@@ -132,78 +132,82 @@ Node queries
 
 '''
 from __future__ import division, absolute_import, print_function
-import logging
-import sys
-
-from sqlalchemy import sql, text
-from sqlalchemy.orm.exc import NoResultFound
+from collections import OrderedDict
+from functools import wraps
 import getpass
+from itertools import islice, chain
+import logging
+import os.path
+import tempfile
+import warnings
 
-try:
-    import pygments
-except ImportError:
-    pygments = None
-
-from core.database.postgres import *
-from utils.compat import *
+from sqlalchemy import sql
+from sqlalchemy.orm.exc import NoResultFound
 
 from core import config
-
 import core.init as initmodule
-from functools import wraps
 
-from core import init
 import core.database
 from core.database.postgres.node import t_noderelation
-from core.database.postgres import alchemyext
+from core.database.postgres import alchemyext, mediatumfunc
 import core.database.postgres.connector
-core.database.postgres.connector.DEBUG_SHOW_TRACE = False
-core.database.postgres.connector.DEBUG = True
-from itertools import islice, chain
-from collections import OrderedDict
-import copy
-init.basic_init()
-# we don't want to raise exceptions for missing node classes
-init.check_undefined_nodeclasses()
+from utils.compat import *
 
-from core import Node, File, User, db
-from core import AccessRule, AccessRuleset
-
-q = core.db.query
-s = core.db.session
-
-# settings
+# settings #
 
 # set this to INFO for SQL statement echo, DEBUG for even more info from SQLAlchemy
 SQLALCHEMY_LOGGING = logging.WARN
 SQL_LOGGING = logging.WARN
 
-# use default connection specified by mediatum config for ipython-sql
-SQLALCHEMY_CONNECTION = core.db.connectstr
-# TODO: changing the connection string should be possible for the postgres connector, too
-
 # change this to True in your IPython notebook after running mediatumipython.py
 IPYTHON_NOTEBOOK = False
+
+ROOT_LOGLEVEL = logging.INFO
+LOG_FILEPATH = os.path.join(tempfile.gettempdir(), "mediatumipython.log")
+
+core.database.postgres.connector.DEBUG_SHOW_TRACE = False
+core.database.postgres.connector.DEBUG = True
+
+# use default connection specified by mediatum config for ipython-sql magic
+SQLMAGICS_CONNECTION_FACTORY = lambda: core.db.connectstr
+# TODO: changing the connection string should be possible for the postgres connector, too
+
+# /settings #
+
+initmodule.basic_init(ROOT_LOGLEVEL, log_filepath=LOG_FILEPATH, use_logstash=False)
+initmodule.register_workflow()
+
+# we don't want to raise warnings for missing node classes, just stub them and be silent
+_core_init_loglevel = logging.getLogger("core.init").level
+logging.getLogger("core.init").setLevel(logging.ERROR)
+initmodule.check_undefined_nodeclasses(stub_undefined_nodetypes=True)
+logging.getLogger("core.init").setLevel(_core_init_loglevel)
+
+from core import db, Node, File
+from core import User, UserGroup, AuthenticatorInfo, ShoppingBag
+from core import AccessRule, AccessRuleset, NodeToAccessRule, NodeToAccessRuleset
+from core import Fts, Setting
+
+q = core.db.query
+s = core.db.session
 
 # load types for interactive querying
 from contenttypes import Audio, Content, Directory, Collection, Container, Collections, Home, Document, Flash, Image, Imagestream, \
     Project, Video, Data
 from core.systemtypes import Mappings, Metadatatypes, Root, Navigation, Searchmasks
 from schema.schema import Metadatatype, Maskitem, Mask, Metafield
+from schema.mapping import Mapping, MappingField
 from workflow.workflow import Workflow, Workflows
 from core.database.postgres.permission import NodeToAccessRule, NodeToAccessRuleset, EffectiveNodeToAccessRuleset
 
 from sqlalchemy.exc import SQLAlchemyError
 
-# disable mediatum loggers
-rootlogg = logging.getLogger()
-rootlogg.handlers = []
-
-# init stdout logging
-logging.basicConfig(level=logging.INFO)
-
+# set user-defined log levels later to avoid log spam in startup phase
 logging.getLogger("sqlalchemy.engine").setLevel(SQLALCHEMY_LOGGING)
+# setting this to logging.DEBUG show all DB statements
 logging.getLogger("sqllog").setLevel(SQL_LOGGING)
+
+logg = logging.getLogger(__name__)
 
 global last_inserted_node
 last_inserted_node_id = None
@@ -282,10 +286,14 @@ def format_access_ruleset_assoc(ra, inherited):
 
 def format_access_rule_assoc(ra):
     r = ra.rule
-    group_names = [n or str(r.group_ids[i]) for i, n in enumerate(r.group_names)]
+    group_names = r.group_names
+    if group_names is not None:
+        group_names_or_ids = [n or str(r.group_ids[i]) for i, n in enumerate(r.group_names)]
+    else:
+        group_names_or_ids = []
 
     return u"{}{} groups:{} {} subnets:{} {} dateranges:{} {}".format(inversion_label(ra.invert), blocking_label(ra.blocking),
-                                                                      inversion_label(r.invert_group), ", ".join(group_names) or "-",
+                                                                      inversion_label(r.invert_group), ", ".join(group_names_or_ids) or "-",
                                                                       inversion_label(r.invert_subnet), r.subnets or "-",
                                                                       inversion_label(r.invert_date), r.dateranges or "-")
 
@@ -466,7 +474,7 @@ class MediatumMagics(Magics):
             logg.warn(
                 "ruleset %s (%s, %s) already used by current node, ignored",
                 args.name,
-                sign(
+                inversion_label(
                     not existing_assoc.invert),
                 args.ruletype)
         else:
@@ -565,12 +573,19 @@ class MediatumMagics(Magics):
     def init(self, line):
         args = parse_argstring(self.init, line)
         new_state = args.type
-        if new_state == "basic":
-            initmodule.basic_init()
-            if not self.init_state:
-                self.init_state = INIT_STATES[new_state]
-        else:
-            initmodule.full_init()
+        new_state_level = INIT_STATES[new_state]
+        if not new_state_level <= self.init_state:
+            if new_state == "basic":
+                initmodule.basic_init()
+            if new_state == "full":
+                if self.init_state == INIT_STATES["basic"]:
+                    with warnings.catch_warnings():
+                        # drop reassignment warnings because we want to reassign node classes when plugins are loaded later, for example
+                        warnings.filterwarnings("ignore", "Reassigning polymorphic.*")
+                        initmodule.additional_init()
+                else:
+                    initmodule.full_init()
+
             self.init_state = INIT_STATES[new_state]
 
     @line_magic
@@ -578,7 +593,7 @@ class MediatumMagics(Magics):
         res = delete_unreachable_nodes(synchronize_session=False)
         s.expire_all()
         print(res, "nodes deleted")
-        
+
     @needs_init("full")
     @magic_arguments()
     @argument("login_name", default=None)
@@ -586,15 +601,15 @@ class MediatumMagics(Magics):
     @line_magic
     def password(self, line):
         args = parse_argstring(self.password, line)
-        
+
         if args.password is None:
             pw = getpass.getpass()
         else:
             pw = args.password
-            
+
         user = q(User).filter_by(login_name=args.login_name).one()
         user.change_password(pw)
-        
+
     @needs_init("full")
     @magic_arguments()
     @argument("login_name", default=None)
@@ -603,25 +618,25 @@ class MediatumMagics(Magics):
     def check_login(self, line):
         from core.auth import authenticate_user_credentials
         args = parse_argstring(self.check_login, line)
-        
+
         if args.password is None:
             pw = getpass.getpass()
         else:
             pw = args.password
-            
+
         user = authenticate_user_credentials(args.login_name, pw, {})
-        
+
         if user is None:
             user = q(User).filter_by(login_name=args.login_name).scalar()
             if user is None:
-                print("login failed, no user with login name '{}'!".format(args.login_name))
+                print(u"login failed, no user with login name '{}'!".format(args.login_name))
             else:
-                print("user with login_name '{}' found, but login failed!".format(args.login_name))
+                print(u"user with login_name '{}' found, but login failed!".format(args.login_name))
         else:
-            print("login ok")
+            print(u"login ok")
         return user
-            
-            
+
+
 ip = get_ipython()  # @UndefinedVariable
 
 
@@ -646,20 +661,20 @@ ip.set_hook("pre_prompt_hook", set_prompt)
 def explain(query, analyze=False, pygments_style="native"):
     """Prints EXPLAIN (ANALYZE) query in current session."""
     explained = alchemyext.explain(query, s, analyze)
-    if pygments is not None:
-        from pygments.lexers import PostgresConsoleLexer
+    from pygments.lexers import PostgresConsoleLexer
+    from pygments import highlight
 
-        if IPYTHON_NOTEBOOK:
-            from pygments.formatters import HtmlFormatter
-            formatter = HtmlFormatter
-        else:
-            from pygments.formatters import Terminal256Formatter
-            formatter = Terminal256Formatter
+    if IPYTHON_NOTEBOOK:
+        from pygments.formatters import HtmlFormatter
+        formatter = HtmlFormatter
+    else:
+        from pygments.formatters import Terminal256Formatter
+        formatter = Terminal256Formatter
 
-        explained = pygments.highlight(
-            explained,
-            PostgresConsoleLexer(),
-            formatter(style=pygments_style))
+    explained = highlight(
+        explained,
+        PostgresConsoleLexer(),
+        formatter(style=pygments_style))
 
     if IPYTHON_NOTEBOOK:
         formatted_statement = db.statement_history.format_statement(
@@ -668,7 +683,7 @@ def explain(query, analyze=False, pygments_style="native"):
         from IPython.display import HTML
         return HTML(
             "<style>" +
-            pygments.formatters.HtmlFormatter().get_style_defs('.highlight') +
+            HtmlFormatter().get_style_defs('.highlight') +
             "</style>" +
             formatted_statement +
             "<br>" +
@@ -735,7 +750,7 @@ def load_ipython_extensions(ip):
     if SQLMagics:
         ip.register_magics(SqlMagic)
         ip.register_magics(SQLMagics)
-        ip.magic("sql $SQLALCHEMY_CONNECTION")
+        ip.magic("sql {SQLMAGICS_CONNECTION_FACTORY()}")
 
 load_ipython_extensions(ip)
 

@@ -213,18 +213,24 @@ def test_tag(content_node_versioned):
     assert node.tag == u"5"
 
 
-def test_create_new_tagged_version(content_node_versioned):
+def test_create_new_tagged_version(content_node_versioned, some_user):
     node = content_node_versioned
+    user = some_user
+    # commit user
+    db.session.commit()
 
-    with node.new_tagged_version(tag=u"tag", comment=u"comment") as tx:
+    with node.new_tagged_version(tag=u"tag", comment=u"comment", user=user) as tx:
         node.orderpos = 100
 
     assert node.versions.count() == 4
     assert tx.meta[u"tag"] == u"tag"
     assert tx.meta[u"comment"] == u"comment"
+    assert tx.user == user
 
     new_version = node.versions[-1]
-    assert new_version.changeset == {u"orderpos": [42, 100]}
+    assert u"orderpos" in new_version.changeset
+    assert new_version.changeset[u"orderpos"] == [42, 100]
+    assert u"updatetime" in new_version.changeset[u"attrs"][1]
 
 
 def test_create_new_tagged_version_initial_version_tag(content_node_versioned):
@@ -257,5 +263,3 @@ def test_create_new_tagged_version_dirty(content_node_versioned):
             node.orderpos = 100
 
     assert "Refusing" in einfo.value.message
-
-    

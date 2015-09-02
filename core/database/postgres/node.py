@@ -293,7 +293,7 @@ class Node(DeclarativeBase, NodeMixin):
     def get_tagged_version(self, tag):
         return self.tagged_versions.filter_by(value=tag).scalar()
 
-    def new_tagged_version(self, tag=None, comment=None):
+    def new_tagged_version(self, tag=None, comment=None, user=None):
         """Returns a context manager that manages the creation of a new tagged node version.
 
         :param tag: a unicode tag assigned to the transaction belonging to the new version.
@@ -302,6 +302,7 @@ class Node(DeclarativeBase, NodeMixin):
             If no numbered version is present, assign 1 to the last version and 2 to the new version.
 
         :param comment: optional comment for the transaction
+        :param user: user that will be associated with the transaction.
         """
         node = self
 
@@ -314,6 +315,9 @@ class Node(DeclarativeBase, NodeMixin):
 
                 uow = versioning_manager.unit_of_work(s)
                 tx = uow.create_transaction(s)
+
+                if user is not None:
+                    tx.user = user
 
                 if tag:
                     tx.meta["tag"] = tag

@@ -107,7 +107,7 @@ def _handle_change(node, req):
 
             version_comment_full = u'({})\n{}'.format(t(req, translation_msg_id), version_comment)
 
-            with node.new_tagged_version(comment=version_comment_full):
+            with node.new_tagged_version(comment=version_comment_full, user=user):
                 _finish_change(node, change_file, user, uploadfile, req)
                 node.set("updateuser", user.login_name)
 

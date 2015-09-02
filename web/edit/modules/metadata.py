@@ -113,7 +113,7 @@ def _handle_edit_metadata(req, ids, mask, maskname, nodes):
             comment = u'({})\n{}'.format(t(req, "document_new_version_comment"), req.params.get('version_comment', ''))
 
             for node in nodes:
-                with node.new_tagged_version(comment=comment):
+                with node.new_tagged_version(comment=comment, user=user):
                     node.set("updateuser", user.login_name)
                     mask.update_node(node, req)
         else:

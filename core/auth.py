@@ -64,7 +64,7 @@ class Authenticator(object):
     def __init__(self, name):
         self.name = name
 
-    def authenticate_user_credentials(self, login, password, request):
+    def authenticate_user_credentials(self, login, password, request=None):
         """Returns an User instance when authentication succeeds, else None."""
 
     def logout_user(self, user, request):
@@ -80,7 +80,7 @@ class InternalAuthenticator(Authenticator):
 
     auth_type = INTERNAL_AUTHENTICATOR_KEY[0]
 
-    def authenticate_user_credentials(self, login_name, password, request):
+    def authenticate_user_credentials(self, login_name, password, request=None):
         """Returns an User instance when authentication with `login_name` and `password` succeeds, else None.
         Successful means: login and password hash match the db values
         """

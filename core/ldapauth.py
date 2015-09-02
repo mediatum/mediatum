@@ -169,7 +169,11 @@ class LDAPAuthenticator(Authenticator):
 
     auth_type = u"ldap"
 
-    def authenticate_user_credentials(self, login, password, request):
+    def __init__(self, name, configuration=None):
+        self._configure(configuration)
+        Authenticator.__init__(self, name)
+
+    def authenticate_user_credentials(self, login, password, request=None):
         if "@" not in login and LDAP_USER_URL:
             login += LDAP_USER_URL
 
@@ -213,9 +217,13 @@ class LDAPAuthenticator(Authenticator):
             else:
                 data = login_result_data[0][1]
                 authenticator_info = q(AuthenticatorInfo).filter_by(name=self.name, auth_type=LDAPAuthenticator.auth_type).scalar()
-                user = add_ldap_user(login_result_data[0][1], login, authenticator_info)
+                user = add_ldap_user(data, login, authenticator_info)
 
                 # refuse login if no user was created (if no matching group was found)
                 if user is not None:
                     db.session.commit()
                     return user
+
+
+    def _configure(self, configuration):
+        pass

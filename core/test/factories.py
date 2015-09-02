@@ -99,13 +99,23 @@ CollectionFactory = make_simple_nodeclass_factory(Collection)
 CollectionsFactory = make_simple_nodeclass_factory(Collections)
 HomeFactory = make_simple_nodeclass_factory(Home)
 
-class InternalAuthenticatorInfoFactory(SQLAFactory):
+
+class AuthenticatorInfoFactory(SQLAFactory):
 
     class Meta:
         model = AuthenticatorInfo
 
-    auth_type=INTERNAL_AUTHENTICATOR_KEY[0]
-    name=INTERNAL_AUTHENTICATOR_KEY[1]
+    auth_type = FuzzyText(length=6, chars=string.lowercase)
+    name = FuzzyText(length=6, chars=string.lowercase)
+
+
+class InternalAuthenticatorInfoFactory(AuthenticatorInfoFactory):
+
+    class Meta:
+        model = AuthenticatorInfo
+
+    auth_type = INTERNAL_AUTHENTICATOR_KEY[0]
+    name = INTERNAL_AUTHENTICATOR_KEY[1]
 
 
 class FileFactory(SQLAFactory):

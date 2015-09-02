@@ -132,9 +132,11 @@ def init_db():
     for cls in core.db.get_model_classes():
         setattr(core, cls.__name__, cls)
 
+
 def init_fulltext_search():
     import core
     core.db.init_fulltext_search()
+
 
 def init_modules():
     """init modules with own init function"""
@@ -168,20 +170,48 @@ def add_ustr_builtin():
     __builtin__.ustr = ustr
 
 
-def check_undefined_nodeclasses():
+def check_undefined_nodeclasses(stub_undefined_nodetypes=None, fail_if_undefined_nodetypes=None):
+    """Checks if all nodetypes found in the database are defined as subclasses of Node.
+
+    There are 3 modes which can be selected in the config file or by the parameters:
+
+    * fail_if_undefined_nodetypes is True:
+        => raise an Exception if a class if missing. Recommended.
+
+    * fail_if_undefined_nodetypes is False, stub_undefined_nodetypes is True:
+        => emit a warning that classes are missing and create stub classes directly inheriting from Node.
+        Most code will continue to work, but it may fail if the real class overrides methods from Node.
+
+    * fail_if_undefined_nodetypes is False, stub_undefined_nodetypes is False (default):
+        => just emit a warning that classes are missing
+    """
     from core import Node, db
+
     known_nodetypes = set(c.__mapper__.polymorphic_identity for c in Node.get_all_subclasses())
     nodetypes_in_db = set(t[0] for t in db.query(Node.type.distinct()))
     undefined_nodetypes = nodetypes_in_db - known_nodetypes
 
-    logg.warn("some node types are present in the database, but not defined in code. Missing plugins?\n%s",
-              [str(t) for t in undefined_nodetypes])
+    if undefined_nodetypes:
 
-    if config.get("config.stub_undefined_nodetypes", "true") == "true":
-        for t in undefined_nodetypes:
-            clsname = t.capitalize()
-            type(str(clsname), (Node, ), {})
-            logg.info("auto-generated stub class for node type '%s'", clsname)
+        if fail_if_undefined_nodetypes is None:
+            fail_if_undefined_nodetypes = config.get("config.fail_undefined_nodetypes", "false") == "true"
+
+        msg = u"some node types are present in the database, but not defined in code. Missing plugins?\n{}".format(
+            [str(t) for t in undefined_nodetypes])
+
+        if fail_if_undefined_nodetypes:
+            raise Exception(msg)
+        else:
+            logg.warn(msg)
+
+        if stub_undefined_nodetypes is None:
+            stub_undefined_nodetypes = config.get("config.stub_undefined_nodetypes", "false") == "true"
+
+        if stub_undefined_nodetypes:
+            for t in undefined_nodetypes:
+                clsname = t.capitalize()
+                type(str(clsname), (Node, ), {})
+                logg.info("auto-generated stub class for node type '%s'", clsname)
 
 
 def basic_init(root_loglevel=None, config_filepath=None):

@@ -215,12 +215,12 @@ def check_undefined_nodeclasses(stub_undefined_nodetypes=None, fail_if_undefined
                 logg.info("auto-generated stub class for node type '%s'", clsname)
 
 
-def basic_init(root_loglevel=None, config_filepath=None):
+def basic_init(root_loglevel=None, config_filepath=None, log_filepath=None, use_logstash=None):
     add_ustr_builtin()
     import core.config
     core.config.initialize(config_filepath)
     import utils.log
-    utils.log.initialize(root_loglevel)
+    utils.log.initialize(root_loglevel, log_filepath, use_logstash)
     log_basic_sys_info()
     check_imports()
     set_locale()
@@ -231,8 +231,7 @@ def basic_init(root_loglevel=None, config_filepath=None):
     load_types()
 
 
-def full_init(root_loglevel=None, config_filepath=None):
-    basic_init(root_loglevel, config_filepath)
+def additional_init():
     init_fulltext_search()
     register_workflow()
     init_ldap()
@@ -240,3 +239,8 @@ def full_init(root_loglevel=None, config_filepath=None):
     init_modules()
     tal_setup()
     check_undefined_nodeclasses()
+
+
+def full_init(root_loglevel=None, config_filepath=None, log_filepath=None, use_logstash=None):
+    basic_init(root_loglevel, config_filepath, log_filepath, use_logstash)
+    additional_init()

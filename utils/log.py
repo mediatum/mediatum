@@ -245,7 +245,7 @@ logging.captureWarnings(True)
 logg = logging.getLogger(__name__)
 
 
-def initialize(level=None):
+def initialize(level=None, log_filepath=None, use_logstash=None):
     root_logger = logging.getLogger()
 
     if level is None:
@@ -261,13 +261,19 @@ def initialize(level=None):
     root_logger.handlers = []
     root_logger.addHandler(stream_handler)
 
-    logstash_handler = logstash.TCPLogstashHandler("localhost", 5959, version=1, message_type="mediatum")
-    root_logger.addHandler(logstash_handler)
-    filepath = config.get('logging.file', None)
+    if use_logstash is None:
+        use_logstash = config.get('logging.use_logstash', "true") == "true"
 
-    if filepath:
-        dlogfiles['mediatum'] = {'path': filepath, 'filename': filepath}
-        file_handler = logging.FileHandler(filepath)
+    if use_logstash:
+        logstash_handler = logstash.TCPLogstashHandler("localhost", 5959, version=1, message_type="mediatum")
+        root_logger.addHandler(logstash_handler)
+
+    if log_filepath is None:
+        log_filepath = config.get('logging.file', None)
+
+    if log_filepath:
+        dlogfiles['mediatum'] = {'path': log_filepath, 'filename': log_filepath}
+        file_handler = logging.FileHandler(log_filepath)
         file_handler.setFormatter(logging.Formatter(ROOT_FILE_LOGFORMAT))
         root_logger.addHandler(file_handler)
-        logg.info('logging everything to %s', filepath)
+        logg.info('--- logging everything to %s ---', log_filepath)

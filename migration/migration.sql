@@ -61,6 +61,8 @@ BEGIN
     UPDATE mediatum.node SET type = 'workflowstep_editmetadata' WHERE type = 'workflowstep_edit';
     UPDATE mediatum.node SET type = 'workflowstep_sendemail' WHERE type = 'workflowstep_send_email';
     UPDATE mediatum.node SET type = 'workflowstep_urn' WHERE type = 'workflowstep_addurn';
+    UPDATE mediatum.node SET type = 'workflowstep_buildinfid' WHERE type = 'workflowstep_buildInfId';
+    UPDATE mediatum.node SET type = 'workflowstep_showdata' WHERE type = 'workflowstep_wait';
 
     RAISE NOTICE 'data migration finished';
 

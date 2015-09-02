@@ -40,6 +40,7 @@ def set_locale():
 def load_system_types():
     from core.systemtypes import *
     from schema.searchmask import SearchMaskItem, SearchMask
+    from schema.mapping import Mapping, MappingField
     from core import ShoppingBag
 
 
@@ -194,7 +195,7 @@ def check_undefined_nodeclasses(stub_undefined_nodetypes=None, fail_if_undefined
     if undefined_nodetypes:
 
         if fail_if_undefined_nodetypes is None:
-            fail_if_undefined_nodetypes = config.get("config.fail_undefined_nodetypes", "false") == "true"
+            fail_if_undefined_nodetypes = config.get("config.fail_if_undefined_nodetypes", "false") == "true"
 
         msg = u"some node types are present in the database, but not defined in code. Missing plugins?\n{}".format(
             [str(t) for t in undefined_nodetypes])

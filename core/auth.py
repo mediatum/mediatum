@@ -163,12 +163,15 @@ def init():
     """Initializes core authenticators according to auth.authenticator_order"""
     # New core authenticator types must be added here.
     # Plugins use register_authenticator() after init() has been run.
-    from core.ldapauth import LDAPAuthenticator
-    
-    authenticator_types = {
-        LDAPAuthenticator.auth_type: LDAPAuthenticator,
-        InternalAuthenticator.auth_type: InternalAuthenticator,
-    }
+
+    authenticator_types = {InternalAuthenticator.auth_type: InternalAuthenticator}
+
+    try:
+        from core.ldapauth import LDAPAuthenticator
+    except Exception as e:
+        logg.warn("LDAP authenticator is not available: '%s: %s'", e.__class__.__name__, e.message)
+    else:
+        authenticator_types[LDAPAuthenticator.auth_type] = LDAPAuthenticator
 
     # if authenticator_order is undefined, use an internal authentificator only
     # internal auth can be disabled by not adding it to the config option
@@ -179,3 +182,4 @@ def init():
         if authenticator_cls is not None:
             authenticators[(auth_type, name)] = authenticator_cls(name)
 
+    logg.info("core authenticators order: %s", authenticators.keys())

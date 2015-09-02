@@ -42,8 +42,8 @@ LDAP_PROXYUSER = config.get("ldap.proxyuser")
 LDAP_PROXYUSER_PASSWORD = config.get("ldap.proxyuser_password")
 LDAP_USER_URL = config.get("ldap.user_url")
 LDAP_USER_LOGIN = config.get("ldap.user_login")
-LDAP_ATTRIBUTES = config.get("ldap.attributes").encode("utf8").split(",") + [LDAP_USER_LOGIN.encode("utf8")]
-LDAP_USER_GROUP_ATTRS = [a.strip() for a in config.get("ldap.user_group").split(",")]
+LDAP_ATTRIBUTES = config.get("ldap.attributes", "").encode("utf8").split(",") + [LDAP_USER_LOGIN.encode("utf8")]
+LDAP_USER_GROUP_ATTRS = [a.strip() for a in config.get("ldap.user_group", "").split(",")]
 
 LDAP_USER_ATTRIBUTES = {
     "lastname": config.get("ldap.user_lastname"),

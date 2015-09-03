@@ -572,10 +572,13 @@ let
 
   sqlalchemy-continuum = self.buildPythonPackage {
     name = "sqlalchemy-continuum-1.2.0";
-    src = fetchurl {
-      url = "https://pypi.python.org/packages/source/S/SQLAlchemy-Continuum/SQLAlchemy-Continuum-1.2.0.tar.gz";
-      md5 = "a2ff22e7172f08dac069200925cf2043";
+
+    src = fetchgit {
+      url = https://mediatumdev.ub.tum.de/sqlalchemy-continuum.git;
+      rev = "131e544bcb24dfe985347f179ab61d6b31eceab0";
+      sha256 = "c9ac0aeb5cbaa2e0b60b4dd49199e0fff5c91dd782578dad931ad0f3350aa1fe";
     };
+
     propagatedBuildInputs = with self; [sqlalchemy sqlalchemy-utils];
     buildInputs = with self; [];
     doCheck = false;

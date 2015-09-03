@@ -3,6 +3,7 @@
     :copyright: (c) 2014 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
+import datetime
 import logging
 from json import dumps
 from warnings import warn
@@ -16,13 +17,15 @@ from sqlalchemy.ext.declarative.api import DeclarativeMeta
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.ext.hybrid import hybrid_property
 
-from core.node import NodeMixin
-from core.database.postgres import db_metadata, DeclarativeBase, MtQuery, mediatumfunc
+from core.node import NodeMixin, NodeVersionMixin
+from core.database.postgres import db_metadata, DeclarativeBase, MtQuery, mediatumfunc, MtVersionBase
 from core.database.postgres import rel, bref, C, FK
 from core.database.postgres.alchemyext import LenMixin, view
 from core.database.postgres.attributes import Attributes, AttributesExpressionAdapter
 from utils.magicobjects import MInt
 from ipaddr import IPv4Address
+from sqlalchemy_continuum import versioning_manager
+from sqlalchemy_continuum.utils import version_class
 
 
 logg = logging.getLogger(__name__)
@@ -150,6 +153,9 @@ class Node(DeclarativeBase, NodeMixin):
     """
     __metaclass__ = BaseNodeMeta
     __tablename__ = "node"
+    __versioned__ = {
+        "base_classes": (NodeVersionMixin, MtVersionBase, DeclarativeBase)
+    }
 
     id = C(Integer, Sequence('node_id_seq', schema=db_metadata.schema, start=100), primary_key=True)
     type = C(Text, index=True)
@@ -247,7 +253,6 @@ class Node(DeclarativeBase, NodeMixin):
         searchtree = parser.parse_string(searchquery)
         return searchtree
 
-
     def _search_query_object(self):
         """Builds the query object that is used as basis for content node searches below this node"""
         from contenttypes import Content
@@ -276,6 +281,73 @@ class Node(DeclarativeBase, NodeMixin):
         searchtree = self._parse_searchquery(searchquery)
         query = self._search_query_object()
         return [apply_searchtree_to_query(query, searchtree, l) for l in languages]
+
+    @property
+    def tagged_versions(self):
+        Transaction = versioning_manager.transaction_cls
+        TransactionMeta = versioning_manager.transaction_meta_cls
+        version_cls = version_class(self.__class__)
+        return (self.versions.join(Transaction, version_cls.transaction_id == Transaction.id).join(Transaction.meta_relation).
+                filter(TransactionMeta.key == u"tag"))
+
+    def get_tagged_version(self, tag):
+        return self.tagged_versions.filter_by(value=tag).scalar()
+
+    def new_tagged_version(self, tag=None, comment=None, user=None):
+        """Returns a context manager that manages the creation of a new tagged node version.
+
+        :param tag: a unicode tag assigned to the transaction belonging to the new version.
+            If none is given, assume that we want to add a new numbered version.
+            The tag will be the incremented version number of the last numbered version.
+            If no numbered version is present, assign 1 to the last version and 2 to the new version.
+
+        :param comment: optional comment for the transaction
+        :param user: user that will be associated with the transaction.
+        """
+        node = self
+
+        class VersionContextManager(object):
+
+            def __enter__(self):
+                self.session = s = object_session(node)
+                if s.new or s.dirty:
+                    raise Exception("Refusing to create a new tagged node version. Session must be clean!")
+
+                uow = versioning_manager.unit_of_work(s)
+                tx = uow.create_transaction(s)
+
+                if user is not None:
+                    tx.user = user
+
+                if tag:
+                    tx.meta["tag"] = tag
+                else:
+                    NodeVersion = version_class(node.__class__)
+                    # in case you were wondering: order_by(None) resets the default order_by
+                    last_tagged_version = node.tagged_versions.order_by(None).order_by(NodeVersion.transaction_id.desc()).first()
+                    if last_tagged_version is not None:
+                        next_version = int(last_tagged_version.tag) + 1
+                    else:
+                        node.versions[-1].tag = u"1"
+                        next_version = 2
+
+                    tx.meta["tag"] = unicode(next_version)
+
+                if comment:
+                    tx.meta["comment"] = comment
+
+                # XXX: Actually, we could use the transaction time instead of writing an update time.
+                # But this is the old way, keep it because the application expects it.
+                node["updatetime"] = datetime.datetime.now().isoformat()
+                return tx
+
+            def __exit__(self, exc_type, exc_value, traceback):
+                if exc_type:
+                    self.session.rollback()
+                else:
+                    self.session.commit()
+
+        return VersionContextManager()
 
 
     __mapper_args__ = {

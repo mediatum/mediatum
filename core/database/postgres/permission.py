@@ -14,6 +14,7 @@ from sqlalchemy.orm import column_property, object_session
 
 class AccessRule(DeclarativeBase):
     __tablename__ = "access_rule"
+    __versioned__ = {} 
 
     id = integer_pk()
     invert_subnet = C(Boolean, server_default="false", index=True)
@@ -28,6 +29,7 @@ class AccessRule(DeclarativeBase):
 
 class NodeToAccessRule(DeclarativeBase):
     __tablename__ = "node_to_access_rule"
+    __versioned__ = {} 
 
     nid = C(FK(Node.id, ondelete="CASCADE"), primary_key=True)
     rule_id = C(FK(AccessRule.id, ondelete="CASCADE"), primary_key=True)
@@ -41,6 +43,7 @@ class NodeToAccessRule(DeclarativeBase):
 
 class AccessRuleset(DeclarativeBase, TimeStamp):
     __tablename__ = "access_ruleset"
+    __versioned__ = {} 
 
     name = C(Unicode, primary_key=True)
     description = C(Unicode, server_default="''")
@@ -48,6 +51,7 @@ class AccessRuleset(DeclarativeBase, TimeStamp):
 
 class AccessRulesetToRule(DeclarativeBase):
     __tablename__ = "access_ruleset_to_rule"
+    __versioned__ = {} 
 
     rule_id = C(FK(AccessRule.id), primary_key=True)
     ruleset_name = C(FK(AccessRuleset.name, ondelete="CASCADE", onupdate="CASCADE"), primary_key=True)
@@ -59,6 +63,7 @@ class AccessRulesetToRule(DeclarativeBase):
 
 class NodeToAccessRuleset(DeclarativeBase):
     __tablename__ = "node_to_access_ruleset"
+    __versioned__ = {} 
 
     nid = C(FK(Node.id, ondelete="CASCADE"), primary_key=True, nullable=False)
     ruleset_name = C(FK(AccessRuleset.name, ondelete="CASCADE", onupdate="CASCADE"), primary_key=True, nullable=False)

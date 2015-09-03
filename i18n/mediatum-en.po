@@ -1266,10 +1266,10 @@ msgid "workflow_key"
 msgstr "Key"
 
 msgid "document_view_new_version_exist"
-msgstr "There is a ${a_open}newer version${a_close} of the object available."
+msgstr "There is a newer version of the object available."
 
 msgid "document_view_version_deleted"
-msgstr "The version has been deleted.<br />The object will be show in the ${a_open}newest version${a_close}."
+msgstr "The version has been deleted.<br />The object will be show in the newest version."
 
 msgid "document_view_from"
 msgstr "from"

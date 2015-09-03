@@ -40,14 +40,15 @@ class AuthenticatorInfo(DeclarativeBase):
     __table_args__ = (UniqueConstraint(name, auth_type),)
 
 user_to_usergroup = Table("user_to_usergroup", db_metadata,
-                          integer_fk("user.id", name="user_id"),
-                          integer_fk("usergroup.id", name="usergroup_id")
+                          integer_fk("user.id", name="user_id", primary_key=True),
+                          integer_fk("usergroup.id", name="usergroup_id", primary_key=True)
                           )
 
 
 class UserGroup(DeclarativeBase, TimeStamp, UserGroupMixin):
 
     __tablename__ = "usergroup"
+    __versioned__ = {}
 
     id = integer_pk()
     name = C(Unicode)
@@ -72,6 +73,7 @@ def create_special_user_dirs():
 class User(DeclarativeBase, TimeStamp, UserMixin):
 
     __tablename__ = "user"
+    __versioned__ = {}
 
     id = integer_pk()
     login_name = C(Unicode)
@@ -141,7 +143,7 @@ class User(DeclarativeBase, TimeStamp, UserMixin):
         from contenttypes import Directory
         if self.home_dir:
             return self.home_dir.children.filter(Directory.a.system.used_as == "trash").one()
-        
+
     def change_password(self, password):
         from core.auth import create_password_hash
         self.password_hash, self.salt = create_password_hash(password)

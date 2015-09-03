@@ -95,10 +95,10 @@ let
   };
 
   sqlalchemy-utils = self.buildPythonPackage {
-    name = "sqlalchemy-utils-0.30.15";
+    name = "SQLAlchemy-Utils-0.30.16";
     src = fetchurl {
-      url = "https://pypi.python.org/packages/source/S/SQLAlchemy-Utils/SQLAlchemy-Utils-0.30.15.tar.gz";
-      md5 = "719ac730d44e25ff641f2cc8e2a1597d";
+      url = "https://pypi.python.org/packages/source/S/SQLAlchemy-Utils/SQLAlchemy-Utils-0.30.16.tar.gz";
+      md5 = "021d23890e15eb2ef6d6287f782c3f5e";
     };
     propagatedBuildInputs = with self; [six sqlalchemy];
     buildInputs = with self; [];
@@ -570,6 +570,21 @@ let
     doCheck = false;
   };
 
+  sqlalchemy-continuum = self.buildPythonPackage {
+    name = "sqlalchemy-continuum-1.2.0";
+
+    src = fetchgit {
+      url = https://mediatumdev.ub.tum.de/sqlalchemy-continuum.git;
+      rev = "131e544bcb24dfe985347f179ab61d6b31eceab0";
+      sha256 = "c9ac0aeb5cbaa2e0b60b4dd49199e0fff5c91dd782578dad931ad0f3350aa1fe";
+    };
+
+    propagatedBuildInputs = with self; [sqlalchemy sqlalchemy-utils];
+    buildInputs = with self; [];
+    doCheck = false;
+  };
+
+
 in {
   production = [
       coffeescript
@@ -601,10 +616,12 @@ in {
       requests
       scrypt
       sqlalchemy
+      sqlalchemy-continuum
       sqlalchemy-utils
       sympy
       unicodecsv
       werkzeug
+      pkgs.perlPackages.ImageExifTool
     ];
 
     devel = [

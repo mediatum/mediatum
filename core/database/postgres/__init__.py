@@ -17,8 +17,14 @@ from sqlalchemy.engine import Engine
 from sqlalchemy import Column, ForeignKey, event, Integer, DateTime, func as sqlfunc
 from sqlalchemy.orm import relationship, backref, Query, Mapper
 from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy_continuum.utils import version_class
+from sqlalchemy_continuum.plugins.transaction_meta import TransactionMetaPlugin
+from sqlalchemy_continuum import versioning_manager
+from sqlalchemy_continuum import make_versioned
+from sqlalchemy_continuum.utils import parent_class
 
 from core.transition import request
+from core.database.postgres.continuumext import MtVersionBase
 
 
 logg = logging.getLogger(__name__)
@@ -36,7 +42,22 @@ SLOW_QUERY_SECONDS = 0.2
 
 
 def dynamic_rel(*args, **kwargs):
-        return relationship(*args, lazy="dynamic", **kwargs)
+    return relationship(*args, lazy="dynamic", **kwargs)
+
+
+db_metadata = sqla.MetaData(schema=DB_SCHEMA_NAME)
+mediatumfunc = getattr(sqlfunc, DB_SCHEMA_NAME)
+DeclarativeBase = declarative_base(metadata=db_metadata)
+
+
+meta_plugin = TransactionMetaPlugin()
+make_versioned(
+    plugins=[meta_plugin],
+    options={
+        'native_versioning': True,
+        'base_classes': (MtVersionBase, DeclarativeBase),
+    }
+)
 
 
 class TimeStamp(object):
@@ -60,10 +81,6 @@ def integer_fk(*args, **kwargs):
     else:
         raise ValueError("at least one argument must be specified (type)!")
 
-
-db_metadata = sqla.MetaData(schema=DB_SCHEMA_NAME)
-mediatumfunc = getattr(sqlfunc, DB_SCHEMA_NAME)
-DeclarativeBase = declarative_base(metadata=db_metadata)
 
 # some pretty printing for SQLAlchemy objects ;)
 
@@ -107,6 +124,7 @@ def adapt_ipv4network(ipnet):
     val = adapt(str(ipnet)).getquoted()
     return AsIs(val + "::cidr")
 
+
 def adapt_ipv4address(ipnet):
     val = adapt(str(ipnet)).getquoted()
     return AsIs(val + "::inet")
@@ -149,19 +167,19 @@ class MtQuery(Query):
         ]
 
     def filter_read_access(self, user=None, ip=None, req=None):
-        
+
         if user is None and ip is None:
             if req is None:
                 req = request
-                
+
             from core.users import user_from_session
             user = user_from_session(req.session)
             ip = IPv4Address(req.remote_addr)
-            
+
         # admin sees everything ;)
         if user.is_admin:
             return self
-        
+
         nodeclass = self._find_nodeclass()
         if not nodeclass:
             return self
@@ -170,3 +188,19 @@ class MtQuery(Query):
 
         read_access = mediatumfunc.has_read_access_to_node(nodeclass.id, user.group_ids, ip, sqlfunc.current_date())
         return self.filter(read_access)
+
+    def get(self, ident):
+        nodeclass = self._find_nodeclass()
+        if not nodeclass:
+            return Query.get(self, ident)
+        else:
+            nodeclass = nodeclass[0]
+        active_version = Query.get(self, ident)
+        Transaction = versioning_manager.transaction_cls
+        if active_version is None:
+            ver_cls = version_class(nodeclass)
+            return (self.session.query(ver_cls).join(Transaction, ver_cls.transaction_id == Transaction.id)
+                    .join(Transaction.meta_relation)
+                    .filter_by(key=u'alias_id', value=unicode(ident)).scalar())
+
+        return active_version

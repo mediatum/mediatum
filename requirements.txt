@@ -30,3 +30,4 @@ sqlalchemy-utils
 sympy
 unicodecsv
 werkzeug
+https://mediatumdev.ub.tum.de/sqlalchemy-continuum.git@my

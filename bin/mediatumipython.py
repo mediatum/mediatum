@@ -138,8 +138,10 @@ import getpass
 from itertools import islice, chain
 import logging
 import os.path
+import sys
 import tempfile
 import warnings
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from sqlalchemy import sql
 from sqlalchemy.orm.exc import NoResultFound
@@ -167,6 +169,7 @@ LOG_FILEPATH = os.path.join(tempfile.gettempdir(), "mediatumipython.log")
 
 core.database.postgres.connector.DEBUG_SHOW_TRACE = False
 core.database.postgres.connector.DEBUG = True
+core.database.postgres.SLOW_QUERY_SECONDS = 3600
 
 # use default connection specified by mediatum config for ipython-sql magic
 SQLMAGICS_CONNECTION_FACTORY = lambda: core.db.connectstr

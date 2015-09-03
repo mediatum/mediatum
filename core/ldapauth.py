@@ -29,157 +29,143 @@ from utils.compat import iteritems
 
 
 logg = logging.getLogger(__name__)
-
 q = db.query
 
 ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
 ldap.set_option(ldap.OPT_REFERRALS, 0)
 
-LDAP_BASE_DN = config.get("ldap.basedn")
-LDAP_USER_LOGIN = config.get("ldap.user_login")
-LDAP_SERVER = config.get("ldap.server")
-LDAP_PROXYUSER = config.get("ldap.proxyuser")
-LDAP_PROXYUSER_PASSWORD = config.get("ldap.proxyuser_password")
-LDAP_USER_URL = config.get("ldap.user_url")
-LDAP_USER_LOGIN = config.get("ldap.user_login")
-LDAP_ATTRIBUTES = config.get("ldap.attributes", "").encode("utf8").split(",") + [LDAP_USER_LOGIN.encode("utf8")]
-LDAP_USER_GROUP_ATTRS = [a.strip() for a in config.get("ldap.user_group", "").split(",")]
 
-LDAP_USER_ATTRIBUTES = {
-    "lastname": config.get("ldap.user_lastname"),
-    "firstname": config.get("ldap.user_firstname"),
-    "email": config.get("ldap.user_email"),
-    "organisation": config.get("ldap.user_org"),
-    "comment": config.get("ldap.user_comment"),
-    "telephone": config.get("ldap.user_telephone"),
-    "login_name": LDAP_USER_LOGIN,
-    "display_name": config.get("ldap.user_displayname"),
-}
-
-if LDAP_USER_URL and LDAP_USER_URL.find("@") == -1:
-    LDAP_USER_URL = "@" + LDAP_USER_URL
-
-if "," not in LDAP_PROXYUSER:
-    BIND_USER = LDAP_PROXYUSER + LDAP_USER_URL
-else:
-    BIND_USER = LDAP_PROXYUSER
-
-
-def try_auth(searchfilter):
-    count = 5
-    # if proxyuser given as full DN, take that
-    # otherwise assume cn as given and append configured basedn
-    while True:
-        l = ldap.initialize(LDAP_SERVER)
-        l.simple_bind_s(BIND_USER, LDAP_PROXYUSER_PASSWORD)
-
-        ldap_result_id = l.search(LDAP_BASE_DN, ldap.SCOPE_SUBTREE, searchfilter, [])
-        try:
-            return l.result(ldap_result_id, 0, timeout=5)
-
-        except ldap.TIMEOUT:
-            count += 1
-            if count > 5:
-                raise
-            logg.warn("timeout while trying to connect to user database, retry %s", count)
-            continue
-        else:
-            return None, None
-
-
-def try_login(user_dn, password, searchfilter):
-    while True:
-        l2 = ldap.initialize(LDAP_SERVER)
-        try:
-            l2.simple_bind_s(user_dn, password)
-        except ldap.INVALID_CREDENTIALS:
-            return None, None
-
-        ldap_result_id = l2.search(LDAP_BASE_DN, ldap.SCOPE_SUBTREE, searchfilter, LDAP_ATTRIBUTES)
-        try:
-            return l2.result(ldap_result_id, 0, timeout=5)
-        except ldap.TIMEOUT:
-            logg.info("timeout while authenticating user,  retrying...")
-            continue
-        else:
-            return None, None
-
-
-def get_user_data(data):
-    return {attribute_name: data.get(ldap_fieldname)[0].decode("utf8") if data.get(ldap_fieldname) else None
-            for attribute_name, ldap_fieldname in iteritems(LDAP_USER_ATTRIBUTES)}
-
-
-def get_ldap_group_names(data):
-    all_groups = set()
-
-    for group_attr in LDAP_USER_GROUP_ATTRS:
-        group_desc_list = data.get(group_attr)
-
-        if group_desc_list is not None:
-            if "," in group_desc_list[0]:
-                groups = set([group_dn.split(u",")[0][3:] for group_dn in group_desc_list])
-            else:
-                groups = set(group_desc_list)
-
-            all_groups.update(groups)
-
-    return all_groups
-
-
-def update_groups_from_ldap(user, data):
-
-    ldap_group_names = get_ldap_group_names(data)
-
-    # add group from LDAP if we have a mediaTUM usergroup with that name
-    # groups must be deleted manually if a user is no longer member of a group!
-    groups = q(UserGroup).filter(UserGroup.name.in_(ldap_group_names)).all()
-    user.groups.extend(groups)
-    return groups
-
-
-def add_ldap_user(data, uname, authenticator_info):
-    """Creates LDAP user and adds it to the session if there's at least one group associated with that user.
-    :returns: User or None if user was not added."""
-    s = db.session
-    user_data = get_user_data(data)
-    user = User(can_change_password=False, can_edit_shoppingbag=True, active=True, authenticator_info=authenticator_info, **user_data)
-
-    if not user.display_name:
-        if user.lastname and user.firstname:
-            user.display_name = u"{} {}".format(user.lastname, user.firstname)
-
-    added_groups = update_groups_from_ldap(user, data)
-    if added_groups:
-        s.add(user)
-        logg.info("created ldap user: %s", uname)
-        return user
-
-    # no groups found? Don't add user, return None
-    logg.info("not creating LDAP user for login '%s' because there's no matching group for this user", user.login_name)
-
-
-def update_ldap_user(data, user):
-    user_data = get_user_data(data)
-    user.update(**user_data)
-    update_groups_from_ldap(user, data)
+class LDAPConfigError(Exception):
+    pass
 
 
 class LDAPAuthenticator(Authenticator):
+    """Provide LDAP authentication. Multiple LDAPAuthenticators can be configured in mediatum.cfg like:
+
+        [ldap_name]
+        server=name.sub.example.com
+        ...
+
+        [ldap_name2]
+        server=name2.example.com
+
+        The config option authenticator_order could look like that:
+
+        authenticator_order=internal|default,ldap|name,ldap|name2
+
+        This prefers internal authentication. If that fails, the ldap authenticator with 'name' is tried and so on.
+    """
 
     auth_type = u"ldap"
 
-    def __init__(self, name, configuration=None):
-        self._configure(configuration)
+    def __init__(self, name, config_dict=None):
+        """
+        :param name: used as name of the Authenticator and as config prefix
+        :param config_dict: optional config that is used instead of the global config file
+        """
         Authenticator.__init__(self, name)
+        self._configure(config_dict)
+
+    def try_auth(self, searchfilter):
+        count = 5
+        # if proxyuser given as full DN, take that
+        # otherwise assume cn as given and append configured basedn
+        while True:
+            l = ldap.initialize(self.server)
+            l.simple_bind_s(self.bind_user, self.proxyuser_password)
+
+            ldap_result_id = l.search(self.base_dn, ldap.SCOPE_SUBTREE, searchfilter, [])
+            try:
+                return l.result(ldap_result_id, 0, timeout=5)
+
+            except ldap.TIMEOUT:
+                count += 1
+                if count > 5:
+                    raise
+                logg.warn("timeout while trying to connect to user database, retry %s", count)
+                continue
+            else:
+                return None, None
+
+    def try_login(self, user_dn, password, searchfilter):
+        while True:
+            l2 = ldap.initialize(self.server)
+            try:
+                l2.simple_bind_s(user_dn, password)
+            except ldap.INVALID_CREDENTIALS:
+                return None, None
+
+            ldap_result_id = l2.search(self.base_dn, ldap.SCOPE_SUBTREE, searchfilter, self.attributes)
+            try:
+                return l2.result(ldap_result_id, 0, timeout=5)
+            except ldap.TIMEOUT:
+                logg.info("timeout while authenticating user,  retrying...")
+                continue
+            else:
+                return None, None
+
+    def get_user_data(self, data):
+        return {attribute_name: data.get(ldap_fieldname)[0].decode("utf8") if data.get(ldap_fieldname) else None
+                for attribute_name, ldap_fieldname in iteritems(self.user_attributes)}
+
+    def get_ldap_group_names(self, data):
+        all_groups = set()
+
+        for group_attr in self.group_attributes:
+            group_desc_list = data.get(group_attr)
+
+            if group_desc_list is not None:
+                if "," in group_desc_list[0]:
+                    groups = set([group_dn.split(u",")[0][3:] for group_dn in group_desc_list])
+                else:
+                    groups = set(group_desc_list)
+
+                all_groups.update(groups)
+
+        return all_groups
+
+    def update_groups_from_ldap(self, user, data):
+
+        ldap_group_names = self.get_ldap_group_names(data)
+
+        # add group from LDAP if we have a mediaTUM usergroup with that name
+        # groups must be deleted manually if a user is no longer member of a group!
+        groups = q(UserGroup).filter(UserGroup.name.in_(ldap_group_names)).all()
+        user.groups.extend(groups)
+        return groups
+
+    def add_ldap_user(self, data, uname, authenticator_info):
+        """Creates LDAP user and adds it to the session if there's at least one group associated with that user.
+        :returns: User or None if user was not added."""
+        s = db.session
+        user_data = self.get_user_data(data)
+        user = User(can_change_password=False, can_edit_shoppingbag=True, active=True, authenticator_info=authenticator_info, **user_data)
+
+        if not user.display_name:
+            if user.lastname and user.firstname:
+                user.display_name = u"{} {}".format(user.lastname, user.firstname)
+
+        added_groups = self.update_groups_from_ldap(user, data)
+        if added_groups:
+            s.add(user)
+            logg.info("created ldap user: %s", uname)
+            return user
+
+        # no groups found? Don't add user, return None
+        logg.info("not creating LDAP user for login '%s' because there's no matching group for this user", user.login_name)
+
+    def update_ldap_user(self, data, user):
+        user_data = self.get_user_data(data)
+        user.update(**user_data)
+        self.update_groups_from_ldap(user, data)
 
     def authenticate_user_credentials(self, login, password, request=None):
-        if "@" not in login and LDAP_USER_URL:
-            login += LDAP_USER_URL
+        if "@" not in login and self.user_url:
+            login += self.user_url
 
-        searchfilter = config.get("ldap.searchfilter").replace("[username]", login)
+        searchfilter = self.searchfilter_template.replace("[username]", login)
 
-        result_type, auth_result_data = try_auth(searchfilter)
+        result_type, auth_result_data = self.try_auth(searchfilter)
 
         if result_type == ldap.RES_SEARCH_RESULT:
             if len(auth_result_data) > 0:
@@ -193,9 +179,9 @@ class LDAPAuthenticator(Authenticator):
 
         user_dn = auth_result_data[0][0]
         auth_result_dict = auth_result_data[0][1]
-        dir_id = auth_result_dict[LDAP_USER_LOGIN][0]
+        dir_id = auth_result_dict[self.user_login][0]
 
-        result_type, login_result_data = try_login(user_dn, password, searchfilter)
+        result_type, login_result_data = self.try_login(user_dn, password, searchfilter)
 
         if (result_type == ldap.RES_SEARCH_RESULT and len(login_result_data) > 0):
             result_type = ldap.RES_SEARCH_ENTRY
@@ -211,19 +197,63 @@ class LDAPAuthenticator(Authenticator):
 
             if user is not None:
                 # we already have an user object, update data
-                update_ldap_user(login_result_data[0][1], user)
+                self.update_ldap_user(login_result_data[0][1], user)
                 db.session.commit()
                 return user
             else:
                 data = login_result_data[0][1]
                 authenticator_info = q(AuthenticatorInfo).filter_by(name=self.name, auth_type=LDAPAuthenticator.auth_type).scalar()
-                user = add_ldap_user(data, login, authenticator_info)
+                user = self.add_ldap_user(data, login, authenticator_info)
 
                 # refuse login if no user was created (if no matching group was found)
                 if user is not None:
                     db.session.commit()
                     return user
 
+    def _configure(self, config_dict):
+        if config_dict is not None:
+            def get_config(key, optional=False):
+                value = config_dict.get(key)
+                if value is None and not optional:
+                    raise LDAPConfigError("config value must be present: " + key)
+                return value
+        else:
+            def get_config(key, optional=False):
+                value = config.get(u"ldap_{}.{}".format(self.name, key))
+                if value is None and not optional:
+                    raise LDAPConfigError("config value must be present: " + key)
+                return value
 
-    def _configure(self, configuration):
-        pass
+        proxyuser = get_config("proxyuser")
+        user_url = get_config("user_url", optional=True)
+
+        if user_url and not user_url[0] == "@":
+            self.user_url = "@" + user_url
+        else:
+            self.user_url = user_url
+
+        if "," not in proxyuser:
+            if user_url is None:
+                raise LDAPConfigError("config value user_url must be present")
+            self.bind_user = proxyuser + user_url
+        else:
+            self.bind_user = proxyuser
+
+        self.base_dn = get_config("basedn")
+        self.server = get_config("server")
+        self.proxyuser_password = get_config("proxyuser_password")
+        self.user_login = get_config("user_login")
+        self.attributes = get_config("attributes", "").encode("utf8").split(",") + [self.user_login.encode("utf8")]
+        self.group_attributes = [a.strip() for a in get_config("group_attributes", "").split(",")]
+        self.searchfilter_template = get_config("searchfilter")
+
+        self.user_attributes = {
+            "login_name": self.user_login,
+            "email": get_config("user_email", optional=True),
+            "lastname": get_config("user_lastname", optional=True),
+            "firstname": get_config("user_firstname", optional=True),
+            "organisation": get_config("user_org", optional=True),
+            "comment": get_config("user_comment", optional=True),
+            "telephone": get_config("user_telephone", optional=True),
+            "display_name": get_config("user_displayname", optional=True),
+        }

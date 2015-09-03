@@ -277,6 +277,9 @@ msgstr "Inkonsistente Daten"
 msgid "user_trash"
 msgstr "Papierkorb"
 
+msgid "user_home"
+msgstr "Arbeitsverzeichnis (%s)"
+
 msgid "editor_overwrite"
 msgstr "überschreiben"
 

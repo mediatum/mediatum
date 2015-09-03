@@ -24,29 +24,33 @@ import json
 import core.config as config
 import core.help as help
 import core.translation
-from core import Node
+from core import Node, db
 
 from contenttypes import Container, Collections, Data, Home
-from utils.utils import Menu, splitpath, parseMenuString, isDirectory
-from edit_common import *
 
-from core.translation import lang
-from core.translation import t as translation_t
+from core.translation import lang, t
+from edit_common import *
 from core.transition import httpstatus
 from core.users import user_from_session
 
-from utils.utils import funcname, get_user_id, dec_entry_log
+from utils.utils import funcname, get_user_id, dec_entry_log, Menu, splitpath, parseMenuString, isDirectory
 
-
-from core import db
 
 logg = logging.getLogger(__name__)
 q = db.query
 
 
-def getTreeLabel(node, lang=None):
-    label = node.getLabel(lang=lang)
-    c = len(node.content_children)
+def getTreeLabel(node, lang):
+    special_dir_type = get_special_dir_type(node)
+
+    if special_dir_type is None:
+        label = node.getLabel(lang=lang)
+    elif special_dir_type == "home":
+        label = t(lang, 'user_home') % node.name
+    else:
+        label = t(lang, 'user_' + special_dir_type)
+
+    c = node.content_children.count()
     if c > 0:
         label += ' <small>(%s)</small>' % (c)
     return label
@@ -188,7 +192,7 @@ def frameset(req):
         ct_name = ct.__name__
         # translations of ct_name will be offered in editor tree context menu
         cmenu_iconpaths.append(
-            [ct_name.lower(), translation_t(language, ct_name), get_editor_icon_path_from_nodeclass(ct)])
+            [ct_name.lower(), t(language, ct_name), get_editor_icon_path_from_nodeclass(ct)])
 
     # a html snippet may be inserted in the editor header
     header_insert = q(Collections).one().get('system.editor.header.insert.' + language).strip()
@@ -207,7 +211,7 @@ def frameset(req):
         'path': path,
         'containerpath': containerpath,
         'language': lang(req),
-        't': translation_t,
+        't': t,
         '_getIDPath': _getIDPath,
         'system_editor_header_insert': header_insert,
         'system_editor_help_link': help_link,
@@ -397,7 +401,7 @@ def edit_tree(req):
         if not node.has_read_access():
             continue
 
-        label = getTreeLabel(node, lang=language)
+        label = getTreeLabel(node, language)
 
         nodedata = {'title': label,
                     'key': node.id,
@@ -479,8 +483,7 @@ def action(req):
 
         for nid in set(nids + [_n.id for _n in [trashdir, uploaddir, faultydir]]):
             try:
-                changednodes[nid] = getTreeLabel(
-                    q(Node).get(nid), lang=language)
+                changednodes[nid] = getTreeLabel(q(Node).get(nid), language)
             except:
                 logg.exception("exception ignored: could not make fancytree label for node %s", nid)
         res_dict = {'changednodes': changednodes}
@@ -767,7 +770,7 @@ def content(req):
                         items.append(("", node.show_node_image()))
         v["items"] = items
         if logg.isEnabledFor(logging.DEBUG):
-            logg.debug("... %s inside %s.%s: -> display current images: items: %s", 
+            logg.debug("... %s inside %s.%s: -> display current images: items: %s",
                        get_user_id(req), __name__, funcname(), [_t[0] for _t in items])
         try:
             n = q(Data).get(req.params.get('src', req.params.get('id')))
@@ -837,9 +840,9 @@ def content(req):
                     break
 
     else:
-        t = current.split("_")[-1]
-        if t in editModules.keys():
-            c = editModules[t].getContent(req, ids)
+        t2 = current.split("_")[-1]
+        if t2 in editModules.keys():
+            c = editModules[t2].getContent(req, ids)
             if c:
                 content["body"] += c  # use standard method of module
             else:
@@ -863,7 +866,7 @@ def content(req):
         user = user_from_session(req.session)
         v['user'] = user
         v['language'] = lang(req)
-        v['t'] = translation_t
+        v['t'] = t
 
         v['spc'] = [Menu("sub_header_frontend", "../", target="_parent")]
         if user.isAdmin():

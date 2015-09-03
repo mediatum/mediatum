@@ -396,3 +396,8 @@ def upload_for_html(req):
             return res
 
     return send_nodefile_tal(req)
+
+
+def get_special_dir_type(node):
+    return node.get("system.used_as", None)
+

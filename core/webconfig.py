@@ -116,7 +116,7 @@ def tal_add_template_globals():
         if version:
             params["v"] = version
         params.update(kwargs)
-        return "?" + urllib.urlencode(params)
+        return "/?" + urllib.urlencode(params)
 
     tal.add_template_globals(node_url=node_url)
 

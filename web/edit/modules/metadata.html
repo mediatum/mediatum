@@ -154,7 +154,8 @@
                     </tr>
                     <tal:block tal:repeat="v versions">
                     <tr tal:attributes="class python:(v.isActiveVersion() and 'row active' or 'row') ">
-                      <td><a href="/" tal:attributes="href python:u'?id={}&amp;v={}&amp;tab=metadata'.format(v.id, v.tag)" tal:content="python:u'V' + v.tag">Version</a></td>
+                      <td><a href="/" tal:attributes="href python:node_url(v.id, v.tag)" target="frontend"
+                             tal:content="python:u'V' + v.tag">Version</a></td>
                         <td>
                         <div tal:content="python:v.getUpdatedDate()"></div>
                         <div tal:content="python:v.comment"></div>

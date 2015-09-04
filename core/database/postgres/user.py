@@ -26,8 +26,8 @@ class AuthenticatorInfo(DeclarativeBase):
     __tablename__ = "authenticator"
 
     id = integer_pk()
-    name = C(Unicode)
-    auth_type = C(Unicode)
+    name = C(Unicode, nullable=False)
+    auth_type = C(Unicode, nullable=False)
 
     @property
     def authenticator_key(self):
@@ -51,13 +51,13 @@ class UserGroup(DeclarativeBase, TimeStamp, UserGroupMixin):
     __versioned__ = {}
 
     id = integer_pk()
-    name = C(Unicode)
+    name = C(Unicode, nullable=False)
     description = C(Unicode)
-    hidden_edit_functions = C(ARRAY(Unicode))
+    hidden_edit_functions = C(ARRAY(Unicode), server_default="{}")
 
-    is_editor_group = C(Boolean)
-    is_workflow_editor_group = C(Boolean)
-    is_admin_group = C(Boolean)
+    is_editor_group = C(Boolean, server_default="false")
+    is_workflow_editor_group = C(Boolean, server_default="false")
+    is_admin_group = C(Boolean, server_default="false")
 
     def __repr__(self):
         return u"UserGroup<{} '{}'> ({})".format(self.id, self.name, object.__repr__(self)).encode("utf8")
@@ -76,7 +76,7 @@ class User(DeclarativeBase, TimeStamp, UserMixin):
     __versioned__ = {}
 
     id = integer_pk()
-    login_name = C(Unicode)
+    login_name = C(Unicode, nullable=False)
     display_name = C(Unicode)
 
     lastname = C(Unicode)
@@ -90,11 +90,11 @@ class User(DeclarativeBase, TimeStamp, UserMixin):
 
     # user activity
     last_login = C(DateTime)
-    active = C(Boolean)
+    active = C(Boolean, server_default="true")
 
     # options
-    can_edit_shoppingbag = C(Boolean)
-    can_change_password = C(Boolean)
+    can_edit_shoppingbag = C(Boolean, server_default="false")
+    can_change_password = C(Boolean, server_default="false")
 
     # relationships
     groups = rel(UserGroup, secondary=user_to_usergroup, backref='users')
@@ -103,7 +103,7 @@ class User(DeclarativeBase, TimeStamp, UserMixin):
     home_dir = rel("Directory", foreign_keys=[home_dir_id])
 
     authenticator_info = rel(AuthenticatorInfo)
-    authenticator_id = integer_fk(AuthenticatorInfo.id)
+    authenticator_id = integer_fk(AuthenticatorInfo.id, nullable=False)
 
     @property
     def group_ids(self):

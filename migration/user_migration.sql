@@ -8,7 +8,7 @@ BEGIN
     SELECT id,
     trim(' ' from name),
     trim(' ' from attrs->>'description') AS description,
-    regexp_split_to_array(attrs->>'hideedit', ';') AS hidden_edit_functions,
+    coalesce(regexp_split_to_array(attrs->>'hideedit', ';'), '{}') AS hidden_edit_functions,
     bool(position('w' in attrs->>'opts')) AS is_workflow_editor_group,
     bool(position('e' in attrs->>'opts')) AS is_editor_group
     FROM node

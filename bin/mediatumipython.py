@@ -223,7 +223,7 @@ lastnode = root
 global limit_number_of_info_lines
 limit_number_of_info_lines = None
 
-user_guest = q(User).filter_by(login_name=config.get("user.guestuser", "guest")).one()
+user_guest = q(User).filter_by(login_name=config.get("user.guestuser", "guest")).scalar()
 
 # IPython magic
 

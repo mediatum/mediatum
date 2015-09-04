@@ -25,6 +25,7 @@ from sqlalchemy_continuum.utils import parent_class
 
 from core.transition import request
 from core.database.postgres.continuumext import MtVersionBase
+from utils.compat import iteritems
 
 
 logg = logging.getLogger(__name__)
@@ -94,8 +95,14 @@ def to_yaml(self):
     return pyaml.dump(self.to_dict())
 
 
+def update(self, **kwargs):
+    for name, value in iteritems(kwargs):
+        setattr(self, name, value)
+
+
 DeclarativeBase.to_dict = to_dict
 DeclarativeBase.to_yaml = to_yaml
+DeclarativeBase.update = update
 
 
 @event.listens_for(Engine, "before_cursor_execute")

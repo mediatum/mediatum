@@ -24,13 +24,23 @@ authenticators = OrderedDict()
 def generate_salt():
     return b64encode(os.urandom(16))[:-2]
 
+
 def check_user_password(user, password):
     return user.password_hash == b64encode(scrypt.hash(password.encode("utf8"), str(user.salt)))
+
 
 def create_password_hash(password):
     salt = generate_salt()
     password_hash = b64encode(scrypt.hash(password.encode("utf8"), salt))
     return (password_hash, salt)
+
+
+def get_configured_authenticator_order():
+    auth_order_conf = config.get("auth.authenticator_order")
+    if auth_order_conf is not None:
+        return [tuple(t.split(u"|")) for t in auth_order_conf.split(u",")]
+    else:
+        return [INTERNAL_AUTHENTICATOR_KEY]
 
 
 class CredentialsError(ValueError):
@@ -47,14 +57,14 @@ class WrongPassword(CredentialsError):
 
 class PasswordChangeNotAllowed(CredentialsError):
     pass
-    
+
 
 class Authenticator(object):
 
     def __init__(self, name):
         self.name = name
 
-    def authenticate_user_credentials(self, login, password, request):
+    def authenticate_user_credentials(self, login, password, request=None):
         """Returns an User instance when authentication succeeds, else None."""
 
     def logout_user(self, user, request):
@@ -70,7 +80,7 @@ class InternalAuthenticator(Authenticator):
 
     auth_type = INTERNAL_AUTHENTICATOR_KEY[0]
 
-    def authenticate_user_credentials(self, login_name, password, request):
+    def authenticate_user_credentials(self, login_name, password, request=None):
         """Returns an User instance when authentication with `login_name` and `password` succeeds, else None.
         Successful means: login and password hash match the db values
         """
@@ -106,14 +116,13 @@ class InternalAuthenticator(Authenticator):
         return user
 
 
-def register_authenticator(authenticator, name=""):
-    """authenticators can have a name to distinquish between instances of the same auth_type
-    """
-    key = (authenticator.auth_type, name)
+def register_authenticator(authenticator):
+    # authenticators can have a name to distinquish between instances of the same auth_type
+    key = (authenticator.auth_type, authenticator.name)
     # re-sort authenticators according to configured order
-    auth_order = config.get("auth.authenticator_order", ("internal", ""))
-    existing_authenticators = authenticators
-    authenticators = OrderedDict()
+    auth_order = get_configured_authenticator_order()
+    existing_authenticators = authenticators.copy()
+    authenticators.clear()
 
     for order_key in auth_order:
         if order_key == key:
@@ -121,7 +130,7 @@ def register_authenticator(authenticator, name=""):
         else:
             authenticators[order_key] = existing_authenticators[order_key]
 
-    logg.info("registered authenticator auth_type %s, name %s", authenticator.auth_type, name)
+    logg.info("registered authenticator auth_type %s, name %s", authenticator.auth_type, authenticator.name)
 
 
 def authenticate_user_credentials(login, password, request):
@@ -145,14 +154,32 @@ def change_user_password(user, old_password, new_password, new_password_repeated
         raise PasswordChangeNotAllowed()
     if new_password != new_password_repeated:
         raise PasswordsDoNotMatch()
-    
+
     authenticator = authenticators[user.authenticator_info.authenticator_key]
     return authenticator.change_user_password(user, old_password, new_password, request)
 
 
 def init():
+    """Initializes core authenticators according to auth.authenticator_order"""
+    # New core authenticator types must be added here.
+    # Plugins use register_authenticator() after init() has been run.
+
+    authenticator_types = {InternalAuthenticator.auth_type: InternalAuthenticator}
+
+    try:
+        from core.ldapauth import LDAPAuthenticator
+    except Exception as e:
+        logg.warn("LDAP authenticator is not available: '%s: %s'", e.__class__.__name__, e.message)
+    else:
+        authenticator_types[LDAPAuthenticator.auth_type] = LDAPAuthenticator
+
     # if authenticator_order is undefined, use an internal authentificator only
     # internal auth can be disabled by not adding it to the config option
-    auth_order = config.get("auth.authenticator_order", [INTERNAL_AUTHENTICATOR_KEY])
-    if INTERNAL_AUTHENTICATOR_KEY in auth_order:
-        authenticators[INTERNAL_AUTHENTICATOR_KEY] = InternalAuthenticator(name=INTERNAL_AUTHENTICATOR_KEY[1])
+    auth_order = get_configured_authenticator_order()
+
+    for auth_type, name in auth_order:
+        authenticator_cls = authenticator_types.get(auth_type)
+        if authenticator_cls is not None:
+            authenticators[(auth_type, name)] = authenticator_cls(name)
+
+    logg.info("core authenticators order: %s", authenticators.keys())

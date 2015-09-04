@@ -5,13 +5,13 @@ CREATE OR REPLACE FUNCTION mediatum.migrate_usergroups() RETURNS void
     AS $f$
 BEGIN
     INSERT INTO usergroup (id, name, description, hidden_edit_functions, is_workflow_editor_group, is_editor_group)
-    SELECT id, 
-    trim(' ' from name), 
+    SELECT id,
+    trim(' ' from name),
     trim(' ' from attrs->>'description') AS description,
     regexp_split_to_array(attrs->>'hideedit', ';') AS hidden_edit_functions,
     bool(position('w' in attrs->>'opts')) AS is_workflow_editor_group,
     bool(position('e' in attrs->>'opts')) AS is_editor_group
-    FROM node 
+    FROM node
     WHERE id IN (SELECT cid FROM nodemapping WHERE nid=(SELECT id FROM node WHERE name = 'usergroups'));
 END;
 $f$;
@@ -22,13 +22,13 @@ CREATE OR REPLACE FUNCTION mediatum.migrate_internal_users() RETURNS void
     LANGUAGE plpgsql
     SET search_path = mediatum
     AS $f$
-    
+
 DECLARE rows integer;
 BEGIN
     INSERT INTO authenticator (id, auth_type, name)
          VALUES (0, 'internal', 'default');
-    
-    INSERT INTO mediatum.user (id, login_name, display_name, firstname, lastname, telephone, email, organisation, password_hash, comment, can_change_password, can_edit_shoppingbag, authenticator_id) 
+
+    INSERT INTO mediatum.user (id, login_name, display_name, firstname, lastname, telephone, email, organisation, password_hash, comment, can_change_password, can_edit_shoppingbag, authenticator_id)
     SELECT id,
     name AS login_name,
     trim(' ' from attrs->>'lastname') || ' ' || trim(' ' from attrs->>'firstname') AS display_name,
@@ -42,27 +42,27 @@ BEGIN
     bool(position('c' in attrs->>'opts')) AS can_change_password,
     bool(position('s' in attrs->>'opts')) AS can_edit_shoppingbag,
     0 as authenticator_id
-    FROM node 
+    FROM node
     WHERE id IN (SELECT cid FROM nodemapping WHERE nid=(SELECT id FROM node WHERE name = 'users'));
-    
+
     GET DIAGNOSTICS rows = ROW_COUNT;
     RAISE NOTICE '% internal users inserted', rows;
-    
+
     -- find home dirs by name
     -- warning: home dir association must be unique or this will fail!
-    
+
     UPDATE mediatum.user u
-    SET home_dir_id = (SELECT n.id 
-                FROM mediatum_import.node AS n 
-                WHERE n.name LIKE 'Arbeitsverzeichnis (%' 
-                AND n.readaccess = '{user ' || u.display_name || '}' 
+    SET home_dir_id = (SELECT n.id
+                FROM mediatum_import.node AS n
+                WHERE n.name LIKE 'Arbeitsverzeichnis (%'
+                AND n.readaccess = '{user ' || u.display_name || '}'
                 -- check if home dir is actually present, could be unreachable in mediatum_import.node
-                AND n.id IN (SELECT id FROM mediatum.node) 
+                AND n.id IN (SELECT id FROM mediatum.node)
                 )
         WHERE authenticator_id = 0;
-    
+
     RAISE NOTICE 'home dirs set, % users with home dir', (SELECT COUNT(*) FROM mediatum.user WHERE home_dir_id IS NOT NULL);
-    
+
     INSERT INTO user_to_usergroup
        SELECT cid AS user_id, id AS usergroup_id
          FROM nodemapping JOIN node ON nid = id
@@ -83,14 +83,14 @@ BEGIN
                                 FROM nodemapping
                                WHERE nid = 674265) -- user from Jahrbuch-User group ignored
     ;
-    
+
     GET DIAGNOSTICS rows = ROW_COUNT;
     RAISE NOTICE 'users mapped to groups, % mappings', rows;
 END;
 $f$;
 
-    
--- Creates user entries from imported home directories for dynamic users (mediatum-dynauth plugin)
+
+-- Creates user entries from imported home directories for dynamic users (former mediatum-dynauth plugin, now core.ldapauth)
 CREATE OR REPLACE FUNCTION mediatum.migrate_dynauth_users() RETURNS void
     LANGUAGE plpgsql
     SET search_path = mediatum
@@ -98,54 +98,53 @@ CREATE OR REPLACE FUNCTION mediatum.migrate_dynauth_users() RETURNS void
 DECLARE
     rows integer;
 BEGIN
-    INSERT INTO authenticator (id, name, auth_type) VALUES (1, 'ads', 'dynauth');
-    
+    INSERT INTO authenticator (id, name, auth_type) VALUES (1, 'ads', 'ldap');
+
     -- select info from home dirs for ads user (has system.name.adsuser attribute) and create user from it
-    
-    INSERT INTO mediatum.user (display_name, comment, home_dir_id, authenticator_id)
+
+    INSERT INTO mediatum.user (display_name, login_name, comment, home_dir_id, authenticator_id)
     SELECT
     trim(' ' from attrs->>'system.name.adsuser') AS display_name,
+    trim(' ' from attrs->>'system.dirid.adsuser') AS login_name,
     'migration: created from home dir' AS comment,
     node.id AS home_dir_id,
     1 as authenticator_id
-    FROM node 
-    WHERE id IN (SELECT cid FROM nodemapping WHERE nid=(SELECT id FROM node WHERE name = 'home')) 
+    FROM node
+    WHERE id IN (SELECT cid FROM nodemapping WHERE nid=(SELECT id FROM node WHERE name = 'home'))
     AND attrs ? 'system.dirid.adsuser'
     ;
-    
+
     GET DIAGNOSTICS rows = ROW_COUNT;
     RAISE NOTICE '% dynauth users created from their home dirs', rows;
-    
-    -- additional user info from home dir
-    
-    INSERT INTO dynauth.user_info (name, user_type, dirid, dirgroups, user_id) 
+
+
+    -- Handle dynamic_users attr of groups. That attribute contains a newline-separated login name list.
+
+    -- create placeholder users for dynamic_users login names not found in the user table
+    INSERT INTO mediatum.user (login_name, authenticator_id)
     SELECT
-    trim(' ' from attrs->>'system.name.adsuser') AS name,
-    'adsuser'::text as user_type,
-    trim(' ' from attrs->>'system.dirid.adsuser') AS dirid,
-    (SELECT regexp_split_to_array(attrs->>'system.dirgroups.adsuser', '\|#\|')) AS dirgroups,
-    (SELECT u.id from mediatum.user as u WHERE display_name = trim(' ' from node.attrs->>'system.name.adsuser') LIMIT 1) AS user_id
-    FROM node 
-    WHERE id IN (SELECT cid FROM nodemapping WHERE nid=(SELECT id FROM node WHERE name = 'home')) 
-    AND attrs ? 'system.dirid.adsuser'
-    ;
-    
-    RAISE NOTICE 'added additional user infos';
-    
-    -- group membership is determined by the dynamic_users attr of groups that contains a newline-separated login name list
-    
+    q.login_name as login_name,
+    1 as authenticator_id
+    FROM
+        (SELECT distinct unnest(array_remove(regexp_split_to_array(attrs->>'dynamic_users', '\r\n'), '')) as login_name
+        FROM mediatum.node WHERE type = 'usergroup' AND attrs ? 'dynamic_users'
+        ) q
+    WHERE login_name NOT IN (SELECT login_name FROM mediatum.user WHERE login_name IS NOT NULL AND authenticator_id = 1);
+
+    -- insert user-group relationship for all dynamic users
+
     INSERT INTO user_to_usergroup (usergroup_id, user_id)
-    SELECT usergroup_id, user_id FROM 
-        (SELECT id as usergroup_id, 
-            (SELECT user_id FROM dynauth.user_info WHERE dynauth.user_info.dirid = q.dirid LIMIT 1) as user_id
-        FROM 
-            (SELECT distinct id, 
-            unnest(array_remove(regexp_split_to_array(attrs->>'dynamic_users', '\r\n'), '')) as dirid
-            FROM node WHERE attrs ? 'dynamic_users'
+    SELECT usergroup_id, user_id FROM
+        (SELECT id as usergroup_id,
+            (SELECT id FROM mediatum.user WHERE mediatum.user.login_name = q.login_name AND authenticator_id = 1 LIMIT 1) as user_id
+        FROM
+            (SELECT distinct id,
+            unnest(array_remove(regexp_split_to_array(attrs->>'dynamic_users', '\r\n'), '')) as login_name
+            FROM node WHERE type = 'usergroup' AND attrs ? 'dynamic_users'
             ) q
         ) s
-    WHERE user_id is not NULL ORDER BY usergroup_id;
-    
+    ORDER BY usergroup_id;
+
     GET DIAGNOSTICS rows = ROW_COUNT;
     RAISE NOTICE 'users mapped to groups, % mappings', rows;
 END;
@@ -164,15 +163,15 @@ DECLARE
 BEGIN
     SET CONSTRAINTS ALL DEFERRED;
 
-    WITH deleted AS 
+    WITH deleted AS
         (DELETE FROM node WHERE type IN ('user', 'users', 'usergroup', 'usergroups', 'externalusers') RETURNING id),
-     
+
     deleted_rel AS
         (DELETE FROM noderelation WHERE nid IN (SELECT id FROM deleted) OR cid IN (SELECT id FROM deleted))
-        
+
     SELECT count(id) INTO deleted_nodes FROM deleted;
-        
-    RAISE NOTICE '% user-related nodes deleted', deleted_nodes;       
+
+    RAISE NOTICE '% user-related nodes deleted', deleted_nodes;
 
 END;
 $f$;

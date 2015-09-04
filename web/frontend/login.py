@@ -53,7 +53,7 @@ def _handle_login_submit(req):
     if user:
         if "contentarea" in req.session:
             del req.session["contentarea"]
-        req.session["user"] = user
+        req.session["user_id"] = user.id
         logg.info("%s logged in", user.login_name)
 
         if req.session.get('return_after_login'):
@@ -106,8 +106,8 @@ def logout(req):
     # if the session has expired, there may be no user in the session dictionary
     user = users.user_from_session(req.session)
     auth.logout_user(user, req)
-    if "user" in req.session:
-        del req.session["user"]
+    if "user_id" in req.session:
+        del req.session["user_id"]
 
     req.request["Location"] = '/'
     return httpstatus.HTTP_MOVED_TEMPORARILY

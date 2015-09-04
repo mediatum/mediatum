@@ -65,9 +65,9 @@ class UserGroup(DeclarativeBase, TimeStamp, UserGroupMixin):
 
 def create_special_user_dirs():
     from contenttypes import Directory
-    return [Directory("faulty", attrs=dict(system=dict(used_as="faulty"))),
-            Directory("upload", attrs=dict(system=dict(used_as="upload"))),
-            Directory("trash", attrs=dict(system=dict(used_as="trash")))]
+    return [Directory(u"faulty", attrs={u"system.used_as": u"faulty"}),
+            Directory(u"upload", attrs={u"system.used_as": u"upload"}),
+            Directory(u"trash", attrs={u"system.used_as": u"trash"})]
 
 
 class User(DeclarativeBase, TimeStamp, UserMixin):
@@ -115,8 +115,7 @@ class User(DeclarativeBase, TimeStamp, UserMixin):
 
     @property
     def is_admin(self):
-        # XXX: I think we should remove user.adminuser
-        return any(g.is_admin_group for g in self.groups) or self.login_name == config.get("user.adminuser")
+        return any(g.is_admin_group for g in self.groups)
 
     @property
     def is_workflow_editor(self):
@@ -130,19 +129,19 @@ class User(DeclarativeBase, TimeStamp, UserMixin):
     def upload_dir(self):
         from contenttypes import Directory
         if self.home_dir:
-            return self.home_dir.children.filter(Directory.a.system.used_as == "upload").one()
+            return self.home_dir.children.filter(Directory.a.system.used_as == u"upload").one()
 
     @property
     def faulty_dir(self):
         from contenttypes import Directory
         if self.home_dir:
-            return self.home_dir.children.filter(Directory.a.system.used_as == "faulty").one()
+            return self.home_dir.children.filter(Directory.a.system.used_as == u"faulty").one()
 
     @property
     def trash_dir(self):
         from contenttypes import Directory
         if self.home_dir:
-            return self.home_dir.children.filter(Directory.a.system.used_as == "trash").one()
+            return self.home_dir.children.filter(Directory.a.system.used_as == u"trash").one()
 
     def change_password(self, password):
         from core.auth import create_password_hash
@@ -150,10 +149,8 @@ class User(DeclarativeBase, TimeStamp, UserMixin):
 
     def create_home_dir(self):
         from core import db
-        from core.translation import getDefaultLanguage, translate
         from contenttypes.container import Directory, Home
-        # XXX: better solution for dir name? Language independency?
-        homedir_name = translate("user_directory", getDefaultLanguage()) + " (" + self.login_name + ")"
+        homedir_name = self.login_name
         home = Directory(homedir_name)
         home.children.extend(create_special_user_dirs())
         # XXX: add access rules

@@ -15,6 +15,10 @@ BEGIN
     WHERE type IN ('collection', 'directory', 'project', 'home');
 
     UPDATE mediatum.node
+    SET type = 'other', schema = 'other'
+    WHERE type = 'file';
+
+    UPDATE mediatum.node
     SET schema = 'collection'
     WHERE type = 'collections';
 

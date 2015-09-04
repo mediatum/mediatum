@@ -604,6 +604,6 @@ class Content(Data, SchemaMixin):
     pass
 
 
-class File(Content):
+class Other(Content):
     pass
 

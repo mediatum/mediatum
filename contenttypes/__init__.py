@@ -9,7 +9,7 @@
 """
 
 from contenttypes.audio import Audio
-from contenttypes.data import Data, Content
+from contenttypes.data import Data, Content, Other
 from contenttypes.container import Directory, Collection, Container, Collections, Home
 from contenttypes.document import Document
 from contenttypes.flash import Flash

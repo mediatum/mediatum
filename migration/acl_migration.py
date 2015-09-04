@@ -12,7 +12,7 @@ from ipaddr import IPv4Network
 from psycopg2.extras import DateRange
 from sympy import Symbol
 from sympy.logic import boolalg, Not, And, Or
-from sqlalchemy import sql
+from sqlalchemy import sql, func
 
 from core import db, User, UserGroup
 from core.database.postgres import mediatumfunc
@@ -34,7 +34,7 @@ def prepare_acl_rulestring(rulestr):
 
 def load_node_rules(ruletype):
     db.session.execute("SET search_path TO mediatum_import")
-    expanded_accessrule = mediatumfunc.to_json(mediatumfunc.expand_acl_rule(sql.text(ruletype)))
+    expanded_accessrule = func.to_json(func.mediatum_import.expand_acl_rule(sql.text(ruletype)))
     stmt = sql.select(["id", expanded_accessrule], from_obj="node").where(sql.text(
         "{} != ''"
         " AND name NOT LIKE 'Arbeitsverzeichnis (%'"

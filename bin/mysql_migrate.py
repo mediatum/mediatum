@@ -39,8 +39,8 @@ from bin.manage import vacuum_analyze_tables
 basic_init(root_loglevel=logging.WARN)
 import core.database.postgres
 
-check_undefined_nodeclasses()
-
+# we must ignore user types because sqlalchemy-continuum fails due to mapped class duplication
+check_undefined_nodeclasses(stub_undefined_nodetypes=True, ignore_nodetypes=[u"usergroup", u"user"])
 
 
 core.database.postgres.SLOW_QUERY_SECONDS = 1000

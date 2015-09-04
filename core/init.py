@@ -171,7 +171,7 @@ def add_ustr_builtin():
     __builtin__.ustr = ustr
 
 
-def check_undefined_nodeclasses(stub_undefined_nodetypes=None, fail_if_undefined_nodetypes=None):
+def check_undefined_nodeclasses(stub_undefined_nodetypes=None, fail_if_undefined_nodetypes=None, ignore_nodetypes=[]):
     """Checks if all nodetypes found in the database are defined as subclasses of Node.
 
     There are 3 modes which can be selected in the config file or by the parameters:
@@ -190,15 +190,14 @@ def check_undefined_nodeclasses(stub_undefined_nodetypes=None, fail_if_undefined
 
     known_nodetypes = set(c.__mapper__.polymorphic_identity for c in Node.get_all_subclasses())
     nodetypes_in_db = set(t[0] for t in db.query(Node.type.distinct()))
-    undefined_nodetypes = nodetypes_in_db - known_nodetypes
+    undefined_nodetypes = nodetypes_in_db - known_nodetypes - set(ignore_nodetypes)
 
     if undefined_nodetypes:
 
         if fail_if_undefined_nodetypes is None:
             fail_if_undefined_nodetypes = config.get("config.fail_if_undefined_nodetypes", "false") == "true"
 
-        msg = u"some node types are present in the database, but not defined in code. Missing plugins?\n{}".format(
-            [str(t) for t in undefined_nodetypes])
+        msg = u"some node types are present in the database, but not defined in code. Missing plugins?\n{}".format(undefined_nodetypes)
 
         if fail_if_undefined_nodetypes:
             raise Exception(msg)

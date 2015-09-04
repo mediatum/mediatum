@@ -39,7 +39,7 @@ class File(DeclarativeBase, FileMixin):
             self.node = node
 
     __tablename__ = "nodefile"
-    nid = C(Integer, FK(Node.id), primary_key=True, index=True)
+    nid = C(Integer, FK(Node.id, ondelete="CASCADE"), primary_key=True, index=True)
     path = C(Unicode(4096), primary_key=True)
     filetype = C(Unicode(126), primary_key=True)
     mimetype = C(String(126))

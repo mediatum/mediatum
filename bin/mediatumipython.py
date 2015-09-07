@@ -269,6 +269,10 @@ def unreachable_nodes():
     return q(Node).filter(~Node.id.in_(reachable_node_sq))
 
 
+def exec_sqlfunc(func):
+    return s.execute(func).fetchone()
+
+
 def inversion_label(invert):
     return u"(-)" if invert else u""
 

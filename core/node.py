@@ -161,8 +161,11 @@ class NodeMixin(object):
     def has_access(self, accesstype, req=None):
         return self.req_has_access_to_node_id(self.id, accesstype, req)
 
-    def has_read_access(self, req=None):
-        return self.req_has_access_to_node_id(self.id, "read", req)
+    def has_read_access(self, req=None, user=None, ip=None, date=None):
+        if user is not None or ip is not None or date is not None:
+            return self.has_access_to_node_id(self.id, "read", user, ip, date)
+        else:
+            return self.req_has_access_to_node_id(self.id, "read", req)
 
     def has_write_access(self, req=None):
         return self.req_has_access_to_node_id(self.id, "write", req)

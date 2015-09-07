@@ -253,7 +253,6 @@ class Node(DeclarativeBase, NodeMixin):
     @staticmethod
     def has_access_to_node_id(node_id, accesstype, user=None, ip=None, date=func.current_date()):
         from core import db
-        from core.users import user_from_session
 
         if user.is_admin:
             return True

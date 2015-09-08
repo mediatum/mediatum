@@ -63,7 +63,8 @@ DOCKER_PGLOADER_IMAGE = "dpausp/pgloader"
 
 def pgloader(s=None):
     if args.docker:
-        docker_call = ["docker", "run", "--rm", "-v", "{}:/tmp".format(os.path.abspath(MIGRATION_DIR))]
+        docker_call = ["docker", "run", "--rm", "-u", "{}:{}".format(os.getuid(), os.getgid()),
+                       "-v", "{}:/tmp".format(os.path.abspath(MIGRATION_DIR))]
         links = []
         for link in args.link:
             links.append("--link")

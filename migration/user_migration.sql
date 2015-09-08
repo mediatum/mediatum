@@ -58,6 +58,8 @@ BEGIN
                 AND n.readaccess = '{user ' || u.login_name || '}'
                 -- check if home dir is actually present, could be unreachable in mediatum_import.node
                 AND n.id IN (SELECT id FROM mediatum.node)
+                ORDER BY id
+                LIMIT 1 -- mediaTUM selects the home dir with the lowest ID if there are multiple choices (which should not happen...)
                 )
         WHERE authenticator_id = 0;
 
@@ -102,11 +104,12 @@ BEGIN
 
     -- select info from home dirs for ads user (has system.name.adsuser attribute) and create user from it
 
-    INSERT INTO mediatum.user (display_name, login_name, comment, home_dir_id, authenticator_id)
+    INSERT INTO mediatum.user (display_name, login_name, comment, last_login, home_dir_id, authenticator_id)
     SELECT
     trim(' ' from attrs->>'system.name.adsuser') AS display_name,
     trim(' ' from attrs->>'system.dirid.adsuser') AS login_name,
     'migration: created from home dir' AS comment,
+    (attrs->>'system.last_authentication.adsuser')::timestamp AS last_login,
     node.id AS home_dir_id,
     1 as authenticator_id
     FROM node
@@ -121,15 +124,17 @@ BEGIN
     -- Handle dynamic_users attr of groups. That attribute contains a newline-separated login name list.
 
     -- create placeholder users for dynamic_users login names not found in the user table
-    INSERT INTO mediatum.user (login_name, authenticator_id)
+    INSERT INTO mediatum.user (login_name, comment, authenticator_id)
     SELECT
     q.login_name as login_name,
+    'migration: created from dynuser list of group ' || array_to_string(group_name, ','),
     1 as authenticator_id
     FROM
-        (SELECT distinct unnest(array_remove(regexp_split_to_array(attrs->>'dynamic_users', '\r\n'), '')) as login_name
+        (SELECT distinct unnest(array_remove(regexp_split_to_array(attrs->>'dynamic_users', '\r\n'), '')) as login_name, array_agg(name) as group_name
         FROM mediatum.node WHERE type = 'usergroup' AND attrs ? 'dynamic_users'
+        GROUP BY login_name
         ) q
-    WHERE login_name NOT IN (SELECT login_name FROM mediatum.user WHERE login_name IS NOT NULL AND authenticator_id = 1);
+    WHERE q.login_name NOT IN (SELECT login_name FROM mediatum.user WHERE login_name IS NOT NULL AND authenticator_id = 1);
 
     -- insert user-group relationship for all dynamic users
 

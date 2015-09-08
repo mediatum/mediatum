@@ -42,6 +42,7 @@ languages = [l.strip() for l in config.get("i18n.languages").split(",") if l.str
 
 # for TAL templates from mask cache
 context = default_context.copy()
+### XXX: does this work without hostname? Can we remove this?
 context['host'] = "http://" + config.get("host.name", "")
 
 DEFAULT_MASKCACHE = 'deep'  # 'deep' | 'shallow' | None

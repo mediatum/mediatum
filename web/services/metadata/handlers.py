@@ -33,7 +33,7 @@ from web.services.cache import Cache
 
 logg = logging.getLogger(__name__)
 
-host = "http://" + config.get("host.name")
+host = "http://" + config.get("host.name", "")
 
 FILTERCACHE_NODECOUNT_THRESHOLD = 2000000
 

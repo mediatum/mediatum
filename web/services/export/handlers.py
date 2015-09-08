@@ -51,7 +51,7 @@ logg = logging.getLogger(__name__)
 q = db.query
 
 
-host = "http://" + config.get("host.name")
+host = "http://" + config.get("host.name", "")
 
 from web.services.cache import Cache
 from web.services.cache import date2string as cache_date2string

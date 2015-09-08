@@ -40,7 +40,7 @@ from utils.fileutils import importFileFromData, importFile
 
 logg = logging.getLogger(__name__)
 
-host = "http://" + config.get("host.name")
+host = "http://" + config.get("host.name", "")
 
 from web.services.cache import Cache
 

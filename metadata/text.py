@@ -181,7 +181,7 @@ class m_text(Metatype):
         if template_from_caller and template_from_caller[0] and maskitem and ustr(maskitem.id) == template_from_caller[3]:
             value = template_from_caller[0]
 
-        context = {'node': node, 'host': "http://" + config.get("host.name")}
+        context = {'node': node, 'host': "http://" + config.get("host.name", "")}
 
         if (template_from_caller and template_from_caller[0]) and (not node.get(field.getName())):
             value = runTALSnippet(value, context)

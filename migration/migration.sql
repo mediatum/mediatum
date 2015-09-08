@@ -75,3 +75,30 @@ BEGIN
     RAISE NOTICE 'transitive node connections finished';
 END;
 $f$;
+
+
+-- delete nodes that migrated to a different table. They have been renamed to migration_<type>.
+CREATE OR REPLACE FUNCTION delete_migrated_nodes()
+   RETURNS void
+   LANGUAGE plpgsql
+    SET search_path TO :search_path
+       VOLATILE
+    AS
+    $f$
+DECLARE
+    deleted_nodes integer;
+BEGIN
+    SET CONSTRAINTS ALL DEFERRED;
+
+    WITH deleted AS
+        (DELETE FROM node WHERE type LIKE 'migration_%' RETURNING id),
+
+    deleted_rel AS
+        (DELETE FROM noderelation WHERE nid IN (SELECT id FROM deleted) OR cid IN (SELECT id FROM deleted))
+
+    SELECT count(id) INTO deleted_nodes FROM deleted;
+
+    RAISE NOTICE '% table-migrated nodes deleted', deleted_nodes;
+
+END;
+$f$;

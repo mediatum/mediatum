@@ -55,7 +55,7 @@ BEGIN
     SET home_dir_id = (SELECT n.id
                 FROM mediatum_import.node AS n
                 WHERE n.name LIKE 'Arbeitsverzeichnis (%'
-                AND n.readaccess = '{user ' || u.display_name || '}'
+                AND n.readaccess = '{user ' || u.login_name || '}'
                 -- check if home dir is actually present, could be unreachable in mediatum_import.node
                 AND n.id IN (SELECT id FROM mediatum.node)
                 )
@@ -151,27 +151,15 @@ END;
 $f$;
 
 
-CREATE OR REPLACE FUNCTION delete_user_system_nodes()
+CREATE OR REPLACE FUNCTION rename_user_system_nodes()
    RETURNS void
    LANGUAGE plpgsql
     SET search_path TO :search_path
        VOLATILE
     AS
     $f$
-DECLARE
-    deleted_nodes integer;
 BEGIN
-    SET CONSTRAINTS ALL DEFERRED;
-
-    WITH deleted AS
-        (DELETE FROM node WHERE type IN ('user', 'users', 'usergroup', 'usergroups', 'externalusers') RETURNING id),
-
-    deleted_rel AS
-        (DELETE FROM noderelation WHERE nid IN (SELECT id FROM deleted) OR cid IN (SELECT id FROM deleted))
-
-    SELECT count(id) INTO deleted_nodes FROM deleted;
-
-    RAISE NOTICE '% user-related nodes deleted', deleted_nodes;
-
+    UPDATE node set type = 'migration_' || type
+    WHERE type IN ('user', 'users', 'usergroup', 'usergroups', 'externalusers');
 END;
 $f$;

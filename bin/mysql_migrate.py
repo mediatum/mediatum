@@ -96,13 +96,16 @@ def versions(s):
 def users(s):
     s.execute("SELECT mediatum.migrate_usergroups()")
     s.execute("SELECT mediatum.migrate_internal_users()")
-    s.execute("SELECT mediatum.delete_user_system_nodes()")
     logg.info("finished user migration")
 
 
 def dynusers(s):
     s.execute("SELECT mediatum.migrate_dynauth_users()")
     logg.info("finished dynauth user migration")
+
+
+def user_cleanup(s):
+    s.execute("SELECT mediatum.rename_user_system_nodes()")
 
 
 def permissions(s):
@@ -128,18 +131,18 @@ def inherited_permissions(s):
 
 
 def cleanup(s):
-    pass
+    s.execute("SELECT mediatum.delete_migrated_nodes()")
 
 def everything(s):
     pgloader()
     prepare_import_migration(s)
     migrate_core(s)
     users(s)
+    user_cleanup(s)
     versions(s)
     dynusers()
     permissions(s)
     inherited_permissions(s)
-    cleanup(s)
 
 
 actions = OrderedDict([
@@ -147,8 +150,9 @@ actions = OrderedDict([
     ("prepare", prepare_import_migration),
     ("core", migrate_core),
     ("users", users),
-    ("versions", versions),
     ("dynusers", dynusers),
+    ("user_cleanup", user_cleanup),
+    ("versions", versions),
     ("permissions", permissions),
     ("inherited_permissions", inherited_permissions),
     ("cleanup", cleanup),

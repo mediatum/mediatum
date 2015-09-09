@@ -37,7 +37,7 @@ from schema.schema import getMetaType, VIEW_DATA_ONLY, Metadatatype
 
 from utils.date import format_date
 from utils.pathutils import getBrowsingPathList, isDescendantOf
-from utils.utils import u, u2, esc, intersection, getMimeType, modify_tex
+from utils.utils import esc, intersection, getMimeType, modify_tex
 
 import web.services.jsonnode as jsonnode
 from web.services.rssnode import template_rss_channel, template_rss_item, feed_channel_dict, try_node_date
@@ -248,61 +248,54 @@ def struct2json(req, path, params, data, d, debug=False, singlenode=False, send_
     return s
 
 
-def struct2csv(req, path, params, data, d, debug=False, sep=';', string_delimiter='"', singlenode=False, send_children=False):
+def struct2csv(req, path, params, data, d, debug=False, sep=u';', string_delimiter=u'"', singlenode=False, send_children=False):
+
 
     # delimiter and separator can be transferred by the query
     # this dictionary decodes the characters that would disturb in the url
     trans = {
-        'none': u(''),
-        'tab': u('\t'),
-        'quote': u("'"),
-        'dquote': u('"'),
+        'none': u'',
+        'tab': u'\t',
+        'quote': u"'",
+        'dquote': u'"',
     }
 
-    string_delimiter = u(params.get('delimiter', string_delimiter))
+    string_delimiter = params.get('delimiter', string_delimiter)
     if string_delimiter.lower() in trans.keys():
         string_delimiter = trans[string_delimiter.lower()]
 
-    sep = u(params.get('sep', sep))
+    sep = params.get('sep', sep)
     if sep.lower() in trans.keys():
         sep = trans[sep.lower()]
 
     def join_row(row):
-        row = [u(x) for x in row]
+        row = [unicode(x) for x in row]
 
         try:
             if string_delimiter:
                 res = string_delimiter + \
                     ((string_delimiter + sep +
-                      string_delimiter).join([x.replace(string_delimiter, u("'")) for x in row])) + string_delimiter
+                      string_delimiter).join([x.replace(string_delimiter, u"'") for x in row])) + string_delimiter
             else:
                 res = sep.join(row)
         except:
-            res = u("")
+            res = u""
             for x in row:
                 if string_delimiter:
-                    x = x.replace(string_delimiter, u("'"))
-                try:
-                    res += string_delimiter + u(x) + string_delimiter + sep
-                except:
-                    try:
-                        res += string_delimiter + x.decode('utf-8') + string_delimiter + sep
-                    except:
-                        try:
-                            res += string_delimiter + x.decode('latin1') + string_delimiter + sep
-                        except:
-                            res += string_delimiter + x + string_delimiter + sep
+                    x = x.replace(string_delimiter, u"'")
+                res += string_delimiter + x + string_delimiter + sep
+
             if res:
                 res = res[0:-len(sep)]
-        return u(res)
+        return res
 
-    r = u('')  # string to be returned
+    r = u''
 
     if d['status'].lower() == 'fail':
         header = ['status', 'html_response_code', 'errormessage', 'retrievaldate', 'dataready']
-        r = join_row(header) + u('\r\n')
-        r += join_row(map(lambda x: u(d[x]), header))
-        return u(r)
+        r = join_row(header) + u'\r\n'
+        r += join_row(map(lambda x: d[x], header))
+        return r
 
     rd = {}
     keys = set()
@@ -313,9 +306,9 @@ def struct2csv(req, path, params, data, d, debug=False, sep=';', string_delimite
 
     for i, n in enumerate(csv_nodelist):
         rd[i] = {}
-        rd[i]['id'] = u(n.id)
-        rd[i]['name'] = u(n.name)
-        rd[i]['type'] = u(n.type)
+        rd[i]['id'] = unicode(n.id)
+        rd[i]['name'] = n.name
+        rd[i]['type'] = n.type + "/" + n.schema
         attrs = copy.deepcopy(n.attributes)
         rd[i]['attributes'] = attrs
         keys = keys.union(attrs.keys())
@@ -324,7 +317,7 @@ def struct2csv(req, path, params, data, d, debug=False, sep=';', string_delimite
         keys = set(csvattrs)
 
     sorted_tuples = sorted([(x.lower(), x) for x in list(keys)])
-    attr_header = [u(x[1]) for x in sorted_tuples]
+    attr_header = [x[1] for x in sorted_tuples]
 
     # sortfields shall appear early (after id, type and name of the node) of the csv table
     if 'sfields' in d.keys() and d['sfields']:
@@ -336,25 +329,25 @@ def struct2csv(req, path, params, data, d, debug=False, sep=';', string_delimite
     # filter attribute names
     attr_header = filter(attribute_name_filter, attr_header)
 
-    header = [u('count'), u('id'), u('type'), u('name')] + attr_header
-    r = join_row(header) + u('\r\n')
+    header = [u'count', u'id', u'type', u'name'] + attr_header
+    r = join_row(header) + u'\r\n'
 
     for i, n in enumerate(csv_nodelist):
-        row = [u(i), u(rd[i]['id']), u(rd[i]['type']), u(rd[i]['name'])]
+        row = [unicode(i), rd[i]['id'], rd[i]['type'], rd[i]['name']]
         for attr in attr_header:
             # handle sortfields in attr_header that are not attributes
             if attr in ['node.id', 'node.name', 'node.type']:
                 continue
             elif attr in ['node.orderpos']:
-                row.append(tree.getNode(rd[i]['id']).get(attr))
+                row.append(q(Node).get(rd[i]['id']).get(attr))
             else:
-                row.append(u(rd[i]['attributes'].setdefault(attr, '')))
-        r += join_row(row) + u('\r\n')
+                row.append(rd[i]['attributes'].setdefault(attr, u''))
+        r += join_row(row) + u'\r\n'
 
     if 'bom' in params.keys():
-        import codecs
-        r = codecs.BOM_UTF8 + r
-    return u(r)
+        return r.encode("utf_8_sig") # this codec adds BOM
+    else:
+        return r.encode("utf8")
 
 
 def struct2rss(req, path, params, data, d, debug=False, singlenode=False, send_children=False):
@@ -366,7 +359,7 @@ def struct2rss(req, path, params, data, d, debug=False, singlenode=False, send_c
 
     for n in nodelist:
         nodename = n.name
-        nodeid = n.id
+        nodeid = str(n.id)
         nodetype = n.type
         updatetime = utime = try_node_date(n)
 
@@ -413,8 +406,8 @@ def struct2rss(req, path, params, data, d, debug=False, singlenode=False, send_c
             item_d['title'] = esc('-unnamed-node-' + ' (' + nodeid + ', ' + nodetype + ') ' + ('/'.join(most_detailed_path)))
 
         item_d['item_pubDate'] = utime
-        item_d['guid'] = host + '/node?id=%s' % ustr(nodeid)
-        item_d['link'] = host + '/node?id=%s' % ustr(nodeid)
+        item_d['guid'] = host + '/node?id=%s' % nodeid
+        item_d['link'] = host + '/node?id=%s' % nodeid
 
         mtype = getMetaType(n.getSchema())
 
@@ -426,7 +419,7 @@ def struct2rss(req, path, params, data, d, debug=False, singlenode=False, send_c
                 mask = mtype.getMask('nodesmall')
             attr_list = mask.getViewHTML([n], VIEW_DATA_ONLY, language)  # [[attr_name, value, label, type], ...]
         else:
-            attr_list = [['', ustr(n.id), 'node id', ''], ['', n.name, 'node name', ''], ['', n.type, 'node type', ''], ]
+            attr_list = [['', n.id, 'node id', ''], ['', n.name, 'node name', ''], ['', n.type, 'node type', ''], ]
 
         description = ''
         for x in attr_list:
@@ -1168,7 +1161,7 @@ def write_formatted_response(
             # "#".join(resultcache.getKeys())), time.time()-atime]); atime =
             # time.time()
 
-        s = modify_tex(s.decode("utf8"), 'strip')
+        s = modify_tex(s.decode("utf8"), 'strip').encode("utf8")
 
     else:
         d = {}

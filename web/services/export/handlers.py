@@ -491,8 +491,8 @@ def struct2rss(req, path, params, data, d, debug=False, singlenode=False, send_c
 
 supported_formats = [
     [['xml', ''], struct2xml, 'text/xml'],
-    [['json'], struct2json, 'text/plain'],
-    [['csv'], struct2csv, 'text/plain'],
+    [['json'], struct2json, 'application/json'],
+    [['csv'], struct2csv, 'text/csv'],
     [['template_test'], struct2template_test, 'text/plain'],
     [['rss'], struct2rss, 'application/rss+xml'],
 ]
@@ -1117,8 +1117,6 @@ def write_formatted_response(
         res_format = (params.get('format', 'xml')).lower()
         formatIsSupported = False
 
-        mimetype = ''
-
         for supported_format in supported_formats:
             if res_format in supported_format[0]:
                 atime = time.time()
@@ -1126,8 +1124,17 @@ def write_formatted_response(
                 s = supported_format[1](req, path, params, data, d, debug=debug, singlenode=singlenode, send_children=send_children)
                 if res_format == 'json' and 'jsoncallback' in params:
                     s = params['jsoncallback'] + '(' + s + ')'
+                # XXX: clients can override the content_type by setting the mimetype param
+                # XXX: this is ugly, but we keep it for compatibility
                 mimetype = params.get('mimetype', supported_format[2])
-                req.reply_headers['Content-Type'] = mimetype + "; charset=utf-8"
+
+                # append correct charset if client didn't force another value
+                # it doesn't make sense to set it in the client to a different charset than utf8, but it was possible in the past...
+                if "charset=" in mimetype:
+                    content_type = mimetype
+                else:
+                    content_type = mimetype + "; charset=utf-8"
+
                 d['timetable'].append(["formatted for '%s'" % res_format, time.time() - atime])
                 atime = time.time()
 
@@ -1148,7 +1155,7 @@ def write_formatted_response(
             d['build_response_end'] = time.time()
 
             s = struct2xml(req, path, params, data, d, singlenode=True, send_children=False)
-            req.reply_headers['Content-Type'] = "text/xml; charset=utf-8"
+            content_type = "text/xml; charset=utf-8"
 
         if acceptcached > 0:  # only write to cache for these requests
             resultcache.update(cache_key, [s, mimetype])
@@ -1218,16 +1225,14 @@ def write_formatted_response(
                                (size_uncompressed, size_compressed, percentage), time.time() - atime])
         atime = time.time()
 
-    req.reply_headers['Content-Length'] = len(s)
-
     # (format) Expires: Mon, 28 Nov 2011 12:41:22 GMT
     # see core.athana.build_http_date
     # req.reply_headers['Expires'] = time.strftime ('%a, %d %b %Y %H:%M:%S GMT', time.gmtime(time.time()+60.0)) # 1 minute
 
     # remark: on 2011-12-01 switched response from req.write to req.sendAsBuffer for performance reasons
     # (before: ) req.write(s)
-    req.sendAsBuffer(s, mimetype, force=1)
-    d['timetable'].append(["executed req.sendAsBuffer, %d bytes, mimetype='%s'" % (len(s), mimetype), time.time() - atime])
+    req.sendAsBuffer(s, content_type, force=1)
+    d['timetable'].append(["executed req.sendAsBuffer, %d bytes, content type='%s'" % (len(s), content_type), time.time() - atime])
     atime = time.time()
     return d['html_response_code'], len(s), d
 

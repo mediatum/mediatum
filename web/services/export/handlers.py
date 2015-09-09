@@ -19,34 +19,29 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import copy
 import json
+import logging
 import os
 import re
 import time
-import logging
 
+from sqlalchemy.orm import undefer
 
-import core.users as users
-import core.xmlnode as xmlnode
-import copy
-
+from core.users import get_guest_user
 from core import config
 from core import Node, db
-from core.acl import AccessData
+import core.users as users
+import core.xmlnode as xmlnode
+from contenttypes import Collections, Home
+from contenttypes import Data
 from schema.schema import getMetaType, VIEW_DATA_ONLY, Metadatatype
-
 from utils.date import format_date
 from utils.pathutils import getBrowsingPathList, isDescendantOf
 from utils.utils import esc, intersection, getMimeType, modify_tex
-
 import web.services.jsonnode as jsonnode
 from web.services.rssnode import template_rss_channel, template_rss_item, feed_channel_dict, try_node_date
 from web.services.serviceutils import attribute_name_filter
-
-from contenttypes import Collections, Home
-from contenttypes import Data
-from core.users import get_guest_user
-from sqlalchemy.orm import undefer
 
 
 logg = logging.getLogger(__name__)
@@ -59,9 +54,6 @@ from web.services.cache import Cache
 from web.services.cache import date2string as cache_date2string
 import web.services.serviceutils as serviceutils
 
-FILTERCACHE_NODECOUNT_THRESHOLD = 2000000
-
-filtercache = Cache(maxcount=10, verbose=True)
 searchcache = Cache(maxcount=10, verbose=True)
 resultcache = Cache(maxcount=25, verbose=True)
 
@@ -80,10 +72,10 @@ def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_c
         r = ''
         for attr in attr_list:
             if attribute_name_filter(attr[0]):
-                r += (sformat % (attr[0], u(attr[1])))
+                r += (sformat % (attr[0], attr[1]))
         return r
 
-    atime = starttime = time.time()
+    atime = time.time()
 
     # file types not to be included in listed node files
     exclude_filetypes = ['statistic']
@@ -147,7 +139,7 @@ def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_c
         res += '''<listinfo sortfield="%s" sortdirection="%s">\r\n''' % (d['sortfield'], d['sortdirection'])
         for p in d['result_shortlist']:
             if sfields:
-                res += '''  <item index="%d" id="%s" type="%s">%s</item>\r\n''' % (p[0], p[1], p[3], u(attr_list_join(p[4])))
+                res += '''  <item index="%d" id="%s" type="%s">%s</item>\r\n''' % (p[0], p[1], p[3], attr_list_join(p[4]))
             else:
                 res += '''  <item index="%d" id="%s" type="%s"/>\r\n''' % (p[0], p[1], p[3])
         res += '''</listinfo>\r\n'''
@@ -175,7 +167,6 @@ def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_c
 
 
 def struct2template_test(req, path, params, data, d, debug=False, singlenode=False, send_children=False, send_timetable=SEND_TIMETABLE):
-    atime = starttime = time.time()
     nodelist = d['nodelist']
 
     if 'add_shortlist' not in req.params:
@@ -225,7 +216,6 @@ def struct2template_test(req, path, params, data, d, debug=False, singlenode=Fal
 
 
 def struct2json(req, path, params, data, d, debug=False, singlenode=False, send_children=False, send_timetable=SEND_TIMETABLE):
-    atime = starttime = time.time()
     nodelist = d['nodelist']
 
     if 'add_shortlist' not in req.params:
@@ -351,7 +341,6 @@ def struct2csv(req, path, params, data, d, debug=False, sep=u';', string_delimit
 
 
 def struct2rss(req, path, params, data, d, debug=False, singlenode=False, send_children=False):
-    atime = starttime = time.time()
     nodelist = d['nodelist']
     language = params.get('lang', 'en')
     items_list = []
@@ -423,7 +412,7 @@ def struct2rss(req, path, params, data, d, debug=False, singlenode=False, send_c
 
         description = ''
         for x in attr_list:
-            description = description + ('''<b>%s: </b>%s<br/>\r\n''' % (u(x[2]), (x[1])))
+            description = description + ('''<b>%s: </b>%s<br/>\r\n''' % (x[2], (x[1])))
 
         item_d['description'] = description
         categories = default_categories
@@ -441,12 +430,12 @@ def struct2rss(req, path, params, data, d, debug=False, singlenode=False, send_c
         if subjects:
             subjects = subjects.split(';')
             for subject in subjects:
-                categories = categories + '<category>' + esc(u2(subject)) + '</category>\r\n'
+                categories = categories + '<category>' + esc(subject) + '</category>\r\n'
 
         item_d['categories'] = categories
 
         for k, v in item_d.items():
-            item_d[k] = u(v)
+            item_d[k] = v
 
         items_list = items_list + [(updatetime, nodename, nodeid, (template_rss_item % item_d))]
 
@@ -476,7 +465,7 @@ def struct2rss(req, path, params, data, d, debug=False, singlenode=False, send_c
         for k, v in params['feed_info'].items():
             fcd[k] = v
     else:
-        fcd['title'] = host + req.fullpath + ustr(req.query)
+        fcd['title'] = host + req.fullpath + req.query
     fcd['items'] = items
     s = template_rss_channel % fcd  # params['feed_info']
 
@@ -644,7 +633,6 @@ def get_node_children_struct(
             sortdirection += 'u'
 
     psort = params.get('sort', 'orderpos')
-    sortresult = ''
 
     default_nodelist_start = 0
     default_nodelist_limit = 100
@@ -751,7 +739,7 @@ def get_node_children_struct(
     elif parents:
         nodelist = node.getParents()
         timetable.append(['''get parents for node %s, '%s', '%s' -> (%d nodes)''' %
-                          (ustr(node.id), node.name, node.type, len(nodelist)), time.time() - atime])
+                          (node.id, node.name, node.type, len(nodelist)), time.time() - atime])
         atime = time.time()
     elif allchildren:
         if node_query and not mdt_name:
@@ -785,30 +773,26 @@ def get_node_children_struct(
                 res['timetable'] = timetable
                 return res
             timetable.append(['''get all children for node %s, '%s', '%s' -> (%d nodes)''' %
-                              (ustr(node.id), node.name, node.type, len(nodelist)), time.time() - atime])
+                              (node.id, node.name, node.type, len(nodelist)), time.time() - atime])
             atime = time.time()
     else:
         nodelist = node.getChildren()
         timetable.append(['''get direct children for node %s, '%s', '%s' -> (%d nodes)''' %
-                          (ustr(node.id), node.name, node.type, len(nodelist)), time.time() - atime])
+                          (node.id, node.name, node.type, len(nodelist)), time.time() - atime])
         atime = time.time()
         if node_query:
             nodelist = intersection([searchresult, nodelist])
             timetable.append(['''searchresult filter with direct children for node %s, '%s', '%s' -> (%d nodes)''' %
-                              (ustr(node.id), node.name, node.type, len(nodelist)), time.time() - atime])
+                              (node.id, node.name, node.type, len(nodelist)), time.time() - atime])
             atime = time.time()
         if mdt_name:
             nodelist = intersection([typed_nodelist, nodelist])
             timetable.append(['''filter typed nodes with direct children for node %s, '%s', '%s' -> (%d nodes)''' %
-                              (ustr(node.id), node.name, node.type, len(nodelist)), time.time() - atime])
+                              (node.id, node.name, node.type, len(nodelist)), time.time() - atime])
             atime = time.time()
-
-    req_path = req.path
 
     timetable.append(['get set of ids of nodelist', time.time() - atime])
     atime = time.time()
-
-    default_guest_access_name = None
 
     if not mdt_name and not node_query:
         # XXX: we don't check here if permissions have changed
@@ -1071,7 +1055,7 @@ def write_formatted_response(
     if "_" in _p:
         del _p['_']
 
-    cache_key = '|'.join(map(ustr, [path, _p, allchildren, singlenode, parents, send_children]))
+    cache_key = '|'.join(map(str, [path, _p, allchildren, singlenode, parents, send_children]))
     cache_key = cache_key.replace(' ', '_')
 
     acceptcached = float(params.get('acceptcached', '0'))
@@ -1086,7 +1070,7 @@ def write_formatted_response(
             result_from_cache, mimetype_from_cache = cachecontent[-1]
             # replace jQuery, jsonp callback value
             if result_from_cache.startswith('jQuery') or result_from_cache.startswith('jsonp'):
-                result_from_cache = ustr(params['jsoncallback']) + result_from_cache[result_from_cache.find("({"):]
+                result_from_cache = params['jsoncallback'] + result_from_cache[result_from_cache.find("({"):]
 
             r_timetable.append(["retrieved filtered result from 'resultcache': (%d bytes), time_delta: %.3f lower acceptcached %.3f sec." % (
                 len(result_from_cache), time_delta, acceptcached), time.time() - atime])
@@ -1265,11 +1249,6 @@ def get_cachestatus(req, path, params, data):
     s = 'searchcache content: %s\r\n' % cache_date2string(time.time(), '%04d-%02d-%02d-%02d-%02d-%02d')
     s += searchcache.report()
     d['timetable'].append(["retrieved report for searchcache", time.time() - atime])
-    atime = time.time()
-
-    s += '\r\n\r\nfiltercache content: %s\r\n' % cache_date2string(time.time(), '%04d-%02d-%02d-%02d-%02d-%02d')
-    s += filtercache.report()
-    d['timetable'].append(["retrieved report for filtercache", time.time() - atime])
     atime = time.time()
 
     s += '\r\n\r\nresultcache content: %s\r\n' % cache_date2string(time.time(), '%04d-%02d-%02d-%02d-%02d-%02d')

@@ -584,6 +584,17 @@ let
     doCheck = false;
   };
 
+  ldap = self.buildPythonPackage rec {
+    name = "ldap-2.4.15";
+
+    src = pkgs.fetchurl {
+      url = "http://pypi.python.org/packages/source/p/python-ldap/python-${name}.tar.gz";
+      sha256 = "0w0nn5yj0nbbkvpbqgfni56v7sjx6jf6s6zvp9zmahyrvqrsrg1h";
+    };
+
+    NIX_CFLAGS_COMPILE = "-I${pkgs.cyrus_sasl}/include/sasl";
+    propagatedBuildInputs = with self; [pkgs.openldap pkgs.cyrus_sasl pkgs.openssl];
+  };
 
 in {
   production = [
@@ -601,7 +612,7 @@ in {
       mediatumtal
       mock
       parcon
-      pkgs.pythonPackages.ldap
+      ldap
       psycopg2
       pyaml
       pydot

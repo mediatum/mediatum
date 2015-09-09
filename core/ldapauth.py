@@ -32,6 +32,7 @@ logg = logging.getLogger(__name__)
 q = db.query
 
 ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
+ldap.set_option(ldap.OPT_X_TLS, ldap.OPT_X_TLS_DEMAND)
 ldap.set_option(ldap.OPT_REFERRALS, 0)
 
 
@@ -228,17 +229,18 @@ class LDAPAuthenticator(Authenticator):
         user_url = get_config("user_url", optional=True)
 
         if user_url and not user_url[0] == "@":
-            self.user_url = "@" + user_url
+            at_user_url = "@" + user_url
         else:
-            self.user_url = user_url
+            at_user_url = user_url
 
         if "," not in proxyuser:
             if user_url is None:
                 raise LDAPConfigError("config value user_url must be present")
-            self.bind_user = proxyuser + user_url
+            self.bind_user = proxyuser + at_user_url
         else:
             self.bind_user = proxyuser
 
+        self.user_url = at_user_url
         self.base_dn = get_config("basedn")
         self.server = get_config("server")
         self.proxyuser_password = get_config("proxyuser_password")

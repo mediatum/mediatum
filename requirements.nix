@@ -574,7 +574,7 @@ let
     name = "sqlalchemy-continuum-1.2.0";
 
     src = fetchgit {
-      url = https://mediatumdev.ub.tum.de/sqlalchemy-continuum.git;
+      url = https://github.com/mediatum/sqlalchemy-continuum.git;
       rev = "131e544bcb24dfe985347f179ab61d6b31eceab0";
       sha256 = "c9ac0aeb5cbaa2e0b60b4dd49199e0fff5c91dd782578dad931ad0f3350aa1fe";
     };

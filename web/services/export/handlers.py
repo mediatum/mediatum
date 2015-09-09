@@ -45,6 +45,8 @@ from web.services.serviceutils import attribute_name_filter
 
 from contenttypes import Collections, Home
 from contenttypes import Data
+from core.users import get_guest_user
+from sqlalchemy.orm import undefer
 
 
 logg = logging.getLogger(__name__)
@@ -360,7 +362,7 @@ def struct2rss(req, path, params, data, d, debug=False, singlenode=False, send_c
     nodelist = d['nodelist']
     language = params.get('lang', 'en')
     items_list = []
-    mdts = tree.getRoot("metadatatypes").getChildren()
+    mdts = q(Metadatatype)
 
     for n in nodelist:
         nodename = n.name
@@ -375,9 +377,8 @@ def struct2rss(req, path, params, data, d, debug=False, singlenode=False, send_c
 
         # check for export mask for this node
         try:
-            schema = n.getSchema()
             try:
-                mdt = [x for x in mdts if x.name == schema][0]
+                mdt = [x for x in mdts if x.name == n.schema][0]
             except:
                 mdt = None
             mask = mdt.getMask('rss')
@@ -614,11 +615,11 @@ def get_node_children_struct(
         else:
             guestAccess = None
     else:
-        guestAccess = AccessData(user=users.getUser('Gast'))
+        user = get_guest_user()
 
-    if guestAccess:
-        res['username'] = guestAccess.getUser().getName()  # name,
-        res['userid'] = guestAccess.getUser().getUserID()  # id,
+    if user is not None:
+        res['username'] = user.login_name
+        res['userid'] = user.id
     result_shortlist = []
 
     nodelist = []
@@ -688,7 +689,7 @@ def get_node_children_struct(
         return res
 
     # check node access
-    if guestAccess is not None and guestAccess.hasAccess(node, "read") and (
+    if user is not None and node.has_read_access(user=user) and (
             isDescendantOf(node, q(Collections).one()) or isDescendantOf(node, q(Home).one())):
         pass
     else:
@@ -811,55 +812,18 @@ def get_node_children_struct(
 
     req_path = req.path
 
-    # if type(nodelist)!= list:
-    #    set_nodelist_ids = set(nodelist.getIDs())
-    # else:
-    #    set_nodelist_ids = set(nodelist)
-
-    set_nodeid_localread = set(["%s_%s" % (n.id, n.localread) for n in nodelist])
-
     timetable.append(['get set of ids of nodelist', time.time() - atime])
     atime = time.time()
 
-    try:
-        from core.acl import getDefaultGuestAccessRule
-        default_guest_access_name = getDefaultGuestAccessRule().name
-    except:
-        default_guest_access_name = None
-
-    if not default_guest_access_name:
-        logg.warning('No default guest access name set in config file: will use hasAccess method, which may cost web service performance')
+    default_guest_access_name = None
 
     if not mdt_name and not node_query:
-        resultcode, cachecontent = filtercache.retrieve(req_path)
-        if resultcode == 'hit' and len(set_nodeid_localread.difference(cachecontent[-1][0])) == 0:
-            filtered_nodelist = cachecontent[-1][1]
-            timetable.append(['retrieved filtered access from cache (%d nodes -> %d nodes)' %
-                              (len(nodelist), len(filtered_nodelist)), time.time() - atime])
-            atime = time.time()
-            nodelist = filtered_nodelist
-        elif not node_query:
+        # XXX: we don't check here if permissions have changed
+        nodelist = [x for x in nodelist if (x.has_read_access(user=user))]
+        timetable.append(['filter access with hasAccess (%d nodes -> %d nodes)' %
+                          (len(nodelist), len(nodelist)), time.time() - atime])
+        atime = time.time()
 
-            if 0 and default_guest_access_name:
-                filtered_nodelist = [x for x in nodelist if default_guest_access_name in x.localread.split(',')]
-                timetable.append(['filter access with localread == "%s" (%d nodes -> %d nodes)' %
-                                  (default_guest_access_name, len(nodelist), len(filtered_nodelist)), time.time() - atime])
-                atime = time.time()
-            else:
-                if singlenode or parents:
-                    filtered_nodelist = [x for x in nodelist if (guestAccess.hasAccess(x, 'read'))]
-                else:
-                    filtered_nodelist = [x for x in nodelist if (guestAccess.hasAccess(x, 'read'))]
-                timetable.append(['filter access with hasAccess (%d nodes -> %d nodes)' %
-                                  (len(nodelist), len(filtered_nodelist)), time.time() - atime])
-                atime = time.time()
-
-            nodelist = filtered_nodelist
-
-            if not singlenode and len(filtered_nodelist) > FILTERCACHE_NODECOUNT_THRESHOLD:
-                filtercache.update(req_path, [set_nodeid_localread, filtered_nodelist])
-                timetable.append(['added filtered nodelist to filtercache (%d nodes)' % (len(filtered_nodelist)), time.time() - atime])
-                atime = time.time()
 
     # 'sort' may be removed later (undocumented feature)
     if not singlenode and 'sort' in params.keys():

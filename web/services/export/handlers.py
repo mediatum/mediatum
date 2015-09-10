@@ -48,7 +48,7 @@ logg = logging.getLogger(__name__)
 q = db.query
 
 
-host = "http://" + config.get("host.name", "")
+configured_host = u"http://" + config.get("host.name", "")
 
 from web.services.cache import Cache
 from web.services.cache import date2string as cache_date2string
@@ -346,16 +346,17 @@ def struct2rss(req, path, params, data, d, debug=False, singlenode=False, send_c
     items_list = []
     mdts = q(Metadatatype)
 
+    host = unicode(req.get_header("HOST") or configured_host)
+    collections = q(Collections).one()
+    user = get_guest_user()
+
     for n in nodelist:
         nodename = n.name
         nodeid = str(n.id)
-        nodetype = n.type
         updatetime = utime = try_node_date(n)
 
         # categories to be included in all items - mask generated or not
-        default_categories = ''
-        if n.type.strip():
-            default_categories = '<category>node type: ' + n.type.strip() + '</category>\r\n'
+        default_categories = u'<category>node type: ' + n.type + u'</category>\r\n'
 
         # check for export mask for this node
         try:
@@ -370,7 +371,7 @@ def struct2rss(req, path, params, data, d, debug=False, singlenode=False, send_c
             mask = None
 
         if mask:
-            item_xml = '<item>\r\n' + mask.getViewHTML([n], flags=8) + default_categories + '\r\n</item>\r\n'
+            item_xml = u'<item>\r\n' + mask.getViewHTML([n], flags=8) + default_categories + u'\r\n</item>\r\n'
             items_list = items_list + [(updatetime, nodename, nodeid, item_xml)]
             continue
 
@@ -378,7 +379,7 @@ def struct2rss(req, path, params, data, d, debug=False, singlenode=False, send_c
         item_d = {}
 
         browsingPathList = getBrowsingPathList(n)
-        browsingPathList = [x for x in browsingPathList if (guestAccess.hasAccess(x[-1], 'read') and (isDescendantOf(x[-1], q(Collections).one())))]
+        browsingPathList = [x for x in browsingPathList if x[-1].has_read_access(user=user) and x[-1].is_descendant_of(collections)]
         browsingPathList_names = [map(lambda x: x.name, browsingPath) for browsingPath in browsingPathList]
 
         # assumption: longest path is most detailled and illustrative for being used in the title
@@ -389,16 +390,13 @@ def struct2rss(req, path, params, data, d, debug=False, singlenode=False, send_c
         except:  # browsing path list may be empty (for directories, collections, ...)
             most_detailed_path = ''
 
-        if nodename:
-            item_d['title'] = esc(nodename + ' (' + nodeid + ', ' + nodetype + ') ' + ('/'.join(most_detailed_path)))
-        else:
-            item_d['title'] = esc('-unnamed-node-' + ' (' + nodeid + ', ' + nodetype + ') ' + ('/'.join(most_detailed_path)))
-
+        item_d['title'] = esc(u"{} ({}, {}/{}) {}".format(nodename or u'-unnamed-node-',
+                                                          nodeid, n.type, n.schema, u"/".join(most_detailed_path)))
         item_d['item_pubDate'] = utime
-        item_d['guid'] = host + '/node?id=%s' % nodeid
-        item_d['link'] = host + '/node?id=%s' % nodeid
+        item_d['guid'] = host + u'/node?id=%s' % nodeid
+        item_d['link'] = host + u'/node?id=%s' % nodeid
 
-        mtype = getMetaType(n.getSchema())
+        mtype = getMetaType(n.schema)
 
         if mtype:
             lang_masks = [m for m in mtype.getMasks() if m.getLanguage() == language and m.name.startswith('nodesmall')]
@@ -412,25 +410,25 @@ def struct2rss(req, path, params, data, d, debug=False, singlenode=False, send_c
 
         description = ''
         for x in attr_list:
-            description = description + ('''<b>%s: </b>%s<br/>\r\n''' % (x[2], (x[1])))
+            description = description + (u'''<b>%s: </b>%s<br/>\r\n''' % (x[2], (x[1])))
 
         item_d['description'] = description
         categories = default_categories
 
         for x in browsingPathList_names:
-            categories = categories + '<category>' + esc('/'.join(x)) + '</category>\r\n'
+            categories = categories + u'<category>' + esc(u'/'.join(x)) + u'</category>\r\n'
 
         ddcs = n.get('ddc').strip()
         if ddcs.strip():
             ddcs = ddcs.split(';')
             for ddc in ddcs:
-                categories = categories + '<category>' + esc(ddc) + '</category>\r\n'
+                categories = categories + u'<category>' + esc(ddc) + u'</category>\r\n'
 
         subjects = n.get('subject').strip()
         if subjects:
             subjects = subjects.split(';')
             for subject in subjects:
-                categories = categories + '<category>' + esc(subject) + '</category>\r\n'
+                categories = categories + u'<category>' + esc(subject) + u'</category>\r\n'
 
         item_d['categories'] = categories
 
@@ -445,21 +443,21 @@ def struct2rss(req, path, params, data, d, debug=False, singlenode=False, send_c
 
     items = ''
     for x in items_list:
-        items += (x[3] + '\r\n')
+        items += (x[3] + u'\r\n')
 
     pubDate = lastBuildDate = format_date(format='rfc822')
 
-    d['dataready'] = ("%.3f" % (time.time() - d['build_response_start']))
+    d['dataready'] = (u"%.3f" % (time.time() - d['build_response_start']))
 
     fcd = feed_channel_dict.copy()
-    fcd['lang'] = 'de'
+    fcd['lang'] = u'de'
     fcd['pubdate'] = pubDate
     fcd['lastbuild'] = lastBuildDate
     fcd['link'] = host
     fcd['atom_link'] = host + req.fullpath
     fcd['image_title'] = 'testlogo'
-    fcd['image_link'] = host + '/img/testlogo.png'
-    fcd['image_url'] = host + '/img/testlogo.png'
+    fcd['image_link'] = host + u'/img/testlogo.png'
+    fcd['image_url'] = host + u'/img/testlogo.png'
 
     if 'feed_info' in params:
         for k, v in params['feed_info'].items():
@@ -469,7 +467,7 @@ def struct2rss(req, path, params, data, d, debug=False, singlenode=False, send_c
     fcd['items'] = items
     s = template_rss_channel % fcd  # params['feed_info']
 
-    return s
+    return s.encode("utf8")
 
 supported_formats = [
     [['xml', ''], struct2xml, 'text/xml'],
@@ -482,7 +480,6 @@ supported_formats = [
 
 def get_node_children_struct(
         req, path, params, data, id, debug=True, allchildren=False, singlenode=False, parents=False, send_children=False):
-    global guestAccess
     atime = starttime = time.time()
     retrievaldate = format_date()
 
@@ -583,8 +580,6 @@ def get_node_children_struct(
                               atime])
             atime = time.time()
 
-        guestAccess = AccessData(user=_user)
-
         if guestAccess.user:
             valid = guestAccess.verify_request_signature(req.fullpath, params)
             if not valid:
@@ -669,9 +664,10 @@ def get_node_children_struct(
         res['dataready'] = dataready
         return res
 
+    home = q(Home).one()
+    collections = q(Collections).one()
     # check node access
-    if user is not None and node.has_read_access(user=user) and (
-            isDescendantOf(node, q(Collections).one()) or isDescendantOf(node, q(Home).one())):
+    if user is not None and node.has_read_access(user=user) and (node.is_descendant_of(collections) or node.is_descendant_of(home)):
         pass
     else:
         res['status'] = 'fail'

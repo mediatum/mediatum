@@ -103,6 +103,10 @@ def explain(query, session, analyze=False):
     return "\n".join(l[0] for l in lines)
 
 
+def exec_sqlfunc(s, func):
+    return s.execute(func).fetchone()[0]
+
+
 class LenMixin(object):
 
     def __len__(self):

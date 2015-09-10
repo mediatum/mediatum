@@ -260,6 +260,10 @@ def needs_init(min_state):
     return _needs_init
 
 
+def exec_sqlfunc(func):
+    return alchemyext.exec_sqlfunc(s, func)
+
+
 def reachable_node_ids():
     return q(t_noderelation.c.cid).filter(t_noderelation.c.nid == 1).union_all(sql.select([sql.expression.literal(1)]))
 
@@ -275,10 +279,6 @@ def delete_unreachable_nodes(synchronize_session='fetch'):
 def unreachable_nodes():
     reachable_node_sq = reachable_node_ids().subquery()
     return q(Node).filter(~Node.id.in_(reachable_node_sq))
-
-
-def exec_sqlfunc(func):
-    return s.execute(func).fetchone()
 
 
 def inversion_label(invert):

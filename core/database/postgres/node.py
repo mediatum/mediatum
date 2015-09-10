@@ -20,7 +20,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from core.node import NodeMixin, NodeVersionMixin
 from core.database.postgres import db_metadata, DeclarativeBase, MtQuery, mediatumfunc, MtVersionBase
 from core.database.postgres import rel, bref, C, FK
-from core.database.postgres.alchemyext import LenMixin, view
+from core.database.postgres.alchemyext import LenMixin, view, exec_sqlfunc
 from core.database.postgres.attributes import Attributes, AttributesExpressionAdapter
 from utils.magicobjects import MInt
 from ipaddr import IPv4Address
@@ -366,6 +366,8 @@ class Node(DeclarativeBase, NodeMixin):
 
         return VersionContextManager()
 
+    def is_descendant_of(self, node):
+        return exec_sqlfunc(object_session(self), mediatumfunc.is_descendant_of(self.id, node.id))
 
     __mapper_args__ = {
         'polymorphic_identity': 'node',

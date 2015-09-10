@@ -375,3 +375,16 @@ PERFORM recalculate_relation_subtree(OLD.cid);
 RETURN OLD;
 END;
 $f$;
+
+
+CREATE OR REPLACE FUNCTION is_descendant_of(descendant_id integer, node_id integer) RETURNS bool
+    LANGUAGE plpgsql
+    SET search_path = :search_path
+    AS $f$
+DECLARE
+    res bool;
+BEGIN
+    SELECT INTO res EXISTS (SELECT FROM noderelation WHERE nid=node_id AND cid=descendant_id);
+    RETURN res;
+END;
+$f$;

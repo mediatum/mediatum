@@ -20,6 +20,7 @@
 
 import os
 import string
+from warnings import warn
 from core import db
 from core import Node
 from contenttypes import Collections
@@ -115,12 +116,8 @@ def getBrowsingPathList(node):
 
 
 def isDescendantOf(node, parent):
-    if node.id == parent.id:
-        return 1
-    for p in node.parents:
-        if isDescendantOf(p, parent):
-            return 1
-    return 0
+    warn("use node.is_descendant_of(parent)", DeprecationWarning)
+    return node.is_descendant_of(parent)
 
 
 def getSubdirsContaining(path, filelist=[]):

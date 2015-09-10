@@ -17,6 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import cgi
 import inspect
 import logging
 import traceback
@@ -39,15 +40,11 @@ from .strings import ensure_unicode_returned
 
 
 def esc(s):
-    return s.replace("&", "&amp;").replace("\"", "&quot;").replace("<", "&lt;").replace(">", "&gt;")
+    return cgi.escape(s, quote=True)
 
 
 def esc2(s):
-    return s.replace("&", "&amp;").replace("\"", "'").replace("<", "&lt;").replace(">", "&gt;")
-
-
-def lightesc(s):
-    return s.replace("<", "&lt;").replace(">", "&gt;")
+    return cgi.escape(s.replace(u"\"", u"'"))
 
 
 def desc(s):

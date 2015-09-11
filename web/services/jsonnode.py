@@ -63,10 +63,11 @@ def buildNodeDescriptor(req, node, indent=None, written=None, children=True, chi
         try:
             mask_obj = getMetaType(node.getSchema()).getMask(mask)
             if mask_obj:
-                nodedict['defaultexport'] = mask_obj.getViewHTML([node], flags=0)
+                nodedict['defaultexport'] = mask_obj.getViewHTML([node], flags=8)
             else:
                 nodedict['defaultexport'] = "mask not found"
-        except:
+        except Exception as e:
+            logg.exception("exception in buildNodeDescriptor")
             nodedict['defaultexport'] = "error"
 
     if children:
@@ -105,7 +106,7 @@ def buildNodeDescriptor(req, node, indent=None, written=None, children=True, chi
             node.show_node_text(labels=False, language=language, cachetype='deep')
 
         field_descriptors = get_maskcache_entry(lookup_key)
-        
+
         try:
             mask = field_descriptors[0]
             for field_descriptor in field_descriptors[1:]:

@@ -156,6 +156,8 @@ def init_modules():
 #     xmlnode.init()
     from core import auth
     auth.init()
+    from export import exportutils
+    exportutils.init()
     from core.plugins import init_plugins
     init_plugins()
 

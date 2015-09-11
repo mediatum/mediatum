@@ -156,7 +156,9 @@ def init_modules():
     from contenttypes.data import init_maskcache
     init_maskcache()
     from export import oaisets
-#     oaisets.init()
+    oaisets.init()
+    from export import exportutils
+    exportutils.init()
     from schema import schema
     schema.init()
     from core import xmlnode

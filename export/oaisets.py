@@ -23,6 +23,10 @@ from collections import OrderedDict
 from utils.utils import esc
 from utils.pathutils import isDescendantOf
 from .oaisetgroup import OAISetGroup as OAISetGroup
+from core import Node
+from core import db
+
+q = db.query
 
 DEBUG = False
 DICT_GROUPS = {}
@@ -51,22 +55,21 @@ def loadGroups():
 
 
 def func_getNodesForSetSpec(self, setspec, schemata):
-    collection = tree.getNode(setspec)
-    return [n for n in collection.getAllChildren() if n.getSchema() in schemata]
+    collection = q(Node).get(setspec)
+    return [n for n in collection.all_children if n.schema in schemata]
 
 
 def func_getSetSpecsForNode(self, node, schemata):
     res = []
     for setspec in self.d_names.keys():
-        if isDescendantOf(node, tree.getNode(setspec)):
+        if isDescendantOf(node, q(Node).get(setspec)):
             res.append(setspec)
     return res
 
 
 def build_container_group():
-    # sets configured with container attributes
-    node_list = tree.NodeList(tree.getNodesByAttribute('oai.setname', '*'))
-    node_list = node_list.sort_by_fields(field="oai.setname")
+    node_list = q(Node).filter(Node.attrs['oai.setname'].isnot(None))
+    node_list = node_list.order_by(Node.attrs['oai.setname'])
     node_list = [node for node in node_list if node.type in ['collection', 'directory']]
     node_list = [node for node in node_list if node.get('oai.setname').strip()]
     node_list = [node for node in node_list if node.get('oai.formats').strip()]

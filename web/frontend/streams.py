@@ -399,7 +399,7 @@ def build_filelist(node):
     files_written = 0
     result_list = []
 
-    for n in node.getAllChildren():
+    for n in node.all_children:
         if n.isActiveVersion():
             for fn in n.files:
                 if fn.filetype in ['doc', 'document', 'zip', 'attachment', 'other']:

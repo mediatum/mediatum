@@ -23,6 +23,11 @@ import re
 import logging
 from utils.utils import intersection, union
 from utils.boolparser import BoolParser
+from core import Node
+from core import db
+from core.database.postgres.search import comparisons
+
+q = db.query
 
 pattern_op = re.compile('^([\:a-zA-Z0-9._-]+)\s*(=|>=|<=|<|>|[Ll][Ii][Kk][Ee])\s*"?([^"]*)"?$')
 
@@ -69,27 +74,24 @@ class OAISearchFieldCondition:
         return self.field + " " + self.op + " " + self.value
 
     def execute(self):
-        fieldprefix = 'fts:'
-        if self.field.startswith(fieldprefix):
-            logg.debug('OAISearchParser: ---> calling fts:' + self.field + " " + self.op + " " + self.value)
-            from core.tree import searcher
-            return searcher.run_search(self.field.replace(fieldprefix, ''), self.op, self.value)
+        if self.field.startswith('fts:'):  # compatibility for old fields used in fts searcher
+            self.field = self.field[4:]
 
         if self.field == 'schema' and self.op == '=':
-            logg.debug('OAISearchParser: ---> getting nodes with type %s', self.value)
-            node_ids = tree.db.get_nids_by_type_suffix(self.value)
+            logg.debug('OAISearchParser: ---> getting nodes with schema %s', self.value)
+            nodes = q(Node).filter_by(schema=self.value).all()
 
         elif self.field and self.op and self.value:
-            sql = "SELECT id FROM node, nodeattribute WHERE id=nid AND nodeattribute.name=%s AND nodeattribute.value " + self.op + " %s"
-            params = (self.field, self.value)
-            logg.debug('OAISearchParser: ---> going to execute sql: %s with params %s', sql, params)
-            res = tree.db.runQuery(sql, *params)
-            node_ids = [x[0] for x in res]
+            logg.debug('OAISearchParser: ---> going to make the query: Node.attrs["%s"] %s %s', self.field, self.op, self.value)
+            if self.op.lower() == 'like':
+                nodes = q(Node).filter(Node.a[self.field].like(self.value)).all()
+            else:
+                nodes = q(Node).filter(comparisons[self.op](Node.attrs[self.field].astext, self.value)).all()
         else:
             logg.debug('OAISearchParser: ---> OAISearchParser: Error evaluating FieldCondition')
             return []
-        logg.debug('OAISearchParser: ---> sql returned %d results', len(node_ids))
-        return list(set(node_ids))
+        logg.debug('OAISearchParser: ---> sql returned %d results', len(nodes))
+        return list(set(nodes))
 
 
 class OAISearchParser(BoolParser):

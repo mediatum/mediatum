@@ -38,7 +38,12 @@ from utils.utils import esc, fixXMLString
 from schema.schema import getMetaType
 from utils.pathutils import isDescendantOf
 from threading import Lock
+from core.systemtypes import Root, Metadatatypes
+from contenttypes import Collections
+from core import Node
+from core import db
 
+q = db.query
 
 logg = logging.getLogger(__name__)
 
@@ -182,11 +187,11 @@ def checkParams(req, list):
 
 
 def getExportMasks(regexp):
-    exportmasks = [tree.getNode(nid) for nid in tree.getNodesByAttribute('masktype', 'export')]
+    exportmasks = q(Node).filter(Node.a.masktype == 'export').all()
     exportmasks = [(n, n.name) for n in exportmasks if re.match(regexp, n.name) and n.type == 'mask']
     dict_metadatatype2exportmask = {}
     for exportmask in exportmasks:
-        parents = exportmask[0].getParents()
+        parents = exportmask[0].parents
         try:
             mdt_node = [p for p in parents if p.type == 'metadatatype'][0]
             mdt = (mdt_node, mdt_node.name)
@@ -198,8 +203,8 @@ def getExportMasks(regexp):
 
 def getOAIExportFormatsForSchema(schema_name):
     try:
-        schema_node = [x for x in tree.getRoot('metadatatypes').getChildren() if x.name == schema_name][0]
-        res = [x.name for x in schema_node.getChildren() if (x.type == 'mask' and x.get('masktype') == 'export')]
+        schema_node = [x for x in q(Metadatatypes).one().children if x.name == schema_name][0]
+        res = [x.name for x in schema_node.children if (x.type == 'mask' and x.get('masktype') == 'export')]
         return [x.replace('oai_', '', 1) for x in res if x.startswith('oai_')]
     except:
         logg.exception("ERROR in getOAIExportMasksForSchema('%s')", schema_name)
@@ -207,9 +212,8 @@ def getOAIExportFormatsForSchema(schema_name):
 
 
 def getOAIExportFormatsForIdentifier(identifier):
-    try:
-        node = tree.getNode(identifier2id(identifier))
-    except:
+    node = q(Node).get(identifier2id(identifier))
+    if node is None:
         return []
     return getOAIExportFormatsForSchema(node.getSchema())
 
@@ -232,8 +236,10 @@ def ListMetadataFormats(req):
     if "identifier" in req.params:
         # list only formats available for the given identifier
         try:
-            node = tree.getNode(identifier2id(req.params.get("identifier")))
-        except (TypeError, KeyError, tree.NoSuchNodeError):
+            node = q(Node).get(identifier2id(req.params.get("identifier")))
+        except (TypeError, KeyError):
+            return writeError(req, "badArgument")
+        if node is None:
             return writeError(req, "badArgument")
 
         access = acl.AccessData(req)
@@ -273,7 +279,7 @@ def Identify(req):
     if not checkParams(req, ["verb"]):
         return writeError(req, "badArgument")
     if config.get("config.oaibasename") == "":
-        root = tree.getRoot()
+        root = q(Root).one()
         name = root.getName()
     else:
         name = config.get("config.oaibasename")
@@ -367,7 +373,7 @@ def writeRecord(req, node, metadataformat):
 
 
 def mkIdentifier(id):
-    return IDPREFIX + id
+    return IDPREFIX + ustr(id)
 
 
 def identifier2id(id):
@@ -387,18 +393,11 @@ def parentIsMedia(n):
         return True
 
 
-def concatNodeLists(nodelist1, nodelist2):
-    try:
-        return tree.NodeList(list(set(nodelist1.getIDs() + nodelist2.getIDs())))
-    except:
-        return tree.NodeList(list(set(nodelist1.getIDs() + list(nodelist2))))
-
-
 def retrieveNodes(req, access, setspec, date_from=None, date_to=None, metadataformat=None):
     schemata = []
 
     if metadataformat == 'mediatum':
-        metadatatypes = tree.getRoot('metadatatypes').getChildren()
+        metadatatypes = q(Metadatatypes).one().children
         schemata = [m.name for m in metadatatypes if m.type == 'metadatatype' and m.name not in ['directory', 'collection']]
     elif metadataformat:
         mdt_masks_list = getExportMasks("oai_" + metadataformat.lower() + "$")  # check exact name
@@ -410,12 +409,12 @@ def retrieveNodes(req, access, setspec, date_from=None, date_to=None, metadatafo
 
     if setspec:
         res = oaisets.getNodes(setspec, schemata)
+        res = [q(Node).get(nid) for nid in res]
     else:
         osp = OAISearchParser()
         query = " or ".join(["schema=%s" % schema for schema in schemata])
         res = osp.parse(query).execute()
 
-    res = tree.NodeList(res)
     if DEBUG:
         timetable_update(req, "in retrieveNodes: after building NodeList for %d nodes" % (len(res)))
 
@@ -433,7 +432,7 @@ def retrieveNodes(req, access, setspec, date_from=None, date_to=None, metadatafo
         if DEBUG:
             timetable_update(req, "in retrieveNodes: after access filter --> %d nodes" % (len(res)))
 
-    collections = tree.getRoot('collections')
+    collections = q(Collections).one()
     res = [n for n in res if isDescendantOf(n, collections)]
     if DEBUG:
         timetable_update(req, "in retrieveNodes: after checking descendance from basenode --> %d nodes" % (len(res)))
@@ -524,8 +523,10 @@ def getNodes(req):
             nodes = [n for n in nodes if not parentIsMedia(n)]
             # filter out nodes that are inactive or older versions of other nodes
             nodes = [n for n in nodes if n.isActiveVersion()]
-        except tree.NoSuchNodeError:
+        except:
             # collection doesn't exist
+            return None, "badArgument", None
+        if not nodes:
             return None, "badArgument", None
 
     with token_lock:
@@ -537,7 +538,7 @@ def getNodes(req):
         with token_lock:
             del tokenpositions[token]
     logg.info("%s : set=%s, objects, format=%s", req.params.get('verb'), req.params.get('set'), len(nodes), metadataformat)
-    res = tree.NodeList(nodes[pos:pos + CHUNKSIZE])
+    res = nodes[pos:pos + CHUNKSIZE]
     if DEBUG:
         timetable_update(req, "leaving getNodes: returning %d nodes, tokenstring='%s', metadataformat='%s'" %
                          (len(res), tokenstring, metadataformat))
@@ -606,9 +607,8 @@ def GetRecord(req):
     if not checkMetaDataFormat(metadataformat):
         return writeError(req, "badArgument")
 
-    try:
-        node = tree.getNode(id)
-    except (TypeError, KeyError, tree.NoSuchNodeError):
+    node = q(Node).get(id)
+    if node is None:
         return writeError(req, "idDoesNotExist")
 
     if metadataformat and (metadataformat.lower() in FORMAT_FILTERS.keys()) and not filterFormat(node, metadataformat.lower()):

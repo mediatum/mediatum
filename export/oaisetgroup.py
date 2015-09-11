@@ -65,8 +65,7 @@ class OAISetGroup:
             res = osp.parse(self.d_queries[setspec]).execute()
             if setspec in self.d_filters:
                 nodefilter = self.d_filters[setspec]
-                nodelist = tree.NodeList(res)
-                res = [n.id for n in nodelist if nodefilter(setspec, n)]
+                res = [n.id for n in res if nodefilter(setspec, n)]
             return res
         else:
             logg.error("OAI: Error: no function 'getNodesForSetSpec' found for setSpec='%s', returning empty list", setspec)

@@ -48,7 +48,7 @@ logg = logging.getLogger(__name__)
 q = db.query
 
 
-configured_host = u"http://" + config.get("host.name", "")
+configured_host = config.get("host.name", "")
 
 from web.services.cache import Cache
 from web.services.cache import date2string as cache_date2string
@@ -340,13 +340,12 @@ def struct2csv(req, path, params, data, d, debug=False, sep=u';', string_delimit
         return r.encode("utf8")
 
 
-def struct2rss(req, path, params, data, d, debug=False, singlenode=False, send_children=False):
-    nodelist = d['nodelist']
+def struct2rss(req, path, params, data, struct, debug=False, singlenode=False, send_children=False):
+    nodelist = struct['nodelist']
     language = params.get('lang', 'en')
     items_list = []
-    mdts = q(Metadatatype)
 
-    host = unicode(req.get_header("HOST") or configured_host)
+    host = u"http://" + unicode(req.get_header("HOST") or configured_host)
     collections = q(Collections).one()
     user = get_guest_user()
 
@@ -356,12 +355,12 @@ def struct2rss(req, path, params, data, d, debug=False, singlenode=False, send_c
         updatetime = utime = try_node_date(n)
 
         # categories to be included in all items - mask generated or not
-        default_categories = u'<category>node type: ' + n.type + u'</category>\r\n'
+        default_categories = u'<category>node type: ' + n.type + '/' + n.schema + u'</category>\r\n'
 
         # check for export mask for this node
         try:
             try:
-                mdt = [x for x in mdts if x.name == n.schema][0]
+                mdt = n.metadatatype
             except:
                 mdt = None
             mask = mdt.getMask('rss')
@@ -396,21 +395,23 @@ def struct2rss(req, path, params, data, d, debug=False, singlenode=False, send_c
         item_d['guid'] = host + u'/node?id=%s' % nodeid
         item_d['link'] = host + u'/node?id=%s' % nodeid
 
-        mtype = getMetaType(n.schema)
-
-        if mtype:
-            lang_masks = [m for m in mtype.getMasks() if m.getLanguage() == language and m.name.startswith('nodesmall')]
-            if lang_masks:
-                mask = lang_masks[0]
+        if mdt:
+            lang_mask = mdt.masks.filter(Node.name.startswith(u"nodesmall")).filter(Node.a.language == language).first()
+            if lang_mask is not None:
+                mask = lang_mask
             else:
-                mask = mtype.getMask('nodesmall')
+                mask = mdt.get_mask('nodesmall')
+        else:
+            mask = None
+
+        if mask is not None:
             attr_list = mask.getViewHTML([n], VIEW_DATA_ONLY, language)  # [[attr_name, value, label, type], ...]
         else:
-            attr_list = [['', n.id, 'node id', ''], ['', n.name, 'node name', ''], ['', n.type, 'node type', ''], ]
+            attr_list = [['', n.id, 'node id', ''], ['', n.name, 'node name', ''], ['', n.type + "/" + n.schema, 'node type', ''], ]
 
-        description = ''
+        description = u''
         for x in attr_list:
-            description = description + (u'''<b>%s: </b>%s<br/>\r\n''' % (x[2], (x[1])))
+            description = description + (u'''<b>%s: </b>%s<br/>\r\n''' % (x[2], x[1]))
 
         item_d['description'] = description
         categories = default_categories
@@ -447,7 +448,7 @@ def struct2rss(req, path, params, data, d, debug=False, singlenode=False, send_c
 
     pubDate = lastBuildDate = format_date(format='rfc822')
 
-    d['dataready'] = (u"%.3f" % (time.time() - d['build_response_start']))
+    struct['dataready'] = (u"%.3f" % (time.time() - struct['build_response_start']))
 
     fcd = feed_channel_dict.copy()
     fcd['lang'] = u'de'

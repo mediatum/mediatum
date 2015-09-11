@@ -9,7 +9,7 @@ import os
 from pytest import yield_fixture, fixture
 
 from core.test.factories import NodeFactory, DocumentFactory, DirectoryFactory, UserFactory, UserGroupFactory,\
-    InternalAuthenticatorInfoFactory, FileFactory, CollectionFactory, HomeFactory, CollectionsFactory
+    InternalAuthenticatorInfoFactory, FileFactory, CollectionFactory, HomeFactory, CollectionsFactory, RootFactory
 from core import db
 from contenttypes.container import Collections, Home
 from core.database.init import init_database_values
@@ -141,6 +141,11 @@ def home_root(session):
 
 
 @fixture
+def root(session):
+    return RootFactory()
+
+
+@fixture
 def some_user(session):
     return UserFactory()
 
@@ -174,6 +179,15 @@ def admin_user(some_user):
     admin_group = UserGroupFactory(is_editor_group=False, is_workflow_editor_group=False, is_admin_group=True)
     some_user.groups.append(admin_group)
     return some_user
+
+@fixture
+def guest_user(internal_authenticator_info):
+    guest_group = UserGroupFactory(is_editor_group=False, is_workflow_editor_group=False, is_admin_group=False)
+    from core import config
+    user = UserFactory(login_name=config.get(u"user.guestuser", u"guest"))
+    user.groups.append(guest_group)
+    user.authenticator_info = internal_authenticator_info
+    return user
 
 
 @fixture

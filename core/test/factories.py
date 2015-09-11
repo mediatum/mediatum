@@ -98,6 +98,7 @@ DirectoryFactory = make_simple_nodeclass_factory(Directory)
 CollectionFactory = make_simple_nodeclass_factory(Collection)
 CollectionsFactory = make_simple_nodeclass_factory(Collections)
 HomeFactory = make_simple_nodeclass_factory(Home)
+RootFactory = make_simple_nodeclass_factory(Root)
 
 
 class AuthenticatorInfoFactory(SQLAFactory):

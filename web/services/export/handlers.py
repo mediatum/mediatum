@@ -758,7 +758,7 @@ def get_node_children_struct(
         else:
             # refuse request for all children on collections root
             if node.id != q(Collections.id).scalar():
-                nodelist = node.all_children_by_query(q(Data)).options(undefer(Node.attrs)).all()
+                nodelist = [node] + node.all_children_by_query(q(Data)).options(undefer(Node.attrs)).all()
             else:
                 nodelist = []
                 res['status'] = 'fail'

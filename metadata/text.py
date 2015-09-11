@@ -126,7 +126,7 @@ class m_text(Metatype):
 
     def getFormatedValue(self, field, node, language=None, html=1, template_from_caller=None, mask=None):
 
-        value = node.get(field.getName()).replace(";", "; ")
+        value = node.get_special(field.name).replace(";", "; ")
 
         # ignore trailing newlines for textfields
         value = value.rstrip("\r\n")

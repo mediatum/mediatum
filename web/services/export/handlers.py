@@ -1002,21 +1002,7 @@ def get_node_children_struct(
                 t[i] = f(t[i])
             return inputlist
 
-        def nodeValueGetter(node, valuename):
-            '''get node related values in uniform fashion: like 'node.id', 'node.name', 'node.type', 'orderpos', attributes'''
-            if valuename.startswith('node.'):
-                if valuename == 'node.id':
-                    return node.id
-                elif valuename == 'node.name':
-                    return node.name
-                elif valuename == 'node.type':
-                    return node.type
-                elif valuename == 'node.orderpos':
-                    return node.orderpos
-            else:
-                return node.get(valuename)
-
-        nodetuples = [map(lambda sfield: nodeValueGetter(x, sfield), sfields) + [x.id, x] for x in nodelist]
+        nodetuples = [map(lambda sfield: x.get_special(sfield), sfields) + [x.id, x] for x in nodelist]
 
         data = nodetuples[:]
 

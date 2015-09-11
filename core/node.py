@@ -140,6 +140,22 @@ class NodeMixin(object):
             return format_date(parse_date(self.get('creationtime')), '%d.%m.%Y, %H:%M:%S')
         return ''
 
+    def get_special(self, valuename):
+        '''Attribute getter with special cases for attributes of the node object; 'node.id', 'node.name'/'nodename', 'node.type', 'orderpos'
+        This works like the old Node.get method.'''
+        if valuename.startswith('node'):
+            if valuename == 'nodename' or valuename == "node.name":
+                return self.name
+            elif valuename == 'node.id':
+                return self.id
+            elif valuename == 'node.type':
+                return self.type
+            elif valuename == 'node.orderpos':
+                return self.orderpos
+        else:
+            return self.get(valuename)
+
+
     # access stuff
 
     def has_access(self, accesstype, req=None):

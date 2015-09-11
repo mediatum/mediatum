@@ -175,7 +175,7 @@ def struct2template_test(req, path, params, data, d, debug=False, singlenode=Fal
     d['nodelist'] = [jsonnode.buildNodeDescriptor(req, n, children=send_children) for n in nodelist]
     json_timetable = d['timetable'][:]
 
-    template = req.params.get("template", "record $$[_rcd]$$: id=$$[id]$$: no-template-given\n")
+    template = req.params.get("template", u"record $$[_rcd]$$: id=$$[id]$$: no-template-given\n")
     attrs1 = template.split("$$[")
     attrs = []
     for x in attrs1:
@@ -190,13 +190,15 @@ def struct2template_test(req, path, params, data, d, debug=False, singlenode=Fal
         x = template
         for attr in attrs:
             if attr == "defaultexport":
-                x = x.replace(("$$[%s]$$" % attr), nd[0].get(attr, ''))
+                x = x.replace((u"$$[%s]$$" % attr), nd[0].get(attr, ''))
             elif attr.startswith("_rc"):
-                x = x.replace(("$$[%s]$$" % attr), attr.replace("_rc", "%") % rc)
-            elif attr in ["id", "nodename", "nodetype"]:
-                x = x.replace(("$$[%s]$$" % attr), nd[0].get(attr.replace("node", ""), ''))
+                x = x.replace((u"$$[%s]$$" % attr), attr.replace("_rc", "%") % rc)
+            elif attr == "id":
+                x = x.replace(u"$$[id]$$", unicode(nd[0].get("id")))
+            elif attr in ["nodename", "nodetype"]:
+                x = x.replace((u"$$[%s]$$" % attr), nd[0].get(attr.replace("node", ""), ''))
             else:
-                x = x.replace(("$$[%s]$$" % attr), nd[0]["attributes"].get(attr, ''))
+                x = x.replace((u"$$[%s]$$" % attr), nd[0]["attributes"].get(attr, ''))
         res = res + x
 
     d['timetable'] = []
@@ -209,10 +211,9 @@ def struct2template_test(req, path, params, data, d, debug=False, singlenode=Fal
     res = res.replace("\\n", "\n").replace("\\l", "\l").replace("\\r", "\r").replace("\\t", "\t")
 
     if 'bom' in params.keys():
-        import codecs
-        res = codecs.BOM_UTF8 + res
-
-    return res
+        return res.encode("utf_8_sig") # this codec adds BOM
+    else:
+        return res.encode("utf8")
 
 
 def struct2json(req, path, params, data, d, debug=False, singlenode=False, send_children=False, send_timetable=SEND_TIMETABLE):

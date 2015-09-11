@@ -80,35 +80,33 @@ def checkPath(parent_node, sPath, sSeparator='/'):
 
 
 def getBrowsingPathList(node):
+    from contenttypes import Container
     list = []
+    collections = q(Collections).one()
+    root = q(Root).one()
 
     def r(node, path):
-        if node is q(Root).one():
+        if node is root:
             return
         for p in node.parents:
             path.append(p)
-            if p is not q(Collections).one():
+            if p is not collections:
                 r(p, path)
         return path
 
     paths = []
 
     p = r(node, [])
-    omit = 0
 
     if p:
         for node in p:
-            if True:
-                if node.type in ("directory", "home", "collection"):
-                    paths.append(node)
-                if node is q(Collections).one() or node.type == "root":
-                    paths.reverse()
-                    if len(paths) > 1 and not omit:
-                        list.append(paths)
-                    omit = 0
-                    paths = []
-            else:
-                omit = 1
+            if node is collections or node is root:
+                paths.reverse()
+                if len(paths) > 1:
+                    list.append(paths)
+                paths = []
+            elif isinstance(node, Container):
+                paths.append(node)
     if len(list) > 0:
         return list
     else:

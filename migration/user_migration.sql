@@ -1,16 +1,17 @@
 -- Creates usergroup entries from imported group nodes
 CREATE OR REPLACE FUNCTION mediatum.migrate_usergroups() RETURNS void
     LANGUAGE plpgsql
-    SET search_path = mediatum
+    SET search_path TO :search_path
     AS $f$
 BEGIN
-    INSERT INTO usergroup (id, name, description, hidden_edit_functions, is_workflow_editor_group, is_editor_group)
+    INSERT INTO usergroup (id, name, description, hidden_edit_functions, is_workflow_editor_group, is_editor_group, created_at)
     SELECT id,
     trim(' ' from name),
     trim(' ' from attrs->>'description') AS description,
     coalesce(regexp_split_to_array(attrs->>'hideedit', ';'), '{}') AS hidden_edit_functions,
     bool(position('w' in attrs->>'opts')) AS is_workflow_editor_group,
-    bool(position('e' in attrs->>'opts')) AS is_editor_group
+    bool(position('e' in attrs->>'opts')) AS is_editor_group,
+    now() AS created_at
     FROM node
     WHERE id IN (SELECT cid FROM nodemapping WHERE nid=(SELECT id FROM node WHERE name = 'usergroups'));
 END;
@@ -20,7 +21,7 @@ $f$;
 -- Creates user entries from imported internal user nodes
 CREATE OR REPLACE FUNCTION mediatum.migrate_internal_users() RETURNS void
     LANGUAGE plpgsql
-    SET search_path = mediatum
+    SET search_path TO :search_path
     AS $f$
 
 DECLARE rows integer;
@@ -28,7 +29,8 @@ BEGIN
     INSERT INTO authenticator (id, auth_type, name)
          VALUES (0, 'internal', 'default');
 
-    INSERT INTO mediatum.user (id, login_name, display_name, firstname, lastname, telephone, email, organisation, password_hash, comment, can_change_password, can_edit_shoppingbag, authenticator_id)
+    INSERT INTO mediatum.user (id, login_name, display_name, firstname, lastname, telephone, email,
+        organisation, password_hash, comment, can_change_password, can_edit_shoppingbag, authenticator_id, created_at)
     SELECT id,
     name AS login_name,
     trim(' ' from attrs->>'lastname') || ' ' || trim(' ' from attrs->>'firstname') AS display_name,
@@ -41,7 +43,8 @@ BEGIN
     trim(' ' from attrs->>'comment') AS comment,
     bool(position('c' in attrs->>'opts')) AS can_change_password,
     bool(position('s' in attrs->>'opts')) AS can_edit_shoppingbag,
-    0 as authenticator_id
+    0 AS authenticator_id,
+    now() AS created_at
     FROM node
     WHERE id IN (SELECT cid FROM nodemapping WHERE nid=(SELECT id FROM node WHERE name = 'users'));
 
@@ -95,7 +98,7 @@ $f$;
 -- Creates user entries from imported home directories for dynamic users (former mediatum-dynauth plugin, now core.ldapauth)
 CREATE OR REPLACE FUNCTION mediatum.migrate_dynauth_users() RETURNS void
     LANGUAGE plpgsql
-    SET search_path = mediatum
+    SET search_path TO :search_path
     AS $f$
 DECLARE
     rows integer;
@@ -104,14 +107,15 @@ BEGIN
 
     -- select info from home dirs for ads user (has system.name.adsuser attribute) and create user from it
 
-    INSERT INTO mediatum.user (display_name, login_name, comment, last_login, home_dir_id, authenticator_id)
+    INSERT INTO mediatum.user (display_name, login_name, comment, last_login, home_dir_id, authenticator_id, created_at)
     SELECT
     trim(' ' from attrs->>'system.name.adsuser') AS display_name,
     trim(' ' from attrs->>'system.dirid.adsuser') AS login_name,
     'migration: created from home dir' AS comment,
     (attrs->>'system.last_authentication.adsuser')::timestamp AS last_login,
     node.id AS home_dir_id,
-    1 as authenticator_id
+    1 AS authenticator_id,
+    coalesce((attrs->>'system.last_authentication.adsuser')::timestamp, now()) AS created_at -- no really the creation date, but better than nothing
     FROM node
     WHERE id IN (SELECT cid FROM nodemapping WHERE nid=(SELECT id FROM node WHERE name = 'home'))
     AND attrs ? 'system.dirid.adsuser'
@@ -120,21 +124,25 @@ BEGIN
     GET DIAGNOSTICS rows = ROW_COUNT;
     RAISE NOTICE '% dynauth users created from their home dirs', rows;
 
-
     -- Handle dynamic_users attr of groups. That attribute contains a newline-separated login name list.
 
     -- create placeholder users for dynamic_users login names not found in the user table
-    INSERT INTO mediatum.user (login_name, comment, authenticator_id)
+    INSERT INTO mediatum.user (login_name, comment, authenticator_id, created_at)
     SELECT
     q.login_name as login_name,
     'migration: created from dynuser list of group ' || array_to_string(group_name, ','),
-    1 as authenticator_id
+    1 AS authenticator_id,
+    now() AS created_at
     FROM
-        (SELECT distinct unnest(array_remove(regexp_split_to_array(attrs->>'dynamic_users', '\r\n'), '')) as login_name, array_agg(name) as group_name
+        (SELECT distinct unnest(array_remove(regexp_split_to_array(attrs->>'dynamic_users', '\r\n'), '')) as login_name,
+        array_agg(name) as group_name
         FROM mediatum.node WHERE type = 'usergroup' AND attrs ? 'dynamic_users'
         GROUP BY login_name
         ) q
     WHERE q.login_name NOT IN (SELECT login_name FROM mediatum.user WHERE login_name IS NOT NULL AND authenticator_id = 1);
+
+    GET DIAGNOSTICS rows = ROW_COUNT;
+    RAISE NOTICE '% users created from dynamic user lists', rows;
 
     -- insert user-group relationship for all dynamic users
 
@@ -151,16 +159,14 @@ BEGIN
     ORDER BY usergroup_id;
 
     GET DIAGNOSTICS rows = ROW_COUNT;
-    RAISE NOTICE 'users mapped to groups, % mappings', rows;
+    RAISE NOTICE '% user-group mappings for dynamic users', rows;
 END;
 $f$;
 
 
-CREATE OR REPLACE FUNCTION rename_user_system_nodes()
-   RETURNS void
-   LANGUAGE plpgsql
+CREATE OR REPLACE FUNCTION rename_user_system_nodes() RETURNS void
+    LANGUAGE plpgsql
     SET search_path TO :search_path
-       VOLATILE
     AS
     $f$
 BEGIN

@@ -64,7 +64,7 @@ CREATE OR REPLACE FUNCTION to_numeric(src text) RETURNS numeric
     SET search_path = :search_path
     IMMUTABLE
     AS $f$
-DECLARE 
+DECLARE
     conv numeric;
 BEGIN
     BEGIN
@@ -74,5 +74,25 @@ BEGIN
     END;
 
     RETURN conv;
+END;
+$f$;
+
+
+CREATE OR REPLACE FUNCTION jsonb_object_delete_keys(jsonb jsonb, variadic keys_to_delete text[]) RETURNS jsonb
+    LANGUAGE plpgsql
+    SET search_path = :search_path
+    IMMUTABLE
+    AS $f$
+DECLARE
+    res jsonb;
+BEGIN
+    SELECT INTO res COALESCE(
+      (SELECT ('{' || string_agg(to_json(key) || ':' || value, ',') || '}')
+       FROM jsonb_each(jsonb)
+       WHERE "key" <> ALL ("keys_to_delete")),
+      '{}'
+    )::jsonb;
+
+    RETURN res;
 END;
 $f$;

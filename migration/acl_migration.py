@@ -33,12 +33,11 @@ def prepare_acl_rulestring(rulestr):
 
 
 def load_node_rules(ruletype):
-    db.session.execute("SET search_path TO mediatum_import")
     expanded_accessrule = func.to_json(func.mediatum_import.expand_acl_rule(sql.text(ruletype)))
-    stmt = sql.select(["id", expanded_accessrule], from_obj="node").where(sql.text(
+    stmt = sql.select(["id", expanded_accessrule], from_obj="mediatum_import.node").where(sql.text(
         "{} != ''"
         " AND name NOT LIKE 'Arbeitsverzeichnis (%'"
-        " AND id IN (SELECT id FROM mediatum.node)".format(ruletype)))
+        " AND id IN (SELECT id FROM mediatum_import.node)".format(ruletype)))
 
     node_rules = db.session.execute(stmt)
     res = node_rules.fetchall()

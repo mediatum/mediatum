@@ -52,13 +52,17 @@ DeclarativeBase = declarative_base(metadata=db_metadata)
 
 
 meta_plugin = TransactionMetaPlugin()
-make_versioned(
-    plugins=[meta_plugin],
-    options={
-        'native_versioning': True,
-        'base_classes': (MtVersionBase, DeclarativeBase),
-    }
-)
+
+def setup_versioning():
+    make_versioned(
+        plugins=[meta_plugin],
+        options={
+            'native_versioning': True,
+            'base_classes': (MtVersionBase, DeclarativeBase),
+        }
+    )
+
+setup_versioning()
 
 
 class TimeStamp(object):

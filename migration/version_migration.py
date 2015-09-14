@@ -21,14 +21,9 @@ q = db.query
 
 def fix_versoning_attributes():
     """There are 3 ways to say 'there is no next node'. Fix it..."""
-    for node in q(Node).filter((Node.a["system.prev_id"] == "0") | (Node.attrs["system.prev_id"].cast(Integer) == Node.id)):
-        logg.info("fixing prev_id for node %s", node)
-        del node["system.prev_id"]
-
-    for node in q(Node).filter((Node.a["system.next_id"] == "0") | (Node.attrs["system.next_id"].cast(Integer) == Node.id)):
-        logg.info("fixing next_id for node %s", node)
-        del node["system.next_id"]
-
+    s = db.session
+    s.execute("UPDATE node SET attrs=jsonb_object_delete_keys(attrs, 'system.prev_id') WHERE attrs->>'system.prev_id' IN (id::text, '0')")
+    s.execute("UPDATE node SET attrs=jsonb_object_delete_keys(attrs, 'system.next_id') WHERE attrs->>'system.next_id' IN (id::text, '0')")
 
 def all_version_nodes():
     return q(Node).filter(Node.attrs.has_key("system.next_id"))

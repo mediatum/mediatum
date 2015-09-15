@@ -86,6 +86,8 @@ def migrate_core(s):
 
 
 def users(s):
+    s.execute("SELECT mediatum.clean_trash_dirs()")
+    s.execute("SELECT mediatum.purge_empty_home_dirs()")
     s.execute("SELECT mediatum.migrate_usergroups()")
     s.execute("SELECT mediatum.migrate_internal_users()")
     logg.info("finished user migration")

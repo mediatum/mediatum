@@ -132,19 +132,19 @@ class User(DeclarativeBase, TimeStamp, UserMixin):
     def upload_dir(self):
         from contenttypes import Directory
         if self.home_dir:
-            return self.home_dir.children.filter(Directory.a.system.used_as == u"upload").one()
+            return self.home_dir.children.filter(Directory.a[u"system.used_as"] == u"upload").one()
 
     @property
     def faulty_dir(self):
         from contenttypes import Directory
         if self.home_dir:
-            return self.home_dir.children.filter(Directory.a.system.used_as == u"faulty").one()
+            return self.home_dir.children.filter(Directory.a[u"system.used_as"] == u"faulty").one()
 
     @property
     def trash_dir(self):
         from contenttypes import Directory
         if self.home_dir:
-            return self.home_dir.children.filter(Directory.a.system.used_as == u"trash").one()
+            return self.home_dir.children.filter(Directory.a[u"system.used_as"] == u"trash").one()
 
     def change_password(self, password):
         from core.auth import create_password_hash

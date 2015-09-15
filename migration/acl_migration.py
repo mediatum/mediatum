@@ -324,14 +324,15 @@ class SymbolicExprToAccessRuleConverter(object):
         self.missing_groups = {}
         self.fake_groups = {}
 
-    def get_user_id_from_cond(self, acl_cond):
+    def get_private_user_group_id_from_cond(self, acl_cond):
         username = acl_cond.name
-        user = q(User).filter_by(login_name=username).first()
-        if not user:
-            logg.warn("user %s not found", username)
+        # find the private user group
+        group = q(UserGroup).join(User, UserGroup.id == User.private_group_id).filter_by(login_name=username).scalar()
+        if group is None:
+            logg.warn("private group for user %s not found", username)
             self.missing_users[acl_cond] = username
             return self._fake_groupid(username)
-        return user.id
+        return group.id
 
     def _fake_groupid(self, name):
         if name in self.fake_groups:
@@ -356,8 +357,8 @@ class SymbolicExprToAccessRuleConverter(object):
             return AccessRule(group_ids=set([group_id]))
 
         elif isinstance(acl_cond, ACLUserCondition):
-            user_id = self.get_user_id_from_cond(acl_cond)
-            return AccessRule(group_ids=set([user_id]))
+            group_id = self.get_private_user_group_id_from_cond(acl_cond)
+            return AccessRule(group_ids=set([group_id]))
 
         elif isinstance(acl_cond, ACLIPCondition):
             subnet = make_ipnetwork_from_rule(acl_cond)
@@ -430,8 +431,8 @@ class SymbolicExprToAccessRuleConverter(object):
 
                     if isinstance(acl_cond, ACLUserCondition):
                         invert_group = check_inversion(invert, invert_group)
-                        user_id = self.get_user_id_from_cond(acl_cond)
-                        group_ids.add(user_id)
+                        group_id = self.get_private_user_group_id_from_cond(acl_cond)
+                        group_ids.add(group_id)
 
                     elif isinstance(acl_cond, ACLIPCondition):
                         invert_subnet = check_inversion(invert, invert_subnet)

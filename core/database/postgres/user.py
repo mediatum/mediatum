@@ -8,6 +8,7 @@ import logging
 
 from sqlalchemy import Unicode, Text, Boolean, Table, DateTime, UniqueConstraint, String
 from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.orm.session import object_session
 from sqlalchemy_utils.types import EmailType
 
 from core.database.postgres import DeclarativeBase, db_metadata
@@ -96,10 +97,12 @@ class User(DeclarativeBase, TimeStamp, UserMixin):
     can_edit_shoppingbag = C(Boolean, server_default="false")
     can_change_password = C(Boolean, server_default="false")
 
-    # relationships
-    groups = rel(UserGroup, secondary=user_to_usergroup, backref='users')
-
     home_dir_id = integer_fk("node.id")
+    private_group_id = integer_fk(UserGroup.id)
+
+    # relationships
+    private_group = rel(UserGroup)
+    groups = rel(UserGroup, secondary=user_to_usergroup, backref='users')
     home_dir = rel("Directory", foreign_keys=[home_dir_id])
 
     authenticator_info = rel(AuthenticatorInfo)
@@ -107,7 +110,7 @@ class User(DeclarativeBase, TimeStamp, UserMixin):
 
     @property
     def group_ids(self):
-        return [g.id for g in self.groups] + [self.id]
+        return [g.id for g in self.groups]
 
     @property
     def is_editor(self):

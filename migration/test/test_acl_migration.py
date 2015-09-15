@@ -167,10 +167,12 @@ def test_convert_node_symbolic_rules_to_access_rules(import_node_with_ruleset, u
     assert len(access_rules) == 2
     # check inversion flag
     assert access_rules[0][1] == True
+    # the second rule is the user-based rule
     assert access_rules[1][1] == False
     # check rule contents
-    assert_access_rule(access_rules[0][0], group_ids=set([g.id for g in groups]))
-    assert_access_rule(access_rules[1][0], group_ids=set([u.id for u in users]))
+    # last group is the private user group
+    assert_access_rule(access_rules[0][0], group_ids=set([g.id for g in groups][:-1]))
+    assert_access_rule(access_rules[1][0], group_ids=set([groups[-1].id]))
 
 
 def test_save_node_to_rule_mappings(two_access_rules, some_numbered_nodes, session):

@@ -60,12 +60,13 @@ def import_node_with_ruleset(session):
 
 
 @fixture
-def users_and_groups_for_ruleset(session):
+def users_and_groups_for_ruleset(session, internal_authenticator_info):
     from core import User, UserGroup
-    users = [User(login_name="darfdas")]
+
+    users = [User(login_name="darfdas", authenticator_info=internal_authenticator_info)]
     session.add_all(users)
 
-    groups = [UserGroup(name="test_readers"), UserGroup(name="test_readers2")]
+    groups = [UserGroup(name="test_readers"), UserGroup(name="test_readers2"), UserGroup(name="darfdas")]
     session.add_all(groups)
     return users, groups
 

@@ -51,7 +51,7 @@ class UserGroup(DeclarativeBase, TimeStamp, UserGroupMixin):
     __versioned__ = {}
 
     id = integer_pk()
-    name = C(Unicode, nullable=False)
+    name = C(Unicode, nullable=False, unique=True)
     description = C(Unicode)
     hidden_edit_functions = C(ARRAY(Unicode), server_default="{}")
 
@@ -161,3 +161,5 @@ class User(DeclarativeBase, TimeStamp, UserMixin):
 
     def __repr__(self):
         return u"User<{} '{}'> ({})".format(self.id, self.login_name, object.__repr__(self)).encode("utf8")
+
+    __table_args__ = (UniqueConstraint(login_name, authenticator_id),)

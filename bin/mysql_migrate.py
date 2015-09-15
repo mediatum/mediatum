@@ -98,7 +98,7 @@ def dynusers(s):
     logg.info("finished dynauth user migration")
 
 
-def user_cleanup(s):
+def user_finish(s):
     # orphaned home dirs are moved to node 25 which is created if it doesn't exist.
     s.execute("SELECT mediatum.rename_move_home_dirs(25)")
     s.execute("SELECT mediatum.rename_user_system_nodes()")
@@ -149,16 +149,21 @@ def inherited_permissions(s):
 def cleanup(s):
     s.execute("SELECT mediatum.delete_migrated_nodes()")
 
-def everything(s):
-    pgloader()
+
+def everything_after_pgloader(s):
     prepare_import_migration(s)
     migrate_core(s)
     users(s)
-    user_cleanup(s)
+    dynusers(s)
+    user_finish(s)
     versions(s)
-    dynusers()
     permissions(s)
     inherited_permissions(s)
+
+
+def everything(s):
+    pgloader()
+    everything_after_pgloader(s)
 
 
 actions = OrderedDict([
@@ -167,11 +172,12 @@ actions = OrderedDict([
     ("core", migrate_core),
     ("users", users),
     ("dynusers", dynusers),
-    ("user_cleanup", user_cleanup),
+    ("user_finish", user_finish),
     ("versions", versions),
     ("permissions", permissions),
     ("inherited_permissions", inherited_permissions),
     ("cleanup", cleanup),
+    ("everything_after_pgloader", everything_after_pgloader),
     ("everything", everything)
 ])
 

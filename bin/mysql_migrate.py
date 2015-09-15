@@ -97,6 +97,8 @@ def dynusers(s):
 
 
 def user_cleanup(s):
+    # orphaned home dirs are moved to node 25 which is created if it doesn't exist.
+    s.execute("SELECT mediatum.rename_move_home_dirs(25)")
     s.execute("SELECT mediatum.rename_user_system_nodes()")
 
 

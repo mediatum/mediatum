@@ -123,6 +123,7 @@ def permissions(s):
     s.execute("ALTER TABLE node_to_access_ruleset DISABLE TRIGGER USER")
     check_undefined_nodeclasses(stub_undefined_nodetypes=True)
     acl_migration.migrate_access_entries()
+    acl_migration.set_home_dir_permissions()
     acl_migration.migrate_rules()
     s.commit()
     s.execute("ALTER TABLE node_to_access_rule ENABLE TRIGGER USER")

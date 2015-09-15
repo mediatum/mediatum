@@ -180,6 +180,14 @@ def migrate_rules(ruletypes=["read", "write", "data"]):
         save_node_to_ruleset_mappings(nid_to_rulesets, ruletype)
 
 
+def set_home_dir_permissions():
+    users_with_home_dir = db.query(User).filter(User.home_dir_id != None)
+    for user in users_with_home_dir:
+        rule = AccessRule(group_ids=[user.private_group_id])
+        assocs = [NodeToAccessRule(ruletype=r, rule=rule) for r in (u"read", u"write", u"data")]
+        user.home_dir.access_rule_assocs.extend(assocs)
+
+
 def migrate_access_entries():
     s = db.session
     access = s.execute("select * from mediatum_import.access").fetchall()

@@ -381,6 +381,7 @@ DECLARE
     c record;
     rec node_to_access_rule;
 BEGIN
+
 IF TG_OP = 'INSERT' THEN
     rec = NEW;
 ELSE
@@ -397,12 +398,16 @@ IF rec.ruletype IN ('read', 'data') THEN
 ELSE
     FOR c in SELECT cid FROM noderelation WHERE nid = rec.nid LOOP
         DELETE FROM node_to_access_rule WHERE nid = c.cid AND inherited = true AND ruletype = rec.ruletype;
-        INSERT INTO node_to_access_rule SELECT * from inherited_access_rules_write(c.cid);
+        
+        INSERT INTO node_to_access_rule 
+        SELECT * from inherited_access_rules_write(c.cid) t
+        WHERE NOT EXISTS (SELECT FROM node_to_access_rule WHERE nid=t.nid AND rule_id=t.rule_id AND ruletype='write');
     END LOOP;
 END IF;
 RETURN NULL;
 END;
 $f$;
+
 ----
 -- ruleset functions
 ----

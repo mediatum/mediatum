@@ -37,7 +37,7 @@ def load_node_rules(ruletype):
     stmt = sql.select(["id", expanded_accessrule], from_obj="mediatum_import.node").where(sql.text(
         "{} != ''"
         " AND name NOT LIKE 'Arbeitsverzeichnis (%'"
-        " AND id IN (SELECT id FROM mediatum_import.node)".format(ruletype)))
+        " AND id IN (SELECT id FROM mediatum.node)".format(ruletype)))
 
     node_rules = db.session.execute(stmt)
     res = node_rules.fetchall()

@@ -29,6 +29,7 @@ import logging
 import os.path
 import subprocess
 import sys
+from sqlalchemy_continuum import remove_versioning
 sys.path.append(".")
 
 from core.init import basic_init, check_undefined_nodeclasses
@@ -38,9 +39,6 @@ from bin.manage import vacuum_analyze_tables
 
 basic_init(root_loglevel=logging.WARN)
 import core.database.postgres
-
-# we must ignore user types because sqlalchemy-continuum fails due to mapped class duplication
-check_undefined_nodeclasses(stub_undefined_nodetypes=True, ignore_nodetypes=[u"usergroup", u"user"])
 
 
 core.database.postgres.SLOW_QUERY_SECONDS = 1000
@@ -87,13 +85,6 @@ def migrate_core(s):
     logg.info("finished node + attrs, nodefile and nodemapping migration")
 
 
-def versions(s):
-    from migration import version_migration
-    version_migration.fix_versoning_attributes()
-    version_migration.insert_migrated_version_nodes(version_migration.all_version_nodes())
-    version_migration.finish()
-
-
 def users(s):
     s.execute("SELECT mediatum.migrate_usergroups()")
     s.execute("SELECT mediatum.migrate_internal_users()")
@@ -107,6 +98,18 @@ def dynusers(s):
 
 def user_cleanup(s):
     s.execute("SELECT mediatum.rename_user_system_nodes()")
+
+
+def versions(s):
+    # we really must commit before running version migration or nodes created earlier will be lost
+    s.commit()
+    from migration import version_migration
+    # all node classes must be defined for versioning, stub them if some plugins are missing, for example
+    check_undefined_nodeclasses(stub_undefined_nodetypes=True)
+    version_migration.fix_versoning_attributes()
+    version_migration.insert_migrated_version_nodes(version_migration.all_version_nodes())
+    version_migration.finish()
+    remove_versioning()
 
 
 def permissions(s):

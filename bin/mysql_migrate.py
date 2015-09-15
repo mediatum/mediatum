@@ -111,12 +111,20 @@ def user_cleanup(s):
 
 def permissions(s):
     from migration import acl_migration
+    # running rule insert triggers while inserting the migrated rules would be very slow ;)
+    s.execute("ALTER TABLE node_to_access_rule DISABLE TRIGGER USER")
+    s.execute("ALTER TABLE node_to_access_ruleset DISABLE TRIGGER USER")
+    check_undefined_nodeclasses(stub_undefined_nodetypes=True)
     acl_migration.migrate_access_entries()
     acl_migration.migrate_rules()
+    s.commit()
+    s.execute("ALTER TABLE node_to_access_rule ENABLE TRIGGER USER")
+    s.execute("ALTER TABLE node_to_access_ruleset ENABLE TRIGGER USER")
     logg.info("finished permissions migration")
 
 
 def inherited_permissions(s):
+    # we are using database functions here, so we must commit before continuing
     s.commit()
     vacuum_analyze_tables(s)
     try:

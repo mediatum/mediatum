@@ -290,13 +290,18 @@ editModules = {}
 def getEditModules(force=0):
     if len(editModules) == 0:
         for modpath in core.editmodulepaths:  # paths with edit modules
-            path = os.walk(os.path.join(config.basedir, modpath[1]))
-            for root, dirs, files in path:
+            if os.path.isabs(modpath[1]):
+                mod_dirpath = modpath[1]
+            else:
+                mod_dirpath = os.path.join(config.basedir, modpath[1])
+
+            walk = os.walk(mod_dirpath)
+            for root, dirs, files in walk:
                 for name in [f for f in files if f.endswith(".py") and f != "__init__.py"]:
                     basename = name[:-3]
                     try:
-                        path, module = splitpath(modpath[1])
-                        if modpath[0] == '':
+                        path, module = splitpath(mod_dirpath)
+                        if not modpath[0]:
                             m = __import__("web.edit.modules." + basename)
                             m = eval("m.edit.modules." + basename)
                         else:

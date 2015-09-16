@@ -60,13 +60,23 @@ class m_hlist(Metatype):
             nodes.extend(filter(lambda c: c.get(req.args.get(u'attrfilter')) != u"", node.getContainerChildren()))
             return nodes
 
-        # try direct conteiner children
-        for child in filter(lambda c: c.get(req.args.get(u'attrfilter')) != u"", tree.getNode(req.args.get(u'id')).getChildren()):
+        # try direct container children
+        childlist = []
+        for _id in req.args.get('id').split('|'):
+            try:
+                childlist.extend(filter(lambda c: c.get(req.args.get(u'attrfilter')) != u"", tree.getNode(_id).getChildren()))
+            except tree.NoSuchNodeError:
+                pass
+        for child in childlist:
             children[child.id] = child.getName()
         # if no direct children test all container children
         if len(children) == 0:
-            for child in getAllContainerChildren(tree.getNode(req.args.get(u'id'))):
-                children[child.id] = child.getName()
+            for _id in req.args.get('id').split('|'):
+                try:
+                    for child in getAllContainerChildren(tree.getNode(_id)):
+                        children[child.id] = child.getName()
+                except tree.NoSuchNodeError:
+                    pass
 
         req.write(json.dumps(children))
         return httpstatus.HTTP_OK

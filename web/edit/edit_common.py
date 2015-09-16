@@ -22,7 +22,7 @@ import logging
 from core import Node, db
 from core.systemtypes import Root
 from core.translation import t, lang
-from core.users import user_from_session
+from core.transition import current_user
 from contenttypes import Container
 from utils.fileutils import importFile
 from utils.utils import EncryptionException, dec_entry_log
@@ -99,15 +99,14 @@ class EditorNodeList:
 @dec_entry_log
 def showdir(req, node, publishwarn="auto", markunpublished=False, sortfield=None):
     if publishwarn == "auto":
-        user = user_from_session(req.session)
-        homedirs = user.home_dir.all_children_by_query(q(Container))
+        homedirs = current_user.home_dir.all_children_by_query(q(Container))
         publishwarn = node in homedirs
     nodes = node.content_children # XXX: ?? correct
     if sortfield is None:
         sortfield = node.get("sortfield")
         if sortfield:
             nodes = nodes.sort_by_fields(sortfield)
-#     nodes = [n for n in nodes if not n.type == 'shoppingbag'] # XXX: ?? 
+#     nodes = [n for n in nodes if not n.type == 'shoppingbag'] # XXX: ??
     return shownodelist(req, nodes, publishwarn=publishwarn, markunpublished=markunpublished, dir=node)
 
 
@@ -130,7 +129,7 @@ def shownodelist(req, nodes, publishwarn=True, markunpublished=False, dir=None):
     script_array = "allobjects = new Array();\n"
     nodelist = []
 
-    user = user_from_session(req.session)
+    user = current_user
 
     for child in nodes:
         from contenttypes import Content
@@ -164,7 +163,6 @@ def shownodelist(req, nodes, publishwarn=True, markunpublished=False, dir=None):
 
     unpublishedlink = None
     if publishwarn:
-        user = user_from_session(req.session)
         if dir:
             uploaddir = dir
         else:
@@ -229,7 +227,7 @@ def writenode(req, node, unfoldedids, f, indent, key, ret=""):
 @dec_entry_log
 def writetree(req, node, f, key="", openednodes=None, sessionkey="unfoldedids", omitroot=0):
     ret = ""
-    
+
     try:
         unfoldedids = req.session[sessionkey]
         len(unfoldedids)
@@ -339,7 +337,7 @@ def upload_for_html(req):
         del req.params["file"]
         if hasattr(file, "filesize") and file.filesize > 0:
             try:
-                logg.info("%s upload (%s)", user.login_name, file.filename, file.tempname, user.login_name)
+                logg.info("file %s (temp %s) uploaded by user %s (%s)", file.filename, file.tempname, user.login_name, user.id)
                 nodefile = importFile(file.filename, file.tempname)
                 node.files.append(nodefile)
                 db.session.commit()

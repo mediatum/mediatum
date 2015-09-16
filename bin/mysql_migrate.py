@@ -38,7 +38,7 @@ from core.database.postgres.connector import read_and_prepare_sql
 from collections import OrderedDict
 from bin.manage import vacuum_analyze_tables
 
-basic_init(root_loglevel=logging.INFO)
+basic_init()
 import core.database.postgres
 
 
@@ -192,13 +192,15 @@ if __name__ == "__main__":
         pgloader()
         requested_actions.remove("pgloader")
 
-    try:
-        disable_triggers()
 
-        for action in requested_actions:
-            actions[action](s)
+    if requested_actions:
+        try:
+            disable_triggers()
+
+            for action in requested_actions:
+                actions[action](s)
+                s.commit()
+        finally:
+            s.rollback()
+            enable_triggers()
             s.commit()
-    finally:
-        s.rollback()
-        enable_triggers()
-        s.commit()

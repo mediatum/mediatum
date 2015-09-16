@@ -106,7 +106,6 @@ def insert_migrated_version_nodes(all_versioned_nodes):
         next_id = node.get("system.next_id")
         version_nodes = []
         while node and next_id:
-            print node.id
             version_nodes.append(node)
             last_node_id = node.id
             node = q(Node).get(next_id)

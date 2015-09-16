@@ -60,7 +60,7 @@ PGLOADER_BINARY = "pgloader"
 DOCKER_PGLOADER_IMAGE = "dpausp/pgloader"
 
 
-def pgloader(s=None):
+def pgloader():
     if args.docker:
         docker_call = ["docker", "run", "--rm", "-u", "{}:{}".format(os.getuid(), os.getgid()),
                        "-v", "{}:/tmp".format(os.path.abspath(MIGRATION_DIR))]
@@ -149,7 +149,7 @@ def cleanup(s):
     s.execute("SELECT mediatum.delete_migrated_nodes()")
 
 
-def everything_after_pgloader(s):
+def schema_migration(s):
     prepare_import_migration(s)
     migrate_core(s)
     users(s)
@@ -158,11 +158,6 @@ def everything_after_pgloader(s):
     versions(s)
     permissions(s)
     inherited_permissions(s)
-
-
-def everything(s):
-    pgloader()
-    everything_after_pgloader(s)
 
 
 actions = OrderedDict([
@@ -176,13 +171,11 @@ actions = OrderedDict([
     ("permissions", permissions),
     ("inherited_permissions", inherited_permissions),
     ("cleanup", cleanup),
-    ("everything_after_pgloader", everything_after_pgloader),
-    ("everything", everything)
+    ("schema_migration", schema_migration),
 ])
 
 if __name__ == "__main__":
     parser = configargparse.ArgumentParser("mediaTUM mysql_migrate.py")
-    parser.add_argument("--full-transaction", default=False, action="store_true")
     parser.add_argument("--docker", default=False, action="store_true", help="use the prebuilt docker image for pgloader")
     parser.add_argument("--link", default=[], action="append", help="docker link to another container like: --link=postgres:postgres")
     parser.add_argument("action", nargs="*", choices=actions.keys())
@@ -192,17 +185,20 @@ if __name__ == "__main__":
     print()
 
     args = parser.parse_args()
+    requested_actions = args.action
 
+    # pgloader can't be run in the action loop and must be run first
+    if "pgloader" in requested_actions:
+        pgloader()
+        requested_actions.remove("pgloader")
 
     try:
         disable_triggers()
 
-        for action in args.action:
+        for action in requested_actions:
             actions[action](s)
-            if not args.full_transaction:
-                logg.info("commit after action %s", action)
-                s.commit()
+            s.commit()
     finally:
+        s.rollback()
         enable_triggers()
-
-    s.commit()
+        s.commit()

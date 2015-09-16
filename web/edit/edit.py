@@ -24,14 +24,13 @@ import json
 import core.config as config
 import core.help as help
 import core.translation
-from core import Node, db
+from core import Node, db, User
 
 from contenttypes import Container, Collections, Data, Home
 
 from core.translation import lang, t
 from edit_common import *
-from core.transition import httpstatus
-from core.users import user_from_session
+from core.transition import httpstatus, current_user
 
 from utils.utils import funcname, get_user_id, dec_entry_log, Menu, splitpath, parseMenuString, isDirectory
 
@@ -46,7 +45,9 @@ def getTreeLabel(node, lang):
     if special_dir_type is None:
         label = node.getLabel(lang=lang)
     elif special_dir_type == "home":
-        label = t(lang, 'user_home') % node.name
+        label = t(lang, 'user_home')
+        if current_user.is_admin:
+            label += " (" + node.name + ")"
     else:
         label = t(lang, 'user_' + special_dir_type)
 
@@ -61,7 +62,7 @@ def getEditorIconPath(node, req=None):
     retrieve icon path for editor tree relative to img/
     '''
     if req:
-        user = user_from_session(req.session)
+        user = current_user
 
         if node is user.home_dir:
             return 'webtree/homeicon.gif'
@@ -117,7 +118,7 @@ def frameset(req):
     id = req.params.get("id", q(Collections).one().id)
     tab = req.params.get("tab", None)
     language = lang(req)
-    user = user_from_session(req.session)
+    user = current_user
 
     if not user.is_editor:
         req.writeTAL("web/edit/edit.html", {}, macro="error")
@@ -146,10 +147,8 @@ def frameset(req):
     path = ['%s' % p.id for p in nodepath]
     containerpath = [('%s' % p.id) for p in nodepath if isinstance(p, Container)]
 
-    user = user_from_session(req.session)
-
     spc = [Menu("sub_header_frontend", "../", target="_parent")]
-    if user.isAdmin():
+    if user.is_admin:
         spc.append(
             Menu("sub_header_administration", "../admin", target="_parent"))
 
@@ -244,7 +243,7 @@ def filterMenu(menuitems, user):
 
 
 def handletabs(req, ids, tabs):
-    user = user_from_session(req.session)
+    user = current_user
     language = lang(req)
 
     n = q(Data).get(ids[0])
@@ -254,11 +253,11 @@ def handletabs(req, ids, tabs):
     menu = filterMenu(getEditMenuString(n.type), user)
 
     spc = [Menu("sub_header_frontend", "../", target="_parent")]
-    if user.isAdmin():
+    if user.is_admin:
         spc.append(
             Menu("sub_header_administration", "../admin", target="_parent"))
 
-    if user.isWorkflowEditor():
+    if user.is_workflow_editor:
         spc.append(Menu("sub_header_workflow", "../publish", target="_parent"))
 
     spc.append(Menu("sub_header_logout", "../logout", target="_parent"))
@@ -364,7 +363,7 @@ def nodeIsChildOfNode(node1, node2):
 @dec_entry_log
 def edit_tree(req):
     language = lang(req)
-    user = user_from_session(req.session)
+    user = current_user
     home_dir = user.home_dir
     match_result = ''
     match_error = False
@@ -377,7 +376,9 @@ def edit_tree(req):
         else:
             homenodefilter = req.params.get('homenodefilter', '')
             if homenodefilter:
-                nodes = q(Home).one().container_children.sort_by_orderpos().filter(Home.name.ilike('%(%{}%)%'.format(homenodefilter))).all()
+                pattern = "%" + homenodefilter.strip() + "%"
+                nodes = (q(Node).join(User, User.home_dir_id == Node.id)
+                         .filter(User.login_name.ilike(pattern) | User.display_name.ilike(pattern)).all())
                 if len(nodes) > 1:
                     match_result = u'#={}'.format(len(nodes))
                 else:
@@ -458,7 +459,7 @@ def getEditMenuString(ntype, default=0):
 def action(req):
     global editModules
     language = lang(req)
-    user = user_from_session(req.session)
+    user = current_user
 
     trashdir = user.trash_dir
     uploaddir = user.upload_dir
@@ -683,7 +684,7 @@ def showPaging(req, tab, ids):
 @dec_entry_log
 def content(req):
 
-    user = user_from_session(req.session)
+    user = current_user
 
     if not user.is_editor:
         return req.writeTAL("web/edit/edit.html", {}, macro="error")
@@ -863,16 +864,15 @@ def content(req):
             v["ids"] = req.params.get("id", "").split(",")
         v["tab"] = current
         v["operations"] = req.getTAL("web/edit/edit_common.html", {'iscontainer': node.isContainer()}, macro="show_operations")
-        user = user_from_session(req.session)
         v['user'] = user
         v['language'] = lang(req)
         v['t'] = t
 
         v['spc'] = [Menu("sub_header_frontend", "../", target="_parent")]
-        if user.isAdmin():
+        if user.is_admin:
             v['spc'].append(Menu("sub_header_administration", "../admin", target="_parent"))
 
-        if user.isWorkflowEditor():
+        if user.is_workflow_editor:
             v['spc'].append(Menu("sub_header_workflow", "../publish", target="_parent"))
 
         v['spc'].append(Menu("sub_header_logout", "../logout", target="_parent"))

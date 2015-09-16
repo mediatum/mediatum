@@ -268,6 +268,9 @@ msgstr "Inconsistent data"
 msgid "user_trash"
 msgstr "Trashbox"
 
+msgid "user_home"
+msgstr "Home Directory"
+
 msgid "editor_overwrite"
 msgstr "overwrite"
 

@@ -278,7 +278,7 @@ msgid "user_trash"
 msgstr "Papierkorb"
 
 msgid "user_home"
-msgstr "Arbeitsverzeichnis (%s)"
+msgstr "Arbeitsverzeichnis"
 
 msgid "editor_overwrite"
 msgstr "überschreiben"

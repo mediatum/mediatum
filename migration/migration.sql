@@ -1,3 +1,20 @@
+CREATE OR REPLACE FUNCTION set_subnode_attribute()
+   RETURNS void
+   LANGUAGE plpgsql
+    SET search_path TO :search_path
+    AS
+    $f$
+BEGIN
+    UPDATE node SET subnode = true
+    WHERE id IN (SELECT n1.id
+                 FROM node n1 JOIN nodemapping nm1 ON cid=n1.id JOIN node n2 ON nid=n2.id
+                 -- XXX: select content types from a table
+                 WHERE n2.type IN ('dissertation', 'audio', 'image', 'flash', 'content', 'other', 'video', 'imagestream', 'document'));
+
+END;
+$f$;
+
+
 CREATE OR REPLACE FUNCTION mediatum.migrate_core() RETURNS void
     LANGUAGE plpgsql
     SET search_path = mediatum
@@ -73,6 +90,10 @@ BEGIN
     INSERT INTO mediatum.noderelation SELECT DISTINCT * FROM mediatum.transitive_closure_without_direct_connections();
 
     RAISE NOTICE 'transitive node connections finished';
+
+    PERFORM set_subnode_attribute();
+
+    RAISE NOTICE 'subnode attribute set';
 END;
 $f$;
 

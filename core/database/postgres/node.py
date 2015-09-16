@@ -9,7 +9,7 @@ from json import dumps
 from warnings import warn
 
 import pyaml
-from sqlalchemy import (Table, Sequence, Integer, Unicode, Text, sql, text, select, func)
+from sqlalchemy import (Table, Sequence, Integer, Unicode, Text, Boolean, sql, text, select, func)
 from sqlalchemy.orm import deferred, object_session
 from sqlalchemy.orm.dynamic import AppenderQuery, AppenderMixin
 from sqlalchemy.dialects.postgresql import JSONB
@@ -154,7 +154,8 @@ class Node(DeclarativeBase, NodeMixin):
     __metaclass__ = BaseNodeMeta
     __tablename__ = "node"
     __versioned__ = {
-        "base_classes": (NodeVersionMixin, MtVersionBase, DeclarativeBase)
+        "base_classes": (NodeVersionMixin, MtVersionBase, DeclarativeBase),
+        "exclude": ["subnode"]
     }
 
     id = C(Integer, Sequence('node_id_seq', schema=db_metadata.schema, start=100), primary_key=True)
@@ -163,6 +164,9 @@ class Node(DeclarativeBase, NodeMixin):
     name = C(Unicode, index=True)
     orderpos = C(Integer, default=1, index=True)
     fulltext = deferred(C(Text))
+    # indicate that this node is a subnode of a content type node
+    # subnode exists just for performance reasons and is updated by the database
+    subnode = C(Boolean, server_default="false")
 
     attrs = deferred(C(MutableDict.as_mutable(JSONB)))
 
@@ -201,10 +205,13 @@ class Node(DeclarativeBase, NodeMixin):
             self.orderpos = orderpos
 
     @property
-    def content_children_for_all_subcontainers(self):
-        """Collects all Content nodes in all subcontainers of this node.
+    def slow_content_children_for_all_subcontainers(self):
+        """
+        !!! very slow, use content_children_for_all_subcontainers instead!!!
+        Collects all Content nodes in all subcontainers of this node.
         This excludes content nodes that are children of other content nodes.
         """
+        warn("very slow, use content_children_for_all_subcontainers instead", DeprecationWarning)
         from contenttypes.data import Content
         from core import db
         sq = _subquery_subtree_container(self)
@@ -214,6 +221,16 @@ class Node(DeclarativeBase, NodeMixin):
             filter(t_noderelation.c.distance == 1)
 
         return query
+
+    @property
+    def content_children_for_all_subcontainers(self):
+        """Collects all Content nodes in all subcontainers of this node.
+        This excludes content nodes that are children of other content nodes.
+        """
+        from contenttypes.data import Content
+        from core import db
+        sq = _subquery_subtree(self)
+        return object_session(self).query(Content).filter(Node.id.in_(sq)).filter_by(subnode=False)
 
     def all_children_by_query(self, query):
         sq = _subquery_subtree(self)

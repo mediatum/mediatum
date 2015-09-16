@@ -102,6 +102,8 @@ def user_finish(s):
     # orphaned home dirs are moved to node 25 which is created if it doesn't exist.
     s.execute("SELECT mediatum.rename_move_home_dirs(25)")
     s.execute("SELECT mediatum.rename_user_system_nodes()")
+    from migration import user_migration
+    user_migration.migrate_special_dirs()
 
 
 def versions(s):

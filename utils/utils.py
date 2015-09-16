@@ -406,10 +406,9 @@ def getCollection(node):
 
 
 def isDirectory(node):
-    if node.type == "directory" or node.isContainer():
-        return 1
-    else:
-        return 0
+    warn("use isinstance(node, Directory)", DeprecationWarning)
+    from contenttypes import Directory
+    return int(isinstance(node, Directory))
 
 
 def getDirectory(node):

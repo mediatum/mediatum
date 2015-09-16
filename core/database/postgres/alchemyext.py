@@ -8,6 +8,7 @@
     :copyright: (c) 2014 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
+from functools import partial
 import logging
 from warnings import warn
 
@@ -213,3 +214,20 @@ def truncate_tables(table_fullnames=None):
     s.execute('TRUNCATE {} RESTART IDENTITY;'.format(table_fullname_str))
     logg.info("truncated %s", table_fullname_str)
 
+
+def toggle_triggers(action, table_fullnames=None):
+    from core import db
+    s = db.session
+
+    if not table_fullnames:
+        table_fullnames = [t.fullname for t in reverse_sorted_tables()]
+        logg.warn("%s user triggers for all tables", action)
+    else:
+        logg.warn("%s user triggers for tables: %s", action, table_fullnames)
+
+    for fullname in table_fullnames:
+        s.execute('ALTER TABLE {} {} TRIGGER USER;'.format(fullname, action.upper()))
+
+
+enable_triggers = partial(toggle_triggers, "enable")
+disable_triggers = partial(toggle_triggers, "disable")

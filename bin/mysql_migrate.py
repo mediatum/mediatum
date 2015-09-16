@@ -30,6 +30,7 @@ import os.path
 import subprocess
 import sys
 from sqlalchemy_continuum import remove_versioning
+from core.database.postgres.alchemyext import disable_triggers, enable_triggers
 sys.path.append(".")
 
 from core.init import basic_init, check_undefined_nodeclasses
@@ -120,16 +121,11 @@ def versions(s):
 
 def permissions(s):
     from migration import acl_migration
-    # running rule insert triggers while inserting the migrated rules would be very slow ;)
-    s.execute("ALTER TABLE node_to_access_rule DISABLE TRIGGER USER")
-    s.execute("ALTER TABLE node_to_access_ruleset DISABLE TRIGGER USER")
     check_undefined_nodeclasses(stub_undefined_nodetypes=True)
     acl_migration.migrate_access_entries()
     acl_migration.set_home_dir_permissions()
     acl_migration.migrate_rules()
     s.commit()
-    s.execute("ALTER TABLE node_to_access_rule ENABLE TRIGGER USER")
-    s.execute("ALTER TABLE node_to_access_ruleset ENABLE TRIGGER USER")
     logg.info("finished permissions migration")
 
 
@@ -197,10 +193,16 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    for action in args.action:
-        actions[action](s)
-        if not args.full_transaction:
-            logg.info("commit after action %s", action)
-            s.commit()
+
+    try:
+        disable_triggers()
+
+        for action in args.action:
+            actions[action](s)
+            if not args.full_transaction:
+                logg.info("commit after action %s", action)
+                s.commit()
+    finally:
+        enable_triggers()
 
     s.commit()

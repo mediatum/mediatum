@@ -38,7 +38,7 @@ from core.database.postgres.connector import read_and_prepare_sql
 from collections import OrderedDict
 from bin.manage import vacuum_analyze_tables
 
-basic_init(root_loglevel=logging.WARN)
+basic_init(root_loglevel=logging.INFO)
 import core.database.postgres
 
 
@@ -100,10 +100,10 @@ def dynusers(s):
 
 
 def user_finish(s):
-    # orphaned home dirs are moved to node 25 which is created if it doesn't exist.
-    s.execute("SELECT mediatum.rename_move_home_dirs(25)")
     s.execute("SELECT mediatum.rename_user_system_nodes()")
+    # orphaned home dirs are moved to node 1276513
     from migration import user_migration
+    user_migration.migrate_home_dirs(1276513)
     user_migration.migrate_special_dirs()
 
 

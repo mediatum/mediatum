@@ -42,7 +42,7 @@ BEGIN
                  FROM groups
                  RETURNING usergroup_id, user_id)
 
-    UPDATE mediatum.user 
+    UPDATE mediatum.user
     SET private_group_id = m.usergroup_id
     FROM mappings m
     WHERE m.user_id = id;
@@ -205,35 +205,6 @@ BEGIN
 
     GET DIAGNOSTICS rows = ROW_COUNT;
     RAISE NOTICE '% user-group mappings for dynamic users', rows;
-
-END;
-$f$;
-
-
--- Moves orphaned home dirs (not associated with an user) to a special node with id `target_id`.
--- The remaining home dirs are renamed: Arbeitsverzeichnis(<name>) -> <name>.
-CREATE OR REPLACE FUNCTION rename_move_home_dirs(target_id integer) RETURNS void
-    LANGUAGE plpgsql
-    SET search_path TO :search_path
-    AS
-    $f$
-DECLARE
-    rows integer;
-BEGIN
-    UPDATE node
-    SET name = regexp_replace(node.name, 'Arbeitsverzeichnis \((.+)\)', '\1')
-    WHERE id IN (SELECT home_dir_id FROM mediatum.user WHERE home_dir_id IS NOT NULL);
-
-    IF NOT EXISTS (SELECT FROM node WHERE id=target_id) THEN
-        INSERT INTO node (id, name, type, schema, attrs) VALUES(target_id, 'Verwaiste Home-Verzeichnisse', 'directory', 'directory', '{}');
-        INSERT INTO nodemapping VALUES((SELECT home_dir_id FROM mediatum.user WHERE login_name = 'Administrator'), target_id);
-    END IF;
-
-    WITH orphaned_home_dir_ids AS (DELETE FROM nodemapping WHERE cid IN (SELECT id FROM node WHERE name LIKE 'Arbeitsverzeichnis (%') RETURNING cid as id)
-    INSERT INTO nodemapping SELECT target_id, id FROM orphaned_home_dir_ids;
-
-    GET DIAGNOSTICS rows = ROW_COUNT;
-    RAISE NOTICE '% orphaned user dirs moved to orphan dir', rows;
 
 END;
 $f$;

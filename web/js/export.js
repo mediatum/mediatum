@@ -55,7 +55,7 @@ function mediatum_load(id, limit, sort, query, format, language, type, detailof)
     lastScript.insertAdjacentHTML("beforebegin", '<div class="mediatum" id="mediatum_'+module_count+'"><p class="loading">'+labels[language][0]+'</p></div>');
 
     load_script({ 
-        src: 'http://mediatum.ub.tum.de/js/jquery.min.js',
+        src: '//mediatum.ub.tum.de/js/jquery.min.js',
         position: module_count,
         callback: function(pos) {
             

@@ -34,9 +34,10 @@ from utils.utils import u, modify_tex, normalize_utf8
 import utils.utils
 import utils.mail as mail
 import logging
+import core.config
 
-#Configurable, ;-separated
-MAIL_RECIPIENTS = 'andrew.darrohn@tum.de;ga39lit@mytum.de'
+# Configurable, ;-separated
+MAIL_RECIPIENTS = core.config.get("email.admin")
 
 SearchField = namedtuple('SearchField', 'position name')
 searcher = tree.searcher

@@ -276,11 +276,8 @@ class NavTreeEntry:
             if isinstance(self.node, Directory):
                 if not hasattr(self.node, "ccount") or self.node.ccount == -1:
 #                     self.node.ccount = self.node.children.count()
-                    if self.node.children.first():
-                        self.node.ccount = 1
-                    else: 
-                        self.node.ccount = 0
-                        
+                    self.node.ccount = self.node.content_children_for_all_subcontainers.distinct().count()
+
                 self.count = self.node.ccount
 
                 if self.hide_empty and self.count == 0:

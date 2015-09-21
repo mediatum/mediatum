@@ -187,6 +187,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
     requested_actions = args.action
 
+    s.execute("SET search_path to mediatum, public")
+    s.commit()
+
     # pgloader can't be run in the action loop and must be run first
     if "pgloader" in requested_actions:
         pgloader()

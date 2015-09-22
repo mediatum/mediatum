@@ -19,7 +19,7 @@
 """
 
 from core import Node
-from core.xmlnode import getNodeXML, readNodeXML
+from core.xmlnode import add_node_to_xmldoc, readNodeXML
 from core.transition.postgres import check_type_arg
 
 from core import db

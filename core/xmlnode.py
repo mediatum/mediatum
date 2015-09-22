@@ -18,113 +18,94 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from core import Node
-#import xml.parsers.expat as expat
-import StringIO
+import io
 import random
 import logging
 import codecs
 
-from utils.utils import esc, u, u2
-from core.acl import AccessData
-from core import File
-from core import db
+from lxml import etree
+from core import File, db
 from core.systemtypes import Mappings, Root
-
-q = db.query
+from utils.compat import iteritems
 
 EXCLUDE_WORKFLOW_NEWNODES = True
 
-
+q = db.query
 logg = logging.getLogger(__name__)
 
-
-def getInformation():
-    return {"version": "1.1a", "system": 1}
+EXPORTVERSION = u"1.1a"
 
 
-def writexml(node, fi, indent=None, written=None, children=True, children_access=None,
-             exclude_filetypes=[], exclude_children_types=[], attribute_name_filter=None):
-    if written is None:
-        written = {}
-    if indent is None:
-        indent = 0
-    # there are a lot of nodes without name ...
-    nodename_copy = node.name
-    if nodename_copy is None:
-        nodename_copy = ""
-    #fi.write('%s<node name="%s" id="%s" ' % ((" " * indent), esc(nodename_copy), ustr(node.id)))
-    # non-utf8 encoded umlauts etc. may cause invalid xml
-    fi.write('%s<node name="%s" id="%s" ' % ((" " * indent), u2(esc(nodename_copy)), ustr(node.id)))
-    if node.type is None:
-        node.type = "node"
-    fi.write('type="%s" ' % node.type)
-    # TODO: serialize access rights
-    fi.write(">\n")
+def create_xml_nodelist(rootname, roottype, original_nodeid):
+    xmlnodelist = etree.Element("nodelist")
+    xmlnodelist.set("exportversion", EXPORTVERSION)
+    xmlnodelist.set("rootname", rootname)
+    xmlnodelist.set("roottype", roottype)
+    xmlnodelist.set("original_nodeid", unicode(original_nodeid))
+    return xmlnodelist
 
-    indent += 4
 
-    db.session.commit()
+def add_file_to_xmlnode(file, xmlnode):
+    xmlfile = etree.SubElement(xmlnode, "file")
+    xmlfile.set("filename", file.base_name)
+    xmlfile.set("mime-type", file.mimetype)
+    xmlfile.set("type", file.filetype)
 
-    for name, value in node.attrs.items():
-        u_esc_name = u(esc(name))
-        if attribute_name_filter and not attribute_name_filter(u_esc_name):
+
+def add_child_to_xmlnode(child, xmlnode):
+    xmlchild = etree.SubElement(xmlnode, "child")
+    xmlchild.set("id", unicode(child.id))
+    xmlchild.set("type", child.type + "/" + child.schema)
+    xmlchild.set("datatype", child.type)
+    xmlchild.set("schema", child.schema)
+
+
+def add_node_to_xmldoc(
+        node,
+        xmlroot,
+        written=set(),
+        children=True,
+        exclude_filetypes=[],
+        exclude_childtypes=[],
+        attribute_name_filter=None):
+
+    from schema.schema import Mask
+    from schema.mapping import Mapping
+
+    written.add(node.id)
+
+    xmlnode = etree.SubElement(xmlroot, "node")
+    xmlnode.set("name", node.name)
+    xmlnode.set("id", unicode(node.id))
+    xmlnode.set("type", node.type + "/" + node.schema)
+    xmlnode.set("datatype", node.type)
+    xmlnode.set("schema", node.schema)
+
+    # TODO: no access rights at the moment
+
+    for name, value in iteritems(node.attrs):
+        if attribute_name_filter and not attribute_name_filter(name):
             continue
-        fi.write('%s<attribute name="%s"><![CDATA[%s]]></attribute>\n' % ((" " * indent), u_esc_name, u2(value)))
+        xmlattr = etree.SubElement(xmlnode, "attribute")
+        xmlattr.set("name", name)
+        xmlattr.text = etree.CDATA(unicode(value))
 
-    for file in node.files:
-        if file.type == "metadata" or file.type in exclude_filetypes:
-            continue
-        mimetype = file.mimetype
-        if mimetype is None:
-            mimetype = "application/x-download"
-        fi.write('%s<file filename="%s" mime-type="%s" type="%s"/>\n' %
-                 ((" " * indent), esc(file.getName()), mimetype, (file.type is not None and file.type or "image")))
+    for file in node.files.filter(File.filetype != u"metadata").filter(~File.filetype.in_(exclude_filetypes)):
+        add_file_to_xmlnode(file, xmlnode)
+
     if children:
-        for c in node.children.sort_by_orderpos():
-            if (not children_access) or (children_access and children_access.hasAccess(c, 'read')):
-                if c.type not in exclude_children_types:
-                    fi.write('%s<child id="%s" type="%s"/>\n' % ((" " * indent), ustr(c.id), c.type))
+        for child in node.children.filter(~Node.type.in_(exclude_childtypes)).order_by("orderpos"):
+            add_child_to_xmlnode(child, xmlnode)
 
-    indent -= 4
-    fi.write("%s</node>\n" % (" " * indent))
-    if(children):
-        for c in node.children.sort_by_orderpos():
-            if (not children_access) or (children_access and children_access.hasAccess(c, 'read')):
-                if c.type not in exclude_children_types:
-                    if c.id not in written:
-                        written[c.id] = None
-                        writexml(c, fi, indent=indent,
-                                   written=written,
-                                   children=children,
-                                   children_access=children_access,
-                                   exclude_filetypes=exclude_filetypes,
-                                   exclude_children_types=exclude_children_types,
-                                   attribute_name_filter=attribute_name_filter
-                                   )
+            if child.id not in written:
+                add_node_to_xmldoc(child, xmlroot, written, children, exclude_filetypes, exclude_childtypes, attribute_name_filter)
 
-    if node.type in ["mask"]:
-        try:
-            exportmapping_id = node.get("exportmapping").strip()
-            if exportmapping_id and exportmapping_id not in written:
-                try:
-                    exportmapping = q(Node).get(exportmapping_id)
-                    written[exportmapping_id] = None
-                    writexml(exportmapping, fi, indent=indent,
-                                           written=written,
-                                           children=children,
-                                           children_access=children_access,
-                                           exclude_filetypes=exclude_filetypes,
-                                           exclude_children_types=exclude_children_types,
-                                           attribute_name_filter=attribute_name_filter
-                                           )
-                except:
-                    logg.exception("ERROR: node xml export error node.id='%s', node.name='%s', node.type='%s', exportmapping:'%s'",
-                        node.id, node.name, node.type, exportmapping_id)
-            else:
-                pass
-        except:
-            logg.exception("ERROR: node xml export error node.id='%s', node.name='%s', node.type='%s', exportmapping:'%s'",
-                           node.id, node.name, node.type, exportmapping_id)
+    if isinstance(node, Mask):
+        exportmapping_id = node.get(u"exportmapping").strip()
+        if exportmapping_id and exportmapping_id not in written:
+            mapping = q(Mapping).get(int(exportmapping_id))
+            written.add(mapping.id)
+            add_node_to_xmldoc(mapping, xmlroot, written, children, exclude_filetypes, exclude_childtypes, attribute_name_filter)
 
 
 class _StringWriter:
@@ -200,7 +181,7 @@ class _NodeLoader:
             if self.verbose and node.tmpchilds:
                 added = [(cid, d[cid].type, d[cid].name) for cid in d.keys()]
                 logg.info("added %d children to node id='%s', type='%s', name='%s': %s",
-                    len(node.tmpchilds), node.id, node.type, node.name, added)
+                          len(node.tmpchilds), node.id, node.type, node.name, added)
 
         for node in self.nodes:
             if node.type == "maskitem":
@@ -211,7 +192,7 @@ class _NodeLoader:
                     db.session.commit()
                     if self.verbose:
                         logg.info("adjusting node attribute for maskitem '%s', name='attribute', value: old='%s' -> new='%s'",
-                            node.id, attr, attr_new)
+                                  node.id, attr, attr_new)
                 mappingfield = node.get("mappingfield")
                 if mappingfield and mappingfield in self.id2node:
                     mappingfield_new = self.id2node[mappingfield].id
@@ -219,7 +200,7 @@ class _NodeLoader:
                     db.session.commit()
                     if self.verbose:
                         logg.info("adjusting node attribute for maskitem '%s', name='mappingfield', value old='%s' -> new='%s'",
-                            node.id, mappingfield, mappingfield_new)
+                                  node.id, mappingfield, mappingfield_new)
             elif node.type == "mask":
                 exportmapping = node.get("exportmapping")
                 if exportmapping and exportmapping in self.id2node:
@@ -228,7 +209,7 @@ class _NodeLoader:
                     db.session.commit()
                     if self.verbose:
                         logg.info("adjusting node attribute for mask '%s',  name='exportmapping':, value old='%s' -> new='%s'",
-                            node.id, exportmapping, exportmapping_new)
+                                  node.id, exportmapping, exportmapping_new)
 
         logg.info("xml import done")
 
@@ -337,11 +318,6 @@ class _NodeLoader:
         db.session.commit()
 
 
-def init():
-    pass
-#     tree.registerNodeFunction("writexml", writexml)
-
-
 def parseNodeXML(s):
     return _NodeLoader(StringIO.StringIO(s)).root
 
@@ -375,10 +351,4 @@ def getNodeListXMLForUser(node, readuser=None, exclude_filetypes=[], attribute_n
     wr.write('<nodelist exportversion="%s">\n' % getInformation()["version"])
     writexml(node, wr, children_access=children_access, exclude_filetypes=exclude_filetypes, attribute_name_filter=attribute_name_filter)
     wr.write("</nodelist>\n")
-    return wr.get()
-
-
-def getSingleNodeXML(node, exclude_filetypes=[], attribute_name_filter=None):
-    wr = _StringWriter()
-    writexml(node, wr, children=False, exclude_filetypes=exclude_filetypes, attribute_name_filter=attribute_name_filter)
     return wr.get()

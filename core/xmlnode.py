@@ -27,6 +27,7 @@ from lxml import etree
 from core import File, db
 from core.systemtypes import Mappings, Root
 from utils.compat import iteritems
+from core.transition import current_user
 
 EXCLUDE_WORKFLOW_NEWNODES = True
 
@@ -106,33 +107,6 @@ def add_node_to_xmldoc(
             mapping = q(Mapping).get(int(exportmapping_id))
             written.add(mapping.id)
             add_node_to_xmldoc(mapping, xmlroot, written, children, exclude_filetypes, exclude_childtypes, attribute_name_filter)
-
-
-class _StringWriter:
-
-    def __init__(self):
-        self.buffer = []
-
-    def write(self, ustr):
-        self.buffer.append(ustr)
-
-    def get(self):
-        return "".join(self.buffer)
-
-
-def _writeNodeXML(node, fi):
-    fi.write('<?xml version="1.0" encoding="utf-8"?>' + "\n")
-    fi.write('<nodelist exportversion="%s" rootname="%s" roottype="%s" original_nodeid="%s">\n' %
-             (getInformation()["version"], node.name, node.type, ustr(node.id)))
-    exclude_children_types = []
-    if EXCLUDE_WORKFLOW_NEWNODES and node.type == 'workflow':
-        for c in node.children:
-            if c.type == "workflowstep_start":
-                newnodetypes = c.get("newnodetype").strip().split(";")
-                for newnodetype in newnodetypes:
-                    exclude_children_types.append(newnodetype)
-    writexml(node, fi, exclude_children_types=exclude_children_types)
-    fi.write("</nodelist>\n")
 
 
 class _NodeLoader:
@@ -318,37 +292,21 @@ class _NodeLoader:
         db.session.commit()
 
 
-def parseNodeXML(s):
-    return _NodeLoader(StringIO.StringIO(s)).root
-
-
 def readNodeXML(filename):
-    try:
-        return _NodeLoader(open(filename, "rb")).root
-    except IOError:
-        return None
-
-
-def writeNodeXML(node, filename):
-    with codecs.open(filename, "wb") as fi:
-        _writeNodeXML(node, fi)
+    raise NotImplementedError()
 
 
 def getNodeXML(node):
-    wr = _StringWriter()
-    _writeNodeXML(node, wr)
-    return wr.get()
-
-
-def getNodeListXMLForUser(node, readuser=None, exclude_filetypes=[], attribute_name_filter=None):
-    from core import users
-    if readuser:
-        # only write child data if children_access_user has read access
-        children_access = AccessData(user=users.getUser(readuser))
-    else:
-        children_access = None
-    wr = _StringWriter()
-    wr.write('<nodelist exportversion="%s">\n' % getInformation()["version"])
-    writexml(node, wr, children_access=children_access, exclude_filetypes=exclude_filetypes, attribute_name_filter=attribute_name_filter)
-    wr.write("</nodelist>\n")
-    return wr.get()
+    raise NotImplementedError()
+    fi.write('<?xml version="1.0" encoding="utf-8"?>' + "\n")
+    fi.write('<nodelist exportversion="%s" rootname="%s" roottype="%s" original_nodeid="%s">\n' %
+             (getInformation()["version"], node.name, node.type, ustr(node.id)))
+    exclude_children_types = []
+    if EXCLUDE_WORKFLOW_NEWNODES and node.type == 'workflow':
+        for c in node.children:
+            if c.type == "workflowstep_start":
+                newnodetypes = c.get("newnodetype").strip().split(";")
+                for newnodetype in newnodetypes:
+                    exclude_children_types.append(newnodetype)
+    writexml(node, fi, exclude_children_types=exclude_children_types)
+    fi.write("</nodelist>\n")

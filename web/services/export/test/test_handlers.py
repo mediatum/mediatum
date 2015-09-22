@@ -4,11 +4,15 @@
     :license: GPL3, see COPYING for details
 """
 
-from web.services.export.handlers import struct2rss
+from web.services.export.handlers import struct2rss, struct2xml
 from mock.mock import MagicMock
 import time
 from core.permission import get_or_add_everybody_rule
 from core.database.postgres.permission import NodeToAccessRule
+import datetime
+from schema.test.factories import MetadatatypeFactory
+from _pytest.python import fixture
+from core.test.fixtures import other_container_node
 
 def test_rss(container_node, other_container_node, content_node, collections, home_root, guest_user, root):
 
@@ -37,3 +41,60 @@ def test_rss(container_node, other_container_node, content_node, collections, ho
 <channel>""")
     assert "document/testschema" in res
     assert "http://localhost:8081/node?id=" in res
+
+
+@fixture
+def xml_fixture(parent_node, content_node):
+    struct = {"nodelist": [parent_node, content_node],
+              "build_response_start": time.time(),
+              "status": "ok",
+              "dataready": "0.1",
+              "retrievaldate": datetime.datetime.now().isoformat(),
+              "sortfield": "sortfield",
+              "sortdirection": "up",
+              "result_shortlist": []}
+    params = {}
+    req = MagicMock()
+    req.get_header = lambda x: "localhost:8081"
+    req.fullpath = ""
+    req.query = ""
+
+    MetadatatypeFactory(name=u"directory")
+
+    return struct, req, params
+
+
+def test_xml_singlenode(xml_fixture):
+    struct, req, params = xml_fixture
+    xmlstr = struct2xml(req, "", params, None, singlenode=True, d=struct)
+    print xmlstr
+    assert "smallview mask not defined" in xmlstr
+    assert "directory/directory" in xmlstr
+    assert "![CDATA[7]]" in xmlstr
+
+
+def test_xml_singlenode_send_children(xml_fixture):
+    struct, req, params = xml_fixture
+    xmlstr = struct2xml(req, "", params, None, singlenode=True, send_children=True, d=struct)
+    print xmlstr
+    assert "smallview mask not defined" in xmlstr
+    assert "directory/directory" in xmlstr
+    assert "document/testschema" in xmlstr
+    assert "![CDATA[7]]" in xmlstr
+    assert "![CDATA[8]]" in xmlstr
+
+
+def test_xml(xml_fixture):
+    struct, req, params = xml_fixture
+
+    struct["nodelist_start"] = "10"
+    struct["nodelist_limit"] = "10"
+    struct["nodelist_countall"] = "100"
+
+    MetadatatypeFactory(name="testschema")
+
+    xmlstr = struct2xml(req, "", params, None, singlenode=False, d=struct)
+    print xmlstr
+    assert "smallview mask not defined" in xmlstr
+    assert "directory/directory" in xmlstr
+    assert "![CDATA[7]]" in xmlstr

@@ -37,12 +37,13 @@ logg = logging.getLogger(__name__)
 EXPORTVERSION = u"1.1a"
 
 
-def create_xml_nodelist(rootname, roottype, original_nodeid):
-    xmlnodelist = etree.Element("nodelist")
+def create_xml_nodelist(xmlroot=None):
+    if xmlroot is None:
+        xmlnodelist = etree.Element("nodelist")
+    else:
+        xmlnodelist = etree.SubElement(xmlroot, "nodelist")
+
     xmlnodelist.set("exportversion", EXPORTVERSION)
-    xmlnodelist.set("rootname", rootname)
-    xmlnodelist.set("roottype", roottype)
-    xmlnodelist.set("original_nodeid", unicode(original_nodeid))
     return xmlnodelist
 
 

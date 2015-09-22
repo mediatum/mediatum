@@ -42,6 +42,8 @@ from utils.utils import esc, intersection, getMimeType, modify_tex
 import web.services.jsonnode as jsonnode
 from web.services.rssnode import template_rss_channel, template_rss_item, feed_channel_dict, try_node_date
 from web.services.serviceutils import attribute_name_filter
+from lxml import etree
+from core.xmlnode import add_node_to_xmldoc, create_xml_nodelist
 
 
 logg = logging.getLogger(__name__)
@@ -65,15 +67,46 @@ def escape_illegal_xml_chars(val, replacement=''):
     return illegal_xml_chars_re.sub(replacement, val)
 
 
-def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_children=False, send_timetable=SEND_TIMETABLE):
+def add_mask_xml(xmlroot, node, mask_name, language):
+    # mask handling
+    if mask_name not in ["", "none"]:  # deliver every mask
+        mask_obj = node.metadatatype.get_mask(mask_name)
+        if mask_obj is not None:
+            formated = mask_obj.getViewHTML([node], flags=8)
+        else:
+            mask = 'default'
+            formated = node.show_node_text(labels=1, language=language)
 
-    def attr_list_join(attr_list):
-        sformat = '''<attribute name="%s"><![CDATA[%s]]></attribute>'''
-        r = ''
-        for attr in attr_list:
-            if attribute_name_filter(attr[0]):
-                r += (sformat % (attr[0], attr[1]))
-        return r
+    maskxml = etree.SubElement(xmlroot, "mask")
+    maskxml.set("name", mask)
+    maskxml.text = etree.CDATA(formated)
+
+
+def _add_attrs_to_listinfo_item(xml_listinfo_item, attr_list, attribute_name_filter):
+    for name, value in attr_list:
+        if attribute_name_filter(name):
+            xml_attribute = etree.SubElement(xml_listinfo_item, "attribute")
+            xml_attribute.set("name", name)
+            xml_attribute.text = etree.CDATA(unicode(value))
+
+
+def _add_timetable_to_xmldoc(xmlroot, timetable):
+    xml_tt = etree.SubElement(xmlroot, "service_handler_process_info")
+    tt_sum = 0.0
+    for i, x in enumerate(timetable):
+        xml_step = etree.SubElement(xml_tt, "step")
+        xml_step.set("order", "%02d" % i)
+        xml_step.set("duration", "%.3f" % x[1])
+        xml_step.set("unit", "sec.")
+        xml_step.set("description", x[0])
+        tt_sum += x[1]
+
+    xml_allsteps = etree.SubElement(xml_tt, "allsteps")
+    xml_allsteps.set("durationsum", "%.3f" % tt_sum)
+    xml_allsteps.set("unit", "sec.")
+
+
+def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_children=False, send_timetable=SEND_TIMETABLE):
 
     atime = time.time()
 
@@ -84,86 +117,68 @@ def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_c
     sfields = d.setdefault('sfields', [])
 
     # mask
-    mask = req.params.get('mask', 'default').lower()
-    maskcachetype = req.params.get('maskcache', 'deep')  # 'deep', 'shallow', 'none'
+    mask = params.get('mask', 'default').lower()
+    # we ignore the maskcache parameter
 
-    user_info = 'oauthuser="%s" username="%s" userid="%s"' % (d.get('oauthuser', ''), d.get('username', ''), d.get('userid', ''))
+    xmlroot = etree.Element("response")
+    xmlroot.set("status", d["status"])
+    xmlroot.set("retrievaldate", d["retrievaldate"])
+    xmlroot.set("servicereactivity", d["dataready"])
+    xmlroot.set("oauthuser", d.get("oauthuser", ""))
+    xmlroot.set("username", d.get("username", ""))
+    xmlroot.set("userid", d.get("userid", ""))
 
-    res = '<?xml version="1.0" encoding="utf-8"?>\r\n'
-    res += '<response status="%s" retrievaldate="%s" servicereactivity="%s sec." %s>\r\n' % (
-        d['status'], d['retrievaldate'], d['dataready'], user_info)
+    language = params.get('lang', '')
+
     if d['status'] == 'ok':
         if singlenode:
             n = d['nodelist'][0]
             if not send_children:
-                res += xmlnode.getSingleNodeXML(n, exclude_filetypes=exclude_filetypes, attribute_name_filter=attribute_name_filter)
+                add_node_to_xmldoc(n, xmlroot, exclude_filetypes=exclude_filetypes, attribute_name_filter=attribute_name_filter)
             else:
-                res += xmlnode.getNodeListXMLForUser(n, readuser='Gast',
-                                                     exclude_filetypes=exclude_filetypes, attribute_name_filter=attribute_name_filter)
+                xml_nodelist = create_xml_nodelist(xmlroot)
+                add_node_to_xmldoc(n, xml_nodelist, children=True, exclude_filetypes=exclude_filetypes,
+                                           attribute_name_filter=attribute_name_filter)
 
-            # mask handling
-            formated = n.show_node_text(labels=1, language=req.params.get('lang', ''), cachetype=maskcachetype)
-            if mask not in ["", "none"]:  # deliver every mask
-                try:
-                    mask_obj = getMetaType(n.getSchema()).getMask(mask)
-                except:
-                    mask_obj = None
-                if mask_obj:
-                    formated = mask_obj.getViewHTML([n], flags=8)
-                else:
-                    mask = 'default'
-            res = '%s\n    <mask name="%s"><![CDATA[%s]]></mask>\n%s' % (res[:-9], mask, formated, res[-8:])
+            add_mask_xml(xmlroot, n, mask, language)
 
         else:
-            res += '<nodelist start="%d" count="%d" countall="%d">\r\n' % (d['nodelist_start'], d['nodelist_limit'], d['nodelist_countall'])
+            xml_nodelist = create_xml_nodelist()
+            xml_nodelist.set("start", d["nodelist_start"])
+            xml_nodelist.set("count", d["nodelist_limit"])
+            xml_nodelist.set("countall", d["nodelist_countall"])
+
             for n in d['nodelist']:
-                res += xmlnode.getSingleNodeXML(n, exclude_filetypes=exclude_filetypes, attribute_name_filter=attribute_name_filter)
-
-                # mask handling
-                formated = n.show_node_text(labels=1, language=req.params.get('lang', ''), cachetype=maskcachetype)
-                if mask not in ["", "none"]:  # deliver every mask
-                    try:
-                        mask_obj = getMetaType(n.getSchema()).getMask(mask)
-                    except:
-                        mask_obj = None
-                    if mask_obj:
-                        formated = mask_obj.getViewHTML([n], flags=8)
-                    else:
-                        mask = 'default'
-                res = '%s\n    <mask name="%s"><![CDATA[%s]]></mask>\n%s' % (res[:-9], mask, formated, res[-8:])
-
-            res += '</nodelist>\r\n'
+                add_node_to_xmldoc(n, xmlroot, exclude_filetypes=exclude_filetypes, attribute_name_filter=attribute_name_filter)
+                add_mask_xml(xmlroot, n, mask, language)
 
         # append a shortlist with id, name and type of the nodes
         # from result_shortlist = [[i, x.id, x.name, x.type, attr_list(x, sfields)] for i, x in enumerate(nodelist)]
-        res += '''<listinfo sortfield="%s" sortdirection="%s">\r\n''' % (d['sortfield'], d['sortdirection'])
-        for p in d['result_shortlist']:
-            if sfields:
-                res += '''  <item index="%d" id="%s" type="%s">%s</item>\r\n''' % (p[0], p[1], p[3], attr_list_join(p[4]))
-            else:
-                res += '''  <item index="%d" id="%s" type="%s"/>\r\n''' % (p[0], p[1], p[3])
-        res += '''</listinfo>\r\n'''
 
-        xml_timetable = d['timetable'][:]
-        xml_timetable.append(['build result xml', time.time() - atime])
-        atime = time.time()
+        xml_listinfo = etree.SubElement(xmlroot, "listinfo")
+        xml_listinfo.set("sortfield", d["sortfield"])
+        xml_listinfo.set("sortdirection", d["sortdirection"])
+
+        for p in d['result_shortlist']:
+            xml_item = etree.SubElement(xml_listinfo, "item")
+            xml_item.set("index", p[0])
+            xml_item.set("id", p[1])
+            xml_item.set("type", p[3])
+
+            if sfields:
+                _add_attrs_to_listinfo_item(xml_item, p[4], attribute_name_filter)
 
         if send_timetable:
             # append info on how long the steps took to get the result
-            tt = '<service_handler_process_info>\r\n'
-            tt_sum = 0.0
-            for i, x in enumerate(xml_timetable):
-                tt += '''  <step order="%02d" duration="%.3f" unit="sec." description="%s"/>\r\n''' % (i, x[1], x[0])
-                tt_sum += x[1]
-            tt += '''  <allsteps durationsum="%.3f" unit="sec."/>\r\n''' % (tt_sum)
-            tt += '</service_handler_process_info>\r\n'
-
-            res += tt
+            timetable = d['timetable'][:]
+            timetable.append(['build result xml', time.time() - atime])
+            _add_timetable_to_xmldoc(xmlroot, timetable)
 
     else:
-        res += '''<errormessage><![CDATA[%s]]></errormessage>\r\n''' % d['errormessage']
+        xml_errormessage = etree.SubElement(xmlroot, "errormessage")
+        xml_errormessage.text = etree.CDATA(d["errormessage"])
 
-    return escape_illegal_xml_chars(res) + '</response>\r\n'
+    return etree.tostring(xmlroot, pretty_print=True, encoding="utf8")
 
 
 def struct2template_test(req, path, params, data, d, debug=False, singlenode=False, send_children=False, send_timetable=SEND_TIMETABLE):

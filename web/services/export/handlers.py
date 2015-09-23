@@ -44,6 +44,7 @@ from web.services.serviceutils import attribute_name_filter
 from lxml import etree
 from core.xmlnode import add_node_to_xmldoc, create_xml_nodelist
 from core.search import parser
+from core.transition import request
 from core.database.postgres.search import apply_searchtree_to_query
 from sqlalchemy import sql
 from itertools import izip_longest
@@ -535,20 +536,33 @@ def _exif_location_filter(nodelist, components):
     return filtered_nodelist
 
 
+def _prepare_response():
+    res = {}
+    res['build_response_start'] = time.time()
+    retrievaldate = format_date()
+    res['retrievaldate'] = retrievaldate
+    res['method'] = request.command
+    res['path'] = request.path
+    res['query'] = request.query
+    res['timetable'] = []
+    return res
+
+
+def _client_error_response(status_code, error_msg, **additional_data):
+    res = _prepare_response()
+    res.update(additional_data)
+    res['status'] = 'fail'
+    res["nodelist"] = []
+    res['html_response_code'] = unicode(status_code)
+    res['errormessage'] = 'node not found'
+    return res
+
+
 def get_node_children_struct(
         req, path, params, data, id, debug=True, allchildren=False, singlenode=False, parents=False, send_children=False):
-    atime = starttime = time.time()
-    retrievaldate = format_date()
 
-    res = {}  # holds the resulting data structure
-    res['build_response_start'] = starttime
-    res['retrievaldate'] = retrievaldate
-    res['method'] = req.command
-    res['path'] = req.path
-    res['query'] = req.query
-    timetable = []
-    res['timetable'] = timetable
-
+    res = _prepare_response()
+    timetable = res["timetable"]
 
     # verify signature if a user is given, otherwise use guest user
     if params.get('user'):
@@ -583,8 +597,6 @@ def get_node_children_struct(
     default_nodelist_start = 0
     default_nodelist_limit = 100
 
-    res['timetable'] = timetable
-
     try:
         nodelist_start = int(params.get('start', default_nodelist_start))
     except:
@@ -598,14 +610,7 @@ def get_node_children_struct(
     # check node existence
     node = q(Node).get(id)
     if node is None:
-        res['status'] = 'fail'
-        res["nodelist"] = []
-        res['html_response_code'] = '404'  # not found
-        res['errormessage'] = 'node not found'
-        res['build_response_end'] = time.time()
-        dataready = "%.3f" % (res['build_response_end'] - starttime)
-        res['dataready'] = dataready
-        return res
+        return _client_error_response(404, u"node not found")
 
     home = q(Home).one()
     collections = q(Collections).one()
@@ -613,31 +618,15 @@ def get_node_children_struct(
     if node.has_read_access(user=user) and (node.is_descendant_of(collections) or node.is_descendant_of(home)):
         pass
     else:
-        res['status'] = 'fail'
-        res['html_response_code'] = '403'  # forbidden (authorization will not help)
-        res['errormessage'] = 'no access'
-        res['build_response_end'] = time.time()
-        dataready = "%.3f" % (res['build_response_end'] - starttime)
-        res['dataready'] = dataready
-        return res
-
-    atime = time.time()
+        return _client_error_response(403, u"forbidden")
 
     if mdt_name:
-        mdt = q(Metadatatype).filter_by(name=mdt_name).scalar()
-        if not mdt:
-            res['status'] = 'fail'
-            res["nodelist"] = []
-            res['html_response_code'] = '404'  # not found
-            res['errormessage'] = 'no such metadata type: ' + mdt_name
-            res['build_response_end'] = time.time()
-            dataready = "%.3f" % (res['build_response_end'] - starttime)
-            res['dataready'] = dataready
-            return res
+        mdt = q(Metadatatype.id).filter_by(name=mdt_name).scalar()
+        if mdt is None:
+            return _client_error_response(404, u'no such metadata type: ' + mdt_name)
 
     if allchildren:
         nodequery = node.all_children
-
     elif parents:
         nodequery = node.parents
     else:
@@ -754,14 +743,7 @@ def get_node_children_struct(
         components = exif_location_rect.split(',')
 
         if len(components) != 4:
-            res['status'] = 'fail'
-            res['html_response_code'] = '403'  # not found
-            res['errormessage'] = u"exif_location_rect is invalid: {}".format(exif_location_rect)
-            res['build_response_end'] = time.time()
-            dataready = "%.3f" % (res['build_response_end'] - starttime)
-            res['dataready'] = dataready
-            res['timetable'] = timetable
-            return res
+            return _client_error_response(400, u"exif_location_rect is invalid: {}".format(exif_location_rect))
 
         nodelist = _exif_location_filter(nodelist, components)
 
@@ -779,7 +761,7 @@ def get_node_children_struct(
     res['status'] = 'ok'
     res['html_response_code'] = '200'  # ok
     res['build_response_end'] = time.time()
-    dataready = "%.3f" % (res['build_response_end'] - starttime)
+    dataready = "%.3f" % (res['build_response_end'] - res["build_response_start"])
     res['dataready'] = dataready
     return res
 

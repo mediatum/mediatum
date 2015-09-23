@@ -32,10 +32,9 @@ from core.users import get_guest_user
 from core import config
 from core import Node, db
 import core.users as users
-import core.xmlnode as xmlnode
 from contenttypes import Collections, Home
 from contenttypes import Data
-from schema.schema import getMetaType, VIEW_DATA_ONLY, Metadatatype
+from schema.schema import VIEW_DATA_ONLY, Metadatatype
 from utils.date import format_date
 from utils.pathutils import getBrowsingPathList, isDescendantOf
 from utils.utils import esc, intersection, getMimeType, modify_tex
@@ -60,11 +59,6 @@ searchcache = Cache(maxcount=10, verbose=True)
 resultcache = Cache(maxcount=25, verbose=True)
 
 SEND_TIMETABLE = False
-
-
-def escape_illegal_xml_chars(val, replacement=''):
-    illegal_xml_chars_re = re.compile(u'[\x00-\x08\x0b\x0c\x0e-\x1F\uD800-\uDFFF\uFFFE\uFFFF]')
-    return illegal_xml_chars_re.sub(replacement, val)
 
 
 def add_mask_xml(xmlroot, node, mask_name, language):
@@ -519,83 +513,11 @@ def get_node_children_struct(
         res['oauthuser'] = _username
         _user = users.getUser(_username)
 
-        if not _user:  # user of dynamic type and not logged in with this request
-
-            timetable.append(
-                [
-                    '''oauth: users.getUser(%r) returned %r: going to built dummy user with attributes of homedir with system.oauthuser=%r''' %
-                    (_username, _user, _username), time.time() - atime])
-            atime = time.time()
-
-            dirid = _username
-
-            # build an object with attributes used by AccessData constructor
-            class dummyuser:  # dummy user class
-
-                def __init__(self, dirid):
-                    self.dirid = dirid
-
-                    # find home directory for dynamic user with given directory id
-                    self.homedir = None
-                    self.usertype = ''
-                    for hd in tree.getRoot("home").getChildren():
-                        if hd.get('system.oauthuser') == dirid:
-                            self.homedir = hd
-                            items = hd.items()
-                            for k, v in items:
-                                if k.startswith('system.dirid.') and v == dirid:
-                                    self.usertype = k.replace('system.dirid.', '')
-                                    break
-                            break
-
-                    self.dirgroups = []
-                    if self.homedir:
-                        self.dirgroups = self.homedir.get('system.dirgroups.' + self.usertype)
-                        if not self.dirgroups:
-                            self.dirgroups = ''
-                        self.dirgroups = self.dirgroups.split('|#|')
-                        self.name = self.homedir.get('system.name.' + self.usertype)
-                        self.last_authentication = self.homedir.get('system.last_authentication.' + self.usertype)
-                    else:
-                        self.name = self.dirid
-
-                    self.groups = [
-                        g.name for g in tree.getRoot('usergroups').getChildren() if (
-                            g.get('allow_dynamic') == '1' and params.get('user') in g.get('dynamic_users')) or g.name in self.dirgroups]
-
-                    self.is_admin = config.get("user.admingroup", "Administration") in self.groups
-
-                def getGroups(self):  # return all groups with given dynamic user
-                    return self.groups
-
-                def getName(self):
-                    return self.name
-
-                def getUserID(self):  # unique identifier
-                    return self.dirid
-
-                def getUserType(self):
-                    return 'dummy_' + self.usertype
-
-                def isAdmin(self):
-                    return self.is_admin
-
-            _user = dummyuser(dirid)
-            homedir = _user.homedir
-            if homedir:
-                timetable.append(['''oauth: built dummy dyn. user %r, homedir: %r %r -> groups: %r''' %
-                                  (_username, homedir.name, homedir.id, _user.getGroups()), time.time() - atime])
-                atime = time.time()
-            else:
-                timetable.append(['''oauth: tried to built dummy dyn. user %r, no homedir found''' % (_username), time.time() - atime])
-                atime = time.time()
-
-        else:
-            # users.getUser(_username) returned user
-            timetable.append(['''oauth: users.getUser(%r) returned %r (%r, %r, %r) -> groups: %r''' %
-                              (_username, _user, _user.getName(), _user.getUserID(), _user.getUserType(), _user.getGroups()), time.time() -
-                              atime])
-            atime = time.time()
+        # users.getUser(_username) returned user
+        timetable.append(['''oauth: users.getUser(%r) returned %r (%r, %r, %r) -> groups: %r''' %
+                          (_username, _user, _user.getName(), _user.getUserID(), _user.getUserType(), _user.getGroups()), time.time() -
+                          atime])
+        atime = time.time()
 
         if guestAccess.user:
             valid = guestAccess.verify_request_signature(req.fullpath, params)

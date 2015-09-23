@@ -106,10 +106,11 @@ def test_xml(xml_fixture):
 def test_json(xml_fixture):
     struct, req, params = xml_fixture
     MetadatatypeFactory(name="testschema")
+    n1, n2 = struct["nodelist"]
 
     jsonstr = struct2json(req, "", params, None, d=struct)
     print jsonstr
     res = json.loads(jsonstr)
 
     assert res["status"] == "ok"
-    assert res["nodelist"] == [[{"id": 3}], [{"id": 100}]]
+    assert res["nodelist"] == [[{"id": n1.id}], [{"id": n2.id}]]

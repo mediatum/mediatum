@@ -543,9 +543,6 @@ def get_node_children_struct(
 
     result_shortlist = []
 
-    nodelist = []
-    res['nodelist'] = nodelist
-
     # query parameters
     nodelist_type = params.get('type', '')  # return only nodes of given type like dissertation/diss
     parent_type = params.get('parent_type', '')  # return only nodes that have only parents of  given type like folder or collection
@@ -554,7 +551,7 @@ def get_node_children_struct(
     exif_location_rect = params.get('exif_location_rect', '')
     mdt_name = params.get('mdt_name', '')
     attrreg = params.get('attrreg', '')
-    node_query = params.get('node_query', '')  # node query
+    searchquery = params.get('q', '')  # node query
     sortfield = params.get('sortfield', '')
     sortformat = params.get('sortformat', '')  # 'sissfi'
     sfields = []  # sortfields
@@ -624,8 +621,9 @@ def get_node_children_struct(
 
     atime = time.time()
     searchresult = []
-    if node_query:
-        cache_key = (path).split('?')[0] + '|node_query=' + node_query  # req.path
+
+    if searchquery:
+        cache_key = (path).split('?')[0] + '|q=' + searchquery  # req.path
         resultcode, cachecontent = searchcache.retrieve(cache_key, acceptcached)
         if resultcode == 'hit':
             time_cached = searchcache.getTimestamp(cache_key)
@@ -642,9 +640,9 @@ def get_node_children_struct(
             atime = time.time()
 
         if resultcode != 'hit':
-            searchresult = node.search(node_query)
-            timetable.append(['execute search node_query=%s on node (%s, %s, %s) resulting in %d nodes' %
-                              (node_query, node.id, node.type, node.name, len(searchresult)), time.time() - atime])
+            searchresult = node.search(searchquery)
+            timetable.append(['execute search searchquery=%s on node (%s, %s, %s) resulting in %d nodes' %
+                              (searchquery, node.id, node.type, node.name, len(searchresult)), time.time() - atime])
             atime = time.time()
             searchresult = guestAccess.filter(searchresult)
             timetable.append(['filter access for search result resulting in %d nodes' % (len(searchresult)), time.time() - atime])
@@ -670,26 +668,26 @@ def get_node_children_struct(
         typed_node_id_list = db.get_nids_by_type_suffix(mdt_name)
         db.close()
         if typed_node_id_list:
-            typed_nodelist = tree.NodeList(typed_node_id_list)
+            typed_nodequery = None
             timetable.append(['''generated typed node list -> (%d nodes)''' % (len(typed_nodelist)), time.time() - atime])
             atime = time.time()
 
     if singlenode:
         nodelist = [node]
     elif parents:
-        nodelist = node.getParents()
+        nodelist = node.parents
         timetable.append(['''get parents for node %s, '%s', '%s' -> (%d nodes)''' %
                           (node.id, node.name, node.type, len(nodelist)), time.time() - atime])
         atime = time.time()
     elif allchildren:
-        if node_query and not mdt_name:
+        if searchquery and not mdt_name:
             nodelist = searchresult
-        elif mdt_name and not node_query:
+        elif mdt_name and not searchquery:
             if typed_nodelist:
                 nodelist = tree.NodeList([x for x in typed_nodelist if (guestAccess.hasAccess(x, 'read') and (isDescendantOf(x, node)))])
                 timetable.append(['''access filter of typed (%s) nodes -> (%d nodes)''' % (mdt_name, len(nodelist)), time.time() - atime])
                 atime = time.time()
-        elif mdt_name and node_query:
+        elif mdt_name and searchquery:
             filtered_nodelist = tree.NodeList(
                 [x for x in typed_nodelist if (guestAccess.hasAccess(x, 'read') and (isDescendantOf(x, node)))])
             timetable.append(['''access filter of typed (%s) nodes -> (%d nodes)''' % (mdt_name, len(nodelist)), time.time() - atime])
@@ -720,7 +718,7 @@ def get_node_children_struct(
         timetable.append(['''get direct children for node %s, '%s', '%s' -> (%d nodes)''' %
                           (node.id, node.name, node.type, len(nodelist)), time.time() - atime])
         atime = time.time()
-        if node_query:
+        if searchquery:
             nodelist = intersection([searchresult, nodelist])
             timetable.append(['''searchresult filter with direct children for node %s, '%s', '%s' -> (%d nodes)''' %
                               (node.id, node.name, node.type, len(nodelist)), time.time() - atime])
@@ -734,7 +732,7 @@ def get_node_children_struct(
     timetable.append(['get set of ids of nodelist', time.time() - atime])
     atime = time.time()
 
-    if not mdt_name and not node_query:
+    if not mdt_name and not searchquery:
         # XXX: we don't check here if permissions have changed
         nodelist = [x for x in nodelist if (x.has_read_access(user=user))]
         timetable.append(['filter access with hasAccess (%d nodes -> %d nodes)' %

@@ -43,6 +43,11 @@ from web.services.rssnode import template_rss_channel, template_rss_item, feed_c
 from web.services.serviceutils import attribute_name_filter
 from lxml import etree
 from core.xmlnode import add_node_to_xmldoc, create_xml_nodelist
+from core.search import parser
+from core.database.postgres.search import apply_searchtree_to_query
+from sqlalchemy import sql
+from itertools import izip_longest
+from sqlalchemy import Unicode, Float, Integer
 
 
 logg = logging.getLogger(__name__)
@@ -67,12 +72,12 @@ def add_mask_xml(xmlroot, node, mask_name, language):
         if mask_obj is not None:
             formated = mask_obj.getViewHTML([node], flags=8)
         else:
-            mask = 'default'
+            mask_name = 'default'
             formated = node.show_node_text(labels=1, language=language)
 
-    maskxml = etree.SubElement(xmlroot, "mask")
-    maskxml.set("name", mask)
-    maskxml.text = etree.CDATA(formated)
+        maskxml = etree.SubElement(xmlroot, "mask")
+        maskxml.set("name", mask_name)
+        maskxml.text = etree.CDATA(formated)
 
 
 def _add_attrs_to_listinfo_item(xml_listinfo_item, attr_list, attribute_name_filter):
@@ -119,7 +124,7 @@ def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_c
     xmlroot.set("servicereactivity", d["dataready"])
     xmlroot.set("oauthuser", d.get("oauthuser", ""))
     xmlroot.set("username", d.get("username", ""))
-    xmlroot.set("userid", d.get("userid", ""))
+    xmlroot.set("userid", unicode(d.get("userid", "")))
 
     language = params.get('lang', '')
 
@@ -137,9 +142,8 @@ def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_c
 
         else:
             xml_nodelist = create_xml_nodelist()
-            xml_nodelist.set("start", d["nodelist_start"])
-            xml_nodelist.set("count", d["nodelist_limit"])
-            xml_nodelist.set("countall", d["nodelist_countall"])
+            xml_nodelist.set("start", unicode(d["nodelist_start"]))
+            xml_nodelist.set("count", unicode(d["nodelist_limit"]))
 
             for n in d['nodelist']:
                 add_node_to_xmldoc(n, xmlroot, exclude_filetypes=exclude_filetypes, attribute_name_filter=attribute_name_filter)
@@ -543,9 +547,10 @@ def get_node_children_struct(
     result_shortlist = []
 
     # query parameters
-    nodelist_type = params.get('type', '')  # return only nodes of given type like dissertation/diss
+    typefilter = params.get('type', '')  # return only nodes of given type like dissertation/diss
     parent_type = params.get('parent_type', '')  # return only nodes that have only parents of  given type like folder or collection
-    send_versions = params.get('send_versions', '').lower()  # return also nodes that are older versions of other nodes
+    # XXX: do we want version support?
+#     send_versions = params.get('send_versions', '').lower()  # return also nodes that are older versions of other nodes
     # return only nodes that have an EXIF location that lies between the given lon,lat values
     exif_location_rect = params.get('exif_location_rect', '')
     mdt_name = params.get('mdt_name', '')
@@ -553,21 +558,6 @@ def get_node_children_struct(
     searchquery = params.get('q', '')  # node query
     sortfield = params.get('sortfield', '')
     sortformat = params.get('sortformat', '')  # 'sissfi'
-    sfields = []  # sortfields
-
-    if sortfield:
-        sfields = [x.strip() for x in sortfield.split(',')]
-    num_sfields = len(sfields)
-
-    sortdirection = ''
-    for i in range(num_sfields):
-        if sfields[i] and sfields[i][0] == '-':
-            sfields[i] = sfields[i][1:]
-            sortdirection += 'd'
-        else:
-            sortdirection += 'u'
-
-    psort = params.get('sort', 'orderpos')
 
     default_nodelist_start = 0
     default_nodelist_limit = 100
@@ -583,13 +573,6 @@ def get_node_children_struct(
         nodelist_limit = int(params.get('limit', default_nodelist_limit))
     except:
         nodelist_limit = default_nodelist_limit
-
-    if singlenode:
-        nodelist_start = 0
-        nodelist_limit = 1
-
-    # accept results calculated and cached up to this amount of seconds
-    acceptcached = float(params.get('acceptcached', '0'))
 
     # check node existence
     try:
@@ -607,7 +590,7 @@ def get_node_children_struct(
     home = q(Home).one()
     collections = q(Collections).one()
     # check node access
-    if user is not None and node.has_read_access(user=user) and (node.is_descendant_of(collections) or node.is_descendant_of(home)):
+    if node.has_read_access(user=user) and (node.is_descendant_of(collections) or node.is_descendant_of(home)):
         pass
     else:
         res['status'] = 'fail'
@@ -620,173 +603,75 @@ def get_node_children_struct(
 
     atime = time.time()
 
-    if searchquery:
-        searchresult = node.search(searchquery).filter_read_access(user=user)
-    else:
-        searchresult = None
-
-    typed_nodelist = []
     if mdt_name:
         mdt = q(Metadatatype).filter_by(name=mdt_name).scalar()
         if not mdt:
             res['status'] = 'fail'
+            res["nodelist"] = []
             res['html_response_code'] = '404'  # not found
             res['errormessage'] = 'no such metadata type: ' + mdt_name
             res['build_response_end'] = time.time()
             dataready = "%.3f" % (res['build_response_end'] - starttime)
             res['dataready'] = dataready
             return res
-        typed_node_id_list = db.get_nids_by_type_suffix(mdt_name)
-        db.close()
-        if typed_node_id_list:
-            typed_nodequery = None
-            timetable.append(['''generated typed node list -> (%d nodes)''' % (len(typed_nodelist)), time.time() - atime])
-            atime = time.time()
 
-    if singlenode:
-        nodelist = [node]
+    if allchildren:
+        nodequery = node.all_children
+
     elif parents:
-        nodelist = node.parents
-        timetable.append(['''get parents for node %s, '%s', '%s' -> (%d nodes)''' %
-                          (node.id, node.name, node.type, len(nodelist)), time.time() - atime])
-        atime = time.time()
-    elif allchildren:
-        if searchquery and not mdt_name:
-            nodelist = searchresult
-        elif mdt_name and not searchquery:
-            if typed_nodelist:
-                nodelist = tree.NodeList([x for x in typed_nodelist if (guestAccess.hasAccess(x, 'read') and (isDescendantOf(x, node)))])
-                timetable.append(['''access filter of typed (%s) nodes -> (%d nodes)''' % (mdt_name, len(nodelist)), time.time() - atime])
-                atime = time.time()
-        elif mdt_name and searchquery:
-            filtered_nodelist = tree.NodeList(
-                [x for x in typed_nodelist if (guestAccess.hasAccess(x, 'read') and (isDescendantOf(x, node)))])
-            timetable.append(['''access filter of typed (%s) nodes -> (%d nodes)''' % (mdt_name, len(nodelist)), time.time() - atime])
-            atime = time.time()
-            nodelist = intersection([filtered_nodelist, searchresult])
-            timetable.append(['''intersection of typed (%s) nodes with searchresult -> (%d nodes)''' %
-                              (mdt_name, len(nodelist)), time.time() - atime])
-            atime = time.time()
-        else:
-            # refuse request for all children on collections root
-            if node.id != q(Collections.id).scalar():
-                nodelist = [node] + node.all_children_by_query(q(Data)).options(undefer(Node.attrs)).all()
-            else:
-                nodelist = []
-                res['status'] = 'fail'
-                res['html_response_code'] = '403'  # forbidden (authorization will not help)
-                res['errormessage'] = 'no access'
-                res['build_response_end'] = time.time()
-                dataready = "%.3f" % (res['build_response_end'] - starttime)
-                res['dataready'] = dataready
-                res['timetable'] = timetable
-                return res
-            timetable.append(['''get all children for node %s, '%s', '%s' -> (%d nodes)''' %
-                              (node.id, node.name, node.type, len(nodelist)), time.time() - atime])
-            atime = time.time()
+        nodequery = node.parents
     else:
-        nodelist = node.getChildren()
-        timetable.append(['''get direct children for node %s, '%s', '%s' -> (%d nodes)''' %
-                          (node.id, node.name, node.type, len(nodelist)), time.time() - atime])
-        atime = time.time()
-        if searchquery:
-            nodelist = intersection([searchresult, nodelist])
-            timetable.append(['''searchresult filter with direct children for node %s, '%s', '%s' -> (%d nodes)''' %
-                              (node.id, node.name, node.type, len(nodelist)), time.time() - atime])
-            atime = time.time()
-        if mdt_name:
-            nodelist = intersection([typed_nodelist, nodelist])
-            timetable.append(['''filter typed nodes with direct children for node %s, '%s', '%s' -> (%d nodes)''' %
-                              (node.id, node.name, node.type, len(nodelist)), time.time() - atime])
-            atime = time.time()
+        nodequery = node.children
 
-    timetable.append(['get set of ids of nodelist', time.time() - atime])
-    atime = time.time()
+    if searchquery:
+        searchtree = parser.parse_string(searchquery)
+        nodequery = apply_searchtree_to_query(nodequery, searchtree)
 
-    if not mdt_name and not searchquery:
-        # XXX: we don't check here if permissions have changed
-        nodelist = [x for x in nodelist if (x.has_read_access(user=user))]
-        timetable.append(['filter access with hasAccess (%d nodes -> %d nodes)' %
-                          (len(nodelist), len(nodelist)), time.time() - atime])
-        atime = time.time()
+    if typefilter:
+        nodequery = nodequery.filter((Node.type + "/" + Node.schema).op("~")(typefilter))
+
+    if attrreg:
+        akey, aval = attrreg.split('=')
+        nodequery = nodequery.filter(Node.attrs[akey].astext.op("~")(aval))
+
+    sortdirection = u""
+
+    if sortfield:
+        sfields = [x.strip() for x in sortfield.split(',')]
+
+        sortformat = sortformat[:len(sfields)]
+
+        for sfield, sformat in izip_longest(sfields, sortformat, fillvalue="s"):
+            if sformat == "i":
+                astype = Integer
+            elif sformat == "f":
+                astype = Float
+            else:
+                astype = Unicode
+
+            if sfield[0] == "-":
+                sfield = sfield[1:]
+                desc = True
+                sortdirection += u"d"
+            else:
+                desc = False
+                sortdirection += u"u"
+
+            order_expr = Node.attrs[sfield].cast(astype)
+
+            if desc:
+                order_expr = sql.desc(order_expr)
+
+            nodequery = nodequery.order_by(order_expr)
+    else:
+        sfields = []
 
 
-    # 'sort' may be removed later (undocumented feature)
-    if not singlenode and 'sort' in params.keys():
-        # sort default with orderpos
-        nodelist = tree.NodeList(nodelist)
-        nodelist = nodelist.sort(psort)
-        timetable.append(["sort nodelist (%d nodes): sort='%s'" % (len(nodelist), psort), time.time() - atime])
-        atime = time.time()
-
-    if nodelist_type:
-        stypes = [x.strip() for x in nodelist_type.split(',')]
-        typefiltered_nodelist = []
-        for stype in stypes:
-            try:
-                regexp_stype = re.compile(stype)
-            except:
-                res['status'] = 'fail'
-                res['html_response_code'] = '403'  # not found
-                res['errormessage'] = "invalid expression '%s' in parameter '%s'" % (stype, 'type')
-                res['build_response_end'] = time.time()
-                dataready = "%.3f" % (res['build_response_end'] - starttime)
-                res['dataready'] = dataready
-                res['timetable'] = timetable
-                return res
-
-            newly_filtered = [x for x in nodelist if regexp_stype.match(x.type)]
-            typefiltered_nodelist += newly_filtered
-            timetable.append(['filter node type %s (-> %d nodes)' % (stype, len(newly_filtered)), time.time() - atime])
-            atime = time.time()
-        nodelist = tree.NodeList(list(set(typefiltered_nodelist)))
-        timetable.append(['built set from type filter results (total: %d nodes)' % (len(nodelist)), time.time() - atime])
-        atime = time.time()
+    ### TODO: do we need this?
 
     if parent_type:
-        # filter all nodes with parents that are not of one of the specified types
-        typefiltered_nodelist = []
-        for stype in [x.strip() for x in parent_type.split(',')]:
-            try:
-                regexp_stype = re.compile(stype)
-            except:
-                res['status'] = 'fail'
-                res['html_response_code'] = '403'  # not found
-                res['errormessage'] = "invalid expression '%s' in parameter '%s'" % (stype, 'type')
-                res['build_response_end'] = time.time()
-                dataready = "%.3f" % (res['build_response_end'] - starttime)
-                res['dataready'] = dataready
-                res['timetable'] = timetable
-                return res
-
-            newly_filtered = []  # [x for x in nodelist if regexp_stype.match(x.type)]
-
-            for one_node in nodelist:
-                parents_comply = True
-                for one_parent in one_node.getParents():
-                    if regexp_stype.match(one_parent.type):
-                        pass
-                    else:
-                        parents_comply = False
-                        break
-
-                if parents_comply:
-                    newly_filtered.append(one_node)
-
-            typefiltered_nodelist += newly_filtered
-            timetable.append(['filter parent type %s (-> %d nodes)' % (stype, len(newly_filtered)), time.time() - atime])
-            atime = time.time()
-        nodelist = tree.NodeList(list(set(typefiltered_nodelist)))
-        timetable.append(['built set from type filter results (total: %d nodes)' % (len(nodelist)), time.time() - atime])
-        atime = time.time()
-
-    if send_versions in ["1"]:
+        # XXX: do we need this?
         pass
-    else:
-        # this is the default: remove older version nodes from the result list
-        nodelist = [n for n in nodelist if n.isActiveVersion() or n.id == n.next_nid]
-        timetable.append(['filtered older (inactive) versions out -> (%d nodes)' % (len(nodelist)), time.time() - atime])
-        atime = time.time()
 
     if exif_location_rect:
         # filter all nodes that have an EXIF location inside the given rectangle
@@ -818,105 +703,46 @@ def get_node_children_struct(
                 if node_lon > test_lon_lower and node_lon < test_lon_upper and node_lat > test_lat_lower and node_lat < test_lat_upper:
                     typefiltered_nodelist.append(one_node)
 
-        timetable.append(['filter exif location rect %s (-> %d nodes)' %
-                          (exif_location_rect, len(typefiltered_nodelist)), time.time() - atime])
+    ### actually get the nodes
+
+    nodequery = nodequery.options(undefer(Node.attrs))
+
+    if singlenode:
+        nodelist = [node]
+        nodelist_start = 0
+        nodelist_limit = 1
+    else:
+        if mdt_name:
+            nodequery = nodequery.filter(Node.schema==mdt_name)
+
+        nodequery = nodequery.filter_read_access(user=user)
+
+        offset = params.get("start")
+        if offset:
+            nodequery = nodequery.offset(offset)
+
+        limit = params.get("limit")
+        if limit:
+            nodequery = nodequery.limit(limit)
+
         atime = time.time()
-        nodelist = tree.NodeList(list(set(typefiltered_nodelist)))
-        timetable.append(['built set from type filter results (total: %d nodes)' % (len(nodelist)), time.time() - atime])
+
+        if allchildren:
+            nodelist = [node] + nodequery.all()
+        else:
+            nodelist = nodequery.all()
+
+        timetable.append(['fetching nodes from db returned {} results'.format(len(nodelist)), time.time() - atime])
         atime = time.time()
 
-    if attrreg:
-        attrreg_filtered_nodelist = []
-        try:
-            akey, aval = attrreg.split('=')
-            regexp_attrreg = re.compile(aval)
-        except:
-            res['status'] = 'fail'
-            res['html_response_code'] = '403'  # not found
-            res['errormessage'] = "invalid expression '%s' in parameter '%s'" % (attrreg, 'attrreg')
-            res['build_response_end'] = time.time()
-            dataready = "%.3f" % (res['build_response_end'] - starttime)
-            res['dataready'] = dataready
-            res['timetable'] = timetable
-            return res
-
-        attrreg_filtered_nodelist += [x for x in nodelist if regexp_attrreg.match(x.get(akey))]
-        timetable.append(['filter attrreg %s (-> %d nodes)' % (attrreg, len(attrreg_filtered_nodelist)), time.time() - atime])
-        atime = time.time()
-        nodelist = tree.NodeList(list(set(attrreg_filtered_nodelist)))
-
-    if sortfield:
-        def reformat(inputlist, i, f):
-            '''the i.th column in a list of list  is formated (i.e. from string to integer, float, ...'''
-            for t in inputlist:
-                t[i] = f(t[i])
-            return inputlist
-
-        nodetuples = [map(lambda sfield: x.get_special(sfield), sfields) + [x.id, x] for x in nodelist]
-
-        data = nodetuples[:]
-
-        for i in range(num_sfields):
-            pos = num_sfields - i - 1
-
-            fReverse = False  # default
-            try:
-                field_sortdirection = sortdirection[pos]
-                if field_sortdirection == 'u':
-                    fReverse = False
-                elif field_sortdirection == 'd':
-                    fReverse = True
-                else:
-                    # perhaps return "failed" in this case ?
-                    pass
-            except:
-                pass
-
-            def int_getter(pos, x):
-                try:
-                    return int(float(x[pos]))
-                except:
-                    return 0
-
-            def float_getter(pos, x):
-                try:
-                    return float(x[pos])
-                except:
-                    return 0.0
-
-            # map formats for sortfield (defaul: string)
-            sortkey = lambda x: serviceutils.din5007v2(x[pos])
-            try:
-                field_format = sortformat[pos]
-                if field_format == 'i':
-                    sortkey = lambda x: int_getter(pos, x)
-                # XXX: this was 'fieldformat' before, recheck!
-                elif field_format == 'f':
-                    sortkey = lambda x: float_getter(pos, x)
-                else:
-                    pass
-            except:
-                pass
-
-            data = sorted(data, key=sortkey, reverse=fReverse)
-
-        nodetuples = data[:]
-        nodelist = [x[len(sfields) + 1] for x in nodetuples]  # sorted
-        timetable.append(["sort nodelist (%d nodes): sortfield='%s', sortdirection='%s', sortformat='%s'" %
-                          (len(nodelist), sortfield, sortdirection, sortformat), time.time() - atime])
-        atime = time.time()
-        res['timetable'] = timetable
-
-    nodelist_countall = len(nodelist)
+    i0 = int(params.get('i0', '0'))
+    i1 = int(params.get('i1', len(nodelist)))
 
     def attr_list(node, sfields):
         r = []
         for sfield in sfields:
             r.append([sfield, node.get(sfield)])
         return r
-
-    i0 = int(params.get('i0', '0'))
-    i1 = int(params.get('i1', len(nodelist)))
 
     if 'add_shortlist' in params:
         if sortfield:
@@ -929,10 +755,7 @@ def get_node_children_struct(
             timetable.append(['build result_shortlist for %d nodes (no sortfield)' % len(result_shortlist), time.time() - atime])
             atime = time.time()
 
-    if 'limit' in params:
-        nodelist = nodelist[nodelist_start:nodelist_start + nodelist_limit]
-    else:
-        nodelist = nodelist[nodelist_start:]
+    ### build result
 
     res['nodelist'] = nodelist
     res['sfields'] = sfields
@@ -942,7 +765,6 @@ def get_node_children_struct(
     res['timetable'] = timetable
     res['nodelist_start'] = nodelist_start
     res['nodelist_limit'] = nodelist_limit
-    res['nodelist_countall'] = nodelist_countall
     res['path'] = req.path
     res['status'] = 'ok'
     res['html_response_code'] = '200'  # ok

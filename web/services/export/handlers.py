@@ -558,7 +558,7 @@ def _client_error_response(status_code, error_msg, **additional_data):
     return res
 
 
-def get_node_children_struct(
+def get_node_data_struct(
         req, path, params, data, id, debug=True, allchildren=False, singlenode=False, parents=False, send_children=False):
 
     res = _prepare_response()
@@ -807,7 +807,7 @@ def write_formatted_response(
 
     if not result_from_cache:
 
-        d = get_node_children_struct(req, path, params, data, id, debug=debug, allchildren=allchildren,
+        d = get_node_data_struct(req, path, params, data, id, debug=debug, allchildren=allchildren,
                                      singlenode=singlenode, send_children=send_children, parents=parents)
 
         if r_timetable:

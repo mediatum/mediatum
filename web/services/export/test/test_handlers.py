@@ -9,7 +9,7 @@ import json
 import time
 from mock.mock import MagicMock
 from pytest import fixture
-from web.services.export.handlers import struct2rss, struct2xml, struct2json, get_node_children_struct
+from web.services.export.handlers import struct2rss, struct2xml, struct2json, get_node_data_struct
 from core.permission import get_or_add_everybody_rule
 from core.database.postgres.permission import NodeToAccessRule
 from schema.test.factories import MetadatatypeFactory
@@ -132,7 +132,7 @@ def test_search(guest_user, root, home_root, collections, container_node, conten
     req.fullpath = ""
     req.query = ""
 
-    res = get_node_children_struct(req, "", params, None, container_node.id)
+    res = get_node_data_struct(req, "", params, None, container_node.id)
     assert res["status"] == "ok"
     print res
     pass

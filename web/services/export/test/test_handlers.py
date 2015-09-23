@@ -4,7 +4,7 @@
     :license: GPL3, see COPYING for details
 """
 
-from web.services.export.handlers import struct2rss, struct2xml
+from web.services.export.handlers import struct2rss, struct2xml, struct2json
 from mock.mock import MagicMock
 import time
 from core.permission import get_or_add_everybody_rule
@@ -13,6 +13,30 @@ import datetime
 from schema.test.factories import MetadatatypeFactory
 from _pytest.python import fixture
 from core.test.fixtures import other_container_node
+import json
+
+
+@fixture
+def xml_fixture(parent_node, content_node):
+    struct = {"nodelist": [parent_node, content_node],
+              "build_response_start": time.time(),
+              "status": "ok",
+              "dataready": "0.1",
+              "retrievaldate": datetime.datetime.now().isoformat(),
+              "sortfield": "sortfield",
+              "sortdirection": "up",
+              "timetable": [],
+              "result_shortlist": []}
+    params = {}
+    req = MagicMock()
+    req.get_header = lambda x: "localhost:8081"
+    req.fullpath = ""
+    req.query = ""
+
+    MetadatatypeFactory(name=u"directory")
+
+    return struct, req, params
+
 
 def test_rss(container_node, other_container_node, content_node, collections, home_root, guest_user, root):
 
@@ -41,27 +65,6 @@ def test_rss(container_node, other_container_node, content_node, collections, ho
 <channel>""")
     assert "document/testschema" in res
     assert "http://localhost:8081/node?id=" in res
-
-
-@fixture
-def xml_fixture(parent_node, content_node):
-    struct = {"nodelist": [parent_node, content_node],
-              "build_response_start": time.time(),
-              "status": "ok",
-              "dataready": "0.1",
-              "retrievaldate": datetime.datetime.now().isoformat(),
-              "sortfield": "sortfield",
-              "sortdirection": "up",
-              "result_shortlist": []}
-    params = {}
-    req = MagicMock()
-    req.get_header = lambda x: "localhost:8081"
-    req.fullpath = ""
-    req.query = ""
-
-    MetadatatypeFactory(name=u"directory")
-
-    return struct, req, params
 
 
 def test_xml_singlenode(xml_fixture):
@@ -98,3 +101,15 @@ def test_xml(xml_fixture):
     assert "smallview mask not defined" in xmlstr
     assert "directory/directory" in xmlstr
     assert "![CDATA[7]]" in xmlstr
+
+
+def test_json(xml_fixture):
+    struct, req, params = xml_fixture
+    MetadatatypeFactory(name="testschema")
+
+    jsonstr = struct2json(req, "", params, None, d=struct)
+    print jsonstr
+    res = json.loads(jsonstr)
+
+    assert res["status"] == "ok"
+    assert res["nodelist"] == [[{"id": 3}], [{"id": 100}]]

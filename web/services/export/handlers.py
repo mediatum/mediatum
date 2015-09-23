@@ -178,13 +178,13 @@ def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_c
 def struct2template_test(req, path, params, data, d, debug=False, singlenode=False, send_children=False, send_timetable=SEND_TIMETABLE):
     nodelist = d['nodelist']
 
-    if 'add_shortlist' not in req.params:
+    if 'add_shortlist' not in params:
         d['result_shortlist'] = []
 
     d['nodelist'] = [jsonnode.buildNodeDescriptor(req, n, children=send_children) for n in nodelist]
-    json_timetable = d['timetable'][:]
+    json_timetable = d['timetable']
 
-    template = req.params.get("template", u"record $$[_rcd]$$: id=$$[id]$$: no-template-given\n")
+    template = params.get("template", u"record $$[_rcd]$$: id=$$[id]$$: no-template-given\n")
     attrs1 = template.split("$$[")
     attrs = []
     for x in attrs1:
@@ -228,20 +228,16 @@ def struct2template_test(req, path, params, data, d, debug=False, singlenode=Fal
 def struct2json(req, path, params, data, d, debug=False, singlenode=False, send_children=False, send_timetable=SEND_TIMETABLE):
     nodelist = d['nodelist']
 
-    if 'add_shortlist' not in req.params:
+    if 'add_shortlist' not in params:
         d['result_shortlist'] = []
 
-    d['nodelist'] = [jsonnode.buildNodeDescriptor(req, n, children=send_children) for n in nodelist]
-    json_timetable = d['timetable'][:]
+    d['nodelist'] = [jsonnode.buildNodeDescriptor(params, n, children=send_children) for n in nodelist]
+    json_timetable = d['timetable']
 
-    d['timetable'] = []
-    if send_timetable:
-        d['timetable'] = json_timetable
+    if not send_timetable:
+        del d['timetable']
 
-    try:
-        s = json.dumps(d, indent=4, encoding="UTF-8")
-    except:
-        s = json.dumps(d, encoding='latin1')
+    s = json.dumps(d, indent=4, encoding="UTF-8")
 
     d['timetable'] = json_timetable
     d['dataready'] = ("%.3f" % (time.time() - d['build_response_start']))
@@ -299,7 +295,7 @@ def struct2csv(req, path, params, data, d, debug=False, sep=u';', string_delimit
 
     rd = {}
     keys = set()
-    csv_nodelist = d['nodelist'][:]
+    csv_nodelist = d['nodelist']
     csvattrs = []
     if 'csvattrs' in params:
         csvattrs = [attr.strip() for attr in params['csvattrs'].split(',')]
@@ -489,6 +485,32 @@ supported_formats = [
 ]
 
 
+def _handle_oauth(params, timetable):
+    _username = params.get('user')
+    res['oauthuser'] = _username
+    _user = users.getUser(_username)
+
+    # users.getUser(_username) returned user
+    timetable.append(['''oauth: users.getUser(%r) returned %r (%r, %r, %r) -> groups: %r''' %
+                      (_username, _user, _user.getName(), _user.getUserID(), _user.getUserType(), _user.getGroups()), time.time() -
+                      atime])
+    atime = time.time()
+
+    if guestAccess.user:
+        valid = guestAccess.verify_request_signature(req.fullpath, params)
+        if not valid:
+            guestAccess = None
+        else:
+            res['userid'] = _user.getUserID()
+        timetable.append(['''oauth: verify_request_signature returned %r for authname %r, userid: %r, groups: %r''' %
+                          (valid, _username, res['userid'], _user.getGroups()), time.time() - atime])
+        atime = time.time()
+    else:
+        guestAccess = None
+
+    return _user
+
+
 def get_node_children_struct(
         req, path, params, data, id, debug=True, allchildren=False, singlenode=False, parents=False, send_children=False):
     atime = starttime = time.time()
@@ -503,39 +525,22 @@ def get_node_children_struct(
     timetable = []
     res['timetable'] = timetable
 
-    res['oauthuser'] = ''  # username supplied for authentication (login name) in query parameter user
-    res['userid'] = ''  # unique id for authenticated user if applicable (node.id for internal, dirid for dynamic users)
-    res['username'] = ''  # name of the user, may be "guest" or personal name
 
     # verify signature if a user is given, otherwise use guest user
     if params.get('user'):
-        _username = params.get('user')
-        res['oauthuser'] = _username
-        _user = users.getUser(_username)
-
-        # users.getUser(_username) returned user
-        timetable.append(['''oauth: users.getUser(%r) returned %r (%r, %r, %r) -> groups: %r''' %
-                          (_username, _user, _user.getName(), _user.getUserID(), _user.getUserType(), _user.getGroups()), time.time() -
-                          atime])
-        atime = time.time()
-
-        if guestAccess.user:
-            valid = guestAccess.verify_request_signature(req.fullpath, params)
-            if not valid:
-                guestAccess = None
-            else:
-                res['userid'] = _user.getUserID()
-            timetable.append(['''oauth: verify_request_signature returned %r for authname %r, userid: %r, groups: %r''' %
-                              (valid, _username, res['userid'], _user.getGroups()), time.time() - atime])
-            atime = time.time()
-        else:
-            guestAccess = None
+        user = _handle_oauth(params, timetable)
+        res['oauthuser'] = user.login_name
     else:
         user = get_guest_user()
+        res['oauthuser'] = ''  # username supplied for authentication (login name) in query parameter user
 
     if user is not None:
         res['username'] = user.login_name
         res['userid'] = user.id
+    else:
+        res['userid'] = ''  # unique id for authenticated user if applicable (node.id for internal, dirid for dynamic users)
+        res['username'] = ''  # name of the user, may be "guest" or personal name
+
     result_shortlist = []
 
     nodelist = []
@@ -944,7 +949,7 @@ def get_node_children_struct(
     i0 = int(params.get('i0', '0'))
     i1 = int(params.get('i1', len(nodelist)))
 
-    if 'add_shortlist' in req.params:
+    if 'add_shortlist' in params:
         if sortfield:
             result_shortlist = [[i, x.id, x.name, x.type, attr_list(x, sfields)] for i, x in enumerate(nodelist)][i0:i1]
             timetable.append(['build result_shortlist for %d nodes and %d sortfields' %
@@ -965,7 +970,7 @@ def get_node_children_struct(
     res['sortfield'] = sortfield
     res['sortdirection'] = sortdirection
     res['result_shortlist'] = result_shortlist
-    res['timetable'] = timetable[:]
+    res['timetable'] = timetable
     res['nodelist_start'] = nodelist_start
     res['nodelist_limit'] = nodelist_limit
     res['nodelist_countall'] = nodelist_countall
@@ -1050,7 +1055,7 @@ def write_formatted_response(
                 d['timetable'].append(["formatted for '%s'" % res_format, time.time() - atime])
                 atime = time.time()
 
-                disposition = req.params.get('disposition', '')
+                disposition = params.get('disposition', '')
                 if disposition:
                     # ex.: (direct to download) value: "attachment; filename=myfilename.txt"
                     # ex.: (open in browser) value: "filename=myfilename.txt"
@@ -1088,7 +1093,7 @@ def write_formatted_response(
         d['html_response_code'] = '200'  # ok
         d['build_response_end'] = time.time()
         if r_timetable:
-            d['timetable'] = r_timetable[:]
+            d['timetable'] = r_timetable
         s = result_from_cache
         d['timetable'].append(["serving %.3f sec. old response (%d bytes) from '%s', cache_key: %s" %
                                (time.time() - timestamp_from_cache, len(s), cache_name, cache_key), time.time() - atime])
@@ -1109,7 +1114,7 @@ def write_formatted_response(
         gzfile.close()
         return buffer.getvalue()
 
-    if 'deflate' in req.params:
+    if 'deflate' in params:
         size_uncompressed = len(s)
         compressed_s = compressForDeflate(s)
         s = compressed_s
@@ -1123,7 +1128,7 @@ def write_formatted_response(
                                (size_uncompressed, size_compressed, percentage), time.time() - atime])
         atime = time.time()
 
-    elif 'gzip' in req.params:
+    elif 'gzip' in params:
         size_uncompressed = len(s)
         compressed_s = compressForGzip(s)
         s = compressed_s
@@ -1237,8 +1242,8 @@ def serve_file(req, path, params, data, filepath):
     d = {}
     d['timetable'] = []
 
-    if 'mimetype' in req.params:
-        mimetype = req.params['mimetype']
+    if 'mimetype' in params:
+        mimetype = params['mimetype']
     elif filepath.lower().endswith('.html') or filepath.lower().endswith('.htm'):
         mimetype = 'text/html'
     else:

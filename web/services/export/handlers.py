@@ -64,6 +64,8 @@ import web.services.serviceutils as serviceutils
 resultcache = Cache(maxcount=25, verbose=True)
 
 SEND_TIMETABLE = False
+DEFAULT_NODEQUERY_START = 0
+DEFAULT_NODEQUERY_LIMIT = 100
 
 
 def add_mask_xml(xmlroot, node, mask_name, language):
@@ -593,19 +595,8 @@ def get_node_data_struct(
     searchquery = params.get('q', '')  # node query
     sortfield = params.get('sortfield', '')
     sortformat = params.get('sortformat', '')  # 'sissfi'
-
-    default_nodelist_start = 0
-    default_nodelist_limit = 100
-
-    try:
-        nodelist_start = int(params.get('start', default_nodelist_start))
-    except:
-        nodelist_start = default_nodelist_start
-
-    try:
-        nodelist_limit = int(params.get('limit', default_nodelist_limit))
-    except:
-        nodelist_limit = default_nodelist_limit
+    limit = params.get("limit", DEFAULT_NODEQUERY_LIMIT)
+    offset = params.get("start", DEFAULT_NODEQUERY_START)
 
     # check node existence
     node = q(Node).get(id)
@@ -621,8 +612,8 @@ def get_node_data_struct(
         return _client_error_response(403, u"forbidden")
 
     if mdt_name:
-        mdt = q(Metadatatype.id).filter_by(name=mdt_name).scalar()
-        if mdt is None:
+        mdt = q(Metadatatype).filter_by(name=mdt_name).count()
+        if not mdt:
             return _client_error_response(404, u'no such metadata type: ' + mdt_name)
 
     if allchildren:
@@ -679,28 +670,28 @@ def get_node_data_struct(
     ### TODO: do we need this?
 
     if parent_type:
+        raise NotImplementedError("parent_type not supported at the moment")
         # XXX: do we need this?
         pass
 
     ### actually get the nodes
 
-    nodequery = nodequery.options(undefer(Node.attrs))
+    nodequery = nodequery.distinct().options(undefer(Node.attrs))
 
     if singlenode:
+        # we already checked that node can be accessed by the user, just return the node
         nodelist = [node]
-        nodelist_start = 0
-        nodelist_limit = 1
+        start = 0
+        limit = 1
     else:
         if mdt_name:
             nodequery = nodequery.filter(Node.schema==mdt_name)
 
         nodequery = nodequery.filter_read_access(user=user)
 
-        offset = params.get("start")
         if offset:
             nodequery = nodequery.offset(offset)
 
-        limit = params.get("limit")
         if limit:
             nodequery = nodequery.limit(limit)
 
@@ -755,8 +746,8 @@ def get_node_data_struct(
     res['sortdirection'] = sortdirection
     res['result_shortlist'] = result_shortlist
     res['timetable'] = timetable
-    res['nodelist_start'] = nodelist_start
-    res['nodelist_limit'] = nodelist_limit
+    res['nodelist_start'] = offset
+    res['nodelist_limit'] = limit
     res['path'] = req.path
     res['status'] = 'ok'
     res['html_response_code'] = '200'  # ok

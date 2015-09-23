@@ -514,6 +514,27 @@ def _handle_oauth(params, timetable):
     return _user
 
 
+def _exif_location_filter(nodelist, components):
+    """Filters all nodes that have an EXIF location inside the given rectangle"""
+    filtered_nodelist = []
+
+    for one_node in nodelist:
+        location = one_node.get_location()
+        if "lon" in location and "lat" in location:
+            node_lon = location["lon"]
+            node_lat = location["lat"]
+
+            test_lat_lower = float(components[0])
+            test_lon_lower = float(components[1])
+            test_lat_upper = float(components[2])
+            test_lon_upper = float(components[3])
+
+            if node_lon > test_lon_lower and node_lon < test_lon_upper and node_lat > test_lat_lower and node_lat < test_lat_upper:
+                filtered_nodelist.append(one_node)
+
+    return filtered_nodelist
+
+
 def get_node_children_struct(
         req, path, params, data, id, debug=True, allchildren=False, singlenode=False, parents=False, send_children=False):
     atime = starttime = time.time()
@@ -673,36 +694,6 @@ def get_node_children_struct(
         # XXX: do we need this?
         pass
 
-    if exif_location_rect:
-        # filter all nodes that have an EXIF location inside the given rectangle
-        components = exif_location_rect.split(',')
-
-        if len(components) != 4:
-            res['status'] = 'fail'
-            res['html_response_code'] = '403'  # not found
-            res['errormessage'] = "invalid expression '%s' in parameter '%s'" % (stype, 'type')
-            res['build_response_end'] = time.time()
-            dataready = "%.3f" % (res['build_response_end'] - starttime)
-            res['dataready'] = dataready
-            res['timetable'] = timetable
-            return res
-
-        typefiltered_nodelist = []
-
-        for one_node in nodelist:
-            location = one_node.get_location()
-            if "lon" in location and "lat" in location:
-                node_lon = location["lon"]
-                node_lat = location["lat"]
-
-                test_lat_lower = float(components[0])
-                test_lon_lower = float(components[1])
-                test_lat_upper = float(components[2])
-                test_lon_upper = float(components[3])
-
-                if node_lon > test_lon_lower and node_lon < test_lon_upper and node_lat > test_lat_lower and node_lat < test_lat_upper:
-                    typefiltered_nodelist.append(one_node)
-
     ### actually get the nodes
 
     nodequery = nodequery.options(undefer(Node.attrs))
@@ -754,6 +745,26 @@ def get_node_children_struct(
             result_shortlist = [[i, x.id, x.name, x.type] for i, x in enumerate(nodelist)][i0:i1]
             timetable.append(['build result_shortlist for %d nodes (no sortfield)' % len(result_shortlist), time.time() - atime])
             atime = time.time()
+
+
+    ### XXX: filtering in python, should be moved to the database
+
+    if exif_location_rect:
+        raise NotImplementedError("not supported at the moment")
+
+        components = exif_location_rect.split(',')
+
+        if len(components) != 4:
+            res['status'] = 'fail'
+            res['html_response_code'] = '403'  # not found
+            res['errormessage'] = u"exif_location_rect is invalid: {}".format(exif_location_rect)
+            res['build_response_end'] = time.time()
+            dataready = "%.3f" % (res['build_response_end'] - starttime)
+            res['dataready'] = dataready
+            res['timetable'] = timetable
+            return res
+
+        nodelist = _exif_location_filter(nodelist, components)
 
     ### build result
 

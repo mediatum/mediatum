@@ -596,11 +596,10 @@ def get_node_children_struct(
         nodelist_limit = default_nodelist_limit
 
     # check node existence
-    try:
-        node = q(Node).get(id)
-    except:
-        logg.exception("exception in get_node_children_struct, return 404")
+    node = q(Node).get(id)
+    if node is None:
         res['status'] = 'fail'
+        res["nodelist"] = []
         res['html_response_code'] = '404'  # not found
         res['errormessage'] = 'node not found'
         res['build_response_end'] = time.time()

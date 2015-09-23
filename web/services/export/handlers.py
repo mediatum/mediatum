@@ -30,7 +30,7 @@ from sqlalchemy.orm import undefer
 
 from core.users import get_guest_user
 from core import config
-from core import Node, db
+from core import Node, db, User
 import core.users as users
 from contenttypes import Collections, Home
 from contenttypes import Data
@@ -491,30 +491,26 @@ supported_formats = [
 ]
 
 
-def _handle_oauth(params, timetable):
-    _username = params.get('user')
-    res['oauthuser'] = _username
-    _user = users.getUser(_username)
+def _handle_oauth(res, fullpath, params, timetable):
+    username = params.get('user')
+    res['oauthuser'] = username
+    _user = q(User).filter_by(login_name=username)
 
     # users.getUser(_username) returned user
-    timetable.append(['''oauth: users.getUser(%r) returned %r (%r, %r, %r) -> groups: %r''' %
-                      (_username, _user, _user.getName(), _user.getUserID(), _user.getUserType(), _user.getGroups()), time.time() -
-                      atime])
-    atime = time.time()
+    timetable.append(['''oauth: users.getUser(%r) returned %r (%r, %r) -> groups: %r''' %
+                      (username, _user, _user.getName(), _user.id, _user.groups)])
 
-    if guestAccess.user:
-        valid = guestAccess.verify_request_signature(req.fullpath, params)
-        if not valid:
-            guestAccess = None
-        else:
-            res['userid'] = _user.getUserID()
-        timetable.append(['''oauth: verify_request_signature returned %r for authname %r, userid: %r, groups: %r''' %
-                          (valid, _username, res['userid'], _user.getGroups()), time.time() - atime])
-        atime = time.time()
+    valid = oauth.verify_request_signature(fullpath, params)
+
+    if not valid:
+        user = None
     else:
-        guestAccess = None
+        user = _user
+        res['userid'] = user.id
+    timetable.append(['''oauth: verify_request_signature returned %r for authname %r, userid: %r, groups: %r''' %
+                      (valid, username, user.id, user.group_names)])
 
-    return _user
+    return user
 
 
 def _exif_location_filter(nodelist, components):

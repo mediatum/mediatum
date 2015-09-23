@@ -4,16 +4,15 @@
     :license: GPL3, see COPYING for details
 """
 
-from web.services.export.handlers import struct2rss, struct2xml, struct2json
-from mock.mock import MagicMock
+import datetime
+import json
 import time
+from mock.mock import MagicMock
+from pytest import fixture
+from web.services.export.handlers import struct2rss, struct2xml, struct2json, get_node_children_struct
 from core.permission import get_or_add_everybody_rule
 from core.database.postgres.permission import NodeToAccessRule
-import datetime
 from schema.test.factories import MetadatatypeFactory
-from _pytest.python import fixture
-from core.test.fixtures import other_container_node
-import json
 
 
 @fixture
@@ -34,6 +33,7 @@ def xml_fixture(parent_node, content_node):
     req.query = ""
 
     MetadatatypeFactory(name=u"directory")
+    MetadatatypeFactory(name=u"testschema")
 
     return struct, req, params
 
@@ -94,8 +94,6 @@ def test_xml(xml_fixture):
     struct["nodelist_limit"] = "10"
     struct["nodelist_countall"] = "100"
 
-    MetadatatypeFactory(name="testschema")
-
     xmlstr = struct2xml(req, "", params, None, singlenode=False, d=struct)
     print xmlstr
     assert "smallview mask not defined" in xmlstr
@@ -105,7 +103,6 @@ def test_xml(xml_fixture):
 
 def test_json(xml_fixture):
     struct, req, params = xml_fixture
-    MetadatatypeFactory(name="testschema")
     n1, n2 = struct["nodelist"]
 
     jsonstr = struct2json(req, "", params, None, d=struct)
@@ -114,3 +111,28 @@ def test_json(xml_fixture):
 
     assert res["status"] == "ok"
     assert res["nodelist"] == [[{"id": n1.id}], [{"id": n2.id}]]
+
+
+def test_search(guest_user, root, home_root, collections, container_node, content_node, other_container_node):
+    params = {}
+    params["q"] = "full=test"
+
+    everybody_rule = get_or_add_everybody_rule()
+
+    root.children.append(collections)
+
+    collections.access_rule_assocs.append(NodeToAccessRule(ruletype=u"read", rule=everybody_rule))
+    collections.container_children.append(container_node)
+
+    container_node.container_children.append(other_container_node)
+    other_container_node.content_children.append(content_node)
+
+    req = MagicMock()
+    req.get_header = lambda x: "localhost:8081"
+    req.fullpath = ""
+    req.query = ""
+
+    res = get_node_children_struct(req, "", params, None, container_node.id)
+    assert res["status"] == "ok"
+    print res
+    pass

@@ -55,7 +55,6 @@ from web.services.cache import Cache
 from web.services.cache import date2string as cache_date2string
 import web.services.serviceutils as serviceutils
 
-searchcache = Cache(maxcount=10, verbose=True)
 resultcache = Cache(maxcount=25, verbose=True)
 
 SEND_TIMETABLE = False
@@ -620,40 +619,12 @@ def get_node_children_struct(
         return res
 
     atime = time.time()
-    searchresult = []
 
     if searchquery:
-        cache_key = (path).split('?')[0] + '|q=' + searchquery  # req.path
-        resultcode, cachecontent = searchcache.retrieve(cache_key, acceptcached)
-        if resultcode == 'hit':
-            time_cached = searchcache.getTimestamp(cache_key)
-            time_delta = starttime - time_cached
-            searchresult = cachecontent[-1]
-            timetable.append(['retrieved filtered search result from cache: %d nodes, time_delta: %.3f lower acceptcached %.3f sec.' % (
-                len(searchresult), time_delta, acceptcached), time.time() - atime])
-            atime = time.time()
-        elif resultcode == 'refused':
-            time_cached = searchcache.getTimestamp(cache_key)
-            time_delta = starttime - time_cached
-            timetable.append(['cached filtered search result exists, but not used: time_delta: %.3f sec. higher acceptcached %.3f sec.' % (
-                time_delta, acceptcached), time.time() - atime])
-            atime = time.time()
+        searchresult = node.search(searchquery).filter_read_access(user=user)
+    else:
+        searchresult = None
 
-        if resultcode != 'hit':
-            searchresult = node.search(searchquery)
-            timetable.append(['execute search searchquery=%s on node (%s, %s, %s) resulting in %d nodes' %
-                              (searchquery, node.id, node.type, node.name, len(searchresult)), time.time() - atime])
-            atime = time.time()
-            searchresult = guestAccess.filter(searchresult)
-            timetable.append(['filter access for search result resulting in %d nodes' % (len(searchresult)), time.time() - atime])
-            atime = time.time()
-            if acceptcached > 0:  # only write to cache for these requests
-                searchcache.update(cache_key, searchresult)
-                timetable.append(['wrote filtered search result to cache (%d nodes), now in cache: %d entries: %s' %
-                                  (len(searchresult), searchcache.getKeysCount(), "#".join(searchcache.getKeys())), time.time() - atime])
-                atime = time.time()
-
-    res['timetable'] = timetable
     typed_nodelist = []
     if mdt_name:
         mdt = q(Metadatatype).filter_by(name=mdt_name).scalar()

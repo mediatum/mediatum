@@ -50,6 +50,7 @@ from sqlalchemy import sql
 from itertools import izip_longest
 from sqlalchemy import Unicode, Float, Integer
 from utils.xml import xml_remove_illegal_chars
+from core.search import ParseException
 
 
 logg = logging.getLogger(__name__)
@@ -626,7 +627,13 @@ def get_node_data_struct(
         nodequery = node.children
 
     if searchquery:
-        searchtree = parser.parse_string(searchquery)
+        try:
+            searchtree = parser.parse_string(searchquery)
+        except ParseException:
+            # wrong search queries are interpreted as full search
+            # XXX: can we remove this?
+            searchtree = parser.parse_string('full="{}"'.format(searchquery))
+
         nodequery = apply_searchtree_to_query(nodequery, searchtree)
 
     if typefilter:

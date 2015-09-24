@@ -300,7 +300,7 @@ def struct2csv(req, path, params, data, d, debug=False, sep=u';', string_delimit
     r = u''
 
     if d['status'].lower() == 'fail':
-        header = ['status', 'html_response_code', 'errormessage', 'retrievaldate', 'dataready']
+        header = ['status', 'html_response_code', 'errormessage', 'retrievaldate']
         r = join_row(header) + u'\r\n'
         r += join_row(map(lambda x: d[x], header))
         return r

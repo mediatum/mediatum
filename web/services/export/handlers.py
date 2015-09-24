@@ -643,7 +643,11 @@ def get_node_data_struct(
         nodequery = nodequery.filter((Node.type + "/" + Node.schema).op("~")(typefilter))
 
     if attrreg:
-        akey, aval = attrreg.split('=')
+        spl = attrreg.split('=')
+        if len(spl) != 2:
+            return _client_error_response(400, "wrong attrreg value: " + attrreg)
+        akey, aval = spl
+
         nodequery = nodequery.filter(Node.attrs[akey].astext.op("~")(aval))
 
     sortdirection = u""
@@ -709,10 +713,15 @@ def get_node_data_struct(
 
         atime = time.time()
 
+        try:
+            nodes_from_query = nodequery.all()
+        except Exception as e:
+            return _client_error_response(400, "the database failed with the message: {}".format(str(e)))
+
         if allchildren:
-            nodelist = [node] + nodequery.all()
+            nodelist = [node] + nodes_from_query
         else:
-            nodelist = nodequery.all()
+            nodelist = nodes_from_query
 
         timetable.append(['fetching nodes from db returned {} results'.format(len(nodelist)), time.time() - atime])
         atime = time.time()
@@ -1042,7 +1051,7 @@ def serve_file(req, path, params, data, filepath):
     else:
         basedir = os.path.dirname(os.path.abspath(__file__))
     abspath = os.path.join(basedir, 'static', filepath)
-    logg.info("web service trying to serve: ", abspath)
+    logg.info("web service trying to serve: %s", abspath)
     if os.path.isfile(abspath):
         filesize = os.path.getsize(abspath)
         req.sendFile(abspath, mimetype, force=1)

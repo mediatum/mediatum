@@ -49,6 +49,7 @@ from core.database.postgres.search import apply_searchtree_to_query
 from sqlalchemy import sql
 from itertools import izip_longest
 from sqlalchemy import Unicode, Float, Integer
+from utils.xml import xml_remove_illegal_chars
 
 
 logg = logging.getLogger(__name__)
@@ -80,7 +81,7 @@ def add_mask_xml(xmlroot, node, mask_name, language):
 
         maskxml = etree.SubElement(xmlroot, "mask")
         maskxml.set("name", mask_name)
-        maskxml.text = etree.CDATA(formated)
+        maskxml.text = etree.CDATA(xml_remove_illegal_chars(formated))
 
 
 def _add_attrs_to_listinfo_item(xml_listinfo_item, attr_list, attribute_name_filter):
@@ -88,7 +89,7 @@ def _add_attrs_to_listinfo_item(xml_listinfo_item, attr_list, attribute_name_fil
         if attribute_name_filter(name):
             xml_attribute = etree.SubElement(xml_listinfo_item, "attribute")
             xml_attribute.set("name", name)
-            xml_attribute.text = etree.CDATA(unicode(value))
+            xml_attribute.text = etree.CDATA(xml_remove_illegal_chars(unicode(value)))
 
 
 def _add_timetable_to_xmldoc(xmlroot, timetable):
@@ -124,7 +125,6 @@ def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_c
     xmlroot = etree.Element("response")
     xmlroot.set("status", d["status"])
     xmlroot.set("retrievaldate", d["retrievaldate"])
-    xmlroot.set("servicereactivity", d["dataready"])
     xmlroot.set("oauthuser", d.get("oauthuser", ""))
     xmlroot.set("username", d.get("username", ""))
     xmlroot.set("userid", unicode(d.get("userid", "")))
@@ -132,6 +132,7 @@ def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_c
     language = params.get('lang', '')
 
     if d['status'] == 'ok':
+        xmlroot.set("servicereactivity", d["dataready"])
         if singlenode:
             n = d['nodelist'][0]
             if not send_children:
@@ -161,8 +162,8 @@ def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_c
 
         for p in d['result_shortlist']:
             xml_item = etree.SubElement(xml_listinfo, "item")
-            xml_item.set("index", p[0])
-            xml_item.set("id", p[1])
+            xml_item.set("index", unicode(p[0]))
+            xml_item.set("id", unicode(p[1]))
             xml_item.set("type", p[3])
 
             if sfields:
@@ -178,7 +179,12 @@ def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_c
         xml_errormessage = etree.SubElement(xmlroot, "errormessage")
         xml_errormessage.text = etree.CDATA(d["errormessage"])
 
-    return etree.tostring(xmlroot, pretty_print=True, encoding="utf8")
+
+    xmlstr = etree.tostring(xmlroot, pretty_print=True, encoding="utf8")
+
+    d['dataready'] = ("%.3f" % (time.time() - d['build_response_start']))
+
+    return xmlstr
 
 
 def struct2template_test(req, path, params, data, d, debug=False, singlenode=False, send_children=False, send_timetable=SEND_TIMETABLE):

@@ -4,7 +4,7 @@
     :license: GPL3, see COPYING for details
 
 Python access layer for the mediaTUM export web service
-    
+
 """
 from urlparse import urljoin
 from nap.url import Url
@@ -150,9 +150,12 @@ class MediatumAPIUrlMixin(object):
     SERVICE_PATH = "services/"
     EXPORT_PATH = "export/"
 
+    raise_for_status = True
+
     def after_request(self, response):
         """Raises an exception if the HTTP status code indicates a failure"""
-        response.raise_for_status()
+        if self.raise_for_status:
+            response.raise_for_status()
         return response
 
 
@@ -161,7 +164,8 @@ class MediatumAPI(MediatumAPIAccessMixin, MediatumAPIUrlMixin, Url):
     """Access the mediaTUM API via this class. This client is stateless and doesn't save cookies!
     """
 
-    def __init__(self, base_url=None, **default_kwargs):
+    def __init__(self, base_url=None, raise_for_status=True, **default_kwargs):
+        self.raise_for_status = raise_for_status
         url = urljoin(base_url or self.BASE_URL, self.SERVICE_PATH)
         super(MediatumAPI, self).__init__(url, **default_kwargs)
 
@@ -171,7 +175,8 @@ class MediatumAPISession(MediatumAPIAccessMixin, MediatumAPIUrlMixin, SessionUrl
     """Access the mediaTUM API via this class. This client is stateful and remembers cookies.
     """
 
-    def __init__(self, base_url=None, **default_kwargs):
+    def __init__(self, base_url=None, raise_for_status=True, **default_kwargs):
+        self.raise_for_status = raise_for_status
         url = urljoin(base_url or self.BASE_URL, self.SERVICE_PATH)
         super(MediatumAPISession, self).__init__(url, **default_kwargs)
         self.new_session()

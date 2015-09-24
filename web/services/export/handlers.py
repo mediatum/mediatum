@@ -29,7 +29,7 @@ import time
 from sqlalchemy.orm import undefer
 
 from core.users import get_guest_user
-from core import config
+from core import config, search
 from core import Node, db, User
 import core.users as users
 from contenttypes import Collections, Home
@@ -43,14 +43,13 @@ from web.services.rssnode import template_rss_channel, template_rss_item, feed_c
 from web.services.serviceutils import attribute_name_filter
 from lxml import etree
 from core.xmlnode import add_node_to_xmldoc, create_xml_nodelist
-from core.search import parser
 from core.transition import request
 from core.database.postgres.search import apply_searchtree_to_query
 from sqlalchemy import sql
 from itertools import izip_longest
 from sqlalchemy import Unicode, Float, Integer
 from utils.xml import xml_remove_illegal_chars
-from core.search import ParseException
+from core.search import SearchQueryException
 
 
 logg = logging.getLogger(__name__)
@@ -628,11 +627,15 @@ def get_node_data_struct(
 
     if searchquery:
         try:
-            searchtree = parser.parse_string(searchquery)
-        except ParseException:
+            searchtree = search.parse_searchquery(searchquery)
+        except search.SearchQueryException:
             # wrong search queries are interpreted as full search
             # XXX: can we remove this?
-            searchtree = parser.parse_string('full="{}"'.format(searchquery))
+            try:
+                searchtree = search.parse_searchquery('full="{}"'.format(searchquery))
+            except SearchQueryException as e:
+                # we had enough, return error to client...
+                return _client_error_response(400, str(e))
 
         nodequery = apply_searchtree_to_query(nodequery, searchtree)
 

@@ -89,7 +89,7 @@ def buildNodeDescriptor(params, node, indent=None, written=None, children=True, 
             if (not children_access) or (children_access and children_access.hasAccess(c, 'read')):
                 if c.id not in written:
                     written[c.id] = None
-                    childnodedict = buildNodeDescriptor(req, c, indent, children_access=children_access)
+                    childnodedict = buildNodeDescriptor(params, c, indent, children_access=children_access)
                     nd.append(childnodedict)
 
     nodeattributes_dict = {}
@@ -158,7 +158,3 @@ def buildNodeDescriptor(params, node, indent=None, written=None, children=True, 
             nodedict['type'] = node.type
     return nd
 
-
-def getSingleNodeJSON(req, node, children=False):
-    nd = buildNodeDescriptor(req, node, children=children)
-    return json.dumps(nd, indent=4)

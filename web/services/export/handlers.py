@@ -193,7 +193,7 @@ def struct2template_test(req, path, params, data, d, debug=False, singlenode=Fal
     if 'add_shortlist' not in params:
         d['result_shortlist'] = []
 
-    d['nodelist'] = [jsonnode.buildNodeDescriptor(req, n, children=send_children) for n in nodelist]
+    d['nodelist'] = [jsonnode.buildNodeDescriptor(params, n, children=send_children) for n in nodelist]
     json_timetable = d['timetable']
 
     template = params.get("template", u"record $$[_rcd]$$: id=$$[id]$$: no-template-given\n")

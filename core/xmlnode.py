@@ -29,6 +29,7 @@ from core import File, db
 from core.systemtypes import Mappings, Root
 from utils.compat import iteritems
 from core.transition import current_user
+from utils.xml import xml_remove_illegal_chars
 
 EXCLUDE_WORKFLOW_NEWNODES = True
 
@@ -78,7 +79,7 @@ def add_node_to_xmldoc(
     written.add(node.id)
 
     xmlnode = etree.SubElement(xmlroot, "node")
-    xmlnode.set("name", node.name)
+    xmlnode.set("name", node.name or "")
     xmlnode.set("id", unicode(node.id))
     xmlnode.set("type", node.type + "/" + node.schema)
     xmlnode.set("datatype", node.type)
@@ -86,17 +87,14 @@ def add_node_to_xmldoc(
 
     # TODO: no access rights at the moment
 
-    RE_ILLEGAL_CHAR = re.compile(b'[^\u0020-\uD7FF\u0009\u000A\u000D\uE000-\uFFFD\u10000-\u10FFFF]+', re.UNICODE)
-
     for name, value in iteritems(node.attrs):
         if attribute_name_filter and not attribute_name_filter(name):
             continue
         xmlattr = etree.SubElement(xmlnode, "attribute")
         xmlattr.set("name", name)
-        # protext XML from invalid character
+        # protect XML from invalid characters
         # XXX: is this ok?
-        protected_value = RE_ILLEGAL_CHAR.sub(u"", unicode(value))
-        xmlattr.text = etree.CDATA(protected_value)
+        xmlattr.text = etree.CDATA(xml_remove_illegal_chars(value))
 
     for file in node.files.filter(File.filetype != u"metadata").filter(~File.filetype.in_(exclude_filetypes)):
         add_file_to_xmlnode(file, xmlnode)

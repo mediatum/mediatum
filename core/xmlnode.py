@@ -20,6 +20,7 @@
 from core import Node
 import io
 import random
+import re
 import logging
 import codecs
 
@@ -85,12 +86,17 @@ def add_node_to_xmldoc(
 
     # TODO: no access rights at the moment
 
+    RE_ILLEGAL_CHAR = re.compile(b'[^\u0020-\uD7FF\u0009\u000A\u000D\uE000-\uFFFD\u10000-\u10FFFF]+', re.UNICODE)
+
     for name, value in iteritems(node.attrs):
         if attribute_name_filter and not attribute_name_filter(name):
             continue
         xmlattr = etree.SubElement(xmlnode, "attribute")
         xmlattr.set("name", name)
-        xmlattr.text = etree.CDATA(unicode(value))
+        # protext XML from invalid character
+        # XXX: is this ok?
+        protected_value = RE_ILLEGAL_CHAR.sub(u"", unicode(value))
+        xmlattr.text = etree.CDATA(protected_value)
 
     for file in node.files.filter(File.filetype != u"metadata").filter(~File.filetype.in_(exclude_filetypes)):
         add_file_to_xmlnode(file, xmlnode)

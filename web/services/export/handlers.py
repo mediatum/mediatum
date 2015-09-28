@@ -774,7 +774,7 @@ def get_node_data_struct(
 
 
 def write_formatted_response(
-        req, path, params, data, id, debug=True, allchildren=False, singlenode=False, parents=False, send_children=False):
+        req, path, params, data, id, debug=True, allchildren=False, singlenode=False, parents=False):
 
     atime = starttime = time.time()
     r_timetable = []
@@ -784,6 +784,8 @@ def write_formatted_response(
         del _p['jsoncallback']
     if "_" in _p:
         del _p['_']
+
+    send_children = "send_children" in params
 
     cache_key = '|'.join(map(str, [path, _p, allchildren, singlenode, parents, send_children]))
     cache_key = cache_key.replace(' ', '_')
@@ -945,14 +947,7 @@ def write_formatted_response(
 
 
 def get_node_single(req, path, params, data, id):
-
-    res_children = params.get('children', False)
-    if res_children and res_children.lower() not in ['0', 'none', 'false']:
-        send_children = True
-    else:
-        send_children = False
-
-    return write_formatted_response(req, path, params, data, id, debug=True, singlenode=True, send_children=send_children)
+    return write_formatted_response(req, path, params, data, id, debug=True, singlenode=True)
 
 
 def get_node_children(req, path, params, data, id):

@@ -136,22 +136,22 @@ def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_c
         if singlenode:
             n = d['nodelist'][0]
             if not send_children:
-                add_node_to_xmldoc(n, xmlroot, exclude_filetypes=exclude_filetypes, attribute_name_filter=attribute_name_filter)
+                add_node_to_xmldoc(n, xmlroot, children=False, exclude_filetypes=exclude_filetypes, attribute_name_filter=attribute_name_filter)
             else:
                 xml_nodelist = create_xml_nodelist(xmlroot)
-                add_node_to_xmldoc(n, xml_nodelist, children=True, exclude_filetypes=exclude_filetypes,
+                xmlnode = add_node_to_xmldoc(n, xml_nodelist, children=True, exclude_filetypes=exclude_filetypes,
                                            attribute_name_filter=attribute_name_filter)
 
-            add_mask_xml(xmlroot, n, mask, language)
+            add_mask_xml(xmlnode, n, mask, language)
 
         else:
-            xml_nodelist = create_xml_nodelist()
+            xml_nodelist = create_xml_nodelist(xmlroot)
             xml_nodelist.set("start", unicode(d["nodelist_start"]))
             xml_nodelist.set("count", unicode(d["nodelist_limit"]))
 
             for n in d['nodelist']:
-                add_node_to_xmldoc(n, xmlroot, exclude_filetypes=exclude_filetypes, attribute_name_filter=attribute_name_filter)
-                add_mask_xml(xmlroot, n, mask, language)
+                xmlnode = add_node_to_xmldoc(n, xml_nodelist, children=False, exclude_filetypes=exclude_filetypes, attribute_name_filter=attribute_name_filter)
+                add_mask_xml(xmlnode, n, mask, language)
 
         # append a shortlist with id, name and type of the nodes
         # from result_shortlist = [[i, x.id, x.name, x.type, attr_list(x, sfields)] for i, x in enumerate(nodelist)]
@@ -180,7 +180,7 @@ def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_c
         xml_errormessage.text = etree.CDATA(d["errormessage"])
 
 
-    xmlstr = etree.tostring(xmlroot, pretty_print=True, encoding="utf8")
+    xmlstr = etree.tostring(xmlroot, xml_declaration=True, pretty_print=True, encoding="utf8")
 
     d['dataready'] = ("%.3f" % (time.time() - d['build_response_start']))
 

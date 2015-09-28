@@ -114,6 +114,9 @@ def add_node_to_xmldoc(
             add_node_to_xmldoc(mapping, xmlroot, written, children, exclude_filetypes, exclude_childtypes, attribute_name_filter)
 
 
+    return xmlnode
+
+
 class _NodeLoader:
 
     def __init__(self, fi, verbose=True):

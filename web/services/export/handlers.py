@@ -714,14 +714,9 @@ def get_node_data_struct(
         atime = time.time()
 
         try:
-            nodes_from_query = nodequery.all()
+            nodelist = nodequery.all()
         except Exception as e:
             return _client_error_response(400, "the database failed with the message: {}".format(str(e)))
-
-        if allchildren:
-            nodelist = [node] + nodes_from_query
-        else:
-            nodelist = nodes_from_query
 
         timetable.append(['fetching nodes from db returned {} results'.format(len(nodelist)), time.time() - atime])
         atime = time.time()

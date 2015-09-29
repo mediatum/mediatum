@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-    Object representation for the mediaTUM search language. 
+    Object representation for the mediaTUM search language.
 
     :copyright: (c) 2015 by the mediaTUM authors
     :license: GPL3, see COPYING for details

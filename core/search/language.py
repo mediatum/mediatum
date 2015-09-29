@@ -8,7 +8,7 @@
 """
 import re
 import string
-from parcon import Literal, SignificantLiteral, Word, InfixExpr, Forward, AnyCase
+from parcon import Literal, SignificantLiteral, Word, InfixExpr, Forward, AnyCase, Regex, Expected
 from core.search.untilregex import UntilRegex
 from core.search.representation import AttributeMatch, FullMatch, SchemaMatch, FulltextMatch, AttributeCompare, TypeMatch, And, Or, Not
 
@@ -18,16 +18,16 @@ SL = SignificantLiteral
 AC = AnyCase
 
 
-umlauts = u"äÄöÖüÜß"
+VALUE_CHAR_REGEX = u"[\u0020\u0021\u0023-\uD7FF\u0009\u000A\u000D\uE000-\uFFFD\u10000-\u10FFFF]+"
+
 
 def _join(seq):
     return "".join(seq)
 
 compare_op = (SL(">=") | SL("<=") | SL(">") | SL("<"))(name="compare_op")
 attr_name = Word(string.letters + string.digits + "_" + "-" + ".")(desc="attribute")
-printable_without_doublequote = umlauts + string.printable.replace("\"", "")
-value = Word(printable_without_doublequote)(desc="printable_without_doublequote")
-bare_value = UntilRegex(u"\s*(?:\sor\s|\sand\s|[)(])", flags=re.IGNORECASE|re.UNICODE) | value  # may end with or | and | ( | )
+value = Expected(Regex(VALUE_CHAR_REGEX), "value")(desc="value")
+bare_value = UntilRegex(u"\s*(?:\sor\s|\sand\s|[)(])", flags=re.IGNORECASE | re.UNICODE) | value  # may end with or | and | ( | )
 maybe_quoted = (SL('"') + value + SL('"'))[_join] | bare_value
 
 attr_match = (attr_name + "=" + maybe_quoted)(name="attr_match")[AttributeMatch.tup]

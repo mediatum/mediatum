@@ -77,7 +77,7 @@ def _prepare_searchstring(op, searchstring):
     return op.join(rewritten_terms)
 
 
-def make_fts_expr_tsvec(languages, target, searchstring, op="|"):
+def make_fts_expr_tsvec(languages, target, searchstring, op="&"):
     """Searches tsvector column. `target` should have a gin index.
     :param language: postgresql language string
     :param target: SQLAlchemy expression with type tsvector
@@ -94,7 +94,7 @@ def make_fts_expr_tsvec(languages, target, searchstring, op="|"):
     return target.op("@@")(ts_query)
 
 
-def make_fts_expr(languages, target, searchstring, op="|"):
+def make_fts_expr(languages, target, searchstring, op="&"):
     """Searches fulltext column, building ts_vector on the fly.
     `target` must have a gin index built with an ts_vector or this will be extremly slow.
     :param language: postgresql language string

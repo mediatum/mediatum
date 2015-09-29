@@ -40,6 +40,10 @@ def getExternalUser(name, type="intern"):
     raise Exception("we don't need this anymore")
 
 
+def get_guest_user():
+    return q(User).filter_by(login_name=config.get("user.guestuser")).one()
+
+
 def getUser(name_or_id):
     """Returns user object from db if found, else None"""
     try:

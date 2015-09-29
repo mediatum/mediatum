@@ -17,18 +17,21 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import codecs
 import logging
 import socket
 import asyncore
 import random  # FIXME: drop dependency!
 
 from .athana import counter, async_chat
-from core import medmarc, acl, users, config
+from core import medmarc, db, Node
 from schema import mapping
 
 from PyZ3950 import z3950, zdefs, asn1
 
+
 logg = logging.getLogger(__name__)
+q = db.query
 
 try:
     set
@@ -62,7 +65,7 @@ class AsyncPyZ3950Server(z3950.Server):
         try:
             self.decode_ctx.feed(map(ord, b))
         except asn1.BERError, val:
-            raise self.ProtocolError('ASN1 BER', ustr(val))
+            raise self.ProtocolError('ASN1 BER', unicode(val))
         if self.decode_ctx.val_count() > 0:
             typ, val = self.decode_ctx.get_first_decoded()
             logg.debug("received Z3950 message '%s'", typ)
@@ -71,7 +74,10 @@ class AsyncPyZ3950Server(z3950.Server):
                 raise self.ProtocolError("Bad typ", '%s %s' % (typ, val))
             if typ != 'initRequest' and self.expecting_init:
                 raise self.ProtocolError("Init expected", typ)
-            fn(self, val)
+            try:
+                fn(self, val)
+            except:
+                logg.exception("error while handling request")
 
     def send(self, val):
         b = self.encode_ctx.encode(z3950.APDU, val)
@@ -166,9 +172,8 @@ class AsyncPyZ3950Server(z3950.Server):
         map_node = medmarc.MarcMapper()
         l = []
         for i in xrange(start - 1, min(len(res_set), start + count - 1)):
-            try:
-                node = tree.getNode(res_set[i])
-            except tree.NoSuchNodeError:
+            node = q(Node).get(res_set[i])
+            if node is None:
                 logg.debug("request for non-existant node %s", res_set[i])
                 continue
             marc21_node = map_node(node)
@@ -179,7 +184,7 @@ class AsyncPyZ3950Server(z3950.Server):
             elt_external.direct_reference = z3950.Z3950_RECSYN_USMARC_ov
             elt_external.encoding = ('octet-aligned', marc21_node)
             n = z3950.NamePlusRecord()
-            n.name = ustr(node.id)
+            n.name = unicode(node.id)
             n.record = ('retrievalRecord', elt_external)
             l.append(n)
         return l
@@ -229,12 +234,14 @@ def search_nodes(query, mapping_prefix='Z3950_search_'):
         name = mapping_node.getName()
         if not name.startswith(mapping_prefix):
             continue
-        try:
-            node_id = name[len(mapping_prefix):]
-            roots_and_mappings.append((tree.getNode(node_id), mapping_node))
-        except tree.NoSuchNodeError:
+
+        node_id = name[len(mapping_prefix):]
+        node = q(Node).get(node_id)
+        if node is None:
             logg.error("Configuration problem detected: Z39.50 search mapping '%s' found, "
                        "but no matching root node with ID '%s'", name, node_id)
+        else:
+            roots_and_mappings.append((node, mapping_node))
 
     if not roots_and_mappings:
         logg.info('no mappings configured, skipping search')
@@ -244,7 +251,6 @@ def search_nodes(query, mapping_prefix='Z3950_search_'):
 
     # run one search per root node
     node_ids = []
-    guestaccess = acl.AccessData(user=users.getUser(config.get('user.guestuser')))
 
     for root_node, mapping_node in roots_and_mappings:
         # map query fields to node attributes
@@ -259,8 +265,8 @@ def search_nodes(query, mapping_prefix='Z3950_search_'):
             continue
         logg.info('executing query: %s', query_string)
         for n in root_node.search(query_string):
-            if guestaccess.hasReadAccess(n):
-                node_ids.append(n.id)
+#             if n.has_read_access():
+            node_ids.append(n.id)
 
         #node_ids.append( root_node.search(query_string).getIDs() )
 
@@ -361,7 +367,7 @@ def find_query_attribute(attrs):
         if attr.attributeType == 1:  # 'use' attribute
             attr_type, value = attr.attributeValue
             if attr_type == 'numeric':
-                cmp_value = ustr(value)
+                cmp_value = unicode(value)
         elif attr.attributeType == 2:  # 'relation' attribute
             attr_type, value = attr.attributeValue
             if attr_type == 'numeric' and 1 <= value <= 6:

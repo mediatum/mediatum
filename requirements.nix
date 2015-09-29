@@ -358,6 +358,29 @@ let
     buildInputs = with self; [];
     doCheck = false;
   };
+  
+  mollyZ3950 = self.buildPythonPackage {
+    name = "mollyZ3950-2.04-molly1";
+    src = fetchurl {
+      url = "https://pypi.python.org/packages/source/m/mollyZ3950/mollyZ3950-2.04-molly1.tar.gz";
+      md5 = "a0e5d7bb395ae31026afc7f974711630";
+    };
+    propagatedBuildInputs = with self; [ply];
+    buildInputs = with self; [];
+    doCheck = false;
+  };
+
+  ply = self.buildPythonPackage {
+    name = "ply-3.6";
+    src = fetchurl {
+      url = "https://pypi.python.org/packages/source/p/ply/ply-3.6.tar.gz";
+      md5 = "7aa0e8749d2377a863f477a7d67524d2";
+    };
+    propagatedBuildInputs = with self; [];
+    buildInputs = with self; [];
+    doCheck = false;
+  };
+
   pillow = self.buildPythonPackage {
     name = "pillow-2.9.0";
     src = fetchurl {
@@ -611,6 +634,7 @@ in {
       mediatumfsm
       mediatumtal
       mock
+      mollyZ3950
       parcon
       ldap
       psycopg2

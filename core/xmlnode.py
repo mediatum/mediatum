@@ -61,7 +61,7 @@ def writexml(node, fi, indent=None, written=None, children=True, children_access
 
     indent += 4
 
-    for name, value in node.items():
+    for name, value in sorted(node.items()):
         u_esc_name = u(esc(name))
         if attribute_name_filter and not attribute_name_filter(u_esc_name):
             continue

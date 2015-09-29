@@ -87,7 +87,7 @@ def add_node_to_xmldoc(
 
     # TODO: no access rights at the moment
 
-    for name, value in iteritems(node.attrs):
+    for name, value in sorted(iteritems(node.attrs)):
         if attribute_name_filter and not attribute_name_filter(name):
             continue
         xmlattr = etree.SubElement(xmlnode, "attribute")

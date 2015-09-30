@@ -107,9 +107,9 @@ def make_fts_expr(languages, target, searchstring, op="&"):
     tsvec = mediatumfunc.to_tsvector_safe(languages[0], target)
 
     for language in languages[1:]:
-        tsvec = tsvec.op("||")(mediatumfunc.to_tsvector_safe(language, prepared_searchstring))
+        tsvec = tsvec.op("||")(mediatumfunc.to_tsvector_safe(language, target))
 
-    return make_fts_expr_tsvec(languages, target, searchstring, op)
+    return make_fts_expr_tsvec(languages, tsvec, prepared_searchstring, op)
 
 
 def make_config_searchtype_cond(languages, searchtypes):

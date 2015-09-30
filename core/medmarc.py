@@ -112,10 +112,10 @@ def find_marc_mapping(schema_name):
     if marc_mapping is None:  # FIXME: or not marc_mapping.isActive():
         return None
 
-    mapping_fields = [(tuple(mask_item.getName().split('$', 1)),
+    mapping_fields = [(tuple(mask_item.name.split('$', 1)),
                        Template(mask_item.getDescription()))
-                      for mask_item in marc_mapping.getFields()
-                      if '$' in mask_item.getName()]
+                      for mask_item in marc_mapping.children
+                      if '$' in mask_item.name]
     return mapping_fields
 
 
@@ -178,7 +178,7 @@ class MarcMapper(object):
         self.mappings_by_schema = {}
 
     def __call__(self, node):
-        schema_name = node.getSchema()
+        schema_name = node.schema
         try:
             mapping_fields = self.mappings_by_schema[schema_name]
         except KeyError:
@@ -197,11 +197,11 @@ def map_node(node, mapping_fields=None):
     Map a node to a MARC21 record.  Returns its serialised form.
     """
     if not mapping_fields:
-        mapping_fields = find_marc_mapping(node.getSchema())
+        mapping_fields = find_marc_mapping(node.schema)
         if mapping_fields is None:
             raise LookupError(
                 "Failed to find marc mappings for node %s with schema %s" % (
-                    node.id, node.getSchema()))
+                    node.id, node.schema))
 
     # interpolate MARC field value templates using node attributes
     fields = {}

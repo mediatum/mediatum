@@ -30,6 +30,7 @@ from schema import mapping
 from PyZ3950 import z3950, zdefs, asn1
 from sqlalchemy.orm import undefer
 from core.users import get_guest_user
+from schema.mapping import Mapping
 
 
 logg = logging.getLogger(__name__)
@@ -160,7 +161,7 @@ class AsyncPyZ3950Server(z3950.Server):
         map_node = medmarc.MarcMapper()
 
         node_ids = res_set[start-1:start+count-1]
-        nodes = q(Node).filter(Node.id.in_(node_ids)).options(undefer(Node.attrs))
+        nodes = q(Node).filter(Node.id.in_(node_ids)).prefetch_attrs()
         formatted = [fo for fo in [format_node(n, map_node) for n in nodes] if fo is not None]
         return formatted
 
@@ -203,20 +204,15 @@ def search_nodes(query, mapping_prefix='Z3950_search_'):
     with a node ID, which is then used as root node for the search
     based on that field mapping.
     """
-    # find root nodes and their mappings
-    roots_and_mappings = []
-    for mapping_node in mapping.getMappings():
-        name = mapping_node.getName()
-        if not name.startswith(mapping_prefix):
-            continue
 
+    def get_root_for_mapping(mapping_node):
+        name = mapping_node.name
         node_id = name[len(mapping_prefix):]
         node = q(Node).get(node_id)
-        if node is None:
-            logg.error("Configuration problem detected: Z39.50 search mapping '%s' found, "
-                       "but no matching root node with ID '%s'", name, node_id)
-        else:
-            roots_and_mappings.append((node, mapping_node))
+        return node
+
+    mapping_nodes = q(Mapping).filter(Mapping.name.startswith(mapping_prefix))
+    roots_and_mappings = [(get_root_for_mapping(m), m) for m in mapping_nodes]
 
     if not roots_and_mappings:
         logg.info('no mappings configured, skipping search')
@@ -229,20 +225,23 @@ def search_nodes(query, mapping_prefix='Z3950_search_'):
     guest = get_guest_user()
 
     for root_node, mapping_node in roots_and_mappings:
+        if root_node is None:
+            logg.error("Configuration problem detected: Z39.50 search mapping '%s' found, but no matching root node", mapping_node.name)
+            continue
         # map query fields to node attributes
         field_mapping = {}
-        for field in mapping_node.getChildren():
-            field_mapping[field.getName()] = field.getDescription().split(';')
-        # FIXME: this is redundant - why build an infix query string
-        # just to parse it afterwards?
+        for field in mapping_node.children:
+            field_mapping[field.name] = field.getDescription().split(';')
+        # XXX: this is redundant - why build an infix query string
+        # XXX: just to parse it afterwards?
+        # XXX: better: create search tree and apply it to a query instead of using node.search()
         query_string = query.build_query_string(field_mapping)
         if query_string is None:
             logg.info('unable to map query: [%r] using mapping %s', query, field_mapping)
             continue
-        logg.info('executing query: %s', query_string)
+        logg.info('executing query for node %s: %s', root_node.id, query_string)
         for n in root_node.search(query_string).filter_read_access(user=guest):
             node_ids.append(n.id)
-
 
     # use a round-robin algorithm to merge the separate query results
     # in order to produce maximally diverse results in the first hits

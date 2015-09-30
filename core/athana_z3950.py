@@ -29,6 +29,7 @@ from schema import mapping
 
 from PyZ3950 import z3950, zdefs, asn1
 from sqlalchemy.orm import undefer
+from core.users import get_guest_user
 
 
 logg = logging.getLogger(__name__)
@@ -225,6 +226,7 @@ def search_nodes(query, mapping_prefix='Z3950_search_'):
 
     # run one search per root node
     node_ids = []
+    guest = get_guest_user()
 
     for root_node, mapping_node in roots_and_mappings:
         # map query fields to node attributes
@@ -238,11 +240,9 @@ def search_nodes(query, mapping_prefix='Z3950_search_'):
             logg.info('unable to map query: [%r] using mapping %s', query, field_mapping)
             continue
         logg.info('executing query: %s', query_string)
-        for n in root_node.search(query_string):
-#             if n.has_read_access():
+        for n in root_node.search(query_string).filter_read_access(user=guest):
             node_ids.append(n.id)
 
-        #node_ids.append( root_node.search(query_string).getIDs() )
 
     # use a round-robin algorithm to merge the separate query results
     # in order to produce maximally diverse results in the first hits

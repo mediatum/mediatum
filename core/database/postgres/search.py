@@ -112,6 +112,25 @@ def make_fts_expr(languages, target, searchstring, op="&"):
     return make_fts_expr_tsvec(languages, tsvec, prepared_searchstring, op)
 
 
+def make_attribute_fts_cond(languages, target, searchstring, op="&"):
+    """Searches fulltext column, building ts_vector on the fly.
+    `target` must have a gin index built with an ts_vector or this will be extremly slow.
+    :param language: postgresql language string
+    :param target: SQLAlchemy expression with type text
+    :param searchstring: string of space-separated words to search
+    :param op: operator used to join searchterms separated by space, | or &
+    """
+    languages = list(languages)
+    prepared_searchstring = _prepare_searchstring(op, searchstring)
+
+    cond = mediatumfunc.to_tsvector_safe(languages[0], target).op("@@")(func.to_tsquery(languages[0], prepared_searchstring))
+
+    for language in languages[1:]:
+        cond |= mediatumfunc.to_tsvector_safe(language, target).op("@@")(func.to_tsquery(language, prepared_searchstring))
+
+    return cond
+
+
 def make_config_searchtype_cond(languages, searchtypes):
     # we must repeat the language for all search types, because Postgres is to stupid to find the optimal plan without that ;)
 
@@ -154,9 +173,7 @@ def apply_searchtree_to_query(query, searchtree, languages=None):
             return left | right, fts_left or fts_right
 
         elif isinstance(n, AttributeMatch):
-            return make_fts_expr(languages,
-                                 Node.attrs[n.attribute].astext,
-                                 n.searchterm), False
+            return make_attribute_fts_cond(languages, Node.attrs[n.attribute].astext, n.searchterm), False
 
         elif isinstance(n, FulltextMatch):
             cond = make_fts_expr_tsvec(languages, Fts.tsvec, n.searchterm)

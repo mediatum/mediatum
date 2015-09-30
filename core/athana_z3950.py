@@ -28,6 +28,7 @@ from core import medmarc, db, Node
 from schema import mapping
 
 from PyZ3950 import z3950, zdefs, asn1
+from sqlalchemy.orm import undefer
 
 
 logg = logging.getLogger(__name__)
@@ -43,6 +44,19 @@ class FormatError(Exception):
 
     """Communication format not supported.
     """
+
+def format_node(node, map_node):
+    marc21_node = map_node(node)
+
+    # None? no mapping => no node
+    if marc21_node is not None:
+        elt_external = asn1.EXTERNAL()
+        elt_external.direct_reference = z3950.Z3950_RECSYN_USMARC_ov
+        elt_external.encoding = ('octet-aligned', marc21_node)
+        n = z3950.NamePlusRecord()
+        n.name = unicode(node.id)
+        n.record = ('retrievalRecord', elt_external)
+        return n
 
 
 class AsyncPyZ3950Server(z3950.Server):
@@ -168,26 +182,12 @@ class AsyncPyZ3950Server(z3950.Server):
         """
         Format a 'present' response for the requested query result subset.
         """
-        #encode_charset = self.charset_name
         map_node = medmarc.MarcMapper()
-        l = []
-        for i in xrange(start - 1, min(len(res_set), start + count - 1)):
-            node = q(Node).get(res_set[i])
-            if node is None:
-                logg.debug("request for non-existant node %s", res_set[i])
-                continue
-            marc21_node = map_node(node)
-            if marc21_node is None:
-                # no mapping => no node
-                continue
-            elt_external = asn1.EXTERNAL()
-            elt_external.direct_reference = z3950.Z3950_RECSYN_USMARC_ov
-            elt_external.encoding = ('octet-aligned', marc21_node)
-            n = z3950.NamePlusRecord()
-            n.name = unicode(node.id)
-            n.record = ('retrievalRecord', elt_external)
-            l.append(n)
-        return l
+
+        node_ids = res_set[start-1:start+count-1]
+        nodes = q(Node).filter(Node.id.in_(node_ids)).options(undefer(Node.attrs))
+        formatted = [fo for fo in [format_node(n, map_node) for n in nodes] if fo is not None]
+        return formatted
 
     def delete(self, dreq):
         """

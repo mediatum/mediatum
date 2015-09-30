@@ -15,7 +15,7 @@ import sqlalchemy as sqla
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.engine import Engine
 from sqlalchemy import Column, ForeignKey, event, Integer, DateTime, func as sqlfunc
-from sqlalchemy.orm import relationship, backref, Query, Mapper
+from sqlalchemy.orm import relationship, backref, Query, Mapper, undefer
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy_continuum.utils import version_class
 from sqlalchemy_continuum.plugins.transaction_meta import TransactionMetaPlugin
@@ -167,6 +167,11 @@ psycopg2.extensions.register_adapter(datetime.date, InfDateAdapter)
 
 
 class MtQuery(Query):
+
+
+    def prefetch_attrs(self):
+        from core import Node
+        return self.options(undefer(Node.attrs))
 
     def _find_nodeclass(self):
         from core import Node

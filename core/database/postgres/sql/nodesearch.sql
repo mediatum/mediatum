@@ -214,6 +214,33 @@ END;
 $$;
 
 
+CREATE OR REPLACE FUNCTION recreate_fts_index_for_attribute(name text) RETURNS void
+    LANGUAGE plpgsql
+    SET search_path = :search_path
+    AS $$
+DECLARE
+    searchconfig regconfig;
+    autoindex_languages text[];
+    index_name text;
+BEGIN
+    autoindex_languages = get_autoindex_languages();
+
+    IF autoindex_languages IS NOT NULL THEN
+        FOREACH searchconfig IN ARRAY autoindex_languages LOOP
+            -- TODO: replace with proper upsert after 9.5
+            index_name = 'fts_attr_' || replace(name, '-', '_') || '_' || searchconfig;
+            EXECUTE 'DROP INDEX IF EXISTS ' || index_name; 
+
+            -- rebuild the search index
+            EXECUTE 'CREATE INDEX ' || index_name
+            || ' ON node USING gin(to_tsvector_safe(''' || searchconfig || ''', node.attrs ->> ''' || name || '''))';
+        END LOOP;
+    END IF;
+RETURN;
+END;
+$$;
+
+
 CREATE OR REPLACE FUNCTION recreate_all_tsvectors_attrs() RETURNS void
     LANGUAGE plpgsql
     SET search_path = :search_path

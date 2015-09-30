@@ -11,6 +11,7 @@ mediatumbabel
 mediatumfsm
 mediatumtal
 mock==1.1.2
+mollyZ3950==2.04-molly1
 parcon
 psycopg2
 pyaml

@@ -911,12 +911,15 @@ class Template(object):
         self.template_parts = self.split_at_vars(template_string)
         self.attribute_positions = xrange(1, len(self.template_parts), 2)
 
-    def __call__(self, data_provider):
+    def __call__(self, data_provider, lookup=None):
         """
         Interpolate the template using the content of the data
         provider (dict or MediaTUM tree node).
+        :param lookup: function for getting attributes from `data_provider`, defaults to data_provider.get
         """
-        lookup = data_provider.get
+        if lookup is None:
+            lookup = data_provider.get
+
         text_parts = self.template_parts[:]
         for i in self.attribute_positions:
             func = ""
@@ -926,7 +929,7 @@ class Template(object):
                 attribute_name = parts[0]
                 func = parts[1:]
             if attribute_name:
-                text_parts[i] = lookup(attribute_name) or ''
+                text_parts[i] = unicode(lookup(attribute_name)) or ''
                 try:
                     if func[0] == "substring":
                         text_parts[i] = self._substring(text_parts[i], func[1:])

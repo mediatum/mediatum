@@ -114,31 +114,6 @@ class AsyncPyZ3950Server(z3950.Server):
         ir.protocolVersion['version_1'] = 1
         ir.protocolVersion['version_2'] = 1
         ir.protocolVersion['version_3'] = self.v3_flag
-        val = zdefs.get_charset_negot(ireq)
-        charset_name = None
-        records_in_charsets = 0
-        if val != None:
-            csreq = zdefs.CharsetNegotReq()
-            csreq.unpack_proposal(val)
-
-            def rand_choose(list_or_none):
-                if list_or_none == None or len(list_or_none) == 0:
-                    return None
-                return random.choice(list_or_none)
-            charset_name = rand_choose(csreq.charset_list)
-            if charset_name != None:
-                try:
-                    codecs.lookup(charset_name)
-                except LookupError, l:
-                    charset_name = None
-            csresp = CharsetNegotResp(
-                charset_name,
-                rand_choose(csreq.lang_list),
-                csreq.records_in_charsets)
-            records_in_charsets = csresp.records_in_charsets
-            if trace_charset:
-                print csreq, csresp
-            zdefs.set_charset_negot(ir, csresp.pack_negot_resp(), self.v3_flag)
 
         optionslist = ['search', 'present', 'negotiation', 'delSet']  # , 'scan']
         ir.options = z3950.Options()
@@ -159,7 +134,6 @@ class AsyncPyZ3950Server(z3950.Server):
 
         self.expecting_init = 0
         self.send(('initResponse', ir))
-        self.set_codec(charset_name, records_in_charsets)
 
     def search_child(self, query):
         """

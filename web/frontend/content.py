@@ -430,9 +430,9 @@ def mkContentNode(req):
         # try to find a start page
         if "files" not in req.params and len(filter(None, node.getStartpageDict().values())) > 0:
             # XXX: would be better to show an error message for missing, but configured start pages
-            for f in node.getFiles():
-                if f.type == "content" and f.mimetype == "text/html" and os.path.isfile(
-                        f.retrieveFile()) and fileIsNotEmpty(f.retrieveFile()):
+            html_files = node.files.filter_by(filetype=u"content", mimetype=u"text/html")
+            for f in html_files:
+                if f.exists and f.size > 0:
                     return ContentNode(node)
 
         if node.show_list_view:

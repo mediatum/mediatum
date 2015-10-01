@@ -80,9 +80,9 @@ namespace=     # nbn:de:bvb | nbn:en:1111 | publicid | etc
 
 [user]
 adminuser=Administrator
-guestuser=Guest
 admingroup=Administration
-passwd=ABC
+default_admin_password = ABC # !!!
+guestuser=Guest
 
 [z3950]
 activate=false

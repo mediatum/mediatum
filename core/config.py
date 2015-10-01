@@ -122,7 +122,7 @@ def initialize(filepath=None):
         print "Couldn't find data directory", settings["paths.datadir"]
         sys.exit(1)
 
-    for var in ["paths.datadir", "paths.searchstore", "paths.tempdir"]:
+    for var in ["paths.datadir", "paths.tempdir"]:
         if var not in settings:
             print "ERROR: config option", var, "not set"
             sys.exit(1)

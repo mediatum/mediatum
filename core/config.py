@@ -18,7 +18,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-
+from __future__ import print_function
 import logging
 import os
 import sys
@@ -103,12 +103,19 @@ def _read_ini_file(basedir, filename):
     return params
 
 
-def mkDir(dir):
-    try:
-        os.mkdir(dir)
-        print "Created directory", dir
-    except:
-        pass  # already exists
+def check_create_dir(dirpath, label):
+    if not os.path.exists(dirpath):
+        try:
+            os.mkdir(dirpath)
+        except OSError as e:
+            print("ERROR 2, couldn't create directory '{}' ({}): {}".format(dirpath, label, e.strerror))
+            sys.exit(2)
+
+        print("created directory " + dirpath)
+
+    elif not os.path.isdir(dirpath):
+        print("ERROR 3, path is not a directory: '{}' ({})".format(dirpath, label))
+        sys.exit(3)
 
 
 def initialize(filepath=None):
@@ -118,18 +125,25 @@ def initialize(filepath=None):
     logg.info("using config file %s", filepath)
     global settings
     settings = _read_ini_file(basedir, filepath)
-    if not os.path.isdir(settings["paths.datadir"]):
-        print "Couldn't find data directory", settings["paths.datadir"]
-        sys.exit(1)
 
     for var in ["paths.datadir", "paths.tempdir"]:
         if var not in settings:
-            print "ERROR: config option", var, "not set"
+            print("ERROR 1: config option", var, "not set")
             sys.exit(1)
 
-    mkDir(os.path.join(settings["paths.datadir"], "search"))
-    mkDir(os.path.join(settings["paths.datadir"], "html"))
-    mkDir(os.path.join(settings["paths.datadir"], "log"))
+    # create dirs if neccessary
+    data_path = settings["paths.datadir"]
+
+    check_create_dir(data_path, "datadir")
+    check_create_dir(os.path.join(data_path, "html"), "datadir/html")
+    check_create_dir(settings["paths.tempdir"], "tempdir")
+
+    # extract log dir from log file path and create it if neccessary
+
+    log_filepath = settings.get("logging.file")
+    if log_filepath:
+        log_dirpath = os.path.dirname(log_filepath)
+        check_create_dir(log_dirpath, "dir for logging.file")
 
 #
 # resolve given filename to correct path/file

@@ -48,7 +48,7 @@ def getContent(req, ids):
     node = q(Node).get(ids[0])
     user = users.getUserFromRequest(req)
     access = AccessData(req)
-    if not access.hasWriteAccess(node) or "editor" in users.getHideMenusForUser(user):
+    if not node.has_write_access() or "editor" in user.hidden_edit_functions:
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
@@ -107,7 +107,7 @@ def getContent(req, ids):
             return ""
 
         if req.params.get("option") == "htmlupload":  # use fileupload
-            logg.info("%s going to use ckeditor fileupload (htmlupload) for node %s (%s, %s)", 
+            logg.info("%s going to use ckeditor fileupload (htmlupload) for node %s (%s, %s)",
                       user.login_name, node.id, node.name, node.type)
             req.write(upload_for_html(req))
             return ""
@@ -116,7 +116,7 @@ def getContent(req, ids):
             for f in node.files:
                 if f.abspath.endswith(req.params.get('option')):
                     filepath = f.abspath.replace(config.get("paths.datadir"), '')
-                    logg.info("%s going to delete ckeditor filebrowser file %s for node %s (%s, %s)", 
+                    logg.info("%s going to delete ckeditor filebrowser file %s for node %s (%s, %s)",
                               user.login_name, filepath, node.id, node.name, node.type)
                     if os.path.exists(f.abspath):
                         os.remove(f.abspath)
@@ -245,7 +245,7 @@ def getContent(req, ids):
     node.set('startpage.selector', startpage_selector[0:-1])
 
     db.session.commit()
-        
+
     v = {"id": req.params.get("id", "0"),
          "tab": req.params.get("tab", ""),
          "node": node,

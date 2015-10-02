@@ -24,12 +24,12 @@ import web.edit
 
 from core.acl import AccessData
 from core.translation import t, lang
-from web.edit.edit_common import showdir 
+from web.edit.edit_common import showdir
 from web.edit.edit import nodeIsChildOfNode
 from utils.utils import isDirectory
 from core.users import getHomeDir
 import logging
-from contenttypes import Collections
+from contenttypes import Collections, Directory
 from core import Node
 from core import db
 
@@ -69,36 +69,46 @@ def getContent(req, ids):
                 continue
 
             for dest_id in req.params.get("destination", "").split(","):
-                if dest_id=="": # no destination given
+                if not dest_id: # no destination given
                     continue
 
                 dest = q(Node).get(dest_id)
-                if dest != src and access.hasReadAccess(src) and access.hasWriteAccess(dest) and access.hasWriteAccess(obj) and isDirectory(dest):
-                        if not nodeIsChildOfNode(dest,obj):
-                            dest.children.append(obj)
-                            src.children.remove(obj)
-                            db.session.commit()
 
-                            if dest.id not in changes:
-                                changes.append(dest.id)
-                            if src.id not in changes:
-                                changes.append(src.id)
-                            logg.info("%s published %s (%s, %s) from src %s (%s, %s) to dest %s (%s, %s)", user.login_name,
-                                      obj.id, obj.name, obj.type,
-                                      src.id, src.name, src.type,
-                                      dest.id, dest.name, dest.type)
-                        else:
-                            actionerror.append(obj.id)
-                            logg.error("Error in publishing of node %s: Destination node %s is child of node.", obj_id, dest.id)
+                # XXX: this error handling should be revised, I think...
 
-                if not access.hasReadAccess(src):
+                if not src.has_read_access():
                     logg.error("Error in publishing of node %r: source position %r has no read access.", obj.id, src.id)
-                if not access.hasWriteAccess(dest):
+                    error = True
+                if not dest.has_write_access():
                     logg.error("Error in publishing of node %r: destination %r has no write access.", obj.id, dest.id)
-                if not access.hasWriteAccess(obj):
+                    error = True
+                if not obj.has_write_access():
                     logg.error("Error in publishing of node %r: object has no write access.", obj.id)
-                if not isDirectory(dest):
+                    error = True
+                if not isinstance(dest, Directory):
                     logg.error("Error in publishing of node %r: destination %r is not a directory.", obj.id, dest.id)
+                    error = True
+                if dest == src:
+                    logg.error("Error in publishing of node %r: destination %r is not a directory.", obj.id, dest.id)
+                    error = True
+
+                if not error:
+                    if not nodeIsChildOfNode(dest,obj):
+                        dest.children.append(obj)
+                        src.children.remove(obj)
+                        db.session.commit()
+
+                        if dest.id not in changes:
+                            changes.append(dest.id)
+                        if src.id not in changes:
+                            changes.append(src.id)
+                        logg.info("%s published %s (%s, %s) from src %s (%s, %s) to dest %s (%s, %s)", user.login_name,
+                                  obj.id, obj.name, obj.type,
+                                  src.id, src.name, src.type,
+                                  dest.id, dest.name, dest.type)
+                    else:
+                        actionerror.append(obj.id)
+                        logg.error("Error in publishing of node %s: Destination node %s is child of node.", obj_id, dest.id)
 
         v = {}
         v["id"] = publishdir.id

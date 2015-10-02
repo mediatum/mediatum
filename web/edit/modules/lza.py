@@ -48,7 +48,7 @@ def getContent(req, ids):
         node = q(Node).get(id)
 
         access = acl.AccessData(req)
-        if not access.hasWriteAccess(node):
+        if not node.has_write_access():
             req.setStatus(httpstatus.HTTP_FORBIDDEN)
             return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
@@ -58,7 +58,7 @@ def getContent(req, ids):
             for f in node.files:
                 if f.filetype == "lza":
                     node.files.remove(f)
-            # create new file     
+            # create new file
             for f in node.files:
                 if f.filetype in ("original", "document"):
                     try:

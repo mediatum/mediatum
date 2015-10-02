@@ -19,14 +19,12 @@
 """
 
 
-import core.acl as acl
-import core.users as users
 import logging
 from utils.utils import formatTechAttrs, dec_entry_log
 from utils.date import format_date, parse_date
 from core.transition import httpstatus
-from core import Node
-from core import db
+from core import Node, db
+from core.transition import current_user
 
 q = db.query
 logg = logging.getLogger(__name__)
@@ -34,10 +32,8 @@ logg = logging.getLogger(__name__)
 
 @dec_entry_log
 def getContent(req, ids):
-    user = users.getUserFromRequest(req)
     node = q(Node).get(ids[0])
-    access = acl.AccessData(req)
-    if not access.hasWriteAccess(node) or "admin" in users.getHideMenusForUser(user):
+    if not node.has_write_access() or "admin" in current_user.hidden_edit_functions:
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
@@ -112,8 +108,8 @@ def getContent(req, ids):
                                                       "tattr": tattr,
                                                       "fd": formatdate,
                                                       "gf": getFormat,
-                                                      "adminuser": user.isAdmin(),
-                                                      "canedit": access.hasWriteAccess(node)},
+                                                      "adminuser": user.is_admin,
+                                                      "canedit": node.has_write_access()},
                       macro="edit_admin_file")
 
 

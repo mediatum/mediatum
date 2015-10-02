@@ -29,16 +29,20 @@ import logging
 import os.path
 import subprocess
 import sys
+import tempfile
 from sqlalchemy_continuum import remove_versioning
 from core.database.postgres.alchemyext import disable_triggers, enable_triggers
 sys.path.append(".")
 
-from core.init import basic_init, check_undefined_nodeclasses
+from core import init
 from core.database.postgres.connector import read_and_prepare_sql
 from collections import OrderedDict
 from bin.manage import vacuum_analyze_tables
 
-basic_init()
+LOG_FILEPATH = os.path.join(tempfile.gettempdir(), "mediatum_mysql_migrate.log")
+
+init.basic_init(root_loglevel=logging.INFO, log_filepath=LOG_FILEPATH)
+
 import core.database.postgres
 
 
@@ -47,7 +51,6 @@ logging.getLogger("migration.acl_migration").trace_level = logging.ERROR
 logging.getLogger("core.database.postgres").trace_level = logging.ERROR
 
 logg = logging.getLogger("mysql_migrate.py")
-logg.setLevel(logging.INFO)
 
 from core import db
 
@@ -112,7 +115,7 @@ def versions(s):
     s.commit()
     from migration import version_migration
     # all node classes must be defined for versioning, stub them if some plugins are missing, for example
-    check_undefined_nodeclasses(stub_undefined_nodetypes=True)
+    init.check_undefined_nodeclasses(stub_undefined_nodetypes=True)
     version_migration.fix_versoning_attributes()
     version_migration.insert_migrated_version_nodes(version_migration.all_version_nodes())
     version_migration.finish()
@@ -121,7 +124,7 @@ def versions(s):
 
 def permissions(s):
     from migration import acl_migration
-    check_undefined_nodeclasses(stub_undefined_nodetypes=True)
+    init.check_undefined_nodeclasses(stub_undefined_nodetypes=True)
     acl_migration.migrate_access_entries()
     acl_migration.set_home_dir_permissions()
     acl_migration.migrate_rules()

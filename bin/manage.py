@@ -5,40 +5,38 @@
 
 mediaTUM management script.
 
-manage.py <action>
+manage.py <subcommand> args...
 
-action is one of:
+see
 
-* create: create database schema and structure
-* drop: drop database schema with all data
-* recreate: run drop and create
-* init: load initial database values needed for an empty mediaTUM
-* truncate: deletes all data, but keeps the db structure
+* ``python bin/manage.py --help`` for details
+* ``python bin/manage.py <subcommand> --help`` for details for a subcommand
+
 
 """
-from __future__ import division, absolute_import, print_function
-
+from collections import OrderedDict
 from functools import partial
 import logging
-from pprint import pformat
+import os
 import sys
+import tempfile
 import warnings
 import pyaml
-from collections import OrderedDict
+
 sys.path.append(".")
 
 from core import init
 from core.database.postgres import db_metadata, mediatumfunc
 import configargparse
 
-init.basic_init(root_loglevel=logging.WARN)
+LOG_FILEPATH = os.path.join(tempfile.gettempdir(), "mediatum_manage.log")
+
+init.basic_init(root_loglevel=logging.INFO, log_filepath=LOG_FILEPATH)
 
 logg = logging.getLogger("manage.py")
-logg.setLevel(logging.INFO)
 
 from utils.log import TraceLogger
 TraceLogger.trace_level = logging.ERROR
-logging.getLogger("database").setLevel(logging.INFO)
 
 from core.database.init import init_database_values
 from core import db, Node

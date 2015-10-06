@@ -108,7 +108,7 @@ def getContent(req, ids):
                                                       "tattr": tattr,
                                                       "fd": formatdate,
                                                       "gf": getFormat,
-                                                      "adminuser": user.is_admin,
+                                                      "adminuser": current_user.is_admin,
                                                       "canedit": node.has_write_access()},
                       macro="edit_admin_file")
 

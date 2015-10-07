@@ -83,7 +83,8 @@ def init_database_values(s, default_admin_password=None):
 
     admingroup = UserGroup(name=config.get(u"user.admingroup", u"administration"),
                            is_workflow_editor_group=True,
-                           is_editor_group=True
+                           is_editor_group=True,
+                           is_admin_group=True
                            )
     admingroup.users.append(adminuser)
     s.add(admingroup)

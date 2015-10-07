@@ -23,6 +23,7 @@ import logging
 import os
 import sys
 import codecs
+import tempfile
 
 #basedir = os.path.dirname(__file__).rsplit(os.sep, 1)[0]
 # using abspath allows importing start.py or variants (wn 2014-11-20)
@@ -34,8 +35,15 @@ logg = logging.getLogger(__name__)
 sys.path.append(os.path.join(basedir, "external"))
 
 settings = None
+languages = None
 # append our own fallback lib directory
 sys.path.append(os.path.join(basedir, "external"))
+
+
+def get_default_data_dir():
+    home = os.path.expanduser("~")
+    default_data_dir = os.path.join(home, "mediatum_data")
+    return default_data_dir
 
 
 def get_config_filepath():
@@ -45,6 +53,8 @@ def get_config_filepath():
 def get(key, default=None):
     return settings.get(key, default)
 
+def is_default_config():
+    return not settings
 
 def getsubset(prefix):
     options = {}
@@ -104,6 +114,10 @@ def _read_ini_file(basedir, filename):
 
 
 def check_create_dir(dirpath, label):
+    """Checks if dir with `dirpath` already exists and creates it if it doesn't exists.
+    :param dirpath: path of directory
+    :param label: short, readable directory description to show in messages
+    """
     if not os.path.exists(dirpath):
         try:
             os.mkdir(dirpath)
@@ -111,7 +125,7 @@ def check_create_dir(dirpath, label):
             print("ERROR 2, couldn't create directory '{}' ({}): {}".format(dirpath, label, e.strerror))
             sys.exit(2)
 
-        print("created directory " + dirpath)
+        print("created directory '{}' ({})".format(dirpath, label))
 
     elif not os.path.isdir(dirpath):
         print("ERROR 3, path is not a directory: '{}' ({})".format(dirpath, label))
@@ -123,20 +137,22 @@ def initialize(filepath=None):
         filepath = get_config_filepath()
 
     logg.info("using config file %s", filepath)
-    global settings
-    settings = _read_ini_file(basedir, filepath)
+    global settings, languages
 
-    for var in ["paths.datadir", "paths.tempdir"]:
-        if var not in settings:
-            print("ERROR 1: config option", var, "not set")
-            sys.exit(1)
+    if os.path.exists(filepath):
+        settings = _read_ini_file(basedir, filepath)
+    else:
+        logg.warn("WARNING: config file %s not found, using default test config!", filepath)
+        settings = {}
+
+    languages = [lang.strip() for lang in settings.get("i18n.languages", "en").split(",") if lang.strip()]
 
     # create dirs if neccessary
-    data_path = settings["paths.datadir"]
+    data_path = settings.get("paths.datadir", get_default_data_dir())
 
     check_create_dir(data_path, "datadir")
     check_create_dir(os.path.join(data_path, "html"), "datadir/html")
-    check_create_dir(settings["paths.tempdir"], "tempdir")
+    check_create_dir(settings.get("paths.tempdir", tempfile.gettempdir()), "tempdir")
 
     # extract log dir from log file path and create it if neccessary
 

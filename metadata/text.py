@@ -33,7 +33,7 @@ from export.exportutils import runTALSnippet
 
 logg = logging.getLogger(__name__)
 
-system_languages = [lang.strip() for lang in config.get("i18n.languages").split(",") if lang.strip()]
+languages = [lang.strip() for lang in config.get("i18n.languages").split(",") if lang.strip()]
 
 
 def getMaskitemForField(field, language=None, mask=None):
@@ -133,7 +133,7 @@ class m_text(Metatype):
 
         if value.find('\n') != -1:
             valuesList = value.split('\n')
-            if any(lang in valuesList for lang in system_languages):  # treat as multilingual
+            if any(lang in valuesList for lang in languages):  # treat as multilingual
                 index = 0
                 try:
                     index = valuesList.index(language)

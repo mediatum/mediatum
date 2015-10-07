@@ -111,8 +111,9 @@ def main(host=None, http_port=None, redis_sessions=False, force_test_db=None):
         z3950port = None
 
     athana.setThreads(int(config.get("host.threads", "8")))
-    print("WARNING: using experimental persistent redis session support, only for testing!!!")
-    athana.USE_PERSISTENT_SESSIONS = redis_sessions
+    if redis_sessions:
+        print("WARNING: using experimental persistent redis session support, only for testing!!!")
+        athana.USE_PERSISTENT_SESSIONS = True
 
     import datetime
     with open("/tmp/mediatum.started", "w") as wf:

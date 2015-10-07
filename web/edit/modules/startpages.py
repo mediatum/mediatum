@@ -175,9 +175,6 @@ def getContent(req, ids):
 
     db.session.commit()
 
-
-    languages = [language.strip() for language in config.get("i18n.languages").split(",")]
-
     if "startpages_save" in req.params.keys():  # user saves startpage configuration
         logg.info("%s going to save startpage configuration for node %s (%s, %s): %s",
                   user.login_name, node.id, node.name, node.type, req.params)
@@ -192,7 +189,7 @@ def getContent(req, ids):
 
         # build startpage_selector
         startpage_selector = ""
-        for language in languages:
+        for language in config.languages:
             startpage_selector += "%s:%s;" % (language, req.params.get('radio_' + language))
         node.set('startpage.selector', startpage_selector[0:-1])
     named_filelist = []
@@ -208,7 +205,7 @@ def getContent(req, ids):
 
         langlist = []
         sidebar = []
-        for language in languages:
+        for language in config.languages:
             spn = node.getStartpageFileNode(language)
             if spn and spn.abspath == long_path:
                 langlist.append(language)
@@ -235,7 +232,7 @@ def getContent(req, ids):
     # compatibilty: node may not have attribute startpage.selector
     # build startpage_selector and write back to node
     startpage_selector = ""
-    for language in languages:
+    for language in config.languages:
         if initial:
             lang2file[language] = named_filelist[0][0]
         else:
@@ -245,12 +242,12 @@ def getContent(req, ids):
     node.set('startpage.selector', startpage_selector[0:-1])
 
     db.session.commit()
-        
+
     v = {"id": req.params.get("id", "0"),
          "tab": req.params.get("tab", ""),
          "node": node,
          "named_filelist": named_filelist,
-         "languages": languages,
+         "languages": config.languages,
          "lang2file": lang2file,
          "types": ['content'],
          "d": lang2file and True}

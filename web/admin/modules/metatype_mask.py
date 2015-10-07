@@ -147,7 +147,7 @@ def MaskDetails(req, pid, id, err=0):
     v["pid"] = pid
     v["masktypes"] = getMaskTypes()
     v["id"] = id
-    v["langs"] = config.get("i18n.languages").split(",")
+    v["langs"] = config.languages
     v["actpage"] = req.params.get("actpage")
 
     # XXX: just shut it down...

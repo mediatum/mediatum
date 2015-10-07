@@ -562,7 +562,7 @@ class WorkflowStep(Node):
             if line.startswith(language + ':'):
                 return line.replace(language + ':', '')
         value = value.split('\n')[0]  # use first language
-        for lang in config.get('i18n.languages').split(','):
+        for lang in config.languages:
             value = value.replace('%s:' % (lang), '')
         return value.strip()
 
@@ -572,7 +572,7 @@ class WorkflowStep(Node):
             if line.startswith(language + ':'):
                 return line.replace(language + ':', '')
         value = value.split('\n')[0]  # use first language
-        for lang in config.get('i18n.languages').split(','):
+        for lang in config.languages:
             value = value.replace('%s:' % (lang), '')
         return value.strip()
 

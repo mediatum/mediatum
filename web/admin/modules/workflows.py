@@ -298,7 +298,7 @@ def WorkflowDetail(req, id, err=0):
     v["acl_read"] = makeList(req, "read", removeEmptyStrings(rule["read"]), {}, overload=0, type="read")
     v["acl_write"] = makeList(req, "write", removeEmptyStrings(rule["write"]), {}, overload=0, type="write")
     v["workflow"] = workflow
-    v["languages"] = config.get("i18n.languages", "en").split(",")
+    v["languages"] = config.languages
     v["error"] = err
     v["rules"] = getRuleList()
     v["actpage"] = req.params.get("actpage")

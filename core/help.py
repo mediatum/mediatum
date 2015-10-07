@@ -197,7 +197,7 @@ def getHelp(req):
             addExtItem(language, path, items[language])
 
     v['content'] = content
-    v['languages'] = config.get('i18n.languages').split(',')
+    v['languages'] = config.languages
     v['curlang'] = translation.lang(req)
     v['items'] = items[translation.lang(req)]
     v['path'] = req.path.split("/")[1:]

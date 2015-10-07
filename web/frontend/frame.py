@@ -550,7 +550,7 @@ class NavigationFrame:
 
         # languages
         front_lang = {}
-        front_lang["name"] = config.get("i18n.languages").split(",")
+        front_lang["name"] = config.languages
         front_lang["actlang"] = lang(req)
 
         self.params = {"show_navbar": True, "user": user, "userlinks": userlinks, "navigation": navigation, "language": front_lang}

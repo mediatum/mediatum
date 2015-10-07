@@ -33,8 +33,6 @@ from export.exportutils import runTALSnippet
 
 logg = logging.getLogger(__name__)
 
-languages = [lang.strip() for lang in config.get("i18n.languages").split(",") if lang.strip()]
-
 
 def getMaskitemForField(field, language=None, mask=None):
     if mask:
@@ -74,7 +72,7 @@ class m_text(Metatype):
 
     def getEditorHTML(self, field, value="", width=40, lock=0, language=None, required=None):
         lang = None
-        languages = config.get("i18n.languages")
+        languages = config.languages
         if language is None:
             language = languages.split(",")[0].strip()
         if field.getValues() and "multilingual" in field.getValues():
@@ -133,7 +131,7 @@ class m_text(Metatype):
 
         if value.find('\n') != -1:
             valuesList = value.split('\n')
-            if any(lang in valuesList for lang in languages):  # treat as multilingual
+            if any(lang in valuesList for lang in config.languages):  # treat as multilingual
                 index = 0
                 try:
                     index = valuesList.index(language)

@@ -23,17 +23,17 @@ import logging
 from collections import OrderedDict
 
 from mediatumtal import tal
+from core import config
 from core.transition import httpstatus
 from core.metatype import Metatype
 
 from core.translation import getDefaultLanguage
 
-from contenttypes.data import languages as config_languages
 import re
 
 logg = logging.getLogger(__name__)
 
-max_lang_length = max([len(lang) for lang in config_languages])
+max_lang_length = max([len(lang) for lang in config.languages])
 config_default_language = getDefaultLanguage()
 
 
@@ -71,7 +71,7 @@ class m_htmlmemo(Metatype):
         if not self.has_language_cutter(s):
             d = OrderedDict()
 
-            for lang in config_languages:
+            for lang in config.languages:
                 if lang == config_default_language:
                     d[lang] = s
                 else:
@@ -100,15 +100,15 @@ class m_htmlmemo(Metatype):
                 value = []
                 d[key] = value
 
-        # handle unused config_languages
-        for lang in config_languages:
+        # handle unused languages
+        for lang in config.languages:
             if lang not in d.keys():
                 d[lang] = []
 
-        # ignore keys not in config_languages
+        # ignore keys not in languages
         if only_config_langs:
             for k in d.keys():
-                if k not in config_languages:
+                if k not in config.languages:
                     del d[k]
 
         if join_stringlists:
@@ -169,7 +169,7 @@ class m_htmlmemo(Metatype):
         }
 
         if enable_multilang:
-            lang = [l for l in config_languages if l != language]
+            lang = [l for l in config.languages if l != language]
             context.update(
                 {
                     "languages": lang,

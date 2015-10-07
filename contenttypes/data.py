@@ -38,7 +38,6 @@ from mock import MagicMock
 
 logg = logging.getLogger(__name__)
 
-languages = [l.strip() for l in config.get("i18n.languages").split(",") if l.strip()]
 
 # for TAL templates from mask cache
 context = default_context.copy()
@@ -85,8 +84,10 @@ def flush_maskcache(req=None):
     maskcache_msg = '| cache last flushed %s\r\n|\r\n' % cache_date2string(time.time(), '%04d-%02d-%02d-%02d-%02d-%02d')
 
 
-def make_lookup_key(node, language=languages[0], labels=True):
-    global languages
+def make_lookup_key(node, language=None, labels=True):
+    languages = config.languages
+    if language is None:
+        language = languages[0]
     flaglabels = 'nolabels'
     if labels:
         flaglabels = 'uselabels'

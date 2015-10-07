@@ -458,7 +458,7 @@ def showEditor(node, hiddenvalues={}, allowedFields=None):
         name = field.getName()
         langNames = None
         if field.get("text"):
-            langNames = [lang + name for lang in config.get("i18n.languages").split(",")]
+            langNames = [lang + name for lang in config.languages]
         if allowedFields and name not in allowedFields:
             continue
         value = ""

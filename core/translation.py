@@ -138,7 +138,7 @@ def lang(req):
     elif "language" in req.session and req.session["language"]:
         return req.session["language"]
 
-    allowed_languages = config.get("i18n.languages", "en").split(",")
+    allowed_languages = config.languages
     if "Accept-Language" in req.request_headers:
         languages = req.request_headers["Accept-Language"]
         for language in languages.split(";"):
@@ -153,7 +153,7 @@ def lang(req):
 
 
 def switch_language(req, language):
-    allowed_languages = config.get("i18n.languages", "en").split(",")
+    allowed_languages = config.languages
     if language is None and len(allowed_languages) > 0:
         language = allowed_languages[0]
     elif language not in allowed_languages:
@@ -177,6 +177,6 @@ def getDefaultLanguage():
     global default_language
 
     if default_language is None:
-        default_language = config.get("i18n.languages").split(",")[0].strip()
+        default_language = config.languages[0]
 
     return default_language

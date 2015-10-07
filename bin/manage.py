@@ -53,28 +53,6 @@ search_initialized = False
 # utility functions
 # XXX: could be moved to utils
 
-def drop_schema(s):
-    s.execute("DROP SCHEMA mediatum CASCADE")
-    s.commit()
-    logg.info("dropped database structure")
-
-
-def create_schema(s):
-    logg.info("creating DB schema...")
-
-    s.execute("CREATE SCHEMA mediatum")
-    s.commit()
-    try:
-        db.create_all()
-        s.commit()
-        logg.info("commited database structure")
-    except:
-        # I tried to use a transaction to enclose everything, but sqlalchemy (?) fails when the schema is created within the transaction
-        # solution: just drop the schema it if something fails after schema creation
-        s.execute("DROP SCHEMA mediatum CASCADE")
-        raise
-
-
 def reverse_sorted_tables():
     return reversed(db_metadata.sorted_tables)
 

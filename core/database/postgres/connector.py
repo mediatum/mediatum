@@ -148,6 +148,44 @@ class PostgresSQLAConnector(object):
         else:
             return self.session.query(Node).get(node.id)
 
+    # database manipulation helpers
+
+    def drop_schema(self):
+        s = self.session
+        s.execute("DROP SCHEMA mediatum CASCADE")
+        s.commit()
+        logg.info("dropped database structure")
+
+    def create_schema(self):
+        s = self.session
+        logg.info("creating DB schema...")
+        s.execute("CREATE SCHEMA mediatum")
+        s.commit()
+        try:
+            self.create_all()
+            s.commit()
+            logg.info("commited database structure")
+        except:
+            # I tried to use a transaction to enclose everything, but sqlalchemy (?) fails when the schema is created within the transaction
+            # solution: just drop the schema it if something fails after schema creation
+            s.execute("DROP SCHEMA mediatum CASCADE")
+            raise
+
+    def check_create_schema(self):
+        s = self.session
+        stmt = "SELECT EXISTS (SELECT FROM information_schema.schemata WHERE schema_name = 'mediatum')"
+        schema_exists = s.execute(stmt).fetchone()[0]
+        if not schema_exists:
+            self.create_schema()
+
+    def check_load_initial_database_values(self, default_admin_password=None):
+        s = self.session
+        stmt = "SELECT EXISTS (SELECT FROM node)"
+        nodes_exist = s.execute(stmt).fetchone()[0]
+        if not nodes_exist:
+            init_database_values(s, default_admin_password=default_admin_password)
+            return True
+        return False
 
     def create_tables(self, conn):
         # Fts is imported nowhere else, make it known to SQLAlchemy by importing it here

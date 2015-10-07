@@ -107,13 +107,13 @@ def get_maskcache_entry(lookup_key):
 
 
 class Data(Node):
-    
+
     """Abstract base class for all node classes which can be viewed / fetched by frontend / api users.
     Methods in this class are concerned with viewing / representing the contents of the data node.
-    
+
     In other words: Node classes which don't inherit from this class are seen as internal 'system types'.
     """
-    
+
     content_children = children_rel("Content")
 
     @classmethod
@@ -166,7 +166,7 @@ class Data(Node):
         '''
         parentInformation = MagicMock()
         return parentInformation
-    
+
         pid = req.params.get('pid', self.id)
         sid = req.params.get('id', self.id)
 
@@ -578,7 +578,7 @@ class Data(Node):
 
     def buildLZAVersion(self):
         logg.warn("no lza builder implemented")
-         
+
     def getEditMenuTabs(self):
         menu = list()
         try:

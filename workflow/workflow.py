@@ -532,7 +532,7 @@ class WorkflowStep(Node):
                     if k not in context:
                         context[k] = data[k]
                     else:
-                        logg.warning("workflow '%s', step '%s', node %s: ignored data key '%s' (value='%s')", 
+                        logg.warning("workflow '%s', step '%s', node %s: ignored data key '%s' (value='%s')",
                                      getNodeWorkflow(node).name, getNodeWorkflowStep(node).name, node.id, k, data[k])
 
             newloc = req.makeLink("/mask", context)

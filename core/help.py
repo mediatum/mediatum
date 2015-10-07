@@ -37,8 +37,8 @@ try:
     reportlab = 1
 except:
     reportlab = 0
-    
-    
+
+
 logg = logging.getLogger(__name__)
 
 helppaths = ['web/help/']

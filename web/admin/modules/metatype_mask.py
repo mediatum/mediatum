@@ -156,7 +156,7 @@ def MaskDetails(req, pid, id, err=0):
 #         rule = rule.split(",")
 #     else:
 #         rule = []
-# 
+#
 #     rights = removeEmptyStrings(rule)
     rights = []
     v["acl"] = makeList(req, "read", rights, {}, overload=0, type="read")

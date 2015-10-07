@@ -16,8 +16,8 @@ stub_undefined_nodetypes=true
 fail_if_undefined_nodetypes=false
 
 [database]
-dbhost=127.0.0.1
-dbport=5432
+host=127.0.0.1
+port=5432
 db=mediatum
 user=mediatum
 passwd=m

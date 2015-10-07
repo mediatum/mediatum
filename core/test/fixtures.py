@@ -13,7 +13,7 @@ from core.test.factories import NodeFactory, DocumentFactory, DirectoryFactory, 
 from core import db
 from contenttypes.container import Collections, Home
 from core.database.init import init_database_values
-from core.init import load_system_types, load_types, init_fulltext_search, init_db
+from core.init import load_system_types, load_types, init_fulltext_search, init_db_connector
 from core.database.postgres.user import AuthenticatorInfo, create_special_user_dirs
 from sqlalchemy import event
 from core.database.postgres.alchemyext import truncate_tables
@@ -31,16 +31,12 @@ def autouse_session():
 
 @fixture(scope="session")
 def database():
-    """Connect to the DB, drop/create schema and load models"""
+    """Connect to the DB and drop/create mediatum schema for a clean environment"""
     db.enable_session_for_test()
-    db.connect()
-    s = db.session
-    s.execute("DROP SCHEMA IF EXISTS mediatum CASCADE")
-    s.execute("CREATE schema mediatum")
-    s.commit()
-    db.create_all()
-    load_system_types()
-    load_types()
+    db.configure()
+    db.create_engine()
+    db.drop_schema()
+    db.create_schema()
     init_fulltext_search()
     db.disable_session_for_test()
     return db

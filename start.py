@@ -20,6 +20,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import print_function
 from werkzeug._reloader import run_with_reloader
 import configargparse
 import tempfile
@@ -49,7 +50,7 @@ def stackdump_setup():
         logg.info("IPython installed, write stack dumps to tmpdir with: `kill -QUIT <mediatum_pid>`")
 
         def dumpstacks(signal, frame):
-            print "dumping stack"
+            print("dumping stack")
             # we must use the system temp dir here because mediaTUM config must not be loaded here
             filepath = os.path.join(SYSTEM_TMP_DIR, "mediatum_threadstatus")
             id2name = dict([(th.ident, th.name) for th in threading.enumerate()])
@@ -80,11 +81,11 @@ def stackdump_setup():
         signal.signal(signal.SIGQUIT, dumpstacks)
 
 
-def main(host=None, http_port=None, redis_sessions=False):
+def main(host=None, http_port=None, redis_sessions=False, force_test_db=None):
     """Serve mediaTUM from the Athana HTTP Server and start FTP and Z3950, if requested"""
     # init.full_init() must be done as early as possible to init logging etc.
     from core import init
-    init.full_init()
+    init.full_init(force_test_db=force_test_db)
 
     # init all web components
     from core import webconfig
@@ -134,6 +135,8 @@ if __name__ == "__main__":
     parser.add_argument("-s", "--stackdump", action="store_true", default=True,
                         help="write stackdumps to temp dir {} on SIGQUIT, default true".format(SYSTEM_TMP_DIR))
 
+    parser.add_argument("--force-test-db", action="store_true", default=False,
+                        help="create / use test database server and test database (overrides configured db connection)")
     parser.add_argument(
         "--redis-sessions",
         action="store_true",
@@ -141,6 +144,7 @@ if __name__ == "__main__":
         help="EXPERIMENTAL: save sessions to redis, making them persistent, requires redis-collections and a redis server on localhost!")
 
     args = parser.parse_args()
+    print("start.py args:", args)
 
     if args.stackdump:
         stackdump_setup()
@@ -150,7 +154,7 @@ if __name__ == "__main__":
         extra_files = [config.get_config_filepath()]
 
         def main_wrapper():
-            main(args.bind, args.http_port, args.redis_sessions)
+            main(args.bind, args.http_port, args.redis_sessions, args.force_test_db)
         run_with_reloader(main_wrapper, extra_files)
     else:
-        main(args.bind, args.http_port, args.redis_sessions)
+        main(args.bind, args.http_port, args.redis_sessions, args.force_test_db)

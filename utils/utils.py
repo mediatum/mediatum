@@ -1106,6 +1106,18 @@ def utf8_encode_recursive(d):
     return d
 
 
+def find_free_port():
+    """Returns a free local port"""
+    import socket
+    s = socket.socket()
+    try:
+        s.bind(("", 0))
+        _, port = s.getsockname()
+    finally:
+        s.close()
+    return port
+
+
 if __name__ == "__main__":
     def tt(s):
         t, f, l = splitname(s)

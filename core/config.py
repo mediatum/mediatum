@@ -161,10 +161,16 @@ def initialize(filepath=None):
         log_dirpath = os.path.dirname(log_filepath)
         check_create_dir(log_dirpath, "dir for logging.file")
 
+
+def check_create_test_db_dir():
+    data_path = settings.get("paths.datadir", get_default_data_dir())
+    dirpath = os.path.join(data_path, "test_db")
+    check_create_dir(dirpath, "datadir/test_db")
+    return dirpath
+
 #
 # resolve given filename to correct path/file
 #
-
 
 def resolve_filename(filename):
     templatepath = settings.get("template.path")

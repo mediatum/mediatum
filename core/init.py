@@ -127,11 +127,17 @@ def init_app():
     core.app = create_app()
 
 
-def init_db():
+def init_db_connector():
     import core.database  # init DB connector
     # assign model classes for selected DB connector to the core package
     for cls in core.db.get_model_classes():
         setattr(core, cls.__name__, cls)
+
+
+def connect_db(force_test_db=None):
+    import core
+    core.db.configure(force_test_db)
+    core.db.create_engine()
 
 
 def init_fulltext_search():
@@ -214,7 +220,7 @@ def check_undefined_nodeclasses(stub_undefined_nodetypes=None, fail_if_undefined
                 logg.info("auto-generated stub class for node type '%s'", clsname)
 
 
-def basic_init(root_loglevel=None, config_filepath=None, log_filepath=None, use_logstash=None):
+def basic_init(root_loglevel=None, config_filepath=None, log_filepath=None, use_logstash=None, force_test_db=None):
     add_ustr_builtin()
     import core.config
     core.config.initialize(config_filepath)
@@ -224,10 +230,10 @@ def basic_init(root_loglevel=None, config_filepath=None, log_filepath=None, use_
     check_imports()
     set_locale()
     init_app()
-    init_db()
-    core.db.connect()
+    init_db_connector()
     load_system_types()
     load_types()
+    connect_db(force_test_db)
 
 
 def additional_init():
@@ -240,6 +246,6 @@ def additional_init():
     check_undefined_nodeclasses()
 
 
-def full_init(root_loglevel=None, config_filepath=None, log_filepath=None, use_logstash=None):
-    basic_init(root_loglevel, config_filepath, log_filepath, use_logstash)
+def full_init(root_loglevel=None, config_filepath=None, log_filepath=None, use_logstash=None, force_test_db=None):
+    basic_init(root_loglevel, config_filepath, log_filepath, use_logstash, force_test_db)
     additional_init()

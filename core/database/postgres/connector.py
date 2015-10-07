@@ -4,23 +4,29 @@
     :license: GPL3, see COPYING for details
 """
 import logging
+import atexit
+import pwd
 import os.path
+from subprocess import check_call, check_output, call
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
+from sqlalchemy_continuum.utils import version_class
 
 from core import config
 from . import db_metadata, DeclarativeBase
 from core.database.postgres import MtQuery
 from core.database.postgres.psycopg2_debug import make_debug_connection_factory
-from sqlalchemy_continuum.utils import version_class
+from core.database.init import init_database_values
+from utils.utils import find_free_port
 
 # set this to True or False to override debug config settings
 DEBUG = None
 DEBUG_SHOW_TRACE = None
 
-CONNECTSTR_TEMPLATE = "postgresql+psycopg2://{user}:{passwd}@{dbhost}:{dbport}/{database}"
-CONNECTSTR_TEMPLATE_WITHOUT_PW = "postgresql+psycopg2://{user}:<passwd>@{dbhost}:{dbport}/{database}"
+CONNECTSTR_TEMPLATE = "postgresql+psycopg2://{user}:{passwd}@{host}:{port}/{database}"
+CONNECTSTR_TEMPLATE_TEST_DB = "postgresql+psycopg2://{user}@:{port}/{database}?host={socketdir}"
+CONNECTSTR_TEMPLATE_WITHOUT_PW = "postgresql+psycopg2://{user}:<passwd>@{host}:{port}/{database}"
 
 logg = logging.getLogger(__name__)
 
@@ -46,6 +52,11 @@ def disabled_scoped_session(*args, **kwargs):
     raise Exception("Test mode, database session disabled. Use the core.test.fixtures.session fixture!")
 
 
+
+class ConnectionException(Exception):
+    pass
+
+
 class PostgresSQLAConnector(object):
 
     """Basic db object used by the application
@@ -56,20 +67,88 @@ class PostgresSQLAConnector(object):
         self.Session = scoped_session(session_factory)
         self.metadata = db_metadata
 
-    def connect(self):
-        from core import config
-        self.dbhost = config.get("database.dbhost", "localhost")
-        self.dbport = int(config.get("database.dbport", "5432"))
-        self.database = config.get("database.db", "mediatum")
-        self.user = config.get("database.user", "mediatumadmin")
-        self.passwd = config.get("database.passwd", "")
-        self.connectstr = CONNECTSTR_TEMPLATE.format(**self.__dict__)
-
+    def configure(self, force_test_db=False):
         if DEBUG is None:
             self.debug = config.get("database.debug", "").lower() == "true"
         else:
             self.debug = DEBUG
 
+        if force_test_db:
+            logg.warn("WARNING: force_test_db requested, creating / using test database server")
+            test_db = True
+        else:
+            test_db = config.get("database.test_db", "false").lower() == "true"
+            if test_db:
+                logg.warn("WARNING: database.test_db enabled in config, creating / using test database server")
+
+        self.test_db = test_db
+
+        if not test_db:
+            self.host = config.get("database.host", "localhost")
+            self.port = int(config.get("database.port", "5432"))
+            self.database = config.get("database.db", "mediatum")
+            self.user = config.get("database.user", "mediatum")
+            self.passwd = config.get("database.passwd", "mediatum")
+            self.connectstr = CONNECTSTR_TEMPLATE.format(**self.__dict__)
+            logg.info("using database connection string: %s", CONNECTSTR_TEMPLATE_WITHOUT_PW.format(**self.__dict__))
+        # test_db is handled in create_engine / check_run_test_db_server
+
+    def check_create_test_db(self):
+        # check database existence
+        out = self._psql_command("SELECT 1 FROM pg_database WHERE datname='mediatum'", output=True, database="postgres")
+        if out.strip() != "1":
+            # no mediaTUM database present, use postgres as starting point to create one
+            self._psql_command("CREATE DATABASE mediatum OWNER=" + self.user, database="postgres")
+            self._psql_command("CREATE EXTENSION hstore SCHEMA public")
+            self._psql_command("ALTER ROLE {} SET search_path TO mediatum,public".format(self.user))
+
+    def check_run_test_db_server(self):
+        dirpath = config.check_create_test_db_dir()
+        # database role name must be the same as the process user
+        user = pwd.getpwuid(os.getuid())[0]
+        code = call(["pg_ctl", "status", "-D", dirpath])
+        if code:
+            # error code > 0? database dir is not present or server not running
+            if code == 4:
+            # dirpath is not a proper database directory, try to init it
+                check_call(["pg_ctl", "init", "-D", dirpath])
+            elif code == 3:
+            # database directory is ok, but no server running
+                logg.info("using existing database directory %s", dirpath)
+            else:
+                # should not happen with the tested postgres version...
+                raise ConnectionException("unexpected exit code from pg_ctl: %s. This looks like a bug.".format(code))
+
+            port = find_free_port()
+            socketdir = "/tmp"
+            logg.info("starting temporary postgresql server on port %s as user %s", port, user)
+            check_call(["pg_ctl", "start", "-w", "-D", dirpath, "-o", "'-p {}'".format(port)])
+
+            # we have started the database server, it should be stopped automatically if mediaTUM exits
+            def stop_db():
+                self.Session.close_all()
+                self.engine.dispose()
+                check_call(["pg_ctl", "stop", "-D", dirpath])
+
+            atexit.register(stop_db)
+        else:
+            # server is already running, get information from database dir
+            with open(os.path.join(dirpath, "postmaster.pid")) as f:
+                lines = f.readlines()
+                port = int(lines[3])
+                socketdir = lines[4]
+
+        # finally set the database config params for engine creation
+        self.port = port
+        self.host = "localhost"
+        self.passwd = ""
+        self.user = user
+        self.database = "mediatum"
+        self.socketdir = socketdir
+        self.connectstr = CONNECTSTR_TEMPLATE_TEST_DB.format(**self.__dict__)
+        logg.info("using test database connection string: %s", self.connectstr)
+
+    def create_engine(self):
         if self.debug:
             if DEBUG_SHOW_TRACE is None:
                 show_trace = config.get("database.debug_show_trace", "").lower() == "true"
@@ -79,12 +158,37 @@ class PostgresSQLAConnector(object):
         else:
             connect_args = {}
 
-        logg.info("Connecting to %s", CONNECTSTR_TEMPLATE_WITHOUT_PW.format(**self.__dict__))
+        if self.test_db:
+            self.check_run_test_db_server()
+            self.check_create_test_db()
+
         engine = create_engine(self.connectstr, connect_args=connect_args)
+        db_connection_exception = self.check_db_connection(engine)
+
+        if db_connection_exception:
+            if self.test_db:
+                msg = "Could not connect to temporary test database, error was: " + db_connection_exception.args[0]
+                msg += "This looks like a bug in mediaTUM or a strange problem with your system."
+            else:
+                msg = "Could not connect to database, error was: " + db_connection_exception.args[0]
+                if config.is_default_config():
+                    msg += "HINT: You are running mediaTUM without a config file. Did you forget to create one?" \
+                           "\nTo start mediaTUM without a config file using a temporary test database server, use" \
+                           " the --force-test-db option on the command line." \
+                           "\nSee --help for more info."
+                else:
+                    msg += "check the settings in the [database] section in your config file."
+
+            raise ConnectionException(msg)
 
         DeclarativeBase.metadata.bind = engine
         self.engine = engine
         self.Session.configure(bind=engine)
+
+        if self.test_db:
+            # create schema with default data in test_db mode if not present
+            self.check_create_schema()
+            self.check_load_initial_database_values(default_admin_password=u"insecure")
 
     def check_db_connection(self, engine):
         try:
@@ -254,6 +358,13 @@ class PostgresSQLAConnector(object):
         autoindex_languages_setting = Setting(key=u"search.autoindex_languages", value=autoindex_languages)
         s.merge(autoindex_languages_setting)
         s.commit()
+
+    def _psql_command(self, command, output=False, database="mediatum"):
+        args = ["psql", "-tA", "-p", str(self.port), database, "-c", command]
+        if output:
+            return check_output(args)
+        else:
+            check_call(args)
 
     def disable_session_for_test(self):
         """Disables db.Session, preventing all session operations using db.session. Used for unit tests."""

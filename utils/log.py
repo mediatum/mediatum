@@ -249,7 +249,7 @@ def initialize(level=None, log_filepath=None, use_logstash=None):
     root_logger = logging.getLogger()
 
     if level is None:
-        levelname = config.get('logging.level', "DEBUG")
+        levelname = config.get('logging.level', "INFO")
         try:
             level = getattr(logging, levelname.upper())
         except:

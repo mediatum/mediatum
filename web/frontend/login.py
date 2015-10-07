@@ -32,6 +32,7 @@ from utils.utils import mkKey
 from core.styles import theme
 from contenttypes import Collections
 from core.auth import PasswordsDoNotMatch, WrongPassword, PasswordChangeNotAllowed
+from core.users import get_guest_user
 
 q = db.query
 logg = logging.getLogger(__name__)
@@ -42,7 +43,7 @@ def _make_collection_root_link():
 
 
 def _handle_login_submit(req):
-    login_name = req.form.get("user", config.get("user.guestuser"))
+    login_name = req.form.get("user")
     password = req.form.get("password", "")
 
     if not login_name.strip() and "user" in req.form:
@@ -118,7 +119,7 @@ def pwdchange(req):
     error = 0
 
     if "ChangeSubmit" in req.form:
-        if user.login_name == config.get("user.guestuser"):
+        if user is get_guest_user():
             req.request["Location"] = _make_collection_root_link()
             return httpstatus.HTTP_MOVED_TEMPORARILY
 

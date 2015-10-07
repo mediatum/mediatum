@@ -29,6 +29,7 @@ import core.help as help
 from version import mediatum_version
 from utils.utils import join_paths, Menu
 from web.admin.adminutils import findmodule, show_content, adminNavigation, getMenuItemID
+from core.users import get_guest_user
 
 
 logg = logging.getLogger(__name__)
@@ -43,7 +44,7 @@ def show_node(req):
 
     v = {}
     v["user"] = user
-    v["guestuser"] = config.get("user.guestuser")
+    v["guestuser"] = get_guest_user().login_name
     v["version"] = mediatum_version
     v["content"] = show_content(req, p[0])
     v["navigation"] = adminNavigation()

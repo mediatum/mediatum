@@ -141,6 +141,7 @@ import os.path
 import sys
 import tempfile
 import warnings
+from core.users import get_guest_user
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from sqlalchemy import sql
@@ -223,7 +224,7 @@ lastnode = root
 global limit_number_of_info_lines
 limit_number_of_info_lines = None
 
-user_guest = q(User).filter_by(login_name=config.get("user.guestuser", "guest")).scalar()
+user_guest = get_guest_user()
 
 # IPython magic
 

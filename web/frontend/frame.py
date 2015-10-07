@@ -35,6 +35,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from core import Node
 from core.systemtypes import Searchmasks, Root
 from contenttypes.container import Directory
+from core.users import get_guest_user
 
 q = db.query
 logg = logging.getLogger(__name__)
@@ -45,7 +46,7 @@ class Portlet:
     def __init__(self):
         self.folded = 0
         self.name = "common"
-        self.user = q(User).filter_by(login_name=config.get("user.guestuser", "")).one()
+        self.user = get_guest_user()
 
     def isFolded(self):
         return self.folded
@@ -485,9 +486,10 @@ class UserLinks:
         self.language = lang(req)
 
     def getLinks(self):
+        guest_user = get_guest_user()
         l = [Link("/logout", t(self.language, "sub_header_logout_title"),
                   t(self.language, "sub_header_logout"), icon="/img/logout.gif")]
-        if config.get("user.guestuser") == self.user.login_name:
+        if  self.user is guest_user:
             if config.get("config.ssh") == "yes":
                 host = config.get("host.name") or self.host
                 l = [Link("https://" + host + "/login", t(self.language, "sub_header_login_title"),
@@ -515,7 +517,7 @@ class UserLinks:
             l += [Link("/publish/", t(self.language, "sub_header_workflow_title"),
                        t(self.language, "sub_header_workflow"), icon="/img/workflow.gif")]
 
-        if config.get("user.guestuser") != self.user.login_name and self.user.can_change_password:
+        if self.user is guest_user and self.user.can_change_password:
             l += [Link("/pwdchange", t(self.language, "sub_header_changepwd_title"),
                        t(self.language, "sub_header_changepwd"), "_parent", icon="/img/changepwd.gif")]
         return l

@@ -41,7 +41,7 @@ def getExternalUser(name, type="intern"):
 
 
 def get_guest_user():
-    return q(User).filter_by(login_name=config.get("user.guestuser", "guest")).one()
+    return q(User).filter_by(login_name=config.get("user.guestuser", u"guest")).one()
 
 
 def getUser(name_or_id):

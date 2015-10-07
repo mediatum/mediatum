@@ -30,12 +30,14 @@ from core.xmlnode import getNodeXML, readNodeXML
 import utils.date as date
 import core.acl as acl
 from core.translation import t, lang, addLabels, getDefaultLanguage, switch_language
-from core.users import getUserFromRequest, getUser
+from core.users import get_guest_user
+from core.transition import current_user
 
 import thread
 
 from core import db
 from core import Node
+
 
 q = db.query
 logg = logging.getLogger(__name__)
@@ -438,7 +440,7 @@ class WorkflowStep(Node):
 
                 if self in node.parents:
                     # set correct language for workflow for guest user only
-                    if node.get('key') == node.get('system.key') and getUserFromRequest(req) == getUser(config.get('user.guestuser')):
+                    if node.get('key') == node.get('system.key') and current_user is get_guest_user():
                         switch_language(req, node.get('system.wflanguage'))
 
                     link = req.makeLink("/mask", {"id": self.id})

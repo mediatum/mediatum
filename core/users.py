@@ -41,7 +41,7 @@ def getExternalUser(name, type="intern"):
 
 
 def get_guest_user():
-    return q(User).filter_by(login_name=config.get("user.guestuser")).one()
+    return q(User).filter_by(login_name=config.get("user.guestuser", "guest")).one()
 
 
 def getUser(name_or_id):
@@ -69,7 +69,7 @@ def getExternalAuthentificators():
 def user_from_session(session):
     user_id = session.get("user_id")
     if user_id is None:
-        user = q(User).filter_by(login_name=config.get("user.guestuser")).one()
+        user = get_guest_user()
     else:
         user = q(User).get(user_id)
     return user

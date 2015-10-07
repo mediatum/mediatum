@@ -81,11 +81,11 @@ def stackdump_setup():
         signal.signal(signal.SIGQUIT, dumpstacks)
 
 
-def main(host=None, http_port=None, redis_sessions=False, force_test_db=None):
+def main(host=None, http_port=None, redis_sessions=False, force_test_db=None, loglevel=None):
     """Serve mediaTUM from the Athana HTTP Server and start FTP and Z3950, if requested"""
     # init.full_init() must be done as early as possible to init logging etc.
     from core import init
-    init.full_init(force_test_db=force_test_db)
+    init.full_init(force_test_db=force_test_db, root_loglevel=loglevel)
 
     # init all web components
     from core import webconfig
@@ -138,6 +138,7 @@ if __name__ == "__main__":
 
     parser.add_argument("--force-test-db", action="store_true", default=False,
                         help="create / use test database server and test database (overrides configured db connection)")
+    parser.add_argument("-l", "--loglevel", help="root loglevel, sensible values: DEBUG, INFO, WARN")
     parser.add_argument(
         "--redis-sessions",
         action="store_true",
@@ -155,7 +156,7 @@ if __name__ == "__main__":
         extra_files = [config.get_config_filepath()]
 
         def main_wrapper():
-            main(args.bind, args.http_port, args.redis_sessions, args.force_test_db)
+            main(args.bind, args.http_port, args.redis_sessions, args.force_test_db, args.loglevel)
         run_with_reloader(main_wrapper, extra_files)
     else:
-        main(args.bind, args.http_port, args.redis_sessions, args.force_test_db)
+        main(args.bind, args.http_port, args.redis_sessions, args.force_test_db, args.loglevel)

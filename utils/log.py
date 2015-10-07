@@ -95,9 +95,9 @@ class TraceLogger(logging.Logger):
         """Adds an optional traceback for some messages and calls Logger._log.
         A traceback is added if the logging level is at least `trace_level` or requested in the logging call.
 
-        :param trace: Always add a trace if trace is true
+        :param trace: Always add trace if true, never add one if false. Use trace_level if None. Defaults to None.
         """
-        if trace or (level >= self.trace_level and not exc_info):
+        if trace or (trace is None and level >= self.trace_level and not exc_info):
             if extra is None:
                 extra = {}
             f = inspect.currentframe()

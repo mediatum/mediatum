@@ -57,7 +57,7 @@ def loadThemes():
 
     # use fallback standard theme
     manageThemes("default", "web/", "intern")
-    logg.warn("using (broken) standard theme, you should create your own theme :)")
+    logg.warn("using (broken) standard theme, you should create your own theme :)", trace=False)
 
 
 def loadServices():

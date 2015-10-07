@@ -86,6 +86,17 @@ class PostgresSQLAConnector(object):
         self.engine = engine
         self.Session.configure(bind=engine)
 
+    def check_db_connection(self, engine):
+        try:
+            conn = engine.connect()
+        except Exception as e:
+            return e
+
+        res = conn.execute("select version()")
+        version = res.fetchone()
+        logg.info("db connection test succeeded, version is: %s", version[0])
+        conn.close()
+
     def get_model_classes(self):
         from core.database.postgres.file import File
         from core.database.postgres.node import Node

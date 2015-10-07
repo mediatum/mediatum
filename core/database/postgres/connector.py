@@ -231,7 +231,7 @@ class PostgresSQLAConnector(object):
         from core.database.postgres.setting import Setting
         from core.database.postgres.search import fts_config_exists
         s = self.session
-        autoindex_languages_from_config = config.get("search.autoindex_languages", "").split(",")
+        autoindex_languages_from_config = [l.strip() for l in config.get("search.autoindex_languages", "").split(",") if l.strip()]
         autoindex_languages = []
 
         for lang in autoindex_languages_from_config:

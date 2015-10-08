@@ -1,4 +1,3 @@
-#!/usr/bin/python
 """
  mediatum - a multimedia content repository
 
@@ -237,13 +236,17 @@ def basic_init(root_loglevel=None, config_filepath=None, log_filepath=None, use_
 
 
 def additional_init():
+    from core import db
+    from core.database import validity
+    db.check_db_structure_validity()
+    validity.check_database()
+    check_undefined_nodeclasses()
     init_fulltext_search()
     register_workflow()
     init_ldap()
     init_archivemanager()
     init_modules()
     tal_setup()
-    check_undefined_nodeclasses()
 
 
 def full_init(root_loglevel=None, config_filepath=None, log_filepath=None, use_logstash=None, force_test_db=None):

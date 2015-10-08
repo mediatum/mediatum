@@ -19,6 +19,7 @@ from core.database.postgres import MtQuery
 from core.database.postgres.psycopg2_debug import make_debug_connection_factory
 from core.database.init import init_database_values
 from utils.utils import find_free_port
+from utils.postgres import schema_exists, table_exists
 
 # set this to True or False to override debug config settings
 DEBUG = None
@@ -201,6 +202,19 @@ class PostgresSQLAConnector(object):
         logg.info("db connection test succeeded, version is: %s", version[0])
         conn.close()
 
+    def check_db_structure_validity(self):
+        """Just a simple check if the schema and the node table exist, should be extended"""
+        if not schema_exists(self.session, "mediatum"):
+            # missing schema, user should run schema creation or import a dump with structure
+            raise Exception("'mediatum' database schema does not exist." \
+                            "HINT: Did you forget to run 'bin/manage.py schema create'?")
+
+        if not table_exists(self.session, "mediatum", "node"):
+            # missing node table, there's something really wrong here...
+            raise Exception("'node' table does not exist." \
+                            "HINT: You can delete and recreate the database schema with all tables with 'bin/manage.py schema recreate'")
+
+
     def get_model_classes(self):
         from core.database.postgres.file import File
         from core.database.postgres.node import Node
@@ -287,10 +301,7 @@ class PostgresSQLAConnector(object):
             raise
 
     def check_create_schema(self):
-        s = self.session
-        stmt = "SELECT EXISTS (SELECT FROM information_schema.schemata WHERE schema_name = 'mediatum')"
-        schema_exists = s.execute(stmt).fetchone()[0]
-        if not schema_exists:
+        if not schema_exists(self.session, "mediatum"):
             self.create_schema()
 
     def check_load_initial_database_values(self, default_admin_password=None):

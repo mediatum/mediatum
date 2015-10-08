@@ -34,7 +34,7 @@ from contenttypes import Collections
 from sqlalchemy.orm.exc import NoResultFound
 from core import Node
 from core.systemtypes import Searchmasks, Root
-from contenttypes.container import Directory
+from contenttypes import Directory, Container
 from core.users import get_guest_user
 
 q = db.query
@@ -223,15 +223,14 @@ class Searchlet(Portlet):
             return ""
 
 
-class NavTreeEntry:
+class NavTreeEntry(object):
 
     def __init__(self, col, node, indent, small=0, hide_empty=0, lang=None):
         self.col = col
-        from contenttypes import Container
         assert isinstance(node, Container)
         self.node = node
         self.id = node.id
-        self.orderpos = node.getOrderPos()
+        self.orderpos = node.orderpos
         self.indent = indent
         self.defaultopen = indent == 0
         self.hassubdir = 0
@@ -242,12 +241,12 @@ class NavTreeEntry:
         self.hide_empty = hide_empty
         self.lang = lang
         self.orderpos = 0
-        if len(self.node.getContainerChildren()) > 0:
+        if self.node.container_children.first() is not None:
             self.hassubdir = 1
             self.folded = 1
 
     def isRoot(self):
-        return self.node.type == 'collections'
+        return isinstance(self.node, Collections)
 
     def getFoldLink(self):
         return u"/?cfold={}&dir={}&id={}".format(self.node.id,
@@ -275,21 +274,17 @@ class NavTreeEntry:
             warn("accessdata argument is unused, remove it", DeprecationWarning)
         try:
             if isinstance(self.node, Directory):
-                if not hasattr(self.node, "ccount") or self.node.ccount == -1:
-#                     self.node.ccount = self.node.children.count()
-                    self.node.ccount = self.node.content_children_for_all_subcontainers.distinct().count()
-
-                self.count = self.node.ccount
+                if self.count == -1:
+                    self.count = self.node.content_children_for_all_subcontainers.distinct().count()
 
                 if self.hide_empty and self.count == 0:
-                    return ""  # hide empty entries
-
+                    return ""  # hides entry
             else:
                 if hasattr(self.node, "childcount"):
                     self.count = self.node.childcount()
 
             if self.count > 0:
-                return "%s <small>(%s)</small>" % (self.node.getLabel(lang=self.lang), ustr(self.count))
+                return u"%s <small>(%s)</small>" % (self.node.getLabel(lang=self.lang), unicode(self.count))
             else:
                 return self.node.getLabel(lang=self.lang)
 

@@ -25,7 +25,6 @@ from core.transition import httpstatus
 import core.config as config
 import re
 from utils.utils import esc
-from utils.pathutils import isDescendantOf
 from utils.utils import modify_tex
 from core.metatype import Metatype, charmap
 from export.exportutils import runTALSnippet
@@ -38,13 +37,13 @@ def getMaskitemForField(field, language=None, mask=None):
     if mask:
         masks = [mask]
     else:
-        mdt = [p for p in field.getParents() if p.type == 'metadatatype'][0]
-        masks = [m for m in mdt.getChildren() if m.get('masktype') in ['shortview', 'fullview', 'editmask']]
+        mdt = [p for p in field.parents if p.type == 'metadatatype'][0]
+        masks = [m for m in mdt.children if m.get('masktype') in ['shortview', 'fullview', 'editmask']]
         if masks and language:
             masks = [m for m in masks if m.get('language') in [language]]
 
-    maskitems = [p for p in field.getParents() if p.type == 'maskitem']
-    maskitems = [mi for mi in maskitems if 1 in [isDescendantOf(mi, m) for m in masks]]
+    maskitems = [p for p in field.parents if p.type == 'maskitem']
+    maskitems = [mi for mi in maskitems if 1 in [mi.is_descendant_of(m) for m in masks]]
 
     if maskitems:
         return maskitems[0]

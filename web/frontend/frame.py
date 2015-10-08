@@ -517,7 +517,7 @@ class UserLinks:
             l += [Link("/publish/", t(self.language, "sub_header_workflow_title"),
                        t(self.language, "sub_header_workflow"), icon="/img/workflow.gif")]
 
-        if self.user is guest_user and self.user.can_change_password:
+        if self.user.can_change_password:
             l += [Link("/pwdchange", t(self.language, "sub_header_changepwd_title"),
                        t(self.language, "sub_header_changepwd"), "_parent", icon="/img/changepwd.gif")]
         return l

@@ -142,7 +142,6 @@ import os.path
 import sys
 import tempfile
 import warnings
-from core.users import get_guest_user
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from sqlalchemy import sql
@@ -181,6 +180,12 @@ SQLMAGICS_CONNECTION_FACTORY = lambda: core.db.connectstr
 
 initmodule.basic_init(ROOT_LOGLEVEL, log_filepath=LOG_FILEPATH, use_logstash=False)
 initmodule.register_workflow()
+
+from core.users import get_guest_user
+try:
+    guest_user = get_guest_user()
+except:
+    guest_user = None
 
 # we don't want to raise warnings for missing node classes, just stub them and be silent
 _core_init_loglevel = logging.getLogger("core.init").level
@@ -225,7 +230,8 @@ lastnode = root
 global limit_number_of_info_lines
 limit_number_of_info_lines = None
 
-user_guest = get_guest_user()
+# from core.users import get_guest_user
+# user_guest = get_guest_user()
 
 # IPython magic
 

@@ -62,7 +62,7 @@ def truncate_tables(s, table_fullnames=None):
         table_fullnames = [t.fullname for t in reverse_sorted_tables()]
 
     table_fullname_str = ",".join(table_fullnames)
-    s.execute('TRUNCATE {} RESTART IDENTITY;'.format(table_fullname_str))
+    s.execute('TRUNCATE {} RESTART IDENTITY CASCADE;'.format(table_fullname_str))
     logg.info("truncated %s", table_fullname_str)
 
 
@@ -109,12 +109,12 @@ def run_single_sql(stmt, s):
 def schema(args):
     action = args.action.lower()
     if action == "drop":
-        drop_schema(s)
+        db.drop_schema()
     elif action == "create":
-        create_schema(s)
+        db.create_schema()
     elif action == "recreate":
-        drop_schema(s)
-        create_schema(s)
+        db.drop_schema()
+        db.create_schema()
 
 
 def data(args):

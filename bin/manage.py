@@ -1,3 +1,4 @@
+#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 """
     :copyright: (c) 2015 by the mediaTUM authors

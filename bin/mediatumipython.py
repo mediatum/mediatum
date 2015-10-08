@@ -1,3 +1,4 @@
+#!/usr/bin/env ipython2
 # -*- coding: utf-8 -*-
 '''
 Created on 06.06.2013

@@ -116,13 +116,10 @@ def send_rawfile(req, n=None):
 
 
 def send_thumbnail(req):
-    n = q(Node).get(splitpath(req.path)[0])
-    if not isinstance(n, Node):
-        return 404
-    for f in n.files:
-        if f.type == "thumb":
-            if os.path.isfile(f.abspath):
-                return req.sendFile(f.abspath, f.mimetype)
+    nid = splitpath(req.path)[0]
+    for f in q(File).filter_by(nid=nid, filetype=u"thumb"):
+        if os.path.isfile(f.abspath):
+            return req.sendFile(f.abspath, f.mimetype)
 
     for p in athana.getFileStorePaths("/img/"):
         for test in ["default_thumb_%s_%s.*" % (n.type, n.schema),
@@ -214,8 +211,7 @@ def send_file(req, download=0):
                 file = f
                 break
 
-    # XXX: temporary fix for getSchema(), hasattr can be removed later when all data nodes have a schema
-    if hasattr(n, "schema") and existMetaField(n.schema, 'nodename'):
+    if existMetaField(n.schema, 'nodename'):
         display_file_name = '{}.{}'.format(os.path.splitext(os.path.basename(n.name))[0], os.path.splitext(filename)[-1].strip('.'))
     else:
         display_file_name = filename

@@ -73,7 +73,8 @@ def init_database_values(s, default_admin_password=None):
                      password_hash=admin_hash,
                      salt=admin_salt,
                      email=u"admin@mediatum",
-                     authenticator_info=internal_auth
+                     authenticator_info=internal_auth,
+                     can_change_password=True
                      )
 
     guestuser = User(login_name=config.get(u"user.guestuser", u"guest"),

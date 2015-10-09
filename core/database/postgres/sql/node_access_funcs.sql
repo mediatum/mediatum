@@ -598,7 +598,7 @@ BEGIN
                     WHERE na.nid=OLD.nid);
 
     IF OLD.ruletype IN ('read', 'data') 
-        AND NOT EXISTS (SELECT FROM node_to_access_rulesets WHERE nid=OLD.nid AND ruletype=OLD.ruletype)
+        AND NOT EXISTS (SELECT FROM node_to_access_ruleset WHERE nid=OLD.nid AND ruletype=OLD.ruletype)
         AND NOT EXISTS (SELECT FROM node_to_access_rule WHERE nid=OLD.nid AND ruletype=OLD.ruletype) THEN
         -- inherit from parents if no rules and rulesets are present for the node anymore
         INSERT INTO node_to_access_rule SELECT * FROM _inherited_access_rules_read_type(OLD.nid, OLD.ruletype);

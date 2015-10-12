@@ -145,7 +145,7 @@ class Default(tree.Node):
         pid = req.params.get('pid', self.id)
         sid = req.params.get('id', self.id)
 
-        if len(self.getChildren()) > 0 and self.type != 'directory' and self.type != 'collection':
+        if len(self.getChildren()) > 0 and self.isContainer != 1:
             parentInformation['parent_node_id'] = req.params.get('pid', self.id)
             parentInformation['children_list'] = [child for child in self.getChildren() if not child.get('system.next_id') != '']
         else:
@@ -153,15 +153,14 @@ class Default(tree.Node):
             parentInformation['children_list'] = []
         if len([sib.id for sib in filter(lambda itm: str(itm.id) == parentInformation['parent_node_id'], self.getParents())]) != 0:
             parentInformation['parent_condition'] = True
-            parentInformation['siblings_list'] = [c for c in tree.getNode(pid).getChildren() if c.id != self.id ]
+            parentInformation['siblings_list'] = [c for c in tree.getNode(pid).getChildren() if c.id != self.id]
         else:
             parentInformation['parent_condition'] = False
             parentInformation['siblings_list'] = tree.getNode(sid).getParents()[0].getChildren()
 
-        if parentInformation['parent_node_id']:
-            pass
-        else:
+        if not parentInformation['parent_node_id']:
             parentInformation['parent_node_id'] = re.split('\D', req.split_uri()[2].split('pid=')[-1])[0]
+        parentInformation['display_siblings'] = pid != self.id
 
         parentInformation['paren_ex_dir&col'] = [id for id in self.getParents() if id.type != 'directory' and id.type != 'collection']
         parentInformation['details_condition'] = self.getDetailsCondition()
@@ -324,7 +323,6 @@ class Default(tree.Node):
                         else:
                             value = default
 
-
                 if skip_empty_fields and not value:
                     continue
 
@@ -426,7 +424,6 @@ class Default(tree.Node):
                 print comp, pre
         return res
 
-
     # shallow caching
     def show_node_text_shallow(self, words=None, language=None, separator="", labels=0):
         global maskcache_shallow
@@ -480,13 +477,11 @@ class Default(tree.Node):
             if mask:
                 fields = mask.getMaskFields()
 
-                #####
                 def getNodeAttributeName(field):
                     metafields = [x for x in field.getChildren() if x.type == 'metafield']
                     if len(metafields) != 1:
                         logging.getLogger("error").error("maskfield %s zero or multiple metafield child(s)" % field.id)
                     return metafields[0].name
-                #####
 
                 if labels:
                     labels_data = [(f, f.getField().getName(), f.getLabel()) for f in fields]

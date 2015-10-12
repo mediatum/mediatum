@@ -129,6 +129,16 @@ def getAllContainerChildrenAbs(node, count=[]):  # returns a list with children,
     return count
 
 
+def getAllContainerChildrenByFieldValueAbs(node, count=None, **kwargs):
+    if count is None:
+        count = list()
+
+    for n in node.getContainerChildren():
+        count = getAllContainerChildrenByFieldValueAbs(n, count, **kwargs)
+    count.extend(node.getChildrenByFieldValue(**kwargs).ids)
+    return count
+
+
 def getAllContainerChildren(node):
     return len(list(set(getAllContainerChildrenAbs(node, []))))  # get number of children
     # return getAllContainerChildrenNum(node, 0) # get number of children (faster)
@@ -145,6 +155,10 @@ def getDirtyNodes(num=0):
 
 def getDirtySchemaNodes(num=0):
     return NodeList(db.getDirtySchemas(num))
+
+
+def getNodesByFieldValue(**kwargs):
+    return NodeList(db.get_nodes_by_field_value(**kwargs))
 
 
 class NoSuchNodeError:
@@ -535,7 +549,7 @@ class Node(object):
 
     @property
     def unicode_name(self):
-        return self._name.decode(encoding="utf8")
+        return self._name.decode(encoding="utf8", errors="replace")
 
     def _makePersistent(self):
         if self.id is None:
@@ -884,6 +898,10 @@ class Node(object):
         id = db.getContentChildren(self.id)
         return NodeList(id)
 
+    def getChildrenByFieldValue(self, **kwargs):
+        ids = db.get_nodes_by_field_value(parent_id=self.id, **kwargs)
+        return NodeList(ids)
+
     """ get all parents of this node """
 
     def getParents(self):
@@ -1065,6 +1083,8 @@ class Node(object):
         # fall-through
         raise AttributeError("Node %s of type has no attribute %s", self, name)
 
+    def getTechnAttributes(self):
+        return {}
 
     # fill hashmap with idlists of listvalues
     def getAllAttributeValues(self, attribute, access, schema=""):

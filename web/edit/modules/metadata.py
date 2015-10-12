@@ -427,6 +427,7 @@ def getContent(req, ids):
                     __name__, funcname(), field, field.id, field.getName(), mask, maskname)
                 logger.debug(msg)
                 field_name = field.getName()
+
                 if field_name == 'nodename' and maskname == 'settings':
                     if '__nodename' in req.params:
                         field_name = '__nodename'  # no multilang here !
@@ -439,7 +440,14 @@ def getContent(req, ids):
                             flag_nodename_changed = str(node.id)
                         for node in nodes:
                             node.setName(value)
+                elif field_name in ('repec.code', 'repec.provider') and maskname == 'settings':
+                    if '__' + field_name in req.params:
+                        field_name = '__' + field_name  # no multilang here!
+                    elif getDefaultLanguage() + '__' + field_name in req.params:
+                        field_name = getDefaultLanguage() + '__' + field_name  # no multilang here!
+
                 value = req.params.get(field_name, None)
+
                 if value is not None:
                     for node in nodes:
                         node.set(field.getName(), value)

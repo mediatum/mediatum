@@ -246,8 +246,20 @@ class Directory(default.Default):
         field.set("valuelist", "thumbnail;list;text")
         ret.append(field)
 
-        if self.type.startswith("collection"):
+        if self.type.startswith(("collection", "directory")):
             # special fields for collections
+            field = tree.Node("repec.code", "metafield")
+            field.set("label", t(lang, "RePEc archive code"))
+            field.set("language", "no")
+            field.set("type", "text")
+            ret.append(field)
+
+            field = tree.Node("repec.provider", "metafield")
+            field.set("label", t(lang, "RePEc provider"))
+            field.set("language", "no")
+            field.set("type", "text")
+            ret.append(field)
+
             field = tree.Node("style_hide_empty", "metafield")
             field.set("label", t(lang, "hide empty directories"))
             field.set("type", "check")

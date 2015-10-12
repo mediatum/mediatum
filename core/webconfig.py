@@ -138,6 +138,10 @@ def initContexts():
     # file.addHandler("send_bookconfig_xml").addPattern("/[0-9]*/bookconfig.xml")
     # file.addHandler("send_page").addPattern("/[0-9]*/page/[0-9]*\.jpg")
 
+    # === RePEc ===
+    file = context.addFile("web/repec/main.py")
+    file.addHandler("repec").addPattern("/repec/.*")
+
     # === workflow ===
     #file = context.addFile("web/publish/main.py")
     # file.addHandler("publish").addPattern("/publish/.*")

@@ -73,8 +73,8 @@
                     <tal:block tal:repeat="metafield python:metafields[pages.getStart():pages.getEnd()]">
                         <tr tal:define="cssclass python:metafields.index(metafield)%2 and 'norm' or 'silver'" tal:attributes="class cssclass">
                             <td tal:content="python:str(metafields.index(metafield)+1) +'.'"/>
-                            <td tal:content="python:str(metafield.getName())"/>
-                            <td tal:content="python:str(metafield.getLabel())"/>
+                            <td tal:content="python:metafield.getName()"/>
+                            <td tal:content="python:metafield.getLabel()"/>
                             <td tal:content="python:fieldtypes[str(metafield.getFieldtype())]" i18n:translate=""/>
                             <td tal:define="flist python:metafield.getFieldOptionList()">
                                 <table>

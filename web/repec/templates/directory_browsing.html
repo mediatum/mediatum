@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8" />
+    <title>RePEc Browsing</title>
+</head>
+<body>
+    <div tal:omit-tag="" tal:repeat="item items">
+        <br/><a href="#"
+            tal:attributes="href python:item[0]"
+            tal:content="python:item[1]">ITEM NAME GOES HERE</a>
+    </div>
+</body>
+</html>

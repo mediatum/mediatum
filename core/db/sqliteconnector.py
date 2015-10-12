@@ -339,3 +339,30 @@ class SQLiteConnector(Connector):
         order_clause = ", ".join(order_parts)
         query = q.format(join_clause, where_name_clause, order_clause)
         return [str(r[0]) for r in self.runQuery(query)]
+
+    def _get_nodes_by_field_value(self, **kwargs):
+        sql_parameters = ()
+        sql_conditions = []
+        sql_query = """
+SELECT DISTINCT n.id
+FROM node n INNER JOIN
+     nodeattribute a ON a.nid = n.id
+        """
+
+        if "parent_id" in kwargs:
+            parent_id = kwargs["parent_id"]
+            sql_conditions.append("(n.id IN (SELECT cid FROM nodemapping nm WHERE nm.nid = %s))")
+            sql_parameters += (parent_id, )
+            del kwargs["parent_id"]
+
+        for field, value in kwargs.items():
+            sql_conditions.append("a.name = %s AND a.value = %s)")
+            sql_parameters += (field, value)
+
+        if sql_conditions:
+            sql_query += " WHERE " + " AND ".join(sql_conditions)
+
+        return [str(r[0]) for r in self.runQuery(sql_query, *sql_parameters)]
+
+    def get_nodes_by_field_value(self, **kwargs):
+        return self._get_nodes_by_field_value(self, **kwargs)

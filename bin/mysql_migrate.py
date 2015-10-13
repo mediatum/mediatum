@@ -31,11 +31,11 @@ import os.path
 import subprocess
 import sys
 import tempfile
-from sqlalchemy_continuum import remove_versioning
-from core.database.postgres.alchemyext import disable_triggers, enable_triggers
 sys.path.append(".")
 
+from sqlalchemy_continuum import remove_versioning
 from core import init
+from core.database.postgres.alchemyext import disable_triggers, enable_triggers
 from core.database.postgres.connector import read_and_prepare_sql
 from collections import OrderedDict
 from bin.manage import vacuum_analyze_tables

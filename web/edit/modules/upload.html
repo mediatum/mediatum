@@ -331,23 +331,21 @@
     		// User can upload no more then 20 files in one go (sets multiple_queues to false)
     		max_file_count: 0,  // default is 0 -> no limit
 
-
-
-    //multipart_params : mpv,
-
-    		filters : {
-    			// Maximum file size
-    			//max_file_size : '1000mb',
-    			// Specify what files to browse for
-    			mime_types: [
-      			{title : "Image files", extensions : "jpg,jpeg,gif,png,tif,tiff"},
-      			{title : "Zip files", extensions : "zip"},
-            {title : "pdf files", extensions : "pdf"},
-            {title : "flv video files", extensions : "flv"},
-            {title : "mp3 files", extensions : "mp3"},
-            {title : "bibtex files", extensions : "bib"}
-    			]
-    		},
+            //multipart_params : mpv,
+            filters : {
+                 // Maximum file size
+                 //max_file_size : '1000mb',
+                 // Specify what files to browse for
+              mime_types: [
+                {title : "Image files", extensions : "jpg,jpeg,gif,png,tif,tiff"},
+                {title : "Zip files", extensions : "zip"},
+                {title : "pdf files", extensions : "pdf"},
+                {title: "apple mov video", extensions : "mov"},
+                {title : "mp3 files", extensions : "mp3"},
+                {title : "bibtex files", extensions : "bib"},
+                {title: "mp4 video", extensions : "mp4"},
+              ]
+              },
 
     		// Rename files by clicking on their titles
     		rename: true,

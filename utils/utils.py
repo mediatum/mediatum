@@ -491,7 +491,6 @@ def highlight(string, words, left, right):
 # mimetype validator
 #
 def getMimeType(filename):
-
     filename = filename.lower().strip()
     mimetype = "application/x-download"
     type = "file"
@@ -534,6 +533,15 @@ def getMimeType(filename):
     elif filename.endswith(".mov"):
         mimetype = "video/quicktime"
         type = "video"
+    elif filename.endswith(".mp4"):
+        mimetype = "video/mp4"
+        type = "video"
+    elif filename.endswith(".webm"):
+        mimetype = "video/webm"
+        type = "video"
+    elif filename.endswith(".ogv"):
+        mimetype = "video/ogv"
+        type = "video"
     elif filename.endswith(".doc"):
         mimetype = "application/msword"
         type = "document"
@@ -561,7 +569,6 @@ def getMimeType(filename):
     elif filename.endswith(".sur"):
         mimetype = "text/plain"
         type = "survey"
-
     else:
         mimetype = "other"
         type = "other"

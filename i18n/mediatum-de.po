@@ -343,7 +343,7 @@ msgid "image_high_res_load"
 msgstr "  Datei wird geladen..."
 
 msgid "image_high_res_archive"
-msgstr "Hochaufgelöste Version aus Archiv lagen"
+msgstr "Hochaufgelöste Version aus Archiv laden"
 
 msgid "doc_fulltext_title"
 msgstr "Volltext in neuem Fenster öffnen"

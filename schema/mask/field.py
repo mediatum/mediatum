@@ -24,6 +24,7 @@ from core.tree import getNode
 from schema.schema import getMetaFieldTypeNames, getMetaFieldTypes, getMetadataType, VIEW_DATA_ONLY, VIEW_SUB_ELEMENT, VIEW_HIDE_EMPTY, VIEW_DATA_EXPORT, dateoption
 from core.translation import lang, translate
 from core.metatype import Metatype
+from lib.iptc.IPTC import get_wanted_iptc_tags, cut_string
 
 
 class m_field(Metatype):
@@ -63,6 +64,13 @@ class m_field(Metatype):
         val = nodes[0].get(element.getName())
         for node in nodes:
             elementname = node.get(element.getName())
+
+            if element.getName() in get_wanted_iptc_tags():
+                max_len = int(get_wanted_iptc_tags()[element.getName()].split('|')[-1])
+                if not element.getName() in ['iptc_DateCreated', 'TimeCreated']:
+                    if max_len:
+                        val = cut_string(val, max_len)
+
             if elementname == "":
                 val = ""
         valuelist = {}

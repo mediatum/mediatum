@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
  mediatum - a multimedia content repository
 
@@ -19,21 +20,27 @@
 """
 from core import config
 from PIL import Image as PILImage, ImageDraw
+import logging
+
 import core.acl as acl
 import random
 import os
-from . import default
 import hashlib
+import shutil
+from . import default
 
-from schema.schema import VIEW_HIDE_EMPTY
+from schema.schema import VIEW_HIDE_EMPTY, getMetaType
 from core.acl import AccessData
 from core.attachment import filebrowser
-from utils.fileutils import getImportDir
+from utils.fileutils import getImportDir, importFileRandom
 from utils.utils import splitfilename, isnewer, iso2utf8, OperationException, utf8_decode_escape
-from core.tree import FileNode
+from core.tree import Node, FileNode, getRoot
 from core.translation import lang, t
 from core.styles import getContentStyles
 from web.frontend import zoom
+from lib.Exif import EXIF
+
+import lib.iptc.IPTC
 
 """ make thumbnail (jpeg 128x128) """
 
@@ -306,7 +313,6 @@ class Image(default.Default):
             if orig == 0:
                 for f in self.getFiles():
                     if f.type == "image":
-
                         if f.mimetype == "image/tiff" or ((f.mimetype is None or f.mimetype == "application/x-download")
                                                           and (f.getName().lower().endswith("tif") or f.getName().lower().endswith("tiff"))):
 
@@ -328,7 +334,7 @@ class Image(default.Default):
                                 self.set("width", width)
                                 self.set("height", height)
 
-                            print 'png name/path: ', pngname
+                            print 'png: ', pngname
 
                             self.addFile(FileNode(name=pngname, type="image", mimetype="image/png"))
                             self.addFile(FileNode(name=f.retrieveFile(), type="original", mimetype="image/tiff"))
@@ -350,10 +356,8 @@ class Image(default.Default):
             if thumb == 0:
                 for f in self.getFiles():
                     if (f.type == "image" and not f.getName().lower().endswith("svg")) or f.type == "tmppng":
-                        path, ext = splitfilename(f.retrieveFile())
                         basename = hashlib.md5(str(random.random())).hexdigest()[0:8]
 
-                        # path = os.path.join(getImportDir(),os.path.basename(path))
                         path = os.path.join(getImportDir(), basename)
 
                         thumbname = path + ".thumb"
@@ -377,12 +381,11 @@ class Image(default.Default):
                         self.set("width", width)
                         self.set("height", height)
 
-            #fetch unwanted tags to be omitted
+            # fetch unwanted tags to be omitted
             unwanted_attrs = self.unwanted_attributes()
 
             # Exif
             try:
-                from lib.Exif import EXIF
                 files = self.getFiles()
 
                 for file in files:
@@ -403,7 +406,6 @@ class Image(default.Default):
                                     self.set("Thumbnail", "True")
                                 else:
                                     self.set("Thumbnail", "False")
-
             except:
                 None
 
@@ -415,40 +417,41 @@ class Image(default.Default):
                 if not tileok and self.get("width") and self.get("height"):
                     zoom.getImage(self.id, 1)
 
-            # iptc
-            try:
-                from lib.iptc import IPTC
-                files = self.getFiles()
+            for f in self.getFiles():
+                if f.getType() == 'original':
 
-                for file in files:
-                    if file.type == "original":
-                        tags = IPTC.getIPTCValues(file.retrieveFile())
-                        tags.keys().sort()
-                        for k in tags.keys():
-                            # skip unknown iptc tags
-                            if 'IPTC_' in k:
-                                continue
-                            if any(tag in k for tag in unwanted_attrs):
-                                continue
-                            if isinstance(tags[k], list):
-                                tags[k] = ', '.join(tags[k])
-                            if tags[k] != "":
-                                self.set("iptc_" + k.replace(" ", "_"),
-                                         utf8_decode_escape(str(tags[k])))
-            except:
-                None
+                    wanted_tags = lib.iptc.IPTC.get_wanted_iptc_tags()
+
+                    tags_in_upload = lib.iptc.IPTC.get_iptc_values(f.retrieveFile(), wanted_tags)
+
+                    with_value = []
+                    for field in getMetaType(self.getSchema()).getMetaFields():
+                        if field.get('type') == "meta" and len(field.getValueList()) > 1:
+                            value = self.get('iptc_{}'.format(field.getName()))
+
+                            if len(value) > 0:
+                                with_value.append(field.getName())
+
+                    if tags_in_upload:
+                        for key in tags_in_upload.keys():
+                            if tags_in_upload[key] != '':
+
+                                if key not in with_value:
+                                    self.set('iptc_{}'.format(key.replace(' ', '_')),
+                                             tags_in_upload[key])
 
             for f in self.getFiles():
                 if f.getName().lower().endswith("png") and f.type == "tmppng":
                     self.removeFile(f)
                     break
 
-
     def unwanted_attributes(self):
-        '''
-        Returns a list of unwanted exif tags which are not to be extracted from uploaded images
-        @return: list
-        '''
+        """
+            Returns a list of unwanted exif tags
+            which are not to be extracted from uploaded images
+
+            :return: list
+        """
         return ['BitsPerSample',
                 'IPTC/NAA',
                 'WhitePoint',
@@ -539,7 +542,8 @@ class Image(default.Default):
                          "exif_Thumbnail_Orientation": "Thumbnail Orientation",
                          "exif_Thumbnail_Model": "Thumbnail Model",
                          "exif_JPEGThumbnail": "JPEGThumbnail",
-                         "Thumbnail": "Thumbnail"}}
+                         "Thumbnail": "Thumbnail"},
+                }
 
     """ fullsize popup-window for image node """
     def popup_fullsize(self, req):
@@ -651,3 +655,46 @@ class Image(default.Default):
 
     def getDefaultEditTab(self):
         return "view"
+
+    def event_metadata_changed(self):
+        """ Handles metadata content if changed.
+            Creates a 'new' original [old == upload].
+        """
+        upload_file = None
+        original_path = None
+        original_file = None
+
+        for f in self.getFiles():
+
+            if f.getType() == 'original':
+                original_file = f
+                if os.path.exists(f.retrieveFile()):
+                    original_path = f.retrieveFile()
+                if os.path.basename(original_path).startswith('-'):
+                    return
+
+            if f.getType() == 'upload':
+                if os.path.exists(f.retrieveFile()):
+                    upload_path = os.path.abspath(f.retrieveFile())
+
+        if not original_file:
+            logging.getLogger('editor').info('No original upload for writing IPTC.')
+            return
+
+        if not upload_file:
+            upload_path = '{}_upload{}'.format(os.path.splitext(original_path)[0], os.path.splitext(original_path)[-1])
+            shutil.copy(original_path, upload_path)
+            self.addFile(FileNode(upload_path, 'upload', original_file.mimetype))
+
+        tag_dict = {}
+
+        for field in getMetaType(self.getSchema()).getMetaFields():
+            if field.get('type') == "meta" and field.getValueList()[0] != '' and 'on' in field.getValueList():
+                tag_name = field.getValueList()[0].split('iptc_')[-1]
+
+                field_value = self.get('iptc_{}'.format(field.getName()))
+
+                if field.getValueList()[0] != '' and 'on' in field.getValueList():
+                    tag_dict[tag_name] = field_value
+
+        lib.iptc.IPTC.write_iptc_tags(original_path, tag_dict)

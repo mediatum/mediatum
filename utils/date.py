@@ -31,10 +31,14 @@ class DateTime:
         self.hour = hour
         self.minute = minute
         self.second = second
-        self.has_year = year > 0
-        self.has_month = month > 0
-        self.has_day = day > 0
+        self.has_year = year
+        self.has_month = month
+        self.has_day = day
         self.has_time = hour or minute or second
+
+        self.has_hour = hour
+        self.has_minute = minute
+        self.has_second = second
 
     def split(self):
         return (self.year, self.month, self.day, self.hour, self.minute, self.second)
@@ -303,19 +307,15 @@ def parse_date(string, format=None):
 
 
 def validateDate(d):
-    if d.year or d.month or d.day == 0:
-        return True
-
-    if d.has_year:
-        if not d.year:
-            return False
+    if not d.year and not d.year == 0:
+        return False
 
     if d.has_month:
-        if d.month > 12 or d.month < 1:
+        if d.month > 12 or d.month < 0:
             return False
 
     if d.has_day:
-        if d.day < 1:
+        if d.day < 0:
             return False
         if d.day > 31:
             return False
@@ -327,6 +327,19 @@ def validateDate(d):
             leapyear = (d.year % 4 == 0 and d.year % 100 != 0) or (d.year % 400 == 0)
             if ((leapyear and d.day > 29) or (not leapyear and d.day > 28)):
                 return False
+
+    if d.has_hour:
+        if 0 > d.hour or 24 < d.hour:
+            return False
+
+    if d.has_minute:
+        if 0 > d.minute or 60 < d.minute:
+            return False
+
+    if d.has_second:
+        if 0 > d.second or 60 < d.second:
+            return False
+
     return True
 
 """ validate given date-string """

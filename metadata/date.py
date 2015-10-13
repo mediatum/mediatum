@@ -66,24 +66,17 @@ class m_date(Metatype):
                 return (field.getLabel(), value)
             value = format_date(d, format=field.getValues())
 
-        parse_value = value.split(':')[0].split('T')[0]
-
         value_list = []
 
-        if re.search(r'[0]{2}\.', parse_value):
-            pass
-        elif re.search(r'\d\d\.', parse_value):
-            value_list.append(re.search(r'\d\d\.', parse_value).group())
+        if re.search(r'\d{2}\W\d{2}\W', value):
+            day_month = re.sub(r'00\W', '', re.search(r'\d{2}\W\d{2}\W', value).group())
+            value_list.append(day_month)
 
-        if re.search(r'\.[0]{2}\.', parse_value):
-            pass
-        elif re.search(r'\.\d\d\.', parse_value):
-            value_list.append(re.search(r'\.\d\d\.', parse_value).group().lstrip('.'))
-
-        if re.search(r'[0]{4}', parse_value):
-            pass
-        elif re.search(r'[1-9]\d{3}', parse_value):
-            value_list.append(re.search(r'[1-9]\d{3}', parse_value).group())
+        if re.search(r'\d{4}\W\d{2}', value):
+            year_month = re.sub(r'\W00', '', re.search(r'\d{4}-\d{2}', value).group())
+            value_list.append(year_month)
+        elif re.search(r'\d{4}', value):
+            value_list.append(re.search(r'\d{4}', value).group())
 
         return (field.getLabel(), ''.join(value_list))
 

@@ -137,7 +137,7 @@ if __name__ == "__main__":
                         help="write stackdumps to temp dir {} on SIGQUIT, default true".format(SYSTEM_TMP_DIR))
 
     parser.add_argument("--force-test-db", action="store_true", default=False,
-                        help="create / use test database server and test database (overrides configured db connection)")
+                        help="create / use database server with default database for testing (overrides configured db connection)")
     parser.add_argument("-l", "--loglevel", help="root loglevel, sensible values: DEBUG, INFO, WARN")
     parser.add_argument(
         "--redis-sessions",

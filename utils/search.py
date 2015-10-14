@@ -27,7 +27,7 @@ def import_node_fulltext(node, overwrite=False):
             with fi.open() as f:
                 fulltexts.append(f.read())
 
-            logg.debug("imported fulltext for node %s from %s", node.id, fi.path)
+            logg.info("imported fulltext for node %s from %s", node.id, fi.path)
         else:
             logg.warn("missing fulltext for node %s from %s", node.id, fi.path)
 

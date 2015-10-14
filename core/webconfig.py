@@ -162,8 +162,6 @@ def initContexts():
     handler.addPattern("/")
     handler.addPattern("/node")
     file.addHandler("display_noframe").addPattern("/mask")
-    file.addHandler("xmlsearch").addPattern("/xmlsearch")
-    file.addHandler("jssearch").addPattern("/jssearch")
     file.addHandler("show_parent_node").addPattern("/pnode")
     file.addHandler("publish").addPattern("/publish/.*")
     file = context.addFile("web/frontend/popups.py")

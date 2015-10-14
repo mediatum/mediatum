@@ -259,7 +259,6 @@ def runTALSnippet(s, context, mask=None):
 
 
 def init():
-    default_context['tree'] = tree
     default_context['esc'] = esc  # may be needed for example in escaping rss item elements
     default_context['esc2'] = esc2  # may be needed for example in escaping rss item elements
     default_context['no_html'] = no_html

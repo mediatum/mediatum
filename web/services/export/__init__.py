@@ -141,7 +141,7 @@ def request_handler(req):
                                                                                                                req.params,
                                                                                                                useragent)
 
-    if logg.isEnabledFor(logging.DEBUG) and matched and 'timetable' in d:
+    if logg.isEnabledFor(logging.INFO) and matched and 'timetable' in d:
         timesum = 0
         s += '\n' + ('-' * 80)
         s += "\n| timetable for request (%s, %s, %s)" % (req.command, req.fullpath, handle_params)
@@ -150,7 +150,7 @@ def request_handler(req):
             timesum += executiontime
         s += "\n| sum of execution times: %.3f sec.: %s bytes returned" % (timesum, locale.format("%d", bytes_sent, 1))
         s += '\n' + ('-' * 80)
-        logg.debug(s)
+        logg.info(s)
     else:
         logg.info(s)
     sys.stdout.flush()

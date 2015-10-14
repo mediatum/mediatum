@@ -29,7 +29,7 @@ from web.services.serviceutils import attribute_name_filter
 logg = logging.getLogger(__name__)
 
 
-def buildNodeDescriptor(req, node, indent=None, written=None, children=True, children_access=None, parents=False):
+def buildNodeDescriptor(params, node, indent=None, written=None, children=True, children_access=None, parents=False):
     nd = []
     d = {}
     if written is None:
@@ -38,13 +38,13 @@ def buildNodeDescriptor(req, node, indent=None, written=None, children=True, chi
     nodedict = {}
     nodedict['id'] = node.id
 
-    mask = req.params.get('mask', 'none').lower()
+    mask = params.get('mask', 'none').lower()
 
-    attrlist = req.params.get('attrlist', [])
+    attrlist = params.get('attrlist', [])
     if attrlist:
         attrlist = attrlist.split(',')
 
-    attrspec = req.params.get('attrspec', 'default_mask')
+    attrspec = params.get('attrspec', 'default_mask')
     # 'all': no restriction, send all attributes
     # 'none': to not send any attribute at all
     # 'default_mask' (default): only send attributes that correspond to the default mask fields
@@ -53,8 +53,8 @@ def buildNodeDescriptor(req, node, indent=None, written=None, children=True, chi
     #
 
     if mask == 'default':
-        maskcachetype = req.params.get('maskcache', 'deep')  # 'deep', 'shallow', 'none'
-        nodedict['defaultexport'] = node.show_node_text(labels=1, language=req.params.get('lang', ''), cachetype=maskcachetype)
+        maskcachetype = params.get('maskcache', 'deep')  # 'deep', 'shallow', 'none'
+        nodedict['defaultexport'] = node.show_node_text(labels=1, language=params.get('lang', ''), cachetype=maskcachetype)
         # except:
         #    logg.error('Error: web.services.jsonnode: could not get default mask content')
         #    nodedict['defaultexport'] = []
@@ -63,10 +63,11 @@ def buildNodeDescriptor(req, node, indent=None, written=None, children=True, chi
         try:
             mask_obj = getMetaType(node.getSchema()).getMask(mask)
             if mask_obj:
-                nodedict['defaultexport'] = mask_obj.getViewHTML([node], flags=0)
+                nodedict['defaultexport'] = mask_obj.getViewHTML([node], flags=8)
             else:
                 nodedict['defaultexport'] = "mask not found"
-        except:
+        except Exception as e:
+            logg.exception("exception in buildNodeDescriptor")
             nodedict['defaultexport'] = "error"
 
     if children:
@@ -88,7 +89,7 @@ def buildNodeDescriptor(req, node, indent=None, written=None, children=True, chi
             if (not children_access) or (children_access and children_access.hasAccess(c, 'read')):
                 if c.id not in written:
                     written[c.id] = None
-                    childnodedict = buildNodeDescriptor(req, c, indent, children_access=children_access)
+                    childnodedict = buildNodeDescriptor(params, c, indent, children_access=children_access)
                     nd.append(childnodedict)
 
     nodeattributes_dict = {}
@@ -98,14 +99,14 @@ def buildNodeDescriptor(req, node, indent=None, written=None, children=True, chi
         pass
     elif attrspec == 'default_mask' or attrspec not in ['none', 'all']:
         from contenttypes.data import make_lookup_key, get_maskcache_entry, maskcache
-        language = req.params.get('lang', '')
+        language = params.get('lang', '')
         lookup_key = make_lookup_key(node, language=language, labels=False)
         if lookup_key not in maskcache:
             # fill cache
             node.show_node_text(labels=False, language=language, cachetype='deep')
 
         field_descriptors = get_maskcache_entry(lookup_key)
-        
+
         try:
             mask = field_descriptors[0]
             for field_descriptor in field_descriptors[1:]:
@@ -135,7 +136,7 @@ def buildNodeDescriptor(req, node, indent=None, written=None, children=True, chi
     if nodeattributes_dict:
         nodedict['attributes'] = nodeattributes_dict
 
-    if 'files' in req.params:
+    if 'files' in params:
 
         nodedict['files'] = []
 
@@ -147,17 +148,13 @@ def buildNodeDescriptor(req, node, indent=None, written=None, children=True, chi
                 mimetype = "application/x-download"
             nodedict['files'].append({'filename': esc(file.getName()), 'mime-type': mimetype, 'type': file.type})
 
-    if 'nodename' in req.params:
+    if 'nodename' in params:
         nodedict['name'] = node.name
 
-    if 'nodetype' in req.params:
+    if 'nodetype' in params:
         if node.type is None:
             nodedict['type'] = 'node'
         else:
             nodedict['type'] = node.type
     return nd
 
-
-def getSingleNodeJSON(req, node, children=False):
-    nd = buildNodeDescriptor(req, node, children=children)
-    return json.dumps(nd, indent=4)

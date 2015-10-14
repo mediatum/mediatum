@@ -58,7 +58,3 @@ class SessionUrl(Url):
         )
 
         return self.after_request(response)
-
-    def after_request(self, response):
-        response.raise_for_status()
-        return response

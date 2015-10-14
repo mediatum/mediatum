@@ -65,6 +65,4 @@ The last line in the output should say _Athana HTTP Server started at http://0.0
 You can visit `http://localhost:8081` now. Default login is *admin* with password *insecure*.
 
 The last step downloads all missing dependencies, it may take some minutes on the first run. Dependencies are installed to `/nix/store`.
-
 By default, database, upload and log files are written to $HOME/mediatum_data.
-To configure mediaTUM, copy `mediatum.cfg.template` to `mediatum.cfg` and edit.

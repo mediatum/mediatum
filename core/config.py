@@ -118,6 +118,8 @@ def check_create_dir(dirpath, label):
     :param dirpath: path of directory
     :param label: short, readable directory description to show in messages
     """
+    dirpath = os.path.expanduser(dirpath)
+
     if not os.path.exists(dirpath):
         try:
             os.mkdir(dirpath)

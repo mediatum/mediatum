@@ -20,14 +20,17 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
+import re
 from mediatumtal import tal
 from core.transition import httpstatus
 import core.config as config
-import re
+from core import Node
 from utils.utils import esc
 from utils.utils import modify_tex
 from core.metatype import Metatype, charmap
 from export.exportutils import runTALSnippet
+from schema.schema import Mask
+from core.database.postgres.node import t_noderelation
 
 
 logg = logging.getLogger(__name__)
@@ -35,20 +38,20 @@ logg = logging.getLogger(__name__)
 
 def getMaskitemForField(field, language=None, mask=None):
     if mask:
-        masks = [mask]
+        mask_ids = [mask.id]
     else:
-        mdt = [p for p in field.parents if p.type == 'metadatatype'][0]
-        masks = [m for m in mdt.children if m.get('masktype') in ['shortview', 'fullview', 'editmask']]
-        if masks and language:
-            masks = [m for m in masks if m.get('language') in [language]]
+        mdt = field.parents.filter_by(type=u"metadatatype").one()
+        q_masks = mdt.children.with_entities(Node.id).filter(Node.attrs[u"masktype"].astext.in_([u'shortview', u'fullview', u'editmask']))
+        if language:
+            q_masks = q_masks.filter(Node.a.language == language)
 
-    maskitems = [p for p in field.parents if p.type == 'maskitem']
-    maskitems = [mi for mi in maskitems if 1 in [mi.is_descendant_of(m) for m in masks]]
+        mask_ids = [t[0] for t in q_masks]
 
-    if maskitems:
-        return maskitems[0]
-    else:
-        return None
+    # t_noderelation is postgres-specific, maybe there's a better way?
+    maskitem = (field.parents.filter_by(type=u'maskitem')
+                .join(t_noderelation, t_noderelation.c.cid==Node.id)
+                .filter(t_noderelation.c.nid.in_(mask_ids)))
+    return maskitem.first()
 
 
 class m_text(Metatype):

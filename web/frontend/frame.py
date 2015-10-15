@@ -338,9 +338,10 @@ class Collectionlet(Portlet):
                     if isDirectory(node):
                         self.directory = node
                     else:
-                        if not isDirectory(self.directory) or not isParentOf(node, self.directory):
+                        # XXX: do we really need these checks? Better way?
+                        if not isDirectory(self.directory) or not node.is_descendant_of(self.directory):
                             self.directory = getDirectory(node)
-                    if self.collection.type == "collections" or not isParentOf(node, self.collection):
+                    if isinstance(self.collection, Collections) or not node.is_descendant_of(self.collection):
                         self.collection = getCollection(node)
         try:
             self.hide_empty = self.collection.get("style_hide_empty") == "1"

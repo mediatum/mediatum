@@ -238,11 +238,7 @@ class Container(Data, ContainerMixin, SchemaMixin):
         return {}
 
     def getLogoPath(self):
-        items = []
-        for file in self.getFiles():
-            if file.getType() == 'image':
-                items.append(file.getName())
-
+        items = [f.base_name for f in self.files.filter_by(filetype=u"image")]
         if "system.logo" not in self.attributes.keys() and len(items) == 1:
             return items[0]
         else:

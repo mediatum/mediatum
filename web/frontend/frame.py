@@ -214,7 +214,7 @@ class Searchlet(Portlet):
             if f is None:  # All Metadata
                 # quick&dirty
                 f = g = getMetadataType("text")
-            return f.getSearchHTML(Context(g, value=self.values[i], width=width, name="query" + ustr(i),
+            return f.getSearchHTML(Context(g, value=self.values[i], width=width, name="query" + unicode(i),
                                            language=lang(self.req), collection=self.collection,
                                            user=users.getUserFromRequest(self.req), ip=self.req.ip))
         except:

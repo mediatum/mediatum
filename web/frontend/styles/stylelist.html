@@ -1,12 +1,11 @@
 
 <div tal:repeat="file python:files" class="preview_list" onmouseover="this.style.backgroundColor='#cccccc'" onmouseout="this.style.backgroundColor='white'">
     <div style="float:left; width:128px; height:128px; margin: 3px;overflow:hidden">
-        <a tal:attributes="href python:file.getLink()" tal:content="raw python:file.node.show_node_image()" target="_parent"/>
+        <a tal:attributes="href python:file.link" tal:content="raw python:file.image" target="_parent"/>
     </div>
-    <p tal:content="python:u'[{}/{}]'.format(file.nr+1, file.num)" class="docnum"/>
-    <a tal:attributes="href python:file.getLink()" tal:content="raw python:file.node.show_node_text(None, language)" style="white-space:normal"/>
+    <a tal:attributes="href python:file.link" tal:content="raw python:file.text" style="white-space:normal"/>
 
-    <div tal:attributes="onclick python:u'shoppingBag(\'{}\')'.format(file.node.id)" style="position:absolute; right:0px; top:3px; width:20px; height:20px; overflow:hidden; cursor: pointer;">
+    <div tal:attributes="onclick python:file.shopping_bag_link" style="position:absolute; right:0px; top:3px; width:20px; height:20px; overflow:hidden; cursor: pointer;">
         <img i18n:attributes="title view_list_add_shoppingbag" src="/img/favourite_add.png"/>
     </div>
 

@@ -18,24 +18,21 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
-from mediatumtal import tal
 import os
+from warnings import warn
 
-from mediatumtal import tal
-
-from core import db
+from core import db, Node, File
 from core.styles import getContentStyles, theme
 from core.translation import lang, t
-from contenttypes import Collections, Directory
+from contenttypes import Collections
 from contenttypes.container import includetemplate, replaceModules
 from web.frontend import Content
 from utils.strings import ensure_unicode_returned
 from utils.utils import getCollection, Link, getFormatedString
 from web.frontend.searchresult import simple_search, extended_search
 from core.systemtypes import Root
-from sqlalchemy.orm.exc import NoResultFound
-from core import Node
 from contenttypes.container import Container
+from mediatumtal import tal
 
 logg = logging.getLogger(__name__)
 q = db.query
@@ -45,66 +42,78 @@ def get_collections_node():
     return q(Collections).one()
 
 
-class SingleFile:
+class SingleFile(object):
 
     def __init__(self, file, nr, num, words=None, language=None):
-        """ XXX: param file is Node! This is very confusing..."""
-        self.attachment = None
-        for f in file.getFiles():
-            if f.getType() == "attachment":
-                self.attachment = f
-                break
+        node = file
+        sys_filetypes = [unicode(x) for x in node.getSysFiles()]
 
-        if not self.attachment:
-            for f in file.getFiles():
-                if hasattr(file, "getSysFiles") and f.getType() not in file.getSysFiles():
-                    self.attachment = f
-                    break
+        attachment = node.files.filter_by(filetype=u"attachment").first()
+        if attachment is None:
+            attachment = node.files.filter(~File.filetype.in_(sys_filetypes)).first()
 
-        self.datatype = file
-        self.image = file.show_node_image()
-        self.text = file.show_node_text(words, language=language)
+        self.attachment = attachment
+        self.datatype = node
+        self.image = node.show_node_image()
+        self.text = node.show_node_text(words, language=language)
         self.fields = self.datatype.getMetaFields()
         self.thumbnail = self.image
-        self.node = file
+        self.link = u'/node?id=' + unicode(node.id)
+        self.shopping_bag_link = u'shoppingBag(\'{}\')'.format(node.id)
+        self.node = node
         self.nr = nr
         self.num = num
-        self.file = file
+
+    def getLink(self):
+        warn("SingleFile.getLink() is deprecated, use SingleFile.link", DeprecationWarning)
+        return self.link
 
     def getShoppingBagLink(self):
-        return u'shoppingBag(\'{}\')'.format(self.node.id)
+        warn("SingleFile.getShoppingBagLink() is deprecated, use SingleFile.shopping_bag_link", DeprecationWarning)
+        return self.shopping_bag_link
 
     def getMetadata(self, separator=".", language=None):
         return self.node.show_node_text(separator=separator, language=language)
 
-    def getLink(self):
-        return '/node?id=' + unicode(self.file.id)
+    @property
+    def file(self):
+        warn("SingleFile.file is deprecated, use SingleFile.node", DeprecationWarning)
+        return self.node
+
 
 SORT_FIELDS = 2
 
 
 class ContentList(Content):
 
-    def __init__(self, files, collection=None, words=None):
+    def __init__(self, nodes, collection=None, words=None):
         self.nr = -1
         self.page = 0
         self.lang = "en"
         self.words = words
-        self.files = files
-        self.num = len(files)
+        self.nodes = nodes
+        self._num = -1
         self.collection = collection
         self.content = None
         self.id2pos = {}
         self.sortfields = [self.collection.get("sortfield")] * SORT_FIELDS
-        # TODO access.filter returns list sometimes which don't have the sort method
-#         if self.sortfields[0]:
-#             self.files.sort_by_fields(self.sortfields)
         ls = self.collection.get("style")
         if ls:
             ls = ls.split(";")[0]
         else:
             ls = "list"
         self.liststyle = getContentStyles("smallview", ls)
+
+    @property
+    def files(self):
+        warn("ContentList.files is deprecated, use ContentList.nodes", DeprecationWarning)
+        return self.nodes
+
+    @property
+    def num(self):
+        if self._num == -1:
+            self._num = self.nodes.count()
+        return self._num
 
     def length(self):
         return self.num
@@ -116,24 +125,24 @@ class ContentList(Content):
         return id in self.id2pos
 
     def link_first(self):
-        self.id2pos[self.files[0].id] = 0
-        return "/node?id=" + unicode(self.files[0].id)
+        self.id2pos[self.nodes[0].id] = 0
+        return "/node?id=" + unicode(self.nodes[0].id)
 
     def link_last(self):
-        self.id2pos[self.files[self.num - 1].id] = self.num - 1
-        return "/node?id=" + unicode(self.files[self.num - 1].id)
+        self.id2pos[self.nodes[self.num - 1].id] = self.num - 1
+        return "/node?id=" + unicode(self.nodes[self.num - 1].id)
 
     def link_prev(self):
         if self.nr > 0:
-            self.id2pos[self.files[self.nr - 1].id] = self.nr - 1
-            return "/node?id=" + unicode(self.files[self.nr - 1].id)
+            self.id2pos[self.nodes[self.nr - 1].id] = self.nr - 1
+            return "/node?id=" + unicode(self.nodes[self.nr - 1].id)
         else:
             return self.link_first()
 
     def link_next(self):
         if self.nr < self.num - 1:
-            self.id2pos[self.files[self.nr + 1].id] = self.nr + 1
-            return "/node?id=" + unicode(self.files[self.nr + 1].id)
+            self.id2pos[self.nodes[self.nr + 1].id] = self.nr + 1
+            return "/node?id=" + unicode(self.nodes[self.nr + 1].id)
         else:
             return self.link_last()
 
@@ -154,6 +163,9 @@ class ContentList(Content):
             self.page = int(req.params.get("page"))
             self.nr = -1
 
+        if "first" in req.args or "last" in req.args:
+            self.page = -1
+
         if "back" in req.params:
             self.nr = -1
 
@@ -162,11 +174,11 @@ class ContentList(Content):
                 self.sortfields[i] = req.params["sortfield%d" % i]
 
         # XXX: would be very slow to do this here, ideas?
-#         self.files.sort_by_fields(self.sortfields)
+#         self.nodes.sort_by_fields(self.sortfields)
 
         self.content = None
         if self.nr >= 0 and self.nr < self.num:
-            self.content = ContentNode(self.files[self.nr], self.nr, self.num, self.words, self.collection)
+            self.content = ContentNode(self.nodes[self.nr], self.nr, self.num, self.words, self.collection)
 
         # style selection
         if "style" in req.params:
@@ -207,12 +219,12 @@ class ContentList(Content):
         ok = 0
         for i in range(SORT_FIELDS):
             sortfields = []
-            if len(self.files):
+            if self.num:
                 if not self.sortfields[i]:
                     sortfields += [SortChoice("", "", 0, "")]
                 else:
                     sortfields += [SortChoice("", "", 0, "not selected")]
-                for field in self.files[0].getMetaFields():
+                for field in self.nodes[0].getMetaFields():
                     if "o" in field.getOption():
                         sortfields += [SortChoice(field.getLabel(), field.getName(), 0, self.sortfields[i])]
                         sortfields += [SortChoice(field.getLabel() + t(self.lang, "descending"),
@@ -244,15 +256,15 @@ class ContentList(Content):
         nav_page = list()
 
         if "itemsperpage" not in req.params:
-            files_per_page = 9
+            nodes_per_page = 9
         else:
             if req.params.get("itemsperpage") == "-1":
-                files_per_page = len(self.files)
+                nodes_per_page = self.num
             else:
-                files_per_page = int(req.params.get("itemsperpage"))
+                nodes_per_page = int(req.params.get("itemsperpage"))
 
         min = 0
-        max = (len(self.files) + files_per_page - 1) / files_per_page - 1
+        max = (self.num + nodes_per_page - 1) / nodes_per_page - 1
         left = self.page - 6
         right = self.page + 6
 
@@ -264,18 +276,18 @@ class ContentList(Content):
             left = min
 
         if left > min:
-            nav_list.append("/node?page=" + ustr(min))
+            nav_list.append("/node?page=" + unicode(min))
             nav_list.append('...')
             nav_page.append(min)
             nav_page.append(-1)
 
         for a in range(left, right + 1):
-            nav_list.append("/node?page=" + ustr(a))
+            nav_list.append("/node?page=" + unicode(a))
             nav_page.append(a)
 
         if right < max:
             nav_list.append('...')
-            nav_list.append("/node?page=" + ustr(max))
+            nav_list.append("/node?page=" + unicode(max))
             nav_page.append(-1)
             nav_page.append(max)
 
@@ -283,12 +295,12 @@ class ContentList(Content):
         tal_ids = []
 
         i = 0
-        for i in range(self.page * files_per_page, (self.page + 1) * files_per_page):
+        for i in range(self.page * nodes_per_page, (self.page + 1) * nodes_per_page):
             if i < self.num:
                 # XXX: remove session-stored Node instances!
-                file = db.refresh(self.files[i])
+                file = db.refresh(self.nodes[i])
 
-                self.id2pos[self.files[i].id] = i
+                self.id2pos[self.nodes[i].id] = i
                 tal_files += [SingleFile(file, i, self.num, language=language)]
                 tal_ids += [SingleFile(file, i, self.num, language=language).node.id]
             i += 1
@@ -301,12 +313,12 @@ class ContentList(Content):
         filesHTML = tal.getTAL(theme.getTemplate("content_nav.html"), {
             "nav_list": nav_list, "nav_page": nav_page, "act_page": self.page,
             "sortfields": self.sortfields, "sortfieldslist": self.getSortFieldsList(),
-            "files": tal_files, "ids": ",".join(str(nid) for nid in tal_ids), "maxresult": len(self.files),
+            "files": tal_files, "ids": ",".join(str(nid) for nid in tal_ids), "maxresult": self.num,
             "op": "", "query": req.params.get("query", "")}, macro="files", request=req)
 
         # use template of style and build html content
         contentList = liststyle.renderTemplate(req, {"nav_list": nav_list, "nav_page": nav_page, "act_page": self.page,
-                                                     "files": tal_files, "maxresult": len(self.files), "op": "", "language": lang(req)})
+                                                     "files": tal_files, "maxresult": self.num, "op": "", "language": lang(req)})
         sidebar = u""  # check for sidebar
         if self.collection.get(u"system.sidebar") != "":
             for sb in [s for s in self.collection.get("system.sidebar").split(";") if s != ""]:
@@ -437,8 +449,7 @@ def mkContentNode(req):
 
         if node.show_list_view:
             # no startpage found, list view requested
-            allowed_nodes = list(node.content_children_for_all_subcontainers.filter_read_access())
-            node.ccount = len(allowed_nodes)
+            allowed_nodes = node.content_children_for_all_subcontainers.filter_read_access()
             c = ContentList(allowed_nodes, getCollection(node))
             c.feedback(req)
             c.node = node
@@ -523,9 +534,9 @@ class ContentArea(Content):
             self.params = '&' + self.content.getParams()
 
     def actNode(self):
-        if hasattr(self.content, 'files'):
-            if self.content.nr >= 0 and len(self.content.files) >= self.content.nr:
-                return self.content.files[self.content.nr]
+        if hasattr(self.content, 'nodes'):
+            if self.content.nr >= 0 and len(self.content.nodes) >= self.content.nr:
+                return self.content.nodes[self.content.nr]
             else:
                 return self.content.node
 
@@ -594,7 +605,7 @@ class CollectionLogo(Content):
         self.path = collection.getLogoPath()
 
         if self.path != "":
-            self.path = '/file/' + ustr(self.collection.id) + '/' + self.path
+            self.path = '/file/' + unicode(self.collection.id) + '/' + self.path
 
     def getPath(self):
         return self.path

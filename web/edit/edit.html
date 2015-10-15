@@ -279,28 +279,20 @@ function build_context_menu_items(node, opts) {
       ctx_items["delete"] = {name: delete_t, icon: "delete", disabled: true};
      }
 
-      var this_node_is_special = node.data.this_node_is_special;
+    var special_dir_type = node.data.special_dir_type;
 
-      if (typeof this_node_is_special === 'object') {
-        consoledb.log('this_node_is_special:', node.data.this_node_is_special);
-        if ($.inArray('trash', this_node_is_special) > -1) {
-          delete ctx_items["edit"];
-          delete ctx_items["cut_container"];
-          delete ctx_items["delete"];
-          ctx_items["clear_trash"] = {
-                                       name: emptybin_t,
-                                       icon: '../img/' + node.data.icon
-                                      }
-        }
-        if ($.inArray('userhomedir', this_node_is_special) > -1) {
-          delete ctx_items["edit"];
-          delete ctx_items["cut_container"];
-          delete ctx_items["delete"];
-        }
-      }
+    if (typeof special_dir_type !== "undefined") {
+      delete ctx_items["edit"];
+      delete ctx_items["cut_container"];
+      delete ctx_items["delete"];
+    }
+
+    if (special_dir_type === "trash") {
+      ctx_items["clear_trash"] = {name: emptybin_t,
+                                  icon: '../img/' + node.data.icon}
+    }
 
       ctx_items["sep4"] = "---------";
-      // ctx_items["quit"] = {name: "Quit", icon: "quit"};
 
       consoledb.groupEnd('build_context_menu_items for node ' +  node.key + ', ' + node.title);
       return ctx_items;

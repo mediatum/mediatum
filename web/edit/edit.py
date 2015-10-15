@@ -384,11 +384,12 @@ def edit_tree(req):
                 pattern = "%" + homenodefilter.strip() + "%"
                 nodes = (q(Node).join(User, User.home_dir_id == Node.id)
                          .filter(User.login_name.ilike(pattern) | User.display_name.ilike(pattern)).all())
-                if len(nodes) > 1:
+                if nodes:
                     match_result = u'#={}'.format(len(nodes))
                 else:
                     match_result = u'<span style="color:red">Error: {} not found</span>'.format(homenodefilter)
                     match_error = True
+
                 if home_dir not in nodes:
                     if not match_error:
                         match_result = u'#={}+1'.format(len(nodes))
@@ -432,13 +433,18 @@ def edit_tree(req):
         else:
             nodedata['readonly'] = 0
 
+        if node is home_dir:
+            nodedata["special_dir_type"] = "home"
+            nodedata['match_result'] = match_result
 
+        elif node is user.trash_dir:
+            nodedata["special_dir_type"] = "trash"
 
-        nodedata['this_node_is_special'] = []
-        if node in (user.trash_dir, user.faulty_dir, user.upload_dir):
-            nodedata['this_node_is_special'] = nodedata['this_node_is_special'] + [node.id]
-            if node is home_dir:
-                nodedata['match_result'] = match_result
+        elif node is user.faulty_dir:
+            nodedata["special_dir_type"] = "faulty"
+
+        elif node is user.upload_dir:
+            nodedata["special_dir_type"] = "upload"
 
         data.append(nodedata)
 

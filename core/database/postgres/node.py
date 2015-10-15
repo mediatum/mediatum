@@ -26,6 +26,7 @@ from utils.magicobjects import MInt
 from ipaddr import IPv4Address
 from sqlalchemy_continuum import versioning_manager
 from sqlalchemy_continuum.utils import version_class
+from werkzeug.utils import cached_property
 
 
 logg = logging.getLogger(__name__)
@@ -380,6 +381,10 @@ class Node(DeclarativeBase, NodeMixin):
 
     def is_descendant_of(self, node):
         return exec_sqlfunc(object_session(self), mediatumfunc.is_descendant_of(self.id, node.id))
+
+    @cached_property
+    def has_files(self):
+        return self.files.first() is not None
 
     __mapper_args__ = {
         'polymorphic_identity': 'node',

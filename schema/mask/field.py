@@ -109,16 +109,16 @@ class m_field(Metatype):
 
 
     def getViewHTML(self, field, nodes, flags, language=None, template_from_caller=None, mask=None):
-        element = field.getField()
+        element = field.metafield
         if not element:
             return []
         fieldtype = element.get("type")
-        
+
         def get_formatted_value(*args, **kwargs):
             _t = getMetadataType(element.get("type"))
             result = _t.getFormatedValue(*args, **kwargs)[1]
             return ensure_unicode(result)
-        
+
         unit = u''
         if field.getUnit() != "":
             unit = ' ' + field.getUnit()

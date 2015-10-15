@@ -210,11 +210,13 @@ class m_mappingfield(Metatype):
         ret = ""
         node = nodes[0]
 
-        mask = fields[0].getParents()[0]
+        mask = fields[0].parents.first()
         separator = ""
 
         if mask.getMappingHeader() != "":
             ret += mask.getMappingHeader() + "\r\n"
+
+        field_vals = []
 
         for field in fields:
             attrnode = q(Node).get(field.get("attribute"))
@@ -241,10 +243,12 @@ class m_mappingfield(Metatype):
                 field_value = ""
                 default = ""
 
-            ret += self.replaceVars(format, node, attrnode, field_value, options=mask.getExportOptions(), mask=mask, default=default)
+            field_vals.append(self.replaceVars(format, node, attrnode, field_value, options=mask.getExportOptions(), mask=mask, default=default))
 
-            if not mask.hasExportOption("l") and list(fields).index(field) < len(fields) - 1:
-                ret += separator
+        if not mask.hasExportOption("l"):
+            ret += separator.join(field_vals)
+        else:
+            ret += u"".join(field_vals)
 
         if mask.getMappingFooter() != "":
             ret += "\r\n" + mask.getMappingFooter()

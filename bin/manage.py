@@ -23,6 +23,7 @@ import sys
 import tempfile
 import warnings
 import pyaml
+import codecs
 
 sys.path.append(".")
 
@@ -72,6 +73,11 @@ def get_conn_with_autocommit(s):
         warnings.simplefilter("ignore")
         conn = s.connection().execution_options(isolation_level="AUTOCOMMIT")
     return conn
+
+
+def import_dump(s, dump_filepath):
+    db.run_psql_file(dump_filepath)
+    logg.info("imported dump from %s", dump_filepath)
 
 
 def run_maint_command_for_tables(command, s, table_fullnames=None):
@@ -124,6 +130,8 @@ def data(args):
         init_database_values(s)
     elif action == "truncate":
         truncate_tables(s)
+    elif action == "import":
+        import_dump(s, args.sql_dumpfile)
 
 
 def fulltext(args):
@@ -201,7 +209,9 @@ if __name__ == "__main__":
     schema_subparser.set_defaults(func=schema)
 
     data_subparser = subparsers.add_parser("data", help="delete database data / load default values")
-    data_subparser.add_argument("action", choices=["truncate", "init"], help="remove all data | load default values into empty database")
+    data_subparser.add_argument("action", choices=["truncate", "init", "import"],
+                                help="remove all data | load default values | import SQL dump into empty database")
+    data_subparser.add_argument("sql_dumpfile", nargs="?", help="dump file to load for 'import' command")
     data_subparser.set_defaults(func=data)
 
     vacuum_subparser = subparsers.add_parser("vacuum", help="run VACUUM on all tables")

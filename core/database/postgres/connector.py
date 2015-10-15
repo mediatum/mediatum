@@ -96,12 +96,12 @@ class PostgresSQLAConnector(object):
 
     def check_create_test_db(self):
         # check database existence
-        out = self._psql_command("SELECT 1 FROM pg_database WHERE datname='mediatum'", output=True, database="postgres")
+        out = self.run_psql_command("SELECT 1 FROM pg_database WHERE datname='mediatum'", output=True, database="postgres")
         if out.strip() != "1":
             # no mediaTUM database present, use postgres as starting point to create one
-            self._psql_command("CREATE DATABASE mediatum OWNER=" + self.user, database="postgres")
-            self._psql_command("CREATE EXTENSION hstore SCHEMA public")
-            self._psql_command("ALTER ROLE {} SET search_path TO mediatum,public".format(self.user))
+            self.run_psql_command("CREATE DATABASE mediatum OWNER=" + self.user, database="postgres")
+            self.run_psql_command("CREATE EXTENSION hstore SCHEMA public")
+            self.run_psql_command("ALTER ROLE {} SET search_path TO mediatum,public".format(self.user))
 
     def check_run_test_db_server(self):
         dirpath = config.check_create_test_db_dir()
@@ -370,12 +370,37 @@ class PostgresSQLAConnector(object):
         s.merge(autoindex_languages_setting)
         s.commit()
 
-    def _psql_command(self, command, output=False, database="mediatum"):
-        args = ["psql", "-tA", "-p", str(self.port), database, "-c", command]
+    def run_psql_command(self, command, output=False, database=None):
+        """Executes a single SQL command via an external psql call.
+        Uses the connections options that are specified for the connector.
+        :param output: Return output from psql invocation?
+        :param database: override database name specified by connector configuration
+        """
+        return self._run_psql(database, output, "-c", command)
+
+    def run_psql_file(self, filepath, output=False, database=None):
+        """Executes a list of SQL statements from a file via an external psql call.
+        Uses the connections options that are specified for the connector.
+        :param output: Return output from psql invocation?
+        :param database: override database name specified by connector configuration
+        """
+        return self._run_psql(database, output, "-f", filepath)
+
+    def _run_psql(self, database, output, *additional_args):
+        if database is None:
+            database = self.database
+
+        args = ["psql", "-tA", "-h", self.host, "-p", str(self.port), "-U", self.user, database]
+        args.extend(additional_args)
+
+        env = dict(os.environ, PGPASSWORD=self.passwd)
+
         if output:
-            return check_output(args)
+            return check_output(args, env=env)
         else:
-            check_call(args)
+            check_call(args, env=env)
+
+    # test helpers
 
     def disable_session_for_test(self):
         """Disables db.Session, preventing all session operations using db.session. Used for unit tests."""

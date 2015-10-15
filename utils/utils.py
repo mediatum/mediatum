@@ -407,12 +407,13 @@ def isDirectory(node):
 
 def getDirectory(node):
     from core import db
+    from contenttypes import Container
     q = db.query
     from contenttypes.container import Collections
     def p(node):
-        if node.type.startswith("directory"):
+        if isinstance(node, Container):
             return node
-        for pp in node.getParents():
+        for pp in node.parents:
             n = p(pp)
             if n:
                 return n

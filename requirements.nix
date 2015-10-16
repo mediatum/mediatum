@@ -617,6 +617,20 @@ let
     doCheck = false;
   };
 
+  pyexiftool = self.buildPythonPackage {
+    name = "pyexiftool-0.1";
+
+    src = fetchgit {
+      url = https://github.com/smarnach/pyexiftool;
+      rev = "3db3764895e687d75b42d3ae4e554ca8664a7f6f";
+      sha256 = "f3f3b8e9a48846c5610006e5131ed4029bafc95b67a9864f1fcfeb45d8c2facb";
+    };
+
+    propagatedBuildInputs = with self; [];
+    buildInputs = with self; [];
+    doCheck = false;
+  };
+
   ldap = self.buildPythonPackage rec {
     name = "ldap-2.4.15";
 
@@ -650,6 +664,7 @@ in {
       psycopg2
       pyaml
       pydot
+      pyexiftool
       pygments
       pyjade
       pymarc

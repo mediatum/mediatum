@@ -31,4 +31,5 @@ sqlalchemy-utils
 sympy
 unicodecsv
 werkzeug
-https://mediatumdev.ub.tum.de/sqlalchemy-continuum.git@my
+git+https://mediatumdev.ub.tum.de/sqlalchemy-continuum.git@my
+git+https://github.com/smarnach/pyexiftool

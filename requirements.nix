@@ -387,9 +387,19 @@ let
       url = "https://pypi.python.org/packages/source/P/Pillow/Pillow-2.9.0.zip";
       md5 = "cd4e6286fb28e277954c011c3ce05bc4";
     };
-    propagatedBuildInputs = with self; [];
-    buildInputs = with self; [pkgs.zlib pkgs.libjpeg pkgs.libtiff pkgs.freetype pkgs.lcms2 pkgs.libwebp];
+    buildInputs = with self; [pkgs.zlib pkgs.libjpeg pkgs.libtiff pkgs.freetype pkgs.lcms2];
     doCheck = false;
+
+    # NOTE: we use LCMS_ROOT as WEBP root since there is not other setting for webp.
+    preConfigure = ''
+      sed -i "setup.py" \
+          -e 's|^FREETYPE_ROOT =.*$|FREETYPE_ROOT = _lib_include("${pkgs.freetype}")|g ;
+              s|^JPEG_ROOT =.*$|JPEG_ROOT = _lib_include("${pkgs.libjpeg}")|g ;
+              s|^ZLIB_ROOT =.*$|ZLIB_ROOT = _lib_include("${pkgs.zlib}")|g ;
+              s|^LCMS_ROOT =.*$|LCMS_ROOT = _lib_include("${pkgs.libwebp}")|g ;
+              s|^TIFF_ROOT =.*$|TIFF_ROOT = _lib_include("${pkgs.libtiff}")|g ;
+              s|^TCL_ROOT=.*$|TCL_ROOT = _lib_include("${pkgs.tcl}")|g ;'
+    '';
   };
   pyjade = self.buildPythonPackage {
     name = "pyjade-3.1.0";

@@ -56,7 +56,6 @@ class m_hgroup(Metatype):
             sep = ''
             has_raw_value = False  # skip group display if no item has raw_value
             items = field.getChildren().sort_by_orderpos()
-            len_items = len(items)
             for i, item in enumerate(items):
                 f = getMetadataType(item.get("type"))
                 raw_value = f.getViewHTML(item, nodes, flags | VIEW_SUB_ELEMENT, language=language)

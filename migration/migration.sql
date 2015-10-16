@@ -85,6 +85,11 @@ BEGIN
     UPDATE mediatum.node SET type = 'workflowstep_buildinfid' WHERE type = 'workflowstep_buildInfId';
     UPDATE mediatum.node SET type = 'workflowstep_showdata' WHERE type = 'workflowstep_wait';
 
+    -- scholar plugin
+
+    UPDATE mediatum.node SET type = 'directoryscholar' WHERE type = 'directory_scholar';
+
+
     RAISE NOTICE 'data migration finished';
 
     INSERT INTO mediatum.noderelation SELECT DISTINCT * FROM mediatum.transitive_closure_without_direct_connections();

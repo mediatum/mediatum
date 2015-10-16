@@ -242,12 +242,12 @@ def additional_init():
     from core.database import validity
     db.check_db_structure_validity()
     validity.check_database()
+    register_workflow()
+    init_modules()
     check_undefined_nodeclasses()
     init_fulltext_search()
-    register_workflow()
     init_ldap()
     init_archivemanager()
-    init_modules()
     tal_setup()
 
 

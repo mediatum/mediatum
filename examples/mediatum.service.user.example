@@ -1,0 +1,11 @@
+# Name this 'mediatum.service'.
+# Then, start mediatum as user with:
+# systemctl --user start mediatum
+
+[Unit]
+Description=mediaTUM Document Server
+Documentation="https://mediatum.github.io/mediatum"
+
+[Service]
+ExecStart=<path-to-mediatum>/mediatum.py
+WorkingDirectory=<path-to-mediatum>

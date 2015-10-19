@@ -26,7 +26,7 @@ import zipfile
 import time
 
 from core import db
-from core import Node
+from core import Node, File
 import core.config as config
 import core.athana as athana
 from core.archive import archivemanager

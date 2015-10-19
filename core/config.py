@@ -47,7 +47,11 @@ def get_default_data_dir():
 
 
 def get_config_filepath():
-    return os.getenv("MEDIATUM_CONFIG", "mediatum.cfg")
+    conf_filepath_from_env = os.getenv("MEDIATUM_CONFIG")
+    if conf_filepath_from_env:
+        return conf_filepath_from_env
+
+    return os.path.join(basedir, "mediatum.cfg")
 
 
 def get(key, default=None):
@@ -67,9 +71,8 @@ def getsubset(prefix):
     return options
 
 
-def _read_ini_file(basedir, filename):
+def _read_ini_file(basedir, filepath):
     lineno = 0
-    filepath = os.path.join(basedir, filename)
     params = {}
 
     with codecs.open(filepath, "rb", encoding='utf8') as fi:
@@ -138,13 +141,13 @@ def initialize(filepath=None):
     if not filepath:
         filepath = get_config_filepath()
 
-    logg.info("using config file %s", filepath)
     global settings, languages
 
     if os.path.exists(filepath):
+        print("using config file at", filepath)
         settings = _read_ini_file(basedir, filepath)
     else:
-        logg.warn("WARNING: config file %s not found, using default test config!", filepath)
+        print("WARNING: config file %s not found, using default test config!", filepath)
         settings = {}
 
     languages = [lang.strip() for lang in settings.get("i18n.languages", "en").split(",") if lang.strip()]

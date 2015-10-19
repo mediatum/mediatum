@@ -35,12 +35,14 @@ Commands
 ========
 
 Commands are implemented as IPython magic functions. You can omit the leading % most of the time.
+For more information on each magic function, use `%<magic>?`, for example `%check_login?`
 
 Initialization
 --------------
 
 * `%init full` - init everything, needed for some commands.
-    At startup, only important stuff is initialized (database, plugins, ...) automatically.
+    At startup, only important stuff is initialized (database, basic data types ...) automatically.
+    Plugins are loaded only in 'full' mode.
 
 
 Change current node
@@ -59,6 +61,7 @@ Display info for current node
 * `%list_children` - (alias lc)
 * `%list_parents` - (alias lp)
 * `%list_files` - (alias lf)
+* `%list_rights` - (alias lr)
 
 
 Set `limit_number_of_info_lines = <n>` to display only the first <n> lines of a category.
@@ -81,6 +84,13 @@ See `ipython-sql documentation <https://pypi.python.org/pypi/ipython-sql>`_ for 
 * `%insert` - run a insert statement
 * `%update` - run a update statement
 * `%delete` - run a delete statement
+
+
+User Management
+---------------
+
+%check_login <login_name> - check if user is able to login with given password. Returns the user object even if authentication fails.
+%password <login_name> - set user password
 
 
 Misc information

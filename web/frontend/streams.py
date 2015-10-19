@@ -121,6 +121,12 @@ def send_thumbnail(req):
         if os.path.isfile(f.abspath):
             return req.sendFile(f.abspath, f.mimetype)
 
+    # default thumb fallback
+    # XXX is there a cheaper way to get this?
+    n = q(Node).get(nid)
+    if n is None:
+        return 404
+
     for p in athana.getFileStorePaths("/img/"):
         for test in ["default_thumb_%s_%s.*" % (n.type, n.schema),
                      "default_thumb_%s.*" % n.schema,
@@ -129,6 +135,7 @@ def send_thumbnail(req):
             if fps:
                 thumb_mimetype, thumb_type = utils.utils.getMimeType(fps[0])
                 return req.sendFile(fps[0], thumb_mimetype, force=1)
+
     return req.sendFile(config.basedir + "/web/img/questionmark.png", "image/png", force=1)
 
 

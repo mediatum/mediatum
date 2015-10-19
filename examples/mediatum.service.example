@@ -1,0 +1,13 @@
+# Name this 'mediatum.service' and put it in /etc/systemd/system.
+# Then, start mediatum as root with:
+# systemctl start mediatum
+
+[Unit]
+Description=mediaTUM Document Server
+Documentation="https://mediatum.github.io/mediatum"
+Wants=postgresql.service nginx.service
+User=mediatum
+
+[Service]
+ExecStart=<path-to-mediatum>/mediatum.py
+WorkingDirectory=<path-to-mediatum>

@@ -1,4 +1,7 @@
 # Name this 'mediatum.service'.
+# Nix package manager is needed to run this unit.
+# You may need to set some enviroment variables for Nix in systemctl, like this:
+# systemctl --user set-environment NIX_PATH=$NIX_PATH NIX_REMOTE=$NIX_REMOTE
 # Then, start mediatum as user with:
 # systemctl --user start mediatum
 

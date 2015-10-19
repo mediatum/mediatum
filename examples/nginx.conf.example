@@ -1,0 +1,95 @@
+worker_processes  4;
+
+error_log  /home/mediatum/nginx/logs/error.log notice;
+pid        /home/mediatum/nginx/logs/nginx.pid;
+
+
+events {
+    worker_connections  1024;
+}
+
+
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+
+    # these path settings are needed if the nginx prefix is read-only (on NixOS, for example)
+    client_body_temp_path /home/mediatum/nginx/client_body_tmp;
+    proxy_temp_path /home/mediatum/nginx/proxy_tmp;
+    fastcgi_temp_path /home/mediatum/nginx/fastcgi_tmp;
+    uwsgi_temp_path /home/mediatum/nginx/uwsgi_tmp;
+    scgi_temp_path /home/mediatum/nginx/scgi_tmp;
+
+    log_format combinedapachelog '$remote_addr - $remote_user [$time_local] '
+                    '"$request" $status $body_bytes_sent "$http_referer" '
+                    '"$http_user_agent" "$http_x_forwarded_for"' ;
+
+    # structured JSON logging that can easily be consumed by logstash, for example
+    log_format json '{ "@timestamp": "$time_iso8601", '
+                         '"@fields": { '
+                         '"remote_addr": "$remote_addr", '
+                         '"remote_user": "$remote_user", '
+                         '"body_bytes_sent": "$body_bytes_sent", '
+                         '"request_time": "$request_time", '
+                         '"status": "$status", '
+                         '"request": "$request", '
+                         '"request_method": "$request_method", '
+                         '"http_referrer": "$http_referer", '
+                         '"http_user_agent": "$http_user_agent" } }';
+
+    sendfile  on;
+    keepalive_timeout  65;
+    gzip  on;
+
+    
+    # reverse proxying to Athana/mediaTUM running on local port 8081
+
+    upstream mediatum {
+        server localhost:8081;
+    }
+
+    server {
+        # serve HTTPS and SPDY on 8443 (unprivileged HTTPS port)
+        listen  8443 ssl spdy;
+        server_name  localhost:8443;
+
+        # SSL config
+        include  ssl_params;
+        ssl_certificate  /home/mediatum/nginx/conf/ssl-mediatum.crt;
+        ssl_certificate_key  /home/mediatum/nginx/conf/ssl-mediatum.key;
+
+        # logging
+        access_log  /home/mediatum/nginx/logs/access_mediatum.log combinedapachelog;
+		access_log /home/mediatum/nginx/logs/access_mediatum.json json;
+		#access_log syslog:server=0.0.0.0:5141 json;
+
+        # filter methods which don't work at all before they reach Athana
+        if ($request_method !~ ^(GET|HEAD|POST)$ ) { return 404; }
+
+        # filter hack attacks on common web products
+        location ~ /trackback/$ { return 404; }
+        location ~ .php/?$ { return 404; }
+        location ~ .aspx?/?$ { return 404; }
+    
+        location @backend {
+            proxy_read_timeout 300;
+            add_header X-Served-By backend;
+            proxy_pass http://mediatum;
+        }
+
+        # static files served by nginx first. If not found, try backend.
+        location ~ \.(css|gif|img|js|png|ico|json|xml|html)$ {
+            root /home/mediatum;
+            try_files /mediatum_myplugin/themes/mytheme/$uri /mediatum/web/$uri /mediatum/web/edit/$uri /mediatum/web/admin/$uri /mediatum/web/root/$uri @backend;
+        }
+
+        # everything else is passed directly to backend
+        location / {
+            proxy_read_timeout  300;
+            proxy_set_header  X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_pass  http://mediatum;
+        }
+    }
+}
+
+# vim: set filetype=nginx sw=4 ts=4 sts=4 expandtab:

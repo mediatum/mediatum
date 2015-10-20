@@ -340,6 +340,7 @@ INSERT INTO noderelation
 SELECT * FROM extend_relation_to_parents(NEW.nid, NEW.cid) f
 WHERE NOT EXISTS(SELECT FROM noderelation WHERE nid=f.nid AND cid=f.cid AND distance=f.distance);
 
+PERFORM update_inherited_access_rules_for_node(NEW.cid);
 PERFORM recalculate_relation_subtree(NEW.cid);
 
 RETURN NEW;

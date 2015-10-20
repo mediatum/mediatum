@@ -9,7 +9,7 @@ import logging
 from sqlalchemy import func, Text, text
 from core import config, db
 from core.search.representation import AttributeMatch, FullMatch, SchemaMatch, FulltextMatch, AttributeCompare, TypeMatch, And, Or, Not
-from core.database.postgres import mediatumfunc, DeclarativeBase, integer_pk, integer_fk, C
+from core.database.postgres import mediatumfunc, DeclarativeBase, integer_pk, integer_fk, C, FK
 from sqlalchemy.dialects.postgresql.base import TSVECTOR
 from core.database.postgres.node import Node
 
@@ -60,7 +60,7 @@ class Fts(DeclarativeBase):
     # XXX: we allow multiple search items with the same configuration
     # XXX: otherwise, we could use nid, config, searchtype as primary key
     # XXX: may change in the future
-    nid = integer_fk(Node.id)
+    nid = C(FK(Node.id, ondelete="CASCADE"))
     config = C(Text)
     searchtype = C(Text)
     tsvec = C(TSVECTOR)

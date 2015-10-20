@@ -47,11 +47,7 @@ BEGIN
         ids_to_delete = node_ids;
     END IF;
 
-    WITH del_fts AS
-       (DELETE FROM fts
-        WHERE nid IN (SELECT unnest(ids_to_delete))),
-
-    del_rel AS
+    WITH del_rel AS
        (DELETE FROM noderelation
         WHERE cid IN (SELECT unnest(ids_to_delete))
         RETURNING cid AS id),

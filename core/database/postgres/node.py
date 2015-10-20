@@ -246,6 +246,19 @@ class Node(DeclarativeBase, NodeMixin):
         sq = _subquery_subtree(self)
         return object_session(self).query(Content).filter(Node.id.in_(sq)).filter_by(subnode=False)
 
+    @property
+    def content_children_for_all_subcontainers_with_duplicates(self):
+        """Collects all Content nodes in all subcontainers of this node.
+        This excludes content nodes that are children of other content nodes.
+        This method can be much faster than content_children_for_all_subcontainers, but may return lesser nodes than expected (when using limit).
+        Don't use distinct() on this method, use content_children_for_all_subcontainers instead if you need it!
+        """
+        from contenttypes.data import Content
+        from core import db
+        sq = _subquery_subtree(self)
+        nr = t_noderelation
+        return object_session(self).query(Content).filter_by(subnode=False).join(nr, Content.id == nr.c.cid).filter(nr.c.nid==self.id)
+
     def all_children_by_query(self, query):
         sq = _subquery_subtree(self)
         query = query.filter(Node.id.in_(sq))

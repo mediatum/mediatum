@@ -56,7 +56,7 @@ class SingleFile(object):
         self.datatype = node
         self.image = node.show_node_image()
         self.text = node.show_node_text(words, language=language)
-        self.fields = self.datatype.getMetaFields()
+#         self.fields = self.datatype.getMetaFields()
         self.thumbnail = self.image
         self.link = u'/node?id=' + unicode(node.id)
         self.shopping_bag_link = u'shoppingBag(\'{}\')'.format(node.id)

@@ -89,6 +89,8 @@ class ContentList(Content):
     def __init__(self, nodes, collection=None, words=None):
         self.nr = -1
         self.page = 0
+        self.before = None
+        self.after = None
         self.lang = "en"
         self.words = words
         self.nodes = nodes
@@ -150,21 +152,25 @@ class ContentList(Content):
         return "node?back=y"
 
     def feedback(self, req):
-        myid = req.params.get("id")
-        if myid:
+        container_id = req.params.get("id")
+        if container_id:
             try:
-                self.nr = self.id2pos[myid]
+                self.nr = self.id2pos[container_id]
             except KeyError:
                 pass  # happens for first node (the directory)
 
+        self.container_id = container_id
         self.lang = lang(req)
 
         if "page" in req.params:
-            self.page = int(req.params.get("page"))
+            self.page = req.args.get("page", type=int)
             self.nr = -1
 
-        if "first" in req.args or "last" in req.args:
+        if "before" in req.args or "after" in req.args:
             self.page = -1
+
+        self.before = req.args.get("before", type=int)
+        self.after = req.args.get("after", type=int)
 
         if "back" in req.params:
             self.nr = -1
@@ -243,25 +249,10 @@ class ContentList(Content):
         else:
             return getContentStyles("smallview")  # , self.collection.get("style") or "default")
 
-    @ensure_unicode_returned(name="web.frontend.content.ContentList:html")
-    def html(self, req):
-        language = lang(req)
-        if not language:
-            language = None
-        if self.content:
-            headline = tal.getTAL(theme.getTemplate("content_nav.html"), {"nav": self}, macro="navheadline", language=lang(req))
-            return headline + self.content.html(req)
-
-        nav_list = list()
-        nav_page = list()
-
-        if "itemsperpage" not in req.params:
-            nodes_per_page = 9
-        else:
-            if req.params.get("itemsperpage") == "-1":
-                nodes_per_page = self.num
-            else:
-                nodes_per_page = int(req.params.get("itemsperpage"))
+    def _page_nav_numbers(self, nodes_per_page, liststyle, language, req):
+        nav_list = []
+        nav_page = []
+        files = []
 
         min = 0
         max = (self.num + nodes_per_page - 1) / nodes_per_page - 1
@@ -291,34 +282,115 @@ class ContentList(Content):
             nav_page.append(-1)
             nav_page.append(max)
 
-        tal_files = []
-        tal_ids = []
+        displayed_nodes = self.nodes.offset(self.page * nodes_per_page).limit(nodes_per_page).all()
+        for pos, node in enumerate(displayed_nodes):
+            self.id2pos[node.id] = pos
+            files.append(SingleFile(node, pos, self.num, language=language))
 
-        i = 0
-        for i in range(self.page * nodes_per_page, (self.page + 1) * nodes_per_page):
-            if i < self.num:
-                # XXX: remove session-stored Node instances!
-                file = db.refresh(self.nodes[i])
+        ctx = {
+            "nav_list": nav_list, "nav_page": nav_page, "act_page": self.page
+        }
 
-                self.id2pos[self.nodes[i].id] = i
-                tal_files += [SingleFile(file, i, self.num, language=language)]
-                tal_ids += [SingleFile(file, i, self.num, language=language).node.id]
-            i += 1
+        page_nav = tal.getTAL(theme.getTemplate("content_nav.html"), ctx, macro="page_nav_numbers", language=language)
+        return page_nav, files
+
+    def _page_nav_prev_next(self, nodes_per_page, liststyle, language, req):
+        q_nodes = self.nodes
+
+        # self.after set <=> moving to next page
+        # self.before set <=> moving to previous page
+        # nothing set <=> first page
+
+        if self.after:
+            q_nodes = q_nodes.filter(Node.id < self.after)
+
+        elif self.before:
+            q_nodes = q_nodes.filter(Node.id > self.before)
+
+        if self.before:
+            q_nodes = q_nodes.order_by(Node.id)
+        else:
+            q_nodes = q_nodes.order_by(Node.id.desc())
+
+        # get one more to find out if there are more nodes available
+
+        ctx = {
+            "container_id": self.container_id,
+            "before": None,
+            "after": None
+        }
+
+        available_node_count = q_nodes.limit(nodes_per_page+1).count()
+        nodes = q_nodes.limit(nodes_per_page).prefetch_attrs().all()
+
+
+        if available_node_count > nodes_per_page:
+            # more nodes available when navigating in the same direction
+            # last node will be displayed on next page, remove it
+            if self.before:
+                ctx["before"] = nodes[-1].id
+            else:
+                ctx["after"] = nodes[-1].id
+
+        if self.before:
+            # going backwards, so it must be possible to go forward in the next step
+            ctx["after"] = nodes[0].id
+        elif self.after:
+            # going forward, so it must be possible to go back in the next step
+            ctx["before"] = nodes[0].id
+
+        if self.before:
+            # going backwards inverts the order, invert again for display
+            nodes = nodes[::-1]
+
+        files = [SingleFile(n, 0, 0, language=language) for n in nodes]
+
+        page_nav = tal.getTAL(theme.getTemplate("content_nav.html"), ctx, macro="page_nav_prev_next", language=language)
+        return page_nav, files
+
+    @ensure_unicode_returned(name="web.frontend.content.ContentList:html")
+    def html(self, req):
+        language = lang(req)
+        if not language:
+            language = None
+        if self.content:
+            headline = tal.getTAL(theme.getTemplate("content_nav.html"), {"nav": self}, macro="navheadline", language=language)
+            return headline + self.content.html(req)
+
+        if "itemsperpage" not in req.params:
+            nodes_per_page = 9
+        else:
+            if req.params.get("itemsperpage") == "-1":
+                nodes_per_page = self.num
+            else:
+                nodes_per_page = int(req.params.get("itemsperpage"))
 
         liststyle = req.session.get("liststyle-" + unicode(self.collection.id), "")  # .split(";")[0]# user/session setting for liststyle?
         if not liststyle:
             # no liststsyle, use collection default
             liststyle = self.liststyle
 
-        filesHTML = tal.getTAL(theme.getTemplate("content_nav.html"), {
-            "nav_list": nav_list, "nav_page": nav_page, "act_page": self.page,
+        if "page" in req.args or "pagenav" in req.args:
+            # old page navigation
+            page_nav, files = self._page_nav_numbers(nodes_per_page, liststyle, language, req)
+        else:
+            # new prev next navigation
+            page_nav, files = self._page_nav_prev_next(nodes_per_page, liststyle, language, req)
+
+        ctx = {
+            "page_nav": page_nav,
+            "files": files,
             "sortfields": self.sortfields, "sortfieldslist": self.getSortFieldsList(),
-            "files": tal_files, "ids": ",".join(str(nid) for nid in tal_ids), "maxresult": self.num,
-            "op": "", "query": req.params.get("query", "")}, macro="files", request=req)
+            "ids": ",".join(str(f.node.id) for f in files),
+            "op": "", "query": req.params.get("query", "")}
+
+        filesHTML = tal.getTAL(theme.getTemplate("content_nav.html"), ctx, macro="list_header", request=req)
 
         # use template of style and build html content
-        contentList = liststyle.renderTemplate(req, {"nav_list": nav_list, "nav_page": nav_page, "act_page": self.page,
-                                                     "files": tal_files, "maxresult": self.num, "op": "", "language": lang(req)})
+        ctx = {"files": files, "op": "", "language": lang(req)}
+
+        contentList = liststyle.renderTemplate(req, ctx)
+
         sidebar = u""  # check for sidebar
         if self.collection.get(u"system.sidebar") != "":
             for sb in [s for s in self.collection.get("system.sidebar").split(";") if s != ""]:

@@ -18,9 +18,8 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import core.users as users
 from core.translation import lang, t
-from core.transition import httpstatus
+from core.transition import httpstatus, current_user
 from core import Node
 from core.systemtypes import Root
 from contenttypes import Collections, Home
@@ -32,7 +31,7 @@ def getInformation():
 
 
 def getContent(req, ids):
-    user = users.getUserFromRequest(req)
+    user = current_user
     nodes = []
     for nid in ids:
         node = q(Node).get(nid)

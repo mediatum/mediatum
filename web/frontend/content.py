@@ -185,7 +185,7 @@ class ContentList(Content):
         return self.nav_link(after=self.next_after)
 
     def feedback(self, req):
-        container_id = req.params.get("id")
+        container_id = req.args.get("id")
         if container_id:
             try:
                 self.nr = self.id2pos[container_id]
@@ -195,7 +195,7 @@ class ContentList(Content):
         self.container_id = container_id
         self.lang = lang(req)
 
-        if "page" in req.params:
+        if "page" in req.args:
             self.page = req.args.get("page", type=int)
             self.nr = -1
 
@@ -206,12 +206,12 @@ class ContentList(Content):
         self.after = req.args.get("after", type=int)
         self.nodes_per_page = req.args.get("nodes_per_page", type=int)
 
-        if "back" in req.params:
+        if "back" in req.args:
             self.nr = -1
 
         for i in range(SORT_FIELDS):
-            if ("sortfield%d" % i) in req.params:
-                self.sortfields[i] = req.params["sortfield%d" % i]
+            if ("sortfield%d" % i) in req.args:
+                self.sortfields[i] = req.args["sortfield%d" % i]
 
         # XXX: would be very slow to do this here, ideas?
 #         self.nodes.sort_by_fields(self.sortfields)
@@ -408,7 +408,7 @@ class ContentList(Content):
             "files": files,
             "sortfields": self.sortfields, "sortfieldslist": self.getSortFieldsList(),
             "ids": ",".join(str(f.node.id) for f in files),
-            "op": "", "query": req.params.get("query", "")}
+            "op": "", "query": req.args.get("query", "")}
 
         filesHTML = tal.getTAL(theme.getTemplate("content_nav.html"), ctx, macro="list_header", request=req)
 
@@ -524,7 +524,7 @@ def fileIsNotEmpty(file):
 
 
 def mkContentNode(req):
-    id = req.params.get("id", get_collections_node().id)
+    id = req.args.get("id", get_collections_node().id)
     node = q(Node).get(id)
 
     if node is None:
@@ -534,7 +534,7 @@ def mkContentNode(req):
 
     if isinstance(node, Container):
         # try to find a start page
-        if "files" not in req.params and len(filter(None, node.getStartpageDict().values())) > 0:
+        if "files" not in req.args and len(filter(None, node.getStartpageDict().values())) > 0:
             # XXX: would be better to show an error message for missing, but configured start pages
             html_files = node.files.filter_by(filetype=u"content", mimetype=u"text/html")
             for f in html_files:
@@ -612,12 +612,12 @@ class ContentArea(Content):
         return path
 
     def feedback(self, req):
-        if ("id" in req.params or "item" in req.params) and "searchmode" not in req.params and not (
-                hasattr(self.content, "in_list") and self.content.in_list(req.params.get("id"))):
+        if ("id" in req.args or "item" in req.args) and "searchmode" not in req.args and not (
+                hasattr(self.content, "in_list") and self.content.in_list(req.args.get("id"))):
             self.content = mkContentNode(req)
-        elif req.params.get("searchmode") == "simple" and req.params.get("submittype") != "change":
+        elif req.args.get("searchmode") == "simple" and req.args.get("submittype") != "change":
             self.content = simple_search(req)  # simple search
-        elif req.params.get("searchmode") in ["extended", "extendedsuper"] and req.params.get("submittype") != "change":
+        elif req.args.get("searchmode") in ["extended", "extendedsuper"] and req.args.get("submittype") != "change":
             self.content = extended_search(req)  # extended search
         else:
             newcontent = self.content.feedback(req)
@@ -645,7 +645,7 @@ class ContentArea(Content):
 
     @ensure_unicode_returned
     def html(self, req):
-        if "raw" in req.params:
+        if "raw" in req.args:
             path = ""
         else:
             if hasattr(self.content, "node"):
@@ -661,10 +661,10 @@ class ContentArea(Content):
                 else:
                     printlink = None
 
-            if printlink and "sortfield0" in req.params:
-                printlink += '?sortfield0=' + req.params.get("sortfield0") + '&sortfield1=' + req.params.get("sortfield1")
+            if printlink and "sortfield0" in req.args:
+                printlink += '?sortfield0=' + req.args.get("sortfield0") + '&sortfield1=' + req.args.get("sortfield1")
 
-            if req.params.get("show_navbar") == 0 or req.session.get("area") == "publish":
+            if req.args.get("show_navbar") == 0 or req.session.get("area") == "publish":
                 breadcrumbs = []
             else:
                 try:
@@ -680,8 +680,7 @@ class ContentArea(Content):
                                "path": breadcrumbs,
                                "styles": styles,
                                "logo": self.collectionlogo,
-                               "searchmode": req.params.get("searchmode", ""),
-                               "items": items,
+                               "searchmode": req.args.get("searchmode", ""),
                                "select_style_link": self.content.select_style_link,
                                "id": id,
                                "nodeprint": "1" if printlink else "0",  # XXX: template compat for non-default templates
@@ -718,7 +717,7 @@ class CollectionLogo(Content):
 
 
 def getContentArea(req):
-    if len(req.params):
+    if len(req.args):
         if "contentarea" in req.session:
             c = req.session["contentarea"]
         else:

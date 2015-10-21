@@ -22,12 +22,12 @@ import core.users as users
 
 import web.edit
 
-from core.acl import AccessData
 from core.translation import t, lang
 from web.edit.edit_common import showdir
 from web.edit.edit import nodeIsChildOfNode
 from utils.utils import isDirectory
 from core.users import getHomeDir
+from core.transition import current_user
 import logging
 from contenttypes import Collections, Directory
 from core import Node
@@ -40,7 +40,7 @@ def getInformation():
     return {"version":"1.1", "system":1}
 
 def getContent(req, ids):
-    user = users.getUserFromRequest(req)
+    user = current_user
     publishdir = q(Node).get(ids[0])
     explicit = q(Node).filter(Node.write_access == user.login_name).all()
     ret = ""
@@ -48,7 +48,6 @@ def getContent(req, ids):
     actionerror = []
     changes = []
     if "dopublish" in req.params.keys():
-        access = AccessData(req)
 
         objlist = []
         for key in req.params.keys():
@@ -60,7 +59,7 @@ def getContent(req, ids):
             faultylist = []
             obj = q(Node).get(obj_id)
             for mask in obj.getMasks(type="edit"): # check required fields
-                if access.hasReadAccess(mask) and mask.getName() == obj.get("edit.lastmask"):
+                if mask.has_read_access() and mask.getName() == obj.get("edit.lastmask"):
                     for f in mask.validateNodelist([obj]):
                         faultylist.append(f)
 

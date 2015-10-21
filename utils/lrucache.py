@@ -207,6 +207,7 @@ def lru_cache(maxsize=100, typed=False):
         wrapper.cache_remove = cache_remove
         wrapper.cache_add = cache_add
         wrapper.make_graph = make_graph
+        wrapper._cache = cache
         return update_wrapper(wrapper, user_function)
 
     return decorating_function

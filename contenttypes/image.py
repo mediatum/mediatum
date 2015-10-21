@@ -257,16 +257,9 @@ class Image(Content):
         obj['originallink'] = u"getArchivedItem('{}/{}')".format(node.id, tif)
         obj['archive'] = node.get('archive_type')
 
-        if "style" in req.params.keys():
-            req.session["full_style"] = req.params.get("style", "full_standard")
-        elif "full_style" not in req.session.keys():
-            if "contentarea" in req.session.keys():
-                col = req.session["contentarea"].collection
-                req.session["full_style"] = col.get("style_full")
-            else:
-                req.session["full_style"] = "full_standard"
-
-        obj['style'] = req.session["full_style"]
+        full_style = req.args.get("style", "full_standard")
+        if full_style:
+            obj['style'] = full_style
 
         obj['parentInformation'] = self.getParentInformation(req)
 
@@ -274,8 +267,8 @@ class Image(Content):
 
     """ format big view with standard template """
     def show_node_big(self, req, template="", macro=""):
-        if template == "":
-            styles = getContentStyles("bigview", contenttype=self.getContentType())
+        if not template:
+            styles = getContentStyles("bigview", contenttype=self.type)
             if len(styles) >= 1:
                 template = styles[0].getTemplate()
         return req.getTAL(template, self._prepareData(req), macro)

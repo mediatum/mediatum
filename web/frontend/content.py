@@ -19,6 +19,7 @@
 """
 import logging
 import os
+import urllib
 from warnings import warn
 
 from core import db, Node, File
@@ -34,6 +35,7 @@ from core.systemtypes import Root
 from contenttypes.container import Container
 from mediatumtal import tal
 
+
 logg = logging.getLogger(__name__)
 q = db.query
 
@@ -44,7 +46,7 @@ def get_collections_node():
 
 class SingleFile(object):
 
-    def __init__(self, file, nr, num, words=None, language=None):
+    def __init__(self, file, nr, num, words=None, language=None, fullstyle_name=None):
         node = file
         sys_filetypes = [unicode(x) for x in node.getSysFiles()]
 
@@ -56,9 +58,11 @@ class SingleFile(object):
         self.datatype = node
         self.image = node.show_node_image()
         self.text = node.show_node_text(words, language=language)
-#         self.fields = self.datatype.getMetaFields()
         self.thumbnail = self.image
-        self.link = u'/node?id=' + unicode(node.id)
+        link_params = {"id": node.id}
+        if fullstyle_name:
+            link_params["style"] = fullstyle_name
+        self.link = u"/node?" + urllib.urlencode(link_params)
         self.shopping_bag_link = u'shoppingBag(\'{}\')'.format(node.id)
         self.node = node
         self.nr = nr
@@ -83,28 +87,32 @@ class SingleFile(object):
 
 SORT_FIELDS = 2
 
+DEFAULT_FULL_STYLE_NAME = "full_standard"
 
 class ContentList(Content):
 
-    def __init__(self, nodes, collection=None, words=None):
+    def __init__(self, node_query, collection, words=None):
+
         self.nr = -1
         self.page = 0
+        self.nodes_per_page = None
+        self.nav_params = {}
         self.before = None
         self.after = None
         self.lang = "en"
         self.words = words
-        self.nodes = nodes
+        self.nodes = node_query
         self._num = -1
-        self.collection = collection
         self.content = None
         self.id2pos = {}
-        self.sortfields = [self.collection.get("sortfield")] * SORT_FIELDS
-        ls = self.collection.get("style")
-        if ls:
-            ls = ls.split(";")[0]
-        else:
-            ls = "list"
-        self.liststyle = getContentStyles("smallview", ls)
+        self.liststyle_name = None
+        self.collection = collection
+        self.sortfields = []
+        self.default_fullstyle_name = None
+
+        coll_default_full_style_name = collection.get("style_full")
+        if coll_default_full_style_name is not None and coll_default_full_style_name != DEFAULT_FULL_STYLE_NAME:
+            self.default_fullstyle_name = coll_default_full_style_name
 
     @property
     def files(self):
@@ -151,6 +159,31 @@ class ContentList(Content):
     def link_back(self):
         return "node?back=y"
 
+    def nav_link(self, **param_overrides):
+        params = {"id": self.container_id}
+        if self.liststyle_name:
+            params["style"] = self.liststyle_name
+        if self.nodes_per_page:
+            params["nodes_per_page"] = self.nodes_per_page
+
+        if not ("before" in param_overrides or "after" in param_overrides):
+            if self.before:
+                params["before"] = self.before
+            if self.after:
+                params["after"] = self.after
+
+        params.update(param_overrides)
+        return u"?" + urllib.urlencode(params)
+
+    def select_style_link(self, style):
+        return self.nav_link(style=style)
+
+    def nav_link_before(self):
+        return self.nav_link(before=self.next_before)
+
+    def nav_link_after(self):
+        return self.nav_link(after=self.next_after)
+
     def feedback(self, req):
         container_id = req.params.get("id")
         if container_id:
@@ -171,6 +204,7 @@ class ContentList(Content):
 
         self.before = req.args.get("before", type=int)
         self.after = req.args.get("after", type=int)
+        self.nodes_per_page = req.args.get("nodes_per_page", type=int)
 
         if "back" in req.params:
             self.nr = -1
@@ -184,20 +218,10 @@ class ContentList(Content):
 
         self.content = None
         if self.nr >= 0 and self.nr < self.num:
-            self.content = ContentNode(self.nodes[self.nr], self.nr, self.num, self.words, self.collection)
+            self.content = ContentNode(self.nodes[self.nr], self.nr, self.num, self.words)
 
-        # style selection
-        if "style" in req.params:
-            newstyle = req.params.get("style")
-            if self.content.__class__ != ContentNode:
-                req.session["liststyle-" + unicode(self.collection.id)] = getContentStyles("smallview", newstyle)
-            else:
-                req.session[
-                    "style-" +
-                    self.content.node.getContentType()] = getContentStyles(
-                    "bigview",
-                    name=newstyle,
-                    contenttype=self.content.node.getContentType())[0]
+        self.liststyle_name = req.args.get("style")
+
         if self.content:
             return self.content.feedback(req)
 
@@ -249,7 +273,7 @@ class ContentList(Content):
         else:
             return getContentStyles("smallview")  # , self.collection.get("style") or "default")
 
-    def _page_nav_numbers(self, nodes_per_page, liststyle, language, req):
+    def _page_nav_numbers(self, nodes_per_page, language, req):
         nav_list = []
         nav_page = []
         files = []
@@ -294,7 +318,7 @@ class ContentList(Content):
         page_nav = tal.getTAL(theme.getTemplate("content_nav.html"), ctx, macro="page_nav_numbers", language=language)
         return page_nav, files
 
-    def _page_nav_prev_next(self, nodes_per_page, liststyle, language, req):
+    def _page_nav_prev_next(self, nodes_per_page, language, req):
         q_nodes = self.nodes
 
         # self.after set <=> moving to next page
@@ -315,7 +339,7 @@ class ContentList(Content):
         # get one more to find out if there are more nodes available
 
         ctx = {
-            "container_id": self.container_id,
+            "nav": self,
             "before": None,
             "after": None
         }
@@ -343,7 +367,7 @@ class ContentList(Content):
             # going backwards inverts the order, invert again for display
             nodes = nodes[::-1]
 
-        files = [SingleFile(n, 0, 0, language=language) for n in nodes]
+        files = [SingleFile(n, 0, 0, language=language, fullstyle_name=self.default_fullstyle_name) for n in nodes]
 
         page_nav = tal.getTAL(theme.getTemplate("content_nav.html"), ctx, macro="page_nav_prev_next", language=language)
         return page_nav, files
@@ -357,25 +381,27 @@ class ContentList(Content):
             headline = tal.getTAL(theme.getTemplate("content_nav.html"), {"nav": self}, macro="navheadline", language=language)
             return headline + self.content.html(req)
 
-        if "itemsperpage" not in req.params:
-            nodes_per_page = 9
-        else:
-            if req.params.get("itemsperpage") == "-1":
-                nodes_per_page = self.num
-            else:
-                nodes_per_page = int(req.params.get("itemsperpage"))
+        nodes_per_page = self.nodes_per_page or 9
 
-        liststyle = req.session.get("liststyle-" + unicode(self.collection.id), "")  # .split(";")[0]# user/session setting for liststyle?
-        if not liststyle:
-            # no liststsyle, use collection default
-            liststyle = self.liststyle
+        if self.liststyle_name:
+            ls = self.liststyle_name
+            # use default collection style
+        else:
+            ls = self.collection.get("style")
+            if ls is None:
+                # nothing found, use default style
+                ls = "list"
+            else:
+                ls = ls.split(";")[0]
+
+        liststyle = getContentStyles("smallview", ls)
 
         if "page" in req.args or "pagenav" in req.args:
             # old page navigation
-            page_nav, files = self._page_nav_numbers(nodes_per_page, liststyle, language, req)
+            page_nav, files = self._page_nav_numbers(nodes_per_page, language, req)
         else:
             # new prev next navigation
-            page_nav, files = self._page_nav_prev_next(nodes_per_page, liststyle, language, req)
+            page_nav, files = self._page_nav_prev_next(nodes_per_page, language, req)
 
         ctx = {
             "page_nav": page_nav,
@@ -446,50 +472,46 @@ def getPaths(node):
 
 class ContentNode(Content):
 
-    def __init__(self, node, nr=0, num=0, words=None, collection=None):
+    def __init__(self, node, nr=0, num=0, words=None):
         self.node = node
         self.id = node.id
         self.paths = []
         self.nr = nr
         self.num = num
         self.words = words
-        if collection:
-            self.collection = collection
-        else:
-            self.collection = getCollection(node)
-        collections = {}
+        self.full_style_name = None
+
+    def feedback(self, req):
+        self.full_style_name = req.args.get("style")
+
+    def getContentStyles(self):
+        return getContentStyles("bigview", contenttype=self.node.type)
 
     def actual(self):
         return "(%d/%d)" % (int(self.nr) + 1, self.num)
 
-    def getContentStyles(self):
-        return getContentStyles("bigview", contenttype=self.node.getContentType())
+    def select_style_link(self, style):
+        params = {"id": self.id, "style": style}
+        return u"node?" + urllib.urlencode(params)
 
     @ensure_unicode_returned(name="web.frontend.content:html")
     def html(self, req):
+        language = lang(req)
         paths = u""
-        stylebig = self.getContentStyles()
-        liststyle = req.session.get("style-" + self.node.getContentType(), "")
         # XXX: remove session-stored Node instances!
         self.node = db.refresh(self.node)
         show_node_big = ensure_unicode_returned(self.node.show_node_big, name="show_node_big of %s" % self.node)
 
-        if not self.node.isContainer():
+        if not isinstance(self.node, Container):
             plist = getPaths(self.node)
-            paths = tal.getTAL(theme.getTemplate("content_nav.html"), {"paths": plist}, macro="paths", language=lang(req))
-        # render style of node for nodebig
-        if len(stylebig) > 1:
-            # more than on style found
-            for item in stylebig:
-                if liststyle:
-                    if item.getName() == liststyle.getName():
-                        return getFormatedString(show_node_big(req, template=item.getTemplate())) + paths
-                else:
-                    if item.isDefaultStyle():
-                        return getFormatedString(show_node_big(req, template=item.getTemplate())) + paths
-        elif len(stylebig) == 1:
-            return getFormatedString(show_node_big(req, template=stylebig[0].getTemplate())) + paths
-        return getFormatedString(show_node_big(req)) + paths
+            paths = tal.getTAL(theme.getTemplate("content_nav.html"), {"paths": plist}, macro="paths", language=language)
+
+        full_styles = getContentStyles("bigview", self.full_style_name or DEFAULT_FULL_STYLE_NAME, contenttype=self.node.type)
+
+        if full_styles:
+            return getFormatedString(show_node_big(req, template=full_styles[0].getTemplate())) + paths
+        else:
+            return getFormatedString(show_node_big(req)) + paths
 
 
 def fileIsNotEmpty(file):
@@ -529,7 +551,10 @@ def mkContentNode(req):
 
     version_id = req.args.get("v")
     version = node.get_tagged_version(unicode(version_id))
-    return ContentNode(version) if version is not None else ContentNode(node)
+
+    c = ContentNode(version) if version is not None else ContentNode(node)
+    c.feedback(req)
+    return c
 
 
 class ContentError(Content):
@@ -552,7 +577,7 @@ class ContentError(Content):
 class ContentArea(Content):
 
     def __init__(self):
-        self.content = ContentNode(q(Collections).one())
+        self.content = ContentNode(get_collections_node())
         self.collection = None
         self.collectionlogo = None
         self.params = ""
@@ -601,6 +626,7 @@ class ContentArea(Content):
         if hasattr(self.content, "collection"):
             self.collection = self.content.collection
             if self.collection:
+                self.collection = db.refresh(self.collection)
                 self.collectionlogo = CollectionLogo(self.collection)
         if hasattr(self.content, "getParams"):
             self.params = '&' + self.content.getParams()
@@ -648,7 +674,6 @@ class ContentArea(Content):
                     return req.error(404, "Object cannot be shown")
 
             styles = self.content.getContentStyles()
-            items = req.params.get("itemsperpage")
 
             path = tal.getTAL(theme.getTemplate("content_nav.html"),
                               {"params": self.params,
@@ -657,6 +682,7 @@ class ContentArea(Content):
                                "logo": self.collectionlogo,
                                "searchmode": req.params.get("searchmode", ""),
                                "items": items,
+                               "select_style_link": self.content.select_style_link,
                                "id": id,
                                "nodeprint": "1" if printlink else "0",  # XXX: template compat for non-default templates
                                "printlink": printlink,
@@ -675,6 +701,8 @@ class CollectionLogo(Content):
     def __init__(self, collection):
         self.collection = collection
         self.path = collection.getLogoPath()
+        self.url = collection.get("url")
+        self.show_on_html = collection.get("showonhtml")
 
         if self.path != "":
             self.path = '/file/' + unicode(self.collection.id) + '/' + self.path
@@ -683,10 +711,10 @@ class CollectionLogo(Content):
         return self.path
 
     def getURL(self):
-        return self.collection.get("url")
+        return self.url
 
     def getShowOnHTML(self):
-        return self.collection.get("showonhtml")
+        return self.show_on_html
 
 
 def getContentArea(req):

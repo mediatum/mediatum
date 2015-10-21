@@ -17,21 +17,17 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import core.acl as acl
 
 import logging
 import utils.date as date
-from core.acl import AccessData
 import string
 from web.edit.edit_common import EditorNodeList, shownodelist
 from schema.schema import getMetaType
 from core.metatype import Context
 from core.translation import lang
-import core.users as users
-from core.users import getUserFromRequest
+from core.transition import current_user
 from core import Node
 from core import db
-from contenttypes import Collections
 from core.systemtypes import Root
 from sqlalchemy import func
 from schema.schema import Metadatatype
@@ -44,9 +40,8 @@ def protect(s):
     return '"'+s.replace('"','').replace('\'','')+'"'
 
 def search_results(req,id):
-    access = AccessData(req)
-    user = users.getUserFromRequest(req)
-    if "search" in users.getHideMenusForUser(user):
+    user = current_user
+    if "search" in user.hidden_edit_functions:
         req.writeTAL("web/edit/edit.html", {}, macro="access_error")
         return ""
 
@@ -90,7 +85,7 @@ def search_results(req,id):
 
     query += ' and schema="'+req.params.get("objtype","*")+'"'
                                 
-    logg.info("%s search for %s", access.user.login_name, query)
+    logg.info("%s search for %s", user.login_name, query)
     nodes = node.search(query)
     req.session["nodelist"] = EditorNodeList(nodes)
 
@@ -154,7 +149,7 @@ def search_form(req, id, message=None):
             if 's' in field.get('opts') and field.getFieldtype() != "date":
                 value = searchvalues.get(otype.schema+"."+field.getName(),"")
               
-                c = Context(field, value, width=640, name=field.getName(), collection=node, language=lang(req), user=getUserFromRequest(req))
+                c = Context(field, value, width=640, name=field.getName(), collection=node, language=lang(req), user=current_user)
                 field.searchitem = field.getSearchHTML(c)
                 
                 formlist.append([field, value])

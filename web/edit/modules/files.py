@@ -24,18 +24,16 @@ import random
 import os
 import core.users as users
 import logging
-import core.acl as acl
 from utils.utils import getMimeType, get_user_id
 from utils.fileutils import importFile, getImportDir, importFileIntoDir
 from contenttypes.image import makeThumbNail, makePresentationFormat
-from core.transition import httpstatus
+from core.transition import httpstatus, current_user
 from core.translation import t
 from core import Node
 from core import db
 from core import File
 from contenttypes import Home, Collections
 from core.systemtypes import Root
-from core.users import user_from_session
 
 q = db.query
 logg = logging.getLogger(__name__)
@@ -86,7 +84,7 @@ def _handle_change(node, req):
     if not uploadfile:
         return
     change_file = req.params.get("change_file")
-    user = user_from_session(req.session)
+    user = current_user
 
     if (req.params.get('generate_new_version') and not hasattr(node, "metaFields")):
         # Create new version when changing files
@@ -120,15 +118,14 @@ def _handle_change(node, req):
 
 def getContent(req, ids):
     ret = ""
-    user = users.getUserFromRequest(req)
+    user = current_user
     node = q(Node).get(ids[0])
     update_error = False
-    access = acl.AccessData(req)
 
     logg.debug("%s|web.edit.modules.files.getContend|req.fullpath=%s|req.path=%s|req.params=%s|ids=%s",
                get_user_id(req), req.fullpath, req.path, req.params, ids)
 
-    if not access.hasWriteAccess(node) or "files" in users.getHideMenusForUser(user):
+    if not node.has_write_access() or "files" in current_user.hidden_edit_functions:
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
@@ -261,7 +258,7 @@ def getContent(req, ids):
          "attfiles": filter(lambda x: x.type == 'attachment', node.files),
          "att": [],
          "nodes": [node],
-         "access": access}
+        }
 
     for f in v["attfiles"]:  # collect all files in attachment directory
         if f.mimetype == "inode/directory":

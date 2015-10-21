@@ -203,7 +203,7 @@
                             <span id="inputname" style="display:none"><tal:block i18n:translate="edit_files_dirname"/> <input type="text" name="inputname" size="60"/></span>
                             <br/>
                             <span id="updatefile"><tal:block i18n:translate="edit_files_choosefile"/> <input name="updatefile"  type="file" size="50"/></span>
-                            <span id="generate_new_version" tal:condition="python:not hasattr(node, 'metaFields') and access.hasWriteAccess(node)">
+                            <span id="generate_new_version" tal:condition="python:not hasattr(node, 'metaFields') and node.has_write_access()">
                                 <br/>
                                 <br/>
                                 <br/>

@@ -4404,12 +4404,13 @@ def runthread(athanathread):
     athanathread.worker_thread()
 
 ATHANA_STARTED = False
+_ATHANA_HANDLER = None
 
 
 def run(host="0.0.0.0", port=8081, z3950_port=None):
-    global ATHANA_STARTED
+    global ATHANA_STARTED, _ATHANA_HANDLER
     check_date()
-    ph = AthanaHandler()
+    ph = _ATHANA_HANDLER = AthanaHandler()
     hs = http_server(host, port)
     hs.install_handler(ph)
 

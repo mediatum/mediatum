@@ -19,12 +19,10 @@
 """
 import logging
 
-import core.users as users
-from core.acl import AccessData
 from utils.utils import dec_entry_log
 from schema.schema import getMetaType
 from core.translation import lang
-from core.transition import httpstatus
+from core.transition import httpstatus, current_user
 from core import Node
 from core import db
 
@@ -35,8 +33,7 @@ logg = logging.getLogger(__name__)
 
 @dec_entry_log
 def getContent(req, ids):
-    user = users.getUserFromRequest(req)
-    access = AccessData(req)
+    user = current_user
     language = lang(req)
     node = q(Node).get(ids[0])
     

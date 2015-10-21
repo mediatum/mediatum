@@ -21,15 +21,13 @@
 
 import os
 import logging
-import core.acl as acl
-import core.users as users
 
 from utils.utils import getMimeType, splitpath, dec_entry_log
 from utils.fileutils import importFile
 
 from core.translation import lang
 from core.translation import t as translation_t
-from core.transition import httpstatus
+from core.transition import httpstatus, current_user
 from core import Node
 from core import db
 
@@ -42,11 +40,11 @@ logg = logging.getLogger(__name__)
 
 @dec_entry_log
 def getContent(req, ids):
-    user = users.getUserFromRequest(req)
+    user = current_user
     node = q(Node).get(ids[0])
     access = acl.AccessData(req)
 
-    if "logo" in users.getHideMenusForUser(user) or not access.hasWriteAccess(node):
+    if "logo" in current_user.hidden_edit_functions or node.has_write_access():
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 

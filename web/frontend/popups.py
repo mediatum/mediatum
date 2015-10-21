@@ -23,7 +23,7 @@ from schema.schema import getMetaType, getMetadataType
 from lib.pdf import printview
 
 from schema.schema import VIEW_DATA_ONLY, VIEW_HIDE_EMPTY
-from web.frontend.content import getPaths
+from web.frontend.content import getPaths, getContentArea
 from core.translation import t, lang
 from utils.utils import u, getCollection
 from core.styles import theme
@@ -116,20 +116,22 @@ def show_printview(req):
     # use objects from session
     if unicode(nodeid) == "0":
         children = []
-        if "contentarea" in req.session:
-            try:
-                nodes = req.session["contentarea"].content.files
-            except:
-                c = req.session["contentarea"].content
-                nodes = c.resultlist[c.active].files
-            for n in nodes:
-                c_mtype = getMetaType(n.schema)
-                c_mask = c_mtype.getMask("printlist")
-                if not c_mask:
-                    c_mask = c_mtype.getMask("nodesmall")
-                _c = c_mask.getViewHTML([n], VIEW_DATA_ONLY + VIEW_HIDE_EMPTY)
-                if len(_c) > 0:
-                    children.append(_c)
+        # XXX: test that, don't know if that works
+        content_area = getContentArea()
+        content_area.feedback(req)
+        try:
+            nodes = content_area.content.files
+        except:
+            c = content_area.content
+            nodes = c.resultlist[c.active].files
+        for n in nodes:
+            c_mtype = getMetaType(n.schema)
+            c_mask = c_mtype.getMask("printlist")
+            if not c_mask:
+                c_mask = c_mtype.getMask("nodesmall")
+            _c = c_mask.getViewHTML([n], VIEW_DATA_ONLY + VIEW_HIDE_EMPTY)
+            if len(_c) > 0:
+                children.append(_c)
 
         req.reply_headers['Content-Type'] = "application/pdf"
         req.write(printview.getPrintView(lang(req), None, [["", "", t(lang(req), "")]], [], 3, children))

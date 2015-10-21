@@ -577,10 +577,21 @@ class ContentError(Content):
 class ContentArea(Content):
 
     def __init__(self):
-        self.content = ContentNode(get_collections_node())
+        logg.info("created content area", trace=True)
+        self._content = None
         self.collection = None
         self.collectionlogo = None
         self.params = ""
+
+    @property
+    def content(self):
+        if self._content is None:
+            self._content = ContentNode(get_collections_node())
+        return self._content
+
+    @content.setter
+    def content(self, content):
+        self._content = content
 
     def getPath(self, language=None, check_access=False):
         path = []
@@ -717,12 +728,4 @@ class CollectionLogo(Content):
 
 
 def getContentArea(req):
-    if len(req.args):
-        if "contentarea" in req.session:
-            c = req.session["contentarea"]
-        else:
-            c = req.session["contentarea"] = ContentArea()
-        return c
-    else:
-        c = req.session["contentarea"] = ContentArea()
-        return c
+    return ContentArea()

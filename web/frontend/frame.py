@@ -588,8 +588,4 @@ class NavigationFrame:
 
 
 def getNavigationFrame(req):
-    if "navframe" in req.session:
-        c = req.session["navframe"]
-    else:
-        c = req.session["navframe"] = NavigationFrame()
-    return c
+    return NavigationFrame()

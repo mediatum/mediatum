@@ -1,6 +1,6 @@
 <tal:block metal:define-macro="set_identifier">
     <div style="display:none" id="confirm_popup"  i18n:translate="edit_identifier_confirm_popup">TEXT</div>
-    <tal:block tal:condition="python:not user.isAdmin()">
+    <tal:block tal:condition="python:not user.is_admin">
     <script>
         $(document).ready(function()
         {
@@ -90,9 +90,9 @@
 <tal:block metal:define-macro="generate_identifier_admin_mail">
 Bitte erfüllen Sie die Beantragung durch erzeugung die gewünschten art des Identifikators in dem Identifier Modul im Edit Bereich.
 
-Benutzer: <span tal:replace="python:user.getName()"/>
+Benutzer: <span tal:replace="python:user.display_name"/>
 
-Benutzer E-mail: <span tal:replace="python:user.getEmail()"/>
+Benutzer E-mail: <span tal:replace="python:user.email"/>
 
 Knoten: <span tal:replace="python:', '.join(nodes)"/>
 
@@ -105,7 +105,7 @@ Namensraum: <span tal:replace="python:namespace"/>
 </tal:block>
 
 <tal:block metal:define-macro="generate_identifier_usr_mail_1_de">
-Sehr geehrte(r) Frau/Herr <span tal:replace="python:u'{} {}'.format(user.getFirstName(), user.getLastName())"/>,
+Sehr geehrte(r) Frau/Herr <span tal:replace="python:u'{} {}'.format(user.firstname, user.lastname)"/>,
 
 vielen Dank für Ihre Anfrage nach einem eindeutigen und dauerhafter digitalen Identifikator.
 
@@ -124,7 +124,7 @@ mediaTUM Anwendungsbetreuung
 </tal:block>
 
 <tal:block metal:define-macro="generate_identifier_usr_mail_1_en">
-Dear Mr./Ms. <span tal:replace="python:u'{} {}'.format(user.getFirstName() , user.getLastName())"/>,
+Dear Mr./Ms. <span tal:replace="python:u'{} {}'.format(user.firstname , user.lastname)"/>,
 
 Thank you for requesting a unique and long-term digital identifier.
 
@@ -163,7 +163,7 @@ mediaTUM Anwendungsbetreuung
 
 ----------------------------
 
-Dear Mr/Ms. <span tal:replace="python:u'{} {}'.format(creator.getFirstName(), creator.getLastName())"/>,
+Dear Mr/Ms. <span tal:replace="python:u'{} {}'.format(creator.firstname, creator.lastname)"/>,
 
 A unique identifier has been generated for you and the editing rights to the document/data-record have been removed so it's not possible to make any more changes.
 

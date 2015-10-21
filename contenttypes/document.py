@@ -93,14 +93,19 @@ class Document(Content):
             # don't confuse search engines with the PDF link
             obj['print_url'] = None
             obj['documentdownload'] = None
-        if "style" in req.params.keys():
-            req.session["full_style"] = req.params.get("style", "full_standard")
-        elif "full_style" not in req.session.keys():
-            if "contentarea" in req.session.keys():
+
+        full_style = None
+
+        if "style" in req.params:
+            full_style = req.params.get("style")
+
+        elif "full_style" not in req.session:
+            if "contentarea" in req.session:
                 col = req.session["contentarea"].collection
-                req.session["full_style"] = col.get("style_full")
-            else:
-                req.session["full_style"] = "full_standard"
+                if col is not None:
+                    full_style = col.get("style_full")
+
+            req.session["full_style"] = full_style or "full_standard"
 
         obj['parentInformation'] = self.getParentInformation(req)
 

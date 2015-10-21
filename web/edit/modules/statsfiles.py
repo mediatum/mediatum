@@ -19,9 +19,6 @@
 
 import logging
 
-import core.acl as acl
-import core.users as users
-
 from utils.utils import dec_entry_log
 from utils.date import format_date
 from core.transition import httpstatus, current_user

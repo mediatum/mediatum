@@ -1005,7 +1005,7 @@ class http_request(object):
         "finalize this transaction - send output to the http channel"
 
         self.unlink_tempfiles()
-        
+
         # ----------------------------------------
         # persistent connection management
         # ----------------------------------------
@@ -3805,7 +3805,7 @@ def make_param_dict_utf8_values(param_list):
         except UnicodeDecodeError as e:
             logg.warn("tried to decode non-UTF8 string: %s", k.encode("string-escape"))
             raise
-        
+
     return ImmutableMultiDict([(decode(k), decode(v)) for k, v in param_list])
 # /COMPAT
 
@@ -3996,7 +3996,7 @@ class AthanaHandler:
             request.form = make_param_dict_utf8_values(form)
         except UnicodeDecodeError:
             return request.error(400)
-        
+
         request.files = ImmutableMultiDict(files)
         request.make_legacy_params_dict()
         # /COMPAT
@@ -4391,12 +4391,13 @@ def runthread(athanathread):
     athanathread.worker_thread()
 
 ATHANA_STARTED = False
+_ATHANA_HANDLER = None
 
 
 def run(port=8081, z3950_port=None):
-    global ATHANA_STARTED
+    global ATHANA_STARTED, _ATHANA_HANDLER
     check_date()
-    ph = AthanaHandler()
+    ph = _ATHANA_HANDLER = AthanaHandler()
     hs = http_server('', port)
     hs.install_handler(ph)
 

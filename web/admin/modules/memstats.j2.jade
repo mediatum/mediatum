@@ -1,0 +1,49 @@
+h1 Memory Status
+
+h2 Memory Consumption
+
+dl
+  dt Number of objects
+  dd= memory.count
+
+
+h2 Mask Cache
+
+dl
+  dt Number of objects
+  dd= maskcache.count
+
+  dt Total Size
+  dd= naturalsize(maskcache.total_size)
+
+  dt Accesscount
+  dd= maskcache.access_count
+
+
+h2 Sessions
+
+dl
+  dt Number of sessions
+  dd= sessions.count
+
+  dt Total Size
+  dd= naturalsize(sessions.total_size)
+
+
+h2 Memory Consumption By Type
+
+table
+  thead
+    th type
+    th # of objects
+    th size
+  tbody
+    for type, num, size in memory.summary
+      tr
+        td= type
+        td= num
+        td= naturalsize(size)
+
+
+// generated from jade
+//- vim: set filetype=jade sw=2 ts=2 sts=2 expandtab:

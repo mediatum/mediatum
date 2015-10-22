@@ -12,6 +12,6 @@ class Content:
     def status(self):
         return httpstatus.HTTP_OK
 
-    def style_change_link(self, style):
+    def select_style_link(self, style):
         """Link for changing the current style without changing anything else"""
         return "#"

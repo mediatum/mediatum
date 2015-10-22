@@ -522,8 +522,6 @@ def edit_tree(req):
         else:
             nodedata['readonly'] = 0
 
-
-
         nodedata['this_node_is_special'] = []
         if node.id in special_dir_ids:
             nodedata['this_node_is_special'] = nodedata[

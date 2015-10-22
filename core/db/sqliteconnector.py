@@ -160,6 +160,29 @@ class SQLiteConnector(Connector):
         FROM (nodemapping join node on((nodemapping.cid = node.id))) where (instr(node.type, '/') = 0);")
         self.runQueryNoError("CREATE VIEW contentmapping AS select nodemapping.nid AS nid, nodemapping.cid AS cid,node.type AS type\
         FROM (nodemapping join node on((nodemapping.cid = node.id))) where (instr(node.type, '/') > 0);")
+        self.runQueryNoError("""
+CREATE VIEW nodetree AS
+SELECT m01.cid AS nid01,
+       m02.cid AS nid02,
+       m03.cid AS nid03,
+       m04.cid AS nid04,
+       m05.cid AS nid05,
+       m06.cid AS nid06,
+       m07.cid AS nid07,
+       m08.cid AS nid08,
+       m09.cid AS nid09,
+       m10.cid AS nid10
+FROM nodemapping m01
+LEFT JOIN nodemapping m02 ON m01.cid = m02.nid
+LEFT JOIN nodemapping m03 ON m02.cid = m03.nid
+LEFT JOIN nodemapping m04 ON m03.cid = m04.nid
+LEFT JOIN nodemapping m05 ON m04.cid = m05.nid
+LEFT JOIN nodemapping m06 ON m05.cid = m06.nid
+LEFT JOIN nodemapping m07 ON m06.cid = m07.nid
+LEFT JOIN nodemapping m08 ON m07.cid = m08.nid
+LEFT JOIN nodemapping m09 ON m08.cid = m09.nid
+LEFT JOIN nodemapping m10 ON m09.cid = m10.nid
+        """)
 
         self.runQueryNoError("CREATE INDEX [IDX_NODE_ID] ON [node]([id]  ASC)")
         self.runQueryNoError("CREATE INDEX [IDX_NODE_TYPE] ON [node]([type]  ASC)")
@@ -356,8 +379,55 @@ FROM node n INNER JOIN
             del kwargs["parent_id"]
 
         for field, value in kwargs.items():
-            sql_conditions.append("a.name = %s AND a.value = %s)")
-            sql_parameters += (field, value)
+            if value == '__is_set__':
+                sql_conditions.append("(a.name = %s AND a.value IS NOT NULL AND a.value != %s)")
+                sql_parameters += (field, '', )
+            else:
+                sql_conditions.append("(a.name = %s AND a.value = %s)")
+                sql_parameters += (field, value, )
+
+        if sql_conditions:
+            sql_query += " WHERE " + " AND ".join(sql_conditions)
+
+        return [str(r[0]) for r in self.runQuery(sql_query, *sql_parameters)]
+
+    def _get_child_nodes_by_field_value(self, nid, **kwargs):
+        sql_parameters = ()
+        sql_conditions = []
+        sql_query = """
+SELECT DISTINCT nt.nid
+FROM (
+    SELECT nid01 AS nid FROM nodetree nt01 WHERE nid01 = %s
+    UNION ALL
+    SELECT nid02 AS nid FROM nodetree nt02 WHERE nid01 = %s
+    UNION ALL
+    SELECT nid03 AS nid FROM nodetree nt03 WHERE nid01 = %s
+    UNION ALL
+    SELECT nid04 AS nid FROM nodetree nt04 WHERE nid01 = %s
+    UNION ALL
+    SELECT nid05 AS nid FROM nodetree nt05 WHERE nid01 = %s
+    UNION ALL
+    SELECT nid06 AS nid FROM nodetree nt06 WHERE nid01 = %s
+    UNION ALL
+    SELECT nid07 AS nid FROM nodetree nt07 WHERE nid01 = %s
+    UNION ALL
+    SELECT nid08 AS nid FROM nodetree nt08 WHERE nid01 = %s
+    UNION ALL
+    SELECT nid09 AS nid FROM nodetree nt09 WHERE nid01 = %s
+    UNION ALL
+    SELECT nid10 AS nid FROM nodetree nt10 WHERE nid01 = %s
+) AS nt INNER JOIN
+     nodeattribute a ON a.nid = nt.nid
+        """
+        sql_parameters += (nid, ) * 10
+
+        for field, value in kwargs.items():
+            if value == '__is_set__':
+                sql_conditions.append("(a.name = %s AND a.value IS NOT NULL AND a.value != %s)")
+                sql_parameters += (field, '', )
+            else:
+                sql_conditions.append("(a.name = %s AND a.value = %s)")
+                sql_parameters += (field, value, )
 
         if sql_conditions:
             sql_query += " WHERE " + " AND ".join(sql_conditions)
@@ -365,4 +435,7 @@ FROM node n INNER JOIN
         return [str(r[0]) for r in self.runQuery(sql_query, *sql_parameters)]
 
     def get_nodes_by_field_value(self, **kwargs):
-        return self._get_nodes_by_field_value(self, **kwargs)
+        return self._get_nodes_by_field_value(**kwargs)
+
+    def get_child_nodes_by_field_value(self, nid, **kwargs):
+        return self._get_child_nodes_by_field_value(nid, **kwargs)

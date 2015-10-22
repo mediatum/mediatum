@@ -20,22 +20,39 @@
 """
 import re
 
-from web.repec.content import HTMLCollectionContent, CollectionArchiveContent, CollectionSeriesContent, \
-    HTMLCollectionJournalContent, CollectionJournalContent, HTMLCollectionPaperContent, \
-    CollectionPaperContent, HTMLCollectionBookContent, CollectionBookContent
+from web.repec.content import HTMLCollectionContent, HTMLCollectionPaperContent, HTMLCollectionBookContent, \
+    HTMLCollectionJournalContent, CollectionArchiveContent, CollectionSeriesContent, CollectionJournalContent, \
+    CollectionPaperContent, CollectionBookContent
 
 
 def repec(req):
     patterns = {
-        r"/repec/[\d\w]+/wpaper/$": _wpaper,
-        r"/repec/[\d\w]+/wpaper/papers.rdf$": _wpaper_rdf,
-        r"/repec/[\d\w]+/journl/$": _journl,
-        r"/repec/[\d\w]+/journl/journals.rdf$": _journl_rdf,
-        r"/repec/[\d\w]+/ecbook/$": _ecbook,
-        r"/repec/[\d\w]+/ecbook/books.rdf$": _ecbook_rdf,
-        r"/repec/[\d\w]+/[\d\w]+seri.rdf$": _collection_seri,
-        r"/repec/[\d\w]+/[\d\w]+arch.rdf$": _collection_arch,
+        # URL: /repec/aaa/
         r"/repec/[\d\w]+/$": _collection,
+
+        # URL: /repec/aaa/bbbwpaper/
+        r"/repec/[\d\w]+/[\d\w]+wpaper/$": _collection_wpaper,
+
+        # URL: /repec/aaa/bbbjournl/
+        r"/repec/[\d\w]+/[\d\w]+journl/$": _collection_journl,
+
+        # URL: /repec/aaa/bbbjournl/
+        r"/repec/[\d\w]+/[\d\w]+ecbook/$": _collection_ecbook,
+
+        # URL: /repec/aaa/aaaseri.rdf
+        r"/repec/[\d\w]+/[\d\w]+seri.rdf$": _seri_rdf,
+
+        # URL: /repec/aaa/aaaarch.rdf
+        r"/repec/[\d\w]+/[\d\w]+arch.rdf$": _arch_rdf,
+
+        # URL: /repec/aaa/bbb/papers.rdf
+        r"/repec/[\d\w]+/[\d\w]+wpaper/papers.rdf$": _wpaper_rdf,
+
+        # URL: /repec/aaa/bbb/journals.rdf
+        r"/repec/[\d\w]+/[\d\w]+journl/journals.rdf$": _journl_rdf,
+
+        # URL: /repec/aaa/bbb/books.rdf
+        r"/repec/[\d\w]+/[\d\w]+ecbook/books.rdf$": _ecbook_rdf,
     }
     url = req.fullpath
 
@@ -53,21 +70,35 @@ def _collection(req):
     return content.respond()
 
 
-def _collection_arch(req):
+def _arch_rdf(req):
     req['Content-Type'] = 'text/plain; charset=utf-8'
 
     content = CollectionArchiveContent(req)
     return content.respond()
 
 
-def _collection_seri(req):
+def _seri_rdf(req):
     req['Content-Type'] = 'text/plain; charset=utf-8'
 
     content = CollectionSeriesContent(req)
     return content.respond()
 
 
-def _journl(req):
+def _collection_wpaper(req):
+    req['Content-Type'] = 'text/html; charset=utf-8'
+
+    content = HTMLCollectionPaperContent(req)
+    return content.respond()
+
+
+def _collection_ecbook(req):
+    req['Content-Type'] = 'text/html; charset=utf-8'
+
+    content = HTMLCollectionBookContent(req)
+    return content.respond()
+
+
+def _collection_journl(req):
     req['Content-Type'] = 'text/html; charset=utf-8'
 
     content = HTMLCollectionJournalContent(req)
@@ -81,24 +112,10 @@ def _journl_rdf(req):
     return content.respond()
 
 
-def _wpaper(req):
-    req['Content-Type'] = 'text/html; charset=utf-8'
-
-    content = HTMLCollectionPaperContent(req)
-    return content.respond()
-
-
 def _wpaper_rdf(req):
     req['Content-Type'] = 'text/plain; charset=utf-8'
 
     content = CollectionPaperContent(req)
-    return content.respond()
-
-
-def _ecbook(req):
-    req['Content-Type'] = 'text/html; charset=utf-8'
-
-    content = HTMLCollectionBookContent(req)
     return content.respond()
 
 

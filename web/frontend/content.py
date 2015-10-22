@@ -85,7 +85,7 @@ class SingleFile(object):
         return self.node
 
 
-SORT_FIELDS = 2
+SORT_FIELDS = 0
 
 DEFAULT_FULL_STYLE_NAME = "full_standard"
 

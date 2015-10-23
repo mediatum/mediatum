@@ -20,24 +20,19 @@
 
 
 import os
-import sys
 import json
 import codecs
 
 import logging
-import core.users as users
 import core.config as config
 
 from utils.utils import format_filesize, dec_entry_log
 from core.translation import lang
-from core.acl import AccessData
 from web.edit.edit_common import send_nodefile_tal, upload_for_html
-from core.transition import httpstatus
+from core.transition import httpstatus, current_user
 from core import Node
 from core import db
 from core import File
-from contenttypes import Home, Collections
-from core.systemtypes import Root
 
 q = db.query
 logg = logging.getLogger(__name__)
@@ -46,9 +41,8 @@ logg = logging.getLogger(__name__)
 @dec_entry_log
 def getContent(req, ids):
     node = q(Node).get(ids[0])
-    user = users.getUserFromRequest(req)
-    access = AccessData(req)
-    if not access.hasWriteAccess(node) or "editor" in users.getHideMenusForUser(user):
+    user = current_user
+    if not node.has_write_access() or "editor" in user.hidden_edit_functions:
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 

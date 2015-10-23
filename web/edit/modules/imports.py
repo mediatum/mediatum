@@ -23,7 +23,6 @@ from sqlalchemy import func
 
 import core.users as users
 
-import core.acl as acl
 import schema.bibtex as bibtex
 import schema.citeproc as citeproc
 import schema.importbase as importbase
@@ -46,12 +45,9 @@ def getInformation():
 
 @dec_entry_log
 def getContent(req, ids):
-    user = users.getUserFromRequest(req)
-    access = AccessData(user=user)
-    language = lang(req)
     node = q(Node).get(ids[0])
 
-    if not access.hasWriteAccess(node):
+    if not node.has_write_access():
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 

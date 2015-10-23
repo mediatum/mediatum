@@ -19,12 +19,9 @@
 
 import logging
 
-import core.acl as acl
-import core.users as users
-
 from utils.utils import dec_entry_log
 from utils.date import format_date
-from core.transition import httpstatus
+from core.transition import httpstatus, current_user
 from core import Node
 from core import db
 
@@ -136,11 +133,10 @@ def getContent(req, ids):
     if len(ids) > 0:
         ids = ids[0]
 
-    user = users.getUserFromRequest(req)
+    user = current_user
     node = q(Node).get(ids)
-    access = acl.AccessData(req)
 
-    if "statsfiles" in users.getHideMenusForUser(user) or not access.hasWriteAccess(node):
+    if "statsfiles" in user.hidden_edit_functions or not node.has_write_access():
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
@@ -161,9 +157,9 @@ def getContent(req, ids):
                     [file for file in n.files if file.filetype in["image", "document", "video"]])
                 data.addItem(n.type, n.schema, found_dig)
 
-            node.set("system.statscontent", ustr(data))
-            node.set("system.statsdate", ustr(format_date()))
-            statstring = ustr(data)
+            node.set("system.statscontent", unicode(data))
+            node.set("system.statsdate", unicode(format_date()))
+            statstring = unicode(data)
 
         v = {}
         v["data"] = StatTypes(statstring)

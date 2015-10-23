@@ -18,14 +18,12 @@
 """
 
 import core.config as config
-import core.acl as acl
-import core.users as users
 
 from core.stats import buildStat, StatisticFile
 from core.translation import t, lang
 from utils.utils import splitpath
 from utils.date import format_date, now
-from core.transition import httpstatus
+from core.transition import httpstatus, current_user
 from core import Node
 from core import db
 
@@ -54,11 +52,10 @@ def getContent(req, ids):
     if len(ids) > 0:
         ids = ids[0]
 
-    user = users.getUserFromRequest(req)
+    user = current_user
     node = q(Node).get(ids)
-    access = acl.AccessData(req)
 
-    if "statsaccess" in users.getHideMenusForUser(user) or not access.hasWriteAccess(node):
+    if "statsaccess" in user.hidden_edit_functions or not node.has_write_access():
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 

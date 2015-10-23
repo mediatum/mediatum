@@ -21,7 +21,6 @@ import logging
 import os
 from PIL import Image
 from core.transition.athana_sep import athana_http as athana
-import core.acl as acl
 
 import core.config as config
 from utils.utils import CustomItem
@@ -44,9 +43,8 @@ def getContent(req, ids):
         ids = ids[0]
 
     node = q(Node).get(ids)
-    access = acl.AccessData(req)
 
-    if not node or node.type != "collections" or not access.hasWriteAccess(node):
+    if not node or node.type != "collections" or not node.has_write_access():
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
@@ -58,7 +56,6 @@ def getContent(req, ids):
         if req.params.get("action") == "nodeselection":
             # tree popup for node selection
             def f(req, node, objnum, link, indent, type):
-                access = acl.AccessData(req)
                 indent *= 10
                 nodename = node.name
                 try:
@@ -81,7 +78,7 @@ def getContent(req, ids):
                 v["link1"] = link
                 v["indent"] = indent + 10
                 v["nodename"] = nodename
-                v["writeaccess"] = access.hasWriteAccess(node)
+                v["writeaccess"] = node.has_data_access()
                 return req.getTAL("web/edit/modules/frontendparts.html", v, macro="edit_frontendparts_nodeselection")
 
             content = writetree(req, q(Collections).one(), f, "", openednodes=[], sessionkey="nodetree", omitroot=0)

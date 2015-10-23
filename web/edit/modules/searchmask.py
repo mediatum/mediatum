@@ -18,9 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import schema.searchmask as searchmask
-import core.users as users
-from core.acl import AccessData
-from core.transition import httpstatus
+from core.transition import httpstatus, current_user
 import json
 from core import Node
 from core import db
@@ -29,11 +27,10 @@ from core.systemtypes import Searchmasks, Metadatatypes
 q = db.query
 
 def getContent(req, ids):
-    user = users.getUserFromRequest(req)
+    user = current_user
     node = q(Node).get(ids[0])
-    access = AccessData(req)
-    
-    if not access.hasWriteAccess(node) or "searchmask" in users.getHideMenusForUser(user):
+
+    if not node.has_write_access() or "searchmask" in user.hidden_edit_functions:
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 

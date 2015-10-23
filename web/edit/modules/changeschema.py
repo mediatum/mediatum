@@ -18,15 +18,13 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import core.users as users
 
-import core.acl as acl
 import logging
 
 from core.acl import AccessData
 from schema.schema import loadTypesFromDB
 from core.translation import translate
-from core.transition import httpstatus
+from core.transition import httpstatus, current_user
 from utils.utils import dec_entry_log
 from core import Node
 from contenttypes import Data
@@ -77,10 +75,9 @@ def getContainers(datatypes):
 
 @dec_entry_log
 def getContent(req, ids):
-    user = users.getUserFromRequest(req)
+    user = current_user
     node = q(Node).get(ids[0])
-    access = acl.AccessData(req)
-    if not access.hasWriteAccess(node) or "changeschema" in users.getHideMenusForUser(user):
+    if not node.has_write_access() or "changeschema" in current_user.hidden_edit_functions:
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 

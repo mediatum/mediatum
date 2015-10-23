@@ -19,20 +19,19 @@
 import os
 
 import core.acl as acl
-import core.users as users
 import core.config as config
 
 from schema.schema import loadTypesFromDB
 from core.translation import translate
-from core.transition import httpstatus
+from core.transition import httpstatus, current_user
 from core import Node
 from core import db
 
 q = db.query
 
 def getContent(req, ids):
-    user = users.getUserFromRequest(req)
-    if "ftp" in users.getHideMenusForUser(user):
+    user = current_user
+    if "ftp" in user.hidden_edit_functions:
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
     
@@ -121,8 +120,7 @@ def getContent(req, ids):
 
     db.session.commit()
 
-    access = acl.AccessData(req)
-    if not access.hasWriteAccess(node):
+    if not node.has_write_access():
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
     

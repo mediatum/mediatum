@@ -19,8 +19,6 @@
 """
 
 import os
-import core.users as users
-import core.acl as acl
 
 import core.config as config
 import utils.date as date
@@ -31,9 +29,9 @@ import utils.doi as doi
 import utils.pathutils as pathutils
 from core.translation import lang, t
 from utils.utils import dec_entry_log
-from core.transition import httpstatus
+from core.transition import httpstatus, current_user
 import logging
-from core import Node
+from core import Node, User
 from core import db
 from contenttypes import Collections
 
@@ -47,13 +45,12 @@ def getContent(req, ids):
     The standard method,  which has to be implemented by every module.
     It's called in edit.py, where all the modules will be identified.
     """
-    user = users.getUserFromRequest(req)
-    access = acl.AccessData(req)
+    user = current_user
     node = q(Node).get(ids[0])
     access_nobody = 'nicht Jeder'
 
     # first prove if the user has the required rights to call this module
-    if 'sortfiles' in users.getHideMenusForUser(user) or not access.hasWriteAccess(node):
+    if 'sortfiles' in user.hidden_edit_functions or not node.has_write_access():
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL('web/edit/edit.html', {}, macro='access_error')
 
@@ -73,10 +70,10 @@ def getContent(req, ids):
          'namespace': req.params.get('namespace'),
          'urn_type': req.params.get('urn_type'),
          'host': config.get('host.name'),
-         'creator': users.getUser(node.get('creator'))
+         'creator': q(User).filter_by(login_name=node.get('creator')).one()  #users.getUser(node.get('creator'))
          }
 
-    if user.isAdmin():
+    if user.is_admin:
         if 'id_type' in req.params:
             if req.params.get('id_type') == 'hash':
                 createHash(node)

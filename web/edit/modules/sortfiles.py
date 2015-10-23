@@ -19,11 +19,9 @@
 """
 
 from sqlalchemy import func
-import core.users as users
-from core.acl import AccessData
 from utils.utils import getCollection
 from core.translation import t
-from core.transition import httpstatus
+from core.transition import httpstatus, current_user
 from core import Node
 from core import db
 from schema.schema import Metadatatype
@@ -32,11 +30,10 @@ q = db.query
 
 
 def getContent(req, ids):
-    user = users.getUserFromRequest(req)
-    access = AccessData(req)
+    user = current_user
     node = q(Node).get(ids[0])
 
-    if "sortfiles" in users.getHideMenusForUser(user) or not access.hasWriteAccess(node):
+    if "sortfiles" in user.hidden_edit_functions or not node.has_write_access():
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 

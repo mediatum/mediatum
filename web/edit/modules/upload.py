@@ -414,8 +414,7 @@ def getContent(req, ids):
         schemes = []
         dtypes = []
 
-        access = acl.AccessData(req)
-        if access.hasWriteAccess(node):
+        if node.has_write_access():
             schemes = getSchemes(req)
             dtypes = getDatatypes(req, schemes)
 
@@ -644,7 +643,7 @@ doi_labels = {
     [
         ("identifier_importer_longname", "Via DOI importieren"),
         ("identifier_importer_explain", u"""Um Metadaten für eine Publikation mit einem Digital Object Identifier zu importieren, bitte DOI eingeben und 'Objekt erzeugen' anklicken.
-      <p>Beispiele:</p> 
+      <p>Beispiele:</p>
       doi:10.1371/journal.pbio.0020449
       <br/>DOI:10.1002/nme.4628 """),
 
@@ -662,7 +661,7 @@ doi_labels = {
     [
         ("identifier_importer_longname", "Import via DOI"),
         ("identifier_importer_explain", """To import metadata for a publication with a Digital Object Identifier, please enter the DOI below and click 'Create Object'.
-      <p>Examples:</p> 
+      <p>Examples:</p>
       doi:10.1371/journal.pbio.0020449
       <br/>DOI:10.1002/nme.4628 """),
 

@@ -19,13 +19,11 @@
 """
 
 import lib.lza.lza as l
-import core.acl as acl
-import core.users as users
 
 from schema.schema import getMetaType
 from core.translation import lang, t
 from utils.utils import dec_entry_log
-from core.transition import httpstatus
+from core.transition import httpstatus, current_user
 from core import Node
 from core import db
 from core import File
@@ -35,8 +33,8 @@ q = db.query
 
 @dec_entry_log
 def getContent(req, ids):
-    user = users.getUserFromRequest(req)
-    if "lza" in users.getHideMenusForUser(user):
+    user = current_user
+    if "lza" in user.hidden_edit_functions:
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
@@ -47,8 +45,7 @@ def getContent(req, ids):
     for id in ids:
         node = q(Node).get(id)
 
-        access = acl.AccessData(req)
-        if not access.hasWriteAccess(node):
+        if not node.has_write_access():
             req.setStatus(httpstatus.HTTP_FORBIDDEN)
             return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
@@ -58,7 +55,7 @@ def getContent(req, ids):
             for f in node.files:
                 if f.filetype == "lza":
                     node.files.remove(f)
-            # create new file     
+            # create new file
             for f in node.files:
                 if f.filetype in ("original", "document"):
                     try:

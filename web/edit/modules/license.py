@@ -19,9 +19,7 @@
 """
 
 
-import core.users as users
-from core.acl import AccessData
-from core.transition import httpstatus
+from core.transition import httpstatus, current_user
 from core import Node
 from core import db
 from core.systemtypes import Root
@@ -34,8 +32,8 @@ def getContent(req, ids):
         req.write(objlist(req))
         return ""
     
-    user = users.getUserFromRequest(req)
-    if "license" in users.getHideMenusForUser(user):
+    user = current_user
+    if "license" in user.hidden_edit_functions:
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
         
@@ -44,9 +42,8 @@ def getContent(req, ids):
 
 def objlist(req):
     node = q(Node).get(req.params["id"])
-    access = AccessData(req)
-    
-    if node.id==q(Root).one().id or not access.hasWriteAccess(node):
+
+    if node.id==q(Root).one().id or not node.has_write_access():
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 

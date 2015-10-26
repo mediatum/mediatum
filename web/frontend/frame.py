@@ -25,12 +25,12 @@ from warnings import warn
 import core.config as config
 
 from schema.schema import getMetadataType
-from utils.utils import getCollection, getDirectory, Link, isCollection, isDirectory, isParentOf
+from utils.utils import Link
 from core.translation import lang, t
 from core.metatype import Context
 from core.styles import theme
 from core import db, User, users
-from contenttypes import Collections
+from contenttypes import Collections, Collection
 from sqlalchemy.orm.exc import NoResultFound
 from core import Node
 from core.systemtypes import Searchmasks, Root
@@ -311,55 +311,42 @@ class Collectionlet(Portlet):
     def __init__(self):
         Portlet.__init__(self)
         self.name = "collectionlet"
-        self.collection = q(Collections).one()
-        self.directory = self.collection
+        self.collection = None
+        self.directory = None
         self.folded = 0
         self.col_data = None
         self.hassubdir = 0
         self.hide_empty = False
 
-    def getCurrent(self):
-        return self.collection
-
     def feedback(self, req):
         Portlet.feedback(self, req)
         self.lang = lang(req)
-        # XXX: node refreshing, better save node ids
-        self.collection = db.refresh(self.collection)
-        self.directory = db.refresh(self.directory)
-        if "dir" in req.params or "id" in req.params:
-            id = req.params.get("id", req.params.get("dir"))
-            node = q(Node).get(id)
+        if "dir" in req.args or "id" in req.args:
+            nid = req.args.get("id", req.args.get("dir"))
+            node = q(Node).get(nid)
             if node is not None:
-                if isCollection(node):
-                    self.collection = node
+                if isinstance(node, Container):
                     self.directory = node
-                else:
-                    if isDirectory(node):
-                        self.directory = node
-                    else:
-                        # XXX: do we really need these checks? Better way?
-                        if not isDirectory(self.directory) or not node.is_descendant_of(self.directory):
-                            self.directory = getDirectory(node)
-                    if isinstance(self.collection, Collections) or not node.is_descendant_of(self.collection):
-                        self.collection = getCollection(node)
-        try:
-            self.hide_empty = self.collection.get("style_hide_empty") == "1"
-        except:
-            self.hide_empty = False
-        # open all parents, so we see that node
-        opened = {}
-        parents = [self.directory]
-        counter = 0
-        while parents:
-            counter += 1
-            if counter > 50:
-                raise RecursionException
-            p = parents.pop()
-            opened[p.id] = 1
-            parents.extend(p.parents)
 
-        m = {}
+                    if isinstance(node, Collection): # XXX: is Collections also needed here?
+                        self.collection = node
+                    else:
+                        self.collection = node.get_parent_collection()
+                else:
+                    self.directory = node.get_parent_container()
+                    self.collection = node.get_parent_collection()
+
+        if self.collection is None:
+            self.collection = q(Collections).one()
+            self.directory = self.collection
+
+        self.hide_empty = self.collection.get("style_hide_empty") == "1"
+
+        opened = {t[0] for t in self.directory.all_parents.with_entities(Node.id)}
+        opened.add(self.directory.id)
+
+        unfold_nid = req.args.get("cunfold")
+        col_data = []
 
         def f(m, node, indent, hide_empty):
             if indent > 15:
@@ -367,43 +354,20 @@ class Collectionlet(Portlet):
             if not isinstance(node, (Root, Collections)) and not node.has_read_access():
                 return
 
-            m[node.id] = e = NavTreeEntry(self, node, indent, node.type == "directory", hide_empty=hide_empty, lang=self.lang)
-            if node.id in opened or e.defaultopen:
-                m[node.id].folded = 0
-                for c in node.getContainerChildren():
+            small = not isinstance(node, (Collection, Collections))
+            e = NavTreeEntry(self, node, indent, small, hide_empty, self.lang)
+            if node.id == self.collection.id or node.id == self.directory.id:
+                e.active = 1
+            m.append(e)
+            if node.id in (unfold_nid, self.directory.id, self.collection.id) or node.id in opened or e.defaultopen:
+                e.folded = 0
+                for c in node.container_children.order_by(Node.orderpos).prefetch_attrs():
                     if c.get("style_hide_empty") == "1":
                         hide_empty = 1
                     f(m, c, indent + 1, hide_empty)
 
-        f(m, q(Collections).one(), 0, self.hide_empty)
+        f(col_data, q(Collections).one(), 0, self.hide_empty)
 
-        if "cunfold" in req.params:
-            id = req.params["cunfold"]
-            if id in m:
-                m[id].folded = 0
-
-        if self.directory.id in m:
-            m[self.directory.id].folded = 0
-            m[self.directory.id].active = 1
-
-        if self.collection.id in m:
-            m[self.collection.id].active = 1
-
-        col_data = []
-
-        def f(col_data, node, indent):
-            if indent > 15:
-                raise RecursionException
-            if node.id not in m:
-                return
-
-            data = m[node.id]
-            col_data += [data]
-            if not data.folded or data.defaultopen:
-                for c in node.getContainerChildren().sort_by_orderpos():
-                    f(col_data, c, indent + 1)
-
-        f(col_data, q(Collections).one(), 0)
         self.col_data = col_data
 
     def getCollections(self):

@@ -347,28 +347,26 @@ class ContentList(Content):
         # we fetch one more to see if more nodes are available (on the next page)
         nodes = q_nodes.limit(nodes_per_page+1).prefetch_attrs().all()
 
-        cur_len = len(nodes)
+        # Check if we got enough nodes and try to load more if needed.
+        # Maybe there were enough results for the database LIMIT, but SQLAlchemy filtered out some duplicates.
+        node_count = len(nodes)
+        # It doesn't make sense to try again if no results were returned. Empty container is empty...
+        if node_count:
+            while node_count <= nodes_per_page:
+                refetch_limit = nodes_per_page - node_count + 1
+                if self.before:
+                    q_additional_nodes = q_nodes.filter(Node.id > nodes[-1].id)
+                else:
+                    q_additional_nodes = q_nodes.filter(Node.id < nodes[-1].id)
 
+                additional_nodes = q_additional_nodes.limit(refetch_limit).prefetch_attrs().all()
+                if not additional_nodes:
+                    # no more nodes found (first or last page), stop trying
+                    break
+                nodes += additional_nodes
+                node_count += len(additional_nodes)
 
-        # check if we got enough nodes and try to load more if needed
-        # maybe there were enough results for the database LIMIT, but SQLAlchemy filtered out some duplicates.
-        while cur_len <= nodes_per_page:
-            refetch_limit = nodes_per_page - cur_len + 1
-            if self.before:
-                q_additional_nodes = q_nodes.filter(Node.id > nodes[-1].id)
-            else:
-                q_additional_nodes = q_nodes.filter(Node.id < nodes[-1].id)
-
-            additional_nodes = q_additional_nodes.limit(refetch_limit).prefetch_attrs().all()
-            if not additional_nodes:
-                # no more nodes found (first or last page), stop trying
-                break
-            nodes += additional_nodes
-            cur_len += len(additional_nodes)
-
-        available_node_count = len(nodes)
-
-        if available_node_count > nodes_per_page:
+        if len(nodes) > nodes_per_page:
             # more nodes available when navigating in the same direction
             # last node will be displayed on next page, remove it
             nodes = nodes[:-1]

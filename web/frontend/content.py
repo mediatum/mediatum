@@ -596,7 +596,6 @@ class ContentError(Content):
 class ContentArea(Content):
 
     def __init__(self):
-        logg.info("created content area", trace=True)
         self._content = None
         self.collection = None
         self.collectionlogo = None

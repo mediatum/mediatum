@@ -181,17 +181,11 @@ def getAllMetaFields():
 def getMetaField(pid, name):
     return getMetaType(pid).children.filter_by(name=name).scalar()
 
-
 #
 # check existance of field for given metadatatype
 #
 def existMetaField(pid, name):
-    try:
-        f = getMetaType(pid).getChild(name)
-        return True
-    except:
-        return False
-
+    return getMetaField(pid, name) is not None
 
 """ update/create metadatafield """
 

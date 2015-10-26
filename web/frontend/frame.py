@@ -21,9 +21,9 @@ import logging
 from collections import OrderedDict
 import time
 from warnings import warn
+from sqlalchemy import event
 
 import core.config as config
-
 from schema.schema import getMetadataType
 from utils.utils import Link
 from core.translation import lang, t
@@ -224,6 +224,14 @@ class Searchlet(Portlet):
             return ""
 
 
+# XXX very simple and conservative directory child count cache. Cleared after each commit.
+directory_child_count_cache = {}
+
+@event.listens_for(db.Session, "after_commit")
+def clear_directory_child_count_cache_after_commit(session):
+    directory_child_count_cache.clear()
+
+
 class NavTreeEntry(object):
 
     def __init__(self, col, node, indent, small=0, hide_empty=0, lang=None):
@@ -273,7 +281,10 @@ class NavTreeEntry(object):
         try:
             if isinstance(self.node, Directory):
                 if self.count == -1:
-                    self.count = self.node.content_children_for_all_subcontainers.count()
+                    if self.id in directory_child_count_cache:
+                        self.count = directory_child_count_cache[self.id]
+                    else:
+                        directory_child_count_cache[self.id] = self.count = self.node.content_children_for_all_subcontainers.count()
 
                 if self.hide_empty and self.count == 0:
                     return ""  # hides entry

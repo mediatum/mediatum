@@ -358,7 +358,7 @@ let
     buildInputs = with self; [];
     doCheck = false;
   };
-  
+
   mollyZ3950 = self.buildPythonPackage {
     name = "mollyZ3950-2.04-molly1";
     src = fetchurl {
@@ -643,12 +643,35 @@ let
     propagatedBuildInputs = with self; [pkgs.openldap pkgs.cyrus_sasl pkgs.openssl];
   };
 
+  pympler = self.buildPythonPackage {
+    name = "pympler-0.4.2";
+    src = fetchurl {
+      url = "https://pypi.python.org/packages/source/P/Pympler/Pympler-0.4.2.tar.gz";
+      md5 = "6bdfd913ad4c94036e8a2b358e49abd7";
+    };
+    propagatedBuildInputs = with self; [];
+    buildInputs = with self; [];
+    doCheck = false;
+  };
+
+  humanize = self.buildPythonPackage {
+    name = "humanize-0.5.1";
+    src = fetchurl {
+      url = "https://pypi.python.org/packages/source/h/humanize/humanize-0.5.1.tar.gz";
+      md5 = "e8473d9dc1b220911cac2edd53b1d973";
+    };
+    propagatedBuildInputs = with self; [];
+    buildInputs = with self; [];
+    doCheck = false;
+  };
+
 in {
   production = [
       coffeescript
       configargparse
       decorator
       httplib2
+      humanize
       ipaddr
       ipython
       ipython-sql
@@ -668,6 +691,7 @@ in {
       pygments
       pyjade
       pymarc
+      pympler
       pypdf
       python-Levenshtein
       python-logstash

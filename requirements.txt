@@ -2,6 +2,7 @@ coffeescript
 configargparse
 decorator
 httplib2
+humanize
 ipaddr
 ipython
 ipython-sql
@@ -19,6 +20,7 @@ pydot
 pygments
 pyjade
 pymarc
+pympler
 pyPdf
 python-Levenshtein
 python-logstash

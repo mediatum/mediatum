@@ -395,6 +395,25 @@ class Node(DeclarativeBase, NodeMixin):
     def is_descendant_of(self, node):
         return exec_sqlfunc(object_session(self), mediatumfunc.is_descendant_of(self.id, node.id))
 
+    def get_parent_container(self):
+        from contenttypes import Container
+        nr = t_noderelation
+        q = object_session(self).query
+        parent_dir = q(Container).join(nr, Node.id == nr.c.nid).filter_by(cid=self.id).order_by(nr.c.distance).limit(1).one()
+        return parent_dir
+
+    def get_parent_collection(self):
+        from contenttypes import Collection
+        nr = t_noderelation
+        q = object_session(self).query
+        parent_coll = q(Collection).join(nr, Node.id == nr.c.nid).filter_by(cid=self.id).order_by(nr.c.distance).limit(1).scalar()
+
+        if parent_coll is None:
+            from contenttypes import Collections
+            return q(Collections).one()
+
+        return parent_coll
+
     @cached_property
     def has_files(self):
         return self.files.first() is not None
@@ -444,6 +463,15 @@ _parents_rel_options = dict(
     query_class=NodeAppenderQuery
 )
 
+_all_parents_rel_options = dict(
+    secondary=t_noderelation,
+    lazy="dynamic",
+    primaryjoin=Node.id == t_noderelation.c.cid,
+    secondaryjoin=Node.id == t_noderelation.c.nid,
+    query_class=NodeAppenderQuery,
+    viewonly=True
+)
+
 
 def children_rel(*args, **kwargs):
     extended_kwargs = _children_rel_options.copy()
@@ -462,7 +490,14 @@ def parents_rel(*args, **kwargs):
     extended_kwargs.update(kwargs)
     return rel(*args, **extended_kwargs)
 
+
+def all_parents_rel(*args, **kwargs):
+    extended_kwargs = _all_parents_rel_options.copy()
+    extended_kwargs.update(kwargs)
+    return rel(*args, **extended_kwargs)
+
 # define Node child/parent relationships here
 
 Node.children = children_rel(Node, backref=bref("parents", lazy="dynamic", query_class=NodeAppenderQuery))
 Node.all_children = all_children_rel(Node)
+Node.all_parents = all_parents_rel(Node)

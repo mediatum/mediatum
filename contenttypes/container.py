@@ -336,9 +336,20 @@ class Collection(Container):
 
 @check_type_arg_with_schema
 class Collections(Container):
-    pass
+    
+    def get_parent_container(self):
+        pass
+
+    def get_parent_collection(self):
+        pass
 
 
 @check_type_arg_with_schema
 class Home(Container):
-    pass
+    
+    def get_parent_container(self):
+        pass
+
+    def get_parent_collection(self):
+        pass
+

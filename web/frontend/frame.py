@@ -49,6 +49,7 @@ class Portlet:
         self.user = get_guest_user()
 
     def isFolded(self):
+        warn("use Portlet.folded()", DeprecationWarning)
         return self.folded
 
     def close(self):
@@ -245,9 +246,6 @@ class NavTreeEntry(object):
             self.hassubdir = 1
             self.folded = 1
 
-    def isRoot(self):
-        return isinstance(self.node, Collections)
-
     def getFoldLink(self):
         return u"/?cfold={}&dir={}&id={}".format(self.node.id,
                                                  self.node.id,
@@ -275,7 +273,7 @@ class NavTreeEntry(object):
         try:
             if isinstance(self.node, Directory):
                 if self.count == -1:
-                    self.count = self.node.content_children_for_all_subcontainers.distinct().count()
+                    self.count = self.node.content_children_for_all_subcontainers.count()
 
                 if self.hide_empty and self.count == 0:
                     return ""  # hides entry
@@ -293,17 +291,13 @@ class NavTreeEntry(object):
             return "Node (0)"
 
     def getClass(self):
-        if self.node.type == "directory":
+        if isinstance(self.node, Directory):
             return "lv2"
         else:
             if self.indent > 1:
                 return "lv1"
             else:
                 return "lv0"
-
-
-class RecursionException:
-    pass
 
 
 class Collectionlet(Portlet):
@@ -349,8 +343,6 @@ class Collectionlet(Portlet):
         col_data = []
 
         def f(m, node, indent, hide_empty):
-            if indent > 15:
-                raise RecursionException
             if not isinstance(node, (Root, Collections)) and not node.has_read_access():
                 return
 
@@ -373,36 +365,6 @@ class Collectionlet(Portlet):
     def getCollections(self):
         return self.col_data
 
-    def getCollUnfold(id):
-        if self.req.params.get("colunfold", "") == ustr(id):
-            return True
-        else:
-            return False
-
-
-class Pathlet:
-
-    def __init__(self, currentdir):
-        self.currentdir = currentdir
-
-    def getPath(self):
-        path = []
-        if isinstance(self.currentdir, type("")):
-            path.append(Link(self.currentdir, self.currentdir, self.currentdir))
-        else:
-            cd = self.currentdir
-            if cd is not None:
-                path.append(Link('', cd.name, ''))
-                while True:
-                    parents = cd.getParents()
-                    if(len(parents) == 0):
-                        break
-                    cd = parents[0]
-                    if cd is tree.getRoot():
-                        break
-                    path.append(Link('/?id=' + cd.id + '&dir=' + cd.id, cd.name, cd.name))
-        path.reverse()
-
 
 class CollectionMapping:
 
@@ -414,21 +376,6 @@ class CollectionMapping:
         if collection.id not in self.searchmap:
             self.searchmap[collection.id] = Searchlet(collection)
         return self.searchmap[collection.id]
-
-
-def getSessionSetting(req, name, default):
-    try:
-        value = req.params[name]
-        value[0]
-    except:
-        pass
-    try:
-        value = req.session[name]
-    except:
-        value = default
-        req.session[name] = default
-
-    return value
 
 
 class UserLinks:

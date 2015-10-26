@@ -96,7 +96,7 @@ class ContentList(Content):
         self.nr = -1
         self.page = 0
         self.nodes_per_page = None
-        self.nav_params = {}
+        self.nav_params = None
         self.before = None
         self.after = None
         self.lang = "en"
@@ -160,7 +160,7 @@ class ContentList(Content):
         return "node?back=y"
 
     def nav_link(self, **param_overrides):
-        params = {"id": self.container_id}
+        params = dict(id=self.container_id, **self.nav_params)
         if self.liststyle_name:
             params["style"] = self.liststyle_name
         if self.nodes_per_page:
@@ -221,6 +221,9 @@ class ContentList(Content):
             self.content = ContentNode(self.nodes[self.nr], self.nr, self.num, self.words)
 
         self.liststyle_name = req.args.get("style")
+
+        self.nav_params = {k: v for k, v in req.args.items()
+                           if k not in ("before", "after", "style", "sortfield", "page", "id", "nodes_per_page")}
 
         if self.content:
             return self.content.feedback(req)

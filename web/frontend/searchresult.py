@@ -220,32 +220,29 @@ def _extended_searchquery_from_req(req):
 def extended_search(req):
     from web.frontend.content import ContentList
 
-    collection_id = req.args.get("collection", type=int)
-    collection = q(Collection).get(collection_id) if collection_id else None
+    collection_id = req.args.get("id", type=int)
+    search_collection = q(Collection).get(collection_id) if collection_id else None
 
-    if collection is None:
+    if search_collection is None:
         # no collection id given or collection not found -> search starts at collection root
         # XXX: collection not found should not really happen, but it happens. Investigate later...
-        collection = q(Collections).one()
+        search_collection = q(Collections).one()
 
     searchquery, readable_query = _extended_searchquery_from_req(req)
 
-    logg.debug("extended_search with query '%s' on collection '%s'(%s)", searchquery, collection.name, collection.id)
+    logg.debug("extended_search with query '%s' on collection '%s'(%s)", searchquery, search_collection.name, search_collection.id)
 
-    nid = req.args.get("id", type=int)
-    search_node = q(Node).get(nid) if nid else None
+#     result = search_collection.search(searchquery).filter_read_access().all()
+    result = search_collection.content_children_for_all_subcontainers.filter(Node.id > 1200000)
 
-    search_collection = search_node if search_node is not None else collection
+    cl = ContentList(result, search_collection, readable_query)
+    cl.feedback(req)
+    cl.linkname = u"{} ({})".format(translate("search_result", request=req), search_collection.getLabel())
+    cl.linktarget = ""
 
-    result = search_collection.search(searchquery).filter_read_access().all()
+    if cl.num > 0:
+        logg.info("xsearch for '%s', %s results", searchquery, cl.num)
+    else:
+        logg.info("xsearch for '%s', no results", searchquery)
 
-    logg.debug("xsearch for '%s', %s results", len(result))
-
-    if len(result) > 0:
-        cl = ContentList(result, collection, readable_query)
-        cl.feedback(req)
-        cl.linkname = ""
-        cl.linktarget = ""
-        return cl
-
-    return SearchResult([], readable_query)
+    return SearchResult([cl], readable_query)

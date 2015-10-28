@@ -17,6 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from collections import OrderedDict
 import logging
 import os
 import urllib
@@ -30,6 +31,7 @@ from contenttypes.container import includetemplate, replaceModules
 from web.frontend import Content
 from utils.strings import ensure_unicode_returned
 from utils.utils import getCollection, Link, getFormatedString
+from utils.compat import iteritems
 from web.frontend.searchresult import simple_search, extended_search, SearchResult
 from core.systemtypes import Root
 from contenttypes.container import Container
@@ -85,7 +87,87 @@ class SingleFile(object):
         return self.node
 
 
-SORT_FIELDS = 0
+def prepare_sortfields(node, sortfields):
+    sortfields_to_comp = OrderedDict()
+
+    for sortfield in sortfields:
+        if sortfield[0] == "-":
+            order = "desc"
+            sortfield = sortfield[1:]
+        else:
+            order = "asc"
+
+        sortfields_to_comp[sortfield] = (order, node.get_special(sortfield))
+
+    # sort position must always be unique. That means that the node id must be part of the position key.
+    if not "node.id" in sortfields:
+        sortfields_to_comp["node.id"] = ("desc", node.id)
+
+    return sortfields_to_comp
+
+
+def node_value_expression(name):
+    if name == "node.id":
+        return Node.id
+    elif name == "node.orderpos":
+        return Node.orderpos
+    elif name == "node.name":
+        return Node.name
+    else:
+        return getattr(Node.a, name)
+
+comparisons = {
+    "asc": (lambda l, r: l > r),
+    "desc": (lambda l, r: l < r),
+    "eq": (lambda l, r: l == r),
+}
+
+comparisons_inv = {
+    "asc": (lambda l, r: l < r),
+    "desc": (lambda l, r: l > r),
+}
+
+
+def make_cond(name_to_comp, invert=False):
+
+    name, (op_name, val) = name_to_comp
+    node_expr = node_value_expression(name)
+
+    if invert:
+        return comparisons_inv[op_name](node_expr, val)
+    else:
+        return comparisons[op_name](node_expr, val)
+
+
+def position_filter(sortfields_to_comp, after=False, before=False):
+
+    assert before or after
+
+    iter_sortfield = iteritems(sortfields_to_comp)
+    prev_sortfields_to_comp = []
+
+    first_sortfield = next(iter_sortfield)
+    cond = make_cond(first_sortfield, invert=before)
+    prev_sortfields_to_comp.append(first_sortfield)
+
+    # add remaining sortfields if present
+    for sortfield_to_comp in iter_sortfield:
+        # We are doing a "tuple" comparision here. If the first field is equivalent, we have to compare the seconds field and so on.
+        # first add comparison for current field...
+        sub_cond = make_cond(sortfield_to_comp)
+        # ... and add equivalence conditions for previous fields
+        for prev in prev_sortfields_to_comp:
+            sub_cond &= node_value_expression(prev[0]) == prev[1][1]
+
+        prev_sortfields_to_comp.append(sortfield_to_comp)
+
+        # or-append condition for current field to full condition
+        cond |= sub_cond
+
+    return cond
+
+
+SORT_FIELDS = 2
 
 DEFAULT_FULL_STYLE_NAME = "full_standard"
 
@@ -210,11 +292,13 @@ class ContentList(Content):
             self.nr = -1
 
         for i in range(SORT_FIELDS):
-            if ("sortfield%d" % i) in req.args:
-                self.sortfields[i] = req.args["sortfield%d" % i]
+            key = "sortfield" + str(i)
+            if key not in req.args:
+                break
+            self.sortfields.append(req.args[key])
 
-        # XXX: would be very slow to do this here, ideas?
-#         self.nodes.sort_by_fields(self.sortfields)
+        if not self.sortfields:
+            self.sortfields = ["-node.id"]
 
         self.content = None
         if self.nr >= 0 and self.nr < self.num:
@@ -229,6 +313,7 @@ class ContentList(Content):
             return self.content.feedback(req)
 
     def getSortFieldsList(self):
+        return []
         class SortChoice:
 
             def __init__(self, label, value, descending, selected):
@@ -323,21 +408,28 @@ class ContentList(Content):
 
     def _page_nav_prev_next(self, nodes_per_page, language, req):
         q_nodes = self.nodes
-
         # self.after set <=> moving to next page
         # self.before set <=> moving to previous page
         # nothing set <=> first page
 
-        if self.after:
-            q_nodes = q_nodes.filter(Node.id < self.after)
 
-        elif self.before:
-            q_nodes = q_nodes.filter(Node.id > self.before)
+        if self.after or self.before:
+            comp_node = q(Node).get(self.after or self.before)
+            sortfields_to_comp = prepare_sortfields(comp_node, self.sortfields)
+            position_cond = position_filter(sortfields_to_comp, self.after, self.before)
+            q_nodes = q_nodes.filter(position_cond)
 
-        if self.before:
-            q_nodes = q_nodes.order_by(Node.id)
-        else:
-            q_nodes = q_nodes.order_by(Node.id.desc())
+
+        for sortfield in self.sortfields:
+            if sortfield.startswith("-"):
+                desc = not bool(self.before)
+                sortfield = sortfield[1:]
+            else:
+                desc = bool(self.before)
+
+            expr = node_value_expression(sortfield)
+
+            q_nodes = q_nodes.order_by(expr.desc() if desc else expr)
 
         # get one more to find out if there are more nodes available
 
@@ -646,10 +738,9 @@ class ContentArea(Content):
     def feedback(self, req):
         content = None
         if req.args.get("query", "").strip():
-            if req.args.get("searchmode") in ["extended", "extendedsuper"]:
-                content = extended_search(req)
-            else:
-                content = simple_search(req)
+            content = simple_search(req)
+        elif req.args.get("query1", "").strip():
+            content = extended_search(req)
 
         if content is None:
             self.content = mkContentNode(req)

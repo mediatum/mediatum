@@ -36,6 +36,8 @@ from core import Node
 from core.systemtypes import Searchmasks, Root
 from contenttypes import Directory, Container
 from core.users import get_guest_user
+import urllib
+from utils.compat import iteritems
 
 q = db.query
 logg = logging.getLogger(__name__)
@@ -116,9 +118,6 @@ class Searchlet(Portlet):
         return self.collection and not isinstance(self.collection, Collections)
 
     def initialize(self):
-        types = {}
-        firsttype = None
-
         # get searchfields for collection
         self.searchfields = OrderedDict()
 
@@ -130,6 +129,8 @@ class Searchlet(Portlet):
     def feedback(self, req):
         Portlet.feedback(self, req)
         self.req = req
+        self.url_params = {k: v for k, v in iteritems(req.args) if k not in ()}
+
         extendedfields = range(1, 4)
 
         if "searchmode" in req.params:
@@ -188,14 +189,21 @@ class Searchlet(Portlet):
     def query(self):
         return self.values[0]
 
+    def search_link(self, mode="simple"):
+        params = {k: v for k, v in iteritems(self.url_params) if k not in ("query", "searchmode")}
+        if mode != "simple":
+            params["searchmode"] = mode
+
+        return u"node?" + urllib.urlencode(params)
+
     def searchLinkSimple(self):
-        return "node?searchmode=simple&submittype=change"
+        return self.search_link()
 
     def searchLinkExtended(self):
-        return "node?searchmode=extended&submittype=change"
+        return self.search_link("extended")
 
     def searchLinkExtendedSuper(self):
-        return "node?searchmode=extendedsuper&submittype=change"
+        return self.search_link("extendedsuper")
 
     def searchActiveLeft(self):
         return not self.extended
@@ -326,9 +334,10 @@ class Collectionlet(Portlet):
     def feedback(self, req):
         Portlet.feedback(self, req)
         self.lang = lang(req)
-        if "dir" in req.args or "id" in req.args:
-            nid = req.args.get("id", req.args.get("dir"))
-            node = q(Node).get(nid)
+        nid = req.args.get("id", type=int)
+        dir_id = req.args.get("dir", type=int)
+        if nid or dir_id:
+            node = q(Node).get(nid or dir_id)
             if node is not None:
                 if isinstance(node, Container):
                     self.directory = node
@@ -478,7 +487,7 @@ class NavigationFrame:
     def write(self, req, contentHTML, show_navbar=1):
         self.params["show_navbar"] = show_navbar
         self.params["content"] = contentHTML
-        self.params["act_node"] = req.params.get("id", req.params.get("dir", ""))
+        self.params["id"] = req.params.get("id", req.params.get("dir", ""))
 
         rootnode = q(Collections).one()
         self.params["header_items"] = rootnode.getCustomItems("header")
@@ -497,9 +506,17 @@ class NavigationFrame:
         self.params["search"] = ""
         if show_navbar == 1:
             # search mask
-            self.params["search"] = req.getTAL(
-                theme.getTemplate("frame.html"), {
-                    "search": self.params["navigation"]["search"], "act_node": self.params["act_node"]}, macro="frame_search")
+            # collection_id specifies which collection to search
+            collection = self.collection_portlet.collection
+            ctx = {
+                "search": self.params["navigation"]["search"],
+                "collection_id": None
+            }
+            # we want to search to current collection except when it's the collection root
+            if not isinstance(collection, Collections):
+                ctx["collection_id"] = collection.id
+
+            self.params["search"] = req.getTAL(theme.getTemplate("frame.html"), ctx, macro="frame_search")
 
             # tree
             self.params["tree"] = req.getTAL(

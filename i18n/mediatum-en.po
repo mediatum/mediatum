@@ -232,6 +232,9 @@ msgstr "More Searchfields"
 msgid "all_metafields"
 msgstr "all metadata"
 
+msgid "search_result"
+msgstr "Search Result"
+
 msgid "search_result_header"
 msgstr "Your search string "
 

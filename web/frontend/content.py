@@ -30,7 +30,7 @@ from contenttypes.container import includetemplate, replaceModules
 from web.frontend import Content
 from utils.strings import ensure_unicode_returned
 from utils.utils import getCollection, Link, getFormatedString
-from web.frontend.searchresult import simple_search, extended_search
+from web.frontend.searchresult import simple_search, extended_search, SearchResult
 from core.systemtypes import Root
 from contenttypes.container import Container
 from mediatumtal import tal
@@ -644,33 +644,28 @@ class ContentArea(Content):
         return path
 
     def feedback(self, req):
-        if ("id" in req.args or "item" in req.args) and "searchmode" not in req.args and not (
-                hasattr(self.content, "in_list") and self.content.in_list(req.args.get("id"))):
+        content = None
+        if req.args.get("query", "").strip():
+            if req.args.get("searchmode") in ["extended", "extendedsuper"]:
+                content = extended_search(req)
+            else:
+                content = simple_search(req)
+
+        if content is None:
             self.content = mkContentNode(req)
-        elif req.args.get("searchmode") == "simple" and req.args.get("submittype") != "change":
-            self.content = simple_search(req)  # simple search
-        elif req.args.get("searchmode") in ["extended", "extendedsuper"] and req.args.get("submittype") != "change":
-            self.content = extended_search(req)  # extended search
         else:
-            newcontent = self.content.feedback(req)
-            if newcontent:
-                self.content = newcontent
+            self.content = content
+
         if hasattr(self.content, "collection"):
             self.collection = self.content.collection
             if self.collection:
-                self.collection = db.refresh(self.collection)
                 self.collectionlogo = CollectionLogo(self.collection)
+
         if hasattr(self.content, "getParams"):
             self.params = '&' + self.content.getParams()
 
     def actNode(self):
-        if hasattr(self.content, 'nodes'):
-            if self.content.nr >= 0 and len(self.content.nodes) >= self.content.nr:
-                return self.content.nodes[self.content.nr]
-            else:
-                return self.content.node
-
-        elif hasattr(self.content, 'node'):
+        if hasattr(self.content, 'node'):
             return self.content.node
         else:
             return None
@@ -681,7 +676,7 @@ class ContentArea(Content):
             path = ""
         else:
             if hasattr(self.content, "node"):
-                node = self.content.node = db.refresh(self.content.node)
+                node = self.content.node
             else:
                 node = None
 
@@ -712,7 +707,6 @@ class ContentArea(Content):
                                "path": breadcrumbs,
                                "styles": styles,
                                "logo": self.collectionlogo,
-                               "searchmode": req.args.get("searchmode", ""),
                                "select_style_link": self.content.select_style_link,
                                "id": id,
                                "nodeprint": "1" if printlink else "0",  # XXX: template compat for non-default templates

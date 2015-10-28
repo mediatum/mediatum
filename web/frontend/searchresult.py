@@ -26,6 +26,7 @@ from web.frontend import Content
 from utils.strings import ensure_unicode_returned
 from contenttypes.container import Collections, Collection, Container
 from schema.searchmask import SearchMaskItem
+import urllib
 
 q = db.query
 
@@ -40,6 +41,7 @@ class SearchResult(Content):
         self.collections = collections
         self.active = -1
         self.error = 0
+        self.searchmode = None
 
         if resultlist is None:
             self.resultlist = []
@@ -50,13 +52,7 @@ class SearchResult(Content):
                 result.parent = self
 
     def feedback(self, req):
-        if "scoll" in req.params:
-            id = req.args.get("scoll", type=int)
-            for nr in range(len(self.resultlist)):
-                if self.resultlist[nr].collection.id == id:
-                    self.active = nr
-        elif self.active >= 0:
-            return self.resultlist[self.active].feedback(req)
+        self.searchmode = req.args.get("searchmode")
 
     def in_list(self, id):
         if self.active >= 0:
@@ -66,7 +62,10 @@ class SearchResult(Content):
         return 0
 
     def getLink(self, collection):
-        return u'node?scoll={}'.format(collection.id)
+        params = dict(query=self.query, id=collection.id)
+        if self.searchmode is not None:
+            params["searchmode"] = self.searchmode
+        return u"node?" + urllib.urlencode(params)
 
     def getContentStyles(self):
         return []
@@ -77,25 +76,21 @@ class SearchResult(Content):
             return req.getTAL(theme.getTemplate("searchresult.html"), {
                               "query": self.query, "r": self, "collections": self.collections, "language": lang(req)}, macro="error")
 
-        if self.active < 0:
-            if len(self.resultlist) == 0:
-                return req.getTAL(theme.getTemplate("searchresult.html"), {
-                                  "query": self.query, "r": self, "collections": self.collections, "language": lang(req)}, macro="noresult")
-            else:
-                if len(self.resultlist) == 1:
-                    self.resultlist[self.active].feedback(req)
-                    return self.resultlist[self.active].html(req)
-                else:
-                    return req.getTAL(theme.getTemplate("searchresult.html"),
-                                      {"query": self.query,
-                                       "collections": self.collections,
-                                       "reslist": self.resultlist,
-                                       "r": self,
-                                       "language": lang(req)},
-                                      macro="listcollections")
+        if not self.resultlist:
+            return req.getTAL(theme.getTemplate("searchresult.html"), {
+                              "query": self.query, "r": self, "collections": self.collections, "language": lang(req)}, macro="noresult")
         else:
-            self.resultlist[self.active].feedback(req)
-            return self.resultlist[self.active].html(req)
+            if len(self.resultlist) == 1:
+                self.resultlist[self.active].feedback(req)
+                return self.resultlist[self.active].html(req)
+            else:
+                return req.getTAL(theme.getTemplate("searchresult.html"),
+                                  {"query": self.query,
+                                   "collections": self.collections,
+                                   "reslist": self.resultlist,
+                                   "r": self,
+                                   "language": lang(req)},
+                                  macro="listcollections")
 
 
 def protect(s):
@@ -106,13 +101,13 @@ def protect(s):
 
 def simple_search(req):
     from web.frontend.content import ContentList
-    searchquery = req.form.get("query")
+    searchquery = req.args.get("query")
 
-    # test whether this query is restricted to a number of collections
-    collection_ids = []
-    for key in req.params:
-        if key.startswith("c_"):
-            collection_ids.append(key[2:])
+    collection_id = req.args.get("id", type=int)
+    collection_ids = [collection_id] if collection_id else []
+
+    # test whether this query is restricted to a number of (additional) collections
+    collection_ids.extend(req.args.getlist("c", type=int))
 
     # no collection means: all collections
     if collection_ids:
@@ -120,29 +115,20 @@ def simple_search(req):
     else:
         collection_query = q(Collections).one().container_children
 
-    collections = collection_query.all()
+    collections = collection_query.filter_read_access().all()
 
     if logg.isEnabledFor(logging.DEBUG):
         logg.debug("simple_search with query '%s' on %s collections: %s", searchquery, len(collections), [c.name for c in collections])
 
-    def do_search(start_node):
-        result = start_node.search('full=' + searchquery).filter_read_access().all()
-        if len(result) > 0:
-            cl = ContentList(result, start_node, [])
-            cl.feedback(req)
-            cl.linkname = "Suchergebnis"
-            cl.linktarget = ""
-            return cl
+    def do_search(search_collection):
+        result = search_collection.search('full=' + searchquery).filter_read_access()
+        cl = ContentList(result, search_collection, words=None)
+        cl.feedback(req)
+        cl.linkname = u"{} ({})".format(translate("search_result", request=req), search_collection.getLabel())
+        cl.linktarget = ""
+        return cl
 
-    act_node_id = req.form.get("act_node", type=int)
-    act_node = q(Node).get(act_node_id) if act_node_id else None
-    if act_node is not None and not isinstance(act_node, Collections):
-        # actual node is a collection or directory
-        single_result = do_search(act_node)
-        res = [single_result] if single_result else []
-    else:
-        # actual node is collections-node
-        res = [cl for cl in (do_search(collection) for collection in collections) if cl is not None]
+    res = [cl for cl in (do_search(collection) for collection in collections) if cl.num]
 
     if logg.isEnabledFor(logging.DEBUG):
         logg.debug("%s result sets found with %s nodes", len(res), len([n for cl in res for n in cl.files]))
@@ -155,7 +141,7 @@ def simple_search(req):
 
 def _extended_searchquery_from_req(req):
     max_fields = 3
-    if req.form.get("searchmode") == "extendedsuper":
+    if req.args.get("searchmode") == "extendedsuper":
         max_fields = 10
 
     q_str = u''
@@ -166,10 +152,10 @@ def _extended_searchquery_from_req(req):
         # for range queries
         query_to_key = "query" + unicode(i) + "-to"
         query_from_key = "query" + unicode(i) + "-from"
-        field_id_or_name = req.form.get("field" + unicode(i), "").strip()
-        element_query = req.form.get(query_key, "").strip()
+        field_id_or_name = req.args.get("field" + unicode(i), "").strip()
+        element_query = req.args.get(query_key, "").strip()
 
-        if not element_query and query_from_key not in req.form:
+        if not element_query and query_from_key not in req.args:
             # no query found, do nothing
             continue
 
@@ -191,15 +177,15 @@ def _extended_searchquery_from_req(req):
                     q_str += " or "
                     q_user += " %s " % (translate("search_or", request=req))
                 first = 0
-                if query_to_key in req.form and field.getFieldtype() == "date":
+                if query_to_key in req.args and field.getFieldtype() == "date":
                     date_from = "0000-00-00T00:00:00"
                     date_to = "0000-00-00T00:00:00"
 
-                    from_value = req.form.get(query_from_key)
+                    from_value = req.args.get(query_from_key)
                     if from_value:
                         date_from = date.format_date(date.parse_date(from_value, field.getValues()), "%Y-%m-%dT%H:%M:%S")
 
-                    to_value = req.form.get(query_to_key)
+                    to_value = req.args.get(query_to_key)
                     if to_value:
                         date_to = date.format_date(date.parse_date(to_value, field.getValues()), "%Y-%m-%dT%H:%M:%S")
 
@@ -234,7 +220,7 @@ def _extended_searchquery_from_req(req):
 def extended_search(req):
     from web.frontend.content import ContentList
 
-    collection_id = req.form.get("collection", type=int)
+    collection_id = req.args.get("collection", type=int)
     collection = q(Collection).get(collection_id) if collection_id else None
 
     if collection is None:
@@ -246,10 +232,10 @@ def extended_search(req):
 
     logg.debug("extended_search with query '%s' on collection '%s'(%s)", searchquery, collection.name, collection.id)
 
-    act_node_id = req.form.get("act_node", type=int)
-    act_node = q(Node).get(act_node_id) if act_node_id else None
+    nid = req.args.get("id", type=int)
+    search_node = q(Node).get(nid) if nid else None
 
-    search_collection = act_node if act_node is not None else collection
+    search_collection = search_node if search_node is not None else collection
 
     result = search_collection.search(searchquery).filter_read_access().all()
 

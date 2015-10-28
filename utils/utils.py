@@ -383,6 +383,9 @@ def isCollection(node):
 
 def getCollection(node):
     warn("use Node.get_parent_collection()", DeprecationWarning)
+    from contenttypes import Collections
+    if isinstance(node, Collections):
+        return node
     return node.get_parent_collection()
 
 

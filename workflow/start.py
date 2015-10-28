@@ -29,6 +29,8 @@ from core.systemtypes import Metadatatypes
 from core import Node
 from core import db
 from schema.schema import Metafield
+from core.database.postgres.permission import AccessRule, NodeToAccessRule
+from core import UserGroup
 
 q = db.query
 
@@ -57,9 +59,14 @@ class WorkflowStep_Start(WorkflowStep):
 
         if "workflow_start" in req.params:
             switch_language(req, req.params.get('workflow_language'))
-            node = Node(name="", type=req.params.get('selected_schema'))
+            node = Node(name=u"", type=req.params.get('selected_schema'))
             self.children.append(node)
-            node.setAccess("read", "{user workflow}")
+
+            # create access rule with 'Workflow' user group
+            rule = AccessRule(group_ids=set([q(UserGroup).filter_by(name=u'Workflow').one().id]))
+            db.session.add(rule)
+            node.access_rule_assocs.append(NodeToAccessRule(rule=rule, ruletype=u'read'))
+
             node.set("creator", "workflow-" + self.parents[0].name)
             node.set("creationtime", date.format_date())
             node.set("system.wflanguage", req.params.get('workflow_language', req.session.get('language')))

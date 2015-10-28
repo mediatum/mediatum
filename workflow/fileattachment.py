@@ -22,6 +22,7 @@ from .workflow import WorkflowStep, registerStep
 from core.translation import t, lang, addLabels
 from schema.schema import getMetaType, VIEW_HIDE_EMPTY
 from schema.schema import Metafield, Metadatatype
+from core.database.postgres.permission import NodeToAccessRuleset
 from core import db
 
 q = db.query
@@ -38,10 +39,13 @@ def register():
 class WorkflowStep_FileAttachment(WorkflowStep):
 
     def show_workflow_node(self, node, req):
-        print req.params
+        # print req.params
 
-        if self.getAccess('data') != self.getAccess('write'):  # set access for download same as edit (only once needed)
-            self.setAccess('data', self.getAccess('write'))
+        # set access for download same as edit (only once needed)
+        for r in self.access_ruleset_assocs.filter_by(ruletype='write'):
+            if self.access_ruleset_assocs.filter_by(ruleset_name=r.ruleset_name, ruletype='data').first() is None:
+                self.access_ruleset_assocs.append(NodeToAccessRuleset(ruleset_name=r.ruleset_name, ruletype='data'))
+                db.session.commit()
 
         if "gotrue" in req.params:
             return self.forwardAndShow(node, True, req)

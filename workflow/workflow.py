@@ -28,10 +28,10 @@ from utils.utils import *
 from core.xmlnode import getNodeXML, readNodeXML
 
 import utils.date as date
-import core.acl as acl
 from core.translation import t, lang, addLabels, getDefaultLanguage, switch_language
 from core.users import get_guest_user
 from core.transition import current_user
+from core.database.postgres.permission import NodeToAccessRuleset
 
 import thread
 
@@ -55,7 +55,8 @@ def getWorkflow(name):
 
 
 def addWorkflow(name, description):
-    node = q(Workflows).one().children.append(Workflow(name))
+    node = Workflow(name=name, type=u'workflow')
+    q(Workflows).one().children.append(node)
     node.set("description", description)
     db.session.commit()
 
@@ -63,14 +64,21 @@ def addWorkflow(name, description):
 def updateWorkflow(name, description, origname="", writeaccess=""):
     if origname == "":
         node = q(Workflows).one()
-        if not node.children.filter_by(name=name).scalar():
+        if node.children.filter_by(name=name).scalar() is None:
             addWorkflow(name, description)
         w = q(Workflows).one().children.filter_by(name=name).one()
     else:
         w = q(Workflows).one().children.filter_by(name=origname).one()
-        w.set("name", name)
+        w.name = name
+        db.session.commit()
     w.set("description", description)
-    w.setAccess("write", writeaccess)
+
+    # TODO: is this part necessary?
+    if not writeaccess:
+        for r in w.access_ruleset_assocs.filter_by(ruletype=u'write'):
+            db.session.delete(r)
+    else:
+        w.access_ruleset_assocs.append(NodeToAccessRuleset(ruleset_name=writeaccess, ruletype=u'write'))
     db.session.commit()
 
 
@@ -83,9 +91,11 @@ def deleteWorkflow(id):
 
 def inheritWorkflowRights(name, type):
     w = getWorkflow(name)
-    ac = w.getAccess(type)
+    ac = w.access_ruleset_assocs.filter_by(ruletype=type)
     for step in w.children:
-        step.setAccess(type, ac)
+        for r in ac:
+            if step.access_ruleset_assocs.filter_by(ruleset_name=r.ruleset_name, ruletype=type).first() is None:
+                step.access_ruleset_assocs.append(NodeToAccessRuleset(ruleset_name=r.ruleset_name, ruletype=type))
     db.session.commit()
 
 
@@ -157,8 +167,8 @@ def createWorkflowStep(name="", type="workflowstep", trueid="", falseid="", true
 def updateWorkflowStep(workflow, oldname="", newname="", type="workflowstep", trueid="", falseid="", truelabel="",
                        falselabel="", sidebartext='', pretext="", posttext="", comment='', adminstep=""):
     n = workflow.getStep(oldname)
-    n.set("name", newname)
-    n.set("type", type)
+    n.name = newname
+    n.type = type
     n.set("truestep", trueid)
     n.set("falsestep", falseid)
     n.set("truelabel", truelabel)
@@ -207,15 +217,14 @@ def registerWorkflowStep(nodename, cls):
 def getWorkflowTypes():
     return workflowtypes
 
-
-def workflowSearch(nodes, text, access=None):
+def workflowSearch(nodes, text):
     text = text.strip()
     if text == "":
         return []
 
     ret = []
     for node in filter(lambda x: x.type == 'workflow', nodes):
-        for n in node.getSteps(access, "write"):
+        for n in node.getSteps("write"):
             for c in n.children:
                 if text == "*":
                     ret += [c]
@@ -261,7 +270,7 @@ def importWorkflow(filename):
             importlist.append(ch)
     workflows = q(Workflows).one()
     for w in importlist:
-        w.attrs["name"] = "import_" + w.name
+        w.name = "import_" + w.name
         workflows.children.append(w)
     db.session.commit()
 
@@ -269,18 +278,16 @@ def importWorkflow(filename):
 class Workflows(Node):
 
     def show_node_big(node, req, template="workflow/workflow.html", macro="workflowlist"):
-        access = acl.AccessData(req)
-
         list = []
         for workflow in getWorkflowList():
-            if access.hasWriteAccess(workflow):
+            if workflow.has_write_access():
                 list += [workflow]
         return req.getTAL(
             template, {
                 "list": list, "search": req.params.get(
                     "workflow_search", ""), "items": workflowSearch(
                     list, req.params.get(
-                        "workflow_search", ""), access), "getStep": getNodeWorkflowStep, "format_date": formatItemDate}, macro=macro)
+                        "workflow_search", "")), "getStep": getNodeWorkflowStep, "format_date": formatItemDate}, macro=macro)
 
     @classmethod
     def isContainer(cls):
@@ -296,15 +303,14 @@ class Workflows(Node):
 class Workflow(Node):
 
     def show_node_big(node, req, template="workflow/workflow.html", macro="object_list"):
-        access = acl.AccessData(req)
-        if not access.hasWriteAccess(node):
+        if not node.has_write_access():
             return '<i>' + t(lang(req), "permission_denied") + '</i>'
         return req.getTAL(
             template, {
-                "workflow": node, "access": access, "search": req.params.get(
+                "workflow": node, "search": req.params.get(
                     "workflow_search", ""), "items": workflowSearch(
                     [node], req.params.get(
-                        "workflow_search", ""), access), "getStep": getNodeWorkflowStep, "format_date": formatItemDate}, macro=macro)
+                        "workflow_search", "")), "getStep": getNodeWorkflowStep, "format_date": formatItemDate}, macro=macro)
 
     def getId(self):
         return self.name
@@ -343,10 +349,11 @@ class Workflow(Node):
         self.set("description", d)
         db.session.commit()
 
-    def getSteps(self, access=None, accesstype="read"):
+    def getSteps(self, accesstype=''):
         steps = self.children
-        if access:
-            return access.filter(steps, accesstype=accesstype)
+        if accesstype:
+            # TODO: is this access part sufficient?
+            return [s for s in steps if s.has_access(accesstype=accesstype)]
         else:
             return steps
 
@@ -402,7 +409,6 @@ class WorkflowStep(Node):
         workflow_lock.acquire()
 
         try:
-            access = acl.AccessData(req)
             key = req.params.get("key", req.session.get("key", ""))
             req.session["key"] = key
 
@@ -410,7 +416,7 @@ class WorkflowStep(Node):
                 nodes = [q(Node).get(id) for id in req.params['obj'].split(',')]
 
                 for node in nodes:
-                    if not access.hasWriteAccess(self) and \
+                    if not self.has_write_access() and \
                             (key != node.get("key")):  # no permission
 
                         link = '(' + self.name + ')'
@@ -421,7 +427,7 @@ class WorkflowStep(Node):
                             return ""
 
                 if 'action' in req.params:
-                    if access.hasWriteAccess(self):
+                    if self.has_write_access():
                         if req.params.get('action') == 'delete':
                             for node in nodes:
                                 for parent in node.parents:
@@ -485,8 +491,7 @@ class WorkflowStep(Node):
         return req.getTAL("workflow/workflow.html", {"node": node, "name": self.name}, macro="workflow_node")
 
     def show_workflow_step(self, req):
-        access = acl.AccessData(req)
-        if not access.hasWriteAccess(self):
+        if not self.has_write_access():
             return '<i>' + t(lang(req), "permission_denied") + '</i>'
         c = []
         for item in self.children:

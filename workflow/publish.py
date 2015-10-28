@@ -19,6 +19,10 @@
 """
 from .workflow import WorkflowStep, registerStep
 from core import db
+from core.database.postgres.permission import AccessRule
+from core import UserGroup
+q = db.query
+
 
 def register():
     #tree.registerNodeClass("workflowstep-publish", WorkflowStep_Publish)
@@ -28,12 +32,16 @@ def register():
 class WorkflowStep_Publish(WorkflowStep):
 
     def runAction(self, node, op=""):
-        newaccess = []
-        a = node.getAccess("read")
-        if a and not a.startswith("{date >="):
-            for right in a.split(','):
-                if right != "{user workflow}":
-                    newaccess += [right]
-                node.setAccess("read", ",".join(newaccess))
+
+        ugid = q(UserGroup).filter_by(name=u'Workflow').one().id
+
+        # remove access rule with 'Workflow' user group id
+        for e in node.access_rule_assocs.filter_by(ruletype=u'read'):
+            ar = q(AccessRule).get(e.rule_id)
+            if ar and ar.group_ids and (ugid in ar.group_ids):
+                node.access_rule_assocs.filter_by(rule_id=ar.id).delete()
+                db.session.delete(ar)
+
         db.session.commit()
+
         self.forward(node, True)

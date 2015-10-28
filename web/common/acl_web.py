@@ -17,20 +17,20 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import core.acl as acl
 from core.translation import translate, lang
-from warnings import warn
+from core.database.postgres.permission import AccessRuleset
+from core import db
+
+q = db.query
 
 
 def makeList(req, name, rights, readonlyrights, overload=0, type=""):
-    warn("this is broken, acl...", DeprecationWarning)
-    return {}
     rightsmap = {}
     rorightsmap = {}
     for r in rights:
         rightsmap[r] = None
 
-    rulelist = acl.getRuleList()
+    rulelist = q(AccessRuleset).all()
 
     val_left = ""
     val_right = ""
@@ -38,12 +38,12 @@ def makeList(req, name, rights, readonlyrights, overload=0, type=""):
     if not (len(rightsmap) > 0 and overload):
         # inherited standard rules
         for rule in rulelist:
-            if rule.getName() in readonlyrights:
-                if rule.getDescription().startswith("{"):
+            if rule.name in readonlyrights:
+                if rule.description.startswith("{"):
                     val_left += """<optgroup label="%s"></optgroup>""" % (translate("edit_acl_special_rule", lang(req)))
                 else:
-                    val_left += """<optgroup label="%s"></optgroup>""" % (rule.getDescription())
-                rorightsmap[rule.getName()] = 1
+                    val_left += """<optgroup label="%s"></optgroup>""" % rule.description
+                rorightsmap[rule.name] = 1
 
         # inherited implicit rules
         for rule in readonlyrights:
@@ -51,13 +51,13 @@ def makeList(req, name, rights, readonlyrights, overload=0, type=""):
                 if rule.startswith("{"):
                     val_left += """<optgroup label="%s"></optgroup>""" % (translate("edit_acl_special_rule", lang(req)))
                 else:
-                    val_left += """<optgroup label="%s"></optgroup>""" % (rule)
+                    val_left += """<optgroup label="%s"></optgroup>""" % rule
 
     # node-level standard rules
     for rule in rulelist:
-        if rule.getName() in rightsmap:
-            val_left += """<option value="%s">%s</option>""" % (rule.getName(), rule.getDescription())
-            rightsmap[rule.getName()] = 1
+        if rule.name in rightsmap:
+            val_left += """<option value="%s">%s</option>""" % (rule.name, rule.description)
+            rightsmap[rule.name] = 1
 
     # node-level implicit rules
     for r in rightsmap.keys():
@@ -68,6 +68,6 @@ def makeList(req, name, rights, readonlyrights, overload=0, type=""):
                 val_left += """<option value="%s">%s</option>""" % (r, r)
 
     for rule in rulelist:
-        if rule.getName() not in rightsmap and rule.getName() not in rorightsmap:
-            val_right += """<option value="%s">%s</option>""" % (rule.getName(), rule.getDescription())
+        if rule.name not in rightsmap and rule.name not in rorightsmap:
+            val_right += """<option value="%s">%s</option>""" % (rule.name, rule.description)
     return {"name": name, "val_left": val_left, "val_right": val_right, "type": type}

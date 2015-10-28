@@ -24,7 +24,6 @@ import traceback
 
 import core.config as config
 
-from core.acl import getRuleList
 from workflow.workflow import Workflow, getWorkflowList, getWorkflow, updateWorkflow, addWorkflow, deleteWorkflow, inheritWorkflowRights, getWorkflowTypes, updateWorkflowStep, createWorkflowStep, deleteWorkflowStep, exportWorkflow, importWorkflow
 from web.admin.adminutils import Overview, getAdminStdVars, getFilter, getSortCol
 from schema.schema import parseEditorData
@@ -32,6 +31,7 @@ from web.common.acl_web import makeList
 from utils.utils import removeEmptyStrings
 from core.translation import t, lang
 from core import db
+from core.database.postgres.permission import NodeToAccessRuleset
 
 logg = logging.getLogger(__name__)
 
@@ -98,17 +98,27 @@ def validate(req, op):
                     if "wf_language" in req.params:
                         wf.set('languages', req.params.get('wf_language'))
                     else:
-                        wf.removeAttribute('languages')
-                    wf.setAccess("read", "")
+                        if wf.get('languages'):
+                            del wf.attrs['languages']
+
+                    for r in wf.access_ruleset_assocs.filter_by(ruletype=u'read'):
+                        db.session.delete(r)
+
                     for key in req.params.keys():
                         if key.startswith("left_read"):
-                            wf.setAccess(key[9:], req.params.get(key).replace(";", ","))
+                            for r in req.params.get(key).split(';'):
+                                wf.access_ruleset_assocs.append(NodeToAccessRuleset(ruleset_name=r, ruletype=key[9:]))
                             break
-                    wf.setAccess("write", "")
+
+                    for r in wf.access_ruleset_assocs.filter_by(ruletype=u'write'):
+                        db.session.delete(r)
+
                     for key in req.params.keys():
                         if key.startswith("left_write"):
-                            wf.setAccess(key[10:], req.params.get(key).replace(";", ","))
+                            for r in req.params.get(key).split(';'):
+                                wf.access_ruleset_assocs.append(NodeToAccessRuleset(ruleset_name=r, ruletype=key[10:]))
                             break
+
                     # check for right inheritance
                     if "write_inherit" in req.params:
                         inheritWorkflowRights(req.params.get("name", ""), "write")
@@ -196,15 +206,22 @@ def validate(req, op):
                 except:
                     wfs = getWorkflow(req.params.get("parent")).getStep(req.params.get("nname", ""))
                 if wfs:
-                    wfs.setAccess("read", "")
+                    for r in wfs.access_ruleset_assocs.filter_by(ruletype=u'read'):
+                        db.session.delete(r)
+
                     for key in req.params.keys():
                         if key.startswith("left_read"):
-                            wfs.setAccess(key[9:], req.params.get(key).replace(";", ","))
+                            for r in req.params.get(key).split(';'):
+                                wfs.access_ruleset_assocs.append(NodeToAccessRuleset(ruleset_name=r, ruletype=key[9:]))
                             break
-                    wfs.setAccess("write", "")
+
+                    for r in wfs.access_ruleset_assocs.filter_by(ruletype=u'write'):
+                        db.session.delete(r)
+
                     for key in req.params.keys():
                         if key.startswith("left_write"):
-                            wfs.setAccess(key[10:], req.params.get(key).replace(";", ","))
+                            for r in req.params.get(key).split(';'):
+                                wfs.access_ruleset_assocs.append(NodeToAccessRuleset(ruleset_name=r, ruletype=key[10:]))
                             break
                     db.session.commit()
 
@@ -226,7 +243,6 @@ def view(req):
     workflows = list(getWorkflowList())
     order = getSortCol(req)
     actfilter = getFilter(req)
-
     # filter
     if actfilter != "":
         if actfilter in ("all", "*", t(lang(req), "admin_filter_all")):
@@ -248,10 +264,10 @@ def view(req):
             workflows.sort(lambda x, y: cmp(x.name, y.name))
         elif int(order[0:1]) == 2:
             workflows.sort(lambda x, y: cmp(x.getDescription(), y.getDescription()))
-        elif int(order[0:1]) == 3:
-            workflows.sort(lambda x, y: cmp(x.getAccess("read"), y.getAccess("read")))
-        elif int(order[0:1]) == 4:
-            workflows.sort(lambda x, y: cmp(x.getAccess("write"), y.getAccess("write")))
+        # elif int(order[0:1]) == 3:
+            # workflows.sort(lambda x, y: cmp(x.getAccess("read"), y.getAccess("read")))
+        # elif int(order[0:1]) == 4:
+            # workflows.sort(lambda x, y: cmp(x.getAccess("write"), y.getAccess("write")))
         if int(order[1:]) == 1:
             workflows.reverse()
 
@@ -284,23 +300,27 @@ def WorkflowDetail(req, id, err=0):
     else:
         # error
         workflow = Workflow(u"")
-        workflow.set("name", req.params.get("name", ""))
+        workflow.name = req.params.get("name", "")
         workflow.set("description", req.params.get("description", ""))
-        db.session.commit()
         #workflow.setAccess("write", req.params.get("writeaccess", ""))
         v["original_name"] = req.params.get("orig_name", "")
-        workflow.set("id", req.params.get("id"))
+        workflow.id = req.params.get("id")
+        db.session.commit()
 
     # XXX: just shut it down...
-#     rule = {"read": ustr(workflow.getAccess("read") or "").split(","), "write": ustr(workflow.getAccess("write") or "").split(",")}
-    rule = {"read":[], "write":[]}
+    # rule = {"read": ustr(workflow.getAccess("read") or "").split(","), "write": ustr(workflow.getAccess("write") or "").split(",")}
+
+    try:
+        rule = {"read": [r.ruleset_name for r in workflow.access_ruleset_assocs.filter_by(ruletype='read')],
+                "write": [r.ruleset_name for r in workflow.access_ruleset_assocs.filter_by(ruletype='write')]}
+    except:
+        rule = {"read": [], "write": []}
 
     v["acl_read"] = makeList(req, "read", removeEmptyStrings(rule["read"]), {}, overload=0, type="read")
     v["acl_write"] = makeList(req, "write", removeEmptyStrings(rule["write"]), {}, overload=0, type="write")
     v["workflow"] = workflow
     v["languages"] = config.languages
     v["error"] = err
-    v["rules"] = getRuleList()
     v["actpage"] = req.params.get("actpage")
     return req.getTAL("web/admin/modules/workflows.html", v, macro="modify")
 
@@ -342,10 +362,10 @@ def WorkflowStepList(req, wid):
             workflowsteps.sort(lambda x, y: cmp(x.getFalseId(), y.getFalseId()))
         elif int(order[0]) == 4:
             workflowsteps.sort(lambda x, y: cmp(len(x.get("description")), len(y.get("description"))))
-        elif int(order[0]) == 5:
-            workflowstep.sort(lambda x, y: cmp(x.getAccess("read"), y.getAccess("read")))
-        elif int(order[0]) == 6:
-            workflowstep.sort(lambda x, y: cmp(x.getAccess("write"), y.getAccess("write")))
+        # elif int(order[0]) == 5:
+            # workflowstep.sort(lambda x, y: cmp(x.getAccess("read"), y.getAccess("read")))
+        # elif int(order[0]) == 6:
+            # workflowstep.sort(lambda x, y: cmp(x.getAccess("write"), y.getAccess("write")))
         if int(order[1]) == 1:
             workflowsteps.reverse()
     else:
@@ -438,7 +458,12 @@ def WorkflowStepDetail(req, wid, wnid, err=0):
     v_part["node"] = workflowstep
     v_part["hiddenvalues"] = {"wnodeid": workflowstep.name}
 
-    rule = {"read": unicode(workflowstep.getAccess("read") or "").split(","), "write": unicode(workflowstep.getAccess("write") or "").split(",")}
+    try:
+        rule = {"read": [r.ruleset_name for r in workflowstep.access_ruleset_assocs.filter_by(ruletype='read')],
+                "write": [r.ruleset_name for r in workflowstep.access_ruleset_assocs.filter_by(ruletype='write')]}
+    except:
+        rule = {"read": [], "write": []}
+
     v["acl_read"] = makeList(req, "read", removeEmptyStrings(rule["read"]), {}, overload=0, type="read")
     v["acl_write"] = makeList(req, "write", removeEmptyStrings(rule["write"]), {}, overload=0, type="write")
     v["editor"] = req.getTAL("web/admin/modules/workflows.html", v_part, macro="view_editor")

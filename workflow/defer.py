@@ -26,6 +26,9 @@ from .workflow import WorkflowStep, registerStep
 from core.translation import t, addLabels
 from core import db
 from schema.schema import Metafield
+from core.database.postgres.permission import AccessRule, NodeToAccessRule
+from psycopg2._range import DateRange
+import datetime
 
 q = db.query
 
@@ -62,8 +65,16 @@ class WorkflowStep_Defer(WorkflowStep):
                 try:
                     node.set('updatetime', date.format_date(date.parse_date(l_date)))
                     formated_date = date.format_date(date.parse_date(l_date), "dd.mm.yyyy")
+                    d = formated_date.split('.')
+                    dateranges = set([DateRange(datetime.date(int(d[2]), int(d[1]), int(d[0])), datetime.date(9999, 12, 31), '[)')])
                     for item in self.get('accesstype').split(';'):
-                        node.setAccess(item, "{date >= %s}" % formated_date)
+                        rule = AccessRule()
+                        db.session.add(rule)
+                        node.access_rule_assocs.append(NodeToAccessRule(rule=rule, ruletype=item))
+                        db.session.commit()
+                        q(AccessRule).get(rule.id).dateranges = dateranges
+                        db.session.commit()
+
                     node.getLocalRead()
 
                     if self.get('recipient'):  # if the recipient-email was entered, create a scheduler
@@ -74,7 +85,6 @@ class WorkflowStep_Defer(WorkflowStep):
                                      'attr_body': self.get('body')}
 
                         schedules.create_schedule("WorkflowStep_Defer", attr_dict)
-                    db.session.commit()
                 except ValueError:
                     logg.exception("exception in workflow step defer, runAction failed")
 

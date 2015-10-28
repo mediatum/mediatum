@@ -96,7 +96,7 @@
                 <th i18n:translate="wf_edit_stepname">TEXT</th>
                 <th i18n:translate="wf_edit_stepitems">TEXT</th>
             </tr>
-            <tal:block tal:repeat="step python:workflow.getSteps(access, 'write')">
+            <tal:block tal:repeat="step python:workflow.getSteps('write')">
                 <tr tal:attributes="bgcolor python:step.get('adminstep') and '#bec2d3' or None">
                     <td align="left"><b tal:content="python:step.getName()"></b></td>
                     <td align="left"><a tal:attributes="href python:'/mask?id=' + ustr(step.id)" i18n:translate="wf_list_objects"><span tal:content="python:unicode(len(step.getChildren()))" i18n:name="number"/> TEXT</a></td>

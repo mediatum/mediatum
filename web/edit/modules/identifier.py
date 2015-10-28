@@ -34,6 +34,7 @@ import logging
 from core import Node, User
 from core import db
 from contenttypes import Collections
+from core.database.postgres.permission import AccessRule, NodeToAccessRule
 
 q = db.query
 logg = logging.getLogger(__name__)
@@ -47,7 +48,7 @@ def getContent(req, ids):
     """
     user = current_user
     node = q(Node).get(ids[0])
-    access_nobody = 'nicht Jeder'
+    # access_nobody = u'nicht Jeder'
 
     # first prove if the user has the required rights to call this module
     if 'sortfiles' in user.hidden_edit_functions or not node.has_write_access():
@@ -95,15 +96,12 @@ def getContent(req, ids):
                     node.set('system.identifierstate', u'2')
                     db.session.commit()
 
-                    # TODO: required anymore?
-                    '''
                     # add nobody rule if not set
-                    if node.getAccess('write') is None:
-                        node.setAccess('write', access_nobody)
-                    else:
-                        if access_nobody not in node.getAccess('write'):
-                            node.setAccess('write', ','.join([node.getAccess('write'), access_nobody]))
-                    '''
+                    if node.access_rule_assocs.filter_by(ruletype=u'write', invert=True, blocking=True).scalar() is None:
+                        everybody_rule = AccessRule()
+                        db.session.add(everybody_rule)
+                        node.access_rule_assocs.append(NodeToAccessRule(rule=everybody_rule, ruletype=u"write", invert=True, blocking=True))
+                        db.session.commit()
 
                 try:
                     mailtext = req.getTAL('web/edit/modules/identifier.html', v, macro='generate_identifier_usr_mail_2')
@@ -158,16 +156,12 @@ def getContent(req, ids):
                         node.set('system.identifierstate', u'1')
                         db.session.commit()
 
-                        # TODO: required anymore?
-                        '''
-                        # add nobody rule
-                        print node.getAccess('write')
-                        if node.getAccess('write') is None:
-                            node.setAccess('write', access_nobody)
-                        else:
-                            if access_nobody not in node.getAccess('write'):
-                                node.setAccess('write', ','.join([node.getAccess('write'), access_nobody]))
-                        '''
+                        # add nobody rule if not set
+                        if node.access_rule_assocs.filter_by(ruletype=u'write', invert=True, blocking=True).scalar() is None:
+                            everybody_rule = AccessRule()
+                            db.session.add(everybody_rule)
+                            node.access_rule_assocs.append(NodeToAccessRule(rule=everybody_rule, ruletype=u"write", invert=True, blocking=True))
+                            db.session.commit()
 
                     except mail.SocketError:
                         logg.exception('failed to send identifier request mail')

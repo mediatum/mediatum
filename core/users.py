@@ -66,9 +66,6 @@ def getExternalAuthentificators():
     raise Exception("use auth.authenticators")
 
 
-def get_guest_user():
-    return q(User).filter_by(login_name=config.get("user.guestuser")).one()
-
 def user_from_session(session):
     user_id = session.get("user_id")
     if user_id is None:

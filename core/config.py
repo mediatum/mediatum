@@ -147,7 +147,7 @@ def initialize(filepath=None):
         print("using config file at", filepath)
         settings = _read_ini_file(basedir, filepath)
     else:
-        print("WARNING: config file %s not found, using default test config!", filepath)
+        print("WARNING: config file", filepath, "not found, using default test config!")
         settings = {}
 
     languages = [lang.strip() for lang in settings.get("i18n.languages", "en").split(",") if lang.strip()]

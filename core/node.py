@@ -82,7 +82,7 @@ class NodeMixin(object):
         warn("deprecated, use Node.files instead", DeprecationWarning)
         return list(self.files)
 
-    def get(self, key, default=""):
+    def get(self, key, default=u""):
         return self.attrs.get(key, default)
 
     def set(self, key, value):
@@ -140,7 +140,7 @@ class NodeMixin(object):
             return format_date(parse_date(self.get('creationtime')), '%d.%m.%Y, %H:%M:%S')
         return ''
 
-    def get_special(self, valuename):
+    def get_special(self, valuename, default=u""):
         '''Attribute getter with special cases for attributes of the node object; 'node.id', 'node.name'/'nodename', 'node.type', 'orderpos'
         This works like the old Node.get method.'''
         if valuename.startswith('node'):
@@ -153,7 +153,7 @@ class NodeMixin(object):
             elif valuename == 'node.orderpos':
                 return self.orderpos
         else:
-            return self.get(valuename)
+            return self.get(valuename, default)
 
 
     # access stuff

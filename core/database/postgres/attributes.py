@@ -59,6 +59,8 @@ class PythonicJSONElement(JSONElement):
                 return super(JSONElement, self).operate(op, str(other).lower())
             elif isinstance(other, (int, long)):
                 return super(JSONElement, self).operate(op, str(other))
+            elif other is None:
+                return super(JSONElement, self).operate(op, None, **kwargs)
             return super(JSONElement, self).operate(op, dumps(other), **kwargs)
         # multiple operands given
         return super(JSONElement, self).operate(op, *(dumps(o) for o in other), **kwargs)

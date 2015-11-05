@@ -210,36 +210,8 @@ class ContentList(Content):
     def length(self):
         return self.num
 
-    def actual(self):
-        return "(%d/%d)" % (int(self.nr) + 1, self.num)
-
     def in_list(self, id):
         return id in self.id2pos
-
-    def link_first(self):
-        self.id2pos[self.nodes[0].id] = 0
-        return "/node?id=" + unicode(self.nodes[0].id)
-
-    def link_last(self):
-        self.id2pos[self.nodes[self.num - 1].id] = self.num - 1
-        return "/node?id=" + unicode(self.nodes[self.num - 1].id)
-
-    def link_prev(self):
-        if self.nr > 0:
-            self.id2pos[self.nodes[self.nr - 1].id] = self.nr - 1
-            return "/node?id=" + unicode(self.nodes[self.nr - 1].id)
-        else:
-            return self.link_first()
-
-    def link_next(self):
-        if self.nr < self.num - 1:
-            self.id2pos[self.nodes[self.nr + 1].id] = self.nr + 1
-            return "/node?id=" + unicode(self.nodes[self.nr + 1].id)
-        else:
-            return self.link_last()
-
-    def link_back(self):
-        return "node?back=y"
 
     def nav_link(self, **param_overrides):
         params = dict(id=self.container_id, **self.nav_params)
@@ -361,51 +333,6 @@ class ContentList(Content):
         else:
             return getContentStyles("smallview")  # , self.collection.get("style") or "default")
 
-    def _page_nav_numbers(self, nodes_per_page, language, req):
-        nav_list = []
-        nav_page = []
-        files = []
-
-        min = 0
-        max = (self.num + nodes_per_page - 1) / nodes_per_page - 1
-        left = self.page - 6
-        right = self.page + 6
-
-        if left < 0:
-            left = 0
-        if right > max or right >= max - 2:
-            right = max
-        if left <= min + 2:
-            left = min
-
-        if left > min:
-            nav_list.append("/node?page=" + unicode(min))
-            nav_list.append('...')
-            nav_page.append(min)
-            nav_page.append(-1)
-
-        for a in range(left, right + 1):
-            nav_list.append("/node?page=" + unicode(a))
-            nav_page.append(a)
-
-        if right < max:
-            nav_list.append('...')
-            nav_list.append("/node?page=" + unicode(max))
-            nav_page.append(-1)
-            nav_page.append(max)
-
-        displayed_nodes = self.nodes.offset(self.page * nodes_per_page).limit(nodes_per_page).all()
-        for pos, node in enumerate(displayed_nodes):
-            self.id2pos[node.id] = pos
-            files.append(SingleFile(node, pos, self.num, language=language))
-
-        ctx = {
-            "nav_list": nav_list, "nav_page": nav_page, "act_page": self.page
-        }
-
-        page_nav = tal.getTAL(theme.getTemplate("content_nav.html"), ctx, macro="page_nav_numbers", language=language)
-        return page_nav, files
-
     def _page_nav_prev_next(self, nodes_per_page, language, req):
         q_nodes = self.nodes
         # self.after set <=> moving to next page
@@ -510,12 +437,7 @@ class ContentList(Content):
 
         liststyle = getContentStyles("smallview", ls)
 
-        if "page" in req.args or "pagenav" in req.args:
-            # old page navigation
-            page_nav, files = self._page_nav_numbers(nodes_per_page, language, req)
-        else:
-            # new prev next navigation
-            page_nav, files = self._page_nav_prev_next(nodes_per_page, language, req)
+        page_nav, files = self._page_nav_prev_next(nodes_per_page, language, req)
 
         ctx = {
             "page_nav": page_nav,

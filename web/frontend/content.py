@@ -87,8 +87,9 @@ class SingleFile(object):
         return self.node
 
 
-def prepare_sortfields(node, sortfields):
+def prepare_sortfields(node, pos_to_sortfield):
     sortfields_to_comp = OrderedDict()
+    sortfields = pos_to_sortfield.values()
 
     for sortfield in sortfields:
         if sortfield[0] == "-":
@@ -97,11 +98,16 @@ def prepare_sortfields(node, sortfields):
         else:
             order = "asc"
 
-        sortfields_to_comp[sortfield] = (order, node.get_special(sortfield))
+        if node is None:
+            value = None
+        else:
+            value = node.get_special(sortfield, default=None)
+
+        sortfields_to_comp[sortfield] = (order, value)
 
     # sort position must always be unique. That means that the node id must be part of the position key.
     if not "node.id" in sortfields:
-        sortfields_to_comp["node.id"] = ("desc", node.id)
+        sortfields_to_comp["node.id"] = ("desc", node.id if node is not None else None)
 
     return sortfields_to_comp
 
@@ -119,12 +125,11 @@ def node_value_expression(name):
 comparisons = {
     "asc": (lambda l, r: l > r),
     "desc": (lambda l, r: l < r),
-    "eq": (lambda l, r: l == r),
 }
 
 comparisons_inv = {
-    "asc": (lambda l, r: l < r),
-    "desc": (lambda l, r: l > r),
+    "asc": comparisons["desc"],
+    "desc": comparisons["asc"]
 }
 
 
@@ -133,10 +138,15 @@ def make_cond(name_to_comp, invert=False):
     name, (op_name, val) = name_to_comp
     node_expr = node_value_expression(name)
 
+    if val is None:
+        if invert:
+            return node_expr != None
+        return
+
     if invert:
         return comparisons_inv[op_name](node_expr, val)
     else:
-        return comparisons[op_name](node_expr, val)
+        return comparisons[op_name](node_expr, val) | (node_expr == None)
 
 
 def position_filter(sortfields_to_comp, after=False, before=False):
@@ -154,15 +164,20 @@ def position_filter(sortfields_to_comp, after=False, before=False):
     for sortfield_to_comp in iter_sortfield:
         # We are doing a "tuple" comparision here. If the first field is equivalent, we have to compare the seconds field and so on.
         # first add comparison for current field...
-        sub_cond = make_cond(sortfield_to_comp)
+        sub_cond = make_cond(sortfield_to_comp, invert=before)
         # ... and add equivalence conditions for previous fields
         for prev in prev_sortfields_to_comp:
-            sub_cond &= node_value_expression(prev[0]) == prev[1][1]
+            expr = node_value_expression(prev[0])
+            eq_cond = expr == prev[1][1]
+            sub_cond &= eq_cond
 
         prev_sortfields_to_comp.append(sortfield_to_comp)
 
         # or-append condition for current field to full condition
-        cond |= sub_cond
+        if cond is None:
+            cond = sub_cond
+        else:
+            cond |= sub_cond
 
     return cond
 
@@ -189,7 +204,7 @@ class ContentList(Content):
         self.id2pos = {}
         self.liststyle_name = None
         self.collection = collection
-        self.sortfields = []
+        self.sortfields = OrderedDict()
         self.default_fullstyle_name = None
 
         coll_default_full_style_name = collection.get("style_full")
@@ -214,7 +229,7 @@ class ContentList(Content):
         return id in self.id2pos
 
     def nav_link(self, **param_overrides):
-        params = dict(id=self.container_id, **self.nav_params)
+        params = self.nav_params.copy()
         if self.liststyle_name:
             params["style"] = self.liststyle_name
         if self.nodes_per_page:
@@ -267,10 +282,12 @@ class ContentList(Content):
             key = "sortfield" + str(i)
             if key not in req.args:
                 break
-            self.sortfields.append(req.args[key])
+            sortfield = req.args[key].strip()
+            if sortfield:
+                self.sortfields[i] = req.args[key]
 
         if not self.sortfields:
-            self.sortfields = ["-node.id"]
+            self.sortfields[0] = u"-node.id"
 
         self.content = None
         if self.nr >= 0 and self.nr < self.num:
@@ -279,14 +296,14 @@ class ContentList(Content):
         self.liststyle_name = req.args.get("style")
 
         self.nav_params = {k: v for k, v in req.args.items()
-                           if k not in ("before", "after", "style", "sortfield", "page", "id", "nodes_per_page")}
+                           if k not in ("before", "after", "style", "sortfield", "page", "nodes_per_page")}
 
         if self.content:
             return self.content.feedback(req)
 
     def getSortFieldsList(self):
-        return []
-        class SortChoice:
+
+        class SortChoice(object):
 
             def __init__(self, label, value, descending, selected):
                 self.label = label
@@ -308,19 +325,20 @@ class ContentList(Content):
         l = []
         ok = 0
         for i in range(SORT_FIELDS):
-            sortfields = []
+            sort_choice = []
             if self.num:
-                if not self.sortfields[i]:
-                    sortfields += [SortChoice("", "", 0, "")]
+                sortfield = self.sortfields.get(i)
+                if not sortfield:
+                    sort_choice += [SortChoice("", "", 0, "")]
                 else:
-                    sortfields += [SortChoice("", "", 0, "not selected")]
+                    sort_choice += [SortChoice("", "", 0, "not selected")]
                 for field in self.nodes[0].getMetaFields():
                     if "o" in field.getOption():
-                        sortfields += [SortChoice(field.getLabel(), field.getName(), 0, self.sortfields[i])]
-                        sortfields += [SortChoice(field.getLabel() + t(self.lang, "descending"),
-                                                  "-" + field.getName(), 1, self.sortfields[i])]
-            l += [sortfields]
-            if len(sortfields) > 1:
+                        sort_choice += [SortChoice(field.getLabel(), field.getName(), 0, sortfield)]
+                        sort_choice += [SortChoice(field.getLabel() + t(self.lang, "descending"),
+                                                  "-" + field.getName(), 1, sortfield)]
+            l += [sort_choice]
+            if len(sort_choice) > 1:
                 ok = 1
         if not ok:
             return []
@@ -345,18 +363,28 @@ class ContentList(Content):
             sortfields_to_comp = prepare_sortfields(comp_node, self.sortfields)
             position_cond = position_filter(sortfields_to_comp, self.after, self.before)
             q_nodes = q_nodes.filter(position_cond)
+        else:
+            # first page
+            sortfields_to_comp = prepare_sortfields(None, self.sortfields)
 
 
-        for sortfield in self.sortfields:
-            if sortfield.startswith("-"):
+        for sortfield, (order, _) in iteritems(sortfields_to_comp):
+            if order == "desc":
                 desc = not bool(self.before)
-                sortfield = sortfield[1:]
             else:
                 desc = bool(self.before)
 
             expr = node_value_expression(sortfield)
 
-            q_nodes = q_nodes.order_by(expr.desc() if desc else expr)
+            if desc:
+                expr = expr.desc()
+
+            if self.before:
+                expr = expr.nullsfirst()
+            else:
+                expr = expr.nullslast()
+
+            q_nodes = q_nodes.order_by(expr)
 
         # get one more to find out if there are more nodes available
 
@@ -376,10 +404,9 @@ class ContentList(Content):
         if node_count:
             while node_count <= nodes_per_page:
                 refetch_limit = nodes_per_page - node_count + 1
-                if self.before:
-                    q_additional_nodes = q_nodes.filter(Node.id > nodes[-1].id)
-                else:
-                    q_additional_nodes = q_nodes.filter(Node.id < nodes[-1].id)
+                sortfields_to_comp = prepare_sortfields(nodes[-1], self.sortfields)
+                position_cond = position_filter(sortfields_to_comp, self.after or not self.before, self.before)
+                q_additional_nodes = q_nodes.filter(position_cond)
 
                 additional_nodes = q_additional_nodes.limit(refetch_limit).prefetch_attrs().all()
                 if not additional_nodes:
@@ -441,8 +468,9 @@ class ContentList(Content):
 
         ctx = {
             "page_nav": page_nav,
+            "nav": self,
             "files": files,
-            "sortfields": self.sortfields, "sortfieldslist": self.getSortFieldsList(),
+            "sortfieldslist": self.getSortFieldsList(),
             "ids": ",".join(str(f.node.id) for f in files),
             "op": "", "query": req.args.get("query", "")}
 

@@ -247,12 +247,6 @@ class ContentList(Content):
     def select_style_link(self, style):
         return self.nav_link(style=style)
 
-    def nav_link_before(self):
-        return self.nav_link(before=self.next_before)
-
-    def nav_link_after(self):
-        return self.nav_link(after=self.next_after)
-
     def feedback(self, req):
         container_id = req.args.get("id")
         if container_id:
@@ -326,17 +320,16 @@ class ContentList(Content):
         ok = 0
         for i in range(SORT_FIELDS):
             sort_choice = []
-            if self.num:
-                sortfield = self.sortfields.get(i)
-                if not sortfield:
-                    sort_choice += [SortChoice("", "", 0, "")]
-                else:
-                    sort_choice += [SortChoice("", "", 0, "not selected")]
-                for field in self.nodes[0].getMetaFields():
-                    if "o" in field.getOption():
-                        sort_choice += [SortChoice(field.getLabel(), field.getName(), 0, sortfield)]
-                        sort_choice += [SortChoice(field.getLabel() + t(self.lang, "descending"),
-                                                  "-" + field.getName(), 1, sortfield)]
+            sortfield = self.sortfields.get(i)
+            if not sortfield:
+                sort_choice += [SortChoice("", "", 0, "")]
+            else:
+                sort_choice += [SortChoice("", "", 0, "not selected")]
+            for field in self.nodes[0].getMetaFields():
+                if "o" in field.getOption():
+                    sort_choice += [SortChoice(field.getLabel(), field.getName(), 0, sortfield)]
+                    sort_choice += [SortChoice(field.getLabel() + t(self.lang, "descending"),
+                                              "-" + field.getName(), 1, sortfield)]
             l += [sort_choice]
             if len(sort_choice) > 1:
                 ok = 1

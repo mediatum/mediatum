@@ -379,10 +379,12 @@ class ContentList(Content):
             if desc:
                 expr = expr.desc()
 
-            if self.before:
-                expr = expr.nullsfirst()
-            else:
-                expr = expr.nullslast()
+            # attributes can be NULL (means: attribute doesn't exists), so we must be careful about null ordering
+            if not (sortfield.startswith("node.") or sortfield == "nodename"):
+                if self.before:
+                    expr = expr.nullsfirst()
+                else:
+                    expr = expr.nullslast()
 
             q_nodes = q_nodes.order_by(expr)
 

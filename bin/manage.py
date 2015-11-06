@@ -24,11 +24,13 @@ import tempfile
 import warnings
 import pyaml
 import codecs
+import sqlalchemy
 
 sys.path.append(".")
 
 from core import init, config
 from core.database.postgres import db_metadata, mediatumfunc
+from core.database.postgres.alchemyext import exec_sqlfunc
 import configargparse
 
 LOG_FILEPATH = os.path.join(tempfile.gettempdir(), "mediatum_manage.log")
@@ -139,6 +141,43 @@ def data(args):
         import_dump(s, args.sql_dumpfile)
 
 
+def attrindex(args):
+    from schema.schema import Metafield
+    name_or_all = args.name_or_all.lower()
+
+    if name_or_all == "all":
+        # find all search / sort metafields
+        metafield_names = (t[0] for t in q(Metafield.name).filter(Metafield.a.opts.like("%s%") | Metafield.a.opts.like("%o%")).distinct())
+        created_indices = []
+        failed_indices = []
+
+        for attrname in metafield_names:
+            try:
+                created = exec_sqlfunc(s, mediatumfunc.create_attr_index(attrname))
+            except sqlalchemy.exc.OperationalError:
+                logg.exception("failed to create index for " + attrname)
+                s.rollback()
+                failed_indices.append(attrname)
+            else:
+                if created:
+                    s.commit()
+                    created_indices.append(attrname)
+
+        logg.info("created sort / search indices for %s attributes, %s failed: %s",
+                  len(created_indices), len(failed_indices), failed_indices)
+    else:
+        name = name_or_all
+        created = exec_sqlfunc(s, mediatumfunc.create_attr_index(name))
+        if created:
+            s.commit()
+            logg.info("created sort / search indices for attribute '%s'", name)
+        else:
+            logg.info("sort / search indices for attribute '%s' already exist", name)
+
+
+
+
+
 def fulltext(args):
     nid_or_all = args.nid_or_all.lower()
 
@@ -219,6 +258,12 @@ if __name__ == "__main__":
                                 help="remove all data | load default values | import SQL dump into empty database")
     data_subparser.add_argument("sql_dumpfile", nargs="?", help="dump file to load for 'import' command")
     data_subparser.set_defaults(func=data)
+
+    attrindex_subparser = subparsers.add_parser("attrindex", help="database performance index management")
+    attrindex_subparser.add_argument("action", choices=["create"],
+                                help="create search / sort index for attribute")
+    attrindex_subparser.add_argument("name_or_all", help="attribute name to index or all")
+    attrindex_subparser.set_defaults(func=attrindex)
 
     vacuum_subparser = subparsers.add_parser("vacuum", help="run VACUUM on all tables")
     vacuum_subparser.add_argument("action", nargs="?", choices=["analyze"])

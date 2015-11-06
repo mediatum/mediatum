@@ -333,6 +333,7 @@ class PostgresSQLAConnector(object):
 
     def create_functions(self, conn):
         conn.execute(read_and_prepare_sql("mediatum_utils.sql"))
+        conn.execute(read_and_prepare_sql("node_funcs.sql"))
         conn.execute(read_and_prepare_sql("noderelation_funcs.sql"))
         conn.execute(read_and_prepare_sql("json.sql"))
         conn.execute(read_and_prepare_sql("nodesearch.sql"))

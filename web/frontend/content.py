@@ -36,6 +36,7 @@ from web.frontend.searchresult import simple_search, extended_search, SearchResu
 from core.systemtypes import Root
 from contenttypes.container import Container
 from mediatumtal import tal
+from schema.schema import Metadatatype
 
 
 logg = logging.getLogger(__name__)
@@ -318,25 +319,34 @@ class ContentList(Content):
                     return None
         l = []
         ok = 0
+
+        try:
+            first_node = self.nodes[0]
+        except IndexError:
+            return []
+
+        sort_metafields = first_node.metadatatype.metafields.filter(Metadatatype.a.opts.like("%o%"))
+
         for i in range(SORT_FIELDS):
             sort_choice = []
             sortfield = self.sortfields.get(i)
+
             if not sortfield:
                 sort_choice += [SortChoice("", "", 0, "")]
             else:
                 sort_choice += [SortChoice("", "", 0, "not selected")]
-            for field in self.nodes[0].getMetaFields():
-                if "o" in field.getOption():
-                    sort_choice += [SortChoice(field.getLabel(), field.getName(), 0, sortfield)]
-                    sort_choice += [SortChoice(field.getLabel() + t(self.lang, "descending"),
-                                              "-" + field.getName(), 1, sortfield)]
+
+            for field in sort_metafields:
+                sort_choice += [SortChoice(field.label, field.name, 0, sortfield)]
+                sort_choice += [SortChoice(field.label + t(self.lang, "descending"), "-" + field.name, 1, sortfield)]
+
+            if len(sort_choice) < 2:
+                # no choice for the user
+                return []
+
             l += [sort_choice]
-            if len(sort_choice) > 1:
-                ok = 1
-        if not ok:
-            return []
-        else:
-            return l
+
+        return l
 
     def getContentStyles(self):
         if self.content.__class__ == ContentNode:

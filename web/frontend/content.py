@@ -210,8 +210,6 @@ class ContentList(Content):
 
     def __init__(self, node_query, collection, words=None):
 
-        self.nr = -1
-        self.page = 0
         self.nodes_per_page = None
         self.nav_params = None
         self.before = None
@@ -221,7 +219,6 @@ class ContentList(Content):
         self.nodes = node_query
         self._num = -1
         self.content = None
-        self.id2pos = {}
         self.liststyle_name = None
         self.collection = collection
         self.sortfields = OrderedDict()
@@ -244,9 +241,6 @@ class ContentList(Content):
 
     def length(self):
         return self.num
-
-    def in_list(self, id):
-        return id in self.id2pos
 
     def nav_link(self, **param_overrides):
         """
@@ -293,29 +287,12 @@ class ContentList(Content):
         return self.nav_link(style=style)
 
     def feedback(self, req):
-        container_id = req.args.get("id")
-        if container_id:
-            try:
-                self.nr = self.id2pos[container_id]
-            except KeyError:
-                pass  # happens for first node (the directory)
-
-        self.container_id = container_id
+        self.container_id = req.args.get("id")
         self.lang = lang(req)
-
-        if "page" in req.args:
-            self.page = req.args.get("page", type=int)
-            self.nr = -1
-
-        if "before" in req.args or "after" in req.args:
-            self.page = -1
 
         self.before = req.args.get("before", type=int)
         self.after = req.args.get("after", type=int)
         self.nodes_per_page = req.args.get("nodes_per_page", type=int)
-
-        if "back" in req.args:
-            self.nr = -1
 
         for i in range(SORT_FIELDS):
             key = "sortfield" + str(i)

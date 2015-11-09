@@ -20,24 +20,22 @@
 import logging
 from collections import OrderedDict
 import time
+import urllib
 from warnings import warn
 from sqlalchemy import event
 
 import core.config as config
-from schema.schema import getMetadataType
-from utils.utils import Link
+from core import db, users
+from core import Node
 from core.translation import lang, t
 from core.metatype import Context
 from core.styles import theme
-from core import db, User, users
-from contenttypes import Collections, Collection
-from sqlalchemy.orm.exc import NoResultFound
-from core import Node
 from core.systemtypes import Searchmasks, Root
-from contenttypes import Directory, Container
 from core.users import get_guest_user
-import urllib
+from contenttypes import Directory, Container, Collections, Collection
+from schema.schema import getMetadataType
 from utils.compat import iteritems
+from utils.utils import Link
 
 q = db.query
 logg = logging.getLogger(__name__)

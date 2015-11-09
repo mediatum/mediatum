@@ -78,6 +78,16 @@ Node.access_rule_assocs = dynamic_rel(NodeToAccessRule, backref="node", cascade=
 Node.access_ruleset_assocs = dynamic_rel(NodeToAccessRuleset, backref="node", cascade="all, delete-orphan", passive_deletes=True)
 
 
+class IPNetworkList(DeclarativeBase):
+
+    __tablename__ = "ipnetwork_list"
+    __versioned__ = {} 
+
+    name = C(Unicode, primary_key=True)
+    description = C(Unicode)
+    subnets = C(ARRAY(CIDR), index=True)
+
+
 EffectiveNodeToAccessRuleset = map_function_to_mapped_class(mediatumfunc.effective_access_rulesets, NodeToAccessRuleset, "node_id")
 
 
@@ -88,3 +98,5 @@ def _effective_access_ruleset_assocs(self):
 Node.effective_access_ruleset_assocs = property(_effective_access_ruleset_assocs)
 
 AccessRuleset.rule_assocs = rel(AccessRulesetToRule, backref="ruleset")
+
+

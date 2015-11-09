@@ -36,6 +36,7 @@ from contenttypes import Directory, Container, Collections, Collection
 from schema.schema import getMetadataType
 from utils.compat import iteritems
 from utils.utils import Link
+from core.transition import current_user
 
 q = db.query
 logg = logging.getLogger(__name__)
@@ -46,7 +47,18 @@ class Portlet:
     def __init__(self):
         self.folded = 0
         self.name = "common"
-        self.user = get_guest_user()
+        self._user = None
+
+    @property
+    def user(self):
+        if self._user is None:
+            logg.warn("accessed Portlet.user but it's not set; using guest user. Is that correct?")
+            self._user = get_guest_user()
+        return self._user
+
+    @user.setter
+    def user(self, user):
+        self._user = user
 
     def isFolded(self):
         warn("use Portlet.folded()", DeprecationWarning)
@@ -67,7 +79,7 @@ class Portlet:
         return 1
 
     def feedback(self, req):
-        self.user = users.user_from_session(req.session)
+        self.user = current_user
         r = req.params.get(self.name, "")
         if r == "unfold":
             self.open()

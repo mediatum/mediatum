@@ -248,7 +248,7 @@ class ContentList(Content):
         """
         params = self.nav_params.copy()
         if self.liststyle_name:
-            params["style"] = self.liststyle_name
+            params["liststyle"] = self.liststyle_name
         if self.nodes_per_page:
             params["nodes_per_page"] = self.nodes_per_page
 
@@ -284,7 +284,7 @@ class ContentList(Content):
         return u"?id=" + str(self.content.id)
 
     def select_style_link(self, style):
-        return self.nav_link(style=style)
+        return self.nav_link(liststyle=style)
 
     def feedback(self, req):
         self.container_id = req.args.get("id")
@@ -305,7 +305,7 @@ class ContentList(Content):
         if not self.sortfields:
             self.sortfields[0] = u"-node.id"
 
-        self.liststyle_name = req.args.get("style")
+        self.liststyle_name = req.args.get("liststyle")
 
         self.nav_params = {k: v for k, v in req.args.items()
                            if k not in ("before", "after", "style", "sortfield", "page", "nodes_per_page")}

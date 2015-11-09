@@ -29,7 +29,7 @@ BEGIN
 
     UPDATE mediatum.node
     SET schema = type
-    WHERE type IN ('collection', 'directory', 'project', 'home');
+    WHERE type IN ('collection', 'directory', 'project', 'home', 'directoryarmusarch', 'directoryarmus', 'directoryarmusproject');
 
     UPDATE mediatum.node
     SET type = 'other', schema = 'other'

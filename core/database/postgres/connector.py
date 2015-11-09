@@ -292,6 +292,11 @@ class PostgresSQLAConnector(object):
         s.commit()
         try:
             self.create_all()
+            # create alembic version table and set current alembic version to head
+            from alembic.config import Config
+            from alembic import command
+            alembic_cfg = Config(os.path.join(config.basedir, "alembic.ini"))
+            command.stamp(alembic_cfg, "head")
             s.commit()
             logg.info("commited database structure")
         except:

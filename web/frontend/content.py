@@ -216,7 +216,7 @@ class ContentList(Content):
         self.nav_params = None
         self.before = None
         self.after = None
-        self.lang = "en"
+        self.lang = None
         self.words = words
         self.nodes = node_query
         self._num = -1
@@ -332,8 +332,6 @@ class ContentList(Content):
 
         self.nav_params = {k: v for k, v in req.args.items()
                            if k not in ("before", "after", "style", "sortfield", "page", "nodes_per_page")}
-
-        self.language = lang(req) or None
 
         self.show_id = req.args.get("show_id")
         self.result_nav = req.args.get("result_nav")
@@ -513,9 +511,9 @@ class ContentList(Content):
             # going backwards inverts the order, invert again for display
             nodes = nodes[::-1]
 
-        files = [SingleFile(n, dict(self.nav_params, show_id=n.id), self.language, self.default_fullstyle_name) for n in nodes]
+        files = [SingleFile(n, dict(self.nav_params, show_id=n.id), self.lang, self.default_fullstyle_name) for n in nodes]
 
-        page_nav = tal.getTAL(theme.getTemplate("content_nav.html"), ctx, macro="page_nav_prev_next", language=self.language)
+        page_nav = tal.getTAL(theme.getTemplate("content_nav.html"), ctx, macro="page_nav_prev_next", language=self.lang)
         return page_nav, files
 
     @ensure_unicode_returned(name="web.frontend.content.ContentList:html")
@@ -523,7 +521,7 @@ class ContentList(Content):
         # do we want to show a single result or the result list?
         if self.content:
             # render single result
-            headline = tal.getTAL(theme.getTemplate("content_nav.html"), {"nav": self}, macro="navheadline", language=self.language)
+            headline = tal.getTAL(theme.getTemplate("content_nav.html"), {"nav": self}, macro="navheadline", language=self.lang)
             return headline + self.content.html(req)
 
         # render result list
@@ -552,7 +550,7 @@ class ContentList(Content):
         filesHTML = tal.getTAL(theme.getTemplate("content_nav.html"), ctx, macro="list_header", request=req)
 
         # use template of style and build html content
-        ctx = {"files": self.files, "op": "", "language": self.language}
+        ctx = {"files": self.files, "op": "", "language": self.lang}
 
         contentList = liststyle.renderTemplate(req, ctx)
 

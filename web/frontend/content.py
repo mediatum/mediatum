@@ -49,7 +49,7 @@ def get_collections_node():
 
 class SingleFile(object):
 
-    def __init__(self, file, nr, num, words=None, language=None, fullstyle_name=None):
+    def __init__(self, file, link_params, language, fullstyle_name, words=None):
         node = file
         sys_filetypes = [unicode(x) for x in node.getSysFiles()]
 
@@ -62,14 +62,11 @@ class SingleFile(object):
         self.image = node.show_node_image()
         self.text = node.show_node_text(words, language=language)
         self.thumbnail = self.image
-        link_params = {"id": node.id}
         if fullstyle_name:
             link_params["style"] = fullstyle_name
         self.link = u"/node?" + urllib.urlencode(link_params)
         self.shopping_bag_link = u'shoppingBag(\'{}\')'.format(node.id)
         self.node = node
-        self.nr = nr
-        self.num = num
 
     def getLink(self):
         warn("SingleFile.getLink() is deprecated, use SingleFile.link", DeprecationWarning)
@@ -183,9 +180,31 @@ def position_filter(sortfields_to_comp, after=False, before=False):
     return cond
 
 
-SORT_FIELDS = 2
+def apply_order_by_for_sortfields(query, sortfields_to_comp, before=False):
+    for sortfield, (order, _) in iteritems(sortfields_to_comp):
+        if order == "desc":
+            desc = not bool(before)
+        else:
+            desc = bool(before)
 
+        expr = node_value_expression(sortfield)
+
+        if desc:
+            expr = expr.desc()
+
+        # attributes can be NULL (means: attribute doesn't exists), so we must be careful about null ordering
+        if not (sortfield.startswith("node.") or sortfield == "nodename"):
+            if before:
+                expr = expr.nullsfirst()
+            else:
+                expr = expr.nullslast()
+
+        return query.order_by(expr)
+
+
+SORT_FIELDS = 2
 DEFAULT_FULL_STYLE_NAME = "full_standard"
+DEFAULT_NODES_PER_PAGE = 9
 
 class ContentList(Content):
 
@@ -230,6 +249,9 @@ class ContentList(Content):
         return id in self.id2pos
 
     def nav_link(self, **param_overrides):
+        """
+        params can be removed from the URL by setting them to None in param_overrides
+        """
         params = self.nav_params.copy()
         if self.liststyle_name:
             params["style"] = self.liststyle_name
@@ -243,7 +265,29 @@ class ContentList(Content):
                 params["after"] = self.after
 
         params.update(param_overrides)
+        params = {k: v for k, v in iteritems(params) if v is not None}
         return u"?" + urllib.urlencode(params)
+
+    def link_first(self):
+        return self.nav_link(show_id=None, result_nav="first")
+
+    def link_last(self):
+        return self.nav_link(show_id=None, result_nav="last")
+
+    def link_next(self):
+        # replace show_id because it can be changed in self.feedback()
+        return self.nav_link(show_id=self.show_id, result_nav="next")
+
+    def link_prev(self):
+        # replace show_id because it can be changed in self.feedback()
+        return self.nav_link(show_id=self.show_id, result_nav="prev")
+
+    def link_back(self):
+        # remove navigation params, go back to list view
+        return self.nav_link(show_id=None, result_nav=None)
+
+    def link_current_node(self):
+        return u"?id=" + str(self.content.id)
 
     def select_style_link(self, style):
         return self.nav_link(style=style)
@@ -284,17 +328,23 @@ class ContentList(Content):
         if not self.sortfields:
             self.sortfields[0] = u"-node.id"
 
-        self.content = None
-        if self.nr >= 0 and self.nr < self.num:
-            self.content = ContentNode(self.nodes[self.nr], self.nr, self.num, self.words)
-
         self.liststyle_name = req.args.get("style")
 
         self.nav_params = {k: v for k, v in req.args.items()
                            if k not in ("before", "after", "style", "sortfield", "page", "nodes_per_page")}
 
-        if self.content:
+        self.language = lang(req) or None
+
+        self.show_id = req.args.get("show_id")
+        self.result_nav = req.args.get("result_nav")
+
+        if self.show_id or self.result_nav:
+            # single result view
+            self.content = self._single_result()
             return self.content.feedback(req)
+        else:
+            # prepare content list page navigation
+            self.page_nav, self.files = self._page_nav_prev_next()
 
     def getSortFieldsList(self):
 
@@ -354,12 +404,54 @@ class ContentList(Content):
         else:
             return getContentStyles("smallview")  # , self.collection.get("style") or "default")
 
-    def _page_nav_prev_next(self, nodes_per_page, language, req):
+
+    def _single_result(self):
+        # 5 cases (show_id, nav):
+        # (None, "first") => show first node in result
+        # (None, "last") => show last node in result
+        # (<id>, "next") => go to next node in result relative to <id>
+        # (<id>, "prev") => go to previous node in result relative to <id>
+        # (<id>, None) => show node <id> in result list (*)
+
+        # * (no check if node is in list, but doesn't really matter, I think)
+
+        if self.show_id:
+            # show_id needed for all cases except first and last
+            show_node = q(Node).get(self.show_id)
+
+        nav = self.result_nav
+
+        if nav:
+            if nav in ("next", "prev"):
+                # we want to display the node _after_ or _before_ `show_node`
+                sortfields_to_comp = prepare_sortfields(show_node, self.sortfields)
+                before = nav == "prev"
+                position_cond = position_filter(sortfields_to_comp, after=nav=="next", before=before)
+                q_nodes = self.nodes.filter(position_cond)
+                q_nodes = apply_order_by_for_sortfields(q_nodes, sortfields_to_comp, before=before)
+
+            elif nav in ("first", "last"):
+                sortfields_to_comp = prepare_sortfields(None, self.sortfields)
+                q_nodes = apply_order_by_for_sortfields(self.nodes, sortfields_to_comp, before=nav=="last")
+
+            # replace show_node with our navigation result if something was found. Else, just display the old node.
+            new_node = q_nodes.first()
+            if new_node:
+                show_node = new_node
+                self.show_id = show_node.id
+
+        else:
+            # doing nothing here when `nav` was not given
+            pass
+
+        return ContentNode(show_node, 0, 0, self.words)
+
+    def _page_nav_prev_next(self):
         q_nodes = self.nodes
+        nodes_per_page = self.nodes_per_page or DEFAULT_NODES_PER_PAGE
         # self.after set <=> moving to next page
         # self.before set <=> moving to previous page
         # nothing set <=> first page
-
 
         if self.after or self.before:
             comp_node = q(Node).get(self.after or self.before)
@@ -370,26 +462,7 @@ class ContentList(Content):
             # first page
             sortfields_to_comp = prepare_sortfields(None, self.sortfields)
 
-
-        for sortfield, (order, _) in iteritems(sortfields_to_comp):
-            if order == "desc":
-                desc = not bool(self.before)
-            else:
-                desc = bool(self.before)
-
-            expr = node_value_expression(sortfield)
-
-            if desc:
-                expr = expr.desc()
-
-            # attributes can be NULL (means: attribute doesn't exists), so we must be careful about null ordering
-            if not (sortfield.startswith("node.") or sortfield == "nodename"):
-                if self.before:
-                    expr = expr.nullsfirst()
-                else:
-                    expr = expr.nullslast()
-
-            q_nodes = q_nodes.order_by(expr)
+        q_nodes = apply_order_by_for_sortfields(q_nodes, sortfields_to_comp, self.before)
 
         # get one more to find out if there are more nodes available
 
@@ -440,21 +513,20 @@ class ContentList(Content):
             # going backwards inverts the order, invert again for display
             nodes = nodes[::-1]
 
-        files = [SingleFile(n, 0, 0, language=language, fullstyle_name=self.default_fullstyle_name) for n in nodes]
+        files = [SingleFile(n, dict(self.nav_params, show_id=n.id), self.language, self.default_fullstyle_name) for n in nodes]
 
-        page_nav = tal.getTAL(theme.getTemplate("content_nav.html"), ctx, macro="page_nav_prev_next", language=language)
+        page_nav = tal.getTAL(theme.getTemplate("content_nav.html"), ctx, macro="page_nav_prev_next", language=self.language)
         return page_nav, files
 
     @ensure_unicode_returned(name="web.frontend.content.ContentList:html")
     def html(self, req):
-        language = lang(req)
-        if not language:
-            language = None
+        # do we want to show a single result or the result list?
         if self.content:
-            headline = tal.getTAL(theme.getTemplate("content_nav.html"), {"nav": self}, macro="navheadline", language=language)
+            # render single result
+            headline = tal.getTAL(theme.getTemplate("content_nav.html"), {"nav": self}, macro="navheadline", language=self.language)
             return headline + self.content.html(req)
 
-        nodes_per_page = self.nodes_per_page or 9
+        # render result list
 
         if self.liststyle_name:
             ls = self.liststyle_name
@@ -469,20 +541,18 @@ class ContentList(Content):
 
         liststyle = getContentStyles("smallview", ls)
 
-        page_nav, files = self._page_nav_prev_next(nodes_per_page, language, req)
-
         ctx = {
-            "page_nav": page_nav,
+            "page_nav": self.page_nav,
             "nav": self,
-            "files": files,
+            "files": self.files,
             "sortfieldslist": self.getSortFieldsList(),
-            "ids": ",".join(str(f.node.id) for f in files),
+            "ids": ",".join(str(f.node.id) for f in self.files),
             "op": "", "query": req.args.get("query", "")}
 
         filesHTML = tal.getTAL(theme.getTemplate("content_nav.html"), ctx, macro="list_header", request=req)
 
         # use template of style and build html content
-        ctx = {"files": files, "op": "", "language": lang(req)}
+        ctx = {"files": self.files, "op": "", "language": self.language}
 
         contentList = liststyle.renderTemplate(req, ctx)
 

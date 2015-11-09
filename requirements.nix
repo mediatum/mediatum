@@ -665,8 +665,53 @@ let
     doCheck = false;
   };
 
+  python-editor = self.buildPythonPackage {
+    name = "python-editor-0.4";
+    src = fetchurl {
+      url = https://pypi.python.org/packages/source/p/python-editor/python-editor-0.4.tar.gz;
+      md5 = "30de680ec944d073e0c3f18b44d5aa15";
+    };
+    propagatedBuildInputs = with self; [];
+    buildInputs = with self; [];
+    doCheck = false;
+  };
+
+  markupsafe = self.buildPythonPackage {
+    name = "markupsafe-0.23";
+    src = fetchurl {
+      url = https://pypi.python.org/packages/source/M/MarkupSafe/MarkupSafe-0.23.tar.gz;
+      md5 = "f5ab3deee4c37cd6a922fb81e730da6e";
+    };
+    propagatedBuildInputs = with self; [];
+    buildInputs = with self; [];
+    doCheck = false;
+  };
+
+  mako = self.buildPythonPackage {
+    name = "mako-1.0.3";
+    src = fetchurl {
+      url = https://pypi.python.org/packages/source/M/Mako/Mako-1.0.3.tar.gz;
+      md5 = "a78f20f6366a8a0659ce5532f8614e53";
+    };
+    propagatedBuildInputs = with self; [];
+    buildInputs = with self; [markupsafe];
+    doCheck = false;
+  };
+
+  alembic = self.buildPythonPackage {
+    name = "alembic-0.8.3";
+    src = fetchurl {
+      url = https://pypi.python.org/packages/source/a/alembic/alembic-0.8.3.tar.gz;
+      md5 = "2e4ef17675316af9f09d749b0aee390e";
+    };
+    propagatedBuildInputs = with self; [mako python-editor];
+    buildInputs = with self; [];
+    doCheck = false;
+  };
+
 in {
   production = [
+      alembic
       coffeescript
       configargparse
       decorator

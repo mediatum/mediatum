@@ -263,19 +263,13 @@ class NavTreeEntry(object):
             self.folded = 1
 
     def getFoldLink(self):
-        return u"/?cfold={}&dir={}&id={}".format(self.node.id,
-                                                 self.node.id,
-                                                 self.node.id)
+        return self.getLink()
 
     def getUnfoldLink(self):
-        return u"/?cunfold={}&dir={}&id={}".format(self.node.id,
-                                                   self.node.id,
-                                                   self.node.id)
+        return self.getLink()
 
     def getLink(self):
-        if self.folded:
-            return self.getUnfoldLink()
-        return self.getFoldLink()
+        return u"/node?id=" + unicode(self.node.id)
 
     def isFolded(self):
         return self.folded
@@ -335,9 +329,8 @@ class Collectionlet(Portlet):
         Portlet.feedback(self, req)
         self.lang = lang(req)
         nid = req.args.get("id", type=int)
-        dir_id = req.args.get("dir", type=int)
-        if nid or dir_id:
-            node = q(Node).get(nid or dir_id)
+        if nid:
+            node = q(Node).get(nid)
             if node is not None:
                 if isinstance(node, Container):
                     self.directory = node
@@ -359,7 +352,6 @@ class Collectionlet(Portlet):
         opened = {t[0] for t in self.directory.all_parents.with_entities(Node.id)}
         opened.add(self.directory.id)
 
-        unfold_nid = req.args.get("cunfold")
         col_data = []
 
         def f(m, node, indent, hide_empty):
@@ -371,7 +363,7 @@ class Collectionlet(Portlet):
             if node.id == self.collection.id or node.id == self.directory.id:
                 e.active = 1
             m.append(e)
-            if node.id in (unfold_nid, self.directory.id, self.collection.id) or node.id in opened or e.defaultopen:
+            if node.id in (self.directory.id, self.collection.id) or node.id in opened or e.defaultopen:
                 e.folded = 0
                 for c in node.container_children.order_by(Node.orderpos).prefetch_attrs():
                     if c.get("style_hide_empty") == "1":

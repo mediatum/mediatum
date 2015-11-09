@@ -27,7 +27,7 @@ import codecs
 
 sys.path.append(".")
 
-from core import init
+from core import init, config
 from core.database.postgres import db_metadata, mediatumfunc
 import configargparse
 
@@ -122,6 +122,11 @@ def schema(args):
     elif action == "recreate":
         db.drop_schema()
         db.create_schema()
+    elif action == "upgrade":
+        from alembic.config import Config
+        from alembic import command
+        alembic_cfg = Config(os.path.join(config.basedir, "alembic.ini"))
+        command.upgrade(alembic_cfg, "head")
 
 
 def data(args):
@@ -205,7 +210,8 @@ if __name__ == "__main__":
     subparsers = parser.add_subparsers(title="subcommands", help="see manage.py <subcommand> --help for more info")
 
     schema_subparser = subparsers.add_parser("schema", help="create / drop database schema")
-    schema_subparser.add_argument("action", choices=["drop", "create", "recreate"], help="recreate first runs 'drop', then 'create'")
+    schema_subparser.add_argument("action", choices=["drop", "create", "recreate", "upgrade"],
+                                  help="recreate first runs 'drop', then 'create' | upgrade schema to newest revision")
     schema_subparser.set_defaults(func=schema)
 
     data_subparser = subparsers.add_parser("data", help="delete database data / load default values")

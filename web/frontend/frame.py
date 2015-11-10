@@ -235,7 +235,7 @@ class Searchlet(Portlet):
                 f = g = getMetadataType("text")
             return f.getSearchHTML(Context(g, value=self.values[i], width=width, name="query" + unicode(i),
                                            language=lang(self.req), collection=self.collection,
-                                           user=users.getUserFromRequest(self.req), ip=self.req.ip))
+                                           user=current_user, ip=self.req.ip))
         except:
             # workaround for unknown error
             logg.exception("exception in getSearchField, return empty string")

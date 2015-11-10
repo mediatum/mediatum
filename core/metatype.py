@@ -22,7 +22,7 @@
 import core.acl as acl
 
 
-class Context:
+class Context(object):
 
     def __init__(self, field, value="", width=400, name="", lock=0, language=None, collection=None, user=None, ip=""):
         self.field = field
@@ -33,7 +33,6 @@ class Context:
         self.collection = collection
         self.ip = ip
         self.user = user
-        self.access = acl.AccessData(user=user)
         self.lock = lock
 
 

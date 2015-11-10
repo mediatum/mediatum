@@ -376,12 +376,9 @@ class Option:
 
 
 def isCollection(node):
-    try:
-        if node.type in["collection", "collections"]:
-            return 1
-        return 0
-    except:
-        return 0
+    warn("use isinstance(node, (Collection, Collections))", DeprecationWarning)
+    from contenttypes import Collection, Collections
+    return int(isinstance(node, (Collection, Collections)))
 
 
 def getCollection(node):

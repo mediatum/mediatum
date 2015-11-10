@@ -124,7 +124,7 @@ class Document(Content):
         return self.name
 
     def getSysFiles(self):
-        return ["doc", "document", "thumb", "thumb2", "presentati", "presentation", "fulltext", "fileinfo"]
+        return [u"doc", u"document", u"thumb", u"thumb2", u"presentati", u"presentation", u"fulltext", u"fileinfo"]
 
     """ postprocess method for object type 'document'. called after object creation """
     def event_files_changed(self):

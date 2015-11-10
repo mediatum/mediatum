@@ -213,7 +213,7 @@ class Video(Content):
         return 0
 
     def getSysFiles(self):
-        return ["presentation", "thumb", "video"]
+        return [u"presentation", u"thumb", u"video"]
 
     def getLabel(self):
         return self.name

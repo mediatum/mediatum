@@ -197,7 +197,7 @@ class Audio(Content):
         return False
 
     def getSysFiles(self):
-        return ["audio", "thumb", "presentation", "mp3"]
+        return [u"audio", u"thumb", u"presentation", u"mp3"]
 
     """ postprocess method for object type 'audio'. called after object creation """
     def event_files_changed(self):

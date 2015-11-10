@@ -212,7 +212,7 @@ class Container(Data, ContainerMixin, SchemaMixin):
         return 1
 
     def getSysFiles(self):
-        return ["statistic", "image"]
+        return [u"statistic", u"image"]
 
     def getLabel(self, lang=getDefaultLanguage()):
 
@@ -336,7 +336,7 @@ class Collection(Container):
 
 @check_type_arg_with_schema
 class Collections(Container):
-    
+
     def get_parent_container(self):
         pass
 
@@ -346,7 +346,7 @@ class Collections(Container):
 
 @check_type_arg_with_schema
 class Home(Container):
-    
+
     def get_parent_container(self):
         pass
 

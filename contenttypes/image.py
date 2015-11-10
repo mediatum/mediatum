@@ -281,7 +281,7 @@ class Image(Content):
         return self.name
 
     def getSysFiles(self):
-        return ["original", "thumb", "presentati", "image", "presentation", "zoom"]
+        return [u"original", u"thumb", u"presentati", u"image", u"presentation", u"zoom"]
 
     """ make a copy of the svg file in png format """
     def svg_to_png(self, filename, imgfile):

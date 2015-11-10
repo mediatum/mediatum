@@ -131,9 +131,9 @@ class m_field(Metatype):
         else:
             if field.getFormat() != "":
                 if fieldtype in ['text']:
-                    value = t.getFormatedValue(element, nodes[0], language, template_from_caller=template_from_caller, mask=mask)[1]
+                    value = get_formatted_value(element, nodes[0], language, template_from_caller=template_from_caller, mask=mask)
                 else:
-                    value = t.getFormatedValue(element, nodes[0], language)[1]
+                    value = get_formatted_value(element, nodes[0], language)
                 value = field.getFormat().replace("<value>", value)
             else:
                 if fieldtype in ['text']:

@@ -32,7 +32,7 @@ from web.frontend import Content
 from utils.strings import ensure_unicode_returned
 from utils.utils import getCollection, Link, getFormatedString
 from utils.compat import iteritems
-from web.frontend.searchresult import simple_search, extended_search, SearchResult
+from web.frontend.searchresult import simple_search, extended_search
 from core.systemtypes import Root
 from contenttypes.container import Container
 from mediatumtal import tal
@@ -284,6 +284,11 @@ class ContentList(Content):
         return u"?id=" + str(self.content.id)
 
     def select_style_link(self, style):
+        # self.content means: we're showing a single result node.
+        # Therefore, we want to change the style of the node, not the list.
+        if self.content is not None:
+            return self.nav_link(style=style)
+
         return self.nav_link(liststyle=style)
 
     def feedback(self, req):

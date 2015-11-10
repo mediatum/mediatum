@@ -22,6 +22,7 @@ import hashlib
 
 from core import db, User, auth
 from core.transition import httpstatus
+from core.webconfig import node_url
 import core.users as users
 import core.config as config
 import utils.mail as mail
@@ -38,8 +39,16 @@ q = db.query
 logg = logging.getLogger(__name__)
 
 
+_collection_root_link = None
+
+
 def _make_collection_root_link():
-    return "/node?id={}".format(q(Collections).one().id)
+    global _collection_root_link
+
+    if _collection_root_link is None:
+        _collection_root_link = node_url(q(Collections.id).one()[0])
+
+    return _collection_root_link
 
 
 def _handle_login_submit(req):
@@ -60,10 +69,7 @@ def _handle_login_submit(req):
         if req.session.get('return_after_login'):
             req['Location'] = req.session['return_after_login']
         elif config.get("config.ssh", "") == "yes":
-            req["Location"] = ''.join(["https://",
-                                       config.get("host.name"),
-                                       "/node?id=",
-                                       q(Collections).one().id])
+            req["Location"] = ''.join(["https://", config.get("host.name"), _make_collection_root_link()])
         else:
             req["Location"] = _make_collection_root_link()
     else:

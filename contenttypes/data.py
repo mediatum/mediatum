@@ -78,7 +78,7 @@ def flush_maskcache(req=None):
     maskcache_shallow = {}
     if req:
         user = users.getUserFromRequest(req)
-        logg.info("flush of masks cache triggered by user %s with request on '%s'", user.name, req.path)
+        logg.info("flush of masks cache triggered by user %s with request on '%s'", user.login_name, req.path)
 
         sys.stdout.flush()
     maskcache_msg = '| cache last flushed %s\r\n|\r\n' % cache_date2string(time.time(), '%04d-%02d-%02d-%02d-%02d-%02d')

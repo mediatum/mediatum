@@ -150,15 +150,11 @@ def MaskDetails(req, pid, id, err=0):
     v["langs"] = config.languages
     v["actpage"] = req.params.get("actpage")
 
-    # XXX: just shut it down...
-#     rule = mask.getAccess("read")
-#     if rule:
-#         rule = rule.split(",")
-#     else:
-#         rule = []
-#
-#     rights = removeEmptyStrings(rule)
-    rights = []
-    v["acl"] = makeList(req, "read", rights, {}, overload=0, type="read")
+    try:
+        rules = [r.ruleset_name for r in mask.access_ruleset_assocs.filter_by(ruletype=u'read')]
+    except:
+        rules = []
+
+    v["acl"] = makeList(req, "read", removeEmptyStrings(rules), {}, overload=0, type=u"read")
 
     return req.getTAL("web/admin/modules/metatype_mask.html", v, macro="modify_mask")

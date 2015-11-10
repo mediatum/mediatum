@@ -63,8 +63,8 @@
                     
                     <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img tal:attributes="src python:lang_icons[mask.getLanguage()]"/></td>
                     <td>
-                        <img tal:condition="python:mask.getAccess('read')" i18n:attributes="title admin_mask_acl_title" src="/img/archive.png"/>
-                        <img tal:condition="python:mask.getAccess('read')==''" i18n:attributes="title admin_mask_acl_title" src="/img/mark_empty.png"/>
+                        <img tal:condition="python:mask.access_ruleset_assocs.filter_by(ruletype='read').count()>0" i18n:attributes="title admin_mask_acl_title" src="/img/archive.png"/>
+                        <img tal:condition="python:mask.access_ruleset_assocs.filter_by(ruletype='read').count()==0" i18n:attributes="title admin_mask_acl_title" src="/img/mark_empty.png"/>
                     </td>
                     <td>
                         <a tal:attributes="onclick python:u'javascript:openPopupWithScroll(\'/admin/metatype/{}/{}/editor?style=popup\',\'editor\',800,600)'.format(metadatatype.getName(), mask.getName())" href="#"><img i18n:attributes="title admin_mask_edit_field" src="/img/rightarrow.png" border="0"/></a>&nbsp;

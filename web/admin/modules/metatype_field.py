@@ -156,8 +156,8 @@ def FieldDetail(req, pid, id, err=0):
     attr = {}
     metadatatype = getMetaType(pid)
     for t in metadatatype.getDatatypes():
-        node = Node(u'', t)
-        db.session.commit()
+        content_class = Node.get_class_for_typestring(t)
+        node = content_class(name=u'')
         try:
             attr.update(node.getTechnAttributes())
         except AttributeError:

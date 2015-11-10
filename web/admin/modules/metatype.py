@@ -26,7 +26,6 @@ from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilte
 from web.common.acl_web import makeList
 from utils.utils import removeEmptyStrings, esc
 from core.translation import lang, t
-from core.acl import AccessData
 from schema.schema import loadTypesFromDB, getMetaFieldTypeNames, getMetaType, updateMetaType, existMetaType, deleteMetaType, fieldoption, moveMetaField, getMetaField, deleteMetaField, getFieldsForMeta, dateoption, requiredoption, existMetaField, updateMetaField, generateMask, cloneMask, exportMetaScheme, importMetaSchema
 from schema.schema import VIEW_DEFAULT
 from schema.bibtex import getAllBibTeXTypes
@@ -45,6 +44,7 @@ from core import Node
 from core import db
 from core.systemtypes import Metadatatypes
 from schema.schema import Metadatatype, Mask
+from core.database.postgres.permission import NodeToAccessRuleset
 
 q = db.query
 
@@ -92,8 +92,6 @@ def validate(req, op):
         mdt = q(Metadatatypes).one().children.filter_by(name=mdt_name).one()
         mask = mdt.children.filter_by(name=mask_name).one()
 
-        access = AccessData(req)
-
         sectionlist = []
         for nid in [x.strip() for x in testnodes_list.split(',') if x.strip()]:
             section_descr = {}
@@ -102,7 +100,7 @@ def validate(req, op):
 
             node = q(Node).get(nid)
             section_descr['node'] = node
-            if node and access.hasAccess(node, "data"):
+            if node and node.has_data_access():
                 try:
                     node_html = mask.getViewHTML([node], VIEW_DEFAULT, template_from_caller=[template, mdt, mask, item_id], mask=mask)
                     section_descr['node_html'] = node_html
@@ -123,7 +121,7 @@ def validate(req, op):
                         pass
                     section_descr['error_flag'] = 'Error while evaluating template:'
                     section_descr['node_html'] = template_line
-            elif node and not access.hasAccess(node, "data"):
+            elif node and not node.has_data_access():
                 section_descr['error_flag'] = 'no access'
                 section_descr['node_html'] = ''
             if node is None:
@@ -198,14 +196,17 @@ def validate(req, op):
                            bibtexmapping=req.params.get("mbibtex", ""),
                            citeprocmapping=req.params.get("mciteproc", ""),
                            orig_name=req.params.get("mname_orig", ""))
-            mtype = getMetaType(req.params.get("mname"))
+            mtype = q(Metadatatype).filter_by(name=req.params.get("mname")).scalar()
             if mtype:
-                mtype.setAccess("read", "")
+                for r in mtype.access_ruleset_assocs.filter_by(ruletype=u'read'):
+                    db.session.delete(r)
+
                 for key in req.params.keys():
                     if key.startswith("left"):
-                        mtype.setAccess(key[4:], req.params.get(key).replace(";", ","))
-                        db.session.commit()
+                        for r in req.params.get(key).split(';'):
+                            mtype.access_ruleset_assocs.append(NodeToAccessRuleset(ruleset_name=r, ruletype=key[4:]))
                         break
+            db.session.commit()
 
     elif req.params.get("acttype") == "field":
         # section for fields
@@ -307,9 +308,13 @@ def validate(req, op):
 
             # cope selected mask
             if key.startswith("copymask_"):
-                mtype = getMetaType(req.params.get("parent"))
-                mask = mtype.getMask(key[9:-2])
-                cloneMask(mask, "copy_" + mask.name)
+                k = key[9:-2]
+                if k.isdigit():
+                    mask = q(Mask).get(k)
+                else:
+                    mtype = getMetaType(req.params.get("parent"))
+                    mask = mtype.getMask(k)
+                cloneMask(mask, u"copy_" + mask.name)
                 return showMaskList(req, req.params.get("parent"))
 
         if "form_op" in req.params.keys():
@@ -330,8 +335,7 @@ def validate(req, op):
                 mask = Mask(req.params.get("mname", ""))
                 mtype.children.append(mask)
                 db.session.commit()
-
-            mask.set("name", req.params.get("mname"))
+            mask.name = req.params.get("mname")
             mask.setDescription(req.params.get("mdescription"))
             mask.setMasktype(req.params.get("mtype"))
             mask.setSeparator(req.params.get("mseparator"))
@@ -351,10 +355,14 @@ def validate(req, op):
 
             mask.setLanguage(req.params.get("mlanguage", ""))
             mask.setDefaultMask("mdefault" in req.params.keys())
-            mask.setAccess("read", "")
+
+            for r in mask.access_ruleset_assocs.filter_by(ruletype=u'read'):
+                db.session.delete(r)
+
             for key in req.params.keys():
                 if key.startswith("left"):
-                    mask.setAccess(key[4:], req.params.get(key).replace(";", ","))
+                    for r in req.params.get(key).split(';'):
+                        mask.access_ruleset_assocs.append(NodeToAccessRuleset(ruleset_name=r, ruletype=key[4:]))
                     break
             db.session.commit()
         return showMaskList(req, ustr(req.params.get("parent", "")))
@@ -405,8 +413,8 @@ def view(req):
             mtypes.sort(lambda x, y: cmp(x.getActive(), y.getActive()))
         elif int(order[0:1]) == 4:
             mtypes.sort(lambda x, y: cmp(x.getDatatypeString().lower(), y.getDatatypeString().lower()))
-        elif int(order[0:1]) == 5:
-            mtypes.sort(lambda x, y: cmp(x.metadatatype.getAccess("read"), y.metadatatype.getAccess("read")))
+        # elif int(order[0:1]) == 5:
+            # mtypes.sort(lambda x, y: cmp(x.metadatatype.getAccess("read"), y.metadatatype.getAccess("read")))
         elif int(order[0:1]) == 6:
             mtypes.sort(lambda x, y: cmp(x.searchIndexCorrupt(), y.searchIndexCorrupt()))
         elif int(order[0:1]) == 7:
@@ -428,6 +436,7 @@ def view(req):
                                 lang(req), "admin_meta_col_6")])
     v["metadatatypes"] = mtypes
     v["get_classname_for_typestring"] = Node.get_classname_for_typestring
+    v['dtypes'] = Node.__mapper__.polymorphic_map  # is used to prevent missing plugins from causing error
     v["pages"] = pages
     v["actfilter"] = actfilter
     v["filterattrs"] = [("id", "admin_metatype_filter_id"), ("name", "admin_metatype_filter_name")]
@@ -473,16 +482,12 @@ def MetatypeDetail(req, id, err=0):
     v["citeproctypes"] = citeproc.TYPES
     v["citeprocselected"] = metadatatype.get("citeprocmapping").split(";")
 
-    # XXX: just shut it down...
-#     rule = metadatatype.getAccess("read")
-#     if rule:
-#         rule = rule.split(",")
-#     else:
-#         rule = []
-# 
-#     rights = removeEmptyStrings(rule)
-    rights = []
-    v["acl"] = makeList(req, "read", rights, {}, overload=0, type="read")
+    try:
+        rules = [r.ruleset_name for r in metadatatype.access_ruleset_assocs.filter_by(ruletype=u'read')]
+    except:
+        rules = []
+
+    v["acl"] = makeList(req, "read", removeEmptyStrings(rules), {}, overload=0, type="read")
     v["filtertype"] = req.params.get("filtertype", "")
     v["actpage"] = req.params.get("actpage")
     return req.getTAL("web/admin/modules/metatype.html", v, macro="modify_type")

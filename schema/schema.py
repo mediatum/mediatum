@@ -126,13 +126,14 @@ def existMetaType(name):
 # update/create metatype by given object
 #
 def updateMetaType(name, description="", longname="", active=0, datatypes="", bibtexmapping="", orig_name="", citeprocmapping=""):
-    metadatatypes = tree.getRoot("metadatatypes")
-    try:
-        metadatatype = metadatatypes.getChild(orig_name)
-        metadatatype.setName(name)
-    except tree.NoSuchNodeError:
-        metadatatype = tree.Node(name=name, type="metadatatype")
-        metadatatypes.addChild(metadatatype)
+    metadatatypes = q(Metadatatypes).one()
+    metadatatype = metadatatypes.children.filter_by(name=orig_name).scalar()
+
+    if metadatatype is not None:
+        metadatatype.name = name
+    else:
+        metadatatype = Metadatatype(name)
+        metadatatypes.children.append(metadatatype)
 
     metadatatype.set("description", description)
     metadatatype.set("longname", longname)
@@ -140,6 +141,7 @@ def updateMetaType(name, description="", longname="", active=0, datatypes="", bi
     metadatatype.set("datatypes", datatypes)
     metadatatype.set("bibtexmapping", bibtexmapping)
     metadatatype.set("citeprocmapping", citeprocmapping)
+    db.session.commit()
 
 #
 # delete metatype by given name
@@ -147,8 +149,9 @@ def updateMetaType(name, description="", longname="", active=0, datatypes="", bi
 
 
 def deleteMetaType(name):
-    metadatatypes = tree.getRoot("metadatatypes")
-    metadatatypes.removeChild(getMetaType(name))
+    db.session.delete(getMetaType(name))
+    db.session.commit()
+
 
 ###################################################
 #                detail section                   #
@@ -195,16 +198,18 @@ def existMetaField(pid, name):
 def updateMetaField(parent, name, label, orderpos, fieldtype, option="", description="",
                     fieldvalues="", fieldvaluenum="", fieldid="", filenode=None, attr_dict={}):
     metatype = getMetaType(parent)
+    field = None
 
-    field = q(Node).get(fieldid)
-    if field is None:
+    if fieldid:
+        field = q(Node).get(fieldid)
+
+    if field is not None:
+        field.name = name
+    else:
         field = Metafield(name)
         metatype.children.append(field)
         field.orderpos = len(metatype.children) - 1
         db.session.commit()
-    else:
-        field.set("name", name)
-
     # <----- Begin: For fields of list type ----->
 
     if filenode:
@@ -215,14 +220,14 @@ def updateMetaField(parent, name, label, orderpos, fieldtype, option="", descrip
                 os.remove(fnode.abspath)  # delete the file from the hard drive
             except:
                 logg.exception("exception in updateMetaField")
-        field.addFile(filenode)
+        field.files.append(filenode)
 
     if fieldvalues.startswith("multiple"):
         field.set("multiple", True)
         fieldvalues = fieldvalues.replace("multiple;", "", 1)
     else:
         if field.get("multiple"):
-            field.removeAttribute("multiple")
+            del field.attrs["multiple"]
 
     if fieldvalues.endswith("delete"):  # the checkbox 'delete' was checked
         # all files of the field will be removed
@@ -254,12 +259,13 @@ def updateMetaField(parent, name, label, orderpos, fieldtype, option="", descrip
 def deleteMetaField(pid, name):
     metadatatype = getMetaType(pid)
     field = getMetaField(pid, name)
-    metadatatype.removeChild(field)
+    metadatatype.children.remove(field)
 
     i = 0
-    for field in getMetaType(pid).getChildren().sort_by_orderpos():
-        field.setOrderPos(i)
+    for field in metadatatype.children.order_by(Node.orderpos):
+        field.orderpos = i
         i += 1
+    db.session.commit()
 
 #
 # change order of metadatafields: move element up/down
@@ -299,50 +305,56 @@ def moveMetaField(pid, name, direction):
 def generateMask(metatype, masktype="", force=0):
     if force:
         try:
-            metatype.removeChild(metatype.getChild(masktype))
+            metatype.children.remove(metatype.children.filter_by(name=masktype).one())
+            db.session.commit()
         except:  # if we can't remove the existing mask, it wasn't there, which is ok
             pass
-    try:
-        mask = metatype.getChild(masktype)
+
+    mask = metatype.children.filter_by(name=masktype).scalar()
+    if mask is not None:
         return  # mask is already there- nothing to do!
-    except tree.NoSuchNodeError:
-        mask = metatype.addChild(tree.Node("-auto-", "mask"))
+    else:
+        mask = Mask(u"-auto-")
+        metatype.children.append(mask)
         i = 0
-        for c in metatype.getChildren().sort_by_orderpos():
+        for c in metatype.children.order_by(Node.orderpos):
             if c.type != "mask":
                 if c.getFieldtype() != "union":
-                    n = tree.Node(c.get("label"), "maskitem")
-                    n.setOrderPos(i)
+                    field = Maskitem(c.get("label"))
+                    field.orderpos = i
                     i += 1
-                    field = mask.addChild(n)
+                    mask.children.append(field)
                     field.set("width", "400")
                     field.set("type", "field")
-                    field.addChild(c)
+                    field.children.append(c)
+    db.session.commit()
 
 
 def cloneMask(mask, newmaskname):
     def recurse(m1, m2):
-        for k, v in m1.items():
+        for k, v in m1.attrs.items():
             m2.set(k, v)
-        for c1 in m1.getChildren().sort_by_orderpos():
+        for c1 in m1.children.order_by(Node.orderpos):
             if c1.type in ["mask", "maskitem"]:
-                c2 = tree.Node(c1.getName(), c1.type)
-                c2.setOrderPos(c1.getOrderPos())
-                m2.addChild(c2)
+                content_class = Node.get_class_for_typestring(c1.type)
+                c2 = content_class(name=c1.name)
+                c2.orderpos = c1.orderpos
+                m2.children.append(c2)
                 recurse(c1, c2)
             else:
-                m2.addChild(c1)
+                m2.children.append(c1)
 
-    p = mask.getParents()
+    p = mask.parents
     if len(p) == 0:
         raise "Mask has no parents"
     if len(p) > 1:
         raise "Mask has more than one parent"
     if mask.type != "mask":
         raise "Not a mask"
-    newmask = tree.Node(newmaskname, mask.type)
-    p[0].addChild(newmask)
+    newmask = Mask(newmaskname)
+    p[0].children.append(newmask)
     recurse(mask, newmask)
+    db.session.commit()
 
 
 def checkMask(mask, fix=0, verbose=1, show_unused=0):
@@ -1107,7 +1119,7 @@ class Mask(Node):
             return ret
 
         ret += '<div align="right"><input type="image" src="/img/install.png" name="newdetail_'
-        ret += self.id
+        ret += ustr(self.id)
         ret += '" i18n:attributes="title mask_editor_new_line_title"/></div><br/>'
 
         if not self.validateMappingDef():

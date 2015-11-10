@@ -75,16 +75,13 @@
                     </td>
                     <td>
                         <tal:block tal:repeat="datatype python:metadatatype.getDatatypes()">
-                            <tal:block i18n:translate="">
-                                <tal:block tal:replace="python:get_classname_for_typestring(datatype)"/>
-                            </tal:block>
+                            <tal:block tal:condition="python:datatype.lower() in dtypes" i18n:translate="" tal:content="python:get_classname_for_typestring(datatype.lower())" />
                         </tal:block>
                     </td>
                     <td>
                         &nbsp;&nbsp;
-                        <img 
-                        tal:condition="python:True or metadatatype.getAccess('read')" i18n:attributes="title admin_meta_acl_title" src="/img/archive.png"/>
-                        <img tal:condition="python:True or metadatatype.getAccess('read')==''" i18n:attributes="title admin_meta_acl_title" src="/img/mark_empty.png"/>
+                        <img tal:condition="python:metadatatype.access_ruleset_assocs.filter_by(ruletype='read').count()>0" i18n:attributes="title admin_meta_acl_title" src="/img/archive.png"/>
+                        <img tal:condition="python:metadatatype.access_ruleset_assocs.filter_by(ruletype='read').count()==0" i18n:attributes="title admin_meta_acl_title" src="/img/mark_empty.png"/>
                     </td>
                     <td>
                         <input tal:attributes="name python:u'detaillist_{}'.format(metadatatype.getName())" i18n:attributes="title admin_meta_editdetail" type="image" src="/img/rightarrow.png"/>&nbsp;
@@ -182,7 +179,7 @@
             <tr>
                 <td><tal:block i18n:translate="admin_meta_id">TEXT</tal:block>: <span class="required">*</span></td>
                 <td>
-                    <input tal:attributes="value python:metadatatype.getName()" type="text" style="width:300px" name="mname" maxlenght=50/>
+                    <input tal:attributes="value python:metadatatype.name" type="text" style="width:300px" name="mname" maxlenght=50/>
                     <input tal:attributes="value original_name" type="hidden" name="mname_orig"/>
                 </td>
             </tr>
@@ -205,7 +202,7 @@
                 <td><tal:block i18n:translate="admin_meta_datatype">TEXT</tal:block>: <span class="required">*</span></td>
                 <td>
                     <select name="mdatatypes" multiple="multiple" style="width:300px" size="5">
-                        <option tal:repeat="datatype datatypes" tal:attributes="value python:datatype.getName(); selected python:'selected' if datatype.getName() in metadatatype.getDatatypes() else None" tal:content="python:datatype.getName()" i18n:translate=""/>
+                    <option tal:repeat="datatype datatypes" tal:attributes="value python:datatype.__name__.lower(); selected python:'selected' if datatype.__name__.lower() in metadatatype.getDatatypes() else None" tal:content="python:datatype.__name__" i18n:translate=""/>
                     </select>
                 </td>
             </tr>

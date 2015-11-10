@@ -50,7 +50,8 @@ class m_meta(Metatype):
         attr = {}
         if metadatatype:
             for t in metadatatype.getDatatypes():
-                node = Node(u'', t)
+                content_class = Node.get_class_for_typestring(t)
+                node = content_class(name=u'')
                 try:
                     attr.update(node.getTechnAttributes())
                 except AttributeError:

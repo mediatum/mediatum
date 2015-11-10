@@ -382,11 +382,8 @@ def isCollection(node):
 
 
 def getCollection(node):
-    warn("use Node.get_parent_collection()", DeprecationWarning)
-    from contenttypes import Collections
-    if isinstance(node, Collections):
-        return node
-    return node.get_parent_collection()
+    warn("use Node.get_collection()", DeprecationWarning)
+    return node.get_collection()
 
 
 def isDirectory(node):
@@ -396,8 +393,8 @@ def isDirectory(node):
 
 
 def getDirectory(node):
-    warn("use Node.get_parent_container()", DeprecationWarning)
-    return node.get_parent_container()
+    warn("use Node.get_container()", DeprecationWarning)
+    return node.get_container()
 
 
 def ArrayToString(pieces, glue=""):

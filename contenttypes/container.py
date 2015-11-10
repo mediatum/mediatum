@@ -304,7 +304,8 @@ class Container(Data, ContainerMixin, SchemaMixin):
     def event_files_changed(self):
         logg.debug("Postprocessing node %s", self.id)
 
-
+    def get_container(self):
+        return self
 
 
 # concrete Container classes
@@ -333,23 +334,18 @@ class Collection(Container):
         metafields.append(field)
         return metafields
 
+    def get_collection(self):
+        return self
+
 
 @check_type_arg_with_schema
 class Collections(Container):
 
-    def get_parent_container(self):
-        pass
-
-    def get_parent_collection(self):
-        pass
+    def get_collection(self):
+        return self
 
 
 @check_type_arg_with_schema
 class Home(Container):
-
-    def get_parent_container(self):
-        pass
-
-    def get_parent_collection(self):
-        pass
+    pass
 

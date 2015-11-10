@@ -348,10 +348,10 @@ class Collectionlet(Portlet):
                     if isinstance(node, Collection): # XXX: is Collections also needed here?
                         self.collection = node
                     else:
-                        self.collection = node.get_parent_collection()
+                        self.collection = node.get_collection()
                 else:
-                    self.directory = node.get_parent_container()
-                    self.collection = node.get_parent_collection()
+                    self.directory = node.get_container()
+                    self.collection = node.get_collection()
 
         if self.collection is None:
             self.collection = q(Collections).one()

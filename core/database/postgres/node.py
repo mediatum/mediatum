@@ -395,14 +395,14 @@ class Node(DeclarativeBase, NodeMixin):
     def is_descendant_of(self, node):
         return exec_sqlfunc(object_session(self), mediatumfunc.is_descendant_of(self.id, node.id))
 
-    def get_parent_container(self):
+    def get_container(self):
         from contenttypes import Container
         nr = t_noderelation
         q = object_session(self).query
         parent_dir = q(Container).join(nr, Node.id == nr.c.nid).filter_by(cid=self.id).order_by(nr.c.distance).limit(1).one()
         return parent_dir
 
-    def get_parent_collection(self):
+    def get_collection(self):
         from contenttypes import Collection
         nr = t_noderelation
         q = object_session(self).query

@@ -19,13 +19,13 @@
 """
 from collections import OrderedDict
 import logging
-import os
 import urllib
 from warnings import warn
 
 from core import db, Node, File
 from core.styles import getContentStyles, theme
 from core.translation import lang, t
+from core.webconfig import node_url
 from contenttypes import Collections
 from contenttypes.container import includetemplate, replaceModules
 from web.frontend import Content
@@ -64,7 +64,7 @@ class SingleFile(object):
         self.thumbnail = self.image
         if fullstyle_name:
             link_params["style"] = fullstyle_name
-        self.link = u"/node?" + urllib.urlencode(link_params)
+        self.link = node_url(**link_params)
         self.shopping_bag_link = u'shoppingBag(\'{}\')'.format(node.id)
         self.node = node
 
@@ -260,7 +260,7 @@ class ContentList(Content):
 
         params.update(param_overrides)
         params = {k: v for k, v in iteritems(params) if v is not None}
-        return u"?" + urllib.urlencode(params)
+        return node_url(**params)
 
     def link_first(self):
         return self.nav_link(show_id=None, result_nav="first")
@@ -281,7 +281,7 @@ class ContentList(Content):
         return self.nav_link(show_id=None, result_nav=None)
 
     def link_current_node(self):
-        return u"?id=" + str(self.content.id)
+        return node_url(self.content.id)
 
     def select_style_link(self, style):
         # self.content means: we're showing a single result node.
@@ -613,8 +613,7 @@ class ContentNode(Content):
         return "(%d/%d)" % (int(self.nr) + 1, self.num)
 
     def select_style_link(self, style):
-        params = {"id": self.id, "style": style}
-        return u"node?" + urllib.urlencode(params)
+        return node_url(self.id, style=style)
 
     @ensure_unicode_returned(name="web.frontend.content:html")
     def html(self, req):
@@ -735,9 +734,9 @@ class ContentArea(Content):
                     if cd is q(Collections).one() or cd is q(Root).one():
                         break
                     if isinstance(cd, Container):
-                        path.append(Link('/?id={id}&dir={id}'.format(id=cd.id), cd.getLabel(language), cd.getLabel(language)))
+                        path.append(Link(node_url(cd.id), cd.getLabel(language), cd.getLabel(language)))
                     else:
-                        path.append(Link('/?id={id}&dir={id}'.format(id=cd.id), cd.getLabel(), cd.getLabel()))
+                        path.append(Link(node_url(cd.id), cd.getLabel(), cd.getLabel()))
         elif hasattr(self.content, "linkname") and hasattr(self.content, "linktarget"):
             path.append(Link(self.content.linktarget, self.content.linkname, self.content.linkname))
         path.reverse()

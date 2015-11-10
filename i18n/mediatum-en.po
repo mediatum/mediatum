@@ -1316,3 +1316,12 @@ msgstr "File:"
 
 msgid "file_size"
 msgstr "File size:"
+
+msgid "direct_link_current_node"
+msgstr "Permanent link for displayed object"
+
+msgid "next"
+msgstr "next"
+
+msgid "previous"
+msgstr "previous"

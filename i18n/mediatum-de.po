@@ -1329,3 +1329,12 @@ msgstr "Datei:"
 
 msgid "file_size"
 msgstr "Dateigröße:"
+
+msgid "direct_link_current_node"
+msgstr "Dauerhafter Link zum angezeigten Objekt"
+
+msgid "next"
+msgstr "weiter"
+
+msgid "previous"
+msgstr "zurück"

@@ -84,10 +84,13 @@ def log_basic_sys_info():
 
 def check_imports():
     external_modules = [
-        "babel",
+        "alembic",
         "coffeescript",
+        "configargparse",
         "decorator",
+        "exiftool",
         "httplib2",
+        "humanize",
         "ipaddr",
         "jinja2",
         "Levenshtein",
@@ -96,7 +99,6 @@ def check_imports():
         "mediatumbabel",
         "mediatumfsm",
         "mediatumtal",
-        "mock",
         "parcon",
         "PIL",
         "psycopg2",
@@ -109,7 +111,9 @@ def check_imports():
         "requests",
         "scrypt",
         "sqlalchemy",
+        "sqlalchemy_continuum",
         "sqlalchemy_utils",
+        "sympy",
         "unicodecsv",
         "werkzeug",
         "yaml",

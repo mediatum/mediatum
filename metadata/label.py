@@ -22,6 +22,7 @@ from schema.schema import VIEW_DATA_ONLY, VIEW_DEFAULT
 from core.metatype import Metatype
 from core import Node
 from core import db
+from utils.utils import esc
 
 q = db.query
 

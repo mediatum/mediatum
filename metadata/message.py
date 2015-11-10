@@ -46,7 +46,7 @@ class m_message(Metatype):
         if int(value[1]) == 0:  # suppress label
             return ("", "")
 
-        ret = '<span style="color: ' + value[2] + '">' + value[0] + '</span>'
+        ret = u'<span style="color: ' + value[2] + '">' + value[0] + '</span>'
 
         if int(value[3]) == 1:  # bold
             ret = '<b>' + ret + '</b>'

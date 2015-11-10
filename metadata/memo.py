@@ -204,7 +204,7 @@ class m_memo(Metatype):
 
     def getFormatedValue(self, field, node, language=None, html=1):
         value = node.get(field.getName()).replace(";", "; ")
-        value = self.language_snipper(value, language, joiner="\n")
+        value = self.language_snipper(value, language, joiner=u"\n")
         return (field.getLabel(), value)
 
     def getMaskEditorHTML(self, field, metadatatype=None, language=None, attr_dict={}):

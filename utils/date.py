@@ -113,7 +113,7 @@ def format_date(t=None, format=None):
         return "%s, %0.2d %s %0.4d %0.2d:%0.2d:%0.2d CET" % (dn, t.day, monthname[t.month], t.year, t.hour, t.minute, t.second)
     else:
         i = 0
-        result = ""
+        result = u""
         l = len(format)
         while i < l:
             if format[i] == '%':

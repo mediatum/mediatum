@@ -43,7 +43,7 @@ class m_hlist(Metatype):
             values.append(u'')
         if values[2] == '1':
             return field.getLabel(), value[-1]
-        return field.getLabel(), ' - '.join(value)
+        return field.getLabel(), u' - '.join(value)
 
     def getName(self):
         return "fieldtype_hlist"

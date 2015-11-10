@@ -159,20 +159,33 @@ class UserMixin(object):
         return self.id
 
 
-class ExternalAuth(object):
+class GuestUser(UserMixin):
 
-    def getUserType(self):
-        return self.usertype
+    """
+    This is a lame attempt at caching the information for the guest user ;)
+    Many normal user operations will fail, but it should be sufficient for get_guest_user().
+    GuestUser.get_db_object() returns the proper database user object.
+    """
 
-    def getUser(self):
-        raise "not implemented"
+    _instance = None
 
-    def authenticate_login(self, username, password):
-        raise "notImplemented"
+    @classmethod
+    def get(cls):
+        if cls._instance is None:
+            cls._instance = cls()
 
-    def getName(self):
-        return ""
+        return cls._instance
 
-    def canChangePWD(self):
-        raise "not implemented"
+    def __init__(self):
 
+        db_obj = self.get_db_object()
+        self.__dict__.update(db_obj.to_dict())
+
+        for prop in ("group_ids", "is_editor", "is_admin", "is_workflow_editor",
+                     "hidden_edit_functions", "upload_dir", "faulty_dir", "trash_dir"):
+            setattr(self, prop, getattr(db_obj, prop))
+
+    def get_db_object(self):
+        from core import User
+        from core import db
+        return db.query(User).filter_by(login_name=config.get("user.guestuser", u"guest")).one()

@@ -22,6 +22,7 @@ from warnings import warn
 import core.config as config
 from core import User
 from core import db
+from core.user import GuestUser
 
 
 q = db.query
@@ -41,7 +42,7 @@ def getExternalUser(name, type="intern"):
 
 
 def get_guest_user():
-    return q(User).filter_by(login_name=config.get("user.guestuser", u"guest")).one()
+    return GuestUser.get()
 
 
 def getUser(name_or_id):

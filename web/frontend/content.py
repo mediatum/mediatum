@@ -514,7 +514,10 @@ class ContentList(Content):
             else:
                 ls = ls.split(";")[0]
 
-        liststyle = getContentStyles("smallview", ls)
+        liststyle = getContentStyles("smallview", ls, contenttype=u"")
+        if not liststyle:
+            raise Exception("invalid liststyle " + ls)
+        liststyle = liststyle[0]
 
         ctx = {
             "page_nav": self.page_nav,

@@ -1080,7 +1080,7 @@ class Mask(Node):
         if hasattr(node, "event_metadata_changed"):
             node.event_metadata_changed()
 
-        node["updatetime"] = ustr(format_date())
+        node["updatetime"] = format_date()
 
 
     def getMappingHeader(self):
@@ -1091,9 +1091,14 @@ class Mask(Node):
             elif len(self.get("exportmapping").split(";")) > 1:
                 return self.getExportHeader()
             else:
-                c = q(Mapping).get(self.get("exportmapping"))
-                return c.getHeader()
-        return ""
+                exportmapping_id = self.get("exportmapping")
+                c = q(Mapping).get(exportmapping_id)
+                if c is not None:
+                    return c.getHeader()
+                else:
+                    logg.warn("exportmapping %s for mask %s not found", exportmapping_id, self.id)
+                    return u""
+        return u""
 
     def getMappingFooter(self):
         from .mapping import Mapping

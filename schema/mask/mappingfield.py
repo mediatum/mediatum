@@ -19,6 +19,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import logging
 import re
 
 from core.metatype import Metatype
@@ -29,6 +30,7 @@ import export.exportutils as exportutils
 from core import Node
 from core import db
 
+logg = logging.getLogger(__name__)
 q = db.query
 
 class MappingReplacement():
@@ -220,7 +222,11 @@ class m_mappingfield(Metatype):
                 continue
 
             if field.get("fieldtype") == "mapping":  # mapping to mapping definition
-                mapping = q(Node).get(mask.get("exportmapping").split(";")[0])
+                exportmapping_id = mask.get("exportmapping").split(";")[0]
+                mapping = q(Node).get(exportmapping_id)
+                if mapping is None:
+                    logg.warn("exportmapping %s for mask %s not found", exportmapping_id, mask.id)
+                    return u""
                 separator = mapping.get("separator")
 
                 ns = mapping.getNamespace()

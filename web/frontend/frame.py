@@ -31,12 +31,14 @@ from core.translation import lang, t
 from core.metatype import Context
 from core.styles import theme
 from core.systemtypes import Searchmasks, Root
+from core.transition import current_user
 from core.users import get_guest_user
+from core.webconfig import node_url
 from contenttypes import Directory, Container, Collections, Collection
 from schema.schema import getMetadataType
 from utils.compat import iteritems
 from utils.utils import Link
-from core.transition import current_user
+
 
 q = db.query
 logg = logging.getLogger(__name__)
@@ -279,7 +281,7 @@ class NavTreeEntry(object):
         return self.getLink()
 
     def getLink(self):
-        return u"/node?id=" + unicode(self.node.id)
+        return node_url(self.node.id)
 
     def isFolded(self):
         return self.folded

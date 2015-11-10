@@ -217,7 +217,7 @@ def send_file(req, download=0):
                 file = f
                 break
 
-    if existMetaField(n.schema, 'nodename'):
+    if existMetaField(n.schema, u'nodename'):
         display_file_name = u'{}.{}'.format(os.path.splitext(os.path.basename(n.name))[0], os.path.splitext(filename)[-1].strip('.'))
     else:
         display_file_name = filename

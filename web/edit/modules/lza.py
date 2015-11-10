@@ -63,8 +63,8 @@ def getContent(req, ids):
                         schema = node.schema
 
                         # test for lza export mask
-                        if (getMetaType(schema).getMask("lza")):
-                            m = getMetaType(schema).getMask("lza")
+                        if (getMetaType(schema).getMask(u"lza")):
+                            m = getMetaType(schema).getMask(u"lza")
                             meta = l.LZAMetadata(m.getViewHTML([node], 8))
                         else:
                             # generate error message

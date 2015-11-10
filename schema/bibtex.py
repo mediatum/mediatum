@@ -446,9 +446,9 @@ def importBibTeX(infile, node=None, req=None):
             metatype = bibtextypes[mytype]
 
             # check for mask configuration
-            mask = getMetaType(metatype).getMask("bibtex_import")
+            mask = getMetaType(metatype).getMask(u"bibtex_import")
             if not mask:
-                mask = getMetaType(metatype).getMask("bibtex")
+                mask = getMetaType(metatype).getMask(u"bibtex")
             if mask:
                 for f in mask.getMaskFields():
                     try:

@@ -231,8 +231,8 @@ class Data(Node):
         if separator == "":
             separator = u"<br/>"
         metatext = list()
-        mask = self.getMask("nodesmall")
-        for m in self.getMasks("shortview", language=language):
+        mask = self.getMask(u"nodesmall")
+        for m in self.getMasks(u"shortview", language=language):
             mask = m
 
         if mask:

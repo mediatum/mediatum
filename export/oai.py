@@ -337,11 +337,11 @@ def writeRecord(req, node, metadataformat):
         req.write(core.xmlnode.getSingleNodeXML(node))
     # in [masknode.name for masknode in getMetaType(node.getSchema()).getMasks() if masknode.get('masktype')=='exportmask']:
     elif nodeHasOAIExportMask(node, metadataformat.lower()):
-        mask = getMetaType(node.getSchema()).getMask("oai_" + metadataformat.lower())
+        mask = getMetaType(node.getSchema()).getMask(u"oai_" + metadataformat.lower())
         if DEBUG:
             timetable_update(
                 req,
-                """ in writeRecord: mask = getMetaType(node.getSchema()).getMask("oai_"+metadataformat.lower()): node.id='%s', metadataformat='%s'""" %
+                """ in writeRecord: mask = getMetaType(node.getSchema()).getMask(u"oai_"+metadataformat.lower()): node.id='%s', metadataformat='%s'""" %
                 (ustr(
                     node.id),
                     metadataformat))

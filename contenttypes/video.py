@@ -95,10 +95,9 @@ class Video(Content):
 
     def _prepareData(self, req, words=""):
 
-        access = acl.AccessData(req)
         mask = self.getFullView(lang(req))
 
-        obj = {'deleted': False, 'access': access}
+        obj = {'deleted': False}
         node = self
         if self.get('deleted') == 'true':
             node = self.getActiveVersion()

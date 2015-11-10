@@ -226,7 +226,6 @@ class Image(Content):
         except:
             tifs = []
 
-        access = acl.AccessData(req)
         if self.has_data_access():
             for f in self.files:
                 if f.type == "original":
@@ -240,7 +239,7 @@ class Image(Content):
 
         files, sum_size = filebrowser(self, req)
 
-        obj = {'deleted': False, 'access': access}
+        obj = {'deleted': False}
         node = self
         if self.get('deleted') == 'true':
             node = self.getActiveVersion()

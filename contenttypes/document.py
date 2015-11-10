@@ -54,9 +54,8 @@ class Document(Content):
         return "document"
 
     def _prepareData(self, req, words=""):
-        access = acl.AccessData(req)
         mask = self.getFullView(lang(req))
-        obj = {'deleted': False, 'access': access}
+        obj = {'deleted': False}
         node = self
         if self.get('deleted') == 'true':
             node = self.getActiveVersion()
@@ -73,7 +72,7 @@ class Document(Content):
         obj['sum_size'] = sum_size
 
         obj['bibtex'] = False
-        if node.getMask("bibtex"):
+        if node.getMask(u"bibtex"):
             obj['bibtex'] = True
 
         if node.has_object():

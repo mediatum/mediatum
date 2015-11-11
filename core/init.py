@@ -137,10 +137,13 @@ def init_db_connector():
         setattr(core, cls.__name__, cls)
 
 
-def connect_db(force_test_db=None):
+def connect_db(force_test_db=None, automigrate=False):
     import core
     core.db.configure(force_test_db)
     core.db.create_engine()
+
+    if automigrate:
+        core.db.upgrade_schema()
 
 
 def init_fulltext_search():
@@ -254,7 +257,7 @@ def update_nodetypes_in_db():
     s.commit()
 
 
-def basic_init(root_loglevel=None, config_filepath=None, log_filepath=None, use_logstash=None, force_test_db=None):
+def basic_init(root_loglevel=None, config_filepath=None, log_filepath=None, use_logstash=None, force_test_db=None, automigrate=False):
     add_ustr_builtin()
     import core.config
     core.config.initialize(config_filepath)
@@ -267,7 +270,7 @@ def basic_init(root_loglevel=None, config_filepath=None, log_filepath=None, use_
     init_db_connector()
     load_system_types()
     load_types()
-    connect_db(force_test_db)
+    connect_db(force_test_db, automigrate)
 
 
 def additional_init():
@@ -285,6 +288,6 @@ def additional_init():
     tal_setup()
 
 
-def full_init(root_loglevel=None, config_filepath=None, log_filepath=None, use_logstash=None, force_test_db=None):
-    basic_init(root_loglevel, config_filepath, log_filepath, use_logstash, force_test_db)
+def full_init(root_loglevel=None, config_filepath=None, log_filepath=None, use_logstash=None, force_test_db=None, automigrate=False):
+    basic_init(root_loglevel, config_filepath, log_filepath, use_logstash, force_test_db, automigrate)
     additional_init()

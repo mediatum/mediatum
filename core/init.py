@@ -221,6 +221,35 @@ def check_undefined_nodeclasses(stub_undefined_nodetypes=None, fail_if_undefined
                 logg.info("auto-generated stub class for node type '%s'", clsname)
 
 
+def update_nodetypes_in_db():
+    """The DB must know which nodetypes exist and if they are a container or a content node type.
+    Node types are never deleted from the DB, only added.
+
+    We still have some "system node types" which don't fit in either category.
+    They will be moved to their own tables later.
+    """
+    from contenttypes import Content, Container
+    from core import db, NodeType
+    q = db.query
+    s = db.session
+
+    db_nodetypes = set(t[0] for t in q(NodeType.name))
+
+    for cls in Content.get_all_subclasses():
+        typename = cls.__mapper__.polymorphic_identity
+        if typename not in db_nodetypes:
+            s.add(NodeType(name=typename, is_container=False))
+            logg.debug("added new content type '%s' to DB", typename)
+
+    for cls in Container.get_all_subclasses():
+        typename = cls.__mapper__.polymorphic_identity
+        if typename not in db_nodetypes:
+            s.add(NodeType(name=typename, is_container=True))
+            logg.debug("added new container type '%s' to DB", typename)
+
+    s.commit()
+
+
 def basic_init(root_loglevel=None, config_filepath=None, log_filepath=None, use_logstash=None, force_test_db=None):
     add_ustr_builtin()
     import core.config
@@ -245,6 +274,7 @@ def additional_init():
     register_workflow()
     init_modules()
     check_undefined_nodeclasses()
+    update_nodetypes_in_db()
     init_fulltext_search()
     init_ldap()
     init_archivemanager()

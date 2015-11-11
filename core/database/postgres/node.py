@@ -31,6 +31,19 @@ from sqlalchemy_continuum.utils import version_class
 logg = logging.getLogger(__name__)
 
 
+class NodeType(DeclarativeBase):
+
+    """Node type / node class description.
+    We don't need that in the application, that's just to inform Postgres about our types.
+    """
+
+    __tablename__ = "nodetype"
+
+    name = C(Text, primary_key=True)
+    # does this type act as a container type? Other types are "content types".
+    is_container = C(Boolean, index=True)
+
+
 class NodeAppenderQuery(AppenderMixin, LenMixin, MtQuery):
 
     """Custom AppenderQuery class with additional methods for node handling

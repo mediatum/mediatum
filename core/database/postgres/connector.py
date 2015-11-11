@@ -308,6 +308,12 @@ class PostgresSQLAConnector(object):
         if not schema_exists(self.session, "mediatum"):
             self.create_schema()
 
+    def upgrade_schema(self):
+        from alembic.config import Config
+        from alembic import command
+        alembic_cfg = Config(os.path.join(config.basedir, "alembic.ini"))
+        command.upgrade(alembic_cfg, "head")
+
     def check_load_initial_database_values(self, default_admin_password=None):
         s = self.session
         stmt = "SELECT EXISTS (SELECT FROM node)"

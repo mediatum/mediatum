@@ -125,10 +125,7 @@ def schema(args):
         db.drop_schema()
         db.create_schema()
     elif action == "upgrade":
-        from alembic.config import Config
-        from alembic import command
-        alembic_cfg = Config(os.path.join(config.basedir, "alembic.ini"))
-        command.upgrade(alembic_cfg, "head")
+        db.upgrade_schema()
 
 
 def data(args):

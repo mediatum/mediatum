@@ -53,7 +53,6 @@ def disabled_scoped_session(*args, **kwargs):
     raise Exception("Test mode, database session disabled. Use the core.test.fixtures.session fixture!")
 
 
-
 class ConnectionException(Exception):
     pass
 
@@ -111,10 +110,10 @@ class PostgresSQLAConnector(object):
         if code:
             # error code > 0? database dir is not present or server not running
             if code == 4:
-            # dirpath is not a proper database directory, try to init it
+                # dirpath is not a proper database directory, try to init it
                 check_call(["pg_ctl", "init", "-D", dirpath])
             elif code == 3:
-            # database directory is ok, but no server running
+                # database directory is ok, but no server running
                 logg.info("using existing database directory %s", dirpath)
             else:
                 # should not happen with the tested postgres version...
@@ -206,14 +205,13 @@ class PostgresSQLAConnector(object):
         """Just a simple check if the schema and the node table exist, should be extended"""
         if not schema_exists(self.session, "mediatum"):
             # missing schema, user should run schema creation or import a dump with structure
-            raise Exception("'mediatum' database schema does not exist." \
+            raise Exception("'mediatum' database schema does not exist."
                             "HINT: Did you forget to run 'bin/manage.py schema create'?")
 
         if not table_exists(self.session, "mediatum", "node"):
             # missing node table, there's something really wrong here...
-            raise Exception("'node' table does not exist." \
+            raise Exception("'node' table does not exist."
                             "HINT: You can delete and recreate the database schema with all tables with 'bin/manage.py schema recreate'")
-
 
     def get_model_classes(self):
         from core.database.postgres.file import File

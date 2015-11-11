@@ -709,8 +709,11 @@ let
     doCheck = false;
   };
 
+  imagemagick = pkgs.imagemagick.override { ghostscript = pkgs.ghostscript; };
+
 in {
   production = [
+      # python deps
       alembic
       coffeescript
       configargparse
@@ -750,7 +753,12 @@ in {
       sympy
       unicodecsv
       werkzeug
+      # other
+      pkgs.ffmpeg
+      imagemagick
+      pkgs.graphviz
       pkgs.perlPackages.ImageExifTool
+      pkgs.poppler_utils
     ];
 
     devel = [
@@ -763,12 +771,8 @@ in {
     ];
 
     system = with pkgs; [
-      ffmpeg
       git
-      graphviz
-      imagemagick
       nginx
-      poppler_utils
       zsh
     ];
 

@@ -768,6 +768,7 @@ in {
       graphviz
       imagemagick
       nginx
+      poppler_utils
       zsh
     ];
 

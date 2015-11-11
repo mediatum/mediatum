@@ -19,6 +19,7 @@
 
 import os
 import core.config as config
+from core import File
 
 from utils.utils import getMimeType, format_filesize
 from core.styles import theme
@@ -48,11 +49,7 @@ fileicons = {'directory': 'mmicon_dir.gif',
 def filebrowser(node, req):
     filesize = 0
     ret = list()
-    paths = []
-    for f in node.getFiles():
-        if f.getType() == "attachment":
-            paths.append(f._path)
-            # break
+    paths = [t[0] for t in node.files.with_entities(File.path).filter_by(filetype=u"attachment")]
 
     if len(paths) == 1 and os.path.isdir(config.get("paths.datadir") + paths[0]):
         # single file with no path
@@ -66,7 +63,7 @@ def filebrowser(node, req):
                 file["mimetype"], file["type"] = getMimeType(config.get("paths.datadir") + path)
                 file["icon"] = fileicons[file["mimetype"]]
                 file["path"] = path
-                file["name"] = f.getName()
+                file["name"] = os.path.basename(path)
                 if os.path.exists(config.get("paths.datadir") + path):
                     size = os.path.getsize(config.get("paths.datadir") + path)
                 else:
@@ -82,16 +79,15 @@ def filebrowser(node, req):
     if path == "":
         # no attachment directory -> test for single file
         file = {}
-        for f in node.getFiles():
-            if f.getType() not in node.getSysFiles():
-                file["mimetype"], file["type"] = getMimeType(f.getName())
-                file["icon"] = fileicons[file["mimetype"]]
-                file["path"] = f._path
-                file["name"] = f.getName()
-                size = f.getSize() or 0
-                file["size"] = format_filesize(size)
-                filesize += f.getSize()
-                ret.append(file)
+
+        for f in node.files.filter(~File.filetype.in_(node.getSysFiles())):
+            file["mimetype"], file["type"] = getMimeType(f.getName())
+            file["icon"] = fileicons[file["mimetype"]]
+            file["path"] = f.path
+            file["name"] = f.base_name
+            file["size"] = format_filesize(f.size)
+            filesize += f.size
+            ret.append(file)
         return ret, filesize
 
     if not path.endswith("/") and not req.params.get("path", "").startswith("/"):

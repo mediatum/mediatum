@@ -95,10 +95,9 @@ class Video(Content):
 
     def _prepareData(self, req, words=""):
 
-        access = acl.AccessData(req)
         mask = self.getFullView(lang(req))
 
-        obj = {'deleted': False, 'access': access}
+        obj = {'deleted': False}
         node = self
         if self.get('deleted') == 'true':
             node = self.getActiveVersion()
@@ -213,7 +212,7 @@ class Video(Content):
         return 0
 
     def getSysFiles(self):
-        return ["presentation", "thumb", "video"]
+        return [u"presentation", u"thumb", u"video"]
 
     def getLabel(self):
         return self.name

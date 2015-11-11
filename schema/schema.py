@@ -38,6 +38,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from core.transition.postgres import check_type_arg
 from core.database.postgres.node import children_rel, parents_rel
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import undefer
 
 
 log = logg = logging.getLogger(__name__)
@@ -180,17 +181,11 @@ def getAllMetaFields():
 def getMetaField(pid, name):
     return getMetaType(pid).children.filter_by(name=name).scalar()
 
-
 #
 # check existance of field for given metadatatype
 #
 def existMetaField(pid, name):
-    try:
-        f = getMetaType(pid).getChild(name)
-        return True
-    except:
-        return False
-
+    return getMetaField(pid, name) is not None
 
 """ update/create metadatafield """
 
@@ -943,8 +938,6 @@ class Mask(Node):
         return ret
 
     def getViewHTML(self, nodes, flags=0, language=None, template_from_caller=None, mask=None):
-        if not self.getChildren():
-            return []
         if flags & 4:
             ret = []
         else:
@@ -955,7 +948,7 @@ class Mask(Node):
             x.sort_by_orderpos()
             return getMetadataType("mappingfield").getViewHTML(
                 x, nodes, flags, language=language, template_from_caller=template_from_caller, mask=mask)
-        for field in self.getChildren().sort_by_orderpos():
+        for field in self.maskitems.sort_by_orderpos().options(undefer(Node.attrs)):
             t = getMetadataType(field.get("type"))
             if flags & 4:  # data mode
                 v = t.getViewHTML(field, nodes, flags, language=language, template_from_caller=template_from_caller, mask=mask)
@@ -1327,17 +1320,19 @@ class Mask(Node):
 @check_type_arg
 class Maskitem(Node):
 
-    _metafields = children_rel("Metafield", backref="maskitems")
+    _metafield_rel = children_rel("Metafield", backref="maskitems")
 
     @hybrid_property
     def metafield(self):
-        return self._metafields.scalar()
+        if not hasattr(self, "_metafield"):
+            self._metafield = self._metafield_rel.options(undefer(Node.attrs)).one()
+        return self._metafield
 
     @metafield.expression
     def metafield_expr(cls):
         class MetafieldExpr(object):
             def __eq__(self, other):
-                return cls._metafields.contains(other)
+                return cls._metafield_rel.contains(other)
 
         return MetafieldExpr()
 
@@ -1346,7 +1341,8 @@ class Maskitem(Node):
         if metafield is None:
             raise ValueError("setting metafield to None is not allowed!")
 
-        self._metafields = [metafield]
+        self._metafield_rel = [metafield]
+        self._metafield = metafield
 
     def getLabel(self):
         return self.getName()

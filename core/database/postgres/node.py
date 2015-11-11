@@ -26,6 +26,7 @@ from utils.magicobjects import MInt
 from ipaddr import IPv4Address
 from sqlalchemy_continuum import versioning_manager
 from sqlalchemy_continuum.utils import version_class
+from werkzeug.utils import cached_property
 
 
 logg = logging.getLogger(__name__)
@@ -245,6 +246,19 @@ class Node(DeclarativeBase, NodeMixin):
         sq = _subquery_subtree(self)
         return object_session(self).query(Content).filter(Node.id.in_(sq)).filter_by(subnode=False)
 
+    @property
+    def content_children_for_all_subcontainers_with_duplicates(self):
+        """Collects all Content nodes in all subcontainers of this node.
+        This excludes content nodes that are children of other content nodes.
+        This method can be much faster than content_children_for_all_subcontainers, but may return lesser nodes than expected (when using limit).
+        Don't use distinct() on this method, use content_children_for_all_subcontainers instead if you need it!
+        """
+        from contenttypes.data import Content
+        from core import db
+        sq = _subquery_subtree(self)
+        nr = t_noderelation
+        return object_session(self).query(Content).filter_by(subnode=False).join(nr, Content.id == nr.c.cid).filter(nr.c.nid==self.id)
+
     def all_children_by_query(self, query):
         sq = _subquery_subtree(self)
         query = query.filter(Node.id.in_(sq))
@@ -381,6 +395,29 @@ class Node(DeclarativeBase, NodeMixin):
     def is_descendant_of(self, node):
         return exec_sqlfunc(object_session(self), mediatumfunc.is_descendant_of(self.id, node.id))
 
+    def get_container(self):
+        from contenttypes import Container
+        nr = t_noderelation
+        q = object_session(self).query
+        parent_dir = q(Container).join(nr, Node.id == nr.c.nid).filter_by(cid=self.id).order_by(nr.c.distance).limit(1).one()
+        return parent_dir
+
+    def get_collection(self):
+        from contenttypes import Collection
+        nr = t_noderelation
+        q = object_session(self).query
+        parent_coll = q(Collection).join(nr, Node.id == nr.c.nid).filter_by(cid=self.id).order_by(nr.c.distance).limit(1).scalar()
+
+        if parent_coll is None:
+            from contenttypes import Collections
+            return q(Collections).one()
+
+        return parent_coll
+
+    @cached_property
+    def has_files(self):
+        return self.files.first() is not None
+
     __mapper_args__ = {
         'polymorphic_identity': 'node',
         'polymorphic_on': type
@@ -426,6 +463,15 @@ _parents_rel_options = dict(
     query_class=NodeAppenderQuery
 )
 
+_all_parents_rel_options = dict(
+    secondary=t_noderelation,
+    lazy="dynamic",
+    primaryjoin=Node.id == t_noderelation.c.cid,
+    secondaryjoin=Node.id == t_noderelation.c.nid,
+    query_class=NodeAppenderQuery,
+    viewonly=True
+)
+
 
 def children_rel(*args, **kwargs):
     extended_kwargs = _children_rel_options.copy()
@@ -444,7 +490,14 @@ def parents_rel(*args, **kwargs):
     extended_kwargs.update(kwargs)
     return rel(*args, **extended_kwargs)
 
+
+def all_parents_rel(*args, **kwargs):
+    extended_kwargs = _all_parents_rel_options.copy()
+    extended_kwargs.update(kwargs)
+    return rel(*args, **extended_kwargs)
+
 # define Node child/parent relationships here
 
 Node.children = children_rel(Node, backref=bref("parents", lazy="dynamic", query_class=NodeAppenderQuery))
 Node.all_children = all_children_rel(Node)
+Node.all_parents = all_parents_rel(Node)

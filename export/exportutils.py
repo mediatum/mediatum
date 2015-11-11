@@ -231,10 +231,10 @@ def runTALSnippet(s, context, mask=None):
     if s.find('tal:') < 0:
         return s
 
-    header = '''<?xml version="1.0" encoding="UTF-8" ?>'''
-    xmlns = '''<talnamespaces xmlns:tal="http://xml.zope.org/namespaces/tal" xmlns:metal="http://xml.zope.org/namespaces/metal">'''
-    footer = '''</talnamespaces>'''
-    cutter = "----cut-TAL-result-here----\n"
+    header = u'''<?xml version="1.0" encoding="UTF-8" ?>'''
+    xmlns = u'''<talnamespaces xmlns:tal="http://xml.zope.org/namespaces/tal" xmlns:metal="http://xml.zope.org/namespaces/metal">'''
+    footer = u'''</talnamespaces>'''
+    cutter = u"----cut-TAL-result-here----\n"
 
     if mask:
         exportheader = mask.get('exportheader')
@@ -245,15 +245,7 @@ def runTALSnippet(s, context, mask=None):
         footer += mask.get('exportfooter')
 
     to_be_processed = header + xmlns + cutter + s + cutter + footer
-    try:  # normally only encoding errors
-        wr_result = tal.getTALstr(to_be_processed, context, mode='xml')
-    except:  # try with u2 method
-        try:
-            wr_result = tal.getTALstr(u2(to_be_processed), context, mode='xml')
-        except:
-            wr_result = tal.getTALstr(u2(to_be_processed), context)
-        #wr_result = tal.getTALstr(u2(to_be_processed), context, mode='xml')
-
+    wr_result = tal.getTALstr(to_be_processed, context, mode='xml')
 
     return wr_result[wr_result.find(cutter)+len(cutter):wr_result.rfind(cutter)]
 

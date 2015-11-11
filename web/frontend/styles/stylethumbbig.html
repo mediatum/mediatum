@@ -7,7 +7,7 @@
         <div tal:condition="python:file.attachment" style="position:absolute; right:25px; top:3px; overflow:hidden">
             <img i18n:attributes="title view_list_att_title" src="/img/attach.png"/>
         </div>
-        
+
         <div style="position:absolute; left:3px; top:3px; overflow:hidden">
             <small><p tal:replace="python:u'[{}/{}]'.format(file.nr+1, file.num)"/></small>
         </div>
@@ -15,11 +15,11 @@
             <div style="text-align:center;width:253px;height:240px;margin:3px;padding-top:12px;margin-bottom:2px;overflow:hidden">
                 <img tal:condition="python:int(file.node.get('width') or 0)>int(file.node.get('height') or 0)" tal:attributes="src python:u'/thumb2/{}'.format(file.node.id)" class="thumbnail" style="width:250px;margin-top:10px" border="0"/>
                 <img tal:condition="python:int(file.node.get('width') or 0)<int(file.node.get('height') or 0)" tal:attributes="src python:u'/thumb2/{}'.format(file.node.id)" class="thumbnail" style="height:240px" border="0"/>
-                
-                <p tal:condition="python:file.node.get('width')==file.node.get('height')" tal:content="raw python:file.node.show_node_text(None, language)" style="text-align:left;margin-top:30px;margin-left:50px">
+
+                <p tal:condition="python:file.node.get('width')==file.node.get('height')" tal:content="raw python:file.text" style="text-align:left;margin-top:30px;margin-left:50px">
                     TEXT
                 </p>
-                
+
             </div>
         </a>
     </div>

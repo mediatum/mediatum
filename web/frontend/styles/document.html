@@ -13,7 +13,7 @@
     <a tal:condition="print_url" tal:attributes="href python:print_url" i18n:attributes="title printview" target="_blank"><img src="/img/print_icon.gif" style="margin-top:-5px"/></a>
 </div>
 <div id="object_main">
-    <div tal:condition="python: len(node.getFiles())>0" id="object_image">
+    <div tal:condition="python: node.has_files" id="object_image">
         <tal:block tal:condition="python:canseeoriginal">
             <a tal:attributes="href documentlink" i18n:attributes="title doc_fulltext_title" target="pdfdocument">
                 <img tal:attributes="src documentthumb" style="cursor:pointer" border="0" width="300" />
@@ -42,15 +42,15 @@
             <a tal:attributes="href python:u'/export/{}/bibtex'.format(node.id)" target="bibtexdocument" i18n:attributes="title doc_bibtex_title"><img src="/img/bibtex.gif"/></a>
         </tal:block>
     </div>
-    <tal:block tal:condition="python: len(node.getFiles())==0">
+    <tal:block tal:condition="python: not node.has_files">
         <div id="object_meta" style="margin-left:0px" tal:content="raw metadata"/>
         <tal:block tal:condition="bibtex">
             <br/>
             <a tal:attributes="href python:u'/export/{}/bibtex'.format(node.id)" target="bibtexdocument" i18n:attributes="title doc_bibtex_title"><img src="/img/bibtex.gif"/></a>
         </tal:block>
     </tal:block>
-    <div tal:condition="python: len(node.getFiles())>0" id="object_meta" tal:content="raw metadata"/>
-    
+    <div tal:condition="python: node.has_files" id="object_meta" tal:content="raw metadata"/>
+
     <p tal:condition="python:node.get('license')!='' and ', http' in node.get('license')" style="text-align:right" class="licenseicon">
         <a tal:attributes="href python:node.get('license').split(',')[1]" target="_blank"><img tal:attributes="src python:u'/img/{}.png'.format(node.get('license').split(',')[0])" style="width:80px;"/></a>
     </p>

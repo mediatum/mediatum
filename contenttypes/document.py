@@ -54,9 +54,8 @@ class Document(Content):
         return "document"
 
     def _prepareData(self, req, words=""):
-        access = acl.AccessData(req)
         mask = self.getFullView(lang(req))
-        obj = {'deleted': False, 'access': access}
+        obj = {'deleted': False}
         node = self
         if self.get('deleted') == 'true':
             node = self.getActiveVersion()
@@ -73,7 +72,7 @@ class Document(Content):
         obj['sum_size'] = sum_size
 
         obj['bibtex'] = False
-        if node.getMask("bibtex"):
+        if node.getMask(u"bibtex"):
             obj['bibtex'] = True
 
         if node.has_object():
@@ -94,28 +93,18 @@ class Document(Content):
             obj['print_url'] = None
             obj['documentdownload'] = None
 
-        full_style = None
-
-        if "style" in req.params:
-            full_style = req.params.get("style")
-
-        elif "full_style" not in req.session:
-            if "contentarea" in req.session:
-                col = req.session["contentarea"].collection
-                if col is not None:
-                    full_style = col.get("style_full")
-
-            req.session["full_style"] = full_style or "full_standard"
+        full_style = req.args.get("style", "full_standard")
+        if full_style:
+            obj['style'] = full_style
 
         obj['parentInformation'] = self.getParentInformation(req)
 
-        obj['style'] = req.session["full_style"]
         return obj
 
     """ format big view with standard template """
     def show_node_big(self, req, template="", macro=""):
-        if template == "":
-            styles = getContentStyles("bigview", contenttype=self.getContentType())
+        if not template:
+            styles = getContentStyles("bigview", contenttype=self.type)
             if len(styles) >= 1:
                 template = styles[0].getTemplate()
         return req.getTAL(template, self._prepareData(req), macro)
@@ -134,7 +123,7 @@ class Document(Content):
         return self.name
 
     def getSysFiles(self):
-        return ["doc", "document", "thumb", "thumb2", "presentati", "presentation", "fulltext", "fileinfo"]
+        return [u"doc", u"document", u"thumb", u"thumb2", u"presentati", u"presentation", u"fulltext", u"fileinfo"]
 
     """ postprocess method for object type 'document'. called after object creation """
     def event_files_changed(self):

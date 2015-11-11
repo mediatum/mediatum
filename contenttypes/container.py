@@ -212,7 +212,7 @@ class Container(Data, ContainerMixin, SchemaMixin):
         return 1
 
     def getSysFiles(self):
-        return ["statistic", "image"]
+        return [u"statistic", u"image"]
 
     def getLabel(self, lang=getDefaultLanguage()):
 
@@ -238,11 +238,7 @@ class Container(Data, ContainerMixin, SchemaMixin):
         return {}
 
     def getLogoPath(self):
-        items = []
-        for file in self.getFiles():
-            if file.getType() == 'image':
-                items.append(file.getName())
-
+        items = [f.base_name for f in self.files.filter_by(filetype=u"image")]
         if "system.logo" not in self.attributes.keys() and len(items) == 1:
             return items[0]
         else:
@@ -308,7 +304,8 @@ class Container(Data, ContainerMixin, SchemaMixin):
     def event_files_changed(self):
         logg.debug("Postprocessing node %s", self.id)
 
-
+    def get_container(self):
+        return self
 
 
 # concrete Container classes
@@ -337,12 +334,18 @@ class Collection(Container):
         metafields.append(field)
         return metafields
 
+    def get_collection(self):
+        return self
+
 
 @check_type_arg_with_schema
 class Collections(Container):
-    pass
+
+    def get_collection(self):
+        return self
 
 
 @check_type_arg_with_schema
 class Home(Container):
     pass
+

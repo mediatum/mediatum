@@ -131,8 +131,9 @@ def readStyleConfig(filename):
                         attrs["icon"], attrs["template"], attrs["default"], attrs["description"])
 
 
-def getContentStyles(type, name="", contenttype=""):
-    name = name.split(";")[0]
+def getContentStyles(type, name=None, contenttype=None):
+    if name:
+        name = name.split(";")[0]
     global contentstyles
 
     if len(contentstyles) == 0:
@@ -167,17 +168,17 @@ def getContentStyles(type, name="", contenttype=""):
 
         contentstyles = styles
 
-    if contenttype != "":
-        ret = filter(lambda x: x.getContentType() == contenttype, contentstyles.values())
+    if contenttype is not None:
+        ret = filter(lambda x: x.contenttype == contenttype, contentstyles.values())
         if len(ret) > 0:
-            if name != "":
-                return filter(lambda x: x.getName() == name, ret)
+            if name:
+                return filter(lambda x: x.name == name, ret)
             else:
                 return ret
         else:
             return []
 
-    if name != "":
+    if name is not None:
         if name in contentstyles.keys():
             return contentstyles[name]
         else:

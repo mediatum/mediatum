@@ -239,6 +239,9 @@ msgstr "Mehr Felder"
 msgid "all_metafields"
 msgstr "Alle Daten"
 
+msgid "search_result"
+msgstr "Suchergebnis"
+
 msgid "search_result_header"
 msgstr "Ihr(e) Suchbegriff(e) " ${searchstring} " wurde(n) in folgenden Kollektionen gefunden:"
 
@@ -1326,3 +1329,12 @@ msgstr "Datei:"
 
 msgid "file_size"
 msgstr "Dateigröße:"
+
+msgid "direct_link_current_node"
+msgstr "Dauerhafter Link zum angezeigten Objekt"
+
+msgid "next"
+msgstr "weiter"
+
+msgid "previous"
+msgstr "zurück"

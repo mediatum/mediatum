@@ -263,13 +263,7 @@ class MappingField(Node):
             self.set("mandatory", "False")
 
     def getMapping(self):
-        for p in self.getParents():
-            try:
-                if p.getFieldtype() == "mapping":
-                    return p
-            except:
-                pass
-        return None
+        return self.parents.filter_by(type=u"mapping").first()
 
     def getValues(self):
         return ""

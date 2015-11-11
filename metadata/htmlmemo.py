@@ -50,7 +50,7 @@ class m_htmlmemo(Metatype):
     def has_language_cutter(self, s):
         return bool(self.CUTTER_PATTERN.search(s))
 
-    def language_snipper(self, s, language, joiner=""):
+    def language_snipper(self, s, language, joiner=u""):
         res = []
         append_line = True
         for line in s.splitlines(True):

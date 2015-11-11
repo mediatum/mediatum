@@ -62,7 +62,7 @@ class m_date(Metatype):
         value = node.get(field.getName())
 
         if not value or value == "0000-00-00T00:00:00":  # dummy for unknown
-            return (field.getLabel(), "")
+            return (field.getLabel(), u"")
         else:
             try:
                 d = parse_date(value)

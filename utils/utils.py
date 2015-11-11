@@ -382,21 +382,8 @@ def isCollection(node):
 
 
 def getCollection(node):
-    from core import db
-    from contenttypes import Collections, Collection
-    q = db.query
-    def p(node):
-        if isinstance(node, (Collection, Collections)):
-            return node
-        for pp in node.parents:
-            n = p(pp)
-            if n:
-                return n
-        return None
-    collection = p(node)
-    if collection is None:
-        collection = q(Collections).one()
-    return collection
+    warn("use Node.get_collection()", DeprecationWarning)
+    return node.get_collection()
 
 
 def isDirectory(node):
@@ -406,21 +393,8 @@ def isDirectory(node):
 
 
 def getDirectory(node):
-    from core import db
-    q = db.query
-    from contenttypes.container import Collections
-    def p(node):
-        if node.type.startswith("directory"):
-            return node
-        for pp in node.getParents():
-            n = p(pp)
-            if n:
-                return n
-        return None
-    directory = p(node)
-    if directory is None:
-        directory = q(Collections).one()
-    return directory
+    warn("use Node.get_container()", DeprecationWarning)
+    return node.get_container()
 
 
 def ArrayToString(pieces, glue=""):

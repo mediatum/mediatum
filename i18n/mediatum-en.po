@@ -232,6 +232,9 @@ msgstr "More Searchfields"
 msgid "all_metafields"
 msgstr "all metadata"
 
+msgid "search_result"
+msgstr "Search Result"
+
 msgid "search_result_header"
 msgstr "Your search string "
 
@@ -1313,3 +1316,12 @@ msgstr "File:"
 
 msgid "file_size"
 msgstr "File size:"
+
+msgid "direct_link_current_node"
+msgstr "Permanent link for displayed object"
+
+msgid "next"
+msgstr "next"
+
+msgid "previous"
+msgstr "previous"

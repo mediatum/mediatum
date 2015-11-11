@@ -18,24 +18,22 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
-from PIL import Image, ImageDraw
-import core.config as config
 import re
+from PIL import Image
+import core.config as config
 
 try:
     from reportlab.platypus import Paragraph, BaseDocTemplate, SimpleDocTemplate, FrameBreak, Table, TableStyle, Image as PdfImage, Frame, PageBreak, PageTemplate
-    from reportlab.lib import colors
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
     from reportlab.lib.units import cm
     from reportlab.rl_config import defaultPageSize
-    from reportlab.pdfgen import canvas
-    from utils.utils import esc
     reportlab = 1
 except:
     reportlab = 0
 
-from utils.utils import u, esc
 from core.translation import t
+from core.webconfig import node_url
+from utils.utils import u, esc
 
 
 class PrintPreview:
@@ -226,8 +224,7 @@ class PrintPreview:
             for path in pathlist:
 
                 for item in path:
-                    p += '<link href="http://' + self.host + '/node?id=' + item.id + \
-                        '&amp;dir=' + item.id + '\">' + item.getName() + '</link>'
+                    p += u'<link href="http://{}{}">{}</link>'.format(self.host, node_url(item.id), item.getName())
 
                     if path.index(item) < len(path) - 1:
                         p += ' > '

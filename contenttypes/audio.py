@@ -148,10 +148,9 @@ class Audio(Content):
 
     # prepare hash table with values for TAL-template
     def _prepareData(self, req):
-        access = acl.AccessData(req)
         mask = self.getFullView(lang(req))
 
-        obj = {'deleted': False, 'access': access}
+        obj = {'deleted': False}
         node = self
         if self.get('deleted') == 'true':
             node = self.getActiveVersion()
@@ -197,7 +196,7 @@ class Audio(Content):
         return False
 
     def getSysFiles(self):
-        return ["audio", "thumb", "presentation", "mp3"]
+        return [u"audio", u"thumb", u"presentation", u"mp3"]
 
     """ postprocess method for object type 'audio'. called after object creation """
     def event_files_changed(self):

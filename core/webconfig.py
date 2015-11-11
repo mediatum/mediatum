@@ -109,16 +109,19 @@ def loadServices():
         logg.info("web services not activated")
 
 
+def node_url(nid=None, version=None, **kwargs):
+    params = {}
+    if nid:
+        params["id"] = nid
+    if version:
+        params["v"] = version
+    params.update(kwargs)
+    return u"/node?" + urllib.urlencode(params)
+
+
 def tal_add_template_globals():
-
-    def node_url(nid, version=0, **kwargs):
-        params = {"id": nid}
-        if version:
-            params["v"] = version
-        params.update(kwargs)
-        return "/?" + urllib.urlencode(params)
-
     tal.add_template_globals(node_url=node_url)
+
 
 def initContexts():
     athana.setBase(".")

@@ -1,116 +1,33 @@
-<!-- use jwplayer -->
-<html metal:define-macro="fullsize_flv_jwplayer">
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <meta content="text/html;charset=UTF-8" http-equiv="content-type">
+<link rel="stylesheet" href="css/childs.css">
+<link rel="stylesheet" href="css/video.css">
 
-        <title i18n:translate="video_showvideo">TEXT</title>
-        <script type="text/javascript" src="/js/jwplayer.min.js"> </script>
-        
-        <script tal:content="python:'var file_url = \''+str(file)+'\';'">;</script>
-        <script tal:content="python:'var thumbnail_url = \'/thumb2/{}\';'.format(node.id)">;</script>
-        <script tal:content="python:'var captions_info = '+str(captions_info)+';'">;</script>
-        
-        <style>
-            body {margin:0px;padding:0px;}
-            html {height:100%;}
-        </style>
-    </head>
-    <body>
-        <a tal:attributes="href file" style="display:block;" id="player"> </a>
-        
-          <script type="text/javascript">
-          
-              function get_captions_plugin() {
-                if (captions_info && typeof captions_info["file_list"] != 'undefined' && captions_info["file_list"].length > 0) {
-                    return {
-                      '/js/captions.js': {
-                          state: true,  // initial state on/off
-                          
-                          // default values - may be overridden by styling in caption files
-                          back: false,  // underlay with rectangle to increase readability
-                          color: '#FFF',  // font color
-                          fontSize: 14,
-                          fontFamily: 'Arial,sans-serif',  // 'Courier'
-                          fontStyle: 'normal',  // 'normal' or 'italic'
-                          fontWeight: 'normal',  // 'normal' or 'bold'
-                          textDecoration: 'none',  // 'none' or 'underline'
-                          
-                          files: captions_info['file_list'],
-                          labels: captions_info['label_list'],
-                          label: captions_info['preset_label']
-                      }
-                  }
-                }
-                else {
-                    return null;
-                }
-              }
-              
-              jwplayer("player").setup({
-                  file: file_url,
-                  height: "100%",
-                  image: thumbnail_url,
-                  stretching: 'uniform',
-                  plugins: get_captions_plugin(),
-                  flashplayer: '/img/player.swf',
-                  width: "100%",
-                  autostart: true,
-                  debug: 'console'                
-              });
-              
-              // make the player stop 1 second before end of movie:
-              // http://www.longtailvideo.com/support/forums/bits-on-the-run/content-delivery/25830/leave-last-frame-on-screen/              
-              jwplayer().onTime(
-                                  function(object) {
-                                      if(object.position > object.duration - 1) {
-                                          this.pause();
-                                      }
-                                  }
-              );    
-          </script>
-    </body>
-</html>
+<metal:macro use-macro="web/frontend/styles/macros.html/version_alerts"/>
+<metal:macro use-macro="web/frontend/styles/macros.html/deleted"/>
 
-<!-- use flowplayer -->
-<html metal:define-macro="fullsize_flv">
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <meta content="text/html;charset=UTF-8" http-equiv="content-type">
+<div id="object_main">
+    <div style="width:100%; text-align:right">
+        <a tal:attributes="href python:'javascript:shoppingBag(\'{}\')'.format(node.id)">
+            <img i18n:attributes="title view_list_add_shoppingbag" border="0" src="/img/favourite_add.png"/></a>
+        <a tal:attributes="href python:'/print/{}'.format(node.id)" i18n:attributes="title printview" target="_blank"><img src="/img/print_icon.gif"/></a>
+    </div>
+    <div id="object_image">
+        <tal:block tal:condition="python:hasFiles">
+            <div tal:condition="python:not canseeoriginal" class="video">
+                <img tal:attributes="src python:'/thumb2/{}'.format(node.id)"/>
+            </div>
+            <video tal:condition="python:canseeoriginal and hasVidFiles" controls autobuffer tal:attributes="src python:file" style="cursor:pointer;width:300px"/>
+            <img tal:condition="python:canseeoriginal and not hasVidFiles" tal:attributes="src python:'/thumb2/{}'.format(node.id)" style="border:0px;width:300px"/>
+            <metal:macro use-macro="web/frontend/styles/macros.html/object_versions"/>
+        </tal:block>
+        <img tal:condition="python:not canseeoriginal and not hasFiles" tal:attributes="src python:'/thumb2/{}'.format(node.id)" style="border:0px;width:300px"/>
+    </div>
+    <div id="object_meta" tal:content="raw metadata">TEXT</div>
+</div>
 
-        <title i18n:translate="video_showvideo">TEXT</title>
-        <script src="/js/flowplayer-3.0.5.min.js"> </script>
-        
-        <style>
-            body {margin:0px;padding:0px;}
-            html {height:100%;}
-        </style>
-    
-    </head>
-    <body>
-        <a tal:attributes="href file" style="display:block;" id="player"> </a>
-        <script language="JavaScript">
-            flowplayer("player", "/img/FlowPlayerDark.swf", {
-                plugins: {         
-                    controls: {
-                        autoHide: 'always',
-                        bufferColor: '#000000',
-                        progressColor: '#6E6E6E',
-                        buttonColor: '#000000',
-                        buttonOverColor: '#000000',
-                        durationColor: "#ffffff",
-                        timeColor: "#9E9E9E",
-                        backgroundGradient: 'none',
-                        time: true
-                        }
-                    },
-                    clip:{
-                        scaling: 'fit'
-                        }
-                }
-            );
-        </script>
-    </body>
-</html>
+<p tal:condition="python:node.get('license')!='' and ', http' in node.get('license')" style="text-align:right" class="licenseicon">
+    <a tal:attributes="href python:node.get('license').split(',')[1]" target="_blank"><img tal:attributes="src python:u'/img/{}.png'.format(node.get('license').split(',')[0])" style="width:80px;"/></a>
+</p>
 
-
+<div style="clear:both"/>
+<metal:macro use-macro="web/frontend/styles/macros.html/bothView"/>
+<div style="clear:both"/>

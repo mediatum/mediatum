@@ -1,3 +1,10 @@
+<link rel="stylesheet" href="css/childs.css">
+<link rel="stylesheet" href="css/video.css">
+
+<metal:macro use-macro="web/frontend/styles/macros.html/version_alerts"/>
+
+<metal:macro use-macro="web/frontend/styles/macros.html/deleted"/>
+
 <div id="object_main" style="position:relative">
     <div style="width:100%; text-align:right">
         <a tal:attributes="href python:'javascript:shoppingBag(\'{}\')'.format(node.id)">
@@ -6,68 +13,19 @@
     </div>
 </div>
 
-        <script type="text/javascript" src="/js/jwplayer.min.js"> </script>
-        
-        <script tal:content="python:'var file_url = \''+str(file)+'\';'">;</script>
-        <script tal:content="python:'var thumbnail_url = \'/thumb2/{}\';'.format(node.id)">;</script>
-        <script tal:content="python:'var captions_info = '+str(captions_info)+';'">;</script>
-
-<div tal:condition="python:not canseeoriginal" style="border:1px solid silver">
-    <img tal:attributes="src python:'/thumb2/{}'.format(node.id)"/>
+<div id="object_main">
+    <div id="object_image">
+        <video tal:condition="python:canseeoriginal and hasVidFiles" controls autobuffer tal:attributes="src python:file" style="cursor:pointer;width:300px"/>
+        <img tal:condition="python:canseeoriginal and not hasVidFiles" tal:attributes="src python:'/thumb2/{}'.format(node.id)" style="border:1px solid silver;width:300px"/>
+        <img tal:condition="python:not canseeoriginal" tal:attributes="src python:'/thumb2/{}'.format(node.id)" style="border:0px;width:300px"/>
+        <br/>
+        <metal:macro use-macro="web/frontend/styles/macros.html/object_versions"/>
+    </div>
+    <div id="object_meta" tal:content="raw metadata">TEXT</div>
 </div>
-<div tal:condition="python:canseeoriginal and hasFiles" tal:attributes="width python:node.get('vid-width')+'px';height python:node.get('vid-height')+'px'" style="border:1px solid silver; height:400px;text-align:center">
-<a tal:attributes="href file" style="display:block;" id="player"> </a>
-</div>
-
-<tal:block condition="python: not hasFiles">
-    <img tal:attributes="src python:'/thumb2/{}'.format(node.id); onClick python:'fullSizePopup({}, 320, 240)'.format(node.id)" style="cursor:pointer;border:1px double silver;width:300px; float:left" border="1px"/>
-</tal:block>
-
-<tal:block condition="python:hasFiles">
-      <script type="text/javascript">
-          function get_captions_plugin() {
-            if (captions_info && typeof captions_info["file_list"] != 'undefined' && captions_info["file_list"].length > 0) {
-                return {
-                  '/js/captions.js': {
-                      state: true,  // initial state on/off
-
-                      // default values - may be overridden by styling in caption files
-                      back: false,  // underlay with rectangle to increase readability
-                      color: '#FFF',  // font color
-                      fontSize: 14,
-                      fontFamily: 'Arial,sans-serif',  // 'Courier'
-                      fontStyle: 'normal',  // 'normal' or 'italic'
-                      fontWeight: 'normal',  // 'normal' or 'bold'
-                      textDecoration: 'none',  // 'none' or 'underline'
-
-                      files: captions_info['file_list'],
-                      labels: captions_info['label_list'],
-                      label: captions_info['preset_label']
-                  }
-              }
-            }
-            else {
-                return null;
-            }
-          }
-          jwplayer("player").setup({
-              file: file_url,
-              height: "100%",
-              image: thumbnail_url,
-              stretching: 'uniform',
-              plugins: get_captions_plugin(),
-              flashplayer: '/img/player.swf',
-              width: "100%",
-              autostart: false,
-              debug: 'console'
-          });
-      </script>
-    <p><small i18n:translate="video_plugin_info">TEXT</small></p>
-</tal:block>
-<div tal:condition="python:hasFiles" id="object_meta" style="margin-left:10px">
-    <tal:block tal:content="raw metadata"/>
-</div>
-
-<div tal:condition="python: not hasFiles" id="object_meta" style="margin-left:335px;">
-    <tal:block tal:content="raw metadata"/>
-</div>
+<p tal:condition="python:node.get('license')!='' and ', http' in node.get('license')" style="text-align:right" class="licenseicon">
+    <a tal:attributes="href python:node.get('license').split(',')[1]" target="_blank"><img tal:attributes="src python:'/img/'+node.get('license').split(',')[0]+'.png'" style="width:80px;"/></a>
+</p>
+<div style="clear:both"/>
+<metal:macro use-macro="web/frontend/styles/macros.html/bothView"/>
+<div style="clear:both"/>

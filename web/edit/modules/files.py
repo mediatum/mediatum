@@ -158,6 +158,9 @@ def getContent(req, ids):
                         ret += req.getTAL("web/edit/modules/metadata.html", {'url':'?id='+node.id+'&tab=files', 'pid':None}, macro="redirect")
 
                 if req.params.get("change_file")=="yes" and not create_version_error: # remove old files
+                    if uploadfile.filename:
+                        if getMimeType(uploadfile.filename)[0] == 'other':
+                            return '<h2 style="width:100%; text-align:center ;color:red">file-format is not supported (upload canceled / use attachment)</h2>'
                     for f in node.getFiles():
                         if f.getType() in node.getSysFiles():
                             node.removeFile(f)
@@ -167,6 +170,9 @@ def getContent(req, ids):
                     node.set("system.version.comment", '('+t(req, "edit_files_new_version_adding_comment")+')\n'+req.params.get('version_comment', ''))
 
                 if req.params.get("change_file") in ["yes", "no"] and not create_version_error:
+                    if uploadfile.filename:
+                        if getMimeType(uploadfile.filename)[0] == 'other':
+                            return '<h2 style="width:100%; text-align:center ;color:red">file-format is not supported (upload canceled / use attachment)</h2>'
                     file = importFile(uploadfile.filename, uploadfile.tempname) # add new file
                     node.addFile(file)
                     logging.getLogger('usertracing').info(user.name+" changed file of node "+node.id+" to "+uploadfile.filename+" ("+uploadfile.tempname+")")
@@ -233,7 +239,7 @@ def getContent(req, ids):
                     node.event_files_changed()
                     logging.getLogger('usertracing').info(user.name + " postprocesses node " + node.id)
                 except:
-                    update_error = True    
+                    update_error = True
 
     v = {"id": req.params.get("id", "0"), "tab": req.params.get("tab", ""), "node": node, "update_error": update_error,
          "user": user, "files": filter(lambda x: x.type != 'statistic', node.getFiles()),

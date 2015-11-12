@@ -27,12 +27,12 @@ from utils.utils import splitfilename
 from utils.date import format_date, make_date
 from core.acl import AccessData
 from core.tree import FileNode
-from lib.flv.parse import FLVReader
 from contenttypes.image import makeThumbNail, makePresentationFormat
 from core.translation import lang, t
 from core.styles import getContentStyles
 from schema.schema import VIEW_HIDE_EMPTY
 from metadata.upload import getFilelist
+from utils.utils import getMimeType
 
 from . import default
 
@@ -101,9 +101,14 @@ class Video(default.Default):
             obj['captions_info'] = {}
             obj['file'] = ''
             obj['hasFiles'] = False
+            obj['hasVidFiles'] = False
 
         if len(node.getFiles()) > 0:
             obj['hasFiles'] = True
+            if len([m for m in [getMimeType(os.path.abspath(f.retrieveFile()))[0].split('/')[0] for f in self.getFiles() if os.path.exists(os.path.abspath(f.retrieveFile()))] if m == 'video'])>0:
+                obj['hasVidFiles'] = True
+            else:
+                obj['hasVidFiles'] = False
 
         if self.get('deleted') == 'true':
             node = self.getActiveVersion()
@@ -130,13 +135,6 @@ class Video(default.Default):
             template = styles[0].getTemplate()
             return req.getTAL(template, self._prepareData(req), macro)
 
-        # if the file format is not mp4 video (edit area)
-        if 'contentarea' not in req.session:
-            files = [f.retrieveFile() for f in self.getFiles()]
-            if len(files) > 1 and os.path.splitext(files[0])[-1] not in ['.mp4']:
-                return req.error(415, "video is not in a supported video-format")
-
-
         if template == "":
             styles = getContentStyles("bigview", contenttype=self.getContentType())
             if len(styles) >= 1:
@@ -150,7 +148,16 @@ class Video(default.Default):
         context = self._prepareData(req)
         context["captions_info"] = json.dumps(captions_info)
 
-        return req.getTAL(template, context, macro)
+        if len([m for m in [getMimeType(os.path.abspath(f.retrieveFile()))[0].split('/')[0] for f in self.getFiles() if os.path.exists(os.path.abspath(f.retrieveFile()))] if m == 'video'])>0:
+            return req.getTAL(template, context, macro)
+        else:
+            if len([th for th in [os.path.abspath(f.retrieveFile()) for f in self.getFiles()] if th.endswith('thumb2')])>0:
+                return req.getTAL(template, context, macro)
+            else:
+                if len([f for f in self.getFiles() if f.getType() == 'attachment'])>0:
+                    return req.getTAL(template, context, macro)
+
+                return '<h2 style="width:100%; text-align:center ;color:red">Video is not in a supported video-format.</h2>'
 
     """ returns preview image """
     def show_node_image(self):
@@ -161,108 +168,13 @@ class Video(default.Default):
             if f.type in ["thumb", "presentation"]:
                 self.removeFile(f)
 
-        nodefiles = self.getFiles()
-        if len(nodefiles) == 1 and nodefiles[0].mimetype == "video/quicktime":
-            if nodefiles[0].retrieveFile().endswith('.mov'):  # handle mov -> flv
-                flvname = "%sflv" % nodefiles[0].retrieveFile()[:-3]
-                ret = os.system("ffmpeg -loglevel quiet -i %s -ar 44100 -ab 128 -f flv %s" % (nodefiles[0].retrieveFile(), flvname))
-                if ret & 0xff00:
-                    return
-                self.addFile(FileNode(name=flvname, type="video", mimetype="video/x-flv"))
-
-        #fetch tags to be omitted
-        unwanted_attrs = self.unwanted_attributes()
-
         for f in self.getFiles():
-            if f.mimetype == "video/ogv":
-                for f in self.getFiles():
-                    if f.type in ["thumb", "presentation"]:
-                        self.removeFile(f)
-
-                nodefiles = self.getFiles()
-                if len(nodefiles) == 1 and nodefiles[0].mimetype == "video/ogv":
-                    tempname = os.path.join(config.get("paths.tempdir"), "tmp.gif")
-
-                    if os.path.exists(tempname):
-                        os.remove(tempname)
-
-                    ogv_path = f.retrieveFile()
-                    ogv_name = os.path.splitext(ogv_path)[0]
-
-                    ret_dict = {}
-                    p = os.popen("ffprobe -v error -show_entries stream=width,height -of default=noprint_wrappers=1 {}".format(ogv_path), "r")
-                    while 1:
-                        line = p.readline()
-                        ret_dict[line.split('=')[0]] = line.split('=')[-1].strip('\n')
-                        if not line: break
-
-                    self.set("vid-width", ret_dict['width'])
-                    self.set("vid-height", ret_dict['height'])
-
-                    try:
-                        if self.get("system.thumbframe") != "":
-
-                            cmd = "ffmpeg -loglevel quiet -ss {} -i {} -vframes 1 -pix_fmt rgb24 {}".format(self.get("system.thumbframe"), ogv_path, tempname)
-                        else:
-                            cmd = "ffmpeg -loglevel quiet -i {} -vframes 1 -pix_fmt rgb24 {}".format(ogv_path, tempname)
-                        ret = os.system(cmd)
-                        if ret & 0xff00:
-                            return
-                    except:
-                        return
-                    thumbname = "{}.thumb".format(ogv_name)
-                    thumbname2 = "{}.thumb2".format(ogv_name)
-                    makeThumbNail(tempname, thumbname)
-                    makePresentationFormat(tempname, thumbname2)
-                    self.addFile(FileNode(name=thumbname, type="thumb", mimetype="image/jpeg"))
-                    self.addFile(FileNode(name=thumbname2, type="presentation", mimetype="image/jpeg"))
-
-            if f.type in["original", "video"]:
-                if f.mimetype == "video/x-flv":
-                    meta = FLVReader(f.retrieveFile())
-                    for key in meta:
-                        if any(tag in key for tag in unwanted_attrs):
-                                continue
-                        try:
-                            self.set(key, int(meta[key]))
-                        except:
-                            self.set(key, meta[key])
-
-                    self.set("vid-width", self.get("width"))
-                    self.set("vid-height", self.get("height"))
-
-                    tempname = os.path.join(config.get("paths.tempdir"), "tmp.gif")
-                    try:
-                        os.unlink(tempname)
-                    except:
-                        pass
-
-                    try:
-                        if self.get("system.thumbframe") != "":
-                            cmd = "ffmpeg -loglevel quiet  -ss %s -i %s -vframes 1 -pix_fmt rgb24 %s" % (
-                                self.get("system.thumbframe"), f.retrieveFile(), tempname)
-                        else:
-                            cmd = "ffmpeg -loglevel quiet -i %s -vframes 1 -pix_fmt rgb24 %s" % (f.retrieveFile(), tempname)
-                        ret = os.system(cmd)
-                        if ret & 0xff00:
-                            return
-                    except:
-                        return
-                    path, ext = splitfilename(f.retrieveFile())
-                    thumbname = path + ".thumb"
-                    thumbname2 = path + ".thumb2"
-                    makeThumbNail(tempname, thumbname)
-                    makePresentationFormat(tempname, thumbname2)
-                    self.addFile(FileNode(name=thumbname, type="thumb", mimetype="image/jpeg"))
-                    self.addFile(FileNode(name=thumbname2, type="presentation", mimetype="image/jpeg"))
-
             if f.mimetype == "video/mp4":
                 for f in self.getFiles():
                     if f.type in ["thumb", "presentation"]:
                         self.removeFile(f)
 
-                nodefiles = self.getFiles()
-                if len(nodefiles) == 1 and nodefiles[0].mimetype == "video/mp4":
+                if len([f for f in self.getFiles() if f.mimetype == 'video/mp4']) > 0:
                     tempname = os.path.join(config.get("paths.tempdir"), "tmp.gif")
 
                     if os.path.exists(tempname):
@@ -270,7 +182,7 @@ class Video(default.Default):
 
                     mp4_path = f.retrieveFile()
                     mp4_name = os.path.splitext(mp4_path)[0]
-                    
+
                     try:
                         if self.get("system.thumbframe") != "":
 
@@ -284,49 +196,6 @@ class Video(default.Default):
                         return
                     thumbname = "{}.thumb".format(mp4_name)
                     thumbname2 = "{}.thumb2".format(mp4_name)
-                    makeThumbNail(tempname, thumbname)
-                    makePresentationFormat(tempname, thumbname2)
-                    self.addFile(FileNode(name=thumbname, type="thumb", mimetype="image/jpeg"))
-                    self.addFile(FileNode(name=thumbname2, type="presentation", mimetype="image/jpeg"))
-
-            if f.mimetype == "video/webm":
-                for f in self.getFiles():
-                    if f.type in ["thumb", "presentation"]:
-                        self.removeFile(f)
-
-                nodefiles = self.getFiles()
-                if len(nodefiles) == 1 and nodefiles[0].mimetype == "video/webm":
-                    tempname = os.path.join(config.get("paths.tempdir"), "tmp.gif")
-
-                    if os.path.exists(tempname):
-                        os.remove(tempname)
-
-                    webm_path = f.retrieveFile()
-                    webm_name = os.path.splitext(webm_path)[0]
-
-                    ret_dict = {}
-                    p = os.popen("ffprobe -v error -show_entries stream=width,height -of default=noprint_wrappers=1 {}".format(webm_path), "r")
-                    while 1:
-                        line = p.readline()
-                        ret_dict[line.split('=')[0]] = line.split('=')[-1].strip('\n')
-                        if not line: break
-
-                    self.set("vid-width", ret_dict['width'])
-                    self.set("vid-height", ret_dict['height'])
-
-                    try:
-                        if self.get("system.thumbframe") != "":
-
-                            cmd = "ffmpeg -loglevel quiet -ss {} -i {} -vframes 1 -pix_fmt rgb24 {}".format(self.get("system.thumbframe"), webm_path, tempname)
-                        else:
-                            cmd = "ffmpeg -loglevel quiet -i {} -vframes 1 -pix_fmt rgb24 {}".format(webm_path, tempname)
-                        ret = os.system(cmd)
-                        if ret & 0xff00:
-                            return
-                    except:
-                        return
-                    thumbname = "{}.thumb".format(webm_name)
-                    thumbname2 = "{}.thumb2".format(webm_name)
                     makeThumbNail(tempname, thumbname)
                     makePresentationFormat(tempname, thumbname2)
                     self.addFile(FileNode(name=thumbname, type="thumb", mimetype="image/jpeg"))

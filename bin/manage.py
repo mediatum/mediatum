@@ -144,13 +144,13 @@ def attrindex(args):
 
     if name_or_all == "all":
         # find all search / sort metafields
-        metafield_names = (t[0] for t in q(Metafield.name).filter(Metafield.a.opts.like("%s%") | Metafield.a.opts.like("%o%")).distinct())
+        metafield_names = (t[0] for t in q(Metafield.name).filter(Metafield.a.opts.like("%o%")).distinct())
         created_indices = []
         failed_indices = []
 
         for attrname in metafield_names:
             try:
-                created = exec_sqlfunc(s, mediatumfunc.create_attr_index(attrname))
+                created = exec_sqlfunc(s, mediatumfunc.create_attr_sort_index(attrname))
             except sqlalchemy.exc.OperationalError:
                 logg.exception("failed to create index for " + attrname)
                 s.rollback()
@@ -164,7 +164,7 @@ def attrindex(args):
                   len(created_indices), len(failed_indices), failed_indices)
     else:
         name = name_or_all
-        created = exec_sqlfunc(s, mediatumfunc.create_attr_index(name))
+        created = exec_sqlfunc(s, mediatumfunc.create_attr_sort_index(name))
         if created:
             s.commit()
             logg.info("created sort / search indices for attribute '%s'", name)

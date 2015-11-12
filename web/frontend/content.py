@@ -199,7 +199,9 @@ def apply_order_by_for_sortfields(query, sortfields_to_comp, before=False):
             else:
                 expr = expr.nullslast()
 
-        return query.order_by(expr)
+        query = query.order_by(expr)
+
+    return query
 
 
 SORT_FIELDS = 2

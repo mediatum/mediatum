@@ -307,12 +307,25 @@
     </div>
 </tal:block>
 
-<tal:block metal:define-macro="edit_files_popup_children">
+<tal:block metal:define-macro="edit_files_popup_children" tal:condition="python:len(children)>0">
     <tal:block tal:repeat="child children">
-    <div tal:condition="python:not child.isContainer()" style="float:left; margin:2px 2px 0px 0px; border:1px solid silver; position:relative">
-        <img tal:attributes="src python:'/thumbs/'+child.id"/>
+    <div tal:condition="python:child not in grandchildren and not child.isContainer()" style="float:left; margin:2px 2px 0px 0px; border:1px solid silver; position:relative">
+        <div tal:content="python:child.id" style="top:1px;"></div>
         <div style="position:absolute;top:1px;right:1px">
-            <input tal:attributes="value python:child.id" name="items_add" id="items_add" type="checkbox" style="margin:0px; padding:0px"/>
+            <input tal:attributes="value python:child.id" name="items_add" id="child_add" type="checkbox" style="margin:0px; padding:0px"/>
+        </div>
+        <img tal:attributes="src python:'/thumbs/'+child.id"/>
+    </div>
+    </tal:block>
+</tal:block>
+
+<tal:block metal:define-macro="edit_files_popup_grandchildren" tal:condition="python:len(grandchildren)>0">
+    <tal:block tal:repeat="grand grandchildren">
+    <div id=grandchildnode tal:condition="python:grand in grandchildren" style="float:left; margin:2px 2px 0px 0px; border:1px solid silver; position:relative">
+        <div tal:content="python:grand.id" style="top:1px;"></div>
+        <img tal:attributes="src python:'/thumbs/'+grand.id"/>
+        <div style="position:absolute;top:1px;right:1px">
+            <input tal:attributes="value python:grand.id" name="items_add" id="grands_add" type="checkbox" style="margin:0px; padding:0px"/>
         </div>
     </div>
     </tal:block>
@@ -338,12 +351,25 @@
             function setFolder(){
                 markFolder(true, "", this.id);
                 getFolderItems(this.id);
+                getGrandchildren(this.id);
                 return false;
             }
 
             function getFolderItems(id){
                 $.get('/edit/edit_content?style=popup&tab=files&data=children&id='+id+'&jsoncallback=?', function(data) {
                   $('#files').html(data);
+                });
+            }
+
+            function getFolderItemsExclude(folderid, excludeid){
+                $.get('/edit/edit_content?style=popup&tab=files&data=children&id='+folderid+'&excludeid='+excludeid+'&jsoncallback=?', function(data) {
+                  $('#files').html(data);
+                });
+            }
+
+            function getGrandchildren(folderid){
+                $.get('/edit/edit_content?style=popup&tab=files&data=grandchildren&id='+folderid+'&excludeid=&jsoncallback=?', function(data) {
+                  $('#grandchildren').html(data);
                 });
             }
 
@@ -359,25 +385,51 @@
                   self.close();
                 });
             }
+
+            function select_all_grand(obj){
+                $(':checkbox').each(function() {
+                    if(this.id=='grands_add'){
+                        this.checked = obj.checked;
+                    }
+                });
+            }
+
+            function select_all_child(obj){
+                $(':checkbox').each(function() {
+                    if(this.id=='child_add'){
+                        this.checked = obj.checked;
+                    }
+                });
+            }
+
+
         </script>
         <form>
-        <h1 i18n:translate="edit_files_choosedirectory">TEXT</h1>
-        <div style="height:340px; overflow:auto;border:1px solid silver;background-color:white">
-            <ul id="tree" class="tree">
-                <li tal:repeat="basedir basedirs" tal:attributes="id python:'Node'+basedir.id"><a tal:attributes="id python:str(basedir.id); title python:basedir.getLabel()+' ('+str(basedir.id)+')'" tal:content="python:basedir.getLabel()" href="#">TEXT</a>
-                    <ul>
-                        <li tal:attributes="parentId python:basedir.id" class="spinner.gif"><a href="#" id="node_0"> </a></li>
-                    </ul>
-                </li>
-            </ul>
-        </div>
-        <h1 i18n:translate="edit_files_choosefile">TEXT</h1>
-        <div style="border:1px solid silver;height:300px;overflow:auto" id="files">
-        </div>
-        <p style="text-align:center">
-            <button type="button" style="width:150px;margin-right:50px;background-color:white" onclick="selectedItems()" i18n:translate="edit_ok">TEXT</button>
-            <button type="button" style="width:150px" onclick="self.close()" i18n:translate="edit_cancel">TEXT</button>
-        </p>
+            <h1 i18n:translate="edit_files_choosedirectory">TEXT</h1>
+            <div style="height:150px; overflow:auto;border:1px solid silver;background-color:white">
+                <ul id="tree" class="tree">
+                    <li tal:repeat="basedir basedirs" tal:attributes="id python:'Node'+basedir.id"><a tal:attributes="id python:str(basedir.id); title python:basedir.getLabel()+' ('+str(basedir.id)+')'" tal:content="python:basedir.getLabel()" href="#">TEXT</a>
+                        <ul>
+                            <li tal:attributes="parentId python:basedir.id" class="spinner.gif"><a href="#" id="node_0"> </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <h1 i18n:translate="edit_files_nodes_colon">TEXT</h1>
+            <input style="float:left" id="select-all-child" type="checkbox" onclick="select_all_child(this)" tal:attributes="value python:True"/>
+            <p i18n:translate="edit_files_select_all_child">TEXT</p>
+            <div style="border:1px solid silver;height:225px;overflow:auto" id="files">
+            </div>
+
+            <h1 i18n:translate="edit_files_children_colon">TEXT</h1>
+            <input style="float:left" id="select-all-grand" type="checkbox" onclick="select_all_grand(this)" tal:attributes="value python:True"/>
+            <p i18n:translate="edit_files_select_all_grand">TEXT</p>
+            <div style="border:1px solid silver;height:225px;overflow:auto" id="grandchildren">
+            </div>
+            <p style="text-align:center">
+                <button type="button" style="width:150px;margin-right:50px;background-color:white" onclick="selectedItems()" i18n:translate="edit_ok">TEXT</button>
+                <button type="button" style="width:150px" onclick="self.close()" i18n:translate="edit_cancel">TEXT</button>
+            </p>
         </form>
         <script type="text/javascript">
             initTree({'idOfFolderTrees': ['tree'], 'multiselect':false});
@@ -386,7 +438,8 @@
             <tal:block tal:repeat="id python:idstr.split(',')" tal:replace="python:'allobjects['+id+']=1;'"/>
         <tal:block tal:replace="raw python:'</script>'"/>
         <script>
-            getFolderItems(currentfolder);
+            getFolderItemsExclude(currentfolder, currentitem);
+            getGrandchildren(currentfolder);
         </script>
     </body>
 </html>

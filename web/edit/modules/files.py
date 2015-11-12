@@ -52,18 +52,50 @@ def getContent(req, ids):
 
     if 'data' in req.params:
         if req.params.get('data') == 'children':  # get formated list of childnodes of selected directory
-            req.writeTAL("web/edit/modules/files.html", {'children': node.getChildren()}, macro="edit_files_popup_children")
+            excludeid = req.params.get('excludeid', None)
+            if excludeid:
+                grandchildren = []
+                for child in node.getChildren():
+                    for grandchild in child.getChildren():
+                        if not grandchild.isContainer():
+                            grandchildren.append(grandchild)
+                req.writeTAL("web/edit/modules/files.html", {'children': [c for c in node.getChildren() if str(c.id) != excludeid],
+                                                             'grandchildren': grandchildren}, macro="edit_files_popup_children")
+            else:
+                grandchildren = []
+                for child in node.getChildren():
+                    for grandchild in child.getChildren():
+                        if not grandchild.isContainer():
+                            grandchildren.append(grandchild)
+                req.writeTAL("web/edit/modules/files.html", {'children': [c for c in node.getChildren() if str(c.id) != excludeid],
+                                                             'grandchildren': grandchildren}, macro="edit_files_popup_children")
+        elif req.params.get('data') =='grandchildren':
+            grandchildren = []
+            for child in node.getChildren():
+                if not child.isContainer():
+                    for grandchild in child.getChildren():
+                        if not grandchild.isContainer():
+                            if not grandchild.isContainer():
+                                grandchildren.append(grandchild)
+
+            if len(node.getChildren())==0:
+                req.writeTAL("web/edit/modules/files.html", {'grandchildren': []}, macro="edit_files_popup_grandchildren")
+            else:
+                req.writeTAL("web/edit/modules/files.html", {'grandchildren': grandchildren}, macro="edit_files_popup_grandchildren")
 
         if req.params.get('data') == 'additems':  # add selected node as children
             for childid in req.params.get('items').split(";"):
                 if childid.strip() != "":
                     childnode = tree.getNode(childid.strip())
                     for p in childnode.getParents():
-                        p.removeChild(childnode)
+                        if p.isContainer():
+                            logging.getLogger('editor').info("Removed childnode: {} from node: {}. - caused by adding".format(childnode.id, node.id))
+                            p.removeChild(childnode)
                     node.addChild(childnode)
             req.writeTAL("web/edit/modules/files.html", {'children': node.getChildren(), 'node': node}, macro="edit_files_children_list")
 
         if req.params.get('data') == 'removeitem':  # remove selected childnode node
+
             try:
                 remnode = tree.getNode(req.params.get('remove'))
                 if len(remnode.getParents()) == 1:
@@ -91,6 +123,14 @@ def getContent(req, ids):
         v["script"] = "var currentitem = '%s';\nvar currentfolder = '%s';\nvar node = %s;" %(id, req.params.get('parent'), id)
         v["idstr"] = ",".join(ids)
         v["node"] = node
+
+        if node.type != 'directory':
+            try:
+                if v['current_id'] == None:
+                    v['current_id'] = node.id
+            except KeyError:
+                pass
+
         req.writeTAL("web/edit/modules/files.html", v, macro="edit_files_popup_selection")
         return ""
 

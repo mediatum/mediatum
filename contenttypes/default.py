@@ -146,28 +146,28 @@ class Default(tree.Node):
         '''
         parentInformation = {}
         pid = req.params.get('pid', self.id)
-        sid = req.params.get('id', self.id)
+        parentInformation['parent_node_id'] = pid
 
-        if len(self.getChildren()) > 0 and self.isContainer != 1:
-            parentInformation['parent_node_id'] = req.params.get('pid', self.id)
+        if len(self.getChildren()) > 0 and self.isContainer() != 1:
             parentInformation['children_list'] = [child for child in self.getChildren() if not child.get('system.next_id') != '']
         else:
-            parentInformation['parent_node_id'] = re.split('\D', req.split_uri()[2].split('pid=')[-1])[0]
             parentInformation['children_list'] = []
-        if len([sib.id for sib in filter(lambda itm: str(itm.id) == parentInformation['parent_node_id'], self.getParents())]) != 0:
+
+        if len([sib.id for sib in filter(lambda itm: str(itm.id) == pid, self.getParents())]) != 0:
             parentInformation['parent_condition'] = True
             parentInformation['siblings_list'] = [c for c in tree.getNode(pid).getChildren() if c.id != self.id]
         else:
             parentInformation['parent_condition'] = False
-            parentInformation['siblings_list'] = tree.getNode(sid).getParents()[0].getChildren()
+            if len(self.getParents()) > 0:
+                parentInformation['siblings_list'] = self.getParents()[0].getChildren()
+            else:
+                parentInformation['siblings_list'] = []
 
-        if not parentInformation['parent_node_id']:
-            parentInformation['parent_node_id'] = re.split('\D', req.split_uri()[2].split('pid=')[-1])[0]
         parentInformation['display_siblings'] = pid != self.id
-
-        parentInformation['paren_ex_dir&col'] = [id for id in self.getParents() if id.type != 'directory' and id.type != 'collection']
+        parentInformation['parent_is_container'] = [id for id in self.getParents() if self.isContainer() != 1]
         parentInformation['details_condition'] = self.getDetailsCondition()
         parentInformation['further_details'] = self.getFurtherDetailsCondition(req)
+
         return parentInformation
 
     def show_node_big(self, req, template="", macro=""):

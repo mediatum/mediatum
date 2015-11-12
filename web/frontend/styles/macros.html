@@ -36,9 +36,9 @@
 </metal:macro>
 
 <div metal:define-macro="bothView" >
-    <tal:block define="children python:parentInformation.get('children_list')">
-    <tal:block condition ="python:bool(len(children)>0)">
-            <span i18n:translate="details_colon" tal:condition="python:parentInformation.get('details_condition')">TEXT</span>
+    <tal:block define="children python: parentInformation.get('children_list')">
+    <tal:block condition ="python: len(children) > 0">
+            <span i18n:translate="details_colon" tal:condition="python: parentInformation.get('details_condition')">TEXT</span>
                 <tal:block tal:repeat="child children">
                     <div tal:condition="python:child.id!=node.id and child.isActiveVersion()">
                         <div class="childnode" tal:condition="python:access.hasReadAccess(child)">

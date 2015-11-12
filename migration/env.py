@@ -2,6 +2,7 @@ from __future__ import with_statement, print_function
 import sys
 from alembic import context
 from logging.config import fileConfig
+import sqlalchemy.orm
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -17,6 +18,8 @@ from core import init
 
 init.basic_init()
 from core import db
+
+sqlalchemy.orm.configure_mappers()
 
 from core.database.postgres import DB_SCHEMA_NAME
 

@@ -52,11 +52,11 @@
                     </div>
                 </tal:block>
     </tal:block>
-        <tal:block condition="python:len(parentInformation.get('paren_ex_dir&col'))>0">
-            <tal:block condition="python:len(children)==0">
-                <div tal:define="siblings python:parentInformation.get('siblings_list')" tal:condition="python:parentInformation.get('display_siblings')">
-                    <span i18n:translate="further_details_colon" tal:condition="python:parentInformation.get('further_details')">TEXT</span>
-                        <tal:block tal:repeat="sib siblings">
+        <tal:block condition="python: parentInformation.get('parent_is_container') > 0">
+            <tal:block condition="python: len(children) == 0">
+                <div tal:define="siblings python: parentInformation.get('siblings_list')" tal:condition="python: parentInformation.get('display_siblings')">
+                    <span i18n:translate="further_details_colon" tal:condition="python: parentInformation.get('further_details')">TEXT</span>
+                        <tal:block tal:repeat="sib siblings" tal:condition="python: parentInformation.get('further_details')">
                              <div tal:condition="python:sib.id!=node.id and sib.isActiveVersion()">
                                 <div class="childnode" tal:condition="python:access.hasReadAccess(sib)">
                                     <a tal:attributes="href python:'?id='+sib.id +'&pid='+parentInformation.get('parent_node_id')" i18n:attributes="title details"><img tal:attributes="src python:'/thumbs/'+sib.id"/></a>

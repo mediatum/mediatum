@@ -127,12 +127,15 @@ class Default(tree.Node):
 
            :return: boolean
         '''
-        if len(tree.getNode(req.params.get('pid', self.id)).getChildren()) == 1:
+        try:
+            if len(tree.getNode(req.params.get('pid', self.id)).getChildren()) == 1:
+                return False
+            if len(self.getParents()) > 0:
+                return True
+            else:
+                return (self.get('system.prev_id') == '') or (len(self.getChildren()) > 0) in [(c.get('system.prev_id') != '') for c in self.getChildren()]
+        except tree.NoSuchNodeError:
             return False
-        if len(self.getParents()) > 0:
-            return True
-        else:
-            return (self.get('system.prev_id') == '') or (len(self.getChildren()) > 0) in [(c.get('system.prev_id') != '') for c in self.getChildren()]
 
     def getParentInformation(self, req):
         '''sets diffrent used Information

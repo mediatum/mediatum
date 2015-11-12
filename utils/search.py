@@ -25,7 +25,11 @@ def import_node_fulltext(node, overwrite=False):
     for fi in fulltext_files:
         if fi.exists:
             with fi.open() as f:
-                fulltexts.append(f.read())
+                try:
+                    fulltexts.append(f.read())
+                except UnicodeDecodeError:
+                    logg.info("decoding error for node %s from %s", node.id, fi.path)
+                    continue
 
             logg.info("imported fulltext for node %s from %s", node.id, fi.path)
         else:
@@ -47,7 +51,7 @@ def import_fulltexts(overwrite=False):
 
     import_count = 0
     for node in nodes:
-        imported = import_node_fulltext(node)
+        imported = import_node_fulltext(node, overwrite=overwrite)
         if imported:
             import_count += 1
 

@@ -25,6 +25,8 @@ import warnings
 import pyaml
 import codecs
 import sqlalchemy
+import sqlalchemy_continuum
+from sqlalchemy_continuum import remove_versioning
 
 sys.path.append(".")
 
@@ -172,13 +174,14 @@ def attrindex(args):
             logg.info("sort / search indices for attribute '%s' already exist", name)
 
 
-
-
-
 def fulltext(args):
+    # we must initialize all node types to import fulltexts
+    init.additional_init()
+
     nid_or_all = args.nid_or_all.lower()
 
     if nid_or_all == "all":
+        remove_versioning()
         import_count = utils.search.import_fulltexts(args.overwrite)
         logg.info("loaded fulltexts for %s nodes", import_count)
     else:

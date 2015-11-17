@@ -404,9 +404,7 @@ def view(req):
         d = Data()
         for dtype in d.get_all_datatypes():
             if dtype.name != "root":
-                n = Node(u"", type=dtype.name)
-                db.session.commit()
-                if hasattr(n, "getEditMenuTabs"):
+                if hasattr(dtype, "getEditMenuTabs"):
                     v['datatypes'].append(dtype)
             if dtype.name == v["subitem"]:
                 v["typelongname"] = dtype.getLongName()

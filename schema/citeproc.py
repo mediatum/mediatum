@@ -98,6 +98,7 @@ CSL_TYPES = [
     'article-journal',
     'bill',
     'book',
+    'book-chapter',
     'broadcast',
     'chapter',
     'dataset',

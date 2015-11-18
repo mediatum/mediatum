@@ -183,6 +183,15 @@ class MtQuery(Query):
         ]
 
     def filter_read_access(self, user=None, ip=None, req=None):
+        self._filter_access("read", user, ip, req)
+
+    def filter_write_access(self, user=None, ip=None, req=None):
+        self._filter_access("write", user, ip, req)
+
+    def filter_data_access(self, user=None, ip=None, req=None):
+        self._filter_access("data", user, ip, req)
+
+    def _filter_access(self, accesstype, user=None, ip=None, req=None):
 
         if user is None and ip is None:
             if req is None:
@@ -202,7 +211,18 @@ class MtQuery(Query):
         else:
             nodeclass = nodeclass[0]
 
-        read_access = mediatumfunc.has_read_access_to_node(nodeclass.id, user.group_ids, ip, sqlfunc.current_date())
+        db_funcs = {
+            "read": mediatumfunc.has_read_access_to_node,
+            "write": mediatumfunc.has_write_access_to_node,
+            "data": mediatumfunc.has_data_access_to_node
+        }
+
+        try:
+            db_accessfunc = db_funcs[accesstype]
+        except KeyError:
+            raise ValueError("accesstype '{}' does not exist, accesstype must be one of: read, write, data".format(accesstype))
+
+        read_access = db_accessfunc(nodeclass.id, user.group_ids, ip, sqlfunc.current_date())
         return self.filter(read_access)
 
     def get(self, ident):

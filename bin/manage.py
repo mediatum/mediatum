@@ -47,6 +47,7 @@ TraceLogger.trace_level = logging.ERROR
 from core.database.init import init_database_values
 from core import db, Node
 import utils.search
+import utils.iplist
 
 
 s = db.session
@@ -244,6 +245,16 @@ def sql(args):
         logg.info("finished, no results returned")
 
 
+def iplist_import(args):
+    f = open(args.file, "r") if args.file else sys.stdin
+    try:
+        addr = utils.iplist.ipranges_to_ipobjects(f)
+        utils.iplist.update_mediatum_iplist(unicode(args.name), addr)
+    finally:
+        if args.file:
+            f.close()
+
+
 if __name__ == "__main__":
     parser = configargparse.ArgumentParser("mediaTUM manage.py")
     subparsers = parser.add_subparsers(title="subcommands", help="see manage.py <subcommand> --help for more info")
@@ -282,6 +293,11 @@ if __name__ == "__main__":
     sql_subparser.add_argument("--yaml", "-y", action="store_true", help="pretty yaml output")
     sql_subparser.add_argument("sql", nargs="+", help="SQL statement to execute")
     sql_subparser.set_defaults(func=sql)
+
+    iplist_subparser = subparsers.add_parser("iplist", help="import ip-ranges (given as text file) into an ip ACL list")
+    iplist_subparser.add_argument("name", help="Name of the ip list to be (re)written")
+    iplist_subparser.add_argument("file", nargs="?", help="File to be parsed (will be stdin if none is given)")
+    iplist_subparser.set_defaults(func=iplist_import)
 
     args = parser.parse_args()
     args.func(args)

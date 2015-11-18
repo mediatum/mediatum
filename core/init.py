@@ -17,6 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from functools import wraps
 import sys
 import importlib
 import logging
@@ -27,6 +28,37 @@ import core.config as config
 
 
 logg = logging.getLogger(__name__)
+
+# functions can check if mediaTUM is initialized correctly and report an error if this is not the case
+
+INIT_STATES = {
+    None: 0,  # nothing initialized
+    "basic": 100,  # core.init.basic_init()
+    "full": 200  # core.init.full_init()
+}
+
+REV_INIT_STATES = {v: k for k, v in INIT_STATES.items()}
+
+CURRENT_INIT_STATE = INIT_STATES[None]
+
+
+def init_state_reached(min_state):
+    if CURRENT_INIT_STATE >= INIT_STATES[min_state]:
+        logg.debug("Current init state is '%s', requested state '%s', doing nothing.",
+                   REV_INIT_STATES[CURRENT_INIT_STATE], min_state)
+        return True
+    return False
+
+
+def get_current_init_state():
+    """Returns string representation for current init state or None if nothing has been initialized yet."""
+    return REV_INIT_STATES[CURRENT_INIT_STATE]
+
+
+def _set_current_init_state(state):
+    """Set current init state by string representation"""
+    global CURRENT_INIT_STATE
+    CURRENT_INIT_STATE = INIT_STATES[state]
 
 
 def set_locale():
@@ -260,6 +292,10 @@ def update_nodetypes_in_db():
 
 
 def basic_init(root_loglevel=None, config_filepath=None, log_filepath=None, use_logstash=None, force_test_db=None, automigrate=False):
+    init_state = "basic"
+    if init_state_reached(init_state):
+        return
+
     add_ustr_builtin()
     import core.config
     core.config.initialize(config_filepath)
@@ -273,9 +309,10 @@ def basic_init(root_loglevel=None, config_filepath=None, log_filepath=None, use_
     load_system_types()
     load_types()
     connect_db(force_test_db, automigrate)
+    _set_current_init_state(init_state)
 
 
-def additional_init():
+def _additional_init():
     from core import db
     from core.database import validity
     db.check_db_structure_validity()
@@ -291,5 +328,10 @@ def additional_init():
 
 
 def full_init(root_loglevel=None, config_filepath=None, log_filepath=None, use_logstash=None, force_test_db=None, automigrate=False):
+    init_state = "full"
+    if init_state_reached(init_state):
+        return
+
     basic_init(root_loglevel, config_filepath, log_filepath, use_logstash, force_test_db, automigrate)
-    additional_init()
+    _additional_init()
+    _set_current_init_state(init_state)

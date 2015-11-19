@@ -33,9 +33,10 @@ from schema.schema import getMetadataType, getMetaType
 from core.transition import httpstatus
 from contenttypes.data import Content
 from core import db
-from core import Node
+from core import Node, NodeAlias
 from contenttypes import Collections
 from workflow.workflow import Workflows
+from werkzeug.datastructures import ImmutableMultiDict
 
 q = db.query
 
@@ -79,28 +80,33 @@ def display_404(req):
     return httpstatus.HTTP_NOT_FOUND
 
 
+def overwrite_id_in_req(nid, req):
+    """Patches a GET request to include a new nid.
+    XXX: A bit hacky, nid handling should be changed somehow.
+    """
+    assert req.method == "GET"
+    req.args = ImmutableMultiDict(dict(req.args, id=nid))
+    req.params["id"] = nid
+    return req
+
+
 def display_alias(req):
     match = DISPLAY_PATH.match(req.path)
     if match:
-        alias = match.group(1).rstrip("/").lower()
-        node_id = known_node_aliases.get(alias)
-        if node_id is not None:
-            logg.debug("known node alias in cache '%s' -> '%s'", alias, node_id)
-            req.params["id"] = node_id
+        alias_name = match.group(1).rstrip("/").lower()
+        node_alias = q(NodeAlias).get(unicode(alias_name))
+        
+        if node_alias is not None:
+            new_nid = node_alias.nid
         else:
-            node_id = db.get_aliased_nid(alias)
-            if node_id:
-                known_node_aliases[alias] = node_id
-                req.params["id"] = node_id
-                logg.debug("node alias from DB '%s' -> '%s'", alias, node_id)
-            else:
-                logg.info("node alias not found: '%s'", alias)
-                # pass illegal id => nice error msg is displayed
-                req.params["id"] = "-1"
-        # node is set now, redirect to regular display handler
+            # -1 is a node ID that's never found, this will just display 404
+            new_nid = -1
+        
+        req = overwrite_id_in_req(new_nid, req)
+        # redirect to regular display handler
         display(req)
     else:
-        raise Exception(u"illegal alias '{}', should not be passed to this handler!".format(alias))
+        raise RuntimeError(u"illegal alias '{}', should not be passed to this handler!".format(alias_name))
 
 
 def display(req):

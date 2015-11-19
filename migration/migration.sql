@@ -99,6 +99,15 @@ BEGIN
     PERFORM set_subnode_attribute();
 
     RAISE NOTICE 'subnode attribute set';
+
+    INSERT INTO node_alias (alias, nid) SELECT attrs->>'system.aliascol' AS alias, id as nid FROM node WHERE attrs ? 'system.aliascol';
+
+    RAISE NOTICE 'migrated node aliases';
+
+
+    UPDATE node SET attrs = jsonb_object_delete_keys(attrs, ['system.aliascol']) WHERE attrs ? 'system.aliascol';
+
+    RAISE NOTICE 'deleted obsolete attributes';
 END;
 $f$;
 

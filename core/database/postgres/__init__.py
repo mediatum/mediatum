@@ -183,13 +183,13 @@ class MtQuery(Query):
         ]
 
     def filter_read_access(self, user=None, ip=None, req=None):
-        self._filter_access("read", user, ip, req)
+        return self._filter_access("read", user, ip, req)
 
     def filter_write_access(self, user=None, ip=None, req=None):
-        self._filter_access("write", user, ip, req)
+        return self._filter_access("write", user, ip, req)
 
     def filter_data_access(self, user=None, ip=None, req=None):
-        self._filter_access("data", user, ip, req)
+        return self._filter_access("data", user, ip, req)
 
     def _filter_access(self, accesstype, user=None, ip=None, req=None):
 

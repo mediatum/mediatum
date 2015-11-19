@@ -5,6 +5,7 @@
 """
 
 import logging
+import os
 import warnings
 from pytest import skip
 from utils.log import TraceLogger
@@ -25,17 +26,24 @@ def pytest_runtest_setup(item):
 
 
 from core import config
-from core.init import add_ustr_builtin, init_db_connector, load_system_types, load_types
-config.initialize("test_mediatum.cfg")
+from core.init import add_ustr_builtin, init_db_connector, load_system_types, load_types, connect_db, _set_current_init_state
+
+
+# we are doing a 'basic_init()' here for testing that's a bit different from core.init_basic_init()
+# maybe this can be converted to a new init state or replaced by basic_init()
+
+config.initialize(os.path.join(config.basedir, "test_mediatum.cfg"))
 add_ustr_builtin()
 import utils.log
 utils.log.initialize()
 init_db_connector()
 load_system_types()
 load_types()
+connect_db()
 from core import db
 db.disable_session_for_test()
 warnings.simplefilter("always")
+_set_current_init_state("basic")
 
 # global fixtures, do not import them again!
 from core.test.fixtures import *

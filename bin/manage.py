@@ -177,7 +177,7 @@ def attrindex(args):
 
 def fulltext(args):
     # we must initialize all node types to import fulltexts
-    init.additional_init()
+    init.full_init()
 
     nid_or_all = args.nid_or_all.lower()
 

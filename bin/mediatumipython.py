@@ -249,26 +249,6 @@ from IPython.core.magic import Magics, magics_class, line_magic, needs_local_sco
 from IPython.core.magic_arguments import argument, magic_arguments,\
     parse_argstring, defaults
 
-# functions can check if mediaTUM is initialized correctly and report an error if this is not the case
-
-INIT_STATES = {
-    "basic": 100,  # initmodule.basic_init() default
-    "full": 200  # initmodule.full_init()
-}
-
-REV_INIT_STATES = {v: k for k, v in INIT_STATES.items()}
-
-
-def needs_init(min_state):
-    def _needs_init(f):
-        @wraps(f)
-        def _inner(self, *args, **kwargs):
-            if self.check_init_state(min_state):
-                return f(self, *args, **kwargs)
-        return _inner
-
-    return _needs_init
-
 
 def exec_sqlfunc(func):
     return alchemyext.exec_sqlfunc(s, func)
@@ -381,19 +361,24 @@ def print_info_for_category(category, limit=None):
         print(u"\t\t" + line)
 
 
+def needs_init(min_state):
+    def _needs_init(f):
+        @wraps(f)
+        def _inner(self, *args, **kwargs):
+            if initmodule.init_state_reached(min_state):
+                return f(self, *args, **kwargs)
+            else:
+                print("mediaTUM is not initialized properly. You must run '%init {}' first." .format(min_state))
+        return _inner
+
+    return _needs_init
+
+
 @magics_class
 class MediatumMagics(Magics):
 
     def __init__(self, shell):
         super(MediatumMagics, self).__init__(shell)
-        self.init_state = INIT_STATES["basic"]
-
-    def check_init_state(self, min_state):
-        if self.init_state < INIT_STATES[min_state]:
-            print("mediaTUM is not initialized properly. You must run '%init {}' first."
-                  .format(min_state))
-            return False
-        return True
 
     @magic_arguments()
     @argument("nid", nargs="?", default="")
@@ -593,25 +578,19 @@ class MediatumMagics(Magics):
         citeproc.check_mappings()
 
     @magic_arguments()
-    @argument("type", default="full", nargs="?", help="init type. Full initializes everything, basic only important stuff")
+    @argument("state", nargs="?", help="init state. Full initializes everything, basic only important stuff")
     @line_magic
     def init(self, line):
         args = parse_argstring(self.init, line)
-        new_state = args.type
-        new_state_level = INIT_STATES[new_state]
-        if not new_state_level <= self.init_state:
-            if new_state == "basic":
-                initmodule.basic_init()
-            if new_state == "full":
-                if self.init_state == INIT_STATES["basic"]:
-                    with warnings.catch_warnings():
-                        # drop reassignment warnings because we want to reassign node classes when plugins are loaded later, for example
-                        warnings.filterwarnings("ignore", "Reassigning polymorphic.*")
-                        initmodule.additional_init()
-                else:
-                    initmodule.full_init()
-
-            self.init_state = INIT_STATES[new_state]
+        new_state = args.state
+        if new_state == "basic":
+            initmodule.basic_init()
+        elif new_state == "full":
+            # drop reassignment warnings because we want to reassign node classes when plugins are loaded later, for example
+            warnings.filterwarnings("ignore", "Reassigning polymorphic.*")
+            initmodule.full_init()
+        else:
+            print("current init state is: " + initmodule.get_current_init_state())
 
     @line_magic
     def purge_nodes(self, line):

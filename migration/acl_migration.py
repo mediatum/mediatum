@@ -16,7 +16,8 @@ from sqlalchemy import sql, func
 
 from core import db, User, UserGroup
 from core.database.postgres import mediatumfunc
-from core.database.postgres.permission import AccessRule, NodeToAccessRule, AccessRulesetToRule, AccessRuleset, NodeToAccessRuleset
+from core.database.postgres.permission import AccessRule, NodeToAccessRule, AccessRulesetToRule, AccessRuleset, NodeToAccessRuleset,\
+    IPNetworkList
 from migration import oldaclparser
 from migration.oldaclparser import ACLAndCondition, ACLDateAfterClause, ACLDateBeforeClause, ACLOrCondition, ACLNotCondition,\
     ACLTrueCondition, ACLFalseCondition, ACLGroupCondition, ACLIPCondition, ACLUserCondition, ACLParseException, ACLIPListCondition
@@ -316,6 +317,19 @@ def make_ipnetwork_from_rule(acl_cond):
     return IPv4Network("{}/{}".format(acl_cond.ip, acl_cond.netmask))
 
 
+def get_iplist_from_cond(acl_cond):
+    list_name = acl_cond.listid
+    iplist = q(IPNetworkList).get(list_name)
+
+    if iplist is None:
+        logg.warn("found iplist rule '%s', which does not exist in the database! Use manage.py iplist to import it.", list_name)
+        return [IPv4Network("127.0.0.0/8")]
+    else:
+        # SQLAlchemy returns simple string, we'd like to work with networks.
+        # XXX: Better to return IPv4Network from IPNetworkList.subnets?
+        return [IPv4Network(sn) for sn in iplist.subnets]
+
+
 class SymbolicExprToAccessRuleConverter(object):
 
     fail_on_first_error = False
@@ -373,11 +387,8 @@ class SymbolicExprToAccessRuleConverter(object):
             return AccessRule(subnets=set([subnet]))
 
         elif isinstance(acl_cond, ACLIPListCondition):
-            # TODO: iplist
-            #         subnet = IPv4Network(acl_cond.ip + "/32")
-            logg.warn("fake iplist for %s", acl_cond.listid)
-            subnet = IPv4Network("127.0.0.0/8")
-            return AccessRule(subnets=[subnet])
+            subnets = get_iplist_from_cond(acl_cond)
+            return AccessRule(subnets=subnets)
 
         elif isinstance(acl_cond, (ACLDateBeforeClause, ACLDateAfterClause)):
             daterange = make_open_daterange_from_rule(acl_cond)
@@ -449,11 +460,8 @@ class SymbolicExprToAccessRuleConverter(object):
 
                     elif isinstance(acl_cond, ACLIPListCondition):
                         invert_subnet = check_inversion(invert, invert_subnet)
-                        # TODO: iplist
-#                         subnet = IPv4Network(acl_cond.iplist + "/32")
-                        logg.warn("fake iplist for %s", acl_cond.listid)
-                        subnet = IPv4Network("127.0.0.0/8")
-                        subnets.add(subnet)
+                        rule_subnets = get_iplist_from_cond(acl_cond)
+                        subnets.update(rule_subnets)
 
                     elif isinstance(acl_cond, (ACLDateAfterClause, ACLDateBeforeClause)):
                         invert_date = check_inversion(invert, invert_date)

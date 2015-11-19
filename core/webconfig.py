@@ -111,12 +111,12 @@ def loadServices():
 
 def node_url(nid=None, version=None, **kwargs):
     params = {}
-    if nid:
-        params["id"] = nid
+    if "id" in kwargs:
+        nid = kwargs.pop("id")
     if version:
         params["v"] = version
     params.update(kwargs)
-    return u"/node?" + urllib.urlencode(params)
+    return u"/{}?{}".format(nid, urllib.urlencode(params))
 
 
 def tal_add_template_globals():
@@ -164,6 +164,10 @@ def initContexts():
     handler = file.addHandler("display")
     handler.addPattern("/")
     handler.addPattern("/node")
+    handler = file.addHandler("display_newstyle")
+    handler.addPattern("/nodes/\d+")
+    # /\d+ could also be a node, the handler must check this
+    handler.addPattern("/\d+")
     file.addHandler("display_noframe").addPattern("/mask")
     file.addHandler("show_parent_node").addPattern("/pnode")
     file.addHandler("publish").addPattern("/publish/.*")

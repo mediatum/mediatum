@@ -109,6 +109,27 @@ def display_alias(req):
         raise RuntimeError(u"illegal alias '{}', should not be passed to this handler!".format(alias_name))
 
 
+RE_NEWSTYLE_NODE_URL = re.compile("/(nodes/)?(\d+).*")
+
+
+def display_newstyle(req):
+    """Handles requests for new style frontend node URLs matching 
+    /nodes/<nid> OR
+    /<nid> (can be interpreted as alias, too)
+    """
+    nodes_path, nid_or_alias = RE_NEWSTYLE_NODE_URL.match(req.path).groups()
+    if nodes_path is None:
+        # check first if nid_or_alias is an alias 
+        maybe_node_alias = q(NodeAlias).get(unicode(nid_or_alias))
+        if maybe_node_alias is not None:
+            # found matching alias, assume it's an alias
+            return display_alias(req)
+    
+    # either coming from /nodes/ or nid_or_alias is not a valid alias
+    req = overwrite_id_in_req(nid_or_alias, req)
+    return display(req)
+
+
 def display(req):
     if "jsonrequest" in req.params:
         handle_json_request(req)

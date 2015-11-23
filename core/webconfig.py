@@ -25,7 +25,6 @@ import core.athana as athana
 import core.config as config
 from core.styles import theme
 from core import db
-from contenttypes import Collections
 
 from core.plugins import find_plugin_with_theme
 
@@ -270,6 +269,7 @@ def initContexts():
 
     # === check for ftp usage ===
     if config.get("ftp.activate", "") == "true":
+        from contenttypes import Collections
         # dummy handler for users
         athana.addFTPHandler(collection_ftpserver(None, port=int(config.get("ftp.port", 21)), debug=config.get("host.type", "testing")))
 

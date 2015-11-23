@@ -116,7 +116,8 @@ def node_url(nid=None, version=None, **kwargs):
     if version:
         params["v"] = version
     params.update(kwargs)
-    return u"/{}?{}".format(nid, urllib.urlencode(params))
+    params = {k: unicode(v).encode("utf8") for k, v in params.items()}
+    return "/{}?{}".format(nid, urllib.urlencode(params))
 
 
 def tal_add_template_globals():

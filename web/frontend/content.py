@@ -780,13 +780,11 @@ class ContentArea(Content):
             else:
                 node = None
 
-            if node is None:
-                printlink = '/print/0'
-            else:
-                if isinstance(node, Container) and node.get("system.print") == "1":
-                    printlink = '/print/' + unicode(node.id)
-                else:
-                    printlink = None
+            # printing is allowed for containers by default, unless system.print != "1" is set on the node
+            printlink = None
+
+            if isinstance(node, Container) and node.get("system.print", "1") == "1":
+                printlink = '/print/' + unicode(node.id)
 
             if printlink and "sortfield0" in req.args:
                 printlink += '?sortfield0=' + req.args.get("sortfield0") + '&sortfield1=' + req.args.get("sortfield1")

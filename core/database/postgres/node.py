@@ -395,27 +395,36 @@ class Node(DeclarativeBase, NodeMixin):
     def is_descendant_of(self, node):
         return exec_sqlfunc(object_session(self), mediatumfunc.is_descendant_of(self.id, node.id))
 
-    def get_container(self):
-        from contenttypes import Container
+    def _get_nearest_ancestor_by_type(self, ancestor_type):
+        """Returns a nearest ancestor of `ancestor_type`. 
+        If none is found, return `Collections` as default.
+        It's undefined which one will be returned if more than one nearest ancestor is found.
+        """
         nr = t_noderelation
         q = object_session(self).query
-        parent_dir = q(Container).join(nr, Node.id == nr.c.nid).filter_by(cid=self.id).order_by(nr.c.distance).limit(1).one()
-        return parent_dir
 
-    def get_collection(self):
-        from contenttypes import Collection
-        nr = t_noderelation
-        q = object_session(self).query
-        parent_coll = q(Collection).join(nr, Node.id == nr.c.nid).filter_by(cid=self.id).order_by(nr.c.distance).limit(1).scalar()
+        maybe_ancestor = (q(ancestor_type)
+                .join(nr, Node.id == nr.c.nid)
+                .filter_by(cid=self.id)
+                .order_by(nr.c.distance).limit(1).first())
 
-        if parent_coll is None:
+        if maybe_ancestor is None:
             from contenttypes import Collections
             return q(Collections).one()
 
-        return parent_coll
+        return maybe_ancestor
+
+    def get_container(self):
+        from contenttypes import Container
+        return self._get_nearest_ancestor_by_type(Container)
+
+    def get_collection(self):
+        from contenttypes import Collection
+        return self._get_nearest_ancestor_by_type(Collection)
 
     @cached_property
     def has_files(self):
+        # XXX: this must not be cached, change this!
         return self.files.first() is not None
 
     __mapper_args__ = {

@@ -185,15 +185,15 @@ PUBPATH = re.compile("/?(publish|pub)/(.*)$")
 def publish(req):
     m = PUBPATH.match(req.path)
 
-    node = q(Workflows).one()
+    node = workflow_root = q(Workflows).one()
     if m:
         for a in m.group(2).split("/"):
             if a:
-                node = node.children.filter_by(name=a).scalar()
+                node = workflow_root.children.filter_by(name=a).scalar()
                 if node is None:
                     return 404
 
-    req.params["id"] = node.id
+    req = overwrite_id_in_req(node.id, req)
 
     content = getContentArea(req)
     content.content = ContentNode(node)

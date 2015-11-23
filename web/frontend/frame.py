@@ -206,7 +206,7 @@ class Searchlet(Portlet):
         if mode != "simple":
             params["searchmode"] = mode
 
-        return u"node?" + urllib.urlencode(params)
+        return node_url(**params)
 
     def searchLinkSimple(self):
         return self.search_link()

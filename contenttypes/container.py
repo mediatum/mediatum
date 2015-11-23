@@ -25,6 +25,7 @@ import codecs
 from mediatumtal import tal
 import core.config as config
 from core import Node
+from core.webconfig import node_url
 from contenttypes.data import Data
 
 from core.database.helpers import ContainerMixin
@@ -161,7 +162,7 @@ class Container(Data, ContainerMixin, SchemaMixin):
     """ format big view with standard template """
     def show_node_big(self, req, template="", macro=""):
         content = u""
-        link = u"node?id={}&amp;files=1".format(self.id)
+        link = node_url(self.id, files=1)
         sidebar = u""
         pages = self.getStartpageDict()
         if self.get("system.sidebar") != "":

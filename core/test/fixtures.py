@@ -144,10 +144,16 @@ def home_root(session):
 def root(session):
     return RootFactory()
 
+@fixture
+def internal_authenticator_info(session):
+    return InternalAuthenticatorInfoFactory()
+
 
 @fixture
-def some_user(session):
-    return UserFactory()
+def some_user(session, internal_authenticator_info):
+    user = UserFactory()
+    user.authenticator_info = internal_authenticator_info
+    return user
 
 
 @fixture
@@ -188,11 +194,6 @@ def guest_user(internal_authenticator_info):
     user.groups.append(guest_group)
     user.authenticator_info = internal_authenticator_info
     return user
-
-
-@fixture
-def internal_authenticator_info(session):
-    return InternalAuthenticatorInfoFactory()
 
 
 @fixture

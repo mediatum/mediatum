@@ -285,18 +285,23 @@ class PostgresSQLAConnector(object):
         s.commit()
         logg.info("dropped database structure")
 
-    def create_schema(self):
+    def create_schema(self, set_alembic_version=True):
+        """Creates the 'mediatum' schema.
+        :param set_alembic_version: Stamp database with current alembic revision information. Defaults to True.
+        Can be disabled if a schema for testing is going to be created.
+        """
         s = self.session
         logg.info("creating DB schema...")
         s.execute("CREATE SCHEMA mediatum")
         s.commit()
         try:
             self.create_all()
-            # create alembic version table and set current alembic version to head
-            from alembic.config import Config
-            from alembic import command
-            alembic_cfg = Config(os.path.join(config.basedir, "alembic.ini"))
-            command.stamp(alembic_cfg, "head")
+            if set_alembic_version:
+                # create alembic version table and set current alembic version to head
+                from alembic.config import Config
+                from alembic import command
+                alembic_cfg = Config(os.path.join(config.basedir, "alembic.ini"))
+                command.stamp(alembic_cfg, "head")
             s.commit()
             logg.info("commited database structure")
         except:

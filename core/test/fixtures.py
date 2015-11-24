@@ -36,7 +36,7 @@ def database():
     db.configure()
     db.create_engine()
     db.drop_schema()
-    db.create_schema()
+    db.create_schema(set_alembic_version=False)
     init_fulltext_search()
     db.disable_session_for_test()
     return db

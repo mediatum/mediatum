@@ -197,17 +197,16 @@ let
     buildInputs = with self; [];
     doCheck = false;
   };
-
   sqlalchemy = self.buildPythonPackage {
-    name = "sqlalchemy-1.0.8";
-    src = fetchurl {
-      url = "https://pypi.python.org/packages/source/S/SQLAlchemy/SQLAlchemy-1.0.8.tar.gz";
-      md5 = "7cfd005be63945c96a78c67764ac3a85";
-    };
-    propagatedBuildInputs = with self; [];
-    buildInputs = with self; [];
+    name = "SQLAlchemy-1.0.9";
+    buildInputs = with self; []; 
     doCheck = false;
-  };
+    propagatedBuildInputs = with self; []; 
+    src = fetchurl {
+      url = "https://pypi.python.org/packages/source/S/SQLAlchemy/SQLAlchemy-1.0.9.tar.gz";
+      md5 = "0e2d7442e70d02c9f6346a5bf0ec2265";
+    };  
+  };  
   PyExecJS = self.buildPythonPackage {
     name = "PyExecJS-1.1.0";
     src = fetchurl {

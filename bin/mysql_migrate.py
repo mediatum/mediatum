@@ -109,6 +109,7 @@ def user_finish(s):
     from migration import user_migration
     user_migration.migrate_home_dirs(1276513)
     user_migration.migrate_special_dirs()
+    user_migration.set_admin_group()
 
 
 def versions(s):

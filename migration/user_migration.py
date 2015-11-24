@@ -5,9 +5,10 @@
 """
 import logging
 from sqlalchemy import text
-from core import db, Node, User
+from core import config, db, Node, User
 from contenttypes import Directory, Home
 from core.translation import getDefaultLanguage, translate
+from sqlalchemy.orm.exc import NoResultFound
 
 logg = logging.getLogger(__name__)
 
@@ -71,3 +72,16 @@ def migrate_special_dirs():
                     dirr.name = new
 
                 dirr[u"system.used_as"] = new
+
+
+def set_admin_group():
+    from core import UserGroup
+    admin_group_name = config.get(u"user.admingroup", u"administration")
+    try:
+        admin_group = q(UserGroup).filter_by(name=admin_group_name).one()
+    except NoResultFound:
+        logg.warn("admin group '%s' specified in config file does not exist, no admin group set!")
+
+    admin_group.is_admin_group = True
+    admin_group.is_workflow_editor_group = True
+    admin_group.is_editor_group = True

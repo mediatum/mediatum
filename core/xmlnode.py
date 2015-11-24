@@ -94,7 +94,7 @@ def add_node_to_xmldoc(
         xmlattr.set("name", name)
         # protect XML from invalid characters
         # XXX: is this ok?
-        xmlattr.text = etree.CDATA(xml_remove_illegal_chars(value))
+        xmlattr.text = etree.CDATA(xml_remove_illegal_chars(unicode(value)))
 
     for file in node.files.filter(File.filetype != u"metadata").filter(~File.filetype.in_(exclude_filetypes)):
         add_file_to_xmlnode(file, xmlnode)

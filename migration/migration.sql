@@ -105,7 +105,7 @@ BEGIN
     RAISE NOTICE 'migrated node aliases';
 
 
-    UPDATE node SET attrs = jsonb_object_delete_keys(attrs, ['system.aliascol']) WHERE attrs ? 'system.aliascol';
+    UPDATE node SET attrs = jsonb_object_delete_keys(attrs, 'system.aliascol') WHERE attrs ? 'system.aliascol';
 
     RAISE NOTICE 'deleted obsolete attributes';
 END;

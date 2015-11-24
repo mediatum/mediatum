@@ -127,12 +127,15 @@ def test_search(guest_user, root, home_root, collections, container_node, conten
     container_node.container_children.append(other_container_node)
     other_container_node.content_children.append(content_node)
 
-    req = MagicMock()
-    req.get_header = lambda x: "localhost:8081"
-    req.fullpath = ""
-    req.query = ""
+    import core
 
-    res = get_node_data_struct(req, "", params, None, container_node.id)
+    with core.app.test_request_context() as ctx:
+        req = ctx.request
+        req.get_header = lambda x: "localhost:8081"
+        req.fullpath = req.path = ""
+        req.query = ""
+        res = get_node_data_struct(req, "", params, None, container_node.id)
+
     assert res["status"] == "ok"
     print res
     pass

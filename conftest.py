@@ -26,7 +26,7 @@ def pytest_runtest_setup(item):
 
 
 from core import config
-from core.init import add_ustr_builtin, init_db_connector, load_system_types, load_types, connect_db, _set_current_init_state
+from core.init import add_ustr_builtin, init_db_connector, load_system_types, load_types, connect_db, _set_current_init_state, init_app
 
 
 # we are doing a 'basic_init()' here for testing that's a bit different from core.init_basic_init()
@@ -36,6 +36,7 @@ config.initialize(os.path.join(config.basedir, "test_mediatum.cfg"))
 add_ustr_builtin()
 import utils.log
 utils.log.initialize()
+init_app()
 init_db_connector()
 load_system_types()
 load_types()

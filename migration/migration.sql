@@ -8,8 +8,7 @@ BEGIN
     UPDATE node SET subnode = true
     WHERE id IN (SELECT n1.id
                  FROM node n1 JOIN nodemapping nm1 ON cid=n1.id JOIN node n2 ON nid=n2.id
-                 -- XXX: select content types from a table
-                 WHERE n2.type IN ('dissertation', 'audio', 'image', 'flash', 'content', 'other', 'video', 'imagestream', 'document'));
+                 WHERE n2.type IN (SELECT name FROM mediatum.nodetype WHERE is_container = false));
 
 END;
 $f$;
@@ -29,7 +28,7 @@ BEGIN
 
     UPDATE mediatum.node
     SET schema = type
-    WHERE type IN ('collection', 'directory', 'project', 'home', 'directoryarmusarch', 'directoryarmus', 'directoryarmusproject');
+    WHERE type IN (SELECT name FROM mediatum.nodetype WHERE is_container = true);
 
     UPDATE mediatum.node
     SET type = 'other', schema = 'other'
@@ -103,7 +102,6 @@ BEGIN
     INSERT INTO node_alias (alias, nid) SELECT attrs->>'system.aliascol' AS alias, id as nid FROM node WHERE attrs ? 'system.aliascol';
 
     RAISE NOTICE 'migrated node aliases';
-
 
     UPDATE node SET attrs = jsonb_object_delete_keys(attrs, 'system.aliascol') WHERE attrs ? 'system.aliascol';
 

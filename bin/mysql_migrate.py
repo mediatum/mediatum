@@ -82,6 +82,7 @@ def pgloader():
 def prepare_import_migration(s):
     for sql_file in ["migration.sql", "acl_migration.sql", "user_migration.sql"]:
         s.execute(read_and_prepare_sql(sql_file, MIGRATION_DIR))
+    init.update_nodetypes_in_db()
     logg.info("finished db preparations")
 
 

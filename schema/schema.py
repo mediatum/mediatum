@@ -58,11 +58,11 @@ dateoption = []
 dateoption += [Option("metafield_dateformat_std",
                       "dd.mm.yyyy",
                       "%d.%m.%Y",
-                      validation_regex='^(0[1-9]|1[0-9]|2[0-9]|3[01])\.(0[1-9]|1[012])\.[0-9]{4}$')]
+                      validation_regex='^(0[0-9]|1[0-9]|2[0-9]|3[01])\.(0[0-9]|1[012])\.[0-9]{4}$')]
 dateoption += [Option("metafield_dateformat_long",
                       "dd.mm.yyyy hh:mm:ss",
                       "%d.%m.%Y %H:%M:%S",
-                      validation_regex='^(0[1-9]|1[0-9]|2[0-9]|3[01])\.(0[1-9]|1[012])\.[0-9]{4} (0[0-9]|1[0-9]|2[0-3])(:[0-5][0-9]){2}$')]
+                      validation_regex='^(0[0-9]|1[0-9]|2[0-9]|3[01])\.(0[0-9]|1[012])\.[0-9]{4} (0[0-9]|1[0-9]|2[0-3])(:[0-5][0-9]){2}$')]
 dateoption += [Option("metafield_dateformat_year",
                       "yyyy",
                       "%Y",
@@ -70,11 +70,11 @@ dateoption += [Option("metafield_dateformat_year",
 dateoption += [Option("metafield_dateformat_yearmonth",
                       "yyyy-mm",
                       "%Y-%m",
-                      validation_regex='^[0-9]{4}-(0[1-9]|1[012])$')]
+                      validation_regex='^[0-9]{4}-(0[0-9]|1[012])$')]
 dateoption += [Option("metafield_dateformat_month",
                       "mm",
                       "%m",
-                      validation_regex='^(0[1-9]|1[012])$')]
+                      validation_regex='^(0[0-9]|1[012])$')]
 dateoption += [Option("metafield_dateformat_time",
                       "hh:mm:ss",
                       "%H:%M:%S",

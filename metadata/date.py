@@ -18,6 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
+import re
 from mediatumtal import tal
 import utils.date as date
 from utils.date import format_date, parse_date, validateDate
@@ -59,6 +60,13 @@ class m_date(Metatype):
         return tal.getTAL("metadata/date.html", {"context": context}, macro="searchfield", language=context.language)
 
     def getFormatedValue(self, field, node, language=None, html=1):
+        ''' search with re if string could be a date
+            appends this to a list and returns this
+
+            :param field: metadatafield
+            :param node: node with fields
+            :return: formatted value
+        '''
         value = node.get(field.getName())
 
         if not value or value == "0000-00-00T00:00:00":  # dummy for unknown
@@ -68,8 +76,27 @@ class m_date(Metatype):
                 d = parse_date(value)
             except ValueError:
                 return (field.getLabel(), value)
-            value = format_date(d, format=field.getValues())
-        return (field.getLabel(), value)
+
+        parse_value = value.split(':')[0].split('T')[0]
+
+        value_list = []
+
+        if re.search(r'[0]{2}\.', parse_value):
+            pass
+        elif re.search(r'\d\d\.', parse_value):
+            value_list.append(re.search(r'\d\d\.', parse_value).group())
+
+        if re.search(r'\.[0]{2}\.', parse_value):
+            pass
+        elif re.search(r'\.\d\d\.', parse_value):
+            value_list.append(re.search(r'\.\d\d\.', parse_value).group().lstrip('.'))
+
+        if re.search(r'[0]{4}', parse_value):
+            pass
+        elif re.search(r'[1-9]\d{3}', parse_value):
+            value_list.append(re.search(r'[1-9]\d{3}', parse_value).group())
+
+        return (field.getLabel(), ''.join(value_list))
 
     def format_request_value_for_db(self, field, params, item, language=None):
         value = params.get(item)

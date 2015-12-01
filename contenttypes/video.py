@@ -23,6 +23,7 @@ import core.acl as acl
 import os
 import json
 import logging
+import subprocess
 
 from utils.utils import splitfilename
 from utils.date import format_date, make_date
@@ -94,11 +95,25 @@ class Video(Content):
         return "video"
 
     def _prepareData(self, req, words=""):
-
         mask = self.getFullView(lang(req))
 
         obj = {'deleted': False}
         node = self
+
+        if len(node.files) == 0:
+            obj['captions_info'] = {}
+            obj['file'] = ''
+            obj['hasFiles'] = False
+            obj['hasVidFiles'] = False
+
+        if len(node.files) > 0:
+            obj['hasFiles'] = True
+
+            if len([f for f in self.files if os.path.exists('{}/{}'.format(os.path.abspath(config.get('paths.datadir')), f.path)) and f.type == 'video']) > 0:
+                obj['hasVidFiles'] = True
+            else:
+                obj['hasVidFiles'] = False
+
         if self.get('deleted') == 'true':
             node = self.getActiveVersion()
             obj['deleted'] = True
@@ -121,27 +136,34 @@ class Video(Content):
 
     """ format big view with standard template """
     def show_node_big(self, req, template="", macro=""):
-
-        # if the file format is not flash video (edit area)
-        if 'contentarea' not in req.session:
-            files = [f.abspath for f in self.files]
-            if len(files) == 1 and 'flv' != files[0].split('/')[-1].split('.')[-1]:
-                return req.error(415, "Video is not in Flash Video format")
+        if len([f.path for f in self.files]) == 0:
+            styles = getContentStyles("bigview", contenttype=self.getContentType())
+            template = styles[0].getTemplate()
+            return req.getTAL(template, self._prepareData(req), macro)
 
         if template == "":
-            styles = getContentStyles("bigview", contenttype=self.type)
+            styles = getContentStyles("bigview", contenttype=self.getContentType())
             if len(styles) >= 1:
                 template = styles[0].getTemplate()
 
         captions_info = getCaptionInfoDict(self)
 
         if captions_info:
-            logg.info("video: '%s' (%s): captions: dictionary 'captions_info': %s", self.name, self.id, captions_info)
+            logger.info("video: '%s' (%s): captions: dictionary 'captions_info': %s" % (self.name, str(self.id), str(captions_info)))
 
         context = self._prepareData(req)
         context["captions_info"] = json.dumps(captions_info)
 
-        return req.getTAL(template, context, macro)
+        if len([m for m in [f.type for f in self.files if os.path.exists(os.path.abspath(f.path))] if m == 'video']) > 0:
+            return req.getTAL(template, context, macro)
+        else:
+            if len([th for th in [os.path.abspath(f.path) for f in self.files] if th.endswith('thumb2')]) > 0:
+                return req.getTAL(template, context, macro)
+            else:
+                if len([f for f in self.files if f.type == 'attachment']) > 0:
+                    return req.getTAL(template, context, macro)
+
+                return '<h2 style="width:100%; text-align:center ;color:red">Video is not in a supported video-format.</h2>'
 
     """ returns preview image """
     def show_node_image(self):
@@ -149,63 +171,41 @@ class Video(Content):
 
     def event_files_changed(self):
         for f in self.files:
-            if f.type in ["thumb", "presentation"]:
+            if f.type in ['thumb', 'thumb2', 'presentation']:
                 self.files.remove(f)
+                db.session.commit()
 
-        nodefiles = self.files
-        if len(nodefiles) == 1 and nodefiles[0].mimetype == "video/quicktime":
-            if nodefiles[0].abspath.endswith('.mov'):  # handle mov -> flv
-                flvname = "%sflv" % nodefiles[0].abspath[:-3]
-                ret = os.system("ffmpeg -loglevel quiet -i %s -ar 44100 -ab 128 -f flv %s" % (nodefiles[0].abspath, flvname))
-                if ret & 0xff00:
-                    return
-                self.files.append(File(flvname, "video", "video/x-flv"))
+            if f.mimetype == 'video/mp4':
+                if len([f for f in self.files if f.mimetype == 'video/mp4']) > 0:
+                    if f.type == 'video':
+                        tempname = os.path.join(config.get('paths.tempdir'), 'tmp.gif')
 
-        for f in self.files:
-        #fetch tags to be omitted
-            unwanted_attrs = self.unwanted_attributes()
+                        self.set('vid-width', self.get('width'))
+                        self.set('vid-height', self.get('height'))
 
-            if f.type in["original", "video"]:
-                if f.mimetype == "video/x-flv":
-                    meta = FLVReader(f.abspath)
-                    for key in meta:
-                        if any(tag in key for tag in unwanted_attrs):
-                                continue
+                        if os.path.exists(tempname):
+                            os.remove(tempname)
+
+                        mp4_path = '{}/{}'.format(os.path.abspath(config.get('paths.datadir')), f.path)
+                        mp4_name = os.path.splitext(mp4_path)[0]
+
                         try:
-                            self.set(key, int(meta[key]))
+                            if self.get("system.thumbframe") != '':
+                                ret = subprocess.call(['ffmpeg',  '-y', '-ss', '{}'.format(self.get('system.thumbframe')), '-i', '{}'.format(mp4_path), '-vframes', '1', '-pix_fmt', 'rgb24', '{}'.format(tempname)]) #'-loglevel', 'quiet',
+                            else:
+                                ret = subprocess.call(['ffmpeg',  '-y', '-i', '{}'.format(mp4_path), '-vf', 'thumbnail', '-frames:v', '1', '-pix_fmt', 'rgb24', '{}'.format(tempname)]) #'-loglevel', 'quiet',
                         except:
-                            self.set(key, meta[key])
-
-                    self.set("vid-width", self.get("width"))
-                    self.set("vid-height", self.get("height"))
-
-                    tempname = os.path.join(config.get("paths.tempdir"), "tmp.gif")
-                    try:
-                        os.unlink(tempname)
-                    except:
-                        logg.exception("exception while unlinking tempfile, ignore")
-
-                    try:
-                        if self.get("system.thumbframe") != "":
-                            cmd = "ffmpeg -loglevel quiet  -ss %s -i %s -vframes 1 -pix_fmt rgb24 %s" % (
-                                self.get("system.thumbframe"), f.abspath, tempname)
-                        else:
-                            cmd = "ffmpeg -loglevel quiet -i %s -vframes 1 -pix_fmt rgb24 %s" % (f.abspath, tempname)
-                        ret = os.system(cmd)
-                        if ret & 0xff00:
                             return
-                    except:
-                        logg.exception("exception in event_files_changed, ignore")
-                        return
-                    path, ext = splitfilename(f.abspath)
-                    thumbname = path + ".thumb"
-                    thumbname2 = path + ".thumb2"
-                    makeThumbNail(tempname, thumbname)
-                    makePresentationFormat(tempname, thumbname2)
-                    self.files.append(File(thumbname, "thumb", "image/jpeg"))
-                    self.files.append(File(thumbname2, "presentation", "image/jpeg"))
 
-        db.session.commit()
+                        thumbname = '{}.thumb'.format(mp4_name)
+                        thumbname2 = '{}.thumb2'.format(mp4_name)
+                        makeThumbNail(tempname, thumbname)
+                        makePresentationFormat(tempname, thumbname2)
+
+                        self.files.append(File(thumbname, 'thumb', 'image/jpeg'))
+                        self.files.append(File(thumbname2, 'thumb2', 'image/jpeg'))
+
+                        db.session.commit()
 
     @classmethod
     def isContainer(cls):

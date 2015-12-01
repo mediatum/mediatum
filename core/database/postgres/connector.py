@@ -187,7 +187,7 @@ class PostgresSQLAConnector(object):
 
         if self.test_db:
             # create schema with default data in test_db mode if not present
-            self.check_create_schema()
+            self.check_create_schema(set_alembic_version=False)
             self.check_load_initial_database_values(default_admin_password=u"insecure")
 
     def check_db_connection(self, engine):
@@ -310,7 +310,7 @@ class PostgresSQLAConnector(object):
             s.execute("DROP SCHEMA mediatum CASCADE")
             raise
 
-    def check_create_schema(self):
+    def check_create_schema(self, set_alembic_version=True):
         if not schema_exists(self.session, "mediatum"):
             self.create_schema()
 

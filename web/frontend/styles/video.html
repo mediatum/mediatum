@@ -11,11 +11,10 @@
 
 <div id="object_main">
     <div id="object_image">
+        <video tal:condition="python:canseeoriginal and hasVidFiles" controls autobuffer tal:attributes="src python:file" style="cursor:pointer;width:300px"/>
         <img tal:condition="python:canseeoriginal" tal:attributes="src python:u'/thumb2/{}'.format(node.id); onClick python:'fullSizePopup({}, {}, {})'.format(node.id, (int(node.get('vid-width') or '0')+64), (int(node.get('vid-height') or '0')+53))" style="cursor:pointer;border:0px;width:300px" alt="thumbnail" src="/thumb2/_"/>
         <img tal:condition="python:not canseeoriginal" tal:attributes="src python:u'/thumb2/{}'.format(node.id)" style="border:0px;width:300px"/>
         <br/>
-        
-        <p style="padding-top:20px"><small i18n:translate="video_plugin_info">TEXT</small></p>
         
         <metal:macro use-macro="web/frontend/styles/macros.html/object_versions"/>
     </div>

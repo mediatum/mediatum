@@ -45,10 +45,13 @@ logg = logging.getLogger(__name__)
 
 
 def makeThumbNail(image, thumb):
+    import os
+
     if isnewer(thumb, image):
         return
     pic = PILImage.open(image)
-    tmpjpg = config.get("paths.datadir") + "tmp/img" + ustr(random.random()) + ".jpg"
+
+    tmpjpg = config.get("paths.datadir") + "tmp/img" + str(random.random()) + ".jpg"
 
     if pic.mode == "CMYK" and (image.endswith("jpg") or image.endswith("jpeg")) or pic.mode in ["P", "L"]:
         os.system("convert -quality 100 -draw \"rectangle 0,0 1,1\" %s %s" % (image, tmpjpg))  # always get a rgb image
@@ -93,7 +96,7 @@ def makePresentationFormat(image, thumb):
     if isnewer(thumb, image):
         return
     pic = PILImage.open(image)
-    tmpjpg = config.get("paths.datadir") + "tmp/img" + ustr(random.random()) + ".jpg"
+    tmpjpg = config.get("paths.datadir") + "tmp/img" + str(random.random()) + ".jpg"
     if pic.mode == "CMYK" and (image.endswith("jpg") or image.endswith("jpeg")) or pic.mode in ["P", "L"]:
         os.system("convert -quality 100 -draw \"rectangle 0,0 1,1\" %s %s" % (image, tmpjpg))
         pic = PILImage.open(tmpjpg)
@@ -131,8 +134,8 @@ def makePresentationFormat(image, thumb):
 
 
 def makeOriginalFormat(image, thumb):
+    tmpjpg = config.get("paths.datadir") + "tmp/img" + str(random.random()) + ".jpg"
 
-    tmpjpg = config.get("paths.datadir") + "tmp/img" + ustr(random.random()) + ".jpg"
     pic = PILImage.open(image)
     if pic.mode == "CMYK" and (image.endswith("jpg") or image.endswith("jpeg")) or pic.mode in ["P", "L"]:
         # if image.endswith("jpg") or image.endswith("jpeg"):

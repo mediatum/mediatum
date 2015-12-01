@@ -301,6 +301,7 @@ class PostgresSQLAConnector(object):
                 from alembic.config import Config
                 from alembic import command
                 alembic_cfg = Config(os.path.join(config.basedir, "alembic.ini"))
+                alembic_cfg.attributes["running_in_mediatum"] = True
                 command.stamp(alembic_cfg, "head")
             s.commit()
             logg.info("commited database structure")

@@ -8,19 +8,20 @@ import sqlalchemy.orm
 # access to the values within the .ini file in use.
 config = context.config
 
-# Interpret the config file for Python logging.
-# This line sets up loggers basically.
-fileConfig(config.config_file_name)
-
 sys.path.append(".")
 
-from core import init
+# Don't run DB initialization when we are running alembic commands from within the mediaTUM process.
+if not config.attributes.get("running_in_mediatum"):
+    # Interpret the config file for Python logging.
+    # This line sets up loggers basically.
+    fileConfig(config.config_file_name)
 
-init.basic_init()
+    from core import init
+    init.basic_init()
+
+    sqlalchemy.orm.configure_mappers()
+
 from core import db
-
-sqlalchemy.orm.configure_mappers()
-
 from core.database.postgres import DB_SCHEMA_NAME
 
 # other values from the config, defined by the needs of env.py,

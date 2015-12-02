@@ -6,9 +6,30 @@
 <html>
 
     <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta http-equiv="expires" content="43200" />
         <meta content="text/html;charset=UTF-8" http-equiv="content-type">
+        <meta name="msapplication-TileColor" content="#ffffff">
+        <meta name="msapplication-TileImage" content="/mstile-144x144.png">
+        <meta name="theme-color" content="#ffffff">
+        <link rel="icon" type="image/vnd.microsoft.icon" href="/img/favicon.ico">
+        <link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+        <link rel="apple-touch-icon" sizes="60x60" href="/apple-touch-icon-60x60.png">
+        <link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+        <link rel="apple-touch-icon" sizes="76x76" href="/apple-touch-icon-76x76.png">
+        <link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+        <link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120x120.png">
+        <link rel="apple-touch-icon" sizes="144x144" href="/apple-touch-icon-144x144.png">
+        <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152x152.png">
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180x180.png">
+        <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32">
+        <link rel="icon" type="image/png" href="/favicon-194x194.png" sizes="194x194">
+        <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96">
+        <link rel="icon" type="image/png" href="/android-chrome-192x192.png" sizes="192x192">
+        <link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16">
+        <link rel="manifest" href="/manifest.json">
         <title i18n:translate="main_title">TEXT</title>
+        
         <link rel="stylesheet" href="/css/mediatum.css"/>
         <script type="text/javascript" language="javascript" src="/js/jquery.min.js">
         </script>
@@ -91,12 +112,12 @@
 
 
 <!-- macro for navigation tree -->
-<div  metal:define-macro="frame_tree" class="portlet">
+<div  metal:define-macro="frame_tree" id="frame-tree" class="portlet" style="overflow:auto;height:500px">
     <ul id="navigationlist">
-        <tal:block tal:repeat="data collections"><li tal:attributes="class python:data.getClass()" tal:define="label python:data.getText()" tal:condition="python:label!=''">
+        <tal:block tal:repeat="data collections"><a tal:attributes="name python:data.id"> </a><li tal:attributes="class python:data.getClass()" tal:define="label python:data.getText()" tal:condition="python:label!=''">
             <div  tal:attributes="style python:data.getStyle(); class python:['linknotselected','linkselected'][data.active];">
                 <a tal:attributes="href python:data.getFoldLink()" tal:content="raw label"/>
-                <a tal:condition="python:data.hassubdir" tal:attributes="href python:data.getLink(); class python:['expanded','collapsed'][data.folded]"> </a>
+                <a tal:condition="python:data.hassubdir" tal:attributes="href python:data.getLink()+'#'+ustr(data.id); class python:['expanded','collapsed'][data.isFolded()]"> </a>
             </div>
         </li></tal:block>
     </ul>
@@ -104,47 +125,45 @@
 
 
 <!-- macro for search mask -->
-<div metal:define-macro="frame_search" class="portlet">
-    <span>
-        <form tal:condition="python:search.isSimple()" id="search-box" name="search" action="/node" method="post" accept-charset="utf-8" style="padding:10px 0px 0px 10px">
+<div metal:define-macro="frame_search" class="portlet" id="search-form">
+    <span tal:condition="python:search.isSimple()">
+        <form id="search-box" name="search" action="/node">
             <input tal:attributes="value python:search.query()" id="search-field" name="query" style="width:180px"/>
-            <input type="hidden" name="searchmode" value="simple"/>
-            <input type="hidden" value="1" tal:attributes="name python:u'c_{}'.format(search.collection.id)" tal:condition="python:search.insideCollection()"/>
-            <input i18n:attributes="value search; title search_title" id="search-button" type="submit" name="start_search"/>
-            <a tal:condition="python:search.hasExtendedSearch()" tal:attributes="href python:search.searchLinkExtended()" i18n:translate="xsearch" id="advancedsearchlink"> </a>
-            <input type="hidden" name="act_node" tal:attributes="value python:act_node"/>
+            <input i18n:attributes="value search; title search_title" id="search-button" type="submit" />
+            <input tal:condition="collection_id" type="hidden" name="id" tal:attributes="value collection_id"/>
         </form>
-
-        <form tal:condition="python:search.isExtended()" name="xsearch" id="search-box" method="post" action="/node" accept-charset="utf-8"  style="padding:10px 0px 0px 10px">
-            <input type="hidden" name="submittype" value="search"/>
-            <input type="hidden" name="collection" tal:attributes="value python:search.collection.id" tal:condition="python:search.insideCollection()"/>
-            <input type="hidden" name="act_node" tal:attributes="value python:act_node"/>
-            <input type="hidden" name="searchmode" id="searchmodeId" tal:attributes="value python:['extendedsuper','extended'][search.isExtendedNormal()]"/>
-            <table id="abc" name="xsearchtable" tal:define="max python:[4,11][search.isExtendedSuper()]">
-                <tr tal:repeat="i python:range(1,max)">
-                    <td valign="top">
-                        <select tal:attributes="name python:u'field{}'.format(i);id python:u'id{}'.format(i); onchange python: u'chg({}, {})'.format(i, search.collection.id)">
-                            <option tal:attributes="selected python:[None,'selected'][search.names[i]=='full']" i18n:translate="all_metafields" value="full"/>
-                            <tal:block tal:repeat="a python:search.getSearchFields().keys()">
-                                <option tal:attributes="value a; selected python:[None,'selected'][search.names[i]==a]" tal:content="python:search.getSearchFields()[a]"/>
-                            </tal:block>
-                        </select>
-                    </td>
-                    <td tal:content="raw python:search.getSearchField(i)"/>
-                </tr>
-                <tr>
-                    <td>
-                        <small>
-                             <a tal:condition="python:search.isExtendedNormal()" tal:attributes="href python:search.searchLinkExtendedSuper()" i18n:translate="search_extendedsuper" id="advancedsearchlink"> </a>
-                             <a tal:condition="python:search.isExtendedSuper()" tal:attributes="href python:search.searchLinkExtended()" i18n:translate="xsearch2" id="advancedsearchlink"> </a>
-                        </small>
-                    </td>
-                    <td align="right">
-                        <button i18n:attributes="title reset_field_title" i18n:translate="reset_field" type="button" onclick="clearFields()" id="reset-button"/>&nbsp;&nbsp;<button i18n:translate="search" i18n:attributes="title search_title" type="submit" name="Suche" id="xsearch-button"/>
-                    </td>
-                </tr>
-            </table>
-            <a tal:attributes="href python:search.searchLinkSimple()" i18n:translate="search_simple" id="advancedsearchlink"> </a>
-        </form>
+        <a tal:condition="python:search.hasExtendedSearch()" tal:attributes="href python:search.searchLinkExtended()" i18n:translate="xsearch" id="advancedsearchlink"> </a>
     </span>
+
+    <form tal:condition="python:search.isExtended()" name="xsearch" id="advancedsearch-box" action="/node" accept-charset="utf-8" style="margin:0px;padding:0px;background-color:#edf1f4">
+        <input tal:condition="collection_id" type="hidden" name="id" tal:attributes="value collection_id"/>
+        <input type="hidden" name="searchmode" tal:attributes="value python:['extendedsuper','extended'][search.isExtendedNormal()]"/>
+        <table tal:define="max python:[4,11][search.isExtendedSuper()]">
+            <tr tal:repeat="i python:range(1,max)">
+                <td valign="top">
+                    <select tal:attributes="name python:u'field{}'.format(i)" onchange="chg()">
+                        <option tal:attributes="selected python:[None,'selected'][search.names[i]=='full']" i18n:translate="all_metafields" value="full"/>
+                        <tal:block tal:repeat="a python:search.getSearchFields().keys()">
+                            <option tal:attributes="value a; selected python:[None,'selected'][search.names[i]==a]" tal:content="python:search.getSearchFields()[a]"/>
+                        </tal:block>
+                    </select>
+                </td>
+                <td tal:content="raw python:search.getSearchField(i)"/>
+            </tr>
+            <tr>
+                <td>
+                    <small>
+                         <a tal:condition="python:search.isExtendedNormal()" tal:attributes="href python:search.searchLinkExtendedSuper()" i18n:translate="search_extendedsuper" id="advancedmorelink"> </a>
+                         <a tal:condition="python:search.isExtendedSuper()" tal:attributes="href python:search.searchLinkExtended()" i18n:translate="xsearch2" id="advancedmorelink"> </a>
+                    </small>
+                </td>
+                <td style="text-align:right">
+                    <button i18n:attributes="title reset_field_title" i18n:translate="reset_field" type="button" onclick="clearFields()" id="reset-button"> </button>
+                    <button i18n:translate="search" i18n:attributes="title search_title" type="submit" id="xsearch-button"></button>
+                </td>
+            </tr>
+        </table>
+        <a tal:attributes="href python:search.searchLinkSimple()" i18n:translate="search_simple" id="advancedsearchlink"> </a>
+    </form>
+
 </div>

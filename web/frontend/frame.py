@@ -281,7 +281,8 @@ class NavTreeEntry(object):
         return self.getLink()
 
     def getLink(self):
-        return node_url(self.node.id)
+        # do we really need this '#' ?
+        return node_url(self.node.id) + "#" + str(self.node.id)
 
     def isFolded(self):
         return self.folded

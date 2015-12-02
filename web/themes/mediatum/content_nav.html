@@ -1,44 +1,45 @@
 
 <div metal:define-macro="path" id="portal-breadcrumbs">
-    <div tal:condition="python:logo and logo.getPath()" style="float:right; margin-right:15px">
+    <div id="collectionlogo" tal:condition="python:logo and logo.getPath()">
             <a tal:condition="python: logo.getURL()" tal:attributes="href python:logo.getURL()" target="_blank">
                 <img tal:attributes="src python:logo.getPath(); title python:logo.getURL()" style="margin-left: 30px;"/>
             </a>
             <img tal:condition="python: not logo.getURL()" tal:attributes="src python:logo.getPath()" style="margin-left: 30px;"/>
     </div>
-
-    <a tal:condition="python:printlink" target="_blank" tal:attributes="href printlink" id="view_switch"><img src="/img/print_icon.gif"/></a>
-
-    <a tal:condition="python:len(styles)>1" tal:repeat="style styles"
-       tal:attributes="href python:select_style_link(style=style.name); title python:style.getLabel()"
-       i18n:attributes="title" id="view_switch">
-        <img tal:attributes="src python:u'/img/{}'.format(style.getIcon())"/>
-    </a>
-
-    <a i18n:translate="startpage" href="/">TEXT</a>
-    <span tal:condition="python:searchmode!=''" id="last_breadcrumb_link" i18n:translate="searchresult">TEXT</span>
-
+    <div style="text-align:right; float:right">
+        <p>
+            <a tal:condition="python:len(styles)>1" tal:repeat="style styles"
+               tal:attributes="href python:select_style_link(style=style.name); title python:style.getLabel()"
+               i18n:attributes="title" id="view_switch">
+                <img tal:attributes="src python:u'/img/{}'.format(style.getIcon())"/>
+            </a>
+            <a tal:condition="python:printlink" target="_blank" tal:attributes="href printlink" id="view_switch"><img src="/img/print_icon.gif"/></a>
+        </p>
+    </div>
+    <div style="padding-bottom:20px">
+    <a tal:condition="python:area==''" i18n:translate="startpage" href="/">TEXT</a>
     <tal:block tal:repeat="dir python:path">
-        <a tal:condition="python:dir.link!=''" tal:content="python:dir.title" tal:attributes="href python:dir.link" class="breadcrumb_link"/>
-        <span tal:condition="python:dir.link==''" tal:content="python:dir.title" id="last_breadcrumb_link"/>
+        <a tal:condition="python:dir.link!=''" tal:content="raw python:dir.title" tal:attributes="href python:dir.link" class="breadcrumb_link"/>
+        <span tal:condition="python:dir.link==''" tal:content="raw python:dir.title" id="last_breadcrumb_link"/>
     </tal:block>
-    <div style="clear:both"><span tal:replace="nothing"/></div>
+    </div>
 </div>
 
-
 <div metal:define-macro="page_nav_numbers" id="list-page-nav">
-    prev_next_nav!
     <div tal:condition="python:len(list(nav_list))>1">
     <tal:block tal:repeat="page python:list(nav_list)">
         <tal:block tal:condition="python:page!='...'" tal:define="page_no python:nav_page[int(nav_list.index(page))]">
             &nbsp;
-            <tal:block tal:condition="python:act_page==page_no" tal:replace="python:'['"/><a tal:attributes="href page" tal:content="python:unicode(page_no+1)"/><tal:block tal:condition="python:act_page==page_no" tal:replace="python:']'"/>
+            <tal:block tal:condition="python:act_page==page_no" tal:replace="python:'['"/><a tal:attributes="href page" tal:content="python:ustr(page_no+1)"/><tal:block tal:condition="python:act_page==page_no" tal:replace="python:']'"/>
         </tal:block>
         <span tal:condition="python:page=='...'" tal:replace="python:' ...'"/>
     </tal:block>
     <span>&nbsp;&nbsp;<a href="?itemsperpage=-1" i18n:translate="show_all">TEXT</a></span>
     </div>
-    <div tal:condition="python:len(list(nav_list))==1">
+    <span style="position:absolute;right:20px;top:0px">
+        <img i18n:attributes="title view_lists_add_shoppingbag" tal:attributes="onclick python:'shoppingBag(\''+ ids +'\')'" border="0" src="/img/favourite_add.png" style="cursor:pointer"/>
+    </span>
+    <div tal:condition="python:len(list(nav_list))==1 and len(nav_page)>1">
         <span><a href="?page=0" i18n:translate="show_pages">TEXT</a></span>
     </div>
 </div>
@@ -56,35 +57,33 @@
 
 
 <div metal:define-macro="list_header" id="portal-pages">
-    <div tal:condition="python:sortfieldslist" id="sortdiv" style="position:relative; left:0px">
-        <form>
-            <table cellspacing="0" cellpadding="0">
-                <tal:block tal:repeat="i python:range(len(sortfieldslist))">
-                <tr>
-                    <td>
-                        <small tal:condition="python:i==0" i18n:translate="sort_label">TEXT</small>
-                        <small tal:condition="python:i>0" i18n:translate="sort_label2">TEXT</small>
-                    </td>
-                    <td>
-                        <select tal:attributes="name python:u'sortfield{}'.format(i)" style="font-size: 9px" onchange="submit()">
-                            <option tal:repeat="field python:sortfieldslist[i]" tal:content="python:field.getLabel()"
-                                tal:attributes="value python:field.getName(); selected python:field.selected()"/>
-                        </select>
-                    </td>
-                </tr>
-                </tal:block>
-            </table>
-        </form>
-    </div>
-    <div id="pages" style="position:relative" tal:replace="raw python:page_nav">
-    <span style="position:absolute;right:20px;top:0px">
-        <img i18n:attributes="title view_lists_add_shoppingbag" tal:attributes="onclick python:u'shoppingBag(\'{}\')'.format(ids)" border="0" src="/img/favourite_add.png" style="cursor:pointer"/>
-    </span>
-    </div>
+    <form style="padding:0px; margin:0px">
+        <tal:block tal:repeat="param python:nav.nav_params.items()">
+            <input tal:condition="python:not param[0].startswith('sortfield')"
+                type="hidden" tal:attributes="name python:param[0]; value python:param[1]" />
+        </tal:block>
+        <table cellspacing="0" cellpadding="0" style="padding:0px;margin:0px">
+            <tr tal:repeat="i python:range(len(sortfieldslist))">
+                <td>
+                    <small tal:condition="python:i==0" i18n:translate="sort_label"/>
+                    <small tal:condition="python:i>0" i18n:translate="sort_label2"/>
+                </td>
+                <td>
+
+                    <select tal:attributes="name python:'sortfield'+ustr(i)" style="font-size: 9px" onchange="submit()">
+                        <option tal:repeat="field python:sortfieldslist[i]" tal:content="python:field.getLabel()"
+                            tal:attributes="value python:field.getName(); selected python:field.selected()"/>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+        </table>
+    </form>
+    <div id="pages" style="position:relative" tal:replace="raw python:page_nav"></div>
 </div>
 
 
-<div metal:define-macro="navheadline" id="page-nav">
+<div metal:define-macro="navheadline" id="result-nav">
     <table>
         <tr>
             <td align="left" valign="top" nowrap>
@@ -93,7 +92,8 @@
             </td>
             <td width="100%" align="center">
                 <a tal:attributes="href python:nav.link_back()" i18n:translate="search_list_title">TEXT</a>
-                <br><div tal:replace="python:nav.actual()"/>
+                <br>
+                <a tal:attributes="href python:nav.link_current_node()" i18n:translate="direct_link_current_node">TEXT</a>
             </td>
             <td align="right" valign="top" nowrap>
                 <a tal:attributes="href python:nav.link_next()"><img border="0" src="/img/pageright.gif"/></a>
@@ -101,7 +101,7 @@
             </td>
         </tr>
     </table>
-    <br>
+    <br/>
 </div>
 
 
@@ -110,7 +110,7 @@
     <ul tal:repeat="path paths">
         <li>
         <tal:block tal:repeat="step path">
-            <a tal:content="python: step.getLabel()" tal:attributes="href python:u'/node?id={}&dir={}'.format(step.id, step.id)"></a>
+            <a tal:content="python: step.getLabel()" tal:attributes="href python:node_url(step.id)"></a>
             <img tal:condition="python:path.index(step)<len(path)-1" src="../img/breadcrumb-arrow.gif"/>
          </tal:block>
         </li>

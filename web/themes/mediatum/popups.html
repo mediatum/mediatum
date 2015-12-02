@@ -167,6 +167,22 @@
     </html>
 </metal:block>
 
+
+
+
+<metal:block metal:define-macro="shoppingbag_error">
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
+    <html tal:omit-tag xmlns:tal="http://xml.zope.org/namespaces/tal" xmlns:metal="http://xml.zope.org/namespaces/metal">
+        <body>
+            <script language="javascript">
+                window.close();
+                opener.reloadPage();
+            </script>
+            <p i18n:translate="popup_shoppingbag_movefiles">TEXT</p>
+        </body>
+    </html>
+</metal:block>
+
 <metal:block metal:define-macro="show_help">
     <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
     <html>

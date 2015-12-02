@@ -102,14 +102,6 @@ def _read_ini_file(basedir, filepath):
                     value = value[1:-1]
                 params[key] = value
 
-    for key, value in params.items():
-        if key.startswith("paths") or key.endswith("file"):
-            if not (value[0] == '/' or value[0] == '\\' or value[1] == ':'):
-                value = os.path.join(basedir, value)
-                params[key] = value
-            else:
-                pass  # path is absolute, don't bother
-
     # add the filepath from where the config was loaded.
     # This could differ from get_config_filepath() called at a later time, but that's quite unrealistic ;)
     params["config.filepath"] = filepath
@@ -123,17 +115,21 @@ def check_create_dir(dirpath, label):
     """
     dirpath = os.path.expanduser(dirpath)
 
+    if not os.path.isabs(dirpath):
+        print("CONFIG ERROR 1, path must be absolute: {} ({})".format(dirpath, label))
+        sys.exit(1)
+
     if not os.path.exists(dirpath):
         try:
             os.mkdir(dirpath)
         except OSError as e:
-            print("ERROR 2, couldn't create directory '{}' ({}): {}".format(dirpath, label, e.strerror))
+            print("CONFIG ERROR 2, couldn't create directory '{}' ({}): {}".format(dirpath, label, e.strerror))
             sys.exit(2)
 
         print("created directory '{}' ({})".format(dirpath, label))
 
     elif not os.path.isdir(dirpath):
-        print("ERROR 3, path is not a directory: '{}' ({})".format(dirpath, label))
+        print("CONFIG ERROR 3, path is not a directory: '{}' ({})".format(dirpath, label))
         sys.exit(3)
 
 

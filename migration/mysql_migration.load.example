@@ -17,3 +17,6 @@ INCLUDING ONLY TABLE NAMES MATCHING 'node', 'nodefile', 'nodemapping', 'nodeattr
 
 BEFORE LOAD DO 
 $$ CREATE SCHEMA IF NOT EXISTS mediatum_import; $$
+
+AFTER LOAD DO
+$$ UPDATE mediatum_import.node SET writeaccess='' where type = 'workflow'; $$;

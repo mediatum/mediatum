@@ -280,7 +280,7 @@ class Workflows(Node):
     def show_node_big(node, req, template="workflow/workflow.html", macro="workflowlist"):
         list = []
         for workflow in getWorkflowList():
-            if workflow.has_write_access():
+            if workflow.children.filter_write_access().first() is not None:
                 list += [workflow]
         return req.getTAL(
             template, {
@@ -303,7 +303,7 @@ class Workflows(Node):
 class Workflow(Node):
 
     def show_node_big(node, req, template="workflow/workflow.html", macro="object_list"):
-        if not node.has_write_access():
+        if node.children.filter_write_access().first() is None:
             return '<i>' + t(lang(req), "permission_denied") + '</i>'
         return req.getTAL(
             template, {
@@ -352,7 +352,6 @@ class Workflow(Node):
     def getSteps(self, accesstype=''):
         steps = self.children
         if accesstype:
-            # TODO: is this access part sufficient?
             return [s for s in steps if s.has_access(accesstype=accesstype)]
         else:
             return steps

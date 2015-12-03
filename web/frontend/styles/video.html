@@ -21,6 +21,10 @@
     <div id="object_meta" tal:content="raw metadata">TEXT</div>
 </div>
 
+<p tal:condition="python:node.get('license')!='' and ', http' in node.get('license')" style="text-align:right" class="licenseicon">
+    <a tal:attributes="href python:node.get('license').split(',')[1]" target="_blank"><img tal:attributes="src python:u'/img/{}.png'.format(node.get('license').split(',')[0])" style="width:80px;"/></a>
+</p>
+
 <div style="clear:both"/>
 <metal:macro use-macro="web/frontend/styles/macros.html/bothView"/>
 <div style="clear:both"/>

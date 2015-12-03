@@ -42,39 +42,13 @@ logg = logging.getLogger(__name__)
 
 
 def getCaptionInfoDict(self):
+    '''
+        function should be reimplemented
+        with the usage of the html5 Track element
+
+        :return: captions dict / .srt format
+    '''
     d = {}
-
-    file_url_list = []
-    file_label_list = []
-    preset_label = ""
-
-    counter = 0
-
-    filelist, filelist2 = getFilelist(self, fieldname='.*captions.*')
-
-    for filenode in filelist2:
-        if filenode.filetype in ["u_other", "u_xml"]:
-            filename = filenode.base_name
-            file_ext = filename.split('.')[-1]
-            if file_ext in ['srt', 'xml']:
-                counter += 1
-                file_url = "/file/%s/%s" % (self.id, filename)
-                file_url_list.append(file_url)
-
-                x = filename[0:-len(file_ext) + 1].split('-')
-                if len(x) > 1 and len(x[-1]):
-                    file_label = x[-1]
-                else:
-                    file_label = "Track %s" % counter
-                file_label_list.append(file_label)
-
-                if filename.find('preset') >= 0:
-                    preset_label = file_label
-
-    if file_url_list:
-        d['file_list'] = ",".join([x.strip() for x in file_url_list])
-        d['label_list'] = ",".join([x.strip() for x in file_label_list])
-        d['preset_label'] = preset_label
     return d
 
 
@@ -149,7 +123,7 @@ class Video(Content):
         captions_info = getCaptionInfoDict(self)
 
         if captions_info:
-            logger.info("video: '%s' (%s): captions: dictionary 'captions_info': %s" % (self.name, str(self.id), str(captions_info)))
+            logg.info("video: '%s' (%s): captions: dictionary 'captions_info': %s" % (self.name, str(self.id), str(captions_info)))
 
         context = self._prepareData(req)
         context["captions_info"] = json.dumps(captions_info)
@@ -276,7 +250,7 @@ class Video(Content):
         if f:
             script = '<p href="%s" style="display:block;width:%spx;height:%spx;" id="player"/p>' % (f, videowidth(), videoheight())
 
-        # use jw player
+        # implement html5 track element
         captions_info = getCaptionInfoDict(self)
         if captions_info:
             logg.info("video: '%s' (%s): captions: dictionary 'captions_info': %s", self.name, self.id, captions_info)

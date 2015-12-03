@@ -86,7 +86,7 @@ def getFilelist(node, fieldname=''):
     filelist = []
 
     for f in fs:
-        f_name = f.getName()
+        f_name = f.base_name
         if re.match(pattern, f_name):
             f_retrieve = f.abspath
             try:

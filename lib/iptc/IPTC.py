@@ -196,7 +196,7 @@ def write_iptc_tags(image_path, tag_dict):
             else:
                 logger.error('Could not validate {}.'.format(tag_value))
 
-        command_list.append('-{}={}'.format(tag_name, tag_value))
+        command_list.append(u'-{}={}'.format(tag_name, tag_value))
 
     logger.info('Command: {} will be executed.'.format(command_list))
     process = subprocess.Popen(command_list, stdout=subprocess.PIPE)

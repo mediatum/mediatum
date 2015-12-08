@@ -151,14 +151,17 @@ def get_iptc_values(file_path, tags=None):
     with exiftool.ExifTool() as et:
         metadata = et.get_metadata_batch([file_path])[0]
 
+    ret = {}
     for iptc_key in metadata.keys():
-        if iptc_key == 'DateCreated':
-            if 'DateCreated' in ret.keys():
-                if validateDate(parse_date(ret['DateCreated'], format='%Y:%m:%d')):
-                    ret['DateCreated'] = format_date(parse_date(ret['DateCreated'], format='%Y:%m:%d'))
-                else:
-                    logger.error('Could not validate: {}.'.format(ret['DateCreated']))
+        if 'iptc_{}'.format(str(iptc_key).split(':')[-1]) in get_wanted_iptc_tags():
+            if iptc_key == 'DateCreated':
+                if 'DateCreated' in ret.keys():
+                    if validateDate(parse_date(ret['DateCreated'], format='%Y:%m:%d')):
+                        ret['DateCreated'] = format_date(parse_date(ret['DateCreated'], format='%Y:%m:%d'))
+                    else:
+                        logger.error('Could not validate: {}.'.format(ret['DateCreated']))
 
+            ret['iptc_{}'.format(str(iptc_key).split(':')[-1])] = metadata[iptc_key]
 
     logger.info('{} read from file.'.format(ret))
     return ret

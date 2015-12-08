@@ -416,23 +416,11 @@ class Image(Content):
             # iptc
             for file in self.files:
                 if file.type == "original":
+
                     tags = lib.iptc.IPTC.get_iptc_values(file.abspath, lib.iptc.IPTC.get_wanted_iptc_tags())
-                    tags.keys().sort()
-
                     for k in tags.keys():
-                        # skip unknown iptc tags
-                        if 'IPTC_' in k:
-                            continue
+                        self.attrs[k] = tags[k]
 
-                        if any(tag in k for tag in unwanted_attrs):
-                            continue
-
-                        if isinstance(tags[k], list):
-                            tags[k] = ', '.join(tags[k])
-
-                        if tags[k] != "":
-                            self.set("iptc_" + k.replace(" ", "_"),
-                                     utf8_decode_escape(ustr(tags[k])))
 
             for f in self.files:
                 if f.base_name.lower().endswith("png") and f.type == "tmppng":

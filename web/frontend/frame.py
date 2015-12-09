@@ -413,15 +413,20 @@ class UserLinks:
         self.host = host
 
     def feedback(self, req):
-        if "id" in req.params:
-            self.id = req.params.get("id")
+        # show_id: edit currently shown content node
+        nid = req.args.get("show_id")
+        # id: edit current container
+        if nid is None:
+            nid = req.args.get("id")
+
+        self.id = nid
         self.language = lang(req)
 
     def getLinks(self):
         guest_user = get_guest_user()
         l = [Link("/logout", t(self.language, "sub_header_logout_title"),
                   t(self.language, "sub_header_logout"), icon="/img/logout.gif")]
-        if  self.user is guest_user:
+        if self.user is guest_user:
             if config.get("config.ssh") == "yes":
                 host = config.get("host.name") or self.host
                 l = [Link("https://" + host + "/login", t(self.language, "sub_header_login_title"),

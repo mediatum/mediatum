@@ -19,7 +19,7 @@
 """
 import logging
 
-from schema.schema import getMetaType, getMetadataType
+from schema.schema import getMetadataType
 from lib.pdf import printview
 
 from schema.schema import VIEW_DATA_ONLY, VIEW_HIDE_EMPTY
@@ -29,6 +29,7 @@ from utils.utils import u, getCollection
 from core.styles import theme
 from core import db
 from core import Node
+from contenttypes import Container
 
 #
 # execute fullsize method from node-type
@@ -125,7 +126,7 @@ def show_printview(req):
             c = content_area.content
             nodes = c.resultlist[c.active].files
         for n in nodes:
-            c_mtype = getMetaType(n.schema)
+            c_mtype = n.metadatatype
             c_mask = c_mtype.getMask("printlist")
             if not c_mask:
                 c_mask = c_mtype.getMask("nodesmall")
@@ -147,7 +148,7 @@ def show_printview(req):
         style = int(req.params.get("style", 2))
 
         # nodetype
-        mtype = getMetaType(node.schema)
+        mtype = node.metadatatype
 
         mask = None
         metadata = None
@@ -176,14 +177,14 @@ def show_printview(req):
 
         # children
         children = []
-        if node.isContainer():
+        if isinstance(node, Container):
             ret = []
             getPrintChildren(req, node, ret)
 
             for c in ret:
-                if not c.isContainer():
+                if not isinstance(c, Container):
                     # items
-                    c_mtype = getMetaType(c.schema)
+                    c_mtype = c.metadatatype
                     c_mask = c_mtype.getMask("printlist")
                     if not c_mask:
                         c_mask = c_mtype.getMask("nodesmall")

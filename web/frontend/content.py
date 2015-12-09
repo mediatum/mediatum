@@ -840,5 +840,5 @@ class CollectionLogo(Content):
         return self.show_on_html
 
 
-def getContentArea(req):
+def getContentArea(req=None):
     return ContentArea()

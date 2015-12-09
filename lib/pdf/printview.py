@@ -160,7 +160,7 @@ class PrintPreview:
                 return [frameFollow]
 
     def build(self, style=1):
-        template = SimpleDocTemplate(config.get("paths.tempdir", "") + "print.pdf", showBoundary=0)
+        template = SimpleDocTemplate(os.path.join(config.get("paths.tempdir"), "print.pdf"), showBoundary=0)
         tFirst = PageTemplate(id='First', frames=self.getStyle(1, style), onPage=self.myPages, pagesize=defaultPageSize)
         tNext = PageTemplate(id='Later', frames=self.getStyle(2, style), onPage=self.myPages, pagesize=defaultPageSize)
 

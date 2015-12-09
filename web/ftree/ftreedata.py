@@ -43,12 +43,12 @@ def getData(req):
                 inum = len(c.content_children)
 
                 label = c.getLabel()
-                title = c.getLabel() + " (" + unicode(c.id) + ")"
+                title = label + " (" + unicode(c.id) + ")"
 
                 cls = "folder"
 
                 itemcls = ""
-                if not access.hasWriteAccess(c):
+                if not c.has_write_access():
                     itemcls = "read"
 
                 if c.type == "collection":  # or "collection" in c.type:
@@ -69,39 +69,39 @@ def getData(req):
 
                 if style == "edittree":  # standard tree for edit area
                     if inum > 0:
-                        label += " <small>(" + ustr(inum) + ")</small>"
+                        label += u" <small>({})</small>".format(inum)
 
-                    ret.append('<li class="' + cls + '.gif" id="Node' + c.id + '">')
-                    ret.append('<a href="#" title="' + title + '" id="' + c.id + '" class="' + itemcls + '">' + label + '</a>')
+
+                    ret.append(u'<li class="{}.gif" id="Node{}">'.format(cls, c.id))
+                    ret.append(u'<a href="#" title="{}" id="{}" class="{}">{}</a>'.format(title, c.id, itemcls, label))
 
                     if cnum > 0:
-                        ret.append('<ul><li parentId="' + c.id + '" class="spinner.gif"><a href="#">&nbsp;</a></li></ul>')
-                    ret.append('</li>')
+                        ret.append(u'<ul><li parentId="{}" class="spinner.gif"><a href="#">&nbsp;</a></li></ul>'.format(c.id))
+                    ret.append(u'</li>')
 
                 elif style == "classification":  # style for classification
-                    ret.append('<li class="' + cls + '.gif" id="Node' + c.id + '">')
-                    ret.append('<a href="#" title="' + title + '" id="' + c.id + '" class="' + itemcls +
-                               '">' + label + ' <input type="image" src="/img/ftree/uncheck.gif"/></a>')
+                    ret.append(u'<li class="{}.gif" id="Node{}">'.format(cls, c.id))
+                    ret.append(u'<a href="#" title="{}" id="{}" class="{}">{}<input type="image" src="/img/ftree/uncheck.gif"/></a>'.format(
+                                    title, c.id, itemcls, label))
 
                     if cnum > 0:
-                        ret.append('<ul><li parentId="' + c.id + '" class="spinner.gif"><a href="#">&nbsp;</a></li></ul>')
+                        ret.append(u'<ul><li parentId="{}" class="spinner.gif"><a href="#">&nbsp;</a></li></ul>'.format(c.id))
 
-                    ret.append('</li>')
+                    ret.append(u'</li>')
         except:
             logg.exception("exception in getData")
 
-    req.write("\n".join(ret))
+    req.write(u"\n".join(ret))
     return
 
 
 def getLabel(req):
     node = q(Node).get(req.params.get("getLabel"))
-    style = req.params.get("style", "edittree")
 
     inum = len(node.content_children)
     label = node.getLabel()
     if inum > 0:
-        label += " <small>(" + ustr(inum) + ")</small>"
+        label += u" <small>({})</small>".format(inum)
     req.write(label)
     return
 

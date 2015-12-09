@@ -25,19 +25,18 @@ import sys
 import codecs
 import tempfile
 
-#basedir = os.path.dirname(__file__).rsplit(os.sep, 1)[0]
-# using abspath allows importing start.py or variants (wn 2014-11-20)
-basedir = os.path.abspath(__file__).rsplit(os.sep, 2)[0]
-
 logg = logging.getLogger(__name__)
 
+basedir = os.path.abspath(__file__).rsplit(os.sep, 2)[0]
 # append our own fallback lib directory
 sys.path.append(os.path.join(basedir, "external"))
 
+#: set to True in initialize() if no config file was found
+is_default_config = None
+#: holds the loaded / default config values
 settings = None
+#: parsed form of the config key 'i18n.languages' (list)
 languages = None
-# append our own fallback lib directory
-sys.path.append(os.path.join(basedir, "external"))
 
 
 def get_default_data_dir():
@@ -57,8 +56,6 @@ def get_config_filepath():
 def get(key, default=None):
     return settings.get(key, default)
 
-def is_default_config():
-    return not settings
 
 def getsubset(prefix):
     options = {}
@@ -133,27 +130,39 @@ def check_create_dir(dirpath, label):
         sys.exit(3)
 
 
+def set_default_values():
+    if not "paths.datadir" in settings:
+        settings["paths.datadir"] = get_default_data_dir()
+
+    if not "paths.tempdir" in settings:
+        settings["paths.tempdir"] = tempfile.gettempdir()
+
+
 def initialize(filepath=None):
     if not filepath:
         filepath = get_config_filepath()
 
-    global settings, languages
+    global settings, languages, is_default_config
 
     if os.path.exists(filepath):
         print("using config file at", filepath)
         settings = _read_ini_file(basedir, filepath)
+        is_default_config = False
     else:
         print("WARNING: config file", filepath, "not found, using default test config!")
         settings = {}
+        is_default_config = True
+
+    set_default_values()
 
     languages = [lang.strip() for lang in settings.get("i18n.languages", "en").split(",") if lang.strip()]
 
     # create dirs if neccessary
-    data_path = settings.get("paths.datadir", get_default_data_dir())
+    data_path = settings.get("paths.datadir")
 
     check_create_dir(data_path, "datadir")
     check_create_dir(os.path.join(data_path, "html"), "datadir/html")
-    check_create_dir(settings.get("paths.tempdir", tempfile.gettempdir()), "tempdir")
+    check_create_dir(settings.get("paths.tempdir"), "tempdir")
 
     # extract log dir from log file path and create it if neccessary
 
@@ -172,6 +181,7 @@ def check_create_test_db_dir():
 #
 # resolve given filename to correct path/file
 #
+
 
 def resolve_filename(filename):
     templatepath = settings.get("template.path")

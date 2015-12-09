@@ -171,7 +171,7 @@ class PostgresSQLAConnector(object):
                 msg += "This looks like a bug in mediaTUM or a strange problem with your system."
             else:
                 msg = "Could not connect to database, error was: " + db_connection_exception.args[0]
-                if config.is_default_config():
+                if config.is_default_config:
                     msg += "HINT: You are running mediaTUM without a config file. Did you forget to create one?" \
                            "\nTo start mediaTUM without a config file using a temporary test database server, use" \
                            " the --force-test-db option on the command line." \

@@ -381,7 +381,7 @@ class ContentList(Content):
         return l
 
     def getContentStyles(self):
-        if self.content.__class__ == ContentNode:
+        if isinstance(self.content, ContentNode):
             return getContentStyles("bigview", contenttype=self.content.node.getContentType())
         else:
             return getContentStyles("smallview")  # , self.collection.get("style") or "default")

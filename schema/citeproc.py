@@ -289,8 +289,8 @@ def import_csl(record, target=None, name=None, testing=False):
             elif FIELDS[key].fieldtype == "number":
                 if not check_number(value):
                     logg.warn("field '%s' is of type number and contains an illegal value: '%s'!"
-                              "See http://citationstyles.org/downloads/specification.html#number"
-                              .key, value)
+                              "See http://citationstyles.org/downloads/specification.html#number",
+                              key, value)
                 return unicode(value)
             elif FIELDS[key].fieldtype == "standard" and isinstance(value, list):
                 value = u''.join(value)

@@ -306,6 +306,7 @@ def getContent(req, ids):
                     new_node.set("system.identifier_imported_from", identifier)
 
                     res['newid'] = new_node.id
+                    db.session.commit()
 
                     logg.info("%s created new node id=%s (name=%s, type=%s) by importing identifier %s, "
                               "node is child of base node id=%s (name=%s, type=%s)", user.login_name, new_node.id, new_node.name, new_node.type,

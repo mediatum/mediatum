@@ -166,3 +166,14 @@ class User(DeclarativeBase, TimeStamp, UserMixin):
         return u"User<{} '{}'> ({})".format(self.id, self.login_name, object.__repr__(self)).encode("utf8")
 
     __table_args__ = (UniqueConstraint(login_name, authenticator_id),)
+
+
+class OAuthUserCredentials(DeclarativeBase, TimeStamp):
+
+    __tablename__ = "oauth_user_credentials"
+
+    oauth_user = C(Unicode, primary_key=True)
+    oauth_key = C(Unicode)
+    user_id = integer_fk(User.id)
+
+    user = rel(User)

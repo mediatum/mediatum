@@ -216,7 +216,7 @@ class PostgresSQLAConnector(object):
     def get_model_classes(self):
         from core.database.postgres.file import File
         from core.database.postgres.node import NodeType, Node, NodeAlias
-        from core.database.postgres.user import User, UserGroup, AuthenticatorInfo
+        from core.database.postgres.user import User, UserGroup, AuthenticatorInfo, OAuthUserCredentials
         from core.database.postgres.shoppingbag import ShoppingBag
         from core.database.postgres.permission import AccessRule, AccessRuleset, NodeToAccessRule, NodeToAccessRuleset
         from core.database.postgres.setting import Setting
@@ -227,6 +227,7 @@ class PostgresSQLAConnector(object):
             User,
             UserGroup,
             AuthenticatorInfo,
+            OAuthUserCredentials,
             ShoppingBag,
             AccessRule,
             AccessRuleset,

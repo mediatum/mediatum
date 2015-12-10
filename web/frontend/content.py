@@ -606,6 +606,7 @@ class ContentNode(Content):
 
     def __init__(self, node, nr=0, num=0, words=None):
         self.node = node
+        self.collection = node.get_collection()
         self.id = node.id
         self.paths = []
         self.nr = nr
@@ -761,13 +762,9 @@ class ContentArea(Content):
 
         if content is None:
             self.content = mkContentNode(req)
+            self.collectionlogo = CollectionLogo(self.content.collection)
         else:
             self.content = content
-
-        if hasattr(self.content, "collection"):
-            self.collection = self.content.collection
-            if self.collection:
-                self.collectionlogo = CollectionLogo(self.collection)
 
         if hasattr(self.content, "getParams"):
             self.params = '&' + self.content.getParams()

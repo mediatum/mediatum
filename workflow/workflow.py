@@ -133,10 +133,11 @@ def runWorkflowStep(node, op):
     else:
         newstep = workflow.getStep(workflowstep.getFalseId())
 
-    workflowstep.children.remove(node)
     newstep.children.append(node)
-    newstep.runAction(node, op)
     db.session.commit()
+    workflowstep.children.remove(node)
+    db.session.commit()
+    newstep.runAction(node, op)
     logg.info('workflow run action "%s" (op="%s") for node %s', newstep.name, op, node.id)
     return getNodeWorkflowStep(node)
 

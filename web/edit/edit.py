@@ -696,6 +696,7 @@ def showPaging(req, tab, ids):
 def content(req):
 
     user = current_user
+    language = lang(req)
 
     if not user.is_editor:
         return req.writeTAL("web/edit/edit.html", {}, macro="error")
@@ -790,19 +791,15 @@ def content(req):
                 pass
             s = []
             while n:
-                try:
-                    s = ['<a onClick="activateEditorTreeNode(%r); return false;" href="/edit/edit_content?id=%s">%s</a>' %
-                         (n.id, n.id, n.getLabel(lang=language))] + s
-                except:
-                    s = ['<a onClick="activateEditorTreeNode(%r); return false;" href="/edit/edit_content?id=%s">%s</a>' %
-                         (n.id, n.id, n.name)] + s
+                s = ['<a onClick="activateEditorTreeNode(%r); return false;" href="/edit/edit_content?id=%s">%s</a>' %
+                     (n.id, n.id, n.getLabel(lang=language))] + s
 
                 p = n.parents
-                if p:
+                if p and not isinstance(p[0], Root):
                     n = p[0]
                 else:
                     n = None
-            v["dircontent"] = ' <b>&raquo;</b> '.join(s[1:])
+            v["dircontent"] = ' <b>&raquo;</b> '.join(s)
         except:
             logg.exception('ERROR displaying current images, exception ignored')
 
@@ -811,24 +808,17 @@ def content(req):
         s = []
         while n:
             if len(s) == 0:
-                try:
-                    s = ['%s' % (n.getLabel(lang=language))]
-                except:
-                    s = ['%s' % (n.name)]
+                s = ['%s' % (n.getLabel(lang=language))]
             else:
-                try:
-                    s = ['<a onClick="activateEditorTreeNode(%r); return false;" href="/edit/edit_content?id=%s">%s</a>' %
-                         (n.id, n.id, n.getLabel(lang=language))] + s
-                except:
-                    s = ['<a onClick="activateEditorTreeNode(%r); return false;" href="/edit/edit_content?id=%s">%s</a>' %
-                         (n.id, n.id, n.name)] + s
+                s = ['<a onClick="activateEditorTreeNode(%r); return false;" href="/edit/edit_content?id=%s">%s</a>' %
+                     (n.id, n.id, n.getLabel(lang=language))] + s
 
             p = n.parents
-            if p:
+            if p and not isinstance(p[0], Root):
                 n = p[0]
             else:
                 n = None
-        v["dircontent"] = ' <b>&raquo;</b> '.join(s[1:])
+        v["dircontent"] = ' <b>&raquo;</b> '.join(s)
 
     if current == "globals":
         basedir = config.get("paths.datadir")
@@ -840,8 +830,8 @@ def content(req):
         if not file_to_edit:
             #todo: getstartpagedict doesnt exist
             d = node.getStartpageDict()
-            if d and lang(req) in d:
-                file_to_edit = d[lang(req)]
+            if d and language in d:
+                file_to_edit = d[language]
 
         found = False
         for f in node.files:

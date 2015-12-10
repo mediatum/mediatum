@@ -495,7 +495,15 @@ class ContentList(Content):
             # going backwards inverts the order, invert again for display
             nodes = nodes[::-1]
 
-        files = [SingleFile(n, dict(self.nav_params, show_id=n.id), self.lang, self.default_fullstyle_name) for n in nodes]
+        files = []
+        for n in nodes:
+            nav_params = dict(self.nav_params, show_id=n.id)
+            # special case: no id set <=> we are on the collections root node
+            if "id" not in nav_params:
+                nav_params["id"] = self.collection.id
+
+            sfile = SingleFile(n, nav_params, self.lang, self.default_fullstyle_name)
+            files.append(sfile)
 
         page_nav = tal.getTAL(theme.getTemplate("content_nav.html"), ctx, macro="page_nav_prev_next", language=self.lang)
         return page_nav, files

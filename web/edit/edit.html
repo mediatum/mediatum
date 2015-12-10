@@ -1061,7 +1061,7 @@ function set_cm_to_default() {
 
             <script tal:content="python:u'var currentid = {};'.format(id)">TEXT</script>
             <script tal:content="python:u'var currentpath = \'/{}\';'.format('/'.join(path[2:]))">TEXT</script>
-            <script tal:content="python:u'var currentcpath = \'/{}\';'.format('/'.join(containerpath[2:]))">TEXT</script>
+            <script tal:content="python:u'var currentcpath = \'/{}\';'.format('/'.join(containerpath[1:]))">TEXT</script>
 
             <script>
                var rct = null;

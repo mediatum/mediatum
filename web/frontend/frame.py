@@ -379,9 +379,7 @@ class Collectionlet(Portlet):
             if node.id in (self.directory.id, self.collection.id) or node.id in opened or e.defaultopen:
                 e.folded = 0
                 for c in node.container_children.order_by(Node.orderpos).prefetch_attrs():
-                    if c.get("style_hide_empty") == "1":
-                        hide_empty = 1
-                    f(m, c, indent + 1, hide_empty)
+                    f(m, c, indent + 1, c.get("style_hide_empty") == "1")
 
         f(col_data, q(Collections).one(), 0, self.hide_empty)
 

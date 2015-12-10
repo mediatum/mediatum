@@ -214,9 +214,6 @@ class Video(Content):
     def getSysFiles(self):
         return [u"presentation", u"thumb", u"video"]
 
-    def getLabel(self):
-        return self.name
-
     def getDuration(self):
         duration = self.get("duration")
         try:

@@ -595,8 +595,8 @@ class Data(Node):
     def childcount(self):
         return 0
 
-    def getLabel(self):
-        return self.getName()
+    def getLabel(self, lang=None):
+        return self.name
 
 
 class Content(Data, SchemaMixin):

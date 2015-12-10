@@ -186,9 +186,6 @@ class Audio(Content):
     def isContainer(cls):
         return 0
 
-    def getLabel(self):
-        return self.name
-
     def has_object(self):
         for f in self.files:
             if f.type == "audio":

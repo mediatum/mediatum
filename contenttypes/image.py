@@ -276,9 +276,6 @@ class Image(Content):
     def isContainer(cls):
         return 0
 
-    def getLabel(self):
-        return self.name
-
     def getSysFiles(self):
         return [u"original", u"thumb", u"presentati", u"image", u"presentation", u"zoom"]
 

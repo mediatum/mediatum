@@ -75,9 +75,6 @@ class Flash(Content):
     def getSysFiles(self):
         return []
 
-    def getLabel(self):
-        return self.name
-
     """ list with technical attributes for type flash """
     def getTechnAttributes(self):
         return {"Standard": {"creationtime": "Erstelldatum",

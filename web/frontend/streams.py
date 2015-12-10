@@ -293,7 +293,7 @@ def send_attfile(req):
     node = q(Node).get(f[0])
     if not isinstance(node, Node):
         return 404
-    if not isinstance(Directory) and not node.has_data_access():
+    if not isinstance(node, Directory) and not node.has_data_access():
         return 403
     if len([file for file in node.files if file.abspath in ["/".join(f[1:]), "/".join(f[1:-1])]]) == 0:  # check filepath
         return 403

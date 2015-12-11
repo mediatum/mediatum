@@ -661,7 +661,7 @@ class Image(Content):
                     upload_file = f
 
         if not original_file:
-            logging.getLogger('editor').info('No original upload for writing IPTC.')
+            logg.info('No original upload for writing IPTC.')
             return
 
         if not upload_file:

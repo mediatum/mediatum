@@ -35,9 +35,9 @@ from export.exportutils import runTALSnippet, default_context
 from web.services.cache import date2string as cache_date2string
 from core.database.postgres.node import children_rel
 from mock import MagicMock
+from sqlalchemy.orm import object_session
 
 logg = logging.getLogger(__name__)
-
 
 # for TAL templates from mask cache
 context = default_context.copy()
@@ -140,10 +140,10 @@ class Data(Node):
 
            :return: boolean
         '''
-        if self.get('system.prev_id') != '' and len(self.getChildren()) > 0 in [(c.get('system.next_id') != '') for c in self.getChildren()]:
+        if self.get('system.prev_id') != '' and len(self.children.all()) > 0 in [(c.get('system.next_id') != '') for c in self.children]:
             return True
         else:
-            return (self.get('system.prev_id') == '') or (len(self.getChildren()) > 0) in [(c.get('system.prev_id') != '') for c in self.getChildren()]
+            return (self.get('system.prev_id') == '') or (len(self.children.all()) > 0) in [(c.get('system.prev_id') != '') for c in self.children]
 
     def getFurtherDetailsCondition(self, req):
         '''checks if 'further details'
@@ -151,12 +151,15 @@ class Data(Node):
 
            :return: boolean
         '''
-        if len(tree.getNode(req.params.get('pid', self.id)).getChildren()) == 1:
+        s = object_session(self)
+        q = s.query
+
+        if q(Node).get((req.params.get('pid', self.id))).children.count() == 1:
             return False
-        if len(self.getParents()) > 0:
+        if self.parents.first() is not None:
             return True
         else:
-            return (self.get('system.prev_id') == '') or (len(self.getChildren()) > 0) in [(c.get('system.prev_id') != '') for c in self.getChildren()]
+            return (self.get('system.prev_id') == '') or (len(self.children.all()) > 0) in [(c.get('system.prev_id') != '') for c in self.children]
 
     def getParentInformation(self, req):
         '''sets diffrent used Information
@@ -165,33 +168,33 @@ class Data(Node):
            :param req: request object
            :return: dict parentInformation
         '''
-        parentInformation = MagicMock()
-        return parentInformation
+        s = object_session(self)
+        q = s.query
 
+        parentInformation = {}
         pid = req.params.get('pid', self.id)
-        sid = req.params.get('id', self.id)
+        parentInformation['parent_node_id'] = pid
 
-        if len(self.getChildren()) > 0 and self.type != 'directory' and self.type != 'collection':
-            parentInformation['parent_node_id'] = pid
-            parentInformation['children_list'] = [child for child in self.getChildren() if not child.get('system.next_id') != '']
+        if len(self.children) > 0 and self.isContainer() != 1:
+            parentInformation['children_list'] = [c for c in self.children if not c.get('system.next_id') != '']
         else:
-            parentInformation['parent_node_id'] = re.split('\D', req.split_uri()[2].split('pid=')[-1])[0]
             parentInformation['children_list'] = []
-        if len([sib.id for sib in filter(lambda itm: str(itm.id) == parentInformation['parent_node_id'], self.getParents())]) != 0:
+               #[sib for sib in q(Node).get(pid).children if not sib.id is self.id]
+        if len([sib.id for sib in filter(lambda itm: str(itm.id) == pid,  [p for p in self.parents])]) != 0:
             parentInformation['parent_condition'] = True
-            parentInformation['siblings_list'] = [c for c in tree.getNode(pid).getChildren() if c.id != self.id ]
+            parentInformation['siblings_list'] = [sib for sib in q(Node).get(pid).children.all() if not sib.id is self.id]
         else:
             parentInformation['parent_condition'] = False
-            parentInformation['siblings_list'] = tree.getNode(sid).getParents()[0].getChildren()
+            if len([p for p in self.parents]) > 0:
+                parentInformation['siblings_list'] = self.parents.all()[0].children
+            else:
+                parentInformation['siblings_list'] = []
 
-        if parentInformation['parent_node_id']:
-            pass
-        else:
-            parentInformation['parent_node_id'] = re.split('\D', req.split_uri()[2].split('pid=')[-1])[0]
-
-        parentInformation['paren_ex_dir&col'] = [id for id in self.getParents() if id.type != 'directory' and id.type != 'collection']
+        parentInformation['display_siblings'] = pid != self.id
+        parentInformation['parent_is_container'] = [self.parents.one()] #[id for id in [p for p in self.getParents()] if self.isContainer() != 1] <- y?
         parentInformation['details_condition'] = self.getDetailsCondition()
         parentInformation['further_details'] = self.getFurtherDetailsCondition(req)
+
         return parentInformation
 
     def show_node_big(self, req, template="", macro=""):

@@ -762,7 +762,8 @@ class ContentArea(Content):
 
         if content is None:
             self.content = mkContentNode(req)
-            self.collectionlogo = CollectionLogo(self.content.collection)
+            if not isinstance(self.content, ContentError):
+                self.collectionlogo = CollectionLogo(self.content.collection)
         else:
             self.content = content
 

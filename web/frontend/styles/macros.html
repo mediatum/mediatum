@@ -38,7 +38,7 @@
             <span i18n:translate="details_colon" tal:condition="python: parentInformation.get('details_condition')">TEXT</span>
                 <tal:block tal:repeat="child children">
                     <div tal:condition="python:child.id!=node.id and child.isActiveVersion()">
-                        <div class="childnode" > <!-- tal:condition="python:access.hasReadAccess(child)" -->
+                        <div class="childnode" tal:condition="python:child.has_read_access()">
                             <a tal:attributes="href python:'?id={}{}{}'.format(child.id, '&pid=', parentInformation.get('parent_node_id'))" i18n:attributes="title details"><img tal:attributes="src python:'/thumbs/{}'.format(child.id)"/></a>
                                 <br/>
                                 <small class="small_name">
@@ -55,7 +55,7 @@
                     <span i18n:translate="further_details_colon" tal:condition="python: parentInformation.get('further_details')">TEXT</span>
                         <tal:block tal:repeat="sib siblings" tal:condition="python: parentInformation.get('further_details')">
                              <div tal:condition="python:sib.id!=node.id and sib.isActiveVersion()">
-                                <div class="childnode" tal:condition="True"> <!-- python:access.hasReadAccess(sib) -->
+                                <div class="childnode" tal:condition='python:sib.has_read_access()'>
                                     <a tal:attributes="href python:'?id={}{}{}'.format(sib.id, '&pid=', parentInformation.get('parent_node_id'))" i18n:attributes="title details"><img tal:attributes="src python:'/thumbs/{}'.format(sib.id)"/></a>
                                     <br/>
                                     <small class="small_name">

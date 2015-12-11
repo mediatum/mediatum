@@ -1051,7 +1051,7 @@ class Mask(Node):
 
     def update_node(self, node, req):
         ''' update given node with given request values '''
-        for item in self.maskitems:
+        for item in self.all_maskitems:
             field = item.metafield
 
             if field and field.type == "metafield" and req.params.get(field.name, "").find("?") != 0:
@@ -1074,6 +1074,7 @@ class Mask(Node):
             node.event_metadata_changed()
 
         node["updatetime"] = format_date()
+        db.session.commit()
 
 
     def getMappingHeader(self):
@@ -1325,7 +1326,7 @@ class Maskitem(Node):
     @hybrid_property
     def metafield(self):
         if not hasattr(self, "_metafield"):
-            self._metafield = self._metafield_rel.options(undefer(Node.attrs)).one()
+            self._metafield = self._metafield_rel.options(undefer(Node.attrs)).scalar()
         return self._metafield
 
     @metafield.expression

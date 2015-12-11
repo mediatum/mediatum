@@ -33,6 +33,7 @@ from urlparse import parse_qsl, urlsplit, urlunsplit
 from urllib import quote, urlencode
 
 #import xml.parsers.expat
+from lxml import etree
 from HTMLParser import HTMLParser
 
 from .compat import iteritems
@@ -941,11 +942,10 @@ def fixXMLString(s, i=100):
 
 
 def checkXMLString(s):
-    parser = xml.parsers.expat.ParserCreate()
     try:
-        parser.Parse(s.encode('utf-8'))
+        etree.fromstring(s.encode('utf-8'))
         return 1
-    except xml.parsers.expat.ExpatError as err:
+    except etree.XMLSyntaxError:
         return 0
 
 

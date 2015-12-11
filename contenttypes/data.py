@@ -592,9 +592,6 @@ class Data(Node):
     def getDefaultEditTab(self):
         return "view"
 
-    def childcount(self):
-        return 0
-
     def getLabel(self, lang=None):
         return self.name
 

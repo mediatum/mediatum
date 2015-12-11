@@ -308,6 +308,9 @@ class Container(Data, ContainerMixin, SchemaMixin):
     def get_container(self):
         return self
 
+    def childcount(self):
+        return self.content_children_for_all_subcontainers.count()
+
 
 # concrete Container classes
 

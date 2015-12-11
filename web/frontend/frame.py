@@ -245,11 +245,11 @@ class Searchlet(Portlet):
 
 
 # XXX very simple and conservative directory child count cache. Cleared after each commit.
-directory_child_count_cache = {}
+child_count_cache = {}
 
 @event.listens_for(db.Session, "after_commit")
 def clear_directory_child_count_cache_after_commit(session):
-    directory_child_count_cache.clear()
+    child_count_cache.clear()
 
 
 class NavTreeEntry(object):
@@ -294,18 +294,15 @@ class NavTreeEntry(object):
         if accessdata is not None:
             warn("accessdata argument is unused, remove it", DeprecationWarning)
         try:
-            if isinstance(self.node, Directory):
-                if self.count == -1:
-                    if self.id in directory_child_count_cache:
-                        self.count = directory_child_count_cache[self.id]
+            if self.count == -1:
+                if isinstance(self.node, Directory):
+                    if self.id in child_count_cache:
+                        self.count = child_count_cache[self.id]
                     else:
-                        directory_child_count_cache[self.id] = self.count = self.node.content_children_for_all_subcontainers.count()
+                        child_count_cache[self.id] = self.count = self.node.childcount()
 
-                if self.hide_empty and self.count == 0:
-                    return ""  # hides entry
-            else:
-                if hasattr(self.node, "childcount"):
-                    self.count = self.node.childcount()
+                    if self.hide_empty and self.count == 0:
+                        return ""  # hides entry
 
             if self.count > 0:
                 return u"%s <small>(%s)</small>" % (self.node.getLabel(lang=self.lang), unicode(self.count))

@@ -18,15 +18,19 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-
-from schema.schema import getMetaType
-from core.acl import AccessData
+import logging
+from core import db
 from core.translation import t
+from contenttypes import Data
+from sqlalchemy.orm.exc import NoResultFound
+
+q = db.query
+
+logg = logging.getLogger(__name__)
 
 
 def export(req):
     p = req.path[1:].split("/")
-    access = AccessData(req)
 
     if len(p) != 2:
         req.error(404, "Object not found")
@@ -34,22 +38,22 @@ def export(req):
 
     if p[0].isdigit():
         try:
-            node = tree.getNode(p[0])
+            node = q(Data).get(p[0])
         except:
             return req.error(404, "Object not found")
     else:
         return req.error(404, "Object not found")
 
-    if not access.hasAccess(node, "read"):
+    if not node.has_read_access():
         req.write(t(req, "permission_denied"))
         return
 
-    mask = getMetaType(node.getSchema()).getMask(p[1])
+    mask = node.metadatatype.getMask(p[1])
     if mask:
         try:
             req.reply_headers['Content-Type'] = "text/plain; charset=utf-8"
             req.write(mask.getViewHTML([node], flags=8))  # flags =8 -> export type
-        except tree.NoSuchNodeError:
+        except NoResultFound:
             return req.error(404, "Object not found")
     else:
         req.error(404, "Object not found")

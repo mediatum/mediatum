@@ -136,7 +136,7 @@ def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_c
         if singlenode:
             n = d['nodelist'][0]
             if not send_children:
-                add_node_to_xmldoc(n, xmlroot, children=False, exclude_filetypes=exclude_filetypes, attribute_name_filter=attribute_name_filter)
+                xmlnode = add_node_to_xmldoc(n, xmlroot, children=False, exclude_filetypes=exclude_filetypes, attribute_name_filter=attribute_name_filter)
             else:
                 xml_nodelist = create_xml_nodelist(xmlroot)
                 xmlnode = add_node_to_xmldoc(n, xml_nodelist, children=True, exclude_filetypes=exclude_filetypes,

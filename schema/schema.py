@@ -1154,7 +1154,7 @@ class Mask(Node):
 
     """ """
 
-    def editItem(self, req):
+    def edittem(self, req):
         for key in req.params.keys():
             # edit field
             if key.startswith("edit_"):
@@ -1165,7 +1165,7 @@ class Mask(Node):
         if (req.params.get("op", "") == "new" and req.params.get("type", "") != "") or (
                 self.getMasktype() == "export" and req.params.get("op", "") in ["newdetail", "new"]):
             # add field
-            item = tree.Node(name="", type="maskitem")
+            item = Maskitem(u'')
             if self.getMasktype() == "export":  # export mask has no selection of fieldtype -> only field
                 t = getMetadataType("field")
                 req.params["op"] = "new"
@@ -1176,7 +1176,8 @@ class Mask(Node):
                 req.params["edit"] = item
             else:
                 req.params["edit"] = item.id
-            return '<form method="post" name="myform">%s</form>' % (t.getMetaEditor(item, req))
+            db.session.commit()
+            return '<form method="post" name="myform">{}</form>'.format(t.getMetaEditor(item, req))
 
         if (req.params.get("type", "") == "" and self.getMasktype() != "export") or req.params.get('op') == 'newdetail':
             # type selection for new field
@@ -1281,8 +1282,8 @@ class Mask(Node):
         self.set("separator", value)
 
     def addMaskitem(self, label, type, fieldid, pid):
-        item = tree.Node(name=label, type="maskitem")
-        item.set("type", type)
+        item = Maskitem(u'')
+        item.type = type
 
         if fieldid != 0:
             for id in ustr(fieldid).split(";"):
@@ -1293,14 +1294,15 @@ class Mask(Node):
                     # (b) still be in the global metadatafield list
                     # for p in field.getParents():
                     #    p.removeChild(field)
-                    item.addChild(field)
+                    item.children.append(field)
                 except ValueError:
                     print "node id error for id '", id, "'"
         if ustr(pid) == "0":
-            self.addChild(item)
+            self.children.append(item)
         else:
-            node = tree.getNode(pid)
-            node.addChild(item)
+            node = q(Node).get(pid)
+            node.append(item)
+        db.session.commit()
         return item
 
     ''' delete given  maskitem '''

@@ -102,3 +102,18 @@ msgstr "attachment directory added"
 
 msgid "edit_files_new_version_attachment_comment"
 msgstr "attachment added"
+
+msgid "edit_files_nodes_colon"
+msgstr "Nodes:"
+
+msgid "edit_files_children_colon"
+msgstr "Childnodes:"
+
+msgid "edit_files_select_all_child"
+msgstr "select all nodes"
+
+msgid "edit_files_select_all_grand"
+msgstr "select all childnodes"
+
+msgid "edit_files_choosedirectory"
+msgstr "Directory:"

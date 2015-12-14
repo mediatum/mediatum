@@ -117,7 +117,7 @@ def getPathTo(req):
     items = []
     checked = []
 
-    for path in getPaths(node, access):
+    for path in getPaths(node):
         if node.id not in path and node.isContainer():  # add node if container
             path.append(node)
 

@@ -168,7 +168,8 @@ def getContent(req, ids):
                 if childid.strip() != "":
                     childnode = q(Node).get(childid.strip())
                     for p in childnode.parents:
-                        p.children.remove(childnode)
+                        if p.isContainer():
+                            p.children.remove(childnode)
                     node.children.append(childnode)
             req.writeTAL("web/edit/modules/files.html", {'children': node.children, 'node': node}, macro="edit_files_children_list")
 

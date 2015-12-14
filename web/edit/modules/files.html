@@ -384,6 +384,23 @@
                   self.close();
                 });
             }
+
+            function select_all_grand(obj){
+                $(':checkbox').each(function() {
+                    if(this.id=='grands_add'){
+                        this.checked = obj.checked;
+                    }
+                });
+            }
+
+            function select_all_child(obj){
+                $(':checkbox').each(function() {
+                    if(this.id=='child_add'){
+                        this.checked = obj.checked;
+                    }
+                });
+            }
+
         </script>
         <form>
             <h1 i18n:translate="edit_files_choosedirectory">TEXT</h1>

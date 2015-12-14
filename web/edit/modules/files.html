@@ -346,6 +346,14 @@
                 });
             }
 
+            function getFolderItemsExclude(folderid, excludeid){
+                $.get('/edit/edit_content?style=popup&tab=files&data=children&id='+folderid+'&excludeid='+excludeid+'&jsoncallback=?', function(data) {
+                  $('#files').html(data);
+                });
+            }
+
+
+
             function selectedItems(){
                 var val = "";
                 $(":checkbox:checked[name=items_add]").each(
@@ -385,7 +393,8 @@
             <tal:block tal:repeat="id python:idstr.split(',')" tal:replace="python:u'allobjects[{}]=1;'.format(id)"/>
         <tal:block tal:replace="raw python:'</script>'"/>
         <script>
-            getFolderItems(currentfolder);
+            //getFolderItems(currentfolder);
+            getFolderItemsExclude(currentfolder, currentitem);
         </script>
     </body>
 </html>

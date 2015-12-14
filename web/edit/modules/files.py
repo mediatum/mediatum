@@ -131,8 +131,11 @@ def getContent(req, ids):
 
     if 'data' in req.params:
         if req.params.get('data') == 'children':  # get formated list of childnodes of selected directory
-            req.writeTAL("web/edit/modules/files.html", {'children': node.children}, macro="edit_files_popup_children")
-
+            excludeid = str(req.params.get('excludeid', node.id))
+            if excludeid:
+                req.writeTAL("web/edit/modules/files.html", {'children': [c for c in node.children.all() if str(c.id) != excludeid]}, macro="edit_files_popup_children")
+            else:
+                req.writeTAL("web/edit/modules/files.html", {'children': [c for c in node.children.all()]}, macro="edit_files_popup_children")
         if req.params.get('data') == 'additems':  # add selected node as children
             for childid in req.params.get('items').split(";"):
                 if childid.strip() != "":

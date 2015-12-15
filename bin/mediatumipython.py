@@ -219,6 +219,7 @@ from schema.schema import Metadatatype, Maskitem, Mask, Metafield
 from schema.mapping import Mapping, MappingField
 from workflow.workflow import Workflow, Workflows
 from core.database.postgres.permission import NodeToAccessRule, NodeToAccessRuleset, EffectiveNodeToAccessRuleset
+from core.oauth import OAuthUserCredentials
 
 from sqlalchemy.exc import SQLAlchemyError
 

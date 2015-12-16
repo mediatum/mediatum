@@ -107,7 +107,6 @@ def upload_new_node(req, path, params, data):
         logg.error("user has no edit permission for node %s", parent)
         return d['html_response_code'], len(msg), d
 
-    datatype = params.get('type')
     uploaddir = users.getUploadDir(user)
 
 
@@ -125,11 +124,18 @@ def upload_new_node(req, path, params, data):
     mimetype = getMimeType(filename)
     typestring = mimetype[1]
 
+
+    datatype = params.get('type')
+    if '/' in datatype:
+        typestring, schemastring = datatype.rplit('/', 1)  # override mimetype by user input
+    else:
+        schemastring = datatype
+
     try:
         content_class = Node.get_class_for_typestring(typestring)
-        n = content_class(name=filename, schema=datatype)
+        n = content_class(name=filename, schema=schemastring)
     except Exception as e:
-        msg = "failed to create node of type %r and schema %r" % (typestring, schema)
+        msg = "failed to create node of type %r and schema %r" % (typestring, schemastring)
         logg.exception(msg)
         d = {
             'status': 'fail',

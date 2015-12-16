@@ -95,10 +95,10 @@ let
   };
 
   sqlalchemy-utils = self.buildPythonPackage {
-    name = "SQLAlchemy-Utils-0.30.16";
+    name = "SQLAlchemy-Utils-0.31.4";
     src = fetchurl {
-      url = "https://pypi.python.org/packages/source/S/SQLAlchemy-Utils/SQLAlchemy-Utils-0.30.16.tar.gz";
-      md5 = "021d23890e15eb2ef6d6287f782c3f5e";
+      url = "https://pypi.python.org/packages/source/S/SQLAlchemy-Utils/SQLAlchemy-Utils-0.31.4.tar.gz";
+      md5 = "6134419c599dbc378452b5f9d4ceb5db";
     };
     propagatedBuildInputs = with self; [six sqlalchemy];
     buildInputs = with self; [];
@@ -116,10 +116,10 @@ let
     doCheck = false;
   };
   six = self.buildPythonPackage {
-    name = "six-1.9.0";
+    name = "six-1.10.0";
     src = fetchurl {
-      url = "https://pypi.python.org/packages/source/s/six/six-1.9.0.tar.gz";
-      md5 = "476881ef4012262dfc8adc645ee786c4";
+      url = "https://pypi.python.org/packages/source/s/six/six-1.10.0.tar.gz";
+      md5 = "34eed507548117b2ab523ab14b2f8b55";
     };
     propagatedBuildInputs = with self; [];
     buildInputs = with self; [];
@@ -198,13 +198,13 @@ let
     doCheck = false;
   };
   sqlalchemy = self.buildPythonPackage {
-    name = "SQLAlchemy-1.0.9";
+    name = "SQLAlchemy-1.0.10";
     buildInputs = with self; []; 
     doCheck = false;
     propagatedBuildInputs = with self; []; 
     src = fetchurl {
-      url = "https://pypi.python.org/packages/source/S/SQLAlchemy/SQLAlchemy-1.0.9.tar.gz";
-      md5 = "0e2d7442e70d02c9f6346a5bf0ec2265";
+      url = "https://pypi.python.org/packages/source/S/SQLAlchemy/SQLAlchemy-1.0.10.tar.gz";
+      md5 = "84f01631cc4813a0298bf68ce27d9c5d";
     };  
   };  
   PyExecJS = self.buildPythonPackage {
@@ -603,12 +603,12 @@ let
   };
 
   sqlalchemy-continuum = self.buildPythonPackage {
-    name = "sqlalchemy-continuum-1.2.0";
+    name = "sqlalchemy-continuum-1.2.2";
 
     src = fetchgit {
       url = https://github.com/mediatum/sqlalchemy-continuum.git;
-      rev = "131e544bcb24dfe985347f179ab61d6b31eceab0";
-      sha256 = "c9ac0aeb5cbaa2e0b60b4dd49199e0fff5c91dd782578dad931ad0f3350aa1fe";
+      rev = "a30c17a2dcdf58866265f698e05423d2225d5f23";
+      sha256 = "189a52c4d6425ae6dd2894c95eaa7685eda5cf78622b13da9a18805cdf3cfcca";
     };
 
     propagatedBuildInputs = with self; [sqlalchemy sqlalchemy-utils];

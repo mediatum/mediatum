@@ -87,7 +87,7 @@ def parsePDF(filename, tempdir):
         return PDFInfo(data)
 
     name = ".".join(filename.split(".")[:-1])
-    imgfile = tempdir + "tmp" + str(random.random()) + ".png"
+    imgfile = os.path.join(tempdir, "tmp" + str(random.random()) + ".png")
     thumb128 = name + ".thumb"
     thumb300 = name + ".thumb2"
     fulltext = name + ".txt"
@@ -100,7 +100,7 @@ def parsePDF(filename, tempdir):
         logg.exception("failed to extract metadata from file %s")
         info = PDFInfo()
     else:
-        info = parseInfo(out)
+        info = parseInfo(out.splitlines())
 
     # test for correct rights
     if info.isEncrypted():
@@ -128,6 +128,16 @@ def parsePDF(filename, tempdir):
     except CalledProcessError:
         logg.exception("failed to extract fulltext from file %s", filename)
     os.remove(imgfile)
+
+
+def parsePDFExternal(filepath, tempdir):
+    """Call parsePDF as external process"""
+    from core.config import basedir
+    retcode = call([sys.executable, os.path.join(basedir, "lib/pdf/parsepdf.py"), filepath, tempdir])
+    if retcode == 111:
+        raise PDFException("error:document encrypted")
+    elif retcode == 1:  # normal run
+        pass
 
 
 def makeThumbs(src, thumb128, thumb300):

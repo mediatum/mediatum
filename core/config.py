@@ -128,6 +128,8 @@ def check_create_dir(dirpath, label):
     elif not os.path.isdir(dirpath):
         print("CONFIG ERROR 3, path is not a directory: '{}' ({})".format(dirpath, label))
         sys.exit(3)
+    else:
+        print("found dir '{}' ({})".format(label, dirpath))
 
 
 def set_default_values():
@@ -136,6 +138,11 @@ def set_default_values():
 
     if not "paths.tempdir" in settings:
         settings["paths.tempdir"] = tempfile.gettempdir()
+
+
+def expand_paths():
+    for confkey in ["paths.datadir", "paths.tempdir", "logging.file"]:
+        settings[confkey] = os.path.expanduser(settings[confkey])
 
 
 def initialize(filepath=None):
@@ -154,6 +161,7 @@ def initialize(filepath=None):
         is_default_config = True
 
     set_default_values()
+    expand_paths()
 
     languages = [lang.strip() for lang in settings.get("i18n.languages", "en").split(",") if lang.strip()]
 

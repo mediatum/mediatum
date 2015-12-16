@@ -51,6 +51,8 @@ from sqlalchemy import Unicode, Float, Integer
 from utils.xml import xml_remove_illegal_chars
 from core.search import SearchQueryException
 
+import core.oauth as oauth
+
 
 logg = logging.getLogger(__name__)
 q = db.query

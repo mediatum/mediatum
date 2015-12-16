@@ -29,6 +29,7 @@ from core import Node
 import core.config as config
 from core.translation import lang
 from core.styles import getContentStyles
+from core.transition.postgres import check_type_arg_with_schema
 from schema.schema import getMetadataType, VIEW_DATA_ONLY, VIEW_HIDE_EMPTY, SchemaMixin
 from utils.utils import Menu, highlight, format_filesize
 from export.exportutils import runTALSnippet, default_context
@@ -603,6 +604,7 @@ class Content(Data, SchemaMixin):
     pass
 
 
+@check_type_arg_with_schema
 class Other(Content):
     pass
 

@@ -37,6 +37,12 @@ from utils.date import format_date
 from utils.utils import u, getMimeType, OperationException
 from utils.fileutils import importFileFromData, importFile
 
+from core import Node, db, User
+
+import core.oauth as oauth
+
+q = db.query
+s = db.session
 
 logg = logging.getLogger(__name__)
 
@@ -66,25 +72,7 @@ def upload_new_node(req, path, params, data):
         # user=users.getUser(params.get('user'))
         #userAccess = AccessData(user=user)
         _user = users.getUser(params.get('user'))
-        if not _user:  # user of dynamic
 
-            class dummyuser:  # dummy user class
-
-                # return all groups with given dynamic user
-                def getGroups(self):
-                    return [g.name for g in tree.getRoot('usergroups').getChildren() if g.get(
-                        'allow_dynamic') == '1' and params.get('user') in g.get('dynamic_users')]
-
-                def getName(self):
-                    return params.get('user')
-
-                def getDirID(self):  # unique identifier
-                    return params.get('user')
-
-                def isAdmin(self):
-                    return 0
-
-            _user = dummyuser()
         userAccess = AccessData(user=_user)
 
         if userAccess.user:
@@ -100,40 +88,61 @@ def upload_new_node(req, path, params, data):
         user = users.getUser(config.get('user.guestuser'))
         userAccess = AccessData(user=user)
 
-    parent = tree.getNode(params.get('parent'))
+    parent_id = int(params.get('parent'))
+    parent = q(Node).get(parent_id)
+
+    if not parent:
+        pass
 
     # check user access
     if userAccess and userAccess.hasAccess(parent, "write"):
         pass
     else:
-        s = "No Access"
-        req.write(s)
+        msg = "No Access"
+        req.write(msg)
         d = {
             'status': 'fail',
             'html_response_code': '403',
             'errormessage': 'no access'}
         logg.error("user has no edit permission for node %s", parent)
-        return d['html_response_code'], len(s), d
+        return d['html_response_code'], len(msg), d
 
     datatype = params.get('type')
     uploaddir = users.getUploadDir(user)
 
-    n = tree.Node(name=params.get('name'), type=datatype)
+
+    filename = uploadfile.filename
     if isinstance(uploadfile, types.InstanceType):  # file object used
+        filename = uploadfile.filename
         nfile = importFile(uploadfile.filename, uploadfile.tempname)
+
     else:  # string used
         nfile = importFileFromData(
             'uploadTest.jpg',
             base64.b64decode(uploadfile))
-    if nfile:
-        n.addFile(nfile)
-    else:
-        logg.error("error in file uploadservice")
+        filename = 'uploadTest.jpg'
+
+    mimetype = getMimeType(filename)
+    typestring = mimetype[1]
+
+    try:
+        content_class = Node.get_class_for_typestring(typestring)
+        n = content_class(name=filename, schema=datatype)
+    except Exception as e:
+        msg = "failed to create node of type %r and schema %r" % (typestring, schema)
+        logg.exception(msg)
+        d = {
+            'status': 'fail',
+            'html_response_code': '403',
+            'errormessage': 'no access'}
+        return d['html_response_code'], len(msg), d
+
+    parent.children.append(n)
 
     try:  # test metadata
         metadata = json.loads(params.get('metadata'))
-    except ValueError:
-        metadata = dict()
+    except ValueError as e:
+        metadata = dict()  # todo: log this
 
     # set provided metadata
     for key, value in metadata.iteritems():
@@ -143,9 +152,38 @@ def upload_new_node(req, path, params, data):
     n.set("creator", user.getName())
     n.set("creationtime", format_date())
 
-    parent.addChild(n)
+    db.session.commit()
+
+    n_id = None
+    try:
+        n_id = n.id
+    except:
+        pass
+
+    if nfile:
+        n.files.append(nfile)
+    else:
+        logg.error("error in file uploadservice")
 
     # process the file, we've added to the new node
+    #if hasattr(n, "event_files_changed"):
+    #    try:
+    #        n.event_files_changed()
+
+    #    except OperationException as e:
+    #        for file in n.getFiles():
+    #            if os.path.exists(file.retrieveFile()):
+    #                os.remove(file.retrieveFile())
+    #        raise OperationException(e.value)
+
+    # make sure the new node is visible immediately from the web service and
+    # the search index gets updated
+    #n.setDirty()
+    #tree.remove_from_nodecaches(parent) !!!
+
+    db.session.commit()
+
+    #n.event_files_changed()
     if hasattr(n, "event_files_changed"):
         try:
             n.event_files_changed()
@@ -156,24 +194,19 @@ def upload_new_node(req, path, params, data):
                     os.remove(file.retrieveFile())
             raise OperationException(e.value)
 
-    # make sure the new node is visible immediately from the web service and
-    # the search index gets updated
-    n.setDirty()
-    tree.remove_from_nodecaches(parent)
-
     d = {
         'status': 'Created',
         'html_response_code': '201',
         'build_response_end': time.time()}
-    s = "Created"
+    msg = "Created"
 
     # provide the uploader with the new node ID
-    req.reply_headers['NodeID'] = n.id
+    req.reply_headers['NodeID'] = str(n_id)
 
     # we need to write in case of POST request, send as buffer will not work
-    req.write(s)
+    req.write(msg)
 
-    return d['html_response_code'], len(s), d
+    return d['html_response_code'], len(msg), d
 
 
 def update_node(req, path, params, data, id):

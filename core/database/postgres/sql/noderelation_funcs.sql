@@ -335,6 +335,18 @@ CREATE OR REPLACE FUNCTION on_mapping_insert() RETURNS trigger
 BEGIN
 RAISE NOTICE 'insert mapping % -> %', NEW.nid, NEW.cid;
 
+-- check if parent is a content node (is_container = false)
+IF (SELECT type IN (SELECT name FROM nodetype WHERE is_container = false) FROM node WHERE id=NEW.nid) THEN
+    RAISE NOTICE 'parent is content';
+
+    -- should fail if someone wants to add a container as child of a content node
+    IF (SELECT type IN (SELECT name FROM nodetype WHERE is_container = true) FROM node WHERE id=NEW.cid) THEN
+        RAISE EXCEPTION 'cannot add a container child to a content parent!';
+    END IF;
+    -- set subnode attribute because we are adding a content node as child of another content node
+    UPDATE node SET subnode = true WHERE id = NEW.cid;
+END IF;
+
 -- copy connections from new parent (nid)
 INSERT INTO noderelation 
 SELECT * FROM extend_relation_to_parents(NEW.nid, NEW.cid) f
@@ -372,6 +384,16 @@ INSERT INTO noderelation
 SELECT DISTINCT * FROM transitive_closure_for_node(OLD.cid) WHERE distance > 2;
 -- recalculate connections to the subtree under `cid` (all paths going through `cid`)
 PERFORM recalculate_relation_subtree(OLD.cid);
+
+-- check if old parent and child are content nodes (is_container = false)
+IF (SELECT type IN (SELECT name FROM nodetype WHERE is_container = false) FROM node WHERE id=OLD.nid)
+AND (SELECT type IN (SELECT name FROM nodetype WHERE is_container = false) FROM node WHERE id=OLD.cid) THEN
+    -- and child is orphaned now
+    IF (SELECT NOT EXISTS (SELECT FROM nodemapping WHERE cid=OLD.cid)) THEN
+        UPDATE node SET subnode = false WHERE id = OLD.cid;
+    END IF;
+END IF;
+
 
 RETURN OLD;
 END;

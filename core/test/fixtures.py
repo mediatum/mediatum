@@ -13,7 +13,7 @@ from core.test.factories import NodeFactory, DocumentFactory, DirectoryFactory, 
 from core import db
 from contenttypes.container import Collections, Home
 from core.database.init import init_database_values
-from core.init import load_system_types, load_types, init_fulltext_search, init_db_connector
+from core.init import load_system_types, load_types, init_fulltext_search, init_db_connector, update_nodetypes_in_db
 from core.database.postgres.user import AuthenticatorInfo, create_special_user_dirs
 from sqlalchemy import event
 from core.database.postgres.alchemyext import truncate_tables
@@ -38,6 +38,7 @@ def database():
     db.drop_schema()
     db.create_schema(set_alembic_version=False)
     init_fulltext_search()
+    update_nodetypes_in_db()
     db.disable_session_for_test()
     return db
 

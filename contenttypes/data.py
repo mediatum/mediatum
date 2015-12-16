@@ -140,10 +140,10 @@ class Data(Node):
 
            :return: boolean
         '''
-        if self.get('system.prev_id') != '' and len(self.children.all()) > 0 in [(c.get('system.next_id') != '') for c in self.children]:
+        if self.children.count() > 0:
             return True
         else:
-            return (self.get('system.prev_id') == '') or (len(self.children.all()) > 0) in [(c.get('system.prev_id') != '') for c in self.children]
+            return bool(len(self.children.all()) > 0) in self.children.all()
 
     def getFurtherDetailsCondition(self, req):
         '''checks if 'further details'
@@ -159,7 +159,7 @@ class Data(Node):
         if self.parents.first() is not None:
             return True
         else:
-            return (self.get('system.prev_id') == '') or (len(self.children.all()) > 0) in [(c.get('system.prev_id') != '') for c in self.children]
+            return bool(len(self.children.all()) > 0) in self.children.all()
 
     def getParentInformation(self, req):
         '''sets diffrent used Information
@@ -174,24 +174,24 @@ class Data(Node):
         parentInformation = {}
         pid = req.params.get('pid', self.id)
         parentInformation['parent_node_id'] = pid
+        from contenttypes.container import Container
 
-        if len(self.children) > 0 and self.isContainer() != 1:
-            parentInformation['children_list'] = [c for c in self.children if not c.get('system.next_id') != '']
+        if self.children.count() > 0 and not isinstance(self, Container):
+            parentInformation['children_list'] = self.children.all()
         else:
             parentInformation['children_list'] = []
-               #[sib for sib in q(Node).get(pid).children if not sib.id is self.id]
-        if len([sib.id for sib in filter(lambda itm: str(itm.id) == pid,  [p for p in self.parents])]) != 0:
+        if len([sib.id for sib in self.parents.filter_by(id=req.params.get('pid', self.id)).all()]) != 0:
             parentInformation['parent_condition'] = True
-            parentInformation['siblings_list'] = [sib for sib in q(Node).get(pid).children.all() if not sib.id is self.id]
+            parentInformation['siblings_list'] = q(Node).get(pid).children.filter(Node.id is not self.id).all()
         else:
             parentInformation['parent_condition'] = False
             if len([p for p in self.parents]) > 0:
-                parentInformation['siblings_list'] = self.parents.all()[0].children
+                parentInformation['siblings_list'] = self.parents.first().children.all()
             else:
                 parentInformation['siblings_list'] = []
 
         parentInformation['display_siblings'] = pid != self.id
-        parentInformation['parent_is_container'] = [self.parents.one()] #[id for id in [p for p in self.getParents()] if self.isContainer() != 1] <- y?
+        parentInformation['parent_is_container'] = self.parents.filter(isinstance(self, Container)).all()
         parentInformation['details_condition'] = self.getDetailsCondition()
         parentInformation['further_details'] = self.getFurtherDetailsCondition(req)
 

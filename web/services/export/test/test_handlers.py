@@ -17,6 +17,8 @@ from schema.test.factories import MetadatatypeFactory
 
 @fixture
 def xml_fixture(parent_node, content_node):
+    parent_node["testvalue"] = "1001"
+    content_node["testvalue"] = "1002"
     struct = {"nodelist": [parent_node, content_node],
               "build_response_start": time.time(),
               "status": "ok",
@@ -73,7 +75,7 @@ def test_xml_singlenode(xml_fixture):
     print xmlstr
     assert "smallview mask not defined" in xmlstr
     assert "directory/directory" in xmlstr
-    assert "![CDATA[7]]" in xmlstr
+    assert "![CDATA[1001]]" in xmlstr
 
 
 def test_xml_singlenode_send_children(xml_fixture):
@@ -83,8 +85,8 @@ def test_xml_singlenode_send_children(xml_fixture):
     assert "smallview mask not defined" in xmlstr
     assert "directory/directory" in xmlstr
     assert "document/testschema" in xmlstr
-    assert "![CDATA[7]]" in xmlstr
-    assert "![CDATA[8]]" in xmlstr
+    assert "![CDATA[1001]]" in xmlstr
+    assert "![CDATA[1002]]" in xmlstr
 
 
 def test_xml(xml_fixture):
@@ -98,7 +100,7 @@ def test_xml(xml_fixture):
     print xmlstr
     assert "smallview mask not defined" in xmlstr
     assert "directory/directory" in xmlstr
-    assert "![CDATA[7]]" in xmlstr
+    assert "![CDATA[1001]]" in xmlstr
 
 
 def test_json(xml_fixture):

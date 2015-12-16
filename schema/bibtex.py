@@ -505,23 +505,3 @@ def importBibTeX(infile, node=None, req=None):
     print msg
 
     return node
-
-
-def test():
-    try:
-        b = tree.getRoot("bibs")
-        tree.getRoot().removeChild(b)
-    except:
-        pass
-
-    b = tree.Node("bibs", type="directory")
-    tree.getRoot().addChild(b)
-    #import glob
-    # for file in glob.glob("/home/mis/tmp/bib/*"):
-    #    c = tree.Node(os.path.basename(file),type="directory")
-    #    b.addChild(c)
-    #    importBibTeX(file,c)
-    file = "../file.bib"
-    c = tree.Node(os.path.basename(file), type="directory")
-    b.addChild(c)
-    importBibTeX(file, c)

@@ -42,7 +42,7 @@ from bin.manage import vacuum_analyze_tables
 
 LOG_FILEPATH = os.path.join(tempfile.gettempdir(), "mediatum_mysql_migrate.log")
 
-init.basic_init(root_loglevel=logging.INFO, log_filepath=LOG_FILEPATH)
+init.full_init(root_loglevel=logging.INFO, log_filepath=LOG_FILEPATH)
 
 import core.database.postgres
 

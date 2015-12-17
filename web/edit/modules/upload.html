@@ -704,6 +704,7 @@
 <tal:block metal:define-macro="addmeta">
     <script>
         function loadSchemes(o){
+            $('#buttoncreate2').hide();
             $.getJSON('/edit/edit_content?action=getschemes&func=loadSchemes&contenttype='+o.value+'&id='+id, function(data){
                 var schemes = $('#schema');
                 first = schemes.find('option')[0];
@@ -713,6 +714,16 @@
                     schemes.append($('<option />').val(data.schemes[item].id).text(data.schemes[item].name));
                 });
             });
+        }
+
+
+        function showOrHide(selector, selectedIndex){
+            if (selectedIndex == 0) {
+                $(selector).hide();
+            }
+            else {
+                $(selector).show();
+            }
         }
 
 
@@ -807,7 +818,7 @@
       </p>
 
       <p><tal:block i18n:translate="edit_upload_scheme"/><br/>
-          <select name="schema" id="schema" style="width:360px;" onchange="$('#buttoncreate2').toggle();">
+          <select name="schema" id="schema" style="width:360px;" onchange="showOrHide('#buttoncreate2', this.selectedIndex);">
               <option i18n:translate="edit_upload_schemeselection">TEXT</option>
               <tal:block tal:condition="python:len(datatypes)==1" tal:repeat="scheme schemes">
                   <option tal:attributes="value python:scheme.name" tal:content="python:scheme.name"/>

@@ -38,6 +38,7 @@ from utils.utils import u, getMimeType, OperationException
 from utils.fileutils import importFileFromData, importFile
 
 from core import Node, db, User
+from core.users import user_from_session, get_guest_user, getUser
 
 import core.oauth as oauth
 
@@ -48,16 +49,6 @@ logg = logging.getLogger(__name__)
 
 host = "http://" + config.get("host.name", "")
 
-from web.services.cache import Cache
-
-FILTERCACHE_NODECOUNT_THRESHOLD = 2000000
-
-filtercache = Cache(maxcount=10, verbose=True)
-searchcache = Cache(maxcount=10, verbose=True)
-resultcache = Cache(maxcount=25, verbose=True)
-
-SEND_TIMETABLE = False
-
 
 def upload_new_node(req, path, params, data):
 
@@ -67,35 +58,45 @@ def upload_new_node(req, path, params, data):
     except KeyError:
         uploadfile = None
 
+    session_user = user_from_session(req.session)
+
     # get the user and verify the signature
-    if params.get('user'):
-        # user=users.getUser(params.get('user'))
-        #userAccess = AccessData(user=user)
-        _user = users.getUser(params.get('user'))
-
-        userAccess = AccessData(user=_user)
-
-        if userAccess.user:
-            user = userAccess.user
-            if not userAccess.verify_request_signature(
-                    req.fullpath +
-                    '?',
-                    params):
-                userAccess = None
-        else:
-            userAccess = None
-    else:
-        user = users.getUser(config.get('user.guestuser'))
-        userAccess = AccessData(user=user)
-
+    login_name = params.get('user')
     parent_id = int(params.get('parent'))
-    parent = q(Node).get(parent_id)
+    datatype = params.get('type')
+    try:  # test metadata
+        metadata = json.loads(params.get('metadata'))
+    except ValueError as e:
+        metadata = dict()  # todo: log this
 
+    if login_name:
+        user = getUser(login_name)
+        if user:
+            flag_user_oauth_verified =  oauth.verify_request_signature(
+                req.fullpath +
+                '?',
+                params)
+    else:
+        flag_user_oauth_verified = False
+        user = get_guest_user()
+    if user:
+        username = user.getName()
+    else:
+        username = None
+    entry_msg = "user: %r, username: %r, session_user: %r, parend_node_id: %r, datatype: %r, metadata: %r" % (login_name,
+                                                                                                username,
+                                                                                                session_user.getName(),
+                                                                                                parent_id,
+                                                                                                datatype,
+                                                                                                metadata)
+    logg.info("upload_new_node %s" % entry_msg)
+
+    parent = q(Node).get(parent_id)
     if not parent:
-        pass
+        logg.info('no such node id: %r' % parent_id)
 
     # check user access
-    if userAccess and userAccess.hasAccess(parent, "write"):
+    if user and flag_user_oauth_verified and parent and parent.has_write_access(user=user):
         pass
     else:
         msg = "No Access"
@@ -104,13 +105,10 @@ def upload_new_node(req, path, params, data):
             'status': 'fail',
             'html_response_code': '403',
             'errormessage': 'no access'}
-        logg.error("user has no edit permission for node %s", parent)
+        logg.error("user %r has no edit permission for node %s" % (login_name, parent))
         return d['html_response_code'], len(msg), d
 
-    uploaddir = users.getUploadDir(user)
 
-
-    filename = uploadfile.filename
     if isinstance(uploadfile, types.InstanceType):  # file object used
         filename = uploadfile.filename
         nfile = importFile(uploadfile.filename, uploadfile.tempname)
@@ -124,18 +122,18 @@ def upload_new_node(req, path, params, data):
     mimetype = getMimeType(filename)
     typestring = mimetype[1]
 
-
-    datatype = params.get('type')
     if '/' in datatype:
         typestring, schemastring = datatype.rplit('/', 1)  # override mimetype by user input
     else:
         schemastring = datatype
+        # todo: check user access to this schema
 
     try:
         content_class = Node.get_class_for_typestring(typestring)
         n = content_class(name=filename, schema=schemastring)
     except Exception as e:
         msg = "failed to create node of type %r and schema %r" % (typestring, schemastring)
+        req.write(msg)
         logg.exception(msg)
         d = {
             'status': 'fail',
@@ -144,11 +142,6 @@ def upload_new_node(req, path, params, data):
         return d['html_response_code'], len(msg), d
 
     parent.children.append(n)
-
-    try:  # test metadata
-        metadata = json.loads(params.get('metadata'))
-    except ValueError as e:
-        metadata = dict()  # todo: log this
 
     # set provided metadata
     for key, value in metadata.iteritems():
@@ -160,40 +153,22 @@ def upload_new_node(req, path, params, data):
 
     db.session.commit()
 
-    n_id = None
     try:
         n_id = n.id
     except:
-        pass
+        n_id = None
 
     if nfile:
         n.files.append(nfile)
     else:
         logg.error("error in file uploadservice")
 
-    # process the file, we've added to the new node
-    #if hasattr(n, "event_files_changed"):
-    #    try:
-    #        n.event_files_changed()
-
-    #    except OperationException as e:
-    #        for file in n.getFiles():
-    #            if os.path.exists(file.retrieveFile()):
-    #                os.remove(file.retrieveFile())
-    #        raise OperationException(e.value)
-
-    # make sure the new node is visible immediately from the web service and
-    # the search index gets updated
     #n.setDirty()
-    #tree.remove_from_nodecaches(parent) !!!
-
     db.session.commit()
 
-    #n.event_files_changed()
     if hasattr(n, "event_files_changed"):
         try:
             n.event_files_changed()
-
         except OperationException as e:
             for file in n.getFiles():
                 if os.path.exists(file.retrieveFile()):
@@ -204,6 +179,7 @@ def upload_new_node(req, path, params, data):
         'status': 'Created',
         'html_response_code': '201',
         'build_response_end': time.time()}
+
     msg = "Created"
 
     # provide the uploader with the new node ID
@@ -211,6 +187,8 @@ def upload_new_node(req, path, params, data):
 
     # we need to write in case of POST request, send as buffer will not work
     req.write(msg)
+
+    logg.info("upload_new_node: OK %s" % entry_msg)
 
     return d['html_response_code'], len(msg), d
 

@@ -18,7 +18,7 @@ logg = logging.getLogger(__name__)
 logg.info("imported core.oauth")
 
 
-def verify_request_signature(self, req_path, params):
+def verify_request_signature(req_path, params):
     # we generate the signature from the shared secret, the request path and all sorted parameters
     # as described in the upload api documentation
     _p = params.copy()
@@ -79,6 +79,7 @@ def get_oauth_key_for_user(user):
             oauth_user_credentials = q(OAuthUserCredentials).filter(OAuthUserCredentials.oauth_user == login_name).filter(OAuthUserCredentials.user_id == user.id).one()
             oauthkey = oauth_user_credentials.oauth_key
         else:
+            oauthkey = ''
             pass  #raise exception?  should not happen: unique constraint on column oauth_user
         return oauthkey
 

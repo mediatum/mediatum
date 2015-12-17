@@ -131,13 +131,15 @@ def getContent(req, ids):
 
     if 'data' in req.params:
         if 'data' in req.params:
+            from contenttypes.container import Container
             if req.params.get('data') == 'children':  # get formated list of childnodes of selected directory
                 excludeid = str(req.params.get('excludeid', None))
                 if excludeid:
                     grandchildren = []
+
                     for child in node.getChildren():
                         for grandchild in child.children.all():
-                            if not grandchild.isContainer():
+                            if not isinstance(grandchild, Container):
                                 grandchildren.append(grandchild)
                     req.writeTAL("web/edit/modules/files.html", {'children': [c for c in node.children.all() if str(c.id) != excludeid],
                                                                  'grandchildren': grandchildren}, macro="edit_files_popup_children")
@@ -145,17 +147,16 @@ def getContent(req, ids):
                     grandchildren = []
                     for child in node.children.all():
                         for grandchild in child.children.all():
-                            if not grandchild.isContainer():
+                            if not isinstance(grandchild, Container):
                                 grandchildren.append(grandchild)
                     req.writeTAL("web/edit/modules/files.html", {'children': [c for c in node.getChildren() if str(c.id) != excludeid],
                                                                  'grandchildren': grandchildren}, macro="edit_files_popup_children")
             elif req.params.get('data') =='grandchildren':
                 grandchildren = []
                 for child in node.children.all():
-                    if not child.isContainer():
+                    if not isinstance(child, Container):
                         for grandchild in child.children.all():
-                            if not grandchild.isContainer():
-                                if not grandchild.isContainer():
+                            if not isinstance(grandchild, Container):
                                     grandchildren.append(grandchild)
 
                 if len(node.getChildren())==0:
@@ -168,7 +169,7 @@ def getContent(req, ids):
                 if childid.strip() != "":
                     childnode = q(Node).get(childid.strip())
                     for p in childnode.parents:
-                        if p.isContainer():
+                        if isinstance(p, Container):
                             p.children.remove(childnode)
                     node.children.append(childnode)
             req.writeTAL("web/edit/modules/files.html", {'children': node.children, 'node': node}, macro="edit_files_children_list")

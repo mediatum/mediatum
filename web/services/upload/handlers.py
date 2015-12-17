@@ -47,8 +47,6 @@ s = db.session
 
 logg = logging.getLogger(__name__)
 
-host = "http://" + config.get("host.name", "")
-
 
 def upload_new_node(req, path, params, data):
 
@@ -105,7 +103,7 @@ def upload_new_node(req, path, params, data):
             'status': 'fail',
             'html_response_code': '403',
             'errormessage': 'no access'}
-        logg.error("user %r has no edit permission for node %s" % (login_name, parent))
+        logg.error("user %r has no edit permission for node %r" % (login_name, parent))
         return d['html_response_code'], len(msg), d
 
 
@@ -163,7 +161,6 @@ def upload_new_node(req, path, params, data):
     else:
         logg.error("error in file uploadservice")
 
-    #n.setDirty()
     db.session.commit()
 
     if hasattr(n, "event_files_changed"):
@@ -196,36 +193,57 @@ def upload_new_node(req, path, params, data):
 def update_node(req, path, params, data, id):
 
     # get the user and verify the signature
-    if params.get('user'):
-        user = users.getUser(params.get('user'))
-        userAccess = AccessData(user=user)
 
-        if userAccess.user:
-            valid = userAccess.verify_request_signature(req.fullpath, params)
-            if not valid:
-                userAccess = None
-        else:
-            userAccess = None
+    session_user = user_from_session(req.session)
+
+    # get the user and verify the signature
+    login_name = params.get('user')
+    node_name = params.get('name')
+    try:  # test metadata
+        metadata = json.loads(params.get('metadata'))
+    except ValueError as e:
+        metadata = dict()  # todo: log this
+
+    if login_name:
+        user = getUser(login_name)
+        if user:
+            flag_user_oauth_verified =  oauth.verify_request_signature(
+                req.fullpath +
+                '?',
+                params)
     else:
-        user = users.getUser('Gast')
-        userAccess = AccessData(user=user)
+        flag_user_oauth_verified = False
+        user = get_guest_user()
+    if user:
+        username = user.getName()
+    else:
+        username = None
+    entry_msg = "user: %r, username: %r, session_user: %r, node_id: %r, node_name: %r, metadata: %r" % (login_name,
+                                                                                        username,
+                                                                                        session_user.getName(),
+                                                                                        id,
+                                                                                        node_name,
+                                                                                        metadata)
+    logg.info("update_node %s" % entry_msg)
 
-    node = tree.getNode(id)
+    node = q(Node).get(id)
+    if not node:
+        logg.info('no such node id: %r' % id)
 
     # check user access
-    if userAccess and userAccess.hasAccess(node, "write"):
+    if user and flag_user_oauth_verified and node and node.has_write_access(user=user):
         pass
     else:
-        s = "No Access"
-        req.write(s)
+        msg = "No Access"
+        req.write(msg)
         d = {
             'status': 'fail',
             'html_response_code': '403',
             'errormessage': 'no access'}
-        return d['html_response_code'], len(s), d
+        logg.error("user %r has no edit permission for node %r" % (login_name, node))
+        return d['html_response_code'], len(msg), d
 
-    node.name = params.get('name')
-    metadata = json.loads(params.get('metadata'))
+    node.name = node_name
 
     # set provided metadata
     for key, value in metadata.iteritems():
@@ -234,7 +252,8 @@ def update_node(req, path, params, data, id):
     # service flags
     node.set("updateuser", user.getName())
     node.set("updatetime", format_date())
-    node.setDirty()
+
+    db.session.commit()
 
     d = {
         'status': 'OK',
@@ -246,6 +265,8 @@ def update_node(req, path, params, data, id):
     req.write(s)
 
     req.reply_headers['updatetime'] = node.get('updatetime')
+
+    logg.info("update_node: OK %s" % entry_msg)
 
     return d['html_response_code'], len(s), d
 

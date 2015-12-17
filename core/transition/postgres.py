@@ -8,9 +8,10 @@ from warnings import warn
 
 def check_type_arg(cls):
     from core.database.postgres.node import Node
-    clsname = cls.__name__
 
     def init(self, name="", type=None, id=None, attrs=None, orderpos=None):
+        clsname = self.__class__.__name__
+
         if type is None:
             type = clsname.lower()
         else:
@@ -26,16 +27,17 @@ def check_type_arg(cls):
 
 def check_type_arg_with_schema(cls):
     from core.database.postgres.node import Node
-    clsname = cls.__name__
 
     def init(self, name="", type=None, id=None, schema=None, attrs=None, orderpos=None):
+        clsname = self.__class__.__name__
+
         if type is None:
             type = clsname.lower()
         else:
             warn("type param is deprecated for " + clsname + " instances", DeprecationWarning)
             if not type.startswith(clsname.lower()):
                 raise ValueError("type must be {} for a {} instance ".format(clsname.lower(), clsname))
-        
+
         if schema is None:
             schema = type
 

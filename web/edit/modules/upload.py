@@ -188,6 +188,7 @@ def getContent(req, ids):
                                         basenodefiles_processed.append(f)
                                     except ValueError, e:
                                         errornodes.append((filename, unicode(e)))
+                                    db.session.commit()
                                 else:
 
                                     logg.debug("creating new node: filename: %s", filename)
@@ -553,7 +554,7 @@ def upload_bibhandler(req):
             try:
                 retrieved_file = f.abspath
                 logg.debug('going to call importBibTex(%s), import will be logged to backend!', retrieved_file)
-                nn = importBibTeX(retrieved_file)
+                importBibTeX(retrieved_file)
                 logg.info('importBibTex(%s) done, import logged to backend!', retrieved_file)
             except ValueError, e:
                 logg.exception('calling importBibTex(%s)', retrieved_file)

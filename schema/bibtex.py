@@ -35,10 +35,15 @@ import codecs
 import logging
 import unicodedata
 
+from core import db, Node
+from .schema import Metadatatype
 import core.users as users
-from .schema import getMetaType
+from contenttypes import Directory
+from contenttypes.document import Document
 from utils.utils import u, u2, utf8_decode_escape
 from utils.date import parse_date
+
+q = db.query
 
 
 logg = logging.getLogger(__name__)
@@ -407,9 +412,7 @@ def importBibTeX(infile, node=None, req=None):
     if isinstance(infile, list):
         entries = infile
     else:
-        if not node:
-            node = tree.Node(name=utf8_decode_escape(os.path.basename(infile)),
-                             type="directory")
+        node = node or Directory(utf8_decode_escape(os.path.basename(infile)))
         try:
             entries = getentries(infile)
         except:
@@ -446,44 +449,37 @@ def importBibTeX(infile, node=None, req=None):
             metatype = bibtextypes[mytype]
 
             # check for mask configuration
-            mask = getMetaType(metatype).getMask(u"bibtex_import")
-            if not mask:
-                mask = getMetaType(metatype).getMask(u"bibtex")
+            metadatatype = q(Metadatatype).filter_by(name=metatype).one()
+            mask = metadatatype.get_mask(u"bibtex_import") or metadatatype.get_mask(u"bibtex")
             if mask:
-                for f in mask.getMaskFields():
+                for f in mask.all_maskitems:
                     try:
-                        _bib_name = tree.getNode(f.get("mappingfield")).getName()
-                        _mfield = tree.getNode(f.get("attribute"))
-                        _med_name = _mfield.getName()
+                        _bib_name = q(Node).get(f.get(u"mappingfield")).name
+                        _mfield = q(Node).get(f.get(u"attribute"))
+                        _med_name = _mfield.name
+                        if _mfield.get(u"type") == u"date":
+                            datefields[_med_name] = _mfield.get(u"valuelist")
+                    except AttributeError as e:
+                        msg = "bibtex import docid='{}': field error for bibtex mask for type {} and bibtex-type '{}': {}"
+                        msg = msg.format(docid_utf8, metatype, mytype, e)
+                        log.error(msg)
+                    else:
+                        fieldnames[_bib_name] = _med_name
 
-                        if _mfield.get("type") == "date":
-                            datefields[_med_name] = _mfield.get("valuelist")
-
-                    except tree.NoSuchNodeError as e:
-                        msg = "bibtex import docid='%s': field error for bibtex mask for type %s and bibtex-type '%s': %s: " % (
-                            docid_utf8, metatype, mytype, e)
-                        msg = msg + "_bib_name='%s', _mfield='%s', _med_name='%s'" % (
-                            ustr(_bib_name), ustr(_mfield), ustr(_med_name))
-                        logg.error(msg)
-                        continue
-
-                    fieldnames[_bib_name] = _med_name
-
-            doc = tree.Node(docid_utf8, type="document/" + metatype)
+            doc = Document(docid_utf8,schema=metatype)
             for k, v in fields.items():
                 if k in fieldnames.keys():
                     k = fieldnames[k]  # map bibtex name
 
                 if k in datefields.keys():  # format date field
-                    v = parse_date(v, datefields[k])
+                    v = str(parse_date(v, datefields[k]))
 
                 doc.set(k,  utf8_decode_escape(v))
 
             child_id = None
             child_type = None
             try:
-                node.addChild(doc)
-                doc.setDirty()
+                node.children.append(doc)
                 child_id = doc.id
                 child_type = doc.type
             except Exception as e:

@@ -200,7 +200,6 @@ def init_modules():
     from export import exportutils
     exportutils.init()
     from core.plugins import init_plugins
-    init_plugins()
 
 
 def add_ustr_builtin():
@@ -318,6 +317,8 @@ def _additional_init():
     db.check_db_structure_validity()
     validity.check_database()
     register_workflow()
+    from core import plugins
+    plugins.init_plugins()
     init_modules()
     check_undefined_nodeclasses()
     update_nodetypes_in_db()

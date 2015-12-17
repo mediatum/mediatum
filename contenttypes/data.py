@@ -143,7 +143,7 @@ class Data(Node):
         if self.children.count() > 0:
             return True
         else:
-            return bool(len(self.children.all()) > 0) in self.children.all()
+            return len(self.children.all()) > 0 in self.children.all()
 
     def getFurtherDetailsCondition(self, req):
         '''checks if 'further details'
@@ -159,7 +159,7 @@ class Data(Node):
         if self.parents.first() is not None:
             return True
         else:
-            return bool(len(self.children.all()) > 0) in self.children.all()
+            return len(self.children.all()) > 0 in self.children.all()
 
     def getParentInformation(self, req):
         '''sets diffrent used Information

@@ -34,10 +34,12 @@ class m_hlist(Metatype):
 
     def getFormatedValue(self, field, node, language=None, html=1, template_from_caller=None, mask=None):
         value = []
-        for n in node.get(field.getName()).split(';'):
-            vn = q(Node).get(n)
-            if vn is not None:
-                value.append(vn.getName())
+        ids = node.get(field.getName())
+        if ids:
+            for n in ids.split(';'):
+                vn = q(Node).get(n)
+                if vn is not None:
+                    value.append(vn.getName())
         values = field.get("valuelist").split(';')
         while len(values) < 3:
             values.append(u'')

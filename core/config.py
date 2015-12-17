@@ -142,7 +142,8 @@ def set_default_values():
 
 def expand_paths():
     for confkey in ["paths.datadir", "paths.tempdir", "logging.file"]:
-        settings[confkey] = os.path.expanduser(settings[confkey])
+        if confkey in settings:
+            settings[confkey] = os.path.expanduser(settings[confkey])
 
 
 def initialize(filepath=None):

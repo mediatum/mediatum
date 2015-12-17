@@ -158,20 +158,20 @@ class NodeMixin(object):
 
     # access stuff
 
-    def has_access(self, accesstype, req=None):
+    def has_access(self, accesstype, req=None, user=None, ip=None, date=None):
+        if user is not None or ip is not None or date is not None:
+            return self.has_access_to_node_id(self.id, accesstype, user, ip, date)
+
         return self.req_has_access_to_node_id(self.id, accesstype, req)
 
     def has_read_access(self, req=None, user=None, ip=None, date=None):
-        if user is not None or ip is not None or date is not None:
-            return self.has_access_to_node_id(self.id, "read", user, ip, date)
-        else:
-            return self.req_has_access_to_node_id(self.id, "read", req)
+        return self.has_access("read", req, user, ip, date)
 
-    def has_write_access(self, req=None):
-        return self.req_has_access_to_node_id(self.id, "write", req)
+    def has_write_access(self, req=None, user=None, ip=None, date=None):
+        return self.has_access("write", req, user, ip, date)
 
-    def has_data_access(self, req=None):
-        return self.req_has_access_to_node_id(self.id, "data", req)
+    def has_data_access(self, req=None, user=None, ip=None, date=None):
+        return self.has_access("data", req, user, ip, date)
 
     def __repr__(self):
         return u"Node<{} '{}'> ({})".format(self.id, self.name, object.__repr__(self)).encode("utf8")

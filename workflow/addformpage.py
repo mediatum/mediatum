@@ -24,6 +24,7 @@ import os.path
 import shutil
 import logging
 import codecs
+import random
 
 from .workflow import WorkflowStep, getNodeWorkflow, getNodeWorkflowStep, registerStep
 from core.translation import t, addLabels
@@ -65,7 +66,6 @@ def parse_pdftk_fields_dump(s):
                 d = {}
         elif line.find(':') > 0:
             vals = line.split(':')
-            #key, value = line.split(':')
             d[vals[0].strip()] = ":".join(vals[1:]).strip()
     field_dicts.append(d)
     return field_dicts
@@ -144,30 +144,29 @@ def fillPDFForm(formPdf, fields, outputPdf="filled.pdf", input_is_fullpath=False
         fill given pdf file with form fields with given attributes and store result in pdf file
     """
     # build data file
+    fdffilename = "{}infdata.fdf".format(str(random.random())[2:])
+    outputPdf = "{}filled.pdf".format(str(random.random())[2:])
     try:
-        with open(config.get('paths.tempdir') + 'infdata.fdf', 'wb') as fdf_file:
+        with open("{}{}".format(config.get('paths.tempdir'), fdffilename), 'wb') as fdf_file:
             fdf_file.write(forge_fdf(fdf_data_strings=fields))
-
-        #res = '%FDF-1.2\n%\xe2\xe3\xcf\xd3\r\n1 0 obj\n<</FDF<</Fields['
-        # for field in fields:
-        #    res += '<</T('+field[0]+')/V('+field[1]+')>>\n'
-        #res += ']>>/Type/Catalog>>\nendobj\ntrailer\r\n<</Root 1 0 R>>\r\n%%EOF\r\n'
-
-        #fout = open(config.get('paths.tempdir')+'infdata.fdf', 'wb')
-        # fout.write(res)
-        # fout.close()
 
         # fill data in form pdf and generate pdf
         if editable:
-            os.system('pdftk %s fill_form %sinfdata.fdf output %s%s' %
-                      (formPdf, config.get('paths.tempdir'), config.get('paths.tempdir'), outputPdf))
+            os.system('pdftk %s fill_form %s%s output %s%s' %
+                      (formPdf, config.get('paths.tempdir'), fdffilename, config.get('paths.tempdir'), outputPdf))
         else:
-            os.system('pdftk %s fill_form %sinfdata.fdf output %s%s flatten' %
-                      (formPdf, config.get('paths.tempdir'), config.get('paths.tempdir'), outputPdf))
+            os.system('pdftk %s fill_form %s%s output %s%s flatten' %
+                      (formPdf, config.get('paths.tempdir'), fdffilename, config.get('paths.tempdir'), outputPdf))
 
+        if os.path.exists("{}{}".format(config.get('paths.tempdir'), fdffilename)):
+            os.remove("{}{}".format(config.get('paths.tempdir'), fdffilename))
     except Exception:
         logg.exception("exception in workflow step addformpage, error while filling pdf form, ignoring")
-    return config.get('paths.tempdir') + outputPdf
+
+    if not os.path.exists(config.get('paths.tempdir') + outputPdf):  # check if file created
+        return ""
+    else:
+        return config.get('paths.tempdir') + outputPdf
 
 
 def addPagesToPDF(prefile, pdffile):
@@ -181,7 +180,6 @@ def addPagesToPDF(prefile, pdffile):
 
 
 class WorkflowStep_AddFormPage(WorkflowStep):
-
     """
         update given pdf-file and add some pre-pages
         pre-pages can use formular fields
@@ -234,13 +232,12 @@ class WorkflowStep_AddFormPage(WorkflowStep):
                 if fieldname:
                     value = ''
                     if fieldname in dict(node.attrs.items()):
-                        schemafield = schema.getMetaField(fieldname)
+                        schemafield = schema.children.filter_by(name=fieldname).first()
                         value = schemafield.getFormatedValue(node)[1]
-                        #value = node.get(fieldname)
                         if fieldname.find('author') >= 0:
                             value = reformatAuthors(value)
                     elif fieldname.lower() == 'node.schema':
-                        value = getMetaType(node.schema).__name__
+                        value = getMetaType(node.schema).getLongName()
                     elif fieldname.lower() == 'node.id':
                         value = ustr(node.id)
                     elif fieldname.lower() == 'node.type':
@@ -264,20 +261,23 @@ class WorkflowStep_AddFormPage(WorkflowStep):
                                 elif m.group(0) == 'type':
                                     v = node.type
                                 elif m.group(0) == 'schema':
-                                    v = node.getMetaType(node.schema).__name__
+                                    v = getMetaType(node.schema).getLongName()
                                 else:
-                                    schemafield = schema.getMetaField(m.group(0))
+                                    schemafield = schema.children.filter_by(name=m.group(0)).first()
                                     v = schemafield.getFormatedValue(node)[0]
-                                    #v = node.get(m.group(0))
                                 value = value.replace('[att:%s]' % (m.group(0)), v)
                     else:
                         logg.warning("workflowstep %s (%s): could not find attribute for pdf form field '%s' - node: '%s' (%s)",
-                                       current_workflow_step.name, current_workflow_step.id, fieldname, node.name, node.id)
-                    fields.append((fieldname, remove_tags(utils.desc(value)).decode("utf-8")))
+                                       current_workflow_step.name, ustr(current_workflow_step.id), fieldname, node.name, node.id)
+                    fields.append((fieldname, remove_tags(utils.desc(value))))
 
         if not pdf_form_separate and fnode and f_retrieve_path and os.path.isfile(f_retrieve_path):
             pages = fillPDFForm(f_retrieve_path, fields, input_is_fullpath=True, editable=pdf_fields_editable)
-
+            if pages == "":  # error in pdf creation -> forward to false operation
+                logg.error("workflowstep %s (%s): could not create pdf file - node: '%s' (%s)" %
+                           (current_workflow_step.name, ustr(current_workflow_step.id), node.name, node.id))
+                self.forward(node, False)
+                return
             origname = fnode.abspath
             outfile = addPagesToPDF(pages, origname)
 
@@ -289,10 +289,15 @@ class WorkflowStep_AddFormPage(WorkflowStep):
             node.event_files_changed()
             db.session.commit()
             logg.info("workflow '%s' (%s), workflowstep '%s' (%s): added pdf form to pdf (node '%s' (%s)) fields: %s",
-                current_workflow.name, current_workflow.id, current_workflow_step.name, current_workflow_step.id, node.name, node.id, fields)
+                current_workflow.name, ustr(current_workflow.id), current_workflow_step.name, ustr(current_workflow_step.id), node.name, node.id, ustr(fields))
             
         elif pdf_form_separate and f_retrieve_path and os.path.isfile(f_retrieve_path):
             pages = fillPDFForm(f_retrieve_path, fields, input_is_fullpath=True, editable=pdf_fields_editable)
+            if pages == "":  # error in pdf creation -> forward to false operation
+                logg.error("workflowstep %s (%s): could not create pdf file - node: '%s' (%s)" %
+                           (current_workflow_step.name, ustr(current_workflow_step.id), node.name, node.id))
+                self.forward(node, False)
+                return
             importdir = getImportDir()
             try:
                 new_form_path = join_paths(importdir, "%s_%s" % (node.id, f_name))
@@ -301,10 +306,13 @@ class WorkflowStep_AddFormPage(WorkflowStep):
                     while os.path.isfile(new_form_path):
                         counter += 1
                         new_form_path = join_paths(importdir, "%s_%s_%s" % (node.id, counter, f_name))
+                # copy new file and remove tmp
                 shutil.copy(pages, new_form_path)
+                if os.path.exists(pages):
+                    os.remove(pages)
             except Exception:
                 logg.exception("workflowstep %s (%s): could not copy pdf form to import directory - node: '%s' (%s), import directory: '%s'",
-                             current_workflow_step.name, current_workflow_step.id, node.name, node.id, importdir)
+                             current_workflow_step.name, ustr(current_workflow_step.id), node.name, node.id, importdir)
             found = 0
             for fn in node.files:
                 if fn.abspath == new_form_path:
@@ -316,8 +324,8 @@ class WorkflowStep_AddFormPage(WorkflowStep):
 
             logg.info(
                 "workflow '%s' (%s), workflowstep '%s' (%s): added separate pdf form to node (node '%s' (%s)) fields: %s, path: '%s'",
-                current_workflow.name, current_workflow.id, current_workflow_step.name, 
-                current_workflow_step.id, node.name, node.id, fields, new_form_path)
+                current_workflow.name, ustr(current_workflow.id), current_workflow_step.name,
+                ustr(current_workflow_step.id), node.name, node.id, ustr(fields), new_form_path)
         else:
             logg.warning("workflowstep %s (%s): could not process pdf form - node: '%s' (%s)",
                            current_workflow_step.name, ustr(current_workflow_step.id), node.name, node.id)

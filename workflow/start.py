@@ -59,7 +59,8 @@ class WorkflowStep_Start(WorkflowStep):
 
         if "workflow_start" in req.params:
             switch_language(req, req.params.get('workflow_language'))
-            node = Node(name=u"", type=req.params.get('selected_schema'))
+            content_class = Node.get_class_for_typestring(req.params.get('selected_schema').split('/')[0])
+            node = content_class(name=u'', schema=req.params.get('selected_schema').split('/')[1])
             self.children.append(node)
 
             # create access rule with 'Workflow' user group

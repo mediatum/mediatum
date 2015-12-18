@@ -562,6 +562,7 @@ class Data(Node):
         return True
 
     def getFullView(self, language):
+        from schema.schema import Mask
         masks = self.metadatatype.filter_masks(masktype='fullview', language=language).all()
         if len(masks) > 1:
             for m in masks:
@@ -571,7 +572,7 @@ class Data(Node):
                 if m.getLanguage() in ["", "no"]:
                     return m
         elif len(masks) == 0:
-            return Node(u"", type="mask")
+            return Mask(u"")
         else:
             return masks[0]
 

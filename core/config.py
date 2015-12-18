@@ -146,6 +146,15 @@ def expand_paths():
             settings[confkey] = os.path.expanduser(settings[confkey])
 
 
+def fix_dirpaths():
+    for confkey in ["paths.datadir", "paths.tempdir"]:
+        if confkey in settings:
+            # we need the trailing slash because concatenation is used in some places in the codebase.
+            # XXX: remove this when all concatenations are replaced by os.path.join()!
+            if not settings[confkey].endswith("/"):
+                settings[confkey] += "/"
+
+
 def initialize(filepath=None):
     if not filepath:
         filepath = get_config_filepath()
@@ -163,6 +172,7 @@ def initialize(filepath=None):
 
     set_default_values()
     expand_paths()
+    fix_dirpaths()
 
     languages = [lang.strip() for lang in settings.get("i18n.languages", "en").split(",") if lang.strip()]
 

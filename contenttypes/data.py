@@ -36,9 +36,9 @@ from export.exportutils import runTALSnippet, default_context
 from web.services.cache import date2string as cache_date2string
 from core.database.postgres.node import children_rel
 from mock import MagicMock
+from sqlalchemy.orm import object_session
 
 logg = logging.getLogger(__name__)
-
 
 # for TAL templates from mask cache
 context = default_context.copy()
@@ -141,10 +141,10 @@ class Data(Node):
 
            :return: boolean
         '''
-        if self.get('system.prev_id') != '' and len(self.getChildren()) > 0 in [(c.get('system.next_id') != '') for c in self.getChildren()]:
+        if self.children.count() > 0:
             return True
         else:
-            return (self.get('system.prev_id') == '') or (len(self.getChildren()) > 0) in [(c.get('system.prev_id') != '') for c in self.getChildren()]
+            return len(self.children.all()) > 0 in self.children.all()
 
     def getFurtherDetailsCondition(self, req):
         '''checks if 'further details'
@@ -152,12 +152,15 @@ class Data(Node):
 
            :return: boolean
         '''
-        if len(tree.getNode(req.params.get('pid', self.id)).getChildren()) == 1:
+        s = object_session(self)
+        q = s.query
+
+        if q(Node).get((req.params.get('pid', self.id))).children.count() == 1:
             return False
-        if len(self.getParents()) > 0:
+        if self.parents.first() is not None:
             return True
         else:
-            return (self.get('system.prev_id') == '') or (len(self.getChildren()) > 0) in [(c.get('system.prev_id') != '') for c in self.getChildren()]
+            return len(self.children.all()) > 0 in self.children.all()
 
     def getParentInformation(self, req):
         '''sets diffrent used Information
@@ -166,33 +169,33 @@ class Data(Node):
            :param req: request object
            :return: dict parentInformation
         '''
-        parentInformation = MagicMock()
-        return parentInformation
+        s = object_session(self)
+        q = s.query
 
+        parentInformation = {}
         pid = req.params.get('pid', self.id)
-        sid = req.params.get('id', self.id)
+        parentInformation['parent_node_id'] = pid
+        from contenttypes.container import Container
 
-        if len(self.getChildren()) > 0 and self.type != 'directory' and self.type != 'collection':
-            parentInformation['parent_node_id'] = pid
-            parentInformation['children_list'] = [child for child in self.getChildren() if not child.get('system.next_id') != '']
+        if self.children.count() > 0 and not isinstance(self, Container):
+            parentInformation['children_list'] = self.children.all()
         else:
-            parentInformation['parent_node_id'] = re.split('\D', req.split_uri()[2].split('pid=')[-1])[0]
             parentInformation['children_list'] = []
-        if len([sib.id for sib in filter(lambda itm: str(itm.id) == parentInformation['parent_node_id'], self.getParents())]) != 0:
+        if len([sib.id for sib in self.parents.filter_by(id=req.params.get('pid', self.id)).all()]) != 0:
             parentInformation['parent_condition'] = True
-            parentInformation['siblings_list'] = [c for c in tree.getNode(pid).getChildren() if c.id != self.id ]
+            parentInformation['siblings_list'] = q(Node).get(pid).children.filter(Node.id is not self.id).all()
         else:
             parentInformation['parent_condition'] = False
-            parentInformation['siblings_list'] = tree.getNode(sid).getParents()[0].getChildren()
+            if len([p for p in self.parents]) > 0:
+                parentInformation['siblings_list'] = self.parents.first().children.all()
+            else:
+                parentInformation['siblings_list'] = []
 
-        if parentInformation['parent_node_id']:
-            pass
-        else:
-            parentInformation['parent_node_id'] = re.split('\D', req.split_uri()[2].split('pid=')[-1])[0]
-
-        parentInformation['paren_ex_dir&col'] = [id for id in self.getParents() if id.type != 'directory' and id.type != 'collection']
+        parentInformation['display_siblings'] = pid != self.id
+        parentInformation['parent_is_container'] = self.parents.filter(isinstance(self, Container)).all()
         parentInformation['details_condition'] = self.getDetailsCondition()
         parentInformation['further_details'] = self.getFurtherDetailsCondition(req)
+
         return parentInformation
 
     def show_node_big(self, req, template="", macro=""):

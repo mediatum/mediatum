@@ -22,10 +22,10 @@
     <div tal:define="versions python:node.tagged_versions.all()" tal:condition="python:len(versions)>1">
         <span onclick="$('#versions').toggle()" style="cursor:pointer" i18n:attributes="title document_versions_existing_title"><tal:block i18n:translate="document_versions">TEXT</tal:block> <img src="/img/greyarrow.gif"/></span>
             <div style="display:none;border:1px solid silver;padding:5px;" id="versions">
-                <div><tal:block i18n:translate="document_view_current_version_from">Current version:<br/><span i18n:name="version" tal:replace="python:'Version '+ versions[-1].tag">Version</span> from</tal:block> <tal:block tal:condition="python:node.get('updatetime') or node.get('creationtime')" tal:replace="python:node.getUpdatedDate()"></tal:block> <tal:block i18n:translate="document_view_by" /> <tal:block tal:replace="python:node.get('updateuser') and node.get('updateuser') or node.get('creator')" /></div>
+                <div><tal:block i18n:translate="document_view_current_version_from">Current version:<br/><span i18n:name="version" tal:replace="python:'Version {}'.format(versions[-1].tag)">Version</span> from</tal:block> <tal:block tal:condition="python:node.get('updatetime') or node.get('creationtime')" tal:replace="python:node.getUpdatedDate()"></tal:block> <tal:block i18n:translate="document_view_by" /> <tal:block tal:replace="python:node.get('updateuser') and node.get('updateuser') or node.get('creator')" /></div>
                 <div i18n:translate="document_view_other_versions_of_the_document">Other versions of the document:</div>
                 <div tal:repeat="v versions">
-                    <a href="/" tal:attributes="href python:node_url(v.id, v.tag)"><span tal:content="python:'Version ' + v.tag">Version</span>
+                    <a href="/" tal:attributes="href python:node_url(v.id, v.tag)"><span tal:content="python:'Version {}'.format(v.tag)">Version</span>
                     <span tal:condition="python:v.get('updatetime') or v.get('creationtime')">(<tal:block i18n:translate="document_view_from">from</tal:block> <tal:block tal:replace="python:v.getUpdatedDate()"></tal:block> <tal:block i18n:translate="document_view_by" /> <tal:block tal:replace="python:v.get('updateuser') and v.get('updateuser') or v.get('creator')" />)</span></a>
                 </div>
             </div>
@@ -34,34 +34,34 @@
 
 <div metal:define-macro="bothView" >
     <tal:block define="children python: parentInformation.get('children_list')">
-    <tal:block condition ="python: bool(len(children) > 0)">
+    <tal:block condition ="python: len(children) > 0">
             <span i18n:translate="details_colon" tal:condition="python: parentInformation.get('details_condition')">TEXT</span>
                 <tal:block tal:repeat="child children">
-                    <div tal:condition="python: child.id != node.id and child.isActiveVersion()">
-                        <div class="childnode" tal:condition="python:access.hasReadAccess(child)">
-                            <a tal:attributes="href python:'?id='+child.id +'&pid='+parentInformation.get('parent_node_id')" i18n:attributes="title details"><img tal:attributes="src python:'/thumbs/'+child.id"/></a>
+                    <div tal:condition="python:child.id!=node.id and child.isActiveVersion()">
+                        <div class="childnode" tal:condition="python:child.has_read_access()">
+                            <a tal:attributes="href python:'?id={}{}{}'.format(child.id, '&pid=', parentInformation.get('parent_node_id'))" i18n:attributes="title details"><img tal:attributes="src python:'/thumbs/{}'.format(child.id)"/></a>
                                 <br/>
                                 <small class="small_name">
                                     <span tal:content="python:child.getName()" tal:attributes="title python:child.getName()">TEXT</span>
                                 </small>
-                                <div class="morelink"><a tal:attributes="href python:'?id='+child.id +'&pid=' + parentInformation.get('parent_node_id')"><tal:block i18n:translate="details">TEXT</tal:block>...</a></div>
+                                <div class="morelink"><a tal:attributes="href python:'?id={}{}{}'.format(child.id, '&pid=', parentInformation.get('parent_node_id'))"><tal:block i18n:translate="details">TEXT</tal:block>...</a></div>
                         </div>
                     </div>
                 </tal:block>
     </tal:block>
-        <tal:block condition="python: len(parentInformation.get('paren_ex_dir&col')) > 0">
+        <tal:block condition="python: parentInformation.get('parent_is_container') > 0">
             <tal:block condition="python: len(children) == 0">
-                <div tal:define="siblings python: parentInformation.get('siblings_list')">
+                <div tal:define="siblings python: parentInformation.get('siblings_list')" tal:condition="python: parentInformation.get('display_siblings')">
                     <span i18n:translate="further_details_colon" tal:condition="python: parentInformation.get('further_details')">TEXT</span>
-                        <tal:block tal:repeat="sib siblings">
-                             <div tal:condition="python: sib.id != node.id and sib.isActiveVersion()">
-                                <div class="childnode" tal:condition="python:access.hasReadAccess(sib)">
-                                    <a tal:attributes="href python:'?id='+sib.id +'&pid='+parentInformation.get('parent_node_id')" i18n:attributes="title details"><img tal:attributes="src python:'/thumbs/'+sib.id"/></a>
+                        <tal:block tal:repeat="sib siblings" tal:condition="python: parentInformation.get('further_details')">
+                             <div tal:condition="python:sib.id!=node.id and sib.isActiveVersion()">
+                                <div class="childnode" tal:condition='python:sib.has_read_access()'>
+                                    <a tal:attributes="href python:'?id={}{}{}'.format(sib.id, '&pid=', parentInformation.get('parent_node_id'))" i18n:attributes="title details"><img tal:attributes="src python:'/thumbs/{}'.format(sib.id)"/></a>
                                     <br/>
                                     <small class="small_name">
                                         <span tal:content="python:sib.getName()" tal:attributes="title python:sib.getName()">TEXT</span>
                                     </small>
-                                    <div class="morelink"><a tal:attributes="href python:'?id='+sib.id+'&pid=' + parentInformation.get('parent_node_id')"><tal:block i18n:translate="details">TEXT</tal:block>...</a></div>
+                                    <div class="morelink"><a tal:attributes="href python:'?id={}{}{}'.format(sib.id, '&pid=', parentInformation.get('parent_node_id'))"><tal:block i18n:translate="details">TEXT</tal:block>...</a></div>
                                 </div>
                              </div>
                         </tal:block>
@@ -70,3 +70,4 @@
         </tal:block>
     </tal:block>
 </div>
+

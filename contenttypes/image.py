@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 """
  mediatum - a multimedia content repository
 
@@ -37,6 +39,8 @@ from contenttypes.data import Content
 from core.transition.postgres import check_type_arg_with_schema
 from core import File
 from core import db
+
+import lib.iptc.IPTC
 
 """ make thumbnail (jpeg 128x128) """
 
@@ -407,30 +411,13 @@ class Image(Content):
                     zoom.getImage(self.id, 1)
 
             # iptc
-            try:
-                from lib.iptc import IPTC
-                files = self.files
+            for file in self.files:
+                if file.type == "original":
 
-                for file in files:
-                    if file.type == "original":
-                        tags = IPTC.getIPTCValues(file.abspath)
-                        tags.keys().sort()
-                        for k in tags.keys():
-                            # skip unknown iptc tags
-                            if 'IPTC_' in k:
-                                continue
+                    tags = lib.iptc.IPTC.get_iptc_values(file.abspath, lib.iptc.IPTC.get_wanted_iptc_tags())
+                    for k in tags.keys():
+                        self.attrs[k] = tags[k]
 
-                            if any(tag in k for tag in unwanted_attrs):
-                                continue
-
-                            if isinstance(tags[k], list):
-                                tags[k] = ', '.join(tags[k])
-
-                            if tags[k] != "":
-                                self.set("iptc_" + k.replace(" ", "_"),
-                                         utf8_decode_escape(ustr(tags[k])))
-            except:
-                logg.exception("exception getting IPTC attributes")
 
             for f in self.files:
                 if f.base_name.lower().endswith("png") and f.type == "tmppng":
@@ -649,3 +636,47 @@ class Image(Content):
 
     def getDefaultEditTab(self):
         return "view"
+
+    def event_metadata_changed(self):
+        """ Handles metadata content if changed.
+            Creates a 'new' original [old == upload].
+        """
+        upload_file = None
+        original_path = None
+        original_file = None
+
+        for f in self.files:
+            if f.getType() == 'original':
+                original_file = f
+                if os.path.exists(f.abspath):
+                    original_path = f.abspath
+                if os.path.basename(original_path).startswith('-'):
+                    return
+
+            if f.type == 'upload':
+                if os.path.exists(f.abspath):
+                    upload_file = f
+
+        if not original_file:
+            logg.info('No original upload for writing IPTC.')
+            return
+
+        if not upload_file:
+            upload_path = '{}_upload{}'.format(os.path.splitext(original_path)[0], os.path.splitext(original_path)[-1])
+            import shutil
+            shutil.copy(original_path, upload_path)
+            self.files.append(File(upload_path, "upload", original_file.mimetype))
+            db.session.commit()
+
+        tag_dict = {}
+
+        for field in self.getMetaFields():
+            if field.get('type') == "meta" and field.getValueList()[0] != '' and 'on' in field.getValueList():
+                tag_name = field.getValueList()[0].split('iptc_')[-1]
+
+                field_value = self.get('iptc_{}'.format(field.getName()))
+
+                if field.getValueList()[0] != '' and 'on' in field.getValueList():
+                    tag_dict[tag_name] = field_value
+
+        lib.iptc.IPTC.write_iptc_tags(original_path, tag_dict)

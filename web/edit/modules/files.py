@@ -130,15 +130,47 @@ def getContent(req, ids):
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     if 'data' in req.params:
-        if req.params.get('data') == 'children':  # get formated list of childnodes of selected directory
-            req.writeTAL("web/edit/modules/files.html", {'children': node.children}, macro="edit_files_popup_children")
+        if 'data' in req.params:
+            from contenttypes.container import Container
+            if req.params.get('data') == 'children':  # get formated list of childnodes of selected directory
+                excludeid = str(req.params.get('excludeid', None))
+                if excludeid:
+                    grandchildren = []
+
+                    for child in node.getChildren():
+                        for grandchild in child.children.all():
+                            if not isinstance(grandchild, Container):
+                                grandchildren.append(grandchild)
+                    req.writeTAL("web/edit/modules/files.html", {'children': [c for c in node.children.all() if str(c.id) != excludeid],
+                                                                 'grandchildren': grandchildren}, macro="edit_files_popup_children")
+                else:
+                    grandchildren = []
+                    for child in node.children.all():
+                        for grandchild in child.children.all():
+                            if not isinstance(grandchild, Container):
+                                grandchildren.append(grandchild)
+                    req.writeTAL("web/edit/modules/files.html", {'children': [c for c in node.getChildren() if str(c.id) != excludeid],
+                                                                 'grandchildren': grandchildren}, macro="edit_files_popup_children")
+            elif req.params.get('data') =='grandchildren':
+                grandchildren = []
+                for child in node.children.all():
+                    if not isinstance(child, Container):
+                        for grandchild in child.children.all():
+                            if not isinstance(grandchild, Container):
+                                    grandchildren.append(grandchild)
+
+                if len(node.getChildren())==0:
+                    req.writeTAL("web/edit/modules/files.html", {'grandchildren': []}, macro="edit_files_popup_grandchildren")
+                else:
+                    req.writeTAL("web/edit/modules/files.html", {'grandchildren': grandchildren}, macro="edit_files_popup_grandchildren")
 
         if req.params.get('data') == 'additems':  # add selected node as children
             for childid in req.params.get('items').split(";"):
                 if childid.strip() != "":
                     childnode = q(Node).get(childid.strip())
                     for p in childnode.parents:
-                        p.children.remove(childnode)
+                        if isinstance(p, Container):
+                            p.children.remove(childnode)
                     node.children.append(childnode)
             req.writeTAL("web/edit/modules/files.html", {'children': node.children, 'node': node}, macro="edit_files_children_list")
 

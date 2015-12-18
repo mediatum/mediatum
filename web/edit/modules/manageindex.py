@@ -120,7 +120,7 @@ def getContent(req, ids):
             all_values = getAllAttributeValues(fieldname, scheme)
 
             def isChildOf(access, node, basenodeid):
-                for ls in getPaths(node, access):
+                for ls in getPaths(node):
                     if basenodeid in [unicode(n.id) for n in ls]:
                         return 1
                 return 0

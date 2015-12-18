@@ -117,3 +117,15 @@ msgstr "Befestigung Verzeichnis hinzugefügt"
 
 msgid "edit_files_new_version_attachment_comment"
 msgstr "Anhang hinzugefügt"
+
+msgid "edit_files_nodes_colon"
+msgstr "Elementknoten:"
+
+msgid "edit_files_children_colon"
+msgstr "Kindelemente:"
+
+msgid "edit_files_select_all_child"
+msgstr "alle Elementknoten wählen"
+
+msgid "edit_files_select_all_grand"
+msgstr "alle Kindelemente wählen"

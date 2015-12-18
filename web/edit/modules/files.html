@@ -144,7 +144,7 @@
                                     <td style="text-align:center"><input tal:condition="python:file.type not in ['original', 'image']" tal:attributes="name python:u'del|{}|{}'.format(file.type, file.getName())" type="image" src="/img/delete.png" onclick="return questionDelName('')"/>&nbsp;</td>
                                 </tr>
                                 <tr tal:repeat="file att">
-                                    <td tal:content="python:u' - {}'.format(file.type)"/>
+                                    <td tal:content="python:u' - {}'.format(file.filetype)"/>
                                     <td tal:content="python:file.getSize()"/>
                                     <td tal:content="python:file.mimetype"/>
                                     <td>

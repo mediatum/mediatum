@@ -71,7 +71,7 @@ def _finish_change(node, change_file, user, uploadfile, req):
             # no attachment directory existing
             file = importFile(uploadfile.filename, uploadfile.tempname)  # add new file
             file.mimetype = "inode/file"
-            file.type = "attachment"
+            file.filetype = "attachment"
             node.files.append(file)
         else:
             # import attachment file into existing attachment directory
@@ -184,7 +184,7 @@ def getContent(req, ids):
                 if key.startswith("del|"):
                     filename = key[4:-2].split("|")
                     for file in node.files:
-                        if file.base_name == filename[1] and file.type == filename[0]:
+                        if file.base_name == filename[1] and file.filetype == filename[0]:
                             # remove all files in directory
                             if file.mimetype == "inode/directory":
                                 for root, dirs, files in os.walk(file.abspath):

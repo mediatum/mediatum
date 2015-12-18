@@ -32,7 +32,7 @@ def getMappings():
     mappings = q(Mappings).scalar()
     if mappings is None:
         root = q(Root).one()
-        root.children.append(Node("mappings", "mappings"))
+        root.children.append(Mappings(u"mappings"))
         mappings = q(Mappings).one()
         db.session.commit()
 
@@ -70,9 +70,9 @@ def updateMapping(name, namespace="", namespaceurl="", description="", header=""
         mapping = q(Node).get(id)
     else:
         mappings = q(Mappings).one()
-        mapping = Node(name=name, type="mapping")
+        mapping = Mapping(name=name)
         mappings.children.append(mapping)
-    mapping.set("name", name)
+    mapping.name = name
     mapping.setDescription(description)
     mapping.setNamespace(namespace)
     mapping.setNamespaceUrl(namespaceurl)
@@ -96,9 +96,9 @@ def updateMappingField(parentid, name, description="", exportformat="", mandator
     if id != "" and int(id) > 0:
         mappingfield = q(Node).get(id)
     else:
-        mappingfield = Node(name=name, type="mappingfield")
+        mappingfield = MappingField(name=name)
         mapping.children.append(mappingfield)
-    mappingfield.set("name", name)
+    mappingfield.name = name
     mappingfield.setDescription(description)
     mappingfield.setExportFormat(exportformat)
     mappingfield.setMandatory(mandatory)
@@ -133,7 +133,7 @@ def importMapping(filename):
 
     mappings = q(Mappings).one()
     for m in importlist:
-        m.set("name", "import-" + m.getName())
+        m.name = u"import-" + m.getName()
         mappings.children.append(m)
     db.session.commit()
 

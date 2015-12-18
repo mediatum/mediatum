@@ -26,6 +26,7 @@ from core.translation import lang, t
 from core import Node
 from core import db
 from core.systemtypes import Mappings
+from schema.mapping import Mapping, MappingField
 
 q = db.query
 
@@ -195,18 +196,18 @@ def view(req):
 def editMapping_mask(req, id, err=0):
     if err == 0 and id == "":
         # new mapping
-        mapping = Node(u"", type="mapping")
+        mapping = Mapping(u"")
         db.session.commit()
     elif id != "":
         # edit mapping
         mapping = getMapping(id)
     else:
         # error while filling values
-        mapping = Node(u"", type="mapping")
-        mapping.set("name", req.params.get("name", ""))
-        mapping.setDescription(req.params.get("description", ""))
-        mapping.setNamespace(req.params.get("namespace", ""))
-        mapping.setNamespaceUrl(req.params.get("namespaceurl", ""))
+        mapping = Mapping(u"")
+        mapping.name = req.params.get("name", u"")
+        mapping.setDescription(req.params.get("description", u""))
+        mapping.setNamespace(req.params.get("namespace", u""))
+        mapping.setNamespaceUrl(req.params.get("namespaceurl", u""))
         mapping.setHeader(req.params.get("header"))
         mapping.setFooter(req.params.get("footer"))
         mapping.setSeparator(req.params.get("separator"))
@@ -274,17 +275,17 @@ def viewlist(req, id):
 def editMappingField_mask(req, id, parent, err=0):
     if err == 0 and id == "":
         # new mapping field
-        field = Node(u"", type="mappingfield")
+        field = MappingField(u"")
         db.session.commit()
     elif id != "":
         # edit mapping field
         field = q(Node).get(id)
     else:
         # error while filling values
-        field = Node(u"", type="mappingfield")
-        field.set("name", req.params.get("name", ""))
-        field.setDescription(req.params.get("description", ""))
-        field.setExportFormat(req.params.get("exportformat", ""))
+        field = MappingField(u"")
+        field.name = req.params.get("name", u"")
+        field.setDescription(req.params.get("description", u""))
+        field.setExportFormat(req.params.get("exportformat", u""))
         if "mandatory" in req.params.keys():
             field.setMandatory("True")
         db.session.commit()

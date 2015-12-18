@@ -83,11 +83,27 @@ class NodeMixin(object):
         return list(self.files)
 
     def get(self, key, default=u""):
+        """Returns a node attribute. Returns empty string by default if no value was found.
+        Attributes prefixed with 'system.' in older mediaTUM versions still can be fetched
+        with this method, but Node.system_attrs.get() without prefix should be used instead.
+        Note that Node.system_attrs.get() returns None as default, not empty string.
+        """
+        if key.startswith("system."):
+            warn("getting system. attribute with Node.get(), use Node.system_attrs.get()", DeprecationWarning)
+            return self.system_attrs.get(key[7:], default if default != u"" else None)
+
         return self.attrs.get(key, default)
 
     def set(self, key, value):
-        # warn("deprecated, use Node.attrs = "value" instead", DeprecationWarning)
-        self.attrs[key] = value
+        """Sets a node attribute.
+        Attributes prefixed with 'system.' in older mediaTUM versions still can be set
+        with this method, but Node.system_attrs[key] = value without prefix should be used instead.
+        """
+        if key.startswith("system."):
+            warn("setting system. attribute with Node.set(), use Node.system_attrs[key] = value", DeprecationWarning)
+            self.system_attrs[key[7:]] = value
+        else:
+            self.attrs[key] = value
 
     def getName(self):
         warn("deprecated, use Node.name instead", DeprecationWarning)

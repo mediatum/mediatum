@@ -264,7 +264,10 @@ def some_node(content_node, container_node, some_file):
     attrs = {
         u"testattr": u"testvalue"
     }
-    some_node = DirectoryFactory(name=u"somenode", attrs=attrs)
+    system_attrs = {
+        u"testattr": u"system.testvalue"
+    }
+    some_node = DirectoryFactory(name=u"somenode", attrs=attrs, system_attrs=system_attrs)
     parent = DirectoryFactory(name=u"parent")
     parent.children.append(some_node)
     some_node.children.extend([container_node, content_node])

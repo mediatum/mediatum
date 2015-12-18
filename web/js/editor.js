@@ -633,7 +633,7 @@ function updateNodeLabels(ids) {
             ajax_response = response;
             new_path_endpoint = response.key;
 
-            consoledb.log('edit_action_sync: $.ajax returns: '+response);
+            consoledb.log('edit_action_sync: $.ajax returns: ', response);
             consoledb.dir(response);
 
             if ('changednodes' in ajax_response) {

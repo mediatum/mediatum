@@ -130,9 +130,10 @@ def _handle_edit_metadata(req, ids, mask, maskname, nodes):
             # XXX: why check here?
             # if nodes:
             new_nodename = nodes[0].name
-            if old_nodename != new_nodename and isinstance(nodes[0], Container):
+            print '----> ', nodes[0].name, isinstance(nodes[0], Container), nodes[0].attrs
+            if ( len(nodes) == 1 or old_nodename != new_nodename) and isinstance(nodes[0], Container):
                 # for updates of node label in editor tree
-                flag_nodename_changed = ustr(node.id)
+                flag_nodename_changed = ustr(nodes[0].id)
 
     else:
         for field in mask.metaFields():

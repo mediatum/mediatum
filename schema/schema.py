@@ -1058,11 +1058,21 @@ class Mask(Node):
                 t = getMetadataType(field.get("type"))
 
                 if field.name in req.params.keys():
-                    value = t.format_request_value_for_db(field, req.params, field.name)
-                    node[field.name] = value
+                    if field.name == 'nodename':
+                        value = req.params.get('nodename')
+                        node.name = value
+                    else:
+                        value = t.format_request_value_for_db(field, req.params, field.name)
+                        node[field.name] = value
 
                 elif field.type == "check":
                     node[field.name] = 0
+
+                # handle multilang heritage
+                elif field.name == 'nodename' and translation.getDefaultLanguage() + '__nodename' in req.params.keys():
+                    value = req.params.get(translation.getDefaultLanguage() + '__nodename')
+                    node.name = value
+                    update_multilang_field(node, field, t, req)
 
                 else:
                     update_multilang_field(node, field, t, req)

@@ -343,7 +343,10 @@ def make_info_producer_access_rules(ruletype):
 INFO_PRODUCERS = OrderedDict([
     ("parents", lambda node: (u"{} {}:  {}".format(n.id, n.name, n.type) for n in node.parents)),
     ("children", lambda node: (u"{} {}:  {}".format(n.id, n.name, n.type) for n in node.children)),
-    ("attributes", lambda node: (u"{} = {}".format(name, value) for name, value in sorted(iteritems(node.attrs), key=lambda a: a[0]))),
+    ("attributes", lambda node: (u"{} = {}".format(name, value)
+                                 for name, value in sorted(iteritems(node.attrs), key=lambda a: a[0]))),
+    ("system_attributes", lambda node: (u"{} = {}".format(name, value)
+                                 for name, value in sorted(iteritems(node.system_attrs), key=lambda a: a[0]))),
     ("files", lambda node: (u"{} {} {}".format(a.path, a.filetype, a.mimetype) for a in node.files)),
     ("read_rules", make_info_producer_access_rules("read")),
     ("write_rules", make_info_producer_access_rules("write")),
@@ -426,6 +429,11 @@ class MediatumMagics(Magics):
     @line_magic("la")
     def list_attributes(self, line):
         print_info_for_category("attributes")
+
+    @line_magic("list_system_attributes")
+    @line_magic("lsa")
+    def list_system_attributes(self, line):
+        print_info_for_category("system_attributes")
 
     @line_magic("list_children")
     @line_magic("lc")

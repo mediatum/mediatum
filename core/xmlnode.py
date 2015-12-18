@@ -18,18 +18,15 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from core import Node
-import io
 import random
-import re
 import logging
-import codecs
 
 from lxml import etree
 from core import File, db
 from core.systemtypes import Mappings, Root
 from utils.compat import iteritems
-from core.transition import current_user
 from utils.xml import xml_remove_illegal_chars
+
 
 EXCLUDE_WORKFLOW_NEWNODES = True
 
@@ -117,6 +114,20 @@ def add_node_to_xmldoc(
     return xmlnode
 
 
+class HandlerTarget(object):
+    def start(self, tag, attrib):
+        logg.info("default handler start %s %r" % (tag, dict(attrib)))
+    def end(self, tag):
+        logg.info("default handler end %s" % tag)
+    def data(self, data):
+        logg.info("default handler data %r" % data)
+    def comment(self, text):
+        logg.info("default handler comment %s" % text)
+    def close(self):
+        logg.info("default handler close")
+        return "closed!"
+
+
 class _NodeLoader:
 
     def __init__(self, fi, verbose=True):
@@ -126,17 +137,25 @@ class _NodeLoader:
         self.id2node = {}
         self.verbose = verbose
         self.node_already_seen = False
-        p = expat.ParserCreate()
-        p.StartElementHandler = lambda name, attrs: self.xml_start_element(name, attrs)
-        p.EndElementHandler = lambda name: self.xml_end_element(name)
-        p.CharacterDataHandler = lambda d: self.xml_char_data(d)
+
+        handler = HandlerTarget()
+        handler.start = lambda name, attrs: self.xml_start_element(name, attrs)
+        handler.end = lambda name: self.xml_end_element(name)
+        handler.data = lambda d: self.xml_char_data(d)
+
+        parser = etree.XMLParser(target = handler)
+        if type(fi) in [unicode, str]:
+            xml = fi
+        elif type(fi) in [file]:
+            xml = fi.read()
+            fi.close()
+        else:
+            raise NotImplementedError()
         try:
-            p.ParseFile(fi)
-        except expat.ExpatError as e:
+            result = etree.XML(xml, parser)
+        except Exception as e:
             logg.exception("\tfile not well-formed in line %s, %s", e.lineno, e.offset)
             return
-        finally:
-            fi.close()
 
         mappings = q(Mappings).scalar()
         if mappings is None:
@@ -208,9 +227,9 @@ class _NodeLoader:
             self.node_already_seen = False
             parent = node
             try:
-                type = attrs["type"].encode("utf-8")
+                datatype = attrs["datatype"]
             except:
-                type = "directory"
+                datatype = "directory"
 
             if "id" not in attrs:
                 attrs["id"] = ustr(random.random())
@@ -221,56 +240,58 @@ class _NodeLoader:
                 node = self.id2node[old_id]
                 self.node_already_seen = True
                 return
-            elif type in ["mapping"]:
-                node = Node(name=(attrs["name"] + "_imported_" + old_id).encode("utf-8"), type=type)
+            elif datatype in ["mapping"]:
+                node = Node(name=(attrs["name"] + "_imported_" + old_id), type=datatype)
             else:
-                node = Node(name=attrs["name"].encode("utf-8"), type=type)
+                node = Node(name=attrs["name"], type=datatype)
             db.session.commit()
 
-            if "read" in attrs:
-                node.setAccess("read", attrs["read"].encode("utf-8"))
-            if "write" in attrs:
-                node.setAccess("write", attrs["write"].encode("utf-8"))
-            if "data" in attrs:
-                node.setAccess("data", attrs["data"].encode("utf-8"))
+            # todo: handle access
+
+            #if "read" in attrs:
+            #    node.setAccess("read", attrs["read"].encode("utf-8"))
+            #if "write" in attrs:
+            #    node.setAccess("write", attrs["write"].encode("utf-8"))
+            #if "data" in attrs:
+            #    node.setAccess("data", attrs["data"].encode("utf-8"))
 
             if self.verbose:
                 logg.info("created node '%s', '%s', '%s', old_id from attr='%s'", node.name, node.type, node.id, attrs["id"])
 
-            self.id2node[attrs["id"].encode("utf-8")] = node
+            self.id2node[attrs["id"]] = node
             node.tmpchilds = []
-            self.nodes += [node]
+            self.nodes.append(node)
             if self.root is None:
                 self.root = node
             db.session.commit()
             return
         elif name == "attribute" and not self.node_already_seen:
-            attr_name = attrs["name"].encode("utf-8")
+            attr_name = attrs["name"]
             if "value" in attrs:
                 if attr_name in ["valuelist"]:
-                    node.setAttribute(attr_name, attrs["value"].encode("utf-8").replace("\n\n", "\n").replace("\n", ";").replace(";;", ";"))
+                    node.setAttribute(attr_name, attrs["value"].replace("\n\n", "\n").replace("\n", ";").replace(";;", ";"))
                 else:
-                    node.setAttribute(attr_name, attrs["value"].encode("utf-8"))
+                    node.setAttribute(attr_name, attrs["value"])
             else:
                 self.attributename = attr_name
             db.session.commit()
 
         elif name == "child" and not self.node_already_seen:
-            id = u(attrs["id"])
-            node.tmpchilds += [id]
+            nid = attrs["id"]
+            node.tmpchilds += [nid]
         elif name == "file" and not self.node_already_seen:
             try:
-                type = attrs["type"].encode("utf-8")
+                datatype = attrs["type"]
             except:
-                type = None
+                datatype = None
 
             try:
-                mimetype = attrs["mime-type"].encode("utf-8")
+                mimetype = attrs["mime-type"]
             except:
                 mimetype = None
 
-            filename = attrs["filename"].encode("utf-8")
-            node.files.append(File(name=filename, type=type, mimetype=mimetype))
+            filename = attrs["filename"]
+            node.files.append(File(name=filename, type=datatype, mimetype=mimetype))
             db.session.commit()
 
     def xml_end_element(self, name):
@@ -294,27 +315,53 @@ class _NodeLoader:
                 val = ""
             if self.attributename in ["valuelist"]:
                 self.nodes[-1].set(self.attributename,
-                                   (val + data.encode("utf-8")).replace("\n\n", "\n").replace("\n", ";").replace(";;", ";"))
+                                   (val + data).replace("\n\n", "\n").replace("\n", ";").replace(";;", ";"))
             else:
-                self.nodes[-1].set(self.attributename, val + data.encode("utf-8"))
+                self.nodes[-1].set(self.attributename, val + data)
         db.session.commit()
 
 
+
 def readNodeXML(filename):
-    raise NotImplementedError()
+    try:
+        return _NodeLoader(open(filename, "rb")).root
+    except IOError:
+        return None
 
 
-def getNodeXML(node):
-    raise NotImplementedError()
-    fi.write('<?xml version="1.0" encoding="utf-8"?>' + "\n")
-    fi.write('<nodelist exportversion="%s" rootname="%s" roottype="%s" original_nodeid="%s">\n' %
-             (getInformation()["version"], node.name, node.type, ustr(node.id)))
-    exclude_children_types = []
-    if EXCLUDE_WORKFLOW_NEWNODES and node.type == 'workflow':
+def getNodeXML(
+        node,
+        children=True,
+        exclude_filetypes=[],
+        exclude_childtypes=[],
+        attribute_name_filter=None):
+
+    nodelist = create_xml_nodelist()
+
+    nodelist.set('rootname', node.name)
+    nodelist.set('roottype', node.type + "/" + node.schema)
+    nodelist.set('rootdatatype', node.type)
+    nodelist.set('rootschema', node.schema)
+    nodelist.set('original_nodeid', unicode(node.id))
+
+    from workflow.workflow import Workflow
+    if EXCLUDE_WORKFLOW_NEWNODES and isinstance(node, Workflow):
         for c in node.children:
             if c.type == "workflowstep_start":
                 newnodetypes = c.get("newnodetype").strip().split(";")
                 for newnodetype in newnodetypes:
-                    exclude_children_types.append(newnodetype)
-    writexml(node, fi, exclude_children_types=exclude_children_types)
-    fi.write("</nodelist>\n")
+                    if newnodetype not in exclude_childtypes:
+                        exclude_childtypes.append(newnodetype)
+
+    written = set()
+    add_node_to_xmldoc(
+        node,
+        nodelist,
+        written=written,
+        children=children,
+        exclude_filetypes=exclude_filetypes,
+        exclude_childtypes=exclude_childtypes,
+        attribute_name_filter=attribute_name_filter)
+
+    xmlstr = etree.tostring(nodelist, xml_declaration=True, pretty_print=True, encoding="utf8")
+    return xmlstr

@@ -37,20 +37,15 @@ from utils.date import format_date
 from utils.utils import u, getMimeType, OperationException
 from utils.fileutils import importFileFromData, importFile
 
+from core import Node, db, User
+from core.users import user_from_session, get_guest_user, getUser
+
+import core.oauth as oauth
+
+q = db.query
+s = db.session
 
 logg = logging.getLogger(__name__)
-
-host = "http://" + config.get("host.name", "")
-
-from web.services.cache import Cache
-
-FILTERCACHE_NODECOUNT_THRESHOLD = 2000000
-
-filtercache = Cache(maxcount=10, verbose=True)
-searchcache = Cache(maxcount=10, verbose=True)
-resultcache = Cache(maxcount=25, verbose=True)
-
-SEND_TIMETABLE = False
 
 
 def upload_new_node(req, path, params, data):
@@ -61,79 +56,90 @@ def upload_new_node(req, path, params, data):
     except KeyError:
         uploadfile = None
 
+    session_user = user_from_session(req.session)
+
     # get the user and verify the signature
-    if params.get('user'):
-        # user=users.getUser(params.get('user'))
-        #userAccess = AccessData(user=user)
-        _user = users.getUser(params.get('user'))
-        if not _user:  # user of dynamic
+    login_name = params.get('user')
+    parent_id = int(params.get('parent'))
+    datatype = params.get('type')
+    try:  # test metadata
+        metadata = json.loads(params.get('metadata'))
+    except ValueError as e:
+        metadata = dict()  # todo: log this
 
-            class dummyuser:  # dummy user class
-
-                # return all groups with given dynamic user
-                def getGroups(self):
-                    return [g.name for g in tree.getRoot('usergroups').getChildren() if g.get(
-                        'allow_dynamic') == '1' and params.get('user') in g.get('dynamic_users')]
-
-                def getName(self):
-                    return params.get('user')
-
-                def getDirID(self):  # unique identifier
-                    return params.get('user')
-
-                def isAdmin(self):
-                    return 0
-
-            _user = dummyuser()
-        userAccess = AccessData(user=_user)
-
-        if userAccess.user:
-            user = userAccess.user
-            if not userAccess.verify_request_signature(
-                    req.fullpath +
-                    '?',
-                    params):
-                userAccess = None
-        else:
-            userAccess = None
+    if login_name:
+        user = getUser(login_name)
+        if user:
+            flag_user_oauth_verified =  oauth.verify_request_signature(
+                req.fullpath +
+                '?',
+                params)
     else:
-        user = users.getUser(config.get('user.guestuser'))
-        userAccess = AccessData(user=user)
+        flag_user_oauth_verified = False
+        user = get_guest_user()
+    if user:
+        username = user.getName()
+    else:
+        username = None
+    entry_msg = "user: %r, username: %r, session_user: %r, parend_node_id: %r, datatype: %r, metadata: %r" % (login_name,
+                                                                                                username,
+                                                                                                session_user.getName(),
+                                                                                                parent_id,
+                                                                                                datatype,
+                                                                                                metadata)
+    logg.info("upload_new_node %s" % entry_msg)
 
-    parent = tree.getNode(params.get('parent'))
+    parent = q(Node).get(parent_id)
+    if not parent:
+        logg.info('no such node id: %r' % parent_id)
 
     # check user access
-    if userAccess and userAccess.hasAccess(parent, "write"):
+    if user and flag_user_oauth_verified and parent and parent.has_write_access(user=user):
         pass
     else:
-        s = "No Access"
-        req.write(s)
+        msg = "No Access"
+        req.write(msg)
         d = {
             'status': 'fail',
             'html_response_code': '403',
             'errormessage': 'no access'}
-        logg.error("user has no edit permission for node %s", parent)
-        return d['html_response_code'], len(s), d
+        logg.error("user %r has no edit permission for node %r" % (login_name, parent))
+        return d['html_response_code'], len(msg), d
 
-    datatype = params.get('type')
-    uploaddir = users.getUploadDir(user)
 
-    n = tree.Node(name=params.get('name'), type=datatype)
     if isinstance(uploadfile, types.InstanceType):  # file object used
+        filename = uploadfile.filename
         nfile = importFile(uploadfile.filename, uploadfile.tempname)
+
     else:  # string used
         nfile = importFileFromData(
             'uploadTest.jpg',
             base64.b64decode(uploadfile))
-    if nfile:
-        n.addFile(nfile)
-    else:
-        logg.error("error in file uploadservice")
+        filename = 'uploadTest.jpg'
 
-    try:  # test metadata
-        metadata = json.loads(params.get('metadata'))
-    except ValueError:
-        metadata = dict()
+    mimetype = getMimeType(filename)
+    typestring = mimetype[1]
+
+    if '/' in datatype:
+        typestring, schemastring = datatype.rplit('/', 1)  # override mimetype by user input
+    else:
+        schemastring = datatype
+        # todo: check user access to this schema
+
+    try:
+        content_class = Node.get_class_for_typestring(typestring)
+        n = content_class(name=filename, schema=schemastring)
+    except Exception as e:
+        msg = "failed to create node of type %r and schema %r" % (typestring, schemastring)
+        req.write(msg)
+        logg.exception(msg)
+        d = {
+            'status': 'fail',
+            'html_response_code': '403',
+            'errormessage': 'no access'}
+        return d['html_response_code'], len(msg), d
+
+    parent.children.append(n)
 
     # set provided metadata
     for key, value in metadata.iteritems():
@@ -143,72 +149,101 @@ def upload_new_node(req, path, params, data):
     n.set("creator", user.getName())
     n.set("creationtime", format_date())
 
-    parent.addChild(n)
+    db.session.commit()
 
-    # process the file, we've added to the new node
+    try:
+        n_id = n.id
+    except:
+        n_id = None
+
+    if nfile:
+        n.files.append(nfile)
+    else:
+        logg.error("error in file uploadservice")
+
+    db.session.commit()
+
     if hasattr(n, "event_files_changed"):
         try:
             n.event_files_changed()
-
         except OperationException as e:
             for file in n.getFiles():
                 if os.path.exists(file.retrieveFile()):
                     os.remove(file.retrieveFile())
             raise OperationException(e.value)
 
-    # make sure the new node is visible immediately from the web service and
-    # the search index gets updated
-    n.setDirty()
-    tree.remove_from_nodecaches(parent)
-
     d = {
         'status': 'Created',
         'html_response_code': '201',
         'build_response_end': time.time()}
-    s = "Created"
+
+    msg = "Created"
 
     # provide the uploader with the new node ID
-    req.reply_headers['NodeID'] = n.id
+    req.reply_headers['NodeID'] = str(n_id)
 
     # we need to write in case of POST request, send as buffer will not work
-    req.write(s)
+    req.write(msg)
 
-    return d['html_response_code'], len(s), d
+    logg.info("upload_new_node: OK %s" % entry_msg)
+
+    return d['html_response_code'], len(msg), d
 
 
 def update_node(req, path, params, data, id):
 
     # get the user and verify the signature
-    if params.get('user'):
-        user = users.getUser(params.get('user'))
-        userAccess = AccessData(user=user)
 
-        if userAccess.user:
-            valid = userAccess.verify_request_signature(req.fullpath, params)
-            if not valid:
-                userAccess = None
-        else:
-            userAccess = None
+    session_user = user_from_session(req.session)
+
+    # get the user and verify the signature
+    login_name = params.get('user')
+    node_name = params.get('name')
+    try:  # test metadata
+        metadata = json.loads(params.get('metadata'))
+    except ValueError as e:
+        metadata = dict()  # todo: log this
+
+    if login_name:
+        user = getUser(login_name)
+        if user:
+            flag_user_oauth_verified =  oauth.verify_request_signature(
+                req.fullpath +
+                '?',
+                params)
     else:
-        user = users.getUser('Gast')
-        userAccess = AccessData(user=user)
+        flag_user_oauth_verified = False
+        user = get_guest_user()
+    if user:
+        username = user.getName()
+    else:
+        username = None
+    entry_msg = "user: %r, username: %r, session_user: %r, node_id: %r, node_name: %r, metadata: %r" % (login_name,
+                                                                                        username,
+                                                                                        session_user.getName(),
+                                                                                        id,
+                                                                                        node_name,
+                                                                                        metadata)
+    logg.info("update_node %s" % entry_msg)
 
-    node = tree.getNode(id)
+    node = q(Node).get(id)
+    if not node:
+        logg.info('no such node id: %r' % id)
 
     # check user access
-    if userAccess and userAccess.hasAccess(node, "write"):
+    if user and flag_user_oauth_verified and node and node.has_write_access(user=user):
         pass
     else:
-        s = "No Access"
-        req.write(s)
+        msg = "No Access"
+        req.write(msg)
         d = {
             'status': 'fail',
             'html_response_code': '403',
             'errormessage': 'no access'}
-        return d['html_response_code'], len(s), d
+        logg.error("user %r has no edit permission for node %r" % (login_name, node))
+        return d['html_response_code'], len(msg), d
 
-    node.name = params.get('name')
-    metadata = json.loads(params.get('metadata'))
+    node.name = node_name
 
     # set provided metadata
     for key, value in metadata.iteritems():
@@ -217,7 +252,8 @@ def update_node(req, path, params, data, id):
     # service flags
     node.set("updateuser", user.getName())
     node.set("updatetime", format_date())
-    node.setDirty()
+
+    db.session.commit()
 
     d = {
         'status': 'OK',
@@ -229,6 +265,8 @@ def update_node(req, path, params, data, id):
     req.write(s)
 
     req.reply_headers['updatetime'] = node.get('updatetime')
+
+    logg.info("update_node: OK %s" % entry_msg)
 
     return d['html_response_code'], len(s), d
 

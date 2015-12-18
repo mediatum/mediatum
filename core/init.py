@@ -199,7 +199,6 @@ def init_modules():
     auth.init()
     from export import exportutils
     exportutils.init()
-    from core.plugins import init_plugins
 
 
 def add_ustr_builtin():
@@ -318,8 +317,8 @@ def _additional_init():
     validity.check_database()
     register_workflow()
     from core import plugins
-    plugins.init_plugins()
     init_modules()
+    plugins.init_plugins()
     check_undefined_nodeclasses()
     update_nodetypes_in_db()
     init_fulltext_search()

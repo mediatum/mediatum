@@ -12,11 +12,12 @@ from sqlalchemy.orm.session import object_session
 from sqlalchemy_utils.types import EmailType
 
 from core.database.postgres import DeclarativeBase, db_metadata
-from core.database.postgres import rel, C
+from core.database.postgres import rel, C, FK
 from core.database.postgres import TimeStamp, integer_fk, integer_pk
 from core import config
 from core.user import UserMixin
 from core.usergroup import UserGroupMixin
+from sqlalchemy.ext.associationproxy import association_proxy
 
 
 logg = logging.getLogger(__name__)
@@ -40,11 +41,6 @@ class AuthenticatorInfo(DeclarativeBase):
 
     __table_args__ = (UniqueConstraint(name, auth_type),)
 
-user_to_usergroup = Table("user_to_usergroup", db_metadata,
-                          integer_fk("user.id", name="user_id", primary_key=True),
-                          integer_fk("usergroup.id", name="usergroup_id", primary_key=True)
-                          )
-
 
 class UserGroup(DeclarativeBase, TimeStamp, UserGroupMixin):
 
@@ -59,6 +55,8 @@ class UserGroup(DeclarativeBase, TimeStamp, UserGroupMixin):
     is_editor_group = C(Boolean, server_default="false")
     is_workflow_editor_group = C(Boolean, server_default="false")
     is_admin_group = C(Boolean, server_default="false")
+
+    users = association_proxy("user_assocs", "user")
 
     def __repr__(self):
         return u"UserGroup<{} '{}'> ({})".format(self.id, self.name, object.__repr__(self)).encode("utf8")
@@ -102,7 +100,7 @@ class User(DeclarativeBase, TimeStamp, UserMixin):
 
     # relationships
     private_group = rel(UserGroup)
-    groups = rel(UserGroup, secondary=user_to_usergroup, backref='users')
+    groups = association_proxy("group_assocs", "usergroup")
     home_dir = rel("Directory", foreign_keys=[home_dir_id])
 
     authenticator_info = rel(AuthenticatorInfo)
@@ -166,6 +164,18 @@ class User(DeclarativeBase, TimeStamp, UserMixin):
         return u"User<{} '{}'> ({})".format(self.id, self.login_name, object.__repr__(self)).encode("utf8")
 
     __table_args__ = (UniqueConstraint(login_name, authenticator_id),)
+
+
+class UserToUserGroup(DeclarativeBase, TimeStamp):
+
+    __tablename__ = "user_to_usergroup"
+
+    user_id = C(FK(User.id, ondelete="CASCADE"), primary_key=True)
+    usergroup_id = C(FK(UserGroup.id, ondelete="CASCADE"), primary_key=True)
+    managed_by_authenticator = C(Boolean, server_default="false")
+
+    user = rel(User, backref="group_assocs")
+    usergroup = rel(UserGroup, backref="user_assocs")
 
 
 class OAuthUserCredentials(DeclarativeBase, TimeStamp):

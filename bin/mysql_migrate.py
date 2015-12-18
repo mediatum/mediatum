@@ -34,7 +34,7 @@ import tempfile
 sys.path.append(".")
 
 from sqlalchemy_continuum import remove_versioning
-from core import init
+from core import init, plugins
 from core.database.postgres.alchemyext import disable_triggers, enable_triggers
 from core.database.postgres.connector import read_and_prepare_sql
 from collections import OrderedDict
@@ -42,7 +42,8 @@ from bin.manage import vacuum_analyze_tables
 
 LOG_FILEPATH = os.path.join(tempfile.gettempdir(), "mediatum_mysql_migrate.log")
 
-init.full_init(root_loglevel=logging.INFO, log_filepath=LOG_FILEPATH)
+init.basic_init(root_loglevel=logging.INFO, log_filepath=LOG_FILEPATH)
+plugins.init_plugins()
 
 import core.database.postgres
 

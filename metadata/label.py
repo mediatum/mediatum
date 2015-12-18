@@ -76,13 +76,13 @@ class m_label(Metatype):
         if req.params.get("op", "") == "new":
             pidnode = q(Node).get(req.params.get("pid"))
             if pidnode.get("type") in ("vgroup", "hgroup"):
-                for field in pidnode.getAllChildren():
-                    if field.getType().getName() == "maskitem" and field.id != pidnode.id:
+                for field in pidnode.all_children:
+                    if field.type == "maskitem" and field.id != pidnode.id:
                         fields.append(field)
             else:
                 for m in metadatatype.getMasks():
                     if ustr(m.id) == ustr(req.params.get("pid")):
-                        for field in m.getChildren():
+                        for field in m.children:
                             fields.append(field)
         fields.sort(lambda x, y: cmp(x.getOrderPos(), y.getOrderPos()))
 

@@ -327,7 +327,8 @@ def validate(req, op):
                 # if the name contains wrong characters
                 return MaskDetails(req, req.params.get("parent", ""), req.params.get("morig_name", ""), err=4)
 
-            mtype = getMetaType(req.params.get("parent", ""))
+            from core.systemtypes import Metadatatypes
+            mtype = q(Metadatatype).filter_by(name=q(Node).get(req.params.get("parent", "")).name).one()
             if req.params.get("form_op") == "save_editmask":
                 mask = mtype.get_mask(req.params.get("mname", ""))
 

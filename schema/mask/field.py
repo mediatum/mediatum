@@ -23,6 +23,10 @@ from utils.strings import ensure_unicode
 from schema.schema import getMetaFieldTypeNames, getMetaFieldTypes, getMetadataType, VIEW_DATA_ONLY, VIEW_SUB_ELEMENT, VIEW_HIDE_EMPTY, VIEW_DATA_EXPORT, dateoption
 from core.translation import lang, translate
 from core.metatype import Metatype
+from core import db, Node
+
+q = db.query
+s = db.session
 
 
 class m_field(Metatype):
@@ -280,11 +284,12 @@ class m_field(Metatype):
 
         metadatatype = req.params.get("metadatatype")
         for t in metadatatype.getDatatypes():
-            node = tree.Node(type=t)
+            content_class = Node.get_class_for_typestring(t)
+            node = content_class(name=u'')
             attr.update(node.getTechnAttributes())
 
         if req.params.get("op", "") == "new":
-            pidnode = tree.getNode(req.params.get("pid"))
+            pidnode = q(Node).get(req.params.get("pid"))
             if hasattr(pidnode, 'getMasktype') and pidnode.getMasktype() in ("vgroup", "hgroup"):
                 for field in pidnode.getAllChildren():
                     if field.getType().getName() == "maskitem" and field.id != pidnode.id:
@@ -300,6 +305,7 @@ class m_field(Metatype):
         val = u""
         if item.getField():
             val = item.getField().getValues()
+            db.session.commit()
 
         for t in getMetaFieldTypeNames():
             f = getMetadataType(t)

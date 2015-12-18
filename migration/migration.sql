@@ -58,15 +58,27 @@ BEGIN
 
     -- migrate imported nodeattribute table to node.attrs
 
-
     UPDATE mediatum.node
     SET attrs=attrjson
-    FROM(SELECT nid, json_object(array_agg(name), array_agg(value))::jsonb as attrjson FROM mediatum_import.nodeattribute GROUP BY nid) q
+    FROM(SELECT nid, json_object(array_agg(name), array_agg(value))::jsonb as attrjson
+         FROM mediatum_import.nodeattribute
+         WHERE name NOT LIKE 'system.%'
+         GROUP BY nid) q
+    WHERE q.nid = mediatum.node.id;
+
+    -- old "system." attrs go to node.system_attrs without the prefix
+    UPDATE mediatum.node
+    SET system_attrs=attrjson
+    FROM(SELECT nid, json_object(array_agg(substring(name, 8)), array_agg(value))::jsonb as attrjson
+         FROM mediatum_import.nodeattribute
+         WHERE name LIKE 'system.%'
+         GROUP BY nid) q
     WHERE q.nid = mediatum.node.id;
 
     -- we want empty attrs objects for nodes without attributes. NULL doesn't make sense
 
     UPDATE mediatum.node SET attrs = '{}' where attrs is NULL;
+    UPDATE mediatum.node SET system_attrs = '{}' where system_attrs is NULL;
 
     -- original type is 'users', we need 'externalusers' in postgres to distinguish it from the users node
 

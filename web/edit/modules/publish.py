@@ -18,14 +18,8 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import core.users as users
-
-import web.edit
-
-from core.translation import t, lang
 from web.edit.edit_common import showdir
 from web.edit.edit import nodeIsChildOfNode
-from utils.utils import isDirectory
 from core.users import getHomeDir
 from core.transition import current_user
 import logging
@@ -42,7 +36,7 @@ def getInformation():
 def getContent(req, ids):
     user = current_user
     publishdir = q(Node).get(ids[0])
-    explicit = q(Node).filter(Node.write_access == user.login_name).all()
+    explicit = q(Collections).one().container_children.sort_by_orderpos()
     ret = ""
 
     actionerror = []
@@ -58,14 +52,22 @@ def getContent(req, ids):
         for obj_id in objlist:
             faultylist = []
             obj = q(Node).get(obj_id)
-            for mask in obj.getMasks(type="edit"): # check required fields
+            metadatatype = obj.metadatatype
+            mask_validated = False
+            for mask in metadatatype.getMasks(type="edit"): # check required fields
                 if mask.has_read_access() and mask.getName() == obj.get("edit.lastmask"):
                     for f in mask.validateNodelist([obj]):
                         faultylist.append(f)
+                    mask_validated = True
 
             if len(faultylist)>0: # object faulty
                 actionerror.append(obj_id)
                 continue
+
+            if not mask_validated:
+                msg = "user %r going to publish node %r without having validated edit.lastmask" % (user, obj)
+                logg.warning(msg)
+                # should we validate standard edit mask here?
 
             for dest_id in req.params.get("destination", "").split(","):
                 if not dest_id: # no destination given
@@ -75,6 +77,7 @@ def getContent(req, ids):
 
                 # XXX: this error handling should be revised, I think...
 
+                error = False
                 if not src.has_read_access():
                     logg.error("Error in publishing of node %r: source position %r has no read access.", obj.id, src.id)
                     error = True
@@ -118,8 +121,14 @@ def getContent(req, ids):
     stddir = ""
     stdname = ""
     l = []
+    users_homedir_id = getHomeDir(user).id
     for n in explicit:
-        if unicode(getHomeDir(user).id) != unicode(n):
+
+        if not n.has_write_access():
+            continue
+
+        # not needed anymore (?)
+        if unicode(users_homedir_id) != unicode(n):
             l.append(n)
 
     if len(l)==1:

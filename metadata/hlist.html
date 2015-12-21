@@ -8,7 +8,6 @@
     <div tal:attributes="style python:'width:{}px'.format(width-16)">
         <input type="text" tal:attributes="name python:'{}'.format(name); value python:value" style="display:none;"/>
     </div>
-    <!-- <script tal:content="python:'var startnode = {};\nvar attrname = \'{}\';\nvar attrfilter = \'{}\';\nvar pre = Object();\npre[\'{}\'] = {};'.format(startnode, name, attrname, str(name), str(value).split(';'))">TEXT</script>  -->
     <script tal:content="python:'var startnode = \'{}\';\nvar attrname = \'{}\';\nvar attrfilter = \'{}\';\nvar pre = Object();\npre[\'{}\'] = {};'.format(startnode, name, attrname, name, value.split(';'))">TEXT</script>
     <script type="text/javascript">
     $(function() {

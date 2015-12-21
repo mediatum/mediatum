@@ -55,21 +55,28 @@ class m_hlist(Metatype):
 
     def getPopup(self, req):
         children = dict()
+        attrfilter = req.args.get(u'attrfilter')
+        pidlist = req.args.get(u'id').split(u'|')
 
-        def getAllContainerChildren(node, nodes=list()):
+        def getAllContainerChildren(node, nodes=list(), attrfilter=attrfilter):
             for n in node.container_children:
                 nodes = getAllContainerChildren(n, nodes)
-            nodes.extend(filter(lambda c: c.get(req.args.get(u'attrfilter')) != u"", node.container_children))
+            nodes.extend(filter(lambda c: c and (c.get(attrfilter) != u""), node.container_children))
             return nodes
 
-        # try direct conteiner children
-        for child in filter(lambda c: c.get(req.args.get(u'attrfilter')) != u"", q(Node).get(req.args.get(u'id')).children):
+        # try direct container children
+        childlist = []
+        for _id in pidlist:
+            childlist.extend(filter(lambda c: c and (c.get(attrfilter) != u""), q(Node).get(_id).children))
 
+        for child in childlist:
             children[child.id] = child.getName()
+
         # if no direct children test all container children
         if len(children) == 0:
-            for child in getAllContainerChildren(q(Node).get(req.args.get(u'id'))):
-                children[child.id] = child.getName()
+            for _id in pidlist:
+                for child in getAllContainerChildren(q(Node).get(_id)):
+                    children[child.id] = child.getName()
 
         req.write(json.dumps(children))
         return httpstatus.HTTP_OK

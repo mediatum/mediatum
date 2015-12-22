@@ -47,7 +47,7 @@ def getContent(req, ids):
     v = {}
     v["basedirs"] = [q(Home).one(), q(Collections).one()]
     nid = req.params.get("id", q(Root).one().id)
-    v["script"] = "var currentitem = '%s';\nvar currentfolder = '%s'" % (id, id)
+    v["script"] = "var currentitem = '%s';\nvar currentfolder = '%s'" % (nid, nid)
     v["idstr"] = ",".join(ids)
     v["nodes"] = nodes
     v["t"] = t

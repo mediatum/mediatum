@@ -656,7 +656,7 @@ def fileIsNotEmpty(file):
 
 
 def mkContentNode(req):
-    id = req.args.get("id", get_collections_node().id)
+    id = req.params.get("id", get_collections_node().id)
     node = q(Node).get(id)
 
     if node is None:

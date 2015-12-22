@@ -189,7 +189,7 @@ def publish(req):
     if m:
         for a in m.group(2).split("/"):
             if a:
-                node = workflow_root.children.filter_by(name=a).scalar()
+                node = node.children.filter_by(name=a).scalar()
                 if node is None:
                     return 404
 

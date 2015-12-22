@@ -29,7 +29,7 @@ from web.services.serviceutils import attribute_name_filter
 logg = logging.getLogger(__name__)
 
 
-def buildNodeDescriptor(params, node, indent=None, written=None, children=True, children_access=None, parents=False):
+def buildNodeDescriptor(params, node, indent=None, written=None, children=True, parents=False):
     nd = []
     d = {}
     if written is None:
@@ -73,24 +73,21 @@ def buildNodeDescriptor(params, node, indent=None, written=None, children=True, 
     if children:
         nodedict['children'] = []
         for c in node.getChildren().sort_by_orderpos():
-            if (not children_access) or (children_access and children_access.hasAccess(c, 'read')):
-                nodedict['children'].append({'id': ustr(c.id), 'type': c.type, 'name': esc(c.name)})
+            nodedict['children'].append({'id': ustr(c.id), 'type': c.type, 'name': esc(c.name)})
 
     if parents:
         nodedict['parents'] = []
         for c in node.getParents().sort_by_orderpos():
-            if (not children_access) or (children_access and children_access.hasAccess(c, 'read')):
-                nodedict['parents'].append({'id': ustr(c.id), 'type': c.type, 'name': esc(c.name)})
+            nodedict['parents'].append({'id': ustr(c.id), 'type': c.type, 'name': esc(c.name)})
 
     nd.append(nodedict)
 
     if(children):
         for c in node.getChildren().sort_by_orderpos():
-            if (not children_access) or (children_access and children_access.hasAccess(c, 'read')):
-                if c.id not in written:
-                    written[c.id] = None
-                    childnodedict = buildNodeDescriptor(params, c, indent, children_access=children_access)
-                    nd.append(childnodedict)
+            if c.id not in written:
+                written[c.id] = None
+                childnodedict = buildNodeDescriptor(params, c, indent)
+                nd.append(childnodedict)
 
     nodeattributes_dict = {}
 

@@ -32,7 +32,6 @@ import core.config as config
 
 from .workflow import WorkflowStep, getNodeWorkflow, getNodeWorkflowStep, registerStep
 from core.translation import t, lang, addLabels
-from core.acl import AccessData
 from utils.utils import getMimeType
 from utils.fileutils import importFileToRealname
 from utils.date import format_date
@@ -107,7 +106,6 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
         check_context()
 
         user = users.getUserFromRequest(req)
-        access = AccessData(req)
 
         current_workflow = getNodeWorkflow(node)
         current_workflow_step = getNodeWorkflowStep(node)
@@ -603,7 +601,6 @@ def handle_request(req):
     errors = []
 
     user = users.getUserFromRequest(req)
-    access = AccessData(req)
 
     if not PYPDF_MODULE_PRESENT:
         return
@@ -627,6 +624,7 @@ def handle_request(req):
         if node.id not in current_workflow_step_children_ids:
             return 403  # forbidden
 
+        # XXX: WTF?!
         if False:  # and not access.hasAccess(node, "read"):
             req.params["addpic2pdf_error"] = "%s: %s" % (
                 format_date().replace('T', ' - '), t(lang(req), "admin_wfstep_addpic2pdf_no_access"))

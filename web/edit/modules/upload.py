@@ -39,14 +39,13 @@ from utils.fileutils import importFileToRealname, importFileRandom
 from schema.bibtex import importBibTeX, MissingMapping
 
 from core.acl import AccessData
-from schema.schema import loadTypesFromDB
 
 from core.translation import translate, lang, addLabels
 from core.translation import t as translation_t
 from core import db
 from contenttypes import Data
 from core import Node
-from schema.schema import Metadatatype
+from schema.schema import Metadatatype, get_permitted_schemas, get_permitted_schemas_for_datatype
 from sqlalchemy import func
 
 logg = logging.getLogger(__name__)
@@ -73,11 +72,6 @@ def elemInList(list, name):
 
 
 @dec_entry_log
-def getSchemes():
-    return q(Metadatatype).filter(Metadatatype.a.active == "1").filter_read_access()
-
-
-@dec_entry_log
 def getDatatypes(req, schemes):
     dtypes = []
     datatypes = Data.get_all_datatypes()
@@ -92,10 +86,6 @@ def getDatatypes(req, schemes):
                                  translate(y.__name__.lower(),
                                            request=req).lower()))
     return dtypes
-
-
-def getSchemesForType(datatype):
-    return [sc for sc in getSchemes() if datatype in sc.getDatatypes()]
 
 
 @dec_entry_log
@@ -222,7 +212,7 @@ def getContent(req, ids):
 
             mime = getMimeType(filename)
             scheme_type = {mime[1]: []}
-            for scheme in getSchemes():
+            for scheme in get_permitted_schemas():
                 if mime[1] in scheme.getDatatypes():
                     scheme_type[mime[1]].append(scheme)
                     # break
@@ -237,10 +227,10 @@ def getContent(req, ids):
 
         # add new object, only metadata
         if req.params.get('action') == "addmeta":
-            schemes = getSchemes()
+            schemes = get_permitted_schemas()
             dtypes = getDatatypes(req, schemes)
             if len(dtypes) == 1:  # load schemes for type
-                schemes = getSchemesForType(dtypes[0].__name__.lower())
+                schemes = get_permitted_schemas_for_datatype(dtypes[0].__name__.lower())
             content = req.getTAL('web/edit/modules/upload.html', {"datatypes": dtypes,
                                                                   "schemes": schemes,
                                                                   "language": lang(req),
@@ -253,7 +243,7 @@ def getContent(req, ids):
         # deliver schemes for given contenttype
         if req.params.get('action') == 'getschemes':
             ret = []
-            for scheme in getSchemesForType(req.params.get('contenttype')):
+            for scheme in get_permitted_schemas_for_datatype(req.params.get('contenttype')):
                 ret.append({'id': scheme.name, 'name': scheme.getLongName()})
             req.write(json.dumps({'schemes': ret}))
             return None
@@ -402,7 +392,7 @@ def getContent(req, ids):
 
             req.write(json.dumps(_d))
             return None
-    schemes = getSchemes()
+    schemes = get_permitted_schemas()
 
     node = q(Node).get(ids[0])
     v = {}
@@ -411,7 +401,7 @@ def getContent(req, ids):
         dtypes = []
 
         if node.has_write_access():
-            schemes = getSchemes()
+            schemes = get_permitted_schemas()
             dtypes = getDatatypes(req, schemes)
 
         if "globalsort" in req.params:
@@ -470,7 +460,7 @@ def mybasename(filename):
 def upload_filehandler(req):
     mime = getMimeType(req.params.get('file'))
     scheme_type = {mime[1]: []}
-    for scheme in getSchemes():
+    for scheme in get_permitted_schemas():
         if mime[1] in scheme.getDatatypes():
             scheme_type[mime[1]].append(scheme)
             # break
@@ -482,7 +472,7 @@ def upload_filehandler(req):
 def upload_to_filetype_filehandler(req):
     datatype = 'file'
     scheme_type = {datatype: []}
-    for scheme in getSchemes():
+    for scheme in get_permitted_schemas():
         if datatype in scheme.getDatatypes():
             scheme_type[datatype].append(scheme)
             # break
@@ -492,7 +482,7 @@ def upload_to_filetype_filehandler(req):
 
 @dec_entry_log
 def upload_ziphandler(req):
-    schemes = getSchemes()
+    schemes = get_permitted_schemas()
     files = []
     scheme_type = {}
     basenode = q(Node).get(req.params.get('id'))

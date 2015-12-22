@@ -111,6 +111,14 @@ def loadTypesFromDB():
     return list(q(Metadatatype).order_by("name"))
 
 
+def get_permitted_schemas():
+    return q(Metadatatype).filter(Metadatatype.a.active == "1").filter_read_access()
+
+
+def get_permitted_schemas_for_datatype(datatype):
+    return [sc for sc in get_metadatatypes_with_read_access() if datatype in sc.getDatatypes()]
+
+
 #
 # check if metatype with given name is still existing in db
 #

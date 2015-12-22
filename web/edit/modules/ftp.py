@@ -21,7 +21,7 @@ import os
 import core.acl as acl
 import core.config as config
 
-from schema.schema import loadTypesFromDB
+from schema.schema import get_permitted_schemas
 from core.translation import translate
 from core.transition import httpstatus, current_user
 from core import Node
@@ -108,7 +108,7 @@ def getContent(req, ids):
                 types.append(f.filetype)
 
     dtypes = {}
-    for scheme in filter(lambda x: x.isActive(), acl.AccessData(req).filter(loadTypesFromDB())):
+    for scheme in get_permitted_schemas():
         for dtype in scheme.getDatatypes():
             if dtype not in dtypes.keys():
                 dtypes[dtype] = []
@@ -142,7 +142,7 @@ def adduseropts(user):
     ret = []
     
     dtypes = {}
-    for scheme in filter(lambda x: x.isActive(), acl.AccessData(user=user).filter(loadTypesFromDB())):
+    for scheme in get_permitted_schemas():
         for dtype in scheme.getDatatypes():
             if dtype not in dtypes.keys():
                 dtypes[dtype] = []

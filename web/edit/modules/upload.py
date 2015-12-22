@@ -38,8 +38,6 @@ from utils.utils import join_paths, getMimeType, funcname, get_user_id, dec_entr
 from utils.fileutils import importFileToRealname, importFileRandom
 from schema.bibtex import importBibTeX, MissingMapping
 
-from core.acl import AccessData
-
 from core.translation import translate, lang, addLabels
 from core.translation import t as translation_t
 from core import db
@@ -92,7 +90,6 @@ def getDatatypes(req, schemes):
 def getContent(req, ids):
 
     user = users.getUserFromRequest(req)
-    access = AccessData(user=user)
     language = lang(req)
 
     if "action" in req.params:

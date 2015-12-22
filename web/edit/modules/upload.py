@@ -73,9 +73,8 @@ def elemInList(list, name):
 
 
 @dec_entry_log
-def getSchemes(req):
-    schemes = AccessData(req).filter(loadTypesFromDB())
-    return filter(lambda x: x.isActive(), schemes)
+def getSchemes():
+    return q(Metadatatype).filter(Metadatatype.a.active == "1").filter_read_access()
 
 
 @dec_entry_log
@@ -95,13 +94,8 @@ def getDatatypes(req, schemes):
     return dtypes
 
 
-def getSchemesforType(access, datatype):
-    schemes = access.filter(loadTypesFromDB())
-    ret = []
-    for scheme in filter(lambda x: x.isActive(), schemes):
-        if datatype in scheme.getDatatypes():
-            ret.append(scheme)
-    return ret
+def getSchemesForType(datatype):
+    return [sc for sc in getSchemes() if datatype in sc.getDatatypes()]
 
 
 @dec_entry_log
@@ -228,7 +222,7 @@ def getContent(req, ids):
 
             mime = getMimeType(filename)
             scheme_type = {mime[1]: []}
-            for scheme in getSchemes(req):
+            for scheme in getSchemes():
                 if mime[1] in scheme.getDatatypes():
                     scheme_type[mime[1]].append(scheme)
                     # break
@@ -243,10 +237,10 @@ def getContent(req, ids):
 
         # add new object, only metadata
         if req.params.get('action') == "addmeta":
-            schemes = getSchemes(req)
+            schemes = getSchemes()
             dtypes = getDatatypes(req, schemes)
             if len(dtypes) == 1:  # load schemes for type
-                schemes = getSchemesforType(access, dtypes[0].__name__.lower())
+                schemes = getSchemesForType(dtypes[0].__name__.lower())
             content = req.getTAL('web/edit/modules/upload.html', {"datatypes": dtypes,
                                                                   "schemes": schemes,
                                                                   "language": lang(req),
@@ -259,7 +253,7 @@ def getContent(req, ids):
         # deliver schemes for given contenttype
         if req.params.get('action') == 'getschemes':
             ret = []
-            for scheme in getSchemesforType(access, req.params.get('contenttype')):
+            for scheme in getSchemesForType(req.params.get('contenttype')):
                 ret.append({'id': scheme.name, 'name': scheme.getLongName()})
             req.write(json.dumps({'schemes': ret}))
             return None
@@ -408,7 +402,7 @@ def getContent(req, ids):
 
             req.write(json.dumps(_d))
             return None
-    schemes = getSchemes(req)
+    schemes = getSchemes()
 
     node = q(Node).get(ids[0])
     v = {}
@@ -417,7 +411,7 @@ def getContent(req, ids):
         dtypes = []
 
         if node.has_write_access():
-            schemes = getSchemes(req)
+            schemes = getSchemes()
             dtypes = getDatatypes(req, schemes)
 
         if "globalsort" in req.params:
@@ -476,7 +470,7 @@ def mybasename(filename):
 def upload_filehandler(req):
     mime = getMimeType(req.params.get('file'))
     scheme_type = {mime[1]: []}
-    for scheme in getSchemes(req):
+    for scheme in getSchemes():
         if mime[1] in scheme.getDatatypes():
             scheme_type[mime[1]].append(scheme)
             # break
@@ -488,7 +482,7 @@ def upload_filehandler(req):
 def upload_to_filetype_filehandler(req):
     datatype = 'file'
     scheme_type = {datatype: []}
-    for scheme in getSchemes(req):
+    for scheme in getSchemes():
         if datatype in scheme.getDatatypes():
             scheme_type[datatype].append(scheme)
             # break
@@ -498,7 +492,7 @@ def upload_to_filetype_filehandler(req):
 
 @dec_entry_log
 def upload_ziphandler(req):
-    schemes = getSchemes(req)
+    schemes = getSchemes()
     files = []
     scheme_type = {}
     basenode = q(Node).get(req.params.get('id'))

@@ -56,7 +56,7 @@ class UserGroup(DeclarativeBase, TimeStamp, UserGroupMixin):
     is_workflow_editor_group = C(Boolean, server_default="false")
     is_admin_group = C(Boolean, server_default="false")
 
-    users = association_proxy("user_assocs", "user")
+    users = association_proxy("user_assocs", "user", creator=lambda u: UserToUserGroup(user=u))
 
     def __repr__(self):
         return u"UserGroup<{} '{}'> ({})".format(self.id, self.name, object.__repr__(self)).encode("utf8")
@@ -100,7 +100,7 @@ class User(DeclarativeBase, TimeStamp, UserMixin):
 
     # relationships
     private_group = rel(UserGroup)
-    groups = association_proxy("group_assocs", "usergroup")
+    groups = association_proxy("group_assocs", "usergroup", creator=lambda ug: UserToUserGroup(usergroup=ug))
     home_dir = rel("Directory", foreign_keys=[home_dir_id])
 
     authenticator_info = rel(AuthenticatorInfo)

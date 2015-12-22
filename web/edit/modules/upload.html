@@ -885,7 +885,7 @@
     <div class="schema" tal:define="type python:schemes.keys()[0]"> <span i18n:translate="edit_upload_select_metadata_type">Select metadata type: </span>
         <select class="typesel" tal:attributes="name python:u'scheme_{}'.format(filename); id type" tal:condition="python:len(schemes[type])>1">
             <tal:block tal:repeat="scheme python:schemes[type]">
-                <option tal:attributes="value python:scheme.name" tal:content="python:scheme.name">TEXT</option>
+                <option tal:attributes="value python:scheme.name" tal:content="python:scheme.getLongName()">TEXT</option>
             </tal:block>
         </select>
         <tal:block tal:condition="python:len(schemes[type])==1" tal:replace="python:schemes[type][0].getLongName()"/>

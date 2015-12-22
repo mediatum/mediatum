@@ -109,10 +109,11 @@ def getLabel(req):
 def getPathTo(req):
     # returns path(s) to selected node, 'x' separated, with selected nodes in ()
     # parameters: pathTo=selected Node
-    access = AccessData(req)
     collectionsid = q(Collections).one().id
-    id = req.params.get("pathTo", collectionsid).split(",")[0]
-    node = q(Node).get(id)
+    nid = req.args.get("pathTo", collectionsid, type=int)
+    if not id:
+        raise ValueError("node id must be numeric, got '{}'".format(req.args.get("pathTo")))
+    node = q(Node).get(nid)
 
     items = []
     checked = []

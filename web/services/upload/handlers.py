@@ -31,7 +31,6 @@ from collections import OrderedDict
 import core.users as users
 
 from core import config
-from core.acl import AccessData
 
 from utils.date import format_date
 from utils.utils import u, getMimeType, OperationException

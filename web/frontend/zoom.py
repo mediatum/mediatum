@@ -20,9 +20,10 @@
 import logging
 import re
 import os
-from PIL import Image
+from PIL import Image as PILImage
 import zipfile
 import random
+from core import db, File
 import core.config as config
 from utils.lrucache import lru_cache
 
@@ -32,6 +33,8 @@ IMGNAME = re.compile("/?tile/([^/]*)(/(.*))?$")
 
 store = 1  # keep tiles?
 
+
+q = db.query
 
 def splitpath(path):
     m = IMGNAME.match(path)
@@ -47,7 +50,8 @@ TILESIZE = 256
 
 @lru_cache(maxsize=16)
 def getImage(nid, preprocess=0):
-    node = tree.getNode(nid)
+    from contenttypes import Image
+    node = q(Image).get(nid)
     img = ZoomImage(node, preprocess)
     import os
     if "MEDIATUM_EMBED_IPYTHON" in os.environ:
@@ -85,11 +89,11 @@ class ZoomImage:
         else:
             raise AttributeError("Not an image")
 
-        self.img = Image.open(filename)
+        self.img = PILImage.open(filename)
         tmpjpg = config.get("paths.datadir") + "tmp/img" + ustr(random.random()) + ".jpg"
         if self.img.mode == "CMYK" and (filename.endswith("jpg") or filename.endswith("jpeg")) or self.img.mode in ["P", "L"]:
             os.system("convert -quality 100 -draw \"rectangle 0,0 1,1\" %s %s" % (filename, tmpjpg))
-            self.img = Image.open(tmpjpg)
+            self.img = PILImage.open(tmpjpg)
         self.img.load()
         l = max(self.img.size)
         self.levels = 0
@@ -116,8 +120,9 @@ class ZoomImage:
             os.unlink(name)
         file.close()
         l = config.get("paths.datadir")
-        self.node.addFile(
-            tree.FileNode(name=self.filepath[len(l):] + u"/zoom{}.zip".format(self.node.id), mimetype="application/zip", type="zoom"))
+        file_obj = File(path=self.filepath[len(l):] + u"/zoom{}.zip".format(self.node.id), mimetype="application/zip", filetype="zoom")
+        self.node.files.append(file_obj)
+        db.session.commit()
 
     def getTile(self, level, x, y, generate=0):
         if level > self.levels:

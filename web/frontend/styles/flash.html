@@ -52,7 +52,7 @@ The document is displayed in the <a href="/" tal:attributes="href python:u'?id={
 <div tal:define="children python:[c for c in node.getChildren().sort_by_orderpos() if c.isActiveVersion()]" tal:condition="python:len(children)>0" style="width:100%">
     <p><tal:block i18n:translate="details">TEXT</tal:block>:</p>
     <tal:block tal:repeat="child children">
-        <div class="childnode" tal:condition="python:access.hasReadAccess(child)">
+        <div class="childnode" tal:condition="python:child.has_read_access()">
             <a tal:attributes="href python:u'?id={}'.format(child.id)" i18n:attributes="title details"><img tal:attributes="src python:u'/thumbs/{}'.format(child.id)"/></a>
             <br/>
             <small>
@@ -66,7 +66,7 @@ The document is displayed in the <a href="/" tal:attributes="href python:u'?id={
 <div tal:define="children python:[oc for oc in node.getParents()[0].getChildren() if oc.id != node.id and oc.isActiveVersion()]" tal:condition="python:len(children)>0" style="width:100%">
     <p><tal:block i18n:translate="details">TEXT</tal:block>:</p>
     <tal:block tal:repeat="child children">
-        <div class="childnode" tal:condition="python:access.hasReadAccess(child)">
+        <div class="childnode" tal:condition="python:child.has_read_access()">
             <a tal:attributes="href python:'?id='+child.id" i18n:attributes="title details"><img tal:attributes="src python:'/thumbs/'+child.id"/></a>
             <br/>
             <small>

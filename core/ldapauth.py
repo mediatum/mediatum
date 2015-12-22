@@ -21,7 +21,7 @@
 import logging
 import ldap
 
-from core import db, Node, User, UserGroup
+from core import db, Node, User, UserGroup, UserToUserGroup
 from core.auth import Authenticator
 import core.config as config
 from core.auth import AuthenticatorInfo
@@ -129,10 +129,17 @@ class LDAPAuthenticator(Authenticator):
 
         ldap_group_names = self.get_ldap_group_names(data)
 
-        # add group from LDAP if we have a mediaTUM usergroup with that name
-        # groups must be deleted manually if a user is no longer member of a group!
+        # remove authenticator-managed groups that are no longer present in LDAP
+        for group_assoc in user.group_assocs:
+            if group_assoc.managed_by_authenticator and group_assoc.usergroup.name not in ldap_group_names:
+                user.group_assocs.remove(group_assoc)
+
+        # add missing groups from LDAP if we have a mediaTUM usergroup with that name
         groups = q(UserGroup).filter(UserGroup.name.in_(ldap_group_names)).all()
-        user.groups.extend(groups)
+        for group in groups:
+            if group not in user.groups:
+                user.group_assocs.append(UserToUserGroup(usergroup=group, managed_by_authenticator=True))
+
         return groups
 
     def add_ldap_user(self, data, uname, authenticator_info):

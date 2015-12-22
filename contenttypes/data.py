@@ -200,7 +200,6 @@ class Data(Node):
 
     def show_node_big(self, req, template="", macro=""):
         mask = self.getFullView(lang(req))
-        access = acl.AccessData(req)
 
         if template == "":
             styles = getContentStyles("bigview", contenttype=self.getContentType())
@@ -212,7 +211,6 @@ class Data(Node):
                           {'node': self,
                            'metadata': mask.getViewHTML([self], VIEW_HIDE_EMPTY),
                            'format_size': format_filesize,
-                           'access': access,
                            'parentInformation': self.getParentInformation(req)
                           })
 

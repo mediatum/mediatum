@@ -20,7 +20,6 @@
 
 import core.acl as acl
 from core.translation import t, lang
-from core.acl import AccessData
 from contenttypes import data
 from schema.schema import VIEW_HIDE_EMPTY
 from contenttypes.data import Content
@@ -45,9 +44,8 @@ class Flash(Content):
         return "video"
 
     def _prepareData(self, req, words=""):
-        access = acl.AccessData(req)
         mask = self.getFullView(lang(req))
-        obj = {'deleted': False, 'access': access}
+        obj = {'deleted': False}
         node = self
         if self.get('deleted') == 'true':
             node = self.getActiveVersion()
@@ -82,7 +80,6 @@ class Flash(Content):
 
     """ popup window for actual nodetype """
     def popup_fullsize(self, req):
-        access = AccessData(req)
         if not self.has_data_access() or not self.has_read_access():
             req.write(t(req, "permission_denied"))
             return

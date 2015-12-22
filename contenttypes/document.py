@@ -26,7 +26,6 @@ import codecs
 from utils.utils import splitfilename, u, OperationException, utf8_decode_escape
 from schema.schema import VIEW_HIDE_EMPTY
 from core.translation import lang, t
-from core.acl import AccessData
 from core.styles import getContentStyles
 from lib.pdf import parsepdf
 from core.attachment import filebrowser

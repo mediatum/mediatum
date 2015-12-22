@@ -28,7 +28,6 @@ import os
 import hashlib
 
 from schema.schema import VIEW_HIDE_EMPTY
-from core.acl import AccessData
 from core.attachment import filebrowser
 from utils.fileutils import getImportDir
 from utils.utils import splitfilename, isnewer, iso2utf8, OperationException, utf8_decode_escape
@@ -529,7 +528,6 @@ class Image(Content):
 
     """ fullsize popup-window for image node """
     def popup_fullsize(self, req):
-        access = AccessData(req)
         d = {}
         svg = 0
         if (not self.has_data_access() and not dozoom(self)) or not self.has_read_access():
@@ -552,8 +550,6 @@ class Image(Content):
         req.writeTAL("contenttypes/image.html", d, macro="imageviewer")
 
     def popup_thumbbig(self, req):
-        access = AccessData(req)
-
         if (not self.has_data_access() and not dozoom(self)) or not self.has_read_access():
             req.write(t(req, "permission_denied"))
             return

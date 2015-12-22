@@ -27,7 +27,6 @@ import subprocess
 
 from utils.utils import splitfilename
 from utils.date import format_date, make_date
-from core.acl import AccessData
 from lib.flv.parse import FLVReader
 from contenttypes.image import makeThumbNail, makePresentationFormat
 from core.translation import lang, t
@@ -232,7 +231,6 @@ class Video(Content):
         def videoheight():
             int(self.get('vid-height') or 0) + 53
 
-        access = AccessData(req)
         if not self.has_data_access() or not self.has_read_access():
             req.write(t(req, "permission_denied"))
             return

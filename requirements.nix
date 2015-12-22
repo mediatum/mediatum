@@ -708,12 +708,24 @@ let
     doCheck = false;
   };
 
+  bibtexparser = self.buildPythonPackage {
+    name = "bibtexparser-0.6.1";
+    src = fetchurl {
+      url = "https://pypi.python.org/packages/source/b/bibtexparser/bibtexparser-0.6.1.tar.gz";
+      md5 = "9e1fa92ac059c6a75f7076965267c3f8";
+    };
+    propagatedBuildInputs = with self; [];
+    buildInputs = with self; [];
+    doCheck = false;
+  };
+
   imagemagick = pkgs.imagemagick.override { ghostscript = pkgs.ghostscript; };
 
 in {
   production = [
       # python deps
       alembic
+      bibtexparser
       coffeescript
       configargparse
       decorator

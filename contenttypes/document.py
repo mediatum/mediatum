@@ -169,7 +169,7 @@ class Document(Content):
                 tempdir = config.get("paths.tempdir")
 
                 try:
-                    pdfdata = parsepdf.parsePDF2(doc.abspath, tempdir)
+                    pdfdata = parsepdf.parsePDFExternal(doc.abspath, tempdir)
                 except parsepdf.PDFException as ex:
                     raise OperationException(ex.value)
                 with codecs.open(infoname, "rb", encoding='utf8') as fi:

@@ -24,7 +24,6 @@ import locale
 from mediatumtal import tal
 from utils.utils import esc
 from core.metatype import Metatype
-from core.acl import AccessData
 from core.transition import httpstatus
 from core import db
 from core import Node
@@ -85,7 +84,6 @@ class m_ilist(Metatype):
         return {"moduleversion": "1.1", "softwareversion": "1.1"}
 
     def getPopup(self, req):
-        access = AccessData(req)
         try:
             name = req.params['name']
             fieldname = req.params.get('fieldname', name)

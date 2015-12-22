@@ -31,7 +31,7 @@ import core.users as users
 
 from core.metatype import Metatype
 from core.translation import getDefaultLanguage, t, lang
-from core.acl import AccessData
+from core.acl import Data
 from utils.fileutils import importFileToRealname
 from core import Node
 from core import db
@@ -229,8 +229,6 @@ class m_upload(Metatype):
 def handle_request(req):
 
     user = users.getUserFromRequest(req)
-    access = AccessData(req)
-
     errors = []
 
     if "cmd" in req.params:
@@ -271,7 +269,7 @@ def handle_request(req):
             n = q(Node).get(targetnodeid)
             fs = n.files
 
-            if not access.hasAccess(n, 'data'):
+            if not n.has_data_access():
                 msg = "m_upload: no access for user '%s' to node %s ('%s', '%s') from '%s'" % (
                     user.name, n.id, n.name, n.type, ustr(req.ip))
                 logg.info(msg)
@@ -326,7 +324,7 @@ def handle_request(req):
             errors.append(msg)
             logg.error(msg)
 
-        if not access.hasAccess(targetnode, 'data'):
+        if not targetnode.has_data_access():
             msg = "m_upload: no access for user '%s' to node %s ('%s', '%s') from '%s'" % (
                 user.name, ustr(targetnode.id), targetnode.name, targetnode.type, ustr(req.ip))
             logg.error(msg)

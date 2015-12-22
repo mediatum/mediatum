@@ -12,7 +12,7 @@ from sqlalchemy.orm.session import object_session
 from sqlalchemy_utils.types import EmailType
 
 from core.database.postgres import DeclarativeBase, db_metadata
-from core.database.postgres import rel, C, FK
+from core.database.postgres import rel, C, FK, bref
 from core.database.postgres import TimeStamp, integer_fk, integer_pk
 from core import config
 from core.user import UserMixin
@@ -174,8 +174,8 @@ class UserToUserGroup(DeclarativeBase, TimeStamp):
     usergroup_id = C(FK(UserGroup.id, ondelete="CASCADE"), primary_key=True)
     managed_by_authenticator = C(Boolean, server_default="false")
 
-    user = rel(User, backref="group_assocs")
-    usergroup = rel(UserGroup, backref="user_assocs")
+    user = rel(User, backref=bref("group_assocs", passive_deletes=True, cascade="all, delete-orphan"))
+    usergroup = rel(UserGroup, backref=bref("user_assocs", passive_deletes=True, cascade="all, delete-orphan"))
 
 
 class OAuthUserCredentials(DeclarativeBase, TimeStamp):

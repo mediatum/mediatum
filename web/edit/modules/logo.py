@@ -42,7 +42,6 @@ logg = logging.getLogger(__name__)
 def getContent(req, ids):
     user = current_user
     node = q(Node).get(ids[0])
-    access = acl.AccessData(req)
 
     if "logo" in current_user.hidden_edit_functions or node.has_write_access():
         req.setStatus(httpstatus.HTTP_FORBIDDEN)

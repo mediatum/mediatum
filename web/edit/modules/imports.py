@@ -30,7 +30,6 @@ import schema.importbase as importbase
 from utils.utils import dec_entry_log
 from web.edit.edit_common import showdir
 from core.translation import lang, t
-from core.acl import AccessData
 from core.transition import httpstatus
 from core import db
 from core import Node

@@ -21,8 +21,7 @@
 
 import logging
 
-from core.acl import AccessData
-from schema.schema import loadTypesFromDB
+from schema.schema import get_permitted_schemas
 from core.translation import translate
 from core.transition import httpstatus, current_user
 from utils.utils import dec_entry_log
@@ -83,7 +82,7 @@ def getContent(req, ids):
 
     error = req.params.get("error")
 
-    schemes = [scheme for scheme in AccessData(req).filter(loadTypesFromDB()) if scheme.isActive()]
+    schemes = get_permitted_schemas()
     long_scheme_names = {scheme.name: scheme.getLongName() for scheme in schemes}
 
     # find allowed datatypes

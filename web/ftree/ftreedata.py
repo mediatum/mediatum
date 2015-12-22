@@ -18,7 +18,6 @@
 """
 import logging
 
-from core.acl import AccessData
 from web.frontend.content import getPaths
 from core.translation import translate
 from contenttypes import Collections
@@ -29,18 +28,15 @@ logg = logging.getLogger(__name__)
 q = db.query
 
 def getData(req):
-    access = AccessData(req)
     pid = req.params.get("parentId")
     style = req.params.get("style", "edittree")
     ret = []
 
-    for c in q(Node).get(pid).children.sort_by_orderpos():
-        if not access.hasReadAccess(c):
-            continue
+    for c in q(Node).get(pid).children.filter_read_access().order_by(Node.orderpos):
         try:
-            if c.isContainer():
-                cnum = len(c.container_children)
-                inum = len(c.content_children)
+            if isinstance(c, Container):
+                cnum = c.container_children.count()
+                inum = c.content_children.count()
 
                 label = c.getLabel()
                 title = label + " (" + unicode(c.id) + ")"

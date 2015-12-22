@@ -26,7 +26,7 @@ import core.acl as acl
 from web.edit.edit_common import showdir, showoperations
 from utils.utils import dec_entry_log
 from core.translation import translate, lang, t
-from schema.schema import loadTypesFromDB
+from schema.schema import get_permitted_schemas
 
 q = db.query
 
@@ -45,9 +45,6 @@ def getContent(req, ids):
         def __init__(self, label, value):
             self.label = label
             self.value = value
-
-    def getSchemes(_req):
-        return filter(lambda x: x.isActive(), acl.AccessData(_req).filter(loadTypesFromDB()))
 
     def getDatatypes(_req, _schemes):
         _dtypes = []
@@ -84,7 +81,7 @@ def getContent(req, ids):
 
         v = {"operations": showoperations(req, node), "items": showdir(req, node)}
         if node.has_write_access():
-            schemes = getSchemes(req)
+            schemes = get_permitted_schemas()
             dtypes = getDatatypes(req, schemes)
 
         col = node

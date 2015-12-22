@@ -5,7 +5,7 @@
 """
 from pytest import fixture, raises
 from core.ldapauth import LDAPAuthenticator, LDAPConfigError
-from core.test.factories import UserFactory, AuthenticatorInfoFactory
+from core.test.factories import UserFactory, AuthenticatorInfoFactory, UserGroupFactory
 import ldap
 
 BASE_DN = "OU=Users,OU=TEST,OU=TEST,DC=test,DC=example,DC=com"
@@ -18,7 +18,8 @@ USER_DATA = {'cn': ['testuser'],
              'mail': ['testuser' + USER_URL],
              'mail_adresses': ['testuser@example.com', '123@my.example.com'],
              'memberOf': ['CN=RESOURCE,OU=Resources,OU=TEST,OU=TEST,DC=test,DC=example,DC=com',
-                          'CN=TESTGROUP,OU=Groups,OU=TEST,OU=TEST,DC=test,DC=example,DC=com'],
+                          'CN=TESTGROUP,OU=Groups,OU=TEST,OU=TEST,DC=test,DC=example,DC=com'
+                          'CN=NOTINMEDIATUM,OU=Groups,OU=TEST,OU=TEST,DC=test,DC=example,DC=com',],
              'sn': ['User'],
              'telephoneNumber': ['+42 123456']}
 
@@ -89,3 +90,19 @@ def test_authenticate_credentials_unknown(fake_ldap_record, ldap_authenticator):
     user = UserFactory(login_name=u"testuser", authenticator_info=auth_info)
     ret = ldap_authenticator.authenticate_user_credentials(u"unknown", u"password")
     assert ret is None
+
+
+def test_get_ldap_group_names(fake_ldap_record, ldap_authenticator):
+    group_names = ldap_authenticator.get_ldap_group_names(USER_DATA)
+    assert group_names == set(["RESOURCE", "TESTGROUP"])
+
+
+def test_update_groups_from_ldap(fake_ldap_record, ldap_authenticator):
+    auth_info = AuthenticatorInfoFactory(auth_type=u"ldap", name=u"ldap", id=1)
+    user = UserFactory(login_name=u"testuser", authenticator_info=auth_info)
+    resource = UserGroupFactory(name="RESOURCE")
+    testgroup = UserGroupFactory(name="TESTGROUP")
+    # group NOTINMEDIATUM must not be added because it doesn't exist in the DB
+    groups = ldap_authenticator.update_groups_from_ldap(user, USER_DATA)
+    assert set(groups) == set([testgroup, resource])
+    assert set(user.groups) == set(groups)

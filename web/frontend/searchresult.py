@@ -232,8 +232,7 @@ def extended_search(req):
 
     logg.debug("extended_search with query '%s' on collection '%s'(%s)", searchquery, search_collection.name, search_collection.id)
 
-#     result = search_collection.search(searchquery).filter_read_access().all()
-    result = search_collection.content_children_for_all_subcontainers.filter(Node.id > 1200000)
+    result = search_collection.search(searchquery).filter_read_access()
 
     cl = ContentList(result, search_collection, readable_query)
     cl.feedback(req)

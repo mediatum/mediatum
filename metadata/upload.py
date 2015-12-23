@@ -31,7 +31,6 @@ import core.users as users
 
 from core.metatype import Metatype
 from core.translation import getDefaultLanguage, t, lang
-from core.acl import Data
 from utils.fileutils import importFileToRealname
 from core import Node
 from core import db

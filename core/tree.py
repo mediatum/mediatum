@@ -1421,7 +1421,6 @@ def initialize(load=1):
     global db, _root, testmode
     testmode = config.get("host.type", "") == "testing"
     db = database.getConnection()
-    db.applyPatches()
     if load:
         getRoot()
     global schema, subnodes, searchParser, searcher

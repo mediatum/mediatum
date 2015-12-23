@@ -44,10 +44,10 @@ class WorkflowStep_End(WorkflowStep):
 
         db.session.commit()
         if self.get("endtext") != "":
-            link = u"http://{}/pnode?id={}&key={}".format(config.get("host.name"),
+            link = u"https://{}/pnode?id={}&key={}".format(config.get("host.name"),
                                                           node.id,
                                                           node.get("key"))
-            link2 = u"http://{}/node?id={}".format(config.get("host.name"),
+            link2 = u"https://{}/node?id={}".format(config.get("host.name"),
                                                    node.id)
 
             return req.getTALstr(self.get("endtext"), {"node": node, "link": link, "link2": link2})

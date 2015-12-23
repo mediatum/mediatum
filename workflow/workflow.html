@@ -6,10 +6,10 @@
         <h2 i18n:translate="wf_edit_no_header" style="padding:30px 4px">TEXT</h2>
         <br/>&nbsp;
     </tal:block>
-    
+
     <tal:block tal:condition="python:len(list)>0">
         <h2 i18n:translate="wf_edit_header" style="padding:10px">TEXT</h2>
-        
+
         <table id="workflowtable" cellspacing="0px">
             <tbody>
                 <tr>
@@ -33,7 +33,7 @@
     <thead>
         <tr class="search">
             <th colspan="7" style="padding-top:20px;padding-bottom:20px">
-                <form method="post">
+                <form>
                     <tal:block i18n:translate="wf_edit_search"/>: <input tal:attributes="value search" type="text" name="workflow_search"/><button type="submit" i18n:translate="wf_edit_search">TEXT</button>
                 </form>
                 <p tal:condition="python:search!='' and len(items)==0" i18n:translate="wf_edit_nosearchresults"></p>
@@ -112,7 +112,7 @@
     <p i18n:translate="wf_step_msg1">
         TEXT
         <br/><span tal:content="python:u'{} {}'.format(node.id, node.name)" i18n:name="name"/>
-        TEXT 
+        TEXT
         <span tal:replace="link" i18n:name="link"/>.
     </p>
 
@@ -129,7 +129,7 @@
 </tal:block>
 
 <div metal:define-macro="workflow_show" id="workflow">
-    
+
     <div style="display:none" id="confirm_delete"  i18n:translate="workflow_confirm_msg_delete">TEXT</div>
     <div style="display:none" id="confirm_move"  i18n:translate="workflow_confirm_msg_move">TEXT</div>
     <script tal:content="python:u'var id={}'.format(step.id)"/>
@@ -185,7 +185,7 @@
                     .done(function(data)
                     {
                         $('#workflow').replaceWith($(data).find('#workflow'));
-                    }); 
+                    });
             }
             else
             {
@@ -212,7 +212,7 @@
                 });
                 allChecked = true;
             }
-        } 
+        }
     </script>
     <p>
     <span style="text-align:left"><a tal:attributes="href python:u'/publish/{}'.format(workflow.getName())" i18n:translate="workflow_back">TEXT</a></span>
@@ -277,7 +277,7 @@
 <tal:block metal:define-macro="workflow_forward">
     <h2 i18n:translate="wf_step_ready">TEXT</h2>
     <p i18n:translate="workflow_msg4">
-        TEXT <span tal:content="python:node.id" i18n:name="name"/> 
+        TEXT <span tal:content="python:node.id" i18n:name="name"/>
     </p>
 </tal:block>
 
@@ -286,7 +286,7 @@
     <h2 i18n:translate="wf_step_ready">TEXT</h2>
 
     <p i18n:translate="wf_step_msg1">TEXT<tal:block i18n:name="name"/></p>
-    
+
     <p i18n:translate="workflow_msg5">TEXT</p>
 
     <p i18n:translate="workflow_msg6">TEXT <span tal:content="email" i18n:name="email"/></p>

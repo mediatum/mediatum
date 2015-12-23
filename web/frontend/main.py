@@ -95,13 +95,13 @@ def display_alias(req):
     if match:
         alias_name = match.group(1).rstrip("/").lower()
         node_alias = q(NodeAlias).get(unicode(alias_name))
-        
+
         if node_alias is not None:
             new_nid = node_alias.nid
         else:
             # -1 is a node ID that's never found, this will just display 404
             new_nid = -1
-        
+
         req = overwrite_id_in_req(new_nid, req)
         # redirect to regular display handler
         display(req)
@@ -113,18 +113,18 @@ RE_NEWSTYLE_NODE_URL = re.compile("/(nodes/)?(\d+).*")
 
 
 def display_newstyle(req):
-    """Handles requests for new style frontend node URLs matching 
+    """Handles requests for new style frontend node URLs matching
     /nodes/<nid> OR
     /<nid> (can be interpreted as alias, too)
     """
     nodes_path, nid_or_alias = RE_NEWSTYLE_NODE_URL.match(req.path).groups()
     if nodes_path is None:
-        # check first if nid_or_alias is an alias 
+        # check first if nid_or_alias is an alias
         maybe_node_alias = q(NodeAlias).get(unicode(nid_or_alias))
         if maybe_node_alias is not None:
             # found matching alias, assume it's an alias
             return display_alias(req)
-    
+
     # either coming from /nodes/ or nid_or_alias is not a valid alias
     req = overwrite_id_in_req(nid_or_alias, req)
     return display(req)
@@ -215,7 +215,7 @@ def show_parent_node(req):
         return display_noframe(req)
 
     req.params["id"] = parent.id
-    req.params["obj"] = node.id
+    req.params["obj"] = str(node.id)
 
     content = getContentArea(req)
     content.content = ContentNode(parent)

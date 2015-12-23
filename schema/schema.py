@@ -112,11 +112,11 @@ def loadTypesFromDB():
 
 
 def get_permitted_schemas():
-    return q(Metadatatype).filter(Metadatatype.a.active == "1").filter_read_access()
+    return q(Metadatatype).filter(Metadatatype.a.active == "1").filter_read_access().all()
 
 
 def get_permitted_schemas_for_datatype(datatype):
-    return [sc for sc in get_metadatatypes_with_read_access() if datatype in sc.getDatatypes()]
+    return [sc for sc in get_permitted_schemas() if datatype in sc.getDatatypes()]
 
 
 #

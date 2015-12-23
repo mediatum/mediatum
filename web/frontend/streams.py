@@ -38,12 +38,6 @@ from schema.schema import existMetaField
 IMGNAME = re.compile("/?(attachment|doc|images|thumbs|thumb2|file|download|archive)/([^/]*)(/(.*))?$")
 
 
-def incUsage(node):
-    nr = int(node.get("hit_statistic.file") or "0")
-    nr += 1
-    node.set("hit_statistic.file", str(nr))
-
-
 def splitpath(path):
     m = IMGNAME.match(path)
     if m is None:
@@ -87,7 +81,6 @@ def send_rawimage(req):
         return 403
     for f in n.getFiles():
         if f.getType() == "original":
-            incUsage(n)
             return req.sendFile(f.retrieveFile(), f.getMimeType())
     return 404
 
@@ -106,7 +99,6 @@ def send_rawfile(req, n=None):
         return 403
     for f in n.getFiles():
         if f.getType() == "original":
-            incUsage(n)
             return req.sendFile(f.retrieveFile(n), f.getMimeType(n))
     return 404
 
@@ -180,7 +172,6 @@ def send_doc(req):
         return 403
     for f in n.getFiles():
         if f.getType() in ["doc", "document"]:
-            incUsage(n)
             return req.sendFile(f.retrieveFile(), f.getMimeType())
     return 404
 
@@ -212,7 +203,6 @@ def send_file(req, download=0):
     # try full filename
     for f in n.getFiles():
         if f.getName() == filename:
-            incUsage(n)
             file = f
             break
 
@@ -221,7 +211,6 @@ def send_file(req, download=0):
         file_ext = os.path.splitext(filename)[1]
         for f in n.getFiles():
             if os.path.splitext(f.getName())[1] == file_ext and f.getType() in ['doc', 'document', 'original', 'mp3']:
-                incUsage(n)
                 file = f
                 break
 

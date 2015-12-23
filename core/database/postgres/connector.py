@@ -196,9 +196,11 @@ class PostgresSQLAConnector(object):
         except Exception as e:
             return e
 
-        res = conn.execute("select version()")
+        res = conn.execute("SELECT version()")
         version = res.fetchone()
-        logg.info("db connection test succeeded, version is: %s", version[0])
+        res =  conn.execute("SHOW search_path")
+        search_path = res.fetchone()
+        logg.info("db connection test succeeded, search_path is '%s', version is: '%s'", search_path[0], version[0])
         conn.close()
 
     def check_db_structure_validity(self):

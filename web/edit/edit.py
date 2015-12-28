@@ -785,23 +785,25 @@ def content(req):
         if logg.isEnabledFor(logging.DEBUG):
             logg.debug("... %s inside %s.%s: -> display current images: items: %s",
                        get_user_id(req), __name__, funcname(), [_t[0] for _t in items])
-        try:
-            n = q(Data).get(req.params.get('src', req.params.get('id')))
-            if current == 'metadata' and 'save' in req.params:
-                pass
-            s = []
-            while n:
-                s = ['<a onClick="activateEditorTreeNode(%r); return false;" href="/edit/edit_content?id=%s">%s</a>' %
-                     (n.id, n.id, n.getLabel(lang=language))] + s
 
-                p = n.parents
-                if p and not isinstance(p[0], Root):
-                    n = p[0]
-                else:
-                    n = None
-            v["dircontent"] = ' <b>&raquo;</b> '.join(s)
-        except:
-            logg.exception('ERROR displaying current images, exception ignored')
+        nid = req.params.get('src', req.params.get('id'))
+        if nid is None:
+            raise ValueError("invalid request, neither 'src' not 'id' parameter is set!")
+
+        n = q(Data).get(nid)
+        if current == 'metadata' and 'save' in req.params:
+            pass
+        s = []
+        while n:
+            s = ['<a onClick="activateEditorTreeNode(%r); return false;" href="/edit/edit_content?id=%s">%s</a>' %
+                 (n.id, n.id, n.getLabel(lang=language))] + s
+
+            p = n.parents
+            if p and not isinstance(p[0], Root):
+                n = p[0]
+            else:
+                n = None
+        v["dircontent"] = ' <b>&raquo;</b> '.join(s)
 
     else:  # or current directory
         n = q(Data).get(long(ids[0]))

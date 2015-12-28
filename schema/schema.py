@@ -1273,8 +1273,6 @@ class Mask(Node):
         return False
 
     def getLanguage(self):
-        if self.get("language") == "":
-            return "no"
         return self.get("language")
 
     def setLanguage(self, value):

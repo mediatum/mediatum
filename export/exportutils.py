@@ -27,13 +27,12 @@ import logging
 
 from mediatumtal import tal
 import core.config as config
-import core.users as users
 
 import utils.date as date
 
 from utils.utils import esc, u, u2, esc2, utf82iso, iso2utf8
 from utils.date import parse_date, format_date
-from core.acl import AccessData
+from core.users import get_guest_user
 
 logg = logging.getLogger(__name__)
 
@@ -73,11 +72,11 @@ def getAccessRights(node):
         l_date = parse_date(node.get('updatetime'))
     except:
         l_date = date.now()
-    guestAccess = AccessData(user=users.getUser('Gast'))
+    guest_user = get_guest_user()
     if date.now() < l_date:
         return "embargoedAccess"
-    elif guestAccess.hasAccess(node, 'read'):
-        if guestAccess.hasAccess(node, 'data'):
+    elif node.has_read_access(user=guest_user):
+        if node.has_data_access(user=guest_user):
             return "openAccess"
         else:
             return "restrictedAccess"
@@ -282,3 +281,5 @@ def handleCommand(cmd, var, s, node, attrnode=None, field_value="", options=[], 
         result = runTALSnippet(s, context, mask)
 
         return result.replace("[" + var + "]", "")
+
+

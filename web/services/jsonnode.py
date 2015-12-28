@@ -53,8 +53,7 @@ def buildNodeDescriptor(params, node, indent=None, written=None, children=True, 
     #
 
     if mask == 'default':
-        maskcachetype = params.get('maskcache', 'deep')  # 'deep', 'shallow', 'none'
-        nodedict['defaultexport'] = node.show_node_text(labels=1, language=params.get('lang', ''), cachetype=maskcachetype)
+        nodedict['defaultexport'] = node.show_node_text(labels=1, language=params.get('lang', ''))
         # except:
         #    logg.error('Error: web.services.jsonnode: could not get default mask content')
         #    nodedict['defaultexport'] = []
@@ -100,7 +99,7 @@ def buildNodeDescriptor(params, node, indent=None, written=None, children=True, 
         lookup_key = make_lookup_key(node, language=language, labels=False)
         if lookup_key not in maskcache:
             # fill cache
-            node.show_node_text(labels=False, language=language, cachetype='deep')
+            node.show_node_text(labels=False, language=language)
 
         field_descriptors = get_maskcache_entry(lookup_key)
 

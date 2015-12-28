@@ -45,19 +45,12 @@ context = default_context.copy()
 ### XXX: does this work without hostname? Can we remove this?
 context['host'] = "http://" + config.get("host.name", "")
 
-DEFAULT_MASKCACHE = 'deep'  # 'deep' | 'shallow' | None
-# remark 2013-09-18 wn: only deep cache compatible with multilingual text/memo/htmlmemo fields
-
 
 def init_maskcache():
-    global maskcache, maskcache_shallow, maskcache_accesscount, maskcache_msg
-# for deep mask caching
-maskcache = {}
-maskcache_accesscount = {}
-maskcache_msg = '| cache initialized %s\r\n|\r\n' % cache_date2string(time.time(), '%04d-%02d-%02d-%02d-%02d-%02d')
-
-# for shallow mask caching
-maskcache_shallow = {}
+    global maskcache, maskcache_accesscount, maskcache_msg
+    maskcache = {}
+    maskcache_accesscount = {}
+    maskcache_msg = '| cache initialized %s\r\n|\r\n' % cache_date2string(time.time(), '%04d-%02d-%02d-%02d-%02d-%02d')
 
 
 def get_maskcache_report():
@@ -72,11 +65,10 @@ def get_maskcache_report():
 
 def flush_maskcache(req=None):
     from core import users
-    global maskcache, maskcache_accesscount, maskcache_shallow, maskcache_msg
+    global maskcache, maskcache_accesscount, maskcache_msg
     logg.info("going to flush maskcache, content is: \r\n%s", get_maskcache_report())
     maskcache = {}
     maskcache_accesscount = {}
-    maskcache_shallow = {}
     if req:
         user = users.getUserFromRequest(req)
         logg.info("flush of masks cache triggered by user %s with request on '%s'", user.login_name, req.path)
@@ -218,54 +210,11 @@ class Data(Node):
         return tal.getTAL(
             "contenttypes/data.html", {'children': self.getChildren().sort_by_orderpos(), 'node': self}, macro="show_node_image")
 
-    def show_node_text(self, words=None, language=None, separator="", labels=0, cachetype=DEFAULT_MASKCACHE):
-        if cachetype not in ['shallow', 'deep']:
-            return self.show_node_text_orignal(words=words, language=language, separator=separator, labels=labels)
-        elif cachetype == 'deep':
-            return self.show_node_text_deep(words=words, language=language, separator=separator, labels=labels)
-        else:
-            return self.show_node_text_shallow(words=words, language=language, separator=separator, labels=labels)
 
-    """ format preview node text """
-    # original
+    def show_node_text(self, words=None, language=None, separator="", labels=0):
+        return self.show_node_text_deep(words=words, language=language, separator=separator, labels=labels)
 
-    def show_node_text_orignal(self, words=None, language=None, separator="", labels=0):
-        if separator == "":
-            separator = u"<br/>"
-        metatext = list()
-        mask = self.getMask(u"nodesmall")
-        for m in self.getMasks(u"shortview", language=language):
-            mask = m
 
-        if mask:
-            fields = mask.getMaskFields()
-            for field in mask.getViewHTML([self], VIEW_DATA_ONLY, language=language, mask=mask):
-                if len(field) >= 2:
-                    value = field[1]
-                else:
-                    value = ""
-
-                if words is not None:
-                    value = highlight(value, words, '<font class="hilite">', "</font>")
-
-                if value:
-                    if labels:
-                        for f in fields:
-                            if f.getField().getName() == field[0]:
-                                metatext.append("<b>%s:</b> %s" % (f.getLabel(), value))
-                                break
-                    else:
-                        if field[0].startswith("author"):
-                            value = '<span class="author">%s</span>' % value
-                        if field[0].startswith("subject"):
-                            value = '<b>%s</b>' % value
-                        metatext.append(value)
-        else:
-            metatext.append('&lt;smallview mask not defined&gt;')
-
-        return separator.join(metatext)
-
-    # deep caching
     def show_node_text_deep(self, words=None, language=None, separator="", labels=0):
 
         def render_mask_template(node, mfs, words=None, separator="", skip_empty_fields=True):
@@ -445,103 +394,6 @@ class Data(Node):
 
         return res
 
-
-    # shallow caching
-    def show_node_text_shallow(self, words=None, language=None, separator="", labels=0):
-        global maskcache_shallow
-
-        def render_mask_template(node, mfs, words=None, separator=""):
-            mask, fields, labels_data = mfs
-            metatext = list()
-
-            for field in mask.getViewHTML([node], VIEW_DATA_ONLY, language=language, mask=mask):
-                if len(field) >= 2:
-                    value = field[1]
-                else:
-                    value = ""
-
-                if words is not None:
-                    value = highlight(value, words, '<font class="hilite">', "</font>")
-
-                if value:
-                    if labels:
-                        for f, f_name, f_label in labels_data:
-                            if f_name == field[0]:
-                                metatext.append("<b>%s:</b> %s" % (f_label, value))
-                                break
-                    else:
-
-                        if field[0].startswith("author"):
-                            value = '<span class="author">%s</span>' % value
-                        if field[0].startswith("subject"):
-                            value = '<b>%s</b>' % value
-                        metatext.append(value)
-
-            return separator.join(metatext)
-
-        if not separator:
-            separator = "<br/>"
-
-        lookup_key = make_lookup_key(self, language, labels)
-
-        if lookup_key in maskcache_shallow:
-            mfs = maskcache_shallow[lookup_key]
-            return render_mask_template(self, mfs, words=words, separator=separator)
-        else:
-            # this list will be cached
-            to_be_cached = []
-
-            metatext = list()
-            mask = self.getMask("nodesmall")
-            for m in self.getMasks("shortview", language=language):
-                mask = m
-
-            if mask:
-                fields = mask.getMaskFields()
-
-                #####
-                def getNodeAttributeName(field):
-                    metafields = [x for x in field.getChildren() if x.type == 'metafield']
-                    if len(metafields) != 1:
-                        logg.error("maskfield %s zero or multiple metafield child(s)", field.id)
-                    return metafields[0].name
-                #####
-
-                if labels:
-                    labels_data = [(f, f.getField().getName(), f.getLabel()) for f in fields]
-                else:
-                    pass
-                    labels_data = []
-
-                for field in mask.getViewHTML([self], VIEW_DATA_ONLY, language=language, mask=mask):
-                    if len(field) >= 2:
-                        value = field[1]
-                    else:
-                        value = ""
-
-                    if words is not None:
-                        value = highlight(value, words, '<font class="hilite">', "</font>")
-
-                    if value:
-                        if labels:
-                            for f, f_name, f_label in labels_data:
-                                if f_name == field[0]:
-                                    metatext.append("<b>%s:</b> %s" % (f_label, value))
-                                    break
-                        else:
-
-                            if field[0].startswith("author"):
-                                value = '<span class="author">%s</span>' % value
-                            if field[0].startswith("subject"):
-                                value = '<b>%s</b>' % value
-                            metatext.append(value)
-
-                to_be_cached = [mask, fields, labels_data]
-                maskcache_shallow[lookup_key] = to_be_cached
-
-            else:
-                metatext.append('&lt;smallview mask not defined&gt;')
-            return separator.join(metatext)
 
     @classmethod
     def isContainer(cls):

@@ -114,8 +114,8 @@ class WorkflowStep_SendEmail(WorkflowStep):
         return 1
 
     def runAction(self, node, op=""):
-        link = "http://%s/pnode?id=%s&key=%s" % (config.get("host.name"), node.id, node.get("key"))
-        link2 = "http://%s/node?id=%s" % (config.get("host.name"), node.id)
+        link = "https://%s/pnode?id=%s&key=%s" % (config.get("host.name"), node.id, node.get("key"))
+        link2 = "https://%s/node?id=%s" % (config.get("host.name"), node.id)
         attrs = {"node": node, "link": link, "publiclink": link2}
         try:
             if "@" in self.get('from'):

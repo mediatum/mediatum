@@ -20,7 +20,7 @@ import logging
 
 from web.frontend.content import getPaths
 from core.translation import translate
-from contenttypes import Collections
+from contenttypes import Collections, Container
 from core import Node
 from core import db
 

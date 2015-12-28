@@ -48,7 +48,7 @@ q = db.query
 logg = logging.getLogger(__name__)
 
 
-DEBUG = False
+DEBUG = True
 
 DATEFIELD = config.get("oai.datefield", "updatetime")
 EARLIEST_YEAR = int(config.get("oai.earliest_year", "1960"))
@@ -719,4 +719,4 @@ def oaiRequest(req):
               req.ip, req.channel.addr[1], (exit_time - start_time), (req.path + req.uri).replace('//', '/'), useragent)
 
     if DEBUG:
-        logg.debug(timetable_string(req))
+        logg.info(timetable_string(req))

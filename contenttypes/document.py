@@ -60,7 +60,7 @@ class Document(Content):
             node = self.getActiveVersion()
             obj['deleted'] = True
         if mask:
-            obj['metadata'] = mask.getViewHTML([node], VIEW_HIDE_EMPTY, lang(req), mask=mask)  # hide empty elements
+            obj['metadata'] = mask.getViewHTML([node], VIEW_HIDE_EMPTY, lang(req))  # hide empty elements
         else:
             obj['metadata'] = []
         obj['node'] = node

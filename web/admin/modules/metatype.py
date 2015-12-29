@@ -102,7 +102,7 @@ def validate(req, op):
             section_descr['node'] = node
             if node and node.has_data_access():
                 try:
-                    node_html = mask.getViewHTML([node], VIEW_DEFAULT, template_from_caller=[template, mdt, mask, item_id], mask=mask)
+                    node_html = mask.getViewHTML([node], VIEW_DEFAULT, template_from_caller=[template, mdt, mask, item_id])
                     section_descr['node_html'] = node_html
                 except:
                     logg.exception("exception while evaluating template")

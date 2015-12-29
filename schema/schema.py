@@ -945,7 +945,7 @@ class Mask(Node):
             ret += t.getFormHTML(field, nodes, req)
         return ret
 
-    def getViewHTML(self, nodes, flags=0, language=None, template_from_caller=None, mask=None):
+    def getViewHTML(self, nodes, flags=0, language=None, template_from_caller=None):
         if flags & 4:
             ret = []
         else:
@@ -955,11 +955,11 @@ class Mask(Node):
             x = self.getChildren()
             x.sort_by_orderpos()
             return getMetadataType("mappingfield").getViewHTML(
-                x, nodes, flags, language=language, template_from_caller=template_from_caller, mask=mask)
+                x, nodes, flags, language=language, template_from_caller=template_from_caller, mask=self)
         for field in self.maskitems.sort_by_orderpos().options(undefer(Node.attrs)):
             t = getMetadataType(field.get("type"))
             if flags & 4:  # data mode
-                v = t.getViewHTML(field, nodes, flags, language=language, template_from_caller=template_from_caller, mask=mask)
+                v = t.getViewHTML(field, nodes, flags, language=language, template_from_caller=template_from_caller, mask=self)
                 format = field.getFormat()
                 if format != "":
                     v[1] = format.replace("<value>", v[1])
@@ -971,7 +971,7 @@ class Mask(Node):
                 else:
                     ret.append(v)
             else:
-                ret += t.getViewHTML(field, nodes, flags, language=language, template_from_caller=template_from_caller, mask=mask)
+                ret += t.getViewHTML(field, nodes, flags, language=language, template_from_caller=template_from_caller, mask=self)
         return ret
 
     def getViewList(self, node, flags=0, language=None):

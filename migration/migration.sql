@@ -31,7 +31,7 @@ BEGIN
     WHERE type IN (SELECT name FROM mediatum.nodetype WHERE is_container = true);
 
     UPDATE mediatum.node
-    SET type = 'other', schema = 'other'
+    SET type = 'other'
     WHERE type = 'file';
 
     UPDATE mediatum.node

@@ -68,9 +68,12 @@ class Video(Content):
         return "video"
 
     def _prepareData(self, req, words=""):
-        mask = self.getFullView(lang(req))
+        obj = super(Video, self)._prepareData(req)
+        if obj["deleted"]:
+            # no more processing needed if this object version has been deleted
+            # rendering has been delegated to current version
+            return obj
 
-        obj = {'deleted': False}
         node = self
 
         if len(node.files) == 0:
@@ -87,23 +90,12 @@ class Video(Content):
             else:
                 obj['hasVidFiles'] = False
 
-        if self.get('deleted') == 'true':
-            node = self.getActiveVersion()
-            obj['deleted'] = True
         for filenode in node.files:
             if filenode.filetype in ["original", "video"]:
                 obj["file"] = "/file/%s/%s" % (node.id, filenode.base_name)
                 break
 
-        if mask:
-            obj['metadata'] = mask.getViewHTML([node], VIEW_HIDE_EMPTY, lang(req))  # hide empty elements
-        else:
-            obj['metadata'] = []
-        obj['node'] = node
-        obj['path'] = req.params.get("path", "")
         obj['canseeoriginal'] = node.has_data_access()
-
-        obj['parentInformation'] = self.getParentInformation(req)
 
         return obj
 

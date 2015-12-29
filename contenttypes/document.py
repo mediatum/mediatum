@@ -52,25 +52,22 @@ class Document(Content):
     def getCategoryName(cls):
         return "document"
 
+
     def _prepareData(self, req, words=""):
-        mask = self.getFullView(lang(req))
-        obj = {'deleted': False}
+        obj = super(Document, self)._prepareData(req)
+        if obj["deleted"]:
+            # no more processing needed if this object version has been deleted
+            # rendering has been delegated to current version
+            return obj
+
         node = self
-        if self.get('deleted') == 'true':
-            node = self.getActiveVersion()
-            obj['deleted'] = True
-        if mask:
-            obj['metadata'] = mask.getViewHTML([node], VIEW_HIDE_EMPTY, lang(req))  # hide empty elements
-        else:
-            obj['metadata'] = []
-        obj['node'] = node
-        obj['path'] = req and req.params.get("path", "") or ""
+
         files, sum_size = filebrowser(node, req)
 
         obj['attachment'] = files
         obj['sum_size'] = sum_size
-
         obj['bibtex'] = False
+
         if node.getMask(u"bibtex"):
             obj['bibtex'] = True
 
@@ -95,8 +92,6 @@ class Document(Content):
         full_style = req.args.get("style", "full_standard")
         if full_style:
             obj['style'] = full_style
-
-        obj['parentInformation'] = self.getParentInformation(req)
 
         return obj
 

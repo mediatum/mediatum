@@ -224,7 +224,13 @@ class Image(Content):
 
     # prepare hash table with values for TAL-template
     def _prepareData(self, req):
-        mask = self.getFullView(lang(req))
+        obj = super(Image, self)._prepareData(req)
+        if obj["deleted"]:
+            # no more processing needed if this object version has been deleted
+            # rendering has been delegated to current version
+            return obj
+
+        node = self
 
         tif = ""
         try:
@@ -245,16 +251,8 @@ class Image(Content):
 
         files, sum_size = filebrowser(self, req)
 
-        obj = {'deleted': False}
-        node = self
-        if self.get('deleted') == 'true':
-            node = self.getActiveVersion()
-            obj['deleted'] = True
-        obj['path'] = req and req.params.get("path", "") or ""
         obj['attachment'] = files
         obj['sum_size'] = sum_size
-        obj['metadata'] = mask.getViewHTML([node], VIEW_HIDE_EMPTY)  # hide empty elements
-        obj['node'] = node
         obj['tif'] = tif
         obj['zoom'] = dozoom(node)
         obj['tileurl'] = u"/tile/{}/".format(node.id)
@@ -265,8 +263,6 @@ class Image(Content):
         full_style = req.args.get("style", "full_standard")
         if full_style:
             obj['style'] = full_style
-
-        obj['parentInformation'] = self.getParentInformation(req)
 
         return obj
 

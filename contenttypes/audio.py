@@ -148,19 +148,14 @@ class Audio(Content):
 
     # prepare hash table with values for TAL-template
     def _prepareData(self, req):
-        mask = self.getFullView(lang(req))
+        obj = super(Audio, self)._prepareData(req)
+        if obj["deleted"]:
+            # no more processing needed if this object version has been deleted
+            # rendering has been delegated to current version
+            return obj
 
-        obj = {'deleted': False}
         node = self
-        if self.get('deleted') == 'true':
-            node = self.getActiveVersion()
-            obj['deleted'] = True
-        if mask:
-            obj['metadata'] = mask.getViewHTML([node], VIEW_HIDE_EMPTY, lang(req))  # hide empty elements
-        else:
-            obj['metadata'] = []
-        obj['node'] = node
-        obj['path'] = req and req.params.get("path", "") or ""
+
         obj['audiothumb'] = u'/thumb2/{}'.format(node.id)
         if node.has_object():
             obj['canseeoriginal'] = node.has_data_access()
@@ -168,8 +163,6 @@ class Audio(Content):
             obj['audiodownload'] = u'/download/{}/{}'.format(node.id, node.getName())
         else:
             obj['canseeoriginal'] = False
-
-        obj['parentInformation'] = self.getParentInformation(req)
 
         return obj
 

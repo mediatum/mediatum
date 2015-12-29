@@ -43,21 +43,6 @@ class Flash(Content):
     def getCategoryName(cls):
         return "video"
 
-    def _prepareData(self, req, words=""):
-        mask = self.getFullView(lang(req))
-        obj = {'deleted': False}
-        node = self
-        if self.get('deleted') == 'true':
-            node = self.getActiveVersion()
-            obj['deleted'] = True
-        if mask:
-            obj['metadata'] = mask.getViewHTML([node], VIEW_HIDE_EMPTY, lang(req))  # hide empty elements
-        else:
-            obj['metadata'] = []
-        obj['node'] = node
-        obj['path'] = req.params.get("path", "")
-        return obj
-
     """ format big view with standard template """
     def show_node_big(self, req, template="contenttypes/flash.html", macro="showbig"):
         return req.getTAL(template, self._prepareData(req), macro)

@@ -1338,3 +1338,6 @@ msgstr "weiter"
 
 msgid "previous"
 msgstr "zurück"
+
+msgid "no_metadata_to_display"
+msgstr "Es gibt für dieses Objekt keine Metadaten, die angezeigt werden können."

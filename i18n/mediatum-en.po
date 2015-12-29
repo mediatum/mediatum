@@ -1325,3 +1325,6 @@ msgstr "next"
 
 msgid "previous"
 msgstr "previous"
+
+msgid "no_metadata_to_display"
+msgstr "There is no metadata that can be displayed for this object."

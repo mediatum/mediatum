@@ -27,7 +27,7 @@ from mediatumtal import tal
 import core.acl as acl
 from core import Node
 import core.config as config
-from core.translation import lang
+from core.translation import lang, t
 from core.styles import getContentStyles
 from core.transition.postgres import check_type_arg_with_schema
 from schema.schema import getMetadataType, VIEW_DATA_ONLY, VIEW_HIDE_EMPTY, SchemaMixin
@@ -394,7 +394,6 @@ class Data(Node):
 
         return res
 
-
     @classmethod
     def isContainer(cls):
         return 0
@@ -453,7 +452,37 @@ class Content(Data, SchemaMixin):
 
     """(Abstract) base class for all content node types.
     """
-    pass
+
+    def _get_metadata_html(self, req):
+        """Renders HTML data for displaying metadata using the the fullview mask.
+        :rtype: unicode
+        """
+        mask = self.getFullView(lang(req))
+        if mask is not None:
+            return mask.getViewHTML([self], VIEW_HIDE_EMPTY, lang(req))  # hide empty elements
+        else:
+            return t(req, "no_metadata_to_display")
+
+    def _prepareData(self, req):
+        """Prepare data needed for displaying this object.
+        :returns: representation dictionary
+        :rtype: dict
+        """
+
+        if self.get('deleted') == 'true':
+            # If this object is marked as deleted version, render the active version instead.
+            active_version = self.getActiveVersion()
+            data = active_version._prepareData()
+            data["deleted"] = True
+            return data
+
+        data = {}
+        data["deleted"] = False
+        data["metadata"] = self._get_metadata_html(req)
+        data['node'] = self
+        data['parentInformation'] = self.getParentInformation(req)
+        data['path'] = req.params.get("path", "")
+        return data
 
 
 @check_type_arg_with_schema

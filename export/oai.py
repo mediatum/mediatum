@@ -32,7 +32,6 @@ import core.config as config
 from .oaisearchparser import OAISearchParser as OAISearchParser
 from . import oaisets
 import utils.date as date
-import core.acl as acl
 import core.xmlnode
 from utils.utils import esc, fixXMLString
 from schema.schema import getMetaType
@@ -42,13 +41,14 @@ from core.systemtypes import Root, Metadatatypes
 from contenttypes import Collections
 from core import Node
 from core import db
+from core.users import get_guest_user
 
 q = db.query
 
 logg = logging.getLogger(__name__)
 
 
-DEBUG = False
+DEBUG = True
 
 DATEFIELD = config.get("oai.datefield", "updatetime")
 EARLIEST_YEAR = int(config.get("oai.earliest_year", "1960"))
@@ -60,6 +60,8 @@ token_lock = Lock()
 
 SET_LIST = []
 FORMAT_FILTERS = {}
+
+GUEST_USER = get_guest_user()
 
 
 def registerFormatFilter(key, filterFunc):
@@ -242,8 +244,7 @@ def ListMetadataFormats(req):
         if node is None:
             return writeError(req, "badArgument")
 
-        access = acl.AccessData(req)
-        if not access.hasReadAccess(node):
+        if not node.has_read_access(user=GUEST_USER):
             return writeError(req, "noPermission")
 
         formats = [x for x in formats if nodeHasOAIExportMask(node, x.lower())]
@@ -393,7 +394,7 @@ def parentIsMedia(n):
         return True
 
 
-def retrieveNodes(req, access, setspec, date_from=None, date_to=None, metadataformat=None):
+def retrieveNodes(req, setspec, date_from=None, date_to=None, metadataformat=None):
     schemata = []
 
     if metadataformat == 'mediatum':
@@ -427,10 +428,9 @@ def retrieveNodes(req, access, setspec, date_from=None, date_to=None, metadatafo
         if DEBUG:
             timetable_update(req, "in retrieveNodes: after filtering date_to --> %d nodes" % (len(res)))
 
-    if access:
-        res = access.filter(res)
-        if DEBUG:
-            timetable_update(req, "in retrieveNodes: after access filter --> %d nodes" % (len(res)))
+    res = [n for n in res if n.has_read_access(user=GUEST_USER)]
+    if DEBUG:
+        timetable_update(req, "in retrieveNodes: after read access filter --> %d nodes" % (len(res)))
 
     collections = q(Collections).one()
     res = [n for n in res if isDescendantOf(n, collections)]
@@ -465,7 +465,6 @@ def new_token(req):
 
 def getNodes(req):
     global tokenpositions, CHUNKSIZE
-    access = acl.AccessData(req)
     nodes = None
 
     if "resumptionToken" in req.params:
@@ -519,7 +518,7 @@ def getNodes(req):
             return None, "badArgument", None
 
         try:
-            nodes = retrieveNodes(req, access, setspec, date_from, date_to, metadataformat)
+            nodes = retrieveNodes(req, setspec, date_from, date_to, metadataformat)
             nodes = [n for n in nodes if not parentIsMedia(n)]
             # filter out nodes that are inactive or older versions of other nodes
             nodes = [n for n in nodes if n.isActiveVersion()]
@@ -597,7 +596,6 @@ def ListRecords(req):
 
 
 def GetRecord(req):
-    access = acl.AccessData(req)
     if "identifier" in req.params:
         id = identifier2id(req.params.get("identifier"))
     else:
@@ -617,7 +615,7 @@ def GetRecord(req):
     if parentIsMedia(node):
         return writeError(req, "noPermission")
 
-    if not access.hasReadAccess(node):
+    if not node.has_read_access(user=GUEST_USER):
         return writeError(req, "noPermission")
 
     req.write('<GetRecord>')
@@ -642,11 +640,6 @@ def ListSets(req):
 
 def initSetList(req=None):
     global SET_LIST
-    if req:
-        access = acl.AccessData(req)
-    else:
-        import core.users as users
-        access = acl.AccessData(user=users.getUser('Gast'))
 
     oaisets.loadGroups()
     SET_LIST = oaisets.GROUPS
@@ -726,4 +719,4 @@ def oaiRequest(req):
               req.ip, req.channel.addr[1], (exit_time - start_time), (req.path + req.uri).replace('//', '/'), useragent)
 
     if DEBUG:
-        logg.debug(timetable_string(req))
+        logg.info(timetable_string(req))

@@ -71,7 +71,7 @@ def getContent(req, ids):
          'namespace': req.params.get('namespace'),
          'urn_type': req.params.get('urn_type'),
          'host': config.get('host.name'),
-         'creator': q(User).filter_by(login_name=node.get('creator')).one()  #users.getUser(node.get('creator'))
+         'creator': user
          }
 
     if user.is_admin:
@@ -105,13 +105,13 @@ def getContent(req, ids):
 
                 try:
                     mailtext = req.getTAL('web/edit/modules/identifier.html', v, macro='generate_identifier_usr_mail_2')
-                    mail.sendmail(config.get('email.admin'),
-                                  config.get('email.admin'),
-                                  u'Vergabe eines Idektifikators / Generation of an Identifier',
+                    mail.sendmail(config.get('email.admin'),  # email from
+                                  "%s;%s" % (config.get('email.admin'), user.getEmail()), # email to
+                                  u'Vergabe eines Identifikators / Generation of an Identifier',
                                   mailtext)
 
                 except mail.SocketError:
-                    logg.exception('failed to send Autorenvertrag mail to user %s', node.get('creator'))
+                    logg.exception('failed to send Autorenvertrag mail to user %r (%s): %r' % (user.login_name, user.getName(), user.getEmail()))
                     v['msg'] = t(lang(req), 'edit_identifier_mail_fail')
 
         if node.get('system.identifierstate') != '2':
@@ -141,7 +141,7 @@ def getContent(req, ids):
                         mailtext_user = req.getTAL(
                             'web/edit/modules/identifier.html', v, macro='generate_identifier_usr_mail_1_' + lang(req))
                         mail.sendmail(config.get('email.admin'),
-                                      config.get('email.admin'),
+                                      ("%s;%s" % (config.get('email.admin'), user.getEmail())),
                                       unicode(t(lang(req), 'edit_identifier_mail_title_usr_1')),
                                       mailtext_user,
                                       attachments_paths_and_filenames=attachment)

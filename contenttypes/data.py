@@ -415,19 +415,17 @@ class Data(Node):
         return True
 
     def getFullView(self, language):
-        from schema.schema import Mask
-        masks = self.metadatatype.filter_masks(masktype='fullview', language=language).all()
-        if len(masks) > 1:
-            for m in masks:
-                if m.getLanguage() == language:
-                    return m
-            for m in masks:
-                if m.getLanguage() in ["", "no"]:
-                    return m
-        elif len(masks) == 0:
-            return Mask(u"")
+        """Gets the fullview mask for the given `language`.
+        If no matching language mask is found, return a mask without language specification or None.
+        :rtype: Mask
+        """
+
+        lang_mask = self.metadatatype.filter_masks(masktype=u"fullview", language=language).first()
+
+        if lang_mask is not None:
+            return lang_mask
         else:
-            return masks[0]
+            return self.metadatatype.filter_masks(masktype=u"fullview").first()
 
     def getSysFiles(self):
         return []

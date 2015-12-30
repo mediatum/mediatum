@@ -169,7 +169,7 @@ class Node(DeclarativeBase, NodeMixin):
     __tablename__ = "node"
     __versioned__ = {
         "base_classes": (NodeVersionMixin, MtVersionBase, DeclarativeBase),
-        "exclude": ["subnode"]
+        "exclude": ["subnode", "system_attrs"]
     }
 
     id = C(Integer, Sequence('node_id_seq', schema=db_metadata.schema, start=100), primary_key=True)
@@ -180,9 +180,14 @@ class Node(DeclarativeBase, NodeMixin):
     fulltext = deferred(C(Text))
     # indicate that this node is a subnode of a content type node
     # subnode exists just for performance reasons and is updated by the database
+    # unversioned
     subnode = C(Boolean, server_default="false")
 
     attrs = deferred(C(MutableDict.as_mutable(JSONB)))
+    # Migration from old mediatum: all attributes starting with "system." go here.
+    # We should get rid of most (all?) such attributes in the future.
+    # unversioned
+    system_attrs = deferred(C(MutableDict.as_mutable(JSONB)))
 
     @hybrid_property
     def a(self):
@@ -202,19 +207,22 @@ class Node(DeclarativeBase, NodeMixin):
     def a_set(self, value):
         raise NotImplementedError("immutable!")
 
-    def __init__(self, name="", type="node", id=None, schema=None, attrs=None, orderpos=None):
+    def __init__(self, name="", type="node", id=None, schema=None, attrs=None, system_attrs=None, orderpos=None):
         self.name = name
         if "/" in type:
             warn("use separate type and schema parameters instead of 'type/schema'", DeprecationWarning)
             type, schema = type.split("/")
         self.type = type
         self.attrs = MutableDict()
+        self.system_attrs = MutableDict()
         if id:
             self.id = id
         if schema:
             self.schema = schema
         if attrs:
             self.attrs.update(attrs)
+        if system_attrs:
+            self.system_attrs.update(system_attrs)
         if orderpos:
             self.orderpos = orderpos
 
@@ -396,7 +404,7 @@ class Node(DeclarativeBase, NodeMixin):
         return exec_sqlfunc(object_session(self), mediatumfunc.is_descendant_of(self.id, node.id))
 
     def _get_nearest_ancestor_by_type(self, ancestor_type):
-        """Returns a nearest ancestor of `ancestor_type`. 
+        """Returns a nearest ancestor of `ancestor_type`.
         If none is found, return `Collections` as default.
         It's undefined which one will be returned if more than one nearest ancestor is found.
         """

@@ -9,7 +9,7 @@ from warnings import warn
 def check_type_arg(cls):
     from core.database.postgres.node import Node
 
-    def init(self, name="", type=None, id=None, attrs=None, orderpos=None):
+    def init(self, name="", type=None, id=None, attrs=None, system_attrs=None, orderpos=None):
         clsname = self.__class__.__name__
 
         if type is None:
@@ -19,7 +19,7 @@ def check_type_arg(cls):
             if not type == clsname.lower():
                 raise ValueError("type must be {} for a {} instance ".format(clsname.lower(), clsname))
 
-        Node.__init__(self, name, type, id, None, attrs, orderpos)
+        Node.__init__(self, name, type, id, None, attrs, system_attrs, orderpos)
 
     cls.__init__ = init
     return cls
@@ -28,7 +28,8 @@ def check_type_arg(cls):
 def check_type_arg_with_schema(cls):
     from core.database.postgres.node import Node
 
-    def init(self, name="", type=None, id=None, schema=None, attrs=None, orderpos=None):
+
+    def init(self, name="", type=None, id=None, schema=None, attrs=None, system_attrs=None, orderpos=None):
         clsname = self.__class__.__name__
 
         if type is None:
@@ -41,7 +42,7 @@ def check_type_arg_with_schema(cls):
         if schema is None:
             schema = type
 
-        Node.__init__(self, name, type, id, schema, attrs, orderpos)
+        Node.__init__(self, name, type, id, schema, attrs, system_attrs, orderpos)
 
     cls.__init__ = init
     return cls

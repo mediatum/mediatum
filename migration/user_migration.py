@@ -71,7 +71,7 @@ def migrate_special_dirs():
                     dirr = old_dirrs[0]
                     dirr.name = new
 
-                dirr[u"system.used_as"] = new
+                dirr.system_attrs[u"used_as"] = new
 
 
 def set_admin_group():

@@ -81,6 +81,11 @@ def test_get_default_value(some_node):
     assert value == "default_value"
 
 
+def test_get_system_attr(some_node):
+    value = some_node.get("system.testattr", "default_value")
+    assert value == "system.testvalue"
+
+
 def test_set_overwrite(some_node):
     num_attrs = len(some_node.attrs)
     some_node.set("testattr", "newvalue")
@@ -93,6 +98,20 @@ def test_set_new(some_node):
     some_node.set("newattr", "newvalue")
     assert some_node.attrs["newattr"] == "newvalue"
     assert len(some_node.attrs) == num_attrs + 1
+
+
+def test_set_system_attr_overwrite(some_node):
+    some_node.set("system.testattr", "system.newvalue")
+    assert some_node.system_attrs["testattr"] == "system.newvalue"
+
+
+def test_set_system_attr_new(some_node):
+    num_attrs = len(some_node.attrs)
+    num_system_attrs = len(some_node.system_attrs)
+    some_node.set("system.newattr", "system.newvalue")
+    assert len(some_node.attrs) == num_attrs
+    assert len(some_node.system_attrs) == num_system_attrs + 1
+    assert some_node.system_attrs["newattr"] == "system.newvalue"
 
 
 def test_getName(some_node):

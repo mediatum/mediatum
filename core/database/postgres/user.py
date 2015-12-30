@@ -64,9 +64,9 @@ class UserGroup(DeclarativeBase, TimeStamp, UserGroupMixin):
 
 def create_special_user_dirs():
     from contenttypes import Directory
-    return [Directory(u"faulty", attrs={u"system.used_as": u"faulty"}),
-            Directory(u"upload", attrs={u"system.used_as": u"upload"}),
-            Directory(u"trash", attrs={u"system.used_as": u"trash"})]
+    return [Directory(u"faulty", system_attrs={u"used_as": u"faulty"}),
+            Directory(u"upload", system_attrs={u"used_as": u"upload"}),
+            Directory(u"trash", system_attrs={u"used_as": u"trash"})]
 
 
 class User(DeclarativeBase, TimeStamp, UserMixin):

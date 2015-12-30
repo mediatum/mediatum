@@ -61,8 +61,6 @@ token_lock = Lock()
 SET_LIST = []
 FORMAT_FILTERS = {}
 
-GUEST_USER = get_guest_user()
-
 
 def registerFormatFilter(key, filterFunc):
     FORMAT_FILTERS[key.lower()] = filterFunc
@@ -244,7 +242,7 @@ def ListMetadataFormats(req):
         if node is None:
             return writeError(req, "badArgument")
 
-        if not node.has_read_access(user=GUEST_USER):
+        if not node.has_read_access(user=get_guest_user()):
             return writeError(req, "noPermission")
 
         formats = [x for x in formats if nodeHasOAIExportMask(node, x.lower())]
@@ -428,7 +426,7 @@ def retrieveNodes(req, setspec, date_from=None, date_to=None, metadataformat=Non
         if DEBUG:
             timetable_update(req, "in retrieveNodes: after filtering date_to --> %d nodes" % (len(res)))
 
-    res = [n for n in res if n.has_read_access(user=GUEST_USER)]
+    res = [n for n in res if n.has_read_access(user=get_guest_user())]
     if DEBUG:
         timetable_update(req, "in retrieveNodes: after read access filter --> %d nodes" % (len(res)))
 
@@ -615,7 +613,7 @@ def GetRecord(req):
     if parentIsMedia(node):
         return writeError(req, "noPermission")
 
-    if not node.has_read_access(user=GUEST_USER):
+    if not node.has_read_access(user=get_guest_user()):
         return writeError(req, "noPermission")
 
     req.write('<GetRecord>')
@@ -715,7 +713,7 @@ def oaiRequest(req):
 
     exit_time = now()
 
-    logg.info("%s:%d OAI (exit after %.3f sec.) %s - (user-agent: %s)", 
+    logg.info("%s:%d OAI (exit after %.3f sec.) %s - (user-agent: %s)",
               req.ip, req.channel.addr[1], (exit_time - start_time), (req.path + req.uri).replace('//', '/'), useragent)
 
     if DEBUG:

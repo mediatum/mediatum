@@ -32,7 +32,7 @@ sys.path.append(".")
 
 from core import init, config
 from core.database.postgres import db_metadata, mediatumfunc
-from core.database.postgres.alchemyext import exec_sqlfunc
+from core.database.postgres.alchemyext import exec_sqlfunc, disable_triggers, enable_triggers
 import configargparse
 
 LOG_FILEPATH = os.path.join(tempfile.gettempdir(), "mediatum_manage.log")
@@ -81,7 +81,11 @@ def get_conn_with_autocommit(s):
 
 
 def import_dump(s, dump_filepath):
+    disable_triggers()
+    db.session.commit()
     db.run_psql_file(dump_filepath)
+    enable_triggers()
+    db.session.commit()
     logg.info("imported dump from %s", dump_filepath)
 
 

@@ -19,4 +19,7 @@ BEFORE LOAD DO
 $$ CREATE SCHEMA IF NOT EXISTS mediatum_import; $$
 
 AFTER LOAD DO
-$$ UPDATE mediatum_import.node SET writeaccess='' where type = 'workflow'; $$;
+$$
+UPDATE mediatum_import.node SET writeaccess='' where type = 'workflow';
+UPDATE mediatum_import.nodeattribute SET name = 'system.zoom_levels' where name = 'levels';
+$$;

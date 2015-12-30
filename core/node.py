@@ -90,7 +90,7 @@ class NodeMixin(object):
         """
         if key.startswith("system."):
             warn("getting system. attribute with Node.get(), use Node.system_attrs.get()", DeprecationWarning)
-            return self.system_attrs.get(key[7:], default if default != u"" else None)
+            return self.system_attrs.get(key[7:], default)
 
         return self.attrs.get(key, default)
 

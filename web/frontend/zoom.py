@@ -53,10 +53,6 @@ def getImage(nid, preprocess=0):
     from contenttypes import Image
     node = q(Image).get(nid)
     img = ZoomImage(node, preprocess)
-    import os
-    if "MEDIATUM_EMBED_IPYTHON" in os.environ:
-        import IPython
-        IPython.embed()
     return img
 
 
@@ -66,14 +62,11 @@ class ZoomImage:
         self.node = node
         self.width = int(self.node.get("width"))
         self.height = int(self.node.get("height"))
-        self.levels = int(self.node.get("levels") or "0")
+        self.levels = int(self.node.system_attrs.get("zoom_levels", 0))
         self.img = None
         self.z_file = None
         self.filepath = None
         self.load()
-
-        if not self.levels:
-            self.load()
         if store and preprocess:
             self.preprocess()
 
@@ -91,7 +84,7 @@ class ZoomImage:
 
         self.img = PILImage.open(filename)
         tmpjpg = config.get("paths.datadir") + "tmp/img" + ustr(random.random()) + ".jpg"
-        if self.img.mode == "CMYK" and (filename.endswith("jpg") or filename.endswith("jpeg")) or self.img.mode in ["P", "L"]:
+        if self.img.mode == "CMYK" and (filename.endswith("jpg") or filename.endsith("jpeg")) or self.img.mode in ["P", "L"]:
             os.system("convert -quality 100 -draw \"rectangle 0,0 1,1\" %s %s" % (filename, tmpjpg))
             self.img = PILImage.open(tmpjpg)
         self.img.load()
@@ -101,7 +94,7 @@ class ZoomImage:
             l = l / 2
             self.levels = self.levels + 1
         self.width, self.height = self.img.size
-        self.node.set("levels", ustr(self.levels))
+        self.node.system_attrs["zoom_levels"] = self.levels
         if os.path.exists(tmpjpg):
             os.unlink(tmpjpg)
 
@@ -141,7 +134,6 @@ class ZoomImage:
         if not generate:
             return None
 
-        self.load()
         l = level
         level = 1 << (self.levels - level)
 
@@ -178,7 +170,6 @@ def send_imageproperties_xml(req):
 def send_tile(req):
     nid, data = splitpath(req.path)
     img = getImage(nid)
-    zoomlevels = 4
 
     if not req.path.endswith(".jpg"):
         logg.warn("invalid tile request %s", req.path)
@@ -191,5 +182,6 @@ def send_tile(req):
         req.write(tmpname)
         return 200
     except:
+        logg.exception("exception in send_tile")
         return 404
     return tmpname

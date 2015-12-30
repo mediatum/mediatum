@@ -17,6 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import logging
 from warnings import warn
 
 import core.config as config
@@ -25,6 +26,7 @@ from core import db
 from core.user import GuestUser
 
 
+logg = logging.getLogger(__name__)
 q = db.query
 
 
@@ -69,11 +71,16 @@ def getExternalAuthentificators():
 
 def user_from_session(session):
     user_id = session.get("user_id")
-    if user_id is None:
-        user = get_guest_user()
-    else:
+    if user_id is not None:
         user = q(User).get(user_id)
-    return user
+
+        if user is not None:
+            return user
+
+        logg.warn("invalid user id %s from session, falling back to guest user", user_id)
+        del session["user_id"]
+
+    return get_guest_user()
 
 
 def getUserFromRequest(req):

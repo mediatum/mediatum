@@ -29,7 +29,7 @@ def migrate_home_dirs(orphan_dir_id):
 
         if user is None:
             logg.info("orphaned home dir name=%s id=%s", home_dir.name, home_dir.id)
-            home_dir[u"system.migration"] = u"moved by mysql -> postgres migration"
+            home_dir.system_attrs[u"migration"] = u"moved by mysql -> postgres migration"
             # we go "low-level" here because we don't want to trigger noderelation updates via nodemapping
             s.execute(text("DELETE FROM noderelation WHERE cid=:cid").bindparams(cid=home_dir.id))
             s.execute(text("INSERT INTO noderelation VALUES(:nid, :cid, 1)").bindparams(nid=orphan_dir.id, cid=home_dir.id))
@@ -42,11 +42,11 @@ def migrate_home_dirs(orphan_dir_id):
                           home_dir.name, home_dir.id, user.login_name, user.id)
                 home_dir.name = new_name
 
-            home_dir[u"system.used_as"] = u"home"
+            home_dir.system_attrs[u"used_as"] = u"home"
 
 
 def migrate_special_dirs():
-    """Special dirs are found by special attribute system.used_as, not the directory name as before.
+    """Special dirs are found by special system attribute used_as, not the directory name as before.
     """
     home_root = q(Home).one()
     for home_dir in home_root.children:

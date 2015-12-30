@@ -146,20 +146,20 @@ DECLARE
 BEGIN
     INSERT INTO authenticator (id, name, auth_type) VALUES (1, 'ads', 'ldap');
 
-    -- select info from home dirs for ads user (has system.name.adsuser attribute) and create user from it
+    -- select info from home dirs for ads user (has name.adsuser system attribute) and create user from it
 
     INSERT INTO mediatum.user (display_name, login_name, comment, last_login, home_dir_id, authenticator_id, created_at)
     SELECT
-    trim(' ' from attrs->>'system.name.adsuser') AS display_name,
-    trim(' ' from attrs->>'system.dirid.adsuser') AS login_name,
+    trim(' ' from system_attrs->>'name.adsuser') AS display_name,
+    trim(' ' from system_attrs->>'dirid.adsuser') AS login_name,
     'migration: created from home dir' AS comment,
-    (attrs->>'system.last_authentication.adsuser')::timestamp AS last_login,
+    (system_attrs->>'last_authentication.adsuser')::timestamp AS last_login,
     node.id AS home_dir_id,
     1 AS authenticator_id,
-    coalesce((attrs->>'system.last_authentication.adsuser')::timestamp, now()) AS created_at -- no really the creation date, but better than nothing
+    coalesce((system_attrs->>'last_authentication.adsuser')::timestamp, now()) AS created_at -- no really the creation date, but better than nothing
     FROM node
     WHERE id IN (SELECT cid FROM nodemapping WHERE nid=(SELECT id FROM node WHERE name = 'home'))
-    AND attrs ? 'system.dirid.adsuser'
+    AND system_attrs ? 'dirid.adsuser'
     ;
 
     GET DIAGNOSTICS rows = ROW_COUNT;

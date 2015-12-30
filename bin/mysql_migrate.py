@@ -133,6 +133,7 @@ def permissions(s):
     acl_migration.set_home_dir_permissions()
     acl_migration.migrate_rules()
     s.commit()
+    s.execute("SELECT mediatum.deduplicate_access_rules()")
     logg.info("finished permissions migration")
 
 

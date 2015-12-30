@@ -37,18 +37,15 @@ def ftree(req):
         return getLabel(req)
 
     if "changeCheck" in req.params:
-        try:
-            for id in req.params.get("currentitem").split(","):
-                node = q(Node).get(id)
-                parent = q(Node).get(req.params.get("changeCheck"))
-                if node in parent.children:
-                    if len(node.parents) > 1:
-                        parent.children.remove(node)
-                        db.session.commit()
-                    else:
-                        req.writeTALstr('<tal:block i18n:translate="edit_classes_noparent"/>', {})
-                else:
-                    parent.children.add(node)
+        for id in req.params.get("currentitem").split(","):
+            node = q(Node).get(id)
+            parent = q(Node).get(req.params.get("changeCheck"))
+            if node in parent.children:
+                if len(node.parents) > 1:
+                    parent.children.remove(node)
                     db.session.commit()
-        except:
-            logg.exception("exception in ftree")
+                else:
+                    req.writeTALstr('<tal:block i18n:translate="edit_classes_noparent"/>', {})
+            else:
+                parent.children.append(node)
+                db.session.commit()

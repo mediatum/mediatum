@@ -117,7 +117,7 @@ def node_url(nid=None, version=None, **kwargs):
     params.update(kwargs)
     params = {k: unicode(v).encode("utf8") for k, v in params.items()}
     if params:
-        return "/{}?{}".format(nid, urllib.urlencode(params))
+        return "/{}?{}".format(nid or "", urllib.urlencode(params))
     else:
         return "/" + str(nid)
 

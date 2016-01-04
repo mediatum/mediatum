@@ -423,6 +423,10 @@ IF EXISTS (SELECT FROM node_to_access_ruleset WHERE nid=node_id AND ruletype=_ru
     RETURN;
 END IF;
 
+IF EXISTS (SELECT FROM node_to_access_rule WHERE nid=node_id AND ruletype=_ruletype) THEN
+    RETURN;
+END IF;
+
 RETURN QUERY
     SELECT DISTINCT node_id AS nid, ruleset_name, _ruletype,
       (SELECT invert
@@ -435,23 +439,36 @@ RETURN QUERY
        WHERE na.nid=q.nid
         AND na.ruleset_name=q.ruleset_name
         AND na.ruletype=_ruletype) as blocking 
-    FROM (WITH RECURSIVE ra(nid, ruleset_names) AS
+    FROM (WITH RECURSIVE ra(nid, ruleset_names, rule_ids) AS
             (SELECT nm.nid,
                (SELECT array_agg(ruleset_name) AS ruleset_names
                 FROM node_to_access_ruleset na
                 WHERE nid=nm.nid
+                  AND na.ruletype=_ruletype),
+
+               (SELECT array_agg(rule_id) AS rule_ids
+                FROM node_to_access_rule na
+                WHERE nid=nm.nid
                   AND na.ruletype=_ruletype)
+
              FROM nodemapping nm
              WHERE nm.cid = node_id
+
              UNION ALL SELECT nm.nid,
                (SELECT array_agg(ruleset_name) AS ruleset_names
                 FROM node_to_access_ruleset na
                 WHERE nid=nm.nid
+                  AND na.ruletype=_ruletype),
+
+               (SELECT array_agg(rule_id) AS rule_ids
+                FROM node_to_access_rule na
+                WHERE nid=nm.nid
                   AND na.ruletype=_ruletype)
+
              FROM nodemapping nm,
                               ra
              WHERE nm.cid = ra.nid
-               AND ra.ruleset_names IS NULL)
+               AND ra.ruleset_names IS NULL AND ra.rule_ids IS NULL)
           SELECT DISTINCT nid,
                           unnest(ruleset_names) AS ruleset_name
           FROM ra) q;

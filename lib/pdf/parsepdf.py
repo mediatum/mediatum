@@ -112,7 +112,7 @@ def parsePDF(filename, tempdir):
     finfo.close()
 
     # convert first page to image (imagemagick + ghostview)
-    convert_cmd = ["convert", "-alpha", "off", "-colorspace", "RGB,",
+    convert_cmd = ["convert", "-alpha", "off", "-colorspace", "RGB,", "-density", "300",
                    filename + "[0]", "-background", "white", "-thumbnail", "x300", imgfile]
     try:
         check_call(convert_cmd)

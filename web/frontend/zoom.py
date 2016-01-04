@@ -84,7 +84,7 @@ class ZoomImage:
 
         self.img = PILImage.open(filename)
         tmpjpg = config.get("paths.datadir") + "tmp/img" + ustr(random.random()) + ".jpg"
-        if self.img.mode == "CMYK" and (filename.endswith("jpg") or filename.endsith("jpeg")) or self.img.mode in ["P", "L"]:
+        if self.img.mode == "CMYK" and (filename.endswith("jpg") or filename.endswith("jpeg")) or self.img.mode in ["P", "L"]:
             os.system("convert -quality 100 -draw \"rectangle 0,0 1,1\" %s %s" % (filename, tmpjpg))
             self.img = PILImage.open(tmpjpg)
         self.img.load()

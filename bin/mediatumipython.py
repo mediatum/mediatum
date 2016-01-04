@@ -298,7 +298,8 @@ def format_access_rule_assoc(ra):
     else:
         group_names_or_ids = []
 
-    return u"{}{} groups:{} {} subnets:{} {} dateranges:{} {}".format(inversion_label(ra.invert), blocking_label(ra.blocking),
+    return u"{}{}{} groups:{} {} subnets:{} {} dateranges:{} {}".format(inherited_label(ra.inherited),
+                                                                      inversion_label(ra.invert), blocking_label(ra.blocking),
                                                                       inversion_label(r.invert_group), ", ".join(group_names_or_ids) or "-",
                                                                       inversion_label(r.invert_subnet), r.subnets or "-",
                                                                       inversion_label(r.invert_date), r.dateranges or "-")

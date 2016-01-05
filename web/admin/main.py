@@ -23,7 +23,7 @@ import random
 import codecs
 
 import core
-from core import config
+from core import config, help
 from core.users import get_guest_user
 from core.transition import httpstatus
 from utils.utils import join_paths, Menu
@@ -56,7 +56,7 @@ def show_node(req):
     ]
 
     if user.is_workflow_editor:
-        v["spc"].append(Menu("sub_header_workflow", u"../publish"))
+        spc.append(Menu("sub_header_workflow", u"../publish"))
 
     v["spc"] = spc
     v["hashelp"] = help.getHelpPath(['admin', 'modules', req.path.split('/')[1]])

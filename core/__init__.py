@@ -1,3 +1,5 @@
+__version__ = "16.1dev0"
+
 # set by core.database
 db = None
 # set by core.init.init_app()

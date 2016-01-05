@@ -216,7 +216,7 @@ def check_create_test_db_dir():
 
 
 def resolve_filename(filename):
-    templatepath = settings.get("template.path")
+    templatepath = settings.get("template.path", "")
     templatename = settings.get("template.name", None)
     if templatepath.startswith("/") or templatepath.startswith("\\"):
         pathlist = [templatepath]

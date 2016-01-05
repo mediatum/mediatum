@@ -787,4 +787,5 @@ in {
       zsh
     ];
 
+    build = [ setuptools-git ];
 }

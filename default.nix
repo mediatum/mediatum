@@ -9,4 +9,3 @@ pkgs.pythonPackages.buildPythonPackage {
     src = ./.;
     propagatedBuildInputs = requirements.production ++ requirements.devel ++ requirements.system;
 }
-

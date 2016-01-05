@@ -34,8 +34,13 @@ plugins = {}
 
 
 def import_plugin_module(name, location):
-    location = os.path.realpath(location)
-    containing_dir_path = os.path.realpath(os.path.dirname(os.path.join(config.basedir, location)))
+    location = location.rstrip(os.sep)
+
+    if not os.path.isabs(location):
+        location = os.path.join(config.basedir, location)
+
+    containing_dir_path = os.path.realpath(os.path.dirname(location))
+
     if containing_dir_path not in sys.path:
         sys.path.append(containing_dir_path)
         logg.info("added to pythonpath: %s", containing_dir_path)
@@ -51,7 +56,7 @@ def import_plugin_module(name, location):
 
 def init_plugins():
     for name, location in config.getsubset("plugins").items():
-        m = import_plugin_module(name, location.strip(os.sep))
+        m = import_plugin_module(name, location)
         if m is None:
             logg.warn("couldn't load plugin %s!", name)
         else:

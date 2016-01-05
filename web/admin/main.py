@@ -19,17 +19,16 @@
 """
 import logging
 import os
-from core.transition import httpstatus
-import core.config as config
 import random
 import codecs
-import core.users as users
-import core.help as help
 
-from version import mediatum_version
+import core
+from core import config
+from core.users import get_guest_user
+from core.transition import httpstatus
 from utils.utils import join_paths, Menu
 from web.admin.adminutils import findmodule, show_content, adminNavigation, getMenuItemID
-from core.users import get_guest_user
+from core.transition import current_user
 
 
 logg = logging.getLogger(__name__)
@@ -40,23 +39,26 @@ def show_node(req):
 
     p = req.path[1:].split("/")
     style = req.params.get("style", u"")
-    user = users.getUserFromRequest(req)
+    user = current_user
 
     v = {}
     v["user"] = user
     v["guestuser"] = get_guest_user().login_name
-    v["version"] = mediatum_version
+    v["version"] = core.__version__
     v["content"] = show_content(req, p[0])
     v["navigation"] = adminNavigation()
     v["breadcrumbs"] = getMenuItemID(v["navigation"], req.path[1:])
-    v["spc"] = list()
 
-    spc = list()
-    v["spc"].append(Menu("sub_header_frontend", u"/"))
-    v["spc"].append(Menu("sub_header_edit", u"/edit"))
-    if user.isWorkflowEditor():
+    spc = [
+        Menu("sub_header_frontend", u"/"),
+        Menu("sub_header_edit", u"/edit"),
+        Menu("sub_header_logout", u"/logout")
+    ]
+
+    if user.is_workflow_editor:
         v["spc"].append(Menu("sub_header_workflow", u"../publish"))
-    v["spc"].append(Menu("sub_header_logout", u"/logout"))
+
+    v["spc"] = spc
     v["hashelp"] = help.getHelpPath(['admin', 'modules', req.path.split('/')[1]])
 
     if len(p) > 0:
@@ -69,15 +71,14 @@ def show_node(req):
 def export(req):
     """ export definition: url contains /[type]/[id] """
 
-    user = users.getUserFromRequest(req)
-    if not user.isAdmin():
+    if not current_user.is_admin:
         return httpstatus.HTTP_FORBIDDEN
 
     path = req.path[1:].split("/")
     try:
         module = findmodule(path[1])
 
-        tempfile = join_paths(config.get("paths.tempdir"), ustr(random.random()))
+        tempfile = join_paths(config.get("paths.tempdir"), str(random.random()))
         with codecs.open(tempfile, "w", encoding='utf8') as f:
             f.write(module.export(req, path[2]))
 

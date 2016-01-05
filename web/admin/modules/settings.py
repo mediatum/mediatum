@@ -25,7 +25,6 @@ import core.config as config
 import core
 
 
-from version import mediatum_version
 from utils.utils import format_filesize
 from core.transition import httpstatus
 from core import db
@@ -82,7 +81,7 @@ def view(req):
         # mediatum information
         with codecs.open(os.path.join(config.basedir, 'mediatum.cfg'), "rb", encoding='utf8') as fi:
             v['mediatum_cfg'] = fi.readlines()
-            v["mediatum_version"] = mediatum_version
+            v["mediatum_version"] = core.__version__
 
         return req.getTAL("web/admin/modules/settings.html", v, macro="view_mediatum")
 

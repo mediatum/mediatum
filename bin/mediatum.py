@@ -155,10 +155,12 @@ def main():
 
     if args.reload:
         # don't use this in production!
-        extra_files = [config.get_config_filepath()]
+        maybe_config_filepath = config.get_config_filepath()
+        extra_files = [maybe_config_filepath] if maybe_config_filepath else []
 
         def main_wrapper():
             run(args.bind, args.http_port, args.redis_sessions, args.force_test_db, args.loglevel, args.automigrate)
+
         run_with_reloader(main_wrapper, extra_files)
     else:
         run(args.bind, args.http_port, args.redis_sessions, args.force_test_db, args.loglevel, args.automigrate)

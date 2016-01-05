@@ -46,11 +46,24 @@ def get_default_data_dir():
 
 
 def get_config_filepath():
-    conf_filepath_from_env = os.getenv("MEDIATUM_CONFIG")
-    if conf_filepath_from_env:
-        return conf_filepath_from_env
+    """Looks for a config file and returns its path if found, in the following order:
+    1. MEDIATUM_CONFIG env var
+    3. <mediatum_install_dir>/mediatum.cfg (for example, the git working dir in development)
+    2. ~/.config/mediatum/mediatum.cfg
+    4. None (use default config)
+    """
 
-    return os.path.join(basedir, "mediatum.cfg")
+    env_config_filepath = os.getenv("MEDIATUM_CONFIG")
+    if env_config_filepath:
+        return env_config_filepath
+
+    basedir_config_filepath = os.path.join(basedir, "mediatum.cfg")
+    if os.path.exists(basedir_config_filepath):
+        return basedir_config_filepath
+
+    home_config_filepath = os.path.join(os.path.expanduser("~/.config/mediatum"), "mediatum.cfg")
+    if os.path.exists(home_config_filepath):
+        return home_config_filepath
 
 
 def get(key, default=None):
@@ -155,18 +168,18 @@ def fix_dirpaths():
                 settings[confkey] += "/"
 
 
-def initialize(filepath=None):
-    if not filepath:
-        filepath = get_config_filepath()
+def initialize(config_filepath=None):
+    if not config_filepath:
+        config_filepath = get_config_filepath()
 
     global settings, languages, is_default_config
 
-    if os.path.exists(filepath):
-        print("using config file at", filepath)
-        settings = _read_ini_file(basedir, filepath)
+    if config_filepath is not None:
+        print("using config file at", config_filepath)
+        settings = _read_ini_file(basedir, config_filepath)
         is_default_config = False
     else:
-        print("WARNING: config file", filepath, "not found, using default test config!")
+        print("WARNING: config file", config_filepath, "not found, using default test config!")
         settings = {}
         is_default_config = True
 

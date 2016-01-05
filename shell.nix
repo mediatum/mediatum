@@ -4,8 +4,8 @@ let
 
 in
 
-pkgs.pythonPackages.buildPythonPackage {
-    name = "mediatum";
+pkgs.stdenv.mkDerivation {
+    name = "mediatumenv";
     src = ./.;
     propagatedBuildInputs = requirements.production ++ requirements.devel ++ requirements.system;
 }

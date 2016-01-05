@@ -111,6 +111,7 @@ def run_maint_command_for_tables(command, s, table_fullnames=None):
 reindex_tables = partial(run_maint_command_for_tables, "REINDEX TABLE")
 vacuum_tables = partial(run_maint_command_for_tables, "VACUUM")
 vacuum_analyze_tables = partial(run_maint_command_for_tables, "VACUUM ANALYZE")
+vacuum_full_tables = partial(run_maint_command_for_tables, "VACUUM FULL")
 
 
 def run_single_sql(stmt, s):
@@ -225,6 +226,8 @@ def vacuum(args):
         vacuum_tables(s)
     elif action == "analyze":
         vacuum_analyze_tables(s)
+    elif action == "full":
+        vacuum_full_tables(s)
 
 
 def result_proxy_to_yaml(resultproxy):
@@ -281,7 +284,7 @@ if __name__ == "__main__":
     attrindex_subparser.set_defaults(func=attrindex)
 
     vacuum_subparser = subparsers.add_parser("vacuum", help="run VACUUM on all tables")
-    vacuum_subparser.add_argument("action", nargs="?", choices=["analyze"])
+    vacuum_subparser.add_argument("action", nargs="?", choices=["analyze", "full"])
     vacuum_subparser.set_defaults(func=vacuum)
 
     fulltext_subparser = subparsers.add_parser("fulltext", help="import fulltext files into the database")

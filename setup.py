@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 import codecs
 import os
 import re
@@ -42,20 +42,7 @@ setup(
         'Programming Language :: Python :: 2.7',
     ],
     keywords='',
-    packages=[
-        "bin",
-        "contenttypes",
-        "core",
-        "export",
-        "i18n",
-        "lib",
-        "metadata",
-        "migration",
-        "schema",
-        "utils",
-        "web",
-        "workflow",
-    ],
+    packages=find_packages(),
     install_requires=[],
     setup_requires=["setuptools-git"],
     include_package_data=True,

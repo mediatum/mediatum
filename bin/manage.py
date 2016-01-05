@@ -262,7 +262,7 @@ def iplist_import(args):
             f.close()
 
 
-if __name__ == "__main__":
+def main():
     parser = configargparse.ArgumentParser("mediaTUM manage.py")
     subparsers = parser.add_subparsers(title="subcommands", help="see manage.py <subcommand> --help for more info")
 
@@ -310,3 +310,7 @@ if __name__ == "__main__":
     args.func(args)
 
     s.commit()
+
+
+if __name__ == "__main__":
+    main()

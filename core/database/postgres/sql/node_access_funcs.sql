@@ -423,7 +423,7 @@ IF EXISTS (SELECT FROM node_to_access_ruleset WHERE nid=node_id AND ruletype=_ru
     RETURN;
 END IF;
 
-IF EXISTS (SELECT FROM node_to_access_rule WHERE nid=node_id AND ruletype=_ruletype) THEN
+IF EXISTS (SELECT FROM node_to_access_rule WHERE nid=node_id AND ruletype=_ruletype AND inherited = false) THEN
     RETURN;
 END IF;
 
@@ -449,7 +449,8 @@ RETURN QUERY
                (SELECT array_agg(rule_id) AS rule_ids
                 FROM node_to_access_rule na
                 WHERE nid=nm.nid
-                  AND na.ruletype=_ruletype)
+                  AND na.ruletype=_ruletype
+                  AND na.inherited = false)
 
              FROM nodemapping nm
              WHERE nm.cid = node_id
@@ -463,7 +464,8 @@ RETURN QUERY
                (SELECT array_agg(rule_id) AS rule_ids
                 FROM node_to_access_rule na
                 WHERE nid=nm.nid
-                  AND na.ruletype=_ruletype)
+                  AND na.ruletype=_ruletype
+                  AND na.inherited = false)
 
              FROM nodemapping nm,
                               ra

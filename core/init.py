@@ -84,15 +84,6 @@ def register_workflow():
     workflow.register()
 
 
-def init_ldap():
-    # LDAP activated
-    if config.get("ldap.activate", "").lower() == "true":
-        print "activate LDAP login"
-        from core.userldap import LDAPUser
-        import core.users as users
-        users.registerAuthenticator(LDAPUser(), "ldapuser")
-
-
 def init_archivemanager():
     # load archive manager
     global archivemanager
@@ -322,7 +313,6 @@ def _additional_init():
     check_undefined_nodeclasses()
     update_nodetypes_in_db()
     init_fulltext_search()
-    init_ldap()
     init_archivemanager()
     tal_setup()
 

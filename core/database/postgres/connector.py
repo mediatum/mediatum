@@ -317,7 +317,7 @@ class PostgresSQLAConnector(object):
 
     def check_create_schema(self, set_alembic_version=True):
         if not schema_exists(self.session, "mediatum"):
-            self.create_schema()
+            self.create_schema(set_alembic_version)
 
     def upgrade_schema(self):
         from alembic.config import Config

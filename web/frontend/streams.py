@@ -312,34 +312,19 @@ def get_archived(req):
     id, filename = splitpath(req.path)
     node = q(Node).get(id)
     node.set("archive_state", "1")
-    if not archivemanager:
-        msg = "-no archive module loaded-"
+
+    am = archivemanager and archivemanager.getManager(node.get("archive_type"))
+    if am:
+        node.set("archive_state", "1")
+        am.getArchivedFile(id)
+        node.set("archive_state", "2")
+        req.write('done')
+    else:
+        msg = "-archive manager not found-" if archivemanager else "-no archive module loaded-"
         req.write(msg)
         logg.warn(msg)
-        return
 
-    archiveclass = ""
-    for item in config.get("archive.class").split(";"):
-        if item.endswith(node.get("archive_type")):
-            archiveclass = item + ".py"
-            break
-
-    if archiveclass:  # start process from archive
-        os.chdir(config.basedir)
-        os.system("python %s %s" % (archiveclass, node.id))
-
-    st = ""
-    while True:  # test if process is still running
-        attrs = tree.db.getAttributes(id)
-        if "archive_state" in attrs.keys():
-            st = attrs['archive_state']
-        time.sleep(1)
-        if st == "2":
-            break
-
-    for n in node.getAllChildren():
-        tree.remove_from_nodecaches(n)
-    req.write('done')
+    db.commit()
 
 
 def get_root(req):

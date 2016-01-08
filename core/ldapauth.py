@@ -168,6 +168,11 @@ class LDAPAuthenticator(Authenticator):
         self.update_groups_from_ldap(user, data)
 
     def authenticate_user_credentials(self, login, password, request=None):
+
+        # empty passwords not allowed, don't even try to authenticate with that...
+        if not password:
+            return
+
         if "@" not in login and self.user_url:
             login += self.user_url
 

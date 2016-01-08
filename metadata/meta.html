@@ -16,4 +16,7 @@
             <option tal:repeat="val python:list(t_attrs[t_attr].keys())" tal:attributes="value val; selected python:'selected' if value==val else None" tal:content="raw python:t_attrs[t_attr][val]"/>
         </optgroup>
     </select>
+    <br/>
+    <input type="checkbox" name="meta_value" tal:attributes="checked python:{'True':'checked', 'False':None}[str(value[1]=='on')]"/>
+    <span class="label" i18n:translate="write_information_back">TEXT</span>
 </div>

@@ -21,7 +21,7 @@ import logging
 from mediatumtal import tal
 from core.metatype import Metatype
 from core import Node
-
+from lib.iptc.IPTC import get_wanted_iptc_tags
 logg = logging.getLogger(__name__)
 
 
@@ -44,9 +44,13 @@ class m_meta(Metatype):
 
     def getMaskEditorHTML(self, field, metadatatype=None, language=None):
         try:
-            value = field.getValues()
+            value = field.getValues().split("\r\n")
         except AttributeError:
-            value = u""
+            #value = u""
+            value = []
+            while len(value) < 2:
+                value.append('')
+
         attr = {}
         if metadatatype:
             for t in metadatatype.getDatatypes():
@@ -54,6 +58,7 @@ class m_meta(Metatype):
                 node = content_class(name=u'')
                 try:
                     attr.update(node.getTechnAttributes())
+                    attr['IPTC'] = get_wanted_iptc_tags()
                 except AttributeError:
                     logg.exception("attribute error in getMaskEditorHTML, continue")
                     continue

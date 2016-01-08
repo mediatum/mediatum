@@ -32,16 +32,11 @@
             <a tal:attributes="onclick python:u'javascript:openPopup(\'/attachmentbrowser?id={}&path={}\', \'Attachment\', 400, 400)'.format(node.id, path)" i18n:translate="doc_att_browser" href="#" >TEXT</a>
         </div>
     </div>
+
     <div id="object_versions">
-
         <metal:macro use-macro="web/frontend/styles/macros.html/object_versions"/>
-
-
-        <tal:block tal:condition="bibtex">
-            <br/>
-            <a tal:attributes="href python:u'/export/{}/bibtex'.format(node.id)" target="bibtexdocument" i18n:attributes="title doc_bibtex_title"><img src="/img/bibtex.gif"/></a>
-        </tal:block>
     </div>
+
     <tal:block tal:condition="python: not node.has_files">
         <div id="object_meta" style="margin-left:0px" tal:content="raw metadata"/>
         <tal:block tal:condition="bibtex">
@@ -49,12 +44,12 @@
             <a tal:attributes="href python:u'/export/{}/bibtex'.format(node.id)" target="bibtexdocument" i18n:attributes="title doc_bibtex_title"><img src="/img/bibtex.gif"/></a>
         </tal:block>
     </tal:block>
+
     <div tal:condition="python: node.has_files" id="object_meta" tal:content="raw metadata"/>
 
     <p tal:condition="python:node.get('license')!='' and ', http' in node.get('license')" style="text-align:right" class="licenseicon">
         <a tal:attributes="href python:node.get('license').split(',')[1]" target="_blank"><img tal:attributes="src python:u'/img/{}.png'.format(node.get('license').split(',')[0])" style="width:80px;"/></a>
     </p>
-
 </div>
 
 <div style="clear:both"/>

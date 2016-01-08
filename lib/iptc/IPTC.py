@@ -112,19 +112,6 @@ def get_wanted_iptc_tags():
     }.items()))
 
 
-def cut_string(in_string, length=0):
-    """
-        returns a cutted string
-
-        :param in_string: string to cut
-        :param length: length to cut
-        :return: cutted string
-    """
-    if isinstance(in_string, str):
-        return in_string[0:length]
-    else:
-        return None
-
 def get_iptc_values(file_path, tags=None):
     """
         get the IPTC tags/values from a given
@@ -138,26 +125,32 @@ def get_iptc_values(file_path, tags=None):
     if not isinstance(tags, dict):
         return
 
-    ret = {}
+    if file_path is None:
+        return
 
     if not os.path.exists(file_path):
         logger.info('Could not read IPTC metadata from non existing file.')
-        return {}
+        return
 
     if os.path.basename(file_path).startswith('-'):
         logger.error('Will not read IPTC metadata to files starting with a hyphen, caused by exiftool security issues.')
-        return {}
+        return
 
     with exiftool.ExifTool() as et:
         metadata = et.get_metadata_batch([file_path])[0]
 
     ret = {}
+    rep = {'[': '', ',': ';', ']': ''}
+
     for iptc_key in metadata.keys():
-        if 'iptc_{}'.format(str(iptc_key).split(':')[-1]) in get_wanted_iptc_tags():
-            if iptc_key == 'DateCreated':
-                if 'DateCreated' in ret.keys():
-                    if validateDate(parse_date(ret['DateCreated'], format='%Y:%m:%d')):
-                        ret['DateCreated'] = format_date(parse_date(ret['DateCreated'], format='%Y:%m:%d'))
+        if isinstance(metadata[iptc_key], basestring):
+            for i, j in rep.iteritems():
+                metadata[iptc_key] = metadata[iptc_key].replace(i, j)
+        if 'iptc_{}'.format(str(iptc_key).split(':')[-1]) in tags:
+            if iptc_key.split(':')[-1] == 'DateCreated':
+                    if validateDate(parse_date(metadata[iptc_key], format='%Y:%m:%d')):
+                        ret['DateCreated'] = format_date(parse_date(metadata[iptc_key], format='%Y:%m:%d'))
+                        continue
                     else:
                         logger.error('Could not validate: {}.'.format(ret['DateCreated']))
 
@@ -175,11 +168,23 @@ def write_iptc_tags(image_path, tag_dict):
 
         :param image_path: imaqe path to write
         :param tag_dict: tagname / tagvalue
+
+        :return  status
     '''
+    try:
+        subprocess.call(['exiftool'])
+    except OSError:
+        logger.error('No exiftool installed.')
+        return
+
     image_path = os.path.abspath(image_path)
 
     if not os.path.exists(image_path):
         logger.info('Image {} for writing IPTC metadata does not exist.'.format(image_path))
+        return
+
+    if not isinstance(tag_dict, dict):
+        logger.error('No dictionary of tags.')
         return
 
     command_list = ['exiftool']
@@ -195,7 +200,7 @@ def write_iptc_tags(image_path, tag_dict):
 
         elif tag_name == 'DateCreated':
             if validateDate(parse_date(tag_value.split('T')[0], format='%Y-%m-%d')):
-                tag_value = format_date(parse_date(tag_value.split('T')[0], format='%Y-%m-%d'), '%Y:%m:%d')
+                tag_value = format_date(parse_date(tag_value.split('T')[0], format='%Y:%m:%d'), '%d-%m-%Y')
             else:
                 logger.error('Could not validate {}.'.format(tag_value))
 

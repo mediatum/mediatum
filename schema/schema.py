@@ -1047,9 +1047,9 @@ class Mask(Node):
         mandfields = []
         if self.getMasktype() == "export":
             for mapping in self.get("exportmapping").split(";"):
-                for c in tree.getNode(mapping).getMandatoryFields():
+                for c in q(Node).get(mapping).getMandatoryFields():
                     mandfields.append(c.id)
-        for item in self.getMaskFields():
+        for item in self.all_maskitems:
             try:
                 mandfields.remove(item.get("mappingfield"))
             except ValueError:  # id not in list
@@ -1142,7 +1142,7 @@ class Mask(Node):
         if not self.validateMappingDef():
             ret += '<p i18n:translate="mask_editor_export_error" class="error">TEXT</p>'
 
-        if len(self.getChildren()) == 0:
+        if len(self.children) == 0:
             ret += '<div i18n:translate="mask_editor_no_fields">- keine Felder definiert -</div>'
         else:
             if self.getMappingHeader() != "":
@@ -1150,21 +1150,21 @@ class Mask(Node):
                     esc(self.getMappingHeader()))
 
         # check if all the orderpos attributes are the same which causes problems with sorting
-        z = [t for t in self.getChildren().sort_by_orderpos()]
-        if all(z[0].getOrderPos() == item.getOrderPos() for item in z):
+        z = [t for t in self.children.order_by(Node.orderpos)]
+        if all(z[0].orderpos == item.orderpos for item in z):
             k = 0
             for elem in z:
-                elem.setOrderPos(elem.getOrderPos() + k)
+                elem.orderpos = elem.orderpos + k
                 k += 1
 
         i = 0
         fieldlist = {}  # !!!getAllMetaFields()
-        for item in self.getChildren().sort_by_orderpos():
+        for item in self.children.order_by(Node.orderpos):
             t = getMetadataType(item.get("type"))
             ret += t.getMetaHTML(self, i, language=language, fieldlist=fieldlist)  # get formated line specific of type (e.g. field)
             i += 1
 
-        if len(self.getChildren()) > 0:
+        if len(self.children) > 0:
             if self.getMappingFooter() != "":
                 ret += '<div class="label" i18n:translate="mask_edit_footer">TEXT</div><div class="row">%s</div>' % (
                     esc(self.getMappingFooter()))
@@ -1173,11 +1173,11 @@ class Mask(Node):
 
     """ """
 
-    def edittem(self, req):
+    def editItem(self, req):
         for key in req.params.keys():
             # edit field
             if key.startswith("edit_"):
-                item = tree.getNode(req.params.get("edit", ""))
+                item = q(Node).get(req.params.get("edit", ""))
                 t = getMetadataType(item.get("type"))
                 return '<form method="post" name="myform">%s</form>' % (t.getMetaEditor(item, req))
 
@@ -1185,6 +1185,7 @@ class Mask(Node):
                 self.getMasktype() == "export" and req.params.get("op", "") in ["newdetail", "new"]):
             # add field
             item = Maskitem(u'')
+            db.session.add(item)
             if self.getMasktype() == "export":  # export mask has no selection of fieldtype -> only field
                 t = getMetadataType("field")
                 req.params["op"] = "new"
@@ -1195,8 +1196,7 @@ class Mask(Node):
                 req.params["edit"] = item
             else:
                 req.params["edit"] = item.id
-            db.session.commit()
-            return '<form method="post" name="myform">{}</form>'.format(t.getMetaEditor(item, req))
+            return u'<form method="post" name="myform">{}</form>'.format(t.getMetaEditor(item, req))
 
         if (req.params.get("type", "") == "" and self.getMasktype() != "export") or req.params.get('op') == 'newdetail':
             # type selection for new field
@@ -1224,7 +1224,7 @@ class Mask(Node):
 
         if req.params.get("edit", " ") == " " and req.params.get("op", "") != "new":
             # create new node
-            item = tree.getNode(req.params.get("id"))
+            item = q(Node).get(req.params.get("id"))
             t = getMetadataType(req.params.get("type"))
             return '<form method="post" name="myform">%s</form>' % (t.getMetaEditor(item, req))
 
@@ -1299,13 +1299,13 @@ class Mask(Node):
         self.set("separator", value)
 
     def addMaskitem(self, label, type, fieldid, pid):
-        item = Maskitem(u'')
-        item.type = type
+        item = Maskitem(label)
+        item.set("type", type)
 
         if fieldid != 0:
             for id in ustr(fieldid).split(";"):
                 try:
-                    field = tree.getNode(long(id))
+                    field = q(Node).get(long(id))
                     # don't remove field- it may
                     # (a) be used for some other mask item or
                     # (b) still be in the global metadatafield list
@@ -1318,20 +1318,21 @@ class Mask(Node):
             self.children.append(item)
         else:
             node = q(Node).get(pid)
-            node.append(item)
+            node.children.append(item)
         db.session.commit()
         return item
 
     ''' delete given  maskitem '''
 
     def deleteMaskitem(self, itemid):
-        item = tree.getNode(itemid)
-        for parent in item.getParents():
-            parent.removeChild(item)
+        item = q(Node).get(itemid)
+        for parent in item.parents:
+            parent.children.remove(item)
             i = 0
-            for child in parent.getChildren().sort_by_orderpos():
-                child.setOrderPos(i)
+            for child in parent.children.order_by(Node.orderpos):
+                child.orderpos = i
                 i += 1
+        db.session.commit()
 
 """ class for editor/view masks """
 
@@ -1367,7 +1368,7 @@ class Maskitem(Node):
         return self.getName()
 
     def setLabel(self, value):
-        self.setName(value)
+        self.name = value
 
     def getField(self):
         warn("use Maskitem.metafield", DeprecationWarning)

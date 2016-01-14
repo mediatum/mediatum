@@ -60,8 +60,7 @@
                         <img tal:condition="python:mask.getDefaultMask()" src="/img/haken.gif"/>
                         <img tal:condition="python:not mask.getDefaultMask()" src="/img/emtyDot1Pix.gif"/>
                     </td>
-                    
-                    <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img tal:attributes="src python:lang_icons[mask.getLanguage()]"/></td>
+                    <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img tal:attributes="src python:lang_icons.get(mask.getLanguage())"/></td>
                     <td>
                         <img tal:condition="python:mask.access_ruleset_assocs.filter_by(ruletype='read').count()>0" i18n:attributes="title admin_mask_acl_title" src="/img/archive.png"/>
                         <img tal:condition="python:mask.access_ruleset_assocs.filter_by(ruletype='read').count()==0" i18n:attributes="title admin_mask_acl_title" src="/img/mark_empty.png"/>

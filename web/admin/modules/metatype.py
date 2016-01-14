@@ -546,7 +546,7 @@ def showEditor(req):
             break
 
         if key.startswith("down_"):
-            changeOrder(q(Node).get(key[5:-2]).parents()[0], -1, q(Node).get(key[5:-2]).orderpos)
+            changeOrder(q(Node).get(key[5:-2]).parents[0], -1, q(Node).get(key[5:-2]).orderpos)
             break
 
         if key.startswith("delete_"):
@@ -652,12 +652,12 @@ def showEditor(req):
             position = req.params.get("insertposition", "end")
             if position == "end":
                 # insert at the end of existing mask
-                item.setOrderPos(len(q(Node).get(req.params.get("pid")).children) - 1)
+                item.orderpos = len(q(Node).get(req.params.get("pid")).children) - 1
                 db.session.commit()
             else:
                 # insert at special position
                 fields = editor.getMaskFields()
-                fields.sort(lambda x, y: cmp(x.orderpos, y.orderpos))
+                fields.all().sort(lambda x, y: cmp(x.orderpos, y.orderpos))
                 for f in fields:
                     if f.orderpos >= q(Node).get(position).orderpos and f.id != item.id:
                         f.orderpos = f.orderpos + 1
@@ -773,7 +773,8 @@ def changeOrder(parent, up, down):
                 pos = down
             else:
                 pos = i
-            child.setOrderPos(pos)
+            child.orderpos = pos
+            db.session.commit()
             i = i + 1
         except:
             pass

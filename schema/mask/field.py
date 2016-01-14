@@ -196,7 +196,7 @@ class m_field(Metatype):
         """ return formated row for metaeditor """
         if len(itemlist) > 0:
             # parent still not existing
-            item = getNode(itemlist[index])
+            item = q(Node).get(itemlist[index])
             pitems = len(itemlist)
         else:
             item = parent.getChildren().sort_by_orderpos()[index]
@@ -212,7 +212,7 @@ class m_field(Metatype):
             f = getMetadataType(field.get("type"))
             fieldstring = f.getEditorHTML(field, width=item.getWidth(), value=item.getDefault(), language=language) + ' ' + item.getUnit()
         else:  # node for export mask
-            attribute = tree.getNode(item.get("attribute"))
+            attribute = q(Node).get(item.get("attribute"))
             field = item
             fieldstring = getMetadataType("mappingfield").getEditorHTML(
                 field, width=item.getWidth(), value=attribute.getName(), language=language) + ' ' + item.getUnit()
@@ -334,7 +334,7 @@ class m_field(Metatype):
         if pidnode and hasattr(pidnode, 'getMasktype') and pidnode.getMasktype() == "export":
             v["mappings"] = []
             for m in pidnode.getExportMapping():
-                v["mappings"].append(tree.getNode(m))
+                v["mappings"].append(q(Node).get(m))
             return req.getTAL("schema/mask/field.html", v, macro="metaeditor_" + pidnode.getMasktype())
         else:
             return req.getTAL("schema/mask/field.html", v, macro="metaeditor")

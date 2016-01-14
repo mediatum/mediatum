@@ -45,11 +45,11 @@ class m_label(Metatype):
         item = parent.getChildren().sort_by_orderpos()[index]
         ret = ''
         if not sub:
-            ret += '<div id="' + item.id + '" class="row" onmouseover="pick(this)" onmouseout="unpick(this)" onclick="select(this)">'
+            ret += '<div id="' + ustr(item.id) + '" class="row" onmouseover="pick(this)" onmouseout="unpick(this)" onclick="select(this)">'
         ret += '<b>' + ustr(item.getLabel()) + '</b>'
 
         if not sub:
-            ret += '<div align="right" id="' + item.id + \
+            ret += '<div align="right" id="' + ustr(item.id) + \
                 '_sub" style="display:none"><small style="color:silver">(' + (item.get("type")) + ')</small>'
             if index > 0:
                 ret += '<input type="image" src="/img/uparrow.png" name="up_' + \

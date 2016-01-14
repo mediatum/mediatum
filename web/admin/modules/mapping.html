@@ -345,7 +345,7 @@
             </tr>
         </table>
         <input tal:attributes="value python:parent.id" type="hidden" name="parent"/>
-        <input tal:attributes="value python:field.id" type="hidden" name="id"/>
+        <input tal:attributes="value python:field.id if field.parents.first() is not None else ''" type="hidden" name="id"/>
         <input tal:attributes="value python:id=='' and 'save_new_field' or 'save_edit_field'" type="hidden" name="form_op" id="form_op"/>
         <input type="hidden" name="acttype" value="field"/>
         <input type="hidden" name="actpage" tal:attributes="value actpage"/>

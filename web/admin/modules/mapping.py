@@ -276,7 +276,7 @@ def editMappingField_mask(req, id, parent, err=0):
     if err == 0 and id == "":
         # new mapping field
         field = MappingField(u"")
-        db.session.commit()
+        db.session.add(field)
     elif id != "":
         # edit mapping field
         field = q(Node).get(id)

@@ -149,13 +149,11 @@ def get_iptc_values(file_path, tags=None):
         if 'iptc_{}'.format(str(iptc_key).split(':')[-1]) in tags:
             if iptc_key.split(':')[-1] == 'DateCreated':
                     if validateDate(parse_date(metadata[iptc_key], format='%Y:%m:%d')):
-                        ret['DateCreated'] = format_date(parse_date(metadata[iptc_key], format='%Y:%m:%d'))
+                        ret['iptc_DateCreated'] = format_date(parse_date(metadata['IPTC:{}'.format(iptc_key.split(':')[-1])], format='%Y:%m:%d'))
                         continue
                     else:
                         logger.error('Could not validate: {}.'.format(ret['DateCreated']))
-
-            ret['iptc_{}'.format(str(iptc_key).split(':')[-1])] = metadata[iptc_key]
-
+            ret['iptc_{}'.format(str(iptc_key).split(':')[-1])] = metadata['IPTC:{}'.format(iptc_key.split(':')[-1])]
     logger.info('{} read from file.'.format(ret))
     return ret
 
@@ -199,12 +197,14 @@ def write_iptc_tags(image_path, tag_dict):
             command_list.append('-{}='.format(tag_name))
 
         elif tag_name == 'DateCreated':
-            if validateDate(parse_date(tag_value.split('T')[0], format='%Y-%m-%d')):
-                tag_value = format_date(parse_date(tag_value.split('T')[0], format='%Y:%m:%d'), '%d-%m-%Y')
+            if validateDate(parse_date(tag_value, format='%Y-%m-%dT%H:%M:%S')):
+                tag_value = format_date(parse_date(tag_value, format='%Y-%m-%dT%H:%M:%S'), '%Y:%m:%d')
+                command_list.append(u'-IPTC:{}={}'.format(tag_name, tag_value))
+                continue
             else:
                 logger.error('Could not validate {}.'.format(tag_value))
 
-        command_list.append(u'-{}={}'.format(tag_name, tag_value))
+        command_list.append(u'-IPTC:{}={}'.format(tag_name, tag_value))
 
     logger.info('Command: {} will be executed.'.format(command_list))
     process = subprocess.Popen(command_list, stdout=subprocess.PIPE)

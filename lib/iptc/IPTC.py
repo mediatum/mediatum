@@ -129,11 +129,11 @@ def get_iptc_values(file_path, tags=None):
         return
 
     if not os.path.exists(file_path):
-        logger.info('Could not read IPTC metadata from non existing file.')
+        logger.info('Could not read IPTC metadata from non existing file. {}')
         return
 
     if os.path.basename(file_path).startswith('-'):
-        logger.error('Will not read IPTC metadata to files starting with a hyphen, caused by exiftool security issues.')
+        logger.error('Will not read IPTC metadata to files starting with a hyphen, caused by exiftool security issues. ({})')
         return
 
     with exiftool.ExifTool() as et:
@@ -142,18 +142,24 @@ def get_iptc_values(file_path, tags=None):
     ret = {}
     rep = {'[': '', ',': ';', ']': ''}
 
-    for iptc_key in metadata.keys():
-        if isinstance(metadata[iptc_key], basestring):
-            for i, j in rep.iteritems():
-                metadata[iptc_key] = metadata[iptc_key].replace(i, j)
-        if 'iptc_{}'.format(str(iptc_key).split(':')[-1]) in tags:
-            if iptc_key.split(':')[-1] == 'DateCreated':
-                    if validateDate(parse_date(metadata[iptc_key], format='%Y:%m:%d')):
-                        ret['iptc_DateCreated'] = format_date(parse_date(metadata['IPTC:{}'.format(iptc_key.split(':')[-1])], format='%Y:%m:%d'))
+    for key in metadata.keys():
+        if not key.startswith('IPTC:'):
+            continue
+
+        if isinstance(metadata[key], basestring):
+            for old_value, new_value in rep.iteritems():
+                metadata[key] = metadata[key].replace(old_value, new_value)
+
+        key =  key.split(':')[-1]
+        if 'iptc_{}'.format(key) in tags:
+            if key == 'DateCreated':
+                    if validateDate(parse_date(metadata['IPTC:{}'.format(key)], format='%Y:%m:%d')):
+                        ret['iptc_DateCreated'] = format_date(parse_date(metadata['IPTC:{}'.format(key)], format='%Y:%m:%d'))
                         continue
                     else:
                         logger.error('Could not validate: {}.'.format(ret['DateCreated']))
-            ret['iptc_{}'.format(str(iptc_key).split(':')[-1])] = metadata['IPTC:{}'.format(iptc_key.split(':')[-1])]
+
+            ret['iptc_{}'.format(key)] = metadata['IPTC:{}'.format(key)]
     logger.info('{} read from file.'.format(ret))
     return ret
 

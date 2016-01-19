@@ -111,11 +111,11 @@ BEGIN
 
     RAISE NOTICE 'subnode attribute set';
 
-    INSERT INTO node_alias (alias, nid) SELECT attrs->>'system.aliascol' AS alias, id as nid FROM node WHERE attrs ? 'system.aliascol';
+    INSERT INTO node_alias (alias, nid) SELECT system_attrs->>'aliascol' AS alias, id as nid FROM node WHERE system_attrs ? 'aliascol';
 
     RAISE NOTICE 'migrated node aliases';
 
-    UPDATE node SET attrs = jsonb_object_delete_keys(attrs, 'system.aliascol') WHERE attrs ? 'system.aliascol';
+    UPDATE node SET system_attrs = jsonb_object_delete_keys(system_attrs, 'aliascol') WHERE system_attrs ? 'aliascol';
 
     RAISE NOTICE 'deleted obsolete attributes';
 END;

@@ -129,26 +129,24 @@ def get_iptc_values(file_path, tags=None):
         return
 
     if not os.path.exists(file_path):
-        logger.info('Could not read IPTC metadata from non existing file. {}')
+        logger.info('Could not read IPTC metadata from non existing file. {}'.format(file_path))
         return
 
     if os.path.basename(file_path).startswith('-'):
-        logger.error('Will not read IPTC metadata to files starting with a hyphen, caused by exiftool security issues. ({})')
+        logger.error('Will not read IPTC metadata to files starting with a hyphen, caused by exiftool security issues. ({})'.format(file_path))
         return
 
     with exiftool.ExifTool() as et:
         metadata = et.get_metadata_batch([file_path])[0]
 
     ret = {}
-    rep = {'[': '', ',': ';', ']': ''}
 
     for key in metadata.keys():
         if not key.startswith('IPTC:'):
             continue
 
-        if isinstance(metadata[key], basestring):
-            for old_value, new_value in rep.iteritems():
-                metadata[key] = metadata[key].replace(old_value, new_value)
+        if isinstance(metadata[key], list):
+            metadata[key] = u';'.join(metadata[key])
 
         key =  key.split(':')[-1]
         if 'iptc_{}'.format(key) in tags:

@@ -161,7 +161,7 @@ def get_iptc_values(file_path, tags=None):
                     else:
                         logger.error('Could not validate: {}.'.format(ret[mediatum_key]))
 
-            ret[mediatum_key] = metadata['IPTC:{}'.format(key)]
+            ret[mediatum_key] = metadata[exiftool_key]
     logger.info('{} read from file.'.format(ret))
     return ret
 

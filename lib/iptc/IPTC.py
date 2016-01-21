@@ -112,19 +112,6 @@ def get_wanted_iptc_tags():
     }.items()))
 
 
-def cut_string(in_string, length=0):
-    """
-        returns a cutted string
-
-        :param in_string: string to cut
-        :param length: length to cut
-        :return: cutted string
-    """
-    if isinstance(in_string, str):
-        return in_string[0:length]
-    else:
-        return None
-
 def get_iptc_values(file_path, tags=None):
     """
         get the IPTC tags/values from a given
@@ -138,31 +125,41 @@ def get_iptc_values(file_path, tags=None):
     if not isinstance(tags, dict):
         return
 
-    ret = {}
+    if file_path is None:
+        return
 
     if not os.path.exists(file_path):
-        logger.info('Could not read IPTC metadata from non existing file.')
-        return {}
+        logger.info('Could not read IPTC metadata from non existing file. {}'.format(file_path))
+        return
 
     if os.path.basename(file_path).startswith('-'):
-        logger.error('Will not read IPTC metadata to files starting with a hyphen, caused by exiftool security issues.')
-        return {}
+        logger.error('Will not read IPTC metadata to files starting with a hyphen, caused by exiftool security issues. ({})'.format(file_path))
+        return
 
     with exiftool.ExifTool() as et:
         metadata = et.get_metadata_batch([file_path])[0]
 
     ret = {}
-    for iptc_key in metadata.keys():
-        if 'iptc_{}'.format(str(iptc_key).split(':')[-1]) in get_wanted_iptc_tags():
-            if iptc_key == 'DateCreated':
-                if 'DateCreated' in ret.keys():
-                    if validateDate(parse_date(ret['DateCreated'], format='%Y:%m:%d')):
-                        ret['DateCreated'] = format_date(parse_date(ret['DateCreated'], format='%Y:%m:%d'))
+
+    for exiftool_key in metadata.keys():
+        if not exiftool_key.startswith('IPTC:'):
+            continue
+
+        if isinstance(metadata[exiftool_key], list):
+            metadata[key] = u';'.join(metadata[exiftool_key])
+
+        key =  exiftool_key.split(':')[-1]
+        mediatum_key = 'iptc_{}'.format(key)
+
+        if mediatum_key in tags:
+            if 'Date' in key:
+                    if validateDate(parse_date(metadata[exiftool_key], format='%Y:%m:%d')):
+                        ret[mediatum_key] = format_date(parse_date(metadata[exiftool_key], format='%Y:%m:%d'))
+                        continue
                     else:
-                        logger.error('Could not validate: {}.'.format(ret['DateCreated']))
+                        logger.error('Could not validate: {}.'.format(ret[mediatum_key]))
 
-            ret['iptc_{}'.format(str(iptc_key).split(':')[-1])] = metadata[iptc_key]
-
+            ret[mediatum_key] = metadata[exiftool_key]
     logger.info('{} read from file.'.format(ret))
     return ret
 
@@ -175,11 +172,23 @@ def write_iptc_tags(image_path, tag_dict):
 
         :param image_path: imaqe path to write
         :param tag_dict: tagname / tagvalue
+
+        :return  status
     '''
+    try:
+        subprocess.call(['exiftool'])
+    except OSError:
+        logger.error('No exiftool installed.')
+        return
+
     image_path = os.path.abspath(image_path)
 
     if not os.path.exists(image_path):
         logger.info('Image {} for writing IPTC metadata does not exist.'.format(image_path))
+        return
+
+    if not isinstance(tag_dict, dict):
+        logger.error('No dictionary of tags.')
         return
 
     command_list = ['exiftool']
@@ -194,12 +203,14 @@ def write_iptc_tags(image_path, tag_dict):
             command_list.append('-{}='.format(tag_name))
 
         elif tag_name == 'DateCreated':
-            if validateDate(parse_date(tag_value.split('T')[0], format='%Y-%m-%d')):
-                tag_value = format_date(parse_date(tag_value.split('T')[0], format='%Y-%m-%d'), '%Y:%m:%d')
+            if validateDate(parse_date(tag_value, format='%Y-%m-%dT%H:%M:%S')):
+                tag_value = format_date(parse_date(tag_value, format='%Y-%m-%dT%H:%M:%S'), '%Y:%m:%d')
+                command_list.append(u'-IPTC:{}={}'.format(tag_name, tag_value))
+                continue
             else:
                 logger.error('Could not validate {}.'.format(tag_value))
 
-        command_list.append(u'-{}={}'.format(tag_name, tag_value))
+        command_list.append(u'-IPTC:{}={}'.format(tag_name, tag_value))
 
     logger.info('Command: {} will be executed.'.format(command_list))
     process = subprocess.Popen(command_list, stdout=subprocess.PIPE)

@@ -377,3 +377,6 @@ msgstr "number of matches ( + 1, if own home directory did not match)"
 
 msgid "edit_tree_filterbutton_tooltip"
 msgstr "apply filter to all existing home directories"
+
+msgid "write_information_back"
+msgstr "synchronize information"

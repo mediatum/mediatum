@@ -151,8 +151,8 @@ def get_iptc_values(file_path, tags=None):
         key =  key.split(':')[-1]
         if 'iptc_{}'.format(key) in tags:
             if key == 'DateCreated':
-                    if validateDate(parse_date(metadata['IPTC:{}'.format(key)], format='%Y:%m:%d')):
-                        ret['iptc_DateCreated'] = format_date(parse_date(metadata['IPTC:{}'.format(key)], format='%Y:%m:%d'))
+                    if validateDate(parse_date(metadata['IPTC:DateCreated'], format='%Y:%m:%d')):
+                        ret['iptc_DateCreated'] = format_date(parse_date(metadata['IPTC:DateCreated'], format='%Y:%m:%d'))
                         continue
                     else:
                         logger.error('Could not validate: {}.'.format(ret['DateCreated']))

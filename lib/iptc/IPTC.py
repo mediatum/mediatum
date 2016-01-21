@@ -141,16 +141,14 @@ def get_iptc_values(file_path, tags=None):
 
     ret = {}
 
-    for key in metadata.keys():
-        if not key.startswith('IPTC:'):
+    for exiftool_key in metadata.keys():
+        if not exiftool_key.startswith('IPTC:'):
             continue
 
-        if isinstance(metadata[key], list):
-            metadata[key] = u';'.join(metadata[key])
+        if isinstance(metadata[exiftool_key], list):
+            metadata[key] = u';'.join(metadata[exiftool_key])
 
-        exiftool_key = key
-
-        key =  key.split(':')[-1]
+        key =  exiftool_key.split(':')[-1]
         mediatum_key = 'iptc_{}'.format(key)
 
         if mediatum_key in tags:

@@ -148,16 +148,20 @@ def get_iptc_values(file_path, tags=None):
         if isinstance(metadata[key], list):
             metadata[key] = u';'.join(metadata[key])
 
+        exiftool_key = key
+
         key =  key.split(':')[-1]
-        if 'iptc_{}'.format(key) in tags:
-            if key == 'DateCreated':
-                    if validateDate(parse_date(metadata['IPTC:DateCreated'], format='%Y:%m:%d')):
-                        ret['iptc_DateCreated'] = format_date(parse_date(metadata['IPTC:DateCreated'], format='%Y:%m:%d'))
+        mediatum_key = 'iptc_{}'.format(key)
+
+        if mediatum_key in tags:
+            if 'Date' in key:
+                    if validateDate(parse_date(metadata[exiftool_key], format='%Y:%m:%d')):
+                        ret[mediatum_key] = format_date(parse_date(metadata[exiftool_key], format='%Y:%m:%d'))
                         continue
                     else:
-                        logger.error('Could not validate: {}.'.format(ret['DateCreated']))
+                        logger.error('Could not validate: {}.'.format(ret[mediatum_key]))
 
-            ret['iptc_{}'.format(key)] = metadata['IPTC:{}'.format(key)]
+            ret[mediatum_key] = metadata['IPTC:{}'.format(key)]
     logger.info('{} read from file.'.format(ret))
     return ret
 

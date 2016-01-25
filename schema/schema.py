@@ -562,7 +562,7 @@ def parseEditorData(req, node):
 #
 def exportMetaScheme(name):
     if name == "all":
-        return getNodeXML(tree.getRoot("metadatatypes"))
+        return getNodeXML(q(Metadatatypes).one())
     else:
         return getNodeXML(getMetaType(name))
 
@@ -573,16 +573,17 @@ def exportMetaScheme(name):
 def importMetaSchema(filename):
     n = readNodeXML(filename)
     importlist = list()
-    if n.getContentType() == "metadatatype":
+    if n.type == "metadatatype":
         importlist.append(n)
-    elif n.getContentType() == "metadatatypes":
-        for ch in n.getChildren():
+    elif n.type == "metadatatypes":
+        for ch in n.children:
             importlist.append(ch)
 
-    metadatatypes = tree.getRoot("metadatatypes")
+    metadatatypes = q(Metadatatypes).one()
     for m in importlist:
-        m.setName("import-" + m.getName())
-        metadatatypes.addChild(m)
+        m.name = u"import-" + m.name
+        metadatatypes.children.append(m)
+    db.session.commit()
 
 
 @check_type_arg

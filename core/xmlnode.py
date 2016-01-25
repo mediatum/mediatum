@@ -56,9 +56,9 @@ def add_file_to_xmlnode(file, xmlnode):
 def add_child_to_xmlnode(child, xmlnode):
     xmlchild = etree.SubElement(xmlnode, "child")
     xmlchild.set("id", unicode(child.id))
-    xmlchild.set("type", child.type + "/" + child.schema)
+    xmlchild.set("type", (child.type + "/" + (child.schema or u"")).strip("/"))
     xmlchild.set("datatype", child.type)
-    xmlchild.set("schema", child.schema)
+    xmlchild.set("schema", (child.schema or u""))
 
 
 def add_node_to_xmldoc(
@@ -76,11 +76,11 @@ def add_node_to_xmldoc(
     written.add(node.id)
 
     xmlnode = etree.SubElement(xmlroot, "node")
-    xmlnode.set("name", node.name or "")
+    xmlnode.set("name", node.name or u"")
     xmlnode.set("id", unicode(node.id))
-    xmlnode.set("type", node.type + "/" + node.schema)
+    xmlnode.set("type", (node.type + "/" + (node.schema or u"")).strip("/"))
     xmlnode.set("datatype", node.type)
-    xmlnode.set("schema", node.schema)
+    xmlnode.set("schema", (node.schema or u""))
 
     # TODO: no access rights at the moment
 
@@ -107,10 +107,9 @@ def add_node_to_xmldoc(
         exportmapping_id = node.get(u"exportmapping").strip()
         if exportmapping_id and exportmapping_id not in written:
             mapping = q(Mapping).get(int(exportmapping_id))
-            written.add(mapping.id)
-            add_node_to_xmldoc(mapping, xmlroot, written, children, exclude_filetypes, exclude_childtypes, attribute_name_filter)
-
-
+            if mapping is not None:
+                written.add(mapping.id)
+                add_node_to_xmldoc(mapping, xmlroot, written, children, exclude_filetypes, exclude_childtypes, attribute_name_filter)
     return xmlnode
 
 
@@ -228,8 +227,13 @@ class _NodeLoader:
             parent = node
             try:
                 datatype = attrs["datatype"]
-            except:
-                datatype = "directory"
+            except KeyError:
+                # compatibility for old xml files created with mediatum
+                t = attrs.get("type")
+                if t is not None:
+                    datatype = t
+                else:
+                    datatype = "directory"
 
             if "id" not in attrs:
                 attrs["id"] = ustr(random.random())
@@ -241,10 +245,12 @@ class _NodeLoader:
                 self.node_already_seen = True
                 return
             elif datatype in ["mapping"]:
-                node = Node(name=(attrs["name"] + "_imported_" + old_id), type=datatype)
+                content_class = Node.get_class_for_typestring(datatype)
+                node = content_class(name=(attrs["name"] + "_imported_" + old_id))
             else:
-                node = Node(name=attrs["name"], type=datatype)
-            db.session.commit()
+                content_class = Node.get_class_for_typestring(datatype)
+                node = content_class(name=attrs["name"])
+            db.session.add(node)
 
             # todo: handle access
 
@@ -263,7 +269,6 @@ class _NodeLoader:
             self.nodes.append(node)
             if self.root is None:
                 self.root = node
-            db.session.commit()
             return
         elif name == "attribute" and not self.node_already_seen:
             attr_name = attrs["name"]
@@ -339,9 +344,9 @@ def getNodeXML(
     nodelist = create_xml_nodelist()
 
     nodelist.set('rootname', node.name)
-    nodelist.set('roottype', node.type + "/" + node.schema)
+    nodelist.set('roottype', (node.type + "/" + (node.schema or u"")).strip("/"))
     nodelist.set('rootdatatype', node.type)
-    nodelist.set('rootschema', node.schema)
+    nodelist.set('rootschema', (node.schema or u""))
     nodelist.set('original_nodeid', unicode(node.id))
 
     from workflow.workflow import Workflow

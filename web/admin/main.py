@@ -56,7 +56,7 @@ def show_node(req):
     ]
 
     if user.is_workflow_editor:
-        spc.append(Menu("sub_header_workflow", u"../publish"))
+        spc.append(Menu("sub_header_workflow", u"../publish/"))
 
     v["spc"] = spc
     v["hashelp"] = help.getHelpPath(['admin', 'modules', req.path.split('/')[1]])

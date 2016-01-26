@@ -80,7 +80,10 @@ def export(req):
 
         tempfile = join_paths(config.get("paths.tempdir"), str(random.random()))
         with codecs.open(tempfile, "w", encoding='utf8') as f:
-            f.write(module.export(req, path[2]))
+            try:
+                f.write(module.export(req, path[2]))
+            except UnicodeDecodeError:
+                f.write(module.export(req, path[2]).decode('utf-8'))
 
         req.sendFile(tempfile, u"application/xml")
         if os.sep == '/':  # Unix?

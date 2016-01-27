@@ -153,7 +153,7 @@ def frameset(req):
             Menu("sub_header_administration", "../admin", target="_parent"))
 
     if user.is_workflow_editor:
-        spc.append(Menu("sub_header_workflow", "../publish", target="_parent"))
+        spc.append(Menu("sub_header_workflow", "../publish/", target="_parent"))
 
     spc.append(Menu("sub_header_logout", "../logout", target="_parent"))
 
@@ -258,7 +258,7 @@ def handletabs(req, ids, tabs):
             Menu("sub_header_administration", "../admin", target="_parent"))
 
     if user.is_workflow_editor:
-        spc.append(Menu("sub_header_workflow", "../publish", target="_parent"))
+        spc.append(Menu("sub_header_workflow", "../publish/", target="_parent"))
 
     spc.append(Menu("sub_header_logout", "../logout", target="_parent"))
 
@@ -876,7 +876,7 @@ def content(req):
             v['spc'].append(Menu("sub_header_administration", "../admin", target="_parent"))
 
         if user.is_workflow_editor:
-            v['spc'].append(Menu("sub_header_workflow", "../publish", target="_parent"))
+            v['spc'].append(Menu("sub_header_workflow", "../publish/", target="_parent"))
 
         v['spc'].append(Menu("sub_header_logout", "../logout", target="_parent"))
 

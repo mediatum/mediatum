@@ -18,6 +18,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from werkzeug._compat import wsgi_encoding_dance
 
 #===============================================================
 #
@@ -66,7 +67,6 @@ def attrEscape(s):
     s = s.replace('>', '&gt;')
     s = s.replace('"', '&quot;')
     return s
-
 
 # ================ MEDUSA ===============
 
@@ -3345,6 +3345,88 @@ class WebContext:
         return None
 
 
+class WSGIHandler(object):
+
+    def __init__(self, app, context_name, path):
+        self.app = app
+        self.context_name = context_name
+        self.path = path
+
+    def start_response(self, status, response_headers, exc_info=None):
+        self.request.reply_headers.update(dict(response_headers))
+        self.status = status
+        return self.request.write
+
+    def make_environ(self):
+        from StringIO import StringIO
+        request = self.request
+        query = request.query[1:] if request.query is not None else ""
+        request_body = StringIO(request._data) if hasattr(request, "_data") else StringIO()
+
+        # SERVER_NAME is unknown, we can only use localhost...
+        environ = {
+            "REQUEST_METHOD": request.method,
+            "SCRIPT_NAME": self.context_name,
+            "PATH_INFO": wsgi_encoding_dance(self.path),
+            "QUERY_STRING": wsgi_encoding_dance(query),
+            "CONTENT_TYPE": request.request_headers.get("content-type", ""),
+            "CONTENT_LENGTH": request.request_headers.get("content-length", ""),
+            'REMOTE_ADDR': request.channel.addr[0],
+            'REMOTE_PORT': request.channel.addr[1],
+            "SERVER_NAME": "localhost",
+            "SERVER_PORT": request.channel.server.port,
+            "SERVER_PROTOCOL": "HTTP/" + request.version,
+            "wsgi.version": (1, 0),
+            "wsgi.url_scheme": "http",
+            "wsgi.input": request_body,
+            "wsgi.errors": sys.stderr,
+            "wsgi.multithread": multithreading_enabled,
+            "wsgi.multiprocess": False,
+            "wsgi.run_once": False
+        }
+
+        for key, value in request.request_headers.items():
+            key = 'HTTP_' + key.upper().replace('-', '_')
+            if key not in ('HTTP_CONTENT_TYPE', 'HTTP_CONTENT_LENGTH'):
+                environ[key] = value
+
+        return environ
+
+    def __call__(self, request):
+
+
+        self.request = request
+        environ = self.make_environ()
+
+        try:
+            content = self.app(environ, self.start_response)
+        except:
+            logg.exception("exception in WSGI app:")
+            request.error(500, "WSGI app failed")
+            return
+
+        for elem in content:
+            request.write(elem)
+
+        spl = self.status.split(" ", 1)
+        status_code = int(spl[0])
+        reason = spl[1] if len(spl) == 2 else None
+
+        request.setStatus(status_code)
+        request.done()
+
+
+class WSGIContext(object):
+
+    def __init__(self, name, app):
+        self.name = name
+        self.app = app
+
+    def match(self, path):
+        """we don't really "match" here, just for compatibility with Athana's WebContext"""
+        return WSGIHandler(self.app, self.name, path)
+
+
 class FileStore:
 
     def __init__(self, name, root=None):
@@ -3613,6 +3695,7 @@ class simple_input_collector:
         del self.data
         r = self.request
         del self.request
+        r._data = d
         pairs = []
         data = d.split('&')
         for e in data:
@@ -3635,7 +3718,7 @@ class upload_input_collector:
         self.handler = handler
         self.boundary = boundary
         request.channel.set_terminator(length)
-        self.data = ""
+        self.data = self._all_data = ""
         self.pos = 0
         self.start_marker = "--" + boundary + "\r\n"
         self.end_marker = "--" + boundary + "--"
@@ -3688,6 +3771,7 @@ class upload_input_collector:
     def collect_incoming_data(self, newdata):
         self.pos += len(newdata)
         self.data += newdata
+        self._all_data += newdata
 
         while len(self.data) > 0:
             if self.data.startswith(self.end_marker):
@@ -3740,6 +3824,7 @@ class upload_input_collector:
         d = self.data
         del self.data
         r = self.request
+        r._data = self._all_data
         del self.request
         self.handler.continue_request(r, self.form)
 
@@ -3835,9 +3920,15 @@ def _call_handler_func(handler, handler_func, request):
 
 
 def call_handler_func(handler, handler_func, request):
-    if app:
+
+    # WSGI passthrough. WSGIHandler takes care of the rest
+    if isinstance(handler_func, WSGIHandler):
+        handler_func(request)
+
+    elif app:
         with app.request_context(request, request.session):
             _call_handler_func(handler, handler_func, request)
+            pass
     else:
         _call_handler_func(handler, handler_func, request)
 # /COMPAT
@@ -4007,15 +4098,17 @@ class AthanaHandler:
         request.query = query
         request.fragment = fragment
         # COMPAT: new param style like flask
-        form, files = filter_out_files(form)
-        try:
-            request.args = make_param_dict_utf8_values(args)
-            request.form = make_param_dict_utf8_values(form)
-        except UnicodeDecodeError:
-            return request.error(400)
+        # we don't need this for WSGI, args / form parsing is done by the WSGI app
+        if not isinstance(context, WSGIContext):
+            form, files = filter_out_files(form)
+            try:
+                request.args = make_param_dict_utf8_values(args)
+                request.form = make_param_dict_utf8_values(form)
+            except UnicodeDecodeError:
+                return request.error(400)
 
-        request.files = ImmutableMultiDict(files)
-        request.make_legacy_params_dict()
+            request.files = ImmutableMultiDict(files)
+            request.make_legacy_params_dict()
         # /COMPAT
         request.request = request
         request.ip = ip
@@ -4202,6 +4295,9 @@ def addContext(webpath, localpath):
     contexts += [c]
     return c
 
+def add_wsgi_context(webpath, wsgi_app):
+    c = WSGIContext(webpath, wsgi_app)
+    contexts.append(c)
 
 def setServiceUser(u):
     global service_user
@@ -4445,6 +4541,43 @@ TODO:
     * session clearup
     * temp directory in .cfg file
 """
+
+global _test_running, _test_thread
+_test_running = False
+_test_thread = None
+
+def threaded_testrun(port=8081):
+    ph = AthanaHandler()
+    hs = http_server('', port)
+    hs.install_handler(ph)
+
+    global _test_running, _test_thread
+    _test_running = True
+
+    def athana_test_loop():
+        global ATHANA_STARTED
+        ATHANA_STARTED = True
+
+        while _test_running:
+            asyncore.poll2(timeout=0.005)
+
+        logg.info("left testmode loop")
+        hs.close()
+
+    import threading
+    _test_thread = threading.Thread(target=athana_test_loop)
+    _test_thread.start()
+
+    while not ATHANA_STARTED:
+        time.sleep(0.001)
+
+    logg.info("athana testmode, use athana.stop_testrun()")
+
+
+def stop_testrun():
+    global _test_running
+    _test_running = False
+    _test_thread.join()
 
 
 def setTempDir(path):

@@ -103,10 +103,16 @@ def update(self, **kwargs):
     for name, value in iteritems(kwargs):
         setattr(self, name, value)
 
+def __str__(self):
+    if hasattr(self, "__unicode__"):
+        return unicode(self).encode("utf8")
+    return repr(self)
+
 
 DeclarativeBase.to_dict = to_dict
 DeclarativeBase.to_yaml = to_yaml
 DeclarativeBase.update = update
+DeclarativeBase.__str__ = __str__
 
 
 @event.listens_for(Engine, "before_cursor_execute")

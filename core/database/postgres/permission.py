@@ -3,13 +3,14 @@
     :copyright: (c) 2015 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
-from sqlalchemy import Integer, Unicode, Boolean, Text, sql
+from sqlalchemy import Integer, Unicode, Boolean, Text, sql, UniqueConstraint
 from sqlalchemy.dialects.postgresql import ARRAY, CIDR
+from sqlalchemy.orm import column_property, object_session
 
 from core.database.postgres import DeclarativeBase, C, rel, integer_pk, TimeStamp, mediatumfunc, FK, dynamic_rel
 from core.database.postgres.node import Node
 from core.database.postgres.alchemyext import Daterange, map_function_to_mapped_class
-from sqlalchemy.orm import column_property, object_session
+from sqlalchemy.dialects.postgresql.constraints import ExcludeConstraint
 
 
 class AccessRule(DeclarativeBase):
@@ -70,12 +71,20 @@ class NodeToAccessRuleset(DeclarativeBase):
     ruletype = C(Text, index=True, primary_key=True, nullable=False)
     invert = C(Boolean, server_default="false", index=True)
     blocking = C(Boolean, server_default="false", index=True)
+    private = C(Boolean, server_default="false")
 
     ruleset = rel(AccessRuleset, backref="node_assocs")
 
-
-Node.access_rule_assocs = dynamic_rel(NodeToAccessRule, backref="node", cascade="all, delete-orphan", passive_deletes=True)
-Node.access_ruleset_assocs = dynamic_rel(NodeToAccessRuleset, backref="node", cascade="all, delete-orphan", passive_deletes=True)
+    __table_args__ = (
+        # This exclude constraint is something like a unique constraint only for rows where private is true.
+        # Postgres doesn't support WHERE for unique constraints (why?), so lets just use this.
+        # Alternatively, we could use a unique partial index to enforce the constraint.
+        ExcludeConstraint((nid, "="),
+                          (ruletype, "="),
+                          using="btree",
+                          where="private = true",
+                          name="only_one_private_ruleset_per_node_and_ruletype"),
+    )
 
 
 class IPNetworkList(DeclarativeBase):
@@ -88,6 +97,30 @@ class IPNetworkList(DeclarativeBase):
     subnets = C(ARRAY(CIDR), index=True)
 
 
+# some Node extensions that could be moved to the Node class later.
+
+Node.access_rule_assocs = dynamic_rel(NodeToAccessRule, backref="node", cascade="all, delete-orphan", passive_deletes=True)
+Node.access_ruleset_assocs = dynamic_rel(NodeToAccessRuleset, backref="node", cascade="all, delete-orphan", passive_deletes=True)
+
+
+def get_or_add_private_access_ruleset(self, ruletype):
+
+    ruleset_assoc = self.access_ruleset_assocs.filter_by(private=True, ruletype=ruletype).scalar()
+
+    if ruleset_assoc is None:
+        # the name doesn't really matter, but it must be unique
+        ruleset = AccessRuleset(name=u"_{}_{}".format(ruletype, unicode(self.id)))
+        ruleset_assoc = NodeToAccessRuleset(ruletype=ruletype, ruleset=ruleset, private=True)
+        self.access_ruleset_assocs.append(ruleset_assoc)
+    else:
+        ruleset = ruleset_assoc.ruleset
+
+    return ruleset
+
+
+Node.get_or_add_private_access_ruleset = get_or_add_private_access_ruleset
+
+
 EffectiveNodeToAccessRuleset = map_function_to_mapped_class(mediatumfunc.effective_access_rulesets, NodeToAccessRuleset, "node_id")
 
 
@@ -98,5 +131,3 @@ def _effective_access_ruleset_assocs(self):
 Node.effective_access_ruleset_assocs = property(_effective_access_ruleset_assocs)
 
 AccessRuleset.rule_assocs = rel(AccessRulesetToRule, backref="ruleset")
-
-

@@ -1,0 +1,4 @@
+[BASIC]
+max-line-length=140
+ignored-modules=core,pygments.formatters,pygments.lexers
+const-rgx=[a-z_][a-z0-9_]{2,30}$

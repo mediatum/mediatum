@@ -3403,6 +3403,7 @@ class WSGIHandler(object):
         except:
             logg.exception("exception in WSGI app:")
             request.error(500, "WSGI app failed")
+            return
 
         for elem in content:
             request.write(elem)

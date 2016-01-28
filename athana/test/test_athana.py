@@ -110,6 +110,18 @@ def test_wsgi_response_content_type(app, cl):
     assert res.headers["Content-Type"] == "text/plain; charset=utf-8"
 
 
+def test_wsgi_exception(app, cl, caplog):
+    caplog.setLevel(logging.ERROR)
+    def fail():
+        raise Exception("epic fail!")
+    add_test_handler(app, fail)
+    res = cl.get("/test")
+    assert res.status_code == 500
+    # check if logging reported our stupid exception ;)
+    rec = caplog.records()[-1]
+    assert rec.exc_info[1].args[0] == "epic fail!"
+
+
 def test_wsgi_response_binary(app, cl):
     res = cl.get("/test_data/test.png")
     assert res.status_code == 200

@@ -4,11 +4,13 @@
     :license: GPL3, see COPYING for details
 """
 
-from pytest import fixture
+from pytest import fixture, raises
+from sqlalchemy.exc import IntegrityError
 from core.test.asserts import assert_deprecation_warning
-from core import config, db, User, ShoppingBag
-from contenttypes import Directory
+from core import config, db, User, UserGroup, ShoppingBag
 from core.test.factories import UserGroupFactory
+from contenttypes import Directory
+from core.database.postgres.user import UserToUserGroup
 
 
 @fixture(params=[
@@ -83,6 +85,27 @@ def test_user_create_home_dir(some_user, home_root):
     assert user.trash_dir in home_subdirs
 
 
+def test_get_or_add_private_group(session, some_user):
+    group = some_user.get_or_add_private_group()
+    assert isinstance(group, UserGroup)
+    same_group_again = some_user.get_or_add_private_group()
+    assert same_group_again is group
+
+
+def test_add_another_private_group(session, some_user):
+    """Private access rulesets should never be created by hand (use Node.get_or_add_private_access_ruleset).
+    But, if you actually do that, this will happen some day:
+    """
+    with raises(IntegrityError):
+        # ok
+        some_user.get_or_add_private_group()
+        # not ok, someone tries to add a second read private ruleset by hand...
+        group = UserGroup(name=u"epic_fail")
+        group_assoc = UserToUserGroup(usergroup=group, private=True)
+        some_user.group_assocs.append(group_assoc)
+        # flush to enforce constraints
+        session.flush()
+
 def test_user_hidden_edit_functions(some_user, some_group):
     g1 = UserGroupFactory()
     g2 = UserGroupFactory(hidden_edit_functions=["func1", "func2"])
@@ -91,7 +114,7 @@ def test_user_hidden_edit_functions(some_user, some_group):
     hidden_edit_functions = some_user.hidden_edit_functions
     for f in g1.hidden_edit_functions:
         assert f in hidden_edit_functions
-    
+
 
 def test_guest_user_in_default_data(default_data):
     q = db.session.query

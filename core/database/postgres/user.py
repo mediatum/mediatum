@@ -7,8 +7,9 @@ from itertools import chain
 import logging
 
 from sqlalchemy import Unicode, Text, Boolean, Table, DateTime, UniqueConstraint, String
-from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.dialects.postgresql import ARRAY, ExcludeConstraint
 from sqlalchemy.orm.session import object_session
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy_utils.types import EmailType
 
 from core.database.postgres import DeclarativeBase, db_metadata
@@ -17,7 +18,6 @@ from core.database.postgres import TimeStamp, integer_fk, integer_pk
 from core import config
 from core.user import UserMixin
 from core.usergroup import UserGroupMixin
-from sqlalchemy.ext.associationproxy import association_proxy
 
 
 logg = logging.getLogger(__name__)
@@ -96,10 +96,8 @@ class User(DeclarativeBase, TimeStamp, UserMixin):
     can_change_password = C(Boolean, server_default="false")
 
     home_dir_id = integer_fk("node.id")
-    private_group_id = integer_fk(UserGroup.id)
 
     # relationships
-    private_group = rel(UserGroup)
     groups = association_proxy("group_assocs", "usergroup", creator=lambda ug: UserToUserGroup(usergroup=ug))
     home_dir = rel("Directory", foreign_keys=[home_dir_id])
 
@@ -144,6 +142,25 @@ class User(DeclarativeBase, TimeStamp, UserMixin):
         if self.home_dir:
             return self.home_dir.children.filter(Directory.system_attrs[u"used_as"].astext == u"trash").one()
 
+    def get_or_add_private_group(self):
+        """Gets the private group for this user.
+        Creates the group if it's missing and adds it to the session.
+        Always use this method and don't create private groups by yourself!
+        :rtype: UserGroup
+        """
+
+        maybe_group_assoc = [g for g in self.group_assocs if g.private == True]
+
+        if not maybe_group_assoc:
+            # the name doesn't really matter, but it must be unique
+            group = UserGroup(name=u"_user_{}".format(unicode(self.id)))
+            group_assoc = UserToUserGroup(usergroup=group, private=True)
+            self.group_assocs.append(group_assoc)
+        else:
+            group = maybe_group_assoc[0].usergroup
+
+        return group
+
     def change_password(self, password):
         from core.auth import create_password_hash
         self.password_hash, self.salt = create_password_hash(password)
@@ -173,10 +190,20 @@ class UserToUserGroup(DeclarativeBase, TimeStamp):
     user_id = C(FK(User.id, ondelete="CASCADE"), primary_key=True)
     usergroup_id = C(FK(UserGroup.id, ondelete="CASCADE"), primary_key=True)
     managed_by_authenticator = C(Boolean, server_default="false")
+    private = C(Boolean, server_default="false")
 
     user = rel(User, backref=bref("group_assocs", passive_deletes=True, cascade="all, delete-orphan"))
     usergroup = rel(UserGroup, backref=bref("user_assocs", passive_deletes=True, cascade="all, delete-orphan"))
 
+    __table_args__ = (
+        # This exclude constraint is something like a unique constraint only for rows where private is true.
+        # Postgres doesn't support WHERE for unique constraints (why?), so lets just use this.
+        # Alternatively, we could use a unique partial index to enforce the constraint.
+        ExcludeConstraint((user_id, "="),
+                          using="btree",
+                          where="private = true",
+                          name="only_one_private_group_per_user"),
+    )
 
 class OAuthUserCredentials(DeclarativeBase, TimeStamp):
 
@@ -187,3 +214,4 @@ class OAuthUserCredentials(DeclarativeBase, TimeStamp):
     user_id = integer_fk(User.id)
 
     user = rel(User)
+

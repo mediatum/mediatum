@@ -18,42 +18,6 @@ END;
 $f$;
 
 
--- Creates a private user group for all users of an authenticator.
--- They are named <user_id>_<user_login_name> (but it doesn't really matter, it's just a name)
-CREATE OR REPLACE FUNCTION mediatum.create_private_user_groups(_authenticator_id integer) RETURNS void
-    LANGUAGE plpgsql
-    SET search_path TO :search_path
-    AS $f$
-DECLARE
-    rows integer;
-BEGIN
-    WITH users AS (SELECT login_name, id FROM mediatum.user WHERE authenticator_id=_authenticator_id),
-
-    groups AS (INSERT INTO usergroup (name, description, created_at)
-               SELECT users.id::text || '_' || users.login_name AS name,
-                      'private user group for ' || login_name AS description,
-                      now() AS created_at
-               FROM users
-               RETURNING usergroup.id, usergroup.name),
-
-    mappings AS (INSERT INTO user_to_usergroup (usergroup_id, user_id)
-                 SELECT id as usergroup_id,
-                        (SELECT id FROM mediatum.user u WHERE groups.name=u.id::text || '_' || u.login_name AND authenticator_id=_authenticator_id) as user_id
-                 FROM groups
-                 RETURNING usergroup_id, user_id)
-
-    UPDATE mediatum.user
-    SET private_group_id = m.usergroup_id
-    FROM mappings m
-    WHERE m.user_id = id;
-
-    GET DIAGNOSTICS rows = ROW_COUNT;
-
-    RAISE NOTICE 'created % private user groups for authenticator %', rows, _authenticator_id;
-END;
-$f$;
-
-
 -- Creates user entries from imported internal user nodes
 CREATE OR REPLACE FUNCTION mediatum.migrate_internal_users() RETURNS void
     LANGUAGE plpgsql

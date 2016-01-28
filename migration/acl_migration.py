@@ -347,13 +347,14 @@ class SymbolicExprToAccessRuleConverter(object):
         self.fake_groups = {}
 
     def get_private_user_group_id_from_cond(self, acl_cond):
+        """Returns the private user group id or a fake id if nothing was found."""
         username = acl_cond.name
-        # find the private user group
-        group = q(UserGroup).join(User, UserGroup.id == User.private_group_id).filter_by(login_name=username).scalar()
-        if group is None:
-            logg.warn("private group for user %s not found", username)
+        user = q(User).filter_by(login_name=username).scalar()
+        if user is None:
+            logg.warn("user %s not found", username)
             self.missing_users[acl_cond] = username
             return self._fake_groupid(username)
+        group = user.get_or_add_private_group()
         return group.id
 
     def _fake_groupid(self, name):

@@ -104,6 +104,11 @@ Node.access_ruleset_assocs = dynamic_rel(NodeToAccessRuleset, backref="node", ca
 
 
 def get_or_add_private_access_ruleset(self, ruletype):
+    """Gets the private access ruleset for this node for the specified `ruletype`.
+    Creates the ruleset if it's missing and adds it to the session.
+    Always use this method and don't create private rulesets by yourself!
+    :rtype: AccessRuleset
+    """
 
     ruleset_assoc = self.access_ruleset_assocs.filter_by(private=True, ruletype=ruletype).scalar()
 

@@ -438,7 +438,12 @@ RETURN QUERY
        FROM node_to_access_ruleset na
        WHERE na.nid=q.nid
         AND na.ruleset_name=q.ruleset_name
-        AND na.ruletype=_ruletype) as blocking 
+        AND na.ruletype=_ruletype) as blocking,
+      (SELECT private
+       FROM node_to_access_ruleset na
+       WHERE na.nid=q.nid
+        AND na.ruleset_name=q.ruleset_name
+        AND na.ruletype=_ruletype) as private 
     FROM (WITH RECURSIVE ra(nid, ruleset_names, rule_ids) AS
             (SELECT nm.nid,
                (SELECT array_agg(ruleset_name) AS ruleset_names
@@ -505,7 +510,8 @@ RETURN QUERY
                     na.ruleset_name,
                     _ruletype AS ruletype,
                     na.invert,
-                    na.blocking
+                    na.blocking,
+                    na.private
     FROM noderelation nr
     JOIN node_to_access_ruleset na ON nr.nid=na.nid
     WHERE cid=node_id

@@ -112,6 +112,7 @@ def check_imports():
         "configargparse",
         "decorator",
         "exiftool",
+        "flask_admin",
         "httplib2",
         "humanize",
         "ipaddr",

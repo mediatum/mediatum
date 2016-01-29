@@ -277,6 +277,11 @@ def initContexts():
                     collection, port=int(config.get("ftp.port", 21)), debug=config.get("host.type", "testing")))
 
 
+    # new admin area
+
+    import web.newadmin
+    athana.add_wsgi_context("/f", web.newadmin.app)
+
 def flush(req):
     athana.flush()
     import core.__init__ as c

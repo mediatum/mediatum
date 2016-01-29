@@ -9,6 +9,7 @@ let
   inherit (self) 
   alembic
   decorator
+  flask
   httplib2
   humanize
   ipdb
@@ -55,6 +56,17 @@ let
     };
     doCheck = false;
   };
+
+  flask-admin = self.buildPythonPackage {
+    name = "flask-admin-1.4.0";
+    src = fetchurl {
+      url = https://pypi.python.org/packages/source/F/Flask-Admin/Flask-Admin-1.4.0.tar.gz;
+      md5 = "7b24933924f1de60c7dafc371bcbb6f4";
+    };
+    propagatedBuildInputs = with self; [wtforms flask];
+    buildInputs = with self; [];
+    doCheck = false;
+  };  
 
   imagemagick = pkgs.imagemagick.override { ghostscript = pkgs.ghostscript; };
 
@@ -266,6 +278,14 @@ let
     propagatedBuildInputs = with self; [sqlalchemy sqlalchemy-utils];
   };
 
+  wtforms = self.buildPythonPackage {
+    name = "wtforms-2.1";
+    src = fetchurl {
+      url = "https://pypi.python.org/packages/source/W/WTForms/WTForms-2.1.zip";
+      md5 = "6938a541fafd1a1ae2f6b9b88588eef2";
+    };
+  };
+
   ### test /devel deps
 
   inherit (self)
@@ -323,6 +343,7 @@ in {
       coffeescript
       configargparse
       decorator
+      flask-admin
       httplib2
       humanize
       ipaddr

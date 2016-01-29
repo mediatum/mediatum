@@ -91,6 +91,9 @@ class TraceLogger(logging.Logger):
     # the tuple may contain strings or callables which are called with a single line as argument, returning bool
     skip_trace_lines = (lambda l: "tal" in l and not ("TAL" in l or "evaluate" in l), )
 
+    # activate special debugging code for TAL templates
+    tal_debugging = True
+
     def _log(self, level, msg, args, exc_info=None, extra=None, trace=None):
         """Adds an optional traceback for some messages and calls Logger._log.
         A traceback is added if the logging level is at least `trace_level` or requested in the logging call.
@@ -159,40 +162,41 @@ class TraceLogger(logging.Logger):
 
             extra["trace"] = "".join(final_tracelines)
 
-            # hack for additional traceback info for TAL traces
-            stack = inspect.stack()
-            # search for a python expr evaluation in the TAL interpreter stack trace
-            eval_frame_result = [f for f in stack if f[3] == "evaluate" and "talextracted" in f[1]]
-            if eval_frame_result:
-                eval_frame_locals = eval_frame_result[0][0].f_locals
-                extra["tal_expr"] = tal_expr = eval_frame_locals["expr"]
-                tal_engine = eval_frame_locals["self"]
-                if tal_engine.position:
-                    tal_lineno, tal_col = tal_engine.position
-                    extra["tal_lineno"] = tal_lineno
-                    extra["tal_col"] = tal_col
-                else:
-                    tal_lineno = None
-                    tal_col = None
-                # search for runTAL frame
-                tal_frame_result = [f for f in stack if f[3] == "runTAL"]
-                if tal_frame_result:
-                    tal_call_locals = tal_frame_result[0][0].f_locals
-                    extra["tal_filename"] = tal_filename = tal_call_locals["file"]
-                    extra["tal_macro"] = tal_macro = tal_call_locals["macro"]
-                    # format a line that looks like a traceback line
-                    # this produces a clickable link in Pycharm or Eclipse, for example ;)
-                    if tal_filename:
-                        tal_filepath = os.path.join(config.basedir, tal_filename)
+            if self.tal_debugging:
+                # hack for additional traceback info for TAL traces
+                stack = inspect.stack()
+                # search for a python expr evaluation in the TAL interpreter stack trace
+                eval_frame_result = [f for f in stack if f[3] == "evaluate" and "talextracted" in f[1]]
+                if eval_frame_result:
+                    eval_frame_locals = eval_frame_result[0][0].f_locals
+                    extra["tal_expr"] = tal_expr = eval_frame_locals["expr"]
+                    tal_engine = eval_frame_locals["self"]
+                    if tal_engine.position:
+                        tal_lineno, tal_col = tal_engine.position
+                        extra["tal_lineno"] = tal_lineno
+                        extra["tal_col"] = tal_col
                     else:
-                        # no filename? template was rendered from a string
-                        tal_filepath = "<string>"
+                        tal_lineno = None
+                        tal_col = None
+                    # search for runTAL frame
+                    tal_frame_result = [f for f in stack if f[3] == "runTAL"]
+                    if tal_frame_result:
+                        tal_call_locals = tal_frame_result[0][0].f_locals
+                        extra["tal_filename"] = tal_filename = tal_call_locals["file"]
+                        extra["tal_macro"] = tal_macro = tal_call_locals["macro"]
+                        # format a line that looks like a traceback line
+                        # this produces a clickable link in Pycharm or Eclipse, for example ;)
+                        if tal_filename:
+                            tal_filepath = os.path.join(config.basedir, tal_filename)
+                        else:
+                            # no filename? template was rendered from a string
+                            tal_filepath = "<string>"
 
-                    tal_tbline = u'\n  File "{}", line {}, in {}\n    {}'.format(tal_filepath,
-                                                                                 tal_lineno,
-                                                                                 tal_macro or "<template>",
-                                                                                 tal_expr)
-                    extra["trace"] += tal_tbline
+                        tal_tbline = u'\n  File "{}", line {}, in {}\n    {}'.format(tal_filepath,
+                                                                                     tal_lineno,
+                                                                                     tal_macro or "<template>",
+                                                                                     tal_expr)
+                        extra["trace"] += tal_tbline
 
         logging.Logger._log(self, level, msg, args, exc_info=exc_info, extra=extra)
 

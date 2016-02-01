@@ -21,6 +21,9 @@ from schema.schema import getMetadataType, getAllMetaFields, VIEW_DATA_ONLY, VIE
 
 from core.translation import lang
 from core.metatype import Metatype
+from core import Node, db
+
+q = db.query
 
 
 class m_hgroup(Metatype):
@@ -96,7 +99,7 @@ class m_hgroup(Metatype):
         ret += '<div id="editor_content">'
         for field in item.getChildren().sort_by_orderpos():
             f = getMetadataType(field.get("type"))
-            ret += '<div id="hitem">{}</div>'.format(f.getMetaHTML(item, i, True, language=language, fieldlist=fieldlist))
+            ret += u'<div id="hitem">{}</div>'.format(f.getMetaHTML(item, i, True, language=language, fieldlist=fieldlist))
             i += 1
 
         if len(item.getChildren()) == 0:
@@ -105,20 +108,20 @@ class m_hgroup(Metatype):
         ret += '</fieldset>'
 
         if not sub:
-            ret += '<div align="right" id="' + item.id + \
+            ret += '<div align="right" id="' + unicode(item.id) + \
                 '_sub" style="display:none; clear:both"><small style="color:silver">(' + (item.get("type")) + ')</small>'
             if index > 0:
                 ret += '<input type="image" src="/img/uparrow.png" name="up_' + \
-                    ustr(item.id) + '" i18n:attributes="title mask_edit_up_title"/>'
+                    unicode(item.id) + '" i18n:attributes="title mask_edit_up_title"/>'
             else:
                 ret += '&nbsp;&nbsp;&nbsp;'
             if index < len(parent.getChildren()) - 1:
                 ret += '<input type="image" src="/img/downarrow.png" name="down_' + \
-                    ustr(item.id) + '" i18n:attributes="title mask_edit_down_title"/>'
+                    unicode(item.id) + '" i18n:attributes="title mask_edit_down_title"/>'
             else:
                 ret += '&nbsp;&nbsp;&nbsp;'
-            ret += ' <input type="image" src="/img/edit.png" name="edit_' + ustr(
-                item.id) + '" i18n:attributes="title mask_edit_edit_row"/> <input type="image" src="/img/delete.png" name="delete_' + ustr(
+            ret += ' <input type="image" src="/img/edit.png" name="edit_' + unicode(
+                item.id) + '" i18n:attributes="title mask_edit_edit_row"/> <input type="image" src="/img/delete.png" name="delete_' + unicode(
                 item.id) + '" i18n:attributes="title mask_edit_delete_row" onClick="return questionDel()"/></div>'
             ret += '</div>'
 
@@ -146,7 +149,7 @@ class m_hgroup(Metatype):
         if req.params.get("sel_id", "") != "":
             i = 0
             for id in req.params.get("sel_id")[:-1].split(";"):
-                f = getMetadataType(getNode(id).get("type"))
+                f = getMetadataType(q(Node).get(id).get("type"))
                 details += f.getMetaHTML(item, i, False, itemlist=req.params.get("sel_id")
                                          [:-1].split(";"), ptype="hgroup", fieldlist=fieldlist, language=lang(req))
                 i += 1
@@ -155,9 +158,9 @@ class m_hgroup(Metatype):
         metadatatype = req.params.get("metadatatype")
 
         if req.params.get("op", "") == "new":
-            pidnode = getNode(req.params.get("pid"))
+            pidnode = q(Node).get(req.params.get("pid"))
             if pidnode.get("type") in ("vgroup", "hgroup"):
-                for field in pidnode.getAllChildren():
+                for field in pidnode.all_children:
                     if field.getType().getName() == "maskitem" and field.id != pidnode.id:
                         fields.append(field)
             else:

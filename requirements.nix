@@ -41,36 +41,33 @@ let
 
   sqlalchemy = self.sqlalchemy_1_0;
 
-  bibtexparser = self.buildPythonPackage {
-    name = "bibtexparser-0.6.1";
+  bibtexparser = self.buildPythonPackage rec {
+    name = "bibtexparser-${version}";
+    version = "0.6.2";
     src = fetchurl {
-      url = "https://pypi.python.org/packages/source/b/bibtexparser/bibtexparser-0.6.1.tar.gz";
-      md5 = "9e1fa92ac059c6a75f7076965267c3f8";
+      url = "https://pypi.python.org/packages/source/b/bibtexparser/bibtexparser-${version}.tar.gz";
+      md5 = "b173b4d1d770dcac929dca2c19ed3f2a";
     };
-    propagatedBuildInputs = with self; [];
-    buildInputs = with self; [];
-    doCheck = false;
   };
 
-  coffeescript = self.buildPythonPackage {
-    name = "coffeescript-1.1.1";
+  coffeescript = self.buildPythonPackage rec {
+    name = "coffeescript-${version}";
+    version = "1.1.2";
     src = fetchurl {
-      url = https://pypi.python.org/packages/source/C/CoffeeScript/CoffeeScript-1.1.1.tar.gz;
-      md5 = "7c7083dc51e104fb89fe55b674314c2a";
+      url = "https://pypi.python.org/packages/source/C/CoffeeScript/CoffeeScript-${version}.tar.gz";
+      md5 = "9ae342ac4c7b383841b58b3da14bec8b";
     };
     propagatedBuildInputs = with self; [PyExecJS];
-    buildInputs = with self; [];
     doCheck = false;
   };
 
-  configargparse = self.buildPythonPackage {
-    name = "configargparse-0.9.3";
+  configargparse = self.buildPythonPackage rec {
+    name = "configargparse-${version}";
+    version = "0.10.0";
     src = fetchurl {
-      url = "https://pypi.python.org/packages/source/C/ConfigArgParse/ConfigArgParse-0.9.3.tar.gz";
-      md5 = "69273e8099661cd12985b85d795ab73e";
+      url = "https://pypi.python.org/packages/source/C/ConfigArgParse/ConfigArgParse-${version}.tar.gz";
+      md5 = "408ad7af06cd449420cecc19bee6f0c9";
     };
-    propagatedBuildInputs = with self; [];
-    buildInputs = with self; [];
     doCheck = false;
   };
 
@@ -82,9 +79,6 @@ let
       url = "https://pypi.python.org/packages/source/i/ipaddr/ipaddr-2.1.11.tar.gz";
       md5 = "f2c7852f95862715f92e7d089dc3f2cf";
     };
-    propagatedBuildInputs = with self; [];
-    buildInputs = with self; [];
-    doCheck = false;
   };
 
   ipython-sql = self.buildPythonPackage {
@@ -94,8 +88,6 @@ let
       md5 = "d4feb00ac5806d7640b2545a43974766";
     };
     propagatedBuildInputs = with self; [prettytable ipython sqlalchemy sqlparse six];
-    buildInputs = with self; [];
-    doCheck = false;
   };
 
   mediatumbabel = self.buildPythonPackage {
@@ -106,7 +98,6 @@ let
     };
     propagatedBuildInputs = with self; [Babel];
     buildInputs = with self; [setuptools-git];
-    doCheck = false;
   };
 
   mediatumfsm = self.buildPythonPackage {
@@ -117,7 +108,6 @@ let
     };
     propagatedBuildInputs = with self; [pydot2];
     buildInputs = with self; [setuptools-git];
-    doCheck = false;
   };
 
   mediatumtal = self.buildPythonPackage {
@@ -126,9 +116,6 @@ let
       url = https://pypi.python.org/packages/source/m/mediatumtal/mediatumtal-0.3.2.tar.gz;
       md5 = "c41902f1a9a60237640d3a730c58f05f";
     };
-    propagatedBuildInputs = with self; [];
-    buildInputs = with self; [];
-    doCheck = false;
   };
 
   mollyZ3950 = self.buildPythonPackage {
@@ -138,8 +125,6 @@ let
       md5 = "a0e5d7bb395ae31026afc7f974711630";
     };
     propagatedBuildInputs = with self; [ply];
-    buildInputs = with self; [];
-    doCheck = false;
   };
 
   parcon = self.buildPythonPackage {
@@ -148,9 +133,6 @@ let
       url = "https://pypi.python.org/packages/source/p/parcon/parcon-0.1.25.tar.gz";
       md5 = "146ab4d138fd5b1848390fbf199c3ac2";
     };
-    propagatedBuildInputs = with self; [];
-    buildInputs = with self; [];
-    doCheck = false;
   };
 
   prettytable = self.buildPythonPackage {
@@ -159,9 +141,6 @@ let
       url = "https://pypi.python.org/packages/source/P/PrettyTable/prettytable-0.7.2.tar.bz2";
       md5 = "760dc900590ac3c46736167e09fa463a";
     };
-    propagatedBuildInputs = with self; [];
-    buildInputs = with self; [];
-    doCheck = false;
   };
 
   psycopg2 = self.buildPythonPackage {
@@ -171,19 +150,16 @@ let
       md5 = "842b44f8c95517ed5b792081a2370da1";
     };
     propagatedBuildInputs = with self; [pkgs.postgresql94];
-    buildInputs = with self; [];
-    doCheck = false;
   };
 
-  pyaml = self.buildPythonPackage {
-    name = "pyaml-15.6.3";
+  pyaml = self.buildPythonPackage rec {
+    name = "pyaml-${version}";
+    version = "15.8.2";
     src = fetchurl {
-      url = "https://pypi.python.org/packages/source/p/pyaml/pyaml-15.6.3.tar.gz";
-      md5 = "36a769535f45c2d04feb9ba50cfbbd3d";
+      url = "https://pypi.python.org/packages/source/p/pyaml/pyaml-${version}.tar.gz";
+      md5 = "e3a39e02dffaf5f6efa8ccdd22745739";
     };
     propagatedBuildInputs = with self; [pyyaml];
-    buildInputs = with self; [];
-    doCheck = false;
   };
 
   pydot2 = self.buildPythonPackage {
@@ -193,8 +169,6 @@ let
       md5 = "33ddc024f5f3df4522ab2d867bdedb0d";
     };
     propagatedBuildInputs = with self; [pyparsing setuptools];
-    buildInputs = with self; [];
-    doCheck = false;
   };
 
   PyExecJS = self.buildPythonPackage {
@@ -203,8 +177,6 @@ let
       url = "https://pypi.python.org/packages/source/P/PyExecJS/PyExecJS-1.1.0.zip";
       md5 = "027bcbc0a2f44419a6be1e3c4d5d68a1";
     };
-    propagatedBuildInputs = with self; [];
-    buildInputs = with self; [];
     doCheck = false;
   };
 
@@ -216,10 +188,6 @@ let
       rev = "3db3764895e687d75b42d3ae4e554ca8664a7f6f";
       sha256 = "f3f3b8e9a48846c5610006e5131ed4029bafc95b67a9864f1fcfeb45d8c2facb";
     };
-
-    propagatedBuildInputs = with self; [];
-    buildInputs = with self; [];
-    doCheck = false;
   };
 
   pyjade = self.buildPythonPackage {
@@ -229,19 +197,16 @@ let
       md5 = "e6a38f7c5c4f6fdee15800592a85eb1d";
     };
     propagatedBuildInputs = with self; [six];
-    buildInputs = with self; [];
-    doCheck = false;
   };
 
-  pymarc = self.buildPythonPackage {
-    name = "pymarc-3.0.4";
+  pymarc = self.buildPythonPackage rec {
+    name = "pymarc-${version}";
+    version = "3.1.1";
     src = fetchurl {
-      url = "https://pypi.python.org/packages/source/p/pymarc/pymarc-3.0.4.tar.gz";
-      md5 = "8d6fe584820542760b2f954076fba9aa";
+      url = "https://pypi.python.org/packages/source/p/pymarc/pymarc-${version}.tar.gz";
+      md5 = "78c1eecad2e7ed8b2a72b6e37c5e9363";
     };
     propagatedBuildInputs = with self; [six];
-    buildInputs = with self; [];
-    doCheck = false;
   };
   
   pympler = self.buildPythonPackage {
@@ -250,20 +215,16 @@ let
       url = "https://pypi.python.org/packages/source/P/Pympler/Pympler-0.4.2.tar.gz";
       md5 = "6bdfd913ad4c94036e8a2b358e49abd7";
     };
-    propagatedBuildInputs = with self; [];
-    buildInputs = with self; [];
     doCheck = false;
   };
 
-  pyparsing = self.buildPythonPackage {
-    name = "pyparsing-2.0.3";
+  pyparsing = self.buildPythonPackage rec {
+    name = "pyparsing-${version}";
+    version = "2.0.7";
     src = fetchurl {
-      url = "https://pypi.python.org/packages/source/p/pyparsing/pyparsing-2.0.3.zip";
-      md5 = "0a5ec41bb650aed802751a311b5d820d";
+      url = "https://pypi.python.org/packages/source/p/pyparsing/pyparsing-${version}.tar.gz";
+      md5 = "1c8bed7530642ca19197f3caa05fd28b";
     };
-    propagatedBuildInputs = with self; [];
-    buildInputs = with self; [];
-    doCheck = false;
   };
 
   python-Levenshtein = self.buildPythonPackage {
@@ -273,8 +234,6 @@ let
       md5 = "e8cde197d6d304bbdc3adae66fec99fb";
     };
     propagatedBuildInputs = with self; [setuptools];
-    buildInputs = with self; [];
-    doCheck = false;
   };
 
   python-logstash = self.buildPythonPackage {
@@ -283,9 +242,6 @@ let
       url = "https://pypi.python.org/packages/source/p/python-logstash/python-logstash-0.4.5.tar.gz";
       md5 = "401462a61563f992894bd65c976e556b";
     };
-    propagatedBuildInputs = with self; [];
-    buildInputs = with self; [];
-    doCheck = false;
   };
 
   scrypt = self.buildPythonPackage {
@@ -295,7 +251,7 @@ let
       md5 = "9feb713f183e11caa940e8ec71cf1361";
     };
     propagatedBuildInputs = with self; [pkgs.openssl];
-    buildInputs = with self; [];
+    
     doCheck = false;
   };
 
@@ -306,8 +262,6 @@ let
       md5 = "6134419c599dbc378452b5f9d4ceb5db";
     };
     propagatedBuildInputs = with self; [six sqlalchemy_1_0];
-    buildInputs = with self; [];
-    doCheck = false;
   };
 
   sqlalchemy-continuum = self.buildPythonPackage {
@@ -320,8 +274,6 @@ let
     };
 
     propagatedBuildInputs = with self; [sqlalchemy sqlalchemy-utils];
-    buildInputs = with self; [];
-    doCheck = false;
   };
 
   ### test /devel deps
@@ -339,8 +291,6 @@ let
       url = "https://pypi.python.org/packages/source/f/fake-factory/fake-factory-0.5.2.tar.gz";
       md5 = "c32835b3fed1f18bb8aad12527cc1941";
     };
-    propagatedBuildInputs = with self; [];
-    buildInputs = with self; [];
     doCheck = false;
   };
 
@@ -353,7 +303,6 @@ let
     };
     propagatedBuildInputs = with self; [fake-factory];
     buildInputs = with self; [mock];
-    doCheck = true;
   };
 
   py = self.buildPythonPackage {
@@ -362,9 +311,6 @@ let
       url = "https://pypi.python.org/packages/source/p/py/py-1.4.30.tar.gz";
       md5 = "a904aabfe4765cb754f2db84ec7bb03a";
     };
-    propagatedBuildInputs = with self; [];
-    buildInputs = with self; [];
-    doCheck = false;
   };
   
   pytest-capturelog = self.buildPythonPackage {
@@ -374,8 +320,6 @@ let
       md5 = "cfeac23d8ed254deaeb50a8c0aa141e9";
     };
     propagatedBuildInputs = with self; [py];
-    buildInputs = with self; [];
-    doCheck = false;
   };
 
   redis-collections = self.buildPythonPackage {
@@ -385,8 +329,6 @@ let
       md5 = "67aa817d9a2f1f63b3b3251062762e7d";
     };
     propagatedBuildInputs = with self; [redis];
-    buildInputs = with self; [];
-    doCheck = false;
   };
 
 

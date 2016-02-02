@@ -1,7 +1,8 @@
 {fetchurl, fetchgit, stdenv, self, pkgs}:
 
 let
-  self = pkgs.pythonPackages;
+  pythonPackages = pkgs.python27Packages;
+  self = pythonPackages;
 
   pyaml = self.buildPythonPackage {
     name = "pyaml-15.6.3";
@@ -43,16 +44,6 @@ let
     buildInputs = with self; [];
     doCheck = false;
   };
-  pip = self.buildPythonPackage {
-    name = "pip-7.1.0";
-    src = fetchurl {
-      url = "https://pypi.python.org/packages/source/p/pip/pip-7.1.0.tar.gz";
-      md5 = "d935ee9146074b1d3f26c5f0acfd120e";
-    };
-    propagatedBuildInputs = with self; [];
-    buildInputs = with self; [];
-    doCheck = false;
-  };
   pyparsing = self.buildPythonPackage {
     name = "pyparsing-2.0.3";
     src = fetchurl {
@@ -71,16 +62,6 @@ let
     };
     propagatedBuildInputs = with self; [babel];
     buildInputs = with self; [setuptools-git];
-    doCheck = false;
-  };
-  reportlab = self.buildPythonPackage {
-    name = "reportlab-3.2.0";
-    src = fetchurl {
-      url = "https://pypi.python.org/packages/source/r/reportlab/reportlab-3.2.0.tar.gz";
-      md5 = "79d059e797c557aed4b40c68dd6c7eae";
-    };
-    propagatedBuildInputs = with self; [pillow pip setuptools];
-    buildInputs = with self; [pkgs.freetype pkgs.gnome.libart_lgpl];
     doCheck = false;
   };
   parcon = self.buildPythonPackage {
@@ -327,16 +308,6 @@ let
     buildInputs = with self; [];
     doCheck = false;
   };
-  setuptools = self.buildPythonPackage {
-    name = "setuptools-18.0.1";
-    src = fetchurl {
-      url = "https://pypi.python.org/packages/source/s/setuptools/setuptools-18.0.1.zip";
-      md5 = "9746c2a5347128d00189e3900e88cc52";
-    };
-    propagatedBuildInputs = with self; [];
-    buildInputs = with self; [];
-    doCheck = false;
-  };
   babel = self.buildPythonPackage {
     name = "babel-2.0";
     src = fetchurl {
@@ -380,26 +351,6 @@ let
     doCheck = false;
   };
 
-  pillow = self.buildPythonPackage {
-    name = "pillow-2.9.0";
-    src = fetchurl {
-      url = "https://pypi.python.org/packages/source/P/Pillow/Pillow-2.9.0.zip";
-      md5 = "cd4e6286fb28e277954c011c3ce05bc4";
-    };
-    buildInputs = with self; [pkgs.zlib pkgs.libjpeg pkgs.libtiff pkgs.freetype pkgs.lcms2];
-    doCheck = false;
-
-    # NOTE: we use LCMS_ROOT as WEBP root since there is not other setting for webp.
-    preConfigure = ''
-      sed -i "setup.py" \
-          -e 's|^FREETYPE_ROOT =.*$|FREETYPE_ROOT = _lib_include("${pkgs.freetype}")|g ;
-              s|^JPEG_ROOT =.*$|JPEG_ROOT = _lib_include("${pkgs.libjpeg}")|g ;
-              s|^ZLIB_ROOT =.*$|ZLIB_ROOT = _lib_include("${pkgs.zlib}")|g ;
-              s|^LCMS_ROOT =.*$|LCMS_ROOT = _lib_include("${pkgs.libwebp}")|g ;
-              s|^TIFF_ROOT =.*$|TIFF_ROOT = _lib_include("${pkgs.libtiff}")|g ;
-              s|^TCL_ROOT=.*$|TCL_ROOT = _lib_include("${pkgs.tcl}")|g ;'
-    '';
-  };
   pyjade = self.buildPythonPackage {
     name = "pyjade-3.1.0";
     src = fetchurl {
@@ -703,7 +654,7 @@ let
       url = https://pypi.python.org/packages/source/a/alembic/alembic-0.8.3.tar.gz;
       md5 = "2e4ef17675316af9f09d749b0aee390e";
     };
-    propagatedBuildInputs = with self; [mako python-editor];
+    propagatedBuildInputs = with self; [mako python-editor sqlalchemy markupsafe];
     buildInputs = with self; [];
     doCheck = false;
   };
@@ -742,6 +693,7 @@ in {
       mock
       mollyZ3950
       parcon
+      pythonPackages.pillow
       ldap
       psycopg2
       pyaml
@@ -755,7 +707,7 @@ in {
       python-Levenshtein
       python-logstash
       pyyaml
-      reportlab
+      pythonPackages.reportlab
       requests
       scrypt
       sqlalchemy

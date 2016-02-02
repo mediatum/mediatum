@@ -1,5 +1,7 @@
+{ nixpkgs ? https://nixos.org/releases/nixos/unstable/nixos-16.03pre75806.77f8f35/ }:
+
 let
-  pkgs = import <nixpkgs> {};
+  pkgs = import nixpkgs {};
   requirements = pkgs.callPackage ./requirements.nix {};
 
 in

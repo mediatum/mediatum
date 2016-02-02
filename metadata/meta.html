@@ -17,6 +17,6 @@
         </optgroup>
     </select>
     <br/>
-    <input type="checkbox" name="meta_value" tal:attributes="checked python:{'True':'checked', 'False':None}[str(value[1]=='on')]"/>
+    <input type="checkbox" name="meta_value" tal:attributes="checked python:{'True':'checked', 'False':None}[str(len(value)>1 and value[1]=='on')]"/>
     <span class="label" i18n:translate="write_information_back">TEXT</span>
 </div>

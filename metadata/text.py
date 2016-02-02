@@ -76,9 +76,9 @@ class m_text(Metatype):
         lang = None
         languages = config.languages
         if language is None:
-            language = languages.split(",")[0].strip()
+            language = languages[0]
         if field.getValues() and "multilingual" in field.getValues():
-            lang = [l.strip() for l in languages.split(',') if (l != language)]
+            lang = [l.strip() for l in languages if (l != language)]
         valueList = value.split("\n")
         values = dict()
         i = 0

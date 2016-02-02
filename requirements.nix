@@ -6,19 +6,6 @@ let
 
   ### production deps
 
-  # transitive production deps
-  inherit (self)
-  Babel
-  funcsigs
-  markupsafe
-  ply
-  pytz
-  setuptools-git
-  six
-  sqlparse
-  ;
-
-  # direct production deps
   inherit (self) 
   alembic
   decorator
@@ -38,8 +25,6 @@ let
   unicodecsv
   werkzeug
   ;
-
-  sqlalchemy = self.sqlalchemy_1_0;
 
   bibtexparser = self.buildPythonPackage rec {
     name = "bibtexparser-${version}";
@@ -255,6 +240,8 @@ let
     doCheck = false;
   };
 
+  sqlalchemy = self.sqlalchemy_1_0;
+
   sqlalchemy-utils = self.buildPythonPackage {
     name = "SQLAlchemy-Utils-0.31.4";
     src = fetchurl {
@@ -399,5 +386,5 @@ in {
       zsh
     ];
 
-    build = [ setuptools-git ];
+    build = [ pythonPackages.setuptools-git ];
 }

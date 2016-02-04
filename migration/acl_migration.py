@@ -184,7 +184,7 @@ def migrate_rules(ruletypes=["read", "write", "data"]):
 def set_home_dir_permissions():
     users_with_home_dir = db.query(User).filter(User.home_dir_id != None)
     for user in users_with_home_dir:
-        rule = AccessRule(group_ids=[user.private_group_id])
+        rule = AccessRule(group_ids=[user.get_or_add_private_group().id])
         assocs = [NodeToAccessRule(ruletype=r, rule=rule) for r in (u"read", u"write", u"data")]
         user.home_dir.access_rule_assocs.extend(assocs)
 

@@ -3,7 +3,7 @@
         #editform{display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;z-index:10;}
         #editform-background{position:absolute;top:0;left:0;height:100%;width:100%;background-color:silver;opacity: 0.5; -moz-opacity: 0.5;-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";filter:alpha(opacity=50);}
         #editform-form{position:absolute;top:0;left:0;bottom:0;right:0;padding:0;margin:30px;z-index:11;height:80%;width:80%;margin:auto;}
-        #editform-form form{background-color:white;min-height:100%;padding:0}
+        #editform-form form{min-height:100%;padding:0}
 
         .ui-accordion .ui-accordion-header {border:1px solid silver;color:#fff;background-color:#333; display: block; cursor: pointer; position: relative; margin-top: 2px;margin-bottom:0; padding: .5em .5em .5em .7em; zoom: 1; }
         #accordion h3 {border-left:0;margin:0}
@@ -84,7 +84,7 @@
         <div id="editform-background">&nbsp;</div>
         <div id="editform-form">
             <div style="position:absolute;top:-7px;right:-7px;z-index:10002"><a href="#" onclick="closeForm()" i18n:attributes="title mask_editor_cancel"><img src="/img/cancel.png"/></a></div>
-            <form style="background-color:white;border:1px solid silver" action="javascript:handleCKEditorPost();void(0);">
+            <form action="javascript:handleCKEditorPost();void(0);">
                 <input type="hidden" id="filename" name="filename"/>
                 <textarea id="page_content" name="page_content"> </textarea>
                 <script>

@@ -120,7 +120,7 @@ def run(host=None, http_port=None, redis_sessions=False, force_test_db=None, log
         wf.write(datetime.datetime.now().isoformat())
         wf.write("\n")
 
-    athana.run(host or config.get("host.host", "0.0.0.0"), http_port or int(config.get("host.port", "8081")), z3950port)
+    athana.run(host or config.get("host.host", "0.0.0.0"), int(http_port or config.get("host.port", "8081")), z3950port)
 
 
 def main():
@@ -128,7 +128,7 @@ def main():
 
     parser.add_argument("-b", "--bind", default=None, help="hostname / IP to bind to, default: see config file")
 
-    parser.add_argument("-p", "--http_port", action="store_true", default=None, help="HTTP port to use, default: see config file")
+    parser.add_argument("-p", "--http_port", default=None, help="HTTP port to use, default: see config file")
 
     parser.add_argument("-r", "--reload", action="store_true", default=False,
                         help="reload when code or config file changes, default false")

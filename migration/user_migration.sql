@@ -51,10 +51,6 @@ BEGIN
     GET DIAGNOSTICS rows = ROW_COUNT;
     RAISE NOTICE '% internal users inserted', rows;
 
-    -- create private user groups for internal users
-
-    PERFORM create_private_user_groups(0);
-
     -- find home dirs by name
     -- warning: home dir association must be unique or this will fail!
 
@@ -148,10 +144,6 @@ BEGIN
 
     GET DIAGNOSTICS rows = ROW_COUNT;
     RAISE NOTICE '% users created from dynamic user lists', rows;
-
-    -- create private user groups for all dynauth users
-
-    PERFORM create_private_user_groups(1);
 
     -- insert user-group relationships
 

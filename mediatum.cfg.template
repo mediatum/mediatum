@@ -100,3 +100,9 @@ namespace.mediatum=http://www.mediatum.org/oai/mediatum
 languages=en,de
 en=i18n/mediatum-en.po
 de=i18n/mediatum-de.po
+
+[repec]
+maintainer_name=Joe Admin
+maintainer_email=joe.admin@mediatum.org
+name=Mediatum Institution
+provider_name=Mediatum Provider

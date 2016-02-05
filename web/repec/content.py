@@ -176,6 +176,11 @@ class CollectionArchiveContent(RDFCollectionContent):
                 "Maintainer-Email": collection_owner["email"],
             })
 
+        # config values may override Name and Maintainer info
+        for key in "Name Maintainer-Name Maintainer-Email".split():
+            collection_data[key] = config.get("repec.{}".format(key.lower().replace("-", "_")),
+                                              collection_data[key])
+
         return redif_encode_archive(collection_data)
 
 
@@ -232,6 +237,11 @@ class CollectionSeriesContent(RDFCollectionContent):
                     "Maintainer-Email": collection_owner["email"],
                 })
 
+            # config values may override Provider-Name and Maintainer info
+            for key in "Provider-Name Maintainer-Name Maintainer-Email".split():
+                collection_data[key] = config.get("repec.{}".format(key.lower().replace("-", "_")),
+                                                  collection_data[key])
+
             wpaper_series_rdf = redif_encode_series(collection_data)
 
             collection_data = {
@@ -250,6 +260,11 @@ class CollectionSeriesContent(RDFCollectionContent):
                     "Maintainer-Email": collection_owner["email"],
                 })
 
+            # config values may override Provider-Name and Maintainer info
+            for key in "Provider-Name Maintainer-Name Maintainer-Email".split():
+                collection_data[key] = config.get("repec.{}".format(key.lower().replace("-", "_")),
+                                                  collection_data[key])
+
             journl_series_rdf = redif_encode_series(collection_data)
 
             collection_data = {
@@ -267,6 +282,11 @@ class CollectionSeriesContent(RDFCollectionContent):
                     "Maintainer-Name": collection_owner.unicode_name,
                     "Maintainer-Email": collection_owner["email"],
                 })
+
+            # config values may override Provider-Name and Maintainer info
+            for key in "Provider-Name Maintainer-Name Maintainer-Email".split():
+                collection_data[key] = config.get("repec.{}".format(key.lower().replace("-", "_")),
+                                                  collection_data[key])
 
             ecbook_series_rdf = redif_encode_series(collection_data)
 

@@ -324,7 +324,7 @@ def get_archived(req):
         req.write(msg)
         logg.warn(msg)
 
-    db.commit()
+    db.session.commit()
 
 
 def get_root(req):

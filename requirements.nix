@@ -182,6 +182,7 @@ let
       md5 = "e6a38f7c5c4f6fdee15800592a85eb1d";
     };
     propagatedBuildInputs = with self; [six];
+    doCheck = false;
   };
 
   pymarc = self.buildPythonPackage rec {

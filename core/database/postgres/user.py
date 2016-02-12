@@ -35,9 +35,12 @@ class AuthenticatorInfo(DeclarativeBase):
     def authenticator_key(self):
         return (self.auth_type, self.name)
 
+    def __unicode__(self):
+        return self.auth_type + ":" + self.name
+
     def __repr__(self):
         return u"AuthenticatorInfo<id: {} key: ({}, {})> ({})".format(self.id, self.name,
-                                                                        self.auth_type, object.__repr__(self)).encode("utf8")
+                                                                      self.auth_type, object.__repr__(self)).encode("utf8")
 
     __table_args__ = (UniqueConstraint(name, auth_type),)
 
@@ -57,6 +60,9 @@ class UserGroup(DeclarativeBase, TimeStamp, UserGroupMixin):
     is_admin_group = C(Boolean, server_default="false")
 
     users = association_proxy("user_assocs", "user", creator=lambda u: UserToUserGroup(user=u))
+
+    def __unicode__(self):
+        return self.name
 
     def __repr__(self):
         return u"UserGroup<{} '{}'> ({})".format(self.id, self.name, object.__repr__(self)).encode("utf8")
@@ -176,6 +182,10 @@ class User(DeclarativeBase, TimeStamp, UserMixin):
         self.home_dir = home
         logg.info("created home dir for user '%s (id: %s)'", self.login_name, self.id)
         return home
+
+    def __unicode__(self):
+        return u"{} ({}:{})".format(self.display_name or self.login_name, self.authenticator_info.auth_type,
+                                    self.authenticator_info.name)
 
     def __repr__(self):
         return u"User<{} '{}'> ({})".format(self.id, self.login_name, object.__repr__(self)).encode("utf8")

@@ -20,7 +20,6 @@ let
   pyPdf
   pyyaml
   reportlab
-  requests
   sympy
   unicodecsv
   werkzeug
@@ -230,6 +229,8 @@ let
     };
   };
 
+  requests = self.requests2;
+  
   scrypt = self.buildPythonPackage {
     name = "scrypt-0.7.1";
     src = fetchurl {

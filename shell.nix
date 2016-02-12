@@ -1,12 +1,11 @@
+{ nixpkgs ? import ./nixpkgs.nix }:
+
 let
-  pkgs = import <nixpkgs> {};
+  pkgs = import nixpkgs {};
   requirements = pkgs.callPackage ./requirements.nix {};
 
-in
-
-pkgs.stdenv.mkDerivation {
+in pkgs.stdenv.mkDerivation {
     name = "mediatumenv";
-    src = ./.;
     propagatedBuildInputs = requirements.production ++ requirements.devel ++ requirements.system;
 }
 

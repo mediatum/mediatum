@@ -6,7 +6,7 @@
 from itertools import chain
 import logging
 
-from sqlalchemy import Unicode, Text, Boolean, Table, DateTime, UniqueConstraint, String
+from sqlalchemy import Unicode, UnicodeText, Boolean, Table, DateTime, UniqueConstraint, String
 from sqlalchemy.dialects.postgresql import ARRAY, ExcludeConstraint
 from sqlalchemy.orm.session import object_session
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -52,7 +52,7 @@ class UserGroup(DeclarativeBase, TimeStamp, UserGroupMixin):
 
     id = integer_pk()
     name = C(Unicode, nullable=False, unique=True)
-    description = C(Unicode)
+    description = C(UnicodeText)
     hidden_edit_functions = C(ARRAY(Unicode), server_default="{}")
 
     is_editor_group = C(Boolean, server_default="false")
@@ -88,7 +88,7 @@ class User(DeclarativeBase, TimeStamp, UserMixin):
     firstname = C(Unicode)
     telephone = C(Unicode)
     organisation = C(Unicode)
-    comment = C(Unicode)
+    comment = C(UnicodeText)
     email = C(EmailType)
     password_hash = C(String)
     salt = C(String)

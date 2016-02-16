@@ -270,6 +270,7 @@ let
   inherit (self)
   mock
   munch
+  py
   pytest
   redis
   ;
@@ -294,14 +295,6 @@ let
     buildInputs = with self; [mock];
   };
 
-  py = self.buildPythonPackage {
-    name = "py-1.4.30";
-    src = fetchurl {
-      url = "https://pypi.python.org/packages/source/p/py/py-1.4.30.tar.gz";
-      md5 = "a904aabfe4765cb754f2db84ec7bb03a";
-    };
-  };
-  
   pytest-capturelog = self.buildPythonPackage {
     name = "pytest-capturelog-0.7";
     src = fetchurl {
@@ -367,7 +360,7 @@ in {
       # other
       pkgs.ffmpeg
       imagemagick
-      pkgs.graphviz
+      pkgs.graphviz-nox
       pkgs.perlPackages.ImageExifTool
       pkgs.poppler_utils
     ];

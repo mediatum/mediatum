@@ -29,7 +29,7 @@ from core.db import database
 
 db = database.getConnection()
 
-write = 1  # parameter: 0=simulate operation, 1=write operation
+write = 0  # parameter: 0=simulate operation, 1=write operation
 
 rootid = None
 used_ids = {}

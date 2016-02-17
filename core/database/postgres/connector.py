@@ -285,9 +285,12 @@ class PostgresSQLAConnector(object):
 
     def drop_schema(self):
         s = self.session
-        s.execute("DROP SCHEMA mediatum CASCADE")
-        s.commit()
-        logg.info("dropped database structure")
+        if schema_exists(s, "mediatum"):
+            s.execute("DROP SCHEMA mediatum CASCADE")
+            s.commit()
+            logg.info("dropped database structure")
+        else:
+            logg.info("schema mediatum does not exist, cannot drop it")
 
     def create_schema(self, set_alembic_version=True):
         """Creates the 'mediatum' schema.

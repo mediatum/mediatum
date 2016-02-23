@@ -57,7 +57,7 @@ def check_pwdchange(user, req, exception):
 
 
 @fixture(params=[None, WrongPassword, PasswordsDoNotMatch, PasswordChangeNotAllowed])
-def pwdchange_patch(monkeypatch, request, req, user):
+def pwdchange_patch(monkeypatch, request, req, guest_user, user):
     exception = request.param
     import core.auth
     monkeypatch.setattr(core.auth, "change_user_password", check_pwdchange(user, req, exception))

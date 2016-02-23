@@ -36,9 +36,9 @@ def import_node_with_simple_access():
     node = NodeFactory(id=100)
     import_node = ImportNodeFactory(
         id=100,
-        readaccess="{ group test_readers }",
-        writeaccess="{ group test_writers }",
-        dataaccess="{ group test_datausers }")
+        readaccess=u"{ group test_readers }",
+        writeaccess=u"{ group test_writers }",
+        dataaccess=u"{ group test_datausers }")
     return import_node
 
 
@@ -46,7 +46,7 @@ def import_node_with_simple_access():
 def import_node_with_complex_access():
     node = NodeFactory(id=100)
     import_node = ImportNodeFactory(id=100,
-                                    readaccess="{ NOT ( group test_readers OR group test_readers2 ) }")
+                                    readaccess=u"{ NOT ( group test_readers OR group test_readers2 ) }")
     return import_node
 
 
@@ -54,8 +54,8 @@ def import_node_with_complex_access():
 def import_node_with_ruleset(session):
     node = NodeFactory(id=100)
     session.flush()
-    acl1 = AccessFactory(rule="NOT ( group test_readers OR group test_readers2 )", name="not_rule")
-    import_node = ImportNodeFactory(id=100, readaccess="not_rule,{ user darfdas }")
+    acl1 = AccessFactory(rule=u"NOT ( group test_readers OR group test_readers2 )", name=u"not_rule")
+    import_node = ImportNodeFactory(id=100, readaccess=u"not_rule,{ user darfdas }")
     return import_node
 
 
@@ -63,10 +63,10 @@ def import_node_with_ruleset(session):
 def users_and_groups_for_ruleset(session, internal_authenticator_info):
     from core import User, UserGroup
 
-    users = [User(login_name="darfdas", authenticator_info=internal_authenticator_info)]
+    users = [User(login_name=u"darfdas", authenticator_info=internal_authenticator_info)]
     session.add_all(users)
 
-    groups = [UserGroup(name="test_readers"), UserGroup(name="test_readers2")]
+    groups = [UserGroup(name=u"test_readers"), UserGroup(name=u"test_readers2")]
     session.add_all(groups)
     return users, groups
 
@@ -80,8 +80,8 @@ def two_access_rules():
 
 @fixture
 def two_access_rulesets():
-    ruleset1 = AccessRuleset(name="Ruleset1")
-    ruleset2 = AccessRuleset(name="Ruleset2")
+    ruleset1 = AccessRuleset(name=u"Ruleset1")
+    ruleset2 = AccessRuleset(name=u"Ruleset2")
     return ruleset1, ruleset2
 
 

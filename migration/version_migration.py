@@ -22,11 +22,12 @@ q = db.query
 def fix_versoning_attributes():
     """There are 3 ways to say 'there is no next node'. Fix it..."""
     s = db.session
-    s.execute("UPDATE node SET attrs=jsonb_object_delete_keys(attrs, 'system.prev_id') WHERE attrs->>'system.prev_id' IN (id::text, '0')")
-    s.execute("UPDATE node SET attrs=jsonb_object_delete_keys(attrs, 'system.next_id') WHERE attrs->>'system.next_id' IN (id::text, '0')")
+    s.execute("UPDATE node SET system_attrs=jsonb_object_delete_keys(system_attrs, 'prev_id') WHERE system_attrs->>'prev_id' IN (id::text, '0')")
+    s.execute("UPDATE node SET system_attrs=jsonb_object_delete_keys(system_attrs, 'next_id') WHERE system_attrs->>'next_id' IN (id::text, '0')")
+
 
 def all_version_nodes():
-    return q(Node).filter(Node.attrs.has_key("system.next_id"))
+    return q(Node).filter(Node.system_attrs.has_key(u"next_id"))
 
 
 def create_alias_version(current_version_node, old_version_node):

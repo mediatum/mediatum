@@ -34,13 +34,13 @@ def create_alias_version(current_version_node, old_version_node):
     s = db.session
     Transaction = versioning_manager.transaction_cls
     tx = Transaction()
-    version_id = int(old_version_node["system.version.id"])
+    version_id = int(old_version_node.system_attrs[u"version.id"])
     operation_type = Operation.INSERT if version_id == 1 else Operation.UPDATE
     TransactionMeta = versioning_manager.transaction_meta_cls
-    tx.meta_relation["alias_id"] = TransactionMeta(key="alias_id", value=unicode(old_version_node.id))
-    tx.meta_relation["tag"] = TransactionMeta(key="tag", value=u"v" + unicode(version_id))
-    if "system.version.comment" in old_version_node:
-        tx.meta_relation["comment"] = TransactionMeta(key="comment", value=old_version_node["system.version.comment"])
+    tx.meta_relation[u"alias_id"] = TransactionMeta(key=u"alias_id", value=unicode(old_version_node.id))
+    tx.meta_relation[u"tag"] = TransactionMeta(key=u"tag", value=u"v" + unicode(version_id))
+    if u"version.comment" in old_version_node.system_attrs:
+        tx.meta_relation[u"comment"] = TransactionMeta(key=u"comment", value=old_version_node.system_attrs[u"version.comment"])
     s.add(tx)
     NodeVersion = version_class(Node)
     NodeFileVersion = version_class(File)
@@ -70,11 +70,14 @@ def create_current_version(current_version_node):
     s = db.session
     Transaction = versioning_manager.transaction_cls
     tx = Transaction()
-    version_id = current_version_node["system.version.id"]
+    version_id = current_version_node.system_attrs[u"version.id"]
     operation_type = Operation.UPDATE
     TransactionMeta = versioning_manager.transaction_meta_cls
-    tx.meta_relation["tag"] = TransactionMeta(key="tag", value=u"v" + unicode(version_id))
-    tx.meta_relation["comment"] = TransactionMeta(key="comment", value=current_version_node["system.version.comment"])
+    tx.meta_relation[u"tag"] = TransactionMeta(key=u"tag", value=u"v" + unicode(version_id))
+
+    if u"version.comment" in current_version_node.system_attrs:
+        tx.meta_relation[u"comment"] = TransactionMeta(key=u"comment", value=current_version_node.system_attrs[u"version.comment"])
+
     s.add(tx)
     NodeVersion = version_class(Node)
     NodeFileVersion = version_class(File)
@@ -104,7 +107,7 @@ def insert_migrated_version_nodes(all_versioned_nodes):
     processed_nodes = set()
 
     for node in all_versioned_nodes:
-        next_id = node.get("system.next_id")
+        next_id = node.system_attrs.get(u"next_id")
         version_nodes = []
         while node and next_id:
             version_nodes.append(node)
@@ -113,7 +116,7 @@ def insert_migrated_version_nodes(all_versioned_nodes):
             if node is None:
                 logg.warn("node version with id %s, successor of version %s not found!", next_id, last_node_id)
             else:
-                next_id = node.get("system.next_id")
+                next_id = node.system_attrs.get(u"next_id")
 
         # node is the current version now, old versions in version_nodes
         if node and node.id not in processed_nodes:
@@ -130,6 +133,8 @@ def insert_migrated_version_nodes(all_versioned_nodes):
             old_version.end_transaction_id = current_version.transaction_id
 
             processed_nodes.add(node.id)
+
+    return processed_nodes
 
 
 def finish():

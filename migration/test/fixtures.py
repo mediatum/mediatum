@@ -88,3 +88,27 @@ def two_access_rulesets():
 @fixture
 def some_numbered_nodes():
     return [DirectoryFactory(id=j) for j in range(1, 4)]
+
+
+@fixture
+def first_version_node():
+    node = NodeFactory(schema=u"testschema")
+    node.system_attrs[u"version.id"] = u"1"
+    node.system_attrs[u"version.comment"] = u"first"
+    return node
+
+
+@fixture
+def middle_version_node():
+    node = NodeFactory(schema=u"testschema")
+    node.system_attrs[u"version.id"] = u"2"
+    node.system_attrs[u"version.comment"] = u"middle"
+    return node
+
+
+@fixture
+def current_version_node():
+    node = NodeFactory(schema=u"testschema")
+    node.system_attrs[u"version.id"] = u"3"
+    node.system_attrs[u"version.comment"] = u"current"
+    return node

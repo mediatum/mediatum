@@ -87,6 +87,9 @@ class DocumentFactory(NodeFactory):
     schema = u"testschema"
 
 
+ContentNodeFactory = DocumentFactory
+
+
 def make_simple_nodeclass_factory(nodecls):
     class NodeClassFactory(NodeFactory):
         class Meta:

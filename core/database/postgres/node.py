@@ -441,12 +441,12 @@ class Node(DeclarativeBase, NodeMixin):
     }
 
     def to_yaml(self):
-        """overwrite default DeclarativeBase.to_yaml method because we need to convert MutableDict and MInt first
+        """overwrite default DeclarativeBase.to_yaml method because we need to convert MutableDict first
         """
-        as_dict = self.to_dict()
-        as_dict["attrs"] = dict(as_dict["attrs"])
-        as_dict["id"] = str(as_dict["id"])
-        return pyaml.dump(as_dict)
+        node_dict = self.to_dict()
+        node_dict["attrs"] = dict(node_dict["attrs"])
+        node_dict["system_attrs"] = dict(node_dict["system_attrs"])
+        return pyaml.dump(node_dict)
 
 
 # view for direct parent-child relationship (distance = 1), also used for inserting new node connections

@@ -43,6 +43,19 @@ from utils.utils import Link
 q = db.query
 logg = logging.getLogger(__name__)
 
+child_count_cache = None
+
+
+def init_child_count_cache():
+    """XXX very simple and conservative directory child count cache. Cleared after each commit.
+    """
+    global child_count_cache
+    child_count_cache = {}
+
+    @event.listens_for(db.Session, "after_commit")
+    def clear_directory_child_count_cache_after_commit(session):
+        child_count_cache.clear()
+
 
 class Portlet:
 
@@ -242,14 +255,6 @@ class Searchlet(Portlet):
             # workaround for unknown error
             logg.exception("exception in getSearchField, return empty string")
             return ""
-
-
-# XXX very simple and conservative directory child count cache. Cleared after each commit.
-child_count_cache = {}
-
-@event.listens_for(db.Session, "after_commit")
-def clear_directory_child_count_cache_after_commit(session):
-    child_count_cache.clear()
 
 
 class NavTreeEntry(object):

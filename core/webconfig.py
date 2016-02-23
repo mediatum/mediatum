@@ -137,6 +137,10 @@ def initContexts():
     tal.add_translator(translate)
     tal_add_template_globals()
 
+    # XXX: init our temporary child count cahche
+    from web.frontend import frame
+    frame.init_child_count_cache()
+
     context = athana.addContext("/", ".")
     # === public area ===
     file = context.addFile("web/frontend/streams.py")

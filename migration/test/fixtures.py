@@ -66,7 +66,7 @@ def users_and_groups_for_ruleset(session, internal_authenticator_info):
     users = [User(login_name="darfdas", authenticator_info=internal_authenticator_info)]
     session.add_all(users)
 
-    groups = [UserGroup(name="test_readers"), UserGroup(name="test_readers2"), UserGroup(name="darfdas")]
+    groups = [UserGroup(name="test_readers"), UserGroup(name="test_readers2")]
     session.add_all(groups)
     return users, groups
 

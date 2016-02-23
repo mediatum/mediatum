@@ -355,6 +355,7 @@ class SymbolicExprToAccessRuleConverter(object):
             self.missing_users[acl_cond] = username
             return self._fake_groupid(username)
         group = user.get_or_add_private_group()
+        db.session.flush()
         return group.id
 
     def _fake_groupid(self, name):

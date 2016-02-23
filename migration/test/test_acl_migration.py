@@ -152,9 +152,11 @@ def test_convert_node_rulestrings_to_symbolic_rules_ruleset(import_node_with_rul
     assert len(symbol_to_acl_cond) == 3
 
 
-def test_convert_node_symbolic_rules_to_access_rules(import_node_with_ruleset, users_and_groups_for_ruleset):
+def test_convert_node_symbolic_rules_to_access_rules(session, import_node_with_ruleset, users_and_groups_for_ruleset):
     node = import_node_with_ruleset
     users, groups = users_and_groups_for_ruleset
+    user = users[0]
+    session.flush()
     nid_to_rulestr = {node.id: test_rulestr_replaced}
     nid_to_symbolic_rule, symbol_to_acl_cond = acl_migration.convert_node_rulestrings_to_symbolic_rules(nid_to_rulestr)
 
@@ -171,8 +173,8 @@ def test_convert_node_symbolic_rules_to_access_rules(import_node_with_ruleset, u
     assert access_rules[1][1] == False
     # check rule contents
     # last group is the private user group
-    assert_access_rule(access_rules[0][0], group_ids=set([g.id for g in groups][:-1]))
-    assert_access_rule(access_rules[1][0], group_ids=set([groups[-1].id]))
+    assert_access_rule(access_rules[0][0], group_ids=set([g.id for g in groups]))
+    assert_access_rule(access_rules[1][0], group_ids=set([user.get_or_add_private_group().id]))
 
 
 def test_save_node_to_rule_mappings(two_access_rules, some_numbered_nodes, session):

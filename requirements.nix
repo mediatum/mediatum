@@ -254,12 +254,12 @@ let
   };
 
   sqlalchemy-continuum = self.buildPythonPackage {
-    name = "sqlalchemy-continuum-1.2.2";
+    name = "sqlalchemy-continuum-1.2.4";
 
     src = fetchgit {
       url = https://github.com/mediatum/sqlalchemy-continuum.git;
-      rev = "a30c17a2dcdf58866265f698e05423d2225d5f23";
-      sha256 = "189a52c4d6425ae6dd2894c95eaa7685eda5cf78622b13da9a18805cdf3cfcca";
+      rev = "78e32719f329c468e5ea38f7fd3a2be8bd8023c4";
+      sha256 = "3363b57230ade95227b56cba619b7f5bd8dbffb5d04c0547534b404ed113f7c5";
     };
 
     propagatedBuildInputs = with self; [sqlalchemy sqlalchemy-utils];

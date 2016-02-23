@@ -23,6 +23,7 @@ from sqlalchemy_continuum import versioning_manager
 from sqlalchemy_continuum import make_versioned
 from sqlalchemy_continuum.utils import parent_class
 
+from core import config
 from core.transition import request
 from core.database.postgres.continuumext import MtVersionBase
 from utils.compat import iteritems
@@ -59,6 +60,7 @@ def setup_versioning():
         options={
             'native_versioning': True,
             'base_classes': (MtVersionBase, DeclarativeBase),
+            'extension_schema': config.get("database.extension_schema", "public")
         }
     )
 

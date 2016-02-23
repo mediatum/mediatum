@@ -7,11 +7,10 @@ import logging
 import hashlib
 import random
 import time
-from core import db  #, Node, User, UserGroup
+from core import db
 from core.database.postgres.user import OAuthUserCredentials
 
 q = db.query
-s = db.session
 
 logg = logging.getLogger(__name__)
 
@@ -85,6 +84,7 @@ def get_oauth_key_for_user(user):
 
 
 def generate_new_oauth_key_for_user(user):
+    s = db.session
 
     generated_key = hashlib.md5(str(time.time()) + str(''.join(str(random.randint(0, 9)) for i in range(40)))).hexdigest()[0:15] # generate key
 

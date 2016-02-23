@@ -276,10 +276,10 @@ let
   ;
 
   fake-factory = self.buildPythonPackage {
-    name = "fake-factory-0.5.2";
+    name = "fake-factory-0.5.3";
     src = fetchurl {
-      url = "https://pypi.python.org/packages/source/f/fake-factory/fake-factory-0.5.2.tar.gz";
-      md5 = "c32835b3fed1f18bb8aad12527cc1941";
+      url = "https://pypi.python.org/packages/source/f/fake-factory/fake-factory-0.5.3.tar.gz";
+      md5 = "85ecbe613260037fe983806ded208651";
     };
     doCheck = false;
   };
@@ -288,8 +288,8 @@ let
     name = "factory-boy";
     src = fetchgit {
       url = https://github.com/dpausp/factory_boy;
-      rev = "8e5a74651008f1eb0f6bf4f03bf96d7e33ce6314";
-      sha256 = "12dced99cb13c05c11448d15137cccef170b923e501eceb3cbe2c2bac8f6096b";
+      rev = "36b4cffa336845b6b0d30b2e040930af53eb732e";
+      sha256 = "cc5d66091428d976f0a645240282e126e979c02fc255a389242083833ba5201e";
     };
     propagatedBuildInputs = with self; [fake-factory];
     buildInputs = with self; [mock];

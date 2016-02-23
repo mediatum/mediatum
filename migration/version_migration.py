@@ -19,7 +19,7 @@ q = db.query
 #q(Node).first()
 
 
-def fix_versoning_attributes():
+def fix_versioning_attributes():
     """There are 3 ways to say 'there is no next node'. Fix it..."""
     s = db.session
     s.execute("UPDATE node SET system_attrs=jsonb_object_delete_keys(system_attrs, 'prev_id') WHERE system_attrs->>'prev_id' IN (id::text, '0')")

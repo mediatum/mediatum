@@ -92,7 +92,7 @@ def some_numbered_nodes():
 
 @fixture
 def first_version_node():
-    node = NodeFactory(schema=u"testschema")
+    node = NodeFactory(id=100001, schema=u"testschema")
     node.system_attrs[u"version.id"] = u"1"
     node.system_attrs[u"version.comment"] = u"first"
     return node
@@ -100,7 +100,7 @@ def first_version_node():
 
 @fixture
 def middle_version_node():
-    node = NodeFactory(schema=u"testschema")
+    node = NodeFactory(id=100002, schema=u"testschema")
     node.system_attrs[u"version.id"] = u"2"
     node.system_attrs[u"version.comment"] = u"middle"
     return node
@@ -108,7 +108,7 @@ def middle_version_node():
 
 @fixture
 def current_version_node():
-    node = NodeFactory(schema=u"testschema")
+    node = NodeFactory(id=100003, schema=u"testschema")
     node.system_attrs[u"version.id"] = u"3"
     node.system_attrs[u"version.comment"] = u"current"
     return node

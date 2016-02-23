@@ -120,7 +120,7 @@ def versions(s):
     from migration import version_migration
     # all node classes must be defined for versioning, stub them if some plugins are missing, for example
     init.check_undefined_nodeclasses(stub_undefined_nodetypes=True)
-    version_migration.fix_versoning_attributes()
+    version_migration.fix_versioning_attributes()
     version_migration.insert_migrated_version_nodes(version_migration.all_version_nodes())
     version_migration.finish()
     remove_versioning()

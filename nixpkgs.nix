@@ -1,1 +1,1 @@
-fetchTarball https://nixos.org/releases/nixos/unstable/nixos-16.03pre75806.77f8f35/nixexprs.tar.bz2 
+fetchTarball https://nixos.org/releases/nixos/unstable/nixos-16.03pre76756.885acea/nixexprs.tar.bz2 

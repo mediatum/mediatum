@@ -35,8 +35,6 @@ sys.path.append(".")
 
 from sqlalchemy_continuum import remove_versioning
 from core import init, plugins
-from core.database.postgres.alchemyext import disable_triggers, enable_triggers
-from core.database.postgres.connector import read_and_prepare_sql
 from collections import OrderedDict
 from bin.manage import vacuum_analyze_tables
 
@@ -46,6 +44,8 @@ init.basic_init(root_loglevel=logging.INFO, log_filepath=LOG_FILEPATH)
 plugins.init_plugins()
 
 import core.database.postgres
+from core.database.postgres.alchemyext import disable_triggers, enable_triggers
+from core.database.postgres.connector import read_and_prepare_sql
 
 
 core.database.postgres.SLOW_QUERY_SECONDS = 1000

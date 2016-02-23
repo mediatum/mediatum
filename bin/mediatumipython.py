@@ -152,31 +152,33 @@ import os.path
 import sys
 import tempfile
 import warnings
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
 from sqlalchemy import sql
 from sqlalchemy.orm.exc import NoResultFound
 
-from core import config
-import core.init as initmodule
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-import core.database
-from core.database.postgres.node import t_noderelation
-from core.database.postgres import alchemyext, mediatumfunc
-import core.database.postgres.connector
+import core.init as initmodule
 from utils.compat import *
 
-# settings #
+# log settings #
 
 # set this to INFO for SQL statement echo, DEBUG for even more info from SQLAlchemy
 SQLALCHEMY_LOGGING = logging.WARN
 SQL_LOGGING = logging.WARN
+ROOT_LOGLEVEL = logging.INFO
+LOG_FILEPATH = os.path.join(tempfile.gettempdir(), "mediatumipython.log")
+
+# / log settings #
+
+initmodule.basic_init(ROOT_LOGLEVEL, log_filepath=LOG_FILEPATH, use_logstash=False)
+initmodule.register_workflow()
+
+from core.database.postgres.node import t_noderelation
+from core.database.postgres import alchemyext
+import core.database.postgres.connector
 
 # change this to True in your IPython notebook after running mediatumipython.py
 IPYTHON_NOTEBOOK = False
-
-ROOT_LOGLEVEL = logging.INFO
-LOG_FILEPATH = os.path.join(tempfile.gettempdir(), "mediatumipython.log")
 
 core.database.postgres.connector.DEBUG_SHOW_TRACE = False
 core.database.postgres.connector.DEBUG = True
@@ -186,10 +188,6 @@ core.database.postgres.SLOW_QUERY_SECONDS = 3600
 SQLMAGICS_CONNECTION_FACTORY = lambda: core.db.connectstr
 # TODO: changing the connection string should be possible for the postgres connector, too
 
-# /settings #
-
-initmodule.basic_init(ROOT_LOGLEVEL, log_filepath=LOG_FILEPATH, use_logstash=False)
-initmodule.register_workflow()
 
 from core.users import get_guest_user
 try:
@@ -240,9 +238,6 @@ lastnode = root
 
 global limit_number_of_info_lines
 limit_number_of_info_lines = None
-
-# from core.users import get_guest_user
-# user_guest = get_guest_user()
 
 # IPython magic
 

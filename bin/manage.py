@@ -23,21 +23,18 @@ import sys
 import tempfile
 import warnings
 import pyaml
-import codecs
 import sqlalchemy
-import sqlalchemy_continuum
 from sqlalchemy_continuum import remove_versioning
 
 sys.path.append(".")
 
-from core import init, config
+LOG_FILEPATH = os.path.join(tempfile.gettempdir(), "mediatum_manage.log")
+from core import init
+init.basic_init(root_loglevel=logging.INFO, log_filepath=LOG_FILEPATH)
+
 from core.database.postgres import db_metadata, mediatumfunc
 from core.database.postgres.alchemyext import exec_sqlfunc, disable_triggers, enable_triggers
 import configargparse
-
-LOG_FILEPATH = os.path.join(tempfile.gettempdir(), "mediatum_manage.log")
-
-init.basic_init(root_loglevel=logging.INFO, log_filepath=LOG_FILEPATH)
 
 logg = logging.getLogger("manage.py")
 

@@ -22,7 +22,6 @@ from core.database.postgres import db_metadata, DeclarativeBase, MtQuery, mediat
 from core.database.postgres import rel, bref, C, FK
 from core.database.postgres.alchemyext import LenMixin, view, exec_sqlfunc
 from core.database.postgres.attributes import Attributes, AttributesExpressionAdapter
-from utils.magicobjects import MInt
 from ipaddr import IPv4Address
 from sqlalchemy_continuum import versioning_manager
 from sqlalchemy_continuum.utils import version_class
@@ -441,7 +440,7 @@ class Node(DeclarativeBase, NodeMixin):
     }
 
     def to_yaml(self):
-        """overwrite default DeclarativeBase.to_yaml method because we need to convert MutableDict first
+        """overwrite default DeclarativeBase.to_yaml method because we need to convert MutableDicts first
         """
         node_dict = self.to_dict()
         node_dict["attrs"] = dict(node_dict["attrs"])

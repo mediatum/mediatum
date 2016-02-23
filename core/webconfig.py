@@ -265,16 +265,6 @@ def initContexts():
     # === theme handling ===
     loadThemes()
 
-    # === frontend modules handling ===
-    try:
-        context = athana.addContext("/modules", ".")
-        file = context.addFile("web/frontend/modules/modules.py")
-        file.addHandler("getContent").addPattern("/.*")
-    except IOError:
-        logg.exception("no frontend modules found")
-
-    #athana.addContext("/flush", ".").addFile("core/webconfig.py").addHandler("flush").addPattern("/py")
-
     # === check for ftp usage ===
     if config.get("ftp.activate", "") == "true":
         from contenttypes import Collections

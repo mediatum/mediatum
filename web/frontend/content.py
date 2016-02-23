@@ -27,7 +27,7 @@ from core.styles import getContentStyles, theme
 from core.translation import lang, t
 from core.webconfig import node_url
 from contenttypes import Collections
-from contenttypes.container import includetemplate, replaceModules
+from contenttypes.container import includetemplate
 from web.frontend import Content
 from utils.strings import ensure_unicode_returned
 from utils.utils import getCollection, Link, getFormatedString
@@ -555,7 +555,7 @@ class ContentList(Content):
                 l, fn = sb.split(":")
                 if l == lang(req):
                     for f in [f for f in self.collection.getFiles() if fn.endswith(f.getName())]:
-                        sidebar = replaceModules(self, req, includetemplate(self, f.retrieveFile(), {})).strip()
+                        sidebar = includetemplate(self, f.retrieveFile(), {}).strip()
         if sidebar != "":
             return u'<div id="portal-column-one">{0}<div id="nodes">{1}</div>{0}</div><div id="portal-column-two">{2}</div>'.format(
                 filesHTML,

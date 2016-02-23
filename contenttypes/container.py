@@ -31,13 +31,8 @@ from contenttypes.data import Data
 from core.database.helpers import ContainerMixin
 from core.translation import t, lang, getDefaultLanguage
 from utils.utils import CustomItem
-from core.transition.postgres import check_type_arg, check_type_arg_with_schema
+from core.transition.postgres import check_type_arg_with_schema
 from schema.schema import Metafield, SchemaMixin
-try:
-    import web.frontend.modules.modules as frontendmods
-    frontend_modules = 1
-except:
-    frontend_modules = 0
 
 
 logg = logging.getLogger(__name__)
@@ -72,26 +67,6 @@ def includetemplate(self, file, substitute):
                     ret += 'src="/file/' + self.id + '/' + imgname + '"'
                     lastend = match.end()
     return ret
-
-
-def replaceModules(self, req, input):
-    if frontend_modules:
-        frontend_mods = frontendmods.getFrontendModules()
-
-        def getModString(m):
-            for k in frontend_mods:
-                if m.group(0).startswith('{frontend/' + k + '/'):
-                    return m.group(0), frontend_mods[k]().getContent(req, path=m.group(0)[1:-1].replace('frontend/' + k + '/', ""))
-            return "", ""
-
-        while True:
-            m = re.compile('{frontend/.[^{]*}').search(input)
-            if m:
-                mod_str, mod_repl = getModString(m)
-                input = input.replace(mod_str, mod_repl)
-            else:
-                break
-    return input
 
 
 def fileIsNotEmpty(file):
@@ -173,7 +148,6 @@ class Container(Data, ContainerMixin, SchemaMixin):
                         for f in self.getFiles():
                             if fn.endswith(f.getName()):
                                 sidebar = includetemplate(self, f.retrieveFile(), {})
-                                sidebar = replaceModules(self, req, sidebar).strip()
         if sidebar:
             sidebar = req.getTAL("contenttypes/container.html", {"content": sidebar}, macro="addcolumn")
         else:
@@ -195,7 +169,6 @@ class Container(Data, ContainerMixin, SchemaMixin):
             long_path = spn.retrieveFile()
             if os.path.isfile(long_path) and fileIsNotEmpty(long_path):
                 content = includetemplate(self, long_path, {'${next}': link})
-                content = replaceModules(self, req, content)
             if content:
                 if sidebar:
                     return u'<div id="portal-column-one">{}</div>{}'.format(content,

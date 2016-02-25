@@ -667,8 +667,14 @@ RETURN QUERY
         (UPDATE node_to_access_rule
         SET rule_id = dupes.surviving_rule_id
         FROM dupes
-        WHERE ARRAY[rule_id] <@ dupes.duplicates)
+        WHERE ARRAY[rule_id] <@ dupes.duplicates),
         
+    updated_access_ruleset_to_rule AS
+        (UPDATE access_ruleset_to_rule
+        SET rule_id = dupes.surviving_rule_id
+        FROM dupes
+        WHERE ARRAY[rule_id] <@ dupes.duplicates)
+
     SELECT * FROM dupes ORDER BY surviving_rule_id;
 END;
 $f$;

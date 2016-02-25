@@ -22,6 +22,7 @@ from core.database.postgres import DeclarativeBase, db_metadata
 from utils.compat import string_types
 from sqlalchemy import Table, bindparam, select, column
 from sqlalchemy.orm import aliased, mapper
+from decorator import contextmanager
 
 
 logg = logging.getLogger(__name__)
@@ -235,3 +236,10 @@ def toggle_triggers(action, table_fullnames=None):
 
 enable_triggers = partial(toggle_triggers, "enable")
 disable_triggers = partial(toggle_triggers, "disable")
+
+
+@contextmanager
+def disabled_triggers():
+    disable_triggers()
+    yield
+    enable_triggers()

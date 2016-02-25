@@ -103,6 +103,12 @@ Node.access_rule_assocs = dynamic_rel(NodeToAccessRule, backref="node", cascade=
 Node.access_ruleset_assocs = dynamic_rel(NodeToAccessRuleset, backref="node", cascade="all, delete-orphan", passive_deletes=True)
 
 
+def _create_private_ruleset_assoc_for_nid(nid, ruletype):
+    ruleset = AccessRuleset(name=u"_{}_{}".format(ruletype, unicode(nid)))
+    ruleset_assoc = NodeToAccessRuleset(nid=nid, ruletype=ruletype, ruleset=ruleset, private=True)
+    return ruleset_assoc
+
+
 def get_or_add_private_access_ruleset(self, ruletype):
     """Gets the private access ruleset for this node for the specified `ruletype`.
     Creates the ruleset if it's missing and adds it to the session.
@@ -114,12 +120,10 @@ def get_or_add_private_access_ruleset(self, ruletype):
 
     if ruleset_assoc is None:
         # the name doesn't really matter, but it must be unique
-        ruleset = AccessRuleset(name=u"_{}_{}".format(ruletype, unicode(self.id)))
-        ruleset_assoc = NodeToAccessRuleset(ruletype=ruletype, ruleset=ruleset, private=True)
+        ruleset_assoc = _create_private_ruleset_assoc_for_nid(self.id, ruletype)
         self.access_ruleset_assocs.append(ruleset_assoc)
-    else:
-        ruleset = ruleset_assoc.ruleset
 
+    ruleset = ruleset_assoc.ruleset
     return ruleset
 
 

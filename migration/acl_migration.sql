@@ -1,5 +1,5 @@
 DROP TYPE IF EXISTS mediatum_import.expanded_accessrule CASCADE;
-CREATE TYPE mediatum_import.expanded_accessrule AS (expanded_rule text, rulesets text[]);
+CREATE TYPE mediatum_import.expanded_accessrule AS (expanded_rule text, rulesets text[], special_rulestrings text[]);
 
 CREATE OR REPLACE FUNCTION mediatum_import.expand_acl_rule(rulestr text)
   RETURNS mediatum_import.expanded_accessrule
@@ -17,9 +17,12 @@ SELECT array_to_string(array_agg(
                                 WHERE name = n) END)),',') as expanded_rule,
        array_agg(
                (SELECT trim(' ' from n)
-                WHERE n NOT LIKE '{%')) as rulesets
+                WHERE n NOT LIKE '{%')) as rulesets,
+       array_agg(
+               (SELECT trim(' ' from n)
+                WHERE n LIKE '{%')) as special_rulestrings
 INTO expanded
-FROM unnest(regexp_split_to_array(rulestr, ',')) AS n;
+FROM unnest(regexp_split_to_array(trim(', ' from rulestr), ',')) AS n;
 RETURN expanded;
 END;
 $f$;

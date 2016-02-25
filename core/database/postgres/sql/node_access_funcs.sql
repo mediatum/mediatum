@@ -1,23 +1,3 @@
-CREATE FUNCTION op_xor(a boolean, b boolean) 
-    RETURNS boolean
-    LANGUAGE plpgsql 
-    IMMUTABLE STRICT
-    SET search_path TO :search_path
-    AS $$
-BEGIN
-  RETURN ((NOT a) AND b) OR (a AND (NOT b));
-END;
-$$;
-
-
-CREATE OPERATOR # (
-    PROCEDURE = :search_path.op_xor,
-    LEFTARG = boolean,
-    RIGHTARG = boolean,
-    COMMUTATOR = OPERATOR(:search_path.#)
-);
-
-
 CREATE OR REPLACE FUNCTION check_access_rule(rule access_rule, _group_ids integer[], ipaddr inet, _date date) 
     RETURNS boolean
     LANGUAGE plpgsql
@@ -26,9 +6,9 @@ CREATE OR REPLACE FUNCTION check_access_rule(rule access_rule, _group_ids intege
 AS $f$
 BEGIN
 RETURN 
-    (rule.subnets IS NULL OR ipaddr IS NULL OR (rule.invert_subnet # (ipaddr <<= ANY(rule.subnets))))
-    AND (rule.group_ids IS NULL OR _group_ids IS NULL OR (rule.invert_group # (_group_ids && rule.group_ids)))
-    AND (rule.dateranges IS NULL OR _date IS NULL OR (rule.invert_date # (_date <@ ANY(rule.dateranges))));
+    (rule.subnets IS NULL OR ipaddr IS NULL OR (rule.invert_subnet != (ipaddr <<= ANY(rule.subnets))))
+    AND (rule.group_ids IS NULL OR _group_ids IS NULL OR (rule.invert_group != (_group_ids && rule.group_ids)))
+    AND (rule.dateranges IS NULL OR _date IS NULL OR (rule.invert_date != (_date <@ ANY(rule.dateranges))));
 END;
 $f$;
 
@@ -50,7 +30,7 @@ RETURN EXISTS (
     JOIN access_rule a on na.rule_id=a.id
     WHERE na.ruletype=_ruletype
     AND node.id = node_id
-    AND na.invert # check_access_rule(a, _group_ids, ipaddr, _date));
+    AND na.invert != check_access_rule(a, _group_ids, ipaddr, _date));
 END;
 $f$;
 
@@ -93,7 +73,7 @@ RETURN EXISTS (
     WHERE na.ruletype=_ruletype
     AND na.blocking = false
     AND node.id = node_id
-    AND na.invert # check_access_rule(a, _group_ids, ipaddr, _date)
+    AND na.invert != check_access_rule(a, _group_ids, ipaddr, _date)
 
     EXCEPT
 
@@ -103,7 +83,7 @@ RETURN EXISTS (
     WHERE na.ruletype=_ruletype
     AND na.blocking = true
     AND node.id = node_id
-    AND NOT na.invert # check_access_rule(a, _group_ids, ipaddr, _date));
+    AND NOT na.invert != check_access_rule(a, _group_ids, ipaddr, _date));
 
 END;
 $f$;
@@ -135,7 +115,7 @@ RETURN QUERY
     JOIN node_to_access_rule na on node.id=na.nid
     JOIN access_rule a on na.rule_id=a.id
     WHERE na.ruletype=_ruletype
-    AND na.invert # check_access_rule(a, _group_ids, ipaddr, _date);
+    AND na.invert != check_access_rule(a, _group_ids, ipaddr, _date);
 END;
 $f$;
 
@@ -177,7 +157,7 @@ RETURN QUERY
     JOIN access_rule a on na.rule_id=a.id
     WHERE na.ruletype=_ruletype
     AND na.blocking = false
-    AND na.invert # check_access_rule(a, _group_ids, ipaddr, _date)
+    AND na.invert != check_access_rule(a, _group_ids, ipaddr, _date)
 
     EXCEPT
 
@@ -186,7 +166,7 @@ RETURN QUERY
     JOIN access_rule a on na.rule_id=a.id
     WHERE na.ruletype=_ruletype
     AND na.blocking = true
-    AND NOT na.invert # check_access_rule(a, _group_ids, ipaddr, _date);
+    AND NOT na.invert != check_access_rule(a, _group_ids, ipaddr, _date);
 END;
 $f$;
 
@@ -569,6 +549,33 @@ UNION ALL
 ;
 END;
 $f$;
+
+
+--- rules from rulesets
+CREATE OR REPLACE FUNCTION create_node_rulemappings_from_rulesets(_ruletype text)
+    RETURNS void
+    LANGUAGE plpgsql
+    SET search_path TO :search_path
+    VOLATILE
+AS $f$
+BEGIN
+    INSERT INTO node_to_access_rule
+    SELECT DISTINCT nid,
+           rule_id, 
+           _ruletype,
+           arr.invert != nar.invert AS invert,
+           false as inherited, 
+           arr.blocking OR nar.blocking AS blocking
+    FROM access_ruleset_to_rule arr
+    JOIN node_to_access_ruleset nar ON arr.ruleset_name=nar.ruleset_name
+    WHERE nar.ruletype=_ruletype
+    -- exclude existing rules
+    EXCEPT 
+    SELECT * FROM node_to_access_rule nar
+    WHERE nar.ruletype=_ruletype;
+END;
+$f$;
+
 
 --- trigger functions for access rules
 

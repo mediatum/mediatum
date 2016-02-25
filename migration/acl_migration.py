@@ -17,16 +17,24 @@ from sqlalchemy import sql, func
 from core import db, User, UserGroup
 from core.database.postgres import mediatumfunc
 from core.database.postgres.permission import AccessRule, NodeToAccessRule, AccessRulesetToRule, AccessRuleset, NodeToAccessRuleset,\
-    IPNetworkList
+    IPNetworkList, _create_private_ruleset_assoc_for_nid
 from migration import oldaclparser
 from migration.oldaclparser import ACLAndCondition, ACLDateAfterClause, ACLDateBeforeClause, ACLOrCondition, ACLNotCondition,\
     ACLTrueCondition, ACLFalseCondition, ACLGroupCondition, ACLIPCondition, ACLUserCondition, ACLParseException, ACLIPListCondition
 from utils.compat import iteritems
+from core.database.postgres.alchemyext import disable_triggers, disabled_triggers
 
 
 q = db.query
 
 logg = logging.getLogger(__name__)
+
+
+class CannotRepresentRule(Exception):
+    def __init__(self, condition, description="no description given"):
+        self.condition = condition
+        msg = "cannot be represented: {} ({})".format(condition, description)
+        super(CannotRepresentRule, self).__init__(msg)
 
 
 def prepare_acl_rulestring(rulestr):
@@ -35,19 +43,23 @@ def prepare_acl_rulestring(rulestr):
 
 def load_node_rules(ruletype):
     expanded_accessrule = func.to_json(func.mediatum_import.expand_acl_rule(sql.text(ruletype)))
-    stmt = sql.select(["id", expanded_accessrule], from_obj="mediatum_import.node").where(sql.text(
+    stmt = sql.select([sql.text("id"), expanded_accessrule], from_obj=sql.text("mediatum_import.node")).where(sql.text(
         "{} != ''"
         " AND name NOT LIKE 'Arbeitsverzeichnis (%'"
         " AND id IN (SELECT id FROM mediatum.node)".format(ruletype)))
 
     node_rules = db.session.execute(stmt)
     res = node_rules.fetchall()
-    nid_to_rulestr = {r[0]: r[1]["expanded_rule"] for r in res}
-    nid_to_rulesets = {r[0]: r[1]["rulesets"] for r in res}
-    return nid_to_rulestr, nid_to_rulesets
+    nid_to_rulesets = {r[0]: [rs for rs in r[1]["rulesets"] if rs is not None] for r in res}
+    nid_to_special_rulestrings = {r[0]: [rs for rs in r[1]["special_rulestrings"] if rs is not None] for r in res}
+    return nid_to_rulesets, nid_to_special_rulestrings
 
 
 def convert_node_rulestrings_to_symbolic_rules(nid_to_rulestr, fail_on_first_error=False, ignore_errors=False):
+    """Creates symbolic (sympy) rules from legacy rule strings.
+    Empty rulestrings (stripped) are mapped to None.
+    :return: dict mapping node id -> symbolic rule
+    """
     rulestr_set = set(nid_to_rulestr.itervalues())
     converter = OldACLToBoolExprConverter()
     converter.fail_on_first_error = fail_on_first_error
@@ -66,12 +78,19 @@ def convert_node_rulestrings_to_symbolic_rules(nid_to_rulestr, fail_on_first_err
         logg.warn(msg)
 
     # map node ids to bool expression results
-    nid_to_symbolic_rule = {nid: rulestr_to_symbolic_rule.get(rulestr) for nid, rulestr in nid_to_rulestr.iteritems()}
+    nid_to_symbolic_rule = {nid: None if not rulestr.strip() else rulestr_to_symbolic_rule[rulestr]
+                            for nid, rulestr in nid_to_rulestr.iteritems()}
+
     return (nid_to_symbolic_rule, converter.symbol_to_acl_cond.copy())
 
 
 def convert_node_symbolic_rules_to_access_rules(nid_to_symbolic_rule, symbol_to_acl_cond,
                                                 fail_on_first_error=False, ignore_errors=False, ignore_missing_user_groups=False):
+    """
+    Creates AccessRules from a node id -> symbolic rule mapping.
+    Symbols that are None are converted to an empty list.
+    :return: dict mapping node id -> list of access rules
+    """
     converter = SymbolicExprToAccessRuleConverter(symbol_to_acl_cond)
     converter.fail_on_first_error = fail_on_first_error
     symbolic_rule_set = set(nid_to_symbolic_rule.itervalues())
@@ -98,7 +117,8 @@ def convert_node_symbolic_rules_to_access_rules(nid_to_symbolic_rule, symbol_to_
     if converter.fake_groups:
         logg.warn("inserted fake group ids for missing groups / users:\n%s", pformat(converter.fake_groups))
 
-    nid_to_access_rules = {nid: symbolic_rule_to_access_rules.get(symbolic_rule) for nid, symbolic_rule in nid_to_symbolic_rule.iteritems()}
+    nid_to_access_rules = {nid: [] if symbolic_rule is None else symbolic_rule_to_access_rules[symbolic_rule]
+                           for nid, symbolic_rule in nid_to_symbolic_rule.iteritems()}
     return nid_to_access_rules
 
 
@@ -139,22 +159,9 @@ def convert_symbolic_rules_to_dnf(nid_to_symbolic_rule, simplify=False):
     return {nid: boolalg.to_dnf(rule, simplify=simplify) for nid, rule in iteritems(nid_to_symbolic_rule)}
 
 
-def save_node_to_rule_mappings(nid_to_access_rules, ruletype):
-    s = db.session
-    node_to_access_rule_it = (
-        NodeToAccessRule(
-            nid=nid,
-            rule=r[0],
-            ruletype=ruletype,
-            invert=r[1][0],
-            blocking=r[1][1]) for nid,
-        rules in nid_to_access_rules.items() for r in set(rules))
-
-    s.add_all(node_to_access_rule_it)
-
-
 def save_node_to_ruleset_mappings(nid_to_rulesets, ruletype):
     s = db.session
+    logg.info("saving %s ruleset mappings for %d nodes", ruletype, len(nid_to_rulesets))
     node_to_access_ruleset_it = (
         NodeToAccessRuleset(
             nid=nid,
@@ -165,20 +172,48 @@ def save_node_to_ruleset_mappings(nid_to_rulesets, ruletype):
     s.add_all(node_to_access_ruleset_it)
 
 
-def migrate_rules(ruletypes=["read", "write", "data"]):
+def save_node_to_special_rules(nid_to_special_rules, ruletype):
+    from core import Node
+    logg.info("saving special %s rules for %d nodes", ruletype, len(nid_to_special_rules))
+    for nid, rules_with_flags in iteritems(nid_to_special_rules):
+        ruleset_assoc = _create_private_ruleset_assoc_for_nid(nid, ruletype)
+        db.session.add(ruleset_assoc)
+        rs = ruleset_assoc.ruleset
+        for rule, (invert, blocking) in rules_with_flags:
+            rs.rule_assocs.append(AccessRulesetToRule(rule=rule, invert=invert, blocking=blocking))
+
+
+def convert_nid_to_rulestr(nid_to_rulestr):
+    nid_to_symbolic_rule, symbol_to_acl_condition = convert_node_rulestrings_to_symbolic_rules(nid_to_rulestr, ignore_errors=False,
+                                                                                               fail_on_first_error=True)
+    nid_to_access_rules = convert_node_symbolic_rules_to_access_rules(nid_to_symbolic_rule, symbol_to_acl_condition,
+                                                                      fail_on_first_error=True, ignore_missing_user_groups=True)
+
+    for nid, access_rules in nid_to_access_rules.iteritems():
+        rulestr = nid_to_rulestr[nid]
+        nid_to_access_rules[nid] = add_blocking_flag_to_access_rules(rulestr, access_rules)
+
+    return nid_to_access_rules
+
+
+def migrate_rules(ruletypes=["write", "read", "data"]):
+    """
+    WARNING: This function creates db objects that may trigger unwanted permission update functions on session flushing.
+    Disable database triggers (see `disabled_triggers`) in migration scripts when using this function!
+    """
     for ruletype in ruletypes:
-        nid_to_rulestr, nid_to_rulesets = load_node_rules(ruletype + "access")
-        nid_to_symbolic_rule, symbol_to_acl_condition = convert_node_rulestrings_to_symbolic_rules(nid_to_rulestr, ignore_errors=False,
-                                                                                                   fail_on_first_error=True)
-        nid_to_access_rules = convert_node_symbolic_rules_to_access_rules(nid_to_symbolic_rule, symbol_to_acl_condition,
-                                                                          fail_on_first_error=True, ignore_missing_user_groups=True)
+        logg.info("------ migrating %s permissions ------", ruletype)
+        nid_to_rulesets, nid_to_special_rulestrings = load_node_rules(ruletype + "access")
 
-        for nid, access_rules in nid_to_access_rules.iteritems():
-            rulestr = nid_to_rulestr[nid]
-            nid_to_access_rules[nid] = add_blocking_flag_to_access_rules(rulestr, access_rules)
+        nid_to_special_rulestrings = {nid: ",".join(r for r in rulestrings if r is not None) for nid, rulestrings in iteritems(nid_to_special_rulestrings)}
+        nid_to_special_rules = convert_nid_to_rulestr(nid_to_special_rulestrings)
 
-        save_node_to_rule_mappings(nid_to_access_rules, ruletype)
         save_node_to_ruleset_mappings(nid_to_rulesets, ruletype)
+        db.session.flush()
+        save_node_to_special_rules(nid_to_special_rules, ruletype)
+        db.session.flush()
+        create_rulemappings_stmt = sql.select([mediatumfunc.create_node_rulemappings_from_rulesets(ruletype)])
+        db.session.execute(create_rulemappings_stmt)
 
 
 def set_home_dir_permissions():
@@ -351,7 +386,7 @@ class SymbolicExprToAccessRuleConverter(object):
         username = acl_cond.name
         user = q(User).filter_by(login_name=username).scalar()
         if user is None:
-            logg.warn("user %s not found", username)
+            logg.debug("user %s not found", username)
             self.missing_users[acl_cond] = username
             return self._fake_groupid(username)
         group = user.get_or_add_private_group()
@@ -370,7 +405,7 @@ class SymbolicExprToAccessRuleConverter(object):
         groupname = acl_cond.group
         group = q(UserGroup).filter_by(name=groupname).first()
         if not group:
-            logg.warn("group %s not found", groupname)
+            logg.debug("group %s not found", groupname)
             self.missing_groups[acl_cond] = groupname
             return self._fake_groupid(groupname)
         return group.id
@@ -409,79 +444,174 @@ class SymbolicExprToAccessRuleConverter(object):
 
         return acl_cond, invert
 
-    def convert_symbolic_rule(self, cond):
-        # cached value? boolalg.true and boolalg.false are always returned from here
-        if cond in self.symbolic_rule_to_access_rules:
-            logg.info("convert: known rule: %s", cond)
-            return self.symbolic_rule_to_access_rules[cond]
+    def convert_literal(self, expr):
+        acl_cond, invert = self.get_acl_cond_for_literal(expr)
+        return ((self.rule_model_from_acl_cond(acl_cond), invert), )
 
-        if boolalg.is_literal(cond):
-            acl_cond, invert = self.get_acl_cond_for_literal(cond)
-            return ((self.rule_model_from_acl_cond(acl_cond), invert), )
+    def convert_conjunction(self, expr):
+        group_ids = None
+        invert_group = False
+        dateranges = None
+        invert_date = False
+        subnets = None
+        invert_subnet = False
 
+        if expr.is_Not:
+            expr = ~expr
+            invert = True
         else:
-            access_rules = []
-            group_ids = set()
-            subnets = set()
-            dateranges = set()
-            invert_group = False
-            invert_subnet = False
-            invert_date = False
-            invert_access_rule = True if isinstance(cond, Not) else False
+            invert = False
 
-            def check_inversion(invert_flag, inversion_state):
-                if not invert_flag and inversion_state:
-                    raise Exception("cannot be represented: {}".format(cond))
-                return invert_flag
+        for arg in expr.args:
+            if not boolalg.is_literal(arg):
+                raise CannotRepresentRule(expr, "conjunction can only contain literals")
 
-            if cond.func is And:
-                print "And found"
-                cond = Or(*(Not(a) for a in cond.args))
-                invert_access_rule = True
+            acl_cond, invert = self.get_acl_cond_for_literal(arg)
 
-            for arg in cond.args:
-                if arg.func is And:
-                    access_rules.extend(self.convert_symbolic_rule(arg))
-                else:
-                    acl_cond, invert = self.get_acl_cond_for_literal(arg)
+            if isinstance(acl_cond, ACLGroupCondition):
+                if group_ids:
+                    raise CannotRepresentRule(expr, "conjunction can only contain one group / user rule")
+                group_ids = [self.get_group_id_from_cond(acl_cond)]
+                invert_group = invert
 
-                    if isinstance(acl_cond, ACLGroupCondition):
-                        invert_group = check_inversion(invert, invert_group)
-                        group_id = self.get_group_id_from_cond(acl_cond)
-                        group_ids.add(group_id)
+            elif isinstance(acl_cond, ACLUserCondition):
+                if group_ids:
+                    raise CannotRepresentRule(expr, "conjunction can only contain one group / user rule")
+                group_ids = [self.get_private_user_group_id_from_cond(acl_cond)]
+                invert_group = invert
 
-                    if isinstance(acl_cond, ACLUserCondition):
-                        invert_group = check_inversion(invert, invert_group)
-                        group_id = self.get_private_user_group_id_from_cond(acl_cond)
-                        group_ids.add(group_id)
+            elif isinstance(acl_cond, (ACLDateBeforeClause, ACLDateAfterClause)):
+                if dateranges:
+                    raise CannotRepresentRule(expr, "conjunction can only contain one date rule")
+                dateranges = [make_open_daterange_from_rule(acl_cond)]
+                invert_date = invert
 
-                    elif isinstance(acl_cond, ACLIPCondition):
-                        invert_subnet = check_inversion(invert, invert_subnet)
-                        subnet = make_ipnetwork_from_rule(acl_cond)
-                        subnets.add(subnet)
+            elif isinstance(acl_cond, ACLIPCondition):
+                if subnets and not invert:
+                    raise CannotRepresentRule(expr, "conjunction can only contain one ip / iplist rule")
+                subnets = [make_ipnetwork_from_rule(acl_cond)]
+                invert_subnet = invert
 
-                    elif isinstance(acl_cond, ACLIPListCondition):
-                        invert_subnet = check_inversion(invert, invert_subnet)
-                        rule_subnets = get_iplist_from_cond(acl_cond)
-                        subnets.update(rule_subnets)
+            elif isinstance(acl_cond, ACLIPListCondition):
+                if subnets and not invert:
+                    raise CannotRepresentRule(expr, "conjunction can only contain one ip / iplist rule")
+                subnets = get_iplist_from_cond(acl_cond)
+                invert_subnet = invert
 
-                    elif isinstance(acl_cond, (ACLDateAfterClause, ACLDateBeforeClause)):
-                        invert_date = check_inversion(invert, invert_date)
-                        daterange = make_open_daterange_from_rule(acl_cond)
-                        dateranges.add(daterange)
+        return ((AccessRule(group_ids=group_ids, subnets=subnets, dateranges=dateranges,
+                   invert_date=invert_date, invert_subnet=invert_subnet, invert_group=invert_group), invert), )
+
+    def convert_conjunction_try_flip(self, expr):
+        try:
+            return self.convert_conjunction(expr)
+        except CannotRepresentRule:
+            # try conversion to a disjunction with De Morgan
+            expr = Or(*(Not(a) for a in expr.args))
+            access_rules = self.convert_disjunction(expr)
+            # we must invert the resulting rule, cannot invert more than one
+            if len(access_rules) > 1:
+                raise CannotRepresentRule(expr, "tried to invert conjunction, but more than one access rule returned")
+
+            return ((access_rules[0][0], True), )
+
+
+    def convert_disjunction(self, expr):
+        access_rules = []
+        group_ids = set()
+        subnets = set()
+        dateranges = set()
+        invert_group = False
+        invert_subnet = False
+        invert_date = False
+
+        def check_inversion(invert_flag, inversion_state, already_found):
+            if not invert_flag and inversion_state:
+                raise CannotRepresentRule(expr)
+            # only one negated element allowed
+            if already_found and (invert_flag or inversion_state):
+                raise CannotRepresentRule(expr, "negated subrules can only contain a single element")
+            return invert_flag
+
+        for arg in expr.args:
+            if arg.func is And:
+                access_rules.extend(self.convert_conjunction_try_flip(arg))
+            else:
+                if not boolalg.is_literal(arg):
+                    raise CannotRepresentRule(expr, "illegal nesting in disjunction")
+                acl_cond, invert = self.get_acl_cond_for_literal(arg)
+
+                if isinstance(acl_cond, ACLGroupCondition):
+                    invert_group = check_inversion(invert, invert_group, group_ids)
+                    group_id = self.get_group_id_from_cond(acl_cond)
+                    group_ids.add(group_id)
+
+                if isinstance(acl_cond, ACLUserCondition):
+                    invert_group = check_inversion(invert, invert_group, group_ids)
+                    group_id = self.get_private_user_group_id_from_cond(acl_cond)
+                    group_ids.add(group_id)
+
+                elif isinstance(acl_cond, ACLIPCondition):
+                    invert_subnet = check_inversion(invert, invert_subnet, subnets)
+                    subnet = make_ipnetwork_from_rule(acl_cond)
+                    subnets.add(subnet)
+
+                elif isinstance(acl_cond, ACLIPListCondition):
+                    invert_subnet = check_inversion(invert, invert_subnet, subnets)
+                    rule_subnets = get_iplist_from_cond(acl_cond)
+                    subnets.update(rule_subnets)
+
+                elif isinstance(acl_cond, (ACLDateAfterClause, ACLDateBeforeClause)):
+                    invert_date = check_inversion(invert, invert_date, dateranges)
+                    daterange = make_open_daterange_from_rule(acl_cond)
+                    dateranges.add(daterange)
+
+        # some after conversion check for disjunctions that cannot be represented properly
+
+        if (group_ids and (subnets or dateranges)
+         or subnets and (group_ids or dateranges)
+         or dateranges and (group_ids or subnets)):
+            raise CannotRepresentRule(expr)
 
         access_rules.append((AccessRule(
             group_ids=group_ids or None, dateranges=dateranges or None, subnets=subnets or None, invert_group=invert_group,
-            invert_subnet=invert_subnet, invert_date=invert_date),
-            invert_access_rule))
+            invert_subnet=invert_subnet, invert_date=invert_date), False))
 
         return tuple(access_rules)
+
+    def convert_disjunction_try_split(self, expr):
+        try:
+            return self.convert_disjunction(expr)
+
+        except CannotRepresentRule:
+            access_rules = [self.convert_literal(e) if boolalg.is_literal(e) else self.convert_conjunction(e) for e in expr.args]
+            access_rules_flat = [r for rules in access_rules for r in rules]
+            return access_rules_flat
+
+    def convert_symbolic_rule(self, expr):
+        # cached value? boolalg.true and boolalg.false are always returned from here
+        if expr in self.symbolic_rule_to_access_rules:
+            logg.info("convert: known rule: %s", expr)
+            return self.symbolic_rule_to_access_rules[expr]
+
+        elif boolalg.is_literal(expr):
+            return self.convert_literal(expr)
+
+        elif expr.func is And:
+            return self.convert_conjunction_try_flip(expr)
+
+        elif expr.func is Or:
+            return self.convert_disjunction_try_split(expr)
+
+        else:
+            raise CannotRepresentRule(expr, "unknown")
 
     def batch_convert_symbolic_rules(self, symbolic_rules):
         symbolic_rule_to_access_rules = {}
 
         for symbolic_rule in symbolic_rules:
-            if symbolic_rule not in symbolic_rule_to_access_rules:
+            if symbolic_rule is None:
+                logg.debug("batch_convert_symbolic_rules: symbolic rule is None, ignoring")
+            elif symbolic_rule not in symbolic_rule_to_access_rules:
                 try:
                     access_rules = self.convert_symbolic_rule(symbolic_rule)
 
@@ -493,6 +623,6 @@ class SymbolicExprToAccessRuleConverter(object):
                 else:
                     symbolic_rule_to_access_rules[symbolic_rule] = access_rules
             else:
-                logg.info("batch: known rule: %s", symbolic_rule)
+                logg.debug("batch_convert_symbolic_rules: known rule: %s", symbolic_rule)
 
         return symbolic_rule_to_access_rules

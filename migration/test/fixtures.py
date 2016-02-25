@@ -7,9 +7,9 @@
 import os.path
 from pytest import fixture, yield_fixture
 import migration.acl_migration
-from migration.test.factories import AccessFactory
+from migration.test.factories import AccessFactory, IPListFactory, AccessRulesetFactory
 from migration.test.factories import ImportNodeFactory
-from core.database.postgres.permission import AccessRule, AccessRuleset
+from core.database.postgres.permission import AccessRule, AccessRuleset, AccessRulesetToRule
 from core.test.factories import DirectoryFactory, NodeFactory
 from ipaddr import IPv4Network
 from core.database.postgres.connector import read_and_prepare_sql
@@ -43,6 +43,15 @@ def import_node_with_simple_access():
 
 
 @fixture
+def import_node_with_stupid_commas_in_readaccess():
+    node = NodeFactory(id=100)
+    import_node = ImportNodeFactory(
+        id=100,
+        readaccess=u",nicht Jeder,{ group test_readers },,")
+    return import_node
+
+
+@fixture
 def import_node_with_complex_access():
     node = NodeFactory(id=100)
     import_node = ImportNodeFactory(id=100,
@@ -52,6 +61,15 @@ def import_node_with_complex_access():
 
 @fixture
 def import_node_with_ruleset(session):
+    node = NodeFactory(id=100)
+    session.flush()
+    acl1 = AccessFactory(rule=u"( group test_readers OR group test_readers2 )", name=u"not_rule")
+    import_node = ImportNodeFactory(id=100, readaccess=u"not_rule,{ user darfdas }")
+    return import_node
+
+
+@fixture
+def import_node_with_non_dnf_ruleset(session):
     node = NodeFactory(id=100)
     session.flush()
     acl1 = AccessFactory(rule=u"NOT ( group test_readers OR group test_readers2 )", name=u"not_rule")
@@ -69,6 +87,15 @@ def users_and_groups_for_ruleset(session, internal_authenticator_info):
     groups = [UserGroup(name=u"test_readers"), UserGroup(name=u"test_readers2")]
     session.add_all(groups)
     return users, groups
+
+
+@fixture
+def ruleset(session, users_and_groups_for_ruleset):
+    users, groups = users_and_groups_for_ruleset
+    rs = AccessRulesetFactory(name="not_rule")
+    rule = AccessRule(group_ids=[g.id for g in groups] + [u.get_or_add_private_group().id for u in users])
+    rs.rule_assocs.append(AccessRulesetToRule(rule=rule))
+    return rs
 
 
 @fixture
@@ -112,3 +139,9 @@ def current_version_node():
     node.system_attrs[u"version.id"] = u"3"
     node.system_attrs[u"version.comment"] = u"current"
     return node
+
+
+@fixture
+def some_iplist():
+    iplist = IPListFactory()
+    return iplist

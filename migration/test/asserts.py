@@ -17,8 +17,11 @@ def assert_access_rule(access_rule, invert=None, blocking=None, **attrs_to_check
     attrs = dict(group_ids=None, dateranges=None, subnets=None, invert_group=False, invert_date=False, invert_subnet=False)
     attrs.update(attrs_to_check)
     for attrname, expected_value in iteritems(attrs):
-        value = getattr(access_rule, attrname) 
-        assert value == expected_value
+        value = getattr(access_rule, attrname)
+        if isinstance(value, set):
+            assert value == set(expected_value)
+        else:
+            assert value == expected_value
 
 
 def assert_access_rule_with_flags(access_rule_with_flags, invert=None, blocking=None, **attrs_to_check):
@@ -26,6 +29,6 @@ def assert_access_rule_with_flags(access_rule_with_flags, invert=None, blocking=
     assert_access_rule(access_rule, **attrs_to_check)
     if invert is not None:
         assert flags[0] == invert
-        
+
     if blocking is not None:
         assert flags[1] == blocking

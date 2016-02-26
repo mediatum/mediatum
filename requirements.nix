@@ -133,7 +133,7 @@ let
       url = "https://pypi.python.org/packages/source/p/psycopg2/psycopg2-2.6.1.tar.gz";
       md5 = "842b44f8c95517ed5b792081a2370da1";
     };
-    propagatedBuildInputs = with self; [pkgs.postgresql94];
+    buildInputs = with self; [pkgs.postgresql95];
   };
 
   pyaml = self.buildPythonPackage rec {
@@ -363,6 +363,7 @@ in {
       pkgs.graphviz-nox
       pkgs.perlPackages.ImageExifTool
       pkgs.poppler_utils
+      pkgs.postgresql95
     ];
 
     devel = [

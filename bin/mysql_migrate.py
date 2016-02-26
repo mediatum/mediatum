@@ -17,7 +17,10 @@ action is one of:
 * core: basic migrations from import schema to mediatum schema
 * users: migrate users and usergroups in mediatum schema
 * dynusers: migrate users from dynauth plugin
+* user_finish: rename migrated user nodes, migrate user home dirs and set admin user
+* versions: migrate node versions
 * permissons: migrate node permissons from import schema to mediatum schema
+* inherited_permissons: calculate inherited permissions
 * everything: run all tasks above
 
 Database changes are commited after all actions have been run.

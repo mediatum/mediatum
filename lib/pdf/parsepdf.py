@@ -90,7 +90,8 @@ def parsePDF(filename, tempdir):
     imgfile = os.path.join(tempdir, "tmp" + str(random.random()) + ".png")
     thumb128 = name + ".thumb"
     thumb300 = name + ".thumb2"
-    fulltext = name + ".txt"
+    fulltext_from_pdftotext = name + ".pdftotext"  # output of pdf to text, possibly not normalized utf-8
+    fulltext = name + ".txt"  # normalized output of uconv
     infoname = name + ".info"
 
     info_cmd = ["pdfinfo", "-meta", filename]
@@ -122,11 +123,20 @@ def parsePDF(filename, tempdir):
         makeThumbs(imgfile, thumb128, thumb300)
 
     # extract fulltext (xpdf)
-    fulltext_cmd = ["pdftotext", "-enc", "UTF-8", filename, fulltext]
+    fulltext_cmd = ["pdftotext", "-enc", "UTF-8", filename, fulltext_from_pdftotext]
     try:
         check_call(fulltext_cmd)
     except CalledProcessError:
         logg.exception("failed to extract fulltext from file %s", filename)
+
+    # normalization of fulltext (uconv)
+    fulltext_normalization_cmd = ["uconv", "-x", "any-nfc", "--output", fulltext, fulltext_from_pdftotext]
+    try:
+        check_call(fulltext_normalization_cmd)
+    except CalledProcessError:
+        logg.exception("failed to normalize fulltext from file %s", filename)
+
+    os.remove(fulltext_from_pdftotext)
     os.remove(imgfile)
 
 

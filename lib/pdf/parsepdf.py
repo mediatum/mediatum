@@ -92,7 +92,8 @@ def parsePDF(filename, tempdir):
     imgfile = tempdir + "tmp" + str(random.random()) + ".png"
     thumb128 = name + ".thumb"
     thumb300 = name + ".thumb2"
-    fulltext = name + ".txt"
+    fulltext_from_pdftotext = name + ".pdftotext"  # output of pdf to text, possibly not normalized utf-8
+    fulltext = name + ".txt"  # normalized output of uconv
     infoname = name + ".info"
 
     # pdf info (xpdf)
@@ -113,7 +114,12 @@ def parsePDF(filename, tempdir):
     makeThumbs(imgfile, thumb128, thumb300)
 
     # extract fulltext (xpdf)
-    os.system("pdftotext -enc UTF-8 %s %s" % (filename, fulltext))
+    os.system("pdftotext -enc UTF-8 %s %s" % (filename, fulltext_from_pdftotext))
+
+    # normalization of fulltext (uconv)
+    os.system("uconv -x any-nfc --output %s %s" % (fulltext, fulltext_from_pdftotext))
+
+    os.remove(fulltext_from_pdftotext)
     os.remove(imgfile)
 
 

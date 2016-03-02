@@ -117,7 +117,7 @@ def parsePDF(filename, tempdir):
     os.system("pdftotext -enc UTF-8 %s %s" % (filename, fulltext_from_pdftotext))
 
     # normalization of fulltext (uconv)
-    os.system("uconv -x any-nfc --output %s %s" % (fulltext, fulltext_from_pdftotext))
+    os.system("uconv -x any-nfc -f UTF-8 -t UTF-8 --output %s %s" % (fulltext, fulltext_from_pdftotext))
 
     os.remove(fulltext_from_pdftotext)
     os.remove(imgfile)

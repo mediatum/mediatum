@@ -130,7 +130,7 @@ def parsePDF(filename, tempdir):
         logg.exception("failed to extract fulltext from file %s", filename)
 
     # normalization of fulltext (uconv)
-    fulltext_normalization_cmd = ["uconv", "-x", "any-nfc", "--output", fulltext, fulltext_from_pdftotext]
+    fulltext_normalization_cmd = ["uconv", "-x", "any-nfc", "-f UTF-8", "-t UTF-8", "--output", fulltext, fulltext_from_pdftotext]
     try:
         check_call(fulltext_normalization_cmd)
     except CalledProcessError:

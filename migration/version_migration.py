@@ -147,7 +147,7 @@ def finish():
 
     # insert remaining nodes as current version into version table
     # create a single transaction for all nodes, would be too much to create a transaction for each node ;)
-    res = s.execute("INSERT INTO transaction DEFAULT VALUES RETURNING id")
+    res = s.execute("INSERT INTO transaction (issued_at, id) VALUES (now(), nextval('transaction_id_seq')) RETURNING id")
     tx_id = res.fetchone()[0]
     stmt = ("INSERT INTO node_version (id, name, type, schema, attrs, orderpos, transaction_id, operation_type) " +
            "SELECT id, name, type, schema, attrs, orderpos, {}, {} " +

@@ -9,6 +9,8 @@ from core import db, User, UserGroup, AuthenticatorInfo
 from markupsafe import Markup
 from wtforms.fields.core import StringField
 from web.newadmin.views import BaseAdminView
+from wtforms.ext.sqlalchemy.fields import QuerySelectMultipleField
+from flask.ext.admin import form
 
 
 logg = logging.getLogger(__name__)
@@ -21,7 +23,8 @@ def _link_format_node_id_column(node_id):
 
 class UserView(BaseAdminView):
 
-    column_exclude_list = ("created", "password_hash", "salt", "comment", "private_group", "can_edit_shoppingbag", "can_change_password")
+    column_exclude_list = ("created", "password_hash", "salt", "comment",
+                           "private_group", "can_edit_shoppingbag", "can_change_password")
     column_filters = ("authenticator_info", "display_name", "login_name", "organisation")
     can_export = True
 
@@ -30,10 +33,16 @@ class UserView(BaseAdminView):
     }
     column_searchable_list = ("display_name", "login_name", "organisation")
     column_editable_list = ("login_name", "email")
-    form_excluded_columns = ("home_dir", "created", "password_hash", "salt", "versions", "shoppingbags", "private_group")
+    form_excluded_columns = ("home_dir", "created", "password_hash", "salt",
+                             "versions", "shoppingbags", "private_group", "group_assocs")
 
     form_overrides = {
         "email": StringField
+    }
+
+    form_extra_fields = {
+        "groups": QuerySelectMultipleField(query_factory=lambda: db.query(UserGroup),
+                                           widget=form.Select2Widget(multiple=True))
     }
 
     def __init__(self, session=None, *args, **kwargs):
@@ -41,6 +50,13 @@ class UserView(BaseAdminView):
 
 
 class UserGroupView(BaseAdminView):
+
+    form_excluded_columns = "user_assocs"
+
+    form_extra_fields = {
+        "users": QuerySelectMultipleField(query_factory=lambda: db.query(User),
+                                          widget=form.Select2Widget(multiple=True))
+    }
 
     def __init__(self, session=None, *args, **kwargs):
         super(UserGroupView, self).__init__(UserGroup, session, category="User", *args, **kwargs)

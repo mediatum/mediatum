@@ -104,7 +104,9 @@ class NodeAppenderQuery(AppenderMixin, LenMixin, MtQuery):
 t_noderelation = Table("noderelation", db_metadata,
                        C("nid", Integer, FK("node.id"), primary_key=True, index=True),
                        C("cid", Integer, FK("node.id", ondelete="CASCADE"), primary_key=True, index=True),
-                       C("distance", Integer, primary_key=True, index=True))
+                       # SQLAlchemy automatically generates primary key integers as SERIAL.
+                       # We don't want that for the distance, disable with autoincrement=False
+                       C("distance", Integer, primary_key=True, autoincrement=False, index=True))
 
 
 class BaseNodeMeta(DeclarativeMeta):
@@ -159,6 +161,7 @@ access_funcs = {
     "data": mediatumfunc.has_data_access_to_node
 }
 
+node_id_seq = Sequence('node_id_seq', schema=db_metadata.schema, start=100)
 
 class Node(DeclarativeBase, NodeMixin):
 
@@ -171,7 +174,7 @@ class Node(DeclarativeBase, NodeMixin):
         "exclude": ["subnode", "system_attrs"]
     }
 
-    id = C(Integer, Sequence('node_id_seq', schema=db_metadata.schema, start=100), primary_key=True)
+    id = C(Integer, node_id_seq, server_default=node_id_seq.next_value(), primary_key=True)
     type = C(Text, index=True)
     schema = C(Unicode, index=True)
     name = C(Unicode, index=True)

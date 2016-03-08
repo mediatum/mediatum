@@ -326,6 +326,7 @@ class PostgresSQLAConnector(object):
         from alembic.config import Config
         from alembic import command
         alembic_cfg = Config(os.path.join(config.basedir, "alembic.ini"))
+        alembic_cfg.attributes["running_in_mediatum"] = True
         command.upgrade(alembic_cfg, "head")
 
     def check_load_initial_database_values(self, default_admin_password=None):

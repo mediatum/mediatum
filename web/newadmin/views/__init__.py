@@ -20,5 +20,5 @@ class BaseAdminView(ModelView):
     column_display_pk = True
     can_view_details = True
 
-    def __init__(self, model, session=db.session, *args, **kwargs):
-        super(BaseAdminView, self).__init__(model, session, *args, **kwargs)
+    def __init__(self, model, session=None, *args, **kwargs):
+        super(BaseAdminView, self).__init__(model, session or db.Session, *args, **kwargs)

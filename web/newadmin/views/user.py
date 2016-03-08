@@ -10,6 +10,7 @@ from markupsafe import Markup
 from wtforms.fields.core import StringField
 from web.newadmin.views import BaseAdminView
 
+
 logg = logging.getLogger(__name__)
 
 
@@ -35,17 +36,17 @@ class UserView(BaseAdminView):
         "email": StringField
     }
 
-    def __init__(self, session=db.session, *args, **kwargs):
+    def __init__(self, session=None, *args, **kwargs):
         super(UserView, self).__init__(User, session, category="User", *args, **kwargs)
 
 
 class UserGroupView(BaseAdminView):
 
-    def __init__(self, session=db.session, *args, **kwargs):
+    def __init__(self, session=None, *args, **kwargs):
         super(UserGroupView, self).__init__(UserGroup, session, category="User", *args, **kwargs)
 
 
 class AuthenticatorInfoView(BaseAdminView):
 
-    def __init__(self, session=db.session, *args, **kwargs):
+    def __init__(self, session=None, *args, **kwargs):
         super(AuthenticatorInfoView, self).__init__(AuthenticatorInfo, session, category="User", *args, **kwargs)

@@ -30,7 +30,7 @@ sys.path.append(".")
 
 LOG_FILEPATH = os.path.join(tempfile.gettempdir(), "mediatum_manage.log")
 from core import init
-init.basic_init(root_loglevel=logging.INFO, log_filepath=LOG_FILEPATH)
+init.basic_init(root_loglevel=logging.DEBUG, log_filepath=LOG_FILEPATH)
 
 from core.database.postgres import db_metadata, mediatumfunc
 from core.database.postgres.alchemyext import exec_sqlfunc, disable_triggers, enable_triggers
@@ -45,6 +45,7 @@ from core.database.init import init_database_values
 from core import db, Node
 import utils.search
 import utils.iplist
+from utils.postgres import truncate_tables, run_single_sql, vacuum_tables, vacuum_full_tables, vacuum_analyze_tables
 
 
 s = db.session
@@ -54,28 +55,6 @@ q = db.query
 global search_initialized
 search_initialized = False
 
-# utility functions
-# XXX: could be moved to utils
-
-def reverse_sorted_tables():
-    return reversed(db_metadata.sorted_tables)
-
-
-def truncate_tables(s, table_fullnames=None):
-    if not table_fullnames:
-        table_fullnames = [t.fullname for t in reverse_sorted_tables()]
-
-    table_fullname_str = ",".join(table_fullnames)
-    s.execute('TRUNCATE {} RESTART IDENTITY CASCADE;'.format(table_fullname_str))
-    logg.info("truncated %s", table_fullname_str)
-
-
-def get_conn_with_autocommit(s):
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        conn = s.connection().execution_options(isolation_level="AUTOCOMMIT")
-    return conn
-
 
 def import_dump(s, dump_filepath):
     disable_triggers()
@@ -84,37 +63,6 @@ def import_dump(s, dump_filepath):
     enable_triggers()
     db.session.commit()
     logg.info("imported dump from %s", dump_filepath)
-
-
-def run_maint_command_for_tables(command, s, table_fullnames=None):
-    """Runs a maintenance postgres command on tables that must be run outside a transaction.
-    Uses all tables if `table_fullnames` is None.
-    :param s: session to use
-    :param table_fullnames: sequence of schema-qualified table names or None.
-    """
-    # we can't run inside an (implicit) transaction, so we have to use autocommit mode
-    conn = get_conn_with_autocommit(s)
-    if not table_fullnames:
-        table_fullnames = [t.fullname for t in reverse_sorted_tables()]
-
-    for fullname in table_fullnames:
-        cmd = command + " " + fullname
-        logg.info(cmd)
-        conn.execute(cmd)
-
-    logg.info("completed %s", command)
-
-
-reindex_tables = partial(run_maint_command_for_tables, "REINDEX TABLE")
-vacuum_tables = partial(run_maint_command_for_tables, "VACUUM")
-vacuum_analyze_tables = partial(run_maint_command_for_tables, "VACUUM ANALYZE")
-vacuum_full_tables = partial(run_maint_command_for_tables, "VACUUM FULL")
-
-
-def run_single_sql(stmt, s):
-    # we can't run inside an (implicit) transaction, so we have to use autocommit mode
-    conn = get_conn_with_autocommit(s)
-    return conn.execute(stmt)
 
 
 # subcommand handlers

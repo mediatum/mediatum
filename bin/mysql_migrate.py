@@ -39,7 +39,7 @@ sys.path.append(".")
 from sqlalchemy_continuum import remove_versioning
 from core import init, plugins
 from collections import OrderedDict
-from bin.manage import vacuum_analyze_tables
+from utils.postgres import vacuum_analyze_tables
 
 LOG_FILEPATH = os.path.join(tempfile.gettempdir(), "mediatum_mysql_migrate.log")
 
@@ -47,9 +47,9 @@ init.basic_init(root_loglevel=logging.INFO, log_filepath=LOG_FILEPATH)
 plugins.init_plugins()
 
 import core.database.postgres
+from core.database.postgres import db_metadata
 from core.database.postgres.alchemyext import disable_triggers, enable_triggers
 from core.database.postgres.connector import read_and_prepare_sql
-
 
 core.database.postgres.SLOW_QUERY_SECONDS = 1000
 logging.getLogger("migration.acl_migration").trace_level = logging.ERROR
@@ -143,7 +143,7 @@ def permissions(s):
 def inherited_permissions(s):
     # we are using database functions here, so we must commit before continuing
     s.commit()
-    vacuum_analyze_tables(s)
+    vacuum_analyze_tables(s, db_metadata=db_metadata)
     try:
         s.execute("SELECT mediatum.create_all_inherited_access_rules_read()")
         s.execute("SELECT mediatum.create_all_inherited_access_rules_write()")

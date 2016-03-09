@@ -11,6 +11,7 @@ let
   decorator
   httplib2
   humanize
+  ipdb
   ipython
   jinja2
   ldap 
@@ -325,6 +326,7 @@ in {
       httplib2
       humanize
       ipaddr
+      ipdb
       ipython
       ipython-sql
       jinja2

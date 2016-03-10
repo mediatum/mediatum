@@ -72,7 +72,8 @@ def getContent(req, ids):
                 node.removeAttribute('sortfield')
             else:
                 node.set('sortfield', field)
-            req.write(json.dumps({'state': 'ok', 'message': translate('edit_content_save_order', request=req)}))
+            req.write(json.dumps({'state': 'ok'}))
+            db.session.commit()
         return None
 
     if node.isContainer():

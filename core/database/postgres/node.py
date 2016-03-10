@@ -71,7 +71,7 @@ class NodeAppenderQuery(AppenderMixin, LenMixin, MtQuery):
         return [n.id for n in self.all()]
 
     def sort_by_fields(self, field):
-        if isinstance(field, str):
+        if isinstance(field, basestring):
             # handle some special cases
             if field == "name" or field == "nodename":
                 warn("use query.order_by(Node.name) instead", DeprecationWarning)
@@ -82,7 +82,7 @@ class NodeAppenderQuery(AppenderMixin, LenMixin, MtQuery):
             elif field in ("orderpos", "-orderpos"):
                 raise NotImplementedError("this method must not be used for orderpos sorting, use query.order_by(Node.orderpos)!")
             else:
-                warn("use query.order_by(Node.attrs[field]).order_by ... instead", DeprecationWarning)
+                warn("use query.order_by(Node.attrs[field]) instead", DeprecationWarning)
                 fields = [field]
         else:
             # remove empty sortfields

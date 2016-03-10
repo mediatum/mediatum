@@ -3,6 +3,7 @@ bibtexparser
 coffeescript
 configargparse
 decorator
+flask-admin
 httplib2
 humanize
 ipaddr

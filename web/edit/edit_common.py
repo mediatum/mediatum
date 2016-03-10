@@ -104,8 +104,8 @@ def showdir(req, node, publishwarn="auto", markunpublished=False, sortfield=None
     nodes = node.content_children # XXX: ?? correct
     if sortfield is None:
         sortfield = node.get("sortfield")
-        if sortfield:
-            nodes = nodes.sort_by_fields(sortfield)
+    if sortfield:
+        nodes = nodes.sort_by_fields([sortfield])
 #     nodes = [n for n in nodes if not n.type == 'shoppingbag'] # XXX: ??
     return shownodelist(req, nodes, publishwarn=publishwarn, markunpublished=markunpublished, dir=node)
 

@@ -38,6 +38,7 @@ from contenttypes import Directory, Container, Collections, Collection
 from schema.schema import getMetadataType
 from utils.compat import iteritems
 from utils.utils import Link
+from utils.url import build_url_from_path_and_params
 
 
 q = db.query
@@ -421,6 +422,8 @@ class UserLinks:
 
         self.id = nid
         self.language = lang(req)
+        self.path = req.path
+        self.args = req.args
 
     def getLinks(self):
         guest_user = get_guest_user()
@@ -458,6 +461,11 @@ class UserLinks:
             l += [Link("/pwdchange", t(self.language, "sub_header_changepwd_title"),
                        t(self.language, "sub_header_changepwd"), "_parent", icon="/img/changepwd.gif")]
         return l
+
+    def change_language_link(self, language):
+        params = self.args.copy()
+        params["change_language"] = language
+        return build_url_from_path_and_params(self.path, params)
 
 
 class NavigationFrame:

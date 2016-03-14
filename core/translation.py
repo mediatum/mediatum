@@ -132,11 +132,9 @@ def addPoFilepath(filepath=[]):
 
 
 def lang(req):
-    if "change_language" in req.params and req.params["change_language"]:
-        req.session["language"] = req.params["change_language"]
-        return req.session["language"]
-    elif "language" in req.session and req.session["language"]:
-        return req.session["language"]
+    language_from_session = req.session.get("language")
+    if language_from_session:
+        return language_from_session
 
     allowed_languages = config.languages
     if "Accept-Language" in req.request_headers:

@@ -16,6 +16,8 @@ def req():
     req.params = {}
     req.form = {}
     req.args = {}
+    req.path = "/"
+    req.request = {}
     return req
 
 

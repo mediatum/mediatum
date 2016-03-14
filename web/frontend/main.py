@@ -37,6 +37,8 @@ from core import Node, NodeAlias
 from contenttypes import Collections
 from workflow.workflow import Workflows
 from werkzeug.datastructures import ImmutableMultiDict
+from utils.url import build_url_from_path_and_params
+from functools import wraps
 
 q = db.query
 
@@ -76,6 +78,31 @@ DISPLAY_PATH = re.compile("/([-.~_/a-zA-Z0-9]+)$")
 known_node_aliases = {}
 
 
+def change_language_request(req):
+    language = req.args.get("change_language")
+    if language:
+        # only change session lang if language is configured
+        if language in config.languages:
+            req.session["language"] = language
+        params = req.args.copy()
+        del params["change_language"]
+        req.request["Location"] = build_url_from_path_and_params(req.path, params)
+        return httpstatus.HTTP_MOVED_TEMPORARILY
+
+
+def check_change_language_request(func):
+    @wraps(func)
+    def checked(req):
+        change_lang_http_status = change_language_request(req)
+        if change_lang_http_status:
+            return change_lang_http_status
+
+        return func(req)
+
+    return checked
+
+
+@check_change_language_request
 def display_404(req):
     return httpstatus.HTTP_NOT_FOUND
 
@@ -90,6 +117,7 @@ def overwrite_id_in_req(nid, req):
     return req
 
 
+@check_change_language_request
 def display_alias(req):
     match = DISPLAY_PATH.match(req.path)
     if match:
@@ -112,6 +140,7 @@ def display_alias(req):
 RE_NEWSTYLE_NODE_URL = re.compile("/(nodes/)?(\d+).*")
 
 
+@check_change_language_request
 def display_newstyle(req):
     """Handles requests for new style frontend node URLs matching
     /nodes/<nid> OR
@@ -130,6 +159,7 @@ def display_newstyle(req):
     return display(req)
 
 
+@check_change_language_request
 def display(req):
     if "jsonrequest" in req.params:
         handle_json_request(req)
@@ -162,6 +192,7 @@ def display(req):
     # ... Don't return a code because Athana overwrites the content if an http error code is returned from a handler.
 
 
+@check_change_language_request
 def display_noframe(req):
     content = getContentArea(req)
     content.feedback(req)
@@ -182,6 +213,7 @@ def display_noframe(req):
 PUBPATH = re.compile("/?(publish|pub)/(.*)$")
 
 
+@check_change_language_request
 def publish(req):
     m = PUBPATH.match(req.path)
 
@@ -202,6 +234,7 @@ def publish(req):
     return display_noframe(req)
 
 
+@check_change_language_request
 def show_parent_node(req):
     parent = None
     node = q(Node).get(req.params.get("id"))

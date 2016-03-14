@@ -54,7 +54,10 @@ else:
     try:
         import sqlite3 as sqlite
     except:
-        from pysqlite2 import dbapi2 as sqlite
+        try:
+            from pysqlite2 import dbapi2 as sqlite
+        except:
+            pass
 
 from core.db.database import initDatabaseValues
 from utils import *

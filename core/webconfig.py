@@ -280,7 +280,7 @@ def initContexts():
     # new admin area
 
     import web.newadmin
-    athana.add_wsgi_context("/f", web.newadmin.app)
+    athana.add_wsgi_context("/f/", web.newadmin.app)
 
 def flush(req):
     athana.flush()

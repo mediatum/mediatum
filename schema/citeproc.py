@@ -141,8 +141,11 @@ TYPES = [
 
 TYPE_SET = set(TYPES)
 
-
 class DOINotFound(Exception):
+    pass
+
+
+class DOINotImported(Exception):
     pass
 
 
@@ -216,15 +219,18 @@ def check_number(number):
 
 def get_citeproc_json(doi):
     """Get record for a given DOI in citeproc JSON format.
-    :raises: DOINotFound if DOI is unknown to the server
-
-    TODO: maybe there are other ways this can fail?
+    :raises: DOIFound if DOI is unknown to the server
+    :raises: DOINotImported if no valid metadata has been found for the DOI
     """
     headers = {"Accept": "application/citeproc+json"}
-    try:
-        record = requests.get(DX_DOI_URL + doi, headers=headers).json()
-    except ValueError:
+    res = requests.get(DX_DOI_URL + doi, headers=headers)
+    if res.status_code == 404:
         raise DOINotFound()
+    try:
+        record = res.json()
+    except ValueError:
+        # invalid data returned
+        raise DOINotImported()
     return record
 
 
@@ -336,7 +342,8 @@ def import_doi(doi, target=None, name=None, testing=False):
     :param doi:
     :param target:
     :type target: Node
-    :raises: DOINotFound if DOI is unknown to the server
+    :raises: DOIFound if DOI is unknown to the server
+    :raises: DOINotImported if no valid metadata has been found for the DOI
     """
     record = get_citeproc_json(doi)
     logg.debug("got citeproc data from server: %s", pformat(record))

@@ -761,8 +761,8 @@
 
                       if (data.error != '') {
                         var msg = data.error;
-                        if (data.connect_error_msg != '') {
-                        msg = msg + '\n' + data.connect_error_msg;
+                        if (data.error_detail != '') {
+                        msg = msg + '\n' + data.error_detail;
                         }
                         alert(msg);
                       }

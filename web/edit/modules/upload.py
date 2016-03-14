@@ -45,6 +45,7 @@ from contenttypes import Data
 from core import Node
 from schema.schema import Metadatatype, get_permitted_schemas, get_permitted_schemas_for_datatype
 from sqlalchemy import func
+from utils.compat import iteritems
 
 logg = logging.getLogger(__name__)
 identifier_importers = {}
@@ -277,7 +278,7 @@ def getContent(req, ids):
 
                 new_node = importer_func(identifier, importdir, req=req)
 
-                res = {'id': req.params.get('id'), 'error': req.params.get('error', ''), 'connect_error_msg': req.params.get('connect_error_msg', '')}
+                res = {'id': req.params.get('id'), 'error': req.params.get('error', ''), 'error_detail': req.params.get('error_detail', '')}
 
                 if new_node:
                     new_node.set("creator", user.login_name)
@@ -294,7 +295,7 @@ def getContent(req, ids):
                               "node is child of base node id=%s (name=%s, type=%s)", user.login_name, new_node.id, new_node.name, new_node.type,
                              identifier, importdir.id, importdir.name, importdir.type)
                 else:  # import failed, no new_node created
-                    logg.error("... in %s.%s: import failed, no new_node created for identifier (%s)", __name__, funcname(), identifier)
+                    logg.info("... in %s.%s: import failed, no new_node created for identifier (%s)", __name__, funcname(), identifier)
 
                 req.write(json.dumps(res))
 
@@ -564,6 +565,13 @@ def adduseropts(user):
 
 
 def import_from_doi(identifier, importdir, req=None):
+
+    def handle_error(req, error_msgstr):
+        if req:
+            errormsg = translation_t(req, error_msgstr)
+            req.request["Location"] = req.makeLink("content", {"id": importdir.id, "error": errormsg})
+            req.params["error"] = errormsg
+
     import schema.citeproc as citeproc
     import schema.importbase as importbase
     from requests.exceptions import ConnectionError
@@ -573,29 +581,26 @@ def import_from_doi(identifier, importdir, req=None):
         doi_extracted = citeproc.extract_and_check_doi(doi)
         new_node = citeproc.import_doi(doi_extracted, importdir)
         return new_node
+
     except citeproc.InvalidDOI:
         logg.error("Invalid DOI: '%s'", doi)
-        if req:
-            req.request["Location"] = req.makeLink("content", {"id": importdir.id, "error": translation_t(req, "doi_invalid")})
-            req.params["error"] = translation_t(req, "doi_invalid")
+        handle_error(req, "doi_invalid")
+
     except citeproc.DOINotFound:
         logg.error("DOI not found: '%s'", doi)
-        if req:
-            req.request["Location"] = req.makeLink("content", {"id": importdir.id, "error": translation_t(req, "doi_unknown")})
-            req.params["error"] = translation_t(req, "doi_unknown")
+        handle_error(req, "doi_unknown")
+
+    except citeproc.DOINotImported:
+        logg.error("no metadata imported for DOI: '%s'", doi)
+        handle_error(req, "doi_no_metadata_imported")
+
     except importbase.NoMappingFound as e:
         logg.error("no mapping found for DOI: '%s', type '%s'", doi, e.typ)
-        if req:
-            req.request["Location"] = req.makeLink("content", {"id": importdir.id, "error": translation_t(req, "doi_type_not_mapped")})
-            req.params["error"] = translation_t(req, "doi_type_not_mapped")
+        handle_error(req, "doi_type_not_mapped")
+
     except ConnectionError as e:
-        msg = "Connection to external server failed: '%s', type '%s'" % (
-            doi, e)
-        logg.error(msg)
-        if req:
-            req.request["Location"] = req.makeLink("content", {"id": importdir.id, "error": translation_t(req, "error_connecting_external_server")})
-            req.params["error"] = translation_t(req, "doi_error_connecting_external_server")
-            req.params["connect_error_msg"] = msg
+        logg.error("Connection to external server failed with error '%s'", e)
+        handle_error(req, "doi_error_connecting_external_server")
     else:
         if req:
             req.request["Location"] = req.makeLink("content", {"id": importdir.id})

@@ -13,7 +13,8 @@ from pytest import raises, mark
 from core import Node, db
 from utils.compat import iteritems
 from .. import citeproc
-from ..citeproc import get_citeproc_json, DOINotFound, FIELDS, CSLField
+from ..citeproc import get_citeproc_json, DOINotImported, FIELDS, CSLField
+from schema.citeproc import DOINotFound
 
 
 BASEDIR = os.path.join(os.path.dirname(__file__), "test_data")
@@ -106,9 +107,15 @@ def test_get_citeproc_json_article():
 
 
 @mark.slow
-def test_get_citeproc_json_fail():
+def test_get_citeproc_json_not_found():
     with raises(DOINotFound):
-        get_citeproc_json("invalid")
+        get_citeproc_json("unknown")
+
+
+@mark.slow
+def test_get_citeproc_json_not_imported():
+    with raises(DOINotImported):
+        get_citeproc_json("10.2788/967746")
 
 
 @mark.slow

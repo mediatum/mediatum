@@ -177,7 +177,8 @@ def _extended_searchquery_from_req(req):
                     q_str += " or "
                     q_user += " %s " % (translate("search_or", request=req))
                 first = 0
-                if query_to_key in req.args and field.getFieldtype() == "date":
+                field_type = field.getFieldtype()
+                if query_to_key in req.args and field_type == "date":
                     date_from = "0000-00-00T00:00:00"
                     date_to = "0000-00-00T00:00:00"
 
@@ -205,7 +206,12 @@ def _extended_searchquery_from_req(req):
                                                                 translate("search_and", request=req),
                                                                 to_value)
                 else:
-                    q_str += field.name + "=" + protect(element_query)
+                    if field_type in ("list", "dlist", "hlist", "ilist", "number"):
+                        # exact match
+                        q_str += field.name + " eq " + protect(element_query)
+                    else:
+                        # fulltext match
+                        q_str += field.name + " = " + protect(element_query)
 
                     if field.label:
                         q_user += field.label + " = " + protect(element_query)

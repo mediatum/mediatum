@@ -34,11 +34,13 @@ from core.transition import httpstatus
 from contenttypes.data import Content
 from core import db
 from core import Node, NodeAlias
-from contenttypes import Collections
+from core.transition import current_user
+from contenttypes import Collection
 from workflow.workflow import Workflows
 from werkzeug.datastructures import ImmutableMultiDict
 from utils.url import build_url_from_path_and_params
 from functools import wraps
+from contenttypes import Collections
 
 q = db.query
 
@@ -48,7 +50,7 @@ logg = logging.getLogger(__name__)
 
 def handle_json_request(req):
     s = []
-    if req.params.get("cmd") == "get_list_smi":
+    if req.args.get("cmd") == "get_list_smi":
         searchmaskitem_id = req.params.get("searchmaskitem_id")
         f = None
         g = None
@@ -56,22 +58,28 @@ def handle_json_request(req):
             f = q(Node).get(searchmaskitem_id).getFirstField()
         if not f:  # All Metadata
             f = g = getMetadataType("text")
+
+        collection = None
+        collection_id = req.args.get("collection_id")
+
+        if collection_id:
+            collection = q(Collection).get(collection_id)
+
+        if collection is None:
+            collection = q(Collections).one()
+
         s = [
             f.getSearchHTML(
                 Context(
                     g,
-                    value=req.params.get("query_field_value"),
+                    value=req.args.get("query_field_value"),
                     width=174,
-                    name="query" +
-                    ustr(
-                        req.params.get("fieldno")),
+                    name="query" + str(req.args.get("fieldno")),
                     language=lang(req),
-                    collection=q(Collections).get(
-                        req.params.get("collection_id")),
-                    user=users.getUserFromRequest(req),
+                    collection=collection,
+                    user=current_user,
                     ip=req.ip))]
     req.write(req.params.get("jsoncallback") + "(%s)" % json.dumps(s, indent=4))
-    return
 
 
 DISPLAY_PATH = re.compile("/([-.~_/a-zA-Z0-9]+)$")
@@ -162,8 +170,7 @@ def display_newstyle(req):
 @check_change_language_request
 def display(req):
     if "jsonrequest" in req.params:
-        handle_json_request(req)
-        return
+        return handle_json_request(req)
 
     req.session["area"] = ""
     content = getContentArea(req)

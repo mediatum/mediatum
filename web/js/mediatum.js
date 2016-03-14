@@ -66,7 +66,7 @@ function chg()
     var sel_index = document.xsearch["field"+fieldno].selectedIndex;
     var searchmaskitem_id = document.xsearch["field"+fieldno][sel_index].value;
     var query_field_value = document.xsearch["query"+fieldno].value;
-    var collection_id = $("input[name=collection]").val();
+    var collection_id = $("input[name=id]").val();
 
     $('#query'+fieldno).attr("disabled", true);
 

@@ -12,8 +12,7 @@
 
 <select metal:define-macro="searchfield" tal:attributes="name python:context.name; id python:context.name" class="searchfield">
     <tal:block tal:repeat="val python:valuelist">
-        <option tal:condition="python:val[1]>0 and val[0].strip()!=''" tal:attributes="value python:val[0]; selected python:'selected' if context.value==val[0] else None" tal:content="python:u'{} ({})'.format(val[0], val[1])"/>
-        <option tal:condition="python:val[1]==0 and val[0].strip()!=''" tal:attributes="value python:val[0]; selected python:'selected' if context.value==val[0] else None" tal:content="python:val[0]"/>
+        <option tal:attributes="value python:val[0]; selected python:'selected' if context.value==val[0] else None" tal:content="python:u'{} ({})'.format(val[0], val[1])"/>
     </tal:block>
 </select>
 

@@ -42,7 +42,10 @@ class m_list(Metatype):
             if not isinstance(n, Node):
                 raise KeyError
             field_name = context.field.getName()
-            id_attr_val = n.all_children_by_query(q(Node.id, Node.a[field_name]).filter(Node.a[field_name] != None and Node.a[field_name] != '').distinct(Node.a[field_name]))
+            id_attr_val = n.all_children_by_query(q(Node.id, Node.a[field_name])
+                                                  .filter(Node.a[field_name] != None)
+                                                  .filter(Node.a[field_name] != '')
+                                                  .distinct(Node.a[field_name]))
             items = {pair[0]: pair[1] for pair in id_attr_val}
         except KeyError:
             None

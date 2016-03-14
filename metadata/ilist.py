@@ -21,6 +21,7 @@
 """
 import logging
 import locale
+from sqlalchemy import func, sql
 from mediatumtal import tal
 from utils.utils import esc
 from core.metatype import Metatype
@@ -29,9 +30,18 @@ from core import db
 from core import Node
 from contenttypes import Collections
 from web.edit.modules.manageindex import getAllAttributeValues
+from core.database.postgres import mediatumfunc
+from core.database.postgres.alchemyext import exec_sqlfunc
 
 q = db.query
 logg = logging.getLogger(__name__)
+
+
+def count_list_values_for_all_content_children(collection, attribute_name):
+    func_call = mediatumfunc.count_list_values_for_all_content_children(collection.id, attribute_name)
+    stmt = sql.select([sql.text("*")], from_obj=func_call)
+    res = db.session.execute(stmt)
+    return res.fetchall()
 
 
 class m_ilist(Metatype):
@@ -47,17 +57,11 @@ class m_ilist(Metatype):
                           language=language)
 
     def getSearchHTML(self, context):
-        n = context.collection
         field_name = context.field.getName()
-        id_attr_val = n.all_children_by_query(q(Node.id, Node.a[field_name]).
-                                              filter(Node.a[field_name] != None and Node.a[field_name] != '').
-                                              distinct(Node.a[field_name]))
-        valuelist = {pair[0]: pair[1] for pair in id_attr_val}
-        locale.setlocale(locale.LC_COLLATE, '')
-        v = []
-        for key in sorted(valuelist.keys(), cmp=locale.strcoll):
-            v.append((key, valuelist[key]))
-        return tal.getTAL("metadata/ilist.html", {"context": context, "valuelist": v}, macro="searchfield", language=context.language)
+        value_and_count = count_list_values_for_all_content_children(context.collection, field_name)
+
+        return tal.getTAL("metadata/ilist.html", {"context": context, "valuelist": value_and_count},
+                          macro="searchfield", language=context.language)
 
     def getFormatedValue(self, field, node, language=None, html=1):
         value = node.get(field.getName())

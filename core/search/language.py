@@ -21,14 +21,11 @@ AC = AnyCase
 VALUE_CHAR_REGEX = u"[\u0020\u0021\u0023-\uD7FF\u0009\u000A\u000D\uE000-\uFFFD\u10000-\u10FFFF]+"
 
 
-def _join(seq):
-    return "".join(seq)
-
-compare_op = (SL(">=") | SL("<=") | SL(">") | SL("<"))(name="compare_op")
+compare_op = (SL(">=") | SL("<=") | SL(">") | SL("<") | SL("eq"))(name="compare_op")
 attr_name = Word(string.letters + string.digits + "_" + "-" + ".")(desc="attribute")
 value = Expected(Regex(VALUE_CHAR_REGEX), "value")(desc="value")
 bare_value = UntilRegex(u"\s*(?:\sor\s|\sand\s|[)(])", flags=re.IGNORECASE | re.UNICODE) | value  # may end with or | and | ( | )
-maybe_quoted = (SL('"') + value + SL('"'))[_join] | bare_value
+maybe_quoted = (L('"') + value + L('"')) | bare_value
 
 attr_match = (attr_name + "=" + maybe_quoted)(name="attr_match")[AttributeMatch.tup]
 full_match = (L("full") + "=" + maybe_quoted)(name="full_match")[FullMatch]

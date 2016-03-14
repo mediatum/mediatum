@@ -19,7 +19,7 @@ comparisons = {
     "<": (lambda l, r: l < r),
     ">=": (lambda l, r: l >= r),
     "<=": (lambda l, r: l <= r),
-    "=": (lambda l, r: l == r)
+    "eq": (lambda l, r: l == r)
 }
 
 logg = logging.getLogger(__name__)

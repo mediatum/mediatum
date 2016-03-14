@@ -5,7 +5,7 @@
 """
 
 from pytest import fixture, raises
-from core.search import parser
+from core.search import parser, language
 from core.search.representation import Or, And, Not, FullMatch, FulltextMatch, AttributeMatch, AttributeCompare, TypeMatch, SchemaMatch
 from parcon import ParseException
 
@@ -14,6 +14,8 @@ from parcon import ParseException
     (u"full = München", FullMatch(u"München")),
     (u"fulltext = München", FulltextMatch(u"München")),
     (u"city = München", AttributeMatch(u"city", u"München")),
+    (u"city eq München", AttributeCompare(u"city", u"eq", u"München")),
+    (u"city eq \"München\"", AttributeCompare(u"city", u"eq", u"München")),
     (u"year < 2014", AttributeCompare(u"year", u"<", u"2014")),
     (u"year <= 2014", AttributeCompare(u"year", u"<=", u"2014")),
     (u"year > 2014", AttributeCompare(u"year", u">", u"2014")),
@@ -22,6 +24,14 @@ from parcon import ParseException
     (u"schema = buch", SchemaMatch(u"buch"))])
 def simple_query(request):
     return request.param
+
+
+def test_parse_maybe_quoted_bare():
+    assert language.maybe_quoted.parse_string(u"München") == u"München"
+
+
+def test_parse_maybe_quoted_quoted():
+    assert language.maybe_quoted.parse_string(u"\"München\"") == u"München"
 
 
 def test_parse_unicode():
@@ -45,7 +55,7 @@ def test_parse_simple_query(simple_query):
 def test_parse_full_unicode_quoted():
     text = u'"Öffentliche schöne Häuser in München"'
     st = parser.parse_string(u'full=' + text)
-    assert st == FullMatch(text)
+    assert st == FullMatch(text.strip('"'))
 
 
 def test_parse_plain_or():

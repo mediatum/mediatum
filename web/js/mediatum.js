@@ -1,23 +1,23 @@
 var lastmark = "";
 var lasttime = 0;
-    
+
 function reloadPage()
 {
     location.reload();
 }
 
 function openWindow(fileName)
-{ 
-    win1 = window.open(fileName,'imageWindow','screenX=50,screenY=50,width=800,height=800,directories=no,location=no,menubar=no,scrollbars=no,status=no,toolbar=no,resizable=yes'); 
+{
+    win1 = window.open(fileName,'imageWindow','screenX=50,screenY=50,width=800,height=800,directories=no,location=no,menubar=no,scrollbars=no,status=no,toolbar=no,resizable=yes');
     win1.focus();
-} 
+}
 
 function openDetailWindow(fileName)
-{ 
-    win1 = window.open(fileName,'imageWindow','screenX=50,screenY=50,width=840,height=830,directories=no,location=no,menubar=no,scrollbars=no,status=no,toolbar=no,resizeable=yes'); 
+{
+    win1 = window.open(fileName,'imageWindow','screenX=50,screenY=50,width=840,height=830,directories=no,location=no,menubar=no,scrollbars=no,status=no,toolbar=no,resizeable=yes');
     win1.focus();
-} 
-    
+}
+
 function fullSizePopup(id, width, height)
 {
     url = '/fullsize?id='+id;
@@ -29,7 +29,7 @@ function fullSizePopup(id, width, height)
         height = screen.height-100;
     }
 
-    var win1 = window.open(url,'image_fullsize','width='+width+',height='+height+',screenX=50,screenY=50,directories=no,location=no,menubar=no,scrollbars=no,status=no,toolbar=no,resizable=yes'); 
+    var win1 = window.open(url,'image_fullsize','width='+width+',height='+height+',screenX=50,screenY=50,directories=no,location=no,menubar=no,scrollbars=no,status=no,toolbar=no,resizable=yes');
     win1.focus();
     return win1;
 }
@@ -51,10 +51,10 @@ function addDirToShoppingBag(nodeid)
 {
     openPopup('put_dir_into_shoppingbag?dir='+nodeid, 'move', 150,100, 'no');
 }
-   
+
 function openPopup(url, name, width, height, scroll)
 {
-    var win1 = window.open(url,name,'width='+width+',height='+height+',screenX=50,screenY=50,directories=no,location=no,menubar=no,scrollbars='+scroll+',status=no,toolbar=no,resizable=yes'); 
+    var win1 = window.open(url,name,'width='+width+',height='+height+',screenX=50,screenY=50,directories=no,location=no,menubar=no,scrollbars='+scroll+',status=no,toolbar=no,resizable=yes');
     win1.focus();
     return win1;
 }
@@ -67,9 +67,9 @@ function chg()
     var searchmaskitem_id = document.xsearch["field"+fieldno][sel_index].value;
     var query_field_value = document.xsearch["query"+fieldno].value;
     var collection_id = $("input[name=collection]").val();
-    
+
     $('#query'+fieldno).attr("disabled", true);
-    
+
     $.getJSON("/node?jsoncallback=?",
     {
         jsonrequest: "True",
@@ -80,7 +80,7 @@ function chg()
         query_field_value: query_field_value,
         format: "json"
     },
-    function(data) { 
+    function(data) {
         $('#query'+fieldno).replaceWith(data[0]);
         $('#query'+fieldno).removeAttr("disabled");
     })
@@ -98,7 +98,7 @@ function clearFields()
     for (i=1; i<11; i++){
         if (( $("input[name=searchmode]").val() == "extended") && (i == 4)) {
             break;
-        }    
+        }
         document.xsearch["field"+i].selectedIndex = 0;
         obj = document.getElementById("query"+i);
         if (obj != null){
@@ -173,7 +173,7 @@ function countMeta(obj, maxlength){
     if (maxlength==-1){
         return true;
     }
-    
+
     n = document.getElementById('number'+obj.name);
     if (obj.value.length<maxlength){
         n.firstChild.data = maxlength-obj.value.length;
@@ -189,7 +189,7 @@ function handleArchived(nodeid, filename){
     if(obj){
         obj.css('display', 'inline');
     }
-    
+
     $.get('/archive/'+nodeid+'/'+filename, function(data) {
         if(obj){
             obj.css('display', 'none');

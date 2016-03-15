@@ -85,7 +85,8 @@ class Video(Content):
         if len(node.files) > 0:
             obj['hasFiles'] = True
 
-            if len([f for f in self.files if os.path.exists('{}/{}'.format(os.path.abspath(config.get('paths.datadir')), f.path)) and f.type == 'video']) > 0:
+            if len([f for f in self.files if os.path.exists(
+                    '{}/{}'.format(os.path.abspath(config.get('paths.datadir')), f.path)) and f.type == 'video']) > 0:
                 obj['hasVidFiles'] = True
             else:
                 obj['hasVidFiles'] = False
@@ -100,6 +101,7 @@ class Video(Content):
         return obj
 
     """ format big view with standard template """
+
     def show_node_big(self, req, template="", macro=""):
         if len([f.path for f in self.files]) == 0:
             styles = getContentStyles("bigview", contenttype=self.getContentType())
@@ -131,6 +133,7 @@ class Video(Content):
                 return '<h2 style="width:100%; text-align:center ;color:red">Video is not in a supported video-format.</h2>'
 
     """ returns preview image """
+
     def show_node_image(self):
         return '<img src="/thumbs/%s" class="thumbnail" border="0"/>' % self.id
 
@@ -154,13 +157,30 @@ class Video(Content):
                         mp4_path = '{}/{}'.format(os.path.abspath(config.get('paths.datadir')), f.path)
                         mp4_name = os.path.splitext(mp4_path)[0]
 
-                        try:
-                            if self.get("system.thumbframe") != '':
-                                ret = subprocess.call(['ffmpeg',  '-y', '-ss', '{}'.format(self.get('system.thumbframe')), '-i', '{}'.format(mp4_path), '-vframes', '1', '-pix_fmt', 'rgb24', '{}'.format(tempname)]) #'-loglevel', 'quiet',
-                            else:
-                                ret = subprocess.call(['ffmpeg',  '-y', '-i', '{}'.format(mp4_path), '-vf', 'thumbnail', '-frames:v', '1', '-pix_fmt', 'rgb24', '{}'.format(tempname)]) #'-loglevel', 'quiet',
-                        except:
-                            return
+                        if self.get("system.thumbframe") != '':
+                            ret = subprocess.call(['ffmpeg',
+                                                   '-y',
+                                                   '-ss',
+                                                   '{}'.format(self.get('system.thumbframe')),
+                                                   '-i',
+                                                   '{}'.format(mp4_path),
+                                                   '-vframes',
+                                                   '1',
+                                                   '-pix_fmt',
+                                                   'rgb24',
+                                                   '{}'.format(tempname)])  # '-loglevel', 'quiet',
+                        else:
+                            ret = subprocess.call(['ffmpeg',
+                                                   '-y',
+                                                   '-i',
+                                                   '{}'.format(mp4_path),
+                                                   '-vf',
+                                                   'thumbnail',
+                                                   '-frames:v',
+                                                   '1',
+                                                   '-pix_fmt',
+                                                   'rgb24',
+                                                   '{}'.format(tempname)])  # '-loglevel', 'quiet',
 
                         thumbname = '{}.thumb'.format(mp4_name)
                         thumbname2 = '{}.thumb2'.format(mp4_name)
@@ -199,6 +219,7 @@ class Video(Content):
                 'pmsg']
 
     """ list with technical attributes for type video """
+
     def getTechnAttributes(self):
         return {"Standard": {"creationtime": "Erstelldatum",
                              "creator": "Ersteller"},
@@ -215,6 +236,7 @@ class Video(Content):
                 }
 
     """ popup window for actual nodetype """
+
     def popup_fullsize(self, req):
 
         def videowidth():

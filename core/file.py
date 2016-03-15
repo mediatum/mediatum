@@ -59,6 +59,9 @@ class FileMixin(object):
             kwargs["encoding"] = "utf8"
         return codecs.open(self.abspath, *args, **kwargs)
 
+    def unlink(self):
+        os.unlink(self.abspath)
+
     def getType(self):
         warn("use File.type instead", DeprecationWarning)
         return self.filetype

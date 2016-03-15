@@ -200,6 +200,7 @@ def initialize(config_filepath=None):
     check_create_dir(data_path, "datadir")
     check_create_dir(os.path.join(data_path, "html"), "datadir/html")
     check_create_dir(settings.get("paths.tempdir"), "tempdir")
+    check_create_dir(os.path.join(data_path, "incoming"), "incoming")
 
     # extract log dir from log file path and create it if neccessary
 

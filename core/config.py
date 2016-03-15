@@ -81,6 +81,11 @@ def getsubset(prefix):
     return options
 
 
+def resolve_datadir_path(path):
+    """Resolves paths relative to the datadir location"""
+    return os.path.join(get("paths.datadir"), path)
+
+
 def _read_ini_file(basedir, filepath):
     lineno = 0
     params = {}

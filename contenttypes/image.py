@@ -40,97 +40,102 @@ from core import File
 from core import db
 
 import lib.iptc.IPTC
+import tempfile
+from subprocess import check_call
 
-""" make thumbnail (jpeg 128x128) """
 
 
 logg = logging.getLogger(__name__)
 
 
 def makeThumbNail(image, thumb):
-    import os
+    """make thumbnail (jpeg 128x128)"""
 
     if isnewer(thumb, image):
         return
+
     pic = PILImage.open(image)
-
-    tmpjpg = config.get("paths.datadir") + "tmp/img" + str(random.random()) + ".jpg"
-
-    if pic.mode == "CMYK" and (image.endswith("jpg") or image.endswith("jpeg")) or pic.mode in ["P", "L"]:
-        os.system("convert -quality 100 -draw \"rectangle 0,0 1,1\" %s %s" % (image, tmpjpg))  # always get a rgb image
-        pic = PILImage.open(tmpjpg)
+    temp_jpg_file = tempfile.NamedTemporaryFile(suffix=".jpg", delete=False)
 
     try:
+        temp_jpg_file.close()
+        tmpjpg = temp_jpg_file.name
+
+        convert = config.get("external.convert", "convert")
+        if pic.mode == "CMYK" and (image.endswith("jpg") or image.endswith("jpeg")) or pic.mode in ["P", "L"]:
+            check_call([convert, "-quality", "100", "-draw", 'rectangle 0,0 1,1', image, tmpjpg])
+            pic = PILImage.open(tmpjpg)
+
         pic.load()
-    except IOError as e:
-        pic = None
-        raise OperationException("error:" + ustr(e))
+        width = pic.size[0]
+        height = pic.size[1]
 
-    width = pic.size[0]
-    height = pic.size[1]
-    if width > height:
-        newwidth = 128
-        newheight = height * newwidth / width
-    else:
-        newheight = 128
-        newwidth = width * newheight / height
-    pic = pic.resize((newwidth, newheight), PILImage.ANTIALIAS)
-    try:
-        im = PILImage.new(pic.mode, (128, 128), (255, 255, 255))
-    except:
-        im = PILImage.new("RGB", (128, 128), (255, 255, 255))
+        if width > height:
+            newwidth = 128
+            newheight = height * newwidth / width
+        else:
+            newheight = 128
+            newwidth = width * newheight / height
 
-    x = (128 - newwidth) / 2
-    y = (128 - newheight) / 2
-    im.paste(pic, (x, y, x + newwidth, y + newheight))
+        pic = pic.resize((newwidth, newheight), PILImage.ANTIALIAS)
 
-    draw = ImageDraw.ImageDraw(im)
-    draw.line([(0, 0), (127, 0), (127, 127), (0, 127), (0, 0)], (128, 128, 128))
+        try:
+            im = PILImage.new(pic.mode, (128, 128), (255, 255, 255))
+        except:
+            im = PILImage.new("RGB", (128, 128), (255, 255, 255))
 
-    im = im.convert("RGB")
-    im.save(thumb, "jpeg")
-    if os.path.exists(tmpjpg):
+        x = (128 - newwidth) / 2
+        y = (128 - newheight) / 2
+        im.paste(pic, (x, y, x + newwidth, y + newheight))
+
+        draw = ImageDraw.ImageDraw(im)
+        draw.line([(0, 0), (127, 0), (127, 127), (0, 127), (0, 0)], (128, 128, 128))
+
+        im = im.convert("RGB")
+        im.save(thumb, "jpeg")
+    finally:
         os.unlink(tmpjpg)
-
-""" make presentation format (png) """
 
 
 def makePresentationFormat(image, thumb):
+
     if isnewer(thumb, image):
         return
+
     pic = PILImage.open(image)
-    tmpjpg = config.get("paths.datadir") + "tmp/img" + str(random.random()) + ".jpg"
-    if pic.mode == "CMYK" and (image.endswith("jpg") or image.endswith("jpeg")) or pic.mode in ["P", "L"]:
-        os.system("convert -quality 100 -draw \"rectangle 0,0 1,1\" %s %s" % (image, tmpjpg))
-        pic = PILImage.open(tmpjpg)
+    temp_jpg_file = tempfile.NamedTemporaryFile(suffix=".jpg", delete=False)
 
     try:
+        temp_jpg_file.close()
+        tmpjpg = temp_jpg_file.name
+
+        convert = config.get("external.convert", "convert")
+        if pic.mode == "CMYK" and (image.endswith("jpg") or image.endswith("jpeg")) or pic.mode in ["P", "L"]:
+            check_call([convert, "-quality", "100", "-draw", 'rectangle 0,0 1,1', image, tmpjpg])
+            pic = PILImage.open(tmpjpg)
+
         pic.load()
-    except IOError as e:
-        logg.exception("exception in makePresentationFormat")
-        pic = None
-        raise OperationException("error:" + ustr(e))
 
-    width = pic.size[0]
-    height = pic.size[1]
+        width = pic.size[0]
+        height = pic.size[1]
 
-    resize = 1
-    if resize:
-        # resize images only if they are actually too big
-        if width > height:
-            newwidth = 320
-            newheight = height * newwidth / width
-        else:
-            newheight = 320
-            newwidth = width * newheight / height
-        pic = pic.resize((newwidth, newheight), PILImage.ANTIALIAS)
+        resize = 1
+        if resize:
+            # resize images only if they are actually too big
+            if width > height:
+                newwidth = 320
+                newheight = height * newwidth / width
+            else:
+                newheight = 320
+                newwidth = width * newheight / height
+            pic = pic.resize((newwidth, newheight), PILImage.ANTIALIAS)
 
-    try:
-        pic.save(thumb, "jpeg")
-    except IOError:
-        pic.convert('RGB').save(thumb, "jpeg")
+        try:
+            pic.save(thumb, "jpeg")
+        except IOError:
+            pic.convert('RGB').save(thumb, "jpeg")
 
-    if os.path.exists(tmpjpg):
+    finally:
         os.unlink(tmpjpg)
 
 """ make original (png real size) """

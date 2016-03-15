@@ -18,25 +18,24 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import core.config as config
-import core.acl as acl
-import os
 import json
 import logging
-import subprocess
+import os
+from subprocess import CalledProcessError, check_call
+import tempfile
 
+from mediatumtal import tal
+from contenttypes.data import Content
+from contenttypes.image import makeThumbNail, makePresentationFormat
+from core.transition.postgres import check_type_arg_with_schema
+from core import db, File, config
+from core.config import resolve_datadir_path
+from core.translation import t
+from core.styles import getContentStyles
 from utils.utils import splitfilename
 from utils.date import format_date, make_date
-from lib.flv.parse import FLVReader
-from contenttypes.image import makeThumbNail, makePresentationFormat
-from core.translation import lang, t
-from core.styles import getContentStyles
-from schema.schema import VIEW_HIDE_EMPTY
-from metadata.upload import getFilelist
-from contenttypes.data import Content
-from core.transition.postgres import check_type_arg_with_schema
-from core import db
-from core import File
+
+
 logg = logging.getLogger(__name__)
 
 
@@ -74,123 +73,85 @@ class Video(Content):
             # rendering has been delegated to current version
             return obj
 
-        node = self
+        # user must have data access for video playback
+        if self.has_data_access():
+            video = self.files.filter(File.filetype.in_([u"original", u"video"])).filter_by(mimetype=u"video/mp4").scalar()
+            obj["video_url"] = u"/file/{}/{}".format(self.id, video.base_name) if video is not None else None
+        else:
+            obj["video_url"] = None
 
-        if len(node.files) == 0:
-            obj['captions_info'] = {}
-            obj['file'] = ''
-            obj['hasFiles'] = False
-            obj['hasVidFiles'] = False
+        captions_info = getCaptionInfoDict(self)
+        if captions_info:
+            logg.debug("video: '%s' (%s): captions: dictionary 'captions_info': %s" % (self.name, str(self.id), str(captions_info)))
 
-        if len(node.files) > 0:
-            obj['hasFiles'] = True
-
-            if len([f for f in self.files if os.path.exists(
-                    '{}/{}'.format(os.path.abspath(config.get('paths.datadir')), f.path)) and f.type == 'video']) > 0:
-                obj['hasVidFiles'] = True
-            else:
-                obj['hasVidFiles'] = False
-
-        for filenode in node.files:
-            if filenode.filetype in ["original", "video"]:
-                obj["file"] = "/file/%s/%s" % (node.id, filenode.base_name)
-                break
-
-        obj['canseeoriginal'] = node.has_data_access()
-
+        obj["captions_info"] = json.dumps(captions_info)
         return obj
 
-    """ format big view with standard template """
-
     def show_node_big(self, req, template="", macro=""):
-        if len([f.path for f in self.files]) == 0:
-            styles = getContentStyles("bigview", contenttype=self.getContentType())
-            template = styles[0].getTemplate()
-            return req.getTAL(template, self._prepareData(req), macro)
-
+        """Formats big view with standard template"""
         if template == "":
             styles = getContentStyles("bigview", contenttype=self.getContentType())
             if len(styles) >= 1:
                 template = styles[0].getTemplate()
 
-        captions_info = getCaptionInfoDict(self)
-
-        if captions_info:
-            logg.info("video: '%s' (%s): captions: dictionary 'captions_info': %s" % (self.name, str(self.id), str(captions_info)))
-
         context = self._prepareData(req)
-        context["captions_info"] = json.dumps(captions_info)
 
-        if len([m for m in [f.type for f in self.files if os.path.exists(os.path.abspath(f.path))] if m == 'video']) > 0:
-            return req.getTAL(template, context, macro)
-        else:
-            if len([th for th in [os.path.abspath(f.path) for f in self.files] if th.endswith('thumb2')]) > 0:
-                return req.getTAL(template, context, macro)
-            else:
-                if len([f for f in self.files if f.type == 'attachment']) > 0:
-                    return req.getTAL(template, context, macro)
-
-                return '<h2 style="width:100%; text-align:center ;color:red">Video is not in a supported video-format.</h2>'
-
-    """ returns preview image """
+        return tal.getTAL(template, context, macro)
 
     def show_node_image(self):
+        """Returns preview image"""
         return '<img src="/thumbs/%s" class="thumbnail" border="0"/>' % self.id
 
     def event_files_changed(self):
-        for f in self.files:
-            if f.type in ['thumb', 'thumb2', 'presentation']:
-                self.files.remove(f)
-                db.session.commit()
+        """Generates thumbnails (a small and a larger one) from a MP4 video file.
+        The frame used as thumbnail can be changed by setting self.system_attrs["thumbframe"] to a number > 0.
+        """
+        # XXX: should rather be filetype="video", but we must first ensure that we only have a single video file for each node
+        video_file = self.files.filter_by(mimetype="video/mp4").scalar()
 
-            if f.mimetype == 'video/mp4':
-                if len([f for f in self.files if f.mimetype == 'video/mp4']) > 0:
-                    if f.type == 'video':
-                        tempname = os.path.join(config.get('paths.tempdir'), 'tmp.gif')
+        if video_file is not None:
+            self.set('vid-width', self.get('width'))
+            self.set('vid-height', self.get('height'))
 
-                        self.set('vid-width', self.get('width'))
-                        self.set('vid-height', self.get('height'))
+            ffmpeg = config.get("external.ffmpeg", "ffmpeg")
+            thumbframe = self.system_attrs.get("thumbframe")
 
-                        if os.path.exists(tempname):
-                            os.remove(tempname)
+            ffmpeg_call = [ffmpeg, "-y"]
 
-                        mp4_path = '{}/{}'.format(os.path.abspath(config.get('paths.datadir')), f.path)
-                        mp4_name = os.path.splitext(mp4_path)[0]
+            if thumbframe:
+                ffmpeg_call += ['-ss', str(thumbframe)]  # change frame used as thumbnail
 
-                        if self.get("system.thumbframe") != '':
-                            ret = subprocess.call(['ffmpeg',
-                                                   '-y',
-                                                   '-ss',
-                                                   '{}'.format(self.get('system.thumbframe')),
-                                                   '-i',
-                                                   '{}'.format(mp4_path),
-                                                   '-vframes',
-                                                   '1',
-                                                   '-pix_fmt',
-                                                   'rgb24',
-                                                   '{}'.format(tempname)])  # '-loglevel', 'quiet',
-                        else:
-                            ret = subprocess.call(['ffmpeg',
-                                                   '-y',
-                                                   '-i',
-                                                   '{}'.format(mp4_path),
-                                                   '-vf',
-                                                   'thumbnail',
-                                                   '-frames:v',
-                                                   '1',
-                                                   '-pix_fmt',
-                                                   'rgb24',
-                                                   '{}'.format(tempname)])  # '-loglevel', 'quiet',
+            ffmpeg_call += ['-i', video_file.abspath]  # input settings
 
-                        thumbname = '{}.thumb'.format(mp4_name)
-                        thumbname2 = '{}.thumb2'.format(mp4_name)
-                        makeThumbNail(tempname, thumbname)
-                        makePresentationFormat(tempname, thumbname2)
+            # Temporary file must be named and closed right after creation because ffmpeg wants to access it later.
+            temp_thumbnail = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
+            try:
+                temp_thumbnail.close()
+                temp_thumbnail_path = temp_thumbnail.name
+                ffmpeg_call += ['-vframes', '1', '-pix_fmt', 'rgb24', temp_thumbnail_path]  # output options
 
-                        self.files.append(File(thumbname, 'thumb', 'image/jpeg'))
-                        self.files.append(File(thumbname2, 'thumb2', 'image/jpeg'))
+                try:
+                    check_call(ffmpeg_call)
+                except CalledProcessError:
+                    logg.error("Error processing video, external call failed. No thumbnails generated.")
+                    raise
+                except OSError:
+                    logg.error("Error processing video, external command ffmpeg cannot be called. No thumbnails generated.")
+                    raise
 
-                        db.session.commit()
+                name_without_ext = os.path.splitext(video_file.path)[0]
+                thumbname = u'{}.thumb'.format(name_without_ext)
+                thumbname2 = u'{}.presentation'.format(name_without_ext)
+                makeThumbNail(temp_thumbnail_path, resolve_datadir_path(thumbname))
+                makePresentationFormat(temp_thumbnail_path, resolve_datadir_path(thumbname2))
+            finally:
+                os.unlink(temp_thumbnail_path)
+
+            self.files.filter(File.filetype.in_([u'thumb', u'presentation'])).delete(synchronize_session=False)
+            self.files.append(File(thumbname, u'thumb', u'image/jpeg'))
+            self.files.append(File(thumbname2, u'presentation', u'image/jpeg'))
+
+            db.session.commit()
 
     @classmethod
     def isContainer(cls):
@@ -234,49 +195,6 @@ class Video(Content):
                         "videocodecid": "Video Codec",
                         "audiodelay": "Audioversatz"}
                 }
-
-    """ popup window for actual nodetype """
-
-    def popup_fullsize(self, req):
-
-        def videowidth():
-            return int(self.get('vid-width') or 0) + 64
-
-        def videoheight():
-            int(self.get('vid-height') or 0) + 53
-
-        if not self.has_data_access() or not self.has_read_access():
-            req.write(t(req, "permission_denied"))
-            return
-
-        f = None
-        for filenode in self.files:
-            if filenode.filetype in ["original", "video"] and filenode.abspath.endswith('flv'):
-                f = "/file/%s/%s" % (self.id, filenode.base_name)
-                break
-
-        script = ""
-        if f:
-            script = '<p href="%s" style="display:block;width:%spx;height:%spx;" id="player"/p>' % (f, videowidth(), videoheight())
-
-        # implement html5 track element
-        captions_info = getCaptionInfoDict(self)
-        if captions_info:
-            logg.info("video: '%s' (%s): captions: dictionary 'captions_info': %s", self.name, self.id, captions_info)
-
-        context = {
-            "file": f,
-            "script": script,
-            "node": self,
-            "width": videowidth(),
-            "height": videoheight(),
-            "captions_info": json.dumps(captions_info),
-        }
-
-        req.writeTAL("contenttypes/video.html", context, macro="fullsize_flv_jwplayer")
-
-    def popup_thumbbig(self, req):
-        self.popup_fullsize(req)
 
     def getEditMenuTabs(self):
         return "menulayout(view);menumetadata(metadata;files;admin;lza);menuclasses(classes);menusecurity(acls)"

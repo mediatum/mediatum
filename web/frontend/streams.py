@@ -130,7 +130,7 @@ def send_thumbnail(req):
         for test in ["default_thumb_%s_%s.*" % (ntype, schema),
                      "default_thumb_%s.*" % schema,
                      "default_thumb_%s.*" % ntype]:
-            fps = glob.glob(os.path.join(config.basedir, p[2:], test))
+            fps = glob.glob(os.path.join(p, test))
             if fps:
                 thumb_mimetype, thumb_type = utils.utils.getMimeType(fps[0])
                 return req.sendFile(fps[0], thumb_mimetype, force=1)
@@ -159,7 +159,7 @@ def send_thumbnail2(req):
                 "default_thumb_%s.*" % n.schema,
                 "default_thumb_%s.*" % n.type]:
             # fps = glob.glob(os.path.join(config.basedir, theme.getImagePath(), "img", test))
-            fps = glob.glob(os.path.join(config.basedir, p[2:], test))
+            fps = glob.glob(os.path.join(p, test))
             if fps:
                 thumb_mimetype, thumb_type = utils.utils.getMimeType(fps[0])
                 return req.sendFile(fps[0], thumb_mimetype, force=1)

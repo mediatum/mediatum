@@ -112,55 +112,43 @@ def get_wanted_iptc_tags():
     }.items()))
 
 
-def get_iptc_values(file_path, tags=None):
+def get_iptc_values(image_path, tags=None):
     """
         get the IPTC tags/values from a given
         image file
 
         :rtype : object
-        :param file_path: path to the image file
+        :param image_path: path to the image file
         :param tags: dictionary with wanted iptc tags
         :return: dictionary with tag/value
     """
     if not isinstance(tags, dict):
+        logger.info('No Tags to read.')
         return
 
-    if file_path is None:
+    if image_path is None:
+        logger.info('No file path for reading iptc.')
         return
 
-    if not os.path.exists(file_path):
-        logger.info('Could not read IPTC metadata from non existing file. {}'.format(file_path))
+    if not os.path.exists(image_path):
+        logger.info('Could not read IPTC metadata from non existing file.')
         return
 
-    if os.path.basename(file_path).startswith('-'):
-        logger.error('Will not read IPTC metadata to files starting with a hyphen, caused by exiftool security issues. ({})'.format(file_path))
+    if os.path.basename(image_path).startswith('-'):
+        logger.info('Will not read IPTC metadata to files starting with a hyphen, caused by exiftool security issues.')
         return
 
+    # fetch metadata dict from exiftool
     with exiftool.ExifTool() as et:
-        metadata = et.get_metadata_batch([file_path])[0]
+        iptc_metadata = et.get_metadata(image_path)
 
     ret = {}
 
-    for exiftool_key in metadata.keys():
-        if not exiftool_key.startswith('IPTC:'):
-            continue
+    # TODO:
+    # * return only wanted iptc tags
+    # * format dates for date fields
+    # * join lists to strings
 
-        if isinstance(metadata[exiftool_key], list):
-            metadata[key] = u';'.join(metadata[exiftool_key])
-
-        key =  exiftool_key.split(':')[-1]
-        mediatum_key = 'iptc_{}'.format(key)
-
-        if mediatum_key in tags:
-            if 'Date' in key:
-                    if validateDate(parse_date(metadata[exiftool_key], format='%Y:%m:%d')):
-                        ret[mediatum_key] = format_date(parse_date(metadata[exiftool_key], format='%Y:%m:%d'))
-                        continue
-                    else:
-                        logger.error('Could not validate: {}.'.format(ret[mediatum_key]))
-
-            ret[mediatum_key] = metadata[exiftool_key]
-    logger.info('{} read from file.'.format(ret))
     return ret
 
 
@@ -184,15 +172,18 @@ def write_iptc_tags(image_path, tag_dict):
     image_path = os.path.abspath(image_path)
 
     if not os.path.exists(image_path):
-        logger.info('Image {} for writing IPTC metadata does not exist.'.format(image_path))
+        logger.info(u'Image {} for writing IPTC metadata does not exist.'.format(image_path))
         return
 
     if not isinstance(tag_dict, dict):
-        logger.error('No dictionary of tags.')
+        logger.error(u'No dictionary of tags.')
         return
 
-    command_list = ['exiftool']
-    command_list.append('-overwrite_original')
+    command_list = [u'exiftool']
+    command_list.append(u'-overwrite_original')
+
+    command_list.append(u'-charset')
+    command_list.append(u'iptc=UTF8')
 
     command_list.append(image_path)
 
@@ -200,19 +191,18 @@ def write_iptc_tags(image_path, tag_dict):
         tag_value = tag_dict[tag_name]
 
         if tag_dict[tag_name] == '':
-            command_list.append('-{}='.format(tag_name))
+            command_list.append(u'-{}='.format(tag_name))
 
-        elif tag_name == 'DateCreated':
-            if validateDate(parse_date(tag_value, format='%Y-%m-%dT%H:%M:%S')):
-                tag_value = format_date(parse_date(tag_value, format='%Y-%m-%dT%H:%M:%S'), '%Y:%m:%d')
-                command_list.append(u'-IPTC:{}={}'.format(tag_name, tag_value))
-                continue
+        elif tag_name == u'DateCreated':
+            if validateDate(parse_date(tag_value.split('T')[0], format='%Y-%m-%d')):
+                tag_value = format_date(parse_date(tag_value.split('T')[0], format='%Y-%m-%d'), '%Y:%m:%d')
             else:
-                logger.error('Could not validate {}.'.format(tag_value))
+                logger.error(u'Could not validate {}.'.format(tag_value))
 
-        command_list.append(u'-IPTC:{}={}'.format(tag_name, tag_value))
+        command_list.append(u'-charset iptc=UTF8')
+        command_list.append(u'-{}={}'.format(tag_name, tag_value))
 
-    logger.info('Command: {} will be executed.'.format(command_list))
+    logger.info(u'Command: {} will be executed.'.format(command_list))
     process = subprocess.Popen(command_list, stdout=subprocess.PIPE)
     output, error = process.communicate()
 

@@ -95,6 +95,7 @@ BEGIN
     UPDATE mediatum.node SET type = 'workflowstep_urn' WHERE type = 'workflowstep_addurn';
     UPDATE mediatum.node SET type = 'workflowstep_buildinfid' WHERE type = 'workflowstep_buildInfId';
     UPDATE mediatum.node SET type = 'workflowstep_showdata' WHERE type = 'workflowstep_wait';
+    UPDATE mediatum.node SET type = 'workflowstep_showdata' WHERE type = 'workflowstep_jahrbuch';
 
     -- scholar plugin
 

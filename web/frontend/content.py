@@ -204,6 +204,13 @@ def apply_order_by_for_sortfields(query, sortfields_to_comp, before=False):
     return query
 
 
+def check_node_is_accessible(node):
+    if node is None:
+        return ContentError("No such node", 404)
+    if not node.has_read_access():
+        return ContentError("Permission denied", 403)
+
+
 SORT_FIELDS = 2
 DEFAULT_FULL_STYLE_NAME = "full_standard"
 DEFAULT_NODES_PER_PAGE = 9
@@ -400,6 +407,10 @@ class ContentList(Content):
         if self.show_id:
             # show_id needed for all cases except first and last
             show_node = q(Node).get(self.show_id)
+
+            maybe_content_error = check_node_is_accessible(show_node)
+            if maybe_content_error is not None:
+                return maybe_content_error
 
         nav = self.result_nav
 
@@ -659,10 +670,9 @@ def mkContentNode(req):
     id = req.params.get("id", get_collections_node().id)
     node = q(Node).get(id)
 
-    if node is None:
-        return ContentError("No such node", 404)
-    if not node.has_read_access():
-        return ContentError("Permission denied", 403)
+    maybe_content_error = check_node_is_accessible(node)
+    if maybe_content_error is not None:
+        return maybe_content_error
 
     if isinstance(node, Container):
         # try to find a start page
@@ -678,6 +688,9 @@ def mkContentNode(req):
             allowed_nodes = node.content_children_for_all_subcontainers_with_duplicates.filter_read_access()
             c = ContentList(allowed_nodes, getCollection(node))
             c.feedback(req)
+            # if ContentList feedback produced a content error, return that instead of the list itself
+            if isinstance(c.content, ContentError):
+                return c.content
             c.node = node
             return c
 

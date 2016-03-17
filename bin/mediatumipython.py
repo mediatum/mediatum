@@ -650,10 +650,11 @@ ip = get_ipython()  # @UndefinedVariable
 
 
 def current_prompt():
+    change_indicator = "(changes !) " if s.dirty or s.new or s.deleted else ""
     if cnode:
         name = cnode.name
         name = name if len(name) < 80 else name[:77] + "..."
-        prompt = u"cnode: {} {} \"{}\"\n[\\#]: ".format(cnode.id, cnode.type, name)
+        prompt = u"{}cnode: {} {} \"{}\"\n[\\#]: ".format(change_indicator, cnode.id, cnode.type, name)
     else:
         prompt = "no cnode [\\#] "
     return prompt

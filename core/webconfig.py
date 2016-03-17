@@ -159,14 +159,6 @@ def initContexts():
     file.addHandler("send_imageproperties_xml").addPattern("/tile/[0-9]*/ImageProperties.xml")
     file.addHandler("send_tile").addPattern("/tile/[0-9]*/[^I].*")
 
-    #file = context.addFile("web/frontend/flippage.py")
-    # file.addHandler("send_bookconfig_xml").addPattern("/[0-9]*/bookconfig.xml")
-    # file.addHandler("send_page").addPattern("/[0-9]*/page/[0-9]*\.jpg")
-
-    # === workflow ===
-    #file = context.addFile("web/publish/main.py")
-    # file.addHandler("publish").addPattern("/publish/.*")
-
     main_file = file = context.addFile("web/frontend/main.py")
     handler = file.addHandler("display")
     handler.addPattern("/")

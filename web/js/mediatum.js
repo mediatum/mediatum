@@ -66,7 +66,7 @@ function chg()
     var sel_index = document.xsearch["field"+fieldno].selectedIndex;
     var searchmaskitem_id = document.xsearch["field"+fieldno][sel_index].value;
     var query_field_value = document.xsearch["query"+fieldno].value;
-    var collection_id = $("input[name=id]").val();
+    var container_id = $("input[name=id]").val();
 
     $('#query'+fieldno).attr("disabled", true);
 
@@ -76,7 +76,7 @@ function chg()
         cmd: "get_list_smi",
         fieldno: fieldno,
         searchmaskitem_id: searchmaskitem_id,
-        collection_id: collection_id,
+        container_id: container_id,
         query_field_value: query_field_value,
         format: "json"
     },

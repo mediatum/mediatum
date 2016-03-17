@@ -27,6 +27,7 @@ from utils.strings import ensure_unicode_returned
 from contenttypes.container import Collections, Collection, Container
 from schema.searchmask import SearchMaskItem
 import urllib
+from core.webconfig import node_url
 
 q = db.query
 
@@ -36,9 +37,9 @@ logg = logging.getLogger(__name__)
 
 class SearchResult(Content):
 
-    def __init__(self, resultlist, query, collections=[]):
+    def __init__(self, resultlist, query, container):
         self.query = query
-        self.collections = collections
+        self.container = container
         self.active = -1
         self.error = 0
         self.searchmode = None
@@ -61,11 +62,8 @@ class SearchResult(Content):
                 return 1
         return 0
 
-    def getLink(self, collection):
-        params = dict(query=self.query, id=collection.id)
-        if self.searchmode is not None:
-            params["searchmode"] = self.searchmode
-        return u"node?" + urllib.urlencode(params)
+    def getLink(self, container):
+        return node_url(container)
 
     def getContentStyles(self):
         return []
@@ -74,69 +72,50 @@ class SearchResult(Content):
     def html(self, req):
         if self.error > 0:
             return req.getTAL(theme.getTemplate("searchresult.html"), {
-                              "query": self.query, "r": self, "collections": self.collections, "language": lang(req)}, macro="error")
+                              "query": self.query, "r": self, "container": self.container, "language": lang(req)}, macro="error")
 
         if not self.resultlist:
             return req.getTAL(theme.getTemplate("searchresult.html"), {
-                              "query": self.query, "r": self, "collections": self.collections, "language": lang(req)}, macro="noresult")
-        else:
-            if len(self.resultlist) == 1:
-                self.resultlist[self.active].feedback(req)
-                return self.resultlist[self.active].html(req)
-            else:
-                return req.getTAL(theme.getTemplate("searchresult.html"),
-                                  {"query": self.query,
-                                   "collections": self.collections,
-                                   "reslist": self.resultlist,
-                                   "r": self,
-                                   "language": lang(req)},
-                                  macro="listcollections")
+                              "query": self.query, "r": self, "container": self.container, "language": lang(req)}, macro="noresult")
 
 
 def protect(s):
     return '"' + s.replace('"', '') + '"'
 
-# method handles all parts of the simple search
+
+def search(searchtype, searchquery, readable_query, req):
+    from web.frontend.content import ContentList
+    container_id = req.args.get("id", type=int)
+    container = q(Container).get(container_id) if container_id else None
+
+    # if the current node is not a Container or not accessible by the user, use the collections root instead
+    if container is None or not container.has_read_access():
+        container = q(Collections).one()
+
+    result = container.search(searchquery).filter_read_access()
+#     result = container.content_children_for_all_subcontainers_with_duplicates
+
+    content_list = ContentList(result, container, readable_query)
+    content_list.feedback(req)
+    language = lang(req)
+    content_list.linkname = u"{}: {} \"{}\"".format(container.getLabel(language),
+                                                    translate("search_for", language=language),
+                                                    readable_query)
+    content_list.linktarget = ""
+
+    if content_list.has_elements:
+        logg.info("%s search with query '%s' on container %s produced results", searchtype, searchquery, container_id)
+        return content_list
+    else:
+        logg.info("%s search with query '%s' on container %s produced no results", searchtype, searchquery, container_id)
+        return SearchResult([], readable_query, container)
 
 
 def simple_search(req):
-    from web.frontend.content import ContentList
     searchquery = req.args.get("query")
-
-    collection_id = req.args.get("id", type=int)
-    collection_ids = [collection_id] if collection_id else []
-
-    # test whether this query is restricted to a number of (additional) collections
-    collection_ids.extend(req.args.getlist("c", type=int))
-
-    # no collection means: all collections
-    if collection_ids:
-        collection_query = q(Container).filter(Container.id.in_(collection_ids))
-    else:
-        collection_query = q(Collections).one().container_children
-
-    collections = collection_query.filter_read_access().all()
-
-    if logg.isEnabledFor(logging.DEBUG):
-        logg.debug("simple_search with query '%s' on %s collections: %s", searchquery, len(collections), [c.name for c in collections])
-
-    def do_search(search_collection):
-        result = search_collection.search('full=' + searchquery).filter_read_access()
-        cl = ContentList(result, search_collection, words=None)
-        cl.feedback(req)
-        cl.linkname = u"{} ({})".format(translate("search_result", request=req), search_collection.getLabel())
-        cl.linktarget = ""
-        return cl
-
-    res = [cl for cl in (do_search(collection) for collection in collections) if cl.num]
-
-    if logg.isEnabledFor(logging.DEBUG):
-        logg.debug("%s result sets found with %s nodes", len(res), len([n for cl in res for n in cl.files]))
-
-    if len(res) == 1:
-        return res[0]
-    else:
-        return SearchResult(res, searchquery, collections)
+    if searchquery is None:
+        raise ValueError("searchquery param missing!")
+    return search("simple", u"full=" + searchquery, searchquery, req)
 
 
 def _extended_searchquery_from_req(req):
@@ -222,32 +201,6 @@ def _extended_searchquery_from_req(req):
 
     return q_str, q_user.strip()
 
-
 def extended_search(req):
-    from web.frontend.content import ContentList
-
-    collection_id = req.args.get("id", type=int)
-    search_collection = q(Collection).get(collection_id) if collection_id else None
-
-    if search_collection is None:
-        # no collection id given or collection not found -> search starts at collection root
-        # XXX: collection not found should not really happen, but it happens. Investigate later...
-        search_collection = q(Collections).one()
-
     searchquery, readable_query = _extended_searchquery_from_req(req)
-
-    logg.debug("extended_search with query '%s' on collection '%s'(%s)", searchquery, search_collection.name, search_collection.id)
-
-    result = search_collection.search(searchquery).filter_read_access()
-
-    cl = ContentList(result, search_collection, readable_query)
-    cl.feedback(req)
-    cl.linkname = u"{} ({})".format(translate("search_result", request=req), search_collection.getLabel())
-    cl.linktarget = ""
-
-    if cl.num > 0:
-        logg.info("xsearch for '%s', %s results", searchquery, cl.num)
-    else:
-        logg.info("xsearch for '%s', no results", searchquery)
-
-    return SearchResult([cl], readable_query)
+    return search("extended", searchquery, readable_query, req)

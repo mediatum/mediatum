@@ -40,7 +40,7 @@ from workflow.workflow import Workflows
 from werkzeug.datastructures import ImmutableMultiDict
 from utils.url import build_url_from_path_and_params
 from functools import wraps
-from contenttypes import Collections
+from contenttypes import Collections, Container
 
 q = db.query
 
@@ -59,14 +59,12 @@ def handle_json_request(req):
         if not f:  # All Metadata
             f = g = getMetadataType("text")
 
-        collection = None
-        collection_id = req.args.get("collection_id")
+        container_id = req.args.get("container_id")
 
-        if collection_id:
-            collection = q(Collection).get(collection_id)
+        container = q(Container).get(container_id) if container_id else None
 
-        if collection is None:
-            collection = q(Collections).one()
+        if container is None or not container.has_read_access():
+            container = q(Collections).one()
 
         s = [
             f.getSearchHTML(
@@ -76,7 +74,7 @@ def handle_json_request(req):
                     width=174,
                     name="query" + str(req.args.get("fieldno")),
                     language=lang(req),
-                    collection=collection,
+                    container=container,
                     user=current_user,
                     ip=req.ip))]
     req.write(req.params.get("jsoncallback") + "(%s)" % json.dumps(s, indent=4))

@@ -505,7 +505,7 @@ class NavigationFrame:
     def write(self, req, contentHTML, show_navbar=1):
         self.params["show_navbar"] = show_navbar
         self.params["content"] = contentHTML
-        self.params["id"] = req.params.get("id", req.params.get("dir", ""))
+        self.params["id"] = nid = req.params.get("id", req.params.get("dir", ""))
 
         rootnode = q(Collections).one()
         self.params["header_items"] = rootnode.getCustomItems("header")
@@ -524,15 +524,16 @@ class NavigationFrame:
         self.params["search"] = ""
         if show_navbar == 1:
             # search mask
-            # collection_id specifies which collection to search
-            collection = self.collection_portlet.collection
+            container = q(Container).get(nid) if nid else None
+            if container is None:
+                container = rootnode
+            language = lang(req)
+
             ctx = {
                 "search": self.params["navigation"]["search"],
-                "collection_id": None
+                "container_id": container.id,
+                "search_placeholder": t(language, "search_in") + " " + container.getLabel(language)
             }
-            # we want to search to current collection except when it's the collection root
-            if not isinstance(collection, Collections):
-                ctx["collection_id"] = collection.id
 
             self.params["search"] = req.getTAL(theme.getTemplate("frame.html"), ctx, macro="frame_search")
 

@@ -243,6 +243,12 @@ class ContentList(Content):
         return self.nodes
 
     @property
+    def has_elements(self):
+        if self._num > 0:
+            return True
+        return self.nodes.first() is not None
+
+    @property
     def num(self):
         if self._num == -1:
             self._num = self.nodes.count()

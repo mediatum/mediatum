@@ -239,8 +239,11 @@ msgstr "Mehr Felder"
 msgid "all_metafields"
 msgstr "Alle Daten"
 
-msgid "search_result"
-msgstr "Suchergebnis"
+msgid "search_for"
+msgstr "Suche nach"
+
+msgid "search_in"
+msgstr "Suche in"
 
 msgid "search_result_header"
 msgstr "Ihr(e) Suchbegriff(e) " ${searchstring} " wurde(n) in folgenden Kollektionen gefunden:"

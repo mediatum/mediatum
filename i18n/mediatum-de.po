@@ -1009,13 +1009,7 @@ msgstr "Größe"
 msgid "att_browser_files"
 msgstr "(${c} Dateien)"
 
-msgid "video_plugin_info"
-msgstr "(zum Abspielen ben&ouml;tigen Sie ein Flash-Plugin)"
-
 msgid "video_showvideo"
-msgstr "Video ansehen"
-
-msgid "flash_showvideo"
 msgstr "Video ansehen"
 
 ####################################

@@ -989,13 +989,7 @@ msgstr "Size"
 msgid "att_browser_files"
 msgstr "(${c} Dateien)"
 
-msgid "video_plugin_info"
-msgstr "(flash plugin required)"
-
 msgid "video_showvideo"
-msgstr "show video"
-
-msgid "flash_showvideo"
 msgstr "show video"
 
 msgid "search_result_text"

@@ -210,7 +210,7 @@ q = core.db.query
 s = core.db.session
 
 # load types for interactive querying
-from contenttypes import Audio, Content, Directory, Collection, Container, Collections, Home, Document, Flash, Image, Imagestream, \
+from contenttypes import Audio, Content, Directory, Collection, Container, Collections, Home, Document, Image, Imagestream, \
     Project, Video, Data
 from core.systemtypes import Mappings, Metadatatypes, Root, Navigation, Searchmasks
 from schema.schema import Metadatatype, Maskitem, Mask, Metafield

@@ -68,6 +68,17 @@ let
     doCheck = false;
   };  
 
+  flask-login = self.buildPythonPackage {
+    name = "flask-login-0.3.2";
+    buildInputs = with self; [];
+    doCheck = false;
+    propagatedBuildInputs = with self; [flask];
+    src = fetchurl {
+        url = "https://pypi.python.org/packages/source/F/Flask-Login/Flask-Login-0.3.2.tar.gz";
+        md5 = "d95c2275d3e1c755145910077366dc45";
+    };
+  };
+
   imagemagick = pkgs.imagemagick.override { ghostscript = pkgs.ghostscript; };
 
   ipaddr = self.buildPythonPackage {
@@ -344,6 +355,7 @@ in {
       configargparse
       decorator
       flask-admin
+      flask-login
       httplib2
       humanize
       ipaddr

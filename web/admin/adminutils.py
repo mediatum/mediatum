@@ -194,7 +194,7 @@ def show_content(req, op):
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/admin/frame.html", {}, macro="errormessage")
     else:
-        if op == "" or op not in q(Root).one().get("admin.menu"):
+        if op == "" or op not in q(Root).one().system_attrs.get("admin.menu", ""):
             op = "menumain"
         module = findmodule(op.split("_")[0])
 
@@ -243,12 +243,12 @@ def adminNavigation():
 
     # get module configuration
     root = q(Root).one()
-    admin_configuration = root.get("admin.menu")
+    admin_configuration = root.system_attrs.get("admin.menu", "")
 
     if admin_configuration == "":
         # no confguration found -> use default
         admin_configuration = "menumain();menuuser(usergroup;user);menuacl(acls);menudata(metatype;mapping);menuworkflow(workflows);menusystem(logfile;flush;settings;settingsmenu)"
-        root.set("admin.menu", admin_configuration)
+        root.system_attrs["admin.menu"] = admin_configuration
 
     return parseMenuString(admin_configuration[:-1])
 

@@ -152,8 +152,9 @@ def getEditModuleHierarchy(typename):
 
 def adminModuleActions(req):
     for key in req.params.keys():
+        root = q(Root).one()
         if key == "adminmodules_default":
-            q(Root).one().set("admin.menu", config.get("admin.defaultmenu"))
+            root.system_attrs["admin.menu"] = config.get("admin.defaultmenu", "")
             break
 
         elif key.startswith("move|") and req.params.get(key) != "":
@@ -174,7 +175,7 @@ def adminModuleActions(req):
                     pass
                 elif items[k][0].startswith("menu"):
                     ret += items[k][0] + "(" + ";".join(items[k][1:]) + ");"
-            q(Root).one().set("admin.menu", ret[:-1])
+            root.system_attrs["admin.menu"] = ret[:-1]
 
         elif key.startswith("hide|"):
             # hide module
@@ -188,7 +189,7 @@ def adminModuleActions(req):
                         ret += i[0] + "(" + ";".join(i[1:]) + ");"
                     else:
                         ret += i[0] + "();"
-            q(Root).one().set("admin.menu", ret[:-1])
+            root.system_attrs["admin.menu"] = ret[:-1]
             break
 
         elif key.startswith("show|"):
@@ -207,7 +208,7 @@ def adminModuleActions(req):
                 ret += m + "()"
             elif len(ret) > 2:
                 ret = ret[:-2] + ";" + m + ")"
-            q(Root).one().set("admin.menu", ret)
+            root.system_attrs["admin.menu"] = ret
             break
 
         elif key.startswith("up|"):
@@ -233,7 +234,7 @@ def adminModuleActions(req):
                     pass
                 elif items[k][0].startswith("menu"):
                     ret += items[k][0] + "(" + ";".join(items[k][1:]) + ");"
-            q(Root).one().set("admin.menu", ret[:-1])
+            root.system_attrs["admin.menu"] = ret[:-1]
             break
 
         elif key.startswith("down|"):
@@ -259,7 +260,7 @@ def adminModuleActions(req):
                     pass
                 elif items[k][0].startswith("menu"):
                     ret += items[k][0] + "(" + ";".join(items[k][1:]) + ");"
-            q(Root).one().set("admin.menu", ret[:-1])
+            root.system_attrs["admin.menu"] = ret[:-1]
             break
     db.session.commit()
 

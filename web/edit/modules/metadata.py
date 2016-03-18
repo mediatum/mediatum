@@ -264,7 +264,7 @@ def getContent(req, ids):
         logg.debug("%s change metadata %s", user.login_name, idstr)
         logg.debug(pf(req.params))
 
-    if "edit_metadata" in req.params or node.get("faulty") == "true":
+    if "edit_metadata" in req.params or node.system_attrs.get("faulty") == "true":
         if not hasattr(mask, "i_am_not_a_mask"):
             req.params["errorlist"] = mask.validate(nodes)
 

@@ -75,7 +75,7 @@ class Video(Content):
 
         # user must have data access for video playback
         if self.has_data_access():
-            video = self.files.filter(File.filetype.in_([u"original", u"video"])).filter_by(mimetype=u"video/mp4").scalar()
+            video = self.files.filter_by(filetype=u"video").scalar()
             obj["video_url"] = u"/file/{}/{}".format(self.id, video.base_name) if video is not None else None
         else:
             obj["video_url"] = None
@@ -106,8 +106,7 @@ class Video(Content):
         """Generates thumbnails (a small and a larger one) from a MP4 video file.
         The frame used as thumbnail can be changed by setting self.system_attrs["thumbframe"] to a number > 0.
         """
-        # XXX: should rather be filetype="video", but we must first ensure that we only have a single video file for each node
-        video_file = self.files.filter_by(mimetype="video/mp4").scalar()
+        video_file = self.files.filter_by(filetype=u"video").scalar()
 
         if video_file is not None:
             self.set('vid-width', self.get('width'))

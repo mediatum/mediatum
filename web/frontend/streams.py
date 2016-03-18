@@ -209,7 +209,7 @@ def send_file(req, download=0):
             break
 
     # try only extension
-    if not file and n.get("archive_type") == "":
+    if not file and n.system_attrs.get("archive_type", "") == "":
         file_ext = os.path.splitext(filename)[1]
         for f in n.files:
             if os.path.splitext(f.getName())[1] == file_ext and f.filetype in ['doc', 'document', 'original', 'mp3']:
@@ -223,10 +223,11 @@ def send_file(req, download=0):
         display_file_name = filename
 
     # try file from archivemanager
-    if not file and n.get("archive_type") != "":
-        am = archivemanager.getManager(n.get("archive_type"))
+    archive_type = n.system_attrs.get("archive_type")
+    if not file and archive_type:
+        am = archivemanager.getManager(archive_type)
         req.reply_headers["Content-Disposition"] = u'attachment; filename="{}"'.format(display_file_name).encode('utf8')
-        return req.sendFile(am.getArchivedFileStream(n.get("archive_path")), "application/x-download")
+        return req.sendFile(am.getArchivedFileStream(n.system_attrs.get("archive_path", "")), "application/x-download")
 
     if not file:
         return 404
@@ -311,13 +312,13 @@ def get_archived(req):
     logg.debug("send archived")
     id, filename = splitpath(req.path)
     node = q(Node).get(id)
-    node.set("archive_state", "1")
+    node.system_attrs["archive_state"] = "1"
 
-    am = archivemanager and archivemanager.getManager(node.get("archive_type"))
+    am = archivemanager and archivemanager.getManager(node.system_attrs.get("archive_type", ""))
     if am:
-        node.set("archive_state", "1")
+        node.system_attrs["archive_state"] = "1"
         am.getArchivedFile(id)
-        node.set("archive_state", "2")
+        node.system_attrs["archive_state"] = "2"
         req.write('done')
     else:
         msg = "-archive manager not found-" if archivemanager else "-no archive module loaded-"

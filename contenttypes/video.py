@@ -195,7 +195,8 @@ class Video(Content):
                         "audiodelay": "Audioversatz"}
                 }
 
-    def getEditMenuTabs(self):
+    @classmethod
+    def get_default_edit_menu_tabs(cls):
         return "menulayout(view);menumetadata(metadata;files;admin;lza);menuclasses(classes);menusecurity(acls)"
 
     def getDefaultEditTab(self):

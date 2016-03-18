@@ -631,7 +631,8 @@ class Image(Content):
             return 1
         return 0
 
-    def getEditMenuTabs(self):
+    @classmethod
+    def get_default_edit_menu_tabs(cls):
         return "menulayout(view);menumetadata(metadata;files;admin;lza);menuclasses(classes);menusecurity(acls)"
 
     def getDefaultEditTab(self):

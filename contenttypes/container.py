@@ -246,15 +246,9 @@ class Container(Data, ContainerMixin, SchemaMixin):
         metafields.append(field)
         return metafields
 
-    def getEditMenuTabs(self):
-        if self.type in ["collection", "collections"]:
-            return "menulayout(content;startpages;view);menumetadata(metadata;logo;files;admin;searchmask;sortfiles);menusecurity(acls);menuoperation(search;subfolder;license)"
-
-        elif self.type == "directory":
-            return "menulayout(content;startpages;view);menumetadata(metadata;files;admin);menusecurity(acls);menuoperation(search;subfolder;license)"
-
-        else:
-            return "menulayout(content;startpages;view);menusecurity(acls);menuoperation(search;subfolder;license)"
+    @classmethod
+    def get_default_edit_menu_tabs(cls):
+        return "menulayout(content;startpages;view);menusecurity(acls);menuoperation(search;subfolder;license)"
 
     def getDefaultEditTab(self):
         return "content"
@@ -294,6 +288,10 @@ class Directory(Container):
     def treeiconclass(cls):
         return "directory"
 
+    @classmethod
+    def get_default_edit_menu_tabs(cls):
+        return "menulayout(content;startpages;view);menumetadata(metadata;files;admin);menusecurity(acls);menuoperation(search;subfolder;license)"
+
 
 @check_type_arg_with_schema
 class Collection(Container):
@@ -301,6 +299,10 @@ class Collection(Container):
     @classmethod
     def treeiconclass(cls):
         return "collection"
+
+    @classmethod
+    def get_default_edit_menu_tabs(cls):
+        return "menulayout(content;startpages;view);menumetadata(metadata;logo;files;admin;searchmask;sortfiles);menusecurity(acls);menuoperation(search;subfolder;license)"
 
     def metaFields(self, lang=None):
         metafields = Container.metaFields(self, lang=lang)

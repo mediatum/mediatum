@@ -234,7 +234,8 @@ class Audio(Content):
     def getDuration(self):
         return format_date(parse_date(self.get("mp3.length")), '%H:%M:%S')
 
-    def getEditMenuTabs(self):
+    @classmethod
+    def get_default_edit_menu_tabs(cls):
         return "menulayout(view);menumetadata(metadata;files;admin;lza);menuclasses(classes);menusecurity(acls)"
 
     def getDefaultEditTab(self):

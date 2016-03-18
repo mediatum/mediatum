@@ -432,14 +432,9 @@ class Data(Node):
     def buildLZAVersion(self):
         logg.warn("no lza builder implemented")
 
-    def getEditMenuTabs(self):
-        menu = list()
-        try:
-            submenu = Menu("menuglobals", "..")
-            menu.append(submenu)
-        except TypeError:
-            pass
-        return ";".join([m.getString() for m in menu])
+    @classmethod
+    def get_default_edit_menu_tabs(cls):
+        return "menuglobals()"
 
     def getDefaultEditTab(self):
         return "view"

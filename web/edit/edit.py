@@ -215,7 +215,7 @@ def frameset(req):
         'system_editor_header_insert': header_insert,
         'system_editor_help_link': help_link,
         'homenodefilter': homenodefilter,
-       }
+    }
 
     req.writeTAL("web/edit/edit.html", v, macro="edit_main")
 
@@ -265,15 +265,15 @@ def handletabs(req, ids, tabs):
     # a html snippet may be inserted in the editor header
     help_link = q(Collections.attrs['system.editor.help.link.' + language]).scalar()
     ctx = {
-            "user": user,
-            "ids": ids,
-            "idstr": ",".join(ids),
-            "menu": menu,
-            "hashelp": help.getHelpPath(['edit', 'modules', req.params.get('tab') or tabs]),
-            "breadcrumbs": getBreadcrumbs(menu, req.params.get("tab", tabs)),
-            "spc": spc,
-            "system_editor_help_link": help_link,
-            }
+        "user": user,
+        "ids": ids,
+        "idstr": ",".join(ids),
+        "menu": menu,
+        "hashelp": help.getHelpPath(['edit', 'modules', req.params.get('tab') or tabs]),
+        "breadcrumbs": getBreadcrumbs(menu, req.params.get("tab", tabs)),
+        "spc": spc,
+        "system_editor_help_link": help_link,
+    }
     return req.getTAL("web/edit/edit.html", ctx, macro="edit_tabs")
 
 
@@ -619,10 +619,10 @@ def action(req):
             elif action in ["move", "copy"]:
 
                 if dest != (mysrc and
-                   mysrc.has_write_access() and
-                   dest.has_write_access() and
-                   obj.has_write_access() and
-                   isDirectory(dest)):
+                            mysrc.has_write_access() and
+                            dest.has_write_access() and
+                            obj.has_write_access() and
+                            isDirectory(dest)):
                     if not nodeIsChildOfNode(dest, obj):
                         if action == "move":
                             mysrc.children.remove(obj)
@@ -830,7 +830,7 @@ def content(req):
             file_to_edit = req.params["file_to_edit"]
 
         if not file_to_edit:
-            #todo: getstartpagedict doesnt exist
+            # todo: getstartpagedict doesnt exist
             d = node.getStartpageDict()
             if d and language in d:
                 file_to_edit = d[language]

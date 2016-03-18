@@ -219,7 +219,7 @@ def getContent(req, ids):
     if not default and len(masklist):
         default = masklist[0]
 
-    maskname = req.params.get("mask", node.get("edit.lastmask") or "editmask")
+    maskname = req.params.get("mask", node.system_attrs.get("edit.lastmask") or "editmask")
     if maskname == "":
         maskname = default.name
 
@@ -234,7 +234,8 @@ def getContent(req, ids):
         maskname = default.name
 
     for n in nodes:
-        n.set("edit.lastmask", maskname)
+        n.system_attrs["edit.lastmask"] = maskname
+
     db.session.commit()
 
     if not mask:

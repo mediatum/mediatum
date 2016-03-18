@@ -28,7 +28,7 @@ class AthanaTestRequest(athana_http.http_request):
 
     def __init__(self, params=None, uri="/", headers=None):
         headers = headers or {}
-        athana_http.http_request.__init__(self, None, None, None, uri, 0, headers)
+        super(AthanaTestRequest, self).__init__(None, None, None, uri, 0, headers)
         self.request_headers = headers
         self.params = params or {}
         self.ip = "127.0.0.1"

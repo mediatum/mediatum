@@ -132,8 +132,8 @@ def getContent(req, ids):
                     logg.warn("%s could not remove file %s from disk: not existing", user.login_name, fullpath)
                 filenode = File(page, "", "text/html")
 
-                node.removeAttribute("startpagedescr." + file_shortpath)
-                node.set("startpage.selector", node.get("startpage.selector").replace(file_shortpath, ""))
+                del node.system_attrs["startpagedescr." + file_shortpath]
+                node.system_attrs["startpage_selector"] = node.system_attrs["startpage_selector"].replace(file_shortpath, "")
                 node.files.remove(filenode)
                 db.session.commit()
                 logg.info("%s - startpages - deleted File and file for node %s (%s): %s, %s, %s, %s",
@@ -179,13 +179,13 @@ def getContent(req, ids):
         node.set('system.sidebar', sidebar)
 
         for k in [k for k in req.params if k.startswith('descr.')]:
-            node.set('startpage' + k, req.params[k])
+            node.system_attrs['startpage' + k] = req.params[k]
 
         # build startpage_selector
         startpage_selector = ""
         for language in config.languages:
             startpage_selector += "%s:%s;" % (language, req.params.get('radio_' + language))
-        node.set('startpage.selector', startpage_selector[0:-1])
+        node.system_attrs['startpage_selector'] = startpage_selector[0:-1]
     named_filelist = []
 
     for f in filelist:
@@ -203,11 +203,11 @@ def getContent(req, ids):
             spn = node.getStartpageFileNode(language)
             if spn and spn.abspath == long_path:
                 langlist.append(language)
-            if node.get('system.sidebar').find(language + ":" + short_path) >= 0:
+            if node.system_attrs.get('sidebar', '').find(language + ":" + short_path) >= 0:
                 sidebar.append(language)
 
         named_filelist.append((short_path,
-                               node.get('startpagedescr.' + short_path),
+                               node.system_attrs['startpagedescr.' + short_path],
                                f.type,
                                f,
                                file_exists,
@@ -223,7 +223,7 @@ def getContent(req, ids):
     initial = filelist and not lang2file
 
     # node may not have startpage set for some language
-    # compatibilty: node may not have attribute startpage.selector
+    # compatibilty: node may not have system attribute startpage_selector
     # build startpage_selector and write back to node
     startpage_selector = ""
     for language in config.languages:
@@ -233,7 +233,7 @@ def getContent(req, ids):
             lang2file[language] = lang2file.setdefault(language, '')
         startpage_selector += "%s:%s;" % (language, lang2file[language])
 
-    node.set('startpage.selector', startpage_selector[0:-1])
+    node.system_attrs['startpage_selector'] = startpage_selector[0:-1]
 
     db.session.commit()
 

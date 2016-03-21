@@ -103,7 +103,7 @@ class Container(Data, ContainerMixin, SchemaMixin):
 
     def getStartpageDict(self):
         d = {}
-        descriptor = self.get('startpage.selector')
+        descriptor = self.system_attrs.get('startpage_selector', '')
         for x in descriptor.split(';'):
             if x:
                 key, value = x.split(':')

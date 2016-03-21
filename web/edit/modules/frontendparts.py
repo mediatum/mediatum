@@ -129,9 +129,11 @@ def modifyItem(req, node, type, id):
         item = node.getCustomItems(type)[id]
     v = {}
     files = []
-    for file in node.files:
-        if file.filetype == "content":
-            files.append((file, node.get("startpagedescr.html/" + file.name)))
+    content_file = node.files.filter_by(filetype=u"content").scalar()
+    if content_file is not None:
+        startpage_descriptor = node.system_attrs.get("startpagedescr.html/" + file.name)
+        if startpage_descriptor:
+            files.append((file, startpage_descriptor))
 
     db.session.commit()
 

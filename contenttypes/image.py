@@ -251,8 +251,9 @@ class Image(Content):
                     else:
                         tif = f.base_name
 
-            if self.get("archive_path") != "":
-                tif = "file/" + unicode(self.id) + "/" + self.get("archive_path")
+            archive_path = self.system_attrs.get("archive_path")
+            if archive_path:
+                tif = u"file/{}/{}".format(self.id, archive_path)
 
         files, sum_size = filebrowser(self, req)
 
@@ -263,7 +264,7 @@ class Image(Content):
         obj['tileurl'] = u"/tile/{}/".format(node.id)
         obj['canseeoriginal'] = node.has_data_access()
         obj['originallink'] = u"getArchivedItem('{}/{}')".format(node.id, tif)
-        obj['archive'] = node.get('archive_type')
+        obj['archive'] = node.system_attrs.get('archive_type', "")
 
         full_style = req.args.get("style", "full_standard")
         if full_style:
@@ -631,7 +632,8 @@ class Image(Content):
             return 1
         return 0
 
-    def getEditMenuTabs(self):
+    @classmethod
+    def get_default_edit_menu_tabs(cls):
         return "menulayout(view);menumetadata(metadata;files;admin;lza);menuclasses(classes);menusecurity(acls)"
 
     def getDefaultEditTab(self):

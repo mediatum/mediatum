@@ -146,7 +146,7 @@
                                 <select onchange="submit()" tal:attributes="name python:u'move|{}'.format(item)" tal:condition="python: not isSystem(item)">
                                     <option value="">-<tal:block i18n:translate="admin_modules_editmodules_move">TEXT</tal:block>-</option>
                                     <tal:block tal:repeat="key python:list(mods)">
-                                        <option tal:condition="python:key>=0" tal:content="python:u'tab_{}'.forma(mods[key][0])" tal:attributes="value python:mods[key][0]" i18n:translate=""></option>
+                                        <option tal:condition="python:key>=0" tal:content="python:u'tab_{}'.format(mods[key][0])" tal:attributes="value python:mods[key][0]" i18n:translate=""></option>
                                     </tal:block>
                                 </select>
                                 <tal:block tal:condition="python:isSystem(item)" i18n:translate="admin_modules_editmodules_system"/>

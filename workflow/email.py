@@ -59,8 +59,8 @@ def getTALtext(text, context):
 class WorkflowStep_SendEmail(WorkflowStep):
 
     def sendOut(self, node):
-        xfrom = node.get("mailtmp.from")
-        to = node.get("mailtmp.to")
+        xfrom = node.get("system.mailtmp.from")
+        to = node.get("system.mailtmp.to")
         sendcondition = self.get("sendcondition")
         attach_pdf_form = bool(self.get("attach_pdf_form"))
         sendOk = 1
@@ -93,10 +93,10 @@ class WorkflowStep_SendEmail(WorkflowStep):
                             attachments_paths_and_filenames.append((f.abspath, '%s' % (f.abspath.split('_')[-1])))
                     pass
 
-                mail.sendmail(xfrom, to, node.get("mailtmp.subject"), node.get(
-                    "mailtmp.text"), attachments_paths_and_filenames=attachments_paths_and_filenames)
+                mail.sendmail(xfrom, to, node.get("system.mailtmp.subject"), node.get(
+                    "system.mailtmp.text"), attachments_paths_and_filenames=attachments_paths_and_filenames)
             except:
-                node.set("mailtmp.error", formatException())
+                node.set("system.mailtmp.error", formatException())
                 db.session.commit()
                 logg.exception("Error while sending mail- node stays in workflowstep %s %s", self.id, self.name)
                 return
@@ -104,7 +104,7 @@ class WorkflowStep_SendEmail(WorkflowStep):
             logg.info("sending mail prevented by condition %s " % (sendcondition))
             return
 
-        for s in ["mailtmp.from", "mailtmp.to", "mailtmp.subject", "mailtmp.text", "mailtmp.error", "mailtmp.talerror", "mailtmp.send"]:
+        for s in ["system.mailtmp.from", "system.mailtmp.to", "system.mailtmp.subject", "system.mailtmp.text", "system.mailtmp.error", "system.mailtmp.talerror", "system.mailtmp.send"]:
             try:
                 node.removeAttribute(s)
             except KeyError:
@@ -119,9 +119,9 @@ class WorkflowStep_SendEmail(WorkflowStep):
         attrs = {"node": node, "link": link, "publiclink": link2}
         try:
             if "@" in self.get('from'):
-                node.set("mailtmp.from", getTALtext(self.get("from"), attrs))
+                node.set("system.mailtmp.from", getTALtext(self.get("from"), attrs))
             elif "@" in node.get(self.get('from')):
-                node.set("mailtmp.from", getTALtext(node.get(self.get("from")), attrs))
+                node.set("system.mailtmp.from", getTALtext(node.get(self.get("from")), attrs))
 
             _mails = []
             for m in self.get('email').split(";"):
@@ -129,13 +129,13 @@ class WorkflowStep_SendEmail(WorkflowStep):
                     _mails.append(getTALtext(m, attrs))
                 elif "@" in node.get(m):
                     _mails.append(getTALtext(node.get(m), attrs))
-            node.set("mailtmp.to", ";".join(_mails))
+            node.set("system.mailtmp.to", ";".join(_mails))
 
-            node.set("mailtmp.subject", getTALtext(self.get("subject"), attrs))
-            node.set("mailtmp.text", getTALtext(self.get("text"), attrs))
+            node.set("system.mailtmp.subject", getTALtext(self.get("subject"), attrs))
+            node.set("system.mailtmp.text", getTALtext(self.get("text"), attrs))
             db.session.commit()
         except:
-            node.set("mailtmp.talerror", formatException())
+            node.set("system.mailtmp.talerror", formatException())
             db.session.commit()
             return
         if self.get("allowedit").lower().startswith("n"):
@@ -146,13 +146,13 @@ class WorkflowStep_SendEmail(WorkflowStep):
         if "sendout" in req.params:
             del req.params["sendout"]
             if "from" in req.params:
-                node.set("mailtmp.from", req.params.get("from"))
+                node.set("system.mailtmp.from", req.params.get("from"))
             if "to" in req.params:
-                node.set("mailtmp.to", req.params.get("to"))
+                node.set("system.mailtmp.to", req.params.get("to"))
             if "subject" in req.params:
-                node.set("mailtmp.subject", req.params.get("subject"))
+                node.set("system.mailtmp.subject", req.params.get("subject"))
             if "text" in req.params:
-                node.set("mailtmp.text", req.params.get("text"))
+                node.set("system.mailtmp.text", req.params.get("text"))
             db.session.commit()
             if(self.sendOut(node)):
                 return self.forwardAndShow(node, True, req)
@@ -161,22 +161,22 @@ class WorkflowStep_SendEmail(WorkflowStep):
         if "gofalse" in req.params:
             return self.forwardAndShow(node, False, req)
 
-        elif node.get("mailtmp.talerror"):
-            node.removeAttribute("mailtmp.talerror")
+        elif node.get("system.mailtmp.talerror"):
+            node.removeAttribute("system.mailtmp.talerror")
             self.runAction(node, "true")
             db.session.commit()
-            if node.get("mailtmp.talerror"):
-                return """<pre>%s</pre>""" % node.get("mailtmp.talerror")
+            if node.get("system.mailtmp.talerror"):
+                return """<pre>%s</pre>""" % node.get("system.mailtmp.talerror")
             else:
                 return self.show_node_big(req)
-        elif node.get("mailtmp.error"):
+        elif node.get("system.mailtmp.error"):
             return '%s<br/><pre>%s</pre><br>&gt;<a href="%s">%s</a>&lt;' % (t(lang(req), "workflow_email_msg_1"), node.get(
-                "mailtmp.error"), req.makeSelfLink({"sendout": "true"}), t(lang(req), "workflow_email_resend"))
+                "system.mailtmp.error"), req.makeSelfLink({"sendout": "true"}), t(lang(req), "workflow_email_resend"))
         else:
-            xfrom = node.get("mailtmp.from")
-            to = node.get("mailtmp.to")
-            text = node.get("mailtmp.text")
-            subject = tal.getTALstr(node.get("mailtmp.subject"), {}, language=node.get("system.wflanguage"))
+            xfrom = node.get("system.mailtmp.from")
+            to = node.get("system.mailtmp.to")
+            text = node.get("system.mailtmp.text")
+            subject = tal.getTALstr(node.get("system.mailtmp.subject"), {}, language=node.get("system.wflanguage"))
             return req.getTAL("workflow/email.html", {"page": u"node?id={}&obj={}".format(self.id, node.id),
                                                       "from": xfrom,
                                                       "to": to,

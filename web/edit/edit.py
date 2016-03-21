@@ -215,7 +215,7 @@ def frameset(req):
         'system_editor_header_insert': header_insert,
         'system_editor_help_link': help_link,
         'homenodefilter': homenodefilter,
-       }
+    }
 
     req.writeTAL("web/edit/edit.html", v, macro="edit_main")
 
@@ -250,7 +250,7 @@ def handletabs(req, ids, tabs):
     if n.type.startswith("workflow"):
         n = q(Root).one()
 
-    menu = filterMenu(getEditMenuString(n.type), user)
+    menu = filterMenu(get_edit_menu_tabs(n.__class__), user)
 
     spc = [Menu("sub_header_frontend", "../", target="_parent")]
     if user.is_admin:
@@ -265,15 +265,15 @@ def handletabs(req, ids, tabs):
     # a html snippet may be inserted in the editor header
     help_link = q(Collections.attrs['system.editor.help.link.' + language]).scalar()
     ctx = {
-            "user": user,
-            "ids": ids,
-            "idstr": ",".join(ids),
-            "menu": menu,
-            "hashelp": help.getHelpPath(['edit', 'modules', req.params.get('tab') or tabs]),
-            "breadcrumbs": getBreadcrumbs(menu, req.params.get("tab", tabs)),
-            "spc": spc,
-            "system_editor_help_link": help_link,
-            }
+        "user": user,
+        "ids": ids,
+        "idstr": ",".join(ids),
+        "menu": menu,
+        "hashelp": help.getHelpPath(['edit', 'modules', req.params.get('tab') or tabs]),
+        "breadcrumbs": getBreadcrumbs(menu, req.params.get("tab", tabs)),
+        "spc": spc,
+        "system_editor_help_link": help_link,
+    }
     return req.getTAL("web/edit/edit.html", ctx, macro="edit_tabs")
 
 
@@ -451,19 +451,9 @@ def edit_tree(req):
     return req.write(json.dumps(data, indent=4))
 
 
-def getEditMenuString(ntype, default=0):
-    menu_str = ""
-
-    for dtype in Data.get_all_datatypes():  # all known datatypes
-        if dtype.__name__.lower() in ntype:
-            content_class = Node.get_class_for_typestring(dtype.__name__.lower())
-            node = content_class(u'')
-
-            menu_str = q(Root).one().get("edit.menu." + dtype.__name__.lower())
-            if (menu_str == "" or default == 1) and hasattr(node, "getEditMenuTabs"):
-                menu_str = node.getEditMenuTabs()
-            break
-    return menu_str
+def get_edit_menu_tabs(nodeclass):
+    root = q(Root).one()
+    return root.system_attrs.get("edit.menu." + nodeclass.__name__.lower()) or nodeclass.get_default_edit_menu_tabs()
 
 
 @dec_entry_log
@@ -619,10 +609,10 @@ def action(req):
             elif action in ["move", "copy"]:
 
                 if dest != (mysrc and
-                   mysrc.has_write_access() and
-                   dest.has_write_access() and
-                   obj.has_write_access() and
-                   isDirectory(dest)):
+                            mysrc.has_write_access() and
+                            dest.has_write_access() and
+                            obj.has_write_access() and
+                            isDirectory(dest)):
                     if not nodeIsChildOfNode(dest, obj):
                         if action == "move":
                             mysrc.children.remove(obj)
@@ -830,7 +820,7 @@ def content(req):
             file_to_edit = req.params["file_to_edit"]
 
         if not file_to_edit:
-            #todo: getstartpagedict doesnt exist
+            # todo: getstartpagedict doesnt exist
             d = node.getStartpageDict()
             if d and language in d:
                 file_to_edit = d[language]

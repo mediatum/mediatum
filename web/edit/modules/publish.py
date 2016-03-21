@@ -55,7 +55,7 @@ def getContent(req, ids):
             metadatatype = obj.metadatatype
             mask_validated = False
             for mask in metadatatype.getMasks(type="edit"): # check required fields
-                if mask.has_read_access() and mask.getName() == obj.get("edit.lastmask"):
+                if mask.has_read_access() and mask.getName() == obj.system_attrs.get("edit.lastmask"):
                     for f in mask.validateNodelist([obj]):
                         faultylist.append(f)
                     mask_validated = True

@@ -219,7 +219,7 @@ def getContent(req, ids):
     if not default and len(masklist):
         default = masklist[0]
 
-    maskname = req.params.get("mask", node.get("edit.lastmask") or "editmask")
+    maskname = req.params.get("mask", node.system_attrs.get("edit.lastmask") or "editmask")
     if maskname == "":
         maskname = default.name
 
@@ -234,7 +234,8 @@ def getContent(req, ids):
         maskname = default.name
 
     for n in nodes:
-        n.set("edit.lastmask", maskname)
+        n.system_attrs["edit.lastmask"] = maskname
+
     db.session.commit()
 
     if not mask:
@@ -264,7 +265,7 @@ def getContent(req, ids):
         logg.debug("%s change metadata %s", user.login_name, idstr)
         logg.debug(pf(req.params))
 
-    if "edit_metadata" in req.params or node.get("faulty") == "true":
+    if "edit_metadata" in req.params or node.system_attrs.get("faulty") == "true":
         if not hasattr(mask, "i_am_not_a_mask"):
             req.params["errorlist"] = mask.validate(nodes)
 

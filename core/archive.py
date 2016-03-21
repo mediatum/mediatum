@@ -63,20 +63,6 @@ class Archive:
         self.version = "0.1"
         return "no description of archive manager found"
 
-    def stat(self, attribute=""):
-        stat = {}
-        stat['name'] = ustr(self)
-        stat['used'] = db.getNodeIdByAttribute("archive_type", ustr(self))
-        stat['state1'] = len(intersection([stat['used'], db.getNodeIdByAttribute("archive_state", "1")]))
-        stat['state2'] = len(intersection([stat['used'], db.getNodeIdByAttribute("archive_state", "3")]))
-        stat['state3'] = len(intersection([stat['used'], db.getNodeIdByAttribute("archive_state", "3")]))
-        stat['used'] = len(stat['used'])
-
-        if attribute == "":
-            return stat
-        elif attribute in stat.keys():
-            return stat[attribute]
-
 
 class ArchiveManager:
 

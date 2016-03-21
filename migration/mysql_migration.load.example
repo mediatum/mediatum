@@ -1,9 +1,9 @@
--- see pgloader reference @ http://pgloader.io/howto/pgloader.1.html 
+-- see pgloader reference @ http://pgloader.io/howto/pgloader.1.html
 
 LOAD database
     FROM mysql://mediatum:password@172.17.42.1/mediatum
     INTO postgres://mediatum:password@172.17.42.1/mediatum
-WITH 
+WITH
     include drop
     , no truncate
     , create tables
@@ -11,15 +11,24 @@ WITH
     , reset sequences
     , foreign keys
 
-SET maintenance_work_mem to '2048MB', work_mem to '2048MB', search_path to 'mediatum_import'  
+SET maintenance_work_mem to '2048MB', work_mem to '2048MB', search_path to 'mediatum_import'
 
 INCLUDING ONLY TABLE NAMES MATCHING 'node', 'nodefile', 'nodemapping', 'nodeattribute', 'access'
 
-BEFORE LOAD DO 
+BEFORE LOAD DO
 $$ CREATE SCHEMA IF NOT EXISTS mediatum_import; $$
 
 AFTER LOAD DO
 $$
 $$UPDATE mediatum_import.node SET writeaccess='' where type = 'workflow';$$,
-$$UPDATE mediatum_import.nodeattribute SET name = 'system.zoom_levels' where name = 'levels';$$
+$$UPDATE mediatum_import.nodeattribute SET name = 'system.zoom_levels' where name = 'levels';$$,
+$$UPDATE mediatum_import.nodeattribute SET name = 'system.' || name WHERE nid=1 AND name LIKE 'edit.menu.%' OR name = 'admin.menu';$$,
+$$UPDATE mediatum_import.nodeattribute SET name = 'system.' || name WHERE name IN ('archive_type', 'archive_state', 'archive_date', 'archive_path')$$,
+$$UPDATE mediatum_import.nodeattribute SET name = 'system.' || name WHERE name IN ('faulty', 'edit.lastmask')$$
+$$UPDATE mediatum_import.nodeattribute SET name = 'system.' || name WHERE name IN ('faulty', 'edit.lastmask')$$,
+$$UPDATE mediatum_import.nodeattribute SET name = 'system.' || name WHERE name LIKE 'mailtmp.%$$
+$$UPDATE mediatum_import.nodeattribute SET name = 'system.' || name WHERE name LIKE 'startpagedescr.%';$$,
+$$UPDATE mediatum_import.nodeattribute SET name = 'system.startpage_selector' WHERE name = 'startpage.selector';$$,
+
+$$DELETE FROM mediatum_import.nodeattribute WHERE name IN ('hit_statistic.file', 'lastindexerrun', 'updatesearchindex')$$
 ;

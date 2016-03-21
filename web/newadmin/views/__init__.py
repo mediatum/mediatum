@@ -10,6 +10,7 @@
 from __future__ import absolute_import
 from core import db
 from flask_admin.contrib.sqla import ModelView
+from flask.ext import login
 
 
 class BaseAdminView(ModelView):
@@ -22,3 +23,6 @@ class BaseAdminView(ModelView):
 
     def __init__(self, model, session=None, *args, **kwargs):
         super(BaseAdminView, self).__init__(model, session or db.Session, *args, **kwargs)
+
+    def is_accessible(self):
+        return login.current_user.is_authenticated

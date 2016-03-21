@@ -183,6 +183,19 @@ class User(DeclarativeBase, TimeStamp, UserMixin):
         logg.info("created home dir for user '%s (id: %s)'", self.login_name, self.id)
         return home
 
+    # Flask-Login integration functions
+    def is_authenticated(self):
+        return True
+
+    def is_active(self):
+        return True
+
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        return unicode(self.id)
+
     def __unicode__(self):
         return u"{} ({}:{})".format(self.display_name or self.login_name, self.authenticator_info.auth_type,
                                     self.authenticator_info.name)

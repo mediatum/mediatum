@@ -6,35 +6,9 @@
 from __future__ import absolute_import
 import os
 import pytest
-from pytest import fixture
 
 from core import config, File
-from contenttypes import Video
-from core.test.factories import NodeFactory
-from core.config import resolve_datadir_path
-from schema.test.factories import MetadatatypeFactory
-
-
-class VideoFactory(NodeFactory):
-
-    class Meta:
-        model = Video
-
-    schema = u"test"
-
-# must be relative to datadir
-TEST_VIDEO_NAME = u"test.mp4"
-TEST_VIDEO_PATH = u"test/" + TEST_VIDEO_NAME
-
-test_video_fullpath = resolve_datadir_path(TEST_VIDEO_PATH)
-
-
-@fixture
-def video(session):
-    video = VideoFactory()
-    MetadatatypeFactory(name=u"test")
-    video.files.append(File(path=TEST_VIDEO_PATH, filetype=u"video", mimetype=u"video/mp4"))
-    return video
+from contenttypes.test import TEST_VIDEO_PATH, skip_if_video_missing, TEST_VIDEO_NAME
 
 
 def assert_thumbnails_and_video_ok(video):
@@ -71,8 +45,7 @@ def test_show_node_big_video_url(video, req):
     assert u"/file/{}/{}".format(video.id, TEST_VIDEO_NAME) in html
 
 
-@pytest.mark.skipif(not os.path.exists(test_video_fullpath),
-                    reason=u"test video not found at " + test_video_fullpath)
+@skip_if_video_missing
 @pytest.mark.slow
 def test_event_files_changed_new_video(video):
     video.system_attrs[u"thumbframe"] = None
@@ -81,8 +54,7 @@ def test_event_files_changed_new_video(video):
     assert_thumbnails_and_video_ok(video)
 
 
-@pytest.mark.skipif(not os.path.exists(test_video_fullpath),
-                    reason="test video not found at " + test_video_fullpath)
+@skip_if_video_missing
 @pytest.mark.slow
 def test_event_files_changed_new_video_thumbframe(video):
     # event_files_changed should generate a small thumb and a larger thumb2, both jpegs

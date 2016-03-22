@@ -4,7 +4,9 @@
     :license: GPL3, see COPYING for details
 """
 from mediatumtal import tal
-from web.frontend.test.fixtures import req
 from core import config
 
 tal.set_base(config.basedir)
+
+from web.frontend.test.fixtures import req
+from contenttypes.test.fixtures import *

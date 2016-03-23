@@ -175,10 +175,26 @@ class NodeMixin(object):
     # access stuff
 
     def has_access(self, accesstype, req=None, user=None, ip=None, date=None):
+        """Checks if it's permitted to access this node with `accesstype`.
+        There are 3 modes:
+
+        * Nothing except the `accesstype` is passed: current request is used (must have request context). This is recommended.
+        * `req != None`: use user and ip from request, current date to check permission
+        * At least one of `user`, `ip` or `date` `is != None`: check permission with given values.
+          Uses the following defaults when a value is None:
+
+          * user: guest user
+          * ip: 0.0.0.0
+          * date: current date
+        """
         if user is not None or ip is not None or date is not None:
+            if req is not None:
+                raise ValueError("has_access can only be called with a request instance or user/ip/date, but not both!")
+
             return self.has_access_to_node_id(self.id, accesstype, user, ip, date)
 
         return self.req_has_access_to_node_id(self.id, accesstype, req)
+
 
     def has_read_access(self, req=None, user=None, ip=None, date=None):
         return self.has_access("read", req, user, ip, date)

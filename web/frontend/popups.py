@@ -169,11 +169,9 @@ def show_printview(req):
         if not metadata:
             metadata = [['nodename', node.getName(), 'Name', 'text']]
 
-        files = node.files
-        imagepath = None
-        for file in files:
-            if file.filetype.startswith("presentati"):
-                imagepath = file.abspath
+        # XXX: use scalar() after duplicate cleanup
+        presentation_file = node.files.filter_by(filetype=u"presentation").first()
+        imagepath = presentation_file.abspath if presentation_file is not None else None
 
         # children
         children = []

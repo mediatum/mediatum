@@ -46,7 +46,7 @@ class Document(Content):
 
     @classmethod
     def get_sys_filetypes(cls):
-        return [u"doc", u"document", u"thumb", u"thumb2", u"presentati", u"presentation", u"fulltext", u"fileinfo"]
+        return [u"doc", u"document", u"thumb", u"thumb2", u"presentation", u"fulltext", u"fileinfo"]
 
     @classmethod
     def get_default_edit_menu_tabs(cls):

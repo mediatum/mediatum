@@ -261,7 +261,7 @@ def getContent(req, ids):
                     os.remove(file.abspath)
 
                 for f in node.files:
-                    if f.type in ["thumb", "presentation", "presentati"]:
+                    if f.type in ["thumb", "presentation"]:
                         if os.path.exists(f.abspath):
                             os.remove(f.abspath)
                         node.files.remove(f)

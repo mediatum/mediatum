@@ -221,7 +221,7 @@ class Image(Content):
 
     @classmethod
     def get_sys_filetypes(cls):
-        return [u"original", u"thumb", u"presentati", u"image", u"presentation", u"zoom"]
+        return [u"original", u"thumb", u"image", u"presentation", u"zoom"]
 
     # prepare hash table with values for TAL-template
     def _prepareData(self, req):

@@ -68,7 +68,7 @@ def getChecksum(nodeId, method="SHA-1", filepath=""):
             node = q(Node).get(nodeId)
             if isinstance(node, Node):
                 for f in node.files:
-                    if f.filetype == node.getOriginalTypeName():
+                    if f.filetype == node.get_original_filetype():
                         return calcChecksum(f.abspath, method)
                 return calcChecksumFromMetadata(node)
             else:

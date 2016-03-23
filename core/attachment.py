@@ -80,7 +80,7 @@ def filebrowser(node, req):
         # no attachment directory -> test for single file
         file = {}
 
-        for f in node.files.filter(~File.filetype.in_(node.getSysFiles())):
+        for f in node.files.filter(~File.filetype.in_(node.get_sys_filetypes())):
             file["mimetype"], file["type"] = getMimeType(f.getName())
             file["icon"] = fileicons[file["mimetype"]]
             file["path"] = f.path

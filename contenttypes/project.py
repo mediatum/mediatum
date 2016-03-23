@@ -27,5 +27,6 @@ class Project(Directory):
     def treeiconclass(cls):
         return "project"
 
-    def getDefaultEditTab(self):
+    @classmethod
+    def get_default_edit_tab(cls):
         return "metadata"

@@ -742,8 +742,8 @@ def content(req):
         tabs = "content"
     elif node is user.upload_dir:
         tabs = "upload"
-    elif hasattr(node, "getDefaultEditTab"):
-        tabs = node.getDefaultEditTab()
+    else:
+        tabs = node.get_default_edit_tab()
         v["notdirectory"] = 0
 
     current = req.params.get("tab", tabs)

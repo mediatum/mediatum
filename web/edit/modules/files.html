@@ -298,7 +298,7 @@
 
 <tal:block metal:define-macro="edit_files_children_list">
     <div tal:repeat="child children" style="float:left;width:128px;height:128px;padding-right:2px;position:relative">
-        <a tal:attributes="href python:u'/edit/edit_content?id={}&tab={}'.format(child.id, child.getDefaultEditTab())"><img tal:attributes="src python:u'/thumbs/{}'.format(child.id)"/></a>
+        <a tal:attributes="href python:u'/edit/edit_content?id={}&tab={}'.format(child.id, child.get_default_edit_tab())"><img tal:attributes="src python:u'/thumbs/{}'.format(child.id)"/></a>
         <div style="position:absolute; top:2px;right:4px">
             <a tal:attributes="href python:u'/edit/edit_content?id={}&tab=metadata'.format(child.id)"><img src="/img/edit.png"/></a>
             <a href="#" tal:attributes="onclick python:u'return removeItem(this.id, {})'.format(node.id);id python:child.id"><img src="/img/delete.png"/></a>

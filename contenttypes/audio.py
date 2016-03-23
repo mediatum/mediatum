@@ -128,23 +128,17 @@ def makeMetaData(self, audiofile):
             if key in audiofile.tags.keys():
                 self.attrs["mp3." + audio_frames[key]] = unicode(audiofile.tags[key])
 
-""" audio class for internal audio-type """
-
 
 @check_type_arg_with_schema
 class Audio(Content):
 
     @classmethod
-    def getTypeAlias(cls):
-        return "audio"
+    def get_sys_filetypes(cls):
+        return [u"audio", u"thumb", u"presentation", u"mp3"]
 
     @classmethod
-    def getOriginalTypeName(cls):
-        return "original"
-
-    @classmethod
-    def getCategoryName(cls):
-        return "audio"
+    def get_default_edit_menu_tabs(cls):
+        return "menulayout(view);menumetadata(metadata;files;admin;lza);menuclasses(classes);menusecurity(acls)"
 
     # prepare hash table with values for TAL-template
     def _prepareData(self, req):
@@ -175,18 +169,11 @@ class Audio(Content):
 
         return req.getTAL(template, self._prepareData(req), macro)
 
-    @classmethod
-    def isContainer(cls):
-        return 0
-
     def has_object(self):
         for f in self.files:
             if f.type == "audio":
                 return True
         return False
-
-    def getSysFiles(self):
-        return [u"audio", u"thumb", u"presentation", u"mp3"]
 
     """ postprocess method for object type 'audio'. called after object creation """
     def event_files_changed(self):
@@ -233,13 +220,6 @@ class Audio(Content):
 
     def getDuration(self):
         return format_date(parse_date(self.get("mp3.length")), '%H:%M:%S')
-
-    @classmethod
-    def get_default_edit_menu_tabs(cls):
-        return "menulayout(view);menumetadata(metadata;files;admin;lza);menuclasses(classes);menusecurity(acls)"
-
-    def getDefaultEditTab(self):
-        return "view"
 
     def processMediaFile(self, dest):
         for file in self.files:

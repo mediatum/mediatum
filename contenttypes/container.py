@@ -21,6 +21,7 @@ import re
 import os
 import logging
 import codecs
+from warnings import warn
 
 from mediatumtal import tal
 import core.config as config
@@ -90,16 +91,21 @@ class Container(Data, ContainerMixin, SchemaMixin):
     show_list_view = True
 
     @classmethod
-    def getTypeAlias(cls):
-        return "directory"
+    def isContainer(cls):
+        warn("use isinstance(node, Container) or issubclass(nodecls, Container)", DeprecationWarning)
+        return 1
 
     @classmethod
-    def getOriginalTypeName(cls):
-        return "directory"
+    def get_sys_filetypes(cls):
+        return [u"statistic", u"image"]
 
     @classmethod
-    def getCategoryName(cls):
-        return "container"
+    def get_default_edit_menu_tabs(cls):
+        return "menulayout(content;startpages;view);menusecurity(acls);menuoperation(search;subfolder;license)"
+
+    @classmethod
+    def get_default_edit_tab(cls):
+        return "content"
 
     def getStartpageDict(self):
         d = {}
@@ -181,13 +187,6 @@ class Container(Data, ContainerMixin, SchemaMixin):
     def show_node_image(self, language=None):
         return tal.getTAL("contenttypes/container.html", {"node": self}, macro="thumbnail", language=language)
 
-    @classmethod
-    def isContainer(cls):
-        return 1
-
-    def getSysFiles(self):
-        return [u"statistic", u"image"]
-
     def getLabel(self, lang=getDefaultLanguage()):
 
         # try language-specific name first
@@ -245,13 +244,6 @@ class Container(Data, ContainerMixin, SchemaMixin):
         })
         metafields.append(field)
         return metafields
-
-    @classmethod
-    def get_default_edit_menu_tabs(cls):
-        return "menulayout(content;startpages;view);menusecurity(acls);menuoperation(search;subfolder;license)"
-
-    def getDefaultEditTab(self):
-        return "content"
 
     def getCustomItems(self, type=""):
         ret = []

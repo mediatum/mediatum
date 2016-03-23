@@ -216,16 +216,12 @@ def dozoom(self):
 class Image(Content):
 
     @classmethod
-    def getTypeAlias(cls):
-        return "image"
+    def get_default_edit_menu_tabs(cls):
+        return "menulayout(view);menumetadata(metadata;files;admin;lza);menuclasses(classes);menusecurity(acls)"
 
     @classmethod
-    def getOriginalTypeName(cls):
-        return "original"
-
-    @classmethod
-    def getCategoryName(cls):
-        return "image"
+    def get_sys_filetypes(cls):
+        return [u"original", u"thumb", u"presentati", u"image", u"presentation", u"zoom"]
 
     # prepare hash table with values for TAL-template
     def _prepareData(self, req):
@@ -279,13 +275,6 @@ class Image(Content):
             if len(styles) >= 1:
                 template = styles[0].getTemplate()
         return req.getTAL(template, self._prepareData(req), macro)
-
-    @classmethod
-    def isContainer(cls):
-        return 0
-
-    def getSysFiles(self):
-        return [u"original", u"thumb", u"presentati", u"image", u"presentation", u"zoom"]
 
     """ make a copy of the svg file in png format """
     def svg_to_png(self, filename, imgfile):
@@ -631,13 +620,6 @@ class Image(Content):
             pic.save(dest + self.id + ".jpg", "jpeg")
             return 1
         return 0
-
-    @classmethod
-    def get_default_edit_menu_tabs(cls):
-        return "menulayout(view);menumetadata(metadata;files;admin;lza);menuclasses(classes);menusecurity(acls)"
-
-    def getDefaultEditTab(self):
-        return "view"
 
     def event_metadata_changed(self):
         """ Handles metadata content if changed.

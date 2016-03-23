@@ -26,7 +26,7 @@ from core.translation import translate
 from core.transition import httpstatus, current_user
 from utils.utils import dec_entry_log
 from core import Node
-from contenttypes import Data
+from contenttypes import Data, Content, Container
 from core import db
 
 q = db.query
@@ -98,11 +98,8 @@ def getContent(req, ids):
     dtypes.sort(key=lambda x: translate(x.__name__, request=req).lower())
 
     admissible_objtypes = getTypes(datatypes)
-    admissible_datatypes = [n for n in admissible_objtypes if n.getCategoryName() in ['document',
-                                                                                      'image',
-                                                                                      'video',
-                                                                                      'audio']]
-    admissible_containers = [n for n in admissible_objtypes if n.getCategoryName() in ['container']]
+    admissible_datatypes = [t for t in admissible_objtypes if issubclass(t, Content)]
+    admissible_containers = [n for n in admissible_objtypes if issubclass(t, Container)]
 
     admissible_objtypes.sort(key=lambda x: translate(x.__name__, request=req).lower())
     admissible_datatypes.sort(key=lambda x: translate(x.__name__, request=req).lower())
@@ -153,6 +150,7 @@ def getContent(req, ids):
          'current_type': node.type,
          'current_schema': node.schema,
          'category_name': node.getCategoryName(),
+         # XXX: this is the only line that uses getTypeAlias. What is the real meaning?
          'type_alias': node.getTypeAlias(),
          'is_container': int(node.isContainer()),
          'nodes': [node]}

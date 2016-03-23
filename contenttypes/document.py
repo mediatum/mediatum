@@ -41,17 +41,16 @@ logg = logging.getLogger(__name__)
 class Document(Content):
 
     @classmethod
-    def getTypeAlias(cls):
+    def get_original_filetype(cls):
         return "document"
 
     @classmethod
-    def getOriginalTypeName(cls):
-        return "document"
+    def get_sys_filetypes(cls):
+        return [u"doc", u"document", u"thumb", u"thumb2", u"presentati", u"presentation", u"fulltext", u"fileinfo"]
 
     @classmethod
-    def getCategoryName(cls):
-        return "document"
-
+    def get_default_edit_menu_tabs(cls):
+        return "menulayout(view);menumetadata(metadata;files;admin;lza);menuclasses(classes);menusecurity(acls)"
 
     def _prepareData(self, req, words=""):
         obj = super(Document, self)._prepareData(req)
@@ -103,18 +102,11 @@ class Document(Content):
                 template = styles[0].getTemplate()
         return req.getTAL(template, self._prepareData(req), macro)
 
-    @classmethod
-    def isContainer(cls):
-        return 0
-
     def has_object(self):
         for f in self.files:
             if f.type == "doc" or f.type == "document":
                 return True
         return False
-
-    def getSysFiles(self):
-        return [u"doc", u"document", u"thumb", u"thumb2", u"presentati", u"presentation", u"fulltext", u"fileinfo"]
 
     """ postprocess method for object type 'document'. called after object creation """
     def event_files_changed(self):
@@ -226,13 +218,6 @@ class Document(Content):
 
     def popup_thumbbig(self, req):
         self.popup_fullsize(req)
-
-    @classmethod
-    def get_default_edit_menu_tabs(cls):
-        return "menulayout(view);menumetadata(metadata;files;admin;lza);menuclasses(classes);menusecurity(acls)"
-
-    def getDefaultEditTab(self):
-        return "view"
 
     def processDocument(self, dest):
         for file in self.files:

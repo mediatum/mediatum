@@ -43,7 +43,7 @@ def _finish_change(node, change_file, user, uploadfile, req):
 
     if change_file == "yes":  # remove old files
         for f in node.files:
-            if f.filetype in node.getSysFiles():
+            if f.filetype in node.get_sys_filetypes():
                 node.files.remove(f)
 
     if change_file in ["yes", "no"]:

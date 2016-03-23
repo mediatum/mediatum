@@ -53,18 +53,17 @@ def getCaptionInfoDict(self):
 @check_type_arg_with_schema
 class Video(Content):
 
-    """ video class """
     @classmethod
-    def getTypeAlias(cls):
-        return "video"
-
-    @classmethod
-    def getOriginalTypeName(cls):
+    def get_original_filetype(cls):
         return "original"
 
     @classmethod
-    def getCategoryName(cls):
-        return "video"
+    def get_default_edit_menu_tabs(cls):
+        return "menulayout(view);menumetadata(metadata;files;admin;lza);menuclasses(classes);menusecurity(acls)"
+
+    @classmethod
+    def get_sys_filetypes(cls):
+        return [u"presentation", u"thumb", u"video"]
 
     def _prepareData(self, req, words=""):
         obj = super(Video, self)._prepareData(req)
@@ -152,13 +151,6 @@ class Video(Content):
 
             db.session.commit()
 
-    @classmethod
-    def isContainer(cls):
-        return 0
-
-    def getSysFiles(self):
-        return [u"presentation", u"thumb", u"video"]
-
     def getDuration(self):
         duration = self.get("duration")
         try:
@@ -194,13 +186,6 @@ class Video(Content):
                         "videocodecid": "Video Codec",
                         "audiodelay": "Audioversatz"}
                 }
-
-    @classmethod
-    def get_default_edit_menu_tabs(cls):
-        return "menulayout(view);menumetadata(metadata;files;admin;lza);menuclasses(classes);menusecurity(acls)"
-
-    def getDefaultEditTab(self):
-        return "view"
 
     def processMediaFile(self, dest):
         for nfile in self.files:

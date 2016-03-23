@@ -51,7 +51,7 @@ class SingleFile(object):
 
     def __init__(self, file, link_params, language, fullstyle_name, words=None):
         node = file
-        sys_filetypes = [unicode(x) for x in node.getSysFiles()]
+        sys_filetypes = [unicode(x) for x in node.get_sys_filetypes()]
 
         attachment = node.files.filter_by(filetype=u"attachment").first()
         if attachment is None:

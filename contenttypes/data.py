@@ -117,15 +117,32 @@ class Data(Node):
 
     @classmethod
     def getTypeAlias(cls):
-        return "default"
+        """Returns an identifier for this content type, always lower case.
+        By default, the class name in lowercase is used.
+        """
+        return cls.__name__.lower()
 
     @classmethod
-    def getOriginalTypeName(cls):
+    def get_original_filetype(cls):
+        """Returns the File.filetype value for associated files that represent the original ("as uploaded") file
+        """
         return "original"
 
     @classmethod
-    def getCategoryName(cls):
-        return "undefined"
+    def isContainer(cls):
+        warn("use isinstance(node, Container) or issubclass(nodecls, Container)", DeprecationWarning)
+        return 0
+
+    @classmethod
+    def get_default_edit_menu_tabs(cls):
+        return "menuglobals()"
+
+    @classmethod
+    def get_default_edit_tab(cls):
+        """Returns the editor tag that should be displayed when visiting a node.
+        Defaults to the preview view
+        """
+        return "view"
 
     def getDetailsCondition(self):
         '''checks if 'details' should be displayed
@@ -394,16 +411,6 @@ class Data(Node):
 
         return res
 
-    @classmethod
-    def isContainer(cls):
-        return 0
-
-    def getTreeIcon(self):
-        return ""
-
-    def isSystemType(self):
-        return 0
-
     def get_name(self):
         return self.name
 
@@ -411,7 +418,7 @@ class Data(Node):
         return {}
 
     def has_object(self):
-        return True
+        return False
 
     def getFullView(self, language):
         """Gets the fullview mask for the given `language`.
@@ -426,18 +433,9 @@ class Data(Node):
         else:
             return self.metadatatype.filter_masks(masktype=u"fullview").first()
 
-    def getSysFiles(self):
-        return []
-
-    def buildLZAVersion(self):
-        logg.warn("no lza builder implemented")
-
     @classmethod
-    def get_default_edit_menu_tabs(cls):
-        return "menuglobals()"
-
-    def getDefaultEditTab(self):
-        return "view"
+    def get_sys_filetypes(cls):
+        return []
 
     def getLabel(self, lang=None):
         return self.name

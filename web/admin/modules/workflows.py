@@ -91,7 +91,8 @@ def validate(req, op):
                     addWorkflow(req.params.get("name", ""), req.params.get("description"))
                 elif req.params.get("form_op") == "save_edit":
                     # save workflow values
-                    updateWorkflow(req.params.get("name", ""), req.params.get("description"), req.params.get("orig_name"))
+                    updateWorkflow(req.params.get("name", ""), req.params.get("description"),
+                                   req.params.get("name_attr"), req.params.get("orig_name"))
 
                 wf = getWorkflow(req.params.get("name"))
                 if wf:

@@ -205,6 +205,12 @@
                 <td><textarea tal:content="python:workflow.get('description')" name="description" rows="4" style="width:400px"/><td>
             </tr>
             <tr>
+                <td><tal:block i18n:translate="admin_wf_display_name_attribute">TEXT</tal:block>:</td>
+                <td>
+                    <input tal:attributes="value python:workflow.display_name_attribute" type="text" name="name_attr" maxlenght=64 style="width:400px"/>
+                </td>
+            </tr>
+            <tr>
                 <td>&nbsp;</td>
                 <td><small>(<span class="required">*</span> <span i18n:translate="admin_mandatory_info">TEXT</span>)</small></td>
             </tr>

@@ -42,3 +42,22 @@ def test_size(some_file_real):
 
 def test_base_name(some_file_in_subdir):
     assert some_file_in_subdir.base_name == "filename"
+
+
+def test_unlink_after_deletion(session, some_file_real):
+    session.commit()
+    assert some_file_real.exists
+    some_file_real.unlink_after_deletion = True
+    session.delete(some_file_real)
+    session.commit()
+    # unlink_after_deletion is set, file should be gone now
+    assert not some_file_real.exists
+
+
+def test_unlink_after_deletion_default_disabled(session, some_file_real):
+    session.commit()
+    assert some_file_real.exists
+    session.delete(some_file_real)
+    session.commit()
+    # files should not be unlinked by default on object deletion by default, so it must still be there
+    assert some_file_real.exists

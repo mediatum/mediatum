@@ -36,6 +36,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from core import Node
 from schema.schema import existMetaField
 from contenttypes import Container, Directory
+from functools import partial
 
 
 logg = logging.getLogger(__name__)
@@ -114,10 +115,10 @@ def send_rawfile(req, n=None):
             return req.sendFile(f.abspath, f.mimetype)
     return 404
 
-
-def send_thumbnail(req):
+def _send_thumbnail(thumb_type, req):
     nid = splitpath(req.path)[0]
-    for f in q(File).filter_by(nid=nid, filetype=u"thumb"):
+    # XXX: better to use scalar(), but we must ensure that we have no dupes first
+    for f in q(File).filter_by(nid=nid, filetype=thumb_type):
         if os.path.isfile(f.abspath):
             return req.sendFile(f.abspath, f.mimetype)
 
@@ -138,32 +139,8 @@ def send_thumbnail(req):
     return req.sendFile(config.basedir + "/web/img/questionmark.png", "image/png", force=1)
 
 
-def send_thumbnail2(req):
-    n = q(Node).get(splitpath(req.path)[0])
-    if not isinstance(n, Node):
-        return 404
-    for f in n.files:
-        if f.type.startswith("presentat"):
-            if os.path.isfile(f.abspath):
-                return req.sendFile(f.abspath, f.mimetype)
-    # fallback
-    for f in n.files:
-        if f.type == "image":
-            if os.path.isfile(f.abspath):
-                return req.sendFile(f.abspath, f.mimetype)
-
-    # fallback2
-    for p in athana.getFileStorePaths("/img/"):
-        for test in [
-                "default_thumb_%s_%s.*" % (n.type, n.schema),
-                "default_thumb_%s.*" % n.schema,
-                "default_thumb_%s.*" % n.type]:
-            # fps = glob.glob(os.path.join(config.basedir, theme.getImagePath(), "img", test))
-            fps = glob.glob(os.path.join(p, test))
-            if fps:
-                thumb_mimetype, thumb_type = utils.utils.getMimeType(fps[0])
-                return req.sendFile(fps[0], thumb_mimetype, force=1)
-    return 404
+send_thumbnail = partial(_send_thumbnail, u"thumb")
+send_thumbnail2 = partial(_send_thumbnail, u"presentation")
 
 
 def send_doc(req):

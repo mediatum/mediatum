@@ -213,25 +213,29 @@ def some_group(session):
 @fixture
 def some_file(session):
     """Create a File model without creating a real file"""
-    return FileFactory(path=u"testfilename", filetype=u"testfiletype", mimetype=u"testmimetype")
+    node = NodeFactory()
+    return FileFactory(node=node, path=u"testfilename", filetype=u"testfiletype", mimetype=u"testmimetype")
 
 
 @fixture
 def some_file_in_subdir(session):
     """Create a File model with a dir in the path without creating a real file"""
-    return FileFactory(path=u"test/filename", filetype=u"testfiletype", mimetype=u"testmimetype")
+    node = NodeFactory()
+    return FileFactory(node=node, path=u"test/filename", filetype=u"testfiletype", mimetype=u"testmimetype")
 
 
 @yield_fixture
 def some_file_real(some_file):
-    from core import File
     """Create a File model and the associated file on the filesystem.
     File is deleted after the test
     """
     with some_file.open("w") as wf:
         wf.write("test")
-    yield some_file
-    os.unlink(some_file.abspath)
+    try:
+        yield some_file
+    finally:
+        if some_file.exists:
+            os.unlink(some_file.abspath)
 
 
 @fixture

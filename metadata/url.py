@@ -36,7 +36,7 @@ def _replace_vars(node, s):
         if var == "att:id":
             s = s.replace("<" + var + ">", unicode(node.id))
         elif var.startswith("att:"):
-            val = node.get(var[4:])
+            val = node.get_special(var[4:])
             if val == "":
                 val = "____"
             s = s.replace("<" + var + ">", val)
@@ -45,7 +45,7 @@ def _replace_vars(node, s):
         if var == "att:id":
             s = s.replace("[" + var + "]", unicode(node.id))
         elif var.startswith("att:"):
-            val = node.get(var[4:])
+            val = node.get_special(var[4:])
             if val == "":
                 val = "____"
             s = s.replace("[" + var + "]", val)

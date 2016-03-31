@@ -42,6 +42,7 @@ def getContent(req, ids):
     if "globalsort" in req.params:
         c.set("sortfield", req.params["globalsort"])
     collection_sortfield = c.get("sortfield")
+    db.session.commit()
 
     class SortChoice:
 
@@ -50,12 +51,15 @@ def getContent(req, ids):
             self.value = value
 
     sortfields = [SortChoice(t(req, "off"), "")]
-    sorted_schema_count = c.all_children_by_query(q(Node.schema, func.count(Node.schema)).group_by(Node.schema).order_by(func.count(Node.schema).desc()))
+    schemas = (t[0] for t in c.all_children_by_query(q(Node.schema)
+                                                  .filter_by(subnode=False)
+                                                  .group_by(Node.schema)
+                                                  .order_by(func.count(Node.schema).desc())))
 
-    for schema_count in sorted_schema_count:
-        metadatatype = q(Metadatatype).filter_by(name=schema_count[0]).first()
+    for schema in schemas:
+        metadatatype = q(Metadatatype).filter_by(name=schema).one()
         if metadatatype:
-            sort_fields = metadatatype.metafields.filter(Node.a.opts.like("%o%")).all()
+            sort_fields = metadatatype.metafields.filter(Node.a.opts.like(u"%o%")).all()
             if sort_fields:
                 for sortfield in sort_fields:
                     sortfields += [SortChoice(sortfield.getLabel(), sortfield.name)]

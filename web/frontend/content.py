@@ -323,7 +323,8 @@ class ContentList(Content):
                 self.sortfields[i] = req.args[key]
 
         if not self.sortfields:
-            self.sortfields[0] = u"-node.id"
+            default_sortfield = self.collection.get(u"sortfield")
+            self.sortfields[0] = default_sortfield if default_sortfield else u"-node.id"
 
         self.liststyle_name = req.args.get("liststyle")
 

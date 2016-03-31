@@ -68,7 +68,7 @@ class WorkflowStep_Upload(WorkflowStep):
                     if hasattr(file, "filename") and file.filename:
                         file = fileutils.importFile(file.filename, file.tempname)
                         node.files.append(file)
-                        node.set("name", orig_filename)
+                        node.name = orig_filename
                         if hasattr(node, "event_files_changed"):
                             try:
                                 node.event_files_changed()

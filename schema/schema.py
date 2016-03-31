@@ -712,8 +712,8 @@ class Metafield(Node):
         return self.get("label")
 
     @label.setter
-    def set_label(self):
-        self.set("label")
+    def label(self, value):
+        self.set("label", value)
 
     def getLabel(self):
         warn("use Metafield.label instead", DeprecationWarning)

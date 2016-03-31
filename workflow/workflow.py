@@ -61,7 +61,7 @@ def addWorkflow(name, description):
     db.session.commit()
 
 
-def updateWorkflow(name, description, origname="", writeaccess=""):
+def updateWorkflow(name, description, nameattribute="", origname="", writeaccess=""):
     if origname == "":
         node = q(Workflows).one()
         if node.children.filter_by(name=name).scalar() is None:
@@ -72,6 +72,7 @@ def updateWorkflow(name, description, origname="", writeaccess=""):
         w.name = name
         db.session.commit()
     w.set("description", description)
+    w.display_name_attribute = nameattribute
 
     # TODO: is this part necessary?
     if not writeaccess:
@@ -335,6 +336,14 @@ class Workflow(Node):
     def isSystemType(node):
         return 1
 
+    @property
+    def display_name_attribute(self):
+        return self.get("display_name_attribute")
+
+    @display_name_attribute.setter
+    def display_name_attribute(self, value):
+        self.set("display_name_attribute", value)
+
     def getLanguages(node):
         if node.get('languages') != '':
             return node.get('languages').split(';')
@@ -494,9 +503,16 @@ class WorkflowStep(Node):
         if not self.has_write_access():
             return '<i>' + t(lang(req), "permission_denied") + '</i>'
         c = []
+        display_name_attr = self.parents[0].display_name_attribute
+        i = 0
         for item in self.children:
             c.append({"id": ustr(item.id), "creationtime": date.format_date(
-                date.parse_date(item.get('creationtime')), 'dd.mm.yyyy HH:MM:SS'), "name": item.name})
+                date.parse_date(item.get('creationtime')), 'dd.mm.yyyy HH:MM:SS')})
+            if display_name_attr:
+                c[i]["name"] = item.get(display_name_attr)
+            else:
+                c[i]["name"] = item.name
+            i += 1
         c.sort(lambda x, y: cmp(x['name'], y['name']))
         return req.getTAL("workflow/workflow.html", {"children": c, "workflow": self.parents[
                           0], "step": self, "nodelink": "/mask?id={}&obj=".format(self.id), 'currentlang': lang(req)}, macro="workflow_show")

@@ -184,7 +184,6 @@ def getContent(req, ids):
                                     node.set("creationtime",  unicode(time.strftime('%Y-%m-%dT%H:%M:%S',
                                                                                     time.localtime(time.time()))))
 
-                                    db.session.commit()
                                     # clones to a file with random name
                                     cloned_file = importFileRandom(f.abspath)
                                     node.files.append(cloned_file)
@@ -192,7 +191,6 @@ def getContent(req, ids):
                                         node.event_files_changed()
                                     newnodes.append(node.id)
                                     basenodefiles_processed.append(f)
-                                    db.session.commit()
 
                                     logg.info("%s created new node id=%s (name=%s, type=%s) by uploading file %s, "
                                     "node is child of base node id=%s (name=%s, type=%s)", user.login_name, node.id, node.name, node.type, filename,
@@ -215,6 +213,7 @@ def getContent(req, ids):
                     scheme_type[mime[1]].append(scheme)
                     # break
 
+            db.session.commit()
             # standard file
             content = req.getTAL('web/edit/modules/upload.html', {'files': [filename], 'schemes': scheme_type}, macro="uploadfileok")
 

@@ -31,11 +31,10 @@ class DateTime:
         self.hour = hour
         self.minute = minute
         self.second = second
-        self.has_year = year > 0
-        self.has_month = month > 0
-        self.has_day = day > 0
+        self.has_year = year
+        self.has_month = month
+        self.has_day = day
         self.has_time = hour or minute or second
-
         self.has_hour = hour
         self.has_minute = minute
         self.has_second = second

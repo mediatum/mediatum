@@ -246,7 +246,7 @@ class Data(Node):
                 field_type = fd['field_type']
                 if metafield_type in ['date', 'url', 'hlist']:
                     exception_count[metafield_type] = exception_count.setdefault(metafield_type, 0) + 1
-                    value = node.get(node_attribute)
+                    value = node.get_special(node_attribute)
                     try:
                         value = fd['metadatatype'].getFormatedValue(fd['element'], node, language=language, mask=mask)[1]
                     except:
@@ -266,7 +266,7 @@ class Data(Node):
                                                                          language=language,
                                                                          mask=mask, use_label=use_label)
                 else:
-                    value = node.get(node_attribute)
+                    value = node.get_special(node_attribute)
                     metadatatype = fd['metadatatype']
 
                     if hasattr(metadatatype, "language_snipper"):
@@ -282,7 +282,7 @@ class Data(Node):
                             if var == "att:id":
                                 value = value.replace("&lt;" + var + "&gt;", unicode(node.id))
                             elif var.startswith("att:"):
-                                val = node.get(var[4:])
+                                val = node.get_special(var[4:])
                                 if val == "":
                                     val = "____"
 
@@ -295,7 +295,7 @@ class Data(Node):
                             if var == "att:id":
                                 value = value.replace("<" + var + ">", unicode(node.id))
                             elif var.startswith("att:"):
-                                val = node.get(var[4:])
+                                val = node.get_special(var[4:])
                                 if val == "":
                                     val = "____"
 

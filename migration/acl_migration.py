@@ -196,7 +196,7 @@ def convert_nid_to_rulestr(nid_to_rulestr):
     return nid_to_access_rules
 
 
-def migrate_rules(ruletypes=["write", "read", "data"]):
+def migrate_rules(ruletypes=["read", "write", "data"]):
     """
     WARNING: This function creates db objects that may trigger unwanted permission update functions on session flushing.
     Disable database triggers (see `disabled_triggers`) in migration scripts when using this function!
@@ -219,9 +219,14 @@ def migrate_rules(ruletypes=["write", "read", "data"]):
 def set_home_dir_permissions():
     users_with_home_dir = db.query(User).filter(User.home_dir_id != None)
     for user in users_with_home_dir:
-        rule = AccessRule(group_ids=[user.get_or_add_private_group().id])
-        assocs = [NodeToAccessRule(ruletype=r, rule=rule) for r in (u"read", u"write", u"data")]
-        user.home_dir.access_rule_assocs.extend(assocs)
+        private_group = user.get_or_add_private_group()
+        db.session.flush()
+        assert private_group.id
+        rule = AccessRule(group_ids=[private_group.id])
+
+        for ruletype in (u"read", u"write", u"data"):
+            special_access_ruleset = user.home_dir.get_or_add_private_access_ruleset(ruletype)
+            special_access_ruleset.rule_assocs.append(AccessRulesetToRule(rule=rule))
 
 
 def migrate_access_entries():

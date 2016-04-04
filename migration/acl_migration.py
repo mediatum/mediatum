@@ -391,6 +391,7 @@ class SymbolicExprToAccessRuleConverter(object):
             return self._fake_groupid(username)
         group = user.get_or_add_private_group()
         db.session.flush()
+        assert group.id
         return group.id
 
     def _fake_groupid(self, name):
@@ -408,6 +409,7 @@ class SymbolicExprToAccessRuleConverter(object):
             logg.debug("group %s not found", groupname)
             self.missing_groups[acl_cond] = groupname
             return self._fake_groupid(groupname)
+        assert group.id
         return group.id
 
     def rule_model_from_acl_cond(self, acl_cond):

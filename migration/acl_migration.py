@@ -179,6 +179,7 @@ def save_node_to_special_rules(nid_to_special_rules, ruletype):
         ruleset_assoc = _create_private_ruleset_assoc_for_nid(nid, ruletype)
         db.session.add(ruleset_assoc)
         rs = ruleset_assoc.ruleset
+        assert rules_with_flags, "tried to save a special ruleset with no rules"
         for rule, (invert, blocking) in rules_with_flags:
             rs.rule_assocs.append(AccessRulesetToRule(rule=rule, invert=invert, blocking=blocking))
 
@@ -210,7 +211,7 @@ def migrate_rules(ruletypes=["read", "write", "data"]):
 
         save_node_to_ruleset_mappings(nid_to_rulesets, ruletype)
         db.session.flush()
-        save_node_to_special_rules(nid_to_special_rules, ruletype)
+        save_node_to_special_rules({k: v for k, v in iteritems(nid_to_special_rules) if v}, ruletype)
         db.session.flush()
         create_rulemappings_stmt = sql.select([mediatumfunc.create_node_rulemappings_from_rulesets(ruletype)])
         db.session.execute(create_rulemappings_stmt)
@@ -225,7 +226,7 @@ def set_home_dir_permissions():
         rule = AccessRule(group_ids=[private_group.id])
 
         for ruletype in (u"read", u"write", u"data"):
-            special_access_ruleset = user.home_dir.get_or_add_private_access_ruleset(ruletype)
+            special_access_ruleset = user.home_dir.get_or_add_special_access_ruleset(ruletype)
             special_access_ruleset.rule_assocs.append(AccessRulesetToRule(rule=rule))
 
 

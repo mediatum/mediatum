@@ -365,7 +365,7 @@ def test_migrate_rules(session, import_node_with_ruleset, ruleset, users_and_gro
 
     node = session.query(Node).get(import_node.id)
     access_rules = [ra.rule for ra in node.access_rule_assocs]
-    private_access_ruleset = node.get_or_add_private_access_ruleset(u"read")
+    private_access_ruleset = node.get_or_add_special_access_ruleset(u"read")
     assert len(private_access_ruleset.rule_assocs) == 1
     assert private_access_ruleset.rule_assocs[0].rule in access_rules
     assert node.access_ruleset_assocs.filter_by(ruleset_name=ruleset.name, ruletype=u"read").scalar()

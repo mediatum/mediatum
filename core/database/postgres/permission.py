@@ -15,7 +15,7 @@ from sqlalchemy.dialects.postgresql.constraints import ExcludeConstraint
 
 class AccessRule(DeclarativeBase):
     __tablename__ = "access_rule"
-    __versioned__ = {} 
+    __versioned__ = {}
 
     id = integer_pk()
     invert_subnet = C(Boolean, server_default="false", index=True)
@@ -30,7 +30,7 @@ class AccessRule(DeclarativeBase):
 
 class NodeToAccessRule(DeclarativeBase):
     __tablename__ = "node_to_access_rule"
-    __versioned__ = {} 
+    __versioned__ = {}
 
     nid = C(FK(Node.id, ondelete="CASCADE"), primary_key=True)
     rule_id = C(FK(AccessRule.id, ondelete="CASCADE"), primary_key=True)
@@ -44,7 +44,7 @@ class NodeToAccessRule(DeclarativeBase):
 
 class AccessRuleset(DeclarativeBase, TimeStamp):
     __tablename__ = "access_ruleset"
-    __versioned__ = {} 
+    __versioned__ = {}
 
     name = C(Unicode, primary_key=True)
     description = C(Unicode, server_default="''")
@@ -52,7 +52,7 @@ class AccessRuleset(DeclarativeBase, TimeStamp):
 
 class AccessRulesetToRule(DeclarativeBase):
     __tablename__ = "access_ruleset_to_rule"
-    __versioned__ = {} 
+    __versioned__ = {}
 
     rule_id = C(FK(AccessRule.id), primary_key=True)
     ruleset_name = C(FK(AccessRuleset.name, ondelete="CASCADE", onupdate="CASCADE"), primary_key=True)
@@ -64,7 +64,7 @@ class AccessRulesetToRule(DeclarativeBase):
 
 class NodeToAccessRuleset(DeclarativeBase):
     __tablename__ = "node_to_access_ruleset"
-    __versioned__ = {} 
+    __versioned__ = {}
 
     nid = C(FK(Node.id, ondelete="CASCADE"), primary_key=True, nullable=False)
     ruleset_name = C(FK(AccessRuleset.name, ondelete="CASCADE", onupdate="CASCADE"), primary_key=True, nullable=False)
@@ -90,7 +90,7 @@ class NodeToAccessRuleset(DeclarativeBase):
 class IPNetworkList(DeclarativeBase):
 
     __tablename__ = "ipnetwork_list"
-    __versioned__ = {} 
+    __versioned__ = {}
 
     name = C(Unicode, primary_key=True)
     description = C(Unicode)
@@ -109,8 +109,8 @@ def _create_private_ruleset_assoc_for_nid(nid, ruletype):
     return ruleset_assoc
 
 
-def get_or_add_private_access_ruleset(self, ruletype):
-    """Gets the private access ruleset for this node for the specified `ruletype`.
+def get_or_add_special_access_ruleset(self, ruletype):
+    """Gets the special access ruleset for this node for the specified `ruletype`.
     Creates the ruleset if it's missing and adds it to the session.
     Always use this method and don't create private rulesets by yourself!
     :rtype: AccessRuleset
@@ -126,8 +126,19 @@ def get_or_add_private_access_ruleset(self, ruletype):
     ruleset = ruleset_assoc.ruleset
     return ruleset
 
+def get_special_access_ruleset(self, ruletype):
+    """Gets the special access ruleset for this node for the specified `ruletype`.
+    Returns None, if node has no special ruleset.
+    Use Node.get_or_add_special_access_ruleset() instead if you want to edit the special ruleset!
+    :rtype: AccessRuleset
+    """
+    ruleset_assoc = self.access_ruleset_assocs.filter_by(private=True, ruletype=ruletype).scalar()
+    if ruleset_assoc is not None:
+        return ruleset_assoc.ruleset
 
-Node.get_or_add_private_access_ruleset = get_or_add_private_access_ruleset
+
+Node.get_or_add_special_access_ruleset = get_or_add_special_access_ruleset
+Node.get_special_access_ruleset = get_special_access_ruleset
 
 
 EffectiveNodeToAccessRuleset = map_function_to_mapped_class(mediatumfunc.effective_access_rulesets, NodeToAccessRuleset, "node_id")

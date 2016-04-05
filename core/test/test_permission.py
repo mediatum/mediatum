@@ -60,25 +60,25 @@ def test_access_rule_inheritance_write(some_node_with_two_parents):
     assert node.access_rule_assocs.count() == 3
 
 
-def test_get_or_add_private_access_ruleset(some_node):
-    read_ruleset = some_node.get_or_add_private_access_ruleset(u"read")
+def test_get_or_add_special_access_ruleset(some_node):
+    read_ruleset = some_node.get_or_add_special_access_ruleset(u"read")
     assert isinstance(read_ruleset, AccessRuleset)
     assert some_node.access_ruleset_assocs.one().private
 
-    write_ruleset = some_node.get_or_add_private_access_ruleset(u"write")
+    write_ruleset = some_node.get_or_add_special_access_ruleset(u"write")
     assert some_node.access_ruleset_assocs.count() == 2
 
-    same_ruleset_again = some_node.get_or_add_private_access_ruleset(u"write")
+    same_ruleset_again = some_node.get_or_add_special_access_ruleset(u"write")
     assert same_ruleset_again is write_ruleset
 
 
 def test_add_another_private_access_ruleset(session, some_node):
-    """Private access rulesets should never be created by hand (use Node.get_or_add_private_access_ruleset).
+    """Private access rulesets should never be created by hand (use Node.get_or_add_special_access_ruleset).
     But, if you actually do that, this will happen some day:
     """
     with raises(IntegrityError):
         # ok
-        some_node.get_or_add_private_access_ruleset(u"read")
+        some_node.get_or_add_special_access_ruleset(u"read")
         # not ok, someone tries to add a second read private ruleset by hand...
         ruleset = AccessRuleset(name=u"epic_fail")
         ruleset_assoc = NodeToAccessRuleset(ruletype=u"read", ruleset=ruleset, private=True)

@@ -58,7 +58,7 @@ def init_child_count_cache():
         child_count_cache.clear()
 
 
-class Portlet:
+class Portlet(object):
 
     def __init__(self):
         self.folded = 0
@@ -128,91 +128,74 @@ def getSearchMask(collection):
 
 class Searchlet(Portlet):
 
-    def __init__(self, collection):
+    def __init__(self, container):
         Portlet.__init__(self)
-        self.name = "searchlet"
-        self.extended = 0
-        self.folded = 0
-        self.collection = collection
+        self.lang = None
+        self.ip = None
+        self.container = container
+        # Searchmasks are defined on collections, so we must find the parent collection if container is not a collection.
+        collection = container.get_collection()
         self.searchmask = getSearchMask(collection)
+        self.searchmode = "simple"
 
         self.values = [None] + [""] * 10
         self.req = None
-        self.initialize()
-
-    def insideCollection(self):
-        return self.collection and not isinstance(self.collection, Collections)
-
-    def initialize(self):
-        # get searchfields for collection
-        self.searchfields = OrderedDict()
+        self.searchmaskitems = OrderedDict()
 
         if self.searchmask:
-            for field in self.searchmask.getChildren().sort_by_orderpos():
-                self.searchfields[field.id] = field.name
-        self.names = [None] * 11
+            for field in self.searchmask.children.order_by("orderpos"):
+                self.searchmaskitems[field.id] = field.name
+        self.searchmaskitem_ids = [None] * 11
 
     def feedback(self, req):
         Portlet.feedback(self, req)
-        self.req = req
+        self.lang = lang(req)
+        self.ip = req.ip
         self.url_params = {k: v for k, v in iteritems(req.args) if k not in ()}
 
-        extendedfields = range(1, 4)
+        searchmode_from_req = req.args.get("searchmode")
+        if searchmode_from_req in ("extended", "extendedsuper"):
+            if self.searchmask is None:
+                raise ValueError("no searchmask defined, extended search cannot be run for container {}".format(self.container.id))
+            self.searchmode = searchmode_from_req
 
-        if "searchmode" in req.params:
-            if req.params["searchmode"] == "simple":
-                self.extended = 0
-            if req.params["searchmode"] == "extendedsuper":
-                self.extended = 2
-                extendedfields = range(1, 11)
-            if req.params["searchmode"] == "extended":
-                self.extended = 1
 
-        for i in extendedfields:
-            if "field" + ustr(i) in req.params:
-                newname = req.params.get("field" + ustr(i), "full")
-                if newname != self.names[i]:
-                    self.values[i] = ""
-                self.names[i] = newname
+        if self.searchmode == "extended":
+            extendedfields = range(1, 4)
+        elif self.searchmode == "extendedsuper":
+            extendedfields = range(1, 11)
+        else:
+            extendedfields = []
 
-            name = self.names[i]
-            if name == "full" or not name:
-                f = None
-            else:
-                node = q(Node).get(name)
-                if node is not None:
-                    f = node.getFirstField()
+        for pos in extendedfields:
+            searchmaskitem_argname = "field" + str(pos)
+            searchmaskitem_id = req.args.get(searchmaskitem_argname, type=int)
+            self.searchmaskitem_ids[pos] = searchmaskitem_id
+
+            searchmaskitem = self.searchmask.children.filter_by(id=searchmaskitem_id).scalar() if searchmaskitem_id else None
+            field = searchmaskitem.children.scalar() if searchmaskitem else None
+
+            if field is not None:
+                value_argname = "query" + str(pos)
+                if field.getFieldtype() == "date":
+                    from_value = req.args.get(value_argname + "-from", "")
+                    to_value = req.args.get(value_argname + "-to", "")
+                    value = from_value + ";" + to_value
                 else:
-                    f = None
+                    value = req.args.get(value_argname)
 
-            if "query" + ustr(i) in req.params or "query" + ustr(i) + "-from" in req.params:
-                if f and f.getFieldtype() == "date":
-                    self.values[i] = req.params.get("query" + ustr(i) + "-from", "") + ";" + req.params.get("query" + ustr(i) + "-to", "")
-                else:
-                    self.values[i] = req.params.get("query" + ustr(i), "")
+                if value:
+                    self.values[pos] = value
 
-        if "query" in req.params:
-            self.values[0] = req.params["query"]
+        # this is the "special" value for simple search
+        if not extendedfields and "query" in req.args:
+            self.values[0] = req.args["query"]
 
     def hasExtendedSearch(self):
         return self.searchmask is not None
 
-    def setExtended(self, value):  # value 0:simple, 1:extended, 2:extendedsuper
-        self.extended = value
-
-    def isSimple(self):
-        return self.extended == 0 or self.searchmask is None
-
-    def isExtended(self):
-        return self.extended > 0 and self.searchmask is not None
-
-    def isExtendedNormal(self):
-        return self.extended == 1 and self.searchmask is not None
-
-    def isExtendedSuper(self):
-        return self.extended == 2 and self.searchmask is not None
-
-    def query(self):
+    @property
+    def simple_search_query(self):
         return self.values[0]
 
     def search_link(self, mode="simple"):
@@ -231,31 +214,43 @@ class Searchlet(Portlet):
     def searchLinkExtendedSuper(self):
         return self.search_link("extendedsuper")
 
-    def searchActiveLeft(self):
-        return not self.extended
+    def isSimple(self):
+        return self.searchmode == "simple"
 
-    def searchActiveRight(self):
-        return self.extended
+    def isExtendedNormal(self):
+        return self.searchmode == "extended"
 
-    def getSearchFields(self):
-        return self.searchfields
+    def isExtendedSuper(self):
+        return self.searchmode == "extendedsuper"
 
-    def getSearchField(self, i, width=174):
+    def getSearchField(self, pos, width=174):
         try:
-            f = None
-            if self.names[i] and self.names[i] != "full":
-                f = q(Node).get(self.names[i]).getFirstField()
+            searchmaskitem_id = self.searchmaskitem_ids[pos]
+            searchmaskitem = self.searchmask.children.filter_by(id=searchmaskitem_id).scalar() if searchmaskitem_id else None
+            field = searchmaskitem.children.scalar() if searchmaskitem else None
             g = None
-            if f is None:  # All Metadata
+            if field is None:  # All Metadata
                 # quick&dirty
-                f = g = getMetadataType("text")
-            return f.getSearchHTML(Context(g, value=self.values[i], width=width, name="query" + unicode(i),
-                                           language=lang(self.req), collection=self.collection,
-                                           user=current_user, ip=self.req.ip))
+                field = getMetadataType("text")
+            return field.getSearchHTML(Context(
+                                            field,
+                                            value=self.values[pos],
+                                            width=width,
+                                            name="query" + unicode(pos),
+                                            language=self.lang,
+                                            container=self.container,
+                                            user=current_user,
+                                            ip=self.ip))
         except:
             # workaround for unknown error
             logg.exception("exception in getSearchField, return empty string")
             return ""
+
+    def searchmaskitem_is_selected(self, pos, searchmaskitem_id):
+        if self.searchmaskitem_ids[pos] == searchmaskitem_id:
+            return "selected"
+        else:
+            None
 
 
 class NavTreeEntry(object):
@@ -335,11 +330,16 @@ class Collectionlet(Portlet):
         Portlet.__init__(self)
         self.name = "collectionlet"
         self.collection = None
-        self.directory = None
+        self.container = None
         self.folded = 0
         self.col_data = None
         self.hassubdir = 0
         self.hide_empty = False
+
+    @property
+    def directory(self):
+        warn("use Collectionlet.container instead", DeprecationWarning)
+        return self.container
 
     def feedback(self, req):
         Portlet.feedback(self, req)
@@ -349,24 +349,24 @@ class Collectionlet(Portlet):
             node = q(Node).get(nid)
             if node is not None:
                 if isinstance(node, Container):
-                    self.directory = node
+                    self.container = node
 
                     if isinstance(node, Collection): # XXX: is Collections also needed here?
                         self.collection = node
                     else:
                         self.collection = node.get_collection()
                 else:
-                    self.directory = node.get_container()
+                    self.container = node.get_container()
                     self.collection = node.get_collection()
 
         if self.collection is None:
             self.collection = q(Collections).one()
-            self.directory = self.collection
+            self.container = self.collection
 
         self.hide_empty = self.collection.get("style_hide_empty") == "1"
 
-        opened = {t[0] for t in self.directory.all_parents.with_entities(Node.id)}
-        opened.add(self.directory.id)
+        opened = {t[0] for t in self.container.all_parents.with_entities(Node.id)}
+        opened.add(self.container.id)
 
         col_data = []
 
@@ -376,10 +376,10 @@ class Collectionlet(Portlet):
 
             small = not isinstance(node, (Collection, Collections))
             e = NavTreeEntry(self, node, indent, small, hide_empty, self.lang)
-            if node.id == self.collection.id or node.id == self.directory.id:
+            if node.id == self.collection.id or node.id == self.container.id:
                 e.active = 1
             m.append(e)
-            if node.id in (self.directory.id, self.collection.id) or node.id in opened or e.defaultopen:
+            if node.id in (self.container.id, self.collection.id) or node.id in opened or e.defaultopen:
                 e.folded = 0
                 for c in node.container_children.order_by(Node.orderpos).prefetch_attrs():
                     f(m, c, indent + 1, c.get("style_hide_empty") == "1")
@@ -392,19 +392,7 @@ class Collectionlet(Portlet):
         return self.col_data
 
 
-class CollectionMapping:
-
-    def __init__(self):
-        self.searchmap = {}
-        self.browsemap = {}
-
-    def getSearch(self, collection):
-        if collection.id not in self.searchmap:
-            self.searchmap[collection.id] = Searchlet(collection)
-        return self.searchmap[collection.id]
-
-
-class UserLinks:
+class UserLinks(object):
 
     def __init__(self, user, area="", host=""):
         self.user = user
@@ -468,14 +456,13 @@ class UserLinks:
         return build_url_from_path_and_params(self.path, params)
 
 
-class NavigationFrame:
+class NavigationFrame(object):
 
     def __init__(self):
-        self.cmap = CollectionMapping()
         self.collection_portlet = Collectionlet()
 
     def feedback(self, req):
-        user = users.getUserFromRequest(req)
+        user = current_user
 
         host = req.get_header("HOST")
         userlinks = UserLinks(user, area=req.session.get("area"), host=host)
@@ -487,11 +474,10 @@ class NavigationFrame:
         # collection
         collection_portlet = self.collection_portlet
         collection_portlet.feedback(req)
-        col_selected = collection_portlet.collection
         navigation["collection"] = collection_portlet
 
         # search
-        search_portlet = self.cmap.getSearch(col_selected)
+        search_portlet = Searchlet(collection_portlet.container)
         search_portlet.feedback(req)
         navigation["search"] = search_portlet
 

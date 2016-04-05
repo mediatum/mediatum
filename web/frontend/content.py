@@ -777,8 +777,19 @@ class ContentArea(Content):
         content = None
         if req.args.get("query", "").strip():
             content = simple_search(req)
-        elif req.args.get("query1", "").strip():
-            content = extended_search(req)
+        else:
+            searchmode = req.args.get("searchmode")
+
+            if searchmode in ("extended", "extendedsuper"):
+                if searchmode == "extended":
+                    field_range = xrange(1,4)
+                elif searchmode == "extendedsuper":
+                    field_range = xrange(1,11)
+
+                for ii in field_range:
+                    if req.args.get("query" + str(ii), "").strip():
+                        content = extended_search(req)
+                        break
 
         if content is None:
             self.content = mkContentNode(req)

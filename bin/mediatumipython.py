@@ -293,8 +293,7 @@ def format_access_rule_assoc(ra):
     else:
         group_names_or_ids = []
 
-    return u"{}{}{} groups:{} {} subnets:{} {} dateranges:{} {}".format(inherited_label(ra.inherited),
-                                                                      inversion_label(ra.invert), blocking_label(ra.blocking),
+    return u"{}{} groups:{} {} subnets:{} {} dateranges:{} {}".format(inversion_label(ra.invert), blocking_label(ra.blocking),
                                                                       inversion_label(r.invert_group), ", ".join(group_names_or_ids) or "-",
                                                                       inversion_label(r.invert_subnet), r.subnets or "-",
                                                                       inversion_label(r.invert_date), r.dateranges or "-")
@@ -322,14 +321,18 @@ def make_info_producer_access_rules(ruletype):
             return [a for a in assocs if _f(a)]
 
         remaining_rule_assocs = assoc_filter(rule_assocs, rule_assocs_in_rulesets)
+        special_ruleset = node.get_special_access_ruleset(ruletype)
+        special_rule_assocs = special_ruleset.rule_assocs if special_ruleset else []
 
         return chain(
-            [u"Rulesets:"],
+            [u"Rulesets:"] if own_ruleset_assocs or inherited_ruleset_assocs else [""],
             ("\t" + format_access_ruleset_assoc(rs, inherited=False)
              for rs in own_ruleset_assocs),
             ("\t" + format_access_ruleset_assoc(rs, inherited=True)
              for rs in inherited_ruleset_assocs),
-            [u"", u"Additional Rules:"] if remaining_rule_assocs else [""],
+            [u"Special Rules:"] if special_rule_assocs else [""],
+            ("\t" + format_access_rule_assoc(r) for r in special_rule_assocs),
+            [u"", u"RULES NOT IN A RULESET (INVALID!)"] if remaining_rule_assocs else [""],
             ("\t" + format_access_rule_assoc(r) for r in remaining_rule_assocs)
         )
 
@@ -520,6 +523,16 @@ class MediatumMagics(Magics):
         rule = AccessRule()
         assoc = NodeToAccessRule(rule=rule, ruletype=args.ruletype, invert=args.invert, blocking=args.blocking)
         cnode.access_ruleset_assocs.append(assoc)
+
+    @needs_init("basic")
+    @magic_arguments()
+    @argument("ruleset_name")
+    @line_magic
+    def ruleset(self, line):
+        args = parse_argstring(self.ruleset, line)
+        ars = q(AccessRuleset).get(args.ruleset_name)
+        for ra in ars.rule_assocs:
+            print(format_access_rule_assoc(ra))
 
     @needs_init("basic")
     @magic_arguments()

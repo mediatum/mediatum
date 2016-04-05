@@ -73,7 +73,7 @@ def test_get_or_add_special_access_ruleset(some_node):
 
 
 def test_add_another_private_access_ruleset(session, some_node):
-    """Private access rulesets should never be created by hand (use Node.get_or_add_special_access_ruleset).
+    """Private ("special") access rulesets should never be created by hand (use Node.get_or_add_special_access_ruleset).
     But, if you actually do that, this will happen some day:
     """
     with raises(IntegrityError):

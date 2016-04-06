@@ -14,6 +14,7 @@ oaibasename=mediatum repository
 theme=default
 stub_undefined_nodetypes=true
 fail_if_undefined_nodetypes=false
+rehash_legacy_passwords=True
 
 [database]
 host=127.0.0.1

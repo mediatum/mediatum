@@ -29,10 +29,16 @@ def check_user_password(user, password):
     return user.password_hash == b64encode(scrypt.hash(password.encode("utf8"), str(user.salt)))
 
 
-def create_password_hash(password):
-    salt = generate_salt()
+def create_password_hash(password, salt=None):
+    if not salt:
+        salt = generate_salt()
     password_hash = b64encode(scrypt.hash(password.encode("utf8"), salt))
     return (password_hash, salt)
+
+
+def create_md5_hash(password):
+    """This is for legacy password checks only, don't use it for new passwords!"""
+    return hashlib.md5(password.encode("utf8")).hexdigest()
 
 
 def get_configured_authenticator_order():
@@ -89,16 +95,34 @@ class InternalAuthenticator(Authenticator):
             .join(AuthenticatorInfo).filter_by(auth_type=InternalAuthenticator.auth_type, name=self.name).scalar()
         )
 
+        def rehash_legacy_password(password):
+            if config.get("config.rehash_legacy_passwords", "true").lower() == "false":
+                return
+            try:
+                user.change_password(password)
+                db.session.commit()
+            except:
+                logg.exception("cannot rehash legacy password for user", user.id)
+            else:
+                logg.info("rehashed legacy password for user '%s'", user.id)
+                return True
+
         if user is not None:
             if user.salt:
+                # new password hash
                 if check_user_password(user, password):
                     return user
+                # check legacy md5 hash that was hashed again
+                if check_user_password(user, create_md5_hash(password)):
+                    rehash_legacy_password(password)
+                    return user
             else:
-                if user.password_hash == hashlib.md5(password).hexdigest():
-                    # rehash password
-                    user.change_password(password)
-                    logg.info("rehashed password for user '%s'", user.login_name)
-                    db.session.commit()
+                # check legacy md5 hash directly
+                if user.password_hash == create_md5_hash(password):
+                    rehashed = rehash_legacy_password(password)
+                    # not rehashing md5 is NOT ok, let's warn...
+                    if not rehashed:
+                        logg.warn("password rehashing failed or disabled in config, you really should rehash insecure md5 hashes!")
                     return user
 
     def change_user_password(self, user, old_password, new_password, request):

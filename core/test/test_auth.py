@@ -6,10 +6,16 @@
 from pytest import raises, fixture, yield_fixture
 from mock import MagicMock
 import core.auth
-from core.auth import PasswordsDoNotMatch, change_user_password, PasswordChangeNotAllowed, Authenticator
+from core.auth import PasswordsDoNotMatch, change_user_password, PasswordChangeNotAllowed, Authenticator, create_password_hash,\
+    check_user_password
+from munch import Munch
 
 
 FAKE_AUTHENTICATOR_KEY = (u"fake", u"fakename")
+
+TEST_PASSWORD = u"täst"
+TEST_SALT = "salt"
+TEST_HASH = "/j2XlL3HyHsJrQ6PDyzYqY+Xqd3XnULSSIzd7N2hPNpWS8pXPH9mlkHhl4fzQtSMSKJifjdayh8MJ0Ltv+irJQ=="
 
 class FakeAuthenticator(Authenticator):
     auth_type = FAKE_AUTHENTICATOR_KEY[0]
@@ -19,7 +25,7 @@ class FakeAuthenticator(Authenticator):
 def fake_authenticator():
     authenticator = FakeAuthenticator(FAKE_AUTHENTICATOR_KEY[1])
     return authenticator
-        
+
 
 @fixture
 def auth_order(monkeypatch):
@@ -27,6 +33,18 @@ def auth_order(monkeypatch):
     order_str = u",".join(u"{}|{}".format(*a) for a in auth_order)
     monkeypatch.setattr("core.auth.config", {u"auth.authenticator_order": order_str})
     return auth_order
+
+
+def test_create_password_hash():
+    hashed_pw, salt = create_password_hash(TEST_PASSWORD, TEST_SALT)
+    assert salt == TEST_SALT
+    assert hashed_pw == TEST_HASH
+
+
+def test_check_user_password():
+    user = Munch(salt=TEST_SALT, password_hash=TEST_HASH)
+    pass_ok = check_user_password(user, TEST_PASSWORD)
+    assert pass_ok
 
 
 def test_change_user_password_do_not_match(some_user):
@@ -75,3 +93,4 @@ def test_get_configured_authenticator_order(auth_order):
     actual_auth_order = core.auth.get_configured_authenticator_order()
     assert actual_auth_order == auth_order
     core.auth.config = normal_conf
+

@@ -5,11 +5,10 @@
 """
 
 import hashlib
-from pytest import fixture, raises
+from pytest import raises
 from mock import MagicMock
-from core.test.asserts import assert_deprecation_warning
-from core import User, db
-from core.auth import InternalAuthenticator, WrongPassword, PasswordChangeNotAllowed, INTERNAL_AUTHENTICATOR_KEY
+from core import db
+from core.auth import WrongPassword, INTERNAL_AUTHENTICATOR_KEY, create_password_hash, create_md5_hash
 from core.database.postgres.user import AuthenticatorInfo
 
 
@@ -27,15 +26,35 @@ def test_authenticate_user_credentials(internal_authenticator, internal_user):
     assert should_be_user == internal_user
 
 
-def test_authenticate_user_credentials_rehash(internal_authenticator, internal_user):
-    internal_user.password_hash = hashlib.md5("insecure").hexdigest()
+def test_authenticate_user_credentials_rehash_plain_md5(internal_authenticator, internal_user):
+    md5_hash = hashlib.md5("insecure").hexdigest()
+    internal_user.password_hash = md5_hash
     internal_user.salt = None
     req = MagicMock()
     should_be_user = internal_authenticator.authenticate_user_credentials(u"testuser", u"insecure", req)
     assert should_be_user == internal_user
+    # salt must be present now
     assert should_be_user.salt is not None
+    # hash must have changed (our secure hashes are longer than md5 ;)
+    assert should_be_user.password_hash != md5_hash
     # try again with rehashed password, should return the same user
     should_be_user_rehashed = internal_authenticator.authenticate_user_credentials(u"testuser", u"insecure", req)
+    assert should_be_user_rehashed == internal_user
+
+
+def test_authenticate_user_credentials_rehash_hashed_md5(internal_authenticator, internal_user):
+    req = MagicMock()
+    md5_hash = create_md5_hash(u"ünsecure")
+    password_hash, salt = create_password_hash(md5_hash)
+    internal_user.password_hash, internal_user.salt = password_hash, salt
+    should_be_user = internal_authenticator.authenticate_user_credentials(u"testuser", u"ünsecure", req)
+    assert should_be_user == internal_user
+    # salt should change (with rare collisions)
+    assert should_be_user.salt != salt
+    # hash must change (same hash type, but collisions should be rare ;)
+    assert should_be_user.password_hash != password_hash
+    # try again with rehashed password, should return the same user
+    should_be_user_rehashed = internal_authenticator.authenticate_user_credentials(u"testuser", u"ünsecure", req)
     assert should_be_user_rehashed == internal_user
 
 

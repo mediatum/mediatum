@@ -85,3 +85,16 @@ def set_admin_group():
     admin_group.is_admin_group = True
     admin_group.is_workflow_editor_group = True
     admin_group.is_editor_group = True
+
+
+def rehash_md5_password_hashes():
+    """Double-hash unsalted md5 hashes for internal users with our new hashing alg scrypt"""
+    for user in q(User).filter_by(authenticator_id=0):
+        if user.password_hash:
+            if not user.salt:
+                user.change_password(user.password_hash)
+                logg.info("rehashing md5 for user: %s", user.id)
+            else:
+                logg.info("user already has a secure password hash: %s", user.id)
+        else:
+            logg.warn("internal user has no password: %s", user.id)

@@ -17,7 +17,7 @@ action is one of:
 * core: basic migrations from import schema to mediatum schema
 * users: migrate users and usergroups in mediatum schema
 * dynusers: migrate users from dynauth plugin
-* user_finish: rename migrated user nodes, migrate user home dirs and set admin user
+* user_finish: rename migrated user nodes, migrate user home dirs and set admin user, rehash passwords
 * versions: migrate node versions
 * permissons: migrate node permissons from import schema to mediatum schema
 * inherited_permissons: calculate inherited permissions
@@ -115,6 +115,7 @@ def user_finish(s):
     user_migration.migrate_home_dirs(1276513)
     user_migration.migrate_special_dirs()
     user_migration.set_admin_group()
+    user_migration.rehash_md5_password_hashes()
 
 
 def versions(s):

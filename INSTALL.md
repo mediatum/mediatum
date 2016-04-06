@@ -6,9 +6,8 @@
 
 ## Nix Installation
 
-(for Linux and MacOS)
-
-This should work on all Linux distributions and MacOS. You need the [Nix package manager](https://nixos.org/nix) (version > 1.8) to use this.
+This should work on all Linux distributions and Mac OS X (Mac untested, but give it a try and report problems!).
+You need the [Nix package manager](https://nixos.org/nix) (version > 1.8) to use this.
 On non-NixOS machines, about 1,5GB disk space is required. On NixOS, about 1GB is required.
 
 
@@ -35,40 +34,47 @@ TODO
 
 ## Manual Installation
 
-(for Windows, TODO)
+You should use Nix instead. We don't support this installation method at the moment.
+If you really want to install everything by yourself, here are some hints:
 
-* install python 2.7, postgresql 9.4
-* optional: ffmpeg, exiftool, graphviz
+* install `python 2.7`, `postgresql 9.5`
+* optional external program for video support: `ffmpeg`
+* optional for image support: `exiftool`, `imagemagick`
+* optional for workflow graphics: `graphviz`
 * Python dependencies can be found in `requirements.txt`
 * create virtualenv for mediaTUM
 * install python deps with `pip install -r requirements.txt` (use virtualenv!)
 
+## MediaTUM Config File
+
+See `mediatum.cfg.template` for default values. Copy this file to `mediatum.cfg` and edit.
+
+Most important sections:
+
+-   \[database\]: database connection
+-   \[paths\]: where to store data
+-   \[host\]: set host name and port
+
+
 ## Database Setup
 
-MediaTUM stores its information in a Postgres database within the schema _mediatum_.
+MediaTUM stores its information in a Postgres database within the schema `mediatum`.
 A database user / role should be created for mediaTUM.
-The database must have the `hstore` extension, usable without schema qualification.
-One way to accomplish this is to set the search path to _mediatum,public_ and create the extension in schema public.
-
+The database must have the `hstore` extension.
 
 Example database setup (using `psql`):
 
     CREATE USER mediatum;
     \password mediatum
     CREATE DATABASE mediatum OWNER mediatum;
-    ALTER DATABASE mediatum SET search_path TO mediatum,public;
     \c mediatum
     CREATE EXTENSION hstore SCHEMA public;
 
-### MediaTUM Config File
+By default, mediaTUM uses the `public` schema to look for extensions.
+If you have created `hstore` in another schema, for example `extensions`, set this in `mediatum.cfg`:
 
-See `mediatum.cfg.template` for default values. Copy this file to `mediatum.cfg` and edit.
-
-Most important sections:
-
-* [database]: database connection
-* [paths]: where to store data
-* [host]: set host name and port
+    [database]
+    extension_schema=extensions
 
 
 ## Database Schema Setup

@@ -1,7 +1,5 @@
 # mediaTUM - Installation
 
-TODO
-
 ## Getting mediaTUM
 
 * Clone the repository: `git clone https://mediatumdev.ub.tum.de/mediatum.git -b postgres`
@@ -42,8 +40,8 @@ TODO
 * install python 2.7, postgresql 9.4
 * optional: ffmpeg, exiftool, graphviz
 * Python dependencies can be found in `requirements.txt`
-* Create virtualenv for mediaTUM
-* Install python deps with `pip install -r requirements.txt` (use virtualenv!)
+* create virtualenv for mediaTUM
+* install python deps with `pip install -r requirements.txt` (use virtualenv!)
 
 ## Database Setup
 

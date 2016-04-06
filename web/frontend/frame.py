@@ -417,7 +417,7 @@ class UserLinks(object):
         guest_user = get_guest_user()
         l = [Link("/logout", t(self.language, "sub_header_logout_title"),
                   t(self.language, "sub_header_logout"), icon="/img/logout.gif")]
-        if self.user is guest_user:
+        if self.user == guest_user:
             if config.get("config.ssh") == "yes":
                 host = config.get("host.name") or self.host
                 l = [Link("https://" + host + "/login", t(self.language, "sub_header_login_title"),

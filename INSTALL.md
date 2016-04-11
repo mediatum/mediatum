@@ -37,7 +37,12 @@ TODO
 You should use Nix instead. We don't support this installation method at the moment.
 If you really want to install everything by yourself, here are some hints:
 
-* install `python 2.7`, `postgresql 9.5` (postgres database server), `libpq-dev` (postgres client library)
+### Pre-Requesits
+libxml2, libxml2-dev, libxslt1-dev, python-dev, postgresql-9.4 (or postgresql-9.5), libpq-dev
+
+### Python
+
+* Install Pre-Requesits from above using a package manager
 * Optional:
   * external program for video support: `ffmpeg`
   * for image support: `exiftool`, `imagemagick`

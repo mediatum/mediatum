@@ -24,8 +24,9 @@ the Free Software Foundation.
 
 ## Quick Test Installation In Three Steps
 
-This should work on all Linux distributions and MacOS. You need the [Nix package manager](https://nixos.org/nix) (version > 1.8) to run this.
-On non-NixOS machines, about 1,5GB disk space is required. On NixOS, about 1GB is required.
+This should work on all Linux distributions and MacOS. You need the [Nix package manager](https://nixos.org/nix)
+(version > 1.8) to run this. On non-NixOS machines, about 1,5GB disk space is required. On NixOS, about 1GB is
+required. In addition, Python 2.7 and postgresql 9.5 are required (see [INSTALL.md](INSTALL.md) for more details).
 
 1. Clone the repository: `git clone https://mediatumdev.ub.tum.de/mediatum.git -b postgres`
 2. Go to the mediatum directory: `cd mediatum`

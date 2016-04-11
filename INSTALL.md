@@ -37,13 +37,14 @@ TODO
 You should use Nix instead. We don't support this installation method at the moment.
 If you really want to install everything by yourself, here are some hints:
 
-* install `python 2.7`, `postgresql 9.5`
+* install `python 2.7`, `postgresql 9.5` (postgres database server), `libpq-dev` (postgres client library)
 * optional external program for video support: `ffmpeg`
 * optional for image support: `exiftool`, `imagemagick`
 * optional for workflow graphics: `graphviz`
 * Python dependencies can be found in `requirements.txt`
-* create virtualenv for mediaTUM
-* install python deps with `pip install -r requirements.txt` (use virtualenv!)
+* create virtualenv for mediaTUM: `virtualenv -p python2.7 venv`+
+* activate virtualenv with `source venv/bin/activate`
+* within the virtualenv, install python deps with `pip install -r requirements.txt`
 
 ## MediaTUM Config File
 

@@ -18,22 +18,27 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from .workflow import WorkflowStep, registerStep
-import core.tree as tree
+from core import UserGroup, db
+from core.permission import get_or_add_access_rule
+q = db.query
 
 
 def register():
-    tree.registerNodeClass("workflowstep-publish", WorkflowStep_Publish)
-    registerStep("workflowstep-publish")
+    registerStep("workflowstep_publish")
 
 
 class WorkflowStep_Publish(WorkflowStep):
 
     def runAction(self, node, op=""):
-        newaccess = []
-        a = node.getAccess("read")
-        if a and not a.startswith("{date >="):
-            for right in a.split(','):
-                if right != "{user workflow}":
-                    newaccess += [right]
-                node.setAccess("read", ",".join(newaccess))
+        ugid = q(UserGroup).filter_by(name=u'_workflow').one().id
+
+        # remove access rule with '_workflow' user group id
+        special_access_ruleset = node.get_special_access_ruleset(ruletype=u'read')
+        workflow_rule = get_or_add_access_rule(group_ids=[ugid])
+
+        for rule_assoc in special_access_ruleset.rule_assocs:
+            if rule_assoc.rule == workflow_rule:
+                db.session.delete(rule_assoc)
+
+        db.session.commit()
         self.forward(node, True)

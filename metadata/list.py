@@ -18,12 +18,19 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import logging
 import os
+import codecs
 from mediatumtal import tal
-import core.tree as tree
 
 from utils.utils import esc
 from core.metatype import Metatype, Context
+from metadata.ilist import count_list_values_for_all_content_children
+from core import Node
+from core import db
+
+q = db.query
+logg = logging.getLogger(__name__)
 
 
 class m_list(Metatype):
@@ -33,20 +40,21 @@ class m_list(Metatype):
         items = {}
         try:
             n = context.collection
-            if n is None:
-                raise tree.NoSuchNodeError()
-            items = n.getAllAttributeValues(context.field.getName(), context.access)
-        except tree.NoSuchNodeError:
+            if not isinstance(n, Node):
+                raise KeyError
+            field_name = context.field.getName()
+            id_attr_val = count_list_values_for_all_content_children(n.id, field_name)
+            items = {pair[0]: pair[1] for pair in id_attr_val}
+        except KeyError:
             None
 
         tempvalues = context.field.getValueList()
-        valuesfiles = context.field.getFiles()
+        valuesfiles = context.field.files.all()
 
         if len(valuesfiles):  # a text file with list values was uploaded
-            if os.path.isfile(valuesfiles[0].retrieveFile()):
-                valuesfile = open(valuesfiles[0].retrieveFile(), 'r')
-                tempvalues = valuesfile.readlines()
-                valuesfile.close()
+            if os.path.isfile(valuesfiles[0].abspath):
+                with codecs.open(valuesfiles[0].abspath, 'r', encoding='utf8') as valuesfile:
+                    tempvalues = valuesfile.readlines()
 
         if len(tempvalues):  # Has the user entered any values?
             if tempvalues[0].find('|') > 0:  # there are values in different languages available
@@ -91,8 +99,9 @@ class m_list(Metatype):
                 elif int(num) == 0:
                     num = ""
                 else:
-                    num = " (" + str(num) + ")"
+                    num = " (" + ustr(num) + ")"
             except:
+                logg.exception("exception in getMaskEditorHTML, using empty string")
                 num = ""
 
             val = esc(val)
@@ -121,25 +130,25 @@ class m_list(Metatype):
                           macro="searchfield",
                           language=context.language)
 
-    def getFormatedValue(self, field, node, language=None, html=1):
-        value = node.get(field.getName()).replace(";", "; ")
+    def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
+        value = node.get(metafield.getName()).replace(";", "; ")
         if html:
             value = esc(value)
-        return (field.getLabel(), value)
+        return (metafield.getLabel(), value)
 
     def format_request_value_for_db(self, field, params, item, language=None):
         value = params.get(item)
         return value.replace("; ", ";")
 
     def getMaskEditorHTML(self, field, metadatatype=None, language=None):
-        value = ""
-        filename = ""
-        multiple_list = ""
+        value = u""
+        filename = u""
+        multiple_list = u""
         try:
             if field:
                 value = field.getValues()
-                if field.id and len(field.getFiles()) > 0:
-                    filename = os.path.basename(field.getFiles()[0].retrieveFile())
+                if field.id and len(field.files) > 0:
+                    filename = os.path.basename(field.files[0].abspath)
                     multiple_list = field.get('multiple')
         except AttributeError:
             value = field

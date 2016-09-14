@@ -23,7 +23,7 @@ from pydot import Node, Edge, Dot
 import core.config as config
 from ..workflow import getWorkflow
 
-logg = logging.getLogger("backend")
+logg = logging.getLogger(__name__)
 
 
 FILE_ENDINGS = {

@@ -23,6 +23,8 @@ import os
 import stat
 import time
 import thread
+import codecs
+from utils.strings import ensure_unicode_returned
 
 
 class _POFile:
@@ -40,19 +42,18 @@ class _POFile:
         self.filedates[filename] = os.stat(filename)[stat.ST_MTIME]
         self.lastchecktime = time.time()
 
-        fi = open(filename, "rb")
-        id = None
-        for line in fi.readlines():
-            if line.startswith("msgid"):
-                id = line[5:].strip()
-                if id[0] == '"' and id[-1] == '"':
-                    id = id[1:-1]
-            elif line.startswith("msgstr"):
-                text = line[6:].strip()
-                if text[0] == '"' and text[-1] == '"':
-                    text = text[1:-1]
-                self.map[id] = text
-        fi.close()
+        with codecs.open(filename, "rb", encoding='utf8') as fi:
+            id = None
+            for line in fi.readlines():
+                if line.startswith("msgid"):
+                    id = line[5:].strip()
+                    if id[0] == '"' and id[-1] == '"':
+                        id = id[1:-1]
+                elif line.startswith("msgstr"):
+                    text = line[6:].strip()
+                    if text[0] == '"' and text[-1] == '"':
+                        text = text[1:-1]
+                    self.map[id] = text
 
     def getTranslation(self, key):
         self.lock.acquire()
@@ -80,9 +81,14 @@ addlangitems = {}
 addlangfiles = []
 
 
+@ensure_unicode_returned(silent=True)
 def translate(key, language=None, request=None):
     if request and not language:
         language = lang(request)
+
+    if not request and not language:
+        from core.transition import request as _request
+        language = lang(_request)
 
     if not language:
         return "?%s?" % key
@@ -130,41 +136,65 @@ def addPoFilepath(filepath=[]):
 
 
 def lang(req):
-    if "change_language" in req.params and req.params["change_language"]:
-        req.session["language"] = req.params["change_language"]
-        return req.session["language"]
-    elif "language" in req.session and req.session["language"]:
-        return req.session["language"]
+    # simple cache, lang won't change in the current request
+    if hasattr(req, "_lang"):
+        return req._lang
+    
+    return set_language(req)
 
-    allowed_languages = config.get("i18n.languages", "en").split(",")
+    
+def set_language(req):
+    language_from_cookie = req.Cookies.get("language")
+    if language_from_cookie:
+        req._lang = language_from_cookie
+        return language_from_cookie
+
+    allowed_languages = config.languages
+    
+    if allowed_languages:
+        language = allowed_languages[0]
+    else:
+        language = "en"
+    
     if "Accept-Language" in req.request_headers:
         languages = req.request_headers["Accept-Language"]
-        for language in languages.split(";"):
-            if language and language in allowed_languages:
-                req.session["language"] = language
-                return language
-    if allowed_languages and allowed_languages[0]:
-        req.session["language"] = allowed_languages[0]
-        return allowed_languages[0]
-    else:
-        return "en"
+        for lang in languages.split(";"):
+            if lang and lang in allowed_languages:
+                language = lang
+                break
+    
+    if language != default_language:
+        req.setCookie("language", language, path="/")
+    
+    req._lang = language
+    return language
 
 
 def switch_language(req, language):
-    allowed_languages = config.get("i18n.languages", "en").split(",")
+    allowed_languages = config.languages
     if language is None and len(allowed_languages) > 0:
         language = allowed_languages[0]
     elif language not in allowed_languages:
         raise "Language %s not configured" % language
-    req.session["language"] = language
+    req.setCookie("language", language, path="/")
 
 
 def t(target, key):
-    if isinstance(target, type("")):
+    if isinstance(target, basestring):
         return translate(key, language=target)
     else:
         return translate(key, request=target)
 
 
+# XXX: cache the default language, we assume that the config doesn't change at runtime
+global default_language
+default_language = None
+
+
 def getDefaultLanguage():
-    return config.get("i18n.languages").split(",")[0].strip()
+    global default_language
+
+    if default_language is None:
+        default_language = config.languages[0]
+
+    return default_language

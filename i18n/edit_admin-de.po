@@ -20,9 +20,6 @@ msgstr "Speichern"
 msgid "edit_admin_noattribute"
 msgstr "Kein solches Attribut für dieses Object"
 
-msgid "edit_clearfromcache"
-msgstr "Knoten aus Cache löschen"
-
 msgid "edit_admin_searchdata"
 msgstr "Suchindex-Daten"
 
@@ -40,3 +37,12 @@ msgstr "Volltext Suche"
 
 msgid "edit_admin_nosearchdata"
 msgstr "- keine Suchdaten vorhanden -"
+
+msgid "edit_system_attrs"
+msgstr "Systemattribute"
+
+msgid "edit_notice_adding_system_attrs"
+msgstr "Wenn der Attributname mit 'system.' beginnt, wird ein Systemattribut hinzugefügt."
+
+msgid "edit_admin_del_attribute"
+msgstr "Attribut löschen"

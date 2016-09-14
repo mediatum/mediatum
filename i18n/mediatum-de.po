@@ -35,6 +35,7 @@ msgid "show in new window"
 msgstr "In neuem Fenster anzeigen"
 
 msgid "main_title_tum"
+
 msgstr "mediaTUM - Der Medienserver der TU München"
 
 msgid "header_slogan_tum"
@@ -42,12 +43,6 @@ msgstr "mediaTUM - Der Medienserver der TU München"
 
 msgid "bib_link_title"
 msgstr "Zum Bibliotheksportal"
-
-msgid "header_shoppingbag_alt"
-msgstr "Merkliste"
-
-msgid "header_shoppingbag_title"
-msgstr "Merkliste anzeigen"
 
 msgid "sub_header_user"
 msgstr "Benutzer"
@@ -66,6 +61,9 @@ msgstr "Zugriff verweigert"
 
 msgid "login_error_1"
 msgstr "Die Anmeldung ist fehlgeschlagen! Benutzername oder Passwort falsch."
+
+msgid "pass_change_info"
+msgstr "Bitte wenden Sie sich an den Support: ${email}"
 
 msgid "login_submit"
 msgstr "Anmelden"
@@ -236,8 +234,14 @@ msgstr "Weniger Felder"
 msgid "search_extendedsuper"
 msgstr "Mehr Felder"
 
-msgid "all_metafields"
+msgid "all_data"
 msgstr "Alle Daten"
+
+msgid "search_for"
+msgstr "Suche nach"
+
+msgid "search_in"
+msgstr "Suche in"
 
 msgid "search_result_header"
 msgstr "Ihr(e) Suchbegriff(e) " ${searchstring} " wurde(n) in folgenden Kollektionen gefunden:"
@@ -263,8 +267,11 @@ msgstr "Zuklappen"
 msgid "unfold"
 msgstr "Aufklappen"
 
-msgid "search_list_title"
-msgstr "Zurück zur Trefferliste"
+msgid "back_to_list_view_start"
+msgstr "Zurück zum Anfang der Trefferliste"
+
+msgid "back"
+msgstr "Zurück"
 
 msgid "search_hit"
 msgstr "Treffer"
@@ -295,7 +302,7 @@ msgid "Document"
 msgstr "Dokumente"
 
 msgid "Collection"
-msgstr "Kollektion (Systemtyp)"
+msgstr "Kollektion"
 
 msgid "User"
 msgstr "Benutzer (Systemtyp)"
@@ -307,7 +314,7 @@ msgid "Mask"
 msgstr "Maske (Systemtyp)"
 
 msgid "Directory"
-msgstr "Verzeichnis (Systemtyp)"
+msgstr "Verzeichnis"
 
 msgid "directory"
 msgstr "Verzeichnis"
@@ -326,18 +333,15 @@ msgstr "Root-Knoten (Systemtyp)"
 
 
 ### views ###
-msgid "view_list_add_shoppingbag"
-msgstr "Objekt zur Merkliste hinzufügen"
-
-msgid "view_lists_add_shoppingbag"
-msgstr "Aufgelistete Objekte in die Merkliste hinzufügen"
-
 msgid "view_list_att_title"
 msgstr "Attachment zu Dokument vorhanden"
 
 ### object views ###
 msgid "image_high_res_title"
 msgstr "Hochaufgelöste Version herunterladen"
+
+msgid "image_available_formats"
+msgstr "Verfügbare Bildformate"
 
 msgid "image_high_res_load"
 msgstr "  Datei wird geladen..."
@@ -353,6 +357,9 @@ msgstr "BibTeX Informationen in neuem Fenster öffnen"
 
 msgid "doc_att_browser"
 msgstr "Attachment-Browser öffnen..."
+
+msgid "image_no_flash_link"
+msgstr "Hier klicken, um das Bild in Originalgröße anzuzeigen (ohne Flash-Zoom). Nutzen Sie diesen Link bei Problemen mit der aktuellen Darstellung."
 
 #########################################
 
@@ -425,145 +432,6 @@ msgstr "Erstelloptionen:"
 msgid "mysql_comment"
 msgstr "Bemerkung:"
 
-
-### shoppingbag popup ###
-msgid "shoppingbag_object_added"
-msgstr "Objekt wurde zur Merkliste hinzugefügt."
-
-msgid "shoppingbag_objects_added"
-msgstr "Objekte wurden zur Merkliste hinzugefügt."
-
-msgid "shoppingbag_object_still_added"
-msgstr "Objekt befindet sich bereits in der Merkliste."
-
-msgid "shoppingbag_objects_still_added"
-msgstr "Objekte befinden sich bereits in der Merkliste."
-
-msgid "popup_shoppingbag_img_title"
-msgstr "Bilder können per Drag&Drop in eine Anwendung (z.B. Powerpoint) durch Ziehen exportiert werden:"
-
-msgid "popup_shoppingbag_doc_title"
-msgstr "Dokumente können direkt geöffnet werden:"
-
-msgid "popup_shoppingbag_media_title"
-msgstr "Multimediadateien können direkt geöffnet werden:"
-
-msgid "popup_shoppingbag_no_items"
-msgstr "Keine Objekte in Ihrer Merkliste vorhanden"
-
-msgid "popup_shoppingbag_delete_title"
-msgstr "Merkliste leeren"
-
-msgid "popup_shoppingbag_delete"
-msgstr "Merkliste leeren"
-
-msgid "popup_shoppingbag_movefiles"
-msgstr "Files werden verschoben..."
-
-msgid "popup_shoppingbag_add_msg"
-msgstr "Objekt wurde hinzugefügt"
-
-msgid "popup_shoppingbag_title"
-msgstr "Merkliste"
-
-msgid "popup_shoppingbag_items_filtered"
-msgstr "Merkliste wurde gefiltert, nicht alle Objekte können angezeigt werden."
-
-msgid "shoppingbag_clear_item"
-msgstr "Objekt aus Merkliste entfernen"
-
-msgid "popup_shoppingbag_object_delete"
-msgstr "Soll die gewählte Merkliste wirklich gelöscht werden?"
-
-msgid "popup_shoppingbag_export"
-msgstr "Export..."
-
-msgid "popup_shoppingbag_metadata"
-msgstr "Metadaten:"
-
-msgid "popup_shoppingbag_imageonly"
-msgstr "Nur Bilder"
-
-msgid "popup_shoppingbag_imagemeta"
-msgstr "Bilder und Metadaten"
-
-msgid "popup_shoppingbag_metaonly"
-msgstr "Nur Metadaten"
-
-msgid "popup_shoppingbag_size"
-msgstr "Größe:"
-
-msgid "popup_shoppingbag_imagesize"
-msgstr "Bildgröße:"
-
-msgid "popup_shoppingbag_or"
-msgstr "oder"
-
-msgid "popup_shoppingbag_maximgsize"
-msgstr "Max. Seitenlänge:"
-
-msgid "popup_shoppingbag_stdsize"
-msgstr "Std. Größe:"
-
-msgid "popup_shoppingbag_format"
-msgstr "Format:"
-
-msgid "popup_shoppingbag_ziptitle"
-msgstr "Als Zip-Datei exportieren"
-
-msgid "popup_shoppingbag_doconly"
-msgstr "Nur Dokumente"
-
-msgid "popup_shoppingbag_docmeta"
-msgstr "Dokumente und Metadaten"
-
-msgid "popup_shoppingbag_mediaonly"
-msgstr "Nur Objekte"
-
-msgid "popup_shoppingbag_mediameta"
-msgstr "Objekte und Metadaten"
-
-msgid "popup_shoppingbag_ownbags"
-msgstr "Eigene Merklisten:"
-
-msgid "popup_shoppingbag_private"
-msgstr "private Merkliste (kann nicht extern geladen werden)"
-
-msgid "popup_shoppingbag_share_bag"
-msgstr "Merkliste öffentlich/privat schalten"
-
-msgid "popup_shoppingbag_delete_bag"
-msgstr "Merkliste löschen"
-
-msgid "popup_shoppingbag_load_bag"
-msgstr "Objekte der Merkliste laden"
-
-msgid "popup_shoppingbag_privateinfo"
-msgstr "private Merkliste"
-
-msgid "popup_shoppingbag_savebag"
-msgstr "Merkliste speichern:"
-
-msgid "popup_shoppingbag_name"
-msgstr "Name:"
-
-msgid "popup_shoppingbag_save"
-msgstr "speichern"
-
-msgid "popup_shoppingbag_loadbag"
-msgstr "Externe Merkliste laden (key):"
-
-msgid "popup_shoppingbag_key"
-msgstr "Schlüssel:"
-
-msgid "popup_shoppingbag_load"
-msgstr "laden"
-
-msgid "popup_shoppingbag_markall"
-msgstr "Alle Objekte markieren"
-
-msgid "popup_shoppingbag_unmarkall"
-msgstr "Auswahl aufheben"
 
 ### popup help###
 msgid "popup_help_title"
@@ -729,15 +597,17 @@ msgstr "Mitteilungen verwalten"
 msgid "tab_identifier"
 msgstr "Objektidentifikator erzeugen"
 
+msgid "liststyle_text"
+msgstr "Listen-Ansicht, nur Text"
 
-msgid "Text-Ansicht"
-msgstr "Text-Ansicht"
+msgid "liststyle_list"
+msgstr "Listen-Ansicht mit Thumbnail"
 
-msgid "Thumbnail-Ansicht"
+msgid "liststyle_thumbnailbig"
+msgstr "Thumbnail-Ansicht (groß)"
+
+msgid "liststyle_thumbnail"
 msgstr "Thumbnail-Ansicht"
-
-msgid "Listen-Ansicht"
-msgstr "Listen-Ansicht"
 
 msgid "full_standard_doc_title"
 msgstr "Default-Ansicht für Dokumente"
@@ -1006,13 +876,7 @@ msgstr "Größe"
 msgid "att_browser_files"
 msgstr "(${c} Dateien)"
 
-msgid "video_plugin_info"
-msgstr "(zum Abspielen ben&ouml;tigen Sie ein Flash-Plugin)"
-
 msgid "video_showvideo"
-msgstr "Video ansehen"
-
-msgid "flash_showvideo"
 msgstr "Video ansehen"
 
 ####################################
@@ -1035,8 +899,8 @@ msgstr "Fehler bei Dateiverarbeitung! Bitte überprüfen Sie die zu bearbeitende
 msgid "searchresult"
 msgstr "Suchresultate"
 
-msgid "If_you_experience_problems_opening_this_document_please_try"
-msgstr "Wenn Sie Schwierigkeiten haben, dieses Dokument zu öffnen, versuchen Sie auch bitte"
+msgid "alternative_pdf_link"
+msgstr "Wenn Sie Schwierigkeiten haben, das Dokument zu öffnen, versuchen Sie auch bitte diesen Link"
 
 msgid "popup_help_header"
 msgstr "Hilfe"
@@ -1279,16 +1143,22 @@ msgid "image_view_big"
 msgstr "Bild-Ansicht"
 
 msgid "document_view_new_version_exist"
-msgstr "Es ist eine ${a_open}neuere Version${a_close} des gewünschten Dokuments verfügbar."
+msgstr "Es ist eine neuere Version des gewünschten Dokuments verfügbar."
 
 msgid "document_view_version_deleted"
-msgstr "Die gewünschte Version des Dokuments wurde gelöscht.<br />Das Dokument wird in der ${a_open}neuesten Version${a_close} angezeigt."
+msgstr "Die gewünschte Version des Dokuments wurde gelöscht.<br />Das Dokument wird in der neuesten Version angezeigt."
 
 msgid "document_view_from"
 msgstr "von"
 
 msgid "document_view_current_version_from"
 msgstr "<b>Angezeigte Version: </b><br/>${version} vom"
+
+msgid "document_view_is_current_version_with_tag_from"
+msgstr "<b>Angezeigte Version: </b><br/>${version} (Aktuelle Version) vom"
+
+msgid "document_view_is_current_version_without_tag_from"
+msgstr "<b>Angezeigte Version: </b><br/>Aktuelle Version vom"
 
 msgid "document_view_other_versions_of_the_document"
 msgstr "<b>Andere Versionen des Dokuments:</b><br/>"
@@ -1326,3 +1196,27 @@ msgstr "Datei:"
 
 msgid "file_size"
 msgstr "Dateigröße:"
+
+msgid "direct_link_current_node"
+msgstr "Dauerhafter Link zum angezeigten Objekt"
+
+msgid "next"
+msgstr "weiter"
+
+msgid "previous"
+msgstr "zurück"
+
+msgid "no_metadata_to_display"
+msgstr "Es gibt für dieses Objekt keine Metadaten, die angezeigt werden können."
+
+msgid "untagged_version"
+msgstr "ohne Versionsnummer"
+
+msgid "current_version"
+msgstr "Aktuelle Version"
+
+msgid "guest"
+msgstr "Gast"
+
+msgid "audio_download_link"
+msgstr "Download"

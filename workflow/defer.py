@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
  mediatum - a multimedia content repository
 
@@ -18,18 +19,34 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-
-import core.tree as tree
+import logging
 import utils.date as date
-import core.schedules as schedules
 from .workflow import WorkflowStep, registerStep
 from core.translation import t, addLabels
+from core import db
+from schema.schema import Metafield
+from core.database.postgres.permission import AccessRulesetToRule
+from psycopg2.extras import DateRange
+import datetime
+from core.permission import get_or_add_access_rule
+
+q = db.query
+
+logg = logging.getLogger(__name__)
 
 
 def register():
-    tree.registerNodeClass("workflowstep-defer", WorkflowStep_Defer)
-    registerStep("workflowstep-defer")
+    #tree.registerNodeClass("workflowstep-defer", WorkflowStep_Defer)
+    registerStep("workflowstep_defer")
     addLabels(WorkflowStep_Defer.getLabels())
+
+
+def get_or_add_defer_daterange_rule(year, month, day):
+    """Gets an access rule that blocks access until the date given by `year`, `month` and `day`.
+    The rule is created if it's missing."""
+    dateranges = set([DateRange(datetime.date(year, month, day), datetime.date(9999, 12, 31), '[)')])
+    rule = get_or_add_access_rule(dateranges=dateranges)
+    return rule
 
 
 class WorkflowStep_Defer(WorkflowStep):
@@ -56,49 +73,45 @@ class WorkflowStep_Defer(WorkflowStep):
                 try:
                     node.set('updatetime', date.format_date(date.parse_date(l_date)))
                     formated_date = date.format_date(date.parse_date(l_date), "dd.mm.yyyy")
-                    for item in self.get('accesstype').split(';'):
-                        node.setAccess(item, "{date >= %s}" % formated_date)
-                    node.getLocalRead()
+                    d = formated_date.split('.')
+                    rule = get_or_add_defer_daterange_rule(int(d[2]), int(d[1]), int(d[0]))
 
-                    if self.get('recipient'):  # if the recipient-email was entered, create a scheduler
-                        attr_dict = {'single_trigger': l_date, 'function': "test_sendmail01",
-                                     'nodelist': list(node.id), 'attr_recipient': self.get('recipient'),
-                                     'attr_subject': "{} ID: {}".format(self.get('subject'),
-                                                                        node.id),
-                                     'attr_body': self.get('body')}
+                    for access_type in self.get('accesstype').split(';'):
+                        special_access_ruleset = node.get_or_add_special_access_ruleset(ruletype=access_type)
+                        special_access_ruleset.rule_assocs.append(AccessRulesetToRule(rule=rule))
 
-                        schedules.create_schedule("WorkflowStep_Defer", attr_dict)
+                    db.session.commit()
 
-                except ValueError as e:
-                    print "Error: %s" % e
+                except ValueError:
+                    logg.exception("exception in workflow step defer, runAction failed")
 
     def show_workflow_node(self, node, req):
         return self.forwardAndShow(node, True, req)
 
     def metaFields(self, lang=None):
         ret = list()
-        field = tree.Node("attrname", "metafield")
+        field = Metafield("attrname")
         field.set("label", t(lang, "attributname"))
         field.set("type", "text")
         ret.append(field)
 
-        field = tree.Node("accesstype", "metafield")
+        field = Metafield("accesstype")
         field.set("label", t(lang, "accesstype"))
         field.set("type", "mlist")
         field.set("valuelist", ";read;write;data")
         ret.append(field)
 
-        field = tree.Node("recipient", "metafield")
+        field = Metafield("recipient")
         field.set("label", t(lang, "admin_wfstep_email_recipient"))
         field.set("type", "text")
         ret.append(field)
 
-        field = tree.Node("subject", "metafield")
+        field = Metafield("subject")
         field.set("label", t(lang, "admin_wfstep_email_subject"))
         field.set("type", "text")
         ret.append(field)
 
-        field = tree.Node("body", "metafield")
+        field = Metafield("body")
         field.set("label", t(lang, "admin_wfstep_email_text"))
         field.set("type", "memo")
         ret.append(field)
@@ -109,7 +122,7 @@ class WorkflowStep_Defer(WorkflowStep):
     def getLabels():
         return {"de":
                 [
-                    ("workflowstep-defer", "Freischaltverz\xc3\xb6gerung"),
+                    ("workflowstep-defer", u"Freischaltverzögerung"),
                     ("attributname", "Attributname"),
                     ("accesstype", "Zugriffsattribut"),
                 ],

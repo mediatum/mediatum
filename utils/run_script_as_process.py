@@ -27,11 +27,12 @@ import subprocess
 
 
 def detach(program, *args):
-
-    if platform.system().lower() in ["windows_test"]:
-        return os.spawnv(os.P_NOWAIT, program, (program,) + args)
-    else:
-        return subprocess.Popen([program] + list(args))
+    """
+    Caution: In contrast to most other code of mediatum,
+    this function does *not* resolve the executable's name
+    with the config "external" section (c.f. utils.process).
+    """
+    return subprocess.Popen([program] + list(args))
 
 
 def run():

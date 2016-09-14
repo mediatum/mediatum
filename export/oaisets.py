@@ -20,10 +20,12 @@
 """
 from collections import OrderedDict
 
-import core.tree as tree
 from utils.utils import esc
 from utils.pathutils import isDescendantOf
 from .oaisetgroup import OAISetGroup as OAISetGroup
+from core import db, config, Node
+
+q = db.query
 
 DEBUG = False
 DICT_GROUPS = {}
@@ -52,34 +54,46 @@ def loadGroups():
 
 
 def func_getNodesForSetSpec(self, setspec, schemata):
-    collection = tree.getNode(setspec)
-    return [n for n in collection.getAllChildren() if n.getSchema() in schemata]
+    collection = q(Node).get(setspec)
+    return [n for n in collection.all_children if n.schema in schemata]
 
 
 def func_getSetSpecsForNode(self, node, schemata):
     res = []
     for setspec in self.d_names.keys():
-        if isDescendantOf(node, tree.getNode(setspec)):
+        if isDescendantOf(node, q(Node).get(setspec)):
             res.append(setspec)
     return res
 
 
+def get_nodes_query_for_container_setspec(self, setspec, schemata):
+
+    container_node = q(Node).get(setspec)
+    nodequery = container_node.all_children
+    nodequery = nodequery.filter(Node.schema.in_(schemata))
+
+    return nodequery
+
+
 def build_container_group():
-    # sets configured with container attributes
-    node_list = tree.NodeList(tree.getNodesByAttribute('oai.setname', '*'))
-    node_list = node_list.sort_by_fields(field="oai.setname")
+    node_list = q(Node).filter(Node.attrs['oai.setname'].isnot(None))
+    node_list = node_list.order_by(Node.attrs['oai.setname'])
     node_list = [node for node in node_list if node.type in ['collection', 'directory']]
     node_list = [node for node in node_list if node.get('oai.setname').strip()]
     node_list = [node for node in node_list if node.get('oai.formats').strip()]
 
     d_names = OrderedDict()
+    d_filters = OrderedDict()
+
     for col_node in node_list:
-        d_names[str(col_node.id)] = esc(col_node.get('oai.setname'))
+        d_names[ustr(col_node.id)] = esc(col_node.get('oai.setname'))
+        d_filters[ustr(col_node.id)] = None  # todo: fix this
 
     g = OAISetGroup(d_names, descr='group of %d container sets' % len(d_names))
 
     g.func_getNodesForSetSpec = func_getNodesForSetSpec
     g.func_getSetSpecsForNode = func_getSetSpecsForNode
+    g.func_get_nodes_query_for_setspec = get_nodes_query_for_container_setspec
     g.sortorder = '040'
     g.group_identifier = 'oaigroup_containers'
     return g
@@ -96,6 +110,21 @@ def getNodes(setspec, schemata):
         if setspec in g.d_names.keys():
             return g.getNodesForSetSpec(setspec, schemata)
     return []
+
+
+def getNodesFilterForSetSpec(setspec, schemata):
+    for g in GROUPS:
+        if setspec in g.d_names.keys():
+            return g.getNodesFilterForSetSpec(setspec, schemata)
+    return []
+
+
+def getNodesQueryForSetSpec(setspec, schemata):
+    for g in GROUPS:
+        if setspec in g.d_names.keys():
+            if g.func_get_nodes_query_for_setspec:
+                return g.func_get_nodes_query_for_setspec(g, setspec, schemata)
+    return None
 
 
 def getSets():
@@ -116,6 +145,20 @@ def getGroup(group_identifier):
     return DICT_GROUPS[group_identifier]
 
 
+def existsSetSpec(setspec):
+    '''
+    :param setspec: string
+    :return: True if setspec is defined, False otherwise
+
+    this function has been introduced to allow to respond early with an oai error
+    '''
+    for g in GROUPS:
+        if setspec in g.d_names.keys():
+            return True
+    return False
+
+
 def init():
-    registerGroupGetterFunc('mediatum', get_set_groups)
-    loadGroups()
+    if config.getboolean("oai.activate", True):
+        registerGroupGetterFunc('mediatum', get_set_groups)
+        loadGroups()

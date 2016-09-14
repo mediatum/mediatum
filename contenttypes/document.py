@@ -17,120 +17,119 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import logging
+
 import core.config as config
-import core.acl as acl
 import os
-from . import default
+import shutil
+import codecs
 from utils.utils import splitfilename, u, OperationException, utf8_decode_escape
-from core.tree import FileNode
+from utils.search import import_node_fulltext
 from schema.schema import VIEW_HIDE_EMPTY
 from core.translation import lang, t
-from core.acl import AccessData
-from core.styles import getContentStyles
 from lib.pdf import parsepdf
 from core.attachment import filebrowser
+from contenttypes.data import Content, prepare_node_data
+from core.transition.postgres import check_type_arg_with_schema
+from core import File
+from core import db
 
-""" document class """
+logg = logging.getLogger(__name__)
 
 
-class Document(default.Default):
-
-    def getTypeAlias(self):
-        return "document"
-
-    def getOriginalTypeName(self):
-        return "document"
-
-    def getCategoryName(self):
-        return "document"
-
-    def _prepareData(self, req, words=""):
-        access = acl.AccessData(req)
-        mask = self.getFullView(lang(req))
-        obj = {'deleted': False, 'access': access}
-        node = self
-        if self.get('deleted') == 'true':
-            node = self.getActiveVersion()
-            obj['deleted'] = True
-        if mask:
-            obj['metadata'] = mask.getViewHTML([node], VIEW_HIDE_EMPTY, lang(req), mask=mask)  # hide empty elements
-        else:
-            obj['metadata'] = []
-        obj['node'] = node
-        obj['path'] = req and req.params.get("path", "") or ""
-        files, sum_size = filebrowser(node, req)
-
-        obj['attachment'] = files
-        obj['sum_size'] = sum_size
-
-        obj['bibtex'] = False
-        if node.getMask("bibtex"):
-            obj['bibtex'] = True
-
-        if node.has_object():
-            obj['canseeoriginal'] = access.hasAccess(node, "data")
-            if node.get('system.origname') == "1":
-                obj['documentlink'] = '/doc/{}/{}'.format(node.id, node.getName())
-                obj['documentdownload'] = '/download/{}/{}'.format(node.id, node.getName())
-            else:
-                obj['documentlink'] = '/doc/{}/{}.pdf'.format(node.id, node.id)
-                obj['documentdownload'] = '/download/{}/{}.pdf'.format(node.id, node.id)
-        else:
-            obj['canseeoriginal'] = False
-        obj['documentthumb'] = '/thumb2/{}'.format(node.id)
-        if "oogle" not in (req.get_header("user-agent") or ""):
-            obj['print_url'] = '/print/{}'.format(node.id)
-        else:
-            # don't confuse search engines with the PDF link
-            obj['print_url'] = None
-            obj['documentdownload'] = None
-        if "style" in req.params.keys():
-            req.session["full_style"] = req.params.get("style", "full_standard")
-        elif "full_style" not in req.session.keys():
-            if "contentarea" in req.session.keys():
-                col = req.session["contentarea"].collection
-                req.session["full_style"] = col.get("style_full")
-            else:
-                req.session["full_style"] = "full_standard"
-
-        obj['parentInformation'] = self.getParentInformation(req)
-
-        obj['style'] = req.session["full_style"]
+def _prepare_document_data(node, req, words=""):
+    obj = prepare_node_data(node, req)
+    if obj["deleted"]:
+        # no more processing needed if this object version has been deleted
+        # rendering has been delegated to current version
         return obj
 
-    """ format big view with standard template """
-    def show_node_big(self, req, template="", macro=""):
-        if template == "":
-            styles = getContentStyles("bigview", contenttype=self.getContentType())
-            if len(styles) >= 1:
-                template = styles[0].getTemplate()
-        return req.getTAL(template, self._prepareData(req), macro)
+    files, sum_size = filebrowser(node, req)
 
-    def isContainer(self):
-        return 0
+    obj['attachment'] = files
+    obj['sum_size'] = sum_size
+    obj['bibtex'] = False
+
+    if node.getMask(u"bibtex"):
+        obj['bibtex'] = True
+
+    if node.has_object():
+        obj['canseeoriginal'] = node.has_data_access()
+        if node.system_attrs.get('origname') == "1":
+            obj['documentlink'] = u'/doc/{}/{}'.format(node.id, node.name)
+            obj['documentdownload'] = u'/download/{}/{}'.format(node.id, node.name)
+        else:
+            obj['documentlink'] = u'/doc/{}/{}.pdf'.format(node.id, node.id)
+            obj['documentdownload'] = u'/download/{}/{}.pdf'.format(node.id, node.id)
+
+            if not node.isActiveVersion():
+                obj['documentlink'] += "?v=" + node.tag
+                obj['documentdownload'] += "?v=" + node.tag
+
+    else:
+        obj['canseeoriginal'] = False
+
+    obj['documentthumb'] = u'/thumb2/{}'.format(node.id)
+    if not node.isActiveVersion():
+        obj['documentthumb'] += "?v=" + node.tag
+        obj['tag'] = node.tag
+
+    # XXX: do we really need this spider filtering?
+    user_agent = req.get_header("user-agent") or ""
+    is_spider = "oogle" in user_agent or "aidu" in user_agent
+    
+    obj['print_url'] = None
+
+    if config.getboolean("config.enable_printing") and not is_spider:
+        obj['print_url'] = u'/print/{}'.format(node.id)
+    
+    if is_spider:
+        # don't confuse search engines with the PDF link
+        obj['documentdownload'] = None
+
+    full_style = req.args.get("style", "full_standard")
+    if full_style:
+        obj['style'] = full_style
+
+    return obj
+
+
+@check_type_arg_with_schema
+class Document(Content):
+
+    @classmethod
+    def get_original_filetype(cls):
+        return "document"
+
+    @classmethod
+    def get_sys_filetypes(cls):
+        return [u"document", u"thumb", u"thumb2", u"presentation", u"fulltext", u"fileinfo"]
+
+    @classmethod
+    def get_default_edit_menu_tabs(cls):
+        return "menulayout(view);menumetadata(metadata;files;admin;lza);menuclasses(classes);menusecurity(acls)"
+
+    def _prepareData(self, req, words=""):
+        return _prepare_document_data(self, req)
+
+    @property
+    def document(self):
+        # XXX: this should be one() instead of first(), but we must enforce this unique constraint in the DB first
+        return self.files.filter_by(filetype=u"document").first()
 
     def has_object(self):
-        for f in self.getFiles():
-            if f.type == "doc" or f.type == "document":
-                return True
-        return False
-
-    def getLabel(self):
-        return self.name
-
-    def getSysFiles(self):
-        return ["doc", "document", "thumb", "thumb2", "presentati", "presentation", "fulltext", "fileinfo"]
+        return self.document is not None
 
     """ postprocess method for object type 'document'. called after object creation """
     def event_files_changed(self):
-        print "Postprocessing node", self.id
+        logg.debug("Postprocessing node %s", self.id)
 
         thumb = 0
         fulltext = 0
         doc = None
         present = 0
         fileinfo = 0
-        for f in self.getFiles():
+        for f in self.files:
             if f.type == "thumb":
                 thumb = 1
             elif f.type.startswith("present"):
@@ -139,26 +138,24 @@ class Document(default.Default):
                 fulltext = 1
             elif f.type == "fileinfo":
                 fileinfo = 1
-            elif f.type == "doc":
-                doc = f
             elif f.type == "document":
                 doc = f
         if not doc:
-            for f in self.getFiles():
+            for f in self.files:
                 if f.type == "thumb":
-                    self.removeFile(f)
+                    self.files.remove(f)
                 elif f.type.startswith("present"):
-                    self.removeFile(f)
+                    self.files.remove(f)
                 elif f.type == "fileinfo":
-                    self.removeFile(f)
+                    self.files.remove(f)
                 elif f.type == "fulltext":
-                    self.removeFile(f)
+                    self.files.remove(f)
 
-        #fetch unwated tags to be omitted
-        unwanted_attrs = self.unwanted_attributes()
+        #fetch unwanted tags to be omitted
+        unwanted_attrs = self.get_unwanted_exif_attributes()
 
         if doc:
-            path, ext = splitfilename(doc.retrieveFile())
+            path, ext = splitfilename(doc.abspath)
 
             if not (thumb and present and fulltext and fileinfo):
                 thumbname = path + ".thumb"
@@ -168,23 +165,28 @@ class Document(default.Default):
                 tempdir = config.get("paths.tempdir")
 
                 try:
-                    pdfdata = parsepdf.parsePDF2(doc.retrieveFile(), tempdir)
+                    pdfdata = parsepdf.parsePDFExternal(doc.abspath, tempdir)
                 except parsepdf.PDFException as ex:
                     raise OperationException(ex.value)
-                fi = open(infoname, "rb")
-                for line in fi.readlines():
-                    i = line.find(':')
-                    if i > 0:
-                        if any(tag in line[0:i].strip().lower() for tag in unwanted_attrs):
+                with codecs.open(infoname, "rb", encoding='utf8') as fi:
+                    for line in fi.readlines():
+                        i = line.find(':')
+                        if i > 0:
+                            if any(tag in line[0:i].strip().lower() for tag in unwanted_attrs):
                                 continue
-                        self.set("pdf_" + line[0:i].strip().lower(), utf8_decode_escape(line[i + 1:].strip()))
-                fi.close()
-                self.addFile(FileNode(name=thumbname, type="thumb", mimetype="image/jpeg"))
-                self.addFile(FileNode(name=thumb2name, type="presentation", mimetype="image/jpeg"))
-                self.addFile(FileNode(name=fulltextname, type="fulltext", mimetype="text/plain"))
-                self.addFile(FileNode(name=infoname, type="fileinfo", mimetype="text/plain"))
+                            self.set("pdf_" + line[0:i].strip().lower(), utf8_decode_escape(line[i + 1:].strip()))
 
-    def unwanted_attributes(self):
+                self.files.append(File(thumbname, "thumb", "image/jpeg"))
+                self.files.append(File(thumb2name, "presentation", "image/jpeg"))
+                self.files.append(File(fulltextname, "fulltext", "text/plain"))
+                self.files.append(File(infoname, "fileinfo", "text/plain"))
+
+        db.session.commit()
+
+        if doc:
+            import_node_fulltext(self, overwrite=True)
+
+    def get_unwanted_exif_attributes(self):
             '''
             Returns a list of unwanted attributes which are not to be extracted from uploaded documents
             @return: list
@@ -215,35 +217,27 @@ class Document(default.Default):
                            "pdf_addnotes": "kommentierbar"},
                 "Standard": {"creationtime": "Erstelldatum",
                              "creator": "Ersteller"}}
+
     """ popup window for actual nodetype """
     def popup_fullsize(self, req):
-        access = AccessData(req)
-        if not access.hasAccess(self, "data") or not access.hasAccess(self, "read"):
+        if not self.has_data_access() or not self.has_read_access():
             req.write(t(req, "permission_denied"))
             return
 
-        for f in self.getFiles():
-            if f.getType() == "doc" or f.getType() == "document":
-                req.sendFile(f.retrieveFile(), f.getMimeType())
-                return
+        document = self.document
+
+        if document is not None:
+            req.sendFile(document.abspath, document.mimetype)
 
     def popup_thumbbig(self, req):
         self.popup_fullsize(req)
 
-    def getEditMenuTabs(self):
-        return "menulayout(view);menumetadata(metadata;files;admin;lza);menuclasses(classes);menusecurity(acls)"
-
-    def getDefaultEditTab(self):
-        return "view"
-
     def processDocument(self, dest):
-        for file in self.getFiles():
-            if file.getType() == "document":
-                filename = file.retrieveFile()
-                if os.sep == '/':
-                    cmd = "cp %s %s" % (filename, dest)
-                    ret = os.system(cmd)
-                else:
-                    cmd = "copy %s %s" % (filename, dest + self.id + ".pdf")
-                    ret = os.system(cmd.replace('/', '\\'))
+        for file in self.files:
+            if file.filetype == "document":
+                filename = file.abspath
+                try:
+                    shutil.copy(filename, dest)
+                except:
+                    logg.exception("while copying file")
         return 1

@@ -20,12 +20,20 @@
 
 import re
 import inspect
+import logging
 
-import core.tree as tree
+
 from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter
 from schema.schema import getMetaType, getMetaFieldTypeNames, getMetaField, getFieldsForMeta, getMetadataType, dateoption, requiredoption,\
-    fieldoption
+    fieldoption, Metadatatype
 from core.translation import lang, t
+from schema.schema import Metafield
+from core import Node
+from core import db
+
+q = db.query
+
+logg = logging.getLogger(__name__)
 
 
 """ list all fields of given metadatatype """
@@ -75,18 +83,18 @@ def showDetailList(req, id):
     # sorting
     if order != "":
         if int(order[0:1]) == 0:
-            metafields.sort(lambda x, y: cmp(x.getOrderPos(), y.getOrderPos()))
+            metafields.sort(lambda x, y: cmp(x.orderpos, y.orderpos))
         elif int(order[0:1]) == 1:
             metafields.sort(lambda x, y: cmp(x.getName().lower(), y.getName().lower()))
         elif int(order[0:1]) == 2:
             metafields.sort(lambda x, y: cmp(x.getLabel().lower(), y.getLabel().lower()))
         elif int(order[0:1]) == 3:
             metafields.sort(
-                lambda x, y: cmp(getMetaFieldTypeNames()[str(x.getFieldtype())], getMetaFieldTypeNames()[str(y.getFieldtype())]))
+                lambda x, y: cmp(getMetaFieldTypeNames()[ustr(x.getFieldtype())], getMetaFieldTypeNames()[ustr(y.getFieldtype())]))
         if int(order[1:]) == 1:
             metafields.reverse()
     else:
-        metafields.sort(lambda x, y: cmp(x.getOrderPos(), y.getOrderPos()))
+        metafields.sort(lambda x, y: cmp(x.orderpos, y.orderpos))
 
     v = getAdminStdVars(req)
     v["filterattrs"] = [("name", "admin_metafield_filter_name"), ("label", "admin_metafield_filter_label")]
@@ -103,7 +111,7 @@ def showDetailList(req, id):
     v["actfilter"] = actfilter
 
     v["actpage"] = req.params.get("actpage")
-    if str(req.params.get("page", "")).isdigit():
+    if ustr(req.params.get("page", "")).isdigit():
         v["actpage"] = req.params.get("page")
 
     return req.getTAL("web/admin/modules/metatype_field.html", v, macro="view_field")
@@ -120,42 +128,46 @@ def FieldDetail(req, pid, id, err=0):
 
     if err == 0 and id == "":
         # new field
-        field = tree.Node("", type="metafield")
+        field = Metafield(u"")
+        db.session.commit()
 
     elif id != "":
         # edit field
-        field = getMetaField(pid, id)
+        field = q(Metadatatype).get(pid).children.filter_by(name=id, type=u'metafield').scalar()
 
     else:
         # error filling values
         _fieldvalue = ""
         if req.params.get('mtype', '') + "_value" in req.params.keys():
-            _fieldvalue = str(req.params[req.params.get('mtype', '') + "_value"])
+            _fieldvalue = ustr(req.params[req.params.get('mtype', '') + "_value"])
 
         if (req.params.get("mname") == ""):
-            field = tree.Node(req.params.get("orig_name"), type="metafield")
+            field = Metafield(req.params.get("orig_name"))
         else:
-            field = tree.Node(req.params.get("mname"), type="metafield")
+            field = Metafield(req.params.get("mname"))
         field.setLabel(req.params.get("mlabel"))
         field.setOrderPos(req.params.get("orderpos"))
         field.setFieldtype(req.params.get("mtype"))
         field.setOption(_option)
         field.setValues(_fieldvalue)
         field.setDescription(req.params.get("mdescription"))
+        db.session.commit()
 
     attr = {}
     metadatatype = getMetaType(pid)
     for t in metadatatype.getDatatypes():
-        node = tree.Node(type=t)
+        content_class = Node.get_class_for_typestring(t)
+        node = content_class(name=u'')
         try:
             attr.update(node.getTechnAttributes())
         except AttributeError:
+            logg.exception("attribute error in FieldDetail, continue")
             continue
 
     metafields = {}
     for fields in getFieldsForMeta(pid):
         if fields.getType() != "union":
-            metafields[fields.getName()] = fields
+            metafields[fields.name] = fields
 
     v = getAdminStdVars(req)
     v["metadatatype"] = metadatatype
@@ -189,9 +201,9 @@ def FieldDetail(req, pid, id, err=0):
         f = getMetadataType(t)
 
         if 'attr_dict' in inspect.getargspec(f.getMaskEditorHTML).args:
-            attr_dict = dict(field.items())
+            attr_dict = dict(field.attrs.items())
             v["adminfields"] .append(f.getMaskEditorHTML(v["field"], metadatatype=metadatatype, language=lang(req), attr_dict=attr_dict))
         else:
             v["adminfields"] .append(f.getMaskEditorHTML(v["field"], metadatatype=metadatatype, language=lang(req)))
-
+    db.session.commit()
     return req.getTAL("web/admin/modules/metatype_field.html", v, macro="modify_field")

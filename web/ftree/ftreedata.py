@@ -16,34 +16,41 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import logging
 
-import core.tree as tree
-from core.acl import AccessData
-from web.frontend.content import getPaths
-from core.translation import translate
+from core.translation import translate, lang
+from core.transition import current_user
+from contenttypes import Collections, Container
+from core import Node
+from core import db
+from web.edit.edit import get_special_dir_type
+from web.edit.edit_common import get_edit_label
+from core.systemtypes import Root
+from utils.pathutils import getPaths
+
+logg = logging.getLogger(__name__)
+q = db.query
 
 
 def getData(req):
-    access = AccessData(req)
     pid = req.params.get("parentId")
     style = req.params.get("style", "edittree")
     ret = []
 
-    for c in tree.getNode(pid).getChildren().sort_by_orderpos():
-        if not access.hasReadAccess(c):
-            continue
+    for c in q(Node).get(pid).children.filter_read_access().order_by(Node.orderpos):
         try:
-            if c.isContainer():
-                cnum = len(c.getContainerChildren())
-                inum = len(c.getContentChildren())
+            if isinstance(c, Container):
+                special_dir_type = get_special_dir_type(c)
+                cnum = c.container_children.count()
+                inum = c.content_children.count()
 
-                label = c.getLabel()
-                title = c.getLabel() + " (" + str(c.id) + ")"
+                label = get_edit_label(c, lang(req))
+                title = label + " (" + unicode(c.id) + ")"
 
                 cls = "folder"
 
                 itemcls = ""
-                if not access.hasWriteAccess(c):
+                if not c.has_write_access():
                     itemcls = "read"
 
                 if c.type == "collection":  # or "collection" in c.type:
@@ -51,52 +58,48 @@ def getData(req):
                 if hasattr(c, 'treeiconclass'):
                     cls = c.treeiconclass()
 
-                if c.getName().startswith(translate('user_trash', request=req)):
+                if special_dir_type == u'trash':
                     cls = "trashicon"
-                elif c.getName().startswith(translate('user_upload', request=req)):
+                elif special_dir_type == u'upload':
                     cls = "uploadicon"
-                elif c.getName().startswith(translate('user_import', request=req)):
-                    cls = "importicon"
-                elif c.getName().startswith(translate('user_faulty', request=req)):
-                    cls = "faultyicon"
-                elif c.getName().startswith(translate('user_directory', request=req)):
+                elif c == current_user.home_dir:
                     cls = "homeicon"
 
                 if style == "edittree":  # standard tree for edit area
                     if inum > 0:
-                        label += " <small>(" + str(inum) + ")</small>"
+                        label += u" <small>({})</small>".format(inum)
 
-                    ret.append('<li class="' + cls + '.gif" id="Node' + c.id + '">')
-                    ret.append('<a href="#" title="' + title + '" id="' + c.id + '" class="' + itemcls + '">' + label + '</a>')
+
+                    ret.append(u'<li class="{}.gif" id="Node{}">'.format(cls, c.id))
+                    ret.append(u'<a href="#" title="{}" id="{}" class="{}">{}</a>'.format(title, c.id, itemcls, label))
 
                     if cnum > 0:
-                        ret.append('<ul><li parentId="' + c.id + '" class="spinner.gif"><a href="#">&nbsp;</a></li></ul>')
-                    ret.append('</li>')
+                        ret.append(u'<ul><li parentId="{}" class="spinner.gif"><a href="#">&nbsp;</a></li></ul>'.format(c.id))
+                    ret.append(u'</li>')
 
                 elif style == "classification":  # style for classification
-                    ret.append('<li class="' + cls + '.gif" id="Node' + c.id + '">')
-                    ret.append('<a href="#" title="' + title + '" id="' + c.id + '" class="' + itemcls +
-                               '">' + label + ' <input type="image" src="/img/ftree/uncheck.gif"/></a>')
+                    ret.append(u'<li class="{}.gif" id="Node{}">'.format(cls, c.id))
+                    ret.append(u'<a href="#" title="{}" id="{}" class="{}">{}<input type="image" src="/img/ftree/uncheck.gif"/></a>'.format(
+                                    title, c.id, itemcls, label))
 
                     if cnum > 0:
-                        ret.append('<ul><li parentId="' + c.id + '" class="spinner.gif"><a href="#">&nbsp;</a></li></ul>')
+                        ret.append(u'<ul><li parentId="{}" class="spinner.gif"><a href="#">&nbsp;</a></li></ul>'.format(c.id))
 
-                    ret.append('</li>')
+                    ret.append(u'</li>')
         except:
-            pass
+            logg.exception("exception in getData")
 
-    req.write("\n".join(ret))
+    req.write(u"\n".join(ret))
     return
 
 
 def getLabel(req):
-    node = tree.getNode(req.params.get("getLabel"))
-    style = req.params.get("style", "edittree")
+    node = q(Node).get(req.params.get("getLabel"))
 
-    inum = len(node.getContentChildren())
+    inum = len(node.content_children)
     label = node.getLabel()
     if inum > 0:
-        label += " <small>(" + str(inum) + ")</small>"
+        label += u" <small>({})</small>".format(inum)
     req.write(label)
     return
 
@@ -104,21 +107,23 @@ def getLabel(req):
 def getPathTo(req):
     # returns path(s) to selected node, 'x' separated, with selected nodes in ()
     # parameters: pathTo=selected Node
-    access = AccessData(req)
-    collectionsid = tree.getRoot('collections').id
-    id = req.params.get("pathTo", collectionsid).split(",")[0]
-    node = tree.getNode(id)
+    collectionsid = q(Collections).one().id
+    # if more than one node selected use the first to get the path to
+    nid = req.args.get("pathTo", collectionsid).split(',')[0]
+    if not nid:
+        raise ValueError("node id must be numeric, got '{}'".format(req.args.get("pathTo")))
+    node = q(Node).get(nid)
 
     items = []
     checked = []
 
-    for path in getPaths(node, access):
+    for path in getPaths(node):
         if node.id not in path and node.isContainer():  # add node if container
             path.append(node)
 
-        checked.append(path[-1].id)  # last item of path is checked
+        checked.append(unicode(path[-1].id))  # last item of path is checked
 
-        if path[0].getParents()[0].id == collectionsid and collectionsid not in items:
+        if path[0].parents[0].id == collectionsid and collectionsid not in items:
             items.append(collectionsid)
 
         for item in path:
@@ -129,13 +134,13 @@ def getPathTo(req):
         if req.params.get("multiselect", "false") == "false":  # if not multiselect use only first path
             break
 
-    if len(items) == 0 or collectionsid in tree.getNode(items[0]).getParents()[0].id:
+    if len(items) == 0 or collectionsid == q(Node).get(items[0]).parents[0].id:
         items = [collectionsid] + items
 
-    items = (",").join(items)
+    items = u",".join([unicode(i) for i in items])
 
     for check in checked:  # set marked items
-        items = items.replace(check, "(%s)" % (check))
+        items = items.replace(check, u'({})'.format(check))
 
     req.write(items)
     return

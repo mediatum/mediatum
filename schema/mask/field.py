@@ -17,14 +17,16 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-from utils.utils import formatLongText, u
-import core.tree as tree
-from core.tree import getNode
+from utils.utils import formatLongText
+from utils.strings import ensure_unicode
 
 from schema.schema import getMetaFieldTypeNames, getMetaFieldTypes, getMetadataType, VIEW_DATA_ONLY, VIEW_SUB_ELEMENT, VIEW_HIDE_EMPTY, VIEW_DATA_EXPORT, dateoption
 from core.translation import lang, translate
 from core.metatype import Metatype
-from lib.iptc.IPTC import get_wanted_iptc_tags, cut_string
+from core import db, Node
+
+q = db.query
+s = db.session
 
 
 class m_field(Metatype):
@@ -49,11 +51,11 @@ class m_field(Metatype):
                     label += '<span class="required">*</span> '
 
         if field.getDescription() != "":
-            description = '<div id="div_description"><a href="#" onclick="openPopup(\'/popup_help?id=' + element.id + \
-                '&maskid=' + field.id + '\', \'\', 400, 250)"><img src="/img/tooltip.png" border="0"/></a></div>'
+            description = '<div id="div_description"><a href="#" onclick="openPopup(\'/popup_help?id=' + ustr(element.id) + \
+                '&maskid=' + ustr(field.id) + '\', \'\', 400, 250)"><img src="/img/tooltip.png" border="0"/></a></div>'
 
         if not sub:
-            if str(element.id) in req.params.get("errorlist", []):
+            if ustr(element.id) in req.params.get("errorlist", []):
                 ret += '<div class="editorerror">'
             else:
                 ret += '<div class="editorrow">'
@@ -61,16 +63,9 @@ class m_field(Metatype):
         ret += label + description
         elementtype = element.get("type")
 
-        val = nodes[0].get(element.getName())
+        val = nodes[0].get_special(element.getName())
         for node in nodes:
-            elementname = node.get(element.getName())
-
-            if element.getName() in get_wanted_iptc_tags():
-                max_len = int(get_wanted_iptc_tags()[element.getName()].split('|')[-1])
-                if not element.getName() in ['iptc_DateCreated', 'TimeCreated']:
-                    if max_len:
-                        val = cut_string(val, max_len)
-
+            elementname = node.get_special(element.getName())
             if elementname == "":
                 val = ""
         valuelist = {}
@@ -80,7 +75,7 @@ class m_field(Metatype):
         containsemptystring = val == ""
 
         for node in nodes:
-            newvalue = node.get(element.getName())
+            newvalue = node.get_special(element.getName())
             containsemptystring = containsemptystring or newvalue == ""
             if newvalue not in valuelist:
                 differentvalues += 1
@@ -114,92 +109,61 @@ class m_field(Metatype):
             ret += '</div>'
         return ret
 
-    """ create view format """
 
-    def getViewHTML(self, field, nodes, flags, language=None, template_from_caller=None, mask=None):
-        element = field.getField()
-        if not element:
-            return []
-        fieldtype = element.get("type")
-        t = getMetadataType(element.get("type"))
-        unit = ''
-        if field.getUnit() != "":
-            unit = ' ' + field.getUnit()
+    def getViewHTML(self, maskitem, nodes, flags, language=None, template_from_caller=None, mask=None):
+        # XXX: this method claims to support multiple nodes. Unfortunately, this is not true at all...
+        first_node = nodes[0]
+        metafield = maskitem.metafield
+        fieldtype = metafield.get("type")
+        metatype = getMetadataType(fieldtype)
 
-        if flags & VIEW_DATA_ONLY:
-            if fieldtype in ['text']:
-                value = u(t.getFormatedValue(element, nodes[0], language, template_from_caller=template_from_caller, mask=mask)[1])
+        if flags & VIEW_DATA_EXPORT:
+            return metatype.getFormattedValue(metafield, maskitem, mask, first_node, language, html=0)
+        
+        value = metatype.getFormattedValue(metafield, maskitem, mask, first_node, language)[1]
+        if not flags & VIEW_DATA_ONLY:
+            if maskitem.getFormat() != "":
+                value = maskitem.getFormat().replace("<value>", value)
             else:
-                value = u(t.getFormatedValue(element, nodes[0], language)[1])
-        else:
-            if field.getFormat() != "":
-                if fieldtype in ['text']:
-                    value = t.getFormatedValue(element, nodes[0], language, template_from_caller=template_from_caller, mask=mask)[1]
-                else:
-                    value = t.getFormatedValue(element, nodes[0], language)[1]
-                value = field.getFormat().replace("<value>", value)
-            else:
-                if fieldtype in ['text']:
-                    if template_from_caller and template_from_caller[0]:  # checking template on test nodes: show full length
-                        fieldvalue = nodes[0].get(element.name)
-                        if fieldvalue.strip():  # field is filled for this node
-                            value = str(t.getFormatedValue(element, nodes[0], language, template_from_caller=fieldvalue, mask=mask)[1])
-                        else:  # use default
-                            value = str(
-                                t.getFormatedValue(element, nodes[0], language, template_from_caller=template_from_caller, mask=mask)[1])
-                    else:  # cut long values
-                        value = str(
-                            formatLongText(
-                                t.getFormatedValue(
-                                    element,
-                                    nodes[0],
-                                    language,
-                                    template_from_caller=template_from_caller,
-                                    mask=mask)[1],
-                                element))
-                elif fieldtype in ['upload']:
-                    # passing mask necessary for fieldtype='upload'
-                    value = str(formatLongText(t.getFormatedValue(element, nodes[0], language, mask=mask)[1], element))
-                else:
-                    value = str(formatLongText(t.getFormatedValue(element, nodes[0], language)[1], element))
+                value = formatLongText(value, metafield)
 
-        if len(value.strip()) > 0:
-            value += str(unit)
+        value = value.strip()
 
-        label = '&nbsp;'
-        if field.getLabel() != "":
-            label = field.getLabel() + ': '
+        if flags & VIEW_HIDE_EMPTY  and not flags & VIEW_DATA_ONLY and not value:
+            # hide empty elements
+            return u''
+
+        unit = maskitem.getUnit()
+
+        if value and unit:
+            value += " " + unit
 
         if flags & VIEW_DATA_ONLY:
             # return a valuelist
-            return [element.getName(), value, element.getLabel(), element.get("type")]
+            return [metafield.name, value, metafield.getLabel(), fieldtype]
 
-        elif flags & VIEW_SUB_ELEMENT:
-            # element in hgroup
+        if flags & VIEW_SUB_ELEMENT:
+            # metafield in hgroup
             # only using value omitting label, delimiter like '&nbsp;' may be inserted in hgroup.getViewHTML
             return value
 
-        elif flags & VIEW_HIDE_EMPTY and value.strip() == "":
-            # hide empty elements
-            return ''
-        elif flags & VIEW_DATA_EXPORT:
-            if fieldtype in ['text']:
-                return str(t.getFormatedValue(element, nodes[0], language, html=0, template_from_caller=template_from_caller, mask=mask)[1])
-            else:
-                return str(t.getFormatedValue(element, nodes[0], language, html=0)[1])
-            # return element.get("type")
+        maskitem_label = maskitem.getLabel()
+        if maskitem_label:
+            label = maskitem_label + u":"
         else:
-            # standard view
-            ret = '<div class="mask_row field-' + element.getName() + '"><div>'
-            ret += '<div class="mask_label">' + label + '</div>\n<div class="mask_value">' + value + '&nbsp;</div>\n'
-            ret += '</div></div>'
-            return ret
+            label = u'&nbsp;'
+
+        # render HTML
+        ret = u'<div class="mask_row field-{}"><div>'.format(metafield.name)
+        ret += u'<div class="mask_label">{}</div>\n<div class="mask_value">{}&nbsp;</div>\n'.format(label, value)
+        ret += u'</div></div>'
+        return ret
 
     def getMetaHTML(self, parent, index, sub=False, language=None, itemlist=[], ptype="", fieldlist={}):
         """ return formated row for metaeditor """
         if len(itemlist) > 0:
             # parent still not existing
-            item = getNode(itemlist[index])
+            item = q(Node).get(itemlist[index])
             pitems = len(itemlist)
         else:
             item = parent.getChildren().sort_by_orderpos()[index]
@@ -215,7 +179,7 @@ class m_field(Metatype):
             f = getMetadataType(field.get("type"))
             fieldstring = f.getEditorHTML(field, width=item.getWidth(), value=item.getDefault(), language=language) + ' ' + item.getUnit()
         else:  # node for export mask
-            attribute = tree.getNode(item.get("attribute"))
+            attribute = q(Node).get(item.get("attribute"))
             field = item
             fieldstring = getMetadataType("mappingfield").getEditorHTML(
                 field, width=item.getWidth(), value=attribute.getName(), language=language) + ' ' + item.getUnit()
@@ -287,26 +251,29 @@ class m_field(Metatype):
 
         metadatatype = req.params.get("metadatatype")
         for t in metadatatype.getDatatypes():
-            node = tree.Node(type=t)
+            content_class = Node.get_class_for_typestring(t)
+            node = content_class(name=u'')
             attr.update(node.getTechnAttributes())
 
         if req.params.get("op", "") == "new":
-            pidnode = tree.getNode(req.params.get("pid"))
+            pidnode = q(Node).get(req.params.get("pid"))
             if hasattr(pidnode, 'getMasktype') and pidnode.getMasktype() in ("vgroup", "hgroup"):
+                # XXX: getAllChildren does not exist anymore, is this dead code?
                 for field in pidnode.getAllChildren():
                     if field.getType().getName() == "maskitem" and field.id != pidnode.id:
                         fields.append(field)
             else:
                 for m in metadatatype.getMasks():
-                    if str(m.id) == str(req.params.get("pid")):
+                    if ustr(m.id) == ustr(req.params.get("pid")):
                         for field in m.getChildren():
                             fields.append(field)
 
         fields.sort(lambda x, y: cmp(x.getOrderPos(), y.getOrderPos()))
         add_values = []
-        val = ""
+        val = u""
         if item.getField():
             val = item.getField().getValues()
+            db.session.commit()
 
         for t in getMetaFieldTypeNames():
             f = getMetadataType(t)
@@ -335,12 +302,13 @@ class m_field(Metatype):
         if pidnode and hasattr(pidnode, 'getMasktype') and pidnode.getMasktype() == "export":
             v["mappings"] = []
             for m in pidnode.getExportMapping():
-                v["mappings"].append(tree.getNode(m))
+                v["mappings"].append(q(Node).get(m))
             return req.getTAL("schema/mask/field.html", v, macro="metaeditor_" + pidnode.getMasktype())
         else:
             return req.getTAL("schema/mask/field.html", v, macro="metaeditor")
 
-    def isContainer(self):
+    @classmethod
+    def isContainer(cls):
         return True
 
     def getName(self):

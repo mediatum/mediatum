@@ -17,142 +17,120 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import hashlib
-import core.tree as tree
-import core.usergroups as usergroups
+from warnings import warn
 import core.config as config
-import core.translation as translation
-from core.users import useroption
+import flask_login
+from core.translation import translate
 
 
-class User(tree.Node):
+class UserMixin(object):
+
+    """Provides legacy methods for user objects.
+    """
+
+    def getName(self):
+        warn("deprecated, use User.display_name or User.login_name instead", DeprecationWarning)
+        return self.display_name or self.login_name
 
     def getGroups(self):
-        groups = []
-        for p in self.getParents():
-            if p.type == "usergroup":
-                groups += [p.getName()]
-        return groups
+        warn("deprecated, use User.groups instead", DeprecationWarning)
+        return self.groups
 
     def getLastName(self):
-        return self.get("lastname")
+        warn("deprecated, use User.lastname instead", DeprecationWarning)
+        return self.lastname
 
     def setLastName(self, value):
-        self.set("lastname", value)
+        warn("deprecated, use User.lastname instead", DeprecationWarning)
+        self.lastname = value
 
     def getFirstName(self):
-        return self.get("firstname")
+        warn("deprecated, use User.firstname instead", DeprecationWarning)
+        return self.firstname
 
     def setFirstName(self, value):
-        self.set("firstname", value)
+        warn("deprecated, use User.firstname instead", DeprecationWarning)
+        self.firstname = value
 
     def getTelephone(self):
-        return self.get("telephone")
+        warn("deprecated, use User.telephone instead", DeprecationWarning)
+        return self.telephone
 
     def setTelephone(self, value):
-        self.set("telephone", value)
+        warn("deprecated, use User.telephone instead", DeprecationWarning)
+        self.telephone = value
 
     def getComment(self):
-        return self.get("comment")
+        warn("deprecated, use User.comment instead", DeprecationWarning)
+        return self.comment
 
     def setComment(self, value):
-        self.set("comment", value)
+        warn("deprecated, use User.comment instead", DeprecationWarning)
+        self.comment = value
 
     def getEmail(self):
-        return self.get("email")
+        warn("deprecated, use User.email instead", DeprecationWarning)
+        return self.email
 
     def setEmail(self, m):
-        return self.set("email", m)
+        warn("deprecated, use User.email instead", DeprecationWarning)
+        self.email = m
 
     def getPassword(self):
-        return self.get("password")
+        raise NotImplementedError("does not work anymore!")
 
     def setPassword(self, p):
-        self.set("password", hashlib.md5(p).hexdigest())
+        warn("deprecated, use User.password instead", DeprecationWarning)
+        raise NotImplementedError("does not work anymore!")
 
     def inGroup(self, id):
-        for group in self.getGroups():
-            if group == id:
-                return True
-        return False
+        warn("deprecated, use User.groups instead", DeprecationWarning)
+        return id in self.group_ids
 
     def getOption(self):
-        return self.get("opts")
+        raise NotImplementedError("obsolete, use User.can_change_password")
 
     def setOption(self, o):
-        return self.set("opts", o)
-
-    def getOptionList(self):
-        retList = {}
-        myoptions = self.getOption()
-        for option in useroption:
-            if option.value in myoptions and option.value != "":
-                retList[option.getName()] = True
-            else:
-                retList[option.getName()] = False
-        return retList
+        raise NotImplementedError("obsolete, use User.can_change_password")
 
     def isGuest(self):
-        return self.getName() == config.get("user.guestuser")
+        warn("deprecated, use User.is_anonymous instead", DeprecationWarning)
+        return self.is_anonymous
 
     def isAdmin(self):
-        return self.inGroup(config.get("user.admingroup", "Administration"))
+        warn("deprecated, use User.is_admin instead", DeprecationWarning)
+        return self.is_admin
 
     def isEditor(self):
-        for group in self.getGroups():
-            if "e" in str(usergroups.getGroup(group).getOption()):
-                return True
-        return False
+        warn("deprecated, use User.is_editor instead", DeprecationWarning)
+        return self.is_editor
 
     def isWorkflowEditor(self):
-        for group in self.getGroups():
-            if "w" in str(usergroups.getGroup(group).getOption()):
-                return True
-        return False
+        warn("deprecated, use User.is_workflow_editor instead", DeprecationWarning)
+        return self.is_workflow_editor
 
     def stdPassword(self):
-        return self.get("password") == hashlib.md5(config.get("user.passwd")).hexdigest()
+        raise NotImplementedError("no standard passwords!")
 
     def resetPassword(self, newPwd):
-        self.set("password", hashlib.md5(newPwd).hexdigest())
-
-    def translate(self, key):
-        return translation.translate(key=key, user=self)
-
-    def isSystemType(self):
-        return 1
+        warn("deprecated, use User.password instead", DeprecationWarning)
 
     def setUserType(self, value):
-        self.usertype = value
+        raise NotImplementedError("obsolete, use User.authenticator")
 
     def getUserType(self):
-        for p in self.getParents():
-            if p.type == "usergroup":
-                continue
-            return p.getName()
-
-        # try:
-        #    print "else", self.usertype
-        #    return self.usertype
-        # except AttributeError:
-        #    print " ->", self.getName()
-        #    for p in self.getParents():
-        #
-        #        print "   p:", p.getName(), p.id, p.type
-        #        if p.type=="usergroup":
-        #            continue
-        #        return p.getName()
+        raise NotImplementedError("obsolete, use User.authenticator")
 
     def setOrganisation(self, value):
+        warn("deprecated, use User.organisation instead", DeprecationWarning)
         self.set("organisation", value)
 
     def getOrganisation(self):
-        return self.get("organisation")
-
-    def allowAdd(self):
-        return 1
+        warn("deprecated, use User.organisation instead", DeprecationWarning)
+        return self.organisation
 
     def canChangePWD(self):
+        raise NotImplementedError("later!")
         if self.isAdmin():
             return 0
         if self.getUserType() == "users":
@@ -161,57 +139,35 @@ class User(tree.Node):
             from core.users import authenticators
             return authenticators[self.getUserType()].canChangePWD()
 
-    def getShoppingBag(self, name=""):
-        ret = []
-        for c in self.getChildren():
-            if c.getContentType() == "shoppingbag":
-                if str(c.id) == str(name) or c.getName() == name:
-                    return [c]
-                else:
-                    ret.append(c)
-        return ret
-
-    def addShoppingBag(self, name, items=[]):
-        sb = tree.Node(name, type="shoppingbag")
-        sb.setItems(items)
-        self.addChild(sb)
-
-    def isDynamicUser(self):
-        """user objects that are not persisted in the database are labeled 'dynamic'"""
-        return False
-
     def getUserID(self):
-        """
-        for compatibility with dynamic users that are not persisted as nodes:
-        those will return a unique identifier for their directory entry
-        nodes should return the node id
-        """
+        warn("deprecated, use User.id instead", DeprecationWarning)
         return self.id
 
 
-class ExternalUser:
+class GuestUser(UserMixin, flask_login.AnonymousUserMixin):
 
-    def getUserType(self):
-        return self.usertype
+    """
+    A Guest user...
+    """
+    _instance = None
 
-    def getUser(self):
-        raise "not implemented"
+    @classmethod
+    def get(cls):
+        if cls._instance is None:
+            cls._instance = cls()
 
-    def authenticate_login(self, username, password):
-        raise "notImplemented"
-
-    def getName(self):
-        return ""
-
-    def allowAdd(self):
-        return 0
-
-    def canChangePWD(self):
-        raise "not implemented"
-
-    def getAdminOperation(self, req, params={}):
-        raise "not implemented"
-
-    def isDynamicUser(self):
-        """user objects that are not persisted in the database are labeled 'dynamic'"""
-        return False
+        return cls._instance
+    
+    @property
+    def display_name(self):
+        return translate("guest")
+    
+    def __init__(self):
+        self.id = None
+        self.is_admin = False
+        self.is_editor = False
+        self.is_workflow_editor = False
+        self.can_change_password = False
+        self.login_name = "guest"
+        self.group_ids = []
+        

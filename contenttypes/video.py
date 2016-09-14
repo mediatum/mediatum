@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
  mediatum - a multimedia content repository
 
@@ -17,198 +18,134 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import core.config as config
-import core.acl as acl
-import os
+import shutil
 import json
 import logging
+import os
+from subprocess import CalledProcessError
+import tempfile
 
+from mediatumtal import tal
+from contenttypes.data import Content, prepare_node_data
+from contenttypes.image import make_thumbnail_image, make_presentation_image
+from core.transition.postgres import check_type_arg_with_schema
+from core import db, File, config
+from core.config import resolve_datadir_path
+from core.translation import t
 from utils.utils import splitfilename
 from utils.date import format_date, make_date
-from core.acl import AccessData
-from core.tree import FileNode
-from contenttypes.image import makeThumbNail, makePresentationFormat
-from core.translation import lang, t
-from core.styles import getContentStyles
-from schema.schema import VIEW_HIDE_EMPTY
-from metadata.upload import getFilelist
-from utils.utils import getMimeType
-
-from . import default
+import utils.process
 
 
-logger = logging.getLogger("backend")
+logg = logging.getLogger(__name__)
 
 
 def getCaptionInfoDict(self):
+    '''
+        function should be reimplemented
+        with the usage of the html5 Track element
+
+        :return: captions dict / .srt format
+    '''
     d = {}
-
-    file_url_list = []
-    file_label_list = []
-    preset_label = ""
-
-    counter = 0
-
-    filelist, filelist2 = getFilelist(self, fieldname='.*captions.*')
-
-    for filenode in filelist2:
-        if filenode.getType() in ["u_other", "u_xml"]:
-            filename = filenode.getName()
-            file_ext = filename.split('.')[-1]
-            if file_ext in ['srt', 'xml']:
-                counter += 1
-                file_url = "/file/%s/%s" % (self.id, filename)
-                file_url_list.append(file_url)
-
-                x = filename[0:-len(file_ext) + 1].split('-')
-                if len(x) > 1 and len(x[-1]):
-                    file_label = x[-1]
-                else:
-                    file_label = "Track %s" % counter
-                file_label_list.append(file_label)
-
-                if filename.find('preset') >= 0:
-                    preset_label = file_label
-
-    if file_url_list:
-        d['file_list'] = ",".join([x.strip() for x in file_url_list])
-        d['label_list'] = ",".join([x.strip() for x in file_label_list])
-        d['preset_label'] = preset_label
     return d
 
 
-class Video(default.Default):
+@check_type_arg_with_schema
+class Video(Content):
 
-    """ video class """
-    def getTypeAlias(self):
-        return "video"
+    @classmethod
+    def get_original_filetype(cls):
+        return u"video"
 
-    def getOriginalTypeName(self):
-        return "original"
+    @classmethod
+    def get_default_edit_menu_tabs(cls):
+        return "menulayout(view);menumetadata(metadata;files;admin;lza);menuclasses(classes);menusecurity(acls)"
 
-    def getCategoryName(self):
-        return "video"
+    @classmethod
+    def get_sys_filetypes(cls):
+        return [u"presentation", u"thumb", u"video"]
 
     def _prepareData(self, req, words=""):
+        obj = prepare_node_data(self, req)
+        if obj["deleted"]:
+            # no more processing needed if this object version has been deleted
+            # rendering has been delegated to current version
+            return obj
 
-        access = acl.AccessData(req)
-        mask = self.getFullView(lang(req))
-
-        obj = {'deleted': False, 'access': access}
-        node = self
-
-        if len(node.getFiles()) == 0:
-            obj['captions_info'] = {}
-            obj['file'] = ''
-            obj['hasFiles'] = False
-            obj['hasVidFiles'] = False
-
-        if len(node.getFiles()) > 0:
-            obj['hasFiles'] = True
-            if len([m for m in [getMimeType(os.path.abspath(f.retrieveFile()))[0].split('/')[0] for f in self.getFiles() if os.path.exists(os.path.abspath(f.retrieveFile()))] if m == 'video'])>0:
-                obj['hasVidFiles'] = True
-            else:
-                obj['hasVidFiles'] = False
-
-        if self.get('deleted') == 'true':
-            node = self.getActiveVersion()
-            obj['deleted'] = True
-        for filenode in node.getFiles():
-            if filenode.getType() in ["original", "video"]:
-                obj["file"] = "/file/%s/%s" % (node.id, filenode.getName())
-
-        if mask:
-            obj['metadata'] = mask.getViewHTML([node], VIEW_HIDE_EMPTY, lang(req), mask=mask)  # hide empty elements
+        # user must have data access for video playback
+        if self.has_data_access():
+            video = self.files.filter_by(filetype=u"video").scalar()
+            obj["video_url"] = u"/file/{}/{}".format(self.id, video.base_name) if video is not None else None
+            if not self.isActiveVersion():
+                obj['video_url'] += "?v=" + self.tag
         else:
-            obj['metadata'] = []
-        obj['node'] = node
-        obj['path'] = req.params.get("path", "")
-        obj['canseeoriginal'] = access.hasAccess(node, "data")
-        obj['parentInformation'] = self.getParentInformation(req)
-
-        return obj
-
-    """ format big view with standard template """
-    def show_node_big(self, req, template="", macro=""):
-        if len([f.retrieveFile() for f in self.getFiles()]) == 0:
-            styles = getContentStyles("bigview", contenttype=self.getContentType())
-            template = styles[0].getTemplate()
-            return req.getTAL(template, self._prepareData(req), macro)
-
-        if template == "":
-            styles = getContentStyles("bigview", contenttype=self.getContentType())
-            if len(styles) >= 1:
-                template = styles[0].getTemplate()
+            obj["video_url"] = None
 
         captions_info = getCaptionInfoDict(self)
-
         if captions_info:
-            logger.info("video: '%s' (%s): captions: dictionary 'captions_info': %s" % (self.name, str(self.id), str(captions_info)))
+            logg.debug("video: '%s' (%s): captions: dictionary 'captions_info': %s" % (self.name, str(self.id), str(captions_info)))
 
-        context = self._prepareData(req)
-        context["captions_info"] = json.dumps(captions_info)
+        obj["captions_info"] = json.dumps(captions_info)
+        return obj
 
-        if len([m for m in [getMimeType(os.path.abspath(f.retrieveFile()))[0].split('/')[0] for f in self.getFiles() if os.path.exists(os.path.abspath(f.retrieveFile()))] if m == 'video'])>0:
-            return req.getTAL(template, context, macro)
-        else:
-            if len([th for th in [os.path.abspath(f.retrieveFile()) for f in self.getFiles()] if th.endswith('thumb2')])>0:
-                return req.getTAL(template, context, macro)
-            else:
-                if len([f for f in self.getFiles() if f.getType() == 'attachment'])>0:
-                    return req.getTAL(template, context, macro)
-
-                return '<h2 style="width:100%; text-align:center ;color:red">Video is not in a supported video-format.</h2>'
-
-    """ returns preview image """
     def show_node_image(self):
+        """Returns preview image"""
         return '<img src="/thumbs/%s" class="thumbnail" border="0"/>' % self.id
 
     def event_files_changed(self):
-        for f in self.getFiles():
-            if f.type in ["thumb", "presentation"]:
-                self.removeFile(f)
+        """Generates thumbnails (a small and a larger one) from a MP4 video file.
+        The frame used as thumbnail can be changed by setting self.system_attrs["thumbframe"] to a number > 0.
+        """
+        video_file = self.files.filter_by(filetype=u"video").scalar()
 
-        for f in self.getFiles():
-            if f.mimetype == "video/mp4":
-                for f in self.getFiles():
-                    if f.type in ["thumb", "presentation"]:
-                        self.removeFile(f)
+        if video_file is not None:
+            self.set('vid-width', self.get('width'))
+            self.set('vid-height', self.get('height'))
 
-                if len([f for f in self.getFiles() if f.mimetype == 'video/mp4']) > 0:
-                    tempname = os.path.join(config.get("paths.tempdir"), "tmp.gif")
+            thumbframe = self.system_attrs.get("thumbframe")
 
-                    if os.path.exists(tempname):
-                        os.remove(tempname)
+            ffmpeg_call = ["ffmpeg", "-y"]
 
-                    mp4_path = f.retrieveFile()
-                    mp4_name = os.path.splitext(mp4_path)[0]
+            if thumbframe:
+                ffmpeg_call += ['-ss', str(thumbframe)]  # change frame used as thumbnail
 
-                    try:
-                        if self.get("system.thumbframe") != "":
+            ffmpeg_call += ['-i', video_file.abspath]  # input settings
 
-                            cmd = "ffmpeg -loglevel quiet -ss {} -i {} -vframes 1 -pix_fmt rgb24 {}".format(self.get("system.thumbframe"), mp4_path, tempname)
-                        else:
-                            cmd = "ffmpeg -loglevel quiet -i {} -vframes 1 -pix_fmt rgb24 {}".format(mp4_path, tempname)
-                        ret = os.system(cmd)
-                        if ret & 0xff00:
-                            return
-                    except:
-                        return
-                    thumbname = "{}.thumb".format(mp4_name)
-                    thumbname2 = "{}.thumb2".format(mp4_name)
-                    makeThumbNail(tempname, thumbname)
-                    makePresentationFormat(tempname, thumbname2)
-                    self.addFile(FileNode(name=thumbname, type="thumb", mimetype="image/jpeg"))
-                    self.addFile(FileNode(name=thumbname2, type="presentation", mimetype="image/jpeg"))
+            # Temporary file must be named and closed right after creation because ffmpeg wants to access it later.
+            temp_thumbnail = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
+            try:
+                temp_thumbnail.close()
+                temp_thumbnail_path = temp_thumbnail.name
+                ffmpeg_call += ['-vframes', '1', '-pix_fmt', 'rgb24', temp_thumbnail_path]  # output options
 
-    def isContainer(self):
-        return 0
+                try:
+                    utils.process.check_call(ffmpeg_call)
+                except CalledProcessError:
+                    logg.error("Error processing video, external call failed. No thumbnails generated.")
+                    raise
+                except OSError:
+                    logg.error("Error processing video, external command ffmpeg cannot be called. No thumbnails generated.")
+                    raise
 
-    def getSysFiles(self):
-        return ["presentation", "thumb", "video"]
+                name_without_ext = os.path.splitext(video_file.path)[0]
+                thumbname = u'{}.thumb'.format(name_without_ext)
+                thumbname2 = u'{}.presentation'.format(name_without_ext)
+                make_thumbnail_image(temp_thumbnail_path, resolve_datadir_path(thumbname))
+                make_presentation_image(temp_thumbnail_path, resolve_datadir_path(thumbname2))
+            finally:
+                os.unlink(temp_thumbnail_path)
 
-    def getLabel(self):
-        return self.name
+            old_thumb_files = self.files.filter(File.filetype.in_([u'thumb', u'presentation']))
+            
+            for old_thumb_file in old_thumb_files:
+                self.files.remove(old_thumb_file)
+                old_thumb_file.unlink()
+            
+            self.files.append(File(thumbname, u'thumb', u'image/jpeg'))
+            self.files.append(File(thumbname2, u'presentation', u'image/jpeg'))
+
+            db.session.commit()
 
     def getDuration(self):
         duration = self.get("duration")
@@ -219,7 +156,7 @@ class Video(default.Default):
         else:
             return format_date(make_date(0, 0, 0, int(duration) / 3600, duration / 60, int(duration % 60)), '%H:%M:%S')
 
-    def unwanted_attributes(self):
+    def get_unwanted_exif_attributes(self):
         '''
         Returns a list of unwanted attributes which are not to be extracted from uploaded videos
         @return: list
@@ -230,13 +167,14 @@ class Video(default.Default):
                 'pmsg']
 
     """ list with technical attributes for type video """
+
     def getTechnAttributes(self):
         return {"Standard": {"creationtime": "Erstelldatum",
                              "creator": "Ersteller"},
                 "FLV": {"audiodatarate": "Audio Datenrate",
                         "videodatarate": "Video Datenrate",
                         "framerate": "Frame Rate",
-                        "height": "Videoh\xc3\xb6he",
+                        "height": u"Videohöhe",
                         "width": "Breite",
                         "audiocodecid": "Audio Codec",
                         "duration": "Dauer",
@@ -245,63 +183,13 @@ class Video(default.Default):
                         "audiodelay": "Audioversatz"}
                 }
 
-    """ popup window for actual nodetype """
-    def popup_fullsize(self, req):
-
-        def videowidth():
-            return int(self.get('vid-width') or 0) + 64
-
-        def videoheight():
-            int(self.get('vid-height') or 0) + 53
-
-        access = AccessData(req)
-        if not access.hasAccess(self, "data") or not access.hasAccess(self, "read"):
-            req.write(t(req, "permission_denied"))
-            return
-
-        f = None
-        for filenode in self.getFiles():
-            if filenode.getType() in ["original", "video"] and filenode.retrieveFile().endswith('flv'):
-                f = "/file/%s/%s" % (self.id, filenode.getName())
-                break
-
-        script = ""
-        if f:
-            script = '<p href="%s" style="display:block;width:%spx;height:%spx;" id="player"/p>' % (f, videowidth(), videoheight())
-
-        # use jw player
-        captions_info = getCaptionInfoDict(self)
-        if captions_info:
-            logger.info("video: '%s' (%s): captions: dictionary 'captions_info': %s" % (self.name, self.id, captions_info))
-
-        context = {
-            "file": f,
-            "script": script,
-            "node": self,
-            "width": videowidth(),
-            "height": videoheight(),
-            "captions_info": json.dumps(captions_info),
-        }
-
-        req.writeTAL("contenttypes/video.html", context, macro="fullsize_flv_jwplayer")
-
-    def popup_thumbbig(self, req):
-        self.popup_fullsize(req)
-
-    def getEditMenuTabs(self):
-        return "menulayout(view);menumetadata(metadata;files;admin;lza);menuclasses(classes);menusecurity(acls)"
-
-    def getDefaultEditTab(self):
-        return "view"
-
     def processMediaFile(self, dest):
-        for nfile in self.getFiles():
-            if nfile.getType() == "video":
-                filename = nfile.retrieveFile()
+        for nfile in self.files:
+            if nfile.filetype == "video":
+                filename = nfile.abspath
                 path, ext = splitfilename(filename)
-                if os.sep == '/':
-                    os.system("cp %s %s" % (filename, dest))
-                else:
-                    cmd = "copy %s %s%s.%s" % (filename, dest, self.id, ext)
-                    os.system(cmd.replace('/', '\\'))
+                try:
+                    shutil.copy(filename, dest)
+                except:
+                    logg.exception("copying file")
         return 1

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
  mediatum - a multimedia content repository
 
@@ -18,18 +19,21 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import logging
 from collections import OrderedDict
 
 from mediatumtal import tal
+from core import config
 from core.transition import httpstatus
 from core.metatype import Metatype
 
 from core.translation import getDefaultLanguage
 
-from contenttypes.default import languages as config_languages
 import re
 
-max_lang_length = max([len(lang) for lang in config_languages])
+logg = logging.getLogger(__name__)
+
+max_lang_length = max([len(lang) for lang in config.languages])
 config_default_language = getDefaultLanguage()
 
 
@@ -46,7 +50,7 @@ class m_htmlmemo(Metatype):
     def has_language_cutter(self, s):
         return bool(self.CUTTER_PATTERN.search(s))
 
-    def language_snipper(self, s, language, joiner=""):
+    def language_snipper(self, s, language, joiner=u""):
         res = []
         append_line = True
         for line in s.splitlines(True):
@@ -67,7 +71,7 @@ class m_htmlmemo(Metatype):
         if not self.has_language_cutter(s):
             d = OrderedDict()
 
-            for lang in config_languages:
+            for lang in config.languages:
                 if lang == config_default_language:
                     d[lang] = s
                 else:
@@ -91,23 +95,20 @@ class m_htmlmemo(Metatype):
                     d[key][-1] = d[key][-1][0:-1]  # trailing \n belongs to found cutter
                 key = m.groupdict()["lang"]
                 if key in d:  # should not happen
-                    print '#v' * 30
-                    print __file__, "----> default language conflict for:", key
-                    print "already in dict:"
-                    print "d['%s'] = '%s'" % (key, str(d[key]))
-                    print '#^' * 30
+                    logg.warn("default language conflict for: %s", key)
+                    logg.warn("already in dict:d['%s'] = '%s'", key, d[key])
                 value = []
                 d[key] = value
 
-        # handle unused config_languages
-        for lang in config_languages:
+        # handle unused languages
+        for lang in config.languages:
             if lang not in d.keys():
                 d[lang] = []
 
-        # ignore keys not in config_languages
+        # ignore keys not in languages
         if only_config_langs:
             for k in d.keys():
-                if k not in config_languages:
+                if k not in config.languages:
                     del d[k]
 
         if join_stringlists:
@@ -154,7 +155,7 @@ class m_htmlmemo(Metatype):
             "width": width,
             "name": field_node_name,
             "field": field,
-            "ident": str(field.id),
+            "ident": ustr(field.id),
             "current_lang": language,
             "defaultlang": language,  # not the systems default language
             "languages": [],
@@ -168,7 +169,7 @@ class m_htmlmemo(Metatype):
         }
 
         if enable_multilang:
-            lang = [l for l in config_languages if l != language]
+            lang = [l for l in config.languages if l != language]
             context.update(
                 {
                     "languages": lang,
@@ -183,22 +184,21 @@ class m_htmlmemo(Metatype):
                 context["expand_multilang"] = False
 
         s = tal.getTAL("metadata/htmlmemo.html", context, macro="editorfield", language=language)
-        return s.replace("REPLACE_WITH_IDENT", str(field.id))
+        return s.replace("REPLACE_WITH_IDENT", unicode(field.id))
 
     def getSearchHTML(self, context):
         return tal.getTAL("metadata/htmlmemo.html", {"context": context}, macro="searchfield", language=context.language)
 
-    def getFormatedValue(self, field, node, language=None, html=1):
-        value = node.get(field.getName()).replace(";", "; ")
+    def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
+        value = node.get(metafield.getName()).replace(";", "; ")
         value = self.language_snipper(value, language, joiner="\n")
-        return (field.getLabel(), value)
+        return (metafield.getLabel(), value)
 
     def getMaskEditorHTML(self, field, metadatatype=None, language=None, attr_dict={}):
-
         try:
             value = field.getValues()
-        except:
-            value = ""
+        except AttributeError:
+            value = u""
 
         context = {
             "value": value,
@@ -233,12 +233,12 @@ class m_htmlmemo(Metatype):
 
     labels = {"de":
               [
-                  ("editor_memo_label", "Zeichen \xc3\xbcbrig"),
-                  ("mask_edit_max_length", "Maximall\xc3\xa4nge"),
+                  ("editor_memo_label", u"Zeichen übrig"),
+                  ("mask_edit_max_length", u"Maximallänge"),
                   ("mask_edit_enable_multilang", "Multilang aktivieren"),
                   ("fieldtype_htmlmemo", "HTML Memofeld"),
-                  ("htmlmemo_titlepopupbutton", "Editiermaske \xc3\xb6ffnen"),
-                  ("htmlmemo_popup_title", "Eingabemaske f\xc3\xbcr HTML formatierte Texte"),
+                  ("htmlmemo_titlepopupbutton", u"Editiermaske öffnen"),
+                  ("htmlmemo_popup_title", u"Eingabemaske für HTML formatierte Texte"),
                   ("htmlmemo_valuelabel", "Wert:"),
                   ("htmlmemo_show_multilang", "umschalten zu mehrsprachig"),
                   ("htmlmemo_hide_multilang", "umschalten zu einsprachig"),

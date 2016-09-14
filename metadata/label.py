@@ -17,11 +17,14 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import core.tree as tree
 from mediatumtal import tal
 from schema.schema import VIEW_DATA_ONLY, VIEW_DEFAULT
 from core.metatype import Metatype
+from core import Node
+from core import db
+from utils.utils import esc
 
+q = db.query
 
 class m_label(Metatype):
 
@@ -42,24 +45,24 @@ class m_label(Metatype):
         item = parent.getChildren().sort_by_orderpos()[index]
         ret = ''
         if not sub:
-            ret += '<div id="' + item.id + '" class="row" onmouseover="pick(this)" onmouseout="unpick(this)" onclick="select(this)">'
-        ret += '<b>' + str(item.getLabel()) + '</b>'
+            ret += '<div id="' + ustr(item.id) + '" class="row" onmouseover="pick(this)" onmouseout="unpick(this)" onclick="select(this)">'
+        ret += '<b>' + ustr(item.getLabel()) + '</b>'
 
         if not sub:
-            ret += '<div align="right" id="' + item.id + \
+            ret += '<div align="right" id="' + ustr(item.id) + \
                 '_sub" style="display:none"><small style="color:silver">(' + (item.get("type")) + ')</small>'
             if index > 0:
                 ret += '<input type="image" src="/img/uparrow.png" name="up_' + \
-                    str(item.id) + '" i18n:attributes="title mask_edit_up_title"/>'
+                    ustr(item.id) + '" i18n:attributes="title mask_edit_up_title"/>'
             else:
                 ret += '&nbsp;&nbsp;&nbsp;'
             if index < len(parent.getChildren()) - 1:
                 ret += '<input type="image" src="/img/downarrow.png" name="down_' + \
-                    str(item.id) + '" i18n:attributes="title mask_edit_down_title"/>'
+                    ustr(item.id) + '" i18n:attributes="title mask_edit_down_title"/>'
             else:
                 ret += '&nbsp;&nbsp;&nbsp;'
-            ret += ' <input type="image" src="/img/edit.png" name="edit_' + str(
-                item.id) + '" i18n:attributes="title mask_edit_edit_row"/> <input type="image" src="/img/delete.png" name="delete_' + str(
+            ret += ' <input type="image" src="/img/edit.png" name="edit_' + ustr(
+                item.id) + '" i18n:attributes="title mask_edit_edit_row"/> <input type="image" src="/img/delete.png" name="delete_' + ustr(
                 item.id) + '" i18n:attributes="title mask_edit_delete_row" onClick="return questionDel()"/></div>'
             ret += '</div>'
 
@@ -71,15 +74,15 @@ class m_label(Metatype):
         metadatatype = req.params.get("metadatatype")
 
         if req.params.get("op", "") == "new":
-            pidnode = tree.getNode(req.params.get("pid"))
+            pidnode = q(Node).get(req.params.get("pid"))
             if pidnode.get("type") in ("vgroup", "hgroup"):
-                for field in pidnode.getAllChildren():
-                    if field.getType().getName() == "maskitem" and field.id != pidnode.id:
+                for field in pidnode.all_children:
+                    if field.type == "maskitem" and field.id != pidnode.id:
                         fields.append(field)
             else:
                 for m in metadatatype.getMasks():
-                    if str(m.id) == str(req.params.get("pid")):
-                        for field in m.getChildren():
+                    if ustr(m.id) == ustr(req.params.get("pid")):
+                        for field in m.children:
                             fields.append(field)
         fields.sort(lambda x, y: cmp(x.getOrderPos(), y.getOrderPos()))
 
@@ -91,19 +94,25 @@ class m_label(Metatype):
         return req.getTAL("metadata/label.html", v, macro="metaeditor")
 
     def getEditorHTML(self, field, value="", width=40, lock=0, language=None, required=None):
-        return tal.getTAL("metadata/label.html", {"lock": lock, "value": value, "width": width,
-                                                  "name": field.getName(), "field": field}, macro="editorfield", language=language)
+        return tal.getTAL("metadata/label.html", {"lock": lock,
+                                                  "value": value,
+                                                  "width": width,
+                                                  "name": field.getName(),
+                                                  "field": field},
+                          macro="editorfield",
+                          language=language)
 
     def getSearchHTML(self, context):
         return tal.getTAL("metadata/label.html", {"context": context}, macro="searchfield", language=context.language)
 
-    def getFormatedValue(self, field, node, language=None, html=1, template_from_caller=None, mask=None):
-        value = node.get(field.getName())
+    def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
+        value = node.get(metafield.getName())
         if html:
             value = esc(value)
-        return (field.getLabel(), value)
+        return (metafield.getLabel(), value)
 
-    def isContainer(self):
+    @classmethod
+    def isContainer(cls):
         return True
 
     def getName(self):

@@ -1,4 +1,3 @@
-
 <tal:block metal:define-macro="edit_admin_file">
     <style>
         #addform{display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;z-index:99;}
@@ -25,8 +24,9 @@
         <div id="addform-background">&nbsp;</div>
         <div id="addform-form">
             <div style="position:absolute;top:0;right:7px;z-index:10002"><a href="#" onclick="closeForm()" i18n:attributes="title mask_editor_cancel"><img src="/img/cancel.png"/></a></div>
-            <form tal:attributes="action python:'edit_content?id='+str(id)+'&tab=admin'" method="post" name="addmeta">
+            <form tal:attributes="action python:u'edit_content?id={}&tab=admin'.format(id)" method="post" name="addmeta">
                 <h2 i18n:translate="edit_admin_add_attribute">TEXT</h2>
+                <p tal:condition="user_is_admin" i18n:translate="edit_notice_adding_system_attrs">TEXT</p>
                 <p>
                     <tal:block i18n:translate="edit_admin_add_attributename"/><br/>
                     <input type="text" name="new_name" id="new_name"/>
@@ -50,43 +50,29 @@
     </div>
 
     <div id="sub_content_content" style="border-width:0 0 0 1px!important">
-        <form tal:attributes="action python:'edit_content?id='+str(id)+'&tab=admin'" method="post" name="meta" style="height:100%;padding:0">
+        <form tal:attributes="action python:u'edit_content?id={}&tab=admin'.format(id)" method="post" name="meta" style="height:100%;padding:0">
             <div id="accordion">
                 <h3><a href="#" i18n:translate="edit_nodeinformation">TEXT</a></h3>
                 <div id="info" style="padding:10px">
                     <div id="entry">
                         <div class="label" i18n:translate="edit_id">TEXT</div>
-                        <div class="content" tal:content="python:str(node.id)">TEXT</div>
-                        <input i18n:attributes="title edit_clearfromcache" name="del_cache" type="image" src="/img/update_index.gif"/>
+                        <div class="content" tal:content="python:node.id">TEXT</div>
                     </div>
-
-                    <tal:block tal:define="type python:node.type" tal:condition="python:type.find('/')>0">
+                    <div id="entry">
+                        <div class="label" i18n:translate="edit_objectname">TEXT</div>
+                        <div class="content" tal:content="python:node.name">TEXT</div>
+                    </div>
                     <div id="entry">
                         <div class="label" i18n:translate="edit_objecttype">TEXT</div>
-                        <div class="content" tal:content="python:type.split('/')[0]">TEXT</div>
+                        <div class="content" tal:content="python:node.type">TEXT</div>
                     </div>
                     <div id="entry">
                         <div class="label" i18n:translate="edit_schema">TEXT</div>
-                        <div class="content" tal:content="python:type.split('/')[1]">TEXT</div>
+                        <div class="content" tal:content="python:node.schema">TEXT</div>
                     </div>
                     <div id="entry">
                         <div class="label" i18n:translate="edit_orderpos">TEXT</div>
-                        <div class="content" tal:content="python:node.getOrderPos()">TEXT</div>
-                    </div>
-                    </tal:block>
-                    <div id="entry" tal:define="type python:node.getType().getName()" tal:condition="python:type.find('/')<0">
-                        <div class="label" i18n:translate="edit_objectname">TEXT</div>
-                        <div class="content" tal:content="python:type + ' ('+node.type+')'">TEXT</div>
-                    </div>
-                    <div id="entry">
-                        <div class="label" i18n:translate="edit_dirty">TEXT</div>
-                        <div class="content" tal:content="python:str(node.isDirty())">TEXT</div>
-                        <input tal:condition="python:node.isDirty()==0" name="set_dirty" i18n:attributes="title edit_admin_setdirty_title" type="image" src="/img/attention.gif"/>
-                    </div>
-                    <div id="entry">
-                        <div class="label" i18n:translate="edit_localread">TEXT</div>
-                        <div class="content" tal:content="python:str(node.getLocalRead())">TEXT</div>
-                        <input name="del_localread" i18n:attributes="title edit_admin_localread_del_title" type="image" src="/img/erase.gif"/>
+                        <div class="content" tal:content="python:node.orderpos">TEXT</div>
                     </div>
                 </div>
 
@@ -95,8 +81,8 @@
                      <div id="entry" tal:repeat="key python: list(metafields)">
                          <div class="label" tal:content="key">TEXT</div>
                          <div class="content" tal:content="python:fd(node.get(key), gf(fields, key))">TEXT</div>
-                         <img tal:condition="canedit" tal:attributes="name python:str(key);value python:fd(node.get(key), gf(fields, key))" i18n:attributes="title edit_admin_editattr_title" type="image" src="/img/edit.png" onClick="return openFilledForm(this)" style="position:absolute;top:4px;right:0!important"/>
-                         <input tal:condition="adminuser" tal:attributes="name python:'attr_'+str(key)" i18n:attributes="title edit_files_obsolete_del_title" type="image" src="/img/delete.png" onClick="return questionDel()" style="top:8px"/>
+                         <img tal:condition="canedit" tal:attributes="name python:key;value python:fd(node.get(key), gf(fields, key))" i18n:attributes="title edit_admin_editattr_title" type="image" src="/img/edit.png" onClick="return openFilledForm(this)" style="position:absolute;top:4px;right:0!important"/>
+                         <input tal:condition="user_is_admin" tal:attributes="name python:u'attr_{}'.format(key)" i18n:attributes="title edit_admin_del_attribute" type="image" src="/img/delete.png" onClick="return questionDel()" style="top:8px"/>
                      </div>
 
                     <div tal:condition="python: len(list(metafields))==0" id="entry">
@@ -109,11 +95,25 @@
                     <div id="entry" tal:repeat="key python:list(obsoletefields)">
                         <div class="label" tal:content="key">TEXT</div>
                         <div class="content" tal:content="python:fd(node.get(key), gf(fields, key))">TEXT</div>
-                        <img tal:condition="canedit" tal:attributes="name python:str(key);value python:fd(node.get(key), gf(fields, key))" i18n:attributes="title edit_admin_editattr_title" type="image" src="/img/edit.png" onClick="return openFilledForm(this)" style="position:absolute;top:4px;right:0!important"/>
-                        <input tal:condition="adminuser" tal:attributes="name python:'attr_'+str(key)" i18n:attributes="title edit_files_obsolete_del_title" type="image" src="/img/delete.png" onClick="return questionDel()" style="top:8px"/>
+                        <img tal:condition="canedit" tal:attributes="name python:key;value python:fd(node.get(key), gf(fields, key))" i18n:attributes="title edit_admin_editattr_title" type="image" src="/img/edit.png" onClick="return openFilledForm(this)" style="position:absolute;top:4px;right:0!important"/>
+                        <input tal:condition="user_is_admin" tal:attributes="name python:u'attr_{}'.format(key)" i18n:attributes="title edit_admin_del_attribute" type="image" src="/img/delete.png" onClick="return questionDel()" style="top:8px"/>
                     </div>
 
                     <div tal:condition="python: len(list(obsoletefields))==0" id="entry">
+                        <div class="label" i18n:translate="edit_admin_noattribute">TEXT</div>
+                    </div>
+                </div>
+
+                <h3><a href="#" i18n:translate="edit_system_attrs">TEXT</a></h3>
+                <div id="system_attrs" style="padding:10px">
+                    <div id="entry" tal:repeat="item python:system_attrs">
+                        <div class="label" tal:content="python:item[0]">TEXT</div>
+                        <div class="content" tal:content="python:item[1]">TEXT</div>
+                        <img tal:condition="user_is_admin" tal:attributes="name python:'system.' + item[0];value python:item[1]" i18n:attributes="title edit_admin_editattr_title" type="image" src="/img/edit.png" onClick="return openFilledForm(this)" style="position:absolute;top:4px;right:0!important"/>
+                        <input tal:condition="user_is_admin" tal:attributes="name python:u'system_attr_{}'.format(item[0])" i18n:attributes="title edit_admin_del_attribute" type="image" src="/img/delete.png" onClick="return questionDel()" style="top:8px"/>
+                    </div>
+
+                    <div tal:condition="python: not system_attrs" id="entry">
                         <div class="label" i18n:translate="edit_admin_noattribute">TEXT</div>
                     </div>
                 </div>
@@ -127,9 +127,9 @@
                                 <small><em>(<tal:block tal:content="key">TEXT</tal:block>)</em></small>
                             </div>
                         </tal:block>
-                        <div class="content" tal:content="python:str(fd(node.get(key)))">TEXT</div>
-                        <img tal:condition="canedit" tal:attributes="name python:str(key);value python:fd(node.get(key), gf(fields, key))" i18n:attributes="title edit_admin_editattr_title" type="image" src="/img/edit.png" onClick="return openFilledForm(this)" style="position:absolute;top:4px;right:0!important"/>
-                        <input tal:condition="adminuser" tal:attributes="name python:'attr_'+str(key)" i18n:attributes="title edit_files_obsolete_del_title" type="image" src="/img/delete.png" onClick="return questionDel()" style="top:8px"/>
+                        <div class="content" tal:content="python:fd(node.get(key))">TEXT</div>
+                        <img tal:condition="canedit" tal:attributes="name python:key;value python:fd(node.get(key), gf(fields, key))" i18n:attributes="title edit_admin_editattr_title" type="image" src="/img/edit.png" onClick="return openFilledForm(this)" style="position:absolute;top:4px;right:0!important"/>
+                        <input tal:condition="user_is_admin" tal:attributes="name python:u'attr_{}'.format(key)" i18n:attributes="title edit_admin_del_attribute" type="image" src="/img/delete.png" onClick="return questionDel()" style="top:8px"/>
                     </div>
 
                     <div tal:condition="python:len(technfields)>0" style="text-align:center;padding:20px 0px">
@@ -140,13 +140,6 @@
                         <div class="label" i18n:translate="edit_admin_noattribute">TEXT</div>
                     </div>
                 </div>
-                <h3><a href="#" i18n:translate="edit_admin_searchdata">TEXT</a></h3>
-                <div>
-                    <p style="padding-left:20px">
-                        <button type="button" onclick="getSearchData()" i18n:translate="edit_admin_index_button">TEXT</button>
-                    </p>
-                    <div id="searchdata"> </div>
-                </div>
             </div>
             <input type="hidden" name="type" value=""/>
             <input type="hidden" name="type" id="type" value=""/>
@@ -154,7 +147,7 @@
     </div>
     <div id="sub_footer_module"> </div>
 
-    <script tal:content="python:'var id='+node.id" />
+    <script tal:content="python:u'var id={}'.format(node.id)" />
 
     <script>
         $(document).ready(function () { // set correct height of scrollable content
@@ -183,12 +176,6 @@
         function closeForm(){ // close upload form
             $('#addform').css('display','none');
             parent.$('#overlay').css('display', 'none');
-        }
-
-        function getSearchData(){
-            $.get('/edit/edit_content?id='+id+'&tab=admin&action=getsearchdata&style=popup', function(data) {
-                $('#searchdata').html(data);
-            });
         }
 
         function setActionType(value){

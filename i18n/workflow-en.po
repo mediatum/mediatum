@@ -142,44 +142,65 @@ msgstr "Objekt ${name} has reached the end of the current workflow."
 msgid "workflow_back"
 msgstr "Back"
 
-msgid "workflowstep-addurn"
+msgid "workflowstep_urn"
 msgstr "create URN"
 
-msgid "workflowstep-delete"
+msgid "workflowstep_delete"
 msgstr "delete entry"
 
-msgid "workflowstep-edit"
+msgid "workflowstep_editmetadata"
 msgstr "edit node"
 
-msgid "workflowstep-jahrbuch"
+msgid "workflowstep_jahrbuch"
 msgstr "data export (yearbook)"
 
-msgid "workflowstep-protect"
+msgid "workflowstep_protect"
 msgstr "ACL protection"
 
-msgid "workflowstep-send_email"
+msgid "workflowstep_sendemail"
 msgstr "send email"
 
-msgid "workflowstep-showdata"
+msgid "workflowstep_showdata"
 msgstr "metadata editor"
 
-#msgid "workflowstep-start"
-#msgstr "start node"
+msgid "workflowstep_start"
+msgstr "start node"
 
-msgid "workflowstep-upload"
+msgid "workflowstep_upload"
 msgstr "upload node"
 
-msgid "workflowstep-publish"
+msgid "workflowstep_publish"
 msgstr "publish"
 
-msgid "workflowstep-wait"
+msgid "workflowstep_wait"
 msgstr "wait"
 
 msgid "workflowstep-checkdoublet"
 msgstr "check for doublet metadata (record linkage)"
 
-#msgid "workflowstep-end"
-#msgstr "end node"
+msgid "workflowstep_end"
+msgstr "end node"
+
+msgid "workflowstep_addformpage"
+msgstr "add PDF pages"
+
+msgid "workflowstep_reauth"
+msgstr "Re-Auth"
+
+msgid "workflowstep_checkcontent"
+msgstr "Check Content"
+
+msgid "workflowstep_deletefile"
+msgstr "Remove file"
+
+msgid "workflowstep_textpage"
+msgstr "show textpage"
+
+msgid "workflowstep_defer"
+msgstr "Defer-Field"
+
+msgid "workflowstep_fileattachment"
+msgstr "File-Attachment"
 
 msgid "WorkflowStep_ShowData"
 msgstr "editor (workflow)"

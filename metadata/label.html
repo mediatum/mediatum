@@ -17,9 +17,9 @@
         <select name="insertposition" style="width:500px">
             <option value="end" selected="selected" i18n:translate="mask_edit_end">TEXT</option>
             <tal:block tal:repeat="field fields">
-                <option tal:condition="python:hasattr(field.getField(),'getFieldtype')" tal:attributes="value python:field.id" tal:content="python:field.getLabel()+' ('+field.getField().getFieldtype()+')'"/>
+                <option tal:condition="python:hasattr(field.getField(),'getFieldtype')" tal:attributes="value python:field.id" tal:content="python:u'{} ({})'.format(field.getLabel(), field.getField().getFieldtype())"/>
 
-                <option tal:condition="python:not hasattr(field.getField(),'getFieldtype')" tal:attributes="value python:field.id" tal:content="python:field.getLabel()+' ('+field.get('type')+')'"/>
+                <option tal:condition="python:not hasattr(field.getField(),'getFieldtype')" tal:attributes="value python:field.id" tal:content="python:u'{} ({})'.format(field.getLabel(), field.get('type'))"/>
             </tal:block>
         </select>
         <br/>

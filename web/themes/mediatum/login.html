@@ -1,11 +1,11 @@
 <div id="object_main" metal:define-macro="login" style="margin-left:20px">
     <p>&nbsp;</p>
-    <p tal:condition="python:error>0" tal:content="python:'login_error_'+str(error)" i18n:translate="" class="error" style="text-align:center">TEXT</p>
+    <p tal:condition="python:error>0" tal:content="python:u'login_error_{}'.format(error)" i18n:translate="" class="error" style="text-align:center">TEXT</p>
     <br/>
-    <form method="post" class="login" name="login" style="margin-bottom:50px">
+    <form method="post" class="login" name="login">
         <div class="label">&nbsp;</div>
         <span i18n:translate="login_currentuser_msg">
-            TEXT [ <span tal:content="python:user.getName()" i18n:name="name" class="username">username</span> ]
+            TEXT <span tal:content="python:user.getName()" i18n:name="name" class="username">username</span> 
         </span>
         <br/>
         <br/>
@@ -23,7 +23,7 @@
         <div class="label">&nbsp;</div>
         <small style="font-size:9px"><a href="/pwdforgotten" i18n:translate="pwdforgotten_link">TEXT</a></small>
     </form>
-    <div style="width:520px;" align="justify"><small i18n:translate="login_info">TEXT</small></div>
+    <div id="login-information" align="justify"><small i18n:translate="login_info">TEXT</small></div>
     <script>
         function setFocus(){document.login.user.focus();}
         setFocus()
@@ -32,7 +32,7 @@
 
 <div id="object_main" metal:define-macro="change_pwd" style="margin-left:20px">
     <p>&nbsp;</p>
-    <p tal:condition="python:error>0" tal:content="python:'login_change_err_'+str(error)" i18n:translate="" class="error" style="text-align:center">TEXT</p>
+    <p tal:condition="python:error>0" tal:content="python:u'login_change_err_{}'.format(error)" i18n:translate="" class="error" style="text-align:center">TEXT</p>
     <form method="post" action="pwdchange" class="login" name="login">
         <div i18n:translate="login_act_pwd:" class="label">TEXT</div>
         <input maxlength="30" class="text" type="password" name="password_old" style="width:200px; margin-bottom:2px"/>
@@ -62,7 +62,7 @@
     <form method="post" class="login" name="login" style="margin-bottom:50px">
         <div class="label">&nbsp;</div>
         <div i18n:translate="login_currentuser_msg">
-            TEXT [ <span tal:content="python:user.getName()" i18n:name="name" class="username">username</span> ]
+            TEXT <span tal:content="python:user.getName()" i18n:name="name" class="username">username</span> 
         </div>
         <br/>
         <div i18n:translate="pwdforgotten_explain_procedure">TEXT</div>        
@@ -75,7 +75,7 @@
         <div class="label">&nbsp;</div>
         <button type="submit" name="PwdForgottenSubmit" i18n:translate="pwdforgotten_submit">TEXT</button>
         &nbsp;
-        <button type="button" onclick="location='/login'" name="cancel" i18n:translate="pwdforgotten_cancel">TEXT</button>
+        <button type="button" onclick="location='/'" name="cancel" i18n:translate="pwdforgotten_cancel">TEXT</button>
     </form>
     <div style="width:520px;" align="justify"><small i18n:translate="login_info">TEXT</small></div>
     <script>

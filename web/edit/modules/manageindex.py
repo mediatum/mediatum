@@ -17,28 +17,21 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import core.tree as tree
-from core.acl import AccessData
-from schema.schema import loadTypesFromDB, getMetaType
-from web.frontend.content import getPaths
-from utils.utils import u, dec_entry_log
 
+from schema.schema import loadTypesFromDB, getMetaType
+from utils.utils import u, dec_entry_log
+from core import Node
+from core import db
+from utils.pathutils import getPaths
+
+q = db.query
 
 def getInformation():
     return {"version": "1.0", "system": 0}
 
-
-def isParent__(basenode, node, access):
-    return 1
-    for ls in getPaths(node, access):
-        if str(basenode.id) in tree.NodeList(ls).getIDs():
-            return 1
-    return 0
-
-
 def getAllAttributeValues(attribute, schema):
     values = {}
-    nids_values = tree.db.get_all_nids_attribute_values_for_schema(attribute, schema)
+    nids_values = q(Node.id, Node.a[attribute]).filter(Node.schema==schema).filter(Node.a[attribute] != None and Node.a[attribute] != '').distinct(Node.a[attribute]).all()
     for nid, value in nids_values:
         for s in value.split(";"):
             s = u(s.strip())
@@ -77,15 +70,14 @@ def getContent(req, ids):
         fieldname = req.params.get("fields")
         old_values = u(req.params.get("old_values", "")).split(";")
         new_value = u(req.params.get("new_value"))
-        basenode = tree.getNode(ids)
+        basenode = q(Node).get(ids)
         entries = getAllAttributeValues(fieldname, req.params.get("schema"))
 
         c = 0
         for old_val in old_values:
-            for n in AccessData(req).filter(tree.NodeList(entries[old_val])):
+            for n in AccessData(req).filter(q(Node).filter(Node.id.in_(entries[old_val])).all()):
                 try:
                     n.set(fieldname, replaceValue(n.get(fieldname), u(old_val), u(new_value)))
-                    n.setDirty()
                     c += 1
                 except:
                     pass
@@ -109,7 +101,7 @@ def getContent(req, ids):
             return ""
 
         elif req.params.get("action", "").startswith("indexvalues__"):  # load values of selected indexfield
-            node = tree.getNode(ids)
+            node = q(Node).get(ids)
             fieldname = req.params.get("action").split("__")[-2]
             schema = req.params.get("action").split("__")[-1]
             v["entries"] = []
@@ -127,8 +119,8 @@ def getContent(req, ids):
             all_values = getAllAttributeValues(fieldname, scheme)
 
             def isChildOf(access, node, basenodeid):
-                for ls in getPaths(node, access):
-                    if str(basenodeid) in tree.NodeList(ls).getIDs():
+                for ls in getPaths(node):
+                    if basenodeid in [unicode(n.id) for n in ls]:
                         return 1
                 return 0
 
@@ -138,7 +130,7 @@ def getContent(req, ids):
                 if value in all_values:
                     subitems[value] = []
                     for l in all_values[value]:
-                        if isChildOf(AccessData(req), tree.getNode(l), ids):
+                        if isChildOf(AccessData(req), q(Node).get(l), ids):
                             subitems[value].append(l)
 
             v["items"] = subitems

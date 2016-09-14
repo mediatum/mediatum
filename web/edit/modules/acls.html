@@ -13,6 +13,64 @@
                 firstload=0;
             }
         }
+
+
+
+
+    // load data to tab via ajax
+    function get_json_for_action(src, action, id) {
+
+      var tempdiv = $('<span id="tempdiv"><img height="12" src="/img/wait.gif" />   </span>');
+      $(src).append(tempdiv);
+      var ajax_response;
+
+      var options = {
+            url: '/edit/edit_content?tab=acls&action='+action+'&style=popup&id='+id, // id instead of ids
+            async: false,
+            dataType: 'json',
+            success: function (response) {
+                ajax_response = response;
+                $('#tempdiv').remove();
+                console.log('edit_action_sync: $.ajax returns: ', response);
+                console.dir(response);
+
+            }
+          };
+
+      $.ajax(options);
+    }
+
+
+    // http://stackoverflow.com/questions/1447728/how-to-dynamic-filter-options-of-select-with-jquery
+
+    jQuery.fn.filterByText = function(textbox) {
+        return this.each(function() {
+            var select = this;
+            var options = [];
+            $(select).find('option').each(function() {
+                options.push({value: $(this).val(), text: $(this).text(), title: $(this).attr('title')});
+            });
+            $(select).data('options', options);
+
+            $(textbox).bind('change keyup', function() {
+                var options = $(select).empty().data('options');
+                var search = $.trim($(this).val());
+                var regex = new RegExp(search,"gi");
+
+                $.each(options, function(i) {
+                    var option = options[i];
+                    if(option.text.match(regex) !== null) {
+                        $(select).append(
+                            $('<option>').text(option.text).val(option.value).attr('title', option.title)
+                        );
+                    }
+                });
+            });
+        });
+    };
+
+
+
     </script>
 
     <script type="text/javascript" language="javascript" src="/js/mediatum.js">
@@ -20,27 +78,28 @@
 
     <div id="sub_content_content">
 
+
     <form class="edit" name="myform" method="post">
         <input type="hidden" name="save" value="save"/>
         <input type="hidden" name="nodeid" tal:attributes="value idstr"/>
         <p><input i18n:attributes="value edit_save_title" type="button" name="save" onClick="runsubmit()"/></p>
 
         <tal:block tal:condition="adminuser">
-            <span i18n:translate="edit_acls_selection">TEXT</span> 
-            <a href="#" onclick="showACLGroup()" i18n:translate="edit_acls_selectacl" i18n:attributes="title edit_acls_selectacltitle">TEXT</a> | 
+            <span i18n:translate="edit_acls_selection">TEXT</span>
+            <a href="#" onclick="showACLGroup()" i18n:translate="edit_acls_selectacl" i18n:attributes="title edit_acls_selectacltitle">TEXT</a> |
             <a href="#"  onclick="showACLUser();getSelect(document.myform.nodeid.value)" i18n:translate="edit_acls_selectuser"  i18n:attributes="title edit_acls_selectusertitle">TEXT</a><br/><br/>
         </tal:block>
-        
+
         <div id="acl_div" style="border:1px solid silver;padding:5px">
             <h5 i18n:translate="edit_acls_groupheader">TEXT</h5>
             <tal:block tal:replace="raw contentacl"/>
         </div>
-        
+
         <div tal:condition="adminuser" id="user_div" style="border:1px solid silver; display:none; padding:5px">
             <h5 i18n:translate="edit_acls_userheader">TEXT</h5>
             <span id="useracl"/>
         </div><br/><br/>
-        
+
         <p>
             <input type="hidden" name="type" id="type" value="acl"/>
             <input i18n:attributes="value edit_save_title" type="button" name="save" onClick="runsubmit()">
@@ -68,7 +127,7 @@
     <tal:block tal:condition="python:type=='read'" i18n:translate="edit_acls_righttype_read">TEXT</tal:block>
     <tal:block tal:condition="python:type=='write'" i18n:translate="edit_acls_righttype_write">TEXT</tal:block>
     <tal:block tal:condition="python:type=='data'" i18n:translate="edit_acls_righttype_data">TEXT</tal:block>
- 
+
     <table>
         <tr>
             <td align="left" valign="top">
@@ -81,13 +140,31 @@
                 <input tal:attributes="onclick python:'moveRight(document.myform.left'+name+',document.myform.right'+name+')'" type="button" value=">>"/>
             </td>
             <td align="left" valign="top">
-                <select tal:content="raw val_right" tal:attributes="name python:'right'+name;  ondblclick python:'moveLeft(document.myform.left'+name+',document.myform.right'+name+')'" style="width:320px" size="10" multiple="multiple">
+                <select tal:content="raw val_right" tal:attributes="id python: 'select_right_acl_%s' % type; name python:'right'+name;  ondblclick python:'moveLeft(document.myform.left'+name+',document.myform.right'+name+')'" style="width:320px" size="10" multiple="multiple">
                 </select>
             </td>
         </tr>
+        <tr>
+            <td>
+            </td>
+            <td></td>
+            <td><tal:block i18n:translate="edit_acls_filter_input_label">TEXT</tal:block><input type="text" tal:attributes="id python: 'input_acl_%s' % type " onChange="" i18n:attributes="title edit_acls_filter_input_tooltip"></td>
+        </tr>
     </table>
-    
     <br/>
+
+<script>
+    $(function() {
+        $('#select_right_acl_read').filterByText($('#input_acl_read'));
+    });
+        $(function() {
+        $('#select_right_acl_write').filterByText($('#input_acl_write'));
+    });
+    $(function() {
+        $('#select_right_acl_data').filterByText($('#input_acl_data'));
+    });
+</script>
+
 </tal:block>
 
 
@@ -95,7 +172,6 @@
     <tal:block tal:condition="python:type=='read'" i18n:translate="edit_acls_userrighttype_read">TEXT</tal:block>
     <tal:block tal:condition="python:type=='write'" i18n:translate="edit_acls_userrighttype_write">TEXT</tal:block>
     <tal:block tal:condition="python:type=='data'" i18n:translate="edit_acls_userrighttype_data">TEXT</tal:block>
-
     <table>
         <tr>
             <td align="left" valign="top">
@@ -108,11 +184,31 @@
                 <input tal:attributes="onclick python:'moveRight(document.myform.leftuser'+name+',document.myform.rightuser'+name+')'" type="button" value=">>"/>
             </td>
             <td align="left" valign="top">
-                <select tal:content="raw val_right" tal:attributes="name python:'rightuser'+name;  ondblclick python:'moveLeft(document.myform.leftuser'+name+',document.myform.rightuser'+name+')'" style="width:320px" size="10" multiple="multiple">
+                <select tal:content="raw val_right" tal:attributes="id python: 'select_right_user_%s' % type; name python:'rightuser'+name;  ondblclick python:'moveLeft(document.myform.leftuser'+name+',document.myform.rightuser'+name+')'" style="width:320px" size="10" multiple="multiple">
                 </select>
             </td>
         </tr>
+        <tr>
+            <td>
+            </td>
+            <td></td>
+            <td><tal:block i18n:translate="edit_acls_filter_input_label">TEXT</tal:block><input type="text" tal:attributes="id python: 'input_user_%s' % type " onChange="" i18n:attributes="title edit_acls_filter_input_tooltip"></td>
+        </tr>
     </table>
     <br/>
+
+<script>
+    $(function() {
+        $('#select_right_user_read').filterByText($('#input_user_read'));
+    });
+        $(function() {
+        $('#select_right_user_write').filterByText($('#input_user_write'));
+    });
+    $(function() {
+        $('#select_right_user_data').filterByText($('#input_user_data'));
+    });
+</script>
+
 </tal:block>
 
+<i metal:define-macro="acl_editor_error" i18n:translate="edit_acls_id_count_error">TEXT</i>

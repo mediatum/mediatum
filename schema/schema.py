@@ -18,23 +18,35 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import logging
-import core.tree as tree
-import core.config as config
-import core.translation as translation
-
-from utils.utils import *
-from utils.date import *
-from utils.log import logException
-from core.config import *
-from core.xmlnode import getNodeXML, readNodeXML
-from core.db.database import getConnection
-from core.metatype import Metatype
+import datetime
 import inspect
 import importlib
+import logging
+import os
 import pkgutil
+import sys
+from warnings import warn
 
-log = logg = logging.getLogger('backend')
+from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import undefer
+from werkzeug.utils import cached_property
+import core.config as config
+import core.translation as translation
+from core import Node
+from core.xmlnode import getNodeXML, readNodeXML
+from core.metatype import Metatype
+from core import db
+from core.systemtypes import Metadatatypes
+from core.transition.postgres import check_type_arg
+from core.database.postgres.node import children_rel, parents_rel
+from utils.date import parse_date, format_date, validateDateString
+from utils.utils import Option, esc
+
+
+log = logg = logging.getLogger(__name__)
+q = db.query
+
 
 requiredoption = []
 requiredoption += [Option("Kein Pflichtfeld", "notmandatory", "0", "/img/req2_opt.png")]
@@ -49,11 +61,11 @@ dateoption = []
 dateoption += [Option("metafield_dateformat_std",
                       "dd.mm.yyyy",
                       "%d.%m.%Y",
-                      validation_regex='^(0[0-9]|1[0-9]|2[0-9]|3[01])\.(0[0-9]|1[012])\.[0-9]{4}$')]    #'^(0[1-9]|1[0-9]|2[0-9]|3[01])\.(0[1-9]|1[012])\.[0-9]{4}$'
+                      validation_regex='^(0[0-9]|1[0-9]|2[0-9]|3[01])\.(0[0-9]|1[012])\.[0-9]{4}$')]
 dateoption += [Option("metafield_dateformat_long",
                       "dd.mm.yyyy hh:mm:ss",
                       "%d.%m.%Y %H:%M:%S",
-                      validation_regex='^(0[0-9]|1[0-9]|2[0-9]|3[01])\.(0[0-9]|1[012])\.[0-9]{4} (0[0-9]|1[0-9]|2[0-3])(:[0-5][0-9]){2}$')] #'^(0[1-9]|1[0-9]|2[0-9]|3[01])\.(0[1-9]|1[012])\.[0-9]{4} (0[0-9]|1[0-9]|2[0-3])(:[0-5][0-9]){2}$'
+                      validation_regex='^(0[0-9]|1[0-9]|2[0-9]|3[01])\.(0[0-9]|1[012])\.[0-9]{4} (0[0-9]|1[0-9]|2[0-3])(:[0-5][0-9]){2}$')]
 dateoption += [Option("metafield_dateformat_year",
                       "yyyy",
                       "%Y",
@@ -83,31 +95,32 @@ VIEW_DATA_EXPORT = 8    # deliver export format
 
 
 def getMetaType(name):
-
+    warn("use q(Metadatatype) instead", DeprecationWarning)
     if name.isdigit():
-        return tree.getNode(name)
+        nid = int(name)
+        return q(Metadatatype).get(nid)
 
     if name.find("/") > 0:
         name = name[name.rfind("/") + 1:]
 
-    metadatatypes = tree.getRoot("metadatatypes")
-    try:
-        return metadatatypes.getChild(name)
-    except tree.NoSuchNodeError as e:
-        return None
+    return q(Metadatatype).filter_by(name=name).scalar()
 
 #
 # load all meta-types from db
 #
 
-
 def loadTypesFromDB():
-    return list(tree.getRoot("metadatatypes").getChildren().sort_by_name())
+    warn("use q(Metadatatype) instead", DeprecationWarning)
+    return list(q(Metadatatype).order_by("name"))
 
 
-def getNumberNodes(name):
-    return 1
-    return len(tree.getRoot("metadatatypes").search("objtype=%s*" % (name)))
+def get_permitted_schemas():
+    return q(Metadatatype).filter(Metadatatype.a.active == "1").filter_read_access().order_by(Metadatatype.a.longname).all()
+
+
+def get_permitted_schemas_for_datatype(datatype):
+    return [sc for sc in get_permitted_schemas() if datatype in sc.getDatatypes()]
+
 
 #
 # check if metatype with given name is still existing in db
@@ -115,6 +128,7 @@ def getNumberNodes(name):
 
 
 def existMetaType(name):
+    warn("use q(Metadatatype) instead", DeprecationWarning)
     if getMetaType(name):
         return True
     return False
@@ -124,20 +138,22 @@ def existMetaType(name):
 # update/create metatype by given object
 #
 def updateMetaType(name, description="", longname="", active=0, datatypes="", bibtexmapping="", orig_name="", citeprocmapping=""):
-    metadatatypes = tree.getRoot("metadatatypes")
-    try:
-        metadatatype = metadatatypes.getChild(orig_name)
-        metadatatype.setName(name)
-    except tree.NoSuchNodeError:
-        metadatatype = tree.Node(name=name, type="metadatatype")
-        metadatatypes.addChild(metadatatype)
+    metadatatypes = q(Metadatatypes).one()
+    metadatatype = metadatatypes.children.filter_by(name=orig_name).scalar()
+
+    if metadatatype is not None:
+        metadatatype.name = name
+    else:
+        metadatatype = Metadatatype(name)
+        metadatatypes.children.append(metadatatype)
 
     metadatatype.set("description", description)
     metadatatype.set("longname", longname)
-    metadatatype.set("active", str(active))
+    metadatatype.set("active", ustr(active))
     metadatatype.set("datatypes", datatypes)
     metadatatype.set("bibtexmapping", bibtexmapping)
     metadatatype.set("citeprocmapping", citeprocmapping)
+    db.session.commit()
 
 #
 # delete metatype by given name
@@ -145,8 +161,11 @@ def updateMetaType(name, description="", longname="", active=0, datatypes="", bi
 
 
 def deleteMetaType(name):
-    metadatatypes = tree.getRoot("metadatatypes")
-    metadatatypes.removeChild(getMetaType(name))
+    metadatatypes = q(Metadatatypes).one()
+    metadatatype = q(Metadatatype).filter_by(name=name).one()
+    metadatatypes.children.remove(metadatatype)
+    db.session.commit()
+
 
 ###################################################
 #                detail section                   #
@@ -173,22 +192,16 @@ def getAllMetaFields():
 # returns field for given name and metatype
 #
 def getMetaField(pid, name):
-    try:
-        return getMetaType(pid).getChild(name)
-    except tree.NoSuchNodeError as e:
+    metatype = getMetaType(pid)
+    if metatype is None:
         return None
-
+    return metatype.children.filter_by(name=name).scalar()
 
 #
 # check existance of field for given metadatatype
 #
 def existMetaField(pid, name):
-    try:
-        f = getMetaType(pid).getChild(name)
-        return True
-    except:
-        return False
-
+    return getMetaField(pid, name) is not None
 
 """ update/create metadatafield """
 
@@ -196,40 +209,50 @@ def existMetaField(pid, name):
 def updateMetaField(parent, name, label, orderpos, fieldtype, option="", description="",
                     fieldvalues="", fieldvaluenum="", fieldid="", filenode=None, attr_dict={}):
     metatype = getMetaType(parent)
-    try:
-        field = tree.getNode(fieldid)
-        field.setName(name)
-    except tree.NoSuchNodeError:
-        field = tree.Node(name=name, type="metafield")
-        metatype.addChild(field)
-        field.setOrderPos(len(metatype.getChildren()) - 1)
+    field = None
 
-    #<----- Begin: For fields of list type ----->
+    if fieldid:
+        field = q(Node).get(fieldid)
+
+    if field is not None:
+        field.name = name
+    elif name in [c.name for c in metatype.children]:
+        for c in metatype.children:
+            if c.name == name:
+                field = c
+                break
+    else:
+        field = Metafield(name)
+        metatype.children.append(field)
+        field.orderpos = len(metatype.children) - 1
+        db.session.commit()
+    # <----- Begin: For fields of list type ----->
 
     if filenode:
         # all files of the field will be removed before a new file kann be added
-        for fnode in field.getFiles():
-            field.removeFile(fnode)         # remove the file from the node tree
+        for fnode in field.files:
+            field.files.remove(fnode)         # remove the file from the node tree
             try:
-                os.remove(fnode.retrieveFile())  # delete the file from the hard drive
-            except Exception as e:
-                logException(e)
-        field.addFile(filenode)
+                os.remove(fnode.abspath)  # delete the file from the hard drive
+            except:
+                logg.exception("exception in updateMetaField")
+        field.files.append(filenode)
 
     if fieldvalues.startswith("multiple"):
         field.set("multiple", True)
         fieldvalues = fieldvalues.replace("multiple;", "", 1)
     else:
-        field.removeAttribute("multiple")
+        if field.get("multiple"):
+            del field.attrs["multiple"]
 
     if fieldvalues.endswith("delete"):  # the checkbox 'delete' was checked
         # all files of the field will be removed
-        for fnode in field.getFiles():
-            field.removeFile(fnode)         # remove the file from the node tree
+        for fnode in field.files:
+            field.files.remove(fnode)         # remove the file from the node tree
             try:
-                os.remove(fnode.retrieveFile())  # delete the file from the hard drive
-            except Exception as e:
-                logException(e)
+                os.remove(fnode.abspath)  # delete the file from the hard drive
+            except:
+                logg.exception("exception in updateMetaField")
         fieldvalues = fieldvalues.replace(";delete", "", 1)
 
     #<----- End: For fields of list type ----->
@@ -243,6 +266,7 @@ def updateMetaField(parent, name, label, orderpos, fieldtype, option="", descrip
 
     for attr_name, attr_value in attr_dict.items():
         field.set(attr_name, attr_value)
+    db.session.commit()
 
 
 #
@@ -251,12 +275,13 @@ def updateMetaField(parent, name, label, orderpos, fieldtype, option="", descrip
 def deleteMetaField(pid, name):
     metadatatype = getMetaType(pid)
     field = getMetaField(pid, name)
-    metadatatype.removeChild(field)
+    metadatatype.children.remove(field)
 
     i = 0
-    for field in getMetaType(pid).getChildren().sort_by_orderpos():
-        field.setOrderPos(i)
+    for field in metadatatype.children.order_by(Node.orderpos):
+        field.orderpos = i
         i += 1
+    db.session.commit()
 
 #
 # change order of metadatafields: move element up/down
@@ -296,65 +321,71 @@ def moveMetaField(pid, name, direction):
 def generateMask(metatype, masktype="", force=0):
     if force:
         try:
-            metatype.removeChild(metatype.getChild(masktype))
+            metatype.children.remove(metatype.children.filter_by(name=masktype).one())
+            db.session.commit()
         except:  # if we can't remove the existing mask, it wasn't there, which is ok
             pass
-    try:
-        mask = metatype.getChild(masktype)
+
+    mask = metatype.children.filter_by(name=masktype).scalar()
+    if mask is not None:
         return  # mask is already there- nothing to do!
-    except tree.NoSuchNodeError:
-        mask = metatype.addChild(tree.Node("-auto-", "mask"))
+    else:
+        mask = Mask(u"-auto-")
+        metatype.children.append(mask)
         i = 0
-        for c in metatype.getChildren().sort_by_orderpos():
+        for c in metatype.children.order_by(Node.orderpos):
             if c.type != "mask":
                 if c.getFieldtype() != "union":
-                    n = tree.Node(c.get("label"), "maskitem")
-                    n.setOrderPos(i)
+                    field = Maskitem(c.get("label"))
+                    field.orderpos = i
                     i += 1
-                    field = mask.addChild(n)
+                    mask.children.append(field)
                     field.set("width", "400")
                     field.set("type", "field")
-                    field.addChild(c)
+                    field.children.append(c)
+    db.session.commit()
 
 
 def cloneMask(mask, newmaskname):
     def recurse(m1, m2):
-        for k, v in m1.items():
+        for k, v in m1.attrs.items():
             m2.set(k, v)
-        for c1 in m1.getChildren().sort_by_orderpos():
+        for c1 in m1.children.order_by(Node.orderpos):
             if c1.type in ["mask", "maskitem"]:
-                c2 = tree.Node(c1.getName(), c1.type)
-                c2.setOrderPos(c1.getOrderPos())
-                m2.addChild(c2)
+                content_class = Node.get_class_for_typestring(c1.type)
+                c2 = content_class(name=c1.name)
+                c2.orderpos = c1.orderpos
+                m2.children.append(c2)
                 recurse(c1, c2)
             else:
-                m2.addChild(c1)
+                m2.children.append(c1)
 
-    p = mask.getParents()
+    p = mask.parents
     if len(p) == 0:
         raise "Mask has no parents"
     if len(p) > 1:
         raise "Mask has more than one parent"
     if mask.type != "mask":
         raise "Not a mask"
-    newmask = tree.Node(newmaskname, mask.type)
-    p[0].addChild(newmask)
+    newmask = Mask(newmaskname)
+    p[0].children.append(newmask)
     recurse(mask, newmask)
+    db.session.commit()
 
 
 def checkMask(mask, fix=0, verbose=1, show_unused=0):
     if mask.type != "mask":
         if verbose:
-            print "Node", mask.id, mask.name, "is no mask"
+            logg.debug("Node %s %s is no mask", mask.id, mask.name)
         return 1
     p = mask.getParents()
     if len(p) > 1:
         if verbose:
-            print "Mask has more than one parent"
+            logg.debug("Mask has more than one parent")
         return 1
     if len(p) == 0:
         if verbose:
-            print "Mask has no parents (?)"
+            logg.debug("Mask has no parents (?)")
         return 1
 
     metatypes = p[0]
@@ -455,7 +486,7 @@ def showEditor(node, hiddenvalues={}, allowedFields=None):
         name = field.getName()
         langNames = None
         if field.get("text"):
-            langNames = [lang + name for lang in config.get("i18n.languages").split(",")]
+            langNames = [lang + name for lang in config.languages]
         if allowedFields and name not in allowedFields:
             continue
         value = ""
@@ -489,7 +520,7 @@ def parseEditorData(req, node):
     incorrect = False
     defaultlang = translation.lang(req)
 
-    for field in node.getType().getMetaFields():
+    for field in node.metaFields():
         name = field.getName()
         if "%s__%s" % (defaultlang, name) in req.params:
             value = req.params.get("%s__%s" % (defaultlang, name), "? ")
@@ -517,10 +548,10 @@ def parseEditorData(req, node):
             #    for node in nodes:
             #        node.set(name, value)
 
-            if field.getType() == "date":
+            if field.get('type') == "date":
                 f = field.getSystemFormat(field.fieldvalues)
                 try:
-                    date = parse_date(str(value), f.getValue())
+                    date = parse_date(ustr(value), f.getValue())
                 except ValueError:
                     date = None
                 if date:
@@ -531,7 +562,11 @@ def parseEditorData(req, node):
                 for node in nodes:
                     node.set(name, value)
         else:  # value not in request -> remove attribute
-            node.removeAttribute(field.getName())
+            try:
+                node.removeAttribute(field.getName())
+            except KeyError:
+                pass
+    db.session.commit()
     return not incorrect
 
 
@@ -540,7 +575,7 @@ def parseEditorData(req, node):
 #
 def exportMetaScheme(name):
     if name == "all":
-        return getNodeXML(tree.getRoot("metadatatypes"))
+        return getNodeXML(q(Metadatatypes).one())
     else:
         return getNodeXML(getMetaType(name))
 
@@ -551,25 +586,32 @@ def exportMetaScheme(name):
 def importMetaSchema(filename):
     n = readNodeXML(filename)
     importlist = list()
-    if n.getContentType() == "metadatatype":
+    if n.type == "metadatatype":
         importlist.append(n)
-    elif n.getContentType() == "metadatatypes":
-        for ch in n.getChildren():
+    elif n.type == "metadatatypes":
+        for ch in n.children:
             importlist.append(ch)
 
-    metadatatypes = tree.getRoot("metadatatypes")
+    metadatatypes = q(Metadatatypes).one()
     for m in importlist:
-        m.setName("import-" + m.getName())
-        metadatatypes.addChild(m)
+        m.name = u"import-" + m.name
+        metadatatypes.children.append(m)
+    db.session.commit()
 
 
-#
-# metadatatype
-#
-class Metadatatype(tree.Node):
+@check_type_arg
+class Metadatatype(Node):
+
+    masks = children_rel("Mask")
+    metafields = children_rel("Metafield")
+
+    @property
+    def description(self):
+        return self.get("description")
 
     def getDescription(self):
-        return self.get("description")
+        warn("use Metadatatype.description", DeprecationWarning)
+        return self.description
 
     def setDescription(self, value):
         self.set("description", value)
@@ -607,89 +649,68 @@ class Metadatatype(tree.Node):
         return self.get("datatypes")
 
     def setDatatypeString(self, value):
-        self.set("datatypes", str(value))
+        self.set("datatypes", ustr(value))
 
     def getNumFields(self):
         return len(self.getMetaFields())
 
-    def getNumNodes(self):
-        return getNumberNodes(self.name)
-
     def getMetaFields(self, type=None):
         fields = []
-        for item in self.getChildren().sort_by_orderpos():
-            if item.getContentType() == "metafield":
+        for item in self.children.sort_by_orderpos():
+            if item.type == "metafield":
                 if not type or type in item.getOption():
                     fields.append(item)
         return fields
 
-    def getMetaField(self, name):
-        try:
-            return self.getChild(name)
-        except tree.NoSuchNodeError:
-            # *shrug*
-            return None
-
-    def getMasks(self, type="", language=""):
-        masks = []
-        for item in self.getChildren().sort_by_orderpos():
-            if item.getContentType() == "mask":
-                if type == "":
-                    if item.getLanguage() in [language, "no"] or language == "":
-                        masks.append(item)
-                elif type == item.getMasktype():
-                    if item.getLanguage() in [language, "no"] or language == "":
-                        masks.append(item)
+    def filter_masks(self, masktype=None, language=None):
+        masks = self.masks
+        if masktype:
+            masks = masks.filter(Mask.a.masktype.astext == masktype)
+        if language:
+            # return masks with given language
+            masks = masks.filter(Mask.a.language.astext == language)
         return masks
 
+    def get_mask(self, name):
+        return self.masks.filter_by(name=name).scalar()
+
     def getMask(self, name):
-        try:
-            if name.isdigit():
-                return tree.getNode(name)
-            else:
-                return self.get_child_with_type(name, "mask")
-        except tree.NoSuchNodeError:
-            return None
+        warn("use Metadatatype.get_mask instead", DeprecationWarning)
+        return self.get_mask(name)
 
-    def searchIndexCorrupt(self):
-        try:
-            from core.tree import searcher
-            search_def = []
-            for node in node_getSearchFields(self):
-                search_def.append(node.getName())
-            search_def = set(search_def)
-
-            index_def = searcher.getDefForSchema(self.name)
-            index_def = set(index_def.values())
-            if len(search_def) > len(index_def) and len(self.getAllItems()) > 0:
-                return True
-            else:
-                if search_def.union(index_def) == set([]) or index_def.difference(search_def) == set([]):
-                    return False
-            return True
-        except:
-            logException("error in searchIndexCorrupt")
-            return False
-
-    def getAllItems(self):
-        node_ids = tree.db.get_nids_by_type_suffix(self.getName())
-        return tree.NodeList(node_ids)
+    def getMasks(self, type=None, language=None):
+        warn("use Metadatatype.filter_masks instead", DeprecationWarning)
+        masks = self.filter_masks(type, language).all()
+        if not masks and language:
+            masks = self.filter_masks(type, None).all()
+        return masks
 
 
 """ fields for metadata """
 
 
-class Metadatafield(tree.Node):
+@check_type_arg
+class Metafield(Node):
 
-    def getLabel(self):
+    @property
+    def label(self):
         return self.get("label")
 
-    def setLabel(self, value):
+    @label.setter
+    def label(self, value):
         self.set("label", value)
 
-    def getSchemaNode(node):
-        for p in node.getParents():
-            if p.type == "metadatatype":
+    def getLabel(self):
+        warn("use Metafield.label instead", DeprecationWarning)
+        return self.label
+
+    def setLabel(self, value):
+        warn("use Metafield.label instead", DeprecationWarning)
+        self.label = value
+
+    def getSchemaNode(self):
+        for p in self.parents:
+            if isinstance(p, Metadatatype):
                 return p
         return None
 
@@ -754,11 +775,12 @@ class Metadatafield(tree.Node):
         return dateoption[0]
 
     def getValue(self, node):
+        logg.warn("who uses getValue?")
         if self.get("fieldtype") == "date":
-            d = self.getSystemFormat(str(self.fieldvalues))
+            d = self.getSystemFormat(ustr(self.fieldvalues))
             v = node.get(self.name)
             try:
-                value = date.format_date(date.parse_date(v), d.getValue())
+                value = format_date(parse_date(v), d.getValue())
             except ValueError:
                 value = v
         else:
@@ -780,13 +802,13 @@ class Metadatafield(tree.Node):
         context.field = self
         return t.getSearchHTML(context)
 
-    def getFormatedValue(self, node, language=None):
+    def getFormattedValue(self, node, language=None):
         try:
             t = getMetadataType(self.getFieldtype())
         except LookupError:
             t = getMetadataType("default")
 
-        return t.getFormatedValue(self, node, language=language)
+        return t.getFormattedValue(self, None, None, node, language=language)
 
 # helper class for masks
 
@@ -799,12 +821,14 @@ class MaskType:
 
     def setType(self, value):
         self.type = value
+        db.session.commit()
 
     def getType(self):
         return self.type
 
     def setSeparator(self, value):
         self.separator = value
+        db.session.commit()
 
     def getSeparator(self):
         return self.separator
@@ -828,22 +852,91 @@ def getMaskTypes(key="."):
             return MaskType()
 
 
-class Mask(tree.Node):
+def update_multilang_field(node, field, mdt, req, updated_attrs):
+    """TODO: extracted from updateNode(), rework multilang...
+    if multilingual textfields were used, their names are
+    saved in form en__Name, de__Name, de-AU__Name, en-US__Name etc.
+    """
+    for item in req.params.keys():
+        langPos = item.find('__')
+        if langPos != -1 and item[langPos + 2:] == field.name:
+            # cut the language identifier (en__, fr__, etc)
+            if (req.params.get(unicode(field.id) + '_show_multilang', '') == 'multi'
+                    and hasattr(mdt, "language_update")):
+                value_old = node.get(field.name)
+                value_new = req.params.get(item)
+                value = mdt.language_update(value_old, value_new, item[:langPos])
+                updated_attrs[field.name] = value
+            elif req.params.get(unicode(field.id) + '_show_multilang', '') == 'single':
+                if item[0:langPos] == translation.lang(req):
+                    new_value = req.params.get(item)
+                    updated_attrs[field.name] = new_value
+            elif (req.params.get(unicode(field.id) + '_show_multilang', '') == 'multi'
+                  and not hasattr(mdt, "language_update")):
+                value = mdt.format_request_value_for_db(field, req.params, item)
+                oldValue = node.get(field.name)
+                position = oldValue.find(item[:langPos] + mdt.joiner)
+                if position != -1:
+                    # there is already a value for this language
+                    newValue = (oldValue[:position + langPos + len(mdt.joiner)]
+                                + value
+                                + oldValue[oldValue.find(mdt.joiner,
+                                                         position + langPos + len(mdt.joiner)):])
+                    updated_attrs[field.name] = newValue
+                else:  # there is no value for this language yet
+                    if oldValue.find(mdt.joiner) == -1:
+                        # there are no values at all yet
+                        updated_attrs[field.name] = item[:langPos] + mdt.joiner + value + mdt.joiner
+                    else:
+                        # there are some values for other languages, but not for the current
+                        updated_attrs[field.name] = oldValue + item[:langPos] + mdt.joiner + value + mdt.joiner
+
+
+@check_type_arg
+class Mask(Node):
+
+    maskitems = children_rel("Maskitem", lazy="joined", order_by="Maskitem.orderpos")
+
+    _metadatatypes = parents_rel("Metadatatype")
+
+    @property
+    def masktype(self):
+        return self.get("masktype")
+
+    @property
+    def language(self):
+        return self.get("language")
+
+    @hybrid_property
+    def metadatatype(self):
+        return self._metadatatypes.scalar()
+
+    @metadatatype.expression
+    def metadatatype_expr(cls):
+        class MetadatatypeExpr(object):
+            def __eq__(self, other):
+                return cls._metadatatypes.contains(other)
+
+        return MetadatatypeExpr()
+
+
+    @property
+    def all_maskitems(self):
+        """Recursively get all maskitems, they can be nested
+        """
+        return self.all_children_by_query(q(Maskitem))
 
     def getFormHTML(self, nodes, req):
-        if not self.getChildren():
+        if not self.children:
             return None
 
         ret = ''
-        for field in self.getChildren().sort_by_orderpos():
-            element = field.getField()
+        for field in self.children.sort_by_orderpos():
             t = getMetadataType(field.get("type"))
             ret += t.getFormHTML(field, nodes, req)
         return ret
 
-    def getViewHTML(self, nodes, flags=0, language=None, template_from_caller=None, mask=None):
-        if not self.getChildren():
-            return []
+    def getViewHTML(self, nodes, flags=0, language=None, template_from_caller=None):
         if flags & 4:
             ret = []
         else:
@@ -853,15 +946,15 @@ class Mask(tree.Node):
             x = self.getChildren()
             x.sort_by_orderpos()
             return getMetadataType("mappingfield").getViewHTML(
-                x, nodes, flags, language=language, template_from_caller=template_from_caller, mask=mask)
-        for field in self.getChildren().sort_by_orderpos():
-            t = getMetadataType(field.get("type"))
+                x, nodes, flags, language=language, template_from_caller=template_from_caller, mask=self)
+        for maskitem in self.maskitems:
+            t = getMetadataType(maskitem.get("type"))
             if flags & 4:  # data mode
-                v = t.getViewHTML(field, nodes, flags, language=language, template_from_caller=template_from_caller, mask=mask)
-                format = field.getFormat()
+                v = t.getViewHTML(maskitem, nodes, flags, language=language, template_from_caller=template_from_caller, mask=self)
+                format = maskitem.getFormat()
                 if format != "":
                     v[1] = format.replace("<value>", v[1])
-                v.append(field.getSeparator())
+                v.append(maskitem.getSeparator())
 
                 if flags & 2:   # hide empty
                     if v[1].strip() != "":
@@ -869,7 +962,7 @@ class Mask(tree.Node):
                 else:
                     ret.append(v)
             else:
-                ret += t.getViewHTML(field, nodes, flags, language=language, template_from_caller=template_from_caller, mask=mask)
+                ret += t.getViewHTML(maskitem, nodes, flags, language=language, template_from_caller=template_from_caller, mask=self)
         return ret
 
     def getViewList(self, node, flags=0, language=None):
@@ -888,16 +981,12 @@ class Mask(tree.Node):
         return ret
 
     def getMaskFields(self, first_level_only=False):
-        ret = []
+        warn("use Mask.maskitems or Mask.all_maskitems instead", DeprecationWarning)
+        # XXX: type changed: list -> NodeAppenderQuery
         if first_level_only:
-            for field in self.getChildren():
-                if field.getContentType() == "maskitem":
-                    ret.append(field)
+            return self.maskitems
         else:
-            for field in self.getAllChildren():
-                if field.getContentType() == "maskitem":
-                    ret.append(field)
-        return ret
+            return self.all_maskitems
 
     """ return all fields which are empty """
 
@@ -925,8 +1014,7 @@ class Mask(tree.Node):
                 if item.getRequired() == 1:
                     if node.get(field.getName()) == "":
                         ret.append(node.id)
-                        logging.getLogger('editor').error(
-                            "Error in publishing of node %r: The required field %r is empty." % (node.id, field.name))
+                        logg.error("Error in publishing of node %r: The required field %r is empty." ,node.id, field.name)
 
                 if field and field.getContentType() == "metafield" and field.getFieldtype() == "date":
                     if not node.get(field.getName()) == "":
@@ -935,17 +1023,13 @@ class Mask(tree.Node):
                                 datetime.datetime.strptime(node.get(field.getName())[:7], '%Y-%m')
                             except ValueError:
                                 ret.append(node.id)
-                                logging.getLogger('editor').error(
-                                    "Error in publishing of node %r: The date field 'yearmonth' with content %r is not valid." %
-                                    (node.id, node.get(
-                                        field.getName())))
+                                logg.error("Error in publishing of node %r: The date field 'yearmonth' with content %r is not valid.",
+                                    node.id, node.get(field.getName()))
                             continue
                         if not validateDateString(node.get(field.getName())):
                             ret.append(node.id)
-                            logging.getLogger('editor').error(
-                                "Error in publishing of node %r: The date field %r with content %r is not valid." %
-                                (node.id, field.name, node.get(
-                                    field.getName())))
+                            logg.error("Error in publishing of node %r: The date field %r with content %r is not valid.",
+                                (node.id, field.name, node.get(field.getName())))
         return ret
 
     ''' returns True if all mandatory fields of mappingdefinition are used -> valid format'''
@@ -954,98 +1038,89 @@ class Mask(tree.Node):
         mandfields = []
         if self.getMasktype() == "export":
             for mapping in self.get("exportmapping").split(";"):
-                for c in tree.getNode(mapping).getMandatoryFields():
+                for c in q(Node).get(mapping).getMandatoryFields():
                     mandfields.append(c.id)
-        for item in self.getMaskFields():
+        for item in self.all_maskitems:
             try:
                 mandfields.remove(item.get("mappingfield"))
             except ValueError:  # id not in list
                 pass
         return len(mandfields) == 0
 
-    ''' update given node with given request values '''
 
-    def updateNode(self, nodes, req):
-        default_language = translation.getDefaultLanguage()
-        for node in nodes:
-            for item in self.getMaskFields():
-                field = item.getField()
-                if field and field.getContentType() == "metafield" and req.params.get(field.getName(), "").find("?") != 0:
-                    t = getMetadataType(field.get("type"))
-                    if field.getName() in req.params.keys():
-                        value = t.format_request_value_for_db(field, req.params, field.getName())
-                        language = translation.lang(req)
-                        node.set(field.getName(), value)
-                    elif field.getFieldtype() == "check":
-                        node.set(field.getName(), 0)
+    def update_node(self, node, req, user):
+        ''' update given node with given request values '''
+        form = req.form
+        # collect all changes first and apply them at the end because SQLAlchemy would issue an UPDATE for each attr assignment
+        updated_attrs = {}
+        updated_system_attrs = {}
+        for item in self.all_maskitems:
+            field = item.metafield
 
+            if field and form.get(field.name, "").find("?") != 0:
+                t = getMetadataType(field.get("type"))
+
+                if field.name in form:
+                    if field.name == 'nodename':
+                        value = form.get('nodename')
+                        node.name = value
                     else:
-                        # if multilingual textfields were used, their names are
-                        # saved in form en__Name, de__Name, de-AU__Name, en-US__Name etc.
-                        for item in req.params.keys():
-                            langPos = item.find('__')
-                            if langPos != -1 and item[langPos + 2:] == field.getName():
-                                # cut the language identifier (en__, fr__, etc)
-                                if (req.params.get(str(field.id) + '_show_multilang', '') == 'multi'
-                                        and hasattr(t, "language_update")):
-                                    value_old = node.get(field.getName())
-                                    value_new = req.params.get(item)
-                                    value = t.language_update(value_old, value_new, item[:langPos])
-                                    node.set(field.getName(), value)
-                                elif req.params.get(str(field.id) + '_show_multilang', '') == 'single':
-                                    if item[0:langPos] == translation.lang(req):
-                                        new_value = req.params.get(item)
-                                        node.set(field.getName(), new_value)
-                                elif (req.params.get(str(field.id) + '_show_multilang', '') == 'multi'
-                                      and not hasattr(t, "language_update")):
-                                    value = t.format_request_value_for_db(field, req.params, item)
-                                    oldValue = node.get(field.getName())
-                                    position = oldValue.find(item[:langPos] + t.joiner)
-                                    if position != -1:
-                                        # there is already a value for this language
-                                        newValue = (oldValue[:position + langPos + len(t.joiner)]
-                                                    + value
-                                                    + oldValue[oldValue.find(t.joiner,
-                                                                             position + langPos + len(t.joiner)):])
-                                        node.set(field.getName(), newValue)
-                                    else:  # there is no value for this language yet
-                                        if oldValue.find(t.joiner) == -1:
-                                            # there are no values at all yet
-                                            node.set(field.getName(), item[:langPos] + t.joiner + value + t.joiner)
-                                        else:
-                                            # there are some values for other languages, but not for the current
-                                            node.set(field.getName(), oldValue + item[:langPos] + t.joiner + value + t.joiner)
+                        value = t.format_request_value_for_db(field, form, field.name)
+                        if field.name.startswith("system."):
+                            updated_system_attrs[field.name[len("system."):]] = value
+                        else:
+                            updated_attrs[field.name] = value
 
-                    ''' raise event for metafield-type '''
-                    if hasattr(t, "event_metafield_changed"):
-                        t.event_metafield_changed(node, field)
-            ''' raise event for node '''
-            if hasattr(node, "event_metadata_changed"):
-                node.event_metadata_changed()
-            if node.get('updatetime') < str(now()):
-                node.set("updatetime", str(format_date()))
+                elif field["type"] == "check":
+                    updated_attrs[field.name] = "0"
 
-        return nodes
+                # handle multilang heritage
+                elif field.name == 'nodename' and translation.getDefaultLanguage() + '__nodename' in form:
+                    value = form.get(translation.getDefaultLanguage() + '__nodename')
+                    node.name = value
+                    update_multilang_field(node, field, t, req, updated_attrs)
+
+                else:
+                    update_multilang_field(node, field, t, req, updated_attrs)
+
+                if hasattr(t, "event_metafield_changed"):
+                    t.event_metafield_changed(node, field)
+
+        updated_attrs["updateuser"] = user.getName()
+        updated_attrs["updatetime"] = format_date()
+
+        node.attrs.update(updated_attrs)
+        node.system_attrs.update(updated_system_attrs)
+
+        if hasattr(node, "event_metadata_changed"):
+            node.event_metadata_changed()
 
     def getMappingHeader(self):
+        from .mapping import Mapping
         if self.getMasktype() == "export":
             if len(self.get("exportheader")) > 0:
                 return self.get("exportheader")
             elif len(self.get("exportmapping").split(";")) > 1:
                 return self.getExportHeader()
             else:
-                c = tree.getNode(self.get("exportmapping"))
-                return c.getHeader()
-        return ""
+                exportmapping_id = self.get("exportmapping")
+                c = q(Mapping).get(exportmapping_id)
+                if c is not None:
+                    return c.getHeader()
+                else:
+                    logg.warn("exportmapping %s for mask %s not found", exportmapping_id, self.id)
+                    return u""
+        return u""
 
     def getMappingFooter(self):
+        from .mapping import Mapping
         if self.getMasktype() == "export":
             if len(self.get("exportfooter")) > 0:
                 return self.get("exportfooter")
             elif len(self.get("exportmapping").split(";")) > 1:
                 return self.getExportFooter()
             else:
-                c = tree.getNode(self.get("exportmapping"))
+                c = q(Mapping).get(self.get("exportmapping"))
                 return c.getFooter()
         return ""
 
@@ -1061,13 +1136,13 @@ class Mask(tree.Node):
             return ret
 
         ret += '<div align="right"><input type="image" src="/img/install.png" name="newdetail_'
-        ret += self.id
+        ret += unicode(self.id)
         ret += '" i18n:attributes="title mask_editor_new_line_title"/></div><br/>'
 
         if not self.validateMappingDef():
             ret += '<p i18n:translate="mask_editor_export_error" class="error">TEXT</p>'
 
-        if len(self.getChildren()) == 0:
+        if len(self.children) == 0:
             ret += '<div i18n:translate="mask_editor_no_fields">- keine Felder definiert -</div>'
         else:
             if self.getMappingHeader() != "":
@@ -1075,21 +1150,21 @@ class Mask(tree.Node):
                     esc(self.getMappingHeader()))
 
         # check if all the orderpos attributes are the same which causes problems with sorting
-        z = [t for t in self.getChildren().sort_by_orderpos()]
-        if all(z[0].getOrderPos() == item.getOrderPos() for item in z):
+        z = [t for t in self.children.order_by(Node.orderpos)]
+        if all(z[0].orderpos == item.orderpos for item in z):
             k = 0
             for elem in z:
-                elem.setOrderPos(elem.getOrderPos() + k)
+                elem.orderpos = elem.orderpos + k
                 k += 1
 
         i = 0
         fieldlist = {}  # !!!getAllMetaFields()
-        for item in self.getChildren().sort_by_orderpos():
+        for item in self.children.order_by(Node.orderpos):
             t = getMetadataType(item.get("type"))
             ret += t.getMetaHTML(self, i, language=language, fieldlist=fieldlist)  # get formated line specific of type (e.g. field)
             i += 1
 
-        if len(self.getChildren()) > 0:
+        if len(self.children) > 0:
             if self.getMappingFooter() != "":
                 ret += '<div class="label" i18n:translate="mask_edit_footer">TEXT</div><div class="row">%s</div>' % (
                     esc(self.getMappingFooter()))
@@ -1102,14 +1177,15 @@ class Mask(tree.Node):
         for key in req.params.keys():
             # edit field
             if key.startswith("edit_"):
-                item = tree.getNode(req.params.get("edit", ""))
+                item = q(Node).get(req.params.get("edit", ""))
                 t = getMetadataType(item.get("type"))
                 return '<form method="post" name="myform">%s</form>' % (t.getMetaEditor(item, req))
 
         if (req.params.get("op", "") == "new" and req.params.get("type", "") != "") or (
                 self.getMasktype() == "export" and req.params.get("op", "") in ["newdetail", "new"]):
             # add field
-            item = tree.Node(name="", type="maskitem")
+            item = Maskitem(u'')
+            db.session.add(item)
             if self.getMasktype() == "export":  # export mask has no selection of fieldtype -> only field
                 t = getMetadataType("field")
                 req.params["op"] = "new"
@@ -1120,7 +1196,7 @@ class Mask(tree.Node):
                 req.params["edit"] = item
             else:
                 req.params["edit"] = item.id
-            return '<form method="post" name="myform">%s</form>' % (t.getMetaEditor(item, req))
+            return u'<form method="post" name="myform">{}</form>'.format(t.getMetaEditor(item, req))
 
         if (req.params.get("type", "") == "" and self.getMasktype() != "export") or req.params.get('op') == 'newdetail':
             # type selection for new field
@@ -1140,7 +1216,7 @@ class Mask(tree.Node):
                 <br/>
                 <br/>
                 <input type="hidden" name="op" value="new"/>"""
-            ret += '<input type="hidden" name="pid" value="' + str(req.params.get("pid")) + '"/>'
+            ret += '<input type="hidden" name="pid" value="' + req.params.get("pid") + '"/>'
             ret += '<div class="label">&nbsp;</div><button type="submit" name="new_" style="width:100px" i18n:translate="mask_editor_ok"> OK </button>'
             ret += '&nbsp;&nbsp;<button type="submit" onclick="setCancel(document.myform.op)" i18n:translate="mask_editor_cancel">Abbrechen</button><br/>'
             ret += '</div></form>'
@@ -1148,7 +1224,7 @@ class Mask(tree.Node):
 
         if req.params.get("edit", " ") == " " and req.params.get("op", "") != "new":
             # create new node
-            item = tree.getNode(req.params.get("id"))
+            item = q(Node).get(req.params.get("id"))
             t = getMetadataType(req.params.get("type"))
             return '<form method="post" name="myform">%s</form>' % (t.getMetaEditor(item, req))
 
@@ -1197,8 +1273,6 @@ class Mask(tree.Node):
         return False
 
     def getLanguage(self):
-        if self.get("language") == "":
-            return "no"
         return self.get("language")
 
     def setLanguage(self, value):
@@ -1216,7 +1290,7 @@ class Mask(tree.Node):
             self.set("defaultmask", "False")
 
     def getSeparator(self):
-        for key, value in self.items():
+        for key, value in self.attrs.items():
             if key == "separator":
                 return self.get("separator")
         return getMaskTypes(self.getMasktype()).getSeparator()
@@ -1225,54 +1299,71 @@ class Mask(tree.Node):
         self.set("separator", value)
 
     def addMaskitem(self, label, type, fieldid, pid):
-        item = tree.Node(name=label, type="maskitem")
+        item = Maskitem(label)
         item.set("type", type)
 
         if fieldid != 0:
-            for id in str(fieldid).split(";"):
+            for id in ustr(fieldid).split(";"):
                 try:
-                    field = tree.getNode(long(id))
+                    field = q(Node).get(long(id))
                     # don't remove field- it may
                     # (a) be used for some other mask item or
                     # (b) still be in the global metadatafield list
                     # for p in field.getParents():
                     #    p.removeChild(field)
-                    item.addChild(field)
+                    item.children.append(field)
                 except ValueError:
                     print "node id error for id '", id, "'"
-        if str(pid) == "0":
-            self.addChild(item)
+        if ustr(pid) == "0":
+            self.children.append(item)
         else:
-            node = tree.getNode(pid)
-            node.addChild(item)
+            node = q(Node).get(pid)
+            node.children.append(item)
+        db.session.commit()
         return item
 
     ''' delete given  maskitem '''
 
     def deleteMaskitem(self, itemid):
-        item = tree.getNode(itemid)
-        for parent in item.getParents():
-            parent.removeChild(item)
+        item = q(Node).get(itemid)
+        for parent in item.parents:
+            parent.children.remove(item)
             i = 0
-            for child in parent.getChildren().sort_by_orderpos():
-                child.setOrderPos(i)
+            for child in parent.children.order_by(Node.orderpos):
+                child.orderpos = i
                 i += 1
+        db.session.commit()
 
 """ class for editor/view masks """
 
 
-class Maskitem(tree.Node):
+@check_type_arg
+class Maskitem(Node):
+
+    _metafield_rel = children_rel("Metafield", backref="maskitems", lazy="joined")
+
+    @property
+    def metafield(self):
+        return self._metafield_rel[0] if self._metafield_rel else None
+
+    @metafield.setter
+    def metafield(self, metafield):
+        if metafield is None:
+            raise ValueError("setting metafield to None is not allowed!")
+
+        self._metafield_rel = [metafield]
 
     def getLabel(self):
         return self.getName()
 
     def setLabel(self, value):
-        self.setName(value)
+        self.name = value
 
     def getField(self):
-        if self.getNumChildren():
-            return self.getChildren()[0]
-        else:
+        warn("use Maskitem.metafield", DeprecationWarning)
+        try:
+            return self.metafield
+        except NoResultFound:
             return None
 
     def getDescription(self):
@@ -1294,7 +1385,7 @@ class Maskitem(tree.Node):
             return 0
 
     def setRequired(self, value):
-        self.set("required", str(value))
+        self.set("required", value)
 
     def getWidth(self):
         if self.get("width"):
@@ -1302,20 +1393,20 @@ class Maskitem(tree.Node):
         else:
             return 400
 
-    def setWidth(self, value=400):
-        self.set("width", str(value))
+    def setWidth(self, value=u'400'):
+        self.set("width", value)
 
     def getDefault(self):
         return self.get("default")
 
     def setDefault(self, value):
-        self.set("default", str(value))
+        self.set("default", value)
 
     def getTestNodes(self):
         return self.get("testnodes")
 
     def setTestNodes(self, value):
-        self.set("testnodes", str(value))
+        self.set("testnodes", value)
 
     def getMultilang(self):
         field = [c for c in self.getChildren() if c.type == "metafield"]
@@ -1327,13 +1418,14 @@ class Maskitem(tree.Node):
     def setMultilang(self, value):
         field = [c for c in self.getChildren() if c.type == "metafield"]
         if len(field) > 0:
-            field[0].set("multilang", str(value))
+            field[0].set("multilang", value)
 
     def getUnit(self):
-        return self.get("unit")
+        # XXX: we don't want empty units, better sanitize user input instead of stripping here
+        return self.get("unit").strip()
 
     def setUnit(self, value):
-        self.set("unit", str(value))
+        self.set("unit", value)
 
     def getFormat(self):
         return self.get("format")
@@ -1354,15 +1446,16 @@ mytypes = {}
 def _metatype_class(name, cls):
     name = name[2:] if name.startswith("m_") else name
     logg.debug("loading metatype class %s", name)
-    mytypes[name] = cls
-    if hasattr(cls(), "getLabels"):
-        translation.addLabels(cls().getLabels())
+    instance = cls()
+    mytypes[name] = instance
+    if hasattr(instance, "getLabels"):
+        translation.addLabels(instance.getLabels())
 
 
 def load_metatype_module(prefix_path, pkg_dir):
-    logg.info("loading modules from '%s', prefix path %s", pkg_dir, prefix_path)
+    logg.debug("loading modules from '%s', prefix path %s", pkg_dir, prefix_path)
     if prefix_path not in sys.path:
-        logg.info("%s added to pythonpath", prefix_path)
+        logg.debug("%s added to pythonpath", prefix_path)
         sys.path.append(prefix_path)
     for _, name, _ in pkgutil.iter_modules([os.path.join(prefix_path, pkg_dir)]):
         module = importlib.import_module(pkg_dir.replace("/", ".") + "." + name)
@@ -1381,7 +1474,7 @@ def init():
 
 def getMetadataType(mtype):
     if mtype in mytypes:
-        return mytypes[mtype]()
+        return mytypes[mtype]
     else:
         raise LookupError("No such metatype: " + mtype)
 
@@ -1389,7 +1482,7 @@ def getMetadataType(mtype):
 def getMetaFieldTypeNames():
     ret = {}
     for key in mytypes.keys():
-        if "meta" in str(mytypes[key]):
+        if "meta" in ustr(mytypes[key]):
             ret[key] = "fieldtype_" + key
     return ret
 
@@ -1407,78 +1500,84 @@ def getMetaFieldTypes():
 def getFieldsForMeta(name):
     return list(getMetaType(name).getMetaFields())
 
-""" return fields based on node class and schema name """
 
+class SchemaMixin(object):
 
-def node_getMetaFields(node, type=None):
-    try:
-        l = node.metaFields()
-    except:
-        l = []
+    def getMask(self, name):
+        warn("use Default.metadatatype.get_mask instead", DeprecationWarning)
+        mdt = self.metadatatype
+        return mdt.get_mask(name)
 
-    try:
-        if node.getSchema():
-            l += getMetaType(node.getSchema()).getMetaFields(type)
-    except AttributeError:
-        pass
-    return l
+    def getMasks(self, type=None, language=None):
+        warn("use Default.metadatatype.filter_masks instead", DeprecationWarning)
+        return self.metadatatype.getMasks(type, language)
 
+    def getFullView(self, language):
+        """Gets the fullview mask for the given `language`.
+        If no matching language mask is found, return a mask without language specification or None.
+        :rtype: Mask
+        """
+        
+        from sqlalchemy.orm import joinedload
+        
+        mask_load_opts = (undefer("attrs"), 
+                          joinedload(Mask.maskitems).undefer("attrs").joinedload(Maskitem._metafield_rel).undefer("attrs"))
 
-def node_getMetaField(node, name):
-    if node.getSchema():
-        try:
-            metadatatype = getMetaType(node.getSchema())
-            return getMetaType(node.getSchema()).getMetaField(name)
-        except AttributeError:
-            return None
-    else:
-        return None
+        lang_mask = self.metadatatype.filter_masks(masktype=u"fullview", language=language).options(mask_load_opts).first()
 
-
-def node_getSearchFields(node):
-    sfields = []
-    fields = node.getMetaFields()
-    fields.sort(lambda x, y: cmp(x.getOrderPos(), y.getOrderPos()))
-    for field in fields:
-        if field.Searchfield():
-            sfields += [field]
-    return sfields
-
-
-def node_getSortFields(node):
-    sfields = []
-    fields = node.getMetaFields()
-    fields.sort(lambda x, y: cmp(x.getOrderPos(), y.getOrderPos()))
-    for field in fields:
-        if field.Sortfield():
-            sfields += [field]
-    return sfields
-
-
-def node_getMasks(node, type="", language=""):
-    try:
-        if node.getSchema():
-            return getMetaType(node.getSchema()).getMasks(type=type, language=language)
+        if lang_mask is not None:
+            return lang_mask
         else:
-            return []
-    except AttributeError:
-        return []
+            return self.metadatatype.filter_masks(masktype=u"fullview").options(mask_load_opts).first()
 
-
-def node_getMask(node, name):
-    if node.getSchema():
+    @cached_property
+    def metadatatype(self):
         try:
-            return getMetaType(node.getSchema()).getMask(name)
+            return q(Metadatatype).filter_by(name=self.schema).one()
+        except NoResultFound:
+            raise Exception("metadatatype '{}' is missing, needed for node {}".format(self.schema, self))
+
+    def getSchema(self):
+        warn("deprecated, use Content.schema instead", DeprecationWarning)
+        return self.schema
+
+    def getMetaFields(self, type=None):
+        """return fields based on node class and schema name
+        """
+        try:
+            l = self.metaFields()
+        except:
+            l = []
+
+        try:
+            if self.getSchema():
+                l += getMetaType(self.getSchema()).getMetaFields(type)
         except AttributeError:
-            return None
-    else:
-        raise ValueError("Node of type '" + str(node.getSchema()) + "' has no mask")
+            pass
+        return l
 
+    def getSearchFields(self):
+        sfields = []
+        fields = self.getMetaFields()
+        fields.sort(lambda x, y: cmp(x.getOrderPos(), y.getOrderPos()))
+        for field in fields:
+            if field.Searchfield():
+                sfields += [field]
+        return sfields
 
-def node_getDescription(node):
-    if node.getSchema():
-        mtype = getMetaType(node.getSchema())
-        if mtype:
-            return mtype.getDescription()
-        else:
-            return ""
+    def getSortFields(self):
+        sfields = []
+        fields = self.getMetaFields()
+        fields.sort(lambda x, y: cmp(x.getOrderPos(), y.getOrderPos()))
+        for field in fields:
+            if field.Sortfield():
+                sfields += [field]
+        return sfields
+
+    def getDescription(self):
+        if self.getSchema():
+            mtype = getMetaType(self.getSchema())
+            if mtype:
+                return mtype.getDescription()
+            else:
+                return ""

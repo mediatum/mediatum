@@ -21,7 +21,13 @@
 
 import time
 import logging
-import core.tree as tree
+from core import Node
+from core import db
+from core.systemtypes import Metadatatypes
+from schema.schema import Metafield
+
+q = db.query
+
 try:
     import Levenshtein
 except:
@@ -34,15 +40,18 @@ RATIO_THRESHOLD = 0.85
 DEBUG = 0
 
 
+logg = logging.getLogger(__name__)
+
+
 def register():
-    tree.registerNodeClass("workflowstep-checkdoublet", WorkflowStep_CheckDoublet)
-    registerStep("workflowstep-checkdoublet")
+    #tree.registerNodeClass("workflowstep-checkdoublet", WorkflowStep_CheckDoublet)
+    registerStep("workflowstep_checkdoublet")
 
 
 def getNodeAttributeName(field):
     metafields = [x for x in field.getChildren() if x.type == 'metafield']
     if len(metafields) != 1:
-        logging.getLogger("workflows").error("checkdoublet: maskfield %s zero or multiple metafield child(s)" % field.id)
+        logg.error("checkdoublet: maskfield %s zero or multiple metafield child(s)", field.id)
     return metafields[0].name
 
 
@@ -60,7 +69,7 @@ def getAttributeNamesForMask(node, language, maskname="shortview"):
         for orderpos, field in ordered_fields:
             res.append(getNodeAttributeName(field))
     else:
-        logging.getLogger("workflows").error("checkdoublet: no mask of name %s for node %s, %s" % (maskname, str(node.id), node.type))
+        logg.error("checkdoublet: no mask of name %s for node %s, %s", maskname, node.id, node.type)
 
     return res
 
@@ -74,19 +83,19 @@ def getLabelForAttributename(mdt_name, attr_name, maskname_list):
     res = attr_name
 
     try:
-        mdt = tree.getRoot('metadatatypes').getChild(mdt_name)
+        mdt = q(Metadatatypes).one().children.filter_by(name=mdt_name).one()
         field = [x for x in getFieldsForMeta(mdt_name) if x.name == attr_name][0]
 
         masks = []
         for maskname in maskname_list:
-            mask = mdt.getChild(maskname)
+            mask = mdt.children.filter_by(name=maskname).one()
             if mask.type == 'mask':
                 masks.append(mask)
 
-        set_maskitems_for_field = set([x for x in field.getParents() if x.type == 'maskitem'])
+        set_maskitems_for_field = set([x for x in field.parents if x.type == 'maskitem'])
 
         for mask in masks:
-            maskitems = list(set_maskitems_for_field.intersection(set(mask.getChildren())))
+            maskitems = list(set_maskitems_for_field.intersection(set(mask.children)))
             if maskitems:
                 return maskitems[0].name
     except:
@@ -97,7 +106,7 @@ def getLabelForAttributename(mdt_name, attr_name, maskname_list):
 
 def getAttr(node, attributename):
     res = node.get(attributename)
-    if getTypeForAttributename(node.getSchema(), attributename).lower() == 'date':
+    if getTypeForAttributename(node.schema, attributename).lower() == 'date':
         test = res.split('-')
         if len(test) > 2 and test[1] == '00' and len(test[0]) == 4:
             return test[0]
@@ -120,11 +129,9 @@ class WorkflowStep_CheckDoublet(WorkflowStep):
 
         if "gotrue" in req.params:
             chosen_id = req.params.get('chosen_id').strip()
-            try:
-                chosen_node = tree.getNode(chosen_id)
-            except tree.NoSuchNodeError:
-                msg = "checkdoublet: no such node as chosen_node: %s" % chosen_id
-                logging.getLogger("workflows").error(msg)
+            chosen_node = q(Node).get(chosen_id)
+            if chosen_node is None:
+                logg.error("checkdoublet: no such node as chosen_node: %s", chosen_id)
 
             all_ids = req.params.get('all_ids')
             nid_list = [x.strip() for x in all_ids.split(';')]
@@ -134,17 +141,16 @@ class WorkflowStep_CheckDoublet(WorkflowStep):
                 import core.xmlnode
                 checked_to_remove = self.get("checked_to_remove")
                 for nid in nid_list:
-                    try:
-                        n = tree.getNode(nid)
+                    n = q(Node).get(nid)
+                    if n:
                         for wf_step, wf_step_children, wf_step_children_ids in step_children_list:
                             if n.id in wf_step_children_ids:
                                 if checked_to_remove:
-                                    msg_tuple = (nid, chosen_id, wf_step.name, wf_step.id, current_workflow.name, current_workflow.id)
-                                    msg = "checkdoublet: going to remove node %s (doublette of node %s) from workflowstep '%s' (%s) of workflow '%s' (%s)" % msg_tuple
-                                    logging.getLogger('workflows').info(msg)
-                                    wf_step.removeChild(n)
-                    except tree.NoSuchNodeError:
-                        pass
+                                    current_workflow = getNodeWorkflow(node)
+                                    logg.info("checkdoublet: going to remove node %s (doublette of node %s) from workflowstep '%s' (%s) of workflow '%s' (%s)",
+                                              nid, chosen_id, wf_step.name, wf_step.id, current_workflow.name, current_workflow.id)
+                                    wf_step.children.remove(n)
+                                    db.session.commit()
 
             handleDoublets(nid_list)
 
@@ -165,7 +171,7 @@ class WorkflowStep_CheckDoublet(WorkflowStep):
         if "gofalse" in req.params:
             return self.forwardAndShow(node, False, req)
 
-        schema = node.getSchema()
+        schema = node.schema
         attribute_names_string = self.get("attribute_names").strip()
         attribute_names = []
         if attribute_names_string:
@@ -201,16 +207,16 @@ class WorkflowStep_CheckDoublet(WorkflowStep):
         additional_attributes = [x[1] for x in additional_attributes_decorated if not x[1] in attribute_names]
 
         if exact_field not in all_attribute_names:
-            msg_tuple = (current_workflow.id, self.id, exact_field, schema, node.id)
+            msg_tuple = (getNodeWorkflow(node).id, self.id, exact_field, schema, node.id)
             msg = "checkdoublet: workflow %s, step %s (doubletcheck): exact_field '%s' not in schema '%s' of current node %s: contact administrator" % msg_tuple
             errors.append(msg)
-            logging.getLogger("workflows").error(msg)
+            logg.error(msg)
 
         if set(attribute_names) - set(all_attribute_names):
-            msg_tuple = (current_workflow.id, self.id, str(set(attribute_names) - set(all_attribute_names)), schema, node.id)
+            msg_tuple = (getNodeWorkflow(node).id, self.id, unicode(set(attribute_names) - set(all_attribute_names)), schema, node.id)
             msg = "checkdoublet: workflow %s, step %s (doubletcheck): attribute_names '%s' not in schema '%s' of current node %s: contact administrator" % msg_tuple
             errors.append(msg)
-            logging.getLogger("workflows").error(msg)
+            logg.error(msg)
 
         doublets = []
 
@@ -257,52 +263,49 @@ class WorkflowStep_CheckDoublet(WorkflowStep):
                    "buttons": self.tableRowButtons(node)}
 
         if len(doublets) == 1:
-            if DEBUG:
-                logging.getLogger('workflows').info('checkdoublet: node %s: no doublet found' % node.id)
+            logg.debug('checkdoublet: node %s: no doublet found', node.id)
             return self.forwardAndShow(node, True, req)
 
         atime = time.time()
         res = req.getTAL("workflow/checkdoublet.html", context, macro="workflow_checkdoublet")
         etime = time.time()
-
-        if DEBUG:
-            logging.getLogger('workflows').info('checkdoublet: duration getTAL: %.3f' % (etime - atime))
+        logg.debug('checkdoublet: duration getTAL: %.3f', etime - atime)
 
         return res
 
     def metaFields(self, lang=None):
         ret = list()
-        field = tree.Node("prefix", "metafield")
+        field = Metafield("prefix")
         field.set("label", t(lang, "admin_wfstep_text_before_data"))
         field.set("type", "memo")
         ret.append(field)
 
-        field = tree.Node("suffix", "metafield")
+        field = Metafield("suffix")
         field.set("label", t(lang, "admin_wfstep_text_after_data"))
         field.set("type", "memo")
         ret.append(field)
 
-        field = tree.Node("attribute_names", "metafield")
+        field = Metafield("attribute_names")
         field.set("label", t(lang, "admin_wfstep_checkdoublet_names_of_attributes_to_check"))
         field.set("type", "text")
         ret.append(field)
 
-        field = tree.Node("exact_field", "metafield")
+        field = Metafield("exact_field")
         field.set("label", t(lang, "admin_wfstep_checkdoublet_exact_field"))
         field.set("type", "text")
         ret.append(field)
 
-        field = tree.Node("additional_attribute_to_show", "metafield")
+        field = Metafield("additional_attribute_to_show")
         field.set("label", t(lang, "admin_wfstep_checkdoublet_additional_attribute_to_show"))
         field.set("type", "text")
         ret.append(field)
 
-        field = tree.Node("masklist_for_labels", "metafield")
+        field = Metafield("masklist_for_labels")
         field.set("label", t(lang, "admin_wfstep_checkdoublet_masklist_for_labels"))
         field.set("type", "text")
         ret.append(field)
 
-        field = tree.Node("checked_to_remove", "metafield")
+        field = Metafield("checked_to_remove")
         field.set("label", t(lang, "admin_wfstep_checkdoublet_check_to_remove"))
         field.set("type", "check")
         ret.append(field)

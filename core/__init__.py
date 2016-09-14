@@ -1,14 +1,11 @@
-import os
-import sys
+__version__ = "16.1dev0"
 
+# set by core.database
+db = None
+# set by core.init.init_app()
+app = None
+
+# TODO: move to web.edit
 editmodulepaths = [('', 'web/edit/modules')]
 
-from core import config
-
-print "Python Version is", sys.version.split("\n")[0]
-
-config.initialize()
-
-from core import tree
-from core import acl
-from core import users
+import utils.log

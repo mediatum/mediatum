@@ -10,7 +10,8 @@ from core.transition.helpers import get_root_path, runswith, Response
 from core.transition import httpstatus
 from core.transition.globals import request
 
-logg = logging.getLogger("athanatransition")
+
+logg = logging.getLogger(__name__)
 
 
 class AthanaBlueprint(object):

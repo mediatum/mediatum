@@ -40,12 +40,6 @@ msgstr "mediaTUM - digital collection management at TUM"
 msgid "bib_link_title"
 msgstr "to the library portal"
 
-msgid "header_shoppingbag_alt"
-msgstr "List of favourites"
-
-msgid "header_shoppingbag_title"
-msgstr "List of favourites"
-
 msgid "sub_header_user"
 msgstr "User"
 
@@ -63,6 +57,9 @@ msgstr "access denied"
 
 msgid "login_error_1"
 msgstr "Login failed! Wrong name or password."
+
+msgid "pass_change_info"
+msgstr "Please contact support: ${email}"
 
 msgid "login_submit"
 msgstr "Login"
@@ -149,7 +146,7 @@ msgid "startpage"
 msgstr "Home"
 
 msgid "occurences:"
-msgstr "Folder:"
+msgstr "Occurrences:"
 
 msgid "printview"
 msgstr "Print view"
@@ -229,8 +226,14 @@ msgstr "Less Searchfields"
 msgid "search_extendedsuper"
 msgstr "More Searchfields"
 
-msgid "all_metafields"
-msgstr "all metadata"
+msgid "all_data"
+msgstr "all data"
+
+msgid "search_for"
+msgstr "Search for"
+
+msgid "search_in"
+msgstr "Search in"
 
 msgid "search_result_header"
 msgstr "Your search string "
@@ -256,8 +259,11 @@ msgstr "fold"
 msgid "unfold"
 msgstr "unfold"
 
-msgid "search_list_title"
-msgstr "back to complete results"
+msgid "back_to_list_view_start"
+msgstr "back to start of result list"
+
+msgid "back"
+msgstr "back"
 
 msgid "search_hit"
 msgstr "hints"
@@ -287,7 +293,7 @@ msgid "Document"
 msgstr "document"
 
 msgid "Collection"
-msgstr "collection (system type)"
+msgstr "collection"
 
 msgid "User"
 msgstr "user (system type)"
@@ -299,7 +305,7 @@ msgid "Mask"
 msgstr "mask (system type)"
 
 msgid "Directory"
-msgstr "directory (system type)"
+msgstr "directory"
 
 msgid "directory"
 msgstr "Directory"
@@ -316,23 +322,23 @@ msgstr "Collection"
 msgid "Root"
 msgstr "root node (system type)"
 
-msgid "view_list_add_shoppingbag"
-msgstr "Add object to list of favourites"
-
-msgid "view_lists_add_shoppingbag"
-msgstr "Add listed objects to the favourites list"
-
 msgid "view_list_att_title"
 msgstr "document has an attachment"
 
 msgid "image_high_res_title"
 msgstr "download high resolution version"
 
+msgid "image_available_formats"
+msgstr "Available image formats"
+
 msgid "image_high_res_load"
 msgstr "  File being loaded..."
 
 msgid "image_high_res_archive"
 msgstr "Load high resolution from archive"
+
+msgid "image_no_flash_link"
+msgstr "Click here to show the image with its original size (without Flash zoom). Use this link if you experience problems with the current view."
 
 msgid "doc_fulltext_title"
 msgstr "open fulltext in new window"
@@ -411,144 +417,6 @@ msgstr "Creation Options:"
 
 msgid "mysql_comment"
 msgstr "Comment:"
-
-msgid "shoppingbag_object_added"
-msgstr "Object added to favourites."
-
-msgid "shoppingbag_objects_added"
-msgstr "Objects added to favourites."
-
-msgid "shoppingbag_object_still_added"
-msgstr "Object is already in favourites."
-
-msgid "shoppingbag_objects_still_added"
-msgstr "Objects are already in favourites."
-
-msgid "popup_shoppingbag_img_title"
-msgstr "Pictures can be exported via Drag&Drop into most applications (e.g. Powerpoint):"
-
-msgid "popup_shoppingbag_doc_title"
-msgstr "Documents can be opened:"
-
-msgid "popup_shoppingbag_media_title"
-msgstr "Multimedia files can be opened:"
-
-msgid "popup_shoppingbag_no_items"
-msgstr "No objects in your favourites"
-
-msgid "popup_shoppingbag_delete_title"
-msgstr "clear favourites"
-
-msgid "popup_shoppingbag_delete"
-msgstr "clear favourites"
-
-msgid "popup_shoppingbag_movefiles"
-msgstr "Objects will be moved..."
-
-msgid "popup_shoppingbag_add_msg"
-msgstr "Object was added to favourites."
-
-msgid "popup_shoppingbag_title"
-msgstr "Favourites"
-
-msgid "popup_shoppingbag_items_filtered"
-msgstr "Favourites were filtered, your user account has no rights to see some objects."
-
-msgid "shoppingbag_clear_item"
-msgstr "remove from list"
-
-msgid "popup_shoppingbag_object_delete"
-msgstr "Remove object from list?"
-
-msgid "popup_shoppingbag_export"
-msgstr "Export..."
-
-msgid "popup_shoppingbag_metadata"
-msgstr "metadata:"
-
-msgid "popup_shoppingbag_imageonly"
-msgstr "only images"
-
-msgid "popup_shoppingbag_imagemeta"
-msgstr "images and metadata"
-
-msgid "popup_shoppingbag_metaonly"
-msgstr "only metadata"
-
-msgid "popup_shoppingbag_size"
-msgstr "size:"
-
-msgid "popup_shoppingbag_imagesize"
-msgstr "image dimensions:"
-
-msgid "popup_shoppingbag_or"
-msgstr "or"
-
-msgid "popup_shoppingbag_maximgsize"
-msgstr "max. length:"
-
-msgid "popup_shoppingbag_stdsize"
-msgstr "std. size:"
-
-msgid "popup_shoppingbag_format"
-msgstr "format:"
-
-msgid "popup_shoppingbag_ziptitle"
-msgstr "export as zip file"
-
-msgid "popup_shoppingbag_doconly"
-msgstr "only documents"
-
-msgid "popup_shoppingbag_docmeta"
-msgstr "docuemtns and metadata"
-
-msgid "popup_shoppingbag_mediaonly"
-msgstr "only objects"
-
-msgid "popup_shoppingbag_mediameta"
-msgstr "objects and metadata"
-
-msgid "popup_shoppingbag_ownbags"
-msgstr "Own favourites:"
-
-msgid "popup_shoppingbag_private"
-msgstr "private favourites (not shared)"
-
-msgid "popup_shoppingbag_share_bag"
-msgstr "toggle favourites public/private"
-
-msgid "popup_shoppingbag_delete_bag"
-msgstr "clear favourites"
-
-msgid "popup_shoppingbag_load_bag"
-msgstr "load objects from favourites"
-
-msgid "popup_shoppingbag_privateinfo"
-msgstr "private favourites"
-
-msgid "popup_shoppingbag_savebag"
-msgstr "Save favourites:"
-
-msgid "popup_shoppingbag_name"
-msgstr "Name:"
-
-msgid "popup_shoppingbag_save"
-msgstr "Save"
-
-msgid "popup_shoppingbag_loadbag"
-msgstr "Load external favourites (by key):"
-
-msgid "popup_shoppingbag_key"
-msgstr "Key:"
-
-msgid "popup_shoppingbag_load"
-msgstr "load"
-
-msgid "popup_shoppingbag_markall"
-msgstr "Mark all objects"
-
-msgid "popup_shoppingbag_unmarkall"
-msgstr "Unmark selection"
 
 msgid "popup_help_title"
 msgstr "Help for metadata field "
@@ -712,15 +580,17 @@ msgstr "Manage messages"
 msgid "tab_identifier"
 msgstr "Create identifier"
 
+msgid "liststyle_text"
+msgstr "list view, only text"
 
-msgid "Text-Ansicht"
-msgstr "text view"
+msgid "liststyle_list"
+msgstr "list view with thumbnails"
 
-msgid "Thumbnail-Ansicht"
+msgid "liststyle_thumbnailbig"
+msgstr "thumbnail view (big)"
+
+msgid "liststyle_thumbnail"
 msgstr "thumbnail view"
-
-msgid "Listen-Ansicht"
-msgstr "list view"
 
 msgid "full_standard_doc_title"
 msgstr "Default view for documents"
@@ -986,13 +856,7 @@ msgstr "Size"
 msgid "att_browser_files"
 msgstr "(${c} Dateien)"
 
-msgid "video_plugin_info"
-msgstr "(flash plugin required)"
-
 msgid "video_showvideo"
-msgstr "show video"
-
-msgid "flash_showvideo"
 msgstr "show video"
 
 msgid "search_result_text"
@@ -1013,8 +877,8 @@ msgstr "Error while processing file! Please check processed file."
 msgid "searchresult"
 msgstr "Searchresult"
 
-msgid "If_you_experience_problems_opening_this_document_please_try"
-msgstr "If you experience problems opening this document, please try"
+msgid "alternative_pdf_link"
+msgstr "If you experience problems opening the document, please try this link"
 
 msgid "popup_help_header"
 msgstr "Help"
@@ -1266,16 +1130,22 @@ msgid "workflow_key"
 msgstr "Key"
 
 msgid "document_view_new_version_exist"
-msgstr "There is a ${a_open}newer version${a_close} of the object available."
+msgstr "There is a newer version of the object available."
 
 msgid "document_view_version_deleted"
-msgstr "The version has been deleted.<br />The object will be show in the ${a_open}newest version${a_close}."
+msgstr "The version has been deleted.<br />The object will be show in the newest version."
 
 msgid "document_view_from"
 msgstr "from"
 
 msgid "document_view_current_version_from"
 msgstr "<b>Shown version: </b><br/>${version} from"
+
+msgid "document_view_is_current_version_with_tag_from"
+msgstr "<b>Shown version: </b><br/>${version} (Current Version) from"
+
+msgid "document_view_is_current_version_without_tag_from"
+msgstr "<b>Shown version: </b><br/>Current Version from"
 
 msgid "document_view_other_versions_of_the_document"
 msgstr "<b>Other versions of the object:</b><br/>"
@@ -1313,3 +1183,27 @@ msgstr "File:"
 
 msgid "file_size"
 msgstr "File size:"
+
+msgid "direct_link_current_node"
+msgstr "Permanent link for displayed object"
+
+msgid "next"
+msgstr "next"
+
+msgid "previous"
+msgstr "previous"
+
+msgid "no_metadata_to_display"
+msgstr "There is no metadata that can be displayed for this object."
+
+msgid "untagged_version"
+msgstr "no version number"
+
+msgid "current_version"
+msgstr "Current Version"
+
+msgid "guest"
+msgstr "Guest"
+
+msgid "audio_download_link"
+msgstr "download"

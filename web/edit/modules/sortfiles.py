@@ -17,25 +17,23 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import core.acl as acl
-import core.tree as tree
-import core.users as users
-import logging
-from core.acl import AccessData
+
+from sqlalchemy import func
 from utils.utils import getCollection
 from core.translation import t
-from core.transition import httpstatus
+from core.transition import httpstatus, current_user
+from core import Node
+from core import db
+from schema.schema import Metadatatype
 
-log = logging.getLogger('edit')
-utrace = logging.getLogger('usertracing')
+q = db.query
 
 
 def getContent(req, ids):
-    user = users.getUserFromRequest(req)
-    access = AccessData(req)
-    node = tree.getNode(ids[0])
+    user = current_user
+    node = q(Node).get(ids[0])
 
-    if "sortfiles" in users.getHideMenusForUser(user) or not access.hasWriteAccess(node):
+    if "sortfiles" in user.hidden_edit_functions or not node.has_write_access():
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
@@ -44,6 +42,7 @@ def getContent(req, ids):
     if "globalsort" in req.params:
         c.set("sortfield", req.params["globalsort"])
     collection_sortfield = c.get("sortfield")
+    db.session.commit()
 
     class SortChoice:
 
@@ -52,12 +51,24 @@ def getContent(req, ids):
             self.value = value
 
     sortfields = [SortChoice(t(req, "off"), "")]
-    for ntype, num in c.getAllOccurences(AccessData(req)).items():
-        if ntype.getSortFields():
-            for sortfield in ntype.getSortFields():
-                sortfields += [SortChoice(sortfield.getLabel(), sortfield.getName())]
-                sortfields += [SortChoice(sortfield.getLabel() + t(req, "descending"), "-" + sortfield.getName())]
-            break
+    schemas = (t[0] for t in c.all_children_by_query(q(Node.schema)
+                                                  .filter_by(subnode=False)
+                                                  .group_by(Node.schema)
+                                                  .order_by(func.count(Node.schema).desc())))
 
-    return req.getTAL("web/edit/modules/sortfiles.html", {"node": node, "collection_sortfield": collection_sortfield,
-                                                          "sortchoices": sortfields, "name": c.getName()}, macro="edit_sortfiles")
+    for schema in schemas:
+        metadatatype = q(Metadatatype).filter_by(name=schema).one()
+        if metadatatype:
+            sort_fields = metadatatype.metafields.filter(Node.a.opts.like(u"%o%")).all()
+            if sort_fields:
+                for sortfield in sort_fields:
+                    sortfields += [SortChoice(sortfield.getLabel(), sortfield.name)]
+                    sortfields += [SortChoice(sortfield.getLabel() + t(req, "descending"), "-" + sortfield.name)]
+                break
+
+
+    return req.getTAL("web/edit/modules/sortfiles.html", {"node": node,
+                                                          "collection_sortfield": collection_sortfield,
+                                                          "sortchoices": sortfields,
+                                                          "name": c.name},
+                      macro="edit_sortfiles")

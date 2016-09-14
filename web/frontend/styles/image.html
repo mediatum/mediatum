@@ -1,58 +1,101 @@
 <link rel="stylesheet" href="css/childs.css">
 
-<metal:macro use-macro="web/frontend/styles/macros.html/version_alerts"/>
+<tal:block replace="raw old_version_alert_html"></tal:block>
+<tal:block replace="raw deleted_version_alert_html"></tal:block>
 
-<metal:macro use-macro="web/frontend/styles/macros.html/deleted"/>
 
-<div style="width: 100%; text-align:right">
-    <a tal:attributes="href python:'javascript:shoppingBag(\'{}\')'.format(node.id)">
-        <img i18n:attributes="title view_list_add_shoppingbag" border="0" src="/img/favourite_add.png"/></a>
-    <a tal:attributes="href python:'/print/{}'.format(node.id)" i18n:attributes="title printview" target="_blank"><img src="/img/print_icon.gif"/></a>
+<div id="object_main">
+    <div id="object_image" tal:condition="python:canseeoriginal">
+        <a tal:condition="python:not zoom">
+            <tal:block tal:condition="python:node.get('width')!=''">
+            <img tal:condition="python:int(node.get('width'))>=int(node.get('height'))" tal:attributes="src presentation_url; onClick python:'fullSizePopup('+ustr(node.id)+', ' + ustr(node.get('width')) +', ' + ustr(node.get('height')) +')'" style="width:300px;cursor:pointer;border:1px double silver;" border="1px" />
+            <img tal:condition="python:int(node.get('width'))<int(node.get('height'))" tal:attributes="src presentation_url; onClick python:'fullSizePopup('+ustr(node.id)+', ' + ustr(node.get('width')) +', ' + ustr(node.get('height')) +')'" style="height:300px;cursor:pointer;border:1px double silver;" border="1px" />
+            </tal:block>
+            <tal:block tal:condition="python:node.get('width')==''">
+                <img tal:condition="python:node.get('width')>=node.get('height')" tal:attributes="src presentation_url; onClick python:'fullSizePopup('+ustr(node.id)+', ' + ustr(node.get('width')) +', ' + ustr(node.get('height')) +')'" style="width:300px;cursor:pointer;border:1px double silver;" border="1px" />
+                <img tal:condition="python:node.get('width')<node.get('height')" tal:attributes="src presentation_url; onClick python:'fullSizePopup('+ustr(node.id)+', ' + ustr(node.get('width')) +', ' + ustr(node.get('height')) +')'" style="height:300px;cursor:pointer;border:1px double silver;" border="1px" />
+            </tal:block>
+        </a>
+        <a tal:condition="python:zoom">
+            <img tal:condition="python:int(node.get('width'))>=int(node.get('height'))" tal:attributes="src presentation_url; onClick python:'fullSizePopup('+ustr(node.id)+', 700, 700)'" style="width:300px;cursor:pointer;border:1px double silver;" border="1px" />
+            <img tal:condition="python:int(node.get('width'))<int(node.get('height'))" tal:attributes="src presentation_url; onClick python:'fullSizePopup('+ustr(node.id)+', 700, 700)'" style="cursor:pointer;border:1px double silver;" border="1px" />
+        </a>
+
+        <div tal:condition="python:image_formats">
+          <h3 i18n:translate="image_available_formats"></h3>
+          <ul tal:repeat="type python:image_formats">
+              <li>
+              <a tal:attributes="href python:image_formats[type]['url']">
+                  <span tal:replace="python:type"></span> (<span tal:replace="python:image_formats[type]['display_size']"></span>)
+              </a>
+              </li>
+          </ul>
+        </div>
+
+        <tal:block tal:condition="python:highres_url">
+			<div tal:condition="python:not archive_fetch_url" style="padding-top:20px">
+				<a tal:attributes="href highres_url" i18n:translate="image_high_res_title">TEXT</a>
+			</div>
+
+			<div tal:condition="python:archive_fetch_url" style="padding-top:10px">
+				<script>
+					function getArchivedFile(path){
+						// replace archive fetch link with spinner image 
+						$('#archive_div').html('<img src="/img/wait_small.gif"/>');
+						$.ajax({
+							url: path,
+							type: "GET",
+							success: function(msg) {
+								$('#high_resolution_link').css("display", "inherit");
+								$('#archive_div').hide()
+							},
+							error: function(msg) { 
+								alert(msg.responseText); 
+								$('#archive_div').hide();
+							}});
+					}
+				</script>
+
+				<a style="display:none;" id="high_resolution_link" tal:attributes="href highres_url" i18n:translate="image_high_res_title">TEXT</a>
+
+				<div id="archive_div">
+					<a id="get_archive_link" tal:attributes="href python:'javascript:getArchivedFile(\'{}\')'.format(archive_fetch_url)" i18n:translate="image_high_res_archive">TEXT</a>
+				</div>
+			</div>
+        </tal:block>
+        
+        <div tal:condition="python:len(attachment)>0" id="object_attachment" style="padding:5px 0px">
+            <p><a tal:attributes="onclick python:'javascript:openPopup(\'/attachmentbrowser?id='+ustr(node.id)+'&path='+path+'\', \'Attachment\', 400, 400)'" i18n:translate="doc_att_browser" href="#" >TEXT</a></p>
+        </div>
+    </div>
+
+    <div id="object_image" tal:condition="python:not canseeoriginal">
+        <a tal:condition="python:zoom">
+            <tal:block tal:condition="python:node.get('width')!=''">
+                <img tal:condition="python:int(node.get('width'))>=int(node.get('height'))" tal:attributes="src presentation_url; onClick python:'fullSizePopup('+ustr(node.id)+', 700, 700)'" style="width:300px;cursor:pointer;border:1px double silver;" border="1px" />
+                <img tal:condition="python:int(node.get('width'))<int(node.get('height'))" tal:attributes="src presentation_url; onClick python:'fullSizePopup('+ustr(node.id)+', 700, 700)'" style="height:300px;cursor:pointer;border:1px double silver;" border="1px" />
+            </tal:block>
+            <tal:block tal:condition="python:node.get('width')==''">
+                <img tal:condition="python:node.get('width')>=node.get('height')" tal:attributes="src presentation_url; onClick python:'fullSizePopup('+ustr(node.id)+', 700, 700)'" style="width:300px;cursor:pointer;border:1px double silver;" border="1px" />
+                <img tal:condition="python:node.get('width')<node.get('height')" tal:attributes="src presentation_url; onClick python:'fullSizePopup('+ustr(node.id)+', 700, 700)'" style="height:300px;cursor:pointer;border:1px double silver;" border="1px" />
+            </tal:block>
+        </a>
+        <img tal:condition="python:not zoom" tal:attributes="src presentation_url" style="width: 300px;border:1px double silver;" border="1px"/>
+
+        <div tal:condition="python:image_formats">
+          <h3 i18n:translate="image_available_formats"></h3>
+          <ul tal:repeat="type python:image_formats">
+              <li>
+              <a tal:attributes="href python:image_formats[type]['url']">
+                  <span tal:replace="python:type"></span> (<span tal:replace="python:image_formats[type]['display_size']"></span>)
+              </a>
+              </li>
+          </ul>
+        </div>
+    </div>
+    <div id="object_meta" tal:content="raw metadata" style="margin-left: 325px;" />
 </div>
 
-<div id="object_image" tal:condition="python:canseeoriginal">
-    <tal:block tal:condition="python:not zoom">
-    <a>
-        <img tal:attributes="src python:'/thumb2/{}'.format(node.id); onClick python:'fullSizePopup({}, {}, {})'.format(node.id, node.get('width'), node.get('height'))" style="width:300px;cursor:pointer;border:1px double silver;" border="1px" />
-    </a>
-    </tal:block>
-
-    <tal:block tal:condition="python:zoom">
-    <a>
-        <img tal:attributes="src python:'/thumb2/{}'.format(node.id); onClick python:'fullSizePopup({}, 700, 700)'.format(node.id)" style="width:300px;cursor:pointer;border:1px double silver;" border="1px" />
-    </a>
-    </tal:block>
-
-    <div tal:condition="python:tif!=''" id="object_highresolution" style="padding-top:10px">
-        <a tal:attributes="href python:'/file/{}/{}'.format(node.id, str(tif))" i18n:translate="image_high_res_title">TEXT</a>
-        <img id="object_highresolution_remark" style="display:none;" src="/img/wait_small.gif"/>
-    </div>
-
-    <div tal:condition="python:len(attachment)>0" id="object_attachment" style="padding:10px 0px">
-        <a tal:attributes="onclick python:'javascript:openPopup(\'/attachmentbrowser?id={}&path={}\', \'Attachment\', 400, 400)'.format(node.id, path)" i18n:translate="doc_att_browser" href="#" >TEXT</a>
-    </div>
-
-    <div id="object_versions" tal:define="versions python:node.getVersionList()" tal:condition="python:len(versions)>1">
-        <metal:macro use-macro="web/frontend/styles/macros.html/object_versions"/>
-    </div>
-</div>
-
-<div id="object_image" tal:condition="python:not canseeoriginal">
-    <a tal:condition="python:zoom">
-        <img tal:attributes="src python:'/thumb2/{}'.format(node.id); onClick python:'fullSizePopup({}, 700, 700)'.format(node.id)" style="width:300px;cursor:pointer;border:1px double silver;" border="1px" />
-    </a>
-    <img tal:condition="python:not zoom" tal:attributes="src python:'/thumb2/{}'.format(node.id)" style="width: 300px;border:1px double silver;" border="1px"/>
-    <div id="object_versions">
-        <metal:macro use-macro="web/frontend/styles/macros.html/object_versions"/>
-    </div>
-</div>
-
-<div tal:content="raw metadata" style="margin-left:330px"/>
-
-<p tal:condition="python:node.get('license')!='' and ', http' in node.get('license')" style="text-align:right" class="licenseicon">
-    <a tal:attributes="href python:node.get('license').split(',')[1]" target="_blank"><img tal:attributes="src python:'/img/'+node.get('license').split(',')[0]+'.png'" style="width:80px;"/></a>
-</p>
-    
 <div style="clear:both"/>
-<metal:macro use-macro="web/frontend/styles/macros.html/bothView"/>
+<tal:block replace="raw children_html"></tal:block>
 <div style="clear:both"/>

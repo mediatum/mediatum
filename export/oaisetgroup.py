@@ -20,7 +20,9 @@
 """
 
 import logging
-import core.tree as tree
+
+
+logg = logging.getLogger(__name__)
 
 
 class OAISetGroup:
@@ -29,6 +31,7 @@ class OAISetGroup:
                  func_getNodesForSetSpec=None,
                  func_getSetSpecsForNode=None,
                  func_isSetEmpty=None,
+                 func_get_nodes_query_for_setspec= None,
                  descr='-undescribed OAI set group-',
                  sortorder='',
                  group_identifier=''):
@@ -38,6 +41,7 @@ class OAISetGroup:
         self.func_getNodesForSetSpec = func_getNodesForSetSpec
         self.func_getSetSpecsForNode = func_getSetSpecsForNode
         self.func_isSetEmpty = func_isSetEmpty
+        self.func_get_nodes_query_for_setspec = func_get_nodes_query_for_setspec
         self.descr = descr
         self.sortorder = sortorder
         self.group_identifier = group_identifier
@@ -57,20 +61,26 @@ class OAISetGroup:
     def getNodesForSetSpec(self, setspec, schemata):
         if self.func_getNodesForSetSpec:
             return self.func_getNodesForSetSpec(self, setspec, schemata)
-        elif setspec in self.d_queries:
+        elif setspec in self.d_filters:
+            setspecFilter = self.d_filters.get(setspec)
+            return setspecFilter
             from .oaisearchparser import OAISearchParser
             osp = OAISearchParser()
             res = osp.parse(self.d_queries[setspec]).execute()
             if setspec in self.d_filters:
                 nodefilter = self.d_filters[setspec]
-                nodelist = tree.NodeList(res)
-                # for i, n in enumerate(nodelist):
-                #    print i, n.id, n.name, n.type, n
-                res = [n.id for n in nodelist if nodefilter(setspec, n)]
+                res = [n.id for n in res if nodefilter(setspec, n)]
             return res
         else:
-            logging.getLogger('oai').error(
-                "OAI: Error: no function 'getNodesForSetSpec' found for setSpec='%s', returning empty list" % setspec)
+            logg.error("OAI: Error: no function 'getNodesForSetSpec' found for setSpec='%s', returning empty list", setspec)
+            return []
+
+    def getNodesFilterForSetSpec(self, setspec, schemata):
+        if setspec in self.d_filters:
+            setspecFilter = self.d_filters.get(setspec)
+            return setspecFilter
+        else:
+            logg.error("OAI: Error: no function 'getNodesForSetSpec' found for setSpec='%s', returning empty list", setspec)
             return []
 
     def getSetSpecsForNode(self, node, schemata=[]):
@@ -90,11 +100,8 @@ class OAISetGroup:
                         erg.append(setspec)
             return erg
         else:
-            logging.getLogger('oai').error(
-                "OAI: Error: set group %s: no function 'getSetSpecsForNode' found for node.id='%s', node.type='%s', returning empty list" %
-                (str(self), str(
-                    node.id), str(
-                    node.type)))
+            logg.error("OAI: Error: set group %s: no function 'getSetSpecsForNode' found for node.id='%s', node.type='%s', returning empty list",
+                self, node.id, node.type)
             return []
 
     def isSetEmpty(self, node, schemata=[]):

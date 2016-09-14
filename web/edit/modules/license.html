@@ -7,7 +7,7 @@
     </div>
     <div id="sub_content_content">
         <p i18n:translate="edit_license_info">TEXT</p>
-        <a tal:attributes="href python:'/edit/edit_content?id='+node.id+'&tab=license&style=popup'" target="licensewindow" i18n:translate="edit_license_gen">TEXT</a>
+        <a tal:attributes="href python:u'/edit/edit_content?id={}&tab=license&style=popup'.format(node.id)" target="licensewindow" i18n:translate="edit_license_gen">TEXT</a>
     </div>
     <div id="sub_footer_module"> </div>
 
@@ -65,13 +65,13 @@
                     <th i18n:translate="edit_license_hash">TEXT</th>
                     <th i18n:translate="edit_license_size">TEXT</th>
                 </tr>
-                <tal:block tal:repeat="child python:node.getAllChildren()">
-                    <tal:block tal:repeat="file python:child.getFiles()">
-                        <tr tal:condition="python:file.type=='original'">
-                            <td tal:content="python:child.getName()"/>
-                            <td tal:content="python:file.getName()"/>
-                            <td tal:content="python:file.getHash()"/>
-                            <td style="text-align: right" tal:content="python:file.getSize()"/>
+                <tal:block tal:repeat="child children">
+                    <tal:block tal:repeat="file python:child.files">
+                        <tr tal:condition="python:file.filetype=='original'">
+                            <td tal:content="python:child.name"/>
+                            <td tal:content="python:file.base_name"/>
+                            <td tal:content="python:file.hash"/>
+                            <td style="text-align: right" tal:content="python:file.size"/>
                         </tr>
                     </tal:block>
                 </tal:block>

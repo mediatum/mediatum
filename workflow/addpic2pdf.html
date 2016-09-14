@@ -3,13 +3,13 @@
 <!--<script type="text/javascript" language="javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.22/jquery-ui.js"> </script>-->
 <script src="js/jquery-ui.js"> </script>
 
-<script tal:content="python:'var pdf_dim = '+str(json_pdf_dimensions)+';'">;</script>
-<script tal:content="python:'var keep_params = '+str(keep_params)+';'">;</script>
-<script tal:content="python:'var logo_info_list = '+str(logo_info_list)+';'">;</script>
-<script tal:content="python:'var logo_info = '+str(logo_info)+';'">;</script>
-<script tal:content="python:'var node_id = {};'.format(node.id)">;</script>
-<script tal:content="python:'var startpageno = '+str(startpageno)+';'">;</script>
-<script tal:content="python:'var FATAL_ERROR = '+str(FATAL_ERROR)+';'">;</script>
+<script tal:content="python:u'var pdf_dim = {};'.format(json_pdf_dimensions)">;</script>
+<script tal:content="python:u'var keep_params = {};'.format(keep_params)">;</script>
+<script tal:content="python:u'var logo_info_list = {};'.format(logo_info_list)">;</script>
+<script tal:content="python:u'var logo_info = {};'.format(logo_info)">;</script>
+<script tal:content="python:u'var node_id = {};'.format(node.id)">;</script>
+<script tal:content="python:u'var startpageno = {};'.format(startpageno)">;</script>
+<script tal:content="python:u'var FATAL_ERROR = {};'.format(FATAL_ERROR)">;</script>
 
 <script>
 
@@ -637,8 +637,8 @@
       <div style="text-align:center; padding:2px;">
         <input id="checkbox_grid" type="checkbox" name="grid" onClick="gridCheckboxEvent(this.checked);"><span i18n:translate="admin_wfstep_addpic2pdf_cb_grid">Grid</span> |
         <input id="checkbox_logo_zindex" type="checkbox" name="logo_zindex" onClick="zIndexCheckboxEvent(this.checked);"><span i18n:translate="admin_wfstep_addpic2pdf_cb_logo_above_grid">logo above grid</span> |
-        <a target="_blank" tal:attributes="href python:'/wfs_addpic2pdf/serve_page/p_document.pdf?node_id={}'.format(node.id);"><span i18n:translate="admin_wfstep_addpic2pdf_link_processed">currently processed</span></a> |
-        <a target="_blank" tal:attributes="href python:'/wfs_addpic2pdf/serve_page/document.pdf?node_id={}'.format(node.id);"><span i18n:translate="admin_wfstep_addpic2pdf_link_original">original</span></a>
+        <a target="_blank" tal:attributes="href python:u'/wfs_addpic2pdf/serve_page/p_document.pdf?node_id={}'.format(node.id);"><span i18n:translate="admin_wfstep_addpic2pdf_link_processed">currently processed</span></a> |
+        <a target="_blank" tal:attributes="href python:u'/wfs_addpic2pdf/serve_page/document.pdf?node_id={}'.format(node.id);"><span i18n:translate="admin_wfstep_addpic2pdf_link_original">original</span></a>
       </div>
   </div>
 
@@ -652,9 +652,9 @@
         <form id="form_left" action="/mask" method="post">
           <div class="select">
             <span i18n:translate="admin_wfstep_addpic2pdf_select_page_to_preview">Select page to preview</span>:
-            <select id="select_pdf_page" tal:attributes="name python:'pdfpage_select_for_node_{}'.format(node.id)" size=1 onchange="g(this.name, this.value);" onselect="g(this.name, this.value);" onkeyup="g(this.name, this.value);">
+            <select id="select_pdf_page" tal:attributes="name python:u'pdfpage_select_for_node_{}'.format(node.id)" size=1 onchange="g(this.name, this.value);" onselect="g(this.name, this.value);" onkeyup="g(this.name, this.value);">
               <tal:block tal:repeat="i python: range(pdf_page_count)">
-                <option tal:attributes="value python:str(i)" tal:content="python: str(i+1)" />
+                <option tal:attributes="value python:unicode(i)" tal:content="python: unicode(i+1)" />
               </tal:block>
             </select>
           </div>
@@ -750,22 +750,22 @@
           <div style="overflow:hidden;">
             <tal:block tal:condition="python:wfs_files[fileindex].getName().startswith('m_upload_logoupload')">
               <div style="border:1px solid silver; padding:5px; overflow:auto;" class="subcontainer_logo" style="float:left;">
-                <input name="radio_logo" type="radio" onclick="radio_clicked(this.value);" tal:attributes="id python:'radio_logo_'+str(fileindex); value python:str(fileindex);"/>
+                <input name="radio_logo" type="radio" onclick="radio_clicked(this.value);" tal:attributes="id python:u'radio_logo_{}'.format(fileindex); value python:unicode(fileindex);"/>
 
                 <tal:block tal:replace="python:wfs_files[fileindex].getName().replace('m_upload_logoupload_', '')" />
                 
                 <div style="border:1px solid silver; padding:5px; overflow:auto;" style="float:left;">
                                 
-                <span style="display:none" tal:content="python:wfs_files[fileindex].getName()" tal:attributes="id python:'radio_logo_'+str(fileindex)+'_fullname';" />
+                <span style="display:none" tal:content="python:wfs_files[fileindex].getName()" tal:attributes="id python:u'radio_logo_{}_fullname'.format(fileindex);" />
                 <!-- <br/> -->
-                <div tal:attributes="id python:'div_logo_small_'+str(fileindex);  title python:str(logo_info_list[fileindex])">
-                  <img tal:attributes="src python:'/file/'+wfs.id+'/'+wfs_files[fileindex].getName();id python:'image_logo_'+str(fileindex); height python: '60px';" />
+                <div tal:attributes="id python:u'div_logo_small_{}'.format(fileindex);  title python:unicode(logo_info_list[fileindex])">
+                  <img tal:attributes="src python:u'/file/{}/{}'.format(wfs.id, wfs_files[fileindex].getName());id python:u'image_logo_{}'.format(fileindex); height python: '60px';" />
                 </div>
-                <div style="display:none;" tal:attributes="id python:'div_logo_'+str(fileindex)">
-                  <img  tal:attributes="src python:'/file/'+wfs.id+'/'+wfs_files[fileindex].getName();id python:'image_logo_'+str(fileindex); style python:'height:'+str(float(logo_info_list[fileindex]['size'][1])/float(logo_info_list[fileindex]['dpi'])*2.54)+'cm'" />
+                <div style="display:none;" tal:attributes="id python:u'div_logo_{}'.format(fileindex)">
+                  <img  tal:attributes="src python:u'/file/{}/{}'.format(wfs.id, wfs_files[fileindex].getName());id python:u'image_logo_{}'.format(fileindex); style python:u'height:{}cm'.format(float(logo_info_list[fileindex]['size'][1])/float(logo_info_list[fileindex]['dpi'])*2.54)" />
                 </div>
                 <div class="no_wrap">
-                <input type="text" tal:attributes="value python:logo_info[wfs_files[fileindex].getName()]['url']; id python:'input_radio_logo_'+str(fileindex); size python:max(len(logo_info[wfs_files[fileindex].getName()]['url'])+10, 40)"/>
+                <input type="text" tal:attributes="value python:logo_info[wfs_files[fileindex].getName()]['url']; id python:u'input_radio_logo_{}'.format(fileindex); size python:max(len(logo_info[wfs_files[fileindex].getName()]['url'])+10, 40)"/>
                 </div>
                 </div>
               </div>

@@ -1,5 +1,6 @@
 
 <tal:block metal:define-macro="editorfield">
+<div style="padding-left:220px;">
     <style tal:attributes="name python:name">
         select.vertical{display:block;width:100%;margin-bottom:5px;height:25px;}
     </style>
@@ -7,7 +8,7 @@
     <div tal:attributes="style python:'width:{}px'.format(width-16)">
         <input type="text" tal:attributes="name python:'{}'.format(name); value python:value" style="display:none;"/>
     </div>
-    <script tal:content="python:'var startnode = \'{}\';\nvar attrname = \'{}\';\nvar attrfilter = \'{}\';\nvar pre = Object();\npre[\'{}\'] = {};'.format(startnode, name, attrname, name, value.split(';'))">TEXT</script>
+    <script tal:content="python:'var startnode = \'{}\';\nvar attrname = \'{}\';\nvar attrfilter = \'{}\';\nvar pre = Object();\npre[\'{}\'] = {};'.format(startnode, name, attrname, name.encode('utf-8'), value.encode('utf-8').split(';'))">TEXT</script>
     <script type="text/javascript">
     $(function() {
 
@@ -26,13 +27,15 @@
             var labels = [];
             $(this).siblings().find(':selected').each(function() { labels.push($(this).val()); });
                 $('input[name='+attrname+']').val(labels.join(';'));
-            }
+            };
 
         $.getJSON('/metatype/hlist?attrfilter='+attrfilter, {id: startnode}, function(tree) {
             $('input[name='+attrname+']').optionTree(tree, options).change(displayParents);
         });
     });
     </script>
+
+</div>
 </tal:block>
 
 <div metal:define-macro="maskeditor" style="display:none" name="div_hlist" id="div_hlist">

@@ -23,29 +23,18 @@ import os
 import time
 import logging
 
-import core.tree as tree
-import core.users as users
-from core import config
-from core.acl import AccessData
-from schema.schema import exportMetaScheme
+from schema.schema import Metadatatype
 from utils.utils import getMimeType
-from web.services.cache import Cache
+from core import db
+from core.users import user_from_session, get_guest_user, getUser
+from core.xmlnode import getNodeXML
 
+import core.oauth as oauth
 
-logger = logging.getLogger('services')
-host = "http://" + config.get("host.name")
+q = db.query
 
-guestAccess = AccessData(user=users.getUser('Gast'))
-collections = tree.getRoot('collections')
+logg = logging.getLogger(__name__)
 
-
-FILTERCACHE_NODECOUNT_THRESHOLD = 2000000
-
-filtercache = Cache(maxcount=10, verbose=True)
-searchcache = Cache(maxcount=10, verbose=True)
-resultcache = Cache(maxcount=25, verbose=True)
-
-SEND_TIMETABLE = False
 
 
 def get_sheme(req, path, params, data, name):
@@ -54,39 +43,42 @@ def get_sheme(req, path, params, data, name):
     r_timetable = []
     userAccess = None
 
+
+
     # get the user and verify the signature
-    if params.get('user'):
-        # user=users.getUser(params.get('user'))
-        #userAccess = AccessData(user=user)
-        _user = users.getUser(params.get('user'))
-        if not _user:  # user of dynamic
 
-            class dummyuser:  # dummy user class
+    session_user = user_from_session(req.session)
 
-                def getGroups(self):  # return all groups with given dynamic user
-                    return [g.name for g in tree.getRoot('usergroups').getChildren() if g.get(
-                        'allow_dynamic') == '1' and params.get('user') in g.get('dynamic_users')]
+    # get the user and verify the signature
+    login_name = params.get('user')
+    scheme_name = name
 
-                def getName(self):
-                    return params.get('user')
+    if login_name:
+        user = getUser(login_name)
+        if user:
+            flag_user_oauth_verified =  oauth.verify_request_signature(
+                req.fullpath +
+                '?',
+                params)
+    else:
+        flag_user_oauth_verified = False
+        user = get_guest_user()
+    if user:
+        username = user.getName()
+    else:
+        username = None
+    entry_msg = "user: %r, username: %r, session_user: %r, scheme: %r" % (login_name,
+                                                                          username,
+                                                                          session_user.getName(),
+                                                                          scheme_name)
+    logg.info("metadata %s" % entry_msg)
 
-                def getDirID(self):  # unique identifier
-                    return params.get('user')
 
-                def isAdmin(self):
-                    return 0
 
-            _user = dummyuser()
-        userAccess = AccessData(user=_user)
 
-        if userAccess.user is not None:
-            valid = userAccess.verify_request_signature(req.fullpath, params)
-            if not valid:
-                userAccess = None
-        else:
-            userAccess = None
 
-    if userAccess is None:
+
+    if 0 and not (user and flag_user_oauth_verified):
         d = {}
         d['status'] = 'fail'
         d['html_response_code'] = '403'  # denied
@@ -102,7 +94,9 @@ def get_sheme(req, path, params, data, name):
 
     if name.endswith('/'):
         name = name[:-1]
-    s = exportMetaScheme(name)
+
+    metadatatype = q(Metadatatype).filter(Metadatatype.name==name).one()
+    s = getNodeXML(metadatatype)
 
     def compressForDeflate(s):
         import gzip
@@ -183,8 +177,7 @@ def serve_file(req, path, params, data, filepath):
     else:
         basedir = os.path.dirname(os.path.abspath(__file__))
     abspath = os.path.join(basedir, 'static', filepath)
-    msg = "web service trying to serve: " + str(abspath)
-    logger.info(msg)
+    logg.info("web service trying to serve: ", abspath)
     if os.path.isfile(abspath):
         filesize = os.path.getsize(abspath)
         req.sendFile(abspath, mimetype, force=1)

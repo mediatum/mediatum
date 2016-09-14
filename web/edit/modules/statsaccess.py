@@ -17,18 +17,17 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import os
-from PIL import Image
 import core.config as config
-import core.tree as tree
-import core.acl as acl
-import core.users as users
 
 from core.stats import buildStat, StatisticFile
 from core.translation import t, lang
 from utils.utils import splitpath
 from utils.date import format_date, now
-from core.transition import httpstatus
+from core.transition import httpstatus, current_user
+from core import Node
+from core import db
+
+q = db.query
 
 try:
     from reportlab.platypus import Paragraph, XPreformatted, BaseDocTemplate, SimpleDocTemplate, FrameBreak, Table, TableStyle, Image as PdfImage, Frame, PageBreak, PageTemplate
@@ -53,11 +52,10 @@ def getContent(req, ids):
     if len(ids) > 0:
         ids = ids[0]
 
-    user = users.getUserFromRequest(req)
-    node = tree.getNode(ids)
-    access = acl.AccessData(req)
+    user = current_user
+    node = q(Node).get(ids)
 
-    if "statsaccess" in users.getHideMenusForUser(user) or not access.hasWriteAccess(node):
+    if "statsaccess" in user.hidden_edit_functions or not node.has_write_access():
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
@@ -65,13 +63,12 @@ def getContent(req, ids):
         getPopupWindow(req, ids)
         return ""
 
-    node = tree.getNode(ids)
     statfiles = {}
     p = ""
 
-    for file in node.getFiles():
-        if file.getType() == "statistic":
-            period, type = getPeriod(file.retrieveFile())
+    for file in node.files:
+        if file.filetype == "statistic":
+            period, type = getPeriod(file.abspath)
             if period > p:
                 p = period
 
@@ -90,7 +87,7 @@ def getContent(req, ids):
         v["current_file"] = StatisticFile(statfiles[v["current_period"].split("_")[0]][v["current_period"].split("_")[1]][0])
     else:
         v["current_file"] = StatisticFile(None)
-    v["nodename"] = tree.getNode
+    v["nodename"] = node.name
 
     items = v["current_file"].getProgress('country')
     return req.getTAL("web/edit/modules/statsaccess.html", v, macro="edit_stats")
@@ -103,16 +100,16 @@ def getPopupWindow(req, ids):
         v["action"] = "doupdate"
 
     elif req.params.get("action") == "do":  # do action and refresh current month
-        collection = tree.getNode(req.params.get("id"))
+        collection = q(Node).get(req.params.get("id"))
         collection.set("system.statsrun", "1")
-        buildStat(collection, str(format_date(now(), "yyyy-mm")))
+        buildStat(collection, ustr(format_date(now(), "yyyy-mm")))
         req.writeTAL("web/edit/modules/statsaccess.html", {}, macro="edit_stats_result")
         collection.removeAttribute("system.statsrun")
         return
 
     else:
         v["action"] = "showform"
-        v["statsrun"] = tree.getNode(ids).get("system.statsrun")
+        v["statsrun"] = q(Node).get(ids).get("system.statsrun")
     req.writeTAL("web/edit/modules/statsaccess.html", v, macro="edit_stats_popup")
 
 
@@ -125,7 +122,7 @@ class StatsAccessPDF:
         self.language = language
         self._pages = 1
         self.data = []
-        self.collection = tree.getNode(id)
+        self.collection = q(Node).get(id)
 
     def myPages(self, canvas, doc):
         doc.pageTemplate.frames = self.getStyle(self._pages)
@@ -204,20 +201,20 @@ class StatsAccessPDF:
             for i in range(0, 45):
                 if i < len(d):
                     try:
-                        nodename = tree.getNode(d[i][0]).getName()
-                        suffix = " (" + str(d[i][0]) + ")"
+                        nodename = q(Node).get(d[i][0]).name
+                        suffix = " (" + ustr(d[i][0]) + ")"
                         n = nodename + suffix
                         if namecut > 0 and len(n) > namecut:
                             delta = len(n) - namecut
                             new_length = len(nodename) - delta - 3
                             n = nodename[0:new_length] + "..." + suffix
                     except:
-                        n = str(d[i][0])
+                        n = ustr(d[i][0])
                     items.append(Paragraph(n, self.bv))
                     items.append((FrameBreak()))
                     items.append(PdfImage(config.basedir + "/web/img/stat_bar.png", width=d[i][1] * 280 / max, height=10))
                     items.append((FrameBreak()))
-                    items.append(Paragraph(str(d[i][1]), self.bv))
+                    items.append(Paragraph(ustr(d[i][1]), self.bv))
                     items.append((FrameBreak()))
         return items
 
@@ -258,11 +255,11 @@ class StatsAccessPDF:
 
             for v in sorted([(len(d[k]['items']), k) for k in filter(lambda x:x != 0, d.keys())], reverse=True)[:50]:
                 if v[0] != 0:
-                    items.append(Paragraph(str(v[1]), self.bv))
+                    items.append(Paragraph(ustr(v[1]), self.bv))
                     items.append((FrameBreak()))
                     items.append(PdfImage(config.basedir + "/web/img/stat_bar.png", width=v[0] * 400 / max, height=10))
                     items.append((FrameBreak()))
-                    items.append(Paragraph(str(v[0]), self.bv))
+                    items.append(Paragraph(ustr(v[0]), self.bv))
                     items.append((FrameBreak()))
 
             items = items[:-1]
@@ -334,7 +331,7 @@ class StatsAccessPDF:
                 if k > 0:  # first item holds max values
                     if self.stats.getWeekDay(k) > 4:
                         weekend.append(('BACKGROUND', (k - 1, 0), (k - 1, -1), colors.HexColor('#E6E6E6')))
-                    t_data.append('%02d \n%s' % (k, t(self.language, "monthname_" + str(int(self.period[-2:])) + "_short")))
+                    t_data.append('%02d \n%s' % (k, t(self.language, "monthname_" + ustr(int(self.period[-2:])) + "_short")))
 
             tb = Table([t_data], 31 * [17], 30)
             tb.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'TOP'),
@@ -354,7 +351,7 @@ class StatsAccessPDF:
                 if k > 0:  # first item holds max values
                     if self.stats.getWeekDay(k) > 4:
                         weekend.append(('BACKGROUND', (0, k), (-1, k), colors.HexColor('#E6E6E6')))
-                    t_data.append(['%02d.%s %s' % (k, t(self.language, "monthname_" + str(int(self.period[-2:])) + "_short"),
+                    t_data.append(['%02d.%s %s' % (k, t(self.language, "monthname_" + ustr(int(self.period[-2:])) + "_short"),
                                                    self.period[:4]), len(d[k]["visitors"]), len(d[k]["different"]), len(d[k]["items"])])
 
             tb = Table(t_data, 4 * [100], [25] + (len(d) - 1) * [12])
@@ -446,7 +443,7 @@ class StatsAccessPDF:
                     PdfImage(config.basedir + "/web/img/stat_bar_vert.gif", width=6, height=len(d[k]["items"]) * h / max["max"] + 1))
                 items.append(FrameBreak())
 
-            tb = Table([[t(self.language, "dayname_" + str(x) + "_short") for x in range(0, 7)]], 7 * [17], 17)
+            tb = Table([[t(self.language, "dayname_" + ustr(x) + "_short") for x in range(0, 7)]], 7 * [17], 17)
             tb.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'TOP'),
                                     ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
                                     ('INNERGRID', (0, 0), (-1, -1), 1, colors.black),
@@ -458,7 +455,7 @@ class StatsAccessPDF:
             items.append(tb)
             items.append(FrameBreak())
 
-            t_data = [[t(self.language, "dayname_" + str(x) + "_long")] for x in range(0, 7)]
+            t_data = [[t(self.language, "dayname_" + ustr(x) + "_long")] for x in range(0, 7)]
 
             for k in d:
                 if k == 0:
@@ -557,8 +554,8 @@ class StatsAccessPDF:
 
             t_data = []
             for i in range(0, 24):
-                im = PdfImage(config.basedir + "/web/img/stat_hr" + str(i % 12 + 1) + ".png", width=14, height=14)
-                p = Paragraph((str(i) + "-" + str(i + 1)), self.bv)
+                im = PdfImage(config.basedir + "/web/img/stat_hr" + ustr(i % 12 + 1) + ".png", width=14, height=14)
+                p = Paragraph((ustr(i) + "-" + ustr(i + 1)), self.bv)
                 t_data.append([p, im])
 
             tb = Table([t_data], 24 * [21], [40])
@@ -609,7 +606,7 @@ class StatsAccessPDF:
         self.bv.formatRight = 'Helvetica'
         self.formatRight.alignment = 2
 
-        nameColl = self.collection.getName()
+        nameColl = self.collection.name
 
         while True:
             # page 1
@@ -631,7 +628,7 @@ class StatsAccessPDF:
         self.data += self.getStatTop("data", namecut=60)
 
         # page 2
-        self.data.append(Paragraph("%s \n'%s' %s - " % (t(self.language, "edit_stats_header"), self.collection.getName(),
+        self.data.append(Paragraph("%s \n'%s' %s - " % (t(self.language, "edit_stats_header"), self.collection.name,
                                                         self.period) + t(self.language, "edit_stats_pages_of") % ("2", "4"), self.bv))
         self.data.append((FrameBreak()))
         # country
@@ -639,7 +636,7 @@ class StatsAccessPDF:
         self.data.append(PageBreak())
 
         # page 3
-        self.data.append(Paragraph("%s \n'%s' %s - " % (t(self.language, "edit_stats_header"), self.collection.getName(),
+        self.data.append(Paragraph("%s \n'%s' %s - " % (t(self.language, "edit_stats_header"), self.collection.name,
                                                         self.period) + t(self.language, "edit_stats_pages_of") % ("3", "4"), self.bv))
         self.data.append((FrameBreak()))
         # date
@@ -647,7 +644,7 @@ class StatsAccessPDF:
         self.data.append(PageBreak())
 
         # page 4
-        self.data.append(Paragraph("%s \n'%s' %s - " % (t(self.language, "edit_stats_header"), self.collection.getName(),
+        self.data.append(Paragraph("%s \n'%s' %s - " % (t(self.language, "edit_stats_header"), self.collection.name,
                                                         self.period) + t(self.language, "edit_stats_pages_of") % ("4", "4"), self.bv))
         self.data.append((FrameBreak()))
         # weekday
@@ -666,7 +663,7 @@ class StatsAccessPDF:
         template.canv.setAuthor(t(self.language, "main_title"))
         template.canv.setTitle("%s \n'%s' - %s: %s" % (t(self.language,
                                                          "edit_stats_header"),
-                                                       self.collection.getName(),
+                                                       self.collection.name,
                                                        t(self.language,
                                                          "edit_stats_period_header"),
                                                        self.period))
@@ -676,10 +673,10 @@ class StatsAccessPDF:
 def getPrintView(req):
     p = req.params.get("period")
     id = req.path.split("/")[2]
-    node = tree.getNode(id)
-    for f in node.getFiles():
-        if f.getType() == "statistic":
-            period, type = getPeriod(f.retrieveFile())
+    node = q(Node).get(id)
+    for f in node.files:
+        if f.filetype == "statistic":
+            period, type = getPeriod(f.abspath)
             if type == p.split("_")[0] and period == p.split("_")[1]:
                 data = StatisticFile(f)
 

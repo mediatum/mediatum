@@ -1,0 +1,45 @@
+= old_version_alert_html
+= deleted_version_alert_html
+
+link(rel="stylesheet", href="/css/jade_style.css")
+
+- block top
+  // CSS, custom JS, counting pixel, etc...
+
+.object_main.content_container
+  - block before_metadata
+    // thumbnails, additional download links, etc...
+
+  .object_meta.object_column
+    = metadata
+
+    if license_url
+      br
+      a(href=license_url)
+        img(src=license_image_url, width=100)
+
+    if bibtex
+      .action_icon
+        a(href="/export/{{ node.id }}/bibtex", target="bibtexdocument", title=_t("doc_bibtex_title"))
+          img(src="/img/bibtex.gif")
+          |&nbsp;BibTeX
+
+  - block after_metadata
+    // additional download links, etc...
+  .clear
+
+if attachment
+  #object_attachment
+    a(onclick="javascript:openPopup('attachmentbrowser?id={{ node.id }}&path={{ path }}')", href="#")
+      = _t("doc_att_browser")
+
+if versions_html
+  = versions_html
+
+if children_html
+  = children_html
+
+.clear
+
+// generated from jade
+//- vim: set filetype=jade sw=2 ts=2 sts=2 expandtab:

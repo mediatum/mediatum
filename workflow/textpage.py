@@ -18,14 +18,14 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import core.tree as tree
 from .workflow import WorkflowStep, registerStep
-from core.translation import t, lang, addLabels
+from core.translation import t, addLabels
+from schema.schema import Metafield
 
 
 def register():
-    tree.registerNodeClass("workflowstep-textpage", WorkflowStep_TextPage)
-    registerStep("workflowstep-textpage")
+    #tree.registerNodeClass("workflowstep-textpage", WorkflowStep_TextPage)
+    registerStep("workflowstep_textpage")
     addLabels(WorkflowStep_TextPage.getLabels())
 
 
@@ -59,7 +59,7 @@ class WorkflowStep_TextPage(WorkflowStep):
         return req.getTAL("workflow/textpage.html", {"text": self.get("text"), "buttons": buttons}, macro="textpage_show_node")
 
     def metaFields(self, lang=None):
-        field = tree.Node("text", "metafield")
+        field = Metafield("text")
         field.set("label", t(lang, "admin_wfstep_textpage_text_to_display"))
         field.set("type", "htmlmemo")
         return [field]

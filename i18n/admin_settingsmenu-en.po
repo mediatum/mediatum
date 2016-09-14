@@ -25,6 +25,9 @@ msgstr "Hide Module"
 msgid "admin_settings_adminmodules_reset"
 msgstr "Reset Menu Structure"
 
+msgid "adminmodules_reset_question"
+msgstr "Do you really want to reset the admin area?"
+
 msgid "admin_settings_editmodules_header"
 msgstr "Edit Menu"
 

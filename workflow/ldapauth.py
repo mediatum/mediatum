@@ -21,12 +21,13 @@
 """
 
 import logging
-import core.tree as tree
+
 import core.users as users
 import core.config as config
 from .workflow import WorkflowStep, getNodeWorkflow, getNodeWorkflowStep, registerStep
 from core.translation import t, lang, addLabels
 from utils.date import format_date
+from schema.schema import Metafield
 
 LDAP_AVAILABLE = True
 LDAP_MODULE_PRESENT = True
@@ -43,9 +44,13 @@ else:
     LDAP_AVAILABLE = False
 
 
+logg = logging.getLogger(__name__)
+
+
 def register():
-    tree.registerNodeClass("workflowstep-ldapauth", WorkflowStep_LdapAuth)
-    registerStep("workflowstep-ldapauth")
+    #tree.registerNodeClass("workflowstep-ldapauth", WorkflowStep_LdapAuth)
+    # registerStep("workflowstep-ldapauth")
+    registerStep("workflowstep_ldapauth")
     addLabels(WorkflowStep_LdapAuth.getLabels())
 
 
@@ -68,8 +73,7 @@ class WorkflowStep_LdapAuth(WorkflowStep):
                 del req.params['gotrue']
                 return self.show_workflow_node(node, req)
 
-            logging.getLogger("workflows").info("workflow '%s', node %s: going to authenticate username '%s' via ldap ..." %
-                                                (current_workflow.name, node.id, username))
+            logg.info("workflow '%s', node %s: going to authenticate username '%s' via ldap", current_workflow.name, node.id, username)
 
             ldap_user = LDAPUser()
             res_dict = ldap_user.authenticate_login(username, password, create_new_user=0)
@@ -83,13 +87,12 @@ class WorkflowStep_LdapAuth(WorkflowStep):
                     attr_name = DEFAULT_ATTRIBUTE_FOR_USERNAME
 
                 node.set(attr_name, user_identifier)
-                logging.getLogger("workflows").info("workflow '%s', node %s: success authenticating username '%s': identified as '%s'" % (
-                    current_workflow.name, node.id, username, user_identifier))
+                logg.info("workflow '%s', node %s: success authenticating username '%s': identified as '%s'",
+                    current_workflow.name, node.id, username, user_identifier)
                 return self.forwardAndShow(node, True, req)
 
             else:
-                logging.getLogger("workflows").info("workflow '%s', node %s: fail authenticating username '%s'" %
-                                                    (current_workflow.name, node.id, username))
+                logg.info("workflow '%s', node %s: fail authenticating username '%s'", current_workflow.name, node.id, username)
                 error = "%s: %s" % (format_date().replace('T', ' - '), t(lang(req), "admin_wfstep_ldapauth_wrong_credentials"))
                 current_workflow_step = getNodeWorkflowStep(node)
 
@@ -119,19 +122,19 @@ class WorkflowStep_LdapAuth(WorkflowStep):
 
     def metaFields(self, lang=None):
         if not LDAP_AVAILABLE:
-            field = tree.Node("infotext", "metafield")
+            field = Metafield("infotext")
             field.set("label", t(lang, "xadmin_wfstep_ldapauth_label"))
             field.set("type", "label")
             field.set("value", '<span style="color:#ff0000">' + t(lang, "xadmin_wfstep_ldapauth_text") + '</span>')
             return [field]
 
         ret = list()
-        field = tree.Node("prefix", "metafield")
+        field = Metafield("prefix")
         field.set("label", t(lang, "admin_wfstep_text_before_data"))
         field.set("type", "memo")
         ret.append(field)
 
-        field = tree.Node("attribute_for_user_identifier", "metafield")
+        field = Metafield("attribute_for_user_identifier")
         field.set("label", t(lang, "admin_wfstep_ldapauth_attribute_for_user_identifier"))
         field.set("type", "text")
         ret.append(field)

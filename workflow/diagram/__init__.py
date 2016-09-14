@@ -18,13 +18,5 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from core import config
-
-diagram_type = config.get("config.workflowdiagram_type", "internal")
-
-if diagram_type == "internal":
-    from .internal import send_workflow_diagram
-elif diagram_type == "graphviz":
-    from .graphviz import send_workflow_diagram
-else:
-    raise NotImplementedError("workflow diagram type " + diagram_type)
+# graphviz is our only implementation, just import it, ignoring the config value `config.workflowdiagram_type`
+from .graphviz import send_workflow_diagram

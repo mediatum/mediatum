@@ -19,21 +19,27 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import core.acl as acl
+from warnings import warn
 
 
-class Context:
+class Context(object):
 
-    def __init__(self, field, value="", width=400, name="", lock=0, language=None, collection=None, user=None, ip=""):
+    def __init__(self, field, value="", width=400, name="", lock=0, language=None, collection=None, container=None, user=None, ip=""):
+        if collection is not None:
+            warn("collections argument is deprecated, use container", DeprecationWarning)
+            if container is not None:
+                raise ValueError("container and collection cannot be used together")
+            container = collection
+
         self.field = field
         self.value = value
         self.width = width
         self.name = name
         self.language = language
-        self.collection = collection
+        self.collection = container
+        self.container = container
         self.ip = ip
         self.user = user
-        self.access = acl.AccessData(user=user)
         self.lock = lock
 
 
@@ -47,7 +53,7 @@ class Metatype(object):
     def getSearchHTML(self, context):
         None
 
-    def getFormatedValue(self, field, node, language=None):
+    def getFormattedValue(self, metafield, maskitem, mask, node, language, html):
         None
 
     def format_request_value_for_db(self, field, params, item, language=None):
@@ -56,13 +62,14 @@ class Metatype(object):
         :param params: dict which contains POST form values
         :param item: field name prepended with language specifier. Is the same as field name for non-multilingual fields.
         """
-        # just fetch the unmodified value from the params dict
+        # just fetch the unmodified alue from the params dict
         return params.get(item)
 
     def getMaskEditorHTML(self, field, metadatatype=None, language=None):
         return ""
 
-    def isContainer(self):
+    @classmethod
+    def isContainer(cls):
         return False
 
     def isFieldType(self):

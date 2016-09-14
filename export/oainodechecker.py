@@ -23,6 +23,9 @@ import re
 import logging
 from utils.boolparser import BoolParser
 
+
+logg = logging.getLogger(__name__)
+
 DEBUG = False
 
 pattern_op = re.compile('^([a-zA-Z0-9._-]+)\s*(=|>=|<=|<|>|[Ll][Ii][Kk][Ee])\s*"?([^"]*)"?$')
@@ -35,7 +38,7 @@ class OAINodeCheckerAndCondition:
         self.b = b
 
     def __str__(self):
-        return "(" + str(self.a) + ") AND (" + str(self.b) + ")"
+        return "(" + ustr(self.a) + ") AND (" + ustr(self.b) + ")"
 
     def execute(self, node):
         res = self.a.execute(node)
@@ -51,7 +54,7 @@ class OAINodeCheckerOrCondition:
         self.b = b
 
     def __str__(self):
-        return "(" + str(self.a) + ") OR (" + str(self.b) + ")"
+        return "(" + ustr(self.a) + ") OR (" + ustr(self.b) + ")"
 
     def execute(self, node):
         res = self.a.execute(node)
@@ -66,7 +69,7 @@ class OAINodeCheckerNotCondition:
         self.a = a
 
     def __str__(self):
-        return "NOT (" + str(self.b) + ")"
+        return "NOT (" + ustr(self.b) + ")"
 
     def execute(self, node):
         return not self.a.execute(node)
@@ -101,8 +104,7 @@ class OAINodeCheckerFieldCondition:
                     return True
                 return False
 
-        if DEBUG:
-            logging.getLogger('oai').info('OAINodeChecker ---> : Error evaluating FieldCondition')
+        logg.debug('OAINodeChecker ---> : Error evaluating FieldCondition')
         return False
 
 
@@ -113,8 +115,7 @@ class OAINodeChecker(BoolParser):
         if m:
             return OAINodeCheckerFieldCondition(m.group(1), m.group(2), m.group(3))
         else:
-            if DEBUG:
-                logging.getLogger('oai').info('OAINodeChecker ---> Error: no field specified')
+            logg.debug('OAINodeChecker ---> Error: no field specified')
 
     def getAndClass(self):
         return OAINodeCheckerAndCondition

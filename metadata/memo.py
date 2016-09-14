@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
  mediatum - a multimedia content repository
 
@@ -17,16 +18,19 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import logging
 from collections import OrderedDict
 from mediatumtal import tal
+from core import config
 from core.transition import httpstatus
 from core.metatype import Metatype, charmap
 from core.translation import t, getDefaultLanguage
 
-from contenttypes.default import languages as config_languages
 import re
 
-max_lang_length = max([len(lang) for lang in config_languages])
+logg = logging.getLogger(__name__)
+
+max_lang_length = max([len(lang) for lang in config.languages])
 config_default_language = getDefaultLanguage()
 
 
@@ -66,7 +70,7 @@ class m_memo(Metatype):
         if not self.has_language_cutter(s):
             d = OrderedDict()
 
-            for lang in config_languages:
+            for lang in config.languages:
                 if lang == config_default_language:
                     d[lang] = s
                 else:
@@ -94,25 +98,22 @@ class m_memo(Metatype):
                     d[key][-1] = d[key][-1][0:-1]  # trailing \n belongs to found cutter
                 key = m.groupdict()["lang"]
                 if key in d:  # should not happen
-                    print '#v' * 30
-                    print __file__, "----> default language conflict for:", key
-                    print "already in dict:"
-                    print "d['%s'] = '%s'" % (key, str(d[key]))
-                    print '#^' * 30
+                    logg.warn("----> default language conflict for: %s", key)
+                    logg.warn("already in dict:d['%s'] = '%s'", key, d[key])
                 value = []
                 d[key] = value
 
-        # handle unused config_languages
+        # handle unused languages
         keys = d.keys()
-        for lang in config_languages:
+        for lang in config.languages:
             if lang not in keys:
                 d[lang] = []
 
-        # ignore keys not in config_languages
+        # ignore keys not in languages
         if only_config_langs:
             keys = d.keys()
             for k in keys:
-                if k not in config_languages:
+                if k not in config.languages:
                     del d[k]
 
         if join_stringlists:
@@ -162,7 +163,7 @@ class m_memo(Metatype):
             "name": field_node_name,
             "field": field,
             "t": t,
-            "ident": str(field.id),
+            "ident": ustr(field.id),
             "current_lang": language,
             "defaultlang": language,  # not the systems default language
             "languages": [],
@@ -176,7 +177,7 @@ class m_memo(Metatype):
         }
 
         if enable_multilang:
-            languages = config_languages
+            languages = config.languages
             lang = [l for l in languages if l != language]
 
             langdict = self.str2dict(value)
@@ -201,21 +202,17 @@ class m_memo(Metatype):
     def getSearchHTML(self, context):
         return tal.getTAL("metadata/memo.html", {"context": context}, macro="searchfield", language=context.language)
 
-    def getFormatedValue(self, field, node, language=None, html=1):
-        value = node.get(field.getName()).replace(";", "; ")
-        value = self.language_snipper(value, language, joiner="\n")
-        return (field.getLabel(), value)
+    def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
+        value = node.get(metafield.getName()).replace(";", "; ")
+        value = self.language_snipper(value, language, joiner=u"\n")
+        return (metafield.getLabel(), value)
 
     def getMaskEditorHTML(self, field, metadatatype=None, language=None, attr_dict={}):
 
         try:
             value = field.getValues()
-        except:
-            value = ""
-
-        #value = ""
-        # if field:
-        #    value = field.getValues()
+        except AttributeError:
+            value = u""
 
         context = {
             "value": value,
@@ -253,16 +250,16 @@ class m_memo(Metatype):
 
     labels = {"de":
               [
-                  ("editor_memo_label", "Zeichen \xc3\xbcbrig"),
-                  ("mask_edit_max_length", "Maximall\xc3\xa4nge"),
+                  ("editor_memo_label", u"Zeichen übrig"),
+                  ("mask_edit_max_length", u"Maximallänge"),
                   ("mask_edit_enable_multilang", "Multilang aktivieren"),
                   ("fieldtype_memo", "Memofeld"),
-                  ("fieldtype_memo_desc", "Texteingabefeld beliebiger L\xc3\xa4nge"),
-                  ("memo_titlepopupbutton", "Editiermaske \xc3\xb6ffnen"),
-                  ("memo_popup_title", "Eingabemaske f\xc3\xbcr Sonderzeichen"),
+                  ("fieldtype_memo_desc", u"Texteingabefeld beliebiger Länge"),
+                  ("memo_titlepopupbutton", u"Editiermaske öffnen"),
+                  ("memo_popup_title", u"Eingabemaske für Sonderzeichen"),
                   ("memo_valuelabel", "Wert:"),
                   ("memo_formatedvalue", "Formatierter Wert:"),
-                  ("memo_done", "\xC3\x9Cbernehmen"),
+                  ("memo_done", u"Übernehmen"),
                   ("memo_cancel", "Abbrechen"),
                   ("memo_spcchar", "Sonderzeichen:"),
                   ("memo_bold_title", "Markierten Text 'Fett' setzen"),

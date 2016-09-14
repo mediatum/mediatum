@@ -17,8 +17,9 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import cgi
 import inspect
-import stat
+import logging
 import traceback
 import sys
 import os
@@ -26,26 +27,25 @@ import string
 import hashlib
 import re
 import random
-import StringIO
-import logging
+import io
+from warnings import warn
 from urlparse import parse_qsl, urlsplit, urlunsplit
 from urllib import quote, urlencode
 
-import xml.parsers.expat
+#import xml.parsers.expat
+from lxml import etree
 from HTMLParser import HTMLParser
+
 from .compat import iteritems
+from .strings import ensure_unicode_returned
 
 
 def esc(s):
-    return s.replace("&", "&amp;").replace("\"", "&quot;").replace("<", "&lt;").replace(">", "&gt;")
+    return cgi.escape(s, quote=True)
 
 
 def esc2(s):
-    return s.replace("&", "&amp;").replace("\"", "'").replace("<", "&lt;").replace(">", "&gt;")
-
-
-def lightesc(s):
-    return s.replace("<", "&lt;").replace(">", "&gt;")
+    return cgi.escape(s.replace(u"\"", u"'"))
 
 
 def desc(s):
@@ -53,6 +53,7 @@ def desc(s):
 
 
 def u(s):
+    warn("u is deprecated, use unicode objects!!!", DeprecationWarning)
     try:
         return s.encode("utf-8")
     except:
@@ -64,6 +65,7 @@ def u(s):
 
 
 def u2(s):
+    warn("u2 is deprecated, use unicode objects!!!", DeprecationWarning)
     try:
         return s.encode("utf-8")
     except:
@@ -87,14 +89,16 @@ def utf8_decode_escape(s):
         s.decode('utf8')
         return s
     except:
-        return str(s).encode('string-escape')
+        return s.encode('unicode-escape')
 
 
 def iso2utf8(s):
+    warn("use unicode objects!!!", DeprecationWarning)
     return unicode(s, "latin-1").encode("utf-8")
 
 
 def utf82iso(s):
+    warn("utf82iso is deprecated, use unicode objects!!!", DeprecationWarning)
     try:
         return unicode(s, "utf-8").encode("latin-1")
     except:
@@ -109,6 +113,7 @@ replacements = {'sub': {'regex': re.compile(r'(?<=\$_)(.*?)(?=\$)'),
                         'html': '<sup>%s</sup>'}}
 
 
+@ensure_unicode_returned
 def modify_tex(string, option):
     """
     Swaps tex super and subscript markup ($^...$ and $_...$)
@@ -126,7 +131,7 @@ def modify_tex(string, option):
             if option == 'strip':
                 string = string.replace(replacements[tag]['tex'] % match,
                                         match)
-    return string
+    return unicode(string)
 
 
 def splitpath(path):
@@ -256,7 +261,11 @@ def format_filesize(size):
 
 def get_hash(filename):
     try:
-        fi = open(filename, "rb")
+        pathname = filename
+        if not os.path.exists(pathname):
+            import core.config as config
+            pathname = os.path.join(config.settings["paths.datadir"], filename )
+        fi = open(pathname, "rb")
         s = fi.read()
         fi.close()
         return hashlib.md5(s).hexdigest()
@@ -270,11 +279,11 @@ def get_filesize(filename):
             stat = os.stat(filename)
             return stat[6]
         import core.config as config
-        if os.path.exists(config.settings["paths.datadir"] + "/" + filename):
-            stat = os.stat(config.settings["paths.datadir"] + "/" + filename)
+        pathname = os.path.join(config.settings["paths.datadir"], filename )
+        if os.path.exists(pathname):
+            stat = os.stat(pathname)
             return stat[6]
         else:
-            print "Warning: File", filename, "not found"
             return 0
     except:
         return 0
@@ -305,7 +314,7 @@ def replace_words(s):
     s = s.lower()
     # Processing word trees for search
     for key, value in normalization_items["words"]:
-        s = re.sub(str(key), value, s)
+        s = re.sub(ustr(key), value, s)
     return s
 
 import locale
@@ -373,67 +382,25 @@ class Option:
 
 
 def isCollection(node):
-    try:
-        if node.type in["collection", "collections"]:
-            return 1
-        return 0
-    except:
-        return 0
+    warn("use isinstance(node, (Collection, Collections))", DeprecationWarning)
+    from contenttypes import Collection, Collections
+    return int(isinstance(node, (Collection, Collections)))
 
 
 def getCollection(node):
-    # local import due to import loop with core.tree
-    from core import tree
-
-    def p(node):
-        if node.type == "collection" or node.type == "collections":
-            return node
-        for pp in node.getParents():
-            n = p(pp)
-            if n:
-                return n
-        return None
-    collection = p(node)
-    if collection is None:
-        collection = tree.getRoot("collections")
-    return collection
-
-
-def getAllCollections():
-    # local import due to import loop with core.tree
-    from core import tree
-    l = []
-
-    def f(l, node):
-        for c in node.getChildren():
-            if isCollection(c):
-                l += [c]
-                f(l, c)
-    f(l, tree.getRoot("collections"))
-    return l
+    warn("use Node.get_collection()", DeprecationWarning)
+    return node.get_collection()
 
 
 def isDirectory(node):
-    if node.getContentType() == "directory" or node.isContainer():
-        return 1
-    else:
-        return 0
+    warn("use isinstance(node, Directory)", DeprecationWarning)
+    from contenttypes import Directory
+    return int(isinstance(node, Directory))
 
 
 def getDirectory(node):
-    def p(node):
-        if node.type.startswith("directory"):
-            return node
-        for pp in node.getParents():
-            n = p(pp)
-            if n:
-                return n
-        return None
-    directory = p(node)
-    if directory is None:
-        import core.tree
-        directory = core.tree.getRoot("collections")
-    return directory
+    warn("use Node.get_container()", DeprecationWarning)
+    return node.get_container()
 
 
 def ArrayToString(pieces, glue=""):
@@ -441,10 +408,10 @@ def ArrayToString(pieces, glue=""):
 
 
 def formatException():
-    s = "Exception " + str(sys.exc_info()[0])
+    s = "Exception " + ustr(sys.exc_info()[0])
     info = sys.exc_info()[1]
     if info:
-        s += " " + str(info)
+        s += " " + ustr(info)
     s += "\n"
     for l in traceback.extract_tb(sys.exc_info()[2]):
         s += "  File \"%s\", line %d, in %s\n" % (l[0], l[1], l[2])
@@ -491,6 +458,7 @@ def highlight(string, words, left, right):
 # mimetype validator
 #
 def getMimeType(filename):
+
     filename = filename.lower().strip()
     mimetype = "application/x-download"
     type = "file"
@@ -554,6 +522,7 @@ def getMimeType(filename):
     elif filename.endswith(".sur"):
         mimetype = "text/plain"
         type = "survey"
+
     else:
         mimetype = "other"
         type = "other"
@@ -602,11 +571,11 @@ def splitname(fullname):
 
 
 #
-# cutting text content of html snippet after cutoff
-#
-
 
 class HTMLTextCutter(HTMLParser):
+
+    """cutting text content of html snippet after cutoff
+    """
 
     def __init__(self, cutoff=500, output=sys.stdout):
         self.cutoff = cutoff
@@ -661,30 +630,30 @@ class HTMLTextCutter(HTMLParser):
 
     def handle_charref(self, name):
         if self.in_script + self.in_style > 0:
-            self.output.write("&#%s;" % str(name))
+            self.output.write("&#%s;" % name)
         elif self.count >= self.cutoff:
             self.is_cutted = True
         else:
             self.count += 1
-            self.output.write("&#%s;" % str(name))
+            self.output.write("&#%s;" % name)
 
     def handle_entityref(self, name):
         if self.in_script + self.in_style > 0:
-            self.output.write("&%s;" % str(name))
+            self.output.write("&%s;" % name)
         elif self.count >= self.cutoff:
             self.is_cutted = True
         else:
             self.count += 1
-            self.output.write("&%s;" % str(name))
+            self.output.write("&%s;" % name)
 
     def handle_comment(self, data):
         self.output.write("<!--%s-->" % data)
 
     def handle_decl(self, decl):
-        self.output.write("<!%s>" % str(decl))
+        self.output.write("<!%s>" % decl)
 
     def handle_pi(self, data):
-        self.output.write("<?%s>" % str(data))
+        self.output.write("<?%s>" % data)
 
     def close(self):
         HTMLParser.close(self)
@@ -694,17 +663,17 @@ class HTMLTextCutter(HTMLParser):
 # returns formated string for long text
 #
 
-
+@ensure_unicode_returned(silent=True)
 def formatLongText(value, field, cutoff=500):
     try:
-        out = StringIO.StringIO()
+        out = io.StringIO()
         p = HTMLTextCutter(cutoff, out)
         p.feed(value)
         p.close()
         if p.is_cutted:
             val = p.output.getvalue()
-            val = val.rstrip('\xc3').rstrip()
-            return '<div id="' + field.getName() + '_full" style="display:none">' + value + '&nbsp;&nbsp;&nbsp;&nbsp;<a href="#" title="Text reduzieren" onclick="expandLongMetatext(\'' + field.getName() + '\');return false">&laquo;</a></div><div id="' + \
+            val = val.rstrip()
+            return u'<div id="' + field.getName() + '_full" style="display:none">' + value + '&nbsp;&nbsp;&nbsp;&nbsp;<a href="#" title="Text reduzieren" onclick="expandLongMetatext(\'' + field.getName() + '\');return false">&laquo;</a></div><div id="' + \
                 field.getName() + '_more">' + val + '...&nbsp;&nbsp;&nbsp;&nbsp;<a href="#" title="gesamten Text zeigen" onclick="expandLongMetatext(\'' + \
                 field.getName() + '\');return false">&raquo;</a></div>'
         else:
@@ -910,12 +879,15 @@ class Template(object):
         self.template_parts = self.split_at_vars(template_string)
         self.attribute_positions = xrange(1, len(self.template_parts), 2)
 
-    def __call__(self, data_provider):
+    def __call__(self, data_provider, lookup=None):
         """
         Interpolate the template using the content of the data
         provider (dict or MediaTUM tree node).
+        :param lookup: function for getting attributes from `data_provider`, defaults to data_provider.get
         """
-        lookup = data_provider.get
+        if lookup is None:
+            lookup = data_provider.get
+
         text_parts = self.template_parts[:]
         for i in self.attribute_positions:
             func = ""
@@ -925,7 +897,7 @@ class Template(object):
                 attribute_name = parts[0]
                 func = parts[1:]
             if attribute_name:
-                text_parts[i] = lookup(attribute_name) or ''
+                text_parts[i] = unicode(lookup(attribute_name)) or ''
                 try:
                     if func[0] == "substring":
                         text_parts[i] = self._substring(text_parts[i], func[1:])
@@ -952,28 +924,11 @@ class Template(object):
             return s
 
 
-def fixXMLString(s, i=100):
-    if i == 0:  # loop check
-        return s
-    parser = xml.parsers.expat.ParserCreate()
-    try:
-        parser.Parse(s)
-        return s
-
-    except xml.parsers.expat.ExpatError as err:
-        # remove error char
-        s2 = s.split('\n')
-        s2[err.lineno - 1] = s2[err.lineno - 1][:(err.offset)] + s2[err.lineno - 1][(err.offset + 2):]
-        return fixXMLString("\n".join(s2), i - 1)
-    return s
-
-
 def checkXMLString(s):
-    parser = xml.parsers.expat.ParserCreate()
     try:
-        parser.Parse(s)
+        etree.fromstring(s.encode('utf-8'))
         return 1
-    except xml.parsers.expat.ExpatError as err:
+    except etree.XMLSyntaxError:
         return 0
 
 
@@ -1000,7 +955,7 @@ def callername():
 def get_user_id(req):
     import core.users as users
     user = users.getUserFromRequest(req)
-    res = "userid=%r|username=%r" % (user.getUserID(), user.getName())
+    res = "userid=%r|username=%r" % (user.id, user.getName())
     return res
 
 
@@ -1100,6 +1055,19 @@ def utf8_encode_recursive(d):
     elif isinstance(d, unicode):
         return d.encode("utf8")
     return d
+
+
+def find_free_port():
+    """Returns a free local port"""
+    import socket
+    s = socket.socket()
+    try:
+        s.bind(("", 0))
+        _, port = s.getsockname()
+    finally:
+        s.close()
+    return port
+
 
 
 if __name__ == "__main__":

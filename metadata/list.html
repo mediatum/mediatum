@@ -1,14 +1,14 @@
 <tal:block metal:define-macro="editorfield">
     <tal:block tal:condition="python:not bool(context.field.get('multiple'))">
-        <select class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[int(context.lock)]; style python:'width:'+str(context.width-16)+'px'; name python:context.name; id python:context.name;">
+        <select class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[int(context.lock)]; style python:u'width:{}px'.format(context.width-16); name python:context.name; id python:context.name;">
             <tal:block tal:repeat="v valuelist">
-                <option tal:condition="python:v[0] in ['optionselected','option']" tal:attributes="value python:v[2]; selected python:{'True':'selected','False':None}[str(v[0]=='optionselected')]" tal:content="raw python:v[1]+v[2]+v[3]"/>
+                <option tal:condition="python:v[0] in ['optionselected','option']" tal:attributes="value python:v[2]; selected python:'selected' if v[0]=='optionselected' else None" tal:content="raw python:v[1]+v[2]+v[3]"/>
                 <optgroup tal:condition="python:v[0]=='optgroup'" tal:replace="raw python:v[1]"/>
             </tal:block>
         </select>
     </tal:block>
     <tal:block tal:condition="python:bool(context.field.get('multiple'))">
-        <select class="multitext" tal:attributes="disabled python:{0:None,1:'disabled'}[int(context.lock)]; style python:'width:'+str(context.width-16)+'px'; name python: context.name; id python: context.name; required required" multiple="multiple">
+        <select class="multitext" tal:attributes="disabled python:{0:None,1:'disabled'}[int(context.lock)]; style python:u'width:{}px'.format(context.width-16); name python: context.name; id python: context.name; required required" multiple="multiple">
             <tal:block tal:repeat="v valuelist">
                 <option tal:condition="python:v[0]=='optionselected'" tal:attributes="value python:v[2]" tal:content="raw python:v[1]+v[2]+v[3]" selected="selected"/>
                 <option tal:condition="python:v[0]=='option'" tal:attributes="value python:v[2]" tal:content="raw python:v[1]+v[2]+v[3]"/>
@@ -16,8 +16,8 @@
             </tal:block>
         </select>
     </tal:block>
-    <tal:block tal:condition="python:context.lock!=0" tal:attributes="id python:'lockspan_'+context.name">&nbsp;
-        <input tal:attributes="name python:'lock_'+context.name; id python:'lock_'+context.name; onclick python:'handlelock(\''+context.name+'\')'" type="checkbox"/>
+    <tal:block tal:condition="python:context.lock!=0" tal:attributes="id python:u'lockspan_{}'.format(context.name)">&nbsp;
+        <input tal:attributes="name python:u'lock_{}'.format(context.name); id python:u'lock_{}'.format(context.name); onclick python:u'handlelock(\'{}\')'.format(context.name)" type="checkbox"/>
         <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
     </tal:block>
 </tal:block>
@@ -25,7 +25,7 @@
 
 <select metal:define-macro="searchfield" tal:attributes="name python:context.name; id python:context.name;" class="searchfield">
     <tal:block tal:repeat="v valuelist">
-       <option tal:condition="python:v[0]!='optgroup'" tal:attributes="value python:''+v[2]+''; selected python:{'True':'selected','False':None}[str(context.value==''+v[2]+'')]" tal:content="raw python:v[1]+v[2]+v[3]"/>
+       <option tal:condition="python:v[0]!='optgroup'" tal:attributes="value python:v[2]; selected python:'selected' if context.value==v[2] else None" tal:content="raw python:v[1]+v[2]+v[3]"/>
        <optgroup tal:condition="python:v[0]=='optgroup'" tal:replace="raw python:v[1]"/>
     </tal:block>
 </select>

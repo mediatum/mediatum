@@ -7,7 +7,7 @@
         <p>Der Suchbegriff <b>"<tal:block tal:replace="raw query"/>"</b> ergab einen Fehler bei Ausf&uuml;hrung der Suche.</p>
         <p>Bitte &uuml;berpr&uuml;fen Sie Ihren Suchbegriff und starten Sie die Suche erneut.</p>
     </tal:block>
-    
+
     <tal:block tal:condition="python:language=='en'">
         <br/>
         <br/>
@@ -22,15 +22,15 @@
     <tal:block tal:condition="python:language=='de'">
     <br/>
     <h2>Keine Resultate</h2>
-    <p>Ihr(e) Suchbegriff(e) "<tal:block tal:replace="raw query"/>" wurde(n) leider nicht gefunden.</p>
-    
+    <p>Ihr(e) Suchbegriff(e) "<em tal:content="structure query"/>" wurde(n) leider nicht gefunden.</p>
+
     <h2>Gesucht wurde in folgenden Kollektionen:</h2>
     <ol type="square">
         <li tal:repeat="col python:collections">
-            <a tal:content="python:col.getName()" tal:attributes="href python:'/node?id={}&dir={}'.format(col.id, col.id)"/>
+            <a tal:content="python:col.getName()" tal:attributes="href python:node_url(col.id)"/>
         </li>
     </ol>
-    
+
     <br/>
     <h2>Allgemeine Tipps zur Suche:</h2>
 
@@ -67,15 +67,15 @@
     <tal:block tal:condition="python:language=='en'">
     <br/>
     <h2>No Search results</h2>
-    <p>No result(s) for your query "<tal:block tal:replace="raw query"/>".</p>
-    
+    <p>No result(s) for your query "<em tal:content="structure python:query.replace('<', '&lsaquo;').replace('>', '&rsaquo;')"/>".</p>
+
     <h2>The following collections have been searched:</h2>
     <ol type="square">
         <li tal:repeat="col python:collections">
-            <a tal:content="python:col.getName()" tal:attributes="href python:'/node?id={}&dir={}'.format(col.id, col.id)"/>
+            <a tal:content="python:col.getName()" tal:attributes="href python:node_url(col.id)"/>
         </li>
     </ol>
-    
+
     <br/>
     <h2>Search Tips:</h2>
 
@@ -113,7 +113,7 @@
     <div>
         <br/>
         <p i18n:translate="search_result_header">
-            TEXT"<b tal:content="raw query" i18n:name="searchstring"/>" TEXT
+            TEXT"<b tal:content="structure query" i18n:name="searchstring"/>" TEXT
         </p>
         <table cellspacing="5px" cellpadding="5px">
             <tr tal:repeat="coll python:reslist">
@@ -124,7 +124,7 @@
                     <a tal:content="python:coll.collection.name" tal:attributes="href python:r.getLink(coll.collection)"/>
                 </td>
                 <td style="text-align:right">
-                    <span tal:replace="python:str(coll.length())"/>
+                    <span tal:replace="python:unicode(coll.length())"/>
                 </td>
                 <td i18n:translate="search_hit">
                     TEXT
@@ -135,7 +135,7 @@
         <h2 i18n:translate="search_result_text">TEXT</h2>
         <ol type="square">
             <li tal:repeat="col python:collections">
-                <a tal:content="python:col.getName()" tal:attributes="href python:'/node?id={}&dir={}'.format(col.id, col.id)"/>
+                <a tal:content="python:col.getName()" tal:attributes="href python:node_url(col.id)"/>
             </li>
         </ol>
     </div>

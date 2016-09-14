@@ -17,15 +17,22 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import logging
 import os
 from PIL import Image
 from core.transition.athana_sep import athana_http as athana
-import core.acl as acl
-import core.tree as tree
+
 import core.config as config
 from utils.utils import CustomItem
 from web.edit.edit_common import writetree
 from core.transition import httpstatus
+from core import Node
+from core import db
+from contenttypes import Collections
+
+q = db.query
+logg = logging.getLogger(__name__)
+
 
 def getInformation():
     return {"version": "1.0", "system": 1}
@@ -35,10 +42,9 @@ def getContent(req, ids):
     if len(ids) > 0:
         ids = ids[0]
 
-    node = tree.getNode(ids)
-    access = acl.AccessData(req)
+    node = q(Node).get(ids)
 
-    if not node or node.getContentType() != "collections" or not access.hasWriteAccess(node):
+    if not node or node.type != "collections" or not node.has_write_access():
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
@@ -50,29 +56,32 @@ def getContent(req, ids):
         if req.params.get("action") == "nodeselection":
             # tree popup for node selection
             def f(req, node, objnum, link, indent, type):
-                access = acl.AccessData(req)
                 indent *= 10
                 nodename = node.name
                 try:
                     nodename = node.getLabel()
                 except:
-                    log.logException()
+                    logg.exception("exception in getContent, ignored")
 
                 if type == 1:
-                    link = req.makeSelfLink({"tree_unfold": "", "tree_fold": node.id}) + "#node{}".format(node.id)
+                    link = u'{}{}'.format(req.makeSelfLink({"tree_unfold": u"",
+                                                            "tree_fold": node.id}),
+                                          u"#node{}".format(node.id))
                 elif type == 2:
-                    link = req.makeSelfLink({"tree_unfold": node.id, "tree_fold": ""}) + "#node{}".format(node.id)
+                    link = u'{}{}'.format(req.makeSelfLink({"tree_unfold": node.id,
+                                                            "tree_fold": u""}),
+                                          u"#node{}".format(node.id))
 
                 v = {}
-                v["id"] = str(node.id)
+                v["id"] = node.id
                 v["type"] = type
                 v["link1"] = link
                 v["indent"] = indent + 10
                 v["nodename"] = nodename
-                v["writeaccess"] = access.hasWriteAccess(node)
+                v["writeaccess"] = node.has_data_access()
                 return req.getTAL("web/edit/modules/frontendparts.html", v, macro="edit_frontendparts_nodeselection")
 
-            content = writetree(req, tree.getRoot("collections"), f, "", openednodes=[], sessionkey="nodetree", omitroot=0)
+            content = writetree(req, q(Collections).one(), f, "", openednodes=[], sessionkey="nodetree", omitroot=0)
             req.writeTAL("web/edit/modules/frontendparts.html", {"content": content}, macro="edit_frontendparts_nodepopup")
 
         if req.params.get("action") == "iconselection":
@@ -120,9 +129,13 @@ def modifyItem(req, node, type, id):
         item = node.getCustomItems(type)[id]
     v = {}
     files = []
-    for file in node.getFiles():
-        if file.getType() == "content":
-            files.append((file, node.get("startpagedescr.html/" + file.getName())))
+    content_file = node.files.filter_by(filetype=u"content").scalar()
+    if content_file is not None:
+        startpage_descriptor = node.system_attrs.get("startpagedescr.html/" + content_file.base_name)
+        if startpage_descriptor:
+            files.append((content_file, startpage_descriptor))
+
+    db.session.commit()
 
     v["item"] = item  # [id]
     v["files"] = files

@@ -91,6 +91,9 @@ msgstr "import"
 msgid "admin_mapping_exportall_title"
 msgstr "export all mappings"
 
+msgid "admin_mapping_export_title"
+msgstr "export mapping"
+
 msgid "admin_mappingfield_existing"
 msgstr "Available Mapping fields of Mapping"
 

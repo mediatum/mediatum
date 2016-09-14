@@ -17,76 +17,78 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import core.tree as tree
+
 import lib.lza.lza as l
-import core.acl as acl
-import core.users as users
 
 from schema.schema import getMetaType
 from core.translation import lang, t
 from utils.utils import dec_entry_log
-from core.transition import httpstatus
+from core.transition import httpstatus, current_user
+from core import Node
+from core import db
+from core import File
+
+q = db.query
 
 
 @dec_entry_log
 def getContent(req, ids):
-    user = users.getUserFromRequest(req)
-    if "lza" in users.getHideMenusForUser(user):
+    user = current_user
+    if "lza" in user.hidden_edit_functions:
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
-    
+
     v = {}
     v['error'] = ""
 
     nodes = []
     for id in ids:
-        node = tree.getNode(id)
+        node = q(Node).get(id)
 
-        access = acl.AccessData(req)
-        if not access.hasWriteAccess(node):
+        if not node.has_write_access():
             req.setStatus(httpstatus.HTTP_FORBIDDEN)
             return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
         nodes.append(node)
-        if "createlza" in req.params:           
+        if "createlza" in req.params:
             # remove old file if existing
-            for f in node.getFiles():
-                if f.getType()=="lza":
-                    node.removeFile(f)
-            # create new file     
-            for f in node.getFiles():
-                if f.getType() in ("original", "document"):
+            for f in node.files:
+                if f.filetype == "lza":
+                    node.files.remove(f)
+            # create new file
+            for f in node.files:
+                if f.filetype in ("original", "document"):
                     try:
-                        archive = l.LZA(f.retrieveFile())
-                        schema = node.getSchema()
+                        archive = l.LZA(f.abspath)
+                        schema = node.schema
 
                         # test for lza export mask
-                        if (getMetaType(schema).getMask("lza")):
-                            m = getMetaType(schema).getMask("lza")
+                        m = getMetaType(schema).get_mask(u"lza")
+                        if (m):
                             meta = l.LZAMetadata(m.getViewHTML([node], 8))
                         else:
                             # generate error message
                             meta = l.LZAMetadata("""
-        <?xpacket begin="\xef\xbb\xbf" id="mediatum_metadata"?>
-                <lza:data> 
-                    <lza:error>-definition missing-</lza:error>
-                </lza:data><?xpacket end="w"?>
-                                """)
+                                                <?xpacket begin="\xef\xbb\xbf" id="mediatum_metadata"?>
+                                                <lza:data>
+                                                <lza:error>-definition missing-</lza:error>
+                                                </lza:data><?xpacket end="w"?>""")
                         archive.writeMediatumData(meta)
-                        node.addFile(tree.
+                        nodefile = File(archive.buildLZAName(), "lza", f.mimetype)
+                        node.files.append(nodefile)
 
-                        FileNode(archive.buildLZAName(),"lza", f.getMimeType()))
-                    
                     except l.FiletypeNotSupported:
                         v['error'] = "edit_lza_wrongfiletype"
-                    
+
 
         elif "removelza" in req.params:
-            for f in node.getFiles():
-                if f.getType()=="lza":
-                    node.removeFile(f)
+            for f in node.files:
+                if f.filetype == "lza":
+                    node.files.remove(f)
 
-    v['id'] = req.params.get("id","0")
+    db.session.commit()
+
+    v['id'] = req.params.get("id", "0")
     v['tab'] = req.params.get("tab", "")
     v['ids'] = ids
     v['nodes'] = nodes
@@ -95,11 +97,11 @@ def getContent(req, ids):
 
     meta = {}
     for id in ids:
-        node = tree.getNode(id)
-        for f in node.getFiles():
-            if f.getType()=="lza":
+        node = q(Node).get(id)
+        for f in node.files:
+            if f.filetype == "lza":
                 try:
-                    archive = l.LZA(f.retrieveFile(), f.getMimeType())
+                    archive = l.LZA(f.abspath, f.mimetype)
                     meta[id] = archive.getMediatumData()
                 except IOError:
                     v['error'] = "edit_lza_ioerror"

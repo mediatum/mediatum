@@ -1,13 +1,12 @@
-
 <div id="clean-container" metal:define-macro="edit_tabs" style="position:relative;">
     <ul id="nav">
         <tal:block tal:repeat="navitem python:menu">
-        <li tal:condition="python:len(navitem.getItemList())>0" tal:attributes="class python:{0:None,1:'selected'}[navitem.name==breadcrumbs[0]]"><a tal:condition="python:len(navitem.getItemList())==0" tal:attributes="class python:{0:None,1:'selected'}[navitem.name==breadcrumbs[0]]; href python:navitem.link; target python:navitem.target" i18n:translate="" tal:content="python:'tab_'+navitem.name">TEXT</a>
+        <li tal:condition="python:len(navitem.getItemList())>0" tal:attributes="class python:{0:None,1:'selected'}[navitem.name==breadcrumbs[0]]"><a tal:condition="python:len(navitem.getItemList())==0" tal:attributes="class python:{0:None,1:'selected'}[navitem.name==breadcrumbs[0]]; href python:navitem.link; target python:navitem.target" i18n:translate="" tal:content="python:u'tab_{}'.format(navitem.name)">TEXT</a>
             <tal:block tal:condition="python:len(navitem.getItemList())>0">
-                <a tal:attributes="class python:{0:None,1:'selected'}[navitem.getName()==breadcrumbs[0]]; target python:navitem.target" i18n:translate="" tal:content="python:'tab_'+navitem.getName()"/>
+                <a tal:attributes="class python:{0:None,1:'selected'}[navitem.getName()==breadcrumbs[0]]; target python:navitem.target" i18n:translate="" tal:content="python:u'tab_{}'.format(navitem.getName())"/>
                 <ul>
                     <li tal:repeat="item python:navitem.getItemList()">
-                        <a i18n:translate="" tal:content="python:'tab_'+item" tal:attributes="href python:'?id='+idstr+'&tab='+item"/>
+                        <a i18n:translate="" tal:content="python:u'tab_{}'.format(item)" tal:attributes="href python:u'?id={}&tab={}'.format(idstr, item)"/>
                     </li>
                 </ul>
             </tal:block>
@@ -16,21 +15,23 @@
     </ul>
 
     <div class="breadcrumbs" style="clear:left;">
-       <div id="nodeid_" tal:attributes="title python:str(ids)" style="position:absolute;top:2px;right:5px">
-                ID: <span tal:condition="python:len(ids)<=5" tal:replace="python:', '.join(ids)"/>
-                    <span tal:condition="python:len(ids)>5" tal:replace="python:', '.join(ids[:5])+'...'"/>
+       <div id="nodeid_" style="position:absolute;top:2px;right:5px">
+       ID:
+            <a target="_blank" tal:condition="python:len(ids)==1" tal:attributes="href python: node_url(ids[0])" tal:content='python:ids[0]'></a>
+            <span tal:condition="python:1 < len(ids) <= 5" tal:replace="python:u', '.join(ids)"/>
+            <span tal:condition="python:len(ids)>=5" tal:replace="python:u'{}...'.format(u', '.join(ids[:5]))"/>
        </div>
        <h2 class="breadcrumbs">
             <tal:block tal:repeat="item breadcrumbs">
-                <tal:block tal:content="python:'tab_'+item.replace('*','')" i18n:translate="">TEXT</tal:block>
+                <tal:block tal:content="python:u'tab_{}'.format(item.replace('*',''))" i18n:translate="">TEXT</tal:block>
                 <tal:block tal:condition="python:breadcrumbs.index(item)<len(breadcrumbs)-1"> &raquo; </tal:block>
             </tal:block>
         </h2>
         <div id="printdiv" style="position:absolute;right:5px;bottom:5px;">
-            <a tal:attributes="href python:'/print/'+idstr" target="_blank"><img src="/img/print_icon.gif"/></a>
+            <a tal:attributes="href python:u'/print/{}'.format(idstr)" target="_blank"><img src="/img/print_icon.gif"/></a>
             <!-- replaced context help temporarily by static pdf -->
             <!--
-            <a tal:condition="python:hashelp!=''" href="#" i18n:attributes="title edit_help_title" tal:attributes="onclick python:'return getHelp(&quot;'+hashelp+'&quot;)'"><img src="/img/help.png"/></a>
+            <a tal:condition="python:hashelp!=''" href="#" i18n:attributes="title edit_help_title" tal:attributes="onclick python:u'return getHelp(&quot;{}&quot;)'.format(hashelp)"><img src="/img/help.png"/></a>
             -->
             <a tal:condition="python:system_editor_help_link" target="_blank" i18n:attributes="title edit_help_title" tal:attributes="href python:system_editor_help_link" > <img src="/img/help.png"/></a>
         </div>
@@ -161,19 +162,16 @@
               consoledb.groupEnd('--- loading contextmenu js ---');
             </script>
 
-            <script tal:content="python:'var user_folders = %r;' % {k: str(folders[k][0].id) for k in folders}">TEXT</script>
-            <script tal:content="python:'var collectionsid = %r;' % collectionsid">TEXT</script>
-
-            <script tal:content="python:'var containertype2iconpath = %r;' % ([[t[2], t[1], t[3]] for t in cmenu_iconpaths])">;</script>
-
-            <script tal:content="python:'var edit_t = \''+str(t(language, 'edit_edit_container_node'))+'\';'">;</script>
-            <script tal:content="python:'var cut_t = \''+str(t(language, 'edit_cut_container'))+'\';'">;</script>
-            <script tal:content="python:'var paste_t = \''+str(t(language, 'edit_paste_container_here'))+'\';'">;</script>
-            <script tal:content="python:'var addcontainer_t = \''+str(t(language, 'edit_add_new_container'))+'\';'">;</script>
-            <script tal:content="python:'var emptybin_t = \''+str(t(language, 'edit_empty_recycle_bin'))+'\';'">;</script>
-            <script tal:content="python:'var delete_t = \''+str(t(language, 'edit_delete_container'))+'\';'">;</script>
-
-            <script tal:content="python:'var add_col_t = \''+str(t(language, 'edit_add_new_collection'))+'\';'">;</script>
+            <script tal:content="python:u'var user_folders = {};'.format({k: str(folders[k][0].id) for k in folders})">TEXT</script>
+            <script tal:content="python:u'var collectionsid = \'{}\';'.format(collectionsid)">TEXT</script>
+            <script tal:content="python:u'var containertype2iconpath = {};'.format([[str(i) for i in j] for j in cmenu_iconpaths])">;</script>
+            <script tal:content="python:u'var edit_t = \'{}\';'.format(t(language, 'edit_edit_container_node'))">;</script>
+            <script tal:content="python:u'var cut_t = \'{}\';'.format(t(language, 'edit_cut_container'))">;</script>
+            <script tal:content="python:u'var paste_t = \'{}\';'.format(t(language, 'edit_paste_container_here'))">;</script>
+            <script tal:content="python:u'var addcontainer_t = \'{}\';'.format(t(language, 'edit_add_new_container'))">;</script>
+            <script tal:content="python:u'var emptybin_t = \'{}\';'.format(t(language, 'edit_empty_recycle_bin'))">;</script>
+            <script tal:content="python:u'var delete_t = \'{}\';'.format(t(language, 'edit_delete_container'))">;</script>
+            <script tal:content="python:u'var add_col_t = \'{}\';'.format(t(language, 'edit_add_new_collection'))">;</script>
 
 <script type="text/javascript">
 
@@ -256,7 +254,7 @@ function build_context_menu_items(node, opts) {
 
     containertype2iconpath.forEach(
           function(t){
-            create_container_items['create_container_'+t[0]] = {name: t[2], icon:t[0]};
+            create_container_items['create_container_'+t[0]] = {name: t[1], icon:t[0]};
             }
     );
 
@@ -283,28 +281,20 @@ function build_context_menu_items(node, opts) {
       ctx_items["delete"] = {name: delete_t, icon: "delete", disabled: true};
      }
 
-      var this_node_is_special = node.data.this_node_is_special;
+    var special_dir_type = node.data.special_dir_type;
 
-      if (typeof this_node_is_special === 'object') {
-        consoledb.log('this_node_is_special:', node.data.this_node_is_special);
-        if ($.inArray('trash', this_node_is_special) > -1) {
-          delete ctx_items["edit"];
-          delete ctx_items["cut_container"];
-          delete ctx_items["delete"];
-          ctx_items["clear_trash"] = {
-                                       name: emptybin_t,
-                                       icon: '../img/' + node.data.icon
-                                      }
-        }
-        if ($.inArray('userhomedir', this_node_is_special) > -1) {
-          delete ctx_items["edit"];
-          delete ctx_items["cut_container"];
-          delete ctx_items["delete"];
-        }
-      }
+    if (typeof special_dir_type !== "undefined") {
+      delete ctx_items["edit"];
+      delete ctx_items["cut_container"];
+      delete ctx_items["delete"];
+    }
+
+    if (special_dir_type === "trash") {
+      ctx_items["clear_trash"] = {name: emptybin_t,
+                                  icon: '../img/' + node.data.icon}
+    }
 
       ctx_items["sep4"] = "---------";
-      // ctx_items["quit"] = {name: "Quit", icon: "quit"};
 
       consoledb.groupEnd('build_context_menu_items for node ' +  node.key + ', ' + node.title);
       return ctx_items;
@@ -758,7 +748,7 @@ function reloadPage(id, path, tree_selector){
       active_accordion = 0;
     }
     action = "";
-    idselection = "";
+    idselection = id;
     consoledb.log(path);
     $('.ui-layout-center').attr('src', '/edit/edit_content?id='+id);
     $('#accordiontree').accordion("option", "active", active_accordion);
@@ -1011,7 +1001,7 @@ function set_cm_to_default() {
 </head>
         <body>
 
-            <iframe class="ui-layout-center" tal:attributes="src python:'/edit/edit_content?id='+id"> </iframe>
+            <iframe class="ui-layout-center" tal:attributes="src python:u'/edit/edit_content?id={}'.format(id)"> </iframe>
 
             <div class="ui-layout-north" style="background-color:#ddd!important;">
                 <tal:block tal:condition="python:system_editor_header_insert" tal:replace="structure python: system_editor_header_insert">TEXT</tal:block>
@@ -1019,7 +1009,7 @@ function set_cm_to_default() {
 
                     <span i18n:translate="sub_header_user">TEXT</span>: <span tal:replace="raw python:user.getName()"/>
                     <span tal:repeat="item python:spc">
-                        | <a tal:attributes="href python:item.link; target python:item.target; title python:item.getName()+'_title'" i18n:translate="" i18n:attributes="title" tal:content="python:item.getName()">TEXT</a>
+                        | <a tal:attributes="href python:item.link; target python:item.target; title python:u'{}_title'.format(item.getName())" i18n:translate="" i18n:attributes="title" tal:content="python:item.getName()">TEXT</a>
                     </span>
                 </div>
             </div>
@@ -1036,9 +1026,9 @@ function set_cm_to_default() {
                         <a tal:condition="python:system_editor_help_link" target="_blank" i18n:attributes="title edit_help_title" tal:attributes="href python:system_editor_help_link" > <img src="/img/edit_help.gif"/></a>
                     </div>
                     <div style="padding-top:6px;margin:0 0 0 5px;white-space:nowrap;" i18n:translate="">
-                        <a href="#" tal:attributes="onclick python:'return reloadPage('+folders['homedir'][0].id+',\''+folders['homedir'][1]+'\')'"><img src="/img/webtree/homeicon.gif" i18n:attributes="title e_folder_homedir" style="padding-right:10px"/></a>
-                        <a href="#" tal:attributes="onclick python:'return reloadPage('+folders['trashdir'][0].id+',\''+folders['trashdir'][1]+'\')'"><img src="/img/webtree/trashicon.gif" i18n:attributes="title e_folder_trashdir" style="padding-right:10px"/></a>
-                        <a href="#" tal:attributes="onclick python:'return reloadPage('+folders['uploaddir'][0].id+',\''+folders['uploaddir'][1]+'\')'"><img src="/img/webtree/uploadicon.gif" i18n:attributes="title e_folder_uploaddir"  style="padding-right:10px"/></a>
+                        <a href="#" tal:attributes="onclick python:u'return reloadPage({},\'{}\')'.format(folders['homedir'][0].id, folders['homedir'][1])"><img src="/img/webtree/homeicon.gif" i18n:attributes="title e_folder_homedir" style="padding-right:10px"/></a>
+                        <a href="#" tal:attributes="onclick python:u'return reloadPage({},\'{}\')'.format(folders['trashdir'][0].id, folders['trashdir'][1])"><img src="/img/webtree/trashicon.gif" i18n:attributes="title e_folder_trashdir" style="padding-right:10px"/></a>
+                        <a href="#" tal:attributes="onclick python:u'return reloadPage({},\'{}\')'.format(folders['uploaddir'][0].id, folders['uploaddir'][1])"><img src="/img/webtree/uploadicon.gif" i18n:attributes="title e_folder_uploaddir"  style="padding-right:10px"/></a>
                         &nbsp;&nbsp;&nbsp;
                     </div>
                 </div>
@@ -1046,7 +1036,7 @@ function set_cm_to_default() {
                 <div class="treecontent" id="tree" style="border:0 solid #bbb!important;overflow:hidden!important;background-color:#ddd;">
                     <div i18n:translate="select_target_dir" id="select_target_dir" style="display:none">TEXT</div>
                     <div id="accordiontree" style="overflow:hidden!important;">
-                        <h3 class="context-menu-home" style="overflow: hidden!important;"><a href="#" tal:attributes="onclick python:'loadEditArea('+str(basedirs[0].id)+')'"><span id="homedir" tal:content="python:basedirs[0].getName()" i18n:translate=""/></a></h3>
+                        <h3 class="context-menu-home" style="overflow: hidden!important;"><a href="#" tal:attributes="onclick python:u'loadEditArea({})'.format(basedirs[0].id)"><span id="homedir" tal:content="python:basedirs[0].getName()" i18n:translate=""/></a></h3>
                         <div id="home_content" onmouseover="$(this).scrollTop(-100);">
                             <tal:block tal:condition="python:user.isAdmin()">
                               <label>Filter:</label>
@@ -1057,7 +1047,7 @@ function set_cm_to_default() {
                             <div  class="acc_content" id="hometree"> </div>
                         </div>
 
-                        <h3 class="context-menu-collections"><a href="#" tal:attributes="onclick python:'loadEditArea('+str(basedirs[1].id)+')'"><span id="collections" tal:content="python:basedirs[1].getLabel()"/></a></h3>
+                        <h3 class="context-menu-collections"><a href="#" tal:attributes="onclick python:u'loadEditArea({})'.format(basedirs[1].id)"><span id="collections" tal:content="python:basedirs[1].getLabel()"/></a></h3>
 
                         <div class="acc_content" id="tree_content">
 
@@ -1071,9 +1061,9 @@ function set_cm_to_default() {
             <div id="overlay"> </div>
             </div>
 
-            <script tal:content="python:'var currentid = '+str(id)+';'">TEXT</script>
-            <script tal:content="python:'var currentpath = \'/'+'/'.join(path[2:])+'\';'">TEXT</script>
-            <script tal:content="python:'var currentcpath = \'/'+'/'.join(containerpath[2:])+'\';'">TEXT</script>
+            <script tal:content="python:u'var currentid = {};'.format(id)">TEXT</script>
+            <script tal:content="python:u'var currentpath = \'/{}\';'.format('/'.join(path[2:]))">TEXT</script>
+            <script tal:content="python:u'var currentcpath = \'/{}\';'.format('/'.join(containerpath[1:]))">TEXT</script>
 
             <script>
                var rct = null;
@@ -1082,9 +1072,9 @@ function set_cm_to_default() {
 
             <script> var currentselection="";</script>
 
-            <script tal:content="python:'var js_edit_layout_togglertip_open = \''+str(t(language, 'edit_layout_togglertip_open'))+'\';'">;</script>
-            <script tal:content="python:'var js_edit_layout_togglertip_closed = \''+str(t(language, 'edit_layout_togglertip_closed'))+'\';'">;</script>
-            <script tal:content="python:'var js_edit_layout_resizertip = \''+str(t(language, 'edit_layout_resizertip'))+'\';'">;</script>
+            <script tal:content="python:u'var js_edit_layout_togglertip_open = \'{}\';'.format(t(language, 'edit_layout_togglertip_open'))">;</script>
+            <script tal:content="python:u'var js_edit_layout_togglertip_closed = \'{}\';'.format(t(language, 'edit_layout_togglertip_closed'))">;</script>
+            <script tal:content="python:u'var js_edit_layout_resizertip = \'{}\';'.format(t(language, 'edit_layout_resizertip'))">;</script>
 
 <script type="text/javascript">
 
@@ -1577,7 +1567,7 @@ ct.visit(function(node){
             </style>
 
             <tal:block tal:repeat="ct_iconpath cmenu_iconpaths">
-                <style tal:condition="python: not ct_iconpath[0].getName().startswith('bare_')" tal:content="python: '.context-menu-item.icon-%s { background-image: url(img/%s); }' % (ct_iconpath[0].getName(), ct_iconpath[1])">#</style>
+                <style tal:content="python: '.context-menu-item.icon-%s { background-image: url(img/%s); }' % (ct_iconpath[0], ct_iconpath[2])">#</style>
             </tal:block>
 
             <div id="clear_trash_question" style="display:none" i18n:translate="clear_trash_question"> </div>
@@ -1594,14 +1584,14 @@ ct.visit(function(node){
 
 <div metal:define-macro="edit_paging" style="width:130px;position:absolute;right:0;">
     <div tal:condition="python:previd" style="position:absolute;left:0;top:0;width:20px">
-        <a tal:attributes="href python:'/edit/edit_content?id='+str(previd)+'&tab='+tab"><img border="0" src="/img/pageleft.gif"/></a>
+        <a tal:attributes="href python:u'/edit/edit_content?id={}&tab={}'.format(previd, tab)"><img border="0" src="/img/pageleft.gif"/></a>
     </div>
     <div tal:condition="python:nextid" style="position:absolute;right:0;top:0;width:20px">
-         <a tal:attributes="href python:'/edit/edit_content?id='+str(nextid)+'&tab='+tab"><img border="0" src="/img/pageright.gif"/></a>
+         <a tal:attributes="href python:u'/edit/edit_content?id={}&tab={}'.format(nextid, tab)"><img border="0" src="/img/pageright.gif"/></a>
     </div>
     <div tal:condition="python:previd or nextid" style="margin-left:20px;margin-right:20px;text-align:center">
         <tal:block tal:replace="raw script"/>
-        <select id="goto" tal:attributes="onchange python:'gotoContent(document.getElementById(\'goto\').value,\''+tab+'\')'">
+        <select id="goto" tal:attributes="onchange python:u'gotoContent(document.getElementById(\'goto\').value,\'{}\')'.format(tab)">
             <option tal:repeat="item combodata" tal:attributes="value python:item[0]; selected python:[None,'selected'][item[0]==nodeid]" tal:content="python:item[1]" ></option>
         </select>
         / <tal:block tal:replace="absitems" />
@@ -1652,7 +1642,7 @@ ct.visit(function(node){
             <script type="text/javascript" src="/js/admin.js"> </script>
 
             <script type="text/javascript" src="/js/mediatum.js"> </script>
-            <script type="text/javascript" tal:content="python:'var tab=\''+tab+'\';'"/>
+            <script type="text/javascript" tal:content="python:U'var tab=\'{}\';'.format(tab)"/>
             <script type="text/javascript">
                 var allobjects = new Array();
 
@@ -1712,9 +1702,9 @@ ct.visit(function(node){
                 <tal:block tal:replace="raw body"/>
             </div>
 
-            <script tal:content="python:'var js_edit_layout_togglertip_open = \''+str(t(language, 'edit_layout_togglertip_open'))+'\';'">;</script>
-            <script tal:content="python:'var js_edit_layout_togglertip_closed = \''+str(t(language, 'edit_layout_togglertip_closed'))+'\';'">;</script>
-            <script tal:content="python:'var js_edit_layout_resizertip = \''+str(t(language, 'edit_layout_resizertip'))+'\';'">;</script>
+            <script tal:content="python:u'var js_edit_layout_togglertip_open = \'{}\';'.format(t(language, 'edit_layout_togglertip_open'))">;</script>
+            <script tal:content="python:u'var js_edit_layout_togglertip_closed = \'{}\';'.format(t(language, 'edit_layout_togglertip_closed'))">;</script>
+            <script tal:content="python:u'var js_edit_layout_resizertip = \'{}\';'.format(t(language, 'edit_layout_resizertip'))">;</script>
 
             <script>
                 $(document).ready(function () {
@@ -1790,7 +1780,7 @@ ct.visit(function(node){
 <tal:block metal:define-macro="itemlist">
     <div id="items" style="float:left;width:100%;height:82px;overflow:auto;border:1px solid silver;">
         <tal:block tal:repeat="item nodes">
-            <a href="#" tal:attributes="onclick python:'return Thumb2Window('+str(item.id)+')'"><img tal:attributes="src python:'/thumbs/'+str(item.id)" style="width:80px;"/></a>
+            <a href="#" tal:attributes="onclick python:u'return Thumb2Window({})'.format(item.id)"><img tal:attributes="src python:u'/thumbs/{}'.format(item.id)" style="width:80px;"/></a>
         </tal:block>
     </div>
 </tal:block>

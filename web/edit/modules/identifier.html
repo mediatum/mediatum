@@ -1,6 +1,6 @@
 <tal:block metal:define-macro="set_identifier">
     <div style="display:none" id="confirm_popup"  i18n:translate="edit_identifier_confirm_popup">TEXT</div>
-    <tal:block tal:condition="python:not user.isAdmin()">
+    <tal:block tal:condition="python:not user.is_admin">
     <script>
         $(document).ready(function()
         {
@@ -14,7 +14,7 @@
     </tal:block>
 
     <div id="navigation_content">
-    <tal:block tal:condition="python:', ' not in nodes">
+    <tal:block tal:condition="python:len(nodes) < 2">
 
     <script>
         function Thumb2Window2(id){
@@ -23,7 +23,7 @@
         }
     </script>
     <div style="float:left;width:100%;height:82px;overflow:auto">
-        <a href="#" tal:attributes="onclick python:'return Thumb2Window2('+nodes+')'"><img tal:attributes="src python:'/thumbs/'+nodes" style="width:80px;"/></a>
+        <a href="#" tal:attributes="onclick python:u'return Thumb2Window2({})'.format(*nodes)"><img tal:attributes="src python:u'/thumbs/{}'.format(*nodes)" style="width:80px;"/></a>
     </div>
     </tal:block>
     </div>
@@ -90,11 +90,11 @@
 <tal:block metal:define-macro="generate_identifier_admin_mail">
 Bitte erfüllen Sie die Beantragung durch erzeugung die gewünschten art des Identifikators in dem Identifier Modul im Edit Bereich.
 
-Benutzer: <span tal:replace="python:user.getName()"/>
+Benutzer: <span tal:replace="python:user.display_name"/>
 
-Benutzer E-mail: <span tal:replace="python:user.getEmail()"/>
+Benutzer E-mail: <span tal:replace="python:user.email"/>
 
-Knoten: <span tal:replace="python:nodes"/>
+Knoten: <span tal:replace="python:', '.join(nodes)"/>
 
 Typ des Identifikators: <span tal:replace="python:type"/>
 <tal:block tal:condition="python:type == 'urn'">
@@ -105,27 +105,15 @@ Namensraum: <span tal:replace="python:namespace"/>
 </tal:block>
 
 <tal:block metal:define-macro="generate_identifier_usr_mail_1_de">
-Sehr geehrte(r) Frau/Herr <span tal:replace="python:user.getFirstName() + ' ' + user.getLastName()"/>,
+Sehr geehrte(r) Frau/Herr <span tal:replace="python:u'{} {}'.format(user.firstname, user.lastname)"/>,
 
 vielen Dank für Ihre Anfrage nach einem eindeutigen und dauerhafter digitalen Identifikator.
 
 Art des beantragten Identifikators: <span tal:replace="python:type"/>
 
-mediaTUM-Link zum Dokument/Datensatz, für welchen dieser Identifikator beantragt werden soll: <span tal:replace="python:'\n'.join(['http://' + host + '/?id=' + node for node in nodes.split(', ')])"/>
+mediaTUM-Link zum Dokument/Datensatz, für welchen dieser Identifikator beantragt werden soll:
 
-Für die Vergabe eines eindeutigen Identifikators benötigen wird einen Autorenvertrag von Ihnen. Bitte füllen Sie den angehängten Autorenvertrag aus und schicken Sie ihn in *doppelter Ausführung* unterschrieben per Post an die im Vertrag angegebene Adresse oder per Haus-Post an:
-
-Universitätsbibliothek
-mediaTUM Anwendungsbetreuung
-Barer Straße 21
-
-Das Zusenden des Autorenvertrags per Fax ist leider nicht ausreichend.
-
-Bitte stellen Sie sicher, dass es sich um die endgültige Fassung des Dokuments/Datensatzes handelt. Mit der Vergabe des Identifikators verlieren Sie alle Rechte zur Bearbeitung, so dass keine weiteren Änderungen mehr vorgenommen werden können. Bitte überprüfen Sie ebenfalls, ob der Datensatz an der richtigen Stelle in der mediaTUM-Hierarchie eingeordnet wurde.
-
-Wenn der Autorenvertrag bei der Universitätsbibliothek eingegangen ist, prüfen wir den Datensatz. Anschließend vergeben wir den Identifikator und senden Ihnen per E-Mail eine Bestätigung zu.
-
-Bitte melden Sie sich jederzeit, wenn Sie Fragen zum digitalen Identifikator haben.
+<span tal:repeat="node nodes" tal:replace="python:u'\n'.join([u'http://{}/?id={}'.format(host, node)])"/>
 
 Mit freundlichen Grüßen,
 
@@ -136,28 +124,15 @@ mediaTUM Anwendungsbetreuung
 </tal:block>
 
 <tal:block metal:define-macro="generate_identifier_usr_mail_1_en">
-Dear Mr./Ms. <span tal:replace="python:user.getFirstName() + ' ' + user.getLastName()"/>,
+Dear Mr./Ms. <span tal:replace="python:u'{} {}'.format(user.firstname , user.lastname)"/>,
 
 Thank you for requesting a unique and long-term digital identifier.
 
 Type of identifier requested: <span tal:replace="python:type"/>
 
-mediaTUM-Link to the document/data-record for which this identifier will be created: <span tal:replace="python:'\n'.join(['http://' + host + '/?id=' + node for node in nodes.split(', ')])"/>
+mediaTUM-Link to the document/data-record for which this identifier will be created:
 
-In order to complete your request for a unique identifier, we require an Autorenvertrag (Author Contract) from you. Please fill out the attached Autorenvertrag and send *two signed copies* per mail to the address listed in the contract or per internal mail to:
-
-Universitätsbibliothek
-mediaTUM Anwendungsbetreuung
-Barer Straße 21
-
-Unfortunately, sending the filled out form per fax can not be accepted.
-
-As soon as the University Library receives the Autorenvertrag, the data-record will be reviewed. Subsequently we will generate an identifier and send you a conformation per E-Mail.
-
-Please don't hesitate to contact us with any questions regarding the digital identifier.
-
-Sincerely,
-
+<span tal:repeat="node nodes" tal:replace="python:u'\n'.join([u'http://{}/?id={}'.format(host, node)])"/>
 
 Your University Library
 
@@ -165,15 +140,15 @@ mediaTUM Support Team
 </tal:block>
 
 <tal:block metal:define-macro="generate_identifier_usr_mail_2">
-Sehr geehrte(r) Frau/Herr <span tal:replace="python:creator.getFirstName() + ' ' + creator.getLastName()"/>,
+Sehr geehrte(r) Frau/Herr <span tal:replace="python:u'{} {}'.format(creator.getFirstName(), creator.getLastName())"/>,
 
-vielen Dank für das Zusenden des Autorenvertrags. In den nächsten Tagen erhalten Sie die von uns unterschriebene Zweitschrift des Vertrags per (Haus-)Post.
-
-In der Zwischenzeit wurde der beantragte eindeutige Identifikator vergeben. Die Bearbeitungsrechte wurden Ihnen mit der Vergabe entzogen, so dass eine Änderung des Dokuments/Datensatzes nun nicht mehr möglich ist.
+Der beantragte eindeutige Identifikator wurde vergeben. Die Bearbeitungsrechte wurden Ihnen mit der Vergabe entzogen, so dass eine Änderung des Dokuments/Datensatzes nun nicht mehr möglich ist.
 
 Art des beantragten Identifikators: <span tal:replace="python:type"/>
 
-mediaTUM-Link zum Dokument/Datensatz, für welchen dieser Identifikator beantragt wurde: <span tal:replace="python:'\n'.join(['http://' + host + '/?id=' + node for node in nodes.split(', ')])"/>
+mediaTUM-Link zum Dokument/Datensatz, für welchen dieser Identifikator beantragt wurde:
+
+<span tal:repeat="node nodes" tal:replace="python:u'\n'.join([u'http://{}/?id={}'.format(host, node)])"/>
 
 Bitte beachten Sie, dass es auf Seiten der Vergabestellen zu einer zeitlichen Verzögerung kommen kann. Es kann somit einige Tage in Anspruch nehmen bis der Identifikator aktiviert wird und die Verlinkung tatsächlich funktioniert. Wir bitten um Ihr Verständnis.
 
@@ -188,15 +163,15 @@ mediaTUM Anwendungsbetreuung
 
 ----------------------------
 
-Dear Mr/Ms. <span tal:replace="python:creator.getFirstName() + ' ' + creator.getLastName()"/>,
+Dear Mr/Ms. <span tal:replace="python:u'{} {}'.format(creator.firstname, creator.lastname)"/>,
 
-Thank you for sending us the Autorenvertrags (Author Contract). In the next days you should receive a signed copy of the contract per internal mail.
-
-In the meantime, a unique identifier has been generated for you and the editing rights to the document/data-record have been removed so it's not possible to make any more changes.
+A unique identifier has been generated for you and the editing rights to the document/data-record have been removed so it's not possible to make any more changes.
 
 Type of identifier requested: <span tal:replace="python:type"/>
 
-mediaTUM-Link to the document/data-record for which this identifier will be created: <span tal:replace="python:'\n'.join(['http://' + host + '/?id=' + node for node in nodes.split(', ')])"/>
+mediaTUM-Link to the document/data-record for which this identifier will be created:
+
+<span tal:repeat="node nodes" tal:replace="python:u'\n'.join([u'http://{}/?id={}'.format(host, node)])"/>
 
 Please take note that it can take some time until our service partner generates your identifier. This means that it may take a few days until your identifier is activated and that the linking functions properly. We ask you for your understanding.
 

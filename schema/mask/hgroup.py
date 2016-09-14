@@ -18,10 +18,12 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from schema.schema import getMetadataType, getAllMetaFields, VIEW_DATA_ONLY, VIEW_SUB_ELEMENT, Maskitem
-from core.tree import getNode
 
 from core.translation import lang
 from core.metatype import Metatype
+from core import Node, db
+
+q = db.query
 
 
 class m_hgroup(Metatype):
@@ -41,23 +43,22 @@ class m_hgroup(Metatype):
             ret += f.getFormHTML(item, nodes, req, True)
         return ret + '</div>'
 
-    def getViewHTML(self, field, nodes, flags, language=None, template_from_caller=None, mask=None, use_label=True):
+    def getViewHTML(self, maskitem, nodes, flags, language=None, template_from_caller=None, mask=None, use_label=True):
         if flags & VIEW_DATA_ONLY:
             ret = []
-            for item in field.getChildren().sort_by_orderpos():
+            for item in maskitem.getChildren().sort_by_orderpos():
                 f = getMetadataType(item.get("type"))
                 ret.append(f.getViewHTML(item, nodes, flags, language=language))
             return ret
         else:
             if use_label:
-                snippets = ['<div class="mask_row hgroup hgroup-%s"><div class="mask_label">%s: </div><div class="mask_value">' % (field.id, field.getLabel())]
+                snippets = ['<div class="mask_row hgroup hgroup-%s"><div class="mask_label">%s: </div><div class="mask_value">' % (maskitem.id, maskitem.getLabel())]
             else:
-                snippets = ['<div class="mask_row hgroup hgroup-%s"><div class="mask_value">' % (field.id)]
+                snippets = ['<div class="mask_row hgroup hgroup-%s"><div class="mask_value">' % (maskitem.id)]
             raw_values = ['&nbsp;']
             sep = ''
             has_raw_value = False  # skip group display if no item has raw_value
-            items = field.getChildren().sort_by_orderpos()
-            len_items = len(items)
+            items = maskitem.getChildren().sort_by_orderpos()
             for i, item in enumerate(items):
                 f = getMetadataType(item.get("type"))
                 raw_value = f.getViewHTML(item, nodes, flags | VIEW_SUB_ELEMENT, language=language)
@@ -72,11 +73,11 @@ class m_hgroup(Metatype):
                 else:
                     sep = ''  # no separator before or after empty sub element
 
-            unit = field.get('unit').strip()
+            unit = maskitem.get('unit').strip()
             if not has_raw_value:
                 snippets = []  # no value when all sub elements are empty
             elif raw_values and unit:
-                snippets.append('&nbsp;<span class="hgroup_unit field_unit hgroup-%s">%s</span></div></div>' % (field.id, unit))
+                snippets.append('&nbsp;<span class="hgroup_unit field_unit hgroup-%s">%s</span></div></div>' % (maskitem.id, unit))
             elif raw_values:
                 snippets.append('</div></div>')
             ret = ''.join(snippets)
@@ -93,12 +94,12 @@ class m_hgroup(Metatype):
         ret += '<fieldset>'
 
         if item.getLabel() != "":
-            ret += '<legend>{}</legend>'.format(item.getLabel())
+            ret += u'<legend>{}</legend>'.format(item.getLabel())
 
         ret += '<div id="editor_content">'
         for field in item.getChildren().sort_by_orderpos():
             f = getMetadataType(field.get("type"))
-            ret += '<div id="hitem">{}</div>'.format(f.getMetaHTML(item, i, True, language=language, fieldlist=fieldlist))
+            ret += u'<div id="hitem">{}</div>'.format(f.getMetaHTML(item, i, True, language=language, fieldlist=fieldlist))
             i += 1
 
         if len(item.getChildren()) == 0:
@@ -107,20 +108,20 @@ class m_hgroup(Metatype):
         ret += '</fieldset>'
 
         if not sub:
-            ret += '<div align="right" id="' + item.id + \
+            ret += '<div align="right" id="' + unicode(item.id) + \
                 '_sub" style="display:none; clear:both"><small style="color:silver">(' + (item.get("type")) + ')</small>'
             if index > 0:
                 ret += '<input type="image" src="/img/uparrow.png" name="up_' + \
-                    str(item.id) + '" i18n:attributes="title mask_edit_up_title"/>'
+                    unicode(item.id) + '" i18n:attributes="title mask_edit_up_title"/>'
             else:
                 ret += '&nbsp;&nbsp;&nbsp;'
             if index < len(parent.getChildren()) - 1:
                 ret += '<input type="image" src="/img/downarrow.png" name="down_' + \
-                    str(item.id) + '" i18n:attributes="title mask_edit_down_title"/>'
+                    unicode(item.id) + '" i18n:attributes="title mask_edit_down_title"/>'
             else:
                 ret += '&nbsp;&nbsp;&nbsp;'
-            ret += ' <input type="image" src="/img/edit.png" name="edit_' + str(
-                item.id) + '" i18n:attributes="title mask_edit_edit_row"/> <input type="image" src="/img/delete.png" name="delete_' + str(
+            ret += ' <input type="image" src="/img/edit.png" name="edit_' + unicode(
+                item.id) + '" i18n:attributes="title mask_edit_edit_row"/> <input type="image" src="/img/delete.png" name="delete_' + unicode(
                 item.id) + '" i18n:attributes="title mask_edit_delete_row" onClick="return questionDel()"/></div>'
             ret += '</div>'
 
@@ -134,7 +135,7 @@ class m_hgroup(Metatype):
         else:
             pid = item.getParents()[0].id
 
-        if str(req.params.get("edit")) == str("None"):
+        if ustr(req.params.get("edit")) == ustr("None"):
             item = Maskitem(name="", type="maskitem")
             item.set("type", "hgroup")
 
@@ -148,7 +149,7 @@ class m_hgroup(Metatype):
         if req.params.get("sel_id", "") != "":
             i = 0
             for id in req.params.get("sel_id")[:-1].split(";"):
-                f = getMetadataType(getNode(id).get("type"))
+                f = getMetadataType(q(Node).get(id).get("type"))
                 details += f.getMetaHTML(item, i, False, itemlist=req.params.get("sel_id")
                                          [:-1].split(";"), ptype="hgroup", fieldlist=fieldlist, language=lang(req))
                 i += 1
@@ -157,14 +158,14 @@ class m_hgroup(Metatype):
         metadatatype = req.params.get("metadatatype")
 
         if req.params.get("op", "") == "new":
-            pidnode = getNode(req.params.get("pid"))
+            pidnode = q(Node).get(req.params.get("pid"))
             if pidnode.get("type") in ("vgroup", "hgroup"):
-                for field in pidnode.getAllChildren():
+                for field in pidnode.all_children:
                     if field.getType().getName() == "maskitem" and field.id != pidnode.id:
                         fields.append(field)
             else:
                 for m in metadatatype.getMasks():
-                    if str(m.id) == str(req.params.get("pid")):
+                    if ustr(m.id) == ustr(req.params.get("pid")):
                         for field in m.getChildren():
                             fields.append(field)
         fields.sort(lambda x, y: cmp(x.getOrderPos(), y.getOrderPos()))
@@ -178,7 +179,8 @@ class m_hgroup(Metatype):
         v["selid"] = req.params.get("sel_id", "")
         return req.getTAL("schema/mask/hgroup.html", v, macro="metaeditor")
 
-    def isContainer(self):
+    @classmethod
+    def isContainer(cls):
         return True
 
     def getName(self):

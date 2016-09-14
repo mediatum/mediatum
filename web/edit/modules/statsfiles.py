@@ -18,14 +18,16 @@
 """
 
 import logging
-import core.tree as tree
-import core.acl as acl
-import core.users as users
 
-from core.stats import buildStat, StatisticFile
-from utils.utils import splitpath, dec_entry_log
-from utils.date import format_date, now
-from core.transition import httpstatus
+from utils.utils import dec_entry_log
+from utils.date import format_date
+from core.transition import httpstatus, current_user
+from core import Node
+from core import db
+
+q = db.query
+logg = logging.getLogger(__name__)
+
 
 class StatType:
 
@@ -106,7 +108,7 @@ class StatTypes:
         for t in self.data:
             ret += t.getName() + "("
             for i in t.getTypes():
-                ret += i[0] + "=" + str(i[1]) + "|" + str(i[2]) + ";"
+                ret += i[0] + "=" + ustr(i[1]) + "|" + ustr(i[2]) + ";"
             if ret[-1] == ";":
                 ret = ret[:-1]
             ret += ");"
@@ -125,27 +127,21 @@ class StatTypes:
             sum += datatype.getMax()
         return sum
 
-logger = logging.getLogger("usertracing")
-
 
 @dec_entry_log
 def getContent(req, ids):
     if len(ids) > 0:
         ids = ids[0]
 
-    user = users.getUserFromRequest(req)
-    node = tree.getNode(ids)
-    access = acl.AccessData(req)
+    user = current_user
+    node = q(Node).get(ids)
 
-    if "statsfiles" in users.getHideMenusForUser(user) or not access.hasWriteAccess(node):
+    if "statsfiles" in user.hidden_edit_functions or not node.has_write_access():
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     if "update_stat" in req.params.keys():  # reset stored statistics data
-        msg = "user %r requests update of of system.statscontent for node %r (%r, %r)" % (
-            user.getName(), node.id, node.name, node.type)
-        logger.info(msg)
-        logging.getLogger('editor').info(msg)
+        logg.info("user %s requests update of of system.statscontent for node %s (%s, %s)", user.login_name, node.id, node.name, node.type)
         node.removeAttribute("system.statscontent")
         node.removeAttribute("system.statsdate")
 
@@ -155,14 +151,14 @@ def getContent(req, ids):
 
         if statstring == "":  # load stats from objects/renew stat
             data = StatTypes()
-            for n in node.getAllChildren():
+            for n in node.all_children:
                 found_dig = 0 or len(
-                    [file for file in n.getFiles() if file.type in["image", "document", "video"]])
-                data.addItem(n.getContentType(), n.getSchema(), found_dig)
+                    [file for file in n.files if file.filetype in["image", "document", "video"]])
+                data.addItem(n.type, n.schema, found_dig)
 
-            node.set("system.statscontent", str(data))
-            node.set("system.statsdate", str(format_date()))
-            statstring = str(data)
+            node.set("system.statscontent", unicode(data))
+            node.set("system.statsdate", unicode(format_date()))
+            statstring = unicode(data)
 
         v = {}
         v["data"] = StatTypes(statstring)

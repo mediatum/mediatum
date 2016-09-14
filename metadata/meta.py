@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
  mediatum - a multimedia content repository
 
@@ -18,38 +17,51 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import logging
 from mediatumtal import tal
-import core.tree as tree
-import lib.iptc.IPTC as IPTC
 from core.metatype import Metatype
+from core import Node
+from lib.iptc.IPTC import get_wanted_iptc_tags
+logg = logging.getLogger(__name__)
+
 
 class m_meta(Metatype):
 
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
-        return tal.getTAL("metadata/meta.html", {"lock": lock, "value": value, "width": width,
-                                                 "name": field.getName(), "field": field
-                                                 }, macro="editorfield", language=language)
+        return tal.getTAL("metadata/meta.html", {"lock": lock,
+                                                 "value": value,
+                                                 "width": width,
+                                                 "name": field.getName(),
+                                                 "field": field},
+                          macro="editorfield",
+                          language=language)
 
     def getSearchHTML(self, context):
         return tal.getTAL("metadata/meta.html", {"context": context}, macro="searchfield", language=context.language)
 
-    def getFormatedValue(self, field, node, language=None, html=1):
-        return field.getLabel(), node.get(field.getValues())
+    def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
+        return (metafield.getLabel(), node.get(metafield.getValues()))
 
     def getMaskEditorHTML(self, field, metadatatype=None, language=None):
         try:
             value = field.getValues().split("\r\n")
-        except:
+        except AttributeError:
+            #value = u""
             value = []
-        while len(value) < 2:
-            value.append('')
+            while len(value) < 2:
+                value.append('')
 
         attr = {}
         if metadatatype:
             for t in metadatatype.getDatatypes():
-                node = tree.Node(type=t)
-                attr.update(node.getTechnAttributes())
-            attr['IPTC'] = IPTC.get_wanted_iptc_tags()
+                content_class = Node.get_class_for_typestring(t)
+                node = content_class(name=u'')
+                try:
+                    attr.update(node.getTechnAttributes())
+                    attr['IPTC'] = get_wanted_iptc_tags()
+                except AttributeError:
+                    logg.exception("attribute error in getMaskEditorHTML, continue")
+                    continue
 
         return tal.getTAL("metadata/meta.html", {"value": value, "t_attrs": attr}, macro="maskeditor", language=language)
 

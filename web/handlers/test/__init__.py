@@ -1,0 +1,1 @@
+from core.test.fixtures import *

@@ -7,18 +7,6 @@ msgstr "Dateien"
 msgid "edit_files_children"
 msgstr "Kindelemente"
 
-msgid "edit_files_nodes_colon"
-msgstr "Elementknoten:"
-
-msgid "edit_files_children_colon"
-msgstr "Kindelemente:"
-
-msgid "edit_files_select_all_child"
-msgstr "alle Elementknoten wählen"
-
-msgid "edit_files_select_all_grand"
-msgstr "alle Kindelemente wählen"
-
 msgid "edit_files_attachments"
 msgstr "Attachments"
 
@@ -69,9 +57,6 @@ msgstr "(dabei werden alle Operationen ausgeführt, die notwendig sind, um Techn
 
 msgid "edit_files_obsolete"
 msgstr "nicht verwendete Metadatenfelder"
-
-msgid "edit_files_obsolete_del_title"
-msgstr "Attribut löschen"
 
 msgid "edit_files_metafields"
 msgstr "Metadatenfelder"
@@ -129,3 +114,15 @@ msgstr "Befestigung Verzeichnis hinzugefügt"
 
 msgid "edit_files_new_version_attachment_comment"
 msgstr "Anhang hinzugefügt"
+
+msgid "edit_files_nodes_colon"
+msgstr "Elementknoten:"
+
+msgid "edit_files_children_colon"
+msgstr "Kindelemente:"
+
+msgid "edit_files_select_all_child"
+msgstr "alle Elementknoten wählen"
+
+msgid "edit_files_select_all_grand"
+msgstr "alle Kindelemente wählen"

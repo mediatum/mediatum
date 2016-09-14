@@ -1,0 +1,23 @@
+- extends "styles/base.j2.jade"
+- from "styles/macros.j2.jade" import metis
+
+
+-block top
+ if metis_url
+   = metis(metis_url)
+
+
+- block before_metadata
+  if video_url
+    .object_video.object_column.left
+      .video_container
+        video(controls="controls", preload="metadata")
+          source(type="video/mp4", src=video_url)
+
+  else
+    .document_thumb
+      img(src="/thumb2/{{ node.id }}", width="300")
+
+
+// generated from jade
+//- vim: set filetype=jade sw=2 ts=2 sts=2 expandtab:

@@ -24,7 +24,12 @@ import codecs
 import logging
 import os
 import core.config as config
-from schema.schema import getMetaType
+from core import Node
+from core import db
+from schema.schema import getMetaType, Metadatatype
+
+q = db.query
+logg = logging.getLogger(__name__)
 
 
 def generate_doi_test(node):
@@ -33,9 +38,9 @@ def generate_doi_test(node):
     Returns a DOI for the given node for testing purposes
     """
     prefix = config.get('doi.prefix_test')
-    node_id = node.get('node.id')
+    node_id = unicode(node.id)
 
-    return '/'.join([prefix, node_id])
+    return u'/'.join([prefix, node_id])
 
 
 def generate_doi_live(node):
@@ -54,7 +59,7 @@ def generate_doi_live(node):
         'year': '',
         'publisher': config.get('doi.publisher'),
         'type': '',
-        'id': node.get('node.id'),
+        'id': node.id,
     }
 
     possible_year_fields = [
@@ -78,9 +83,9 @@ def generate_doi_live(node):
             break
 
     if node.getContentType() not in ('document', 'image'):
-        raise Exception('document type not document or image but rather %s' % node.getContentType())
+        raise Exception('document type not document or image but rather {}'.format(node.type))
     else:
-        params['type'] = node.getContentType()[0]
+        params['type'] = node.type
 
     return '10.{}/{}{}{}{}/{}'.format(prefix,
                                       params['year'],
@@ -99,23 +104,24 @@ def create_meta_file(node):
         raise Exception('doi not set')
     else:
         tmp = config.get('paths.tempdir')
-        filename = 'meta_file_%s.txt' % node.get('node.id')
+        filename = 'meta_file_{}.txt'.format(node.id)
         path = os.path.join(tmp, filename)
 
         if os.path.exists(path):
             pass
         else:
             try:
-                with open(path, 'w') as f:
-                    mask = getMetaType(node.getSchema()).getMask('doi')
+                with codecs.open(path, 'w', encoding='utf8') as f:
+                    mask = q(Metadatatype).filter_by(name=node.schema).scalar().get_mask('doi')
                     xml = mask.getViewHTML([node], flags=8)
                     f.write(xml)
             except AttributeError:
-                logging.getLogger('backend').error(
-                    'Doi was not successfully registered: Doi-mask for Schema %s is missing and should be created' % node.getSchema())
-                node.removeAttribute('doi')
+                logg.error(
+                    'Doi was not successfully registered: Doi-mask for Schema %s is missing and should be created',
+                    node.schema)
+                del node.attrs['doi']
             except IOError:
-                logging.getLogger('errors').error('Error creating %s' % path)
+                logg.exception('Error creating %s', path)
 
         return path
 
@@ -125,23 +131,26 @@ def create_doi_file(node):
     @param node
     Creates and returns the path to the 'doi file' needed to register the doi with datacite via api
     """
-    if 'doi' not in node.attributes:
+    if 'doi' not in node.attrs:
         raise Exception('doi not set')
     else:
         tmp = config.get('paths.tempdir')
         host = config.get('host.name')
-        filename = 'doi_file_%s.txt' % node.get('node.id')
+        filename = 'doi_file_{}.txt'.format(node.id)
         path = os.path.join(tmp, filename)
 
         if os.path.exists(path):
             pass
         else:
             try:
-                with open(path, 'w') as f:
-                    f.write('doi=%s\n' % node.get('doi'))
-                    f.write('url=%s%s%s%s' % ('http://', 'mediatum.ub.tum.de', '/?id=', node.get('node.id')))
+                with codecs.open(path, 'w', encoding='utf8') as f:
+                    f.write('doi={}\n'.format(node.get('doi')))
+                    f.write('url={}{}{}{}'.format('http://',
+                                                  'mediatum.ub.tum.de',
+                                                  '/?id=',
+                                                  node.id))
             except IOError:
-                logging.getLogger('error').error('Error creating %s' % path)
+                logg.exception('Error creating %s', path)
         return path
 
 
@@ -168,9 +177,7 @@ def post_file(file_type, file_location):
                       'r',
                       encoding='UTF-8').read()
     h = httplib2.Http()
-    response, content = h.request(endpoint,
-                                  'POST',
-                                  body=msg.encode('utf-8'),
-                                  headers={'Content-Type': 'text/plain;charset=UTF-8',
-                                           'Authorization': 'Basic ' + auth})
+
+    response, content = h.request(endpoint, 'POST', body=msg.encode('utf-8'), headers=header)
+
     return response.status, content.encode('utf-8')

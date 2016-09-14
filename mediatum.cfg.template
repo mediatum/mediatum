@@ -1,108 +1,110 @@
-[host]
-name=enter-your-hostname-into-mediatum-cfg
-port=8081
-threads=8
+[admin]
+pageitems=10
+
+[auth]
+authenticator_order=internal|default # ,ldap|server1
 
 [config]
-reindex_time=3600
-searcher=fts3  # fts3|magpy|<empty>
 oaibasename=mediatum repository
-workflowdiagram_type=graphviz # graphviz | internal | html5
+theme=default
+stub_undefined_nodetypes=true
+fail_if_undefined_nodetypes=false
+rehash_legacy_passwords=True
 
-[urn]
-institutionid=00
-pubtypes=epub  # multiple values separated with semicolon (;) are possible
-namespace=     # nbn:de:bvb | nbn:en:1111 | publicid | etc
+[database]
+host=127.0.0.1
+port=5432
+db=mediatum
+user=mediatum
+passwd=m
+debug=false
+debug_show_trace=true
+
+[email]
+admin=admin@example.com
+workflow=admin@example.com
+support=support@example.com
 
 [ftp]
 activate=false
 port=8021
 
-[paths]
-datadir=/data/
-searchstore=/data/search/
-tempdir=/tmp/
-
-[database]
-type=sqlite # sqlite or mysql
-#dbhost=localhost
-#dbport=3306 # default port for mysql
-#db=mediatum
-#user=mediatumadmin
-#passwd=
-#cache_size=100000
-searchdb=std # 'std' or 'split' split = split databases; std = all tables in one db
-
-[ldap]
-activate=false
-server=serverurl
-password=password
-searchfilter=authLogin=[username]
-username=
-basedn=
-attributes=attribute,attribute1
-user_login=attribute
-user_lastname=attribute
-user_firstname=attribute
-user_email=attribute
-user_comment=attribute
-user_group=attribute
-user_org=attribute
-
-[archive]
-activate=false
-class=#
-interval=3600
-
-[z3950]
-activate=false
-port=2101
-
-[marc21]
-mapping_name=marc21
-
-[user]
-adminuser=Administrator
-guestuser=Gast
-admingroup=Administration
-passwd=ABC
-
-[admin]
-pageitems=10
-
-[logging]
-path=/data/log/
-file.everything=/data/log/everything.log
-file.database=/data/log/database.log
-file.backend=/data/log/backend.log
-file.frontend=/data/log/frontend.log
-file.editor=/data/log/editor.log
-file.usertracing=/data/log/user.log
-file.athana=/data/log/athana.log
-file.errors=/data/log/errors.log
-
-[server]
-mail=mysmtpserver.com
-
-[email]
-admin=admin@mediatum.org
-workflow=admin@mediatum.org
-
-[oai]
-formats=mediatum # format for testing
-
-schema.mediatum=http://mediatum/no-schema-defined
-namespace.mediatum=http://www.mediatum.org/oai/mediatum
-
-[plugins]
+[host]
+name=localhost
+port=8081
+threads=8
 
 [i18n]
 languages=en,de
 en=i18n/mediatum-en.po
 de=i18n/mediatum-de.po
 
-[repec]
-maintainer_name=Joe Admin
-maintainer_email=joe.admin@mediatum.org
-name=Mediatum Institution
-provider_name=Mediatum Provider
+[logging]
+file=../mediatum_data/mediatum.log
+level=DEBUG
+use_logstash=false
+tal_extension=true
+
+[marc21]
+mapping_name=marc21
+
+[oai]
+activate=false
+formats=mediatum # format for testing
+schema.mediatum=http://mediatum/no-schema-defined
+namespace.mediatum=http://www.mediatum.org/oai/mediatum
+
+[paths]
+datadir=../mediatum_data # !!!
+tempdir=/tmp/
+#zoomdir=/path/for/zoom/tiles  # optional, default: ~$datadir/zoom_tiles
+
+[plugins]
+#mediatum_plugin_package=
+#mediatum_plugin_package_with_path=../mediatum_plugin_package_with_path
+
+[search]
+default_languages=german,english
+autoindex_languages=german,english
+
+[server]
+mail=somemail.example.com
+
+[services]
+activate=false
+
+[urn]
+institutionid=00
+pubtypes=epub  # multiple values separated with semicolon (;) are possible
+namespace=     # nbn:de:bvb | nbn:en:1111 | publicid | etc
+
+[user]
+adminuser=Administrator
+admingroup=Administration
+default_admin_password = ABC # !!!
+guestuser=Guest
+
+[z3950]
+activate=false
+port=2101
+
+# LDAP configs
+
+#[ldap_server1]
+#attributes=displayName,memberOf,department,mail,telephoneNumber,givenName,sn
+#basedn=OU=TU,OU=IAM,DC=ldap,DC=example,DC=com
+#group_attributes=memberOf
+#proxyuser=username
+#proxyuser_password=password
+#searchfilter=proxyAddresses=smtp:[username]
+#server=ldaps://ldap.example.com
+#user_displayname=displayName
+#user_email=mailattribute
+#user_emails=mailAddresses
+#user_firstname=givenName
+#user_identificator=mailAddresses #! XXX: unused, todo
+#user_lastname=sn
+#user_login=cn
+#user_org=department
+#user_telephone=telephoneNumber
+#user_url=ldap.example.com

@@ -17,18 +17,25 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import codecs
 import logging
 import socket
 import asyncore
 import random  # FIXME: drop dependency!
 
-from athana import counter, async_chat
-from core import tree, medmarc, acl, users, config
+from .athana import counter, async_chat
+from core import medmarc, db, Node, search
 from schema import mapping
 
 from PyZ3950 import z3950, zdefs, asn1
+from sqlalchemy.orm import undefer
+from core.users import get_guest_user
+from schema.mapping import Mapping
+from core.search.config import get_service_search_languages
 
-logg = logging.getLogger("z3950")
+
+logg = logging.getLogger(__name__)
+q = db.query
 
 try:
     set
@@ -40,6 +47,19 @@ class FormatError(Exception):
 
     """Communication format not supported.
     """
+
+def format_node(node, map_node):
+    marc21_node = map_node(node)
+
+    # None? no mapping => no node
+    if marc21_node is not None:
+        elt_external = asn1.EXTERNAL()
+        elt_external.direct_reference = z3950.Z3950_RECSYN_USMARC_ov
+        elt_external.encoding = ('octet-aligned', marc21_node)
+        n = z3950.NamePlusRecord()
+        n.name = unicode(node.id)
+        n.record = ('retrievalRecord', elt_external)
+        return n
 
 
 class AsyncPyZ3950Server(z3950.Server):
@@ -62,7 +82,7 @@ class AsyncPyZ3950Server(z3950.Server):
         try:
             self.decode_ctx.feed(map(ord, b))
         except asn1.BERError, val:
-            raise self.ProtocolError('ASN1 BER', str(val))
+            raise self.ProtocolError('ASN1 BER', unicode(val))
         if self.decode_ctx.val_count() > 0:
             typ, val = self.decode_ctx.get_first_decoded()
             logg.debug("received Z3950 message '%s'", typ)
@@ -71,7 +91,10 @@ class AsyncPyZ3950Server(z3950.Server):
                 raise self.ProtocolError("Bad typ", '%s %s' % (typ, val))
             if typ != 'initRequest' and self.expecting_init:
                 raise self.ProtocolError("Init expected", typ)
-            fn(self, val)
+            try:
+                fn(self, val)
+            except:
+                logg.exception("error while handling request")
 
     def send(self, val):
         b = self.encode_ctx.encode(z3950.APDU, val)
@@ -94,31 +117,6 @@ class AsyncPyZ3950Server(z3950.Server):
         ir.protocolVersion['version_1'] = 1
         ir.protocolVersion['version_2'] = 1
         ir.protocolVersion['version_3'] = self.v3_flag
-        val = zdefs.get_charset_negot(ireq)
-        charset_name = None
-        records_in_charsets = 0
-        if val != None:
-            csreq = zdefs.CharsetNegotReq()
-            csreq.unpack_proposal(val)
-
-            def rand_choose(list_or_none):
-                if list_or_none == None or len(list_or_none) == 0:
-                    return None
-                return random.choice(list_or_none)
-            charset_name = rand_choose(csreq.charset_list)
-            if charset_name != None:
-                try:
-                    codecs.lookup(charset_name)
-                except LookupError, l:
-                    charset_name = None
-            csresp = CharsetNegotResp(
-                charset_name,
-                rand_choose(csreq.lang_list),
-                csreq.records_in_charsets)
-            records_in_charsets = csresp.records_in_charsets
-            if trace_charset:
-                print csreq, csresp
-            zdefs.set_charset_negot(ir, csresp.pack_negot_resp(), self.v3_flag)
 
         optionslist = ['search', 'present', 'negotiation', 'delSet']  # , 'scan']
         ir.options = z3950.Options()
@@ -139,7 +137,6 @@ class AsyncPyZ3950Server(z3950.Server):
 
         self.expecting_init = 0
         self.send(('initResponse', ir))
-        self.set_codec(charset_name, records_in_charsets)
 
     def search_child(self, query):
         """
@@ -162,27 +159,12 @@ class AsyncPyZ3950Server(z3950.Server):
         """
         Format a 'present' response for the requested query result subset.
         """
-        #encode_charset = self.charset_name
         map_node = medmarc.MarcMapper()
-        l = []
-        for i in xrange(start - 1, min(len(res_set), start + count - 1)):
-            try:
-                node = tree.getNode(res_set[i])
-            except tree.NoSuchNodeError:
-                logg.debug("request for non-existant node %s", res_set[i])
-                continue
-            marc21_node = map_node(node)
-            if marc21_node is None:
-                # no mapping => no node
-                continue
-            elt_external = asn1.EXTERNAL()
-            elt_external.direct_reference = z3950.Z3950_RECSYN_USMARC_ov
-            elt_external.encoding = ('octet-aligned', marc21_node)
-            n = z3950.NamePlusRecord()
-            n.name = str(node.id)
-            n.record = ('retrievalRecord', elt_external)
-            l.append(n)
-        return l
+
+        node_ids = res_set[start-1:start+count-1]
+        nodes = q(Node).filter(Node.id.in_(node_ids)).prefetch_attrs()
+        formatted = [fo for fo in [format_node(n, map_node) for n in nodes] if fo is not None]
+        return formatted
 
     def delete(self, dreq):
         """
@@ -223,18 +205,15 @@ def search_nodes(query, mapping_prefix='Z3950_search_'):
     with a node ID, which is then used as root node for the search
     based on that field mapping.
     """
-    # find root nodes and their mappings
-    roots_and_mappings = []
-    for mapping_node in mapping.getMappings():
-        name = mapping_node.getName()
-        if not name.startswith(mapping_prefix):
-            continue
-        try:
-            node_id = name[len(mapping_prefix):]
-            roots_and_mappings.append((tree.getNode(node_id), mapping_node))
-        except tree.NoSuchNodeError:
-            logg.error("Configuration problem detected: Z39.50 search mapping '%s' found, "
-                       "but no matching root node with ID '%s'", name, node_id)
+
+    def get_root_for_mapping(mapping_node):
+        name = mapping_node.name
+        node_id = name[len(mapping_prefix):]
+        node = q(Node).get(node_id)
+        return node
+
+    mapping_nodes = q(Mapping).filter(Mapping.name.startswith(mapping_prefix))
+    roots_and_mappings = [(get_root_for_mapping(m), m) for m in mapping_nodes]
 
     if not roots_and_mappings:
         logg.info('no mappings configured, skipping search')
@@ -244,25 +223,28 @@ def search_nodes(query, mapping_prefix='Z3950_search_'):
 
     # run one search per root node
     node_ids = []
-    guestaccess = acl.AccessData(user=users.getUser(config.get('user.guestuser')))
+    guest = get_guest_user()
+    search_languages = get_service_search_languages()
 
     for root_node, mapping_node in roots_and_mappings:
+        if root_node is None:
+            logg.error("Configuration problem detected: Z39.50 search mapping '%s' found, but no matching root node", mapping_node.name)
+            continue
         # map query fields to node attributes
         field_mapping = {}
-        for field in mapping_node.getChildren():
-            field_mapping[field.getName()] = field.getDescription().split(';')
-        # FIXME: this is redundant - why build an infix query string
-        # just to parse it afterwards?
+        for field in mapping_node.children:
+            field_mapping[field.name] = field.getDescription().split(';')
+        # XXX: this is redundant - why build an infix query string
+        # XXX: just to parse it afterwards?
+        # XXX: better: create search tree and apply it to a query instead of using node.search()
         query_string = query.build_query_string(field_mapping)
+        searchtree = search.parse_searchquery_old_style(query_string)
         if query_string is None:
             logg.info('unable to map query: [%r] using mapping %s', query, field_mapping)
             continue
-        logg.info('executing query: %s', query_string)
-        for n in root_node.search(query_string):
-            if guestaccess.hasReadAccess(n):
-                node_ids.append(n.id)
-
-        #node_ids.append( root_node.search(query_string).getIDs() )
+        logg.info('executing query for node %s: %s', root_node.id, query_string)
+        for n in root_node.search(searchtree, search_languages).filter_read_access(user=guest):
+            node_ids.append(n.id)
 
     # use a round-robin algorithm to merge the separate query results
     # in order to produce maximally diverse results in the first hits
@@ -332,14 +314,14 @@ class QueryMatchNode(object):
     "equality match"
 
     def __init__(self, op, name, value):
-        self.op, self.name, self.value = op, name, protect(value)
+        self.op, self.name, self.value = op, name, protect(value).decode('utf8')
 
     def build_query_string(self, field_mapping):
         if self.name not in field_mapping:
             return None
         op, value = self.op, self.value
         return ' or '.join(['%s %s %s' % (field_type, op, value)
-                            for field_type in field_mapping[self.name] if self.name in field_mapping])
+                            for field_type in field_mapping[self.name]])
 
     def __repr__(self):
         return '%s = %s' % (self.name, self.value)
@@ -361,7 +343,7 @@ def find_query_attribute(attrs):
         if attr.attributeType == 1:  # 'use' attribute
             attr_type, value = attr.attributeValue
             if attr_type == 'numeric':
-                cmp_value = str(value)
+                cmp_value = unicode(value)
         elif attr.attributeType == 2:  # 'relation' attribute
             attr_type, value = attr.attributeValue
             if attr_type == 'numeric' and 1 <= value <= 6:

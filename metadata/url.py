@@ -24,26 +24,28 @@ from core.metatype import Metatype
 from core.translation import t
 from urllib import unquote
 from utils.utils import quote_uri
+from utils.strings import ensure_unicode_returned
 
 
-logg = logging.getLogger("frontend")
+logg = logging.getLogger(__name__)
 
 
+@ensure_unicode_returned
 def _replace_vars(node, s):
     for var in re.findall(r'<(.+?)>', s):
         if var == "att:id":
-            s = s.replace("<" + var + ">", node.id)
+            s = s.replace("<" + var + ">", unicode(node.id))
         elif var.startswith("att:"):
-            val = node.get(var[4:])
+            val = node.get_special(var[4:])
             if val == "":
                 val = "____"
             s = s.replace("<" + var + ">", val)
 
     for var in re.findall(r'\[(.+?)\]', s):
         if var == "att:id":
-            s = s.replace("[" + var + "]", node.id)
+            s = s.replace("[" + var + "]", unicode(node.id))
         elif var.startswith("att:"):
-            val = node.get(var[4:])
+            val = node.get_special(var[4:])
             if val == "":
                 val = "____"
             s = s.replace("[" + var + "]", val)
@@ -88,13 +90,13 @@ class m_url(Metatype):
     #
     # format node value depending on field definition
     #
-    def getFormatedValue(self, field, node, language=None, html=1):
+    def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
         try:
-            value = node.get(field.getName()).split(";")
-            fielddef = field.getValues().split("\r\n")
+            value = node.get(metafield.getName()).split(";")
+            fielddef = metafield.getValues().split("\r\n")
 
             while len(fielddef) < 4:
-                fielddef.append("")
+                fielddef.append(u"")
 
             l = []
             for i in range(0, 4):
@@ -109,47 +111,47 @@ class m_url(Metatype):
             uri, linktext, icon, target = [_replace_vars(node, p) for p in l]
 
             # find unsatisfied variables
-            if str(uri).find("____") >= 0:
-                uri = ''
-            if str(linktext).find("____") >= 0:
-                linktext = ''
+            if uri.find("____") >= 0:
+                uri = u''
+            if linktext.find("____") >= 0:
+                linktext = u''
 
             if len(fielddef) < 4:
-                target = ""
+                target = u""
             if uri != "" and linktext == "":
                 linktext = unquote(uri)
 
             if uri == '' and linktext == '':
-                value = icon = ""
+                value = icon = u""
             # XXX: ???
             elif uri == '' and linktext != '':
                 value = linktext
-                icon = ""
+                icon = u""
             else:  # link and text given
                 if target in ["", "_blank"]:
-                    value = '<a href="{}" target="_blank" title="{}">{}</a>'.format(uri, t(language, 'show in new window'), linktext)
+                    value = u'<a href="{}" target="_blank" title="{}">{}</a>'.format(uri, t(language, 'show in new window'), linktext)
                 else:
-                    value = '<a href="{}">{}</a>'.format(uri, linktext)
+                    value = u'<a href="{}">{}</a>'.format(uri, linktext)
             if icon != "":
-                value += '<img src="{}"/>'.format(icon)
+                value += u'<img src="{}"/>'.format(icon)
 
-            return (field.getLabel(), value)
+            return (metafield.getLabel(), value)
         except:
-            logg.error("error getting formatted value for URI", exc_info=1)
-            return (field.getLabel(), "")
+            logg.exception("exception in getFormattedValue, error getting formatted value for URI")
+            return (metafield.getLabel(), "")
 
     def format_request_value_for_db(self, field, params, item, language=None):
         uri = params.get(item)
         quoted_uri = quote_uri(uri)
-        linktext = params.get(item + "_text").replace(";", "\xcd\xbe")
+        linktext = params.get(item + "_text").replace(u";", u"\u037e")
         if not quoted_uri:
             return ""
-        return "{};{}".format(quoted_uri, linktext)
+        return u"{};{}".format(quoted_uri, linktext)
 
     def getMaskEditorHTML(self, field, metadatatype=None, language=None):
         try:
             value = field.getValues().split("\r\n")
-        except:
+        except AttributeError:
             value = []
         while len(value) < 4:
             value.append("")

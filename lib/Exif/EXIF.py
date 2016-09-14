@@ -1111,7 +1111,7 @@ def process_file(file, debug=0):
     # deal with the EXIF info we found
     if debug:
         print {'I': 'Intel', 'M': 'Motorola'}[endian], 'format'
-    hdr = EXIF_header(file, endian, offset, fake_exif, debug)
+    hdr = EXIF_header(file, endian, offset, False, debug)
     ifd_list = hdr.list_IFDs()
     ctr = 0
     for i in ifd_list:

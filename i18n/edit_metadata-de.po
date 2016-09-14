@@ -4,6 +4,9 @@ msgstr "Für diesen Knotentyp sind keine Metadaten verfügbar, die editiert werd
 msgid "edit_meta_info2"
 msgstr "Achtung, es wurden Objekte mit unterschiedlichen Metadatentypen ausgewählt!<br/>Es werden nur Objekte vom Schema <b>'${n}'</b> berücksichtigt."
 
+msgid "edit_meta_info3"
+msgstr "Das gleichzeitige Editieren von Metadaten von mehreren Dokumenten wird aktuell nicht unterstützt"
+
 msgid "edit_meta_mask_selection"
 msgstr "Maskenauswahl"
 

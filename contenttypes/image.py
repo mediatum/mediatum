@@ -1,3 +1,4 @@
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 """
  mediatum - a multimedia content repository
@@ -18,440 +19,531 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-from core import config
-from PIL import Image as PILImage, ImageDraw
 import logging
-
-import core.acl as acl
-import random
 import os
-import hashlib
-import shutil
-from . import default
+import tempfile
+from PIL import Image as PILImage, ImageDraw
 
-from schema.schema import VIEW_HIDE_EMPTY, getMetaType
-from core.acl import AccessData
+from core import config, File, db
+from core.archive import Archive, get_archive_for_node
 from core.attachment import filebrowser
-from utils.fileutils import getImportDir, importFileRandom
-from utils.utils import splitfilename, isnewer, iso2utf8, OperationException, utf8_decode_escape
-from core.tree import Node, FileNode, getRoot
-from core.translation import lang, t
-from core.styles import getContentStyles
-from web.frontend import zoom
-from lib.Exif import EXIF
+from core.translation import t
+from core.transition.postgres import check_type_arg_with_schema
+from contenttypes.data import Content, prepare_node_data
+from utils.utils import isnewer, iso2utf8, utf8_decode_escape
+from utils.compat import iteritems
 
 import lib.iptc.IPTC
+from lib.Exif import EXIF
+from utils.list import filter_scalar
+from utils.compat import iteritems
+import utils.process
+import zipfile
+from contextlib import contextmanager
+from StringIO import StringIO
+from collections import defaultdict
+import humanize
+from werkzeug.utils import cached_property
 
-""" make thumbnail (jpeg 128x128) """
 
 
-def makeThumbNail(image, thumb):
-    if isnewer(thumb, image):
+logg = logging.getLogger(__name__)
+
+# XXX: some refactoring has to be done for the next two methods, many similarities ...
+
+def make_thumbnail_image(src_filepath, dest_filepath):
+    """make thumbnail (jpeg 128x128)"""
+
+    if isnewer(dest_filepath, src_filepath):
         return
-    pic = PILImage.open(image)
-    tmpjpg = config.get("paths.datadir") + "tmp/img" + str(random.random()) + ".jpg"
 
-    if pic.mode == "CMYK" and (image.endswith("jpg") or image.endswith("jpeg")) or pic.mode in ["P", "L"]:
-        os.system("convert -quality 100 -draw \"rectangle 0,0 1,1\" %s %s" % (image, tmpjpg))  # always get a rgb image
-        pic = PILImage.open(tmpjpg)
+    pic = PILImage.open(src_filepath)
+    temp_jpg_file = tempfile.NamedTemporaryFile(suffix=".jpg", delete=False)
 
     try:
+        temp_jpg_file.close()
+        tmpjpg = temp_jpg_file.name
+
+        if pic.mode == "CMYK" and (src_filepath.endswith("jpg") or src_filepath.endswith("jpeg")) or pic.mode in ["P", "L"]:
+            convert_image(src_filepath, tmpjpg, ["-quality", "100", "-draw", "rectangle 0,0 1,1"])
+            pic = PILImage.open(tmpjpg)
+
         pic.load()
-    except IOError as e:
-        pic = None
-        raise OperationException("error:" + str(e))
+        width = pic.size[0]
+        height = pic.size[1]
 
-    width = pic.size[0]
-    height = pic.size[1]
-    if width > height:
-        newwidth = 128
-        newheight = height * newwidth / width
-    else:
-        newheight = 128
-        newwidth = width * newheight / height
-    pic = pic.resize((newwidth, newheight), PILImage.ANTIALIAS)
-    try:
-        im = PILImage.new(pic.mode, (128, 128), (255, 255, 255))
-    except:
-        im = PILImage.new("RGB", (128, 128), (255, 255, 255))
-
-    x = (128 - newwidth) / 2
-    y = (128 - newheight) / 2
-    im.paste(pic, (x, y, x + newwidth, y + newheight))
-
-    draw = ImageDraw.ImageDraw(im)
-    draw.line([(0, 0), (127, 0), (127, 127), (0, 127), (0, 0)], (128, 128, 128))
-
-    im = im.convert("RGB")
-    im.save(thumb, "jpeg")
-    if os.path.exists(tmpjpg):
-        os.unlink(tmpjpg)
-
-""" make presentation format (png) """
-
-
-def makePresentationFormat(image, thumb):
-    if isnewer(thumb, image):
-        return
-    pic = PILImage.open(image)
-    tmpjpg = config.get("paths.datadir") + "tmp/img" + str(random.random()) + ".jpg"
-    if pic.mode == "CMYK" and (image.endswith("jpg") or image.endswith("jpeg")) or pic.mode in ["P", "L"]:
-        os.system("convert -quality 100 -draw \"rectangle 0,0 1,1\" %s %s" % (image, tmpjpg))
-        pic = PILImage.open(tmpjpg)
-
-    try:
-        pic.load()
-    except IOError as e:
-        pic = None
-        raise OperationException("error:" + str(e))
-
-    width = pic.size[0]
-    height = pic.size[1]
-
-    resize = 1
-    if resize:
-        # resize images only if they are actually too big
         if width > height:
-            newwidth = 320
+            newwidth = 128
             newheight = height * newwidth / width
         else:
-            newheight = 320
+            newheight = 128
             newwidth = width * newheight / height
+
         pic = pic.resize((newwidth, newheight), PILImage.ANTIALIAS)
 
-    try:
-        pic.save(thumb, "jpeg")
-    except IOError:
-        pic.convert('RGB').save(thumb, "jpeg")
+        try:
+            im = PILImage.new(pic.mode, (128, 128), (255, 255, 255))
+        except:
+            im = PILImage.new("RGB", (128, 128), (255, 255, 255))
 
-    if os.path.exists(tmpjpg):
+        x = (128 - newwidth) / 2
+        y = (128 - newheight) / 2
+        im.paste(pic, (x, y, x + newwidth, y + newheight))
+
+        draw = ImageDraw.ImageDraw(im)
+        draw.line([(0, 0), (127, 0), (127, 127), (0, 127), (0, 0)], (128, 128, 128))
+
+        im = im.convert("RGB")
+        im.save(dest_filepath, "jpeg")
+    finally:
         os.unlink(tmpjpg)
 
-""" make original (png real size) """
 
+def make_presentation_image(src_filepath, dest_filepath):
 
-def makeOriginalFormat(image, thumb):
+    if isnewer(dest_filepath, src_filepath):
+        return
 
-    tmpjpg = config.get("paths.datadir") + "tmp/img" + str(random.random()) + ".jpg"
-    pic = PILImage.open(image)
-    if pic.mode == "CMYK" and (image.endswith("jpg") or image.endswith("jpeg")) or pic.mode in ["P", "L"]:
-        # if image.endswith("jpg") or image.endswith("jpeg"):
-        os.system("convert -quality 100 -draw \"rectangle 0,0 1,1\" %s %s" % (image, tmpjpg))
-        pic = PILImage.open(tmpjpg)
+    pic = PILImage.open(src_filepath)
+    temp_jpg_file = tempfile.NamedTemporaryFile(suffix=".jpg", delete=False)
 
     try:
+        temp_jpg_file.close()
+        tmpjpg = temp_jpg_file.name
+
+        if pic.mode == "CMYK" and (src_filepath.endswith("jpg") or src_filepath.endswith("jpeg")) or pic.mode in ["P", "L"]:
+            convert_image(src_filepath, tmpjpg, ["-quality", "100", "-draw", "rectangle 0,0 1,1"])
+            pic = PILImage.open(tmpjpg)
+
         pic.load()
-    except IOError as e:
-        pic = None
-        raise OperationException("error:" + str(e))
 
-    pic.save(thumb, "png")
-    if os.path.exists(tmpjpg):
+        width = pic.size[0]
+        height = pic.size[1]
+
+        resize = 1
+        if resize:
+            # resize images only if they are actually too big
+            if width > height:
+                newwidth = 320
+                newheight = height * newwidth / width
+            else:
+                newheight = 320
+                newwidth = width * newheight / height
+            pic = pic.resize((newwidth, newheight), PILImage.ANTIALIAS)
+
+        try:
+            pic.save(dest_filepath, "jpeg")
+        except IOError:
+            pic.convert('RGB').save(dest_filepath, "jpeg")
+
+    finally:
         os.unlink(tmpjpg)
 
 
-""" evaluate image dimensions for given file """
+def convert_image(src_filepath, dest_filepath, options=[]):
+    """Create a PNG with filename `dest_filepath` from a file at `src_filepath`
+    :param options: additional command line option list passed to convert
+    """
+    utils.process.check_call(["convert"] + options + [src_filepath, dest_filepath])
 
 
-def getImageDimensions(image):
-    pic = PILImage.open(image)
+def get_image_dimensions(image):
+    pic = PILImage.open(image.abspath)
     width = pic.size[0]
     height = pic.size[1]
     return width, height
 
 
-def getJpegSection(image, section):  # section character
-    data = ""
+@contextmanager
+def _create_zoom_tile_buffer(img, max_level, tilesize, level, x, y):
+    level = 1 << (max_level - level)
+    buff = StringIO()
+
+    x0, y0, x1, y1 = (x * tilesize * level, y * tilesize * level, (x + 1) * tilesize * level, (y + 1) * tilesize * level)
+    if x0 > img.size[0] or y0 > img.size[1]:
+        yield None
+
+    if x1 > img.size[0]:
+        x1 = img.size[0]
+    if y1 > img.size[1]:
+        y1 = img.size[1]
+
+    xl = (x1 - x0) / level
+    yl = (y1 - y0) / level
+
+    # do not resize to zero dimension (would cause exception when saving)
+    xl = max(1, xl)
+    yl = max(1, yl)
+
+    img = img.crop((x0, y0, x1, y1)).resize((xl, yl))
+    img.save(buff, format="JPEG")
     try:
-        fin = open(image, "rb")
-        done = False
-        capture = False
-
-        while not done:
-            c = fin.read(1)
-            if capture and ord(c) != 0xFF and ord(c) != section:
-                data += c
-
-            if ord(c) == 0xFF:  # found tag start
-                if capture:
-                    done = True
-
-                c = fin.read(1)
-                if ord(c) == section:  # found tag
-                    capture = True
-        fin.close()
-    except:
-        data = ""
-    return data
+        yield buff
+    finally:
+        buff.close()
 
 
-def dozoom(self):
-    b = 0
-    svg = 0
-    for file in self.getFiles():
-        if file.getType() == "zoom":
-            b = 1
-        if file.getName().lower().endswith('svg') and file.type == "original":
-            svg = 1
-    if self.get("width") and self.get("height") and (int(self.get("width")) > 2000 or int(self.get("height")) > 2000) and not svg:
-        b = 1
-    return b
+def get_zoom_zip_filename(nid):
+    return u"zoom{}.zip".format(nid)
 
 
-""" image class for internal image-type """
+def _create_zoom_archive(tilesize, image_filepath, zoom_zip_filepath):
+    """Create tiles in zip file that will be displayed by zoom.swf"""
+    img = PILImage.open(image_filepath)
+    img = img.convert("RGB")
+
+    width, height = img.size
+    l = max(width, height)
+    max_level = 0
+    while l > tilesize:
+        l = l / 2
+        max_level += 1
+
+    logg.debug('Creating: %s', zoom_zip_filepath)
+    with zipfile.ZipFile(zoom_zip_filepath, "w") as zfile:
+        for level in range(max_level + 1):
+            t = (tilesize << (max_level - level))
+            for x in range((width + (t - 1)) / t):
+                for y in range((height + (t - 1)) / t):
+                    with _create_zoom_tile_buffer(img, max_level, tilesize, level, x, y) as buff:
+                        tile_name = "tile-%d-%d-%d.jpg" % (level, x, y)
+                        zfile.writestr(tile_name, buff.getvalue(), zipfile.ZIP_DEFLATED)
 
 
-class Image(default.Default):
+@check_type_arg_with_schema
+class Image(Content):
 
-    def getTypeAlias(self):
-        return "image"
+    #: create zoom tiles when width or height of image exceeds this value
+    ZOOM_SIZE = 2000
 
-    def getOriginalTypeName(self):
-        return "original"
+    ZOOM_TILESIZE = 256
 
-    def getCategoryName(self):
-        return "image"
+    # image formats that should exist for each mimetype of the `original` image
+    IMAGE_FORMATS_FOR_MIMETYPE = defaultdict(
+        lambda: [u"image/png"], {
+        u"image/tiff": [u"image/tiff", u"image/png"],
+        u"image/svg+xml": [u"image/svg+xml", u"image/png"],
+        u"image/jpeg": [u"image/jpeg"],
+        u"image/gif": [u"image/gif"],
+        u"image/png": [u"image/png"]
+    })
+
+    MIMETYPE_FOR_EXTENSION = {
+        u"jpg": u"image/jpeg",
+        u"jpeg": u"image/jpeg",
+        u"png": u"image/png",
+        u"tif": u"image/tiff",
+        u"tiff": u"image/tiff",
+        u"gif": u"image/gif",
+        u"svg": u"image/svg+xml",
+    }
+
+    # beware of duplicates!
+    EXTENSION_FOR_MIMETYPE = {v:k for k, v in iteritems(MIMETYPE_FOR_EXTENSION)}
+
+    @classmethod
+    def get_default_edit_menu_tabs(cls):
+        return "menulayout(view);menumetadata(metadata;files;admin;lza);menuclasses(classes);menusecurity(acls)"
+
+    @classmethod
+    def get_sys_filetypes(cls):
+        return [u"original", u"thumb", u"image", u"presentation", u"zoom"]
+
+    @classmethod
+    def get_upload_filetype(cls):
+        return u"original"
+
+    @property
+    def svg_image(self):
+        return self.files.filter_by(filetype=u"image", mimetype=u"image/svg+xml").scalar()
+
+    @property
+    def zoom_available(self):
+        zoom_file = self.files.filter_by(filetype=u"zoom").scalar()
+        return zoom_file is not None
+
+    @property
+    def should_use_zoom(self):
+        # svg should never use the flash zoom
+        if self.svg_image is not None:
+            return False
+
+        return int(self.get("width") or 0) > Image.ZOOM_SIZE or int(self.get("height") or 0) > Image.ZOOM_SIZE
+
+    def image_url_for_mimetype(self, mimetype):
+        try:
+            file_ext = Image.EXTENSION_FOR_MIMETYPE[mimetype]
+        except KeyError:
+            raise ValueError("unsupported image mimetype " + mimetype)
+
+        url = u"/image/{}.{}".format(self.id, file_ext)
+
+        return self._add_version_tag_to_url(url)
+
+    @property
+    def preferred_image_url(self):
+        url = u"/image/" + unicode(self.id)
+        return self._add_version_tag_to_url(url)
+
+    @property
+    def presentation_url(self):
+        url = u"/thumb2/" + unicode(self.id)
+        return self._add_version_tag_to_url(url)
+
+    def get_image_formats(self):
+        image_files = self.files.filter_by(filetype=u"image")
+        image_formats = {}
+        for img_file in image_files:
+            if img_file.exists:
+                image_formats[img_file.mimetype] = {
+                    "url": self.image_url_for_mimetype(img_file.mimetype),
+                    "display_size": humanize.filesize.naturalsize(img_file.size)
+                }
+
+        return image_formats
 
     # prepare hash table with values for TAL-template
     def _prepareData(self, req):
-        mask = self.getFullView(lang(req))
+        obj = prepare_node_data(self, req)
+        if obj["deleted"]:
+            # no more processing needed if this object version has been deleted
+            # rendering has been delegated to current version
+            return obj
 
-        tif = ""
-        try:
-            tifs = req.session["fullresolutionfiles"]
-        except:
-            tifs = []
+        obj["highres_url"] = None
 
-        access = acl.AccessData(req)
-        if access.hasAccess(self, "data"):
-            for f in self.getFiles():
-                if f.getType() == "original":
-                    if self.get('system.origname') == "1":
-                        tif = self.getName()
-                    else:
-                        tif = f.getName()
+        can_see_original = self.has_data_access()
 
-            if self.get("archive_path") != "":
-                tif = "file/" + str(self.id) + "/" + self.get("archive_path")
+        archive = get_archive_for_node(self)
+        if archive:
+            if can_see_original:
+                obj['highres_url'] = u"/file/{nid}/{nid}.tif".format(nid=self.id)
+                archive_state = archive.get_file_state(self)
+                if archive_state == Archive.NOT_PRESENT:
+                    obj['archive_fetch_url'] = u"/archive/{}".format(self.id)
+                elif archive_state == Archive.PRESENT:
+                    obj['archive_fetch_url'] = None
 
         files, sum_size = filebrowser(self, req)
 
-        obj = {'deleted': False, 'access': access}
-        node = self
-        if self.get('deleted') == 'true':
-            node = self.getActiveVersion()
-            obj['deleted'] = True
-        obj['path'] = req and req.params.get("path", "") or ""
+        obj['canseeoriginal'] = can_see_original
+        obj['preferred_image_url'] = self.preferred_image_url
+        obj["image_formats"] = self.get_image_formats()
+        obj['zoom'] = self.zoom_available
         obj['attachment'] = files
         obj['sum_size'] = sum_size
-        obj['metadata'] = mask.getViewHTML([node], VIEW_HIDE_EMPTY)  # hide empty elements
-        obj['node'] = node
-        obj['tif'] = tif
-        obj['zoom'] = dozoom(node)
-        obj['tileurl'] = "/tile/{}/".format(node.id)
-        obj['canseeoriginal'] = access.hasAccess(node, "data")
-        obj['originallink'] = "getArchivedItem('{}/{}')".format(node.id, tif)
-        obj['archive'] = node.get('archive_type')
+        obj['presentation_url'] = self.presentation_url
+        obj['fullsize'] = str(self.id)
+        if not self.isActiveVersion():
+            obj['tag'] = self.tag
+            obj['fullsize'] += "&v=" + self.tag
+        obj['fullsize'] = '"' + obj['fullsize'] + '"'
 
-        if "style" in req.params.keys():
-            req.session["full_style"] = req.params.get("style", "full_standard")
-        elif "full_style" not in req.session.keys():
-            if "contentarea" in req.session.keys():
-                col = req.session["contentarea"].collection
-                req.session["full_style"] = col.get("style_full")
-            else:
-                req.session["full_style"] = "full_standard"
-
-        obj['style'] = req.session["full_style"]
-
-        obj['parentInformation'] = self.getParentInformation(req)
+        full_style = req.args.get(u"style", u"full_standard")
+        if full_style:
+            obj['style'] = full_style
 
         return obj
 
-    """ format big view with standard template """
-    def show_node_big(self, req, template="", macro=""):
-        if template == "":
-            styles = getContentStyles("bigview", contenttype=self.getContentType())
-            if len(styles) >= 1:
-                template = styles[0].getTemplate()
-        return req.getTAL(template, self._prepareData(req), macro)
+    def _generate_other_format(self, mimetype_to_generate, files=None):
+        original_file = filter_scalar(lambda f: f.filetype == u"original", files)
 
-    def isContainer(self):
-        return 0
+        extension = mimetype_to_generate.split("/")[1]
+        newimg_name = os.path.splitext(original_file.abspath)[0] + "." + extension
 
-    def getLabel(self):
-        return self.name
+        assert original_file.abspath != newimg_name
 
-    def getSysFiles(self):
-        return ["original", "thumb", "presentati", "image", "presentation", "zoom"]
+        if original_file.mimetype == u"image/svg+xml":
+            convert_options = ["-alpha", "off", "-colorspace", "RGB", "-background", "white"]
+        else:
+            convert_options = []
 
-    """ make a copy of the svg file in png format """
-    def svg_to_png(self, filename, imgfile):
-        # convert svg to png (imagemagick + ghostview)
-        os.system("convert -alpha off -colorspace RGB %s -background white %s" % (filename, imgfile))
+        old_file = filter_scalar(lambda f: f.filetype == u"image" and f.mimetype == mimetype_to_generate, files)
 
-    """ postprocess method for object type 'image'. called after object creation """
+        if old_file is not None:
+            self.files.remove(old_file)
+            old_file.unlink()
+
+        convert_image(original_file.abspath, newimg_name, convert_options)
+
+        self.files.append(File(newimg_name, u"image", mimetype_to_generate))
+
+    def _check_missing_image_formats(self, files=None):
+        if files is None:
+            files = self.files.all()
+
+        original_file = filter_scalar(lambda f: f.filetype == u"original", files)
+        old_image_files = filter(lambda f: f.filetype == u"image", files)
+
+        wanted_mimetypes = set(Image.IMAGE_FORMATS_FOR_MIMETYPE[original_file.mimetype])
+
+        return wanted_mimetypes - {f.mimetype for f in old_image_files}
+
+    def _generate_image_formats(self, files=None, mimetypes_to_consider=None):
+        """Creates other full size formats for this image node.
+
+        TIFF: create new PNG to be used as `image`
+        SVG: create PNG and add it as `png_image`
+
+        :param mimetypes_to_consider: limit the formats that should be (re)-generated to this sequence of mimetypes
+        """
+        if files is None:
+            files = self.files.all()
+
+        original_file = filter_scalar(lambda f: f.filetype == u"original", files)
+        old_image_files = filter(lambda f: f.filetype == u"image", files)
+
+        for old_img_file in old_image_files:
+            # we don't want to remove the original file...
+            if old_img_file.path != original_file.path:
+                self.files.remove(old_img_file)
+                old_img_file.unlink()
+
+        mimetypes_to_generate = set(Image.IMAGE_FORMATS_FOR_MIMETYPE[original_file.mimetype])
+
+        if mimetypes_to_consider is not None:
+            mimetypes_to_generate = mimetypes_to_generate.intersection(mimetypes_to_consider)
+
+        for new_mimetype in mimetypes_to_generate:
+            if new_mimetype == original_file.mimetype:
+                # image is alias for the original image in this case
+                fileobj = File(original_file.path, u"image", original_file.mimetype)
+                self.files.append(fileobj)
+            else:
+                self._generate_other_format(new_mimetype, files)
+
+
+    def _find_processing_file(self, files=None):
+        """Finds the file that should be used for processing (generating thumbnails, extracting metadata etc) in a file sequence.
+        """
+        if files is None:
+            files = self.files.all()
+
+        original_file = filter_scalar(lambda f: f.filetype == u"original", files)
+
+        if original_file.mimetype == u"image/svg+xml":
+            return filter_scalar(lambda f: f.filetype == u"image" and f.mimetype == u"image/png", files)
+
+        return original_file
+
+
+    def _generate_thumbnails(self, files=None):
+        if files is None:
+            files = self.files.all()
+
+        image_file = self._find_processing_file(files)
+        path = os.path.splitext(image_file.abspath)[0]
+
+        # XXX: we really should use the correct file ending and find another way of naming
+        thumbname = path + ".thumb"
+        thumbname2 = path + ".presentation"
+
+        old_thumb_files = filter(lambda f: f.filetype in (u"thumb", u"presentation"), files)
+
+        # XXX: removing files before the new ones are created is bad, that should happen later (use File.unlink_after_deletion).
+        # XXX: But we need better thumbnail naming first.
+        for old in old_thumb_files:
+            self.files.remove(old)
+            old.unlink()
+
+        make_thumbnail_image(image_file.abspath, thumbname)
+        make_presentation_image(image_file.abspath, thumbname2)
+
+        self.files.append(File(thumbname, u"thumb", u"image/jpeg"))
+        self.files.append(File(thumbname2, u"presentation", u"image/jpeg"))
+
+    def _generate_zoom_archive(self, files=None):
+        if files is None:
+            files = self.files.all()
+
+        image_file = self._find_processing_file(files)
+
+        zip_filename = get_zoom_zip_filename(self.id)
+        zip_filepath = os.path.join(config.get("paths.zoomdir"), zip_filename)
+
+        old_zoom_files = filter(lambda f: f.filetype == u"zoom", files)
+
+        for old in old_zoom_files:
+            self.files.remove(old)
+            old.unlink()
+
+        _create_zoom_archive(Image.ZOOM_TILESIZE, image_file.abspath, zip_filepath)
+        file_obj = File(path=zip_filepath, filetype=u"zoom", mimetype=u"application/zip")
+        self.files.append(file_obj)
+
+    def _extract_metadata(self, files=None):
+        image_file = self._find_processing_file(files)
+        width, height = get_image_dimensions(image_file)
+        # XXX: this is a bit redundant...
+        self.set("origwidth", width)
+        self.set("origheight", height)
+        self.set("origsize", image_file.size)
+        self.set("width", width)
+        self.set("height", height)
+
+        # Exif
+        unwanted_attrs = Image.get_unwanted_exif_attributes()
+
+        with open(image_file.abspath, 'rb') as f:
+            tags = EXIF.process_file(f)
+
+        for k in tags.keys():
+            # don't set unwanted exif attributes
+            if any(tag in k for tag in unwanted_attrs):
+                continue
+            if tags[k]:
+                self.set("exif_" + k.replace(" ", "_"), utf8_decode_escape(str(tags[k])))
+
+        # IPTC
+        iptc_metadata = lib.iptc.IPTC.get_iptc_tags(image_file.abspath)
+        if iptc_metadata is not None:
+            for k, v in iteritems(iptc_metadata):
+                self.set('iptc_' + k, v)
+
     def event_files_changed(self):
-        print "Postprocessing node", self.id
-        if "image" in self.type:
-            for f in self.getFiles():
-                if f.getName().lower().endswith('svg'):
-                    self.svg_to_png(f.retrieveFile(), f.retrieveFile()[:-4] + ".png")
-                    self.removeFile(f)
-                    self.addFile(FileNode(name=f.retrieveFile(), type="original", mimetype=f.mimetype))
-                    self.addFile(FileNode(name=f.retrieveFile(), type="image", mimetype=f.mimetype))
-                    self.addFile(FileNode(name=f.retrieveFile()[:-4] + ".png", type="tmppng", mimetype="image/png"))
-                    break
-            orig = 0
-            thumb = 0
-            for f in self.getFiles():
-                if f.type == "original":
-                    orig = 1
-                if f.type == "thumb":
-                    thumb = 1
+        """postprocess method for object type 'image'. called after object creation"""
+        logg.debug("Postprocessing node %s", self.id)
+        existing_files = self.files.all()
 
-            if orig == 0:
-                for f in self.getFiles():
-                    if f.type == "image":
-                        if f.mimetype == "image/tiff" or ((f.mimetype is None or f.mimetype == "application/x-download")
-                                                          and (f.getName().lower().endswith("tif") or f.getName().lower().endswith("tiff"))):
+        if filter_scalar(lambda f: f.filetype == u"original", existing_files) is None:
+            # we cannot do anything without an `original` file, stop here
+            return
 
-                            # move old file to "original", create a new png to be used as "image"
-                            self.removeFile(f)
+        missing_image_mimetypes = self._check_missing_image_formats(existing_files)
 
-                            path, ext = splitfilename(f.retrieveFile())
-                            pngname = path + ".png"
+        if missing_image_mimetypes:
+            self._generate_image_formats(existing_files, missing_image_mimetypes)
 
-                            if not os.path.isfile(pngname):
-                                makeOriginalFormat(f.retrieveFile(), pngname)
+        # _generate_image_formats is allowed to change `image` and `original` images, so
+        files = self.files.all()
 
-                                width, height = getImageDimensions(pngname)
-                                self.set("width", width)
-                                self.set("height", height)
+        # generate both thumbnail sizes if one is missing because they should always display the same
+        if (filter_scalar(lambda f: f.filetype == u"thumb", files) is None
+            or filter_scalar(lambda f: f.filetype == u"presentation", files) is None):
+            self._generate_thumbnails(files)
 
-                            else:
-                                width, height = getImageDimensions(pngname)
-                                self.set("width", width)
-                                self.set("height", height)
+        # should we skip this sometimes? Do we want to overwrite everything?
+        self._extract_metadata(files)
 
-                            print 'png: ', pngname
-
-                            self.addFile(FileNode(name=pngname, type="image", mimetype="image/png"))
-                            self.addFile(FileNode(name=f.retrieveFile(), type="original", mimetype="image/tiff"))
-                            break
-                        else:
-                            self.addFile(FileNode(name=f.retrieveFile(), type="original", mimetype=f.mimetype))
-
-            # retrieve technical metadata.
-            for f in self.getFiles():
-                if (f.type == "image" and not f.getName().lower().endswith("svg")) or f.type == "tmppng":
-                    width, height = getImageDimensions(f.retrieveFile())
-                    self.set("origwidth", width)
-                    self.set("origheight", height)
-                    self.set("origsize", f.getSize())
-
-                    if f.mimetype == "image/jpeg":
-                        self.set("jpg_comment", iso2utf8(getJpegSection(f.retrieveFile(), 0xFE).strip()))
-
-            if thumb == 0:
-                for f in self.getFiles():
-                    if (f.type == "image" and not f.getName().lower().endswith("svg")) or f.type == "tmppng":
-                        basename = hashlib.md5(str(random.random())).hexdigest()[0:8]
-
-                        path = os.path.join(getImportDir(), basename)
-
-                        thumbname = path + ".thumb"
-                        thumbname2 = path + ".thumb2"
-
-                        print 'tumb: ', thumbname
-                        print 'presentation: ', thumbname2
-
-                        assert not os.path.isfile(thumbname)
-                        assert not os.path.isfile(thumbname2)
-                        width, height = getImageDimensions(f.retrieveFile())
-                        makeThumbNail(f.retrieveFile(), thumbname)
-                        makePresentationFormat(f.retrieveFile(), thumbname2)
-                        if f.mimetype is None:
-                            if f.getName().lower().endswith("jpg"):
-                                f.mimetype = "image/jpeg"
-                            else:
-                                f.mimetype = "image/tiff"
-                        self.addFile(FileNode(name=thumbname, type="thumb", mimetype="image/jpeg"))
-                        self.addFile(FileNode(name=thumbname2, type="presentation", mimetype="image/jpeg"))
-                        self.set("width", width)
-                        self.set("height", height)
-
-            # fetch unwanted tags to be omitted
-            unwanted_attrs = self.unwanted_attributes()
-
-            # Exif
+        if self.should_use_zoom:
             try:
-                files = self.getFiles()
-
-                for file in files:
-                    if file.type == "original":
-                        f = open(file.retrieveFile(), 'rb')
-                        tags = EXIF.process_file(f)
-                        tags.keys().sort()
-
-                        for k in tags.keys():
-                            # don't set unwanted exif attributes
-                            if any(tag in k for tag in unwanted_attrs):
-                                continue
-                            if tags[k] != "" and k != "JPEGThumbnail":
-                                self.set("exif_" + k.replace(" ", "_"),
-                                         utf8_decode_escape(str(tags[k])))
-                            elif k == "JPEGThumbnail":
-                                if tags[k] != "":
-                                    self.set("Thumbnail", "True")
-                                else:
-                                    self.set("Thumbnail", "False")
+                self._generate_zoom_archive(files)
             except:
-                None
+                # XXX: this sometimes throws SystemError, see #806
+                # XXX: missing zoom tiles shouldn't abort the upload process
+                logg.exception("zoom image generation failed!")
 
-            if dozoom(self) == 1:
-                tileok = 0
-                for f in self.getFiles():
-                    if f.type.startswith("tile"):
-                        tileok = 1
-                if not tileok and self.get("width") and self.get("height"):
-                    zoom.getImage(self.id, 1)
+        # XXX: IPTC writeback will be fixed in #782
+        # self._writeback_iptc()
 
-            for f in self.getFiles():
-                if f.getType() == 'original':
+        db.session.commit()
 
-                    wanted_tags = lib.iptc.IPTC.get_wanted_iptc_tags()
-
-                    tags_in_upload = lib.iptc.IPTC.get_iptc_values(f.retrieveFile(), wanted_tags)
-
-                    with_value = []
-                    for field in getMetaType(self.getSchema()).getMetaFields():
-                        if field.get('type') == "meta" and len(field.getValueList()) > 1:
-                            value = self.get('iptc_{}'.format(field.getName()))
-
-                            if len(value) > 0:
-                                with_value.append(field.getName())
-
-                    if tags_in_upload:
-                        for key in tags_in_upload.keys():
-                            if tags_in_upload[key] != '':
-
-                                if key not in with_value:
-                                    self.set('iptc_{}'.format(key.replace(' ', '_')),
-                                             tags_in_upload[key])
-
-            for f in self.getFiles():
-                if f.getName().lower().endswith("png") and f.type == "tmppng":
-                    self.removeFile(f)
-                    break
-
-    def unwanted_attributes(self):
-        """
-            Returns a list of unwanted exif tags
-            which are not to be extracted from uploaded images
-
-            :return: list
-        """
+    @classmethod
+    def get_unwanted_exif_attributes(cls):
+        '''
+        Returns a list of unwanted exif tags which are not to be extracted from uploaded images
+        @return: list
+        '''
         return ['BitsPerSample',
                 'IPTC/NAA',
                 'WhitePoint',
@@ -542,63 +634,48 @@ class Image(default.Default):
                          "exif_Thumbnail_Orientation": "Thumbnail Orientation",
                          "exif_Thumbnail_Model": "Thumbnail Model",
                          "exif_JPEGThumbnail": "JPEGThumbnail",
-                         "Thumbnail": "Thumbnail"},
-                }
+                         "Thumbnail": "Thumbnail"}}
 
     """ fullsize popup-window for image node """
     def popup_fullsize(self, req):
-        access = AccessData(req)
-        d = {}
-        svg = 0
-        if (not access.hasAccess(self, "data") and not dozoom(self)) or not access.hasAccess(self, "read"):
-            req.write(t(req, "permission_denied"))
-            return
-        zoom_exists = 0
-        for file in self.getFiles():
-            if file.getType() == "zoom":
-                zoom_exists = 1
-            if file.getName().lower().endswith('svg') and file.type == "original":
-                svg = 1
+        # XXX: should be has_data_access instead, see #1135>
+        if not self.has_read_access():
+            return 404
 
-        d["svg"] = svg
-        d["width"] = self.get("origwidth")
-        d["height"] = self.get("origheight")
-        d["key"] = req.params.get("id", "")
+        no_flash_requested = req.args.get("no_flash", type=int) == 1
+        use_flash_zoom = not no_flash_requested and config.getboolean("image.use_flash_zoom", True) and self.should_use_zoom
+
+        if use_flash_zoom and not self.zoom_available:
+            logg.warn("missing zoom file for image # %s", self.id, trace=False)
+
+        d = {}
+        d["flash"] = use_flash_zoom
+        d["svg_url"] = self.image_url_for_mimetype(u"image/svg+xml") if self.svg_image else None
+        d["width"] = self.get("width")
         # we assume that width==origwidth, height==origheight
-        d['flash'] = dozoom(self) and zoom_exists
-        d['tileurl'] = "/tile/" + self.id + "/"
+        # XXX: ^ wrong!
+        d["height"] = self.get("height")
+        d["image_url"] = self.preferred_image_url
+        d['tileurl'] = "/tile/{}/".format(self.id)
+        if use_flash_zoom:
+            d["no_flash_url"] = "/fullsize?id={}&no_flash=1".format(self.id)
         req.writeTAL("contenttypes/image.html", d, macro="imageviewer")
 
     def popup_thumbbig(self, req):
-        access = AccessData(req)
-
-        if (not access.hasAccess(self, "data") and not dozoom(self)) or not access.hasAccess(self, "read"):
-            req.write(t(req, "permission_denied"))
-            return
-
-        thumbbig = None
-        for file in self.getFiles():
-            if file.getType() == "thumb2":
-                thumbbig = file
-                break
-        if not thumbbig:
-            self.popup_fullsize(req)
-        else:
-            im = PILImage.open(thumbbig.retrieveFile())
-            req.writeTAL("contenttypes/image.html", {"filename": '/file/' + str(self.id) + '/' +
-                                                     thumbbig.getName(), "width": im.size[0], "height": im.size[1]}, macro="thumbbig")
+        self.popup_fullsize(req)
 
     def processImage(self, type="", value="", dest=""):
-        import os
-
+        """XXX: this method is only called in shoppingbags.
+        What does it even do?!
+        """
         img = None
-        for file in self.getFiles():
-            if file.type == "image":
+        for file in self.files:
+            if file.filetype == "image":
                 img = file
                 break
 
         if img:
-            pic = PILImage.open(img.retrieveFile())
+            pic = PILImage.open(img.abspath)
             pic.load()
 
             if type == "percentage":
@@ -650,13 +727,13 @@ class Image(default.Default):
             return 1
         return 0
 
-    def getEditMenuTabs(self):
-        return "menulayout(view);menumetadata(metadata;files;admin;lza);menuclasses(classes);menusecurity(acls)"
-
-    def getDefaultEditTab(self):
-        return "view"
-
     def event_metadata_changed(self):
+        pass
+        # XXX: IPTC writeback will be fixed in #782
+        # self._writeback_iptc()
+
+
+    def _writeback_iptc(self):
         """ Handles metadata content if changed.
             Creates a 'new' original [old == upload].
         """
@@ -664,31 +741,32 @@ class Image(default.Default):
         original_path = None
         original_file = None
 
-        for f in self.getFiles():
-
+        for f in self.files:
             if f.getType() == 'original':
                 original_file = f
-                if os.path.exists(f.retrieveFile()):
-                    original_path = f.retrieveFile()
+                if os.path.exists(f.abspath):
+                    original_path = f.abspath
                 if os.path.basename(original_path).startswith('-'):
                     return
 
-            if f.getType() == 'upload':
-                if os.path.exists(f.retrieveFile()):
-                    upload_path = os.path.abspath(f.retrieveFile())
+            if f.type == 'upload':
+                if os.path.exists(f.abspath):
+                    upload_file = f
 
         if not original_file:
-            logging.getLogger('editor').info('No original upload for writing IPTC.')
+            logg.info('No original upload for writing IPTC.')
             return
 
         if not upload_file:
             upload_path = '{}_upload{}'.format(os.path.splitext(original_path)[0], os.path.splitext(original_path)[-1])
+            import shutil
             shutil.copy(original_path, upload_path)
-            self.addFile(FileNode(upload_path, 'upload', original_file.mimetype))
+            self.files.append(File(upload_path, "upload", original_file.mimetype))
+            db.session.commit()
 
         tag_dict = {}
 
-        for field in getMetaType(self.getSchema()).getMetaFields():
+        for field in self.getMetaFields():
             if field.get('type') == "meta" and field.getValueList()[0] != '' and 'on' in field.getValueList():
                 tag_name = field.getValueList()[0].split('iptc_')[-1]
 

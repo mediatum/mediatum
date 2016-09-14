@@ -19,118 +19,34 @@
 """
 import sys
 import os
-import re
 import time
-import urllib
 import json
-import traceback
-import core.tree as tree
 import core.config as config
 import core.help as help
-import core.users as users
-import core.usergroups as usergroups
 import core.translation
-import utils.log
-import logging
-from core.acl import AccessData
-from utils.utils import Link, isCollection, Menu, getFormatedString, splitpath, parseMenuString, isDirectory
+from core import Node, NodeType, db, User, UserGroup, UserToUserGroup
+from core.systemtypes import Metadatatypes
+from core.database.postgres.permission import NodeToAccessRuleset, AccessRulesetToRule, AccessRule
 
+from contenttypes import Container, Collections, Data, Home
+
+from core.translation import lang, t
 from edit_common import *
+from core.transition import httpstatus, current_user
 
-from core.translation import lang
-from core.translation import t as translation_t
-
-from core.transition import httpstatus
-
-from edit_common import EditorNodeList
-from core.datatypes import loadAllDatatypes, Datatype
-from core.tree import getRoot, remove_from_nodecaches
-from schema.schema import loadTypesFromDB
-from utils.utils import funcname, get_user_id, log_func_entry, dec_entry_log
-
-from pprint import pprint as pp, pformat as pf
-
-logger = logging.getLogger('editor')
+from utils.utils import funcname, get_user_id, dec_entry_log, Menu, splitpath, parseMenuString,\
+    isDirectory, isCollection
+from schema.schema import Metadatatype
+from web.edit.edit_common import get_edit_label
 
 
-containertypes = []
+logg = logging.getLogger(__name__)
+q = db.query
 
 
-def clearFromCache(node):
-    if node is tree.getRoot('collections'):
-        return
-    for n in node.getAllChildren():
-        remove_from_nodecaches(n)
-
-
-def getContainerTreeTypes(req):
-    '''
-    function only called to fill context menues for editor tree
-    '''
-    global containertypes
-    containertypes = []
-
-    def getDatatypes(req):
-        dtypes = []
-        for scheme in AccessData(req).filter(loadTypesFromDB()):
-            dtypes += scheme.getDatatypes()
-        return set(dtypes)
-
-    if 1:  # len(containertypes)==0:
-        dtypes = getDatatypes(req)
-
-        for dtype in loadAllDatatypes():
-            if dtype.name in dtypes:
-                n = tree.Node("", type=dtype.name)
-                if hasattr(n, "isContainer") and hasattr(n, "isSystemType"):
-                    if n.isContainer() and not n.isSystemType():
-                        if dtype not in containertypes:
-                            containertypes.append(dtype)
-
-    ct_names = [ct.name for ct in containertypes]
-    # Datatype(key, key, cls.__name__, cls.__module__+'.'+cls.__name__)
-    for key in ['collection', 'directory']:
-        prefix = 'bare_'
-        # user should be able to create collection and directory containers to
-        # have a functinal system. in a completly empty mediatum there will be no
-        # metadatatypes (schemata) for those. they are inserted here on-the-fly
-        # as bare_collection, bare_directory
-        if key not in ct_names:
-            containertypes.append(Datatype(prefix + key, prefix + key, 'no_class',
-                                           'generated on-the-fly for editor to provide name for context_menue'))
-
-    return containertypes
-
-
-def getContainerTreeTypes_orig(req):
-    def getDatatypes(req):
-        dtypes = []
-        for scheme in AccessData(req).filter(loadTypesFromDB()):
-            dtypes += scheme.getDatatypes()
-        return set(dtypes)
-
-    if len(containertypes) == 0:
-        dtypes = getDatatypes(req)
-
-        for dtype in loadAllDatatypes():
-            if dtype.name in dtypes:
-                n = tree.Node("", type=dtype.name)
-                if hasattr(n, "isContainer") and hasattr(n, "isSystemType"):
-                    if n.isContainer() and not n.isSystemType():
-                        containertypes.append(dtype)
-    return containertypes
-
-
-def getTreeLabel(node, lang=None):
-    try:
-        label = node.getLabel(lang=lang)
-    except:
-        try:
-            label = node.getLabel()
-        except:
-            label = node.getName()
-
-    c = len(node.getContentChildren())
+def getTreeLabel(node, lang):
+    label = get_edit_label(node, lang)
+    c = node.content_children.count()
     if c > 0:
         label += ' <small>(%s)</small>' % (c)
     return label
@@ -141,43 +57,49 @@ def getEditorIconPath(node, req=None):
     retrieve icon path for editor tree relative to img/
     '''
     if req:
-        name = node.name
-        label = node.getLabel(req)
+        user = current_user
 
-        if name == 'home' or name.startswith('Arbeitsverzeichnis') or name.startswith(translate('user_directory', request=req)) or label.startswith(translate('user_directory', request=req)):
+        if node is user.home_dir:
             return 'webtree/homeicon.gif'
-        elif name == 'Uploads' or name.startswith(translate('user_upload', request=req)) or label.startswith(translate('user_upload', request=req)):
+        elif node is user.upload_dir:
             return 'webtree/uploadicon.gif'
-        elif name == 'Importe' or name.startswith(translate('user_import', request=req)) or label.startswith(translate('user_import', request=req)):
-            return 'webtree/importicon.gif'
-        elif name == 'Inkonsistente Daten' or name.startswith(translate('user_faulty', request=req)) or label.startswith(translate('user_faulty', request=req)):
-            return 'webtree/faultyicon.gif'
-        elif node.name == 'Papierkorb' or name.startswith(translate('user_directory', request=req)) or label.startswith(translate('user_directory', request=req)):
+        elif node is user.trash_dir:
             return 'webtree/trashicon.gif'
 
     if hasattr(node, 'treeiconclass'):
         return "webtree/" + node.treeiconclass() + ".gif"
     else:
-        return "webtree/" + node.getContentType() + ".gif"
+        return "webtree/" + node.type + ".gif"
 
 
-def getIDPaths(nid, access, sep="/", containers_only=True):
+def get_editor_icon_path_from_nodeclass(cls):
+    '''
+    retrieve icon path for editor tree relative to img/
+    '''
+
+    if hasattr(cls, 'treeiconclass'):
+        return u"webtree/{}.gif".format(cls.treeiconclass())
+    else:
+        return u"webtree/{}.gif".format(cls.__name__)
+
+
+def getIDPaths(nid, sep="/", containers_only=True):
     '''
     return list of sep-separated id lists for paths to node with id nid
     '''
     try:
-        node = tree.getNode(nid)
-        if not access.hasReadAccess(node):
+        node = q(Node).get(nid)
+        if not node.has_read_access():
             return []
     except:
         return []
     from web.frontend.content import getPaths
-    paths = getPaths(node, access)
+    paths = getPaths(node)
     res = []
     for path in paths:
         if containers_only:
             pids = [("%s" % p.id)
-                    for p in path if hasattr(p, 'isContainer') and p.isContainer()]
+                    for p in path if isinstance(p, Container)]
         else:
             pids = [("%s" % p.id) for p in path]
         if pids:
@@ -186,48 +108,52 @@ def getIDPaths(nid, access, sep="/", containers_only=True):
 
 
 def frameset(req):
-    id = req.params.get("id", tree.getRoot("collections").id)
+    id = req.params.get("id", q(Collections).one().id)
     tab = req.params.get("tab", None)
     language = lang(req)
+    user = current_user
 
-    access = AccessData(req)
-    if not access.getUser().isEditor():
+    if not user.is_editor:
         req.writeTAL("web/edit/edit.html", {}, macro="error")
         req.writeTAL("web/edit/edit.html",
                      {"id": id, "tab": (tab and "&tab=" + tab) or ""}, macro="edit_notree_permission")
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return
 
-    try:
-        currentdir = tree.getNode(id)
-    except tree.NoSuchNodeError:
-        currentdir = tree.getRoot("collections")
+    currentdir = q(Data).get(id)
+
+    if currentdir is None:
+        currentdir = q(Collections).one()
         req.params["id"] = currentdir.id
+        id = req.params.get("id")
+
+    # use always the newest version
+    currentdir = currentdir.getActiveVersion()
+
+    if unicode(currentdir.id) != id:
+        req.params["id"] = unicode(currentdir.id)
         id = req.params.get("id")
 
     nodepath = []
     n = currentdir
     while n:
         nodepath = [n] + nodepath
-        p = n.getParents()
+        p = n.parents
         if p:
             n = p[0]
         else:
             n = None
 
-    path = nidpath = ['%s' % p.id for p in nodepath]
-    containerpath = [('%s' % p.id) for p in nodepath if p.isContainer()]
-
-    user = users.getUserFromRequest(req)
-    menu = filterMenu(getEditMenuString(currentdir.getContentType()), user)
+    path = ['%s' % p.id for p in nodepath]
+    containerpath = [('%s' % p.id) for p in nodepath if isinstance(p, Container)]
 
     spc = [Menu("sub_header_frontend", "../", target="_parent")]
-    if user.isAdmin():
+    if user.is_admin:
         spc.append(
             Menu("sub_header_administration", "../admin", target="_parent"))
 
-    if user.isWorkflowEditor():
-        spc.append(Menu("sub_header_workflow", "../publish", target="_parent"))
+    if user.is_workflow_editor:
+        spc.append(Menu("sub_header_workflow", "../publish/", target="_parent"))
 
     spc.append(Menu("sub_header_logout", "../logout", target="_parent"))
 
@@ -235,8 +161,8 @@ def frameset(req):
         n = node
         path = []
         while n:
-            path = ['/%s' % (n.id)] + path
-            p = n.getParents()
+            path = ['/%s' % n.id] + path
+            p = n.parents
             if p:
                 n = p[0]
             else:
@@ -244,25 +170,48 @@ def frameset(req):
         return (node, "".join(path[2:]))
 
     def _getIDPath(nid, sep="/", containers_only=True):
-        res = getIDPaths(nid, access, sep=sep, containers_only=containers_only)
+        res = getIDPaths(nid, sep=sep, containers_only=containers_only)
         return res
 
-    folders = {'homedir': getPathToFolder(users.getHomeDir(user)), 'trashdir': getPathToFolder(users.getSpecialDir(
-        user, 'trash')), 'uploaddir': getPathToFolder(users.getSpecialDir(user, 'upload')), 'importdir': getPathToFolder(users.getSpecialDir(user, 'import'))}
+    # does the user have a homedir? if not, create one
+    if user.home_dir is None:
+        user.create_home_dir()
+        db.session.commit()
+        logg.info("created new home dir for user #%s (%s)", user.id, user.login_name)
 
-    cmenu = sorted(getContainerTreeTypes(req), key=lambda x: x.getName())
+    folders = {'homedir': getPathToFolder(user.home_dir),
+               'trashdir': getPathToFolder(user.trash_dir),
+               'uploaddir': getPathToFolder(user.upload_dir)}
+
+    containertypes = Container.get_all_subclasses(filter_classnames=("collections", "home", "container", "project"))
+
+    if not user.is_admin:
+        # search all metadatatypes which are container
+        container_nodetype_names = [c.__name__.lower() for c in containertypes]
+        allowed_container_metadatanames = [x[0] for x in q(Metadatatype.name)
+                                                  .filter(Metadatatype.name.in_(container_nodetype_names)).filter_read_access()]
+
+        # remove all elements from containertypes which names are not in container_metadatanames
+        new_containertypes = []
+        for ct in containertypes:
+            ct_name = ct.__name__
+            if ct_name.lower() in allowed_container_metadatanames:
+                new_containertypes += [ct]
+        containertypes = new_containertypes
+
     cmenu_iconpaths = []
 
-    for ct in cmenu:
-        ct_name = ct.getName()
-        _n = tree.Node("", type=ct_name)
+    for ct in containertypes:
+        ct_name = ct.__name__
         # translations of ct_name will be offered in editor tree context menu
         cmenu_iconpaths.append(
-            [ct, getEditorIconPath(_n), ct_name, translation_t(language, ct_name)])
+            [ct_name.lower(), t(language, ct_name), get_editor_icon_path_from_nodeclass(ct)])
 
     # a html snippet may be inserted in the editor header
-    header_insert = tree.getRoot('collections').get('system.editor.header.insert.' + language).strip()
-    help_link = tree.getRoot('collections').get('system.editor.help.link.' + language).strip()
+    # XXX: this should be moved to the settings table!
+    header_insert, help_link = q(Collections.system_attrs[u"editor.header.insert" + language], 
+                                 Collections.system_attrs[u"editor.help_link" + language]).one()
+                                 
     homenodefilter = req.params.get('homenodefilter', '')
 
     v = {
@@ -271,19 +220,18 @@ def frameset(req):
         'user': user,
         'spc': spc,
         'folders': folders,
-        'collectionsid': tree.getRoot('collections').id,
-        "basedirs": [tree.getRoot('home'), tree.getRoot('collections')],
-        'cmenu': cmenu,
+        'collectionsid': q(Collections).one().id,
+        "basedirs": [q(Home).one(), q(Collections).one()],
         'cmenu_iconpaths': cmenu_iconpaths,
         'path': path,
         'containerpath': containerpath,
         'language': lang(req),
-        't': translation_t,
+        't': t,
         '_getIDPath': _getIDPath,
-        'system_editor_header_insert': header_insert,
-        'system_editor_help_link': help_link,
+        'system_editor_header_insert': (header_insert or "").strip(),
+        'system_editor_help_link': (help_link or "").strip(),
         'homenodefilter': homenodefilter,
-       }
+    }
 
     req.writeTAL("web/edit/edit.html", v, macro="edit_main")
 
@@ -292,12 +240,12 @@ def getBreadcrumbs(menulist, tab):
     for menuitem in menulist:
         for item in menuitem.getItemList():
             if item == tab or tab.startswith(item) or item.startswith(tab):
-                return [menuitem.getName(), "*" + item]
+                return [menuitem.name, "*" + item]
     return [tab]
 
 
 def filterMenu(menuitems, user):
-    hide = users.getHideMenusForUser(user)
+    hide = user.hidden_edit_functions
     ret = []
     for menu in parseMenuString(menuitems):
         i = []
@@ -311,37 +259,37 @@ def filterMenu(menuitems, user):
 
 
 def handletabs(req, ids, tabs):
-    user = users.getUserFromRequest(req)
+    user = current_user
     language = lang(req)
 
-    n = tree.getNode(ids[0])
+    n = q(Data).get(ids[0])
     if n.type.startswith("workflow"):
-        n = tree.getRoot()
+        n = q(Root).one()
 
-    menu = filterMenu(getEditMenuString(n.getContentType()), user)
+    menu = filterMenu(get_edit_menu_tabs(n.__class__), user)
 
     spc = [Menu("sub_header_frontend", "../", target="_parent")]
-    if user.isAdmin():
+    if user.is_admin:
         spc.append(
             Menu("sub_header_administration", "../admin", target="_parent"))
 
-    if user.isWorkflowEditor():
-        spc.append(Menu("sub_header_workflow", "../publish", target="_parent"))
+    if user.is_workflow_editor:
+        spc.append(Menu("sub_header_workflow", "../publish/", target="_parent"))
 
     spc.append(Menu("sub_header_logout", "../logout", target="_parent"))
 
     # a html snippet may be inserted in the editor header
-    help_link = tree.getRoot('collections').get('system.editor.help.link.' + language).strip()
+    help_link = q(Collections.system_attrs['editor.help.link.' + language]).scalar()
     ctx = {
-            "user": user,
-            "ids": ids,
-            "idstr": ",".join(ids),
-            "menu": menu,
-            "hashelp": help.getHelpPath(['edit', 'modules', req.params.get('tab') or tabs]),
-            "breadcrumbs": getBreadcrumbs(menu, req.params.get("tab", tabs)),
-            "spc": spc,
-            "system_editor_help_link": help_link,
-            }
+        "user": user,
+        "ids": ids,
+        "idstr": ",".join(ids),
+        "menu": menu,
+        "hashelp": help.getHelpPath(['edit', 'modules', req.params.get('tab') or tabs]),
+        "breadcrumbs": getBreadcrumbs(menu, req.params.get("tab", tabs)),
+        "spc": spc,
+        "system_editor_help_link": help_link,
+    }
     return req.getTAL("web/edit/edit.html", ctx, macro="edit_tabs")
 
 
@@ -357,28 +305,33 @@ editModules = {}
 
 def getEditModules(force=0):
     if len(editModules) == 0:
-
         for modpath in core.editmodulepaths:  # paths with edit modules
-            path = os.walk(os.path.join(config.basedir, modpath[1]))
-            for root, dirs, files in path:
-                for name in [f for f in files if f.endswith(".py") and f != "__init__.py"]:
-                    try:
-                        path, module = splitpath(modpath[1])
-                        if modpath[0] == '':
-                            m = __import__("web.edit.modules." + name[:-3])
-                            m = eval("m.edit.modules." + name[:-3])
-                        else:
-                            sys.path += [path]
-                            m = __import__(
-                                module.replace("/", ".") + "." + name[:-3])
-                            m = eval("m." + name[:-3])
-                        editModules[name[:-3]] = m
-                    except ImportError as e:
-                        print e
-                        logger.error("import error in module " + name[:-3])
-                    except SyntaxError:
-                        logger.error("syntax error in module " + name[:-3])
-                        print sys.exc_info()
+            if os.path.isabs(modpath[1]):
+                mod_dirpath = modpath[1]
+            else:
+                mod_dirpath = os.path.join(config.basedir, modpath[1])
+
+            walk = os.walk(mod_dirpath)
+            for dirpath, subdirs, files in walk:
+                if os.path.basename(dirpath) not in ("test", "__pycache__"):
+                    for name in [f for f in files if f.endswith(".py") and f != "__init__.py"]:
+                        basename = name[:-3]
+                        try:
+                            path, module = splitpath(mod_dirpath)
+                            if not modpath[0]:
+                                m = __import__("web.edit.modules." + basename)
+                                m = eval("m.edit.modules." + basename)
+                            else:
+                                sys.path += [path]
+                                m = __import__(
+                                    module.replace("/", ".") + "." + basename)
+                                m = eval("m." + name[:-3])
+                            editModules[name[:-3]] = m
+                        except ImportError as e:
+                            print e
+                            logg.exception("import error in module %s", basename)
+                        except SyntaxError:
+                            logg.exception("syntax error in module %s", basename)
 
     return editModules
 
@@ -388,7 +341,7 @@ def getIDs(req):
     if "nodelist" in req.params:
         nodelist = []
         for id in req.params.get("nodelist").split(","):
-            nodelist.append(tree.getNode(id))
+            nodelist.append(q(Node).get(id))
         req.session["nodelist"] = EditorNodeList(nodelist)
 
     # look for one "id" parameter, containing an id or a list of ids
@@ -408,110 +361,79 @@ def getIDs(req):
 
     try:
         srcid = req.params.get("src")
-        if srcid == "":
+        if not srcid:
             raise KeyError
-        src = tree.getNode(srcid)
+        src = q(Node).get(srcid)
     except KeyError:
         src = None
 
-    idlist = ids.split(',')
-    if idlist == ['']:
+    if type(ids) == str:
+        idlist = ids.split(',')
+    elif type(ids) == unicode:
+        idlist = ids.split(u',')
+
+    if idlist == [''] or idlist == [u'']:
         idlist = []
     return idlist
 
 
-def nodeIsChildOfNode(node1, node2):
-    if node1.id == node2.id:
-        return 1
-    for c in node2.getChildren():
-        if nodeIsChildOfNode(node1, c):
-            return 1
-    return 0
-
-
 @dec_entry_log
 def edit_tree(req):
-    access = AccessData(req)
     language = lang(req)
-    user = users.getUserFromRequest(req)
-    home_dir = users.getHomeDir(user)
+    user = current_user
+    home_dir = user.home_dir
     match_result = ''
     match_error = False
 
     if req.params.get('key') == 'root':
-        nodes = core.tree.getRoot(
-            'collections').getContainerChildren().sort_by_orderpos()
+        nodes = q(Collections).one().container_children.sort_by_orderpos()
     elif req.params.get('key') == 'home':
-        if not user.isAdmin():
+        if not user.is_admin:
             nodes = [home_dir]
         else:
             homenodefilter = req.params.get('homenodefilter', '')
             if homenodefilter:
-                nodes = []
-                try:
-                    pattern = re.compile(homenodefilter)
-                    nodes = tree.getRoot('home').getContainerChildren().sort_by_orderpos()
-                    # filter out shoppingbags etc.
-                    nodes = [n for n in nodes if n.isContainer()]
-                    # filter user name - after first "("
-                    nodes = filter(lambda n: re.match(homenodefilter, n.getLabel(language).split('(', 1)[-1]), nodes)
-                    match_result = '#=%d' % len(nodes)
-                except Exception as e:
-                    logger.warning('pattern matching for home nodes: %r' % e)
-                    match_result = '<span style="color:red">Error: %r</span>' % str(e)
+                pattern = "%" + homenodefilter.strip() + "%"
+                nodes = (q(Node).join(User, User.home_dir_id == Node.id)
+                         .filter(User.login_name.ilike(pattern) | User.display_name.ilike(pattern)).all())
+                if nodes:
+                    match_result = u'#={}'.format(len(nodes))
+                else:
+                    match_result = u'<span style="color:red">Error: {} not found</span>'.format(homenodefilter)
                     match_error = True
+
                 if home_dir not in nodes:
                     if not match_error:
-                        match_result = '#=%d+1' % len(nodes)
-                    nodes.append(home_dir)
-                nodes = tree.NodeList(nodes).sort_by_orderpos()
+                        match_result = u'#={}+1'.format(len(nodes))
+                    nodes.insert(0, home_dir)
             else:
                 nodes = [home_dir]
     else:
-        nodes = core.tree.getNode(
-            req.params.get('key')).getContainerChildren().sort_by_orderpos()
-        # filter out shoppingbags etc.
+        nodes = q(Data).get(req.params.get('key')).container_children.sort_by_orderpos()
         nodes = [n for n in nodes if n.isContainer()]
 
     data = []
 
-    # wn 2014-03-14
-    # special directories may be handled in a special way by the editor
-    special_dir_ids = {}
-    special_dir_ids[home_dir.id] = 'userhomedir'
-    for dir_type in ['upload', 'import', 'faulty', 'trash']:
-        special_dir_ids[users.getSpecialDir(user, dir_type).id] = dir_type
-
-    spec_dirs = ['userhomedir', 'upload', 'import', 'faulty', 'trash']
-    spec_dir_icons = ["homeicon.gif", "uploadicon.gif",
-                      "importicon.gif", "faultyicon.gif", "trashicon.gif"]
-
     for node in nodes:
 
-        if not access.hasReadAccess(node):
+        if not node.has_read_access():
             continue
 
-        # try:
-        #    label = node.getLabel()
-        # except:
-        #    label = node.getName()
-        #
-        # c = len(node.getContentChildren())
-        #  if c>0:
-        #     label += ' <small>(%s)</small>' %(c)
+        label = getTreeLabel(node, language)
 
-        label = getTreeLabel(node, lang=language)
+        nodedata = {'title': label,
+                    'key': node.id,
+                    'lazy': True,
+                    'folder': True,
+                    'readonly': 0,
+                    'tooltip': '%s (%s)' % (node.getLabel(lang=language), node.id),
+                    'icon': getEditorIconPath(node, req)}
 
-        nodedata = {'title': label, 'key': node.id, 'lazy': True, 'folder': True,
-                    'readonly': 0, 'tooltip': '%s (%s)' % (node.getLabel(lang=language),
-                                                           node.id)}
-        nodedata['icon'] = getEditorIconPath(node, req)
-
-        if len(node.getContainerChildren()) == 0:
+        if len(node.container_children) == 0:
             nodedata['lazy'] = False
             nodedata['children'] = []
 
-        if not access.hasWriteAccess(node):
+        if not node.has_write_access():
             if req.params.get('key') == 'home':
                 continue
             nodedata['readonly'] = 1
@@ -522,48 +444,40 @@ def edit_tree(req):
         else:
             nodedata['readonly'] = 0
 
-        nodedata['this_node_is_special'] = []
-        if node.id in special_dir_ids:
-            nodedata['this_node_is_special'] = nodedata[
-                'this_node_is_special'] + [special_dir_ids[node.id]]
-            if node.id == home_dir.id:
-                nodedata['match_result'] = match_result
+        if node is home_dir:
+            nodedata["special_dir_type"] = "home"
+            nodedata['match_result'] = match_result
+
+        elif node is user.trash_dir:
+            nodedata["special_dir_type"] = "trash"
+
+        elif node is user.upload_dir:
+            nodedata["special_dir_type"] = "upload"
 
         data.append(nodedata)
 
-    return req.write(json.dumps(data, indent=4))
+    return req.write(json.dumps(data, indent=4, ensure_ascii=False))
 
 
-def getEditMenuString(ntype, default=0):
-    menu_str = ""
-
-    for dtype in loadAllDatatypes():  # all known datatypes
-        if dtype.name == ntype:
-            n = tree.Node("", type=dtype.name)
-            menu_str = getRoot().get("edit.menu." + dtype.name)
-            if (menu_str == "" or default == 1) and hasattr(n, "getEditMenuTabs"):
-                menu_str = n.getEditMenuTabs()
-            break
-    return menu_str
+def get_edit_menu_tabs(nodeclass):
+    root = q(Root).one()
+    return root.system_attrs.get("edit.menu." + nodeclass.__name__.lower()) or nodeclass.get_default_edit_menu_tabs()
 
 
 @dec_entry_log
 def action(req):
     global editModules
-    access = AccessData(req)
     language = lang(req)
-    user = users.getUserFromRequest(req)
+    user = current_user
 
-    trashdir = users.getTrashDir(user)
-    uploaddir = users.getUploadDir(user)
-    faultydir = users.getFaultyDir(user)
-    importdir = users.getImportDir(user)
+    trashdir = user.trash_dir
+    uploaddir = user.upload_dir
 
-    trashdir_parents = trashdir.getParents()
+    trashdir_parents = trashdir.parents
     action = req.params.get("action", "")
     changednodes = {}
 
-    if not access.user.isEditor():
+    if not user.is_editor:
         req.write("""permission denied""")
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return
@@ -576,30 +490,32 @@ def action(req):
         nids = req.params.get('ids', [])
         nids = [nid.strip() for nid in nids.split(',') if nid.strip()]
 
-        for nid in set(nids + [_n.id for _n in [trashdir, uploaddir, importdir, faultydir]]):
+        for nid in set(nids + [_n.id for _n in [trashdir, uploaddir]]):
             try:
-                changednodes[nid] = getTreeLabel(
-                    tree.getNode(nid), lang=language)
+                changednodes[nid] = getTreeLabel(q(Node).get(nid), language)
             except:
-                msg = "could not make fancytree label for node %r" % nid
-                logger.error(msg)
+                logg.exception("exception ignored: could not make fancytree label for node %s", nid)
         res_dict = {'changednodes': changednodes}
-        req.write(json.dumps(res_dict, indent=4))
+        req.write(json.dumps(res_dict, indent=4, ensure_ascii=False))
         return
 
     else:
         # all 'action's except 'getlabels' require a base dir (src)
+        # but expanding of a subdir in the edit-tree via fancytree has
+        # not a srcid, so no action is necessary
         srcid = req.params.get("src")
+        if not srcid:
+            return
         try:
-            src = tree.getNode(srcid)
+            src = q(Node).get(srcid)
         except:
             req.writeTAL(
                 "web/edit/edit.html", {"edit_action_error": srcid}, macro="edit_action_error")
             return
 
     if req.params.get('action') == 'addcontainer':
-        node = tree.getNode(srcid)
-        if not access.hasWriteAccess(node):
+        node = q(Node).get(srcid)
+        if not node.has_write_access():
             # deliver errorlabel
             req.writeTALstr(
                 '<tal:block i18n:translate="edit_nopermission"/>', {})
@@ -614,23 +530,15 @@ def action(req):
             translated_label = t(
                 lang(req), 'edit_add_container_default') + newnode_type
 
-        newnode = node.addChild(
-            tree.Node(name=translated_label, type=newnode_type))
-        newnode.set("creator", user.getName())
-        newnode.set("creationtime", str(
+        content_class = Node.get_class_for_typestring(newnode_type)
+        newnode = content_class(name=translated_label)
+        node.children.append(newnode)
+        newnode.set("creator", user.login_name)
+        newnode.set("creationtime", unicode(
             time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
-        clearFromCache(node)
+        newnode.set("nodename", translated_label)  # set attribute named "nodename" to label text
+        db.session.commit()
         req.params["dest"] = newnode.id
-
-        # try:
-        #    label = newnode.getLabel()
-        # except:
-        #    label = newnode.getName()
-        #
-
-        # c = len(newnode.getContentChildren())
-        # if c>0:
-        #    label += ' <small>(%s)</small>' %(c)
 
         label = getTreeLabel(newnode, lang=language)
 
@@ -645,16 +553,14 @@ def action(req):
             'children': [],
         }
 
-        req.write(json.dumps(fancytree_nodedata))
-        msg = "%s adding new container %r (%r) to %r (%r, %r)" % (
-            access.user.name, newnode.id, newnode.type, node.id, node.name, node.type)
-        logging.getLogger('usertracing').info(msg)
-        logger.info(msg)
+        req.write(json.dumps(fancytree_nodedata, ensure_ascii=False))
+        logg.info("%s adding new container %s (%s) to %s (%s, %s)",
+                  user.login_name, newnode.id, newnode.type, node.id, node.name, node.type)
         return
 
     try:
         destid = req.params.get("dest", None)
-        dest = tree.getNode(destid)
+        dest = q(Node).get(destid)
         folderid = destid
     except:
         destid = None
@@ -667,87 +573,77 @@ def action(req):
 
     # try:
     if action == "clear_trash":
-        for n in trashdir.getChildren():
+        for n in trashdir.children:
             # if trashdir is it's sole parent, remove file from disk
             # attn: this will not touch files from children of deleted
             # containers
-            if len(n.getParents()) == 1:
-                logger.info("%s going to remove files from disk for node %r (%r, %r)" % (
-                    user.getName(), n.id, n.name, n.type))
-                for f in n.getFiles():
+            if len(n.parents) == 1:
+                logg.info("%s going to remove files from disk for node %s (%s, %s)", user.login_name, n.id, n.name, n.type)
+                for f in n.files:
                     # dangerous ??? check this
-                    f_path = f.retrieveFile()
+                    f_path = f.abspath
                     if os.path.exists(f_path):
-                        logger.info(
-                            "%s going to remove file %r from disk" % (user.getName(), f_path))
+                        logg.info("%s going to remove file %r from disk", user.login_name, f_path)
                         os.remove(f_path)
-            trashdir.removeChild(n)
+            trashdir.children.remove(n)
+            db.session.commit()
             dest = trashdir
-        clearFromCache(trashdir)
         changednodes[trashdir.id] = 1
         _parent_descr = [(p.name, p.id, p.type) for p in trashdir_parents]
-        msg = "%s cleared trash folder with id %s, child of %r" % (
-            user.getName(), trashdir.id, _parent_descr)
-        logger.info(msg)
-        logging.getLogger('usertracing').info(msg)
+        logg.info("%s cleared trash folder with id %s, child of %s", user.login_name, trashdir.id, _parent_descr)
         # return
     else:
         for id in idlist:
-            obj = tree.getNode(id)
+            obj = q(Node).get(id)
             mysrc = src
 
-            if isDirectory(obj):
-                mysrc = obj.getParents()[0]
+            if isDirectory(obj) or isCollection(obj):
+                mysrc = obj.parents[0]
 
             if action == "delete":
-                if access.hasWriteAccess(mysrc) and access.hasWriteAccess(obj):
+                if mysrc.has_write_access() and obj.has_write_access():
                     if mysrc.id != trashdir.id:
-                        mysrc.removeChild(obj)
+                        mysrc.children.remove(obj)
                         changednodes[mysrc.id] = 1
-                        trashdir.addChild(obj)
+                        trashdir.children.append(obj)
+                        db.session.commit()
                         changednodes[trashdir.id] = 1
-                        clearFromCache(mysrc)
-                        logger.info("%s moved to trash bin %s (%r, %r) from %s (%r, %r)" % (
-                            user.getName(), obj.id, obj.name, obj.type, mysrc.id, mysrc.name, mysrc.type))
-                        logging.getLogger('usertracing').info("%s removed %s (%r, %r) from %s (%r, %r)" % (
-                            user.getName(), obj.id, obj.name, obj.type, mysrc.id, mysrc.name, mysrc.type))
+                        logg.info("%s moved to trash bin %s (%s, %s) from %s (%s, %s)",
+                                  user.login_name, obj.id, obj.name, obj.type, mysrc.id, mysrc.name, mysrc.type)
                         dest = mysrc
 
                 else:
-                    logger.info(
-                        "%s has no write access for node %s" % (user.getName(), mysrc.id))
+                    logg.info("%s has no write access for node %s", user.login_name, mysrc.id)
                     req.writeTALstr(
                         '<tal:block i18n:translate="edit_nopermission"/>', {})
                 dest = mysrc
 
             elif action in ["move", "copy"]:
 
-                if dest != mysrc and \
-                   access.hasWriteAccess(mysrc) and \
-                   access.hasWriteAccess(dest) and \
-                   access.hasWriteAccess(obj) and \
-                   isDirectory(dest):
-                    if not nodeIsChildOfNode(dest, obj):
+                if dest != (mysrc and
+                            mysrc.has_write_access() and
+                            dest.has_write_access() and
+                            obj.has_write_access() and
+                            isDirectory(dest)):
+                    if not dest.is_descendant_of(obj):
                         if action == "move":
-                            mysrc.removeChild(obj)
+                            mysrc.children.remove(obj)
                             changednodes[mysrc.id] = 1  # getLabel(mysrc)
-                        dest.addChild(obj)
+                        dest.children.append(obj)
                         changednodes[dest.id] = 1  # getLabel(dest)
-                        clearFromCache(dest)
+                        db.session.commit()
 
-                        _what = "%s %s %r (%r, %r) " % (
-                            access.user.name, action, obj.id, obj.name, obj.type)
-                        _from = "from %r (%r, %r) " % (
-                            mysrc.id, mysrc.name, mysrc.type)
-                        _to = "to %r (%r, %r)" % (
-                            dest.id, dest.name, dest.type)
-                        msg = _what + _from + _to
-                        logging.getLogger('usertracing').info(msg)
-                        logger.info(msg)
+                        if logg.isEnabledFor(logging.INFO):
+                            _what = "%s %s %r (%s, %s) " % (
+                                user.login_name, action, obj.id, obj.name, obj.type)
+                            _from = "from %s (%s, %s) " % (
+                                mysrc.id, mysrc.name, mysrc.type)
+                            _to = "to %s (%s, %s)" % (
+                                dest.id, dest.name, dest.type)
+                            logg.info(_what + _from + _to)
 
                     else:
-                        logger.error("%s could not %s %s from %s to %s" % (
-                            user.getName(), action, obj.id, mysrc.id, dest.id))
+                        logg.error("%s could not %s %s from %s to %s", user.login_name, action, obj.id, mysrc.id, dest.id)
                 else:
                     return
                 mysrc = None
@@ -760,18 +656,17 @@ def action(req):
         for nid in changednodes:
             try:
                 changednodes[nid] = getTreeLabel(
-                    tree.getNode(nid), lang=language)
+                    q(Node).get(nid), lang=language)
             except:
-                msg = "could not make fancytree label for node %r" % nid
-                logger.error(msg)
+                logg.exception("exception ignored: could not make fancytree label for node %s", nid)
         res_dict = {'changednodes': changednodes}
-        req.write(json.dumps(res_dict, indent=4))
+        req.write(json.dumps(res_dict, indent=4, ensure_ascii=False))
     else:
         try:
             req.write(dest.id)
         except:
             req.write('no-node-id-specified (web.edit.edit.action)')
-            logger.warning('no-node-id-specified (web.edit.edit.action)')
+            logg.exception('exception ignored, no-node-id-specified (web.edit.edit.action)')
     return
 
 
@@ -786,34 +681,38 @@ def showPaging(req, tab, ids):
         nextid = nodelist.getNext(ids[0])
         position, absitems = nodelist.getPositionString(ids[0])
         combodata, script = nodelist.getPositionCombo(tab)
-    v = {"nextid": nextid, "previd": previd, "position": position, "absitems":
-         absitems, "tab": tab, "combodata": combodata, "script": script, "nodeid": ids[0]}
+
+    v = {"nextid": nextid,
+         "previd": previd,
+         "position": position,
+         "absitems": absitems,
+         "tab": tab,
+         "combodata": combodata,
+         "script": script,
+         "nodeid": int(ids[0])}
+
     return req.getTAL("web/edit/edit.html", v, macro="edit_paging")
 
 
 @dec_entry_log
 def content(req):
 
-    user = users.getUserFromRequest(req)
-
-    access = AccessData(req)
+    user = current_user
     language = lang(req)
-    if not access.user.isEditor():
+
+    if not user.is_editor:
         return req.writeTAL("web/edit/edit.html", {}, macro="error")
 
     if 'id' in req.params and len(req.params) == 1:
-        nid = req.params.get('id')
-        try:
-            node = tree.getNode(nid)
-        except:
-            node = None
-        if node:
+        nid = long(req.params.get('id'))
+        node = q(Data).get(nid)
+
+        if node is not None:
             cmd = "cd (%s %r, %r)" % (nid, node.name, node.type)
-            logger.info("%s: %s" % (user.getName(), cmd))
-            #logging.getLogger("usertracing").info("%s: in editor %s" % (user.getName(), cmd))
+            logg.info("%s: %s", user.login_name, cmd)
         else:
             cmd = "ERROR-cd to non-existing id=%r" % nid
-            logger.error("%s: %s") % (user.getName(), cmd)
+            logg.error("%s: %s", user.login_name, cmd)
 
     if 'action' in req.params and req.params['action'] == 'upload':
         pass
@@ -833,7 +732,7 @@ def content(req):
         req.params["option"] = path[3]
     getEditModules()
 
-    if not access.user.isEditor():
+    if not user.is_editor:
         return req.writeTAL("web/edit/edit.html", {}, macro="error")
 
     # remove all caches for the frontend area- we might make changes there
@@ -849,26 +748,23 @@ def content(req):
         return upload_help(req)
 
     if len(ids) > 0:
-        node = tree.getNode(ids[0])
+        node = q(Node).get(long(ids[0]))
     tabs = "content"
-    if node.type == "root":
+    if isinstance(node, Root):
         tabs = "content"
-    elif node.id == users.getUploadDir(access.getUser()).id:
+    elif node is user.upload_dir:
         tabs = "upload"
-    elif node.id == users.getImportDir(access.getUser()).id:
-        tabs = "imports"
-    elif hasattr(node, "getDefaultEditTab"):
-        tabs = node.getDefaultEditTab()
+    else:
+        tabs = node.get_default_edit_tab()
         v["notdirectory"] = 0
 
     current = req.params.get("tab", tabs)
-    logger.debug("... %s inside %s.%s: ->  !!! current = %r !!!" %
-                 (get_user_id(req), __name__, funcname(), current))
-    msg = "%s selected editor module is %r" % (user.getName(), current)
+    logg.debug("... %s inside %s.%s: ->  !!! current = %s !!!", get_user_id(req), __name__, funcname(), current)
+    msg = "%s selected editor module is %s" % (user.login_name, current)
     jsfunc = req.params.get("func", "")
     if jsfunc:
         msg = msg + (', js-function: %r' % jsfunc)
-    logger.info(msg)
+    logg.info(msg)
 
     # some tabs operate on only one file
     # if current in ["files", "view", "upload"]:
@@ -876,65 +772,68 @@ def content(req):
         ids = ids[0:1]
 
     # display current images
-    if not tree.getNode(ids[0]).isContainer():
+    if not isinstance(q(Data).get(ids[0]), Container):
         v["notdirectory"] = 1
         items = []
         if current != "view":
             for id in ids:
-                node = tree.getNode(id)
+                node = q(Data).get(id)
                 if hasattr(node, "show_node_image"):
                     if not isDirectory(node) and not node.isContainer():
                         items.append((id, node.show_node_image()))
                     else:
                         items.append(("", node.show_node_image()))
         v["items"] = items
-        logger.debug("... %s inside %s.%s: -> display current images: items: %r" %
-                     (get_user_id(req), __name__, funcname(), [_t[0] for _t in items]))
-        try:
-            n = tree.getNode(req.params.get('src', req.params.get('id')))
-            if current == 'metadata' and 'save' in req.params:
-                pass
-            s = []
-            while n:
-                try:
-                    s = ['<a onClick="activateEditorTreeNode(%r); return false;" href="/edit/edit_content?id=%s">%s</a>' %
-                         (n.id, n.id, n.getLabel(lang=language))] + s
-                except:
-                    s = ['<a onClick="activateEditorTreeNode(%r); return false;" href="/edit/edit_content?id=%s">%s</a>' %
-                         (n.id, n.id, n.name)] + s
+        if logg.isEnabledFor(logging.DEBUG):
+            logg.debug("... %s inside %s.%s: -> display current images: items: %s",
+                       get_user_id(req), __name__, funcname(), [_t[0] for _t in items])
 
-                p = n.getParents()
-                if p:
-                    n = p[0]
-                else:
-                    n = None
-            v["dircontent"] = ' <b>&raquo;</b> '.join(s[1:])
-        except:
-            logger.exception('ERROR displaying current images')
+        nid = req.params.get('src', req.params.get('id'))
+        if nid is None:
+            raise ValueError("invalid request, neither 'src' not 'id' parameter is set!")
 
-    else:  # or current directory
-        n = tree.getNode(ids[0])
+        folders_only = False
+        if nid.find(',') > 0:
+            # more than one node selected
+            # use the first one for activateEditorTreeNode
+            # and display only folders
+            nid = nid.split(',')[0]
+            folders_only = True
+        n = q(Data).get(nid)
+        if current == 'metadata' and 'save' in req.params:
+            pass
         s = []
         while n:
-            if len(s) == 0:
-                try:
-                    s = ['%s' % (n.getLabel(lang=language))]
-                except:
-                    s = ['%s' % (n.name)]
-            else:
-                try:
-                    s = ['<a onClick="activateEditorTreeNode(%r); return false;" href="/edit/edit_content?id=%s">%s</a>' %
-                         (n.id, n.id, n.getLabel(lang=language))] + s
-                except:
-                    s = ['<a onClick="activateEditorTreeNode(%r); return false;" href="/edit/edit_content?id=%s">%s</a>' %
-                         (n.id, n.id, n.name)] + s
+            if not folders_only:
+                s = ['<a onClick="activateEditorTreeNode(%r); return false;" href="/edit/edit_content?id=%s">%s</a>' %
+                     (n.id, n.id, get_edit_label(n, language))] + s
 
-            p = n.getParents()
-            if p:
+            folders_only = False;
+            p = n.parents
+            # XXX: we only check the first parent. This is wrong, how could be solve this? #
+            first_parent = p[0]
+            if isinstance(first_parent, Data) and first_parent.has_read_access():
                 n = p[0]
             else:
                 n = None
-        v["dircontent"] = ' <b>&raquo;</b> '.join(s[1:])
+        v["dircontent"] = ' <b>&raquo;</b> '.join(s)
+
+    else:  # or current directory
+        n = q(Data).get(long(ids[0]))
+        s = []
+        while n:
+            if len(s) == 0:
+                s = ['%s' % (get_edit_label(n, language))]
+            else:
+                s = ['<a onClick="activateEditorTreeNode(%r); return false;" href="/edit/edit_content?id=%s">%s</a>' %
+                     (n.id, n.id, get_edit_label(n, language))] + s
+
+            p = n.parents
+            if p and not isinstance(p[0], Root):
+                n = p[0]
+            else:
+                n = None
+        v["dircontent"] = ' <b>&raquo;</b> '.join(s)
 
     if current == "globals":
         basedir = config.get("paths.datadir")
@@ -944,44 +843,32 @@ def content(req):
             file_to_edit = req.params["file_to_edit"]
 
         if not file_to_edit:
+            # todo: getstartpagedict doesnt exist
             d = node.getStartpageDict()
-            if d and lang(req) in d:
-                file_to_edit = d[lang(req)]
+            if d and language in d:
+                file_to_edit = d[language]
 
         found = False
-        for f in node.getFiles():
+        for f in node.files:
             if f.mimetype == 'text/html':
-                filepath = f.retrieveFile().replace(basedir, '')
+                filepath = f.abspath.replace(basedir, '')
                 if file_to_edit == filepath:
                     found = True
-                    result = edit_editor(req, node, f)
-                    if result == "error":
-                        logger.error("error editing %r" % f.retrieveFile())
                     break
 
-        if not found:
-            edit_editor(req, node, None)
-
-    elif current == "tab_metadata":
-        edit_metadata(req, ids)  # undefined
-    elif current == "tab_upload":
-        edit_upload(req, ids)  # undefined
-    elif current == "tab_import":
-        edit_import(req, ids)  # undefined
-    elif current == "tab_globals":
-        req.write("")
-    elif current == "tab_lza":
-        edit_lza(req, ids)  # undefined
-    elif current == "tab_logo":
-        edit_logo(req, ids)  # undefined
     else:
-        t = current.split("_")[-1]
-        if t in editModules.keys():
-            c = editModules[t].getContent(req, ids)
-            if c:
-                content["body"] += c  # use standard method of module
+        t2 = current.split("_")[-1]
+        if t2 in editModules.keys():
+            c = editModules[t2].getContent(req, ids)
+
+            if isinstance(c, int):
+                # module returned a custom http status code instead of HTML content
+                return c
+
+            elif c:
+                content["body"] += c
             else:
-                logger.debug('empty content')
+                logg.debug('empty content')
                 return
         else:
             req.setStatus(httpstatus.HTTP_INTERNAL_SERVER_ERROR)
@@ -998,32 +885,27 @@ def content(req):
             v["ids"] = req.params.get("id", "").split(",")
         v["tab"] = current
         v["operations"] = req.getTAL("web/edit/edit_common.html", {'iscontainer': node.isContainer()}, macro="show_operations")
-        user = users.getUserFromRequest(req)
         v['user'] = user
         v['language'] = lang(req)
-        v['t'] = translation_t
+        v['t'] = t
 
         v['spc'] = [Menu("sub_header_frontend", "../", target="_parent")]
-        if user.isAdmin():
+        if user.is_admin:
             v['spc'].append(Menu("sub_header_administration", "../admin", target="_parent"))
 
-        if user.isWorkflowEditor():
-            v['spc'].append(Menu("sub_header_workflow", "../publish", target="_parent"))
+        if user.is_workflow_editor:
+            v['spc'].append(Menu("sub_header_workflow", "../publish/", target="_parent"))
 
         v['spc'].append(Menu("sub_header_logout", "../logout", target="_parent"))
 
         # add icons to breadcrumbs
         ipath = 'webtree/directory.gif'
         if node and node.isContainer():
-            if node.name == 'home' or 'Arbeitsverzeichnis' in node.name:
+            if node.name == 'home' or 'Arbeitsverzeichnis' in node.name or node == current_user.home_dir:
                 ipath = 'webtree/homeicon.gif'
-            elif node.name == 'Uploads':
+            elif node.name in ('Uploads', 'upload'):
                 ipath = 'webtree/uploadicon.gif'
-            elif node.name == 'Importe':
-                ipath = 'webtree/importicon.gif'
-            elif node.name == 'Inkonsistente Daten':
-                ipath = 'webtree/faultyicon.gif'
-            elif node.name == 'Papierkorb':
+            elif node.name in ('Papierkorb', 'trash'):
                 ipath = 'webtree/trashicon.gif'
             else:
                 ipath = getEditorIconPath(node)

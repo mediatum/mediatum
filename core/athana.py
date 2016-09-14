@@ -18,6 +18,10 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from werkzeug._compat import wsgi_encoding_dance
+from werkzeug.http import parse_accept_header
+from werkzeug.utils import cached_property
+from array import array
 
 #===============================================================
 #
@@ -36,12 +40,12 @@ import string
 from functools import partial
 from itertools import chain
 import logging
-from werkzeug.datastructures import ImmutableMultiDict
+from werkzeug.datastructures import ImmutableMultiDict, MIMEAccept
 from mediatumtal import tal
 
 
-logg = logging.getLogger("athana")
-logftp = logging.getLogger("ftp")
+logg = logging.getLogger(__name__)
+logftp = logging.getLogger(__name__ + ":ftp")
 
 
 class AthanaException(Exception):
@@ -67,7 +71,6 @@ def attrEscape(s):
     s = s.replace('"', '&quot;')
     return s
 
-
 # ================ MEDUSA ===============
 
 # python modules
@@ -80,10 +83,12 @@ import mimetypes
 from cgi import escape
 from urllib import unquote, splitquery
 from collections import OrderedDict
+from core import config
 
 # async modules
 import asyncore
 import socket
+
 
 
 class async_chat (asyncore.dispatcher):
@@ -278,23 +283,6 @@ class async_chat (asyncore.dispatcher):
             self.producer_fifo.pop()
 
 
-class simple_producer:
-
-    def __init__(self, data, buffer_size=512):
-        self.data = data
-        self.buffer_size = buffer_size
-
-    def more(self):
-        if len(self.data) > self.buffer_size:
-            result = self.data[:self.buffer_size]
-            self.data = self.data[self.buffer_size:]
-            return result
-        else:
-            result = self.data
-            self.data = ''
-            return result
-
-
 class fifo:
 
     def __init__(self, list=None):
@@ -377,7 +365,7 @@ class counter:
         return '<counter value=%s at %x>' % (self.value, id(self))
 
     def __str__(self):
-        s = str(long(self.value))
+        s = ustr(long(self.value))
         if s[-1:] == 'L':
             s = s[:-1]
         return s
@@ -521,7 +509,7 @@ def parse_http_date(d):
 
 def check_date():
     global time_offset
-    tmpfile = join_paths(GLOBAL_TEMP_DIR, "datetest" + str(random.random()) + ".tmp")
+    tmpfile = join_paths(GLOBAL_TEMP_DIR, "datetest" + ustr(random.random()) + ".tmp")
     open(tmpfile, "wb").close()
     time1 = os.stat(tmpfile)[stat.ST_MTIME]
     os.unlink(tmpfile)
@@ -870,11 +858,14 @@ class http_request(object):
         self.reply_headers = {
             'Server': 'Athana/%s' % ATHANA_VERSION,
             'Date': build_http_date(time.time()),
-            'Expires': build_http_date(time.time())
         }
         self.request_number = http_request.request_counter.increment()
         self._split_uri = None
         self._header_cache = {}
+        self.session = None
+        
+        # XXX: not really a good idea, but we need some place to store request-bound caching data...
+        self.app_cache = {}
 
     # --------------------------------------------------
     # reply header management
@@ -897,10 +888,18 @@ class http_request(object):
     def build_reply_header(self):
         h = []
         for k, vv in self.reply_headers.items():
-            if type(vv) != type([]):
+            if not isinstance(vv, list):
+                if isinstance(k, unicode):
+                    k = k.encode("utf8")
+                if isinstance(vv, unicode):
+                    vv = vv.encode("utf8")
                 h += ["%s: %s" % (k, vv)]
             else:
                 for v in vv:
+                    if isinstance(k, unicode):
+                        k = k.encode("utf8")
+                    if isinstance(v, unicode):
+                        v = v.encode("utf8")
                     h += ["%s: %s" % (k, v)]
         return string.join([self.response(self.reply_code)] + h, '\r\n') + '\r\n\r\n'
 
@@ -946,6 +945,11 @@ class http_request(object):
         else:
             return hc[header]
 
+    @cached_property
+    def accept_mimetypes(self):
+        accept = parse_accept_header(self.get_header("ACCEPT"), MIMEAccept)
+        return accept
+
     # --------------------------------------------------
     # user data
     # --------------------------------------------------
@@ -974,7 +978,7 @@ class http_request(object):
         self.reply_code = code
         return 'HTTP/%s %d %s' % (self.version, code, message)
 
-    def error(self, code, s=None):
+    def error(self, code, s=None, content_type='text/html'):
         self.reply_code = code
         self.outgoing = []
         message = self.responses[code]
@@ -984,7 +988,7 @@ class http_request(object):
                 'message': message,
             }
         self['Content-Length'] = len(s)
-        self['Content-Type'] = 'text/html'
+        self['Content-Type'] = content_type
         # make an error reply
         self.push(s)
         self.done()
@@ -998,7 +1002,7 @@ class http_request(object):
             for f in self.tempfiles:
                 os.unlink(f)
                 unlinked_tempfiles.append(f)
-                logg.info("unlinked tempfile %s", f)
+                logg.debug("unlinked tempfile %s", f)
         return unlinked_tempfiles
 
     def done(self):
@@ -1044,7 +1048,15 @@ class http_request(object):
             # when using telnet to debug a server.
             close_it = 1
 
-        outgoing_header = simple_producer(self.build_reply_header())
+        if self.session and "PSESSION" not in self.Cookies:
+            self.setCookie('PSESSION', self.sessionid, path="/", secure=config.getboolean("host.ssl", True))
+            
+        if "Cache-Control" not in self.reply_headers:
+            self.reply_headers["Cache-Control"] = "no-cache"
+
+        reply_header = self.build_reply_header()
+
+        outgoing_header = simple_producer(reply_header)
 
         if close_it:
             self['Connection'] = 'close'
@@ -1081,10 +1093,10 @@ class http_request(object):
                   time.strftime('[%d/%b/%Y:%H:%M:%S ]', time.gmtime()), self.request)
 
     def write(self, text):
-        if type(text) == type(''):
-            self.push(text)
-        elif type(text) == type(u''):
+        if isinstance(text, unicode):
             self.push(text.encode("utf-8"))
+        elif isinstance(text, str):
+            self.push(text)
         else:
             text.more
             self.push(text)
@@ -1101,17 +1113,29 @@ class http_request(object):
                     query += "?"
                 else:
                     query += "&"
-                query += "%s=%s" % (urllib.quote(k), urllib.quote(v))
+                query += "{}={}".format(urllib.quote(k), urllib.quote(unicode(v)))
                 first = 0
-        return page + ";" + self.sessionid + query
+        return "{}{}".format(page, query)
 
     def sendFile(self, path, content_type, force=0):
+        
+        if isinstance(path, unicode):
+            path = path.encode("utf8")
+        
+        if isinstance(content_type, unicode):
+            content_type = content_type.encode("utf8")
+        
 
-        try:
-            file_length = os.stat(path)[stat.ST_SIZE]
-        except OSError:
-            self.error(404)
-            return
+        x_accel_redirect = config.get("nginx.X-Accel-Redirect", "").lower() == "true"
+        file = None
+        file_length = 0
+
+        if not x_accel_redirect:
+            try:
+                file_length = os.stat(path)[stat.ST_SIZE]
+            except OSError:
+                self.error(404)
+                return
 
         ims = get_header_match(IF_MODIFIED_SINCE, self.header)
         length_match = 1
@@ -1135,24 +1159,31 @@ class http_request(object):
             return
         if length_match and ims_date:
             if mtime <= ims_date and not force:
-                # print "File "+path+" was not modified since "+str(ims_date)+" (current filedate is "+str(mtime)+")-> 304"
+                # print "File "+path+" was not modified since "+ustr(ims_date)+" (current filedate is "+ustr(mtime)+")-> 304"
                 self.reply_code = 304
                 return
-        try:
-            file = open(path, 'rb')
-        except IOError:
-            self.error(404)
-            print "404"
-            return
+
+        if not x_accel_redirect:
+            try:
+                file = open(path, 'rb')
+            except IOError:
+                self.error(404)
+                print "404"
+                return
 
         self.reply_headers['Last-Modified'] = build_http_date(mtime)
         self.reply_headers['Content-Length'] = file_length
         self.reply_headers['Content-Type'] = content_type
+        if x_accel_redirect:
+            self.reply_headers['X-Accel-Redirect'] = path
         if self.command == 'GET':
-            self.push(file_producer(file))
+            if x_accel_redirect:
+                self.done()
+            else:
+                self.push(file_producer(file))
         return
 
-    def sendAsBuffer(self, text, content_type, force=0):
+    def sendAsBuffer(self, text, content_type, force=0, allow_cross_origin=False):
         from StringIO import StringIO
         stringio = StringIO(text)
 
@@ -1196,22 +1227,35 @@ class http_request(object):
         self.reply_headers['Last-Modified'] = build_http_date(mtime)
         self.reply_headers['Content-Length'] = file_length
         self.reply_headers['Content-Type'] = content_type
+        if allow_cross_origin:
+            self.reply_headers['Access-Control-Allow-Origin'] = '*'
         if self.command == 'GET':
             self.push(file_producer(file))
         return
 
-    def setCookie(self, name, value, expire=None):
-        if expire is None:
-            s = name + '=' + value
-        else:
+    def setCookie(self, name, value, expire=None, path=None, http_only=True, secure=False):
+        
+        parts = [name + '=' + value]
+
+        if expire:
             datestr = time.strftime("%a, %d-%b-%Y %H:%M:%S GMT", time.gmtime(expire))
-            s = name + '=' + value + '; expires=' + datestr
-            # +'; path=PATH; domain=DOMAIN_NAME; secure'
+            parts.append('expires=' + datestr)
+            
+        if path:
+            parts.append("path=" + path)
+
+        if http_only:
+            parts.append("HttpOnly")
+            
+        if secure:
+            parts.append("Secure")
+            
+        cookie_str = "; ".join(parts)
 
         if 'Set-Cookie' not in self.reply_headers:
-            self.reply_headers['Set-Cookie'] = [s]
+            self.reply_headers['Set-Cookie'] = [cookie_str]
         else:
-            self.reply_headers['Set-Cookie'] += [s]
+            self.reply_headers['Set-Cookie'] += [cookie_str]
 
     def makeSelfLink(self, params):
         params2 = self.params.copy()
@@ -1241,12 +1285,17 @@ class http_request(object):
     # COMPAT: new param style like flask
     def make_legacy_params_dict(self):
         """convert new-style params to old style athana params dict"""
-        params = {}
+        self.params = params = {}
         for key, values in chain(self.form.iterlists(), self.args.iterlists()):
             value = ";".join(values)
-            params[key.encode("utf8")] = value.encode("utf8")
+            params[key] = value
+#             params[key.encode("utf8")] = value.encode("utf8")
         params.update(self.files.iteritems())
-        self.params = params
+
+    # COMPAT: flask-style properties
+    @property
+    def remote_addr(self):
+        return self.ip
 
     responses = {
         100: "Continue",
@@ -1540,8 +1589,8 @@ class http_server (asyncore.dispatcher):
 
     channel_class = http_channel
 
-    def __init__(self, ip, port, resolver=None):
-        self.ip = ip
+    def __init__(self, host, port, resolver=None):
+        self.ip = self.host = host
         self.port = port
         asyncore.dispatcher.__init__(self)
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -1549,24 +1598,12 @@ class http_server (asyncore.dispatcher):
         self.handlers = []
 
         self.set_reuse_addr()
-        self.bind((ip, port))
+        self.bind((host, port))
 
         # lower this to 5 if your OS complains
         self.listen(1024)
 
-        host, port = self.socket.getsockname()
-        if not ip:
-            logg.warn('Computing default hostname')
-        try:
-            ip = socket.gethostbyname(socket.gethostname())
-        except:
-            ip = "0.0.0.0"
-        try:
-            self.server_name = socket.gethostbyaddr(ip)[0]
-        except socket.error:
-            logg.warn('Cannot do reverse lookup')
-            self.server_name = ip       # use the IP address as the "hostname"
-
+        self.server_name = host
         self.server_port = port
         self.total_clients = counter()
         self.total_requests = counter()
@@ -1574,15 +1611,7 @@ class http_server (asyncore.dispatcher):
         self.bytes_out = counter()
         self.bytes_in = counter()
 
-        logg.info(
-            'Athana (%s) started'
-            '\n\n'
-            'The server is running! You can now direct your browser to:\n'
-            '\thttp://%s:%d/'
-            '\n',
-            ATHANA_VERSION,
-            self.server_name,
-            port)
+        logg.info('Athana HTTP Server started at http://%s:%d', self.server_name, port)
     # overriding asyncore.dispatcher methods
 
     # cheap inheritance, used to pass all other attribute
@@ -1846,7 +1875,7 @@ class default_handler:
                 request.reply_code = 304
                 request.done()
                 self.cache_counter.increment()
-                # print "File "+path+" was not modified since "+str(ims_date)+" (current filedate is "+str(mtime)+")"
+                # print "File "+path+" was not modified since "+ustr(ims_date)+" (current filedate is "+ustr(mtime)+")"
                 return
         try:
             file = self.filesystem.open(path, 'rb')
@@ -3282,7 +3311,7 @@ def _load_module(filename):
         path = path + "."
 
     module2 = (path + module)
-    logg.info("Loading module %s", module2)
+    logg.debug("Loading module %s", module2)
 
     m = importlib.import_module(module2)
     global_modules[filename] = m
@@ -3354,6 +3383,88 @@ class WebContext:
             return partial(call_and_close, self.catchall_handler.f)
 
         return None
+
+
+class WSGIHandler(object):
+
+    def __init__(self, app, context_name, path):
+        self.app = app
+        self.context_name = context_name
+        self.path = path
+
+    def start_response(self, status, response_headers, exc_info=None):
+        self.request.reply_headers.update(dict(response_headers))
+        self.status = status
+        return self.request.write
+
+    def make_environ(self):
+        from StringIO import StringIO
+        request = self.request
+        query = request.query[1:] if request.query is not None else ""
+        request_body = StringIO(request._data) if hasattr(request, "_data") else StringIO()
+
+        # SERVER_NAME is unknown, we can only use localhost...
+        environ = {
+            "REQUEST_METHOD": request.method,
+            "SCRIPT_NAME": self.context_name,
+            "PATH_INFO": wsgi_encoding_dance(self.path),
+            "QUERY_STRING": wsgi_encoding_dance(query),
+            "CONTENT_TYPE": request.request_headers.get("content-type", ""),
+            "CONTENT_LENGTH": request.request_headers.get("content-length", ""),
+            'REMOTE_ADDR': request.channel.addr[0],
+            'REMOTE_PORT': request.channel.addr[1],
+            "SERVER_NAME": "localhost",
+            "SERVER_PORT": request.channel.server.port,
+            "SERVER_PROTOCOL": "HTTP/" + request.version,
+            "wsgi.version": (1, 0),
+            "wsgi.url_scheme": "http",
+            "wsgi.input": request_body,
+            "wsgi.errors": sys.stderr,
+            "wsgi.multithread": multithreading_enabled,
+            "wsgi.multiprocess": False,
+            "wsgi.run_once": False
+        }
+
+        for key, value in request.request_headers.items():
+            key = 'HTTP_' + key.upper().replace('-', '_')
+            if key not in ('HTTP_CONTENT_TYPE', 'HTTP_CONTENT_LENGTH'):
+                environ[key] = value
+
+        return environ
+
+    def __call__(self, request):
+
+
+        self.request = request
+        environ = self.make_environ()
+
+        try:
+            content = self.app(environ, self.start_response)
+        except:
+            logg.exception("exception in WSGI app:")
+            request.error(500, "WSGI app failed")
+            return
+
+        for elem in content:
+            request.write(elem)
+
+        spl = self.status.split(" ", 1)
+        status_code = int(spl[0])
+        reason = spl[1] if len(spl) == 2 else None
+
+        request.setStatus(status_code)
+        request.done()
+
+
+class WSGIContext(object):
+
+    def __init__(self, name, app):
+        self.name = name
+        self.app = app
+
+    def match(self, path):
+        """we don't really "match" here, just for compatibility with Athana's WebContext"""
+        return WSGIHandler(self.app, self.name, path)
 
 
 class FileStore:
@@ -3536,7 +3647,7 @@ def read_ini_file(filename):
         elif key == "pattern":
             handler.addPattern(value)
         else:
-            raise AthanaException("Syntax error in line " + str(lineno) + " of file " + filename + ":\n" + line)
+            raise AthanaException("Syntax error in line " + ustr(lineno) + " of file " + filename + ":\n" + line)
     fi.close()
     return context
 
@@ -3567,7 +3678,7 @@ class AthanaFile:
         self.param_list = param_list
         self.filename = filename
         self.content_type = content_type
-        self.tempname = GLOBAL_TEMP_DIR + str(int(random.random() * 999999)) + os.path.splitext(filename)[1]
+        self.tempname = GLOBAL_TEMP_DIR + ustr(int(random.random() * 999999)) + os.path.splitext(filename)[1]
         self.filesize = 0
         self.fi = open(self.tempname, "wb")
 
@@ -3583,7 +3694,7 @@ class AthanaFile:
         del self.fieldname
         del self.param_list
         del self.fi
-        logg.info("closed file %s (%s)", self.filename, self.tempname)
+        logg.debug("closed file %s (%s)", self.filename, self.tempname)
 
     def __str__(self):
         return "file %s (%s), %d bytes, content-type: %s" % (self.filename, self.tempname, self.filesize, self.content_type)
@@ -3624,6 +3735,7 @@ class simple_input_collector:
         del self.data
         r = self.request
         del self.request
+        r._data = d
         pairs = []
         data = d.split('&')
         for e in data:
@@ -3647,6 +3759,7 @@ class upload_input_collector:
         self.boundary = boundary
         request.channel.set_terminator(length)
         self.data = ""
+        self._all_data = array('c', '')
         self.pos = 0
         self.start_marker = "--" + boundary + "\r\n"
         self.end_marker = "--" + boundary + "--"
@@ -3687,7 +3800,7 @@ class upload_input_collector:
         if "content-type" in headers:
             content_type = headers["content-type"]
             self.file = AthanaFile(fieldname, self.form, filename, content_type)
-            logg.info("opened file %s (%s)", filename, self.file.tempname)
+            logg.debug("opened file %s (%s)", filename, self.file.tempname)
             self.files.append(self.file)
             self.tempfiles.append(self.file.tempname)
         else:
@@ -3699,6 +3812,7 @@ class upload_input_collector:
     def collect_incoming_data(self, newdata):
         self.pos += len(newdata)
         self.data += newdata
+        self._all_data += array('c', newdata)
 
         while len(self.data) > 0:
             if self.data.startswith(self.end_marker):
@@ -3751,8 +3865,31 @@ class upload_input_collector:
         d = self.data
         del self.data
         r = self.request
+        r._data = self._all_data.tostring()
         del self.request
         self.handler.continue_request(r, self.form)
+
+
+# XXX: hack for better testing, do not use this in production...
+USE_PERSISTENT_SESSIONS = False
+
+
+try:
+    import redis_collections
+except ImportError:
+    pass
+else:
+    class RedisSession(redis_collections.Dict):
+
+        def __init__(self, key):
+            super(RedisSession, self).__init__(key=key)
+
+        @property
+        def id(self):
+            return self.key
+
+        def use(self):
+            pass
 
 
 class Session(dict):
@@ -3765,10 +3902,10 @@ class Session(dict):
 
 
 def exception_string():
-    s = "Exception " + str(sys.exc_info()[0])
+    s = "Exception " + ustr(sys.exc_info()[0])
     info = sys.exc_info()[1]
     if info:
-        s += " " + str(info)
+        s += " " + ustr(info)
     s += "\n"
     for l in traceback.extract_tb(sys.exc_info()[2]):
         s += "  File \"%s\", line %d, in %s\n" % (l[0], l[1], l[2])
@@ -3780,7 +3917,6 @@ MULTIPART = re.compile('multipart/form-data.*boundary=([^ ]*)', re.IGNORECASE)
 SESSION_PATTERN = re.compile("^;[a-z0-9]{6}-[a-z0-9]{6}-[a-z0-9]{6}$")
 SESSION_PATTERN2 = re.compile("[a-z0-9]{6}-[a-z0-9]{6}-[a-z0-9]{6}")
 
-use_cookies = 1
 SESSION_COOKIES_LIVE_SECS = 3600 * 2  # unused sessions may be valid for 2 hours
 
 
@@ -3814,21 +3950,17 @@ _request_finished_handlers = []
 app = None
 
 
-def _call_handler_func(handler, handler_func, request):
-    for handler in _request_started_handlers:
-        handler()
-    res = handler.callhandler(handler_func, request)
-    for handler in _request_finished_handlers:
-        handler()
-    return res
-
-
 def call_handler_func(handler, handler_func, request):
-    if app:
+
+    # WSGI passthrough. WSGIHandler takes care of the rest
+    if isinstance(handler_func, WSGIHandler):
+        handler_func(request)
+
+    elif app:
         with app.request_context(request, request.session):
-            _call_handler_func(handler, handler_func, request)
+            handler.callhandler(handler_func, request)
     else:
-        _call_handler_func(handler, handler_func, request)
+        handler.callhandler(handler_func, request)
 # /COMPAT
 
 
@@ -3865,9 +3997,9 @@ class AthanaHandler:
             self.continue_request(request, form=[])
 
     def create_session_id(self):
-        pid = abs((str(random.random())).__hash__())
-        now = abs((str(time.time())).__hash__())
-        rand = abs((str(random.random())).__hash__())
+        pid = abs((ustr(random.random())).__hash__())
+        now = abs((ustr(time.time())).__hash__())
+        rand = abs((ustr(random.random())).__hash__())
         x = "abcdefghijklmnopqrstuvwxyz0123456789"
         result = ""
         for a in range(0, 6):
@@ -3942,25 +4074,29 @@ class AthanaHandler:
         request.Cookies = cookies
 
         sessionid = None
-        if params is not None and SESSION_PATTERN.match(params):
-            sessionid = params
-            if sessionid[0] == ';':
-                sessionid = sessionid[1:]
-        elif use_cookies and "PSESSION" in cookies:
+                
+        if "PSESSION" in cookies:
             sessionid = cookies["PSESSION"]
 
-        if sessionid is not None:
-            if sessionid in self.sessions:
-                session = self.sessions[sessionid]
-                session.use()
+        if USE_PERSISTENT_SESSIONS:
+            if sessionid is None:
+                sessionid = self.create_session_id()
+                logg.debug("Creating new session %s", sessionid)
+
+            session = RedisSession(sessionid)
+        else:
+            if sessionid is not None:
+                if sessionid in self.sessions:
+                    session = self.sessions[sessionid]
+                    session.use()
+                else:
+                    session = Session(sessionid)
+                    self.sessions[sessionid] = session
             else:
+                sessionid = self.create_session_id()
+                logg.debug("Creating new session %s", sessionid)
                 session = Session(sessionid)
                 self.sessions[sessionid] = session
-        else:
-            sessionid = self.create_session_id()
-            logg.debug("Creating new session %s", sessionid)
-            session = Session(sessionid)
-            self.sessions[sessionid] = session
 
         request['Content-Type'] = 'text/html; encoding=utf-8; charset=utf-8'
 
@@ -3971,6 +4107,7 @@ class AthanaHandler:
             if path.startswith(c.name) and len(c.name) > maxlen:
                 context = c
                 maxlen = len(context.name)
+                
         if context is None:
             request.error(404)
             return
@@ -3989,23 +4126,23 @@ class AthanaHandler:
         request.query = query
         request.fragment = fragment
         # COMPAT: new param style like flask
-        form, files = filter_out_files(form)
-        try:
-            request.args = make_param_dict_utf8_values(args)
-            request.form = make_param_dict_utf8_values(form)
-        except UnicodeDecodeError:
-            return request.error(400)
+        # we don't need this for WSGI, args / form parsing is done by the WSGI app
+        if not isinstance(context, WSGIContext):
+            form, files = filter_out_files(form)
+            try:
+                request.args = make_param_dict_utf8_values(args)
+                request.form = make_param_dict_utf8_values(form)
+            except UnicodeDecodeError:
+                return request.error(400)
 
-        request.files = ImmutableMultiDict(files)
-        request.make_legacy_params_dict()
+            request.files = ImmutableMultiDict(files)
+            request.make_legacy_params_dict()
         # /COMPAT
         request.request = request
         request.ip = ip
         request.uri = request.uri.replace(context.name, "/")
         request._split_uri = None
 
-        if use_cookies:
-            request.setCookie('PSESSION', sessionid, time.time() + SESSION_COOKIES_LIVE_SECS)
 
         request.channel.current_request = None
 
@@ -4025,19 +4162,65 @@ class AthanaHandler:
                 self.queuelock.release()
             return
         else:
-            logg.info("Request %s matches no pattern (context: %s)", request.path, context.name)
+            logg.debug("Request %s matches no pattern (context: %s)", request.path, context.name)
             return request.error(404, "File %s not found" % request.path)
 
-    def callhandler(self, function, req):
-        request = req.request
+    def callhandler(self, handler_func, req):
+        for handler in _request_started_handlers:
+            handler(req)
+
         s = None
         try:
-            status = function(req)
-        except:
-            logg.error("Error in page: '%s %s', session '%s'",
-                       request.type, request.uri, request.session.id, exc_info=1)
-            s = "<pre>" + traceback.format_exc() + "</pre>"
-            return request.error(500, s)
+            status = handler_func(req)
+        except Exception as e:
+            # XXX: this shouldn't be in Athana, most of it is mediaTUM-specific...
+            # TODO: add some kind of exception handler system for Athana
+            import core.config as config
+            request = req.request
+            if config.get('host.type') != 'testing':
+                from utils.log import make_xid_and_errormsg_hash, extra_log_info_from_req
+                from core.translation import translate
+                from core import db
+
+                # Roll back if the error was caused by a database problem. 
+                # DB requests in this error handler will fail until rollback is called, so let's do it here.
+                db.session.rollback()
+                
+                xid, hashed_errormsg, hashed_tb = make_xid_and_errormsg_hash()
+
+                mail_to_address = config.get('email.support')
+                if not mail_to_address:
+                    logg.warn("no support mail address configured, consider setting it with `email.support`", trace=False)
+
+                log_extra = {"xid": xid,
+                             "error_hash": hashed_errormsg,
+                             "trace_hash": hashed_tb}
+                
+                log_extra["req"] = extra_log_info_from_req(req)
+
+                logg.exception(u"exception (xid=%s) while handling request %s %s, %s",
+                               xid, req.method, req.path, dict(req.args), extra=log_extra)
+
+                if mail_to_address:
+                    msg = translate("core_snipped_internal_server_error_with_mail", request=req).replace('${email}', mail_to_address)
+                else:
+                    msg = translate("core_snipped_internal_server_error_without_mail", request=req)
+                s = msg.replace('${XID}', xid)
+
+                req.reply_headers["X-XID"] = xid
+                    
+                return request.error(500, s.encode("utf8"), content_type='text/html; encoding=utf-8; charset=utf-8')
+
+            else:
+                logg.error("Error in page: '%s %s', session '%s'",
+                           request.type, request.fullpath, request.session.id, exc_info=1)
+                s = "<pre>" + traceback.format_exc() + "</pre>"
+
+                return request.error(500, s)
+
+        finally:
+            for handler in _request_finished_handlers:
+                handler(req)
 
 
 class fs:
@@ -4184,6 +4367,9 @@ def addContext(webpath, localpath):
     contexts += [c]
     return c
 
+def add_wsgi_context(webpath, wsgi_app):
+    c = WSGIContext(webpath, wsgi_app)
+    contexts.append(c)
 
 def setServiceUser(u):
     global service_user
@@ -4254,7 +4440,7 @@ def thread_status(req):
                 duration = time.time() - thread.lastrequest
                 if duration > 10:
                     req.write('<p style="color: red">')
-                req.write("Working on <tt>%s</tt><br />" % str(thread.uri))
+                req.write("Working on <tt>%s</tt><br />" % ustr(thread.uri))
                 req.write("Since: " + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(thread.lastrequest)))
                 req.write(" (%.2f seconds)" % duration)
                 if duration > 10:
@@ -4264,7 +4450,7 @@ def thread_status(req):
                     req.write('<p style="color: green">')
                 req.write("Idle.<br />")
                 if thread.lastrequest or thread.duration:
-                    req.write("Last request <tt>%s</tt><br/>" % str(thread.uri))
+                    req.write("Last request <tt>%s</tt><br/>" % ustr(thread.uri))
                     req.write("Processed at: " + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(thread.lastrequest)) + "<br />")
 
                     if thread.duration >= 10:
@@ -4314,6 +4500,9 @@ except ImportError:
     profiling = 0
 
 
+log_request_time = logg.isEnabledFor(logging.DEBUG)
+
+
 class AthanaThread:
 
     def __init__(self, server, number):
@@ -4337,20 +4526,28 @@ class AthanaThread:
                 function, req = server.queue.pop()
                 self.lastrequest = time.time()
                 self.status = "working"
-                self.uri = SESSION_PATTERN.sub("xxxxxx-xxxxxx-xxxxxx", req.uri)
+                self.uri = req.fullpath
                 server.queuelock.release()
                 if profiling:
                     self.prof = hotshot.Profile("/tmp/athana%d.prof" % self.number)
                     self.prof.start()
+                    
+                if log_request_time or profiling:  
                     timenow = time.time()
                 try:
                     call_handler_func(server, function, req)
                 except:
-                    logg.error("Error while processing request:", exc_info=1)
+                    try:
+                        logg.error("Error while processing request:", exc_info=1)
+                    except:
+                        print "FATAL ERROR: error in request, logging the exception failed!"
+
+                if log_request_time or profiling:
+                    duration = time.time() - timenow
+                    logg.debug("time for request %s: %.1fms", req.path, duration * 1000.)
 
                 if profiling:
                     global profiles
-                    duration = time.time() - timenow
                     self.prof.stop()
                     self.prof.close()
                     st = hotshot.stats.load("/tmp/athana%d.prof" % self.number)
@@ -4391,11 +4588,11 @@ ATHANA_STARTED = False
 _ATHANA_HANDLER = None
 
 
-def run(port=8081, z3950_port=None):
+def run(host="0.0.0.0", port=8081, z3950_port=None):
     global ATHANA_STARTED, _ATHANA_HANDLER
     check_date()
     ph = _ATHANA_HANDLER = AthanaHandler()
-    hs = http_server('', port)
+    hs = http_server(host, port)
     hs.install_handler(ph)
 
     if len(ftphandlers) > 0:
@@ -4428,10 +4625,42 @@ TODO:
     * temp directory in .cfg file
 """
 
+global _test_running, _test_thread
+_test_running = False
+_test_thread = None
 
-def setTempDir(path):
-    global GLOBAL_TEMP_DIR
-    GLOBAL_TEMP_DIR = path
+def threaded_testrun(port=8081):
+    ph = AthanaHandler()
+    hs = http_server('', port)
+    hs.install_handler(ph)
+
+    global _test_running, _test_thread
+    _test_running = True
+
+    def athana_test_loop():
+        global ATHANA_STARTED
+        ATHANA_STARTED = True
+
+        while _test_running:
+            asyncore.poll2(timeout=0.005)
+
+        logg.info("left testmode loop")
+        hs.close()
+
+    import threading
+    _test_thread = threading.Thread(target=athana_test_loop)
+    _test_thread.start()
+
+    while not ATHANA_STARTED:
+        time.sleep(0.001)
+
+    logg.info("athana testmode, use athana.stop_testrun()")
+
+
+def stop_testrun():
+    global _test_running
+    _test_running = False
+    _test_thread.join()
 
 
 # COMPAT: added functions

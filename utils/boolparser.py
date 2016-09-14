@@ -47,7 +47,7 @@ class AndCondition:
         self.b = b
 
     def __str__(self):
-        return "(" + str(self.a) + ") AND (" + str(self.b) + ")"
+        return "(" + ustr(self.a) + ") AND (" + ustr(self.b) + ")"
 
 
 class OrCondition:
@@ -57,7 +57,7 @@ class OrCondition:
         self.b = b
 
     def __str__(self):
-        return "(" + str(self.a) + ") OR (" + str(self.b) + ")"
+        return "(" + ustr(self.a) + ") OR (" + ustr(self.b) + ")"
 
 
 class NotCondition:
@@ -66,7 +66,7 @@ class NotCondition:
         self.a = a
 
     def __str__(self):
-        return "NOT (" + str(self.a) + ")"
+        return "NOT (" + ustr(self.a) + ")"
 
 
 class TrueCondition:
@@ -117,7 +117,7 @@ class BoolParser:
             m = pattern_string.search(s)
             if m:
                 clause = m.group(1)
-                s = s[0:m.start()] + "@s<" + str(len(l)) + ">s@" + s[m.end():]
+                s = s[0:m.start()] + "@s<" + ustr(len(l)) + ">s@" + s[m.end():]
                 l += [clause]
             else:
                 break
@@ -139,7 +139,7 @@ class BoolParser:
             m = pattern_bracket.search(s)
             if m:
                 clause = m.group()
-                s = s[0:m.start()] + "@c<" + str(len(l)) + ">c@" + s[m.end():]
+                s = s[0:m.start()] + "@c<" + ustr(len(l)) + ">c@" + s[m.end():]
                 l += [self.extendClauses(clause, l)]
             else:
                 break
@@ -212,12 +212,12 @@ class BoolParser:
 
 if __name__ == "__main__":
     b = BoolParser()
-    print str(b.parse("not true or not false"))
-    print str(b.parse("true and (true and (true and (true)))"))
-    print str(b.parse("((((true) and false) and true) and false) and true"))
-    print str(b.parse("true or (true or (true or (true)))"))
-    print str(b.parse("((((true) or false) or (true or false)) or (false or true)) or true"))
-    print str(b.parse("((true and false and ((false))))"))
+    print ustr(b.parse("not true or not false"))
+    print ustr(b.parse("true and (true and (true and (true)))"))
+    print ustr(b.parse("((((true) and false) and true) and false) and true"))
+    print ustr(b.parse("true or (true or (true or (true)))"))
+    print ustr(b.parse("((((true) or false) or (true or false)) or (false or true)) or true"))
+    print ustr(b.parse("((true and false and ((false))))"))
 
     class StringCondition:
 
@@ -238,5 +238,5 @@ if __name__ == "__main__":
             return StringCondition(s2)
     bb = StringParser()
 
-    print str(bb.parse("""test2=test(test)"""))
-    print str(bb.parse('(("bla (and) bla" and user "blupp" and (("bli bla blo"))))'))
+    print ustr(bb.parse("""test2=test(test)"""))
+    print ustr(bb.parse('(("bla (and) bla" and user "blupp" and (("bli bla blo"))))'))

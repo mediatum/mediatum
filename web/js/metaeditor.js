@@ -75,7 +75,7 @@ function questionDel(){
 function moveRight(left, right) {
     if (left.selectedIndex != -1) {
         for (i=left.length-1; i>=0; i--) {
-            if (left.options[i].selected && left.options[i].value.charAt(0)!='{') {
+            if (left.options[i].selected && left.options[i].value!='__special_rule__') {
                 mytext = left.options[i].text;
                 myvalue = left.options[i].value;
                 opt = new Option(mytext,myvalue);
@@ -89,7 +89,7 @@ function moveRight(left, right) {
 function moveLeft(left, right) {
     if (right.selectedIndex!=-1) {
         for (i=right.length-1; i>=0; i--) {
-            if (right.options[i].selected && right.options[i].value.charAt(0)!='{') {
+            if (right.options[i].selected && right.options[i].value!='__special_rule__') {
                mytext = right.options[i].text;
                myvalue = right.options[i].value;
                opt = new Option(mytext, myvalue);

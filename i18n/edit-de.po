@@ -15,7 +15,7 @@ msgid "edit_nodeinformation"
 msgstr "Node Informationen"
 
 msgid "edit_id"
-msgstr "Id"
+msgstr "ID"
 
 msgid "edit_objecttype"
 msgstr "Objekttyp"
@@ -25,6 +25,9 @@ msgstr "Metadatenschema"
 
 msgid "edit_objectname"
 msgstr "Name"
+
+msgid "edit_orderpos"
+msgstr "Sortier-Position"
 
 msgid "edit_error"
 msgstr "Fehler"
@@ -271,11 +274,11 @@ msgstr "Hinweis: Dieser Ordner enthält unpublizierte Objekte (Objekte die bishe
 msgid "unpublished_objects2"
 msgstr "Unpublizierte Objekte jetzt publizieren (Quick-Publisher)"
 
-msgid "user_faulty"
-msgstr "Inkonsistente Daten"
-
 msgid "user_trash"
 msgstr "Papierkorb"
+
+msgid "user_home"
+msgstr "Arbeitsverzeichnis"
 
 msgid "editor_overwrite"
 msgstr "überschreiben"

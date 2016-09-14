@@ -17,16 +17,16 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import core.tree as tree
+from contenttypes import Data
+from core import db
 from utils.utils import getFormatedString
 
-def getContent(req, ids):
-    if len(ids)>=0:
-        ids = ids[0]
+q = db.query
 
-    node = tree.getNode(ids)
+def getContent(req, ids):
+    node = q(Data).get(long(ids[0]))
 
     if hasattr(node, "show_node_big"):
-        return req.getTAL("web/edit/modules/view.html", {'content':getFormatedString(node.show_node_big(req))}, macro="view_node")
+        return req.getTAL("web/edit/modules/view.html", {'content': getFormatedString(node.show_node_big(req))}, macro="view_node")
     else:
         return req.getTAL("web/edit/modules/view.html", {}, macro="view_noview")

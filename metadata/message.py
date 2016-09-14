@@ -39,14 +39,14 @@ class m_message(Metatype):
     def getSearchHTML(self, context):
         return tal.getTAL("metadata/message.html", {"context": context}, macro="searchfield", language=context.language)
 
-    def getFormatedValue(self, field, node, language=None, html=1):
-        value = node.get(field.getName()).replace(";", "; ").split(";")
+    def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
+        value = node.get(metafield.getName()).replace(";", "; ").split(";")
         if len(value) < 2:
             value = ["", 0, "black", 0]
         if int(value[1]) == 0:  # suppress label
             return ("", "")
 
-        ret = '<span style="color: ' + value[2] + '">' + value[0] + '</span>'
+        ret = u'<span style="color: ' + value[2] + '">' + value[0] + '</span>'
 
         if int(value[3]) == 1:  # bold
             ret = '<b>' + ret + '</b>'

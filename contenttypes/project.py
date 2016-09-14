@@ -18,13 +18,17 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from contenttypes.directory import Directory
+from contenttypes.container import Directory
+from core.transition.postgres import check_type_arg_with_schema
 
 
+@check_type_arg_with_schema
 class Project(Directory):
 
-    def treeiconclass(node):
+    @classmethod
+    def treeiconclass(cls):
         return "project"
 
-    def getDefaultEditTab(node):
+    @classmethod
+    def get_default_edit_tab(cls):
         return "metadata"

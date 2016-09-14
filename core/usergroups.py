@@ -18,137 +18,62 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-#
-# needs sql table usergroup:
-#   - name varchar(50) (primary key, index, unique, not null)
-#   - description text
-#
+from warnings import warn
+from core import db, Node, UserGroup
 
-from utils.utils import Option
-import core.tree as tree
-import logging
 
-log = logging.getLogger("usertracing")
-
-groupoption = []
-groupoption += [Option("usergroup_option_1", "editor", "e", "img/edit_opt.png"),
-                Option("usergroup_option_2", "workfloweditor", "w", "img/edit_opt.png")]
-
-""" load all groups from db """
+q = db.query
 
 
 def loadGroupsFromDB():
-    groups = tree.getRoot("usergroups")
-    return groups.getChildren().sort_by_name()
-
-""" get group from db """
+    warn("use q(UserGroup).order_by(UserGroup.name)", DeprecationWarning)
+    return q(UserGroup).order_by(UserGroup.name)
 
 
-def getGroup(id):
-    if id.isdigit():
-        return tree.getNode(id)
+def getGroup(name_or_id):
+    try:
+        nid = long(name_or_id)
+    except ValueError:
+        warn("use q(UserGroup).filter_by(name=name)", DeprecationWarning)
+        return q(UserGroup).filter_by(name=name_or_id).scalar()
     else:
-        groups = tree.getRoot("usergroups")
-        return groups.getChild(id)
-
-""" create new group in db """
+        warn("use q(UserGroup).get(id)", DeprecationWarning)
+        return q(UserGroup).get(nid)
 
 
 def create_group(name, description="", option="", dynamic_users="", allow_dynamic=""):
-    groups = tree.getRoot("usergroups")
-    group = tree.Node(name=name, type="usergroup")
-    group.set("description", description)
-    group.set("opts", option)
-    if allow_dynamic:
-        group.set("allow_dynamic", allow_dynamic)
-    if dynamic_users:
-        group.set("dynamic_users", dynamic_users)
-    groups.addChild(group)
-    log.debug("created group %r (%r)" % (group.name, group.id))
-    return group
+    raise Exception("use UserGroup constructor")
 
 """ get number of users containing given group """
 
 
 def getNumUsers(grp):
+    raise Exception("use q(UserGroup).count()")
     return len(getGroup(grp).getChildren())
 
 
 def getMetadata(grp):
-    results = []
-    if grp.name == "":
-        return results
-    for mdt in tree.getRoot("metadatatypes").getChildren():
-        acc = mdt.getAccess("read")
-        if acc:
-            if grp.name in acc.split(","):
-                results.append(mdt.name)
-    return results
+    """Get Metadatatypes which can be read by the given group"""
+    raise Exception("obsolete")
 
 
 def saveGroupMetadata(group, metaList):
-    for meta in tree.getRoot("metadatatypes").getChildren():
-        acc = meta.getAccess("read")
-        if not acc:
-            accList = []
-        else:
-            accList = acc.split(",")
-        if meta.name in metaList:
-            if group not in accList:
-                if isinstance(accList, type([])):
-                    if group != "":
-                        accList.append(group)
-                        accList = filter(None, accList)
-                        meta.setAccess("read", ",".join(accList))
-                else:
-                    print "Type error, no list: ", type(accList)
-        else:
-            if group in accList:
-                accList.remove(group)
-                meta.setAccess("read", ",".join(accList))
-
-
-""" delete given group """
+    """Sets permitting access rules for given `group` on the metadatatypes in metaList.
+    Metadatatypes not mentioned in metaList will have the access right removed for `group`"""
+    raise Exception("obsolete")
 
 
 def deleteGroup(grp):
-    # remove users from group
-    grp = getGroup(grp)
-    log.debug("going to remove group %r (%r)" % (grp.name, grp.id))
-    children = grp.getChildren()
-    log.debug("going to remove %r children from group %r (%r)" % (len(children), grp.name, grp.id))
-    for user in children:
-        grp.removeChild(user)
-    child_ids = [c.id for c in children]
-    log.debug("id's of %r children removed from group %r (%r): %r" % (len(children), grp.name, grp.id, child_ids))
-    if grp.get("allow_dynamic") == "1":
-        msg = "group %r (%r) allowed dynamic users. Attribute 'dynamic_users': %r" % (grp.name, grp.id, grp.get('dynamic_users'))
-        log.debug(msg)
-    # remove group from groups
-    groups = tree.getRoot("usergroups")
-    groups.removeChild(grp)
-    log.debug("removed group %r (%r) from %r (%r)" % (grp.name, grp.id, groups.name, groups.id))
+    raise Exception("implement this...")
 
 
 def existGroup(grp):
-    groups = tree.getRoot("usergroups")
-    try:
-        return groups.getChild(grp)
-    except tree.NoSuchNodeError:
-        return 0
+    raise Exception("use q(UserGroup).filter_by(name=name)")
 
 
 def updateAclRule(oldname, newname):
-    from . import acl
-    newrule = acl.AccessRule(newname, "( group " + newname + " )", newname)
-    if (acl.existRule(oldname)):
-        acl.updateRule(newrule, oldname, newname, oldname)
-
-    else:
-        acl.addRule(newrule)
+    raise Exception("obsolete")
 
 
 def sortUserGroups():
-    groups = tree.getRoot("usergroups").getChildren().sort_by_fields("name")
-    for g in groups:
-        g.setOrderPos(groups.index(g))
+    raise Exception("use q(UserGroup).")

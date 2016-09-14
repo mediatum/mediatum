@@ -13,6 +13,9 @@ msgstr "Es wurden weder Datei noch DOI angegeben."
 msgid "doi_unknown"
 msgstr "Der angegebene DOI existiert nicht."
 
+msgid "doi_no_metadata_imported"
+msgstr "Für den angegebenen DOI konnten keine Metadaten importiert werden."
+
 msgid "doi_invalid"
 msgstr "Dies sieht nicht wie eine gültige DOI aus! (muss eine Zeichenkette enthalten, die mit 10. beginnt)"
 

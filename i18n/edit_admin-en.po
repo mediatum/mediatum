@@ -19,9 +19,6 @@ msgstr "Save attribute"
 msgid "edit_admin_noattribute"
 msgstr "No such attribute for this object set"
 
-msgid "edit_clearfromcache"
-msgstr "Clear node from cache"
-
 msgid "edit_admin_searchdata"
 msgstr "Search index data"
 
@@ -39,3 +36,12 @@ msgstr "Fulltext Search"
 
 msgid "edit_admin_nosearchdata"
 msgstr "- no search data -"
+
+msgid "edit_system_attrs"
+msgstr "System attributes"
+
+msgid "edit_notice_adding_system_attrs"
+msgstr If the attribute name starts with 'system.', a system attribute will be added.
+
+msgid "edit_admin_del_attribute"
+msgstr "Delete attribute"

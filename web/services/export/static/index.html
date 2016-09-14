@@ -33,28 +33,28 @@ A request on <code>/node/{id}/allchildren</code> will return a representation of
 The result lists can be manipulated using the following query parameters:
 
 <pre>
-<b class="blue">format:</b> specifies the response format. Currently supported: xml (default), json, csv, rss. 
-The default response format is xml. The xml data contains the id, name and type of the node, 
-the attributes and information about the files of the node. 
+<b class="blue">format:</b> specifies the response format. Currently supported: xml (default), json, csv, rss.
+The default response format is xml. The xml data contains the id, name and type of the node,
+the attributes and information about the files of the node.
 Only xml and json give the full data of the node. The csv response is limited to node id, name, type and the attributes.
 
-The csv format can be best viewed with openoffice calc with semicolon as separator and (") as string delimiter. 
-Excel will not detect utf-8 encoding if no byte order marker 'bom' is given. (see below) 
+The csv format can be best viewed with openoffice calc with semicolon as separator and (") as string delimiter.
+Excel will not detect utf-8 encoding if no byte order marker 'bom' is given. (see below)
 
 The rss item of the response can be configured in an export mask named <code>rss</code> for the metadatatype of the node.
-If no such export mask is present, the fields of a mask where the name starts with <code>nodesmall</code> of the metadatatype 
-of the node will be used to fill the rss item. 
+If no such export mask is present, the fields of a mask where the name starts with <code>nodesmall</code> of the metadatatype
+of the node will be used to fill the rss item.
 The language of this mask can be specified in the query parameter <code>'lang'</code>.
-The surrounding <code>&lt;item/&gt;</code> tag will be added by the handler. 
+The surrounding <code>&lt;item/&gt;</code> tag will be added by the handler.
 The handler will always add the node type as <code>&lt;category/&gt;</code> to the item.
 
-A compressed response may be requested by adding &gzip or &deflate to the query for all formats. 
+A compressed response may be requested by adding &gzip or &deflate to the query for all formats.
 This will reduce the payload and may be an option over slow network connections.
 The compression rates for gzip and deflate are virtually the same (as the formats will only differ
 by an 8 bytes prefix).
 
 The xml and json responses will contain information on the processing time of different steps of response generation.
-They also contain a shortlist of the result nodelist of the request containing only node id and type if the query 
+They also contain a shortlist of the result nodelist of the request containing only node id and type if the query
 <br>parameter 'add_shortlist' is added to the request.
 
 This shortlist is not affected by the query parameters <code>start</code> and <code>limit</code> (see below).
@@ -67,13 +67,13 @@ It has been introduced to reduce network traffic when the web service is used fo
 
 <b class="blue">i0, i1:</b> specify the slice of the shortlist to be returned like ''shortlist[i0:i1]'' in Python (xml and json only)
 
-<b class="blue">sortfield:</b> specifies a comma-separated attribute list for sorting the result. 
-Besides node attributes the following sortfields may be used: "node.id", "node.name", "node.type", "node.orderpos". 
+<b class="blue">sortfield:</b> specifies a comma-separated attribute list for sorting the result.
+Besides node attributes the following sortfields may be used: "node.id", "node.name", "node.type", "node.orderpos".
 The sorting is lexical and upward by default. Downward sorting for a sortfield can be chosen by prefixing it with a minus '-'.
 The default lexical sorting may be overridden with the parameter "sortformat". This uses the flags "s", "i", "f".
-When using 4 sortfields and the second should be read as integer, the fourth as float, the parameter "sortformat=sisf" 
+When using 4 sortfields and the second should be read as integer, the fourth as float, the parameter "sortformat=sisf"
 shoud be added to the query. "s" (for string) specifies lexical sorting.
-  
+
 Remark: When csv is used as format, the sortfield(s) are advanced to the first column(s) after the node id, type and name
 
 <b class="blue">q:</b> allows specifying a search below the given node to generate the result
@@ -82,7 +82,7 @@ Examples:
 /node/{id}/allchildren/?format=rss&q=year=2011   search in metadata attribute 'year' for value '2011'
 
 <b class="blue">acceptcached:</b> query parameter to indicate the age (measured in seconds) of a cached query that the client would accept as a result. The default value is 0.
-Remark: Only the unsliced and unsorted python data of the result may be cached. 
+Remark: Only the unsliced and unsorted python data of the result may be cached.
 The slicing, sorting  and rendering to output formats will - at least in this version - always be computed.
 
 <b class="blue">sep:</b> field separator used for csv format (default: semicolon)
@@ -120,24 +120,17 @@ Remark 3: For compatability with with the JavaScript export the json response wi
 <b class="blue">mask</b>: 'none', 'default' (-> 'none' being the deafult value)
 html markup of the default shortview mask content for each node if the query 'mask=default' is added to request.
 
-<b class="blue">maskcache</b>: 'none', 'deep', 'shallow' (-> 'deep' being the default value)
-For performance reasons the masks switched on by 'mask=default' will be cached. 
-This cache may be switched off with 'maskcache=none', or to a shallower, but not that performant shallow cache
-using 'maskcache=shallow'. These caches will be flushed when a mask is edited.
-The hit statistics of the deep mask cache may be found under
-/services/export/maskcachestatus.
-
 <b class="blue">attrspec</b>: 'none', 'all', 'default_mask' (-> 'default_mask' being the default value)
 A single node may have more than a hundred attributes. The output of all or none of them may be triggered
-with 'attrspec=all' or 'attrspec=none'. With 'attrspec=default_mask' only the attributes for the fields 
-of the default shortview mask of the nodes metadata type will be sent. 
+with 'attrspec=all' or 'attrspec=none'. With 'attrspec=default_mask' only the attributes for the fields
+of the default shortview mask of the nodes metadata type will be sent.
 
 <b class="blue">attrlist</b>:
-The set of attributes chosen with 'attrspec' may be enriched by the 
+The set of attributes chosen with 'attrspec' may be enriched by the
 (comma separated) attribute list in 'attrlist'.
 
-Remark: If fields are specified in 'mediatum_config' in the JavaScript export, 
-'attrspec=all' will be added to the query run by 'mediatum_load'. 
+Remark: If fields are specified in 'mediatum_config' in the JavaScript export,
+'attrspec=all' will be added to the query run by 'mediatum_load'.
 
 Some examples to help to illustrate this:
 

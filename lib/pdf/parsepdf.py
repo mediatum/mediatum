@@ -24,11 +24,15 @@ if __name__ == "__main__":
 import logging
 import random
 from PIL import Image, ImageDraw
-import logging
+from core import config
 import sys
 import os
+from subprocess import call, CalledProcessError
+import utils.process
 
-from subprocess import Popen, PIPE, call
+logging.basicConfig()
+
+logg = logging.getLogger(__name__)
 
 
 class PDFException(Exception):
@@ -40,11 +44,7 @@ class PDFException(Exception):
         return repr(self.value)
 
 
-class EncryptedException:
-    pass
-
-
-class PDFInfo:
+class PDFInfo(object):
 
     def __init__(self, data={}):
         self.data = data
@@ -89,16 +89,21 @@ def parsePDF(filename, tempdir):
         return PDFInfo(data)
 
     name = ".".join(filename.split(".")[:-1])
-    imgfile = tempdir + "tmp" + str(random.random()) + ".png"
+    imgfile = os.path.join(tempdir, "tmp" + str(random.random()) + ".png")
     thumb128 = name + ".thumb"
     thumb300 = name + ".thumb2"
     fulltext_from_pdftotext = name + ".pdftotext"  # output of pdf to text, possibly not normalized utf-8
     fulltext = name + ".txt"  # normalized output of uconv
     infoname = name + ".info"
 
-    # pdf info (xpdf)
-    p = Popen(("pdfinfo -meta %s" % filename).split(" "), stdout=PIPE)
-    info = parseInfo(p.communicate()[0].strip().split("\n"))
+    info_cmd = ["pdfinfo", "-meta", filename]
+    try:
+        out = utils.process.check_output(info_cmd)
+    except CalledProcessError:
+        logg.exception("failed to extract metadata from file %s")
+        info = PDFInfo()
+    else:
+        info = parseInfo(out.splitlines())
 
     # test for correct rights
     if info.isEncrypted():
@@ -110,32 +115,45 @@ def parsePDF(filename, tempdir):
     finfo.close()
 
     # convert first page to image (imagemagick + ghostview)
-    os.system("convert -alpha off -colorspace RGB -density 300 %s[0] -background white -thumbnail x300  %s" % (filename, imgfile))
-    makeThumbs(imgfile, thumb128, thumb300)
+    convert_cmd = ["convert", "-alpha", "off", "-colorspace", "RGB,", "-density", "300",
+                   filename + "[0]", "-background", "white", "-thumbnail", "x300", imgfile]
+    try:
+        utils.process.check_call(convert_cmd)
+    except CalledProcessError:
+        logg.exception("failed to create PDF thumbnail for file " + filename)
+    else:
+        makeThumbs(imgfile, thumb128, thumb300)
 
     # extract fulltext (xpdf)
-    os.system("pdftotext -enc UTF-8 %s %s" % (filename, fulltext_from_pdftotext))
+    fulltext_cmd = ["pdftotext", "-enc", "UTF-8", filename, fulltext_from_pdftotext]
+    try:
+        utils.process.check_call(fulltext_cmd)
+    except CalledProcessError:
+        logg.exception("failed to extract fulltext from file %s", filename)
 
     # normalization of fulltext (uconv)
-    os.system("uconv -x any-nfc -f UTF-8 -t UTF-8 --output %s %s" % (fulltext, fulltext_from_pdftotext))
+    fulltext_normalization_cmd = ["uconv", "-x", "any-nfc", "-f", "UTF-8", "-t", "UTF-8", "--output", fulltext, fulltext_from_pdftotext]
+    try:
+        utils.process.check_call(fulltext_normalization_cmd)
+    except CalledProcessError:
+        logg.exception("failed to normalize fulltext from file %s", filename)
 
     os.remove(fulltext_from_pdftotext)
     os.remove(imgfile)
 
 
-def parsePDF2(filename, tempdir):
+def parsePDFExternal(filepath, tempdir):
+    """Call parsePDF as external process"""
     from core.config import basedir
-    retcode = call([sys.executable, os.path.join(basedir, "lib/pdf/parsepdf.py"), filename, tempdir])
+    retcode = call([sys.executable, os.path.join(basedir, "lib/pdf/parsepdf.py"), filepath, tempdir])
     if retcode == 111:
         raise PDFException("error:document encrypted")
     elif retcode == 1:  # normal run
         pass
 
 
-"""  create preview image for given pdf """
-
-
 def makeThumbs(src, thumb128, thumb300):
+    """create preview image for given pdf """
     pic = Image.open(src)
     pic.load()
     pic = pic.convert("RGB")
@@ -165,7 +183,6 @@ def makeThumbs(src, thumb128, thumb300):
 
 
 if __name__ == "__main__":
-    import sys
     try:
         import signal
         signal.alarm(600)  # try processing the file for 10 minutes - then abort
@@ -174,5 +191,5 @@ if __name__ == "__main__":
     try:
         parsePDF(sys.argv[1], sys.argv[2])
 
-    except PDFException, e:
+    except PDFException as e:
         sys.exit(111)

@@ -18,14 +18,18 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from .workflow import WorkflowStep, registerStep
-import core.tree as tree
 from core.translation import t, lang, addLabels
 from schema.schema import getMetaType
+from schema.schema import Metafield
+from core import db
+from core.transition import current_user
+
+q = db.query
 
 
 def register():
-    tree.registerNodeClass("workflowstep-edit", WorkflowStep_EditMetadata)
-    registerStep("workflowstep-edit")
+    #tree.registerNodeClass("workflowstep-edit", WorkflowStep_EditMetadata)
+    registerStep("workflowstep_editmetadata")
     addLabels(WorkflowStep_EditMetadata.getLabels())
 
 
@@ -39,13 +43,14 @@ class WorkflowStep_EditMetadata(WorkflowStep):
         maskname = self.get("mask")
         mask = None
         if node.get('system.wflanguage') != '':  # use correct language
-            mask = getMetaType(node.type).getMask("%s.%s" % (node.get('system.wflanguage'), maskname))
+            mask = getMetaType(node.schema).getMask("%s.%s" % (node.get('system.wflanguage'), maskname))
 
         if not mask:
-            mask = getMetaType(node.type).getMask(maskname)
+            mask = getMetaType(node.schema).getMask(maskname)
 
         if "metaDataEditor" in req.params:
-            mask.updateNode([node], req)
+            mask.update_node(node, req, current_user)
+            db.session.commit()
             missing = mask.validate([node])
             if not missing or "gofalse" in req.params:
                 op = "gotrue" in req.params
@@ -60,7 +65,7 @@ class WorkflowStep_EditMetadata(WorkflowStep):
             maskcontent = req.getTAL("workflow/editmetadata.html", {}, macro="maskerror")
 
         return req.getTAL("workflow/editmetadata.html",
-                          {"name": self.getName(),
+                          {"name": self.name,
                            "error": error,
                            "key": key,
                            "mask": maskcontent,
@@ -71,7 +76,7 @@ class WorkflowStep_EditMetadata(WorkflowStep):
                           macro="workflow_metadateneditor")
 
     def metaFields(self, lang=None):
-        field = tree.Node("mask", "metafield")
+        field = Metafield("mask")
         field.set("label", t(lang, "admin_wfstep_editor_mask"))
         field.set("type", "text")
         return [field]

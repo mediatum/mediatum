@@ -31,9 +31,6 @@ response_code_dict = BaseHTTPServer.BaseHTTPRequestHandler.responses
 
 LOCALES = ["en_US.UTF-8", "english", "german"]
 
-#import core.tree as tree
-#collections_id = tree.getRoot('collections').id
-
 try:
     locale.setlocale(locale.LC_ALL, LOCALES[0])  # for thousands separator
 except:
@@ -45,6 +42,9 @@ except:
     pass
 
 from . import handlers
+
+logg = logging.getLogger(__name__)
+
 
 SERVICES_URL_HAS_HANDLER = 1
 SERVICES_URL_SIMPLE_REWRITE = 2
@@ -59,8 +59,6 @@ urls = [
 
     ["GET", "/static/(?P<filepath>.*)$", handlers.serve_file, None, SERVICES_URL_HAS_HANDLER, None],
 ]
-
-DEBUG = True
 
 
 def request_handler(req):
@@ -118,7 +116,7 @@ def request_handler(req):
         pass
 
     s = "services %s '%s' (%s): %s for %s bytes for service request (%s, %s, %s) - (user-agent: %s)" % (req.ip,
-                                                                                                        str(response_code),
+                                                                                                        ustr(response_code),
                                                                                                         response_code_description,
                                                                                                         handle_duration,
                                                                                                         locale.format(
@@ -130,7 +128,7 @@ def request_handler(req):
                                                                                                         req.params,
                                                                                                         useragent)
 
-    if DEBUG and matched and 'timetable' in d:
+    if logg.isEnabledFor(logging.DEBUG) and matched and 'timetable' in d:
         timesum = 0
         s += '\n' + ('-' * 80)
         s += "\n| timetable for request (%s, %s, %s)" % (req.command, req.fullpath, handle_params)
@@ -140,7 +138,7 @@ def request_handler(req):
         s += "\n| sum of execution times: %.3f sec.: %s bytes returned" % (timesum, locale.format("%d", bytes_sent, 1))
         s += '\n' + ('-' * 80)
 
-    logging.getLogger('services').info(s)
+    logg.info(s)
     sys.stdout.flush()
 
     if not matched:

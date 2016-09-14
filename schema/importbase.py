@@ -21,7 +21,7 @@
 import logging
 from . import schema
 
-logg = logging.getLogger("backend")
+logg = logging.getLogger(__name__)
 
 
 class ImportException(Exception):
@@ -32,7 +32,7 @@ class NoMappingFound(ImportException):
 
     def __init__(self, msg="Error", typ=""):
         if typ:
-            msg = "{} (type '{})'".format(msg, typ)
+            msg = u"{} (type '{})'".format(msg, typ)
         ImportException.__init__(self, msg)
         self.typ = typ
 
@@ -52,7 +52,7 @@ def get_all_import_mappings(mapping_type):
         if len(metatype_names) == 1:
             types[typ] = metatype_names[0]
         else:
-            logg.error("ambiguous mapping for bibtex type '%s': %s - choosing last one" % (typ, metatype_names[-1]))
+            logg.error("ambiguous mapping for bibtex type '%s': %s - choosing last one", typ, metatype_names[-1])
             ambiguous_types[typ] = metatype_names
             types[typ] = metatype_names[-1]
     return types, ambiguous_types
@@ -70,7 +70,7 @@ def get_import_mapping(mapping_type, mapped_type):
     if not mappings:
         return None
     elif len(mappings) > 1:
-        logg.error("ambiguous mapping for %s type '%s': %s - choosing last one" % (mapping_type, mapped_type, mappings[-1]))
+        logg.error("ambiguous mapping for %s type '%s': %s - choosing last one", mapping_type, mapped_type, mappings[-1])
         return mappings[-1]
     else:
         return mappings[0]

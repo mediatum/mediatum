@@ -26,17 +26,19 @@ import codecs
 import logging
 
 from mediatumtal import tal
-import core.tree as tree
 import core.config as config
-import core.users as users
 
 import utils.date as date
 
 from utils.utils import esc, u, u2, esc2, utf82iso, iso2utf8
 from utils.date import parse_date, format_date
-from core.acl import AccessData
+from core.users import get_guest_user
+
+logg = logging.getLogger(__name__)
 
 tagpattern = re.compile(r'<[^>]*?>')
+
+default_context = {} # filled by init()
 
 
 def no_html(s):
@@ -70,11 +72,11 @@ def getAccessRights(node):
         l_date = parse_date(node.get('updatetime'))
     except:
         l_date = date.now()
-    guestAccess = AccessData(user=users.getUser('Gast'))
+    guest_user = get_guest_user()
     if date.now() < l_date:
         return "embargoedAccess"
-    elif guestAccess.hasAccess(node, 'read'):
-        if guestAccess.hasAccess(node, 'data'):
+    elif node.has_read_access(user=guest_user):
+        if node.has_data_access(user=guest_user):
             return "openAccess"
         else:
             return "restrictedAccess"
@@ -87,15 +89,13 @@ def load_iso_639_2_b_names():
     try:
         abs_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
         abs_path = os.path.join(abs_dir, filename)
-        f = codecs.open(abs_path, 'rb', 'utf8')
-        text = f.read()
-        f.close()
+        with codecs.open(abs_path, 'rb', encoding='utf8') as f:
+            text = f.read()
         lines = text.splitlines()
-        msg = "exportutils read file 'ISO-639-2_utf-8.txt': %d lines" % len(lines)
-        logging.getLogger("backend").info(msg)
+        logg.debug("exportutils read file 'ISO-639-2_utf-8.txt': %d lines", len(lines))
     except:
         lines = []
-        logging.getLogger("backend").warning("exportutils could not load file 'ISO-639-2_utf-8.txt'")
+        logg.warning("exportutils could not load file 'ISO-639-2_utf-8.txt'")
     return lines
 
 
@@ -158,8 +158,7 @@ def normLanguage_iso_639_2_b(s, emptyval=''):
                 return s1
             elif line.find(s3) > 0:
                 return line.split("|")[0]
-        msg = 'normLanguage_iso_639_2_b(...) -> language was not matched, returning emtyval="%s" s="%s", s1="%s"' % (emptyval, s, s1)
-        logging.getLogger("backend").error(msg)
+        logg.error('normLanguage_iso_639_2_b(...) -> language was not matched, returning emtyval="%s" s="%s", s1="%s"', emptyval, s, s1)
         return emptyval
 
 
@@ -223,8 +222,7 @@ def normLanguage_iso_639_2_t(s, emptyval=''):
                     return _b
             elif line.find(s3) > 0:
                 return line.split("|")[0]
-        msg = 'normLanguage_iso_639_2_t(...) -> language was not matched, returning emtyval="%s" s="%s", s1="%s"' % (emptyval, s, s1)
-        logging.getLogger("backend").error(msg)
+        logg.error('normLanguage_iso_639_2_t(...) -> language was not matched, returning emtyval="%s" s="%s", s1="%s"', emptyval, s, s1)
         return emptyval
 
 
@@ -232,10 +230,10 @@ def runTALSnippet(s, context, mask=None):
     if s.find('tal:') < 0:
         return s
 
-    header = '''<?xml version="1.0" encoding="UTF-8" ?>'''
-    xmlns = '''<talnamespaces xmlns:tal="http://xml.zope.org/namespaces/tal" xmlns:metal="http://xml.zope.org/namespaces/metal">'''
-    footer = '''</talnamespaces>'''
-    cutter = "----cut-TAL-result-here----\n"
+    header = u'''<?xml version="1.0" encoding="UTF-8" ?>'''
+    xmlns = u'''<talnamespaces xmlns:tal="http://xml.zope.org/namespaces/tal" xmlns:metal="http://xml.zope.org/namespaces/metal">'''
+    footer = u'''</talnamespaces>'''
+    cutter = u"----cut-TAL-result-here----\n"
 
     if mask:
         exportheader = mask.get('exportheader')
@@ -246,34 +244,27 @@ def runTALSnippet(s, context, mask=None):
         footer += mask.get('exportfooter')
 
     to_be_processed = header + xmlns + cutter + s + cutter + footer
-    try:  # normally only encoding errors
-        wr_result = tal.getTALstr(to_be_processed, context, mode='xml')
-    except:  # try with u2 method
-        try:
-            wr_result = tal.getTALstr(u2(to_be_processed), context, mode='xml')
-        except:
-            wr_result = tal.getTALstr(u2(to_be_processed), context)
-        #wr_result = tal.getTALstr(u2(to_be_processed), context, mode='xml')
+    wr_result = tal.getTALstr(to_be_processed, context, mode='xml')
 
-    return wr_result[wr_result.find(cutter) + len(cutter):wr_result.rfind(cutter)]
+    return wr_result[wr_result.find(cutter)+len(cutter):wr_result.rfind(cutter)]
 
-default_context = {}
-default_context['tree'] = tree
-default_context['esc'] = esc  # may be needed for example in escaping rss item elements
-default_context['esc2'] = esc2  # may be needed for example in escaping rss item elements
-default_context['no_html'] = no_html
-default_context['u'] = u
-default_context['utf82iso'] = utf82iso
-default_context['iso2utf8'] = iso2utf8
-default_context['prss'] = prss  # protect rss
-default_context['parse_date'] = parse_date
-default_context['format_date'] = format_date
-default_context['cdata'] = cdata
-default_context['get_udate'] = get_udate
-default_context['getAccessRights'] = getAccessRights
-default_context['config_get'] = config.get
-default_context['normLanguage_iso_639_2_b'] = normLanguage_iso_639_2_b
-default_context['normLanguage_iso_639_2_t'] = normLanguage_iso_639_2_t
+
+def init():
+    default_context['esc'] = esc  # may be needed for example in escaping rss item elements
+    default_context['esc2'] = esc2  # may be needed for example in escaping rss item elements
+    default_context['no_html'] = no_html
+    default_context['u'] = u
+    default_context['utf82iso'] = utf82iso
+    default_context['iso2utf8'] = iso2utf8
+    default_context['prss'] = prss # protect rss
+    default_context['parse_date'] = parse_date
+    default_context['format_date'] = format_date
+    default_context['cdata'] = cdata
+    default_context['get_udate'] = get_udate
+    default_context['getAccessRights'] = getAccessRights
+    default_context['config_get'] = config.get
+    default_context['normLanguage_iso_639_2_b'] = normLanguage_iso_639_2_b
+    default_context['normLanguage_iso_639_2_t'] = normLanguage_iso_639_2_t
 
 
 def registerDefaultContextEntry(key, entry):
@@ -281,7 +272,7 @@ def registerDefaultContextEntry(key, entry):
 
 
 def handleCommand(cmd, var, s, node, attrnode=None, field_value="", options=[], mask=None):
-    from web.frontend.streams import build_filelist, get_transfer_url
+    from web.frontend.filehelpers import build_filelist, get_transfer_url
     if cmd == 'cmd:getTAL':
         context = default_context.copy()
         context['node'] = node
@@ -290,3 +281,5 @@ def handleCommand(cmd, var, s, node, attrnode=None, field_value="", options=[], 
         result = runTALSnippet(s, context, mask)
 
         return result.replace("[" + var + "]", "")
+
+

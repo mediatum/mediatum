@@ -23,27 +23,30 @@ from pprint import pformat
 import os.path
 import sys
 
-from utils.log import addLogger
 from core import config, translation
 from utils.compat import iteritems
 
-addLogger("plugins")
-logg = logging.getLogger("plugins")
+
+logg = logging.getLogger(__name__)
 
 
 plugins = {}
 
 
 def import_plugin_module(name, location):
-    location = os.path.realpath(location)
-    containing_dir_path = os.path.realpath(os.path.dirname(os.path.join(config.basedir, location)))
+    location = location.rstrip(os.sep)
+
+    if not os.path.isabs(location):
+        location = os.path.join(config.basedir, location)
+
+    containing_dir_path = os.path.realpath(os.path.dirname(location))
+
     if containing_dir_path not in sys.path:
         sys.path.append(containing_dir_path)
         logg.info("added to pythonpath: %s", containing_dir_path)
 
     try:
         m = importlib.import_module(name)
-        logg.info("plugin: imported from pythonpath: %s", name)
         return m
     except ImportError:
         logg.error("Exception while loading plugin '%s' from '%s', plugin path '%s'", name, containing_dir_path, location, exc_info=1)
@@ -52,19 +55,22 @@ def import_plugin_module(name, location):
 
 
 def init_plugins():
-    logg.info("looking for plugins, sys path is %s", pformat(sys.path))
     for name, location in config.getsubset("plugins").items():
-        logg.info("Initializing plugin named '%s' from '%s'", name, location)
-        m = import_plugin_module(name, location.strip(os.sep))
+        m = import_plugin_module(name, location)
         if m is None:
             logg.warn("couldn't load plugin %s!", name)
-
         else:
+            logg.info("Initializing plugin '%s' from '%s'", name, location or "pythonpath")
             plugins[name] = m
 
-        if hasattr(m, 'pofiles'):  # add po file paths
+        # plugins can define an init() method in their package __init__
+        if hasattr(m, "init") and callable(m.init):
+            m.init()
+
+        # add po file paths
+        if hasattr(m, "pofiles"):  
             if len(m.pofiles) > 0:
-                print "  load translation files"
+                logg.debug("loading translation files for plugin %s", name)
                 for fp in m.pofiles:
                     translation.addPoFilepath([fp])
 
@@ -76,7 +82,7 @@ def find_plugin_with_theme(theme_name):
     """
     for plugin_name, m in iteritems(plugins):
         plugin_path = os.path.dirname(m.__file__)
-        logg.info("looking for theme %s in plugin %s", theme_name, plugin_name)
+        logg.debug("looking for theme %s in plugin %s", theme_name, plugin_name)
         theme_path = os.path.join(plugin_path, "themes", theme_name)
         if os.path.exists(theme_path):
             return plugin_path

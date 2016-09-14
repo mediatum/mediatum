@@ -18,83 +18,106 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import core.users as users
-import core.tree as tree
-import web.edit
-
-from core.acl import AccessData
-from core.translation import t, lang
-from web.edit.edit_common import showdir 
-from web.edit.edit import nodeIsChildOfNode
-from utils.utils import isDirectory
+from web.edit.edit_common import showdir
 from core.users import getHomeDir
+from core.transition import current_user
 import logging
+from contenttypes import Collections, Container
+from core import Node
+from core import db
 
-log = logging.getLogger("editor")
+logg = logging.getLogger(__name__)
+q = db.query
 
 def getInformation():
     return {"version":"1.1", "system":1}
 
 def getContent(req, ids):
-    user = users.getUserFromRequest(req)
-    publishdir = tree.getNode(ids[0])
-    explicit = tree.getNodesByAttribute("writeaccess", user.getName())
+    user = current_user
+    publishdir = q(Node).get(ids[0])
     ret = ""
 
     actionerror = []
     changes = []
     if "dopublish" in req.params.keys():
-        access = AccessData(req)
 
         objlist = []
         for key in req.params.keys():
             if key.isdigit():
                 objlist.append(key)
-                src = tree.getNode(req.params.get("id"))
+                src = q(Node).get(req.params.get("id"))
 
         for obj_id in objlist:
             faultylist = []
-            obj = tree.getNode(obj_id)
-            for mask in obj.getType().getMasks(type="edit"): # check required fields
-                if access.hasReadAccess(mask) and mask.getName()==obj.get("edit.lastmask"):
+            remove_from_src = False
+            obj = q(Node).get(obj_id)
+            metadatatype = obj.metadatatype
+            mask_validated = False
+            for mask in metadatatype.getMasks(type="edit"): # check required fields
+                if mask.has_read_access() and mask.getName() == obj.system_attrs.get("edit.lastmask"):
                     for f in mask.validateNodelist([obj]):
                         faultylist.append(f)
+                    mask_validated = True
 
             if len(faultylist)>0: # object faulty
                 actionerror.append(obj_id)
                 continue
 
+            if not mask_validated:
+                msg = "user %r going to publish node %r without having validated edit.lastmask" % (user, obj)
+                logg.warning(msg)
+                # should we validate standard edit mask here?
+
             for dest_id in req.params.get("destination", "").split(","):
-                if dest_id=="": # no destination given
+                if not dest_id: # no destination given
                     continue
 
-                dest = tree.getNode(dest_id)
-                if dest != src and access.hasReadAccess(src) and access.hasWriteAccess(dest) and access.hasWriteAccess(obj) and isDirectory(dest):
-                        if not nodeIsChildOfNode(dest,obj):
-                            dest.addChild(obj)
-                            src.removeChild(obj)
+                dest = q(Node).get(dest_id)
 
-                            if dest.id not in changes:
-                                changes.append(dest.id)
-                            if src.id not in changes:
-                                changes.append(src.id)
-                            log.info("%s published %s (%r, %r) from src %s (%r, %r) to dest %s (%r, %r)" % (
-                                      user.getName(),
-                                      obj.id, obj.name, obj.type,
-                                      src.id, src.name, src.type,
-                                      dest.id, dest.name, dest.type,))
-                        else:
-                            actionerror.append(obj.id)
-                            log.error("Error in publishing of node %r: Destination node %r is child of node." % (obj_id, dest.id))
+                # XXX: this error handling should be revised, I think...
 
-                if not access.hasReadAccess(src):
-                    log.error("Error in publishing of node %r: source position %r has no read access." % (obj.id, src.id))
-                if not access.hasWriteAccess(dest):
-                    log.error("Error in publishing of node %r: destination %r has no write access." % (obj.id, dest.id))
-                if not access.hasWriteAccess(obj):
-                    log.error("Error in publishing of node %r: object has no write access." % obj.id)
-                if not isDirectory(dest):
-                    log.error("Error in publishing of node %r: destination %r is not a directory." % (obj.id, dest.id))
+                error = False
+                if not src.has_read_access():
+                    logg.error("Error in publishing of node %r: source position %r has no read access.", obj.id, src.id)
+                    error = True
+                if not dest.has_write_access():
+                    logg.error("Error in publishing of node %r: destination %r has no write access.", obj.id, dest.id)
+                    error = True
+                if not obj.has_write_access():
+                    logg.error("Error in publishing of node %r: object has no write access.", obj.id)
+                    error = True
+                if not isinstance(dest, Container):
+                    logg.error("Error in publishing of node %r: destination %r is not a directory.", obj.id, dest.id)
+                    error = True
+                if dest == src:
+                    logg.error("Error in publishing of node %r: destination %r is not a directory.", obj.id, dest.id)
+                    error = True
+
+                if not error:
+                    if not obj.is_descendant_of(dest):
+                        dest.children.append(obj)
+                        remove_from_src = True
+
+                        if dest.id not in changes:
+                            changes.append(dest.id)
+                        if src.id not in changes:
+                            changes.append(src.id)
+                        logg.info("%s published %s (%s, %s) from src %s (%s, %s) to dest %s (%s, %s)", user.login_name,
+                                  obj.id, obj.name, obj.type,
+                                  src.id, src.name, src.type,
+                                  dest.id, dest.name, dest.type)
+                    else:
+                        actionerror.append(obj.id)
+                        logg.error("Error in publishing of node %s: Destination node %s is child of node.", obj_id, dest.id)
+
+            if remove_from_src:
+                try:
+                    src.children.remove(obj)
+                    db.session.commit()
+                except:
+                    logg.exception("Error in publishing of node %s: Database error", obj.id)
+                    actionerror.append(obj.id)
+                    
 
         v = {}
         v["id"] = publishdir.id
@@ -102,22 +125,19 @@ def getContent(req, ids):
         ret += req.getTAL("web/edit/modules/publish.html", v, macro="reload")
 
     # build normal window
-    stddir = ""
+    stddir = ""  # preset value for destination ids
     stdname = ""
-    l = []
-    for n in explicit:
-        if str(getHomeDir(user).id)!=str(n):
-            l.append(n)
 
-    if len(l)==1:
-        stddir = str(l[0])+","
-        stdname = "- " + tree.getNode(l[0]).getName()
+    v = {"id": publishdir.id,
+         "stddir": stddir,
+         "stdname": stdname,
+         "showdir": showdir(req,
+                            publishdir,
+                            publishwarn=None,
+                            markunpublished=1),
+         "basedir": q(Collections).one(),
+         "script": "var currentitem = '%s';\nvar currentfolder = '%s'" % (publishdir.id, publishdir.id), "idstr": ids,
+         "faultylist": actionerror}
 
-    #v = {"id":publishdir.id,"stddir":stddir, "stdname":stdname, "showdir":showdir(req, publishdir, publishwarn=0, markunpublished=1, nodes=[])}
-    v = {"id":publishdir.id,"stddir":stddir, "stdname":stdname, "showdir":showdir(req, publishdir, publishwarn=None, markunpublished=1, nodes=[])}
-    v["basedir"] = tree.getRoot('collections')
-    v["script"] = "var currentitem = '%s';\nvar currentfolder = '%s'" %(publishdir.id, publishdir.id)
-    v["idstr"] = ids
-    v["faultylist"] = actionerror
     ret += req.getTAL("web/edit/modules/publish.html", v, macro="publish_form")
     return ret

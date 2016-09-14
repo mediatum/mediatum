@@ -1,12 +1,12 @@
-<tal:block metal:define-macro="workflow_start" tal:define="multilang python:{'True':1, 'False':0}[str(len(languages)>1)]">
+<tal:block metal:define-macro="workflow_start" tal:define="multilang python:1 if len(languages)>1 else 0">
     <tal:block tal:content="raw js"/>
-    <script tal:condition="python:redirect!=''" tal:content="raw python:'window.location.href=\''+redirect+'\''"/>
+    <script tal:condition="python:redirect!=''" tal:content="raw python:u'window.location.href=\'{}\''.format(redirect)"/>
     <div style="position:relative;overflow:hidden;">
 
         <div tal:content="raw starttext">TEXT</div>
+        <form action="/mask" method="post" style="text-align:center;">
+            <div style="width:45%;float:left;">
 
-        <div style="width:45%;float:left;">
-            <form action="/mask" method="post" style="text-align:center;">
                 <input type="hidden" name="id" tal:attributes="value python:id"/>
                 
                 <input tal:condition="python:len(types)==1" tal:attributes="value python:types[0][1]" type="hidden" name="selected_schema"/>
@@ -25,7 +25,7 @@
                     <h2 i18n:translate="workflow_start_chooselang">TEXT</h2>
                     <br/>
                         <tal:block tal:repeat="language languages">
-                            <input type="radio" name="workflow_language" tal:attributes="value language;checked python:{'True':'checked','False':None}[str(currentlang==language)]"/> <span i18n:translate="" tal:content="language"/><br/>
+                            <input type="radio" name="workflow_language" tal:attributes="value language;checked python:'checked' if currentlang==language else None"/> <span i18n:translate="" tal:content="language"/><br/>
                         </tal:block>
                     <br/>
                 </div>
@@ -36,11 +36,9 @@
                     <tal:block tal:condition="multilang" i18n:translate="workflow_start_create_m"/>
                     <tal:block tal:condition="not: multilang " i18n:translate="workflow_start_create"/>
                 </button>
-            </form>
-        </div>
-        
-        <div style="width:45%;float:left;padding-left:10px;border-left:1px solid silver;" tal:condition="python:allowcontinue=='1'">
-            <form action="/mask" method="post" style="text-align:center;">
+            </div>
+
+            <div style="width:45%;float:left;padding-left:10px;border-left:1px solid silver;" tal:condition="python:allowcontinue=='1'">
                 <p tal:condition="python:message!=''" tal:content="message" i18n:translate="" class="error">TEXT</p>
                 <p style="font-weight:bold">
                     <tal:block tal:condition="multilang" i18n:translate="workflow_start_continue_header_m">TEXT</tal:block>
@@ -59,9 +57,9 @@
                     <button tal:condition="multilang" type="submit" name="workflow_start_auth" i18n:translate="workflow_start_continue_m">TEXT</button>
                     <button tal:condition="not: multilang " type="submit" name="workflow_start_auth" i18n:translate="workflow_start_continue">TEXT</button>
                 </p>
-            </form>
-        </div>
-        <div style="clear:left"> </div>
+            </div>
+            <div style="clear:left"> </div>
+        </form>
     </div>
     <p>&nbsp;</p>
 </tal:block>

@@ -1,7 +1,15 @@
 mediatum.cfg
+test_mediatum.cfg
+mysql_migrate.cfg
+mediatumipython.cfg
+manage.cfg
 plugins/
 *.pyc
 .settings/
 sitemap*xml
 tmp/
 web/root/robots.txt
+migration/mysql_migration.load
+.venv
+py
+docs/build

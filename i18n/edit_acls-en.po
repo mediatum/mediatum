@@ -40,3 +40,14 @@ msgstr "Changes on user level"
 msgid "edit_acl_special_rule"
 msgstr "[special user rule]"
 
+msgid "internal:default: "
+msgstr "Intern: "
+
+msgid "edit_acls_filter_input_label"
+msgstr "Filter list entries: "
+
+msgid "edit_acls_filter_input_tooltip"
+msgstr "enter sub string for filtering (case insensitive, regular expressions)"
+
+msgid "edit_acls_id_count_error"
+msgstr "Error: multiple ids in request"

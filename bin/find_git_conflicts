@@ -1,2 +1,2 @@
-#!/bin/bash
+#!/usr/bin/env sh
 grep -r --include='*.py' --include='*.html' --include='*.po' --include='*.xml' --include='*.json' --include='*.yml' --include='*.coffee' --include='*.js' --include='*.j2' -e '^=\{6,\}$' -e '[><]\{6,\} ' "$@"

@@ -24,6 +24,9 @@ msgstr "Neuen Workflow anlegen"
 msgid "admin_wf_name"
 msgstr "Name"
 
+msgid "admin_wf_display_name_attribute"
+msgstr "Anzeigename-Attribut"
+
 msgid "admin_wf_acl_title"
 msgstr "Workflow besitzt ACL-Regel"
 

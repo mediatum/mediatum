@@ -31,13 +31,13 @@
                     }
                     window.close();
                 }
-                        
+
                 function getValue(value)
                 {
                     if (window.opener && !window.opener.closed){
                         doc = window.opener.document;
                         arr = doc.getElementById(value);
-                        
+
                         if (arr){
                             arr = arr.value.split(";");
                             selObj = document.getElementById('values');
@@ -82,7 +82,7 @@
                             }
                         }
                     }
-                    
+
                     for (i=0; i<old_id.length; i++){
                         found = false;
                         for(j=0; j<x.length; j++){
@@ -95,8 +95,8 @@
                             old_id.splice(i,1);
                         }
                     }
-                    
-                    
+
+
                     for (i=0; i<selObj.length; i++) {
                         if (selObj.options[i].selected){
                             c++;
@@ -119,7 +119,7 @@
                         alert(txt);
                     }
                 }
-                
+
                 function clearSelection()
                 {
                     selObj = document.getElementById('values');
@@ -131,7 +131,7 @@
             </script>
             <link href="/css/popup.css" rel="stylesheet" type="text/css">
         </head>
-        <body class="form" tal:attributes="onload python:'getValue(\''+fieldname+'\')'">
+        <body class="form" tal:attributes="onload python:u'getValue(\'{}\')'.format(fieldname)">
             <form>
                 <table class="maintable">
                     <tr class="headline">
@@ -156,12 +156,12 @@
                     </tr>
                     <tr class="bottom">
                         <td>
-                            <button tal:attributes="onclick python:'pick(\''+fieldname+'\')'" i18n:translate="popup_ok" type="button">TEXT</button> <button i18n:translate="popup_cancel" type="button" onclick="window.close()">TEXT</button>
+                            <button tal:attributes="onclick python:u'pick(\'{}\')'.format(fieldname)" i18n:translate="popup_ok" type="button">TEXT</button> <button i18n:translate="popup_cancel" type="button" onclick="window.close()">TEXT</button>
                         </td>
                     </tr>
-                    
+
                 </table>
-                
+
             </form>
         </body>
     </html>
@@ -219,24 +219,24 @@
 
                     <tal:block tal:repeat="file files">
                         <tr tal:define="cssclass python:files.index(file)%2 and 'norm' or 'silver'">
-                            
+
                             <tal:block tal:condition="python:file['type']=='dir' or file['type']=='back'">
                                 <td tal:attributes="class cssclass" align="center">
-                                    <a tal:attributes="href python:'/attachmentbrowser?id='+str(id)+'&path='+file['req_path']">
-                                        <img tal:attributes="src python:'/img/'+file['icon']" border="0"/>
+                                    <a tal:attributes="href python:u'/attachmentbrowser?id={}&path={}'.format(id, file['req_path'])">
+                                        <img tal:attributes="src python:u'/img/{}'.format(file['icon'])" border="0"/>
                                     </a>
                                 </td>
-                                <td valign="top" tal:attributes="class cssclass"><a tal:attributes="href python:'/attachmentbrowser?id='+str(id)+'&path='+file['req_path']" tal:content="python:file['name']"/></td>
+                                <td valign="top" tal:attributes="class cssclass"><a tal:attributes="href python:u'/attachmentbrowser?id={}&path={}'.format(id, file['req_path'])" tal:content="python:file['name']"/></td>
                                 <td tal:attributes="class cssclass">&nbsp;</td>
                             </tal:block>
 
                             <tal:block tal:condition="python:file['type']!='dir' and file['type']!='back'">
                                 <td tal:attributes="class cssclass" align="center">
-                                    <a tal:attributes="href python:'/attfile/'+str(id)+'/'+file['path']" href="" target="_blank">
-                                        <img tal:attributes="src python:'/img/'+file['icon']" border="0">
+                                    <a tal:attributes="href python:u'/attfile/{}/{}'.format(id, file['path'])" href="" target="_blank">
+                                        <img tal:attributes="src python:u'/img/{}'.format(file['icon'])" border="0">
                                     </a>
                                 </td>
-                                <td tal:attributes="class cssclass"><a tal:attributes="href python:'attfile/'+str(id)+'/'+file['path']" target="_blank" tal:content="python:file['name']"/></td>
+                                <td tal:attributes="class cssclass"><a tal:attributes="href python:u'attfile/{}/{}'.format(id, file['path'])" target="_blank" tal:content="python:file['name']"/></td>
 
                                 <td tal:attributes="class cssclass" align="right"><small tal:content="python:file['size']"/>&nbsp;</td>
                             </tal:block>
@@ -244,7 +244,7 @@
                         </tr>
                     </tal:block>
                     <tr>
-                        <th i18n:translate="att_browser_files" colspan="2" align="left"><span i18n:name="c" tal:content="python:str(len(files))">TEXT</span></th>
+                        <th i18n:translate="att_browser_files" colspan="2" align="left"><span i18n:name="c" tal:content="python:unicode(len(files))">TEXT</span></th>
                         <th tal:content="sum_size" align="right"/>
                     </tr>
                 </table>

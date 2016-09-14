@@ -19,15 +19,19 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import logging
 import re
-import core.tree as tree
 
 from core.metatype import Metatype
 from utils.utils import esc, desc, modify_tex
 from utils.date import parse_date, format_date
 from schema.schema import getMetadataType
 import export.exportutils as exportutils
+from core import Node
+from core import db
 
+logg = logging.getLogger(__name__)
+q = db.query
 
 class MappingReplacement():
 
@@ -54,13 +58,13 @@ class MappingExtStdAttr(MappingReplacement):  # replace all 'att:X' types
             if var == "att:field":
                 s = s.replace("[" + var + "]", attrnode.getName())
             elif var == "att:id":
-                s = s.replace("[" + var + "]", str(node.id))
+                s = s.replace("[" + var + "]", unicode(node.id))
             elif var == "att:nodename":
-                s = s.replace("[" + var + "]", str(node.getName()))
+                s = s.replace("[" + var + "]", node.name)
             elif var == "att:filename":
-                s = s.replace("[" + var + "]", str(node.getName()))
+                s = s.replace("[" + var + "]", node.name)
             else:
-                s = s.replace("[" + var + "]", str(node.get(var.split(":")[-1])))
+                s = s.replace("[" + var + "]", ustr(node.get(var.split(":")[-1])))
         return s
 
 
@@ -76,7 +80,7 @@ class m_mappingfield(Metatype):
 
         ns = ""
         if field.get("fieldtype") == "mapping":
-            field = tree.getNode(field.get("mappingfield"))
+            field = q(Node).get(field.get("mappingfield"))
             ns = field.getMapping().getNamespace()
             if ns != "":
                 ns += ":"
@@ -159,13 +163,13 @@ class m_mappingfield(Metatype):
 
             elif var.startswith("value|nodename"):
                 try:
-                    s2 = tree.getNode(node.get(attrnode.getName())).getName()
+                    s2 = q(Node).get(node.get(attrnode.getName())).getName()
                 except:
                     s2 = node.getName()
                 s = s.replace("[" + var + "]", s2)
 
             elif var == "value":
-                v = getMetadataType(attrnode.getFieldtype()).getFormatedValue(attrnode, node)[1]
+                v = getMetadataType(attrnode.getFieldtype()).getFormattedValue(attrnode, None, None, node, "")[1]
                 if v == "":
                     v = node.get(attrnode.getName())
                 if v == "" and default != "":
@@ -177,7 +181,7 @@ class m_mappingfield(Metatype):
             elif var == "ns":
                 ns = ""
                 for mapping in attrnode.get("exportmapping").split(";"):
-                    n = tree.getNode(mapping)
+                    n = q(Node).get(mapping)
                     if n.getNamespace() != "" and n.getNamespaceUrl() != "":
                         ns += 'xmlns:' + n.getNamespace() + '="' + n.getNamespaceUrl() + '" '
                 s = s.replace("[" + var + "]", ns)
@@ -206,26 +210,41 @@ class m_mappingfield(Metatype):
         ret = ""
         node = nodes[0]
 
-        mask = fields[0].getParents()[0]
+        mask = fields[0].parents.first()
         separator = ""
 
         if mask.getMappingHeader() != "":
             ret += mask.getMappingHeader() + "\r\n"
 
+        field_vals = []
+
         for field in fields:
+            attribute_nid = field.get("attribute", None)
+            if attribute_nid is None:
+                continue
+
             try:
-                attrnode = tree.getNode(field.get("attribute"))
-            except:
+                attribute_nid = int(attribute_nid)
+            except ValueError:
+                logg.warn("ignoring field # %s with invalid attribute id: '%r'", field.id, attribute_nid)
+                continue
+
+            attrnode = q(Node).get(attribute_nid)
+            if attrnode is None:
                 continue
 
             if field.get("fieldtype") == "mapping":  # mapping to mapping definition
-                mapping = tree.getNode(mask.get("exportmapping").split(";")[0])
+                exportmapping_id = mask.get("exportmapping").split(";")[0]
+                mapping = q(Node).get(exportmapping_id)
+                if mapping is None:
+                    logg.warn("exportmapping %s for mask %s not found", exportmapping_id, mask.id)
+                    return u""
                 separator = mapping.get("separator")
 
                 ns = mapping.getNamespace()
                 if ns != "":
                     ns += ":"
-                fld = tree.getNode(field.get("mappingfield"))
+                fld = q(Node).get(field.get("mappingfield"))
                 format = fld.getExportFormat()
                 field_value = ns + fld.getName()
                 default = fld.getDefault().strip()
@@ -234,10 +253,12 @@ class m_mappingfield(Metatype):
                 field_value = ""
                 default = ""
 
-            ret += self.replaceVars(format, node, attrnode, field_value, options=mask.getExportOptions(), mask=mask, default=default)
+            field_vals.append(self.replaceVars(format, node, attrnode, field_value, options=mask.getExportOptions(), mask=mask, default=default))
 
-            if not mask.hasExportOption("l") and list(fields).index(field) < len(fields) - 1:
-                ret += separator
+        if not mask.hasExportOption("l"):
+            ret += separator.join(field_vals)
+        else:
+            ret += u"".join(field_vals)
 
         if mask.getMappingFooter() != "":
             ret += "\r\n" + mask.getMappingFooter()

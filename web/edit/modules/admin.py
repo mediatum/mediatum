@@ -18,72 +18,88 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import core.tree as tree
-import core.acl as acl
-import core.users as users
+
 import logging
 from utils.utils import formatTechAttrs, dec_entry_log
 from utils.date import format_date, parse_date
-from core.tree import remove_from_nodecaches
 from core.transition import httpstatus
+from core import Node, db
+from core.transition import current_user
+from collections import OrderedDict
+from utils.compat import iteritems
+
+q = db.query
+logg = logging.getLogger(__name__)
+
 
 @dec_entry_log
 def getContent(req, ids):
-    user = users.getUserFromRequest(req)
-    node = tree.getNode(ids[0])
-    access = acl.AccessData(req)
-    if not access.hasWriteAccess(node) or "admin" in users.getHideMenusForUser(user):
+    node = q(Node).get(ids[0])
+    if not node.has_write_access() or "admin" in current_user.hidden_edit_functions:
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
-    if req.params.get('action') == 'getsearchdata':
-        req.writeTAL("web/edit/modules/admin.html", {'searchdata': node.search('searchcontent=%s' % node.id), 'node': node}, macro="searchdata")
-        return ''
-
     if req.params.get("type", "") == "addattr" and req.params.get("new_name", "") != "" and req.params.get("new_value", "") != "":
-        node.set(req.params.get("new_name", ""), req.params.get("new_value", ""))
-        logging.getLogger('editor').info("new attribute %s for node %s added" % (req.params.get("new_name", ""), node.id))
+        attrname = req.form.get("new_name")
+        attrvalue = req.form.get("new_value")
+        if attrname.startswith("system."):
+            if current_user.is_admin:
+                node.system_attrs[attrname[7:]] = attrvalue
+            else:
+            # non-admin user may not add / change system attributes, silently ignore the request.
+            # XXX: an error msg would be better
+                logg.warn("denied writing a system attribute because user is not an admin user, node=%s attrname=%s current_user=%s",
+                          node.id, attrname, current_user.id)
+                return httpstatus.HTTP_FORBIDDEN
+
+        node.set(attrname, attrvalue)
+        db.session.commit()
+        logg.info("new attribute %s for node %s added", req.params.get("new_name", ""), node.id)
 
     for key in req.params.keys():
         # update localread value of current node
         if key.startswith("del_localread"):
             node.resetLocalRead()
-            logging.getLogger('editor').info("localread attribute of node %s updated" % node.id)
+            logg.info("localread attribute of node %s updated", node.id)
             break
 
-        # set current node 'dirty' (reindex for search)
-        if key.startswith("set_dirty"):
-            node.setDirty()
-            logging.getLogger('editor').info("set node %s dirty" % node.id)
+        # removing attributes only allowed for admin user
 
-            if node.isContainer():
-                for child_node in node.getChildren():
-                    child_node.setDirty()
-                    logging.getLogger('editor').info("set node %s dirty" % child_node.id)
-            break
-
-        # delete node from cache (e.g. after changes in db)
-        if key.startswith("del_cache"):
-            for n in node.getAllChildren():
-                remove_from_nodecaches(n)
-            break
-
-        # remove  attribute
+        # remove attribute
         if key.startswith("attr_"):
-            node.removeAttribute(key[5:-2])
-            logging.getLogger('editor').info("attribute %s of node %s removed" % (key[5:-2], node.id))
+            if not current_user.is_admin:
+                return httpstatus.HTTP_FORBIDDEN
+
+            del node.attrs[key[5:-2]]
+            db.session.commit()
+            logg.info("attribute %s of node %s removed", key[5:-2], node.id)
             break
 
-    fields = node.getType().getMetaFields()
+        # remove system attribute
+        if key.startswith("system_attr_"):
+            if not current_user.is_admin:
+                return httpstatus.HTTP_FORBIDDEN
+
+            attrname = key[12:-2]
+            del node.system_attrs[attrname]
+            db.session.commit()
+            logg.info("system attribute %s of node %s removed", attrname, node.id)
+            break
+
+    metadatatype = node.metadatatype
     fieldnames = []
-    for field in fields:
-        fieldnames += [field.name]
 
-    attrs = node.items()
+    if metadatatype:
+        fields = metadatatype.getMetaFields()
+        for field in fields:
+            fieldnames += [field.name]
+    else:
+        fields = []
 
-    metafields = {}
-    technfields = {}
-    obsoletefields = {}
+    metafields = OrderedDict()
+    technfields = OrderedDict()
+    obsoletefields = OrderedDict()
+    system_attrs = []
 
     tattr = {}
     try:
@@ -92,22 +108,40 @@ def getContent(req, ids):
         pass
     tattr = formatTechAttrs(tattr)
 
-    for key, value in attrs:
-        if key in fieldnames:
-            metafields[key] = formatdate(value, getFormat(fields, key))
-        elif key in tattr.keys():
-            technfields[key] = formatdate(value)
-        else:
-            obsoletefields[key] = value
+    for key, value in sorted(iteritems(node.attrs), key=lambda t: t[0].lower()):
+        if value or current_user.is_admin:
+            # display all values for admins, even if they are "empty" (= a false value)
+            if key in fieldnames:
+                metafields[key] = formatdate(value, getFormat(fields, key))
+            elif key in tattr.keys():
+                technfields[key] = formatdate(value)
+            else:
+                obsoletefields[key] = value
+
+    for key, value in sorted(iteritems(node.system_attrs), key=lambda t: t[0].lower()):
+        system_attrs.append((key, value))
 
     # remove all technical attributes
     if req.params.get("type", "") == "technical":
         for key in technfields:
-            node.removeAttribute(key)
+            del node.attrs[key]
         technfields = {}
-        logging.getLogger('editor').info("technical attributes of node %s removed" % node.id)
+        logg.info("technical attributes of node %s removed", node.id)
 
-    return req.getTAL("web/edit/modules/admin.html", {"id": req.params.get("id", "0"), "tab": req.params.get("tab", ""), "node": node, "obsoletefields": obsoletefields, "metafields": metafields, "fields": fields, "technfields": technfields, "tattr": tattr, "fd": formatdate, "gf": getFormat, "adminuser": user.isAdmin(), "canedit": access.hasWriteAccess(node)}, macro="edit_admin_file")
+    return req.getTAL("web/edit/modules/admin.html", {"id": req.params.get("id", "0"),
+                                                      "tab": req.params.get("tab", ""),
+                                                      "node": node,
+                                                      "obsoletefields": obsoletefields,
+                                                      "metafields": metafields,
+                                                      "system_attrs": system_attrs,
+                                                      "fields": fields,
+                                                      "technfields": technfields,
+                                                      "tattr": tattr,
+                                                      "fd": formatdate,
+                                                      "gf": getFormat,
+                                                      "user_is_admin": current_user.is_admin,
+                                                      "canedit": node.has_write_access()},
+                      macro="edit_admin_file")
 
 
 def getFormat(fields, name):
@@ -117,7 +151,9 @@ def getFormat(fields, name):
 
 
 def formatdate(value, f='%d.%m.%Y %H:%M:%S'):
+    if not isinstance(value, unicode):
+        value = unicode(value)
     try:
         return format_date(parse_date(value, "%Y-%m-%dT%H:%M:%S"), format=f)
-    except:
+    except ValueError:
         return value

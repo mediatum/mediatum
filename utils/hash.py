@@ -18,9 +18,14 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import logging
 import os
-import core.tree as tree
 import hashlib
+from core import Node
+from core import db
+
+q = db.query
+logg = logging.getLogger(__name__)
 
 
 def calcChecksum(filename, method):
@@ -39,12 +44,12 @@ def calcChecksum(filename, method):
 
 def calcChecksumFromMetadata(node):
     h = hashlib.sha1()
-    h.update(node.id)
+    h.update(str(node.id))  # h.update requires string or buffer as argument
     h.update(node.getName())
 
     def attributesToString(node):
         string = ""
-        for item in node.items():
+        for item in node.attrs.items():
             string += item[0] + item[1]
         return string
 
@@ -60,15 +65,16 @@ def getChecksum(nodeId, method="SHA-1", filepath=""):
         if filepath != "" and os.path.exists(filepath):
             return calcChecksum(filepath, method)
         else:
-            node = tree.getNode(nodeId)
-            for f in node.getFiles():
-                if f.getType() == node.getOriginalTypeName():
-                    return calcChecksum(f.retrieveFile(), method)
-            return calcChecksumFromMetadata(node)
+            node = q(Node).get(nodeId)
+            if isinstance(node, Node):
+                for f in node.files:
+                    if f.filetype == node.get_original_filetype():
+                        return calcChecksum(f.abspath, method)
+                return calcChecksumFromMetadata(node)
+            else:
+                logg.error("Node not present in mediaTUM: %s", nodeId)
 
-    except tree.NoSuchNodeError as e:
-        print "Node not present in mediaTUM:", e
-    except IOError as e:
-        print "File doesn't exist on filesystem", e
+    except IOError:
+        logg.exception("File loading failed")
     except Exception:
-        print "Error occured in hash.getChecksum"
+        logg.exception("exception in getChecksum")

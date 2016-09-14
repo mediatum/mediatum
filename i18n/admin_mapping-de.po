@@ -93,6 +93,9 @@ msgstr "Importieren"
 msgid "admin_mapping_exportall_title"
 msgstr "Alle Mappings exportieren"
 
+msgid "admin_mapping_export_title"
+msgstr "Mapping exportieren"
+
 msgid "admin_mappingfield_existing"
 msgstr "Vorhandene Mappingfelder des Mappings"
 

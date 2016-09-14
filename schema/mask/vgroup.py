@@ -17,10 +17,12 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-from schema.schema import getMetadataType, getAllMetaFields, VIEW_DATA_ONLY
-from core.tree import getNode
+from schema.schema import getMetadataType, getAllMetaFields, VIEW_DATA_ONLY, Maskitem
 from core.translation import lang
 from core.metatype import Metatype
+from core import Node, db
+
+q = db.query
 
 
 class m_vgroup(Metatype):
@@ -65,7 +67,7 @@ class m_vgroup(Metatype):
         i = 0
 
         if not sub:
-            ret += '<div id="' + item.id + '" class="row" onmouseover="pick(this)" onmouseout="unpick(this)" onclick="select(this)">'
+            ret += '<div id="' + unicode(item.id) + '" class="row" onmouseover="pick(this)" onmouseout="unpick(this)" onclick="select(this)">'
         ret += '<fieldset style="cursor:hand">'
 
         if item.getLabel() != "":
@@ -82,20 +84,20 @@ class m_vgroup(Metatype):
         ret += '</fieldset>'
 
         if not sub:
-            ret += '<div align="right" id="' + item.id + \
+            ret += '<div align="right" id="' + unicode(item.id) + \
                 '_sub" style="display:none"><small style="color:silver">(' + (item.get("type")) + ')</small>'
             if index > 0:
                 ret += '<input type="image" src="/img/uparrow.png" name="up_' + \
-                    str(item.id) + '" i18n:attributes="title mask_edit_up_title"/>'
+                    unicode(item.id) + '" i18n:attributes="title mask_edit_up_title"/>'
             else:
                 ret += '&nbsp;&nbsp;&nbsp;'
             if index < len(parent.getChildren()) - 1:
                 ret += '<input type="image" src="/img/downarrow.png" name="down_' + \
-                    str(item.id) + '" i18n:attributes="title mask_edit_down_title"/>'
+                    unicode(item.id) + '" i18n:attributes="title mask_edit_down_title"/>'
             else:
                 ret += '&nbsp;&nbsp;&nbsp;'
-            ret += ' <input type="image" src="/img/edit.png" name="edit_' + str(
-                item.id) + '" i18n:attributes="title mask_edit_edit_row"/> <input type="image" src="/img/delete.png" name="delete_' + str(
+            ret += ' <input type="image" src="/img/edit.png" name="edit_' + unicode(
+                item.id) + '" i18n:attributes="title mask_edit_edit_row"/> <input type="image" src="/img/delete.png" name="delete_' + unicode(
                 item.id) + '" i18n:attributes="title mask_edit_delete_row" onClick="return questionDel()"/></div>'
             ret += '</div>'
 
@@ -109,7 +111,7 @@ class m_vgroup(Metatype):
         else:
             pid = item.getParents()[0].id
 
-        if str(req.params.get("edit")) == str("None"):
+        if req.params.get("edit") == "None":
             item = Maskitem(name="", type="maskitem")
             item.set("type", "vgroup")
 
@@ -123,7 +125,7 @@ class m_vgroup(Metatype):
         if req.params.get("sel_id", "") != "":
             i = 0
             for id in req.params.get("sel_id")[:-1].split(";"):
-                f = getMetadataType(getNode(id).get("type"))
+                f = getMetadataType(q(Node).get(id).get("type"))
                 try:
                     details += f.getMetaHTML(item, i, False, itemlist=req.params.get("sel_id")
                                              [:-1].split(";"), ptype="vgroup", fieldlist=fieldlist)
@@ -134,14 +136,14 @@ class m_vgroup(Metatype):
         metadatatype = req.params.get("metadatatype")
 
         if req.params.get("op", "") == "new":
-            pidnode = getNode(req.params.get("pid"))
+            pidnode = q(Node).get(req.params.get("pid"))
             if pidnode.get("type") in ("vgroup", "hgroup"):
-                for field in pidnode.getAllChildren():
+                for field in pidnode.all_children:
                     if field.getType().getName() == "maskitem" and field.id != pidnode.id:
                         fields.append(field)
             else:
                 for m in metadatatype.getMasks():
-                    if str(m.id) == str(req.params.get("pid")):
+                    if ustr(m.id) == ustr(req.params.get("pid")):
                         for field in m.getChildren():
                             fields.append(field)
         fields.sort(lambda x, y: cmp(x.getOrderPos(), y.getOrderPos()))
@@ -155,7 +157,8 @@ class m_vgroup(Metatype):
         v["selid"] = req.params.get("sel_id", "")
         return req.getTAL("schema/mask/vgroup.html", v, macro="metaeditor")
 
-    def isContainer(self):
+    @classmethod
+    def isContainer(cls):
         return True
 
     def getName(self):

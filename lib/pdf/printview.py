@@ -18,25 +18,24 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
-from PIL import Image, ImageDraw
-import core.config as config
 import re
+from PIL import Image
+import core.config as config
+import tempfile
+from multiprocessing import Process
 
 try:
     from reportlab.platypus import Paragraph, BaseDocTemplate, SimpleDocTemplate, FrameBreak, Table, TableStyle, Image as PdfImage, Frame, PageBreak, PageTemplate
-    from reportlab.lib import colors
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
     from reportlab.lib.units import cm
     from reportlab.rl_config import defaultPageSize
-    from reportlab.pdfgen import canvas
-    from utils.utils import esc
     reportlab = 1
 except:
     reportlab = 0
 
-from utils.utils import u, esc
 from core.translation import t
-
+from core.webconfig import node_url
+from utils.utils import u, esc
 
 class PrintPreview:
 
@@ -161,15 +160,14 @@ class PrintPreview:
             else:
                 return [frameFollow]
 
-    def build(self, style=1):
-        template = SimpleDocTemplate(config.get("paths.tempdir", "") + "print.pdf", showBoundary=0)
+
+    def build(self, printfile, style=1):
+        template = SimpleDocTemplate(os.path.join(config.get("paths.tempdir"), printfile[1]), showBoundary=0)
         tFirst = PageTemplate(id='First', frames=self.getStyle(1, style), onPage=self.myPages, pagesize=defaultPageSize)
         tNext = PageTemplate(id='Later', frames=self.getStyle(2, style), onPage=self.myPages, pagesize=defaultPageSize)
-
         template.addPageTemplates([tFirst, tNext])
         template.allowSplitting = 1
         BaseDocTemplate.build(template, self.data)
-        return template.canv._doc.GetPDFData(template.canv)
 
     def addData(self, item):
         self.data.append(item)
@@ -226,8 +224,7 @@ class PrintPreview:
             for path in pathlist:
 
                 for item in path:
-                    p += '<link href="http://' + self.host + '/node?id=' + item.id + \
-                        '&amp;dir=' + item.id + '\">' + item.getName() + '</link>'
+                    p += u'<link href="http://{}{}">{}</link>'.format(self.host, node_url(item.id), item.getName())
 
                     if path.index(item) < len(path) - 1:
                         p += ' > '
@@ -290,4 +287,23 @@ def getPrintView(lang, imagepath, metadata, paths, style=1, children=[], collect
         pv.addData(Paragraph(t(pv.language, "print_view_list"), pv.bp))
         pv.addChildren(children)
 
-    return pv.build(style)
+    printfile = tempfile.mkstemp(suffix='.pdf', prefix='print_', dir=config.get("paths.tempdir"))
+    p = Process(target=pv.build, args=(printfile, style,))
+    p.start()
+    p.join(timeout=30)
+    if p.is_alive():
+        p.terminate()
+
+    try:
+        fh = open(printfile[1], 'r')
+        print_template = fh.read()
+        fh.close
+    except IOError:
+        print_template = "";
+
+    try:
+        os.remove(printfile[1])
+    except IOError:
+        pass
+
+    return print_template

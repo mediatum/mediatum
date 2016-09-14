@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
  mediatum - a multimedia content repository
 
@@ -19,36 +20,16 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
+import re
 from mediatumtal import tal
 from core.transition import httpstatus
 import core.config as config
-import re
 from utils.utils import esc
-from utils.log import logException
-from utils.pathutils import isDescendantOf
 from utils.utils import modify_tex
 from core.metatype import Metatype, charmap
-from export.exportutils import runTALSnippet
-
-system_languages = [lang.strip() for lang in config.get("i18n.languages").split(",") if lang.strip()]
 
 
-def getMaskitemForField(field, language=None, mask=None):
-    if mask:
-        masks = [mask]
-    else:
-        mdt = [p for p in field.getParents() if p.type == 'metadatatype'][0]
-        masks = [m for m in mdt.getChildren() if m.get('masktype') in ['shortview', 'fullview', 'editmask']]
-        if masks and language:
-            masks = [m for m in masks if m.get('language') in [language]]
-
-    maskitems = [p for p in field.getParents() if p.type == 'maskitem']
-    maskitems = [mi for mi in maskitems if 1 in [isDescendantOf(mi, m) for m in masks]]
-
-    if maskitems:
-        return maskitems[0]
-    else:
-        return None
+logg = logging.getLogger(__name__)
 
 
 class m_text(Metatype):
@@ -71,11 +52,11 @@ class m_text(Metatype):
 
     def getEditorHTML(self, field, value="", width=40, lock=0, language=None, required=None):
         lang = None
-        languages = config.get("i18n.languages")
+        languages = config.languages
         if language is None:
-            language = languages.split(",")[0].strip()
+            language = languages[0]
         if field.getValues() and "multilingual" in field.getValues():
-            lang = [l.strip() for l in languages.split(',') if (l != language)]
+            lang = [l.strip() for l in languages if (l != language)]
         valueList = value.split("\n")
         values = dict()
         i = 0
@@ -117,40 +98,40 @@ class m_text(Metatype):
     def getMaskEditorHTML(self, field, metadatatype=None, language=None):
         try:
             multilingual = field.getValues()
-        except:
-            multilingual = ""
+        except AttributeError:
+            multilingual = u""
         return tal.getTAL("metadata/text.html", {"multilingual": multilingual}, macro="maskeditor", language=language)
 
-    def getFormatedValue(self, field, node, language=None, html=1, template_from_caller=None, mask=None):
+    def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True, template_from_caller=None):
 
-        value = node.get(field.getName()).replace(";", "; ")
+        value = node.get_special(metafield.name)
+        # consider int, long values like filesize
+        if isinstance(value, (int, long)):
+            value = str(value)
+        value = value.replace(";", "; ")
 
         # ignore trailing newlines for textfields
         value = value.rstrip("\r\n")
 
         if value.find('\n') != -1:
             valuesList = value.split('\n')
-            if any(lang in valuesList for lang in system_languages):  # treat as multilingual
+            if any(lang in valuesList for lang in config.languages):  # treat as multilingual
                 index = 0
                 try:
                     index = valuesList.index(language)
                     value = valuesList[index + 1]
                 except ValueError as e:
-                    logException(e)
-
-                    log = logging.getLogger("errors")
-                    msg = "Exception in getFormatedValue for textfield:\n"
+                    msg = "Exception in getFormattedValue for textfield:\n"
                     msg += " valuesList=%r\n" % valuesList
                     msg += " node.name=%r, node.id=%r, node.type=%r\n" % (node.name, node.id, node.type)
-                    msg += " field.name=%r, field.id=%r, field.type=%r\n" % (field.name, field.id, field.type)
+                    msg += " metafield.name=%r, metafield.id=%r, metafield.type=%r\n" % (metafield.name, metafield.id, metafield.type)
                     msg += " language=%r, mask=%r" % (language, mask)
-                    log.error(msg)
+                    logg.exception(msg)
 
-                    value = ""
+                    value = u""
             else:
                 # treat as monolingual
                 pass
-        unescaped_value = value
 
         if html:
             value = esc(value)
@@ -161,7 +142,7 @@ class m_text(Metatype):
 
         for var in re.findall(r'&lt;(.+?)&gt;', value):
             if var == "att:id":
-                value = value.replace("&lt;" + var + "&gt;", node.id)
+                value = value.replace("&lt;" + var + "&gt;", unicode(node.id))
             elif var.startswith("att:"):
                 val = node.get(var[4:])
                 if val == "":
@@ -170,34 +151,21 @@ class m_text(Metatype):
                 value = value.replace("&lt;" + var + "&gt;", val)
         value = value.replace("&lt;", "<").replace("&gt;", ">")
 
-        maskitem = getMaskitemForField(field, language=language, mask=mask)
         if not maskitem:
-            return (field.getLabel(), value)
+            return (metafield.getLabel(), value)
 
         # use default value from mask if value is empty
-        if value == '':
+        if value == u'':
             value = maskitem.getDefault()
 
-        if template_from_caller and template_from_caller[0] and maskitem and str(maskitem.id) == template_from_caller[3]:
-            value = template_from_caller[0]
-
-        context = {'node': node, 'host': "http://" + config.get("host.name")}
-
-        if (template_from_caller and template_from_caller[0]) and (not node.get(field.getName())):
-            value = runTALSnippet(value, context)
-        else:
-            try:
-                value = runTALSnippet(value, context)
-            except:
-                value = runTALSnippet(unescaped_value, context)
-
-        return (field.getLabel(), value)
+        return (metafield.getLabel(), value)
 
     def format_request_value_for_db(self, field, params, item, language=None):
         value = params.get(item, '')
         try:
             return value.replace("; ", ";")
         except:
+            logg.exception("exception in format_request_value_for_db, returning value")
             return value
 
     def getName(self):
@@ -221,13 +189,13 @@ class m_text(Metatype):
 
     labels = {"de":
               [
-                  ("text_popup_title", "Eingabemaske f\xc3\xbcr Sonderzeichen"),
+                  ("text_popup_title", u"Eingabemaske für Sonderzeichen"),
                   ("fieldtype_text", "Textfeld"),
                   ("fieldtype_text_desc", "Normales Texteingabefeld"),
-                  ("text_titlepopupbutton", "Editiermaske \xc3\xb6ffnen"),
+                  ("text_titlepopupbutton", u"Editiermaske öffnen"),
                   ("text_valuelabel", "Wert:"),
                   ("text_formatedvalue", "Formatierter Wert:"),
-                  ("text_done", "\xC3\x9Cbernehmen"),
+                  ("text_done", u"Übernehmen"),
                   ("text_cancel", "Abbrechen"),
                   ("text_spcchar", "Sonderzeichen:"),
                   ("text_bold_title", "Markierten Text 'Fett' setzen"),

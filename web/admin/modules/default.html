@@ -13,7 +13,7 @@
                 <tal:block tal:condition="python:len(navitem.getItemList())>0">
                     <span i18n:translate="admin_submenu">TEXT</span>
                     <tal:block tal:repeat="item python:navitem.getItemList()">
-                        <a class="itemsublink" i18n:translate="" tal:content="python:'admin_menu_'+item[0]" tal:attributes="href python:item[1]"></a>
+                        <a class="itemsublink" i18n:translate="" tal:content="python:u'admin_menu_{}'.format(item[0])" tal:attributes="href python:item[1]"></a>
                         <span tal:condition="python: navitem.getItemList().index(item)<len(navitem.getItemList())-1">,</span>
                     </tal:block>                
                 </tal:block>

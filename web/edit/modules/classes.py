@@ -17,35 +17,37 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import core.tree as tree
-import core.users as users
-from core.acl import AccessData
-from core.translation import lang, t
-from core.transition import httpstatus
 
+from core.translation import lang, t
+from core.transition import httpstatus, current_user
+from core import Node
+from core.systemtypes import Root
+from contenttypes import Collections, Home
+from core import db
+
+q = db.query
 def getInformation():
     return {"version": "1.1", "system": 0}
 
 
 def getContent(req, ids):
-    ret = ""
-    user = users.getUserFromRequest(req)
-    access = AccessData(req)
+    user = current_user
     nodes = []
-    for id in ids:
-        if not access.hasWriteAccess(tree.getNode(id)):
+    for nid in ids:
+        node = q(Node).get(nid)
+        if not node.has_write_access():
             req.setStatus(httpstatus.HTTP_FORBIDDEN)
             return req.getTAL("web/edit/edit.html", {}, macro="access_error")
-        nodes += [tree.getNode(id)]
+        nodes.append(node)
 
-    if "classes" in users.getHideMenusForUser(user):
+    if "classes" in user.hidden_edit_functions:
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     v = {}
-    v["basedirs"] = [tree.getRoot('home'), tree.getRoot('collections')]
-    id = req.params.get("id", tree.getRoot().id)
-    v["script"] = "var currentitem = '%s';\nvar currentfolder = '%s'" % (id, id)
+    v["basedirs"] = [q(Home).one(), q(Collections).one()]
+    nid = req.params.get("id", q(Root).one().id)
+    v["script"] = "var currentitem = '%s';\nvar currentfolder = '%s'" % (nid, nid)
     v["idstr"] = ",".join(ids)
     v["nodes"] = nodes
     v["t"] = t

@@ -5,8 +5,8 @@ from functools import partial
 from collections import OrderedDict
 import logging
 from os import path
-from jinja2.loaders import FileSystemLoader
-from werkzeug.datastructures import ImmutableDict
+from jinja2.loaders import FileSystemLoader, ChoiceLoader
+from werkzeug.datastructures import ImmutableDict, MultiDict
 import pyaml
 import yaml
 from core.transition.templating import PyJadeExtension, Environment
@@ -17,8 +17,9 @@ from core.transition.helpers import runswith
 from core.transition.helpers import get_root_path
 from utils.date import dt_fromiso
 import datetime
+from werkzeug.utils import cached_property
 
-logg = logging.getLogger("athanatransition")
+logg = logging.getLogger(__name__)
 
 if runswith == "athana":
     from core.transition.athana_sep import athana_http
@@ -28,9 +29,28 @@ class AthanaTestRequest(athana_http.http_request):
 
     def __init__(self, params=None, uri="/", headers=None):
         headers = headers or {}
-        athana_http.http_request.__init__(self, None, None, None, uri, 0, headers)
-        self.request_headers = headers
+        if "Accept" not in headers:
+            headers["Accept"] = "*/*"
+
+        super(AthanaTestRequest, self).__init__(None, None, None, uri, 0, headers)
+        self.request_headers = self.headers = headers
         self.params = params or {}
+        self.ip = "127.0.0.1"
+        self.session = {}
+        self.params = {}
+        self.form = MultiDict()
+        self.args = MultiDict()
+        self.path = "/"
+        self.request = {}
+        self.sent_files_with_mimetype = []
+
+    def get_header(self, header):
+        return self.headers.get(header.capitalize())
+
+    def sendFile(self, filepath, mimetype):
+        if not path.exists(filepath):
+            raise ValueError("cannot send, file not found: " + filepath)
+        self.sent_files_with_mimetype.append((filepath, mimetype))
 
     @property
     def text(self):
@@ -47,10 +67,11 @@ class AthanaFlaskStyleApp(object):
 
     app_ctx_globals_class = _AppCtxGlobals
 
-    def __init__(self, import_name, template_folder="templates", **config):
+    def __init__(self, import_name, template_folder="web/templates", name="mediatum", **config):
         if "DEBUG" not in config:
             config["DEBUG"] = True
         self.blueprints = {}
+        self.name = name
         self.config = config.copy()
         self.extensions = {}
         self.template_folder = template_folder
@@ -178,10 +199,23 @@ class AthanaFlaskStyleApp(object):
         #rv.trim_blocks = True
         return rv
 
-    @property
+    @cached_property
     def jinja_loader(self):
         if self.template_folder is not None:
-            return FileSystemLoader(path.join(self.root_path, self.template_folder))
+            loaders = [FileSystemLoader(path.join(self.root_path, self.template_folder))]
+        else:
+            loaders = []
+    
+        return ChoiceLoader(loaders)
+
+    def add_template_loader(self, loader, pos=None):
+        if pos:
+            self.jinja_loader.loaders.insert(pos, loader)
+        else:
+            self.jinja_loader.loaders.append(loader)
+            
+    def add_template_globals(self, **global_names):
+        self.jinja_env.globals.update(global_names)
 
 
 def detect_athana_or_flask():

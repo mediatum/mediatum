@@ -28,6 +28,9 @@ msgstr "Modul ausblenden"
 msgid "admin_settings_adminmodules_reset"
 msgstr "Menü zurücksetzen"
 
+msgid "adminmodules_reset_question"
+msgstr "Wollen Sie wirklich den Admin-Bereich resetten?"
+
 msgid "admin_settings_editmodules_header"
 msgstr "Edit-Menü"
 

@@ -21,8 +21,13 @@ from itertools import chain
 from urlparse import urlparse
 
 import pymarc
+from core import db
 from utils.utils import Template
-from schema import mapping
+from schema.mapping import Mapping
+from pymarc.constants import END_OF_FIELD, SUBFIELD_INDICATOR, END_OF_RECORD, LEADER_LEN
+
+
+q = db.query
 
 
 def _parse_protocol_indicator(field, subfields, _protocol_map={'http': '4', 'ftp': '1'}):
@@ -103,15 +108,63 @@ def find_marc_mapping(schema_name):
     Returns a list of tuples:
     [ ((field, subfield), field_template), ... ]
     """
-    marc_mapping = mapping.getMapping('marc21_' + schema_name)
+    marc_mapping = q(Mapping).filter_by(name='marc21_' + schema_name).scalar()
     if marc_mapping is None:  # FIXME: or not marc_mapping.isActive():
         return None
 
-    mapping_fields = [(tuple(mask_item.getName().split('$', 1)),
+    mapping_fields = [(tuple(mask_item.name.split('$', 1)),
                        Template(mask_item.getDescription()))
-                      for mask_item in marc_mapping.getFields()
-                      if '$' in mask_item.getName()]
+                      for mask_item in marc_mapping.children
+                      if '$' in mask_item.name]
     return mapping_fields
+
+
+class UnicodeRecord(pymarc.Record):
+
+    def as_marc(self):
+        """
+        returns the record serialized as MARC21 as unicode object
+        """
+        fields = b''
+        directory = b''
+        offset = 0
+
+        # build the directory
+        # each element of the directory includes the tag, the byte length of
+        # the field and the offset from the base address where the field data
+        # can be found
+        encoding = 'utf-8'
+
+        for field in self.fields:
+            field_data = field.as_marc(encoding=encoding)
+            fields += field_data
+            if field.tag.isdigit():
+                directory += ('%03d' % int(field.tag)).encode(encoding)
+            else:
+                directory += ('%03s' % field.tag).encode(encoding)
+            directory += ('%04d%05d' % (len(field_data), offset)).encode(encoding)
+
+            offset += len(field_data)
+
+        # directory ends with an end of field
+        directory += END_OF_FIELD.encode(encoding)
+
+        # field data ends with an end of record
+        fields += END_OF_RECORD.encode(encoding)
+
+        # the base address where the directory ends and the field data begins
+        base_address = LEADER_LEN + len(directory)
+
+        # figure out the length of the record
+        record_length = base_address + len(fields)
+
+        # update the leader with the current record length and base address
+        # the lengths are fixed width and zero padded
+        strleader = '%05d%s%05d%s' % \
+            (record_length, self.leader[5:12], base_address, self.leader[17:])
+        leader = strleader.encode(encoding)
+
+        return (leader + directory + fields).decode(encoding)
 
 
 class MarcMapper(object):
@@ -125,7 +178,7 @@ class MarcMapper(object):
         self.mappings_by_schema = {}
 
     def __call__(self, node):
-        schema_name = node.getSchema()
+        schema_name = node.schema
         try:
             mapping_fields = self.mappings_by_schema[schema_name]
         except KeyError:
@@ -144,24 +197,24 @@ def map_node(node, mapping_fields=None):
     Map a node to a MARC21 record.  Returns its serialised form.
     """
     if not mapping_fields:
-        mapping_fields = find_marc_mapping(node.getSchema())
+        mapping_fields = find_marc_mapping(node.schema)
         if mapping_fields is None:
             raise LookupError(
                 "Failed to find marc mappings for node %s with schema %s" % (
-                    node.id, node.getSchema()))
+                    node.id, node.schema))
 
     # interpolate MARC field value templates using node attributes
     fields = {}
     for (field, subfield), field_template in mapping_fields:
-        value = field_template(node)
+        value = field_template(node, node.get_special)
         if not value:
             continue
         if field not in fields:
             fields[field] = {}
-        fields[field][subfield] = str(value)
+        fields[field][subfield] = unicode(value)
 
     # build MARC record, adding field indicators accordingly
-    record = pymarc.Record()
+    record = UnicodeRecord()
     for field, subfields in sorted(fields.iteritems()):
         subfields = sorted(subfields.iteritems())
 

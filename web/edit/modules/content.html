@@ -21,7 +21,7 @@
         <div id="operation" style="overflow:auto;float:right;">
                 <tal:block i18n:translate="edit_sort_header_auto">TEXT</tal:block>:
                 <select name="globalsort" id="globalsort" style="width:100px;padding:0px" onchange="sortItems_sync($('#globalsort'))">
-                    <option tal:repeat="sortchoice sortchoices" tal:attributes="value python:sortchoice.value; selected python:{'False':None,'True':'selected'}[str(sortchoice.value==collection_sortfield)]" tal:content="python:sortchoice.label"/>
+                    <option tal:repeat="sortchoice sortchoices" tal:attributes="value python:sortchoice.value; selected python:'selected' if sortchoice.value==collection_sortfield else None" tal:content="python:sortchoice.label"/>
                 </select>
                <button type="button" style="margin-top:0px;font-size:10px!important;" onclick="saveSort($('#globalsort'))" i18n:translate="edit_save" >TEXT</button>
         </div>
@@ -46,9 +46,9 @@
         </div>
     </div>
 
-    <script tal:content="python:'var js_edit_layout_togglertip_open = \''+str(t(language, 'edit_layout_togglertip_open'))+'\';'">;</script>
-    <script tal:content="python:'var js_edit_layout_togglertip_closed = \''+str(t(language, 'edit_layout_togglertip_closed'))+'\';'">;</script>
-    <script tal:content="python:'var id = '+id+';'"/>
+    <script tal:content="python:u'var js_edit_layout_togglertip_open = \'{}\';'.format(t(language, 'edit_layout_togglertip_open'))">;</script>
+    <script tal:content="python:u'var js_edit_layout_togglertip_closed = \'{}\';'.format(t(language, 'edit_layout_togglertip_closed'))">;</script>
+    <script tal:content="python:u'var id = {};'.format(id)"/>
 
     <script>
         $(document).ready(function () {

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
  mediatum - a multimedia content repository
 
@@ -17,17 +18,19 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import logging
 import re
 from mediatumtal import tal
 from utils.utils import esc
 from core.metatype import Metatype
-from core.tree import FileNode
 from PIL import Image, ImageFont, ImageDraw, ImageEnhance
 import sys
 import traceback
 from utils.utils import splitfilename
 import core.config as config
 
+
+logg = logging.getLogger(__name__)
 
 FONTPATH = "/utils/ArenaBlack.ttf"
 FONTSIZE = 40
@@ -50,14 +53,14 @@ class m_watermark(Metatype):
     def getSearchHTML(self, context):
         return tal.getTAL("metadata/watermark.html", {"context": context}, macro="searchfield", language=context.language)
 
-    def getFormatedValue(self, field, node, language=None, html=1):
-        value = node.get(field.getName()).replace(";", "; ")
+    def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
+        value = node.get(metafield.getName()).replace(";", "; ")
         if html:
             value = esc(value)
         # replace variables
         for var in re.findall(r'&lt;(.+?)&gt;', value):
             if var == "att:id":
-                value = value.replace("&lt;" + var + "&gt;", node.id)
+                value = value.replace("&lt;" + var + "&gt;", unicode(node.id))
             elif var.startswith("att:"):
                 val = node.get(var[4:])
                 if val == "":
@@ -65,13 +68,14 @@ class m_watermark(Metatype):
 
                 value = value.replace("&lt;" + var + "&gt;", val)
 
-        return (field.getLabel(), value)
+        return (metafield.getLabel(), value)
 
     def format_request_value_for_db(self, field, params, item, language=None):
         value = params.get(item)
         try:
             return value.replace("; ", ";")
         except:
+            logg.exception("exception in format_request_value_for_db, returning value")
             return value
 
     def getName(self):
@@ -102,7 +106,7 @@ class m_watermark(Metatype):
                 im = Image.open(image)
                 im = im.copy()
                 if im.mode != 'RGBA':
-                    print "Converting image to RGBA!"
+                    logg.info("Converting image to RGBA!")
                     im = im.convert('RGBA')
                 draw = ImageDraw.Draw(im)
 
@@ -110,9 +114,8 @@ class m_watermark(Metatype):
                 font = None
                 try:
                     font = ImageFont.truetype(config.basedir + FONTPATH, FONTSIZE)
-                except Exception as inst:
-                    print "Loading of custom font failed: ", inst
-                    print " --> using default!"
+                except Exception:
+                    logg.exception("Loading of custom font failed, using default")
                     font = ImageFont.load_default()
 
                 # Now measure size of text if it would be created with the new font and create a custom bitmap
@@ -145,14 +148,12 @@ class m_watermark(Metatype):
 
                 im = Image.composite(layer, im, layer)
                 im.save(imagewm, "JPEG")
-                print "Finished creating watermark..."
+                logg.info("Finished creating watermark")
 
-            except Exception as inst:
-                print "Exception while creating the watermark: ", inst
-                traceback.print_exc(file=sys.stdout)
+            except:
+                logg.exception("Exception while creating the watermark")
                 im = image
         finally:
-            print "Cleaning up after watermark creation"
             del draw
             del drawwater
             del mark
@@ -163,7 +164,7 @@ class m_watermark(Metatype):
 
     def event_metafield_changed(self, node, field):
         if "image" in node.type:
-            items = node.items()
+            items = node.attrs.items()
             # check if there is an original file and modify it in case
             for f in node.getFiles():
                 if f.type == "original":
@@ -176,7 +177,7 @@ class m_watermark(Metatype):
                             break
                     self.watermark(f.retrieveFile(), pngname, node.get(field.getName()), 0.6)
                     node.addFile(FileNode(name=pngname, type="original_wm", mimetype="image/jpeg"))
-                    print "watermark created for original file"
+                    logg.info("watermark created for original file")
 
     # method for additional keys of type watermark
     def getLabels(self):
@@ -185,7 +186,7 @@ class m_watermark(Metatype):
     labels = {"de":
               [
                   ("fieldtype_watermark", "Wasserzeichen"),
-                  ("fieldtye_watermark_desc", "Wasserzeichen f\xc3\xbcr Bilder")
+                  ("fieldtye_watermark_desc", u"Wasserzeichen für Bilder")
               ],
               "en":
               [

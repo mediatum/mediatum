@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
  mediatum - a multimedia content repository
 
@@ -37,9 +38,9 @@ class m_check(Metatype):
     def getSearchHTML(self, context):
         return tal.getTAL("metadata/check.html", {"context": context}, macro="searchfield", language=context.language)
 
-    def getFormatedValue(self, field, node, language=None, html=1):
-        value = node.get(field.getName()).replace(";", "; ")
-        return (field.getLabel(), value)
+    def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
+        value = node.get(metafield.name)
+        return (metafield.label, value)
 
     def getName(self):
         return "fieldtype_check"
@@ -51,7 +52,7 @@ class m_check(Metatype):
     labels = {"de":
               [
                   ("fieldtype_check", "Checkbox"),
-                  ("fieldtype_check_desc", "Checkbox Auswahl (f\xc3\xbcr Ja/Nein-Werte)")
+                  ("fieldtype_check_desc", u"Checkbox Auswahl (für Ja/Nein-Werte)")
               ],
               "en":
               [

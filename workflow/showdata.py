@@ -17,28 +17,33 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import core.tree as tree
+
 import logging
 from .workflow import WorkflowStep, registerStep
 from core.translation import t, lang
-from schema.schema import getMetaType, VIEW_HIDE_EMPTY
+from schema.schema import VIEW_HIDE_EMPTY, Metafield, Metadatatype
+from core import db
+
+q = db.query
+
+logg = logging.getLogger(__name__)
 
 
 def mkfilelist(node, deletebutton=0, language=None, request=None):
     return request.getTAL(
-        "workflow/showdata.html", {"files": node.getFiles(), "node": node, "delbutton": deletebutton}, macro="workflow_filelist")
+        "workflow/showdata.html", {"files": node.files, "node": node, "delbutton": deletebutton}, macro="workflow_filelist")
 
 
 def mkfilelistshort(node, deletebutton=0, language=None, request=None):
     return request.getTAL(
-        "workflow/showdata.html", {"files": node.getFiles(), "node": node, "delbutton": deletebutton}, macro="workflow_filelist_short")
+        "workflow/showdata.html", {"files": node.files, "node": node, "delbutton": deletebutton}, macro="workflow_filelist_short")
 
 
 def register():
-    tree.registerNodeClass("workflowstep-showdata", WorkflowStep_ShowData)
-    tree.registerNodeClass("workflowstep-wait", WorkflowStep_ShowData)
-    registerStep("workflowstep-showdata")
-    registerStep("workflowstep-wait")
+    #tree.registerNodeClass("workflowstep-showdata", WorkflowStep_ShowData)
+    #tree.registerNodeClass("workflowstep-wait", WorkflowStep_ShowData)
+    registerStep("workflowstep_showdata")
+    registerStep("workflowstep_wait")
 
 
 class WorkflowStep_ShowData(WorkflowStep):
@@ -60,7 +65,7 @@ class WorkflowStep_ShowData(WorkflowStep):
         fieldmap = []
         mask = None
         for maskname in masklist:
-            t = getMetaType(node.type)
+            t = q(Metadatatype).filter_by(name=node.schema).scalar()
             if t:
                 if node.get('system.wflanguage') != '':  # use correct language
                     mask = t.getMask("%s.%s" % (node.get('system.wflanguage'), maskname))
@@ -70,14 +75,13 @@ class WorkflowStep_ShowData(WorkflowStep):
                 try:
                     fieldmap += [mask.getViewHTML([node], VIEW_HIDE_EMPTY, language=lang(req))]
                 except:
-                    print "error"
-                    logging.getLogger("error").error("mask %s defined for workflow step not found." % mask)
+                    logg.exception("exception for mask %s, returning empty string", mask)
                     return ""
 
         filelist = ""
         filelistshort = ""
 
-        if node.getFiles():
+        if node.files:
             filelist = mkfilelist(node, request=req)
             filelistshort = mkfilelistshort(node, request=req)
 
@@ -93,7 +97,7 @@ class WorkflowStep_ShowData(WorkflowStep):
                           macro="workflow_showdata")
 
     def metaFields(self, lang=None):
-        field = tree.Node("masks", "metafield")
+        field = Metafield("masks")
         field.set("label", t(lang, "admin_wfstep_masks_to_display"))
         field.set("type", "text")
         return [field]

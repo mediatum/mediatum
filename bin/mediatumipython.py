@@ -1,337 +1,552 @@
+#!/usr/bin/env ipython2
 # -*- coding: utf-8 -*-
 '''
 Created on 06.06.2013
 @author: stenzel
 
+***************
 mediatumipython
-===============
+***************
 
 mediaTUM command line based on many great IPython features and some extensions.
 
 Run it
-------
+======
 
 Command line, from the mediaTUM base directory::
 
     ipython -i bin/mediatumipython.py
-    
-    
+
+
 In a IPython Notebook cell::
 
     %run bin/mediatumipython.py
 
 
+Basics
+======
+
+* shell-like "filesystem" browsing for the mediaTUM node tree
+* IPython prompt shows the current node
+* the current node can be accessed with `cnode`, the previous node with `lastnode`
+
+
 Commands
---------
+========
 
-* `%l` - show current node info
-* `%cd <node id>` - change to node
-* `%child <child name>` - change to named child of current node
+Commands are implemented as IPython magic functions. You can omit the leading % most of the time.
+For more information on each magic function, use `%<magic>?`, for example `%check_login?`
 
+Initialization
+--------------
+
+* `%init full` - init everything, needed for some commands.
+    At startup, only important stuff is initialized (database, basic data types ...) automatically.
+    Plugins are loaded only in 'full' mode.
+
+
+Change current node
+-------------------
+
+* `%cd <nid>` - change current node by ID
+* `%cd -` - change to previous node
+* `%child <child name>` - change to named child of current node (alias ch)
+
+
+Display info for current node
+-----------------------------
+
+* `%list_all` - list current node info for all categories: parents, children, attributes, files (alias l)
+* `%list_attributes` - (alias la)
+* `%list_children` - (alias lc)
+* `%list_parents` - (alias lp)
+* `%list_files` - (alias lf)
+* `%list_rights` - (alias lr)
+
+
+Set `limit_number_of_info_lines = <n>` to display only the first <n> lines of a category.
+
+
+Change the tree
+---------------
+
+* `%link <nid>` - add node with <nid> as child to current node
+* `%remove <nid>` - remove child with <nid> from current node
+
+
+SQL shortcuts
+-------------
+
+See `ipython-sql documentation <https://pypi.python.org/pypi/ipython-sql>`_ for more info.
 
 * `%sql` - run any sql statement (provided by ipython-sql)
+* `%select` - run a select statement
+* `%insert` - run a insert statement
+* `%update` - run a update statement
+* `%delete` - run a delete statement
+
+
+User Management
+---------------
+
+%check_login <login_name> - check if user is able to login with given password. Returns the user object even if authentication fails.
+%password <login_name> - set user password
+
+
+Misc information
+----------------
+
 * `%citeproc` - show citeproc mappings
 
-You can omit the leading % most of the time.
+
+Maintenance
+^^^^^^^^^^^
+
+* `%postprocess <nid>` - run postprocessing on current node or <nid>, if given
+* `%checkmask [--fix] [--all] [--allmasks]` - run integrity checks on masks, see %checkmask? for details
+* `%purge_nodes`: delete nodes that are not connected to the root node in any way ("unreachable nodes")
 
 
 SQLAlchemy
-----------
+==========
 
-The `q` function can be used to query the database. This returns SQLAlchemy model nodes, not mediaTUM nodes!
+The `q` function can be used to query the database:
+
+
+Node queries
+------------
 
 .. code-block:: python
 
     # count collections
-    q(Node).filter_by(type="collection").count()
-    
+    q(Collection).count()
+
     # get a node named test, fails if none or more than one result found
-    q(Node).filter_by(name="test").one()
+    q(Data).filter_by(name="test").one()
+
+    # get a node named test, fails if more than one result found, returns None if none found
+    q(Data).filter_by(name="test").scalar()
 
     # get the first document
-    q(Node).filter(Node.type.like("document/%").first()
-    
-    # get all metafields of Metadatatype #816859
-    q(Node).get(816859).children.filter_by(type="metafield").all()
-    
+    q(Document).first()
+
+    # get all content children of Collection #993321
+    q(Collection).get(993321).content_children # returns NodeAppenderQuery
+    q(Collection).get(993321).content_children.all() # returns list
+
+    # get all masks of Metadatatype #816859
+    q(Metadatatype).get(816859).masks.all()
+
     # attribute access
-    q(Node).get(816859)["description"]
+    q(Data).get(816859)["description"]
+    q(Data).get(816859).a.description
 
-SQL
----
-
-See `ipython-sql documentation <https://pypi.python.org/pypi/ipython-sql>`_
-
-.. code:: sql
-    
-    // select nodes with no parents
-    %sql SELECT * FROM node where id NOT IN (SELECT cid FROM nodemapping)
-    
-    
-Old mediaTUM
-------------
-
-You can use core.tree if you want to work with mediaTUM-defined nodes. `%init full` must be run to set up the database.
-
-.. code:: python::
-
-    nn = tree.getNode(816859)
-    children = nn.getChildren()
-    
-
-Mixing SQLAlchemy and core.tree
--------------------------------
-
-SQLAlchemy nodes can return the corresponding mediaTUM node::
-
-.. code:: python::
-
-    sqla_node = q(Node).first()
-    mediatum_node = sqla_node.m
- 
-WARNING: Reading from both objects should be safe, but write accesses could cause serious problems! Don't do this...   
+    # find all image nodes that are archived
+    q(Image).filter(Image.sys.archive_type != None).count()
 
 '''
 from __future__ import division, absolute_import, print_function
-import logging as logg
-import sys
-
-from sqlalchemy import create_engine
-from sqlalchemy.sql import *
-from sqlalchemy.orm import sessionmaker
-
-from core.db.sqla_mysql_datamodel import *
-from utils.compat import itervalues
-
-from core import config
-import core.init as initmodule
+from collections import OrderedDict
 from functools import wraps
+import getpass
+from itertools import islice, chain
+import logging
+import os.path
+import sys
+import warnings
+from sqlalchemy import sql
+from sqlalchemy.orm.exc import NoResultFound
+import humanize
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+import core.init as initmodule
+import core.config as config
+import filecmp
+import magic
+from utils.compat import *
+import core.database.postgres.connector
+
+# log settings #
+
+# set this to INFO for SQL statement echo, DEBUG for even more info from SQLAlchemy
+SQLALCHEMY_LOGGING = logging.WARN
+SQL_LOGGING = logging.WARN
+
+core.database.postgres.connector.DEBUG_SHOW_TRACE = False
+core.database.postgres.connector.DEBUG = True
+# / log settings #
+
+INIT_ARGS = dict(prefer_config_filename="mediatumipython.cfg")
+
+initmodule.basic_init(**INIT_ARGS)
+initmodule.register_workflow()
+
+from core.database.postgres.node import t_noderelation
+from core.database.postgres import alchemyext
+
+# change this to True in your IPython notebook after running mediatumipython.py
+IPYTHON_NOTEBOOK = False
 
 
-if len(sys.argv) == 2:
-    db = sys.argv[1].lower()
-    if db == "mysql":
-        # insert your favorite database connection here...
-        SQLALCHEMY_CONNECTION = "mysql://user:password@localhost/database?charset=utf8"
-else:
-    _connection_tmpl = "mysql://{user}:{passwd}@{dbhost}:{dbport}/{database}?charset=utf8"
-    SQLALCHEMY_CONNECTION = _connection_tmpl.format(
-        user=config.get("database.user", "mediatum"),
-        passwd=config.get("database.passwd", ""),
-        dbhost=config.get("database.dbhost", "localhost"),
-        dbport=int(config.get("database.dbport", "3306")),
-        database=config.get("database.db", "mediatum")
-    )
+# use default connection specified by mediatum config for ipython-sql magic
+SQLMAGICS_CONNECTION_FACTORY = lambda: core.db.connectstr
+# TODO: changing the connection string should be possible for the postgres connector, too
 
-print("DB connection is: " + SQLALCHEMY_CONNECTION)
 
-rootlogg = logg.getLogger()
-rootlogg.handlers = []
+from core.users import get_guest_user
+try:
+    guest_user = get_guest_user()
+except:
+    guest_user = None
 
-# logg.basicConfig(level=logg.INFO)
-# logg.getLogger("sqlalchemy.engine").setLevel(logg.INFO)
+# we don't want to raise warnings for missing node classes, just stub them and be silent
+_core_init_loglevel = logging.getLogger("core.init").level
+logging.getLogger("core.init").setLevel(logging.ERROR)
+initmodule.check_undefined_nodeclasses(stub_undefined_nodetypes=True)
+logging.getLogger("core.init").setLevel(_core_init_loglevel)
 
-engine = create_engine(SQLALCHEMY_CONNECTION)
-DeclarativeBase.metadata.bind = engine
-s = db_session = sessionmaker(bind=engine)()
-conn = engine.connect()
-q = s.query
+from core import db, Node, File, NodeToFile
+from core import User, UserGroup, AuthenticatorInfo
+from core import AccessRule, AccessRuleset, NodeToAccessRule, NodeToAccessRuleset
+from core import Fts, Setting
+from core import app
+
+q = core.db.query
+s = core.db.Session
+
+# load types for interactive querying
+from contenttypes import Audio, Content, Directory, Collection, Container, Collections, Home, Document, Image, Imagestream, \
+    Project, Video, Data
+from core.systemtypes import Mappings, Metadatatypes, Root, Searchmasks
+from schema.schema import Metadatatype, Maskitem, Mask, Metafield
+from schema.mapping import Mapping, MappingField
+from workflow.workflow import Workflow, Workflows
+from core.database.postgres.permission import NodeToAccessRule, NodeToAccessRuleset, EffectiveNodeToAccessRuleset, AccessRulesetToRule
+from core.oauth import OAuthUserCredentials
+from core.permission import get_or_add_access_rule
+
+from sqlalchemy.exc import SQLAlchemyError
+
+# set user-defined log levels later to avoid log spam in startup phase
+logging.getLogger("sqlalchemy.engine").setLevel(SQLALCHEMY_LOGGING)
+# setting this to logging.DEBUG show all DB statements
+logging.getLogger("sqllog").setLevel(SQL_LOGGING)
+
+logg = logging.getLogger(__name__)
 
 global last_inserted_node
 last_inserted_node_id = None
 global cnode
-root = cnode = q(Node).get(1)
+# root can be None for uninitialized / corrupt databases. We allow this.
+root = cnode = q(Root).scalar()
 global lastnode
 lastnode = root
 
-nodes = Node.__table__
-nodefiles = NodeFile.__table__
-nodeattributes = NodeAttribute.__table__
-    
-    
-### some Node extensions:
+global limit_number_of_info_lines
+limit_number_of_info_lines = None
 
-def _node_m(self):
-    return tree.getNode(self.id)
+# IPython magic
 
-Node.m = property(_node_m)
-
-
-def all_nodes():
-    return q(Node).all()
-
-
-highest_node_id_stmt = select([func.max(nodes.c.id)]).compile()
-
-nid_bp = bindparam("nid", type_=Integer)
-
-node_delete_stmt = nodes.delete().where(nodes.c.id > nid_bp).compile()
-nodemapping_delete_stmt = t_nodemapping.delete().where(or_(t_nodemapping.c.nid > nid_bp, t_nodemapping.c.cid > nid_bp)).compile()
-nodeattribute_delete_stmt = nodeattributes.delete().where(nodeattributes.c.nid > nid_bp).compile()
-nodefile_delete_stmt = nodefiles.delete().where(nodefiles.c.nid > nid_bp).compile()
-
-delete_node_stmts = [node_delete_stmt, nodemapping_delete_stmt, nodeattribute_delete_stmt, nodefile_delete_stmt]
-
-
-def cut_above_node(nid):
-    return [conn.execute(s, nid=nid).rowcount for s in delete_node_stmts]
-
-
-def highest_node_id():
-    return conn.execute(highest_node_id_stmt).scalar()
-
-
-def cut_last():
-    if last_inserted_node_id:
-        cut_above_node(last_inserted_node_id)
-
-
-def get_child_ids(nids):
-    """Returns all children for all nodes in sequence `nids`
-    """
-    stmt = select([t_nodemapping.c.cid.distinct()]).where(t_nodemapping.c.nid.in_(nids))
-    res = conn.execute(stmt)
-    return [t[0] for t in res]
-
-
-def subtree_ids(start_id):
-    """Returns all ids belonging to a subtree starting from `start_id` as root.
-    """
-    update = [start_id]
-    nodes = set(update)
-
-    while 1:
-        update = get_child_ids(update)
-        if not update:
-            return nodes
-        logg.debug("before %s, new: %s", len(nodes), len(update))
-        nodes.update(update)
-
-
-def get_all_node_ids():
-    """Returns all node ids.
-    """
-    all_ids = {t[0] for t in conn.execute(select([Node.id]))}
-    return all_ids
-
-
-def repair_localread():
-    old_localread_values= {nid: localread for nid, localread in q(Node.id, Node.localread)}
-    Node.__table__.update().values(localread="")
-    updated_localread_count = 0
-    for nid in get_all_node_ids():
-        node = q(Node).get(nid)
-        new_localread = node.m.getLocalRead()
-        old_localread = old_localread_values[nid]
-        if new_localread != old_localread:
-            logg.debug(u"localread changed for Node %s: %s -> %s", nid, old_localread, new_localread)
-            updated_localread_count += 1
-    return updated_localread_count
-
-
-def purge_nodemappings():
-    """Deletes all nodemappings which refer to non-existent Nodes
-    """
-    existing_subselect = q(Node.id).subquery()
-    stmt = t_nodemapping.delete().\
-        where(
-        or_(
-              ~t_nodemapping.c.nid.in_(existing_subselect), 
-              ~t_nodemapping.c.cid.in_(existing_subselect)))
-    res = conn.execute(stmt)
-    return res
-    
-    
-def purge_nodefiles():
-    """Deletes all nodefiles which refer to non-existent Nodes
-    """
-    existing_subselect = q(Node.id).subquery()
-    stmt = NodeFile.__table__.delete().where(~NodeFile.nid.in_(existing_subselect))
-    res = conn.execute(stmt)
-    return res
-    
-    
-def purge_nodes():
-    """Deletes all nodes which are unreachable from the root Node.
-    """
-    reachable_ids = subtree_ids(1)
-    all_ids = get_all_node_ids()
-    unreachable_ids = all_ids - reachable_ids
-    logg.info("all nodes: %s, reachable from root node: %s, unreachable from root node: %s", 
-              len(all_ids), len(reachable_ids), len(unreachable_ids))
-    res = conn.execute(Node.__table__.delete().where(Node.id.in_(unreachable_ids)))
-    return res
-    
-    
-def purge_metadatatypes():
-    """Deletes all metadatatypes which are unused
-    """
-    used_mdts = [t[0] for t in conn.execute(select([func.substring_index(Node.type, '/', -1)]).distinct())]
-    stmt = Node.__table__.delete().where(and_(Node.type == 'metadatatype', ~Node.name.in_(used_mdts)))
-    res = conn.execute(stmt)
-    return res
-
-
-def purge_exportmappings():
-    """Deletes all exportmappings which are not used by any mask
-    """
-    used_exportmappings = [t[0] for t in 
-                              q(t_nodeattribute.c.value.distinct()).
-                              join(Node).
-                              filter(Node.type == 'mask').
-                              filter(t_nodeattribute.c.name == 'exportmapping')] 
-    
-    
-    res = conn.execute(Node.__table__.delete().where(and_(Node.type == 'mapping', 
-                                                          ~Node.id.in_(used_exportmappings))))
-    return res
-    
-    
-def purge_nodeattributes():
-    all_node_ids = select([Node.id])
-    res = conn.execute(t_nodeattribute.delete().where(~t_nodeattribute.c.nid.in_(all_node_ids)))
-    return res
-
-
-### IPython magic
-
-from IPython.core.magic import Magics, magics_class, line_magic
+from IPython.core.magic import Magics, magics_class, line_magic, needs_local_scope
 from IPython.core.magic_arguments import argument, magic_arguments,\
     parse_argstring, defaults
 
-# functions can check if mediaTUM is initialized correctly and report an error if this is not the case
 
-INIT_STATES = {
-    "basic": 100, # initmodule.basic_init()
-    "full": 200 # initmodule.full_init()
-}
+def exec_sqlfunc(func):
+    return alchemyext.exec_sqlfunc(s, func)
 
-REV_INIT_STATES = {v: k for k, v in INIT_STATES.items()}
+
+def reachable_node_ids():
+    return q(t_noderelation.c.cid).filter(t_noderelation.c.nid == 1).union_all(sql.select([sql.expression.literal(1)]))
+
+
+def delete_unreachable_nodes(synchronize_session='fetch'):
+    # XXX: replace this with the SQL function
+    raise Exception("doesn't work anymore, use the SQL function purge_nodes!")
+    reachable_nodes_sq = reachable_node_ids().subquery()
+    s.execute(t_noderelation.delete(~t_noderelation.c.nid.in_(reachable_nodes_sq)))
+    s.execute(t_noderelation.delete(~t_noderelation.c.cid.in_(reachable_nodes_sq)))
+    q(File).filter(~File.nid.in_(reachable_nodes_sq)).delete(synchronize_session)
+    return q(Node).filter(~Node.id.in_(reachable_nodes_sq)).delete(synchronize_session)
+
+
+def unreachable_nodes():
+    reachable_node_sq = reachable_node_ids().subquery()
+    return q(Node).filter(~Node.id.in_(reachable_node_sq))
+
+
+def inversion_label(invert):
+    return u"(-)" if invert else u""
+
+
+def blocking_label(blocking):
+    return u"(blocking)" if blocking else u""
+
+
+def inherited_label(inherited):
+    return u"(inherited)" if inherited else u""
+
+
+def format_access_ruleset_assoc(ra, inherited):
+    r = ra.ruleset
+
+    return u"{}{}{} {}".format(inversion_label(ra.invert), blocking_label(ra.blocking), inherited_label(inherited), r.name)
+
+
+def format_access_rule_assoc(ra):
+    r = ra.rule
+    group_names = r.group_names
+    if group_names is not None:
+        group_names_or_ids = [n or str(r.group_ids[i]) for i, n in enumerate(r.group_names)]
+    else:
+        group_names_or_ids = []
+
+    return u"{}{} groups:{} {} subnets:{} {} dateranges:{} {}".format(inversion_label(ra.invert), blocking_label(ra.blocking),
+                                                                      inversion_label(r.invert_group), ", ".join(group_names_or_ids) or "-",
+                                                                      inversion_label(r.invert_subnet), r.subnets or "-",
+                                                                      inversion_label(r.invert_date), r.dateranges or "-")
+
+
+def make_info_producer_access_rules(ruletype):
+    def _info_producer(node):
+        rule_assocs = node.access_rule_assocs.filter_by(ruletype=ruletype).all()
+        own_ruleset_assocs = node.access_ruleset_assocs.filter_by(ruletype=ruletype).all()
+        effective_ruleset_assocs = node.effective_access_ruleset_assocs.filter(
+            EffectiveNodeToAccessRuleset.c.ruletype == ruletype).all()
+        inherited_ruleset_assocs = set(effective_ruleset_assocs) - set(own_ruleset_assocs)
+
+        effective_rulesets = [rsa.ruleset for rsa in effective_ruleset_assocs]
+        rule_assocs_in_rulesets = [r for rs in effective_rulesets for r in rs.rule_assocs]
+
+        def assoc_filter(assocs, to_remove):
+
+            def _f(a):
+                for rem in to_remove:
+                    if a.rule == rem.rule and a.invert == rem.invert and a.blocking == rem.blocking:
+                        return False
+                return True
+
+            return [a for a in assocs if _f(a)]
+
+        remaining_rule_assocs = assoc_filter(rule_assocs, rule_assocs_in_rulesets)
+        special_ruleset = node.get_special_access_ruleset(ruletype)
+        special_rule_assocs = special_ruleset.rule_assocs if special_ruleset else []
+
+        return chain(
+            [u"Rulesets:"] if own_ruleset_assocs or inherited_ruleset_assocs else [""],
+            ("\t" + format_access_ruleset_assoc(rs, inherited=False)
+             for rs in own_ruleset_assocs),
+            ("\t" + format_access_ruleset_assoc(rs, inherited=True)
+             for rs in inherited_ruleset_assocs),
+            [u"Special Rules:"] if special_rule_assocs else [""],
+            ("\t" + format_access_rule_assoc(r) for r in special_rule_assocs),
+            [u"", u"RULES NOT IN A RULESET (INVALID!)"] if remaining_rule_assocs else [""],
+            ("\t" + format_access_rule_assoc(r) for r in remaining_rule_assocs)
+        )
+
+    return _info_producer
+
+
+def file_info_producer(node):
+    return [u"{} {} {} ({})".format(a.filetype,
+                                    a.mimetype,
+                                    a.path,
+                                    humanize.filesize.naturalsize(a.size) if a.exists else "missing!")
+            for a in sorted(node.files, key=lambda f: (f.filetype, f.mimetype))]
+
+
+INFO_PRODUCERS = OrderedDict([
+    ("parents", lambda node: (u"{} {}:  {}".format(n.id, n.name, n.type) for n in node.parents)),
+    ("children", lambda node: (u"{} {}:  {}".format(n.id, n.name, n.type) for n in node.children)),
+    ("attributes", lambda node: (u"{} = {}".format(name, value)
+                                 for name, value in sorted(iteritems(node.attrs), key=lambda a: a[0]))),
+    ("system_attributes", lambda node: (u"{} = {}".format(name, value)
+                                 for name, value in sorted(iteritems(node.system_attrs), key=lambda a: a[0]))),
+    ("files", file_info_producer),
+    ("read_rules", make_info_producer_access_rules("read")),
+    ("write_rules", make_info_producer_access_rules("write")),
+    ("data_rules", make_info_producer_access_rules("data")),
+])
+
+
+def print_info_for_category(category, limit=None):
+    if limit is None:
+        limit = limit_number_of_info_lines
+
+    print(u"\t" + category.replace("_", " ").capitalize() + ":")
+    info_producer = INFO_PRODUCERS[category]
+
+    for line in islice(info_producer(cnode), 0, limit):
+        print(u"\t\t{}".format(line).encode("utf8"))
+
 
 def needs_init(min_state):
     def _needs_init(f):
         @wraps(f)
         def _inner(self, *args, **kwargs):
-            if self.check_init_state(min_state):
+            if initmodule.init_state_reached(min_state):
                 return f(self, *args, **kwargs)
+            else:
+                print("mediaTUM is not initialized properly. You must run '%init {}' first." .format(min_state))
         return _inner
-        
+
     return _needs_init
-    
+
+
+def cmp_filelist(file_list):
+    """ returns the number of equal files in a list """
+    rc = 1
+    errtxt = ""
+    if not file_list:
+        return 0
+    l = 0
+    for fname1 in file_list[:-1]:
+        l += 1
+        if not os.path.isfile(fname1):
+            continue
+        for fname2 in file_list[l:]:
+            if not os.path.isfile(fname2):
+                continue
+            try:
+                if filecmp.cmp(fname1, fname2):
+                    rc += 1
+            except OSError as e:
+                errtxt = str(e)
+
+    return rc, errtxt
+
+
+def chk_mimetype(fname, mimetype, m):
+    """ checks the fname extension versus mimetype """
+    err_txt = ""
+    type_relations = {'jpg': ['image/jpeg', 'inode/file'],
+                      'jpeg' : ['image/jpeg'],
+                      'thumb' : ['image/jpeg'],
+                      'thumb2' : ['image/jpeg'],
+                      'tif' : ['image/tiff', 'inode/file'],
+                      'tiff' : ['image/tiff'],
+                      'png' : ['image/png'],
+                      'gif' : ['image/gif'],
+                      'bmp' : ['image/bmp', 'image/x-ms-bmp', 'inode/file'],
+                      'svg' : ['image/svg+xml'],
+                      'zip' : ['application/zip', 'inode/file'],
+                      'pdf' : ['application/pdf', 'inode/file'],
+                      'hpgl' : ['inode/file'],
+                      'psd' : ['inode/file'],
+                      'eps' : ['inode/file'],
+                      'dxf' : ['inode/file'],
+                      'dwg' : ['inode/file'],
+                      'db' : ['other'],
+                      'graphml' : ['inode/file', 'other'],
+                      'mov' : ['other'],
+                      'mp4' : ['other'],
+                      'm4v' : ['other'],
+                      'nef' : ['other'],
+                      'gephi' : ['other'],
+                      'html' : ['text/html'],
+                      'xml' : ['application/xml'],
+                     }
+    fname_ext = fname[fname.rfind('.') + 1:].lower()
+    if fname_ext in type_relations.keys() and not mimetype in type_relations[fname_ext]:
+        err_txt = "wrong mimetype %s for %s " % (mimetype, fname)
+
+        if not os.path.isfile(fname):
+            err_txt += "%s does not exist " % fname;
+            mimetype_from_file = ""
+        else:
+            mimetype_from_file = m.from_file(fname)
+
+        if mimetype_from_file and fname_ext in type_relations.keys() and not mimetype_from_file in type_relations[fname_ext]:
+            err_txt += "wrong mimetype_from_file %s for %s " % (mimetype_from_file, fname)
+
+    elif not os.path.isfile(fname):
+        err_txt += "%s does not exist " % fname;
+
+    if fname_ext not in type_relations.keys():
+        err_txt += "extension: %s not found" % fname_ext
+
+    return err_txt
+
+
+def db_check_image(node):
+    warn_str = ""
+    original_list = []
+    image_list = []
+    thumb_list = []
+    presentation_list = []
+    image_mimetype = ""
+    original_mimetype = ""
+    archive_avail = False
+    m = magic.Magic(mimetype=True)
+    if hasattr(node.sys, "archive_type") and hasattr(node.sys, "archive_path"):
+        archive_avail = True
+    for f in node.files:
+        fpath = os.path.join(config.get("paths.datadir"), f.path)
+        if f.filetype == 'image':
+            image_list += [fpath]
+            image_mimetype = f.mimetype
+        elif f.filetype == 'original':
+            original_list += [fpath]
+            original_mimetype = f.mimetype
+        elif f.filetype == 'presentation':
+            presentation_list += [fpath]
+        elif f.filetype == 'thumb':
+            thumb_list += [fpath]
+        err_txt = chk_mimetype(fpath, f.mimetype, m)
+        if err_txt:
+            warn_str += "warning: %d: %s\n" % (node.id, err_txt)
+
+    # multiple images
+    if len(image_list) > 1:
+        errtxt = ""
+        equals, errtxt = cmp_filelist(image_list)
+        warn_str += "warning: %d: more than one image files (%d, equal: %d)\n" % \
+                    (node.id, len(image_list), equals)
+        if errtxt:
+            warn_str += "warning: %d: %s\n" % (node.id, errtxt)
+    # must not have multiple files with type = 'original'
+    if len(original_list) > 1:
+        warn_str += "warning: %d: too many original files (%d, equal: %d)\n" % \
+                    (node.id, len(original_list), cmp_filelist(original_list)[0])
+    # either original or archiv
+    if original_list and archive_avail:
+        warn_str += "warning: %d: original and archive files\n" % node.id
+    # must have an 'original' file or a system attribute archive_type + archive_path
+    # if it has a file with type 'image'
+    if image_list and not original_list and not archive_avail:
+        warn_str += "warning: %d: image files but no original or archive files\n" % node.id
+    # files with type 'image' must have a 'thumbnail' and 'presentation' file
+    if image_list and (not thumb_list or not presentation_list):
+        warn_str += "warning: %d: image without thumb or presentation\n" % node.id
+    # files must have no duplicate 'thumbnail' or 'presentation' files
+    if len(thumb_list) > 1 or len(presentation_list) > 1:
+        warn_str += "warning: %d: multiple thumb (%d, equal: %d) or presentation (%d, equal: %d) files\n" % \
+                    (node.id, len(thumb_list), cmp_filelist(thumb_list)[0],
+                     len(presentation_list), cmp_filelist(presentation_list)[0])
+    # files with type 'image' or 'original' must have a mimetype like 'image/%'
+    if image_list and not image_mimetype.startswith("image/"):
+        warn_str += "warning: %d: image has no mimetype like 'image/%%'\n" % node.id
+    if original_list and not original_mimetype.startswith("image/"):
+        warn_str += "warning: %d: original has no mimetype like 'image/%%'\n" % node.id
+    # TIFF: file with type 'original' must have mimetype = 'image/tiff'
+    #       and type 'image' must have mimetype = 'image/png'
+    if original_mimetype == "image/tiff" and not image_mimetype == "image/png":
+        warn_str += "warning: %d: tiff-original has no png-image\n" % node.id
+
+    if warn_str:
+        print(warn_str)
+        for f in node.files:
+            print(f.path + ' ' + f.filetype + ' ' + f.mimetype)
+
+    return warn_str
+
 
 @magics_class
 class MediatumMagics(Magics):
 
     def __init__(self, shell):
         super(MediatumMagics, self).__init__(shell)
-        self.init_state = 0
-
-    def check_init_state(self, min_state):
-        if self.init_state < INIT_STATES[min_state]:
-            print("mediaTUM is not initialized properly. You must run '%init {}' first."
-                  .format(min_state))
-            return False
-        return True
 
     @magic_arguments()
     @argument("nid", nargs="?", default="")
@@ -351,7 +566,7 @@ class MediatumMagics(Magics):
             if new_node:
                 cnode, lastnode = new_node, cnode
             else:
-                print("node {} not found.".format(nid))
+                print(u"node {} not found.".format(nid))
 
     @magic_arguments()
     @argument("name")
@@ -362,25 +577,49 @@ class MediatumMagics(Magics):
         args = parse_argstring(self.child, line)
         name = args.name.strip("\"'")
         try:
-            cnode, lastnode = filter(lambda c: c.name == name, cnode.children)[0], cnode
-        except IndexError:
+            cnode, lastnode = cnode.children.filter_by(name=name).one(), cnode
+        except NoResultFound:
             print(u"Child {} not found!".format(args.name))
 
-    @line_magic
-    def l(self, line):
+    @line_magic("list_all")
+    @line_magic("l")
+    def list_all(self, line):
         print(cnode)
-        section_names = ["Parents", "Subnodes", "Attributes", "Files"]
-        section_lines = [
-            [u"{} {}:  {}".format(n.id, n.name, n.type) for n in cnode.parents],
-            [u"{} {}:  {}".format(n.id, n.name, n.type) for n in cnode.children],
-            [u"{} = {}".format(a.name, a.value) for a in itervalues(cnode.attributes)],
-            [u"{} {} {}".format(a.filename, a.type, a.mimetype) for a in cnode.files]
-        ]
+        for category in INFO_PRODUCERS:
+            if not category.endswith("_rules"):
+                print_info_for_category(category)
 
-        for name, lines in zip(section_names, section_lines):
-            print(u"\t" + name + ":")
-            for line in lines:
-                print(u"\t\t" + line)
+    @line_magic("list_attributes")
+    @line_magic("la")
+    def list_attributes(self, line):
+        print_info_for_category("attributes")
+
+    @line_magic("list_system_attributes")
+    @line_magic("lsa")
+    def list_system_attributes(self, line):
+        print_info_for_category("system_attributes")
+
+    @line_magic("list_children")
+    @line_magic("lc")
+    def list_children(self, line):
+        print_info_for_category("children")
+
+    @line_magic("list_parents")
+    @line_magic("lp")
+    def list_parents(self, line):
+        print_info_for_category("parents")
+
+    @line_magic("list_files")
+    @line_magic("lf")
+    def list_files(self, line):
+        print_info_for_category("files")
+
+    @line_magic("list_rules")
+    @line_magic("lr")
+    def list_rules(self, line):
+        print_info_for_category("read_rules")
+        print_info_for_category("write_rules")
+        print_info_for_category("data_rules")
 
     @needs_init("basic")
     @magic_arguments()
@@ -388,66 +627,155 @@ class MediatumMagics(Magics):
     @line_magic
     def remove(self, line):
         args = parse_argstring(self.remove, line)
-        child = tree.getNode(args.nid)
-        if child is None:
-            print("Node #{} not found!".format(args.nid))
+        try:
+            child = cnode.children.filter_by(id=long(args.nid)).one()
+        except NoResultFound:
+            print(u"Child {} not found!".format(args.nid))
             return
-        cnode.m.removeChild(child)
-        
+        cnode.children.remove(child)
+
     @needs_init("basic")
     @magic_arguments()
     @argument("nid")
-    @line_magic
+    @line_magic("link")
+    @line_magic("ln")
     def ln(self, line):
         args = parse_argstring(self.ln, line)
-        new_child = tree.getNode(args.nid)
-        cnode.m.addChild(new_child)
+        new_child = q(Node).get(args.nid)
+        cnode.children.append(new_child)
+
+    @needs_init("basic")
+    @magic_arguments()
+    @argument("ruletype")
+    @argument("name")
+    @argument("-i", "--invert", action="store_true")
+    @line_magic
+    def link_ruleset(self, line):
+        args = parse_argstring(self.link_ruleset, line)
+        existing_assoc = cnode.access_ruleset_assocs.filter_by(ruleset_name=args.name, ruletype=args.ruletype).scalar()
+        if existing_assoc is not None:
+            logg.warn(
+                "ruleset %s (%s, %s) already used by current node, ignored",
+                args.name,
+                inversion_label(
+                    not existing_assoc.invert),
+                args.ruletype)
+        else:
+            new_assoc = NodeToAccessRuleset(ruleset_name=args.name, ruletype=args.ruletype, invert=args.invert)
+            cnode.access_ruleset_assocs.append(new_assoc)
+
+    @needs_init("basic")
+    @magic_arguments()
+    @argument("ruletype")
+    @argument("name")
+    @line_magic
+    def unlink_ruleset(self, line):
+        args = parse_argstring(self.unlink_ruleset, line)
+        assoc = cnode.access_ruleset_assocs.filter_by(ruleset_name=args.name, ruletype=args.ruletype).scalar()
+        if assoc is None:
+            logg.warn("ruleset %s (%s) not used by current node, ignored", args.name, args.ruletype)
+        else:
+            cnode.access_ruleset_assocs.remove(assoc)
+
+    @needs_init("basic")
+    @magic_arguments()
+    @argument("ruletype")
+    @argument("-i", "--invert", action="store_true")
+    @argument("-b", "--blocking", action="store_true")
+    @line_magic
+    def add_rule(self, line):
+        args = parse_argstring(self.link_ruleset, line)
+        rule = AccessRule()
+        assoc = NodeToAccessRule(rule=rule, ruletype=args.ruletype, invert=args.invert, blocking=args.blocking)
+        cnode.access_ruleset_assocs.append(assoc)
+
+    @needs_init("basic")
+    @magic_arguments()
+    @argument("ruleset_name")
+    @line_magic
+    def ruleset(self, line):
+        args = parse_argstring(self.ruleset, line)
+        ars = q(AccessRuleset).get(args.ruleset_name)
+        for ra in ars.rule_assocs:
+            print(format_access_rule_assoc(ra))
+
+
+    @needs_init("basic")
+    @magic_arguments()
+    @argument("group_name")
+    @line_magic
+    def create_ruleset_for_group(self, line):
+        args = parse_argstring(self.create_ruleset_for_group, line)
+        group_name = args.group_name
+        usergroup = q(UserGroup).filter_by(name=group_name).scalar()
+        if usergroup is None:
+            print("usergroup {} does not exist, doing nothing!".format(group_name))
+            return
         
+        existing_ruleset = q(AccessRuleset).filter_by(name=group_name).scalar()
+        if existing_ruleset is not None:
+            print("ruleset with the name of the usergroup already exists, doing nothing!".format(group_name))
+            return
+        
+        rule = get_or_add_access_rule(group_ids=[usergroup.id])
+        ruleset = AccessRuleset(name=group_name, description=group_name)
+        arr = AccessRulesetToRule(rule=rule)
+        ruleset.rule_assocs.append(arr)
+
+
     @needs_init("basic")
     @magic_arguments()
     @argument("-f", "--fix", action="store_true")
-    @argument("-a", "--all", action="store_true", help="check all masks of all metadatatypes")
+    @argument("-a", "--all", action="store_true", help="check all masks of current metadatatypes")
+    @argument("-m", "--allmasks", action="store_true", help="check all masks of *all* metadatatypes")
     @defaults(fix=False)
     @line_magic
     def checkmask(self, line):
         args = parse_argstring(self.checkmask, line)
         import schema.schema as metadatatypes
         if args.all:
-            for mdt in q(Node).filter_by(type="metadatatype"):
-                print("=" * 80)
-                print("checking metadatatype", mdt.name)
-                for mask in mdt.children.filter_by(type="mask"):
+            def check_masks_of_mdt(mdt):
+                for mask in mdt.masks:
                     print("-" * 80)
-                    print("checking mask {} of mdt {}".format(mask.name, mdt.name))
-                    metadatatypes.checkMask(mask.m, fix=args.fix, verbose=1, show_unused=1)
+                    print(u"checking mask {} of mdt {}".format(mask.name, mdt.name))
+                    metadatatypes.checkMask(mask, fix=args.fix, verbose=1, show_unused=1)
+
+            if args.allmasks:
+                for mdt in q(Metadatatype):
+                    print("=" * 80)
+                    print("checking metadatatype", mdt.name)
+                    check_masks_of_mdt(mdt)
+            else:
+                check_masks_of_mdt(cnode)
         else:
-            metadatatypes.checkMask(cnode.m, fix=args.fix, verbose=1, show_unused=1)
-        
+            metadatatypes.checkMask(cnode, fix=args.fix, verbose=1, show_unused=1)
+
     @needs_init("basic")
     @magic_arguments()
     @argument("oldmask")
     @argument("newmask")
     @line_magic
     def clonemask(self, line):
+        raise NotImplementedError("not yet implemented in mediaTUM postgres")
         args = parse_argstring(self.clonemask, line)
         import schema.schema as metadatatypes
-        metadatatypes.cloneMask(cnode.m.getChild(args.oldmask), args.newmask)
-        
+        metadatatypes.cloneMask(cnode.children.filter_by(name=args.oldmask), args.newmask)
+
     @needs_init("basic")
     @magic_arguments()
-    @argument("nid")
+    @argument("nid", default=None)
     @line_magic
     def postprocess(self, line):
         args = parse_argstring(self.postprocess, line)
-        if args.nid == "":
-            treenode = tree.getNode(cnode.id)
+        if not args.nid:
+            node = cnode
         else:
-            treenode = tree.getNode(args.nid)
-        if hasattr(treenode, "event_metadata_changed"):
-            treenode.event_metadata_changed()
+            node = q(Node).get(args.nid)
+        if hasattr(node, "event_metadata_changed"):
+            node.event_metadata_changed()
             logg.info("called event_metadata_changed")
-        if hasattr(treenode, "event_files_changed"):
-            treenode.event_files_changed()
+        if hasattr(node, "event_files_changed"):
+            node.event_files_changed()
             logg.info("called event_files_changed")
 
     @needs_init("basic")
@@ -457,98 +785,194 @@ class MediatumMagics(Magics):
         citeproc.check_mappings()
 
     @magic_arguments()
-    @argument("type", default="full", nargs="?", help="init type. Full initializes everything, basic only important stuff")
+    @argument("state", nargs="?", help="init state. Full initializes everything, basic only important stuff")
     @line_magic
     def init(self, line):
         args = parse_argstring(self.init, line)
-        new_state = args.type
+        new_state = args.state
         if new_state == "basic":
-            initmodule.basic_init()
-            if not self.init_state:
-                self.init_state = INIT_STATES[new_state]
+            initmodule.basic_init(**INIT_ARGS)
+        elif new_state == "full":
+            # drop reassignment warnings because we want to reassign node classes when plugins are loaded later, for example
+            warnings.filterwarnings("ignore", "Reassigning polymorphic.*")
+            initmodule.full_init(**INIT_ARGS)
         else:
-            initmodule.full_init()
-            self.init_state = INIT_STATES[new_state]
+            print("current init state is: " + initmodule.get_current_init_state())
 
     @line_magic
-    def delete_mappings_for_missing_nodes(self, line):
-        existing_subselect = q(Node.id).subquery()
-        stmt = t_nodemapping.delete().where(~t_nodemapping.c.nid.in_(existing_subselect))
-        res = conn.execute(stmt)
-        return res
-    
-    @line_magic
     def purge_nodes(self, line):
-        res = purge_nodes()
-        print(res.rowcount, "nodes deleted")
-        
+        res = delete_unreachable_nodes(synchronize_session=False)
+        s.expire_all()
+        print(res, "nodes deleted")
+
+    @needs_init("full")
+    @magic_arguments()
+    @argument("login_name", default=None)
+    @argument("password", nargs="?", default=None)
     @line_magic
-    def purge_nodemappings(self, line):
-        res = purge_nodemappings()
-        print(res.rowcount, "nodemapping entries deleted")
-        
+    def password(self, line):
+        args = parse_argstring(self.password, line)
+
+        if args.password is None:
+            pw = getpass.getpass()
+        else:
+            pw = args.password
+
+        user = q(User).filter_by(login_name=args.login_name).one()
+        user.change_password(pw)
+
+    @needs_init("full")
+    @magic_arguments()
+    @argument("login_name", default=None)
+    @argument("password", nargs="?", default=None)
     @line_magic
-    def purge_nodefiles(self, line):
-        res = purge_nodefiles()
-        print(res.rowcount, "nodefiles deleted")
-        
-    @line_magic
-    def purge_metadatatypes(self, line):
-        res = purge_metadatatypes()
-        print(res.rowcount, "metadatatypes deleted")
-        
-    @line_magic
-    def purge_exportmappings(self, line):
-        res = purge_exportmappings()
-        print(res.rowcount, "exportmappings deleted")
-        
-    @line_magic
-    def purge_nodeattributes(self, line):
-        res = purge_nodeattributes()
-        print(res.rowcount, "attributes deleted")
-        
-    @line_magic
-    def delete_subtree(self, start_id):
-        pass
-    
-    @line_magic
-    def repair_localread(self, line):
-        updated_localread_count = repair_localread()
-        print(updated_localread_count, "localread values repaired")
-    
+    def check_login(self, line):
+        from core.auth import authenticate_user_credentials
+        args = parse_argstring(self.check_login, line)
+
+        if args.password is None:
+            pw = getpass.getpass()
+        else:
+            pw = args.password
+
+        user = authenticate_user_credentials(args.login_name, pw, {})
+
+        if user is None:
+            user = q(User).filter_by(login_name=args.login_name).scalar()
+            if user is None:
+                print(u"login failed, no user with login name '{}'!".format(args.login_name))
+            else:
+                print(u"user with login_name '{}' found, but login failed!".format(args.login_name))
+        else:
+            print(u"login ok")
+        return user
+
 
 ip = get_ipython()  # @UndefinedVariable
 
 
 def current_prompt():
-    name = cnode.name
-    name = name if len(name) < 80 else name[:77] + "..."
-    prompt = u"cnode: {} {} \"{}\"\n[\\#]: ".format(cnode.id, cnode.type, name)
+    change_indicator = "(changes !) " if s.dirty or s.new or s.deleted else ""
+    if cnode:
+        name = cnode.name
+        name = name if len(name) < 80 else name[:77] + "..."
+        prompt = u"{}cnode: {} {} \"{}\"\n[\\#]: ".format(change_indicator, cnode.id, cnode.type, name)
+    else:
+        prompt = "no cnode [\\#] "
     return prompt
- 
+
+
 def set_prompt(ip):
     ip.magic("config PromptManager.in_template = current_prompt()")
-    
+
 ip.set_hook("pre_prompt_hook", set_prompt)
 
-def load_ipython_extension(ip):
-    """Load the extension in IPython."""
+# setup custom exception handler for automatic rollbacks on SQLAlchemy errors
+
+
+def explain(query, analyze=False, pygments_style="native"):
+    """Prints EXPLAIN (ANALYZE) query in current session."""
+    explained = alchemyext.explain(query, s, analyze)
+    from pygments.lexers import PostgresConsoleLexer
+    from pygments import highlight
+
+    if IPYTHON_NOTEBOOK:
+        from pygments.formatters import HtmlFormatter
+        formatter = HtmlFormatter
+    else:
+        from pygments.formatters import Terminal256Formatter
+        formatter = Terminal256Formatter
+
+    explained = highlight(
+        explained,
+        PostgresConsoleLexer(),
+        formatter(style=pygments_style))
+
+    if IPYTHON_NOTEBOOK:
+        formatted_statement = db.statement_history.format_statement(
+            db.statement_history.last_statement,
+            formatter_cls=HtmlFormatter)
+        from IPython.display import HTML
+        return HTML(
+            "<style>" +
+            HtmlFormatter().get_style_defs('.highlight') +
+            "</style>" +
+            formatted_statement +
+            "<br>" +
+            explained)
+    else:
+        # strip EXPLAIN (ANALYZE)
+        stmt_start = 16 if analyze else 8
+        stmt = db.statement_history.last_statement[stmt_start:]
+        formatted_statement = db.statement_history.format_statement(stmt)
+        print()
+        print(formatted_statement)
+        print(explained)
+
+
+def eanalyze(query, pygments_style="native"):
+    """Shortcut for explain(query, analyze=True)"""
+    explain(query, True, pygments_style)
+
+
+def handle_sqla_exception(self, etype, value, tb, tb_offset=None):
+    from core import db
+    db.session.rollback()
+    self.showtraceback((etype, value, tb), tb_offset=0)
+    stb = self.InteractiveTB.structured_traceback(
+        (etype, value, tb), tb_offset=tb_offset)
+    return stb
+
+ip.set_custom_exc((SQLAlchemyError,), handle_sqla_exception)
+
+try:
+    from sql.magic import SqlMagic
+except ImportError:
+    print("SQL magic not found! You should install the IPython sql extension: pip install ipython-sql")
+    SQLMagics = None
+else:
+    @magics_class
+    class SQLMagics(SqlMagic):
+
+        """Some additions to ipython-sql, could be merged"""
+
+        @needs_local_scope
+        @line_magic("select")
+        def select(self, line, cell='', local_ns={}):
+            return self.execute("SELECT " + line, cell, local_ns)
+
+        @needs_local_scope
+        @line_magic("delete")
+        def delete(self, line, cell='', local_ns={}):
+            return self.execute("DELETE " + line, cell, local_ns)
+
+        @needs_local_scope
+        @line_magic("insert")
+        def insert(self, line, cell='', local_ns={}):
+            return self.execute("INSERT " + line, cell, local_ns)
+
+        @needs_local_scope
+        @line_magic("update")
+        def update(self, line, cell='', local_ns={}):
+            return self.execute("UPDATE " + line, cell, local_ns)
+
+        @needs_local_scope
+        @line_magic("expl")
+        def explain_analyze(self, line, cell='', local_ns={}):
+            return self.execute("EXPLAIN ANALYZE " + line, cell, local_ns)
+
+
+def load_ipython_extensions(ip):
     ip.register_magics(MediatumMagics)
+    if SQLMagics:
+        ip.register_magics(SqlMagic)
+        ip.register_magics(SQLMagics)
+        ip.magic("sql {SQLMAGICS_CONNECTION_FACTORY()}")
 
-load_ipython_extension(ip)
-
-### mediaTUM
-
-import core.tree as tree
-
-from core.db.database import getConnection
-get_db_connection = getConnection
-del getConnection
+load_ipython_extensions(ip)
 
 ip.magic("autocall 1")
 
-try:
-    ip.magic("reload_ext sql")
-    ip.magic("sql $SQLALCHEMY_CONNECTION")
-except ImportError:
-    print("SQL magic not found! You should install the IPython sql extension: pip install ipython-sql")
+# the sql extension and is in state of "idle in transaction" here. Force the end of the transaction.
+ip.magic("sql ROLLBACK")
+# the transaction from the SQLAlchemy session is always open, this can block other DB users that want an exclusive lock!

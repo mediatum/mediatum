@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 
-
 from __future__ import absolute_import, print_function
+import logging
+
+logg = logging.getLogger(__name__)
 
 try:
     from core import athana_http
-    print("athana_http imported (separated athana)")
+    logg.debug("athana_http imported (separated athana)")
     from core import athanaserver
-    print("athanaserver imported (separated athana)")
+    logg.debug("athanaserver imported (separated athana)")
 except ImportError:
     from core import athana as athanaserver
     athana_http = athanaserver
-    print("athana imported (monolithic athana)")
+    logg.debug("athana imported (monolithic athana)")

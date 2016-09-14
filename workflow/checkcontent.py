@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
  mediatum - a multimedia content repository
 
@@ -21,12 +22,12 @@ from .workflow import WorkflowStep, registerStep
 from utils.utils import checkXMLString
 from core.translation import t, lang, addLabels
 import utils.mail as mail
-import core.tree as tree
+from schema.schema import Metafield
 
 
 def register():
-    tree.registerNodeClass("workflowstep-checkcontent", WorkflowStep_CheckContent)
-    registerStep("workflowstep-checkcontent")
+    #tree.registerNodeClass("workflowstep-checkcontent", WorkflowStep_CheckContent)
+    registerStep("workflowstep_checkcontent")
     addLabels(WorkflowStep_CheckContent.getLabels())
 
 
@@ -43,10 +44,9 @@ class WorkflowStep_CheckContent(WorkflowStep):
 
     def runAction(self, node, op=""):
         attrs = ""
-        for k, v in node.items():
+        for k, v in node.attrs.items():
             attrs += v
-
-        if not checkXMLString(attrs):
+        if not checkXMLString(u'<?xml version="1.0" encoding="UTF-8"?>' + u'<tag>' + attrs + u'</tag>'):
             try:
                 mail.sendmail(self.get('from'), self.get('to'), self.get('subject'), self.get('text'))
             except:
@@ -56,22 +56,22 @@ class WorkflowStep_CheckContent(WorkflowStep):
 
     def metaFields(self, lang=None):
         ret = []
-        field = tree.Node("from", "metafield")
+        field = Metafield("from")
         field.set("label", t(lang, "admin_wfstep_checkcontent_sender"))
         field.set("type", "text")
         ret.append(field)
 
-        field = tree.Node("email", "metafield")
+        field = Metafield("email")
         field.set("label", t(lang, "admin_wfstep_checkcontent_recipient"))
         field.set("type", "text")
         ret.append(field)
 
-        field = tree.Node("subject", "metafield")
+        field = Metafield("subject")
         field.set("label", t(lang, "admin_wfstep_checkcontent_subject"))
         field.set("type", "text")
         ret.append(field)
 
-        field = tree.Node("text", "metafield")
+        field = Metafield("text")
         field.set("label", t(lang, "admin_wfstep_checkcontent_text"))
         field.set("type", "memo")
         ret.append(field)
@@ -82,9 +82,9 @@ class WorkflowStep_CheckContent(WorkflowStep):
     def getLabels():
         return {"de":
                 [
-                    ("workflowstep-checkcontent", "Inhalt Pr\xc3\xbcfen"),
+                    ("workflowstep-checkcontent", u"Inhalt Prüfen"),
                     ("admin_wfstep_checkcontent_sender", "E-Mail Absender"),
-                    ("admin_wfstep_checkcontent_recipient", "Empf\xc3\xa4nger"),
+                    ("admin_wfstep_checkcontent_recipient", u"Empfänger"),
                     ("admin_wfstep_checkcontent_subject", "Betreff"),
                     ("admin_wfstep_checkcontent_text", "Text"),
                 ],

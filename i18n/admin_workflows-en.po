@@ -22,6 +22,9 @@ msgstr "create new workflow"
 msgid "admin_wf_name"
 msgstr "Name"
 
+msgid "admin_wf_display_name_attribute"
+msgstr "Display name attribute"
+
 msgid "admin_wf_acl_title"
 msgstr "workflow uses ACL-rule"
 

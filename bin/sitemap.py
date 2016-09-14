@@ -18,18 +18,11 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-__author__ = 'Andrew Darrohn andrew.darrohn@tum.de'
 
 import os
 import sys
 sys.path += ['../..', '../', '.']
 
-from core.init import full_init
-full_init()
-
-import core.users as users
-import core.acl as acl
-import core.tree as tree
 import core.config as config
 import logging
 import datetime
@@ -39,6 +32,16 @@ import re
 from lxml import etree
 from math import ceil
 
+from core.init import full_init
+full_init(prefer_config_filename="sitemap.log")
+
+from core import Node
+from core import db
+from contenttypes import Collections
+
+q = db.query
+
+# XXX: alias handling must be fixed before switching this on
 USE_ALIASES = False
 PING_GOOGLE = True
 PING_URL_ENCODED = 'http://www.google.com/webmasters/tools/ping?sitemap=http%3A%2F%2Fmediatum.ub.tum.de%2Fsitemap-index.xml'
@@ -105,8 +108,8 @@ class Sitemap:
                 for id_lastmod_tuple in nodes:
                     url = etree.SubElement(root, 'url')
                     loc = etree.SubElement(url, 'loc')
-                    if 'system.aliascol' in tree.getNode(id_lastmod_tuple[0]).attributes and USE_ALIASES:
-                        loc.text = ''.join(['http://', self.host, '/', tree.getNode(id_lastmod_tuple[0]).attributes['system.aliascol']])
+                    if 'system.aliascol' in q(Node).get(id_lastmod_tuple[0]).attrs and USE_ALIASES:
+                        loc.text = ''.join(['http://', self.host, '/', q(Node).get(id_lastmod_tuple[0]).attrs['system.aliascol']])
                     else:
                         loc.text = ''.join(['http://', self.host, '/node?id=', id_lastmod_tuple[0]])
                     lastmod = etree.SubElement(url, 'lastmod')
@@ -195,14 +198,14 @@ def create():
     Creates the sitemap files and the sitemap index files which are located at /web/root/
     """
     logging.getLogger('everything').info('Creating Sitemaps and Sitemap Index...')
+    from core.users import get_guest_user
 
     base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
     hostname = config.get('host.name')
 
-    root = tree.getRoot('collections')
-    all_nodes = root.getAllChildren()
-    user = users.getUser('Gast')
-    access = acl.AccessData(user=user)
+    root = q(Collections).one()
+    guest_user = get_guest_user()
+    all_nodes = root.all_children_by_query(q(Node)).filter_read_access(user=guest_user)
     sitemaps = []
 
     node_dict = {'collection': [],
@@ -216,10 +219,10 @@ def create():
 
     for node in all_nodes:
         # Arkitekt had a guest field that is actually not visible
-        if access.hasAccess(node, 'read'):
+        if node.has_read_access(user=guest_user):
             for node_type in node_dict.keys():
-                if node_type in tree.getNode(node.id).type:
-                    node_dict[node_type].append((node.id, tree.getNode(node.id).get('updatetime')))
+                if node_type in q(Node).get(node.id).type:
+                    node_dict[node_type].append((unicode(node.id), q(Node).get(node.id).updatetime))
 
     # Reassign node_dict to a dict where empty values were removed
     node_dict = dict((k, v) for k, v in node_dict.iteritems() if v)

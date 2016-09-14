@@ -2,23 +2,19 @@
 '''
 Created on 22.07.2013
 @author: stenzel
-
-XXX: These tests are database dependent. They only work when the DB is prepared for that. They also change the DB!
-WARNING: Don't run them on production databases...
 '''
 from __future__ import division, absolute_import
 import json
 import os.path
-import logging as logg
-logg.basicConfig()
+import datetime
 from pprint import pprint
-from pytest import raises
+from pytest import raises, mark
 
-from core.init import basic_init
-basic_init()
-from core import tree
+from core import Node, db
+from utils.compat import iteritems
 from .. import citeproc
-from ..citeproc import get_citeproc_json, DOINotFound, FIELDS, CSLField
+from ..citeproc import get_citeproc_json, DOINotImported, FIELDS, CSLField
+from schema.citeproc import DOINotFound
 
 
 BASEDIR = os.path.join(os.path.dirname(__file__), "test_data")
@@ -37,27 +33,21 @@ def load_csl_record_file(doi):
     return json.load(open(fp))
 
 
-def check_node(node, expected):
-    assert isinstance(node, tree.Node)
+def check_node(node, expected, **check_attrs):
+    assert isinstance(node, Node)
     print("expected node content:")
     pprint(expected)
     print("actual node attributes:")
     pprint(node.attributes)
-    if expected:
-        doi = node.get("doi") or node.get("DOI")
-        assert doi == expected["DOI"]
-        publisher = node.get("publisher")
-        assert publisher == expected["publisher"]
-
-
-def setup_module(module):
-    try:
-        from core import init
-    except:
-        return
-    init.register_node_classes()
-    init.register_node_functions()
-    tree.initialize()
+    # every doi-imported node must fulfill this
+    assert node.name == expected[u"DOI"]
+    doi = node.get(u"doi") or node.get(u"DOI")
+    assert doi == expected[u"DOI"]
+    # additional attribute value checks
+    for attr, expected in iteritems(check_attrs):
+        value = node.get(attr)
+        if value:
+            assert value == expected
 
 
 def _get_path(doi, typ):
@@ -65,15 +55,20 @@ def _get_path(doi, typ):
     return os.path.join(BASEDIR, filename)
 
 
-def test_get_citeproc_json_article():
-    expected = load_csl_record_file(DOI_ARTICLE)
-    res = get_citeproc_json(DOI_ARTICLE)
-    assert expected == res
+def test_convert_raw_date():
+    year = 2023
+    date_value = {u"raw": unicode(year)}
+    dat = citeproc.convert_csl_date(date_value)
+    assert dat == datetime.date(year=year, month=1, day=1).isoformat()
 
 
-def test_get_citeproc_json_fail():
-    with raises(DOINotFound):
-        get_citeproc_json("invalid")
+def test_convert_date_parts():
+    year = 2003
+    month = 5
+    day = 27
+    date_value = {u"date-parts": [[year, month, day]]}
+    dat = citeproc.convert_csl_date(date_value)
+    assert dat == datetime.date(year=year, month=month, day=day).isoformat()
 
 
 def test_fields():
@@ -85,25 +80,50 @@ def test_fields():
     assert date_field.fieldtype == "date"
 
 
-def test_import_csl():
+def test_import_csl(journal_article_mdt):
+    """Test importing a local CSL file"""
     record = load_csl_record_file(DOI_ARTICLE)
     node = citeproc.import_csl(record, testing=True)
-    check_node(node, record)
+    # check if database can serialize the contents
+    db.session.add(node)
+    db.session.flush()
+    check_node(node, record,
+               issued=datetime.date(year=2013, month=7, day=21).isoformat())
 
 
-def test_import_doi():
-    node = citeproc.import_doi(DOI_ARTICLE3, testing=True)
-    expected = load_csl_record_file(DOI_ARTICLE3)
-    check_node(node, expected)
+def test_import_csl_utf8(journal_article_mdt):
+    """Test importing a local CSL file with non-ASCII characters"""
+    record = load_csl_record_file(DOI_UTF8)
+    node = citeproc.import_csl(record, testing=True)
+    check_node(node, record,
+               author=u"Weisemöller, Ingo;Schürr, Andy")
 
 
-def test_import_doi_utf8():
+@mark.slow
+def test_get_citeproc_json_article():
+    expected = load_csl_record_file(DOI_ARTICLE)
+    res = get_citeproc_json(DOI_ARTICLE)
+    assert expected == res
+
+
+@mark.slow
+def test_get_citeproc_json_not_found():
+    with raises(DOINotFound):
+        get_citeproc_json("unknown")
+
+
+@mark.slow
+def test_get_citeproc_json_not_imported():
+    with raises(DOINotImported):
+        get_citeproc_json("10.2788/967746")
+
+
+@mark.slow
+def test_import_doi(journal_article_mdt):
+    """Note: this contacts the real citeproc server. Marked as slow because of that."""
     node = citeproc.import_doi(DOI_UTF8, testing=True)
     expected = load_csl_record_file(DOI_UTF8)
+    # check if database can serialize the contents
+    db.session.add(node)
+    db.session.flush()
     check_node(node, expected)
-
-
-def test_literal_author_raw_date():
-    node = citeproc.import_doi(DOI_LITERAL_AUTHOR_RAW_DATE, testing=True)
-    assert node.get("author") == "Cambridge Archaeological Unit"
-    assert node.get("publicationdate") == "2012-01-01"

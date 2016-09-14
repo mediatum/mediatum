@@ -1,0 +1,6 @@
+msgid "core_snipped_internal_server_error_without_mail"
+msgstr "<h1>mediatum</h1><p><b>Ein interner Fehler ist aufgetreten.</b></p><p>Für weitere Informationen wenden Sie sich bitte mit dem Code &quot;<b><tt>${XID}</tt></b>&quot; an den Support.</p>"
+
+msgid "core_snipped_internal_server_error_with_mail"
+msgstr "<h1>mediatum</h1><p><b>Ein interner Fehler ist aufgetreten.</b></p><p>Für weitere Informationen senden Sie bitte eine E-Mail mit dem Code &quot;<b><tt>${XID}</tt></b>&quot; an <a href='mailto:${email}?subject=XID ${XID}'>${email}</a>.</p>"
+

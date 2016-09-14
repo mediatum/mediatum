@@ -1,23 +1,23 @@
 var lastmark = "";
 var lasttime = 0;
-    
+
 function reloadPage()
 {
     location.reload();
 }
 
 function openWindow(fileName)
-{ 
-    win1 = window.open(fileName,'imageWindow','screenX=50,screenY=50,width=800,height=800,directories=no,location=no,menubar=no,scrollbars=no,status=no,toolbar=no,resizable=yes'); 
+{
+    win1 = window.open(fileName,'imageWindow','screenX=50,screenY=50,width=800,height=800,directories=no,location=no,menubar=no,scrollbars=no,status=no,toolbar=no,resizable=yes');
     win1.focus();
-} 
+}
 
 function openDetailWindow(fileName)
-{ 
-    win1 = window.open(fileName,'imageWindow','screenX=50,screenY=50,width=840,height=830,directories=no,location=no,menubar=no,scrollbars=no,status=no,toolbar=no,resizeable=yes'); 
+{
+    win1 = window.open(fileName,'imageWindow','screenX=50,screenY=50,width=840,height=830,directories=no,location=no,menubar=no,scrollbars=no,status=no,toolbar=no,resizeable=yes');
     win1.focus();
-} 
-    
+}
+
 function fullSizePopup(id, width, height)
 {
     url = '/fullsize?id='+id;
@@ -29,32 +29,14 @@ function fullSizePopup(id, width, height)
         height = screen.height-100;
     }
 
-    var win1 = window.open(url,'image_fullsize','width='+width+',height='+height+',screenX=50,screenY=50,directories=no,location=no,menubar=no,scrollbars=no,status=no,toolbar=no,resizable=yes'); 
+    var win1 = window.open(url,'image_fullsize','width='+width+',height='+height+',screenX=50,screenY=50,directories=no,location=no,menubar=no,scrollbars=no,status=no,toolbar=no,resizable=yes');
     win1.focus();
     return win1;
 }
 
-function shoppingbag(shoppingbag_width, shoppingbag_height)
-{
-    openPopup('/shoppingbag', 'bag', shoppingbag_width, shoppingbag_height, 'yes');
-}
-
-function shoppingBag(nodeid)
-{
-    $.get('/shoppingbag?files='+nodeid+'&action=add', function(data) {
-      alert(unescape(data));
-    });
-    return false;
-}
-
-function addDirToShoppingBag(nodeid)
-{
-    openPopup('put_dir_into_shoppingbag?dir='+nodeid, 'move', 150,100, 'no');
-}
-   
 function openPopup(url, name, width, height, scroll)
 {
-    var win1 = window.open(url,name,'width='+width+',height='+height+',screenX=50,screenY=50,directories=no,location=no,menubar=no,scrollbars='+scroll+',status=no,toolbar=no,resizable=yes'); 
+    var win1 = window.open(url,name,'width='+width+',height='+height+',screenX=50,screenY=50,directories=no,location=no,menubar=no,scrollbars='+scroll+',status=no,toolbar=no,resizable=yes');
     win1.focus();
     return win1;
 }
@@ -66,21 +48,21 @@ function chg()
     var sel_index = document.xsearch["field"+fieldno].selectedIndex;
     var searchmaskitem_id = document.xsearch["field"+fieldno][sel_index].value;
     var query_field_value = document.xsearch["query"+fieldno].value;
-    var collection_id = $("input[name=collection]").val();
-    
+    var container_id = $("input[name=id]").val();
+
     $('#query'+fieldno).attr("disabled", true);
-    
+
     $.getJSON("/node?jsoncallback=?",
     {
         jsonrequest: "True",
         cmd: "get_list_smi",
         fieldno: fieldno,
         searchmaskitem_id: searchmaskitem_id,
-        collection_id: collection_id,
+        container_id: container_id,
         query_field_value: query_field_value,
         format: "json"
     },
-    function(data) { 
+    function(data) {
         $('#query'+fieldno).replaceWith(data[0]);
         $('#query'+fieldno).removeAttr("disabled");
     })
@@ -98,7 +80,7 @@ function clearFields()
     for (i=1; i<11; i++){
         if (( $("input[name=searchmode]").val() == "extended") && (i == 4)) {
             break;
-        }    
+        }
         document.xsearch["field"+i].selectedIndex = 0;
         obj = document.getElementById("query"+i);
         if (obj != null){
@@ -135,10 +117,12 @@ function questionDel(){
 function moveRight(left, right) {
     if (left.selectedIndex != -1) {
         for (i=left.length-1; i>=0; i--) {
-            if (left.options[i].selected && left.options[i].value.charAt(0)!='{') {
+            if (left.options[i].selected && left.options[i].value!='__special_rule__') {
                 mytext = left.options[i].text;
                 myvalue = left.options[i].value;
+                mytitle = left.options[i].title;
                 opt = new Option(mytext,myvalue);
+                opt.title = mytitle;
                 right.options[right.length] = opt;
                 left.options[i]=null;
             }
@@ -149,10 +133,12 @@ function moveRight(left, right) {
 function moveLeft(left, right) {
     if (right.selectedIndex!=-1) {
         for (i=right.length-1; i>=0; i--) {
-            if (right.options[i].selected && right.options[i].value.charAt(0)!='{') {
+            if (right.options[i].selected && right.options[i].value!='__special_rule__') {
                mytext = right.options[i].text;
                myvalue = right.options[i].value;
+               mytitle = right.options[i].title;
                opt = new Option(mytext, myvalue);
+               opt.title = mytitle;
                left.options[left.length] = opt;
                right.options[i]=null;
             }
@@ -173,7 +159,7 @@ function countMeta(obj, maxlength){
     if (maxlength==-1){
         return true;
     }
-    
+
     n = document.getElementById('number'+obj.name);
     if (obj.value.length<maxlength){
         n.firstChild.data = maxlength-obj.value.length;
@@ -189,7 +175,7 @@ function handleArchived(nodeid, filename){
     if(obj){
         obj.css('display', 'inline');
     }
-    
+
     $.get('/archive/'+nodeid+'/'+filename, function(data) {
         if(obj){
             obj.css('display', 'none');

@@ -17,6 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import logging
 import re
 from mediatumtal import tal
 import utils.date as date
@@ -24,10 +25,14 @@ from utils.date import format_date, parse_date, validateDate
 from core.metatype import Metatype
 from schema.schema import dateoption
 
+
+logg = logging.getLogger(__name__)
+
+
 class m_date(Metatype):
 
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
-        d = field.getSystemFormat(str(field.getValues()))
+        d = field.getSystemFormat(field.getValues())
 
         if value == "?":
             value = date.format_date(date.now(), d.getValue())
@@ -54,17 +59,24 @@ class m_date(Metatype):
             context.value.append('')
         return tal.getTAL("metadata/date.html", {"context": context}, macro="searchfield", language=context.language)
 
-    def getFormatedValue(self, field, node, language=None, html=1):
-        value = node.get(field.getName())
+    def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
+        ''' search with re if string could be a date
+            appends this to a list and returns this
+
+            :param metafield: metadatafield
+            :param node: node with fields
+            :return: formatted value
+        '''
+        value = node.get(metafield.getName())
 
         if not value or value == "0000-00-00T00:00:00":  # dummy for unknown
-            return (field.getLabel(), "")
+            return (metafield.getLabel(), u"")
         else:
             try:
                 d = parse_date(value)
             except ValueError:
-                return (field.getLabel(), value)
-            value = format_date(d, format=field.getValues())
+                return (metafield.getLabel(), value)
+            value = format_date(d, format=metafield.getValues())
 
         value_list = []
 
@@ -78,16 +90,15 @@ class m_date(Metatype):
         elif re.search(r'\d{4}', value):
             value_list.append(re.search(r'\d{4}', value).group())
 
-        return (field.getLabel(), ''.join(value_list))
+        return (metafield.getLabel(), ''.join(value_list))
 
     def format_request_value_for_db(self, field, params, item, language=None):
         value = params.get(item)
-        f = field.getSystemFormat(str(field.getValues()))
-
+        f = field.getSystemFormat(ustr(field.getValues()))
         if not f:
             return ""
         try:
-            d = parse_date(str(value), f.getValue())
+            d = parse_date(ustr(value), f.getValue())
         except ValueError:
             return ""
         if not validateDate(d):
@@ -97,11 +108,8 @@ class m_date(Metatype):
     def getMaskEditorHTML(self, field, metadatatype=None, language=None):
         try:
             value = field.getValues()
-        except:
-            value = ""
-        #value = ""
-        # if field:
-        #    value = field.getValues()
+        except AttributeError:
+            value = u""
         return tal.getTAL("metadata/date.html", {"value": value, "dateoption": dateoption}, macro="maskeditor", language=language)
 
     def getName(self):

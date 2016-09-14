@@ -17,6 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from core.metatype import Metatype
 """
 import citeproc metadata in CSL, JSON variant as served by dx.doi.org.
 """
@@ -27,15 +28,22 @@ import logging
 import re
 import random
 from pprint import pformat
+
+from sqlalchemy.orm.exc import NoResultFound
 import requests
 
-from core import tree
-from .schema import getMetaType
+from core import Node
+from core import db
+from contenttypes import Document
+from .schema import Metadatatype
 from . import importbase
 from .importbase import NoMappingFound
 
 DX_DOI_URL = "http://dx.doi.org/"
-logg = logging.getLogger("frontend")
+logg = logging.getLogger(__name__)
+
+
+q = db.query
 
 
 class CSLField(object):
@@ -133,8 +141,11 @@ TYPES = [
 
 TYPE_SET = set(TYPES)
 
-
 class DOINotFound(Exception):
+    pass
+
+
+class DOINotImported(Exception):
     pass
 
 
@@ -160,17 +171,21 @@ def convert_csl_date(date_value):
     '''
     # XXX: ranges?
     if "date-parts" in date_value:
-        d = date_value["date-parts"][0]
+        d = date_value[u"date-parts"][0]
         year = int(d[0])
         month = int(d[1]) if len(d) > 1 else 1
         day = int(d[2]) if len(d) > 2 else 1
-        return datetime.date(year, month, day)
+        return datetime.date(year, month, day).isoformat()
     elif "raw" in date_value:
+        raw_value = date_value[u"raw"]
+        # XXX: we only support raw dates that consist of a single year at the moment
         try:
-            year = int(date_value["raw"])
-            return datetime.date(year, 1, 1)
+            year = int(raw_value)
+            return datetime.date(year, 1, 1).isoformat()
         except:
-            return date_value["raw"]
+            # well...
+            logg.warn("unrecognized raw date string %s, returning it unchanged", raw_value)
+            return raw_value
 
 
 def convert_csl_names(names):
@@ -179,10 +194,10 @@ def convert_csl_names(names):
     '''
     res = []
     for n in names:
-        parts = (n.get("literal"), n.get("family"), n.get("given"), n.get("suffix"))
-        formatted = ", ".join([p.encode("utf8") for p in parts if p])
+        parts = (n.get(u"literal"), n.get(u"family"), n.get(u"given"), n.get(u"suffix"))
+        formatted = u", ".join([p for p in parts if p])
         res.append(formatted)
-    return ";".join(res)
+    return u";".join(res)
 
 
 CSL_NUMBER_RE = re.compile(r"((\d+)\s*[-&]?\s*(\d+)$)|(\d+)(\s*,\s*(\d+))+$")
@@ -204,15 +219,18 @@ def check_number(number):
 
 def get_citeproc_json(doi):
     """Get record for a given DOI in citeproc JSON format.
-    :raises: DOINotFound if DOI is unknown to the server
-
-    TODO: maybe there are other ways this can fail?
+    :raises: DOIFound if DOI is unknown to the server
+    :raises: DOINotImported if no valid metadata has been found for the DOI
     """
     headers = {"Accept": "application/citeproc+json"}
-    try:
-        record = requests.get(DX_DOI_URL + doi, headers=headers).json()
-    except ValueError:
+    res = requests.get(DX_DOI_URL + doi, headers=headers)
+    if res.status_code == 404:
         raise DOINotFound()
+    try:
+        record = res.json()
+    except ValueError:
+        # invalid data returned
+        raise DOINotImported()
     return record
 
 
@@ -237,34 +255,33 @@ def import_csl(record, target=None, name=None, testing=False):
     :param record: CSL record
     :type record: dict
     :param: target
-    :type target: tree.Node
+    :type target: Node
     :param name: name for the new node. If none, try to get a unique id
         from the record (DOI) or generate an UUID.
     :raises: NoMappingFound if no mapping defined for the given type
     """
-    typ = record["type"]
+    typ = record[u"type"]
     if not typ:
         logg.warn("no type given in CSL import, using _null")
         typ = "_null"
     if typ not in TYPE_SET:
         logg.warn("unknown type %s given in CSL import, using _default", typ)
         typ = "_default"
-    metatype_name = importbase.get_import_mapping("citeproc", typ)
-    if not metatype_name:
+    schema = importbase.get_import_mapping(u"citeproc", typ)
+    if not schema:
         # no mapping, found, try fallback mapping
-        metatype_name = importbase.get_import_mapping("citeproc", "_default")
-        if not metatype_name:
+        schema = importbase.get_import_mapping(u"citeproc", u"_default")
+        if not schema:
             # no _default defined, fail
             raise NoMappingFound("No citeproc schema mapping could be found", typ)
         logg.warn("no mapping found for type %s, using _default fallback mapping", typ)
-    metatype = getMetaType(metatype_name)
-    mask = metatype.getMask("citeproc")
+    metatype = q(Metadatatype).filter_by(name=schema).one()
+    mask = metatype.getMask(u"citeproc")
     if not mask:
         raise NoMappingFound("target schema does not have a citeproc mask", typ)
-    contenttype = "document"
     if name is None:
-        name = record.get("DOI") or "".join(random.choice('0123456789abcdef') for _ in xrange(16))
-    node = tree.Node(name, contenttype + "/" + metatype_name)
+        name = record.get(u"DOI") or u"".join(random.choice(u'0123456789abcdef') for _ in xrange(16))
+    node = Document(name, schema=schema)
 
     def get_converted_from_csl_record(key):
         value = record.get(key)
@@ -278,45 +295,45 @@ def import_csl(record, target=None, name=None, testing=False):
             elif FIELDS[key].fieldtype == "number":
                 if not check_number(value):
                     logg.warn("field '%s' is of type number and contains an illegal value: '%s'!"
-                              "See http://citationstyles.org/downloads/specification.html#number"
-                              .key, value)
-            # for number and standard fields
-            return value.encode("utf8")
+                              "See http://citationstyles.org/downloads/specification.html#number",
+                              key, value)
+                return unicode(value)
+            elif FIELDS[key].fieldtype == "standard" and isinstance(value, list):
+                value = u''.join(value)
+            # for standard fields which already are unicode objects
+            return unicode(value)
         except:
             # all malformed input will be ignored
             # XXX: improve this when we know better what can happen...
-            logg.error("error while converting CSL field '%s' with value '%s', ignored", key, value, exc_info=1)
-            return ""
+            logg.exception("error while converting CSL field '%s' with value '%s', ignored", key, value)
+            return u""
 
-    for f in mask.getMaskFields():
+    for maskitem in mask.maskitems:
         try:
             csl_name = "not defined"
             mfield = "not defined"
             med_name = "not defined"
-            csl_name = tree.getNode(f.get("mappingfield")).getName()
-            mfield = tree.getNode(f.get("attribute"))
-            med_name = mfield.getName()
-        except tree.NoSuchNodeError:
-            msg = "citeproc import name='{}': field error for citeproc mask for type '{}' and " \
-                "csl-type '{}' csl_name='{}', mfield='{}', med_name='{}'".format(name, metatype_name, typ, csl_name, mfield, med_name)
-            logg.error(msg, exc_info=1)
+            csl_name = q(Node).get(int(maskitem[u"mappingfield"])).name
+            mfield = q(Node).get(int(maskitem[u"attribute"]))
+            med_name = mfield.name
+        except:
+            logg.exception("citeproc import name='%s': field error for citeproc mask for type '%s and " +
+                "csl-type '%s' csl_name='%s', mfield='%s', med_name='%s'", name, schema, typ, csl_name, mfield, med_name)
             continue
 
         value = get_converted_from_csl_record(csl_name)
 
         # fixes for special fields
-        mfield_type = mfield.get("type")
+        mfield_type = mfield.get(u"type")
         if mfield_type == "url":
-            value += ";Link"
+            value += u";Link"
 
         if value is not None:
             node.set(med_name, value)
 
     if target:
-        target.addChild(node)
+        target.content_children.append(node)
 
-    if not testing:
-        node.setDirty()
     return node
 
 
@@ -324,8 +341,9 @@ def import_doi(doi, target=None, name=None, testing=False):
     """Get record for a given DOI in citeproc JSON format and create a node from its information.
     :param doi:
     :param target:
-    :type target: tree.Node
-    :raises: DOINotFound if DOI is unknown to the server
+    :type target: Node
+    :raises: DOIFound if DOI is unknown to the server
+    :raises: DOINotImported if no valid metadata has been found for the DOI
     """
     record = get_citeproc_json(doi)
     logg.debug("got citeproc data from server: %s", pformat(record))

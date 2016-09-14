@@ -1,0 +1,22 @@
+- extends "styles/base.j2.jade"
+- from "styles/macros.j2.jade" import metis
+
+
+-block top
+ if metis_url
+   = metis(metis_url)
+
+
+- block before_metadata
+  if canseeoriginal
+    .object_image.object_column.left
+      .document_thumb
+        a(href=documentlink, target="documentdownload", title=_t("doc_fulltext_title"))
+          img(src=documentthumb, width="300")
+
+      .document_download
+        a(href=documentdownload)= _t("alternative_pdf_link")
+
+
+// generated from jade
+//- vim: set filetype=jade sw=2 ts=2 sts=2 expandtab:

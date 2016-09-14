@@ -43,7 +43,7 @@
             <div id="breadcrumbs">
                 <a href="/help" i18n:translate="home">TEXT</a>
                 <tal:block tal:repeat="p path">
-                    &raquo; <a tal:attributes="href python:'/help/'+'/'.join(path[0:path.index(p)+1])" tal:content="p" i18n:translate="">TEXT</a>
+                    &raquo; <a tal:attributes="href python:u'/help/{}'.format('/'.join(path[0:path.index(p)+1]))" tal:content="p" i18n:translate="">TEXT</a>
                 </tal:block>
             </div>
             <div tal:content="structure content" style="margin-left:5px"/>
@@ -54,32 +54,32 @@
         <div class="ui-layout-west" style="display: none;">
             <ul>
                 <a href="/help">
-                    <li tal:attributes="class python:{'True':'selected', 'False':None}[str(url=='')]" i18n:translate="home" style="padding-left:5px">TEXT</li>
+                    <li tal:attributes="class python:'selected' if url=='' else None" i18n:translate="home" style="padding-left:5px">TEXT</li>
                 </a>
                 <tal:block tal:repeat="section python:list(items)">
                     <tal:block tal:condition="python:section!='lang'">
-                        <a tal:attributes="href python:'/help/'+section">
-                            <li tal:attributes="class python:{'True':'selected', 'False':None}[str(url=='/'+section)]" style="padding-left:5px">
+                        <a tal:attributes="href python:u'/help/{}'.format(section)">
+                            <li tal:attributes="class python:'selected' if url==u'/{}'.format(section) else None" style="padding-left:5px">
                                 <tal:block tal:content="section" i18n:translate="">TEXT</tal:block>
-                                <small tal:condition="python:items[section]['lang']!=curlang" tal:content="python:'('+items[section]['lang']+')'" i18n:attributes="title help_diff_language" class="lang">TEXT</small>
+                                <small tal:condition="python:items[section]['lang']!=curlang" tal:content="python:u'({})'.format(items[section]['lang'])" i18n:attributes="title help_diff_language" class="lang">TEXT</small>
                             </li>
                         </a>
                     <ul>
                         <tal:block tal:repeat="sub1 python:list(items[section])">
                         <tal:block tal:condition="python:sub1!='lang'">
-                            <a tal:attributes="href python:'/help/'+section+'/'+sub1">
-                                <li tal:attributes="class python:{'True':'selected', 'False':None}[str(url=='/'+section+'/'+sub1)]" style="padding-left:15px">
+                            <a tal:attributes="href python:u'/help/{}/{}'.format(section, sub1)">
+                                <li tal:attributes="class python:'selected' if url=='/{}/{}'.format(section, sub1) else None" style="padding-left:15px">
                                     <tal:block tal:content="python:sub1" i18n:translate="">TEXT</tal:block>
-                                    <small tal:condition="python:items[section][sub1]['lang']!=curlang" tal:content="python:'('+items[section][sub1]['lang']+')'" i18n:attributes="title help_diff_language" class="lang">TEXT</small>
+                                    <small tal:condition="python:items[section][sub1]['lang']!=curlang" tal:content="python:u'({})'.format(items[section][sub1]['lang'])" i18n:attributes="title help_diff_language" class="lang">TEXT</small>
                                 </li>
                             </a>
                             <ul>
                                 <tal:block tal:repeat="sub2 python:list(items[section][sub1])">
                                 <tal:block tal:condition="python:sub2!='lang'">
-                                    <a tal:attributes="href python:'/help/'+section+'/'+sub1+'/'+sub2">
-                                        <li tal:attributes="class python:{'True':'selected', 'False':None}[str(url=='/'+section+'/'+sub1+'/'+sub2)]" style="padding-left:25px">
+                                    <a tal:attributes="href python:u'/help/{}/{}/{}'.format(section, sub1, sub2)">
+                                        <li tal:attributes="class python:'selected' if url==u'/{}/{}/{}'.format(section, sub1, sub2) else None" style="padding-left:25px">
                                             <tal:block tal:content="python:sub2" i18n:translate="">TEXT</tal:block>
-                                            <small tal:condition="python:items[section][sub1][sub2]['lang']!=curlang" tal:content="python:'('+items[section][sub1][sub2]['lang']+')'" i18n:attributes="title help_diff_language" class="lang">TEXT</small>
+                                            <small tal:condition="python:items[section][sub1][sub2]['lang']!=curlang" tal:content="python:u'({})'.format(items[section][sub1][sub2]['lang'])" i18n:attributes="title help_diff_language" class="lang">TEXT</small>
                                         </li>
                                     </a>
                                 </tal:block>
@@ -104,7 +104,7 @@
 <div metal:define-macro="language" id="language">
     <form method="post">
         <select name="language_change" onchange="form.submit()">
-            <tal:block tal:repeat="language languages"><option tal:attributes="value language;selected python:{'True':'selected', 'False':None}[str(language==curlang)]" tal:content="language" i18n:translate="">TEXT</option></tal:block>
+            <tal:block tal:repeat="language languages"><option tal:attributes="value language;selected python:'selected' if language==curlang else None" tal:content="language" i18n:translate="">TEXT</option></tal:block>
         </select>
     </form>
 </div>
@@ -128,20 +128,20 @@
     <div id="tabs">
         <ul>
         <tal:block tal:repeat="indexchar indexchars">
-            <li><a tal:attributes="href python:'#tabs-'+indexchar" tal:content="indexchar"/></li>
+            <li><a tal:attributes="href python:u'#tabs-{}'.format(indexchar)" tal:content="indexchar"/></li>
         </tal:block>
         </ul>
         
         
         <tal:block tal:repeat="indexchar indexchars">
-            <div tal:attributes="id python:'tabs-'+indexchar">
-                <br/><b><a tal:content="indexchar" tal:attributes="name python:'tabs-'+indexchar">TEXT</a></b><br/>
+            <div tal:attributes="id python:u'tabs-{}'.format(indexchar)">
+                <br/><b><a tal:content="indexchar" tal:attributes="name python:u'tabs-{}'.format(indexchar)">TEXT</a></b><br/>
                 <tal:block tal:repeat="indexkey python:indexvalues.keys()">
                     <tal:block tal:condition="python:indexkey.upper().startswith(indexchar)">
                     &nbsp;<span tal:content="python:indexkey"/>:
                     <small>
                         <tal:block tal:repeat="k python:indexvalues[indexkey]">
-                            <a tal:attributes="href python: '/help/'+('/').join(k.split('.')[1:-1])+'#'+indexkey">
+                            <a tal:attributes="href python: u'/help/{}#{}'.format(('/').join(k.split('.')[1:-1]), indexkey)">
                                 <tal:block i18n:translate="">
                                 <tal:block tal:replace="python:(' - ').join(k.split('.')[1:-1])" >TEXT</tal:block>
                                 </tal:block>

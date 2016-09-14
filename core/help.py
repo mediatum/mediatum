@@ -17,6 +17,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import logging
 import os
 import re
 import zipfile
@@ -24,7 +25,7 @@ import core.athana as athana
 import core.config as config
 import core.translation as translation
 
-from core.styles import theme
+from core import webconfig
 from core.users import getUserFromRequest
 from core.transition import httpstatus
 
@@ -36,6 +37,9 @@ try:
     reportlab = 1
 except:
     reportlab = 0
+
+
+logg = logging.getLogger(__name__)
 
 helppaths = ['web/help/']
 items = {}
@@ -60,7 +64,7 @@ def addHelpPath(path):
 
 
 def initHelp():
-    print "..init help"
+    logg.debug("..init help")
 
     def addHelpItem(i, part, dict):
         for j in range(i):
@@ -157,7 +161,7 @@ def getHelp(req):
     language = translation.lang(req)
 
     if "edit.x" in req.params:  # edit content
-        print "edit page"
+        logg.debug("edit page")
 
     if "refresh.x" in req.params:  # refresh content
         menustructure = []
@@ -178,11 +182,11 @@ def getHelp(req):
             content = getHelpFileContent(req.path, language)
     else:  # page not found 404
         req.setStatus(httpstatus.HTTP_NOT_FOUND)
-        content = req.getTAL(theme.getTemplate("help.html"), {}, macro='notfound')
+        content = req.getTAL(webconfig.theme.getTemplate("help.html"), {}, macro='notfound')
 
     if "export" in req.params:
         if req.params.get('export') == "pdf":
-            print "deliver pdf"
+            logg.debug("deliver pdf")
             req.reply_headers['Content-Type'] = "application/pdf; charset=utf-8"
             content = content.replace('"/help/', '"http://' + config.get('host.name') + '/help/')
             req.write(buildHelpPDF(req.params.get('url'), language))
@@ -193,7 +197,7 @@ def getHelp(req):
             addExtItem(language, path, items[language])
 
     v['content'] = content
-    v['languages'] = config.get('i18n.languages').split(',')
+    v['languages'] = config.languages
     v['curlang'] = translation.lang(req)
     v['items'] = items[translation.lang(req)]
     v['path'] = req.path.split("/")[1:]
@@ -201,7 +205,7 @@ def getHelp(req):
     v['indexvalues'] = index[language]
     indexchars = sorted(set([i[0].upper() for i in index[language].keys()]))
     v['indexchars'] = indexchars
-    req.writeTAL(theme.getTemplate("help.html"), v, macro='help')
+    req.writeTAL(webconfig.theme.getTemplate("help.html"), v, macro='help')
 
 
 def getHelpFileContent(path, language, z_file='web/help/%s%s.zip'):
@@ -276,10 +280,10 @@ class HelpPdf:
                     curstyle = ""
                 else:
                     if item.strip != "" and curstyle != "":
-                        print 'add', item, "-->", curstyle
+                        logg.debug('add %s --> %s')
                         if curstyle == "Bullet":
                             item = "- " + item
-                            print "bullet", item
+                            logg.debug("bullet %s", item)
                         self.data.append(Paragraph(item, self.styleSheet[curstyle]))
 
         template = SimpleDocTemplate(config.get("paths.tempdir", "") + "help.pdf", showBoundary=0)

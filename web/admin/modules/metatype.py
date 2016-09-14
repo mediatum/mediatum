@@ -19,16 +19,14 @@
 """
 import re
 import sys
-import core.tree as tree
 
-from core.datatypes import loadAllDatatypes, loadNonSystemTypes
+import logging
+
 from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter
-from core.tree import getNode, searcher
 from web.common.acl_web import makeList
 from utils.utils import removeEmptyStrings, esc
 from core.translation import lang, t
-from core.acl import AccessData
-from schema.schema import loadTypesFromDB, getMetaFieldTypeNames, getMetaType, updateMetaType, existMetaType, deleteMetaType, fieldoption, moveMetaField, getMetaField, deleteMetaField, getFieldsForMeta, dateoption, requiredoption, existMetaField, updateMetaField, generateMask, cloneMask, exportMetaScheme, importMetaSchema
+from schema.schema import getMetaFieldTypeNames, getMetaType, updateMetaType, existMetaType, deleteMetaType, fieldoption, moveMetaField, getMetaField, deleteMetaField, getFieldsForMeta, dateoption, requiredoption, existMetaField, updateMetaField, generateMask, cloneMask, exportMetaScheme, importMetaSchema
 from schema.schema import VIEW_DEFAULT
 from schema.bibtex import getAllBibTeXTypes
 from schema import citeproc
@@ -39,7 +37,17 @@ from .metatype_field import showDetailList, FieldDetail
 # meta mask methods
 from .metatype_mask import showMaskList, MaskDetails
 
-from contenttypes.default import flush_maskcache
+from contenttypes.data import Data
+
+from core import Node
+from core import db
+from core.systemtypes import Metadatatypes
+from schema.schema import Metadatatype, Mask
+from core.database.postgres.permission import NodeToAccessRuleset
+
+q = db.query
+
+logg = logging.getLogger(__name__)
 
 
 def getInformation():
@@ -55,7 +63,19 @@ def checkString(string):
     return False
 
 
-""" standard method for admin module """
+def add_remove_rulesets_from_metadatatype(mtype, new_ruleset_names):
+    new_ruleset_names = set(new_ruleset_names)
+    current_ruleset_assocs_by_ruleset_name = {rs.ruleset.name: rs for rs in mtype.access_ruleset_assocs.filter_by(ruletype=u"read")}
+    current_ruleset_names = set(current_ruleset_assocs_by_ruleset_name)
+    removed_ruleset_names = current_ruleset_names - new_ruleset_names
+    added_ruleset_names = new_ruleset_names - current_ruleset_names
+    
+    for ruleset_name in removed_ruleset_names:
+        rsa = current_ruleset_assocs_by_ruleset_name[ruleset_name]
+        mtype.access_ruleset_assocs.remove(rsa)
+    
+    for ruleset_name in added_ruleset_names:
+        mtype.access_ruleset_assocs.append(NodeToAccessRuleset(ruleset_name=ruleset_name, ruletype=u"read"))
 
 
 def validate(req, op):
@@ -66,11 +86,11 @@ def validate(req, op):
 
     if len(path) == 4 and path[3] == "editor":
         res = showEditor(req)
-        # mask may have been edited: flush masks cache
-        flush_maskcache(req=req)
         return res
 
     if len(path) == 5 and path[3] == "editor" and path[4] == "show_testnodes":
+        
+        raise NotImplementedError("")
 
         template = req.params.get('template', '')
         testnodes_list = req.params.get('testnodes', '')
@@ -80,46 +100,45 @@ def validate(req, op):
         mdt_name = path[1]
         mask_name = path[2]
 
-        mdt = tree.getRoot('metadatatypes').getChild(mdt_name)
-        mask = mdt.getChild(mask_name)
-
-        access = AccessData(req)
+        mdt = q(Metadatatypes).one().children.filter_by(name=mdt_name).one()
+        mask = mdt.children.filter_by(name=mask_name).one()
 
         sectionlist = []
         for nid in [x.strip() for x in testnodes_list.split(',') if x.strip()]:
             section_descr = {}
             section_descr['nid'] = nid
             section_descr['error_flag'] = ''  # in case of no error
-            try:
-                node = tree.getNode(nid)
-                section_descr['node'] = node
-                if access.hasAccess(node, "data"):
+
+            node = q(Node).get(nid)
+            section_descr['node'] = node
+            if node and node.has_data_access():
+                try:
+                    node_html = mask.getViewHTML([node], VIEW_DEFAULT, template_from_caller=[template, mdt, mask, item_id])
+                    section_descr['node_html'] = node_html
+                except:
+                    logg.exception("exception while evaluating template")
+                    error_text = str(sys.exc_info()[1])
+                    template_line = 'for node id ' + ustr(nid) + ': ' + error_text
                     try:
-                        node_html = mask.getViewHTML([node], VIEW_DEFAULT, template_from_caller=[template, mdt, mask, item_id], mask=mask)
-                        section_descr['node_html'] = node_html
+                        m = re.match(r".*line (?P<line>\d*), column (?P<column>\d*)", error_text)
+                        if m:
+                            mdict = m.groupdict()
+                            line = int(mdict.get('line', 0))
+                            column = int(mdict.get('column', 0))
+                            error_text = error_text.replace('line %d' % line, 'template line %d' % (line - 1))
+                            template_line = 'for node id ' + ustr(nid) + '<br/>' + error_text + '<br/><code>' + esc(template.split(
+                                "\n")[line - 2][0:column - 1]) + '<span style="color:red">' + esc(template.split("\n")[line - 2][column - 1:]) + '</span></code>'
                     except:
-                        error_text = str(sys.exc_info()[1])
-                        template_line = 'for node id ' + str(nid) + ': ' + error_text
-                        try:
-                            m = re.match(r".*line (?P<line>\d*), column (?P<column>\d*)", error_text)
-                            if m:
-                                mdict = m.groupdict()
-                                line = int(mdict.get('line', 0))
-                                column = int(mdict.get('column', 0))
-                                error_text = error_text.replace('line %d' % line, 'template line %d' % (line - 1))
-                                template_line = 'for node id ' + str(nid) + '<br/>' + error_text + '<br/><code>' + esc(template.split(
-                                    "\n")[line - 2][0:column - 1]) + '<span style="color:red">' + esc(template.split("\n")[line - 2][column - 1:]) + '</span></code>'
-                        except:
-                            pass
-                        section_descr['error_flag'] = 'Error while evaluating template:'
-                        section_descr['node_html'] = template_line
-                else:
-                    section_descr['error_flag'] = 'no access'
-                    section_descr['node_html'] = ''
-            except tree.NoSuchNodeError:
+                        pass
+                    section_descr['error_flag'] = 'Error while evaluating template:'
+                    section_descr['node_html'] = template_line
+            elif node and not node.has_data_access():
+                section_descr['error_flag'] = 'no access'
+                section_descr['node_html'] = ''
+            if node is None:
                 section_descr['node'] = None
                 section_descr['error_flag'] = 'NoSuchNodeError'
-                section_descr['node_html'] = 'for node id ' + str(nid)
+                section_descr['node_html'] = 'for node id ' + ustr(nid)
             sectionlist.append(section_descr)
 
         # remark: error messages will be served untranslated in English
@@ -145,7 +164,7 @@ def validate(req, op):
 
             # edit metadatatype
             elif key.startswith("edit_"):
-                return MetatypeDetail(req, str(key[5:-2]))
+                return MetatypeDetail(req, key[5:-2])
 
             # delete metadata
             elif key.startswith("delete_"):
@@ -154,17 +173,11 @@ def validate(req, op):
 
             # show details for given metadatatype
             elif key.startswith("detaillist_"):
-                return showDetailList(req, str(key[11:-2]))
+                return showDetailList(req, key[11:-2])
 
             # show masklist for given metadatatype
             elif key.startswith("masks_"):
-                return showMaskList(req, str(key[6:-2]))
-
-            # reindex search index for current schema
-            elif key.startswith("indexupdate_") and "cancel" not in req.params.keys():
-                schema = tree.getNode(key[12:])
-                searcher.reindex(schema.getAllItems())
-                break
+                return showMaskList(req, key[6:-2])
 
         # save schema
         if "form_op" in req.params.keys():
@@ -188,13 +201,12 @@ def validate(req, op):
                            bibtexmapping=req.params.get("mbibtex", ""),
                            citeprocmapping=req.params.get("mciteproc", ""),
                            orig_name=req.params.get("mname_orig", ""))
-            mtype = getMetaType(req.params.get("mname"))
+            mtype = q(Metadatatype).filter_by(name=req.params.get("mname")).scalar()
             if mtype:
-                mtype.setAccess("read", "")
-                for key in req.params.keys():
-                    if key.startswith("left"):
-                        mtype.setAccess(key[4:], req.params.get(key).replace(";", ","))
-                        break
+                new_ruleset_names = set(req.form.getlist("leftread"))
+                add_remove_rulesets_from_metadatatype(mtype, new_ruleset_names)
+
+            db.session.commit()
 
     elif req.params.get("acttype") == "field":
         # section for fields
@@ -241,7 +253,7 @@ def validate(req, op):
 
             _fieldvalue = ""
             if req.params.get("mtype", "") + "_value" in req.params.keys():
-                _fieldvalue = str(req.params.get(req.params.get("mtype") + "_value"))
+                _fieldvalue = req.params.get(req.params.get("mtype") + "_value")
 
             _filenode = None
             if "valuesfile" in req.params.keys():
@@ -269,9 +281,6 @@ def validate(req, op):
 
     elif req.params.get("acttype") == "mask":
 
-        # mask may have been edited: flush masks cache
-        flush_maskcache(req=req)
-
         # section for masks
         for key in req.params.keys():
 
@@ -286,7 +295,8 @@ def validate(req, op):
             # delete mask
             elif key.startswith("deletemask_"):
                 mtype = getMetaType(req.params.get("parent"))
-                mtype.removeChild(tree.getNode(key[11:-2]))
+                mtype.children.remove(q(Node).get(key[11:-2]))
+                db.session.commit()
                 return showMaskList(req, req.params.get("parent"))
 
             # create autmatic mask with all fields
@@ -296,9 +306,13 @@ def validate(req, op):
 
             # cope selected mask
             if key.startswith("copymask_"):
-                mtype = getMetaType(req.params.get("parent"))
-                mask = mtype.getMask(key[9:-2])
-                cloneMask(mask, "copy_" + mask.getName())
+                k = key[9:-2]
+                if k.isdigit():
+                    mask = q(Mask).get(k)
+                else:
+                    mtype = getMetaType(req.params.get("parent"))
+                    mask = mtype.getMask(k)
+                cloneMask(mask, u"copy_" + mask.name)
                 return showMaskList(req, req.params.get("parent"))
 
         if "form_op" in req.params.keys():
@@ -311,18 +325,24 @@ def validate(req, op):
                 # if the name contains wrong characters
                 return MaskDetails(req, req.params.get("parent", ""), req.params.get("morig_name", ""), err=4)
 
-            mtype = getMetaType(req.params.get("parent", ""))
+            mtype = q(Metadatatype).filter_by(name=q(Node).get(req.params.get("parent", "")).name).one()
             if req.params.get("form_op") == "save_editmask":
-                mask = mtype.getMask(req.params.get("maskid", ""))
+                mask = mtype.get_mask(req.params.get("mname", ""))
+                # in case of renaming a mask the mask cannot be detected via the new mname
+                # then detect mask via maskid
+                if not mask:
+                    mtype = getMetaType(req.params.get("parent"))
+                    mask = mtype.children.filter_by(id =req.params.get("maskid", "")).scalar()
 
             elif req.params.get("form_op") == "save_newmask":
-                mask = tree.Node(req.params.get("mname", ""), type="mask")
-                mtype.addChild(mask)
-
-            mask.setName(req.params.get("mname"))
+                mask = Mask(req.params.get("mname", ""))
+                mtype.children.append(mask)
+                db.session.commit()
+            mask.name = req.params.get("mname")
             mask.setDescription(req.params.get("mdescription"))
             mask.setMasktype(req.params.get("mtype"))
             mask.setSeparator(req.params.get("mseparator"))
+            db.session.commit()
 
             if req.params.get("mtype") == "export":
                 mask.setExportMapping(req.params.get("exportmapping") or "")
@@ -334,15 +354,21 @@ def validate(req, op):
                 if "notlast" in req.params.keys():
                     _opt += "l"
                 mask.setExportOptions(_opt)
+                db.session.commit()
 
             mask.setLanguage(req.params.get("mlanguage", ""))
             mask.setDefaultMask("mdefault" in req.params.keys())
-            mask.setAccess("read", "")
+
+            for r in mask.access_ruleset_assocs.filter_by(ruletype=u'read'):
+                db.session.delete(r)
+
             for key in req.params.keys():
                 if key.startswith("left"):
-                    mask.setAccess(key[4:], req.params.get(key).replace(";", ","))
+                    for r in req.params.get(key).split(';'):
+                        mask.access_ruleset_assocs.append(NodeToAccessRuleset(ruleset_name=r, ruletype=key[4:]))
                     break
-        return showMaskList(req, str(req.params.get("parent", "")))
+            db.session.commit()
+        return showMaskList(req, ustr(req.params.get("parent", "")))
     return view(req)
 
 
@@ -350,7 +376,7 @@ def validate(req, op):
 
 
 def view(req):
-    mtypes = loadTypesFromDB()
+    mtypes = q(Metadatatypes).one().children.order_by("name").all()
     actfilter = getFilter(req)
 
     # filter
@@ -360,18 +386,18 @@ def view(req):
         elif actfilter == "0-9":
             num = re.compile(r'([0-9])')
             if req.params.get("filtertype", "") == "id":
-                mtypes = filter(lambda x: num.match(x.getName()), mtypes)
+                mtypes = filter(lambda x: num.match(x.name), mtypes)
             else:
                 mtypes = filter(lambda x: num.match(x.getLongName()), mtypes)
         elif actfilter == "else" or actfilter == t(lang(req), "admin_filter_else"):
             all = re.compile(r'([a-z]|[A-Z]|[0-9]|\.)')
             if req.params.get("filtertype", "") == "id":
-                mtypes = filter(lambda x: not all.match(x.getName()), mtypes)
+                mtypes = filter(lambda x: not all.match(x.name), mtypes)
             else:
                 mtypes = filter(lambda x: not all.match(x.getLongName()), mtypes)
         else:
             if req.params.get("filtertype", "") == "id":
-                mtypes = filter(lambda x: x.getName().lower().startswith(actfilter), mtypes)
+                mtypes = filter(lambda x: x.name.lower().startswith(actfilter), mtypes)
             else:
                 mtypes = filter(lambda x: x.getLongName().lower().startswith(actfilter), mtypes)
 
@@ -381,7 +407,7 @@ def view(req):
     # sorting
     if order != "":
         if int(order[0:1]) == 0:
-            mtypes.sort(lambda x, y: cmp(x.getName().lower(), y.getName().lower()))
+            mtypes.sort(lambda x, y: cmp(x.name.lower(), y.name.lower()))
         elif int(order[0:1]) == 1:
             mtypes.sort(lambda x, y: cmp(x.getLongName().lower(), y.getLongName().lower()))
         elif int(order[0:1]) == 2:
@@ -390,16 +416,10 @@ def view(req):
             mtypes.sort(lambda x, y: cmp(x.getActive(), y.getActive()))
         elif int(order[0:1]) == 4:
             mtypes.sort(lambda x, y: cmp(x.getDatatypeString().lower(), y.getDatatypeString().lower()))
-        elif int(order[0:1]) == 5:
-            mtypes.sort(lambda x, y: cmp(x.metadatatype.getAccess("read"), y.metadatatype.getAccess("read")))
-        elif int(order[0:1]) == 6:
-            mtypes.sort(lambda x, y: cmp(x.searchIndexCorrupt(), y.searchIndexCorrupt()))
-        elif int(order[0:1]) == 7:
-            mtypes.sort(lambda x, y: cmp(len(x.getAllItems()), len(y.getAllItems())))
         if int(order[1:]) == 1:
             mtypes.reverse()
     else:
-        mtypes.sort(lambda x, y: cmp(x.getName().lower(), y.getName().lower()))
+        mtypes.sort(lambda x, y: cmp(x.name.lower(), y.name.lower()))
 
     v = getAdminStdVars(req)
     v["sortcol"] = pages.OrderColHeader(
@@ -412,8 +432,8 @@ def view(req):
                             lang(req), "admin_meta_col_5"), t(
                                 lang(req), "admin_meta_col_6")])
     v["metadatatypes"] = mtypes
-    v["datatypes"] = loadAllDatatypes()
-    v["datatypes"].sort(lambda x, y: cmp(t(lang(req), x.getLongName()), t(lang(req), y.getLongName())))
+    v["get_classname_for_typestring"] = Node.get_classname_for_typestring
+    v['dtypes'] = Node.__mapper__.polymorphic_map  # is used to prevent missing plugins from causing error
     v["pages"] = pages
     v["actfilter"] = actfilter
     v["filterattrs"] = [("id", "admin_metatype_filter_id"), ("name", "admin_metatype_filter_name")]
@@ -429,7 +449,8 @@ def MetatypeDetail(req, id, err=0):
 
     if err == 0 and id == "":
         # new metadatatype
-        metadatatype = tree.Node("", type="metadatatype")
+        metadatatype = Metadatatype(u"")
+        db.session.commit()
         v["original_name"] = ""
 
     elif id != "" and err == 0:
@@ -439,18 +460,18 @@ def MetatypeDetail(req, id, err=0):
 
     else:
         # error
-        metadatatype = tree.Node(req.params["mname"], type="metadatatype")
-        metadatatype.setDescription(req.params["description"])
-        metadatatype.setLongName(req.params["mlongname"])
-        metadatatype.setActive("mactive" in req.params)
-        metadatatype.setDatatypeString(req.params.get("mdatatypes", "").replace(";", ", "))
+        metadatatype = Metadatatype(req.params["mname"])
+        metadatatype.set("description", req.params["description"])
+        metadatatype.set("longname", req.params["mlongname"])
+        metadatatype.set("active", "mactive" in req.params)
+        metadatatype.set("datatypes", req.params.get("mdatatypes", "").replace(";", ", "))
         metadatatype.set("bibtexmapping", req.params.get("mbibtex", ""))
         metadatatype.set("citeprocmapping", req.params.get("mciteproc", ""))
-
+        db.session.commit()
         v["original_name"] = req.params["mname_orig"]
-
-    v["datatypes"] = loadNonSystemTypes()
-    v["datatypes"].sort(lambda x, y: cmp(t(lang(req), x.getLongName()), t(lang(req), y.getLongName())))
+    d = Data()
+    v["datatypes"] = d.get_all_datatypes()
+    v["datatypes"].sort(lambda x, y: cmp(t(lang(req), x.__name__), t(lang(req), y.__name__)))
     v["metadatatype"] = metadatatype
     v["error"] = err
     v["bibtextypes"] = getAllBibTeXTypes()
@@ -458,14 +479,12 @@ def MetatypeDetail(req, id, err=0):
     v["citeproctypes"] = citeproc.TYPES
     v["citeprocselected"] = metadatatype.get("citeprocmapping").split(";")
 
-    rule = metadatatype.getAccess("read")
-    if rule:
-        rule = rule.split(",")
-    else:
-        rule = []
+    try:
+        rules = [r.ruleset_name for r in metadatatype.access_ruleset_assocs.filter_by(ruletype=u'read')]
+    except:
+        rules = []
 
-    rights = removeEmptyStrings(rule)
-    v["acl"] = makeList(req, "read", rights, {}, overload=0, type="read")
+    v["acl"] = makeList(req, "read", removeEmptyStrings(rules), {}, overload=0, type="read")
     v["filtertype"] = req.params.get("filtertype", "")
     v["actpage"] = req.params.get("actpage")
     return req.getTAL("web/admin/modules/metatype.html", v, macro="modify_type")
@@ -483,7 +502,7 @@ def showInfo(req):
 def showFieldOverview(req):
     path = req.path[1:].split("/")
     fields = getFieldsForMeta(path[1])
-    fields.sort(lambda x, y: cmp(x.getOrderPos(), y.getOrderPos()))
+    fields.sort(lambda x, y: cmp(x.orderpos, y.orderpos))
 
     v = {}
     v["metadatatype"] = getMetaType(path[1])
@@ -519,11 +538,11 @@ def showEditor(req):
             break
 
         if key.startswith("up_"):
-            changeOrder(tree.getNode(key[3:-2]).getParents()[0], tree.getNode(key[3:-2]).getOrderPos(), -1)
+            changeOrder(q(Node).get(key[3:-2]).parents[0], q(Node).get(key[3:-2]).orderpos, -1)
             break
 
         if key.startswith("down_"):
-            changeOrder(tree.getNode(key[5:-2]).getParents()[0], -1, tree.getNode(key[5:-2]).getOrderPos())
+            changeOrder(q(Node).get(key[5:-2]).parents[0], -1, q(Node).get(key[5:-2]).orderpos)
             break
 
         if key.startswith("delete_"):
@@ -556,15 +575,15 @@ def showEditor(req):
         req.params["op"] = "new"
         req.params["edit"] = " "
         req.params["type"] = req.params.get("group_type")
-        req.params["pid"] = getNode(req.params.get("sel_id").split(";")[0]).getParents()[0].id
+        req.params["pid"] = q(Node).get(req.params.get("sel_id").split(";")[0]).parents[0].id
 
     if "saveedit" in req.params.keys() and req.params.get("op", "") != "cancel":
         # update node
         label = req.params.get("label", "-new-")
         if req.params.get("op", "") == "edit":
-            item = tree.getNode(req.params.get("id"))
+            item = q(Node).get(req.params.get("id"))
             item.setLabel(req.params.get("label", ""))
-
+            db.session.commit()
             if "mappingfield" in req.params.keys():
                 # field of export mask
                 item.set("attribute", req.params.get("attribute"))
@@ -574,21 +593,24 @@ def showEditor(req):
                     item.set("mappingfield", mf[0])
                 else:  # attribute name as object name
                     item.set("mappingfield", ";".join(mf[1:]))
+                db.session.commit()
             else:
-                f = tree.getNode(long(req.params.get("field")))
+                f = q(Node).get(long(req.params.get("field")))
 
-            field = item.getChildren()
+            field = item.children
             try:
                 field = list(field)[0]
-                if str(field.id) != str(req.params.get("field")):
-                    item.removeChild(field)
-                    item.addChild(f)
-                field.setValues(req.params.get(field.get("type") + "_value", ""))
+                if ustr(field.id) != req.params.get("field"):
+                    item.children.remove(field)
+                    item.children.append(f)
+                field.setValues(req.params.get(u"{}_value".format(field.get("type")), u""))
+                db.session.commit()
             except:
+                logg.exception("exception in showEditor / saveedit, ignore")
                 pass
 
         elif req.params.get("op", "") == "new":
-            if req.params.get("fieldtype", "") == "common":
+            if req.params.get("fieldtype", "") == "common" and req.params.get("field"):
                 # existing field used
                 fieldid = long(req.params.get("field"))
             elif "mappingfield" in req.params.keys():
@@ -609,7 +631,7 @@ def showEditor(req):
                     updateMetaField(parent, req.params.get("fieldname"), label, 0,
                                     req.params.get("newfieldtype"), option="", description=req.params.get("description", ""),
                                     fieldvalues=fieldvalue, fieldvaluenum="", fieldid="")
-                    fieldid = str(getMetaField(parent, req.params.get("fieldname")).id)
+                    fieldid = ustr(getMetaField(parent, req.params.get("fieldname")).id)
 
             item = editor.addMaskitem(label, req.params.get("type"), fieldid, req.params.get("pid", "0"))
 
@@ -621,39 +643,44 @@ def showEditor(req):
                     item.set("mappingfield", mf[0])
                 else:  # attribute name as object name
                     item.set("mappingfield", ";".join(mf[1:]))
+                db.session.commit()
 
             position = req.params.get("insertposition", "end")
             if position == "end":
                 # insert at the end of existing mask
-                item.setOrderPos(len(tree.getNode(req.params.get("pid")).getChildren()) - 1)
+                item.orderpos = len(q(Node).get(req.params.get("pid")).children) - 1
+                db.session.commit()
             else:
                 # insert at special position
                 fields = editor.getMaskFields()
-                fields.sort(lambda x, y: cmp(x.getOrderPos(), y.getOrderPos()))
+                fields.all().sort(lambda x, y: cmp(x.orderpos, y.orderpos))
                 for f in fields:
-                    if f.getOrderPos() >= tree.getNode(position).getOrderPos() and f.id != item.id:
-                        f.setOrderPos(f.getOrderPos() + 1)
-                item.setOrderPos(tree.getNode(position).getOrderPos() - 1)
+                    if f.orderpos >= q(Node).get(position).orderpos and f.id != item.id:
+                        f.orderpos = f.orderpos + 1
+                item.orderpos = q(Node).get(position).orderpos - 1
+                db.session.commit()
 
-        item.setWidth(int(req.params.get("width", 400)))
-        item.setUnit(req.params.get("unit", ""))
-        item.setDefault(req.params.get("default", ""))
-        item.setFormat(req.params.get("format", ""))
-        item.setSeparator(req.params.get("separator", ""))
-        item.setDescription(req.params.get("description", ""))
-        item.setTestNodes(req.params.get("testnodes", ""))
-        item.setMultilang(req.params.get("multilang", ""))
+        item.setWidth(req.params.get("width", u'400'))
+        item.setUnit(req.params.get("unit", u""))
+        item.setDefault(req.params.get("default", u""))
+        item.setFormat(req.params.get("format", u""))
+        item.setSeparator(req.params.get("separator", u""))
+        item.setDescription(req.params.get("description", u""))
+        item.setTestNodes(req.params.get("testnodes", u""))
+        item.setMultilang(req.params.get("multilang", u""))
+        db.session.commit()
 
         if "required" in req.params.keys():
-            item.setRequired(1)
+            item.setRequired(unicode(1))
         else:
-            item.setRequired(0)
+            item.setRequired(unicode(0))
+        db.session.commit()
 
     if "savedetail" in req.params.keys():
         label = req.params.get("label", "-new-")
         # save details (used for hgroup)
         if req.params.get("op", "") == "edit":
-            item = tree.getNode(req.params.get("id"))
+            item = q(Node).get(req.params.get("id"))
             item.setLabel(req.params.get("label", ""))
         elif req.params.get("op", "") == "new":
             if req.params.get("sel_id", "") != "":
@@ -661,48 +688,53 @@ def showEditor(req):
                     "sel_id", "")[:-1], long(req.params.get("pid", "0")))
             else:
                 item = editor.addMaskitem(label, req.params.get("type"), 0, long(req.params.get("pid", "0")))
+        db.session.commit()
 
         # move selected elementd to new item-container
         if req.params.get("sel_id", "") != "":
             pos = 0
             for i in req.params.get("sel_id")[:-1].split(";"):
-                n = getNode(i)  # node to move
+                n = q(Node).get(i)  # node to move
                 n.setOrderPos(pos)
-                p = getNode(n.getParents()[0].id)  # parentnode
-                p.removeChild(n)
-                item.addChild(n)  # new group
+                p = q(Node).get(n.parents()[0].id)  # parentnode
+                p.children.remove(n)
+                item.children.append(n)  # new group
                 pos += 1
+            db.session.commit()
 
         # position:
         position = req.params.get("insertposition", "end")
         if position == "end":
             # insert at the end of existing mask
-            item.setOrderPos(len(tree.getNode(req.params.get("pid")).getChildren()) - 1)
+            item.setOrderPos(len(q(Node).get(req.params.get("pid")).children) - 1)
+            db.session.commit()
         else:
             # insert at special position
             fields = []
-            pidnode = getNode(req.params.get("pid"))
+            pidnode = q(Node).get(req.params.get("pid"))
             for field in pidnode.getChildren():
                 if field.getType().getName() == "maskitem" and field.id != pidnode.id:
                     fields.append(field)
-            fields.sort(lambda x, y: cmp(x.getOrderPos(), y.getOrderPos()))
+            fields.sort(lambda x, y: cmp(x.orderpos, y.orderpos))
             for f in fields:
-                if f.getOrderPos() >= tree.getNode(position).getOrderPos() and f.id != item.id:
-                    f.setOrderPos(f.getOrderPos() + 1)
-            item.setOrderPos(tree.getNode(position).getOrderPos() - 1)
+                if f.orderpos >= q(Node).get(position).orderpos and f.id != item.id:
+                    f.orderpos = f.orderpos + 1
+            item.orderpos = q(Node).get(position).orderpos - 1
+            db.session.commit()
 
         if "edit" not in req.params.keys():
-            item.set("type", req.params.get("type", ""))
-        item.setWidth(int(req.params.get("width", 400)))
-        item.setUnit(req.params.get("unit", ""))
-        item.setDefault(req.params.get("default", ""))
-        item.setFormat(req.params.get("format", ""))
-        item.setSeparator(req.params.get("separator", ""))
-        item.setDescription(req.params.get("description", ""))
+            item.set("type", req.params.get("type", u""))
+        item.setWidth(req.params.get("width", u'400'))
+        item.setUnit(req.params.get("unit", u""))
+        item.setDefault(req.params.get("default", u""))
+        item.setFormat(req.params.get("format", u""))
+        item.setSeparator(req.params.get("separator", u""))
+        item.setDescription(req.params.get("description", u""))
         if "required" in req.params.keys():
-            item.setRequired(1)
+            item.setRequired(unicode(1))
         else:
-            item.setRequired(0)
+            item.setRequired(unicode(0))
+        db.session.commit()
 
     v = {}
     v["edit"] = req.params.get("edit", "")
@@ -714,6 +746,7 @@ def showEditor(req):
         try:
             v["editor"] = req.getTALstr(editor.getMetaMask(language=lang(req)), {})
         except:
+            logg.exception("exception in showEditor")
             v["editor"] = editor.getMetaMask(language=lang(req))
 
     v["title"] = editor.name
@@ -724,7 +757,7 @@ def showEditor(req):
 def changeOrder(parent, up, down):
     """ change order of given nodes """
     i = 0
-    for child in parent.getChildren().sort_by_orderpos():
+    for child in parent.children.sort_by_orderpos():
         try:
             if i == up:
                 pos = i - 1
@@ -736,7 +769,8 @@ def changeOrder(parent, up, down):
                 pos = down
             else:
                 pos = i
-            child.setOrderPos(pos)
+            child.orderpos = pos
+            db.session.commit()
             i = i + 1
         except:
             pass

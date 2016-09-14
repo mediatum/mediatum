@@ -1,0 +1,40 @@
+.action_icon {
+    margin-top: 8px;
+    margin-bottom: 8px;
+    margin-right: 8px;
+    float: left;
+}
+
+.clear {
+    clear: both;
+}
+
+.content_container {
+    padding: 4px;
+}
+
+.object_column {
+    vertical-align: top;
+    display: table-cell;
+}
+
+.object_column.left>div {
+    width: 325px;
+    margin-bottom: 15px;
+}
+
+video {
+  width:300px; 
+  border:1px solid silver;
+  text-align:center;
+}
+
+.controls button[data-state="captions"] { 
+  height:85%; 
+  text-indent:0; 
+  font-size:16px; 
+  font-weight:bold; 
+  color:#666; 
+  background:#000; 
+  border-radius:2px;
+}

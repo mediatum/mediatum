@@ -18,30 +18,35 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import core.tree as tree
-import core.users as users
-from core.acl import AccessData
-from core.transition import httpstatus
+
+from core.transition import httpstatus, current_user
+from core import Node
+from core import db
+from core.systemtypes import Root
+from utils.utils import get_hash
+
+q = db.query
 
 def getContent(req, ids):
     if req.params.get("style","")=="popup":
         req.write(objlist(req))
         return ""
-    
-    user = users.getUserFromRequest(req)
-    if "license" in users.getHideMenusForUser(user):
+
+    user = current_user
+    if "license" in user.hidden_edit_functions:
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
-        
-    node = tree.getNode(ids[0])
+
+    node = q(Node).get(ids[0])
     return req.getTAL("web/edit/modules/license.html", {"node":node, "nodes": [node]}, macro="edit_license_info")
 
 def objlist(req):
-    node = tree.getNode(req.params["id"])
-    access = AccessData(req)
-    
-    if node.id==tree.getRoot().id or not access.hasWriteAccess(node):
+    node = q(Node).get(req.params["id"])
+
+    if node.id==q(Root).one().id or not node.has_write_access():
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
-    return req.getTAL("web/edit/modules/license.html", {"node":node}, macro="edit_license")
+    return req.getTAL("web/edit/modules/license.html", {"children": node.all_children,
+                                                        'hash_function': get_hash},
+                      macro="edit_license")

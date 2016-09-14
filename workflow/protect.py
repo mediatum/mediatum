@@ -19,16 +19,17 @@
 """
 from .workflow import WorkflowStep, registerStep
 from utils.utils import mkKey
-import core.tree as tree
+from core import db
 
 
 def register():
-    tree.registerNodeClass("workflowstep-protect", WorkflowStep_Protect)
-    registerStep("workflowstep-protect")
+    #tree.registerNodeClass("workflowstep-protect", WorkflowStep_Protect)
+    registerStep("workflowstep_protect")
 
 
 class WorkflowStep_Protect(WorkflowStep):
 
     def runAction(self, node, op=""):
         node.set("key", mkKey())
+        db.session.commit()
         self.forward(node, True)

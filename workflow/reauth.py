@@ -17,15 +17,14 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import core.tree as tree
 from .workflow import WorkflowStep, registerStep
-from utils.utils import mkKey
 from core.translation import addLabels
+from core import db
 
 
 def register():
-    tree.registerNodeClass("workflowstep-reauth", WorkflowStep_Reauth)
-    registerStep("workflowstep-reauth")
+    #tree.registerNodeClass("workflowstep-reauth", WorkflowStep_Reauth)
+    registerStep("workflowstep_reauth")
     addLabels(WorkflowStep_Reauth.getLabels())
 
 
@@ -33,6 +32,7 @@ class WorkflowStep_Reauth(WorkflowStep):
 
     def runAction(self, node, op=""):
         node.set("key", node.get("system.key"))
+        db.session.commit()
         self.forward(node, True)
 
     @staticmethod

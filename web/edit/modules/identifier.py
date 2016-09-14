@@ -19,10 +19,7 @@
 """
 
 import os
-import logging
-import core.users as users
-import core.acl as acl
-import core.tree as tree
+
 import core.config as config
 import utils.date as date
 import utils.urn as urn
@@ -32,7 +29,15 @@ import utils.doi as doi
 import utils.pathutils as pathutils
 from core.translation import lang, t
 from utils.utils import dec_entry_log
-from core.transition import httpstatus
+from core.transition import httpstatus, current_user
+import logging
+from core import Node, User
+from core import db
+from contenttypes import Collections
+from core.database.postgres.permission import AccessRule, NodeToAccessRule
+
+q = db.query
+logg = logging.getLogger(__name__)
 
 
 @dec_entry_log
@@ -41,69 +46,73 @@ def getContent(req, ids):
     The standard method,  which has to be implemented by every module.
     It's called in edit.py, where all the modules will be identified.
     """
-    user = users.getUserFromRequest(req)
-    access = acl.AccessData(req)
-    node = tree.getNode(ids[0])
-    access_nobody = 'nicht Jeder'
+    raise Exception("ACL must be fixed!")
+    user = current_user
+    node = q(Node).get(ids[0])
+    # access_nobody = u'nicht Jeder'
 
     # first prove if the user has the required rights to call this module
-    if 'sortfiles' in users.getHideMenusForUser(user) or not access.hasWriteAccess(node):
+    if 'sortfiles' in user.hidden_edit_functions or not node.has_write_access():
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL('web/edit/edit.html', {}, macro='access_error')
 
     if node.isContainer():
-        nodes = ', '.join(node.getChildren().getIDs())
+        nodes = u', '.join(node.children.getIDs())
     else:
-        nodes = node.get('node.id')
+        nodes = unicode(node.id)
 
     v = {'msg': '',
          'urn_institutionid': config.get('urn.institutionid'),
          'urn_pubtypes': config.get('urn.pubtypes').split(';'),
          'namespaces': config.get('urn.namespace').split(';'),
          'user': user,
-         'nodes': nodes,
+         'nodes': nodes.split(', '),
          'type': req.params.get('id_type'),
          'show_form': True,
          'namespace': req.params.get('namespace'),
          'urn_type': req.params.get('urn_type'),
          'host': config.get('host.name'),
-         'creator': users.getUser(node.get('creator'))
+         'creator': user
          }
 
-    if user.isAdmin():
+    if user.is_admin:
         if 'id_type' in req.params:
             if req.params.get('id_type') == 'hash':
                 createHash(node)
-            if req.params.get('id_type') == 'urn':
+            elif req.params.get('id_type') == 'urn':
                 createUrn(node, req.params.get('namespace'), req.params.get('urn_type'))
-            if req.params.get('id_type') == 'doi':
+            elif req.params.get('id_type') == 'doi':
                 try:
                     createDOI(node)
                 except:
                     return req.error(500, "doi was not successfully registered")
 
+            db.session.commit()
+
             if any(identifier in node.attributes for identifier in ('hash', 'urn', 'doi')):
                 if not node.get('system.identifierdate'):
-                    node.set('system.identifierdate', date.now())
+                    node.set('system.identifierdate', unicode(date.now()))
+                    db.session.commit()
                 if node.get('system.identifierstate') != '2':
-                    node.set('system.identifierstate', '2')
+                    node.set('system.identifierstate', u'2')
+                    db.session.commit()
 
-                    # add nobody rule if not set
-                    if node.getAccess('write') is None:
-                        node.setAccess('write', access_nobody)
-                    else:
-                        if access_nobody not in node.getAccess('write'):
-                            node.setAccess('write', ','.join([node.getAccess('write'), access_nobody]))
+                    # add nobody ruleset if not set
+                    if node.access_rule_assocs.filter_by(ruletype=u'write', invert=True, blocking=True).scalar() is None:
+                        everybody_rule = AccessRule()
+                        db.session.add(everybody_rule)
+                        node.access_rule_assocs.append(NodeToAccessRule(rule=everybody_rule, ruletype=u"write", invert=True, blocking=True))
+                        db.session.commit()
 
                 try:
                     mailtext = req.getTAL('web/edit/modules/identifier.html', v, macro='generate_identifier_usr_mail_2')
-                    mail.sendmail(config.get('email.admin'),
-                                  users.getUser(node.get('creator')).get('email'),
-                                  'Vergabe eines Idektifikators / Generation of an Identifier',
+                    mail.sendmail(config.get('email.admin'),  # email from
+                                  "%s;%s" % (config.get('email.admin'), user.getEmail()), # email to
+                                  u'Vergabe eines Identifikators / Generation of an Identifier',
                                   mailtext)
 
                 except mail.SocketError:
-                    logging.getLogger('backend').error('failed to send Autorenvertrag mail to user %s' % node.get('creator'))
+                    logg.exception('failed to send Autorenvertrag mail to user %r (%s): %r' % (user.login_name, user.getName(), user.getEmail()))
                     v['msg'] = t(lang(req), 'edit_identifier_mail_fail')
 
         if node.get('system.identifierstate') != '2':
@@ -112,7 +121,7 @@ def getContent(req, ids):
             v['msg'] = t(lang(req), 'edit_identifier_state_2_admin')
 
     else:
-        if pathutils.isDescendantOf(node, tree.getRoot('collections')):
+        if pathutils.isDescendantOf(node, q(Collections).one()):
             if not node.get('system.identifierstate'):
                 if 'id_type' in req.params:
                     try:
@@ -123,8 +132,7 @@ def getContent(req, ids):
                                                            autorenvertrag_name)
 
                         if not os.path.isfile(autorenvertrag_path):
-                            logging.getLogger('backend').error(
-                                "Unable to attach Autorenvergrag. Attachment file not found: '%s'" % autorenvertrag_path)
+                            logg.error("Unable to attach Autorenvertrag. Attachment file not found: '%s'", autorenvertrag_path)
                             raise IOError('Autorenvertrag was not located on disk at %s. Please send this error message to %s' %
                                           (autorenvertrag_path, config.get('email.admin')))
                         else:
@@ -134,8 +142,8 @@ def getContent(req, ids):
                         mailtext_user = req.getTAL(
                             'web/edit/modules/identifier.html', v, macro='generate_identifier_usr_mail_1_' + lang(req))
                         mail.sendmail(config.get('email.admin'),
-                                      user.get('email'),
-                                      t(lang(req), 'edit_identifier_mail_title_usr_1'),
+                                      ("%s;%s" % (config.get('email.admin'), user.getEmail())),
+                                      unicode(t(lang(req), 'edit_identifier_mail_title_usr_1')),
                                       mailtext_user,
                                       attachments_paths_and_filenames=attachment)
 
@@ -143,21 +151,21 @@ def getContent(req, ids):
                         mailtext_admin = req.getTAL('web/edit/modules/identifier.html', v, macro='generate_identifier_admin_mail')
                         mail.sendmail(config.get('email.admin'),
                                       config.get('email.admin'),
-                                      'Antrag auf Vergabe eines Identifikators',
+                                      u'Antrag auf Vergabe eines Identifikators',
                                       mailtext_admin)
 
-                        node.set('system.identifierstate', '1')
+                        node.set('system.identifierstate', u'1')
+                        db.session.commit()
 
-                        # add nobody rule
-                        print node.getAccess('write')
-                        if node.getAccess('write') is None:
-                            node.setAccess('write', access_nobody)
-                        else:
-                            if access_nobody not in node.getAccess('write'):
-                                node.setAccess('write', ','.join([node.getAccess('write'), access_nobody]))
+                        # add nobody rule if not set
+                        if node.access_rule_assocs.filter_by(ruletype=u'write', invert=True, blocking=True).scalar() is None:
+                            everybody_rule = AccessRule()
+                            db.session.add(everybody_rule)
+                            node.access_rule_assocs.append(NodeToAccessRule(rule=everybody_rule, ruletype=u"write", invert=True, blocking=True))
+                            db.session.commit()
 
                     except mail.SocketError:
-                        logging.getLogger('backend').error('failed to send identifier request mail')
+                        logg.exception('failed to send identifier request mail')
                         v['msg'] = t(lang(req), 'edit_identifier_mail_fail')
                 else:
                     v['msg'] = t(lang(req), 'edit_identifier_state_0_usr')
@@ -188,14 +196,16 @@ def createUrn(node, namespace, urn_type):
     @param urn_type e.q. diss, epub, etc
     """
     if node.get('urn') and (node.get('urn').strip() != ''):  # keep the existing urn, if there is one
-        logging.getLogger('everything').info('urn already exists for node %s' % node.id)
+        logg.info('urn already exists for node %s', node.id)
     else:
         try:
             d = date.parse_date(node.get('date-accepted'))
         except:
             d = date.now()
-        niss = '%s-%s-%s-0' % (urn_type, date.format_date(d, '%Y%m%d'), node.id)
-        node.set('urn', urn.buildNBN(namespace, config.get('urn.institutionid'), niss))
+        niss = u'{}-{}-{}-0'.format(urn_type,
+                                    date.format_date(d, '%Y%m%d'),
+                                    node.id)
+        node.set('urn', unicode(urn.buildNBN(namespace, config.get('urn.institutionid'), niss)))
 
 
 def createHash(node):
@@ -203,9 +213,9 @@ def createHash(node):
     @param node for which the hash-id should be created
     """
     if node.get('hash') and (node.get('hash').strip() != ''):  # if a hash-id already exists for this node, do nothing
-        logging.getLogger('everything').info('hash already exists for node %s' % node.id)
+        logg.info('hash already exists for node %s', node.id)
     else:
-        node.set('hash', hashid.getChecksum(node.id))
+        node.set('hash', unicode(hashid.getChecksum(node.id)))
 
 
 def createDOI(node):
@@ -213,9 +223,13 @@ def createDOI(node):
     @param node for which the doi should be created
     """
     if node.get('doi') and (node.get('doi').strip() != ''):
-        logging.getLogger('everything').info('doi already exists for node %s' % node.id)
+        logg.info('doi already exists for node %s', node.id)
     else:
-        node.set('doi', doi.generate_doi_live(node))
+        if config.get('doi.testing') == 'true':
+            node.set('doi', unicode(doi.generate_doi_test(node)))
+        else:
+            node.set('doi', unicode(doi.generate_doi_live(node)))
+        db.session.commit()
         meta_file = doi.create_meta_file(node)
         doi_file = doi.create_doi_file(node)
         meta_response, meta_content = doi.post_file('metadata', meta_file)
@@ -225,7 +239,9 @@ def createDOI(node):
             node.removeAttribute('doi')
             os.remove(meta_file)
             os.remove(doi_file)
-            logging.getLogger('backend').error('doi was not successfully registered, META: %s %s | DOI: %s %s' %
-                                               (meta_response, meta_content, doi_response, doi_content))
-            raise Exception('doi was not successfully registered, META: %s %s | DOI: %s %s' %
-                            (meta_response, meta_content, doi_response, doi_content))
+            msg = 'doi was not successfully registered, META: %s %s | DOI: %s %s' % (meta_response, 
+                                                                                     meta_content,
+                                                                                     doi_response,
+                                                                                     doi_content)
+            logg.error(msg)
+            raise Exception(msg)

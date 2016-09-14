@@ -40,11 +40,11 @@ class m_number(Metatype):
     def getSearchHTML(self, context):
         return tal.getTAL("metadata/number.html", {"context": context}, macro="searchfield", language=context.language)
 
-    def getFormatedValue(self, field, node, language=None, html=1):
-        value = node.get(field.getName()).replace(";", "; ")
+    def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
+        value = node.get(metafield.getName()).replace(";", "; ")
         if html:
             value = esc(value)
-        return (field.getLabel(), value)
+        return (metafield.getLabel(), value)
 
 
 

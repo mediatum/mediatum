@@ -33,6 +33,7 @@ from reportlab.pdfgen import canvas
 from pyPdf import PdfFileWriter, PdfFileReader
 
 import core.config as config
+import utils.process
 
 
 def get_pdf_page_image(pdfpath, page, prefix="_PdfPageImage_%(testname)s_%(page)s_.png", path_only=False):
@@ -44,7 +45,8 @@ def get_pdf_page_image(pdfpath, page, prefix="_PdfPageImage_%(testname)s_%(page)
     tmppng = tmppath + tmpname
 
     if not path_only:
-        os.system("convert -alpha off -colorspace RGB %s[%s] %s" % (pdfpath, page, tmppng))
+        utils.process.call(("convert", "-alpha", "off", "-colorspace", "RGB",
+                            "{}[{}]".format(pdfpath, page), tmppng))
     return tmppng
 
 
@@ -73,7 +75,7 @@ def get_pdf_dimensions(fn):
             x1 = max(x1, _x1)
         width = x1 - x0
         height = y1 - y0
-        key = str([width, height])
+        key = unicode([width, height])
         d_pages[key] = d_pages.get(key, []) + [i]
         d_pageno2size[i] = [width, height]
 
@@ -304,10 +306,7 @@ def build_logo_overlay_pdf(fn_matrix_pdf,
     output.write(outputStream)
 
     outputStream.close()
-    cmd = "pdftk %s multistamp %s output %s" % (fn_matrix_pdf, fn_logo_temp, fn_out)
-    p = os.popen(cmd)
-    s = p.read()
-    p.close()
+    utils.process.call(("pdftk", fn_matrix_pdf, "multistamp", fn_logo_temp, "output", fn_out))
     return
 
 

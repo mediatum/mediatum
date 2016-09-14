@@ -17,18 +17,24 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import logging
 import os
 import math
 import sys
-import traceback
 
+from core import db, User, AuthenticatorInfo
 import core.users as users
 import core.config as config
-from utils.utils import Link, splitpath, parseMenuString
 from core.translation import t, lang
-from core.tree import getRoot
-from core.transition import httpstatus
+from core.transition import httpstatus, current_user, request
+from core.systemtypes import Root
+from utils.strings import ensure_unicode_returned
+from utils.utils import Link, splitpath, parseMenuString
+from utils.list import filter_scalar
+from core.exceptions import SecurityException
 
+logg = logging.getLogger(__name__)
+q = db.query
 
 def getAdminStdVars(req):
     page = ""
@@ -100,7 +106,7 @@ class Overview:
                 if p == self.page:
                     b_class = "admin_page_act"
                 ret += '<button type="submit" name="page" class="' + b_class + '" title="' + \
-                    t(self.language, "admin_page") + ' ' + str(p) + '" value="' + str(p) + '">' + str(p) + '</button> '
+                    t(self.language, "admin_page") + ' ' + unicode(p) + '" value="' + unicode(p) + '">' + unicode(p) + '</button> '
         if len(ret) == 0:
             return ""
         return '[' + ret + '] '
@@ -131,11 +137,11 @@ class Overview:
             if col != "":
                 if i == ordercol:
                     if orderdir == 0:
-                        retList += [Link(str(i) + "1", t(self.language, "admin_sort_label"), col + ' <img src="/img/az.png" border="0" />')]
+                        retList += [Link(unicode(i) + "1", t(self.language, "admin_sort_label"), col + ' <img src="/img/az.png" border="0" />')]
                     else:
-                        retList += [Link(str(i) + "0", t(self.language, "admin_sort_label"), col + ' <img src="/img/za.png" border="0" />')]
+                        retList += [Link(unicode(i) + "0", t(self.language, "admin_sort_label"), col + ' <img src="/img/za.png" border="0" />')]
                 else:
-                    retList += [Link(str(i) + "0", t(self.language, "admin_sort_label"), col)]
+                    retList += [Link(unicode(i) + "0", t(self.language, "admin_sort_label"), col)]
             i += 1
         return retList
 
@@ -173,31 +179,29 @@ def findmodule(type):
         m = __import__("web.admin.modules." + type)
         m = eval("m.admin.modules." + type)
     except:
-        print "Warning: couldn't load module for type", type
-        print sys.exc_info()[0], sys.exc_info()[1]
-        traceback.print_tb(sys.exc_info()[2])
+        logg.exception("Warning: couldn't load module for type %s", type)
         m = __import__("web.admin.modules.default")
         m = eval("m.admin.modules.default")
     return m
 
 """ main method for content area """
 
-
+@ensure_unicode_returned(name="adminutils.show_content")
 def show_content(req, op):
-    user = users.getUserFromRequest(req)
+    from core.users import user_from_session
+    user = user_from_session(req.session)
 
-    if not user.inGroup(config.get('user.admingroup')):
+    if not user.is_admin:
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/admin/frame.html", {}, macro="errormessage")
     else:
-        if op == "" or op not in getRoot().get("admin.menu"):
+        if op == "" or op not in q(Root).one().system_attrs.get("admin.menu", ""):
             op = "menumain"
         module = findmodule(op.split("_")[0])
 
-        try:
-            if op.index("_") > -1:
-                return module.spc(req, op)
-        except:
+        if op.find("_") > -1:
+            return module.spc(req, op)
+        else:
             return module.validate(req, op)
 
 # delivers all admin modules
@@ -206,10 +210,11 @@ def show_content(req, op):
 def getAdminModules(path):
     mods = {}
     for root, dirs, files in path:
-        for name in [f for f in files if f.endswith(".py") and f != "__init__.py"]:
-            m = __import__("web.admin.modules." + name[:-3])
-            m = eval("m.admin.modules." + name[:-3])
-            mods[name[:-3]] = m
+        if os.path.basename(root) not in ("test", "__pycache__"):
+            for name in [f for f in files if f.endswith(".py") and f != "__init__.py"]:
+                m = __import__("web.admin.modules." + name[:-3])
+                m = eval("m.admin.modules." + name[:-3])
+                mods[name[:-3]] = m
 
     # test for external modules by plugin
     for k, v in config.getsubset("plugins").items():
@@ -239,13 +244,13 @@ def adminNavigation():
                 adminModules[mod] = (mods[mod])
 
     # get module configuration
-    root = getRoot()
-    admin_configuration = root.get("admin.menu")
+    root = q(Root).one()
+    admin_configuration = root.system_attrs.get("admin.menu", "")
 
     if admin_configuration == "":
         # no confguration found -> use default
-        admin_configuration = "menumain();menuuser(usergroup;user);menuacl(acls);menudata(metatype;mapping);menuworkflow(workflows);menusystem(logfile;flush;settings;settingsmenu)"
-        root.set("admin.menu", admin_configuration)
+        admin_configuration = "menumain();menudata(metatype;mapping);menuworkflow(workflows);menusystem(settingsmenu)"
+        root.system_attrs["admin.menu"] = admin_configuration
 
     return parseMenuString(admin_configuration[:-1])
 
@@ -281,3 +286,44 @@ def getMenuItemID(menulist, path):
                 return [item.name, "admin_menu_" + subitem[0]]
 
     return ["admin_menu_menumain"]
+
+
+def become_user(login_name, authenticator_key=None):
+    """Changes current user to the user specified by `login_name` and returns the user object.
+    If there are multiple results for a `login_name`, an authenticator_key must be given.
+    Can only be called when the current user is admin.
+    """
+    if not current_user.is_admin:
+        raise SecurityException("becoming other users not allowed for non-admin users")
+
+    candidate_users = q(User).filter_by(login_name=login_name).all()
+
+    if not candidate_users:
+        raise ValueError("unknown user login name " + login_name)
+
+    if len(candidate_users) == 1:
+        user = candidate_users[0]
+    else:
+        # multiple candidates
+        if not authenticator_key:
+            raise ValueError("no authenticator_key given, but multiple users found for login name" + login_name)
+
+
+        parts = authenticator_key.split(":")
+
+        if len(parts) != 2:
+            raise ValueError("invalid authenticator key " + authenticator_key)
+
+        authenticator_type, authenticator_name = parts
+        authenticator_info = q(AuthenticatorInfo).filter_by(type=authenticator_type, name=authenticator_name).scalar()
+
+        if authenticator_info is None:
+            raise ValueError("cannot find authenticator key" + authenticator_key)
+
+        user = filter_scalar(lambda u: u.authenticator_id == authenticator_info.id)
+
+        if user is None:
+            return
+
+    request.session["user_id"] = user.id
+    return user

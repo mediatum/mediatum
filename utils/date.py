@@ -35,7 +35,6 @@ class DateTime:
         self.has_month = month
         self.has_day = day
         self.has_time = hour or minute or second
-
         self.has_hour = hour
         self.has_minute = minute
         self.has_second = second
@@ -117,7 +116,7 @@ def format_date(t=None, format=None):
         return "%s, %0.2d %s %0.4d %0.2d:%0.2d:%0.2d CET" % (dn, t.day, monthname[t.month], t.year, t.hour, t.minute, t.second)
     else:
         i = 0
-        result = ""
+        result = u""
         l = len(format)
         while i < l:
             if format[i] == '%':
@@ -194,18 +193,15 @@ def parse_date(string, format=None):
                 return parse_date(string, format='%Y-%m-%d')
             except:
                 return parse_date(string, format='%d.%m.%YT%H:%M:%S')
-
     i = 0
     pos = 0
     slen = len(string)
     l = len(format)
-
     year, month, day, hour, minute, second = 0, 0, 0, 0, 0, 0
     hasyear = 0
     hasmonth = 0
     hasday = 0
     hastime = 0
-
     while i < l:
         if pos >= slen:
             raise ValueError('Unexpected end of value string: "' + string + '"')
@@ -303,6 +299,8 @@ def parse_date(string, format=None):
         date.has_year = hasyear
         date.has_month = hasmonth
         date.has_day = hasday
+    if not validateDate(date):
+        raise ValueError("invalid date: " + ustr(date))
     return date
 
 
@@ -355,6 +353,6 @@ def validateDateString(value, format=None):
 
 def dt_fromiso(isoformat_datestring):
     """Convert datetime string in isoformat to datetime object
-    :param isoformat_datestring: string formatted like datetime.isoformat()
+       :param isoformat_datestring: string formatted like datetime.isoformat()
     """
     return datetime.datetime.strptime(isoformat_datestring, "%Y-%m-%dT%H:%M:%S")

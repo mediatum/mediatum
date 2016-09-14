@@ -18,248 +18,230 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import json
+from functools import partial, wraps
 import logging
+import re
+from werkzeug.datastructures import ImmutableMultiDict
 
-import core.acl
 import core.config as config
-import core.users as users
-import core.xmlnode as xmlnode
-import core.tree as tree
-from utils.utils import *
-from core.acl import AccessData
 from core.metatype import Context
-from core.translation import lang
-from core.tree import db
-from web.frontend.frame import getNavigationFrame
-from web.frontend.content import getContentArea, ContentNode
-from schema.schema import getMetadataType, getMetaType
+from core.translation import lang, switch_language
 from core.transition import httpstatus
+from core import db
+from core import Node, NodeAlias
+from core.transition import current_user
+from contenttypes import Container
+from schema.schema import getMetadataType
+from utils.url import build_url_from_path_and_params
+from web.frontend.frame import render_page
+from web.frontend.content import render_content
+from workflow.workflow import Workflows
+from core.nodecache import get_collections_node
+
+q = db.query
 
 
-logg = logging.getLogger("frontend")
+logg = logging.getLogger(__name__)
 
 
 def handle_json_request(req):
     s = []
-    if req.params.get("cmd") == "get_list_smi":
+    if req.args.get("cmd") == "get_list_smi":
         searchmaskitem_id = req.params.get("searchmaskitem_id")
         f = None
         g = None
         if searchmaskitem_id and searchmaskitem_id != "full":
-            f = tree.getNode(searchmaskitem_id).getFirstField()
+            f = q(Node).get(searchmaskitem_id).getFirstField()
         if not f:  # All Metadata
             f = g = getMetadataType("text")
-        s = [f.getSearchHTML(Context(g, value=req.params.get("query_field_value"), width=174, name="query" + str(req.params.get("fieldno")),
-                                     language=lang(req), collection=tree.getNode(req.params.get("collection_id")),
-                                     user=users.getUserFromRequest(req), ip=req.ip))]
+
+        container_id = req.args.get("container_id")
+
+        container = q(Container).get(container_id) if container_id else None
+
+        if container is None or not container.has_read_access():
+            container = get_collections_node()
+
+        s = [
+            f.getSearchHTML(
+                Context(
+                    g,
+                    value=req.args.get("query_field_value"),
+                    width=174,
+                    name="query" + str(req.args.get("fieldno")),
+                    language=lang(req),
+                    container=container,
+                    user=current_user,
+                    ip=req.ip))]
     req.write(req.params.get("jsoncallback") + "(%s)" % json.dumps(s, indent=4))
-    return
 
 
-DISPLAY_PATH = re.compile("/([-.~_/a-zA-Z0-9]+)$")
+DISPLAY_PATH = re.compile("/([_a-zA-Z][_/a-zA-Z0-9]+)$")
 known_node_aliases = {}
 
 
+def change_language_request(req):
+    language = req.args.get("change_language")
+    if language:
+        # change language cookie if language is configured
+        switch_language(req, language)
+        params = req.args.copy()
+        del params["change_language"]
+        req.request["Location"] = build_url_from_path_and_params(req.path, params)
+        # set the language cookie for caching
+        req.setCookie("language", language)
+        return httpstatus.HTTP_MOVED_TEMPORARILY
+
+
+def check_change_language_request(func):
+    @wraps(func)
+    def checked(req, *args, **kwargs):
+        change_lang_http_status = change_language_request(req)
+        if change_lang_http_status:
+            return change_lang_http_status
+
+        return func(req, *args, **kwargs)
+
+    return checked
+
+
+@check_change_language_request
 def display_404(req):
     return httpstatus.HTTP_NOT_FOUND
 
 
+def overwrite_id_in_req(nid, req):
+    """Patches a GET request to include a new nid.
+    XXX: A bit hacky, nid handling should be changed somehow.
+    """
+    assert req.method == "GET"
+    req.args = ImmutableMultiDict(dict(req.args, id=nid))
+    req.params["id"] = nid
+    return req
+
+
+@check_change_language_request
 def display_alias(req):
     match = DISPLAY_PATH.match(req.path)
     if match:
-        alias = match.group(1).rstrip("/").lower()
-        node_id = known_node_aliases.get(alias)
-        if node_id is not None:
-            logg.debug("known node alias in cache '%s' -> '%s'", alias, node_id)
-            req.params["id"] = node_id
+        alias_name = match.group(1).rstrip("/").lower()
+        node_alias = q(NodeAlias).get(unicode(alias_name))
+
+        if node_alias is not None:
+            new_nid = node_alias.nid
         else:
-            node_id = db.get_aliased_nid(alias)
-            if node_id:
-                known_node_aliases[alias] = node_id
-                req.params["id"] = node_id
-                logg.debug("node alias from DB '%s' -> '%s'", alias, node_id)
-            else:
-                logg.info("node alias not found: '%s'", alias)
-                # pass illegal id => nice error msg is displayed
-                req.params["id"] = "-1"
-        # node is set now, redirect to regular display handler
+            # -1 is a node ID that's never found, this will just display 404
+            new_nid = -1
+
+        req = overwrite_id_in_req(new_nid, req)
+        # redirect to regular display handler
         display(req)
     else:
-        raise Exception("illegal alias '{}', should not be passed to this handler!".format(alias))
+        raise RuntimeError(u"illegal alias '{}', should not be passed to this handler!".format(req.path))
 
 
-def display(req):
+RE_NEWSTYLE_NODE_URL = re.compile("/(nodes/)?(\d+).*")
+
+
+@check_change_language_request
+def display_newstyle(req):
+    """Handles requests for new style frontend node URLs matching
+    /nodes/<nid> OR
+    /<nid> (can be interpreted as alias, too)
+    """
+    nodes_path, nid_or_alias = RE_NEWSTYLE_NODE_URL.match(req.path).groups()
+    if nodes_path is None:
+        # check first if nid_or_alias is an alias
+        maybe_node_alias = q(NodeAlias).get(unicode(nid_or_alias))
+        if maybe_node_alias is not None:
+            # found matching alias, assume it's an alias
+            return display_alias(req)
+
+    # either coming from /nodes/ or nid_or_alias is not a valid alias
+    req = overwrite_id_in_req(nid_or_alias, req)
+    return _display(req)
+
+
+@check_change_language_request
+def _display(req, show_navbar=True, render_paths=True, params=None):
     if "jsonrequest" in req.params:
-        handle_json_request(req)
-        return
+        return handle_json_request(req)
 
-    req.session["area"] = ""
-    content = getContentArea(req)
-    content.feedback(req)
-    try:  # add export mask data of current node to request object
-        mask = getMetaType(content.actNode().getSchema()).getMask('head_meta')
-        req.params['head_meta'] = mask.getViewHTML([content.actNode()], flags=8)
-    except:
-        req.params['head_meta'] = ''
-    navframe = getNavigationFrame(req)
-    navframe.feedback(req)
+    if params is None:
+        params = req.args
 
-    contentHTML = content.html(req)
-    contentHTML = modify_tex(contentHTML, 'html')
-    navframe.write(req, contentHTML)
-    # set status code here... 
-    req.setStatus(content.status())
-    # ... Don't return a code because Athana overwrites the content if an http error code is returned from a handler.
-
-
-def display_noframe(req):
-    content = getContentArea(req)
-    content.feedback(req)
-
-    navframe = getNavigationFrame(req)
-    navframe.feedback(req)
-    req.params["show_navbar"] = 0
-
-    contentHTML = content.html(req)
-
-    if "raw" in req.params:
-        req.write(contentHTML)
+    nid = params.get("id", type=int)
+    
+    if nid is None:
+        node = get_collections_node()
     else:
-        navframe.write(req, contentHTML, show_navbar=0)
+        node = q(Node).prefetch_attrs().prefetch_system_attrs().get(nid)
+        
+    if node is not None and not node.has_read_access():
+        node = None
+        
+    if req.args.get("disable_content"):
+        content_html = u""
+    else:
+        content_html = render_content(node, req, render_paths)
 
-# needed for workflows:
+    if params.get("raw"):
+        req.write(content_html)
+    else:
+        html = render_page(req, node, content_html, show_navbar)
+        req.write(html)
+    # ... Don't return a code because Athana overwrites the content if an http error code is returned from a handler.
+    # instead, req.setStatus() can be used in the rendering code
 
+
+@check_change_language_request
+def display(req):
+    _display(req)
+
+
+@check_change_language_request
+def workflow(req):
+    if req.method == "POST":
+        params = req.form
+    else:
+        params = req.args
+
+    _display(req, show_navbar=False, render_paths=False, params=params)
+
+
+#: needed for workflows:
 PUBPATH = re.compile("/?(publish|pub)/(.*)$")
 
-
+@check_change_language_request
 def publish(req):
     m = PUBPATH.match(req.path)
 
-    node = tree.getRoot("workflows")
+    node = workflow_root = q(Workflows).one()
     if m:
         for a in m.group(2).split("/"):
             if a:
-                try:
-                    node = node.getChild(a)
-                except tree.NoSuchNodeError:
+                node = node.children.filter_by(name=a).scalar()
+                if node is None:
                     return 404
 
-    req.params["id"] = node.id
-
-    content = getContentArea(req)
-    content.content = ContentNode(node)
-    req.session["area"] = "publish"
-
-    return display_noframe(req)
+    req = overwrite_id_in_req(node.id, req)
+    return _display(req, False, render_paths=False)
 
 
+@check_change_language_request
 def show_parent_node(req):
     parent = None
-    try:
-        node = tree.getNode(req.params.get("id"))
-    except tree.NoSuchNodeError:
-        return display_noframe(req)
+    node = q(Node).get(req.params.get("id"))
+    if node is None:
+        return workflow(req)
 
-    for p in node.getParents():
-        if p.type != "directory" and p.type != "collection":
+    for p in node.parents:
+        if not isinstance(p, Container):
             parent = p
     if not parent:
-        return display_noframe(req)
+        return workflow(req)
 
-    req.params["id"] = parent.id
-    req.params["obj"] = node.id
+    req = overwrite_id_in_req(parent.id, req)
+    req.params["obj"] = str(node.id)
 
-    content = getContentArea(req)
-    content.content = ContentNode(parent)
-
-    return display_noframe(req)
-
-
-def esc(v):
-    return v.replace("\\", "\\\\").replace("'", "\\'")
-
-
-def exportsearch(req, xml=0):  # format 0=pre-formated, 1=xml, 2=plain
-    access = AccessData(req)
-    access = core.acl.getRootAccess()
-
-    id = req.params.get("id")
-    q = req.params.get("q", "")
-    lang = req.params.get("language", "")
-    collections = tree.getRoot("collections")
-
-    if xml:
-        req.reply_headers['Content-Type'] = "text/xml; charset=utf-8"
-        req.write('<?xml version="1.0" encoding="utf-8"?>')
-
-    else:
-        req.reply_headers['Content-Type'] = "text/plain; charset=utf-8"
-
-    try:
-        node = tree.getNode(id)
-    except tree.NoSuchNodeError:
-        if xml:
-            req.write("<error>Invalid ID</error>")
-        else:
-            req.write("var error='invalid id';")
-        return
-    if not isParentOf(node, collections):
-        if xml:
-            req.write("<error>Invalid ID</error>")
-        else:
-            req.write("var error='invalid id';")
-        return
-
-    if not q:
-        nodes = access.filter(node.search("objtype=document"))
-    else:
-        #nodes = access.filter(node.search("objtype=document and "+q));
-        nodes = access.filter(node.search(q))
-
-    limit = int(req.params.get("limit", 99999))
-    sortfield = req.params.get("sort", None)
-
-    if sortfield:
-        nodes = nodes.sort_by_fields(sortfield)
-
-    if limit < len(nodes):
-        nodes = nodes[0:limit]
-
-    if xml:  # xml
-        req.write("<nodelist>")
-        i = 0
-        for node in nodes:
-            s = xmlnode.getSingleNodeXML(node)
-            req.write(s)
-            i = i + 1
-        req.write("</nodelist>")
-
-    elif req.params.get("data", None):
-        req.write('a=new Array(%d);' % len(nodes))
-        i = 0
-        for node in nodes:
-            req.write('a[%d] = new Object();\n' % i)
-            req.write("  a[%d]['nodename'] = '%s';\n" % (i, node.name))
-            for k, v in node.items():
-                req.write("    a[%d]['%s'] = '%s';\n" % (i, esc(k), esc(v)))
-            i = i + 1
-        req.write('add_data(a);\n')
-    else:
-        req.write('a=new Array(%d);' % len(nodes))
-        i = 0
-        labels = int(req.params.get("labels", 1))
-        for node in nodes:
-            req.write('a[%d] = new Object();\n' % i)
-            req.write("a[%d]['text'] = '%s';\n" % (i, esc(node.show_node_text(labels=labels, language=lang))))
-            req.write("a[%d]['link'] = 'http://%s?id=%s';\n" % (i, config.get('host.name'), node.id))
-            i = i + 1
-        req.write('add_data(a);\n')
-    print "%d node entries xml=%d" % (i, xml)
-
-
-def xmlsearch(req):
-    return exportsearch(req, xml=1)
-
-
-def jssearch(req):
-    return exportsearch(req, xml=0)
+    return workflow(req)

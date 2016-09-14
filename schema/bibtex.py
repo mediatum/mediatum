@@ -30,24 +30,30 @@
 
 import re
 import os
+import shutil
 import sys
 import codecs
 import logging
+import unicodedata
 
+from bibtexparser import load as bibtex_load
+from bibtexparser.bparser import BibTexParser
+import bibtexparser.customization
+
+from core import db, Node
+from .schema import Metadatatype
 import core.users as users
-
-from .schema import getMetaType
+from contenttypes import Directory
+from contenttypes.document import Document
 from utils.utils import u, u2, utf8_decode_escape
 from utils.date import parse_date
 
-import unicodedata
+q = db.query
 
 
-logger = logging.getLogger("backend")
+logg = logging.getLogger(__name__)
 
 ESCAPE_BIBTEX_KEY = False
-VERBOSE = True
-
 
 def normchar(char_descriptor):
     return unicodedata.lookup(char_descriptor).lower()
@@ -121,177 +127,10 @@ def save_import_file(filename):
     # leave following in for windows: "/" in path representation possible there
     _filename_only = filename.split("/")[-1]
     destname = os.path.join(temppath, "bibtex_import_saved_" + getNow() + "_" + _filename_only)
-    msg = "bibtex import: going to copy/save import file %r -> %r" % (filename, destname)
-    logger.info(msg)
-    if os.sep == '/':
-        ret = os.system("cp %s %s" % (filename, destname))
-    else:
-        cmd = "copy %s %s" % (filename, destname)
-        ret = os.system(cmd.replace('/', '\\'))
-
-    if ret & 0xff00:
-        raise IOError("Couldn't copy %s to %s (error: %s)" % (filename, destname, str(ret)))
+    logg.info("bibtex import: going to copy/save import file %s -> %s", filename, destname)
+    shutil.copyfile(filename, destname)
 
     return
-
-
-def getentries(filename):
-    save_import_file(filename)
-
-    fi = codecs.open(filename, "r", "utf-8")
-
-    try:
-        data = fi.read()
-    except UnicodeDecodeError:
-        fi.close()
-        msg = "bibtex import: getentries(filename): encoding error when trying codec 'utf-8', filename was " + filename
-        logger.error(msg)
-        msg = "bibtex import: getentries(filename): going to try without codec 'utf-8', filename was " + filename
-        logger.info(msg)
-
-        try:
-            fi = codecs.open(filename, "r")
-            try:
-                data = fi.read()
-                data = u2(data)
-            except Exception as e:
-                fi.close()
-                msg = "bibtex import: getentries(filename): error at second attempt: " + str(e)
-                logger.info(msg)
-
-                raise MissingMapping("wrong encoding")
-        except Exception as e:
-            msg = "bibtex import: getentries(filename): error at second attempt: " + str(e)
-            logger.error(msg)
-
-            raise MissingMapping("wrong encoding")
-    try:
-        fi.close()
-    except:
-        pass
-
-    data = data.replace("\r", "\n")
-    # throw out BOM
-    try:
-        data = u2(data).replace('\xef\xbb\xbf', "")
-    except:
-        pass
-    data = comment.sub('\n', data)
-    recordnr = 1
-
-    size = len(data)
-    pos = 0
-    records = []
-    fields = {}
-    doctype = None
-    placeholder = {}
-    while True:
-        m = token.search(data, pos)
-        if not m:
-            break
-        start = m.start()
-        end = m.end()
-        if data[start] == '@':
-            doctype = data[start + 1:end - 1].replace("{", "").strip().lower()
-            m = delim2.search(data[end:])
-            if m:  # and m.start()>end:
-                key = data[end:end + m.end()].strip()
-                pos = end + m.end()
-                if key[-1] == ",":
-                    key = key[0:-1]
-            else:
-                key = "record%05d" % recordnr
-                recordnr = recordnr + 1
-                #pos = m.end()
-                pos = end
-
-            if ESCAPE_BIBTEX_KEY:
-                key = escape_bibtexkey(key)
-
-            fields = {}
-            key = u2(key)
-            fields["key"] = key
-            records += [(doctype, key, fields)]
-
-            if doctype == "string":
-                # found placeholder
-                t2 = re.compile(r'[^}]*')
-                x = t2.search(data, end)
-                x_start = x.start()
-                x_end = x.end()
-                s = data[x_start:x_end + 1]
-                key, value = s.split("=")
-
-                placeholder[key.strip()] = value.strip()[1:-1]
-                pos = x_end
-
-                if VERBOSE:
-                    try:
-                        msg = "bibtex import: placeholder: key='%s', value='%s'" % (key.strip(), value.strip()[1:-1])
-                        logger.info(msg)
-                    except Exception as e:
-                        try:
-                            msg = "bibtex import: placeholder: key='%s', value='%s'" % (
-                                key.strip(), value.strip()[1:-1].encode("utf8", "replace"))
-                            logger.info(msg)
-                        except Exception as e:
-                            msg = "bibtex import: placeholder: 'not printable key-value pair'"
-                            logger.info(msg)
-
-        elif doctype:
-            # new record
-            s = data[start:end]
-
-            if end and data[end - 1].isalnum():
-                # for the \w+\s*=\s+[0-9a-zA-Z_] case
-                end = end - 1
-
-            field = s[:s.index("=")].strip().lower()
-            pos = end
-            next_token = token.search(data, pos)
-            if next_token:
-                content = data[pos:next_token.start()]
-            else:
-                content = data[pos:]
-
-            content = content.replace("{", "")
-            content = content.replace("~", " ")
-            content = content.replace("}", "")
-
-            for key in placeholder:
-                content = content.replace(key, placeholder[key])
-
-            # some people use html entities in their bibtex...
-            content = content.replace("&quot;", "'")
-            content = xspace.sub(" ", backgarbage.sub("", frontgarbage.sub("", content)))
-
-            content = u(content)
-            content = content.replace("\\\"u", "\xc3\xbc").replace("\\\"a", "\xc3\xa4").replace("\\\"o", "\xc3\xb6") \
-                .replace("\\\"U", "\xc3\x9c").replace("\\\"A", "\xc3\x84").replace("\\\"O", "\xc3\x96")
-            content = content.replace("\\\'a", "\xc3\xa0").replace("\\\'A", "\xc3\x80").replace("\\vc", "\xc4\x8d") \
-                .replace("\\vC", "\xc4\x8c")
-            content = content.replace("\\", "")
-            content = content.replace("{\"u}", "\xc3\xbc").replace("{\"a}", "\xc3\xa4").replace("{\"o}", "\xc3\xb6") \
-                .replace("{\"U}", "\xc3\x9c").replace("{\"A}", "\xc3\x84").replace("{\"O}", "\xc3\x96")
-
-            content = content.strip()
-
-            if field in ["author", "editor"] and content:
-                authors = []
-                for author in content.split(" and "):
-                    author = author.strip()
-                    if "," not in author and " " in author:
-                        i = author.rindex(' ')
-                        if i > 0:
-                            forename, lastname = author[0:i].strip(), author[i + 1:].strip()
-                        author = "%s, %s" % (lastname, forename)
-                    authors += [author]
-                content = ";".join(authors)
-
-            fields[field] = content
-        else:
-            pos = end
-    return records
 
 
 article_types = [
@@ -339,7 +178,7 @@ article_types = [
      ("author", "title", "school", "year"),
      ("address", "month", "note", "key"))]
 
-import core.tree as tree
+
 from . import schema as schema
 
 
@@ -358,8 +197,8 @@ def getbibtexmappings():
         if len(bibtextypes[bibtextype]) == 1:
             bibtextypes[bibtextype] = bibtextypes[bibtextype][-1]
         elif len(bibtextypes[bibtextype]) > 1:
-            logger.error("bibtex import: ambiguous mapping for bibtex type '%s': %s - choosing last one" % (
-                bibtextype, bibtextypes[bibtextype]))
+            logg.error("bibtex import: ambiguous mapping for bibtex type '%s': %s - choosing last one",
+                bibtextype, bibtextypes[bibtextype])
             bibtextypes[bibtextype] = bibtextypes[bibtextype][-1]
     return bibtextypes
 
@@ -398,6 +237,23 @@ def detecttype(doctype, fields):
         return None
 
 
+def _bibteximport_customize(record):
+    """
+    Sanitize bibtex records (unicode, name lists).
+    """
+    record = bibtexparser.customization.convert_to_unicode(record)
+    record = bibtexparser.customization.author(record)
+    record = bibtexparser.customization.editor(record)
+    # editor function adds "ids" (s.th. like hashes), we don't need them
+    if record.get("editor"):
+        record["editor"] = list(v["name"] for v in record["editor"])
+    # convert author/editor lists into semicolon-separated strings
+    for key in ("author", "editor"):
+        if key in record:
+            record[key] = ";".join(", ".join(n for n in name.split(", ") if n.strip()) for name in record[key])
+    return record
+
+
 def importBibTeX(infile, node=None, req=None):
     if req:
         try:
@@ -406,137 +262,84 @@ def importBibTeX(infile, node=None, req=None):
         except:
             msg = "bibtex import: starting import (unable to identify user)"
     else:
-        msg = "bibtex import: starting import (%s)" % str(sys.argv)
-    logger.info(msg)
-    print msg
+        msg = "bibtex import: starting import (%s)" % ustr(sys.argv)
+    logg.info(msg)
 
     bibtextypes = getbibtexmappings()
     result = []
     entries = []
-    shortcut = {}
 
     if isinstance(infile, list):
         entries = infile
     else:
-        if not node:
-            node = tree.Node(name=utf8_decode_escape(os.path.basename(infile)),
-                             type="directory")
+        node = node or Directory(utf8_decode_escape(os.path.basename(infile)))
         try:
-            entries = getentries(infile)
-        except:
-            logger.error("getentries failed", exc_info=1)
-            msg = "bibtex import: getentries failed, import stopped (encoding error)"
-            logger.error(msg)
-            raise ValueError("getentries failed")
+            save_import_file(infile)
+            with codecs.open(infile, "r", encoding="utf-8") as fi:
+                parser = BibTexParser()
+                parser.customization = _bibteximport_customize
+                bibtex = bibtex_load(fi, parser=parser)
+        except Exception as e:
+            logg.error("bibtex import: bibtexparser failed: {}".format(e))
+            raise ValueError("bibtexparser failed")
 
-    logger.info("bibtex import: %d entries" % len(entries))
+    logg.info("bibtex import: %d entries", len(entries))
 
-    counter = 0
-    for doctype, docid, fields in entries:
-        counter += 1
-        docid_utf8 = utf8_decode_escape(docid)
-
+    for count, fields in enumerate(bibtex.entries):
+        docid_utf8 = fields["ID"]
+        fields["key"] = fields.pop("ID")
+        doctype = fields.pop("ENTRYTYPE")
         mytype = detecttype(doctype, fields)
-
-        if doctype == "string":
-            if VERBOSE:
-                logger.info(
-                    "bibtex import:       processing %s: %s, %s --> (is string)" % (str(counter), doctype, docid))
-            continue
 
         if mytype:
             fieldnames = {}
             datefields = {}
-
-            if mytype == "string":
-                continue
-
-            elif mytype not in bibtextypes:
-                msg = "bibtex mapping of bibtex type '%s' not defined - import stopped" % mytype
-                logger.error("bibtex import: " + msg)
+            if mytype not in bibtextypes:
+                logg.error("bibtex mapping of bibtex type '%s' not defined - import stopped", mytype)
                 raise MissingMapping(msg)
             result += [(mytype.lower(), fields)]
 
             metatype = bibtextypes[mytype]
 
             # check for mask configuration
-            mask = getMetaType(metatype).getMask("bibtex_import")
-            if not mask:
-                mask = getMetaType(metatype).getMask("bibtex")
+            metadatatype = q(Metadatatype).filter_by(name=metatype).one()
+            mask = metadatatype.get_mask(u"bibtex_import") or metadatatype.get_mask(u"bibtex")
             if mask:
-                for f in mask.getMaskFields():
+                for f in mask.all_maskitems:
                     try:
-                        _bib_name = tree.getNode(f.get("mappingfield")).getName()
-                        _mfield = tree.getNode(f.get("attribute"))
-                        _med_name = _mfield.getName()
+                        _bib_name = q(Node).get(f.get(u"mappingfield")).name
+                        _mfield = q(Node).get(f.get(u"attribute"))
+                        _med_name = _mfield.name
+                        if _mfield.get(u"type") == u"date":
+                            datefields[_med_name] = _mfield.get(u"valuelist")
+                    except AttributeError as e:
+                        msg = "bibtex import docid='{}': field error for bibtex mask for type {} and bibtex-type '{}': {}"
+                        msg = msg.format(docid_utf8, metatype, mytype, e)
+                        logg.error(msg)
+                    else:
+                        fieldnames[_bib_name] = _med_name
 
-                        if _mfield.get("type") == "date":
-                            datefields[_med_name] = _mfield.get("valuelist")
-
-                    except tree.NoSuchNodeError as e:
-                        msg = "bibtex import docid='%s': field error for bibtex mask for type %s and bibtex-type '%s': %s: " % (
-                            docid_utf8, metatype, mytype, str(e))
-                        msg = msg + "_bib_name='%s', _mfield='%s', _med_name='%s'" % (
-                            str(_bib_name), str(_mfield), str(_med_name))
-                        logger.error(msg)
-                        continue
-
-                    fieldnames[_bib_name] = _med_name
-
-            doc = tree.Node(docid_utf8, type="document/" + metatype)
+            doc = Document(docid_utf8,schema=metatype)
             for k, v in fields.items():
                 if k in fieldnames.keys():
                     k = fieldnames[k]  # map bibtex name
 
                 if k in datefields.keys():  # format date field
-                    v = parse_date(v, datefields[k])
+                    v = str(parse_date(v, datefields[k]))
 
-                doc.set(k,  utf8_decode_escape(v))
+                doc.set(k, v)
 
             child_id = None
             child_type = None
             try:
-                node.addChild(doc)
-                doc.setDirty()
+                node.children.append(doc)
                 child_id = doc.id
                 child_type = doc.type
             except Exception as e:
-                logger.error("bibtex import: %s" % (str(e)))
+                logg.exception("bibtex exception")
                 raise ValueError()
 
-            if VERBOSE:
-                try:
-                    logger.info("bibtex import: done  processing %s: %s, %s --> type=%s, id=%s" % (
-                        str(counter), doctype, docid, str(child_type), str(child_id)))
-                except Exception as e:
-                    try:
-                        logger.info("bibtex import: done  processing %s: %s, %s --> type=%s, id=%s" % (
-                            str(counter), doctype, docid.decode("utf8", "replace"), str(child_type), str(child_id)))
-                    except Exception as e:
-                        logger.info("bibtex import: done  processing %s: %s, %s --> type=%s, id=%s" % (
-                            str(counter), doctype, "'not printable bibtex key'", str(child_type), str(child_id)))
-    msg = "bibtex import: finished import"
-    logger.info(msg)
+    logg.debug("bibtex import: finished import")
     print msg
 
     return node
-
-
-def test():
-    try:
-        b = tree.getRoot("bibs")
-        tree.getRoot().removeChild(b)
-    except:
-        pass
-
-    b = tree.Node("bibs", type="directory")
-    tree.getRoot().addChild(b)
-    #import glob
-    # for file in glob.glob("/home/mis/tmp/bib/*"):
-    #    c = tree.Node(os.path.basename(file),type="directory")
-    #    b.addChild(c)
-    #    importBibTeX(file,c)
-    file = "../file.bib"
-    c = tree.Node(os.path.basename(file), type="directory")
-    b.addChild(c)
-    importBibTeX(file, c)

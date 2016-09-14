@@ -18,43 +18,54 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
-import os.path 
+import os.path
+import urllib
+from mediatumtal import tal
 import core.athana as athana
 import core.config as config
-import core.tree as tree
+from core.styles import Theme
+from core import db, app
 
-from core.styles import theme
-from mediatumtal import tal
 from core.plugins import find_plugin_with_theme
 
-logg = logging.getLogger("frontend")
+logg = logging.getLogger(__name__)
+
+
+global theme
+theme = None
 
 
 def loadThemes():
 
     def manageThemes(theme_name, theme_basepath, theme_type):
+        global theme
         theme_dir = os.path.join(theme_basepath, "themes", theme_name)
+        theme = Theme(theme_name, theme_dir + "/", theme_type)
+        theme_jinja_loader = theme.make_jinja_loader()
+        if theme_jinja_loader is not None:
+            logg.info("adding jinja loader for theme")
+            app.add_template_loader(theme_jinja_loader, 0)
+            
         athana.addFileStore("/theme/", theme_dir + "/")
         athana.addFileStorePath("/css/", theme_dir + "/css/")
         athana.addFileStorePath("/img/", theme_dir + "/img/")
         athana.addFileStorePath("/js/", theme_dir + "/js/")
-        theme.update(theme_name, theme_dir + "/", theme_type)
         logg.info("Loading theme '%s' from '%s' (%s)", theme_name, theme_dir, theme_type)
 
     theme_name = config.get("config.theme", "")
-    
+
     if theme_name:
         theme_basepath = find_plugin_with_theme(theme_name)
-        
+
         if theme_basepath is None:
             logg.warn("theme from config file with name '%s' not found, maybe a plugin is missing?", theme_name)
         else:
             manageThemes(theme_name, theme_basepath, "extern")
             return
-        
+
     # use fallback standard theme
     manageThemes("default", "web/", "intern")
-    logg.warn("use standard theme, you should create your own theme :)")
+    logg.warn("using (broken) standard theme, you should create your own theme :)", trace=False)
 
 
 def loadServices():
@@ -74,9 +85,9 @@ def loadServices():
         if servicename + '.basecontext' in config.getsubset("services").keys():
             basecontext = config.getsubset("services")[servicename + '.basecontext']
         else:
-            basecontext = config.get("services.contextprefix", "services") + '/' + servicename
+            basecontext = config.get("services.contextprefix", u"services") + '/' + servicename
         basecontext = ('/' + basecontext).replace('//', '/').replace('//', '/')
-        context = athana.addContext(basecontext, ".")
+        context = athana.addContext(str(basecontext), ".")
         file = context.addFile(servicedir + "services/" + servicename)
 
         if hasattr(file.m, "request_handler"):
@@ -103,56 +114,89 @@ def loadServices():
                     manageService(servicedir, v, os.path.join(datapath, k, servicedir))
 
     else:
-        print "web services not activated"
+        logg.info("web services not activated")
+
+
+def node_url(nid=None, version=None, **kwargs):
+    params = {}
+    if "id" in kwargs:
+        nid = kwargs.pop("id")
+    if version:
+        params["v"] = version
+    params.update(kwargs)
+    params = {k: unicode(v).encode("utf8") for k, v in params.items()}
+    if params:
+        return "/{}?{}".format(nid or "", urllib.urlencode(params))
+    else:
+        return "/" + str(nid)
+
+
+def current_node_url(**kwargs):
+    """Builds a new node URL from the current request params with values replaced by `kwargs`"""
+    from core.transition import request
+    params = {k: v for k, v in request.args.items()}
+    params.update(kwargs)
+    return node_url(**params)
+
+
+def add_template_globals():
+    from core.translation import translate
+    template_globals = dict(node_url=node_url, 
+                            current_node_url=current_node_url, 
+                            _t=translate)
+
+    tal.add_template_globals(**template_globals)
+    app.add_template_globals(**template_globals)
 
 
 def initContexts():
-    athana.setBase(".")
+    athana.setBase(config.basedir)
     athana.setTempDir(config.get("paths.tempdir", "/tmp/"))
     from core.config import resolve_filename
-    from core.translation import translate
+    from core.translation import translate, set_language
     from core.ftp import collection_ftpserver
-    tal.set_base(".")
+    tal.set_base(config.basedir)
     tal.add_macro_resolver(resolve_filename)
     tal.add_translator(translate)
+    add_template_globals()
+
+    @athana.request_started
+    def set_lang(req, *args):
+        set_language(req)
+
+    # XXX: init our temporary child count cahche
+    from web.frontend import frame
+    frame.init_child_count_cache()
 
     context = athana.addContext("/", ".")
     # === public area ===
-    file = context.addFile("web/frontend/streams.py")
-    file.addHandler("send_image").addPattern("/images/.*")
+    file = context.addFile("web/frontend/filehandlers.py")
     file.addHandler("send_thumbnail").addPattern("/thumbs/.*")
     file.addHandler("send_thumbnail2").addPattern("/thumb2/.*")
     file.addHandler("send_doc").addPattern("/doc/.*")
-    file.addHandler("send_file").addPattern("/file/.*")
-    file.addHandler("send_file_as_download").addPattern("/download/.*")
+    file.addHandler("send_image").addPattern("/image/.*")
+    file.addHandler("redirect_images").addPattern("/images/.*")
+    handler = file.addHandler("send_file")
+    handler.addPattern("/file/.*")
+    handler.addPattern("/download/.*")
     file.addHandler("send_attachment").addPattern("/attachment/.*")
     file.addHandler("send_attfile").addPattern("/attfile/.*")
-    file.addHandler("get_archived").addPattern("/archive/.*")
-    file.addHandler("get_root").addPattern("/[a-z,0-9,-]*\.[a-z]*")  # root directory added /web/root (only files with extensions)
+    file.addHandler("fetch_archived").addPattern("/archive/.*")
+    file.addHandler("send_from_webroot").addPattern("/[a-z,0-9,-]*\.[a-z]*")  # root directory added /web/root (only files with extensions)
 
     file = context.addFile("web/frontend/zoom.py")
     file.addHandler("send_imageproperties_xml").addPattern("/tile/[0-9]*/ImageProperties.xml")
     file.addHandler("send_tile").addPattern("/tile/[0-9]*/[^I].*")
 
-    #file = context.addFile("web/frontend/flippage.py")
-    # file.addHandler("send_bookconfig_xml").addPattern("/[0-9]*/bookconfig.xml")
-    # file.addHandler("send_page").addPattern("/[0-9]*/page/[0-9]*\.jpg")
-
-    # === RePEc ===
-    file = context.addFile("web/repec/main.py")
-    file.addHandler("repec").addPattern("/repec/.*")
-
-    # === workflow ===
-    #file = context.addFile("web/publish/main.py")
-    # file.addHandler("publish").addPattern("/publish/.*")
-
     main_file = file = context.addFile("web/frontend/main.py")
     handler = file.addHandler("display")
     handler.addPattern("/")
     handler.addPattern("/node")
-    file.addHandler("display_noframe").addPattern("/mask")
-    file.addHandler("xmlsearch").addPattern("/xmlsearch")
-    file.addHandler("jssearch").addPattern("/jssearch")
+    handler = file.addHandler("display_newstyle")
+    handler.addPattern("/nodes/\d+")
+    # /\d+ could also be a node, the handler must check this
+    handler.addPattern("/\d+")
+    file.addHandler("workflow").addPattern("/mask")
     file.addHandler("show_parent_node").addPattern("/pnode")
     file.addHandler("publish").addPattern("/publish/.*")
     file = context.addFile("web/frontend/popups.py")
@@ -162,10 +206,9 @@ def initContexts():
     # file.addHandler("show_index").addPattern("/popup_index")
     file.addHandler("show_help").addPattern("/popup_help")
     file.addHandler("show_attachmentbrowser").addPattern("/attachmentbrowser")
-    file.addHandler("show_printview").addPattern("/print/.*")
-
-    file = context.addFile("web/frontend/shoppingbag.py")
-    file.addHandler("shoppingbag_action").addPattern("/shoppingbag")
+    
+    if config.getboolean("host.enable_printing"):
+        file.addHandler("show_printview").addPattern("/print/.*")
 
     file = context.addFile("web/frontend/login.py")
     file.addHandler("login").addPattern("/login")
@@ -173,14 +216,13 @@ def initContexts():
     file.addHandler("pwdforgotten").addPattern("/pwdforgotten")
     file.addHandler("pwdchange").addPattern("/pwdchange")
 
-    file = context.addFile("web/frontend/userdata.py")
-    file.addHandler("show_user_data").addPattern("/user")
-
     file = context.addFile("workflow/diagram/__init__.py")
     file.addHandler("send_workflow_diagram").addPattern("/workflowimage")
 
     # === admin area ===
     context = athana.addContext("/admin", ".")
+    file = context.addFile("web/handlers/become.py")
+    file.addHandler("become_user").addPattern("/_become/.*")
     file = context.addFile("web/admin/main.py")
     file.addHandler("show_node").addPattern("/(?!export/).*")
     file.addHandler("export").addPattern("/export/.*")
@@ -191,10 +233,10 @@ def initContexts():
     handler = file.addHandler("frameset")
     handler.addPattern("/")
     handler.addPattern("/edit")
-    #file.addHandler("showtree").addPattern("/edit_tree")
+    # file.addHandler("showtree").addPattern("/edit_tree")
     file.addHandler("edit_tree").addPattern("/treedata")
     file.addHandler("error").addPattern("/edit_error")
-    #file.addHandler("buttons").addPattern("/edit_buttons")
+    # file.addHandler("buttons").addPattern("/edit_buttons")
     file.addHandler("content").addPattern("/edit_content")
     file.addHandler("content").addPattern("/edit_content/.*")
     file.addHandler("action").addPattern("/edit_action")
@@ -220,7 +262,7 @@ def initContexts():
 
     # === Export ===
     context = athana.addContext("/export", ".")
-    file = context.addFile("export/export.py")
+    file = context.addFile("web/frontend/export.py")
     file.addHandler("export").addPattern("/.*")
 
     # === static files ===
@@ -232,7 +274,7 @@ def initContexts():
 
     # === last: path aliasing for collections ===
     handler = main_file.addHandler("display_alias")
-    handler.addPattern("/[-.~_/a-zA-Z0-9]+$")
+    handler.addPattern("/([_a-zA-Z][_/a-zA-Z0-9]+)$")
 
     # 404
     handler = main_file.addHandler("display_404")
@@ -241,30 +283,34 @@ def initContexts():
     # === theme handling ===
     loadThemes()
 
-    # === frontend modules handling ===
-    try:
-        context = athana.addContext("/modules", ".")
-        file = context.addFile("web/frontend/modules/modules.py")
-        file.addHandler("getContent").addPattern("/.*")
-    except IOError:
-        print "no frontend modules found"
-
-    #athana.addContext("/flush", ".").addFile("core/webconfig.py").addHandler("flush").addPattern("/py")
-
     # === check for ftp usage ===
     if config.get("ftp.activate", "") == "true":
+        from contenttypes import Collections
         # dummy handler for users
         athana.addFTPHandler(collection_ftpserver(None, port=int(config.get("ftp.port", 21)), debug=config.get("host.type", "testing")))
 
-        for collection in tree.getRoot("collections").getChildren():
+        for collection in db.query(Collections).one().children:
             if collection.get("ftp.user") and collection.get("ftp.passwd"):
                 athana.addFTPHandler(collection_ftpserver(
                     collection, port=int(config.get("ftp.port", 21)), debug=config.get("host.type", "testing")))
 
+        db.session.close()
+
+    # new admin area
+
+    import web.newadmin
+    athana.add_wsgi_context("/f/", web.newadmin.app)
+    
+    # testing global exception handler
+    context = athana.addContext("/_test", ".")
+    file = context.addFile("web/handlers/handlertest.py")
+    file.addHandler("error").addPattern("/error")
+    file.addHandler("error_variable_msg").addPattern("/error_variable_msg")
+    file.addHandler("db_error").addPattern("/db_error")
 
 def flush(req):
     athana.flush()
     import core.__init__ as c
     initContexts()
     import core.__init__
-    print "all caches cleared"
+    logg.info("all caches cleared")

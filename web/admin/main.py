@@ -17,40 +17,48 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import logging
 import os
-from core.transition import httpstatus
-import core.config as config
 import random
-import core.users as users
-import core.help as help
+import codecs
 
-from version import mediatum_version
+import core
+from core import config, help
+from core.users import get_guest_user
+from core.transition import httpstatus
 from utils.utils import join_paths, Menu
 from web.admin.adminutils import findmodule, show_content, adminNavigation, getMenuItemID
+from core.transition import current_user
+
+
+logg = logging.getLogger(__name__)
 
 
 def show_node(req):
     """ opens administration window with content """
 
     p = req.path[1:].split("/")
-    style = req.params.get("style", "")
-    user = users.getUserFromRequest(req)
+    style = req.params.get("style", u"")
+    user = current_user
 
     v = {}
     v["user"] = user
-    v["guestuser"] = config.get("user.guestuser")
-    v["version"] = mediatum_version
+    v["guestuser"] = get_guest_user().login_name
+    v["version"] = core.__version__
     v["content"] = show_content(req, p[0])
     v["navigation"] = adminNavigation()
     v["breadcrumbs"] = getMenuItemID(v["navigation"], req.path[1:])
-    v["spc"] = list()
 
-    spc = list()
-    v["spc"].append(Menu("sub_header_frontend", "/"))
-    v["spc"].append(Menu("sub_header_edit", "/edit"))
-    if user.isWorkflowEditor():
-        v["spc"].append(Menu("sub_header_workflow", "../publish"))
-    v["spc"].append(Menu("sub_header_logout", "/logout"))
+    spc = [
+        Menu("sub_header_frontend", u"/"),
+        Menu("sub_header_edit", u"/edit"),
+        Menu("sub_header_logout", u"/logout")
+    ]
+
+    if user.is_workflow_editor:
+        spc.append(Menu("sub_header_workflow", u"../publish/"))
+
+    v["spc"] = spc
     v["hashelp"] = help.getHelpPath(['admin', 'modules', req.path.split('/')[1]])
 
     if len(p) > 0:
@@ -63,8 +71,7 @@ def show_node(req):
 def export(req):
     """ export definition: url contains /[type]/[id] """
 
-    user = users.getUserFromRequest(req)
-    if not user.isAdmin():
+    if not current_user.is_admin:
         return httpstatus.HTTP_FORBIDDEN
 
     path = req.path[1:].split("/")
@@ -72,12 +79,14 @@ def export(req):
         module = findmodule(path[1])
 
         tempfile = join_paths(config.get("paths.tempdir"), str(random.random()))
-        file = open(tempfile, "w")
-        file.write(module.export(req, path[2]))
-        file.close()
+        with codecs.open(tempfile, "w", encoding='utf8') as f:
+            try:
+                f.write(module.export(req, path[2]))
+            except UnicodeDecodeError:
+                f.write(module.export(req, path[2]).decode('utf-8'))
 
-        req.sendFile(tempfile, "application/xml")
+        req.sendFile(tempfile, u"application/xml")
         if os.sep == '/':  # Unix?
             os.unlink(tempfile)  # unlinking files while still reading them only works on Unix/Linux
     except:
-        print "module has no export method"
+        logg.info("module has no export method")

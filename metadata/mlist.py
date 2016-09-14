@@ -17,12 +17,18 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import logging
 import os.path
+import codecs
 from mediatumtal import tal
-import core.tree as tree
+from core import Node, db
 from utils.utils import esc
 from core.metatype import Metatype, Context
 
+
+logg = logging.getLogger(__name__)
+
+q = db.query
 
 class m_mlist(Metatype):
 
@@ -32,10 +38,11 @@ class m_mlist(Metatype):
         items = {}
         try:
             n = context.collection
-            if n is None:
-                raise tree.NoSuchNodeError()
-            items = n.getAllAttributeValues(context.field.getName(), context.access)
-        except tree.NoSuchNodeError:
+            if n is not None:
+                field_name = context.field.getName()
+                id_attr_val = n.all_children_by_query(q(Node.id, Node.a[field_name]).filter(Node.a[field_name] != None and Node.a[field_name] != '').distinct(Node.a[field_name]))
+                items = {pair[0]: pair[1] for pair in id_attr_val}
+        except:
             None
 
         tempvalues = context.field.getValueList()
@@ -43,9 +50,8 @@ class m_mlist(Metatype):
 
         if len(valuesfiles) > 0:  # a text file with list values was uploaded
             if os.path.isfile(valuesfiles[0].retrieveFile()):
-                valuesfile = open(valuesfiles[0].retrieveFile(), 'r')
-                tempvalues = valuesfile.readlines()
-                valuesfile.close()
+                with codecs.open(valuesfiles[0].retrieveFile(), 'r', encoding='utf8') as valuesfile:
+                    tempvalues = valuesfile.readlines()
 
         if tempvalues[0].find('|') > 0:  # there are values in different languages available
             languages = [x.strip() for x in tempvalues[0].split('|')]  # find out the languages
@@ -82,13 +88,13 @@ class m_mlist(Metatype):
 
             try:
                 if int(num) < 0:
-                    raise ""
+                    raise u""
                 elif int(num) == 0:
-                    num = ""
+                    num = u""
                 else:
-                    num = " (" + str(num) + ")"
+                    num = u" (" + unicode(num) + u")"
             except:
-                num = ""
+                num = u""
 
             val = esc(val)
 
@@ -116,18 +122,18 @@ class m_mlist(Metatype):
                           macro="searchfield",
                           language=context.language)
 
-    def getFormatedValue(self, field, node, language=None, html=1):
-        value = node.get(field.getName()).replace(";", "; ")
+    def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
+        value = node.get(metafield.getName()).replace(";", "; ")
         if html:
             value = esc(value)
-        return (field.getLabel(), value)
+        return (metafield.getLabel(), value)
 
     def format_request_value_for_db(self, field, params, item, language=None):
         value = params.get(item)
         return value.replace("; ", ";")
 
     def getMaskEditorHTML(self, field, metadatatype=None, language=None):
-        value = ""
+        value = u""
         try:
             if field:
                 value = field.getValues()

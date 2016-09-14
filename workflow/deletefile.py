@@ -17,14 +17,15 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import core.tree as tree
 from .workflow import WorkflowStep, registerStep, addLabels
-from core.translation import t, lang
+from core.translation import t
+from core import db
+from schema.schema import Metafield
 
 
 def register():
-    tree.registerNodeClass("workflowstep-deletefile", WorkflowStep_DeleteFile)
-    registerStep("workflowstep-deletefile")
+    #tree.registerNodeClass("workflowstep-deletefile", WorkflowStep_DeleteFile)
+    registerStep("workflowstep_deletefile")
     addLabels(getLabels())
 
 
@@ -32,18 +33,19 @@ class WorkflowStep_DeleteFile(WorkflowStep):
 
     def runAction(self, node, op=""):
         if self.get('filetype') == '*':  # delete all files
-            for f in node.getFiles():
-                node.removeFile(f)
+            for f in node.files:
+                node.files.remove(f)
 
         elif self.get('filetype') != '':
             types = self.get('filetype').split(';')
-            for f in node.getFiles():
-                if f.getType() in types:
-                    node.removeFile(f)
+            for f in node.files:
+                if f.filetype in types:
+                    node.files.remove(f)
         self.forward(node, True)
+        db.session.commit()
 
     def metaFields(self, lang=None):
-        field = tree.Node("filetype", "metafield")
+        field = Metafield("filetype")
         field.set("label", t(lang, "admin_wfstep_deletefiletype"))
         field.set("type", "text")
         return [field]

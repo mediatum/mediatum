@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
  mediatum - a multimedia content repository
 
@@ -26,19 +27,23 @@ import datetime
 
 from mediatumtal import tal
 from core.transition.athana_sep import athana_http as athana
-import core.tree as tree
 import core.users as users
 
 from core.metatype import Metatype
 from core.translation import getDefaultLanguage, t, lang
-from core.acl import AccessData
 from utils.fileutils import importFileToRealname
+from core import Node
+from core import db
+
+q = db.query
+
+logg = logging.getLogger(__name__)
 
 
 def check_context():
     webcontexts = athana.contexts
     if (not filter(lambda x: x.name == '/md_upload', webcontexts)) and athana.GLOBAL_ROOT_DIR != "no-root-dir-set":
-        print 'going to add context md_upload'
+        logg.info('adding context md_upload')
         webcontext = athana.addContext("/md_upload", ".")
         webcontext_file = webcontext.addFile("metadata/upload.py")
         webcontext_file.addHandler("handle_request").addPattern("/.*")
@@ -69,7 +74,7 @@ def normalizeFilename(s, chars=ALLOWED_CHARACTERS):
 
 def getFilelist(node, fieldname=''):
 
-    fs = node.getFiles()
+    fs = node.files
     if fieldname:
         # get files for this fieldname only
         pattern = r'm_upload_%s_' % fieldname
@@ -80,14 +85,15 @@ def getFilelist(node, fieldname=''):
     filelist = []
 
     for f in fs:
-        f_name = f.getName()
+        f_name = f.base_name
         if re.match(pattern, f_name):
-            f_retrieve = f.retrieveFile()
+            f_retrieve = f.abspath
             try:
-                f_mtime = str(datetime.datetime.fromtimestamp(os.path.getmtime(f_retrieve)))
+                f_mtime = unicode(datetime.datetime.fromtimestamp(os.path.getmtime(f_retrieve)))
             except:
+                logg.exception("exception in getFilelist, formatting datestr failed, using fake date")
                 f_mtime = "2099-01-01 12:00:00.00 " + f_name
-            _t = (f_mtime, f_name, f.getMimeType(), f.getSize(), f.getType(), f_retrieve, f)
+            _t = (f_mtime, f_name, f.mimetype, f.size, f.filetype, f_retrieve, f)
             filelist.append(_t)
 
     filelist.sort()
@@ -117,6 +123,7 @@ class m_upload(Metatype):
         try:
             warning = [t[1] for t in self.labels[language] if t[0] == 'upload_notarget_warning'][0]
         except:
+            logg.exception("exception in getEditorHTML, using default language")
             warning = [t[1] for t in self.labels[getDefaultLanguage()] if t[0] == 'upload_notarget_warning'][0]
 
         context = {
@@ -146,15 +153,15 @@ class m_upload(Metatype):
         elif fieldname:
             s = s.replace("____FIELDNAME____", "%s" % fieldname)
         else:
-            logging.getLogger('backend').warning("metadata: m_upload: no fieldname found")
+            logg.warn("metadata: m_upload: no fieldname found")
         return s
 
-    def getFormatedValue(self, field, node, language=None, html=1, template_from_caller=None, mask=None):
+    def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
 
         check_context()
 
-        fieldname = field.getName()
-        value = node.get(field.getName())
+        fieldname = metafield.getName()
+        value = node.get(metafield.getName())
 
         filelist, filelist2 = getFilelist(node, fieldname)
         #filecount = len(filelist2)
@@ -173,7 +180,7 @@ class m_upload(Metatype):
             html_filelist = html_filelist.replace("____FIELDNAME____", "%s" % fieldname)
             value = html_filelist
 
-        return (field.getLabel(), value)
+        return (metafield.getLabel(), value)
 
     def getName(self):
         return "fieldtype_upload"
@@ -190,14 +197,14 @@ class m_upload(Metatype):
                   ("upload_popup_title", "MDT-m_upload"),
                   ("fieldtype_upload", "MDT-m_upload Feld"),
                   ("fieldtype_text_desc", "Feld MDT-m_upload"),
-                  ("upload_titlepopupbutton", "MDT-m_upload \xc3\xb6ffnen"),
-                  ("upload_done", "\xC3\x9Cbernehmen"),
+                  ("upload_titlepopupbutton", u"MDT-m_upload öffnen"),
+                  ("upload_done", u"Übernehmen"),
                   ("upload_filelist_loc", "Link"),
-                  ("upload_filelist_size", "Gr\xc3\xb6sse"),
+                  ("upload_filelist_size", u"Grösse"),
                   ("upload_filelist_type", "Typ"),
                   ("upload_filelist_mimetype", "Mimetype"),
-                  ("upload_filelist_delete_title", "Datei l\xc3\xb6schen und zur\xc3\xbcck zum Upload"),
-                  ("upload_filelist_open_title", "Datei \xc3\xb6ffnen"),
+                  ("upload_filelist_delete_title", u"Datei löschen und zurück zum Upload"),
+                  ("upload_filelist_open_title", u"Datei öffnen"),
                   ("upload_notarget_warning", "WARNUNG: Upload ist erst mit Zielknoten aktiv."),
               ],
               "en":
@@ -221,8 +228,6 @@ class m_upload(Metatype):
 def handle_request(req):
 
     user = users.getUserFromRequest(req)
-    access = AccessData(req)
-
     errors = []
 
     if "cmd" in req.params:
@@ -232,7 +237,7 @@ def handle_request(req):
             targetnodeid = req.params.get("targetnodeid", "")
             m_upload_field_name = req.params.get("m_upload_field_name", "")
 
-            n = tree.getNode(targetnodeid)
+            n = q(Node).get(targetnodeid)
 
             s = {'response': 'response for cmd="%s"' % cmd}
 
@@ -260,13 +265,13 @@ def handle_request(req):
             targetnodeid = req.params.get("targetnodeid", "")
             m_upload_field_name = req.params.get("m_upload_field_name", "")
 
-            n = tree.getNode(targetnodeid)
-            fs = n.getFiles()
+            n = q(Node).get(targetnodeid)
+            fs = n.files
 
-            if not access.hasAccess(n, 'data'):
+            if not n.has_data_access():
                 msg = "m_upload: no access for user '%s' to node %s ('%s', '%s') from '%s'" % (
-                    user.name, str(n.id), n.name, n.type, str(req.ip))
-                logging.getLogger("backend").info(msg)
+                    user.name, n.id, n.name, n.type, ustr(req.ip))
+                logg.info(msg)
                 errors.append(msg)
 
                 s['errors'] = errors
@@ -275,9 +280,8 @@ def handle_request(req):
 
             for f in fs:
                 if f.getName() == f_name:
-                    msg = "metadata m_upload: going to remove file '%s' from node '%s' (%s) for request from user '%s' (%s)" % (
-                        f_name, n.name, str(n.id), user.name, str(req.ip))
-                    logging.getLogger("backend").info(msg)
+                    logg.info("metadata m_upload: going to remove file '%s' from node '%s' (%s) for request from user '%s' (%s)",
+                        f_name, n.name, n.id, user.name, req.ip)
                     n.removeFile(f)
                     try:
                         os.remove(f.retrieveFile())
@@ -309,20 +313,20 @@ def handle_request(req):
         targetnode = None
         if targetnodeid:
             try:
-                targetnode = tree.getNode(targetnodeid)
+                targetnode = q(Node).get(targetnodeid)
             except:
-                msg = "metadata m_upload: targetnodeid='%s' for non-existant node for upload from '%s'" % (str(targetnodeid), str(req.ip))
+                msg = "metadata m_upload: targetnodeid='%s' for non-existant node for upload from '%s'" % (ustr(targetnodeid), ustr(req.ip))
                 errors.append(msg)
-                logging.getLogger("backend").error(msg)
+                logg.error(msg)
         else:
-            msg = "metadata m_upload could not find 'targetnodeid' for upload from '%s'" % str(req.ip)
+            msg = "metadata m_upload could not find 'targetnodeid' for upload from '%s'" % ustr(req.ip)
             errors.append(msg)
-            logging.getLogger("backend").error(msg)
+            logg.error(msg)
 
-        if not access.hasAccess(targetnode, 'data'):
+        if not targetnode.has_data_access():
             msg = "m_upload: no access for user '%s' to node %s ('%s', '%s') from '%s'" % (
-                user.name, str(targetnode.id), targetnode.name, targetnode.type, str(req.ip))
-            logging.getLogger("backend").info(msg)
+                user.name, ustr(targetnode.id), targetnode.name, targetnode.type, ustr(req.ip))
+            logg.error(msg)
             errors.append(msg)
 
             s['errors'] = errors
@@ -356,11 +360,12 @@ def handle_request(req):
                 imported_filepath = nodeFile.retrieveFile()
                 imported_filemimetype = nodeFile.getMimeType()
             else:
-                msg = "metadata m_upload: could not create file node for request from '%s'" % (str(req.ip))
+                msg = "metadata m_upload: could not create file node for request from '%s'" % (ustr(req.ip))
                 errors.append(msg)
                 logging.getLogger("backend").error(msg)
 
         if targetnode and filename:
+            #todo: check this out later
             targetnode.addFile(nodeFile)
 
             filecount = len(getFilelist(targetnode, submitter)[0])
@@ -372,7 +377,7 @@ def handle_request(req):
             copy_report = ""
 
     else:
-        msg = "metadata m_upload: could not find submitter for request from '%s'" % (str(req.ip))
+        msg = "metadata m_upload: could not find submitter for request from '%s'" % (ustr(req.ip))
         errors.append(msg)
         logging.getLogger("backend").error(msg)
 

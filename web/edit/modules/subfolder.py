@@ -18,49 +18,50 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
-import core.tree as tree
-import core.users as users
-from core.acl import AccessData
-from utils.utils import funcname, get_user_id, log_func_entry, dec_entry_log
+
+from utils.utils import dec_entry_log
 from schema.schema import getMetaType
 from core.translation import lang
-from core.transition import httpstatus
+from core.transition import httpstatus, current_user
+from core import Node
+from core import db
 
-logger = logging.getLogger('editor')
+q = db.query
+
+logg = logging.getLogger(__name__)
+
 
 @dec_entry_log
 def getContent(req, ids):
-    user = users.getUserFromRequest(req)
-    access = AccessData(req)
+    user = current_user
     language = lang(req)
-    node = tree.getNode(ids[0])
+    node = q(Node).get(ids[0])
     
-    if "sort" in users.getHideMenusForUser(user) or not access.hasWriteAccess(node):
+    if "sort" in user.hidden_edit_functions or not node.has_write_access():
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
-    msg_t = (user.getName(), node.id, node.name, node.type, req.params)
-    msg = "%s sorting subfolders of node %r (%r, %r): %r" % msg_t
-    logger.info(msg)
+    logg.info("%s sorting subfolders of node %s (%s, %s): %s", user.login_name, node.id, node.name, node.type, req.params)
 
     if "order" in req.params:  # do reorder
         ids = req.params.get('order').split(',')
         children = []
         for n in ids:
-            child = tree.getNode(n)
-            child.setOrderPos(ids.index(n))
+            child = q(Node).get(n)
+            child.orderpos = ids.index(n)
             children.append(child)
+        db.session.commit()
 
         req.writeTAL('web/edit/modules/subfolder.html', {'nodelist': children, "language": language}, macro="ordered_list")
         return ""
 
     elif "sortdirection" in req.params:  # do automatic re-order
-        i = 0
-        sort_dir = "" if req.params.get("sortdirection", "up") == "up" else "-"
-        sorted_children = node.getContainerChildren().sort_by_fields(sort_dir + req.params.get("sortattribute"))
-        for child in sorted_children:
-            child.setOrderPos(i)
-            i += 1
+        sorted_children = node.container_children.order_by(Node.name).all()
+        if req.params.get("sortdirection", "up") != "up":
+            sorted_children.reverse()
+        for position, child in enumerate(sorted_children, start=1):
+            child.orderpos = position
+        db.session.commit()
         req.writeTAL('web/edit/modules/subfolder.html', {'nodelist': sorted_children, "language": language}, macro="ordered_list")
         return ""
 
@@ -68,11 +69,11 @@ def getContent(req, ids):
     attributes = []
     fields = {}
     i = 0
-    for child in list(node.getContainerChildren().sort_by_orderpos()):
+    for child in list(node.container_children.sort_by_orderpos()):
         i += 1  # count container children
         nodelist.append(child)
-        if getMetaType(child.getSchema()):
-            for field in getMetaType(child.getSchema()).getMetaFields():
+        if getMetaType(child.schema):
+            for field in getMetaType(child.schema).getMetaFields():
                 if not field in fields.keys():
                     fields[field] = 0
                 fields[field] += 1

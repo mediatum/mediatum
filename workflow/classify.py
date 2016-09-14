@@ -21,12 +21,18 @@ from .upload import WorkflowStep
 from .workflow import registerStep
 from core.translation import t, addLabels
 from utils.utils import isNumeric
-import core.tree as tree
+from core import Node
+from core import db
+from schema.schema import Metafield
+from contenttypes.container import Directory
+
+q = db.query
 
 
 def register():
-    tree.registerNodeClass("workflowstep-classify", WorkflowStep_Classify)
-    registerStep("workflowstep-classify")
+    #tree.registerNodeClass("workflowstep-classify", WorkflowStep_Classify)
+    # registerStep("workflowstep-classify")
+    registerStep("workflowstep_classify")
     addLabels(WorkflowStep_Classify.getLabels())
 
 
@@ -62,34 +68,33 @@ class WorkflowStep_Classify(WorkflowStep):
             name = name[int(start):]
 
         for nid in self.get('destination').split(";"):
-            try:
-                pnode = tree.getNode(nid)
+            if nid:
+                pnode = q(Node).get(nid)
                 cnode = None
-                if name != "":
-                    try:
-                        cnode = pnode.getChild(name)
-                    except tree.NoSuchNodeError:
-                        cnode = tree.Node(name, type="directory")
-                        pnode.addChild(cnode)
+                if pnode:
+                    if name != "":
+                        cnode = pnode.children.filter_by(name=name).scalar()
+                        if cnode is None:
+                            cnode = Directory(name)
+                            pnode.children.append(cnode)
 
-                if cnode:  # add node to child given by attributename
-                    cnode.addChild(node)
-                if self.get('only_sub') != '1':  # add to node (no hierarchy)
-                    pnode.addChild(node)
-            except tree.NoSuchNodeError:
-                pass
+                    if cnode:  # add node to child given by attributename
+                        cnode.children.append(node)
+                    if self.get('only_sub') != '1':  # add to node (no hierarchy)
+                        pnode.children.append(node)
+                    db.session.commit()
 
     def metaFields(self, lang=None):
         ret = []
-        field = tree.Node("destination", "metafield")
+        field = Metafield("destination")
         field.set("label", t(lang, "admin_wfstep_classify_destination"))
         field.set("type", "treeselect")
         ret.append(field)
-        field = tree.Node("destination_attr", "metafield")
+        field = Metafield("destination_attr")
         field.set("label", t(lang, "admin_wfstep_classify_destination_attr"))
         field.set("type", "text")
         ret.append(field)
-        field = tree.Node("only_sub", "metafield")
+        field = Metafield("only_sub")
         field.set("label", t(lang, "admin_wfstep_classify_only_sub"))
         field.set("type", "check")
         ret.append(field)

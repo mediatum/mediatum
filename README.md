@@ -18,6 +18,11 @@ All mediaTUM software is licensed under the [GNU General Public License 3](http:
 You can redistribute it and/or modify it under the terms of the GPL 3 as published by
 the Free Software Foundation.
 
+## Documentation
+
+The documentation has its own repository at https://github.com/mediatum/mediatum-docs
+Browseable version at https://mediatum.readthedocs.org
+
 ## Used Tools
 
 * We use [PyVMMonitor](http://pyvmmonitor.com) for profiling, which is free for open source projects
@@ -38,3 +43,5 @@ The last step downloads all missing dependencies, it may take some minutes on th
 By default, database, upload and log files are written to `$HOME/mediatum_data`.
 
 See `INSTALL.md` for more details on installation and usage.
+
+

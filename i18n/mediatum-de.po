@@ -22,24 +22,14 @@ msgstr "Neues Passwort:"
 msgid "invalid"
 msgstr "Ungültig"
 
-msgid "main_title"
-msgstr "mediatum - digital collection management"
-
-msgid "header_slogan"
-msgstr "mediatum - digital collection management"
-
 msgid "show_in_new_window"
 msgstr "In neuem Fenster anzeigen"
 
 msgid "show in new window"
 msgstr "In neuem Fenster anzeigen"
 
-msgid "main_title_tum"
-
-msgstr "mediaTUM - Der Medienserver der TU München"
-
-msgid "header_slogan_tum"
-msgstr "mediaTUM - Der Medienserver der TU München"
+msgid "main_title"
+msgstr "mediaTUM - Medien- und Publikationsserver"
 
 msgid "bib_link_title"
 msgstr "Zum Bibliotheksportal"

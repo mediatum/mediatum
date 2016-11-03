@@ -22,20 +22,11 @@ msgstr "new password:"
 msgid "invalid"
 msgstr "invalid"
 
-msgid "main_title"
-msgstr "mediaTUM - digital collection management at TUM"
-
-msgid "header_slogan"
-msgstr "mediaTUM - digital collection management at TUM"
-
 msgid "show_in_new_window"
 msgstr "open in new window"
 
-msgid "main_title_tum"
-msgstr "mediaTUM - digital collection management at TUM"
-
-msgid "header_slogan_tum"
-msgstr "mediaTUM - digital collection management at TUM"
+msgid "main_title"
+msgstr "mediaTUM - Media and Publication Server"
 
 msgid "bib_link_title"
 msgstr "to the library portal"

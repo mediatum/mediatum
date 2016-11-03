@@ -25,6 +25,7 @@ import time
 import thread
 import codecs
 from utils.strings import ensure_unicode_returned
+from werkzeug import parse_accept_header, LanguageAccept
 
 
 class _POFile:
@@ -144,24 +145,21 @@ def lang(req):
 
     
 def set_language(req):
+    allowed_languages = config.languages
+
     language_from_cookie = req.Cookies.get("language")
-    if language_from_cookie:
+    if language_from_cookie in allowed_languages:
         req._lang = language_from_cookie
         return language_from_cookie
 
-    allowed_languages = config.languages
+    language = allowed_languages[0]
     
-    if allowed_languages:
-        language = allowed_languages[0]
-    else:
-        language = "en"
+    accept_languages_header = req.get_header("Accept-Language")
+    accept_languages = parse_accept_header(accept_languages_header, cls=LanguageAccept)
+    best_match = accept_languages.best_match(allowed_languages)
     
-    if "Accept-Language" in req.request_headers:
-        languages = req.request_headers["Accept-Language"]
-        for lang in languages.split(";"):
-            if lang and lang in allowed_languages:
-                language = lang
-                break
+    if best_match:
+        language = best_match
     
     if language != default_language:
         req.setCookie("language", language, path="/")

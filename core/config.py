@@ -270,7 +270,7 @@ def initialize(config_filepath=None, prefer_config_filename=None):
     expand_paths()
     fix_dirpaths()
 
-    languages = [lang.strip() for lang in settings.get("i18n.languages", "en").split(",") if lang.strip()]
+    languages = [lang.strip() for lang in settings.get("i18n.languages", "").split(",") if lang.strip()] or ["en"]
 
     # create dirs if neccessary
     data_path = settings.get("paths.datadir")

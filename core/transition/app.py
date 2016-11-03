@@ -17,7 +17,9 @@ from core.transition.helpers import runswith
 from core.transition.helpers import get_root_path
 from utils.date import dt_fromiso
 import datetime
+from requests.structures import CaseInsensitiveDict
 from werkzeug.utils import cached_property
+
 
 logg = logging.getLogger(__name__)
 
@@ -28,7 +30,8 @@ if runswith == "athana":
 class AthanaTestRequest(athana_http.http_request):
 
     def __init__(self, params=None, uri="/", headers=None):
-        headers = headers or {}
+        headers = CaseInsensitiveDict(headers or {})
+
         if "Accept" not in headers:
             headers["Accept"] = "*/*"
 
@@ -42,10 +45,11 @@ class AthanaTestRequest(athana_http.http_request):
         self.args = MultiDict()
         self.path = "/"
         self.request = {}
+        self.Cookies = {}
         self.sent_files_with_mimetype = []
 
     def get_header(self, header):
-        return self.headers.get(header.capitalize())
+        return self.headers.get(header.lower())
 
     def sendFile(self, filepath, mimetype):
         if not path.exists(filepath):

@@ -338,7 +338,11 @@ def struct2csv(req, path, params, data, d, debug=False, sep=u';', string_delimit
         for sfield in d['sfields']:
             if sfield in attr_header:
                 attr_header.remove(sfield)
-        attr_header = d['sfields'] + attr_header
+        sfield_header = []
+        for sfield in d['sfields']:
+            if sfield not in ['node.id', 'node.name', 'node.type']:
+                sfield_header.append(sfield)
+        attr_header = sfield_header + attr_header
 
     # filter attribute names
     attr_header = filter(attribute_name_filter, attr_header)
@@ -349,11 +353,8 @@ def struct2csv(req, path, params, data, d, debug=False, sep=u';', string_delimit
     for i, n in enumerate(csv_nodelist):
         row = [unicode(i), rd[i]['id'], rd[i]['type'], rd[i]['name']]
         for attr in attr_header:
-            # handle sortfields in attr_header that are not attributes
-            if attr in ['node.id', 'node.name', 'node.type']:
-                continue
-            elif attr in ['node.orderpos']:
-                row.append(q(Node).get(rd[i]['id']).get(attr))
+            if attr in ['node.orderpos']:
+                row.append(q(Node).get(rd[i]['id']).orderpos)
             else:
                 row.append(rd[i]['attributes'].setdefault(attr, u''))
         r += join_row(row) + u'\r\n'
@@ -668,6 +669,7 @@ def get_node_data_struct(
 
     if sortfield:
         sfields = [x.strip() for x in sortfield.split(',')]
+        sfields_without_sign = []
 
         sortformat = sortformat[:len(sfields)]
 
@@ -686,13 +688,25 @@ def get_node_data_struct(
             else:
                 desc = False
                 sortdirection += u"u"
+            sfields_without_sign.append(sfield)
 
-            order_expr = Node.attrs[sfield].cast(astype)
+            if sfield == 'node.id':
+                order_expr = Node.id
+            elif sfield == 'node.name':
+                order_expr = Node.name
+            elif sfield == 'node.type':
+                order_expr = Node.type
+            elif sfield == 'node.orderpos':
+                order_expr = Node.orderpos
+            else:
+                order_expr = Node.attrs[sfield].cast(astype)
 
             if desc:
                 order_expr = sql.desc(order_expr)
 
             nodequery = nodequery.order_by(order_expr.nullslast())
+
+        sfields = sfields_without_sign
     else:
         sfields = []
 

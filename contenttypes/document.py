@@ -167,6 +167,10 @@ class Document(Content):
                 try:
                     pdfdata = parsepdf.parsePDFExternal(doc.abspath, tempdir)
                 except parsepdf.PDFException as ex:
+                    if ex.value == 'error:document encrypted':
+                        # allow upload of encrypted document
+                        db.session.commit()
+                        return
                     raise OperationException(ex.value)
                 with codecs.open(infoname, "rb", encoding='utf8') as fi:
                     for line in fi.readlines():

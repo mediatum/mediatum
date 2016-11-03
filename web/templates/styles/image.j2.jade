@@ -1,0 +1,60 @@
+- extends "styles/base.j2.jade"
+- from "styles/macros.j2.jade" import metis, archive, format
+
+
+-block top
+ if metis_url
+   = metis(metis_url)
+
+
+-block before_metadata
+  if canseeoriginal
+    #object_image
+      if zoom
+        a
+          if node.get('width') >= node.get('height')
+            img(src=presentation_url, onClick="fullSizePopup({}, {}, {})".format(node.id, 700, 700), style="width:300px;cursor:pointer;border:1px double silver;", border="1px")
+          else
+            img(src=presentation_url, onClick="fullSizePopup({}, {}, {})".format(node.id, 700, 700), style="cursor:pointer;border:1px double silver;", border="1px")
+      else
+        a
+          if node.get('width') != ''
+            if node.get('width') >= node.get('height')
+              img(src=presentation_url, onClick="fullSizePopup({}, {}, {})".format(node.id, node.get('width'), node.get('height')), style="width:300px;cursor:pointer;border:1px double silver;", border="1px")
+            else
+              img(src=presentation_url, onClick="fullSizePopup({}, {}, {})".format(node.id, node.get('width'), node.get('height')), style="height:300px;cursor:pointer;border:1px double silver;", border="1px")
+          else
+            if node.get('width') >= node.get('height')
+              img(src=presentation_url, onClick="fullSizePopup({}, {}, {})".format(node.id, node.get('width'), node.get('height')), style="width:300px;cursor:pointer;border:1px double silver;", border="1px")
+            else
+              img(src=presentation_url, onClick="fullSizePopup({}, {}, {})".format(node.id, node.get('width'), node.get('height')), style="height:300px;cursor:pointer;border:1px double silver;", border="1px")
+
+      if image_formats
+        = format(image_formats)
+
+      if highres_url
+        = archive(highres_url, archive_fetch_url)
+
+  else
+    #object_image
+      if zoom
+        a
+          if node.get('width') != ''
+            if node.get('width') >= node.get('height')
+              img(src=presentation_url, onClick="fullSizePopup({}, {}, {})".format(node.id, 700, 700), style="width:300px;cursor:pointer;border:1px double silver;", border="1px")
+            else
+              img(src=presentation_url, onClick="fullSizePopup({}, {}, {})".format(node.id, 700, 700), style="height:300px;cursor:pointer;border:1px double silver;", border="1px")
+          else
+            if node.get('width') >= node.get('height')
+              img(src=presentation_url, onClick="fullSizePopup({}, {}, {})".format(node.id, 700, 700), style="width:300px;cursor:pointer;border:1px double silver;", border="1px")
+            else
+              img(src=presentation_url, onClick="fullSizePopup({}, {}, {})".format(node.id, 700, 700), style="height:300px;cursor:pointer;border:1px double silver;", border="1px")
+      else
+        img(src=presentation_url, style="width: 300px;border:1px double silver;", border="1px")
+
+      if image_formats
+        = format(image_formats)
+
+
+// generated from jade
+//- vim: set filetype=jade sw=2 ts=2 sts=2 expandtab:

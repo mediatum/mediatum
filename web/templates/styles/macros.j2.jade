@@ -1,5 +1,46 @@
 - macro metis(metis_url)
   img(src=metis_url, width=1, height=1)
 
+
+- macro format(image_formats)
+  h3= _t("image_available_formats")
+  ul
+    for type in image_formats
+      li
+        a(href=image_formats[type]['url'])
+          span {{ type }} ({{ image_formats[type]['display_size'] }})
+
+
+- macro archive(highres_url, archive_fetch_url)
+  if archive_fetch_url
+    div(style="padding-top:10px")
+      script(type='text/javascript').
+        function getArchivedFile(path) {
+          // replace archive fetch link with spinner image
+          $('#archive_div').html('<img src="/img/wait_small.gif"/>');
+          $.ajax({
+            url: path,
+            type: "GET",
+            success: function (msg) {
+              $('#high_resolution_link').css("display", "inherit");
+              $('#archive_div').hide()
+            },
+            error: function (msg) {
+              alert(msg.responseText);
+              $('#archive_div').hide();
+            }
+          });
+        }
+      a(style="display:none;", id=high_resolution_link, href=highres_url)
+        = _t("image_high_res_title")
+      div(id=archive_div)
+        a(id=get_archive_link, href="javascript:getArchivedFile('{}')".format(archive_fetch_url))
+          = _t("image_high_res_archive")
+  else
+    div(style="padding-top:20px")
+      a(href=highres_url)
+        = _t("image_high_res_title")
+
+
 // generated from jade
 //- vim: set filetype=jade sw=2 ts=2 sts=2 expandtab:

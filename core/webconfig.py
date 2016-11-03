@@ -23,7 +23,7 @@ import urllib
 from mediatumtal import tal
 import core.athana as athana
 import core.config as config
-from core.styles import Theme
+from core.styles import CustomTheme, DefaultTheme
 from core import db, app
 
 from core.plugins import find_plugin_with_theme
@@ -35,22 +35,7 @@ global theme
 theme = None
 
 
-def loadThemes():
-
-    def manageThemes(theme_name, theme_basepath, theme_type):
-        global theme
-        theme_dir = os.path.join(theme_basepath, "themes", theme_name)
-        theme = Theme(theme_name, theme_dir + "/", theme_type)
-        theme_jinja_loader = theme.make_jinja_loader()
-        if theme_jinja_loader is not None:
-            logg.info("adding jinja loader for theme")
-            app.add_template_loader(theme_jinja_loader, 0)
-            
-        athana.addFileStore("/theme/", theme_dir + "/")
-        athana.addFileStorePath("/css/", theme_dir + "/css/")
-        athana.addFileStorePath("/img/", theme_dir + "/img/")
-        athana.addFileStorePath("/js/", theme_dir + "/js/")
-        logg.info("Loading theme '%s' from '%s' (%s)", theme_name, theme_dir, theme_type)
+def init_theme():
 
     theme_name = config.get("config.theme", "")
 
@@ -59,12 +44,16 @@ def loadThemes():
 
         if theme_basepath is None:
             logg.warn("theme from config file with name '%s' not found, maybe a plugin is missing?", theme_name)
+            
         else:
-            manageThemes(theme_name, theme_basepath, "extern")
+            theme_dir = os.path.join(theme_basepath, "themes", theme_name)
+            logg.info("Loading theme '%s' from '%s'", theme_name, theme_dir)
+            theme = CustomTheme(theme_name, theme_dir + "/")
+            theme.activate()
             return
 
-    # use fallback standard theme
-    manageThemes("default", "web/", "intern")
+    theme = DefaultTheme()
+    theme.activate()
     logg.warn("using (broken) standard theme, you should create your own theme :)", trace=False)
 
 
@@ -280,8 +269,7 @@ def initContexts():
     handler = main_file.addHandler("display_404")
     handler.addPattern("/(.)+$")
 
-    # === theme handling ===
-    loadThemes()
+    init_theme()
 
     # === check for ftp usage ===
     if config.get("ftp.activate", "") == "true":

@@ -24,9 +24,11 @@ from mediatumtal import tal
 import os
 import attr
 import core.config as config
-from core.transition import render_template
+from core import app, athana
+from core.transition import render_template, render_macro
 import glob
-from jinja2.loaders import FileSystemLoader
+from jinja2.loaders import FileSystemLoader, ChoiceLoader
+from jinja2.exceptions import TemplateNotFound
 
 
 full_styles_by_contenttype = {}
@@ -38,28 +40,102 @@ logg = logging.getLogger(__name__)
 
 class Theme(object):
 
-    def __init__(self, name, path="web/themes/mediatum/", type="intern"):
+    def __init__(self, name, path):
         self.name = name
         self.path = path
-        self.type = type
         self.style_path = os.path.join(path, "styles")
 
     def getImagePath(self):
         return self.path + "/img/"
 
-    def getName(self):
-        return self.name
+    def activate(self):
+        import core.webconfig
+        # XXX: this is ugly, is there a better way?
+        core.webconfig.theme = self
 
+        theme_jinja_loader = self.make_jinja_loader()
+        if theme_jinja_loader is not None:
+            logg.info("adding jinja loader for theme")
+            app.add_template_loader(theme_jinja_loader, 0)
+
+        athana.addFileStore("/theme/", self.path + "/")
+        athana.addFileStorePath("/css/", self.path + "/css/")
+        athana.addFileStorePath("/img/", self.path + "/img/")
+        athana.addFileStorePath("/js/", self.path + "/js/")
+
+    def get_tal_template_path(self, filename):
+        raise NotImplementedError("implement in subclasses!")
+
+    def getTemplate(self, filename):
+        return self.get_tal_template_path(filename)
+
+    def render_template(self, template_name, context):
+        if template_name.endswith((".j2.jade", ".j2.html")):
+            # caller wants a jinja template
+            return render_template(template_name, **context)
+        elif template_name.endswith(".html"):
+            # caller wants a TAL template
+            tal_template = self.get_tal_template_path(template_name)
+            return tal.getTAL(tal_template, context)
+        else:
+            raise TemplateNotFound("invalid template name (must end with .j2.jade, .j2.html or .html): " + template_name)
+
+    def render_macro(self, template_name, macro_name, context):
+        if template_name.endswith((".j2.jade", ".j2.html")):
+            # caller wants a jinja template
+            return render_macro(template_name, macro_name, **context)
+        elif template_name.endswith(".html"):
+            # caller wants a TAL template
+            tal_template = self.get_tal_template_path(template_name)
+            return tal.getTAL(tal_template, context, macro=macro_name)
+        else:
+            raise TemplateNotFound("invalid template name (must end with .j2.jade, .j2.html or .html): " + template_name)
+
+
+class DefaultTheme(Theme):
+
+    PATH = "web/themes/mediatum"
+
+    def __init__(self):
+        super(DefaultTheme, self).__init__("default", DefaultTheme.PATH)
+
+    @classmethod
     def make_jinja_loader(self):
-        template_path = os.path.join(config.basedir, self.path)
+        template_path = os.path.join(config.basedir, DefaultTheme.PATH, "templates")
         if os.path.isdir(template_path):
             return FileSystemLoader(template_path)
 
-    def getTemplate(self, filename):
-        if os.path.exists(os.path.join(config.basedir, self.path + filename)):
-            return self.path + filename
+    @classmethod
+    def get_tal_template_path(self, filename):
+        relative_template_path = os.path.join(DefaultTheme.PATH, filename)
+        if not os.path.exists(os.path.join(config.basedir, relative_template_path)):
+            raise TemplateNotFound("TAL template {} not found".format(filename))
+
+        return relative_template_path
+
+
+class CustomTheme(Theme):
+
+    def get_tal_template_path(self, filename):
+        relative_template_path = self.path + filename
+        if os.path.exists(os.path.join(config.basedir, relative_template_path)):
+            return relative_template_path
         else:
-            return "web/themes/mediatum/" + filename
+            return DefaultTheme.get_tal_template_path(filename)
+
+    def make_jinja_loader(self):
+        template_path = os.path.join(config.basedir, self.path)
+        default_jinja_loader = DefaultTheme.make_jinja_loader()
+
+        if os.path.isdir(template_path):
+            # This loader first looks at the CustomTheme template path, then the default template path, if nothing was found.
+            return ChoiceLoader([
+                FileSystemLoader(template_path),
+                default_jinja_loader
+            ])
+        else:
+            # no template dir for this theme, only use templates from default theme
+            return default_jinja_loader
 
 
 class FullStyle(object):
@@ -118,7 +194,7 @@ def readStyleConfig(filename):
                 key = line[0].strip()
                 value = line[1].strip().replace("\r", "").replace("\n", "")
                 attrs[key] = value
-                    
+
     attrs["path"] = os.path.dirname(filename)
     return attrs
 

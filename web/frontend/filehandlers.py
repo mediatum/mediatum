@@ -22,7 +22,7 @@ from web.frontend.filehelpers import sendZipFile, splitpath, build_transferzip, 
     preference_sorted_image_mimetypes, version_id_from_req, get_node_or_version
 from utils import userinput
 import utils.utils
-from utils.utils import getMimeType
+from utils.utils import getMimeType, clean_path, get_filesize
 import tempfile
 from utils.compat import iterkeys
 from core.transition import httpstatus
@@ -297,6 +297,17 @@ def send_attfile(req):
         return 404
 
     fileobj = fileobjs[0]
+
+    if fileobj.mimetype == u'inode/directory':
+        # files in attachment directory cannot be found in node.files
+        # so send file directly as it was made in mysql
+        filename = clean_path("/".join(parts[1:]))
+        path = os.path.join(config.get("paths.datadir"), filename)
+        mime, type = getMimeType(filename)
+        if (get_filesize(filename) > 16 * 1048576):
+            req.reply_headers["Content-Disposition"] = 'attachment; filename="{}"'.format(filename)
+
+        return req.sendFile(path, mime)
 
     if (fileobj.size > 16 * 1048576):
         req.reply_headers["Content-Disposition"] = u'attachment; filename="{}"'.format(fileobj.base_name).encode('utf8')

@@ -120,7 +120,7 @@ class LDAPAuthenticator(Authenticator):
 
             if group_desc_list is not None:
                 if "," in group_desc_list[0]:
-                    groups = set([group_dn.split(u",")[0][3:] for group_dn in group_desc_list])
+                    groups = set([group_dn.split(",")[0][3:].decode("utf8") for group_dn in group_desc_list])
                 else:
                     groups = set(group_desc_list)
 

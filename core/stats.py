@@ -25,19 +25,24 @@ import xml.parsers.expat
 import logging
 import glob
 import codecs
-
-from sqlalchemy.orm.exc import NoResultFound
+import sys
+import time
+from sets import Set
+import shutil
 
 from core import db, Node
 import core.config as config
-from lib.geoip.geoip import GeoIP, getFullCountyName
+from lib.geoip.geoip import GeoIP, getFullCountyName, MEMORY_CACHE
 from utils.date import parse_date, format_date, now, make_date
 from utils.utils import splitpath
 from utils.fileutils import importFile
+from array import array
 
+# q = db.query
 
-q = db.query
-
+EDIT = 1
+DOWNLOAD = 2
+FRONTEND = 3
 
 class LogItem:
 
@@ -51,26 +56,30 @@ class LogItem:
             self.data = data
             self.id = 0
             self.type = ""
+            self.inttype = 0
             #self.country = ""
 
             if self.url.startswith("/fullsize"):  # download
                 m = re.findall('/fullsize\?id=[0-9]*', self.url)
                 if len(m) == 1:
-                    self.id = m[0][13:]
+                    self.id = int(m[0][13:])
                     self.type = "download"
+                    self.inttype = DOWNLOAD
 
             elif self.url.startswith("/edit"):  # edit
                 m = re.findall('/edit.*[\?|\&]id=[0-9]*', self.url)
                 if len(m) == 1:
                     m = re.findall('[\?|\&]id=[0-9]*', self.url)
                     if len(m) == 1:
-                        self.id = m[0][4:]
+                        self.id = int(m[0][4:])
                 self.type = "edit"
+                self.inttype = EDIT
             else:  # frontend
                 m = re.findall('[\?|\&]id=[0-9]*', self.url)
                 if len(m) == 1:
-                    self.id = m[0][4:]
+                    self.id = int(m[0][4:])
                     self.type = "frontend"
+                    self.inttype = FRONTEND
 
             if self.id == 0:
                 return None
@@ -84,7 +93,7 @@ class LogItem:
         return self.time
 
     def getTimestampShort(self):
-        return format_date(parse_date(ustr(self.getDate()), "yyyy-mm-dd"), "yyyy-mm")
+        return format_date(parse_date((self.getDate()), "yyyy-mm-dd"), "yyyy-mm")
 
     def getUrl(self):
         return self.url
@@ -130,6 +139,19 @@ class LogItem:
                 visitor_num += 1
 
         return ip_table[ip_no_port]
+
+    def get_visitor_number1(self, col_id):
+
+        if self.ip.startswith('66.249'):
+            return col_id.ip_table['google_bot']
+
+        else:
+            ip_no_port = self.getIp()
+            if ip_no_port not in col_id.ip_table:
+                col_id.ip_table[ip_no_port] = col_id.visitor_num
+                col_id.visitor_num += 1
+
+        return col_id.ip_table[ip_no_port]
 
 
 class StatAccess:
@@ -325,12 +347,21 @@ class StatisticFile:
 
 
 logdata = {}
+logitem_set = Set()
 ip_table = {'google_bot': 1}
 visitor_num = 2
+count = 0
 
 
 def readLogFiles(period, fname=None):
+    """
+    read the logfile fname and create a list of accesses
+    :param period: format yyyy-mm
+    :param fname: optional logfile name, default <period>.log
+    :return: list of accesses
+    """
     global logdata
+    global logitem_set
     path = config.get("logging.path")
     files = []
 
@@ -345,48 +376,79 @@ def readLogFiles(period, fname=None):
         files.append(fname)
         print "using given filename", fname
 
-    data = {}  # data [yyyy-mm][id][type]
+    list = []
+    line_count = 0
     for file in files:
         print "reading logfile", file
         if os.path.exists(file):
-            for line in codecs.open(file, "r", encoding='utf8'):
+            # for line in codecs.open(file, "r", encoding='utf8'):
+            for line in open(file, "r"):
+                line_count += 1
+                if line_count % 50000 == 0:
+                    print "reading log file: %d lines processed" % line_count
+
                 if "GET" in line and "id=" in line:
                     info = LogItem(line)
-                    if not info or (info and info.getID() == ''):
+                    if not info or (info and (info.getID() <= 0 or info.getID() > 10000000)):
                         continue
 
-                    if info.getTimestampShort() not in data.keys():
-                        data[info.getTimestampShort()] = {}
+                    if info.getID() not in logitem_set:
+                        logitem_set.add(info.getID())
+                    list.append(info)
 
-                    if info.getID() not in data[info.getTimestampShort()].keys():
-                        data[info.getTimestampShort()][info.getID()] = {"frontend": [], "edit": [], "download": []}
-                    try:
-                        data[info.getTimestampShort()][info.getID()][info.getType()].append(info)
-                    except:
-                        pass
-    logdata = data
-    return data
+    sorted_list = sorted(list, key=lambda item: item.getID())
+
+    logdata = sorted_list
+    return sorted_list
 
 ip2c = None
 
 
-def buildStat(collection, period="", fname=None):  # period format = yyyy-mm
-    gi = GeoIP()
-    logging.getLogger(__name__).info("update stats for node %s and period %s", collection.id, period)
-    statfiles = []
+def buildStatAll(collections, period="", fname=None):  # period format = yyyy-mm
+    """
+    build the statistic files with name stat_<collection_id>_yyyy-mm_<type> where type is in
+    'frontend', 'download' or 'edit'
+    :param collections: list of collections for which the statistic files should be build
+                        if this is an empty list, all collections and their children are
+                        fetched as an psql command
+    :param period: period for which the statistic files should be build, format yyyy-mm
+    :param fname: optional name of the logfile, default <period>.log
+    :return: None
+    """
+
+    class CollectionId:
+        ip_table = None
+        visitor_num = 0
+        ids_set = None
+        fin_frontend = fin_download = fin_edit = None
+        files_open = False
+        first_frontend = first_download = first_edit = True
+        in_ids = False
+        collection = None
+        statfiles = None
+
+        def __init__(self, ids_set, collection):
+            self.ids_set = ids_set
+            self.collection = collection
+            self.ip_table = {'google_bot': 1}
+            self.visitor_num = 2
+            self.statfiles = []
 
     # read data from logfiles
-    def getStatFile(node, timestamp, type, period=period):
+    def getStatFile(col_id, timestamp, type, period=period):
         f = None
+        node = col_id.collection
+        orig_file = None
         for file in node.getFiles():
             if file.getType() == "statistic":
                 try:
                     if file.getName() == u"stat_{}_{}_{}.xml".format(node.id, timestamp, type):
-                        if timestamp == ustr(format_date(now(), "yyyy-mm")) or timestamp == period:  # update current month or given period
+                        if timestamp == format_date(now(), "yyyy-mm") or timestamp == period:  # update current month or given period
                             if os.path.exists(file.retrieveFile()):
                                 print 'removing %s' % file.retrieveFile()
                                 os.remove(file.retrieveFile())
-                            node.removeFile(file)  # remove old file and create new
+                                orig_file = file.retrieveFile()
+                            # node.files.remove(file)
                             f = None
                             break
                         else:  # old month, do nothing
@@ -397,62 +459,177 @@ def buildStat(collection, period="", fname=None):  # period format = yyyy-mm
         if not f:
             # create new file
             f_name = config.get("paths.tempdir") + u"stat_{}_{}_{}.xml".format(node.id, timestamp, type)
-            if os.path.exists(f_name):
-                f = codecs.open(f_name, "a", encoding='utf8')
-            else:
-                # create new file and write header:
-                print 'creating writing headers %s' % f_name
-                f = codecs.open(f_name, "w", encoding='utf8')
-                f.write('<?xml version="1.0" encoding="utf-8" ?>\n')
-                f.write('<nodelist created="' + ustr(format_date(now(), "yyyy-mm-dd HH:MM:SS")) + '">\n')
+            # create new file and write header:j
+            print 'creating writing headers %s' % f_name
+            f = codecs.open(f_name, "w", encoding='utf8')
+            f.write('<?xml version="1.0" encoding="utf-8" ?>\n')
+            f.write('<nodelist created="' + format_date(now(), "yyyy-mm-dd HH:MM:SS") + '">\n')
 
-            if f_name not in statfiles:
-                statfiles.append(f_name)
+            if f_name not in col_id.statfiles:
+                col_id.statfiles.append((f_name, orig_file))
             return f
 
-    def writeFooters():
-        for file in statfiles:
-            with codecs.open(file, "a", encoding='utf8') as f:
-                f.write("</nodelist>\n")
 
-    ids = []
-    items = collection.getAllChildren()
-    for item in items:
-        ids.append(item.id)
     data = readLogFiles(period, fname)
 
-    gi = GeoIP()
+    time0 = time.time()
+    collection_ids = {}
+    for collection in collections:
+        print collection
+        in_logitem_set = False
+        items = collection.all_children
+        ids_set = Set()
+        for item in items:
+            ids_set.add(item.id)
+            if item.id in logitem_set:
+                in_logitem_set = True
 
-    for timestamp in data.keys():
-        for id in data[timestamp].keys():
-            if id in ids:
-                for type in ["frontend", "edit", "download"]:
-                    fin = getStatFile(collection, timestamp, type, period)
-                    if fin and len(data[timestamp][id][type]) > 0:
-                        fin.write('\t<node id="%s">\n' % ustr(id))
-                        for access in data[timestamp][id][type]:
-                            fin.write('\t\t<access date="%s" time="%s" country="%s" visitor_number="%s" bot="%s"/>\n' %
-                                      (ustr(access.getDate()),
-                                       ustr(access.getTime()),
-                                       gi.country_code_by_name(access.getIp()),
-                                       ustr(access.get_visitor_number()),
-                                       ustr(access.is_google_bot())))
-                        fin.write("\t</node>\n")
-                        fin.close()
+        if in_logitem_set:
+            collection_ids[collection.id] = CollectionId(ids_set, collection)
 
-    for file in statfiles:
-        with codecs.open(file, "a", encoding='utf8') as f:
-            f.write("</nodelist>\n")
+    if not collections:
+        # read all collections and its children with a single psql command which is much more faster
+        # than the use of collection.all_children
+        import core
+        out = core.db.run_psql_command("select nid, id from node, noderelation where cid=id and" +
+                                       " nid in (select id from node where type in ('collection', 'collections'))" +
+                                       " order by nid",
+                                       output=True, database=config.get("database.db"))
+        lines = out.split('\n')
+        last_collection = 0
+        for line in lines:
+            if line:
+                collection_s, id_s = line.split('|')
+                collection = int(collection_s)
+                id = int(id_s)
+                if last_collection != collection:
+                    if last_collection:
+                        if in_logitem_set:
+                            collection_ids[last_collection] = CollectionId(ids_set, db.query(Node).get(last_collection))
+                    in_logitem_set = False
+                    ids_set = Set()
+                ids_set.add(id)
+                if id in logitem_set:
+                    in_logitem_set = True
+                last_collection = collection
 
-        statfile = importFile(file.split("/")[-1], file)
-        if statfile:
-            statfile.type = "statistic"
-            collection.addFile(statfile)
+        if last_collection:
+            if in_logitem_set:
+                collection_ids[last_collection] = CollectionId(ids_set, db.query(Node).get(last_collection))
 
-        try:
-            os.remove(file)
-        except:
+    time1 = time.time()
+    print "time to collect all collections: %f" % (time1 - time0)
+
+    gi = GeoIP(flags=MEMORY_CACHE)
+
+    last_access = None
+    count = 0
+    for access in data:
+        if (count % 10000) == 0:
+            print "writing stat files: %d lines from %d processed: %d%%" % (count, len(data), count * 100 / len(data))
+        count += 1
+
+        if last_access and last_access.getID() == access.getID():
             pass
+        else:
+            for col in collection_ids:
+
+                col_id = collection_ids[col]
+                if not col_id.first_frontend:
+                    col_id.fin_frontend.write("\t</node>\n")
+                    col_id.first_frontend = True
+                if not col_id.first_download:
+                    col_id.fin_download.write("\t</node>\n")
+                    col_id.first_download = True
+                if not col_id.first_edit:
+                    col_id.fin_edit.write("\t</node>\n")
+                    col_id.first_edit = True
+
+                col_id.in_ids = access.getID() in col_id.ids_set
+
+        last_access = access
+
+        for col in collection_ids:
+            col_id = collection_ids[col]
+            if not col_id.in_ids:
+                continue
+
+            if not col_id.files_open:
+                col_id.fin_frontend = getStatFile(col_id, period, "frontend", period)
+                col_id.fin_download = getStatFile(col_id, period, "download", period)
+                col_id.fin_edit = getStatFile(col_id, period, "edit", period)
+                col_id.files_open = True
+
+            first = False
+            if access.inttype == FRONTEND:
+                fin = col_id.fin_frontend
+                if col_id.first_frontend:
+                    first = True
+                    col_id.first_frontend = False
+            elif access.inttype == DOWNLOAD:
+                fin = col_id.fin_download
+                if col_id.first_download:
+                    first = True
+                    col_id.first_download = False
+            elif access.inttype == EDIT:
+                fin = col_id.fin_edit
+                if col_id.first_edit:
+                    first = True
+                    col_id.first_edit = False
+
+            if first:
+                fin.write('\t<node id="%d">\n' % access.getID())
+
+            fin.write('\t\t<access date="%s" time="%s" country="%s" visitor_number="%s" bot="%s"/>\n' %
+                      (access.getDate(),
+                       access.getTime(),
+                       gi.country_code_by_name(access.getIp()),
+                       access.get_visitor_number1(col_id),
+                       access.is_google_bot()))
+
+
+    for col in collection_ids:
+        col_id = collection_ids[col]
+        if not col_id.first_frontend:
+            col_id.fin_frontend.write("\t</node>\n")
+        if not col_id.first_download:
+            col_id.fin_download.write("\t</node>\n")
+        if not col_id.first_edit:
+            col_id.fin_edit.write("\t</node>\n")
+
+        if col_id.files_open:
+            col_id.fin_frontend.write("</nodelist>\n")
+            col_id.fin_download.write("</nodelist>\n")
+            col_id.fin_edit.write("</nodelist>\n")
+            col_id.fin_frontend.close()
+            col_id.fin_download.close()
+            col_id.fin_edit.close()
+
+    time1 = time.time()
+    print "read collection: %f" % (time1 - time0)
+
+    for col in collection_ids:
+        col_id = collection_ids[col]
+        for file, orig_file in col_id.statfiles:
+
+            if orig_file:
+                destfile = os.path.join(config.get("paths.datadir"), orig_file)
+                shutil.copyfile(file, destfile)
+                print "copy %s to %s" % (file, destfile)
+            else:
+                print "importFile %s" % file
+                statfile = importFile(file.split("/")[-1], file)
+                if statfile:
+                    statfile.filetype = "statistic"
+                    # collection.addFile(statfile)
+                    col_id.collection.files.append(statfile)
+                    db.session.commit()
+
+            try:
+                os.remove(file)
+            except:
+                pass
+
 
 if __name__ == "__main__":
     readLogFiles()

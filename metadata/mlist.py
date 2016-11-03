@@ -20,6 +20,7 @@
 import logging
 import os.path
 import codecs
+from werkzeug import ImmutableMultiDict
 from mediatumtal import tal
 from core import Node, db
 from utils.utils import esc
@@ -129,8 +130,13 @@ class m_mlist(Metatype):
         return (metafield.getLabel(), value)
 
     def format_request_value_for_db(self, field, params, item, language=None):
-        value = params.get(item)
-        return value.replace("; ", ";")
+        if isinstance(params, ImmutableMultiDict):
+            valuelist = params.getlist(item)
+            value = ";".join(valuelist)
+        else:
+            value_unprepared = params.get(item)
+            value = value_unprepared.replace("; ", ";")
+        return value
 
     def getMaskEditorHTML(self, field, metadatatype=None, language=None):
         value = u""

@@ -167,7 +167,7 @@
                                     <select name="exportmapping" multiple="multiple" size="5">
                                         <option i18n:translate="admin_mask_nomapping" value="">TEXT</option>
                                         <tal:block tal:repeat="mapping mappings">
-                                            <option tal:attributes="selected python:'selected' if mapping.id in mask.getExportMapping() else None; value python:mapping.id" tal:content="python:mapping.getName()"/>
+                                            <option tal:attributes="selected python:'selected' if unicode(mapping.id) in mask.getExportMapping() else None; value python:mapping.id" tal:content="python:mapping.getName()"/>
                                         </tal:block>
                                     </select>
                                 </td>

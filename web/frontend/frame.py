@@ -153,11 +153,11 @@ class Searchlet(object):
         return self.values[0]
 
     def search_link(self, mode="simple"):
-        params = {k: v for k, v in iteritems(self.url_params) if k not in ("query", "searchmode")}
+        params = {k: v for k, v in iteritems(self.url_params) if k not in ("query", "searchmode", "id")}
         if mode != "simple":
             params["searchmode"] = mode
 
-        return node_url(**params)
+        return node_url(self.container.id, **params)
 
     def searchLinkSimple(self):
         return self.search_link()

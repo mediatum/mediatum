@@ -197,7 +197,7 @@ def getContent(req, ids):
     idstr = ",".join(ids)
     action = req.params.get('action', '').strip()
 
-    if len(ids) > 1:
+    if len(ids) > 1 and len(metatypes) > 1:
         logg.info("%s in editor metadata (action=%r) multiple documents not supported: %r",
                   user.login_name, action, [[n.id, n.name, n.type]for n in nodes])
         return req.getTAL("web/edit/modules/metadata.html", {}, macro="multiple_documents_not_supported")

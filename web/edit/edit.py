@@ -537,6 +537,7 @@ def action(req):
         newnode.set("creationtime", unicode(
             time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
         newnode.set("nodename", translated_label)  # set attribute named "nodename" to label text
+        newnode.orderpos = max([c.orderpos for c in node.children]) + 1
         db.session.commit()
         req.params["dest"] = newnode.id
 

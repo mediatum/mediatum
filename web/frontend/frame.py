@@ -216,10 +216,12 @@ def render_search_box(container, language, req):
         "search": search_portlet,
         "container_id": container.id,
         "liststyle": liststyle,
+        "language": language,
         "search_placeholder": t(language, "search_in") + " " + container.getLabel(language)
     }
 
-    search_html = tal.getTAL(webconfig.theme.getTemplate("frame.html"), ctx, macro="frame_search", language=language)
+    search_html = webconfig.theme.render_template("frame_search.j2.jade", ctx)
+
     return search_html
 
 
@@ -361,7 +363,10 @@ def _render_navtree_cached_for_anon(language, node_id):
 def _render_navtree(language, node_id):
     collection, container = find_collection_and_container(node_id)
     navtree_entries = make_navtree_entries(language, collection, container)
-    html = tal.getTAL(webconfig.theme.getTemplate("frame.html"), {"navtree_entries": navtree_entries}, macro="frame_tree", language=language)
+    if navtree_entries:
+        html = webconfig.theme.render_template("frame_tree.j2.jade", {"navtree_entries": navtree_entries})
+    else:
+        html = u""
     logg.debug("rendered navtree with %s unicode chars", len(html))
     return html
 
@@ -445,14 +450,14 @@ def render_page(req, node, contentHTML, show_navbar=True):
     userlinks = UserLinks(user, req)
     language = lang(req)
     rootnode = get_collections_node()
-    
+
     if node is None:
         node = rootnode
         container = rootnode
     else:
         container = node.get_container()
     
-    frame_template = webconfig.theme.getTemplate("frame.html")
+    theme = webconfig.theme
 
     front_lang = {
         "name": config.languages,
@@ -460,18 +465,13 @@ def render_page(req, node, contentHTML, show_navbar=True):
     }
     frame_context = {
         "content": contentHTML,
-        "footer_left_items": rootnode.getCustomItems("footer_left"),
-        "footer_right_items": rootnode.getCustomItems("footer_right"),
-        "header_items": rootnode.getCustomItems("header"),
         "id": node.id,
         "language": front_lang,
         "show_navbar": show_navbar,
-        "user": user, 
-        "userlinks": userlinks
     }
 
-    navtree_html = u""
     search_html = u""
+    navtree_html = u""
 
     if show_navbar and not req.args.get("disable_navbar"):
         if not req.args.get("disable_search"):
@@ -480,10 +480,26 @@ def render_page(req, node, contentHTML, show_navbar=True):
         if not req.args.get("disable_navtree"):
             navtree_html = render_navtree(language, node.id, user)
 
-    frame_context["search"] = search_html
-    frame_context["tree"] = navtree_html
-    frame_context["footer"] = tal.getTAL(frame_template, frame_context, macro="frame_footer", language=language)
-    frame_context["header"] = tal.getTAL(frame_template, frame_context, macro="frame_header", language=language)
+    ctx_header = {
+        "user_name": user.getName(),
+        "userlinks": userlinks,
+        "header_items": rootnode.getCustomItems("header"),
+        "language": front_lang,
+        "show_language_switcher": (len(front_lang['name']) > 1)
+    }
+    header_html = theme.render_template("frame_header.j2.jade", ctx_header)
 
-    html = tal.getTAL(frame_template, frame_context, macro="frame", language=language)
+    ctx_footer = {
+        "footer_left_items": rootnode.getCustomItems("footer_left"),
+        "footer_right_items": rootnode.getCustomItems("footer_right")
+    }
+    footer_html = theme.render_template("frame_footer.j2.jade", ctx_footer)
+
+    frame_context["search"] = search_html
+    frame_context["navtree"] = navtree_html
+    frame_context["header"] = header_html
+    frame_context["footer"] = footer_html
+
+    html = theme.render_template("frame.j2.jade", frame_context)
+
     return html

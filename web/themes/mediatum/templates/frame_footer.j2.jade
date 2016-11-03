@@ -1,0 +1,20 @@
+#footer
+  span.footer_left
+    for item in footer_left_items
+      if item.getType()!='text'
+        a.customcontent(href=item.getLink())
+          if item.getIcon() != ''
+            img.customcontent(src=item.getIcon(), border='0px')
+          =_t(item.getName())
+      else
+        =_t(item.getName())
+  span.footer_right
+    for item in footer_right_items
+      if item.getType() != 'text'
+        a.customcontent(href=item.getLink())
+          if item.getIcon() != ''
+            img.customcontent(src=item.getIcon(), border='0px')
+          =_t(item.getName())
+      else
+        =_t(item.getName())
+

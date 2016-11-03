@@ -1,0 +1,60 @@
+doctype html
+html
+  head
+    meta(http-equiv='Content-Type', content='text/html; charset=UTF-8')
+    meta(http-equiv='expires', content='43200')
+    // This website is powered by mediatum
+    // mediatum is a free open source multimedia content repository
+    title=_t('main_title')
+    meta(name='generator', content='mediatum - a multimedia content repository')
+    
+    unless show_navbar
+      meta(name='robots', content='noindex, nofollow')
+    link(rel='icon', type='image/vnd.microsoft.icon', href='/img/favicon.ico')
+    link(rel='apple-touch-icon', sizes='57x57', href='/apple-touch-icon-57x57.png')
+    link(rel='apple-touch-icon', sizes='60x60', href='/apple-touch-icon-60x60.png')
+    link(rel='apple-touch-icon', sizes='72x72', href='/apple-touch-icon-72x72.png')
+    link(rel='apple-touch-icon', sizes='76x76', href='/apple-touch-icon-76x76.png')
+    link(rel='apple-touch-icon', sizes='114x114', href='/apple-touch-icon-114x114.png')
+    link(rel='apple-touch-icon', sizes='120x120', href='/apple-touch-icon-120x120.png')
+    link(rel='apple-touch-icon', sizes='144x144', href='/apple-touch-icon-144x144.png')
+    link(rel='apple-touch-icon', sizes='152x152', href='/apple-touch-icon-152x152.png')
+    link(rel='apple-touch-icon', sizes='180x180', href='/apple-touch-icon-180x180.png')
+    link(rel='icon', type='image/png', href='/favicon-32x32.png', sizes='32x32')
+    link(rel='icon', type='image/png', href='/favicon-194x194.png', sizes='194x194')
+    link(rel='icon', type='image/png', href='/favicon-96x96.png', sizes='96x96')
+    link(rel='icon', type='image/png', href='/android-chrome-192x192.png', sizes='192x192')
+    link(rel='icon', type='image/png', href='/favicon-16x16.png', sizes='16x16')
+    link(rel='manifest', href='/manifest.json')
+    meta(name='msapplication-TileColor', content='#ffffff')
+    meta(name='msapplication-TileImage', content='/mstile-144x144.png')
+    meta(name='theme-color', content='#ffffff')
+    link(rel='stylesheet', href='/css/mediatum.css')
+    script(type='text/javascript', language='javascript', src='/js/mediatum.js')
+    script(type='text/javascript', language='javascript', src='/js/jquery.min.js')
+    script(type='text/javascript', language='javascript').
+      function change_size(){
+      var searchform = $('#search-form').height();
+      var cheight = $('#portal-column-content').height()+12;
+      $('#frame-tree').height(cheight-searchform);
+      }
+      $(window).resize(function() {
+      change_size();
+      });
+
+  body(onload='change_size();')
+    #visual-portal-wrapper
+      = header
+      #content-wrapper
+        if show_navbar
+          #nav-tree(style='width:292px; padding-left:2px; padding-bottom:0px; padding-top:0px; background-color:#dbe2e9; float:left')
+            = search
+            = navtree
+        else
+          div
+            = navtree
+        #portal-column-content
+          = content
+        div(style='clear:both;')
+      div(style='clear:both')
+      = footer

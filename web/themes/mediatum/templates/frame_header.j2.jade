@@ -1,0 +1,45 @@
+#portal-top
+  .header.header-left
+    block left
+      ul
+        li
+          a(href='/')
+            = _t('main_title')
+        li
+          a(href='https://github.com/mediatum/mediatum', target='_blank') mediatum
+
+  .header.header-right
+    block right
+      a.header-logo(href='https://github.com/mediatum/mediatum', target='_blank', title='Home mediatum')
+        img(src='/img/logo.png', alt='Logo', width='110', height='59')
+
+#portal-personaltools
+  = _t("sub_header_user")
+    | : {{ user_name }}
+
+  for menuitem in userlinks.getLinks()
+    a(href=menuitem.link, title=menuitem.title)
+      | &nbsp
+      img(border='0', height='16', src=menuitem.icon)
+      = menuitem.label
+
+  for item in header_items
+    if item.getType()!='text'
+      a(href=item.getLink())
+        if item.icon!=''
+          img(border='0', height='16', src=item.icon)
+          = _t(item.getName())
+    else
+      = _t(item.getName())
+  if show_language_switcher
+    #language_switch
+      ul
+        for lang in language['name']
+          li
+            if language['actlang']==lang
+              a.selected_language(href=userlinks.change_language_link(lang))
+                = lang
+            else
+              a(href=userlinks.change_language_link(lang))
+                = lang
+

@@ -566,7 +566,8 @@ class ContentList(ContentBase):
             sfile = SingleFile(n, nav_params, self.lang, self.default_fullstyle_name, self.liststyle.maskfield_separator)
             files.append(sfile)
 
-        page_nav = tal.getTAL(webconfig.theme.getTemplate("content_nav.html"), ctx, macro="page_nav_prev_next", language=self.lang)
+        page_nav = webconfig.theme.render_macro("content_nav.j2.jade", "page_nav_prev_next", ctx)
+
         return page_nav, files
 
     @ensure_unicode_returned(name="web.frontend.content.ContentList:html")
@@ -574,8 +575,7 @@ class ContentList(ContentBase):
         # do we want to show a single result or the result list?
         if self.content:
             # render single result
-            headline = tal.getTAL(webconfig.theme.getTemplate("content_nav.html"), {"nav": self}, macro="navheadline", language=self.lang)
-
+            headline = webconfig.theme.render_macro("content_nav.j2.jade", "navheadline", {"nav": self})
             return headline + self.content.html(req)
 
         # render result list
@@ -588,7 +588,7 @@ class ContentList(ContentBase):
             "ids": ",".join(str(f.node.id) for f in self.files),
             "op": "", "query": req.args.get("query", "")}
 
-        filesHTML = tal.getTAL(webconfig.theme.getTemplate("content_nav.html"), ctx, macro="list_header", request=req)
+        filesHTML = webconfig.theme.render_macro("content_nav.j2.jade", "list_header", ctx)
 
         # use template of style and build html content
         ctx = {"files": self.files, "op": "", "language": self.lang}
@@ -730,17 +730,17 @@ def render_content_nav(req, node, logo, styles, select_style_link, paths):
     if paths:
         shortest_path = sorted(paths, key=lambda p: (len(p), p[-1].id))[0]
     else:
-        shortest_path = None   
-    
-    content_nav_html = tal.getTAL(webconfig.theme.getTemplate("content_nav.html"),
-                      {"path": shortest_path,
-                       "styles": styles,
-                       "logo": logo,
-                       "select_style_link": select_style_link,
-                       "node": node,
-                       "printlink": make_content_nav_printlink(req, node)},
-                      macro="content_nav",
-                      request=req)
+        shortest_path = None
+
+    ctx = {"path": shortest_path,
+           "styles": styles,
+           "logo": logo,
+           "select_style_link": select_style_link,
+           "node": node,
+           "printlink": make_content_nav_printlink(req, node)}
+
+    theme = webconfig.theme
+    content_nav_html = theme.render_macro("content_nav.j2.jade", "content_nav", ctx)
 
     return content_nav_html
 
@@ -772,7 +772,12 @@ def render_content_error(error, language):
 
 def render_content_occurences(node, req, paths):
     language = lang(req)
-    return tal.getTAL(webconfig.theme.getTemplate("content_nav.html"), {"paths": paths}, macro="paths", language=language)
+    ctx = {
+            "paths": paths,
+            "language": language
+           }
+    html = webconfig.theme.render_macro("content_nav.j2.jade", "paths", ctx)
+    return html
 
 
 def render_content(node, req, render_paths=True):

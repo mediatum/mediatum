@@ -4,13 +4,14 @@
     :license: GPL3, see COPYING for details
 """
 from __future__ import absolute_import
+import os.path
 import pytest
 from pytest import fixture, yield_fixture
 from core.archive import Archive
 from core.permission import get_or_add_everybody_rule
 from core.database.postgres.permission import AccessRulesetToRule
 from core.transition import httpstatus
-from web.frontend.filehandlers import fetch_archived, send_image
+from web.frontend.filehandlers import fetch_archived, send_image, send_from_webroot
 from utils.testing import make_node_public
 
 
@@ -170,3 +171,10 @@ def test_send_image_extension_wrong(public_image_png, req_for_png_image):
     req.path = "/image/" + unicode(node.id) + ".cow"
     error = send_image(req)
     assert error == httpstatus.HTTP_NOT_ACCEPTABLE
+
+
+def test_send_from_webroot(req):
+    req.path = "/favicon.ico"
+    send_from_webroot(req)
+    from core import config 
+    assert (os.path.join(config.basedir, "web/root", "favicon.ico"), "other") in req.sent_files_with_mimetype

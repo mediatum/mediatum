@@ -344,11 +344,19 @@ def fetch_archived(req):
 
 
 def send_from_webroot(req):
-    filename = config.basedir + "/web/root" + req.path
-    if os.path.isfile(filename):
-        return req.sendFile(filename, getMimeType(filename)[0])
+    import core.webconfig
+
+    if core.webconfig.theme is not None:
+        webroot_dirs = [core.webconfig.theme.path, "web/root"]
     else:
-        return 404
+        webroot_dirs = ["web/root"]
+    
+    for webroot_dir in webroot_dirs:
+        filepath = os.path.join(config.basedir, webroot_dir, req.path.strip("/"))
+        if os.path.isfile(filepath):
+            return req.sendFile(filepath, getMimeType(filepath)[0])
+
+    return 404
 
 ### redirects for legacy handlers
 

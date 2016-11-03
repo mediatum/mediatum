@@ -79,9 +79,6 @@ msgstr "You are not allowed to change password of current user."
 msgid "login_act_pwd:"
 msgstr "current password:"
 
-msgid "login_info"
-msgstr "Note:<br/>You might be asked to accept a security certificate for SSL-encryption. Please accept the certificate as trustworthy and load the certificate."
-
 msgid "password_repeat:"
 msgstr "repeat new password:"
 

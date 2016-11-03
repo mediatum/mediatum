@@ -94,7 +94,7 @@ def make_template_functions(template_dirpath, global_names={}):
     """Creates a template rendering function which uses a fixed template path
     :param global_names: names to add to all template contexts. Use this to add functions that should be avaiable in all templates.
     """
-    jinja_env = Environment(current_app, loader=FileSystemLoader(template_dirpath), extensions=[PyJadeExtension])
+    jinja_env = Environment(current_app, loader=FileSystemLoader(template_dirpath), extensions=[PyJadeExtension, "jinja2.ext.autoescape"])
     jinja_env.globals.update(global_names)
 
     def render_template(template, **kwargs):

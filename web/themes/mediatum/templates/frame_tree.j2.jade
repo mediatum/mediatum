@@ -1,0 +1,12 @@
+#frame-tree.portlet(style='overflow:auto;height:500px')
+  ul#navigationlist
+    for data in navtree_entries
+      a(name=data.id)
+      - var label = data.getText()
+      if label
+        li(class=data.getClass())
+          div(style=data.getStyle(), class=['linknotselected','linkselected'][data.active])
+            a(href=data.getFoldLink())
+              = label
+            if data.hassubdir
+              a(href=data.getLink(), class=['expanded','collapsed'][data.isFolded()])

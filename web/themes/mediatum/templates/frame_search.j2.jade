@@ -1,0 +1,46 @@
+#search-form.portlet
+  if search.isSimple()
+    span
+      form#search-box(name='search', action='/')
+        input#search-field(value=search.simple_search_query, placeholder=search_placeholder, name='query', style='width:180px')
+        input#search-button(value=_t('search'), title=_t('search_title'), type='submit')
+        input(type='hidden', name='id', value=container_id)
+        if liststyle
+          input(type='hidden', name='liststyle', value=liststyle)
+    if search.hasExtendedSearch()
+      a#advancedsearchlink(href=search.searchLinkExtended())
+        = _t('xsearch')
+  if search.isExtendedNormal() or search.isExtendedSuper()
+    form#advancedsearch-box(name='xsearch', action='/', accept-charset='utf-8', style='margin:0px;padding:0px;background-color:#edf1f4')
+      input(type='hidden', name='id', value=container_id)
+      input(type='hidden', name='searchmode', value=['extendedsuper','extended'][search.isExtendedNormal()])
+      - var max = [4,11][search.isExtendedSuper()]
+      table
+        for pos in range(1, max)
+          tr
+            td(valign='top')
+              select(name='field{}'.format(pos), onchange='chg()')
+                option(selected = (search.searchmaskitem_ids[pos] == None), value='full')
+                  = _t('all_data')
+                for searchmaskitem_id in search.searchmaskitems
+                  option(value=searchmaskitem_id, selected=search.searchmaskitem_is_selected(pos, searchmaskitem_id))
+                    = search.searchmaskitems[searchmaskitem_id]
+            td
+              = search.getSearchField(pos)
+        tr
+          td
+            small
+              if search.isExtendedNormal()
+                a#advancedmorelink(href=search.searchLinkExtendedSuper())
+                  = _t('search_extendedsuper')
+              if search.isExtendedSuper()
+                a#advancedmorelink(href=search.searchLinkExtended())
+                  = _t('xsearch2')
+          td(style='text-align:right')
+            button#reset-button(title=_t('reset_field_title'), type='button', onclick='clearFields()')
+              = _t('reset_field')
+            button#xsearch-button(title=_t('search_title'), type='submit')
+              = _t('search')
+      a#advancedsearchlink(href=search.searchLinkSimple())
+        =_t('search_simple')
+

@@ -27,7 +27,7 @@ import core.config as config
 from core import app, athana
 from core.transition import render_template, render_macro
 import glob
-from jinja2.loaders import FileSystemLoader, ChoiceLoader
+from jinja2.loaders import FileSystemLoader, ChoiceLoader, PrefixLoader
 from jinja2.exceptions import TemplateNotFound
 
 
@@ -124,12 +124,15 @@ class CustomTheme(Theme):
             return DefaultTheme.get_tal_template_path(filename)
 
     def make_jinja_loader(self):
-        template_path = os.path.join(config.basedir, self.path)
+        template_path = os.path.join(config.basedir, self.path, "templates")
         default_jinja_loader = DefaultTheme.make_jinja_loader()
+        prefix_default_loader = PrefixLoader({"mediatum": default_jinja_loader})
 
         if os.path.isdir(template_path):
-            # This loader first looks at the CustomTheme template path, then the default template path, if nothing was found.
+            # This loader first looks  
+            # at the CustomTheme template path, then the default template path, if nothing was found.
             return ChoiceLoader([
+                prefix_default_loader,
                 FileSystemLoader(template_path),
                 default_jinja_loader
             ])

@@ -1,18 +1,13 @@
 
 <div tal:repeat="file python:files" class="preview_text" style="height: auto; padding-bottom: 10px;" onmouseover="this.style.backgroundColor='#cccccc'" onmouseout="this.style.backgroundColor='white'">
-    <div style="margin:3px;">
-    </div>
-    <div style="margin-left: 30px; margin-top: 5px">
-        <a tal:attributes="href python:file.getLink()" style="white-space:normal">
-            <tal:block tal:replace="raw python:file.getMetadata('.', language)"/>
-        </a>
-    </div>
+    <a tal:attributes="href python:file.getLink()" style="padding:2px">
+        <div style="margin:0px 30px" tal:content="raw python:file.text"/>
+    </a>
 
-    <div style="position:absolute; right:25px; top:5px; overflow:hidden;">
+    <div style="position:absolute; right:23px; top:3px; overflow:hidden;">
         <img tal:condition="python:file.attachment" i18n:attributes="title view_list_att_title" src="/img/attach.png"/>
         &nbsp;
         <img tal:condition="python:file.node.has_object()" i18n:attributes="title content_text_file_title" src="/img/file.gif"/>
     </div>
-
     <div class="break" tal:content="python:''"/>
 </div>

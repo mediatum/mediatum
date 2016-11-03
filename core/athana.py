@@ -1295,7 +1295,13 @@ class http_request(object):
     # COMPAT: flask-style properties
     @property
     def remote_addr(self):
-        return self.ip
+        return self.ip.split(',')[-1].strip()
+
+    @property
+    def access_route(self):
+        addr = self.ip.split(',')
+        return [x.strip() for x in addr]
+
 
     responses = {
         100: "Continue",

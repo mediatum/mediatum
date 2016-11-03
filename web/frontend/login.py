@@ -88,8 +88,12 @@ def _handle_login_submit(req):
 
 def _set_return_after_login(req):
     referer = req.get_header("Referer")
+    host = req.get_header("host")
 
     if referer is None or any(uri in referer for uri in ('/login', '/logout', '/pwdforgotten', '/pwdchange', '/pnode')):
+        req.session['return_after_login'] = False
+    # check if referrer is mediatum and not a search engine
+    elif not referer.startswith('http://' + host + '/') and not referer.startswith('https://' + host + '/'):
         req.session['return_after_login'] = False
     else:
         if '/edit_content' in referer:

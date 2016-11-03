@@ -136,8 +136,8 @@ msgstr "Home"
 msgid "occurences:"
 msgstr "Occurrences:"
 
-msgid "printview"
-msgstr "Print view"
+msgid "printpdf"
+msgstr "Print (PDF)"
 
 msgid "sort_label"
 msgstr "sort by:"

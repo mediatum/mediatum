@@ -196,7 +196,7 @@ def initContexts():
     file.addHandler("show_help").addPattern("/popup_help")
     file.addHandler("show_attachmentbrowser").addPattern("/attachmentbrowser")
     
-    if config.getboolean("host.enable_printing"):
+    if config.getboolean("config.enable_printing"):
         file.addHandler("show_printview").addPattern("/print/.*")
 
     file = context.addFile("web/frontend/login.py")

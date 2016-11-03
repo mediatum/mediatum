@@ -142,8 +142,8 @@ msgstr "Startseite"
 msgid "occurences:"
 msgstr "Vorkommen:"
 
-msgid "printview"
-msgstr "Druckansicht"
+msgid "printpdf"
+msgstr "Druckansicht (PDF)"
 
 msgid "sort_label"
 msgstr "Sortieren nach:"

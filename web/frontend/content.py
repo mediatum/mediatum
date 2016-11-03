@@ -39,11 +39,16 @@ from sqlalchemy_continuum.utils import version_class
 import json
 from utils.pathutils import get_accessible_paths
 from web.frontend.contentbase import ContentBase
+from utils.url import build_url_from_path_and_params
 
 
 logg = logging.getLogger(__name__)
 q = db.query
 
+
+def print_url(nid, **params):
+    return build_url_from_path_and_params(u"/print/{}".format(nid), params)
+        
 
 class SingleFile(object):
 
@@ -322,8 +327,21 @@ class ContentList(ContentBase):
         # Therefore, we want to change the style of the node, not the list.
         if self.content is not None:
             return self.nav_link(style=style)
-
+        
         return self.nav_link(liststyle=style)
+        
+    @property
+    def print_url(self):
+        if config.getboolean("config.enable_printing"):
+            # self.content means: we're showing a single result node.
+            # Therefore, we want to print the node, not the list.
+            if self.content is not None:
+                return self.content.print_url
+            
+            if self.container.system_attrs.get("print", "1") == "1":
+                # printing is allowed for containers by default, unless system.print != "1" is set on the node
+                params = {k:v for k, v in iteritems(self.nav_params) if k.startswith("sortfield")}
+                return print_url(self.container.id, **params)
 
     def feedback(self, req):
         self.container_id = req.args.get("id", type=int)
@@ -646,6 +664,11 @@ class ContentNode(ContentBase):
     def select_style_link(self, style):
         version = self._node.tag if isinstance(self._node, version_class(Node)) else None
         return node_url(self.id, version=version, style=style)
+    
+    @property
+    def print_url(self):
+        if config.getboolean("config.enable_printing") and self.node.system_attrs.get("print", "1") == "1":
+            return print_url(self.id)
 
     @ensure_unicode_returned(name="web.frontend.content:html")
     def html(self, req):
@@ -714,19 +737,7 @@ def make_node_content(node, req, paths):
     return c
 
 
-def make_content_nav_printlink(req, node):
-    printlink = None
-    if isinstance(node, Container) and config.getboolean("config.enable_printing") and node.system_attrs.get("print", "1") == "1":
-        # printing is allowed for containers by default, unless system.print != "1" is set on the node
-        printlink = '/print/' + unicode(node.id)
-
-    if printlink and "sortfield0" in req.args:
-        printlink += '?sortfield0=' + req.args.get("sortfield0") + '&sortfield1=' + req.args.get("sortfield1")
-
-    return printlink
-    
-
-def render_content_nav(req, node, logo, styles, select_style_link, paths):
+def render_content_nav(req, node, logo, styles, select_style_link, print_url, paths):
     if paths:
         shortest_path = sorted(paths, key=lambda p: (len(p), p[-1].id))[0]
     else:
@@ -737,7 +748,7 @@ def render_content_nav(req, node, logo, styles, select_style_link, paths):
            "logo": logo,
            "select_style_link": select_style_link,
            "node": node,
-           "printlink": make_content_nav_printlink(req, node)}
+           "printlink": print_url}
 
     theme = webconfig.theme
     content_nav_html = theme.render_macro("content_nav.j2.jade", "content_nav", ctx)
@@ -812,8 +823,9 @@ def render_content(node, req, render_paths=True):
         node = content.node
         logo = content.logo
         select_style_link = content.select_style_link
+        print_url = content.print_url
         styles = content.content_styles
-        content_nav_html = render_content_nav(req, node, logo, styles, select_style_link, paths)
+        content_nav_html = render_content_nav(req, node, logo, styles, select_style_link, print_url, paths)
 
 
     content_html = content_nav_html + "\n" + content.html(req)

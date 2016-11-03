@@ -90,7 +90,7 @@
             a#view_switch(href=select_style_link(style=style.name), title=_t(style.label))
               img(src='/img/{}'.format(style.icon))
         if printlink
-          a#view_switch(target='_blank', href=printlink)
+          a#view_switch(target='_blank', href=printlink, rel="nofollow", title=_t("printpdf"))
             img(src='/img/print_icon.gif')
     if path
       div(style='padding-bottom:20px')

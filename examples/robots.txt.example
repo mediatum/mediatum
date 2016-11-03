@@ -1,0 +1,19 @@
+# put robots.txt under web/root or serve it with your webserver
+# sitemaps must be generated with bin/sitemap.py
+
+User-agent: *
+Disallow: /print/
+Disallow: /publish/
+Disallow: /mask/
+Disallow: /edit/
+Disallow: /admin/
+Disallow: /export/*/bibtex
+Disallow: /*after=*
+Disallow: /*before=*
+Disallow: /*liststyle=*
+Disallow: /*style=*
+Disallow: /*query=*
+Disallow: /*query0=*
+Allow: /
+
+# Sitemap: https://example.com/sitemap-index.xml

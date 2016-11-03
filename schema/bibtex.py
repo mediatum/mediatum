@@ -254,6 +254,36 @@ def _bibteximport_customize(record):
     return record
 
 
+def getentries(filename):
+    try:
+        save_import_file(filename)
+    except IOError as e:
+        logg.error("bibtex import: save import file failed: {}".format(e))
+        raise IOError("save import file failed")
+
+    # use utf-8-sig instead of utf-8 to get rid of BOM_UTF8, which confuses bibtex parser
+    for encoding in ('utf-8-sig', 'utf-16', None):
+        try:
+            error = None
+            fi = codecs.open(filename, "r", encoding=encoding)
+            parser = BibTexParser()
+            parser.customization = _bibteximport_customize
+            bibtex = bibtex_load(fi, parser=parser)
+            # seems to be the correct encoding, don't try other encodings
+            break
+        except Exception as e:
+            # check if there is a utf-encoding error, then try other encoding
+            if str(e).lower().find('utf8') or str(e).lower().find('utf-16'):
+                continue
+            error = e
+
+    if error:
+        logg.error("bibtex import: bibtexparser failed: {}".format(e))
+        raise ValueError("bibtexparser failed")
+
+    return bibtex.entries
+
+
 def importBibTeX(infile, node=None, req=None):
     if req:
         try:
@@ -274,18 +304,16 @@ def importBibTeX(infile, node=None, req=None):
     else:
         node = node or Directory(utf8_decode_escape(os.path.basename(infile)))
         try:
-            save_import_file(infile)
-            with codecs.open(infile, "r", encoding="utf-8") as fi:
-                parser = BibTexParser()
-                parser.customization = _bibteximport_customize
-                bibtex = bibtex_load(fi, parser=parser)
-        except Exception as e:
-            logg.error("bibtex import: bibtexparser failed: {}".format(e))
-            raise ValueError("bibtexparser failed")
+            entries = getentries(infile)
+        except:
+            logg.error("getentries failed", exc_info=1)
+            msg = "bibtex import: getentries failed, import stopped (encoding error)"
+            logg.error(msg)
+            raise ValueError("getentries failed")
 
     logg.info("bibtex import: %d entries", len(entries))
 
-    for count, fields in enumerate(bibtex.entries):
+    for count, fields in enumerate(entries):
         docid_utf8 = fields["ID"]
         fields["key"] = fields.pop("ID")
         doctype = fields.pop("ENTRYTYPE")
@@ -325,7 +353,11 @@ def importBibTeX(infile, node=None, req=None):
                     k = fieldnames[k]  # map bibtex name
 
                 if k in datefields.keys():  # format date field
-                    v = str(parse_date(v, datefields[k]))
+                    try:
+                        v = str(parse_date(v, datefields[k]))
+                    except ValueError as e:
+                        logg.exception("bibtex exception: %s: %s", k, v)
+                        raise ValueError("ValueError: " + k + ": " + v)
 
                 doc.set(k, v)
 

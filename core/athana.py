@@ -1051,7 +1051,7 @@ class http_request(object):
         if self.session and "PSESSION" not in self.Cookies:
             self.setCookie('PSESSION', self.sessionid, path="/", secure=config.getboolean("host.ssl", True))
             
-        if "Cache-Control" not in self.reply_headers:
+        if "Cache-Control" not in self.reply_headers or not config.getboolean("athana.allow_cache_header", False):
             self.reply_headers["Cache-Control"] = "no-cache"
 
         reply_header = self.build_reply_header()

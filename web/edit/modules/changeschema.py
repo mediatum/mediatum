@@ -46,6 +46,11 @@ def getContent(req, ids):
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
+    # nobody should be able to change the type/schema of his home directory
+    if node.id == user.home_dir_id:
+        req.setStatus(httpstatus.HTTP_FORBIDDEN)
+        return req.getTAL("web/edit/edit.html", {}, macro="access_error")
+
     error = req.params.get("error")
 
     schemes = get_permitted_schemas()

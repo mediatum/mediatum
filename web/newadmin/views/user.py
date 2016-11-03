@@ -16,6 +16,7 @@ from core.auth import INTERNAL_AUTHENTICATOR_KEY
 from core.permission import get_or_add_access_rule
 from core.database.postgres.permission import AccessRuleset, AccessRulesetToRule, NodeToAccessRuleset
 from schema.schema import Metadatatype
+from core.database.postgres.user import OAuthUserCredentials
 
 q = db.query
 logg = logging.getLogger(__name__)
@@ -24,6 +25,7 @@ logg = logging.getLogger(__name__)
 def _link_format_node_id_column(node_id):
     # XXX: just for testing, this should link to this instance
     return Markup('<a href="https://mediatum.ub.tum.de/node?id={0}">{0}</a>'.format(node_id))
+
 
 class UserView(BaseAdminView):
 
@@ -127,3 +129,11 @@ class AuthenticatorInfoView(BaseAdminView):
 
     def __init__(self, session=None, *args, **kwargs):
         super(AuthenticatorInfoView, self).__init__(AuthenticatorInfo, session, category="User", *args, **kwargs)
+
+
+class OAuthUserCredentialsView(BaseAdminView):
+
+    form_columns = ("user", "oauth_user", "oauth_key")
+
+    def __init__(self, session=None, *args, **kwargs):
+        super(OAuthUserCredentialsView, self).__init__(OAuthUserCredentials, session, category="User", *args, **kwargs)

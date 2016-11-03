@@ -14,7 +14,7 @@ from flask import Flask, request, url_for, redirect, flash
 from flask_admin import Admin
 from flask_admin.contrib import rediscli
 from redis import Redis
-from web.newadmin.views.user import UserView, UserGroupView, AuthenticatorInfoView
+from web.newadmin.views.user import UserView, UserGroupView, AuthenticatorInfoView, OAuthUserCredentialsView
 from wtforms import form, fields, validators
 from core import db, User
 from core.auth import authenticate_user_credentials, logout_user
@@ -94,6 +94,7 @@ def make_app():
     admin.add_view(UserView())
     admin.add_view(UserGroupView())
     admin.add_view(AuthenticatorInfoView())
+    admin.add_view(OAuthUserCredentialsView())
 
     admin.add_view(NodeView())
     admin.add_view(FileView())

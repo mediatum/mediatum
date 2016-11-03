@@ -159,9 +159,21 @@ BEGIN
     GET DIAGNOSTICS rows = ROW_COUNT;
     RAISE NOTICE '% user-group mappings for dynamic users', rows;
 
+    -- copy the oauth user credentials stored as home dir node attributes to the oauth_user_credentials table
+    INSERT INTO oauth_user_credentials (user_id, oauth_user, oauth_key, created_at)
+        SELECT
+            (SELECT id FROM mediatum.user WHERE home_dir_id = node.id AND authenticator_id = 2) AS user_id,
+            trim(' ' from system_attrs->>'oauthuser') AS oauth_user,
+            trim(' ' from system_attrs->>'oauthkey') AS oauth_key,
+            now()
+        FROM node
+        WHERE id IN (SELECT cid FROM nodemapping WHERE nid=(SELECT id FROM node WHERE name = 'home'))
+              AND system_attrs ? 'oauthkey' AND system_attrs ? 'oauthuser';
+
+    GET DIAGNOSTICS rows = ROW_COUNT;
+    RAISE NOTICE '% oauth credentials for dynamic users', rows;
 END;
 $f$;
-
 
 -- assign new IDs to users from the ID sequence
 CREATE OR REPLACE FUNCTION reset_user_ids() RETURNS void

@@ -976,3 +976,62 @@ ip.magic("autocall 1")
 # the sql extension and is in state of "idle in transaction" here. Force the end of the transaction.
 ip.magic("sql ROLLBACK")
 # the transaction from the SQLAlchemy session is always open, this can block other DB users that want an exclusive lock!
+
+
+def replace_or_add_defer_date(node, iso_date_old, iso_date_new, access_types=[u'read', u'data']):
+    """
+    examples:
+        # set new date in the future (for read and data access)
+        replace_or_add_defer_date(node, u"2016-11-03T00:00:00", u"2017-11-03T00:00:00")
+
+        # remove existing rule
+        replace_or_add_defer_date(node, u"2016-11-03T00:00:00", u"")
+
+        # add new rule
+        replace_or_add_defer_date(node, u"", u"2017-11-03T00:00:00")
+    """
+
+    if (not (iso_date_old or iso_date_new)) or (not access_types):
+        print ("noting to be done")
+        return
+
+    import utils.date as date
+    from psycopg2.extras import DateRange
+    import datetime
+    from core import AccessRule, AccessRulesetToRule, db
+
+    q = db.query
+    from core.permission import get_or_add_access_rule
+
+    if iso_date_old:
+        formatted_date_old = date.format_date(date.parse_date(iso_date_old), "dd.mm.yyyy")
+        day_old, month_old, year_old = map(int, formatted_date_old.split('.'))
+        dateranges_old = set([DateRange(datetime.date(year_old, month_old, day_old),
+                                        datetime.date(9999, 12, 31), '[)')])
+        # !!! exit if more than one rule for this daterange exists, should be fixed by looping through the nodes rules
+        rule_old = q(AccessRule).filter_by(group_ids=None, dateranges=dateranges_old, subnets=None,
+                                           invert_group=False, invert_date=False, invert_subnet=False).one()
+        if not rule_old:
+            raise ValueError('rule not found for old date {}'.format(iso_date_old))
+        print("found old rule {}".format(rule_old.to_dict()))
+    else:
+        rule_old = None
+
+    if iso_date_new:
+
+        formatted_date_new = date.format_date(date.parse_date(iso_date_new), "dd.mm.yyyy")
+        day_new, month_new, year_new = map(int, formatted_date_new.split('.'))
+        dateranges_new = set([DateRange(datetime.date(year_new, month_new, day_new),
+                                        datetime.date(9999, 12, 31), '[)')])
+
+        rule_new = get_or_add_access_rule(dateranges=dateranges_new)
+    else:
+        rule_new = None
+
+    for access_type in access_types:
+        special_access_ruleset = node.get_or_add_special_access_ruleset(ruletype=access_type)
+        if rule_old:
+            arr_old = q(AccessRulesetToRule).filter_by(ruleset=special_access_ruleset, rule=rule_old).one()
+            special_access_ruleset.rule_assocs.remove(arr_old)
+        if rule_new:
+            special_access_ruleset.rule_assocs.append(AccessRulesetToRule(rule=rule_new))

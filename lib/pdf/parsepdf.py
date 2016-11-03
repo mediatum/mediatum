@@ -114,9 +114,16 @@ def parsePDF(filename, tempdir):
         finfo.write(item + ":" + (" " * (15 - len(item)) + info[item] + "\n"))
     finfo.close()
 
-    # convert first page to image (imagemagick + ghostview)
-    convert_cmd = ["convert", "-alpha", "off", "-colorspace", "RGB,", "-density", "300",
-                   filename + "[0]", "-background", "white", "-thumbnail", "x300", imgfile]
+    # convert first page to image (graphicsmagick + ghostview)
+    # use convert command from config if defined
+    convert_cmd = config.get("external.convert_cmd", "")
+    if convert_cmd and convert_cmd.find("pdf_file") >= 0 and convert_cmd.find("image_file") >= 0:
+       convert_cmd = convert_cmd.replace("pdf_file", filename + "[0]")
+       convert_cmd = convert_cmd.replace("image_file", imgfile)
+       convert_cmd = convert_cmd.split(' ')
+    else:
+        convert_cmd = ["gm", "convert", "-colorspace", "RGB", "-density", "300",
+                       filename + "[0]", "-background", "white", "-thumbnail", "x300", imgfile]
     try:
         utils.process.check_call(convert_cmd)
     except CalledProcessError:

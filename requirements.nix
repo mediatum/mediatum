@@ -558,11 +558,13 @@ in {
       unicodecsv
       werkzeug
       # other
-      pkgs.ffmpeg
       imagemagick
-      pkgs.pdftk
+      pkgs.ffmpeg
+      pkgs.ghostscript
+      pkgs.graphicsmagick
       pkgs.graphviz-nox
       pkgs.icu
+      pkgs.pdftk
       pkgs.perlPackages.ImageExifTool
       pkgs.poppler_utils
       pkgs.postgresql95

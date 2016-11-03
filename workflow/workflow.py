@@ -229,7 +229,7 @@ def workflowSearch(nodes, text):
                 if text == "*":
                     ret += [c]
                 elif isNumeric(text):
-                    if c.id == text:
+                    if c.id == int(text):
                         ret += [c]
                 else:
                     if "|".join([f[1].lower() for f in c.attrs.items()]).find(text.lower()) >= 0:

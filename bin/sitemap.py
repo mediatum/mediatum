@@ -57,6 +57,7 @@ class Sitemap:
         self.name = name
         self.path = '/'.join([path, 'web', 'root', name])
         self.host = host
+        self.url_schema = "https" if config.getboolean("host.ssl", True) else "http"
 
     def create_sitemap(self, nodes, p_num):
         """
@@ -108,10 +109,7 @@ class Sitemap:
                 for id_lastmod_tuple in nodes:
                     url = etree.SubElement(root, 'url')
                     loc = etree.SubElement(url, 'loc')
-                    if 'system.aliascol' in q(Node).get(id_lastmod_tuple[0]).attrs and USE_ALIASES:
-                        loc.text = ''.join(['http://', self.host, '/', q(Node).get(id_lastmod_tuple[0]).attrs['system.aliascol']])
-                    else:
-                        loc.text = ''.join(['http://', self.host, '/node?id=', id_lastmod_tuple[0]])
+                    loc.text = "{}://{}/{}".format(self.url_schema, self.host, id_lastmod_tuple[0]) 
                     lastmod = etree.SubElement(url, 'lastmod')
 
                     #remove preexisting time zone indicator

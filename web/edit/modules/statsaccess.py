@@ -19,7 +19,7 @@
 
 import core.config as config
 
-from core.stats import buildStat, StatisticFile
+from core.stats import StatisticFile
 from core.translation import t, lang
 from utils.utils import splitpath
 from utils.date import format_date, now
@@ -100,9 +100,10 @@ def getPopupWindow(req, ids):
         v["action"] = "doupdate"
 
     elif req.params.get("action") == "do":  # do action and refresh current month
+        raise NotImplementedError("does not work, must be fixed")
         collection = q(Node).get(req.params.get("id"))
         collection.set("system.statsrun", "1")
-        buildStat(collection, ustr(format_date(now(), "yyyy-mm")))
+        #buildStat(collection, ustr(format_date(now(), "yyyy-mm")))
         req.writeTAL("web/edit/modules/statsaccess.html", {}, macro="edit_stats_result")
         collection.removeAttribute("system.statsrun")
         return

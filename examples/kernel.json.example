@@ -1,0 +1,5 @@
+{
+ "argv": ["/home/user/git/mediatum/bin/run_ipykernel", "{connection_file}"],
+ "display_name": "nixenv mediatum",
+ "language": "python"
+}

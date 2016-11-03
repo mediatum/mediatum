@@ -144,10 +144,17 @@ def request_handler(req):
                                                                                                                useragent)
 
     if logg.isEnabledFor(logging.INFO) and matched and 'timetable' in d:
-        timesum = 0
+        timesum = 0.0
         s += '\n' + ('-' * 80)
         s += "\n| timetable for request (%s, %s, %s)" % (req.command, req.fullpath, handle_params)
-        for i, [step, executiontime] in enumerate(d['timetable']):
+        for i, timetable_step in enumerate(d['timetable']):
+            if len(timetable_step) == 2:
+                step, executiontime = timetable_step
+            elif len(timetable_step) == 1:
+                step = timetable_step[0]
+                executiontime = 0.0
+            else:
+                continue
             s += "\n|  %2d. step: %.3f sec.: %s" % (i, executiontime, step)
             timesum += executiontime
         s += "\n| sum of execution times: %.3f sec.: %s bytes returned" % (timesum, locale.format("%d", bytes_sent, 1))

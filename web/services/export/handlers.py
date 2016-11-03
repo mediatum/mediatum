@@ -504,6 +504,7 @@ supported_formats = [
 
 
 def _handle_oauth(res, fullpath, params, timetable):
+    atime = time.time()
     username = params.get('user')
     res['oauthuser'] = username
     # XXX: We allow duplicate login names, how can we solve this better here?
@@ -519,13 +520,14 @@ def _handle_oauth(res, fullpath, params, timetable):
     user = users[0]
 
     # users.getUser(_username) returned user
-    timetable.append(['''oauth: users.getUser(%r) returned %r (%s, %s) -> groups: %s''' %
-                      (username, user, user.login_name, user.id, user.group_names)])
+    timetable.append([('''oauth: users.getUser(%r) returned %r (%s, %s) -> groups: %s''' %
+                      (username, user, user.login_name, user.id, user.group_names)), time.time() - atime])
 
+    atime = time.time()
     valid = oauth.verify_request_signature(fullpath, params)
 
-    timetable.append(['''oauth: verify_request_signature returned %r for authname %r, userid: %r, groups: %r''' %
-                      (valid, username, user.id, user.group_names)])
+    timetable.append([('''oauth: verify_request_signature returned %r for authname %r, userid: %r, groups: %r''' %
+                      (valid, username, user.id, user.group_names)), time.time() - atime])
 
     if not valid:
         return

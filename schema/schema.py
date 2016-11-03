@@ -103,7 +103,7 @@ def getMetaType(name):
     if name.find("/") > 0:
         name = name[name.rfind("/") + 1:]
 
-    return q(Metadatatype).filter_by(name=name).scalar()
+    return q(Metadatatypes).one().children.filter_by(name=name).scalar()
 
 #
 # load all meta-types from db
@@ -162,8 +162,9 @@ def updateMetaType(name, description="", longname="", active=0, datatypes="", bi
 
 def deleteMetaType(name):
     metadatatypes = q(Metadatatypes).one()
-    metadatatype = q(Metadatatype).filter_by(name=name).one()
-    metadatatypes.children.remove(metadatatype)
+    for metadatatype in q(Metadatatype).filter_by(name=name).all():
+        if metadatatype in metadatatypes.children:
+            metadatatypes.children.remove(metadatatype)
     db.session.commit()
 
 
@@ -595,7 +596,8 @@ def importMetaSchema(filename):
     metadatatypes = q(Metadatatypes).one()
     for m in importlist:
         m.name = u"import-" + m.name
-        metadatatypes.children.append(m)
+        if not metadatatypes.children.filter_by(name=m.name).all():
+            metadatatypes.children.append(m)
     db.session.commit()
 
 

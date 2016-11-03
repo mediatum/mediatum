@@ -68,9 +68,8 @@ class WorkflowStep_Condition(WorkflowStep):
             newstep = getNodeWorkflow(node).getStep(self.getTrueId())
 
         # move node to correct next step depending on condition evaluation
-        newstep.children.append(node)
-        db.session.commit()
         self.children.remove(node)
+        newstep.children.append(node)
         db.session.commit()
 
         newstep.runAction(node, True)  # always run true operation

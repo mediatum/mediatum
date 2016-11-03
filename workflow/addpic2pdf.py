@@ -153,7 +153,6 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
 
                     node.files.remove(document_file)
                     node.files.append(o_document_file)
-                    db.session.commit()
                     o_document_name = o_document_file.base_name
 
                     for f in node.files:
@@ -275,7 +274,6 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
                         logg.info("workflow step addpic2pdf(%s): going to remove file '%s' from node '%s' (%s) for request from user '%s' (%s)",
                             current_workflow_step.id, f_name, node.name, node.id, user.login_name, req.ip)
                         node.files.remove(f)
-                        db.session.commit()
                         try:
                             os.remove(f.abspath)
                         except:

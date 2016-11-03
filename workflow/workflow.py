@@ -70,7 +70,6 @@ def updateWorkflow(name, description, nameattribute="", origname="", writeaccess
     else:
         w = q(Workflows).one().children.filter_by(name=origname).one()
         w.name = name
-        db.session.commit()
     w.set("description", description)
     w.display_name_attribute = nameattribute
 
@@ -134,9 +133,8 @@ def runWorkflowStep(node, op):
     else:
         newstep = workflow.getStep(workflowstep.getFalseId())
 
-    newstep.children.append(node)
-    db.session.commit()
     workflowstep.children.remove(node)
+    newstep.children.append(node)
     db.session.commit()
     newstep.runAction(node, op)
     logg.info('workflow run action "%s" (op="%s") for node %s', newstep.name, op, node.id)
@@ -156,6 +154,7 @@ def setNodeWorkflow(node, workflow):
 
 def createWorkflowStep(name="", type="workflowstep", trueid="", falseid="", truelabel="", falselabel="", comment='', adminstep=""):
     n = WorkflowStep(name)
+    n.type = type
     n.set("truestep", trueid)
     n.set("falsestep", falseid)
     n.set("truelabel", truelabel)
@@ -180,7 +179,6 @@ def updateWorkflowStep(workflow, oldname="", newname="", type="workflowstep", tr
     n.set("posttext", posttext)
     n.set("comment", comment)
     n.set("adminstep", adminstep)
-    db.session.commit()
     for node in workflow.children:
         if node.get("truestep") == oldname:
             node.set("truestep", newname)
@@ -364,7 +362,6 @@ class Workflow(Node):
 
     def setDescription(self, d):
         self.set("description", d)
-        db.session.commit()
 
     def getSteps(self, accesstype=''):
         steps = self.children

@@ -398,7 +398,6 @@ def WorkflowStepDetail(req, wid, wnid, err=0):
     if err == 0 and wnid == "":
         # new workflowstep
         workflowstep = createWorkflowStep(name="", trueid="", falseid="", truelabel="", falselabel="", comment="")
-        workflowstep.set("id",  "")
         v["orig_name"] = req.params.get("orig_name", "")
 
     elif err == -1:
@@ -425,8 +424,6 @@ def WorkflowStepDetail(req, wid, wnid, err=0):
                         "ntruelabel", ""), falselabel=req.params.get(
                             "nfalselabel", ""), comment=req.params.get(
                                 "ncomment", ""))
-            if req.params.get("wnid", "") == "":
-                workflowstep.set("id",  "")
         v["orig_name"] = workflowstep.name
 
     elif wnid != "" and req.params.get("nname") != "":

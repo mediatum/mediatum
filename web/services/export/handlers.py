@@ -873,9 +873,13 @@ def write_formatted_response(
                 s = supported_format[1](req, path, params, data, d, debug=debug, singlenode=singlenode, send_children=send_children)
                 if res_format == 'json' and 'jsoncallback' in params:
                     s = params['jsoncallback'] + '(' + s + ')'
-                # XXX: clients can override the content_type by setting the mimetype param
-                # XXX: this is ugly, but we keep it for compatibility
-                mimetype = params.get('mimetype', supported_format[2])
+                    # the return value of this kind of call must be interpreted as javascript, 
+                    # so we must set the mimetype or browsers will complain
+                    mimetype = "application/javascript"
+                else:
+                    # XXX: clients can override the content_type by setting the mimetype param
+                    # XXX: this is ugly, but we keep it for compatibility
+                    mimetype = params.get('mimetype', supported_format[2])
 
                 # append correct charset if client didn't force another value
                 # it doesn't make sense to set it in the client to a different charset than utf8, but it was possible in the past...

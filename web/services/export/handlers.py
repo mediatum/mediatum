@@ -498,7 +498,7 @@ def struct2rss(req, path, params, data, struct, debug=False, singlenode=False, s
 supported_formats = [
     [['xml', ''], struct2xml, 'text/xml'],
     [['json'], struct2json, 'application/json'],
-    [['csv'], struct2csv, 'text/csv'],
+    [['csv'], struct2csv, 'text/plain'],
     [['template_test'], struct2template_test, 'text/plain'],
     [['rss'], struct2rss, 'application/rss+xml'],
 ]

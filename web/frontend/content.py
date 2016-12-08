@@ -141,7 +141,7 @@ def _prepare_value(name, val):
     
     val = _limit_to_size(val)
     # XXX: that's a bit hacky, find a better solution (maybe in node_value_expression?)
-    if name not in ("node.id", "node.orderpos", "node.name"):
+    if name not in ("node.id", "node.orderpos", "node.name", "nodename"):
         return json.dumps(val)
     else:
         return val
@@ -185,7 +185,7 @@ def position_filter(sortfields_to_comp, after=False, before=False):
         for prev in prev_sortfields_to_comp:
             expr = node_value_expression(prev[0])
             # XXX: can we replace this by make_cond or something like that?
-            eq_cond = expr == _prepare_value(prev[0][0], prev[1][1])
+            eq_cond = expr == _prepare_value(prev[0], prev[1][1])
             sub_cond &= eq_cond
 
         prev_sortfields_to_comp.append(sortfield_to_comp)

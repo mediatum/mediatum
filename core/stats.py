@@ -38,7 +38,7 @@ from utils.utils import splitpath
 from utils.fileutils import importFile
 from array import array
 
-# q = db.query
+q = db.query
 
 EDIT = 1
 DOWNLOAD = 2

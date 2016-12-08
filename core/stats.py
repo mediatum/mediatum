@@ -74,12 +74,25 @@ class LogItem:
                         self.id = int(m[0][4:])
                 self.type = "edit"
                 self.inttype = EDIT
+
             else:  # frontend
-                m = re.findall('[\?|\&]id=[0-9]*', self.url)
-                if len(m) == 1:
-                    self.id = int(m[0][4:])
+                m1 = re.findall('show_id=[0-9]*', self.url)
+                if len(m1) == 1:
+                    self.id = int(m1[0][8:])
                     self.type = "frontend"
                     self.inttype = FRONTEND
+                else:
+                    m2 = re.findall('^/[0-9]+', self.url)
+                    if len(m2) == 1 and m2[0] == self.url:
+                        self.id = int(m2[0][1:])
+                        self.type = "frontend"
+                        self.inttype = FRONTEND
+                    else:
+                        m3 = re.findall('[\?|\&]id=[0-9]*', self.url)
+                        if len(m3) == 1:
+                            self.id = int(m3[0][4:])
+                            self.type = "frontend"
+                            self.inttype = FRONTEND
 
             if self.id == 0:
                 return None
@@ -378,6 +391,8 @@ def readLogFiles(period, fname=None):
 
     list = []
     line_count = 0
+    time0 = time.time()
+    prog = re.compile("GET /[0-9]+ ")
     for file in files:
         print "reading logfile", file
         if os.path.exists(file):
@@ -387,7 +402,16 @@ def readLogFiles(period, fname=None):
                 if line_count % 50000 == 0:
                     print "reading log file: %d lines processed" % line_count
 
-                if "GET" in line and "id=" in line:
+                create_info = False
+                idx = line.find('GET /')
+                if idx > 0:
+                    if "id=" in line:
+                        create_info = True
+                    else:
+                        if prog.match(line[idx:]):
+                            create_info = True
+
+                if create_info:
                     info = LogItem(line)
                     if not info or (info and (info.getID() <= 0 or info.getID() > 10000000)):
                         continue
@@ -396,6 +420,8 @@ def readLogFiles(period, fname=None):
                         logitem_set.add(info.getID())
                     list.append(info)
 
+    time1 = time.time()
+    print time1 - time0
     sorted_list = sorted(list, key=lambda item: item.getID())
 
     logdata = sorted_list
@@ -477,7 +503,7 @@ def buildStatAll(collections, period="", fname=None):  # period format = yyyy-mm
     for collection in collections:
         print collection
         in_logitem_set = False
-        items = collection.all_children
+        items = [collection] + collection.all_children.all()
         ids_set = Set()
         for item in items:
             ids_set.add(item.id)
@@ -508,6 +534,8 @@ def buildStatAll(collections, period="", fname=None):  # period format = yyyy-mm
                             collection_ids[last_collection] = CollectionId(ids_set, db.query(Node).get(last_collection))
                     in_logitem_set = False
                     ids_set = Set()
+                    # add also collection itself
+                    ids_set.add(collection)
                 ids_set.add(id)
                 if id in logitem_set:
                     in_logitem_set = True
@@ -621,7 +649,6 @@ def buildStatAll(collections, period="", fname=None):  # period format = yyyy-mm
                 statfile = importFile(file.split("/")[-1], file)
                 if statfile:
                     statfile.filetype = "statistic"
-                    # collection.addFile(statfile)
                     col_id.collection.files.append(statfile)
                     db.session.commit()
 

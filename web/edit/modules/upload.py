@@ -33,6 +33,7 @@ import json
 
 from web.edit.edit_common import showdir, showoperations
 from web.edit.edit import getTreeLabel
+from utils.url import build_url_from_path_and_params
 from utils.utils import join_paths, getMimeType, funcname, get_user_id, dec_entry_log
 from utils.fileutils import importFileToRealname, importFileRandom
 from schema.bibtex import importBibTeX, MissingMapping
@@ -568,7 +569,7 @@ def import_from_doi(identifier, importdir, req=None):
     def handle_error(req, error_msgstr):
         if req:
             errormsg = translation_t(req, error_msgstr)
-            req.request["Location"] = req.makeLink("content", {"id": importdir.id, "error": errormsg})
+            req.request["Location"] = build_url_from_path_and_params("content", {"id": importdir.id, "error": errormsg})
             req.params["error"] = errormsg
 
     import schema.citeproc as citeproc

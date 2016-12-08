@@ -36,6 +36,7 @@ RCS_ID = '$Id: athana.py,v 1.48 2013/02/28 07:28:19 seiferta Exp $'
 
 import re
 import string
+from warnings import warn
 
 from functools import partial
 from itertools import chain
@@ -1105,6 +1106,7 @@ class http_request(object):
         self.reply_code = status
 
     def makeLink(self, page, params=None):
+        warn("use utils.url.build_url_from_path_and_params instead", DeprecationWarning)
         query = ""
         if params is not None:
             first = 1
@@ -1113,7 +1115,7 @@ class http_request(object):
                     query += "?"
                 else:
                     query += "&"
-                query += "{}={}".format(urllib.quote(k), urllib.quote(unicode(v)))
+                query += "{}={}".format(urllib.quote(k), urllib.quote(unicode(v).encode('utf8')))
                 first = 0
         return "{}{}".format(page, query)
 

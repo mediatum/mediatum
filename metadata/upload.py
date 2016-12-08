@@ -196,7 +196,7 @@ class m_upload(Metatype):
               [
                   ("upload_popup_title", "MDT-m_upload"),
                   ("fieldtype_upload", "MDT-m_upload Feld"),
-                  ("fieldtype_text_desc", "Feld MDT-m_upload"),
+                  ("fieldtype_upload_desc", "Feld MDT-m_upload"),
                   ("upload_titlepopupbutton", u"MDT-m_upload öffnen"),
                   ("upload_done", u"Übernehmen"),
                   ("upload_filelist_loc", "Link"),
@@ -211,7 +211,7 @@ class m_upload(Metatype):
               [
                   ("upload_popup_title", "MDT-m_upload"),
                   ("fieldtype_upload", "MDT-m_upload field"),
-                  ("fieldtype_text_desc", "field for MDT-m_upload"),
+                  ("fieldtype_upload_desc", "field for MDT-m_upload"),
                   ("upload_titlepopupbutton", "open MDT-m_upload"),
                   ("upload_done", "Done"),
                   ("upload_filelist_loc", "Link"),

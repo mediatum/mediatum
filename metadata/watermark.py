@@ -186,7 +186,7 @@ class m_watermark(Metatype):
     labels = {"de":
               [
                   ("fieldtype_watermark", "Wasserzeichen"),
-                  ("fieldtye_watermark_desc", u"Wasserzeichen für Bilder")
+                  ("fieldtype_watermark_desc", u"Wasserzeichen für Bilder")
               ],
               "en":
               [

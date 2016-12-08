@@ -97,8 +97,8 @@ class m_hlist(Metatype):
               ],
               "en":
               [
-                  ("fieldtype_hlist", "Hierarchical list"),
-                  ("fieldtype_hlist_desc", "Hierarchical list from attributes"),
+                  ("fieldtype_hlist", "hierarchical list"),
+                  ("fieldtype_hlist_desc", "hierarchical list from attributes"),
                   ("hlist_edit_parentnodes", "Base node:"),
                   ("hlist_edit_attrname", "Attribute name:"),
                   ("hlist_edit_onlylast", "Show only child:")

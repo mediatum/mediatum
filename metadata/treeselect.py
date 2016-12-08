@@ -80,7 +80,7 @@ class m_treeselect(Metatype):
               [
                   ("treeselect_popup_title", "Knotenauswahl"),
                   ("fieldtype_treeselect", "Knotenauswahlfeld"),
-                  ("fieldtype_text_desc", "Feld zur Knotenauswahl"),
+                  ("fieldtype_treeselect_desc", "Feld zur Knotenauswahl mit Hilfe eins Baumes"),
                   ("treeselect_titlepopupbutton", u"Knotenauswahl öffnen"),
                   ("treeselect_done", u"Übernehmen"),
               ],
@@ -88,7 +88,7 @@ class m_treeselect(Metatype):
               [
                   ("treeselect_popup_title", "Node selection"),
                   ("fieldtype_treeselect", "node selection field"),
-                  ("fieldtype_text_desc", "field for node selection"),
+                  ("fieldtype_treeselect_desc", "field for node selection using a tree"),
                   ("treeselect_titlepopupbutton", "open node selection"),
                   ("treeselect_done", "Done"),
               ]

@@ -90,7 +90,7 @@ class m_password(Metatype):
               [
                   ("password_popup_title", u"Eingabemaske für Passwort"),
                   ("fieldtype_password", "Passwortfeld"),
-                  ("fieldtype_password_desc", "PasswordTexteingabefeld"),
+                  ("fieldtype_password_desc", "Password Texteingabefeld"),
                   ("password_titlepopupbutton", u"Editiermaske öffnen"),
                   ("password_valuelabel", "Wert:"),
                   ("password_done", u"Übernehmen"),

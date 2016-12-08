@@ -5,7 +5,7 @@ msgid "edit_meta_info2"
 msgstr "Attention, objects with different meta data types were selected! Only objects of type <b>'${n}'</b> will be considered."
 
 msgid "edit_meta_info3"
-msgstr "Simultaneously editing metadata for multiple documents is currently not supported"
+msgstr "Simultaneously editing of metadata is only possible for documents with the same metadata schema"
 
 msgid "edit_meta_mask_selection"
 msgstr "Mask selection"

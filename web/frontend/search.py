@@ -38,7 +38,7 @@ logg = logging.getLogger(__name__)
 
 
 class NoSearchResult(ContentBase):
-    """This content class is used if no search results cannot be displayed.
+    """This content class is used if no search results can be displayed.
     Either the result was empty, or an error happened.
     In the error case, NoSearchResult.error is set to True.
     """
@@ -55,12 +55,19 @@ class NoSearchResult(ContentBase):
 
     @ensure_unicode_returned(name="searchresult:html")
     def html(self, req):
-        if self.error:
-            return req.getTAL(webconfig.theme.getTemplate("searchresult.html"), {
-                              "query": self.query, "r": self, "container": self.container, "language": lang(req)}, macro="error")
+        language = lang(req)
+        context = {"language": language,
+                   "query": self.query,
+                   "container": self.container.getLabel(language),
+                   "container_url": node_url(self.container.id)
+                  }
 
-        return req.getTAL(webconfig.theme.getTemplate("searchresult.html"), {
-                          "query": self.query, "r": self, "container": self.container, "language": lang(req)}, macro="noresult")
+        theme = webconfig.theme
+        if self.error:
+            html = theme.render_template("search_error.j2.jade", context)
+        else:
+            html = theme.render_template("search_noresult.j2.jade", context)
+        return html
 
 
 def protect(s):
@@ -88,7 +95,7 @@ def search(searchtype, searchquery, readable_query, paths, req):
     try:
         content_list.feedback(req)
     except Exception as e:
-        # that should not happen, but it somewhat likely (db failures, illegal search queries that slipped through...),
+        # that should not happen, but is somewhat likely (db failures, illegal search queries that slipped through...),
         # just show 0 result view and don't confuse the user with unhelpful error messages ;)
         logg.exception("exception executing %(searchtype)s search for query %(readable_query)s",
                        dict(searchtype=searchtype, readable_query=readable_query, error=True))

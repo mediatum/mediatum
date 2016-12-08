@@ -1,0 +1,19 @@
+if language == 'de'
+    h2 Fehler in Suchanfrage
+    br
+    p
+        | Der Suchbegriff&nbsp;
+        b= query
+        |  ergab einen Fehler bei Ausführung der Suche.
+
+    p Bitte ändern Sie Ihren Suchbegriff und starten Sie die Suche erneut.
+
+else
+    h2 Error in Search query
+    br
+    p
+        | Your query&nbsp;
+        b= query
+        |  resulted in an error during execution.
+
+    p Please try a different search query and start a new search.

@@ -1,0 +1,78 @@
+if language == 'de'
+  h2 Keine Suchergebnisse
+  p
+    | Für Ihre Suchanfrage "
+    b= query
+    | " wurden keine Ergebnisse gefunden.
+  h2 Gesucht wurde in:
+  ul(type='square')
+    li
+      a(href=container_url)= container
+
+  h2 Allgemeine Tipps zur Suche:
+  ol(type='square')
+    li
+      | Probieren Sie verschiedene Suchbegriffe aus. Überlegen Sie sich Synonyme für die von Ihnen
+      | verwendeten Suchanfragen.
+      br
+      | Verwenden Sie weniger Stichwörter auf einmal.
+    li
+      | Mit&nbsp;
+      em Begr*
+      |  können Sie nach allen Begriffen suchen, die mit&nbsp;
+      em Begr
+      |  beginnen.
+      |  Suchbegriffe dürfen nicht mit einem Stern (
+      em *
+      | ) beginnen und werden nach dem ersten Stern abgeschnitten.
+    li
+      | Benutzen Sie den Browsingbaum auf der linken Seite, um nach Dokumenten und Bildern zu browsen, statt
+      | einer speziellen Suche.
+    li
+      | Vermeiden Sie als Suchbegriffe Bindewörter (und, oder) und bestimmte Artikel
+      | (der, die, das).
+    li
+      | Wenn Sie eine Auswahl aus einer Auswahlliste getroffen haben, die durch eine Zahl (z.B.: foobar (9))
+      | gekennzeichnet ist, so kann es sein, daß Sie trotzdem keine Resultate erhalten, weil Sie nicht
+      | die Berechtigung haben, all diese Objekte zu sehen, oder weil die Objekte noch nicht eingeordnet
+      | sind.
+    li
+      | Probieren Sie eine Volltextsuche. Manche spezielle Suchbegriffe tauchen in den Metadaten bzw. in
+      | der Zusammenfassung noch nicht auf, sondern erst im Dokument selber.
+
+else
+  h2 No search results
+  p
+    | For your query "
+    b= query
+    | " no results were found.
+  h2 The following has been searched:
+  ul(type='square')
+    li
+      a(href=container_url)= container
+
+  h2 Search Tips:
+  ol(type='square')
+    li
+      | Try different search queries. Try synonyms. Reduce the number of words in your query.
+    li
+      | Use&nbsp;
+      em Wor*
+      |  to search for all words that start with&nbsp;
+      em Wor
+      |.
+      |  Search terms may not begin with a star (
+      em *
+      | ) and are cut off after the first star.
+    li
+      | Use the browing tree on the left side to browse for documents and images, instead of using
+      | a search.
+    li
+      | Don't use common words (like and, or, the, a, of, etc.)
+    li
+      | If you selected a value from a dropdown list, marked by an occurence number (e.g. foobar (9)),
+      | you might still not receive any queries for it if you don't have the necessary permissions
+      | to view those objects.
+    li
+      | Try a fulltext search. Some search words don't occur in the metadata, only in the document
+      | itself.

@@ -22,14 +22,14 @@
     <tal:block tal:condition="python:language=='de'">
     <br/>
     <h2>Keine Resultate</h2>
-    <p>Ihr(e) Suchbegriff(e) "<em tal:content="structure query"/>" wurde(n) leider nicht gefunden.</p>
+    <p>Ihr(e) Suchbegriff(e) "<em tal:content="text query"/>" wurde(n) leider nicht gefunden.</p>
 
-    <h2>Gesucht wurde in folgenden Kollektionen:</h2>
-    <ol type="square">
-        <li tal:repeat="col python:collections">
-            <a tal:content="python:col.getName()" tal:attributes="href python:node_url(col.id)"/>
+    <h2>Gesucht wurde in:</h2>
+    <ul type="square">
+        <li>
+            <a tal:content="python:container.getLabel('de')" tal:attributes="href python:node_url(container.id)"/>
         </li>
-    </ol>
+    </ul>
 
     <br/>
     <h2>Allgemeine Tipps zur Suche:</h2>
@@ -37,6 +37,11 @@
     <ol type="square">
     <li>Probieren Sie verschiedene Suchbegriffe aus. &Uuml;berlegen Sie sich Synonyme f&uuml;r die von Ihnen
     verwendeten Suchanfragen. <br>Verwenden Sie weniger Stichw&ouml;rter auf einmal.
+    </li>
+
+    <li>
+    Mit <em>Begr*</em> können Sie nach allen Begriffen suchen, die mit <em>Begr</em> beginnen.
+    Suchbegriffe dürfen nicht mit einem Stern (<em>*</em>) beginnen und werden nach dem ersten Stern abgeschnitten.
     </li>
 
     <li>
@@ -67,20 +72,25 @@
     <tal:block tal:condition="python:language=='en'">
     <br/>
     <h2>No Search results</h2>
-    <p>No result(s) for your query "<em tal:content="structure python:query.replace('<', '&lsaquo;').replace('>', '&rsaquo;')"/>".</p>
+    <p>No result(s) for your query "<em tal:content="text query"/>".</p>
 
-    <h2>The following collections have been searched:</h2>
-    <ol type="square">
-        <li tal:repeat="col python:collections">
-            <a tal:content="python:col.getName()" tal:attributes="href python:node_url(col.id)"/>
+    <h2>The following has been searched:</h2>
+    <ul type="square">
+        <li>
+            <a tal:content="python:container.getLabel('en')" tal:attributes="href python:node_url(container.id)"/>
         </li>
-    </ol>
+    </ul>
 
     <br/>
     <h2>Search Tips:</h2>
 
     <ol type="square">
     <li>Try different search queries. Try synonyms. Reduce the number of words in your query.
+    </li>
+
+    <li>
+    Use <em>Wor*</em> to search for all words that start with <em>Wor</em>.
+    Search terms may not begin with a star (<em>*</em>) and are cut off after the first star.
     </li>
 
     <li>
@@ -105,38 +115,4 @@
 
     </ol>
     </tal:block>
-</tal:block>
-
-
-<!-- search results in more than 1 collections -->
-<tal:block metal:define-macro="listcollections">
-    <div>
-        <br/>
-        <p i18n:translate="search_result_header">
-            TEXT"<b tal:content="structure query" i18n:name="searchstring"/>" TEXT
-        </p>
-        <table cellspacing="5px" cellpadding="5px">
-            <tr tal:repeat="coll python:reslist">
-                <td>
-                    &raquo;
-                </td>
-                <td>
-                    <a tal:content="python:coll.collection.name" tal:attributes="href python:r.getLink(coll.collection)"/>
-                </td>
-                <td style="text-align:right">
-                    <span tal:replace="python:unicode(coll.length())"/>
-                </td>
-                <td i18n:translate="search_hit">
-                    TEXT
-                </td>
-            </tr>
-        </table>
-        <br/>
-        <h2 i18n:translate="search_result_text">TEXT</h2>
-        <ol type="square">
-            <li tal:repeat="col python:collections">
-                <a tal:content="python:col.getName()" tal:attributes="href python:node_url(col.id)"/>
-            </li>
-        </ol>
-    </div>
 </tal:block>

@@ -851,6 +851,7 @@
           <p tal:content="structure python:identifier_importers[0].get('labels', {}).get(language, {}).get('identifier_importer_explain', 'identifier_importer_explain')">TEXT</p>
           <input type="hidden" name="identifier_importer" id="identifier_importer" tal:attributes="value python:identifier_importers[0].name"/>
           <input id="input_identifier" type="text" name="input_identifier" style="width:362px" />
+          <input id="dummy" type="text" name="" disabled style="display:none"/>
           <p style="text-align:center;min-height:40px">
               <button type="button" id="buttoncreate3" onclick="createObjectFromIdentifier()" style="min-width:200px;padding:4px;" i18n:translate="edit_upload_create_object">TEXT</button>
           </p>

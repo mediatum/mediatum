@@ -1,0 +1,12 @@
+each file in files
+  .preview(onmouseover="this.style.backgroundColor='#cccccc'", onmouseout="this.style.backgroundColor='white'")
+    if file.attachment
+      div(style='position:absolute; right:25px; top:5px; overflow:hidden')
+        img(title=_t('view_list_att_title'), src='/img/attach.png')
+    a(href=file.getLink())
+      div(style='float:left; margin: 3px;position:absolute')
+        = file.image
+      div(style='margin-left:132px; position: absolute')
+        p(style='padding-top:5px')
+          = file.text
+.break

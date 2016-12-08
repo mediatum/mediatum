@@ -1,0 +1,13 @@
+each file in files
+  .preview_list(onmouseover="this.style.backgroundColor='#cccccc'", onmouseout="this.style.backgroundColor='white'")
+    a(href=file.getLink(), style='margin-left:0px')
+      div(style='float:left; width:128px; height:128px; margin: 3px;overflow:hide')
+        = file.image
+      div(style='padding-top:5px')
+        span(style='white-space:normal; padding-top:10px')
+          = file.text
+    if file.attachment
+      div(style='position:absolute; right:25px; top:5px; overflow:hidden;')
+        img(title=_t('view_list_att_title'), src='/img/attach.png')
+    .break
+      = ''

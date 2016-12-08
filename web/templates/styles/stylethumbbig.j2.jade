@@ -1,0 +1,15 @@
+each file in files
+  .preview(style='width:260px; height:260px', onmouseover="this.style.backgroundColor='#cccccc'", onmouseout="this.style.backgroundColor='white'")
+    if file.attachment
+      div(style='position:absolute; right:25px; top:3px; overflow:hidden')
+        img(title=_t('view_list_att_title'), src='/img/attach.png')
+    a(href=file.getLink(), target='_parent')
+      div(style='text-align:center;width:253px;height:240px;margin:3px;padding-top:12px;margin-bottom:2px;overflow:hidden')
+        if (file.node.get('width') or 0) > (file.node.get('height') or 0)
+          img.thumbnail(src='/thumb2/{}'.format(file.node.id), style='width:250px;margin-top:10px', border='0')
+        if (file.node.get('width') or 0) < (file.node.get('height') or 0)
+          img.thumbnail(src='/thumb2/{}'.format(file.node.id), style='height:240px', border='0')
+        if file.node.get('width') == file.node.get('height')
+          p(style='text-align:left;margin-top:30px;margin-left:50px')
+            = file.text
+.break

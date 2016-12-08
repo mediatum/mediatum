@@ -183,9 +183,12 @@ class ListStyle(object):
     nodes_per_page = attr.ib(default=10, convert=int)
 
     def render_template(self, req, context):
-        template_path = os.path.join(self.path, self.template)
-        return tal.getTAL(template_path, context, request=req)
-
+        if self.template.endswith((".j2.jade", ".j2.html")):
+            template_path = os.path.join("styles", self.template)
+            return render_template(template_path, **context)
+        else:
+            template_path = os.path.join(self.path, self.template)
+            return tal.getTAL(template_path, context, request=req)
 
 def readStyleConfig(filename):
     attrs = {}

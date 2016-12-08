@@ -327,6 +327,7 @@ def importBibTeX(infile, node=None, req=None):
             datefields = {}
             if mytype not in bibtextypes:
                 logg.error("bibtex mapping of bibtex type '%s' not defined - import stopped", mytype)
+                msg = "bibtex mapping of bibtex type '%s' not defined - import stopped" % mytype
                 raise MissingMapping(msg)
             result += [(mytype.lower(), fields)]
 

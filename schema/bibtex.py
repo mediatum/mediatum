@@ -251,6 +251,9 @@ def _bibteximport_customize(record):
     for key in ("author", "editor"):
         if key in record:
             record[key] = ";".join(", ".join(n for n in name.split(", ") if n.strip()) for name in record[key])
+    for key in ("title", "booktitle"):
+        if key in record:
+            record[key] = record[key].replace('\n', ' ')
     return record
 
 

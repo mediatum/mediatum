@@ -92,11 +92,8 @@
 
         <a id="id_a_openplupload" href="#" onclick="openUploadFormPluploadWidget()" style="border:1px solid silver;padding:5px;height:40px;display:block;float:left;margin-right:5px"><img src="/img/upload.png"/> <tal:block i18n:translate="edit_upload_files_plupload_widget"/></a>
 
-        <tal:block tal:condition="python:len(schemes)>1 and len(datatypes)>=1">
+        <tal:block tal:condition="python:len(schemes)>=1 and len(datatypes)>=1">
             <a href="#" onclick="openMetaForm()" style="border:1px solid silver;padding:5px;height:40px;display:block;float:left"><img src="/img/upload.png"/> <tal:block i18n:translate="edit_upload_meta"/></a>
-        </tal:block>
-        <tal:block tal:condition="python:len(schemes)==1 and len(datatypes)==1">
-            <a href="#" tal:attributes="onclick python:u'createMetaObject(\'{}\',\'{}\')'.format(datatypes[0].name, schemes[0].name)" style="border:1px solid silver;padding:5px;height:40px;display:block;float:left"><img src="/img/upload.png"/> <tal:block i18n:translate="edit_upload_meta"/></a>
         </tal:block>
     </div>
 

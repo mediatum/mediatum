@@ -174,6 +174,7 @@ class PostgresSQLAConnector(object):
         self.socketdir = socketdir
         self.connectstr = CONNECTSTR_TEMPLATE_TEST_DB.format(**self.__dict__)
         self.pool_size = 5
+        self.slow_query_seconds = 0.2
         logg.info("using test database connection string: %s", self.connectstr)
 
     def _setup_slow_query_logging(self):

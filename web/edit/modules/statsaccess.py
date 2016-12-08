@@ -671,10 +671,8 @@ class StatsAccessPDF:
         return template.canv._doc.GetPDFData(template.canv)
 
 
-def getPrintView(req):
-    p = req.params.get("period")
-    id = req.path.split("/")[2]
-    node = q(Node).get(id)
+def getPrintView(nid, p, req):
+    node = q(Node).get(nid)
     for f in node.files:
         if f.filetype == "statistic":
             period, type = getPeriod(f.abspath)
@@ -682,5 +680,5 @@ def getPrintView(req):
                 data = StatisticFile(f)
 
     if data:
-        pdf = StatsAccessPDF(data, p.split("_")[1], id, lang(req))
+        pdf = StatsAccessPDF(data, p.split("_")[1], nid, lang(req))
         return pdf.build()

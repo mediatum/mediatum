@@ -18,6 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
+import re
 
 from schema.schema import getMetadataType
 from lib.pdf import printview
@@ -31,6 +32,7 @@ from core import Node
 from contenttypes import Container
 from utils.pathutils import getPaths
 from utils import userinput
+from core.transition import httpstatus
 
 #
 # execute fullsize method from node-type
@@ -105,169 +107,137 @@ def getPrintChildren(req, node, ret):
     return ret
 
 
+RE_PRINT_URL = re.compile("/print/(\d+).pdf")
+
+
+def redirect_old_printview(req):
+    req.reply_headers["Location"] = req.path + ".pdf"
+    return httpstatus.HTTP_TEMPORARY_REDIRECT
+
+
 def show_printview(req):
-    from web.edit.edit import printmethod
-    """ create a pdf preview of given node (id in path e.g. /print/[id]/[area])"""
-    p = req.path[1:].split("/")
-    try:
-        nodeid = int(p[1])
-    except ValueError:
-        raise ValueError("Invalid Printview URL: " + req.path)
+    """ create a pdf preview of given node (id in path e.g. /print/[id].pdf)"""
+    match = RE_PRINT_URL.match(req.path)
+    nodeid = int(match.group(1))
 
-    if len(p) == 3:
-        if p[2] == "edit":
-            req.reply_headers['Content-Type'] = "application/pdf"
-            editprint = printmethod(req)
-            if editprint:
-                req.write(editprint)
+    node = q(Node).get(nodeid)
+    if node.system_attrs.get("print") == "0" or not node.has_read_access():
+        return 404
+
+    style = int(req.params.get("style", 2))
+
+    # nodetype
+    mtype = node.metadatatype
+
+    mask = None
+    metadata = None
+    if mtype:
+        for m in mtype.getMasks():
+            if m.getMasktype() == "fullview":
+                mask = m
+            if m.getMasktype() == "printview":
+                mask = m
+                break
+
+        if not mask:
+            mask = mtype.getMask("nodebig")
+
+        if mask:
+            metadata = mask.getViewHTML([node], VIEW_DATA_ONLY + VIEW_HIDE_EMPTY)
+
+    if not metadata:
+        metadata = [['nodename', node.getName(), 'Name', 'text']]
+
+    # XXX: use scalar() after duplicate cleanup
+    presentation_file = node.files.filter_by(filetype=u"presentation").first()
+    imagepath = presentation_file.abspath if presentation_file is not None else None
+
+    # children
+    children = []
+    if isinstance(node, Container):
+        ret = []
+        getPrintChildren(req, node, ret)
+
+        for c in ret:
+            if not isinstance(c, Container):
+                # items
+                c_mtype = c.metadatatype
+                c_mask = c_mtype.getMask("printlist")
+                if not c_mask:
+                    c_mask = c_mtype.getMask("nodesmall")
+                _c = c_mask.getViewHTML([c], VIEW_DATA_ONLY)
+                if len(_c) > 0:
+                    children.append(_c)
             else:
-                req.write("")
-            return
+                # header
+                items = getPaths(c)
+                p = []
+                for item in items[0]:
+                    p.append(item.getName())
+                p.append(c.getName())
+                children.append([(c.id, " > ".join(p[1:]), c.getName(), "header")])
 
-    # use objects from session
-    if unicode(nodeid) == "0":
-        children = []
-        content_area = ContentArea()
-        # XXX: doesn't work anymore
-        try:
-            nodes = content_area.content.files
-        except:
-            c = content_area.content
-            nodes = c.resultlist[c.active].files
-        # XXX: why don't we use the mask cache here? This is wildy inefficient for many nodes!        
-        for n in nodes:
-            c_mtype = n.metadatatype
-            c_mask = c_mtype.getMask("printlist")
-            if not c_mask:
-                c_mask = c_mtype.getMask("nodesmall")
-            _c = c_mask.getViewHTML([n], VIEW_DATA_ONLY + VIEW_HIDE_EMPTY)
-            if len(_c) > 0:
-                children.append(_c)
+        if len(children) > 1:
+            col = []
+            order = []
+            try:
+                sort = getCollection(node).get("sortfield")
+            except:
+                logg.exception("exception in show_printview, getting sortfield failed, setting sort = \"\"")
+                sort = ""
 
-        req.reply_headers['Content-Type'] = "application/pdf"
-        req.write(printview.getPrintView(lang(req), None, [["", "", t(lang(req), "")]], [], 3, children))
+            for i in range(0, 2):
+                col.append((0, ""))
+                order.append(1)
+                if req.params.get("sortfield" + str(i)) != "":
+                    sort = req.params.get("sortfield" + unicode(i), sort)
 
-    else:
-        node = q(Node).get(nodeid)
-        if node.get("system.print") == "0":
-            return 404
-        if not node.has_read_access():
-            req.write(t(req, "permission_denied"))
-            return
+                if sort != "":
+                    if sort.startswith("-"):
+                        sort = sort[1:]
+                        order[i] = -1
+                    _i = 0
+                    for c in children[0]:
+                        if c[0] == sort:
+                            col[i] = (_i, sort)
+                        _i += 1
+                if col[i][1] == "":
+                    col[i] = (0, children[0][0][0])
 
-        style = int(req.params.get("style", 2))
+            # sort method for items
+            def myCmp(x, y, col, order):
+                cx = ""
+                cy = ""
+                for item in x:
+                    if item[0] == col[0][1]:
+                        cx = item[1]
+                        break
+                for item in y:
+                    if item[0] == col[0][1]:
+                        cy = item[1]
+                        break
+                if cx.lower() > cy.lower():
+                    return 1 * order[0]
+                return -1 * order[0]
 
-        # nodetype
-        mtype = node.metadatatype
-
-        mask = None
-        metadata = None
-        if mtype:
-            for m in mtype.getMasks():
-                if m.getMasktype() == "fullview":
-                    mask = m
-                if m.getMasktype() == "printview":
-                    mask = m
-                    break
-
-            if not mask:
-                mask = mtype.getMask("nodebig")
-
-            if mask:
-                metadata = mask.getViewHTML([node], VIEW_DATA_ONLY + VIEW_HIDE_EMPTY)
-
-        if not metadata:
-            metadata = [['nodename', node.getName(), 'Name', 'text']]
-
-        # XXX: use scalar() after duplicate cleanup
-        presentation_file = node.files.filter_by(filetype=u"presentation").first()
-        imagepath = presentation_file.abspath if presentation_file is not None else None
-
-        # children
-        children = []
-        if isinstance(node, Container):
-            ret = []
-            getPrintChildren(req, node, ret)
-
-            for c in ret:
-                if not isinstance(c, Container):
-                    # items
-                    c_mtype = c.metadatatype
-                    c_mask = c_mtype.getMask("printlist")
-                    if not c_mask:
-                        c_mask = c_mtype.getMask("nodesmall")
-                    _c = c_mask.getViewHTML([c], VIEW_DATA_ONLY)
-                    if len(_c) > 0:
-                        children.append(_c)
+            sorted_children = []
+            tmp = []
+            for item in children:
+                if item[0][3] == "header":
+                    if len(tmp) > 0:
+                        tmp.sort(lambda x, y: myCmp(x, y, col, order))
+                        sorted_children.extend(tmp)
+                    tmp = []
+                    sorted_children.append(item)
                 else:
-                    # header
-                    items = getPaths(c)
-                    p = []
-                    for item in items[0]:
-                        p.append(item.getName())
-                    p.append(c.getName())
-                    children.append([(c.id, " > ".join(p[1:]), c.getName(), "header")])
+                    tmp.append(item)
+            tmp.sort(lambda x, y: myCmp(x, y, col, order))
+            sorted_children.extend(tmp)
+            children = sorted_children
 
-            if len(children) > 1:
-                col = []
-                order = []
-                try:
-                    sort = getCollection(node).get("sortfield")
-                except:
-                    logg.exception("exception in show_printview, getting sortfield failed, setting sort = \"\"")
-                    sort = ""
-
-                for i in range(0, 2):
-                    col.append((0, ""))
-                    order.append(1)
-                    if req.params.get("sortfield" + ustr(i)) != "":
-                        sort = req.params.get("sortfield" + unicode(i), sort)
-
-                    if sort != "":
-                        if sort.startswith("-"):
-                            sort = sort[1:]
-                            order[i] = -1
-                        _i = 0
-                        for c in children[0]:
-                            if c[0] == sort:
-                                col[i] = (_i, sort)
-                            _i += 1
-                    if col[i][1] == "":
-                        col[i] = (0, children[0][0][0])
-
-                # sort method for items
-                def myCmp(x, y, col, order):
-                    cx = ""
-                    cy = ""
-                    for item in x:
-                        if item[0] == col[0][1]:
-                            cx = item[1]
-                            break
-                    for item in y:
-                        if item[0] == col[0][1]:
-                            cy = item[1]
-                            break
-                    if cx.lower() > cy.lower():
-                        return 1 * order[0]
-                    return -1 * order[0]
-
-                sorted_children = []
-                tmp = []
-                for item in children:
-                    if item[0][3] == "header":
-                        if len(tmp) > 0:
-                            tmp.sort(lambda x, y: myCmp(x, y, col, order))
-                            sorted_children.extend(tmp)
-                        tmp = []
-                        sorted_children.append(item)
-                    else:
-                        tmp.append(item)
-                tmp.sort(lambda x, y: myCmp(x, y, col, order))
-                sorted_children.extend(tmp)
-                children = sorted_children
-
-        req.reply_headers['Content-Type'] = "application/pdf"
-        req.write(printview.getPrintView(lang(req), imagepath, metadata, getPaths(node), style, children, getCollection(node)))
+    req.reply_headers['Content-Type'] = "application/pdf"
+    req.reply_headers['Content-Disposition'] = u'inline; filename="{}_printview.pdf"'.format(node.id)
+    req.write(printview.getPrintView(lang(req), imagepath, metadata, getPaths(node), style, children, getCollection(node)))
 
 
 # use popup method of  metadatatype

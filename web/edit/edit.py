@@ -19,6 +19,7 @@
 """
 import sys
 import os
+import re
 import time
 import json
 import core.config as config
@@ -916,8 +917,21 @@ def content(req):
         return req.writeTAL("web/edit/edit.html", v, macro="frame_content")
 
 
-def printmethod(req):
-    getEditModules()
-    if req.params.get("module") in editModules.keys():
-        mod = editModules[req.params.get("module")]
-        return mod.getPrintView(req)
+RE_EDIT_PRINT_URL = re.compile("/print/(\d+)_([a-z]+)(?:_(.+)?)?\.pdf")
+
+
+def edit_print(req):
+    edit_modules = getEditModules()
+    match = RE_EDIT_PRINT_URL.match(req.path)
+    nid = int(match.group(1))
+    module_name = match.group(2)
+    mod = edit_modules.get(module_name)
+    
+    if not mod:
+        return 400
+        
+    additional_data = match.group(3)
+    print_content = mod.getPrintView(nid, additional_data, req)
+    req.reply_headers['Content-Type'] = "application/pdf"
+    req.reply_headers['Content-Disposition'] = u'inline; filename="{}_{}_{}.pdf"'.format(nid, module_name, additional_data)
+    req.write(print_content)

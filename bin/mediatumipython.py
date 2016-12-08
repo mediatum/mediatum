@@ -353,7 +353,7 @@ def file_info_producer(node):
                                     a.mimetype,
                                     a.path,
                                     humanize.filesize.naturalsize(a.size) if a.exists else "missing!")
-            for a in sorted(node.files, key=lambda f: (f.filetype, f.mimetype))]
+            for a in sorted(node.files, key=lambda f: (f.filetype, f.mimetype, f.path))]
 
 
 INFO_PRODUCERS = OrderedDict([

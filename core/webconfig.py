@@ -197,7 +197,8 @@ def initContexts():
     file.addHandler("show_attachmentbrowser").addPattern("/attachmentbrowser")
     
     if config.getboolean("config.enable_printing"):
-        file.addHandler("show_printview").addPattern("/print/.*")
+        file.addHandler("show_printview").addPattern("/print/\d+\.pdf")
+        file.addHandler("redirect_old_printview").addPattern("/print/.*")
 
     file = context.addFile("web/frontend/login.py")
     file.addHandler("login").addPattern("/login")
@@ -222,6 +223,7 @@ def initContexts():
     handler = file.addHandler("frameset")
     handler.addPattern("/")
     handler.addPattern("/edit")
+    file.addHandler("edit_print").addPattern("/print/\d+_.+\.pdf")
     # file.addHandler("showtree").addPattern("/edit_tree")
     file.addHandler("edit_tree").addPattern("/treedata")
     file.addHandler("error").addPattern("/edit_error")

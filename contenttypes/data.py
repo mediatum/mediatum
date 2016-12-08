@@ -34,6 +34,7 @@ from schema.schema import getMetadataType, VIEW_HIDE_EMPTY, SchemaMixin
 from utils.utils import highlight
 from core.transition.globals import request
 from utils.compat import iteritems
+from markupsafe import Markup
 
 logg = logging.getLogger(__name__)
 
@@ -400,7 +401,7 @@ def prepare_node_data(node, req):
         "old_version_alert_html": "",
         "deleted_version_alert_html": "",
         "children_html": "",
-        "metadata": _get_node_metadata_html(node, req),
+        "metadata": Markup(_get_node_metadata_html(node, req)),
         "node": node,
         "path": req.args.get("path", "")
     }

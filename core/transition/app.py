@@ -173,7 +173,7 @@ class AthanaFlaskStyleApp(object):
         """
         if filename is None:
             return False
-        return filename.endswith(('.html', '.htm', '.xml', '.xhtml'))
+        return filename.endswith(('.html', '.htm', '.xml', '.xhtml', '.jade'))
 
     def create_jinja_environment(self):
         """

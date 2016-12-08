@@ -1,0 +1,27 @@
+#result-nav
+  table
+    tr
+      td(align='left', valign='top', nowrap='')
+        a(href=nav.link_first())
+          img(border='0', src='/img/pagestart.gif')
+        a(href=nav.link_prev())
+          img(border='0', src='/img/pageleft.gif')
+      td(width='100%', align='center')
+        a(href='javascript: history.back()')
+          = _t('back')
+        br
+        a(href=nav.link_back())
+          = _t('back_to_list_view_start')
+        br
+        a(href=nav.link_current_node())
+          = _t('direct_link_current_node')
+      td(align='right', valign='top', nowrap='')
+        a(href=nav.link_next())
+          img(border='0', src='/img/pageright.gif')
+        a(href=nav.link_last())
+          img(border='0', src='/img/pageend.gif')
+  br
+
+
+// generated from jade
+//- vim: set filetype=jade sw=2 ts=2 sts=2 expandtab:

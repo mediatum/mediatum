@@ -1,0 +1,16 @@
+#paths
+  b
+    = _t('occurences:')
+  br
+  for path in paths
+    ul
+      li
+        for step in path
+          a(href=node_url(step.id))
+            = step.getLabel()
+          if path.index(step)<path|length-1
+            img.breadcrumb-delimiter(src='../img/breadcrumb-arrow.gif')
+
+
+// generated from jade
+//- vim: set filetype=jade sw=2 ts=2 sts=2 expandtab:

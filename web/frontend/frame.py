@@ -22,6 +22,7 @@ from collections import OrderedDict
 from warnings import warn
 from dogpile.cache import make_region
 from sqlalchemy import event
+from markupsafe import Markup
 
 import core.config as config
 from core import db, Node
@@ -275,7 +276,7 @@ class NavTreeEntry(object):
                 return ""  # hides entry
 
             if self.show_childcount and self.count > 0:
-                return u"%s <small>(%s)</small>" % (self.node.getLabel(lang=self.lang), unicode(self.count))
+                return Markup(u"%s <small>(%s)</small>" % (self.node.getLabel(lang=self.lang), unicode(self.count)))
             else:
                 return self.node.getLabel(lang=self.lang)
 
@@ -443,7 +444,7 @@ class UserLinks(object):
         return build_url_from_path_and_params(self.path, params)
 
 
-def render_page(req, node, contentHTML, show_navbar=True):
+def render_page(req, node, content_html, show_navbar=True):
     """Renders the navigation frame with the inserted content HTML and returns the whole page.
     """
     user = current_user
@@ -464,7 +465,7 @@ def render_page(req, node, contentHTML, show_navbar=True):
         "actlang": language
     }
     frame_context = {
-        "content": contentHTML,
+        "content": Markup(content_html),
         "id": node.id,
         "language": front_lang,
         "show_navbar": show_navbar,
@@ -495,10 +496,10 @@ def render_page(req, node, contentHTML, show_navbar=True):
     }
     footer_html = theme.render_template("frame_footer.j2.jade", ctx_footer)
 
-    frame_context["search"] = search_html
-    frame_context["navtree"] = navtree_html
-    frame_context["header"] = header_html
-    frame_context["footer"] = footer_html
+    frame_context["search"] = Markup(search_html)
+    frame_context["navtree"] = Markup(navtree_html)
+    frame_context["header"] = Markup(header_html)
+    frame_context["footer"] = Markup(footer_html)
 
     html = theme.render_template("frame.j2.jade", frame_context)
 

@@ -26,7 +26,7 @@
                   option(value=searchmaskitem_id, selected=search.searchmaskitem_is_selected(pos, searchmaskitem_id))
                     = search.searchmaskitems[searchmaskitem_id]
             td
-              = search.getSearchField(pos)
+              = search.getSearchField(pos)|safe
         tr
           td
             small

@@ -1,102 +1,29 @@
-- macro page_nav_prev_next(nav, before, after)
-  #list-page-nav
-    if before
-      a.page-nav.page-nav-previous(href=nav.nav_link(before=before))
-        = _t('previous')
-    if after
-      a.page-nav.page-nav-next(href=nav.nav_link(after=after))
-        = _t('next')
+#portal-breadcrumbs
+  if logo and logo.getPath()
+    #collectionlogo
+      if logo.getURL()
+        a(href=logo.getURL(), target='_blank')
+          img(src=logo.getPath(), title=logo.getURL(), style='margin-left: 30px;')
+      else
+        img(src python:logo.getPath(), style='margin-left: 30px;')
+  div(style='text-align:right; float:right')
+    p
+      if styles|length > 1
+        for style in styles
+          a#view_switch(href=select_style_link(style=style.name), title=_t(style.label))
+            img(src='/img/{}'.format(style.icon))
+      if printlink
+        a#view_switch(target='_blank', href=printlink, rel="nofollow", title=_t("printpdf"))
+          img(src='/img/print_icon.gif')
+  if path
+    div(style='padding-bottom:20px')
+      for step in path
+        a(href=node_url(step.id))
+          = step.getLabel()
+        img.breadcrumb-delimiter(src='../img/breadcrumb-arrow.gif')
+      a(href=node_url(node.id))
+        = node.getLabel()
 
 
-- macro list_header(nav, sortfieldslist, page_nav, files, ids, op, query)
-  #portal-pages
-    form(style='padding:0px; margin:0px')
-      for param in nav.nav_params.items()
-        if not param[0].startswith('sortfield')
-          input(type='hidden',name=param[0], value=param[1])
-      table(cellspacing='0', cellpadding='0', style='padding:0px;margin:0px')
-        for i in range(sortfieldslist|length)
-          tr
-            td
-              if i==0
-                small
-                  = _t('sort_label')
-              else
-                small
-                  = _t('sort_label2')
-            td
-              select(name='sortfield{}'.format(i), style='font-size: 9px', onchange='submit()')
-                for field in sortfieldslist[i]
-                  option(value=field.getName(), selected=field.selected())
-                    = _t(field.getLabel())
-        tr
-    = page_nav
-
-
-- macro navheadline(nav)
-  #result-nav
-    table
-      tr
-        td(align='left', valign='top', nowrap='')
-          a(href=nav.link_first())
-            img(border='0', src='/img/pagestart.gif')
-          a(href=nav.link_prev())
-            img(border='0', src='/img/pageleft.gif')
-        td(width='100%', align='center')
-          a(href='javascript: history.back()')
-            = _t('back')
-          br
-          a(href=nav.link_back())
-            = _t('back_to_list_view_start')
-          br
-          a(href=nav.link_current_node())
-            = _t('direct_link_current_node')
-        td(align='right', valign='top', nowrap='')
-          a(href=nav.link_next())
-            img(border='0', src='/img/pageright.gif')
-          a(href=nav.link_last())
-            img(border='0', src='/img/pageend.gif')
-    br
-
-
-- macro paths(paths, language)
-  #paths
-    b
-      = _t('occurences:')
-    br
-    for path in paths
-      ul
-        li
-          for step in path
-            a(href=node_url(step.id))
-              = step.getLabel()
-            if path.index(step)<path|length-1
-              img.breadcrumb-delimiter(src='../img/breadcrumb-arrow.gif')
-
-
-- macro content_nav(path, styles, logo, select_style_link, node, printlink)
-  #portal-breadcrumbs
-    if logo and logo.getPath()
-      #collectionlogo
-        if logo.getURL()
-          a(href=logo.getURL(), target='_blank')
-            img(src=logo.getPath(), title=logo.getURL(), style='margin-left: 30px;')
-        else
-          img(src python:logo.getPath(), style='margin-left: 30px;')
-    div(style='text-align:right; float:right')
-      p
-        if styles|length > 1
-          for style in styles
-            a#view_switch(href=select_style_link(style=style.name), title=_t(style.label))
-              img(src='/img/{}'.format(style.icon))
-        if printlink
-          a#view_switch(target='_blank', href=printlink, rel="nofollow", title=_t("printpdf"))
-            img(src='/img/print_icon.gif')
-    if path
-      div(style='padding-bottom:20px')
-        for step in path
-          a(href=node_url(step.id))
-            = step.getLabel()
-          img.breadcrumb-delimiter(src='../img/breadcrumb-arrow.gif')
-        a(href=node_url(node.id))
-          = node.getLabel()
+// generated from jade
+//- vim: set filetype=jade sw=2 ts=2 sts=2 expandtab:

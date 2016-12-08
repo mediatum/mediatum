@@ -1,0 +1,11 @@
+#list-page-nav
+  if before
+    a.page-nav.page-nav-previous(href=nav.nav_link(before=before))
+      = _t('previous')
+  if after
+    a.page-nav.page-nav-next(href=nav.nav_link(after=after))
+      = _t('next')
+
+
+// generated from jade
+//- vim: set filetype=jade sw=2 ts=2 sts=2 expandtab:

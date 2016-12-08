@@ -1,0 +1,26 @@
+#portal-pages
+  form(style='padding:0px; margin:0px')
+    for param in nav.nav_params.items()
+      if not param[0].startswith('sortfield')
+        input(type='hidden',name=param[0], value=param[1])
+    table(cellspacing='0', cellpadding='0', style='padding:0px;margin:0px')
+      for i in range(sortfieldslist|length)
+        tr
+          td
+            if i==0
+              small
+                = _t('sort_label')
+            else
+              small
+                = _t('sort_label2')
+          td
+            select(name='sortfield{}'.format(i), style='font-size: 9px', onchange='submit()')
+              for field in sortfieldslist[i]
+                option(value=field.getName(), selected=field.selected())
+                  = _t(field.getLabel())
+      tr
+  = page_nav
+
+
+// generated from jade
+//- vim: set filetype=jade sw=2 ts=2 sts=2 expandtab:

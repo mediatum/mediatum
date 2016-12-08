@@ -39,6 +39,7 @@ import json
 from utils.pathutils import get_accessible_paths
 from web.frontend.contentbase import ContentBase
 from utils.url import build_url_from_path_and_params
+from markupsafe import Markup
 
 
 logg = logging.getLogger(__name__)
@@ -61,8 +62,8 @@ class SingleFile(object):
 
         self.attachment = attachment
         self.datatype = node
-        self.image = node.show_node_image()
-        self.text = node.show_node_text(separator=separator, language=language)
+        self.image = Markup(node.show_node_image())
+        self.text = Markup(node.show_node_text(separator=separator, language=language))
         self.thumbnail = self.image
         if fullstyle_name:
             link_params["style"] = fullstyle_name
@@ -583,7 +584,7 @@ class ContentList(ContentBase):
             sfile = SingleFile(n, nav_params, self.lang, self.default_fullstyle_name, self.liststyle.maskfield_separator)
             files.append(sfile)
 
-        page_nav = webconfig.theme.render_macro("content_nav.j2.jade", "page_nav_prev_next", ctx)
+        page_nav = webconfig.theme.render_template("content_nav_page_nav.j2.jade", ctx)
 
         return page_nav, files
 
@@ -592,41 +593,39 @@ class ContentList(ContentBase):
         # do we want to show a single result or the result list?
         if self.content:
             # render single result
-            headline = webconfig.theme.render_macro("content_nav.j2.jade", "navheadline", {"nav": self})
+            headline = webconfig.theme.render_template("content_nav_headline.j2.jade", {"nav": self})
             return headline + self.content.html(req)
 
         # render result list
 
         ctx = {
-            "page_nav": self.page_nav,
+            "page_nav": Markup(self.page_nav),
             "nav": self,
-            "files": self.files,
             "sortfieldslist": self.getSortFieldsList(),
-            "ids": ",".join(str(f.node.id) for f in self.files),
             "op": "", "query": req.args.get("query", "")}
 
-        filesHTML = webconfig.theme.render_macro("content_nav.j2.jade", "list_header", ctx)
+        content_nav_list_header_html = webconfig.theme.render_template("content_nav_list_header.j2.jade", ctx)
 
         # use template of style and build html content
         ctx = {"files": self.files, "op": "", "language": self.lang}
 
-        contentList = self.liststyle.render_template(req, ctx)
+        content_list_html = self.liststyle.render_template(req, ctx)
 
         if self.show_sidebar:
-            sidebar = u""  # check for sidebar
-            if self.collection.get(u"system.sidebar") != "":
-                for sb in [s for s in self.collection.get("system.sidebar").split(";") if s != ""]:
+            sidebar_html = u""  # check for sidebar_html
+            if self.collection.get(u"system.sidebar_html") != "":
+                for sb in [s for s in self.collection.get("system.sidebar_html").split(";") if s != ""]:
                     l, fn = sb.split(":")
                     if l == lang(req):
                         for f in [f for f in self.collection.getFiles() if fn.endswith(f.getName())]:
-                            sidebar = includetemplate(self, f.retrieveFile(), {}).strip()
-            if sidebar:
+                            sidebar_html = includetemplate(self, f.retrieveFile(), {}).strip()
+            if sidebar_html:
                 return u'<div id="portal-column-one">{0}<div id="nodes">{1}</div>{0}</div><div id="portal-column-two">{2}</div>'.format(
-                    filesHTML,
-                    contentList,
-                    sidebar)
+                    content_nav_list_header_html,
+                    content_list_html,
+                    sidebar_html)
 
-        return u'{0}<div id="nodes">{1}</div>{0}'.format(filesHTML, contentList)
+        return u'{0}<div id="nodes">{1}</div>{0}'.format(content_nav_list_header_html, content_list_html)
 
 
 class ContentNode(ContentBase):
@@ -750,7 +749,7 @@ def render_content_nav(req, node, logo, styles, select_style_link, print_url, pa
            "printlink": print_url}
 
     theme = webconfig.theme
-    content_nav_html = theme.render_macro("content_nav.j2.jade", "content_nav", ctx)
+    content_nav_html = theme.render_template("content_nav.j2.jade", ctx)
 
     return content_nav_html
 
@@ -786,7 +785,7 @@ def render_content_occurences(node, req, paths):
             "paths": paths,
             "language": language
            }
-    html = webconfig.theme.render_macro("content_nav.j2.jade", "paths", ctx)
+    html = webconfig.theme.render_template("content_nav_paths.j2.jade", ctx)
     return html
 
 

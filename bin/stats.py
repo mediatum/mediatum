@@ -36,8 +36,8 @@ if not given, current month will be used as period
 
 def create_logfile(period):
     """
-    create a logfile with name yyyy-mm.log as an excerpt of mediatum.log
-    on line beginning with period and containing the string 'INFO' and containing one of the strings:
+    create or append a logfile with name yyyy-mm.log as an excerpt of mediatum.log
+    of lines beginning with period and containing the string 'INFO' and containing one of the strings:
     'GET', 'POST' or 'HEAD are excerpted
     :param period: format: yyyy-mm
     :return: none
@@ -45,8 +45,31 @@ def create_logfile(period):
     outpath = "%s.log" % os.path.join(config.get("logging.save", config.get("logging.path", "/tmp")), period)
     MEDIATUM_LOG = os.path.join(config.get("logging.path"), "mediatum.log")
 
+    period_len_orig = len(period)
+    do_append = False
+    # check if outpath is already existing then append it
+    if os.path.exists(outpath):
+        do_append = True
+        # read the last line to get the last timestamp
+        fout = open(outpath)
+        fout.seek(0, os.SEEK_END)
+        fpos = fout.tell()
+        if fpos > 4096:
+            fout.seek(-4096, os.SEEK_END)
+            lines = fout.readlines()
+        else:
+            do_append = False
+        if fout:
+            fout.close()
+        if do_append and len(lines) > 1:
+            last_line = lines[len(lines) - 1]
+            period = last_line[:23]
+        else:
+            do_append = False
+
     fin = open(MEDIATUM_LOG)
-    fout = open(outpath, "w")
+    openmode = "a" if do_append else "w"
+    fout = open(outpath, openmode)
     # do a binary search for the period in mediatum.log
     fin.seek(0, os.SEEK_SET)
     fpos0 = fin.tell()
@@ -72,8 +95,14 @@ def create_logfile(period):
     for line in fin.readlines():
         if not line.startswith(y):
             continue
-        if line[0:period_len] < period:
+        if do_append and line[0:period_len] <= period:
             continue
+        if not do_append and line[0:period_len] < period:
+            continue
+        if do_append and period_len > period_len_orig:
+            period_len = period_len_orig
+            period = period[:period_len]
+            do_append = False
         if line[0:period_len] > period:
             break
         pos = line.find("INFO")
@@ -81,7 +110,7 @@ def create_logfile(period):
             continue
         if line[pos:].find('"GET') < 0 and line[pos:].find('"POST') < 0 and line[pos:].find('"HEAD') < 0:
             continue
-        fout.write(line[0:24] + line[pos:pos+5] + line[pos+6:])
+        fout.write(line[0:24] + line[pos:pos+4] + line[pos+6:])
 
     fin.close()
     fout.close()

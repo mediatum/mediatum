@@ -29,6 +29,7 @@ def init_database_values(s, default_admin_password=None):
     from workflow.workflow import Workflows
     from core.auth import INTERNAL_AUTHENTICATOR_KEY, create_password_hash
     from core.database.postgres.permission import NodeToAccessRule
+    from web.admin.adminutils import adminNavigation
 
     """
     :type s: Session
@@ -53,6 +54,8 @@ def init_database_values(s, default_admin_password=None):
 
     # finally, add node tree. All nodes will be added automatically
     s.add(root)
+    # activate menuitems metadatatypes, workflows etc.
+    adminNavigation()
     logg.info(u"loaded initial values")
 
     # default users and groups setup

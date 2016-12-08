@@ -21,6 +21,10 @@ class ContentBase(object):
     def content_styles(self):
         return []
 
+    @property
+    def print_url(self):
+        return None
+
     def select_style_link(self, style):
         return ""
     

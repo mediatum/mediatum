@@ -1,4 +1,6 @@
 import json
+import operator
+from collections import OrderedDict
 from mediatumtal import tal
 from core.metatype import Metatype
 from core.transition import httpstatus
@@ -77,7 +79,8 @@ class m_hlist(Metatype):
                 for child in getAllContainerChildren(q(Node).get(_id)):
                     children[child.id] = child.getName()
 
-        req.write(json.dumps(children))
+        sorted_children = sorted(children.items(), key=operator.itemgetter(1))
+        req.write(json.dumps(OrderedDict(sorted_children)))
         return httpstatus.HTTP_OK
 
     # method for additional keys of type mlist

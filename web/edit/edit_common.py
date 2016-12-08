@@ -105,7 +105,7 @@ def showdir(req, node, publishwarn="auto", markunpublished=False, sortfield=None
     if sortfield is None:
         sortfield = node.get("sortfield")
     if sortfield:
-        nodes = nodes.sort_by_fields([sortfield])
+        nodes = nodes.sort_by_fields(sortfield)
     return shownodelist(req, nodes, publishwarn=publishwarn, markunpublished=markunpublished, dir=node)
 
 

@@ -82,7 +82,7 @@ class NodeAppenderQuery(AppenderMixin, LenMixin, MtQuery):
             if field == "name" or field == "nodename":
                 warn("use query.order_by(Node.name) instead", DeprecationWarning)
                 return self.sort_by_name("up")
-            elif field == "-name" or field == "nodename":
+            elif field == "-name" or field == "-nodename":
                 warn("use query.order_by(Node.name.desc()) instead", DeprecationWarning)
                 return self.sort_by_name("down")
             elif field in ("orderpos", "-orderpos"):

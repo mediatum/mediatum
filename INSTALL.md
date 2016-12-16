@@ -2,7 +2,7 @@
 
 ## Getting mediaTUM
 
-* Clone the repository: `git clone https://mediatumdev.ub.tum.de/mediatum.git -b postgres`
+* Clone the repository: `git clone https://mediatumdev.ub.tum.de/mediatum.git`
 
 ## Nix Installation
 
@@ -96,3 +96,18 @@ Default data for an empty mediaTUM instance can be loaded by:
 MediaTUM can be started like that if you want to use the python interpreter in your PATH (possibly in a virtualenv or nix shell):
 
     python mediatum.py
+
+
+## Running the tests
+
+Create the test database :
+
+    CREATE DATABASE test_mediatum OWNER mediatum;
+    \c test_mediatum
+    CREATE EXTENSION hstore SCHEMA public;
+
+The test configuration is defined in `test_mediatum.cfg`
+
+Then start the tests with (in a virtualenv or nix shell): 
+    
+    py.test

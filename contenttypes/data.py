@@ -391,7 +391,7 @@ def prepare_node_data(node, req):
         # If this object is marked as deleted version, render the active version instead.
         active_version = node.getActiveVersion()
         data = prepare_node_data(active_version, req)
-        data["version_deleted_html"] = tal.getTAL("web/frontend/styles/macros.html", data, macro="deleted_version_alert")
+        data["version_deleted_html"] = Markup(tal.getTAL("web/frontend/styles/macros.html", data, macro="deleted_version_alert"))
         data["deleted"] = True
         return data
 
@@ -417,9 +417,9 @@ def prepare_node_data(node, req):
             "tag": versions[-1].tag,
             "versions": versions,
         }
-        data['versions_html'] = tal.getTAL("web/frontend/styles/macros.html", ctx, macro="object_versions")
+        data['versions_html'] = Markup(tal.getTAL("web/frontend/styles/macros.html", ctx, macro="object_versions"))
         if not node.isActiveVersion():
-            data['old_version_alert_html'] = tal.getTAL("web/frontend/styles/macros.html", ctx, macro="old_version_alert")
+            data['old_version_alert_html'] = Markup(tal.getTAL("web/frontend/styles/macros.html", ctx, macro="old_version_alert"))
 
     children = node.children.filter_read_access().all()
 

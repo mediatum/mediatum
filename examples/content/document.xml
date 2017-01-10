@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="utf-8"?>
+<nodelist>
+<node name="document" id="62" type="metadatatype" >
+    <attribute name="active"><![CDATA[1]]></attribute>
+    <attribute name="datatypes"><![CDATA[document]]></attribute>
+    <attribute name="bibtexmapping"><![CDATA[]]></attribute>
+    <attribute name="description"><![CDATA[]]></attribute>
+    <attribute name="longname"><![CDATA[document]]></attribute>
+    <child id="63"/>
+    <child id="64"/>
+    <child id="68"/>
+    <child id="74"/>
+    <child id="80"/>
+    <child id="65"/>
+    <child id="66"/>
+    <child id="67"/>
+</node>
+<node name="nodename" id="63" type="metafield" >
+    <attribute name="valuelistnum"><![CDATA[]]></attribute>
+    <attribute name="label"><![CDATA[nodename]]></attribute>
+    <attribute name="valuelist"><![CDATA[]]></attribute>
+    <attribute name="type"><![CDATA[text]]></attribute>
+    <attribute name="opts"><![CDATA[]]></attribute>
+    <attribute name="description"><![CDATA[]]></attribute>
+</node>
+<node name="title" id="64" type="metafield" >
+    <attribute name="valuelistnum"><![CDATA[]]></attribute>
+    <attribute name="label"><![CDATA[title]]></attribute>
+    <attribute name="valuelist"><![CDATA[]]></attribute>
+    <attribute name="type"><![CDATA[text]]></attribute>
+    <attribute name="opts"><![CDATA[os]]></attribute>
+    <attribute name="description"><![CDATA[]]></attribute>
+</node>
+<node name="editmask" id="68" type="mask" >
+    <attribute name="masktype"><![CDATA[edit]]></attribute>
+    <attribute name="defaultmask"><![CDATA[True]]></attribute>
+    <attribute name="description"><![CDATA[]]></attribute>
+    <attribute name="language"><![CDATA[]]></attribute>
+    <child id="69"/>
+    <child id="70"/>
+    <child id="71"/>
+    <child id="72"/>
+    <child id="73"/>
+</node>
+<node name="nodename" id="69" type="maskitem" >
+    <attribute name="width"><![CDATA[400]]></attribute>
+    <attribute name="type"><![CDATA[field]]></attribute>
+    <child id="63"/>
+</node>
+<node name="nodename" id="63" type="metafield" >
+    <attribute name="valuelistnum"><![CDATA[]]></attribute>
+    <attribute name="label"><![CDATA[nodename]]></attribute>
+    <attribute name="valuelist"><![CDATA[]]></attribute>
+    <attribute name="type"><![CDATA[text]]></attribute>
+    <attribute name="opts"><![CDATA[]]></attribute>
+    <attribute name="description"><![CDATA[]]></attribute>
+</node>
+<node name="title" id="70" type="maskitem" >
+    <attribute name="width"><![CDATA[400]]></attribute>
+    <attribute name="type"><![CDATA[field]]></attribute>
+    <child id="64"/>
+</node>
+<node name="title" id="64" type="metafield" >
+    <attribute name="valuelistnum"><![CDATA[]]></attribute>
+    <attribute name="label"><![CDATA[title]]></attribute>
+    <attribute name="valuelist"><![CDATA[]]></attribute>
+    <attribute name="type"><![CDATA[text]]></attribute>
+    <attribute name="opts"><![CDATA[os]]></attribute>
+    <attribute name="description"><![CDATA[]]></attribute>
+</node>
+<node name="author" id="71" type="maskitem" >
+    <attribute name="width"><![CDATA[400]]></attribute>
+    <attribute name="type"><![CDATA[field]]></attribute>
+    <child id="65"/>
+</node>
+<node name="author" id="65" type="metafield" >
+    <attribute name="valuelistnum"><![CDATA[]]></attribute>
+    <attribute name="label"><![CDATA[author]]></attribute>
+    <attribute name="valuelist"><![CDATA[]]></attribute>
+    <attribute name="type"><![CDATA[ilist]]></attribute>
+    <attribute name="opts"><![CDATA[]]></attribute>
+    <attribute name="description"><![CDATA[]]></attribute>
+</node>
+<node name="abstract" id="72" type="maskitem" >
+    <attribute name="width"><![CDATA[400]]></attribute>
+    <attribute name="type"><![CDATA[field]]></attribute>
+    <child id="66"/>
+</node>
+<node name="abstract" id="66" type="metafield" >
+    <attribute name="valuelistnum"><![CDATA[]]></attribute>
+    <attribute name="label"><![CDATA[abstract]]></attribute>
+    <attribute name="valuelist"><![CDATA[]]></attribute>
+    <attribute name="type"><![CDATA[memo]]></attribute>
+    <attribute name="opts"><![CDATA[]]></attribute>
+    <attribute name="description"><![CDATA[]]></attribute>
+</node>
+<node name="publicationyear" id="73" type="maskitem" >
+    <attribute name="width"><![CDATA[400]]></attribute>
+    <attribute name="type"><![CDATA[field]]></attribute>
+    <child id="67"/>
+</node>
+<node name="publicationyear" id="67" type="metafield" >
+    <attribute name="valuelistnum"><![CDATA[]]></attribute>
+    <attribute name="label"><![CDATA[publicationyear]]></attribute>
+    <attribute name="valuelist"><![CDATA[yyyy]]></attribute>
+    <attribute name="type"><![CDATA[date]]></attribute>
+    <attribute name="opts"><![CDATA[]]></attribute>
+    <attribute name="description"><![CDATA[]]></attribute>
+</node>
+<node name="nodesmall" id="74" type="mask" >
+    <attribute name="masktype"><![CDATA[shortview]]></attribute>
+    <attribute name="defaultmask"><![CDATA[True]]></attribute>
+    <attribute name="description"><![CDATA[]]></attribute>
+    <attribute name="language"><![CDATA[]]></attribute>
+    <child id="75"/>
+    <child id="76"/>
+    <child id="77"/>
+    <child id="78"/>
+    <child id="79"/>
+</node>
+<node name="nodename" id="75" type="maskitem" >
+    <attribute name="width"><![CDATA[400]]></attribute>
+    <attribute name="type"><![CDATA[field]]></attribute>
+    <child id="63"/>
+</node>
+<node name="nodename" id="63" type="metafield" >
+    <attribute name="valuelistnum"><![CDATA[]]></attribute>
+    <attribute name="label"><![CDATA[nodename]]></attribute>
+    <attribute name="valuelist"><![CDATA[]]></attribute>
+    <attribute name="type"><![CDATA[text]]></attribute>
+    <attribute name="opts"><![CDATA[]]></attribute>
+    <attribute name="description"><![CDATA[]]></attribute>
+</node>
+<node name="title" id="76" type="maskitem" >
+    <attribute name="width"><![CDATA[400]]></attribute>
+    <attribute name="type"><![CDATA[field]]></attribute>
+    <child id="64"/>
+</node>
+<node name="title" id="64" type="metafield" >
+    <attribute name="valuelistnum"><![CDATA[]]></attribute>
+    <attribute name="label"><![CDATA[title]]></attribute>
+    <attribute name="valuelist"><![CDATA[]]></attribute>
+    <attribute name="type"><![CDATA[text]]></attribute>
+    <attribute name="opts"><![CDATA[os]]></attribute>
+    <attribute name="description"><![CDATA[]]></attribute>
+</node>
+<node name="author" id="77" type="maskitem" >
+    <attribute name="width"><![CDATA[400]]></attribute>
+    <attribute name="type"><![CDATA[field]]></attribute>
+    <child id="65"/>
+</node>
+<node name="author" id="65" type="metafield" >
+    <attribute name="valuelistnum"><![CDATA[]]></attribute>
+    <attribute name="label"><![CDATA[author]]></attribute>
+    <attribute name="valuelist"><![CDATA[]]></attribute>
+    <attribute name="type"><![CDATA[ilist]]></attribute>
+    <attribute name="opts"><![CDATA[]]></attribute>
+    <attribute name="description"><![CDATA[]]></attribute>
+</node>
+<node name="abstract" id="78" type="maskitem" >
+    <attribute name="width"><![CDATA[400]]></attribute>
+    <attribute name="type"><![CDATA[field]]></attribute>
+    <child id="66"/>
+</node>
+<node name="abstract" id="66" type="metafield" >
+    <attribute name="valuelistnum"><![CDATA[]]></attribute>
+    <attribute name="label"><![CDATA[abstract]]></attribute>
+    <attribute name="valuelist"><![CDATA[]]></attribute>
+    <attribute name="type"><![CDATA[memo]]></attribute>
+    <attribute name="opts"><![CDATA[]]></attribute>
+    <attribute name="description"><![CDATA[]]></attribute>
+</node>
+<node name="publicationyear" id="79" type="maskitem" >
+    <attribute name="width"><![CDATA[400]]></attribute>
+    <attribute name="type"><![CDATA[field]]></attribute>
+    <child id="67"/>
+</node>
+<node name="publicationyear" id="67" type="metafield" >
+    <attribute name="valuelistnum"><![CDATA[]]></attribute>
+    <attribute name="label"><![CDATA[publicationyear]]></attribute>
+    <attribute name="valuelist"><![CDATA[yyyy]]></attribute>
+    <attribute name="type"><![CDATA[date]]></attribute>
+    <attribute name="opts"><![CDATA[]]></attribute>
+    <attribute name="description"><![CDATA[]]></attribute>
+</node>
+<node name="nodebig" id="80" type="mask" >
+    <attribute name="masktype"><![CDATA[fullview]]></attribute>
+    <attribute name="defaultmask"><![CDATA[True]]></attribute>
+    <attribute name="description"><![CDATA[]]></attribute>
+    <attribute name="language"><![CDATA[]]></attribute>
+    <child id="81"/>
+    <child id="82"/>
+    <child id="83"/>
+    <child id="84"/>
+    <child id="85"/>
+</node>
+<node name="nodename" id="81" type="maskitem" >
+    <attribute name="width"><![CDATA[400]]></attribute>
+    <attribute name="type"><![CDATA[field]]></attribute>
+    <child id="63"/>
+</node>
+<node name="nodename" id="63" type="metafield" >
+    <attribute name="valuelistnum"><![CDATA[]]></attribute>
+    <attribute name="label"><![CDATA[nodename]]></attribute>
+    <attribute name="valuelist"><![CDATA[]]></attribute>
+    <attribute name="type"><![CDATA[text]]></attribute>
+    <attribute name="opts"><![CDATA[]]></attribute>
+    <attribute name="description"><![CDATA[]]></attribute>
+</node>
+<node name="title" id="82" type="maskitem" >
+    <attribute name="width"><![CDATA[400]]></attribute>
+    <attribute name="type"><![CDATA[field]]></attribute>
+    <child id="64"/>
+</node>
+<node name="title" id="64" type="metafield" >
+    <attribute name="valuelistnum"><![CDATA[]]></attribute>
+    <attribute name="label"><![CDATA[title]]></attribute>
+    <attribute name="valuelist"><![CDATA[]]></attribute>
+    <attribute name="type"><![CDATA[text]]></attribute>
+    <attribute name="opts"><![CDATA[os]]></attribute>
+    <attribute name="description"><![CDATA[]]></attribute>
+</node>
+<node name="author" id="83" type="maskitem" >
+    <attribute name="width"><![CDATA[400]]></attribute>
+    <attribute name="type"><![CDATA[field]]></attribute>
+    <child id="65"/>
+</node>
+<node name="author" id="65" type="metafield" >
+    <attribute name="valuelistnum"><![CDATA[]]></attribute>
+    <attribute name="label"><![CDATA[author]]></attribute>
+    <attribute name="valuelist"><![CDATA[]]></attribute>
+    <attribute name="type"><![CDATA[ilist]]></attribute>
+    <attribute name="opts"><![CDATA[]]></attribute>
+    <attribute name="description"><![CDATA[]]></attribute>
+</node>
+<node name="abstract" id="84" type="maskitem" >
+    <attribute name="width"><![CDATA[400]]></attribute>
+    <attribute name="type"><![CDATA[field]]></attribute>
+    <child id="66"/>
+</node>
+<node name="abstract" id="66" type="metafield" >
+    <attribute name="valuelistnum"><![CDATA[]]></attribute>
+    <attribute name="label"><![CDATA[abstract]]></attribute>
+    <attribute name="valuelist"><![CDATA[]]></attribute>
+    <attribute name="type"><![CDATA[memo]]></attribute>
+    <attribute name="opts"><![CDATA[]]></attribute>
+    <attribute name="description"><![CDATA[]]></attribute>
+</node>
+<node name="publicationyear" id="85" type="maskitem" >
+    <attribute name="width"><![CDATA[400]]></attribute>
+    <attribute name="type"><![CDATA[field]]></attribute>
+    <child id="67"/>
+</node>
+<node name="publicationyear" id="67" type="metafield" >
+    <attribute name="valuelistnum"><![CDATA[]]></attribute>
+    <attribute name="label"><![CDATA[publicationyear]]></attribute>
+    <attribute name="valuelist"><![CDATA[yyyy]]></attribute>
+    <attribute name="type"><![CDATA[date]]></attribute>
+    <attribute name="opts"><![CDATA[]]></attribute>
+    <attribute name="description"><![CDATA[]]></attribute>
+</node>
+<node name="author" id="65" type="metafield" >
+    <attribute name="valuelistnum"><![CDATA[]]></attribute>
+    <attribute name="label"><![CDATA[author]]></attribute>
+    <attribute name="valuelist"><![CDATA[]]></attribute>
+    <attribute name="type"><![CDATA[ilist]]></attribute>
+    <attribute name="opts"><![CDATA[]]></attribute>
+    <attribute name="description"><![CDATA[]]></attribute>
+</node>
+<node name="abstract" id="66" type="metafield" >
+    <attribute name="valuelistnum"><![CDATA[]]></attribute>
+    <attribute name="label"><![CDATA[abstract]]></attribute>
+    <attribute name="valuelist"><![CDATA[]]></attribute>
+    <attribute name="type"><![CDATA[memo]]></attribute>
+    <attribute name="opts"><![CDATA[]]></attribute>
+    <attribute name="description"><![CDATA[]]></attribute>
+</node>
+<node name="publicationyear" id="67" type="metafield" >
+    <attribute name="valuelistnum"><![CDATA[]]></attribute>
+    <attribute name="label"><![CDATA[publicationyear]]></attribute>
+    <attribute name="valuelist"><![CDATA[yyyy]]></attribute>
+    <attribute name="type"><![CDATA[date]]></attribute>
+    <attribute name="opts"><![CDATA[]]></attribute>
+    <attribute name="description"><![CDATA[]]></attribute>
+</node>
+</nodelist>

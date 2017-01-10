@@ -17,6 +17,7 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+import os.path
 
 logg = logging.getLogger(__name__)
 
@@ -30,6 +31,7 @@ def init_database_values(s, default_admin_password=None):
     from core.auth import INTERNAL_AUTHENTICATOR_KEY, create_password_hash
     from core.database.postgres.permission import NodeToAccessRule
     from web.admin.adminutils import adminNavigation
+    from core.xmlnode import readNodeXML
 
     """
     :type s: Session
@@ -93,3 +95,19 @@ def init_database_values(s, default_admin_password=None):
     guestgroup = UserGroup(name=u"guests")
     guestgroup.users.append(guestuser)
     s.add(guestgroup)
+
+    # add example metadatatypes
+    example_path_collection = os.path.join(config.basedir, u"examples/content/collection.xml")
+    metadatatype_collection = readNodeXML(example_path_collection)
+
+    example_path_directory = os.path.join(config.basedir, u"examples/content/directory.xml")
+    metadatatype_directory = readNodeXML(example_path_directory)
+
+    example_path_image = os.path.join(config.basedir, u"examples/content/image.xml")
+    metadatatype_image = readNodeXML(example_path_image)
+
+    example_path_document = os.path.join(config.basedir, u"examples/content/document.xml")
+    metadatatype_document = readNodeXML(example_path_document)
+
+    metadatatypes.children.extend([metadatatype_collection, metadatatype_directory, metadatatype_image,
+                                   metadatatype_document])

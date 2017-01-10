@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<nodelist>
+<node name="collection" id="29" type="metadatatype" >
+    <attribute name="active"><![CDATA[0]]></attribute>
+    <attribute name="datatypes"><![CDATA[collections]]></attribute>
+    <attribute name="bibtexmapping"><![CDATA[]]></attribute>
+    <attribute name="description"><![CDATA[]]></attribute>
+    <attribute name="longname"><![CDATA[collection]]></attribute>
+    <child id="31"/>
+    <child id="33"/>
+    <child id="35"/>
+    <child id="30"/>
+</node>
+<node name="editmask" id="31" type="mask" >
+    <attribute name="defaultmask"><![CDATA[True]]></attribute>
+    <attribute name="masktype"><![CDATA[edit]]></attribute>
+    <child id="32"/>
+</node>
+<node name="Name" id="32" type="maskitem" >
+    <attribute name="width"><![CDATA[400]]></attribute>
+    <attribute name="required"><![CDATA[0]]></attribute>
+    <attribute name="type"><![CDATA[field]]></attribute>
+    <child id="30"/>
+</node>
+<node name="nodename" id="30" type="metafield" >
+    <attribute name="type"><![CDATA[text]]></attribute>
+    <attribute name="label"><![CDATA[name]]></attribute>
+</node>
+<node name="nodesmall" id="33" type="mask" >
+    <attribute name="defaultmask"><![CDATA[True]]></attribute>
+    <attribute name="masktype"><![CDATA[shortview]]></attribute>
+    <child id="34"/>
+</node>
+<node name="Name" id="34" type="maskitem" >
+    <attribute name="width"><![CDATA[400]]></attribute>
+    <attribute name="required"><![CDATA[0]]></attribute>
+    <attribute name="type"><![CDATA[field]]></attribute>
+    <child id="30"/>
+</node>
+<node name="nodename" id="30" type="metafield" >
+    <attribute name="type"><![CDATA[text]]></attribute>
+    <attribute name="label"><![CDATA[name]]></attribute>
+</node>
+<node name="nodebig" id="35" type="mask" >
+    <attribute name="defaultmask"><![CDATA[True]]></attribute>
+    <attribute name="masktype"><![CDATA[fullview]]></attribute>
+    <child id="36"/>
+</node>
+<node name="Name" id="36" type="maskitem" >
+    <attribute name="width"><![CDATA[400]]></attribute>
+    <attribute name="required"><![CDATA[0]]></attribute>
+    <attribute name="type"><![CDATA[field]]></attribute>
+    <child id="30"/>
+</node>
+<node name="nodename" id="30" type="metafield" >
+    <attribute name="type"><![CDATA[text]]></attribute>
+    <attribute name="label"><![CDATA[name]]></attribute>
+</node>
+<node name="nodename" id="30" type="metafield" >
+    <attribute name="type"><![CDATA[text]]></attribute>
+    <attribute name="label"><![CDATA[name]]></attribute>
+</node>
+</nodelist>

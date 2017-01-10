@@ -40,7 +40,7 @@ en=i18n/mediatum-en.po
 de=i18n/mediatum-de.po
 
 [logging]
-file=../mediatum_data/mediatum.log
+file=/absolute/path/to/mediatum.log
 level=DEBUG
 use_logstash=false
 tal_extension=true
@@ -55,7 +55,7 @@ schema.mediatum=http://mediatum/no-schema-defined
 namespace.mediatum=http://www.mediatum.org/oai/mediatum
 
 [paths]
-datadir=../mediatum_data # !!!
+datadir=/absolute/path/to/mediatum_data/ # !!!
 tempdir=/tmp/
 #zoomdir=/path/for/zoom/tiles  # optional, default: ~$datadir/zoom_tiles
 

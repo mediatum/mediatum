@@ -262,7 +262,7 @@
                 var ajax_response;
 
                 var options = {
-                      url: '/edit/edit_content?action=buildnode&func=createObjectsPlupload&id='+id+'&files='+files+'&type='+type+'&value='+value,
+                      url: '/edit/edit_content?action=buildnode&func=createObjectsPlupload&id='+id+'&files='+encodeURIComponent(files)+'&type='+type+'&value='+value,
                       async: false,
                       dataType: 'json',
                       success: function (data) {

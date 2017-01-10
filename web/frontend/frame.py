@@ -422,6 +422,10 @@ class UserLinks(object):
             idstr = ""
             if self.id:
                 idstr = "?id=" + unicode(self.id)
+            # set edit-link to upload_dir if user comes from collections
+            if not self.id or int(self.id) == get_collections_node().id:
+                if self.user.upload_dir:
+                    idstr = "?id=" + unicode(self.user.upload_dir.id)
             l += [Link("/edit" + idstr, t(self.language, "sub_header_edit_title"),
                        t(self.language, "sub_header_edit"), icon="/img/edit.gif")]
 

@@ -44,6 +44,7 @@ from StringIO import StringIO
 from collections import defaultdict
 import humanize
 from werkzeug.utils import cached_property
+from core import webconfig
 
 
 
@@ -659,7 +660,8 @@ class Image(Content):
         d['tileurl'] = "/tile/{}/".format(self.id)
         if use_flash_zoom:
             d["no_flash_url"] = "/fullsize?id={}&no_flash=1".format(self.id)
-        req.writeTAL("contenttypes/image.html", d, macro="imageviewer")
+        html = webconfig.theme.render_macro("image.j2.jade", "imageviewer", d)
+        req.write(html)
 
     def popup_thumbbig(self, req):
         self.popup_fullsize(req)

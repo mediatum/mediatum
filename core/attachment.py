@@ -144,5 +144,7 @@ def filebrowser(node, req):
 
 def getAttachmentBrowser(node, req):
     f, s = filebrowser(node, req)
-    req.writeTAL(webconfig.theme.getTemplate("popups.html"), {"files": f, "sum_size": s, "id": req.params.get(
-        "id", ""), "path": req.params.get("path", "")}, macro="attachmentbrowser")
+    html = webconfig.theme.render_macro(
+        "popups.j2.jade", "attachmentbrowser",
+        {"files": f, "sum_size": s, "id": req.params.get("id", ""), "path": req.params.get("path", "")})
+    req.write(html)

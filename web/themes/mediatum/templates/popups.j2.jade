@@ -1,0 +1,78 @@
+- macro show_help(field)
+  doctype transitional
+  html
+    head
+      meta(http-equiv='Content-Type', content='text/html; charset=UTF-8')
+      meta(content='text/html;charset=UTF-8', http-equiv='content-type')
+      title
+        = _t('popup_help_header')
+      link(rel='stylesheet', href='/css/mediatum.css')
+      style(type='text/css').
+        body {
+          margin: 5px;
+          padding: 0px;
+        }
+    body
+      div(style='width:100%; height:30px')
+        h2
+          = _t('popup_help_title')
+          b
+            = '"' + field.getLabel() + '"'
+      div(style='width:100%; height:150px')
+        br
+        p
+          = field.getDescription()
+      div(style='width:100%; height:50px', valign='bottom')
+        p(align='center')
+          button(type='button', onclick='self.close()')
+            = _t('close_window')
+
+
+- macro attachmentbrowser(files, sum_size, id, path)
+  doctype transitional
+  html
+    head
+      title
+        = _t('att_browser_title')
+      link(rel='stylesheet', href='/css/tum.css')
+      link(rel='stylesheet', href='/css/admin.css')
+    body(style='margin:5px')
+      h3
+        = _t('att_browser_title')
+      form
+        table.overview
+          tr
+            th(width='30px')
+              = _t('att_browser_type')
+            th(align='left')
+              =_t('att_browser_name')
+            th(align='right')
+              =_t('att_browser_size')
+          each file in files
+            tr
+              - var cssclass = files.index(file)%2 and 'norm' or 'silver'
+              if (file['type'] == 'dir') or (file['type'] == 'back')
+                td(class=cssclass, align='center')
+                  a(href='/attachmentbrowser?id={}&path={}'.format(id, file['req_path']))
+                    img(src='/img/{}'.format(file['icon']), border='0')
+                td(class=cssclass, valign='top')
+                  a(href='/attachmentbrowser?id={}&path={}'.format(id, file['req_path']))
+                    = file['name']
+                td(class=cssclass) &nbsp;
+              if (file['type'] != 'dir') and (file['type'] != 'back')
+                td(class=cssclass, align='center')
+                  a(href='/attfile/{}/{}'.format(id, file['path']), target='_blank')
+                    img(src='/img/{}'.format(file['icon']), border='0')
+                td(class=cssclass)
+                  a(href='attfile/{}/{}'.format(id, file['path']), target='_blank')
+                    = file['name']
+                td(class=cssclass, align='right')
+                  small
+                    = file['size']
+                    | &nbsp;
+          tr
+            th(colspan='2', align='left')
+              = '(' + files|length|string
+              = _t('att_browser_files') + ')'
+            th(align='right')
+              = sum_size

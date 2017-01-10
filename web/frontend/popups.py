@@ -77,8 +77,8 @@ def show_help(req):
         field = q(Node).get(req.params.get("maskid", ""))
     else:
         field = q(Node).get(req.params.get("id", ""))
-
-    req.writeTAL(webconfig.theme.getTemplate("popups.html"), {"field": field}, macro="show_help")
+    html = webconfig.theme.render_macro("popups.j2.jade", "show_help", {"field": field})
+    req.write(html)
 
 #
 # show attachmentbrowser for given node

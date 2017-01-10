@@ -845,7 +845,7 @@ msgid "att_browser_size"
 msgstr "Size"
 
 msgid "att_browser_files"
-msgstr "(${c} Dateien)"
+msgstr " Files"
 
 msgid "video_showvideo"
 msgstr "show video"

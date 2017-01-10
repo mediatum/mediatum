@@ -422,7 +422,7 @@ msgstr "Bemerkung:"
 
 ### popup help###
 msgid "popup_help_title"
-msgstr "Hilfe zum Metadatenfeld "${name}""
+msgstr "Hilfe zum Metadatenfeld "
 
 ### edit tabs ###
 msgid "tab_menulayout"
@@ -864,7 +864,7 @@ msgid "att_browser_size"
 msgstr "Größe"
 
 msgid "att_browser_files"
-msgstr "(${c} Dateien)"
+msgstr " Dateien"
 
 msgid "video_showvideo"
 msgstr "Video ansehen"

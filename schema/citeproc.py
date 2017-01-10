@@ -136,7 +136,8 @@ CSL_TYPES = [
 TYPES = [
     "_default",  # fallback type if no mapping is defined
     "_null",  # fallback type if type not given
-    'journal-article'  # type not in CSL 1.0.1, but returned by dx.doi.org server
+    'journal-article',  # type not in CSL 1.0.1, but returned by dx.doi.org server
+    'proceedings-article'  # type not in CSL 1.0.1, but returned by dx.doi.org server
 ] + CSL_TYPES
 
 TYPE_SET = set(TYPES)

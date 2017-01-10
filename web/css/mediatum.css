@@ -827,22 +827,28 @@ a.page-nav-next {
     border-right: medium none
 }
 
+#portal-column-content h1 {
+    font-size: 170%;
+    color: #444;
+    line-height: 120%;
+    text-transform: none;
+    margin: 0px 0px 1em;
+}
+
 #portal-column-content h2 {
-    line-height: 133%;
+    font-size: 140%;
+    color: #333;
+    line-height: 130%;
     margin: 0px;
-    color: #0a5096;
-    font-size: 100%
 }
 
 #portal-column-content h3 {
-    line-height: 133%;
+    font-size: 120%;
+    line-height: 140%;
     margin: 0px;
-    color: #0a5096;
-    font-size: 100%
 }
 
 #portal-column-content h4 {
-    color: #0a5096;
     border-bottom: #e8eff1 1px solid;
     padding-bottom: 0.3em;
     margin: 1.1em 0px 1.25em;
@@ -1360,14 +1366,6 @@ a.page-nav-next {
 * html #visual-portal-wrapper {
     position: relative;
     margin: 0px auto;
-}
-
-#portal-column-content h1 {
-    line-height: 121%;
-    text-transform: none;
-    margin: 0px 0px 1em;
-    color: #0a5096;
-    font-size: 110%
 }
 
 td#portal-column-content {

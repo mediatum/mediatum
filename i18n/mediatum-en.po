@@ -50,7 +50,7 @@ msgid "login_error_1"
 msgstr "Login failed! Wrong name or password."
 
 msgid "pass_change_info"
-msgstr "Please contact support: ${email}"
+msgstr "Please contact support: "
 
 msgid "login_submit"
 msgstr "Login"
@@ -62,7 +62,7 @@ msgid "login_save"
 msgstr "Save"
 
 msgid "login_currentuser_msg"
-msgstr "You are currently logged in as: [ ${name} ]"
+msgstr "You are currently logged in as: "
 
 msgid "login_change_err_1"
 msgstr "Initial password does not match with the stored one"

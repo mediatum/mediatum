@@ -1,0 +1,73 @@
+- macro login(error, user, email)
+  #object_main(style='margin-left:20px')
+    p &nbsp;
+    if error > 0
+      p.error(style='text-align:center')
+        = _t('login_error_{}'.format(error))
+    p#pass_info.info(style='text-align:center;display:none')
+      = _t('pass_change_info')
+      b
+        = email
+    br
+    form.login(method='post', name='login')
+      .label &nbsp;
+      span
+        = _t('login_currentuser_msg')
+        span.username
+          b
+            = user.getName()
+      br
+      br
+      .label
+        = _t('username:')
+      input.text(maxlength='99', type='text', name='user', style='width:200px; margin-bottom:2px')
+      br
+      .label
+        = _t('password:')
+      input.text(maxlength='99', type='password', name='password', style='width:200px;margin-bottom:5px')
+      br
+      .label &nbsp;
+      button(type='submit', name='LoginSubmit')
+        = _t('login_submit')
+      | &nbsp;&nbsp;
+      button(type='button', onclick="location='/'", name='cancel')
+        = _t('login_reset')
+      br
+      .label &nbsp;
+      small(style='font-size:9px')
+        a(href='#', onclick='passInfo()')
+          = _t('pwdforgotten_link')
+    script.
+      function setFocus(){document.login.user.focus();}
+      setFocus()
+    script.
+      function passInfo() {document.getElementById('pass_info').style.display='';}
+
+- macro change_pwd(error, user)
+  #object_main(style='margin-left:20px')
+    p &nbsp;
+    if error > 0
+      p.error(style='text-align:center')
+        = _t('login_change_err_{}'.format(error))
+    form.login(method='post', action='pwdchange', name='login')
+      .label
+        = _t('login_act_pwd:')
+      input.text(maxlength='99', type='password', name='password_old', style='width:200px; margin-bottom:2px')
+      br
+      .label
+        = _t('new_password:')
+      input.text(maxlength='99', type='password', name='password_new1', style='width:200px; margin-bottom:2px')
+      br
+      .label
+        = _t('password_repeat:')
+      input.text(maxlength='99', type='password', name='password_new2', style='width:200px; margin-bottom:5px')
+      br
+      .label &nbsp;
+      button(type='submit', name='ChangeSubmit')
+        = _t('login_save')
+      | &nbsp;&nbsp;
+      button(type='button', onclick="location='/'", name='cancel')
+        = _t('login_reset')
+    script.
+      function setFocus(){document.login.password_old.focus();}
+      setFocus()

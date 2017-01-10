@@ -53,7 +53,7 @@ msgid "login_error_1"
 msgstr "Die Anmeldung ist fehlgeschlagen! Benutzername oder Passwort falsch."
 
 msgid "pass_change_info"
-msgstr "Bitte wenden Sie sich an den Support: ${email}"
+msgstr "Bitte wenden Sie sich an den Support: "
 
 msgid "login_submit"
 msgstr "Anmelden"
@@ -68,7 +68,7 @@ msgid "login_save"
 msgstr "Speichern"
 
 msgid "login_currentuser_msg"
-msgstr "Sie sind derzeit angemeldet als: <b>${name}</b>"
+msgstr "Sie sind derzeit angemeldet als: "
 
 msgid "login_change_err_1"
 msgstr "Das Ursprungspasswort stimmt nicht mit dem gespeicherten überein"

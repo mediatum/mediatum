@@ -12,7 +12,6 @@
 """
 from flask import Flask, request, url_for, redirect, flash
 from flask_admin import Admin
-from flask_admin.contrib import rediscli
 from redis import Redis
 from web.newadmin.views.user import UserView, UserGroupView, AuthenticatorInfoView, OAuthUserCredentialsView
 from wtforms import form, fields, validators
@@ -24,6 +23,7 @@ import os
 from web.newadmin.views.node import NodeView, FileView
 from web.newadmin.views.setting import SettingView
 from web.newadmin.views.acl import AccessRulesetView, AccessRuleView, AccessRulesetToRuleView
+from web.newadmin.views.redis import ProtectedRedisCli
 
 q = db.query
 
@@ -105,7 +105,7 @@ def make_app():
     admin.add_view(AccessRulesetView())
     admin.add_view(AccessRulesetToRuleView())
 
-    admin.add_view(rediscli.RedisCli(Redis(db=1)))
+    admin.add_view(ProtectedRedisCli(Redis(db=1), name="Redis CLI"))
     
     return admin_app
 

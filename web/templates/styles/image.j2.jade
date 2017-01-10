@@ -22,12 +22,12 @@
             if node.get('width') >= node.get('height')
               img(src=presentation_url, onClick="fullSizePopup({}, {}, {})".format(node.id, node.get('width'), node.get('height')), style="width:300px;cursor:pointer;border:1px double silver;", border="1px")
             else
-              img(src=presentation_url, onClick="fullSizePopup({}, {}, {})".format(node.id, node.get('width'), node.get('height')), style="height:300px;cursor:pointer;border:1px double silver;", border="1px")
+              img(src=presentation_url, onClick="fullSizePopup({}, {}, {})".format(node.id, node.get('width'), node.get('height')), style="max-width:300px;max-height:300px;cursor:pointer;border:1px double silver;", border="1px")
           else
             if node.get('width') >= node.get('height')
               img(src=presentation_url, onClick="fullSizePopup({}, {}, {})".format(node.id, node.get('width'), node.get('height')), style="width:300px;cursor:pointer;border:1px double silver;", border="1px")
             else
-              img(src=presentation_url, onClick="fullSizePopup({}, {}, {})".format(node.id, node.get('width'), node.get('height')), style="height:300px;cursor:pointer;border:1px double silver;", border="1px")
+              img(src=presentation_url, onClick="fullSizePopup({}, {}, {})".format(node.id, node.get('width'), node.get('height')), style="max-width:300px;max-height:300px;cursor:pointer;border:1px double silver;", border="1px")
 
       if image_formats
         = format(image_formats)
@@ -43,12 +43,12 @@
             if node.get('width') >= node.get('height')
               img(src=presentation_url, onClick="fullSizePopup({}, {}, {})".format(node.id, 700, 700), style="width:300px;cursor:pointer;border:1px double silver;", border="1px")
             else
-              img(src=presentation_url, onClick="fullSizePopup({}, {}, {})".format(node.id, 700, 700), style="height:300px;cursor:pointer;border:1px double silver;", border="1px")
+              img(src=presentation_url, onClick="fullSizePopup({}, {}, {})".format(node.id, 700, 700), style="max-width:300px;max-height:300px;cursor:pointer;border:1px double silver;", border="1px")
           else
             if node.get('width') >= node.get('height')
               img(src=presentation_url, onClick="fullSizePopup({}, {}, {})".format(node.id, 700, 700), style="width:300px;cursor:pointer;border:1px double silver;", border="1px")
             else
-              img(src=presentation_url, onClick="fullSizePopup({}, {}, {})".format(node.id, 700, 700), style="height:300px;cursor:pointer;border:1px double silver;", border="1px")
+              img(src=presentation_url, onClick="fullSizePopup({}, {}, {})".format(node.id, 700, 700), style="max-width:300px;max-height:300px;cursor:pointer;border:1px double silver;", border="1px")
       else
         img(src=presentation_url, style="width: 300px;border:1px double silver;", border="1px")
 

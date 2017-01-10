@@ -1,6 +1,7 @@
 = old_version_alert_html
 = deleted_version_alert_html
 
+link(rel="stylesheet", href="/css/childs.css")
 link(rel="stylesheet", href="/css/jade_style.css")
 
 - block top
@@ -34,10 +35,10 @@ if attachment
       = _t("doc_att_browser")
 
 if versions_html
-  = versions_html
+  = versions_html|safe
 
 if children_html
-  = children_html
+  = children_html|safe
 
 .clear
 

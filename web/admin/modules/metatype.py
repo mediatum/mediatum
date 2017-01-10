@@ -238,7 +238,8 @@ def validate(req, op):
             if req.params.get("form_op", "") == "cancel":
                 return showDetailList(req, req.params.get("parent"))
 
-            if existMetaField(req.params.get("parent"), req.params.get("mname")) and req.params.get("form_op", "") == "save_newdetail":
+            if existMetaField(req.params.get("parent"), req.params.get("mname")) and req.params.get("form_op", "") in \
+                    ["save_newdetail", "save_editdetail"]:
                 return FieldDetail(req, req.params.get("parent"), req.params.get("orig_name", ""), 3)  # field still existing
             elif req.params.get("mname", "") == "" or req.params.get("mlabel", "") == "":
                 return FieldDetail(req, req.params.get("parent"), req.params.get("orig_name", ""), 1)

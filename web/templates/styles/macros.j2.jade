@@ -41,6 +41,41 @@
       a(href=highres_url)
         = _t("image_high_res_title")
 
+- macro itemsperpage(nodesperpage)
+  script.
+    function insertParameter(k, v){
+      // add a parameter to the url
+      key = encodeURIComponent(k);
+      value = encodeURIComponent(v);
+      var kvp = document.location.search.substr(1).split('&');
+      if (kvp == '') {
+        document.location.search = '?' + key + '=' + value;
+      }
+      else {
+        var i = kvp.length;
+        var x;
+        while (i--) {
+          x = kvp[i].split('=');
+          if (x[0] == key) {
+            x[1] = value;
+            kvp[i] = x.join('=');
+            break;
+          }
+        }
+        if (i < 0) {
+          kvp[kvp.length] = [key, value].join('=');
+        }
+        document.location.search = kvp.join('&');
+      }
+    }
+  div(style='position:absolute;right:15px;')
+    label(style='font-size:10px;')
+      = _t("items_per_page")
+    select(name='nodes_per_page', onchange='insertParameter(name, this.value)', style='font-size:10px;')
+      for n in [5, 10, 15, 20, 25, 50]
+        option(value=n, selected=n == nodesperpage)
+          = n
+  p(style='margin-top:30px;')
 
 // generated from jade
 //- vim: set filetype=jade sw=2 ts=2 sts=2 expandtab:

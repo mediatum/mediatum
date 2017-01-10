@@ -580,6 +580,9 @@ msgstr "thumbnail view (big)"
 msgid "liststyle_thumbnail"
 msgstr "thumbnail view"
 
+msgid "items_per_page"
+msgstr "items per page"
+
 msgid "full_standard_doc_title"
 msgstr "Default view for documents"
 

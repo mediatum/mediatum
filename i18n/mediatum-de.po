@@ -596,6 +596,9 @@ msgstr "Thumbnail-Ansicht (groß)"
 msgid "liststyle_thumbnail"
 msgstr "Thumbnail-Ansicht"
 
+msgid "items_per_page"
+msgstr "Artikel pro Seite"
+
 msgid "full_standard_doc_title"
 msgstr "Default-Ansicht für Dokumente"
 

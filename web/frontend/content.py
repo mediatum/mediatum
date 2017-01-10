@@ -607,7 +607,7 @@ class ContentList(ContentBase):
         content_nav_list_header_html = webconfig.theme.render_template("content_nav_list_header.j2.jade", ctx)
 
         # use template of style and build html content
-        ctx = {"files": self.files, "op": "", "language": self.lang}
+        ctx = {"files": self.files, "op": "", "language": self.lang, "nodesperpage": self.nodes_per_page}
 
         content_list_html = self.liststyle.render_template(req, ctx)
 

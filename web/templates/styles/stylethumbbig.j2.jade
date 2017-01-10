@@ -1,3 +1,7 @@
+- from "styles/macros.j2.jade" import itemsperpage
+
+= itemsperpage(nodesperpage)
+
 each file in files
   .preview(style='width:260px; height:260px', onmouseover="this.style.backgroundColor='#cccccc'", onmouseout="this.style.backgroundColor='white'")
     if file.attachment

@@ -2,7 +2,7 @@
 
 ## Getting mediaTUM
 
-* Clone the repository: `git clone https://mediatumdev.ub.tum.de/mediatum.git`
+* Clone the repository: `git clone https://github.com/mediatum/mediatum`
 
 ## Nix Installation
 

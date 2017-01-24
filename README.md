@@ -28,7 +28,7 @@ Browseable version at https://mediatum.readthedocs.org
 This should work on all Linux distributions and MacOS. You need the [Nix package manager](https://nixos.org/nix) (version > 1.8) to run this.
 On non-NixOS machines, about 1,5GB disk space is required. On NixOS, about 1GB is required.
 
-1. Clone the repository: `git clone https://mediatumdev.ub.tum.de/mediatum.git`
+1. Clone the repository: `git clone https://github.com/mediatum/mediatum`
 2. Go to the mediatum directory: `cd mediatum`
 3. Run mediaTUM: `./mediatum.py --force-test-db`
 

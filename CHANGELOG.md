@@ -4,6 +4,29 @@ All notable changes to mediaTUM will be documented in this file.
 We mostly follow the conventions given in [Keep a Changelog](http://keepachangelog.com/) and relase a new version roughly once a month.
 Calendar Versioning is used for our version numbers: http://calver.org/
 
+
+## [v2016.12] - 2016-01-24
+
+### Added
+
+- Frontend: Users can change the number of displayed nodes in list views
+- Example content for empty database: example schemas
+- Citation type proceedings-article now allowed in DOI import
+
+### Changed
+
+- Better styling for headings: they don't look like links anymore
+- Editor: start with user uploads dir instead of collections root
+
+### Fixed
+
+- Upload of files with umlauts or other non alphanumeric characters in the file name
+- Display of version HTML
+- Metafield name doublet creation
+- Errors in mediatum configuration template
+- More robust handling of bibtex file names
+
+
 ## [v2016.11] - 2016-12-16
 
 ### Changed

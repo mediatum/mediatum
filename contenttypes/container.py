@@ -102,7 +102,7 @@ class Container(Data, ContainerMixin, SchemaMixin):
 
     @classmethod
     def get_default_edit_menu_tabs(cls):
-        return "menulayout(content;startpages;view);menusecurity(acls);menuoperation(search;subfolder;license)"
+        return "menulayout(content;startpages);menusecurity(acls);menuoperation(search;subfolder;license)"
 
     @classmethod
     def get_default_edit_tab(cls):
@@ -289,7 +289,7 @@ class Directory(Container):
 
     @classmethod
     def get_default_edit_menu_tabs(cls):
-        return "menulayout(content;startpages;view);menumetadata(metadata;files;admin);menusecurity(acls);menuoperation(search;subfolder;license)"
+        return "menulayout(content;startpages);menumetadata(metadata;files;admin);menusecurity(acls);menuoperation(search;subfolder;license)"
 
 
 @check_type_arg_with_schema
@@ -301,7 +301,7 @@ class Collection(Container):
 
     @classmethod
     def get_default_edit_menu_tabs(cls):
-        return "menulayout(content;startpages;view);menumetadata(metadata;logo;files;admin;searchmask;sortfiles);menusecurity(acls);menuoperation(search;subfolder;license)"
+        return "menulayout(content;startpages);menumetadata(metadata;logo;files;admin;searchmask;sortfiles);menusecurity(acls);menuoperation(search;subfolder;license)"
 
     def metaFields(self, lang=None):
         metafields = Container.metaFields(self, lang=lang)

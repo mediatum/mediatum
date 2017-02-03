@@ -519,7 +519,7 @@ msgid "tab_files_obj"
 msgstr "digitale Objekte austauschen/hinzufügen"
 
 msgid "tab_view"
-msgstr "Vorschau"
+msgstr "Anzeige"
 
 msgid "tab_view_title"
 msgstr "Vorschau auf späteres Aussehen in Recherche"

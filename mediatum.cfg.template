@@ -1,5 +1,5 @@
 [admin]
-pageitems=10
+pageitems=20
 
 [auth]
 authenticator_order=internal|default # ,ldap|server1

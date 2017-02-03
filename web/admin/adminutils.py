@@ -72,7 +72,10 @@ class Overview:
             self.page = 1
         elif "resetpage" in req.params.keys():
             self.page = 0
-        max_page = len(list) / int(config.settings["admin.pageitems"])
+            
+        items_per_page = config.getint("admin.pageitems", 20)
+            
+        max_page = len(list) / items_per_page
         if max_page + 1 < self.page:
             self.page = 1
             req.params["page"] = 1
@@ -81,8 +84,8 @@ class Overview:
             self.start = 0
             self.end = len(list)
         else:
-            self.start = (self.page - 1) * int(config.settings["admin.pageitems"])
-            self.end = self.start + int(config.settings["admin.pageitems"])
+            self.start = (self.page - 1) * items_per_page
+            self.end = self.start + items_per_page
         self.list = list
 
     def getStdVars(self):
@@ -95,7 +98,7 @@ class Overview:
         return int(self.end)
 
     def getNoPages(self):
-        return int(math.ceil(float(len(self.list)) / float(config.settings["admin.pageitems"])))
+        return int(math.ceil(float(len(self.list)) / config.getint("admin.pageitems", 20)))
 
     def printPageList(self):
         order = self.req.params.get("order", "")

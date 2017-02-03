@@ -220,6 +220,8 @@ def set_default_values():
     if not "paths.zoomdir" in settings:
         settings["paths.zoomdir"] = get_default_zoom_dir()
 
+    if not "host.ssl" in settings:
+        settings["host.ssl"] = "false"
 
 def expand_paths():
     for confkey in ["paths.datadir", "paths.tempdir", "paths.zoomdir", "logging.file"]:

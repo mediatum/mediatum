@@ -33,6 +33,7 @@ port=8021
 name=localhost
 port=8081
 threads=8
+ssl=true # use true in production, false can be set for testing
 
 [i18n]
 languages=en,de

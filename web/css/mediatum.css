@@ -302,7 +302,7 @@ form#search-box {
     padding-bottom: 0.5em;
     margin: 0px;
     padding-left: 0.75em;
-    padding-right: 1.33em;
+    padding-right: 0em;
     background: url(/img/5pxgradientandarrow.gif) #edf1f4 no-repeat right
         50%;
     border-top: #d3dee3 1px solid;
@@ -400,12 +400,13 @@ input#search-field {
 
 input#search-button {
     border-bottom: medium none;
-    text-align: right;
+    text-align: left;
     border-left: medium none;
     padding-bottom: 0px;
     background-color: transparent;
     padding-left: 0px;
-    width: 4em;
+    width: 7.5em;
+    float: right;
     padding-right: 0px;
     font-family: arial, helvetica, sans-serif;
     color: #333333;

@@ -1158,6 +1158,7 @@ class Mask(Node):
             for elem in z:
                 elem.orderpos = elem.orderpos + k
                 k += 1
+            db.session.commit()
 
         i = 0
         fieldlist = {}  # !!!getAllMetaFields()

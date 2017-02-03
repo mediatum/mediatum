@@ -270,15 +270,19 @@ def getentries(filename):
             error = None
             fi = codecs.open(filename, "r", encoding=encoding)
             parser = BibTexParser()
+            # accept also non standard records like @SCIENCEREPORT
+            parser.ignore_nonstandard_types = False
             parser.customization = _bibteximport_customize
             bibtex = bibtex_load(fi, parser=parser)
             # seems to be the correct encoding, don't try other encodings
             break
         except Exception as e:
             # check if there is a utf-encoding error, then try other encoding
-            if str(e).lower().find('utf8') or str(e).lower().find('utf-16'):
+            if (encoding is 'utf-8-sig' and str(e).lower().find('utf8') >= 0) or \
+                (encoding is 'utf-16' and str(e).lower().find('utf-16') >= 0):
                 continue
             error = e
+            break
 
     if error:
         logg.error("bibtex import: bibtexparser failed: {}".format(e))
@@ -312,7 +316,7 @@ def importBibTeX(infile, node=None, req=None):
             logg.error("getentries failed", exc_info=1)
             msg = "bibtex import: getentries failed, import stopped (encoding error)"
             logg.error(msg)
-            raise ValueError("getentries failed")
+            raise ValueError("encoding_error")
 
     logg.info("bibtex import: %d entries", len(entries))
 

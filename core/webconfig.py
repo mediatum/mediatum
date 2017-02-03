@@ -238,11 +238,6 @@ def initContexts():
     file = context.addFile("web/ftree/ftree.py")
     file.addHandler("ftree").addPattern("/.*")
 
-    # === help area ===
-    context = athana.addContext("/help", '.')
-    file = context.addFile("core/help.py")
-    file.addHandler("getHelp").addPattern("/(?!img/).*")
-
     # === services handling ===
     loadServices()
 

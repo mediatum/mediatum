@@ -23,7 +23,6 @@ import re
 import time
 import json
 import core.config as config
-import core.help as help
 import core.translation
 from core import Node, NodeType, db, User, UserGroup, UserToUserGroup
 from core.systemtypes import Metadatatypes
@@ -286,7 +285,6 @@ def handletabs(req, ids, tabs):
         "ids": ids,
         "idstr": ",".join(ids),
         "menu": menu,
-        "hashelp": help.getHelpPath(['edit', 'modules', req.params.get('tab') or tabs]),
         "breadcrumbs": getBreadcrumbs(menu, req.params.get("tab", tabs)),
         "spc": spc,
         "system_editor_help_link": help_link,

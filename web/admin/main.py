@@ -23,7 +23,7 @@ import random
 import codecs
 
 import core
-from core import config, help
+from core import config
 from core.users import get_guest_user
 from core.transition import httpstatus
 from utils.utils import join_paths, Menu
@@ -59,7 +59,6 @@ def show_node(req):
         spc.append(Menu("sub_header_workflow", u"../publish/"))
 
     v["spc"] = spc
-    v["hashelp"] = help.getHelpPath(['admin', 'modules', req.path.split('/')[1]])
 
     if len(p) > 0:
         if style == "":

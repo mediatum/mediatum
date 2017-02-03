@@ -29,10 +29,6 @@
         </h2>
         <div id="printdiv" style="position:absolute;right:5px;bottom:5px;">
             <a tal:attributes="href python:u'/print/{}'.format(idstr)" target="_blank"><img src="/img/print_icon.gif"/></a>
-            <!-- replaced context help temporarily by static pdf -->
-            <!--
-            <a tal:condition="python:hashelp!=''" href="#" i18n:attributes="title edit_help_title" tal:attributes="onclick python:u'return getHelp(&quot;{}&quot;)'.format(hashelp)"><img src="/img/help.png"/></a>
-            -->
             <a tal:condition="python:system_editor_help_link" target="_blank" i18n:attributes="title edit_help_title" tal:attributes="href python:system_editor_help_link" > <img src="/img/help.png"/></a>
         </div>
     </div>

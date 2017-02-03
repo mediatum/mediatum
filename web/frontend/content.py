@@ -594,6 +594,9 @@ class ContentList(ContentBase):
         if self.content:
             # render single result
             headline = webconfig.theme.render_template("content_nav_headline.j2.jade", {"nav": self})
+            # self.content.paths is the same as self.paths which is only the paths to an upper directory/collection
+            # to force a recalculation of paths in self.content.html(req) it must be set to []
+            self.content.paths = []
             return headline + self.content.html(req)
 
         # render result list
@@ -673,6 +676,11 @@ class ContentNode(ContentBase):
         show_node_big = ensure_unicode_returned(self._node.show_node_big, name="show_node_big of %s" % self._node)
         style_name = self.full_style_name or DEFAULT_FULL_STYLE_NAME
         node_html = getFormatedString(show_node_big(req, style_name))
+
+        if not self.paths:
+            # self.node may be result of a query and/or element of a contentlist, in this case
+            # self.paths is not set - try to recalculate paths
+            self.paths = get_accessible_paths(self.node, q(Node).prefetch_attrs())
         
         if self.paths:
             occurences_html = render_content_occurences(self.node, req, self.paths)

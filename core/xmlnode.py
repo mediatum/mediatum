@@ -176,7 +176,6 @@ class _NodeLoader:
             if node.type == "mapping":
                 if node.name not in [n.name for n in mappings.children if n.type == "mapping"]:
                     mappings.children.append(node)
-                    db.session.commit()
                     if self.verbose:
                         logg.info("xml import: added  mapping id=%s, type='%s', name='%s'", node.id, node.type, node.name)
 
@@ -187,7 +186,6 @@ class _NodeLoader:
             for id in node.tmpchilds:
                 child = self.id2node[id]
                 node.children.append(child)
-                db.session.commit()
                 d[child.id] = child
             if self.verbose and node.tmpchilds:
                 added = [(cid, d[cid].type, d[cid].name) for cid in d.keys()]
@@ -200,7 +198,6 @@ class _NodeLoader:
                 if attr and attr in self.id2node:
                     attr_new = self.id2node[attr].id
                     node.set("attribute", attr_new)
-                    db.session.commit()
                     if self.verbose:
                         logg.info("adjusting node attribute for maskitem '%s', name='attribute', value: old='%s' -> new='%s'",
                                   node.id, attr, attr_new)
@@ -208,7 +205,6 @@ class _NodeLoader:
                 if mappingfield and mappingfield in self.id2node:
                     mappingfield_new = self.id2node[mappingfield].id
                     node.set("mappingfield", ustr(mappingfield_new))
-                    db.session.commit()
                     if self.verbose:
                         logg.info("adjusting node attribute for maskitem '%s', name='mappingfield', value old='%s' -> new='%s'",
                                   node.id, mappingfield, mappingfield_new)
@@ -217,12 +213,12 @@ class _NodeLoader:
                 if exportmapping and exportmapping in self.id2node:
                     exportmapping_new = self.id2node[exportmapping].id
                     node.set("exportmapping", ustr(exportmapping_new))
-                    db.session.commit()
                     if self.verbose:
                         logg.info("adjusting node attribute for mask '%s',  name='exportmapping':, value old='%s' -> new='%s'",
                                   node.id, exportmapping, exportmapping_new)
 
         logg.info("xml import done")
+        db.session.commit()
 
     def xml_start_element(self, name, attrs):
         try:
@@ -261,7 +257,6 @@ class _NodeLoader:
             else:
                 content_class = Node.get_class_for_typestring(datatype)
                 node = content_class(name=attrs["name"])
-            db.session.add(node)
 
             # todo: handle access
 
@@ -290,7 +285,6 @@ class _NodeLoader:
                     node.set(attr_name, attrs["value"])
             else:
                 self.attributename = attr_name
-            db.session.commit()
 
         elif name == "child" and not self.node_already_seen:
             nid = attrs["id"]
@@ -308,7 +302,6 @@ class _NodeLoader:
 
             filename = attrs["filename"]
             node.files.append(File(path=filename, filetype=datatype, mimetype=mimetype))
-            db.session.commit()
 
     def xml_end_element(self, name):
         if self.node_already_seen:
@@ -334,7 +327,6 @@ class _NodeLoader:
                                    (val + data).replace("\n\n", "\n").replace("\n", ";").replace(";;", ";"))
             else:
                 self.nodes[-1].set(self.attributename, val + data)
-        db.session.commit()
 
 
 

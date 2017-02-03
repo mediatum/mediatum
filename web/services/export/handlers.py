@@ -49,6 +49,7 @@ from utils.xml import xml_remove_illegal_chars
 from core.nodecache import get_collections_node, get_home_root_node
 import core.oauth as oauth
 from core.search.config import get_service_search_languages
+from array import array
 
 
 logg = logging.getLogger(__name__)
@@ -283,13 +284,16 @@ def struct2csv(req, path, params, data, d, debug=False, sep=u';', string_delimit
         sep = trans[sep.lower()]
 
     def join_row(row):
-        row = [unicode(x) for x in row]
-
         try:
             if string_delimiter:
-                res = string_delimiter + \
-                    ((string_delimiter + sep +
-                      string_delimiter).join([x.replace(string_delimiter, u"'") for x in row])) + string_delimiter
+                if "".join(row).find(string_delimiter) >= 0:
+                    res = string_delimiter + \
+                        ((string_delimiter + sep +
+                          string_delimiter).join([x.replace(string_delimiter, u"'") for x in row])) + string_delimiter
+                else:
+                    res = string_delimiter + \
+                          ((string_delimiter + sep +
+                            string_delimiter).join(row)) + string_delimiter
             else:
                 res = sep.join(row)
         except:
@@ -306,7 +310,7 @@ def struct2csv(req, path, params, data, d, debug=False, sep=u';', string_delimit
     r = u''
 
     if d['status'].lower() == 'fail':
-        header = ['status', 'html_response_code', 'errormessage', 'retrievaldate']
+        header = [u'status', u'html_response_code', u'errormessage', u'retrievaldate']
         r = join_row(header) + u'\r\n'
         r += join_row(map(lambda x: d[x], header))
         return r
@@ -320,11 +324,12 @@ def struct2csv(req, path, params, data, d, debug=False, sep=u';', string_delimit
 
     for i, n in enumerate(csv_nodelist):
         rd[i] = {}
-        rd[i]['id'] = unicode(n.id)
-        rd[i]['name'] = n.name
-        rd[i]['type'] = n.type + "/" + n.schema
+        rd_i = rd[i]
+        rd_i['id'] = unicode(n.id)
+        rd_i['name'] = n.name
+        rd_i['type'] = n.type + "/" + n.schema
         attrs = copy.deepcopy(n.attributes)
-        rd[i]['attributes'] = attrs
+        rd_i['attributes'] = attrs
         keys = keys.union(attrs.keys())
 
     if csvattrs:
@@ -349,15 +354,21 @@ def struct2csv(req, path, params, data, d, debug=False, sep=u';', string_delimit
 
     header = [u'count', u'id', u'type', u'name'] + attr_header
     r = join_row(header) + u'\r\n'
+    # for a higher performance use an array instead of an unicode-string to collect the result
+    r_a = array('u', r)
 
     for i, n in enumerate(csv_nodelist):
-        row = [unicode(i), rd[i]['id'], rd[i]['type'], rd[i]['name']]
+        rd_i = rd[i]
+        row = [unicode(i), rd_i['id'], rd_i['type'], rd_i['name']]
+        rd_i_attributes = rd_i['attributes']
         for attr in attr_header:
             if attr in ['node.orderpos']:
-                row.append(q(Node).get(rd[i]['id']).orderpos)
+                row.append(q(Node).get(rd_i['id']).orderpos)
             else:
-                row.append(rd[i]['attributes'].setdefault(attr, u''))
-        r += join_row(row) + u'\r\n'
+                row.append(rd_i_attributes.setdefault(attr, u''))
+        r_row = join_row(row) + u'\r\n'
+        r_a += array('u', r_row)
+    r = r_a.tounicode()
 
     if 'bom' in params.keys():
         return r.encode("utf_8_sig") # this codec adds BOM
@@ -583,7 +594,7 @@ def _client_error_response(status_code, error_msg, **additional_data):
 
 def get_node_data_struct(
         req, path, params, data, id, debug=True, 
-        allchildren=False, singlenode=False, parents=False, send_children=False, fetch_files=False):
+        allchildren=False, singlenode=False, parents=False, send_children=False, fetch_files=False, csv=False):
 
     res = _prepare_response()
     timetable = res["timetable"]
@@ -618,6 +629,7 @@ def get_node_data_struct(
     sortformat = params.get('sortformat', '')  # 'sissfi'
     limit = params.get("limit", DEFAULT_NODEQUERY_LIMIT)
     offset = params.get("start", 0)
+    csv_allchildren = csv and allchildren
 
     # check node existence
     node = q(Node).get(id)
@@ -638,7 +650,11 @@ def get_node_data_struct(
             return _client_error_response(404, u'no such metadata type: ' + mdt_name)
 
     if allchildren:
-        nodequery = node.all_children
+        if csv:
+            # fetch only those columns which are needed, this is faster than fetch all columns and need less space
+            nodequery = node.all_children_by_query(q(Node.attrs.label("attributes"), Node.id, Node.name, Node.schema, Node.type))
+        else:
+            nodequery = node.all_children
     elif parents:
         nodequery = node.parents
     else:
@@ -706,6 +722,7 @@ def get_node_data_struct(
 
             nodequery = nodequery.order_by(order_expr.nullslast())
 
+
         sfields = sfields_without_sign
     else:
         sfields = []
@@ -720,8 +737,11 @@ def get_node_data_struct(
 
     ### actually get the nodes
 
-    nodequery = nodequery.distinct().options(undefer(Node.attrs))
-    
+    if csv_allchildren:
+        nodequery = nodequery.order_by('attributes').distinct()
+    else:
+        nodequery = nodequery.distinct().options(undefer(Node.attrs))
+
     if fetch_files:
         nodequery = nodequery.options(joinedload(Node.file_objects))
 
@@ -748,7 +768,7 @@ def get_node_data_struct(
             nodelist = nodequery.all()
         except Exception as e:
             return _client_error_response(400, "the database failed with the message: {}".format(str(e)))
-        
+
         node_count = len(nodelist)
         timetable.append(['fetching nodes from db returned {} results'.format(node_count), time.time() - atime])
         atime = time.time()
@@ -858,7 +878,8 @@ def write_formatted_response(
             fetch_files = False
                     
         d = get_node_data_struct(req, path, params, data, id, debug=debug, allchildren=allchildren,
-                                     singlenode=singlenode, send_children=send_children, parents=parents, fetch_files=fetch_files)
+                                     singlenode=singlenode, send_children=send_children, parents=parents,
+                                     fetch_files=fetch_files, csv=res_format==u'csv')
 
         if r_timetable:
             d['timetable'] = r_timetable + d.setdefault('timetable', [])

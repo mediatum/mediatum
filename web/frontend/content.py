@@ -798,7 +798,7 @@ def get_make_search_content_function(req):
 
 
 def render_content_error(error, language):
-    return tal.getTAL(webconfig.theme.getTemplate("content_error.html"), {"error": error}, language=language)
+    return webconfig.theme.render_template("content_error.j2.jade", {"error": error})
 
 
 def render_startpage_error(node, language):

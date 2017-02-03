@@ -61,10 +61,13 @@ class m_url(Metatype):
         fielddef = field.getValues().split("\r\n")
         if len(fielddef) != 3:
             fielddef = ("", "", "")
+        # separate url and urltext
         val = value.split(";")
-        # XXX: ???
-        if len(val) != 2:
-            val = ("", "")
+        if len(val) == 1:
+            # only url given
+            val = [val[0], ""]
+        elif len(val) > 2:
+            val = val[0:2]
 
         return tal.getTAL("metadata/url.html", {"lock": lock,
                                                 "value": val,
@@ -146,6 +149,9 @@ class m_url(Metatype):
         linktext = params.get(item + "_text").replace(u";", u"\u037e")
         if not quoted_uri:
             return ""
+        if not linktext:
+            # don't add a single ';' add the end of the url (quoted_uri)
+            return u"{}".format(quoted_uri)
         return u"{};{}".format(quoted_uri, linktext)
 
     def getMaskEditorHTML(self, field, metadatatype=None, language=None):

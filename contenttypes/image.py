@@ -226,7 +226,8 @@ class Image(Content):
         u"image/svg+xml": [u"image/svg+xml", u"image/png"],
         u"image/jpeg": [u"image/jpeg"],
         u"image/gif": [u"image/gif"],
-        u"image/png": [u"image/png"]
+        u"image/png": [u"image/png"],
+        u"image/bmp": [u"image/bmp"]
     })
 
     MIMETYPE_FOR_EXTENSION = {
@@ -237,6 +238,7 @@ class Image(Content):
         u"tiff": u"image/tiff",
         u"gif": u"image/gif",
         u"svg": u"image/svg+xml",
+        u"bmp": u"image/bmp",
     }
 
     # beware of duplicates!

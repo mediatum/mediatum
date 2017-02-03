@@ -871,6 +871,9 @@ msgstr "digital object available"
 msgid "file_processingerror"
 msgstr "Error while processing file! Please check processed file."
 
+msgid "file_extensionerror"
+msgstr "Error while processing file! Please check file extension."
+
 msgid "searchresult"
 msgstr "Searchresult"
 

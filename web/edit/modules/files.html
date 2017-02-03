@@ -65,6 +65,10 @@
         <p class="error" i18n:translate="file_processingerror">TEXT</p>
     </tal:block>
 
+    <tal:block tal:condition="python:update_error_extension">
+        <p class="error" i18n:translate="file_extensionerror">TEXT</p>
+    </tal:block>
+
         <div id="accordion">
             <tal:block tal:condition="python:not node.isContainer()">
                 <h3><a href="#" i18n:translate="edit_files_children">TEXT</a></h3>

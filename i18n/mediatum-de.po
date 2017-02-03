@@ -890,7 +890,10 @@ msgid "content_text_file_title"
 msgstr "digitales Objekt vorhanden"
 
 msgid "file_processingerror"
-msgstr "Fehler bei Dateiverarbeitung! Bitte überprüfen Sie die zu bearbeitende Datei"
+msgstr "Fehler bei Dateiverarbeitung! Bitte überprüfen Sie die zu bearbeitende Datei."
+
+msgid "file_extensionerror"
+msgstr "Fehler bei Dateiverarbeitung! Bitte überprüfen Sie die Dateiendung."
 
 msgid "searchresult"
 msgstr "Suchresultate"

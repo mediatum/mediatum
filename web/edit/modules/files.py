@@ -45,6 +45,13 @@ def _finish_change(node, change_file, user, uploadfile, req):
 
     if change_file in ["yes", "no"]:
 
+        # check that the correct filetype is uploaded
+        # note: only the suffix of the filename is checked not the file content
+        uploadfile_type = getMimeType(uploadfile.filename)[1]
+        if uploadfile_type != node.type:
+            req.setStatus(httpstatus.HTTP_NOT_ACCEPTABLE)
+            return
+
         # sys files are always cleared to delete remaining thumbnails, presentation images etc.
         for f in node.files:
             if f.filetype in node.get_sys_filetypes():
@@ -129,6 +136,7 @@ def getContent(req, ids):
     user = current_user
     node = q(Node).get(ids[0])
     update_error = False
+    update_error_extension = False
 
     logg.debug("%s|web.edit.modules.files.getContend|req.fullpath=%s|req.path=%s|req.params=%s|ids=%s",
                get_user_id(req), req.fullpath, req.path, req.params, ids)
@@ -254,6 +262,11 @@ def getContent(req, ids):
 
         elif op == "change":
             _handle_change(node, req)
+            if req.reply_code != httpstatus.HTTP_OK:
+                if req.reply_code is httpstatus.HTTP_NOT_ACCEPTABLE:
+                    update_error_extension = True
+                else:
+                    update_error = True
 
         elif op == "addthumb":  # create new thumbanil from uploaded file
             uploadfile = req.params.get("updatefile")
@@ -291,6 +304,7 @@ def getContent(req, ids):
          "tab": req.params.get("tab", ""),
          "node": node,
          "update_error": update_error,
+         "update_error_extension": update_error_extension,
          "user": user,
          "files": filter(lambda x: x.type != 'statistic', node.files),
          "statfiles": filter(lambda x: x.type == 'statistic', node.files),

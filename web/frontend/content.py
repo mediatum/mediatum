@@ -693,6 +693,17 @@ class NodeNotAccessible(ContentBase):
         return 30
     
 
+class StartpageNotAccessible(ContentBase):
+
+    def __init__(self, error="no such node", status=404):
+        self.error = error
+        self.status = status
+        
+    @property
+    def cache_duration(self):
+        return 30
+    
+
 def make_node_content(node, req, paths):
     """Renders the inner parts of the content area.
     The current node can be a container or a content node. 
@@ -705,12 +716,23 @@ def make_node_content(node, req, paths):
 
     if isinstance(node, Container):
         # try to find a start page
-        if "files" not in req.args and len(filter(None, node.getStartpageDict().values())) > 0:
-            # XXX: would be better to show an error message for missing, but configured start pages
-            html_files = node.files.filter_by(filetype=u"content", mimetype=u"text/html")
+        if "files" not in req.args and len(filter(None, node.getStartpageDict().values())) > 0 and \
+            not req.params.get('after') and not req.params.get('before'):
+
+            html_files = node.files.filter_by(filetype=u"content", mimetype=u"text/html").all()
+            show_startpage = False
             for f in html_files:
                 if f.exists and f.size > 0:
-                    return ContentNode(node)
+                    show_startpage = True
+                else:
+                    logg.error("Startpage: %s is missing for node %d: %s", f.path, node.id, node.name)
+
+            if show_startpage:
+                return ContentNode(node)
+
+            if html_files:
+                # startpage is configured but missing
+                return StartpageNotAccessible()
 
         if node.show_list_view:
             # no startpage found, list view requested
@@ -779,6 +801,16 @@ def render_content_error(error, language):
     return tal.getTAL(webconfig.theme.getTemplate("content_error.html"), {"error": error}, language=language)
 
 
+def render_startpage_error(node, language):
+    # note: append "?after=0" to node_link to display content of page as list
+    ctx = {
+            "node_link": node_url(node.id) + "?after=0",
+            "language" : language
+    }
+    html = webconfig.theme.render_template("content_startpage_error.j2.jade", ctx)
+    return html
+
+
 def render_content_occurences(node, req, paths):
     language = lang(req)
     ctx = {
@@ -812,6 +844,10 @@ def render_content(node, req, render_paths=True):
     if isinstance(content_or_error, NodeNotAccessible):
         req.setStatus(content_or_error.status)
         return render_content_error(content_or_error.error, lang(req))
+
+    if isinstance(content_or_error, StartpageNotAccessible):
+        req.setStatus(content_or_error.status)
+        return render_startpage_error(node, lang(req))
 
     content = content_or_error
     

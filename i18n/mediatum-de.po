@@ -877,8 +877,14 @@ msgstr "Gesucht wurde in folgenden Kollektionen:"
 msgid "error_msg_objectnotfound"
 msgstr "Fehler auf der Seite, Objekt nicht vorhanden bzw. kein Zugriffsrecht auf das gewünschte Objekt."
 
+msgid "error_msg_startpage_not_found"
+msgstr "Fehler auf der Seite, Startseite ist konfiguriert, kann aber nicht gefunden werden"
+
 msgid "home_link"
 msgstr "zur Startseite"
+
+msgid "list_link"
+msgstr "Zum Inhalt der Seite als Liste"
 
 msgid "content_text_file_title"
 msgstr "digitales Objekt vorhanden"

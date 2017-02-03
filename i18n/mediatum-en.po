@@ -856,8 +856,14 @@ msgstr "The search covered the following collections:"
 msgid "error_msg_objectnotfound"
 msgstr "Error on page, object not found or no access rights."
 
+msgid "error_msg_startpage_not_found"
+msgstr "Error on page, a startpage is configured, but cannot be found."
+
 msgid "home_link"
 msgstr "Home"
+
+msgid "list_link"
+msgstr "Content of page as list"
 
 msgid "content_text_file_title"
 msgstr "digital object available"

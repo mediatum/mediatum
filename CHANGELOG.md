@@ -5,6 +5,26 @@ We mostly follow the conventions given in [Keep a Changelog](http://keepachangel
 Calendar Versioning is used for our version numbers: http://calver.org/
 
 
+
+## [v2017.01] - 2017-02-14
+
+### Changed
+
+- removed obsolete integrated help
+- check type of uploaded file when trying to exchange the digital object
+- removed preview editor function for containers
+- performance improvements
+
+### Fixed
+
+- problems when running mediaTUM without a config file
+- Bibtex-Upload: accept non-standard records like @SCIENCEREPORT
+- missing occurences list for search queries
+- missing license icons
+- Bibtex: www-address
+- various bugfixes
+
+
 ## [v2016.12] - 2016-01-24
 
 ### Added

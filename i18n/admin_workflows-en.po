@@ -214,14 +214,26 @@ msgstr "Text to display"
 msgid "WorkflowStep_InvalidFileType"
 msgstr "Type of chosen file invalid"
 
-msgid "admin_wfstep_ldapauth_attribute_for_user_identifier"
-msgstr "attribute for username"
+msgid "admin_wfstep_checkdoublet_names_of_attributes_to_check"
+msgstr "Names of checked attributes (;-separated)"
 
-msgid "admin_wfstep_ldapauth_empty_entry"
-msgstr "username or password empty"
+msgid "admin_wfstep_checkdoublet_exact_field"
+msgstr "Exact fitting Attribut"
 
-msgid "admin_wfstep_ldapauth_wrong_credentials"
-msgstr "wrong credentials: wrong password or username"
+msgid "admin_wfstep_checkdoublet_additional_attribute_to_show"
+msgstr "List of attributes to show additionally (;-separated)"
+
+msgid "admin_wfstep_checkdoublet_masklist_for_labels"
+msgstr "Mask list for labels (;-separated)"
+
+msgid "admin_wfstep_checkdoublet_check_to_remove"
+msgstr "Remove doublets after 'True' option"
+
+msgid "admin_wfstep_checkdoublet_keep"
+msgstr "keep"
+
+msgid "admin_wfstep_checkdoublet_creationtime"
+msgstr "creation time"
 
 msgid "admin_wfstep_sidebar"
 msgstr "Sidebar Content"

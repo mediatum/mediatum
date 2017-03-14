@@ -31,10 +31,6 @@ admin=admin@example.com
 workflow=admin@example.com
 support=support@example.com
 
-[ftp]
-activate=false
-port=8021
-
 [host]
 name=localhost
 port=8081

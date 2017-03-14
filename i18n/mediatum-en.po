@@ -556,9 +556,6 @@ msgstr "Edit Digital Object"
 msgid "tab_frontendparts"
 msgstr "Header/Footer entries"
 
-msgid "tab_ftp"
-msgstr "Process FTP data"
-
 msgid "tab_manageindex"
 msgstr "Manage index lists"
 

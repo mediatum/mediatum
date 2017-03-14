@@ -572,9 +572,6 @@ msgstr "Digitales Objekt bearbeiten"
 msgid "tab_frontendparts"
 msgstr "Kopf-/Fusszeileneinträge"
 
-msgid "tab_ftp"
-msgstr "FTP-Daten verarbeiten"
-
 msgid "tab_manageindex"
 msgstr "Indexlisten verwalten"
 

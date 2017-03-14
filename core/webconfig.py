@@ -143,7 +143,6 @@ def initContexts():
     athana.setTempDir(config.get("paths.tempdir", "/tmp/"))
     from core.config import resolve_filename
     from core.translation import translate, set_language
-    from core.ftp import collection_ftpserver
     tal.set_base(config.basedir)
     tal.add_macro_resolver(resolve_filename)
     tal.add_translator(translate)
@@ -280,18 +279,6 @@ def initContexts():
 
     init_theme()
 
-    # === check for ftp usage ===
-    if config.get("ftp.activate", "") == "true":
-        from contenttypes import Collections
-        # dummy handler for users
-        athana.addFTPHandler(collection_ftpserver(None, port=int(config.get("ftp.port", 21)), debug=config.get("host.type", "testing")))
-
-        for collection in db.query(Collections).one().children:
-            if collection.get("ftp.user") and collection.get("ftp.passwd"):
-                athana.addFTPHandler(collection_ftpserver(
-                    collection, port=int(config.get("ftp.port", 21)), debug=config.get("host.type", "testing")))
-
-        db.session.close()
 
     if admin_enabled:
         import web.newadmin

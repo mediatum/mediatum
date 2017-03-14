@@ -299,6 +299,9 @@ def struct2csv(req, path, params, data, d, debug=False, sep=u';', string_delimit
         except:
             res = u""
             for x in row:
+                # some metadata like width or height may be integer not string
+                if not isinstance(x, basestring):
+                    x = unicode(x)
                 if string_delimiter:
                     x = x.replace(string_delimiter, u"'")
                 res += string_delimiter + x + string_delimiter + sep

@@ -44,7 +44,7 @@ class m_treeselect(Metatype):
     def getSearchHTML(self, context):
         return tal.getTAL("metadata/treeselect.html", {"context": context}, macro="searchfield", language=context.language)
 
-    def getFormattedValue_(self, metafield, maskitem, mask, node, language, html=True, template_from_caller=None):
+    def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True, template_from_caller=None):
         value = node.get(metafield.getName())
         if html:
             value = esc(value)

@@ -24,10 +24,9 @@ from mediatumtal import tal
 from utils.utils import esc
 from core.metatype import Metatype
 from PIL import Image, ImageFont, ImageDraw, ImageEnhance
-import sys
-import traceback
 from utils.utils import splitfilename
 import core.config as config
+from core import db, File
 from utils.strings import replace_attribute_variables
 
 
@@ -161,16 +160,18 @@ class m_watermark(Metatype):
             # check if there is an original file and modify it in case
             for f in node.getFiles():
                 if f.type == "original":
-                    path, ext = splitfilename(f.retrieveFile())
+                    path, ext = splitfilename(f.abspath)
                     pngname = path + "_wm.jpg"
 
                     for file in node.getFiles():
                         if file.getType() == "original_wm":
-                            node.removeFile(file)
+                            node.files.remove(file)
                             break
-                    self.watermark(f.retrieveFile(), pngname, node.get(field.getName()), 0.6)
-                    node.addFile(FileNode(name=pngname, type="original_wm", mimetype="image/jpeg"))
+                    self.watermark(f.abspath, pngname, node.get(field.getName()), 0.6)
+                    node.files.append(File(pngname, "original_wm", "image/jpeg"))
+                    db.session.commit()
                     logg.info("watermark created for original file")
+
 
     # method for additional keys of type watermark
     def getLabels(self):

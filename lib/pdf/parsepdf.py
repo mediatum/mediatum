@@ -29,6 +29,7 @@ import sys
 import os
 from subprocess import call, CalledProcessError
 import utils.process
+import codecs
 
 logging.basicConfig()
 
@@ -76,6 +77,9 @@ def parsePDF(filename, tempdir):
             for attr in attrs:
                 parts = line.replace("\n", "").replace("\r", "").split(attr + ":")
                 if len(parts) == 2:
+                    # pdfinfo cannot handle strings in utf-16, they are clipped after BOM_UTF16_BE:
+                    if parts[1].strip() == codecs.BOM_UTF16_BE:
+                        break
                     data[attr] = parts[1].strip()
 
                     if attr == "Encrypted" and parts[1].strip().startswith("yes"):

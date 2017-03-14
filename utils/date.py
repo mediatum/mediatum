@@ -164,14 +164,6 @@ def format_date(t=None, format=None):
         return result
 
 
-def format_datetime_now():
-    return format_date(now(), '%Y%m%d%H%M%S')
-
-
-def split_date(t):
-    return t.split()
-
-
 def make_date(year, month, day, hour=0, minute=0, second=0):
     return DateTime(year, month, day, hour, minute, second)
 

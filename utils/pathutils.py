@@ -32,54 +32,6 @@ from core.nodecache import get_home_root_node
 
 q = db.query
 
-def createPath(parent_node, sPath, sSeparator='/'):
-    dirs = string.split(sPath, sSeparator)
-    for dirName in dirs:
-        if len(dirName) > 0:
-            dir_node = Node(dirName, 'directory')
-            parent_node.children.append(dir_node)
-            parent_node = dir_node
-    db.session.commit()
-    return parent_node
-
-
-def createPathPreserve(parent_node, sPath, sSeparator='/'):
-    dirs = string.split(sPath, sSeparator)
-    for dirName in dirs:
-        if len(dirName) > 0:
-            node = parent_node.children.filter_by(name=dirName).one()
-            parent_node = node
-            if not isinstance(node, Node):
-                dir_node = Node(dirName, 'directory')
-                parent_node.children.append(dir_node)
-                parent_node = dir_node
-    db.session.commit()
-    return parent_node
-
-
-def createPathPreserve2(parent_node, sPath, sType='directory', sSeparator='/'):
-    dirs = string.split(sPath, sSeparator)
-    for dirName in dirs:
-        if len(dirName) > 0:
-            node = parent_node.children.filter_by(name=dirName).one()
-            parent_node = node
-            if not isinstance(node, Node):
-                dir_node = Node(dirName, sType)
-                parent_node.children.append(dir_node)
-                parent_node = dir_node
-    db.session.commit()
-    return parent_node
-
-
-def checkPath(parent_node, sPath, sSeparator='/'):
-    dirs = string.split(sPath, sSeparator)
-    for dirName in dirs:
-        if len(dirName) > 0:
-            parent_node = parent_node.children.filter_by(name=dirName).one()
-            if not isinstance(parent_node, Node):
-                return None
-    return parent_node
-
 # scaled down version of web.frontend.contend.getPaths() to get all paths
 
 
@@ -121,17 +73,6 @@ def getBrowsingPathList(node):
 def isDescendantOf(node, parent):
     warn("use node.is_descendant_of(parent)", DeprecationWarning)
     return node.is_descendant_of(parent)
-
-
-def getSubdirsContaining(path, filelist=[]):
-    '''returns those (direct) sub folders of path containing all files from filelist'''
-    if not os.path.exists(path):  # path not found
-        return []
-
-    result = [p for p in os.listdir(path) if os.path.isdir(os.path.join(path, p))]
-    if filelist:
-        result = [d for d in result if set(filelist).issubset(os.listdir(os.path.join(path, d)))]
-    return result
 
 
 def getPaths(node):

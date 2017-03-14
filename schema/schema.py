@@ -479,43 +479,6 @@ def checkMask(mask, fix=0, verbose=1, show_unused=0):
     return error
 
 
-def showEditor(node, hiddenvalues={}, allowedFields=None):
-    result = ""
-    fields = node.getType().getMetaFields()
-
-    for field in fields:
-        name = field.getName()
-        langNames = None
-        if field.get("text"):
-            langNames = [lang + name for lang in config.languages]
-        if allowedFields and name not in allowedFields:
-            continue
-        value = ""
-        if langNames:
-            for langName in langNames:
-                value += langName + "\n" + node.get(langName + "__" + name) + "\n"
-        else:
-            value = node.get(name)
-        lock = 0
-
-        #_helpLink = "&nbsp;"
-        # if field.description != "":
-        # _helpLink = """<a href="#" onclick="openPopup(\'/popup_help?pid=""" +
-        # field.pid + """&name=""" + field.name + """\', \'\', 400, 250)"><img
-        # src="img/tooltip.png" border="0"></a>"""
-        if (field.getRequired() > 0):
-            result += ('<tr><td align="left">' + field.getLabel() + ': <span class="required">*</span></td>')
-        else:
-            result += '<tr><td align="left">%s:</td>' % (field.getLabel())
-        result += '<td align="left">%s</td></tr>' % (field.getEditorHTML(value, 400, lock))
-    result += ('<tr><td>&nbsp;</td><td align="left"><small>(<span class="required">*</span> Pflichtfeld, darf nicht leer sein)</small></td></tr>')
-    result += ('<input type="hidden" name="metaDataEditor" value="metaDataEditor">')
-
-    for k, v in hiddenvalues.items():
-        result += ("""<input type="hidden" name="%s" value="%s">\n""" % (k, v))
-    return result
-
-
 def parseEditorData(req, node):
     nodes = [node]
     incorrect = False
@@ -529,25 +492,8 @@ def parseEditorData(req, node):
             value = req.params.get(name, "? ")
 
         if value != "? ":
-            # if (field.getRequired()==1):
-            # not empty
-            #    if (value==""):
-            # error
-            #        incorrect = True
-
             for node in nodes:
                 node.set(name, value)
-
-            # elif (field.getRequired()==2):
-            # has to be a number
-            #    try:
-            #        x = float(value)
-            #    except:
-            # error
-            #        incorrect = True
-
-            #    for node in nodes:
-            #        node.set(name, value)
 
             if field.get('type') == "date":
                 f = field.getSystemFormat(field.fieldvalues)

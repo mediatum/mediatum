@@ -23,7 +23,6 @@ import logging
 import traceback
 import sys
 import os
-import string
 import hashlib
 import re
 import random
@@ -32,7 +31,7 @@ from warnings import warn
 from urlparse import parse_qsl, urlsplit, urlunsplit
 from urllib import quote, urlencode
 
-#import xml.parsers.expat
+# import xml.parsers.expat
 from lxml import etree
 from HTMLParser import HTMLParser
 
@@ -152,12 +151,6 @@ def splitfilename(path):
         return path, ""
 
 
-def findLast(string, char):
-    # TODO
-    """Finds the last occurrence of char in string and returns its index. If the char cannot be found, return -1"""
-    return string.rfind(char)
-
-
 def isnewer(path1, path2):
     try:
         l1 = os.stat(path1)
@@ -176,33 +169,7 @@ def isNumeric(s):
         return 1
 
 
-def float_from_gps_format(string):  # e.g [48, 214/25, 0]
-    if string[0] == '[' and string[-1] == '[':
-        string = string[1:-1]
-        components = string.split(",")
-
-        if len(components) != 3:
-            return 0
-
-        result = 0
-        result += float_from_fraction(components[0])
-        result += float_from_fraction(components[1]) / 60
-        result += float_from_fraction(components[2]) / 3600
-        return result
-    return 0
-
-
-def float_from_fraction(string):
-    components = string.split("/")
-    if len(components) == 1:
-        return float(components[0])
-    elif len(components) == 2:
-        return float(components[0]) / float(components[1])
-    return 0
-
-
 class Link:
-
     def __init__(self, link, title, label, target="_self", icon="/img/blank.gif"):
         self.link = link
         self.title = title
@@ -215,7 +182,6 @@ class Link:
 
 
 class CustomItem:
-
     def __init__(self, name, filename, type="intern", icon=""):
         self.name = name
         self.filename = filename
@@ -264,7 +230,7 @@ def get_hash(filename):
         pathname = filename
         if not os.path.exists(pathname):
             import core.config as config
-            pathname = os.path.join(config.settings["paths.datadir"], filename )
+            pathname = os.path.join(config.settings["paths.datadir"], filename)
         fi = open(pathname, "rb")
         s = fi.read()
         fi.close()
@@ -279,7 +245,7 @@ def get_filesize(filename):
             stat = os.stat(filename)
             return stat[6]
         import core.config as config
-        pathname = os.path.join(config.settings["paths.datadir"], filename )
+        pathname = os.path.join(config.settings["paths.datadir"], filename)
         if os.path.exists(pathname):
             stat = os.stat(pathname)
             return stat[6]
@@ -289,53 +255,7 @@ def get_filesize(filename):
         return 0
 
 
-normalization_items = {"chars": [("00e4", "ae"),
-                                 ("00c4", "Ae"),
-                                 ("00df", "ss"),
-                                 ("00fc", "ue"),
-                                 ("00dc", "Ue"),
-                                 ("00f6", "oe"),
-                                 ("00d6", "Oe"),
-                                 ("00e8", "e"),
-                                 ("00e9", "e")],
-                       "words": []}
-
-
-def normalize_utf8(s):
-    s = s.lower()
-    # Process special characters for search
-    for key, value in normalization_items["chars"]:
-        repl = unichr(int(key, 16)).encode("utf-8")
-        s = s.replace(repl, value)
-    return s
-
-
-def replace_words(s):
-    s = s.lower()
-    # Processing word trees for search
-    for key, value in normalization_items["words"]:
-        s = re.sub(ustr(key), value, s)
-    return s
-
-import locale
-
-
-def compare_utf8(s1, s2):
-    if not s1:
-        s1 = ""
-    if not s2:
-        s2 = ""
-    return locale.strcoll(normalize_utf8(s1), normalize_utf8(s2))
-
-
-def compare_digit(s1, s2):
-    if int(s1) < int(s2):
-        return -1
-    return 1
-
-
 class Option:
-
     def __init__(self, name="", shortname="", value="", imgsource="", optiontype="", validation_regex=""):
         self.name = name
         self.shortname = shortname
@@ -398,15 +318,6 @@ def isDirectory(node):
     return int(isinstance(node, Directory))
 
 
-def getDirectory(node):
-    warn("use Node.get_container()", DeprecationWarning)
-    return node.get_container()
-
-
-def ArrayToString(pieces, glue=""):
-    return string.join(pieces, glue)
-
-
 def formatException():
     s = "Exception " + ustr(sys.exc_info()[0])
     info = sys.exc_info()[1]
@@ -433,7 +344,7 @@ def join_paths(p1, p2):
 
 
 def highlight(string, words, left, right):
-    string = string.replace("\n", " ") .replace("\r", " ") .replace("\t", " ")
+    string = string.replace("\n", " ").replace("\r", " ").replace("\t", " ")
     stringl = string.lower()
     pos = 0
     while pos < len(string):
@@ -458,7 +369,6 @@ def highlight(string, words, left, right):
 # mimetype validator
 #
 def getMimeType(filename):
-
     filename = filename.lower().strip()
     mimetype = "application/x-download"
     type = "file"
@@ -573,7 +483,6 @@ def splitname(fullname):
 #
 
 class HTMLTextCutter(HTMLParser):
-
     """cutting text content of html snippet after cutoff
     """
 
@@ -674,20 +583,12 @@ def formatLongText(value, field, cutoff=500):
             val = p.output.getvalue()
             val = val.rstrip()
             return u'<div id="' + field.getName() + '_full" style="display:none">' + value + '&nbsp;&nbsp;&nbsp;&nbsp;<a href="#" title="Text reduzieren" onclick="expandLongMetatext(\'' + field.getName() + '\');return false">&laquo;</a></div><div id="' + \
-                field.getName() + '_more">' + val + '...&nbsp;&nbsp;&nbsp;&nbsp;<a href="#" title="gesamten Text zeigen" onclick="expandLongMetatext(\'' + \
-                field.getName() + '\');return false">&raquo;</a></div>'
+                   field.getName() + '_more">' + val + '...&nbsp;&nbsp;&nbsp;&nbsp;<a href="#" title="gesamten Text zeigen" onclick="expandLongMetatext(\'' + \
+                   field.getName() + '\');return false">&raquo;</a></div>'
         else:
             return value
     except:
         return value
-
-
-def checkString(string):
-    """ Checks a string, if it only contains alphanumeric chars as well as "-" """
-    result = re.match("([\w\-]+)", string)
-    if result and result.group(0) == string:
-        return True
-    return False
 
 
 def removeEmptyStrings(list):
@@ -729,18 +630,6 @@ def union(definition):  # or
         return result1.keys()
 
 
-def isParentOf(node, parent):
-    parents = node.getParents()
-    if node == parent:
-        return 1
-    if parent in parents:
-        return 1
-    for p in parents:
-        if isParentOf(p, parent):
-            return 1
-    return 0
-
-
 def intersection(definition):  # and
     if not definition:
         return []
@@ -764,7 +653,6 @@ def intersection(definition):  # and
 
 
 class EncryptionException(Exception):
-
     def __init__(self, value=""):
         self.value = value
 
@@ -773,7 +661,6 @@ class EncryptionException(Exception):
 
 
 class OperationException(Exception):
-
     def __init__(self, value=""):
         self.value = value
 
@@ -786,7 +673,6 @@ class FileException:
 
 
 class Menu:
-
     def __init__(self, name, link="", target="_self"):
         self.name = name
         self.link = link
@@ -857,7 +743,6 @@ def mkKey():
 
 
 class Template(object):
-
     """
     Simple and fast templating system for '[att:xyz]' references.
 
@@ -978,24 +863,24 @@ def dec_entry_log(func):
     import sys
     from core.config import basedir
 
-
     @wraps(func)
     def wrapper(*args, **kwargs):
         argnames = func.func_code.co_varnames[:func.func_code.co_argcount]
         a = inspect.getargspec(func)
         if a.defaults:
-            defaults = zip(a.args[-len(a.defaults):],a.defaults)
+            defaults = zip(a.args[-len(a.defaults):], a.defaults)
         else:
             defaults = []
         d = {
-              #'argnames': argnames,
-              #'func.func_code.co_varnames': func.func_code.co_varnames,
-              #'args': args,
-              #'kwargs': kwargs,
-              'defaults': defaults,
-             }
+            # 'argnames': argnames,
+            # 'func.func_code.co_varnames': func.func_code.co_varnames,
+            # 'args': args,
+            # 'kwargs': kwargs,
+            'defaults': defaults,
+        }
         arg_info = []
-        for arg_name, value in zip(argnames, args[:len(argnames)]) + [("args", list(args[len(argnames):]))] + [("kwargs", kwargs)]:
+        for arg_name, value in zip(argnames, args[:len(argnames)]) + [("args", list(args[len(argnames):]))] + [
+            ("kwargs", kwargs)]:
 
             if ("%r" % value).find('.athana.http_request object') > 0:
                 _v = "req.path=%r|req.params=%r" % (value.path, value.params)
@@ -1005,7 +890,8 @@ def dec_entry_log(func):
         s_arg_info = s_arg_info + ("%r" % d)
 
         st = list(inspect.stack()[1])
-        _caller_module = st[1].replace(basedir, '').replace('.pyc', '').replace('.py', '').replace('/', '.').replace('\\', '.')
+        _caller_module = st[1].replace(basedir, '').replace('.pyc', '').replace('.py', '').replace('/', '.').replace(
+            '\\', '.')
         _caller_lineno = st[2]
         _callername = st[3]
         _callerline = st[4]
@@ -1021,9 +907,10 @@ def dec_entry_log(func):
         extra_data = 'result: ' + extra_data
         log_func_exit(args[0], func.__module__, func.__name__, extra_data)
 
-        #print_info(prefix='--> %s.%s' % (func.__module__, func.__name__), prolog='IN ' * 9, epilog='OUT ' * 9, tracecount=250, exclude=[])
+        # print_info(prefix='--> %s.%s' % (func.__module__, func.__name__), prolog='IN ' * 9, epilog='OUT ' * 9, tracecount=250, exclude=[])
         # for later: try to retrieve exit line, log that too
         return res
+
     return wrapper
 
 
@@ -1031,6 +918,7 @@ def make_repr(**args):
     """Class decorator which uses init params to create a human readable instance repr.
     Looks like: MyClass(arg1=value,arg2=value)
     """
+
     def _make_repr(cls):
         """
         :param cls: A class that defines an __init__ method.
@@ -1044,6 +932,7 @@ def make_repr(**args):
 
         cls.__repr__ = repr
         return cls
+
     return _make_repr
 
 
@@ -1069,11 +958,12 @@ def find_free_port():
     return port
 
 
-
 if __name__ == "__main__":
     def tt(s):
         t, f, l = splitname(s)
         print "Title:", t, "| Vorname:", f, "| Nachname:", l
+
+
     tt("Hans Maier (Prof. Dr.)")
     tt("Hans Peter-Juergen Maier (Prof. Dr.)")
     tt("Hans Peter-Juergen Maier (Prof. Dr. (univ))")

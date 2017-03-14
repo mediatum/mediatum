@@ -83,12 +83,3 @@ def increaseURN(urn):
         urn += buildChecksum(urn)
     return urn
 
-
-def checkURN(urn):
-    if not urn.startswith("urn"):
-        return "doesn't start with 'urn'"
-    if urn.lower() != urn:
-        return "is not all lowercase"
-    if buildChecksum(urn[:-1]) != urn[-1:]:
-        return "check sum of '" + urn[:-1] + "' is '" + urn[-1:] + "' but should be '" + buildChecksum(urn[:-1]) + "'"
-    return  # ok

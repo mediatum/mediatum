@@ -487,12 +487,6 @@ msgstr "Rights Management"
 msgid "tab_acls_title"
 msgstr "Edit Rights"
 
-msgid "tab_license"
-msgstr "Object lists/Checksum"
-
-msgid "tab_license_title"
-msgstr "Open Object list/Checksums"
-
 msgid "tab_files"
 msgstr "Change/add digital object"
 

@@ -503,12 +503,6 @@ msgstr "Rechtevergabe"
 msgid "tab_acls_title"
 msgstr "Rechte bearbeiten"
 
-msgid "tab_license"
-msgstr "Objektlisten/Prüfsummen"
-
-msgid "tab_license_title"
-msgstr "Lizensierungsliste anzeigen"
-
 msgid "tab_files"
 msgstr "digitale Objekte austauschen/hinzufügen"
 

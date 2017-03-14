@@ -892,17 +892,8 @@ msgstr "Wenn Sie Schwierigkeiten haben, das Dokument zu öffnen, versuchen Sie a
 msgid "popup_help_header"
 msgstr "Hilfe"
 
-msgid "popup_full_view"
+msgid "full_view"
 msgstr "Vollansicht"
-
-msgid "popup_fullview_decrease"
-msgstr "Verkleinern"
-
-msgid "popup_fullview_increase"
-msgstr "Vergrößern"
-
-msgid "popup_fullview_original"
-msgstr "Originalgröße"
 
 msgid "this_link"
 msgstr "diesen Link"

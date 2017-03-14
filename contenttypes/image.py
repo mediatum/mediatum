@@ -317,6 +317,9 @@ class Image(Content):
 
         can_see_original = self.has_data_access()
 
+        use_flash_zoom = config.getboolean("image.use_flash_zoom", True) and self.should_use_zoom
+        image_url = '/fullsize?id=%d' % self.id if use_flash_zoom else '/image/%d' % self.id
+
         archive = get_archive_for_node(self)
         if archive:
             if can_see_original:
@@ -333,6 +336,7 @@ class Image(Content):
         obj['preferred_image_url'] = self.preferred_image_url
         obj["image_formats"] = self.get_image_formats()
         obj['zoom'] = self.zoom_available
+        obj['image_url'] = image_url
         obj['attachment'] = files
         obj['sum_size'] = sum_size
         obj['presentation_url'] = self.presentation_url
@@ -642,26 +646,14 @@ class Image(Content):
     """ fullsize popup-window for image node """
     def popup_fullsize(self, req):
         # XXX: should be has_data_access instead, see #1135>
+        # but cannot be changed at the moment
         if not self.has_read_access():
             return 404
 
-        no_flash_requested = req.args.get("no_flash", type=int) == 1
-        use_flash_zoom = not no_flash_requested and config.getboolean("image.use_flash_zoom", True) and self.should_use_zoom
-
-        if use_flash_zoom and not self.zoom_available:
-            logg.warn("missing zoom file for image # %s", self.id, trace=False)
-
         d = {}
-        d["flash"] = use_flash_zoom
-        d["svg_url"] = self.image_url_for_mimetype(u"image/svg+xml") if self.svg_image else None
-        d["width"] = self.get("width")
-        # we assume that width==origwidth, height==origheight
-        # XXX: ^ wrong!
-        d["height"] = self.get("height")
         d["image_url"] = self.preferred_image_url
         d['tileurl'] = "/tile/{}/".format(self.id)
-        if use_flash_zoom:
-            d["no_flash_url"] = "/fullsize?id={}&no_flash=1".format(self.id)
+        d["no_flash_url"] = "/fullsize?id={}&no_flash=1".format(self.id)
         html = webconfig.theme.render_macro("image.j2.jade", "imageviewer", d)
         req.write(html)
 

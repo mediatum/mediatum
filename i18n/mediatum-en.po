@@ -871,17 +871,8 @@ msgstr "If you experience problems opening the document, please try this link"
 msgid "popup_help_header"
 msgstr "Help"
 
-msgid "popup_full_view"
+msgid "full_view"
 msgstr "Full View"
-
-msgid "popup_fullview_decrease"
-msgstr "Zoom out"
-
-msgid "popup_fullview_increase"
-msgstr "Zoom in"
-
-msgid "popup_fullview_original"
-msgstr "Fit to window"
 
 msgid "this_link"
 msgstr "this link"

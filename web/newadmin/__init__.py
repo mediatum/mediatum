@@ -12,10 +12,9 @@
 """
 from flask import Flask, request, url_for, redirect, flash
 from flask_admin import Admin
-from redis import Redis
 from web.newadmin.views.user import UserView, UserGroupView, AuthenticatorInfoView, OAuthUserCredentialsView
 from wtforms import form, fields, validators
-from core import db, User
+from core import db, User, config
 from core.auth import authenticate_user_credentials, logout_user
 from flask.ext import admin, login
 from flask.ext.admin import helpers, expose
@@ -105,7 +104,10 @@ def make_app():
     admin.add_view(AccessRulesetView())
     admin.add_view(AccessRulesetToRuleView())
 
-    admin.add_view(ProtectedRedisCli(Redis(db=1), name="Redis CLI"))
+    if config.getboolean("admin.enable_rediscli", False):
+        from flask_admin.contrib import rediscli
+        from redis import Redis
+        admin.add_view(ProtectedRedisCli(Redis(db=1), name="Redis CLI"))
     
     return admin_app
 

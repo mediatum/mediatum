@@ -158,6 +158,12 @@ def initContexts():
     frame.init_child_count_cache()
 
     context = athana.addContext("/", ".")
+
+    workflows_enabled = config.getboolean("workflows.activate", True)
+    admin_enabled = config.getboolean("admin.activate", True)
+    edit_enabled = config.getboolean("edit.activate", True)
+    oai_enabled = config.getboolean("oai.activate", False)
+
     # === public area ===
     file = context.addFile("web/frontend/filehandlers.py")
     file.addHandler("send_thumbnail").addPattern("/thumbs/.*")
@@ -185,7 +191,10 @@ def initContexts():
     handler.addPattern("/nodes/\d+")
     # /\d+ could also be a node, the handler must check this
     handler.addPattern("/\d+")
-    file.addHandler("workflow").addPattern("/mask")
+
+    if workflows_enabled:
+        file.addHandler("workflow").addPattern("/mask")
+
     file.addHandler("show_parent_node").addPattern("/pnode")
     file.addHandler("publish").addPattern("/publish/.*")
     file = context.addFile("web/frontend/popups.py")
@@ -206,45 +215,48 @@ def initContexts():
     file.addHandler("pwdforgotten").addPattern("/pwdforgotten")
     file.addHandler("pwdchange").addPattern("/pwdchange")
 
-    file = context.addFile("workflow/diagram/__init__.py")
-    file.addHandler("send_workflow_diagram").addPattern("/workflowimage")
+    if workflows_enabled:
+        file = context.addFile("workflow/diagram/__init__.py")
+        file.addHandler("send_workflow_diagram").addPattern("/workflowimage")
 
-    # === admin area ===
-    context = athana.addContext("/admin", ".")
-    file = context.addFile("web/handlers/become.py")
-    file.addHandler("become_user").addPattern("/_become/.*")
-    file = context.addFile("web/admin/main.py")
-    file.addHandler("show_node").addPattern("/(?!export/).*")
-    file.addHandler("export").addPattern("/export/.*")
+    if admin_enabled:
+        context = athana.addContext("/admin", ".")
+        file = context.addFile("web/handlers/become.py")
+        file.addHandler("become_user").addPattern("/_become/.*")
+        file = context.addFile("web/admin/main.py")
+        file.addHandler("show_node").addPattern("/(?!export/).*")
+        file.addHandler("export").addPattern("/export/.*")
 
-    # === edit area ===
-    context = athana.addContext("/edit", ".")
-    file = context.addFile("web/edit/edit.py")
-    handler = file.addHandler("frameset")
-    handler.addPattern("/")
-    handler.addPattern("/edit")
-    file.addHandler("edit_print").addPattern("/print/\d+_.+\.pdf")
-    # file.addHandler("showtree").addPattern("/edit_tree")
-    file.addHandler("edit_tree").addPattern("/treedata")
-    file.addHandler("error").addPattern("/edit_error")
-    # file.addHandler("buttons").addPattern("/edit_buttons")
-    file.addHandler("content").addPattern("/edit_content")
-    file.addHandler("content").addPattern("/edit_content/.*")
-    file.addHandler("action").addPattern("/edit_action")
+    if edit_enabled:
+        # === edit area ===
+        context = athana.addContext("/edit", ".")
+        file = context.addFile("web/edit/edit.py")
+        handler = file.addHandler("frameset")
+        handler.addPattern("/")
+        handler.addPattern("/edit")
+        file.addHandler("edit_print").addPattern("/print/\d+_.+\.pdf")
+        # file.addHandler("showtree").addPattern("/edit_tree")
+        file.addHandler("edit_tree").addPattern("/treedata")
+        file.addHandler("error").addPattern("/edit_error")
+        # file.addHandler("buttons").addPattern("/edit_buttons")
+        file.addHandler("content").addPattern("/edit_content")
+        file.addHandler("content").addPattern("/edit_content/.*")
+        file.addHandler("action").addPattern("/edit_action")
 
-    # === ajax tree ===
-    context = athana.addContext("/ftree", ".")
-    handler.addPattern("/ftree")
-    file = context.addFile("web/ftree/ftree.py")
-    file.addHandler("ftree").addPattern("/.*")
+        # === ajax tree ===
+        context = athana.addContext("/ftree", ".")
+        handler.addPattern("/ftree")
+        file = context.addFile("web/ftree/ftree.py")
+        file.addHandler("ftree").addPattern("/.*")
 
     # === services handling ===
     loadServices()
 
     # === OAI ===
-    context = athana.addContext("/oai/", ".")
-    file = context.addFile("export/oai.py")
-    file.addHandler("oaiRequest").addPattern(".*")
+    if oai_enabled:
+        context = athana.addContext("/oai/", ".")
+        file = context.addFile("export/oai.py")
+        file.addHandler("oaiRequest").addPattern(".*")
 
     # === Export ===
     context = athana.addContext("/export", ".")
@@ -281,11 +293,10 @@ def initContexts():
 
         db.session.close()
 
-    # new admin area
+    if admin_enabled:
+        import web.newadmin
+        athana.add_wsgi_context("/f/", web.newadmin.app)
 
-    import web.newadmin
-    athana.add_wsgi_context("/f/", web.newadmin.app)
-    
     # testing global exception handler
     context = athana.addContext("/_test", ".")
     file = context.addFile("web/handlers/handlertest.py")

@@ -124,7 +124,6 @@ def check_imports():
         "sqlalchemy",
         "sqlalchemy_continuum",
         "sqlalchemy_utils",
-        "sympy",
         "unicodecsv",
         "werkzeug",
         "yaml",
@@ -167,7 +166,9 @@ def init_fulltext_search():
 def init_modules():
     """init modules with own init function"""
     from export import oaisets
-    oaisets.init()
+    if config.getboolean("oai.activate", False):
+        oaisets.init()
+
     from export import exportutils
     exportutils.init()
     from schema import schema
@@ -280,7 +281,8 @@ def basic_init(root_loglevel=None, config_filepath=None, prefer_config_filename=
     import utils.log
     utils.log.initialize(root_loglevel, log_filepath, log_filename, use_logstash)
     log_basic_sys_info()
-    check_imports()
+    if config.getboolean("config.enable_startup_checks", True):
+        check_imports()
     set_locale()
     init_app()
     init_db_connector()
@@ -295,15 +297,20 @@ def basic_init(root_loglevel=None, config_filepath=None, prefer_config_filename=
 def _additional_init():
     from core import db
     from core.database import validity
-    db.check_db_structure_validity()
-    validity.check_database()
-    register_workflow()
+    enable_startup_checks = config.getboolean("config.enable_startup_checks", True)
+    if enable_startup_checks:
+        db.check_db_structure_validity()
+        validity.check_database()
+    if config.getboolean("workflows.activate", True):
+        register_workflow()
     from core import plugins
     init_modules()
     plugins.init_plugins()
-    check_undefined_nodeclasses()
+    if enable_startup_checks:
+        check_undefined_nodeclasses()
     update_nodetypes_in_db()
-    init_fulltext_search()
+    if config.getboolean("search.activate", True):
+        init_fulltext_search()
     tal_setup()
     db.session.rollback()
 

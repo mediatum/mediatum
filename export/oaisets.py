@@ -159,6 +159,5 @@ def existsSetSpec(setspec):
 
 
 def init():
-    if config.getboolean("oai.activate", True):
-        registerGroupGetterFunc('mediatum', get_set_groups)
-        loadGroups()
+    registerGroupGetterFunc('mediatum', get_set_groups)
+    loadGroups()

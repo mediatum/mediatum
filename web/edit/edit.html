@@ -1294,7 +1294,8 @@ function reload_htree_filtered(homenodefilter) {
 
     // event click is fired befor activate
     click: function(event, data){
-      consoledb.log('#### click ####');
+      var click_target_type = data.targetType;
+      consoledb.log('#### click ####: ', click_target_type);
       consoledb.log(event);
       consoledb.log('event.type: ' + event.type);
       consoledb.log('action: ' + action);
@@ -1312,15 +1313,15 @@ function reload_htree_filtered(homenodefilter) {
           idselection = node.key;
           loadEditArea(node.key);
       }
-      else {
+      else if (click_target_type == 'title' || click_target_type == 'icon') {
 
         consoledb.groupCollapsed('tree onClick with action');
         consoledb.log('action: '+action);
 
-        var url = '&action='+escape(action);
+        var url = '&action='+encodeURIComponent(action);
 
         if (action=="move" || action=="copy"){
-            url = '&action='+escape(action)+'&dest='+node.key;
+            url = '&action='+encodeURIComponent(action)+'&dest='+node.key;
         }
 
         var ajax_response;
@@ -1367,7 +1368,7 @@ function reload_htree_filtered(homenodefilter) {
 
         $.ajax(options);
         consoledb.groupEnd('tree onClick');
-      }  // else
+      }  // else if
     },  // click:
 
     activate: function(event, data) {

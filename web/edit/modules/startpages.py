@@ -239,6 +239,8 @@ def getContent(req, ids):
 
     db.session.commit()
 
+    named_filelist.sort(lambda x, y: cmp(x[1], y[1]))
+
     v = {"id": req.params.get("id", "0"),
          "tab": req.params.get("tab", ""),
          "node": node,

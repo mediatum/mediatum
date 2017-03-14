@@ -213,27 +213,6 @@ msgstr "Ja;Nein"
 msgid "admin_wfstep_textpage_text_to_display"
 msgstr "anzuzeigender Text"
 
-msgid "admin_wfstep_checkdoublet_names_of_attributes_to_check"
-msgstr "Namen geprüfter Attribute (;-separiert)"
-
-msgid "admin_wfstep_checkdoublet_exact_field"
-msgstr "Exakt passendes Attribut"
-
-msgid "admin_wfstep_checkdoublet_additional_attribute_to_show"
-msgstr "Liste zusätzlich zu zeigender Attribute (;-separiert)"
-
-msgid "admin_wfstep_checkdoublet_masklist_for_labels"
-msgstr "Maskenliste für Labelbestimmung (;-separiert)"
-
-msgid "admin_wfstep_checkdoublet_check_to_remove"
-msgstr "Doubletten bei 'True'-Operation löschen"
-
-msgid "admin_wfstep_checkdoublet_keep"
-msgstr "behalten"
-
-msgid "admin_wfstep_checkdoublet_creationtime"
-msgstr "erstellt am"
-
 msgid "admin_wfstep_ldapauth_attribute_for_user_identifier"
 msgstr "Attribut für Benutzername"
 

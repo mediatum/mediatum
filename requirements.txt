@@ -27,7 +27,6 @@ pyjade
 pymarc
 pympler
 pyPdf
-python-Levenshtein
 python-logstash
 pyyaml
 reportlab

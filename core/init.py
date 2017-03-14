@@ -105,7 +105,6 @@ def check_imports():
         "humanize",
         "ipaddr",
         "jinja2",
-        "Levenshtein",
         "logstash",
         "lxml",
         "mediatumbabel",

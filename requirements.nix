@@ -237,15 +237,6 @@ let
     };
   };
 
-  python-Levenshtein = self.buildPythonPackage {
-    name = "python-Levenshtein-0.12.0";
-    src = fetchurl {
-      url = "https://pypi.python.org/packages/source/p/python-Levenshtein/python-Levenshtein-0.12.0.tar.gz";
-      md5 = "e8cde197d6d304bbdc3adae66fec99fb";
-    };
-    propagatedBuildInputs = with self; [setuptools];
-  };
-
   python-logstash = self.buildPythonPackage {
     name = "python-logstash-0.4.5";
     src = fetchurl {
@@ -545,7 +536,6 @@ in {
       pymarc
       pympler
       pyPdf
-      python-Levenshtein
       python-logstash
       pyyaml
       reportlab

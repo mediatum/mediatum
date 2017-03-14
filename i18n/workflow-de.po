@@ -180,9 +180,6 @@ msgstr "Freischaltung"
 msgid "workflowstep_wait"
 msgstr "Warten"
 
-msgid "workflowstep_checkdoublet"
-msgstr "Doublettencheck (Metadaten)"
-
 msgid "workflowstep_end"
 msgstr "Endknoten"
 

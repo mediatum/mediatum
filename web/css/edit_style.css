@@ -278,35 +278,6 @@ form{
     padding:10px
 }
 
-table.frontendparts{
-    border:1px solid silver; margin:5px; border-width:1px 1px 0px 1px
-}
-table.frontendparts input{
-    background-color:transparent
-}
-table.frontendparts a{
-    color:#000000
-}
-table.frontendparts tr{
-    border:1px solid silver
-}
-tr.silver{
-    background-color:#efefef
-}
-
-table.frontendparts td{
-    padding:2px; margin:2px; border-bottom:1px solid silver
-}
-table.frontendparts td.position{
-    width:20px; text-align:right; padding-right:3px; font-size:8px; padding-top:4px
-}
-table.frontendparts th{
-    background-color:#d8d8d8; padding:3px 5px 2px 3px; border:1px solid silver; border-width:0px 0px 1px 0px; font-variant:small-caps
-}
-table.frontendparts tr:hover{
-    background-color:silver
-}
-
 div.editorrow{
     margin:4px
 }

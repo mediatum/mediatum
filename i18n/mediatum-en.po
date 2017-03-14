@@ -547,9 +547,6 @@ msgstr "Edit startpage"
 msgid "tab_techmeta_obj"
 msgstr "Edit Digital Object"
 
-msgid "tab_frontendparts"
-msgstr "Header/Footer entries"
-
 msgid "tab_manageindex"
 msgstr "Manage index lists"
 

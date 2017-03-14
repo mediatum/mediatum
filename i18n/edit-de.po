@@ -140,20 +140,6 @@ msgstr "Dirty-Flag"
 msgid "edit_localread"
 msgstr "Localread-Flag"
 
-### edit frontendparts ###
-msgid "item_type_intern"
-msgstr "HTML-Seite"
-
-msgid "item_type_text"
-msgstr "Text (Label)"
-
-msgid "item_type_link"
-msgstr "Link"
-
-msgid "item_type_node"
-msgstr "mediatum-Knoten"
-
-
 
 ### workflow ###
 msgid "edit_workflow_msg1"

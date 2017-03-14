@@ -136,18 +136,6 @@ msgstr "Dirty-Flag"
 msgid "edit_localread"
 msgstr "Localread-Flag"
 
-msgid "item_type_intern"
-msgstr "html page"
-
-msgid "item_type_text"
-msgstr "text (label)"
-
-msgid "item_type_link"
-msgstr "link"
-
-msgid "item_type_node"
-msgstr "mediatum node"
-
 msgid "edit_workflow_msg1"
 msgstr "Current object has no workflow. To assign it into a workflow choose one of the list and confirm with 'save'."
 

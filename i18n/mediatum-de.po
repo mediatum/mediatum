@@ -563,9 +563,6 @@ msgstr "Startseite bearbeiten"
 msgid "tab_techmeta_obj"
 msgstr "Digitales Objekt bearbeiten"
 
-msgid "tab_frontendparts"
-msgstr "Kopf-/Fusszeileneinträge"
-
 msgid "tab_manageindex"
 msgstr "Indexlisten verwalten"
 

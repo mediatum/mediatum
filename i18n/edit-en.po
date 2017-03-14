@@ -200,13 +200,22 @@ msgid "edit_access_error"
 msgstr "Access denied"
 
 msgid "edit_common_mark"
-msgstr "Mark"
+msgstr "Mark:"
+
+msgid "edit_all_objects"
+msgstr "Edit all {} objects in this directory"
+
+msgid "pagelist"
+msgstr "Page:"
+
+msgid "edit_common_edit_all_pages"
+msgstr "edit objects on all pages"
 
 msgid "edit_common_mark_all"
-msgstr "Mark all"
+msgstr "Mark all shown objects"
 
 msgid "edit_common_dismark"
-msgstr "Unmark"
+msgstr "Unmark all"
 
 msgid "edit_common_mark_invert"
 msgstr "Invert marks"
@@ -312,17 +321,29 @@ msgstr "Uploads"
 msgid "edit_help_title"
 msgstr "Editor Help"
 
-msgid "edit_selected_edit"
-msgstr "Simultaneously edit metadata of selected objects"
+msgid "edit_selected_edit_on_this_page"
+msgstr "Simultaneously edit metadata of selected objects on this page"
 
-msgid "edit_selected_move"
-msgstr "Move selected objects"
+msgid "edit_all_edit_on_all_pages"
+msgstr "Simultaneously edit metadata of all objects on all pages"
 
-msgid "edit_selected_copy"
-msgstr "Copy selected objects"
+msgid "edit_selected_move_on_this_page"
+msgstr "Move selected objects on this page"
 
-msgid "edit_selected_delete"
-msgstr "Delete selected objects"
+msgid "edit_all_move_on_all_pages"
+msgstr "Move all objects on all pages"
+
+msgid "edit_selected_copy_on_this_page"
+msgstr "Copy selected objects on this page"
+
+msgid "edit_all_copy_on_all_pages"
+msgstr "Copy all objects on all pages"
+
+msgid "edit_selected_delete_on_this_page"
+msgstr "Delete selected objects on this page"
+
+msgid "edit_add_delete_on_all_pages"
+msgstr "Delete all objects on all pages"
 
 msgid "edit_common_edit_meta"
 msgstr "Edit metadata"

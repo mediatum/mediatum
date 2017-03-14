@@ -1,0 +1,56 @@
+<div metal:define-macro="page_nav_prev_next" id="list-page-nav" style="margin-left:5px;margin-right:35px">
+  <style>
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 70px;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -35px;
+    opacity: 0;
+}
+
+.tooltip .tooltiptext::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #555 transparent transparent transparent;
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
+
+  </style>
+    <tal:block tal:condition="python:len(list(nav_list))>1">
+    <span i18n:translate="pagelist">TEXT</span>
+      <tal:block tal:repeat="page python:list(nav_list)">
+        <tal:block tal:define="page_no python:nav_page[int(nav_list.index(page))]">
+        <tal:block tal:define="tooltip python:nav_tooltip[int(nav_list.index(page))]">
+          <tal:block tal:condition="python:act_page!=page_no" >
+            <a class="tooltip" style="font-weight:normal;" tal:attributes="href page" tal:content="raw python:str(page_no) + ('<span class='+chr(34)+'tooltiptext'+chr(34)+'>'+tooltip+'</span>' if tooltip else '')"></a>
+          </tal:block>
+          <tal:block tal:condition="python:act_page==page_no" >
+            <a class="tooltip" style="text-decoration:underline;" tal:attributes="href page" tal:content="raw python:str(page_no) + ('<span class='+chr(34)+'tooltiptext'+chr(34)+'>'+tooltip+'</span>' if tooltip else '')"></a>
+          </tal:block>
+        </tal:block>
+        </tal:block>
+      </tal:block>
+    </tal:block>
+</div>

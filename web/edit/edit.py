@@ -37,8 +37,10 @@ from core.transition import httpstatus, current_user
 from utils.utils import funcname, get_user_id, dec_entry_log, Menu, splitpath, parseMenuString,\
     isDirectory, isCollection
 from schema.schema import Metadatatype
-from web.edit.edit_common import get_edit_label
-
+from web.edit.edit_common import get_edit_label, default_edit_nodes_per_page, get_searchparams
+from web.frontend.content import get_make_search_content_function
+from web.frontend.search import NoSearchResult
+from utils.pathutils import get_accessible_paths
 
 logg = logging.getLogger(__name__)
 q = db.query
@@ -46,25 +48,20 @@ q = db.query
 
 def getTreeLabel(node, lang):
     label = get_edit_label(node, lang)
-    c = node.content_children.count()
-    if c > 0:
-        label += ' <small>(%s)</small>' % (c)
     return label
 
 
-def getEditorIconPath(node, req=None):
+def getEditorIconPath(node, home_dir = None, upload_dir = None, trash_dir = None):
     '''
     retrieve icon path for editor tree relative to img/
     '''
-    if req:
-        user = current_user
 
-        if node is user.home_dir:
-            return 'webtree/homeicon.gif'
-        elif node is user.upload_dir:
-            return 'webtree/uploadicon.gif'
-        elif node is user.trash_dir:
-            return 'webtree/trashicon.gif'
+    if node is home_dir:
+        return 'webtree/homeicon.gif'
+    if node is upload_dir:
+        return 'webtree/uploadicon.gif'
+    if node is trash_dir:
+        return 'webtree/trashicon.gif'
 
     if hasattr(node, 'treeiconclass'):
         return "webtree/" + node.treeiconclass() + ".gif"
@@ -106,9 +103,21 @@ def getIDPaths(nid, sep="/", containers_only=True):
             res.append(sep.join(pids))
     return res
 
+def get_searchitems(req):
+    searchitems = ''
+    searchparams = get_searchparams(req)
+    for k in searchparams:
+        searchitems = '&' + k + '=' + searchparams[k]
+    return searchitems
 
 def frameset(req):
     id = req.params.get("id", q(Collections).one().id)
+    page = int(req.params.get("page", 1))
+    nodes_per_page = req.params.get("nodes_per_page", "")
+    if nodes_per_page:
+        nodes_per_page = int(nodes_per_page)
+    sortfield = req.params.get("sortfield", "")
+    value = req.params.get("value", "")
     tab = req.params.get("tab", None)
     language = lang(req)
     user = current_user
@@ -216,6 +225,11 @@ def frameset(req):
 
     v = {
         "id": id,
+        "page": page,
+        "nodes_per_page": nodes_per_page,
+        "sortfield": sortfield,
+        "value": value,
+        "searchitems": get_searchitems(req),
         "tab": (tab and "&tab=" + tab) or "",
         'user': user,
         'spc': spc,
@@ -381,6 +395,8 @@ def edit_tree(req):
     language = lang(req)
     user = current_user
     home_dir = user.home_dir
+    upload_dir = user.upload_dir
+    trash_dir = user.trash_dir
     match_result = ''
     match_error = False
 
@@ -426,7 +442,7 @@ def edit_tree(req):
                     'folder': True,
                     'readonly': 0,
                     'tooltip': '%s (%s)' % (node.getLabel(lang=language), node.id),
-                    'icon': getEditorIconPath(node, req)}
+                    'icon': getEditorIconPath(node, home_dir=home_dir, upload_dir=upload_dir, trash_dir=trash_dir)}
 
         if len(node.container_children) == 0:
             nodedata['lazy'] = False
@@ -447,10 +463,10 @@ def edit_tree(req):
             nodedata["special_dir_type"] = "home"
             nodedata['match_result'] = match_result
 
-        elif node is user.trash_dir:
+        elif node is trash_dir:
             nodedata["special_dir_type"] = "trash"
 
-        elif node is user.upload_dir:
+        elif node is upload_dir:
             nodedata["special_dir_type"] = "upload"
 
         data.append(nodedata)
@@ -694,6 +710,23 @@ def showPaging(req, tab, ids):
     return req.getTAL("web/edit/edit.html", v, macro="edit_paging")
 
 
+def get_ids_from_req(req):
+    nid = req.params.get("src", req.params.get("id"))
+    if nid:
+        node = q(Node).get(nid)
+        nodes = node.content_children  # XXX: ?? correct
+        make_search_content = get_make_search_content_function(req)
+        paths = get_accessible_paths(node, q(Node).prefetch_attrs())
+        if make_search_content:
+            content_or_error = make_search_content(req, paths)
+            if content_or_error:
+                if isinstance(content_or_error, NoSearchResult):
+                    nodes = []
+                else:
+                    nodes = content_or_error.nodes
+        ids = [str(n.id) for n in nodes]
+        return ids
+
 @dec_entry_log
 def content(req):
 
@@ -748,6 +781,8 @@ def content(req):
         return upload_help(req)
 
     if len(ids) > 0:
+        if ids[0] == "all":
+            ids = get_ids_from_req(req)
         node = q(Node).get(long(ids[0]))
     tabs = "content"
     if isinstance(node, Root):

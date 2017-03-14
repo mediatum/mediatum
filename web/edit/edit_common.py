@@ -19,17 +19,26 @@
 """
 import logging
 
-from core import Node, db
+from core import Node, db, webconfig
 from core.systemtypes import Root
 from core.translation import t, lang
 from core.transition import current_user
 from contenttypes import Container
 from utils.fileutils import importFile
 from utils.utils import EncryptionException, dec_entry_log
+from utils.pathutils import get_accessible_paths
+from utils.compat import iteritems
+from web.frontend.content import get_make_search_content_function
+from web.frontend.search import NoSearchResult
+import re
+import urllib
 
 
 logg = logging.getLogger(__name__)
 q = db.query
+
+default_edit_nodes_per_page = 20
+edit_node_per_page_values = [20, 50, 100, 200]
 
 class NodeWrapper:
 
@@ -42,6 +51,29 @@ class NodeWrapper:
 
     def getNodeNumber(self):
         return self.nodenumber
+
+
+class EditorNavList:
+
+    def __init__(self):
+        self.nav_params = None
+        self.nav_searchparams = {}
+        self.nodes_per_page = default_edit_nodes_per_page
+        self.page = 1
+
+    def nav_link(self, **param_overrides):
+        params = {}
+        # params = self.nav_params.copy()
+        params = self.nav_searchparams.copy()
+        params["page"] = self.page
+
+        if not "page" in param_overrides:
+            if self.page:
+                params["page"] = self.page
+
+        params.update(param_overrides)
+        params = {k: v.encode('utf-8') if not isinstance(v, int) else v for k, v in iteritems(params) if v is not None and v != ""}
+        return '/edit/edit_content?' + urllib.urlencode(params)
 
 
 class EditorNodeList:
@@ -96,17 +128,103 @@ class EditorNodeList:
         return data, script
 
 
+def edit_sort_by_fields(query, field, idx=-1):
+    if idx >= 0:
+        nodes = query
+    if isinstance(field, basestring):
+        # handle some special cases
+        if not field or field == "id" or field == "off":
+            if idx >= 0:
+                return ''
+            return query.order_by(Node.id)
+        elif field == "name" or field == "nodename":
+            if idx >= 0:
+                return nodes[idx].name
+            return query.order_by(Node.name)
+        elif field == "-name" or field == "-nodename":
+            if idx >= 0:
+                return nodes[idx].name
+            return query.order_by(Node.name.desc())
+        elif field == "orderpos":
+            if idx >= 0:
+                print idx
+                return nodes[idx].orderpos
+            return query.order_by(Node.orderpos)
+        elif field == "-orderpos":
+            if idx >= 0:
+                return nodes[idx].orderpos
+            return query.order_by(Node.orderpos.desc())
+        else:
+            fields = [field]
+    else:
+        # remove empty sortfields
+        fields = [f for f in field if f]
+        if not fields:
+            # no fields left, all empty...
+            if idx >= 0:
+                return nodes[idx]
+            return query
+
+    for field in fields:
+        if field.startswith("-"):
+            if idx >= 0:
+                return nodes[idx].get(field[1:])
+            query = query.order_by(Node.attrs[field[1:]].desc())
+        else:
+            if idx >= 0:
+                return nodes[idx].get(field)
+            query = query.order_by(Node.attrs[field])
+
+    if idx >= 0:
+        return nodes[idx]
+    return query
+
+
+def searchbox_navlist_height(req, item_count):
+    searchmode = req.params.get("searchmode")
+    bottom = 93 + 15 if item_count[0] < item_count[1] else 93
+    return bottom if not searchmode else bottom + 67 if searchmode == "extended" else bottom + 256
+
+g_nodes = []
+
 @dec_entry_log
-def showdir(req, node, publishwarn="auto", markunpublished=False, sortfield=None):
+def shownav(req, node, publishwarn="auto", markunpublished=False, sortfield=None):
+    page = int(req.params.get('page', 1))
+    # showdir must be called before shownav, so g_nodes can be used from showdir
+    return shownavlist(req, node, g_nodes, page, dir=node)
+
+
+@dec_entry_log
+def showdir(req, node, publishwarn="auto", markunpublished=False, sortfield=None, item_count=None, all_nodes=None):
+    global g_nodes
     if publishwarn == "auto":
         homedirs = current_user.home_dir.all_children_by_query(q(Container))
         publishwarn = node in homedirs
     nodes = node.content_children # XXX: ?? correct
+    make_search_content = get_make_search_content_function(req)
+    paths = get_accessible_paths(node, q(Node).prefetch_attrs())
+    if make_search_content:
+        content_or_error = make_search_content(req, paths)
+        if content_or_error:
+            if isinstance(content_or_error, NoSearchResult):
+                nodes = []
+            else:
+                nodes = content_or_error.nodes
+
     if sortfield is None:
+        sortfield = req.params.get('sortfield')
+    if not sortfield:
         sortfield = node.get("sortfield")
-    if sortfield:
-        nodes = nodes.sort_by_fields(sortfield)
-    return shownodelist(req, nodes, publishwarn=publishwarn, markunpublished=markunpublished, dir=node)
+    if nodes:
+        if sortfield and sortfield != "off":
+            nodes = edit_sort_by_fields(nodes, sortfield)
+        else:
+            nodes = edit_sort_by_fields(nodes, "id")
+    # set g_nodes to be used by shownav which must be called after showdir
+    g_nodes = nodes
+    page = int(req.params.get('page', 1))
+    return shownodelist(req, nodes, page, publishwarn=publishwarn, markunpublished=markunpublished, dir=node,
+                        item_count=item_count, all_nodes=all_nodes)
 
 
 def getAllSubDirs(node):
@@ -121,16 +239,90 @@ def getAllSubDirs(node):
 def showoperations(req, node):
     return ""
 
+def get_nodes_per_page(req, dir):
+    nodes_per_page = req.params.get('nodes_per_page', '')
+    if nodes_per_page:
+        nodes_per_page = int(nodes_per_page)
+    else:
+        if dir:
+            nodes_per_page = dir.get('nodes_per_page')
+            if nodes_per_page:
+                nodes_per_page = int(nodes_per_page)
+    if not nodes_per_page:
+        nodes_per_page = default_edit_nodes_per_page
+    return nodes_per_page
+
+re_searchparams = re.compile("(query\d*|field\d+|searchmode)")
+
+def get_searchparams(req):
+    searchparams = {k: v for k, v in req.args.items() if re.match(re_searchparams, k)}
+    return searchparams
+
 
 @dec_entry_log
-def shownodelist(req, nodes, publishwarn=True, markunpublished=False, dir=None):
+def shownavlist(req, node, nodes, page, dir=None):
+    nodes_per_page = get_nodes_per_page(req, dir)
+
+    c = EditorNavList()
+    c.nodes_per_page = nodes_per_page
+    c.nodes_per_page_from_req = nodes_per_page
+    c.nav_params = {k: v for k, v in req.args.items()
+                    if k not in ("style", "sortfield", "page", "nodes_per_page")}
+    c.nav_searchparams = get_searchparams(req)
+    if isinstance(nodes, list):
+        nodes_len = len(nodes)
+    else:
+        nodes_len = nodes.count()
+    if req.params.get("action", "") == "resort":
+        sortfield = req.params.get("value", "")
+    else:
+        sortfield = req.params.get("sortfield", "")
+    if not sortfield:
+        sortfield = node.get("sortfield")
+    node_id = req.params.get("id", "")
+    end_idx = nodes_len/nodes_per_page + (1 if nodes_len % nodes_per_page == 0 else 2)
+    nav_page = [x for x in range(1, end_idx)]
+    nav_list = [c.nav_link(id=node_id, page=p, nodes_per_page=nodes_per_page, sortfield=sortfield) for p in nav_page]
+    nav_tooltip = []
+    node_idx = 0
+    if nodes_len:
+        for p in nav_page:
+            tooltip = edit_sort_by_fields(nodes, sortfield, node_idx)
+            if isinstance(tooltip, basestring):
+                if len(tooltip) > 13:
+                    tooltip = tooltip[:10] + '...'
+            else:
+                tooltip = str(tooltip)
+            nav_tooltip.append(tooltip)
+            node_idx += nodes_per_page
+    ctx = {
+        "act_page": page,
+        "nav_list" : nav_list,
+        "nav_tooltip" : nav_tooltip,
+        "nav_page" : nav_page,
+    }
+    page_nav = req.getTAL("web/edit/edit_nav.html", ctx, macro="page_nav_prev_next")
+    return page_nav
+
+
+@dec_entry_log
+def shownodelist(req, nodes, page, publishwarn=True, markunpublished=False, dir=None, item_count=None, all_nodes=None):
     req.session["nodelist"] = EditorNodeList(nodes)
     script_array = "allobjects = new Array();\n"
     nodelist = []
+    nodes_per_page = get_nodes_per_page(req, dir)
+
+    start = (page - 1) * nodes_per_page
+    end = start + nodes_per_page
 
     user = current_user
+    nodes_in_page = nodes[start:end]
+    all_nodes = nodes[:]
+    if isinstance(item_count, list):
+        item_count.append(len(nodes_in_page))
+        item_count.append(len(all_nodes))
 
-    for child in nodes:
+    for child in nodes_in_page:
         from contenttypes import Content
         if isinstance(child, Content):
             script_array += "allobjects['%s'] = 0;\n" % child.id
@@ -142,7 +334,7 @@ def shownodelist(req, nodes, publishwarn=True, markunpublished=False, dir=None):
         homedirs = user.home_dir.all_children_by_query(q(Container))
         if markunpublished:
             chkjavascript = """<script language="javascript">"""
-        for node in nodes:
+        for node in nodes_in_page:
             ok = 0
             for p in node.parents:
                 if p not in homedirs:
@@ -168,13 +360,14 @@ def shownodelist(req, nodes, publishwarn=True, markunpublished=False, dir=None):
             uploaddir = user.upload_dir
         unpublishedlink = "edit_content?tab=publish&id=" + unicode(uploaddir.id)
 
-    return req.getTAL("web/edit/edit_common.html", {"notpublished": notpublished,
+    html = req.getTAL("web/edit/edit_common.html", {"notpublished": notpublished,
                                                     "chkjavascript": chkjavascript,
                                                     "unpublishedlink": unpublishedlink,
                                                     "nodelist": nodelist,
                                                     "script_array": script_array,
                                                     "language": lang(req)},
                       macro="show_nodelist")
+    return html
 
 
 def isUnFolded(unfoldedids, id):

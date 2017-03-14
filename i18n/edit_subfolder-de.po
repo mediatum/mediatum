@@ -31,6 +31,9 @@ msgstr "nach oben"
 msgid "edit_sort_header_auto"
 msgstr "Automatisch sortieren"
 
+msgid "edit_nodes_per_page"
+msgstr "Objekte pro Seite"
+
 msgid "edit_sort_sort"
 msgstr "Sortieren"
 

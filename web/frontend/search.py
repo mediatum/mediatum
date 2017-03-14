@@ -74,9 +74,10 @@ def protect(s):
     return '"' + s.replace('"', '') + '"'
 
 
-def search(searchtype, searchquery, readable_query, paths, req):
+def search(searchtype, searchquery, readable_query, paths, req, container_id = None):
     from web.frontend.content import ContentList
-    container_id = req.args.get("id", type=int)
+    if not container_id:
+        container_id = req.args.get("id", type=int)
     container = q(Container).get(container_id) if container_id else None
 
     # if the current node is not a Container or not accessible by the user, use the collections root instead
@@ -116,12 +117,12 @@ def search(searchtype, searchquery, readable_query, paths, req):
         return NoSearchResult(readable_query, container, searchtype)
 
 
-def simple_search(req, paths):
+def simple_search(req, paths, container_id=None):
     searchquery = req.args.get("query")
     readable_searchquery = searchquery
     if searchquery is None:
         raise ValueError("searchquery param missing!")
-    return search("simple", FullMatch(searchquery), readable_searchquery, paths, req)
+    return search("simple", FullMatch(searchquery), readable_searchquery, paths, req, container_id)
 
 
 def _extended_searchquery_from_req(req):

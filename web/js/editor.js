@@ -669,8 +669,36 @@ function sortItems_sync(o){
 }
 
 
+function loadUrl(newLocation)
+{
+  window.location = newLocation;
+  return false;
+}
+
+
+function sortItemsPage_sync(o1, o2, o3){
+
+
+    var url
+    if (o3 == '')
+       url = '/edit/edit_content?id='+id+'&sortfield='+$(o1).val()+'&nodes_per_page='+$(o2).val();
+    else
+       url = '/edit/edit_content?id='+id+'&'+o3+'&sortfield='+$(o1).val()+'&nodes_per_page='+$(o2).val();
+    reloadURL(url);
+}
+
+
 function saveSort(o){
     $.getJSON('/edit/edit_content?action=save&id='+id+'&tab=content&value='+$(o).val(), function(data) {
+        // save done
+        $("#message").html(data.message);
+        $("#message").show().delay(5000).fadeOut();
+    });
+}
+
+
+function saveSortPage(o1, o2){
+    $.getJSON('/edit/edit_content?action=save&id='+id+'&tab=content&value='+$(o1).val()+'&nodes_per_page='+$(o2).val(), function(data) {
         // save done
         $("#message").html(data.message);
         $("#message").show().delay(5000).fadeOut();

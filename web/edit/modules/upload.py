@@ -31,8 +31,8 @@ import logging
 
 import json
 
-from web.edit.edit_common import showdir, showoperations
-from web.edit.edit import getTreeLabel
+from web.edit.edit_common import showdir, shownav, showoperations, searchbox_navlist_height
+from web.edit.edit import getTreeLabel, get_ids_from_req
 from utils.url import build_url_from_path_and_params
 from utils.utils import join_paths, getMimeType, funcname, get_user_id, dec_entry_log
 from utils.fileutils import importFileToRealname, importFileRandom
@@ -46,6 +46,9 @@ from core import Node
 from schema.schema import Metadatatype, get_permitted_schemas, get_permitted_schemas_for_datatype
 from sqlalchemy import func
 from utils.compat import iteritems
+from web.edit.edit_common import default_edit_nodes_per_page, edit_node_per_page_values, get_searchparams
+from web.frontend.frame import render_search_box
+import urllib
 
 logg = logging.getLogger(__name__)
 identifier_importers = {}
@@ -92,6 +95,10 @@ def getContent(req, ids):
 
     user = users.getUserFromRequest(req)
     language = lang(req)
+
+    def get_ids_from_query():
+        ids = get_ids_from_req(req)
+        return ",".join(ids)
 
     if "action" in req.params:
         state = 'ok'
@@ -407,8 +414,17 @@ def getContent(req, ids):
 
         if "globalsort" in req.params:
             node.set("sortfield", req.params.get("globalsort"))
-        v['collection_sortfield'] = node.get("sortfield")
-        sortfields = [SortChoice(translation_t(req, "off"), "")]
+        if req.params.get("sortfield", "") != "":
+            v['collection_sortfield'] = req.params.get("sortfield")
+        else:
+            v['collection_sortfield'] = node.get("sortfield")
+        if req.params.get("nodes_per_page", "") != "":
+            v['npp_field'] = req.params.get("nodes_per_page", default_edit_nodes_per_page)
+        else:
+            v['npp_field'] = node.get("nodes_per_page")
+        if not v['npp_field']:
+            v['npp_field'] = default_edit_nodes_per_page
+        sortfields = [SortChoice(translation_t(req, "off"), "off")]
 
         if node.type not in ["root", "collections", "home"]:
             sorted_schema_count = node.all_children_by_query(q(Node.schema, func.count(Node.schema)).group_by(Node.schema).order_by(func.count(Node.schema).desc()))
@@ -424,9 +440,17 @@ def getContent(req, ids):
                         break
 
         v['sortchoices'] = sortfields
-        v['count'] = len(node.content_children)
+        v['npp_choices'] = [SortChoice(str(x), x) for x in edit_node_per_page_values]
         v['language'] = lang(req)
         v['t'] = translation_t
+
+    search_html = render_search_box(q(Node).get(ids[0]), language, req, edit=True)
+    searchmode = req.params.get("searchmode")
+    item_count = []
+    items = showdir(req, node, sortfield=req.params.get("sortfield"), item_count=item_count)
+    nav = shownav(req, node, sortfield=req.params.get("sortfield"))
+    navigation_height = searchbox_navlist_height(req, item_count)
+    count = item_count[0] if item_count[0] == item_count[1] else "%d from %d" % (item_count[0], item_count[1])
 
     v.update({
         "id": req.params.get("id"),
@@ -435,9 +459,18 @@ def getContent(req, ids):
         "schemes": schemes,
         "uploadstate": req.params.get("upload"),
         "operations": showoperations(req, node),
-        "nodelist": showdir(req, node),
+        "nodelist": items,
+        "nav": nav,
+        "count": count,
+        "search": search_html,
+        "query" : req.query.replace('id=', 'src='),
+        "searchparams" : urllib.urlencode(get_searchparams(req)),
+        "get_ids_from_query" : get_ids_from_query,
+        "edit_all_objects" : translation_t(lang(req), "edit_all_objects").format(item_count[1]),
+        "navigation_height": navigation_height,
     })
-    return req.getTAL("web/edit/modules/upload.html", v, macro="upload_form")
+    html = req.getTAL("web/edit/modules/upload.html", v, macro="upload_form")
+    return html
 
 
 # differs from os.path.split in that it handles windows as well as unix

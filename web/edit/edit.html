@@ -985,7 +985,7 @@ function addItem(id, path){  // currently unused
 }
 
 function loadEditArea(id){
-    $('.ui-layout-center').attr('src', '/edit/edit_content?id='+id);
+    $('.ui-layout-center').attr('src', '/edit/edit_content?id='+ id);
 }
 
 function set_cm_to_default() {
@@ -997,7 +997,7 @@ function set_cm_to_default() {
 </head>
         <body>
 
-            <iframe class="ui-layout-center" tal:attributes="src python:u'/edit/edit_content?id={}'.format(id)"> </iframe>
+          <iframe class="ui-layout-center" tal:attributes="src python:u'/edit/edit_content?id={}&page={}&nodes_per_page={}&sortfield={}&value={}{}'.format(id, page, nodes_per_page,sortfield, value, searchitems)"> </iframe>
 
             <div class="ui-layout-north" style="background-color:#ddd!important;">
                 <tal:block tal:condition="python:system_editor_header_insert" tal:replace="structure python: system_editor_header_insert">TEXT</tal:block>

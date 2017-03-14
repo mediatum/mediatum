@@ -206,10 +206,19 @@ msgid "edit_access_error"
 msgstr "Nicht berechtigt"
 
 msgid "edit_common_mark"
-msgstr "Markieren"
+msgstr "Markieren:"
+
+msgid "edit_all_objects"
+msgstr "Alle {} Objekte des Ordners bearbeiten"
+
+msgid "pagelist"
+msgstr "Seite:"
+
+msgid "edit_common_edit_all_pages"
+msgstr "Alle Objekte auf allen Seiten bearbeiten"
 
 msgid "edit_common_mark_all"
-msgstr "Alles markieren"
+msgstr "Alle angezeigten Objekte markieren"
 
 msgid "edit_common_dismark"
 msgstr "Markierung aufheben"
@@ -325,17 +334,29 @@ msgstr "Uploads"
 msgid "edit_help_title"
 msgstr "Editor-Hilfe"
 
-msgid "edit_selected_edit"
-msgstr "Metadaten selektierter Objekte gleichzeitig bearbeiten"
+msgid "edit_selected_edit_on_this_page"
+msgstr "Metadaten selektierter Objekte auf dieser Seite gleichzeitig bearbeiten"
 
-msgid "edit_selected_move"
-msgstr "Selektierte Objekte verschieben"
+msgid "edit_all_edit_on_all_pages"
+msgstr "Metadaten aller Objekte auf allen Seiten gleichzeitig bearbeiten"
 
-msgid "edit_selected_copy"
-msgstr "Selektierte Objekte kopieren"
+msgid "edit_selected_move_on_this_page"
+msgstr "Selektierte Objekte auf dieser Seite verschieben"
 
-msgid "edit_selected_delete"
-msgstr "Selektierte Objekte löschen"
+msgid "edit_all_move_on_all_pages"
+msgstr "Alle Objekte auf allen Seiten verschieben"
+
+msgid "edit_selected_copy_on_this_page"
+msgstr "Selektierte Objekte auf dieser Seite kopieren"
+
+msgid "edit_all_copy_on_all_pages"
+msgstr "Alle Objekte auf allen Seiten kopieren"
+
+msgid "edit_selected_delete_on_this_page"
+msgstr "Selektierte Objekte auf dieser Seite löschen"
+
+msgid "edit_all_delete_on_all_pages"
+msgstr "Alle Objekte auf allen Seiten löschen"
 
 msgid "edit_common_edit_meta"
 msgstr "Metadaten bearbeiten"

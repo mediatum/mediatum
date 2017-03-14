@@ -31,7 +31,7 @@ from core.metatype import Context
 from core import webconfig
 from core.transition import current_user
 from core.users import get_guest_user
-from core.webconfig import node_url
+from core.webconfig import node_url, edit_node_url
 from contenttypes import Directory, Container, Collection, Collections
 from schema.schema import getMetadataType
 from utils.compat import iteritems
@@ -86,7 +86,7 @@ def getSearchMask(collection):
 
 class Searchlet(object):
 
-    def __init__(self, container):
+    def __init__(self, container, edit=False):
         self.lang = None
         self.ip = None
         self.container = container
@@ -98,6 +98,7 @@ class Searchlet(object):
         self.values = [None] + [""] * 10
         self.req = None
         self.searchmaskitems = OrderedDict()
+        self.edit = edit
 
         if self.searchmask:
             for field in self.searchmask.children.order_by("orderpos"):
@@ -158,7 +159,7 @@ class Searchlet(object):
         if mode != "simple":
             params["searchmode"] = mode
 
-        return node_url(self.container.id, **params)
+        return node_url(self.container.id, **params) if not self.edit else edit_node_url(self.container.id, **params)
 
     def searchLinkSimple(self):
         return self.search_link()
@@ -177,6 +178,9 @@ class Searchlet(object):
 
     def isExtendedSuper(self):
         return self.searchmode == "extendedsuper"
+
+    def inEditor(self):
+        return self.edit
 
     def getSearchField(self, pos, width=174):
         try:
@@ -208,8 +212,8 @@ class Searchlet(object):
             None
 
 
-def render_search_box(container, language, req):
-    search_portlet = Searchlet(container)
+def render_search_box(container, language, req, edit=False):
+    search_portlet = Searchlet(container, edit)
     search_portlet.feedback(req)
     liststyle = req.args.get("liststyle")
 
@@ -218,7 +222,8 @@ def render_search_box(container, language, req):
         "container_id": container.id,
         "liststyle": liststyle,
         "language": language,
-        "search_placeholder": t(language, "search_in") + " " + container.getLabel(language)
+        "search_placeholder": t(language, "search_in") + " " + container.getLabel(language),
+        "action": '/' if not edit else '/edit/edit_content'
     }
 
     search_html = webconfig.theme.render_template("frame_search.j2.jade", ctx)

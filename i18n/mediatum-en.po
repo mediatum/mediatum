@@ -145,6 +145,12 @@ msgstr "sort by:"
 msgid "sort_label2"
 msgstr "and:"
 
+msgid "sub_header_help_title"
+msgstr "Switch to documentation"
+
+msgid "sub_header_help"
+msgstr "Help"
+
 msgid "sub_header_logout_title"
 msgstr "Logout current user"
 

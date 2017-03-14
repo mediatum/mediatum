@@ -152,6 +152,12 @@ msgid "sort_label2"
 msgstr "und:"
 
 # sub_header
+msgid "sub_header_help_title"
+msgstr "Zur Dokumentation wechseln"
+
+msgid "sub_header_help"
+msgstr "Hilfe"
+
 msgid "sub_header_logout_title"
 msgstr "Abmelden"
 

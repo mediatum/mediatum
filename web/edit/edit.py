@@ -164,6 +164,8 @@ def frameset(req):
     if user.is_workflow_editor:
         spc.append(Menu("sub_header_workflow", "../publish/", target="_parent"))
 
+    spc.append(Menu("sub_header_help", "http://mediatum.readthedocs.io", target="_blank"))
+
     spc.append(Menu("sub_header_logout", "../logout", target="_parent"))
 
     def getPathToFolder(node):
@@ -216,11 +218,6 @@ def frameset(req):
         cmenu_iconpaths.append(
             [ct_name.lower(), t(language, ct_name), get_editor_icon_path_from_nodeclass(ct)])
 
-    # a html snippet may be inserted in the editor header
-    # XXX: this should be moved to the settings table!
-    header_insert, help_link = q(Collections.system_attrs[u"editor.header.insert" + language], 
-                                 Collections.system_attrs[u"editor.help_link" + language]).one()
-                                 
     homenodefilter = req.params.get('homenodefilter', '')
 
     v = {
@@ -242,8 +239,6 @@ def frameset(req):
         'language': lang(req),
         't': t,
         '_getIDPath': _getIDPath,
-        'system_editor_header_insert': (header_insert or "").strip(),
-        'system_editor_help_link': (help_link or "").strip(),
         'homenodefilter': homenodefilter,
     }
 
@@ -282,26 +277,12 @@ def handletabs(req, ids, tabs):
 
     menu = filterMenu(get_edit_menu_tabs(n.__class__), user)
 
-    spc = [Menu("sub_header_frontend", "../", target="_parent")]
-    if user.is_admin:
-        spc.append(
-            Menu("sub_header_administration", "../admin", target="_parent"))
-
-    if user.is_workflow_editor:
-        spc.append(Menu("sub_header_workflow", "../publish/", target="_parent"))
-
-    spc.append(Menu("sub_header_logout", "../logout", target="_parent"))
-
-    # a html snippet may be inserted in the editor header
-    help_link = q(Collections.system_attrs['editor.help.link.' + language]).scalar()
     ctx = {
         "user": user,
         "ids": ids,
         "idstr": ",".join(ids),
         "menu": menu,
         "breadcrumbs": getBreadcrumbs(menu, req.params.get("tab", tabs)),
-        "spc": spc,
-        "system_editor_help_link": help_link,
     }
     return req.getTAL("web/edit/edit.html", ctx, macro="edit_tabs")
 
@@ -923,15 +904,6 @@ def content(req):
         v['user'] = user
         v['language'] = lang(req)
         v['t'] = t
-
-        v['spc'] = [Menu("sub_header_frontend", "../", target="_parent")]
-        if user.is_admin:
-            v['spc'].append(Menu("sub_header_administration", "../admin", target="_parent"))
-
-        if user.is_workflow_editor:
-            v['spc'].append(Menu("sub_header_workflow", "../publish/", target="_parent"))
-
-        v['spc'].append(Menu("sub_header_logout", "../logout", target="_parent"))
 
         # add icons to breadcrumbs
         ipath = 'webtree/directory.gif'

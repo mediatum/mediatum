@@ -29,7 +29,6 @@
         </h2>
         <div id="printdiv" style="position:absolute;right:5px;bottom:5px;">
             <a tal:attributes="href python:u'/print/{}'.format(idstr)" target="_blank"><img src="/img/print_icon.gif"/></a>
-            <a tal:condition="python:system_editor_help_link" target="_blank" i18n:attributes="title edit_help_title" tal:attributes="href python:system_editor_help_link" > <img src="/img/help.png"/></a>
         </div>
     </div>
 
@@ -1000,7 +999,6 @@ function set_cm_to_default() {
           <iframe class="ui-layout-center" tal:attributes="src python:u'/edit/edit_content?id={}&page={}&nodes_per_page={}&sortfield={}&value={}{}'.format(id, page, nodes_per_page,sortfield, value, searchitems)"> </iframe>
 
             <div class="ui-layout-north" style="background-color:#ddd!important;">
-                <tal:block tal:condition="python:system_editor_header_insert" tal:replace="structure python: system_editor_header_insert">TEXT</tal:block>
                 <div id="logocontainer" style="overflow:hidden">
 
                     <span i18n:translate="sub_header_user">TEXT</span>: <span tal:replace="raw python:user.getName()"/>
@@ -1015,11 +1013,6 @@ function set_cm_to_default() {
                 <div class="subnavigation" style="background-color:#ddd!important;margin:0!important;padding:0!important;">
 
                     <div style="position:absolute;right:2px;top:10px">
-                        <!-- replaced context help temporarily by static pdf -->
-                        <!--
-                        <a href="#" onclick="return getHelp('/help/edit/')" i18n:attributes="title edit_help_title"><img src="/img/edit_help.gif"/></a>
-                        -->
-                        <a tal:condition="python:system_editor_help_link" target="_blank" i18n:attributes="title edit_help_title" tal:attributes="href python:system_editor_help_link" > <img src="/img/edit_help.gif"/></a>
                     </div>
                     <div style="padding-top:6px;margin:0 0 0 5px;white-space:nowrap;" i18n:translate="">
                         <a href="#" tal:attributes="onclick python:u'return reloadPage({},\'{}\')'.format(folders['homedir'][0].id, folders['homedir'][1])"><img src="/img/webtree/homeicon.gif" i18n:attributes="title e_folder_homedir" style="padding-right:10px"/></a>

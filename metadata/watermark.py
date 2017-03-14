@@ -28,6 +28,7 @@ import sys
 import traceback
 from utils.utils import splitfilename
 import core.config as config
+from utils.strings import replace_attribute_variables
 
 
 logg = logging.getLogger(__name__)
@@ -58,15 +59,7 @@ class m_watermark(Metatype):
         if html:
             value = esc(value)
         # replace variables
-        for var in re.findall(r'&lt;(.+?)&gt;', value):
-            if var == "att:id":
-                value = value.replace("&lt;" + var + "&gt;", unicode(node.id))
-            elif var.startswith("att:"):
-                val = node.get(var[4:])
-                if val == "":
-                    val = "____"
-
-                value = value.replace("&lt;" + var + "&gt;", val)
+        value = replace_attribute_variables(value, node.id, node.get, r'&lt;(.+?)&gt;', "&lt;", "&gt;")
 
         return (metafield.getLabel(), value)
 

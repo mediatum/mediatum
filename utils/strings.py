@@ -5,6 +5,7 @@
 """
 from functools import wraps, partial
 import logging 
+import re
 
 
 logg = logging.getLogger(__name__)
@@ -58,3 +59,16 @@ def ensure_unicode(s, silent=False):
         if not silent:
             logg.warn("trying to decode ustr as utf8: %s", s[:200].encode("string-escape"))
         return s.decode("utf8")
+
+
+@ensure_unicode_returned
+def replace_attribute_variables(value, nid, value_getter, reg_exp, left_tag, right_tag):
+    for var in re.findall(reg_exp, value):
+        if var == "att:id":
+            value = value.replace(left_tag + var + right_tag, unicode(nid))
+        elif var.startswith("att:"):
+            val = value_getter(var[4:])
+            if val == "":
+                val = "____"
+            value = value.replace(left_tag + var + right_tag, val)
+    return value

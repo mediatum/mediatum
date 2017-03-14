@@ -25,6 +25,7 @@ from core.translation import t
 from urllib import unquote
 from utils.utils import quote_uri
 from utils.strings import ensure_unicode_returned
+from utils.strings import replace_attribute_variables
 
 
 logg = logging.getLogger(__name__)
@@ -32,23 +33,8 @@ logg = logging.getLogger(__name__)
 
 @ensure_unicode_returned
 def _replace_vars(node, s):
-    for var in re.findall(r'<(.+?)>', s):
-        if var == "att:id":
-            s = s.replace("<" + var + ">", unicode(node.id))
-        elif var.startswith("att:"):
-            val = node.get_special(var[4:])
-            if val == "":
-                val = "____"
-            s = s.replace("<" + var + ">", val)
-
-    for var in re.findall(r'\[(.+?)\]', s):
-        if var == "att:id":
-            s = s.replace("[" + var + "]", unicode(node.id))
-        elif var.startswith("att:"):
-            val = node.get_special(var[4:])
-            if val == "":
-                val = "____"
-            s = s.replace("[" + var + "]", val)
+    s = replace_attribute_variables(s, node.id, node.get_special, r'<(.+?)>', "<", ">")
+    s = replace_attribute_variables(s, node.id, node.get_special, r'\[(.+?)\]', "[", "]")
     return s
 
 

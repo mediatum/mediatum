@@ -35,6 +35,7 @@ from utils.utils import highlight
 from core.transition.globals import request
 from utils.compat import iteritems
 from markupsafe import Markup
+from utils.strings import replace_attribute_variables
 
 logg = logging.getLogger(__name__)
 
@@ -122,28 +123,12 @@ def render_mask_template(node, mask, field_descriptors, language, words=None, se
 
             if value.find('&lt;') >= 0:
                 # replace variables
-                for var in re.findall(r'&lt;(.+?)&gt;', value):
-                    if var == "att:id":
-                        value = value.replace("&lt;" + var + "&gt;", unicode(node.id))
-                    elif var.startswith("att:"):
-                        val = node.get_special(var[4:])
-                        if val == "":
-                            val = "____"
-
-                        value = value.replace("&lt;" + var + "&gt;", val)
+                value = replace_attribute_variables(value, node.id, node.get_special, r'&lt;(.+?)&gt;', "&lt;", "&gt;")
                 value = value.replace("&lt;", "<").replace("&gt;", ">")
 
             if value.find('<') >= 0:
                 # replace variables
-                for var in re.findall(r'\<(.+?)\>', value):
-                    if var == "att:id":
-                        value = value.replace("<" + var + ">", unicode(node.id))
-                    elif var.startswith("att:"):
-                        val = node.get_special(var[4:])
-                        if val == "":
-                            val = "____"
-
-                        value = value.replace("&lt;" + var + "&gt;", val)
+                value = replace_attribute_variables(value, node.id, node.get_special, r'\<(.+?)\>', "<", ">")
                 value = value.replace("&lt;", "<").replace("&gt;", ">")
 
             default = fd['default']

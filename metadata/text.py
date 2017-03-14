@@ -27,6 +27,7 @@ import core.config as config
 from utils.utils import esc
 from utils.utils import modify_tex
 from core.metatype import Metatype, charmap
+from utils.strings import replace_attribute_variables
 
 
 logg = logging.getLogger(__name__)
@@ -140,15 +141,7 @@ class m_text(Metatype):
         # substitute TeX sub/super-scripts with <sub>/<sup> html tags
         value = modify_tex(value, 'html')
 
-        for var in re.findall(r'&lt;(.+?)&gt;', value):
-            if var == "att:id":
-                value = value.replace("&lt;" + var + "&gt;", unicode(node.id))
-            elif var.startswith("att:"):
-                val = node.get(var[4:])
-                if val == "":
-                    val = "____"
-
-                value = value.replace("&lt;" + var + "&gt;", val)
+        value = replace_attribute_variables(value, node.id, node.get, r'&lt;(.+?)&gt;', "&lt;", "&gt;")
         value = value.replace("&lt;", "<").replace("&gt;", ">")
 
         if not maskitem:

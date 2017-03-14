@@ -410,10 +410,22 @@ def prepare_node_data(node, req):
 
     # XXX: this is a hack, remove child display from contenttypes!
     if children:
+        # link to child detail in frontend and editor differ
+        # hack: is this flask compatible?
+        in_editor = (req and req.path.startswith("/edit"))
+        if in_editor:
+            get_detail_url = lambda cid, pid: "?id={}&pid={}".format(cid, pid)
+        else:
+            get_detail_url = lambda cid, pid: child_node_url(cid)
+
         ctx = {
+            "in_editor": in_editor,
             "children": children,
             "child_node_url": child_node_url,
+            "get_detail_url": get_detail_url,
+            "parent": node,
         }
+
         data['children_html'] = tal.getTAL("web/frontend/styles/macros.html", ctx, macro="bothView")
 
     return data

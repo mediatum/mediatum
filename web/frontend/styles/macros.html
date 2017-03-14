@@ -60,10 +60,9 @@
                         <small class="small_name">
                             <span tal:content="python:child.name" tal:attributes="title python:child.name">TEXT</span>
                         </small>
-                        <div class="morelink"><a tal:attributes="href python:child_node_url(child.id)"><tal:block i18n:translate="details">TEXT</tal:block>...</a></div>
+                        <div class="morelink"><a tal:attributes="href python:get_detail_url(child.id, parent.id)"><tal:block i18n:translate="details">TEXT</tal:block>...</a></div>
                 </div>
             </tal:block>
         </div>
     </tal:block>
 </div>
-

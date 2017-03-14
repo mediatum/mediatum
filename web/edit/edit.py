@@ -183,7 +183,7 @@ def frameset(req):
                'trashdir': getPathToFolder(user.trash_dir),
                'uploaddir': getPathToFolder(user.upload_dir)}
 
-    containertypes = Container.get_all_subclasses(filter_classnames=("collections", "home", "container", "project"))
+    containertypes = Container.get_all_subclasses(filter_classnames=("collections", "home", "container"))
 
     if not user.is_admin:
         # search all metadatatypes which are container

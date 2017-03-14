@@ -89,7 +89,6 @@ def getContent(req, ids):
         v["current_file"] = StatisticFile(None)
     v["nodename"] = node.name
 
-    items = v["current_file"].getProgress('country')
     return req.getTAL("web/edit/modules/statsaccess.html", v, macro="edit_stats")
 
 

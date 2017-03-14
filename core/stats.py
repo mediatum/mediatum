@@ -29,6 +29,7 @@ import sys
 import time
 from sets import Set
 import shutil
+import calendar
 
 from core import db, Node
 import core.config as config
@@ -269,7 +270,9 @@ class StatisticFile:
                 items[i] = {"items": []}
 
             for item in self.items:
-                day = parse_date(item.date, "yyyy-mm-dd").day
+                # do not use parse_date() which is too slow
+                # day = parse_date(item.date, "yyyy-mm-dd").day
+                day = int(item.date[8:10])
                 items[day]["items"].append(item)
 
         elif type == "day":
@@ -277,7 +280,11 @@ class StatisticFile:
                 items[i] = {"items": []}
 
             for item in self.items:
-                weekday = parse_date(item.date, "yyyy-mm-dd").weekday()
+                item_date = item.date
+                # do not use parse_date() which is too slow
+                # weekday = parse_date(item.date, "yyyy-mm-dd").weekday()
+                y,m,d = int(item_date[0:4]), int(item_date[5:7]), int(item_date[8:10])
+                weekday = calendar.weekday(y, m, d)
                 items[weekday + 1]["items"].append(item)
 
         elif type == "time":
@@ -285,15 +292,20 @@ class StatisticFile:
                 items[i] = {"items": []}
 
             for item in self.items:
-                hour = parse_date(item.time, "HH:MM:SS").hour
+                # do not use parse_date() which is too slow
+                # hour = parse_date(item.time, "HH:MM:SS").hour
+                hour = int(item.time[0:2])
                 items[hour + 1]["items"].append(item)
 
         elif type == "country":
+            items_keys = Set()
             for item in self.items:
                 c = item.country
                 if c == "":
                     c = "n.a."
-                if c not in items.keys():
+                # do not use: if c not in items.keys(), a Set is faster
+                if c not in items_keys:
+                    items_keys.add(c)
                     items[c] = {}
                     items[c]["items"] = []
                 items[c]["items"].append(item)
@@ -305,13 +317,17 @@ class StatisticFile:
         max_u = 0  # maximum users
         for key in items:
             ids = {}
+            ids_keys = Set()
             visitors = {}
+            visitors_keys = Set()
             if max <= len(items[key]["items"]):
                 max = len(items[key]["items"])
 
             for item in items[key]["items"]:  # different pages
-                if item.id not in ids.keys():
+                # do not use: if item.id not in ids.keys(), a Set is faster
+                if item.id not in ids_keys:
                     ids[item.id] = 0
+                    ids_keys.add(item.id)
                 ids[item.id] += 1
             items[key]["different"] = ids
 
@@ -319,7 +335,9 @@ class StatisticFile:
                 max_p = len(ids)
 
             for item in items[key]["items"]:  # different visitors
-                if item.visitor not in visitors.keys():
+                # do not use: if item.visitor not in visitors.keys(), a Set is faster
+                if item.visitor not in visitors_keys:
+                    visitors_keys.add(item.visitor)
                     visitors[item.visitor] = 0
                 visitors[item.visitor] += 1
             items[key]["visitors"] = visitors
@@ -338,27 +356,27 @@ class StatisticFile:
         return dt.weekday()
 
     def xml_start_element(self, name, attrs):
-        if name == "nodelist":
-            if "created" in attrs.keys():
-                self.created = parse_date(attrs["created"], "yyyy-mm-dd HH:MM:SS")
-
-        elif name == "node":
-            if "id" in attrs.keys():
-                self.currentnodeid = attrs["id"].encode("utf-8")
-
-        elif name == "access":
+        if name == "access":
             self.access = StatAccess()
             self.access.id = self.currentnodeid
 
             for key in attrs:
                 if key == "date":
-                    self.access.date = attrs[key].encode("utf-8")
+                    self.access.date = attrs[key]
                 elif key == "time":
-                    self.access.time = attrs[key].encode("utf-8")
+                    self.access.time = attrs[key]
                 elif key == "visitor_number":
-                    self.access.visitor = attrs[key].encode("utf-8")
+                    self.access.visitor = attrs[key]
                 elif key == "country":
                     self.access.country = attrs[key].encode("utf-8")
+
+        elif name == "nodelist":
+            if "created" in attrs.keys():
+                self.created = parse_date(attrs["created"], "yyyy-mm-dd HH:MM:SS")
+
+        elif name == "node":
+            if "id" in attrs.keys():
+                self.currentnodeid = attrs["id"]
 
     def xml_end_element(self, name):
         if name == "access":

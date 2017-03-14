@@ -21,7 +21,6 @@
 import logging
 import os
 import hashlib
-from core import Node
 from core import db
 
 q = db.query
@@ -56,25 +55,3 @@ def calcChecksumFromMetadata(node):
     h.update(attributesToString(node))
 
     return h.hexdigest()
-
-
-def getChecksum(nodeId, method="SHA-1", filepath=""):
-    if method not in ["SHA-1", "RIPEMD-160"]:
-        raise AttributeError("This method is not supported for checksum calculation: " + method)
-    try:
-        if filepath != "" and os.path.exists(filepath):
-            return calcChecksum(filepath, method)
-        else:
-            node = q(Node).get(nodeId)
-            if isinstance(node, Node):
-                for f in node.files:
-                    if f.filetype == node.get_original_filetype():
-                        return calcChecksum(f.abspath, method)
-                return calcChecksumFromMetadata(node)
-            else:
-                logg.error("Node not present in mediaTUM: %s", nodeId)
-
-    except IOError:
-        logg.exception("File loading failed")
-    except Exception:
-        logg.exception("exception in getChecksum")

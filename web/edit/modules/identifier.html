@@ -30,10 +30,6 @@
 
     <div id="sub_content_content">
     <p tal:content="msg"/>
-    <tal:block tal:condition="python:hash_val !=''">
-        <span>Hash: </span>
-        <span tal:content="hash_val" ></span><br/>
-    </tal:block>
     <tal:block tal:condition="python:urn_val !=''">
         <span>URN: </span>
         <span tal:content="urn_val" ></span><br/>
@@ -44,9 +40,6 @@
     </tal:block>
 
     <form tal:condition="python:show_form" method="post">
-        <tal:block tal:condition="python:hash_val==''">
-            <input type="radio" name="id_type" value="hash"/> HASH<br/>
-        </tal:block>
         <tal:block tal:condition="python:urn_val==''">
             <input tal:condition="python:urn_val ==''"type="radio" name="id_type" value="urn"/> URN
             <select name="namespace">

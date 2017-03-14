@@ -23,15 +23,13 @@ import os
 import core.config as config
 import utils.date as date
 import utils.urn as urn
-import utils.hash as hashid
 import utils.mail as mail
-import utils.doi as doi
 import utils.pathutils as pathutils
 from core.translation import lang, t
 from utils.utils import dec_entry_log
 from core.transition import httpstatus, current_user
 import logging
-from core import Node, User
+from core import Node
 from core import db
 from contenttypes import Collections
 from core.database.postgres.permission import AccessRule, NodeToAccessRule
@@ -49,7 +47,6 @@ def getContent(req, ids):
     raise Exception("ACL must be fixed!")
     user = current_user
     node = q(Node).get(ids[0])
-    # access_nobody = u'nicht Jeder'
 
     # first prove if the user has the required rights to call this module
     if 'sortfiles' in user.hidden_edit_functions or not node.has_write_access():
@@ -77,9 +74,7 @@ def getContent(req, ids):
 
     if user.is_admin:
         if 'id_type' in req.params:
-            if req.params.get('id_type') == 'hash':
-                createHash(node)
-            elif req.params.get('id_type') == 'urn':
+            if req.params.get('id_type') == 'urn':
                 createUrn(node, req.params.get('namespace'), req.params.get('urn_type'))
             elif req.params.get('id_type') == 'doi':
                 try:
@@ -89,7 +84,7 @@ def getContent(req, ids):
 
             db.session.commit()
 
-            if any(identifier in node.attributes for identifier in ('hash', 'urn', 'doi')):
+            if any(identifier in node.attributes for identifier in ('urn', 'doi')):
                 if not node.get('system.identifierdate'):
                     node.set('system.identifierdate', unicode(date.now()))
                     db.session.commit()
@@ -177,12 +172,11 @@ def getContent(req, ids):
             v['show_form'] = False
             v['msg'] = t(lang(req), 'edit_identifier_state_published')
 
-    v['hash_val'] = node.get('hash')
     v['urn_val'] = node.get('urn')
     v['doi_val'] = node.get('doi')
 
     # hides form if all identifier types are already set
-    if all(idents != '' for idents in (v['hash_val'], v['urn_val'], v['doi_val'])):
+    if all(idents != '' for idents in (v['urn_val'], v['doi_val'])):
         v['show_form'] = False
         v['msg'] = t(lang(req), 'edit_identifier_all_types_set')
 
@@ -208,20 +202,12 @@ def createUrn(node, namespace, urn_type):
         node.set('urn', unicode(urn.buildNBN(namespace, config.get('urn.institutionid'), niss)))
 
 
-def createHash(node):
-    """
-    @param node for which the hash-id should be created
-    """
-    if node.get('hash') and (node.get('hash').strip() != ''):  # if a hash-id already exists for this node, do nothing
-        logg.info('hash already exists for node %s', node.id)
-    else:
-        node.set('hash', unicode(hashid.getChecksum(node.id)))
-
-
 def createDOI(node):
     """
     @param node for which the doi should be created
     """
+    import utils.doi as doi
+
     if node.get('doi') and (node.get('doi').strip() != ''):
         logg.info('doi already exists for node %s', node.id)
     else:

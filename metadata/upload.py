@@ -111,11 +111,6 @@ class m_upload(Metatype):
         check_context()
 
         try:
-            fieldid = field.id
-        except:
-            fieldid = None
-
-        try:
             fieldname = field.name
         except:
             fieldname = None
@@ -164,7 +159,6 @@ class m_upload(Metatype):
         value = node.get(metafield.getName())
 
         filelist, filelist2 = getFilelist(node, fieldname)
-        #filecount = len(filelist2)
 
         if mask:
             masktype = mask.get('masktype')
@@ -228,6 +222,13 @@ class m_upload(Metatype):
 def handle_request(req):
 
     user = users.getUserFromRequest(req)
+    
+    if not user.is_admin:
+        # XXX: this handler is unsafe for use by non-admins. 
+        # We temporarily disable it for use in the editor. 
+        # This means that the upload metadatatype cannot be used anymore.
+        return 404
+    
     errors = []
 
     if "cmd" in req.params:
@@ -240,6 +241,16 @@ def handle_request(req):
             n = q(Node).get(targetnodeid)
 
             s = {'response': 'response for cmd="%s"' % cmd}
+
+            if not n.has_read_access():
+                msg = "m_upload: no access for user '%s' to node %s ('%s', '%s') from '%s'" % (
+                    user.login_name, n.id, n.name, n.type, ustr(req.ip))
+                logg.info(msg)
+                errors.append(msg)
+
+                s['errors'] = errors
+                req.write(req.params.get("jsoncallback") + "(%s)" % json.dumps(s, indent=4))
+                return 403
 
             filelist, filelist2 = getFilelist(n, m_upload_field_name)
             filelist = [_t[0:-1] for _t in filelist]
@@ -270,7 +281,7 @@ def handle_request(req):
 
             if not n.has_data_access():
                 msg = "m_upload: no access for user '%s' to node %s ('%s', '%s') from '%s'" % (
-                    user.name, n.id, n.name, n.type, ustr(req.ip))
+                    user.login_name, n.id, n.name, n.type, ustr(req.ip))
                 logg.info(msg)
                 errors.append(msg)
 
@@ -281,16 +292,20 @@ def handle_request(req):
             for f in fs:
                 if f.getName() == f_name:
                     logg.info("metadata m_upload: going to remove file '%s' from node '%s' (%s) for request from user '%s' (%s)",
-                        f_name, n.name, n.id, user.name, req.ip)
-                    n.removeFile(f)
+                        f_name, n.name, n.id, user.login_name, req.ip)
+                    filepath = f.abspath
+                    filecount = len(getFilelist(n, m_upload_field_name)[0])
+                    n.files.remove(f)
+                    n.set(m_upload_field_name, filecount - 1)
                     try:
-                        os.remove(f.retrieveFile())
-                    except:
-                        pass
+                        os.remove(filepath)
+                    except Exception, e:
+                        msg = "metadata m_upload: could not remove file %r from disk for node %r for request from '%s': %s" % (filepath, n, ustr(req.ip), str(e))
+                        errors.append(msg)
+                        logg.exception(msg)
                     break
 
-            filecount = len(getFilelist(n, m_upload_field_name)[0])
-            n.set(m_upload_field_name, filecount)
+            db.session.commit()
 
             s['errors'] = errors
             req.write(req.params.get("jsoncallback") + "(%s)" % json.dumps(s, indent=4))
@@ -300,7 +315,6 @@ def handle_request(req):
             req.write(req.params.get("jsoncallback") + "(%s)" % json.dumps(s, indent=4))
             return 200
 
-    filename = None
     filesize = 0
 
     s = {}
@@ -312,9 +326,8 @@ def handle_request(req):
         targetnodeid = req.params.get("targetnodeid_FOR_" + submitter, None)
         targetnode = None
         if targetnodeid:
-            try:
-                targetnode = q(Node).get(targetnodeid)
-            except:
+            targetnode = q(Node).get(targetnodeid)
+            if targetnode is None:
                 msg = "metadata m_upload: targetnodeid='%s' for non-existant node for upload from '%s'" % (ustr(targetnodeid), ustr(req.ip))
                 errors.append(msg)
                 logg.error(msg)
@@ -323,9 +336,9 @@ def handle_request(req):
             errors.append(msg)
             logg.error(msg)
 
-        if not targetnode.has_data_access():
+        if targetnode and not targetnode.has_data_access():
             msg = "m_upload: no access for user '%s' to node %s ('%s', '%s') from '%s'" % (
-                user.name, ustr(targetnode.id), targetnode.name, targetnode.type, ustr(req.ip))
+                user.login_name, ustr(targetnode.id), targetnode.name, targetnode.type, ustr(req.ip))
             logg.error(msg)
             errors.append(msg)
 
@@ -354,22 +367,16 @@ def handle_request(req):
             diskname = normalizeFilename(filename)
             nodeFile = importFileToRealname(diskname, filetempname, prefix='m_upload_%s_' % (submitter, ), typeprefix="u_")
 
-            if nodeFile:
-                imported_filename = nodeFile.getName()
-                imported_filesize = nodeFile.getSize()
-                imported_filepath = nodeFile.retrieveFile()
-                imported_filemimetype = nodeFile.getMimeType()
-            else:
+            if not nodeFile:
                 msg = "metadata m_upload: could not create file node for request from '%s'" % (ustr(req.ip))
                 errors.append(msg)
-                logging.getLogger("backend").error(msg)
+                logg.error(msg)
 
         if targetnode and filename:
-            #todo: check this out later
-            targetnode.addFile(nodeFile)
-
             filecount = len(getFilelist(targetnode, submitter)[0])
-            targetnode.set(submitter, filecount)
+            targetnode.files.append(nodeFile)
+            targetnode.set(submitter, filecount + 1)
+            db.session.commit()
 
             copy_report = t(lang(req), "uploaded file: %s; size: %d bytes") % (filename, filesize)
 
@@ -379,7 +386,7 @@ def handle_request(req):
     else:
         msg = "metadata m_upload: could not find submitter for request from '%s'" % (ustr(req.ip))
         errors.append(msg)
-        logging.getLogger("backend").error(msg)
+        logg.error(msg)
 
     s = {
         'errors': errors,

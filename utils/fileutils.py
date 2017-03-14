@@ -68,17 +68,6 @@ def importFile(realname, tempname, prefix=""):
     return File(destname, filetype, mimetype)
 
 
-def importFileFromData(filename, data, prefix=""):
-    destname = _find_unique_destname(filename, prefix)
-
-    with codecs.open(destname, 'wb', encoding='utf8') as file_handle:
-        file_handle.write(data)
-
-    mimetype, filetype = getMimeType(filename.lower())
-
-    return File(destname, filetype, mimetype)
-
-
 def importFileToRealname(realname, tempname, prefix="", typeprefix=""):
     filename = os.path.basename(realname)
     destname = _find_unique_destname(filename, prefix)

@@ -6,7 +6,7 @@
 from __future__ import absolute_import
 import os
 import tempfile
-from utils.fileutils import importFile, importFileFromData, importFileToRealname, _find_unique_destname, getImportDir, importFileIntoDir,\
+from utils.fileutils import importFile, importFileToRealname, _find_unique_destname, getImportDir, importFileIntoDir,\
     importFileRandom
 
 REALNAME_ROOT = "test"
@@ -59,10 +59,6 @@ def _test_import_function_with_tempfile(import_func, *args):
 def test_importFile():
     _test_import_function_with_tempfile(importFile, REALNAME)
 
-
-def test_importFileFromData():
-    imported_file = importFileFromData(REALNAME, CONTENT)
-    assert_imported_file_ok_and_unlink(imported_file, content=CONTENT)
 
 
 def test_importFileToRealname():

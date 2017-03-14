@@ -1,1 +1,1 @@
-fetchTarball https://nixos.org/releases/nixos/16.03/nixos-16.03.1299.a8e0739/nixexprs.tar.xz
+fetchTarball https://d3g5gsiof5omrk.cloudfront.net/nixos/16.09/nixos-16.09.1650.d2cd8a0/nixexprs.tar.xz

@@ -1,4 +1,4 @@
-{fetchurl, fetchgit, fetchhg, stdenv, self, pkgs}:
+{fetchurl, fetchgit, fetchFromGitHub, fetchhg, stdenv, self, pkgs}:
 
 let
   pythonPackages = pkgs.python27Packages;
@@ -17,7 +17,6 @@ let
   jinja2
   ldap 
   lxml
-  magic
   pillow
   pygments
   pyPdf
@@ -97,6 +96,26 @@ let
       md5 = "d4feb00ac5806d7640b2545a43974766";
     };
     propagatedBuildInputs = with self; [prettytable ipython sqlalchemy sqlparse six];
+  };
+
+  magic = self.buildPythonPackage rec {
+    name = "${pkgs.file.name}";
+
+    src = pkgs.file.src;
+
+    patchPhase = ''
+      substituteInPlace python/magic.py --replace "find_library('magic')" "'${pkgs.file}/lib/libmagic.so'"
+    '';
+
+    buildInputs = with self; [ python pkgs.file ];
+
+    preConfigure = "cd python";
+    doCheck = false;
+
+    meta = {
+      description = "A Python wrapper around libmagic";
+      homepage = http://www.darwinsys.com/file/;
+    };
   };
 
   mediatumbabel = self.buildPythonPackage {
@@ -192,10 +211,11 @@ let
   pyexiftool = self.buildPythonPackage {
     name = "pyexiftool-0.1";
 
-    src = fetchgit {
-      url = https://github.com/smarnach/pyexiftool;
+    src = fetchFromGitHub {
+      owner = "smarnach";
+      repo = "pyexiftool";
       rev = "3db3764895e687d75b42d3ae4e554ca8664a7f6f";
-      sha256 = "f3f3b8e9a48846c5610006e5131ed4029bafc95b67a9864f1fcfeb45d8c2facb";
+      sha256 = "08wjxvkki668lkzw2da7z7sm2zwfy5d8zv6x1xrm8lcz3qbyf1cq";
     };
   };
 
@@ -253,6 +273,7 @@ let
       url = "https://pypi.python.org/packages/source/s/scrypt/scrypt-0.7.1.tar.gz";
       md5 = "9feb713f183e11caa940e8ec71cf1361";
     };
+
     propagatedBuildInputs = with self; [pkgs.openssl];
     
     doCheck = false;
@@ -272,10 +293,11 @@ let
   sqlalchemy-continuum = self.buildPythonPackage {
     name = "sqlalchemy-continuum-1.2.4";
 
-    src = fetchgit {
-      url = https://github.com/mediatum/sqlalchemy-continuum.git;
+    src = fetchFromGitHub {
+      owner = "mediatum";
+      repo = "sqlalchemy-continuum";
       rev = "8730065da2a6754cd7701c10f171bce4798ee3ef";
-      sha256 = "216de4af4407b3ea956bd918c1f575147ea248295fb0fe41a9a540cd8ee22ca2";
+      sha256 = "1ia3apfgpgndhk6y8mn4nbzpjaaqmsl5sb85mkgl4p46vh08qkr6";
     };
 
     propagatedBuildInputs = with self; [sqlalchemy sqlalchemy-utils];
@@ -329,13 +351,15 @@ let
 
   factory-boy = self.buildPythonPackage {
     name = "factory-boy";
-    src = fetchgit {
-      url = https://github.com/dpausp/factory_boy;
+    src = fetchFromGitHub {
+      repo = "factory_boy";
+      owner = "dpausp";
       rev = "36b4cffa336845b6b0d30b2e040930af53eb732e";
-      sha256 = "cc5d66091428d976f0a645240282e126e979c02fc255a389242083833ba5201e";
+      sha256 = "12yhp5nn20pypcnyc1y7gr08dsw3a5x7k2z3gm2z4jyhldgh0a3a";
     };
     propagatedBuildInputs = with self; [fake-factory];
     buildInputs = with self; [mock];
+    doCheck = false;
   };
 
 
@@ -353,10 +377,11 @@ let
   pytest-catchlog = self.buildPythonPackage rec {
     name = "pytest-catchlog-${version}";
     version = "1.2.2";
-    src = fetchgit {
-      url = https://github.com/eisensheng/pytest-catchlog;
+    src = fetchFromGitHub {
+      owner = "eisensheng";
+      repo = "pytest-catchlog";
       rev = "e829f07d74b703397a07157fe919a8fd34014fa7";
-      sha256 = "61b350cf890112b874d7ecb87cff62facd20101e856d348e3edbfd5514fb7ab0";
+      sha256 = "0c2r4gvj44yc2aqrfw5dr4y7ncf5qfkid1xj6gv1nc5xkzwzwfk1";
     };
     propagatedBuildInputs = with self; [py pytest];
   };

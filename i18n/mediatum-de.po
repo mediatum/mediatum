@@ -970,9 +970,6 @@ msgstr "hinzufügen"
 msgid "sub_header_frontend"
 msgstr "Recherche"
 
-msgid "tab_lza"
-msgstr "Langzeitarchivierung"
-
 ######################################
 
 msgid "hide_empty_directories"

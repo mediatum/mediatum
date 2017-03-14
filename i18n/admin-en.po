@@ -142,9 +142,6 @@ msgstr "license functions"
 msgid "e_logo"
 msgstr "logo functions"
 
-msgid "e_lza"
-msgstr "long-term preservation"
-
 msgid "e_metadata"
 msgstr "metadata editor"
 

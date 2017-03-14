@@ -246,7 +246,7 @@ class Image(Content):
 
     @classmethod
     def get_default_edit_menu_tabs(cls):
-        return "menulayout(view);menumetadata(metadata;files;admin;lza);menuclasses(classes);menusecurity(acls)"
+        return "menulayout(view);menumetadata(metadata;files;admin);menuclasses(classes);menusecurity(acls)"
 
     @classmethod
     def get_sys_filetypes(cls):

@@ -102,7 +102,7 @@ class Document(Content):
 
     @classmethod
     def get_default_edit_menu_tabs(cls):
-        return "menulayout(view);menumetadata(metadata;files;admin;lza);menuclasses(classes);menusecurity(acls)"
+        return "menulayout(view);menumetadata(metadata;files;admin);menuclasses(classes);menusecurity(acls)"
 
     def _prepareData(self, req, words=""):
         return _prepare_document_data(self, req)

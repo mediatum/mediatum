@@ -949,9 +949,6 @@ msgstr "add"
 msgid "sub_header_frontend"
 msgstr "View Website"
 
-msgid "tab_lza"
-msgstr "Long-Term Preservation"
-
 msgid "hide_empty_directories"
 msgstr "hide empty directories"
 

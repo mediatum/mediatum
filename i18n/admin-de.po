@@ -144,9 +144,6 @@ msgstr "Lizensierung"
 msgid "e_logo"
 msgstr "Logo Funktionen"
 
-msgid "e_lza"
-msgstr "Langzeitarchivierung"
-
 msgid "e_metadata"
 msgstr "Metadateneditor"
 

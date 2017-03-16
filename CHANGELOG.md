@@ -5,6 +5,34 @@ We mostly follow the conventions given in [Keep a Changelog](http://keepachangel
 Calendar Versioning is used for our version numbers: http://calver.org/
 
 
+## [v2017.02] - 2017-03-16
+
+### Added
+
+- edit area with pagination to accelerate editor
+
+### Changed
+
+- upgraded to Nix packages 16.09
+- removed obsolete edit modules: frontendparts, lza, ftp, license
+- removed obsolete function for creating hashes in the identifier edit module
+- removed obsolete ftp upload function
+- removed obsolete upload webservice
+- removed obsolete javascript zoom for image content type
+- removed obsolete content types ImageStream and Project
+- removed obsolete workflow steps ldapauth and checkdoublet
+- removed obsolete meta field password
+- removed obsolete metadata web service
+- accelerate display of user statistics
+- javascript zoom for images removed
+
+### Fixed
+
+- edit: moving files to subfolders in the edit area
+- editmask with watermark metadata field cannot be saved
+- editor linking child object detail to frontend
+- various bugfixes
+
 
 ## [v2017.01] - 2017-02-14
 

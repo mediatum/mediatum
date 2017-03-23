@@ -48,7 +48,7 @@ def _finish_change(node, change_file, user, uploadfile, req):
         # check that the correct filetype is uploaded
         # note: only the suffix of the filename is checked not the file content
         uploadfile_type = getMimeType(uploadfile.filename)[1]
-        if uploadfile_type != node.type:
+        if uploadfile_type != node.type and uploadfile_type != node.get_upload_filetype():
             req.setStatus(httpstatus.HTTP_NOT_ACCEPTABLE)
             return
 

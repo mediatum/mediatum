@@ -100,7 +100,7 @@ def parsePDF(filename, tempdir):
     fulltext = name + ".txt"  # normalized output of uconv
     infoname = name + ".info"
 
-    info_cmd = ["pdfinfo", "-meta", filename]
+    info_cmd = ["pdfinfo", filename]
     try:
         out = utils.process.check_output(info_cmd)
     except CalledProcessError:

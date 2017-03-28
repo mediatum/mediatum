@@ -26,10 +26,10 @@ class MtVersionBase(object):
         attr = getattr(parent_cls, key)
         if isinstance(attr, types.MethodType):
             return types.MethodType(attr.__func__, self, parent_cls)
-        elif isinstance(attr, property):
-            return attr.fget(self)
         elif isinstance(attr, cached_property):
             return attr.__get__(self)
+        elif isinstance(attr, property):
+            return attr.fget(self)
 
         return attr
 

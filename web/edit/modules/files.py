@@ -262,7 +262,7 @@ def getContent(req, ids):
 
         elif op == "change":
             _handle_change(node, req)
-            if req.reply_code != httpstatus.HTTP_OK:
+            if req.reply_code != httpstatus.HTTP_OK and req.reply_code != httpstatus.HTTP_MOVED_TEMPORARILY:
                 if req.reply_code is httpstatus.HTTP_NOT_ACCEPTABLE:
                     update_error_extension = True
                 else:

@@ -5,6 +5,21 @@ We mostly follow the conventions given in [Keep a Changelog](http://keepachangel
 Calendar Versioning is used for our version numbers: http://calver.org/
 
 
+## [v2017.03] - 2017-04-04
+
+### Added
+
+### Changed
+
+### Fixed
+
+- access to lower versions of a document returns an error
+- wrong errormessage during upload of a file with a new version
+- meta informations cannot be extracted from a pdf-document
+- pdf metadata extraction problem
+- too restrictive editor which denied upload of new files for some types
+
+
 ## [v2017.02] - 2017-03-16
 
 ### Added

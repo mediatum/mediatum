@@ -329,6 +329,10 @@ def import_csl(record, target=None, name=None, testing=False):
         if mfield_type == "url":
             value += u";Link"
 
+        # get rid of month and day
+        if med_name == u'year' and value is not None:
+            value = value[0:4]
+
         if value is not None:
             node.set(med_name, value)
 

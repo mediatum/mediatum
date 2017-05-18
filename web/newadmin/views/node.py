@@ -12,6 +12,7 @@ from pygments.formatters import HtmlFormatter
 from pygments.lexers import JsonLexer
 from core import Node, File, db
 from web.newadmin.views import BaseAdminView
+from core.database.postgres.node import NodeAlias
 
 logg = logging.getLogger(__name__)
 
@@ -56,3 +57,13 @@ class FileView(BaseAdminView):
 
     def __init__(self, session=db.session, *args, **kwargs):
         super(FileView, self).__init__(File, session, category="Node", *args, **kwargs)
+
+
+
+class NodeAliasView(BaseAdminView):
+
+    def __init__(self, session=db.session, *args, **kwargs):
+        super(NodeAliasView, self).__init__(NodeAlias, session, category="Node", *args, **kwargs)
+
+    form_columns = ("alias", "nid", "description")
+    column_labels = {"nid": "Node ID"}

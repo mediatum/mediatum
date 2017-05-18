@@ -19,7 +19,7 @@ from core.auth import authenticate_user_credentials, logout_user
 from flask.ext import admin, login
 from flask.ext.admin import helpers, expose
 import os
-from web.newadmin.views.node import NodeView, FileView
+from web.newadmin.views.node import NodeView, FileView, NodeAliasView
 from web.newadmin.views.setting import SettingView
 from web.newadmin.views.acl import AccessRulesetView, AccessRuleView, AccessRulesetToRuleView
 from web.newadmin.views.redis import ProtectedRedisCli
@@ -97,6 +97,7 @@ def make_app():
 
     admin.add_view(NodeView())
     admin.add_view(FileView())
+    admin.add_view(NodeAliasView())
 
     admin.add_view(SettingView())
 

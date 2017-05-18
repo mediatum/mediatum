@@ -157,6 +157,7 @@ def _handle_edit_metadata(req, mask, nodes):
                     node.set(field.name, value)
             else:
                 node.set(field.getName(), "")
+        db.session.commit()
 
     return flag_nodename_changed
 

@@ -49,7 +49,7 @@
     </script>
 
     <script tal:content="python:u'var flag_nodename_changed = {};'.format(flag_nodename_changed)">TEXT</script>
-    <script tal:content="python:u'var new_nodename = \'{}\';'.format(nodes[0].name)">TEXT</script>
+    <script tal:content="python:u'var new_nodename = \'{}\';'.format(nodes[0].getLabel())">TEXT</script>
 
     <div id="navigation_content" style="border-top:0px!important">
 
@@ -247,33 +247,13 @@
                 togglerTip_closed: js_edit_layout_togglertip_closed,
 
                 });
-            //sublayout.bindButton('#toggleSubNorth', 'toggle', 'north');
-        if (false) {
-           parent.rct();
-        }
-            console.log('flag_nodename_changed ', flag_nodename_changed )
+        console.log('flag_nodename_changed ', flag_nodename_changed );
         if (flag_nodename_changed != -1) {
             if (flag_nodename_changed > 0) {
                 updateNodeLabels(flag_nodename_changed);
             }
-
           var k = parent.last_activated_node.key;
-          var htree = parent.gethometree();
-          var n = htree.getNodeByKey(k);
-          if (n) {
-              n.title = new_nodename;
-              n.renderTitle();
-              parent.$('.ui-layout-center').attr('src', '/edit/edit_content?id='+k+'&tab=metadata');
-              return;
-          }
-          var ctree = parent.getcoltree();
-          n = ctree.getNodeByKey(k);
-          if (n) {
-              n.title = new_nodename;
-              n.renderTitle();
-              parent.$('.ui-layout-center').attr('src', '/edit/edit_content?id='+k+'&tab=metadata');
-              return;
-          }
+          updateNodeLabels(k);
         }
        });
 

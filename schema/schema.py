@@ -805,24 +805,25 @@ def update_multilang_field(node, field, mdt, req, updated_attrs):
     if multilingual textfields were used, their names are
     saved in form en__Name, de__Name, de-AU__Name, en-US__Name etc.
     """
+    field_name = field.name
     for item in req.params.keys():
         langPos = item.find('__')
-        if langPos != -1 and item[langPos + 2:] == field.name:
+        if langPos != -1 and item[langPos + 2:] == field_name:
             # cut the language identifier (en__, fr__, etc)
             if (req.params.get(unicode(field.id) + '_show_multilang', '') == 'multi'
                     and hasattr(mdt, "language_update")):
-                value_old = node.get(field.name)
+                value_old = node.get(field_name)
                 value_new = req.params.get(item)
                 value = mdt.language_update(value_old, value_new, item[:langPos])
-                updated_attrs[field.name] = value
+                updated_attrs[field_name] = value
             elif req.params.get(unicode(field.id) + '_show_multilang', '') == 'single':
                 if item[0:langPos] == translation.lang(req):
                     new_value = req.params.get(item)
-                    updated_attrs[field.name] = new_value
+                    updated_attrs[field_name] = new_value
             elif (req.params.get(unicode(field.id) + '_show_multilang', '') == 'multi'
                   and not hasattr(mdt, "language_update")):
                 value = mdt.format_request_value_for_db(field, req.params, item)
-                oldValue = node.get(field.name)
+                oldValue = node.get(field_name)
                 position = oldValue.find(item[:langPos] + mdt.joiner)
                 if position != -1:
                     # there is already a value for this language
@@ -830,14 +831,14 @@ def update_multilang_field(node, field, mdt, req, updated_attrs):
                                 + value
                                 + oldValue[oldValue.find(mdt.joiner,
                                                          position + langPos + len(mdt.joiner)):])
-                    updated_attrs[field.name] = newValue
+                    updated_attrs[field_name] = newValue
                 else:  # there is no value for this language yet
                     if oldValue.find(mdt.joiner) == -1:
                         # there are no values at all yet
-                        updated_attrs[field.name] = item[:langPos] + mdt.joiner + value + mdt.joiner
+                        updated_attrs[field_name] = item[:langPos] + mdt.joiner + value + mdt.joiner
                     else:
                         # there are some values for other languages, but not for the current
-                        updated_attrs[field.name] = oldValue + item[:langPos] + mdt.joiner + value + mdt.joiner
+                        updated_attrs[field_name] = oldValue + item[:langPos] + mdt.joiner + value + mdt.joiner
 
 
 @check_type_arg
@@ -1002,6 +1003,8 @@ class Mask(Node):
         # collect all changes first and apply them at the end because SQLAlchemy would issue an UPDATE for each attr assignment
         updated_attrs = {}
         updated_system_attrs = {}
+        current_language = translation.lang(req)
+        default_language = translation.getDefaultLanguage()
         for item in self.all_maskitems:
             field = item.metafield
 
@@ -1023,10 +1026,13 @@ class Mask(Node):
                     updated_attrs[field.name] = "0"
 
                 # handle multilang heritage
-                elif field.name == 'nodename' and translation.getDefaultLanguage() + '__nodename' in form:
-                    value = form.get(translation.getDefaultLanguage() + '__nodename')
-                    node.name = value
-                    update_multilang_field(node, field, t, req, updated_attrs)
+                elif field.name == 'nodename':
+                    if default_language + '__nodename' in form:
+                        value = form.get(default_language + '__nodename')
+                        node.name = value
+                    elif current_language + '__nodename' in form:
+                        value = form.get(current_language + '__nodename')
+                        node.name = value
 
                 else:
                     update_multilang_field(node, field, t, req, updated_attrs)

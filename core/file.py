@@ -17,6 +17,9 @@ logg = logging.getLogger(__name__)
 
 class FileMixin(object):
 
+    # Filetypes which are uploaded by the user, used e.g. in calculation of checksums
+    ORIGINAL_FILETYPES = [u'document', u'original', u'video', u'audio']  # 'original' for images, audio, ...]
+
     def _ni(self):
         raise NotImplementedError()
 
@@ -44,16 +47,12 @@ class FileMixin(object):
         return self.filetype
 
     @property
-    def size(self):
-        return get_filesize(self.path)
-
-    @property
     def hash(self):
         return get_hash(self.path)
 
     @property
     def exists(self):
-        return os.path.exists(self.abspath)
+        return os.path.isfile(self.abspath)
 
     def open(self, *args, **kwargs):
         """Opens and returns the referenced file from the file system
@@ -69,6 +68,7 @@ class FileMixin(object):
         else:
             logg.warn("tried to unlink missing physical file %s at %s, ignored", self.id, self.path)
 
+    #  Deprecated methods
     def getType(self):
         warn("use File.type instead", DeprecationWarning)
         return self.filetype

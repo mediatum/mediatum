@@ -7,7 +7,6 @@ let
   ### production deps
 
   inherit (self) 
-  alembic
   decorator
   flask
   httplib2
@@ -26,6 +25,17 @@ let
   unicodecsv
   werkzeug
   ;
+
+  alembic = self.buildPythonPackage rec {
+    name = "alembic-${version}";
+    version = "0.8.9";
+    src = fetchurl {
+      url = "https://pypi.python.org/packages/63/ca/c60ba17274b6737ff9ff1f89f0fbc7da93e05dd12bbdaae5099df8b60d38/${name}.tar.gz";
+      #url = "mirror://pypi/a/alembic/${name}.tar.gz";
+      md5 = "f1ed0d26bc66027568bd3385bbb740f7";
+    };
+    propagatedBuildInputs = with self; [ Mako sqlalchemy python-editor ];
+  };
 
   bibtexparser = self.buildPythonPackage rec {
     name = "bibtexparser-${version}";
@@ -66,7 +76,7 @@ let
     propagatedBuildInputs = with self; [wtforms flask];
     buildInputs = with self; [];
     doCheck = false;
-  };  
+  };
 
   flask-login = self.buildPythonPackage {
     name = "flask-login-0.3.2";
@@ -292,12 +302,11 @@ let
 
   sqlalchemy-continuum = self.buildPythonPackage {
     name = "sqlalchemy-continuum-1.2.4";
-
     src = fetchFromGitHub {
       owner = "mediatum";
       repo = "sqlalchemy-continuum";
-      rev = "8730065da2a6754cd7701c10f171bce4798ee3ef";
-      sha256 = "1ia3apfgpgndhk6y8mn4nbzpjaaqmsl5sb85mkgl4p46vh08qkr6";
+      rev = "2ba7885f8cae10eb1090d176510cfb88ab365506";
+      sha256 = "0b8y0sdgdpf5f3lyxdq9sqc34466466g07p898bm0zqhislss1hh";
     };
 
     propagatedBuildInputs = with self; [sqlalchemy sqlalchemy-utils];

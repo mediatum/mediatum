@@ -61,3 +61,43 @@ def test_unlink_after_deletion_default_disabled(session, some_file_real):
     session.commit()
     # files should not be unlinked by default on object deletion by default, so it must still be there
     assert some_file_real.exists
+
+
+def test_get_sha512(session, some_file_real):
+    session.commit()
+    assert some_file_real.exists
+    #session.delete(some_file_real)
+    sha, created = some_file_real.get_or_create_sha512()
+    assert created == True
+    assert sha
+    assert len(sha) == 128
+    # test correct calculatation of the sha512 of an empty file
+    with open(some_file_real.abspath, 'w') as f:
+        f.truncate()
+    sha = some_file_real.update_sha512()
+    assert sha.startswith('cf83e1357eefb8bdf1542850d6')
+
+
+def test_verify_checksum(session, some_file_real):
+    session.commit()
+    sha, created = some_file_real.get_or_create_sha512()
+    assert created
+    assert some_file_real.verify_checksum() is True
+    # test detection of changes in content
+    with open(some_file_real.abspath, 'w') as f:
+        f.write('file content has changed')
+    assert some_file_real.verify_checksum() is False
+    # test handling of deleted file
+    os.unlink(some_file_real.abspath)
+    assert some_file_real.verify_checksum() is None
+
+
+def test_get_sha_no_file(session, some_file):
+    session.commit()
+    sha, new = some_file.get_or_create_sha512()
+    assert sha is None
+
+def test_check_sha_no_file(session, some_file):
+    session.commit()
+    file_ok = some_file.verify_checksum()
+    assert file_ok is None

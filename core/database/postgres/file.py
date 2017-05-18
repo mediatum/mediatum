@@ -3,16 +3,28 @@
     :copyright: (c) 2015 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
-import logging
-import os
-from warnings import warn
 
-from core.database.postgres import DeclarativeBase, C, FK, rel, bref, integer_pk
-from core.database.postgres.node import Node
-from sqlalchemy import Integer, Unicode, String, event, Table
-from core.database.postgres.alchemyext import AppenderQueryWithLen
+import os
+import logging
+from warnings import warn
+from datetime import datetime
+
+from sqlalchemy import Table
+from sqlalchemy import event
+from sqlalchemy import String
+from sqlalchemy import Boolean
+from sqlalchemy import Integer
+from sqlalchemy import Unicode
+from sqlalchemy import DateTime
+from sqlalchemy import BigInteger
+import humanize
+
+from core import db, config
 from core.file import FileMixin
-from core import config
+from core.database.postgres.node import Node
+from core.database.postgres.alchemyext import AppenderQueryWithLen
+from core.database.postgres import DeclarativeBase, C, FK, rel, bref, integer_pk
+from utils.utils import get_filesize, sha512_from_file
 
 
 logg = logging.getLogger(__name__)
@@ -27,7 +39,6 @@ class NodeToFile(DeclarativeBase):
 
 
 class File(DeclarativeBase, FileMixin):
-
     """Represents an item on the filesystem
     """
     __versioned__ = {
@@ -60,6 +71,12 @@ class File(DeclarativeBase, FileMixin):
     path = C(Unicode(4096))
     filetype = C(Unicode(126))
     mimetype = C(String(255))
+    _size = C('size', BigInteger)
+    # Checksum/hash columns
+    sha512 = C(String(128))  # LargeBinary could be an alternative
+    sha512_created_at = C(DateTime())
+    sha512_checked_at = C(DateTime())
+    sha512_ok = C(Boolean())
 
     nodes = rel(Node, secondary=NodeToFile.__table__, 
                 backref=bref("files", lazy="dynamic", query_class=AppenderQueryWithLen), lazy="dynamic")
@@ -78,6 +95,69 @@ class File(DeclarativeBase, FileMixin):
 
     def __unicode__(self):
         return u"# {} {} {} in {}".format(self.id, self.filetype, self.mimetype, self.path)
+
+    @property
+    def size(self):
+        """Return size of file in bytes"""
+        if self._size is None:
+            self._size = get_filesize(self.path)
+        return self._size
+
+    @property
+    def size_humanized(self):
+        """Return string with the size in human-friendly format, e.g. '7.9 kB'"""
+        return humanize.naturalsize(self.size)
+
+    def calculate_sha512(self):
+        """Calculate the hash from the file on disk."""
+        if not self.exists:
+            return None
+        return sha512_from_file(self.abspath)
+
+    def update_sha512(self):
+        """Overwrite the stored checksum value with the current checksum of the file on disk.
+        Use with caution, should not be necessary under usual circumstances!"""
+        if not self.exists:
+            return None
+        logg.info('Updating sha512 for file ID: %s.' % self.id)
+        self.sha512 = self.calculate_sha512()
+        self.sha512_ok = True
+        self.sha512_created_at = self.sha512_checked_at = datetime.utcnow()
+        return self.sha512
+
+    def get_or_create_sha512(self):
+        """Return the stored hash. If there is none, create and store it."""
+        if not self.exists:
+            return None, False
+        created = False
+        if not self.sha512:
+            created = True
+            logg.info('Checksum not in DB, creating it for file ID: %s.' % self.id)
+            self.update_sha512()
+        return self.sha512, created
+
+    def verify_checksum(self):
+        """Make sure the file exists and has the same checksum as before"""
+        if not self.exists:
+            #raise IOError()
+            logg.warn('check_checksum: file %s does not exist at %s!' % (self.id, self.abspath))
+            self.sha512_ok = None
+            return None
+        self.sha512_checked_at = datetime.utcnow()
+        sha_stored, created = self.get_or_create_sha512()
+        if created:
+            # checksum was just created, skip a second calculation of the hash
+            return True
+        else:
+            sha_calculated = self.calculate_sha512()
+            if sha_stored == sha_calculated and sha_calculated is not None:
+                logg.debug('Matching checksums :) for file ID: %s.' % self.id)
+                self.sha512_ok = True
+            else:
+                logg.warn('Checksum mismatch for file ID: %s.' % self.id)
+                self.sha512_ok = False
+        return self.sha512_ok
+
 
 @event.listens_for(File, 'after_delete')
 def unlink_physical_file_on_delete(mapper, connection, target):

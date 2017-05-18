@@ -239,6 +239,18 @@ def get_hash(filename):
         return hashlib.md5("").hexdigest()
 
 
+def sha512_from_file(file_path, BLOCKSIZE=65536):
+    if not os.path.isfile(file_path):
+        return None
+    sha = hashlib.sha512()
+    with open(file_path, 'rb') as _file:
+        _buffer = _file.read(BLOCKSIZE)
+        while len(_buffer) > 0:
+            sha.update(_buffer)
+            _buffer = _file.read(BLOCKSIZE)
+    return sha.hexdigest()
+
+
 def get_filesize(filename):
     try:
         if os.path.exists(filename):

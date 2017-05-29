@@ -15,8 +15,11 @@ from core.database.postgres.permission import NodeToAccessRule
 from schema.test.factories import MetadatatypeFactory
 
 
+mock = None
+
 @fixture
 def xml_fixture(parent_node, content_node):
+    global mock
     parent_node["testvalue"] = "1001"
     content_node["testvalue"] = "1002"
     struct = {"nodelist": [parent_node, content_node],
@@ -29,7 +32,11 @@ def xml_fixture(parent_node, content_node):
               "timetable": [],
               "result_shortlist": []}
     params = {}
-    req = MagicMock()
+    if not mock:
+        req = MagicMock()
+        mock = req
+    else:
+        req = mock
     req.get_header = lambda x: "localhost:8081"
     req.fullpath = ""
     req.query = ""
@@ -71,6 +78,9 @@ def test_rss(container_node, other_container_node, content_node, collections, ho
 
 def test_xml_singlenode(xml_fixture):
     struct, req, params = xml_fixture
+    req.app_cache = {}
+    from core.transition.globals import _request_ctx_stack
+    _request_ctx_stack.push(req)
     xmlstr = struct2xml(req, "", params, None, singlenode=True, d=struct)
     print xmlstr
     assert "smallview mask not defined" in xmlstr
@@ -94,7 +104,7 @@ def test_xml(xml_fixture):
 
     struct["nodelist_start"] = "10"
     struct["nodelist_limit"] = "10"
-    struct["nodelist_countall"] = "100"
+    struct["nodelist_count"] = "100"
 
     xmlstr = struct2xml(req, "", params, None, singlenode=False, d=struct)
     print xmlstr
@@ -107,6 +117,11 @@ def test_json(xml_fixture):
     struct, req, params = xml_fixture
     n1, n2 = struct["nodelist"]
 
+    # req.request.app_cache.__getitem__('maskcache').__getitem__ = lambda x, y: (None, None)
+    # req.request.app_cache.__getitem__('maskcache_accesscount').__getitem__ = 0
+    # d1 = {'directory/directory_en_nolabels': (None, None)}
+    d = {'maskcache': {}, 'maskcache_accesscount': 0}
+    req.request.app_cache.__getitem__.side_effect = d.__getitem__
     jsonstr = struct2json(req, "", params, None, d=struct)
     print jsonstr
     res = json.loads(jsonstr)
@@ -119,12 +134,17 @@ def test_search(guest_user, root, home_root, collections, container_node, conten
     params = {}
     params["q"] = "full=test"
 
+    # clear nodecache, to get rid of old entries like collections
+    from core.nodecache import new_nodecache
+    new_nodecache()
+
     everybody_rule = get_or_add_everybody_rule()
 
     root.children.append(collections)
 
     collections.access_rule_assocs.append(NodeToAccessRule(ruletype=u"read", rule=everybody_rule))
-    collections.container_children.append(container_node)
+    collections.container_children.append(home_root)
+    home_root.container_children.append(container_node)
 
     container_node.container_children.append(other_container_node)
     other_container_node.content_children.append(content_node)

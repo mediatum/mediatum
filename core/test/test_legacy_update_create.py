@@ -13,11 +13,13 @@ from core.test.test_version import teardown_module, session
 
 def test_create_update(session, req, guest_user, some_user, enable_athana_continuum_plugin):
     session.commit()
+    req.app_cache = {}
     req.session["user_id"] = some_user.id
     node = DocumentFactory()
     session.add(node)
     node["testattr"] = "new"
     session.commit()
+    req.app_cache = {}
     # well, guest users shouldn't update nodes, but it's ok for a test ;)
     req.session["user_id"] = guest_user.id
     node["testattr"] = "changed"
@@ -26,4 +28,3 @@ def test_create_update(session, req, guest_user, some_user, enable_athana_contin
     assert node.updateuser == guest_user.getName()
     assert node.creationtime <= node.updatetime 
     assert parse_date(node.updatetime)
-    

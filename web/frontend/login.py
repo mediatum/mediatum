@@ -36,7 +36,6 @@ from core.auth import PasswordsDoNotMatch, WrongPassword, PasswordChangeNotAllow
 from core.users import get_guest_user
 from datetime import datetime
 from mediatumtal import tal
-from web.frontend.frame import render_page
 
 q = db.query
 logg = logging.getLogger(__name__)
@@ -118,6 +117,8 @@ def login(req):
     user = users.user_from_session(req.session)
     ctx = {"error": error, "user": user, "email": config.get("email.support")}
     login_html = webconfig.theme.render_macro("login.j2.jade", "login", ctx)
+    # following import is also needed for pytest monkeypatch for render_page
+    from web.frontend.frame import render_page
     html = render_page(req, None, login_html)
     req.write(html)
     return httpstatus.HTTP_OK
@@ -164,6 +165,8 @@ def pwdchange(req):
                 return httpstatus.HTTP_MOVED_TEMPORARILY
 
     content_html = webconfig.theme.render_macro("login.j2.jade", "change_pwd", {"error": error, "user": user})
+    # following import is also needed for pytest monkeypatch for render_page
+    from web.frontend.frame import render_page
     html = render_page(req, None, content_html)
     req.write(html)
     return httpstatus.HTTP_OK

@@ -8,11 +8,16 @@ from sqlalchemy.orm import undefer, joinedload
 from dogpile.cache.region import make_region
 from sqlalchemy.orm.exc import NoResultFound
 
-
 class Cache(object):
     pass
 
 memory_nodecache = make_region().configure('dogpile.cache.memory')
+
+
+def new_nodecache():
+    """ create a new memory_nodecache - only for pytest """
+    global memory_nodecache
+    memory_nodecache = make_region().configure('dogpile.cache.memory')
 
 
 def get_typed_node_from_cache(nodeclass, nid):    

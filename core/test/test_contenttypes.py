@@ -20,7 +20,7 @@ def test_getContentType_content(content_node):
 
 def test_data_get_all_subclasses():
     all_datatypes = Data.get_all_subclasses()
-    assert len(all_datatypes) == 14
+    assert len(all_datatypes) == 12
     assert Document in all_datatypes
     assert Collections in all_datatypes
     assert Home in all_datatypes
@@ -29,7 +29,7 @@ def test_data_get_all_subclasses():
 
 def test_data_get_all_datatypes():
     all_datatypes = Data.get_all_datatypes()
-    assert len(all_datatypes) == 12
+    assert len(all_datatypes) == 10
     assert Document in all_datatypes
     assert Collections not in all_datatypes
     assert Home not in all_datatypes

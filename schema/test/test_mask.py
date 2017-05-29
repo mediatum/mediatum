@@ -27,11 +27,13 @@ def test_all_maskitems_nested(some_mask_with_nested_maskitem):
 
 def test_getMaskFields_first_level(some_mask):
     maskitems = assert_deprecation_warning(some_mask.getMaskFields, first_level_only=True)
-    assert isinstance(maskitems.first(), Maskitem)
+    # maskitems is of type InstrumentedList
+    assert isinstance(maskitems[0], Maskitem)
 
 
 def test_getMaskFields(some_mask):
     from core import db
     db.session.flush()
     maskitems = assert_deprecation_warning(some_mask.getMaskFields)
+    # maskitems is of type MtQuery
     assert isinstance(maskitems.first(), Maskitem)

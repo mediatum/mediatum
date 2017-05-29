@@ -69,7 +69,7 @@ def test_image_create_zoom_tile_buffer(image_png):
         val = buff.getvalue()
         assert val
         tile_img = PILImage.open(buff)
-        assert [s for s in tile_img.size if s == 256]
+        assert [s for s in tile_img.size if s == 250]
 
 
 @pytest.mark.slow
@@ -88,8 +88,8 @@ def test_image_extract_metadata(image):
     image._extract_metadata()
 
     # SVG does not support Exif, GIF and PNG are not supported by our ancient exif lib
-    if image._test_mimetype in ("image/tiff", "image/jpeg"):
-        assert image.get("exif_Image_XResolution") == "300"
+    if image._test_mimetype in ("image/tiff",):
+        assert image.get("exif_Image_XResolution") == "400"
 
 @pytest.mark.slow
 def test_image_generate_zoom_archive(image):

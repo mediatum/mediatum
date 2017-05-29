@@ -33,6 +33,8 @@ def test_prepareData_no_data_access(video, req):
 
 
 def test_show_node_big_video_url(video, req):
+    from core import webconfig
+    webconfig.init_theme()
     video.has_data_access = lambda *a, **k: True
     html = video.show_node_big(req)
     assert u"/file/{}/{}".format(video.id, TEST_VIDEO_NAME) in html

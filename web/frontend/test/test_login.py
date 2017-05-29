@@ -7,6 +7,7 @@ from pytest import fixture
 
 from web.frontend import login
 from core.auth import PasswordsDoNotMatch, WrongPassword, PasswordChangeNotAllowed
+from core import app
 
 
 @fixture(autouse=True)
@@ -14,7 +15,9 @@ def login_patch(monkeypatch, user, nav_frame):
     import core.users
     import web.frontend.frame
     monkeypatch.setattr(core.users, "user_from_session", lambda req: user)
-    monkeypatch.setattr(web.frontend.frame, "getNavigationFrame", lambda req: nav_frame)
+    monkeypatch.setattr(user, "is_anonymous", False, raising=False)
+    monkeypatch.setattr(web.frontend.frame, "render_page", lambda req, node, content_html: "")
+    pass
 
 LOGIN_NAME = "username"
 PASSWORD = "password"
@@ -84,42 +87,75 @@ def test_login(auth_success_patch, req):
     req.form["password"] = PASSWORD
     assert login.login(req) == 302
 
-
 def test_logout(logout_patch, req):
     assert login.logout(req) == 302
     assert "user" not in req.session
 
 
 def test_pwdchange(pwdchange_patch, req, session, collections):
+    from core.webconfig import init_theme, add_template_globals
+    from core import webconfig
+    init_theme()
+    webconfig.theme.make_jinja_loader()
+    add_template_globals()
     req.form["ChangeSubmit"] = True
     req.form["user"] = LOGIN_NAME
     req.form["password_old"] = PASSWORD
     req.form["password_new1"] = NEW_PASSWORD
     req.form["password_new2"] = NEW_PASSWORD_REPEATED
-    assert login.pwdchange(req) == pwdchange_patch
+    with app.test_request_context():
+        assert login.pwdchange(req) == pwdchange_patch
 
 
 # Referer tests
 
 def test_login_no_referer(req):
-    assert login.login(req) == 200
-    assert req.session["return_after_login"] is False
+    from core.webconfig import init_theme, add_template_globals
+    from core import webconfig
+    init_theme()
+    webconfig.theme.make_jinja_loader()
+    with app.test_request_context():
+        assert login.login(req) == 200
+        assert req.session["return_after_login"] is False
 
 
 def test_login_from_login_page(req):
+    from core.webconfig import init_theme, add_template_globals
+    from core import webconfig
+    init_theme()
+    webconfig.theme.make_jinja_loader()
     req.headers["Referer"] = "/login"
-    assert login.login(req) == 200
-    assert req.session["return_after_login"] is False
+    with app.test_request_context():
+        assert login.login(req) == 200
+        assert req.session["return_after_login"] is False
 
 
 def test_login_login_from_edit(req):
-    req.headers["Referer"] = "/edit/edit_content?id=604993"
-    assert login.login(req) == 200
-    assert req.session["return_after_login"] == "/edit?id=604993"
+    from core.webconfig import init_theme, add_template_globals
+    from core import webconfig
+    init_theme()
+    webconfig.theme.make_jinja_loader()
+    req.headers["Referer"] = "http://localhost/edit/edit_content?id=604993"
+    req.headers["Host"] = "localhost"
+    with app.test_request_context():
+        assert login.login(req) == 200
+        assert req.session["return_after_login"] == "http://localhost/edit?id=604993"
 
 
 def test_login_from_other(req):
-    ref = "http://localhost:8081/justatest"
+    from core.webconfig import init_theme, add_template_globals
+    from core import webconfig
+    init_theme()
+    webconfig.theme.make_jinja_loader()
+    ref = "http://localhost/justatest"
+    req.headers["Host"] = "localhost"
     req.headers["Referer"] = ref
-    assert login.login(req) == 200
-    assert req.session["return_after_login"] == ref
+    with app.test_request_context():
+        assert login.login(req) == 200
+        assert req.session["return_after_login"] == ref
+
+
+def test_new_nodecache():
+    """ create a new memory_nodecache for later tests like test_search.py """
+    from core.nodecache import new_nodecache
+    new_nodecache()

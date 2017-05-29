@@ -20,12 +20,13 @@ def assert_no_searchresult(res, readable_query=None, container=None, error=None)
         assert res.error == error
 
 
-def test_simple_search(session, req, container_node):
+def test_simple_search(session, req, container_node, collections):
+    make_node_public(collections)
     make_node_public(container_node)
     req.args["query"] = readable_query = u"simple"
     session.flush()
     req.args["id"] = container_node.id
-    res = simple_search(req)
+    res = simple_search(req, None)
     assert_no_searchresult(res, readable_query, container_node, error=False)
 
 
@@ -34,7 +35,7 @@ def test_simple_search_empty_query_error(session, req, container_node):
     req.args["query"] = readable_query = u''
     session.flush()
     req.args["id"] = container_node.id
-    res = simple_search(req)
+    res = simple_search(req, None)
     assert_no_searchresult(res, readable_query, container_node, error=True)
 
 
@@ -42,5 +43,6 @@ def test_simple_search_no_access(session, req, container_node):
     req.args["query"] = u"doesntmatter"
     session.flush()
     req.args["id"] = container_node.id
+
     with raises(NoResultFound):
-        simple_search(req)
+        simple_search(req, None)

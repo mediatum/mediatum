@@ -72,7 +72,7 @@ def get_maskcache_entry(lookup_key, maskcache, maskcache_accesscount):
         res = maskcache[lookup_key]
         maskcache_accesscount[lookup_key] += 1
     except:
-        res = None
+        res = (None, None)
     return res
 
 

@@ -173,7 +173,7 @@ def switch_language(req, language):
     if language is None and len(allowed_languages) > 0:
         language = allowed_languages[0]
     elif language not in allowed_languages:
-        raise "Language %s not configured" % language
+        language = allowed_languages[0]
     req.setCookie("language", language, path="/")
 
 

@@ -9,6 +9,7 @@ import os
 import glob
 
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy_continuum.utils import version_class
 from core import db
 from core import Node, File
 import core.config as config
@@ -46,9 +47,17 @@ def _send_thumbnail(thumb_type, req):
     if not node_or_version.has_read_access():
         return 404
 
+    FileVersion = version_class(File)
     if version_id:
         version = node_or_version
-        for f in version.files.filter_by(filetype=thumb_type, transaction_id=version.transaction_id):
+        if version_id==u"published":
+            files = version.files.filter(FileVersion.filetype==thumb_type, FileVersion.transaction_id<=version.transaction_id). \
+                order_by(FileVersion.transaction_id.desc())
+        else:
+            # XXX this fails if a new version exists that only changed metadata,
+            # XXX that's why the "publish" code above does it different
+            files = version.files.filter_by(filetype=thumb_type, transaction_id=version.transaction_id)
+        for f in files:
             if f.exists:
                 return req.sendFile(f.abspath, f.mimetype)
 
@@ -94,13 +103,21 @@ def _send_file_with_type(filetype, mimetype, req):
     if node is None or not node.has_data_access():
         return 404
 
+    fileobj = None
     file_query = node.files.filter_by(filetype=filetype)
-    if version_id:
+    if version_id == u"published":
+        FileVersion = version_class(File)
+        fileobj = file_query.filter(FileVersion.transaction_id <= node.transaction_id).\
+            order_by(FileVersion.transaction_id.desc()).first()
+    elif version_id:
+        # XXX this fails if a new version exists that only changed metadata,
+        # XXX that's why the "publish" code above does it different
         file_query = file_query.filter_by(transaction_id=node.transaction_id)
     if mimetype:
         file_query = file_query.filter_by(mimetype=mimetype)
 
-    fileobj = file_query.scalar()
+    if not fileobj:
+        fileobj = file_query.scalar()
     if fileobj is not None:
         return req.sendFile(fileobj.abspath, fileobj.mimetype)
 

@@ -1196,6 +1196,9 @@ msgstr "ohne Versionsnummer"
 msgid "current_version"
 msgstr "Aktuelle Version"
 
+msgid "published_version"
+msgstr "Publizierte Version"
+
 msgid "guest"
 msgstr "Gast"
 

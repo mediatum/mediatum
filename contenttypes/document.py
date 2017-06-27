@@ -25,6 +25,7 @@ import shutil
 import codecs
 from utils.utils import splitfilename, u, OperationException, utf8_decode_escape
 from utils.search import import_node_fulltext
+from web.frontend.filehelpers import version_id_from_req
 from schema.schema import VIEW_HIDE_EMPTY
 from core.translation import lang, t
 from lib.pdf import parsepdf
@@ -63,16 +64,18 @@ def _prepare_document_data(node, req, words=""):
             obj['documentdownload'] = u'/download/{}/{}.pdf'.format(node.id, node.id)
 
             if not node.isActiveVersion():
-                obj['documentlink'] += "?v=" + node.tag
-                obj['documentdownload'] += "?v=" + node.tag
+                version_id = unicode(version_id_from_req(req))
+                obj['documentlink'] += "?v=" + version_id
+                obj['documentdownload'] += "?v=" + version_id
 
     else:
         obj['canseeoriginal'] = False
 
     obj['documentthumb'] = u'/thumb2/{}'.format(node.id)
     if not node.isActiveVersion():
-        obj['documentthumb'] += "?v=" + node.tag
-        obj['tag'] = node.tag
+        version_id = unicode(version_id_from_req(req))
+        obj['documentthumb'] += "?v=" + version_id
+        obj['tag'] = version_id
 
     # XXX: do we really need this spider filtering?
     user_agent = req.get_header("user-agent") or ""
@@ -180,10 +183,10 @@ class Document(Content):
                 self.files.append(File(fulltextname, "fulltext", "text/plain"))
                 self.files.append(File(infoname, "fileinfo", "text/plain"))
 
-        db.session.commit()
-
         if doc:
             import_node_fulltext(self, overwrite=True)
+
+        db.session.commit()
 
     def get_unwanted_exif_attributes(self):
             '''

@@ -415,7 +415,15 @@ class Node(DeclarativeBase, NodeMixin):
     def get_tagged_version(self, tag):
         return self.tagged_versions.filter_by(value=tag).scalar()
 
-    def new_tagged_version(self, tag=None, comment=None, user=None):
+    def get_published_version(self):
+        Transaction = versioning_manager.transaction_cls
+        TransactionMeta = versioning_manager.transaction_meta_cls
+        version_cls = version_class(self.__class__)
+        published_versions = self.versions.join(Transaction, version_cls.transaction_id == Transaction.id).\
+                join(Transaction.meta_relation). filter(TransactionMeta.key == u"publish")
+        return published_versions.scalar()
+
+    def new_tagged_version(self, tag=None, comment=None, publish=None, user=None):
         """Returns a context manager that manages the creation of a new tagged node version.
 
         :param tag: a unicode tag assigned to the transaction belonging to the new version.
@@ -442,7 +450,13 @@ class Node(DeclarativeBase, NodeMixin):
                     tx.user = user
 
                 if tag:
+                    if node.get_tagged_version(tag):
+                        raise ValueError("tag already exists")
                     tx.meta[u"tag"] = tag
+                elif publish:
+                    if node.get_published_version():
+                        raise ValueError("publish version already exists")
+                    tx.meta[u"publish"] = publish
                 else:
                     NodeVersion = version_class(node.__class__)
                     # in case you were wondering: order_by(None) resets the default order_by

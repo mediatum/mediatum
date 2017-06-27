@@ -190,6 +190,18 @@
                         </td>
                     </tr>
                     </tal:block>
+                    <tr tal:condition="python: published_version" class="row active">
+						<td><a tal:attributes="href python:node_url(published_version.id, 'published')"
+						       i18n:translate="published_version"
+						       target="frontend">untagged</a>
+						</td>
+                        <td>
+                        <div tal:content="python:published_version.pretty_format_update_time"></div>
+                        </td>
+                        <td>
+                        <div tal:content="python:published_version.updateuser"></div>
+                        </td>
+                    </tr>
                 </table>
             </div>
         </div>

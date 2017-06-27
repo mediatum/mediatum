@@ -42,6 +42,10 @@ class MtVersionBase(object):
         self.transaction.meta[u"tag"] = tag
 
     @property
+    def publish(self):
+        return self.transaction.meta.get(u"publish")
+
+    @property
     def comment(self):
         return self.transaction.meta.get(u"comment")
 

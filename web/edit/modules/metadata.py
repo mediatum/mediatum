@@ -281,8 +281,10 @@ def getContent(req, ids):
     # version handling
     current_version = nodes[0].versions[-1]
     tagged_node_versions = nodes[0].tagged_versions.all()
+    published_version = nodes[0].get_published_version()
     
     data["untagged_current_version"] = current_version
+    data["published_version"] = published_version
 
     if tagged_node_versions:
         data["tagged_versions"] = tagged_node_versions[::-1] # descending version tag

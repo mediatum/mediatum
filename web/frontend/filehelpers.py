@@ -64,7 +64,10 @@ def node_id_from_req_path(req):
 
 
 def version_id_from_req(req):
-    return req.args.get("v", type=int)
+    version = req.args.get("v")
+    if version != u"published":
+        return req.args.get("v", type=int)
+    return version
 
 
 def get_node_or_version(nid, version_id=None, nodeclass=Node):
@@ -76,7 +79,10 @@ def get_node_or_version(nid, version_id=None, nodeclass=Node):
     version = None
 
     if version_id:
-        version = node.get_tagged_version(unicode(version_id))
+        if version_id == u"published":
+            version = node.get_published_version()
+        else:
+            version = node.get_tagged_version(unicode(version_id))
 
     return version if version is not None else node
 

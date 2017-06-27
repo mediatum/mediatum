@@ -58,13 +58,14 @@ class WorkflowStep_End(WorkflowStep):
                     node.id)})
 
     def runAction(self, node, op=""):
-        # insert node into searchindex
-        try:
-            if node.get('updatetime') <= unicode(now()):  # do only if date in the past
-                node.set('updatetime', unicode(now()))
-            db.session.commit()
-        except:
-            logg.exception("exception in workflow step end, runAction failed")
+        if self.get("endsetupdatetime") != "":
+            # insert node into searchindex
+            try:
+                if node.get('updatetime') <= unicode(now()):  # do only if date in the past
+                    node.set('updatetime', unicode(now()))
+                db.session.commit()
+            except:
+                logg.exception("exception in workflow step end, runAction failed")
 
     def metaFields(self, lang=None):
         ret = []
@@ -77,6 +78,11 @@ class WorkflowStep_End(WorkflowStep):
         field.set("label", t(lang, "admin_wfstep_endremove"))
         field.set("type", "check")
         ret.append(field)
+
+        field = Metafield("endsetupdatetime")
+        field.set("label", t(lang, "admin_wfstep_endsetupdatetime"))
+        field.set("type", "check")
+        ret.append(field)
         return ret
 
     @staticmethod
@@ -86,11 +92,13 @@ class WorkflowStep_End(WorkflowStep):
                     ("workflowstep-end", "Endknoten"),
                     ("admin_wfstep_endtext", "Textseite"),
                     ("admin_wfstep_endremove", "Entferne aus Workflow"),
+                    ("admin_wfstep_endsetupdatetime", "Setze Aktualisierungszeit"),
                 ],
                 "en":
                 [
                     ("workflowstep-end", "End node"),
                     ("admin_wfstep_endtext", "Text Page"),
                     ("admin_wfstep_endremove", "Remove from Workflow"),
+                    ("admin_wfstep_endsetupdatetime", "set updatetime"),
                 ]
                 }

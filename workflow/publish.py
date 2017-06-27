@@ -24,7 +24,9 @@ from core.permission import get_or_add_access_rule
 from core.transition import current_user
 from utils.date import now
 from schema.schema import Metafield
+import logging
 q = db.query
+logg = logging.getLogger(__name__)
 
 
 def register():
@@ -39,11 +41,20 @@ class WorkflowStep_Publish(WorkflowStep):
         user = current_user
 
         # remove access rule with '_workflow' user group id
+        # XXX the following debug messages are needed for analyzing the problem that
+        # XXX some dissertations are not published which means that the special_access_ruleset
+        # XXX is not removed
+        logg.debug("publish node id = %d: get_special_access_ruleset", node.id)
         special_access_ruleset = node.get_special_access_ruleset(ruletype=u'read')
         workflow_rule = get_or_add_access_rule(group_ids=[ugid])
 
+        logg.debug("publish node id = %d: loop over special_access_ruleset.rule_assocs", node.id)
         for rule_assoc in special_access_ruleset.rule_assocs:
+            logg.debug("publish node id = %d: rule_id = %d ruleset_name = '%s'",
+                       node.id, rule_assoc.rule_id, rule_assoc.ruleset_name)
             if rule_assoc.rule == workflow_rule:
+                logg.debug("publish node id = %d: delete rule_id = %d ruleset_name = '%s'",
+                           node.id, rule_assoc.rule_id, rule_assoc.ruleset_name)
                 db.session.delete(rule_assoc)
 
         db.session.commit()
@@ -59,6 +70,7 @@ class WorkflowStep_Publish(WorkflowStep):
             elif self.get("publishsetupdatetime") != "":
                 node.set('updatetime', unicode(now()))
                 db.session.commit()
+        logg.debug("publish node id = %d: db.session.commit()", node.id);
 
         self.forward(node, True)
 

@@ -5,6 +5,17 @@ We mostly follow the conventions given in [Keep a Changelog](http://keepachangel
 Calendar Versioning is used for our version numbers: http://calver.org/
 
 
+## [v2017.05] - 2017-06-27
+
+### Added
+
+- workflow diss: log date of publishing
+
+### Changed
+
+### Fixed
+
+
 ## [v2017.03] - 2017-04-04
 
 ### Added

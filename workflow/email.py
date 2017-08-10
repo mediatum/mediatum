@@ -156,8 +156,7 @@ class WorkflowStep_SendEmail(WorkflowStep):
             db.session.commit()
             if(self.sendOut(node)):
                 return self.forwardAndShow(node, True, req)
-            else:
-                return self.show_node_big(req)
+
         if "gofalse" in req.params:
             return self.forwardAndShow(node, False, req)
 
@@ -167,8 +166,7 @@ class WorkflowStep_SendEmail(WorkflowStep):
             self.runAction(node, "true")
             if node.system_attrs.get("mailtmp.talerror", "") != "":
                 return """<pre>%s</pre>""" % node.system_attrs.get("mailtmp.talerror")
-            else:
-                return self.show_node_big(req)
+
         elif node.get("system.mailtmp.error"):
             return '%s<br/><pre>%s</pre><br>&gt;<a href="%s">%s</a>&lt;' % (t(lang(req), "workflow_email_msg_1"), node.get(
                 "system.mailtmp.error"), req.makeSelfLink({"sendout": "true"}), t(lang(req), "workflow_email_resend"))

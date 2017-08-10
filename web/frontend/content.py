@@ -237,7 +237,8 @@ class ContentList(ContentBase):
 
     def __init__(self, node_query, container, paths, words=None, show_sidebar=True):
 
-        self.nodes = node_query
+        self.node_query = node_query
+        self.nodes = None
         self.container = container
         self.paths = paths
         self.words = words
@@ -270,12 +271,17 @@ class ContentList(ContentBase):
     def has_elements(self):
         if self._num > 0:
             return True
-        return self.nodes.first() is not None
+        if self.nodes is not None:
+            return len(self.nodes) > 0
+        return self.node_query.first() is not None
 
     @property
     def num(self):
         if self._num == -1:
-            self._num = self.nodes.count()
+            if self.nodes is not None:
+                self._num = self.nodes.count()
+            else:
+                self._num = self.node_query.count()
         return self._num
 
     def length(self):
@@ -428,7 +434,11 @@ class ContentList(ContentBase):
         ok = 0
 
         try:
-            first_node = self.nodes[0]
+            if self.nodes is not None:
+                first_node = self.nodes[0]
+            else:
+                first_node = self.node_query[0]
+
         except IndexError:
             return []
 
@@ -488,12 +498,12 @@ class ContentList(ContentBase):
                 sortfields_to_comp = prepare_sortfields(show_node, self.sortfields)
                 before = nav == "prev"
                 position_cond = position_filter(sortfields_to_comp, after=nav=="next", before=before)
-                q_nodes = self.nodes.filter(position_cond)
+                q_nodes = self.node_query.filter(position_cond)
                 q_nodes = apply_order_by_for_sortfields(q_nodes, sortfields_to_comp, before=before)
 
             elif nav in ("first", "last"):
                 sortfields_to_comp = prepare_sortfields(None, self.sortfields)
-                q_nodes = apply_order_by_for_sortfields(self.nodes, sortfields_to_comp, before=nav=="last")
+                q_nodes = apply_order_by_for_sortfields(self.node_query, sortfields_to_comp, before=nav=="last")
 
             # replace show_node with our navigation result if something was found. Else, just display the old node.
             new_node = q_nodes.first()
@@ -508,7 +518,7 @@ class ContentList(ContentBase):
         return ContentNode(show_node, self.paths, 0, 0, self.words)
 
     def _page_nav_prev_next(self):
-        q_nodes = self.nodes
+        q_nodes = self.node_query
         nodes_per_page = self.nodes_per_page
         # self.after set <=> moving to next page
         # self.before set <=> moving to previous page
@@ -534,17 +544,25 @@ class ContentList(ContentBase):
 
         # we fetch one more to see if more nodes are available (on the next page)
         nodes = q_nodes.limit(nodes_per_page+1).prefetch_attrs().all()
+        limit_count = nodes_per_page + 1
+        self.nodes = nodes
 
         # Check if we got enough nodes and try to load more if needed.
         # Maybe there were enough results for the database LIMIT, but SQLAlchemy filtered out some duplicates.
         node_count = len(nodes)
         # It doesn't make sense to try again if no results were returned. Empty container is empty...
-        if node_count:
+        # If it is a distinct query, there is no need to search for more nodes
+        if node_count and not q_nodes._distinct:
             while node_count <= nodes_per_page:
                 refetch_limit = nodes_per_page - node_count + 1
+                # set the refetch_limit high enough to fetch the remaining nodes with the next query, because if the
+                # previous queries have duplicate nodes in the result, the next query may have also duplicates
+                # consider the percentage of the fetched nodes with the limitations and enlarge refetch_limit accordingly
+                refetch_limit = refetch_limit * limit_count / node_count + 1
+                limit_count += refetch_limit
                 sortfields_to_comp = prepare_sortfields(nodes[-1], self.sortfields)
                 position_cond = position_filter(sortfields_to_comp, self.after or not self.before, self.before)
-                q_additional_nodes = self.nodes.filter(position_cond)
+                q_additional_nodes = self.node_query.filter(position_cond)
                 q_additional_nodes = apply_order_by_for_sortfields(q_additional_nodes, sortfields_to_comp, self.before)
 
                 additional_nodes = q_additional_nodes.limit(refetch_limit).prefetch_attrs().all()
@@ -552,12 +570,14 @@ class ContentList(ContentBase):
                     # no more nodes found (first or last page), stop trying
                     break
                 nodes += additional_nodes
+                self.nodes = nodes
                 node_count += len(additional_nodes)
 
         if len(nodes) > nodes_per_page:
             # more nodes available when navigating in the same direction
             # last node will be displayed on next page, remove it
-            nodes = nodes[:-1]
+            nodes = nodes[:nodes_per_page - len(nodes)]
+            self.nodes = nodes
             if self.before:
                 ctx["before"] = nodes[-1].id
             else:

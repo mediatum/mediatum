@@ -87,7 +87,7 @@ def search(searchtype, searchquery, readable_query, paths, req, container_id = N
         container = get_collections_node()
 
     try:
-        result = container.search(searchquery).filter_read_access().distinct()
+        result = container.search(searchquery).filter_read_access()
     except SearchQueryException as e:
         # query parsing went wrong or the search backend complained about something
         return NoSearchResult(readable_query, container, readable_query, error=True)

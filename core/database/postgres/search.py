@@ -114,10 +114,10 @@ def make_fts_expr(languages, target, searchstring, op="&"):
     """
     languages = list(languages)
     prepared_searchstring = _prepare_searchstring(op, searchstring)
-    tsvec = mediatumfunc.to_tsvector_safe(languages[0], target)
+    tsvec = func.to_tsvector(languages[0], target)
 
     for language in languages[1:]:
-        tsvec = tsvec.op("||")(mediatumfunc.to_tsvector_safe(language, target))
+        tsvec = tsvec.op("||")(func.to_tsvector(language, target))
 
     return make_fts_expr_tsvec(languages, tsvec, prepared_searchstring, op)
 
@@ -134,7 +134,7 @@ def make_attribute_fts_cond(languages, target, searchstring, op="&"):
     prepared_searchstring = _prepare_searchstring(op, searchstring)
 
     def cond_func(lang):
-        return mediatumfunc.to_tsvector_safe(lang, func.replace(target, ";", " ")).op("@@")(func.to_tsquery(lang, prepared_searchstring))
+        return func.to_tsvector(lang, func.replace(target, ";", " ")).op("@@")(func.to_tsquery(lang, prepared_searchstring))
 
     cond = cond_func(languages[0])
 

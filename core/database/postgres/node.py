@@ -376,10 +376,14 @@ class Node(DeclarativeBase, NodeMixin):
 
     def _search_query_object(self):
         """Builds the query object that is used as basis for content node searches below this node"""
-        from contenttypes import Content
+        from contenttypes import Content, Collections
         q = object_session(self).query
         sq = _subquery_subtree(self)
-        base_query = q(Content).filter(Node.id.in_(sq))
+        if self == q(Collections).one():
+            # no need to filter, the whole tree can be searched
+            base_query = q(Content)
+        else:
+            base_query = q(Content).filter(Node.id.in_(sq))
         return base_query
 
     def search(self, searchquery, languages=None):

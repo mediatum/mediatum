@@ -50,13 +50,12 @@ def _send_thumbnail(thumb_type, req):
     FileVersion = version_class(File)
     if version_id:
         version = node_or_version
-        if version_id==u"published":
+        files = version.files.filter_by(filetype=thumb_type, transaction_id=version.transaction_id).all()
+        if not files:
+            # files may be None if in this version only metadata changed
+            # then try previous transaction_ids
             files = version.files.filter(FileVersion.filetype==thumb_type, FileVersion.transaction_id<=version.transaction_id). \
                 order_by(FileVersion.transaction_id.desc())
-        else:
-            # XXX this fails if a new version exists that only changed metadata,
-            # XXX that's why the "publish" code above does it different
-            files = version.files.filter_by(filetype=thumb_type, transaction_id=version.transaction_id)
         for f in files:
             if f.exists:
                 return req.sendFile(f.abspath, f.mimetype)
@@ -105,14 +104,18 @@ def _send_file_with_type(filetype, mimetype, req, checkonly=False):
 
     fileobj = None
     file_query = node.files.filter_by(filetype=filetype)
-    if version_id == u"published":
-        FileVersion = version_class(File)
-        fileobj = file_query.filter(FileVersion.transaction_id <= node.transaction_id).\
-            order_by(FileVersion.transaction_id.desc()).first()
-    elif version_id:
-        # XXX this fails if a new version exists that only changed metadata,
-        # XXX that's why the "publish" code above does it different
+    # if version_id == u"published":
+    if version_id:
         file_query = file_query.filter_by(transaction_id=node.transaction_id)
+        fileobj = file_query.scalar()
+        # fileobj may be None if in this version only metadata changed
+        # then try previous transaction_ids
+        if not fileobj:
+            FileVersion = version_class(File)
+            # this a long lasting query
+            file_query = node.files.filter_by(filetype=filetype)
+            fileobj = file_query.filter(FileVersion.transaction_id <= node.transaction_id).\
+                order_by(FileVersion.transaction_id.desc()).first()
     if mimetype:
         file_query = file_query.filter_by(mimetype=mimetype)
 

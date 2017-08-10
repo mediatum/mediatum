@@ -75,13 +75,13 @@ def create_logfile(period):
     fpos0 = fin.tell()
     fin.seek(0, os.SEEK_END)
     fpos1 = fin.tell()
-    y = period[0:5]
+    y = period[0:3]
     while fpos1 - fpos0 > 4096:
         fpos = (fpos1 + fpos0) / 2
         fin.seek(fpos, os.SEEK_SET)
         line = fin.readline()
         line = fin.readline()
-        while line and not line.startswith(y):
+        while line and (not line.startswith(y) or line[4] != '-' or line[7] != '-' or line[10] != ' '):
             line = fin.readline()
         if (line >= period):
             fpos1 = fpos
@@ -91,8 +91,13 @@ def create_logfile(period):
     fin.seek(fpos0,os.SEEK_SET)
     line = fin.readline()
 
+    y = period[0:5]
     period_len = len(period)
-    for line in fin.readlines():
+    # for line in fin.readlines():
+    while True:
+        line = fin.readline()
+        if not line:
+            break
         if not line.startswith(y):
             continue
         if do_append and line[0:period_len] <= period:
@@ -109,6 +114,8 @@ def create_logfile(period):
         if pos < 0:
             continue
         if line[pos:].find('"GET') < 0 and line[pos:].find('"POST') < 0 and line[pos:].find('"HEAD') < 0:
+            continue
+        if line[pos:].find('127.0.0.1:') > 0 or line[pos:].find('129.187.87.37:') > 0:
             continue
         fout.write(line[0:24] + line[pos:pos+4] + line[pos+6:])
 

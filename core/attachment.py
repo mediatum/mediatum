@@ -42,6 +42,7 @@ fileicons = {'directory': 'mmicon_dir.gif',
              'video/x-msvideo': 'mmicon_avi.gif',
              'video/x-flv': 'mmicon_mpeg.gif',
              'video/quicktime': 'mmicon_mpeg.gif',
+             'video/mp4': 'mmicon_mpeg.gif',
              'audio/x-wav': 'mmicon_avi.gif',
              'audio/mpeg': 'mmicon_mpeg.gif',
              'text/x-bibtex': 'mmicon_txt.gif'}
@@ -88,9 +89,9 @@ def filebrowser(node, req):
 
     if path == "":
         # no attachment directory -> test for single file
-        file = {}
 
         for f in node.files.filter(~file_entity.filetype.in_(node.get_sys_filetypes())):
+            file = {}
             file["mimetype"], file["type"] = getMimeType(f.getName())
             file["icon"] = fileicons[file["mimetype"]]
             file["path"] = f.path

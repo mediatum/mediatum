@@ -110,8 +110,9 @@ def getMetaType(name):
 #
 
 def loadTypesFromDB():
-    warn("use q(Metadatatype) instead", DeprecationWarning)
-    return list(q(Metadatatype).order_by("name"))
+    warn("use q(Metadatatypes) instead", DeprecationWarning)
+    # do not use list(q(Metadatatype).order_by("name")) which reports also deleted nodes from type metadatatype
+    return list(q(Metadatatypes).one().children.order_by("name"))
 
 
 def get_permitted_schemas():

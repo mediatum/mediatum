@@ -824,7 +824,9 @@ def get_make_search_content_function(req):
                 field_range = xrange(1,11)
 
             for ii in field_range:
-                if req.args.get("query" + str(ii), "").strip():
+                if req.args.get("query" + str(ii), "").strip() or \
+                        req.args.get("query" + str(ii) + "-from", "").strip() or \
+                        req.args.get("query" + str(ii) + "-to", "").strip():
                     return extended_search
 
 

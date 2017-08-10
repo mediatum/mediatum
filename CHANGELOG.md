@@ -5,6 +5,32 @@ We mostly follow the conventions given in [Keep a Changelog](http://keepachangel
 Calendar Versioning is used for our version numbers: http://calver.org/
 
 
+## [v2017.06] - 2017-08-10
+
+### Added
+
+- include meta tags for google scholar
+
+### Changed
+
+- acceleration of search
+- add new container at top navigation tree
+- attachmentbrowser support also mp4
+- links in htmlmemo field enabled
+- access of localhost are not used for statistics data
+- globally most occurring schema is used instead of limiting to container content
+
+### Fixed
+
+- metadata field cannot be changed
+- search in edit area leads to exception by special characters
+- wrong email address blocks workflow
+- prevent adding node as child to itself
+- access to older version of a image returns an error
+- older version of digital objects are not shown if only metadata has changed
+- python type mismatches in handling of metafields of type union
+
+
 ## [v2017.05] - 2017-06-27
 
 ### Added

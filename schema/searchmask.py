@@ -47,9 +47,12 @@ def getMask(node):
 
 def getMainContentType(node):
     #todo this needs acl checks
-    occurrence = q(Root).scalar().all_children_by_query(q(Node.schema, func.count(Node.schema)).group_by(Node.schema).order_by(func.count(Node.schema).desc()))
+
+    occurrence = node.all_children_by_query(
+        q(Node.schema, func.count(Node.schema)).group_by(Node.schema).order_by(func.count(Node.schema).desc()))
+
     for schema_name, count in occurrence:
-        metadatatype = q(Metadatatype).filter_by(name=schema_name).first()
+        metadatatype = q(Metadatatype).filter_by(name=schema_name).filter(Metadatatype.a.active == "1").filter_read_access().first()
         if metadatatype:
             return metadatatype
     return None
@@ -67,7 +70,9 @@ def generateMask(node):
         mask.children.remove(field)
 
     #todo this also needs to be fixed
+    allfields_parent = maintype
     allfields = maintype.metafields.all()
+    allfieldnames = [mf.name for mf in allfields]
 
     for metafield in maintype.getMetaFields("s"):
         d = metafield.get("label")
@@ -77,8 +82,8 @@ def generateMask(node):
         mask.children.append(new_maskitem)
         if metafield.get("type") == "union":
             for t in metafield.get("valuelist").split(";"):
-                if t and t in allfields.children:
-                    new_maskitem.children.append(allfields.children.filter_by(name=t).one())
+                if t and t in allfieldnames:
+                    new_maskitem.children.append(allfields_parent.children.filter_by(name=t).one())
         else:
             new_maskitem.children.append(metafield)
 

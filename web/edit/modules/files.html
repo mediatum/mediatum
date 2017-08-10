@@ -363,7 +363,7 @@
             }
 
             function getFolderItems(id){
-                $.get('/edit/edit_content?style=popup&tab=files&data=children&id='+id+'&jsoncallback=?', function(data) {
+                $.get('/edit/edit_content?style=popup&tab=files&data=children&id='+id+'&excludeid='+node+'&jsoncallback=?', function(data) {
                   $('#files').html(data);
                 });
             }
@@ -375,7 +375,7 @@
             }
 
             function getGrandchildren(folderid){
-                $.get('/edit/edit_content?style=popup&tab=files&data=grandchildren&id='+folderid+'&excludeid=&jsoncallback=?', function(data) {
+                $.get('/edit/edit_content?style=popup&tab=files&data=grandchildren&id='+folderid+'&excludeid='+node+'&jsoncallback=?', function(data) {
                   $('#grandchildren').html(data);
                 });
             }

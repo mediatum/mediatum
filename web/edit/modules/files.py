@@ -184,10 +184,12 @@ def getContent(req, ids):
             for childid in req.params.get('items').split(";"):
                 if childid.strip() != "":
                     childnode = q(Node).get(childid.strip())
-                    for p in childnode.parents:
-                        if isinstance(p, Container):
-                            p.children.remove(childnode)
-                    node.children.append(childnode)
+                    # don't try to add node as child to itself !
+                    if childnode != node:
+                        for p in childnode.parents:
+                            if isinstance(p, Container):
+                                p.children.remove(childnode)
+                        node.children.append(childnode)
             req.writeTAL("web/edit/modules/files.html", {'children': node.children, 'node': node}, macro="edit_files_children_list")
 
         if req.params.get('data') == 'removeitem':  # remove selected childnode node

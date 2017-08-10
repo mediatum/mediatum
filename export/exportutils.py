@@ -31,6 +31,7 @@ import core.config as config
 import utils.date as date
 
 from utils.utils import esc, u, u2, esc2, utf82iso, iso2utf8
+from utils.google_scholar import google_scholar
 from utils.date import parse_date, format_date
 from core.users import get_guest_user
 
@@ -265,6 +266,7 @@ def init():
     default_context['config_get'] = config.get
     default_context['normLanguage_iso_639_2_b'] = normLanguage_iso_639_2_b
     default_context['normLanguage_iso_639_2_t'] = normLanguage_iso_639_2_t
+    default_context['google_scholar'] = google_scholar
 
 
 def registerDefaultContextEntry(key, entry):

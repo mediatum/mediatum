@@ -91,7 +91,7 @@ send_thumbnail = partial(_send_thumbnail, u"thumb")
 send_thumbnail2 = partial(_send_thumbnail, u"presentation")
 
 
-def _send_file_with_type(filetype, mimetype, req):
+def _send_file_with_type(filetype, mimetype, req, checkonly=False):
     try:
         nid = node_id_from_req_path(req)
     except ValueError:
@@ -119,6 +119,8 @@ def _send_file_with_type(filetype, mimetype, req):
     if not fileobj:
         fileobj = file_query.scalar()
     if fileobj is not None:
+        if checkonly:
+            return 200
         return req.sendFile(fileobj.abspath, fileobj.mimetype)
 
     return 404

@@ -179,16 +179,17 @@ def _display(req, show_navbar=True, render_paths=True, params=None):
         
     if node is not None and not node.has_read_access():
         node = None
-        
+
+    show_id = []
     if req.args.get("disable_content"):
         content_html = u""
     else:
-        content_html = render_content(node, req, render_paths)
+        content_html = render_content(node, req, render_paths, show_id)
 
     if params.get("raw"):
         req.write(content_html)
     else:
-        html = render_page(req, node, content_html, show_navbar)
+        html = render_page(req, node, content_html, show_navbar, show_id)
         req.write(html)
     # ... Don't return a code because Athana overwrites the content if an http error code is returned from a handler.
     # instead, req.setStatus() can be used in the rendering code

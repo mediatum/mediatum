@@ -40,6 +40,7 @@ from utils.url import build_url_from_path_and_params
 from schema.searchmask import SearchMask
 from mediatumtal import tal
 from core.nodecache import get_collections_node
+from utils.google_scholar import google_scholar
 
 
 navtree_cache = make_region().configure(
@@ -453,7 +454,7 @@ class UserLinks(object):
         return build_url_from_path_and_params(self.path, params)
 
 
-def render_page(req, node, content_html, show_navbar=True):
+def render_page(req, node, content_html, show_navbar=True, show_id=None):
     """Renders the navigation frame with the inserted content HTML and returns the whole page.
     """
     user = current_user
@@ -509,6 +510,16 @@ def render_page(req, node, content_html, show_navbar=True):
     frame_context["navtree"] = Markup(navtree_html)
     frame_context["header"] = Markup(header_html)
     frame_context["footer"] = Markup(footer_html)
+
+    if show_id and isinstance(show_id, list):
+        show_id = show_id[0]
+    else:
+        show_id = req.args.get("show_id")
+    if show_id:
+        shown_node = q(Node).get(show_id)
+    else:
+        shown_node = node
+    frame_context["google_scholar"] = google_scholar(shown_node)
 
     html = theme.render_template("frame.j2.jade", frame_context)
 

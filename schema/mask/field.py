@@ -285,6 +285,11 @@ class m_field(Metatype):
         metafieldtypes = getMetaFieldTypes().values()
         metafieldtypes.sort(lambda x, y: cmp(translate(x.getName(), request=req).lower(), translate(y.getName(), request=req).lower()))
 
+        add_descriptions = []
+        for metafield in metafields:
+            add_descriptions.append('<div style="display:none" id="div_%d" name="%s" description="%s"/>' %
+                                    (metafield.id, metafield.name, metafield.getDescription()))
+
         v = {}
         v["op"] = req.params.get("op", "")
         v["pid"] = req.params.get("pid", "")
@@ -296,6 +301,7 @@ class m_field(Metatype):
         v["t_attrs"] = attr
         v["icons"] = {"externer Link": "/img/extlink.png", "Email": "/img/email.png"}
         v["add_values"] = add_values
+        v["add_descriptions"] = add_descriptions
         v["translate"] = translate
         v["language"] = lang(req)
 

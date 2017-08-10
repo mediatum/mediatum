@@ -130,6 +130,30 @@ function metatypechange(doc){
             }
         }
     }
+    
+}
+
+function metafieldchange(doc){
+    for(var i=0; i< doc.getElementById("existingfieldtype").options.length; i++){
+        obj = doc.getElementById("div_" + doc.getElementById("existingfieldtype").options[i].value);
+        console.log("div_" + doc.getElementById("existingfieldtype").options[i].value)
+        if (obj){
+            if (doc.getElementById("existingfieldtype").value == doc.getElementById("existingfieldtype").options[i].value){
+              obj_help = doc.getElementById("edit_help");
+              if (obj_help) {
+                obj_help.value = obj.attributes.description.value;
+              }
+                
+            }
+        }
+    }
+}
+
+function clear_description(doc){
+    obj_help = doc.getElementById("edit_help");
+    if (obj_help) {
+      obj_help.value = "";
+    }
 }
 
 function getTypeString(s){ 

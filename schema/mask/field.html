@@ -23,11 +23,11 @@
         <div class="label" i18n:translate="mask_edit_field_selection">TEXT</div> 
         <tal:block tal:condition="python:op=='new'">
             <fieldset style="margin-top:5px;width:500px">
-                <input type="radio" name="fieldtype" value="common" checked="checked"/> 
+                <input type="radio" name="fieldtype" value="common" onchange="metafieldchange(document)" checked="checked"/> 
                 <span i18n:translate="mask_edit_existing_field">TEXT</span>
                 <br/>
                 <div class="label" i18n:translate="mask_edit_field">TEXT</div>
-                <select tal:condition="python:len(metafields)>0" name="field" style="width:250px;">
+                <select id="existingfieldtype" tal:condition="python:len(metafields)>0" name="field" style="width:250px;" onchange="metafieldchange(document)">
                     <tal:block tal:repeat="metafield metafields">
                         <option tal:attributes="value python:metafield.id" tal:content="python:u'{} ({})'.format(metafield.getName(), metafield.getFieldtype())"/>
                     </tal:block>
@@ -35,7 +35,7 @@
                 <span tal:condition="python:len(metafields)==0" style="color:red" i18n:translate="mask_editor_no_fields">TEXT</span>
                 <br/>
                 <br/>
-                <input type="radio" name="fieldtype" value="new"/> <span i18n:translate="mask_edit_new_field">TEXT</span><br/>
+                <input type="radio" name="fieldtype" value="new" onchange="clear_description(document)"/> <span i18n:translate="mask_edit_new_field">TEXT</span><br/>
                 <div class="label" i18n:translate="mask_edit_nameid">TEXT</div> 
                 <input type="text" name="fieldname" style="width:250px;"/>
                 <br/>
@@ -48,6 +48,7 @@
                 <br/>
                 <!-- automatic block from metatype start -->
                 <tal:block tal:repeat="values add_values" tal:content="raw values"/>
+                <tal:block tal:repeat="descriptions add_descriptions" tal:content="raw descriptions"/>
                 <!-- automatic block from metatype end -->
             </fieldset>
             <br/>
@@ -67,7 +68,8 @@
             </script>
         </tal:block>
         <div class="label" i18n:translate="mask_edit_help">TEXT</div>
-        <textarea tal:content="python:item.getDescription()" name="description" rows="4" style="width:500px"/>
+        <textarea id="edit_help" tal:condition="python:op=='edit'" tal:content="python:item.getDescription()" name="description" rows="4" style="width:500px"/>
+        <textarea id="edit_help" tal:condition="python:op=='new'" tal:content="python:metafields[0].getDescription()" name="description" rows="4" style="width:500px"/>
         <br/>
         <div class="label" i18n:translate="mask_edit_required">TEXT</div> 
         <input tal:condition="python:item.getRequired()==1" type="checkbox" name="required" value="1" checked="checked">

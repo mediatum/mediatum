@@ -100,7 +100,7 @@ class File(DeclarativeBase, FileMixin):
     def size(self):
         """Return size of file in bytes"""
         if self._size is None:
-            self._size = get_filesize(self.path)
+            return get_filesize(self.path)
         return self._size
 
     @property
@@ -123,6 +123,7 @@ class File(DeclarativeBase, FileMixin):
         self.sha512 = self.calculate_sha512()
         self.sha512_ok = True
         self.sha512_created_at = self.sha512_checked_at = datetime.utcnow()
+        self._size = get_filesize(self.path)
         return self.sha512
 
     def get_or_create_sha512(self):

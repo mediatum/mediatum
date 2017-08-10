@@ -451,6 +451,8 @@ def getContent(req, ids):
     nav = shownav(req, node, sortfield=req.params.get("sortfield"))
     navigation_height = searchbox_navlist_height(req, item_count)
     count = item_count[0] if item_count[0] == item_count[1] else "%d from %d" % (item_count[0], item_count[1])
+    searchparams = get_searchparams(req)
+    searchparams = {k: unicode(v).encode("utf8") for k, v in searchparams.items()}
 
     v.update({
         "id": req.params.get("id"),
@@ -464,7 +466,7 @@ def getContent(req, ids):
         "count": count,
         "search": search_html,
         "query" : req.query.replace('id=', 'src='),
-        "searchparams" : urllib.urlencode(get_searchparams(req)),
+        "searchparams" : urllib.urlencode(searchparams),
         "get_ids_from_query" : get_ids_from_query,
         "edit_all_objects" : translation_t(lang(req), "edit_all_objects").format(item_count[1]),
         "navigation_height": navigation_height,

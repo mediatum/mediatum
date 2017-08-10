@@ -156,7 +156,9 @@ def getContent(req, ids):
         v['navigation_height'] = navigation_height
         v['parent'] = col.id
         v['query'] = req.query.replace('id=','src=')
-        v['searchparams'] = urllib.urlencode(get_searchparams(req))
+        searchparams = get_searchparams(req)
+        searchparams = {k: unicode(v).encode("utf8") for k, v in searchparams.items()}
+        v['searchparams'] = urllib.urlencode(searchparams)
         v['get_ids_from_query'] = get_ids_from_query
         v['edit_all_objects'] = t(lang(req), "edit_all_objects").format(item_count[1])
         v['t'] = t

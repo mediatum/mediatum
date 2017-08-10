@@ -20,7 +20,7 @@ from sqlalchemy import BigInteger
 import humanize
 
 from core import db, config
-from core.file import FileMixin
+from core.file import FileMixin, FileVersionMixin
 from core.database.postgres.node import Node
 from core.database.postgres.alchemyext import AppenderQueryWithLen
 from core.database.postgres import DeclarativeBase, C, FK, rel, bref, integer_pk
@@ -42,7 +42,7 @@ class File(DeclarativeBase, FileMixin):
     """Represents an item on the filesystem
     """
     __versioned__ = {
-        "base_classes": (FileMixin, DeclarativeBase)
+        "base_classes": (FileVersionMixin, DeclarativeBase)
     }
 
     #: True means: physical file should be deleted when database object is deleted

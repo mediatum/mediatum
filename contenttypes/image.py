@@ -319,6 +319,7 @@ class Image(Content):
 
         use_flash_zoom = config.getboolean("image.use_flash_zoom", True) and self.should_use_zoom
         image_url = '/fullsize?id=%d' % self.id if use_flash_zoom else '/image/%d' % self.id
+        image_url = self._add_version_tag_to_url(image_url)
 
         archive = get_archive_for_node(self)
         if archive:

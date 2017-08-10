@@ -89,3 +89,15 @@ class FileMixin(object):
         warn("use File.size instead", DeprecationWarning)
         return self.size
 
+
+class FileVersionMixin(FileMixin):
+    """Override methods from FileMixin for version objects of files
+    """
+
+    @property
+    def size(self):
+        """Return size of file in bytes"""
+        if self._size is None:
+            self._size = get_filesize(self.path)
+        return self._size
+

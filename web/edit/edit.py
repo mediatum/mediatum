@@ -533,7 +533,21 @@ def action(req):
         newnode.set("creationtime", unicode(
             time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
         newnode.set("nodename", translated_label)  # set attribute named "nodename" to label text
-        newnode.orderpos = max([c.orderpos for c in node.children]) + 1
+        # place newnode at top of the children by setting the orderpos to the lowest orderpos - 1
+        # if the orderpos gets negative, shift the oderpos of all children by incrementing with a positive number
+        # make this number large enough, to avoid the next shifting of orderpos if more containers are added
+        if len(node.children) == 1:
+            # newnode is the only one child
+            newnode.orderpos = 1000
+        else:
+            newnode.orderpos = node.children[0].orderpos
+            newnode.orderpos = min([c.orderpos for c in node.children]) - 1
+            while newnode.orderpos < 0:
+                # in order to avoid negative orderpos, add a positive number to the orderpos of all children
+                # make this number large enough, so there is no shift of orderpos is necessary if the next
+                # container is added to the children
+                for c in node.children:
+                    c.orderpos += 1000
         db.session.commit()
         req.params["dest"] = newnode.id
 

@@ -822,7 +822,7 @@ function addNewContainer(parent_node, type){ /* add new container */
    $.ajax(options);
 
     var childnode = ajax_response;
-    parent_node.tree.getNodeByKey(parent_id).addChildren([childnode]);
+    parent_node.tree.getNodeByKey(parent_id).addChildren([childnode], parent_node.children[0]);
     parent_node.tree.activateKey(new_path_endpoint);
     parent_node.tree.activeNode.data.isFolder = true;
     consoledb.log('activeNode:', parent_node.tree.activeNode.key);

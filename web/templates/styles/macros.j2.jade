@@ -12,7 +12,9 @@
 
 
 - macro archive(highres_url, archive_fetch_url)
-  if archive_fetch_url
+  if archive_fetch_url == "pending"
+    img(src = "/img/wait_small.gif")
+  if archive_fetch_url and archive_fetch_url != "pending"
     div(style="padding-top:10px")
       script(type='text/javascript').
         function getArchivedFile(path) {
@@ -22,8 +24,8 @@
             url: path,
             type: "GET",
             success: function (msg) {
-              $('#high_resolution_link').css("display", "inherit");
-              $('#archive_div').hide()
+              $('#archive_div').hide();
+              $('#high_resolution_link').show();
             },
             error: function (msg) {
               alert(msg.responseText);
@@ -31,12 +33,12 @@
             }
           });
         }
-      a(style="display:none;", id=high_resolution_link, href=highres_url)
+      a(style="display:none;", id="high_resolution_link", href=highres_url)
         = _t("image_high_res_title")
-      div(id=archive_div)
-        a(id=get_archive_link, href="javascript:getArchivedFile('{}')".format(archive_fetch_url))
+      div(id="archive_div")
+        a(id="get_archive_link", href="javascript:getArchivedFile('{}')".format(archive_fetch_url))
           = _t("image_high_res_archive")
-  else
+  if not archive_fetch_url
     div(style="padding-top:20px")
       a(href=highres_url)
         = _t("image_high_res_title")

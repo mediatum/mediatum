@@ -15,6 +15,8 @@ iframe.ui-layout-center{padding:0px!important;}
 #div_description {float:left; border:0px solid white; width:16px;display:block;}
 #hitem {display:inline; float:left; margin-right:5px;}
 #selection {font-size:10px;}
+#archive_div {}
+#high_resolution_link {}
 #selection_div {border-top:1px solid silver; margin:3px; display:none; padding:3px;}
 h4.admin {font-size:25px; padding:0px 0px 0px 0px; margin:0px; text-align:right;}
 td.banner {background-color:#7d85a6; color:#fffaeb; font-size:10px; font-weight:lighter; text-decoration:none;}

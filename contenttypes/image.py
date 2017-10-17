@@ -328,6 +328,8 @@ class Image(Content):
                 archive_state = archive.get_file_state(self)
                 if archive_state == Archive.NOT_PRESENT:
                     obj['archive_fetch_url'] = u"/archive/{}".format(self.id)
+                elif archive_state == Archive.PENDING:
+                    obj['archive_fetch_url'] = u"pending"
                 elif archive_state == Archive.PRESENT:
                     obj['archive_fetch_url'] = None
 

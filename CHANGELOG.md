@@ -5,6 +5,21 @@ We mostly follow the conventions given in [Keep a Changelog](http://keepachangel
 Calendar Versioning is used for our version numbers: http://calver.org/
 
 
+## [v2017.09] - 2017-10-17
+
+### Added
+
+- initial data with access rules for administrator and guest 
+- metis tracking pixel
+
+### Changed
+
+### Fixed
+
+- search in editor leads to exception
+- restore from archive blocks all threads
+
+
 ## [v2017.06] - 2017-08-10
 
 ### Added

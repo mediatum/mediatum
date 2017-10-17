@@ -364,6 +364,16 @@ def get_license_urls(node):
             license_image_url = "/img/{}.png".format(license_name)
 
     return license_url, license_image_url
+
+
+def get_metis_url(node):  # better: get_tracking_pixel_url(s)?
+    """Reads the `metis_url` attribute of `node` and returns the metis URL"""
+    metis_url = node.get("metis_url")
+    if metis_url and not metis_url.startswith("http"):
+        logg.warn("omitting invalid metis_url string '%s', must start with http", metis_url)
+        metis_url = None
+
+    return metis_url
     
 
 def prepare_node_data(node, req):
@@ -392,6 +402,7 @@ def prepare_node_data(node, req):
     }
     
     data["license_url"], data["license_image_url"] = get_license_urls(node)
+    data["metis_url"] = get_metis_url(node)
 
     versions = node.tagged_versions.all()
 

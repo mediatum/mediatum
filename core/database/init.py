@@ -29,7 +29,8 @@ def init_database_values(s, default_admin_password=None):
     from contenttypes import Collections, Home
     from workflow.workflow import Workflows
     from core.auth import INTERNAL_AUTHENTICATOR_KEY, create_password_hash
-    from core.database.postgres.permission import NodeToAccessRule
+    from core.permission import get_or_add_access_rule
+    from core.database.postgres.permission import AccessRuleset, AccessRulesetToRule, NodeToAccessRule
     from web.admin.adminutils import adminNavigation
     from core.xmlnode import readNodeXML
 
@@ -95,6 +96,13 @@ def init_database_values(s, default_admin_password=None):
     guestgroup = UserGroup(name=u"guests")
     guestgroup.users.append(guestuser)
     s.add(guestgroup)
+
+    # add rules for admingroup, guestgroup
+    for usergroup in [admingroup, guestgroup]:
+        rule = get_or_add_access_rule(group_ids=[usergroup.id])
+        ruleset = AccessRuleset(name=usergroup.name, description=usergroup.name)
+        arr = AccessRulesetToRule(rule=rule)
+        ruleset.rule_assocs.append(arr)
 
     # add example metadatatypes
     example_path_collection = os.path.join(config.basedir, u"examples/content/collection.xml")

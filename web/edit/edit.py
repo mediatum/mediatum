@@ -706,6 +706,7 @@ def showPaging(req, tab, ids):
 
 
 def get_ids_from_req(req):
+    from web.edit.edit_common import g_nodes
     nid = req.params.get("src", req.params.get("id"))
     if nid:
         node = q(Node).get(nid)
@@ -713,12 +714,7 @@ def get_ids_from_req(req):
         make_search_content = get_make_search_content_function(req)
         paths = get_accessible_paths(node, q(Node).prefetch_attrs())
         if make_search_content:
-            content_or_error = make_search_content(req, paths)
-            if content_or_error:
-                if isinstance(content_or_error, NoSearchResult):
-                    nodes = []
-                else:
-                    nodes = content_or_error.nodes
+            nodes = g_nodes[req.request_number]
         ids = [str(n.id) for n in nodes]
         return ids
 

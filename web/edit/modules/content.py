@@ -29,7 +29,7 @@ from utils.utils import dec_entry_log
 from core.translation import translate, lang, t
 from schema.schema import get_permitted_schemas
 from web.edit.edit import get_ids_from_req
-from web.edit.edit_common import get_searchparams
+from web.edit.edit_common import get_searchparams, delete_g_nodes_entry
 import urllib
 
 q = db.query
@@ -162,7 +162,9 @@ def getContent(req, ids):
         v['get_ids_from_query'] = get_ids_from_query
         v['edit_all_objects'] = t(lang(req), "edit_all_objects").format(item_count[1])
         v['t'] = t
-        return req.getTAL("web/edit/modules/content.html", v, macro="edit_content")
+        res = req.getTAL("web/edit/modules/content.html", v, macro="edit_content")
+        delete_g_nodes_entry(req)
+        return res
     if hasattr(node, "editContentDefault"):
         return node.editContentDefault(req)
     return ""

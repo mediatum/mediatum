@@ -46,7 +46,7 @@ from core import Node
 from schema.schema import Metadatatype, get_permitted_schemas, get_permitted_schemas_for_datatype
 from sqlalchemy import func
 from utils.compat import iteritems
-from web.edit.edit_common import default_edit_nodes_per_page, edit_node_per_page_values, get_searchparams
+from web.edit.edit_common import default_edit_nodes_per_page, edit_node_per_page_values, get_searchparams, delete_g_nodes_entry
 from web.frontend.frame import render_search_box
 import urllib
 
@@ -472,6 +472,7 @@ def getContent(req, ids):
         "navigation_height": navigation_height,
     })
     html = req.getTAL("web/edit/modules/upload.html", v, macro="upload_form")
+    delete_g_nodes_entry(req)
     return html
 
 

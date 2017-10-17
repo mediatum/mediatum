@@ -185,13 +185,22 @@ def searchbox_navlist_height(req, item_count):
     bottom = 93 + 15 if item_count[0] < item_count[1] else 93
     return bottom if not searchmode else bottom + 67 if searchmode == "extended" else bottom + 256
 
-g_nodes = []
+# simple nodelist cache which is filled in showdir() and used by shownav() and get_ids_from_req() to avoid
+# a recomputing of nodelist, especially if search is used
+# each entry has the request_number as key and the nodelist as value
+# after the page is rendered the entry is no longer needed and is deleted with delete_g_nodes_entry()
+g_nodes = {}
+
+@dec_entry_log
+def delete_g_nodes_entry(req):
+    if req.request_number in g_nodes.keys():
+        del g_nodes[req.request_number]
 
 @dec_entry_log
 def shownav(req, node, publishwarn="auto", markunpublished=False, sortfield=None):
     page = int(req.params.get('page', 1))
     # showdir must be called before shownav, so g_nodes can be used from showdir
-    return shownavlist(req, node, g_nodes, page, dir=node)
+    return shownavlist(req, node, g_nodes[req.request_number], page, dir=node)
 
 
 @dec_entry_log
@@ -209,7 +218,7 @@ def showdir(req, node, publishwarn="auto", markunpublished=False, sortfield=None
             if isinstance(content_or_error, NoSearchResult):
                 nodes = []
             else:
-                nodes = content_or_error.nodes
+                nodes = content_or_error.node_query
 
     if sortfield is None:
         sortfield = req.params.get('sortfield')
@@ -217,11 +226,11 @@ def showdir(req, node, publishwarn="auto", markunpublished=False, sortfield=None
         sortfield = node.get("sortfield")
     if nodes:
         if sortfield and sortfield != "off":
-            nodes = edit_sort_by_fields(nodes, sortfield)
+            nodes = edit_sort_by_fields(nodes, sortfield).all()
         else:
-            nodes = edit_sort_by_fields(nodes, "id")
+            nodes = edit_sort_by_fields(nodes, "id").all()
     # set g_nodes to be used by shownav which must be called after showdir
-    g_nodes = nodes
+    g_nodes[req.request_number] = nodes
     page = int(req.params.get('page', 1))
     return shownodelist(req, nodes, page, publishwarn=publishwarn, markunpublished=markunpublished, dir=node,
                         item_count=item_count, all_nodes=all_nodes)

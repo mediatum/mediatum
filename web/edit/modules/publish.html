@@ -89,9 +89,9 @@
 
     <div style="clear:left"> </div>
     <div>
-        <p tal:condition="python:len(faultylist)>0" class="error" style="left: 200px; top: 100px; position: absolute;">
+        <p tal:condition="python:len(faultyerrlist)>0" id="publish_error" class="error" style="left: 200px; top: 100px; position: absolute;">
                 Objekte mit folgender ID konnten nicht publiziert werden:<br/>
-                <tal:block tal:repeat="item faultylist" tal:replace="raw python:u'- {}<br/>'.format(id)"/>
+                <tal:block tal:repeat="item faultyerrlist" tal:replace="raw python:u'- {}<br/>'.format(item)"/>
             </p>
     </div>
     
@@ -117,7 +117,7 @@
     <script>
         $(document).ready(function () { // set correct height of scrollable content
             initTree({'idOfFolderTrees': ['classtree'], 'style':'classification', 'multiselect':true});
-            $('#scrollcontainer').css('top', $('#operation').position().top + $('#operation').height());
+            $('#operation').css('height', $('#operation').height() + $('#publish_error').outerHeight());
             sublayout = $('#sub_content').layout({applyDemoStyles: true,
                 center:{paneSelector: "#sub_content_content"},
                 south:{paneSelector: "#sub_footer_module",size:20,closable:false, resizable:false, spacing_open: 0, spacing_closed: 0},

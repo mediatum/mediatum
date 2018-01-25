@@ -48,7 +48,6 @@ def getContent(req, ids):
                 src = q(Node).get(req.params.get("id"))
 
         for obj_id in objlist:
-            faultylist = []
             remove_from_src = False
             obj = q(Node).get(obj_id)
             metadatatype = obj.metadatatype
@@ -56,11 +55,10 @@ def getContent(req, ids):
             for mask in metadatatype.getMasks(type="edit"): # check required fields
                 if mask.has_read_access() and mask.getName() == obj.system_attrs.get("edit.lastmask"):
                     for f in mask.validateNodelist([obj]):
-                        faultylist.append(f)
+                        actionerror.append(f)
                     mask_validated = True
 
-            if len(faultylist)>0: # object faulty
-                actionerror.append(obj_id)
+            if len(actionerror)>0: # object faulty
                 continue
 
             if not mask_validated:
@@ -107,16 +105,18 @@ def getContent(req, ids):
                                   src.id, src.name, src.type,
                                   dest.id, dest.name, dest.type)
                     else:
-                        actionerror.append(obj.id)
-                        logg.error("Error in publishing of node %s: Destination node %s is child of node.", obj_id, dest.id)
+                        error_str = "Error in publishing of node %s: Destination node %s is child of node." % (obj_id, dest.id)
+                        actionerror.append((obj.id, error_str))
+                        logg.error(error_str)
 
             if remove_from_src:
                 try:
                     src.children.remove(obj)
                     db.session.commit()
                 except:
-                    logg.exception("Error in publishing of node %s: Database error", obj.id)
-                    actionerror.append(obj.id)
+                    error_str = "Error in publishing of node %s: Database error" % obj.id
+                    logg.exception(error_str)
+                    actionerror.append((obj.id, error_str))
                     
 
         v = {}
@@ -134,10 +134,11 @@ def getContent(req, ids):
          "showdir": showdir(req,
                             publishdir,
                             publishwarn=None,
-                            markunpublished=1),
+                            markunpublished=1,
+                            faultyidlist=[id for (id, error_str) in actionerror]),
          "basedir": q(Collections).one(),
          "script": "var currentitem = '%s';\nvar currentfolder = '%s'" % (publishdir.id, publishdir.id), "idstr": ids,
-         "faultylist": actionerror}
+         "faultyerrlist": [error_str for (id, error_str) in actionerror]}
 
     ret += req.getTAL("web/edit/modules/publish.html", v, macro="publish_form")
     return ret

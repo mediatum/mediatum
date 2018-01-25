@@ -204,7 +204,7 @@ def shownav(req, node, publishwarn="auto", markunpublished=False, sortfield=None
 
 
 @dec_entry_log
-def showdir(req, node, publishwarn="auto", markunpublished=False, sortfield=None, item_count=None, all_nodes=None):
+def showdir(req, node, publishwarn="auto", markunpublished=False, sortfield=None, item_count=None, all_nodes=None, faultyidlist=[]):
     global g_nodes
     if publishwarn == "auto":
         homedirs = current_user.home_dir.all_children_by_query(q(Container))
@@ -233,7 +233,7 @@ def showdir(req, node, publishwarn="auto", markunpublished=False, sortfield=None
     g_nodes[req.request_number] = nodes
     page = int(req.params.get('page', 1))
     return shownodelist(req, nodes, page, publishwarn=publishwarn, markunpublished=markunpublished, dir=node,
-                        item_count=item_count, all_nodes=all_nodes)
+                        item_count=item_count, all_nodes=all_nodes, faultyidlist=faultyidlist)
 
 
 def getAllSubDirs(node):
@@ -315,7 +315,8 @@ def shownavlist(req, node, nodes, page, dir=None):
 
 
 @dec_entry_log
-def shownodelist(req, nodes, page, publishwarn=True, markunpublished=False, dir=None, item_count=None, all_nodes=None):
+def shownodelist(req, nodes, page, publishwarn=True, markunpublished=False, dir=None, item_count=None, all_nodes=None,
+                 faultyidlist=[]):
     req.session["nodelist"] = EditorNodeList(nodes)
     script_array = "allobjects = new Array();\n"
     nodelist = []
@@ -373,6 +374,7 @@ def shownodelist(req, nodes, page, publishwarn=True, markunpublished=False, dir=
                                                     "chkjavascript": chkjavascript,
                                                     "unpublishedlink": unpublishedlink,
                                                     "nodelist": nodelist,
+                                                    "faultyidlist": faultyidlist,
                                                     "script_array": script_array,
                                                     "language": lang(req)},
                       macro="show_nodelist")

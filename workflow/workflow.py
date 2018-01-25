@@ -154,6 +154,7 @@ def setNodeWorkflow(node, workflow):
 
 def createWorkflowStep(name="", type="workflowstep", trueid="", falseid="", truelabel="", falselabel="", comment='', adminstep=""):
     n = WorkflowStep(name)
+    n.set_class(type)
     n.type = type
     n.set("truestep", trueid)
     n.set("falsestep", falseid)
@@ -168,6 +169,17 @@ def createWorkflowStep(name="", type="workflowstep", trueid="", falseid="", true
 def updateWorkflowStep(workflow, oldname="", newname="", type="workflowstep", trueid="", falseid="", truelabel="",
                        falselabel="", sidebartext='', pretext="", posttext="", comment='', adminstep=""):
     n = workflow.getStep(oldname)
+    if n.type != type:
+        # if the type has changed every access to n after db.session.comm() leads to the error:
+        # ObjectDeletedError: Instance '' has been deleted, or its row is otherwise not present.
+        # Workarround: create a temporary workflowstep n_new with the new type and set the id to the same id of n
+        nodeid = n.id # save n.id, after db.session.commit() n.id is no longer accessible
+        n.type = type
+        db.session.commit()
+        n_new = WorkflowStep(type)
+        n_new.set_class(type)
+        n_new.id = nodeid
+        n = n_new
     n.name = newname
     n.type = type
     n.set("truestep", trueid)
@@ -387,10 +399,12 @@ class Workflow(Node):
                 return step
         return None  # circular workflow- shouldn't happen
 
-    def getStep(self, name):
+    def getStep(self, name, test_only=False):
         if name.isdigit():
             return q(Node).get(name)
         else:
+            if test_only:
+                return self.children.filter_by(name=name).scalar()
             return self.children.filter_by(name=name).one()
 
     def getNodeList(self):
@@ -410,6 +424,10 @@ workflow_lock = thread.allocate_lock()
 
 @check_type_arg
 class WorkflowStep(Node):
+
+    def set_class(self, type):
+        # set the correct WorkflowStep-class e.g. WorkflowStep_Publish
+        self.__class__ = self.get_class_for_typestring(type)
 
     def getId(self):
         return self.name

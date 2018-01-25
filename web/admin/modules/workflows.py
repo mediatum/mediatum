@@ -151,6 +151,10 @@ def validate(req, op):
 
                 if req.params.get("form_op", "") == "save_newdetail":
                     # save workflowstep values -> create
+                    # don't create a new workflowstep if a workflowstep with the same name already exists
+                    workflowstep = getWorkflow(req.params.get("parent")).getStep(req.params.get("nname", ""), test_only=True)
+                    if workflowstep:
+                        raise ValueError("a workflowstep with the same name already exists")
                     wnode = createWorkflowStep(
                         name=req.params.get(
                             "nname", ""), type=req.params.get(
@@ -166,6 +170,11 @@ def validate(req, op):
                 elif req.params.get("form_op") == "save_editdetail":
                     # update workflowstep
                     wf = getWorkflow(req.params.get("parent"))
+                    # don't update a workflowstep if the name is changed and a workflowstep with the same name already exists
+                    if req.params.get("orig_name", "") != req.params.get("nname", ""):
+                        workflowstep = wf.getStep(req.params.get("nname", ""), test_only=True)
+                        if workflowstep:
+                            raise ValueError("a workflowstep with the same name already exists")
                     truelabel = ''
                     falselabel = ''
                     for language in wf.getLanguages():
@@ -232,8 +241,9 @@ def validate(req, op):
             return WorkflowStepList(req, req.params.get("parent"))
 
         return view(req)
-    except:
+    except Exception as ex:
         logg.exception("exception in validate")
+        return '<h3 style="color: red">%s</h3>' % ex.message
 
 
 """ overview of all defined workflows

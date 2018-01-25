@@ -432,7 +432,6 @@ def prepare_node_data(node, req):
         ctx = {
             "in_editor": in_editor,
             "children": children,
-            "child_node_url": child_node_url,
             "get_detail_url": get_detail_url,
             "parent": node,
         }

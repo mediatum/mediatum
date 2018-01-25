@@ -272,6 +272,31 @@ logging.captureWarnings(True)
 # get the logger after setting the logger class!
 logg = logging.getLogger(__name__)
 
+def reopen_log(log_filepath=None, log_filename=None):
+    log_dir = None;
+    if log_filepath is None:
+        log_filepath = config.get('logging.file', None)
+
+    if log_filepath is None:
+        log_dir = config.get("logging.dir", None)
+        if log_dir:
+            if not log_filename:
+                # use name of start script as log file name
+                log_filename = os.path.basename(os.path.splitext(sys.argv[0])[0]) + ".log"
+
+            log_filepath = os.path.join(log_dir, log_filename)
+
+    root_logger = logging.getLogger()
+    for handler in root_logger.handlers:
+        if type(handler) == logging.FileHandler:
+            handler.flush()
+            handler.close()
+            root_logger.removeHandler(handler)
+            break
+
+    file_handler = logging.FileHandler(log_filepath)
+    file_handler.setFormatter(logging.Formatter(ROOT_FILE_LOGFORMAT))
+    root_logger.addHandler(file_handler)
 
 def initialize(level=None, log_filepath=None, log_filename=None, use_logstash=None):
     root_logger = logging.getLogger()

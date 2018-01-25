@@ -24,7 +24,7 @@
         </span>
         
         <span tal:condition="python:lock!=0" tal:attributes="id python:u'lockspan_{}'.format(name)">&nbsp;
-            <input tal:attributes="name python:u'lock_{}'.format(name); id python:u'lock_{}'.format(name); onchange python:u'handlelock(\'{}\')'.format(name)" type="checkbox"/>
+          <input tal:attributes="name python:u'lock_{}'.format(name); id python:u'lock_{}__{}'.format(defaultlang, name); onchange python:u'handlelock(\'{}__{}\')'.format(defaultlang, name)" type="checkbox"/>
             <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
         </span>
 

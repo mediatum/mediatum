@@ -4,8 +4,8 @@ let
   pythonPackages = pkgs.python27Packages;
   self = pythonPackages;
 
-  postgresql95patch = pkgs.lib.overrideDerivation pkgs.postgresql95(oldAttrs: rec {
-    postInstall = pkgs.postgresql.postInstall +
+  postgresql95patched = pkgs.lib.overrideDerivation pkgs.postgresql95 ( oldAttrs: {
+    postInstall = oldAttrs.postInstall +
     ''
       cp ${./legacy/unaccent_german_umlauts_special.rules} $out/share/tsearch_data/unaccent_german_umlauts_special.rules
     '';
@@ -598,7 +598,7 @@ in {
       pkgs.pdftk
       pkgs.perlPackages.ImageExifTool
       pkgs.poppler_utils
-      postgresql95patch
+      postgresql95patched
     ];
 
     devel = [

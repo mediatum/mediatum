@@ -5,6 +5,24 @@ We mostly follow the conventions given in [Keep a Changelog](http://keepachangel
 Calendar Versioning is used for our version numbers: http://calver.org/
 
 
+## [v2018.01] - 2018-01-29
+
+### Added
+
+- preparation for logrotation (but not activated)
+- unaccent_german_umlauts_special.rules for postgres search added to nix-shell
+
+### Changed
+
+### Fixed
+
+- simultaneously editing test and memo fields not possible
+- quickpublisher errormessages hided behind other objects
+- creating workflowsteps with the same name
+- node with childnodes use same link for thumbnail and details
+- alembic cleanup
+
+
 ## [v2017.09] - 2017-10-17
 
 ### Added

@@ -41,6 +41,7 @@ from schema.searchmask import SearchMask
 from mediatumtal import tal
 from core.nodecache import get_collections_node
 from utils.google_scholar import google_scholar
+import time
 
 
 navtree_cache = make_region().configure(
@@ -339,7 +340,19 @@ def make_navtree_entries(language, collection, container):
         navtree_entries.append(e)
         if node.id in opened:
             e.folded = 0
-            for c in node.container_children.filter_read_access().order_by(Node.orderpos).prefetch_attrs():
+            """
+            find children ids for a given node id for an additional filter to determine the container_children
+            important: this additional filter is logical not needed - but it speeds up the computation of the
+                       container_children especially for guest users
+                       this additional filter is only used if the number of children ids is lower than 100
+            """
+            children_ids = db.session.execute("select cid from nodemapping where nid = %d" % node.id)
+            cids = [row['cid'] for row in children_ids]
+            if len(cids) < 100:
+                container_children = node.container_children.filter(Node.id.in_(cids)).filter_read_access().order_by(Node.orderpos).prefetch_attrs()
+            else:
+                container_children = node.container_children.filter_read_access().order_by(Node.orderpos).prefetch_attrs()
+            for c in container_children:
                 if hasattr(node, "dont_ask_children_for_hide_empty"):
                     style_hide_empty = hide_empty
                 else:
@@ -350,12 +363,14 @@ def make_navtree_entries(language, collection, container):
     collections_root = get_collections_node()
 
     if collections_root is not None:
+        time0 = time.time()
         make_navtree_entries_rec(navtree_entries, collections_root, 0, hide_empty)
+        time1 = time.time()
+        logg.info("make_navtree_entries: %f", time1 - time0)
 
     return navtree_entries
 
 
-@navtree_cache.cache_on_arguments()
 def _render_navtree_cached_for_anon(language, node_id):
     """
     XXX: This can be improved to reduce the number of stored trees. 

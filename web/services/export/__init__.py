@@ -26,6 +26,7 @@ import time
 import locale
 import logging
 import BaseHTTPServer
+import cgi
 
 response_code_dict = BaseHTTPServer.BaseHTTPRequestHandler.responses
 
@@ -165,6 +166,7 @@ def request_handler(req):
     sys.stdout.flush()
 
     if not matched:
+        req.path = cgi.escape(req.path)
         return req.error(404, "File " + req.path + " not found")
 
     return response_code

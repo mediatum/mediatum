@@ -36,6 +36,7 @@ RCS_ID = '$Id: athana.py,v 1.48 2013/02/28 07:28:19 seiferta Exp $'
 
 import re
 import string
+import cgi
 from warnings import warn
 
 from functools import partial
@@ -3494,6 +3495,7 @@ class FileStore:
         for handler in self.handlers:
             if handler.can_handle(request):
                 return handler.handle_request(request)
+        request.path = cgi.escape(request.path)
         return request.error(404, "File " + request.path + " not found")
 
     def addRoot(self, dir):
@@ -4172,6 +4174,7 @@ class AthanaHandler:
             return
         else:
             logg.debug("Request %s matches no pattern (context: %s)", request.path, context.name)
+            request.path = cgi.escape(request.path)
             return request.error(404, "File %s not found" % request.path)
 
     def callhandler(self, handler_func, req):

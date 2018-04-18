@@ -25,13 +25,14 @@ from warnings import warn
 
 from mediatumtal import tal
 import core.config as config
-from core import Node
+from core import Node, db
 from core.webconfig import node_url
 from contenttypes.data import Data
 
 from core.database.helpers import ContainerMixin
 from core.translation import t, lang, getDefaultLanguage
 from utils.utils import CustomItem
+from core.transition import current_user
 from core.transition.postgres import check_type_arg_with_schema
 from schema.schema import Metafield, SchemaMixin
 
@@ -86,6 +87,8 @@ class Container(Data, ContainerMixin, SchemaMixin):
     """
 
     show_childcount = False
+
+    item_file_pattern = re.compile("^\d+")
 
     # By default, a Container shows its children as a list.
     # Subclasses can set this to False if they want to display something else via show_node_big().
@@ -162,9 +165,20 @@ class Container(Data, ContainerMixin, SchemaMixin):
             sidebar = u""
 
         if "item" in req.params:
+            fname = req.params.get("item")
+            fname_allowed = False
+            # accept only filenames which starts with a number and the number is a node_id and the current_user has
+            # read access to this node, to avoid delivering of systemfiles like /etc/passwd
+            # with e.g. 604993?item=../../../../../../../../../../etc/passwd
+            node_id_list = self.item_file_pattern.findall(fname)
+            if node_id_list:
+                node_id = node_id_list[0]
+                node = db.query(Node).get(node_id)
+                fname_allowed = node and node.has_read_access(user=current_user)
+
             fpath = "{}html/{}".format(config.get("paths.datadir"),
-                                       req.params.get("item"))
-            if os.path.isfile(fpath):
+                                       fname)
+            if fname_allowed and os.path.isfile(fpath):
                 with codecs.open(fpath, "r", encoding='utf8') as c:
                     content = c.read()
                 if sidebar:

@@ -86,7 +86,13 @@ def getContent(req, ids):
                     filepath = f.abspath.replace(config.get("paths.datadir"), '')
                     if req.params.get('filename') == filepath and os.path.exists(config.get("paths.datadir") + filepath):
                         with open(config.get("paths.datadir") + filepath, "w") as fil:
-                            fil.write(req.params.get('data'))
+                            try:
+                                fil.write(req.params.get('data'))
+                            except UnicodeEncodeError:
+                                # some unicode characters like 'Black Circle' &#9679; are not translated in the
+                                # html entity by the current ckeditor version
+                                fil.write(req.params.get('data').encode('ascii', 'xmlcharrefreplace'))
+
                         req.write(json.dumps(
                             {'filesize': format_filesize(os.path.getsize(config.get("paths.datadir") + filepath)),
                              'filename': req.params.get('filename'), 'state': 'ok'}, ensure_ascii=False))

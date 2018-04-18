@@ -1,6 +1,9 @@
 {fetchurl, fetchgit, fetchFromGitHub, fetchhg, stdenv, self, pkgs}:
 
 let
+  nixexpr1709 = fetchTarball https://d3g5gsiof5omrk.cloudfront.net/nixos/17.09/nixos-17.09.2875.c2b668ee726/nixexprs.tar.xz;
+  pkgs1709 = import nixexpr1709 {};
+
   pythonPackages = pkgs.python27Packages;
   self = pythonPackages;
 
@@ -618,7 +621,7 @@ in {
 
     system = with pkgs; [
       git
-      nginx
+      pkgs1709.nginx
       zsh
     ];
 

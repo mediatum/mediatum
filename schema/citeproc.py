@@ -339,6 +339,14 @@ def import_csl(record, target=None, name=None, testing=False):
     if target:
         target.content_children.append(node)
 
+    # because the doi import contains only a subset of the metadata defined in metadatatype,
+    # all other metadata are created and set to default values.
+    # this will be done in the same manner as if the document is loaded in editor and saved without
+    # any changes (required fields are not considered)
+    editmask = metatype.get_mask(u"editmask")
+    if editmask and hasattr(editmask, 'set_default_metadata'):
+        editmask.set_default_metadata(node)
+
     return node
 
 

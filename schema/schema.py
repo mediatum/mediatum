@@ -876,6 +876,22 @@ class Mask(Node):
         """
         return self.all_children_by_query(q(Maskitem))
 
+    def set_default_metadata(self, node):
+        """
+        create all metadata and set it to default value according mask (normally editmask) if they are
+        missing in the document
+        called if the document is uploaded via bibtex- or doi-import
+        :param node: document uploaded view bibtex- or doi-import
+        :return: None
+        """
+        if not self.children:
+            return None
+
+        for field in self.children.sort_by_orderpos():
+            t = getMetadataType(field.get("type"))
+            if hasattr(t, "set_default_metadata"):
+                t.set_default_metadata(field, node)
+
     def getFormHTML(self, nodes, req):
         if not self.children:
             return None

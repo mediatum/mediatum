@@ -373,6 +373,14 @@ def importBibTeX(infile, node=None, req=None):
 
                 doc.set(k, v)
 
+            # because the bibtex import contains only a subset of the metadata defined in metadatatype,
+            # all other metadata are created and set to default values.
+            # this will be done in the same manner as if the document is loaded in editor and saved without
+            # any changes (required fields are not considered)
+            editmask = metadatatype.get_mask(u"editmask")
+            if editmask and hasattr(editmask, 'set_default_metadata'):
+                editmask.set_default_metadata(doc)
+
             child_id = None
             child_type = None
             try:

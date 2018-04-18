@@ -22,7 +22,7 @@ from utils.strings import ensure_unicode
 
 from schema.schema import getMetaFieldTypeNames, getMetaFieldTypes, getMetadataType, VIEW_DATA_ONLY, VIEW_SUB_ELEMENT, VIEW_HIDE_EMPTY, VIEW_DATA_EXPORT, dateoption
 from core.translation import lang, translate
-from core.metatype import Metatype
+from core.metatype import Metatype, Context
 from core import db, Node
 
 q = db.query
@@ -30,6 +30,35 @@ s = db.session
 
 
 class m_field(Metatype):
+
+    def set_default_metadata(self, field, node):
+        """
+        create/set metadata of a document if the value is not set to a default value
+        the default value is normally an empty string except the fieldtype has an attribute
+        "formatValues" (fieldtypes: list, mlist, dlist) an defines an option list. In this case the first listelement is
+        used as default value
+        :param field: field of mask defining metadata
+        :param node: document
+        :return: None
+        """
+        element = field.getField()
+        elementtype = element.get("type")
+        key = element.getName()
+        val = node.get_special(key)
+        if val == "" and field.getDefault() != "":
+            val = field.getDefault()
+
+        if val == "":
+            t = getMetadataType(elementtype)
+            if hasattr(t, "formatValues"):
+                context = Context(element, value=val, width=field.getWidth(), name=field.getName(), lock=0, language=None)
+                valuelist = t.formatValues(context)
+                if valuelist[0][0] in ('option', 'optionselected'):
+                    node.set(key, valuelist[0][2])
+            else:
+                node.set(key, "")
+        return None
+
 
     def getFormHTML(self, field, nodes, req, sub=False):
         """ create editor field (editarea)"""

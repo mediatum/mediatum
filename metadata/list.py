@@ -137,7 +137,11 @@ class m_list(Metatype):
         return (metafield.getLabel(), value)
 
     def format_request_value_for_db(self, field, params, item, language=None):
-        value = params.get(item)
+        if field.get('multiple'):
+            valuelist = params.getlist(item)
+            value = ";".join(valuelist)
+        else:
+            value = params.get(item)
         return value.replace("; ", ";")
 
     def getMaskEditorHTML(self, field, metadatatype=None, language=None):
@@ -149,7 +153,7 @@ class m_list(Metatype):
                 value = field.getValues()
                 if field.id and len(field.files) > 0:
                     filename = os.path.basename(field.files[0].abspath)
-                    multiple_list = field.get('multiple')
+                multiple_list = field.get('multiple')
         except AttributeError:
             value = field
         return tal.getTAL("metadata/list.html",

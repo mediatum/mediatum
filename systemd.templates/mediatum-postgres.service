@@ -1,0 +1,15 @@
+[Unit]
+Description=mediatum-postgres
+Before=mediatum.target
+PartOf=mediatum.target
+
+[Service]
+Type=forking
+WorkingDirectory=MEDIATUM-WORKING-PATH
+ExecStart=MEDIATUM-HOME/.nix-profile/bin/nix-shell --run "pg_ctl start -D MEDIATUM-POSTGRES-CONF-PATH"
+ExecReload=MEDIATUM-HOME/.nix-profile/bin/nix-shell --run "pg_ctl reload -D MEDIATUM-POSTGRES-CONF-PATH"
+ExecStop=MEDIATUM-HOME/.nix-profile/bin/nix-shell --run "pg_ctl stop -D MEDIATUM-POSTGRES-CONF-PATH"
+User=mediatum
+
+[Install]
+Also=mediatum.target

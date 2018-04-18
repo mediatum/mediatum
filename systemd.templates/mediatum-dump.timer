@@ -1,0 +1,9 @@
+[Unit]
+Description=mediatum database dump for backup
+
+[Timer]
+OnCalendar=*-*-* 03:00:00
+Persistent=true
+
+[Install]
+WantedBy=multi-user.target

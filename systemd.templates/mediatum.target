@@ -1,0 +1,9 @@
+[Unit]
+Description=mediatum
+Wants=mediatum-backend.service
+Wants=mediatum-redis.service
+Wants=mediatum-postgres.service
+Wants=mediatum-nginx.service
+
+[Install]
+WantedBy=multi-user.target

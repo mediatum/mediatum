@@ -1,0 +1,17 @@
+[Unit]
+Description=mediatum-nginx
+Before=mediatum.target
+PartOf=mediatum.target
+
+[Service]
+Type=simple
+PIDFile=/run/nginx.pid
+Environment = HOME=/root
+ExecStart=MEDIATUM-HOME/.nix-profile/bin/nix-shell --run "nginx -c NGINX-CONF-PATH/nginx.conf"
+ExecReload=MEDIATUM-HOME/.nix-profile/bin/nix-shell --run "nginx -c NGINX-CONF-PATH/nginx.conf -s reload"
+ExecStop=/sbin/start-stop-daemon --quiet --stop --retry QUIT/5 --pidfile /run/nginx.pid
+WorkingDirectory=MEDIATUM-WORKING-PATH
+
+
+[Install]
+Also=mediatum.target

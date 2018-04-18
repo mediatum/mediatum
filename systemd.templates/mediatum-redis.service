@@ -1,0 +1,13 @@
+[Unit]
+Description=mediatum redis Server
+Before=mediatum.target
+PartOf=mediatum.target
+
+[Service]
+Type=simple
+ExecStart=MEDIATUM-HOME/.nix-profile/bin/nix-shell --run "redis-server"
+WorkingDirectory=MEDIATUM-WORKING-PATH
+User=mediatum
+
+[Install]
+Also=mediatum.target

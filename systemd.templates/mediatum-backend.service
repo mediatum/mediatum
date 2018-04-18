@@ -1,0 +1,16 @@
+[Unit]
+Description=mediatum backend
+Before=mediatum.target
+PartOf=mediatum.target
+After=mediatum-redis.service
+After=mediatum-postgres.service
+
+
+[Service]
+Type=simple
+ExecStart=MEDIATUM-HOME/.nix-profile/bin/nix-shell --run "python mediatum.py"
+WorkingDirectory=MEDIATUM-WORKING-PATH
+User=mediatum
+
+[Install]
+Also=mediatum.target

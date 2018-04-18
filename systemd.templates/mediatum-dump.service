@@ -1,0 +1,10 @@
+[Unit]
+Description=mediatum database dump for backup
+
+[Service]
+WorkingDirectory=MEDIATUM-WORKING-PATH
+ExecStart=MEDIATUM-HOME/.nix-profile/bin/nix-shell --run "pg_dump -Z9 -f POSTGRES-BACKUP-PATH/daily-$(date +%%d).sql.gz mediatum"
+User=mediatum
+
+[Install]
+Also=mediatum-dump.timer

@@ -1,3 +1,5 @@
+(function (exports) {
+var $ = exports.$;
 var mediatum_config = {};
 var mediatum_config_default = {'fields':['<b>[att:pos]</b>','defaultexport'], 'divider':'<br/>', 'target':'internal', 'output':'default', 'groupby':''};
 var module_count = 0;
@@ -48,16 +50,20 @@ function pad(number, length) {
 }
 
 function mediatum_load(id, limit, sort, query, format, language, type, detailof){
+    // grap current global mediatum_config
+    mediatum_config = exports.mediatum_config || {};
     language = language || lan;
     var scripts = document.getElementsByTagName('script');
     var lastScript = scripts[scripts.length-1];
 
     lastScript.insertAdjacentHTML("beforebegin", '<div class="mediatum" id="mediatum_'+module_count+'"><p class="loading">'+labels[language][0]+'</p></div>');
 
-    load_script({ 
-        src: '//mediatum.ub.tum.de/js/jquery.min.js',
+    load_script({
+        src: baseurl + '/js/jquery.min.js',
         position: module_count,
         callback: function(pos) {
+            // fix jQuery conflicts, see https://api.jquery.com/jquery.noconflict/
+            $ = jQuery.noConflict(true);
             
             if(detailof || detailof==0){
                 var divider = mediatum_config['divider'+detailof] ? mediatum_config['divider'+detailof] : mediatum_config_default.divider;
@@ -347,3 +353,6 @@ function execFuncts(value, func){
     }
 
 }
+
+exports.mediatum_load = mediatum_load;
+}(typeof self !== 'undefined' ? self : this));

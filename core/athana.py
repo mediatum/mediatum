@@ -900,7 +900,7 @@ class http_request(object):
         rc = True
         re_bad_chars = re.compile(r"[^ -~\t]").search  # @NK: please test
         for k, vv in self.reply_headers.iteritems():
-            for v in [vv] if isinstance(vv, (str, int)) else vv:
+            for v in [vv] if isinstance(vv, (str, unicode, int)) else vv:
                 field = ": ".join(x.encode("utf8") if isinstance(x, unicode) else str(x) for x in (k,v))
                 # consider only header fields with correct characters
                 if re_bad_chars(field):

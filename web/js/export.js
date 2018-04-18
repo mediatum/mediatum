@@ -59,7 +59,7 @@ function mediatum_load(id, limit, sort, query, format, language, type, detailof)
     lastScript.insertAdjacentHTML("beforebegin", '<div class="mediatum" id="mediatum_'+module_count+'"><p class="loading">'+labels[language][0]+'</p></div>');
 
     load_script({
-        src: baseurl + '/js/jquery.min.js',
+        src: baseurl + '/js/jquery-1.12.4.js',
         position: module_count,
         callback: function(pos) {
             // fix jQuery conflicts, see https://api.jquery.com/jquery.noconflict/

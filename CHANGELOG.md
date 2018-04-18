@@ -5,6 +5,31 @@ We mostly follow the conventions given in [Keep a Changelog](http://keepachangel
 Calendar Versioning is used for our version numbers: http://calver.org/
 
 
+## [v2018.04] - 2018-04-18
+
+### Added
+
+- new config parameter ldap.auto_create_user
+- systemd templates
+
+### Changed
+
+- nix-shell with nginx 1.12.1
+- new jquery version 1.12.4
+- export.js with relative path to to jquery_min.js
+- bibtex- / doi-import: set all metadata
+
+### Fixed
+
+- close tempfiles correctly
+- deny access to system files
+- f/admin user: relative link for user_home_dir
+- cross site scripting
+- inhibit http response splitting by crlf injection
+- metafields of type list: fix multiple selections 
+- chkeditor problems with special utf8 characters
+
+
 ## [v2018.01] - 2018-01-29
 
 ### Added

@@ -65,7 +65,7 @@ def includetemplate(self, file, substitute):
                 else:
                     ret += s[lastend:match.start()]
                     imgname = match.group(1)
-                    ret += 'src="/file/' + self.id + '/' + imgname + '"'
+                    ret += 'src="/file/' + str(self.id) + '/' + imgname + '"'
                     lastend = match.end()
     return ret
 

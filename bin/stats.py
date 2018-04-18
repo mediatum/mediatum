@@ -25,122 +25,52 @@ basic_init(prefer_config_filename="stats.log")
 
 
 from core.stats import buildStatAll
-from core import init, db, Node, config
+from core import init, db, Node
+from core import config
 from contenttypes import Collections, Collection
-import os
+import os, re, argparse, tempfile
+from itertools import imap, ifilter, repeat
+import operator
 
 """
 if parameter is given it will be used as period, format: %Y-%m
 if not given, current month will be used as period
 """
 
-def create_logfile(period):
+def main():
     """
     create or append a logfile with name yyyy-mm.log as an excerpt of mediatum.log
     of lines beginning with period and containing the string 'INFO' and containing one of the strings:
     'GET', 'POST' or 'HEAD are excerpted
-    :param period: format: yyyy-mm
-    :return: none
+    usage: find /home/congkhacdung/logrotated/ -type f -iname 'mediatum.*.log' | sort | xargs cat | python bin/stats.py --skip-ip 127.0.0.1 --skip-ip 129.187.87.37 2018 2
     """
-    outpath = "%s.log" % os.path.join(config.get("logging.save", config.get("logging.path", "/tmp")), period)
-    MEDIATUM_LOG = os.path.join(config.get("logging.path"), "mediatum.log")
+    parser = argparse.ArgumentParser(description='Extract info needed for statistics.')
+    parser.add_argument('--skip-ip', dest='skip_ip', action='append', default=[], help='ip to skip')
+    parser.add_argument('year', type=int, help='year')
+    parser.add_argument('month', type=int, help='month')
+    args = parser.parse_args()
+    period = "{:4}-{:0>2}".format(args.year, args.month)
+    skip_ip = args.skip_ip
 
-    period_len_orig = len(period)
-    do_append = False
-    # check if outpath is already existing then append it
-    if os.path.exists(outpath):
-        do_append = True
-        # read the last line to get the last timestamp
-        fout = open(outpath)
-        fout.seek(0, os.SEEK_END)
-        fpos = fout.tell()
-        if fpos > 4096:
-            fout.seek(-4096, os.SEEK_END)
-            lines = fout.readlines()
-        else:
-            do_append = False
-        if fout:
-            fout.close()
-        if do_append and len(lines) > 1:
-            last_line = lines[len(lines) - 1]
-            period = last_line[:23]
-        else:
-            do_append = False
+    outdir = os.path.join(config.get("logging.save", config.get("logging.path", "/tmp")))
+    match = re.compile('^({period}.{{17}}).*(INFO).{{2}}(.*(?:GET|POST|HEAD).*)'.format(period=period)).match
+    lines = sys.stdin
+    lines = imap(match, lines)
+    lines = ifilter(None, lines)
+    lines = imap(operator.methodcaller('groups'), lines)
 
-    fin = open(MEDIATUM_LOG)
-    openmode = "a" if do_append else "w"
-    fout = open(outpath, openmode)
-    # do a binary search for the period in mediatum.log
-    fin.seek(0, os.SEEK_SET)
-    fpos0 = fin.tell()
-    fin.seek(0, os.SEEK_END)
-    fpos1 = fin.tell()
-    y = period[0:3]
-    while fpos1 - fpos0 > 4096:
-        fpos = (fpos1 + fpos0) / 2
-        fin.seek(fpos, os.SEEK_SET)
-        line = fin.readline()
-        line = fin.readline()
-        while line and (not line.startswith(y) or line[4] != '-' or line[7] != '-' or line[10] != ' '):
-            line = fin.readline()
-        if (line >= period):
-            fpos1 = fpos
-        else:
-            fpos0 = fpos
+    skip_ip_pattern = map("([^0-9.]{}[^0-9.])".format, skip_ip)
+    skip_ip_pattern = '|'.join(skip_ip_pattern)
+    match = re.compile(skip_ip_pattern).match
+    lines = ifilter(lambda g: not match(g[2]), lines)
+    lines = imap(operator.concat, lines, repeat(("\n",)))
+    lines = imap("".join,lines)
 
-    fin.seek(fpos0,os.SEEK_SET)
-    line = fin.readline()
+    with tempfile.NamedTemporaryFile(dir=outdir) as tmpfile:
+        tmpfile.writelines(lines)
+        tmpfile.close()
+        init.full_init()
+        buildStatAll([], period, tmpfile.name)
 
-    y = period[0:5]
-    period_len = len(period)
-    # for line in fin.readlines():
-    while True:
-        line = fin.readline()
-        if not line:
-            break
-        if not line.startswith(y):
-            continue
-        if do_append and line[0:period_len] <= period:
-            continue
-        if not do_append and line[0:period_len] < period:
-            continue
-        if do_append and period_len > period_len_orig:
-            period_len = period_len_orig
-            period = period[:period_len]
-            do_append = False
-        if line[0:period_len] > period:
-            break
-        pos = line.find("INFO")
-        if pos < 0:
-            continue
-        if line[pos:].find('"GET') < 0 and line[pos:].find('"POST') < 0 and line[pos:].find('"HEAD') < 0:
-            continue
-        if line[pos:].find('127.0.0.1:') > 0 or line[pos:].find('129.187.87.37:') > 0:
-            continue
-        fout.write(line[0:24] + line[pos:pos+4] + line[pos+6:])
-
-    fin.close()
-    fout.close()
-
-
-init.full_init()
-args = sys.argv
-period = time.strftime("%Y-%m")
-fname = None
-create_new_logfile = True
-
-if len(args) >= 2 and args[1] == "-nolog":
-    create_new_logfile = False
-    args = args[1:]
-
-if len(args) == 2:  # period given
-    period = args[1]
-
-if len(args) == 3:  # period and filename given
-    period = args[1]
-    fname = args[2]
-
-if create_new_logfile:
-    create_logfile(period)
-
-buildStatAll([], period, fname)
+if __name__ == '__main__':
+    main()

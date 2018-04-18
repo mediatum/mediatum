@@ -24,7 +24,7 @@ logg = logging.getLogger(__name__)
 
 def _link_format_node_id_column(node_id):
     # XXX: just for testing, this should link to this instance
-    return Markup('<a href="https://mediatum.ub.tum.de/node?id={0}">{0}</a>'.format(node_id))
+    return Markup('<a href="/node?id={0}">{0}</a>'.format(node_id))
 
 
 class UserView(BaseAdminView):

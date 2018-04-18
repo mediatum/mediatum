@@ -23,6 +23,8 @@ from PIL import Image
 import core.config as config
 import tempfile
 from multiprocessing import Process
+import shutil
+import logging
 
 try:
     from reportlab.platypus import Paragraph, BaseDocTemplate, SimpleDocTemplate, FrameBreak, Table, TableStyle, Image as PdfImage, Frame, PageBreak, PageTemplate
@@ -36,6 +38,8 @@ except:
 from core.translation import t
 from core.webconfig import node_url
 from utils.utils import u, esc
+
+logg = logging.getLogger(__name__)
 
 class PrintPreview:
 
@@ -162,7 +166,7 @@ class PrintPreview:
 
 
     def build(self, printfile, style=1):
-        template = SimpleDocTemplate(os.path.join(config.get("paths.tempdir"), printfile[1]), showBoundary=0)
+        template = SimpleDocTemplate(printfile, showBoundary=0)
         tFirst = PageTemplate(id='First', frames=self.getStyle(1, style), onPage=self.myPages, pagesize=defaultPageSize)
         tNext = PageTemplate(id='Later', frames=self.getStyle(2, style), onPage=self.myPages, pagesize=defaultPageSize)
         template.addPageTemplates([tFirst, tNext])
@@ -287,23 +291,18 @@ def getPrintView(lang, imagepath, metadata, paths, style=1, children=[], collect
         pv.addData(Paragraph(t(pv.language, "print_view_list"), pv.bp))
         pv.addChildren(children)
 
-    printfile = tempfile.mkstemp(suffix='.pdf', prefix='print_', dir=config.get("paths.tempdir"))
-    p = Process(target=pv.build, args=(printfile, style,))
-    p.start()
-    p.join(timeout=30)
-    if p.is_alive():
-        p.terminate()
-
+    printdir = tempfile.mkdtemp(prefix='print_', dir=config.get("paths.tempdir"))
     try:
-        fh = open(printfile[1], 'r')
-        print_template = fh.read()
-        fh.close
-    except IOError:
-        print_template = "";
+        printfile = os.path.join(printdir,"printview.pdf")
+        p = Process(target=pv.build,args=(printfile,))
+        p.start()
+        p.join(timeout=30)
+        if p.is_alive():
+            p.terminate()
+        with open(printfile) as f:
+            return f.read()
+    except Exception as e:
+        logg.exception("exception in getPrintView")
 
-    try:
-        os.remove(printfile[1])
-    except IOError:
-        pass
-
-    return print_template
+    finally:
+        shutil.rmtree(printdir, ignore_errors=True)

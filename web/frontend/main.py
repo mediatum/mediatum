@@ -88,8 +88,6 @@ def change_language_request(req):
         params = req.args.copy()
         del params["change_language"]
         req.request["Location"] = build_url_from_path_and_params(req.path, params)
-        # set the language cookie for caching
-        req.setCookie("language", language)
         return httpstatus.HTTP_MOVED_TEMPORARILY
 
 

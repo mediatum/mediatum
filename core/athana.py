@@ -887,23 +887,30 @@ class http_request(object):
     def has_key(self, key):
         return self.reply_headers.has_key(key)
 
-    def build_reply_header(self):
-        h = []
-        for k, vv in self.reply_headers.items():
-            if not isinstance(vv, list):
-                if isinstance(k, unicode):
-                    k = k.encode("utf8")
-                if isinstance(vv, unicode):
-                    vv = vv.encode("utf8")
-                h += ["%s: %s" % (k, vv)]
-            else:
-                for v in vv:
-                    if isinstance(k, unicode):
-                        k = k.encode("utf8")
-                    if isinstance(v, unicode):
-                        v = v.encode("utf8")
-                    h += ["%s: %s" % (k, v)]
-        return string.join([self.response(self.reply_code)] + h, '\r\n') + '\r\n\r\n'
+    def build_reply_header(self, check_characters=True):
+        """
+        build reply header from self.reply_headers dict
+        if a header field contains invalid character, this header field is skipped
+        According rfc7230 only visible US-ASCII characters, space and horizontal tab are allowed in a header field
+        these are the characters from '!' (0x21) to '~' (0x7e), space (0x20) and horizontal tab (0x09)
+        :param check_characters: if True and a headerfield contains invalid characters None is returned
+        :return: reply header as text
+        """
+        h = ["%s\r\n" % self.response(self.reply_code)]
+        rc = True
+        re_bad_chars = re.compile(r"[^ -~\t]").search  # @NK: please test
+        for k, vv in self.reply_headers.iteritems():
+            for v in [vv] if isinstance(vv, (str, int)) else vv:
+                field = ": ".join(x.encode("utf8") if isinstance(x, unicode) else str(x) for x in (k,v))
+                # consider only header fields with correct characters
+                if re_bad_chars(field):
+                    rc = False
+                else:
+                    h.append("%s\r\n" % field)
+
+        rc = rc or not check_characters
+
+        return '%s\r\n' % ("".join(h)) if rc else None
 
     # --------------------------------------------------
     # split a uri
@@ -1056,7 +1063,18 @@ class http_request(object):
         if "Cache-Control" not in self.reply_headers or not config.getboolean("athana.allow_cache_header", False):
             self.reply_headers["Cache-Control"] = "no-cache"
 
-        reply_header = self.build_reply_header()
+        if self.reply_code == 500:
+            # don't use Transfer-Encoding chunked because only an error message is displayed
+            # this code is only necessary if a reply-header contains invalid characters but has
+            # Transfer-Encoding chunked set
+            self.use_chunked = 0
+            if self.has_key('Transfer-Encoding'):
+                if self['Transfer-Encoding'] == 'chunked':
+                    self['Transfer-Encoding'] = ''
+
+        reply_header = self.build_reply_header(check_characters=self.reply_code != 500)
+        if not reply_header:
+            raise ValueError("invalid header field")
 
         outgoing_header = simple_producer(reply_header)
 
@@ -4220,7 +4238,7 @@ class AthanaHandler:
                 s = msg.replace('${XID}', xid)
 
                 req.reply_headers["X-XID"] = xid
-                    
+
                 return request.error(500, s.encode("utf8"), content_type='text/html; encoding=utf-8; charset=utf-8')
 
             else:

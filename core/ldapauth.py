@@ -157,13 +157,14 @@ class LDAPAuthenticator(Authenticator):
                 user.display_name = u"{} {}".format(user.lastname, user.firstname)
 
         added_groups = self.update_groups_from_ldap(user, data)
-        if added_groups:
+        if self.auto_create_user == "always" or (added_groups and self.auto_create_user == "group"):
             s.add(user)
             logg.info("created ldap user: %s", uname)
             return user
 
         # no groups found? Don't add user, return None
-        logg.info("not creating LDAP user for login '%s' because there's no matching group for this user", user.login_name)
+        logg.info("not creating LDAP user for login '%s' because there's no matching group for this user or\
+         or denied by auto_create_user", user.login_name)
 
     def update_ldap_user(self, data, user):
         user_data = self.get_user_data(data)
@@ -231,7 +232,7 @@ class LDAPAuthenticator(Authenticator):
                 user = self.add_ldap_user(data, login, authenticator_info)
 
                 if config.getboolean("config.readonly"):
-                    logg.warn("LDAP auth succeeded for login name %s, but cannot create user in read-only mode. Refusing login.", 
+                    logg.warn("LDAP auth succeeded for login name %s, but cannot create user in read-only mode. Refusing login.",
                               login, trace=False)
                     return 
                     
@@ -245,16 +246,20 @@ class LDAPAuthenticator(Authenticator):
 
     def _configure(self, config_dict):
         if config_dict is not None:
-            def get_config(key, optional=False):
+            def get_config(key, optional=False, default=None):
                 value = config_dict.get(key)
                 if value is None and not optional:
                     raise LDAPConfigError("config value must be present: " + key)
+                if value is None:
+                    return default
                 return value
         else:
-            def get_config(key, optional=False):
+            def get_config(key, optional=False, default=None):
                 value = config.get(u"ldap_{}.{}".format(self.name, key))
                 if value is None and not optional:
                     raise LDAPConfigError("config value must be present: " + key)
+                if value is None:
+                    return default
                 return value
 
         proxyuser = get_config("proxyuser")
@@ -280,6 +285,7 @@ class LDAPAuthenticator(Authenticator):
         self.attributes = get_config("attributes", "").encode("utf8").split(",") + [self.user_login.encode("utf8")]
         self.group_attributes = [a.strip() for a in get_config("group_attributes", "").split(",")]
         self.searchfilter_template = get_config("searchfilter")
+        self.auto_create_user = get_config("auto_create_user", optional=True, default="group")
 
         self.user_attributes = {
             "login_name": self.user_login,

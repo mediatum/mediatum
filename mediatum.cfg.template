@@ -115,3 +115,7 @@ port=2101
 #user_org=department
 #user_telephone=telephoneNumber
 #user_url=ldap.example.com
+#auto_create_user=   # never | group (default) | always
+                     # never: ldapuser must be configured as user
+                     # group: ldapuser is accepted if ldapgroup is one of mediatum-groups
+                     # always: every ldapuser is accepted

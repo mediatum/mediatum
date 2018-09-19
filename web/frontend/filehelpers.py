@@ -107,7 +107,7 @@ def sendZipFile(req, path):
     r("/")
     zip.close()
     req.reply_headers['Content-Disposition'] = "attachment; filename=shoppingbag.zip"
-    req.sendFile(tempfile, "application/zip")
+    req.sendFile(tempfile, "application/zip", nginx_x_accel_redirect_enabled=False)
     if os.sep == '/':  # Unix?
         os.unlink(tempfile)  # unlinking files while still reading them only works on Unix/Linux
 

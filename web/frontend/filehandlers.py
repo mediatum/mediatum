@@ -254,7 +254,8 @@ def send_file(req):
             files_written = build_transferzip(tmpfile, node)
             if files_written == 0:
                 return 404
-            return req.sendFile(tmpfile.name, "application/zip")
+            # don't enable nginx x_accel_redirect for temporary files
+            return req.sendFile(tmpfile.name, "application/zip", nginx_x_accel_redirect_enabled=False)
 
     # try full filename
     for f in node.files:

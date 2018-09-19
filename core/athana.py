@@ -1138,7 +1138,7 @@ class http_request(object):
                 first = 0
         return "{}{}".format(page, query)
 
-    def sendFile(self, path, content_type, force=0):
+    def sendFile(self, path, content_type, force=0, nginx_x_accel_redirect_enabled=True):
         
         if isinstance(path, unicode):
             path = path.encode("utf8")
@@ -1147,7 +1147,7 @@ class http_request(object):
             content_type = content_type.encode("utf8")
         
 
-        x_accel_redirect = config.get("nginx.X-Accel-Redirect", "").lower() == "true"
+        x_accel_redirect = config.get("nginx.X-Accel-Redirect", "").lower() == "true" and nginx_x_accel_redirect_enabled
         file = None
         file_length = 0
 

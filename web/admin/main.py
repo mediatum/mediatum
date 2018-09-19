@@ -84,7 +84,7 @@ def export(req):
             except UnicodeDecodeError:
                 f.write(module.export(req, path[2]).decode('utf-8'))
 
-        req.sendFile(tempfile, u"application/xml")
+        req.sendFile(tempfile, u"application/xml", nginx_x_accel_redirect_enabled=False)
         if os.sep == '/':  # Unix?
             os.unlink(tempfile)  # unlinking files while still reading them only works on Unix/Linux
     except:

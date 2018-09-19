@@ -35,6 +35,7 @@ import sys
 import codecs
 import logging
 import unicodedata
+import time
 
 from bibtexparser import load as bibtex_load
 from bibtexparser.bparser import BibTexParser
@@ -292,6 +293,7 @@ def getentries(filename):
 
 
 def importBibTeX(infile, node=None, req=None):
+    user = None
     if req:
         try:
             user = users.getUserFromRequest(req)
@@ -381,12 +383,11 @@ def importBibTeX(infile, node=None, req=None):
             if editmask and hasattr(editmask, 'set_default_metadata'):
                 editmask.set_default_metadata(doc)
 
-            child_id = None
-            child_type = None
             try:
                 node.children.append(doc)
-                child_id = doc.id
-                child_type = doc.type
+                if user:
+                    doc.set("creator", user.login_name)
+                doc.set("creationtime",  unicode(time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
             except Exception as e:
                 logg.exception("bibtex exception")
                 raise ValueError()

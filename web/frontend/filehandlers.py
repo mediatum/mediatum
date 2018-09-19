@@ -10,6 +10,7 @@ import glob
 
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy_continuum.utils import version_class
+from urllib import quote
 from core import db
 from core import Node, File
 import core.config as config
@@ -238,7 +239,13 @@ def send_file(req):
             display_file_name = u'{}{}'.format(os.path.splitext(os.path.basename(node.name))[0], file_ext)
         else:
             display_file_name = filename
-        req.reply_headers["Content-Disposition"] = u'attachment; filename="{}"'.format(display_file_name)
+        try:
+            display_file_name.encode('ascii')
+        except UnicodeEncodeError:
+            req.reply_headers["Content-Disposition"] = u'attachment; filename="{0}"; filename*=UTF-8\'\'{0}'.\
+                format(quote(display_file_name.encode('utf8')))
+        else:
+            req.reply_headers["Content-Disposition"] = u'attachment; filename="{}"'.format(display_file_name)
         return req.sendFile(filepath, mimetype)
 
     if filename is None:

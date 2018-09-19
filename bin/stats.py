@@ -68,7 +68,7 @@ def main():
 
     with tempfile.NamedTemporaryFile(dir=outdir) as tmpfile:
         tmpfile.writelines(lines)
-        tmpfile.close()
+        tmpfile.flush()
         init.full_init()
         buildStatAll([], period, tmpfile.name)
 

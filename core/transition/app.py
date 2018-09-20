@@ -213,7 +213,7 @@ class AthanaFlaskStyleApp(object):
         return ChoiceLoader(loaders)
 
     def add_template_loader(self, loader, pos=None):
-        if pos:
+        if pos is not None:
             self.jinja_loader.loaders.insert(pos, loader)
         else:
             self.jinja_loader.loaders.append(loader)

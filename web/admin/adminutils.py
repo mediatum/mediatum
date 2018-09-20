@@ -199,7 +199,8 @@ def show_content(req, op):
         return req.getTAL("web/admin/frame.html", {}, macro="errormessage")
     else:
         if op == "" or op not in q(Root).one().system_attrs.get("admin.menu", ""):
-            op = "menumain"
+            if op != "memstats":
+                op = "menumain"
         module = findmodule(op.split("_")[0])
 
         if op.find("_") > -1:

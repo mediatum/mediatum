@@ -46,12 +46,6 @@ def validate(req, op):
 
 
 def view(req, op):
-    maskcache_info = {
-        "count": len(data.maskcache),
-        "access_count": sorted(iteritems(data.maskcache_accesscount), key=lambda t: t[1], reverse=True),
-        "total_size": 0
-    }
-
     all_objects = gc.get_objects()
 
     memory_info = {
@@ -69,7 +63,6 @@ def view(req, op):
     }
 
     if pympler:
-        maskcache_info["total_size"] = asizeof(data.maskcache)
         sessions_info["total_size"] = asizeof(sessions)
         summarized_all_objects = sorted(summary.summarize(all_objects), key=lambda t: t[2], reverse=True)
         memory_info["summary"] = summarized_all_objects[:500]
@@ -82,7 +75,6 @@ def view(req, op):
     del all_objects
 
     return render_template("memstats.j2.jade",
-                           maskcache=maskcache_info,
                            sessions=sessions_info,
                            memory=memory_info,
                            naturalsize=humanize.filesize.naturalsize)

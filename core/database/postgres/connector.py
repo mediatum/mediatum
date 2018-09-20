@@ -191,12 +191,9 @@ class PostgresSQLAConnector(object):
         def after_cursor_execute(conn, cursor, statement,
                                  parameters, context, executemany):
             total = time.time() - conn.info['query_start_time'].pop(-1)
+            statement = conn.info['current_query'].pop(-1)
             # total in seconds
             if total > self.slow_query_seconds:
-                if hasattr(conn.connection.connection, "history"):
-                    statement = conn.connection.connection.history.last_statement
-                else:
-                    statement = conn.info['current_query'].pop(-1)
                 logg.warn("slow query %.1fms:\n%s", total * 1000, statement)
 
     def create_engine(self):

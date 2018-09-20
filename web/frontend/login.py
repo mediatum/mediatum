@@ -115,7 +115,8 @@ def login(req):
 
     # show login form
     user = users.user_from_session(req.session)
-    ctx = {"error": error, "user": user, "email": config.get("email.support")}
+    language = lang(req)
+    ctx = {"error": error, "user": user, "email": config.get("email.support"), "language": language}
     login_html = webconfig.theme.render_macro("login.j2.jade", "login", ctx)
     # following import is also needed for pytest monkeypatch for render_page
     from web.frontend.frame import render_page

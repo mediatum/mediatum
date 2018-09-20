@@ -639,7 +639,7 @@ ul#navigationlist li ul.nav_depth03 a {
     background-color: #fff;
     padding-left: 5px;
     padding-right: 9px;
-    overflow: hidden;
+    overflow: auto;
     padding-top: 1px;
     min-height: 500px;
 }
@@ -1353,6 +1353,21 @@ a.page-nav-next {
     margin-left: 202px;
     position: relative
 }
+
+@media (max-width: 700px) {
+    #portal-column-content div.mask_label {
+        width: auto;
+        float: none;
+        font-style: italic;
+    }
+}
+
+@media (max-width: 700px) {
+    #portal-column-content div.mask_value {
+        margin-left: 0px;
+    }
+}
+
 
 #portal-column-content div#paths {
     border-top: 1px solid #0A5096;

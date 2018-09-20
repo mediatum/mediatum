@@ -13,9 +13,14 @@
     padding: 4px;
 }
 
+@media (min-width: 1000px) {
+    .object_column {
+        vertical-align: top;
+        display: table-cell;
+    }
+}
 .object_column {
     vertical-align: top;
-    display: table-cell;
 }
 
 .object_column.left>div {

@@ -78,12 +78,9 @@ def attrEscape(s):
 # python modules
 import os
 import select
-import sys
-import time
-import stat
 import mimetypes
 from cgi import escape
-from urllib import unquote, splitquery
+from urllib import unquote
 from collections import OrderedDict
 from core import config
 
@@ -913,23 +910,16 @@ class http_request(object):
         return '%s\r\n' % ("".join(h)) if rc else None
 
     # --------------------------------------------------
-    # split a uri
+    # split a uri according to https://tools.ietf.org/html/rfc3986
     # --------------------------------------------------
-
-    # <path>;<params>?<query>#<fragment>
-    path_regex = re.compile(
-        #      path      params    query   fragment
-        r'([^;?#]*)(;[^?#]*)?(\?[^#]*)?(#.*)?'
-    )
-
     def split_uri(self):
-        if self._split_uri is None:
-            m = self.path_regex.match(self.uri)
-            if m.end() != len(self.uri):
-                raise ValueError("Broken URI")
-            else:
-                self._split_uri = m.groups()
-        return self._split_uri
+        # <path>;<params>?<query>#<fragment>
+        path_regex = re.compile(
+            #      path      params    query   fragment
+            r'([^;?#]*)(;[^?#]*)?(\?[^#]*)?(#.*)?'
+        )
+        m = path_regex.match(self.uri)
+        return m.groups()
 
     def get_header_with_regex(self, head_reg, group):
         for line in self.header:
@@ -1568,16 +1558,6 @@ class http_channel (async_chat):
 
             command, uri, version = crack_request(request)
             header = join_headers(lines[1:])
-
-            # unquote path if necessary (thanks to Skip Montanaro for pointing
-            # out that we must unquote in piecemeal fashion).
-            rpath, rquery = splitquery(uri)
-            if '%' in rpath:
-                if rquery:
-                    uri = unquote(rpath) + '?' + rquery
-                else:
-                    uri = unquote(rpath)
-
             r = http_request(self, request, command, uri, version, header)
             self.request_counter.increment()
             self.server.total_requests.increment()
@@ -4096,6 +4076,11 @@ class AthanaHandler:
         else:
             args = []
         # /COMPAT
+        path = unquote(path)
+        if params is not None:
+            params = unquote(params)
+        if fragment is not None:
+            fragment = unquote(fragment)
 
         cookies = {}
         if "cookie" in request.request_headers:

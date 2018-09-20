@@ -77,6 +77,7 @@ mail=somemail.example.com
 
 [services]
 activate=false
+allow_cross_origin=true #  if true: add Access-Control-Allow-Origin = '*' to reply-header, default: false
 
 [urn]
 institutionid=00

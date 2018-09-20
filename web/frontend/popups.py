@@ -18,6 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
+import shutil
 import re
 
 from schema.schema import getMetadataType
@@ -98,11 +99,18 @@ def show_attachmentbrowser(req):
 
 
 def getPrintChildren(req, node, ret):
-    for c in node.children:
-        if c.has_read_access():
-            ret.append(c)
-
-        getPrintChildren(req, c, ret)
+    for c in node.children.filter_read_access().prefetch_attrs():
+        ret.append(c)
+        if c.isContainer():
+            getPrintChildren(req, c, ret)
+        else:
+            # this is a content node which has only in rare cases children
+            # use nodemapping to detect children before calling getPrintChildren
+            children_ids = db.session.execute("select cid from nodemapping where nid = %d" % c.id)
+            cids = [row['cid'] for row in children_ids]
+            del children_ids
+            if len(cids):
+                getPrintChildren(req, c, ret)
 
     return ret
 
@@ -157,20 +165,29 @@ def show_printview(req):
     if isinstance(node, Container):
         ret = []
         getPrintChildren(req, node, ret)
+        logg.debug("getPrintChildren done")
+
+        maskcache = {}
 
         for c in ret:
             if not isinstance(c, Container):
                 # items
-                c_mtype = c.metadatatype
-                c_mask = c_mtype.getMask("printlist")
-                if not c_mask:
-                    c_mask = c_mtype.getMask("nodesmall")
+                if c.schema in maskcache:
+                    c_mask = maskcache[c.schema]
+                else:
+                    c_mtype = c.metadatatype
+                    c_mask = c_mtype.getMask("printlist")
+                    if not c_mask:
+                        c_mask = c_mtype.getMask("nodesmall")
+                    maskcache[c.schema] = c_mask
                 _c = c_mask.getViewHTML([c], VIEW_DATA_ONLY)
                 if len(_c) > 0:
                     children.append(_c)
             else:
                 # header
                 items = getPaths(c)
+                if not items:
+                    continue
                 p = []
                 for item in items[0]:
                     p.append(item.getName())
@@ -235,9 +252,12 @@ def show_printview(req):
             sorted_children.extend(tmp)
             children = sorted_children
 
-    req.reply_headers['Content-Type'] = "application/pdf"
-    req.reply_headers['Content-Disposition'] = u'inline; filename="{}_printview.pdf"'.format(node.id)
-    req.write(printview.getPrintView(lang(req), imagepath, metadata, getPaths(node), style, children, getCollection(node)))
+    print_dir = []
+    printfile = printview.getPrintView(lang(req), imagepath, metadata, getPaths(node), style, children, getCollection(node),
+                                       return_file=True, print_dir = print_dir)
+    req.sendFile(printfile, "application/pdf")
+    if print_dir:
+        shutil.rmtree(print_dir[0], ignore_errors=True)
 
 
 # use popup method of  metadatatype

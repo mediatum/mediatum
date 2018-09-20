@@ -248,8 +248,13 @@ class PrintPreview:
         for c in children:
             if len(c) > 0 and c[0][3] == "header":
                 for item in items:
-                    self.addData(Paragraph("[%s/%s]: %s" % (_c, len(children) - _head, "; ".join(item)), self.bv))
-                    _c += 1
+                    try:
+                        self.addData(Paragraph("[%s/%s]: %s" % (_c, len(children) - _head, "; ".join(item)), self.bv))
+                        _c += 1
+                    except ValueError:
+                        pass
+                    except AttributeError:
+                        pass
                 self.addData(Paragraph(u(c[0][1]).replace('&', '&amp;'), self.bf))
                 items = []
                 continue
@@ -268,7 +273,7 @@ class PrintPreview:
                 self.addData(Paragraph("[%s/%s]: %s" % (_c, len(children) - _head, esc(", ".join(item))), self.bv))
 
 
-def getPrintView(lang, imagepath, metadata, paths, style=1, children=[], collection=None):  # style=1: object, style=3: liststyle
+def getPrintView(lang, imagepath, metadata, paths, style=1, children=[], collection=None, return_file=False, print_dir=None):  # style=1: object, style=3: liststyle
     """ returns pdf content of given item """
     if not reportlab:
         return None
@@ -296,13 +301,19 @@ def getPrintView(lang, imagepath, metadata, paths, style=1, children=[], collect
         printfile = os.path.join(printdir,"printview.pdf")
         p = Process(target=pv.build,args=(printfile,))
         p.start()
-        p.join(timeout=30)
+        p.join(timeout=60)
         if p.is_alive():
             p.terminate()
-        with open(printfile) as f:
-            return f.read()
+        if return_file:
+            if isinstance(print_dir, list):
+                print_dir.append(printdir)
+            return printfile
+        else:
+            with open(printfile) as f:
+                return f.read()
     except Exception as e:
         logg.exception("exception in getPrintView")
 
     finally:
-        shutil.rmtree(printdir, ignore_errors=True)
+        if not return_file:
+            shutil.rmtree(printdir, ignore_errors=True)

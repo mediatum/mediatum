@@ -2,6 +2,7 @@
 activate=true
 pageitems=20
 enable_rediscli=false
+session_expiration_time=7200 # session expiration time in seconds, default 7200 seconds = 2 hours
 
 [auth]
 authenticator_order=internal|default # ,ldap|server1

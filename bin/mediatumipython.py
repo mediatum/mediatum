@@ -165,6 +165,12 @@ import core.config as config
 import filecmp
 import magic
 from utils.compat import *
+
+INIT_ARGS = dict(prefer_config_filename="mediatumipython.cfg")
+
+initmodule.basic_init(**INIT_ARGS)
+initmodule.register_workflow()
+
 import core.database.postgres.connector
 
 # log settings #
@@ -177,10 +183,6 @@ core.database.postgres.connector.DEBUG_SHOW_TRACE = False
 core.database.postgres.connector.DEBUG = True
 # / log settings #
 
-INIT_ARGS = dict(prefer_config_filename="mediatumipython.cfg")
-
-initmodule.basic_init(**INIT_ARGS)
-initmodule.register_workflow()
 
 from core.database.postgres.node import t_noderelation
 from core.database.postgres import alchemyext

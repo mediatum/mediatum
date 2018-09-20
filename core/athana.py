@@ -1057,9 +1057,13 @@ class http_request(object):
             # when using telnet to debug a server.
             close_it = 1
 
-        if self.session and "PSESSION" not in self.Cookies:
-            self.setCookie('PSESSION', self.sessionid, path="/", secure=config.getboolean("host.ssl", True))
-            
+        if "PSESSION" not in self.Cookies:
+            if self.session:
+                self.setCookie('PSESSION', self.sessionid, path="/", secure=config.getboolean("host.ssl", True))
+            sessions = _ATHANA_HANDLER.sessions
+            if self.sessionid in sessions:
+                del sessions[self.sessionid]
+
         if "Cache-Control" not in self.reply_headers or not config.getboolean("athana.allow_cache_header", False):
             self.reply_headers["Cache-Control"] = "no-cache"
 
@@ -3925,6 +3929,7 @@ class Session(dict):
 
     def __init__(self, id):
         self.id = id
+        self.use()
 
     def use(self):
         self.lastuse = time.time()
@@ -3947,6 +3952,9 @@ SESSION_PATTERN = re.compile("^;[a-z0-9]{6}-[a-z0-9]{6}-[a-z0-9]{6}$")
 SESSION_PATTERN2 = re.compile("[a-z0-9]{6}-[a-z0-9]{6}-[a-z0-9]{6}")
 
 SESSION_COOKIES_LIVE_SECS = 3600 * 2  # unused sessions may be valid for 2 hours
+session_cookies_live_secs = int(config.get('admin.session_expiration_time', SESSION_COOKIES_LIVE_SECS))
+session_check_period = session_cookies_live_secs / 10
+last_session_check_time = time.time()
 
 
 # COMPAT: flask style
@@ -4065,6 +4073,10 @@ class AthanaHandler:
 
     def continue_request(self, request, form):
 
+        global session_cookies_live_secs, session_check_period, last_session_check_time
+
+        act_time = time.time()
+
         path, params, query, fragment = request.split_uri()
 
         ip = request.request_headers.get("x-forwarded-for", None)
@@ -4114,16 +4126,30 @@ class AthanaHandler:
 
             session = RedisSession(sessionid)
         else:
-            if sessionid is not None:
-                if sessionid in self.sessions:
-                    session = self.sessions[sessionid]
-                    session.use()
-                else:
-                    session = Session(sessionid)
-                    self.sessions[sessionid] = session
-            else:
+            session_expiration_time = act_time - session_cookies_live_secs
+            session = None
+            if sessionid is None:
+
+                if act_time - last_session_check_time > session_check_period:
+                    # delete all sessions with lastuse older than act_time - session_cookies_live_secs
+                    sessionids_to_be_deleted = [sid for sid in self.sessions if self.sessions[sid].lastuse < session_expiration_time]
+                    for sid in sessionids_to_be_deleted:
+                        del self.sessions[sid]
+                    last_session_check_time = act_time
+
                 sessionid = self.create_session_id()
                 logg.debug("Creating new session %s", sessionid)
+
+            else:
+                if sessionid in self.sessions:
+                    session = self.sessions[sessionid]
+                    if session.lastuse < session_expiration_time:
+                        del self.sessions[sessionid]
+                        session = None
+                    else:
+                        session.use()
+
+            if session is None:
                 session = Session(sessionid)
                 self.sessions[sessionid] = session
 

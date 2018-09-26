@@ -5,6 +5,29 @@ We mostly follow the conventions given in [Keep a Changelog](http://keepachangel
 Calendar Versioning is used for our version numbers: http://calver.org/
 
 
+## [v2018.09] - 2018-09-26
+
+### Added
+
+- memory statistics page
+- session expiration time
+
+### Changed
+
+- bibtex import set creationtime
+- Acceleration of print function
+- improve frontend responsiveness
+
+### Fixed
+
+- statistics: flush temporary file
+- serving transfer zip archives may fail
+- login template language aware
+- memory leak sql statements not freed
+- security gap in uri
+- http response header: consider utf8 characters in Content-Disposition
+
+
 ## [v2018.04] - 2018-04-18
 
 ### Added

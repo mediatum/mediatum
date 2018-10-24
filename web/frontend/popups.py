@@ -18,6 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
+import os as _os
 import shutil
 import re
 import functools as _functools
@@ -41,7 +42,8 @@ from core import httpstatus
 from core.request_handler import sendFile as _sendFile
 import core.database.postgres as _database_postgres
 import core.database.postgres.node as _database_postgres_node
-import web.frontend.printview as _printview
+import utils.utils as _utils_utils
+import web.frontend.printview as _web_frontend_printview
 
 #
 # execute fullsize method from node-type
@@ -283,8 +285,8 @@ def show_printview(req):
             sorted_children.extend(tmp)
             children = sorted_children
 
-    print_dir = []
-    printfile = _printview.getPrintView(
+    temp_download_file = _utils_utils.new_temp_download_file(u"{}.printview.pdf".format(node.get_name()))
+    _web_frontend_printview.getPrintView(
         lang(req),
         imagepath,
         metadata,
@@ -292,12 +294,9 @@ def show_printview(req):
         style,
         children,
         getCollection(node),
-        return_file=True,
-        print_dir=print_dir
+        temp_download_file,
     )
-    _sendFile(req, printfile, "application/pdf", nginx_x_accel_redirect_enabled=False)
-    if print_dir:
-        shutil.rmtree(print_dir[0], ignore_errors=True)
+    _sendFile(req, temp_download_file, "application/pdf")
 
 
 # use popup method of  metadatatype

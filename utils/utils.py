@@ -33,6 +33,8 @@ import string as _string
 import sys
 import traceback
 
+import tempfile
+import time
 from warnings import warn
 from urlparse import parse_qsl, urlsplit, urlunsplit
 from urllib import quote, urlencode
@@ -934,6 +936,29 @@ def make_db_auto_name(prefix, sql_type, name):
     rv = "{rv}_{name}".format(rv=rv, name=name)[:63]
     assert _db_auto_name_match_allowed_chars(rv)
     return rv
+
+
+def new_temp_download_file(filename):
+    import core.config as _core_config
+
+    tmppath = _core_config.get("paths.temp-download-dir", os.path.join(_core_config.get("paths.datadir"), "download-temp"))
+    with suppress(OSError,warn=False):
+        os.makedirs(tmppath)
+        logg.debug("create temp path  %s", tmppath)
+
+    #delete all files older than config time
+    timenow = time.time()
+    expiretime = _core_config.getint("paths.temp-download-dir-expire-secs", 24 * 3600)
+    for tmpfile in os.listdir(tmppath):
+        tmpfile = os.path.join(tmppath, tmpfile)
+        with suppress(OSError,warn=False):
+            if expiretime < (timenow - os.path.getmtime(tmpfile)):
+                os.unlink(tmpfile)
+
+    #create tmporary file in tmppath
+    with tempfile.NamedTemporaryFile(prefix="tmp_", suffix=filename,  dir=tmppath, delete=False) as outfile:
+        os.chmod(outfile.name, 0o644)
+        return outfile.name
 
 
 if __name__ == "__main__":

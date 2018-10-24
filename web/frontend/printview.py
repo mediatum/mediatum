@@ -270,7 +270,7 @@ class PrintPreview:
                 self.addData(Paragraph("[%s/%s]: %s" % (_c, len(children) - _head, esc(", ".join(item))), self.bv))
 
 
-def getPrintView(lang, imagepath, metadata, paths, style=1, children=[], collection=None, return_file=False, print_dir=None):  # style=1: object, style=3: liststyle
+def getPrintView(lang, imagepath, metadata, paths, style, children, collection, dest_file):  # style=1: object, style=3: liststyle
     """ returns pdf content of given item """
     pv = PrintPreview(lang, config.get("host.name"))
     pv.setHeader(collection)
@@ -290,25 +290,12 @@ def getPrintView(lang, imagepath, metadata, paths, style=1, children=[], collect
         # objectlist
         pv.addData(Paragraph(t(pv.language, "print_view_list"), pv.bp))
         pv.addChildren(children)
-
-    printdir = tempfile.mkdtemp(prefix='print_', dir=config.get("paths.tempdir"))
     try:
-        printfile = os.path.join(printdir,"printview.pdf")
-        p = Process(target=pv.build,args=(printfile,))
+        p = Process(target=pv.build,args=(dest_file,))
         p.start()
         p.join(timeout=60)
         if p.is_alive():
             p.terminate()
-        if return_file:
-            if isinstance(print_dir, list):
-                print_dir.append(printdir)
-            return printfile
-        else:
-            with open(printfile) as f:
-                return f.read()
+
     except Exception as e:
         logg.exception("exception in getPrintView")
-
-    finally:
-        if not return_file:
-            shutil.rmtree(printdir, ignore_errors=True)

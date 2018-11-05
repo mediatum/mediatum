@@ -107,6 +107,7 @@ def login(req):
     if "LoginSubmit" in req.form:
         error = _handle_login_submit(req)
         if not error:
+            req.response.status_code = httpstatus.HTTP_MOVED_TEMPORARILY
             return httpstatus.HTTP_MOVED_TEMPORARILY
     else:
         error = None
@@ -121,7 +122,8 @@ def login(req):
     # following import is also needed for pytest monkeypatch for render_page
     from web.frontend.frame import render_page
     html = render_page(req, None, login_html)
-    req.write(html)
+    req.response.status_code = httpstatus.HTTP_OK
+    req.response.set_data(html)
     return httpstatus.HTTP_OK
 
 
@@ -134,6 +136,7 @@ def logout(req):
             del _flask.session["user_id"]
 
     req.request["Location"] = '/'
+    req.response.status_code = httpstatus.HTTP_MOVED_TEMPORARILY
     # return to caching
     _setCookie(req, "nocache", "0", path="/")
     return httpstatus.HTTP_MOVED_TEMPORARILY
@@ -146,6 +149,7 @@ def pwdchange(req):
     if "ChangeSubmit" in req.form:
         if user.is_anonymous:
             req.request["Location"] = _make_collection_root_link()
+            req.response.status_code = httpstatus.HTTP_MOVED_TEMPORARILY
             return httpstatus.HTTP_MOVED_TEMPORARILY
 
         else:
@@ -163,13 +167,16 @@ def pwdchange(req):
                 error = 4
             else:
                 req["Location"] = _make_collection_root_link()
+                req.response.autocorrect_location_header = False
+                req.response.status_code = httpstatus.HTTP_MOVED_TEMPORARILY
                 return httpstatus.HTTP_MOVED_TEMPORARILY
 
     content_html = webconfig.theme.render_macro("login.j2.jade", "change_pwd", {"error": error, "user": user, "csrf": req.csrf_token.current_token})
     # following import is also needed for pytest monkeypatch for render_page
     from web.frontend.frame import render_page
     html = render_page(req, None, content_html)
-    req.write(html)
+    req.response.set_data(html)
+    req.response.status_code = httpstatus.HTTP_OK
     return httpstatus.HTTP_OK
 
 

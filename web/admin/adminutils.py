@@ -206,7 +206,7 @@ def show_content(req, op):
 
     user = users.user_from_session()
     if not user.is_admin:
-        req.setStatus(httpstatus.HTTP_FORBIDDEN)
+        req.response.status_code = httpstatus.HTTP_FORBIDDEN
         return req.getTAL("web/admin/frame.html", {}, macro="errormessage")
     else:
         if op == "" or op not in get_menu_strings(_menu):

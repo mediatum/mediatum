@@ -19,6 +19,7 @@
 """
 import logging
 
+import mediatumtal.tal as _tal
 from utils.utils import dec_entry_log
 from schema.schema import getMetaType
 from core.translation import lang
@@ -39,8 +40,8 @@ def getContent(req, ids):
     node = q(Node).get(ids[0])
     
     if "sort" in user.hidden_edit_functions or not node.has_write_access():
-        req.setStatus(httpstatus.HTTP_FORBIDDEN)
-        return req.getTAL("web/edit/edit.html", {}, macro="access_error")
+        req.response.status_code = httpstatus.HTTP_FORBIDDEN
+        return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
     logg.info("%s sorting subfolders of node %s (%s, %s): %s", user.login_name, node.id, node.name, node.type, req.params)
 
@@ -53,7 +54,7 @@ def getContent(req, ids):
             children.append(child)
         db.session.commit()
 
-        req.writeTAL('web/edit/modules/subfolder.html', {'nodelist': children, "language": language, "csrf": req.csrf_token.current_token}, macro="ordered_list")
+        req.response.set_data(_tal.processTAL({'nodelist': children, "language": language, "csrf": req.csrf_token.current_token}, file='web/edit/modules/subfolder.html', macro="ordered_list", request=req))
         return ""
 
     elif "sortdirection" in req.params:  # do automatic re-order
@@ -63,7 +64,7 @@ def getContent(req, ids):
         for position, child in enumerate(sorted_children, start=1):
             child.orderpos = position
         db.session.commit()
-        req.writeTAL('web/edit/modules/subfolder.html', {'nodelist': sorted_children, "language": language, "csrf": req.csrf_token.current_token}, macro="ordered_list")
+        req.response.set_data(_tal.processTAL({'nodelist': sorted_children, "language": language, "csrf": req.csrf_token.current_token}, file='web/edit/modules/subfolder.html', macro="ordered_list", request=req))
         return ""
 
     nodelist = []
@@ -89,4 +90,4 @@ def getContent(req, ids):
             "language": language,
             "csrf": req.csrf_token.current_token
            }
-    return req.getTAL("web/edit/modules/subfolder.html", ctx, macro="edit_subfolder")
+    return _tal.processTAL(ctx, file="web/edit/modules/subfolder.html", macro="edit_subfolder", request=req)

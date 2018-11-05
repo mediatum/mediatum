@@ -20,6 +20,7 @@
 import logging
 import re
 import zipfile
+import core.httpstatus as _httpstatus
 from core import db, Node, File, NodeToFile
 from utils.lrucache import lru_cache
 from contenttypes import Image
@@ -95,21 +96,25 @@ def send_imageproperties_xml(req):
     nid, data = splitpath(req.path)
 
     if not Node.req_has_access_to_node_id(nid, u"read", req):
+        req.response.status_code = 404
         return 404
 
     img = get_cached_image_zoom_data(nid)
-    req.write("""<IMAGE_PROPERTIES WIDTH="%d" HEIGHT="%d" NUMIMAGES="1" VERSION="1.8" TILESIZE="%d"/>""" %
-              (img.width, img.height, Image.ZOOM_TILESIZE))
+    req.response.set_data(req.response.get_data() + """<IMAGE_PROPERTIES WIDTH="%d" HEIGHT="%d" NUMIMAGES="1" VERSION="1.8" TILESIZE="%d"/>""" % (
+        img.width, img.height, Image.ZOOM_TILESIZE))
+    req.response.status_code = _httpstatus.HTTP_OK
 
 
 def send_tile(req):
     nid, data = splitpath(req.path)
 
     if not Node.req_has_access_to_node_id(nid, u"read", req):
+        req.response.status_code = 404
         return 404
 
     if not req.path.endswith(".jpg"):
         logg.error("invalid tile request %s", req.path)
+        req.response.status_code = 404
         return 404
 
     jpg = req.path[req.path.rindex("/") + 1:-4]
@@ -120,9 +125,12 @@ def send_tile(req):
         tile = img.get_tile(zoom, x, y)
 
         if tile is None:
+            req.response.status_code = 404
             return 404
 
-        req.write(tile)
+        req.response.set_data(req.response.get_data() + tile)
+        req.response.status_code = _httpstatus.HTTP_OK
     except:
         logg.exception("exception in send_tile")
+        req.response.status_code = 500
         return 500

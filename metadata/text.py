@@ -170,10 +170,11 @@ class m_text(Metatype):
     # method for popup methods of type text
     def getPopup(self, req):
         if "type" in req.params:
-            req.writeTAL("metadata/text.html", {}, macro="javascript")
+            req.response.set_data(tal.processTAL({}, file="metadata/text.html", macro="javascript", request=req))
         else:
-            req.writeTAL(
-                "metadata/text.html", {"charmap": charmap, "name": req.params.get("name"), "value": req.params.get("value")}, macro="popup")
+            req.response.set_data(tal.processTAL({"charmap": charmap, "name": req.params.get("name"), "value": req.params.get("value")},
+                                                 file="metadata/text.html", macro="popup", request=req))
+        req.response.status_code = httpstatus.HTTP_OK
         return httpstatus.HTTP_OK
 
     # method for additional keys of type text

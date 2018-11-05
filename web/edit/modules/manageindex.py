@@ -18,6 +18,7 @@
 """
 
 
+import mediatumtal.tal as _tal
 from schema.schema import loadTypesFromDB, getMetaType, get_permitted_schemas
 from utils.utils import u, dec_entry_log, suppress
 from contenttypes import Data
@@ -82,12 +83,12 @@ def getContent(req, ids):
                 with suppress(Exception, warn=False):
                     n.set(fieldname, replaceValue(n.get(fieldname), u(old_val), u(new_value)))
                     c += 1
-        v["message"] = req.getTAL("web/edit/modules/manageindex.html", {"number": c}, macro="operationinfo")
+        v["message"] = _tal.processTAL({"number": c}, file="web/edit/modules/manageindex.html", macro="operationinfo", request=req)
 
     if "style" in req.params.keys():  # load schemes
         if req.params.get("action", "") == "schemes":
             v["schemes"] = getSchemes(req)
-            req.writeTAL("web/edit/modules/manageindex.html", v, macro="schemes_dropdown")
+            req.response.set_data(_tal.processTAL(v, file="web/edit/modules/manageindex.html", macro="schemes_dropdown", request=req))
             return ""
 
         elif req.params.get("action", "").startswith("indexfields__"):  # load index fields
@@ -98,7 +99,7 @@ def getContent(req, ids):
                     fields.append(field)
             v["fields"] = fields
             v["schemaname"] = schema.getName()
-            req.writeTAL("web/edit/modules/manageindex.html", v, macro="fields_dropdown")
+            req.response.set_data(_tal.processTAL(v, file="web/edit/modules/manageindex.html", macro="fields_dropdown", request=req))
             return ""
 
         elif req.params.get("action", "").startswith("indexvalues__"):  # load values of selected indexfield
@@ -110,7 +111,7 @@ def getContent(req, ids):
                 v["entries"] = getAllAttributeValues(fieldname, schema)
                 v["keys"] = v["entries"].keys()
                 v["keys"].sort(lambda x, y: cmp(x.lower(), y.lower()))
-            req.writeTAL("web/edit/modules/manageindex.html", v, macro="fieldvalues")
+            req.response.set_data(_tal.processTAL(v, file="web/edit/modules/manageindex.html", macro="fieldvalues", request=req))
             return ""
 
         elif req.params.get("action", "").startswith("children__"):  # search for children of current collection
@@ -137,9 +138,9 @@ def getContent(req, ids):
             v["items"] = subitems
             v["keys"] = subitems.keys()
             v["keys"].sort()
-            req.writeTAL("web/edit/modules/manageindex.html", v, macro="valueinfo")
+            req.response.set_data(_tal.processTAL(v, file="web/edit/modules/manageindex.html", macro="valueinfo", request=req))
             return ""
 
     else:
         v["csrf"] = req.csrf_token.current_token
-        return req.getTAL("web/edit/modules/manageindex.html", v, macro="manageform")
+        return _tal.processTAL(v, file="web/edit/modules/manageindex.html", macro="manageform", request=req)

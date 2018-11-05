@@ -80,7 +80,8 @@ class m_hlist(Metatype):
                     children[child.id] = child.getName()
 
         sorted_children = sorted(children.items(), key=operator.itemgetter(1))
-        req.write(json.dumps(OrderedDict(sorted_children)))
+        req.response.set_data(json.dumps(OrderedDict(sorted_children)))
+        req.response.status_code = httpstatus.HTTP_OK
         return httpstatus.HTTP_OK
 
     # method for additional keys of type mlist

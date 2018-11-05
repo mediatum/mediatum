@@ -81,11 +81,11 @@ def getContent(req, ids):
     hidden_edit_functions_for_current_user = user.hidden_edit_functions
 
     if 'acls' in hidden_edit_functions_for_current_user:
-        req.setStatus(httpstatus.HTTP_FORBIDDEN)
+        req.response.status_code = httpstatus.HTTP_FORBIDDEN
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     if len(ids) != 1:  # should not happen
-        req.setStatus(httpstatus.HTTP_FORBIDDEN)
+        req.response.status_code = httpstatus.HTTP_FORBIDDEN
         return req.getTAL("web/edit/modules/acls.html", {}, macro="acl_editor_error")
 
     # check write access to node
@@ -93,7 +93,7 @@ def getContent(req, ids):
     nid = long(idstr)
     node = q(Node).get(nid)
     if not node.has_write_access():
-        req.setStatus(httpstatus.HTTP_FORBIDDEN)
+        req.response.status_code = httpstatus.HTTP_FORBIDDEN
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     if "save" in req.params:
@@ -220,7 +220,7 @@ def getContent(req, ids):
                                                private_ruleset_names,
                                                rule_type=rule_type),
                                   macro="edit_acls_userselectbox")
-        req.write(retuser)
+        req.response.set_data(retuser)
         return ""
 
     runsubmit = "\nfunction runsubmit(){\n"

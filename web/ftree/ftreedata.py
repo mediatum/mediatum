@@ -18,6 +18,7 @@
 """
 import logging
 
+import core.httpstatus as _httpstatus
 from core.translation import translate, lang
 from core.users import user_from_session as _user_from_session
 from contenttypes import Collections, Container
@@ -90,7 +91,8 @@ def getData(req):
         except:
             logg.exception("exception in getData")
 
-    req.write(u"\n".join(ret))
+    req.response.set_data(u"\n".join(ret))
+    req.response.status_code = _httpstatus.HTTP_OK
     return
 
 
@@ -101,7 +103,8 @@ def getLabel(req):
     label = node.getLabel()
     if inum > 0:
         label += u" <small>({})</small>".format(inum)
-    req.write(label)
+    req.response.status_code = _httpstatus.HTTP_OK
+    req.response.set_data(label)
     return
 
 
@@ -143,5 +146,6 @@ def getPathTo(req):
     for check in checked:  # set marked items
         items = items.replace(check, u'({})'.format(check))
 
-    req.write(items)
+    req.response.status_code = _httpstatus.HTTP_OK
+    req.response.set_data(items)
     return

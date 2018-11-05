@@ -25,6 +25,7 @@ import codecs
 
 import logging
 import core.config as config
+import mediatumtal.tal as _tal
 
 from utils.utils import format_filesize, dec_entry_log, suppress
 from core.translation import lang
@@ -44,12 +45,13 @@ def getContent(req, ids):
     node = q(Node).get(ids[0])
     user = _user_from_session()
     if not node.has_write_access() or "editor" in user.hidden_edit_functions:
-        req.setStatus(httpstatus.HTTP_FORBIDDEN)
-        return req.getTAL("web/edit/edit.html", {}, macro="access_error")
+        req.response.status_code = httpstatus.HTTP_FORBIDDEN
+        return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
     if req.params.get('file') == "config":  # configuration file for ckeditor
-        req.reply_headers['Content-Type'] = "application/javascript"
-        return req.writeTAL("web/edit/modules/startpages.html", {'id': ids[0], 'lang': lang(req)}, macro="ckconfig")
+        req.response.headers['Content-Type'] = "application/javascript"
+        req.response.set_data(_tal.processTAL({'id': ids[0], 'lang': lang(req)}, file="web/edit/modules/startpages.html", macro="ckconfig", request=req))
+        return
 
     if "action" in req.params:
         if req.params.get('action') == "getfile":  # deliver filecontent
@@ -61,7 +63,9 @@ def getContent(req, ids):
                         data = fil.read()
                     logg.info("%s opened startpage %s for node %s (%s, %s)", user.login_name, filepath, node.id, node.name, node.type)
                     break
-            req.write(json.dumps({'filecontent': data}, ensure_ascii=False))
+            req.response.set_data(json.dumps({'filecontent': data}, ensure_ascii=False))
+            req.response.mimetype = 'application/json'
+
         if req.params.get('action') == "save":  # save filedata
             if req.params.get('filename') == "add":  # add new file
                 maxid = 0
@@ -77,7 +81,7 @@ def getContent(req, ids):
                     fil.write(req.params.get('data'))
                 node.files.append(File(filename, u"content", u"text/html"))
                 db.session.commit()
-                req.write(json.dumps({'filename': '', 'state': 'ok'}))
+                req.response.set_data(json.dumps({'filename': '', 'state': 'ok'}))
                 logg.info("%s added startpage %s for node %s (%s, %s)", user.login_name, filename, node.id, node.name, node.type)
                 return None
             else:
@@ -92,9 +96,10 @@ def getContent(req, ids):
                                 # html entity by the current ckeditor version
                                 fil.write(req.params.get('data').encode('ascii', 'xmlcharrefreplace'))
 
-                        req.write(json.dumps(
+                        req.response.set_data(json.dumps(
                             {'filesize': format_filesize(os.path.getsize(config.get("paths.datadir") + filepath)),
                              'filename': req.params.get('filename'), 'state': 'ok'}, ensure_ascii=False))
+                        req.response.mimetype = 'application/json'
                         logg.info("%s saved startpage %s for node %s (%s, %s)", user.login_name, filepath, node.id, node.name, node.type)
                         break
         return None
@@ -102,13 +107,13 @@ def getContent(req, ids):
     if "option" in req.params:
         if req.params.get("option") == "filebrowser":  # open filebrowser
             logg.info("%s opening ckeditor filebrowser for node %s (%r, %r)", user.login_name, node.id, node.name, node.type)
-            req.write(send_nodefile_tal(req))
+            req.response.set_data(send_nodefile_tal(req))
             return ""
 
         if req.params.get("option") == "htmlupload":  # use fileupload
             logg.info("%s going to use ckeditor fileupload (htmlupload) for node %s (%s, %s)",
                       user.login_name, node.id, node.name, node.type)
-            req.write(upload_for_html(req))
+            req.response.set_data(upload_for_html(req))
             return ""
 
         if "delete" in req.params:  # delete file via CKeditor
@@ -255,4 +260,4 @@ def getContent(req, ids):
          "csrf": req.csrf_token.current_token
          }
 
-    return req.getTAL("web/edit/modules/startpages.html", v, macro="edit_startpages")
+    return _tal.processTAL(v, file="web/edit/modules/startpages.html", macro="edit_startpages", request=req)

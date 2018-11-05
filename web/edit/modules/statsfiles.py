@@ -19,6 +19,7 @@
 
 import logging
 
+import mediatumtal.tal as _tal
 from utils.utils import dec_entry_log
 from utils.date import format_date
 from core.users import user_from_session as _user_from_session
@@ -138,8 +139,8 @@ def getContent(req, ids):
     node = q(Node).get(ids)
 
     if "statsfiles" in user.hidden_edit_functions or not node.has_write_access():
-        req.setStatus(httpstatus.HTTP_FORBIDDEN)
-        return req.getTAL("web/edit/edit.html", {}, macro="access_error")
+        req.response.status_code = httpstatus.HTTP_FORBIDDEN
+        return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
     if "update_stat" in req.params.keys():  # reset stored statistics data
         logg.info("user %s requests update of of system.statscontent for node %s (%s, %s)", user.login_name, node.id, node.name, node.type)
@@ -166,8 +167,7 @@ def getContent(req, ids):
 
         v["stand"] = node.get("system.statsdate")
 
-        req.writeTAL(
-            "web/edit/modules/statsfiles.html", v, macro="edit_stats_popup")
+        req.response.set_data(_tal.processTAL(v, file="web/edit/modules/statsfiles.html", macro="edit_stats_popup", request=req))
         return ""
 
-    return req.getTAL("web/edit/modules/statsfiles.html", {"id": ids, "csrf": req.csrf_token.current_token}, macro="edit_stats")
+    return _tal.processTAL({"id": ids, "csrf": req.csrf_token.current_token}, file="web/edit/modules/statsfiles.html", macro="edit_stats", request=req)

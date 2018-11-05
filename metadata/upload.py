@@ -244,10 +244,11 @@ def handle_request(req):
                 msg = "m_upload: no access for user '%s' to node %s ('%s', '%s') from '%s'" % (
                     user.login_name, n.id, n.name, n.type, ustr(req.ip))
                 logg.info(msg)
-                errors.append(msg)
 
+                errors.append(msg)
                 s['errors'] = errors
-                req.write(req.params.get("jsoncallback") + "(%s)" % json.dumps(s, indent=4))
+                req.response.set_data(req.params.get("jsoncallback") + "(%s)" % json.dumps(s, indent=4))
+                req.response.status_code = 403
                 return 403
 
             filelist, filelist2 = getFilelist(n, m_upload_field_name)
@@ -260,7 +261,8 @@ def handle_request(req):
 
             s['html_filelist'] = html_filelist
 
-            req.write(req.params.get("jsoncallback") + "(%s)" % json.dumps(s, indent=4))
+            req.response.set_data(req.params.get("jsoncallback") + "(%s)" % json.dumps(s, indent=4))
+            req.response.status_code = 200
 
             return 200
 
@@ -284,7 +286,8 @@ def handle_request(req):
                 errors.append(msg)
 
                 s['errors'] = errors
-                req.write(req.params.get("jsoncallback") + "(%s)" % json.dumps(s, indent=4))
+                req.response.set_data(req.params.get("jsoncallback") + "(%s)" % json.dumps(s, indent=4))
+                req.response.status_code = 403
                 return 403
 
             for f in fs:
@@ -306,11 +309,12 @@ def handle_request(req):
             db.session.commit()
 
             s['errors'] = errors
-            req.write(req.params.get("jsoncallback") + "(%s)" % json.dumps(s, indent=4))
+            req.response.set_data(req.params.get("jsoncallback") + "(%s)" % json.dumps(s, indent=4))
+            req.response.status_code = 200
             return 200
         else:
             s = {'response': 'response for cmd="%s" not completely implemented feature' % cmd}
-            req.write(req.params.get("jsoncallback") + "(%s)" % json.dumps(s, indent=4))
+            req.response.set_data(req.params.get("jsoncallback") + "(%s)" % json.dumps(s, indent=4))
             return 200
 
     filesize = 0
@@ -341,7 +345,7 @@ def handle_request(req):
             errors.append(msg)
 
             s['errors'] = errors
-            req.write("%s" % json.dumps(s, indent=4))
+            req.response.set_data("%s" % json.dumps(s, indent=4))
             return
 
         filename = None
@@ -391,6 +395,7 @@ def handle_request(req):
         'copy_report': copy_report,
     }
 
-    req.write("%s" % json.dumps(s, indent=4))
+    req.response.set_data("%s" % json.dumps(s, indent=4))
+    req.response.status_code = 200
 
     return 200

@@ -17,6 +17,8 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
+import mediatumtal.tal as _tal
+import core.httpstatus as _httpstatus
 from core import db
 from core.users import user_from_session as _user_from_session
 from contenttypes import Container, Content
@@ -32,6 +34,7 @@ def ftree(req):
     user = _user_from_session()
     if not user.is_editor:
         logg.warn("ftree permission denied for user: %s", user.id)
+        req.response.status_code = 403
         return 403
 
     if "parentId" in req.params:
@@ -49,15 +52,19 @@ def ftree(req):
             parent = q(Container).get(req.params.get("changeCheck"))
             if not(node and parent and node.has_write_access() and parent.has_write_access()):
                 logg.warn("illegal ftree request: %s", req.params)
+                req.response.status_code = 403
                 return 403
 
             if node in parent.content_children:
                 if len(node.parents) > 1:
                     parent.content_children.remove(node)
                     logg.info("ftree change ")
+                    req.response.status_code = _httpstatus.HTTP_OK
                     db.session.commit()
                 else:
-                    req.writeTALstr('<tal:block i18n:translate="edit_classes_noparent"/>', {})
+                    req.response.status_code = _httpstatus.HTTP_OK
+                    req.response.set_data(_tal.processTAL({}, string='<tal:block i18n:translate="edit_classes_noparent"/>', macro=None, request=req))
             else:
+                req.response.status_code = _httpstatus.HTTP_OK
                 parent.content_children.append(node)
                 db.session.commit()

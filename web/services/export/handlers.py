@@ -921,7 +921,7 @@ def write_formatted_response(
                 if disposition:
                     # ex.: (direct to download) value: "attachment; filename=myfilename.txt"
                     # ex.: (open in browser) value: "filename=myfilename.txt"
-                    req.reply_headers['Content-Disposition'] = disposition
+                    req.response.headers['Content-Disposition'] = disposition
                     d['timetable'].append(["wrote disposition %r to reply header" % (disposition), time.time() - atime])
                     atime = time.time()
 
@@ -962,7 +962,7 @@ def write_formatted_response(
         atime = time.time()
         mimetype = mimetype_from_cache
         content_type = mimetype + "; charset=utf-8"
-        req.reply_headers['Content-Type'] = content_type
+        req.response.headers['Content-Type'] = content_type
 
     def compressForDeflate(s):
         import gzip
@@ -986,7 +986,7 @@ def write_formatted_response(
             percentage = 100.0 * size_compressed / size_uncompressed
         except:
             percentage = 100.0
-        req.reply_headers['Content-Encoding'] = "deflate"
+        req.response.headers['Content-Encoding'] = "deflate"
         d['timetable'].append(["'deflate' in request: executed compressForDeflate(s), %d bytes -> %d bytes (compressed to: %.1f %%)" %
                                (size_uncompressed, size_compressed, percentage), time.time() - atime])
         atime = time.time()
@@ -1000,14 +1000,14 @@ def write_formatted_response(
             percentage = 100.0 * size_compressed / size_uncompressed
         except:
             percentage = 100.0
-        req.reply_headers['Content-Encoding'] = "gzip"
+        req.response.headers['Content-Encoding'] = "gzip"
         d['timetable'].append(["'gzip' in request: executed compressForGzip(s), %d bytes -> %d bytes (compressed to: %.1f %%)" %
                                (size_uncompressed, size_compressed, percentage), time.time() - atime])
         atime = time.time()
 
     # (format) Expires: Mon, 28 Nov 2011 12:41:22 GMT
     # see core.athana.build_http_date
-    # req.reply_headers['Expires'] = time.strftime ('%a, %d %b %Y %H:%M:%S GMT', time.gmtime(time.time()+60.0)) # 1 minute
+    # req.response.headers['Expires'] = time.strftime ('%a, %d %b %Y %H:%M:%S GMT', time.gmtime(time.time()+60.0)) # 1 minute
 
     # remark: on 2011-12-01 switched response from req.write to sendAsBuffer for performance reasons
     # (before: ) req.write(s)
@@ -1040,7 +1040,7 @@ def get_cachestatus(req, path, params, data):
     d['status'] = 'ok'
     d['html_response_code'] = '200'
     d['timetable'] = timetable
-    req.reply_headers['Content-Type'] = "text/plain" + "; charset=utf-8"
+    req.response.headers['Content-Type'] = "text/plain" + "; charset=utf-8"
 
     atime = time.time()
 
@@ -1049,7 +1049,7 @@ def get_cachestatus(req, path, params, data):
     d['timetable'].append(["retrieved report for resultcache", time.time() - atime])
     atime = time.time()
 
-    req.write(s)
+    req.response.set_data(s)
 
     d['timetable'].append(["writing cache reports to request", time.time() - atime])
     atime = time.time()
@@ -1083,7 +1083,7 @@ def serve_file(req, path, params, data, filepath):
     else:
         mimetype = getMimeType(filepath)
 
-    req.reply_headers['Content-Type'] = mimetype
+    req.response.headers['Content-Type'] = mimetype
 
     if WEBROOT:
         basedir = WEBROOT

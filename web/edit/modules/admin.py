@@ -37,7 +37,7 @@ def getContent(req, ids):
     user = user_from_session()
     node = q(Node).get(ids[0])
     if not node.has_write_access() or "admin" in user.hidden_edit_functions:
-        req.setStatus(httpstatus.HTTP_FORBIDDEN)
+        req.response.status_code = httpstatus.HTTP_FORBIDDEN
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     if req.params.get("type", "") == "addattr" and req.params.get("new_name", "") != "" and req.params.get("new_value", "") != "":

@@ -213,12 +213,13 @@ class m_htmlmemo(Metatype):
 
     def getPopup(self, req):
         if "type" in req.params:
-            req.reply_headers['Content-Type'] = "application/javascript"
+            req.response.headers['Content-Type'] = "application/javascript"
             if req.params.get('type') == "configfile":
                 from core.translation import lang
-                req.writeTAL("metadata/htmlmemo.html", {'lang': lang(req)}, macro="ckconfig")
+                req.response.set_data(tal.processTAL({'lang': lang(req)}, file="metadata/htmlmemo.html", macro="ckconfig", request=req))
             elif req.params.get('type') == "javascript":
-                req.writeTAL("metadata/htmlmemo.html", {}, macro="javascript")
+                req.response.set_data(tal.processTAL({}, file="metadata/htmlmemo.html", macro="javascript", request=req))
+        req.response.status_code = httpstatus.HTTP_OK
         return httpstatus.HTTP_OK
 
     def getName(self):

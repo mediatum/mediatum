@@ -18,6 +18,7 @@
 """
 
 import core.config as config
+import mediatumtal.tal as _tal
 
 from core.stats import StatisticFile
 from core.translation import t, lang
@@ -57,8 +58,8 @@ def getContent(req, ids):
     node = q(Node).get(ids)
 
     if "statsaccess" in user.hidden_edit_functions or not node.has_write_access():
-        req.setStatus(httpstatus.HTTP_FORBIDDEN)
-        return req.getTAL("web/edit/edit.html", {}, macro="access_error")
+        req.response.status_code = httpstatus.HTTP_FORBIDDEN
+        return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
     if req.params.get("style", "") == "popup":
         getPopupWindow(req, ids)
@@ -90,7 +91,7 @@ def getContent(req, ids):
         v["current_file"] = StatisticFile(None)
     v["nodename"] = node.name
     v["csrf"] = req.csrf_token.current_token
-    return req.getTAL("web/edit/modules/statsaccess.html", v, macro="edit_stats")
+    return _tal.processTAL(v, file="web/edit/modules/statsaccess.html", macro="edit_stats", request=req)
 
 
 def getPopupWindow(req, ids):
@@ -104,7 +105,7 @@ def getPopupWindow(req, ids):
         collection = q(Node).get(req.params.get("id"))
         collection.set("system.statsrun", "1")
         #buildStat(collection, ustr(format_date(now(), "yyyy-mm")))
-        req.writeTAL("web/edit/modules/statsaccess.html", {}, macro="edit_stats_result")
+        req.response.set_data(req.response.get_data() + _tal.processTAL({}, file="web/edit/modules/statsaccess.html", macro="edit_stats_result", request=req))
         collection.removeAttribute("system.statsrun")
         return
 
@@ -112,7 +113,7 @@ def getPopupWindow(req, ids):
         v["action"] = "showform"
         v["statsrun"] = q(Node).get(ids).get("system.statsrun")
         v["csrf"] = req.csrf_token.current_token
-    req.writeTAL("web/edit/modules/statsaccess.html", v, macro="edit_stats_popup")
+    req.response.set_data(req.response.get_data() + _tal.processTAL(v, file="web/edit/modules/statsaccess.html", macro="edit_stats_popup", request=req))
 
 
 class StatsAccessPDF:

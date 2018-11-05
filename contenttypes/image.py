@@ -25,6 +25,7 @@ import tempfile
 from PIL import Image as PILImage, ImageDraw
 from PIL.Image import DecompressionBombError as _DecompressionBombError
 
+import core.httpstatus as _httpstatus
 from core import config, File, db
 from core.archive import Archive, get_archive_for_node
 from core.attachment import filebrowser
@@ -660,7 +661,8 @@ class Image(Content):
         d['tileurl'] = "/tile/{}/".format(self.id)
         d["no_flash_url"] = "/fullsize?id={}&no_flash=1".format(self.id)
         html = webconfig.theme.render_macro("image.j2.jade", "imageviewer", d)
-        req.write(html)
+        req.response.set_data(html)
+        req.response.status_code = _httpstatus.HTTP_OK
 
     def popup_thumbbig(self, req):
         self.popup_fullsize(req)

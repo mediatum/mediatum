@@ -105,14 +105,14 @@ def sendZipFile(req, path):
 
     r("/")
     zip.close()
-    req.reply_headers['Content-Disposition'] = "attachment; filename=shoppingbag.zip"
+    req.response.headers['Content-Disposition'] = "attachment; filename=shoppingbag.zip"
     _sendFile(req, tempfile, "application/zip", nginx_x_accel_redirect_enabled=False)
     if os.sep == '/':  # Unix?
         os.unlink(tempfile)  # unlinking files while still reading them only works on Unix/Linux
 
 
 def sendBibFile(req, path):
-    req.reply_headers['Content-Disposition'] = "attachment; filename=export.bib"
+    req.response.headers['Content-Disposition'] = "attachment; filename=export.bib"
     _sendFile(req, path, getMimeType(path))
     if os.sep == '/':  # Unix?
         os.unlink(path)  # unlinking files while still reading them only works on Unix/Linux

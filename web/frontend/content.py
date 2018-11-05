@@ -823,16 +823,16 @@ def render_content(node, req, render_paths=True, show_id=None):
     
     cache_duration = content_or_error.cache_duration
     if cache_duration:
-        req.reply_headers["Cache-Control"] = "max-age=" + str(cache_duration)
+        req.response.headers["Cache-Control"] = "max-age=" + str(cache_duration)
     else:
-        req.reply_headers["Cache-Control"] = "no-cache"
+        req.response.headers["Cache-Control"] = "no-cache"
 
     if isinstance(content_or_error, NodeNotAccessible):
-        req.setStatus(content_or_error.status)
+        req.response.status_code = content_or_error.status
         return render_content_error(content_or_error.error, lang(req))
 
     if isinstance(content_or_error, StartpageNotAccessible):
-        req.setStatus(content_or_error.status)
+        req.response.status_code = content_or_error.status
         return render_startpage_error(node, lang(req))
 
     content = content_or_error

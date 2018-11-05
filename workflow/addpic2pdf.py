@@ -549,7 +549,7 @@ def serve_file(req, filepath):
     else:
         mimetype = getMimeType(filepath)
 
-    req.reply_headers['Content-Type'] = mimetype
+    req.response.headers['Content-Type'] = mimetype
 
     tmppath = config.get("paths.datadir") + "tmp/"
 
@@ -558,8 +558,10 @@ def serve_file(req, filepath):
     if os.path.isfile(abspath):
         filesize = os.path.getsize(abspath)
         _request_handler.sendFile(req, abspath, mimetype, force=1)
+        req.response.status_code = 200
         return 200, filesize, abspath  # ok
     else:
+        req.response.status_code = 400
         return 404, 0, abspath  # not found
 
 
@@ -572,7 +574,7 @@ def read_serve_file(req, filepath, remove_after_sending=False):
     else:
         mimetype = getMimeType(filepath)
 
-    req.reply_headers['Content-Type'] = mimetype
+    req.response.headers['Content-Type'] = mimetype
 
     abspath = filepath
 
@@ -583,9 +585,11 @@ def read_serve_file(req, filepath, remove_after_sending=False):
         f.close()
         if remove_after_sending:
             os.remove(abspath)
-        req.write(s)
-        return 200, len(s), abspath  # ok
+        req.response.set_data(s)
+        req.response.status_code = 200
+        return 200
     else:
+        req.response.status_code = 404
         return 404, 0, abspath  # not found
 
 
@@ -604,17 +608,21 @@ def handle_request(req):
         if node_id:
             node = q(Node).get(node_id)
             if node is None:
+                req.response.status_code = 404
                 return 404  # not found
         else:
+            req.response.status_code = 404
             return 404  # not found
 
         current_workflow = getNodeWorkflow(node)
         current_workflow_step = getNodeWorkflowStep(node)
 
         if not current_workflow_step:
+            req.response.status_code = 404
             return 404  # not found
         current_workflow_step_children_ids = [n.id for n in current_workflow_step.children]
         if node.id not in current_workflow_step_children_ids:
+            req.response.status_code = 403
             return 403  # forbidden
 
         # XXX: WTF?!
@@ -623,11 +631,13 @@ def handle_request(req):
                 format_date().replace('T', ' - '), t(lang(req), "admin_wfstep_addpic2pdf_no_access"))
             logg.info("workflow step addpic2pdf(%s): no access to node %s for request from user '%s' (%s)",
                 current_workflow_step.id, node.id, user.getName(), req.ip)
+            req.response.status_code = 403
             return 403  # forbidden
 
         if req.path == '/serve_page/document.pdf':
             filepath = [f.abspath for f in node.filrd if f.filetype.startswith('document')][0]
             return_code, file_size, abspath = serve_file(req, filepath)
+            req.response.status_code = return_code
             return return_code
 
         if req.path == '/serve_page/p_document.pdf':
@@ -649,6 +659,7 @@ def handle_request(req):
 
         return_code, file_size, abspath = read_serve_file(req, pdf_page_image_fullpath, remove_after_sending=True)
 
+        req.response.status_code = return_code
         return return_code
 
     if req.path.startswith("/grid"):
@@ -675,9 +686,9 @@ def handle_request(req):
 
         f = getGridBuffer(pdf_size, thumb_size, dpi, thick=5, orig=["top_left", "bottom_left"][1], orig_message=orig_message, rotate=rotate)
         s = f.getvalue()
-        req.write(s)
-        req.write('')
-        req.reply_headers['Content-Type'] = "image/png"
+        req.response.set_data(s)
+        req.response.headers['Content-Type'] = "image/png"
+        req.response.status_code = 200
         return 200
 
     # part handle_request not matched by "/serve_page/" and "/grid"
@@ -692,23 +703,27 @@ def handle_request(req):
             msg = "workflowstep addpic2pdf: nodeid='%s' for non-existant node for upload from '%s'" % (unicode(nodeid), req.ip)
             errors.append(msg)
             logg.error(msg)
+            req.response.status_code = 404
             return 404  # not found
     else:
         msg = "workflowstep addpic2pdf: could not find 'nodeid' for upload from '%s'" % req.ip
         errors.append(msg)
         logg.error(msg)
+        req.response.status_code = 404
         return 404  # not found
 
     try:
         current_workflow = getNodeWorkflow(node)
         current_workflow_step = getNodeWorkflowStep(node)
     except:
+        req.response.status_code = 403
         return 403  # forbidden
 
     if False:  # not access.hasAccess(node, "read"):
         req.params["addpic2pdf_error"] = "%s: %s" % (format_date().replace('T', ' - '), t(lang(req), "admin_wfstep_addpic2pdf_no_access"))
         logg.info("workflow step addpic2pdf(%s): no access to node %s for request from user '%s' (%s)",
             current_workflow_step.id, node.id, user.getName(), req.ip)
+        req.response.status_code = 403
         return 403  # forbidden
 
     pdf_in_filepath = getPdfFilepathForProcessing(current_workflow_step, node)
@@ -716,6 +731,6 @@ def handle_request(req):
 
     s = {'pdf_page_image_url': pdf_page_image_url}
 
-    req.write(req.params.get("jsoncallback") + "(%s)" % json.dumps(s, indent=4))
-
+    req.response.set_data(req.params.get("jsoncallback") + "(%s)" % json.dumps(s, indent=4))
+    req.response.status_code = 200
     return 200

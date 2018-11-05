@@ -48,10 +48,12 @@ q = db.query
 def popup_fullsize(req):
     nid = userinput.string_to_int(req.args.get("id", type=int))
     if nid is None:
+        req.response.status_code = 400
         return 400
     
     node = q(Node).get(nid)
     if not isinstance(node, Node):
+        req.response.status_code = 404
         return 404
     
     version_id = req.params.get("v")
@@ -67,6 +69,7 @@ def popup_fullsize(req):
 def popup_thumbbig(req):
     node = q(Node).get(req.params["id"])
     if not isinstance(node, Node):
+        req.response.status_code = 404
         return 404
     return node.popup_thumbbig(req)
 
@@ -80,8 +83,9 @@ def show_help(req):
     else:
         field = q(Node).get(req.params.get("id", ""))
     html = webconfig.theme.render_macro("popups.j2.jade", "show_help", {"field": field})
-    req.write(html)
 
+    req.response.status_code = httpstatus.HTTP_OK
+    req.response.set_data(html)
 #
 # show attachmentbrowser for given node
 # parameter: req.id, req.path
@@ -92,7 +96,8 @@ def show_attachmentbrowser(req):
     nid = req.params.get("id")
     node = q(Node).get(nid)
     if not node.has_data_access():
-        req.write(t(req, "permission_denied"))
+        req.response.set_data(t(req, "permission_denied"))
+        req.response.status_code = httpstatus.HTTP_FORBIDDEN
         return
 
     from core.attachment import getAttachmentBrowser
@@ -120,7 +125,8 @@ RE_PRINT_URL = re.compile("/print/(\d+).pdf")
 
 
 def redirect_old_printview(req):
-    req.reply_headers["Location"] = req.path + ".pdf"
+    req.response.headers["Location"] = req.path + ".pdf"
+    req.response.status_code = httpstatus.HTTP_TEMPORARY_REDIRECT
     return httpstatus.HTTP_TEMPORARY_REDIRECT
 
 
@@ -131,6 +137,7 @@ def show_printview(req):
 
     node = q(Node).get(nodeid)
     if node.system_attrs.get("print") == "0" or not node.has_read_access():
+        req.response.status_code = 404
         return 404
 
     style = int(req.params.get("style", 2))
@@ -235,7 +242,9 @@ def show_printview(req):
                         cy = item[1]
                         break
                 if cx.lower() > cy.lower():
+                    req.response.status_code = 1 * order[0]
                     return 1 * order[0]
+                req.response.status_code = -1 * order[0]
                 return -1 * order[0]
 
             sorted_children = []

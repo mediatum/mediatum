@@ -69,7 +69,7 @@ def getContent(req, ids):
             field = req.params.get('value', '').strip()
             res = showdir(req, node, sortfield=field)
             res = json.dumps({'state': 'ok', 'values': res}, ensure_ascii=False)
-            req.write(res)
+            req.response.set_data(res)
             return None
 
         elif req.params.get('action') == "save":  # save selection for collection
@@ -85,7 +85,8 @@ def getContent(req, ids):
                     node.removeAttribute('nodes_per_page')
             else:
                 node.set('nodes_per_page', nodes_per_page)
-            req.write(json.dumps({'state': 'ok'}))
+            req.response.set_data(json.dumps({'state': 'ok'}))
+
             db.session.commit()
         return None
 

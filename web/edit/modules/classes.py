@@ -37,12 +37,12 @@ def getContent(req, ids):
     for nid in ids:
         node = q(Node).get(nid)
         if not node.has_write_access():
-            req.setStatus(httpstatus.HTTP_FORBIDDEN)
+            req.response.status_code = httpstatus.HTTP_FORBIDDEN
             return req.getTAL("web/edit/edit.html", {}, macro="access_error")
         nodes.append(node)
 
     if "classes" in user.hidden_edit_functions:
-        req.setStatus(httpstatus.HTTP_FORBIDDEN)
+        req.response.status_code = httpstatus.HTTP_FORBIDDEN
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     v = {}

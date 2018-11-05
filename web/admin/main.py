@@ -23,6 +23,7 @@ import random
 import codecs
 
 import core
+import mediatumtal.tal as _tal
 from core import config
 from core.users import get_guest_user
 from core import httpstatus
@@ -63,9 +64,9 @@ def show_node(req):
 
     if len(p) > 0:
         if style == "":
-            req.writeTAL("web/admin/frame.html", v, macro="frame")
+            req.response.set_data(_tal.processTAL(v, file="web/admin/frame.html", macro="frame", request=req))
         else:
-            req.write(v["content"])
+            req.response.set_data(v["content"])
 
 
 def export(req):

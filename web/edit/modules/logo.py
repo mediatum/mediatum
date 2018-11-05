@@ -45,7 +45,7 @@ def getContent(req, ids):
     node = q(Node).get(ids[0])
 
     if "logo" in user.hidden_edit_functions or not node.has_write_access():
-        req.setStatus(httpstatus.HTTP_FORBIDDEN)
+        req.response.status_code = httpstatus.HTTP_FORBIDDEN
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     # delete logo file
@@ -55,9 +55,9 @@ def getContent(req, ids):
             if f.abspath.endswith(file):
                 node.files.remove(f)
                 db.session.commit()
-                req.write('ok')
+                req.response.set_data('ok')
                 return None
-        req.write('not found')
+        req.response.set_data("not found")
         return None
 
     # add logo file
@@ -70,7 +70,7 @@ def getContent(req, ids):
 
             if mimetype not in ("image/jpeg", "image/gif", "image/png"):
                 # wrong file type (jpeg, jpg, gif, png)
-                req.setStatus(httpstatus.HTTP_INTERNAL_SERVER_ERROR)
+                req.response.status_code = httpstatus.HTTP_INTERNAL_SERVER_ERROR
                 return req.getTAL("web/edit/modules/logo.html", {}, macro="filetype_error")
             else:
                 file = importFile(file.filename, file.tempname)
@@ -112,5 +112,5 @@ def getContent(req, ids):
         "t": translation_t,
         "csrf": req.csrf_token.current_token
     }
-         
+
     return req.getTAL("web/edit/modules/logo.html", v, macro="edit_logo")

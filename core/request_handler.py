@@ -671,7 +671,6 @@ def done(req):
     connection = _string.lower(get_header_from_match(CONNECTION, req.header))
 
     close_it = 0
-    wrap_in_chunking = 0
 
     if req.version == '1.0':
         if connection == 'keep-alive':
@@ -690,7 +689,6 @@ def done(req):
                     close_it = 1
             elif req.use_chunked:
                 req['Transfer-Encoding'] = 'chunked'
-                wrap_in_chunking = 1
             else:
                 close_it = 1
     elif req.version is None:
@@ -700,10 +698,10 @@ def done(req):
         # when using telnet to debug a server.
         close_it = 1
 
-    if "Cache-Control" not in req.reply_headers or not _config.getboolean("athana.allow_cache_header", False):
-        req.reply_headers["Cache-Control"] = "no-cache"
+    if "Cache-Control" not in req.response.headers or not _config.getboolean("athana.allow_cache_header", False):
+        req.response.headers["Cache-Control"] = "no-cache"
 
-    if req.reply_code == 500:
+    if req.response.status_code == 500:
         # don't use Transfer-Encoding chunked because only an error message is displayed
         # this code is only necessary if a reply-header contains invalid characters but has
         # Transfer-Encoding chunked set
@@ -712,45 +710,12 @@ def done(req):
             if req['Transfer-Encoding'] == 'chunked':
                 req['Transfer-Encoding'] = ''
 
-    reply_header = req.build_reply_header(check_characters=req.reply_code != 500)
-    if not reply_header:
-        raise ValueError("invalid header field")
-
-    outgoing_header = _athana_z3950.simple_producer(reply_header)
-
     if close_it:
         req['Connection'] = 'close'
 
-    if wrap_in_chunking:
-        outgoing_producer = _athana.chunked_producer(
-            _athana.composite_producer(list(req.outgoing))
-        )
-        # prepend the header
-        outgoing_producer = _athana.composite_producer(
-            [outgoing_header, outgoing_producer]
-        )
-    else:
-        # prepend the header
-        req.outgoing.insert(0, outgoing_header)
-        outgoing_producer = _athana.composite_producer(list(req.outgoing))
-
-    # actually, this is already set to None by the handler:
-    req.channel.current_request = None
-
-    # apply a few final transformations to the output
-    req.channel.push_with_producer(
-        # globbing gives us large packets
-        _athana.globbing_producer(
-            outgoing_producer
-        )
-    )
-
-    if close_it:
-        req.channel.close_when_done()
-
 
 def error(req, code, s=None, content_type='text/html'):
-    req.reply_code = code
+    req.response.status_code = code
     req.outgoing = []
     message = _httpstatus.responses[code]
     if s is None:
@@ -837,7 +802,7 @@ def sendFile(req, path, content_type, force=0, nginx_x_accel_redirect_enabled=Tr
     if length_match and ims_date:
         if mtime <= ims_date and not force:
             # print "File "+path+" was not modified since "+ustr(ims_date)+" (current filedate is "+ustr(mtime)+")-> 304"
-            req.reply_code = 304
+            req.response.status_code = 304
             return
 
     if not x_accel_redirect:
@@ -848,11 +813,11 @@ def sendFile(req, path, content_type, force=0, nginx_x_accel_redirect_enabled=Tr
             print "404"
             return
 
-    req.reply_headers['Last-Modified'] = build_http_date(mtime)
-    req.reply_headers['Content-Length'] = file_length
-    req.reply_headers['Content-Type'] = content_type
+    req.response.headers['Last-Modified'] = build_http_date(mtime)
+    req.response.headers['Content-Length'] = file_length
+    req.response.headers['Content-Type'] = content_type
     if x_accel_redirect:
-        req.reply_headers['X-Accel-Redirect'] = path
+        req.response.headers['X-Accel-Redirect'] = path
     if req.command == 'GET':
         if x_accel_redirect:
             done(req)
@@ -909,7 +874,7 @@ def sendAsBuffer(req, text, content_type, force=0, allow_cross_origin=False):
 
     if length_match and ims_date:
         if mtime <= ims_date and not force:
-            req.reply_code = 304
+            req.response.status_code = 304
             return
     try:
         file = stringio
@@ -917,11 +882,11 @@ def sendAsBuffer(req, text, content_type, force=0, allow_cross_origin=False):
         error(req, 404)
         return
 
-    req.reply_headers['Last-Modified'] = build_http_date(mtime)
-    req.reply_headers['Content-Length'] = file_length
-    req.reply_headers['Content-Type'] = content_type
+    req.response.headers['Last-Modified'] = build_http_date(mtime)
+    req.response.headers['Content-Length'] = file_length
+    req.response.headers['Content-Type'] = content_type
     if allow_cross_origin:
-        req.reply_headers['Access-Control-Allow-Origin'] = '*'
+        req.response.headers['Access-Control-Allow-Origin'] = '*'
     if req.command == 'GET':
         req.push(_athana.file_producer(file))
     return
@@ -945,10 +910,10 @@ def setCookie(req, name, value, expire=None, path=None, http_only=True, secure=F
 
     cookie_str = "; ".join(parts)
 
-    if 'Set-Cookie' not in req.reply_headers:
-        req.reply_headers['Set-Cookie'] = [cookie_str]
+    if 'Set-Cookie' not in req.response.headers:
+        req.response.headers['Set-Cookie'] = [cookie_str]
     else:
-        req.reply_headers['Set-Cookie'] += [cookie_str]
+        req.response.headers['Set-Cookie'] += [cookie_str]
 
 
 def makeSelfLink(req, params):
@@ -1177,7 +1142,7 @@ class default_handler:
 
         if length_match and ims_date:
             if mtime <= ims_date:
-                request.reply_code = 304
+                request.response.status_code = 304
                 done(request)
                 self.cache_counter.increment()
                 # print "File "+path+" was not modified since "+ustr(ims_date)+" (current filedate is "+ustr(mtime)+")"
@@ -1254,7 +1219,7 @@ class WebContext:
             if type("1") == type(status):
                 status = int(status)
             if status is not None and type(1) == type(status) and status > 10:
-                req.reply_code = status
+                req.response.status_code = status
                 if(status >= 400 and status <= 500):
                     return error(req, status)
             return done(req)
@@ -1315,7 +1280,7 @@ def callhandler(handler_func, req):
                 msg = translate("core_snipped_internal_server_error_without_mail", request=req)
             s = msg.replace('${XID}', xid)
 
-            req.reply_headers["X-XID"] = xid
+            req.response.headers["X-XID"] = xid
             return error(request, 500, s.encode("utf8"), content_type='text/html; encoding=utf-8; charset=utf-8')
 
         else:

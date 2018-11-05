@@ -19,6 +19,7 @@
 """
 
 import logging
+import core.httpstatus as _httpstatus
 from core import db
 from core.translation import t
 from contenttypes import Data
@@ -48,14 +49,16 @@ def export(req):
         return _error(req, 404, "Object not found")
 
     if not node.has_read_access():
-        req.write(t(req, "permission_denied"))
+        req.response.status_code = _httpstatus.HTTP_FORBIDDEN
+        req.response.set_data(t(req, "permission_denied"))
         return
 
     mask = node.metadatatype.getMask(p[1])
     if mask:
         try:
-            req.reply_headers['Content-Type'] = "text/plain; charset=utf-8"
-            req.write(mask.getViewHTML([node], flags=8))  # flags =8 -> export type
+            req.response.status_code = _httpstatus.HTTP_OK
+            req.response.set_data(mask.getViewHTML([node], flags=8))
+            req.response.headers['Content-Type'] = "text/plain; charset=utf-8"
         except NoResultFound:
             return _error(req, 404, "Object not found")
     else:

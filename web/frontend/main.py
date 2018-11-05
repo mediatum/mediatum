@@ -24,6 +24,7 @@ import re
 from werkzeug.datastructures import ImmutableMultiDict
 
 import core.config as config
+import core.request_handler as _request_handler
 from core.metatype import Context
 from core.translation import lang, switch_language
 from core import httpstatus
@@ -74,7 +75,8 @@ def handle_json_request(req):
                     container=container,
                     user=user,
                     ip=req.ip))]
-    req.write(req.params.get("jsoncallback") + "(%s)" % json.dumps(s, indent=4))
+    req.response.set_data(req.params.get("jsoncallback") + "(%s)" % json.dumps(s, indent=4))
+    req.response.status_code = httpstatus.HTTP_OK
 
 
 DISPLAY_PATH = re.compile("/([_a-zA-Z][_/a-zA-Z0-9]+)$")
@@ -89,6 +91,9 @@ def change_language_request(req):
         params = req.args.copy()
         del params["change_language"]
         req.request["Location"] = build_url_from_path_and_params(req.path, params)
+        # set the language cookie for caching
+        _request_handler.setCookie(req, "language", language)
+        req.response.status_code = httpstatus.HTTP_MOVED_TEMPORARILY
         return httpstatus.HTTP_MOVED_TEMPORARILY
 
 
@@ -97,7 +102,11 @@ def check_change_language_request(func):
     def checked(req, *args, **kwargs):
         change_lang_http_status = change_language_request(req)
         if change_lang_http_status:
-            return change_lang_http_status
+            if "Set-Cookie" in req.response.headers:
+                cookie = req.response.headers["Set-Cookie"]
+                i = cookie.find("language")
+                lteil = cookie[i:]
+                req._lang = lteil.split(";")[0].split("=")[1]
 
         return func(req, *args, **kwargs)
 
@@ -106,6 +115,7 @@ def check_change_language_request(func):
 
 @check_change_language_request
 def display_404(req):
+    req.response.status_code = httpstatus.HTTP_NOT_FOUND
     return httpstatus.HTTP_NOT_FOUND
 
 
@@ -186,12 +196,13 @@ def _display(req, show_navbar=True, render_paths=True, params=None):
         content_html = render_content(node, req, render_paths, show_id)
 
     if params.get("raw"):
-        req.write(content_html)
+        req.response.set_data(content_html)
     else:
         html = render_page(req, node, content_html, show_navbar, show_id)
-        req.write(html)
+        req.response.set_data(html)
+    req.response.status_code = httpstatus.HTTP_OK
     # ... Don't return a code because Athana overwrites the content if an http error code is returned from a handler.
-    # instead, req.setStatus() can be used in the rendering code
+    # instead, req.response.status_code = ? can be used in the rendering code
 
 
 @check_change_language_request

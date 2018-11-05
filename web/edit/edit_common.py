@@ -19,6 +19,7 @@
 """
 import logging
 import flask as _flask
+import mediatumtal.tal as _tal
 
 from core import Node, db, webconfig
 from core.systemtypes import Root
@@ -305,7 +306,7 @@ def shownavlist(req, node, nodes, page, dir=None):
         "nav_tooltip" : nav_tooltip,
         "nav_page" : nav_page,
     }
-    page_nav = req.getTAL("web/edit/edit_nav.html", ctx, macro="page_nav_prev_next")
+    page_nav =  _tal.processTAL(ctx, file="web/edit/edit_nav.html", macro="page_nav_prev_next", request=req)
     return page_nav
 
 
@@ -356,13 +357,13 @@ def shownodelist(req, nodes, page, publishwarn=True, markunpublished=False, dir=
             uploaddir = user.upload_dir
         unpublishedlink = "edit_content?tab=publish&id=" + unicode(uploaddir.id)
 
-    html = req.getTAL("web/edit/edit_common.html", {"notpublished": notpublished,
-                                                    "unpublishedlink": unpublishedlink,
-                                                    "nodelist": nodelist,
-                                                    "faultyidlist": faultyidlist,
-                                                    "script_array": script_array,
-                                                    "language": lang(req)},
-                      macro="show_nodelist")
+    html = _tal.processTAL({"notpublished": notpublished,
+                            "unpublishedlink": unpublishedlink,
+                            "nodelist": nodelist,
+                            "faultyidlist": faultyidlist,
+                            "script_array": script_array,
+                            "language": lang(req)},
+                           file="web/edit/edit_common.html", macro="show_nodelist", request=req)
     return html
 
 
@@ -451,7 +452,8 @@ def writetree(req, node, f, key="", openednodes=None, sessionkey="unfoldedids", 
 
 def upload_help(req):
     try:
-        return req.writeTAL("contenttypes/" + req.params.get("objtype", "") + ".html", {}, macro="upload_help")
+        req.response.set_data(_tal.processTAL({}, file="contenttypes/" + req.params.get("objtype", "") + ".html", macro="upload_help", request=req))
+        return
     except:
         None
 
@@ -490,8 +492,14 @@ def send_nodefile_tal(req):
     # this flag may switch the display of a "delete" button in the customs
     # file browser in web/edit/modules/startpages.html
     showdelbutton = True
-    return req.getTAL("web/edit/modules/startpages.html", {"id": id, "node": node, "files": files, "fit": fit, "logoname": node.get("system.logo"), "delbutton": True}, macro="fckeditor_customs_filemanager")
 
+    return _tal.processTAL({"id": id,
+                            "node": node,
+                            "files": files,
+                            "fit": fit,
+                            "logoname": node.get("system.logo"),
+                            "delbutton": True},
+                           file="web/edit/modules/startpages.html", macro="fckeditor_customs_filemanager", request=req)
 
 @dec_entry_log
 def upload_for_html(req):

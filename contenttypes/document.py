@@ -23,6 +23,7 @@ import core.config as config
 import os
 import shutil
 import codecs
+import core.httpstatus as _httpstatus
 from utils.utils import splitfilename, u, OperationException, utf8_decode_escape
 from utils.search import import_node_fulltext
 from web.frontend.filehelpers import version_id_from_req
@@ -226,7 +227,8 @@ class Document(Content):
     """ popup window for actual nodetype """
     def popup_fullsize(self, req):
         if not self.has_data_access() or not self.has_read_access():
-            req.write(t(req, "permission_denied"))
+            req.response.set_data(t(req, "permission_denied"))
+            req.response.status_code = _httpstatus.HTTP_FORBIDDEN
             return
 
         document = self.document

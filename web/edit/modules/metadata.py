@@ -106,7 +106,7 @@ def _handle_edit_metadata(req, mask, nodes):
 
     for node in nodes:
         if not node.has_write_access() or node is userdir:
-            req.setStatus(httpstatus.HTTP_FORBIDDEN)
+            req.response.status_code = httpstatus.HTTP_FORBIDDEN
             return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     if not hasattr(mask, "i_am_not_a_mask"):
@@ -169,7 +169,7 @@ def getContent(req, ids):
 
     if "metadata" in user.hidden_edit_functions:
         print "error 1"
-        req.setStatus(httpstatus.HTTP_FORBIDDEN)
+        req.response.status_code = httpstatus.HTTP_FORBIDDEN
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     metatypes = []
@@ -186,7 +186,7 @@ def getContent(req, ids):
     for nid in ids:
         node = q(Node).get(nid)
         if not node.has_write_access():
-            req.setStatus(httpstatus.HTTP_FORBIDDEN)
+            req.response.status_code = httpstatus.HTTP_FORBIDDEN
             return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
         schema = node.schema

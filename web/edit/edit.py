@@ -25,6 +25,7 @@ import json
 import flask as _flask
 import core.config as config
 import core.translation
+import mediatumtal.tal as _tal
 from core import Node, NodeType, db, User, UserGroup, UserToUserGroup
 from core.systemtypes import Metadatatypes
 from core.database.postgres.permission import NodeToAccessRuleset, AccessRulesetToRule, AccessRule
@@ -92,8 +93,8 @@ def getIDPaths(nid, sep="/", containers_only=True):
             return []
     except:
         return []
-    from web.frontend.content import getPaths
-    paths = getPaths(node)
+    from utils.pathutils import get_accessible_paths
+    paths = get_accessible_paths(node)
     res = []
     for path in paths:
         if containers_only:
@@ -125,10 +126,11 @@ def frameset(req):
     user = _user_from_session()
 
     if not user.is_editor:
-        req.writeTAL("web/edit/edit.html", {}, macro="error")
-        req.writeTAL("web/edit/edit.html",
-                     {"id": id, "tab": (tab and "&tab=" + tab) or ""}, macro="edit_notree_permission")
-        req.setStatus(httpstatus.HTTP_FORBIDDEN)
+        data = _tal.processTAL({}, file="web/edit/edit.html", macro="error", request=req)
+        data += _tal.processTAL({"id": id, "tab": (tab and "&tab=" + tab) or ""}, file="web/edit/edit.html", macro="edit_notree_permission", request=req)
+        req.response.set_data(data)
+        req.response.mimetype = "text/html"
+        req.response.status_code = httpstatus.HTTP_FORBIDDEN
         return
 
     currentdir = q(Data).get(id)
@@ -245,7 +247,8 @@ def frameset(req):
         'csrf': req.csrf_token.current_token,
     }
 
-    req.writeTAL("web/edit/edit.html", v, macro="edit_main")
+    req.response.status_code = httpstatus.HTTP_OK
+    req.response.set_data(_tal.processTAL(v, file="web/edit/edit.html", macro="edit_main", request=req))
 
 
 def getBreadcrumbs(menulist, tab):
@@ -290,12 +293,12 @@ def handletabs(req, ids, tabs, sort_choices):
         "sortfield" : sortfield,
         "nodes_per_page" : nodes_per_page,
     }
-    return req.getTAL("web/edit/edit.html", ctx, macro="edit_tabs")
 
+    return _tal.processTAL(ctx, file="web/edit/edit.html", macro="edit_tabs", request=req)
 
 def error(req):
-    req.writeTAL("<tal:block tal:replace=\"errormsg\"/>",
-                 {"errormsg": req.params.get("errmsg", "")}, macro="edit_errorpage")
+    req.response.set_data(_tal.processTAL({"errormsg": req.params.get("errmsg", "")}, string="<tal:block tal:replace=\"errormsg\"/>", macro="edit_errorpage", request=req))
+    req.response.status_code = httpstatus.HTTP_OK
     return httpstatus.HTTP_OK
 
 
@@ -345,7 +348,6 @@ def getIDs(req):
         _flask.session.nodelist = EditorNodeList(nodelist)
 
     # look for one "id" parameter, containing an id or a list of ids
-    id = req.params.get("id")
 
     try:
         id = req.params["id"]
@@ -458,7 +460,8 @@ def edit_tree(req):
 
         data.append(nodedata)
 
-    return req.write(json.dumps(data, indent=4, ensure_ascii=False))
+    req.response.status_code = httpstatus.HTTP_OK
+    req.response.set_data(json.dumps(data, indent=4, ensure_ascii=False))
 
 
 @dec_entry_log
@@ -475,8 +478,8 @@ def action(req):
     changednodes = {}
 
     if not user.is_editor:
-        req.write("""permission denied""")
-        req.setStatus(httpstatus.HTTP_FORBIDDEN)
+        req.response.set_data("""permission denied""")
+        req.response.status_code = httpstatus.HTTP_FORBIDDEN
         return
 
     if "tab" in req.params:
@@ -493,7 +496,8 @@ def action(req):
             except:
                 logg.exception("exception ignored: could not make fancytree label for node %s", nid)
         res_dict = {'changednodes': changednodes}
-        req.write(json.dumps(res_dict, indent=4, ensure_ascii=False))
+        req.response.status_code = httpstatus.HTTP_OK
+        req.response.set_data(json.dumps(res_dict, indent=4, ensure_ascii=False))
         return
 
     else:
@@ -506,16 +510,16 @@ def action(req):
         try:
             src = q(Node).get(srcid)
         except:
-            req.writeTAL(
-                "web/edit/edit.html", {"edit_action_error": srcid}, macro="edit_action_error")
+            req.response.status_code = httpstatus.HTTP_OK
+            req.response.set_data(_tal.processTAL({"edit_action_error": srcid}, file="web/edit/edit.html", macro="edit_action_error", request=req))
             return
 
     if req.params.get('action') == 'addcontainer':
         node = q(Node).get(srcid)
         if not node.has_write_access():
             # deliver errorlabel
-            req.writeTALstr(
-                '<tal:block i18n:translate="edit_nopermission"/>', {})
+            req.response.status_code = httpstatus.HTTP_FORBIDDEN
+            req.response.set_data(_tal.processTAL({}, string='<tal:block i18n:translate="edit_nopermission"/>', macro=None, request=req))
             return
         # create new container
         newnode_type = req.params.get('type')
@@ -565,7 +569,8 @@ def action(req):
             'children': [],
         }
 
-        req.write(json.dumps(fancytree_nodedata, ensure_ascii=False))
+        req.response.status_code = httpstatus.HTTP_OK
+        req.response.set_data(json.dumps(fancytree_nodedata, ensure_ascii=False))
         logg.info("%s adding new container %s (%s) to %s (%s, %s)",
                   user.login_name, newnode.id, newnode.type, node.id, node.name, node.type)
         return
@@ -626,8 +631,7 @@ def action(req):
 
                 else:
                     logg.info("%s has no write access for node %s", user.login_name, mysrc.id)
-                    req.writeTALstr(
-                        '<tal:block i18n:translate="edit_nopermission"/>', {})
+                    req.response.set_data(req.response.get_data() + _tal.processTAL({}, file='<tal:block i18n:translate="edit_nopermission"/>', macro=None, request=req))
                 dest = mysrc
 
             elif action in ["move", "copy"]:
@@ -672,15 +676,17 @@ def action(req):
             except:
                 logg.exception("exception ignored: could not make fancytree label for node %s", nid)
         res_dict = {'changednodes': changednodes}
-        req.write(json.dumps(res_dict, indent=4, ensure_ascii=False))
+        req.response.status_code = httpstatus.HTTP_OK
+        req.response.set_data(json.dumps(res_dict, indent=4, ensure_ascii=False))
     else:
         try:
+            req.response.status_code = httpstatus.HTTP_OK
             if dest is not None:
-                req.write(dest.id)
+                req.response.set_data(dest.id)
             else:
-                req.write('no-node-id-specified (web.edit.edit.action)')
+                req.response.set_data('no-node-id-specified (web.edit.edit.action)')
         except:
-            req.write('no-node-id-specified (web.edit.edit.action)')
+            req.response.set_data('no-node-id-specified (web.edit.edit.action)')
             logg.exception('exception ignored, no-node-id-specified (web.edit.edit.action)')
     return
 
@@ -706,7 +712,8 @@ def showPaging(req, tab, ids):
          "script": script,
          "nodeid": int(ids[0])}
 
-    return req.getTAL("web/edit/edit.html", v, macro="edit_paging")
+    req.response.status_code = httpstatus.HTTP_OK
+    return _tal.processTAL(v, file="web/edit/edit.html", macro="edit_paging", request=req)
 
 
 def get_ids_from_req(req):
@@ -729,7 +736,9 @@ def content(req):
     language = lang(req)
 
     if not user.is_editor:
-        return req.writeTAL("web/edit/edit.html", {}, macro="error")
+        req.response.status_code = httpstatus.HTTP_OK
+        req.response.set_data(_tal.processTAL({}, file="web/edit/edit.html", macro="error", request=req))
+        return
 
     if 'id' in req.params and len(req.params) == 1:
         nid = long(req.params.get('id'))
@@ -761,7 +770,9 @@ def content(req):
     getEditModules()
 
     if not user.is_editor:
-        return req.writeTAL("web/edit/edit.html", {}, macro="error")
+        req.response.status_code = httpstatus.HTTP_OK
+        req.response.set_data(_tal.processTAL({}, file="web/edit/edit.html", macro="error", request=req))
+        return
 
     ids = getIDs(req)
 
@@ -915,8 +926,8 @@ def content(req):
                 sortchoices = ()
 
         else:
-            req.setStatus(httpstatus.HTTP_INTERNAL_SERVER_ERROR)
-            content["body"] += req.getTAL("web/edit/edit.html", {"module": current}, macro="module_error")
+            req.response.status_code = httpstatus.HTTP_OK
+            content["body"] += _tal.processTAL({"module": current}, file="web/edit/edit.html", macro="module_error", request=req)
 
     if req.params.get("style", "") != "popup":  # normal page with header
         v["tabs"] = handletabs(req, ids, tabs, sortchoices)
@@ -928,7 +939,7 @@ def content(req):
         if req.params.get("ids", "") == "":
             v["ids"] = req.params.get("id", "").split(",")
         v["tab"] = current
-        v["operations"] = req.getTAL("web/edit/edit_common.html", {'iscontainer': node.isContainer()}, macro="show_operations")
+        v["operations"] = _tal.processTAL({'iscontainer': node.isContainer()}, file="web/edit/edit_common.html", macro="show_operations", request=req)
         v['user'] = user
         v['language'] = lang(req)
         v['t'] = t
@@ -947,7 +958,8 @@ def content(req):
 
         v["dircontent"] += '&nbsp;&nbsp;<img src="' + '/img/' + ipath + '" />'
 
-        return req.writeTAL("web/edit/edit.html", v, macro="frame_content")
+        req.response.status_code = httpstatus.HTTP_OK
+        req.response.set_data(_tal.processTAL(v, file="web/edit/edit.html", macro="frame_content", request=req))
 
 
 RE_EDIT_PRINT_URL = re.compile("/print/(\d+)_([a-z]+)(?:_(.+)?)?\.pdf")
@@ -965,6 +977,8 @@ def edit_print(req):
         
     additional_data = match.group(3)
     print_content = mod.getPrintView(nid, additional_data, req)
-    req.reply_headers['Content-Type'] = "application/pdf"
-    req.reply_headers['Content-Disposition'] = u'inline; filename="{}_{}_{}.pdf"'.format(nid, module_name, additional_data)
-    req.write(print_content)
+    req.response.headers['Content-Type'] = "application/pdf"
+    req.response.headers['Content-Disposition'] = u'inline; filename="{}_{}_{}.pdf"'.format(nid, module_name,
+                                                                                              additional_data)
+    req.response.set_data(print_content)
+    req.response.status_code = httpstatus.HTTP_OK

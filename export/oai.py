@@ -28,6 +28,7 @@ import logging
 from collections import OrderedDict
 
 import core.config as config
+import core.httpstatus as _httpstatus
 
 from .oaisearchparser import OAISearchParser as OAISearchParser
 from . import oaisets
@@ -122,23 +123,26 @@ def writeHead(req, attributes=""):
         verb = req.params["verb"]
     except KeyError:
         verb = ""
-    req.reply_headers['charset'] = 'utf-8'
-    req.reply_headers['Content-Type'] = 'text/xml; charset=utf-8'
-    req.write("""<?xml version="1.0" encoding="UTF-8"?>
-    <OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">
-        <responseDate>%sZ</responseDate>
-        <request""" % (ISO8601(date.now())))
+    req.response.headers['charset'] = 'utf-8'
+    req.response.headers['Content-Type'] = 'text/xml; charset=utf-8'
+    resp = """<?xml version="1.0" encoding="UTF-8"?>
+        <OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">
+            <responseDate>%sZ</responseDate>
+            <request""" % (ISO8601(date.now()))
     if attributes != "noatt":
         for n in ["verb", "identifier", "metadataprefix", "from", "until", "set"]:
             if n in req.params:
-                req.write(' %s="%s"' % (n, esc(req.params[n])))
-    req.write('>%s</request>' % (request))
+                resp = resp + ' %s="%s"' % (n, esc(req.params[n]))
+    resp = resp + '>%s</request>' % (request)
+    req.response.status_code = _httpstatus.HTTP_OK
+    req.response.set_data(resp)
     if DEBUG:
         timetable_update(req, "leaving writeHead")
 
 
 def writeTail(req):
-    req.write('</OAI-PMH>')
+    req.response.status_code = _httpstatus.HTTP_OK
+    req.response.set_data(req.response.get_data() + '</OAI-PMH>')
     if DEBUG:
         timetable_update(req, "leaving writeTail")
 
@@ -151,7 +155,8 @@ def writeError(req, code, detail=""):
         desc = errordesc[detail]
     else:
         desc = errordesc[code]
-    req.write('<error code="%s">%s</error>' % (code, desc))
+    req.response.status_code = _httpstatus.HTTP_OK
+    req.response.set_data(req.response.get_data() + '<error code="%s">%s</error>' % (code, desc))
     logg.info("%s:%d OAI (error code: %s) %s", req.ip, req.channel.addr[1], (code), (req.path + req.uri).replace('//', '/'))
 
 
@@ -250,10 +255,12 @@ def ListMetadataFormats(req):
         formats = [x for x in formats if filterFormat(node, x.lower())]
 
     # write xml for metadata formats list
-    req.write('\n      <ListMetadataFormats>\n')
+    req.response.status_code = _httpstatus.HTTP_OK
+    req.response.set_data(req.response.get_data() + '\n      <ListMetadataFormats>\n')
+
     for mdf in formats:
         try:
-            req.write("""
+            req.response.set_data(req.response.get_data() + """
              <metadataFormat>
                <metadataPrefix>%s</metadataPrefix>
                <schema>%s</schema>
@@ -262,7 +269,7 @@ def ListMetadataFormats(req):
              """ % (mdf, d["schema.%s" % mdf], d["namespace.%s" % mdf]))
         except:
             logg.exception("%s: OAI error reading oai metadata format %s from config file", __file__, mdf)
-    req.write('\n</ListMetadataFormats>')
+    req.response.set_data(req.response.get_data() + '\n</ListMetadataFormats>')
     if DEBUG:
         timetable_update(req, "leaving ListMetadataFormats")
 
@@ -283,24 +290,24 @@ def Identify(req):
         name = root.getName()
     else:
         name = config.get("config.oaibasename")
-    req.write("""
-        <Identify>
-          <repositoryName>%s</repositoryName>
-          <baseURL>%s</baseURL>
-          <protocolVersion>2.0</protocolVersion>
-          <adminEmail>%s</adminEmail>
-          <earliestDatestamp>%s-01-01T12:00:00Z</earliestDatestamp>
-          <deletedRecord>no</deletedRecord>
-          <granularity>YYYY-MM-DDThh:mm:ssZ</granularity>
-          <description>
-            <oai-identifier xmlns="http://www.openarchives.org/OAI/2.0/oai-identifier" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai-identifier http://www.openarchives.org/OAI/2.0/oai-identifier.xsd">
-              <scheme>oai</scheme>
-              <repositoryIdentifier>%s</repositoryIdentifier>
-              <delimiter>:</delimiter>
-              <sampleIdentifier>%s</sampleIdentifier>
-            </oai-identifier>
-          </description>
-        </Identify>""" % (name, mklink(req), config.get("email.admin"), ustr(EARLIEST_YEAR - 1), config.get("host.name", socket.gethostname()), SAMPLE_IDENTIFIER))
+    req.response.set_data(req.response.get_data() + """
+            <Identify>
+              <repositoryName>%s</repositoryName>
+              <baseURL>%s</baseURL>
+              <protocolVersion>2.0</protocolVersion>
+              <adminEmail>%s</adminEmail>
+              <earliestDatestamp>%s-01-01T12:00:00Z</earliestDatestamp>
+              <deletedRecord>no</deletedRecord>
+              <granularity>YYYY-MM-DDThh:mm:ssZ</granularity>
+              <description>
+                <oai-identifier xmlns="http://www.openarchives.org/OAI/2.0/oai-identifier" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai-identifier http://www.openarchives.org/OAI/2.0/oai-identifier.xsd">
+                  <scheme>oai</scheme>
+                  <repositoryIdentifier>%s</repositoryIdentifier>
+                  <delimiter>:</delimiter>
+                  <sampleIdentifier>%s</sampleIdentifier>
+                </oai-identifier>
+              </description>
+            </Identify>""" % (name, mklink(req), config.get("email.admin"), ustr(EARLIEST_YEAR - 1), config.get("host.name", socket.gethostname()), SAMPLE_IDENTIFIER))
     if DEBUG:
         timetable_update(req, "leaving Identify")
 
@@ -367,7 +374,7 @@ def writeRecord(req, node, metadataformat, mask=None):
         if DEBUG:
             timetable_update(
                 req,
-                " in writeRecord: req.write(mask.getViewHTML([node], flags=8)): node.id='%s', metadataformat='%s'" %
+                " in writeRecord: req.response.set_data(mask.getViewHTML([node], flags=8)): node.id='%s', metadataformat='%s'" %
                 (ustr(
                     node.id),
                     metadataformat))
@@ -377,7 +384,8 @@ def writeRecord(req, node, metadataformat, mask=None):
 
     record_str += '</metadata></record>'
 
-    req.write(record_str)
+    req.response.status_code = _httpstatus.HTTP_OK
+    req.response.set_data(req.response.get_data() + record_str)
 
     if DEBUG:
         timetable_update(req, "leaving writeRecord: node.id='%s', metadataformat='%s'" % (ustr(node.id), metadataformat))
@@ -509,6 +517,7 @@ def getNodes(req):
     nodes = None
     nids = None
 
+    req.response.status_code = _httpstatus.HTTP_OK
     if "resumptionToken" in req.params:
         token = req.params.get("resumptionToken")
         if token in tokenpositions:
@@ -612,29 +621,30 @@ def ListIdentifiers(req):
 
     nids, tokenstring, metadataformat = getNodes(req)
 
+    req.response.status_code = _httpstatus.HTTP_OK
     if nids is None:
         return writeError(req, tokenstring)
     if not len(nids):
         return writeError(req, 'noRecordsMatch')
     nodes = q(Node).filter(Node.id.in_(nids)).all()
+    req.response.set_data(req.response.get_data() + '<ListIdentifiers>')
 
-    req.write('<ListIdentifiers>')
     for n in nodes:
         updatetime = n.get(DATEFIELD)
         if updatetime:
             d = ISO8601(date.parse_date(updatetime))
         else:
             d = ISO8601()
-        req.write('<header><identifier>%s</identifier><datestamp>%sZ</datestamp>%s\n</header>\n' %
-                  (mkIdentifier(n.id), d, getSetSpecsForNode(n)))
-    if tokenstring:
-        req.write(tokenstring)
-    req.write('</ListIdentifiers>')
+        req.response.set_data(req.response.get_data() + '<header><identifier>%s</identifier><datestamp>%sZ</datestamp>%s\n</header>\n' % (mkIdentifier(n.id), d, getSetSpecsForNode(n)))
+        req.response.set_data(req.response.get_data() + tokenstring)
+
+    req.response.set_data(req.response.get_data() + '</ListIdentifiers>')
     if DEBUG:
         timetable_update(req, "leaving ListIdentifiers")
 
 
 def ListRecords(req):
+    req.response.status_code = _httpstatus.HTTP_OK
     eyear = ustr(EARLIEST_YEAR - 1) + """-01-01T12:00:00Z"""
     if "until" in req.params.keys() and req.params.get("until") < eyear and len(req.params.get("until")) == len(eyear):
         return writeError(req, 'noRecordsMatch')
@@ -654,7 +664,7 @@ def ListRecords(req):
     if not len(nodes):
         return writeError(req, 'noRecordsMatch')
 
-    req.write('<ListRecords>')
+    req.response.set_data(req.response.get_data() + '<ListRecords>')
 
     mask_cache_dict = {}
     for n in nodes:
@@ -674,8 +684,8 @@ def ListRecords(req):
         except Exception as e:
             logg.exception("n.id=%s, n.type=%s, metadataformat=%s" % (n.id, n.type, metadataformat))
     if tokenstring:
-        req.write(tokenstring)
-    req.write('</ListRecords>')
+        req.response.set_data(req.response.get_data() + tokenstring)
+    req.response.set_data(req.response.get_data() + '</ListRecords>')
     if DEBUG:
         timetable_update(req, "leaving ListRecords")
 
@@ -708,9 +718,9 @@ def GetRecord(req):
     schema_name = node.getSchema()
     mask = get_oai_export_mask_for_schema_name_and_metadataformat(schema_name, metadataformat)
 
-    req.write('<GetRecord>')
+    req.response.set_data(req.response.get_data() + '<GetRecord>')
     writeRecord(req, node, metadataformat, mask=mask)
-    req.write('</GetRecord>')
+    req.response.set_data(req.response.set_data() + '<GetRecord>')
     if DEBUG:
         timetable_update(req, "leaving GetRecord")
 
@@ -718,12 +728,12 @@ def GetRecord(req):
 def ListSets(req):
     # new container sets may have been added
     initSetList(req)
-    req.write('\n<ListSets>')
 
+    req.response.set_data(req.response.get_data() + '\n<ListSets>')
     for setspec, setname in oaisets.getSets():
-        req.write('\n <set><setSpec>%s</setSpec><setName>%s</setName></set>' % (setspec, setname))
+        req.response.set_data(req.response.get_data() + '\n <set><setSpec>%s</setSpec><setName>%s</setName></set>' % (setspec, setname))
+    req.response.set_data(req.response.get_data() + '\n</ListSets>')
 
-    req.write('\n</ListSets>')
     if DEBUG:
         timetable_update(req, "leaving ListSets")
 
@@ -744,6 +754,8 @@ def oaiRequest(req):
     start_time = time.clock()
     req._tt = {'atime': now(), 'tlist': []}
     req.request["Content-Type"] = "text/xml"
+    req.response._tt = {'atime': now(), 'tlist': []}
+    req.response.status_code = _httpstatus.HTTP_OK
 
     if "until" in req.params:
         try:

@@ -133,19 +133,20 @@ class m_ilist(Metatype):
             fieldname = req.params.get('fieldname', name)
         except:
             logg.exception("missing request parameter")
+            req.response.status_code = httpstatus.HTTP_NOT_FOUND
             return httpstatus.HTTP_NOT_FOUND
 
         index = get_list_values_for_nodes_with_schema(schema, fieldname)
 
+        req.response.status_code = httpstatus.HTTP_OK
         if req.params.get("print", "") != "":
-            req.reply_headers["Content-Disposition"] = "attachment; filename=index.txt"
-            req.write(u"".join(_itertools.imap(u"{}\r\n".format,
-                               _itertools.imap(_operator.methodcaller("strip"), index))))
+            req.response.headers["Content-Disposition"] = "attachment; filename=index.txt"
+            req.response.set_data(u"".join(_itertools.imap(u"{}\r\n".format, _itertools.imap(_operator.methodcaller("strip"), index))))
             return
 
         option_list = _itertools.imap(_html.escape,index)
         option_list = u"".join(_itertools.imap(u"<option value=\"{0}\">{0}</option>\n".format,option_list))
-        req.writeTAL("metadata/ilist.html", {"option_list": option_list, "fieldname": fieldname, "schema": schema}, macro="popup")
+        req.response.set_data(tal.processTAL({"option_list": option_list, "fieldname": fieldname, "schema": schema}, file="metadata/ilist.html", macro="popup", request=req))
         return httpstatus.HTTP_OK
 
     # method for additional keys of type spctext

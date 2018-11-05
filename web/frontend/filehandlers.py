@@ -38,6 +38,7 @@ def _send_thumbnail(thumb_type, req):
     try:
         nid = node_id_from_req_path(req)
     except ValueError:
+        req.response.status_code = 400
         return 400
 
 
@@ -46,6 +47,7 @@ def _send_thumbnail(thumb_type, req):
     node_or_version = get_node_or_version(nid, version_id, Data)
 
     if not node_or_version.has_read_access():
+        req.response.status_code = 404
         return 404
 
     FileVersion = version_class(File)
@@ -73,6 +75,7 @@ def _send_thumbnail(thumb_type, req):
         try:
             ntype, schema = node.type, node.schema
         except NoResultFound:
+            req.response.status_code = 404
             return 404
 
     for p in _request_handler.getFileStorePaths("/img/"):
@@ -95,12 +98,14 @@ def _send_file_with_type(filetype, mimetype, req, checkonly=False):
     try:
         nid = node_id_from_req_path(req)
     except ValueError:
+        req.response.status_code = 400
         return 400
 
     version_id = version_id_from_req(req)
     node = get_node_or_version(nid, version_id, Content)
 
     if node is None or not node.has_data_access():
+        req.response.status_code = 404
         return 404
 
     fileobj = None
@@ -124,6 +129,7 @@ def _send_file_with_type(filetype, mimetype, req, checkonly=False):
         fileobj = file_query.scalar()
     if fileobj is not None:
         if checkonly:
+            req.response.status_code = 200
             return 200
         return _request_handler.sendFile(req, fileobj.abspath, fileobj.mimetype)
 
@@ -137,6 +143,7 @@ def send_image(req):
     try:
         nid, file_ext = split_image_path(req.path)
     except ValueError:
+        req.response.status_code = 404
         return 400
 
     version_id = version_id_from_req(req)
@@ -145,12 +152,14 @@ def send_image(req):
 
     # XXX: should be has_data_access instead, see #1135
     if node is None or not node.has_read_access():
+        req.response.status_code = 404
         return 404
 
     image_files_by_mimetype = {f.mimetype: f for f in node.files.filter_by(filetype=u"image")}
 
     if not image_files_by_mimetype:
         # no image files? forget it...
+        req.response.status_code = 404
         return 404
 
     def _send(fileobj):
@@ -162,12 +171,14 @@ def send_image(req):
         # client wants a specific mimetype
         client_mimetype = node.MIMETYPE_FOR_EXTENSION.get(file_ext)
         if not client_mimetype:
+            req.response.status_code = httpstatus.HTTP_NOT_ACCEPTABLE
             return httpstatus.HTTP_NOT_ACCEPTABLE
 
         image_file = image_files_by_mimetype.get(client_mimetype)
         if image_file:
             return _send(image_file)
         else:
+            req.response.status_code = httpstatus.HTTP_NOT_ACCEPTABLE
             return httpstatus.HTTP_NOT_ACCEPTABLE
 
     # figure out what we want to send, in that order:
@@ -182,11 +193,13 @@ def send_image(req):
             image_file = image_files_by_mimetype[client_mimetype]
             return _send(image_file)
         else:
+            req.response.status_code = httpstatus.HTTP_NOT_ACCEPTABLE
             return httpstatus.HTTP_NOT_ACCEPTABLE
     else:
         # client doesn't have any preferences, send our choice
         return _send(image_files_by_mimetype[server_preferred_mimetypes[0]])
 
+    req.response.status_code = 404
     return 404
 
 
@@ -194,6 +207,7 @@ def send_original_file(req):
     try:
         nid = node_id_from_req_path(req)
     except ValueError:
+        req.response.status_code = 400
         return 400
 
     version_id = version_id_from_req(req)
@@ -201,6 +215,7 @@ def send_original_file(req):
     node = get_node_or_version(nid, version_id, Data)
 
     if node is None or not node.has_data_access():
+        req.response.status_code = 404
         return 404
 
     original_filetype = node.get_original_filetype()
@@ -214,6 +229,7 @@ def send_original_file(req):
 def send_file(req):
     parts = splitpath(req.path)
     if len(parts) != 2:
+        req.response.status_code = 400
         return 400
 
     nidstr, filename = parts
@@ -222,6 +238,7 @@ def send_file(req):
 
     nid = userinput.string_to_int(nidstr)
     if nid is None:
+        req.response.status_code = 400
         return 400
 
     version_id = version_id_from_req(req)
@@ -231,6 +248,7 @@ def send_file(req):
     if (node is None
             or isinstance(node, Container) and not node.has_read_access()
             or isinstance(node, Content) and not node.has_data_access()):
+        req.response.status_code = 404
         return 404
 
     def _send_attachment(filepath, mimetype):
@@ -242,10 +260,10 @@ def send_file(req):
         try:
             display_file_name.encode('ascii')
         except UnicodeEncodeError:
-            req.reply_headers["Content-Disposition"] = u'attachment; filename="{0}"; filename*=UTF-8\'\'{0}'.\
+            req.response.headers["Content-Disposition"] = u'attachment; filename="{0}"; filename*=UTF-8\'\'{0}'. \
                 format(quote(display_file_name.encode('utf8')))
         else:
-            req.reply_headers["Content-Disposition"] = u'attachment; filename="{}"'.format(display_file_name)
+            req.response.headers["Content-Disposition"] = u'attachment; filename="{}"'.format(display_file_name)
         return _request_handler.sendFile(req, filepath, mimetype)
 
     if filename is None:
@@ -253,6 +271,7 @@ def send_file(req):
         with tempfile.NamedTemporaryFile() as tmpfile:
             files_written = build_transferzip(tmpfile, node)
             if files_written == 0:
+                req.response.status_code = 404
                 return 404
             # don't enable nginx x_accel_redirect for temporary files
             return _request_handler.sendFile(req, tmpfile.name, "application/zip", nginx_x_accel_redirect_enabled=False)
@@ -276,6 +295,7 @@ def send_file(req):
                 logg.warn("serving file %s for node %s only by matched extension", f.path, node.id)
                 return _send_attachment(f.abspath, f.mimetype)
 
+    req.response.status_code = 404
     return 404
 
 
@@ -284,6 +304,7 @@ def send_attachment(req):
         nid = node_id_from_req_path(req)
         version_id = version_id_from_req(req)
     except ValueError:
+        req.response.status_code = 400
         return 400
 
     node = get_node_or_version(nid, version_id, Data)
@@ -291,6 +312,7 @@ def send_attachment(req):
     if (node is None
             or isinstance(node, Container) and not node.has_read_access()
             or isinstance(node, Content) and not node.has_data_access()):
+        req.response.status_code = 404
         return 404
 
     attachment_file = node.files.filter_by(filetype=u"attachment").first()
@@ -304,10 +326,12 @@ def send_attfile(req):
     parts = req.path[9:].split('/')
 
     if len(parts) < 2:
+        req.response.status_code = 404
         return 400
 
     nid = userinput.string_to_int(parts[0])
     if nid is None:
+        req.response.status_code = 404
         return 400
 
     version_id = version_id_from_req(req)
@@ -318,12 +342,14 @@ def send_attfile(req):
     if (node is None
             or isinstance(node, Container) and not node.has_read_access()
             or isinstance(node, Content) and not node.has_data_access()):
+        req.response.status_code = 404
         return 404
 
     paths = ["/".join(parts[1:]), "/".join(parts[1:-1])]
     fileobjs = [fo for fo in node.files if fo.path in paths]
 
     if not fileobjs:
+        req.response.status_code = 404
         return 404
 
     fileobj = fileobjs[0]
@@ -335,12 +361,12 @@ def send_attfile(req):
         path = os.path.join(config.get("paths.datadir"), filename)
         mime, type = getMimeType(filename)
         if (get_filesize(filename) > 16 * 1048576):
-            req.reply_headers["Content-Disposition"] = 'attachment; filename="{}"'.format(filename)
+            req.response.headers["Content-Disposition"] = 'attachment; filename="{}"'.format(filename)
 
         return _request_handler.sendFile(req, path, mime)
 
     if (fileobj.size > 16 * 1048576):
-        req.reply_headers["Content-Disposition"] = u'attachment; filename="{}"'.format(fileobj.base_name).encode('utf8')
+        req.response.headers["Content-Disposition"] = u'attachment; filename="{}"'.format(fileobj.base_name).encode('utf8')
 
     return _request_handler.sendFile(req, fileobj.abspath, fileobj.mimetype)
 
@@ -349,6 +375,7 @@ def fetch_archived(req):
     try:
         nid = node_id_from_req_path(req)
     except ValueError:
+        req.response.status_code = 400
         return 400
 
     node = q(Content).get(nid)
@@ -360,14 +387,14 @@ def fetch_archived(req):
         except:
             logg.exception("exception in fetch_file_from_archive for archive %s", archive.archive_type)
             msg = "fetch archive for node failed"
-            req.setStatus(500)
-            req.write(msg)
+            req.response.status_code = 500
+            req.response.set_data(msg)
         else:
-            req.write('done')
+            req.response.set_data("done")
     else:
         msg = "archive for node not found"
-        req.setStatus(404)
-        req.write(msg)
+        req.response.status_code = 400
+        req.response.set_data(msg)
         logg.warn(msg)
 
     db.session.commit()
@@ -391,5 +418,6 @@ def send_from_webroot(req):
 ### redirects for legacy handlers
 
 def redirect_images(req):
-    req.reply_headers["Location"] = "/image" + req.uri[7:]
+    req.response.headers["Location"] = "/image" + req.path[7:]
+    req.response.status_code = 301
     return 301

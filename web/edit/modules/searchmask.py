@@ -32,7 +32,7 @@ def getContent(req, ids):
     node = q(Node).get(ids[0])
 
     if not node.has_write_access() or "searchmask" in user.hidden_edit_functions:
-        req.setStatus(httpstatus.HTTP_FORBIDDEN)
+        req.response.status_code = httpstatus.HTTP_FORBIDDEN
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     p2 = {}
@@ -174,7 +174,7 @@ def getContent(req, ids):
     if any([openfield, isnewfield, delfield, delsubfield, createsub, schema, searchtypechanged, closefield]):
         content = req.getTAL("web/edit/modules/searchmask.html", data, macro="edit_search")
         s = json.dumps({'content': content}, ensure_ascii=False)
-        req.write(s)
+        req.response.set_data(s)
         return None
 
     return req.getTAL("web/edit/modules/searchmask.html", data, macro="edit_search")

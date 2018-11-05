@@ -21,6 +21,7 @@
 
 import logging
 
+import mediatumtal.tal as _tal
 from schema.schema import get_permitted_schemas
 from core.translation import translate
 from core.users import user_from_session as _user_from_session
@@ -44,12 +45,12 @@ def getContent(req, ids):
     user = _user_from_session()
     node = q(Node).get(ids[0])
     if not node.has_write_access() or "changeschema" in user.hidden_edit_functions:
-        req.setStatus(httpstatus.HTTP_FORBIDDEN)
-        return req.getTAL("web/edit/edit.html", {}, macro="access_error")
+        req.response.status_code = httpstatus.HTTP_FORBIDDEN
+        return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
     # nobody should be able to change the type/schema of his home directory
     if node.id == user.home_dir_id:
-        req.setStatus(httpstatus.HTTP_FORBIDDEN)
+        req.response.status_code = httpstatus.HTTP_FORBIDDEN
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     error = req.params.get("error")
@@ -111,10 +112,10 @@ def getContent(req, ids):
             new_type = req.params.get("action").replace("get_schemes_for_", "").lower()
             available_schemes = [s for s in schemes if new_type in s.getDatatypes()]
 
-            req.writeTAL("web/edit/modules/changeschema.html",
-                         {'schemes': available_schemes,
-                          'current_schema': node.schema},
-                         macro="changeschema_selectscheme")
+            req.response.set_data(_tal.processTAL({'schemes': available_schemes, 'current_schema': node.schema},
+                                                  file="web/edit/modules/changeschema.html",
+                                                  macro="changeschema_selectscheme",
+                                                  request=req))
         return ""
 
     else:
@@ -142,4 +143,4 @@ def getContent(req, ids):
             d['datatypes'] = admissible_content_types
 
         d["csrf"] = req.csrf_token.current_token
-        return req.getTAL("web/edit/modules/changeschema.html", d, macro="changeschema_popup")
+        return _tal.processTAL(d, file="web/edit/modules/changeschema.html", macro="changeschema_popup", request=req)

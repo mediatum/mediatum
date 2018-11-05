@@ -24,6 +24,7 @@ import random
 import os
 import core.users as users
 import logging
+import mediatumtal.tal as _tal
 from utils.utils import getMimeType, get_user_id, suppress
 from utils.fileutils import importFile, getImportDir, importFileIntoDir, importFileToRealname
 from contenttypes.image import make_thumbnail_image, make_presentation_image
@@ -49,7 +50,7 @@ def _finish_change(node, change_file, user, uploadfile, req):
         # note: only the suffix of the filename is checked not the file content
         uploadfile_type = getMimeType(uploadfile.filename)[1]
         if uploadfile_type != node.type and uploadfile_type != node.get_upload_filetype():
-            req.setStatus(httpstatus.HTTP_NOT_ACCEPTABLE)
+            req.response.status_code = httpstatus.HTTP_NOT_ACCEPTABLE
             return
 
         # sys files are always cleared to delete remaining thumbnails, presentation images etc.
@@ -123,8 +124,8 @@ def _handle_change(node, req):
         version_comment = req.params.get('version_comment', '').strip()
         if not version_comment or version_comment == '&nbsp;':
             # comment must be given, abort
-            req.setStatus(httpstatus.HTTP_INTERNAL_SERVER_ERROR)
-            return req.getTAL("web/edit/modules/files.html", {}, macro="version_error")
+            req.response.status_code = httpstatus.HTTP_INTERNAL_SERVER_ERROR
+            return _tal.processTAL({}, file="web/edit/modules/files.html", macro="version_error", request=req)
         else:
             if change_file == "yes":
                 translation_msg_id = "edit_files_new_version_exchanging_comment"
@@ -141,8 +142,11 @@ def _handle_change(node, req):
                 node.set_legacy_update_attributes(user)
                 _finish_change(node, change_file, user, uploadfile, req)
 
-            req.setStatus(httpstatus.HTTP_MOVED_TEMPORARILY)
-            return req.getTAL("web/edit/modules/metadata.html", {'url': '?id={}&tab=files'.format(node.id), 'pid': None}, macro="redirect")
+            req.response.status_code = httpstatus.HTTP_MOVED_TEMPORARILY
+            return _tal.processTAL({'url': '?id={}&tab=files'.format(node.id), 'pid': None},
+                                   file="web/edit/modules/metadata.html",
+                                   macro="redirect",
+                                   request=req)
     else:
         # no new version
         node.set_legacy_update_attributes(user)
@@ -160,8 +164,8 @@ def getContent(req, ids):
                get_user_id(), req.fullpath, req.path, req.params, ids)
 
     if not node.has_write_access() or "files" in user.hidden_edit_functions:
-        req.setStatus(httpstatus.HTTP_FORBIDDEN)
-        return req.getTAL("web/edit/edit.html", {}, macro="access_error")
+        req.response.status_code = httpstatus.HTTP_FORBIDDEN
+        return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
     if 'data' in req.params:
         if 'data' in req.params:
@@ -175,16 +179,23 @@ def getContent(req, ids):
                         for grandchild in child.children.all():
                             if not isinstance(grandchild, Container):
                                 grandchildren.append(grandchild)
-                    req.writeTAL("web/edit/modules/files.html", {'children': [c for c in node.children.all() if str(c.id) != excludeid],
-                                                                 'grandchildren': grandchildren, "csrf": req.csrf_token.current_token}, macro="edit_files_popup_children")
+
+                    ret += _tal.processTAL( {'children': [c for c in node.children.all() if str(c.id) != excludeid],
+                                            'grandchildren': grandchildren, "csrf": req.csrf_token.current_token},
+                                            file="web/edit/modules/files.html",
+                                            macro="edit_files_popup_children",
+                                            request=req)
                 else:
                     grandchildren = []
                     for child in node.children.all():
                         for grandchild in child.children.all():
                             if not isinstance(grandchild, Container):
                                 grandchildren.append(grandchild)
-                    req.writeTAL("web/edit/modules/files.html", {'children': [c for c in node.getChildren() if str(c.id) != excludeid],
-                                                                 'grandchildren': grandchildren, "csrf": req.csrf_token.current_token}, macro="edit_files_popup_children")
+                    ret += _tal.processTAL({'children': [c for c in node.getChildren() if str(c.id) != excludeid],
+                                            'grandchildren': grandchildren, "csrf": req.csrf_token.current_token},
+                                           file="web/edit/modules/files.html",
+                                           macro="edit_files_popup_children",
+                                           request=req)
             elif req.params.get('data') =='grandchildren':
                 grandchildren = []
                 for child in node.children.all():
@@ -194,9 +205,15 @@ def getContent(req, ids):
                                     grandchildren.append(grandchild)
 
                 if len(node.getChildren())==0:
-                    req.writeTAL("web/edit/modules/files.html", {'grandchildren': [], "csrf": req.csrf_token.current_token}, macro="edit_files_popup_grandchildren")
+                    ret += _tal.processTAL({'grandchildren': [], "csrf": req.csrf_token.current_token},
+                                           file="web/edit/modules/files.html",
+                                           macro="edit_files_popup_grandchildren",
+                                           request=req)
                 else:
-                    req.writeTAL("web/edit/modules/files.html", {'grandchildren': grandchildren, "csrf": req.csrf_token.current_token}, macro="edit_files_popup_grandchildren")
+                    ret += _tal.processTAL({'grandchildren': grandchildren, "csrf": req.csrf_token.current_token},
+                                           file="web/edit/modules/files.html",
+                                           macro="edit_files_popup_grandchildren",
+                                           request=req)
 
         if req.params.get('data') == 'additems':  # add selected node as children
             for childid in req.params.get('items').split(";"):
@@ -208,7 +225,10 @@ def getContent(req, ids):
                             if isinstance(p, Container):
                                 p.children.remove(childnode)
                         node.children.append(childnode)
-            req.writeTAL("web/edit/modules/files.html", {'children': node.children, 'node': node, "csrf": req.csrf_token.current_token}, macro="edit_files_children_list")
+            ret += _tal.processTAL({'children': node.children, 'node': node, "csrf": req.csrf_token.current_token},
+                                   file="web/edit/modules/files.html",
+                                   macro="edit_files_children_list",
+                                   request=req)
 
         if req.params.get('data') == 'removeitem':  # remove selected childnode node
             with suppress(Exception):
@@ -217,7 +237,10 @@ def getContent(req, ids):
                     _getUploadDir(user).children.append(remnode)
                 node.children.remove(remnode)
 
-            req.writeTAL("web/edit/modules/files.html", {'children': node.children, 'node': node, "csrf": req.csrf_token.current_token}, macro="edit_files_children_list")
+            ret += _tal.processTAL({'children': node.children, 'node': node, "csrf": req.csrf_token.current_token},
+                                   file="web/edit/modules/files.html",
+                                   macro="edit_files_children_list",
+                                   request=req)
 
         if req.params.get('data') == 'reorder':
             i = 0
@@ -228,8 +251,12 @@ def getContent(req, ids):
                     i += 1
 
         if req.params.get('data') == 'translate':
-            req.writeTALstr('<tal:block i18n:translate="" tal:content="msgstr"/>', {'msgstr': req.params.get('msgstr'), "csrf": req.csrf_token.current_token})
+            ret += _tal.processTAL({'msgstr': req.params.get('msgstr')},
+                                   string='<tal:block i18n:translate="" tal:content="msgstr"/>',
+                                   macro=None,
+                                   request=req)
 
+        req.response.set_data(ret)
         db.session.commit()
         return ""
 
@@ -240,7 +267,8 @@ def getContent(req, ids):
         v["idstr"] = ",".join(ids)
         v["node"] = node
         v["csrf"] = req.csrf_token.current_token
-        req.writeTAL("web/edit/modules/files.html", v, macro="edit_files_popup_selection")
+        ret += _tal.processTAL(v, file="web/edit/modules/files.html", macro="edit_files_popup_selection", request=req)
+        req.response.set_data(ret)
         return ""
 
     if "operation" in req.params:
@@ -278,8 +306,8 @@ def getContent(req, ids):
 
         elif op == "change":
             _handle_change(node, req)
-            if req.reply_code != httpstatus.HTTP_OK and req.reply_code != httpstatus.HTTP_MOVED_TEMPORARILY:
-                if req.reply_code is httpstatus.HTTP_NOT_ACCEPTABLE:
+            if req.response.status_code != httpstatus.HTTP_OK and req.response.status_code != httpstatus.HTTP_MOVED_TEMPORARILY:
+                if req.response.status_code is httpstatus.HTTP_NOT_ACCEPTABLE:
                     update_error_extension = True
                 else:
                     update_error = True
@@ -307,4 +335,4 @@ def getContent(req, ids):
                     af = File(root + "/" + name, "attachmentfile", getMimeType(name)[0])
                     v["att"].append(af)
 
-    return req.getTAL("web/edit/modules/files.html", v, macro="edit_files_file")
+    return _tal.processTAL(v, file="web/edit/modules/files.html", macro="edit_files_file", request=req)

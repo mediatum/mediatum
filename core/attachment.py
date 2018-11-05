@@ -19,6 +19,7 @@
 
 import os
 import core.config as config
+import core.httpstatus as _httpstatus
 from core import File, Node
 
 from utils.utils import getMimeType, format_filesize
@@ -148,4 +149,6 @@ def getAttachmentBrowser(node, req):
     html = webconfig.theme.render_macro(
         "popups.j2.jade", "attachmentbrowser",
         {"files": f, "sum_size": s, "id": req.params.get("id", ""), "path": req.params.get("path", "")})
-    req.write(html)
+    req.response.set_data(html)
+    req.response.mimetype = "text/html"
+    req.response.status_code = _httpstatus.HTTP_OK

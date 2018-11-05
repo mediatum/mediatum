@@ -9,5 +9,5 @@ from __future__ import division, absolute_import, print_function
 
 
 def hello(req):
-    req.write("Hello")
 
+    req.response.set_data("Hello")

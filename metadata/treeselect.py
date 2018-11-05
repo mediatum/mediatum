@@ -66,10 +66,10 @@ class m_treeselect(Metatype):
 
     # method for popup methods of type treeselect
     def getPopup(self, req):
-        req.writeTAL("metadata/treeselect.html", {"basedir": q(Collections).one(),
-                                                  "name": req.params.get("name", ''),
-                                                  "value": req.params.get("value")},
-                     macro="popup")
+        req.response.set_data(tal.processTAL({"basedir": q(Collections).one(),
+                                                "name": req.params.get("name", ''),
+                                                "value": req.params.get("value")}, file="metadata/treeselect.html", macro="popup", request=req))
+        req.response.status_code = httpstatus.HTTP_OK
         return httpstatus.HTTP_OK
 
     # method for additional keys of type treeselect

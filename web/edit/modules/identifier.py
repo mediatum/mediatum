@@ -52,7 +52,7 @@ def getContent(req, ids):
 
     # first prove if the user has the required rights to call this module
     if 'sortfiles' in user.hidden_edit_functions or not node.has_write_access():
-        req.setStatus(httpstatus.HTTP_FORBIDDEN)
+        req.response.status_code = httpstatus.HTTP_FORBIDDEN
         return req.getTAL('web/edit/edit.html', {}, macro='access_error')
 
     if node.isContainer():

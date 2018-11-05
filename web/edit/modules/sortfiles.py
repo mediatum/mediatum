@@ -36,7 +36,7 @@ def getContent(req, ids):
     node = q(Node).get(ids[0])
 
     if "sortfiles" in user.hidden_edit_functions or not node.has_write_access():
-        req.setStatus(httpstatus.HTTP_FORBIDDEN)
+        req.response.status_code = httpstatus.HTTP_FORBIDDEN
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     if "globalsort" in req.params:

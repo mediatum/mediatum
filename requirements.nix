@@ -443,9 +443,27 @@ let
     };
   };
 
+  uwsgi = self.buildPythonPackage rec {
+    name = "uwsgi-2.0.18";
+    src = fetchurl {
+        url = "http://projects.unbit.it/downloads/uwsgi-2.0.18.tar.gz";
+        sha256 = "1zvj28wp3c1hacpd4c6ra5ilwvvfq3l8y6gn8i7mnncpddlzjbjp";
+    };
+    doCheck = false;
+    propagatedBuildInputs = [ pkgs.pcre ];
+    meta = with stdenv.lib; {
+        homepage = http://uwsgi-docs.readthedocs.org/en/latest/;
+        description = "A fast, self-healing and developer/sysadmin-friendly application container server coded in pure C";
+        license = licenses.gpl2;
+        maintainers = with maintainers; [ abbradar schneefux ];
+        platforms = platforms.linux;
+    };
+  };
+
 in {
   production = [
       # python deps
+      uwsgi
       alembic
       attrs
       bibtexparser

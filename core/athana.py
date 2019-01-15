@@ -50,6 +50,7 @@ from wtforms.csrf.session import SessionCSRF
 from wtforms import Form
 from wtforms.validators import ValidationError
 from datetime import timedelta
+from utils.locks import named_lock as _named_lock
 
 logg = logging.getLogger(__name__)
 logftp = logging.getLogger(__name__ + ":ftp")
@@ -1390,38 +1391,26 @@ class http_channel (async_chat):
         self.in_buffer = ''
         self.creation_time = int(time.time())
         self.check_maintenance()
-        self.producer_lock = thread.allocate_lock()
+        self.producer_lock = _named_lock('producer')
 
     def initiate_send(self):
-        self.producer_lock.acquire()
-        try:
+        with self.producer_lock:
             async_chat.initiate_send(self)
-        finally:
-            self.producer_lock.release()
 
     def push(self, data):
         data.more
-        self.producer_lock.acquire()
-        try:
+        with self.producer_lock:
             self.producer_fifo.push(simple_producer(data))
-        finally:
-            self.producer_lock.release()
         self.initiate_send()
 
     def push_with_producer(self, producer):
-        self.producer_lock.acquire()
-        try:
+        with self.producer_lock:
             self.producer_fifo.push(producer)
-        finally:
-            self.producer_lock.release()
         self.initiate_send()
 
     def close_when_done(self):
-        self.producer_lock.acquire()
-        try:
+        with self.producer_lock:
             self.producer_fifo.push(None)
-        finally:
-            self.producer_lock.release()
 
         # results in select.error: (9, 'Bad file descriptor') if the socket map is poll'ed
         # while this socket is being closed
@@ -3951,7 +3940,7 @@ class AthanaHandler:
     def __init__(self):
         self.sessions = {}
         self.queue = []
-        self.queuelock = thread.allocate_lock()
+        self.queuelock = _named_lock('queuelock')
 
     def match(self, request):
         path, params, query, fragment = request.split_uri()
@@ -4259,7 +4248,7 @@ class zip_filesystem:
         self.wd = '/'
         self.m = {}
         self.z = zipfile.ZipFile(filename)
-        self.lock = thread.allocate_lock()
+        self.lock = _named_lock('zipfile')
         for f in self.z.filelist:
             self.m['/' + f.filename] = f
 
@@ -4330,11 +4319,8 @@ class zip_filesystem:
                 del self.content
                 del self.len
                 del self.pos
-        self.lock.acquire()
-        try:
+        with self.lock:
             data = self.z.read(path)
-        finally:
-            self.lock.release()
         return zFile(data)
 
     def unlink(self, path):
@@ -4496,7 +4482,7 @@ def profiling_status(req):
     req.reply_code = 200
     return req.done()
 
-iolock = thread.allocate_lock()
+iolock = _named_lock('iolock')
 profiling = 0
 try:
     import hotshot
@@ -4525,21 +4511,21 @@ class AthanaThread:
     def worker_thread(self):
         server = self.server
         while 1:
-            server.queuelock.acquire()
-            if len(server.queue) == 0:
-                server.queuelock.release()
+            with server.queuelock:
+                queue_len = len(server.queue)
+                if queue_len > 0:
+                    function, req = server.queue.pop()
+                    self.lastrequest = time.time()
+                    self.status = "working"
+                    self.uri = req.fullpath
+            if queue_len == 0:
                 time.sleep(0.01)
             else:
-                function, req = server.queue.pop()
-                self.lastrequest = time.time()
-                self.status = "working"
-                self.uri = req.fullpath
-                server.queuelock.release()
                 if profiling:
                     self.prof = hotshot.Profile("/tmp/athana%d.prof" % self.number)
                     self.prof.start()
-                    
-                if log_request_time or profiling:  
+
+                if log_request_time or profiling:
                     timenow = time.time()
                 try:
                     call_handler_func(server, function, req)
@@ -4573,12 +4559,11 @@ class AthanaThread:
                             else:
                                 self.old.write(txt)
 
-                    iolock.acquire()
-                    io = myio(sys.stdout)
-                    oldstdout, sys.stdout = sys.stdout, io
-                    st.print_stats(50)
-                    sys.stdout = oldstdout
-                    iolock.release()
+                    with iolock:
+                        io = myio(sys.stdout)
+                        oldstdout, sys.stdout = sys.stdout, io
+                        st.print_stats(50)
+                        sys.stdout = oldstdout
                     profiles += [(duration, self.uri, io.txt)]
                     profiles.sort()
                     profiles.reverse()

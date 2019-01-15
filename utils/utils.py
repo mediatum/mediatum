@@ -150,6 +150,10 @@ def suppress(*exceptions, **kwwarn):
             logg.warning("Here passed an exception by!", exc_info=True)
 
 
+def nullcontext():
+    return suppress()
+
+
 def splitpath(path):
     while path.endswith("/") or path.endswith("\\"):
         path = path[:-1]

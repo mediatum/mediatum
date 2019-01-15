@@ -22,7 +22,7 @@ from . import config
 import os
 import stat
 import time
-import thread
+from utils.locks import named_lock as _named_lock
 import codecs
 from utils.strings import ensure_unicode_returned
 from werkzeug import parse_accept_header, LanguageAccept
@@ -32,7 +32,7 @@ class _POFile:
     filedates = {}
 
     def __init__(self, filenames):
-        self.lock = thread.allocate_lock()
+        self.lock = _named_lock('pofile')
         self.filenames = filenames
         self.map = {}
         self.lastchecktime = None
@@ -57,15 +57,12 @@ class _POFile:
                     self.map[id] = text
 
     def getTranslation(self, key):
-        self.lock.acquire()
-        try:
+        with self.lock:
             if self.lastchecktime + 10 < time.time():
                 self.lastchecktime = time.time()
                 for fil in self.filenames:
                     if os.stat(fil)[stat.ST_MTIME] != self.filedates[fil]:
                         self.loadFile(fil)
-        finally:
-            self.lock.release()
         return self.map[key]
 
     def addKeys(self, items):

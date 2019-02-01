@@ -20,7 +20,7 @@
 from .workflow import WorkflowStep, registerStep
 from core.translation import t, addLabels
 from core import UserGroup, db
-from core.permission import get_or_add_access_rule
+from core.permission import get_all_access_rules
 from core.transition import current_user
 from utils.date import now
 from schema.schema import Metafield
@@ -46,16 +46,19 @@ class WorkflowStep_Publish(WorkflowStep):
         # XXX is not removed
         logg.debug("publish node id = %d: get_special_access_ruleset", node.id)
         special_access_ruleset = node.get_special_access_ruleset(ruletype=u'read')
-        workflow_rule = get_or_add_access_rule(group_ids=[ugid])
+        workflow_rules = get_all_access_rules(group_ids=[ugid])
 
         logg.debug("publish node id = %d: loop over special_access_ruleset.rule_assocs", node.id)
+
         for rule_assoc in special_access_ruleset.rule_assocs:
             logg.debug("publish node id = %d: rule_id = %d ruleset_name = '%s'",
                        node.id, rule_assoc.rule_id, rule_assoc.ruleset_name)
-            if rule_assoc.rule == workflow_rule:
-                logg.debug("publish node id = %d: delete rule_id = %d ruleset_name = '%s'",
-                           node.id, rule_assoc.rule_id, rule_assoc.ruleset_name)
-                db.session.delete(rule_assoc)
+            for workflow_rule in workflow_rules:
+                if rule_assoc.rule == workflow_rule:
+                    logg.debug("publish node id = %d: delete rule_id = %d ruleset_name = '%s'",
+                               node.id, rule_assoc.rule_id, rule_assoc.ruleset_name)
+                    db.session.delete(rule_assoc)
+                    break
 
         db.session.commit()
 

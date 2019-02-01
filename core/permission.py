@@ -26,5 +26,16 @@ def get_or_add_access_rule(group_ids=None, dateranges=None, subnets=None,
     return rule
 
 
+def get_all_access_rules(group_ids=None, dateranges=None, subnets=None,
+                           invert_group=False, invert_date=False, invert_subnet=False):
+    """Fetches all access rules from the database
+    """
+
+    rules = q(AccessRule).filter_by(group_ids=group_ids, dateranges=dateranges, subnets=subnets,
+                                   invert_group=invert_group, invert_date=invert_date, invert_subnet=invert_subnet).all()
+
+    return rules
+
+
 def get_or_add_everybody_rule():
     return get_or_add_access_rule()

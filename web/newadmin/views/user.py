@@ -29,6 +29,8 @@ def _link_format_node_id_column(node_id):
 
 class UserView(BaseAdminView):
 
+    can_delete = False
+
     column_exclude_list = ("created", "password_hash", "salt", "comment",
                            "private_group", "can_edit_shoppingbag", "can_change_password")
     column_filters = ("authenticator_info", "display_name", "login_name", "organisation", "active")

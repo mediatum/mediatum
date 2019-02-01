@@ -1,7 +1,7 @@
 
 # edit manage-index
 msgid "edit_manageindex_step1_header"
-msgstr "Step 1: Select a metadata schema"
+msgstr "Step 1: Select a metadata scheme"
 
 msgid "edit_manageindex_step2_header"
 msgstr "Step 2: Select the desired field"

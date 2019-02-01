@@ -10,7 +10,7 @@ msgid "edit_changeschema_obj_selection"
 msgstr "Change object type/metadata type selection"
 
 msgid "edit_changeschema_msg2"
-msgstr "Please choose object type from the following list. <br>The available metadata schemas will be loaded then."
+msgstr "Please choose object type from the following list. <br>The available metadata schemes will be loaded then."
 
 msgid "edit_changeschema_obj_sel"
 msgstr "Select object type and metada type for this object anew: "

@@ -20,7 +20,7 @@ msgid "edit_objecttype"
 msgstr "Object type"
 
 msgid "edit_schema"
-msgstr "Metadata schema"
+msgstr "Metadata scheme"
 
 msgid "edit_orderpos"
 msgstr "Order position"

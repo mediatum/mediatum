@@ -107,7 +107,7 @@
                 <br/>
                 <br/>
 
-        <tal:block tal:condition="python:not hasattr(node, 'metaFields') and node.has_write_access()">
+        <tal:block tal:condition="python:node.type not in ['collection', 'collections', 'directory'] and node.has_write_access()">
         <div class="editorrow">
             <div class="label"><tal:block i18n:translate="edit_meta_version_information"/></div>
             <div id="div_description">&nbsp;</div>

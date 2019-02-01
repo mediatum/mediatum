@@ -26,7 +26,7 @@ import codecs
 from utils.utils import splitfilename, u, OperationException, utf8_decode_escape
 from utils.search import import_node_fulltext
 from web.frontend.filehelpers import version_id_from_req
-from schema.schema import VIEW_HIDE_EMPTY
+from schema.schema import VIEW_HIDE_EMPTY, Metafield
 from core.translation import lang, t
 from lib.pdf import parsepdf
 from core.attachment import filebrowser
@@ -243,3 +243,13 @@ class Document(Content):
                 except:
                     logg.exception("while copying file")
         return 1
+
+    def metaFields(self, lang=None):
+        metafields = []
+
+        field = Metafield(u"nodename", attrs={
+            "label": t(lang, "node name"),
+            "type": u"text"
+        })
+        metafields.append(field)
+        return metafields

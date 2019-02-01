@@ -3735,24 +3735,18 @@ class simple_input_collector:
         self.data += data
 
     def found_terminator(self):
+        pairs = []
+        for e in self.data.split("&"):
+            if '=' in e:
+                pairs.append(tuple(map(urllib.unquote_plus, e.split("=", 1))))
+            elif e.strip():
+                logg.warn("corrupt parameter: %s", e.encode("string-escape"))
         self.request.channel.set_terminator('\r\n\r\n')
         self.request.collector = None
-        d = self.data
-        del self.data
         r = self.request
+        r._data = self.data
+        del self.data
         del self.request
-        r._data = d
-        pairs = []
-        data = d.split('&')
-        for e in data:
-            if '=' in e:
-                i = e.index('=')
-                key, value = e[:i], e[i + 1:]
-                key = urllib.unquote_plus(key)
-                pairs.append((key, urllib.unquote_plus(value)))
-            else:
-                if len(e.strip()) > 0:
-                    logg.warn("corrupt parameter: %s", e.encode("string-escape"))
         self.handler.continue_request(r, pairs)
 
 class upload_input_collector:
@@ -4028,19 +4022,13 @@ class AthanaHandler:
     # COMPAT: new param style like flask
     @staticmethod
     def parse_query(query):
-        if query[0] == '?':
+        if query.startswith("?"):
             query = query[1:]
-        query = query.split('&')
         args = []
-        for e in query:
-            try:
-                i = e.index('=')
-                key, value = e[:i], e[i + 1:]
-            except ValueError:
-                key = e
-                value = ""
-            key = urllib.unquote_plus(key)
-            args.append((key, urllib.unquote_plus(value)))
+        for e in query.split("&"):
+            if "=" not in e:
+                e += "="
+            args.append(tuple(map(urllib.unquote_plus, e.split("=", 1))))
         return args
     # / COMPAT
 

@@ -14,7 +14,7 @@ def parse_searchquery(searchquery):
     try:
         searchtree = parser.parse_string(searchquery)
     except Exception:
-        msg = "search query cannot be parsed: " + searchquery
+        msg = "search query cannot be parsed: %r" % searchquery
         logg.exception(msg)
         raise SearchQueryException(msg)
 
@@ -27,7 +27,7 @@ def parse_searchquery_old_style(searchquery):
         old_searchtree = old_parser.parse(searchquery)
     except Exception:
         # XXX: can this be more specific?
-        msg = "search query cannot be parsed: " + searchquery
+        msg = "search query cannot be parsed: %r" % searchquery
         logg.exception(msg)
         raise SearchQueryException(msg)
 

@@ -410,11 +410,14 @@ class z3950_channel(async_chat):
         return 1  # always
 
     def handle_read(self):
+        data = '--- not read ---'
         try:
             data = self.recv(self.ac_in_buffer_size)
+            logg.debug('received %i bytes of data: %r' % (len(data), data))
             self.server.total_bytes_in.increment(len(data))
             self.z3950_server.handle_incoming_data(data)
         except:
+            logg.exception('handle_read %i bytes of data: %r' % (len(data), data))
             self.server.total_exceptions.increment()
             self.handle_error()
             self.close()

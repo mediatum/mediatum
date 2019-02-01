@@ -10,7 +10,7 @@ from sqlalchemy.orm import column_property, object_session
 from core.database.postgres import DeclarativeBase, C, rel, integer_pk, TimeStamp, mediatumfunc, FK, dynamic_rel
 from core.database.postgres.node import Node
 from core.database.postgres.alchemyext import Daterange, map_function_to_mapped_class
-from sqlalchemy.dialects.postgresql.constraints import ExcludeConstraint
+from sqlalchemy.dialects.postgresql.ext import ExcludeConstraint
 
 
 class AccessRule(DeclarativeBase):

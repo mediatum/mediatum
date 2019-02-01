@@ -206,14 +206,15 @@ class Node(DeclarativeBase, NodeMixin):
     system_attrs = deferred(C(MutableDict.as_mutable(JSONB)))
 
     @hybrid_property
-    def a(self):
+    def a_expr(self):
         """ see: Attributes"""
+        raise Exception("node.a_expr")
         if "_attributes_accessor" not in self.__dict__:
             setattr(self, "_attributes_accessor", Attributes(self, "attrs"))
         return self._attributes_accessor
 
-    @a.expression
-    def a_expr(self):
+    @a_expr.expression
+    def a(self):
         """ see: AttributesExpression"""
         if "_attributes_accessor" not in self.__dict__:
             setattr(self, "_attributes_accessor", AttributesExpressionAdapter(self, "attrs"))

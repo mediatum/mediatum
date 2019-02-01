@@ -44,6 +44,7 @@ let
       #url = "mirror://pypi/a/alembic/${name}.tar.gz";
       md5 = "f1ed0d26bc66027568bd3385bbb740f7";
     };
+    buildInputs = with self; [pytest mock];
     propagatedBuildInputs = with self; [ Mako sqlalchemy python-editor ];
   };
 

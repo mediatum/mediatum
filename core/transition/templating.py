@@ -12,7 +12,7 @@ from pyjade.utils import process
 from utils.compat import itervalues
 from core.transition.globals import current_app, _app_ctx_stack
 from core.transition.helpers import get_template_attribute
-
+from utils.utils import suppress
 
 class JinjaAutoescapeCompiler(JinjaCompiler):
     autocloseCode = 'if,for,block,filter,autoescape,with,trans,spaceless,comment,cache,macro,localize,compress,call'.split(',')
@@ -54,10 +54,8 @@ class DispatchingJinjaLoader(BaseLoader):
 
     def get_source(self, environment, template):
         for loader, local_name in self._iter_loaders(template):
-            try:
+            with suppress(TemplateNotFound, warn=False):
                 return loader.get_source(environment, local_name)
-            except TemplateNotFound:
-                pass
 
         raise TemplateNotFound(template)
 

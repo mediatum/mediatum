@@ -32,6 +32,7 @@ import core.users as users
 from core.metatype import Metatype
 from core.translation import getDefaultLanguage, t, lang
 from utils.fileutils import importFileToRealname
+from utils.utils import suppress
 from core import Node
 from core import db
 
@@ -135,12 +136,9 @@ class m_upload(Metatype):
 
         if lock:
             context['system_lock'] = 1
-
-        try:
+        with suppress(Exception, warn=False):
             if field.get("system.lock"):
                 context['system_lock'] = 1
-        except:
-            pass
 
         s = tal.getTAL("metadata/upload.html", context, macro="editorfield", language=language)
         if field.getName():

@@ -30,6 +30,7 @@ import io
 from warnings import warn
 from urlparse import parse_qsl, urlsplit, urlunsplit
 from urllib import quote, urlencode
+from contextlib import contextmanager
 
 # import xml.parsers.expat
 from lxml import etree
@@ -38,6 +39,7 @@ from HTMLParser import HTMLParser
 from .compat import iteritems
 from .strings import ensure_unicode_returned
 
+logg = logging.getLogger(__name__)
 
 def esc(s):
     return cgi.escape(s, quote=True)
@@ -131,6 +133,21 @@ def modify_tex(string, option):
                 string = string.replace(replacements[tag]['tex'] % match,
                                         match)
     return unicode(string)
+
+
+@contextmanager
+def suppress(*exceptions, **kwwarn):
+    """ Suppresses given exceptions
+
+    @param exceptions: Exceptions that are to be suppressed (e.g. just `Exception` to suppress everything).
+    @param warn: Boolean keyword-only argument that indicates if a suppressed exception should be logged as a warning. Defaults to True.
+    """
+    warn = kwwarn.pop("warn", True)
+    try:
+        yield
+    except exceptions:
+        if warn:
+            logg.warning("Here passed an exception by!", exc_info=True)
 
 
 def splitpath(path):

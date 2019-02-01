@@ -24,7 +24,7 @@ import logging
 
 from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter
 from web.common.acl_web import makeList
-from utils.utils import removeEmptyStrings, esc
+from utils.utils import removeEmptyStrings, esc, suppress
 from core.translation import lang, t
 from schema.schema import getMetaFieldTypeNames, getMetaType, updateMetaType, existMetaType, deleteMetaType, fieldoption, moveMetaField, getMetaField, deleteMetaField, getFieldsForMeta, dateoption, requiredoption, existMetaField, updateMetaField, generateMask, cloneMask, exportMetaScheme, importMetaSchema
 from schema.schema import VIEW_DEFAULT
@@ -119,17 +119,17 @@ def validate(req, op):
                     logg.exception("exception while evaluating template")
                     error_text = str(sys.exc_info()[1])
                     template_line = 'for node id ' + ustr(nid) + ': ' + error_text
-                    try:
+                    with suppress(Exception, warn=False):
                         m = re.match(r".*line (?P<line>\d*), column (?P<column>\d*)", error_text)
                         if m:
                             mdict = m.groupdict()
                             line = int(mdict.get('line', 0))
                             column = int(mdict.get('column', 0))
                             error_text = error_text.replace('line %d' % line, 'template line %d' % (line - 1))
-                            template_line = 'for node id ' + ustr(nid) + '<br/>' + error_text + '<br/><code>' + esc(template.split(
-                                "\n")[line - 2][0:column - 1]) + '<span style="color:red">' + esc(template.split("\n")[line - 2][column - 1:]) + '</span></code>'
-                    except:
-                        pass
+                            template_line = 'for node id ' + ustr(nid) + '<br/>' + error_text + '<br/><code>' + esc(
+                                template.split(
+                                    "\n")[line - 2][0:column - 1]) + '<span style="color:red">' + esc(
+                                template.split("\n")[line - 2][column - 1:]) + '</span></code>'
                     section_descr['error_flag'] = 'Error while evaluating template:'
                     section_descr['node_html'] = template_line
             elif node and not node.has_data_access():
@@ -759,7 +759,7 @@ def changeOrder(parent, up, down):
     """ change order of given nodes """
     i = 0
     for child in parent.children.sort_by_orderpos():
-        try:
+        with suppress(Exception, warn=False):
             if i == up:
                 pos = i - 1
             elif i == up - 1:
@@ -773,5 +773,3 @@ def changeOrder(parent, up, down):
             child.orderpos = pos
             db.session.commit()
             i = i + 1
-        except:
-            pass

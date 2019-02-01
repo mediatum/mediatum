@@ -19,7 +19,7 @@
 
 
 from schema.schema import loadTypesFromDB, getMetaType
-from utils.utils import u, dec_entry_log
+from utils.utils import u, dec_entry_log, suppress
 from core import Node
 from core import db
 from utils.pathutils import getPaths
@@ -76,11 +76,9 @@ def getContent(req, ids):
         c = 0
         for old_val in old_values:
             for n in AccessData(req).filter(q(Node).filter(Node.id.in_(entries[old_val])).all()):
-                try:
+                with suppress(Exception, warn=False):
                     n.set(fieldname, replaceValue(n.get(fieldname), u(old_val), u(new_value)))
                     c += 1
-                except:
-                    pass
         v["message"] = req.getTAL("web/edit/modules/manageindex.html", {"number": c}, macro="operationinfo")
 
     if "style" in req.params.keys():  # load schemes

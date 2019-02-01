@@ -29,7 +29,7 @@ from core.translation import t, lang
 from core.transition import httpstatus, current_user, request
 from core.systemtypes import Root
 from utils.strings import ensure_unicode_returned
-from utils.utils import Link, splitpath, parseMenuString
+from utils.utils import Link, splitpath, parseMenuString, suppress
 from utils.list import filter_scalar
 from core.exceptions import SecurityException
 
@@ -223,16 +223,13 @@ def getAdminModules(path):
     # test for external modules by plugin
     for k, v in config.getsubset("plugins").items():
         path, module = splitpath(v)
-        try:
+        with suppress(ImportError,warn=False): # no admin modules in plugin
             sys.path += [path + ".adminmodules"]
-
             for root, dirs, files in os.walk(os.path.join(config.basedir, v + "/adminmodules")):
                 for name in [f for f in files if f.endswith(".py") and f != "__init__.py"]:
                     m = __import__(module + ".adminmodules." + name[:-3])
                     m = eval("m.adminmodules." + name[:-3])
                     mods[name[:-3]] = m
-        except ImportError:
-            pass  # no admin modules in plugin
     return mods
 
 # delivers all active admin modules in navigations

@@ -34,7 +34,7 @@ import json
 from web.edit.edit_common import showdir, shownav, showoperations, searchbox_navlist_height
 from web.edit.edit import getTreeLabel, get_ids_from_req
 from utils.url import build_url_from_path_and_params
-from utils.utils import join_paths, getMimeType, funcname, get_user_id, dec_entry_log
+from utils.utils import join_paths, getMimeType, funcname, get_user_id, dec_entry_log, suppress
 from utils.fileutils import importFileToRealname, importFileRandom
 from schema.bibtex import importBibTeX, MissingMapping
 
@@ -553,11 +553,9 @@ def upload_ziphandler(req):
                     for scheme in schemes:
                         if _m[1] in scheme.getDatatypes():
                             scheme_type[_m[1]].append(scheme)
-            try:
+            with suppress(Exception, warn=False):
                 z.close()
                 os.remove(file.abspath)
-            except:
-                pass
             basenode.files.remove(file)
             db.session.commit()
     return {'files': files, 'schemes': scheme_type}

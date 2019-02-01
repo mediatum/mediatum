@@ -19,7 +19,7 @@ from utils.date import dt_fromiso
 import datetime
 from requests.structures import CaseInsensitiveDict
 from werkzeug.utils import cached_property
-
+from utils.utils import suppress
 
 logg = logging.getLogger(__name__)
 
@@ -223,12 +223,10 @@ class AthanaFlaskStyleApp(object):
 
 
 def detect_athana_or_flask():
-    try:
+    with suppress(Exception, warn=False):
         from flask import current_app
         if current_app:
             return "flask"
-    except:
-        pass
     return "athana"
 
 

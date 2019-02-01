@@ -35,7 +35,7 @@ from edit_common import *
 from core.transition import httpstatus, current_user
 
 from utils.utils import funcname, get_user_id, dec_entry_log, Menu, splitpath, parseMenuString,\
-    isDirectory, isCollection
+    isDirectory, isCollection, suppress
 from schema.schema import Metadatatype
 from web.edit.edit_common import get_edit_label, default_edit_nodes_per_page, get_searchparams
 from web.frontend.content import get_make_search_content_function
@@ -761,10 +761,8 @@ def content(req):
 
     # remove all caches for the frontend area- we might make changes there
     for sessionkey in ["contentarea", "navframe"]:
-        try:
+        with suppress(Exception, warn=False):
             del req.session[sessionkey]
-        except:
-            pass
 
     ids = getIDs(req)
 

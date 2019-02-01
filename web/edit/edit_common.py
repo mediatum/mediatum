@@ -25,7 +25,7 @@ from core.translation import t, lang
 from core.transition import current_user
 from contenttypes import Container
 from utils.fileutils import importFile
-from utils.utils import EncryptionException, dec_entry_log
+from utils.utils import EncryptionException, dec_entry_log, suppress
 from utils.pathutils import get_accessible_paths
 from utils.compat import iteritems
 from web.frontend.content import get_make_search_content_function
@@ -447,17 +447,13 @@ def writetree(req, node, f, key="", openednodes=None, sessionkey="unfoldedids", 
             o(unfoldedids, n)
         req.session[sessionkey] = unfoldedids
 
-    try:
+    with suppress(KeyError, warn=False):
         unfold = req.params["tree_unfold"]
         unfoldedids[unfold] = 1
-    except KeyError:
-        pass
 
-    try:
+    with suppress(KeyError, warn=False):
         fold = req.params["tree_fold"]
         unfoldedids[fold] = 0
-    except KeyError:
-        pass
 
     if omitroot:
         for c in node.getChildren().sort("name"):

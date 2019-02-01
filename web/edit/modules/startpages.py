@@ -26,7 +26,7 @@ import codecs
 import logging
 import core.config as config
 
-from utils.utils import format_filesize, dec_entry_log
+from utils.utils import format_filesize, dec_entry_log, suppress
 from core.translation import lang
 from web.edit.edit_common import send_nodefile_tal, upload_for_html
 from core.transition import httpstatus, current_user
@@ -65,11 +65,9 @@ def getContent(req, ids):
             if req.params.get('filename') == "add":  # add new file
                 maxid = 0
                 for f in [f for f in node.files if f.type == "content"]:
-                    try:
+                    with suppress(ValueError, warn=False):
                         if int(f.abspath[:-5].split("_")[-1]) >= maxid:
                             maxid = int(f.abspath[:-5].split("_")[-1]) + 1
-                    except ValueError:
-                        pass
                 filename = 'html/%s_%s.html' % (req.params.get('id'), maxid)
                 while os.path.exists(config.get("paths.datadir") + filename):
                     maxid = maxid + 1
@@ -137,10 +135,8 @@ def getContent(req, ids):
                 else:
                     logg.warn("%s could not remove file %s from disk: not existing", user.login_name, fullpath)
                 filenode = q(File).filter_by(path=page, mimetype=u"text/html").one()
-                try:
+                with suppress(KeyError, warn=False):
                     del node.system_attrs["startpagedescr." + file_shortpath]
-                except KeyError:
-                    pass
                 node.system_attrs["startpage_selector"] = node.system_attrs["startpage_selector"].replace(file_shortpath, "")
                 node.files.remove(filenode)
                 db.session.commit()

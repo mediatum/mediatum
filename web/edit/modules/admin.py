@@ -20,7 +20,7 @@
 
 
 import logging
-from utils.utils import formatTechAttrs, dec_entry_log
+from utils.utils import formatTechAttrs, dec_entry_log, suppress
 from utils.date import format_date, parse_date
 from core.transition import httpstatus
 from core import Node, db
@@ -102,10 +102,8 @@ def getContent(req, ids):
     system_attrs = []
 
     tattr = {}
-    try:
+    with suppress(AttributeError, warn=False):
         tattr = node.getTechnAttributes()
-    except AttributeError:
-        pass
     tattr = formatTechAttrs(tattr)
 
     for key, value in sorted(iteritems(node.attrs), key=lambda t: t[0].lower()):

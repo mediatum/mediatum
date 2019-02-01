@@ -11,7 +11,7 @@ import random
 import zipfile
 from core import config, db, Node
 from contenttypes import Content
-from utils.utils import getMimeType, get_filesize
+from utils.utils import getMimeType, get_filesize, suppress
 from utils import userinput
 from utils.compat import text_type
 
@@ -99,10 +99,8 @@ def sendZipFile(req, path):
         else:
             while len(p) > 0 and p[0] == "/":
                 p = p[1:]
-            try:
+            with suppress(Exception, warn=False):
                 zip.write(os.path.join(path, p), p)
-            except:
-                pass
 
     r("/")
     zip.close()

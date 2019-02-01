@@ -22,7 +22,7 @@ import urllib2
 import json
 
 from mediatumtal import tal
-from utils.utils import esc
+from utils.utils import esc, suppress
 from core.metatype import Metatype
 from core import Node
 from core import db
@@ -99,7 +99,8 @@ class m_dlist(Metatype):
             fielddef.append("")
 
         valuelist = []
-        try:
+        with suppress(ValueError, warn=False):
+            # enables the field to be added without fields filled in without throwing an exception
             if fielddef[1] == 'json':
                 opener = urllib2.build_opener()
                 f = opener.open(urllib2.Request(fielddef[0], None, {}))
@@ -120,9 +121,6 @@ class m_dlist(Metatype):
                             _v = _t = item
                         valuelist.append({'select_text': _t.strip(), 'select_value': _v.strip()})
                 f.close()
-        except ValueError:
-            # enables the field to be added without fields filled in without throwing an exception
-            pass
         return tal.getTAL("metadata/dlist.html", {"lock": lock,
                                                   "name": name,
                                                   "width": width,

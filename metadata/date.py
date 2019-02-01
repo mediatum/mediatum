@@ -21,6 +21,7 @@ import logging
 import re
 from mediatumtal import tal
 import utils.date as date
+from utils.utils import suppress
 from utils.date import format_date, parse_date, validateDate
 from core.metatype import Metatype
 from schema.schema import dateoption
@@ -36,11 +37,8 @@ class m_date(Metatype):
 
         if value == "?":
             value = date.format_date(date.now(), d.getValue())
-        try:
+        with suppress(Exception, warn=False):
             value = date.format_date(date.parse_date(value), d.getValue())
-        except:
-            pass
-
         return tal.getTAL("metadata/date.html", {"lock": lock,
                                                  "value": value,
                                                  "width": width,

@@ -32,7 +32,7 @@ import core.config as config
 
 from .workflow import WorkflowStep, getNodeWorkflow, getNodeWorkflowStep, registerStep
 from core.translation import t, lang, addLabels
-from utils.utils import getMimeType
+from utils.utils import getMimeType, suppress
 from utils.fileutils import importFileToRealname
 from utils.date import format_date
 
@@ -274,10 +274,8 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
                         logg.info("workflow step addpic2pdf(%s): going to remove file '%s' from node '%s' (%s) for request from user '%s' (%s)",
                             current_workflow_step.id, f_name, node.name, node.id, user.login_name, req.ip)
                         node.files.remove(f)
-                        try:
+                        with suppress(Exception, warn=False):
                             os.remove(f.abspath)
-                        except:
-                            pass
                         break
 
                 date_str = format_date().replace('T', '-').replace(' ', '').replace(':', '-')
@@ -285,11 +283,8 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
                     unicode(current_workflow_step.id), unicode(node.id), ), typeprefix="p_")
                 node.files.append(nodeFile)
                 db.session.commit()
-                try:
+                with suppress(Exception, warn=False):
                     os.remove(filetempname)
-                except:
-                    pass
-
                 del req.params['gotrue']
                 return self.show_workflow_node(node, req)
 

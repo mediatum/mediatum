@@ -41,7 +41,7 @@ from core.systemtypes import Metadatatypes
 from core.transition.postgres import check_type_arg
 from core.database.postgres.node import children_rel, parents_rel
 from utils.date import parse_date, format_date, validateDateString
-from utils.utils import Option, esc
+from utils.utils import Option, esc, suppress
 
 
 log = logg = logging.getLogger(__name__)
@@ -300,7 +300,7 @@ def moveMetaField(pid, name, direction):
 
     i = 0
     for field in getMetaType(pid).getChildren().sort_by_orderpos():
-        try:
+        with suppress(Exception): # FIXME: what kind of exception is raised here?
             if i == up:
                 pos = i - 1
             elif i == up - 1:
@@ -316,17 +316,12 @@ def moveMetaField(pid, name, direction):
                 pos = 0
             field.setOrderPos(pos)
             i += 1
-        except:  # FIXME: what kind of exception is raised here?
-            pass
-
 
 def generateMask(metatype, masktype="", force=0):
     if force:
-        try:
+        with suppress(Exception, warn=False): # if we can't remove the existing mask, it wasn't there, which is ok
             metatype.children.remove(metatype.children.filter_by(name=masktype).one())
             db.session.commit()
-        except:  # if we can't remove the existing mask, it wasn't there, which is ok
-            pass
 
     mask = metatype.children.filter_by(name=masktype).scalar()
     if mask is not None:
@@ -510,10 +505,8 @@ def parseEditorData(req, node):
                 for node in nodes:
                     node.set(name, value)
         else:  # value not in request -> remove attribute
-            try:
+            with suppress(KeyError, warn=False):
                 node.removeAttribute(field.getName())
-            except KeyError:
-                pass
     db.session.commit()
     return not incorrect
 
@@ -1010,10 +1003,8 @@ class Mask(Node):
                 for c in q(Node).get(mapping).getMandatoryFields():
                     mandfields.append(c.id)
         for item in self.all_maskitems:
-            try:
+            with suppress(ValueError, warn=False):   # id not in list
                 mandfields.remove(item.get("mappingfield"))
-            except ValueError:  # id not in list
-                pass
         return len(mandfields) == 0
 
 
@@ -1524,11 +1515,9 @@ class SchemaMixin(object):
         except:
             l = []
 
-        try:
+        with suppress(AttributeError, warn=False):
             if self.getSchema():
                 l += getMetaType(self.getSchema()).getMetaFields(type)
-        except AttributeError:
-            pass
         return l
 
     def getSearchFields(self):

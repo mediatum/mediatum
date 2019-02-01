@@ -44,6 +44,7 @@ from itertools import chain
 import logging
 from werkzeug.datastructures import ImmutableMultiDict, MIMEAccept
 from mediatumtal import tal
+from utils.utils import suppress
 
 
 logg = logging.getLogger(__name__)
@@ -238,11 +239,9 @@ class async_chat (asyncore.dispatcher):
                         except KeyError:
                             # FIXME: tends to happen sometimes, seems to
                             # be a race condition in asyncore
-                            try:
+                            with suppress(Exception, warn=False):
                                 self._fileno = None
                                 self.socket.close()
-                            except:
-                                pass
                     return
                 elif isinstance(p, str):
                     self.producer_fifo.pop()
@@ -1150,12 +1149,10 @@ class http_request(object):
         if ims:
             length = ims.group(4)
             if length:
-                try:
+                with suppress(Exception, warn=False):
                     length = string.atoi(length)
                     if length != file_length:
                         length_match = 0
-                except:
-                    pass
         ims_date = 0
         if ims:
             ims_date = parse_http_date(ims.group(1))
@@ -1206,12 +1203,10 @@ class http_request(object):
         if ims:
             length = ims.group(4)
             if length:
-                try:
+                with suppress(Exception, warn=False):
                     length = string.atoi(length)
                     if length != file_length:
                         length_match = 0
-                except:
-                    pass
         ims_date = 0
         if ims:
             ims_date = parse_http_date(ims.group(1))
@@ -1271,10 +1266,8 @@ class http_request(object):
             if v is not None:
                 params2[k] = v
             else:
-                try:
+                with suppress(Exception, warn=False):
                     del params2[k]
-                except:
-                    pass
         ret = self.makeLink(self.fullpath, params2)
         return ret
 
@@ -1435,10 +1428,8 @@ class http_channel (async_chat):
 
         # it also results in a "NoneType has no attribute more" error if refill_buffer tries
         # to run data = p.more() on the None terminator (which we catch)
-        try:
+        with suppress(AttributeError, warn=False):
             self.initiate_send()
-        except AttributeError:
-            pass
 
     def __repr__(self):
         ar = async_chat.__repr__(self)[1:-1]
@@ -1476,10 +1467,8 @@ class http_channel (async_chat):
     # so that it may log correctly.
     def send(self, data):
         result = 0
-        try:
+        with suppress(Exception, warn=False):
             result = async_chat.send(self, data)
-        except:
-            pass
         self.server.bytes_out.increment(len(data))
         return result
 
@@ -1574,10 +1563,8 @@ class http_channel (async_chat):
                         self.server.exceptions.increment()
                         (file, fun, line), t, v, tbinfo = asyncore.compact_traceback()
                         logg.error('Server Error: %s, %s: file: %s line: %s', t, v, file, line, exc_info=1)
-                        try:
+                        with suppress(Exception, warn=False):
                             r.error(500)
-                        except:
-                            pass
                     return
 
             # no handlers, so complain
@@ -1857,13 +1844,10 @@ class default_handler:
         if ims:
             length = ims.group(4)
             if length:
-                try:
+                with suppress(Exception, warn=False):
                     length = string.atoi(length)
                     if length != file_length:
                         length_match = 0
-                except:
-                    pass
-
         ims_date = 0
 
         if ims:
@@ -2042,12 +2026,10 @@ class os_filesystem:
             # to see if we have permission to do so.
             try:
                 can = 0
-                try:
+                with suppress(Exception, warn=False):
                     os.chdir(translated_path)
                     can = 1
                     self.wd = p
-                except:
-                    pass
             finally:
                 if can:
                     os.chdir(old_dir)
@@ -2390,10 +2372,8 @@ class ftp_channel (async_chat):
                 self.server.total_exceptions.increment()
                 (file, fun, line), t, v, tbinfo = asyncore.compact_traceback()
                 if self.client_dc:
-                    try:
+                    with suppress(Exception, warn=False):
                         self.client_dc.close()
-                    except:
-                        pass
                 self.respond(
                     '451 Server Error: %s, %s: file: %s line: %s' % (
                         t, v, file, line,
@@ -2756,10 +2736,8 @@ class ftp_channel (async_chat):
                     # try to position the file as requested, but
                     # give up silently on failure (the 'file object'
                     # may not support seek())
-                    try:
+                    with suppress(Exception, warn=False):
                         fd.seek(self.restart_position)
-                    except:
-                        pass
                     self.restart_position = 0
 
                 self.client_dc.push_with_producer(
@@ -3120,11 +3098,8 @@ class xmit_channel (async_chat):
     def handle_error(self):
         # usually this is to catch an unexpected disconnect.
         logg.error('unexpected disconnect on data xmit channel')
-        try:
+        with suppress(Exception, warn=False):
             self.close()
-        except:
-            pass
-
     # TODO: there's a better way to do this.  we need to be able to
     # put 'events' in the producer fifo.  to do this cleanly we need
     # to reposition the 'producer' fifo as an 'event' fifo.
@@ -3142,11 +3117,8 @@ class xmit_channel (async_chat):
         del c
         del s
         del self.channel
-        try:
+        with suppress(Exception, warn=False):
             async_chat.close(self)
-        except:
-            pass
-
 
 class recv_channel (asyncore.dispatcher):
 
@@ -4042,10 +4014,8 @@ class AthanaHandler:
 
         ip = request.request_headers.get("x-forwarded-for", None)
         if ip is None:
-            try:
+            with suppress(Exception, warn=False):
                 ip = request.channel.addr[0]
-            except:
-                pass
         if ip:
             request.channel.addr = (ip, request.channel.addr[1])
 

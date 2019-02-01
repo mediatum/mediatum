@@ -27,6 +27,7 @@ from core.styles import CustomTheme, DefaultTheme
 from core import db, app
 
 from core.plugins import find_plugin_with_theme
+from utils.utils import suppress
 
 logg = logging.getLogger(__name__)
 
@@ -60,10 +61,8 @@ def init_theme():
 def loadServices():
     datapath = config.get("services.datapath", "")
     if not os.path.exists(os.path.join(datapath, "common")):
-        try:
+        with suppress(OSError, warn=False):
             os.makedirs(os.path.join(datapath, "common"))
-        except OSError:
-            pass
 
     def manageService(servicename, servicedir, servicedata):
         if not os.path.exists(servicedir + "services/" + servicename + "/__init__.py"):

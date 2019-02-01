@@ -19,7 +19,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from .workflow import WorkflowStep, registerStep
-from utils.utils import checkXMLString
+from utils.utils import checkXMLString, suppress
 from core.translation import t, lang, addLabels
 import utils.mail as mail
 from schema.schema import Metafield
@@ -47,10 +47,8 @@ class WorkflowStep_CheckContent(WorkflowStep):
         for k, v in node.attrs.items():
             attrs += v
         if not checkXMLString(u'<?xml version="1.0" encoding="UTF-8"?>' + u'<tag>' + attrs + u'</tag>'):
-            try:
+            with suppress(Exception, warn=False):
                 mail.sendmail(self.get('from'), self.get('to'), self.get('subject'), self.get('text'))
-            except:
-                pass
 
         self.forward(node, True)
 

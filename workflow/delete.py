@@ -19,7 +19,7 @@
 """
 from .workflow import WorkflowStep, registerStep
 from core import db
-
+from utils.utils import suppress
 
 def register():
     #tree.registerNodeClass("workflowstep-delete", WorkflowStep_Delete)
@@ -30,8 +30,6 @@ class WorkflowStep_Delete(WorkflowStep):
 
     def runAction(self, node, op=""):
         for p in node.parents:
-            try:
+            with suppress(Exception, warn=False):
                 p.children.remove(node)
                 db.session.commit()
-            except:
-                pass

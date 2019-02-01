@@ -24,7 +24,7 @@ import random
 import os
 import core.users as users
 import logging
-from utils.utils import getMimeType, get_user_id
+from utils.utils import getMimeType, get_user_id, suppress
 from utils.fileutils import importFile, getImportDir, importFileIntoDir, importFileToRealname
 from contenttypes.image import make_thumbnail_image, make_presentation_image
 from core.transition import httpstatus, current_user
@@ -34,7 +34,6 @@ from core import db
 from core import File
 from contenttypes import Home, Collections
 from core.systemtypes import Root
-from utils.date import format_date
 
 q = db.query
 logg = logging.getLogger(__name__)
@@ -193,14 +192,11 @@ def getContent(req, ids):
             req.writeTAL("web/edit/modules/files.html", {'children': node.children, 'node': node}, macro="edit_files_children_list")
 
         if req.params.get('data') == 'removeitem':  # remove selected childnode node
-            try:
+            with suppress(Exception):
                 remnode = q(Node).get(req.params.get('remove'))
                 if len(remnode.parents) == 1:
                     users.getUploadDir(user).children.append(remnode)
                 node.children.remove(remnode)
-            except:  # node not found
-                logg.exception("exception in getContent, node not found? ignore")
-                pass
 
             req.writeTAL("web/edit/modules/files.html", {'children': node.children, 'node': node}, macro="edit_files_children_list")
 
@@ -245,10 +241,8 @@ def getContent(req, ids):
                                             logg.exception("exception while removing file, ignore")
                                     os.removedirs(file.abspath + "/")
                             node.files.remove(file)
-                            try:
+                            with suppress(Exception, warn=False):
                                 os.remove(file.abspath)
-                            except:
-                                pass
 
                             break
                     break

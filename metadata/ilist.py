@@ -23,7 +23,7 @@ import logging
 import locale
 from sqlalchemy import func, sql
 from mediatumtal import tal
-from utils.utils import esc
+from utils.utils import esc, suppress
 from core.metatype import Metatype
 from core.transition import httpstatus
 from core import db
@@ -75,12 +75,9 @@ class m_ilist(Metatype):
 
     def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
         value = node.get(metafield.getName())
-        try:
+        with suppress(Exception):
             if value and value[-1] == ";":
                 value = value[0:-1]
-        except:
-            logg.exception("exception in getFormattedValue, ignore")
-            pass
 
         value = value.replace(";", "; ")
         if html:

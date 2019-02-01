@@ -21,6 +21,7 @@ from schema.schema import getMetadataType, getAllMetaFields, VIEW_DATA_ONLY, Mas
 from core.translation import lang
 from core.metatype import Metatype
 from core import Node, db
+from utils.utils import suppress
 
 q = db.query
 
@@ -126,11 +127,9 @@ class m_vgroup(Metatype):
             i = 0
             for id in req.params.get("sel_id")[:-1].split(";"):
                 f = getMetadataType(q(Node).get(id).get("type"))
-                try:
+                with suppress(TypeError, warn=False):
                     details += f.getMetaHTML(item, i, False, itemlist=req.params.get("sel_id")
                                              [:-1].split(";"), ptype="vgroup", fieldlist=fieldlist)
-                except TypeError:
-                    pass
                 i += 1
         fields = []
         metadatatype = req.params.get("metadatatype")

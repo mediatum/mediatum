@@ -28,7 +28,7 @@ import StringIO
 from PIL import Image, ImageDraw
 
 from datetime import datetime
-
+from utils.utils import suppress
 from reportlab.pdfgen import canvas
 from pyPdf import PdfFileWriter, PdfFileReader
 
@@ -206,11 +206,8 @@ def place_pic(fn_in, fn_pic, fn_out, x0, y0, scale=1.0, mask=None, pages=[], fol
     outputStream.close()
 
     for k in d_watermark:
-        try:
+        with suppress(Exception, warn=False):
             d_watermark[k][1].close()
-        except:
-            pass
-
     pdf.stream.close()
 
     return

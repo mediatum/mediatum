@@ -26,6 +26,7 @@ import shutil
 import logging
 import codecs
 import random
+import fdfgen
 
 from .workflow import WorkflowStep, getNodeWorkflow, getNodeWorkflowStep, registerStep
 from core.translation import t, addLabels
@@ -76,68 +77,6 @@ def remove_tags(text):
     return TAG_RE.sub('', text)
 
 
-def smart_encode_str(s):
-    """Create a UTF-16 encoded PDF string literal for `s`."""
-    try:
-        utf16 = s.encode('utf_16_be')
-    except AttributeError:  # ints and floats
-        utf16 = unicode(s).encode('utf_16_be')
-    safe = utf16.replace(b'\x00)', b'\x00\\)').replace(b'\x00(', b'\x00\\(')
-    return b''.join((codecs.BOM_UTF16_BE, safe))
-
-
-def handle_hidden(key, fields_hidden):
-    if key in fields_hidden:
-        return b"/SetF 2"
-    else:
-        return b"/ClrF 2"
-
-
-def handle_readonly(key, fields_readonly):
-    if key in fields_readonly:
-        return b"/SetFf 1"
-    else:
-        return b"/ClrFf 1"
-
-
-def handle_data_strings(fdf_data_strings, fields_hidden, fields_readonly):
-    for (key, value) in fdf_data_strings:
-        if isinstance(value, bool) and value:
-            value = b'/Yes'
-        elif isinstance(value, bool) and not value:
-            value = b'/Off'
-        else:
-            value = b''.join([b' (', smart_encode_str(value), b')'])
-        yield b''.join([b'<<\n/V', value, b'\n/T (',
-                        smart_encode_str(key), b')\n',
-                        handle_hidden(key, fields_hidden), b'\n',
-                        handle_readonly(key, fields_readonly), b'\n>>\n'])
-
-
-def handle_data_names(fdf_data_names, fields_hidden, fields_readonly):
-    for (key, value) in fdf_data_names:
-        yield b''.join([b'<<\n/V /', smart_encode_str(value), b'\n/T (',
-                        smart_encode_str(key), b')\n',
-                        handle_hidden(key, fields_hidden), b'\n',
-                        handle_readonly(key, fields_readonly), b'\n>>\n'])
-
-
-def forge_fdf(pdf_form_url="", fdf_data_strings=[], fdf_data_names=[], fields_hidden=[], fields_readonly=[]):
-    fdf = [b'%FDF-1.2\n%\xe2\xe3\xcf\xd3\r\n']
-    fdf.append(b'1 0 obj\n<<\n/FDF\n')
-    fdf.append(b'<<\n/Fields [\n')
-    fdf.append(b''.join(handle_data_strings(fdf_data_strings, fields_hidden, fields_readonly)))
-    fdf.append(b''.join(handle_data_names(fdf_data_names, fields_hidden, fields_readonly)))
-    if pdf_form_url:
-        fdf.append(b''.join(b'/F (', smart_encode_str(pdf_form_url), b')\n'))
-    fdf.append(b']\n')
-    fdf.append(b'>>\n')
-    fdf.append(b'>>\nendobj\n')
-    fdf.append(b'trailer\n\n<<\n/Root 1 0 R\n>>\n')
-    fdf.append(b'%%EOF\n\x0a')
-    return b''.join(fdf)
-
-
 def fillPDFForm(formPdf, fields, outputPdf="filled.pdf", input_is_fullpath=False, editable=False):
     """
         fill given pdf file with form fields with given attributes and store result in pdf file
@@ -147,7 +86,7 @@ def fillPDFForm(formPdf, fields, outputPdf="filled.pdf", input_is_fullpath=False
     outputPdf = "{}{}filled.pdf".format(config.get('paths.tempdir'), str(random.random())[2:])
     try:
         with open(fdffilename, 'wb') as fdf_file:
-            fdf_file.write(forge_fdf(fdf_data_strings=fields))
+            fdf_file.write(fdfgen.forge_fdf(fdf_data_strings=fields))
 
         # fill data in form pdf and generate pdf
         pdftkcmd = ["pdftk", formPdf, "fill_form", fdffilename, "output", outputPdf]

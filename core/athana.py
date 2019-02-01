@@ -4174,24 +4174,21 @@ class AthanaHandler:
 
         function = context.match(path)
 
-        if function is not None:
-            if not multithreading_enabled:
-                call_handler_func(self, function, request)
-            else:
-                self.queuelock.acquire()
-                self.queue += [(function, request)]
-                self.queuelock.release()
-            return
-        else:
+        if function is None:
             logg.debug("Request %s matches no pattern (context: %s)", request.path, context.name)
             request.path = cgi.escape(request.path)
             return request.error(404, "File %s not found" % request.path)
+        if multithreading_enabled:
+            self.queuelock.acquire()
+            self.queue += [(function, request)]
+            self.queuelock.release()
+        else:
+            call_handler_func(self, function, request)
 
     def callhandler(self, handler_func, req):
         for handler in _request_started_handlers:
             handler(req)
 
-        s = None
         try:
             status = handler_func(req)
         except Exception as e:

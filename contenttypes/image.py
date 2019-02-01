@@ -145,7 +145,7 @@ def convert_image(src_filepath, dest_filepath, options=[]):
     """Create a PNG with filename `dest_filepath` from a file at `src_filepath`
     :param options: additional command line option list passed to convert
     """
-    utils.process.check_call(["convert"] + options + [src_filepath, dest_filepath])
+    utils.process.check_call(["gm", "convert"] + options + [src_filepath, dest_filepath])
 
 
 def get_image_dimensions(image):

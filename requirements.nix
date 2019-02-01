@@ -67,8 +67,6 @@ let
     doCheck = false;
   };
 
-  imagemagick = pkgs.imagemagick7.override { ghostscript = pkgs.ghostscript; };
-
   ipython-sql = self.buildPythonPackage {
     name = "ipython-sql-0.3.9";
     src = fetchurl {
@@ -506,7 +504,6 @@ in {
       unicodecsv
       werkzeug
       # other
-      imagemagick
       pkgs.ffmpeg
       pkgs.ghostscript
       pkgs.graphicsmagick

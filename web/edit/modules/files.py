@@ -25,7 +25,7 @@ import os
 import core.users as users
 import logging
 from utils.utils import getMimeType, get_user_id
-from utils.fileutils import importFile, getImportDir, importFileIntoDir
+from utils.fileutils import importFile, getImportDir, importFileIntoDir, importFileToRealname
 from contenttypes.image import make_thumbnail_image, make_presentation_image
 from core.transition import httpstatus, current_user
 from core.translation import t
@@ -83,7 +83,7 @@ def _finish_change(node, change_file, user, uploadfile, req):
     if change_file == "attfile":  # add file as attachment
         if attpath == "":
             # no attachment directory existing
-            file = importFile(uploadfile.filename, uploadfile.tempname)  # add new file
+            file = importFileToRealname(uploadfile.filename, uploadfile.tempname)  # add new file
             file.mimetype = "inode/file"
             file.filetype = "attachment"
             node.files.append(file)

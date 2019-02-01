@@ -930,7 +930,7 @@ class http_request(object):
     def get_header(self, header):
         header = header.lower()
         if header not in self._header_cache:
-            h = "{}: ".format(header)
+            h = "{}:".format(header)
             for line in self.header:
                 if line.lower().startswith(h):
                     self._header_cache[header] = line[len(h):]

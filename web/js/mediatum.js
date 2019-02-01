@@ -26,15 +26,24 @@ function openPopup(url, name, width, height, scroll)
 }
 
 /* extended search start */
-function chg()
+function chg(fieldNo)
 {
-    var fieldno = $("*:focus").attr("name").substr(5,$("*:focus").attr("name").length-1)
+    var fieldno = fieldNo;
+    if (fieldno === undefined)
+      fieldno = $("*:focus").attr("name").substr(5,$("*:focus").attr("name").length-1)
     var sel_index = document.xsearch["field"+fieldno].selectedIndex;
     var searchmaskitem_id = document.xsearch["field"+fieldno][sel_index].value;
-    var query_field_value = document.xsearch["query"+fieldno].value;
+    var queryfield = "query"+fieldno;
+    var obj = document.xsearch["query"+fieldno];
+    if (obj === undefined) {
+      console.log(obj);
+      queryfield = "query"+fieldno+"-from";
+      obj = document.xsearch[queryfield];
+    } else {
+    }
+    $('#'+queryfield).attr("disabled", true);
+    var query_field_value = obj.value;
     var container_id = $("input[name=id]").val();
-
-    $('#query'+fieldno).attr("disabled", true);
 
     $.getJSON("/node?jsoncallback=?",
     {
@@ -78,6 +87,7 @@ function clearFields()
         if (obj != null){
              obj.value = "";
              obj = document.getElementById("query"+i+"-to").value = "";
+             chg(i);
         }
     }
     document.xsearch.submittype.value = "change";

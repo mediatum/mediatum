@@ -31,7 +31,7 @@ class UserView(BaseAdminView):
 
     column_exclude_list = ("created", "password_hash", "salt", "comment",
                            "private_group", "can_edit_shoppingbag", "can_change_password")
-    column_filters = ("authenticator_info", "display_name", "login_name", "organisation")
+    column_filters = ("authenticator_info", "display_name", "login_name", "organisation", "active")
     can_export = True
 
     column_details_list = ("home_dir", "authenticator_info", "id", "login_name", "display_name", "lastname",

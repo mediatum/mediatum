@@ -929,20 +929,13 @@ class http_request(object):
         return ''
 
     def get_header(self, header):
-        header = string.lower(header)
-        hc = self._header_cache
-        if not hc.has_key(header):
-            h = header + ': '
-            hl = len(h)
+        header = header.lower()
+        if header not in self._header_cache:
+            h = "{}: ".format(header)
             for line in self.header:
-                if string.lower(line[:hl]) == h:
-                    r = line[hl:]
-                    hc[header] = r
-                    return r
-            hc[header] = None
-            return None
-        else:
-            return hc[header]
+                if line.lower().startswith(h):
+                    self._header_cache[header] = line[len(h):]
+        return self._header_cache.get(header)
 
     @cached_property
     def accept_mimetypes(self):

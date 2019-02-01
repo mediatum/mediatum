@@ -4,10 +4,13 @@ let
   nixexpr1709 = fetchTarball https://d3g5gsiof5omrk.cloudfront.net/nixos/17.09/nixos-17.09.2875.c2b668ee726/nixexprs.tar.xz;
   pkgs1709 = import nixexpr1709 {};
 
+  nixexpr1803 = fetchTarball https://d3g5gsiof5omrk.cloudfront.net/nixos/18.03/nixos-18.03.132865.411cc559c05/nixexprs.tar.xz;
+  pkgs1803 = import nixexpr1803 {};
+
   pythonPackages = pkgs.python27Packages;
   self = pythonPackages;
 
-  postgresql95patched = pkgs.lib.overrideDerivation pkgs.postgresql95 ( oldAttrs: {
+  postgresql100patched = pkgs.lib.overrideDerivation pkgs1803.postgresql100 ( oldAttrs: {
     postInstall = oldAttrs.postInstall +
     ''
       cp ${./legacy/unaccent_german_umlauts_special.rules} $out/share/tsearch_data/unaccent_german_umlauts_special.rules
@@ -190,15 +193,6 @@ let
       url = "https://pypi.python.org/packages/source/P/PrettyTable/prettytable-0.7.2.tar.bz2";
       md5 = "760dc900590ac3c46736167e09fa463a";
     };
-  };
-
-  psycopg2 = self.buildPythonPackage {
-    name = "psycopg2-2.6.1";
-    src = fetchurl {
-      url = "https://pypi.python.org/packages/source/p/psycopg2/psycopg2-2.6.1.tar.gz";
-      md5 = "842b44f8c95517ed5b792081a2370da1";
-    };
-    buildInputs = with self; [pkgs.postgresql95];
   };
 
   pyaml = self.buildPythonPackage rec {
@@ -572,7 +566,6 @@ in {
       parcon
       pillow
       ldap
-      psycopg2
       pyaml
       pydot2
       pyexiftool
@@ -602,7 +595,7 @@ in {
       pkgs.pdftk
       pkgs.perlPackages.ImageExifTool
       pkgs.poppler_utils
-      postgresql95patched
+      postgresql100patched
     ];
 
     devel = [
@@ -622,6 +615,7 @@ in {
 
     system = with pkgs; [
       git
+      pkgs1803.python27Packages.psycopg2
       pkgs1709.nginx
       zsh
     ];

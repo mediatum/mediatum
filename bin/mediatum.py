@@ -25,6 +25,7 @@ from werkzeug._reloader import run_with_reloader
 import configargparse
 import tempfile
 from core import config
+import os as _os
 
 SYSTEM_TMP_DIR = tempfile.gettempdir()
 
@@ -108,10 +109,15 @@ def run(host=None, http_port=None, redis_sessions=False, force_test_db=None, log
         print("WARNING: using experimental persistent redis session support, only for testing!!!")
         athana.USE_PERSISTENT_SESSIONS = True
 
-    import datetime
-    with open("/tmp/mediatum.started", "w") as wf:
-        wf.write(datetime.datetime.now().isoformat())
-        wf.write("\n")
+    #
+    # if the pid path is given in mediatum.cfg, section paths the starting time will be printed in this file
+    #
+
+    if "paths.pidfile" in config.settings:
+        with open(config.settings["paths.pidfile"], "w") as wf:
+            wf.write(str(_os.getpid()))
+            wf.write("\n")
+
 
     athana.run(host or config.get("host.host", "0.0.0.0"), int(http_port or config.get("host.port", "8081")), z3950port)
 

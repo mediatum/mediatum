@@ -354,5 +354,8 @@ function execFuncts(value, func){
 
 }
 
+exports.show = show;
+exports.startsearch = startsearch;
 exports.mediatum_load = mediatum_load;
+
 }(typeof self !== 'undefined' ? self : this));

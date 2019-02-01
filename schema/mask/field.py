@@ -155,6 +155,8 @@ class m_field(Metatype):
                 value = maskitem.getFormat().replace("<value>", value)
             else:
                 value = formatLongText(value, metafield)
+        else:
+            value = ensure_unicode(value)
 
         value = value.strip()
 

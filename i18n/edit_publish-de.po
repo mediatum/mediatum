@@ -12,7 +12,7 @@ msgid "edit_publish_dirs"
 msgstr "Aktuelle(s) Zielverzeichnis(e):"
 
 msgid "edit_publish_button_select"
-msgstr "Zielverzeichnis auswählen"
+msgstr "Verzeichnisse auswählen"
 
 msgid "edit_publish_button"
 msgstr "Publizieren"

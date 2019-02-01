@@ -11,7 +11,7 @@ msgid "edit_publish_dirs"
 msgstr "Actual Destination-Directory:"
 
 msgid "edit_publish_button_select"
-msgstr "Choose publish directories"
+msgstr "Choose directories"
 
 msgid "edit_publish_button"
 msgstr "Publish"

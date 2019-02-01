@@ -98,13 +98,13 @@
     <div id="operation" style="position:relative;margin-right:20px;overflow:hidden;position:relative">
         <div style="width:200px;height:100px;float:left">
             <br/>
-            <a href="#" onclick="showForm()">Verzeichnisse auswählen</a>
+            <a href="#" onclick="showForm()" i18n:translate="edit_publish_button_select">Verzeichnisse auswählen</a>
             <p>
                 <input type="hidden" name="destination" id="destination" tal:attributes="value stddir" />
                 <br/>
                 <button disabled="" id="btn_publish" type="submit" name="dopublish" i18n:attributes="title edit_publish_button_deactivated_tooltip" i18n:translate="edit_publish_button">TEXT</button>
             </p>
-            
+
         </div>
         <div id="dest_names" name="dest_names" style="width:auto;border:1px solid silver;padding:5px;margin:10px 20px;margin-left:200px;height:50px;overflow:auto" tal:content="stdname"/>
         <tal:block tal:replace="raw python:'<script type=&quot;text/javascript&quot;>'"/>

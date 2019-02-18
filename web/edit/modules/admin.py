@@ -24,7 +24,7 @@ from utils.utils import formatTechAttrs, dec_entry_log, suppress
 from utils.date import format_date, parse_date
 from core import httpstatus
 from core import Node, db
-from core.transition import current_user
+from core.users import user_from_session
 from collections import OrderedDict
 from utils.compat import iteritems
 
@@ -34,8 +34,9 @@ logg = logging.getLogger(__name__)
 
 @dec_entry_log
 def getContent(req, ids):
+    user = user_from_session()
     node = q(Node).get(ids[0])
-    if not node.has_write_access() or "admin" in current_user.hidden_edit_functions:
+    if not node.has_write_access() or "admin" in user.hidden_edit_functions:
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
@@ -43,13 +44,13 @@ def getContent(req, ids):
         attrname = req.form.get("new_name")
         attrvalue = req.form.get("new_value")
         if attrname.startswith("system."):
-            if current_user.is_admin:
+            if user.is_admin:
                 node.system_attrs[attrname[7:]] = attrvalue
             else:
             # non-admin user may not add / change system attributes, silently ignore the request.
             # XXX: an error msg would be better
                 logg.warn("denied writing a system attribute because user is not an admin user, node=%s attrname=%s current_user=%s",
-                          node.id, attrname, current_user.id)
+                          node.id, attrname, user.id)
                 return httpstatus.HTTP_FORBIDDEN
 
         node.set(attrname, attrvalue)
@@ -67,7 +68,7 @@ def getContent(req, ids):
 
         # remove attribute
         if key.startswith("attr_"):
-            if not current_user.is_admin:
+            if not user.is_admin:
                 return httpstatus.HTTP_FORBIDDEN
 
             del node.attrs[key[5:-2]]
@@ -77,7 +78,7 @@ def getContent(req, ids):
 
         # remove system attribute
         if key.startswith("system_attr_"):
-            if not current_user.is_admin:
+            if not user.is_admin:
                 return httpstatus.HTTP_FORBIDDEN
 
             attrname = key[12:-2]
@@ -107,7 +108,7 @@ def getContent(req, ids):
     tattr = formatTechAttrs(tattr)
 
     for key, value in sorted(iteritems(node.attrs), key=lambda t: t[0].lower()):
-        if value or current_user.is_admin:
+        if value or user.is_admin:
             # display all values for admins, even if they are "empty" (= a false value)
             if key in fieldnames:
                 metafields[key] = formatdate(value, getFormat(fields, key))
@@ -137,7 +138,7 @@ def getContent(req, ids):
                                                       "tattr": tattr,
                                                       "fd": formatdate,
                                                       "gf": getFormat,
-                                                      "user_is_admin": current_user.is_admin,
+                                                      "user_is_admin": user.is_admin,
                                                       "canedit": node.has_write_access(),
                                                       "csrf": req.csrf_token.current_token},
                       macro="edit_admin_file")

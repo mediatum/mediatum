@@ -219,7 +219,7 @@ class m_upload(Metatype):
 
 def handle_request(req):
 
-    user = users.getUserFromRequest(req)
+    user = users.user_from_session()
     
     if not user.is_admin:
         # XXX: this handler is unsafe for use by non-admins. 

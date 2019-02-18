@@ -919,22 +919,22 @@ def callername():
     return inspect.stack()[2][3]
 
 
-def get_user_id(req):
+def get_user_id():
     import core.users as users
-    user = users.getUserFromRequest(req)
+    user = users.user_from_session()
     res = "userid=%r|username=%r" % (user.id, user.getName())
     return res
 
 
 def log_func_entry(req, modname, functionname, s_arg_info, logger=logging.getLogger('editor')):
     msg = ">>> %s entering %s.%s: %s" % (
-        get_user_id(req), modname, functionname, s_arg_info)
+        get_user_id(), modname, functionname, s_arg_info)
     logger.debug(msg)
 
 
 def log_func_exit(req, modname, functionname, extra_data, logger=logging.getLogger('editor')):
     msg = "<<< %s exiting  %s.%s: %r" % (
-        get_user_id(req), modname, functionname, extra_data)
+        get_user_id(), modname, functionname, extra_data)
     logger.debug(msg)
 
 

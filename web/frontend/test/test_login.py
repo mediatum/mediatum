@@ -3,12 +3,12 @@
     :copyright: (c) 2014 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
+import flask as _flask
 from pytest import fixture
 
 from web.frontend import login
 from core.auth import PasswordsDoNotMatch, WrongPassword, PasswordChangeNotAllowed
 from core import app
-
 
 @fixture(autouse=True)
 def login_patch(monkeypatch, user, nav_frame):
@@ -89,7 +89,7 @@ def test_login(auth_success_patch, req):
 
 def test_logout(logout_patch, req):
     assert login.logout(req) == 302
-    assert "user" not in req.session
+    assert "user" not in _flask.session
 
 
 def test_pwdchange(pwdchange_patch, req, session, collections):
@@ -116,7 +116,7 @@ def test_login_no_referer(req):
     webconfig.theme.make_jinja_loader()
     with app.test_request_context():
         assert login.login(req) == 200
-        assert req.session["return_after_login"] is False
+        assert _flask.session["return_after_login"] is False
 
 
 def test_login_from_login_page(req):
@@ -127,7 +127,7 @@ def test_login_from_login_page(req):
     req.headers["Referer"] = "/login"
     with app.test_request_context():
         assert login.login(req) == 200
-        assert req.session["return_after_login"] is False
+        assert _flask.session["return_after_login"] is False
 
 
 def test_login_login_from_edit(req):
@@ -139,7 +139,7 @@ def test_login_login_from_edit(req):
     req.headers["Host"] = "localhost"
     with app.test_request_context():
         assert login.login(req) == 200
-        assert req.session["return_after_login"] == "http://localhost/edit?id=604993"
+        assert _flask.session["return_after_login"] == "http://localhost/edit?id=604993"
 
 
 def test_login_from_other(req):
@@ -152,7 +152,7 @@ def test_login_from_other(req):
     req.headers["Referer"] = ref
     with app.test_request_context():
         assert login.login(req) == 200
-        assert req.session["return_after_login"] == ref
+        assert _flask.session["return_after_login"] == ref
 
 
 def test_new_nodecache():

@@ -3,6 +3,7 @@
     :copyright: (c) 2015 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
+import flask as _flask
 from pytest import raises
 from sqlalchemy.exc import IntegrityError
 from core import AccessRule, AccessRuleset, NodeToAccessRule, NodeToAccessRuleset
@@ -103,7 +104,7 @@ def test_filter_read_access_admin(session, admin_user, req, container_node, othe
     from core import Node
     q = session.query
     session.flush()
-    req.session["user_id"] = admin_user.id
+    _flask.session["user_id"] = admin_user.id
     
     nodes = q(Node).filter_read_access().all()
     # admin sees everything, even nodes without any access rights

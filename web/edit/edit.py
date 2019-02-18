@@ -22,6 +22,7 @@ import os
 import re
 import time
 import json
+import flask as _flask
 import core.config as config
 import core.translation
 from core import Node, NodeType, db, User, UserGroup, UserToUserGroup
@@ -33,7 +34,7 @@ from contenttypes import Container, Collections, Data, Home
 from core.translation import lang, t
 from edit_common import *
 
-from core.transition import current_user
+from core.users import user_from_session as _user_from_session
 from core import httpstatus
 from utils.utils import funcname, get_user_id, dec_entry_log, Menu, splitpath, parse_menu_struct, isDirectory, isCollection, suppress
 from schema.schema import Metadatatype
@@ -121,7 +122,7 @@ def frameset(req):
     value = req.params.get("value", "")
     tab = req.params.get("tab", None)
     language = lang(req)
-    user = current_user
+    user = _user_from_session()
 
     if not user.is_editor:
         req.writeTAL("web/edit/edit.html", {}, macro="error")
@@ -255,7 +256,7 @@ def getBreadcrumbs(menulist, tab):
     return [tab]
 
 def handletabs(req, ids, tabs, sort_choices):
-    user = current_user
+    user = _user_from_session()
     language = lang(req)
 
     n = q(Data).get(ids[0])
@@ -341,7 +342,7 @@ def getIDs(req):
         nodelist = []
         for id in req.params.get("nodelist").split(","):
             nodelist.append(q(Node).get(id))
-        req.session["nodelist"] = EditorNodeList(nodelist)
+        _flask.session.nodelist = EditorNodeList(nodelist)
 
     # look for one "id" parameter, containing an id or a list of ids
     id = req.params.get("id")
@@ -379,7 +380,7 @@ def getIDs(req):
 @dec_entry_log
 def edit_tree(req):
     language = lang(req)
-    user = current_user
+    user = _user_from_session()
     home_dir = user.home_dir
     upload_dir = user.upload_dir
     trash_dir = user.trash_dir
@@ -464,7 +465,7 @@ def edit_tree(req):
 def action(req):
     global editModules
     language = lang(req)
-    user = current_user
+    user = _user_from_session()
 
     trashdir = user.trash_dir
     uploaddir = user.upload_dir
@@ -685,7 +686,7 @@ def action(req):
 
 
 def showPaging(req, tab, ids):
-    nodelist = req.session.get("nodelist", None)
+    nodelist = _flask.session.nodelist
     nextid = previd = None
     position = absitems = '&nbsp;'
     combodata = ""
@@ -724,7 +725,7 @@ def get_ids_from_req(req):
 @dec_entry_log
 def content(req):
 
-    user = current_user
+    user = _user_from_session()
     language = lang(req)
 
     if not user.is_editor:
@@ -762,11 +763,6 @@ def content(req):
     if not user.is_editor:
         return req.writeTAL("web/edit/edit.html", {}, macro="error")
 
-    # remove all caches for the frontend area- we might make changes there
-    for sessionkey in ["contentarea", "navframe"]:
-        with suppress(Exception, warn=False):
-            del req.session[sessionkey]
-
     ids = getIDs(req)
 
     if req.params.get("type", "") == "help" and req.params.get("tab", "") == "upload":
@@ -790,7 +786,7 @@ def content(req):
     # but is not permitted anymore:
     assert "_" not in tabs
     assert "_" not in current
-    logg.debug("... %s inside %s.%s: ->  !!! current = %s !!!", get_user_id(req), __name__, funcname(), current)
+    logg.debug("... %s inside %s.%s: ->  !!! current = %s !!!", get_user_id(), __name__, funcname(), current)
     msg = "%s selected editor module is %s" % (user.login_name, current)
     jsfunc = req.params.get("func", "")
     if jsfunc:
@@ -817,7 +813,7 @@ def content(req):
         v["items"] = items
         if logg.isEnabledFor(logging.DEBUG):
             logg.debug("... %s inside %s.%s: -> display current images: items: %s",
-                       get_user_id(req), __name__, funcname(), [_t[0] for _t in items])
+                       get_user_id(), __name__, funcname(), [_t[0] for _t in items])
 
         nid = req.params.get('src', req.params.get('id'))
         if nid is None:
@@ -940,7 +936,7 @@ def content(req):
         # add icons to breadcrumbs
         ipath = 'webtree/directory.gif'
         if node and node.isContainer():
-            if node.name == 'home' or 'Arbeitsverzeichnis' in node.name or node == current_user.home_dir:
+            if node.name == 'home' or 'Arbeitsverzeichnis' in node.name or node == user.home_dir:
                 ipath = 'webtree/homeicon.gif'
             elif node.name in ('Uploads', 'upload'):
                 ipath = 'webtree/uploadicon.gif'

@@ -11,6 +11,7 @@ import zipfile as _zipfile
 import httpstatus as _httpstatus
 import traceback as _traceback
 import urllib as _urllib
+import flask as _flask
 import athana as _athana
 import athana_z3950 as _athana_z3950
 import utils.locks as _utils_lock
@@ -43,11 +44,6 @@ IF_MODIFIED_SINCE = _re.compile(
     'If-Modified-Since: ([^;]+)((; length=([0-9]+)$)|$)',
     _re.IGNORECASE
 )
-
-SESSION_COOKIES_LIVE_SECS = 3600 * 2  # unused sessions may be valid for 2 hours
-session_cookies_live_secs = int(_config.get('admin.session_expiration_time', SESSION_COOKIES_LIVE_SECS))
-session_check_period = session_cookies_live_secs / 10
-last_session_check_time = _time.time()
 
 # COMPAT: before / after request handlers and request / app context handling
 _request_started_handlers = []
@@ -704,13 +700,6 @@ def done(req):
         # when using telnet to debug a server.
         close_it = 1
 
-    if "PSESSION" not in req.Cookies:
-        if req.session:
-            setCookie(req, 'PSESSION', req.sessionid, path="/", secure=_config.getboolean("host.ssl", True))
-        sessions = _athana._ATHANA_HANDLER.sessions
-        if req.sessionid in sessions:
-            del sessions[req.sessionid]
-
     if "Cache-Control" not in req.reply_headers or not _config.getboolean("athana.allow_cache_header", False):
         req.reply_headers["Cache-Control"] = "no-cache"
 
@@ -1330,8 +1319,7 @@ def callhandler(handler_func, req):
             return error(request, 500, s.encode("utf8"), content_type='text/html; encoding=utf-8; charset=utf-8')
 
         else:
-            _logg.error("Error in page: '%s %s', session '%s'",
-                       request.type, request.fullpath, request.session.id, exc_info=1)
+            _logg.error("Error in page: '%s %s'", request.type, request.fullpath, exc_info=1)
             s = "<pre>" + _traceback.format_exc() + "</pre>"
             return error(request, 500, s)
 
@@ -1342,9 +1330,6 @@ def callhandler(handler_func, req):
 
 def handle_request(handler, request, form):
 
-    global session_cookies_live_secs, session_check_period, last_session_check_time
-
-    act_time = _time.time()
     path, params, query, fragment = split_uri(request)
 
     ip = request.request_headers.get("x-forwarded-for", None)
@@ -1384,40 +1369,6 @@ def handle_request(handler, request, form):
                 _logg.warn("corrupt cookie value: %s", a.encode("string-escape"))
 
     request.Cookies = cookies
-
-    sessionid = None
-
-    if "PSESSION" in cookies:
-        sessionid = cookies["PSESSION"]
-
-    session_expiration_time = act_time - session_cookies_live_secs
-    session = None
-    if sessionid is None:
-
-        if act_time - last_session_check_time > session_check_period:
-            # delete all sessions with lastuse older than act_time - session_cookies_live_secs
-            sessionids_to_be_deleted = [sid for sid in handler.sessions if
-                                        handler.sessions[sid].lastuse < session_expiration_time]
-            for sid in sessionids_to_be_deleted:
-                del handler.sessions[sid]
-            last_session_check_time = act_time
-
-        sessionid = handler.create_session_id()
-        _logg.debug("Creating new session %s", sessionid)
-
-    else:
-        if sessionid in handler.sessions:
-            session = handler.sessions[sessionid]
-            if session.lastuse < session_expiration_time:
-                del handler.sessions[sessionid]
-                session = None
-            else:
-                session.use()
-
-    if session is None:
-        session = _athana.Session(sessionid)
-        handler.sessions[sessionid] = session
-
     request['Content-Type'] = 'text/html; encoding=utf-8; charset=utf-8'
 
     maxlen = -1
@@ -1437,8 +1388,6 @@ def handle_request(handler, request, form):
     if len(path) == 0 or path[0] != '/':
         path = "/" + path
 
-    request.session = session
-    request.sessionid = sessionid
     request.context = context
     request.path = path
     request.fullpath = fullpath
@@ -1458,14 +1407,15 @@ def handle_request(handler, request, form):
         except UnicodeDecodeError:
             return error(request, 400)
 
+        mediatum_form = MediatumForm(meta={'csrf_context': _flask.session})
         if form and request.method == 'POST':
             if 'csrf_token' not in request.form:
                 raise ValueError("csrf_token not in form of request path " + request.fullpath)
             else:
-                session.mediatum_form.csrf_token.process_data(request.form["csrf_token"].replace("!!!!!", "##"))
-                session.mediatum_form.validate()
+                mediatum_form.csrf_token.process_data(request.form["csrf_token"].replace("!!!!!", "##"))
+                mediatum_form.validate()
 
-        request.csrf_token = session.mediatum_form.csrf_token
+        request.csrf_token = mediatum_form.csrf_token
         request.files = _ImmutableMultiDict(files)
         make_legacy_params_dict(request)
 

@@ -29,7 +29,7 @@ from core.translation import lang, switch_language
 from core import httpstatus
 from core import db
 from core import Node, NodeAlias
-from core.transition import current_user
+from core.users import user_from_session as _user_from_session
 from contenttypes import Container
 from schema.schema import getMetadataType
 from utils.url import build_url_from_path_and_params
@@ -45,6 +45,7 @@ logg = logging.getLogger(__name__)
 
 
 def handle_json_request(req):
+    user = _user_from_session()
     s = []
     if req.args.get("cmd") == "get_list_smi":
         searchmaskitem_id = req.params.get("searchmaskitem_id")
@@ -71,7 +72,7 @@ def handle_json_request(req):
                     name="query" + str(req.args.get("fieldno")),
                     language=lang(req),
                     container=container,
-                    user=current_user,
+                    user=user,
                     ip=req.ip))]
     req.write(req.params.get("jsoncallback") + "(%s)" % json.dumps(s, indent=4))
 

@@ -6,7 +6,7 @@
 from __future__ import absolute_import
 import logging
 import re
-from core.transition import current_user
+from core.users import user_from_session as _user_from_session
 from core import httpstatus
 import web.admin.adminutils
 
@@ -17,10 +17,11 @@ BECOME_RE = re.compile("/_become/([^/]+)/?([^/]+)?$")
 
 
 def become_user(req):
-    if not current_user.is_admin:
+    user = _user_from_session()
+    if not user.is_admin:
         return 404
 
-    before_user_id = current_user.id
+    before_user_id = user.id
 
     match = BECOME_RE.match(req.path)
     if match:

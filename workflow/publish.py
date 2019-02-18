@@ -21,10 +21,11 @@ from .workflow import WorkflowStep, registerStep
 from core.translation import t, addLabels
 from core import UserGroup, db
 from core.permission import get_all_access_rules
-from core.transition import current_user
+from core.users import user_from_session as _user_from_session
 from utils.date import now
 from schema.schema import Metafield
 import logging
+
 q = db.query
 logg = logging.getLogger(__name__)
 
@@ -38,7 +39,7 @@ class WorkflowStep_Publish(WorkflowStep):
 
     def runAction(self, node, op=""):
         ugid = q(UserGroup).filter_by(name=u'_workflow').one().id
-        user = current_user
+        user = _user_from_session()
 
         # remove access rule with '_workflow' user group id
         # XXX the following debug messages are needed for analyzing the problem that

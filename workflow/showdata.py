@@ -19,6 +19,7 @@
 """
 
 import logging
+import flask as _flask
 from .workflow import WorkflowStep, registerStep
 from core.translation import t, lang
 from schema.schema import VIEW_HIDE_EMPTY, Metafield, Metadatatype
@@ -55,7 +56,7 @@ class WorkflowStep_ShowData(WorkflowStep):
         if "gofalse" in req.params:
             return self.forwardAndShow(node, False, req)
 
-        key = req.params.get("key", req.session.get("key", ""))
+        key = req.params.get("key", _flask.session.get("key", ""))
         masks = self.get("masks")
         if not masks:
             masklist = ["editmask"]

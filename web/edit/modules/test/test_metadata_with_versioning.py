@@ -4,6 +4,7 @@
     :license: GPL3, see COPYING for details
 """
 from __future__ import absolute_import
+import flask as _flask
 from web.edit.modules.metadata import _handle_edit_metadata
 from utils.testing import make_node_public
 from schema import schema
@@ -18,7 +19,7 @@ def test_handle_edit_metadata_new_tagged_version(session, req, editor_user, some
     node = some_node
     make_node_public(some_node)
     schema.init()
-    req.session["user_id"] = editor_user.id
+    _flask.session["user_id"] = editor_user.id
     req.form["testattr"] = u"updated"
     session.commit()
     assert node.versions.count() == 1

@@ -9,7 +9,7 @@ from core import db, Node, User, UserGroup
 from core.permission import get_or_add_access_rule
 from core.database.postgres.permission import NodeToAccessRule, NodeToAccessRuleset, EffectiveNodeToAccessRuleset, AccessRule, AccessRuleset, AccessRulesetToRule
 
-from core.transition import current_user
+from core.users import user_from_session as _user_from_session
 from core import httpstatus
 from web.common.acl_editor_web import makeList
 from web.common.accessuser_editor_web import makeUserList, decider_is_private_user_group_access_rule
@@ -77,8 +77,9 @@ def get_or_add_private_access_rule_for_user(user):
 
 @dec_entry_log
 def getContent(req, ids):
+    user = _user_from_session()
+    hidden_edit_functions_for_current_user = user.hidden_edit_functions
 
-    hidden_edit_functions_for_current_user = current_user.hidden_edit_functions
     if 'acls' in hidden_edit_functions_for_current_user:
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
@@ -96,7 +97,7 @@ def getContent(req, ids):
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     if "save" in req.params:
-        logg.info("%r change access %r", current_user, idstr)
+        logg.info("%r change access %r", user, idstr)
         if req.params.get("type") == "acl":
 
             for rule_type in rule_types:
@@ -230,5 +231,5 @@ def getContent(req, ids):
 
     return req.getTAL("web/edit/modules/acls.html",
                       {"runsubmit": runsubmit, "idstr": idstr, "contentacl": retacl,
-                       "adminuser": current_user.is_admin, "csrf": req.csrf_token.current_token},
+                       "adminuser": user.is_admin, "csrf": req.csrf_token.current_token},
                       macro="edit_acls")

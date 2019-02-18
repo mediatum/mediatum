@@ -28,7 +28,7 @@ from core import db, Node
 from core.translation import lang, t
 from core.metatype import Context
 from core import webconfig
-from core.transition import current_user
+from core.users import user_from_session as _user_from_session
 from core.users import get_guest_user
 from core.webconfig import node_url, edit_node_url
 from contenttypes import Directory, Container, Collection, Collections
@@ -175,6 +175,7 @@ class Searchlet(object):
         return self.edit
 
     def getSearchField(self, pos, width=174):
+        user = _user_from_session()
         try:
             searchmaskitem_id = self.searchmaskitem_ids[pos]
             searchmaskitem = self.searchmask.children.filter_by(id=searchmaskitem_id).scalar() if searchmaskitem_id else None
@@ -190,7 +191,7 @@ class Searchlet(object):
                 name="query" + unicode(pos),
                 language=self.lang,
                 container=self.container,
-                user=current_user,
+                user=user,
                 ip=self.ip))
         except:
             # workaround for unknown error
@@ -481,7 +482,7 @@ class UserLinks(object):
 def render_page(req, node, content_html, show_navbar=True, show_id=None):
     """Renders the navigation frame with the inserted content HTML and returns the whole page.
     """
-    user = current_user
+    user = _user_from_session()
     userlinks = UserLinks(user, req)
     language = lang(req)
     rootnode = get_collections_node()

@@ -17,12 +17,13 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import flask as _flask
 from .workflow import WorkflowStep, registerStep
 from core.translation import t, lang, addLabels
 from schema.schema import getMetaType
 from schema.schema import Metafield
 from core import db
-from core.transition import current_user
+from core.users import user_from_session as _user_from_session
 
 q = db.query
 
@@ -36,9 +37,10 @@ def register():
 class WorkflowStep_EditMetadata(WorkflowStep):
 
     def show_workflow_node(self, node, req):
+        user = _user_from_session()
         result = ""
         error = ""
-        key = req.params.get("key", req.session.get("key", ""))
+        key = req.params.get("key", _flask.session.get("key", ""))
 
         maskname = self.get("mask")
         mask = None
@@ -49,7 +51,7 @@ class WorkflowStep_EditMetadata(WorkflowStep):
             mask = getMetaType(node.schema).getMask(maskname)
 
         if "metaDataEditor" in req.params:
-            mask.update_node(node, req, current_user)
+            mask.update_node(node, req, user)
             db.session.commit()
             missing = mask.validate([node])
             if not missing or "gofalse" in req.params:

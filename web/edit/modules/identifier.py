@@ -27,7 +27,7 @@ import utils.mail as mail
 import utils.pathutils as pathutils
 from core.translation import lang, t
 from utils.utils import dec_entry_log
-from core.transition import current_user
+from core.users import user_from_session as _user_from_session
 from core import httpstatus
 import logging
 from core import Node
@@ -47,7 +47,7 @@ def getContent(req, ids):
     It's called in edit.py, where all the modules will be identified.
     """
     raise Exception("ACL must be fixed!")
-    user = current_user
+    user = _user_from_session()
     node = q(Node).get(ids[0])
 
     # first prove if the user has the required rights to call this module

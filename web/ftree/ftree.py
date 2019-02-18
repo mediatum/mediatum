@@ -18,10 +18,10 @@
 """
 import logging
 from core import db
-from core.transition import current_user
+from core.users import user_from_session as _user_from_session
 from contenttypes import Container, Content
-
 from .ftreedata import getData, getPathTo, getLabel
+
 
 q = db.query
 logg = logging.getLogger(__name__)
@@ -29,8 +29,9 @@ logg = logging.getLogger(__name__)
 
 def ftree(req):
 
-    if not current_user.is_editor:
-        logg.warn("ftree permission denied for user: %s", current_user.id)
+    user = _user_from_session()
+    if not user.is_editor:
+        logg.warn("ftree permission denied for user: %s", user.id)
         return 403
 
     if "parentId" in req.params:

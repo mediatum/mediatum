@@ -23,7 +23,7 @@ import logging
 
 from schema.schema import get_permitted_schemas
 from core.translation import translate
-from core.transition import current_user
+from core.users import user_from_session as _user_from_session
 from core import httpstatus
 from utils.utils import dec_entry_log
 from core import Node
@@ -41,9 +41,9 @@ def _redirect_to_view(req):
 
 @dec_entry_log
 def getContent(req, ids):
-    user = current_user
+    user = _user_from_session()
     node = q(Node).get(ids[0])
-    if not node.has_write_access() or "changeschema" in current_user.hidden_edit_functions:
+    if not node.has_write_access() or "changeschema" in user.hidden_edit_functions:
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 

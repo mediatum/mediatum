@@ -19,7 +19,7 @@
 """
 
 from core.translation import lang, t
-from core.transition import current_user
+from core.users import user_from_session as _user_from_session
 from core import httpstatus
 from core import Node
 from core.systemtypes import Root
@@ -32,7 +32,7 @@ def getInformation():
 
 
 def getContent(req, ids):
-    user = current_user
+    user = _user_from_session()
     nodes = []
     for nid in ids:
         node = q(Node).get(nid)

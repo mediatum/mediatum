@@ -29,7 +29,7 @@ import core.config as config
 from utils.utils import format_filesize, dec_entry_log, suppress
 from core.translation import lang
 from web.edit.edit_common import send_nodefile_tal, upload_for_html
-from core.transition import current_user
+from core.users import user_from_session as _user_from_session
 from core import httpstatus
 from core import Node
 from core import db
@@ -42,7 +42,7 @@ logg = logging.getLogger(__name__)
 @dec_entry_log
 def getContent(req, ids):
     node = q(Node).get(ids[0])
-    user = current_user
+    user = _user_from_session()
     if not node.has_write_access() or "editor" in user.hidden_edit_functions:
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")

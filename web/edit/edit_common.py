@@ -18,11 +18,12 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
+import flask as _flask
 
 from core import Node, db, webconfig
 from core.systemtypes import Root
 from core.translation import t, lang
-from core.transition import current_user
+from core.users import user_from_session as _user_from_session
 from contenttypes import Container
 from utils.fileutils import importFile
 from utils.utils import EncryptionException, dec_entry_log, suppress
@@ -206,8 +207,9 @@ def shownav(req, node, publishwarn="auto", markunpublished=False, sortfield=None
 @dec_entry_log
 def showdir(req, node, publishwarn="auto", markunpublished=False, sortfield=None, item_count=None, all_nodes=None, faultyidlist=[]):
     global g_nodes
+    user = _user_from_session()
     if publishwarn == "auto":
-        homedirs = current_user.home_dir.all_children_by_query(q(Container))
+        homedirs = user.home_dir.all_children_by_query(q(Container))
         publishwarn = node in homedirs
     nodes = node.content_children # XXX: ?? correct
     make_search_content = get_make_search_content_function(req)
@@ -310,7 +312,7 @@ def shownavlist(req, node, nodes, page, dir=None):
 @dec_entry_log
 def shownodelist(req, nodes, page, publishwarn=True, markunpublished=False, dir=None, item_count=None, all_nodes=None,
                  faultyidlist=[]):
-    req.session["nodelist"] = EditorNodeList(nodes)
+    _flask.session.nodelist = EditorNodeList(nodes)
     script_array = "allobjects = new Array();\n"
     nodelist = []
     nodes_per_page = get_nodes_per_page(req, dir)
@@ -318,7 +320,7 @@ def shownodelist(req, nodes, page, publishwarn=True, markunpublished=False, dir=
     start = (page - 1) * nodes_per_page
     end = start + nodes_per_page
 
-    user = current_user
+    user = _user_from_session()
     nodes_in_page = nodes[start:end]
     all_nodes = nodes[:]
     if isinstance(item_count, list):
@@ -415,10 +417,10 @@ def writetree(req, node, f, key="", openednodes=None, sessionkey="unfoldedids", 
     ret = ""
 
     try:
-        unfoldedids = req.session[sessionkey]
+        unfoldedids = _flask.session[sessionkey]
         len(unfoldedids)
     except:
-        req.session[sessionkey] = unfoldedids = {unicode(q(Root).one().id): 1}
+        _flask.session[sessionkey] = unfoldedids = {unicode(q(Root).one().id): 1}
 
     if openednodes:
         # open all selected nodes and their parent nodes
@@ -428,7 +430,7 @@ def writetree(req, node, f, key="", openednodes=None, sessionkey="unfoldedids", 
                 o(u, n)
         for n in openednodes:
             o(unfoldedids, n)
-        req.session[sessionkey] = unfoldedids
+        _flask.session[sessionkey] = unfoldedids
 
     with suppress(KeyError, warn=False):
         unfold = req.params["tree_unfold"]
@@ -493,7 +495,7 @@ def send_nodefile_tal(req):
 
 @dec_entry_log
 def upload_for_html(req):
-    user = current_user
+    user = _user_from_session()
     datatype = req.params.get("datatype", "image")
 
     id = req.params.get("id")
@@ -583,13 +585,14 @@ def get_special_dir_type(node):
 
 
 def get_edit_label(node, lang):
+    user = _user_from_session()
     special_dir_type = get_special_dir_type(node)
 
     if special_dir_type is None:
         label = node.getLabel(lang=lang)
     elif special_dir_type == "home":
         label = t(lang, 'user_home')
-        if current_user.is_admin:
+        if user.is_admin:
             label += " (" + node.name + ")"
     else:
         label = t(lang, 'user_' + special_dir_type)

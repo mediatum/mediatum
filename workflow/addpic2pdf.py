@@ -25,6 +25,7 @@ import json
 import os
 import logging
 import random
+import flask as _flask
 
 import core.users as users
 from core import request_handler as _request_handler
@@ -105,7 +106,7 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
 
         check_context()
 
-        user = users.getUserFromRequest(req)
+        user = users.user_from_session()
 
         current_workflow = getNodeWorkflow(node)
         current_workflow_step = getNodeWorkflowStep(node)
@@ -307,7 +308,7 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
                 error += error_no_pdf
             pdf_dimensions = {'d_pageno2size': {0: [595.275, 841.889]}, 'd_pageno2rotate': {0: 0}}  # A4
             keep_params = copyDictValues(req.params, {}, KEEP_PARAMS)
-            context = {"key": req.params.get("key", req.session.get("key", "")),
+            context = {"key": req.params.get("key", _flask.session.get("key", "")),
                        "error": error,
 
                        "node": node,
@@ -327,7 +328,7 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
 
                        "FATAL_ERROR": 'true',
 
-                       "user": users.getUserFromRequest(req),
+                       "user": user,
                        "prefix": self.get("prefix"),
                        "buttons": self.tableRowButtons(node),
                        "csrf": req.csrf_token.current_token,}
@@ -385,7 +386,7 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
 
         keep_params = copyDictValues(req.params, {}, KEEP_PARAMS)
 
-        context = {"key": req.params.get("key", req.session.get("key", "")),
+        context = {"key": req.params.get("key", _flask.session.get("key", "")),
                    "error": req.params.get('addpic2pdf_error', ''),
 
                    "node": node,
@@ -405,7 +406,7 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
 
                    "FATAL_ERROR": {False: 'false', True: 'true'}[bool(FATAL_ERROR)],
 
-                   "user": users.getUserFromRequest(req),
+                   "user": user,
                    "prefix": self.get("prefix"),
                    "buttons": self.tableRowButtons(node),
                    "csrf": req.csrf_token.current_token,}
@@ -592,7 +593,7 @@ def handle_request(req):
 
     errors = []
 
-    user = users.getUserFromRequest(req)
+    user = _user_from_session()
 
     if not PYPDF_MODULE_PRESENT:
         return
@@ -621,7 +622,7 @@ def handle_request(req):
             req.params["addpic2pdf_error"] = "%s: %s" % (
                 format_date().replace('T', ' - '), t(lang(req), "admin_wfstep_addpic2pdf_no_access"))
             logg.info("workflow step addpic2pdf(%s): no access to node %s for request from user '%s' (%s)",
-                current_workflow_step.id, node.id, user.name, req.ip)
+                current_workflow_step.id, node.id, user.getName(), req.ip)
             return 403  # forbidden
 
         if req.path == '/serve_page/document.pdf':
@@ -707,7 +708,7 @@ def handle_request(req):
     if False:  # not access.hasAccess(node, "read"):
         req.params["addpic2pdf_error"] = "%s: %s" % (format_date().replace('T', ' - '), t(lang(req), "admin_wfstep_addpic2pdf_no_access"))
         logg.info("workflow step addpic2pdf(%s): no access to node %s for request from user '%s' (%s)",
-            current_workflow_step.id, node.id, user.name, req.ip)
+            current_workflow_step.id, node.id, user.getName(), req.ip)
         return 403  # forbidden
 
     pdf_in_filepath = getPdfFilepathForProcessing(current_workflow_step, node)

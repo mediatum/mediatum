@@ -4,13 +4,14 @@
     :license: GPL3, see COPYING for details
 """
 from __future__ import absolute_import
+import flask as _flask
 from web.handlers.become import become_user
 from core import httpstatus
 
 
 def test_become(session, req, admin_user, some_user):
     session.flush()
-    req.session["user_id"] = admin_user.id
+    _flask.session["user_id"] = admin_user.id
     req.path = "/_become/" + some_user.login_name
     status = become_user(req)
     assert status == httpstatus.HTTP_MOVED_TEMPORARILY
@@ -20,7 +21,7 @@ def test_become(session, req, admin_user, some_user):
 def test_become_with_authenticator(session, req, admin_user, some_user):
     session.flush()
     user = some_user
-    req.session["user_id"] = admin_user.id
+    _flask.session["user_id"] = admin_user.id
     req.path = "/_become/{}|{}/{}".format(user.authenticator_info.auth_type,
                                           user.authenticator_info.name,
                                           user.login_name)

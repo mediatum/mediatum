@@ -19,6 +19,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
+import flask as _flask
 import core.config as config
 from .workflow import WorkflowStep, registerStep
 from schema.schema import getMetaType
@@ -81,7 +82,7 @@ class WorkflowStep_Start(WorkflowStep):
             node.set("system.wflanguage", req.params.get('workflow_language', req.Cookies.get('language')))
             node.set("key", mkKey())
             node.set("system.key", node.get("key"))  # initial key identifier
-            req.session["key"] = node.get("key")
+            _flask.session["key"] = node.get("key")
             db.session.commit()
             return self.forwardAndShow(node, True, req)
 

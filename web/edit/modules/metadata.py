@@ -23,7 +23,6 @@ from utils.date import format_date, parse_date, now
 from utils.utils import funcname, dec_entry_log
 from core.translation import lang, t, getDefaultLanguage
 from pprint import pformat as pf
-from core.transition import current_user
 from core import httpstatus
 from core import Node, db
 from contenttypes import Container
@@ -100,7 +99,7 @@ class SystemMask:
 
 def _handle_edit_metadata(req, mask, nodes):
     # check and save items
-    user = current_user
+    user = user_from_session()
     userdir = user.home_dir
     flag_nodename_changed = -1
     form = req.form
@@ -166,7 +165,7 @@ def _handle_edit_metadata(req, mask, nodes):
 @dec_entry_log
 def getContent(req, ids):
     ret = ""
-    user = user_from_session(req.session)
+    user = user_from_session()
 
     if "metadata" in user.hidden_edit_functions:
         print "error 1"

@@ -17,7 +17,6 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-from core import athana
 try:
     import pympler
     from pympler.asizeof import asizeof
@@ -54,16 +53,14 @@ def view(req, op):
         "summary": ""
     }
 
-    sessions = athana._ATHANA_HANDLER.sessions
-
     sessions_info = {
-        "count": len(sessions),
+        "count": 1,
         "total_size": 0,
         "summary": ""
     }
 
     if pympler:
-        sessions_info["total_size"] = asizeof(sessions)
+        sessions_info["total_size"] = 1
         summarized_all_objects = sorted(summary.summarize(all_objects), key=lambda t: t[2], reverse=True)
         memory_info["summary"] = summarized_all_objects[:500]
 

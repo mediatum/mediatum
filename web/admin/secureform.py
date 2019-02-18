@@ -1,3 +1,4 @@
+import flask as _flask
 from flask_admin.form import SecureForm
 from datetime import timedelta
 from core import config
@@ -9,7 +10,7 @@ class MediatumSecureForm(SecureForm):
 
     @property
     def csrf_context(self):
-        return session
+        return _flask.session
 
     def validate_csrf_token(self, field):
         try:

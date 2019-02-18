@@ -27,7 +27,7 @@ import logging
 from utils.utils import getMimeType, get_user_id, suppress
 from utils.fileutils import importFile, getImportDir, importFileIntoDir, importFileToRealname
 from contenttypes.image import make_thumbnail_image, make_presentation_image
-from core.transition import current_user
+from core.users import getUploadDir as _getUploadDir
 from core import httpstatus
 from core.translation import t
 from core import Node
@@ -116,7 +116,7 @@ def _handle_change(node, req):
     if not uploadfile:
         return
     change_file = req.params.get("change_file")
-    user = current_user
+    user = users.user_from_session()
 
     if (req.params.get('generate_new_version') and not hasattr(node, "metaFields")):
         # Create new version when changing files
@@ -151,15 +151,15 @@ def _handle_change(node, req):
 
 def getContent(req, ids):
     ret = ""
-    user = current_user
+    user = users.user_from_session()
     node = q(Node).get(ids[0])
     update_error = False
     update_error_extension = False
 
     logg.debug("%s|web.edit.modules.files.getContend|req.fullpath=%s|req.path=%s|req.params=%s|ids=%s",
-               get_user_id(req), req.fullpath, req.path, req.params, ids)
+               get_user_id(), req.fullpath, req.path, req.params, ids)
 
-    if not node.has_write_access() or "files" in current_user.hidden_edit_functions:
+    if not node.has_write_access() or "files" in user.hidden_edit_functions:
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
@@ -214,7 +214,7 @@ def getContent(req, ids):
             with suppress(Exception):
                 remnode = q(Node).get(req.params.get('remove'))
                 if len(remnode.parents) == 1:
-                    users.getUploadDir(user).children.append(remnode)
+                    _getUploadDir(user).children.append(remnode)
                 node.children.remove(remnode)
 
             req.writeTAL("web/edit/modules/files.html", {'children': node.children, 'node': node, "csrf": req.csrf_token.current_token}, macro="edit_files_children_list")

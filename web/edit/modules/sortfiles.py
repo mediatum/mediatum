@@ -20,7 +20,8 @@
 
 from sqlalchemy import func
 from core.translation import t as _t
-from core.transition import current_user
+from utils.utils import getCollection
+from core.users import user_from_session as _user_from_session
 from core import httpstatus
 from core import Node
 from core import db
@@ -31,7 +32,7 @@ q = db.query
 
 
 def getContent(req, ids):
-    user = current_user
+    user = _user_from_session()
     node = q(Node).get(ids[0])
 
     if "sortfiles" in user.hidden_edit_functions or not node.has_write_access():

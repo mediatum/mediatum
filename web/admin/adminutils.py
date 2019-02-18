@@ -21,12 +21,12 @@ import logging
 import os
 import math
 import sys
+import flask as _flask
 
 from core import db, User, AuthenticatorInfo
 import core.users as users
 import core.config as config
 from core.translation import t, lang
-from core.transition import current_user, request
 from core import httpstatus
 from core.systemtypes import Root
 from utils.strings import ensure_unicode_returned
@@ -53,7 +53,7 @@ def getAdminStdVars(req):
     if req.params.get("page", "") == "0":
         page = "?page=0"
 
-    user = users.getUserFromRequest(req)
+    user = users.user_from_session()
 
     tabs = [("0-9", "09")]
     for i in range(65, 91):
@@ -203,9 +203,8 @@ def findmodule(type):
 
 @ensure_unicode_returned(name="adminutils.show_content")
 def show_content(req, op):
-    from core.users import user_from_session
-    user = user_from_session(req.session)
 
+    user = users.user_from_session()
     if not user.is_admin:
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/admin/frame.html", {}, macro="errormessage")
@@ -294,7 +293,8 @@ def become_user(login_name, authenticator_key=None):
     If there are multiple results for a `login_name`, an authenticator_key must be given.
     Can only be called when the current user is admin.
     """
-    if not current_user.is_admin:
+    user = users.user_from_session()
+    if not user.is_admin:
         raise SecurityException("becoming other users not allowed for non-admin users")
 
     candidate_users = q(User).filter_by(login_name=login_name).all()
@@ -326,5 +326,5 @@ def become_user(login_name, authenticator_key=None):
         if user is None:
             return
 
-    request.session["user_id"] = user.id
+    _flask.session["user_id"] = user.id
     return user

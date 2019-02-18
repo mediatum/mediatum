@@ -374,7 +374,7 @@ def extra_log_info_from_req(req, add_user_info=True):
 
     if add_user_info:
         from core.users import user_from_session
-        user = user_from_session(req.session)
+        user = user_from_session()
         extra["user_is_anonymous"] = user.is_anonymous
 
         if not user.is_anonymous:

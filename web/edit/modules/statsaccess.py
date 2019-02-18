@@ -23,7 +23,7 @@ from core.stats import StatisticFile
 from core.translation import t, lang
 from utils.utils import splitpath
 from utils.date import format_date, now
-from core.transition import current_user
+from core.users import user_from_session as _user_from_session
 from core import httpstatus
 from core import Node
 from core import db
@@ -53,7 +53,7 @@ def getContent(req, ids):
     if len(ids) > 0:
         ids = ids[0]
 
-    user = current_user
+    user = _user_from_session()
     node = q(Node).get(ids)
 
     if "statsaccess" in user.hidden_edit_functions or not node.has_write_access():

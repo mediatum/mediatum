@@ -28,7 +28,7 @@ from core.users import get_guest_user
 from core import httpstatus
 from utils.utils import join_paths, Menu
 from web.admin.adminutils import findmodule, show_content, adminNavigation, getMenuItemID
-from core.transition import current_user
+from core.users import user_from_session as _user_from_session
 from core.request_handler import sendFile as _sendFile
 
 
@@ -40,7 +40,7 @@ def show_node(req):
 
     p = req.path[1:].split("/")
     style = req.params.get("style", u"")
-    user = current_user
+    user = _user_from_session()
 
     v = {}
     v["user"] = user
@@ -69,9 +69,10 @@ def show_node(req):
 
 
 def export(req):
+    user = _user_from_session()
     """ export definition: url contains /[type]/[id] """
 
-    if not current_user.is_admin:
+    if not user.is_admin:
         return httpstatus.HTTP_FORBIDDEN
 
     path = req.path[1:].split("/")

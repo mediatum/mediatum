@@ -296,8 +296,8 @@ def importBibTeX(infile, node=None, req=None):
     user = None
     if req:
         try:
-            user = users.getUserFromRequest(req)
-            msg = "bibtex import: import started by user '%s'" % (user.name)
+            user = users.user_from_session()
+            msg = "bibtex import: import started by user '%s'" % (user.getName())
         except:
             msg = "bibtex import: starting import (unable to identify user)"
     else:

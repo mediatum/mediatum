@@ -153,7 +153,7 @@ def build_accessfunc_arguments(user=None, ip=None, date=None, req=None):
 
         from core.users import user_from_session
 
-        user = user_from_session(req.session)
+        user = user_from_session()
         # XXX: like in mysql version, what's the real solution?
         try:
             ip = IPv4Address(req.remote_addr)

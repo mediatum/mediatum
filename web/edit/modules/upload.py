@@ -87,7 +87,7 @@ def getDatatypes(req, schemes):
 @dec_entry_log
 def getContent(req, ids):
 
-    user = users.getUserFromRequest(req)
+    user = users.user_from_session()
     language = lang(req)
 
     def get_ids_from_query():
@@ -299,7 +299,7 @@ def getContent(req, ids):
                 identifierImporter = identifier_importers[identifier_importer]
                 importer_func = identifierImporter.importer_func
 
-                user = users.getUserFromRequest(req)
+                user = users.user_from_session()
                 importdir = users.getUploadDir(user)
 
                 new_node = importer_func(identifier, importdir, req=req)
@@ -343,7 +343,7 @@ def getContent(req, ids):
             node.files.append(f)
             db.session.commit()
             req.write("")
-            logg.debug("%s|%s.%s: added file to node %s (%s, %s)", get_user_id(req), __name__, funcname(), node.id, node.name, node.type)
+            logg.debug("%s|%s.%s: added file to node %s (%s, %s)", get_user_id(), __name__, funcname(), node.id, node.name, node.type)
             if not proceed_to_uploadcomplete:
                 return None
 
@@ -378,7 +378,7 @@ def getContent(req, ids):
                                       'state': 'error',
                                       'filename': req.params.get('file')}, ensure_ascii=False))
                 logg.debug("%s|%s.%s: added file to node %s (%s, %s) -> file type not supported",
-                             get_user_id(req), __name__, funcname(), node.id, node.name, node.type)
+                             get_user_id(), __name__, funcname(), node.id, node.name, node.type)
                 return None
 
             elif mime[1] == "zip":  # zip file
@@ -458,7 +458,6 @@ def getContent(req, ids):
 
     v.update({
         "id": req.params.get("id"),
-        "sid": req.session.id,
         "datatypes": getDatatypes(req, schemes),
         "schemes": schemes,
         "uploadstate": req.params.get("upload"),

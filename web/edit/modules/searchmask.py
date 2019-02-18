@@ -18,7 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import schema.searchmask as searchmask
-from core.transition import current_user
+from core.users import user_from_session as _user_from_session
 from core import httpstatus
 import json
 from core import Node
@@ -28,7 +28,7 @@ from core.systemtypes import Searchmasks, Metadatatypes
 q = db.query
 
 def getContent(req, ids):
-    user = current_user
+    user = _user_from_session()
     node = q(Node).get(ids[0])
 
     if not node.has_write_access() or "searchmask" in user.hidden_edit_functions:

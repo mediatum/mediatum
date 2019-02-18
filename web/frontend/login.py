@@ -19,6 +19,7 @@
 """
 import logging
 import hashlib
+import flask as _flask
 
 from core import db, User, auth
 from core import httpstatus
@@ -67,13 +68,11 @@ def _handle_login_submit(req):
     if user:
         # stop caching
         _setCookie(req, "nocache", "1", path="/")
-        if "contentarea" in req.session:
-            del req.session["contentarea"]
-        req.session["user_id"] = user.id
+        _flask.session["user_id"] = user.id
         logg.info("%s logged in", user.login_name)
 
-        if req.session.get('return_after_login'):
-            req['Location'] = req.session['return_after_login']
+        if _flask.session.get('return_after_login'):
+            req['Location'] = _flask.session['return_after_login']
         elif config.get("config.ssh", "") == "yes":
             req["Location"] = ''.join(["https://", config.get("host.name"), _make_collection_root_link()])
         else:
@@ -92,17 +91,16 @@ def _set_return_after_login(req):
     host = _get_header(req, "host")
 
     if referer is None or any(uri in referer for uri in ('/login', '/logout', '/pwdforgotten', '/pwdchange', '/pnode')):
-        req.session['return_after_login'] = False
+        _flask.session['return_after_login'] = False
     # check if referrer is mediatum and not a search engine
     elif not referer.startswith('http://' + host + '/') and not referer.startswith('https://' + host + '/'):
-        req.session['return_after_login'] = False
+        _flask.session['return_after_login'] = False
     else:
         if '/edit_content' in referer:
             # returns the user to /edit/ instead of /edit/edit_content?id=604993, which has no sidebar
-            req.session['return_after_login'] = referer.replace("/edit_content", "")
+            _flask.session['return_after_login'] = referer.replace("/edit_content", "")
         else:
-            req.session['return_after_login'] = referer
-
+            _flask.session['return_after_login'] = referer
 
 def login(req):
 
@@ -116,7 +114,7 @@ def login(req):
     _set_return_after_login(req)
 
     # show login form
-    user = users.user_from_session(req.session)
+    user = users.user_from_session()
     language = lang(req)
     ctx = {"error": error, "user": user, "email": config.get("email.support"), "language": language, "csrf": req.csrf_token.current_token}
     login_html = webconfig.theme.render_macro("login.j2.jade", "login", ctx)
@@ -129,11 +127,11 @@ def login(req):
 
 def logout(req):
     # if the session has expired, there may be no user in the session dictionary
-    user = users.user_from_session(req.session)
+    user = users.user_from_session()
     if not user.is_anonymous:
         auth.logout_user(user, req)
-        if "user_id" in req.session:
-            del req.session["user_id"]
+        if "user_id" in _flask.session:
+            del _flask.session["user_id"]
 
     req.request["Location"] = '/'
     # return to caching
@@ -142,7 +140,7 @@ def logout(req):
 
 
 def pwdchange(req):
-    user = users.user_from_session(req.session)
+    user = users.user_from_session()
     error = 0
 
     if "ChangeSubmit" in req.form:

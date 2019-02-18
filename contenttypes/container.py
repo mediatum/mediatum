@@ -32,7 +32,7 @@ from contenttypes.data import Data
 from core.database.helpers import ContainerMixin
 from core.translation import t, lang, getDefaultLanguage
 from utils.utils import CustomItem
-from core.transition import current_user
+from core.users import user_from_session as _user_from_session
 from core.postgres import check_type_arg_with_schema
 from schema.schema import Metafield, SchemaMixin
 
@@ -172,6 +172,7 @@ class Container(Data, ContainerMixin, SchemaMixin):
     """ format big view with standard template """
     def show_node_big(self, req, style_name=""):
         # style_name is ignored
+        user = _user_from_session()
         content = u""
         link = node_url(self.id, files=1)
         sidebar = u""
@@ -199,7 +200,7 @@ class Container(Data, ContainerMixin, SchemaMixin):
             if node_id_list:
                 node_id = node_id_list[0]
                 node = db.query(Node).get(node_id)
-                fname_allowed = node and node.has_read_access(user=current_user)
+                fname_allowed = node and node.has_read_access(user=user)
 
             fpath = "{}html/{}".format(config.get("paths.datadir"),
                                        fname)

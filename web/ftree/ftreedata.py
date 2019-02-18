@@ -19,7 +19,7 @@
 import logging
 
 from core.translation import translate, lang
-from core.transition import current_user
+from core.users import user_from_session as _user_from_session
 from contenttypes import Collections, Container
 from core import Node
 from core import db
@@ -36,6 +36,7 @@ def getData(req):
     pid = req.params.get("parentId")
     style = req.params.get("style", "edittree")
     ret = []
+    user = _user_from_session()
 
     for c in q(Node).get(pid).children.filter_read_access().order_by(Node.orderpos):
         try:
@@ -62,7 +63,7 @@ def getData(req):
                     cls = "trashicon"
                 elif special_dir_type == u'upload':
                     cls = "uploadicon"
-                elif c == current_user.home_dir:
+                elif c == user.home_dir:
                     cls = "homeicon"
 
                 if style == "edittree":  # standard tree for edit area

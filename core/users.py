@@ -19,6 +19,7 @@
 """
 import logging
 from warnings import warn
+import flask as _flask
 
 import core.config as config
 from core import User
@@ -69,7 +70,7 @@ def getExternalAuthentificators():
     raise Exception("use auth.authenticators")
 
 
-def user_from_session(session):
+def user_from_session():
     
     from core.transition import request
     user_from_cache = request.app_cache.get("user")
@@ -77,7 +78,7 @@ def user_from_session(session):
         return user_from_cache
     
     def _user_from_session():
-        user_id = session.get("user_id")
+        user_id = _flask.session.get("user_id")
         if user_id is not None:
             user = q(User).get(user_id)
 
@@ -85,18 +86,13 @@ def user_from_session(session):
                 return user
 
             logg.warn("invalid user id %s from session, falling back to guest user", user_id)
-            del session["user_id"]
+            del _flask.session["user_id"]
 
         return get_guest_user()
     
     user = _user_from_session()
     request.app_cache["user"] = user
     return user
-
-
-def getUserFromRequest(req):
-    warn("use users.user_from_session()", DeprecationWarning)
-    return user_from_session(req.session)
 
 
 def getExternalUserFolder(type=""):

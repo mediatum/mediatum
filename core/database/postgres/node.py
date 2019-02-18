@@ -329,7 +329,7 @@ class Node(DeclarativeBase, NodeMixin):
         if req is None:
             req = request
 
-        user = user_from_session(req.session)
+        user = user_from_session()
 
         # XXX: like in mysql version, what's the real solution?
         try:

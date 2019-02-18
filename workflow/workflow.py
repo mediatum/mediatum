@@ -20,6 +20,7 @@
 
 import pkgutil
 import importlib
+import flask as _flask
 
 import core.config as config
 from mediatumtal import tal
@@ -29,7 +30,7 @@ from core.xmlnode import getNodeXML, readNodeXML
 
 import utils.date as date
 from core.translation import t, lang, addLabels, getDefaultLanguage, switch_language
-from core.transition import current_user
+from core.users import user_from_session as _user_from_session
 from core.postgres import check_type_arg
 from core.database.postgres.permission import NodeToAccessRuleset
 
@@ -449,8 +450,8 @@ class WorkflowStep(Node):
             # stop caching
             _setCookie(req, "nocache", "1", path="/")
 
-            key = req.params.get("key", req.session.get("key", ""))
-            req.session["key"] = key
+            key = req.params.get("key", _flask.session.get("key", ""))
+            _flask.session["key"] = key
 
             if "obj" in req.params:
                 nodes = [q(Node).get(id) for id in req.params['obj'].split(',')]
@@ -486,7 +487,8 @@ class WorkflowStep(Node):
 
                 if self in node.parents:
                     # set correct language for workflow for guest user only
-                    if node.get('key') == node.get('system.key') and current_user.is_anonymous:
+                    user = _user_from_session()
+                    if node.get('key') == node.get('system.key') and user.is_anonymous:
                         switch_language(req, node.get('system.wflanguage'))
 
                     link = req.makeLink("/mask", {"id": self.id})

@@ -20,7 +20,7 @@
 
 from web.edit.edit_common import showdir
 from core.users import getHomeDir
-from core.transition import current_user
+from core.users import user_from_session as _user_from_session
 import logging
 from contenttypes import Collections, Container
 from core import Node
@@ -36,7 +36,7 @@ def getInformation():
 
 def getContent(req, ids):
     logg.error("publish.getContent")
-    user = current_user
+    user = _user_from_session()
     publishdir = q(Node).get(ids[0])
     ret = ""
 

@@ -270,16 +270,16 @@ def update_nodetypes_in_db():
 
 
 def _init_locks():
-    _register_lock('cache')
-    _register_lock('iolock')
-    _register_lock('lrucachelock')
-    _register_lock('oaitoken')
-    _register_lock('pofile')
-    _register_lock('producer')
-    _register_lock('queuelock')
-    _register_lock('workflow')
-    _register_lock('zipfile')
-    _register_lock('createsearchindices')
+    _register_lock('cache', 0)
+    _register_lock('createsearchindices', 1)
+    _register_lock('iolock', 2)
+    _register_lock('lrucachelock', 3)
+    _register_lock('oaitoken', 4)
+    _register_lock('pofile', 5)
+    _register_lock('producer', 6)
+    _register_lock('queuelock', 7)
+    _register_lock('workflow', 8)
+    _register_lock('zipfile', 9)
 
 
 def basic_init(root_loglevel=None, config_filepath=None, prefer_config_filename=None, log_filepath=None, log_filename=None,

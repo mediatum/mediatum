@@ -270,7 +270,7 @@ def getentries(filename):
         try:
             error = None
             fi = codecs.open(filename, "r", encoding=encoding)
-            parser = BibTexParser()
+            parser = BibTexParser(common_strings=True)
             # accept also non standard records like @SCIENCEREPORT
             parser.ignore_nonstandard_types = False
             parser.customization = _bibteximport_customize
@@ -315,6 +315,10 @@ def importBibTeX(infile, node=None, req=None):
         try:
             entries = getentries(infile)
         except:
+            # XXX TODO This reports *everything* as encoding error
+            # XXX TODO (even things like full disk or other parsing errors).
+            # XXX TODO We should at least reformulate the error message,
+            # XXX TODO and -- even better -- only catch errors that are to be expected.
             logg.error("getentries failed", exc_info=1)
             msg = "bibtex import: getentries failed, import stopped (encoding error)"
             logg.error(msg)

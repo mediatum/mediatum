@@ -248,15 +248,6 @@ let
     ];
   };
 
-  dogpile_cache = self.buildPythonPackage {
-    name = "dogpile.cache-0.6.7";
-    src = fetchurl {
-      url = "https://pypi.python.org/packages/ee/bd/440da735a11c6087eed7cc8747fc4b995cbac2464168682f8ee1c8e43844/dogpile.cache-0.6.7.tar.gz";
-      sha256= "1aw8rx8vhb75y7zc6gi67g21sw057jdx7i8m3jq7kf3nqavxx9zw";
-    };
-    doCheck = false;
-  };
-
   attrs = self.buildPythonPackage {
     name = "attrs-18.2.0";
     src = fetchurl {
@@ -479,7 +470,6 @@ in {
       coffeescript
       ConfigArgParse
       decorator
-      dogpile_cache
       fdfgen
       flask-admin
       flask_login

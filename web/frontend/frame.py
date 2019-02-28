@@ -44,16 +44,6 @@ from utils.google_scholar import google_scholar
 import time
 
 
-navtree_cache = make_region().configure(
-    'dogpile.cache.redis',
-    expiration_time=5 * 60, # 10 mins and one second
-    arguments = {
-        'db': 1,
-        'redis_expiration_time': 5 * 60 + 10,
-        'distributed_lock': False,
-    }                                     
-)
-
 q = db.query
 logg = logging.getLogger(__name__)
 

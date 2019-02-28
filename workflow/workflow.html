@@ -34,6 +34,7 @@
         <tr class="search">
             <th colspan="7" style="padding-top:20px;padding-bottom:20px">
                 <form>
+                    <input tal:attributes="value csrf" type="hidden" name="csrf_token">
                     <tal:block i18n:translate="wf_edit_search"/>: <input tal:attributes="value search" type="text" name="workflow_search"/><button type="submit" i18n:translate="wf_edit_search">TEXT</button>
                 </form>
                 <p tal:condition="python:search!='' and len(items)==0" i18n:translate="wf_edit_nosearchresults"></p>

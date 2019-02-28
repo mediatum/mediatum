@@ -175,6 +175,7 @@
         <div id="uploadform-form">
             <div style="position:absolute;top:-7px;right:-7px;z-index:10002"><a href="#" onclick="closeFormPluploadWidget()" i18n:attributes="title mask_editor_cancel"><img src="/img/cancel.png"/></a></div>
               <form tal:condition="python:len(schemes)!=0"  style="border:2px solid silver;">
+
               	<div id="uploader" style="width:100%;height:450px;">
               		<p>Your browser doesn't have Flash, Silverlight or HTML5 support.</p>
               	</div>
@@ -182,6 +183,7 @@
               	<button id="id_button_createobjectsplupload" type="button" disabled onclick="createObjectsPlupload();" i18n:translate="edit_upload_create_objects">TEXT</button><span id="span_plupload_createobjects" > </span>
               </form>
               <form tal:condition="python:len(schemes)==0"  style="border:1px solid silver;">
+
               	<div>
               		<p>you cannot upload because you have no metadata types defined</p>
               	</div>
@@ -193,6 +195,7 @@
 <script tal:content="python:u'var uploadstate = \'{}\';'.format(uploadstate)"> </script>
 <script tal:content="python:u'var js_upload_unpack = \'{}\';'.format(t(language, 'edit_upload_unpack'))">;</script>
 <script tal:content="python:u'var js_upload_no_unpack = \'{}\';'.format(t(language, 'edit_upload_no_unpack'))">;</script>
+<script tal:content="python:u'var csrf = \'{}\';'.format(csrf)"> </script>
 
 <script type="text/javascript">
 
@@ -336,7 +339,9 @@
     var files_uploaded = 0;
 
     function init_plupload_widget() {
+     csrf = csrf.replace("##", "!!!!!");
      var u = $(function() {
+
     	$("#uploader").plupload({
     		// General settings
 
@@ -346,7 +351,7 @@
         //autostart: true,
         autostart: false,
 
-    		url : '/edit/edit_content?action=upload&func=init_plupload_widget&uploader=plupload&id='+id,
+    		url : '/edit/edit_content?action=upload&func=init_plupload_widget&uploader=plupload&id='+id+'&csrf_token='+csrf,
 
     		// User can upload no more then 20 files in one go (sets multiple_queues to false)
     		max_file_count: 0,  // default is 0 -> no limit

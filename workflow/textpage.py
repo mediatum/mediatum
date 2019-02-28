@@ -56,7 +56,7 @@ class WorkflowStep_TextPage(WorkflowStep):
             self.forward(node, True)
         else:
             buttons = self.tableRowButtons(node)
-        return req.getTAL("workflow/textpage.html", {"text": self.get("text"), "buttons": buttons}, macro="textpage_show_node")
+        return req.getTAL("workflow/textpage.html", {"text": self.get("text"), "buttons": buttons, "csrf": req.csrf_token.current_token,}, macro="textpage_show_node")
 
     def metaFields(self, lang=None):
         field = Metafield("text")

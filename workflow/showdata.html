@@ -64,6 +64,7 @@
     <p tal:content="raw python:posttext"/>
     
     <form action="/mask" method="post">
+        <input tal:attributes="value csrf" type="hidden" name="csrf_token">
         <input tal:attributes="value key" type="hidden" name="key"/>
         <table style="width:100%">
             <tr>

@@ -165,7 +165,7 @@ def getContent(req, ids):
             return 0
         return 1
     data["display"] = display
-
+    data["csrf"] = req.csrf_token.current_token
     searchtypechanged = False
     if req.params.get("searchtypechanged", "") == "true":
         searchtypechanged = True

@@ -139,6 +139,6 @@ def getContent(req, ids):
          "basedir": q(Collections).one(),
          "script": "var currentitem = '%s';\nvar currentfolder = '%s'" % (publishdir.id, publishdir.id), "idstr": ids,
          "faultyerrlist": [error_str for (id, error_str) in actionerror]}
-
+    v["csrf"] = req.csrf_token.current_token
     ret += req.getTAL("web/edit/modules/publish.html", v, macro="publish_form")
     return ret

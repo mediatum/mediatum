@@ -6,9 +6,11 @@
         {% if not current_user.is_authenticated %}
         <form method="POST" action="">
             {{ form.hidden_tag() if form.hidden_tag }}
-            {% for f in form if f.type != 'CSRFTokenField' %}
+            {% for f in form %}
             <div>
+                {% if f.type != 'CSRFTokenField' %}
             <label style="display:inline-block;width:100px;">{{ f.label }}:</label>
+                {% endif %}
             {{ f }}
             {% if f.errors %}
             <ul>

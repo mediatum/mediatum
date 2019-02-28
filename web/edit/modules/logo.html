@@ -80,10 +80,12 @@
         </div>
         <div style="margin-left:150px;overflow:auto;position:relative;max-height:200px;margin-right:230px;padding-top:20px">
             <form tal:attributes="action python:u'edit_content?id={}&tab={}'.format(id, tab)" tal:define="files python:node.getFiles()" method="post" enctype="multipart/form-data" name="logo">
+                <input tal:attributes="value csrf" type="hidden" name="csrf_token">
                 <p>
                     <span i18n:translate="edit_logo_addfile"/> <input name="updatefile" type="file" size="50"/> <button i18n:attributes="title edit_upload_upload_label" i18n:translate="edit_upload_upload_label" type="submit" name="addfile" value="submit">TEXT</button>
                 </p>
                 <form method="post" >
+                    <input tal:attributes="value csrf" type="hidden" name="csrf_token">
                     <br/>
                     <span i18n:translate="edit_logo_link_label"/>
                     <br/>

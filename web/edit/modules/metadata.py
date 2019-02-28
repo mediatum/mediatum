@@ -259,6 +259,7 @@ def getContent(req, ids):
     ctx["maskname"] = maskname
     ctx["language"] = lang(req)
     ctx["t"] = t
+    ctx["csrf"] = req.csrf_token.current_token
 
     if action == 'restore':
         raise NotImplementedError("restore version not implemented, later...")

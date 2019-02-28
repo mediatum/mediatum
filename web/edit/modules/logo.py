@@ -108,7 +108,8 @@ def getContent(req, ids):
         "logofiles": logofiles,
         "logo": node.getLogoPath(),
         "language": lang(req),
-        "t": translation_t
+        "t": translation_t,
+        "csrf": req.csrf_token.current_token
     }
          
     return req.getTAL("web/edit/modules/logo.html", v, macro="edit_logo")

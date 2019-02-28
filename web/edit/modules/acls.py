@@ -229,7 +229,7 @@ def getContent(req, ids):
 
     return req.getTAL("web/edit/modules/acls.html",
                       {"runsubmit": runsubmit, "idstr": idstr, "contentacl": retacl,
-                       "adminuser": current_user.is_admin},
+                       "adminuser": current_user.is_admin, "csrf": req.csrf_token.current_token},
                       macro="edit_acls")
 
 

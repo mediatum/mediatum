@@ -180,6 +180,7 @@ def getContent(req, ids):
         v['show_form'] = False
         v['msg'] = t(lang(req), 'edit_identifier_all_types_set')
 
+    v["csrf"] = req.csrf_token.current_token
     return req.getTAL('web/edit/modules/identifier.html', v, macro='set_identifier')
 
 

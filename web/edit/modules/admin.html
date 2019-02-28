@@ -25,6 +25,7 @@
         <div id="addform-form">
             <div style="position:absolute;top:0;right:7px;z-index:10002"><a href="#" onclick="closeForm()" i18n:attributes="title mask_editor_cancel"><img src="/img/cancel.png"/></a></div>
             <form tal:attributes="action python:u'edit_content?id={}&tab=admin'.format(id)" method="post" name="addmeta">
+                <input tal:attributes="value csrf" type="hidden" name="csrf_token">
                 <h2 i18n:translate="edit_admin_add_attribute">TEXT</h2>
                 <p tal:condition="user_is_admin" i18n:translate="edit_notice_adding_system_attrs">TEXT</p>
                 <p>
@@ -51,6 +52,7 @@
 
     <div id="sub_content_content" style="border-width:0 0 0 1px!important">
         <form tal:attributes="action python:u'edit_content?id={}&tab=admin'.format(id)" method="post" name="meta" style="height:100%;padding:0">
+            <input tal:attributes="value csrf" type="hidden" name="csrf_token">
             <div id="accordion">
                 <h3><a href="#" i18n:translate="edit_nodeinformation">TEXT</a></h3>
                 <div id="info" style="padding:10px">

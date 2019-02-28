@@ -329,7 +329,8 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
 
                        "user": users.getUserFromRequest(req),
                        "prefix": self.get("prefix"),
-                       "buttons": self.tableRowButtons(node)}
+                       "buttons": self.tableRowButtons(node),
+                       "csrf": req.csrf_token.current_token,}
 
             return req.getTAL("workflow/addpic2pdf.html", context, macro="workflow_addpic2pdf")
         try:
@@ -406,7 +407,8 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
 
                    "user": users.getUserFromRequest(req),
                    "prefix": self.get("prefix"),
-                   "buttons": self.tableRowButtons(node)}
+                   "buttons": self.tableRowButtons(node),
+                   "csrf": req.csrf_token.current_token,}
 
         if FATAL_ERROR:
             context["error"] += " - %s" % (FATAL_ERROR_STR)

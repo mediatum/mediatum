@@ -393,7 +393,7 @@ def view(req):
 
     v["gotopage"] = req.params.get("gotopage", "")
     v["subitem"] = req.params.get("editsubitem", "")
-
+    v["csrf"] = req.csrf_token.current_token
     if page == "adminmodules":
         v['mods'] = getAdminModuleHierarchy()
         v['modinfo'] = getAdminModuleInformation

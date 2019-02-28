@@ -121,3 +121,7 @@ port=2101
                      # never: ldapuser must be configured as user
                      # group: ldapuser is accepted if ldapgroup is one of mediatum-groups
                      # always: every ldapuser is accepted
+
+[csrf]
+secret_key=your-secret-key
+timeout=7200

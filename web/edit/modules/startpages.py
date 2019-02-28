@@ -250,6 +250,8 @@ def getContent(req, ids):
          "languages": config.languages,
          "lang2file": lang2file,
          "types": ['content'],
-         "d": lang2file and True}
+         "d": lang2file and True,
+         "csrf": req.csrf_token.current_token
+         }
 
     return req.getTAL("web/edit/modules/startpages.html", v, macro="edit_startpages")

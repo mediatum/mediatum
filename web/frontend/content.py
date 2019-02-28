@@ -625,7 +625,7 @@ class ContentList(ContentBase):
             "page_nav": Markup(self.page_nav),
             "nav": self,
             "sortfieldslist": self.getSortFieldsList(),
-            "op": "", "query": req.args.get("query", "")}
+            "op": "", "query": req.args.get("query", ""),}
 
         content_nav_list_header_html = webconfig.theme.render_template("content_nav_list_header.j2.jade", ctx)
 

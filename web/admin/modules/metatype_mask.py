@@ -110,6 +110,7 @@ def showMaskList(req, id):
 
     v["order"] = order
     v["actfilter"] = actfilter
+    v["csrf"] = req.csrf_token.current_token
     return req.getTAL("web/admin/modules/metatype_mask.html", v, macro="view_mask")
 
 """ mask details """
@@ -156,5 +157,6 @@ def MaskDetails(req, pid, id, err=0):
         rules = []
 
     v["acl"] = makeList(req, "read", removeEmptyStrings(rules), {}, overload=0, type=u"read")
+    v["csrf"] = req.csrf_token.current_token
 
     return req.getTAL("web/admin/modules/metatype_mask.html", v, macro="modify_mask")

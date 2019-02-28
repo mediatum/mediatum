@@ -50,6 +50,7 @@
 <metal:block metal:define-macro="view_adminmodules">
     <div id="adminmodules_reset" i18n:translate="adminmodules_reset_question" style="display:none">TEXT</div>
     <form method="post">
+        <input tal:attributes="value csrf" type="hidden" name="csrf_token">
     <table class="overview">
         <thead>
             <tr>
@@ -105,6 +106,7 @@
 <metal:block metal:define-macro="view_editmodules">
 
     <form method="post" style="border-width:0px">
+        <input tal:attributes="value csrf" type="hidden" name="csrf_token">
         <h2 i18n:translate="admin_settings_editmodule_selecttype">TEXT</h2>
         <select name="editsubitem" onchange="javascript:submit()">
             <option value="" i18n:translate="">-<tal:block i18n:translate="admin_settings_editmenu_selectmodule"/>-</option>
@@ -115,6 +117,7 @@
 
     <div tal:condition="python: len(mods)>0" id="typediv" style="border:1px solid silver;margin:5px 2px">
         <form method="post" style="border-width:0px;margin:0px">
+            <input tal:attributes="value csrf" type="hidden" name="csrf_token">
             <h3><tal:block i18n:translate="admin_settings_editmenu_typeheader"/> <tal:block tal:content="typelongname" i18n:translate=""/></h3>
             <p style="text-align:right"><button type="submit" name="editmodules_default" i18n:translate="admin_settings_editmodules_reset">TEXT</button></p>
             <table class="overview">

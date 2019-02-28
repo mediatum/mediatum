@@ -157,7 +157,7 @@ def getContent(req, ids):
                             if not isinstance(grandchild, Container):
                                 grandchildren.append(grandchild)
                     req.writeTAL("web/edit/modules/files.html", {'children': [c for c in node.children.all() if str(c.id) != excludeid],
-                                                                 'grandchildren': grandchildren}, macro="edit_files_popup_children")
+                                                                 'grandchildren': grandchildren, "csrf": req.csrf_token.current_token}, macro="edit_files_popup_children")
                 else:
                     grandchildren = []
                     for child in node.children.all():
@@ -165,7 +165,7 @@ def getContent(req, ids):
                             if not isinstance(grandchild, Container):
                                 grandchildren.append(grandchild)
                     req.writeTAL("web/edit/modules/files.html", {'children': [c for c in node.getChildren() if str(c.id) != excludeid],
-                                                                 'grandchildren': grandchildren}, macro="edit_files_popup_children")
+                                                                 'grandchildren': grandchildren, "csrf": req.csrf_token.current_token}, macro="edit_files_popup_children")
             elif req.params.get('data') =='grandchildren':
                 grandchildren = []
                 for child in node.children.all():
@@ -175,9 +175,9 @@ def getContent(req, ids):
                                     grandchildren.append(grandchild)
 
                 if len(node.getChildren())==0:
-                    req.writeTAL("web/edit/modules/files.html", {'grandchildren': []}, macro="edit_files_popup_grandchildren")
+                    req.writeTAL("web/edit/modules/files.html", {'grandchildren': [], "csrf": req.csrf_token.current_token}, macro="edit_files_popup_grandchildren")
                 else:
-                    req.writeTAL("web/edit/modules/files.html", {'grandchildren': grandchildren}, macro="edit_files_popup_grandchildren")
+                    req.writeTAL("web/edit/modules/files.html", {'grandchildren': grandchildren, "csrf": req.csrf_token.current_token}, macro="edit_files_popup_grandchildren")
 
         if req.params.get('data') == 'additems':  # add selected node as children
             for childid in req.params.get('items').split(";"):
@@ -189,7 +189,7 @@ def getContent(req, ids):
                             if isinstance(p, Container):
                                 p.children.remove(childnode)
                         node.children.append(childnode)
-            req.writeTAL("web/edit/modules/files.html", {'children': node.children, 'node': node}, macro="edit_files_children_list")
+            req.writeTAL("web/edit/modules/files.html", {'children': node.children, 'node': node, "csrf": req.csrf_token.current_token}, macro="edit_files_children_list")
 
         if req.params.get('data') == 'removeitem':  # remove selected childnode node
             with suppress(Exception):
@@ -198,7 +198,7 @@ def getContent(req, ids):
                     users.getUploadDir(user).children.append(remnode)
                 node.children.remove(remnode)
 
-            req.writeTAL("web/edit/modules/files.html", {'children': node.children, 'node': node}, macro="edit_files_children_list")
+            req.writeTAL("web/edit/modules/files.html", {'children': node.children, 'node': node, "csrf": req.csrf_token.current_token}, macro="edit_files_children_list")
 
         if req.params.get('data') == 'reorder':
             i = 0
@@ -209,7 +209,7 @@ def getContent(req, ids):
                     i += 1
 
         if req.params.get('data') == 'translate':
-            req.writeTALstr('<tal:block i18n:translate="" tal:content="msgstr"/>', {'msgstr': req.params.get('msgstr')})
+            req.writeTALstr('<tal:block i18n:translate="" tal:content="msgstr"/>', {'msgstr': req.params.get('msgstr'), "csrf": req.csrf_token.current_token})
 
         db.session.commit()
         return ""
@@ -220,6 +220,7 @@ def getContent(req, ids):
         v["script"] = "var currentitem = '%s';\nvar currentfolder = '%s';\nvar node = %s;" % (id, req.params.get('parent'), id)
         v["idstr"] = ",".join(ids)
         v["node"] = node
+        v["csrf"] = req.csrf_token.current_token
         req.writeTAL("web/edit/modules/files.html", v, macro="edit_files_popup_selection")
         return ""
 
@@ -307,6 +308,7 @@ def getContent(req, ids):
          "attfiles": filter(lambda x: x.type == 'attachment', node.files),
          "att": [],
          "nodes": [node],
+         "csrf": req.csrf_token.current_token
         }
 
     for f in v["attfiles"]:  # collect all files in attachment directory

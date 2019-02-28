@@ -240,6 +240,7 @@ def frameset(req):
         't': t,
         '_getIDPath': _getIDPath,
         'homenodefilter': homenodefilter,
+        'csrf': req.csrf_token.current_token,
     }
 
     req.writeTAL("web/edit/edit.html", v, macro="edit_main")
@@ -674,7 +675,10 @@ def action(req):
         req.write(json.dumps(res_dict, indent=4, ensure_ascii=False))
     else:
         try:
-            req.write(dest.id)
+            if dest is not None:
+                req.write(dest.id)
+            else:
+                req.write('no-node-id-specified (web.edit.edit.action)')
         except:
             req.write('no-node-id-specified (web.edit.edit.action)')
             logg.exception('exception ignored, no-node-id-specified (web.edit.edit.action)')

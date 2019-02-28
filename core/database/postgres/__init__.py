@@ -204,7 +204,7 @@ class MtQuery(Query):
         return self._filter_access("data", user, ip, req)
 
     def _filter_access(self, accesstype, user=None, ip=None, req=None):
-        group_ids, ip, date = build_accessfunc_arguments(user, ip, req)
+        group_ids, ip, date = build_accessfunc_arguments(user, ip, req=req)
         
         if group_ids is None and ip is None and date is None:
             # everything is None means: permission checks always pass, so we can skip access checks completely.

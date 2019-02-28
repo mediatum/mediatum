@@ -18,11 +18,13 @@
 """
 
 
-from schema.schema import loadTypesFromDB, getMetaType
+from schema.schema import loadTypesFromDB, getMetaType, get_permitted_schemas
 from utils.utils import u, dec_entry_log, suppress
+from contenttypes import Data
 from core import Node
 from core import db
 from utils.pathutils import getPaths
+from sqlalchemy import and_
 
 q = db.query
 
@@ -31,7 +33,8 @@ def getInformation():
 
 def getAllAttributeValues(attribute, schema):
     values = {}
-    nids_values = q(Node.id, Node.a[attribute]).filter(Node.schema==schema).filter(Node.a[attribute] != None and Node.a[attribute] != '').distinct(Node.a[attribute]).all()
+    nids_values = q(Node.id, Node.a[attribute]).filter(Node.schema == schema).filter(
+        Node.a[attribute] != None and Node.a[attribute] != '').distinct(Node.a[attribute]).all()
     for nid, value in nids_values:
         for s in value.split(";"):
             s = u(s.strip())
@@ -138,4 +141,5 @@ def getContent(req, ids):
             return ""
 
     else:
+        v["csrf"] = req.csrf_token.current_token
         return req.getTAL("web/edit/modules/manageindex.html", v, macro="manageform")

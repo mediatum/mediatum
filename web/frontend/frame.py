@@ -50,7 +50,7 @@ navtree_cache = make_region().configure(
     arguments = {
         'db': 1,
         'redis_expiration_time': 5 * 60 + 10,
-        'distributed_lock': False
+        'distributed_lock': False,
     }                                     
 )
 
@@ -225,7 +225,7 @@ def render_search_box(container, language, req, edit=False):
         "liststyle": liststyle,
         "language": language,
         "search_placeholder": t(language, "search_in") + " " + container.getLabel(language),
-        "action": '/' if not edit else '/edit/edit_content'
+        "action": '/' if not edit else '/edit/edit_content',
     }
 
     search_html = webconfig.theme.render_template("frame_search.j2.jade", ctx)

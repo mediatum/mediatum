@@ -2,6 +2,7 @@
     <div class="sidebartext" tal:condition="python:sidebartext!=''" tal:content="raw sidebartext">TEXT</div>
     
     <form class="edit" action="/mask" method="post" style="position:relative!important;">
+        <input tal:attributes="value csrf" type="hidden" name="csrf_token">
         <div id="clean-container" style="overflow:hidden;position:relative;padding-right:10px;">
             <span tal:replace="raw error"/>
             <input tal:attributes="value key" type="hidden" name="key"/>

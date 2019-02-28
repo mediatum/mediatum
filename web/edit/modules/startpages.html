@@ -30,6 +30,7 @@
     <script type="text/javascript" src="/js/jquery.layout.resizePaneAccordions-latest.min.js"> </script>
 
     <script tal:content="python:u'var id = {};'.format(id)"> </script>
+    <script tal:content="python:u'var csrf = \'{}\';'.format(csrf)"> </script>
     <script type="text/javascript">
         var CKEDITOR_BASEPATH = '/ckeditor/';
 
@@ -61,9 +62,10 @@
         }
 
         function handleCKEditorPost(){ // save data
+            csrf = csrf.replace("##", "!!!!!");
             $.ajax({ type :"post",
                 data : { data: CKEDITOR.instances['page_content'].getData() },
-                url : '/edit/edit_content?id='+id+'&tab=startpages&action=save&filename='+$("#filename").val()
+                url : '/edit/edit_content?id='+id+'&tab=startpages&action=save&filename='+$("#filename").val()+'&csrf_token='+csrf
             }).done(function(ret){
                 ret = jQuery.parseJSON(ret);
                 $('#editform').css('display','none');
@@ -98,6 +100,7 @@
     </div>
 
     <form id="01" method="post" name="startpages" action="/edit/edit_content" style="padding:0;margin:0">
+        <input tal:attributes="value csrf" type="hidden" name="csrf_token">
         <div id="navigation_content" style="text-align:center">
             <input tal:attributes="value id" type="hidden" name="id"/>
             <input tal:attributes="value tab" type="hidden" name="tab"/>

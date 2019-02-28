@@ -1064,7 +1064,7 @@ function set_cm_to_default() {
             <script tal:content="python:u'var js_edit_layout_togglertip_open = \'{}\';'.format(t(language, 'edit_layout_togglertip_open'))">;</script>
             <script tal:content="python:u'var js_edit_layout_togglertip_closed = \'{}\';'.format(t(language, 'edit_layout_togglertip_closed'))">;</script>
             <script tal:content="python:u'var js_edit_layout_resizertip = \'{}\';'.format(t(language, 'edit_layout_resizertip'))">;</script>
-
+            <script tal:content="python:u'var csrf = \'{}\';'.format(csrf)"> </script>
 <script type="text/javascript">
 
 var htree = null;
@@ -1152,7 +1152,7 @@ function reload_htree_filtered(homenodefilter) {
         }
       },
 
-    ajax: {type: "POST", contentType: "application/json", data: {key: tree_root, mode: "edittree", homenodefilter: $('#homenodefilter').val()}},  // tree-dependent
+    ajax: {type: "POST", contentType: "application/json", data: {key: tree_root, mode: "edittree", homenodefilter: $('#homenodefilter').val(), csrf_token: csrf}},  // tree-dependent
 
     source: {
       url: "/edit/treedata"

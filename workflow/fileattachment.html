@@ -16,6 +16,7 @@
     <div tal:condition="python:posttext!=''" tal:content="raw posttext" style="margin-top:20px;">TEXT</div>
     
     <form tal:condition="python:len(buttons)>0" action="/mask" method="post" style="padding:4px">
+        <input tal:attributes="value csrf" type="hidden" name="csrf_token">
         <table tal:content="raw python:buttons">TEXT</table>
     </form>
 

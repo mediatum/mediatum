@@ -44,6 +44,7 @@
     <div id="navigation_content">
         <div style="position:relative">
             <form method="post">
+                <input tal:attributes="value csrf" type="hidden" name="csrf_token">
               <div id="div_select">
                 <div><tal:block i18n:translate="edit_stats_period_header"/>:<br/>
                 <select name="select_period" onchange="javascript:submit()" style="min-width:200px">
@@ -365,6 +366,7 @@
 
         <div tal:condition="python:action=='showform'" class="message">
             <form method="post" tal:condition="python:statsrun!='1'">
+                <input tal:attributes="value csrf" type="hidden" name="csrf_token">
                 <button type="submit" name="update" i18n:translate="edit_stats_popupupdatebutton">TEXT</button>
             </form>
             <p tal:condition="python:statsrun=='1'">

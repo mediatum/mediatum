@@ -40,6 +40,7 @@
     </tal:block>
 
     <form tal:condition="python:show_form" method="post">
+        <input tal:attributes="value csrf" type="hidden" name="csrf_token">
         <tal:block tal:condition="python:urn_val==''">
             <input tal:condition="python:urn_val ==''"type="radio" name="id_type" value="urn"/> URN
             <select name="namespace">

@@ -11,7 +11,7 @@
 
     <script tal:content="python:u'var id = {};'.format(node.id)"> </script>
     <script tal:content="python:u'var cid_list = {};'.format([n.id for n in nodelist])"> </script>
-
+    <script tal:content="python:u'var csrf = \'{}\';'.format(csrf)"> </script>
     <div id="navigation_content">
         <h3 i18n:translate="edit_sort_label">TEXT</h3>
         <input type="hidden" name="tab" value="subfolder">
@@ -37,6 +37,7 @@
     <div id="sub_content_content">
         <h3 i18n:translate="edit_sort_header">TEXT</h3>
         <form>
+            <input tal:attributes="value csrf" type="hidden" name="csrf_token">
             <input type="hidden" name="tab" value="subfolder"/>
             <input tal:attributes="value python:node.id" type="hidden" name="id"/>
             <ul id="sortable">
@@ -68,7 +69,7 @@
                         $.ajax({
                              type: "POST",
                              url: "/edit/edit_content",
-                             data: "id="+id+"&tab=subfolder&popup=popup&order="+$("#sortable").sortable('toArray').toString(),
+                             data: "id="+id+"&tab=subfolder&popup=popup&order="+$("#sortable").sortable('toArray').toString()+"&csrf_token="+csrf,
                              success: function (data) {
                                  $("#sortable").html(data);
                                  parent.reload_tree_nodes_children([ctree, htree], [id]);
@@ -82,7 +83,7 @@
                 $.ajax({
                      type: "POST",
                      url: "/edit/edit_content",
-                     data: "id="+id+"&tab=subfolder&popup=popup&sortdirection="+$("#sortdirection").val()+"&sortattribute="+$("#sortattribute").val(),
+                     data: "id="+id+"&tab=subfolder&popup=popup&sortdirection="+$("#sortdirection").val()+"&sortattribute="+$("#sortattribute").val()+"&csrf_token="+csrf,
                      success: function (data) {
                          $('#sortable').html(data);
                          parent.reload_tree_nodes_children([htree, ctree], [id]);

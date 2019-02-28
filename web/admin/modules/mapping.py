@@ -190,6 +190,7 @@ def view(req):
     v["pages"] = pages
     v["actfilter"] = actfilter
     v["mappingtypes"] = "\n".join(getMappingTypes())
+    v["csrf"] = req.csrf_token.current_token
     return req.getTAL("web/admin/modules/mapping.html", v, macro="view")
 
 
@@ -220,6 +221,7 @@ def editMapping_mask(req, id, err=0):
     v["id"] = id
     v["actpage"] = req.params.get("actpage")
     v["mappingtypes"] = getMappingTypes()
+    v["csrf"] = req.csrf_token.current_token
     return req.getTAL("web/admin/modules/mapping.html", v, macro="modify")
 
 
@@ -269,6 +271,7 @@ def viewlist(req, id):
     v["options"] = []
     v["pages"] = pages
     v["actfilter"] = actfilter
+    v["csrf"] = req.csrf_token.current_token
     return req.getTAL("web/admin/modules/mapping.html", v, macro="viewlist")
 
 
@@ -295,6 +298,7 @@ def editMappingField_mask(req, id, parent, err=0):
     v["field"] = field
     v["parent"] = parent
     v["actpage"] = req.params.get("actpage")
+    v["csrf"] = req.csrf_token.current_token
     return req.getTAL("web/admin/modules/mapping.html", v, macro="modifyfield")
 
 

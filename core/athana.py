@@ -46,6 +46,10 @@ from werkzeug.datastructures import ImmutableMultiDict, MIMEAccept
 from mediatumtal import tal
 from utils.utils import suppress
 
+from wtforms.csrf.session import SessionCSRF
+from wtforms import Form
+from wtforms.validators import ValidationError
+from datetime import timedelta
 
 logg = logging.getLogger(__name__)
 logftp = logging.getLogger(__name__ + ":ftp")
@@ -1343,7 +1347,9 @@ class http_request(object):
         502: "Bad Gateway",
         503: "Service Unavailable",
         504: "Gateway Time-out",
-        505: "HTTP Version not supported"
+        505: "HTTP Version not supported",
+        506: "CSRF token missing",
+        507: "CSRF failed",
     }
 
     # Default error message
@@ -3411,7 +3417,6 @@ class WSGIHandler(object):
 
     def __call__(self, request):
 
-
         self.request = request
         environ = self.make_environ()
 
@@ -3537,7 +3542,6 @@ class WebHandler:
     def addPattern(self, pattern):
         p = WebPattern(self, pattern)
         desc = "pattern %s, file %s, function %s" % (pattern, self.file.filename, self.function)
-        desc2 = "file %s, function %s" % (self.file.filename, self.function)
         self.file.context.pattern_to_function[p.getPattern()] = (self.f, desc)
         return p
 
@@ -3855,6 +3859,7 @@ else:
 
         def __init__(self, key):
             super(RedisSession, self).__init__(key=key)
+            self.mediatum_form = MediatumForm(meta={'csrf_context': self})
 
         @property
         def id(self):
@@ -3869,6 +3874,7 @@ class Session(dict):
     def __init__(self, id):
         self.id = id
         self.use()
+        self.mediatum_form = MediatumForm(meta={'csrf_context': self})
 
     def use(self):
         self.lastuse = time.time()
@@ -4116,24 +4122,36 @@ class AthanaHandler:
         request.paramstring = params
         request.query = query
         request.fragment = fragment
+
         # COMPAT: new param style like flask
         # we don't need this for WSGI, args / form parsing is done by the WSGI app
+
         if not isinstance(context, WSGIContext):
             form, files = filter_out_files(form)
             try:
                 request.args = make_param_dict_utf8_values(args)
+                if "csrf_token" in request.args:
+                    form.append(('csrf_token', str(request.args["csrf_token"])))
                 request.form = make_param_dict_utf8_values(form)
             except UnicodeDecodeError:
                 return request.error(400)
 
+            if form and request.method == 'POST':
+                if 'csrf_token' not in request.form:
+                    raise ValueError("csrf_token not in form of request path " + request.fullpath)
+                else:
+                    session.mediatum_form.csrf_token.process_data(request.form["csrf_token"].replace("!!!!!", "##"))
+                    session.mediatum_form.validate()
+
+            request.csrf_token = session.mediatum_form.csrf_token
             request.files = ImmutableMultiDict(files)
             request.make_legacy_params_dict()
+
         # /COMPAT
         request.request = request
         request.ip = ip
         request.uri = request.uri.replace(context.name, "/")
         request._split_uri = None
-
 
         request.channel.current_request = None
 
@@ -4570,6 +4588,25 @@ class AthanaThread:
                 self.duration = time.time() - self.lastrequest
 
 
+class MediatumForm(Form):
+    class Meta:
+        csrf = True
+        csrf_class = SessionCSRF
+        csrf_secret = str(config.get('csrf.secret_key'))
+        csrf_time_limit = timedelta(int(config.get('csrf.timeout', "7200")))
+
+    def validate_csrf_token(self, field):
+        try:
+            self._csrf.validate_csrf_token(self._csrf, field)
+        except ValidationError as e:
+            if (e.message == "CSRF token expired"):
+                self.csrf_token.current_token = self._csrf.generate_csrf_token(field)
+                csrf_errors = self.errors['csrf_token']
+                csrf_errors.remove("CSRF token expired")
+                if not any(csrf_errors):
+                    self.errors.pop("csrf_token")
+
+
 def runthread(athanathread):
     athanathread.worker_thread()
 
@@ -4668,3 +4705,5 @@ def request_finished(handler):
 
 def getBase():
     return GLOBAL_ROOT_DIR
+
+

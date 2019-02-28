@@ -5,6 +5,7 @@
 
         <div tal:content="raw starttext">TEXT</div>
         <form action="/mask" method="post" style="text-align:center;">
+            <input tal:attributes="value csrf" type="hidden" name="csrf_token">
             <div style="width:45%;float:left;">
 
                 <input type="hidden" name="id" tal:attributes="value python:id"/>

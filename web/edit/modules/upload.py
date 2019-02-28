@@ -470,6 +470,7 @@ def getContent(req, ids):
         "get_ids_from_query" : get_ids_from_query,
         "edit_all_objects" : translation_t(lang(req), "edit_all_objects").format(item_count[1]),
         "navigation_height": navigation_height,
+        "csrf": str(req.csrf_token.current_token),
     })
     html = req.getTAL("web/edit/modules/upload.html", v, macro="upload_form")
     delete_g_nodes_entry(req)

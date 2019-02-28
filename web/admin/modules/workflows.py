@@ -288,7 +288,7 @@ def view(req):
     v["workflows"] = workflows
     v["pages"] = pages
     v["actfilter"] = actfilter
-
+    v["csrf"] = req.csrf_token.current_token
     return req.getTAL("web/admin/modules/workflows.html", v, macro="view")
 
 """ edit form for given workflow (create/update)
@@ -330,6 +330,7 @@ def WorkflowDetail(req, id, err=0):
     v["languages"] = config.languages
     v["error"] = err
     v["actpage"] = req.params.get("actpage")
+    v["csrf"] = req.csrf_token.current_token
     return req.getTAL("web/admin/modules/workflows.html", v, macro="modify")
 
 """ overview of all steps for given workflow
@@ -394,6 +395,7 @@ def WorkflowStepList(req, wid):
     v["workflowsteps"] = workflowsteps
     v["pages"] = pages
     v["actfilter"] = actfilter
+    v["csrf"] = req.csrf_token.current_token
     return req.getTAL("web/admin/modules/workflows.html", v, macro="view_step")
 
 """ edit form for workflowstep for given workflow and given step
@@ -479,6 +481,7 @@ def WorkflowStepDetail(req, wid, wnid, err=0):
     v["error"] = err
     v["update_type"] = req.params.get("ntype", u"")
     v["actpage"] = req.params.get("actpage")
+    v["csrf"] = req.csrf_token.current_token
     return req.getTAL("web/admin/modules/workflows.html", v, macro="modify_step")
 
 """ popup window with image of workflow given by id
@@ -487,7 +490,7 @@ def WorkflowStepDetail(req, wid, wnid, err=0):
 
 def WorkflowPopup(req):
     path = req.path[1:].split("/")
-    return req.getTAL("web/admin/modules/workflows.html", {"id": path[1]}, macro="view_popup")
+    return req.getTAL("web/admin/modules/workflows.html", {"id": path[1], "csrf": req.csrf_token.current_token}, macro="view_popup")
 
 """ export workflow-definition (XML) """
 

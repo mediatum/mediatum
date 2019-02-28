@@ -10,25 +10,34 @@
     :copyright: (c) 2016 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
-from flask import Flask, request, url_for, redirect, flash
+from flask import Flask, request, session, url_for, redirect, flash
 from flask_admin import Admin
+from flask_admin.form import SecureForm
+
 from web.newadmin.views.user import UserView, UserGroupView, AuthenticatorInfoView, OAuthUserCredentialsView
 from wtforms import form, fields, validators
+from wtforms.validators import ValidationError
+
 from core import db, User, config
 from core.auth import authenticate_user_credentials, logout_user
 from flask.ext import admin, login
 from flask.ext.admin import helpers, expose
+
 import os
+
 from web.newadmin.views.node import NodeView, FileView, NodeAliasView
 from web.newadmin.views.setting import SettingView
 from web.newadmin.views.acl import AccessRulesetView, AccessRuleView, AccessRulesetToRuleView
 from web.newadmin.views.redis import ProtectedRedisCli
+from datetime import timedelta
+
 
 q = db.query
 
 DEBUG = True
 
 class IndexView(admin.AdminIndexView):
+
     """Creates index view class for handling login."""
     @expose('/')
     def index(self):
@@ -39,6 +48,7 @@ class IndexView(admin.AdminIndexView):
     @expose('/login/', methods=('GET', 'POST'))
     def login_view(self):
         login_form = LoginForm(request.form)
+
         if helpers.validate_form_on_submit(login_form):
             user = login_form.get_user()
             login.login_user(user)
@@ -54,8 +64,14 @@ class IndexView(admin.AdminIndexView):
         login.logout_user()
         return redirect(url_for('.index'))
 
-
 class LoginForm(form.Form):
+    class Meta(SecureForm.Meta):
+        csrf_time_limit = timedelta(seconds=int(config.get('csrf.timeout', "7200")))
+
+        @property
+        def csrf_context(self):
+            return session
+
     """Creates login form for flask-Login."""
     login = fields.StringField(validators=[validators.required()])
     password = fields.PasswordField(validators=[validators.required()])
@@ -68,9 +84,19 @@ class LoginForm(form.Form):
             raise validators.ValidationError('Invalid password')
         flash('Logged in successfully')
 
+    def validate_csrf_token(self, field):
+        try:
+            self._csrf.validate_csrf_token(self._csrf, field)
+        except ValidationError as e:
+            if (e.message == "CSRF token expired"):
+                self.csrf_token.current_token = self._csrf.generate_csrf_token(field)
+                csrf_errors = self.errors['csrf_token']
+                csrf_errors.remove("CSRF token expired")
+                if not any(csrf_errors):
+                    self.errors.pop("csrf_token")
+
     def get_user(self):
         return q(User).filter_by(login_name=self.login.data).first()
-
 
 def make_app():
     """Creates the mediaTUM-admin Flask app.
@@ -106,15 +132,12 @@ def make_app():
     admin.add_view(AccessRulesetToRuleView())
 
     if config.getboolean("admin.enable_rediscli", False):
-        from flask_admin.contrib import rediscli
         from redis import Redis
-        admin.add_view(ProtectedRedisCli(Redis(db=1), name="Redis CLI"))
+        admin.add_view(ProtectedRedisCli(Redis(db=1, port=0, unix_socket_path="/home/congkhacdung/redis/redis.sock"), name="Redis CLI"))
     
     return admin_app
 
-
 app = make_app()
-
 
 @app.after_request
 def request_finished_db_session(response):
@@ -133,3 +156,6 @@ def init_login():
         return q(User).get(user_id)
 
 init_login()
+
+
+

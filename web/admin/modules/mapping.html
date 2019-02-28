@@ -1,6 +1,7 @@
 <metal:block metal:define-macro="view">
     <p><a i18n:translate="admin_overview" href=".">TEXT</a></p>
     <form name="mappingoverview" method="post" enctype="multipart/form-data" tal:attributes="action page">
+        <input tal:attributes="value csrf" type="hidden" name="csrf_token">
         <table class="overview">
             <thead>
                 <tr>
@@ -96,6 +97,7 @@
     </form>
     
     <form name="mappingoverview" method="post" enctype="multipart/form-data" tal:attributes="action page">
+        <input tal:attributes="value csrf" type="hidden" name="csrf_token">
         <h3 i18n:translate="admin_mapping_configuration">TEXT</h3>
         <table>
             <tr>
@@ -122,6 +124,7 @@
 <metal:block metal:define-macro="modify">
     <p><a i18n:translate="admin_overview" href="./mapping">TEXT</a></p>
     <form tal:attributes="action page" name="editmapping" method="post">
+        <input tal:attributes="value csrf" type="hidden" name="csrf_token">
         <table>
             <tr>
                 <td colspan="2">
@@ -227,6 +230,7 @@
         <![endif]-->
     <p><a i18n:translate="admin_overview" href="./mapping">TEXT</a></p>
     <form name="mappingfieldoverview" method="post" action="#" tal:attributes="action page">
+        <input tal:attributes="value csrf" type="hidden" name="csrf_token">
         <table class="overview">
             <tr>
                 <td colspan="7"><h3><span i18n:translate="admin_mappingfield_existing">TEXT</span> '<span tal:content="python:mapping.getName()">TEXT</span>'</h3></td>
@@ -287,6 +291,7 @@
 <metal:block metal:define-macro="modifyfield">
     <p><a i18n:translate="admin_overview" href="./mapping">TEXT</a></p>
     <form tal:attributes="action page" name="editmappingfield" method="post">
+        <input tal:attributes="value csrf" type="hidden" name="csrf_token">
         <table>
             <tr>
                 <td colspan="2">

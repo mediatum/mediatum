@@ -132,7 +132,8 @@ class WorkflowStep_Start(WorkflowStep):
                               'sidebartext': self.getSidebarText(lang(req)),
                               'redirect': redirect,
                               'message': message,
-                              'allowcontinue': self.get('allowcontinue')},
+                              'allowcontinue': self.get('allowcontinue'),
+                           "csrf": req.csrf_token.current_token,},
                           macro="workflow_start")
 
     def metaFields(self, lang=None):

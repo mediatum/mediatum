@@ -138,7 +138,8 @@ def getContent(req, ids):
                                                       "fd": formatdate,
                                                       "gf": getFormat,
                                                       "user_is_admin": current_user.is_admin,
-                                                      "canedit": node.has_write_access()},
+                                                      "canedit": node.has_write_access(),
+                                                      "csrf": req.csrf_token.current_token},
                       macro="edit_admin_file")
 
 

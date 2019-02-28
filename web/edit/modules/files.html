@@ -100,6 +100,7 @@
             <h3><a href="#" i18n:translate="edit_files_files">TEXT</a></h3>
             <div id="files">
                 <form method="post">
+                    <input tal:attributes="value csrf" type="hidden" name="csrf_token">
                     <table id="filetable" cellpadding="0px" cellspacing="0px">
                         <tr>
                             <th i18n:translate="edit_files_location">TEXT</th>
@@ -129,6 +130,7 @@
                 <h3><a href="#"  i18n:translate="edit_files_attachments">TEXT</a></h3>
                 <div id="attfiles">
                     <form method="post">
+                        <input tal:attributes="value csrf" type="hidden" name="csrf_token">
                             <table id="filetable" cellpadding="0px" cellspacing="0px" style="width:100%">
                                 <tr>
                                     <th i18n:translate="edit_files_type">TEXT</th>
@@ -166,6 +168,7 @@
                 <h3><a href="#" i18n:translate="edit_files_stats">TEXT</a></h3>
                 <div id="statfiles">
                     <form method="post">
+                        <input tal:attributes="value csrf" type="hidden" name="csrf_token">
                             <table id="filetable" cellpadding="0px" cellspacing="0px" style="width:100%">
                                 <tr>
                                     <th i18n:translate="edit_files_type">TEXT</th>
@@ -192,6 +195,7 @@
             <h3><a href="#" i18n:translate="edit_files_options">TEXT</a></h3>
             <div id="options" style="padding:10px;">
                 <form method="post" enctype="multipart/form-data">
+                    <input tal:attributes="value csrf" type="hidden" name="csrf_token">
                             <b><tal:block i18n:translate="edit_files_change"/>:</b>
                             <p>
                                 <tal:block tal:condition="python:node.has_upload_file">
@@ -244,6 +248,7 @@
                         </form>
                         <hr/>
                         <form method="post" enctype="multipart/form-data">
+                            <input tal:attributes="value csrf" type="hidden" name="csrf_token">
                             <b i18n:translate="edit_files_addthumbnail">TEXT</b>
                             <p>
                                 <input name="updatefile" type="file" size="50"/>
@@ -255,6 +260,7 @@
                         </form>
                         <hr/>
                         <form method="post">
+                            <input tal:attributes="value csrf" type="hidden" name="csrf_token">
                             <p><input i18n:attributes="value edit_files_reprocess" type="submit" name="postprocess"></p>
                             <p><small i18n:translate="edit_files_reprocess_info">TEXT</small></p>
                             <input type="hidden" name="operation" value="postprocess"/>

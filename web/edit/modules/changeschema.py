@@ -139,5 +139,6 @@ def getContent(req, ids):
             admissible_content_types.sort(key=lambda x: translate(x, request=req).lower())
             d['schemes'] = available_schemes
             d['datatypes'] = admissible_content_types
-
+        
+        d["csrf"] = req.csrf_token.current_token
         return req.getTAL("web/edit/modules/changeschema.html", d, macro="changeschema_popup")

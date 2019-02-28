@@ -109,7 +109,8 @@ class WorkflowStep_Upload(WorkflowStep):
                               "singlefile": self.get('singleobj'),
                               "error": error,
                               "pretext": self.getPreText(lang(req)),
-                              "posttext": self.getPostText(lang(req))},
+                              "posttext": self.getPostText(lang(req)),
+                           "csrf": req.csrf_token.current_token,},
                           macro="workflow_upload")
 
     def metaFields(self, lang=None):

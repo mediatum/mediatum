@@ -40,6 +40,7 @@
       h3
         = _t('att_browser_title')
       form
+        {{request.csrf_token}}
         table.overview
           tr
             th(width='30px')

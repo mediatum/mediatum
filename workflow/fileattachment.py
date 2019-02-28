@@ -72,7 +72,8 @@ class WorkflowStep_FileAttachment(WorkflowStep):
                            "pretext": self.getPreText(lang(req)),
                            "posttext": self.getPostText(lang(req)),
                            "sidebar": self.getSidebarText(lang(req)),
-                           'maskdata': maskdata},
+                           'maskdata': maskdata,
+                           "csrf": req.csrf_token.current_token,},
                           macro="fileattachment_show_node")
 
     def metaFields(self, lang=None):

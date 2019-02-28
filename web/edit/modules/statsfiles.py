@@ -169,4 +169,4 @@ def getContent(req, ids):
             "web/edit/modules/statsfiles.html", v, macro="edit_stats_popup")
         return ""
 
-    return req.getTAL("web/edit/modules/statsfiles.html", {"id": ids}, macro="edit_stats")
+    return req.getTAL("web/edit/modules/statsfiles.html", {"id": ids, "csrf": req.csrf_token.current_token}, macro="edit_stats")

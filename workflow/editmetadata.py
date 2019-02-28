@@ -72,7 +72,8 @@ class WorkflowStep_EditMetadata(WorkflowStep):
                            "pretext": self.getPreText(lang(req)),
                            "posttext": self.getPostText(lang(req)),
                            "sidebartext": self.getSidebarText(lang(req)),
-                           "buttons": self.tableRowButtons(node)},
+                           "buttons": self.tableRowButtons(node),
+                           "csrf": req.csrf_token.current_token,},
                           macro="workflow_metadateneditor")
 
     def metaFields(self, lang=None):

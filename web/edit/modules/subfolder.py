@@ -52,7 +52,7 @@ def getContent(req, ids):
             children.append(child)
         db.session.commit()
 
-        req.writeTAL('web/edit/modules/subfolder.html', {'nodelist': children, "language": language}, macro="ordered_list")
+        req.writeTAL('web/edit/modules/subfolder.html', {'nodelist': children, "language": language, "csrf": req.csrf_token.current_token}, macro="ordered_list")
         return ""
 
     elif "sortdirection" in req.params:  # do automatic re-order
@@ -62,7 +62,7 @@ def getContent(req, ids):
         for position, child in enumerate(sorted_children, start=1):
             child.orderpos = position
         db.session.commit()
-        req.writeTAL('web/edit/modules/subfolder.html', {'nodelist': sorted_children, "language": language}, macro="ordered_list")
+        req.writeTAL('web/edit/modules/subfolder.html', {'nodelist': sorted_children, "language": language, "csrf": req.csrf_token.current_token}, macro="ordered_list")
         return ""
 
     nodelist = []
@@ -86,5 +86,6 @@ def getContent(req, ids):
             "nodelist": nodelist,
             "sortattributes": sorted(attributes, lambda x, y: cmp(x.getLabel().lower(), y.getLabel().lower())),
             "language": language,
+            "csrf": req.csrf_token.current_token
            }
     return req.getTAL("web/edit/modules/subfolder.html", ctx, macro="edit_subfolder")

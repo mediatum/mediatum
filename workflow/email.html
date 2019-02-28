@@ -1,6 +1,7 @@
 <tal:block metal:define-macro="sendmail">
     <div style="width:100%;position:relative">
         <form tal:attributes="action page" name="mailuser" method="post">
+            <input tal:attributes="value csrf" type="hidden" name="csrf_token">
             <!--<h2 i18n:translate="workflowstep-email_label_header">TEXT</h2>-->
             <div tal:condition="python:pretext!=''" tal:content="raw pretext" class="pretext">TEXT</div>
             <p>&nbsp;</p>

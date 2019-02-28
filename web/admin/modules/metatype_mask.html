@@ -14,6 +14,7 @@
     </script>
 
     <form name="fieldoverview" method="post" action="#" tal:attributes="action page">
+        <input tal:attributes="value csrf" type="hidden" name="csrf_token">
         <table class="overview">
             <thead>
                 <tr>
@@ -127,6 +128,7 @@
     </script>
     <p><a tal:attributes="href python:u'./metatype{}'.format(page)" i18n:translate="admin_overview">TEXT</a></p>
     <form tal:attributes="action page" name="editmetatype" method="post">
+        <input tal:attributes="value csrf" type="hidden" name="csrf_token">
         <table>
             <tr>
                 <td colspan="2">

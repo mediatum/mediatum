@@ -6,6 +6,7 @@
         <![endif]-->
     <p><a i18n:translate="admin_overview" href=".">TEXT</a></p>
     <form tal:attributes="action python:page" name="addnewworkflow" method="post" action="#" enctype="multipart/form-data">
+        <input tal:attributes="value csrf" type="hidden" name="csrf_token">
         <table class="overview">
             <thead>
                 <tr>
@@ -126,6 +127,7 @@
     </script>
     <p><a tal:attributes="href python:u'./workflows{}'.format(page)" i18n:translate="admin_overview">TEXT</a></p>
     <form tal:attributes="action page" name="editworkflow" method="post" action="#">
+        <input tal:attributes="value csrf" type="hidden" name="csrf_token">
         <table>
             <tr>
                 <td colspan="2">
@@ -239,6 +241,7 @@
         <![endif]-->
     <p><a href="./workflows" i18n:translate="admin_overview">TEXT</a></p>
     <form tal:attributes="action page" name="metafields" method="post" action="#">
+        <input tal:attributes="value csrf" type="hidden" name="csrf_token">
         <table class="overview">
             <thead>
                 <tr>
@@ -356,6 +359,7 @@
     </script>
     <p><a tal:attributes="href python:u'./workflows?detailof={}{}'.format(workflow.getId(), page)" i18n:translate="admin_overview">TEXT</a></p>
     <form tal:attributes="action page" name="addmfield" id="addmfield" method="post" action="#">
+        <input tal:attributes="value csrf" type="hidden" name="csrf_token">
         <table>
             <tr>
                 <td colspan="2">

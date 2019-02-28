@@ -8,6 +8,7 @@
 
     <div id="sub_content_content">
     <form class="edit" action="edit_content" name="changeform" id="fbody">
+        <input tal:attributes="value csrf" type="hidden" name="csrf_token">
             <span i18n:translate="edit_searchmask_type">TEXT</span>:
             <input type="image" name="update" value="update" src="/img/s.gif">
                 <select id="searchtype_id" name="searchtype" onChange="change_searchtype()">

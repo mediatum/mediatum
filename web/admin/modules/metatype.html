@@ -17,6 +17,7 @@
         <![endif]-->
     <p><a i18n:translate="admin_overview" href=".">TEXT</a></p>
     <form name="useroverview" method="post" action="#" enctype="multipart/form-data" tal:attributes="action page">
+        <input tal:attributes="value csrf" type="hidden" name="csrf_token">
         <table class="overview">
             <thead>
                 <tr>
@@ -161,6 +162,7 @@
     </script>
     <p><a tal:attributes="href python:u'./metatype{}'.format(page)" i18n:translate="admin_overview">TEXT</a></p>
     <form tal:attributes="action page" name="editmetatype" method="post">
+        <input tal:attributes="value csrf" type="hidden" name="csrf_token">
         <table>
             <tr>
                 <td colspan="2">
@@ -409,6 +411,7 @@
 
         <tal:block tal:condition="python:edit==''">
             <form method="post" name="op">
+                <input tal:attributes="value csrf" type="hidden" name="csrf_token">
                 <div id="selection_div">
                     <span i18n:translate="mask_editor_chosen_element">TEXT</span>
                     <select id="selection" name="group_type">

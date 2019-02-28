@@ -184,7 +184,8 @@ class WorkflowStep_SendEmail(WorkflowStep):
                                                       "sendcondition": self.get("sendcondition"),
                                                       "wfnode": self,
                                                       "pretext": self.getPreText(lang(req)),
-                                                      "posttext": self.getPostText(lang(req))},
+                                                      "posttext": self.getPostText(lang(req)),
+                                                      "csrf": req.csrf_token.current_token,},
                               macro="sendmail")
 
     def metaFields(self, lang=None):

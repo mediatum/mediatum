@@ -10,6 +10,7 @@
         = email
     br
     form.login(method='post', name='login')
+      {{request.csrf_token}}
       .label &nbsp;
       span
         = _t('login_currentuser_msg')
@@ -50,6 +51,7 @@
       p.error(style='text-align:center')
         = _t('login_change_err_{}'.format(error))
     form.login(method='post', action='pwdchange', name='login')
+      {{request.csrf_token}}
       .label
         = _t('login_act_pwd:')
       input.text(maxlength='99', type='password', name='password_old', style='width:200px; margin-bottom:2px')

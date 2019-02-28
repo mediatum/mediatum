@@ -9,14 +9,17 @@ from core import db, User, UserGroup, AuthenticatorInfo
 from markupsafe import Markup
 from wtforms.fields.core import StringField
 from web.newadmin.views import BaseAdminView
+from web.newadmin.secureform import MediatumSecureForm
 from wtforms.ext.sqlalchemy.fields import QuerySelectMultipleField
 from wtforms import SelectMultipleField
-from flask.ext.admin import form
+from flask.ext.admin import form, expose
+
 from core.auth import INTERNAL_AUTHENTICATOR_KEY
 from core.permission import get_or_add_access_rule
 from core.database.postgres.permission import AccessRuleset, AccessRulesetToRule, NodeToAccessRuleset
 from schema.schema import Metadatatype
 from core.database.postgres.user import OAuthUserCredentials
+from web.newadmin.secureform import MediatumSecureForm
 
 q = db.query
 logg = logging.getLogger(__name__)
@@ -30,6 +33,8 @@ def _link_format_node_id_column(node_id):
 class UserView(BaseAdminView):
 
     can_delete = False
+
+    form_base_class = MediatumSecureForm
 
     column_exclude_list = ("created", "password_hash", "salt", "comment",
                            "private_group", "can_edit_shoppingbag", "can_change_password")
@@ -60,17 +65,20 @@ class UserView(BaseAdminView):
     form_extra_fields = {
         "groups": QuerySelectMultipleField(query_factory=lambda: db.query(UserGroup).order_by(UserGroup.name),
                                            widget=form.Select2Widget(multiple=True)),
-        "password": StringField()
+        "password": StringField(),
+
     }
 
     def __init__(self, session=None, *args, **kwargs):
         super(UserView, self).__init__(User, session, category="User", *args, **kwargs)
 
     def on_model_change(self, form, user, is_created):
+
         if form.password.data and user.authenticator_info.authenticator_key == INTERNAL_AUTHENTICATOR_KEY:
             user.change_password(form.password.data)
 
 class UserGroupView(BaseAdminView):
+    form_base_class = MediatumSecureForm
 
     form_excluded_columns = "user_assocs"
     column_details_list = ["id", "name", "description", "hidden_edit_functions", "is_editor_group",
@@ -121,20 +129,19 @@ class UserGroupView(BaseAdminView):
                 for nrs in nrs_list:
                     mt.access_ruleset_assocs.remove(nrs)
 
-
-
     def __init__(self, session=None, *args, **kwargs):
         super(UserGroupView, self).__init__(UserGroup, session, category="User", *args, **kwargs)
 
 
 class AuthenticatorInfoView(BaseAdminView):
+    form_base_class = MediatumSecureForm
 
     def __init__(self, session=None, *args, **kwargs):
         super(AuthenticatorInfoView, self).__init__(AuthenticatorInfo, session, category="User", *args, **kwargs)
 
 
 class OAuthUserCredentialsView(BaseAdminView):
-
+    form_base_class = MediatumSecureForm
     form_columns = ("user", "oauth_user", "oauth_key")
 
     def __init__(self, session=None, *args, **kwargs):

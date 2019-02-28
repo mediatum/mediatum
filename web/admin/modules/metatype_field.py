@@ -111,6 +111,7 @@ def showDetailList(req, id):
     v["actfilter"] = actfilter
 
     v["actpage"] = req.params.get("actpage")
+    v["csrf"] = req.csrf_token.current_token
     if ustr(req.params.get("page", "")).isdigit():
         v["actpage"] = req.params.get("page")
 
@@ -197,6 +198,7 @@ def FieldDetail(req, pid, id, err=0):
         v["field"] = field
 
     v["adminfields"] = []
+    v["csrf"] = req.csrf_token.current_token
     for t in getMetaFieldTypeNames():
         f = getMetadataType(t)
 

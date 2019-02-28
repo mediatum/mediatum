@@ -12,7 +12,9 @@ from pygments.formatters import HtmlFormatter
 from pygments.lexers import JsonLexer
 from core import Node, File, db
 from web.newadmin.views import BaseAdminView
+from web.newadmin.secureform import MediatumSecureForm
 from core.database.postgres.node import NodeAlias
+
 
 logg = logging.getLogger(__name__)
 
@@ -30,6 +32,7 @@ def _format_as_json_html(data):
 
 
 class NodeView(BaseAdminView):
+    form_base_class = MediatumSecureForm
 
     column_list = ("id", "name", "type", "schema", "orderpos")
     column_filters = ("name", "type", "schema")
@@ -45,8 +48,8 @@ class NodeView(BaseAdminView):
     def __init__(self, session=db.session, *args, **kwargs):
         super(NodeView, self).__init__(Node, session, category="Node", *args, **kwargs)
 
-
 class FileView(BaseAdminView):
+    form_base_class = MediatumSecureForm
 
     column_filters = ("path", "filetype", "mimetype")
     column_editable_list = ("path", "filetype", "mimetype")
@@ -58,9 +61,8 @@ class FileView(BaseAdminView):
     def __init__(self, session=db.session, *args, **kwargs):
         super(FileView, self).__init__(File, session, category="Node", *args, **kwargs)
 
-
-
 class NodeAliasView(BaseAdminView):
+    form_base_class = MediatumSecureForm
 
     def __init__(self, session=db.session, *args, **kwargs):
         super(NodeAliasView, self).__init__(NodeAlias, session, category="Node", *args, **kwargs)

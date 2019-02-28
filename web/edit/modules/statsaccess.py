@@ -88,7 +88,7 @@ def getContent(req, ids):
     else:
         v["current_file"] = StatisticFile(None)
     v["nodename"] = node.name
-
+    v["csrf"] = req.csrf_token.current_token
     return req.getTAL("web/edit/modules/statsaccess.html", v, macro="edit_stats")
 
 
@@ -110,6 +110,7 @@ def getPopupWindow(req, ids):
     else:
         v["action"] = "showform"
         v["statsrun"] = q(Node).get(ids).get("system.statsrun")
+        v["csrf"] = req.csrf_token.current_token
     req.writeTAL("web/edit/modules/statsaccess.html", v, macro="edit_stats_popup")
 
 

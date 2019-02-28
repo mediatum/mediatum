@@ -303,7 +303,7 @@ class Workflows(Node):
                 "list": list, "search": req.params.get(
                     "workflow_search", ""), "items": workflowSearch(
                     list, req.params.get(
-                        "workflow_search", "")), "getStep": getNodeWorkflowStep, "format_date": formatItemDate}, macro=macro)
+                        "workflow_search", "")), "getStep": getNodeWorkflowStep, "format_date": formatItemDate, "csrf": req.csrf_token.current_token}, macro=macro)
 
     @classmethod
     def isContainer(cls):
@@ -329,7 +329,7 @@ class Workflow(Node):
                 "workflow": self, "search": req.params.get(
                     "workflow_search", ""), "items": workflowSearch(
                     [self], req.params.get(
-                        "workflow_search", "")), "getStep": getNodeWorkflowStep, "format_date": formatItemDate}, macro=macro)
+                        "workflow_search", "")), "getStep": getNodeWorkflowStep, "format_date": formatItemDate, "csrf": req.csrf_token.current_token}, macro=macro)
 
     def getId(self):
         return self.name
@@ -458,7 +458,7 @@ class WorkflowStep(Node):
 
                         link = '(' + self.name + ')'
                         try:
-                            return req.getTAL(template, {"node": node, "link": link, "email": config.get("email.workflow")}, macro=macro)
+                            return req.getTAL(template, {"node": node, "link": link, "email": config.get("email.workflow"), "csrf": req.csrf_token.current_token}, macro=macro)
                         except:
                             logg.exception("exception in show_node_big, ignoring")
                             return ""
@@ -543,7 +543,7 @@ class WorkflowStep(Node):
             i += 1
         c.sort(lambda x, y: cmp(x['name'], y['name']))
         return req.getTAL("workflow/workflow.html", {"children": c, "workflow": self.parents[
-                          0], "step": self, "nodelink": "/mask?id={}&obj=".format(self.id), 'currentlang': lang(req)}, macro="workflow_show")
+                          0], "step": self, "nodelink": "/mask?id={}&obj=".format(self.id), 'currentlang': lang(req), "csrf": req.csrf_token.current_token}, macro="workflow_show")
 
     def show_node_image(node):
         return '<img border="0" src="/img/directory.png">'
@@ -592,7 +592,7 @@ class WorkflowStep(Node):
         redirect = 1
         if redirect == 0:
             return req.getTAL(
-                "workflow/workflow.html", {"newnodename": newnode.name, "email": config.get("email.workflow")}, macro="workflow_forward2")
+                "workflow/workflow.html", {"newnodename": newnode.name, "email": config.get("email.workflow"), "csrf": req.csrf_token.current_token }, macro="workflow_forward2")
         else:
             if config.get("config.ssh", "") == "yes":
                 if not newloc.lower().startswith("https:"):

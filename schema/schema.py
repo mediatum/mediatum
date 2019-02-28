@@ -38,6 +38,7 @@ from core.xmlnode import getNodeXML, readNodeXML
 from core.metatype import Metatype
 from core import db
 from core.systemtypes import Metadatatypes
+from core.translation import lang
 from core.transition.postgres import check_type_arg
 from core.database.postgres.node import children_rel, parents_rel
 from utils.date import parse_date, format_date, validateDateString
@@ -114,26 +115,21 @@ def loadTypesFromDB():
     # do not use list(q(Metadatatype).order_by("name")) which reports also deleted nodes from type metadatatype
     return list(q(Metadatatypes).one().children.order_by("name"))
 
-
 def get_permitted_schemas():
     return q(Metadatatype).filter(Metadatatype.a.active == "1").filter_read_access().order_by(Metadatatype.a.longname).all()
-
 
 def get_permitted_schemas_for_datatype(datatype):
     return [sc for sc in get_permitted_schemas() if datatype in sc.getDatatypes()]
 
-
 #
 # check if metatype with given name is still existing in db
 #
-
 
 def existMetaType(name):
     warn("use q(Metadatatype) instead", DeprecationWarning)
     if getMetaType(name):
         return True
     return False
-
 
 #
 # update/create metatype by given object
@@ -160,14 +156,12 @@ def updateMetaType(name, description="", longname="", active=0, datatypes="", bi
 # delete metatype by given name
 #
 
-
 def deleteMetaType(name):
     metadatatypes = q(Metadatatypes).one()
     for metadatatype in q(Metadatatype).filter_by(name=name).all():
         if metadatatype in metadatatypes.children:
             metadatatypes.children.remove(metadatatype)
     db.session.commit()
-
 
 ###################################################
 #                detail section                   #
@@ -176,7 +170,6 @@ def deleteMetaType(name):
 #
 # returns a fieldlist with name as key and list of metatypes as value
 #
-
 
 def getAllMetaFields():
     fields = {}
@@ -188,7 +181,6 @@ def getAllMetaFields():
                 if mtype not in fields[field.getName()]:
                     fields[field.getName()].append(mtype)
     return fields
-
 
 #
 # returns field for given name and metatype
@@ -206,7 +198,6 @@ def existMetaField(pid, name):
     return getMetaField(pid, name) is not None
 
 """ update/create metadatafield """
-
 
 def updateMetaField(parent, name, label, orderpos, fieldtype, option="", description="",
                     fieldvalues="", fieldvaluenum="", fieldid="", filenode=None, attr_dict={}):
@@ -270,7 +261,6 @@ def updateMetaField(parent, name, label, orderpos, fieldtype, option="", descrip
         field.set(attr_name, attr_value)
     db.session.commit()
 
-
 #
 # delete metadatafield
 #
@@ -288,7 +278,6 @@ def deleteMetaField(pid, name):
 #
 # change order of metadatafields: move element up/down
 #
-
 
 def moveMetaField(pid, name, direction):
     up, down = -1, -1
@@ -342,7 +331,6 @@ def generateMask(metatype, masktype="", force=0):
                     field.children.append(c)
     db.session.commit()
 
-
 def cloneMask(mask, newmaskname):
     def recurse(m1, m2):
         for k, v in m1.attrs.items():
@@ -368,7 +356,6 @@ def cloneMask(mask, newmaskname):
     p[0].children.append(newmask)
     recurse(mask, newmask)
     db.session.commit()
-
 
 def checkMask(mask, fix=0, verbose=1, show_unused=0):
     if mask.type != "mask":
@@ -1091,10 +1078,11 @@ class Mask(Node):
 
     ''' show maskeditor - definition '''
 
-    def getMetaMask(self, language=None):
+    def getMetaMask(self, req):
+        language = lang(req)
         ret = '<form method="post" name="myform">'
+        ret += '<input value="' + req.csrf_token.current_token + '" type="hidden" name="csrf_token">'
         ret += '<div class="back"><h3 i18n:translate="mask_editor_field_definition">Felddefinition </h3>'
-
         if self.getMasktype() == "export" and self.get("exportmapping") == "":
             # no mapping defined, we just emit an error msg and skip the rest
             ret += '<p i18n:translate="mask_editor_no_export_mapping_defined" class="error">TEXT</p></div><br/>'
@@ -1145,7 +1133,9 @@ class Mask(Node):
             if key.startswith("edit_"):
                 item = q(Node).get(req.params.get("edit", ""))
                 t = getMetadataType(item.get("type"))
-                return '<form method="post" name="myform">%s</form>' % (t.getMetaEditor(item, req))
+                ret = '<form method="post" name="myform">'
+                ret += '<input value="' + req.csrf_token.current_token + '" type="hidden" name="csrf_token">'
+                return ret + '%s</form>' % (t.getMetaEditor(item, req))
 
         if (req.params.get("op", "") == "new" and req.params.get("type", "") != "") or (
                 self.getMasktype() == "export" and req.params.get("op", "") in ["newdetail", "new"]):
@@ -1162,7 +1152,9 @@ class Mask(Node):
                 req.params["edit"] = item
             else:
                 req.params["edit"] = item.id
-            return u'<form method="post" name="myform">{}</form>'.format(t.getMetaEditor(item, req))
+            ret = '<form method="post" name="myform">'
+            ret += '<input value="' + req.csrf_token.current_token + '" type="hidden" name="csrf_token">'
+            return ret + u'{}</form>'.format(t.getMetaEditor(item, req))
 
         if (req.params.get("type", "") == "" and self.getMasktype() != "export") or req.params.get('op') == 'newdetail':
             # type selection for new field
@@ -1182,6 +1174,7 @@ class Mask(Node):
                 <br/>
                 <br/>
                 <input type="hidden" name="op" value="new"/>"""
+            ret += '<input value="' + req.csrf_token.current_token + '" type="hidden" name="csrf_token">'
             ret += '<input type="hidden" name="pid" value="' + req.params.get("pid") + '"/>'
             ret += '<div class="label">&nbsp;</div><button type="submit" name="new_" style="width:100px" i18n:translate="mask_editor_ok"> OK </button>'
             ret += '&nbsp;&nbsp;<button type="submit" onclick="setCancel(document.myform.op)" i18n:translate="mask_editor_cancel">Abbrechen</button><br/>'
@@ -1192,7 +1185,10 @@ class Mask(Node):
             # create new node
             item = q(Node).get(req.params.get("id"))
             t = getMetadataType(req.params.get("type"))
-            return '<form method="post" name="myform">%s</form>' % (t.getMetaEditor(item, req))
+            ret = '<form method="post" name="myform">'
+            ret += '<input value="' + req.csrf_token.current_token + '" type="hidden" name="csrf_token">'
+            return ret + '%s</form>' % (t.getMetaEditor(item, req))
+
 
     def getDescription(self):
         return self.get("description")

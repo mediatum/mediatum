@@ -10,7 +10,7 @@
 <script tal:content="python:u'var node_id = {};'.format(node.id)">;</script>
 <script tal:content="python:u'var startpageno = {};'.format(startpageno)">;</script>
 <script tal:content="python:u'var FATAL_ERROR = {};'.format(FATAL_ERROR)">;</script>
-
+<script tal:content="python:u'var csrf = \'{}\';'.format(csrf)"> </script>
 <script>
 
   var BIGPAGE_HEIGHT = 600;
@@ -146,7 +146,7 @@
 
     $("#img_pdf_page").replaceWith(x);
 
-    var url = '/wfs_addpic2pdf?jsoncallback=?';
+    var url = '/wfs_addpic2pdf?jsoncallback=?&csrf_token=' + csrf;
 
     var options = {
       type: 'POST',
@@ -650,6 +650,7 @@
       <p class="leerzeile">&nbsp;</p>
       <div id="submit_form">
         <form id="form_left" action="/mask" method="post">
+            <input tal:attributes="value csrf" type="hidden" name="csrf_token">
           <div class="select">
             <span i18n:translate="admin_wfstep_addpic2pdf_select_page_to_preview">Select page to preview</span>:
             <select id="select_pdf_page" tal:attributes="name python:u'pdfpage_select_for_node_{}'.format(node.id)" size=1 onchange="g(this.name, this.value);" onselect="g(this.name, this.value);" onkeyup="g(this.name, this.value);">

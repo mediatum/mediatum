@@ -144,7 +144,7 @@ def validate(req, op):
         # remark: error messages will be served untranslated in English
         # because messages from the python interpreter (in English) will be added
 
-        return req.getTAL("web/admin/modules/metatype.html", {'sectionlist': sectionlist}, macro="view_testnodes")
+        return req.getTAL("web/admin/modules/metatype.html", {'sectionlist': sectionlist, 'csrf': req.csrf_token.current_token}, macro="view_testnodes")
 
     if len(path) == 2 and path[1] == "info":
         return showInfo(req)
@@ -439,6 +439,7 @@ def view(req):
     v["actfilter"] = actfilter
     v["filterattrs"] = [("id", "admin_metatype_filter_id"), ("name", "admin_metatype_filter_name")]
     v["filterarg"] = req.params.get("filtertype", "id")
+    v["csrf"] = req.csrf_token.current_token
     return req.getTAL("web/admin/modules/metatype.html", v, macro="view_type")
 
 
@@ -488,6 +489,7 @@ def MetatypeDetail(req, id, err=0):
     v["acl"] = makeList(req, "read", removeEmptyStrings(rules), {}, overload=0, type="read")
     v["filtertype"] = req.params.get("filtertype", "")
     v["actpage"] = req.params.get("actpage")
+    v["csrf"] = req.csrf_token.current_token
     return req.getTAL("web/admin/modules/metatype.html", v, macro="modify_type")
 
 
@@ -495,7 +497,7 @@ def MetatypeDetail(req, id, err=0):
 
 
 def showInfo(req):
-    return req.getTAL("web/admin/modules/metatype.html", {"fieldtypes": getMetaFieldTypeNames()}, macro="show_info")
+    return req.getTAL("web/admin/modules/metatype.html", {"fieldtypes": getMetaFieldTypeNames(), "csrf": req.csrf_token.current_token}, macro="show_info")
 
 """ popup form with field definition """
 
@@ -510,7 +512,7 @@ def showFieldOverview(req):
     v["metafields"] = fields
     v["fieldoptions"] = fieldoption
     v["fieldtypes"] = getMetaFieldTypeNames()
-
+    v["csrf"] = req.csrf_token.current_token
     return req.getTAL("web/admin/modules/metatype.html", v, macro="show_fieldoverview")
 
 """ export metadatatype-definition (XML) """
@@ -745,13 +747,13 @@ def showEditor(req):
         # show metaEditor
         v["editor"] = ""
         try:
-            v["editor"] = req.getTALstr(editor.getMetaMask(language=lang(req)), {})
+            v["editor"] = req.getTALstr(editor.getMetaMask(req), {})
         except:
             logg.exception("exception in showEditor")
-            v["editor"] = editor.getMetaMask(language=lang(req))
+            v["editor"] = editor.getMetaMask(req)
 
     v["title"] = editor.name
-
+    v["csrf"] = req.csrf_token.current_token
     return req.getTAL("web/admin/modules/metatype.html", v, macro="editor_popup")
 
 

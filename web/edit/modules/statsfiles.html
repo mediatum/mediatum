@@ -77,6 +77,7 @@
       </div>
       <div id="div_button">
         <form method="post" class="child_vcentered">
+            <input tal:attributes="value csrf" type="hidden" name="csrf_token">
           <input name="update_stat" type="hidden"/>
           <button type="button" onclick="form.submit()" i18n:translate="edit_stats_updatebutton" style="min-width:200px">TEXT</button>
         </form>

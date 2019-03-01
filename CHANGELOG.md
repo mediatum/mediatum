@@ -5,6 +5,35 @@ We mostly follow the conventions given in [Keep a Changelog](http://keepachangel
 Calendar Versioning is used for our version numbers: http://calver.org/
 
 
+## [v2019.02] - 2019-02-28
+
+### Added
+
+- cross side request forgery
+- metadatascheme translated
+- choosing directories translated
+- filename of attachments is preserved
+- pkgs.glibcLocales
+- enable change of document nodename
+- CC0 license
+- pidfile can be configured
+
+### Changed
+
+- postgresql 10.3
+- all packages from nixos 18.03
+- table fts with new primary key
+- disable delete user
+- expand z3950 logging
+- use convert from graphicsmagick instead of imagemagick
+
+### Fixed
+
+- export.js
+- print failes if metadata not unicode
+- from field from searchfield is not resetted
+
+
 ## [v2018.09] - 2018-09-26
 
 ### Added

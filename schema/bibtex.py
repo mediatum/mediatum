@@ -322,13 +322,13 @@ def importBibTeX(infile, node=None, req=None):
             logg.error("getentries failed", exc_info=1)
             msg = "bibtex import: getentries failed, import stopped (encoding error)"
             logg.error(msg)
-            raise ValueError("encoding_error")
+            raise ValueError("bibtex_unspecified_error")
 
     logg.info("bibtex import: %d entries", len(entries))
 
     for count, fields in enumerate(entries):
         docid_utf8 = fields["ID"]
-        fields["key"] = fields.pop("ID")
+        fields[u"key"] = fields.pop("ID")
         doctype = fields.pop("ENTRYTYPE")
         mytype = detecttype(doctype, fields)
 
@@ -375,7 +375,7 @@ def importBibTeX(infile, node=None, req=None):
                             v = v[:len(datefields[k])]
                     except ValueError as e:
                         logg.exception("bibtex exception: %s: %s", k, v)
-                        raise ValueError("ValueError: " + k + ": " + v)
+                        raise ValueError("bibtex_date_error")
 
                 doc.set(k, v)
 

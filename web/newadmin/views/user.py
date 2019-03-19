@@ -12,7 +12,7 @@ from web.newadmin.views import BaseAdminView
 from web.newadmin.secureform import MediatumSecureForm
 from wtforms.ext.sqlalchemy.fields import QuerySelectMultipleField
 from wtforms import SelectMultipleField
-from flask.ext.admin import form, expose
+from flask_admin import form, expose
 
 from core.auth import INTERNAL_AUTHENTICATOR_KEY
 from core.permission import get_or_add_access_rule

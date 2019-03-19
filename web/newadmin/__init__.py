@@ -11,7 +11,7 @@
     :license: GPL3, see COPYING for details
 """
 from flask import Flask, request, session, url_for, redirect, flash
-from flask_admin import Admin
+from flask_admin import Admin, AdminIndexView
 from flask_admin.form import SecureForm
 
 from web.newadmin.views.user import UserView, UserGroupView, AuthenticatorInfoView, OAuthUserCredentialsView
@@ -20,8 +20,8 @@ from wtforms.validators import ValidationError
 
 from core import db, User, config
 from core.auth import authenticate_user_credentials, logout_user
-from flask.ext import admin, login
-from flask.ext.admin import helpers, expose
+from flask_admin import helpers, expose
+import flask_login as _flask_login
 
 import functools as _functools
 import os
@@ -38,12 +38,12 @@ q = db.query
 
 DEBUG = True
 
-class IndexView(admin.AdminIndexView):
+class IndexView(AdminIndexView):
 
     """Creates index view class for handling login."""
     @expose('/')
     def index(self):
-        if not login.current_user.is_authenticated:
+        if not _flask_login.current_user.is_authenticated:
             return redirect(url_for('.login_view'))
         return super(IndexView, self).index()
 
@@ -53,17 +53,17 @@ class IndexView(admin.AdminIndexView):
 
         if helpers.validate_form_on_submit(login_form):
             user = login_form.get_user()
-            login.login_user(user)
-        if login.current_user.is_authenticated:
+            _flask_login.login_user(user)
+        if _flask_login.current_user.is_authenticated:
             return redirect(url_for('.index'))
         self._template_args['form'] = login_form
         return super(IndexView, self).index()
 
     @expose('/logout/')
     def logout_view(self):
-        user = login.current_user
+        user = _flask_login.current_user
         logout_user(user, request)
-        login.logout_user()
+        _flask_login.logout_user()
         return redirect(url_for('.index'))
 
 class LoginForm(form.Form):
@@ -148,7 +148,7 @@ def request_finished_db_session(response):
 
 def init_login():
     """Initializes flask-login."""
-    login_manager = login.LoginManager()
+    login_manager = _flask_login.LoginManager()
     login_manager.init_app(app)
 
     @login_manager.user_loader

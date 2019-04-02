@@ -5,6 +5,13 @@ We mostly follow the conventions given in [Keep a Changelog](http://keepachangel
 Calendar Versioning is used for our version numbers: http://calver.org/
 
 
+## [v2019.021] - 2019-04-02
+
+### Fixed
+
+- fix missing csrf in default login template
+
+
 ## [v2019.02] - 2019-02-28
 
 ### Added

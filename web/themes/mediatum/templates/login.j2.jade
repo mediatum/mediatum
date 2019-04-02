@@ -1,4 +1,4 @@
-- macro login(error, user, email, language)
+- macro login(error, user, email, language, csrf)
   #object_main(style='margin-left:20px')
     p &nbsp;
     if error > 0
@@ -10,7 +10,7 @@
         = email
     br
     form.login(method='post', name='login')
-      {{request.csrf_token}}
+      input(type='hidden',name='csrf_token', value=csrf)
       .label &nbsp;
       span
         = _t('login_currentuser_msg')
@@ -44,14 +44,14 @@
     script.
       function passInfo() {document.getElementById('pass_info').style.display='';}
 
-- macro change_pwd(error, user)
+- macro change_pwd(error, user, csrf)
   #object_main(style='margin-left:20px')
     p &nbsp;
     if error > 0
       p.error(style='text-align:center')
         = _t('login_change_err_{}'.format(error))
     form.login(method='post', action='pwdchange', name='login')
-      {{request.csrf_token}}
+      input(type='hidden',name='csrf_token', value=csrf)
       .label
         = _t('login_act_pwd:')
       input.text(maxlength='99', type='password', name='password_old', style='width:200px; margin-bottom:2px')

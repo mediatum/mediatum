@@ -2,7 +2,7 @@ msgid "edit_files_filetype_error"
 msgstr "Exchange isn't possible, since the file types do not match."
 
 msgid "edit_files_files"
-msgstr "Files"
+msgstr "List of files"
 
 msgid "edit_files_children"
 msgstr "Children"
@@ -38,7 +38,7 @@ msgid "edit_files_location"
 msgstr "Location / Name"
 
 msgid "edit_files_options"
-msgstr "Options"
+msgstr "Upload files"
 
 msgid "edit_files_opne_title"
 msgstr "Open"

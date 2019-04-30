@@ -8,6 +8,7 @@
 
 <link rel="stylesheet" href="/js/jquery-ui-1.12.1.css" type="text/css" />
 <link rel="stylesheet" href="/js/jquery.ui.plupload/css/jquery.ui.plupload.css" type="text/css" />
+<link rel="stylesheet" href="/css/editor.css" type="text/css" />
 
     <style>
 
@@ -72,6 +73,31 @@
             parent.$('#overlay').css('display', 'none');
         }
 
+        function openDoiForm(){
+
+            var ajax_response;
+
+            var options = {
+                  url: '/edit/edit_content?action=adddoi&func=openMetaForm&id='+id,
+                  async: false,
+                  dataType: 'json',
+                  success: function(data){
+                      ajax_response = data;
+                      $('#metaformcontent').html(data.content);
+                      $('#metaform').show();
+                  }
+                };
+
+            $.ajax(options);
+            parent.$('#overlay').css('display', 'block');
+        }
+
+
+        function closeDoiForm(){ // close upload form
+            $('#metaform').hide();
+            parent.$('#overlay').css('display', 'none');
+        }
+
 
         var number_files = 0;
         var singlefile = 0;
@@ -88,11 +114,16 @@
 
     <div style="padding-left:30px;clear:left">
 
-        <a id="id_a_openplupload" href="#" onclick="openUploadFormPluploadWidget()" style="border:1px solid silver;padding:5px;height:40px;display:block;float:left;margin-right:5px"><img src="/img/upload.png"/> <tal:block i18n:translate="edit_upload_files_plupload_widget"/></a>
-
         <tal:block tal:condition="python:len(schemes)>=1 and len(datatypes)>=1">
-            <a href="#" onclick="openMetaForm()" style="border:1px solid silver;padding:5px;height:40px;display:block;float:left"><img src="/img/upload.png"/> <tal:block i18n:translate="edit_upload_meta"/></a>
+            <a class="uploadmeta" href="#" onclick="openMetaForm()"><img src="/img/upload.png"/> <tal:block i18n:translate="edit_upload_meta"/></a>
         </tal:block>
+
+        <a class="uploaddoi" href="#" onclick="openDoiForm()"><img src="/img/upload.png"/> <tal:block i18n:translate="edit_upload_doi"/></a>
+
+        <a class="uploadfile" id="id_a_openplupload" href="#" onclick="openUploadFormPluploadWidget()"> <img src="/img/upload.png"/> <tal:block i18n:translate="edit_upload_files_plupload_widget"/></a>
+
+        <a class="uploadbibtex" id="id_a_openplupload" href="#" onclick="openUploadFormPluploadWidget()"><img src="/img/upload.png"/> <tal:block i18n:translate="edit_upload_bibtex_plupload_widget"/></a>
+
     </div>
 
 
@@ -679,19 +710,6 @@
 
 <tal:block metal:define-macro="addmeta">
     <script>
-        function loadSchemes(o){
-            $('#buttoncreate2').hide();
-            $.getJSON('/edit/edit_content?action=getschemes&func=loadSchemes&contenttype='+o.value+'&id='+id, function(data){
-                var schemes = $('#schema');
-                first = schemes.find('option')[0];
-                schemes.find('option').remove().end();
-                schemes.append(first);
-                $.each(data.schemes, function(item){
-                    schemes.append($('<option />').val(data.schemes[item].id).text(data.schemes[item].name));
-                });
-            });
-        }
-
 
         function showOrHide(selector, selectedIndex){
             if (selectedIndex == 0) {
@@ -710,7 +728,7 @@
             var ajax_response;
 
             var options = {
-                  url: '/edit/edit_content?action=createobject&func=createMetaObject&contenttype='+$('#objecttype').val()+'&schema='+$('#schema').val()+'&id='+id,
+                  url: '/edit/edit_content?action=createobject&func=createMetaObject&contenttype='+$('#schema').val().split('|')[1]+'&schema='+$('#schema').val().split('|')[0]+'&id='+id,
                   async: false,
                   dataType: 'json',
                   success: function(data){
@@ -723,6 +741,43 @@
             $.ajax(options);
             updateNodeLabels("");
         }
+
+        function disenableInput(index) {
+          if (index != 0) {
+            $("#input_identifier").prop('disabled', false);
+            $('#identifier_subform').show();
+          }
+          else {
+            $("#input_identifier").prop('disabled', true);
+            $('#identifier_subform').hide();
+          }
+        }
+
+
+    </script>
+    <h3 i18n:translate="edit_upload_create_meta">TEXT</h3>
+
+    <!-- create object via metadata scheme -->
+    <div id="subform_meta">
+
+      <p><tal:block i18n:translate="edit_upload_scheme"/><br/>
+          <select name="schema" id="schema" style="width:360px;" onchange="showOrHide('#buttoncreate2', this.selectedIndex);">
+              <option i18n:translate="edit_upload_schemeselection">TEXT</option>
+              <tal:block tal:repeat="scheme schemes">
+                  <option tal:attributes="value python:scheme['id']+'|'+scheme['datatype']; title python:scheme['description']" tal:content="python:scheme['name']"/>
+              </tal:block>
+          </select>
+      </p>
+      <p style="text-align:center;min-height:40px">
+          <button type="button" id="buttoncreate2" onclick="createMetaObject()" style="min-width:200px;padding:4px;display:none" i18n:translate="edit_upload_create_object">TEXT</button>
+      </p>
+    </div>
+
+</tal:block>
+
+
+<tal:block metal:define-macro="adddoi">
+    <script>
 
         function createObjectFromIdentifier(){
 
@@ -760,54 +815,11 @@
         }
 
 
-        function disenableInput(index) {
-          if (index != 0) {
-            $("#input_identifier").prop('disabled', false);
-            $('#identifier_subform').show();
-          }
-          else {
-            $("#input_identifier").prop('disabled', true);
-            $('#identifier_subform').hide();
-          }
-        }
-
-
     </script>
     <h3 i18n:translate="edit_upload_create_meta">TEXT</h3>
-    <input type="radio" name="metadata_createmethod" value="from_schema" checked="checked"><span i18n:translate="edit_upload_createmethod_from_schema">TEXT</span>
-    <input type="radio" name="metadata_createmethod" value="from_identifier"><span i18n:translate="edit_upload_createmethod_from_identifier">TEXT</span>
-
-    <!-- create object via metadata scheme -->
-    <div id="subform_meta">
-      <p tal:condition="python:len(datatypes)>1">
-          <tal:block i18n:translate="edit_upload_obj_sel"/><br/>
-          <select name="objecttype" id="objecttype" onchange="loadSchemes(this)" style="width:360px">
-              <option i18n:translate="edit_upload_typeselection">TEXT</option>
-              <tal:block tal:repeat="datatype datatypes">
-                  <option i18n:translate="" tal:attributes="value python:datatype.__name__.lower()" tal:content="python:datatype.__name__"/>
-              </tal:block>
-          </select>
-      </p>
-      <p tal:condition="python:len(datatypes)==1">
-          <tal:block i18n:translate="edit_upload_obj_sel"/><br/><b i18n:translate="" tal:content="python:datatypes[0].__name__"/>
-          <input type="hidden" name="objecttype" id="objecttype" tal:attributes="value python:datatypes[0].__name__.lower()"/>
-      </p>
-
-      <p><tal:block i18n:translate="edit_upload_scheme"/><br/>
-          <select name="schema" id="schema" style="width:360px;" onchange="showOrHide('#buttoncreate2', this.selectedIndex);">
-              <option i18n:translate="edit_upload_schemeselection">TEXT</option>
-              <tal:block tal:condition="python:len(datatypes)==1" tal:repeat="scheme schemes">
-                  <option tal:attributes="value python:scheme.name" tal:content="python:scheme.name"/>
-              </tal:block>
-          </select>
-      </p>
-      <p style="text-align:center;min-height:40px">
-          <button type="button" id="buttoncreate2" onclick="createMetaObject()" style="min-width:200px;padding:4px;display:none" i18n:translate="edit_upload_create_object">TEXT</button>
-      </p>
-    </div>
 
     <!-- create object from identifier (doi, ...) -->
-    <div id="subform_identifier" style="min-width:200px;padding:4px;display:none">
+    <div id="subform_identifier" style="min-width:200px;padding:4px">
       <div tal:condition="python:len(identifier_importers)>1">
           <tal:block i18n:translate="edit_upload_importer_sel"/><br/>
           <select name="identifier_importer" id="identifier_importer" style="width:360px" onchange="disenableInput(this.selectedIndex)">
@@ -838,25 +850,7 @@
 
     </div>
 
-<script type="text/javascript">
-    $(document).ready(function(){
-
-        $('input[name="metadata_createmethod"]').click(function(){
-            if($(this).attr("value")=="from_schema"){
-                $("#subform_identifier").hide();
-                $("#subform_meta").show();
-            }
-            if($(this).attr("value")=="from_identifier"){
-                $("#subform_meta").hide();
-                $("#subform_identifier").show();
-            }
-        });
-
-    });
-</script>
-
 </tal:block>
-
 
 <tal:block metal:define-macro="uploadfileok_plupload">
     <div class="schema" tal:define="type python:schemes.keys()[0]"> <span i18n:translate="edit_upload_select_metadata_type">Select metadata type: </span>

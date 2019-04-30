@@ -54,10 +54,16 @@ msgid "edit_upload_schemeselection"
 msgstr "-- Metadatenschema wählen --"
 
 msgid "edit_upload_files_plupload_widget"
-msgstr "Datei(en) hochladen"
+msgstr "Datei hochladen"
+
+msgid "edit_upload_bibtex_plupload_widget"
+msgstr "Bibtex-Import"
 
 msgid "edit_upload_meta"
 msgstr "Metadaten einstellen"
+
+msgid "edit_upload_doi"
+msgstr "DOI-Eingabe"
 
 msgid "edit_upload_create_objects"
 msgstr "Objekte erzeugen"

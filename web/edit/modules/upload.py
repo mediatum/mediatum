@@ -252,15 +252,32 @@ def getContent(req, ids):
 
         # add new object, only metadata
         if req.params.get('action') == "addmeta":
+            ret = []
             schemes = get_permitted_schemas()
             dtypes = getDatatypes(req, schemes)
+            dtypenames = {t.__name__.lower():t.__name__ for t in dtypes}
+            for scheme in get_permitted_schemas():
+                datatypes = scheme.getDatatypes()
+                for datatype in datatypes:
+                    if datatype in dtypenames.keys():
+                        ret.append({'id': scheme.name,
+                                    'name': scheme.getLongName() + ' / ' + translate(dtypenames[datatype], request=req),
+                                    'description': scheme.getDescription(), 'datatype': datatype})
             if len(dtypes) == 1:  # load schemes for type
                 schemes = get_permitted_schemas_for_datatype(dtypes[0].__name__.lower())
             content = req.getTAL('web/edit/modules/upload.html', {"datatypes": dtypes,
-                                                                  "schemes": schemes,
-                                                                  "language": lang(req),
-                                                                  "identifier_importers": identifier_importers.values()},
+                                                                  "schemes": ret,
+                                                                  "language": lang(req)},
                                  macro="addmeta")
+
+            req.write(json.dumps({'content': content}, ensure_ascii=False))
+            return None
+
+        # add new object, only doi
+        if req.params.get('action') == "adddoi":
+            content = req.getTAL('web/edit/modules/upload.html', {"language": lang(req),
+                                                                  "identifier_importers": identifier_importers.values()},
+                                 macro="adddoi")
 
             req.write(json.dumps({'content': content}, ensure_ascii=False))
             return None

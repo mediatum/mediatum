@@ -49,6 +49,22 @@ a.breadcrumbs {color:#243135;}
     background-color:#ededed; -moz-border-radius:6px; -webkit-border-radius:6px; border-radius:6px; border:1px solid #dcdcdc; display:inline-block;
     font-size:12px; padding:4px 24px;
 }
+
+a.uploadmeta{
+    border:1px solid silver;padding:5px;height:40px;display:block;float:left
+}
+a.uploaddoi{
+    border:1px solid silver;padding:5px;height:40px;display:block;float:left
+}
+a.uploadfile{
+    border:1px solid silver;padding:5px;height:40px;display:block;float:left
+}
+a.uploadbibtex{
+    border:1px solid silver;padding:5px;height:40px;display:block;float:left
+}
+textarea{
+    font-family:arial, helvetica, sans-serif; resize: vertical;overflow: auto;
+}
 .button:hover, input[type="button"]:hover,input[type="submit"]:hover,input[type="reset"]:hover, button:hover, button[type="submit"]:hover {
     background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #dfdfdf), color-stop(1, #ededed) );
     background:-moz-linear-gradient( center top, #dfdfdf 5%, #ededed 100% );

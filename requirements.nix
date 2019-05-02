@@ -265,7 +265,6 @@ let
   mock
   munch
   py
-  redis
   ;
 
   fake-factory = self.buildPythonPackage {
@@ -321,15 +320,6 @@ let
       sha256 = "0c2r4gvj44yc2aqrfw5dr4y7ncf5qfkid1xj6gv1nc5xkzwzwfk1";
     };
     propagatedBuildInputs = with self; [py pytest];
-  };
-
-  redis-collections = self.buildPythonPackage {
-    name = "redis-collections-0.1.7";
-    src = fetchurl {
-      url = "https://pypi.python.org/packages/source/r/redis-collections/redis-collections-0.1.7.tar.gz";
-      sha256 = "1vlqhh86w10wxj0cicnic1jcxxz8fwv1a4466028w3say8inqdjb";
-    };
-    propagatedBuildInputs = with self; [redis];
   };
   
   selenium = self.buildPythonPackage rec {
@@ -529,8 +519,6 @@ in {
       pytest
       pytest-catchlog
       pytest-base-url
-      redis-collections
-      pkgs.redis
       pytest-splinter
       sphinx
       yappi

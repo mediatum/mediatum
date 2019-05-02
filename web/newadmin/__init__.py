@@ -31,7 +31,6 @@ import string as _string
 from web.newadmin.views.node import NodeView, FileView, NodeAliasView
 from web.newadmin.views.setting import SettingView
 from web.newadmin.views.acl import AccessRulesetView, AccessRuleView, AccessRulesetToRuleView
-from web.newadmin.views.redis import ProtectedRedisCli
 from datetime import timedelta
 
 
@@ -135,10 +134,6 @@ def make_app():
     admin.add_view(AccessRuleView())
     admin.add_view(AccessRulesetView())
     admin.add_view(AccessRulesetToRuleView())
-
-    if config.getboolean("admin.enable_rediscli", False):
-        from redis import Redis
-        admin.add_view(ProtectedRedisCli(Redis(db=1, port=0, unix_socket_path="/home/congkhacdung/redis/redis.sock"), name="Redis CLI"))
     
     return admin_app
 

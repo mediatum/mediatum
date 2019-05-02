@@ -20,7 +20,6 @@
 import logging
 from collections import OrderedDict
 from warnings import warn
-from dogpile.cache import make_region
 from sqlalchemy import event
 from markupsafe import Markup
 

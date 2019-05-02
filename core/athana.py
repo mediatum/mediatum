@@ -3836,27 +3836,6 @@ class upload_input_collector:
 
 
 # XXX: hack for better testing, do not use this in production...
-USE_PERSISTENT_SESSIONS = False
-
-
-try:
-    import redis_collections
-except ImportError:
-    pass
-else:
-    class RedisSession(redis_collections.Dict):
-
-        def __init__(self, key):
-            super(RedisSession, self).__init__(key=key)
-            self.mediatum_form = MediatumForm(meta={'csrf_context': self})
-
-        @property
-        def id(self):
-            return self.key
-
-        def use(self):
-            pass
-
 
 class Session(dict):
 
@@ -4050,39 +4029,32 @@ class AthanaHandler:
         if "PSESSION" in cookies:
             sessionid = cookies["PSESSION"]
 
-        if USE_PERSISTENT_SESSIONS:
-            if sessionid is None:
-                sessionid = self.create_session_id()
-                logg.debug("Creating new session %s", sessionid)
+        session_expiration_time = act_time - session_cookies_live_secs
+        session = None
+        if sessionid is None:
 
-            session = RedisSession(sessionid)
+            if act_time - last_session_check_time > session_check_period:
+                # delete all sessions with lastuse older than act_time - session_cookies_live_secs
+                sessionids_to_be_deleted = [sid for sid in self.sessions if self.sessions[sid].lastuse < session_expiration_time]
+                for sid in sessionids_to_be_deleted:
+                    del self.sessions[sid]
+                last_session_check_time = act_time
+
+            sessionid = self.create_session_id()
+            logg.debug("Creating new session %s", sessionid)
+
         else:
-            session_expiration_time = act_time - session_cookies_live_secs
-            session = None
-            if sessionid is None:
+            if sessionid in self.sessions:
+                session = self.sessions[sessionid]
+                if session.lastuse < session_expiration_time:
+                    del self.sessions[sessionid]
+                    session = None
+                else:
+                    session.use()
 
-                if act_time - last_session_check_time > session_check_period:
-                    # delete all sessions with lastuse older than act_time - session_cookies_live_secs
-                    sessionids_to_be_deleted = [sid for sid in self.sessions if self.sessions[sid].lastuse < session_expiration_time]
-                    for sid in sessionids_to_be_deleted:
-                        del self.sessions[sid]
-                    last_session_check_time = act_time
-
-                sessionid = self.create_session_id()
-                logg.debug("Creating new session %s", sessionid)
-
-            else:
-                if sessionid in self.sessions:
-                    session = self.sessions[sessionid]
-                    if session.lastuse < session_expiration_time:
-                        del self.sessions[sessionid]
-                        session = None
-                    else:
-                        session.use()
-
-            if session is None:
-                session = Session(sessionid)
-                self.sessions[sessionid] = session
+        if session is None:
+            session = Session(sessionid)
+            self.sessions[sessionid] = session
 
         request['Content-Type'] = 'text/html; encoding=utf-8; charset=utf-8'
 

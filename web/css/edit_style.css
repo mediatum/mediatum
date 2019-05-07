@@ -87,30 +87,6 @@ p.lbpass {color:#555555; font-size:1.2em; margin-top:10px;}
 
 div#clean-container {background-color:#ddd;}
 
-/* ----- */
-#navigation{border-left:1px solid #bbb;}
-ul#nav, ul#nav ul  {list-style-type:none; margin:0; padding:0;}
-ul#nav {padding-top:0px; padding-left:0px;z-index:1;position:relative;border:1px solid #bbb;border-width:1px 0px 0px 0px;}
-ul#nav ul {}
-ul#nav li {float:left; margin:0px; padding:0px;z-index:2;margin:0px;border-right:1px solid #bbb;border-bottom:1px solid #bfbfbf;border-left:0px solid #bbb;}
-ul#nav a {text-decoration:none; display:block;border:1px solid #bbb/*#BFBFBF*/;}
-ul#nav li a {font-size:1em; font-weight:normal; display:block;border:1px solid #E6E6E6;border-bottom:0px; padding:5px 15px 5px;margin:0px;}
-ul#nav li.selected {background-color:#fff;border-bottom:1px solid white;z-index:2;margin-bottom:-1px;}
-ul#nav li.selected:hover {background-color:#F2F2F2;}
-ul#nav li a:hover {border:1px solid #E6E6E6;border-bottom:0px;cursor:pointer;background-color:#F2F2F2;color:black}
-ul#nav li ul li {border:1px solid #F2F2F2;}
-ul#nav li ul li a:hover {border:0px;}
-ul#nav li ul {border:1px solid #bbb;border-top:0px;box-shadow:0px 2px 5px rgba(0,0,0,0.5);margin-left:-1px!important;}
-ul#nav li:hover, ul#nav ul li a:hover {background-color:#F2F2F2;}
-ul#nav li ul a {text-align:left; margin:0px; position:relative; padding:6px 30px 6px 15px; font-weight:normal; color:#000; border-top:0 none; border-right:0 none; border-left:0 none;}
-ul#nav li ul {background:#F3F5F5; margin:0px; padding:0px; position:absolute; width:auto; height:auto; display:none; position:absolute; z-index:3;opacity:0.95;background-color:#E6E6E6;}
-ul#nav li li {float:none; margin:0px; padding:0px;}
-ul#nav li:hover ul ul, ul#nav li.cssHover ul ul {display:none;}
-ul#nav li:hover ul, ul#nav li.cssHover ul, ul#nav li.selected:hover ul{display:block;}
-a.module {background:#E1E8EA;}
-a.first_module {background:#E1E8EA; border-top:1px solid #BBCCD0;}
-ul#nav1 li.sep {line-height: 2px; border-bottom: 1px solid #333333;}
-/* ----- */
 div.MainMenu {margin-left:40px; margin-top:50px; margin-bottom:30px; float:left; height:auto; width:auto; padding:10px;}
 .visible {display:block;}
 .invisible {display:none;}

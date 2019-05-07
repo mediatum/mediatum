@@ -1,4 +1,109 @@
 <div id="clean-container" metal:define-macro="edit_tabs" style="position:relative;">
+  <script >
+    $(function() {
+      $("#nav").menu();
+      $('#nav').menu({
+    position: { my: 'left top', at: 'left bottom' },
+    blur: function() {
+      $(this).menu('option', 'position', { my: 'left top', at: 'left bottom' });
+    },
+    focus: function(e, ui) {
+      if ($('#nav').get(0) !== $(ui).get(0).item.parent().get(0)) {
+        $(this).menu('option', 'position', { my: 'left top', at: 'right top' });
+      }
+    },
+    select: function(e, ui) {
+      if (ui.item.children().attr("tag").startsWith('mark')) {
+        doaction(ui.item.children().attr("tag"));
+      }
+    },
+  });
+
+      console.log($("#nav"));
+    });
+  </script>
+    <style>
+#nav > li { /* Menubar buttons */
+  display: inline-block;
+}
+#nav > li > ul > li { /* Menubar buttons inside dropdown */
+  display: block;
+}
+
+/* Change dropdown carets to correct direction */
+#nav > li > a > span.ui-icon-caret-1-e {
+  /* Caret on menubar */
+  background:url(/css/images/ui-icons_444444_256x240.png) no-repeat -64px -16px !important;
+}
+#nav ul li a span.ui-icon-caret-1-e {
+  /* Caret on dropdowns */
+  background:url(/css/images/ui-icons_444444_256x240.png) no-repeat -32px -16px !important;
+}
+
+.ui-menu .ui-menu-item {
+      position:relative;
+      width: 120px;
+      z-index:100;
+}
+
+.ui-menu .ui-menu .ui-menu-item {
+  position:relative;
+  width: 300px;
+  height: 20px;
+}
+
+.ui-menu .ui-menu .ui-menu .ui-menu-item {
+  position:relative;
+  width: 300px;
+  height: 20px;
+}
+
+.ui-menu .ui-menu .ui-menu .ui-menu-item img {
+  position:absolute;
+  width: 16;
+  height: 16;
+}
+
+.ui-menu .ui-menu .ui-menu .ui-menu-item a#editall{
+  position:relative;
+  width: 270px;
+  height: 20px;
+  padding-left: 30px;
+}
+
+.ui-menu .ui-menu .ui-menu .ui-menu-item a#moveall{
+  position:relative;
+  width: 270px;
+  height: 20px;
+  padding-left: 30px;
+}
+
+.ui-menu .ui-menu .ui-menu .ui-menu-item a#copyall{
+  position:relative;
+  width: 270px;
+  height: 20px;
+  padding-left: 30px;
+}
+
+.ui-menu .ui-menu .ui-menu .ui-menu-item a#deleteall{
+  position:relative;
+  width: 270px;
+  height: 20px;
+  padding-left: 30px;
+}
+
+.ui-menu .ui-menu-item a {
+	text-decoration:none;
+	display:block;
+	padding:.2em .4em;
+	line-height:1.5;
+	zoom:1;
+}
+
+
+
+    </style>
+
     <ul id="nav">
         <tal:block tal:repeat="navitem python:menu">
         <li tal:condition="python:len(navitem.getItemList())>0" tal:attributes="class python:{0:None,1:'selected'}[navitem.name==breadcrumbs[0]]"><a tal:condition="python:len(navitem.getItemList())==0" tal:attributes="class python:{0:None,1:'selected'}[navitem.name==breadcrumbs[0]]; href python:navitem.link; target python:navitem.target" i18n:translate="" tal:content="python:u'tab_{}'.format(navitem.name)">TEXT</a>
@@ -6,7 +111,40 @@
                 <a tal:attributes="class python:{0:None,1:'selected'}[navitem.getName()==breadcrumbs[0]]; target python:navitem.target" i18n:translate="" tal:content="python:u'tab_{}'.format(navitem.getName())"/>
                 <ul>
                     <li tal:repeat="item python:navitem.getItemList()">
-                        <a i18n:translate="" tal:content="python:u'tab_{}'.format(item)" tal:attributes="href python:u'?id={}&tab={}'.format(idstr, item)"/>
+                        <a i18n:translate="" tal:content="python:u'tab_{}'.format(item.getName())" tal:attributes="href python:u'?id={}&tab={}'.format(idstr, item.getName())"/>
+                          <tal:block tal:condition="python:len(item.getItemList())>0 and item.getName() != u'menusortnodes'">
+                              <ul>
+                                  <li tal:repeat="item1 python:item.getItemList()">
+                                    <tal:block tal:condition="python:item1.getName().startswith('mark')==False">
+                                    <tal:block tal:condition="python:item1.getName()=='editall'">
+                                    <img src="/img/edit_edit.gif"/>
+                                    </tal:block>
+                                    <tal:block tal:condition="python:item1.getName()=='moveall'">
+                                    <img src="/img/edit_move.gif"/>
+                                    </tal:block>
+                                    <tal:block tal:condition="python:item1.getName()=='copyall'">
+                                    <img src="/img/edit_copy.gif"/>
+                                    </tal:block>
+                                    <tal:block tal:condition="python:item1.getName()=='deleteall'">
+                                    <img src="/img/edit_delete.png"/>
+                                    </tal:block>
+                                    <a i18n:translate="" tal:content="python:u'tab_{}'.format(item1.getName())" tal:attributes="id  python:u'{}'.format(item1.getName());href python:u'?id={}&tab={}'.format(idstr, item1.getName())">
+                                      </a>
+                                    </tal:block>
+                                    <tal:block tal:condition="python:item1.getName().startswith('mark')==True">
+                                    <div i18n:translate="" tal:attributes="tag python:u'{}'.format(item1.getName())" tal:content="python:u'tab_{}'.format(item1.getName())">TEXT</div>
+                                    </tal:block>
+                                  </li>
+                              </ul>
+                          </tal:block>
+
+                          <tal:block tal:condition="python:len(item.getItemList())>0 and item.getName() == u'menusortnodes' and sort_choices">
+                              <ul>
+                                  <li tal:repeat="sortfield python:sort_choices">
+                                    <a i18n:translate="" tal:content="python:u'{}'.format(sortfield.label)" tal:attributes="href python:u'?id={}&sortfield={}&nodes_per_page={}'.format(idstr, sortfield.value,nodes_per_page)"/>
+                                  </li>
+                              </ul>
+                          </tal:block>
                     </li>
                 </ul>
             </tal:block>
@@ -80,11 +218,6 @@
                 .fancytree-node-disabled {opacity: 0.5;background-color: silver}
                 .context-menu-item .disabled {color: #666;cursor: default}
 
-                /* commenting out these styles prevents the icons from being included in hovering effect
-                .context-menu-item.disabled:hover {cursor: default;background-color: #EEE}
-                .context-menu-item:hover {cursor: pointer;background-color: #39F}
-                */
-
                 .context-menu-list {
                   min-width: 200px;
                 }
@@ -100,13 +233,12 @@
 
                 #home_content {overflow: hidden;}
                 #home_content:hover {overflow: auto;}
-                /*  */
+
                 .ui-accordion-content {overflow: hidden!important;}
                 .ui-helper-reset {overflow: hidden!important;}
                 .ui-widget-content {overflow: hidden!important;}
                 .ui-corner-bottom {overflow: hidden!important;}
                 .ui-accordion-content-active {overflow: hidden!important;}
-                /*  */
 
                 html body.ui-layout-container div.ui-layout-west.ui-layout-pane.ui-layout-pane-west.ui-layout-container div#tree.treecontent.ui-layout-pane.ui-layout-pane-center {overflow: hidden;}
                 /* show scrollbars for trees only when mouseover */
@@ -117,8 +249,8 @@
 
             </style>
 
-	          <script type="text/javascript" src="//code.jquery.com/jquery-1.11.1.js"> </script>
-            <script type="text/javascript" src="//code.jquery.com/ui/1.11.1/jquery-ui.min.js"> </script>
+	          <script type="text/javascript" src="/js/jquery-2.0.3.js"> </script>
+            <script type="text/javascript" src="/js/jquery-ui-1.12.1.js"> </script>
 
             <tal:block metal:use-macro="include_jquery_layout_script_tags"/>
 
@@ -309,8 +441,6 @@ function hideContextMenuForNode(node) {
     //consoledb.error('trying to hideContextMenuForNode:', node, e);
     ;
   }
-    //var ctx = _tmp_opt_menu;
-    //return ctx;
 }
 
 
@@ -331,7 +461,6 @@ function callContextMenuCommandForNode(node, action, opt) {
 }
 
 function destroyAllContextMenus() {
-  //
   $.contextMenu('destroy');
 }
 
@@ -553,8 +682,6 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curnode)
                 alert("node.key  : " + node.key);
                 res = false;
               }
-              //$.contextMenu('destroy');
-              //$('#'+node.li.id).contextMenu('hide');
               current_tree.widget.options.keyboard = FANCYTREE_KEYBOARD;
               consoledb.groupEnd('--- ctx_callback ---');
               return res;
@@ -1601,11 +1728,12 @@ function rct() {
             <meta http-equiv="X-UA-Compatible" content="IE=9"/>
             <META http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
             <meta content="text/html;charset=UTF-8" http-equiv="content-type"/>
+            <link rel="stylesheet" href="/css/jquery-ui-1.12.1.css" />
             <link rel="stylesheet" href="/css/editor.css" />
             <link rel="stylesheet" href="/css/edit_style.css" />
 
-            <script type="text/javascript" src="/js/jquery-1.9.1.min.js"> </script>
-            <script type="text/javascript" src="/js/jquery-ui-1.10.1.min.js"> </script>
+            <script type="text/javascript" src="/js/jquery-2.0.3.js"> </script>
+            <script type="text/javascript" src="/js/jquery-ui-1.12.1.js"> </script>
             <script type="text/javascript" src="/js/jquery.layout.min.js"> </script>
             <script type="text/javascript" src="/js/jquery.layout.resizePaneAccordions-latest.min.js"> </script>
             <script type="text/javascript" src="/js/editor.js"> </script>

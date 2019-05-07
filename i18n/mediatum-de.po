@@ -446,11 +446,50 @@ msgstr "Berechtigungen"
 msgid "tab_upload"
 msgstr "Upload"
 
+msgid "tab_nodesperpage20"
+msgstr "20"
+
+msgid "tab_nodesperpage50"
+msgstr "50"
+
+msgid "tab_nodesperpage100"
+msgstr "100"
+
+msgid "tab_nodesperpage200"
+msgstr "200"
+
+msgid "tab_menueditall"
+msgstr "Alle Datensätze im Verzeichnis bearbeiten"
+
+msgid "tab_editall"
+msgstr "Bearbeiten"
+
+msgid "tab_moveall"
+msgstr "Verschieben"
+
+msgid "tab_copyall"
+msgstr "Kopieren"
+
+msgid "tab_deleteall"
+msgstr "Löschen"
+
+msgid "tab_markall"
+msgstr "Alle Datensätze markieren"
+
+msgid "tab_marknone"
+msgstr "Markierung aufheben"
+
+msgid "tab_markinvert"
+msgstr "Markierung invertieren"
+
 msgid "tab_editor"
 msgstr "Startseite editieren"
 
-msgid "tab_startpages"
+msgid "tab_startpagesmenu"
 msgstr "Startseiten verwalten"
+
+msgid "tab_startpages"
+msgstr "Startseite anlegen"
 
 msgid "tab_metadata_dir"
 msgstr "Anzeige"
@@ -508,6 +547,12 @@ msgstr "Rechtevergabe"
 
 msgid "tab_acls_title"
 msgstr "Rechte bearbeiten"
+
+msgid "tab_menunodesperpage"
+msgstr "Einstellungen: Datensätze pro Seite"
+
+msgid "tab_menusortnodes"
+msgstr "Einstellungen: Datensätze sortieren"
 
 msgid "tab_files"
 msgstr "digitale Objekte austauschen/hinzufügen"

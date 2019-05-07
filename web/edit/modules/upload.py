@@ -90,6 +90,24 @@ def getDatatypes(req, schemes):
     return dtypes
 
 
+def getSortChoices(req, ids):
+    node = q(Node).get(ids[0])
+    sortfields = [SortChoice(translation_t(req, "off"), "off")]
+    if node.type not in ["root", "collections", "home"]:
+        sorted_schema_count = node.all_children_by_query(q(Node.schema, func.count(Node.schema)).group_by(Node.schema).order_by(func.count(Node.schema).desc()))
+
+        for schema_count in sorted_schema_count:
+            metadatatype = q(Metadatatype).filter_by(name=schema_count[0]).first()
+            if metadatatype:
+                sort_fields = metadatatype.metafields.filter(Node.a.opts.like("%o%")).all()
+                if sort_fields:
+                    for sortfield in sort_fields:
+                        sortfields += [SortChoice(sortfield.getLabel(), sortfield.name)]
+                        sortfields += [SortChoice(sortfield.getLabel() + translation_t(req, "descending"), "-" + sortfield.name)]
+                    break
+    return sortfields
+
+
 @dec_entry_log
 def getContent(req, ids):
 

@@ -740,7 +740,38 @@ class Menu:
         return self.default
 
 
+def parseSubMenu(uppermenu, data):
+    for item in data:
+        if isinstance(item, basestring):
+            submenu = Menu(item)
+            uppermenu.addItem(submenu)
+        elif isinstance(item, list):
+            parseSubMenu(submenu, item)
+
+
 def parseMenuString(menustring):
+    import json
+    s = '["' + menustring.replace('(', '",["').replace('))', '"]]').replace(');', '"],"').replace(')', '"]').replace(';', '","') + ']'
+
+    try:
+        data = json.loads(s)
+    except ValueError as e:
+        logg.exception(e)
+        return parseMenuString1(menustring)
+
+    menu = []
+    submenu = None
+    for item in data:
+        if isinstance(item, basestring):
+            submenu = Menu(item)
+            menu.append(submenu)
+        elif isinstance(item, list) and submenu:
+            parseSubMenu(submenu, item)
+
+    return menu
+
+
+def parseMenuString1(menustring):
     menu = []
     submenu = None
     if menustring.endswith(")"):

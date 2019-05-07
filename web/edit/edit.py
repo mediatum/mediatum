@@ -250,8 +250,8 @@ def frameset(req):
 def getBreadcrumbs(menulist, tab):
     for menuitem in menulist:
         for item in menuitem.getItemList():
-            if item == tab or tab.startswith(item) or item.startswith(tab):
-                return [menuitem.name, "*" + item]
+            if item == tab or tab.startswith(item.name) or item.name.startswith(tab):
+                return [menuitem.name, "*" + item.name]
     return [tab]
 
 
@@ -269,7 +269,7 @@ def filterMenu(menuitems, user):
     return ret
 
 
-def handletabs(req, ids, tabs):
+def handletabs(req, ids, tabs, sort_choices):
     user = current_user
     language = lang(req)
 
@@ -278,6 +278,12 @@ def handletabs(req, ids, tabs):
         n = q(Root).one()
 
     menu = filterMenu(get_edit_menu_tabs(n.__class__), user)
+    nodes_per_page = req.args.get("nodes_per_page", type=int)
+    if not nodes_per_page:
+        nodes_per_page = 20
+    sortfield = req.args.get("sortfield")
+    if not sortfield:
+        sortfield = "off"
 
     ctx = {
         "user": user,
@@ -285,6 +291,8 @@ def handletabs(req, ids, tabs):
         "idstr": ",".join(ids),
         "menu": menu,
         "breadcrumbs": getBreadcrumbs(menu, req.params.get("tab", tabs)),
+        "sort_choices" : sort_choices,
+        "nodes_per_page" : nodes_per_page,
     }
     return req.getTAL("web/edit/edit.html", ctx, macro="edit_tabs")
 
@@ -729,6 +737,8 @@ def content(req):
     user = current_user
     language = lang(req)
 
+    sort_choices = None
+
     if not user.is_editor:
         return req.writeTAL("web/edit/edit.html", {}, macro="error")
 
@@ -899,12 +909,15 @@ def content(req):
             else:
                 logg.debug('empty content')
                 return
+
+            if hasattr(editModules[t2], 'getSortChoices'):
+                sort_choices = editModules[t2].getSortChoices(req, ids)
         else:
             req.setStatus(httpstatus.HTTP_INTERNAL_SERVER_ERROR)
             content["body"] += req.getTAL("web/edit/edit.html", {"module": current}, macro="module_error")
 
     if req.params.get("style", "") != "popup":  # normal page with header
-        v["tabs"] = handletabs(req, ids, tabs)
+        v["tabs"] = handletabs(req, ids, tabs, sort_choices)
         v["script"] = content["script"]
         v["body"] = content["body"]
         v["paging"] = showPaging(req, current, ids)

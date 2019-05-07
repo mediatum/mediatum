@@ -1,0 +1,9 @@
+<tal:block metal:define-macro="view_node">
+
+    <script tal:content="python:u'var url = \'/edit/edit_content{}&ids=all&tab=metadata\';'.format(query)"> </script>
+    <script>
+        $(document).ready(function () {
+          reloadURL(url);
+        });
+    </script>
+</tal:block>

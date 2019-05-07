@@ -1,0 +1,10 @@
+<tal:block metal:define-macro="view_node">
+
+    <script tal:content="python:u'var action = \'{}\';'.format(action)"> </script>
+    <script tal:content="python:u'var ids = \'{}\';'.format(ids)"> </script>
+    <script>
+        $(document).ready(function () {
+          movecopySelected(ids, action);
+        });
+    </script>
+</tal:block>

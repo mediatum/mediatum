@@ -24,7 +24,7 @@ from contenttypes import Data, Home, Collection, Collections
 from core.systemtypes import Root
 from web.edit.edit_common import showdir, shownav, showoperations, default_edit_nodes_per_page,\
     edit_node_per_page_values, searchbox_navlist_height
-from web.frontend.frame import render_search_box
+from web.frontend.frame import render_edit_search_box
 from utils.utils import dec_entry_log
 from core.translation import translate, lang, t
 from schema.schema import get_permitted_schemas
@@ -119,7 +119,7 @@ def getContent(req, ids):
         if not v['npp_field']:
             v['npp_field'] = default_edit_nodes_per_page
         sort_choices = [SortChoice(t(req, "off"), "off")]
-        search_html = render_search_box(node, lang(req), req, edit=True)
+        search_html = render_edit_search_box(node, lang(req), req, edit=True)
         searchmode = req.params.get("searchmode")
         navigation_height = searchbox_navlist_height(req, item_count)
         if not isinstance(col, (Root, Collections, Home)):

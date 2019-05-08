@@ -47,7 +47,7 @@ from schema.schema import Metadatatype, get_permitted_schemas, get_permitted_sch
 from sqlalchemy import func
 from utils.compat import iteritems
 from web.edit.edit_common import default_edit_nodes_per_page, edit_node_per_page_values, get_searchparams, delete_g_nodes_entry
-from web.frontend.frame import render_search_box
+from web.frontend.frame import render_edit_search_box
 import urllib
 
 logg = logging.getLogger(__name__)
@@ -462,7 +462,7 @@ def getContent(req, ids):
         v['language'] = lang(req)
         v['t'] = translation_t
 
-    search_html = render_search_box(q(Node).get(ids[0]), language, req, edit=True)
+    search_html = render_edit_search_box(q(Node).get(ids[0]), language, req, edit=True)
     searchmode = req.params.get("searchmode")
     item_count = []
     items = showdir(req, node, sortfield=req.params.get("sortfield"), item_count=item_count)

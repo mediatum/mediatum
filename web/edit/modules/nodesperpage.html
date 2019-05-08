@@ -9,7 +9,6 @@
     <script tal:content="python:u'var id = \'{}\';'.format(id)"> </script>
     <script>
         $(document).ready(function () {
-          alert($('#globalsort').val() + ' ' + $('#nodesperpage').val() + ' ' + $('#sortfield').val());
           sortItemsPage_sync($('#sortfield'), $('#nodesperpage'), '');
         });
     </script>

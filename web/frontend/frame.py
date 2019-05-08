@@ -223,6 +223,25 @@ def render_search_box(container, language, req, edit=False):
     return search_html
 
 
+def render_edit_search_box(container, language, req, edit=False):
+    search_portlet = Searchlet(container, edit)
+    search_portlet.feedback(req)
+    liststyle = req.args.get("liststyle")
+
+    ctx = {
+        "search": search_portlet,
+        "container_id": container.id,
+        "liststyle": liststyle,
+        "language": language,
+        "search_placeholder": t(language, "search_in") + " " + container.getLabel(language),
+        "action": '/' if not edit else '/edit/edit_content',
+    }
+
+    search_html = webconfig.theme.render_template("edit_search.j2.jade", ctx)
+
+    return search_html
+
+
 class NavTreeEntry(object):
 
     def __init__(self, node, indent, small=0, hide_empty=0, lang=None):

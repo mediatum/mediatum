@@ -165,9 +165,6 @@
                 <tal:block tal:condition="python:breadcrumbs.index(item)<len(breadcrumbs)-1"> &raquo; </tal:block>
             </tal:block>
         </h2>
-        <div id="printdiv" style="position:absolute;right:5px;bottom:5px;">
-            <a tal:attributes="href python:u'/print/{}'.format(idstr)" target="_blank"><img src="/img/print_icon.gif"/></a>
-        </div>
     </div>
 
 </div>
@@ -1786,10 +1783,6 @@ function rct() {
 
                 <!-- operations-->
                 <div  style="position:relative;" tal:condition="python:len(ids)==1" tal:content="raw operations">TEXT</div>
-
-                <!-- breadcrumbs -->
-                <div style="display:inline-block;height:30px;padding-right:10px"><b i18n:translate="edit_actual_dir" style="padding-left:5px">TEXT</b></div>
-                <div style="display:inline-block;margin-left: 1px" tal:content="raw dircontent"> </div>
 
                 <!-- nav-->
                 <div style="position:relative;bottom:20px;max-height:40px;text-align:right;margin-right:50px" tal:content="raw paging"> </div>

@@ -182,7 +182,7 @@ def edit_sort_by_fields(query, field, idx=-1):
 
 def searchbox_navlist_height(req, item_count):
     searchmode = req.params.get("searchmode")
-    bottom = 93 + 15 if item_count[0] < item_count[1] else 93
+    bottom = 43 + 15 if item_count[0] < item_count[1] else 43
     return bottom if not searchmode else bottom + 67 if searchmode == "extended" else bottom + 256
 
 # simple nodelist cache which is filled in showdir() and used by shownav() and get_ids_from_req() to avoid

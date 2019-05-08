@@ -96,59 +96,10 @@
     </div>
 
 
+<div style="clear:right"> </div>
+        <div id="search" style="float:right;width:390;border:1px solid silver" tal:content="raw search">TEXT</div>
+
 <div style="clear:left"> </div>
-
-        <div id="operation">
-            <tal:block tal:replace="raw operations"/>
-            <div style="overflow:visible;float:right;">
-                    <tal:block i18n:translate="edit_sort_header_auto">TEXT</tal:block>:
-                    <select name="globalsort" id="globalsort" style="width:100px;padding:0px" tal:attributes="onchange python:'sortItemsPage_sync($(\'#globalsort\'), $(\'#editor_nodes_per_page\'), \'{}\')'.format(searchparams)"> 
-                        <option tal:repeat="sortchoice sortchoices" tal:attributes="value python:sortchoice.value; selected python:'selected' if sortchoice.value==collection_sortfield else None" tal:content="python:sortchoice.label"/>
-                    </select>
-                    <tal:block i18n:translate="edit_nodes_per_page">TEXT</tal:block>:
-                    <select name="editor_nodes_per_page" id="editor_nodes_per_page"  style="width:50px;padding:0px" tal:attributes="onchange python:'sortItemsPage_sync($(\'#globalsort\'), $(\'#editor_nodes_per_page\'), \'{}\')'.format(searchparams)"> 
-                        <option tal:repeat="npp_choice npp_choices" tal:attributes="value python:npp_choice.value; selected python:'selected' if npp_choice.value==int(npp_field) else None" tal:content="python:npp_choice.label"/>
-                    </select>
-               <button type="button" style="margin-top:1px;margin-right:30px;font-size:10px!important;" onclick="saveSortPage($('#globalsort'), $('#editor_nodes_per_page'))" i18n:translate="edit_save" >TEXT</button>
-            </div>
-        </div>
-
-      <div style="display:block;width:310px;height:60px;float:left;padding-top:3px">
-        <div id="mark" style="display:block;height:20px;width:290px;position:relative;top:0px;border:1px solid silver">
-          <div id="selection" style="overflow:auto;float:left">
-              <span style="display:inline-block;width:50px" i18n:translate="edit_common_mark">TEXT</span>
-              <select onChange="doaction(this);" name="selection" style="width:150px">
-                  <option value="empty">---</option>
-                  <option value="markall" i18n:translate="edit_common_mark_all">TEXT</option>
-                  <option value="marknone" i18n:translate="edit_common_dismark">TEXT</option>
-                  <option value="invert" i18n:translate="edit_common_mark_invert">TEXT</option>
-              </select>
-
-              <div id="select_icons" style="float:right;padding:0px 0px 0px 10px;">
-                  <a href="#" onclick="editSelected()" i18n:attributes="title edit_selected_edit_on_this_page"><img src="/img/edit_edit.gif"/></a>
-                  <a href="#" onclick="movecopySelected(null,'move')" i18n:attributes="title edit_selected_move_on_this_page"><img src="/img/edit_move.gif"/></a>
-                  <a href="#" onclick="movecopySelected(null,'copy')" i18n:attributes="title edit_selected_copy_on_this_page"><img src="/img/edit_copy.gif"/></a>
-                  <a href="#" onclick="deleteSelected()"><img src="/img/edit_delete.png" i18n:attributes="title edit_selected_delete_on_this_page"/></a>
-
-              </div>
-          </div>
-        </div>
-        <div tal:condition="python:count>npp_field" id="edit_all" style="display:block;height:20px;width:290px;position:relative;top:15px;border:1px solid silver">
-          <div id="selection" style="overflow:auto;float:left;width:300px">
-              <div id="edit_all_icon" style='float:left;'><tal:block tal:content="edit_all_objects">TEXT</tal:block>:&nbsp;&nbsp;</div>
-
-              <div style="float:right;padding:0px 13px 0px 10px">
-                <a tal:attributes="href python:'/edit/edit_content{}&ids=all&tab=metadata'.format(query)" i18n:attributes="title edit_all_edit_on_all_pages"><img src="/img/edit_edit.gif"/></a>
-                <a href="#" tal:attributes="onclick python:'movecopySelected(\'{}\',\'move\')'.format(get_ids_from_query())" i18n:attributes="title edit_all_move_on_all_pages"><img src="/img/edit_move.gif"/></a>
-                <a href="#" tal:attributes="onclick python:'movecopySelected(\'{}\',\'copy\')'.format(get_ids_from_query())" i18n:attributes="title edit_all_copy_on_all_pages"><img src="/img/edit_copy.gif"/></a>
-                <a href="#" tal:attributes="onclick python:'deleteSelected(\'{}\')'.format(get_ids_from_query())"><img src="/img/edit_delete.png" i18n:attributes="title edit_all_delete_on_all_pages"/></a>
-
-              </div>
-          </div>
-        </div>
-      </div>
-
-        <div id="search" style="float:left;width:390;border:1px solid silver;margin-top:3px" tal:content="raw search">TEXT</div>
 
         <div id="nav" style="float:left;clear:both" tal:content="raw nav">TEXT</div>
 
@@ -705,7 +656,7 @@
 
     <script tal:content="python:u'var js_edit_layout_togglertip_open = \'{}\';'.format(t(language, 'edit_layout_togglertip_open'))">;</script>
     <script tal:content="python:u'var js_edit_layout_togglertip_closed = \'{}\';'.format(t(language, 'edit_layout_togglertip_closed'))">;</script>
-    <script tal:content="python:u'var north_size = {};'.format(navigation_height + 38)"/>
+    <script tal:content="python:u'var north_size = {};'.format(navigation_height + 30)"/>
 
     <script>
         $(document).ready(function () {

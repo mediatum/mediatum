@@ -444,7 +444,7 @@ msgid "tab_menusecurity"
 msgstr "Berechtigungen"
 
 msgid "tab_upload"
-msgstr "Upload"
+msgstr "Uploads"
 
 msgid "tab_nodesperpage20"
 msgstr "20"

@@ -25,6 +25,8 @@ The files
 
 - web/css/images/ui-icons_444444_256x240.png
 - web/css/images/ui-icons_ffffff_256x240.png
+- web/css/jquery-ui-1.12.1.css
+- web/js/jquery-ui-1.12.1.js
 
 are subject to the following conditions:
 

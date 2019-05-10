@@ -1,0 +1,9 @@
+#search-form.portlet
+  if search.isSimple()
+    span
+      form#search-box(name='search', action=action)
+        input#search-field(value=search.simple_search_query, placeholder=search_placeholder, name='query', style='width:180px')
+        input#search-button(value=_t('search'), title=_t('search_title'), type='submit')
+        input(type='hidden', name='id', value=container_id)
+        if liststyle
+          input(type='hidden', name='liststyle', value=liststyle)

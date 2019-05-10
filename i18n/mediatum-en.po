@@ -563,7 +563,7 @@ msgid "tab_files_obj"
 msgstr "Change/add digital object"
 
 msgid "tab_view"
-msgstr "Display"
+msgstr "Preview"
 
 msgid "tab_view_title"
 msgstr "Preview of object appearance"

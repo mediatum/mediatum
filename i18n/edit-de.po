@@ -270,7 +270,7 @@ msgid "unpublished_objects1"
 msgstr "Hinweis: Dieser Ordner enthält unpublizierte Objekte (Objekte die bisher nach aussen nicht sichtbar sind)."
 
 msgid "unpublished_objects2"
-msgstr "Unpublizierte Objekte jetzt publizieren (Quick-Publisher)"
+msgstr "Quick-Publisher: Objekte jetzt publizieren"
 
 msgid "user_trash"
 msgstr "Papierkorb"
@@ -372,6 +372,21 @@ msgstr "Objekt kopieren"
 
 msgid "edit_common_edit_delete"
 msgstr "Objekt löschen"
+
+msgid "edit_common_edit_meta_selected"
+msgstr "Metadaten der markierten Objekte bearbeiten"
+
+msgid "edit_common_edit_move_selected"
+msgstr "Markierte Objekt verschieben"
+
+msgid "edit_common_edit_copy_selected"
+msgstr "Markierte Objekt kopieren"
+
+msgid "edit_common_edit_delete_selected"
+msgstr "Markierte Objekt löschen"
+
+msgid "edit_selected_documents"
+msgstr "Markierte Dokumente:"
 
 msgid "edit_common_noobjectsfound"
 msgstr "Keine Objekte gefunden"

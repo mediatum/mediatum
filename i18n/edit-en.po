@@ -360,6 +360,21 @@ msgstr "Copy object"
 msgid "edit_common_edit_delete"
 msgstr "Delete object"
 
+msgid "edit_common_edit_meta_selected"
+msgstr "Edit metadata of selected objects"
+
+msgid "edit_common_edit_move_selected"
+msgstr "Move selected objects"
+
+msgid "edit_common_edit_copy_selected"
+msgstr "Copy selected objects"
+
+msgid "edit_common_edit_delete_selected"
+msgstr "delete selected objects"
+
+msgid "edit_selected_documents"
+msgstr "Edit selected objects:"
+
 msgid "edit_common_noobjectsfound"
 msgstr "No objects found"
 

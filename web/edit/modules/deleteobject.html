@@ -1,0 +1,17 @@
+<tal:block metal:define-macro="view_node">
+
+    <div id="delete_text" style="display:none" i18n:translate="delete_single_object_question">TEXT</div>
+    <script tal:content="python:u'var id = \'{}\';'.format(id)"> </script>
+    <script tal:content="python:u'var parent_id = \'{}\';'.format(parent_id)"> </script>
+    <script>
+        $(document).ready(function () {
+          var url;
+          if (deleteSelected(id)) {
+            url = '/edit/edit_content?id='+parent_id+'&tab=content';
+          } else {
+            url = '/edit/edit_content?id='+id+'&tab=view';
+          }
+          reloadURL(url);
+        });
+    </script>
+</tal:block>

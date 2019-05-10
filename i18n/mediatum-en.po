@@ -428,13 +428,67 @@ msgid "tab_menusecurity"
 msgstr "Rights"
 
 msgid "tab_upload"
-msgstr "Upload"
+msgstr "Uploads"
+
+msgid "tab_nodesperpage20"
+msgstr "20"
+
+msgid "tab_nodesperpage50"
+msgstr "50"
+
+msgid "tab_nodesperpage100"
+msgstr "100"
+
+msgid "tab_nodesperpage200"
+msgstr "200"
+
+msgid "tab_parentcontent"
+msgstr "Directory content"
+
+msgid "tab_menueditobject"
+msgstr "More options for object"
+
+msgid "tab_moveobject"
+msgstr "Verschieben"
+
+msgid "tab_copyobject"
+msgstr "Kopieren"
+
+msgid "tab_deleteobject"
+msgstr "Löschen"
+
+msgid "tab_menueditall"
+msgstr "Edit all objects in directory"
+
+msgid "tab_editall"
+msgstr "Edit"
+
+msgid "tab_moveall"
+msgstr "Move"
+
+msgid "tab_copyall"
+msgstr "Copy"
+
+msgid "tab_deleteall"
+msgstr "Delete"
+
+msgid "tab_markall"
+msgstr "Select all objects"
+
+msgid "tab_marknone"
+msgstr "Unselect all objects"
+
+msgid "tab_markinvert"
+msgstr "Invert selected objects"
 
 msgid "tab_editor"
 msgstr "Edit start page"
 
+msgid "tab_startpagesmenu"
+msgstr "Manage start pages"
+
 msgid "tab_startpages"
-msgstr "Manage startpages"
+msgstr "Edit start pages"
 
 msgid "tab_metadata_dir"
 msgstr "Edit metadata"
@@ -446,7 +500,7 @@ msgid "tab_meta"
 msgstr "Meta Data"
 
 msgid "tab_logo"
-msgstr "Edit Logo"
+msgstr "Edit logo"
 
 msgid "tab_editor_title"
 msgstr "Edit HTML-pages"
@@ -479,22 +533,28 @@ msgid "tab_search_title"
 msgstr "Open Search"
 
 msgid "tab_searchmask"
-msgstr "Search mask"
+msgstr "Edit search mask"
 
 msgid "tab_subfolder"
-msgstr "Sort Subfolder"
+msgstr "Sort subdirectories"
 
 msgid "tab_subfolder_title"
-msgstr "Sort Subfolder"
+msgstr "Sort subdirectories"
 
 msgid "tab_acls"
-msgstr "Rights Management"
+msgstr "Manage rights"
 
 msgid "tab_acls_title"
 msgstr "Edit Rights"
 
+msgid "tab_menunodesperpage"
+msgstr "Configure: objects per page"
+
+msgid "tab_menusortnodes"
+msgstr "Configure: sort objects"
+
 msgid "tab_files"
-msgstr "Change/add digital object"
+msgstr "Add files"
 
 msgid "tab_files_title"
 msgstr "Edit technical metadata"
@@ -515,7 +575,7 @@ msgid "tab_workflow_title"
 msgstr "Open Workflow"
 
 msgid "tab_classes"
-msgstr "Place in Browsing Structure"
+msgstr "Classification"
 
 msgid "tab_classes_title"
 msgstr "Show Classification"

@@ -169,6 +169,9 @@ msgstr "Delete operation denied for current collection!"
 msgid "delete_object_question"
 msgstr "Move objects into trashbox?"
 
+msgid "delete_object_question"
+msgstr "Move this object into trashbox?"
+
 msgid "clear_trash_question"
 msgstr "All elements in the trashbox will be lost while clearing. Perform delete operation?"
 

@@ -610,11 +610,18 @@ function deleteSelected(ids){
                 
             }    
             catch(e) {
-                var nname = parent.last_activated_node.title;
-                var nkey = parent.last_activated_node.key;    
-                consoledb.log('tried to reloadChildren() for node key='+nkey+', title='+nname+' caught: '+e);
+                try {
+                  var nname = parent.last_activated_node.title;
+                  var nkey = parent.last_activated_node.key;
+                  consoledb.log('tried to reloadChildren() for node key='+nkey+', title='+nname+' caught: '+e);
+                }
+                catch(e) {
+                  consoledb.log('tried to reloadChildren() for node key='+nkey+', title='+nname+' caught: '+e);
+                }
             }            
+            return true;
         }
+      return false;
     }
 }
 

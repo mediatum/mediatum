@@ -1,7 +1,7 @@
 
 ### edit changeschema ###
 msgid "tab_changeschema"
-msgstr "Objekttyp/Metadatentyp ändern"
+msgstr "Metadatenschema ändern"
 
 msgid "edit_changeschema_msg1"
 msgstr "Sie besitzen nicht die Berechtigung, hieran Veränderungen vorzunehmen. Bitte wenden Sich an Ihren Administrator"

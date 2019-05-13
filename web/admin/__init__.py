@@ -29,10 +29,41 @@ from web.admin.views.node import NodeView, FileView, NodeAliasView
 from web.admin.views.setting import SettingView
 from web.admin.views.acl import AccessRulesetView, AccessRuleView, AccessRulesetToRuleView
 from datetime import timedelta
+from werkzeug.datastructures import ImmutableDict as _ImmutableDict
+from werkzeug.utils import cached_property as _cached_property
+from core.templating import PyJadeExtension as _PyJadeExtension
+from jinja2.loaders import FileSystemLoader as _FileSystemLoader, ChoiceLoader as _ChoiceLoader
 
 
 q = db.query
 DEBUG = True
+
+
+class MediatumFlask(Flask):
+
+    jinja_options = _ImmutableDict(
+        extensions=['jinja2.ext.autoescape', 'jinja2.ext.with_', _PyJadeExtension]
+    )
+
+    def __init__(self, import_name, template_folder="web/templates"):
+        super(MediatumFlask, self).__init__(import_name=import_name, template_folder=template_folder)
+
+    @_cached_property
+    def jinja_loader(self):
+        if self.template_folder is not None:
+            loaders = [_FileSystemLoader(os.path.join(self.root_path, self.template_folder))]
+        else:
+            loaders = []
+        return _ChoiceLoader(loaders)
+
+    def add_template_loader(self, loader, pos=None):
+        if pos is not None:
+            self.jinja_loader.loaders.insert(pos, loader)
+        else:
+            self.jinja_loader.loaders.append(loader)
+
+    def add_template_globals(self, **global_names):
+        self.jinja_env.globals.update(global_names)
 
 
 class IndexView(AdminIndexView):
@@ -104,11 +135,12 @@ def make_app():
     When more parts of mediaTUM are converted to Flask,
     we might use a "global" app to which the admin interface is added.
     """
-    admin_app = Flask("mediaTUM admin", template_folder="web/templates")
+    admin_app = MediatumFlask("mediaTUM admin", template_folder="web/templates")
     admin_app.debug = True
     # Generate seed for signed session cookies
     make_key_char = _functools.partial(_random.SystemRandom().choice, _string.ascii_letters)
     admin_app.config["SECRET_KEY"] = "".join(make_key_char() for _ in xrange(80))
+    admin_app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(int(config.get('flask.timeout', "7200")))
 
     if DEBUG:
         admin_app.debug = True
@@ -118,20 +150,22 @@ def make_app():
     admin = Admin(admin_app, name="mediaTUM", template_mode="bootstrap3",
                   index_view=IndexView(), base_template='admin_base.html')
 
-    admin.add_view(UserView())
-    admin.add_view(UserGroupView())
-    admin.add_view(AuthenticatorInfoView())
-    admin.add_view(OAuthUserCredentialsView())
+    admin_enabled = config.getboolean("admin.activate", True)
+    if admin_enabled:
+        admin.add_view(UserView())
+        admin.add_view(UserGroupView())
+        admin.add_view(AuthenticatorInfoView())
+        admin.add_view(OAuthUserCredentialsView())
 
-    admin.add_view(NodeView())
-    admin.add_view(FileView())
-    admin.add_view(NodeAliasView())
+        admin.add_view(NodeView())
+        admin.add_view(FileView())
+        admin.add_view(NodeAliasView())
 
-    admin.add_view(SettingView())
+        admin.add_view(SettingView())
 
-    admin.add_view(AccessRuleView())
-    admin.add_view(AccessRulesetView())
-    admin.add_view(AccessRulesetToRuleView())
+        admin.add_view(AccessRuleView())
+        admin.add_view(AccessRulesetView())
+        admin.add_view(AccessRulesetToRuleView())
 
     return admin_app
 

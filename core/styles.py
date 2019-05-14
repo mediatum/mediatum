@@ -24,11 +24,13 @@ from mediatumtal import tal
 import os
 import attr
 import core.config as config
-from core import app, athana
+from core import app
 from core.transition import render_template, render_macro
 import glob
 from jinja2.loaders import FileSystemLoader, ChoiceLoader, PrefixLoader
 from jinja2.exceptions import TemplateNotFound
+from core.request_handler import addFileStore as _addFileStore
+from core.request_handler import addFileStorePath as _addFileStorePath
 
 
 full_styles_by_contenttype = {}
@@ -58,10 +60,10 @@ class Theme(object):
             logg.info("adding jinja loader for theme")
             app.add_template_loader(theme_jinja_loader, 0)
 
-        athana.addFileStore("/theme/", self.path + "/")
-        athana.addFileStorePath("/css/", self.path + "/css/")
-        athana.addFileStorePath("/img/", self.path + "/img/")
-        athana.addFileStorePath("/js/", self.path + "/js/")
+        _addFileStore("/theme/", self.path + "/")
+        _addFileStorePath("/css/", self.path + "/css/")
+        _addFileStorePath("/img/", self.path + "/img/")
+        _addFileStorePath("/js/", self.path + "/js/")
 
     def get_tal_template_path(self, filename):
         raise NotImplementedError("implement in subclasses!")

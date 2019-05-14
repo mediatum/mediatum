@@ -37,6 +37,7 @@ from utils.locks import named_lock as _named_lock
 
 from core import db
 from core import Node
+from core.request_handler import setCookie as _setCookie
 
 
 q = db.query
@@ -443,7 +444,7 @@ class WorkflowStep(Node):
 
         with workflow_lock:
             # stop caching
-            req.setCookie("nocache", "1", path="/")
+            _setCookie(req, "nocache", "1", path="/")
 
             key = req.params.get("key", req.session.get("key", ""))
             req.session["key"] = key

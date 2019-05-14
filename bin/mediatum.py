@@ -91,9 +91,10 @@ def run(host=None, http_port=None, force_test_db=None, loglevel=None, automigrat
     # init all web components
     from core import webconfig
     from core import athana
+    from core.request_handler import request_finished as _request_finished
     webconfig.initContexts()
 
-    @athana.request_finished
+    @_request_finished
     def request_finished_db_session(*args):
         from core import db
         db.session.close()

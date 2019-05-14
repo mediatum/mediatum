@@ -14,7 +14,7 @@ from urllib import quote
 from core import db
 from core import Node, File
 import core.config as config
-import core.athana as athana
+from core import request_handler as _request_handler
 from core.archive import get_archive_for_node
 from contenttypes import Container
 from contenttypes import Content
@@ -59,7 +59,7 @@ def _send_thumbnail(thumb_type, req):
                 order_by(FileVersion.transaction_id.desc())
         for f in files:
             if f.exists:
-                return req.sendFile(f.abspath, f.mimetype)
+                return _request_handler.sendFile(req, f.abspath, f.mimetype)
 
         ntype, schema = version.type, version.schema
     else:
@@ -68,23 +68,23 @@ def _send_thumbnail(thumb_type, req):
         node = node_or_version
         for f in node.files.filter_by(filetype=thumb_type):
             if f.exists:
-                return req.sendFile(f.abspath, f.mimetype)
+                return _request_handler.sendFile(req, f.abspath, f.mimetype)
 
         try:
             ntype, schema = node.type, node.schema
         except NoResultFound:
             return 404
 
-    for p in athana.getFileStorePaths("/img/"):
+    for p in _request_handler.getFileStorePaths("/img/"):
         for test in ["default_thumb_%s_%s.*" % (ntype, schema),
                      "default_thumb_%s.*" % schema,
                      "default_thumb_%s.*" % ntype]:
             fps = glob.glob(os.path.join(p, test))
             if fps:
                 thumb_mimetype, thumb_type = utils.utils.getMimeType(fps[0])
-                return req.sendFile(fps[0], thumb_mimetype, force=1)
+                return _request_handler.sendFile(req, fps[0], thumb_mimetype, force=1)
 
-    return req.sendFile(config.basedir + "/web/img/questionmark.png", "image/png", force=1)
+    return _request_handler.sendFile(req, config.basedir + "/web/img/questionmark.png", "image/png", force=1)
 
 
 send_thumbnail = partial(_send_thumbnail, u"thumb")
@@ -125,7 +125,7 @@ def _send_file_with_type(filetype, mimetype, req, checkonly=False):
     if fileobj is not None:
         if checkonly:
             return 200
-        return req.sendFile(fileobj.abspath, fileobj.mimetype)
+        return _request_handler.sendFile(req, fileobj.abspath, fileobj.mimetype)
 
     return 404
 
@@ -154,7 +154,7 @@ def send_image(req):
         return 404
 
     def _send(fileobj):
-        return req.sendFile(fileobj.abspath, fileobj.mimetype)
+        return _request_handler.sendFile(req, fileobj.abspath, fileobj.mimetype)
 
     client_mimetype = None
 
@@ -173,10 +173,10 @@ def send_image(req):
     # figure out what we want to send, in that order:
     server_preferred_mimetypes = preference_sorted_image_mimetypes(node, iterkeys(image_files_by_mimetype))
 
-    accept_mimetypes = req.accept_mimetypes
+    accept_mimetypes = _request_handler.accept_mimetypes(req)
 
     if accept_mimetypes:
-        client_mimetype = req.accept_mimetypes.best_match(server_preferred_mimetypes)
+        client_mimetype = accept_mimetypes.best_match(server_preferred_mimetypes)
         if client_mimetype:
             # file for mimetype must exist here
             image_file = image_files_by_mimetype[client_mimetype]
@@ -206,7 +206,7 @@ def send_original_file(req):
     original_filetype = node.get_original_filetype()
     original_file = node.files.filter_by(filetype=original_filetype).scalar()
     if original_file is not None:
-        return req.sendFile(original_file.abspath, original_file.mimetype)
+        return _request_handler.sendFile(req, original_file.abspath, original_file.mimetype)
 
     return 404
 
@@ -246,7 +246,7 @@ def send_file(req):
                 format(quote(display_file_name.encode('utf8')))
         else:
             req.reply_headers["Content-Disposition"] = u'attachment; filename="{}"'.format(display_file_name)
-        return req.sendFile(filepath, mimetype)
+        return _request_handler.sendFile(req, filepath, mimetype)
 
     if filename is None:
         # build zip-file and return it
@@ -255,7 +255,7 @@ def send_file(req):
             if files_written == 0:
                 return 404
             # don't enable nginx x_accel_redirect for temporary files
-            return req.sendFile(tmpfile.name, "application/zip", nginx_x_accel_redirect_enabled=False)
+            return _request_handler.sendFile(req, tmpfile.name, "application/zip", nginx_x_accel_redirect_enabled=False)
 
     # try full filename
     for f in node.files:
@@ -337,12 +337,12 @@ def send_attfile(req):
         if (get_filesize(filename) > 16 * 1048576):
             req.reply_headers["Content-Disposition"] = 'attachment; filename="{}"'.format(filename)
 
-        return req.sendFile(path, mime)
+        return _request_handler.sendFile(req, path, mime)
 
     if (fileobj.size > 16 * 1048576):
         req.reply_headers["Content-Disposition"] = u'attachment; filename="{}"'.format(fileobj.base_name).encode('utf8')
 
-    return req.sendFile(fileobj.abspath, fileobj.mimetype)
+    return _request_handler.sendFile(req, fileobj.abspath, fileobj.mimetype)
 
 
 def fetch_archived(req):
@@ -384,7 +384,7 @@ def send_from_webroot(req):
     for webroot_dir in webroot_dirs:
         filepath = os.path.join(config.basedir, webroot_dir, req.path.strip("/"))
         if os.path.isfile(filepath):
-            return req.sendFile(filepath, getMimeType(filepath)[0])
+            return _request_handler.sendFile(req, filepath, getMimeType(filepath)[0])
 
     return 404
 

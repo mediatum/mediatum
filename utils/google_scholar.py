@@ -25,7 +25,7 @@ import core.config as config
 import logging
 import time
 from core.athana import http_request
-from core.athana import make_param_dict_utf8_values
+from core.request_handler import make_param_dict_utf8_values
 
 q = db.query
 

@@ -45,6 +45,7 @@ except:
 
 from . import handlers
 from .. import dec_handle_exception
+from core.request_handler import error as _error
 
 
 logg = logging.getLogger(__name__)
@@ -167,6 +168,6 @@ def request_handler(req):
 
     if not matched:
         req.path = cgi.escape(req.path)
-        return req.error(404, "File " + req.path + " not found")
+        return _error(req, 404, "File " + req.path + " not found")
 
     return response_code

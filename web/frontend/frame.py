@@ -41,6 +41,7 @@ from mediatumtal import tal
 from core.nodecache import get_collections_node
 from utils.google_scholar import google_scholar
 import time
+from core.request_handler import get_header as _get_header
 
 
 q = db.query
@@ -397,7 +398,7 @@ class UserLinks(object):
 
     def __init__(self, user, req):
         self.user = user
-        self.host = req.get_header("HOST")
+        self.host = _get_header(req, "HOST")
         # show_id: edit currently shown content node
         nid = req.args.get("show_id")
         # id: edit current container

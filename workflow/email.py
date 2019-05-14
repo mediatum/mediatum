@@ -30,6 +30,7 @@ import core.config as config
 import utils.mail as mail
 from core import db
 from schema.schema import Metafield
+from core.request_handler import makeSelfLink as _makeSelfLink
 
 logg = logging.getLogger(__name__)
 
@@ -169,7 +170,7 @@ class WorkflowStep_SendEmail(WorkflowStep):
 
         elif node.get("system.mailtmp.error"):
             return '%s<br/><pre>%s</pre><br>&gt;<a href="%s">%s</a>&lt;' % (t(lang(req), "workflow_email_msg_1"), node.get(
-                "system.mailtmp.error"), req.makeSelfLink({"sendout": "true"}), t(lang(req), "workflow_email_resend"))
+                "system.mailtmp.error"), _makeSelfLink(req, {"sendout": "true"}), t(lang(req), "workflow_email_resend"))
         else:
             xfrom = node.get("system.mailtmp.from")
             to = node.get("system.mailtmp.to")

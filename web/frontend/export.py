@@ -23,6 +23,7 @@ from core import db
 from core.translation import t
 from contenttypes import Data
 from sqlalchemy.orm.exc import NoResultFound
+from core.request_handler import error as _error
 
 q = db.query
 
@@ -33,16 +34,16 @@ def export(req):
     p = req.path[1:].split("/")
 
     if len(p) != 2:
-        req.error(404, "Object not found")
+        _error(req, 404, "Object not found")
         return
 
     if p[0].isdigit():
         try:
             node = q(Data).get(p[0])
         except:
-            return req.error(404, "Object not found")
+            return _error(req, 404, "Object not found")
     else:
-        return req.error(404, "Object not found")
+        return _error(req, 404, "Object not found")
 
     if not node.has_read_access():
         req.write(t(req, "permission_denied"))
@@ -54,7 +55,7 @@ def export(req):
             req.reply_headers['Content-Type'] = "text/plain; charset=utf-8"
             req.write(mask.getViewHTML([node], flags=8))  # flags =8 -> export type
         except NoResultFound:
-            return req.error(404, "Object not found")
+            return _error(req, 404, "Object not found")
     else:
-        req.error(404, "Object not found")
+        _error(req, 404, "Object not found")
         return

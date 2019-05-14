@@ -34,6 +34,7 @@ from contenttypes import Container
 from utils.pathutils import getPaths
 from utils import userinput
 from core import httpstatus
+from core.request_handler import sendFile as _sendFile
 
 #
 # execute fullsize method from node-type
@@ -255,7 +256,7 @@ def show_printview(req):
     print_dir = []
     printfile = printview.getPrintView(lang(req), imagepath, metadata, getPaths(node), style, children, getCollection(node),
                                        return_file=True, print_dir = print_dir)
-    req.sendFile(printfile, "application/pdf", nginx_x_accel_redirect_enabled=False)
+    _sendFile(req, printfile, "application/pdf", nginx_x_accel_redirect_enabled=False)
     if print_dir:
         shutil.rmtree(print_dir[0], ignore_errors=True)
 

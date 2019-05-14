@@ -20,6 +20,7 @@ import datetime
 from requests.structures import CaseInsensitiveDict
 from werkzeug.utils import cached_property
 from utils.utils import suppress
+from core import request_handler as _request_handler
 
 logg = logging.getLogger(__name__)
 
@@ -101,9 +102,9 @@ class AthanaFlaskStyleApp(object):
     def register_blueprint(self, blueprint):
         self.blueprints[blueprint.name] = blueprint
         logg.info("added blueprint %s, import name %s", blueprint.name, blueprint.import_name)
-        blueprint_reldir = path.relpath(blueprint.root_path, start=athana_http.getBase())
+        blueprint_reldir = path.relpath(blueprint.root_path, start=_request_handler.getBase())
         context_name = blueprint.name if blueprint.name.startswith("/") else "/" + blueprint.name
-        ctx = athana_http.addContext(context_name, blueprint_reldir)
+        ctx = _request_handler.addContext(context_name, blueprint_reldir)
         logg.info("added athana context from blueprint with context_name %s, dir %s", context_name, blueprint_reldir)
         blueprint.athana_context = ctx
 

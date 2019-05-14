@@ -26,6 +26,8 @@ from utils.locks import named_lock as _named_lock
 import codecs
 from utils.strings import ensure_unicode_returned
 from werkzeug import parse_accept_header, LanguageAccept
+from core.request_handler import get_header as _get_header
+from core.request_handler import setCookie as _setCookie
 
 
 class _POFile:
@@ -151,7 +153,7 @@ def set_language(req):
 
     language = allowed_languages[0]
     
-    accept_languages_header = req.get_header("Accept-Language")
+    accept_languages_header = _get_header(req, "Accept-Language")
     accept_languages = parse_accept_header(accept_languages_header, cls=LanguageAccept)
     best_match = accept_languages.best_match(allowed_languages)
     
@@ -159,7 +161,7 @@ def set_language(req):
         language = best_match
     
     if language != default_language:
-        req.setCookie("language", language, path="/")
+        _setCookie(req, "language", language, path="/")
     
     req._lang = language
     return language
@@ -171,7 +173,7 @@ def switch_language(req, language):
         language = allowed_languages[0]
     elif language not in allowed_languages:
         language = allowed_languages[0]
-    req.setCookie("language", language, path="/")
+    _setCookie(req, "language", language, path="/")
 
 
 def t(target, key):

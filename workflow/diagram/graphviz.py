@@ -22,6 +22,7 @@ import os.path
 from pydot import Node, Edge, Dot
 import core.config as config
 from ..workflow import getWorkflow
+from core.request_handler import sendFile as _sendFile
 
 logg = logging.getLogger(__name__)
 
@@ -157,16 +158,16 @@ def send_workflow_diagram(req, media_type="png"):
     diag = GraphvizWorkflowDiagram(workflow)
     if media_type == "png":
         diag.render_png()
-        req.sendFile(diag.filename(media_type), "image/png")
+        _sendFile(req, diag.filename(media_type), "image/png")
     elif media_type == "svg":
         diag.render_svg()
-        req.sendFile(diag.filename(media_type), "image/svg+xml")
+        _sendFile(req, diag.filename(media_type), "image/svg+xml")
     elif media_type == "pdf":
         diag.render_pdf()
-        req.sendFile(diag.filename(media_type), "application/pdf")
+        _sendFile(req, diag.filename(media_type), "application/pdf")
     elif media_type == "dot":
         diag.write_dot()
-        req.sendFile(diag.filename(media_type), "text/vnd.graphviz")
+        _sendFile(req, diag.filename(media_type), "text/vnd.graphviz")
     else:
         raise ValueError("media type " + media_type + " not supported!")
 

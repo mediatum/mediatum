@@ -50,6 +50,8 @@ from core.nodecache import get_collections_node, get_home_root_node
 import core.oauth as oauth
 from core.search.config import get_service_search_languages
 from array import array
+from core.request_handler import get_header as _get_header
+from core.request_handler import sendAsBuffer as _sendAsBuffer, sendFile as _sendFile
 
 
 logg = logging.getLogger(__name__)
@@ -384,7 +386,7 @@ def struct2rss(req, path, params, data, struct, debug=False, singlenode=False, s
     language = params.get('lang', 'en')
     items_list = []
 
-    host = u"http://" + unicode(req.get_header("HOST") or configured_host)
+    host = u"http://" + unicode(_get_header(req, "HOST") or configured_host)
     collections = get_collections_node()
     user = get_guest_user()
 
@@ -1007,10 +1009,10 @@ def write_formatted_response(
     # see core.athana.build_http_date
     # req.reply_headers['Expires'] = time.strftime ('%a, %d %b %Y %H:%M:%S GMT', time.gmtime(time.time()+60.0)) # 1 minute
 
-    # remark: on 2011-12-01 switched response from req.write to req.sendAsBuffer for performance reasons
+    # remark: on 2011-12-01 switched response from req.write to sendAsBuffer for performance reasons
     # (before: ) req.write(s)
-    req.sendAsBuffer(s, content_type, force=1, allow_cross_origin=allow_cross_origin)
-    d['timetable'].append(["executed req.sendAsBuffer, %d bytes, content type='%s'" % (len(s), content_type), time.time() - atime])
+    _sendAsBuffer(req, s, content_type, force=1, allow_cross_origin=allow_cross_origin)
+    d['timetable'].append(["executed sendAsBuffer, %d bytes, content type='%s'" % (len(s), content_type), time.time() - atime])
     atime = time.time()
     return d['html_response_code'], len(s), d
 
@@ -1091,7 +1093,7 @@ def serve_file(req, path, params, data, filepath):
     logg.info("web service trying to serve: %s", abspath)
     if os.path.isfile(abspath):
         filesize = os.path.getsize(abspath)
-        req.sendFile(abspath, mimetype, force=1)
+        _sendFile(req, abspath, mimetype, force=1)
         d['timetable'].append(["reading file '%s'" % filepath, time.time() - atime])
         atime = time.time()
         d['status'] = 'ok'

@@ -23,7 +23,8 @@ from utils.date import format_date, parse_date, now
 from utils.utils import funcname, dec_entry_log
 from core.translation import lang, t, getDefaultLanguage
 from pprint import pformat as pf
-from core.transition import httpstatus, current_user
+from core.transition import current_user
+from core import httpstatus
 from core import Node, db
 from contenttypes import Container
 from core.users import user_from_session

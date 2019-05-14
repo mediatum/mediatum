@@ -39,7 +39,7 @@ from core.metatype import Metatype
 from core import db
 from core.systemtypes import Metadatatypes
 from core.translation import lang
-from core.transition.postgres import check_type_arg
+from core.postgres import check_type_arg
 from core.database.postgres.node import children_rel, parents_rel
 from utils.date import parse_date, format_date, validateDateString
 from utils.utils import Option, esc, suppress

@@ -28,7 +28,7 @@ import tempfile
 from mediatumtal import tal
 from contenttypes.data import Content, prepare_node_data
 from contenttypes.image import make_thumbnail_image, make_presentation_image
-from core.transition.postgres import check_type_arg_with_schema
+from core.postgres import check_type_arg_with_schema
 from core import db, File, config
 from core.config import resolve_datadir_path
 from core.translation import t

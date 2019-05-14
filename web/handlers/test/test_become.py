@@ -5,7 +5,7 @@
 """
 from __future__ import absolute_import
 from web.handlers.become import become_user
-from core.transition import httpstatus
+from core import httpstatus
 
 
 def test_become(session, req, admin_user, some_user):

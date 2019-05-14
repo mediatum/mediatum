@@ -9,7 +9,7 @@ from jinja2.loaders import FileSystemLoader, ChoiceLoader
 from werkzeug.datastructures import ImmutableDict, MultiDict
 import pyaml
 import yaml
-from core.transition.templating import PyJadeExtension, Environment
+from core.templating import PyJadeExtension, Environment
 from core.transition.ctx import _AppCtxGlobals, AppContext, RequestContext
 from core.transition.frontendincludes import JavascriptIncludes, CSSIncludes
 from core.transition.globals import request, session, g

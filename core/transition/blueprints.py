@@ -7,7 +7,7 @@ from os import path
 from functools import wraps
 from jinja2.loaders import FileSystemLoader
 from core.transition.helpers import get_root_path, runswith, Response
-from core.transition import httpstatus
+from core import httpstatus
 from core.transition.globals import request
 
 

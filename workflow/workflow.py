@@ -30,7 +30,7 @@ from core.xmlnode import getNodeXML, readNodeXML
 import utils.date as date
 from core.translation import t, lang, addLabels, getDefaultLanguage, switch_language
 from core.transition import current_user
-from core.transition.postgres import check_type_arg
+from core.postgres import check_type_arg
 from core.database.postgres.permission import NodeToAccessRuleset
 
 from utils.locks import named_lock as _named_lock

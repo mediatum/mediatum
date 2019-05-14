@@ -33,7 +33,7 @@ from core import Node
 from contenttypes import Container
 from utils.pathutils import getPaths
 from utils import userinput
-from core.transition import httpstatus
+from core import httpstatus
 
 #
 # execute fullsize method from node-type

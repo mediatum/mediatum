@@ -22,7 +22,7 @@
 import logging
 import re
 from mediatumtal import tal
-from core.transition import httpstatus
+from core import httpstatus
 import core.config as config
 from utils.utils import esc
 from utils.utils import modify_tex

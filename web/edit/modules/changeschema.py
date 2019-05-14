@@ -23,7 +23,8 @@ import logging
 
 from schema.schema import get_permitted_schemas
 from core.translation import translate
-from core.transition import httpstatus, current_user
+from core.transition import current_user
+from core import httpstatus
 from utils.utils import dec_entry_log
 from core import Node
 from contenttypes import Data, Content, Container

@@ -25,7 +25,7 @@ import codecs
 import core
 from core import config
 from core.users import get_guest_user
-from core.transition import httpstatus
+from core import httpstatus
 from utils.utils import join_paths, Menu
 from web.admin.adminutils import findmodule, show_content, adminNavigation, getMenuItemID
 from core.transition import current_user

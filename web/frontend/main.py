@@ -26,7 +26,7 @@ from werkzeug.datastructures import ImmutableMultiDict
 import core.config as config
 from core.metatype import Context
 from core.translation import lang, switch_language
-from core.transition import httpstatus
+from core import httpstatus
 from core import db
 from core import Node, NodeAlias
 from core.transition import current_user

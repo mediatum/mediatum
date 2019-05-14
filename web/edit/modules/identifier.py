@@ -27,7 +27,8 @@ import utils.mail as mail
 import utils.pathutils as pathutils
 from core.translation import lang, t
 from utils.utils import dec_entry_log
-from core.transition import httpstatus, current_user
+from core.transition import current_user
+from core import httpstatus
 import logging
 from core import Node
 from core import db

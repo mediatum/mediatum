@@ -2,7 +2,7 @@ import hashlib
 import random
 from sqlalchemy import func
 from . import schema
-from core.transition.postgres import check_type_arg
+from core.postgres import check_type_arg
 from core import Node
 from core import db
 from core.systemtypes import Root, Searchmasks

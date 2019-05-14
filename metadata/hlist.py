@@ -3,7 +3,7 @@ import operator
 from collections import OrderedDict
 from mediatumtal import tal
 from core.metatype import Metatype
-from core.transition import httpstatus
+from core import httpstatus
 from core import Node
 from core import db
 

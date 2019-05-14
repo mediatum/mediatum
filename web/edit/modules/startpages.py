@@ -29,7 +29,8 @@ import core.config as config
 from utils.utils import format_filesize, dec_entry_log, suppress
 from core.translation import lang
 from web.edit.edit_common import send_nodefile_tal, upload_for_html
-from core.transition import httpstatus, current_user
+from core.transition import current_user
+from core import httpstatus
 from core import Node
 from core import db
 from core import File

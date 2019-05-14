@@ -28,7 +28,7 @@ from core.database.postgres.node import children_rel
 import core.config as config
 from core.translation import lang, t
 from core.styles import get_full_style
-from core.transition.postgres import check_type_arg_with_schema
+from core.postgres import check_type_arg_with_schema
 from export.exportutils import default_context
 from schema.schema import getMetadataType, VIEW_HIDE_EMPTY, SchemaMixin
 from utils.utils import highlight

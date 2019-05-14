@@ -27,7 +27,7 @@ import utils.utils
 from utils.utils import getMimeType, clean_path, get_filesize
 import tempfile
 from utils.compat import iterkeys
-from core.transition import httpstatus
+from core import httpstatus
 
 
 logg = logging.getLogger(__name__)

@@ -31,7 +31,7 @@ from core.translation import lang, t
 from lib.pdf import parsepdf
 from core.attachment import filebrowser
 from contenttypes.data import Content, prepare_node_data
-from core.transition.postgres import check_type_arg_with_schema
+from core.postgres import check_type_arg_with_schema
 from core import File
 from core import db
 

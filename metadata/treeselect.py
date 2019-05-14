@@ -19,7 +19,7 @@
 """
 import logging
 from mediatumtal import tal
-from core.transition import httpstatus
+from core import httpstatus
 from utils.utils import esc
 from core.metatype import Metatype
 from core import db

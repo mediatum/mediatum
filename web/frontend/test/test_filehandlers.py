@@ -10,7 +10,7 @@ from pytest import fixture, yield_fixture
 from core.archive import Archive
 from core.permission import get_or_add_everybody_rule
 from core.database.postgres.permission import AccessRulesetToRule
-from core.transition import httpstatus
+from core import httpstatus
 from web.frontend.filehandlers import fetch_archived, send_image, send_from_webroot
 from utils.testing import make_node_public
 

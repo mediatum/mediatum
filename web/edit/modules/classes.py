@@ -19,7 +19,8 @@
 """
 
 from core.translation import lang, t
-from core.transition import httpstatus, current_user
+from core.transition import current_user
+from core import httpstatus
 from core import Node
 from core.systemtypes import Root
 from contenttypes import Collections, Home

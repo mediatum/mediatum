@@ -21,7 +21,8 @@ import logging
 
 from utils.utils import dec_entry_log
 from utils.date import format_date
-from core.transition import httpstatus, current_user
+from core.transition import current_user
+from core import httpstatus
 from core import Node
 from core import db
 

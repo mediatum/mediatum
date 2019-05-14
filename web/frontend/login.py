@@ -21,7 +21,7 @@ import logging
 import hashlib
 
 from core import db, User, auth
-from core.transition import httpstatus
+from core import httpstatus
 from core.webconfig import node_url
 import core.users as users
 import core.config as config

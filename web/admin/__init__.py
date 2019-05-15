@@ -31,6 +31,7 @@ from core import db, User, config
 from core.auth import authenticate_user_credentials, logout_user
 from flask_admin import AdminIndexView
 from flask_admin import helpers, expose
+from flask_admin.babel import lazy_gettext as _lazy_gettext
 from web.admin.views.node import NodeView, FileView, NodeAliasView
 from web.admin.views.setting import SettingView
 from web.admin.views.acl import AccessRulesetView, AccessRuleView, AccessRulesetToRuleView
@@ -39,6 +40,8 @@ from werkzeug.datastructures import ImmutableDict as _ImmutableDict
 from werkzeug.utils import cached_property as _cached_property
 from core.templating import PyJadeExtension as _PyJadeExtension
 from jinja2.loaders import FileSystemLoader as _FileSystemLoader, ChoiceLoader as _ChoiceLoader
+from utils.utils import counter as _counter
+from core.request_handler import handle_request as _handle_request
 
 
 q = db.query
@@ -74,6 +77,21 @@ class MediatumFlask(Flask):
 
 class IndexView(AdminIndexView):
     """Creates index view class for handling login."""
+    def __init__(self, name=None, category=None,
+                 endpoint=None, url=None,
+                 template='admin/index.html',
+                 menu_class_name=None,
+                 menu_icon_type=None,
+                 menu_icon_value=None):
+        super(IndexView, self).__init__(name or _lazy_gettext('Home'),
+                                        category,
+                                        endpoint or 'admin',
+                                        '/f/admin',
+                                        'static',
+                                        menu_class_name=menu_class_name,
+                                        menu_icon_type=menu_icon_type,
+                                        menu_icon_value=menu_icon_value)
+        self._template = template
 
     @expose('/')
     def index(self):
@@ -203,11 +221,16 @@ def flask_routes(app):
     @app.route('/download/<path:action>')
     @app.route('/<path:action>')
     def action(action=None):
-        return "Hello Mediatum"
+        if not hasattr(session, "request_counter"):
+            session.request_counter = _counter()
+        request.request_number = session.request_counter.increment()
+        req = _handle_request(request)
+        return req.response
 
 
 app = make_app()
 
+flask_routes(app)
 
 @app.after_request
 def request_finished_db_session(response):

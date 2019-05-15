@@ -25,7 +25,7 @@ from mediatumtal import tal
 import core.athana as athana
 import core.config as config
 from core.styles import CustomTheme, DefaultTheme
-from core import db, app
+from core import db
 
 from core.plugins import find_plugin_with_theme
 from utils.utils import suppress
@@ -144,6 +144,7 @@ def current_node_url(**kwargs):
 
 def add_template_globals():
     from core.translation import translate
+    from core import app
     template_globals = dict(node_url=node_url, 
                             current_node_url=current_node_url, 
                             _t=translate)
@@ -292,11 +293,6 @@ def initContexts():
     handler.addPattern("/(.)+$")
 
     init_theme()
-
-
-    if admin_enabled:
-        import web.admin
-        athana.add_wsgi_context("/f/", web.admin.app)
 
     # testing global exception handler
     context = _request_handler.addContext("/_test", ".")

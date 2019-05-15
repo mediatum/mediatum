@@ -135,9 +135,11 @@ def check_imports():
 
 
 def init_app():
-    from web.admin import make_app
+    from web.admin import app as _app
     import core
-    core.app = make_app()
+    core.app = _app
+    from webconfig import initContexts as _initContexts
+    _initContexts()
 
 
 def init_db_connector():
@@ -298,7 +300,6 @@ def basic_init(root_loglevel=None, config_filepath=None, prefer_config_filename=
     if config.getboolean("config.enable_startup_checks", True):
         check_imports()
     set_locale()
-    init_app()
     init_db_connector()
     load_system_types()
     load_types()
@@ -341,3 +342,4 @@ def full_init(root_loglevel=None, config_filepath=None, prefer_config_filename=N
     basic_init(root_loglevel, config_filepath, log_filepath, log_filename, prefer_config_filename, use_logstash, force_test_db, automigrate)
     _additional_init()
     _set_current_init_state(init_state)
+    init_app()

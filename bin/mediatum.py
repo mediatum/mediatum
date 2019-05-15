@@ -52,8 +52,10 @@ _patch_urlparse_urlsplit()
 from werkzeug._reloader import run_with_reloader
 import configargparse
 import tempfile
-from core import config
 import os as _os
+import sys as _sys
+_sys.path.append(_os.path.abspath(_os.path.join(__file__, "..", "..")))
+from core import config
 
 SYSTEM_TMP_DIR = tempfile.gettempdir()
 
@@ -110,39 +112,23 @@ def stackdump_setup():
         signal.signal(signal.SIGQUIT, dumpstacks)
 
 
-def run(host=None, http_port=None, force_test_db=None, loglevel=None, automigrate=False):
+def run(force_test_db=None, loglevel=None, automigrate=False):
     """Serve mediaTUM from the Athana HTTP Server and start FTP and Z3950, if requested"""
     # init.full_init() must be done as early as possible to init logging etc.
     from core import init
     init.full_init(force_test_db=force_test_db, root_loglevel=loglevel, automigrate=automigrate)
 
-    # init all web components
-    from core import webconfig
-    from core import athana
     from core.request_handler import request_finished as _request_finished
-    webconfig.initContexts()
-
     @_request_finished
     def request_finished_db_session(*args):
         from core import db
         db.session.close()
 
-    athana.setThreads(int(config.get("host.threads", "8")))
-
-    #
-    # if the pid path is given in mediatum.cfg, section paths the starting time will be printed in this file
-    #
-
-    if "paths.pidfile" in config.settings:
-        with open(config.settings["paths.pidfile"], "w") as wf:
-            wf.write(str(_os.getpid()))
-            wf.write("\n")
+    from core import app as flask_app
+    return flask_app
 
 
-    athana.run(host or config.get("host.host", "0.0.0.0"), int(http_port or config.get("host.port", "8081")))
-
-
-def main():
+def make_flask_app():
     parser = configargparse.ArgumentParser("mediaTUM start.py")
 
     parser.add_argument("-b", "--bind", default=None, help="hostname / IP to bind to, default: see config file")
@@ -180,13 +166,14 @@ def main():
         extra_files = [maybe_config_filepath] if maybe_config_filepath else []
 
         def main_wrapper():
-            run(args.bind, args.http_port, args.force_test_db, args.loglevel, args.automigrate)
+            return run(args.force_test_db, args.loglevel, args.automigrate)
 
-        run_with_reloader(main_wrapper, extra_files)
+        return run_with_reloader(main_wrapper, extra_files)
     else:
-        run(args.bind, args.http_port, args.force_test_db, args.loglevel, args.automigrate)
+        return run(args.force_test_db, args.loglevel, args.automigrate)
 
 
+flask_app = make_flask_app()
 # don't run mediaTUM server when this module is imported, unless FORCE_RUN is set
 if __name__ == "__main__" or hasattr(__builtins__, "FORCE_RUN"):
-    main()
+    flask_app.run(config.get("host.name"), int(config.get("host.port")))

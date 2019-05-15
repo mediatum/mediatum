@@ -170,6 +170,32 @@ def make_app():
     return admin_app
 
 
+def flask_routes(app):
+    @app.route('/')
+    @app.route('/login', methods=['GET', 'POST'])
+    @app.route('/logout')
+    @app.route('/edit')
+    @app.route('/admin/')
+    @app.route('/publish/')
+    @app.route('/pwdchange', methods=['GET', 'POST'])
+    @app.route('/pwdforgotten')
+    @app.route('/mask', methods=['GET', 'POST'])
+    @app.route('/edit/<path:action>', methods=['GET', 'POST'])
+    @app.route('/admin/<path:action>', methods=['GET', 'POST'])
+    @app.route('/services/<path:action>')
+    @app.route('/ftree/<path:action>')
+    @app.route('/publish/<path:action>')
+    @app.route('/thumbs/<path:action>')
+    @app.route('/thumb2/<path:action>')
+    @app.route('/image/<path:action>')
+    @app.route('/doc/<path:action>')
+    @app.route('/file/<path:action>')
+    @app.route('/download/<path:action>')
+    @app.route('/<path:action>')
+    def action(action=None):
+        return "Hello Mediatum"
+
+
 app = make_app()
 
 

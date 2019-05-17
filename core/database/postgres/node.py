@@ -17,6 +17,8 @@ from sqlalchemy.ext.declarative.api import DeclarativeMeta
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.ext.hybrid import hybrid_property
 
+import flask as _flask
+
 from core import config
 from core.node import NodeMixin, NodeVersionMixin
 from core.database.postgres import db_metadata, DeclarativeBase, MtQuery, mediatumfunc, MtVersionBase, integer_fk
@@ -323,11 +325,10 @@ class Node(DeclarativeBase, NodeMixin):
     @staticmethod
     def req_has_access_to_node_id(node_id, accesstype, req=None, date=func.current_date()):
         # XXX: the database-independent code could move to core.node
-        from core.transition import request
         from core.users import user_from_session
 
         if req is None:
-            req = request
+            req = _flask.request
 
         user = user_from_session()
 

@@ -18,6 +18,8 @@
 """
 
 import re as _re
+import mediatumtal.tal as _tal
+
 from contenttypes import Data
 from core import db
 from utils.utils import getFormatedString
@@ -26,4 +28,4 @@ q = db.query
 
 def getContent(req, ids):
 
-    return req.getTAL("web/edit/modules/editall.html", {'query': req.query.replace('id=', 'src=')}, macro="view_node")
+    return _tal.processTAL({'query': req.query_string.replace('id=', 'src=')}, file="web/edit/modules/editall.html", macro="view_node", request=req)

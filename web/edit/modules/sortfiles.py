@@ -17,6 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import mediatumtal.tal as _tal
 
 from sqlalchemy import func
 from core.translation import t as _t
@@ -37,7 +38,7 @@ def getContent(req, ids):
 
     if "sortfiles" in user.hidden_edit_functions or not node.has_write_access():
         req.response.status_code = httpstatus.HTTP_FORBIDDEN
-        return req.getTAL("web/edit/edit.html", {}, macro="access_error")
+        return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
     if "globalsort" in req.params:
         node.set("sortfield", req.params["globalsort"])
@@ -45,10 +46,7 @@ def getContent(req, ids):
     db.session.commit()
 
     sortchoices = _sort.get_sort_choices(container=node, off="off", t_off=_t(req, "off"), t_desc=_t(req, "descending"))
-
-    return req.getTAL("web/edit/modules/sortfiles.html", dict(
-            node=node,
-            collection_sortfield=collection_sortfield,
-            sortchoices=tuple(sortchoices),
-            name=node.name,
-        ), macro="edit_sortfiles")
+    return _tal.processTAL({"node": node,
+                            "collection_sortfield": collection_sortfield,
+                            "sortchoices": tuple(sortchoices),
+                            "name": node.name}, file="web/edit/modules/sortfiles.html", macro="edit_sortfiles", request=req)

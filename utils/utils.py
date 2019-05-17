@@ -964,7 +964,7 @@ def dec_entry_log(func):
         for arg_name, value in zip(argnames, args[:len(argnames)]) + [("args", list(args[len(argnames):]))] + [
             ("kwargs", kwargs)]:
 
-            if ("%r" % value).find('.athana.http_request object') > 0:
+            if ("%r" % value).find('Request ') > 0:
                 _v = "req.path=%r|req.params=%r" % (value.path, value.params)
                 value = _v
             arg_info.append('%s=%r' % (arg_name, value))

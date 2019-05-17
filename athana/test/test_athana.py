@@ -9,7 +9,6 @@ import os.path
 from pytest import fixture, yield_fixture
 from flask import Flask, Response, request
 import nap.url
-from core import athana
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -40,36 +39,6 @@ def add_test_response(app, response_content):
 def make_app():
     app = Flask("test", static_folder=STATIC_DIR)
     return app
-
-
-@yield_fixture
-def wsgi_intercept_app():
-    """Creates WSGI app that receives input directly from requests via wsgi_intercept.
-    This skips HTTP request to athana and can be used to test the tests"""
-    from wsgi_intercept import requests_intercept, add_wsgi_intercept
-    requests_intercept.install()
-    app = make_app()
-    add_wsgi_intercept(HOST, PORT, lambda: app)
-    yield app
-    requests_intercept.uninstall()
-
-
-@yield_fixture
-def athana_app():
-    """Creates WSGI app and starts athana in its own thread to avoid blocking the main thread"""
-    from core.init import add_ustr_builtin
-    add_ustr_builtin()
-    from core import athana
-    athana.threaded_testrun(PORT)
-    app = make_app()
-    athana.add_wsgi_context("/", app)
-    yield app
-    athana.stop_testrun()
-    # athana uses many global variables, it's best to simply reload it to clean up for the next test...
-    reload(athana)
-
-
-app = athana_app
 
 
 def test_wsgi_redirect(app, cl):
@@ -205,18 +174,3 @@ def test_wsgi_binary_upload(app, cl):
         res = cl.post("/test", files={"file": fi})
 
     assert res.content == content
-
-
-def test_build_reply_header_with_unicode():
-    req = athana.http_request(*([None] * 6))
-    req.reply_headers = {}
-    req.reply_headers[u"kä1"] = u"vä"
-    req.reply_headers["k1"] = "v"
-    req.reply_headers[u"kä2"] = "v"
-    req.reply_headers["k2"] = u"vä"
-    reply_header = req.build_reply_header()
-    assert "kä1: vä" in reply_header
-    assert "k1: v" in reply_header
-    assert "kä2: v" in reply_header
-    assert "k2: vä" in reply_header
-    

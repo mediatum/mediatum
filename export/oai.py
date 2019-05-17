@@ -77,7 +77,7 @@ def now():
 
 
 def make_lookup_key(req):
-    return "%s:%d" % (req.ip, req.channel.addr[1])
+    return "%s:%s" % (req.remote_addr, req.port)
 
 
 def timetable_update(req, msg):
@@ -87,7 +87,7 @@ def timetable_update(req, msg):
 
 def timetable_string(req):
     s = '' + ('-' * 80)
-    s += "\n| timetable for request %s" % (req.uri)
+    s += "\n| timetable for request %s" % (req.path)
     atime = req._tt['atime']
     count = 0
     for i, (msg, t) in enumerate(req._tt['tlist']):
@@ -157,7 +157,8 @@ def writeError(req, code, detail=""):
         desc = errordesc[code]
     req.response.status_code = _httpstatus.HTTP_OK
     req.response.set_data(req.response.get_data() + '<error code="%s">%s</error>' % (code, desc))
-    logg.info("%s:%d OAI (error code: %s) %s", req.ip, req.channel.addr[1], (code), (req.path + req.uri).replace('//', '/'))
+    logg.info("%s:%ds OAI (error code: %s) %s", req.remote_addr, req.port, (code),
+              (req.path + req.path).replace('//', '/'))
 
 
 def ISO8601(t=None):
@@ -753,7 +754,7 @@ def oaiRequest(req):
 
     start_time = time.clock()
     req._tt = {'atime': now(), 'tlist': []}
-    req.request["Content-Type"] = "text/xml"
+    req.response.headers["Content-Type"] = "text/xml"
     req.response._tt = {'atime': now(), 'tlist': []}
     req.response.status_code = _httpstatus.HTTP_OK
 
@@ -808,7 +809,7 @@ def oaiRequest(req):
     useragent = 'unknown'
     try:
         cutoff = 60
-        useragent = req.request_headers['user-agent']
+        useragent = req.headers['user-agent']
         if len(useragent) > cutoff:
             useragent = useragent[0:cutoff] + '...'
     except:
@@ -816,8 +817,8 @@ def oaiRequest(req):
 
     exit_time = now()
 
-    logg.info("%s:%d OAI (exit after %.3f sec.) %s - (user-agent: %s)",
-              req.ip, req.channel.addr[1], (exit_time - start_time), (req.path + req.uri).replace('//', '/'), useragent)
+    logg.info("%s:%s OAI (exit after %.3f sec.) %s - (user-agent: %s)",
+              req.remote_addr, req.port, (exit_time - start_time), (req.path + req.path).replace('//', '/'), useragent)
 
     if DEBUG:
         logg.info(timetable_string(req))

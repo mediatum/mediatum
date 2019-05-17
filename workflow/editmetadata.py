@@ -18,6 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import flask as _flask
+import mediatumtal.tal as _tal
 from .workflow import WorkflowStep, registerStep
 from core.translation import t, lang, addLabels
 from schema.schema import getMetaType
@@ -64,19 +65,17 @@ class WorkflowStep_EditMetadata(WorkflowStep):
         if mask:
             maskcontent = mask.getFormHTML([node], req)
         else:
-            maskcontent = req.getTAL("workflow/editmetadata.html", {}, macro="maskerror")
+            maskcontent = _tal.processTAL({}, file="workflow/editmetadata.html", macro="maskerror", request=req)
 
-        return req.getTAL("workflow/editmetadata.html",
-                          {"name": self.name,
-                           "error": error,
-                           "key": key,
-                           "mask": maskcontent,
-                           "pretext": self.getPreText(lang(req)),
-                           "posttext": self.getPostText(lang(req)),
-                           "sidebartext": self.getSidebarText(lang(req)),
-                           "buttons": self.tableRowButtons(node),
-                           "csrf": req.csrf_token.current_token,},
-                          macro="workflow_metadateneditor")
+        return _tal.processTAL({"name": self.name,
+                                "error": error,
+                                "key": key,
+                                "mask": maskcontent,
+                                "pretext": self.getPreText(lang(req)),
+                                "posttext": self.getPostText(lang(req)),
+                                "sidebartext": self.getSidebarText(lang(req)),
+                                "buttons": self.tableRowButtons(node),
+                                "csrf": req.csrf_token.current_token,}, file="workflow/editmetadata.html", macro="workflow_metadateneditor", request=req)
 
     def metaFields(self, lang=None):
         field = Metafield("mask")

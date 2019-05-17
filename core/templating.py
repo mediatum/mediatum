@@ -3,6 +3,7 @@
 from __future__ import division, absolute_import, print_function
 
 import os
+import flask as _flask
 from jinja2.loaders import BaseLoader, FileSystemLoader
 from jinja2.environment import Environment as BaseEnvironment
 from jinja2.exceptions import TemplateNotFound
@@ -10,8 +11,6 @@ from pyjade.ext.jinja import Compiler as JinjaCompiler
 from pyjade.ext.jinja import PyJadeExtension as JinjaJadeExtension
 from pyjade.utils import process
 from utils.compat import itervalues
-from core.transition.globals import current_app, _app_ctx_stack
-from core.transition.helpers import get_template_attribute
 from utils.utils import suppress
 
 class JinjaAutoescapeCompiler(JinjaCompiler):
@@ -92,7 +91,7 @@ def make_template_functions(template_dirpath, global_names={}):
     """Creates a template rendering function which uses a fixed template path
     :param global_names: names to add to all template contexts. Use this to add functions that should be avaiable in all templates.
     """
-    jinja_env = Environment(current_app, loader=FileSystemLoader(template_dirpath), extensions=[PyJadeExtension, "jinja2.ext.autoescape"])
+    jinja_env = Environment(_flask.globals.current_app, loader=FileSystemLoader(template_dirpath), extensions=[PyJadeExtension, "jinja2.ext.autoescape"])
     jinja_env.globals.update(global_names)
 
     def render_template(template, **kwargs):
@@ -104,28 +103,3 @@ def make_template_functions(template_dirpath, global_names={}):
         return macro(**kwargs)
 
     return render_template, render_macro
-
-
-def render_template(template, **context):
-    template = current_app.jinja_env.get_template(template)
-    ctx = _app_ctx_stack.top
-    ctx.app.update_template_context(context)
-    return template.render(**context)
-
-
-def render_template_string(source, **context):
-    """Renders a template from the given template source string
-    with the given context.
-
-    :param source: the sourcecode of the template to be
-                   rendered
-    :param context: the variables that should be available in the
-                    context of the template.
-    """
-    template = current_app.jinja_env.from_string(source)
-    return template.render(context)
-
-
-def render_macro(template_name, macro_name, *args, **kwargs):
-    macro = get_template_attribute(template_name, macro_name)
-    return macro(*args, **kwargs)

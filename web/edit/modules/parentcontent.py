@@ -18,6 +18,8 @@
 """
 
 import re as _re
+import mediatumtal.tal as _tal
+
 from contenttypes import Data
 from core import db
 from utils.utils import getFormatedString
@@ -33,4 +35,4 @@ def getContent(req, ids):
 
     nodesperpage = '20'
 
-    return req.getTAL("web/edit/modules/nodesperpage.html", {'id': parent.id, 'sortfield': sortfield, 'nodesperpage': nodesperpage}, macro="view_node")
+    return _tal.processTAL({'id': parent.id, 'sortfield': sortfield, 'nodesperpage': nodesperpage},file="web/edit/modules/nodesperpage.html", macro="view_node", request=req)

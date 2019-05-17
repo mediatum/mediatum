@@ -38,8 +38,8 @@ def test_change_language_request_change(req, language_config_setting):
     req.args = {u"testarg": u"5"}
     req.args["change_language"] = "no"
     assert main.change_language_request(req) == httpstatus.HTTP_MOVED_TEMPORARILY
-    assert req.reply_headers["Set-Cookie"][0].find("language=no") >= 0
-    assert req.request["Location"] == "/testpath?testarg=5"
+    assert req.response.headers["Set-Cookie"][0].find("language=no") >= 0
+    assert req.response.headers["Location"] == "/testpath?testarg=5"
 
 
 def test_change_language_request_invalid_lang(req, language_config_setting):
@@ -47,8 +47,8 @@ def test_change_language_request_invalid_lang(req, language_config_setting):
     req.args = {u"testarg": u"5"}
     req.args["change_language"] = "haha"
     assert main.change_language_request(req) == httpstatus.HTTP_MOVED_TEMPORARILY
-    assert req.reply_headers.get("language") != "haha"
-    assert req.request["Location"] == "/testpath?testarg=5"
+    assert req.response.headers.get("language") != "haha"
+    assert req.response.headers["Location"] == "/testpath?testarg=5"
 
 
 def test_change_language_all_handlers(req, all_frontend_handlers):
@@ -56,4 +56,4 @@ def test_change_language_all_handlers(req, all_frontend_handlers):
     req.args["change_language"] = "de"
     code = handler(req)
     assert code == httpstatus.HTTP_MOVED_TEMPORARILY
-    assert req.reply_headers["Set-Cookie"][0].find("language=de") >= 0
+    assert req.response.headers["Set-Cookie"][0].find("language=de") >= 0

@@ -21,6 +21,7 @@ import re
 import sys
 
 import logging
+import mediatumtal.tal as _tal
 
 from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter
 from web.common.acl_web import makeList
@@ -144,7 +145,7 @@ def validate(req, op):
         # remark: error messages will be served untranslated in English
         # because messages from the python interpreter (in English) will be added
 
-        return req.getTAL("web/admin/modules/metatype.html", {'sectionlist': sectionlist, 'csrf': req.csrf_token.current_token}, macro="view_testnodes")
+        return _tal.processTAL({'sectionlist': sectionlist, 'csrf': req.csrf_token.current_token}, file="web/admin/modules/metatype.html", macro="view_testnodes", request=req)
 
     if len(path) == 2 and path[1] == "info":
         return showInfo(req)
@@ -440,7 +441,7 @@ def view(req):
     v["filterattrs"] = [("id", "admin_metatype_filter_id"), ("name", "admin_metatype_filter_name")]
     v["filterarg"] = req.params.get("filtertype", "id")
     v["csrf"] = req.csrf_token.current_token
-    return req.getTAL("web/admin/modules/metatype.html", v, macro="view_type")
+    return _tal.processTAL(v, file="web/admin/modules/metatype.html", macro="view_type", request=req)
 
 
 """ form for metadata (edit/new) """
@@ -490,14 +491,14 @@ def MetatypeDetail(req, id, err=0):
     v["filtertype"] = req.params.get("filtertype", "")
     v["actpage"] = req.params.get("actpage")
     v["csrf"] = req.csrf_token.current_token
-    return req.getTAL("web/admin/modules/metatype.html", v, macro="modify_type")
+    return _tal.processTAL(v, file="web/admin/modules/metatype.html", macro="modify_type", request=req)
 
 
 """ popup info form """
 
 
 def showInfo(req):
-    return req.getTAL("web/admin/modules/metatype.html", {"fieldtypes": getMetaFieldTypeNames(), "csrf": req.csrf_token.current_token}, macro="show_info")
+    return _tal.processTAL({"fieldtypes": getMetaFieldTypeNames(), "csrf": req.csrf_token.current_token}, file="web/admin/modules/metatype.html", macro="show_info", request=req)
 
 """ popup form with field definition """
 
@@ -513,7 +514,7 @@ def showFieldOverview(req):
     v["fieldoptions"] = fieldoption
     v["fieldtypes"] = getMetaFieldTypeNames()
     v["csrf"] = req.csrf_token.current_token
-    return req.getTAL("web/admin/modules/metatype.html", v, macro="show_fieldoverview")
+    return _tal.processTAL(v, file="web/admin/modules/metatype.html", macro="show_fieldoverview", request=req)
 
 """ export metadatatype-definition (XML) """
 
@@ -747,14 +748,14 @@ def showEditor(req):
         # show metaEditor
         v["editor"] = ""
         try:
-            v["editor"] = req.getTALstr(editor.getMetaMask(req), {})
+            v["editor"] = _tal.processTAL({}, string=editor.getMetaMask(language=lang(req)), macro=None, request=req)
         except:
             logg.exception("exception in showEditor")
             v["editor"] = editor.getMetaMask(req)
 
     v["title"] = editor.name
     v["csrf"] = req.csrf_token.current_token
-    return req.getTAL("web/admin/modules/metatype.html", v, macro="editor_popup")
+    return _tal.processTAL(v, file="web/admin/modules/metatype.html", macro="editor_popup", request=req)
 
 
 def changeOrder(parent, up, down):

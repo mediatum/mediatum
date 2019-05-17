@@ -79,7 +79,7 @@ def request_handler(req):
     req_path = req.path
 
     for method, pattern, handler_func, rewrite_target, url_flags, data in urls:
-        if method and method == req.command:
+        if method and method == req.method:
             m = re.match(pattern, req_path)
             if m:
 
@@ -121,17 +121,17 @@ def request_handler(req):
     useragent = 'unknown'
     try:
         cutoff = 60
-        useragent = req.request_headers['user-agent']
+        useragent = req.headers['user-agent']
         if len(useragent) > cutoff:
             useragent = useragent[0:cutoff] + '...'
     except:
         pass
 
     request_count += 1
-    req_query = req.query
+    req_query = req.query_string
     if not req_query:
         req_query = ''
-    s = "services %s '%s' (%s): %s for %s bytes for service request no. %r (%s, %s, %s) - (user-agent: %s)" % (req.ip,
+    s = "services %s '%s' (%s): %s for %s bytes for service request no. %r (%s, %s, %s) - (user-agent: %s)" % (req.remote_addr,
                                                                                                                ustr(response_code),
                                                                                                                response_code_description,
                                                                                                                handle_duration,
@@ -140,15 +140,15 @@ def request_handler(req):
                                                                                                                    bytes_sent,
                                                                                                                    1),
                                                                                                                request_count,
-                                                                                                               req.command,
-                                                                                                               req.fullpath + req_query,
+                                                                                                               req.method,
+                                                                                                               req.full_path + req_query,
                                                                                                                req.params,
                                                                                                                useragent)
 
     if logg.isEnabledFor(logging.INFO) and matched and 'timetable' in d:
         timesum = 0.0
         s += '\n' + ('-' * 80)
-        s += "\n| timetable for request (%s, %s, %s)" % (req.command, req.fullpath, handle_params)
+        s += "\n| timetable for request (%s, %s, %s)" % (req.method, req.full_path, handle_params)
         for i, timetable_step in enumerate(d['timetable']):
             if len(timetable_step) == 2:
                 step, executiontime = timetable_step

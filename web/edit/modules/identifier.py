@@ -19,6 +19,7 @@
 """
 
 import os
+import mediatumtal.tal as _tal
 
 import core.config as config
 import utils.date as date
@@ -53,7 +54,7 @@ def getContent(req, ids):
     # first prove if the user has the required rights to call this module
     if 'sortfiles' in user.hidden_edit_functions or not node.has_write_access():
         req.response.status_code = httpstatus.HTTP_FORBIDDEN
-        return req.getTAL('web/edit/edit.html', {}, macro='access_error')
+        return _tal.processTAL({}, file='web/edit/edit.html', macro='access_error', request=req)
 
     if node.isContainer():
         nodes = u', '.join(node.children.getIDs())
@@ -102,7 +103,7 @@ def getContent(req, ids):
                         db.session.commit()
 
                 try:
-                    mailtext = req.getTAL('web/edit/modules/identifier.html', v, macro='generate_identifier_usr_mail_2')
+                    mailtext = _tal.processTAL(v, file='web/edit/identifier.html', macro='generate_identifier_usr_mail_2', request=req)
                     mail.sendmail(config.get('email.admin'),  # email from
                                   "%s;%s" % (config.get('email.admin'), user.getEmail()), # email to
                                   u'Vergabe eines Identifikators / Generation of an Identifier',
@@ -136,8 +137,7 @@ def getContent(req, ids):
                             attachment.append((autorenvertrag_path, 'Autorenvertrag.pdf'))
 
                         # notify user
-                        mailtext_user = req.getTAL(
-                            'web/edit/modules/identifier.html', v, macro='generate_identifier_usr_mail_1_' + lang(req))
+                        mailtext_user = _tal.processTAL(v, file='web/edit/modules/identifier.html', macro='generate_identifier_usr_mail_1_' + lang(req), request=req)
                         mail.sendmail(config.get('email.admin'),
                                       ("%s;%s" % (config.get('email.admin'), user.getEmail())),
                                       unicode(t(lang(req), 'edit_identifier_mail_title_usr_1')),
@@ -145,7 +145,7 @@ def getContent(req, ids):
                                       attachments_paths_and_filenames=attachment)
 
                         # notify admin
-                        mailtext_admin = req.getTAL('web/edit/modules/identifier.html', v, macro='generate_identifier_admin_mail')
+                        mailtext_admin = _tal.processTAL(v, file='web/edit/modules/identifier.html', macro='generate_identifier_admin_mail', request=req)
                         mail.sendmail(config.get('email.admin'),
                                       config.get('email.admin'),
                                       u'Antrag auf Vergabe eines Identifikators',
@@ -183,7 +183,7 @@ def getContent(req, ids):
         v['msg'] = t(lang(req), 'edit_identifier_all_types_set')
 
     v["csrf"] = req.csrf_token.current_token
-    return req.getTAL('web/edit/modules/identifier.html', v, macro='set_identifier')
+    return _tal.processTAL(v, file='web/edit/modules/identifier.html', macro='set_identifier', request=req)
 
 
 def createUrn(node, namespace, urn_type):

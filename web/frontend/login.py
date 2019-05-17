@@ -72,11 +72,11 @@ def _handle_login_submit(req):
         logg.info("%s logged in", user.login_name)
 
         if _flask.session.get('return_after_login'):
-            req['Location'] = _flask.session['return_after_login']
+            req.response.headers['Location'] = _flask.session['return_after_login']
         elif config.get("config.ssh", "") == "yes":
-            req["Location"] = ''.join(["https://", config.get("host.name"), _make_collection_root_link()])
+            req.response.headers["Location"] = ''.join(["https://", config.get("host.name"), _make_collection_root_link()])
         else:
-            req["Location"] = _make_collection_root_link()
+            req.response.headers["Location"] = _make_collection_root_link()
 
         # stores the date/time when a user logs in except in read-only mode
         if not config.getboolean("config.readonly", False):
@@ -135,7 +135,7 @@ def logout(req):
         if "user_id" in _flask.session:
             del _flask.session["user_id"]
 
-    req.request["Location"] = '/'
+    req.response.headers["Location"] = '/'
     req.response.status_code = httpstatus.HTTP_MOVED_TEMPORARILY
     # return to caching
     _setCookie(req, "nocache", "0", path="/")
@@ -148,7 +148,7 @@ def pwdchange(req):
 
     if "ChangeSubmit" in req.form:
         if user.is_anonymous:
-            req.request["Location"] = _make_collection_root_link()
+            req.response.headers["Location"] = _make_collection_root_link()
             req.response.status_code = httpstatus.HTTP_MOVED_TEMPORARILY
             return httpstatus.HTTP_MOVED_TEMPORARILY
 
@@ -166,7 +166,7 @@ def pwdchange(req):
             except PasswordChangeNotAllowed:
                 error = 4
             else:
-                req["Location"] = _make_collection_root_link()
+                req.response.headers["Location"] = _make_collection_root_link()
                 req.response.autocorrect_location_header = False
                 req.response.status_code = httpstatus.HTTP_MOVED_TEMPORARILY
                 return httpstatus.HTTP_MOVED_TEMPORARILY

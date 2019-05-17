@@ -16,6 +16,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import mediatumtal.tal as _tal
 
 from web.admin.adminutils import adminNavigation, adminModules
 
@@ -43,4 +44,4 @@ def validate(req, op):
 
         items.append(itemdata)
     v["navitems"] = items
-    return req.getTAL("/web/admin/modules/menumain.html", v, macro="view")
+    return _tal.processTAL(v, file="/web/admin/modules/menumain.html", macro="view", request=req)

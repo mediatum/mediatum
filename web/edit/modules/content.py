@@ -18,6 +18,7 @@
 """
 
 import json
+import mediatumtal.tal as _tal
 
 from core import db
 from contenttypes import Data, Home, Collection, Collections
@@ -134,14 +135,14 @@ def getContent(req, ids):
         v['search'] = search_html
         v['navigation_height'] = navigation_height
         v['parent'] = node.id
-        v['query'] = req.query.replace('id=','src=')
+        v['query'] = req.query_string.replace('id=','src=')
         searchparams = get_searchparams(req)
         searchparams = {k: unicode(v).encode("utf8") for k, v in searchparams.items()}
         v['searchparams'] = urllib.urlencode(searchparams)
         v['get_ids_from_query'] = get_ids_from_query
         v['edit_all_objects'] = t(lang(req), "edit_all_objects").format(item_count[1])
         v['t'] = t
-        res = req.getTAL("web/edit/modules/content.html", v, macro="edit_content")
+        res = _tal.processTAL(v, file="web/edit/modules/content.html", macro="edit_content", request=req)
         delete_g_nodes_entry(req)
         return res
     if hasattr(node, "editContentDefault"):

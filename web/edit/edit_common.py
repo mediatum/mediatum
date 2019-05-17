@@ -34,6 +34,7 @@ from web.frontend.content import get_make_search_content_function
 from web.frontend.search import NoSearchResult
 import re
 import urllib
+from utils.url import build_url_from_path_and_params as _build_url_from_path_and_params
 
 
 logg = logging.getLogger(__name__)
@@ -533,14 +534,13 @@ def upload_for_html(req):
                 nodefile = importFile(file.filename, file.tempname)
                 node.files.append(nodefile)
                 db.session.commit()
-                req.request["Location"] = req.makeLink(
-                    "nodefile_browser/%s/" % id, {})
+                req.response.headers["Location"] = _build_url_from_path_and_params("nodefile_browser/%s/" % id, {})
             except EncryptionException:
-                req.request["Location"] = req.makeLink("content", {
+                req.response.headers["Location"] = _build_url_from_path_and_params("content", {
                                                        "id": id, "tab": "tab_editor", "error": "EncryptionError_" + datatype[:datatype.find("/")]})
             except:
                 logg.exception("error during upload")
-                req.request["Location"] = req.makeLink("content", {
+                req.response.headers["Location"] = _build_url_from_path_and_params("content", {
                                                        "id": id, "tab": "tab_editor", "error": "PostprocessingError_" + datatype[:datatype.find("/")]})
             return send_nodefile_tal(req)
 
@@ -555,11 +555,11 @@ def upload_for_html(req):
                 node.files.append(nodefile)
                 db.session.commit()
             except EncryptionException:
-                req.request["Location"] = req.makeLink("content", {
+                req.response.headers["Location"] = _build_url_from_path_and_params("content", {
                                                        "id": id, "tab": "tab_editor", "error": "EncryptionError_" + datatype[:datatype.find("/")]})
             except:
                 logg.exception("error during upload")
-                req.request["Location"] = req.makeLink("content", {
+                req.response.headers["Location"] = _build_url_from_path_and_params("content", {
                                                        "id": id, "tab": "tab_editor", "error": "PostprocessingError_" + datatype[:datatype.find("/")]})
 
             url = '/file/' + id + '/' + file.tempname.split('/')[-1]

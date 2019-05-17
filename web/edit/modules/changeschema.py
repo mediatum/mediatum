@@ -36,7 +36,7 @@ logg = logging.getLogger(__name__)
 
 
 def _redirect_to_view(req):
-    req["Location"] = "{}?id={}&tab=changeschema".format(req.fullpath, req.args["id"])
+    req.response.headers["Location"] = "{}?id={}&tab=changeschema".format(req.full_path, req.args["id"])
     return httpstatus.HTTP_MOVED_TEMPORARILY
 
 
@@ -51,7 +51,7 @@ def getContent(req, ids):
     # nobody should be able to change the type/schema of his home directory
     if node.id == user.home_dir_id:
         req.response.status_code = httpstatus.HTTP_FORBIDDEN
-        return req.getTAL("web/edit/edit.html", {}, macro="access_error")
+        return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
     error = req.params.get("error")
 

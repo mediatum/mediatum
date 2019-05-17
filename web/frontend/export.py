@@ -42,7 +42,7 @@ def export(req):
         try:
             node = q(Data).get(p[0])
             if not node:
-                return req.error(404, "Object not found")
+                return _error(req, 404, "Object not found")
         except:
             return _error(req, 404, "Object not found")
     else:

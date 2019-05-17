@@ -16,6 +16,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import mediatumtal.tal as _tal
 
 from contenttypes import Data
 from core import db
@@ -27,6 +28,6 @@ def getContent(req, ids):
     node = q(Data).get(long(ids[0]))
 
     if hasattr(node, "show_node_big"):
-        return req.getTAL("web/edit/modules/view.html", {'content': getFormatedString(node.show_node_big(req))}, macro="view_node")
+        return _tal.processTAL({'content': getFormatedString(node.show_node_big(req))}, file="web/edit/modules/view.html", macro="view_node", request=req)
     else:
-        return req.getTAL("web/edit/modules/view.html", {}, macro="view_noview")
+        return _tal.processTAL({}, file="web/edit/modules/view.html", macro="view_noview", request=req)

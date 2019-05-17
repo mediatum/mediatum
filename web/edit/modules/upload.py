@@ -30,6 +30,7 @@ import time
 import logging
 
 import json
+import mediatumtal.tal as _tal
 
 from web.edit.edit_common import showdir, shownav, showoperations, searchbox_navlist_height
 from web.edit.edit import getTreeLabel, get_ids_from_req
@@ -223,8 +224,7 @@ def getContent(req, ids):
 
             db.session.commit()
             # standard file
-            content = req.getTAL('web/edit/modules/upload.html', {'files': [filename], 'schemes': scheme_type}, macro="uploadfileok")
-
+            content = _tal.processTAL({'files': [filename], 'schemes': scheme_type}, file='web/edit/modules/upload.html', macro="uploadfileok", request=req)
             res = {'state': state, 'newnodes': newnodes, 'errornodes':
                               errornodes, 'new_tree_labels': new_tree_labels, 'ret': content}
             res = json.dumps(res, ensure_ascii=False)
@@ -246,19 +246,18 @@ def getContent(req, ids):
                                     'description': scheme.getDescription(), 'datatype': datatype})
             if len(dtypes) == 1:  # load schemes for type
                 schemes = get_permitted_schemas_for_datatype(dtypes[0].__name__.lower())
-            content = req.getTAL('web/edit/modules/upload.html', {"datatypes": dtypes,
-                                                                  "schemes": ret,
-                                                                  "language": lang(req)},
-                                 macro="addmeta")
+            content = _tal.processTAL({"datatypes": dtypes,
+                                      "schemes": ret,
+                                      "language": lang(req),
+                                      "identifier_importers": identifier_importers.values()}, file='web/edit/modules/upload.html', macro="addmeta", request=req)
 
             req.response.set_data(json.dumps({'content': content}, ensure_ascii=False))
             return None
 
         # add new object, only doi
         if req.params.get('action') == "adddoi":
-            content = req.getTAL('web/edit/modules/upload.html', {"language": lang(req),
-                                                                  "identifier_importers": identifier_importers.values()},
-                                 macro="adddoi")
+            content = _tal.processTAL({"language": lang(req), "identifier_importers": identifier_importers.values()},
+                                      file='web/edit/modules/upload.html', macro="adddoi", request=req)
 
             req.response.set_data(json.dumps({'content': content}, ensure_ascii=False))
             return None
@@ -362,7 +361,7 @@ def getContent(req, ids):
                     'filename': f.getName(),
                 }
                 ctx.update(upload_to_filetype_filehandler(req))
-                content = req.getTAL('web/edit/modules/upload.html', ctx, macro="uploadfileok_plupload")
+                content = _tal.processTAL(ctx, file='web/edit/modules/upload.html', macro="uploadfileok_plupload", request=req)
                 basenode = q(Node).get(req.params.get('id'))
                 new_tree_labels = [{'id': basenode.id, 'label': getTreeLabel(basenode, lang=language)}]
                 req.response.set_data(json.dumps({'type': 'file',
@@ -374,7 +373,7 @@ def getContent(req, ids):
 
             if mime[1] == "other":  # file type not supported
                 req.response.set_data(json.dumps({'type': mime[1],
-                                                  'ret': req.getTAL('web/edit/modules/upload.html', {}, macro="uploadfileerror"),
+                                                  'ret': _tal.processTAL({}, file='web/edit/modules/upload.html', macro="uploadfileerror", request=req),
                                                   'state': 'error',
                                                   'filename': req.params.get('file')}, ensure_ascii=False))
                 logg.debug("%s|%s.%s: added file to node %s (%s, %s) -> file type not supported",
@@ -386,13 +385,13 @@ def getContent(req, ids):
                     macro = "uploadzipfileok_plupload"
                 else:
                     macro = "uploadzipfileok"
-                content = req.getTAL('web/edit/modules/upload.html', upload_ziphandler(req), macro=macro)
+                content = _tal.processTAL(upload_ziphandler(req), file='web/edit/modules/upload.html', macro=macro, request=req)
             elif mime[1] == "bibtex":  # bibtex file
                 if req.params.get('uploader', '') == 'plupload':
                     macro = "uploadbibfileok_plupload"
                 else:
                     macro = "uploadbibfileok"
-                content = req.getTAL('web/edit/modules/upload.html', upload_bibhandler(req), macro=macro)
+                content = _tal.processTAL(upload_bibhandler(req), file='web/edit/modules/upload.html', macro=macro, request=req)
             else:  # standard file
                 if req.params.get('uploader', '') == 'plupload':
                     ctx = {
@@ -400,10 +399,9 @@ def getContent(req, ids):
                     }
 
                     ctx.update(upload_filehandler(req))
-
-                    content = req.getTAL('web/edit/modules/upload.html', ctx, macro="uploadfileok_plupload")
+                    content = _tal.processTAL(ctx, file='web/edit/modules/upload.html', macro="uploadfileok_plupload", request=req)
                 else:
-                    content = req.getTAL('web/edit/modules/upload.html', upload_filehandler(req), macro="uploadfileok")
+                    content = _tal.processTAL(upload_filehandler(req), file='web/edit/modules/upload.html', macro="uploadfileok", request=req)
             basenode = q(Node).get(req.params.get('id'))
             new_tree_labels = [{'id': basenode.id, 'label': getTreeLabel(basenode, lang=language)}]
             _d = {
@@ -466,14 +464,14 @@ def getContent(req, ids):
         "nav": nav,
         "count": count,
         "search": search_html,
-        "query" : req.query.replace('id=', 'src='),
+        "query" : req.query_string.replace('id=', 'src='),
         "searchparams" : urllib.urlencode(searchparams),
         "get_ids_from_query" : get_ids_from_query,
         "edit_all_objects" : translation_t(lang(req), "edit_all_objects").format(item_count[1]),
         "navigation_height": navigation_height,
         "csrf": str(req.csrf_token.current_token),
     })
-    html = req.getTAL("web/edit/modules/upload.html", v, macro="upload_form")
+    html = _tal.processTAL(v, file="web/edit/modules/upload.html", macro="upload_form", request=req)
     delete_g_nodes_entry(req)
     return html
 
@@ -605,7 +603,7 @@ def import_from_doi(identifier, importdir, req=None):
     def handle_error(req, error_msgstr):
         if req:
             errormsg = translation_t(req, error_msgstr)
-            req.request["Location"] = build_url_from_path_and_params("content", {"id": importdir.id, "error": errormsg})
+            req.response.headers["Location"] = build_url_from_path_and_params("content", {"id": importdir.id, "error": errormsg})
             req.params["error"] = errormsg
 
     import schema.citeproc as citeproc
@@ -639,7 +637,7 @@ def import_from_doi(identifier, importdir, req=None):
         handle_error(req, "doi_error_connecting_external_server")
     else:
         if req:
-            req.request["Location"] = req.makeLink("content", {"id": importdir.id})
+            req.response.headers["Location"] = build_url_from_path_and_params("content", {"id": importdir.id})
 
 
 class IdentifierImporter(object):

@@ -20,6 +20,8 @@
 
 
 import logging
+import mediatumtal.tal as _tal
+
 from utils.utils import formatTechAttrs, dec_entry_log, suppress
 from utils.date import format_date, parse_date
 from core import httpstatus
@@ -38,7 +40,7 @@ def getContent(req, ids):
     node = q(Node).get(ids[0])
     if not node.has_write_access() or "admin" in user.hidden_edit_functions:
         req.response.status_code = httpstatus.HTTP_FORBIDDEN
-        return req.getTAL("web/edit/edit.html", {}, macro="access_error")
+        return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
     if req.params.get("type", "") == "addattr" and req.params.get("new_name", "") != "" and req.params.get("new_value", "") != "":
         attrname = req.form.get("new_name")
@@ -127,21 +129,20 @@ def getContent(req, ids):
         technfields = {}
         logg.info("technical attributes of node %s removed", node.id)
 
-    return req.getTAL("web/edit/modules/admin.html", {"id": req.params.get("id", "0"),
-                                                      "tab": req.params.get("tab", ""),
-                                                      "node": node,
-                                                      "obsoletefields": obsoletefields,
-                                                      "metafields": metafields,
-                                                      "system_attrs": system_attrs,
-                                                      "fields": fields,
-                                                      "technfields": technfields,
-                                                      "tattr": tattr,
-                                                      "fd": formatdate,
-                                                      "gf": getFormat,
-                                                      "user_is_admin": user.is_admin,
-                                                      "canedit": node.has_write_access(),
-                                                      "csrf": req.csrf_token.current_token},
-                      macro="edit_admin_file")
+    return _tal.processTAL({"id": req.params.get("id", "0"),
+                            "tab": req.params.get("tab", ""),
+                            "node": node,
+                            "obsoletefields": obsoletefields,
+                            "metafields": metafields,
+                            "system_attrs": system_attrs,
+                            "fields": fields,
+                            "technfields": technfields,
+                            "tattr": tattr,
+                            "fd": formatdate,
+                            "gf": getFormat,
+                            "user_is_admin": user.is_admin,
+                            "canedit": node.has_write_access(),
+                            "csrf": req.csrf_token.current_token}, file="web/edit/modules/admin.html", macro="edit_admin_file", request=req)
 
 
 def getFormat(fields, name):

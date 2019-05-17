@@ -18,6 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
+import mediatumtal.tal as _tal
 
 from utils.date import format_date, parse_date, now
 from utils.utils import funcname, dec_entry_log
@@ -107,7 +108,7 @@ def _handle_edit_metadata(req, mask, nodes):
     for node in nodes:
         if not node.has_write_access() or node is userdir:
             req.response.status_code = httpstatus.HTTP_FORBIDDEN
-            return req.getTAL("web/edit/edit.html", {}, macro="access_error")
+            return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
     if not hasattr(mask, "i_am_not_a_mask"):
         if form.get('generate_new_version'):
@@ -170,7 +171,7 @@ def getContent(req, ids):
     if "metadata" in user.hidden_edit_functions:
         print "error 1"
         req.response.status_code = httpstatus.HTTP_FORBIDDEN
-        return req.getTAL("web/edit/edit.html", {}, macro="access_error")
+        return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
     metatypes = []
     nodes = []
@@ -187,7 +188,7 @@ def getContent(req, ids):
         node = q(Node).get(nid)
         if not node.has_write_access():
             req.response.status_code = httpstatus.HTTP_FORBIDDEN
-            return req.getTAL("web/edit/edit.html", {}, macro="access_error")
+            return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
         schema = node.schema
         if schema not in metatypes:
@@ -201,7 +202,7 @@ def getContent(req, ids):
     if len(ids) > 1 and len(metatypes) > 1:
         logg.info("%s in editor metadata (action=%r) multiple documents not supported: %r",
                   user.login_name, action, [[n.id, n.name, n.type]for n in nodes])
-        return req.getTAL("web/edit/modules/metadata.html", {}, macro="multiple_documents_not_supported")
+        return _tal.processTAL({}, file="web/edit/modules/metadata.html", macro="multiple_documents_not_supported", request=req)
 
     logg.info("%s in editor metadata (action=%r): %r", user.login_name, action, [[n.id, n.name, n.type]for n in nodes])
 
@@ -245,7 +246,7 @@ def getContent(req, ids):
     db.session.commit()
 
     if not mask:
-        return req.getTAL("web/edit/modules/metadata.html", {}, macro="no_mask")
+        return _tal.processTAL({}, file="web/edit/modules/metadata.html", macro="no_mask", request=req)
 
     # context default for TAL interpreter
     ctx = {}
@@ -305,6 +306,5 @@ def getContent(req, ids):
     data.update(ctx)
     data["flag_nodename_changed"] = flag_nodename_changed
 
-    ret += req.getTAL("web/edit/modules/metadata.html",
-                      data, macro="edit_metadata")
+    ret += _tal.processTAL(data, file="web/edit/modules/metadata.html", macro="edit_metadata", request=req)
     return ret

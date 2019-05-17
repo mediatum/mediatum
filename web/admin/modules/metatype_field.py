@@ -21,7 +21,7 @@
 import re
 import inspect
 import logging
-
+import mediatumtal.tal as _tal
 
 from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter
 from schema.schema import getMetaType, getMetaFieldTypeNames, getMetaField, getFieldsForMeta, getMetadataType, dateoption, requiredoption,\
@@ -115,7 +115,7 @@ def showDetailList(req, id):
     if ustr(req.params.get("page", "")).isdigit():
         v["actpage"] = req.params.get("page")
 
-    return req.getTAL("web/admin/modules/metatype_field.html", v, macro="view_field")
+    return _tal.processTAL(v, file="web/admin/modules/metatype_field.html", macro="view_field", request=req)
 
 
 """ form for field of given metadatatype (edit/new) """
@@ -208,4 +208,4 @@ def FieldDetail(req, pid, id, err=0):
         else:
             v["adminfields"] .append(f.getMaskEditorHTML(v["field"], metadatatype=metadatatype, language=lang(req)))
     db.session.commit()
-    return req.getTAL("web/admin/modules/metatype_field.html", v, macro="modify_field")
+    return _tal.processTAL(v, file="web/admin/modules/metatype_field.html", macro="modify_field", request=req)

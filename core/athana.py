@@ -2558,7 +2558,7 @@ class AthanaThread:
                     function, req = server.queue.pop()
                     self.lastrequest = time.time()
                     self.status = "working"
-                    self.uri = req.uri
+                    self.uri = req.path
             if queue_len == 0:
                 time.sleep(0.01)
             else:
@@ -2578,7 +2578,7 @@ class AthanaThread:
 
                 if log_request_time or profiling:
                     duration = time.time() - timenow
-                    logg.debug("time for request %s: %.1fms", req.uri, duration * 1000.)
+                    logg.debug("time for request %s: %.1fms", req.path, duration * 1000.)
 
                 if profiling:
                     global profiles

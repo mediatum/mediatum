@@ -24,9 +24,8 @@ from mediatumtal import tal
 import os
 import attr
 import core.config as config
-from core import app
-from core.transition import render_template, render_macro
 import glob
+import flask as _flask
 from jinja2.loaders import FileSystemLoader, ChoiceLoader, PrefixLoader
 from jinja2.exceptions import TemplateNotFound
 from core.request_handler import addFileStore as _addFileStore
@@ -57,7 +56,8 @@ class Theme(object):
 
         theme_jinja_loader = self.make_jinja_loader()
         if theme_jinja_loader is not None:
-            logg.info("adding jinja loader for theme")
+            from core import app
+            logg.info("adding jinja loader for theme %s", self.name)
             app.add_template_loader(theme_jinja_loader, 0)
 
         _addFileStore("/theme/", self.path + "/")
@@ -74,7 +74,7 @@ class Theme(object):
     def render_template(self, template_name, context):
         if template_name.endswith((".j2.jade", ".j2.html")):
             # caller wants a jinja template
-            return render_template(template_name, **context)
+            return _flask.render_template(template_name, **context)
         elif template_name.endswith(".html"):
             # caller wants a TAL template
             tal_template = self.get_tal_template_path(template_name)
@@ -85,7 +85,8 @@ class Theme(object):
     def render_macro(self, template_name, macro_name, context):
         if template_name.endswith((".j2.jade", ".j2.html")):
             # caller wants a jinja template
-            return render_macro(template_name, macro_name, **context)
+            macro = _flask.helpers.get_template_attribute(template_name, macro_name)
+            return macro(**context)
         elif template_name.endswith(".html"):
             # caller wants a TAL template
             tal_template = self.get_tal_template_path(template_name)
@@ -170,7 +171,7 @@ class JinjaFullStyle(FullStyle):
 
     def render_template(self, req, context):
         template_path = os.path.join("styles", self.template)
-        return render_template(template_path, **context)
+        return _flask.render_template(template_path, **context)
 
 
 @attr.s
@@ -187,7 +188,7 @@ class ListStyle(object):
     def render_template(self, req, context):
         if self.template.endswith((".j2.jade", ".j2.html")):
             template_path = os.path.join("styles", self.template)
-            return render_template(template_path, **context)
+            return _flask.render_template(template_path, **context)
         else:
             template_path = os.path.join(self.path, self.template)
             return tal.getTAL(template_path, context, request=req)

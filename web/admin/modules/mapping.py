@@ -18,6 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import re
+import mediatumtal.tal as _tal
 
 from schema.mapping import getMappings, getMapping, getMappingTypes, updateMapping, deleteMapping, updateMappingField, deleteMappingField, exportMapping, importMapping
 from web.admin.adminutils import Overview, getAdminStdVars, getFilter, getSortCol
@@ -191,7 +192,7 @@ def view(req):
     v["actfilter"] = actfilter
     v["mappingtypes"] = "\n".join(getMappingTypes())
     v["csrf"] = req.csrf_token.current_token
-    return req.getTAL("web/admin/modules/mapping.html", v, macro="view")
+    return _tal.processTAL(v, file="web/admin/modules/mapping.html", macro="view", request=req)
 
 
 def editMapping_mask(req, id, err=0):
@@ -222,7 +223,7 @@ def editMapping_mask(req, id, err=0):
     v["actpage"] = req.params.get("actpage")
     v["mappingtypes"] = getMappingTypes()
     v["csrf"] = req.csrf_token.current_token
-    return req.getTAL("web/admin/modules/mapping.html", v, macro="modify")
+    return _tal.processTAL(v, file="web/admin/modules/mapping.html", macro="modify", request=req)
 
 
 def viewlist(req, id):
@@ -272,7 +273,7 @@ def viewlist(req, id):
     v["pages"] = pages
     v["actfilter"] = actfilter
     v["csrf"] = req.csrf_token.current_token
-    return req.getTAL("web/admin/modules/mapping.html", v, macro="viewlist")
+    return _tal.processTAL(v, file="web/admin/modules/mapping.html", macro="viewlist", request=req)
 
 
 def editMappingField_mask(req, id, parent, err=0):
@@ -299,7 +300,7 @@ def editMappingField_mask(req, id, parent, err=0):
     v["parent"] = parent
     v["actpage"] = req.params.get("actpage")
     v["csrf"] = req.csrf_token.current_token
-    return req.getTAL("web/admin/modules/mapping.html", v, macro="modifyfield")
+    return _tal.processTAL(v, file="web/admin/modules/mapping.html", macro="modifyfield", request=req)
 
 
 """ export mapping-definition (XML) """

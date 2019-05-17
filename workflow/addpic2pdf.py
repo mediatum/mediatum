@@ -27,6 +27,7 @@ import logging
 import random
 import flask as _flask
 
+import mediatumtal.tal as _tal
 import core.users as users
 from core import request_handler as _request_handler
 import core.config as config
@@ -128,7 +129,7 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
                     if f_name.startswith('addpic2pdf_%s_node_%s_' %
                                          (unicode(current_workflow_step.id), unicode(node.id))) and f.filetype.startswith('p_document'):
                         logg.info("workflow step addpic2pdf(%s): going to remove file '%s' from node '%s' (%s) for request from user '%s' (%s)",
-                            current_workflow_step.id, f_name, node.name, node.id, user.login_name, req.ip)
+                            current_workflow_step.id, f_name, node.name, node.id, user.login_name, req.remote_addr)
                         node.files.remove(f)
                         db.session.commit()
                         try:
@@ -273,7 +274,7 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
                     if f_name.startswith('addpic2pdf_%s_node_%s_' %
                                          (unicode(current_workflow_step.id), unicode(node.id), )) and f.filetype.startswith('p_document'):
                         logg.info("workflow step addpic2pdf(%s): going to remove file '%s' from node '%s' (%s) for request from user '%s' (%s)",
-                            current_workflow_step.id, f_name, node.name, node.id, user.login_name, req.ip)
+                            current_workflow_step.id, f_name, node.name, node.id, user.login_name, req.remote_addr)
                         node.files.remove(f)
                         with suppress(Exception, warn=False):
                             os.remove(f.abspath)
@@ -333,7 +334,7 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
                        "buttons": self.tableRowButtons(node),
                        "csrf": req.csrf_token.current_token,}
 
-            return req.getTAL("workflow/addpic2pdf.html", context, macro="workflow_addpic2pdf")
+            return _tal.processTAL(context, file="workflow/addpic2pdf.html", macro="workflow_addpic2pdf", request=req)
         try:
             pdf_dimensions = get_pdf_dimensions(pdf_filepath)
             pdf_pagecount = get_pdf_pagecount(pdf_filepath)
@@ -414,7 +415,7 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
         if FATAL_ERROR:
             context["error"] += " - %s" % (FATAL_ERROR_STR)
 
-        return req.getTAL("workflow/addpic2pdf.html", context, macro="workflow_addpic2pdf")
+        return _tal.processTAL(context, file="workflow/addpic2pdf.html", macro="workflow_addpic2pdf", request=req)
 
     def metaFields(self, lang=None):
 
@@ -597,7 +598,7 @@ def handle_request(req):
 
     errors = []
 
-    user = _user_from_session()
+    user = users.user_from_session()
 
     if not PYPDF_MODULE_PRESENT:
         return
@@ -630,7 +631,7 @@ def handle_request(req):
             req.params["addpic2pdf_error"] = "%s: %s" % (
                 format_date().replace('T', ' - '), t(lang(req), "admin_wfstep_addpic2pdf_no_access"))
             logg.info("workflow step addpic2pdf(%s): no access to node %s for request from user '%s' (%s)",
-                current_workflow_step.id, node.id, user.getName(), req.ip)
+                current_workflow_step.id, node.id, user.getName(), req.remote_addr)
             req.response.status_code = 403
             return 403  # forbidden
 
@@ -700,13 +701,13 @@ def handle_request(req):
         nodeid = nodeid.replace("pdfpage_select_for_node_", "")
         node = q(Node).get(nodeid)
         if node is None:
-            msg = "workflowstep addpic2pdf: nodeid='%s' for non-existant node for upload from '%s'" % (unicode(nodeid), req.ip)
+            msg = "workflowstep addpic2pdf: nodeid='%s' for non-existant node for upload from '%s'" % (unicode(nodeid), req.remote_addr)
             errors.append(msg)
             logg.error(msg)
             req.response.status_code = 404
             return 404  # not found
     else:
-        msg = "workflowstep addpic2pdf: could not find 'nodeid' for upload from '%s'" % req.ip
+        msg = "workflowstep addpic2pdf: could not find 'nodeid' for upload from '%s'" % req.remote_addr
         errors.append(msg)
         logg.error(msg)
         req.response.status_code = 404
@@ -722,7 +723,7 @@ def handle_request(req):
     if False:  # not access.hasAccess(node, "read"):
         req.params["addpic2pdf_error"] = "%s: %s" % (format_date().replace('T', ' - '), t(lang(req), "admin_wfstep_addpic2pdf_no_access"))
         logg.info("workflow step addpic2pdf(%s): no access to node %s for request from user '%s' (%s)",
-            current_workflow_step.id, node.id, user.getName(), req.ip)
+            current_workflow_step.id, node.id, user.getName(), req.remote_addr)
         req.response.status_code = 403
         return 403  # forbidden
 

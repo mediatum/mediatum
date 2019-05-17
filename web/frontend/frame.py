@@ -99,7 +99,7 @@ class Searchlet(object):
 
     def feedback(self, req):
         self.lang = lang(req)
-        self.ip = req.ip
+        self.ip = req.remote_addr
         self.url_params = {k: v for k, v in iteritems(req.args) if k not in ()}
 
         searchmode_from_req = req.args.get("searchmode")

@@ -17,6 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import mediatumtal.tal as _tal
 
 from core.translation import lang, t
 from core.users import user_from_session as _user_from_session
@@ -38,12 +39,12 @@ def getContent(req, ids):
         node = q(Node).get(nid)
         if not node.has_write_access():
             req.response.status_code = httpstatus.HTTP_FORBIDDEN
-            return req.getTAL("web/edit/edit.html", {}, macro="access_error")
+            return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
         nodes.append(node)
 
     if "classes" in user.hidden_edit_functions:
         req.response.status_code = httpstatus.HTTP_FORBIDDEN
-        return req.getTAL("web/edit/edit.html", {}, macro="access_error")
+        return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
     v = {}
     v["basedirs"] = [q(Home).one(), q(Collections).one()]
@@ -53,4 +54,4 @@ def getContent(req, ids):
     v["nodes"] = nodes
     v["t"] = t
     v["language"] = lang(req)
-    return req.getTAL("web/edit/modules/classes.html", v, macro="classtree")
+    return _tal.processTAL(v, file="web/edit/modules/classes.html", macro="classtree", request=req)

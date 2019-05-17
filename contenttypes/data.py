@@ -21,6 +21,7 @@ import re
 import logging
 from warnings import warn
 import humanize
+import flask as _flask
 from mediatumtal import tal
 
 from core import Node, db
@@ -32,7 +33,6 @@ from core.postgres import check_type_arg_with_schema
 from export.exportutils import default_context
 from schema.schema import getMetadataType, VIEW_HIDE_EMPTY, SchemaMixin
 from utils.utils import highlight
-from core.transition.globals import request
 from utils.compat import iteritems, string_types
 from markupsafe import Markup
 from utils.strings import replace_attribute_variables
@@ -243,14 +243,14 @@ class Data(Node):
         # if the lookup_key is already in the cache dict: render the cached mask_template
         # else: build the mask_template
 
-        if not 'maskcache' in request.app_cache:
-            request.app_cache['maskcache'] = {}
-            request.app_cache['maskcache_accesscount'] = {}
+        if not 'maskcache' in _flask.request.app_cache:
+            _flask.request.app_cache['maskcache'] = {}
+            _flask.request.app_cache['maskcache_accesscount'] = {}
 
-        if lookup_key in request.app_cache['maskcache']:
-            mask, field_descriptors = request.app_cache['maskcache'][lookup_key]
+        if lookup_key in _flask.request.app_cache['maskcache']:
+            mask, field_descriptors = _flask.request.app_cache['maskcache'][lookup_key]
             res = render_mask_template(self, mask, field_descriptors, language, words=words, separator=separator)
-            request.app_cache['maskcache_accesscount'][lookup_key] = request.app_cache['maskcache_accesscount'].get(lookup_key, 0) + 1
+            _flask.request.app_cache['maskcache_accesscount'][lookup_key] = _flask.request.app_cache['maskcache_accesscount'].get(lookup_key, 0) + 1
 
         else:
             mask = self.metadatatype.get_mask(u"nodesmall")
@@ -310,8 +310,8 @@ class Data(Node):
                     long_field_descriptor = (node_attribute, fd)
                     field_descriptors.append(long_field_descriptor)
 
-                request.app_cache['maskcache'][lookup_key] = (mask, field_descriptors)
-                request.app_cache['maskcache_accesscount'][lookup_key] = 0
+                _flask.request.app_cache['maskcache'][lookup_key] = (mask, field_descriptors)
+                _flask.request.app_cache['maskcache_accesscount'][lookup_key] = 0
                 res = render_mask_template(self, mask, field_descriptors, language, words=words, separator=separator)
 
             else:
@@ -351,8 +351,7 @@ def _get_node_metadata_html(node, req):
 def child_node_url(child_id, **kwargs):
     """XXX: this shouldn't be here, child display should not be a responsibility of content types!"""
     from core.webconfig import node_url
-    from core.transition import request
-    params = {k: v for k, v in request.args.items()}
+    params = {k: v for k, v in _flask.request.args.items()}
     if "show_id" in params:
         params["show_id"] = child_id
     else:

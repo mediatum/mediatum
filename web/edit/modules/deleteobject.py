@@ -21,6 +21,7 @@ import re as _re
 from contenttypes import Data
 from core import db
 from utils.utils import getFormatedString
+from mediatumtal import tal as _tal
 
 q = db.query
 
@@ -28,4 +29,4 @@ def getContent(req, ids):
     node = q(Data).get(long(ids[0]))
     parent = node.parents[0]
 
-    return req.getTAL("web/edit/modules/deleteobject.html", {'id': node.id, 'parent_id': parent.id}, macro="view_node")
+    return _tal.processTAL({'id': node.id, 'parent_id': parent.id}, file="web/edit/modules/deleteobject.html", macro="view_node", request=req)

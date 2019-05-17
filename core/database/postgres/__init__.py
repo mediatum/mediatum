@@ -24,8 +24,8 @@ from sqlalchemy_continuum import versioning_manager
 from sqlalchemy_continuum import make_versioned
 from sqlalchemy_continuum.utils import parent_class
 
+import flask as _flask
 from core import config
-from core.transition import request
 from core.database.postgres.continuumext import MtVersionBase
 from utils.compat import iteritems
 
@@ -149,7 +149,7 @@ def build_accessfunc_arguments(user=None, ip=None, date=None, req=None):
 
     if user is None and ip is None:
         if req is None:
-            req = request
+            req = _flask.request
 
         from core.users import user_from_session
 

@@ -28,7 +28,7 @@ def test_fetch_archived(req, session, fake_archive, content_node):
 
 @yield_fixture
 def req_for_png_image(session, image_png, req):
-    req.request_headers["Accept"] = "image/png"
+    req.headers["Accept"] = "image/png"
     session.flush()
     req.path = "/image/" + unicode(image_png.id)
     yield req
@@ -36,7 +36,7 @@ def req_for_png_image(session, image_png, req):
 
 @yield_fixture
 def req_for_svg_image(session, image_svg, req):
-    req.request_headers["Accept"] = "image/svg+xml"
+    req.headers["Accept"] = "image/svg+xml"
     session.flush()
     req.path = "/image/" + unicode(image_svg.id)
     yield req
@@ -69,7 +69,7 @@ def assert_image_file_sent(image, mimetype, request, error=None):
 def test_send_image_accept_anything(public_image_png, req_for_png_image):
     image = public_image_png
     req = req_for_png_image
-    req.request_headers["Accept"] = "*/*"
+    req.headers["Accept"] = "*/*"
     error = send_image(req)
     assert_image_file_sent(image, u"image/png", req, error)
 
@@ -84,7 +84,7 @@ def test_send_image_png(public_image_png, req_for_png_image):
 def test_send_image_png_nothing_preferred_by_client(public_image_png, req_for_png_image):
     image = public_image_png
     req = req_for_png_image
-    del req.request_headers["Accept"]
+    del req.headers["Accept"]
     error = send_image(req)
     assert_image_file_sent(image, u"image/png", req, error)
 
@@ -110,7 +110,7 @@ def test_send_image_svg_client_anything(public_image_svg, req_for_svg_image):
     image = public_image_svg
     req = req_for_svg_image
     # client accepts everything, Chrome does this, for example
-    req.request_headers["Accept"] = "*/*"
+    req.headers["Accept"] = "*/*"
     error = send_image(req)
     assert_image_file_sent(image, u"image/png", req, error)
 
@@ -119,7 +119,7 @@ def test_send_image_svg_client_anything(public_image_svg, req_for_svg_image):
 def test_send_image_svg_client_anything_server_prefers_png(public_image_svg, req_for_svg_image):
     image = public_image_svg
     req = req_for_svg_image
-    req.request_headers["Accept"] = "*/*"
+    req.headers["Accept"] = "*/*"
     image.system_attrs["preferred_mimetype"] = u"image/png"
     error = send_image(req)
     assert_image_file_sent(image, u"image/png", req, error)
@@ -153,7 +153,7 @@ def test_send_image_no_file(image_png, req_for_png_image):
 
 def test_send_image_accept_wrong(public_image_png, req_for_png_image):
     req = req_for_png_image
-    req.request_headers["Accept"] = "animal/lizard"
+    req.headers["Accept"] = "animal/lizard"
     error = send_image(req)
     assert error == httpstatus.HTTP_NOT_ACCEPTABLE
 

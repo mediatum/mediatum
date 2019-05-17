@@ -74,7 +74,7 @@ def handle_json_request(req):
                     language=lang(req),
                     container=container,
                     user=user,
-                    ip=req.ip))]
+                    ip=req.remote_addr))]
     req.response.set_data(req.params.get("jsoncallback") + "(%s)" % json.dumps(s, indent=4))
     req.response.status_code = httpstatus.HTTP_OK
 
@@ -90,7 +90,7 @@ def change_language_request(req):
         switch_language(req, language)
         params = req.args.copy()
         del params["change_language"]
-        req.request["Location"] = build_url_from_path_and_params(req.path, params)
+        req.response.headers["Location"] = build_url_from_path_and_params(req.path, params)
         # set the language cookie for caching
         _request_handler.setCookie(req, "language", language)
         req.response.status_code = httpstatus.HTTP_MOVED_TEMPORARILY

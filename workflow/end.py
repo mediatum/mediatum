@@ -18,6 +18,8 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
+import mediatumtal.tal as _tal
+
 from .workflow import WorkflowStep, registerStep
 from core.translation import t, addLabels
 import core.config as config
@@ -50,12 +52,8 @@ class WorkflowStep_End(WorkflowStep):
             link2 = u"https://{}/node?id={}".format(config.get("host.name"),
                                                    node.id)
 
-            return req.getTALstr(self.get("endtext"), {"node": node, "link": link, "link2": link2})
-        return req.getTALstr(
-            '<p><a href="/publish" i18n:translate="workflow_back">TEXT</a></p><h2 i18n:translate="wf_step_ready">Fertig</h2><p>&nbsp;</p><p i18n:translate="workflow_step_ready_msg">Das Objekt <span tal:content="node" i18n:name="name"/> ist am Ende des Workflows angekommen.</p>',
-            {
-                "node": unicode(
-                    node.id)})
+            return _tal.processTAL({"node": node, "link": link, "link2": link2}, string=self.get("endtext"), macro=None, request=req)
+        return _tal.processTAL({"node": unicode(node.id)}, '<p><a href="/publish" i18n:translate="workflow_back">TEXT</a></p><h2 i18n:translate="wf_step_ready">Fertig</h2><p>&nbsp;</p><p i18n:translate="workflow_step_ready_msg">Das Objekt <span tal:content="node" i18n:name="name"/> ist am Ende des Workflows angekommen.</p>', macro=None, request=req)
 
     def runAction(self, node, op=""):
         if self.get("endsetupdatetime") != "":

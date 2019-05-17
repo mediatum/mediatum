@@ -17,6 +17,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import mediatumtal.tal as _tal
+
 import schema.searchmask as searchmask
 from core.users import user_from_session as _user_from_session
 from core import httpstatus
@@ -33,7 +35,7 @@ def getContent(req, ids):
 
     if not node.has_write_access() or "searchmask" in user.hidden_edit_functions:
         req.response.status_code = httpstatus.HTTP_FORBIDDEN
-        return req.getTAL("web/edit/edit.html", {}, macro="access_error")
+        return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
     p2 = {}
     for k, v in req.params.items():
@@ -172,9 +174,9 @@ def getContent(req, ids):
         searchtypechanged = True
 
     if any([openfield, isnewfield, delfield, delsubfield, createsub, schema, searchtypechanged, closefield]):
-        content = req.getTAL("web/edit/modules/searchmask.html", data, macro="edit_search")
+        content =  _tal.processTAL(data, file="web/edit/modules/searchmask.html", macro="edit_search", request=req)
         s = json.dumps({'content': content}, ensure_ascii=False)
         req.response.set_data(s)
         return None
 
-    return req.getTAL("web/edit/modules/searchmask.html", data, macro="edit_search")
+    return _tal.processTAL(data, file="web/edit/modules/searchmask.html", macro="edit_search", request=req)

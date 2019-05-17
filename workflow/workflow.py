@@ -23,7 +23,7 @@ import importlib
 import flask as _flask
 
 import core.config as config
-from mediatumtal import tal
+import mediatumtal.tal as _tal
 
 from utils.utils import *
 from core.xmlnode import getNodeXML, readNodeXML
@@ -39,6 +39,7 @@ from utils.locks import named_lock as _named_lock
 from core import db
 from core import Node
 from core.request_handler import setCookie as _setCookie
+from utils.url import build_url_from_path_and_params as _build_url_from_path_and_params
 
 
 q = db.query
@@ -303,12 +304,13 @@ class Workflows(Node):
         for workflow in getWorkflowList():
             if workflow.children.filter_write_access().first() is not None:
                 list += [workflow]
-        return req.getTAL(
-            template, {
-                "list": list, "search": req.params.get(
-                    "workflow_search", ""), "items": workflowSearch(
-                    list, req.params.get(
-                        "workflow_search", "")), "getStep": getNodeWorkflowStep, "format_date": formatItemDate, "csrf": req.csrf_token.current_token}, macro=macro)
+        return _tal.processTAL({"list": list,
+                               "search": req.params.get("workflow_search", ""),
+                               "items": workflowSearch(list, req.params.get("workflow_search", "")),
+                               "getStep": getNodeWorkflowStep,
+                               "format_date": formatItemDate,
+                               "csrf": req.csrf_token.current_token},
+                              file=template, macro=macro, request=req)
 
     @classmethod
     def isContainer(cls):
@@ -329,12 +331,13 @@ class Workflow(Node):
         macro = "object_list"
         if self.children.filter_write_access().first() is None:
             return '<i>' + t(lang(req), "permission_denied") + '</i>'
-        return req.getTAL(
-            template, {
-                "workflow": self, "search": req.params.get(
-                    "workflow_search", ""), "items": workflowSearch(
-                    [self], req.params.get(
-                        "workflow_search", "")), "getStep": getNodeWorkflowStep, "format_date": formatItemDate, "csrf": req.csrf_token.current_token}, macro=macro)
+        return _tal.processTAL({"workflow": self,
+                               "search": req.params.get("workflow_search", ""),
+                               "items": workflowSearch([self], req.params.get("workflow_search", "")),
+                               "getStep": getNodeWorkflowStep,
+                               "format_date": formatItemDate,
+                               "csrf": req.csrf_token.current_token},
+                               file=template, macro=macro, request=req)
 
     def getId(self):
         return self.name
@@ -462,7 +465,7 @@ class WorkflowStep(Node):
 
                         link = '(' + self.name + ')'
                         try:
-                            return req.getTAL(template, {"node": node, "link": link, "email": config.get("email.workflow"), "csrf": req.csrf_token.current_token}, macro=macro)
+                            return _tal.processTAL({"node": node, "link": link, "email": config.get("email.workflow"), "csrf": req.csrf_token.current_token}, file=template, macro=macro, request=req)
                         except:
                             logg.exception("exception in show_node_big, ignoring")
                             return ""
@@ -491,7 +494,7 @@ class WorkflowStep(Node):
                     if node.get('key') == node.get('system.key') and user.is_anonymous:
                         switch_language(req, node.get('system.wflanguage'))
 
-                    link = req.makeLink("/mask", {"id": self.id})
+                    link = _build_url_from_path_and_params("/mask", {"id": self.id})
                     if "forcetrue" in req.params:
                         return self.forwardAndShow(node, True, req, link=link)
                     if "forcefalse" in req.params:
@@ -527,7 +530,7 @@ class WorkflowStep(Node):
             return self.forwardAndShow(node, False, req)
 
         # to be overloaded
-        return req.getTAL("workflow/workflow.html", {"node": node, "name": self.name}, macro="workflow_node")
+        return _tal.processTAL({"node": node, "name": self.name}, file="workflow/workflow.html", macro="workflow_node", request=req)
 
     def show_workflow_step(self, req):
         if not self.has_write_access():
@@ -544,8 +547,13 @@ class WorkflowStep(Node):
                 c[i]["name"] = item.name
             i += 1
         c.sort(lambda x, y: cmp(x['name'], y['name']))
-        return req.getTAL("workflow/workflow.html", {"children": c, "workflow": self.parents[
-                          0], "step": self, "nodelink": "/mask?id={}&obj=".format(self.id), 'currentlang': lang(req), "csrf": req.csrf_token.current_token}, macro="workflow_show")
+        return _tal.processTAL({"children": c,
+                               "workflow": self.parents[0],
+                               "step": self,
+                               "nodelink": "/mask?id={}&obj=".format(self.id),
+                               'currentlang': lang(req),
+                               "csrf": req.csrf_token.current_token},
+                               file="workflow/workflow.html", macro="workflow_show", request=req)
 
     def show_node_image(node):
         return '<img border="0" src="/img/directory.png">'
@@ -576,7 +584,7 @@ class WorkflowStep(Node):
         newnode = self.forward(node, op, forward)
 
         if newnode is None:
-            return req.getTAL("workflow/workflow.html", {"node": node}, macro="workflow_forward")
+            return _tal.processTAL({"node": node}, file="workflow/workflow.html", macro="workflow_forward", request=req)
 
         if link is None:
             context = {"id": newnode.id, "obj": node.id}
@@ -588,13 +596,12 @@ class WorkflowStep(Node):
                         logg.warning("workflow '%s', step '%s', node %s: ignored data key '%s' (value='%s')",
                                      getNodeWorkflow(node).name, getNodeWorkflowStep(node).name, node.id, k, data[k])
 
-            newloc = req.makeLink("/mask", context)
+            newloc = _build_url_from_path_and_params("/mask", context)
         else:
             newloc = link
         redirect = 1
         if redirect == 0:
-            return req.getTAL(
-                "workflow/workflow.html", {"newnodename": newnode.name, "email": config.get("email.workflow"), "csrf": req.csrf_token.current_token }, macro="workflow_forward2")
+            return _tal.processTAL(context, file="workflow/workflow.html", macro="workflow_forward2", request=req)
         else:
             if config.get("config.ssh", "") == "yes":
                 if not newloc.lower().startswith("https:"):
@@ -665,7 +672,7 @@ class WorkflowStep(Node):
     def tableRowButtons(self, node):
         if node.get('system.key') == node.get('key'):
             # user has permission -> use users language
-            return tal.getTAL("workflow/workflow.html",
+            return _tal.getTAL("workflow/workflow.html",
                               {'node': node,
                                'wfstep': self,
                                'lang': node.get('system.wflanguage')},
@@ -673,7 +680,7 @@ class WorkflowStep(Node):
                               language=node.get('system.wflanguage'))
         else:
             # use standard language of request
-            return tal.getTAL("workflow/workflow.html", {'node': node, 'wfstep': self, 'lang':
+            return _tal.getTAL("workflow/workflow.html", {'node': node, 'wfstep': self, 'lang':
                                                          getDefaultLanguage()}, macro="workflow_buttons", language=getDefaultLanguage())
 
     def getTypeName(self):

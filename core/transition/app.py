@@ -37,7 +37,7 @@ class AthanaTestRequest(athana_http.http_request):
             headers["Accept"] = "*/*"
 
         super(AthanaTestRequest, self).__init__(None, None, None, uri, 0, headers)
-        self.request_headers = self.headers = headers
+        self.headers = self.headers = headers
         self.params = params or {}
         self.ip = "127.0.0.1"
         self.session = {}

@@ -31,12 +31,12 @@ def test_set_language_accept_header_not_accepted(monkeypatch, req):
 
 
 def test_set_language_cookie(monkeypatch, req):
-    req.Cookies["language"] = "de"
+    req.cookies["language"] = "de"
     monkeypatch.setattr(core.config, "languages", ["en", "de"])
     assert set_language(req) == "de"
 
 
 def test_set_language_cookie_not_accepted(monkeypatch, req):
-    req.Cookies["language"] = "no"
+    req.cookies["language"] = "no"
     monkeypatch.setattr(core.config, "languages", ["en", "de"])
     assert set_language(req) == "en"

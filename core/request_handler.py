@@ -12,8 +12,6 @@ import httpstatus as _httpstatus
 import traceback as _traceback
 import urllib as _urllib
 import flask as _flask
-import athana as _athana
-import athana_z3950 as _athana_z3950
 import utils.locks as _utils_lock
 from functools import partial as _partial
 from cgi import escape as _escape
@@ -36,14 +34,15 @@ _logg = _logging.getLogger(__name__)
 
 GLOBAL_TEMP_DIR = "/tmp/"
 GLOBAL_ROOT_DIR = "no-root-dir-set"
-CONNECTION = _re.compile('Connection: (.*)', _re.IGNORECASE)
+CONNECTION = _re.compile('Connection:\s*(.*)', _re.IGNORECASE)
 # HTTP/1.0 doesn't say anything about the "; length=nnnn" addition
 # to this header.  I suppose its purpose is to avoid the overhead
 # of parsing dates...
 IF_MODIFIED_SINCE = _re.compile(
-    'If-Modified-Since: ([^;]+)((; length=([0-9]+)$)|$)',
+    'If-Modified-Since:\s*([^;]+)((; length=([0-9]+)$)|$)',
     _re.IGNORECASE
 )
+
 
 # COMPAT: before / after request handlers and request / app context handling
 _request_started_handlers = []
@@ -258,17 +257,17 @@ def split_uri(req):
         #      path      params    query   fragment
         r'([^;?#]*)(;[^?#]*)?(\?[^#]*)?(#.*)?'
     )
-    m = path_regex.match(req.uri)
+    m = path_regex.match(req.full_path)
     return m.groups()
 
 
 def get_header(req, header):
     header = header.lower()
     if header not in req._header_cache:
-        h = "{}:".format(header)
-        for line in req.header:
-            if line.lower().startswith(h):
-                req._header_cache[header] = line[len(h):]
+        for k, v in req.headers:
+            if k.lower() == header:
+                req._header_cache[header] = v
+                return v
     return req._header_cache.get(header)
 
 
@@ -668,65 +667,64 @@ def done(req):
 
     #  --- BUCKLE UP! ----
 
-    connection = _string.lower(get_header_from_match(CONNECTION, req.header))
+    connection = _string.lower(get_header_from_match(CONNECTION, req.headers))
 
     close_it = 0
 
-    if req.version == '1.0':
+    version = req.environ.get('SERVER_PROTOCOL')
+    if version == '1.0':
         if connection == 'keep-alive':
-            if not req.has_key('Content-Length'):
+            if 'Content-Length' not in req.headers:
                 close_it = 1
             else:
-                req['Connection'] = 'Keep-Alive'
+                req.response.headers['Connection'] = 'Keep-Alive'
         else:
             close_it = 1
-    elif req.version == '1.1':
+    elif version == '1.1':
         if connection == 'close':
             close_it = 1
-        elif not req.has_key('Content-Length'):
-            if req.has_key('Transfer-Encoding'):
-                if not req['Transfer-Encoding'] == 'chunked':
+        elif 'Content-Length' not in req.headers:
+            if 'Transfer-Encoding' in req.headers:
+                if not req.headers['Transfer-Encoding'] == 'chunked':
                     close_it = 1
             elif req.use_chunked:
-                req['Transfer-Encoding'] = 'chunked'
+                req.response.headers['Transfer-Encoding'] = 'chunked'
             else:
                 close_it = 1
-    elif req.version is None:
+    elif version is None:
         # Although we don't *really* support http/0.9 (because we'd have to
         # use \r\n as a terminator, and it would just yuck up a lot of stuff)
         # it's very common for developers to not want to type a version number
         # when using telnet to debug a server.
         close_it = 1
 
-    if "Cache-Control" not in req.response.headers or not _config.getboolean("athana.allow_cache_header", False):
-        req.response.headers["Cache-Control"] = "no-cache"
+    req.response.headers["Cache-Control"] = "no-cache"
 
     if req.response.status_code == 500:
         # don't use Transfer-Encoding chunked because only an error message is displayed
         # this code is only necessary if a reply-header contains invalid characters but has
         # Transfer-Encoding chunked set
         req.use_chunked = 0
-        if req.has_key('Transfer-Encoding'):
-            if req['Transfer-Encoding'] == 'chunked':
-                req['Transfer-Encoding'] = ''
+
+        if 'Transfer-Encoding' in req.headers:
+            if req.headers['Transfer-Encoding'] == 'chunked':
+                req.response.headers['Transfer-Encoding'] = ''
 
     if close_it:
-        req['Connection'] = 'close'
+        req.response.headers['Connection'] = 'close'
 
 
 def error(req, code, s=None, content_type='text/html'):
     req.response.status_code = code
-    req.outgoing = []
     message = _httpstatus.responses[code]
     if s is None:
         s = _httpstatus.DEFAULT_ERROR_MESSAGE % {
             'code': code,
             'message': message,
         }
-    req['Content-Length'] = len(s)
-    req['Content-Type'] = content_type
-    # make an error reply
-    req.push(s)
+    req.response.headers['Content-Length'] = len(s)
+    req.response.headers['Content-Type'] = content_type
+    req.response.set_data(s)
     done(req)
 
 
@@ -746,18 +744,18 @@ def unlink_tempfiles(req):
     return unlinked_tempfiles
 
 
-def get_header_from_match(head_reg, lines, group=1):
-    for line in lines:
-        m = head_reg.match(line)
-        if m and m.end() == len(line):
+def get_header_from_match(head_reg, headers, group=1):
+    for k, v in headers:
+        m = head_reg.match("{}:{}".format(k, v))
+        if m:
             return m.group(group)
     return ''
 
 
-def get_header_match(head_reg, lines):
-    for line in lines:
-        m = head_reg.match(line)
-        if m and m.end() == len(line):
+def get_header_match(head_reg, headers):
+    for k, v in headers:
+        m = head_reg.match("{}:{}".format(k, v))
+        if m:
             return m
     return ''
 
@@ -770,7 +768,6 @@ def sendFile(req, path, content_type, force=0, nginx_x_accel_redirect_enabled=Tr
         content_type = content_type.encode("utf8")
 
     x_accel_redirect = _config.get("nginx.X-Accel-Redirect", "").lower() == "true" and nginx_x_accel_redirect_enabled
-    file = None
     file_length = 0
 
     if not x_accel_redirect:
@@ -780,7 +777,7 @@ def sendFile(req, path, content_type, force=0, nginx_x_accel_redirect_enabled=Tr
             error(req, 404)
             return
 
-    ims = get_header_match(IF_MODIFIED_SINCE, req.header)
+    ims = get_header_match(IF_MODIFIED_SINCE, req.headers)
     length_match = 1
     if ims:
         length = ims.group(4)
@@ -805,24 +802,18 @@ def sendFile(req, path, content_type, force=0, nginx_x_accel_redirect_enabled=Tr
             req.response.status_code = 304
             return
 
-    if not x_accel_redirect:
-        try:
-            file = open(path, 'rb')
-        except IOError:
-            error(req, 404)
-            print "404"
-            return
-
     req.response.headers['Last-Modified'] = build_http_date(mtime)
     req.response.headers['Content-Length'] = file_length
     req.response.headers['Content-Type'] = content_type
     if x_accel_redirect:
         req.response.headers['X-Accel-Redirect'] = path
-    if req.command == 'GET':
+    if req.method == 'GET':
         if x_accel_redirect:
             done(req)
         else:
-            req.push(_athana.file_producer(file))
+            req.response = _flask.send_file(path, conditional=True)
+            req.response.content_length = file_length
+    req.response.status_code = _httpstatus.HTTP_OK
     return
 
 
@@ -851,7 +842,7 @@ def sendAsBuffer(req, text, content_type, force=0, allow_cross_origin=False):
         error(req, 404)
         return
 
-    ims = get_header_match(IF_MODIFIED_SINCE, req.header)
+    ims = get_header_match(IF_MODIFIED_SINCE, req.headers)
     length_match = 1
     if ims:
         length = ims.group(4)
@@ -887,33 +878,26 @@ def sendAsBuffer(req, text, content_type, force=0, allow_cross_origin=False):
     req.response.headers['Content-Type'] = content_type
     if allow_cross_origin:
         req.response.headers['Access-Control-Allow-Origin'] = '*'
-    if req.command == 'GET':
-        req.push(_athana.file_producer(file))
+    if req.method == 'GET':
+        req.response.set_data(file.read())
+    req.response.status_code = _httpstatus.HTTP_OK
     return
 
 
 def setCookie(req, name, value, expire=None, path=None, http_only=True, secure=False):
-    parts = [name + '=' + value]
-
+    req.response.set_cookie(name, value=value)
     if expire:
         datestr = _time.strftime("%a, %d-%b-%Y %H:%M:%S GMT", _time.gmtime(expire))
-        parts.append('expires=' + datestr)
+        req.response.set_cookie('expires', value=datestr)
 
     if path:
-        parts.append("path=" + path)
+        req.response.set_cookie('path', value=path)
 
     if http_only:
-        parts.append("HttpOnly")
+        req.response.set_cookie('HttpOnly', value="1")
 
     if secure:
-        parts.append("Secure")
-
-    cookie_str = "; ".join(parts)
-
-    if 'Set-Cookie' not in req.response.headers:
-        req.response.headers['Set-Cookie'] = [cookie_str]
-    else:
-        req.response.headers['Set-Cookie'] += [cookie_str]
+        req.response.set_cookie('Secure', value=True)
 
 
 def makeSelfLink(req, params):
@@ -924,7 +908,7 @@ def makeSelfLink(req, params):
         else:
             with _suppress(Exception, warn=False):
                 del params2[k]
-    ret = _build_url_from_path_and_params(req.fullpath, params2)
+    ret = _build_url_from_path_and_params(req.full_path, params2)
     return ret
 
 
@@ -1031,7 +1015,6 @@ class default_handler:
         self.file_counter = _counter()
         # count cache hits
         self.cache_counter = _counter()
-        self.default_file_producer = _athana.file_producer
 
     hit_counter = 0
 
@@ -1074,7 +1057,7 @@ class default_handler:
 
     def handle_request(self, request):
 
-        if request.command not in self.valid_commands:
+        if request.method not in self.valid_commands:
             error(request, 400)  # bad request
             return
 
@@ -1090,8 +1073,8 @@ class default_handler:
 
         if self.filesystem.isdir(path):
             if path and path[-1] != '/':
-                request['Location'] = 'http://%s/%s/' % (
-                    request.channel.server.server_name,
+                request.response.headers['Location'] = '%s%s/' % (
+                    request.host_url,
                     path
                 )
                 error(request, 301)
@@ -1119,7 +1102,7 @@ class default_handler:
 
         file_length = self.filesystem.stat(path)[_stat.ST_SIZE]
 
-        ims = get_header_match(IF_MODIFIED_SINCE, request.header)
+        ims = get_header_match(IF_MODIFIED_SINCE, request.headers)
 
         length_match = 1
         if ims:
@@ -1153,12 +1136,12 @@ class default_handler:
             error(request, 404)
             return
 
-        request['Last-Modified'] = build_http_date(mtime)
-        request['Content-Length'] = file_length
+        request.response.headers['Last-Modified'] = build_http_date(mtime)
+        request.response.headers['Content-Length'] = file_length
         self.set_content_type(path, request)
 
-        if request.command == 'GET':
-            request.push(self.default_file_producer(file))
+        if request.method == 'GET':
+            request.response.set_data(file.read())
 
         self.file_counter.increment()
         done(request)
@@ -1167,21 +1150,11 @@ class default_handler:
         ext = _string.lower(get_extension(path))
         typ, encoding = _mimetypes.guess_type(path)
         if typ is not None:
-            request['Content-Type'] = typ
+            request.response.headers['Content-Type'] = typ
         else:
             # TODO: test a chunk off the front of the file for 8-bit
             # characters, and use application/octet-stream instead.
-            request['Content-Type'] = 'text/plain'
-
-    def status(self):
-        return _athana_z3950.simple_producer(
-            '<li>%s' % html_repr(self)
-            + '<ul>'
-            + '  <li><b>Total Hits:</b> %s' % self.hit_counter
-            + '  <li><b>Files Delivered:</b> %s' % self.file_counter
-            + '  <li><b>Cache Hits:</b> %s' % self.cache_counter
-            + '</ul>'
-        )
+            request.response.headers['Content-Type'] = 'text/plain'
 
 
 class WebContext:
@@ -1247,7 +1220,6 @@ def callhandler(handler_func, req):
     except Exception as e:
         # XXX: this shouldn't be in Athana, most of it is mediaTUM-specific...
         # TODO: add some kind of exception handler system for Athana
-        request = req.request
         if _config.get('host.type') != 'testing':
             from utils.log import make_xid_and_errormsg_hash, extra_log_info_from_req
             from core.translation import translate
@@ -1281,60 +1253,36 @@ def callhandler(handler_func, req):
             s = msg.replace('${XID}', xid)
 
             req.response.headers["X-XID"] = xid
-            return error(request, 500, s.encode("utf8"), content_type='text/html; encoding=utf-8; charset=utf-8')
+            return error(req, 500, s.encode("utf8"), content_type='text/html; encoding=utf-8; charset=utf-8')
 
         else:
-            _logg.error("Error in page: '%s %s'", request.type, request.fullpath, exc_info=1)
+            _logg.error("Error in page: '%s %s'", req.type, req.fullpath, exc_info=1)
             s = "<pre>" + _traceback.format_exc() + "</pre>"
-            return error(request, 500, s)
+            return error(req, 500, s)
 
     finally:
         for handler in _request_finished_handlers:
             handler(req)
 
 
-def handle_request(handler, request, form):
+def handle_request(req):
 
-    path, params, query, fragment = split_uri(request)
+    path, params, query, fragment = split_uri(req)
+    req.port = req.host.split(":")[1]
+    req.request_number += 1
+    req._header_cache = {}
+    req.app_cache = {}
+    req.use_chunked = 0
 
-    ip = request.request_headers.get("x-forwarded-for", None)
-    if ip is None:
-        with _suppress(Exception, warn=False):
-            ip = request.channel.addr[0]
-    if ip:
-        request.channel.addr = (ip, request.channel.addr[1])
+    _logg.info('%s - - %s "%s"', req.remote_addr, _time.strftime('[%d/%b/%Y:%H:%M:%S ]', _time.gmtime()), req)
 
-    request.log()
-
-    # COMPAT: new param style like flask
-    if query is not None:
-        args = _athana.AthanaHandler.parse_query(query)
-    else:
-        args = []
-    # /COMPAT
     path = _urllib.unquote(path)
-    if params is not None:
-        params = _urllib.unquote(params)
-    if fragment is not None:
-        fragment = _urllib.unquote(fragment)
 
-    cookies = {}
-    if "cookie" in request.request_headers:
-        cookiestr = request.request_headers["cookie"]
-        if cookiestr.rfind(";") == len(cookiestr) - 1:
-            cookiestr = cookiestr[:-1]
-        items = cookiestr.split(';')
-        for a in items:
-            a = a.strip()
-            i = a.find('=')
-            if i > 0:
-                key, value = a[:i], a[i + 1:]
-                cookies[key] = value
-            else:
-                _logg.warn("corrupt cookie value: %s", a.encode("string-escape"))
+    req.full_path = _urllib.unquote(req.full_path)
+    req.response = _flask.make_response()
+    req.response.headers['Content-Type'] = 'text/html; encoding=utf-8; charset=utf-8'
 
-    request.Cookies = cookies
-    request['Content-Type'] = 'text/html; encoding=utf-8; charset=utf-8'
+    mediatum_form = MediatumForm(meta={'csrf_context': _flask.session})
 
     maxlen = -1
     context = None
@@ -1345,70 +1293,53 @@ def handle_request(handler, request, form):
             maxlen = len(context.name)
 
     if context is None:
-        error(request, 404)
-        return
+        error(req, 404)
+        return req
 
-    fullpath = path
     path = path[len(context.name):]
     if len(path) == 0 or path[0] != '/':
         path = "/" + path
 
-    request.context = context
-    request.path = path
-    request.fullpath = fullpath
-    request.paramstring = params
-    request.query = query
-    request.fragment = fragment
+    req.path = path
 
-    # COMPAT: new param style like flask
-    # we don't need this for WSGI, args / form parsing is done by the WSGI app
-    if not isinstance(context, _athana.WSGIContext):
-        form, files = _athana.filter_out_files(form)
-        try:
-            request.args = make_param_dict_utf8_values(args)
-            if "csrf_token" in request.args:
-                form.append(('csrf_token', str(request.args["csrf_token"])))
-            request.form = make_param_dict_utf8_values(form)
-        except UnicodeDecodeError:
-            return error(request, 400)
+    if not req.form:
+        data = req.get_data()
+        if any(data):
+            pairs = []
+            data = data.split('&')
+            for e in data:
+                if '=' in e:
+                    pairs.append(tuple(map(_urllib.unquote_plus, e.split("=", 1))))
+                elif e.strip():
+                    _logg.warn("corrupt parameter: %s", e.encode("string-escape"))
+            req.form = make_param_dict_utf8_values(pairs)
+            del pairs, data
 
-        mediatum_form = MediatumForm(meta={'csrf_context': _flask.session})
-        if form and request.method == 'POST':
-            if 'csrf_token' not in request.form:
-                raise ValueError("csrf_token not in form of request path " + request.fullpath)
-            else:
-                mediatum_form.csrf_token.process_data(request.form["csrf_token"].replace("!!!!!", "##"))
-                mediatum_form.validate()
+    make_legacy_params_dict(req)
+    req.params = {_urllib.unquote(k) if isinstance(k, str) else k: _urllib.unquote(v) if isinstance(v, str) else v
+                  for k, v in req.params.items()}
 
-        request.csrf_token = mediatum_form.csrf_token
-        request.files = _ImmutableMultiDict(files)
-        make_legacy_params_dict(request)
+    if req.form and req.method == 'POST':
+        csrf_token = req.params.get("csrf_token")
+        if not csrf_token:
+            csrf_token = req.form.get("csrf_token")
+        if not csrf_token:
+            raise ValueError("csrf_token not in form of request path " + req.full_path)
+        else:
+            mediatum_form.csrf_token.process_data(csrf_token.replace("!!!!!", "##"))
+            mediatum_form.validate()
 
-    # /COMPAT
-    request.request = request
-    request.ip = ip
-    request.uri = request.uri.replace(context.name, "/")
-    request._split_uri = None
-
-    request.channel.current_request = None
-
-    if path == "/threadstatus":
-        return _athana.thread_status(request)
-    if path == "/profilingstatus":
-        return _athana.profiling_status(request)
+    req.csrf_token = mediatum_form.csrf_token
+    req.full_path = req.full_path.replace(context.name, "/")
 
     function = context.match(path)
-
-    if function is None:
-        _logg.debug("Request %s matches no pattern (context: %s)", request.path, context.name)
-        request.path = _escape(request.path)
-        return error(request, 404, "File %s not found" % request.path)
-    if _athana.multithreading_enabled:
-        handler.queuelock.acquire()
-        handler.queue += [(function, request)]
-        handler.queuelock.release()
+    if function is not None:
+        callhandler(function, req)
     else:
-        _athana.call_handler_func(function, request)
+        _logg.debug("Request %s matches no pattern (context: %s)", req.full_path, context.name)
+        error(req, 404, "File %s not found" % req.full_path)
+
+    return req
 
 
 def addFileStore(webpath, localpaths):

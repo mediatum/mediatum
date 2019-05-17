@@ -186,7 +186,7 @@ class Container(Data, ContainerMixin, SchemaMixin):
                             if fn.endswith(f.getName()):
                                 sidebar = includetemplate(self, f.retrieveFile(), {})
         if sidebar:
-            sidebar = req.getTAL("contenttypes/container.html", {"content": sidebar}, macro="addcolumn")
+            sidebar = tal.processTAL({"content": sidebar}, file="contenttypes/container.html", macro="addcolumn", request=req)
         else:
             sidebar = u""
 

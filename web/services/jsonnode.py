@@ -20,6 +20,7 @@
 """
 import json
 import logging
+import flask as _flask
 
 from utils.utils import esc
 from schema.schema import getMetaType
@@ -95,14 +96,13 @@ def buildNodeDescriptor(params, node, indent=None, written=None, children=True, 
         pass
     elif attrspec == 'default_mask' or attrspec not in ['none', 'all']:
         from contenttypes.data import make_lookup_key, get_maskcache_entry
-        from core.transition.globals import request
         language = params.get('lang', '')
         lookup_key = make_lookup_key(node, language=language, labels=False)
-        if 'maskcache' not in request.app_cache or lookup_key not in request.app_cache['maskcache']:
+        if 'maskcache' not in _flask.request.app_cache or lookup_key not in _flask.request.app_cache['maskcache']:
             # fill cache
             node.show_node_text(labels=False, language=language)
 
-        mask_id, field_descriptors = get_maskcache_entry(lookup_key, request.app_cache['maskcache'], request.app_cache['maskcache_accesscount'])
+        mask_id, field_descriptors = get_maskcache_entry(lookup_key, _flask.request.app_cache['maskcache'], _flask.request.app_cache['maskcache_accesscount'])
 
         try:
             for field_descriptor in field_descriptors:

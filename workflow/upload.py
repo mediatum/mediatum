@@ -19,6 +19,8 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
+import mediatumtal.tal as _tal
+
 from .workflow import WorkflowStep, registerStep
 import utils.fileutils as fileutils
 from utils.utils import OperationException
@@ -96,22 +98,21 @@ class WorkflowStep_Upload(WorkflowStep):
         filelist = mkfilelist(node, 1, request=req)
         filelistshort = mkfilelistshort(node, 1, request=req)
 
-        return req.getTAL("workflow/upload.html",
-                          {"obj": node.id,
-                           "id": self.id,
-                           "prefix": self.get("prefix"),
-                              "suffix": self.get("suffix"),
-                              "limit": self.get("limit"),
-                              "filelist": filelist,
-                              "filelistshort": filelistshort,
-                              "node": node,
-                              "buttons": self.tableRowButtons(node),
-                              "singlefile": self.get('singleobj'),
-                              "error": error,
-                              "pretext": self.getPreText(lang(req)),
-                              "posttext": self.getPostText(lang(req)),
-                           "csrf": req.csrf_token.current_token,},
-                          macro="workflow_upload")
+        return _tal.processTAL({"obj": node.id,
+                                "id": self.id,
+                                "prefix": self.get("prefix"),
+                                "suffix": self.get("suffix"),
+                                "limit": self.get("limit"),
+                                "filelist": filelist,
+                                "filelistshort": filelistshort,
+                                "node": node,
+                                "buttons": self.tableRowButtons(node),
+                                "singlefile": self.get('singleobj'),
+                                "error": error,
+                                "pretext": self.getPreText(lang(req)),
+                                "posttext": self.getPostText(lang(req)),
+                                "csrf": req.csrf_token.current_token, }, file="workflow/upload.html",
+                               macro="workflow_upload", request=req)
 
     def metaFields(self, lang=None):
         ret = list()

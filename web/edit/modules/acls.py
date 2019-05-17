@@ -5,6 +5,8 @@
 """
 import logging
 import json
+import mediatumtal.tal as _tal
+
 from core import db, Node, User, UserGroup
 from core.permission import get_or_add_access_rule
 from core.database.postgres.permission import NodeToAccessRule, NodeToAccessRuleset, EffectiveNodeToAccessRuleset, AccessRule, AccessRuleset, AccessRulesetToRule
@@ -82,11 +84,11 @@ def getContent(req, ids):
 
     if 'acls' in hidden_edit_functions_for_current_user:
         req.response.status_code = httpstatus.HTTP_FORBIDDEN
-        return req.getTAL("web/edit/edit.html", {}, macro="access_error")
+        return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
     if len(ids) != 1:  # should not happen
         req.response.status_code = httpstatus.HTTP_FORBIDDEN
-        return req.getTAL("web/edit/modules/acls.html", {}, macro="acl_editor_error")
+        return _tal.processTAL({}, file="web/edit/modules/acls.html", macro="acl_editor_error", request=req)
 
     # check write access to node
     idstr = ids[0]
@@ -94,7 +96,7 @@ def getContent(req, ids):
     node = q(Node).get(nid)
     if not node.has_write_access():
         req.response.status_code = httpstatus.HTTP_FORBIDDEN
-        return req.getTAL("web/edit/edit.html", {}, macro="access_error")
+        return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
     if "save" in req.params:
         logg.info("%r change access %r", user, idstr)
@@ -188,16 +190,14 @@ def getContent(req, ids):
             inherited_ruleset_assocs, \
             own_ruleset_assocs, \
             special_ruleset, special_rule_assocs = get_access_rules_info(node, rule_type)
-            retacl += req.getTAL("web/edit/modules/acls.html",
-                                 makeList(req,
+            retacl += _tal.processTAL(makeList(req,
                                           own_ruleset_assocs,  #not_inherited_ruleset_names[rule_type],  # rights
                                           inherited_ruleset_assocs,  #inherited_ruleset_names[rule_type],  # readonlyrights
                                           special_ruleset,  #additional_rules_inherited[rule_type],
                                           special_rule_assocs,  #additional_rules_not_inherited[rule_type],
                                           rulesetnamelist,
                                           private_ruleset_names,
-                                          rule_type=rule_type),
-                                 macro="edit_acls_selectbox")
+                                          rule_type=rule_type), file="web/edit/modules/acls.html", macro="edit_acls_selectbox", request=req)
 
     if action == 'get_userlist':  # load additional rights by ajax
 
@@ -210,16 +210,14 @@ def getContent(req, ids):
             inherited_ruleset_assocs, \
             own_ruleset_assocs, \
             special_ruleset, special_rule_assocs = get_access_rules_info(node, rule_type)
-            retuser += req.getTAL("web/edit/modules/acls.html",
-                                  makeUserList(req,
+            retuser += _tal.processTAL(makeUserList(req,
                                                own_ruleset_assocs,  # not_inherited_ruleset_names[rule_type],  # rights
                                                inherited_ruleset_assocs,  # inherited_ruleset_names[rule_type],  # readonlyrights
                                                special_ruleset,  # additional_rules_inherited[rule_type],
                                                special_rule_assocs,  # additional_rules_not_inherited[rule_type],
                                                rulesetnamelist,
                                                private_ruleset_names,
-                                               rule_type=rule_type),
-                                  macro="edit_acls_userselectbox")
+                                               rule_type=rule_type), file="web/edit/modules/acls.html", macro="edit_acls_userselectbox", request=req)
         req.response.set_data(retuser)
         return ""
 
@@ -229,7 +227,5 @@ def getContent(req, ids):
         runsubmit += "\tmark(document.myform.leftuser" + rule_type + ");\n"
     runsubmit += "\tdocument.myform.submit();\n}\n"
 
-    return req.getTAL("web/edit/modules/acls.html",
-                      {"runsubmit": runsubmit, "idstr": idstr, "contentacl": retacl,
-                       "adminuser": user.is_admin, "csrf": req.csrf_token.current_token},
-                      macro="edit_acls")
+    return _tal.processTAL({"runsubmit": runsubmit, "idstr": idstr, "contentacl": retacl,
+                       "adminuser": user.is_admin, "csrf": req.csrf_token.current_token}, file="web/edit/modules/acls.html", macro="edit_acls", request=req)

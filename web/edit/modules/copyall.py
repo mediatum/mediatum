@@ -16,6 +16,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import mediatumtal.tal as _tal
 
 from web.edit.edit import get_ids_from_req as _get_ids_from_req
 
@@ -25,4 +26,4 @@ def getContent(req, ids):
         _ids = _get_ids_from_req(req)
         return ",".join(_ids)
 
-    return req.getTAL("web/edit/modules/movecopyall.html", {'ids': _get_ids_from_query(), 'action': 'copy'}, macro="view_node")
+    return _tal.processTAL({'ids': _get_ids_from_query(), 'action': 'copy'}, file="web/edit/modules/movecopyall.html", macro="view_node", request=req)

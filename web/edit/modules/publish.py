@@ -17,6 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import mediatumtal.tal as _tal
 
 from web.edit.edit_common import showdir
 from core.users import getHomeDir
@@ -151,7 +152,7 @@ def getContent(req, ids):
         v = {}
         v["id"] = publishdir.id
         v["change"] = changes
-        ret += req.getTAL("web/edit/modules/publish.html", v, macro="reload")
+        ret += _tal.processTAL(v, file="web/edit/modules/publish.html", macro="reload", request=req)
 
     # build normal window
     stddir = ""  # preset value for destination ids
@@ -171,5 +172,5 @@ def getContent(req, ids):
          "faultyerrlist": publisherror,
         }
     v["csrf"] = req.csrf_token.current_token
-    ret += req.getTAL("web/edit/modules/publish.html", v, macro="publish_form")
+    ret += _tal.processTAL(v, file="web/edit/modules/publish.html", macro="publish_form", request=req)
     return ret

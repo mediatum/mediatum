@@ -17,6 +17,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import mediatumtal.tal as _tal
+
 from schema.schema import getMetadataType, getAllMetaFields, VIEW_DATA_ONLY, VIEW_SUB_ELEMENT, Maskitem
 
 from core.translation import lang
@@ -177,7 +179,7 @@ class m_hgroup(Metatype):
         v["details"] = details
         v["fields"] = fields
         v["selid"] = req.params.get("sel_id", "")
-        return req.getTAL("schema/mask/hgroup.html", v, macro="metaeditor")
+        return _tal.processTAL(v, file="schema/mask/hgroup.html", macro="metaeditor", request=req)
 
     @classmethod
     def isContainer(cls):

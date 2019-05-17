@@ -21,6 +21,7 @@ import logging
 import re
 import sys
 import traceback
+import mediatumtal.tal as _tal
 
 import core.config as config
 
@@ -290,7 +291,7 @@ def view(req):
     v["pages"] = pages
     v["actfilter"] = actfilter
     v["csrf"] = req.csrf_token.current_token
-    return req.getTAL("web/admin/modules/workflows.html", v, macro="view")
+    return _tal.processTAL(v, file="web/admin/modules/workflows.html", macro="view", request=req)
 
 """ edit form for given workflow (create/update)
     parameter: req=request, id=workflowid (name), err=error code as integer """
@@ -332,7 +333,7 @@ def WorkflowDetail(req, id, err=0):
     v["error"] = err
     v["actpage"] = req.params.get("actpage")
     v["csrf"] = req.csrf_token.current_token
-    return req.getTAL("web/admin/modules/workflows.html", v, macro="modify")
+    return _tal.processTAL(v, file="web/admin/modules/workflows.html", macro="modify", request=req)
 
 """ overview of all steps for given workflow
     parameter: req=request, wid=wordflow id (name) """
@@ -397,7 +398,7 @@ def WorkflowStepList(req, wid):
     v["pages"] = pages
     v["actfilter"] = actfilter
     v["csrf"] = req.csrf_token.current_token
-    return req.getTAL("web/admin/modules/workflows.html", v, macro="view_step")
+    return _tal.processTAL(v, file="web/admin/modules/workflows.html", macro="view_step", request=req)
 
 """ edit form for workflowstep for given workflow and given step
     parameter: req=request, wid=workflowid(name), wnid=workflow step id (name), err=error code as integer """
@@ -474,7 +475,7 @@ def WorkflowStepDetail(req, wid, wnid, err=0):
 
     v["acl_read"] = makeList(req, "read", removeEmptyStrings(rule["read"]), {}, overload=0, type="read")
     v["acl_write"] = makeList(req, "write", removeEmptyStrings(rule["write"]), {}, overload=0, type="write")
-    v["editor"] = req.getTAL("web/admin/modules/workflows.html", v_part, macro="view_editor")
+    v["editor"] = _tal.processTAL(v_part, file="web/admin/modules/workflows.html", macro="view_editor", request=req)
     v["workflow"] = workflow
     v["workflowstep"] = workflowstep
     v["nodelist"] = nodelist
@@ -483,7 +484,7 @@ def WorkflowStepDetail(req, wid, wnid, err=0):
     v["update_type"] = req.params.get("ntype", u"")
     v["actpage"] = req.params.get("actpage")
     v["csrf"] = req.csrf_token.current_token
-    return req.getTAL("web/admin/modules/workflows.html", v, macro="modify_step")
+    return _tal.processTAL(v, file="web/admin/modules/workflows.html", macro="modify_step", request=req)
 
 """ popup window with image of workflow given by id
     parameter: req=request """
@@ -491,7 +492,7 @@ def WorkflowStepDetail(req, wid, wnid, err=0):
 
 def WorkflowPopup(req):
     path = req.path[1:].split("/")
-    return req.getTAL("web/admin/modules/workflows.html", {"id": path[1], "csrf": req.csrf_token.current_token}, macro="view_popup")
+    return _tal.processTAL({"id": path[1], "csrf": req.csrf_token.current_token}, file="web/admin/modules/workflows.html", macro="view_popup", request=req)
 
 """ export workflow-definition (XML) """
 

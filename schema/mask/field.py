@@ -17,6 +17,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import mediatumtal.tal as _tal
+
 from utils.utils import formatLongText
 from utils.strings import ensure_unicode
 
@@ -340,9 +342,9 @@ class m_field(Metatype):
             v["mappings"] = []
             for m in pidnode.getExportMapping():
                 v["mappings"].append(q(Node).get(m))
-            return req.getTAL("schema/mask/field.html", v, macro="metaeditor_" + pidnode.getMasktype())
+            return _tal.processTAL(v, file="schema/mask/field.html", macro="metaeditor_" + pidnode.getMasktype(), request=req)
         else:
-            return req.getTAL("schema/mask/field.html", v, macro="metaeditor")
+            return _tal.processTAL(v, file="schema/mask/field.html", macro="metaeditor", request=req)
 
     @classmethod
     def isContainer(cls):

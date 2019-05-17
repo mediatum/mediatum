@@ -71,9 +71,8 @@ def getExternalAuthentificators():
 
 
 def user_from_session():
-    
-    from core.transition import request
-    user_from_cache = request.app_cache.get("user")
+
+    user_from_cache = _flask.request.app_cache.get("user")
     if user_from_cache is not None:
         return user_from_cache
     
@@ -91,7 +90,7 @@ def user_from_session():
         return get_guest_user()
     
     user = _user_from_session()
-    request.app_cache["user"] = user
+    _flask.request.app_cache["user"] = user
     return user
 
 

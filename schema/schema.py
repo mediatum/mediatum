@@ -43,6 +43,7 @@ from core.postgres import check_type_arg
 from core.database.postgres.node import children_rel, parents_rel
 from utils.date import parse_date, format_date, validateDateString
 from utils.utils import Option, esc, suppress
+from mediatumtal import tal as _tal
 
 
 log = logg = logging.getLogger(__name__)
@@ -1176,7 +1177,7 @@ class Mask(Node):
             ret += '<div class="label">&nbsp;</div><button type="submit" name="new_" style="width:100px" i18n:translate="mask_editor_ok"> OK </button>'
             ret += '&nbsp;&nbsp;<button type="submit" onclick="setCancel(document.myform.op)" i18n:translate="mask_editor_cancel">Abbrechen</button><br/>'
             ret += '</div></form>'
-            return req.getTALstr(ret, {})
+            return _tal.processTAL({}, string=ret, macro=None, request=req)
 
         if req.params.get("edit", " ") == " " and req.params.get("op", "") != "new":
             # create new node

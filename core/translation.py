@@ -22,6 +22,7 @@ from . import config
 import os
 import stat
 import time
+import flask as _flask
 from utils.locks import named_lock as _named_lock
 import codecs
 from utils.strings import ensure_unicode_returned
@@ -87,8 +88,7 @@ def translate(key, language=None, request=None):
         language = lang(request)
 
     if not request and not language:
-        from core.transition import request as _request
-        language = lang(_request)
+        language = lang(_flask.request)
 
     if not language:
         return "?%s?" % key
@@ -146,7 +146,7 @@ def lang(req):
 def set_language(req):
     allowed_languages = config.languages
 
-    language_from_cookie = req.Cookies.get("language")
+    language_from_cookie = req.cookies.get("language")
     if language_from_cookie in allowed_languages:
         req._lang = language_from_cookie
         return language_from_cookie

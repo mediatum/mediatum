@@ -54,7 +54,7 @@ check_context()
 
 def mkfilelist(targetnode, files, deletebutton=0, language=None, request=None, macro="m_upload_filelist"):
     if request:
-        return request.getTAL("metadata/upload.html", {"files": files, "node": targetnode, "delbutton": deletebutton}, macro=macro)
+        return tal.processTAL({"files": files, "node": targetnode, "delbutton": deletebutton}, file="metadata/upload.html", macro=macro, request=request)
     else:
         return tal.getTAL(
             "metadata/upload.html", {"files": files, "node": targetnode, "delbutton": deletebutton}, macro=macro, language=language)
@@ -242,7 +242,7 @@ def handle_request(req):
 
             if not n.has_read_access():
                 msg = "m_upload: no access for user '%s' to node %s ('%s', '%s') from '%s'" % (
-                    user.login_name, n.id, n.name, n.type, ustr(req.ip))
+                    user.login_name, n.id, n.name, n.type, ustr(req.remote_addr))
                 logg.info(msg)
 
                 errors.append(msg)
@@ -281,7 +281,7 @@ def handle_request(req):
 
             if not n.has_data_access():
                 msg = "m_upload: no access for user '%s' to node %s ('%s', '%s') from '%s'" % (
-                    user.login_name, n.id, n.name, n.type, ustr(req.ip))
+                    user.login_name, n.id, n.name, n.type, ustr(req.remote_addr))
                 logg.info(msg)
                 errors.append(msg)
 
@@ -293,7 +293,7 @@ def handle_request(req):
             for f in fs:
                 if f.getName() == f_name:
                     logg.info("metadata m_upload: going to remove file '%s' from node '%s' (%s) for request from user '%s' (%s)",
-                        f_name, n.name, n.id, user.login_name, req.ip)
+                        f_name, n.name, n.id, user.login_name, req.remote_addr)
                     filepath = f.abspath
                     filecount = len(getFilelist(n, m_upload_field_name)[0])
                     n.files.remove(f)
@@ -301,7 +301,7 @@ def handle_request(req):
                     try:
                         os.remove(filepath)
                     except Exception, e:
-                        msg = "metadata m_upload: could not remove file %r from disk for node %r for request from '%s': %s" % (filepath, n, ustr(req.ip), str(e))
+                        msg = "metadata m_upload: could not remove file %r from disk for node %r for request from '%s': %s" % (filepath, n, ustr(req.remote_addr), str(e))
                         errors.append(msg)
                         logg.exception(msg)
                     break
@@ -330,17 +330,17 @@ def handle_request(req):
         if targetnodeid:
             targetnode = q(Node).get(targetnodeid)
             if targetnode is None:
-                msg = "metadata m_upload: targetnodeid='%s' for non-existant node for upload from '%s'" % (ustr(targetnodeid), ustr(req.ip))
+                msg = "metadata m_upload: targetnodeid='%s' for non-existant node for upload from '%s'" % (ustr(targetnodeid), ustr(req.remote_addr))
                 errors.append(msg)
                 logg.error(msg)
         else:
-            msg = "metadata m_upload could not find 'targetnodeid' for upload from '%s'" % ustr(req.ip)
+            msg = "metadata m_upload could not find 'targetnodeid' for upload from '%s'" % ustr(req.remote_addr)
             errors.append(msg)
             logg.error(msg)
 
         if targetnode and not targetnode.has_data_access():
             msg = "m_upload: no access for user '%s' to node %s ('%s', '%s') from '%s'" % (
-                user.login_name, ustr(targetnode.id), targetnode.name, targetnode.type, ustr(req.ip))
+                user.login_name, ustr(targetnode.id), targetnode.name, targetnode.type, ustr(req.remote_addr))
             logg.error(msg)
             errors.append(msg)
 
@@ -370,7 +370,7 @@ def handle_request(req):
             nodeFile = importFileToRealname(diskname, filetempname, prefix='m_upload_%s_' % (submitter, ), typeprefix="u_")
 
             if not nodeFile:
-                msg = "metadata m_upload: could not create file node for request from '%s'" % (ustr(req.ip))
+                msg = "metadata m_upload: could not create file node for request from '%s'" % (ustr(req.remote_addr))
                 errors.append(msg)
                 logg.error(msg)
 
@@ -386,7 +386,7 @@ def handle_request(req):
             copy_report = ""
 
     else:
-        msg = "metadata m_upload: could not find submitter for request from '%s'" % (ustr(req.ip))
+        msg = "metadata m_upload: could not find submitter for request from '%s'" % (ustr(req.remote_addr))
         errors.append(msg)
         logg.error(msg)
 

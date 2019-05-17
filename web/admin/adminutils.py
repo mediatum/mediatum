@@ -23,6 +23,7 @@ import math
 import sys
 import flask as _flask
 
+import mediatumtal.tal as _tal
 from core import db, User, AuthenticatorInfo
 import core.users as users
 import core.config as config
@@ -207,7 +208,7 @@ def show_content(req, op):
     user = users.user_from_session()
     if not user.is_admin:
         req.response.status_code = httpstatus.HTTP_FORBIDDEN
-        return req.getTAL("web/admin/frame.html", {}, macro="errormessage")
+        return _tal.processTAL({}, file="web/admin/frame.html", macro="errormessage", request=req)
     else:
         if op == "" or op not in get_menu_strings(_menu):
             if op != "memstats":

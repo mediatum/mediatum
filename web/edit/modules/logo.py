@@ -21,6 +21,7 @@
 
 import os
 import logging
+import mediatumtal.tal as _tal
 
 from utils.utils import getMimeType, splitpath, dec_entry_log
 from utils.fileutils import importFile
@@ -46,7 +47,7 @@ def getContent(req, ids):
 
     if "logo" in user.hidden_edit_functions or not node.has_write_access():
         req.response.status_code = httpstatus.HTTP_FORBIDDEN
-        return req.getTAL("web/edit/edit.html", {}, macro="access_error")
+        return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
     # delete logo file
     if "action" in req.params and req.params.get('action') == "delete":
@@ -71,7 +72,7 @@ def getContent(req, ids):
             if mimetype not in ("image/jpeg", "image/gif", "image/png"):
                 # wrong file type (jpeg, jpg, gif, png)
                 req.response.status_code = httpstatus.HTTP_INTERNAL_SERVER_ERROR
-                return req.getTAL("web/edit/modules/logo.html", {}, macro="filetype_error")
+                return _tal.processTAL({}, file="web/edit/modules/logo.html", macro="filetype_error", request=req)
             else:
                 file = importFile(file.filename, file.tempname)
                 node.files.append(file)
@@ -113,4 +114,4 @@ def getContent(req, ids):
         "csrf": req.csrf_token.current_token
     }
 
-    return req.getTAL("web/edit/modules/logo.html", v, macro="edit_logo")
+    return _tal.processTAL(v, file="web/edit/modules/logo.html", macro="edit_logo", request=req)

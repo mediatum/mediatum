@@ -25,6 +25,7 @@ import logging
 import os
 import re
 import time
+import flask as _flask
 
 from sqlalchemy.orm import undefer, joinedload
 
@@ -40,7 +41,6 @@ from web.services.rssnode import template_rss_channel, template_rss_item, feed_c
 from web.services.serviceutils import attribute_name_filter
 from lxml import etree
 from core.xmlnode import add_node_to_xmldoc, create_xml_nodelist
-from core.transition import request
 from core.database.postgres.search import apply_searchtree_to_query
 from sqlalchemy import sql
 from itertools import izip_longest
@@ -496,7 +496,7 @@ def struct2rss(req, path, params, data, struct, debug=False, singlenode=False, s
     fcd['pubdate'] = pubDate
     fcd['lastbuild'] = lastBuildDate
     fcd['link'] = host
-    fcd['atom_link'] = host + req.fullpath
+    fcd['atom_link'] = host + req.full_path
     fcd['image_title'] = 'testlogo'
     fcd['image_link'] = host + u'/img/testlogo.png'
     fcd['image_url'] = host + u'/img/testlogo.png'
@@ -505,7 +505,7 @@ def struct2rss(req, path, params, data, struct, debug=False, singlenode=False, s
         for k, v in params['feed_info'].items():
             fcd[k] = v
     else:
-        fcd['title'] = host + req.fullpath + req.query
+        fcd['title'] = host + req.full_path + req.query_string
     fcd['items'] = items
     s = template_rss_channel % fcd  # params['feed_info']
 
@@ -580,9 +580,9 @@ def _prepare_response():
     res['build_response_start'] = time.time()
     retrievaldate = format_date()
     res['retrievaldate'] = retrievaldate
-    res['method'] = request.command
-    res['path'] = request.path
-    res['query'] = request.query
+    res['method'] = _flask.request.method
+    res['path'] = _flask.request.full_path
+    res['query'] = _flask.request.query_string
     res['timetable'] = []
     return res
 
@@ -606,7 +606,7 @@ def get_node_data_struct(
 
     # verify signature if a user is given, otherwise use guest user
     if params.get('user'):
-        user = _handle_oauth(res, req.fullpath, params, timetable)
+        user = _handle_oauth(res, req.full_path, params, timetable)
     else:
         user = get_guest_user()
         res['oauthuser'] = ''  # username supplied for authentication (login name) in query parameter user

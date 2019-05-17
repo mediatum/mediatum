@@ -15,7 +15,7 @@ def test_become(session, req, admin_user, some_user):
     req.path = "/_become/" + some_user.login_name
     status = become_user(req)
     assert status == httpstatus.HTTP_MOVED_TEMPORARILY
-    assert req["Location"] == "/"
+    assert req.response.headers["Location"] == "/"
 
 
 def test_become_with_authenticator(session, req, admin_user, some_user):
@@ -27,7 +27,7 @@ def test_become_with_authenticator(session, req, admin_user, some_user):
                                           user.login_name)
     status = become_user(req)
     assert status == httpstatus.HTTP_MOVED_TEMPORARILY
-    assert req["Location"] == "/"
+    assert req.response.headers["Location"] == "/"
 
 
 def test_become_guest_not_allowed(req, guest_user):

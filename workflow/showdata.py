@@ -20,6 +20,7 @@
 
 import logging
 import flask as _flask
+import mediatumtal.tal as _tal
 from .workflow import WorkflowStep, registerStep
 from core.translation import t, lang
 from schema.schema import VIEW_HIDE_EMPTY, Metafield, Metadatatype
@@ -31,13 +32,11 @@ logg = logging.getLogger(__name__)
 
 
 def mkfilelist(node, deletebutton=0, language=None, request=None):
-    return request.getTAL(
-        "workflow/showdata.html", {"files": node.files, "node": node, "delbutton": deletebutton}, macro="workflow_filelist")
+    return _tal.processTAL({"files": node.files, "node": node, "delbutton": deletebutton}, file="workflow/showdata.html", macro="workflow_filelist", request=request)
 
 
 def mkfilelistshort(node, deletebutton=0, language=None, request=None):
-    return request.getTAL(
-        "workflow/showdata.html", {"files": node.files, "node": node, "delbutton": deletebutton}, macro="workflow_filelist_short")
+    return _tal.processTAL({"files": node.files, "node": node, "delbutton": deletebutton}, file="workflow/showdata.html", macro="workflow_filelist_short", request=request)
 
 
 def register():
@@ -86,17 +85,16 @@ class WorkflowStep_ShowData(WorkflowStep):
             filelist = mkfilelist(node, request=req)
             filelistshort = mkfilelistshort(node, request=req)
 
-        return req.getTAL("workflow/showdata.html",
-                          {"key": key,
-                           "filelist": filelist,
-                           "filelistshort": filelistshort,
-                           "fields": fieldmap,
-                           "pretext": self.getPreText(lang(req)),
-                           "posttext": self.getPostText(lang(req)),
-                           "sidebar": self.getSidebarText(lang(req)),
-                           "buttons": self.tableRowButtons(node),
-                           "csrf": req.csrf_token.current_token,},
-                          macro="workflow_showdata")
+        return _tal.processTAL({"key": key,
+                                "filelist": filelist,
+                                "filelistshort": filelistshort,
+                                "fields": fieldmap,
+                                "pretext": self.getPreText(lang(req)),
+                                "posttext": self.getPostText(lang(req)),
+                                "sidebar": self.getSidebarText(lang(req)),
+                                "buttons": self.tableRowButtons(node),
+                                "csrf": req.csrf_token.current_token, }, file="workflow/showdata.html",
+                               macro="workflow_showdata", request=req)
 
     def metaFields(self, lang=None):
         field = Metafield("masks")

@@ -17,6 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import mediatumtal.tal as _tal
 
 from .workflow import WorkflowStep, registerStep
 from core.translation import t, addLabels
@@ -56,7 +57,7 @@ class WorkflowStep_TextPage(WorkflowStep):
             self.forward(node, True)
         else:
             buttons = self.tableRowButtons(node)
-        return req.getTAL("workflow/textpage.html", {"text": self.get("text"), "buttons": buttons, "csrf": req.csrf_token.current_token,}, macro="textpage_show_node")
+        return _tal.processTAL({"text": self.get("text"), "buttons": buttons, "csrf": req.csrf_token.current_token,}, file="workflow/textpage.html", macro="textpage_show_node", request=req)
 
     def metaFields(self, lang=None):
         field = Metafield("text")

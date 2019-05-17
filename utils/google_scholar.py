@@ -24,7 +24,7 @@ from core import Node, db
 import core.config as config
 import logging
 import time
-from core.athana import http_request
+import flask as _flask
 from core.request_handler import make_param_dict_utf8_values
 
 q = db.query
@@ -142,15 +142,14 @@ def get_author_list(line):
     authors = [a.strip() for a in authors if a.strip()]
     return authors
 
-dummy_request = http_request(*([None] * 6))
-dummy_request.args = make_param_dict_utf8_values([])
+dummy_request = _flask.request
 
 
 def chk_citation_pdf_url(mappingfield):
     """
     check existence of citation_pdf_url, uses therefore the function _send_file_with_type from core.athana with the
     new parameter checkonly=True.
-    The function_send_file_with_type needs a parameter of the class http_request, but only path and args (which can be
+    The function_send_file_with_type needs a parameter of the flask request, but only path and args (which can be
     the empty list) are needed, so a dummy_request object is used where the path is set accordingly
     :param mappingfield: metafield for citation_pdf_url like
             u'<meta name="citation_pdf_url" content="http://mediatum.ub.tum.de/doc/602482/file.pdf"/>' 
@@ -165,6 +164,7 @@ def chk_citation_pdf_url(mappingfield):
     else:
         return False
     path = path[path.find('/'):]
+    dummy_request.args = make_param_dict_utf8_values([])
     dummy_request.path = path
     status =_send_file_with_type("document", None, dummy_request, checkonly=True)
     return status == 200

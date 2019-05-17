@@ -91,7 +91,7 @@ class m_label(Metatype):
         v["pid"] = req.params.get("pid", "")
         v["item"] = item
         v["fields"] = fields
-        return req.getTAL("metadata/label.html", v, macro="metaeditor")
+        return tal.processTAL(v, file="metadata/label.html", macro="metaeditor", request=req)
 
     def getEditorHTML(self, field, value="", width=40, lock=0, language=None, required=None):
         return tal.getTAL("metadata/label.html", {"lock": lock,

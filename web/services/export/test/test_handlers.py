@@ -38,8 +38,8 @@ def xml_fixture(parent_node, content_node):
     else:
         req = mock
     req.get_header = lambda x: "localhost:8081"
-    req.fullpath = ""
-    req.query = ""
+    req.full_path = ""
+    req.query_string = ""
 
     MetadatatypeFactory(name=u"directory")
     MetadatatypeFactory(name=u"testschema")
@@ -63,8 +63,8 @@ def test_rss(container_node, other_container_node, content_node, collections, ho
     params = {}
     req = MagicMock()
     req.get_header = lambda x: "localhost:8081"
-    req.fullpath = ""
-    req.query = ""
+    req.full_path = ""
+    req.query_string = ""
 
     res = struct2rss(req, "", params, None, struct=struct)
     print res
@@ -154,8 +154,8 @@ def test_search(guest_user, root, home_root, collections, container_node, conten
     with core.app.test_request_context() as ctx:
         req = ctx.request
         req.get_header = lambda x: "localhost:8081"
-        req.fullpath = req.path = ""
-        req.query = ""
+        req.full_path = req.path = ""
+        req.query_string = ""
         res = get_node_data_struct(req, "", params, None, container_node.id)
 
     assert res["status"] == "ok"

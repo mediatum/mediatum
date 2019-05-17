@@ -20,6 +20,7 @@
 import logging
 import os.path
 import urllib
+import flask as _flask
 from mediatumtal import tal
 import core.athana as athana
 import core.config as config
@@ -136,8 +137,7 @@ def edit_node_url(nid=None, version=None, **kwargs):
 
 def current_node_url(**kwargs):
     """Builds a new node URL from the current request params with values replaced by `kwargs`"""
-    from core.transition import request
-    params = {k: v for k, v in request.args.items()}
+    params = {k: v for k, v in _flask.request.args.items()}
     params.update(kwargs)
     return node_url(**params)
 

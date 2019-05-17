@@ -20,6 +20,7 @@
 """
 import logging
 import flask as _flask
+import mediatumtal.tal as _tal
 import core.config as config
 from .workflow import WorkflowStep, registerStep
 from schema.schema import getMetaType
@@ -79,7 +80,7 @@ class WorkflowStep_Start(WorkflowStep):
 
             node.set("creator", "workflow-" + self.parents[0].name)
             node.set("creationtime", date.format_date())
-            node.set("system.wflanguage", req.params.get('workflow_language', req.Cookies.get('language')))
+            node.set("system.wflanguage", req.params.get('workflow_language', req.cookies.get('language')))
             node.set("key", mkKey())
             node.set("system.key", node.get("key"))  # initial key identifier
             _flask.session["key"] = node.get("key")
@@ -123,19 +124,18 @@ class WorkflowStep_Start(WorkflowStep):
         cookie_test();
         </script>""" % cookie_error
 
-        return req.getTAL("workflow/start.html",
-                          {'types': types,
-                           'id': self.id,
-                           'js': js,
-                           'starttext': self.get('starttext'),
-                           'languages': self.parents[0].getLanguages(),
-                           'currentlang': lang(req),
-                              'sidebartext': self.getSidebarText(lang(req)),
-                              'redirect': redirect,
-                              'message': message,
-                              'allowcontinue': self.get('allowcontinue'),
-                           "csrf": req.csrf_token.current_token,},
-                          macro="workflow_start")
+        return _tal.processTAL({'types': types,
+                                'id': self.id,
+                                'js': js,
+                                'starttext': self.get('starttext'),
+                                'languages': self.parents[0].getLanguages(),
+                                'currentlang': lang(req),
+                                'sidebartext': self.getSidebarText(lang(req)),
+                                'redirect': redirect,
+                                'message': message,
+                                'allowcontinue': self.get('allowcontinue'),
+                                "csrf": req.csrf_token.current_token, }, file="workflow/start.html",
+                               macro="workflow_start", request=req)
 
     def metaFields(self, lang=None):
         ret = []

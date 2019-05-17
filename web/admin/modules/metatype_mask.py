@@ -18,7 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import re
-
+import mediatumtal.tal as _tal
 
 import core.config as config
 from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter
@@ -111,7 +111,7 @@ def showMaskList(req, id):
     v["order"] = order
     v["actfilter"] = actfilter
     v["csrf"] = req.csrf_token.current_token
-    return req.getTAL("web/admin/modules/metatype_mask.html", v, macro="view_mask")
+    return _tal.processTAL(v, file="web/admin/modules/metatype_mask.html", macro="view_mask", request=req)
 
 """ mask details """
 
@@ -159,4 +159,4 @@ def MaskDetails(req, pid, id, err=0):
     v["acl"] = makeList(req, "read", removeEmptyStrings(rules), {}, overload=0, type=u"read")
     v["csrf"] = req.csrf_token.current_token
 
-    return req.getTAL("web/admin/modules/metatype_mask.html", v, macro="modify_mask")
+    return _tal.processTAL(v, file="web/admin/modules/metatype_mask.html", macro="modify_mask", request=req)

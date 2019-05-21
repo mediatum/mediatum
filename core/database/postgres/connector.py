@@ -25,8 +25,8 @@ import utils.process
 import sys
 from core.search.config import get_fulltext_autoindex_languages, get_attribute_autoindex_languages
 from sqlalchemy_continuum import make_versioned
+from sqlalchemy_continuum.plugins import FlaskPlugin
 from sqlalchemy_continuum.plugins.transaction_meta import TransactionMetaPlugin
-from core.transition.athana_continuum_plugin import AthanaContinuumPlugin
 from core.database.postgres.continuumext import MtVersionBase
 
 # set this to True or False to override debug config settings
@@ -75,7 +75,6 @@ class PostgresSQLAConnector(object):
         self.Session = scoped_session(session_factory)
         self.metadata = db_metadata
         self.meta_plugin = TransactionMetaPlugin()
-        self.athana_continuum_plugin = AthanaContinuumPlugin()
  
         # XXX: maybe there is a better place for this, but we need it before some methods in this class are called.
         # XXX: maybe we could make it optionsl
@@ -83,7 +82,7 @@ class PostgresSQLAConnector(object):
 
     def setup_versioning(self):
         make_versioned(
-            plugins=[self.meta_plugin, self.athana_continuum_plugin],
+            plugins=[self.meta_plugin, FlaskPlugin()],
             options={
                 'native_versioning': True,
                 'base_classes': (MtVersionBase, DeclarativeBase),

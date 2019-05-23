@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-    web.newadmin.views
+    web.admin.views
     ~~~~~~~~~~~~~~~~~~
     this package is part of mediatum - a multimedia content repository
 

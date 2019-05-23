@@ -6,7 +6,7 @@
 from __future__ import absolute_import
 import logging
 from core import db, Setting
-from web.newadmin.views import BaseAdminView
+from web.admin.views import BaseAdminView
 
 logg = logging.getLogger(__name__)
 

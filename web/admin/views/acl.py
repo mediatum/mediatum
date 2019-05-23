@@ -5,7 +5,7 @@
 """
 from core import db
 from core.database.postgres.permission import AccessRule, AccessRuleset, AccessRulesetToRule
-from web.newadmin.views import BaseAdminView
+from web.admin.views import BaseAdminView
 
 
 class AccessRuleView(BaseAdminView):

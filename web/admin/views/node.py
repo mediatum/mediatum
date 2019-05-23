@@ -11,8 +11,8 @@ from pygments import highlight
 from pygments.formatters import HtmlFormatter
 from pygments.lexers import JsonLexer
 from core import Node, File, db
-from web.newadmin.views import BaseAdminView
-from web.newadmin.secureform import MediatumSecureForm
+from web.admin.views import BaseAdminView
+from web.admin.secureform import MediatumSecureForm
 from core.database.postgres.node import NodeAlias
 
 

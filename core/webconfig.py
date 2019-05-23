@@ -294,8 +294,8 @@ def initContexts():
 
 
     if admin_enabled:
-        import web.newadmin
-        athana.add_wsgi_context("/f/", web.newadmin.app)
+        import web.admin
+        athana.add_wsgi_context("/f/", web.admin.app)
 
     # testing global exception handler
     context = athana.addContext("/_test", ".")

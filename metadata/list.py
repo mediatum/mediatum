@@ -95,7 +95,7 @@ class m_list(Metatype):
 
             try:
                 if int(num) < 0:
-                    raise ""
+                    raise Exception()
                 elif int(num) == 0:
                     num = ""
                 else:

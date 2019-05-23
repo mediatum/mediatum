@@ -161,6 +161,3 @@ def init_login():
         return q(User).get(user_id)
 
 init_login()
-
-
-

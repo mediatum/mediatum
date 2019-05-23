@@ -383,7 +383,7 @@ class Workflow(Node):
             return steps
 
     def getNode(self, type):
-        raise ""
+        raise Exception()
 
     def getStartNode(self):
         followers = {}

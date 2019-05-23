@@ -246,4 +246,3 @@ class MtQuery(Query):
                     .filter_by(key=u'alias_id', value=unicode(ident)).scalar())
 
         return active_version
-    

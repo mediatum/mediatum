@@ -4705,5 +4705,3 @@ def request_finished(handler):
 
 def getBase():
     return GLOBAL_ROOT_DIR
-
-

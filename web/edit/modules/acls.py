@@ -231,5 +231,3 @@ def getContent(req, ids):
                       {"runsubmit": runsubmit, "idstr": idstr, "contentacl": retacl,
                        "adminuser": current_user.is_admin, "csrf": req.csrf_token.current_token},
                       macro="edit_acls")
-
-

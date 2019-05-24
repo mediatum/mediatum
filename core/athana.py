@@ -4274,7 +4274,7 @@ ATHANA_STARTED = False
 _ATHANA_HANDLER = None
 
 
-def run(host="0.0.0.0", port=8081, z3950_port=None):
+def run(host="0.0.0.0", port=8081):
     global ATHANA_STARTED, _ATHANA_HANDLER
     check_date()
     ph = _ATHANA_HANDLER = AthanaHandler()
@@ -4283,9 +4283,6 @@ def run(host="0.0.0.0", port=8081, z3950_port=None):
 
     if len(ftphandlers) > 0:
         ftp = ftp_server(ftp_authorizer(), port=ftphandlers[0].getPort())
-
-    if z3950_port is not None:
-        z3950_server = _athana_z3950.z3950_server(port=z3950_port)
 
     if multithreading_enabled:
         global threadlist

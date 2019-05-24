@@ -98,12 +98,6 @@ def run(host=None, http_port=None, force_test_db=None, loglevel=None, automigrat
         from core import db
         db.session.close()
 
-    # start main web server, Z.39.50 and FTP, if configured
-    if config.get('z3950.activate', '').lower() == 'true':
-        z3950port = int(config.get("z3950.port", "2021"))
-    else:
-        z3950port = None
-
     athana.setThreads(int(config.get("host.threads", "8")))
 
     #
@@ -116,7 +110,7 @@ def run(host=None, http_port=None, force_test_db=None, loglevel=None, automigrat
             wf.write("\n")
 
 
-    athana.run(host or config.get("host.host", "0.0.0.0"), int(http_port or config.get("host.port", "8081")), z3950port)
+    athana.run(host or config.get("host.host", "0.0.0.0"), int(http_port or config.get("host.port", "8081")))
 
 
 def main():

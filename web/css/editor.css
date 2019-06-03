@@ -112,6 +112,8 @@ div.mask_row {margin-bottom:6px;}
 .mediatum_img_content {background: url(/img/edit_edit.gif) no-repeat;} /* Inhalt */
 .mediatum_img_metadata {background: url(/img/edit_edit.gif) no-repeat;} /* Metadaten editieren */
 .mediatum_img_menuoperation{background: url(/img/edit_edit.gif) no-repeat;} /* Spezialfunktionen */
+.mediatum_img_parentcontent {background: url(/img/edit_edit.gif) no-repeat;} /* Verzeichnisübersicht */
+.mediatum_img_view {background: url(/img/edit_edit.gif) no-repeat;} /* Vorschau */
 /* First Sub Menu */
 .mediatum_img_menumetadata {background: url(/img/edit_edit.gif) no-repeat;} /* Inhalt */
 .mediatum_img_metadata {background: url(/img/edit_edit.gif) no-repeat;} /* Metadaten editieren */
@@ -121,6 +123,8 @@ div.mask_row {margin-bottom:6px;}
 .mediatum_img_menusortnodes {background: url(/img/edit_edit.gif) no-repeat;} /* Einstellungen: Datensätze sortieren */
 .mediatum_img_startpagesmenu {background: url(/img/edit_edit.gif) no-repeat;} /* Startseiten verwalten */
 .mediatum_img_admin {background: url(/img/edit_edit.gif) no-repeat;} /* Administration */
+.mediatum_img_classes {background: url(/img/edit_edit.gif) no-repeat;} /* Klassifikation */
+.mediatum_img_menueditobject {background: url(/img/edit_edit.gif) no-repeat;} /* Weitere Aktionen für Datensatz */
 /* Second Submenu */
 .mediatum_img_editall {background: url(/img/edit_edit.gif) no-repeat;} /* Bearbeiten */
 .mediatum_img_moveall {background: url(/img/edit_move.gif) no-repeat;} /* Verschieben */
@@ -130,6 +134,9 @@ div.mask_row {margin-bottom:6px;}
 .mediatum_img_nodesperpage50 {background: url(/img/edit_edit.gif) no-repeat;} /* 50 */
 .mediatum_img_nodesperpage100 {background: url(/img/edit_edit.gif) no-repeat;} /* 100 */
 .mediatum_img_nodesperpage200 {background: url(/img/edit_edit.gif) no-repeat;} /* 200 */
+.mediatum_img_moveobject {background: url(/img/edit_edit.gif) no-repeat;} /* Verschieben */
+.mediatum_img_copyobject {background: url(/img/edit_edit.gif) no-repeat;} /* Kopieren */
+.mediatum_img_deleteobject {background: url(/img/edit_edit.gif) no-repeat;} /* Löschen */
 /* sortnodes -> sort_choices from edit.py */
 .mediatum_img_off {background: url(/img/edit_edit.gif) no-repeat;} /* aus */
 .mediatum_img_ranking {background: url(/img/edit_edit.gif) no-repeat;} /* Ranking */

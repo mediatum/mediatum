@@ -422,7 +422,7 @@ msgid "tab_metadata_col"
 msgstr "Configuration"
 
 msgid "tab_menuoperation"
-msgstr "Special-functions"
+msgstr "Special functions"
 
 msgid "tab_menusecurity"
 msgstr "Rights"
@@ -449,13 +449,13 @@ msgid "tab_menueditobject"
 msgstr "More options for object"
 
 msgid "tab_moveobject"
-msgstr "Verschieben"
+msgstr "Move"
 
 msgid "tab_copyobject"
-msgstr "Kopieren"
+msgstr "Copy"
 
 msgid "tab_deleteobject"
-msgstr "Löschen"
+msgstr "Delete"
 
 msgid "tab_menueditall"
 msgstr "Edit all objects in directory"

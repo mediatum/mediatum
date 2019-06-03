@@ -37,7 +37,7 @@ th {vertical-align:top; white-space:nowrap; font-size:11px; font-weight:bold;tex
 
 /*  classes */
 /* general */
-div.back {background:#ffffff; padding:7px; border:1px solid silver; margin-left:20px; margin-right:20px;} */
+div.back {background:#ffffff; padding:7px; border:1px solid silver; margin-left:20px; margin-right:20px;}
 .breadcrumbs{ clear:left;}
 div.breadcrumbs {margin:0px; border-bottom:0px solid #E2E9EB; padding:2px 10px 2px 5px; color:#243135;overflow:visible;
     background-color:white;margin-top:-1px;}
@@ -59,7 +59,7 @@ a.breadcrumbs {color:#243135;}
 
 .context-menu-list {min-width: 200px;}
 .context-menu-sub.icon-abclabel:hover { list-style-type: none; padding-left: 20px; }
-.descbox {font-size:10px; line-height:11px; font-family:Verdana, Arial, Helvetica, sans-serif; margin-top:10px}
+.descbox {font-size:10px; line-height:0px; font-family:Verdana, Arial, Helvetica, sans-serif; margin-top:10px}
 div.editorrow {margin:4px;}
 div.editorrow  div.label{width:150px; float:left; padding-top:4px;}
 .error{text-align:center;}
@@ -160,7 +160,7 @@ div.mask_row {margin-bottom:6px;}
 .mediatum_nav li:hover > ul { display: block; position: absolute;}
 .mediatum_nav li:hover li { float: none; }
 .mediatum_nav ul ul{left: 100%;top:0;}
-.mediatum_showcontent {float:left; width:296px; height:168px; position:relative; left:0px; top:0px; border:1px solid #808080; margin:2px;background-color:#ffffff;}
+.mediatum_showcontent {float:left; width:996px; height:38px; position:relative; left:0px; top:0px; border:1px solid #808080; margin:2px;background-color:#ffffff;}
 .mediatum_showcontent_error {float:left; width:296px; height:168px; position:relative; left:0px; top:0px; border:1px solid #FF0000; /*background:#FFE7E7;*/ margin: 2px;}
 .mediatum_subnavigation {background-color:#ddd!important;margin:0!important;padding:0!important;}
 .mediatum_subnavigation_1 {position:absolute;right:2px;top:10px;}
@@ -182,6 +182,9 @@ p.mediatum_templateerror #msg {font-family: Courier;}
 div.metaeditor{overflow:hidden;}
 div.metaeditor div.label{width:100px;}
 div.metaeditor div#editor_content{margin-left:110px;}
+div.node_text {position:absolute; left:48px; top:0px; width:877px; height:50px; overflow: hidden};
+td.node_text {position:relative; left:48px; top:0px; width:877px; height:50px; overflow: hidden};
+
 .readonly span.fancytree-title{color:#666!important;font-weight:normal!important;margin-left:3px;cursor:not-allowed}
 span.required {color:#ff0000;}
 div.row {border:solid white 1px; margin:2px; width: 100%; white-space:nowrap; cursor:pointer;}

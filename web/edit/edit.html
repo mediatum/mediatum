@@ -1079,7 +1079,6 @@ function set_cm_to_default() {
                 <div class="mediatum_treesouth">
                     <div class="mediatum_buttonmessage"> </div>
                 </div>
-            <div id="overlay"> </div>
             </div>
 
             <script tal:content="python:u'var currentid = {};'.format(id)">TEXT</script>
@@ -1551,15 +1550,15 @@ function rct() {
     <div tal:condition="python:previd" id="previd">
         <a tal:attributes="href python:u'/edit/edit_content?id={}&tab={}'.format(previd, tab)"><img border="0" src="/img/pageleft.gif"/></a>
     </div>
-    <div tal:condition="python:nextid" id="nextid">
-         <a tal:attributes="href python:u'/edit/edit_content?id={}&tab={}'.format(nextid, tab)"><img border="0" src="/img/pageright.gif"/></a>
-    </div>
     <div tal:condition="python:previd or nextid" id="orid" >
         <tal:block tal:replace="raw script"/>
         <select id="goto" tal:attributes="onchange python:u'gotoContent(document.getElementById(\'goto\').value,\'{}\')'.format(tab)">
             <option tal:repeat="item combodata" tal:attributes="value python:item[0]; selected python:[None,'selected'][item[0]==nodeid]" tal:content="python:item[1]" ></option>
         </select>
         / <tal:block tal:replace="absitems" />
+    </div>
+    <div tal:condition="python:nextid" id="nextid">
+         <a tal:attributes="href python:u'/edit/edit_content?id={}&tab={}'.format(nextid, tab)"><img border="0" src="/img/pageright.gif"/></a>
     </div>
 </div>
 

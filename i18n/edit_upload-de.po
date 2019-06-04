@@ -60,10 +60,10 @@ msgid "edit_upload_bibtex_plupload_widget"
 msgstr "Bibtex-Import"
 
 msgid "edit_upload_meta"
-msgstr "Metadaten einstellen"
+msgstr "Metadaten-Eingabe"
 
 msgid "edit_upload_doi"
-msgstr "DOI-Eingabe"
+msgstr "DOI-Import"
 
 msgid "edit_upload_create_objects"
 msgstr "Objekte erzeugen"

@@ -58,7 +58,6 @@
 
         function closeForm(){ // close form
             $('#editform').css('display','none');
-            parent.$('#overlay').css('display', 'none');
         }
 
         function handleCKEditorPost(){ // save data
@@ -69,7 +68,6 @@
             }).done(function(ret){
                 ret = jQuery.parseJSON(ret);
                 $('#editform').css('display','none');
-                parent.$('#overlay').css('display', 'none');
                 if (ret.filename==""){
                     document.location.reload();
                     return false;

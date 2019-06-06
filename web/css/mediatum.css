@@ -624,7 +624,6 @@ ul#navigationlist li ul.nav_depth03 a {
     display: inline;
     padding: 0px;
     margin: 0px 1px 0px 3px;
-    height: 12px
 }
 
 /* content area */
@@ -646,6 +645,7 @@ ul#navigationlist li ul.nav_depth03 a {
     overflow: auto;
     padding-top: 1px;
     min-height: 500px;
+    max-width:80% !important;
 }
 
 #portal-column-content #page-nav {

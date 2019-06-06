@@ -1,43 +1,4 @@
 <div metal:define-macro="m_upload_filelist" id="m_upload_table">
-
-<style type="text/css">
-
-    #filetable_edit{
-        border:1px solid silver; border-width:1px 1px 1px 1px; width:100%
-    }
-    #filetable_edit input{
-        background-color:transparent; margin:1px; border-width:0px
-    }
-    #filetable_edit input:hover{
-        border-width:0px
-    }
-    #filetable_edit input[type="text"]{
-        border:1px solid silver
-    }
-    #filetable_edit input[type="text"]:hover{
-        border:1px solid black; background-color:#ffffff
-    }
-    #filetable_edit th{
-        background-color:#d8d8d8; padding:3px 5px 2px 3px; border-bottom:1px solid silver; font-variant:small-caps
-    }
-    #filetable_edit tr{
-        background-color:#f0f0f0; border:1px solid silver
-    }
-    #filetable_edit td{
-        vertical-align:middle; padding:2px; border-bottom:1px solid silver
-    }
-    #filetable_edit tr:hover{
-        background-color:silver
-    }
-    #filetable_edit a{
-        color:#000000; padding:1px; margin:0px
-    }
-    td.silver{
-        background-color:#efefef
-    }
-
-</style>
-
     <table id="filetable_edit">
         <tr tal:condition="python:len(files)!=0">
             <th i18n:translate="upload_filelist_type">TEXT</th>
@@ -48,7 +9,7 @@
         </tr>
         <tr tal:repeat="file files">
             <td tal:content="python:file.type"/>
-            <td tal:content="python:u'{} bytes'.format(file.getSize())" style="text-align:right;width:100px"/>
+            <td tal:content="python:u'{} bytes'.format(file.getSize())"/>
             <td tal:content="python:file.mimetype"/>
             <td>
                 <a i18n:attributes="title upload_filelist_open_title" target="filewindow"
@@ -63,45 +24,6 @@
 </div>
 
 <div metal:define-macro="m_upload_filelist_nodebig" id="m_upload_table">
-
-<style type="text/css">
-
-    #filetable_nodebig{
-        border:1px solid silver; border-width:1px 1px 1px 1px; width:100%
-    }
-    #filetable_nodebig input{
-        background-color:transparent; margin:1px; border-width:0px
-    }
-    #filetable_nodebig input:hover{
-        border-width:0px
-    }
-    #filetable_nodebig input[type="text"]{
-        border:1px solid silver
-    }
-    #filetable_nodebig input[type="text"]:hover{
-        border:1px solid black; background-color:#ffffff
-    }
-    #filetable_nodebig th{
-        background-color:#d8d8d8; padding:3px 5px 2px 3px; border-bottom:1px solid silver; font-variant:small-caps
-    }
-    #filetable_nodebig tr{
-        background-color:#f0f0f0; border:1px solid silver
-    }
-    #filetable_nodebig td{
-        vertical-align:middle; padding:2px; border-bottom:1px solid silver
-    }
-    #filetable_nodebig tr:hover{
-        background-color:silver
-    }
-    #filetable_nodebig a{
-        color:#000000; padding:1px; margin:0px
-    }
-    td.silver{
-        background-color:#efefef
-    }
-
-</style>
-
     <table id="filetable_nodebig">
         <tr tal:condition="python:len(files)!=0">
             <th i18n:translate="upload_filelist_loc">TEXT</th>
@@ -114,7 +36,7 @@
                  tal:attributes="href python:u'/file/{}/{}'.format(node.id, file.getName())"
                  tal:content="python:file.getName()"/>
             </td>
-            <td tal:content="python:u'{} bytes'.format(file.getSize())" style="text-align:right;width:100px"/>
+            <td tal:content="python:u'{} bytes'.format(file.getSize())"/>
             <td tal:condition="delbutton">
                 <input tal:attributes="name python:u'delete_{}'.format(file.getName())" i18n:attributes="title upload_filelist_delete_title"  onclick="return delete_file_json_for_targetnode_FOR_____FIELDNAME____(this.name)" type="image" src="/img/delete.png" />
             </td>
@@ -125,26 +47,26 @@
 <div metal:define-macro="m_upload_filelist_short" id="m_upload_tableshort">
     <tal:block tal:repeat="file files">
         <tal:block tal:condition="python:file.type=='thumb'">
-            <div id="thumb" style="float:left">
+            <div id="thumb">
                 <img tal:attributes="src python:u'/file/{}/{}'.format(node.id, file.getName())"/>
             </div>
         </tal:block>
     </tal:block>
     <tal:block tal:repeat="file files">
         <tal:block tal:condition="python:file.type in ['document', 'image']">
-            <div style="padding:20px;margin-left:150px">
+            <div class="mediatum_upload_files">
                 <p tal:content="python:u'{} bytes'.format(file.getSize())"/>
                 <a i18n:attributes="title upload_filelist_open_title" target="filewindow"
              tal:attributes="href python:u'/file/{}/{}'.format(node.id, file.getName())"
              tal:content="python:file.getName()"/>
-             <p style="padding-top:20px" tal:condition="delbutton">
+             <p tal:condition="delbutton">
                 <input tal:attributes="name python:u'delete_{}'.format(file.getName())" i18n:attributes="title upload_filelist_delete_title" onclick="return delete_file_json_for_targetnode_FOR_____FIELDNAME____(this.name)" type="image" src="/img/delete.png" />
                 <span i18n:translate="upload_filelist_delete_label">TEXT</span>
              </p>
             </div>
         </tal:block>
     </tal:block>
-    <div style="clear:both">&nbsp;</div>
+    <div class="mediatum_clear_both">&nbsp;</div>
 </div>
 
 <tal:block metal:define-macro="editorfield">
@@ -410,13 +332,13 @@
 
     </script>
 
-<div style="border:thin solid blue;" tal:attributes="id python:'upload_div_FOR_____FIELDNAME____'; name python:'upload_div_FOR_____FIELDNAME____'; style python:u'width:{}px'.format(width)">
+<div class="mediatum_blue_border" tal:attributes="id python:'upload_div_FOR_____FIELDNAME____'; name python:'upload_div_FOR_____FIELDNAME____'; style python:u'width:{}px'.format(width)">
 
         <input type="hidden" tal:attributes="id python:u'submitter_class_{}'.format(name)" name="submitter_class" value="" />
         <input type="hidden" tal:attributes="id python:'submitter02_FOR_____FIELDNAME____'; value python:name" name="submitter_FOR_____FIELDNAME____" />
         <input type="hidden" tal:attributes="id python:'submitter_FOR_____FIELDNAME____'; value python:name" name="submitter" />
         <input type="hidden" tal:attributes="id python:u'targetnodeid_{}'.format(name)" name="targetnodeid_FOR_____FIELDNAME____" value="" />
-        <div name="upload_warn_div_FOR_____FIELDNAME____" style="color:red;" tal:content="python:warning"> TEXT </div>
+        <div class="mediatum_color_red" name="upload_warn_div_FOR_____FIELDNAME____" tal:content="python:warning"> TEXT </div>
 
 <!-- zero width spaces (#8203) needed for IE(8) and metadata mask editor -->
 &#8203;<input type="file" size="60%" disabled="disabled" tal:attributes="name python:'m_upload_file_FOR_____FIELDNAME____'; id name; value value; required required" />

@@ -85,15 +85,21 @@ div.mask_row {margin-bottom:6px;}
 .mediatum_acc_content{overflow-x:hidden!important;}
 .mediatum_acc_content{box-shadow: 0px 0px 5px silver inset!important;}
 .mediatum_accordiontree{overflow:hidden!important;}
+.mediatum_blue_border{border:thin solid blue;}
+.blue {border: solid 1px #CEE2F2;background-color: #F0F5FF;}
 .mediatum_breadcrumbs{clear:left;}
 .mediatum_breadcrumbs_h{float:left;padding-left:10px;}
 .mediatum_breadcrumbs_id{float:right;padding-right:10px;}
+.mediatum_button_width{width:100px;}
 .mediatum_buttoncreate3{min-width:200px;padding:4px;}
 .mediatum_buttonmessage{color:#ff0000;text-align:center;}
 .mediatum_clean-container {background-color:#ddd;position:relative;}
+.mediatum_clear_both{clear:both;}
 .mediatum_clear_left{clear:right;}
 .mediatum_clear_right{clear:right;}
+.mediatum_color_red{color:red;}
 .mediatum_context-menu-home {overflow: hidden!important;}
+.mediatum_delbutton{padding-top:20px;}
 .mediatum_divnav {position:relative;bottom:20px;max-height:40px;z-index:-100;}
 .mediatum_edit_paging{padding-right:10px;float:right;z-index:-100;}
 .mediatum_edit_upload_scheme_text{text-align:center;min-height:40px;}
@@ -218,12 +224,14 @@ p.mediatum_templateerror #msg {font-family: Courier;}
 .mediatum_treecontent a{font-weight:normal!important; font-size:11px!important;padding:2px!important;width:100%;}
 .mediatum_treesouth{background-color:#bbb;}
 .mediatum_upload{border:1px solid silver;padding:5px;height:40px;display:block;float:left;margin:0px 5px;}
+.mediatum_upload_files{padding:20px;margin-left:150px;}
 .mediatum_uploadform_style{border:2px solid silver;}
 .mediatum_uploadform_widget{position:absolute;top:-7px;right:-7px;z-index:10002;}
 .mediatum_uploadmsg{position:absolute;top:2px;right:2px;}
 .mediatum_uploadzipfileok{padding-left:5px;white-space:nowrap;z-index:2;}
 .mediatum_uploadzipfileok_plupload{background-color:white;z-index:3;}
 .mediatum_wait_ {position:fixed;top:0;left:0;right:0;bottom:0;background-color:white;opacity: 0.5;display:none;padding:40%;}
+.mediatum_width_100px{width:100px;}
 
 .message {margin: 1em 0;padding: 10px 20px;border: solid 1px #FFDD99;background-color: #FFFFCC;overflow: visible;position:relative;}
 div.metaeditor{overflow:hidden;}
@@ -238,12 +246,13 @@ div.metaeditor div#editor_content{margin-left:110px;}
 .progressBarStatus {margin-top: 2px;width: 90%;font-size: 7pt;font-family: Arial;text-align: left;white-space: nowrap;}
 a.progressCancel {font-size: 0;display: block;height: 14px;width: 14px;background-image: url(/img/delete.png);background-repeat: no-repeat;background-position: -14px 0px;float: right;}
 a.progressCancel:hover {background-position: 0px 0px;}
-.progressContainer {margin: 5px;padding: 4px;border: solid 1px #E8E8E8;background-color: #F7F7F7;overflow: visible;position:relative;}
+.progressContainer {margin: 5px;padding: 4px;border: solid 1px #E8E8E8;background-color: #F7F7F7;overflow: visible;position:relative;width:auto !important;}
 .progressContainer .schema{top:10px;right:5px;text-align:right;}
 .progressContainer .schema .selection{text-align:right;white-space:nowrap;float:right;background-color: #F0F5FF;}
 .progressWrapper {width: 100%;overflow: hidden;position:relative}
 .red {border: solid 1px #B50000;background-color: #FFEBEB;}
 .readonly span.fancytree-title{color:#666!important;font-weight:normal!important;margin-left:3px;cursor:not-allowed}
+td.silver{background-color:#efefef;}
 span.required {color:#ff0000;}
 div.row {border:solid white 1px; margin:2px; width: 100%; white-space:nowrap; cursor:pointer;}
 input.text {margin-bottom:5px;}
@@ -290,6 +299,26 @@ iframe.ui-layout-center, div.ui-layout-north{border-width:0!important;padding:0;
 #delete_text{display:none;}
 #dummy{display:none;}
 #editor_content {margin-left:220px; top:0px;}
+#filetable_edit{border:1px solid silver; border-width:1px 1px 1px 1px; width:100%;}
+#filetable_edit input{background-color:transparent; margin:1px; border-width:0px;}
+#filetable_edit input:hover{border-width:0px;}
+#filetable_edit input[type="text"]{border:1px solid silver;}
+#filetable_edit input[type="text"]:hover{border:1px solid black; background-color:#ffffff;}
+#filetable_edit th{background-color:#d8d8d8; padding:3px 5px 2px 3px; border-bottom:1px solid silver; font-variant:small-caps;}
+#filetable_edit tr{background-color:#f0f0f0; border:1px solid silver;}
+#filetable_edit td{vertical-align:middle; padding:2px; border-bottom:1px solid silver;}
+#filetable_edit tr:hover{background-color:silver;}
+#filetable_edit a{color:#000000; padding:1px; margin:0px;}
+#filetable_nodebig{border:1px solid silver; border-width:1px 1px 1px 1px; width:100%;}
+#filetable_nodebig input{background-color:transparent; margin:1px; border-width:0px;}
+#filetable_nodebig input:hover{border-width:0px;}
+#filetable_nodebig input[type="text"]{border:1px solid silver;}
+#filetable_nodebig input[type="text"]:hover{border:1px solid black; background-color:#ffffff;}
+#filetable_nodebig th{background-color:#d8d8d8; padding:3px 5px 2px 3px; border-bottom:1px solid silver; font-variant:small-caps;}
+#filetable_nodebig tr{background-color:#f0f0f0; border:1px solid silver;}
+#filetable_nodebig td{vertical-align:middle; padding:2px; border-bottom:1px solid silver;}
+#filetable_nodebig tr:hover{background-color:silver;}
+#filetable_nodebig a{color:#000000; padding:1px; margin:0px;}
 #footer {color:#fff; text-align:center; padding:20px; clear:both; background:#314348 url(/img/layout/edit_bg_banner.png) repeat-x left top;
     width:auto; margin-top:0px; height:20px;}
 #footer a {color:#fff; text-decoration:underline;}
@@ -332,6 +361,7 @@ iframe.ui-layout-center, div.ui-layout-north{border-width:0!important;padding:0;
 #sub_content{border-width:1px 0 0 0!important;}
 #sub_footer_module{overflow:hidden!important;border-width:0px!important;height:20xp;padding:0px!important;background-color:#bbb!important;}
 #text{position:relative;background-color:white!important;border:2px solid silver;margin:200px auto;height:200px;width:300px;z-index:4;padding:10px;}
+#thumb{float:left;}
 #uploaderbib{width:100%;height:450px;}
 #uploaderfile{width:100%;height:450px;}
 #uploadform-form, #metaform-form{position:absolute;top:0px;left:0px;bottom:0px;right:0px;padding:0px;margin:30px;z-index:1000001;

@@ -43,26 +43,7 @@
                             <ul>
                                 <li tal:repeat="sortfield python:sort_choices">
                                     <div>
-                                        <tal:block tal:condition="python:sortfield.value=='off'">
-                                         <a i18n:translate="" tal:content="python:u'{}'.format(sortfield.label)"
-                                         tal:attributes="class python:u'mediatum_img_off mediatum_img_nav';href python:u'?id={}&sortfield={}&nodes_per_page={}'.format(idstr, sortfield.value,nodes_per_page);"/>
-                                        </tal:block>
-                                        <tal:block tal:condition="python:sortfield.value=='fs-ranking'">
-                                                <a i18n:translate="" tal:content="python:u'{}'.format(sortfield.label)"
-                                                tal:attributes="class python:u'mediatum_img_ranking mediatum_img_nav';href python:u'?id={}&sortfield={}&nodes_per_page={}'.format(idstr, sortfield.value,nodes_per_page);"/>
-                                        </tal:block>
-                                        <tal:block tal:condition="python:sortfield.value=='-fs-ranking'">
-                                            <a i18n:translate="" tal:content="python:u'{}'.format(sortfield.label)"
-                                                tal:attributes="class python:u'mediatum_img_rankingdesc mediatum_img_nav';href python:u'?id={}&sortfield={}&nodes_per_page={}'.format(idstr, sortfield.value,nodes_per_page);"/>
-                                        </tal:block>
-                                        <tal:block tal:condition="python:sortfield.value=='fs-phototime'">
-                                            <a i18n:translate="" tal:content="python:u'{}'.format(sortfield.label)"
-                                                tal:attributes="class python:u'mediatum_img_date mediatum_img_nav';href python:u'?id={}&sortfield={}&nodes_per_page={}'.format(idstr, sortfield.value,nodes_per_page);"/>
-                                        </tal:block>
-                                        <tal:block tal:condition="python:sortfield.value=='-fs-phototime'">
-                                            <a i18n:translate="" tal:content="python:u'{}'.format(sortfield.label)"
-                                                tal:attributes="class python:u'mediatum_img_datedesc mediatum_img_nav'; href python:u'?id={}&sortfield={}&nodes_per_page={}'.format(idstr, sortfield.value,nodes_per_page);"/>
-                                        </tal:block>
+                                        <a i18n:translate="" tal:content="python:u'{}'.format(sortfield.label)" tal:attributes="href python:u'?id={}&sortfield={}&nodes_per_page={}'.format(idstr, sortfield.value,nodes_per_page)"/>
                                     </div>
                                 </li>
                             </ul>

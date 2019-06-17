@@ -24,6 +24,7 @@ if __name__ == "__main__":
 import logging
 import random
 from PIL import Image, ImageDraw
+from PIL.Image import DecompressionBombError as _DecompressionBombError
 from core import config
 import sys
 import os
@@ -159,6 +160,10 @@ def parsePDFExternal(filepath, tempdir):
     retcode = call([sys.executable, os.path.join(basedir, "lib/pdf/parsepdf.py"), filepath, tempdir])
     if retcode == 111:
         raise PDFException("error:document encrypted")
+    elif retcode == 112:
+        raise Exception("DecompressionBombError")
+    elif retcode == 113:
+        raise Exception("general error")
     elif retcode == 1:  # normal run
         pass
 
@@ -204,3 +209,7 @@ if __name__ == "__main__":
 
     except PDFException as e:
         sys.exit(111)
+    except _DecompressionBombError:
+        sys.exit(112)
+    except Exception as e:
+        sys.exit(113)

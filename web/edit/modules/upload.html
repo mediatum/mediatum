@@ -53,6 +53,8 @@
         }
 
         var number_files = 0;
+        var all_files = 0;
+        var err_files = 0;
         var singlefile = 0;
 
         function loadEditArea02(id){
@@ -201,12 +203,12 @@
 
         $('#uploader_start').attr('aria-disabled','true');  // not functional ?
 
-        number_files = $('#uploader_filelist_file').children().length;
+        number_files = all_files = $('#uploaderfile_filelist').children().length;
         if (number_files==1){
             singlefile==1;
     }
 
-    console.log('number_files: ' + number_files);
+    console.log('number_files: ' + number_files + ' all_files: ' + all_files);
 
     var new_elem = $('<img height="30" src="/img/wait.gif" />');
     new_elem.insertBefore('#span_plupload_createobjects_file');
@@ -232,13 +234,25 @@
             success: function (data) {
                 ajax_response = data;
                 console.log('createObjects');
+                curr_file = $('#uploaderfile_filelist').children().slice(all_files-number_files).first()
+                var err = 0;
                 if (data.errornodes.length>0){
-                    $('#uploader_filelist_file').children().first().removeClass('blue');
-                    $('#uploader_filelist_file').children().first().addClass('red');
+                    err_div = curr_file[0].children[1].children[2];
+                    for (i = 0; i < data.errornodes.length; i ++) {
+                      if (err_div.id == 'err_' + data.errornodes[i][2]) {
+                        err_div.textContent = data.errornodes[i][1];
+                        err = 1;
+                        break;
+                      }
+                    }
+                }
+                if (data.errornodes.length>0 && err != 0){
+                    err_files += 1;
+                    $('#uploaderfile_filelist').children().slice(all_files-number_files).first().removeClass('blue');
+                    $('#uploaderfile_filelist').children().slice(all_files-number_files).first().addClass('red');
                 }else{
-                    number_files -= 1;
 
-                    $('#uploader_filelist_file').children().first().remove();
+                    $('#uploaderfile_filelist').children().slice(all_files-number_files).first().remove();
 
                     $('#divStatus').html('processing / ' + number_files);
                     data.new_tree_labels.forEach(
@@ -249,7 +263,9 @@
                         changed_node.renderTitle();
                     }
                     )
+                  all_files -= 1;
                 }
+                number_files -= 1;
 
                 console.log('$.ajax returns: '+data);
                 console.log('number_files: ' + number_files);
@@ -261,12 +277,20 @@
         var childnode = ajax_response;
 
     }) // $.each
-    console.log('going to call closeFormFile()');
-    closeFormPluploadWidgetFile();
-    console.log('after called: closeFormFile()');
-    console.log('going to call loadEditArea(id), id:'+id);
-    parent.loadEditArea(id);
-    console.log('after called loadEditArea(id), id:'+id);
+    if (err_files == 0) {
+      console.log('going to call closeFormFile()');
+      closeFormPluploadWidgetFile();
+      console.log('after called: closeFormFile()');
+      console.log('going to call loadEditArea(id), id:'+id);
+      parent.loadEditArea(id);
+      console.log('after called loadEditArea(id), id:'+id);
+    } else {
+      // $('#error_dummy')[0].textContent='';
+      // throw "some files cannot be created";
+      $('#id_button_createobjectsplupload_file').prop('disabled', true);
+      $('#uploaderfile_browse').addClass('ui-state-disabled').attr('aria-disabled', 'true');
+      new_elem[0].style.visibility = 'hidden';
+    }
     console.groupEnd('edit.modules: upload.html createObjectsPluploadFile');
     }  // function createObjectsPluploadFile
 
@@ -301,7 +325,7 @@
                 //max_file_size : '1000mb',
                 // Specify what files to browse for
                 mime_types: [
-                {title : "Image files", extensions : "jpg,jpeg,gif,png,tiff,svg,bmp"},
+                {title : "Image files", extensions : "jpg,jpeg,gif,png,tif,tiff,svg,bmp"},
                 {title : "Zip files", extensions : "zip"},
                 {title : "pdf files", extensions : "pdf"},
                 {title : "mp4 video files", extensions : "mp4"},
@@ -542,7 +566,7 @@
 
         $('#uploader_start').attr('aria-disabled','true');  // not functional ?
 
-        number_files = $('#uploader_filelist_bib').children().length;
+        number_files = $('#uploaderbib_filelist').children().length;
         if (number_files==1){
             singlefile==1;
         }
@@ -569,12 +593,12 @@
                         ajax_response = data;
                         console.log('createObjects');
                         if (data.errornodes.length>0){
-                            $('#uploader_filelist_bib').children().first().removeClass('blue');
-                            $('#uploader_filelist_bib').children().first().addClass('red');
+                            $('#uploaderbib_filelist').children().first().removeClass('blue');
+                            $('#uploaderbib_filelist').children().first().addClass('red');
                         }else{
                             number_files -= 1;
 
-                            $('#uploader_filelist_bib').children().first().remove();
+                            $('#uploaderbib_filelist').children().first().remove();
 
                             $('#divStatus').html('processing / ' + number_files);
                             data.new_tree_labels.forEach(
@@ -770,7 +794,10 @@
                         console.log('fid='+fid);
                         var filelist_line = $("#"+fid);
                         console.log('filelist_line', filelist_line);
-                        filelist_line.attr('class', 'progressContainer blue');
+                        if (JSON.parse(info.response).ret.indexOf('schema error') >= 0)
+                          filelist_line.attr('class', 'progressContainer red');
+                        else
+                          filelist_line.attr('class', 'progressContainer blue');
                         var c1 = filelist_line.children()[1];
                         c1.innerHTML = c1.innerHTML + JSON.parse(info.response).ret;
                         c1ppp = c1.parentNode.parentNode.parentNode;
@@ -1057,6 +1084,7 @@
         <input type="hidden" tal:condition="python:len(schemes[type])==1" name="scheme" class="typesel" tal:attributes="id type; value python:schemes[type][0].name"/>
         <input type="hidden" tal:attributes="value python:'|'.join(files);id type"/>
     </div>
+    <div tal:attributes="id python:u'err_{}'.format(hash(filename))"></div>
 </tal:block>
 
 <tal:block metal:define-macro="uploadzipfileok_plupload">

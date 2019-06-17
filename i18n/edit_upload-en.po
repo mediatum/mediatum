@@ -109,3 +109,9 @@ msgstr "-- Select importer --"
 
 msgid "edit_upload_select_metadata_type"
 msgstr "Select metadata type: "
+
+msgid "image_too_big"
+msgstr "Image too big"
+
+msgid "unknown_image_format"
+msgstr "Unknown image format"

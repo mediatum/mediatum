@@ -112,3 +112,9 @@ msgstr "-- Importer wählen --"
 
 msgid "edit_upload_select_metadata_type"
 msgstr "Metadatentyp wählen: "
+
+msgid "image_too_big"
+msgstr "Bild zu groß"
+
+msgid "unknown_image_format"
+msgstr "Unbekanntes Bildformat"

@@ -23,13 +23,14 @@ import logging
 import os
 import tempfile
 from PIL import Image as PILImage, ImageDraw
+from PIL.Image import DecompressionBombError as _DecompressionBombError
 
 from core import config, File, db
 from core.archive import Archive, get_archive_for_node
 from core.attachment import filebrowser
 from core.translation import t
 from core.postgres import check_type_arg_with_schema
-from contenttypes.data import Content, prepare_node_data
+from contenttypes.data import Content, prepare_node_data, BadFile as _BadFile
 from utils.utils import isnewer, iso2utf8, utf8_decode_escape
 from utils.compat import iteritems
 
@@ -58,7 +59,12 @@ def make_thumbnail_image(src_filepath, dest_filepath):
     if isnewer(dest_filepath, src_filepath):
         return
 
-    pic = PILImage.open(src_filepath)
+    try:
+        pic = PILImage.open(src_filepath)
+    except IOError as exe:
+        raise _BadFile("unknown_image_format")
+    except _DecompressionBombError as exe:
+        raise _BadFile("image_too_big")
     temp_jpg_file = tempfile.NamedTemporaryFile(suffix=".jpg", delete=False)
 
     try:

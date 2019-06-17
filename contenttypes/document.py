@@ -36,6 +36,7 @@ from core import File
 from core import db
 from core.request_handler import get_header as _get_header
 from core.request_handler import sendFile as _sendFile
+from contenttypes.data import BadFile as _BadFile
 
 logg = logging.getLogger(__name__)
 
@@ -172,6 +173,10 @@ class Document(Content):
                         db.session.commit()
                         return
                     raise OperationException(ex.value)
+                except Exception as exc:
+                    if str(exc)=="DecompressionBombError":  # must match error string in parsepdf.py
+                        raise _BadFile("image_too_big")
+                    raise
                 with codecs.open(infoname, "rb", encoding='utf8') as fi:
                     for line in fi.readlines():
                         i = line.find(':')

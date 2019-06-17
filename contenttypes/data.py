@@ -442,6 +442,13 @@ def prepare_node_data(node, req):
     return data
 
 
+class BadFile(Exception):
+    """
+    Raised if error while handling file
+    """
+    pass
+
+
 class Content(Data, SchemaMixin):
 
     """(Abstract) base class for all content node types.

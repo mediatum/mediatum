@@ -133,7 +133,7 @@ def getContent(req, ids):
                                 newnodes.append(new_node.id)
                                 basenodefiles_processed.append(f)
                             except ValueError, e:
-                                errornodes.append((filename, unicode(e)))
+                                errornodes.append((filename, translate(unicode(e), request=req), unicode(hash(f.getName()))))
 
                         logg.debug("filename: %s, mimetype: %s", filename, mimetype)
                         logg.debug("__name__=%s, func=%s; _m=%s, _m[1]=%s", __name__, funcname(), mimetype, mimetype[1])
@@ -171,7 +171,7 @@ def getContent(req, ids):
                                         newnodes.append(new_node.id)
                                         basenodefiles_processed.append(f)
                                     except ValueError, e:
-                                        errornodes.append((filename, unicode(e)))
+                                        errornodes.append((filename, translate(unicode(e), request=req), unicode(hash(f.getName()))))
                                     db.session.commit()
                                 else:
 
@@ -191,7 +191,12 @@ def getContent(req, ids):
                                     # set filetype for uploaded file as requested by the content class
                                     cloned_file.filetype = content_class.get_upload_filetype()
                                     node.files.append(cloned_file)
-                                    node.event_files_changed()
+                                    try:
+                                        node.event_files_changed()
+                                    except Exception as e:
+                                        errornodes.append((filename, translate(unicode(e), request=req), unicode(hash(f.getName()))))
+                                        db.session.rollback()
+                                        continue
                                     newnodes.append(node.id)
                                     basenodefiles_processed.append(f)
 

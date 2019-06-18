@@ -285,6 +285,10 @@ a.link-parent {
     margin-right: 9px
 }
 
+#footer span.footer_left a {
+    margin-right: 9px
+}
+
 .portlet {
     padding-bottom: 0px;
     padding-left: 0px;

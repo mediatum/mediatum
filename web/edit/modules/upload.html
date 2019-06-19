@@ -6,6 +6,8 @@
 
 <link rel="stylesheet" href="/js/jquery-ui-1.12.1.css" type="text/css" />
 <link rel="stylesheet" href="/js/jquery.ui.plupload/css/jquery.ui.plupload.css" type="text/css" />
+<link rel="stylesheet" href="/css/uploadform.css" type="text/css" />
+
     <script tal:content="python:u'var id = \'{}\';'.format(id)"> </script>
     <script tal:content="python:u'var sid = \'{}\';'.format(sid)"> </script>
     <script type="text/javascript">
@@ -82,17 +84,18 @@
     </div>
 
     <div id="search" tal:content="raw search">TEXT</div>
-    <div id="nav" tal:content="raw nav">TEXT</div>
 </div>
 
 <div class="mediatum_clear_right"> </div>
     <div id="sub_footer_module">
-        <div class="mediatum_sub_footer_module_div">
+        <div class="mediatum_nav_bottom" tal:content="raw nav">TEXT</div>
+        <div id="mediatum_sub_footer_module_div">
             <tal:block tal:replace="count"/> item(s)
         </div>
     </div>
 
     <div id="sub_content_content">
+            <div class="mediatum_nav_top" tal:content="raw nav">TEXT</div>
         <div id="nodelist" tal:content="raw nodelist">TEXT</div>
     </div>
 
@@ -178,8 +181,8 @@
         uf.show();
 
         hc = $('div.plupload_header');
-        ufs = $('#uploader_filelist_file');
-        var x = $('#mediatum_uploader_dropbox');
+        ufs = $('#uploaderfile_filelist');
+        var x = $('#uploaderfile_dropbox');
         var uc = $('#uploader_container');
         hc.remove();
         parent.$('#overlay').css('display', 'block');
@@ -519,8 +522,8 @@
         uf.show();
 
         hc = $('div.plupload_header');
-        ufs = $('#uploader_filelist_bib');
-        var x = $('#mediatum_uploader_dropbox');
+        ufs = $('#uploaderbib_filelist');
+        var x = $('#uploaderbib_dropbox');
         var uc = $('#uploader_container');
         hc.remove();
         parent.$('#overlay').css('display', 'block');

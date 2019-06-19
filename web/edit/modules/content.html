@@ -1,27 +1,23 @@
 <tal:block metal:define-macro="edit_content">
 
     <div id="navigation_content" style="display:block;border:1px solid silver!important;border-width:0px 0px 1px 1px !important;">
-
         <div id="search" style="float:right;width:390;border:1px solid silver" tal:content="raw search">TEXT</div>
-
-        <div id="nav" style="float:left;clear:both" tal:content="raw nav">TEXT</div>
-
     </div>
 
-    <div id="sub_footer_module" style="overflow:hidden!important;border-width:0px!important;height:20xp;padding:0px!important;">
-        <div style="position:absolute;right:5px;top:2px;font-size:11px">
+    <div id="sub_footer_module">
+            <div class="mediatum_nav_bottom" tal:content="raw nav">TEXT</div>
+        <div id="mediatum_sub_footer_module_div">
             <tal:block tal:replace="count"/> item(s)
         </div>
     </div>
 
     <div id="sub_content_content">
-
         <div style="padding-left:200px">
             <p id="message" class="error" style="display:none;text-align:center;position:fixed;"/>
         </div>
         <div style="clear:left"> </div>
-
         <div id="module_content_main">
+                <div id="mediatum_nav_top" tal:content="raw nav">TEXT</div>
             <tal:block tal:replace="raw items"/>
         </div>
     </div>

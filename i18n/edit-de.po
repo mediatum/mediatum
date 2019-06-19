@@ -420,3 +420,9 @@ msgstr "Filter auf alle Arbeitsverzeichnisse anwenden"
 
 msgid "write_information_back"
 msgstr "Informationen synchronisieren"
+
+msgid "preview_images_on"
+msgstr "Vorschaubilder einblenden"
+
+msgid "preview_images_off"
+msgstr "Vorschaubilder ausblenden"

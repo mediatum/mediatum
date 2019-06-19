@@ -407,3 +407,9 @@ msgstr "apply filter to all existing home directories"
 
 msgid "write_information_back"
 msgstr "synchronize information"
+
+msgid "preview_images_on"
+msgstr "Show preview images"
+
+msgid "preview_images_off"
+msgstr "Hide preview images"

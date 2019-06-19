@@ -44,7 +44,7 @@ div.back {background:#ffffff; padding:7px; border:1px solid silver; margin-left:
 div.breadcrumbs {margin:0px; border-bottom:0px solid #E2E9EB; padding:2px 10px 2px 5px; color:#243135;overflow:visible;
     background-color:white;margin-top:-1px;}
 a.breadcrumbs {color:#243135;}
-.button, input[type="button"],input[type="submit"],input[type="reset"], button[type="submit"]{
+.button, input[type="button"],input[type="submit"],input[type="reset"], button[type="submit"], .mediatum_showpreview_btn{
     background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #ededed), color-stop(1, #dfdfdf) );
     background:-moz-linear-gradient( center top, #ededed 5%, #dfdfdf 100% );
     filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ededed', endColorstr='#dfdfdf');
@@ -72,9 +72,6 @@ p.error {background:#FFE7E7; color:#AF0101;  padding:7px; border:1px solid #AF01
 p.error a {color:black; margin:0px;}
 p.error a:hover {color:black; text-decoration:underline;}
 .fancytree-node-disabled {opacity: 0.5;background-color: silver;}
-div.fieldset {border:  1px solid #afe14c;margin: 10px 0;padding: 20px 10px; height:200px;width:90%;overflow:auto;}
-div.flash {width:95%;margin: 10px 5px;border-color: #D9E4FF;position:relative;}
-.green {border: solid 1px #DDF0DD;background-color: #EBFFEB;}
 div.grippie {background:#EEEEEE url(/img/grippie.png) no-repeat scroll center 2px; cursor:s-resize; height:9px; width:100%; margin:0px 5px 5px 2px; padding:0px;}
 div.hstippled {font-size:1px; height:1px;}
 div.label{width:210px;float:left;padding-left:15px;}
@@ -86,13 +83,13 @@ div.mask_row {margin-bottom:6px;}
 .mediatum_acc_content{box-shadow: 0px 0px 5px silver inset!important;}
 .mediatum_accordiontree{overflow:hidden!important;}
 .mediatum_blue_border{border:thin solid blue;}
-.blue {border: solid 1px #CEE2F2;background-color: #F0F5FF;}
 .mediatum_breadcrumbs{clear:left;}
 .mediatum_breadcrumbs_h{float:left;padding-left:10px;}
 .mediatum_breadcrumbs_id{float:right;padding-right:10px;}
 .mediatum_button_width{width:100px;}
 .mediatum_buttoncreate3{min-width:200px;padding:4px;}
 .mediatum_buttonmessage{color:#ff0000;text-align:center;}
+.mediatum_center{display:block;margin-left: auto;margin-right: auto;}
 .mediatum_clean-container {background-color:#ddd;position:relative;}
 .mediatum_clear_both{clear:both;}
 .mediatum_clear_left{clear:right;}
@@ -109,6 +106,11 @@ div.mask_row {margin-bottom:6px;}
 
 /* Image Links */
 .mediatum_img_nav::before{padding: 0px 5px 0px 5px;}
+.mediatum_imgtooltipbase .mediatum_imghover{display:none;}
+.mediatum_imgtooltipbase:hover .mediatum_imghover{display: inline-block;position: relative;bottom:33px;left: 0px;height:128px;width:128px;}
+.mediatum_imgtooltipbasedefault .mediatum_imghoverdefault{display:none;}
+.mediatum_imgtooltipbasedefault:hover .mediatum_imghoverdefault{display: inline-block;position: relative;bottom:33px;left: 0px;height:128px;width:128px;}
+
 /* Top Menu */
 .mediatum_img_menulayout::before{content: url(/img/edit_edit.gif);} /* Verzeichnis-Übersicht not used */
 .mediatum_img_menumetadata::before {content: url(/img/edit_edit.gif);} /* Metadaten bearbeiten */
@@ -175,6 +177,7 @@ div.mask_row {margin-bottom:6px;}
 .mediatum_logocontainer img {float:left; padding:0px; margin:5px; margin-left:10px;}
 .mediatum_MainMenu {margin-left:40px; margin-top:50px; margin-bottom:30px; float:left; height:auto; width:auto; padding:10px;}
 .mediatum_metaform_div{position:absolute;top:-7px;right:-7px;z-index:10002;}
+.mediatum_minithumb{height:30px;width:30px;}
 .mediatum_multitext {height:60px; margin-bottom:5px;}
 .mediatum_nav { top: 0; left: 0; width: 100%; background: #3070b3; list-style:none; margin:0; padding:0; z-index:999}
 .mediatum_nav a{color:#fff;font-weight:normal !important;font-size: 12px;}
@@ -189,24 +192,41 @@ div.mask_row {margin-bottom:6px;}
 .mediatum_nav li:hover > ul { display: inline-block; position: absolute;}
 .mediatum_nav li:hover li { float: none; }
 .mediatum_nav ul ul{left: 100%;top:0;}
+.mediatum_nav_bottom{margin-left:10px;}
+.mediatum_nav_top{background-color: #f0f0f0;}
+.mediatum_node_grid_icons{display:flex;justify-content: center;padding-bottom:5px;}
+.mediatum_node_grid_icon{width:30px;}
 .mediatum_node_icon{display:table-cell;width:30px;}
 .mediatum_node_icon_chk{width:30px;}
 .mediatum_node_icon_header{display:table-cell;padding-bottom: 5px;width:30px;}
-.mediatum_node_text {display:table-cell; overflow: hidden;font-size:10px; line-height:0px;}
+.mediatum_node_text {display:table-cell; font-size:10px; line-height:0px;}
+.mediatum_node_text_grid{padding:0px 5px 0px 5px;width:138px;}
 .mediatum_nodelist_text{display:table-cell;text-align:right; font-weight: bold;padding-right: 20px;}
 .mediatum_nonodelist{text-align:center;padding-top:50px;}
+.mediatum_pagenumber{font-size:14px;margin-left:5px;margin-right:5px;}
+.mediatum_pagenumber_act{font-size:18px;}
 .mediatum_pluploadform-background{position:absolute;top:0px;left:0px;height:100%;width:100%;background-color:silver;opacity: 0.5;
     -moz-opacity: 0.5;-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";filter:alpha(opacity=50);}
 .mediatum_pointer{cursor:pointer;}
+.mediatum_subform_identifier{min-width:200px;padding:4px;}
+.mediatum_subform_identifier_text{text-align:center;min-height:40px;}
 .mediatum_showcontent {display: table-row;width:100%;}
-.mediatum_showcontent .actions{position:absolute;top:1px;right:1px;display:none;}
-.mediatum_showcontent:hover .actions{display:block;}
+.mediatum_showcontent a:link, .mediatum_showcontentthumb a:visited{font-weight:normal;}
+.mediatum_showcontent:hover{border-left:2px solid #333333;border-right:1px solid #333333;border-top:1px solid #333333;border-bottom:1px solid #333333;
+    background-color: #efefef;}
 .mediatum_showcontent_error {float:left; width:296px; height:168px; position:relative; left:0px; top:0px; border:1px solid #FF0000; margin: 2px;}
 .mediatum_showcontent_error .actions{position:absolute;top:1px;right:1px;display:none;}
 .mediatum_showcontent_error:hover .actions{display:block;}
-.mediatum_sub_footer_module_div{position:absolute;right:5px;top:2px;font-size:11px;}
-.mediatum_subform_identifier{min-width:200px;padding:4px;}
-.mediatum_subform_identifier_text{text-align:center;min-height:40px;}
+.mediatum_showcontentthumb {display: block;border: 1px solid #ccc;margin:10px;}
+.mediatum_showcontentthumb a:link, .mediatum_showcontentthumb a:visited{font-weight:normal;}
+.mediatum_showcontentthumbrow {width:296px;display: flex;flex-flow: row wrap;justify-content: space-around;align-content: flex-start;}
+.mediatum_showcontentthumbcellimg {width:128px;}
+.mediatum_showcontentthumbcell {text-overflow: "…";}
+.mediatum_showcontentthumb_error {float:left; width:296px; height:168px; position:relative; left:0px; top:0px; border:1px solid #FF0000; margin: 2px;}
+.mediatum_showcontentthumb_error .actions{position:absolute;top:1px;right:1px;display:none;}
+.mediatum_showcontentthumb_error:hover .actions{display:block;}
+.mediatum_showpreview{margin: 10px;clear:both;overflow:hidden;}
+.mediatum_showpreview_input{float:right;margin-bottom:10px;}
 .mediatum_subnavigation {background-color:#ddd!important;margin:0!important;padding:0!important;}
 .mediatum_subnavigation_1 {position:absolute;right:2px;top:10px;}
 .mediatum_subnavigation_2 {padding-top:6px;margin:0 0 0 5px;white-space:nowrap;}
@@ -216,6 +236,7 @@ div.mask_row {margin-bottom:6px;}
 p.mediatum_templateerror {background: url("/img/talerror.gif") #d8d8d8 no-repeat; background-position:10px 50%; padding:7px; border:1px solid #0c0c0c;
     margin-left:20px; margin-right:20px; vertical-align:middle;}
 p.mediatum_templateerror #msg {font-family: Courier;}
+.mediatum_thumbnail{border:0px!important; position:relative; top:0px; left:0px; width:128px; height:128px;}
 .mediatum_treecontent { background-color:#ddd;border-right:1px solid #ddd;}
 .mediatum_treecontent .mediatum_accordiontree h3 {font-size: 0.9em; background:#333;margin:0px;cursor:pointer;padding:10px 0px;position:relative;z-index:0;
     border-bottom:1px solid #ddd;text-align:center;}
@@ -232,25 +253,10 @@ p.mediatum_templateerror #msg {font-family: Courier;}
 .mediatum_uploadzipfileok_plupload{background-color:white;z-index:3;}
 .mediatum_wait_ {position:fixed;top:0;left:0;right:0;bottom:0;background-color:white;opacity: 0.5;display:none;padding:40%;}
 .mediatum_width_100px{width:100px;}
-
-.message {margin: 1em 0;padding: 10px 20px;border: solid 1px #FFDD99;background-color: #FFFFCC;overflow: visible;position:relative;}
 div.metaeditor{overflow:hidden;}
 div.metaeditor div.label{width:100px;}
 div.metaeditor div#editor_content{margin-left:110px;}
-
-.plupload_container{height:450px;margin-bottom:50px;}
-.progressName {font-size: 8pt;font-weight: 700;color: #555;width: 323px;height: 14px;text-align: left;white-space: nowrap;overflow: visible;}
-.progressBarInProgress, .progressBarComplete, .progressBarError {font-size: 0;width: 0%;height: 2px;background-color: blue;margin-top: 2px;}
-.progressBarComplete {width: 100%;background-color: green;visibility: hidden;}
-.progressBarError {width: 100%;background-color: red;visibility: hidden;}
-.progressBarStatus {margin-top: 2px;width: 90%;font-size: 7pt;font-family: Arial;text-align: left;white-space: nowrap;}
-a.progressCancel {font-size: 0;display: block;height: 14px;width: 14px;background-image: url(/img/delete.png);background-repeat: no-repeat;background-position: -14px 0px;float: right;}
-a.progressCancel:hover {background-position: 0px 0px;}
-.progressContainer {margin: 5px;padding: 4px;border: solid 1px #E8E8E8;background-color: #F7F7F7;overflow: visible;position:relative;width:auto !important;}
-.progressContainer .schema{top:10px;right:5px;text-align:right;}
-.progressContainer .schema .selection{text-align:right;white-space:nowrap;float:right;background-color: #F0F5FF;}
-.progressWrapper {width: 100%;overflow: hidden;position:relative}
-.red {border: solid 1px #B50000;background-color: #FFEBEB;}
+.no_overlap{white-space: nowrap; overflow: hidden;text-overflow: ellipsis;}
 .readonly span.fancytree-title{color:#666!important;font-weight:normal!important;margin-left:3px;cursor:not-allowed}
 td.silver{background-color:#efefef;}
 span.required {color:#ff0000;}
@@ -328,15 +334,17 @@ iframe.ui-layout-center, div.ui-layout-north{border-width:0!important;padding:0;
 #identifier_subform{display:none;}
 #input_identifier{width:362px;}
 #items{float:left;width:100%;height:82px;overflow:auto;border:1px solid silver;}
+#list-page-nav{margin-left:5px;margin-right:35px;z-index: 9999;}
 #mediatum_clear_trash_question{display:none;}
 #mediatum_collectionstree{overflow:hidden!important;}
 #mediatum_collectionstree:hover{overflow-y:auto!important;}
 #mediatum_delete_folder_question{display:none;}
 #mediatum_operations { position:relative;clear:left;z-index:-100;}
 #mediatum_selection_div {border-top:1px solid silver; margin:3px; display:none; padding:3px;}
-#mediatum_table_nodelist{display: table; border-collapse: collapse; width: 100%;}
-#mediatum_uploader_container{height:450px;margin-bottom:50px;}
-#mediatum_uploader_dropbox{height:375px;margin-bottom:50px;}
+#mediatum_sub_footer_module_div{position:absolute;right:5px;top:2px;font-size:11px;margin-right:5px;}
+#mediatum_table_nodelist{display:table;border-collapse: collapse; width: 100%;}
+#mediatum_table_nodeview{display:none;}
+#mediatum_table_nodeview_grid{display: flex;flex-flow: row wrap;justify-content: space-around;align-content: flex-start;}
 #mediatum_uploadform_plupload_widget_bib{display:none;position:fixed;top:0px;left:0px;right:0px;bottom:0px;width:100%;height:100%;z-index:1000000;}
 #mediatum_uploadform_plupload_widget_file{display:none;position:fixed;top:0px;left:0px;right:0px;bottom:0px;width:100%;height:100%;z-index:1000000;}
 #metaform{display:none;position:fixed;top:0px;left:0px;right:0px;bottom:0px;width:100%;height:100%;z-index:1000000;}

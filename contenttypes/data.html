@@ -1,5 +1,10 @@
 <div style="position:relative" metal:define-macro="show_node_image">
-    <img tal:attributes="src python:u'/thumbs/{}'.format(node.id)" class="thumbnail" border="0"/>
+    <img tal:attributes="src python:u'/thumbs/{}'.format(node.id)" class="mediatum_minithumb" border="0px"/>
+
+</div>
+
+<div style="position:relative" metal:define-macro="show_node_image_old">
+    <img tal:attributes="src python:u'/thumbs/{}'.format(node.id)" class="thumbnail" border="0px"/>
     <div style="position:absolute;left:2px;bottom:2px;width:128px;height:30px;overflow:hidden" tal:define="active_children python:[c for c in children if c.isActiveVersion()]" tal:condition="python:len(active_children)>0" title="Details vorhanden">
         <img tal:repeat="child active_children" tal:attributes="src python:u'/thumbs/{}'.format(child.id)" class="thumbnail" border="0px" style="width:28px;height:28px;border:1px solid black"/>
     </div>

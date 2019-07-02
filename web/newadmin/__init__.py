@@ -23,7 +23,10 @@ from core.auth import authenticate_user_credentials, logout_user
 from flask.ext import admin, login
 from flask.ext.admin import helpers, expose
 
+import functools as _functools
 import os
+import random as _random
+import string as _string
 
 from web.newadmin.views.node import NodeView, FileView, NodeAliasView
 from web.newadmin.views.setting import SettingView
@@ -106,7 +109,9 @@ def make_app():
     templates_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
     admin_app = Flask("mediaTUM admin", template_folder=templates_dir)
     admin_app.debug = True
-    admin_app.config["SECRET_KEY"] = "dev"
+    # Generate seed for signed session cookies
+    make_key_char = _functools.partial(_random.SystemRandom().choice, _string.ascii_letters)
+    admin_app.config["SECRET_KEY"] = "".join(make_key_char() for _ in xrange(80))
 
     if DEBUG:
         admin_app.debug = True

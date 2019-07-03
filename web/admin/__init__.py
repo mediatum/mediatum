@@ -15,6 +15,12 @@ import flask_login as _flask_login
 import functools as _functools
 import random as _random
 import string as _string
+
+try:
+    import uwsgi as _uwsgi
+except ImportError:
+    _uwsgi = None
+
 from flask import Flask, request, session, url_for, redirect, flash
 from flask_admin import Admin
 from flask_admin.form import SecureForm
@@ -139,7 +145,11 @@ def make_app():
     admin_app.debug = True
     # Generate seed for signed session cookies
     make_key_char = _functools.partial(_random.SystemRandom().choice, _string.ascii_letters)
-    admin_app.config["SECRET_KEY"] = "".join(make_key_char() for _ in xrange(80))
+    secret_key = "".join(make_key_char() for _ in xrange(80))
+    if _uwsgi:
+        _uwsgi.cache_set("secret_key", secret_key)
+        secret_key = _uwsgi.cache_get("secret_key")
+    admin_app.config["SECRET_KEY"] = secret_key
     admin_app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(int(config.get('flask.timeout', "7200")))
 
     if DEBUG:

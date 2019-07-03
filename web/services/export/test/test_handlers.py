@@ -79,7 +79,7 @@ def test_rss(container_node, other_container_node, content_node, collections, ho
 def test_xml_singlenode(xml_fixture):
     struct, req, params = xml_fixture
     req.app_cache = {}
-    from core.transition.globals import _request_ctx_stack
+    from flask.globals import _request_ctx_stack
     _request_ctx_stack.push(req)
     xmlstr = struct2xml(req, "", params, None, singlenode=True, d=struct)
     print xmlstr

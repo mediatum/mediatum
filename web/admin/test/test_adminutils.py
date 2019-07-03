@@ -5,8 +5,8 @@
 """
 from __future__ import absolute_import
 import flask as _flask
-from core.transition import current_user
 from pytest import raises
+import core.users as users
 from web.admin.adminutils import become_user
 from core.exceptions import SecurityException
 
@@ -16,7 +16,7 @@ def test_become_user(session, req, admin_user, some_user):
     _flask.session["user_id"] = admin_user.id
     user = become_user(some_user.login_name)
     assert user is some_user
-    assert current_user == some_user
+    assert users.user_from_session() == some_user
 
 
 def test_become_user_not_allowed_for_guest(session, req, guest_user, some_user):

@@ -5,8 +5,6 @@
 """
 from pytest import fixture, yield_fixture
 from mock import MagicMock
-from core.transition import current_app
-from core.transition.app import AthanaFlaskStyleApp
 
 
 @fixture

@@ -135,9 +135,9 @@ def check_imports():
 
 
 def init_app():
-    from core.transition.app import create_app
+    from web.admin import make_app
     import core
-    core.app = create_app()
+    core.app = make_app()
 
 
 def init_db_connector():

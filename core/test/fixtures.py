@@ -18,7 +18,7 @@ from core.database.postgres.user import AuthenticatorInfo, create_special_user_d
 from sqlalchemy import event
 from core.database.postgres.alchemyext import truncate_tables
 from core.archive import Archive
-from core.transition.app import AthanaFlaskStyleApp
+from web.admin import MediatumFlask
 logg = logging.getLogger(__name__)
 
 
@@ -376,7 +376,7 @@ def fake_archive():
 
 @fixture
 def app():
-    app = AthanaFlaskStyleApp("test")
+    app = MediatumFlask("mediaTUM admin", template_folder="web/templates")
     return app
 
 

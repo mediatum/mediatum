@@ -163,7 +163,7 @@ class Document(Content):
                 tempdir = config.get("paths.tempdir")
 
                 try:
-                    pdfdata = parsepdf.parsePDFExternal(doc.abspath, tempdir)
+                    pdfdata = parsepdf.parsePDF(doc.abspath, tempdir)
                 except parsepdf.PDFException as ex:
                     if ex.value == 'error:document encrypted':
                         # allow upload of encrypted document

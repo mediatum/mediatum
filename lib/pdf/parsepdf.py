@@ -17,18 +17,13 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import sys
-if __name__ == "__main__":
-    sys.path += [sys.argv[1], "../../", "."]
 
 import logging
 import random
 from PIL import Image, ImageDraw
-from PIL.Image import DecompressionBombError as _DecompressionBombError
 from core import config
-import sys
 import os
-from subprocess import call, CalledProcessError
+from subprocess import CalledProcessError
 import utils.process
 import codecs
 
@@ -154,20 +149,6 @@ def parsePDF(filename, tempdir):
     os.remove(imgfile)
 
 
-def parsePDFExternal(filepath, tempdir):
-    """Call parsePDF as external process"""
-    from core.config import basedir
-    retcode = call([sys.executable, os.path.join(basedir, "lib/pdf/parsepdf.py"), filepath, tempdir])
-    if retcode == 111:
-        raise PDFException("error:document encrypted")
-    elif retcode == 112:
-        raise Exception("DecompressionBombError")
-    elif retcode == 113:
-        raise Exception("general error")
-    elif retcode == 1:  # normal run
-        pass
-
-
 def makeThumbs(src, thumb128, thumb300):
     """create preview image for given pdf """
     pic = Image.open(src)
@@ -196,20 +177,3 @@ def makeThumbs(src, thumb128, thumb300):
     draw = ImageDraw.ImageDraw(im)
     draw.line([(0, 0), (127, 0), (127, 127), (0, 127), (0, 0)], (128, 128, 128))
     im.save(thumb128, "jpeg")
-
-
-if __name__ == "__main__":
-    try:
-        import signal
-        signal.alarm(600)  # try processing the file for 10 minutes - then abort
-    except:
-        pass
-    try:
-        parsePDF(sys.argv[1], sys.argv[2])
-
-    except PDFException as e:
-        sys.exit(111)
-    except _DecompressionBombError:
-        sys.exit(112)
-    except Exception as e:
-        sys.exit(113)

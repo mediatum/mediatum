@@ -133,11 +133,6 @@
                         <img tal:condition="canedit" tal:attributes="name python:key;value python:fd(node.get(key), gf(fields, key))" i18n:attributes="title edit_admin_editattr_title" type="image" src="/img/edit.png" onClick="return openFilledForm(this)" style="position:absolute;top:4px;right:0!important"/>
                         <input tal:condition="user_is_admin" tal:attributes="name python:u'attr_{}'.format(key)" i18n:attributes="title edit_admin_del_attribute" type="image" src="/img/delete.png" onClick="return questionDel()" style="top:8px"/>
                     </div>
-
-                    <div tal:condition="python:len(technfields)>0" style="text-align:center;padding:20px 0px">
-                        <button name="deltechn" type="submit" onclick="return questionDel();document.meta.type.value='technical'" i18n:translate="edit_files_del_tech_meta">TEXT</button>
-                    </div>
-
                     <div tal:condition="python:len(list(technfields))==0" id="entry">
                         <div class="label" i18n:translate="edit_admin_noattribute">TEXT</div>
                     </div>

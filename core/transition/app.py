@@ -231,11 +231,7 @@ def detect_athana_or_flask():
 
 
 def create_app(name="mediatum"):
-    from core import translation
     app = AthanaFlaskStyleApp(name)
     # bind app to athana server
     app.register_with_athana()
-    from mediatumbabel import Babel
-    babel = Babel(app)
-    babel.localeselector(lambda: translation.lang(request))
     return app

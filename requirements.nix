@@ -109,16 +109,6 @@ let
     };
   };
 
-  mediatumbabel = self.buildPythonPackage {
-    name = "mediatumbabel-0.1.1";
-    src = fetchurl {
-      url = "https://pypi.python.org/packages/source/m/mediatumbabel/mediatumbabel-0.1.1.tar.gz";
-      sha256 = "1ljh2ka3043g6027760a8144jvi01s37lhwn78nqlj91r05pxq82";
-    };
-    propagatedBuildInputs = with self; [Babel];
-    buildInputs = with self; [setuptools-git];
-  };
-
   mediatumfsm = self.buildPythonPackage {
     name = "mediatumfsm-0.1";
     src = fetchurl {
@@ -472,7 +462,6 @@ in {
       jinja2
       lxml
       magic
-      mediatumbabel
       mediatumfsm
       mediatumtal
       mollyZ3950

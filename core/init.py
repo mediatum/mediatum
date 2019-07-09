@@ -108,7 +108,6 @@ def check_imports():
         "jinja2",
         "logstash",
         "lxml",
-        "mediatumbabel",
         "mediatumfsm",
         "mediatumtal",
         "parcon",

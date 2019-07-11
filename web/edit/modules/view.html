@@ -1,7 +1,5 @@
 <tal:block metal:define-macro="view_node">
     <div id="navigation_content">
-        <span i18n:translate="edit_tabarea_msg1"/><br/>
-        <b i18n:translate="hint"></b><span i18n:translate="edit_tabarea_msg2"/>
     </div>
 
     <div id="sub_content_content">
@@ -12,7 +10,7 @@
         $(document).ready(function () {
             sublayout = $('#sub_content').layout({applyDemoStyles: true,
                 center: {paneSelector: "#sub_content_content"},
-                north: {paneSelector: "#navigation_content", size: 60, resizable: false},
+                north: {paneSelector: "#navigation_content", size: 0, resizable: false},
                 south: {paneSelector: "#sub_footer_module", size: 20, closable: false, resizable: false, spacing_open: 0, spacing_closed: 0},
 
                 togglerTip_open: js_edit_layout_togglertip_open,

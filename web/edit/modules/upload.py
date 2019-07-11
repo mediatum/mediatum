@@ -700,7 +700,7 @@ doi_labels = {
     "de":
     [
         ("identifier_importer_longname", "Via DOI importieren"),
-        ("identifier_importer_explain", u"""Um Metadaten für eine Publikation mit einem Digital Object Identifier zu importieren, bitte DOI eingeben und 'Objekt erzeugen' anklicken.
+        ("identifier_importer_explain", u"""Bitte DOI eingeben und <i>OK</i> klicken, um die Metadaten einer Publikation in mediaTUM zu importieren.
       <p>Beispiele:</p>
       doi:10.1371/journal.pbio.0020449
       <br/>DOI:10.1002/nme.4628 """),
@@ -718,7 +718,7 @@ doi_labels = {
     "en":
     [
         ("identifier_importer_longname", "Import via DOI"),
-        ("identifier_importer_explain", """To import metadata for a publication with a Digital Object Identifier, please enter the DOI below and click 'Create Object'.
+        ("identifier_importer_explain", """Please enter DOI to import metadata of publication.
       <p>Examples:</p>
       doi:10.1371/journal.pbio.0020449
       <br/>DOI:10.1002/nme.4628 """),

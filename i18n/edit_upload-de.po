@@ -71,6 +71,9 @@ msgstr "Objekte erzeugen"
 msgid "edit_upload_create_object"
 msgstr "Objekt erzeugen"
 
+msgid "edit_upload_create_object_doi"
+msgstr "OK"
+
 msgid "edit_upload_createmethod_from_schema"
 msgstr "mit Metadatenschema"
 
@@ -79,6 +82,9 @@ msgstr "von Identifier"
 
 msgid "edit_upload_create_meta"
 msgstr "Neues Metadatenobjekt anlegen"
+
+msgid "edit_upload_create_doi"
+msgstr "DOI-Eingabe"
 
 msgid "edit_upload_countfiles"
 msgstr "Datei(en) hochgeladen."

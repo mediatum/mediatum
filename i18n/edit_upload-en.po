@@ -65,6 +65,9 @@ msgstr "Create Objects"
 msgid "edit_upload_create_object"
 msgstr "Create Object"
 
+msgid "edit_upload_create_object_doi"
+msgstr "OK"
+
 msgid "edit_upload_createmethod_from_schema"
 msgstr "with metadata scheme"
 
@@ -73,6 +76,9 @@ msgstr "from identifier"
 
 msgid "edit_upload_create_meta"
 msgstr "Create new Object from Metadata"
+
+msgid "edit_upload_create_doi"
+msgstr "DOI Import"
 
 msgid "edit_upload_countfiles"
 msgstr "File(s) uploaded."

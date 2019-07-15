@@ -71,15 +71,6 @@ def _finish_change(node, change_file, user, uploadfile, req):
             attpath = f.base_name
             break
 
-    if change_file == "attdir":  # add attachmentdir
-        if attpath == "":  # add attachment directory
-            attpath = req.params.get("inputname")
-            if not os.path.exists(getImportDir() + "/" + attpath):
-                os.mkdir(getImportDir() + "/" + attpath)
-                node.files.append(File(getImportDir() + "/" + attpath, "attachment", "inode/directory"))
-
-            importFileIntoDir(getImportDir() + "/" + attpath, uploadfile.tempname)  # add new file
-
     if change_file == "attfile":  # add file as attachment
         if attpath == "":
             # no attachment directory existing
@@ -90,6 +81,33 @@ def _finish_change(node, change_file, user, uploadfile, req):
         else:
             # import attachment file into existing attachment directory
             importFileIntoDir(getImportDir() + "/" + attpath, uploadfile.tempname)  # add new file
+
+        # this should re-create all dependent files
+        node.event_files_changed()
+        logg.info(u"%s changed file of node %s to %s (%s)", user.login_name, node.id, uploadfile.filename, uploadfile.tempname)
+
+    if change_file == "addthumb": # create new thumbanil from uploaded file
+        thumbname = os.path.join(getImportDir(), hashlib.md5(ustr(random.random())).hexdigest()[0:8]) + ".thumb"
+
+        file = importFile(thumbname, uploadfile.tempname)  # add new file
+        make_thumbnail_image(file.abspath, thumbname)
+        make_presentation_image(file.abspath, thumbname + "2")
+
+        if os.path.exists(file.abspath):  # remove uploaded original
+            os.remove(file.abspath)
+
+        for f in node.files:
+            if f.type in ["thumb", "presentation"]:
+                if os.path.exists(f.abspath):
+                    os.remove(f.abspath)
+                node.files.remove(f)
+
+        node.files.append(File(thumbname, "thumb", "image/jpeg"))
+        node.files.append(File(thumbname + "2", "presentation", "image/jpeg"))
+        logg.info("%s changed thumbnail of node %s", user.login_name, node.id)
+        # this should re-create all dependent files
+        node.event_files_changed()
+        logg.info(u"%s changed file of node %s to %s (%s)", user.login_name, node.id, uploadfile.filename, uploadfile.tempname)
 
 
 def _handle_change(node, req):
@@ -264,36 +282,6 @@ def getContent(req, ids):
                 if req.reply_code is httpstatus.HTTP_NOT_ACCEPTABLE:
                     update_error_extension = True
                 else:
-                    update_error = True
-
-        elif op == "addthumb":  # create new thumbanil from uploaded file
-            uploadfile = req.params.get("updatefile")
-
-            if uploadfile:
-                thumbname = os.path.join(getImportDir(), hashlib.md5(ustr(random.random())).hexdigest()[0:8]) + ".thumb"
-
-                file = importFile(thumbname, uploadfile.tempname)  # add new file
-                make_thumbnail_image(file.abspath, thumbname)
-                make_presentation_image(file.abspath, thumbname + "2")
-
-                if os.path.exists(file.abspath):  # remove uploaded original
-                    os.remove(file.abspath)
-
-                for f in node.files:
-                    if f.type in ["thumb", "presentation"]:
-                        if os.path.exists(f.abspath):
-                            os.remove(f.abspath)
-                        node.files.remove(f)
-
-                node.files.append(File(thumbname, "thumb", "image/jpeg"))
-                node.files.append(File(thumbname + "2", "presentation", "image/jpeg"))
-                logg.info("%s changed thumbnail of node %s", user.login_name, node.id)
-
-        elif op == "postprocess":
-                try:
-                    node.event_files_changed()
-                    logg.info("%s postprocesses node %s", user.login_name, node.id)
-                except:
                     update_error = True
 
     db.session.commit()

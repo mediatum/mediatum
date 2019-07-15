@@ -6,17 +6,6 @@
 
 <tal:block metal:define-macro="edit_files_file">
     <style type="text/css">
-        #filetable{border:0 solid silver; border-width:1px 1px 0 1px;table-layout:fixed !important;width:100%;}
-        #filetable input{background-color:transparent; margin:1px; border-width:0}
-        #filetable input:hover{border-width:0px}
-        #filetable input[type="text"]{border:1px solid silver}
-        #filetable input[type="text"]:hover{border:1px solid black; background-color:#ffffff}
-        #filetable th{background-color:#d8d8d8; padding:3px 5px 2px 3px; border-bottom:1px solid silver; font-variant:small-caps}
-        #filetable th.header{background-color:#FFFFFF; padding:3px 5px 2px 3px; border-bottom:1px solid silver; font-variant:small-caps; height:30px; vertical-align:bottom}
-        #filetable tr{border:1px solid silver}
-        #filetable td{vertical-align:middle; padding:2px 5px;border-bottom:1px solid silver;overflow:hidden;}
-        #filetable tr:hover{background-color:silver}
-        #filetable a{color:#000000; padding:1px:margin:0px}
         td.silver{background-color:#efefef}
         .sortable-default{float:left; width:130px; height:130px; position:relative;cursor:move;border:1px solid silver;margin:0 5px 5px 0}
 
@@ -70,24 +59,27 @@
     </tal:block>
 
         <div id="accordion">
-
+            <!-- file upload -->
             <h3><a href="#" i18n:translate="edit_files_options">TEXT</a></h3>
-            <div id="options" style="padding:10px;">
+            <div class="mediatum_files_options">
                 <form method="post" enctype="multipart/form-data">
                     <input tal:attributes="value csrf" type="hidden" name="csrf_token">
                             <b><tal:block i18n:translate="edit_files_change"/>:</b>
                             <p>
                                 <tal:block tal:condition="python:node.has_upload_file">
-                                    <input type="radio" name="change_file" value="yes" checked="checked" onclick="setInput('')" style="border:1px solid white"/><tal:block i18n:translate="edit_files_change"/>
-                                    <br/>
+                                    <input class="mediatum_white_border" type="radio" name="change_file" value="yes" checked="checked" onclick="setInput('')"/>
+                                <tal:block i18n:translate="edit_files_change"/>
                                 </tal:block>
                                 <tal:block tal:condition="python:not node.has_upload_file">
-                                    <input type="radio" name="change_file" value="no" checked="checked" onclick="setInput('')" style="border:1px solid white"/><tal:block i18n:translate="edit_files_add_obj"/>
-                                    <br/>
+                                    <input class="mediatum_white_border" type="radio" name="change_file" value="no" checked="checked" onclick="setInput('')"/>
+                                <tal:block i18n:translate="edit_files_add_obj"/>
                                 </tal:block>
-                                <input type="radio" name="change_file" value="attdir" onclick="setInput('dir')" style="border:1px solid white"/><tal:block i18n:translate="edit_files_add_attdir"/>
                                 <br/>
-                                <input type="radio" name="change_file" value="attfile" onclick="setInput('')" style="border:1px solid white"/><tal:block i18n:translate="edit_files_add_attfile"/>
+                                <input type="radio" name="change_file" value="attfile" onclick="setInput('')" class="mediatum_white_border"/>
+                                <tal:block i18n:translate="edit_files_add_attfile"/>
+                                <br/>
+                                <input type="radio" name="change_file" value="addthumb" onclick="setInput('')" class="mediatum_white_border"/>
+                                <tal:block i18n:translate="edit_files_addthumbnail"/>
                                 <br/>
                             </p>
 
@@ -125,32 +117,14 @@
                                 }
                             </script>
                         </form>
-                        <hr/>
-                        <form method="post" enctype="multipart/form-data">
-                            <input tal:attributes="value csrf" type="hidden" name="csrf_token">
-                            <b i18n:translate="edit_files_addthumbnail">TEXT</b>
-                            <p>
-                                <input name="updatefile" type="file" size="50"/>
-                            </p>
-                            <p>
-                                <button i18n:attributes="title edit_upload_upload_label" i18n:translate="edit_upload_upload_label" type="submit" name="addthumbfile" value="submit">TEXT</button>
-                            </p>
-                            <input type="hidden" name="operation" value="addthumb"/>
-                        </form>
-                        <hr/>
-                        <form method="post">
-                            <input tal:attributes="value csrf" type="hidden" name="csrf_token">
-                            <p><input i18n:attributes="value edit_files_reprocess" type="submit" name="postprocess"></p>
-                            <p><small i18n:translate="edit_files_reprocess_info">TEXT</small></p>
-                            <input type="hidden" name="operation" value="postprocess"/>
-                        </form>
                 </div>
 
+            <!-- file list -->
             <h3><a href="#" i18n:translate="edit_files_files">TEXT</a></h3>
             <div id="files">
                 <form method="post">
                     <input tal:attributes="value csrf" type="hidden" name="csrf_token">
-                    <table id="filetable" cellpadding="0px" cellspacing="0px">
+                    <table class="mediatum_filetable_files" cellpadding="0px" cellspacing="0px">
                         <tr>
                             <th i18n:translate="edit_files_location">TEXT</th>
                             <th i18n:translate="edit_files_type" style="width:50px;">TEXT</th>
@@ -175,12 +149,13 @@
                 </form>
             </div>
 
+            <!-- attachments -->
             <tal:block tal:condition="python:len(attfiles)>0">
                 <h3><a href="#"  i18n:translate="edit_files_attachments">TEXT</a></h3>
                 <div id="attfiles">
                     <form method="post">
                         <input tal:attributes="value csrf" type="hidden" name="csrf_token">
-                            <table id="filetable" cellpadding="0px" cellspacing="0px" style="width:100%">
+                            <table class="mediatum_filetable_files" cellpadding="0px" cellspacing="0px" style="width:100%">
                                 <tr>
                                     <th i18n:translate="edit_files_type">TEXT</th>
                                     <th i18n:translate="edit_files_size">TEXT</th>
@@ -213,12 +188,14 @@
                         </form>
                 </div>
             </tal:block>
+
+            <!-- statistics -->
             <tal:block tal:condition="python:len(statfiles)>0">
                 <h3><a href="#" i18n:translate="edit_files_stats">TEXT</a></h3>
                 <div id="statfiles">
                     <form method="post">
                         <input tal:attributes="value csrf" type="hidden" name="csrf_token">
-                            <table id="filetable" cellpadding="0px" cellspacing="0px" style="width:100%">
+                            <table class="mediatum_filetable_files" cellpadding="0px" cellspacing="0px" style="width:100%">
                                 <tr>
                                     <th i18n:translate="edit_files_type">TEXT</th>
                                     <th i18n:translate="edit_files_size">TEXT</th>
@@ -241,6 +218,7 @@
                 </div>
             </tal:block>
 
+            <!-- child elements -->
             <tal:block tal:condition="python:not node.isContainer()">
                 <h3><a href="#" i18n:translate="edit_files_children">TEXT</a></h3>
                 <div id="children" style="padding:10px">

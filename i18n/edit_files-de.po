@@ -44,7 +44,7 @@ msgid "edit_files_opne_title"
 msgstr "Öffnen"
 
 msgid "edit_files_change"
-msgstr "Digitales Objekt austauschen"
+msgstr "Digitales Objekt hinzufügen (bzw. austauschen)"
 
 msgid "edit_files_add_obj"
 msgstr "Digitales Objekt hinzufügen"

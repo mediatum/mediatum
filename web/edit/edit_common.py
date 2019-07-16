@@ -296,13 +296,6 @@ def shownavlist(req, node, nodes, page, dir=None):
     node_idx = 0
     if nodes_len:
         for p in nav_page:
-            tooltip = edit_sort_by_fields(nodes, sortfield, node_idx)
-            if isinstance(tooltip, basestring):
-                if len(tooltip) > 13:
-                    tooltip = tooltip[:10] + '...'
-            else:
-                tooltip = str(tooltip)
-            nav_tooltip.append(tooltip)
             node_idx += nodes_per_page
     ctx = {
         "act_page": page,

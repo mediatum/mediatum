@@ -43,7 +43,7 @@
                             <ul>
                                 <li tal:repeat="sortfield python:sort_choices">
                                     <div>
-                                        <a i18n:translate="" tal:content="python:u'{}'.format(sortfield.label)" tal:attributes="href python:u'?id={}&sortfield={}&nodes_per_page={}'.format(idstr, sortfield.value,nodes_per_page)"/>
+                                        <a i18n:translate="" tal:content="python:u'{}'.format(sortfield.label)" tal:attributes="value python:sortfield.value; href python:u'?id={}&sortfield={}&nodes_per_page={}'.format(idstr, sortfield.value,nodes_per_page)"/>
                                     </div>
                                 </li>
                             </ul>

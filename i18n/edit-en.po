@@ -382,7 +382,7 @@ msgid "edit_add_directory"
 msgstr "New Folder"
 
 msgid "edit_add_container_default"
-msgstr "New folder of Type "
+msgstr "New folder of type "
 
 msgid "edit_layout_togglertip_open"
 msgstr "Fade out"

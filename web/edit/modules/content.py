@@ -112,6 +112,7 @@ def getContent(req, ids):
             v['collection_sortfield'] = req.params.get("sortfield")
         else:
             v['collection_sortfield'] = node.get("sortfield")
+
         if req.params.get("nodes_per_page"):
             v['npp_field'] = req.params.get("nodes_per_page", default_edit_nodes_per_page)
         else:
@@ -146,7 +147,6 @@ def getContent(req, ids):
 
         count = item_count[0] if item_count[0] == item_count[1] else "%d from %d" % (item_count[0], item_count[1])
         v['sortchoices'] = sort_choices
-        v['npp_choices'] = [SortChoice(str(x), x) for x in edit_node_per_page_values]
         v['types'] = dtypes
         v['schemes'] = schemes
         v['id'] = ids[0]

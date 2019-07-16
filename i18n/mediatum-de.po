@@ -887,7 +887,7 @@ msgid "off"
 msgstr "aus"
 
 msgid "tab_sortfiles"
-msgstr "Files Sortieren"
+msgstr "Dateien Sortieren"
 
 msgid "descending"
 msgstr " (absteigend)"

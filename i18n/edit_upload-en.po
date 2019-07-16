@@ -57,13 +57,13 @@ msgid "edit_upload_files_plupload_widget"
 msgstr "Upload File(s)"
 
 msgid "edit_upload_meta"
-msgstr "Create from Metadata"
+msgstr "Create from metadata"
 
 msgid "edit_upload_create_objects"
-msgstr "Create Objects"
+msgstr "Create objects"
 
 msgid "edit_upload_create_object"
-msgstr "Create Object"
+msgstr "Create object"
 
 msgid "edit_upload_create_object_doi"
 msgstr "OK"
@@ -75,10 +75,10 @@ msgid "edit_upload_createmethod_from_identifier"
 msgstr "from identifier"
 
 msgid "edit_upload_create_meta"
-msgstr "Create new Object from Metadata"
+msgstr "Create new object from metadata"
 
 msgid "edit_upload_create_doi"
-msgstr "DOI Import"
+msgstr "DOI import"
 
 msgid "edit_upload_countfiles"
 msgstr "File(s) uploaded."

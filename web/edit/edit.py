@@ -282,8 +282,17 @@ def handletabs(req, ids, tabs, sort_choices):
     if not nodes_per_page:
         nodes_per_page = 20
     sortfield = req.args.get("sortfield")
+
     if not sortfield:
-        sortfield = "off"
+        sortfield = n.get("sortfield")
+        if sortfield.strip() == "":
+            sortfield = "off"
+
+    if sortfield.strip() not in ("", "off"):
+        n.set("sortfield", sortfield)
+    elif n.get("sortfield"):
+        n.removeAttribute("sortfield")
+    db.session.commit()
 
     ctx = {
         "user": user,
@@ -292,6 +301,7 @@ def handletabs(req, ids, tabs, sort_choices):
         "menu": menu,
         "breadcrumbs": getBreadcrumbs(menu, req.params.get("tab", tabs)),
         "sort_choices" : sort_choices,
+        "sortfield" : sortfield,
         "nodes_per_page" : nodes_per_page,
     }
     return req.getTAL("web/edit/edit.html", ctx, macro="edit_tabs")
@@ -737,8 +747,6 @@ def content(req):
     user = current_user
     language = lang(req)
 
-    sort_choices = None
-
     if not user.is_editor:
         return req.writeTAL("web/edit/edit.html", {}, macro="error")
 
@@ -910,13 +918,50 @@ def content(req):
                 logg.debug('empty content')
                 return
 
-            if hasattr(editModules[t2], 'getSortChoices'):
-                sort_choices = editModules[t2].getSortChoices(req, ids)
+            class SortChoiceEdit:
+
+                def __init__(self, label, value):
+                    self.label = label
+                    self.value = value
+
+            item_count = []
+            col = node
+            if "globalsort" in req.params:
+                col.set("sortfield", req.params.get("globalsort"))
+            if req.params.get("sortfield", "") != "":
+                v['collection_sortfield'] = req.params.get("sortfield")
+            else:
+                v['collection_sortfield'] = node.get("sortfield")
+            sort_choices = [SortChoiceEdit(t(req, "off"), "off")]
+            if not isinstance(col, (Root, Collections, Home)):
+                # for node in col.children:
+                count = col.content_children_for_all_subcontainers.count()
+                # the transformation of content_children_for_all_subcontainers in a list is very expensive if count is high
+                # so try a limitation and if no sortfields found then increase limitation
+                start_idx = 0
+                end_idx = 10
+                sortfields = None
+                while start_idx < count:
+                    for node in col.content_children_for_all_subcontainers[start_idx:end_idx]:
+                        # XXX: now without acl filtering, do we need this?
+                        sortfields = node.getSortFields()
+                        if sortfields:
+                            for sortfield in sortfields:
+                                sort_choices += [SortChoiceEdit(sortfield.getLabel(), sortfield.getName())]
+                                sort_choices += [
+                                    SortChoiceEdit(sortfield.getLabel() + t(req, "descending"), "-" + sortfield.getName())]
+                            break
+                    if sortfields:
+                        break
+                    start_idx = end_idx
+                    end_idx *= 10
         else:
             req.setStatus(httpstatus.HTTP_INTERNAL_SERVER_ERROR)
             content["body"] += req.getTAL("web/edit/edit.html", {"module": current}, macro="module_error")
 
     if req.params.get("style", "") != "popup":  # normal page with header
+        v['sortchoices'] = sort_choices
+        v['npp_choices'] = [SortChoiceEdit(str(x), x) for x in edit_node_per_page_values]
         v["tabs"] = handletabs(req, ids, tabs, sort_choices)
         v["script"] = content["script"]
         v["body"] = content["body"]

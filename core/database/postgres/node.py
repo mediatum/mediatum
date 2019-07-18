@@ -517,6 +517,16 @@ class Node(DeclarativeBase, NodeMixin):
         from contenttypes import Collection
         return self._get_nearest_ancestor_by_type(Collection)
 
+    def get_directory(self):
+        from contenttypes import Directory
+        return self._get_nearest_ancestor_by_type(Directory)
+
+    def get_parent_sortfield(self):
+        """Returns a nearest ancestor with non-empty sortfield.
+        """
+        first_ancestor_with_sortfield = self.all_parents.filter(Node.a.sortfield != u'').order_by('distance').first()
+        return first_ancestor_with_sortfield
+
     @property
     def has_files(self):
         return len(self.file_objects) > 0

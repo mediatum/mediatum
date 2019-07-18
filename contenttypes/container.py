@@ -305,6 +305,9 @@ class Directory(Container):
     def get_default_edit_menu_tabs(cls):
         return "menulayout(content;startpages);menumetadata(metadata;files;admin);menusecurity(acls);menuoperation(search;subfolder)"
 
+    def get_directory(self):
+        return self
+
 
 @check_type_arg_with_schema
 class Collection(Container):
@@ -344,7 +347,7 @@ class Collections(Container):
 
     def get_collection(self):
         return self
-    
+
     def childcount(self):
         if self.children.first() is None:
             return 0

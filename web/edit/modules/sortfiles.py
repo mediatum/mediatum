@@ -19,7 +19,6 @@
 """
 
 from sqlalchemy import func
-from utils.utils import getCollection
 from core.translation import t
 from core.transition import current_user
 from core import httpstatus
@@ -38,7 +37,10 @@ def getContent(req, ids):
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
-    c = getCollection(node)
+    if node.schema == u'directory':
+        c = node.get_directory()
+    else:
+        c = node.get_collection()
 
     if "globalsort" in req.params:
         c.set("sortfield", req.params["globalsort"])

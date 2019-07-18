@@ -365,7 +365,16 @@ class ContentList(ContentBase):
                 self.sortfields[i] = req.args[key]
 
         if not self.sortfields:
-            default_sortfield = self.collection.get(u"sortfield")
+            # try to get container sortfield
+            default_sortfield = self.container.attributes.get(u"sortfield")
+            # get first parent where sortfield is not empty
+            if not default_sortfield:
+                parent = self.container.get_parent_sortfield()
+                default_sortfield = parent.get(u"sortfield")
+
+            # if empty take collection sortfield
+            if (not default_sortfield):
+                default_sortfield = self.collection.get(u"sortfield")
             self.sortfields[0] = default_sortfield if default_sortfield else u"-node.id"
 
         liststyle_name = req.args.get("liststyle")

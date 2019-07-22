@@ -1594,19 +1594,12 @@ function rct() {
                 function getAllObjectsString(){
                     var s = [];
                     $('input[id^="check"]:checked').each(function(){
-                        s.push($(this).attr('id').substring(5));
+                        var nodeid = $(this).attr('id').substring(5);
+                        if (nodeid != 'node.id' & ! (s.includes(nodeid))){
+                            s.push(nodeid);
+                        }
                     });
                     return s.join(',');
-                }
-
-                function getFirstObject(){
-                    $('input[id^="check"]:checked').each(function(){
-                        return $(this).attr('id').substring(5);
-                    });
-                }
-
-                function editSingle(id){
-                    document.location('/edit/edit_content?ids='+id+'&nodelist='+getAllObjectsString()+'&tab='+tab);
                 }
 
                 function Thumb2Window(id){
@@ -1627,6 +1620,10 @@ function rct() {
 
                 <!-- operations-->
                 <div id="mediatum_operations" tal:condition="python:len(ids)==1" tal:content="raw operations">TEXT</div>
+
+                <!-- breadcrumbs -->
+                <div class="mediatum_breadcrumbs_link"><b i18n:translate="edit_actual_dir" class="mediatum_breadcrumbs_padding">TEXT</b></div>
+                <div class="mediatum_breadcrumbs_content" tal:content="raw dircontent"> </div>
 
                 <!-- nav-->
                 <div class="mediatum_divnav"  tal:content="raw paging"> </div>

@@ -383,3 +383,6 @@ iframe.ui-layout-center, div.ui-layout-north{border-width:0!important;padding:0;
 .mediatum_filetable_files a{color:#000000; padding:1px;margin:0px;}
 .mediatum_files_options{padding:10px;}
 .mediatum_white_border{border:1px solid white;}
+.mediatum_breadcrumbs_link{display:inline-block;height:30px;padding-right:10px;}
+.mediatum_breadcrumbs_content{display:inline-block;margin-left: 1px;}
+.mediatum_breadcrumbs_padding{padding-left:5px;}

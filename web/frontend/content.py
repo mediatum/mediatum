@@ -370,7 +370,8 @@ class ContentList(ContentBase):
             # get first parent where sortfield is not empty
             if not default_sortfield:
                 parent = self.container.get_parent_sortfield()
-                default_sortfield = parent.get(u"sortfield")
+                if parent:
+                    default_sortfield = parent.get(u"sortfield")
 
             # if empty take collection sortfield
             if (not default_sortfield):

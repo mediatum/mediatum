@@ -1,5 +1,5 @@
 msgid "edit_files_filetype_error"
-msgstr "Exchange isn't possible, since the file types do not match."
+msgstr "Exchange isn't possible since the file types do not match."
 
 msgid "edit_files_files"
 msgstr "List of files"
@@ -14,16 +14,16 @@ msgid "edit_files_stats"
 msgstr "Statistics"
 
 msgid "edit_files_dirname"
-msgstr "Directory name: "
+msgstr "Directory name:"
 
 msgid "edit_files_addthumbnail"
 msgstr "Add new thumbnail:"
 
 msgid "edit_files_add_attdir"
-msgstr "add attachment directory (all attachments will be saved in this directory)"
+msgstr "Add attachment directory (all attachments will be saved in this directory)"
 
 msgid "edit_files_add_attfile"
-msgstr "add attachment"
+msgstr "Add attachment"
 
 msgid "edit_files_type"
 msgstr "Type"
@@ -59,28 +59,28 @@ msgid "edit_files_obsolete"
 msgstr "Metadata fields not in use"
 
 msgid "edit_files_obsolete_del_title"
-msgstr "delete attribute"
+msgstr "Delete attribute"
 
 msgid "edit_files_metafields"
 msgstr "Metadata fields"
 
 msgid "edit_files_tech_meta"
-msgstr "technical metadata fields"
+msgstr "Technical metadata fields"
 
 msgid "edit_files_del_tech_meta"
-msgstr "delete technical metadata field"
+msgstr "Delete technical metadata field"
 
 msgid "edit_files_removequestion"
-msgstr "Do you really want to remove selected object?"
+msgstr "Do you really want to remove the selected object?"
 
 msgid "edit_files_choosefile"
 msgstr "Select file:"
 
 msgid "edit_files_order_label"
-msgstr "Change Order of Objects(Drag&Drop"
+msgstr "Change order of objects(drag & drop)"
 
 msgid "edit_files_order_save"
-msgstr "Save Order"
+msgstr "Save order"
 
 msgid "edit_files_create_identifier"
 msgstr "Create"
@@ -110,10 +110,10 @@ msgid "edit_files_children_colon"
 msgstr "Childnodes:"
 
 msgid "edit_files_select_all_child"
-msgstr "select all nodes"
+msgstr "Select all nodes"
 
 msgid "edit_files_select_all_grand"
-msgstr "select all childnodes"
+msgstr "Select all childnodes"
 
 msgid "edit_files_choosedirectory"
 msgstr "Directory:"

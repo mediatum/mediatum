@@ -4,7 +4,7 @@ msgid "tab_changeschema"
 msgstr "Change metadata scheme"
 
 msgid "edit_changeschema_msg1"
-msgstr "You do not have the rights to perform changes here. Please turn to your administrator"
+msgstr "You do not have the rights to perform changes here. Please turn to your administrator."
 
 msgid "edit_changeschema_obj_selection"
 msgstr "Change object type/metadata type selection"
@@ -13,7 +13,7 @@ msgid "edit_changeschema_msg2"
 msgstr "Please choose object type from the following list. <br>The available metadata schemes will be loaded then."
 
 msgid "edit_changeschema_obj_sel"
-msgstr "Select object type and metada type for this object anew: "
+msgstr "Select object type and metada type for this object anew:"
 
 msgid "edit_changeschema_selection_value"
 msgstr "Set metadata type anew"
@@ -31,4 +31,4 @@ msgid "edit_changeschema_schemename"
 msgstr "Metadata type (name)"
 
 msgid "edit_changeschema_noscheme"
-msgstr "no metadata type for this data type available"
+msgstr "No metadata type for this data type available"

@@ -6,7 +6,7 @@ msgid "edit_upload_obj_selection"
 msgstr "Upload of digital objects (files) / creation of metadatasets<br/><br/>Step 1: Object type selection"
 
 msgid "edit_upload_msg2"
-msgstr "Please select an object type from the list below.<br/>For each type of object special upload forms are available, which offer respective functionality."
+msgstr "Please select an object type from the list below.<br/>For each type of object special upload forms are available which offer respective functionality."
 
 msgid "edit_upload_obj_sel"
 msgstr "Choose object type:"
@@ -15,7 +15,7 @@ msgid "edit_upload_selecttion_value"
 msgstr "Choose"
 
 msgid "edit_upload_header1"
-msgstr "Upload of digital objects (files) / creation of metadatasets<br/><br/>Step 1: Object type selection '${objtype}'"
+msgstr "Upload of digital objects (files) / Creation of metadatasets<br/><br/>Step 1: Object type selection '${objtype}'"
 
 msgid "edit_upload_header2"
 msgstr "Step 2: Metadata scheme selection"
@@ -24,7 +24,7 @@ msgid "edit_upload_header3"
 msgstr "Step 3: Select file for upload"
 
 msgid "edit_upload_header4"
-msgstr "Step 4: Create object / upload selected file"
+msgstr "Step 4: Create object / Upload selected file"
 
 msgid "edit_upload_msg3"
 msgstr "Select file from your computer ("
@@ -54,7 +54,10 @@ msgid "edit_upload_schemeselection"
 msgstr "-- Choose metadata scheme --"
 
 msgid "edit_upload_files_plupload_widget"
-msgstr "Upload File(s)"
+msgstr "Upload file(s)"
+
+msgid "edit_upload_bibtex_plupload_widget"
+msgstr "BibTeX import"
 
 msgid "edit_upload_meta"
 msgstr "Create from metadata"
@@ -77,6 +80,9 @@ msgstr "from identifier"
 msgid "edit_upload_create_meta"
 msgstr "Create new object from metadata"
 
+msgid "edit_upload_doi"
+msgstr "DOI import"
+
 msgid "edit_upload_create_doi"
 msgstr "DOI import"
 
@@ -84,19 +90,16 @@ msgid "edit_upload_countfiles"
 msgstr "File(s) uploaded."
 
 msgid "edit_upload_bibtex_ok"
-msgstr "Bibtex file contains correct data and can be imported."
+msgstr "BibTeX file contains correct data and can be imported."
 
-msgid "upload_bibtex_unspecified_error"
-msgstr "Bibtex unspecified error, maybe not UTF-8 encoded!"
-
-msgid "upload_bibtex_date_error"
-msgstr "Bibtex error, incorrect date format"
+msgid "upload_encoding_error"
+msgstr "BibTeX file has to be UTF-8 encoded!"
 
 msgid "edit_upload_unpack"
-msgstr "unpack file content"
+msgstr "Unpack file content"
 
 msgid "edit_upload_no_unpack"
-msgstr "do not unpack file content (save file as is)"
+msgstr "Do not unpack file content (save file as is)"
 
 msgid "edit_upload_importer_sel"
 msgstr "Select importer:"

@@ -2,10 +2,10 @@ msgid "edit_stats_details"
 msgstr "details..."
 
 msgid "edit_stats_schema"
-msgstr "Types of Metadata"
+msgstr "Types of metadata"
 
 msgid "edit_stats_updatebutton"
-msgstr "Update Statistics"
+msgstr "Update statistics"
 
 msgid "edit_stats_allobjlabel"
 msgstr "Items (sum)"

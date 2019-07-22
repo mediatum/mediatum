@@ -1,11 +1,11 @@
 msgid "edit_stats_header"
-msgstr "Access Statistics for Collection"
+msgstr "Access statistics for collection"
 
 msgid "edit_stats_pages_of"
 msgstr "page %s of %s"
 
 msgid "edit_stats_period_header"
-msgstr "Report Period"
+msgstr "Report period"
 
 msgid "edit_stats_noaccess"
 msgstr "No user access in chosen report period."
@@ -65,19 +65,19 @@ msgid "edit_stats_popupheader"
 msgstr "Refresh statistics for current node"
 
 msgid "edit_stats_popupupdatebutton"
-msgstr "refresh statistics"
+msgstr "Refresh statistics"
 
 msgid "edit_stats_popuperror"
-msgstr "Data cannot be refreshed, since an update is running.<br/>Try it again later."
+msgstr "Data cannot be refreshed since an update is running.<br/>Please try again later."
 
 msgid "edit_stats_popup_close"
-msgstr "close window"
+msgstr "Close window"
 
 msgid "edit_stats_popupfooter"
 msgstr "Close this window only if requested."
 
 msgid "edit_stats_popupdone"
-msgstr "Statisics data were updated.<br/>You can close this window now."
+msgstr "Statistics data were updated.<br/>You can close this window now."
 
 msgid "edit_stats_sum"
 msgstr "Access (total)"

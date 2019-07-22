@@ -2,7 +2,7 @@ msgid "edit_sort_header"
 msgstr "Sort manually"
 
 msgid "edit_sort_header2"
-msgstr "Sort Collections"
+msgstr "Sort collections"
 
 msgid "edit_sort_label"
 msgstr "Sort automatically"
@@ -38,7 +38,7 @@ msgid "edit_sort_sort"
 msgstr "Sort"
 
 msgid "edit_sort_special_attributes"
-msgstr "Special Attributes"
+msgstr "Special attributes"
 
 msgid "edit_sort_attributes"
 msgstr "Attributes"

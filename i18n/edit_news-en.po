@@ -1,6 +1,6 @@
 ### edit news ###
 msgid  "edit_news_overviewheader"
-msgstr "News Overview"
+msgstr "News overview"
 
 msgid "edit_news_start"
 msgstr "Start"

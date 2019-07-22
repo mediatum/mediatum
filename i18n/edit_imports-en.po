@@ -5,7 +5,7 @@ msgid "edit_import_bibtex"
 msgstr "In order to upload bibtex publications, please select a file on your computer and click 'Create / Upload'."
 
 msgid "edit_import_doi"
-msgstr "To import metadata for a publication with a Digital Object Identifier, please enter the DOI below and click 'Create / Upload'."
+msgstr "To import metadata for a publication with a Digital Object Identifier, please enter the DOI and click 'Create / Upload'."
 
 msgid "edit_import_nothing"
 msgstr "No file was specified and no DOI was given."
@@ -17,7 +17,7 @@ msgid "doi_no_metadata_imported"
 msgstr "No metadata could be imported for the given DOI."
 
 msgid "doi_invalid"
-msgstr "This doesn't look like an valid DOI (must contain a string starting with 10.)"
+msgstr "This doesn't look like a valid DOI (must contain a string starting with 10.)"
 
 msgid "doi_type_not_mapped"
 msgstr "No mapping defined for type of given DOI."

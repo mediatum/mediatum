@@ -11,7 +11,7 @@ msgid "edit_fckeditor_cfm_nameonserver"
 msgstr "Name on server"
 
 msgid "edit_fckeditor_cfm_delete"
-msgstr "delete"
+msgstr "Delete"
 
 msgid "edit_fckeditor_cfm_clicktochoose"
 msgstr "Click on an image to select"
@@ -20,16 +20,16 @@ msgid "edit_fckeditor_cfm_hasnoimages"
 msgstr "No images uploaded for this page. Upload an image first."
 
 msgid "edit_fckeditor_cfm_closewindow"
-msgstr "Close Window"
+msgstr "Close window"
 
 msgid "edit_fckeditor_cfm_imageislogo"
-msgstr "image is logo"
+msgstr "Image is logo"
 
 msgid "edit_fckeditor_cfm_uploadexplain"
 msgstr "You can upload a new file to this node:"
 
 msgid "edit_fckeditor_cfm_uploadbutton"
-msgstr "upload to server"
+msgstr "Upload to server"
 
 msgid "edit_fckeditor_cfm_deleteconfirm"
 msgstr "Do you really want to delete this file?"
@@ -44,13 +44,13 @@ msgid "edit_startpages_header2"
 msgstr "Sidebar"
 
 msgid "edit_startpages_explain_table"
-msgstr "html pages for this node"
+msgstr "HTML pages for this node"
 
 msgid "edit_startpages_edit"
-msgstr "click to edit this page"
+msgstr "Click to edit this page"
 
 msgid "edit_startpages_delete"
-msgstr "click to delete this page from the server"
+msgstr "Click to delete this page from the server"
 
 msgid "edit_startpages_savechanges"
 msgstr "Save changes"
@@ -62,7 +62,7 @@ msgid "edit_startpages_reset"
 msgstr "Reset"
 
 msgid "edit_startpages_explain_addbutton"
-msgstr "Click this button to open a new page in the html editor"
+msgstr "Click this button to open a new page in the HTML editor"
 
 msgid "edit_startpages_addnew"
 msgstr "Create new page"
@@ -89,7 +89,7 @@ msgid "edit_startpages_do_not_use_a_sidebar"
 msgstr "No sidebar for this language"
 
 msgid "edit_startpages_selectlanguage"
-msgstr "select as startpage for this language"
+msgstr "Select as startpage for this language"
 
 msgid "edit_startpages_sidebarfile"
 msgstr "Files"

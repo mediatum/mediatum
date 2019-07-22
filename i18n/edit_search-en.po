@@ -1,5 +1,5 @@
 msgid "edit_search_reset_msg"
-msgstr "Search was form reseted."
+msgstr "Search was form reset."
 
 msgid "edit_search_noresult_msg"
 msgstr "Your search resulted in no hits."
@@ -26,5 +26,5 @@ msgid "edit_search_reset"
 msgstr "Reset"
 
 msgid "edit_search_index"
-msgstr "Last search index actualization:"
+msgstr "Last search index update:"
 

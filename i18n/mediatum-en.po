@@ -65,13 +65,13 @@ msgid "login_currentuser_msg"
 msgstr "You are currently logged in as: "
 
 msgid "login_change_err_1"
-msgstr "Initial password does not match with the stored one"
+msgstr "Initial password does not match with the stored one."
 
 msgid "login_change_err_2"
-msgstr "Passwords don't match"
+msgstr "Passwords don't match."
 
 msgid "login_change_err_3"
-msgstr "The user account possesses still the standard password. please change to prevent misuse."
+msgstr "The user account still possesses the standard password. Please change to prevent misuse."
 
 msgid "login_change_err_4"
 msgstr "You are not allowed to change password of current user."
@@ -128,7 +128,7 @@ msgid "hint"
 msgstr "Notice: "
 
 msgid "close_window"
-msgstr "close window"
+msgstr "Close window"
 
 msgid "startpage"
 msgstr "Home"
@@ -140,7 +140,7 @@ msgid "printpdf"
 msgstr "Print (PDF)"
 
 msgid "sort_label"
-msgstr "sort by:"
+msgstr "Sort by:"
 
 msgid "sort_label2"
 msgstr "and:"
@@ -191,7 +191,7 @@ msgid "sub_header_workflow"
 msgstr "Workflows"
 
 msgid "sub_header_changepwd_title"
-msgstr "change password"
+msgstr "Change password"
 
 msgid "sub_header_changepwd"
 msgstr "Change password"
@@ -221,7 +221,7 @@ msgid "search_extendedsuper"
 msgstr "More Searchfields"
 
 msgid "all_data"
-msgstr "all data"
+msgstr "All data"
 
 msgid "search_for"
 msgstr "Search for"
@@ -242,10 +242,10 @@ msgid "search_simple"
 msgstr "Simple search"
 
 msgid "collections"
-msgstr "collektions"
+msgstr "Collections"
 
 msgid "collection_title"
-msgstr "show collections"
+msgstr "Show collections"
 
 msgid "fold"
 msgstr "fold"
@@ -254,10 +254,10 @@ msgid "unfold"
 msgstr "unfold"
 
 msgid "back_to_list_view_start"
-msgstr "back to start of result list"
+msgstr "Back to start of result list"
 
 msgid "back"
-msgstr "back"
+msgstr "Back"
 
 msgid "search_hit"
 msgstr "hints"
@@ -317,10 +317,10 @@ msgid "Root"
 msgstr "root node (system type)"
 
 msgid "view_list_att_title"
-msgstr "document has an attachment"
+msgstr "Document has an attachment."
 
 msgid "image_high_res_title"
-msgstr "download high resolution version"
+msgstr "Download high resolution version"
 
 msgid "image_available_formats"
 msgstr "Available image formats"
@@ -335,13 +335,13 @@ msgid "image_no_flash_link"
 msgstr "Click here to show the image with its original size (without Flash zoom). Use this link if you experience problems with the current view."
 
 msgid "doc_fulltext_title"
-msgstr "open fulltext in new window"
+msgstr "Open fulltext in new window"
 
 msgid "doc_bibtex_title"
-msgstr "open BibTeX information in new window"
+msgstr "Open BibTeX information in new window"
 
 msgid "doc_att_browser"
-msgstr "open attachment browser..."
+msgstr "Open attachment browser..."
 
 msgid "sqlite_type"
 msgstr "Type:"
@@ -494,16 +494,16 @@ msgid "tab_metadata_dir"
 msgstr "Edit metadata"
 
 msgid "tab_techmeta"
-msgstr "Technincal Meta Data"
+msgstr "Technical metadata"
 
 msgid "tab_meta"
-msgstr "Meta Data"
+msgstr "Metadata"
 
 msgid "tab_logo"
 msgstr "Edit logo"
 
 msgid "tab_editor_title"
-msgstr "Edit HTML-pages"
+msgstr "Edit HTML pages"
 
 msgid "tab_html_title"
 msgstr "Edit HTML pages"
@@ -518,7 +518,7 @@ msgid "tab_menumetadata"
 msgstr "Edit metadata"
 
 msgid "tab_meta_title"
-msgstr "Open Meta Data editor"
+msgstr "Open metadata editor"
 
 msgid "tab_content"
 msgstr "Content"
@@ -530,7 +530,7 @@ msgid "tab_search"
 msgstr "Search"
 
 msgid "tab_search_title"
-msgstr "Open Search"
+msgstr "Open search"
 
 msgid "tab_searchmask"
 msgstr "Edit search mask"
@@ -545,7 +545,7 @@ msgid "tab_acls"
 msgstr "Manage rights"
 
 msgid "tab_acls_title"
-msgstr "Edit Rights"
+msgstr "Edit rights"
 
 msgid "tab_menunodesperpage"
 msgstr "Configure: objects per page"
@@ -572,13 +572,13 @@ msgid "tab_workflow"
 msgstr "Workflow"
 
 msgid "tab_workflow_title"
-msgstr "Open Workflow"
+msgstr "Open workflow"
 
 msgid "tab_classes"
 msgstr "Classification"
 
 msgid "tab_classes_title"
-msgstr "Show Classification"
+msgstr "Show classification"
 
 msgid "tab_menuclasses"
 msgstr "Classification"
@@ -593,10 +593,10 @@ msgid "tab_publish"
 msgstr "System module Publish"
 
 msgid "tab_statsaccess"
-msgstr "User-Statistics"
+msgstr "User statistics"
 
 msgid "tab_statsfiles"
-msgstr "File-Statistics"
+msgstr "File statistics"
 
 msgid "tab_meta_col"
 msgstr "View"
@@ -605,13 +605,13 @@ msgid "tab_meta_dir"
 msgstr "View"
 
 msgid "tab_techmeta_title"
-msgstr "Open Technical Meta Data"
+msgstr "Open technical metadata"
 
 msgid "tab_html"
 msgstr "Edit startpage"
 
 msgid "tab_techmeta_obj"
-msgstr "Edit Digital Object"
+msgstr "Edit digital object"
 
 msgid "tab_manageindex"
 msgstr "Manage index lists"
@@ -623,19 +623,19 @@ msgid "tab_identifier"
 msgstr "Create identifier"
 
 msgid "liststyle_text"
-msgstr "list view, only text"
+msgstr "List view, text only"
 
 msgid "liststyle_list"
-msgstr "list view with thumbnails"
+msgstr "List view with thumbnails"
 
 msgid "liststyle_thumbnailbig"
-msgstr "thumbnail view (big)"
+msgstr "Thumbnail view (big)"
 
 msgid "liststyle_thumbnail"
-msgstr "thumbnail view"
+msgstr "Thumbnail view"
 
 msgid "items_per_page"
-msgstr "items per page"
+msgstr "Items per page"
 
 msgid "full_standard_doc_title"
 msgstr "Default view for documents"
@@ -647,13 +647,13 @@ msgid "print_view_header"
 msgstr "mediaTUM object"
 
 msgid "print_view_children"
-msgstr "entries"
+msgstr "Entries"
 
 msgid "print_view_list"
-msgstr "list of mediatum objects"
+msgstr "List of mediatum objects"
 
 msgid "print_view_page"
-msgstr "page"
+msgstr "Page"
 
 msgid "print_preview_occurences"
 msgstr "Occurences"
@@ -665,13 +665,13 @@ msgid "mask_editor_chosen_element"
 msgstr "Chosen elements:"
 
 msgid "mask_editor_into_vert_group"
-msgstr "group in new vertical group"
+msgstr "Group in new vertical group"
 
 msgid "mask_editor_into_hor_group"
-msgstr "group in new horizontal group"
+msgstr "Group in new horizontal group"
 
 msgid "mask_editor_group_title"
-msgstr "group"
+msgstr "Group"
 
 msgid "mask_editor_ok"
 msgstr " OK "
@@ -683,7 +683,7 @@ msgid "mask_editor_field_definition"
 msgstr "Field definition "
 
 msgid "mask_editor_new_line_title"
-msgstr "add new row"
+msgstr "Add new row"
 
 msgid "mask_editor_no_fields"
 msgstr "- no fields defined -"
@@ -695,40 +695,40 @@ msgid "mask_editor_field_selection"
 msgstr "Field type selection:"
 
 msgid "mask_editor_normal_field"
-msgstr "normal field"
+msgstr "Normal field"
 
 msgid "mask_editor_vert_group"
-msgstr "vertical group"
+msgstr "Vertical group"
 
 msgid "mask_editor_hor_group"
-msgstr "horizontal group"
+msgstr "Horizontal group"
 
 msgid "mask_editor_label"
-msgstr "label"
+msgstr "Label"
 
 msgid "mask_editor_no_export_mapping_defined"
 msgstr "No mapping defined."
 
 msgid "mask_editor_export_error"
-msgstr "Not all mandatory field of mapping definition are used. This can result in invalid exports."
+msgstr "Not all mandatory fields of mapping definition are used. This can result in invalid exports."
 
 msgid "mask_editor_msg1"
 msgstr "There are different field types available for mask fields. Standard is the 'normal field'"
 
 msgid "mask_editor_order_label"
-msgstr "(change order by Drag&Drop)"
+msgstr "(Change order by drag & drop)"
 
 msgid "mask_edit_up_title"
-msgstr "move up"
+msgstr "Move up"
 
 msgid "mask_edit_down_title"
-msgstr "move down"
+msgstr "Move down"
 
 msgid "mask_edit_edit_row"
-msgstr "edit row"
+msgstr "Edit row"
 
 msgid "mask_edit_delete_row"
-msgstr "delete row"
+msgstr "Delete row"
 
 msgid "mask_edit_edit_field"
 msgstr "Edit field"
@@ -779,7 +779,7 @@ msgid "mask_edit_field_width"
 msgstr "Field width:"
 
 msgid "mask_edit_width_info"
-msgstr "pixel (date fields min. 200)"
+msgstr "Pixel (date fields min. 200)"
 
 msgid "mask_edit_default"
 msgstr "Default value:"
@@ -806,7 +806,7 @@ msgid "mask_edit_fields"
 msgstr "Fields:"
 
 msgid "mask_edit_insert_field_title"
-msgstr "insert new field"
+msgstr "Insert new field"
 
 msgid "mask_edit_new_vert_field"
 msgstr "Create new vertical field"
@@ -827,16 +827,16 @@ msgid "mask_edit_label"
 msgstr "Label:"
 
 msgid "mask_edit_multi_label"
-msgstr "attribute occures in scheme: "
+msgstr "Attribute occures in scheme:"
 
 msgid "mask_edit_header"
 msgstr "Header"
 
 msgid "mask_edit_footer"
-msgstr "footer"
+msgstr "Footer"
 
 msgid "mask_edit_mappingselection"
-msgstr "Mapping Type:"
+msgstr "Mapping type:"
 
 msgid "mask_edit_mapping_field"
 msgstr "Field of mapping definition"
@@ -845,7 +845,7 @@ msgid "mask_edit_attribute_field"
 msgstr "Format description"
 
 msgid "mask_edit_attribute_description"
-msgstr "possible variables:<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* [value] = attribute value of 'Field'<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* [att:field] = attributename<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* [att:id] = node ID<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (&lt;[att:field]&gt;[value]&lt;/[att:field]&gt;)"
+msgstr "Possible variables:<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* [value] = attribute value of 'Field'<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* [att:field] = attributename<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* [att:id] = node ID<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (&lt;[att:field]&gt;[value]&lt;/[att:field]&gt;)"
 
 msgid "mask_edit_separator"
 msgstr "Separator"
@@ -860,7 +860,7 @@ msgid "PostprocessingError_document"
 msgstr "Document could not be uploaded into the system.<br>This may be caused by a possibly copy-protected or damaged PDF file."
 
 msgid "EncryptionError_document"
-msgstr "This document couldn't be uploaded- the PDF is copy-protected. Please remove the encryption and try uploading it again."
+msgstr "This document couldn't be uploaded because the PDF is copy-protected. Please remove the encryption and try uploading it again."
 
 msgid "Your_browser_doesnt_support_cookies"
 msgstr "Your browser doesn't support cookies. Maybe the 'Allow Cookies' option in your browser is deactivated. Please switch on Cookies again to proceed."
@@ -887,7 +887,7 @@ msgid "videos"
 msgstr "videos"
 
 msgid "att_browser_title"
-msgstr "Attachment-Browser"
+msgstr "Attachment browser"
 
 msgid "att_browser_type"
 msgstr "Type"
@@ -902,7 +902,7 @@ msgid "att_browser_files"
 msgstr " Files"
 
 msgid "video_showvideo"
-msgstr "show video"
+msgstr "Show video"
 
 msgid "search_result_text"
 msgstr "The search covered the following collections:"
@@ -920,7 +920,7 @@ msgid "list_link"
 msgstr "Content of page as list"
 
 msgid "content_text_file_title"
-msgstr "digital object available"
+msgstr "Digital object available"
 
 msgid "file_processingerror"
 msgstr "Error while processing file! Please check processed file."
@@ -929,43 +929,43 @@ msgid "file_extensionerror"
 msgstr "Error while processing file! Please check file extension."
 
 msgid "searchresult"
-msgstr "Searchresult"
+msgstr "Search result"
 
 msgid "alternative_pdf_link"
-msgstr "If you experience problems opening the document, please try this link"
+msgstr "If you experience problems opening the document, please try this link."
 
 msgid "popup_help_header"
 msgstr "Help"
 
 msgid "full_view"
-msgstr "Full View"
+msgstr "Full view"
 
 msgid "this_link"
 msgstr "this link"
 
 msgid "tab_globals"
-msgstr "global settings"
+msgstr "Global settings"
 
 msgid "settings"
-msgstr "settings"
+msgstr "Settings"
 
 msgid "style"
-msgstr "short view style:"
+msgstr "Short view style:"
 
 msgid "dont_display_logo"
-msgstr "don't display logo"
+msgstr "Don't display logo"
 
 msgid "no_extended_search"
-msgstr "no extended search:"
+msgstr "No extended search:"
 
 msgid "full_view_style"
-msgstr "full view style:"
+msgstr "Full view style:"
 
 msgid "node_name"
 msgstr "name:"
 
 msgid "no_extsearch"
-msgstr "no extended search:"
+msgstr "No extended search:"
 
 msgid "fieldname"
 msgstr "field name"
@@ -1001,10 +1001,10 @@ msgid "add"
 msgstr "add"
 
 msgid "sub_header_frontend"
-msgstr "View Website"
+msgstr "View website"
 
 msgid "hide_empty_directories"
-msgstr "hide empty directories"
+msgstr "Hide empty directories"
 
 msgid "yearbookuser"
 msgstr "Yearbook"
@@ -1055,7 +1055,7 @@ msgid "field_msg_color"
 msgstr "color/style:"
 
 msgid "show_all"
-msgstr "show all"
+msgstr "Show all"
 
 msgid "show_pages"
 msgstr "pages"
@@ -1175,7 +1175,7 @@ msgid "document_view_new_version_exist"
 msgstr "There is a newer version of the object available."
 
 msgid "document_view_version_deleted"
-msgstr "The version has been deleted.<br />The object will be show in the newest version."
+msgstr "The version has been deleted.<br />The object will be shown in the latest version."
 
 msgid "document_view_from"
 msgstr "from"
@@ -1239,16 +1239,16 @@ msgid "no_metadata_to_display"
 msgstr "There is no metadata that can be displayed for this object."
 
 msgid "untagged_version"
-msgstr "no version number"
+msgstr "No version number"
 
 msgid "current_version"
-msgstr "Current Version"
+msgstr "Current version"
 
 msgid "published_version"
-msgstr "Published Version"
+msgstr "Published version"
 
 msgid "guest"
 msgstr "Guest"
 
 msgid "audio_download_link"
-msgstr "download"
+msgstr "Download"

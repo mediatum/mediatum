@@ -2,7 +2,7 @@ msgid "edit_module_error"
 msgstr "Module '${name}' couldn't be loaded."
 
 msgid "edit_template_error"
-msgstr "Error while lading template. See the description below for closer information:"
+msgstr "Error while loading template. See the description below for closer information:"
 
 msgid "edit_error_msg"
 msgstr "You're not allowed to access the editor area.<br/> You can logon here: ${link}"
@@ -11,7 +11,7 @@ msgid "edit_linktext"
 msgstr "here"
 
 msgid "edit_nodeinformation"
-msgstr "Node Information"
+msgstr "Node information"
 
 msgid "edit_id"
 msgstr "ID"
@@ -38,7 +38,7 @@ msgid "edit_main_title"
 msgstr "mediatum"
 
 msgid "edit_main_noframe"
-msgstr "Your Browser doesn't support frames."
+msgstr "Your browser doesn't support frames."
 
 msgid "edit_save"
 msgstr "Save"
@@ -53,13 +53,13 @@ msgid "edit_error_msg1"
 msgstr "Folder couldn't be created. Parent object is write protected."
 
 msgid "edit_action_msg"
-msgstr "Action ${action} is starded"
+msgstr "Action ${action} is started"
 
 msgid "edit_add_folder"
-msgstr "New Folder"
+msgstr "New folder"
 
 msgid "edit_add_collection"
-msgstr "New Collection"
+msgstr "New collection"
 
 msgid "edit_nopermission"
 msgstr "permission denied"
@@ -74,7 +74,7 @@ msgid "edit_actual_dir"
 msgstr "Actual folder:"
 
 msgid "edit_tabarea_msg1"
-msgstr "The following view shows how this object would look within the public search interface. (the actual view is possibly different, depending on selected skin or layout)"
+msgstr "The following view shows how this object would look within the public search interface (the actual view is possibly different, depending on selected skin or layout)."
 
 msgid "edit_tabarea_msg2"
 msgstr "You will leave the editor interface by following links on this page."
@@ -137,7 +137,7 @@ msgid "edit_localread"
 msgstr "Localread-Flag"
 
 msgid "edit_workflow_msg1"
-msgstr "Current object has no workflow. To assign it into a workflow choose one of the list and confirm with 'save'."
+msgstr "Current object has no workflow. To assign it to a workflow choose one of the list and confirm with 'Save'."
 
 msgid "edit_wirfklows_wf"
 msgstr "Workflows"
@@ -176,16 +176,16 @@ msgid "clear_trash_question"
 msgstr "All elements in the trashbox will be lost while clearing. Perform delete operation?"
 
 msgid "edit_action_clear_trash"
-msgstr "Clear Trashbox"
+msgstr "Clear trashbox"
 
 msgid "select_target_dir"
-msgstr "Click on 'OK' and select in the navigation tree the folder where to move/copy the selected objects.\nYou may cancel using the cancel button."
+msgstr "Click on 'OK' and, in the navigation tree, select the folder where to move/copy the selected objects.\nYou may cancel using the cancel button."
 
 msgid "fieldsmissing"
 msgstr "Not all required fields were filled correctly."
 
 msgid "saved_in_inconsistent_data"
-msgstr "A copy was stored in the directory 'inconsistent data'."
+msgstr "A copy was stored in the directory 'Inconsistent data'."
 
 msgid "no_more_entries"
 msgstr "This file wasn't assigned to any directory."
@@ -197,7 +197,7 @@ msgid "edit_create_new_folder"
 msgstr "Directory could not be created: The parent directory is write protected."
 
 msgid "edit_tree_editor_title"
-msgstr "Tree Editor"
+msgstr "Tree editor"
 
 msgid "edit_access_error"
 msgstr "Access denied"
@@ -212,7 +212,7 @@ msgid "pagelist"
 msgstr "Page:"
 
 msgid "edit_common_edit_all_pages"
-msgstr "edit objects on all pages"
+msgstr "Edit objects on all pages"
 
 msgid "edit_common_mark_all"
 msgstr "Mark all shown objects"
@@ -245,10 +245,10 @@ msgid "edit_editor_new_file"
 msgstr "newly created file"
 
 msgid "edit_editor_header"
-msgstr "At the moment the archive contains the following data:"
+msgstr "At the moment, the archive contains the following data:"
 
 msgid "edit_flush"
-msgstr "System Caches were flushed"
+msgstr "System caches were flushed"
 
 msgid "user_directory"
 msgstr "User directory"
@@ -313,7 +313,7 @@ msgid "edit_delete_container"
 msgstr "Move folder to recycle bin"
 
 msgid "e_folder_homedir"
-msgstr "Home directory"
+msgstr "Home Directory"
 
 msgid "e_folder_trashdir"
 msgstr "Recycle bin"
@@ -370,7 +370,7 @@ msgid "edit_common_edit_copy_selected"
 msgstr "Copy selected objects"
 
 msgid "edit_common_edit_delete_selected"
-msgstr "delete selected objects"
+msgstr "Delete selected objects"
 
 msgid "edit_selected_documents"
 msgstr "Edit selected objects:"
@@ -379,7 +379,7 @@ msgid "edit_common_noobjectsfound"
 msgstr "No objects found"
 
 msgid "edit_add_directory"
-msgstr "New Folder"
+msgstr "New folder"
 
 msgid "edit_add_container_default"
 msgstr "New folder of type "
@@ -403,10 +403,10 @@ msgid "edit_tree_matches_tooltip"
 msgstr "number of matches ( + 1, if own home directory did not match)"
 
 msgid "edit_tree_filterbutton_tooltip"
-msgstr "apply filter to all existing home directories"
+msgstr "Apply filter to all existing home directories"
 
 msgid "write_information_back"
-msgstr "synchronize information"
+msgstr "Synchronize information"
 
 msgid "preview_images_on"
 msgstr "Show preview images"

@@ -2,7 +2,7 @@ msgid "edit_admin_setdirty_title"
 msgstr "Mark node for reindex process"
 
 msgid "edit_admin_localread_del_title"
-msgstr "Reprocess Localread (ACL-rights cache)"
+msgstr "Reprocess localread (ACL-rights cache)"
 
 msgid "edit_admin_add_attribute"
 msgstr "Create new attribute"
@@ -26,13 +26,13 @@ msgid "edit_admin_index_button"
 msgstr "Load data"
 
 msgid "edit_admin_simplesearch"
-msgstr "Simple Search"
+msgstr "Simple search"
 
 msgid "edit_admin_extsearch"
-msgstr "Extended Search"
+msgstr "Extended search"
 
 msgid "edit_admin_textsearch"
-msgstr "Fulltext Search"
+msgstr "Fulltext search"
 
 msgid "edit_admin_nosearchdata"
 msgstr "- no search data -"
@@ -41,7 +41,7 @@ msgid "edit_system_attrs"
 msgstr "System attributes"
 
 msgid "edit_notice_adding_system_attrs"
-msgstr If the attribute name starts with 'system.', a system attribute will be added.
+msgstr "If the attribute name starts with 'system.', a system attribute will be added."
 
 msgid "edit_admin_del_attribute"
 msgstr "Delete attribute"

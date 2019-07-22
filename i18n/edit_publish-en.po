@@ -1,5 +1,5 @@
 msgid "edit_publish_header"
-msgstr "Publish Objects (Quick Publisher)"
+msgstr "Publish objects (Quick Publisher)"
 
 msgid "edit_publish_warning"
 msgstr "Attention: This refers to unpublished objects (marked with red text), not to your current selection. You can select objects to be published in the next step."
@@ -8,7 +8,7 @@ msgid "edit_publish_info"
 msgstr "All selected objects will be published in selected directory."
 
 msgid "edit_publish_dirs"
-msgstr "Actual Destination-Directory:"
+msgstr "Actual destination directory:"
 
 msgid "edit_publish_button_select"
 msgstr "Choose directories"
@@ -17,13 +17,13 @@ msgid "edit_publish_button"
 msgstr "Publish"
 
 msgid "edit_publish_button_deactivated_tooltip"
-msgstr "(deactivated) Objects can be published after the selection of target directories"
+msgstr "(deactivated) Objects can be published after the selection of target directories."
 
 msgid "edit_publish_button_activated_tooltip"
 msgstr "Publish to the selected directories"
 
 msgid "edit_publish_popupheader"
-msgstr "Choose Destination:"
+msgstr "Choose destination:"
 
 msgid "edit_publish_ok"
 msgstr "OK"

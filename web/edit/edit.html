@@ -11,12 +11,13 @@
             <a tal:condition="python:len(navitem.getItemList())==0" tal:attributes="class python:{0:None,1:'selected'}[navitem.name==breadcrumbs[0]]; href python:navitem.link; target python:navitem.target" i18n:translate="" tal:content="python:u'tab_{}'.format(navitem.name)">TEXT</a>
             <tal:block tal:condition="python:len(navitem.getItemList())>0">
                 <a tal:attributes="class python:u'mediatum_img_nav mediatum_img_{}'.format(navitem.getName()); target python:navitem.target" i18n:translate="" tal:content="python:u'tab_{}'.format(navitem.getName())"/>
+
              <ul>
                 <!-- Second Menu -->
                 <li tal:repeat="item python:navitem.getItemList()">
 
                     <tal:block tal:condition="python:len(item.getItemList())>0">
-                        <a i18n:translate="" tal:content="python:u'tab_{}'.format(item.getName())" tal:attributes="class python:u'mediatum_img_nav mediatum_img_{}'.format(item.getName())"/>
+                       <a i18n:translate="" tal:content="python:u'tab_{}'.format(item.getName())" tal:attributes="class python:u'mediatum_img_nav mediatum_img_{}'.format(item.getName())"/>
                     </tal:block>
                     <tal:block tal:condition="python:len(item.getItemList())==0">
                             <a i18n:translate="" tal:content="python:u'tab_{}'.format(item.getName())" tal:attributes="class python:u'mediatum_img_nav mediatum_img_{}'.format(item.getName());href python:u'?id={}&tab={}'.format(idstr, item.getName())"/>
@@ -54,6 +55,7 @@
         </li>
         </tal:block>
     </ul>
+
 
     <div class="mediatum_breadcrumbs">
         <div class="mediatum_breadcrumbs_h">

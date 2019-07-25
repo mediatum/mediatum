@@ -71,7 +71,7 @@ msgid "edit_taboverview_header"
 msgstr "Selected/Editing:"
 
 msgid "edit_actual_dir"
-msgstr "Actual folder:"
+msgstr "Current folder:"
 
 msgid "edit_tabarea_msg1"
 msgstr "The following view shows how this object would look within the public search interface (the actual view is possibly different, depending on selected skin or layout)."

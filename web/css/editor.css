@@ -103,67 +103,74 @@ div.mask_row {margin-bottom:6px;}
 .mediatum_home_content {overflow: hidden;}
 .mediatum_home_content:hover {overflow: auto;}
 .mediatum_id_h3_editor {white-space:nowrap;margin:5px 0 10px 5px;padding-top:0;position:absolute;top:5px;left:5px;}
-
+.mediatum_div {display:inline;}
 /* Image Links */
-.mediatum_img_nav::before{padding: 0px 5px 0px 5px;}
+.mediatum_img_nav::before{padding: 0px 5px 0px 5px;width:16px;height:16px;background-size: 21px 16px;background-repeat: no-repeat;float:left;}
+.mediatum_imgtooltipbase{padding-right:5px;vertical-align: middle;padding-top:2px;}
+.mediatum_imgtooltipbase .mediatum_minithumb {display: inline-block;padding-top:2px;}
+.mediatum_imgtooltipbase:hover .mediatum_minithumb {display:none;}
 .mediatum_imgtooltipbase .mediatum_imghover{display:none;}
-.mediatum_imgtooltipbase:hover .mediatum_imghover{display: inline-block;position: relative;bottom:33px;left: 0px;height:128px;width:128px;}
+.mediatum_imgtooltipbase:hover .mediatum_imghover{display: inline-block;position: relative;left: 0px;height:128px;width:128px;}
 .mediatum_imgtooltipbasedefault .mediatum_imghoverdefault{display:none;}
-.mediatum_imgtooltipbasedefault:hover .mediatum_imghoverdefault{display: inline-block;position: relative;bottom:33px;left: 0px;height:128px;width:128px;}
+.mediatum_imgtooltipbasedefault:hover .mediatum_imghoverdefault{display: inline-block;position: relative;left: 0px;height:128px;width:128px;}
 
 /* Top Menu */
-.mediatum_img_menulayout::before{content: url(/img/edit_edit.gif);} /* Verzeichnis-Übersicht not used */
-.mediatum_img_menumetadata::before {content: url(/img/edit_edit.gif);} /* Metadaten bearbeiten */
-.mediatum_img_content::before {content: url(/img/edit_edit.gif);} /* Verzeichnis-Übersicht */
-.mediatum_img_metadata::before {content: url(/img/edit_edit.gif);} /* Metadaten editieren */
-.mediatum_img_menuoperation::before{content: url(/img/edit_edit.gif);} /* Spezialfunktionen */
-.mediatum_img_parentcontent::before {content: url(/img/edit_edit.gif);} /* Verzeichnisübersicht */
-.mediatum_img_view::before {content: url(/img/edit_edit.gif);} /* Vorschau */
+/* .mediatum_img_content::before {content: url(/img/editor/visible.gif);}  *//* Verzeichnis-Übersicht */
+.mediatum_img_content::before {content: url(/img/editor/listview.png);}
+/* .mediatum_img_content::before {content: url(/img/editor/listview_detailed_16.png);}  */
+.mediatum_img_metadata::before {content: url(/img/editor/page_white_edit.png);} /* Metadaten bearbeiten */
+/* .mediatum_img_metadata::before {content: url(/img/editor/edit_edit.gif);}  */
+/* .mediatum_img_menuoperation::before{content: url(/img/editor/system_16.png);} */  /*  Spezialfunktionen */
+.mediatum_img_menuoperation::before{content: url(/img/editor/tools_iconfinder_tools.png);}
+.mediatum_img_parentcontent::before {content: url(/img/editor/edit_edit.gif);} /* Verzeichnisübersicht */
+.mediatum_img_view::before {content: url(/img/editor/edit_edit.gif);} /* Vorschau */
 /* First Sub Menu */
-.mediatum_img_menumetadata::before {content: url(/img/edit_edit.gif);} /* Inhalt */
-.mediatum_img_metadata::before {content: url(/img/edit_edit.gif);} /* Metadaten editieren */
-.mediatum_img_acls::before {content: url(/img/edit_edit.gif);} /* Rechte vergeben */
-.mediatum_img_menueditall::before {content: url(/img/edit_edit.gif);} /* Alle Datensätze im Verzeichnis bearbeiten */
-.mediatum_img_menunodesperpage::before {content: url(/img/edit_edit.gif);} /* Einstellungen: Datensätze pro Seite */
-.mediatum_img_menusortnodes::before {content: url(/img/edit_edit.gif);} /* Einstellungen: Datensätze sortieren */
-.mediatum_img_startpagesmenu::before {content: url(/img/edit_edit.gif);} /* Startseiten verwalten */
-.mediatum_img_admin::before {content: url(/img/edit_edit.gif);} /* Administration */
-.mediatum_img_classes::before {content: url(/img/edit_edit.gif);} /* Klassifikation */
-.mediatum_img_menueditobject::before {content: url(/img/edit_edit.gif);} /* Weitere Aktionen für Datensatz */
+/* .mediatum_img_acls::before {content: url(/img/editor/changepwd.gif);}  *//* Rechte vergeben */
+/* .mediatum_img_acls::before {content: url(/img/editor/archive.png);}  */
+.mediatum_img_acls::before {content: url(/img/editor/people_16.png);}
+/* .mediatum_img_acls::before {content: url(/img/editor/lock_icon_16.png);}  */
+.mediatum_img_menueditall::before {content: url(/img/editor/stapel_iconfinder_pages_16.png);} /* Alle Datensätze im Verzeichnis bearbeiten */
+.mediatum_img_menunodesperpage::before {content: url(/img/editor/zahnrad_iconfinder_16.png);} /* Einstellungen: Datensätze pro Seite */
+.mediatum_img_menusortnodes::before {content: url(/img/editor/az.png);} /* Einstellungen: Datensätze sortieren */
+.mediatum_img_startpagesmenu::before {content: url(/img/editor/iconfinder_075_Globe_183204.svg);} /* Startseiten verwalten */
+/* .mediatum_img_admin::before {content: url(/img/editor/tools_iconfinder_tools.png);}  */ /* Administration */
+/* .mediatum_img_admin::before {content: url(/img/editor/admin.gif);}  */
+/* .mediatum_img_admin::before {content: url(/img/editor/system_16.png);}  */
+.mediatum_img_admin::before {content: url(/img/editor/workflow_16.png);}
+.mediatum_img_classes::before {content: url(/img/editor/baum_iconfinder_tree_16.png);} /* Klassifikation */
+.mediatum_img_menueditobject::before {content: url(/img/editor/stapel_iconfinder_pages_16.png);} /* Weitere Aktionen für Datensatz */
 /* Second Submenu */
-.mediatum_img_editall::before {content: url(/img/edit_edit.gif);} /* Bearbeiten */
-.mediatum_img_moveall::before {content: url(/img/edit_move.gif);} /* Verschieben */
-.mediatum_img_copyall::before {content: url(/img/edit_copy.gif);} /* Kopieren */
-.mediatum_img_deleteall::before {content: url(/img/edit_delete.png);} /* Löschen */
-.mediatum_img_nodesperpage20::before {content: url(/img/edit_edit.gif);} /* 20 */
-.mediatum_img_nodesperpage50::before {content: url(/img/edit_edit.gif);} /* 50 */
-.mediatum_img_nodesperpage100::before {content: url(/img/edit_edit.gif);} /* 100 */
-.mediatum_img_nodesperpage200::before {content: url(/img/edit_edit.gif);} /* 200 */
-.mediatum_img_moveobject::before {content: url(/img/edit_edit.gif);} /* Verschieben */
-.mediatum_img_copyobject::before {content: url(/img/edit_edit.gif);} /* Kopieren */
-.mediatum_img_deleteobject::before {content: url(/img/edit_edit.gif);} /* Löschen */
-/* sortnodes -> sort_choices from edit.py */
-.mediatum_img_off::before {content: url(/img/edit_edit.gif);} /* aus */
-.mediatum_img_ranking::before {content: url(/img/edit_edit.gif);} /* Ranking */
-.mediatum_img_rankingdesc::before {content: url(/img/edit_edit.gif);} /* Ranking (absteigend) */
-.mediatum_img_date::before {content: url(/img/edit_edit.gif);} /* Datum */
-.mediatum_img_datedesc::before {content: url(/img/edit_edit.gif);} /* Datum (absteigend) */
-.mediatum_img_menusortsubdir::before {content: url(/img/edit_edit.gif);} /* Unterordner sortieren */
-.mediatum_img_menustatistics::before {content: url(/img/edit_edit.gif);} /* Statistik */
+.mediatum_img_editall::before {content: url(/img/editor/edit_edit.gif);} /* Bearbeiten */
+.mediatum_img_moveall::before {content: url(/img/editor/edit_move.gif);} /* Verschieben */
+.mediatum_img_copyall::before {content: url(/img/editor/edit_copy.gif);} /* Kopieren */
+.mediatum_img_deleteall::before {content: url(/img/editor/edit_delete.png);} /* Löschen */
+/* .mediatum_img_nodesperpage20::before {content: url(/img/editor/edit_edit.gif);} */ /* 20 */
+/* .mediatum_img_nodesperpage50::before {content: url(/img/editor/edit_edit.gif);} */ /* 50 */
+/* .mediatum_img_nodesperpage100::before {content: url(/img/editor/edit_edit.gif);} */ /* 100 */
+/* .mediatum_img_nodesperpage200::before {content: url(/img/editor/edit_edit.gif);}  *//* 200 */
+.mediatum_img_moveobject::before {content: url(/img/editor/edit_move.gif);} /* Verschieben */
+.mediatum_img_copyobject::before {content: url(/img/editor/edit_copy.gif);} /* Kopieren */
+.mediatum_img_deleteobject::before {content: url(/img/editor/edit_delete.png);} /* Löschen */
+.mediatum_img_menusortsubdir::before {content: url(/img/editor/az.png);} /* Unterordner sortieren */
+.mediatum_img_menustatistics::before {content: url(/img/editor/stats_iconfinder_piechart_16.png);} /* Statistik */
+/* .mediatum_img_menustatistics::before {content: url(/img/editor/bars_16.png);}  */
+
 /* sortsubdir items??? */
-.mediatum_img_startpages::before {content: url(/img/edit_edit.gif);} /* Startseite bearbeiten */
-.mediatum_img_logo::before {content: url(/img/edit_edit.gif);} /* Logo editieren */
-.mediatum_img_searchmask::before {content: url(/img/edit_edit.gif);} /* Suchmaske anlegen */
-.mediatum_img_subfolder::before {content: url(/img/edit_edit.gif);} /* Unterordner sortieren */
-.mediatum_img_statsaccess::before {content: url(/img/edit_edit.gif);} /* Zugriffsstatistiken */
-.mediatum_img_statsfiles::before {content: url(/img/edit_edit.gif);} /* Datenstatistiken */
-.mediatum_img_sortfiles::before {content: url(/img/edit_edit.gif);} /* Files sortieren */
-.mediatum_img_changeschema::before {content: url(/img/edit_edit.gif);} /* Objekttyp / Metadatentyp ändern */
-.mediatum_img_files::before {content: url(/img/edit_edit.gif);} /* digitale Objekte austauschen / hinzufügen */
-.mediatum_img_uploadmeta::before {content: url(/img/upload.png);}/* Uploads: Metadaten einstellen */
-.mediatum_img_uploaddoi::before {content: url(/img/upload.png);}/* Uploads: DOI-Eingabe */
-.mediatum_img_uploadfile::before {content: url(/img/upload.png);}/* Uploads: Datei hochladen */
-.mediatum_img_uploadbibtex::before {content: url(/img/upload.png);}/* Uploads: Bibtex-Import */
+.mediatum_img_startpages::before {content: url(/img/editor/edit_edit.gif);} /* Startseite bearbeiten */
+.mediatum_img_logo::before {content: url(/img/editor/edit_edit.gif);} /* Logo editieren */
+.mediatum_img_searchmask::before {content: url(/img/editor/edit_edit.gif);} /* Suchmaske anlegen */
+.mediatum_img_subfolder::before {content: url(/img/editor/az.png);} /* Unterordner sortieren */
+.mediatum_img_statsaccess::before {content: url(/img/editor/edit_edit.gif);} /* Zugriffsstatistiken */
+.mediatum_img_statsfiles::before {content: url(/img/editor/edit_edit.gif);} /* Datenstatistiken */
+.mediatum_img_sortfiles::before {content: url(/img/editor/az.png);} /* Dateien sortieren */
+.mediatum_img_changeschema::before {content: url(/img/editor/edit_edit.gif);} /* Objekttyp / Metadatentyp ändern */
+.mediatum_img_files::before {content: url(/img/editor/attach.png);} /* Datei hinzufügen */
+
+/* .mediatum_img_uploadmeta::before {content: url(/img/editor/upload.png);} *//* Uploads: Metadaten einstellen */
+.mediatum_img_uploadmeta::before {content: url(/img/editor/document-new-6.png);}
+.mediatum_img_uploaddoi::before {content: url(/img/editor/DOI_logo.svg2.png);}/* Uploads: DOI-Eingabe */
+.mediatum_img_uploadfile::before {content: url(/img/editor/insert-image-3.png);}/* Uploads: Datei hochladen */
+.mediatum_img_uploadbibtex::before {content: url(/img/editor/bibtex.gif);}/* Uploads: Bibtex-Import */
 
 .mediatum_itemicon {float:left; margin-right:10px;}
 .mediatum_itemmenucontainer {color:#666666; background:transparent; padding:20px 10px 10px; width:582px; background-image:url(/img/layout/edit_itenmenucontainer.gif);
@@ -179,11 +186,11 @@ div.mask_row {margin-bottom:6px;}
 .mediatum_metaform_div{position:absolute;top:-7px;right:-7px;z-index:10002;}
 .mediatum_minithumb{height:30px;width:30px;}
 .mediatum_multitext {height:60px; margin-bottom:5px;}
-.mediatum_nav { top: 0; left: 0; width: 100%; background: #3070b3; list-style:none; margin:0; padding:0; z-index:999}
+.mediatum_nav { top: 0; left: 0; width: 100%;/*  background: #3070b3; */  background: #333;list-style:none; margin:0; padding:0; z-index:999}
 .mediatum_nav a{color:#fff;font-weight:normal !important;font-size: 12px;}
-.mediatum_nav li:hover{color:#fff;background: #007fff;border:none !important;}
-.mediatum_nav ul {margin: 0; background: #3070b3;padding-left:0;left: 0%;top:29px;}
-.mediatum_nav li{width:150px; display: inline-block;position:relative;padding:5px;}
+.mediatum_nav li:hover{color:#fff;/* background: #007fff; */background: #666;border:none !important;}
+.mediatum_nav ul {margin: 0; /* background: #3070b3; */background: #333;padding-left:0;left: 0%;top:26px;}
+.mediatum_nav li{/* width:160px; */ min-width:160px; display: inline-block;position:relative;padding:5px;}
 .mediatum_nav li a{ text-decoration:none; }
 .mediatum_nav li ul {display:none;}
 .mediatum_nav li ul li {border-bottom: 1px solid #ccc;padding:5px;}

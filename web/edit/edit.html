@@ -263,18 +263,10 @@ function build_context_menu_items(node, opts) {
                                           "items": create_container_items
                                         },
             "sep2": "---------",
+            "cut_container": {name: cut_t, icon: "cut", disabled: flag_cut_mode},
+            "paste_container_here": {name: paste_t, icon: "paste", disabled: !flag_cut_mode},
+            "delete": {name: delete_t, icon: "delete", accesskey: "l", disabled: flag_cut_mode},
           };
-
-    if (!flag_cut_mode) {
-      ctx_items["cut_container"] = {name: cut_t, icon: "cut"};
-      ctx_items["paste_container_here"] = {name: paste_t, icon: "paste", disabled: true};
-      ctx_items["delete"] = {name: delete_t, icon: "delete", accesskey: "l"};
-     }
-     else {
-      ctx_items["cut_container"] = {name: cut_t, icon: "cut", disabled: true};
-      ctx_items["paste_container_here"] = {name: paste_t, icon: "paste"};
-      ctx_items["delete"] = {name: delete_t, icon: "delete", disabled: true};
-     }
 
     var special_dir_type = node.data.special_dir_type;
 
@@ -440,7 +432,7 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curnode)
             callback: function(action, opts) {
 
               consoledb.groupCollapsed('--- ctx_callback ---');
-              consoledb.log('action:'+action);
+              consoledb.log('action cut: ', action);
               consoledb.log(opts);
               consoledb.log('node.key: ' + node.key + ', node.title: ' + node.title);
 
@@ -488,7 +480,8 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curnode)
                 node_to_paste = node;
                 node_to_paste_li = $(node.li);
                 node_to_paste_classname = node_to_paste.li.className;
-                node_to_paste_parent = node.parent;
+                consoledb.log('cut node parent.key: ', node_to_paste.parent.key);
+
                 node_to_paste_li.addClass('fancytree-node-disabled');
                 flag_cut_mode = true;
 
@@ -500,25 +493,34 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curnode)
                 break;
               case "paste_container_here":
                 consoledb.log('cut node:' + node.key);
-                if (node_to_paste_parent.key == node.key) { // nothing to be done: user tries to paste node to parent
+                var src = node_to_paste.parent.key;
+                var obj = node_to_paste.key;
+                var dest = node.key;
+                if(!($.isNumeric(src)))
+                {
+                    src = node_to_paste.parent.title;
+                    consoledb.log("src: ", src);
+                };
+                if (src == dest) { // nothing to be done: user tries to paste node to parent
                   flag_cut_mode = false;
                   node_to_paste_li.removeClass('fancytree-node-disabled');
                   res = false;
                   break;
                 }
-                var src = node_to_paste.parent.key;
-                var obj = node_to_paste.key;
-                var dest = node.key;
                 consoledb.log("moving node "+obj+" from parent "+src+" to destination "+dest);
-                edit_action_sync('move', src, obj, dest);
+                if (!($.isNumeric(src) && $.isNumeric(obj) && $.isNumeric(dest))) {
+                    throw "moving node failed: node id is not an integer";
+                };
+                ret = edit_action_sync('move', src, obj, dest);
+                consoledb.log("edit_action_sync finished: ", ret);
                 flag_cut_mode = false;
-                node_to_paste.moveTo(node);
-                node_to_paste.setActive();
-                new_path_endpoint = node_to_paste.key;
+                new_path_endpoint = obj;
                 if (currentpath) {
                     consoledb.log(2);
                     $('.ui-layout-center').attr('src', '/edit/edit_content?id='+new_path_endpoint+'&tab=content');
                 }
+                consoledb.log("finished paste to: ", dest);
+                reloadColTree();
                 res = false;
                 break;
               case "delete":
@@ -567,7 +569,7 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curnode)
 
 
 function contextmenu_collections(selector) {
-
+    consoledb.log("contextmenu_collections collectionsid=", collectionsid);
     $(function(){
       $.contextMenu({
 
@@ -579,6 +581,14 @@ function contextmenu_collections(selector) {
         build: function($trigger, e) {
             consoledb.log("$trigger:"+$trigger);
             consoledb.log("e:"+e);
+
+             var ctx_items = {
+                "edit": {name: edit_t, icon: "edit"},
+                "sep1": "---------",
+                "create_container_collection": {name: add_col_t, icon: "collection"},
+                "sep2": "---------",
+                "paste_container_here": {name: paste_t, icon: "paste", disabled: !flag_cut_mode},
+            };
 
             return {
                 callback: function(key, options) {
@@ -598,15 +608,40 @@ function contextmenu_collections(selector) {
                         addNewContainerToRoot("collection");
                         reloadColTree();
                         }
+                    if (key == "paste_container_here") {
+                        consoledb.log("paste_container_here: ", collectionsid);
+                        var src = node_to_paste.parent.key;
+                        var obj = node_to_paste.key;
+                        var dest = collectionsid;
+                        if(!($.isNumeric(src)))
+                        {
+                            src = node_to_paste.parent.title;
+                            consoledb.log("src: ", src);
+                        };
+                        if (src == dest) { // nothing to be done: user tries to paste node to parent
+                            flag_cut_mode = false;
+                            node_to_paste_li.removeClass('fancytree-node-disabled');
+                        }
+                        else
+                        {
+                            consoledb.log("moving node "+obj+" from parent "+src+" to destination "+dest);
+                            if (!($.isNumeric(src) && $.isNumeric(obj) && $.isNumeric(dest))) {
+                                throw "moving node failed: node id is not an integer";
+                            };
+                            ret = edit_action_sync('move', src, obj, dest);
+                            consoledb.log("edit_action_sync finished: ", ret);
+                            flag_cut_mode = false;
+                            new_path_endpoint = obj;
+                            if (currentpath) {
+                                $('.ui-layout-center').attr('src', '/edit/edit_content?id='+new_path_endpoint+'&tab=content');
+                            }
+                            consoledb.log("finished paste to: ", dest);
+                            reloadColTree();
+                        }
+                    }
+                },
 
-                    },
-
-                items: {
-                    "edit": {name: edit_t, icon: "edit"},
-                    "sep1": "---------",
-                    "create_container_collection": {name: add_col_t, icon: "collection"}
-
-                  }
+                items: ctx_items
               };
           }
       });
@@ -781,6 +816,7 @@ function reloadPage(id, path, tree_selector){
 function addNewContainerToRoot(type){ /* add new container */
     new_path_endpoint = false;
     var ajax_response;
+    consoledb.log('addNewContainerToRoot: collectionsid=', collectionsid);
     var parent_id = collectionsid;
     var options = {
           url: '/edit/edit_action?src='+parent_id+'&action=addcontainer&type='+type,
@@ -806,6 +842,7 @@ function addNewContainer(parent_node, type){ /* add new container */
     new_path_endpoint = false;
     var ajax_response;
     var parent_id = parent_node.key;
+    consoledb.log('addNewContainer: parent_node.key '+parent_node.key);
     var options = {
           url: '/edit/edit_action?src='+parent_id+'&action=addcontainer&type='+type,
           async: false,
@@ -1078,7 +1115,7 @@ function reload_htree_filtered(homenodefilter) {
 
   tree_selector = "#hometree";
   tree_node_id_prefix = "tree-node-";
-  tree_root = "home";  // "home", "root"
+  tree_root_key = "home";  // "home", "root"
   used_tree_selectors = ["#hometree", "#collectionstree"];
 
   function get_used_trees (selector_list) {
@@ -1086,7 +1123,7 @@ function reload_htree_filtered(homenodefilter) {
      return res;
   }
 
-  function get_tree_opts(tree_selector, tree_node_id_prefix, tree_root, used_tree_selectors) {
+  function get_tree_opts(tree_selector, tree_node_id_prefix, tree_root_key, tree_root_nid, used_tree_selectors) {
   // options template for tree (htree and ctree)
   tree_opts = {
 
@@ -1124,7 +1161,7 @@ function reload_htree_filtered(homenodefilter) {
         if (iconpath == "") {data.node.data.icon = FANCYTREE_DEFAULT_ICON;}
       },
 
-    ajax: {type: "POST", contentType: "application/json", data: {key: tree_root, mode: "edittree", homenodefilter: $('#homenodefilter').val(), csrf_token: csrf}},  // tree-dependent
+    ajax: {type: "POST", contentType: "application/json", data: {key: tree_root_key, mode: "edittree", homenodefilter: $('#homenodefilter').val(), csrf_token: csrf}},  // tree-dependent
 
     source: {
       url: "/edit/treedata"
@@ -1255,7 +1292,7 @@ function reload_htree_filtered(homenodefilter) {
       consoledb.log('#### click ####: ', click_target_type);
       consoledb.log(event);
       consoledb.log('event.type: ' + event.type);
-      consoledb.log('action: ' + action);
+      consoledb.log('action click: ', action);
       last_click_event = event;
 
       node = data.node;
@@ -1377,6 +1414,7 @@ function reload_htree_filtered(homenodefilter) {
     postProcess: function(event, data) {  // check this
         consoledb.log('--- tree postProcess ---');
         consoledb.log('event:', event, 'data:', data);
+        data.tree.rootNode.setTitle(tree_root_nid);
         if (currentpath!="/"){
             //var node = data.node;
             var thistree = $(tree_selector).fancytree("getTree");
@@ -1429,11 +1467,12 @@ $(document).ready(function () {
   });
 
 
+
   // create home tree
-  htree = $("#hometree").fancytree(get_tree_opts("#hometree", "htree-node-", "home", ["#hometree", "#collectionstree"]));
+  htree = $("#hometree").fancytree(get_tree_opts("#hometree", "htree-node-", "home", "INVALID", ["#hometree", "#collectionstree"]));
 
   // create collections tree
-  ctree = $("#collectionstree").fancytree(get_tree_opts("#collectionstree", "ctree-node-", "root", ["#hometree", "#collectionstree"]));
+  ctree = $("#collectionstree").fancytree(get_tree_opts("#collectionstree", "ctree-node-", "root", collectionsid, ["#hometree", "#collectionstree"]));
 
   // close context menu when mouse is leaving pane
   var triggertarget = layout.panes.center;

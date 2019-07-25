@@ -819,7 +819,7 @@ function addNewContainer(parent_node, type){ /* add new container */
           },
         };
 
-   $.ajax(options);
+    $.ajax(options);
 
     var childnode = ajax_response;
     parent_node.tree.getNodeByKey(parent_id).addChildren([childnode], parent_node.children[0]);
@@ -827,19 +827,6 @@ function addNewContainer(parent_node, type){ /* add new container */
     parent_node.tree.activeNode.data.isFolder = true;
     consoledb.log('activeNode:', parent_node.tree.activeNode.key);
     consoledb.log('parent_node.tree.activeNode.data.isFolder:', parent_node.tree.activeNode.data.isFolder);
-
-    return;
-
-    $.get('/edit/edit_action?src='+parent_id+'&action=addcontainer&type='+type, function(data){
-    if (data!=""){
-        currentpath = currentpath + '/' + data;
-        new_path_endpoint = data;
-
-        var n = $("#collectionstree").fancytree("getTree").getNodeByKey(''+parent_id); //.reloadChildren(); //.getParent().reloadChildren();
-        n.reloadChildren();
-        }
-    });
-    return false;
 }
 
 
@@ -1083,15 +1070,6 @@ function reload_htree_filtered(homenodefilter) {
     var match_result = homedir.data.match_result;
     $('#htree_matches').html(match_result);
   }); // .done()
-  return;
-  ht.reload();
-  var homedir_key = user_folders['homedir'];
-  alert(8);
-  var homedir = ht.getNodeByKey(homedir_key);
-  var match_result = homedir.match_result;
-  alert(homedir.data.match_result);
-  $('#htree_matches').text(homedir.data.match_result);
-  $('#htree_matches').text(ht.getNodeByKey(user_folders['homedir']).data.match_result);
 }
 
 
@@ -1144,12 +1122,6 @@ function reload_htree_filtered(homenodefilter) {
         consoledb.log(data);
         var iconpath = data.node.data.icon;
         if (iconpath == "") {data.node.data.icon = FANCYTREE_DEFAULT_ICON;}
-        if (data.node.data.readonly==0){
-            consoledb.log('SPAN: ', data.node.span);
-            // 2014-11-26
-            //contextmenue_on_demand('#'+tree_node_id_prefix+data.node.key, $(tree_selector).fancytree("getTree"), tree_node_id_prefix, data.node);  // tree-dependent
-            // arguments: '#(h|c)tree-node-'+data.node.key, get(hometree|coltree)(), '(h|c)tree-node-', data.node
-        }
       },
 
     ajax: {type: "POST", contentType: "application/json", data: {key: tree_root, mode: "edittree", homenodefilter: $('#homenodefilter').val(), csrf_token: csrf}},  // tree-dependent
@@ -1199,16 +1171,6 @@ function reload_htree_filtered(homenodefilter) {
         catch (e) {
          ;
         }
-
-    /*
-        // asynchronous loading
-        data.result = {
-          url: "/edit/treedata",
-          data: {mode: "edittree", key: node.key},  // tree-dependent
-          cache: false
-        };
-    */
-
 
     },
 
@@ -1286,11 +1248,6 @@ function reload_htree_filtered(homenodefilter) {
       }
 
     },  // keydown:
-
-    // event fired each time a node is deactivated
-    deactivate: function(event, data){
-        //$(data.node.span).addClass('disabled');
-    },
 
     // event click is fired befor activate
     click: function(event, data){
@@ -1394,12 +1351,7 @@ function reload_htree_filtered(homenodefilter) {
         $(".contextMenu").hide();
       }
 
-      //set_cm_to_default();  // check this
-
       last_activated_node = last_activated_hometree_node = node;
-
-      // context menu may / is created after create event
-      //contextmenue_on_demand('#htree-node-'+data.node.key, gethometree(), 'htree-node-', data.node);
 
       if(event.type=="fanytreeclickactivate" && node.data.readonly==0 && action==""){
           idselection = node.key;
@@ -1528,17 +1480,6 @@ function rct() {
           }
           consoledb.groupEnd('edit.html: rct()');
       };
-
-// expand next level:
-/*
-ct = getcoltree();
-ct.visit(function(node){
-  consoledb.log('visiting '+node.key+': '+node.title);
-  if (!node.isExpanded()){
-    node.load(true).done(function(){node.setExpanded(true)});
-  }
-})
-*/
 
 
 </script>

@@ -1623,12 +1623,13 @@ function rct() {
                 <!-- operations-->
                 <div id="mediatum_operations" tal:condition="python:len(ids)==1" tal:content="raw operations">TEXT</div>
 
-                <!-- breadcrumbs -->
-                <div class="mediatum_breadcrumbs_link"><b i18n:translate="edit_actual_dir" class="mediatum_breadcrumbs_padding">TEXT</b></div>
-                <div class="mediatum_breadcrumbs_content" tal:content="raw dircontent"> </div>
-
-                <!-- nav-->
-                <div class="mediatum_divnav"  tal:content="raw paging"> </div>
+                <!-- breadcrumbs-->
+                    <div class="mediatum_breadcrumbs_nav">
+                    <div class="mediatum_breadcrumbs_link"><b i18n:translate="edit_actual_dir" class="mediatum_breadcrumbs_padding">TEXT</b></div>
+                    <div class="mediatum_breadcrumbs_content" tal:content="raw dircontent"> </div>
+                    <!-- nav-->
+                    <div class="mediatum_divnav"  tal:content="raw paging"> </div>
+                </div>
 
             </div>
 

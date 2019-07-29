@@ -852,7 +852,7 @@ def content(req):
         s = []
         while n:
             if not folders_only:
-                s = ['<a onClick="activateEditorTreeNode(%r); return false;" href="/edit/edit_content?id=%s">%s</a>' %
+                s = ['<a onClick="activateEditorTreeNode(%r); return true;" href="/edit/edit_content?id=%s">%s</a>' %
                      (n.id, n.id, get_edit_label(n, language))] + s
 
             folders_only = False;
@@ -872,7 +872,7 @@ def content(req):
             if len(s) == 0:
                 s = ['%s' % (get_edit_label(n, language))]
             else:
-                s = ['<a onClick="activateEditorTreeNode(%r); return false;" href="/edit/edit_content?id=%s">%s</a>' %
+                s = ['<a onClick="activateEditorTreeNode(%r); return true;" href="/edit/edit_content?id=%s">%s</a>' %
                      (n.id, n.id, get_edit_label(n, language))] + s
 
             p = n.parents

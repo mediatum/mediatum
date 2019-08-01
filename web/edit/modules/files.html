@@ -2,22 +2,10 @@
     TEXT
 </p>
 
-<p class="error" metal:define-macro="version_error"><tal:block i18n:translate="fieldsmissing">TEXT</tal:block><br/><tal:block i18n:translate="saved_in_inconsistent_data">TEXT</tal:block></p>
+<p class="error" metal:define-macro="version_error"><tal:block i18n:translate="fieldsmissing">TEXT</tal:block><br/>
+    <tal:block i18n:translate="saved_in_inconsistent_data">TEXT</tal:block></p>
 
 <tal:block metal:define-macro="edit_files_file">
-    <style type="text/css">
-        td.silver{background-color:#efefef}
-        .sortable-default{float:left; width:130px; height:130px; position:relative;cursor:move;border:1px solid silver;margin:0 5px 5px 0}
-
-        .ui-accordion .ui-accordion-header {border:1px solid silver;color:#fff;background-color:#333; display: block; cursor: pointer; position: relative; margin-top: 2px;margin-bottom:0; padding: .5em .5em .5em .7em; zoom: 1; }
-        #accordion form{padding:0!important;}
-        #accordion h3 {border-left:0;margin:0}
-        #accordion h3 a{color:#fff;}
-
-        #sub_content_content{padding:0!important}
-        #navigation_content{border-width:0 0 1px 1px!important}
-    </style>
-
     <script type="text/javascript" src="/js/jquery.layout.resizePaneAccordions-latest.min.js"> </script>
 
     <script>
@@ -46,9 +34,9 @@
             }
     </script>
 
-    <div id="navigation_content"> </div>
+    <div id="navigation_content" class="mediatum_navigation_content"> </div>
 
-    <div id="sub_content_content" style="border-width:0 0 0 1px!important">
+    <div id="sub_content_content" class="mediatum_sub_content_content">
 
     <tal:block tal:condition="python:update_error">
         <p class="error" i18n:translate="file_processingerror">TEXT</p>
@@ -83,7 +71,8 @@
                                 <br/>
                             </p>
 
-                            <span id="inputname" style="display:none"><tal:block i18n:translate="edit_files_dirname"/> <input type="text" name="inputname" size="60"/></span>
+                            <span id="inputname" style="display:none"><tal:block i18n:translate="edit_files_dirname"/>
+                                <input type="text" name="inputname" size="60"/></span>
                             <br/>
                             <span id="updatefile"><tal:block i18n:translate="edit_files_choosefile"/> <input name="updatefile"  type="file" size="50"/></span>
                             <span id="generate_new_version" tal:condition="python:not hasattr(node, 'metaFields') and node.has_write_access()">
@@ -97,11 +86,12 @@
                                 <br/>
                                 <b><tal:block i18n:translate="edit_files_comment">TEXT</tal:block>:<span class="required">*</span></b>
                                 <br/>
-                                <textarea name="version_comment" rows="4" style="width:380px" tal:content="python:''">TEXT </textarea>
+                                <textarea name="version_comment" rows="4" tal:content="python:''">TEXT </textarea>
                                 </span>
                             </span>
                             <p>
-                                <button i18n:attributes="title edit_upload_upload_label" i18n:translate="edit_upload_upload_label" type="submit" name="addfile" value="submit">TEXT</button>
+                                <button i18n:attributes="title edit_upload_upload_label" i18n:translate="edit_upload_upload_label" type="submit"
+                                name="addfile" value="submit">TEXT</button>
                             </p>
                             <input type="hidden" name="operation" value="change"/>
                             <script language="javascript">
@@ -127,21 +117,24 @@
                     <table class="mediatum_filetable_files" cellpadding="0px" cellspacing="0px">
                         <tr>
                             <th i18n:translate="edit_files_location">TEXT</th>
-                            <th i18n:translate="edit_files_type" style="width:50px;">TEXT</th>
-                            <th i18n:translate="edit_files_size" style="width:50px;text-align:right">TEXT</th>
-                            <th i18n:translate="edit_files_mimetype" style="width:50px">TEXT</th>
-                            <th style="width:25px;text-align:right"> </th>
+                            <th i18n:translate="edit_files_type" class="mediatum_filetable_files_th_size50">TEXT</th>
+                            <th i18n:translate="edit_files_size" class="mediatum_filetable_files_th_size50 mediatum_filetable_files_th_ralign">TEXT</th>
+                            <th i18n:translate="edit_files_mimetype" class="mediatum_filetable_files_th_size50">TEXT</th>
+                            <th class="mediatum_filetable_files_th_ralign mediatum_filetable_files_th_size25" > </th>
                          </tr>
 
                         <tr tal:repeat="file python:files">
                             <tal:block tal:condition="python:file.type!='attachment' and (user.isAdmin() or file.type!='statistic')">
                             <td>
-                                <a tal:attributes="href python:u'/file/{}/{}'.format(node.id, file.getName())" tal:content="python:file.path" i18n:attributes="title edit_files_open_title" target="filewindow"/>
+                                <a tal:attributes="href python:u'/file/{}/{}'.format(node.id, file.getName())" tal:content="python:file.path"
+                                i18n:attributes="title edit_files_open_title" target="filewindow"/>
                             </td>
                             <td tal:content="python:file.type"/>
-                            <td tal:content="python:file.getSize()" style="text-align:right;"/>
+                            <td tal:content="python:file.getSize()" class="mediatum_filetable_files_th_ralign" />
                             <td tal:content="python:file.mimetype"/>
-                            <td style="text-align:right;width:30px;"><input tal:attributes="name python:u'del|{}|{}'.format(file.type, file.getName())" type="image" src="/img/editor/mediatum_delete_black.svg" onclick="return questionDelName('')"/>&nbsp;</td>
+                            <td class="mediatum_filetable_files_th_ralign mediatum_filetable_files_th_size30" >
+                                <input tal:attributes="name python:u'del|{}|{}'.format(file.type, file.getName())"
+                                type="image" src="/img/editor/mediatum_delete_black.svg" onclick="return questionDelName('')"/>&nbsp;</td>
                             </tal:block>
                         </tr>
                     </table>
@@ -155,7 +148,7 @@
                 <div id="attfiles">
                     <form method="post">
                         <input tal:attributes="value csrf" type="hidden" name="csrf_token">
-                            <table class="mediatum_filetable_files" cellpadding="0px" cellspacing="0px" style="width:100%">
+                            <table class="mediatum_filetable_files" cellpadding="0px" cellspacing="0px">
                                 <tr>
                                     <th i18n:translate="edit_files_type">TEXT</th>
                                     <th i18n:translate="edit_files_size">TEXT</th>
@@ -168,20 +161,26 @@
                                     <td tal:content="python:file.getSize()"/>
                                     <td tal:content="python:file.mimetype"/>
                                     <td>
-                                        <a tal:condition="python:file.getSize()>0" tal:attributes="href python:u'/file/{}/{}'.format(node.id, file.getName())" tal:content="python:file.getName()" i18n:attributes="title edit_files_open_title" target="filewindow"/>
+                                        <a tal:condition="python:file.getSize()>0" tal:attributes="href python:u'/file/{}/{}'.format(node.id, file.getName())"
+                                            tal:content="python:file.getName()" i18n:attributes="title edit_files_open_title" target="filewindow"/>
                                         <b tal:condition="python:file.getSize()==0" tal:content="python:file.getName()"/>
                                     </td>
-                                    <td style="text-align:center"><input tal:condition="python:file.type not in ['original', 'image']" tal:attributes="name python:u'del|{}|{}'.format(file.type, file.getName())" type="image" src="/img/delete.png" onclick="return questionDelName('')"/>&nbsp;</td>
+                                    <td class="mediatum_files_ta_center"><input tal:condition="python:file.type not in ['original', 'image']"
+                                        tal:attributes="name python:u'del|{}|{}'.format(file.type, file.getName())" type="image" src="/img/delete.png"
+                                        onclick="return questionDelName('')"/>&nbsp;</td>
                                 </tr>
                                 <tr tal:repeat="file att">
                                     <td tal:content="python:u' - {}'.format(file.filetype)"/>
                                     <td tal:content="python:file.getSize()"/>
                                     <td tal:content="python:file.mimetype"/>
                                     <td>
-                                        <a tal:condition="python:file.getSize()>0" tal:attributes="href python:u'/attfile/{}/{}'.format(node.id, file._path)" tal:content="python:file.getName()" i18n:attributes="title edit_files_open_title" target="filewindow"/>
+                                        <a tal:condition="python:file.getSize()>0" tal:attributes="href python:u'/attfile/{}/{}'.format(node.id, file._path)"
+                                            tal:content="python:file.getName()" i18n:attributes="title edit_files_open_title" target="filewindow"/>
                                         <b tal:condition="python:file.getSize()==0" tal:content="python:file.getName()"/>
                                     </td>
-                                    <td style="text-align:center"><input tal:condition="python:file.type not in ['original', 'image']" tal:attributes="name python:u'delatt|{}|{}'.format(file.type, file.getName())" type="image" src="/img/delete.png" onclick="return questionDelName('')"/>&nbsp;</td>
+                                    <td class="mediatum_files_ta_center"><input tal:condition="python:file.type not in ['original', 'image']"
+                                        tal:attributes="name python:u'delatt|{}|{}'.format(file.type, file.getName())" type="image" src="/img/delete.png"
+                                        onclick="return questionDelName('')"/>&nbsp;</td>
                                 </tr>
                             </table>
                             <input type="hidden" name="operation" value="delete"/>
@@ -195,7 +194,7 @@
                 <div id="statfiles">
                     <form method="post">
                         <input tal:attributes="value csrf" type="hidden" name="csrf_token">
-                            <table class="mediatum_filetable_files" cellpadding="0px" cellspacing="0px" style="width:100%">
+                            <table class="mediatum_filetable_files" cellpadding="0px" cellspacing="0px">
                                 <tr>
                                     <th i18n:translate="edit_files_type">TEXT</th>
                                     <th i18n:translate="edit_files_size">TEXT</th>
@@ -208,9 +207,12 @@
                                     <td tal:content="python:file.getSize()"/>
                                     <td tal:content="python:file.mimetype"/>
                                     <td>
-                                        <a tal:attributes="href python:u'/file/{}/{}'.format(node.id, file.getName())" tal:content="python:file.getName()" i18n:attributes="title edit_files_open_title" target="filewindow"/>
+                                        <a tal:attributes="href python:u'/file/{}/{}'.format(node.id, file.getName())" tal:content="python:file.getName()"
+                                        i18n:attributes="title edit_files_open_title" target="filewindow"/>
                                     </td>
-                                    <td style="text-align:center"><input tal:condition="python:file.type not in ['original', 'image']" tal:attributes="name python:u'del|{}|{}'.format(file.type, file.getName())" type="image" src="/img/delete.png" onclick="return questionDelName('')"/>&nbsp;</td>
+                                    <td class="mediatum_files_ta_center"><input tal:condition="python:file.type not in ['original', 'image']"
+                                        tal:attributes="name python:u'del|{}|{}'.format(file.type, file.getName())" type="image" src="/img/delete.png"
+                                        onclick="return questionDelName('')"/>&nbsp;</td>
                                 </tr>
                             </table>
                             <input type="hidden" name="operation" value="delete"/>
@@ -221,27 +223,32 @@
             <!-- child elements -->
             <tal:block tal:condition="python:not node.isContainer()">
                 <h3><a href="#" i18n:translate="edit_files_children">TEXT</a></h3>
-                <div id="children" style="padding:10px">
+                <div id="children" class="mediatum_padding10">
                     <h2>Kindelemente</h2>
                             <b i18n:translate="edit_files_childobjects">TEXT</b><br/>
-                            <a tal:attributes="onclick python:u'openWindow(\'/edit/edit_content?id={}&tab=files&style=popup&parent=\'+parent.tree.currentfolder)'.format(node.id)" target="_blank" i18n:attributes="title edit_files_add_title" style="cursor:pointer">
-                                <div style="border:1px solid #A4A4A4; width:129px;height:129px;float:left;margin-right:2px;text-align:center;margin-top:3px">
-                                    <div style="color:#A4A4A4;font-size:50px;padding-top:30px;padding-left:45px">+</div>
+                            <a tal:attributes="onclick python:u'openWindow(\'/edit/edit_content?id={}&tab=files&style=popup&parent=\'+parent.tree.currentfolder)'.format(node.id)" target="_blank" i18n:attributes="title edit_files_add_title"
+                            style="cursor:pointer">
+                                <div class="mediatum_edit_files_childobjects">
+                                    <div class="mediatum_edit_files_childobjects_plus">+</div>
                                 </div>
                             </a>
-                            <div id="childnodes" style="overflow:hidden;padding-top:2px">
-                                <div id="sortable" class="connectedSortable" style="height:130px;width:100%">
-                                    <div tal:repeat="child python:node.getChildren().sort_by_name()" class="sortable-default" tal:attributes="id python:child.id">
+                            <div id="childnodes" class="mediatum_childnodes">
+                                <div id="sortable" class="connectedSortable">
+                                    <div tal:repeat="child python:node.getChildren().sort_by_name()" class="mediatum_sortable_default"
+                                    tal:attributes="id python:child.id">
                                         <img tal:attributes="id python:child.id; src python:u'/thumbs/{}'.format(child.id)"/>
-                                        <div style="position:absolute;top:2px;right:4px">
-                                            <a tal:attributes="href python:u'/edit/edit_content?id={}&tab=metadata'.format(child.id)" i18n:attributes="title edit_files_edit_child"><img src="/img/edit.png"/></a>
-                                            <a href="#" tal:attributes="onclick python:u'return removeItem(this.id, {})'.format(node.id);id python:child.id" i18n:attributes="title edit_files_delete_child"><img src="/img/delete.png"/></a>
+                                        <div class="mediatum_edit_files_edit_child">
+                                            <a tal:attributes="href python:u'/edit/edit_content?id={}&tab=metadata'.format(child.id)"
+                                            i18n:attributes="title edit_files_edit_child"><img src="/img/edit.png"/></a>
+                                            <a href="#" tal:attributes="onclick python:u'return removeItem(this.id, {})'.format(node.id);id python:child.id"
+                                            i18n:attributes="title edit_files_delete_child"><img src="/img/delete.png"/></a>
                                         </div>
                                     </div>
                                 </div>
                                 <p><tal:block i18n:translate="edit_files_order_label">TEXT</tal:block></p>
                                 <div class="sortlist" style="display:none"> </div>
-                                <div id="orderdiv" style="display:none"><button type="button" tal:attributes="onclick python:u'saveOrder({})'.format(node.id)" i18n:translate="edit_files_order_save">TEXT</button></div>
+                                <div id="orderdiv" style="display:none"><button type="button" tal:attributes="onclick python:u'saveOrder({})'.format(node.id)"
+                                    i18n:translate="edit_files_order_save">TEXT</button></div>
                             </div>
                 </div>
             </tal:block>
@@ -291,9 +298,10 @@
 </tal:block>
 
 <tal:block metal:define-macro="edit_files_children_list">
-    <div tal:repeat="child children" style="float:left;width:128px;height:128px;padding-right:2px;position:relative">
-        <a tal:attributes="href python:u'/edit/edit_content?id={}&tab={}'.format(child.id, child.get_default_edit_tab())"><img tal:attributes="src python:u'/thumbs/{}'.format(child.id)"/></a>
-        <div style="position:absolute; top:2px;right:4px">
+    <div class="mediatum_edit_files_children_list" tal:repeat="child children">
+        <a tal:attributes="href python:u'/edit/edit_content?id={}&tab={}'.format(child.id, child.get_default_edit_tab())">
+            <img tal:attributes="src python:u'/thumbs/{}'.format(child.id)"/></a>
+        <div class="mediatum_edit_files_children_list_div">
             <a tal:attributes="href python:u'/edit/edit_content?id={}&tab=metadata'.format(child.id)"><img src="/img/edit.png"/></a>
             <a href="#" tal:attributes="onclick python:u'return removeItem(this.id, {})'.format(node.id);id python:child.id"><img src="/img/delete.png"/></a>
         </div>
@@ -302,10 +310,10 @@
 
 <tal:block metal:define-macro="edit_files_popup_children" tal:condition="python:len(children)>0">
     <tal:block tal:repeat="child children">
-    <div tal:condition="python:child not in grandchildren and not child.isContainer()" style="float:left; margin:2px 2px 0px 0px; border:1px solid silver; position:relative">
-        <div tal:content="python:child.id" style="top:1px;"></div>
-        <div style="position:absolute;top:1px;right:1px">
-            <input tal:attributes="value python:child.id" name="items_add" id="child_add" type="checkbox" style="margin:0px; padding:0px"/>
+    <div class="mediatum_edit_files_popup_children" tal:condition="python:child not in grandchildren and not child.isContainer()">
+        <div class="mediatum_edit_files_popup_children_id" tal:content="python:child.id"></div>
+        <div class="mediatum_edit_files_popup_children_child">
+            <input class="mediatum_edit_files_popup_children_input" tal:attributes="value python:child.id" name="items_add" id="child_add" type="checkbox"/>
         </div>
         <img tal:attributes="src python:'/thumbs/{}'.format(child.id)"/>
     </div>
@@ -314,11 +322,11 @@
 
 <tal:block metal:define-macro="edit_files_popup_grandchildren" tal:condition="python:len(grandchildren)>0">
     <tal:block tal:repeat="grand grandchildren">
-    <div id=grandchildnode tal:condition="python:grand in grandchildren" style="float:left; margin:2px 2px 0px 0px; border:1px solid silver; position:relative">
-        <div tal:content="python:grand.id" style="top:1px;"></div>
+    <div id="grandchildnode" tal:condition="python:grand in grandchildren" class="mediatum_edit_files_popup_children">
+        <div class="mediatum_edit_files_popup_children_id" tal:content="python:grand.id"></div>
         <img tal:attributes="src python:'/thumbs/{}'.format(grand.id)"/>
-        <div style="position:absolute;top:1px;right:1px">
-            <input tal:attributes="value python:grand.id" name="items_add" id="grands_add" type="checkbox" style="margin:0px; padding:0px"/>
+        <div class="mediatum_edit_files_popup_children_child">
+            <input class="mediatum_edit_files_popup_children_input" tal:attributes="value python:grand.id" name="items_add" id="grands_add" type="checkbox"/>
         </div>
     </div>
     </tal:block>
@@ -397,7 +405,7 @@
         </script>
         <form>
             <h1 i18n:translate="edit_files_choosedirectory">TEXT</h1>
-            <div style="height:150px; overflow:auto;border:1px solid silver;background-color:white">
+            <div class="mediatum_edit_files_choosedirectory">
                 <ul id="tree" class="tree">
                     <li tal:repeat="basedir basedirs" tal:attributes="id python:'Node{}'.format(basedir.id)"><a tal:attributes="id python:str(basedir.id); title python: '{} ({})'.format(basedir.getLabel(), str(basedir.id))" tal:content="python:basedir.getLabel()" href="#">TEXT</a>
                         <ul>
@@ -407,19 +415,20 @@
                 </ul>
             </div>
             <h1 i18n:translate="edit_files_nodes_colon">TEXT</h1>
-            <input style="float:left" id="select-all-child" type="checkbox" onclick="select_all_child(this)" tal:attributes="value python:True"/>
+            <input class="mediatum_float_left" id="select-all-child" type="checkbox" onclick="select_all_child(this)" tal:attributes="value python:True"/>
             <p i18n:translate="edit_files_select_all_child">TEXT</p>
-            <div style="border:1px solid silver;height:225px;overflow:auto" id="files">
+            <div class="mediatum_edit_files_border" id="files">
             </div>
 
             <h1 i18n:translate="edit_files_children_colon">TEXT</h1>
-            <input style="float:left" id="select-all-grand" type="checkbox" onclick="select_all_grand(this)" tal:attributes="value python:True"/>
+            <input class="mediatum_float_left" id="select-all-grand" type="checkbox" onclick="select_all_grand(this)" tal:attributes="value python:True"/>
             <p i18n:translate="edit_files_select_all_grand">TEXT</p>
-            <div style="border:1px solid silver;height:225px;overflow:auto" id="grandchildren">
+            <div class="mediatum_edit_files_border" id="grandchildren">
             </div>
-            <p style="text-align:center">
-                <button type="button" style="width:150px;margin-right:50px;background-color:white" onclick="selectedItems()" i18n:translate="edit_ok">TEXT</button>
-                <button type="button" style="width:150px" onclick="self.close()" i18n:translate="edit_cancel">TEXT</button>
+            <p class="mediatum_files_ta_center">
+                <button class="mediatum_edit_files_ok" type="button" onclick="selectedItems()"
+                i18n:translate="edit_ok">TEXT</button>
+                <button class="mediatum_edit_files_cancel" type="button" onclick="self.close()" i18n:translate="edit_cancel">TEXT</button>
             </p>
         </form>
        <script type="text/javascript">

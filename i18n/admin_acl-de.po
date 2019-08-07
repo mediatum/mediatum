@@ -82,9 +82,6 @@ msgstr "Löscht alle Einträge aus der Tileliste"
 msgid "admin_acl_editor_clearlist"
 msgstr "alle löschen"
 
-msgid "admin_acl_editor_copy_title"
-msgstr "Kopiert selektierten Eintrag in den Bearbeitungsbereich"
-
 msgid "admin_acl_editor_copy"
 msgstr "Selektion bearbeiten"
 

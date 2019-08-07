@@ -98,9 +98,6 @@ msgstr "Importieren (BibTeX / DOI)"
 msgid "edit_action_file_move"
 msgstr "Verschieben nach..."
 
-msgid "edit_action_file_copy"
-msgstr "Kopieren nach..."
-
 msgid "edit_action_file_delete"
 msgstr "Löschen"
 
@@ -124,9 +121,6 @@ msgstr "Verschieben nach..."
 
 msgid "edit_action_dir_sort"
 msgstr "Unterordner sortieren"
-
-msgid "edit_action_dir_copy"
-msgstr "Kopieren nach..."
 
 msgid "edit_action_dir_del"
 msgstr "Löschen"
@@ -348,9 +342,6 @@ msgstr "Selektierte Objekte auf dieser Seite verschieben"
 
 msgid "edit_all_move_on_all_pages"
 msgstr "Alle Objekte auf allen Seiten verschieben"
-
-msgid "edit_selected_copy_on_this_page"
-msgstr "Selektierte Objekte auf dieser Seite kopieren"
 
 msgid "edit_all_copy_on_all_pages"
 msgstr "Alle Objekte auf allen Seiten kopieren"

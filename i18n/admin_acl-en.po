@@ -79,9 +79,6 @@ msgstr "clear partlist"
 msgid "admin_acl_editor_clearlist"
 msgstr "clear all"
 
-msgid "admin_acl_editor_copy_title"
-msgstr "copy selected entry to editor area"
-
 msgid "admin_acl_editor_copy"
 msgstr "edit selection"
 

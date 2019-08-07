@@ -377,13 +377,13 @@ msgid "edit_common_edit_meta_selected"
 msgstr "Metadaten der markierten Objekte bearbeiten"
 
 msgid "edit_common_edit_move_selected"
-msgstr "Markierte Objekt verschieben"
+msgstr "Markierte Objekte verschieben"
 
 msgid "edit_common_edit_copy_selected"
-msgstr "Markierte Objekt kopieren"
+msgstr "Markierte Objekte kopieren"
 
 msgid "edit_common_edit_delete_selected"
-msgstr "Markierte Objekt löschen"
+msgstr "Markierte Objekte löschen"
 
 msgid "edit_selected_documents"
 msgstr "Markierte Dokumente:"

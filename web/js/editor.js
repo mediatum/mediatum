@@ -527,7 +527,7 @@ function modal_confirm(msg) {
       resizable: false,
       height:140,
       modal: true,
-      appendTo: "#collectionstree",
+      appendTo: "#mediatum_collectionstree",
       closeOnEscape: true,
       buttons: {
         "Delete all items": function() { res = true;
@@ -577,8 +577,6 @@ function movecopySelected(ids, type){
     if(ids && confirm(confirm_msg)){
         //parent.idselection = ids;
         parent.action = type;
-        //parent.tree.$("#buttonmessage").html('&dArr; '+parent.tree.$('#select_target_dir').html()+' &dArr;');
-        //parent.$("#buttonmessage").html('&uArr; '+parent.tree.$('#select_target_dir').html()+' &uArr;');
     }else{
         parent.action = "";
     }

@@ -22,10 +22,10 @@
 
 <tal:block metal:define-macro="show_nodelist">
     <style>
-        .showcontent .actions{position:absolute;top:1px;right:1px;display:none}
-        .showcontent:hover .actions{display:block}
-        .showcontent_error .actions{position:absolute;top:1px;right:1px;display:none}
-        .showcontent_error:hover .actions{display:block}
+        .mediatum_showcontent .actions{position:absolute;top:1px;right:1px;display:none}
+        .mediatum_showcontent:hover .actions{display:block}
+        .mediatum_showcontent_error .actions{position:absolute;top:1px;right:1px;display:none}
+        .mediatum_showcontent_error:hover .actions{display:block}
         .actions span{cursor:pointer;}
     </style>
 
@@ -40,7 +40,7 @@
             </p>
         </div>
         <tal:block tal:repeat="node nodelist">
-            <div tal:attributes="class python:'showcontent' if not node.id in faultyidlist else 'showcontent_error'">
+            <div tal:attributes="class python:'mediatum_showcontent' if not node.id in faultyidlist else 'mediatum_showcontent_error'">
                 <div style="position:absolute; left:0px; top:0px; width:296px; height:20px">
                     <input id="itemcheck" tal:attributes="name python:node.id; id python:u'check{}'.format(node.id)" onChange="checkObject(this)" type="checkbox"/> <span i18n:translate="edit_common_mark">TEXT</span>
                 </div>

@@ -1125,10 +1125,6 @@ a.page-nav-next {
     border-right: #cdd9dd 0px solid
 }
 
-#portal-column-content img.banner {
-    margin: 0px 0px 0px -1.4em
-}
-
 .contentnavactions_bereitsbelegt {
     border-bottom: #cdd9dd 3px solid;
     position: relative;
@@ -1336,10 +1332,6 @@ a.page-nav-next {
     width: 320px;
     float: left;
     padding-bottom: 20px;
-}
-
-#portal-column-content #object_basket {
-    margin: 5px
 }
 
 #portal-column-content div.mask_row {
@@ -1604,10 +1596,6 @@ div.editorerror #div_description {
 
 span.required {
     color: #DE2C27;
-}
-
-div.longtext {
-    display: none;
 }
 
 div.editor_memo_remark {

@@ -432,7 +432,7 @@ msgstr "Hilfe zum Metadatenfeld "
 
 ### edit tabs ###
 msgid "tab_menulayout"
-msgstr "Aussehen"
+msgstr "Verzeichnis-Übersicht"
 
 msgid "tab_metadata_col"
 msgstr "Konfiguration"
@@ -504,7 +504,7 @@ msgid "tab_startpagesmenu"
 msgstr "Startseiten verwalten"
 
 msgid "tab_startpages"
-msgstr "Startseite anlegen"
+msgstr "Startseite bearbeiten"
 
 msgid "tab_metadata_dir"
 msgstr "Anzeige"
@@ -528,16 +528,16 @@ msgid "tab_upload_title"
 msgstr "Upload-Bereich anzeigen"
 
 msgid "tab_metadata"
-msgstr "Metadaten editieren"
+msgstr "Metadaten bearbeiten"
 
 msgid "tab_menumetadata"
-msgstr "Metadaten editieren"
+msgstr "Metadaten bearbeiten"
 
 msgid "tab_meta_title"
 msgstr "Metadateneditor anzeigen"
 
 msgid "tab_content"
-msgstr "Inhalt"
+msgstr "Verzeichnis-Übersicht"
 
 msgid "tab_content_title"
 msgstr "Inhalt anzeigen"

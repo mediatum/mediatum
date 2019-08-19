@@ -1,12 +1,12 @@
 <!-- content of startpage of admin area -->
 <tal:block metal:define-macro="view" tal:repeat="navitem navitems">
-    <div class="itemmenucontainer" tal:condition="python:len(navitem['submenu'])>0">
-        <div class="itemoverflow">
-            <p class="itemicon" style="width:60px;display:block">
-                <img tal:condition="python:navitem['icon']!=''" i18n:attributes="alt; title" tal:attributes="src python:navitem['icon']; alt python:navitem; title python:u'admin_menu_{}'.format(navitem['name'])" class="itemicon" />
+    <div class="mediatum_itemmenucontainer" tal:condition="python:len(navitem['submenu'])>0">
+        <div class="mediatum_itemoverflow">
+            <p class="mediatum_itemicon" style="width:60px;display:block">
+                <img tal:condition="python:navitem['icon']!=''" i18n:attributes="alt; title" tal:attributes="src python:navitem['icon']; alt python:navitem; title python:u'admin_menu_{}'.format(navitem['name'])" class="mediatum_itemicon" />
                 &nbsp;
             </p>
-            <p class="itemtext">
+            <p class="mediatum_itemtext">
                 <b i18n:translate="" tal:content="python:u'admin_menu_{}'.format(navitem['name'])"/>
                 <br />
                 <span i18n:translate="" tal:content="python:u'admin_menu_{}_description'.format(navitem['name'])"/>
@@ -14,7 +14,7 @@
                 <tal:block tal:condition="python:len(navitem['submenu'])>0">
                     <span i18n:translate="admin_submenu">TEXT</span>
                     <tal:block tal:repeat="item python:navitem['submenu']">
-                        <a class="itemsublink" i18n:translate="" tal:content="python:u'admin_menu_{}'.format(item)" tal:attributes="href python:u'/admin/{}'.format(item)"></a><span tal:condition="python: navitem['submenu'].index(item)<len(navitem['submenu'])-1">, </span>
+                        <a class="mediatum_itemsublink" i18n:translate="" tal:content="python:u'admin_menu_{}'.format(item)" tal:attributes="href python:u'/admin/{}'.format(item)"></a><span tal:condition="python: navitem['submenu'].index(item)<len(navitem['submenu'])-1">, </span>
                     </tal:block>                
                 </tal:block>
             </p>  

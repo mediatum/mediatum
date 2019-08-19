@@ -1,11 +1,11 @@
 <!-- content of startpage of admin area -->
 <tal:block metal:define-macro="view" tal:repeat="navitem navigation">
-    <div class="itemmenucontainer" tal:condition="python:navitem.icon!=''">
-        <div class="itemoverflow">
-            <p class="itemicon">
-                <img i18n:attributes="alt; title" tal:attributes="src python:navitem.icon; alt python:navitem.name; title python:navitem.name"  class="itemicon" />
+    <div class="mediatum_itemmenucontainer" tal:condition="python:navitem.icon!=''">
+        <div class="mediatum_itemoverflow">
+            <p class="mediatum_itemicon">
+                <img i18n:attributes="alt; title" tal:attributes="src python:navitem.icon; alt python:navitem.name; title python:navitem.name"  class="mediatum_itemicon" />
             </p>
-            <p class="itemtext" tal:condition="python:len(navitem.getItemList())>0">
+            <p class="mediatum_itemtext" tal:condition="python:len(navitem.getItemList())>0">
                 <b i18n:translate="" tal:content="python:navitem.name"/>
                 <br />
                 <span i18n:translate="" tal:content="python:navitem.description"/>
@@ -13,12 +13,12 @@
                 <tal:block tal:condition="python:len(navitem.getItemList())>0">
                     <span i18n:translate="admin_submenu">TEXT</span>
                     <tal:block tal:repeat="item python:navitem.getItemList()">
-                        <a class="itemsublink" i18n:translate="" tal:content="python:u'admin_menu_{}'.format(item[0])" tal:attributes="href python:item[1]"></a>
+                        <a class="mediatum_itemsublink" i18n:translate="" tal:content="python:u'admin_menu_{}'.format(item[0])" tal:attributes="href python:item[1]"></a>
                         <span tal:condition="python: navitem.getItemList().index(item)<len(navitem.getItemList())-1">,</span>
                     </tal:block>                
                 </tal:block>
             </p>
-            <p class="itemtext" tal:condition="python:len(navitem.getItemList())==0">
+            <p class="mediatum_itemtext" tal:condition="python:len(navitem.getItemList())==0">
                 <b><a i18n:translate="" tal:attributes="href python:navitem.link" tal:content="python:navitem.name">TEXT</a></b>
             </p>
         </div>

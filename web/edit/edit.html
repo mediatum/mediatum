@@ -1,147 +1,60 @@
-<div id="clean-container" metal:define-macro="edit_tabs" style="position:relative;">
-  <script >
-    $(function() {
-      $("#nav").menu();
-      $('#nav').menu({
-    position: { my: 'left top', at: 'left bottom' },
-    blur: function() {
-      $(this).menu('option', 'position', { my: 'left top', at: 'left bottom' });
-    },
-    focus: function(e, ui) {
-      if ($('#nav').get(0) !== $(ui).get(0).item.parent().get(0)) {
-        $(this).menu('option', 'position', { my: 'left top', at: 'right top' });
-      }
-    },
-    select: function(e, ui) {
-      if (ui.item.children().attr("tag").startsWith('mark')) {
-        doaction(ui.item.children().attr("tag"));
-      }
-    },
-  });
-
-      console.log($("#nav"));
-    });
-  </script>
-    <style>
-#nav > li { /* Menubar buttons */
-  display: inline-block;
-}
-#nav > li > ul > li { /* Menubar buttons inside dropdown */
-  display: block;
-}
-
-/* Change dropdown carets to correct direction */
-#nav > li > a > span.ui-icon-caret-1-e {
-  /* Caret on menubar */
-  background:url(/css/images/ui-icons_444444_256x240.png) no-repeat -64px -16px !important;
-}
-#nav ul li a span.ui-icon-caret-1-e {
-  /* Caret on dropdowns */
-  background:url(/css/images/ui-icons_444444_256x240.png) no-repeat -32px -16px !important;
-}
-
-.ui-menu .ui-menu-item {
-      position:relative;
-      width: 120px;
-      z-index:100;
-}
-
-.ui-menu .ui-menu .ui-menu-item {
-  position:relative;
-  width: 300px;
-  height: 20px;
-}
-
-.ui-menu .ui-menu .ui-menu .ui-menu-item {
-  position:relative;
-  width: 300px;
-  height: 20px;
-}
-
-.ui-menu .ui-menu .ui-menu .ui-menu-item img {
-  position:absolute;
-  width: 16;
-  height: 16;
-}
-
-.ui-menu .ui-menu .ui-menu .ui-menu-item a#editall{
-  position:relative;
-  width: 270px;
-  height: 20px;
-  padding-left: 30px;
-}
-
-.ui-menu .ui-menu .ui-menu .ui-menu-item a#moveall{
-  position:relative;
-  width: 270px;
-  height: 20px;
-  padding-left: 30px;
-}
-
-.ui-menu .ui-menu .ui-menu .ui-menu-item a#copyall{
-  position:relative;
-  width: 270px;
-  height: 20px;
-  padding-left: 30px;
-}
-
-.ui-menu .ui-menu .ui-menu .ui-menu-item a#deleteall{
-  position:relative;
-  width: 270px;
-  height: 20px;
-  padding-left: 30px;
-}
-
-.ui-menu .ui-menu-item a {
-	text-decoration:none;
-	display:block;
-	padding:.2em .4em;
-	line-height:1.5;
-	zoom:1;
-}
-
-
-
-    </style>
-
-    <ul id="nav">
+<div class="mediatum_clean-container" metal:define-macro="edit_tabs" >
+    <ul class="mediatum_nav">
         <tal:block tal:repeat="navitem python:menu">
-        <li tal:condition="python:len(navitem.getItemList())>0" tal:attributes="class python:{0:None,1:'selected'}[navitem.name==breadcrumbs[0]]"><a tal:condition="python:len(navitem.getItemList())==0" tal:attributes="class python:{0:None,1:'selected'}[navitem.name==breadcrumbs[0]]; href python:navitem.link; target python:navitem.target" i18n:translate="" tal:content="python:u'tab_{}'.format(navitem.name)">TEXT</a>
+
+              <li tal:condition="python:len(navitem.getItemList())==0" tal:attributes="class python:{0:None,1:'selected'}[navitem.name==breadcrumbs[0]]">
+                 <img tal:attributes="class python:u'mediatum_imgmenu mediatum_img_{}'.format(navitem.getName())">
+            <a i18n:translate="" tal:content="python:u'tab_{}'.format(navitem.getName())" tal:attributes="href python:u'?id={}&tab={}'.format(idstr, navitem.getName())"/>
+              </li>
+
+        <li tal:condition="python:len(navitem.getItemList())>0" tal:attributes="class python:{0:None,1:'selected'}[navitem.name==breadcrumbs[0]]">
+            <a tal:condition="python:len(navitem.getItemList())==0" tal:attributes="class python:{0:None,1:'selected'}[navitem.name==breadcrumbs[0]]; href python:navitem.link; target python:navitem.target" i18n:translate="" tal:content="python:u'tab_{}'.format(navitem.name)">TEXT</a>
             <tal:block tal:condition="python:len(navitem.getItemList())>0">
+                 <img tal:attributes="class python:u'mediatum_imgmenu mediatum_img_{}'.format(navitem.getName())">
                 <a tal:attributes="class python:{0:None,1:'selected'}[navitem.getName()==breadcrumbs[0]]; target python:navitem.target" i18n:translate="" tal:content="python:u'tab_{}'.format(navitem.getName())"/>
-                <ul>
+
+             <ul>
                     <li tal:repeat="item python:navitem.getItemList()">
+                        <img tal:attributes="class python:u'mediatum_imgmenu mediatum_img_{}'.format(item.getName())">
                         <a i18n:translate="" tal:content="python:u'tab_{}'.format(item.getName())" tal:attributes="href python:u'?id={}&tab={}'.format(idstr, item.getName())"/>
                           <tal:block tal:condition="python:len(item.getItemList())>0 and item.getName() != u'menusortnodes'">
-                              <ul>
-                                  <li tal:repeat="item1 python:item.getItemList()">
-                                    <tal:block tal:condition="python:item1.getName().startswith('mark')==False">
-                                    <tal:block tal:condition="python:item1.getName()=='editall'">
-                                    <img src="/img/edit_edit.gif"/>
-                                    </tal:block>
-                                    <tal:block tal:condition="python:item1.getName()=='moveall'">
-                                    <img src="/img/edit_move.gif"/>
-                                    </tal:block>
-                                    <tal:block tal:condition="python:item1.getName()=='copyall'">
-                                    <img src="/img/edit_copy.gif"/>
-                                    </tal:block>
-                                    <tal:block tal:condition="python:item1.getName()=='deleteall'">
-                                    <img src="/img/edit_delete.png"/>
-                                    </tal:block>
-                                    <a i18n:translate="" tal:content="python:u'tab_{}'.format(item1.getName())" tal:attributes="id  python:u'{}'.format(item1.getName());href python:u'?id={}&tab={}'.format(idstr, item1.getName())">
-                                      </a>
-                                    </tal:block>
-                                    <tal:block tal:condition="python:item1.getName().startswith('mark')==True">
-                                    <div i18n:translate="" tal:attributes="tag python:u'{}'.format(item1.getName())" tal:content="python:u'tab_{}'.format(item1.getName())">TEXT</div>
-                                    </tal:block>
-                                  </li>
-                              </ul>
+                            <ul>
+                                <li tal:repeat="item1 python:item.getItemList()">
+                                <div>
+                                <tal:block tal:condition="python:item1.getName().startswith('mark')==False">
+                                    <img tal:attributes="class python:u'mediatum_imgmenu mediatum_img_{}'.format(item1.getName())">
+                                <a i18n:translate="" tal:content="python:u'tab_{}'.format(item1.getName())" tal:attributes="id  python:u'{}'.format(item1.getName());href python:u'?id={}&tab={}'.format(idstr, item1.getName())">
+                                    </a>
+                                </tal:block>
+                                <tal:block tal:condition="python:item1.getName().startswith('mark')==True">
+                                <div i18n:translate="" tal:attributes="tag python:u'{}'.format(item1.getName())" tal:content="python:u'tab_{}'.format(item1.getName())">TEXT</div>
+                                </tal:block>
+                                </div>
+                                </li>
+                            </ul>
                           </tal:block>
 
                           <tal:block tal:condition="python:len(item.getItemList())>0 and item.getName() == u'menusortnodes' and sort_choices">
                               <ul>
                                   <li tal:repeat="sortfield python:sort_choices">
-                                    <a i18n:translate="" tal:content="python:u'{}'.format(sortfield.label)" tal:attributes="href python:u'?id={}&sortfield={}&nodes_per_page={}'.format(idstr, sortfield.value,nodes_per_page)"/>
+                                        <div>
+                                            <tal:block tal:condition="python:sortfield.value=='off'">
+                                            <img class="mediatum_img_off mediatum_imgmenu" />
+                                            </tal:block>
+                                            <tal:block tal:condition="python:sortfield.value=='fs-ranking'">
+                                            <img class="mediatum_img_ranking mediatum_imgmenu">
+                                            </tal:block>
+                                            <tal:block tal:condition="python:sortfield.value=='-fs-ranking'">
+                                            <img class="mediatum_img_rankingdesc mediatum_imgmenu"/>
+                                            </tal:block>
+                                            <tal:block tal:condition="python:sortfield.value=='fs-phototime'">
+                                            <img class="mediatum_img_date mediatum_imgmenu"/>
+                                            </tal:block>
+                                            <tal:block tal:condition="python:sortfield.value=='-fs-phototime'">
+                                            <img class="mediatum_img_datedesc mediatum_imgmenu"/>
+                                            </tal:block>
+                                            <a i18n:translate="" tal:content="python:u'{}'.format(sortfield.label)" tal:attributes="href python:u'?id={}&sortfield={}&nodes_per_page={}'.format(idstr, sortfield.value,nodes_per_page)"/>
+                                        </div>
                                   </li>
                               </ul>
                           </tal:block>
@@ -152,8 +65,8 @@
         </tal:block>
     </ul>
 
-    <div class="breadcrumbs" style="clear:left;">
-       <div id="nodeid_" style="position:absolute;top:2px;right:5px">
+    <div class="breadcrumbs">
+       <div id="nodeid_">
        ID:
             <a target="_blank" tal:condition="python:len(ids)==1" tal:attributes="href python: node_url(ids[0])" tal:content='python:ids[0]'></a>
             <span tal:condition="python:1 < len(ids) <= 5" tal:replace="python:u', '.join(ids)"/>
@@ -177,13 +90,13 @@
 </html>
 
 
-<p metal:define-macro="edit_errortemplate" class="templateerror" style="text-align:center">
+<p metal:define-macro="edit_errortemplate" class="mediatum_templateerror">
     <tal:block i18n:translate="edit_template_error"/><br/><br/>
     <span id="msg" tal:condition="python:e!=''" tal:content="e"/>
 </p>
 
 
-<p metal:define-macro="module_error" class="error" style="text-align:center" i18n:translate="edit_module_error"><tal:block tal:content="python:module" i18n:name="name"/></p>
+<p metal:define-macro="module_error" class="error" i18n:translate="edit_module_error"><tal:block tal:content="python:module" i18n:name="name"/></p>
 
 
 <body metal:define-macro="edit_notree_permission" bgcolor="#FFFFFF">
@@ -205,48 +118,8 @@
             <link id="id_link_fancytree_skin" rel="stylesheet" href="/js/fancytree/src/skin-xp/ui.fancytree.css" />
             <link rel="stylesheet" href="/css/jquery.contextMenu.css" />
             <link rel="stylesheet" href="/css/editor.css" />
-            <style>
-                iframe.ui-layout-center, div.ui-layout-north{border-width:0!important;padding:0;margin:0}
-            </style>
 
-            <style>
-
-                ul.fancytree-container {background-color: transparent; border: 0px; height: 99%;}
-                .fancytree-node-disabled {opacity: 0.5;background-color: silver}
-                .context-menu-item .disabled {color: #666;cursor: default}
-
-                .context-menu-list {
-                  min-width: 200px;
-                }
-                .context-menu-item > span {
-                  display: inline-block;
-                  overflow: hidden;
-                  text-overflow: ellipsis;
-                  white-space: nowrap;
-                  width: 100%;
-                }
-
-                #overlay {position:absolute;top:0;left:0;right:0;bottom:0;background-color:silver;opacity: 0.5; -moz-opacity: 0.5;-ms-filter:'progid:DXImageTransform.Microsoft.Alpha(Opacity=50)';filter:alpha(opacity=50);}
-
-                #home_content {overflow: hidden;}
-                #home_content:hover {overflow: auto;}
-
-                .ui-accordion-content {overflow: hidden!important;}
-                .ui-helper-reset {overflow: hidden!important;}
-                .ui-widget-content {overflow: hidden!important;}
-                .ui-corner-bottom {overflow: hidden!important;}
-                .ui-accordion-content-active {overflow: hidden!important;}
-
-                html body.ui-layout-container div.ui-layout-west.ui-layout-pane.ui-layout-pane-west.ui-layout-container div#tree.treecontent.ui-layout-pane.ui-layout-pane-center {overflow: hidden;}
-                /* show scrollbars for trees only when mouseover */
-                .ui-fancytree {overflow: hidden;}
-                .ui-fancytree:hover {overflow: auto;}
-                ul.fancytree-container {overflow: hidden;}
-
-
-            </style>
-
-	          <script type="text/javascript" src="/js/jquery-2.0.3.js"> </script>
+            <script type="text/javascript" src="/js/jquery-2.0.3.js"> </script>
             <script type="text/javascript" src="/js/jquery-ui-1.12.1.js"> </script>
 
             <tal:block metal:use-macro="include_jquery_layout_script_tags"/>
@@ -793,7 +666,7 @@ function loadKeyPath_callback_activate(node, status){
 }
 
 function getcoltree() {
-    return $("#collectionstree").fancytree("getTree");
+    return $("#mediatum_collectionstree").fancytree("getTree");
 }
 
 function gethometree() {
@@ -857,7 +730,7 @@ function keyarray2nodearray(dtree, keyarray) {
 }
 
 function reloadColTree(){
-    $("#collectionstree").fancytree("getTree").reload();
+    $("#mediatum_collectionstree").fancytree("getTree").reload();
 }
 
 function reloadHomeTree(){
@@ -905,7 +778,7 @@ function reloadPage(id, path, tree_selector){
     idselection = id;
     consoledb.log(path);
     $('.ui-layout-center').attr('src', '/edit/edit_content?id='+id);
-    $('#accordiontree').accordion("option", "active", active_accordion);
+    $('.mediatum_accordiontree').accordion("option", "active", active_accordion);
     $(tree_selector).fancytree("getTree").loadKeyPath(path, function(node, status){
         consoledb.log('arguments: ', arguments);
         if(status=="loaded"){
@@ -996,7 +869,7 @@ function questionOperation(type){
     consoledb.group('edit: edit.html: questionOperation('+type+')');
 
     if (type=='clear_trash'){
-        var q = $("#clear_trash_question").text();
+        var q = $("#mediatum_clear_trash_question").text();
 
         if(confirm(q)){
 
@@ -1049,7 +922,7 @@ function questionOperation(type){
         return false;}
 
     } else if (type=='delete'){   // never reached?
-        var q = $("#delete_folder_question").text();
+        var q = $("#mediatum_delete_folder_question").text();
 
     consoledb.log('currentid  :'+currentid);
     consoledb.log('currentpath:'+currentpath);
@@ -1104,7 +977,7 @@ function questionOperation(type){
 
 function cancelOperation(){
     action = "";
-    tree.$("#buttonmessage").html('');
+    tree.$(".mediatum_buttonmessage").html('');
 }
 
 function addItem(id, path){  // currently unused
@@ -1112,7 +985,7 @@ function addItem(id, path){  // currently unused
     idselection = "";
     consoledb.log(path);
     $('.ui-layout-center').attr('src', '/edit/edit_content?id='+id+"&upload=visible&r="+""+Math.random()*10000);
-    $('#accordiontree').accordion("option", "active", 0);
+    $('.mediatum_accordiontree').accordion("option", "active", 0);
     $("#hometree").fancytree("getTree").loadKeyPath(path, function(node, status){
         if(status=="loaded"){
             node.setExpanded();
@@ -1146,8 +1019,8 @@ function set_cm_to_default() {
 
           <iframe class="ui-layout-center" tal:attributes="src python:u'/edit/edit_content?id={}&page={}&nodes_per_page={}&sortfield={}&value={}{}'.format(id, page, nodes_per_page,sortfield, value, searchitems)"> </iframe>
 
-            <div class="ui-layout-north" style="background-color:#ddd!important;">
-                <div id="logocontainer" style="overflow:hidden">
+            <div class="ui-layout-north">
+                <div class="mediatum_logocontainer">
 
                     <span i18n:translate="sub_header_user">TEXT</span>: <span tal:replace="raw python:user.getName()"/>
                     <span tal:repeat="item python:spc">
@@ -1155,45 +1028,45 @@ function set_cm_to_default() {
                     </span>
                 </div>
             </div>
-            <h3 id="id_h3_mediatum_editor" style="white-space:nowrap;margin:5px 0 10px 5px;padding-top:0;position:absolute;top:5px;left:5px;">mediaTUM<sup>&reg;</sup> Editor </h3>
+            <h3 class="mediatum_id_h3_editor" >mediaTUM<sup>&reg;</sup> Editor </h3>
 
-            <div class="ui-layout-west" style="border-width:0!important;padding:0!important;width:300px;">
-                <div class="subnavigation" style="background-color:#ddd!important;margin:0!important;padding:0!important;">
+            <div class="ui-layout-west">
+                <div class="mediatum_subnavigation">
 
-                    <div style="position:absolute;right:2px;top:10px">
+                    <div class="mediatum_subnavigation_1">
                     </div>
-                    <div style="padding-top:6px;margin:0 0 0 5px;white-space:nowrap;" i18n:translate="">
-                        <a href="#" tal:attributes="onclick python:u'return reloadPage({},\'{}\')'.format(folders['homedir'][0].id, folders['homedir'][1])"><img src="/img/webtree/homeicon.gif" i18n:attributes="title e_folder_homedir" style="padding-right:10px"/></a>
-                        <a href="#" tal:attributes="onclick python:u'return reloadPage({},\'{}\')'.format(folders['trashdir'][0].id, folders['trashdir'][1])"><img src="/img/webtree/trashicon.gif" i18n:attributes="title e_folder_trashdir" style="padding-right:10px"/></a>
-                        <a href="#" tal:attributes="onclick python:u'return reloadPage({},\'{}\')'.format(folders['uploaddir'][0].id, folders['uploaddir'][1])"><img src="/img/webtree/uploadicon.gif" i18n:attributes="title e_folder_uploaddir"  style="padding-right:10px"/></a>
+                    <div class="mediatum_subnavigation_2" i18n:translate="">
+                        <a href="#" tal:attributes="onclick python:u'return reloadPage({},\'{}\')'.format(folders['homedir'][0].id, folders['homedir'][1])"><img class="mediatum_subnavigation_2_img" src="/img/webtree/homeicon.gif" i18n:attributes="title e_folder_homedir" /></a>
+                        <a href="#" tal:attributes="onclick python:u'return reloadPage({},\'{}\')'.format(folders['trashdir'][0].id, folders['trashdir'][1])"><img class="mediatum_subnavigation_2_img" src="/img/webtree/trashicon.gif" i18n:attributes="title e_folder_trashdir" /></a>
+                        <a href="#" tal:attributes="onclick python:u'return reloadPage({},\'{}\')'.format(folders['uploaddir'][0].id, folders['uploaddir'][1])"><img class="mediatum_subnavigation_2_img" src="/img/webtree/uploadicon.gif" i18n:attributes="title e_folder_uploaddir" /></a>
                         &nbsp;&nbsp;&nbsp;
                     </div>
                 </div>
 
-                <div class="treecontent" id="tree" style="border:0 solid #bbb!important;overflow:hidden!important;background-color:#ddd;">
-                    <div i18n:translate="select_target_dir" id="select_target_dir" style="display:none">TEXT</div>
-                    <div id="accordiontree" style="overflow:hidden!important;">
-                        <h3 class="context-menu-home" style="overflow: hidden!important;"><a href="#" tal:attributes="onclick python:u'loadEditArea({})'.format(basedirs[0].id)"><span id="homedir" tal:content="python:basedirs[0].getName()" i18n:translate=""/></a></h3>
-                        <div id="home_content" onmouseover="$(this).scrollTop(-100);">
+                <div class="mediatum_treecontent" id="tree">
+                    <div i18n:translate="select_target_dir" id="select_target_dir">TEXT</div>
+                    <div class="mediatum_accordiontree">
+                        <h3 class="mediatum_context-menu-home"><a href="#" tal:attributes="onclick python:u'loadEditArea({})'.format(basedirs[0].id)"><span id="homedir" tal:content="python:basedirs[0].getName()" i18n:translate=""/></a></h3>
+                        <div class="mediatum_home_content" onmouseover="$(this).scrollTop(-100);">
                             <tal:block tal:condition="python:user.isAdmin()">
                               <label>Filter:</label>
                               <input id="homenodefilter" name="homenodefilter" i18n:attributes="title edit_tree_homenodefilter_tooltip" tal:attributes="value python:homenodefilter" />
                               <button id="id_btn_reload_htree" onclick="reload_htree_filtered(); return false;" i18n:attributes="title edit_tree_filterbutton_tooltip">&times;</button>
                               <span i18n:attributes="title edit_tree_matches_tooltip" id="htree_matches"> </span>
                             </tal:block>
-                            <div  class="acc_content" id="hometree"> </div>
+                            <div  class="mediatum_acc_content" id="hometree"> </div>
                         </div>
 
                         <h3 class="context-menu-collections"><a href="#" tal:attributes="onclick python:u'loadEditArea({})'.format(basedirs[1].id)"><span id="collections" tal:content="python:basedirs[1].getLabel()"/></a></h3>
 
-                        <div class="acc_content" id="tree_content">
+                        <div class="mediatum_acc_content" id="tree_content">
 
-                            <div id="collectionstree"> </div>
+                            <div id="mediatum_collectionstree"> </div>
                         </div>
                     </div>
                 </div>
-                <div class="treesouth">
-                    <div id="buttonmessage"> </div>
+                <div class="mediatum_treesouth">
+                    <div class="mediatum_buttonmessage"> </div>
                 </div>
             <div id="overlay"> </div>
             </div>
@@ -1240,7 +1113,7 @@ function reload_htree_filtered(homenodefilter) {
   tree_selector = "#hometree";
   tree_node_id_prefix = "tree-node-";
   tree_root_key = "home";  // "home", "root"
-  used_tree_selectors = ["#hometree", "#collectionstree"];
+  used_tree_selectors = ["#hometree", "#mediatum_collectionstree"];
 
   function get_used_trees (selector_list) {
      res = selector_list.map(function (selector) {return $(selector).fancytree("getTree")});
@@ -1575,9 +1448,9 @@ $(document).ready(function () {
               childOptions: {
                   spacing_open: 0,
                   spacing_closed:0,
-                  north: {paneSelector: ".subnavigation", size:30},
-                  center:{paneSelector: ".treecontent", onresize: $.layout.callbacks.resizePaneAccordions},
-                  south:{paneSelector:  ".treesouth", closable:false, resizable:false, spacing_open: 0, spacing_closed: 0, size:21}
+                  north: {paneSelector: ".mediatum_subnavigation", size:30},
+                  center:{paneSelector: ".mediatum_treecontent", onresize: $.layout.callbacks.resizePaneAccordions},
+                  south:{paneSelector:  ".mediatum_treesouth", closable:false, resizable:false, spacing_open: 0, spacing_closed: 0, size:21}
               }
 
           },
@@ -1586,17 +1459,17 @@ $(document).ready(function () {
           togglerTip_closed: js_edit_layout_togglertip_closed
   });
 
-  $("#accordiontree").accordion({
+  $(".mediatum_accordiontree").accordion({
       heightStyle: "fill", active: 1
   });
 
 
 
   // create home tree
-  htree = $("#hometree").fancytree(get_tree_opts("#hometree", "htree-node-", "home", "INVALID", ["#hometree", "#collectionstree"]));
+  htree = $("#hometree").fancytree(get_tree_opts("#hometree", "htree-node-", "home", "INVALID", ["#hometree", "#mediatum_collectionstree"]));
 
   // create collections tree
-  ctree = $("#collectionstree").fancytree(get_tree_opts("#collectionstree", "ctree-node-", "root", collectionsid, ["#hometree", "#collectionstree"]));
+  ctree = $("#mediatum_collectionstree").fancytree(get_tree_opts("#mediatum_collectionstree", "ctree-node-", "root", collectionsid, ["#hometree", "#mediatum_collectionstree"]));
 
   // close context menu when mouse is leaving pane
   var triggertarget = layout.panes.center;
@@ -1607,7 +1480,7 @@ $(document).ready(function () {
 
 function __load(path){
     consoledb.log('called edit.html: __load(path)');
-    $("#collectionstree").fancytree("getTree").loadKeyPath(path, function(node, status){
+    $("#mediatum_collectionstree").fancytree("getTree").loadKeyPath(path, function(node, status){
             consoledb.log('load');
 
             if(status=="loaded"){
@@ -1633,7 +1506,7 @@ function rct() {
           consoledb.log('acquired htree');
           if (current_tree == ctree) {
               consoledb.log('true: current_tree == ctree');
-              $("#collectionstree").fancytree("getTree").reload();
+              $("#mediatum_collectionstree").fancytree("getTree").reload();
           }
           if (current_tree == htree) {
               consoledb.log('true: current_tree == htree');
@@ -1647,26 +1520,13 @@ function rct() {
 
 </script>
             <!-- Definition of context menu -->
-
-            <style>
-            .context-menu-item.icon-edit { background-image: url(img/webtree/page_white_edit.png); }
-            .context-menu-item.icon-directory { background-image: url(img/webtree/directory.gif); }
-            .context-menu-item.icon-collection { background-image: url(img/webtree/collection.gif); }
-            .context-menu-item.icon-bare_directory { background-image: url(img/webtree/bare_directory.gif); }
-            .context-menu-item.icon-bare_collection { background-image: url(img/webtree/bare_collection.gif); }
-            .context-menu-item.icon-trashicon { background-image: url(img/webtree/trashicon.gif); }
-            .context-menu-item.icon-cut { background-image: url(img/webtree/cut.png); }
-            .context-menu-item.icon-cut { background-image: url(img/webtree/cut.png); }
-            .context-menu-sub.icon-abclabel:hover { list-style-type: none; padding-left: 20px; }
-            </style>
-
             <tal:block tal:repeat="ct_iconpath cmenu_iconpaths">
                 <style tal:content="python: '.context-menu-item.icon-%s { background-image: url(img/%s); }' % (ct_iconpath[0], ct_iconpath[2])">#</style>
             </tal:block>
 
-            <div id="clear_trash_question" style="display:none" i18n:translate="clear_trash_question"> </div>
-            <div id="delete_folder_question" style="display:none" i18n:translate="delete_folder_question"> </div>
-            <div id="select_target_dir" style="display:none" >
+            <div id="mediatum_clear_trash_question" i18n:translate="clear_trash_question"> </div>
+            <div id="mediatum_delete_folder_question" i18n:translate="delete_folder_question"> </div>
+            <div id="select_target_dir" >
                <tal:block i18n:translate="select_target_dir"/>&nbsp;&nbsp;&nbsp;
                <a href="#" tal:attributes="onclick python:'parent.cancelOperation()'"><img src="/img/delete.png" i18n:attributes="title edit_publish_cancel"/></a>&nbsp;
             </div>
@@ -1676,14 +1536,14 @@ function rct() {
 </metal:block>
 
 
-<div metal:define-macro="edit_paging" style="width:130px;position:absolute;right:0;">
-    <div tal:condition="python:previd" style="position:absolute;left:0;top:0;width:20px">
+<div metal:define-macro="edit_paging" class="mediatum_edit_paging">
+    <div tal:condition="python:previd" id="previd">
         <a tal:attributes="href python:u'/edit/edit_content?id={}&tab={}'.format(previd, tab)"><img border="0" src="/img/pageleft.gif"/></a>
     </div>
-    <div tal:condition="python:nextid" style="position:absolute;right:0;top:0;width:20px">
+    <div tal:condition="python:nextid" id="nextid">
          <a tal:attributes="href python:u'/edit/edit_content?id={}&tab={}'.format(nextid, tab)"><img border="0" src="/img/pageright.gif"/></a>
     </div>
-    <div tal:condition="python:previd or nextid" style="margin-left:20px;margin-right:20px;text-align:center">
+    <div tal:condition="python:previd or nextid" id="orid" >
         <tal:block tal:replace="raw script"/>
         <select id="goto" tal:attributes="onchange python:u'gotoContent(document.getElementById(\'goto\').value,\'{}\')'.format(tab)">
             <option tal:repeat="item combodata" tal:attributes="value python:item[0]; selected python:[None,'selected'][item[0]==nodeid]" tal:content="python:item[1]" ></option>
@@ -1727,7 +1587,6 @@ function rct() {
             <meta content="text/html;charset=UTF-8" http-equiv="content-type"/>
             <link rel="stylesheet" href="/css/jquery-ui-1.12.1.css" />
             <link rel="stylesheet" href="/css/editor.css" />
-            <link rel="stylesheet" href="/css/edit_style.css" />
 
             <script type="text/javascript" src="/js/jquery-2.0.3.js"> </script>
             <script type="text/javascript" src="/js/jquery-ui-1.12.1.js"> </script>
@@ -1768,12 +1627,6 @@ function rct() {
                 var sublayout;
             </script>
             <tal:block tal:replace="script"/>
-            <style>
-                body {margin:0;padding:0;border-width:0!important;}
-                html, body {height:100%;width:100%}
-                #navigation{overflow:visible;padding:0!important;border-width:0 0 0 1px!important;}
-                #sub_footer_module {padding:0!important;margin:0!important}
-            </style>
         </head>
 
         <body id="body">
@@ -1782,14 +1635,14 @@ function rct() {
                 <tal:block tal:replace="raw tabs"/>
 
                 <!-- operations-->
-                <div  style="position:relative;" tal:condition="python:len(ids)==1" tal:content="raw operations">TEXT</div>
+                <div id="operations" tal:condition="python:len(ids)==1" tal:content="raw operations">TEXT</div>
 
                 <!-- nav-->
-                <div style="position:relative;bottom:20px;max-height:40px;text-align:right;margin-right:50px" tal:content="raw paging"> </div>
+                <div class="mediatum_divnav"  tal:content="raw paging"> </div>
 
             </div>
 
-            <div id="sub_content" style="border-width:1px 0 0 0!important;">
+            <div id="sub_content" >
                 <tal:block tal:replace="raw body"/>
             </div>
 
@@ -1826,12 +1679,12 @@ function rct() {
                 }
             </script>
             <!--content end-->
-            <div id="wait_" style="position:fixed;top:0;left:0;right:0;bottom:0;background-color:white;opacity: 0.5;display:none;"><img src="/img/wait.gif" style="padding:40%;"/></div>
+            <div class="mediatum_wait_"><img src="/img/wait.gif"/></div>
 
-        <div id="overlay" style="position:fixed;top:0;bottom:0;left:0;right:0;z-index:3!important;height:100%;">
-            <div id="background" style="position:absolute;min-width:100%;min-height:100%;background-color:silver;opacity:0.5;"> </div>
+        <div id="overlay">
+            <div id="background"> </div>
 
-            <div id="text" style="position:relative;background-color:white!important;border:2px solid silver;margin:200px auto;height:200px;width:300px;z-index:4;padding:10px;">
+            <div id="text">
             </div>
         </div>
 
@@ -1847,19 +1700,18 @@ function rct() {
             <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
             <meta content="text/html;charset=UTF-8" http-equiv="content-type">
             <link rel="stylesheet" href="/css/editor.css" />
-            <link rel="stylesheet" href="/css/edit_style.css" />
         </head>
         <body>
-            <div id="logocontainer">
+            <div id="mediatum_logocontainer">
                 &nbsp;
             </div>
             <div class="topmenucontainer">
                 <span>&nbsp;</span>
             </div>
-            <div class="MainMenu">
+            <div class="mediatum_MainMenu">
                 <br/>
                 <br/>
-                <p i18n:translate="edit_error_msg" class="error" style="text-align:center">TEXT
+                <p i18n:translate="edit_error_msg" class="error">TEXT
                     <span i18n:name="link"><a i18n:translate="edit_linktext" href="../login" target="_parent">TEXT</a></span>
                 </p>
             </div>
@@ -1869,7 +1721,7 @@ function rct() {
 
 
 <tal:block metal:define-macro="itemlist">
-    <div id="items" style="float:left;width:100%;height:82px;overflow:auto;border:1px solid silver;">
+    <div id="items" >
         <tal:block tal:repeat="item nodes">
             <a href="#" tal:attributes="onclick python:u'return Thumb2Window({})'.format(item.id)"><img tal:attributes="src python:u'/thumbs/{}'.format(item.id)" style="width:80px;"/></a>
         </tal:block>

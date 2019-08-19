@@ -21,8 +21,8 @@
         
         <body topmargin="0" rightmargin="0" leftmargin="0">           
             <div style="position:absolute;left:0px;right:0px;min-width:100%">
-                <div id="clean-container">
-                    <div id="logocontainer">
+                <div class="mediatum_clean-container">
+                    <div class="mediatum_logocontainer">
                         <div class="logotext">
                             <span i18n:translate="admin_header">TEXT</span><br/>
                             <span i18n:translate="sub_header_user">TEXT</span>: <span tal:replace="raw python:user.getName()"/>
@@ -46,7 +46,7 @@
                                 </tal:block>                            
                             </li>
                         </ul>
-                        <div class="clearb"></div>
+                        <div class="mediatum_clearb"></div>
                     </div>
                     <div class="breadcrumbs">
                         <h2 class="breadcrumbs">
@@ -61,7 +61,7 @@
                     <div class="hstippled">&nbsp;</div>
                 </div>  
                 <!-- content start -->
-                <div class="MainMenu" style="min-width:80%">
+                <div class="mediatum_MainMenu" style="min-width:80%">
                     <div tal:replace="raw content"/>
                 </div>
                 <!-- content end -->

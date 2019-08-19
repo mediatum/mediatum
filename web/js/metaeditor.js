@@ -45,7 +45,7 @@ function select(obj){
         sellist = sellist.replace(obj.id+";","");
         unpick(obj);
     }
-    var div = document.getElementById("selection_div");
+    var div = document.getElementById("mediatum_selection_div");
     if(div){
         if (sellist.length>0){
             div.style.display= 'block';

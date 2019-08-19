@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 96 96" style="enable-background:new 0 0 96 96;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:#FFFFFF;}
+	.st1{fill:none;stroke:#FFFFFF;stroke-width:4;stroke-miterlimit:10;}
+</style>
+<g id="Layer_2">
+	<g>
+		<g>
+			<path class="st0" d="M48,4.5c23.99,0,43.5,19.51,43.5,43.5S71.99,91.5,48,91.5S4.5,71.99,4.5,48S24.01,4.5,48,4.5 M48,0.5
+				C21.77,0.5,0.5,21.77,0.5,48S21.77,95.5,48,95.5S95.5,74.23,95.5,48S74.23,0.5,48,0.5L48,0.5z"/>
+		</g>
+		<g>
+			<line class="st1" x1="4" y1="48" x2="94" y2="48"/>
+		</g>
+		<line class="st1" x1="48" y1="2" x2="48" y2="93"/>
+		<path class="st1" d="M84,20c0,4.97-16.1,9-36,9s-36-4.03-36-9"/>
+		<path class="st1" d="M84,76c0-4.97-16.1-9-36-9s-36,4.03-36,9"/>
+		<path class="st1" d="M55,93c8.84,0,16-20.13,16-45S63.84,3,55,3"/>
+		<path class="st1" d="M41,93c-8.84,0-16-20.13-16-45S32.16,3,41,3"/>
+	</g>
+</g>
+</svg>

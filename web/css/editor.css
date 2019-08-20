@@ -199,8 +199,9 @@ div.mask_row {margin-bottom:6px;}
 .mediatum_node_icon{display:table-cell;width:30px;}
 .mediatum_node_icon_chk{width:30px;}
 .mediatum_node_icon_header{display:table-cell;padding-bottom: 5px;width:30px;}
-.mediatum_node_text {display:table-cell; font-size:10px; line-height:0px;}
+.mediatum_node_text {display:table-cell; font-size:10px; }
 .mediatum_node_text_grid{padding:0px 5px 0px 5px;width:138px;}
+.mediatum_node_text_grid p{overflow:hidden;text-overflow: ellipsis;}
 .mediatum_nodelist_text{display:table-cell;text-align:right; font-weight: bold;padding-right: 20px;}
 .mediatum_nonodelist{text-align:center;padding-top:50px;}
 .mediatum_pagenumber{font-size:14px;margin-left:5px;margin-right:5px;}
@@ -211,17 +212,16 @@ div.mask_row {margin-bottom:6px;}
 .mediatum_subform_identifier{min-width:200px;padding:4px;}
 .mediatum_subform_identifier_text{text-align:center;min-height:40px;}
 .mediatum_showcontent {display: table-row;width:100%;}
-.mediatum_showcontent a:link, .mediatum_showcontentthumb a:visited{font-weight:normal;}
+.mediatum_showcontent a:link, .mediatum_showcontentthumb a:visited{font-weight:normal;vertical-align:text-top;}
 .mediatum_showcontent:hover{border-left:2px solid #333333;border-right:1px solid #333333;border-top:1px solid #333333;border-bottom:1px solid #333333;
     background-color: #efefef;}
-.mediatum_showcontent_error {float:left; width:296px; height:168px; position:relative; left:0px; top:0px; border:1px solid #FF0000; margin: 2px;}
-.mediatum_showcontent_error .actions{position:absolute;top:1px;right:1px;display:none;}
-.mediatum_showcontent_error:hover .actions{display:block;}
-.mediatum_showcontentthumb {display: block;border: 1px solid #ccc;margin:10px;}
-.mediatum_showcontentthumb a:link, .mediatum_showcontentthumb a:visited{font-weight:normal;}
+.mediatum_showcontent_error {display:table-row;width:100%; box-shadow: 0 0 0 1px #FF0000, 0 0 0 1px #FF0000 inset;}
+.mediatum_showcontent_error:hover{box-shadow: 0 0 0 1px #FF0000, 0 0 0 1px #FF0000 inset;background-color: #efefef;}
+.mediatum_showcontentthumb {display: block;border: 1px solid #ccc;margin:10px;overflow:hidden;text-overflow: ellipsis;}
+.mediatum_showcontentthumb a:link, .mediatum_showcontentthumb a:visited{font-weight:normal;overflow:hidden;text-overflow: ellipsis;}
 .mediatum_showcontentthumbrow {width:296px;display: flex;flex-flow: row wrap;justify-content: space-around;align-content: flex-start;}
 .mediatum_showcontentthumbcellimg {width:128px;}
-.mediatum_showcontentthumbcell {text-overflow: "…";}
+.mediatum_showcontentthumbcell {overflow:hidden;text-overflow: ellipsis;}
 .mediatum_showcontentthumb_error {float:left; width:296px; height:168px; position:relative; left:0px; top:0px; border:1px solid #FF0000; margin: 2px;}
 .mediatum_showcontentthumb_error .actions{position:absolute;top:1px;right:1px;display:none;}
 .mediatum_showcontentthumb_error:hover .actions{display:block;}
@@ -231,7 +231,7 @@ div.mask_row {margin-bottom:6px;}
 .mediatum_subnavigation_1 {position:absolute;right:2px;top:10px;}
 .mediatum_subnavigation_2 {padding-top:6px;margin:0 0 0 5px;white-space:nowrap;}
 .mediatum_subnavigation_2_img {padding-right:10px;}
-.mediatum_table_nodelist_row_header{display: table-row;border-bottom:1px solid black;}
+.mediatum_table_nodelist_row_header{display: table-row;border-bottom:1px solid black;padding-bottom:5px;}
 .mediatum_templateerror {text-align:center;}
 p.mediatum_templateerror {background: url("/img/talerror.gif") #d8d8d8 no-repeat; background-position:10px 50%; padding:7px; border:1px solid #0c0c0c;
     margin-left:20px; margin-right:20px; vertical-align:middle;}
@@ -256,7 +256,7 @@ p.mediatum_templateerror #msg {font-family: Courier;}
 div.metaeditor{overflow:hidden;}
 div.metaeditor div.label{width:100px;}
 div.metaeditor div#editor_content{margin-left:110px;}
-.no_overlap{white-space: nowrap; overflow: hidden;text-overflow: ellipsis;}
+.no_overlap{ overflow: hidden;text-overflow: ellipsis;}
 .readonly span.fancytree-title{color:#666!important;font-weight:normal!important;margin-left:3px;cursor:not-allowed}
 td.silver{background-color:#efefef;}
 span.required {color:#ff0000;}
@@ -342,7 +342,7 @@ iframe.ui-layout-center, div.ui-layout-north{border-width:0!important;padding:0;
 #mediatum_operations { position:relative;clear:left;z-index:-100;}
 #mediatum_selection_div {border-top:1px solid silver; margin:3px; display:none; padding:3px;}
 #mediatum_sub_footer_module_div{position:absolute;right:5px;top:2px;font-size:11px;margin-right:5px;}
-#mediatum_table_nodelist{display:table;border-collapse: collapse; width: 100%;}
+#mediatum_table_nodelist{display:table;border-collapse: collapse;width: 100%;}
 #mediatum_table_nodeview{display:none;}
 #mediatum_table_nodeview_grid{display: flex;flex-flow: row wrap;justify-content: space-around;align-content: flex-start;}
 #mediatum_uploadform_plupload_widget_bib{display:none;position:fixed;top:0px;left:0px;right:0px;bottom:0px;width:100%;height:100%;z-index:1000000;}

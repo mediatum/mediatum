@@ -8,39 +8,6 @@
 
 <link rel="stylesheet" href="/js/jquery-ui-1.12.1.css" type="text/css" />
 <link rel="stylesheet" href="/js/jquery.ui.plupload/css/jquery.ui.plupload.css" type="text/css" />
-<link rel="stylesheet" href="/css/editor.css" type="text/css" />
-
-    <style>
-
-        #uploadform_plupload_widget, #metaform{display:none;position:fixed;top:0px;left:0px;right:0px;bottom:0px;width:100%;height:100%;z-index:1000000;}
-        #pluploadform-background, #metaform-background{position:absolute;top:0px;left;0px;height:100%;width:100%;background-color:silver;opacity: 0.5; -moz-opacity: 0.5;-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";filter:alpha(opacity=50);}
-        #uploadform-form, #metaform-form{position:absolute;top:0px;left:0px;bottom:0px;right:0px;padding:0px;margin:30px;z-index:1000001;
-            height:400px;width:80%;margin:auto;
-        }
-        #metaform-form{width:400px}
-        #uploadform-form form, #metaform-form form{background-color:white}
-        .progressWrapper {width: 100%;overflow: hidden;position;relative}
-        .progressContainer {margin: 5px;padding: 4px;border: solid 1px #E8E8E8;background-color: #F7F7F7;overflow: visible;position:relative}
-
-        .message {margin: 1em 0;padding: 10px 20px;border: solid 1px #FFDD99;background-color: #FFFFCC;overflow: visible;position:relative}
-        .red {border: solid 1px #B50000;background-color: #FFEBEB;}
-        .green {border: solid 1px #DDF0DD;background-color: #EBFFEB;}
-        .blue {border: solid 1px #CEE2F2;background-color: #F0F5FF;}
-        .progressName {font-size: 8pt;font-weight: 700;color: #555;width: 323px;height: 14px;text-align: left;white-space: nowrap;overflow: visible;}
-        .progressBarInProgress, .progressBarComplete, .progressBarError {font-size: 0;width: 0%;height: 2px;background-color: blue;margin-top: 2px;}
-        .progressBarComplete {width: 100%;background-color: green;visibility: hidden;}
-        .progressBarError {width: 100%;background-color: red;visibility: hidden;}
-        .progressBarStatus {margin-top: 2px;width: 90%;font-size: 7pt;font-family: Arial;text-align: left;white-space: nowrap;}
-         a.progressCancel {font-size: 0;display: block;height: 14px;width: 14px;background-image: url(/img/delete.png);background-repeat: no-repeat;background-position: -14px 0px;float: right;}
-         a.progressCancel:hover {background-position: 0px 0px;}
-
-        .progressContainer .schema{top:10px;right:5px;text-align:right;}
-        .progressContainer .schema .selection{text-align:right;white-space:nowrap;float:right;background-color: #F0F5FF}
-        div.fieldset {border:  1px solid #afe14c;margin: 10px 0;padding: 20px 10px; height:200px;width:90%;overflow:auto}
-        div.flash {width:95%;margin: 10px 5px;border-color: #D9E4FF;position:relative}
-
-        </style>
-
     <script tal:content="python:u'var id = \'{}\';'.format(id)"> </script>
     <script tal:content="python:u'var sid = \'{}\';'.format(sid)"> </script>
 
@@ -149,9 +116,8 @@
         <div id="nodelist" tal:content="raw nodelist">TEXT</div>
     </div>
 
-
-    <div id="uploadform_plupload_widget" style="display:none">
-        <div id="pluploadform-background">&nbsp;</div>
+    <div id="mediatum_uploadform_plupload_widget_file">
+        <div class="mediatum_pluploadform-background">&nbsp;</div>
         <div id="uploadform-form">
             <div style="position:absolute;top:-7px;right:-7px;z-index:10002"><a href="#" onclick="closeFormPluploadWidget()" i18n:attributes="title mask_editor_cancel"><img src="/img/cancel.png"/></a></div>
               <form tal:condition="python:len(schemes)!=0"  style="border:2px solid silver;">
@@ -678,11 +644,11 @@
 </script>
 
     <div id="metaform">
-        <div id="metaform-background">&nbsp;</div>
-        <div id="metaform-form">
-            <div style="position:absolute;top:-7px;right:-7px;z-index:10002"><a href="#" onclick="closeMetaForm()" i18n:attributes="title mask_editor_cancel"><img src="/img/cancel.png"/></a></div>
-            <form id="metaformcontent"> </form>
-        </div>
+    <div id="metaform-background">&nbsp;</div>
+    <div id="metaform-form">
+        <div class="mediatum_metaform_div"><a href="#" onclick="closeMetaForm()" i18n:attributes="title mask_editor_cancel"><img src="/img/cancel.png"/></a></div>
+        <form id="metaformcontent"> </form>
+    </div>
     </div>
 
     <script tal:content="python:u'var js_edit_layout_togglertip_open = \'{}\';'.format(t(language, 'edit_layout_togglertip_open'))">;</script>
@@ -761,15 +727,15 @@
     <div id="subform_meta">
 
       <p><tal:block i18n:translate="edit_upload_scheme"/><br/>
-          <select name="schema" id="schema" style="width:360px;" onchange="showOrHide('#buttoncreate2', this.selectedIndex);">
+          <select name="schema" id="schema" onchange="showOrHide('#buttoncreate2', this.selectedIndex);">
               <option i18n:translate="edit_upload_schemeselection">TEXT</option>
               <tal:block tal:repeat="scheme schemes">
                   <option tal:attributes="value python:scheme['id']+'|'+scheme['datatype']; title python:scheme['description']" tal:content="python:scheme['name']"/>
               </tal:block>
           </select>
       </p>
-      <p style="text-align:center;min-height:40px">
-          <button type="button" id="buttoncreate2" onclick="createMetaObject()" style="min-width:200px;padding:4px;display:none" i18n:translate="edit_upload_create_object">TEXT</button>
+      <p class="mediatum_edit_upload_scheme_text">
+          <button type="button" id="buttoncreate2" onclick="createMetaObject()" i18n:translate="edit_upload_create_object">TEXT</button>
       </p>
     </div>
 
@@ -819,21 +785,21 @@
     <h3 i18n:translate="edit_upload_create_meta">TEXT</h3>
 
     <!-- create object from identifier (doi, ...) -->
-    <div id="subform_identifier" style="min-width:200px;padding:4px">
+    <div class="mediatum_subform_identifier">
       <div tal:condition="python:len(identifier_importers)>1">
           <tal:block i18n:translate="edit_upload_importer_sel"/><br/>
-          <select name="identifier_importer" id="identifier_importer" style="width:360px" onchange="disenableInput(this.selectedIndex)">
+          <select name="identifier_importer" id="identifier_importer" onchange="disenableInput(this.selectedIndex)">
               <option value="-1" i18n:translate="edit_upload_importerselection">TEXT</option>
               <tal:block tal:repeat="identifier_importer identifier_importers">
                   <option i18n:translate="" tal:attributes="value python:identifier_importer.name" tal:content="python:identifier_importer.get('labels', {}).get(language, {}).get('identifier_importer_longname', 'identifier_importer_longname')"/>
               </tal:block>
           </select>
-          <div id="identifier_subform" style="display:none">
+          <div id="identifier_subform">
           <p tal:content="structure python:identifier_importers[0].get('labels', {}).get(language, {}).get('identifier_importer_explain', 'identifier_importer_explain')">TEXT</p>
           <div class="label"><tal:block i18n:translate="edit_upload_or_doi">TEXT</tal:block>:</div>
-          <input id="input_identifier" type="text" name="input_identifier" style="width:362px" disabled/>
-          <p style="text-align:center;min-height:40px">
-              <button type="button" id="buttoncreate3" onclick="createObjectFromIdentifier()" style="min-width:200px;padding:4px;" i18n:translate="edit_upload_create_object">TEXT</button>
+          <input id="input_identifier" type="text" name="input_identifier" disabled/>
+          <p class="mediatum_subform_identifier_text">
+              <button type="button" class="mediatum_buttoncreate3" onclick="createObjectFromIdentifier()" i18n:translate="edit_upload_create_object">TEXT</button>
           </p>
           </div>
       </div>
@@ -841,10 +807,10 @@
       <div tal:condition="python:len(identifier_importers)==1">
           <p tal:content="structure python:identifier_importers[0].get('labels', {}).get(language, {}).get('identifier_importer_explain', 'identifier_importer_explain')">TEXT</p>
           <input type="hidden" name="identifier_importer" id="identifier_importer" tal:attributes="value python:identifier_importers[0].name"/>
-          <input id="input_identifier" type="text" name="input_identifier" style="width:362px" />
-          <input id="dummy" type="text" name="" disabled style="display:none"/>
-          <p style="text-align:center;min-height:40px">
-              <button type="button" id="buttoncreate3" onclick="createObjectFromIdentifier()" style="min-width:200px;padding:4px;" i18n:translate="edit_upload_create_object">TEXT</button>
+          <input id="input_identifier" type="text" name="input_identifier" />
+          <input id="dummy" type="text" name="" disabled/>
+          <p class="mediatum_subform_identifier_text">
+              <button type="button" class="mediatum_buttoncreate3" onclick="createObjectFromIdentifier()" i18n:translate="edit_upload_create_object">TEXT</button>
           </p>
       </div>
 
@@ -867,7 +833,7 @@
 
 <tal:block metal:define-macro="uploadzipfileok_plupload">
     <div class="schema" style="overflow:hidden;z-index:0">
-        <div class="selection" style="background-color:white;z-index:3">
+        <div class="selection mediatum_uploadzipfileok_plupload">
         <tal:block tal:repeat="type python:schemes.keys()">
             <tal:block tal:content="type"/>
             <select name="scheme" class="typesel" tal:attributes="id type" tal:condition="python:len(schemes[type])>1">
@@ -876,12 +842,13 @@
                 </tal:block>
             </select>
             <tal:block tal:condition="python:len(schemes[type])==1" tal:replace="python:schemes[type][0].getLongName()"/>
-            <input type="hidden" tal:condition="python:len(schemes[type])==1" class="typesel" name="scheme" tal:attributes="id type; value python:schemes[type][0].name"/>
+            <input type="hidden" tal:condition="python:len(schemes[type])==1" class="typesel" name="scheme"
+            tal:attributes="id type; value python:schemes[type][0].name"/>
             <br/>
             <input type="hidden" tal:attributes="value python:'|'.join(files);id type"/>
         </tal:block>
         </div>
-        <div style="padding-left:5px;white-space:nowrap;z-index:2">
+        <div class="mediatum_uploadzipfileok">
             <tal:block tal:repeat="file files">
                 <tal:block tal:content="file">TEXT</tal:block><br/>
             </tal:block>
@@ -899,7 +866,7 @@
 </tal:block>
 
 <tal:block metal:define-macro="uploadfileok">
-    <div style="position:absolute;top:2px;right:2px;">
+    <div class="mediatum_uploadmsg">
         <a href="#" onclick="return removeItem(this)"><img src="/img/delete.png" /></a>
     </div>
     <div class="schema" tal:define="type python:schemes.keys()[0]">
@@ -915,7 +882,7 @@
 </tal:block>
 
 <tal:block metal:define-macro="uploadzipfileok">
-    <div style="position:absolute;top:2px;right:2px;">
+    <div class="mediatum_uploadmsg">
         <a href="#" onclick="return removeItem(this)"><img src="/img/delete.png" /></a>
     </div>
     <div class="schema" style="overflow:hidden;z-index:0">
@@ -933,7 +900,7 @@
             <input type="hidden" tal:attributes="value python:'|'.join(files);id type"/>
         </tal:block>
         </div>
-        <div style="padding-left:5px;white-space:nowrap;z-index:2">
+        <div class="mediatum_uploadzipfileok">
             <tal:block tal:repeat="file files">
                 <tal:block tal:content="file">TEXT</tal:block><br/>
             </tal:block>
@@ -942,7 +909,7 @@
 </tal:block>
 
 <tal:block metal:define-macro="uploadbibfileok">
-    <div style="position:absolute;top:2px;right:2px;">
+    <div class="mediatum_uploadmsg">
         <a href="#" onclick="return removeItem(this)"><img src="/img/delete.png" /></a>
     </div>
     <div class="schema error" tal:condition="python:error!=''" i18n:translate="" tal:content="python:u'upload_{}'.format(error)">TEXT</div>
@@ -954,7 +921,7 @@
 </tal:block>
 
 <tal:block metal:define-macro="uploadfileerror">
-    <div style="position:absolute;top:2px;right:2px;">
+    <div class="mediatum_uploadmsg">
         <a href="#" onclick="return removeItem(this)"><img src="/img/delete.png" /></a>
     </div>
     <div class="schema error">Dateityp wird nicht unterstützt oder Sie besitzen keine Berechtigung.</div>

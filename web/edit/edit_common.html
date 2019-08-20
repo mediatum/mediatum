@@ -21,68 +21,55 @@
 
 
 <tal:block metal:define-macro="show_nodelist">
-    <style>
-        .mediatum_showcontent .actions{position:absolute;top:1px;right:1px;display:none}
-        .mediatum_showcontent:hover .actions{display:block}
-        .mediatum_showcontent_error .actions{position:absolute;top:1px;right:1px;display:none}
-        .mediatum_showcontent_error:hover .actions{display:block}
-        .actions span{cursor:pointer;}
-    </style>
-
     <div id="scrollcontainer">
-
         <div id="scrollcontent">
         <div id="publish" tal:condition="unpublishedlink">
             <p class="error">
                 <a i18n:translate="unpublished_objects2" tal:attributes="href unpublishedlink">TEXT</a>
             </p>
         </div>
-        <table id="table_nodelist" border="0" style="border-collapse:collapse">
-          <tr style="border-bottom:1px solid black">
-                <th style="position:relative; left:0px; bottom:3px; height:10px">
-                    <input id="itemcheck" tal:attributes="name python:'node.id'; id python:u'check{}'.format('node.id')" onChange="doaction(this)" type="checkbox"/>
-                </th>
-                <th>
-                </th>
-                <th style="float:right" tal:content="python:'edit_selected_documents'" i18n:translate="">TEXT
-                </th>
-                    <td tal:attributes="onclick python:u'editSelected()'" target="content" i18n:attributes="title edit_common_edit_meta_selected"><img src="/img/edit_edit.gif"/></td>
-                    <td tal:attributes="onclick python:u'return movecopySelected(null, \'move\')'" target="content" i18n:attributes="title edit_common_edit_move_selected"><img src="/img/edit_move.gif"/></td>
-                    <td tal:attributes="onclick python:u'movecopySelected(null, \'copy\')'" target="content" i18n:attributes="title edit_common_edit_copy_selected"><img src="/img/edit_copy.gif"/></td>
-                    <td tal:attributes="onclick python:u'deleteSelected()'" i18n:attributes="title edit_common_edit_delete_selected" target="content"><img src="/img/edit_delete.png"/></td>
-          </tr>
-        <tal:block tal:repeat="node nodelist">
-            <tr tal:attributes="class python:'showcontent' if not node.id in faultyidlist else 'showcontent_error'">
-                <td style="position:relative; left:0px; bottom:3px; height:10px">
-                    <input id="itemcheck" tal:attributes="name python:node.id; id python:u'check{}'.format(node.id)" onChange="checkObject(this)" type="checkbox"/>
-                </td>
-                <td style="position:relative; left:0px; top:0px; height:20px"><img src="/img/doc_default.png"/></td>
-                <td class="node_text">
-                  <a tal:attributes="href python:u'edit_content?id={}&tab=view'.format(node.id)" i18n:attributes="title edit_common_bigview_title">
-                    <p class="descbox">
-                        <tal:block tal:condition="python:hasattr(node, 'show_node_text')" tal:replace="raw python:node.show_node_text(None, language=language, separator='&'+'nbsp;')[:200]"/>
-                        <tal:block tal:condition="python:not hasattr(node, 'show_node_text')" tal:replace="raw python:node.name"/>
-                    </p>
-                  </a>
-                </td>
-                    <td tal:attributes="onclick python:u'editSelected({})'.format(node.id)" target="content" i18n:attributes="title edit_common_edit_meta"><img src="/img/edit_edit.gif"/></td>
-                    <td tal:attributes="onclick python:u'return movecopySelected({}, \'move\')'.format(node.id)" target="content" i18n:attributes="title edit_common_edit_move"><img src="/img/edit_move.gif"/></td>
-                    <td tal:attributes="onclick python:u'movecopySelected({}, \'copy\')'.format(node.id)" target="content" i18n:attributes="title edit_common_edit_copy"><img src="/img/edit_copy.gif"/></td>
-                    <td tal:attributes="onclick python:u'deleteSelected({})'.format(node.id)" i18n:attributes="title edit_common_edit_delete" target="content"><img src="/img/edit_delete.png"/></td>
-            </tr>
-        </tal:block>
-        </table>
-        </div>
-        <tal:block tal:condition="python:len(nodelist)==0">
-            <p style="text-align:center;padding-top:50px" i18n:translate="edit_common_noobjectsfound">TEXT</p>
-        </tal:block>
 
+        <div id="mediatum_table_nodelist">
+            <div class="mediatum_table_nodelist_row_header">
+                <div class="mediatum_node_icon_header mediatum_node_icon_chk">
+                    <input id="itemcheck" tal:attributes="name python:'node.id'; id python:u'check{}'.format('node.id')" onChange="doaction(this)"
+                    type="checkbox"/>
+                </div>
+                <div class="mediatum_node_icon"><p></p></div>
+                <div class="mediatum_nodelist_text" tal:content="python:'edit_selected_documents'" i18n:translate="">TEXT
+                </div>
+                <div class="mediatum_node_icon" tal:attributes="onclick python:u'editSelected()'" target="content" i18n:attributes="title edit_common_edit_meta_selected"><img src="/img/edit_edit.gif"/></div>
+                <div class="mediatum_node_icon" tal:attributes="onclick python:u'return movecopySelected(null, \'move\')'" target="content" i18n:attributes="title edit_common_edit_move_selected"><img src="/img/edit_move.gif"/></div>
+                <div class="mediatum_node_icon" tal:attributes="onclick python:u'movecopySelected(null, \'copy\')'" target="content" i18n:attributes="title edit_common_edit_copy_selected"><img src="/img/edit_copy.gif"/></div>
+                <div class="mediatum_node_icon" tal:attributes="onclick python:u'deleteSelected()'" i18n:attributes="title edit_common_edit_delete_selected" target="content"><img src="/img/edit_delete.png"/></div>
+             </div>
+            <tal:block tal:repeat="node nodelist">
+                <div tal:attributes="class python:'mediatum_showcontent' if not node.id in faultyidlist else 'mediatum_showcontent_error'">
+                    <div class="mediatum_node_icon mediatum_node_icon_chk">
+                        <input id="itemcheck" tal:attributes="name python:node.id; id python:u'check{}'.format(node.id)" onChange="checkObject(this)" type="checkbox"/>
+                    </div>
+                    <div class="mediatum_node_icon"><img src="/img/doc_default.png"/></div>
+                    <div class="mediatum_node_text">
+                        <a tal:attributes="href python:u'edit_content?id={}&tab=view'.format(node.id)" i18n:attributes="title edit_common_bigview_title">
+                        <p>
+                            <tal:block tal:condition="python:hasattr(node, 'show_node_text')" tal:replace="raw python:node.show_node_text(None, language=language, separator='&'+'nbsp;')[:200]"/>
+                            <tal:block tal:condition="python:not hasattr(node, 'show_node_text')" tal:replace="raw python:node.name"/>
+                        </p>
+                        </a>
+                    </div>
+                        <div class="mediatum_node_icon" tal:attributes="onclick python:u'editSelected({})'.format(node.id)" target="content" i18n:attributes="title edit_common_edit_meta"><img src="/img/edit_edit.gif"/></div>
+                        <div class="mediatum_node_icon" tal:attributes="onclick python:u'return movecopySelected({}, \'move\')'.format(node.id)" target="content" i18n:attributes="title edit_common_edit_move"><img src="/img/edit_move.gif"/></div>
+                        <div class="mediatum_node_icon" tal:attributes="onclick python:u'movecopySelected({}, \'copy\')'.format(node.id)" target="content" i18n:attributes="title edit_common_edit_copy"><img src="/img/edit_copy.gif"/></div>
+                        <div class="mediatum_node_icon" tal:attributes="onclick python:u'deleteSelected({})'.format(node.id)" i18n:attributes="title edit_common_edit_delete" target="content"><img src="/img/edit_delete.png"/></div>
+                </div>
+            </tal:block>
+        </div>
     </div>
     <tal:block tal:content="raw chkjavascript"/>
-    <div id="delete_text" style="display:none" i18n:translate="delete_object_question">TEXT</div>
-    <div id="overlay_content" style="display:none;">
-        <div id="close" style="position:absolute;top:-10px;right:-10px;">
-            <img style="cursor:pointer;" onclick="closeSubOverlay()" src="/img/cancel.png"/>
+    <div id="delete_text" i18n:translate="delete_object_question">TEXT</div>
+    <div id="overlay_content">
+        <div id="close">
+            <img class="mediatum_pointer" onclick="closeSubOverlay()" src="/img/cancel.png"/>
         </div>
         <p>Wählen Sie ein Verzeichnis aus, in das die selektierten Dateien kopiert/verschoben werden sollen.</p>
     </div>

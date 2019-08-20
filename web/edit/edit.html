@@ -73,20 +73,22 @@
         </tal:block>
     </ul>
 
-    <div class="breadcrumbs">
-       <div id="nodeid_">
-       ID:
-            <a target="_blank" tal:condition="python:len(ids)==1" tal:attributes="href python: node_url(ids[0])" tal:content='python:ids[0]'></a>
-            <span tal:condition="python:1 < len(ids) <= 5" tal:replace="python:u', '.join(ids)"/>
-            <span tal:condition="python:len(ids)>=5" tal:replace="python:u'{}...'.format(u', '.join(ids[:5]))"/>
-       </div>
-       <h2 class="breadcrumbs">
-            <tal:block tal:repeat="item breadcrumbs">
-                <tal:block tal:content="python:u'tab_{}'.format(item.replace('*',''))" i18n:translate="">TEXT</tal:block>
-                <tal:block tal:condition="python:breadcrumbs.index(item)<len(breadcrumbs)-1"> &raquo; </tal:block>
-            </tal:block>
-        </h2>
-    </div>
+    <div class="mediatum_breadcrumbs">
+        <div class="mediatum_breadcrumbs_h">
+            <h2>
+                <tal:block tal:repeat="item breadcrumbs">
+                    <tal:block tal:content="python:u'tab_{}'.format(item.replace('*',''))" i18n:translate="">TEXT</tal:block>
+                    <tal:block tal:condition="python:breadcrumbs.index(item)<len(breadcrumbs)-1"> &raquo; </tal:block>
+                </tal:block>
+            </h2>
+        </div>
+        <div id="nodeid_" class="mediatum_breadcrumbs_id">
+        ID:
+             <a target="_blank" tal:condition="python:len(ids)==1" tal:attributes="href python: node_url(ids[0])" tal:content='python:ids[0]'></a>
+             <span tal:condition="python:1 < len(ids) <= 5" tal:replace="python:u', '.join(ids)"/>
+             <span tal:condition="python:len(ids)>=5" tal:replace="python:u'{}...'.format(u', '.join(ids[:5]))"/>
+        </div>
+     </div>
 
 </div>
 
@@ -1643,7 +1645,7 @@ function rct() {
                 <tal:block tal:replace="raw tabs"/>
 
                 <!-- operations-->
-                <div id="operations" tal:condition="python:len(ids)==1" tal:content="raw operations">TEXT</div>
+                <div id="mediatum_operations" tal:condition="python:len(ids)==1" tal:content="raw operations">TEXT</div>
 
                 <!-- nav-->
                 <div class="mediatum_divnav"  tal:content="raw paging"> </div>

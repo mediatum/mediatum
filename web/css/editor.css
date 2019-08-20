@@ -37,8 +37,10 @@ th {vertical-align:top; white-space:nowrap; font-size:11px; font-weight:bold;tex
 
 /*  classes */
 /* general */
+.actions span{cursor:pointer;}
 div.back {background:#ffffff; padding:7px; border:1px solid silver; margin-left:20px; margin-right:20px;}
 .breadcrumbs{ clear:left;}
+.blue {border: solid 1px #CEE2F2;background-color: #F0F5FF;}
 div.breadcrumbs {margin:0px; border-bottom:0px solid #E2E9EB; padding:2px 10px 2px 5px; color:#243135;overflow:visible;
     background-color:white;margin-top:-1px;}
 a.breadcrumbs {color:#243135;}
@@ -50,18 +52,6 @@ a.breadcrumbs {color:#243135;}
     font-size:12px; padding:4px 24px;
 }
 
-a.uploadmeta{
-    border:1px solid silver;padding:5px;height:40px;display:block;float:left
-}
-a.uploaddoi{
-    border:1px solid silver;padding:5px;height:40px;display:block;float:left
-}
-a.uploadfile{
-    border:1px solid silver;padding:5px;height:40px;display:block;float:left
-}
-a.uploadbibtex{
-    border:1px solid silver;padding:5px;height:40px;display:block;float:left
-}
 textarea{
     font-family:arial, helvetica, sans-serif; resize: vertical;overflow: auto;
 }
@@ -75,14 +65,16 @@ textarea{
 
 .context-menu-list {min-width: 200px;}
 .context-menu-sub.icon-abclabel:hover { list-style-type: none; padding-left: 20px; }
-.descbox {font-size:10px; line-height:0px; font-family:Verdana, Arial, Helvetica, sans-serif; margin-top:10px}
 div.editorrow {margin:4px;}
 div.editorrow  div.label{width:150px; float:left; padding-top:4px;}
 .error{text-align:center;}
 p.error {background:#FFE7E7; color:#AF0101;  padding:7px; border:1px solid #AF0101; margin-left:20px; margin-right:20px; vertical-align:middle;}
 p.error a {color:black; margin:0px;}
 p.error a:hover {color:black; text-decoration:underline;}
-.fancytree-node-disabled {opacity: 0.5;background-color: silver}
+.fancytree-node-disabled {opacity: 0.5;background-color: silver;}
+div.fieldset {border:  1px solid #afe14c;margin: 10px 0;padding: 20px 10px; height:200px;width:90%;overflow:auto;}
+div.flash {width:95%;margin: 10px 5px;border-color: #D9E4FF;position:relative;}
+.green {border: solid 1px #DDF0DD;background-color: #EBFFEB;}
 div.grippie {background:#EEEEEE url(/img/grippie.png) no-repeat scroll center 2px; cursor:s-resize; height:9px; width:100%; margin:0px 5px 5px 2px; padding:0px;}
 div.hstippled {font-size:1px; height:1px;}
 div.label{width:210px;float:left;padding-left:15px;}
@@ -91,71 +83,79 @@ div.mask_value {margin-left:220px; top:0px;}
 div.mask_row {margin-bottom:6px;}
 
 .mediatum_acc_content{overflow-x:hidden!important;}
-.mediatum_acc_content{box-shadow: 0px 0px 5px silver inset!important}
+.mediatum_acc_content{box-shadow: 0px 0px 5px silver inset!important;}
 .mediatum_accordiontree{overflow:hidden!important;}
+.mediatum_breadcrumbs{clear:left;}
+.mediatum_breadcrumbs_h{float:left;padding-left:10px;}
+.mediatum_breadcrumbs_id{float:right;padding-right:10px;}
+.mediatum_buttoncreate3{min-width:200px;padding:4px;}
 .mediatum_buttonmessage{color:#ff0000;text-align:center;}
 .mediatum_clean-container {background-color:#ddd;position:relative;}
+.mediatum_clear_left{clear:right;}
+.mediatum_clear_right{clear:right;}
 .mediatum_context-menu-home {overflow: hidden!important;}
-.mediatum_divnav {position:relative;bottom:20px;max-height:40px;text-align:right;margin-right:50px;}
-.mediatum_edit_paging{width:130px;position:absolute;right:0;}
+.mediatum_divnav {position:relative;bottom:20px;max-height:40px;z-index:-100;}
+.mediatum_edit_paging{padding-right:10px;float:right;z-index:-100;}
+.mediatum_edit_upload_scheme_text{text-align:center;min-height:40px;}
 .mediatum_home_content {overflow: hidden;}
 .mediatum_home_content:hover {overflow: auto;}
 .mediatum_id_h3_editor {white-space:nowrap;margin:5px 0 10px 5px;padding-top:0;position:absolute;top:5px;left:5px;}
 
-.mediatum_imgmenu{position:absolute; top:0px;left:0px; width: 16px; height: 16px; margin: 5px; z-index:299; display: block; -moz-box-sizing: border-box;
-    box-sizing: border-box;
-}
 /* Image Links */
+.mediatum_img_nav::before{padding: 0px 5px 0px 5px;}
 /* Top Menu */
-.mediatum_img_menulayout{background: url(/img/edit_edit.gif) no-repeat;} /* Verzeichnis-Übersicht */
-.mediatum_img_menumetadata {background: url(/img/edit_edit.gif) no-repeat;} /* Metadaten bearbeiten */
-.mediatum_img_content {background: url(/img/edit_edit.gif) no-repeat;} /* Inhalt */
-.mediatum_img_metadata {background: url(/img/edit_edit.gif) no-repeat;} /* Metadaten editieren */
-.mediatum_img_menuoperation{background: url(/img/edit_edit.gif) no-repeat;} /* Spezialfunktionen */
-.mediatum_img_parentcontent {background: url(/img/edit_edit.gif) no-repeat;} /* Verzeichnisübersicht */
-.mediatum_img_view {background: url(/img/edit_edit.gif) no-repeat;} /* Vorschau */
+.mediatum_img_menulayout::before{content: url(/img/edit_edit.gif);} /* Verzeichnis-Übersicht not used */
+.mediatum_img_menumetadata::before {content: url(/img/edit_edit.gif);} /* Metadaten bearbeiten */
+.mediatum_img_content::before {content: url(/img/edit_edit.gif);} /* Verzeichnis-Übersicht */
+.mediatum_img_metadata::before {content: url(/img/edit_edit.gif);} /* Metadaten editieren */
+.mediatum_img_menuoperation::before{content: url(/img/edit_edit.gif);} /* Spezialfunktionen */
+.mediatum_img_parentcontent::before {content: url(/img/edit_edit.gif);} /* Verzeichnisübersicht */
+.mediatum_img_view::before {content: url(/img/edit_edit.gif);} /* Vorschau */
 /* First Sub Menu */
-.mediatum_img_menumetadata {background: url(/img/edit_edit.gif) no-repeat;} /* Inhalt */
-.mediatum_img_metadata {background: url(/img/edit_edit.gif) no-repeat;} /* Metadaten editieren */
-.mediatum_img_acls {background: url(/img/edit_edit.gif) no-repeat;} /* Rechte vergeben */
-.mediatum_img_menueditall {background: url(/img/edit_edit.gif) no-repeat;} /* Alle Datensätze im Verzeichnis bearbeiten */
-.mediatum_img_menunodesperpage {background: url(/img/edit_edit.gif) no-repeat;} /* Einstellungen: Datensätze pro Seite */
-.mediatum_img_menusortnodes {background: url(/img/edit_edit.gif) no-repeat;} /* Einstellungen: Datensätze sortieren */
-.mediatum_img_startpagesmenu {background: url(/img/edit_edit.gif) no-repeat;} /* Startseiten verwalten */
-.mediatum_img_admin {background: url(/img/edit_edit.gif) no-repeat;} /* Administration */
-.mediatum_img_classes {background: url(/img/edit_edit.gif) no-repeat;} /* Klassifikation */
-.mediatum_img_menueditobject {background: url(/img/edit_edit.gif) no-repeat;} /* Weitere Aktionen für Datensatz */
+.mediatum_img_menumetadata::before {content: url(/img/edit_edit.gif);} /* Inhalt */
+.mediatum_img_metadata::before {content: url(/img/edit_edit.gif);} /* Metadaten editieren */
+.mediatum_img_acls::before {content: url(/img/edit_edit.gif);} /* Rechte vergeben */
+.mediatum_img_menueditall::before {content: url(/img/edit_edit.gif);} /* Alle Datensätze im Verzeichnis bearbeiten */
+.mediatum_img_menunodesperpage::before {content: url(/img/edit_edit.gif);} /* Einstellungen: Datensätze pro Seite */
+.mediatum_img_menusortnodes::before {content: url(/img/edit_edit.gif);} /* Einstellungen: Datensätze sortieren */
+.mediatum_img_startpagesmenu::before {content: url(/img/edit_edit.gif);} /* Startseiten verwalten */
+.mediatum_img_admin::before {content: url(/img/edit_edit.gif);} /* Administration */
+.mediatum_img_classes::before {content: url(/img/edit_edit.gif);} /* Klassifikation */
+.mediatum_img_menueditobject::before {content: url(/img/edit_edit.gif);} /* Weitere Aktionen für Datensatz */
 /* Second Submenu */
-.mediatum_img_editall {background: url(/img/edit_edit.gif) no-repeat;} /* Bearbeiten */
-.mediatum_img_moveall {background: url(/img/edit_move.gif) no-repeat;} /* Verschieben */
-.mediatum_img_copyall {background: url(/img/edit_copy.gif) no-repeat;} /* Kopieren */
-.mediatum_img_deleteall {background: url(/img/edit_delete.png) no-repeat;} /* Löschen */
-.mediatum_img_nodesperpage20 {background: url(/img/edit_edit.gif) no-repeat;} /* 20 */
-.mediatum_img_nodesperpage50 {background: url(/img/edit_edit.gif) no-repeat;} /* 50 */
-.mediatum_img_nodesperpage100 {background: url(/img/edit_edit.gif) no-repeat;} /* 100 */
-.mediatum_img_nodesperpage200 {background: url(/img/edit_edit.gif) no-repeat;} /* 200 */
-.mediatum_img_moveobject {background: url(/img/edit_edit.gif) no-repeat;} /* Verschieben */
-.mediatum_img_copyobject {background: url(/img/edit_edit.gif) no-repeat;} /* Kopieren */
-.mediatum_img_deleteobject {background: url(/img/edit_edit.gif) no-repeat;} /* Löschen */
+.mediatum_img_editall::before {content: url(/img/edit_edit.gif);} /* Bearbeiten */
+.mediatum_img_moveall::before {content: url(/img/edit_move.gif);} /* Verschieben */
+.mediatum_img_copyall::before {content: url(/img/edit_copy.gif);} /* Kopieren */
+.mediatum_img_deleteall::before {content: url(/img/edit_delete.png);} /* Löschen */
+.mediatum_img_nodesperpage20::before {content: url(/img/edit_edit.gif);} /* 20 */
+.mediatum_img_nodesperpage50::before {content: url(/img/edit_edit.gif);} /* 50 */
+.mediatum_img_nodesperpage100::before {content: url(/img/edit_edit.gif);} /* 100 */
+.mediatum_img_nodesperpage200::before {content: url(/img/edit_edit.gif);} /* 200 */
+.mediatum_img_moveobject::before {content: url(/img/edit_edit.gif);} /* Verschieben */
+.mediatum_img_copyobject::before {content: url(/img/edit_edit.gif);} /* Kopieren */
+.mediatum_img_deleteobject::before {content: url(/img/edit_edit.gif);} /* Löschen */
 /* sortnodes -> sort_choices from edit.py */
-.mediatum_img_off {background: url(/img/edit_edit.gif) no-repeat;} /* aus */
-.mediatum_img_ranking {background: url(/img/edit_edit.gif) no-repeat;} /* Ranking */
-.mediatum_img_rankingdesc {background: url(/img/edit_edit.gif) no-repeat;} /* Ranking (absteigend) */
-.mediatum_img_date {background: url(/img/edit_edit.gif) no-repeat;} /* Datum */
-.mediatum_img_datedesc {background: url(/img/edit_edit.gif) no-repeat;} /* Datum (absteigend) */
-.mediatum_img_menusortsubdir {background: url(/img/edit_edit.gif) no-repeat;} /* Unterordner sortieren */
-.mediatum_img_menustatistics {background: url(/img/edit_edit.gif) no-repeat;} /* Statistik */
+.mediatum_img_off::before {content: url(/img/edit_edit.gif);} /* aus */
+.mediatum_img_ranking::before {content: url(/img/edit_edit.gif);} /* Ranking */
+.mediatum_img_rankingdesc::before {content: url(/img/edit_edit.gif);} /* Ranking (absteigend) */
+.mediatum_img_date::before {content: url(/img/edit_edit.gif);} /* Datum */
+.mediatum_img_datedesc::before {content: url(/img/edit_edit.gif);} /* Datum (absteigend) */
+.mediatum_img_menusortsubdir::before {content: url(/img/edit_edit.gif);} /* Unterordner sortieren */
+.mediatum_img_menustatistics::before {content: url(/img/edit_edit.gif);} /* Statistik */
 /* sortsubdir items??? */
-.mediatum_img_startpages {background: url(/img/edit_edit.gif) no-repeat;} /* Startseite bearbeiten */
-.mediatum_img_logo {background: url(/img/edit_edit.gif) no-repeat;} /* Logo editieren */
-.mediatum_img_searchmask {background: url(/img/edit_edit.gif) no-repeat;} /* Suchmaske anlegen */
-.mediatum_img_subfolder {background: url(/img/edit_edit.gif) no-repeat;} /* Unterordner sortieren */
-.mediatum_img_statsaccess {background: url(/img/edit_edit.gif) no-repeat;} /* Zugriffsstatistiken */
-.mediatum_img_statsfiles {background: url(/img/edit_edit.gif) no-repeat;} /* Datenstatistiken */
-.mediatum_img_sortfiles {background: url(/img/edit_edit.gif) no-repeat;} /* Files sortieren */
-.mediatum_img_changeschema {background: url(/img/edit_edit.gif) no-repeat;} /* Objekttyp / Metadatentyp ändern */
-.mediatum_img_files {background: url(/img/edit_edit.gif) no-repeat;} /* digitale Objekte austauschen / hinzufügen */
-.mediatum_img_menusecurity {background: url(/img/edit_edit.gif) no-repeat;} /* Berechtigungen */
+.mediatum_img_startpages::before {content: url(/img/edit_edit.gif);} /* Startseite bearbeiten */
+.mediatum_img_logo::before {content: url(/img/edit_edit.gif);} /* Logo editieren */
+.mediatum_img_searchmask::before {content: url(/img/edit_edit.gif);} /* Suchmaske anlegen */
+.mediatum_img_subfolder::before {content: url(/img/edit_edit.gif);} /* Unterordner sortieren */
+.mediatum_img_statsaccess::before {content: url(/img/edit_edit.gif);} /* Zugriffsstatistiken */
+.mediatum_img_statsfiles::before {content: url(/img/edit_edit.gif);} /* Datenstatistiken */
+.mediatum_img_sortfiles::before {content: url(/img/edit_edit.gif);} /* Files sortieren */
+.mediatum_img_changeschema::before {content: url(/img/edit_edit.gif);} /* Objekttyp / Metadatentyp ändern */
+.mediatum_img_files::before {content: url(/img/edit_edit.gif);} /* digitale Objekte austauschen / hinzufügen */
+.mediatum_img_uploadmeta::before {content: url(/img/upload.png);}/* Uploads: Metadaten einstellen */
+.mediatum_img_uploaddoi::before {content: url(/img/upload.png);}/* Uploads: DOI-Eingabe */
+.mediatum_img_uploadfile::before {content: url(/img/upload.png);}/* Uploads: Datei hochladen */
+.mediatum_img_uploadbibtex::before {content: url(/img/upload.png);}/* Uploads: Bibtex-Import */
 
 .mediatum_itemicon {float:left; margin-right:10px;}
 .mediatum_itemmenucontainer {color:#666666; background:transparent; padding:20px 10px 10px; width:582px; background-image:url(/img/layout/edit_itenmenucontainer.gif);
@@ -168,27 +168,44 @@ div.mask_row {margin-bottom:6px;}
 .mediatum_logocontainer {overflow:hidden;position:absolute;right:5px;top:5px;}
 .mediatum_logocontainer img {float:left; padding:0px; margin:5px; margin-left:10px;}
 .mediatum_MainMenu {margin-left:40px; margin-top:50px; margin-bottom:30px; float:left; height:auto; width:auto; padding:10px;}
+.mediatum_metaform_div{position:absolute;top:-7px;right:-7px;z-index:10002;}
 .mediatum_multitext {height:60px; margin-bottom:5px;}
-.mediatum_nav { top: 0; left: 0; width: 100%; background: #3070b3; list-style:none; margin:0;  padding:0; z-index:299; }
-.mediatum_nav a{color:#fff;font-weight:normal !important;font-size: 12px;padding: 5px 5px;}
-.mediatum_nav a:hover, #nav a:active{color:#fff;background: #007fff;border:none !important;}
-.mediatum_nav ul {margin: 0; background: #3070b3;padding-left:0;}
-.mediatum_nav li{width:180px; display: inline-block;position:relative;}
-.mediatum_nav li a{ text-decoration:none; display:block; padding:5px 5px 5px 25px; }
+.mediatum_nav { top: 0; left: 0; width: 100%; background: #3070b3; list-style:none; margin:0; padding:0; z-index:999}
+.mediatum_nav a{color:#fff;font-weight:normal !important;font-size: 12px;}
+.mediatum_nav li:hover{color:#fff;background: #007fff;border:none !important;}
+.mediatum_nav ul {margin: 0; background: #3070b3;padding-left:0;left: 0%;top:29px;}
+.mediatum_nav li{width:150px; display: inline-block;position:relative;padding:5px;}
+.mediatum_nav li a{ text-decoration:none; }
 .mediatum_nav li ul {display:none;}
-.mediatum_nav li ul a {padding:5px 5px 5px 25px;  }
-.mediatum_nav li ul li {border-bottom: 1px solid #ccc;}
+.mediatum_nav li ul li {border-bottom: 1px solid #ccc;padding:5px;}
 .mediatum_nav ul li ul {border-bottom: 1px solid #ccc; display: none; position: absolute;}
 .mediatum_nav ul li ul li:first-child { border-top: none; }
-.mediatum_nav li:hover > ul { display: block; position: absolute;}
+.mediatum_nav li:hover > ul { display: inline-block; position: absolute;}
 .mediatum_nav li:hover li { float: none; }
 .mediatum_nav ul ul{left: 100%;top:0;}
-.mediatum_showcontent {float:left; width:996px; height:38px; position:relative; left:0px; top:0px; border:1px solid #808080; margin:2px;background-color:#ffffff;}
-.mediatum_showcontent_error {float:left; width:296px; height:168px; position:relative; left:0px; top:0px; border:1px solid #FF0000; /*background:#FFE7E7;*/ margin: 2px;}
+.mediatum_node_icon{display:table-cell;width:30px;}
+.mediatum_node_icon_chk{width:30px;}
+.mediatum_node_icon_header{display:table-cell;padding-bottom: 5px;width:30px;}
+.mediatum_node_text {display:table-cell; overflow: hidden;font-size:10px; line-height:0px;}
+.mediatum_nodelist_text{display:table-cell;text-align:right; font-weight: bold;padding-right: 20px;}
+.mediatum_nonodelist{text-align:center;padding-top:50px;}
+.mediatum_pluploadform-background{position:absolute;top:0px;left:0px;height:100%;width:100%;background-color:silver;opacity: 0.5;
+    -moz-opacity: 0.5;-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";filter:alpha(opacity=50);}
+.mediatum_pointer{cursor:pointer;}
+.mediatum_showcontent {display: table-row;width:100%;}
+.mediatum_showcontent .actions{position:absolute;top:1px;right:1px;display:none;}
+.mediatum_showcontent:hover .actions{display:block;}
+.mediatum_showcontent_error {float:left; width:296px; height:168px; position:relative; left:0px; top:0px; border:1px solid #FF0000; margin: 2px;}
+.mediatum_showcontent_error .actions{position:absolute;top:1px;right:1px;display:none;}
+.mediatum_showcontent_error:hover .actions{display:block;}
+.mediatum_sub_footer_module_div{position:absolute;right:5px;top:2px;font-size:11px;}
+.mediatum_subform_identifier{min-width:200px;padding:4px;}
+.mediatum_subform_identifier_text{text-align:center;min-height:40px;}
 .mediatum_subnavigation {background-color:#ddd!important;margin:0!important;padding:0!important;}
 .mediatum_subnavigation_1 {position:absolute;right:2px;top:10px;}
 .mediatum_subnavigation_2 {padding-top:6px;margin:0 0 0 5px;white-space:nowrap;}
 .mediatum_subnavigation_2_img {padding-right:10px;}
+.mediatum_table_nodelist_row_header{display: table-row;border-bottom:1px solid black;}
 .mediatum_templateerror {text-align:center;}
 p.mediatum_templateerror {background: url("/img/talerror.gif") #d8d8d8 no-repeat; background-position:10px 50%; padding:7px; border:1px solid #0c0c0c;
     margin-left:20px; margin-right:20px; vertical-align:middle;}
@@ -200,14 +217,32 @@ p.mediatum_templateerror #msg {font-family: Courier;}
 .mediatum_treecontent .mediatum_accordiontree div.mediatum_acc_content{border-right:1px solid #bbb!important;overflow:auto;}
 .mediatum_treecontent a{font-weight:normal!important; font-size:11px!important;padding:2px!important;width:100%;}
 .mediatum_treesouth{background-color:#bbb;}
+.mediatum_upload{border:1px solid silver;padding:5px;height:40px;display:block;float:left;margin:0px 5px;}
+.mediatum_uploadform_style{border:2px solid silver;}
+.mediatum_uploadform_widget{position:absolute;top:-7px;right:-7px;z-index:10002;}
+.mediatum_uploadmsg{position:absolute;top:2px;right:2px;}
+.mediatum_uploadzipfileok{padding-left:5px;white-space:nowrap;z-index:2;}
+.mediatum_uploadzipfileok_plupload{background-color:white;z-index:3;}
 .mediatum_wait_ {position:fixed;top:0;left:0;right:0;bottom:0;background-color:white;opacity: 0.5;display:none;padding:40%;}
 
+.message {margin: 1em 0;padding: 10px 20px;border: solid 1px #FFDD99;background-color: #FFFFCC;overflow: visible;position:relative;}
 div.metaeditor{overflow:hidden;}
 div.metaeditor div.label{width:100px;}
 div.metaeditor div#editor_content{margin-left:110px;}
-div.node_text {position:absolute; left:48px; top:0px; width:877px; height:50px; overflow: hidden};
-td.node_text {position:relative; left:48px; top:0px; width:877px; height:50px; overflow: hidden};
 
+.plupload_container{height:450px;margin-bottom:50px;}
+.progressName {font-size: 8pt;font-weight: 700;color: #555;width: 323px;height: 14px;text-align: left;white-space: nowrap;overflow: visible;}
+.progressBarInProgress, .progressBarComplete, .progressBarError {font-size: 0;width: 0%;height: 2px;background-color: blue;margin-top: 2px;}
+.progressBarComplete {width: 100%;background-color: green;visibility: hidden;}
+.progressBarError {width: 100%;background-color: red;visibility: hidden;}
+.progressBarStatus {margin-top: 2px;width: 90%;font-size: 7pt;font-family: Arial;text-align: left;white-space: nowrap;}
+a.progressCancel {font-size: 0;display: block;height: 14px;width: 14px;background-image: url(/img/delete.png);background-repeat: no-repeat;background-position: -14px 0px;float: right;}
+a.progressCancel:hover {background-position: 0px 0px;}
+.progressContainer {margin: 5px;padding: 4px;border: solid 1px #E8E8E8;background-color: #F7F7F7;overflow: visible;position:relative;}
+.progressContainer .schema{top:10px;right:5px;text-align:right;}
+.progressContainer .schema .selection{text-align:right;white-space:nowrap;float:right;background-color: #F0F5FF;}
+.progressWrapper {width: 100%;overflow: hidden;position:relative}
+.red {border: solid 1px #B50000;background-color: #FFEBEB;}
 .readonly span.fancytree-title{color:#666!important;font-weight:normal!important;margin-left:3px;cursor:not-allowed}
 span.required {color:#ff0000;}
 div.row {border:solid white 1px; margin:2px; width: 100%; white-space:nowrap; cursor:pointer;}
@@ -231,6 +266,9 @@ ul.fancytree-container {background-color: transparent; border: 0px; height: 99%;
 .ui-helper-reset {line-height: unset!important;}
 .ui-layout-north {background-color:#ddd!important;}
 .ui-layout-west {border-width:0!important;padding:0!important;width:300px;}
+.ui-widget-header{background: #cccccc url(https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/themes/base/images/ui-bg_highlight-soft_75_cccccc_1x100.png) 50% 50% repeat-x;}
+.ui-button .ui-icon{background-image:url(https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/themes/base/images/ui-icons_888888_256x240.png);}
+.ui-button:hover .ui-icon, .ui-state-hover .ui-icon{background-image:url(https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/themes/base/images/ui-icons_454545_256x240.png);}
 div.ui-layout-north{background-color:#ddd!important;}
 /* removes jquery border on active menu items */
 .ui-state-active, .ui-widget-content .ui-state-active, .ui-widget-header .ui-state-active, a.ui-button:active, .ui-button:active, .ui-button.ui-state-active:hover
@@ -246,30 +284,56 @@ iframe.ui-layout-center, div.ui-layout-north{border-width:0!important;padding:0;
 
 /* IDs */
 #background{position:absolute;min-width:100%;min-height:100%;background-color:silver;opacity:0.5;}
+#buttoncreate2{min-width:200px;padding:4px;display:none;}
+#close{position:absolute;top:-10px;right:-10px;}
 #contextMenu{position:absolute;display:none; background-color:white;border:1px solid silver;padding:2px;font-size:12px;font-family:arial}
+#delete_text{display:none;}
+#dummy{display:none;}
 #editor_content {margin-left:220px; top:0px;}
 #footer {color:#fff; text-align:center; padding:20px; clear:both; background:#314348 url(/img/layout/edit_bg_banner.png) repeat-x left top;
     width:auto; margin-top:0px; height:20px;}
 #footer a {color:#fff; text-decoration:underline;}
 #header {background-color:silver;overflow:hidden;height:53px;border-bottom:1px solid #bfbfbf;}
 #hitem {display:inline; margin-right:5px;}
+#identifier_importer{width:360px;}
+#identifier_subform{display:none;}
+#input_identifier{width:362px;}
 #items{float:left;width:100%;height:82px;overflow:auto;border:1px solid silver;}
 #mediatum_clear_trash_question{display:none;}
 #mediatum_collectionstree{overflow:hidden!important;}
 #mediatum_collectionstree:hover{overflow-y:auto!important;}
 #mediatum_delete_folder_question{display:none;}
+#mediatum_operations { position:relative;clear:left;z-index:-100;}
 #mediatum_selection_div {border-top:1px solid silver; margin:3px; display:none; padding:3px;}
-#nextid{position:absolute;right:0;top:0;width:20px;}
+#mediatum_table_nodelist{display: table; border-collapse: collapse; width: 100%;}
+#mediatum_uploader_container{height:450px;margin-bottom:50px;}
+#mediatum_uploader_dropbox{height:375px;margin-bottom:50px;}
+#mediatum_uploadform_plupload_widget_bib{display:none;position:fixed;top:0px;left:0px;right:0px;bottom:0px;width:100%;height:100%;z-index:1000000;}
+#mediatum_uploadform_plupload_widget_file{display:none;position:fixed;top:0px;left:0px;right:0px;bottom:0px;width:100%;height:100%;z-index:1000000;}
+#metaform{display:none;position:fixed;top:0px;left:0px;right:0px;bottom:0px;width:100%;height:100%;z-index:1000000;}
+#metaform-form{width:400px;}
+#nav{float:left;clear:both;}
+#navigation{border:1px solid silver!important;border-width:0px 0px 0px 1px !important;}
+#navigation_content{z-index: -100;}
+#nextid{display:inline-block;}
 #object_main {padding:5px;}
 #object_image {float:left; width:330px;}
 #object_meta{ margin-left:325px;}
-#operations { position:relative;}
-#orid{margin-left:20px;margin-right:20px;text-align:center;}
+#orid{margin-left:20px;margin-right:20px;text-align:center;display:inline-block;}
 #overlay{display:none;position:fixed;top:0px;left:0px;right:0px;bottom:0px;width:100%;height:100%;z-index:99;}
-#previd{position:absolute;left:0;top:0;width:20px;}
+#overlay_content{display:none;}
+#pluploadform-background, #metaform-background{position:absolute;top:0px;left:0px;height:100%;width:100%;background-color:silver;opacity: 0.5;
+    -moz-opacity: 0.5;-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";filter:alpha(opacity=50);}
+#previd{display:inline-block;}
+#schema{width:360px;}
+#search{float:right;border:1px solid silver}
 #selection {font-size:10px;padding:1px;}
 #select_target_dir{display:none;}
 #sub_content{border-width:1px 0 0 0!important;}
-#sub_footer_module{background-color:#bbb!important;}
+#sub_footer_module{overflow:hidden!important;border-width:0px!important;height:20xp;padding:0px!important;background-color:#bbb!important;}
 #text{position:relative;background-color:white!important;border:2px solid silver;margin:200px auto;height:200px;width:300px;z-index:4;padding:10px;}
-
+#uploaderbib{width:100%;height:450px;}
+#uploaderfile{width:100%;height:450px;}
+#uploadform-form, #metaform-form{position:absolute;top:0px;left:0px;bottom:0px;right:0px;padding:0px;margin:30px;z-index:1000001;
+    height:400px;width:80%;margin:auto;}
+#uploadform-form form, #metaform-form form{background-color:white;}

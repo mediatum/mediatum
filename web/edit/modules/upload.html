@@ -1,39 +1,31 @@
 <tal:block metal:define-macro="upload_form">
-
     <script type="text/javascript" src="/js/plupload/plupload.full.min.js"> </script>
     <script type="text/javascript" src="/js/jquery.ui.plupload/jquery.ui.plupload.js"> </script>
-
     <!-- activate translation for plupload -->
-   <script type="text/javascript" tal:attributes="src python:u'/js/plupload/i18n/{}.js'.format(language)"> </script>
+    <script type="text/javascript" tal:attributes="src python:u'/js/plupload/i18n/{}.js'.format(language)"> </script>
 
 <link rel="stylesheet" href="/js/jquery-ui-1.12.1.css" type="text/css" />
 <link rel="stylesheet" href="/js/jquery.ui.plupload/css/jquery.ui.plupload.css" type="text/css" />
     <script tal:content="python:u'var id = \'{}\';'.format(id)"> </script>
     <script tal:content="python:u'var sid = \'{}\';'.format(sid)"> </script>
-
-
     <script type="text/javascript">
 
-
         function openMetaForm(){
-
             var ajax_response;
-
             var options = {
-                  url: '/edit/edit_content?action=addmeta&func=openMetaForm&id='+id,
-                  async: false,
-                  dataType: 'json',
-                  success: function(data){
-                      ajax_response = data;
-                      $('#metaformcontent').html(data.content);
-                      $('#metaform').show();
-                  }
-                };
+                url: '/edit/edit_content?action=addmeta&func=openMetaForm&id='+id,
+                async: false,
+                dataType: 'json',
+                success: function(data){
+                    ajax_response = data;
+                    $('#metaformcontent').html(data.content);
+                    $('#metaform').show();
+                }
+            };
 
             $.ajax(options);
             parent.$('#overlay').css('display', 'block');
         }
-
 
         function closeMetaForm(){ // close upload form
             $('#metaform').hide();
@@ -41,30 +33,25 @@
         }
 
         function openDoiForm(){
-
             var ajax_response;
-
             var options = {
-                  url: '/edit/edit_content?action=adddoi&func=openMetaForm&id='+id,
-                  async: false,
-                  dataType: 'json',
-                  success: function(data){
-                      ajax_response = data;
-                      $('#metaformcontent').html(data.content);
-                      $('#metaform').show();
-                  }
-                };
-
+                url: '/edit/edit_content?action=adddoi&func=openMetaForm&id='+id,
+                async: false,
+                dataType: 'json',
+                success: function(data){
+                    ajax_response = data;
+                    $('#metaformcontent').html(data.content);
+                    $('#metaform').show();
+                }
+            };
             $.ajax(options);
             parent.$('#overlay').css('display', 'block');
         }
-
 
         function closeDoiForm(){ // close upload form
             $('#metaform').hide();
             parent.$('#overlay').css('display', 'none');
         }
-
 
         var number_files = 0;
         var singlefile = 0;
@@ -72,8 +59,6 @@
         function loadEditArea02(id){
             $('.ui-layout-center').attr('src', '/edit/edit_content?id='+id);
         }
-
-
     </script>
 
 
@@ -110,7 +95,6 @@
             <tal:block tal:replace="count"/> item(s)
         </div>
     </div>
-
 
     <div id="sub_content_content">
         <div id="nodelist" tal:content="raw nodelist">TEXT</div>
@@ -354,85 +338,67 @@
                 Init: function(up, info) {
                     log('[Init]', 'Info:', info, 'Features:', up.features);
                 },
-
                 UploadFile: function(up, file) {
                     log('[UploadFile]', file);
-
                     // You can override settings before the file is uploaded
                     // up.setOption('url', 'upload.php?id=' + file.id);
                     // up.setOption('multipart_params', {param1 : 'value1', param2 : 'value2'});
                 }
             },
-
             // Post init events, bound after the internal events
             init : {
                 PostInit: function(up) {
                     // Called after initialization is finished and internal event handlers bound
                     log('[PostInit]');
                     files_uploaded = 0;
-
                 },
-
                 Browse: function(up) {
                     // Called when file picker is clicked
                     log('[Browse]');
                 },
-
                 Refresh: function(up) {
                     // Called when the position or dimensions of the picker change
                     log('[Refresh]');
                 },
-
                 StateChanged: function(up) {
                     // Called when the state of the queue is changed
                     log('[StateChanged]', up.state == plupload.STARTED ? "STARTED" : "STOPPED");
                 },
-
                 QueueChanged: function(up) {
                     // Called when queue is changed by adding or removing files
                     log('[QueueChanged]');
                 },
-
                 OptionChanged: function(up, name, value, oldValue) {
                     // Called when one of the configuration options is changed
                     log('[OptionChanged]', 'Option Name: ', name, 'Value: ', value, 'Old Value: ', oldValue);
                 },
-
                 BeforeUpload: function(up, file) {
                     // Called right before the upload for a given file starts, can be used to cancel it if required
                     log('[BeforeUpload]', 'File: ', file);
 
+                    var iframe_c = $("iframe.ui-layout-center");
+                    var fid = file.id;
+                    console.log('fid='+fid);
+                    var filelist_line = $("#"+fid);
+                    var c1 = filelist_line.children()[1];
 
-                                var iframe_c = $("iframe.ui-layout-center");
-            var fid = file.id;
-            console.log('fid='+fid);
-            var filelist_line = $("#"+fid);
-
-
-            var c1 = filelist_line.children()[1];
-
-    // sending additional parameters
-    this.settings.multipart_params = {
-        "file_name" : file.name,
-        "data_extra" : $('#select_extra_' + fid).val()
-    };
-
+                    // sending additional parameters
+                    this.settings.multipart_params = {
+                        "file_name" : file.name,
+                        "data_extra" : $('#select_extra_' + fid).val()
+                    };
                 },
-
                 UploadProgress: function(up, file) {
                     // Called while file is being uploaded
                     log('[UploadProgress]', 'File:', file, "Total:", up.total);
                 },
-
                 FileFiltered: function(up, file) {
                     // Called when file successfully files all the filters
                     log('[FileFiltered]', 'File:', file);
                 },
-
                 FilesAdded: function(up, files) {
                     // Called when files are added to queue
                     log('[FilesAdded]');
-
                     plupload.each(files, function(file) {
                         log('  File:', file);
                         //file.x = '777';
@@ -489,39 +455,29 @@
 
                     });
                 },
-
                 FilesRemoved: function(up, files) {
                     // Called when files are removed from queue
                     log('[FilesRemoved]');
-
                     plupload.each(files, function(file) {
                         log('  File:', file);
                     });
                 },
-
                 FileUploaded: function(up, file, info) {
                     // Called when file has finished uploading
                     log('[FileUploaded] File:', file, "Info:", info);
-
-            var iframe_c = $("iframe.ui-layout-center");
-            var fid = file.id;
-            console.log('fid='+fid);
-            var filelist_line = $("#"+fid);
-            console.log('filelist_line', filelist_line);
-
-            filelist_line.attr('class', 'progressContainer blue');
-
-            var c1 = filelist_line.children()[1];
-
-            c1.innerHTML = c1.innerHTML + JSON.parse(info.response).ret;
-
-            c1ppp = c1.parentNode.parentNode.parentNode;
-            c1ppp.style.position = 'relative';
-            c1ppp.style.top = '0px';
-            c1ppp.style.overflow = 'auto';
-
-            $('#select_extra_' + fid).hide();
-
+                    var iframe_c = $("iframe.ui-layout-center");
+                    var fid = file.id;
+                    console.log('fid='+fid);
+                    var filelist_line = $("#"+fid);
+                    console.log('filelist_line', filelist_line);
+                    filelist_line.attr('class', 'progressContainer blue');
+                    var c1 = filelist_line.children()[1];
+                    c1.innerHTML = c1.innerHTML + JSON.parse(info.response).ret;
+                    c1ppp = c1.parentNode.parentNode.parentNode;
+                    c1ppp.style.position = 'relative';
+                    c1ppp.style.top = '0px';
+                    c1ppp.style.overflow = 'auto';
+                    $('#select_extra_' + fid).hide();
 
                     htree = parent.gethometree();
                     JSON.parse(info.response).new_tree_labels.forEach(
@@ -533,20 +489,16 @@
                       }
                     );
 
-                 uc = $('#uploader_container');
-                 x = uc.find('.ui-resizable-handle');
-                 x.remove();
+                    uc = $('#mediatum_uploader_container');
+                    x = uc.find('.ui-resizable-handle');
+                    x.remove();
 
-                 files_uploaded = files_uploaded + 1;
-
-                 //debugger;
+                    files_uploaded_file = files_uploaded_file + 1;
                 },
-
                 ChunkUploaded: function(up, file, info) {
                     // Called when file chunk has finished uploading
                     log('[ChunkUploaded] File:', file, "Info:", info);
                 },
-
                 UploadComplete: function(up, files) {
                     // Called when all files are either uploaded or failed
                     log('[UploadComplete]');
@@ -554,14 +506,11 @@
                     if (files_uploaded > 0) {
                         $('#id_button_createobjectsplupload').prop('disabled', false);
                     }
-
                 },
-
                 Destroy: function(up) {
                     // Called when uploader is destroyed
                     log('[Destroy] ');
                 },
-
                 Error: function(up, args) {
                     // Called when error occurs
                     log('[Error] ', args);
@@ -569,8 +518,8 @@
                 }
             }
         });
-      });
-      return u;
+        });
+        return u;
     }
 
 
@@ -578,7 +527,6 @@
 
     function log() {
         var str = "";
-
         plupload.each(arguments, function(arg) {
             var row = "";
 
@@ -605,18 +553,15 @@
                                 break;
                         }
                     }
-
                     if (typeof(value) != "function") {
                         row += (row ? ', ' : '') + key + '=' + value;
                     }
                 });
-
                 str += row + " ";
             } else {
                 str += arg + " ";
             }
         });
-
         console.log(str);
     };
 
@@ -676,7 +621,6 @@
 
 <tal:block metal:define-macro="addmeta">
     <script>
-
         function showOrHide(selector, selectedIndex){
             if (selectedIndex == 0) {
                 $(selector).hide();
@@ -686,13 +630,11 @@
             }
         }
 
-
         function createMetaObject(){
 
             parent.$('#overlay').css('display', 'none');
 
             var ajax_response;
-
             var options = {
                   url: '/edit/edit_content?action=createobject&func=createMetaObject&contenttype='+$('#schema').val().split('|')[1]+'&schema='+$('#schema').val().split('|')[0]+'&id='+id,
                   async: false,
@@ -718,19 +660,17 @@
             $('#identifier_subform').hide();
           }
         }
-
-
     </script>
     <h3 i18n:translate="edit_upload_create_meta">TEXT</h3>
 
     <!-- create object via metadata scheme -->
     <div id="subform_meta">
-
       <p><tal:block i18n:translate="edit_upload_scheme"/><br/>
           <select name="schema" id="schema" onchange="showOrHide('#buttoncreate2', this.selectedIndex);">
               <option i18n:translate="edit_upload_schemeselection">TEXT</option>
               <tal:block tal:repeat="scheme schemes">
-                  <option tal:attributes="value python:scheme['id']+'|'+scheme['datatype']; title python:scheme['description']" tal:content="python:scheme['name']"/>
+                  <option tal:attributes="value python:scheme['id']+'|'+scheme['datatype']; title python:scheme['description']"
+                  tal:content="python:scheme['name']"/>
               </tal:block>
           </select>
       </p>
@@ -738,9 +678,7 @@
           <button type="button" id="buttoncreate2" onclick="createMetaObject()" i18n:translate="edit_upload_create_object">TEXT</button>
       </p>
     </div>
-
 </tal:block>
-
 
 <tal:block metal:define-macro="adddoi">
     <script>
@@ -791,7 +729,8 @@
           <select name="identifier_importer" id="identifier_importer" onchange="disenableInput(this.selectedIndex)">
               <option value="-1" i18n:translate="edit_upload_importerselection">TEXT</option>
               <tal:block tal:repeat="identifier_importer identifier_importers">
-                  <option i18n:translate="" tal:attributes="value python:identifier_importer.name" tal:content="python:identifier_importer.get('labels', {}).get(language, {}).get('identifier_importer_longname', 'identifier_importer_longname')"/>
+                  <option i18n:translate="" tal:attributes="value python:identifier_importer.name"
+                  tal:content="python:identifier_importer.get('labels', {}).get(language, {}).get('identifier_importer_longname', 'identifier_importer_longname')"/>
               </tal:block>
           </select>
           <div id="identifier_subform">

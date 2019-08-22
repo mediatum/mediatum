@@ -27,7 +27,8 @@ def import_node_fulltext(node, overwrite=False):
         if fi.exists:
             with fi.open() as f:
                 try:
-                    fulltexts.append(f.read())
+                    # postgres can't handle NULL-Bytes
+                    fulltexts.append(f.read().replace("\0"," "))
                 except UnicodeDecodeError:
                     logg.info("decoding error for node %s from %s", node.id, fi.path)
                     continue

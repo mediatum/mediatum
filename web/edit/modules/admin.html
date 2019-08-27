@@ -1,128 +1,113 @@
 <tal:block metal:define-macro="edit_admin_file">
-    <style>
-        #addform{display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;z-index:99;}
-        #addform-background{position:absolute;top:0;left:0;height:100%;width:100%;background-color:silver;opacity: 0.5; -moz-opacity: 0.5;-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";filter:alpha(opacity=50);}
-        #addform-form{width:390px;min-height:250px;overflow:auto;position:absolute;top:100px;left:0;bottom:0;right:0;padding:5px;margin:auto;z-index:100}
-        #addform-form form{padding:20px;width:340px;min-height:210px;overflow:auto;background-color:white;border:1px solid silver}
-        #addform-form form p, h2{margin-left:18px;}
-        input[type=text]{width:300px}
-        div.label{width:200px;float:left;padding-left:15px;height:100%}
-        div.content{white-space:normal;margin-left:220px;border:1px solid #E6E6E6;min-width:20px;min-height:16px;margin-right:40px;overflow:auto}
-        div#entry{padding:5px;margin-right:10px;position:relative}
-        div#entry:hover{background-color:#E6E6E6}
-        div#entry input{position:absolute;right:20px;top:4px}
-
-        .ui-accordion .ui-accordion-header {border:1px solid silver;color:#fff;background-color:#333; display: block; cursor: pointer; position: relative; margin-top: 2px;margin-bottom:0; padding: .5em .5em .5em .7em; zoom: 1; }
-        #accordion form{padding:0!important;}
-        #accordion h3 {border-left:0;margin:0}
-        #accordion h3 a{color:#fff;}
-
-        #sub_content_content{padding:0!important}
-        #navigation_content{border-width:0 0 1px 1px!important}
-    </style>
-    <div id="addform" style="display:none">
-        <div id="addform-background">&nbsp;</div>
-        <div id="addform-form">
-            <div style="position:absolute;top:0;right:7px;z-index:10002"><a href="#" onclick="closeForm()" i18n:attributes="title mask_editor_cancel"><img src="/img/cancel.png"/></a></div>
+    <div id="mediatum_addform">
+        <div class="mediatum_addform-background">&nbsp;</div>
+        <div class="mediatum_addform-form">
+            <div class="mediatum_addform-div"><a href="#" onclick="closeForm()" i18n:attributes="title mask_editor_cancel"><img src="/img/cancel.png"/></a></div>
             <form tal:attributes="action python:u'edit_content?id={}&tab=admin'.format(id)" method="post" name="addmeta">
                 <input tal:attributes="value csrf" type="hidden" name="csrf_token">
                 <h2 i18n:translate="edit_admin_add_attribute">TEXT</h2>
                 <p tal:condition="user_is_admin" i18n:translate="edit_notice_adding_system_attrs">TEXT</p>
                 <p>
                     <tal:block i18n:translate="edit_admin_add_attributename"/><br/>
-                    <input type="text" name="new_name" id="new_name"/>
+                    <input type="text" class="mediatum_new_name" name="new_name" id="new_name"/>
                 </p>
                 <p>
                     <tal:block i18n:translate="edit_admin_add_attributevalue"/><br/>
-                    <textarea name="new_value" id="new_value" style="width:305px"><tal:block tal:replace="python:''"/></textarea>
+                    <textarea class="mediatum_new_value" name="new_value" id="new_value"><tal:block tal:replace="python:''"/></textarea>
                 </p>
 
                 <input type="hidden" name="type" value="addattr"/>
                 <p>&nbsp;</p>
-                <p style="text-align:center">
+                <p class="mediatum_text_center">
                     <button onclick="closeForm()" name="addattr" type="submit" i18n:translate="edit_admin_add_attr">TEXT</button>
                 </p>
             </form>
         </div>
     </div>
 
-    <div id="navigation_content">
-        <a tal:condition="canedit" href="#" onclick="openForm()"><img src="/img/upload.png"/> <tal:block i18n:translate="edit_admin_add_attribute"/></a>
+    <div id="navigation_content" class="mediatum_navigation_content">
+        <a tal:condition="canedit" href="#" onclick="openForm()"><img src="/img/upload.png"/>
+            <tal:block i18n:translate="edit_admin_add_attribute"/></a>
     </div>
 
-    <div id="sub_content_content" style="border-width:0 0 0 1px!important">
-        <form tal:attributes="action python:u'edit_content?id={}&tab=admin'.format(id)" method="post" name="meta" style="height:100%;padding:0">
+    <div id="sub_content_content" class="mediatum_sub_content_content">
+        <form tal:attributes="action python:u'edit_content?id={}&tab=admin'.format(id)" method="post" name="meta"
+        class="mediatum_subcontent_form">
             <input tal:attributes="value csrf" type="hidden" name="csrf_token">
             <div id="accordion">
                 <h3><a href="#" i18n:translate="edit_nodeinformation">TEXT</a></h3>
-                <div id="info" style="padding:10px">
-                    <div id="entry">
+                <div id="info" class="mediatum_subcontent_padding">
+                    <div class="mediatum_entry">
                         <div class="label" i18n:translate="edit_id">TEXT</div>
                         <div class="content" tal:content="python:node.id">TEXT</div>
                     </div>
-                    <div id="entry">
+                    <div class="mediatum_entry">
                         <div class="label" i18n:translate="edit_objectname">TEXT</div>
                         <div class="content" tal:content="python:node.name">TEXT</div>
                     </div>
-                    <div id="entry">
+                    <div class="mediatum_entry">
                         <div class="label" i18n:translate="edit_objecttype">TEXT</div>
                         <div class="content" tal:content="python:node.type">TEXT</div>
                     </div>
-                    <div id="entry">
+                    <div class="mediatum_entry">
                         <div class="label" i18n:translate="edit_schema">TEXT</div>
                         <div class="content" tal:content="python:node.schema">TEXT</div>
                     </div>
-                    <div id="entry">
+                    <div class="mediatum_entry">
                         <div class="label" i18n:translate="edit_orderpos">TEXT</div>
                         <div class="content" tal:content="python:node.orderpos">TEXT</div>
                     </div>
                 </div>
 
                 <h3><a href="#" i18n:translate="edit_files_metafields">TEXT</a></h3>
-                <div id="meta" style="padding:10px">
-                     <div id="entry" tal:repeat="key python: list(metafields)">
+                <div id="meta" class="mediatum_subcontent_padding">
+                     <div class="mediatum_entry" tal:repeat="key python: list(metafields)">
                          <div class="label" tal:content="key">TEXT</div>
                          <div class="content" tal:content="python:fd(node.get(key), gf(fields, key))">TEXT</div>
-                         <img tal:condition="canedit" tal:attributes="name python:key;value python:fd(node.get(key), gf(fields, key))" i18n:attributes="title edit_admin_editattr_title" type="image" src="/img/edit.png" onClick="return openFilledForm(this)" style="position:absolute;top:4px;right:0!important"/>
-                         <input tal:condition="user_is_admin" tal:attributes="name python:u'attr_{}'.format(key)" i18n:attributes="title edit_admin_del_attribute" type="image" src="/img/delete.png" onClick="return questionDel()" style="top:8px"/>
+                         <img tal:condition="canedit" tal:attributes="name python:key;value python:fd(node.get(key), gf(fields, key))"
+                         i18n:attributes="title edit_admin_editattr_title" type="image" src="/img/edit.png"
+                         onClick="return openFilledForm(this)" class="mediatum_subcontent_position"/>
+                         <input tal:condition="user_is_admin" tal:attributes="name python:u'attr_{}'.format(key)"
+                         i18n:attributes="title edit_admin_del_attribute" type="image" src="/img/delete.png" onClick="return questionDel()"
+                         class="mediatum_subcontent_top"/>
                      </div>
 
-                    <div tal:condition="python: len(list(metafields))==0" id="entry">
+                    <div tal:condition="python: len(list(metafields))==0" class="mediatum_entry">
                         <div class="label" i18n:translate="edit_admin_noattribute">TEXT</div>
                     </div>
                 </div>
 
                 <h3><a href="#" i18n:translate="edit_files_obsolete">TEXT</a></h3>
-                <div id="obsolete" style="padding:10px">
-                    <div id="entry" tal:repeat="key python:list(obsoletefields)">
+                <div id="obsolete" class="mediatum_subcontent_padding">
+                    <div class="mediatum_entry" tal:repeat="key python:list(obsoletefields)">
                         <div class="label" tal:content="key">TEXT</div>
                         <div class="content" tal:content="python:fd(node.get(key), gf(fields, key))">TEXT</div>
-                        <img tal:condition="canedit" tal:attributes="name python:key;value python:fd(node.get(key), gf(fields, key))" i18n:attributes="title edit_admin_editattr_title" type="image" src="/img/edit.png" onClick="return openFilledForm(this)" style="position:absolute;top:4px;right:0!important"/>
-                        <input tal:condition="user_is_admin" tal:attributes="name python:u'attr_{}'.format(key)" i18n:attributes="title edit_admin_del_attribute" type="image" src="/img/delete.png" onClick="return questionDel()" style="top:8px"/>
+                        <img tal:condition="canedit" tal:attributes="name python:key;value python:fd(node.get(key), gf(fields, key))" i18n:attributes="title edit_admin_editattr_title" type="image" src="/img/edit.png" onClick="return openFilledForm(this)" class="mediatum_subcontent_position"/>
+                        <input tal:condition="user_is_admin" tal:attributes="name python:u'attr_{}'.format(key)" i18n:attributes="title edit_admin_del_attribute" type="image" src="/img/delete.png" onClick="return questionDel()" class="mediatum_subcontent_top"/>
                     </div>
 
-                    <div tal:condition="python: len(list(obsoletefields))==0" id="entry">
+                    <div tal:condition="python: len(list(obsoletefields))==0" class="mediatum_entry">
                         <div class="label" i18n:translate="edit_admin_noattribute">TEXT</div>
                     </div>
                 </div>
 
                 <h3><a href="#" i18n:translate="edit_system_attrs">TEXT</a></h3>
-                <div id="system_attrs" style="padding:10px">
-                    <div id="entry" tal:repeat="item python:system_attrs">
+                <div id="system_attrs" class="mediatum_subcontent_padding">
+                    <div class="mediatum_entry" tal:repeat="item python:system_attrs">
                         <div class="label" tal:content="python:item[0]">TEXT</div>
                         <div class="content" tal:content="python:item[1]">TEXT</div>
-                        <img tal:condition="user_is_admin" tal:attributes="name python:'system.' + item[0];value python:item[1]" i18n:attributes="title edit_admin_editattr_title" type="image" src="/img/edit.png" onClick="return openFilledForm(this)" style="position:absolute;top:4px;right:0!important"/>
-                        <input tal:condition="user_is_admin" tal:attributes="name python:u'system_attr_{}'.format(item[0])" i18n:attributes="title edit_admin_del_attribute" type="image" src="/img/delete.png" onClick="return questionDel()" style="top:8px"/>
+                        <img tal:condition="user_is_admin" tal:attributes="name python:'system.' + item[0];value python:item[1]" i18n:attributes="title edit_admin_editattr_title" type="image" src="/img/edit.png" onClick="return openFilledForm(this)" class="mediatum_subcontent_position"/>
+                        <input tal:condition="user_is_admin" tal:attributes="name python:u'system_attr_{}'.format(item[0])" i18n:attributes="title edit_admin_del_attribute" type="image" src="/img/delete.png" onClick="return questionDel()" class="mediatum_subcontent_top"/>
                     </div>
 
-                    <div tal:condition="python: not system_attrs" id="entry">
+                    <div tal:condition="python: not system_attrs" class="mediatum_entry">
                         <div class="label" i18n:translate="edit_admin_noattribute">TEXT</div>
                     </div>
                 </div>
 
                 <h3><a href="#" i18n:translate="edit_files_tech_meta">TEXT</a></h3>
-                <div id="tech" style="padding:10px">
-                    <div id="entry" tal:repeat="key python:list(technfields)">
+                <div id="tech" class="mediatum_subcontent_padding">
+                    <div class="mediatum_entry" tal:repeat="key python:list(technfields)">
                         <tal:block tal:repeat="sec python:node.getTechnAttributes().keys()">
                             <div tal:condition="python:key in node.getTechnAttributes()[sec].keys()" class="label">
                                 <tal:block tal:replace="raw python:node.getTechnAttributes()[sec][key]">TEXT</tal:block>
@@ -130,10 +115,10 @@
                             </div>
                         </tal:block>
                         <div class="content" tal:content="python:fd(node.get(key))">TEXT</div>
-                        <img tal:condition="canedit" tal:attributes="name python:key;value python:fd(node.get(key), gf(fields, key))" i18n:attributes="title edit_admin_editattr_title" type="image" src="/img/edit.png" onClick="return openFilledForm(this)" style="position:absolute;top:4px;right:0!important"/>
-                        <input tal:condition="user_is_admin" tal:attributes="name python:u'attr_{}'.format(key)" i18n:attributes="title edit_admin_del_attribute" type="image" src="/img/delete.png" onClick="return questionDel()" style="top:8px"/>
+                        <img tal:condition="canedit" tal:attributes="name python:key;value python:fd(node.get(key), gf(fields, key))" i18n:attributes="title edit_admin_editattr_title" type="image" src="/img/edit.png" onClick="return openFilledForm(this)" class="mediatum_subcontent_position"/>
+                        <input tal:condition="user_is_admin" tal:attributes="name python:u'attr_{}'.format(key)" i18n:attributes="title edit_admin_del_attribute" type="image" src="/img/delete.png" onClick="return questionDel()" class="mediatum_subcontent_top"/>
                     </div>
-                    <div tal:condition="python:len(list(technfields))==0" id="entry">
+                    <div tal:condition="python:len(list(technfields))==0" class="mediatum_entry">
                         <div class="label" i18n:translate="edit_admin_noattribute">TEXT</div>
                     </div>
                 </div>
@@ -157,7 +142,7 @@
         });
 
         function openForm(){ // show upload form
-            $('#addform').css('display','block');
+            $('#mediatum_addform').css('display','block');
              parent.$('#overlay').css('display', 'block');
         }
 
@@ -165,13 +150,13 @@
             $('#new_name').val($(obj).attr('name'));
             $('#new_value').val($(obj).attr('value'));
 
-            $('#addform').css('display','block');
+            $('#mediatum_addform').css('display','block');
             parent.$('#overlay').css('display', 'block');
             return false;
         }
 
         function closeForm(){ // close upload form
-            $('#addform').css('display','none');
+            $('#mediatum_addform').css('display','none');
         }
 
         function setActionType(value){
@@ -182,12 +167,9 @@
 
 
 <tal:block metal:define-macro="searchdata">
-    <style>
-        div.searchinfo{overflow:auto;width:100%;position:relative;max-height:200px;min-height:20px;border:1px solid silver}
-    </style>
-    <div style="padding:20px;display:relative">
+    <div class="mediatum_searchdata">
         <h5 i18n:translate="edit_admin_simplesearch">TEXT</h5>
-        <div tal:condition="python: len(searchdata[0])>0" class="searchinfo">
+        <div tal:condition="python: len(searchdata[0])>0" class="mediatum_searchinfo">
             <tal:block tal:repeat="i python:searchdata[0]">
                 <span tal:content="i">.</span><br/>
             </tal:block>
@@ -195,7 +177,7 @@
         <div tal:condition="python: len(searchdata[0])==0" i18n:translate="edit_admin_nosearchdata">TEXT</div>
 
         <h5 i18n:translate="edit_admin_extsearch">TEXT</h5>
-        <div tal:condition="python: len(searchdata[1])>0" class="searchinfo">
+        <div tal:condition="python: len(searchdata[1])>0" class="mediatum_searchinfo">
             <tal:block tal:repeat="i python:searchdata[1]">
                 <span tal:content="i">.</span><br/>
             </tal:block>
@@ -204,7 +186,7 @@
 
 
         <h5 i18n:translate="edit_admin_textsearch">TEXT</h5>
-        <div tal:condition="python: len(searchdata[2])>0" class="searchinfo">
+        <div tal:condition="python: len(searchdata[2])>0" class="mediatum_searchinfo">
             <tal:block tal:repeat="i python:searchdata[2]">
                 <span tal:content="i">.</span><br/>
             </tal:block>

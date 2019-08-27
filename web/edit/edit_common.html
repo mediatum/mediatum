@@ -106,12 +106,16 @@
                         <input id="itemcheck" tal:attributes="name python:node.id; id python:u'check{}'.format(node.id)" onChange="checkObject(this)" type="checkbox"/>
                     </div>
                     <div class="mediatum_node_icon mediatum_imgtooltipbase" tal:condition="python:hasattr(node, 'show_node_image')">
-                        <img class="mediatum_minithumb" tal:attributes="src python:u'/thumbs/{}'.format(node.id)"/>
-                        <span class="mediatum_imghover"><img  tal:attributes="src python:u'/thumbs/{}'.format(node.id)"/></span>
+                        <a tal:attributes="href python:u'edit_content?id={}&tab=view'.format(node.id)" i18n:attributes="title edit_common_bigview_title">
+                            <img class="mediatum_minithumb" tal:attributes="src python:u'/thumbs/{}'.format(node.id)"/>
+                            <span class="mediatum_imghover"><img  tal:attributes="src python:u'/thumbs/{}'.format(node.id)"/></span>
+                        </a>
                     </div>
                     <div class="mediatum_node_icon mediatum_imgtooltipbasedefault" tal:condition="python:not hasattr(node, 'show_node_image')">
-                        <img class="mediatum_minithumb" src="/img/doc_default.png"/>
-                        <span class="mediatum_imghoverdefault"><img tal:attributes="src python:u'/thumbs/{}'.format(node.id)"/></span>
+                        <a tal:attributes="href python:u'edit_content?id={}&tab=view'.format(node.id)" i18n:attributes="title edit_common_bigview_title">
+                            <img class="mediatum_minithumb" src="/img/doc_default.png"/>
+                            <span class="mediatum_imghoverdefault"><img tal:attributes="src python:u'/thumbs/{}'.format(node.id)"/></span>
+                        </a>
                     </div>
                     <div class="mediatum_node_text no_overlap">
                         <a tal:attributes="href python:u'edit_content?id={}&tab=view'.format(node.id)" i18n:attributes="title edit_common_bigview_title">

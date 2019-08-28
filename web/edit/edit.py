@@ -855,7 +855,7 @@ def content(req):
                 s = ['<a onClick="activateEditorTreeNode(%r); return true;" href="/edit/edit_content?id=%s">%s</a>' %
                      (n.id, n.id, get_edit_label(n, language))] + s
 
-            folders_only = False;
+            folders_only = False
             p = n.parents
             # XXX: we only check the first parent. This is wrong, how could be solve this? #
             first_parent = p[0]

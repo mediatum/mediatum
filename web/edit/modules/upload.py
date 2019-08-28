@@ -49,17 +49,11 @@ from utils.compat import iteritems
 from web.edit.edit_common import default_edit_nodes_per_page, edit_node_per_page_values, get_searchparams, delete_g_nodes_entry
 from web.frontend.frame import render_edit_search_box
 import urllib
+import web.common.sort as _sort
 
 logg = logging.getLogger(__name__)
 identifier_importers = {}
 q = db.query
-
-
-class SortChoice:
-
-    def __init__(self, label, value):
-        self.label = label
-        self.value = value
 
 
 def getInformation():
@@ -88,24 +82,6 @@ def getDatatypes(req, schemes):
                                  translate(y.__name__.lower(),
                                            request=req).lower()))
     return dtypes
-
-
-def getSortChoices(req, ids):
-    node = q(Node).get(ids[0])
-    sortfields = [SortChoice(translation_t(req, "off"), "off")]
-    if node.type not in ["root", "collections", "home"]:
-        sorted_schema_count = node.all_children_by_query(q(Node.schema, func.count(Node.schema)).group_by(Node.schema).order_by(func.count(Node.schema).desc()))
-
-        for schema_count in sorted_schema_count:
-            metadatatype = q(Metadatatype).filter_by(name=schema_count[0]).first()
-            if metadatatype:
-                sort_fields = metadatatype.metafields.filter(Node.a.opts.like("%o%")).all()
-                if sort_fields:
-                    for sortfield in sort_fields:
-                        sortfields += [SortChoice(sortfield.getLabel(), sortfield.name)]
-                        sortfields += [SortChoice(sortfield.getLabel() + translation_t(req, "descending"), "-" + sortfield.name)]
-                    break
-    return sortfields
 
 
 @dec_entry_log
@@ -459,23 +435,16 @@ def getContent(req, ids):
             v['npp_field'] = node.get("nodes_per_page")
         if not v['npp_field']:
             v['npp_field'] = default_edit_nodes_per_page
-        sortfields = [SortChoice(translation_t(req, "off"), "off")]
 
-        if node.type not in ["root", "collections", "home"]:
-            sorted_schema_count = node.all_children_by_query(q(Node.schema, func.count(Node.schema)).group_by(Node.schema).order_by(func.count(Node.schema).desc()))
+        assert node.type not in ["root", "collections", "home"]
 
-            for schema_count in sorted_schema_count:
-                metadatatype = q(Metadatatype).filter_by(name=schema_count[0]).first()
-                if metadatatype:
-                    sort_fields = metadatatype.metafields.filter(Node.a.opts.like("%o%")).all()
-                    if sort_fields:
-                        for sortfield in sort_fields:
-                            sortfields += [SortChoice(sortfield.getLabel(), sortfield.name)]
-                            sortfields += [SortChoice(sortfield.getLabel() + translation_t(req, "descending"), "-" + sortfield.name)]
-                        break
-
-        v['sortchoices'] = sortfields
-        v['npp_choices'] = [SortChoice(str(x), x) for x in edit_node_per_page_values]
+        v['sortchoices'] = tuple(_sort.get_sort_choices(
+            container=node,
+            off="off",
+            t_off=translation_t(req, "off"),
+            t_desc=translation_t(req, "descending"),
+        ))
+        v['npp_choices'] = [_sort.SortChoice(str(x), x) for x in edit_node_per_page_values]
         v['language'] = lang(req)
         v['t'] = translation_t
 

@@ -42,6 +42,7 @@ from web.edit.edit_common import get_edit_label, default_edit_nodes_per_page, ge
 from web.frontend.content import get_make_search_content_function
 from web.frontend.search import NoSearchResult
 from utils.pathutils import get_accessible_paths
+import web.common.sort as _sort
 
 logg = logging.getLogger(__name__)
 q = db.query
@@ -918,51 +919,28 @@ def content(req):
                 logg.debug('empty content')
                 return
 
-            class SortChoiceEdit:
-
-                def __init__(self, label, value):
-                    self.label = label
-                    self.value = value
-
             item_count = []
-            col = node
             if "globalsort" in req.params:
-                col.set("sortfield", req.params.get("globalsort"))
+                node.set("sortfield", req.params.get("globalsort"))
             if req.params.get("sortfield", "") != "":
                 v['collection_sortfield'] = req.params.get("sortfield")
             else:
                 v['collection_sortfield'] = node.get("sortfield")
-            sort_choices = [SortChoiceEdit(t(req, "off"), "off")]
-            if not isinstance(col, (Root, Collections, Home)):
-                # for node in col.children:
-                count = col.content_children_for_all_subcontainers.count()
-                # the transformation of content_children_for_all_subcontainers in a list is very expensive if count is high
-                # so try a limitation and if no sortfields found then increase limitation
-                start_idx = 0
-                end_idx = 10
-                sortfields = None
-                while start_idx < count:
-                    for node in col.content_children_for_all_subcontainers[start_idx:end_idx]:
-                        # XXX: now without acl filtering, do we need this?
-                        sortfields = node.getSortFields()
-                        if sortfields:
-                            for sortfield in sortfields:
-                                sort_choices += [SortChoiceEdit(sortfield.getLabel(), sortfield.getName())]
-                                sort_choices += [
-                                    SortChoiceEdit(sortfield.getLabel() + t(req, "descending"), "-" + sortfield.getName())]
-                            break
-                    if sortfields:
-                        break
-                    start_idx = end_idx
-                    end_idx *= 10
+
+            if not isinstance(node, (Root, Collections, Home)):
+                sortchoices = _sort.get_sort_choices(container=node, off="off", t_off=t(req, "off"), t_desc=t(req, "descending"))
+                sortchoices = tuple(sortchoices)
+            else:
+                sortchoices = ()
+
         else:
             req.setStatus(httpstatus.HTTP_INTERNAL_SERVER_ERROR)
             content["body"] += req.getTAL("web/edit/edit.html", {"module": current}, macro="module_error")
 
     if req.params.get("style", "") != "popup":  # normal page with header
-        v['sortchoices'] = sort_choices
-        v['npp_choices'] = [SortChoiceEdit(str(x), x) for x in edit_node_per_page_values]
-        v["tabs"] = handletabs(req, ids, tabs, sort_choices)
+        v['sortchoices'] = sortchoices
+        v['npp_choices'] = [_sort.SortChoice(str(x), x) for x in edit_node_per_page_values]
+        v["tabs"] = handletabs(req, ids, tabs, sortchoices)
         v["script"] = content["script"]
         v["body"] = content["body"]
         v["paging"] = showPaging(req, current, ids)

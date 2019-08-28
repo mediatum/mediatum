@@ -31,6 +31,7 @@ from schema.schema import get_permitted_schemas
 from web.edit.edit import get_ids_from_req
 from web.edit.edit_common import get_searchparams, delete_g_nodes_entry
 import urllib
+import web.common.sort as _sort
 
 q = db.query
 
@@ -44,11 +45,6 @@ def elemInList(elemlist, name):
 
 @dec_entry_log
 def getContent(req, ids):
-
-    class SortChoice:
-        def __init__(self, label, value):
-            self.label = label
-            self.value = value
 
     def getDatatypes(_req, _schemes):
         _dtypes = []
@@ -105,9 +101,8 @@ def getContent(req, ids):
             schemes = get_permitted_schemas()
             dtypes = getDatatypes(req, schemes)
 
-        col = node
         if "globalsort" in req.params:
-            col.set("sortfield", req.params.get("globalsort"))
+            node.set("sortfield", req.params.get("globalsort"))
         if req.params.get("sortfield", "") != "":
             v['collection_sortfield'] = req.params.get("sortfield")
         else:
@@ -119,34 +114,17 @@ def getContent(req, ids):
             v['npp_field'] = node.get("nodes_per_page")
         if not v['npp_field']:
             v['npp_field'] = default_edit_nodes_per_page
-        sort_choices = [SortChoice(t(req, "off"), "off")]
+
         search_html = render_edit_search_box(node, lang(req), req, edit=True)
         searchmode = req.params.get("searchmode")
         navigation_height = searchbox_navlist_height(req, item_count)
-        if not isinstance(col, (Root, Collections, Home)):
-            # for node in col.children:
-            count = col.content_children_for_all_subcontainers.count()
-            # the transformation of content_children_for_all_subcontainers in a list is very expensive if count is high
-            # so try a limitation and if no sortfields found then increase limitation
-            start_idx = 0
-            end_idx = 10
-            sortfields = None
-            while start_idx < count:
-                for node in col.content_children_for_all_subcontainers[start_idx:end_idx]:
-                    # XXX: now without acl filtering, do we need this?
-                    sortfields = node.getSortFields()
-                    if sortfields:
-                        for sortfield in sortfields:
-                            sort_choices += [SortChoice(sortfield.getLabel(), sortfield.getName())]
-                            sort_choices += [SortChoice(sortfield.getLabel() + t(req, "descending"), "-" + sortfield.getName())]
-                        break
-                if sortfields:
-                    break
-                start_idx = end_idx
-                end_idx *= 10
+        if not isinstance(node, (Root, Collections, Home)):
+            sortchoices = _sort.get_sort_choices(container=node,off="off",t_off=t(req, "off"),t_desc=t(req, "descending"))
+        else:
+            sortchoices = ()
 
         count = item_count[0] if item_count[0] == item_count[1] else "%d from %d" % (item_count[0], item_count[1])
-        v['sortchoices'] = sort_choices
+        v['sortchoices'] = tuple(sortchoices)
         v['types'] = dtypes
         v['schemes'] = schemes
         v['id'] = ids[0]
@@ -154,7 +132,7 @@ def getContent(req, ids):
         v['language'] = lang(req)
         v['search'] = search_html
         v['navigation_height'] = navigation_height
-        v['parent'] = col.id
+        v['parent'] = node.id
         v['query'] = req.query.replace('id=','src=')
         searchparams = get_searchparams(req)
         searchparams = {k: unicode(v).encode("utf8") for k, v in searchparams.items()}

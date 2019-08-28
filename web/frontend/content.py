@@ -40,6 +40,7 @@ from utils.pathutils import get_accessible_paths
 from web.frontend.contentbase import ContentBase
 from utils.url import build_url_from_path_and_params
 from markupsafe import Markup
+import web.common.sort as _sort
 
 
 logg = logging.getLogger(__name__)
@@ -420,60 +421,23 @@ class ContentList(ContentBase):
             self.page_nav, self.files = self._page_nav_prev_next()
 
     def getSortFieldsList(self):
-
-        class SortChoice(object):
-
-            def __init__(self, label, value, descending, selected):
-                self.label = label
-                self.value = value
-                self.descending = descending
-                self.isselected = self.value == selected
-
-            def getLabel(self):
-                return self.label
-
-            def getName(self):
-                return self.value
-
-            def selected(self):
-                if self.isselected:
-                    return "selected"
-                else:
-                    return None
-        l = []
-        ok = 0
-
+        """
+        Get sortfield list for frontend directories or collections.
+        Must return two lists for the dropdown options and
+        remember the selected sortfield for selected dropdown option.
+        """
         try:
-            if self.nodes is not None:
-                first_node = self.nodes[0]
-            else:
-                first_node = self.node_query[0]
-
+            node = (self.nodes or self.node_query)[0]
         except IndexError:
             return []
 
-        sort_metafields = first_node.metadatatype.metafields.filter(Metadatatype.a.opts.like("%o%"))
-
-        for i in range(SORT_FIELDS):
-            sort_choice = []
-            sortfield = self.sortfields.get(i)
-
-            if not sortfield:
-                sort_choice += [SortChoice("", "", 0, "")]
-            else:
-                sort_choice += [SortChoice("", "", 0, "not selected")]
-
-            for field in sort_metafields:
-                sort_choice += [SortChoice(field.label, field.name, 0, sortfield)]
-                sort_choice += [SortChoice(field.label + t(self.lang, "descending"), "-" + field.name, 1, sortfield)]
-
-            if len(sort_choice) < 2:
-                # no choice for the user
-                return []
-
-            l += [sort_choice]
-
-        return l
+        results = xrange(SORT_FIELDS)
+        results = map(self.sortfields.get,results)
+        results = (
+            _sort.get_sort_choices(metadatatype=node.metadatatype, t_off="", off="", t_desc=t(self.lang, "descending"), selected_value=sf)
+            for sf in results
+        )
+        return map(list,results)
 
     @property
     def content_styles(self):

@@ -19,12 +19,13 @@
 """
 
 from sqlalchemy import func
-from core.translation import t
+from core.translation import t as _t
 from core.transition import current_user
 from core import httpstatus
 from core import Node
 from core import db
 from schema.schema import Metadatatype
+import web.common.sort as _sort
 
 q = db.query
 
@@ -37,41 +38,16 @@ def getContent(req, ids):
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
-    if node.schema == u'directory':
-        c = node.get_directory()
-    else:
-        c = node.get_collection()
-
     if "globalsort" in req.params:
-        c.set("sortfield", req.params["globalsort"])
-    collection_sortfield = c.get("sortfield")
+        node.set("sortfield", req.params["globalsort"])
+    collection_sortfield = node.get("sortfield")
     db.session.commit()
 
-    class SortChoice:
+    sortchoices = _sort.get_sort_choices(container=node, off="off", t_off=_t(req, "off"), t_desc=_t(req, "descending"))
 
-        def __init__(self, label, value):
-            self.label = label
-            self.value = value
-
-    sortfields = [SortChoice(t(req, "off"), "")]
-    schemas = (t[0] for t in c.all_children_by_query(q(Node.schema)
-                                                  .filter_by(subnode=False)
-                                                  .group_by(Node.schema)
-                                                  .order_by(func.count(Node.schema).desc())))
-
-    for schema in schemas:
-        metadatatype = q(Metadatatype).filter_by(name=schema).one()
-        if metadatatype:
-            sort_fields = metadatatype.metafields.filter(Node.a.opts.like(u"%o%")).all()
-            if sort_fields:
-                for sortfield in sort_fields:
-                    sortfields += [SortChoice(sortfield.getLabel(), sortfield.name)]
-                    sortfields += [SortChoice(sortfield.getLabel() + t(req, "descending"), "-" + sortfield.name)]
-                break
-
-
-    return req.getTAL("web/edit/modules/sortfiles.html", {"node": node,
-                                                          "collection_sortfield": collection_sortfield,
-                                                          "sortchoices": sortfields,
-                                                          "name": c.name},
-                      macro="edit_sortfiles")
+    return req.getTAL("web/edit/modules/sortfiles.html", dict(
+            node=node,
+            collection_sortfield=collection_sortfield,
+            sortchoices=tuple(sortchoices),
+            name=node.name,
+        ), macro="edit_sortfiles")

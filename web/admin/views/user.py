@@ -8,18 +8,18 @@ import logging
 from core import db, User, UserGroup, AuthenticatorInfo
 from markupsafe import Markup
 from wtforms.fields.core import StringField
-from web.newadmin.views import BaseAdminView
-from web.newadmin.secureform import MediatumSecureForm
+from web.admin.views import BaseAdminView
+from web.admin.secureform import MediatumSecureForm
 from wtforms.ext.sqlalchemy.fields import QuerySelectMultipleField
 from wtforms import SelectMultipleField
-from flask.ext.admin import form, expose
+from flask_admin import form, expose
 
 from core.auth import INTERNAL_AUTHENTICATOR_KEY
 from core.permission import get_or_add_access_rule
 from core.database.postgres.permission import AccessRuleset, AccessRulesetToRule, NodeToAccessRuleset
 from schema.schema import Metadatatype
 from core.database.postgres.user import OAuthUserCredentials
-from web.newadmin.secureform import MediatumSecureForm
+from web.admin.secureform import MediatumSecureForm
 
 q = db.query
 logg = logging.getLogger(__name__)

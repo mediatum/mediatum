@@ -9,7 +9,8 @@ from core import db, Node, User, UserGroup
 from core.permission import get_or_add_access_rule
 from core.database.postgres.permission import NodeToAccessRule, NodeToAccessRuleset, EffectiveNodeToAccessRuleset, AccessRule, AccessRuleset, AccessRulesetToRule
 
-from core.transition import httpstatus, current_user
+from core.transition import current_user
+from core import httpstatus
 from web.common.acl_editor_web import makeList
 from web.common.accessuser_editor_web import makeUserList, decider_is_private_user_group_access_rule
 
@@ -231,5 +232,3 @@ def getContent(req, ids):
                       {"runsubmit": runsubmit, "idstr": idstr, "contentacl": retacl,
                        "adminuser": current_user.is_admin, "csrf": req.csrf_token.current_token},
                       macro="edit_acls")
-
-

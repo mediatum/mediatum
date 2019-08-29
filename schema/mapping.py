@@ -20,7 +20,7 @@
 
 from core import Node
 from core.xmlnode import getNodeXML, readNodeXML
-from core.transition.postgres import check_type_arg
+from core.postgres import check_type_arg
 
 from core import db
 from core.systemtypes import Mappings, Root

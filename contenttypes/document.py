@@ -31,9 +31,11 @@ from core.translation import lang, t
 from lib.pdf import parsepdf
 from core.attachment import filebrowser
 from contenttypes.data import Content, prepare_node_data
-from core.transition.postgres import check_type_arg_with_schema
+from core.postgres import check_type_arg_with_schema
 from core import File
 from core import db
+from core.request_handler import get_header as _get_header
+from core.request_handler import sendFile as _sendFile
 
 logg = logging.getLogger(__name__)
 
@@ -78,7 +80,7 @@ def _prepare_document_data(node, req, words=""):
         obj['tag'] = version_id
 
     # XXX: do we really need this spider filtering?
-    user_agent = req.get_header("user-agent") or ""
+    user_agent = _get_header(req, "user-agent") or ""
     is_spider = "oogle" in user_agent or "aidu" in user_agent
     
     if is_spider:
@@ -229,7 +231,7 @@ class Document(Content):
         document = self.document
 
         if document is not None:
-            req.sendFile(document.abspath, document.mimetype)
+            _sendFile(req, document.abspath, document.mimetype)
 
     def popup_thumbbig(self, req):
         self.popup_fullsize(req)

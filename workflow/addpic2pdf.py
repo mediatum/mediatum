@@ -27,7 +27,7 @@ import logging
 import random
 
 import core.users as users
-import core.athana as athana
+from core import request_handler as _request_handler
 import core.config as config
 
 from .workflow import WorkflowStep, getNodeWorkflow, getNodeWorkflowStep, registerStep
@@ -64,10 +64,10 @@ logg = logging.getLogger(__name__)
 
 
 def check_context():
-    webcontexts = athana.contexts
-    if (not filter(lambda x: x.name == '/wfs_addpic2pdf', webcontexts)) and athana.GLOBAL_ROOT_DIR != "no-root-dir-set":
+    webcontexts = _request_handler.contexts
+    if (not filter(lambda x: x.name == '/wfs_addpic2pdf', webcontexts)) and _request_handler.GLOBAL_ROOT_DIR != "no-root-dir-set":
         print 'going to add context wfs_addpic2pdf'
-        webcontext = athana.addContext("/wfs_addpic2pdf", ".")
+        webcontext = _request_handler.addContext("/wfs_addpic2pdf", ".")
         webcontext_file = webcontext.addFile("workflow/addpic2pdf.py")
         webcontext_file.addHandler("handle_request").addPattern("/.*")
 
@@ -556,7 +556,7 @@ def serve_file(req, filepath):
 
     if os.path.isfile(abspath):
         filesize = os.path.getsize(abspath)
-        req.sendFile(abspath, mimetype, force=1)
+        _request_handler.sendFile(req, abspath, mimetype, force=1)
         return 200, filesize, abspath  # ok
     else:
         return 404, 0, abspath  # not found

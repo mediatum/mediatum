@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-    web.newadmin.views
+    web.admin.views
     ~~~~~~~~~~~~~~~~~~
     this package is part of mediatum - a multimedia content repository
 
@@ -10,7 +10,7 @@
 from __future__ import absolute_import
 from core import db
 from flask_admin.contrib.sqla import ModelView
-from flask.ext import login
+from flask_login import current_user
 
 
 class BaseAdminView(ModelView):
@@ -26,4 +26,4 @@ class BaseAdminView(ModelView):
 
     def is_accessible(self):
         # view access only allowed for admins!
-        return login.current_user.is_authenticated and login.current_user.is_admin
+        return current_user.is_authenticated and current_user.is_admin

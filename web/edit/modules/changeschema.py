@@ -23,7 +23,8 @@ import logging
 
 from schema.schema import get_permitted_schemas
 from core.translation import translate
-from core.transition import httpstatus, current_user
+from core.transition import current_user
+from core import httpstatus
 from utils.utils import dec_entry_log
 from core import Node
 from contenttypes import Data, Content, Container
@@ -139,6 +140,6 @@ def getContent(req, ids):
             admissible_content_types.sort(key=lambda x: translate(x, request=req).lower())
             d['schemes'] = available_schemes
             d['datatypes'] = admissible_content_types
-        
+
         d["csrf"] = req.csrf_token.current_token
         return req.getTAL("web/edit/modules/changeschema.html", d, macro="changeschema_popup")

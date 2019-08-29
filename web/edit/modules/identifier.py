@@ -27,12 +27,14 @@ import utils.mail as mail
 import utils.pathutils as pathutils
 from core.translation import lang, t
 from utils.utils import dec_entry_log
-from core.transition import httpstatus, current_user
+from core.transition import current_user
+from core import httpstatus
 import logging
 from core import Node
 from core import db
 from contenttypes import Collections
 from core.database.postgres.permission import AccessRule, NodeToAccessRule
+from core.request_handler import error as _error
 
 q = db.query
 logg = logging.getLogger(__name__)
@@ -80,7 +82,7 @@ def getContent(req, ids):
                 try:
                     createDOI(node)
                 except:
-                    return req.error(500, "doi was not successfully registered")
+                    return _error(req, 500, "doi was not successfully registered")
 
             db.session.commit()
 

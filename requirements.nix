@@ -109,16 +109,6 @@ let
     };
   };
 
-  mediatumbabel = self.buildPythonPackage {
-    name = "mediatumbabel-0.1.1";
-    src = fetchurl {
-      url = "https://pypi.python.org/packages/source/m/mediatumbabel/mediatumbabel-0.1.1.tar.gz";
-      sha256 = "1ljh2ka3043g6027760a8144jvi01s37lhwn78nqlj91r05pxq82";
-    };
-    propagatedBuildInputs = with self; [Babel];
-    buildInputs = with self; [setuptools-git];
-  };
-
   mediatumfsm = self.buildPythonPackage {
     name = "mediatumfsm-0.1";
     src = fetchurl {
@@ -248,15 +238,6 @@ let
     ];
   };
 
-  dogpile_cache = self.buildPythonPackage {
-    name = "dogpile.cache-0.6.7";
-    src = fetchurl {
-      url = "https://pypi.python.org/packages/ee/bd/440da735a11c6087eed7cc8747fc4b995cbac2464168682f8ee1c8e43844/dogpile.cache-0.6.7.tar.gz";
-      sha256= "1aw8rx8vhb75y7zc6gi67g21sw057jdx7i8m3jq7kf3nqavxx9zw";
-    };
-    doCheck = false;
-  };
-
   attrs = self.buildPythonPackage {
     name = "attrs-18.2.0";
     src = fetchurl {
@@ -274,7 +255,6 @@ let
   mock
   munch
   py
-  redis
   ;
 
   fake-factory = self.buildPythonPackage {
@@ -330,15 +310,6 @@ let
       sha256 = "0c2r4gvj44yc2aqrfw5dr4y7ncf5qfkid1xj6gv1nc5xkzwzwfk1";
     };
     propagatedBuildInputs = with self; [py pytest];
-  };
-
-  redis-collections = self.buildPythonPackage {
-    name = "redis-collections-0.1.7";
-    src = fetchurl {
-      url = "https://pypi.python.org/packages/source/r/redis-collections/redis-collections-0.1.7.tar.gz";
-      sha256 = "1vlqhh86w10wxj0cicnic1jcxxz8fwv1a4466028w3say8inqdjb";
-    };
-    propagatedBuildInputs = with self; [redis];
   };
   
   selenium = self.buildPythonPackage rec {
@@ -479,7 +450,6 @@ in {
       coffeescript
       ConfigArgParse
       decorator
-      dogpile_cache
       fdfgen
       flask-admin
       flask_login
@@ -492,7 +462,6 @@ in {
       jinja2
       lxml
       magic
-      mediatumbabel
       mediatumfsm
       mediatumtal
       mollyZ3950
@@ -539,8 +508,6 @@ in {
       pytest
       pytest-catchlog
       pytest-base-url
-      redis-collections
-      pkgs.redis
       pytest-splinter
       sphinx
       yappi

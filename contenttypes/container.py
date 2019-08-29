@@ -33,7 +33,7 @@ from core.database.helpers import ContainerMixin
 from core.translation import t, lang, getDefaultLanguage
 from utils.utils import CustomItem
 from core.transition import current_user
-from core.transition.postgres import check_type_arg_with_schema
+from core.postgres import check_type_arg_with_schema
 from schema.schema import Metafield, SchemaMixin
 
 

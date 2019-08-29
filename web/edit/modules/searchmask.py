@@ -18,7 +18,8 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import schema.searchmask as searchmask
-from core.transition import httpstatus, current_user
+from core.transition import current_user
+from core import httpstatus
 import json
 from core import Node
 from core import db

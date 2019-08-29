@@ -14,6 +14,7 @@ from contenttypes import Content
 from utils.utils import getMimeType, get_filesize, suppress
 from utils import userinput
 from utils.compat import text_type
+from core.request_handler import sendFile as _sendFile
 
 
 FILEHANDLER_RE = re.compile("/?(attachment|doc|images|thumbs|thumb2|file|download|archive)/([^/]*)(/(.*))?$")
@@ -105,14 +106,14 @@ def sendZipFile(req, path):
     r("/")
     zip.close()
     req.reply_headers['Content-Disposition'] = "attachment; filename=shoppingbag.zip"
-    req.sendFile(tempfile, "application/zip", nginx_x_accel_redirect_enabled=False)
+    _sendFile(req, tempfile, "application/zip", nginx_x_accel_redirect_enabled=False)
     if os.sep == '/':  # Unix?
         os.unlink(tempfile)  # unlinking files while still reading them only works on Unix/Linux
 
 
 def sendBibFile(req, path):
     req.reply_headers['Content-Disposition'] = "attachment; filename=export.bib"
-    req.sendFile(path, getMimeType(path))
+    _sendFile(req, path, getMimeType(path))
     if os.sep == '/':  # Unix?
         os.unlink(path)  # unlinking files while still reading them only works on Unix/Linux
 

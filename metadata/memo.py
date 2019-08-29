@@ -22,7 +22,7 @@ import logging
 from collections import OrderedDict
 from mediatumtal import tal
 from core import config
-from core.transition import httpstatus
+from core import httpstatus
 from core.metatype import Metatype, charmap
 from core.translation import t, getDefaultLanguage
 

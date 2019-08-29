@@ -26,7 +26,7 @@ import re
 import datetime
 
 from mediatumtal import tal
-from core.transition.athana_sep import athana_http as athana
+from core import request_handler as _request_handler
 import core.users as users
 
 from core.metatype import Metatype
@@ -42,10 +42,10 @@ logg = logging.getLogger(__name__)
 
 
 def check_context():
-    webcontexts = athana.contexts
-    if (not filter(lambda x: x.name == '/md_upload', webcontexts)) and athana.GLOBAL_ROOT_DIR != "no-root-dir-set":
+    webcontexts = _request_handler.contexts
+    if (not filter(lambda x: x.name == '/md_upload', webcontexts)) and _request_handler.GLOBAL_ROOT_DIR != "no-root-dir-set":
         logg.info('adding context md_upload')
-        webcontext = athana.addContext("/md_upload", ".")
+        webcontext = _request_handler.addContext("/md_upload", ".")
         webcontext_file = webcontext.addFile("metadata/upload.py")
         webcontext_file.addHandler("handle_request").addPattern("/.*")
 

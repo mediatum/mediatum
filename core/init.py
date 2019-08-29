@@ -23,6 +23,7 @@ import importlib
 import logging
 import locale
 from pprint import pformat
+from utils.locks import register_lock as _register_lock
 
 import core.config as config
 
@@ -107,7 +108,6 @@ def check_imports():
         "jinja2",
         "logstash",
         "lxml",
-        "mediatumbabel",
         "mediatumfsm",
         "mediatumtal",
         "parcon",
@@ -269,12 +269,23 @@ def update_nodetypes_in_db():
     s.commit()
 
 
+def _init_locks():
+    _register_lock('cache')
+    _register_lock('iolock')
+    _register_lock('pofile')
+    _register_lock('producer')
+    _register_lock('queuelock')
+    _register_lock('workflow')
+    _register_lock('zipfile')
+
+
 def basic_init(root_loglevel=None, config_filepath=None, prefer_config_filename=None, log_filepath=None, log_filename=None,
                use_logstash=None, force_test_db=None, automigrate=False):
     init_state = "basic"
     if init_state_reached(init_state):
         return
 
+    _init_locks()
     add_ustr_builtin()
     import core.config
     core.config.initialize(config_filepath, prefer_config_filename)

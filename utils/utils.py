@@ -150,6 +150,10 @@ def suppress(*exceptions, **kwwarn):
             logg.warning("Here passed an exception by!", exc_info=True)
 
 
+def nullcontext():
+    return suppress()
+
+
 def splitpath(path):
     while path.endswith("/") or path.endswith("\\"):
         path = path[:-1]
@@ -836,6 +840,44 @@ class Template(object):
                 return s.split(attrs[0])[int(attrs[1])]
         except:
             return s
+
+
+class counter:
+    "general-purpose counter"
+
+    def __init__(self, initial_value=0):
+        self.value = initial_value
+
+    def increment(self, delta=1):
+        result = self.value
+        try:
+            self.value = self.value + delta
+        except OverflowError:
+            self.value = long(self.value) + delta
+        return result
+
+    def decrement(self, delta=1):
+        result = self.value
+        try:
+            self.value = self.value - delta
+        except OverflowError:
+            self.value = long(self.value) - delta
+        return result
+
+    def as_long(self):
+        return long(self.value)
+
+    def __nonzero__(self):
+        return self.value != 0
+
+    def __repr__(self):
+        return '<counter value=%s at %x>' % (self.value, id(self))
+
+    def __str__(self):
+        s = ustr(long(self.value))
+        if s[-1:] == 'L':
+            s = s[:-1]
+        return s
 
 
 def checkXMLString(s):

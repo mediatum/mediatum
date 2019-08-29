@@ -32,8 +32,9 @@ from contenttypes import Container, Collections, Data, Home
 
 from core.translation import lang, t
 from edit_common import *
-from core.transition import httpstatus, current_user
 
+from core.transition import current_user
+from core import httpstatus
 from utils.utils import funcname, get_user_id, dec_entry_log, Menu, splitpath, parseMenuString,\
     isDirectory, isCollection, suppress
 from schema.schema import Metadatatype

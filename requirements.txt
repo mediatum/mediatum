@@ -13,7 +13,6 @@ ipython-sql
 jinja2
 lxml
 magic
-mediatumbabel
 mediatumfsm
 mediatumtal
 mock==1.1.2

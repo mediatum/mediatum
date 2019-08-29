@@ -28,6 +28,7 @@ from core import db, app
 
 from core.plugins import find_plugin_with_theme
 from utils.utils import suppress
+import request_handler as _request_handler
 
 logg = logging.getLogger(__name__)
 
@@ -75,7 +76,7 @@ def loadServices():
         else:
             basecontext = config.get("services.contextprefix", u"services") + '/' + servicename
         basecontext = ('/' + basecontext).replace('//', '/').replace('//', '/')
-        context = athana.addContext(str(basecontext), ".")
+        context = _request_handler.addContext(str(basecontext), ".")
         file = context.addFile(servicedir + "services/" + servicename)
 
         if hasattr(file.m, "request_handler"):
@@ -152,8 +153,8 @@ def add_template_globals():
 
 
 def initContexts():
-    athana.setBase(config.basedir)
-    athana.setTempDir(config.get("paths.tempdir", "/tmp/"))
+    _request_handler.setBase(config.basedir)
+    _request_handler.setTempDir(config.get("paths.tempdir", "/tmp/"))
     from core.config import resolve_filename
     from core.translation import translate, set_language
     tal.set_base(config.basedir)
@@ -161,7 +162,7 @@ def initContexts():
     tal.add_translator(translate)
     add_template_globals()
 
-    @athana.request_started
+    @_request_handler.request_started
     def set_lang(req, *args):
         set_language(req)
 
@@ -169,7 +170,7 @@ def initContexts():
     from web.frontend import frame
     frame.init_child_count_cache()
 
-    context = athana.addContext("/", ".")
+    context = _request_handler.addContext("/", ".")
 
     workflows_enabled = config.getboolean("workflows.activate", True)
     admin_enabled = config.getboolean("admin.activate", True)
@@ -232,7 +233,7 @@ def initContexts():
         file.addHandler("send_workflow_diagram").addPattern("/workflowimage")
 
     if admin_enabled:
-        context = athana.addContext("/admin", ".")
+        context = _request_handler.addContext("/admin", ".")
         file = context.addFile("web/handlers/become.py")
         file.addHandler("become_user").addPattern("/_become/.*")
         file = context.addFile("web/admin/main.py")
@@ -241,7 +242,7 @@ def initContexts():
 
     if edit_enabled:
         # === edit area ===
-        context = athana.addContext("/edit", ".")
+        context = _request_handler.addContext("/edit", ".")
         file = context.addFile("web/edit/edit.py")
         handler = file.addHandler("frameset")
         handler.addPattern("/")
@@ -256,7 +257,7 @@ def initContexts():
         file.addHandler("action").addPattern("/edit_action")
 
         # === ajax tree ===
-        context = athana.addContext("/ftree", ".")
+        context = _request_handler.addContext("/ftree", ".")
         handler.addPattern("/ftree")
         file = context.addFile("web/ftree/ftree.py")
         file.addHandler("ftree").addPattern("/.*")
@@ -266,21 +267,21 @@ def initContexts():
 
     # === OAI ===
     if oai_enabled:
-        context = athana.addContext("/oai/", ".")
+        context = _request_handler.addContext("/oai/", ".")
         file = context.addFile("export/oai.py")
         file.addHandler("oaiRequest").addPattern(".*")
 
     # === Export ===
-    context = athana.addContext("/export", ".")
+    context = _request_handler.addContext("/export", ".")
     file = context.addFile("web/frontend/export.py")
     file.addHandler("export").addPattern("/.*")
 
     # === static files ===
-    athana.addFileStore("/ckeditor/", "lib/CKeditor/files.zip")
-    athana.addFileStore("/css/", "web/css/")
-    athana.addFileStore("/xml/", "web/xml/")
-    athana.addFileStore("/img/", ["web/img/", "web/admin/img/", "web/edit/img/"])
-    athana.addFileStore("/js/", ["web/js/", "js", "lib/CKeditor/js/"])
+    _request_handler.addFileStore("/ckeditor/", "lib/CKeditor/files.zip")
+    _request_handler.addFileStore("/css/", "web/css/")
+    _request_handler.addFileStore("/xml/", "web/xml/")
+    _request_handler.addFileStore("/img/", ["web/img/", "web/admin/img/", "web/edit/img/"])
+    _request_handler.addFileStore("/js/", ["web/js/", "js", "lib/CKeditor/js/"])
 
     # === last: path aliasing for collections ===
     handler = main_file.addHandler("display_alias")
@@ -294,19 +295,13 @@ def initContexts():
 
 
     if admin_enabled:
-        import web.newadmin
-        athana.add_wsgi_context("/f/", web.newadmin.app)
+        import web.admin
+        athana.add_wsgi_context("/f/", web.admin.app)
 
     # testing global exception handler
-    context = athana.addContext("/_test", ".")
+    context = _request_handler.addContext("/_test", ".")
     file = context.addFile("web/handlers/handlertest.py")
     file.addHandler("error").addPattern("/error")
     file.addHandler("error_variable_msg").addPattern("/error_variable_msg")
     file.addHandler("db_error").addPattern("/db_error")
 
-def flush(req):
-    athana.flush()
-    import core.__init__ as c
-    initContexts()
-    import core.__init__
-    logg.info("all caches cleared")

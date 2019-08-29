@@ -27,7 +27,8 @@ import logging
 from utils.utils import getMimeType, get_user_id, suppress
 from utils.fileutils import importFile, getImportDir, importFileIntoDir, importFileToRealname
 from contenttypes.image import make_thumbnail_image, make_presentation_image
-from core.transition import httpstatus, current_user
+from core.transition import current_user
+from core import httpstatus
 from core.translation import t
 from core import Node
 from core import db

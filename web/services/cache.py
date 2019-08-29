@@ -21,6 +21,8 @@
 
 import time
 import rfc822
+from utils.utils import nullcontext as _nullcontext
+from utils.locks import named_lock as _named_lock
 
 
 def date2string(t, formatstring=None):
@@ -32,10 +34,6 @@ def date2string(t, formatstring=None):
     else:
         return formatstring % time.localtime(t)[0:formatstring.count('%')]
 
-try:
-    from threading import Lock
-except ImportError:
-    from dummy_threading import Lock
 
 DEFAULTMAXAGE = 3600 * 24  # one day
 
@@ -48,7 +46,7 @@ class Cache:
     def __init__(self, maxcount=0, maxsize=0, verbose=False):
         self.maxcount = maxcount
         self.maxsize = maxsize
-        self.lock = Lock()
+        self.lock = _named_lock('cache')
         self.entries = {}
         self.updatecount = 0
         self.hitcount = 0
@@ -59,115 +57,94 @@ class Cache:
     def update(self, key, value):
         now = time.time()
         snow = date2string(now, '%04d-%02d-%02d-%02d-%02d-%02d')
-        self.lock.acquire()
-        keys = self.entries.keys()
-        if (len(keys) >= self.maxcount) and key not in keys:
-            oldest_key = self.getOldestKey(lock=False)
-            key_age = time.time() - self.entries[oldest_key][0]
-            key_total_updatecount = self.entries[oldest_key][1]
-            delete_result = self.deleteKey(oldest_key, lock=False)
-            if self.verbose:
-                print 'cache update: deleted oldest key:', oldest_key, 'age: %.3f sec.' % key_age, key_total_updatecount
-        self.updatecount += 1
-        oldvalue = self.entries.setdefault(key, [now, self.updatecount, 0, 0, 0, snow, value])
-        newvalue = [now, self.updatecount, oldvalue[2] + 1, oldvalue[3], oldvalue[4], snow, value]
-        self.entries[key] = newvalue
-        self.lock.release()
+        with self.lock:
+            keys = self.entries.keys()
+            if (len(keys) >= self.maxcount) and key not in keys:
+                oldest_key = self.getOldestKey(lock=False)
+                key_age = time.time() - self.entries[oldest_key][0]
+                key_total_updatecount = self.entries[oldest_key][1]
+                delete_result = self.deleteKey(oldest_key, lock=False)
+                if self.verbose:
+                    print 'cache update: deleted oldest key:', oldest_key, 'age: %.3f sec.' % key_age, key_total_updatecount
+            self.updatecount += 1
+            oldvalue = self.entries.setdefault(key, [now, self.updatecount, 0, 0, 0, snow, value])
+            newvalue = [now, self.updatecount, oldvalue[2] + 1, oldvalue[3], oldvalue[4], snow, value]
+            self.entries[key] = newvalue
 
     def retrieve(self, key, maxage=DEFAULTMAXAGE):
         now = time.time()
-        self.lock.acquire()
-        if key in self.entries:
-            oldvalue = self.entries[key]
-            if (now - oldvalue[0]) <= maxage:
-                result_code = 'hit'
-                res = newvalue = oldvalue
-                newvalue[3] += 1
-                self.entries[key] = newvalue
-                self.hitcount += 1
+        with self.lock:
+            if key in self.entries:
+                oldvalue = self.entries[key]
+                if (now - oldvalue[0]) <= maxage:
+                    result_code = 'hit'
+                    res = newvalue = oldvalue
+                    newvalue[3] += 1
+                    self.entries[key] = newvalue
+                    self.hitcount += 1
+                else:
+                    result_code = 'refused'
+                    newvalue = oldvalue
+                    newvalue[4] += 1
+                    self.entries[key] = newvalue
+                    res = (now - oldvalue[0])
+                    self.refusedcount += 1
             else:
-                result_code = 'refused'
-                newvalue = oldvalue
-                newvalue[4] += 1
-                self.entries[key] = newvalue
-                res = (now - oldvalue[0])
-                self.refusedcount += 1
-        else:
-            result_code = 'missed'
-            res = []
-            self.misscount += 1
-        self.lock.release()
+                result_code = 'missed'
+                res = []
+                self.misscount += 1
         return result_code, res
 
     def report(self):
         now = time.time()
         snow = date2string(now, '%04d-%02d-%02d-%02d-%02d-%02d')
-        self.lock.acquire()
-        keys = sorted(self.entries.keys())
 
-        header = '|tupd,upd,hit,refused,date,key'.split(',')
-        hformat = "%4s|%4s|%4s|%4s|%19s|%-s"
-        res = hformat % tuple(header)
-        hline = '\r\n|' + '-' * len(res)
-        res += hline
-        rformat = "\r\n|%4d|%4d|%4d|%7d|%s|%-s"
+        with self.lock:
+            keys = sorted(self.entries.keys())
+            header = '|tupd,upd,hit,refused,date,key'.split(',')
+            hformat = "%4s|%4s|%4s|%4s|%19s|%-s"
+            res = hformat % tuple(header)
+            hline = '\r\n|' + '-' * len(res)
+            res += hline
+            rformat = "\r\n|%4d|%4d|%4d|%7d|%s|%-s"
 
-        for key in keys:
-            res += rformat % tuple(self.entries[key][1:6] + [key])
-
-        res += hline
-
-        self.lock.release()
-
+            for key in keys:
+                res += rformat % tuple(self.entries[key][1:6] + [key])
+            res += hline
         return res
 
     def getOldestKey(self, lock=True):
-        if lock:
-            self.lock.acquire()
-        pairs = [[self.entries[k][0:2]] + [k] for k in self.entries.keys()]
-        if pairs:
-            pairs.sort()
-            res = pairs[0][-1]
-        else:
-            res = None
-        if lock:
-            self.lock.release()
+        with self.lock if lock else _nullcontext():
+            pairs = [[self.entries[k][0:2]] + [k] for k in self.entries.keys()]
+            if pairs:
+                pairs.sort()
+                res = pairs[0][-1]
+            else:
+                res = None
         return res
 
     def deleteKey(self, key, lock=True):
-        if lock:
-            self.lock.acquire()
-        try:
-            del self.entries[key]
-            res = 1
-        except:
-            res = 0
-        if lock:
-            self.lock.release()
+        with self.lock if lock else _nullcontext():
+            try:
+                del self.entries[key]
+                res = 1
+            except:
+                res = 0
         return res
 
     def getKeys(self, lock=True):
-        if lock:
-            self.lock.acquire()
-        res = self.entries.keys()
-        if lock:
-            self.lock.release()
+        with self.lock if lock else _nullcontext():
+            res = self.entries.keys()
         return res
 
     def getKeysCount(self, lock=True):
-        if lock:
-            self.lock.acquire()
-        res = len(self.entries.keys())
-        if lock:
-            self.lock.release()
+        with self.lock if lock else _nullcontext():
+            res = len(self.entries.keys())
         return res
 
     def getTimestamp(self, key, lock=True):
-        if lock:
-            self.lock.acquire()
-        res = self.entries[key][0]
-        if lock:
-            self.lock.release()
+        with self.lock if lock else _nullcontext():
+            res = self.entries[key][0]
         return res
 
     # def getData(self, key, lock=True):

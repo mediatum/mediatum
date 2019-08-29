@@ -2,7 +2,6 @@
 Description=mediatum backend
 Before=mediatum.target
 PartOf=mediatum.target
-After=mediatum-redis.service
 After=mediatum-postgres.service
 
 

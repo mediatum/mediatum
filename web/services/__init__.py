@@ -8,7 +8,7 @@ import logging
 import datetime
 
 import core.config as config
-from core.transition import httpstatus
+from core import httpstatus
 from utils.log import make_xid_and_errormsg_hash, extra_log_info_from_req
 from functools import wraps
 

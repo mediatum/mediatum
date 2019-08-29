@@ -23,12 +23,12 @@ from warnings import warn
 import humanize
 from mediatumtal import tal
 
-from core import Node, db, athana
+from core import Node, db
 from core.database.postgres.node import children_rel
 import core.config as config
 from core.translation import lang, t
 from core.styles import get_full_style
-from core.transition.postgres import check_type_arg_with_schema
+from core.postgres import check_type_arg_with_schema
 from export.exportutils import default_context
 from schema.schema import getMetadataType, VIEW_HIDE_EMPTY, SchemaMixin
 from utils.utils import highlight
@@ -36,6 +36,7 @@ from core.transition.globals import request
 from utils.compat import iteritems, string_types
 from markupsafe import Markup
 from utils.strings import replace_attribute_variables
+from core.request_handler import request_finished as _request_finished
 
 logg = logging.getLogger(__name__)
 
@@ -76,7 +77,7 @@ def get_maskcache_entry(lookup_key, maskcache, maskcache_accesscount):
     return res
 
 
-@athana.request_finished
+@_request_finished
 def log_maskcache_accesscount(req, *args):
     if logg.isEnabledFor(logging.DEBUG):
         maskcache_accesscount = req.app_cache.get('maskcache_accesscount', {})

@@ -25,10 +25,11 @@ import codecs
 import core
 from core import config
 from core.users import get_guest_user
-from core.transition import httpstatus
+from core import httpstatus
 from utils.utils import join_paths, Menu
 from web.admin.adminutils import findmodule, show_content, adminNavigation, getMenuItemID
 from core.transition import current_user
+from core.request_handler import sendFile as _sendFile
 
 
 logg = logging.getLogger(__name__)
@@ -84,7 +85,7 @@ def export(req):
             except UnicodeDecodeError:
                 f.write(module.export(req, path[2]).decode('utf-8'))
 
-        req.sendFile(tempfile, u"application/xml", nginx_x_accel_redirect_enabled=False)
+        _sendFile(req, tempfile, u"application/xml", nginx_x_accel_redirect_enabled=False)
         if os.sep == '/':  # Unix?
             os.unlink(tempfile)  # unlinking files while still reading them only works on Unix/Linux
     except:

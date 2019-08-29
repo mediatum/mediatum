@@ -8,7 +8,7 @@ import pytest
 from pytest import fixture
 
 from web.frontend import main
-from core.transition import httpstatus
+from core import httpstatus
 
 @fixture
 def language_config_setting(monkeypatch):

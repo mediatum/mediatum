@@ -30,13 +30,14 @@ from core.xmlnode import getNodeXML, readNodeXML
 import utils.date as date
 from core.translation import t, lang, addLabels, getDefaultLanguage, switch_language
 from core.transition import current_user
-from core.transition.postgres import check_type_arg
+from core.postgres import check_type_arg
 from core.database.postgres.permission import NodeToAccessRuleset
 
-import thread
+from utils.locks import named_lock as _named_lock
 
 from core import db
 from core import Node
+from core.request_handler import setCookie as _setCookie
 
 
 q = db.query
@@ -383,7 +384,7 @@ class Workflow(Node):
             return steps
 
     def getNode(self, type):
-        raise ""
+        raise Exception()
 
     def getStartNode(self):
         followers = {}
@@ -419,7 +420,7 @@ class Workflow(Node):
         return step
 
 
-workflow_lock = thread.allocate_lock()
+workflow_lock = _named_lock('workflow')
 
 
 @check_type_arg
@@ -440,12 +441,11 @@ class WorkflowStep(Node):
         # parent node handling) are highly non-reentrant, so protect
         # everything with a global lock
         global workflow_lock
-        workflow_lock.acquire()
 
-        # stop caching
-        req.setCookie("nocache", "1", path="/")
+        with workflow_lock:
+            # stop caching
+            _setCookie(req, "nocache", "1", path="/")
 
-        try:
             key = req.params.get("key", req.session.get("key", ""))
             req.session["key"] = key
 
@@ -497,9 +497,6 @@ class WorkflowStep(Node):
                     return self.show_workflow_notexist(node, req)
             else:
                 return self.show_workflow_step(req)
-
-        finally:
-            workflow_lock.release()
 
     @classmethod
     def isContainer(cls):

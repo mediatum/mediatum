@@ -6,7 +6,8 @@
 from __future__ import absolute_import
 import logging
 import re
-from core.transition import current_user, httpstatus
+from core.transition import current_user
+from core import httpstatus
 import web.admin.adminutils
 
 

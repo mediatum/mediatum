@@ -25,7 +25,7 @@ from sqlalchemy import func, sql
 from mediatumtal import tal
 from utils.utils import esc, suppress
 from core.metatype import Metatype
-from core.transition import httpstatus
+from core import httpstatus
 from core import db
 from core import Node
 from contenttypes import Collections

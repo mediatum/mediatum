@@ -110,7 +110,7 @@ def stackdump_setup():
         signal.signal(signal.SIGQUIT, dumpstacks)
 
 
-def run(host=None, http_port=None, redis_sessions=False, force_test_db=None, loglevel=None, automigrate=False):
+def run(host=None, http_port=None, force_test_db=None, loglevel=None, automigrate=False):
     """Serve mediaTUM from the Athana HTTP Server and start FTP and Z3950, if requested"""
     # init.full_init() must be done as early as possible to init logging etc.
     from core import init
@@ -119,23 +119,15 @@ def run(host=None, http_port=None, redis_sessions=False, force_test_db=None, log
     # init all web components
     from core import webconfig
     from core import athana
+    from core.request_handler import request_finished as _request_finished
     webconfig.initContexts()
 
-    @athana.request_finished
+    @_request_finished
     def request_finished_db_session(*args):
         from core import db
         db.session.close()
 
-    # start main web server, Z.39.50 and FTP, if configured
-    if config.get('z3950.activate', '').lower() == 'true':
-        z3950port = int(config.get("z3950.port", "2021"))
-    else:
-        z3950port = None
-
     athana.setThreads(int(config.get("host.threads", "8")))
-    if redis_sessions:
-        print("WARNING: using experimental persistent redis session support, only for testing!!!")
-        athana.USE_PERSISTENT_SESSIONS = True
 
     #
     # if the pid path is given in mediatum.cfg, section paths the starting time will be printed in this file
@@ -147,7 +139,7 @@ def run(host=None, http_port=None, redis_sessions=False, force_test_db=None, log
             wf.write("\n")
 
 
-    athana.run(host or config.get("host.host", "0.0.0.0"), int(http_port or config.get("host.port", "8081")), z3950port)
+    athana.run(host or config.get("host.host", "0.0.0.0"), int(http_port or config.get("host.port", "8081")))
 
 
 def main():
@@ -168,11 +160,6 @@ def main():
     parser.add_argument("-l", "--loglevel", help="root loglevel, sensible values: DEBUG, INFO, WARN")
     parser.add_argument("-m", "--automigrate", action="store_true", default=False,
                         help="run automatic database schema upgrades on startup")
-    parser.add_argument(
-        "--redis-sessions",
-        action="store_true",
-        default=False,
-        help="EXPERIMENTAL: save sessions to redis, making them persistent, requires redis-collections and a redis server on localhost!")
 
     args = parser.parse_args()
     print("start.py args:", args)
@@ -193,11 +180,11 @@ def main():
         extra_files = [maybe_config_filepath] if maybe_config_filepath else []
 
         def main_wrapper():
-            run(args.bind, args.http_port, args.redis_sessions, args.force_test_db, args.loglevel, args.automigrate)
+            run(args.bind, args.http_port, args.force_test_db, args.loglevel, args.automigrate)
 
         run_with_reloader(main_wrapper, extra_files)
     else:
-        run(args.bind, args.http_port, args.redis_sessions, args.force_test_db, args.loglevel, args.automigrate)
+        run(args.bind, args.http_port, args.force_test_db, args.loglevel, args.automigrate)
 
 
 # don't run mediaTUM server when this module is imported, unless FORCE_RUN is set

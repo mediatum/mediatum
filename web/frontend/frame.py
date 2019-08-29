@@ -20,7 +20,6 @@
 import logging
 from collections import OrderedDict
 from warnings import warn
-from dogpile.cache import make_region
 from sqlalchemy import event
 from markupsafe import Markup
 
@@ -42,17 +41,8 @@ from mediatumtal import tal
 from core.nodecache import get_collections_node
 from utils.google_scholar import google_scholar
 import time
+from core.request_handler import get_header as _get_header
 
-
-navtree_cache = make_region().configure(
-    'dogpile.cache.redis',
-    expiration_time=5 * 60, # 10 mins and one second
-    arguments = {
-        'db': 1,
-        'redis_expiration_time': 5 * 60 + 10,
-        'distributed_lock': False,
-    }                                     
-)
 
 q = db.query
 logg = logging.getLogger(__name__)
@@ -408,7 +398,7 @@ class UserLinks(object):
 
     def __init__(self, user, req):
         self.user = user
-        self.host = req.get_header("HOST")
+        self.host = _get_header(req, "HOST")
         # show_id: edit currently shown content node
         nid = req.args.get("show_id")
         # id: edit current container

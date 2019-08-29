@@ -27,7 +27,8 @@ from utils.fileutils import importFile
 
 from core.translation import lang
 from core.translation import t as translation_t
-from core.transition import httpstatus, current_user
+from core.transition import current_user
+from core import httpstatus
 from core import Node
 from core import db
 

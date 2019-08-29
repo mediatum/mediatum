@@ -19,8 +19,6 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from werkzeug._compat import wsgi_encoding_dance
-from werkzeug.http import parse_accept_header
-from werkzeug.utils import cached_property
 from array import array
 
 #===============================================================
@@ -36,20 +34,16 @@ RCS_ID = '$Id: athana.py,v 1.48 2013/02/28 07:28:19 seiferta Exp $'
 
 import re
 import string
-import cgi
 from warnings import warn
 
-from functools import partial
-from itertools import chain
 import logging
-from werkzeug.datastructures import ImmutableMultiDict, MIMEAccept
 from mediatumtal import tal
-from utils.utils import suppress
+from utils.utils import suppress, counter
 
-from wtforms.csrf.session import SessionCSRF
-from wtforms import Form
-from wtforms.validators import ValidationError
-from datetime import timedelta
+from utils.locks import named_lock as _named_lock
+import athana_z3950 as _athana_z3950
+import httpstatus as _httpstatus
+import request_handler as _request_handler
 
 logg = logging.getLogger(__name__)
 logftp = logging.getLogger(__name__ + ":ftp")
@@ -83,461 +77,13 @@ def attrEscape(s):
 # python modules
 import os
 import select
-import mimetypes
-from cgi import escape
-from urllib import unquote
-from collections import OrderedDict
-from core import config
 
 # async modules
 import asyncore
 import socket
 
 
-
-class async_chat (asyncore.dispatcher):
-
-    """This is an abstract class.  You must derive from this class, and add
-    the two methods collect_incoming_data() and found_terminator()"""
-
-    # these are overridable defaults
-
-    ac_in_buffer_size = 4096
-    ac_out_buffer_size = 4096
-
-    def __init__(self, conn=None):
-        self.ac_in_buffer = ''
-        self.ac_out_buffer = ''
-        self.producer_fifo = fifo()
-        asyncore.dispatcher.__init__(self, conn)
-
-    def collect_incoming_data(self, data):
-        raise NotImplementedError("must be implemented in subclass")
-
-    def found_terminator(self):
-        raise NotImplementedError("must be implemented in subclass")
-
-    def set_terminator(self, term):
-        "Set the input delimiter.  Can be a fixed string of any length, an integer, or None"
-        self.terminator = term
-
-    def get_terminator(self):
-        return self.terminator
-
-    # grab some more data from the socket,
-    # throw it to the collector method,
-    # check for the terminator,
-    # if found, transition to the next state.
-
-    def handle_read(self):
-
-        try:
-            data = self.recv(self.ac_in_buffer_size)
-        except socket.error, why:
-            self.handle_error()
-            return
-
-        self.ac_in_buffer = self.ac_in_buffer + data
-
-        # Continue to search for self.terminator in self.ac_in_buffer,
-        # while calling self.collect_incoming_data.  The while loop
-        # is necessary because we might read several data+terminator
-        # combos with a single recv(1024).
-
-        while self.ac_in_buffer:
-            lb = len(self.ac_in_buffer)
-            terminator = self.get_terminator()
-            if terminator is None or terminator == '':
-                # no terminator, collect it all
-                self.collect_incoming_data(self.ac_in_buffer)
-                self.ac_in_buffer = ''
-            elif isinstance(terminator, int):
-                # numeric terminator
-                n = terminator
-                if lb < n:
-                    self.collect_incoming_data(self.ac_in_buffer)
-                    self.ac_in_buffer = ''
-                    self.terminator = self.terminator - lb
-                else:
-                    self.collect_incoming_data(self.ac_in_buffer[:n])
-                    self.ac_in_buffer = self.ac_in_buffer[n:]
-                    self.terminator = 0
-                    self.found_terminator()
-            else:
-                # 3 cases:
-                # 1) end of buffer matches terminator exactly:
-                #    collect data, transition
-                # 2) end of buffer matches some prefix:
-                #    collect data to the prefix
-                # 3) end of buffer does not match any prefix:
-                #    collect data
-                terminator_len = len(terminator)
-                index = self.ac_in_buffer.find(terminator)
-                if index != -1:
-                    # we found the terminator
-                    if index > 0:
-                        # don't bother reporting the empty string (source of subtle bugs)
-                        self.collect_incoming_data(self.ac_in_buffer[:index])
-                    self.ac_in_buffer = self.ac_in_buffer[index + terminator_len:]
-                    # This does the Right Thing if the terminator is changed here.
-                    self.found_terminator()
-                else:
-                    # check for a prefix of the terminator
-                    index = find_prefix_at_end(self.ac_in_buffer, terminator)
-                    if index:
-                        if index != lb:
-                            # we found a prefix, collect up to the prefix
-                            self.collect_incoming_data(self.ac_in_buffer[:-index])
-                            self.ac_in_buffer = self.ac_in_buffer[-index:]
-                        break
-                    else:
-                        # no prefix, collect it all
-                        self.collect_incoming_data(self.ac_in_buffer)
-                        self.ac_in_buffer = ''
-
-    def handle_write(self):
-        self.initiate_send()
-
-    def handle_close(self):
-        self.close()
-
-    def push(self, data):
-        self.producer_fifo.push(simple_producer(data))
-        self.initiate_send()
-
-    def push_with_producer(self, producer):
-        self.producer_fifo.push(producer)
-        self.initiate_send()
-
-    def readable(self):
-        "predicate for inclusion in the readable for select()"
-        return (len(self.ac_in_buffer) <= self.ac_in_buffer_size)
-
-    def writable(self):
-        "predicate for inclusion in the writable for select()"
-        # return len(self.ac_out_buffer) or len(self.producer_fifo) or (not self.connected)
-        # this is about twice as fast, though not as clear.
-        return not (
-            (self.ac_out_buffer == '') and
-            self.producer_fifo.is_empty() and
-            self.connected
-        )
-
-    def close_when_done(self):
-        "automatically close this channel once the outgoing queue is empty"
-        self.producer_fifo.push(None)
-
-    # refill the outgoing buffer by calling the more() method
-    # of the first producer in the queue
-    def refill_buffer(self):
-        while 1:
-            if len(self.producer_fifo):
-                p = self.producer_fifo.first()
-                # a 'None' in the producer fifo is a sentinel,
-                # telling us to close the channel.
-                if p is None:
-                    if not self.ac_out_buffer:
-                        self.producer_fifo.pop()
-                        try:
-                            self.close()
-                        except KeyError:
-                            # FIXME: tends to happen sometimes, seems to
-                            # be a race condition in asyncore
-                            with suppress(Exception, warn=False):
-                                self._fileno = None
-                                self.socket.close()
-                    return
-                elif isinstance(p, str):
-                    self.producer_fifo.pop()
-                    self.ac_out_buffer = self.ac_out_buffer + p
-                    return
-                data = p.more()
-                if data:
-                    self.ac_out_buffer = self.ac_out_buffer + data
-                    return
-                else:
-                    self.producer_fifo.pop()
-            else:
-                return
-
-    def initiate_send(self):
-        obs = self.ac_out_buffer_size
-        # try to refill the buffer
-        if (len(self.ac_out_buffer) < obs):
-            self.refill_buffer()
-
-        if self.ac_out_buffer and self.connected:
-            # try to send the buffer
-            try:
-                num_sent = self.send(self.ac_out_buffer[:obs])
-                if num_sent:
-                    self.ac_out_buffer = self.ac_out_buffer[num_sent:]
-
-            except socket.error, why:
-                self.handle_error()
-                return
-
-    def discard_buffers(self):
-        # Emergencies only!
-        self.ac_in_buffer = ''
-        self.ac_out_buffer = ''
-        while self.producer_fifo:
-            self.producer_fifo.pop()
-
-
-class fifo:
-
-    def __init__(self, list=None):
-        if not list:
-            self.list = []
-        else:
-            self.list = list
-
-    def __len__(self):
-        return len(self.list)
-
-    def is_empty(self):
-        return self.list == []
-
-    def first(self):
-        return self.list[0]
-
-    def push(self, data):
-        self.list.append(data)
-
-    def pop(self):
-        if self.list:
-            return (1, self.list.pop(0))
-        else:
-            return (0, None)
-
-# Given 'haystack', see if any prefix of 'needle' is at its end.  This
-# assumes an exact match has already been checked.  Return the number of
-# characters matched.
-# for example:
-# f_p_a_e ("qwerty\r", "\r\n") => 1
-# f_p_a_e ("qwertydkjf", "\r\n") => 0
-# f_p_a_e ("qwerty\r\n", "\r\n") => <undefined>
-
-# this could maybe be made faster with a computed regex?
-# [answer: no; circa Python-2.0, Jan 2001]
-# new python:   28961/s
-# old python:   18307/s
-# re:        12820/s
-# regex:     14035/s
-
-
-def find_prefix_at_end(haystack, needle):
-    l = len(needle) - 1
-    while l and not haystack.endswith(needle[:l]):
-        l -= 1
-    return l
-
-
-class counter:
-
-    "general-purpose counter"
-
-    def __init__(self, initial_value=0):
-        self.value = initial_value
-
-    def increment(self, delta=1):
-        result = self.value
-        try:
-            self.value = self.value + delta
-        except OverflowError:
-            self.value = long(self.value) + delta
-        return result
-
-    def decrement(self, delta=1):
-        result = self.value
-        try:
-            self.value = self.value - delta
-        except OverflowError:
-            self.value = long(self.value) - delta
-        return result
-
-    def as_long(self):
-        return long(self.value)
-
-    def __nonzero__(self):
-        return self.value != 0
-
-    def __repr__(self):
-        return '<counter value=%s at %x>' % (self.value, id(self))
-
-    def __str__(self):
-        s = ustr(long(self.value))
-        if s[-1:] == 'L':
-            s = s[:-1]
-        return s
-
-
-# http_date
-def concat(*args):
-    return ''.join(args)
-
-
-def join(seq, field=' '):
-    return field.join(seq)
-
-
-def group(s):
-    return '(' + s + ')'
-
-short_days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
-long_days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
-
-short_day_reg = group(join(short_days, '|'))
-long_day_reg = group(join(long_days, '|'))
-
-daymap = {}
-for i in range(7):
-    daymap[short_days[i]] = i
-    daymap[long_days[i]] = i
-
-hms_reg = join(3 * [group('[0-9][0-9]')], ':')
-
-months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
-
-monmap = {}
-for i in range(12):
-    monmap[months[i]] = i + 1
-
-months_reg = group(join(months, '|'))
-
-# From draft-ietf-http-v11-spec-07.txt/3.3.1
-#       Sun, 06 Nov 1994 08:49:37 GMT  ; RFC 822, updated by RFC 1123
-#       Sunday, 06-Nov-94 08:49:37 GMT ; RFC 850, obsoleted by RFC 1036
-#       Sun Nov  6 08:49:37 1994       ; ANSI C's asctime() format
-
-# rfc822 format
-rfc822_date = join(
-    [concat(short_day_reg, ','),    # day
-     group('[0-9][0-9]?'),                  # date
-     months_reg,                                    # month
-     group('[0-9]+'),                               # year
-     hms_reg,                                               # hour minute second
-     'gmt'
-     ],
-    ' '
-)
-
-rfc822_reg = re.compile(rfc822_date)
-
-
-def unpack_rfc822(m):
-    g = m.group
-    a = string.atoi
-    return (
-        a(g(4)),                # year
-        monmap[g(3)],   # month
-        a(g(2)),                # day
-        a(g(5)),                # hour
-        a(g(6)),                # minute
-        a(g(7)),                # second
-        0,
-        0,
-        0
-    )
-
-# rfc850 format
-rfc850_date = join(
-    [concat(long_day_reg, ','),
-     join(
-        [group('[0-9][0-9]?'),
-         months_reg,
-         group('[0-9]+')
-         ],
-        '-'
-    ),
-        hms_reg,
-        'gmt'
-    ],
-    ' '
-)
-
-rfc850_reg = re.compile(rfc850_date)
-# they actually unpack the same way
-
-
-def unpack_rfc850(m):
-    g = m.group
-    a = string.atoi
-    return (
-        a(g(4)),                # year
-        monmap[g(3)],   # month
-        a(g(2)),                # day
-        a(g(5)),                # hour
-        a(g(6)),                # minute
-        a(g(7)),                # second
-        0,
-        0,
-        0
-    )
-
-# parsdate.parsedate    - ~700/sec.
-# parse_http_date       - ~1333/sec.
-
-
-def build_http_date(when):
-    return time.strftime('%a, %d %b %Y %H:%M:%S GMT', time.gmtime(when))
-
-time_offset = 0
-
-
-def parse_http_date(d):
-    global time_offset
-    d = string.lower(d)
-    tz = time.timezone
-    m = rfc850_reg.match(d)
-    if m and m.end() == len(d):
-        retval = int(time.mktime(unpack_rfc850(m)) - tz)
-    else:
-        m = rfc822_reg.match(d)
-        if m and m.end() == len(d):
-            try:
-                retval = int(time.mktime(unpack_rfc822(m)) - tz)
-            except OverflowError:
-                return 0
-        else:
-            return 0
-    # Thanks to Craig Silverstein <csilvers@google.com> for pointing
-    # out the DST discrepancy
-    if time.daylight and time.localtime(retval)[-1] == 1:  # DST correction
-        retval = retval + (tz - time.altzone)
-    return retval - time_offset
-
-
-def check_date():
-    global time_offset
-    tmpfile = join_paths(GLOBAL_TEMP_DIR, "datetest" + ustr(random.random()) + ".tmp")
-    open(tmpfile, "wb").close()
-    time1 = os.stat(tmpfile)[stat.ST_MTIME]
-    os.unlink(tmpfile)
-    time2 = parse_http_date(build_http_date(time.time()))
-    time_offset = time2 - time1
-
 # producers
-
-
-class simple_producer:
-
-    "producer for a string"
-
-    def __init__(self, data, buffer_size=1024):
-        self.data = data
-        self.buffer_size = buffer_size
-
-    def more(self):
-        if len(self.data) > self.buffer_size:
-            result = self.data[:self.buffer_size]
-            self.data = self.data[self.buffer_size:]
-            return result
-        else:
-            result = self.data
-            self.data = ''
-            return result
 
 
 class file_producer:
@@ -563,6 +109,7 @@ class file_producer:
                 return ''
             else:
                 return data
+
 
 # A simple output producer.  This one does not [yet] have
 # the safety feature builtin to the monitor channel:  runaway
@@ -677,6 +224,7 @@ class hooked_producer:
         else:
             return ''
 
+
 # HTTP 1.1 emphasizes that an advertised Content-Length header MUST be
 # correct.  In the face of Strange Files, it is conceivable that
 # reading a 'file' may produce an amount of data not matching that
@@ -694,7 +242,7 @@ class chunked_producer:
             request.push (
                     producers.chunked_producer (your_producer)
                     )
-            request.done()
+            done(request)
     """
 
     def __init__(self, producer, footers=None):
@@ -729,7 +277,7 @@ class escaping_producer:
         self.esc_from = esc_from
         self.esc_to = esc_to
         self.buffer = ''
-        self.find_prefix_at_end = find_prefix_at_end
+        self.find_prefix_at_end = _athana_z3950.find_prefix_at_end
 
     def more(self):
         esc_from = self.esc_from
@@ -751,22 +299,6 @@ class escaping_producer:
         else:
             return buffer
 
-
-def html_repr(object):
-    so = escape(repr(object))
-    if hasattr(object, 'hyper_respond'):
-        return '<a href="/status/object/%d/">%s</a>' % (id(object), so)
-    else:
-        return so
-
-
-def html_reprs(list, front='', back=''):
-    reprs = map(
-        lambda x, f=front, b=back: '%s%s%s' % (f, x, b),
-        map(lambda x: escape(html_repr(x)), list)
-    )
-    reprs.sort()
-    return reprs
 
 # for example, tera, giga, mega, kilo
 # p_d (n, (1024, 1024, 1024, 1024))
@@ -859,7 +391,7 @@ class http_request(object):
         self.outgoing = []
         self.reply_headers = {
             'Server': 'Athana/%s' % ATHANA_VERSION,
-            'Date': build_http_date(time.time()),
+            'Date': _request_handler.build_http_date(time.time()),
         }
         self.request_number = http_request.request_counter.increment()
         self._split_uri = None
@@ -912,38 +444,12 @@ class http_request(object):
 
         return '%s\r\n' % ("".join(h)) if rc else None
 
-    # --------------------------------------------------
-    # split a uri according to https://tools.ietf.org/html/rfc3986
-    # --------------------------------------------------
-    def split_uri(self):
-        # <path>;<params>?<query>#<fragment>
-        path_regex = re.compile(
-            #      path      params    query   fragment
-            r'([^;?#]*)(;[^?#]*)?(\?[^#]*)?(#.*)?'
-        )
-        m = path_regex.match(self.uri)
-        return m.groups()
-
     def get_header_with_regex(self, head_reg, group):
         for line in self.header:
             m = head_reg.match(line)
             if m.end() == len(line):
                 return m.group(group)
         return ''
-
-    def get_header(self, header):
-        header = header.lower()
-        if header not in self._header_cache:
-            h = "{}:".format(header)
-            for line in self.header:
-                if line.lower().startswith(h):
-                    self._header_cache[header] = line[len(h):]
-        return self._header_cache.get(header)
-
-    @cached_property
-    def accept_mimetypes(self):
-        accept = parse_accept_header(self.get_header("ACCEPT"), MIMEAccept)
-        return accept
 
     # --------------------------------------------------
     # user data
@@ -963,140 +469,15 @@ class http_request(object):
 
     def push(self, thing):
         if type(thing) == type(''):
-            self.outgoing.append(simple_producer(thing))
+            self.outgoing.append(_athana_z3950.simple_producer(thing))
         else:
             thing.more
             self.outgoing.append(thing)
 
     def response(self, code=200):
-        message = self.responses[code]
+        message = _httpstatus.responses[code]
         self.reply_code = code
         return 'HTTP/%s %d %s' % (self.version, code, message)
-
-    def error(self, code, s=None, content_type='text/html'):
-        self.reply_code = code
-        self.outgoing = []
-        message = self.responses[code]
-        if s is None:
-            s = self.DEFAULT_ERROR_MESSAGE % {
-                'code': code,
-                'message': message,
-            }
-        self['Content-Length'] = len(s)
-        self['Content-Type'] = content_type
-        # make an error reply
-        self.push(s)
-        self.done()
-
-    # can also be used for empty replies
-    reply_now = error
-
-    def unlink_tempfiles(self):
-        unlinked_tempfiles = []
-        if hasattr(self, "tempfiles"):
-            for f in self.tempfiles:
-                os.unlink(f)
-                unlinked_tempfiles.append(f)
-                logg.debug("unlinked tempfile %s", f)
-        return unlinked_tempfiles
-
-    def done(self):
-        "finalize this transaction - send output to the http channel"
-
-        self.unlink_tempfiles()
-
-        # ----------------------------------------
-        # persistent connection management
-        # ----------------------------------------
-
-        #  --- BUCKLE UP! ----
-
-        connection = string.lower(get_header(CONNECTION, self.header))
-
-        close_it = 0
-        wrap_in_chunking = 0
-
-        if self.version == '1.0':
-            if connection == 'keep-alive':
-                if not self.has_key('Content-Length'):
-                    close_it = 1
-                else:
-                    self['Connection'] = 'Keep-Alive'
-            else:
-                close_it = 1
-        elif self.version == '1.1':
-            if connection == 'close':
-                close_it = 1
-            elif not self.has_key('Content-Length'):
-                if self.has_key('Transfer-Encoding'):
-                    if not self['Transfer-Encoding'] == 'chunked':
-                        close_it = 1
-                elif self.use_chunked:
-                    self['Transfer-Encoding'] = 'chunked'
-                    wrap_in_chunking = 1
-                else:
-                    close_it = 1
-        elif self.version is None:
-            # Although we don't *really* support http/0.9 (because we'd have to
-            # use \r\n as a terminator, and it would just yuck up a lot of stuff)
-            # it's very common for developers to not want to type a version number
-            # when using telnet to debug a server.
-            close_it = 1
-
-        if "PSESSION" not in self.Cookies:
-            if self.session:
-                self.setCookie('PSESSION', self.sessionid, path="/", secure=config.getboolean("host.ssl", True))
-            sessions = _ATHANA_HANDLER.sessions
-            if self.sessionid in sessions:
-                del sessions[self.sessionid]
-
-        if "Cache-Control" not in self.reply_headers or not config.getboolean("athana.allow_cache_header", False):
-            self.reply_headers["Cache-Control"] = "no-cache"
-
-        if self.reply_code == 500:
-            # don't use Transfer-Encoding chunked because only an error message is displayed
-            # this code is only necessary if a reply-header contains invalid characters but has
-            # Transfer-Encoding chunked set
-            self.use_chunked = 0
-            if self.has_key('Transfer-Encoding'):
-                if self['Transfer-Encoding'] == 'chunked':
-                    self['Transfer-Encoding'] = ''
-
-        reply_header = self.build_reply_header(check_characters=self.reply_code != 500)
-        if not reply_header:
-            raise ValueError("invalid header field")
-
-        outgoing_header = simple_producer(reply_header)
-
-        if close_it:
-            self['Connection'] = 'close'
-
-        if wrap_in_chunking:
-            outgoing_producer = chunked_producer(
-                composite_producer(list(self.outgoing))
-            )
-            # prepend the header
-            outgoing_producer = composite_producer(
-                [outgoing_header, outgoing_producer]
-            )
-        else:
-            # prepend the header
-            self.outgoing.insert(0, outgoing_header)
-            outgoing_producer = composite_producer(list(self.outgoing))
-
-        # actually, this is already set to None by the handler:
-        self.channel.current_request = None
-
-        # apply a few final transformations to the output
-        self.channel.push_with_producer(
-            # globbing gives us large packets
-            globbing_producer(
-                outgoing_producer
-            )
-        )
-
-        if close_it:
-            self.channel.close_when_done()
 
     def log(self):
         logg.info('%s:%s - - %s "%s"', self.channel.addr[0], self.channel.addr[1],
@@ -1128,153 +509,6 @@ class http_request(object):
                 first = 0
         return "{}{}".format(page, query)
 
-    def sendFile(self, path, content_type, force=0, nginx_x_accel_redirect_enabled=True):
-        
-        if isinstance(path, unicode):
-            path = path.encode("utf8")
-        
-        if isinstance(content_type, unicode):
-            content_type = content_type.encode("utf8")
-        
-
-        x_accel_redirect = config.get("nginx.X-Accel-Redirect", "").lower() == "true" and nginx_x_accel_redirect_enabled
-        file = None
-        file_length = 0
-
-        if not x_accel_redirect:
-            try:
-                file_length = os.stat(path)[stat.ST_SIZE]
-            except OSError:
-                self.error(404)
-                return
-
-        ims = get_header_match(IF_MODIFIED_SINCE, self.header)
-        length_match = 1
-        if ims:
-            length = ims.group(4)
-            if length:
-                with suppress(Exception, warn=False):
-                    length = string.atoi(length)
-                    if length != file_length:
-                        length_match = 0
-        ims_date = 0
-        if ims:
-            ims_date = parse_http_date(ims.group(1))
-
-        try:
-            mtime = os.stat(path)[stat.ST_MTIME]
-        except:
-            self.error(404)
-            return
-        if length_match and ims_date:
-            if mtime <= ims_date and not force:
-                # print "File "+path+" was not modified since "+ustr(ims_date)+" (current filedate is "+ustr(mtime)+")-> 304"
-                self.reply_code = 304
-                return
-
-        if not x_accel_redirect:
-            try:
-                file = open(path, 'rb')
-            except IOError:
-                self.error(404)
-                print "404"
-                return
-
-        self.reply_headers['Last-Modified'] = build_http_date(mtime)
-        self.reply_headers['Content-Length'] = file_length
-        self.reply_headers['Content-Type'] = content_type
-        if x_accel_redirect:
-            self.reply_headers['X-Accel-Redirect'] = path
-        if self.command == 'GET':
-            if x_accel_redirect:
-                self.done()
-            else:
-                self.push(file_producer(file))
-        return
-
-    def sendAsBuffer(self, text, content_type, force=0, allow_cross_origin=False):
-        from StringIO import StringIO
-        stringio = StringIO(text)
-
-        try:
-            file_length = len(stringio.buf)
-        except OSError:
-            self.error(404)
-            return
-
-        ims = get_header_match(IF_MODIFIED_SINCE, self.header)
-        length_match = 1
-        if ims:
-            length = ims.group(4)
-            if length:
-                with suppress(Exception, warn=False):
-                    length = string.atoi(length)
-                    if length != file_length:
-                        length_match = 0
-        ims_date = 0
-        if ims:
-            ims_date = parse_http_date(ims.group(1))
-
-        try:
-            import time
-            mtime = time.time()  # os.stat (path)[stat.ST_MTIME]
-        except:
-            self.error(404)
-            return
-        if length_match and ims_date:
-            if mtime <= ims_date and not force:
-                self.reply_code = 304
-                return
-        try:
-            file = stringio
-        except IOError:
-            self.error(404)
-            return
-
-        self.reply_headers['Last-Modified'] = build_http_date(mtime)
-        self.reply_headers['Content-Length'] = file_length
-        self.reply_headers['Content-Type'] = content_type
-        if allow_cross_origin:
-            self.reply_headers['Access-Control-Allow-Origin'] = '*'
-        if self.command == 'GET':
-            self.push(file_producer(file))
-        return
-
-    def setCookie(self, name, value, expire=None, path=None, http_only=True, secure=False):
-        
-        parts = [name + '=' + value]
-
-        if expire:
-            datestr = time.strftime("%a, %d-%b-%Y %H:%M:%S GMT", time.gmtime(expire))
-            parts.append('expires=' + datestr)
-            
-        if path:
-            parts.append("path=" + path)
-
-        if http_only:
-            parts.append("HttpOnly")
-            
-        if secure:
-            parts.append("Secure")
-            
-        cookie_str = "; ".join(parts)
-
-        if 'Set-Cookie' not in self.reply_headers:
-            self.reply_headers['Set-Cookie'] = [cookie_str]
-        else:
-            self.reply_headers['Set-Cookie'] += [cookie_str]
-
-    def makeSelfLink(self, params):
-        params2 = self.params.copy()
-        for k, v in params.items():
-            if v is not None:
-                params2[k] = v
-            else:
-                with suppress(Exception, warn=False):
-                    del params2[k]
-        ret = self.makeLink(self.fullpath, params2)
-        return ret
-
     def writeTAL(self, page, context, macro=None):
         tal.runTAL(self, context, file=page, macro=macro, request=self)
 
@@ -1287,16 +521,6 @@ class http_request(object):
     def getTALstr(self, string, context, macro=None):
         return tal.processTAL(context, string=string, macro=macro, request=self)
 
-    # COMPAT: new param style like flask
-    def make_legacy_params_dict(self):
-        """convert new-style params to old style athana params dict"""
-        self.params = params = {}
-        for key, values in chain(self.form.iterlists(), self.args.iterlists()):
-            value = ";".join(values)
-            params[key] = value
-#             params[key.encode("utf8")] = value.encode("utf8")
-        params.update(self.files.iteritems())
-
     # COMPAT: flask-style properties
     @property
     def remote_addr(self):
@@ -1308,71 +532,11 @@ class http_request(object):
         return [x.strip() for x in addr]
 
 
-    responses = {
-        100: "Continue",
-        101: "Switching Protocols",
-        200: "OK",
-        201: "Created",
-        202: "Accepted",
-        203: "Non-Authoritative Information",
-        204: "No Content",
-        205: "Reset Content",
-        206: "Partial Content",
-        300: "Multiple Choices",
-        301: "Moved Permanently",
-        302: "Moved Temporarily",
-        303: "See Other",
-        304: "Not Modified",
-        305: "Use Proxy",
-        307: "Temporary Redirect",
-        400: "Bad Request",
-        401: "Unauthorized",
-        402: "Payment Required",
-        403: "Forbidden",
-        404: "Not Found",
-        405: "Method Not Allowed",
-        406: "Not Acceptable",
-        407: "Proxy Authentication Required",
-        408: "Request Time-out",
-        409: "Conflict",
-        410: "Gone",
-        411: "Length Required",
-        412: "Precondition Failed",
-        413: "Request Entity Too Large",
-        414: "Request-URI Too Large",
-        415: "Unsupported Media Type",
-        418: "I'm a Teapot",
-        500: "Internal Server Error",
-        501: "Not Implemented",
-        502: "Bad Gateway",
-        503: "Service Unavailable",
-        504: "Gateway Time-out",
-        505: "HTTP Version not supported",
-        506: "CSRF token missing",
-        507: "CSRF failed",
-    }
-
-    # Default error message
-    DEFAULT_ERROR_MESSAGE = string.join(
-        ['<html><head>',
-         '<title>Error response</title>',
-         '</head>',
-         '<body>',
-         '<h1>Error response</h1>',
-         '<p>Error code %(code)d.</p>',
-         '<p>Message: %(message)s.</p>',
-         '</body></html>',
-         ''
-         ],
-        '\r\n'
-    )
-
-
 # ===========================================================================
 #                                                HTTP Channel Object
 # ===========================================================================
 
-class http_channel (async_chat):
+class http_channel (_athana_z3950.async_chat):
 
     # use a larger default output buffer
     ac_out_buffer_size = 1 << 16
@@ -1383,45 +547,33 @@ class http_channel (async_chat):
     def __init__(self, server, conn, addr):
         self.channel_number = http_channel.channel_counter.increment()
         self.request_counter = counter()
-        async_chat.__init__(self, conn)
+        _athana_z3950.async_chat.__init__(self, conn)
         self.server = server
         self.addr = addr
         self.set_terminator('\r\n\r\n')
         self.in_buffer = ''
         self.creation_time = int(time.time())
         self.check_maintenance()
-        self.producer_lock = thread.allocate_lock()
+        self.producer_lock = _named_lock('producer')
 
     def initiate_send(self):
-        self.producer_lock.acquire()
-        try:
-            async_chat.initiate_send(self)
-        finally:
-            self.producer_lock.release()
+        with self.producer_lock:
+            _athana_z3950.async_chat.initiate_send(self)
 
     def push(self, data):
         data.more
-        self.producer_lock.acquire()
-        try:
-            self.producer_fifo.push(simple_producer(data))
-        finally:
-            self.producer_lock.release()
+        with self.producer_lock:
+            self.producer_fifo.push(_athana_z3950.simple_producer(data))
         self.initiate_send()
 
     def push_with_producer(self, producer):
-        self.producer_lock.acquire()
-        try:
+        with self.producer_lock:
             self.producer_fifo.push(producer)
-        finally:
-            self.producer_lock.release()
         self.initiate_send()
 
     def close_when_done(self):
-        self.producer_lock.acquire()
-        try:
+        with self.producer_lock:
             self.producer_fifo.push(None)
-        finally:
-            self.producer_lock.release()
 
         # results in select.error: (9, 'Bad file descriptor') if the socket map is poll'ed
         # while this socket is being closed
@@ -1438,7 +590,7 @@ class http_channel (async_chat):
             self.initiate_send()
 
     def __repr__(self):
-        ar = async_chat.__repr__(self)[1:-1]
+        ar = _athana_z3950.async_chat.__repr__(self)[1:-1]
         return '<%s channel#: %s requests:%s>' % (
             ar,
             self.channel_number,
@@ -1474,13 +626,13 @@ class http_channel (async_chat):
     def send(self, data):
         result = 0
         with suppress(Exception, warn=False):
-            result = async_chat.send(self, data)
+            result = _athana_z3950.async_chat.send(self, data)
         self.server.bytes_out.increment(len(data))
         return result
 
     def recv(self, buffer_size):
         try:
-            result = async_chat.recv(self, buffer_size)
+            result = _athana_z3950.async_chat.recv(self, buffer_size)
             self.server.bytes_in.increment(len(result))
             return result
         except MemoryError:
@@ -1496,13 +648,13 @@ class http_channel (async_chat):
         logg.exception("uncaught exception in http_channel")
         t, v = sys.exc_info()[:2]
         if hasattr(self, "current_request") and self.current_request:
-            unlinked_tempfiles = self.current_request.unlink_tempfiles()
+            unlinked_tempfiles = _request_handler.unlink_tempfiles(self.current_request)
             if unlinked_tempfiles:
                 logg.warn("POSSIBLE ATTACK! tempfiles were still open, closed %s files", len(unlinked_tempfiles))
         if t is SystemExit:
             raise t(v)
         else:
-            async_chat.handle_error(self)
+            _athana_z3950.async_chat.handle_error(self)
 
     def log(self, *args):
         pass
@@ -1552,7 +704,7 @@ class http_channel (async_chat):
 
             if command is None:
                 logg.error('Bad HTTP request: %s', repr(request))
-                r.error(400)
+                _request_handler.error(r, 400)
                 return
 
             # --------------------------------------------------
@@ -1570,11 +722,11 @@ class http_channel (async_chat):
                         (file, fun, line), t, v, tbinfo = asyncore.compact_traceback()
                         logg.error('Server Error: %s, %s: file: %s line: %s', t, v, file, line, exc_info=1)
                         with suppress(Exception, warn=False):
-                            r.error(500)
+                            error(r, 500)
                     return
 
             # no handlers, so complain
-            r.error(404)
+            error(r, 404)
 
 # ===========================================================================
 #                                                HTTP Server Object
@@ -1675,8 +827,6 @@ class http_server (asyncore.dispatcher):
         self.handlers.remove(handler)
 
 
-CONNECTION = re.compile('Connection: (.*)', re.IGNORECASE)
-
 # merge multi-line headers
 # [486dx2: ~500/sec]
 
@@ -1690,21 +840,6 @@ def join_headers(headers):
             r.append(headers[i])
     return r
 
-
-def get_header(head_reg, lines, group=1):
-    for line in lines:
-        m = head_reg.match(line)
-        if m and m.end() == len(line):
-            return m.group(group)
-    return ''
-
-
-def get_header_match(head_reg, lines):
-    for line in lines:
-        m = head_reg.match(line)
-        if m and m.end() == len(line):
-            return m
-    return ''
 
 REQUEST = re.compile('([^ ]+) ([^ ]+)(( HTTP/([0-9.]+))$|$)')
 
@@ -1721,219 +856,10 @@ def crack_request(r):
         return None, None, None
 
 
-# This is the 'default' handler.  it implements the base set of
-# features expected of a simple file-delivering HTTP server.  file
-# services are provided through a 'filesystem' object, the very same
-# one used by the FTP server.
-#
-# You can replace or modify this handler if you want a non-standard
-# HTTP server.  You can also derive your own handler classes from
-# it.
-#
-# support for handling POST requests is available in the derived
-# class <default_with_post_handler>, defined below.
-#
-
-class default_handler:
-
-    valid_commands = ['GET', 'HEAD']
-
-    IDENT = 'Default HTTP Request Handler'
-
-    # Pathnames that are tried when a URI resolves to a directory name
-    directory_defaults = [
-        'index.html',
-        'default.html'
-    ]
-
-    default_file_producer = file_producer
-
-    def __init__(self, filesystem):
-        self.filesystem = filesystem
-        # count total hits
-        self.hit_counter = counter()
-        # count file deliveries
-        self.file_counter = counter()
-        # count cache hits
-        self.cache_counter = counter()
-
-    hit_counter = 0
-
-    def __repr__(self):
-        return '<%s (%s hits) at %x>' % (
-            self.IDENT,
-            self.hit_counter,
-            id(self)
-        )
-
-    # always match, since this is a default
-    def match(self, request):
-        return 1
-
-    def can_handle(self, request):
-        path, params, query, fragment = request.split_uri()
-        if '%' in path:
-            path = unquote(path)
-        while path and path[0] == '/':
-            path = path[1:]
-        if self.filesystem.isdir(path):
-            if path and path[-1] != '/':
-                return 0
-            found = 0
-            if path and path[-1] != '/':
-                path = path + '/'
-            for default in self.directory_defaults:
-                p = path + default
-                if self.filesystem.isfile(p):
-                    path = p
-                    found = 1
-                    break
-            if not found:
-                return 0
-        elif not self.filesystem.isfile(path):
-            return 0
-        return 1
-
-    # handle a file request, with caching.
-
-    def handle_request(self, request):
-
-        if request.command not in self.valid_commands:
-            request.error(400)  # bad request
-            return
-
-        self.hit_counter.increment()
-
-        path, params, query, fragment = request.split_uri()
-
-        if '%' in path:
-            path = unquote(path)
-
-        # strip off all leading slashes
-        while path and path[0] == '/':
-            path = path[1:]
-
-        if self.filesystem.isdir(path):
-            if path and path[-1] != '/':
-                request['Location'] = 'http://%s/%s/' % (
-                    request.channel.server.server_name,
-                    path
-                )
-                request.error(301)
-                return
-
-            # we could also generate a directory listing here,
-            # may want to move this into another method for that
-            # purpose
-            found = 0
-            if path and path[-1] != '/':
-                path = path + '/'
-            for default in self.directory_defaults:
-                p = path + default
-                if self.filesystem.isfile(p):
-                    path = p
-                    found = 1
-                    break
-            if not found:
-                request.error(404)  # Not Found
-                return
-
-        elif not self.filesystem.isfile(path):
-            request.error(404)  # Not Found
-            return
-
-        file_length = self.filesystem.stat(path)[stat.ST_SIZE]
-
-        ims = get_header_match(IF_MODIFIED_SINCE, request.header)
-
-        length_match = 1
-        if ims:
-            length = ims.group(4)
-            if length:
-                with suppress(Exception, warn=False):
-                    length = string.atoi(length)
-                    if length != file_length:
-                        length_match = 0
-        ims_date = 0
-
-        if ims:
-            ims_date = parse_http_date(ims.group(1))
-
-        try:
-            mtime = self.filesystem.stat(path)[stat.ST_MTIME]
-        except:
-            request.error(404)
-            return
-
-        if length_match and ims_date:
-            if mtime <= ims_date:
-                request.reply_code = 304
-                request.done()
-                self.cache_counter.increment()
-                # print "File "+path+" was not modified since "+ustr(ims_date)+" (current filedate is "+ustr(mtime)+")"
-                return
-        try:
-            file = self.filesystem.open(path, 'rb')
-        except IOError:
-            request.error(404)
-            return
-
-        request['Last-Modified'] = build_http_date(mtime)
-        request['Content-Length'] = file_length
-        self.set_content_type(path, request)
-
-        if request.command == 'GET':
-            request.push(self.default_file_producer(file))
-
-        self.file_counter.increment()
-        request.done()
-
-    def set_content_type(self, path, request):
-        ext = string.lower(get_extension(path))
-        typ, encoding = mimetypes.guess_type(path)
-        if typ is not None:
-            request['Content-Type'] = typ
-        else:
-            # TODO: test a chunk off the front of the file for 8-bit
-            # characters, and use application/octet-stream instead.
-            request['Content-Type'] = 'text/plain'
-
-    def status(self):
-        return simple_producer(
-            '<li>%s' % html_repr(self)
-            + '<ul>'
-            + '  <li><b>Total Hits:</b> %s' % self.hit_counter
-            + '  <li><b>Files Delivered:</b> %s' % self.file_counter
-            + '  <li><b>Cache Hits:</b> %s' % self.cache_counter
-            + '</ul>'
-        )
-
-# HTTP/1.0 doesn't say anything about the "; length=nnnn" addition
-# to this header.  I suppose its purpose is to avoid the overhead
-# of parsing dates...
-IF_MODIFIED_SINCE = re.compile(
-    'If-Modified-Since: ([^;]+)((; length=([0-9]+)$)|$)',
-    re.IGNORECASE
-)
-
-USER_AGENT = re.compile('User-Agent: (.*)', re.IGNORECASE)
-
 CONTENT_TYPE = re.compile(
     r'Content-Type: ([^;]+)((; boundary=([A-Za-z0-9\'\(\)+_,./:=?-]+)$)|$)',
     re.IGNORECASE
 )
-
-get_header = get_header
-get_header_match = get_header_match
-
-
-def get_extension(path):
-    dirsep = string.rfind(path, '/')
-    dotsep = string.rfind(path, '.')
-    if dotsep > dirsep:
-        return path[dotsep + 1:]
-    else:
-        return ''
 
 
 class abstract_filesystem:
@@ -1981,135 +907,6 @@ class abstract_filesystem:
         [for the output of the LIST command]"""
         pass
 
-# standard wrapper around a unix-like filesystem, with a 'false root'
-# capability.
-
-# security considerations: can symbolic links be used to 'escape' the
-# root?  should we allow it?  if not, then we could scan the
-# filesystem on startup, but that would not help if they were added
-# later.  We will probably need to check for symlinks in the cwd method.
-
-# what to do if wd is an invalid directory?
-
-
-def safe_stat(path):
-    try:
-        return (path, os.stat(path))
-    except:
-        return None
-
-
-class os_filesystem:
-    path_module = os.path
-
-    # set this to zero if you want to disable pathname globbing.
-    # [we currently don't glob, anyway]
-    do_globbing = 1
-
-    def __init__(self, root, wd='/'):
-        self.root = root
-        self.wd = wd
-
-    def current_directory(self):
-        return self.wd
-
-    def isfile(self, path):
-        p = self.normalize(self.path_module.join(self.wd, path))
-        return self.path_module.isfile(self.translate(p))
-
-    def isdir(self, path):
-        p = self.normalize(self.path_module.join(self.wd, path))
-        return self.path_module.isdir(self.translate(p))
-
-    def cwd(self, path):
-        p = self.normalize(self.path_module.join(self.wd, path))
-        translated_path = self.translate(p)
-        if not self.path_module.isdir(translated_path):
-            return 0
-        else:
-            old_dir = os.getcwd()
-            # temporarily change to that directory, in order
-            # to see if we have permission to do so.
-            try:
-                can = 0
-                with suppress(Exception, warn=False):
-                    os.chdir(translated_path)
-                    can = 1
-                    self.wd = p
-            finally:
-                if can:
-                    os.chdir(old_dir)
-            return can
-
-    def cdup(self):
-        return self.cwd('..')
-
-    def listdir(self, path, long=0):
-        p = self.translate(path)
-        # I think we should glob, but limit it to the current
-        # directory only.
-        ld = os.listdir(p)
-        if not long:
-            return list_producer(ld, None)
-        else:
-            old_dir = os.getcwd()
-            try:
-                os.chdir(p)
-                # if os.stat fails we ignore that file.
-                result = filter(None, map(safe_stat, ld))
-            finally:
-                os.chdir(old_dir)
-            return list_producer(result, self.longify)
-
-    # TODO: implement a cache w/timeout for stat()
-    def stat(self, path):
-        p = self.translate(path)
-        return os.stat(p)
-
-    def open(self, path, mode):
-        p = self.translate(path)
-        return open(p, mode)
-
-    def unlink(self, path):
-        p = self.translate(path)
-        return os.unlink(p)
-
-    def mkdir(self, path):
-        p = self.translate(path)
-        return os.mkdir(p)
-
-    def rmdir(self, path):
-        p = self.translate(path)
-        return os.rmdir(p)
-
-    # utility methods
-    def normalize(self, path):
-        # watch for the ever-sneaky '/+' path element
-        path = re.sub('/+', '/', path)
-        p = self.path_module.normpath(path)
-        # remove 'dangling' cdup's.
-        if len(p) > 2 and p[:3] == '/..':
-            p = '/'
-        return p
-
-    def translate(self, path):
-        # we need to join together three separate
-        # path components, and do it safely.
-        # <real_root>/<current_directory>/<path>
-        # use the operating system's path separator.
-        path = string.join(string.split(path, '/'), os.sep)
-        p = self.normalize(self.path_module.join(self.wd, path))
-        p = self.normalize(self.path_module.join(self.root, p[1:]))
-        return p
-
-    def longify(self, (path, stat_info)):
-        return unix_longify(path, stat_info)
-
-    def __repr__(self):
-        return '<unix-style fs root:%s wd:%s>' % (
-            self.root,
-            self.wd
-        )
 
 # this matches the output of NT's ftp server (when in
 # MSDOS mode) exactly.
@@ -2148,69 +945,6 @@ def msdos_date(t):
         info[4],
         merid
     )
-
-months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-          'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-
-mode_table = {
-    '0': '---',
-    '1': '--x',
-    '2': '-w-',
-    '3': '-wx',
-    '4': 'r--',
-    '5': 'r-x',
-    '6': 'rw-',
-    '7': 'rwx'
-}
-
-
-def unix_longify(file, stat_info):
-    # for now, only pay attention to the lower bits
-    mode = ('%o' % stat_info[stat.ST_MODE])[-3:]
-    mode = string.join(map(lambda x: mode_table[x], mode), '')
-    if stat.S_ISDIR(stat_info[stat.ST_MODE]):
-        dirchar = 'd'
-    else:
-        dirchar = '-'
-    date = ls_date(long(time.time()), stat_info[stat.ST_MTIME])
-    return '%s%s %3d %-8d %-8d %8d %s %s' % (
-        dirchar,
-        mode,
-        stat_info[stat.ST_NLINK],
-        stat_info[stat.ST_UID],
-        stat_info[stat.ST_GID],
-        stat_info[stat.ST_SIZE],
-        date,
-        file
-    )
-
-# Emulate the unix 'ls' command's date field.
-# it has two formats - if the date is more than 180
-# days in the past, then it's like this:
-# Oct 19  1995
-# otherwise, it looks like this:
-# Oct 19 17:33
-
-
-def ls_date(now, t):
-    try:
-        info = time.gmtime(t)
-    except:
-        info = time.gmtime(0)
-    # 15,600,000 == 86,400 * 180
-    if (now - t) > 15600000:
-        return '%s %2d  %d' % (
-            months[info[1] - 1],
-            info[2],
-            info[0]
-        )
-    else:
-        return '%s %2d %02d:%02d' % (
-            months[info[1] - 1],
-            info[2],
-            info[3],
-            info[4]
-        )
 
 
 class list_producer:
@@ -2276,7 +1010,7 @@ class hooked_callback:
 VERSION = string.split(RCS_ID)[2]
 
 
-class ftp_channel (async_chat):
+class ftp_channel (_athana_z3950.async_chat):
 
     # defaults for a reliable __repr__
     addr = ('unknown', '0')
@@ -2298,7 +1032,7 @@ class ftp_channel (async_chat):
         self.server = server
         self.current_mode = 'a'
         self.addr = addr
-        async_chat.__init__(self, conn)
+        _athana_z3950.async_chat.__init__(self, conn)
         self.set_terminator('\r\n')
 
         # client data port.  Defaults to 'the same as the control connection'.
@@ -2396,7 +1130,7 @@ class ftp_channel (async_chat):
             if self.client_dc:
                 self.client_dc.close()
             self.server.closed_sessions.increment()
-            async_chat.close(self)
+            _athana_z3950.async_chat.close(self)
 
     # --------------------------------------------------
     # filesystem interface functions.
@@ -3070,7 +1804,7 @@ class passive_acceptor (asyncore.dispatcher):
         self.close()
 
 
-class xmit_channel (async_chat):
+class xmit_channel (_athana_z3950.async_chat):
 
     # for an ethernet, you want this to be fairly large, in fact, it
     # _must_ be large for performance comparable to an ftpd.  [64k] we
@@ -3082,7 +1816,7 @@ class xmit_channel (async_chat):
     def __init__(self, channel, client_addr=None):
         self.channel = channel
         self.client_addr = client_addr
-        async_chat.__init__(self)
+        _athana_z3950.async_chat.__init__(self)
 
 #       def __del__ (self):
 #               print 'xmit_channel.__del__()'
@@ -3097,7 +1831,7 @@ class xmit_channel (async_chat):
         return 1
 
     def send(self, data):
-        result = async_chat.send(self, data)
+        result = _athana_z3950.async_chat.send(self, data)
         self.bytes_out = self.bytes_out + result
         return result
 
@@ -3124,7 +1858,7 @@ class xmit_channel (async_chat):
         del s
         del self.channel
         with suppress(Exception, warn=False):
-            async_chat.close(self)
+            _athana_z3950.async_chat.close(self)
 
 class recv_channel (asyncore.dispatcher):
 
@@ -3173,15 +1907,12 @@ import getopt
 import re
 import sys
 import asyncore
-import os
 import random
-import importlib
 import time
 import thread
 import stat
 import urllib
 import traceback
-import zipfile
 
 HTTP_CONTINUE = 100
 HTTP_SWITCHING_PROTOCOLS = 101
@@ -3233,72 +1964,11 @@ HTTP_VARIANT_ALSO_VARIES = 506
 HTTP_INSUFFICIENT_STORAGE = 507
 HTTP_NOT_EXTENDED = 510
 
-GLOBAL_TEMP_DIR = "/tmp/"
-GLOBAL_ROOT_DIR = "no-root-dir-set"
-verbose = 1
 multithreading_enabled = 0
 number_of_threads = 32
 
 
-def qualify_path(p):
-    if p[-1] != '/':
-        return p + "/"
-    return p
-
-
-def join_paths(p1, p2):
-    if p1.endswith("/"):
-        if p2.startswith("/"):
-            return p1[:-1] + p2
-        else:
-            return p1 + p2
-    else:
-        if p2.startswith("/"):
-            return p1 + p2
-        else:
-            return p1 + "/" + p2
-
-
 ftphandlers = []
-contexts = []
-
-global_modules = {}
-
-
-def _load_module(filename):
-    global global_modules
-    b = BASENAME.match(filename)
-
-    # filename e.g. /my/modules/test.py
-    # b.group(1) = /my/modules/
-    # b.group(2) = test.py
-    if b is None:
-        raise ValueError("Internal error with filename " + filename)
-    module = b.group(2)
-    if module is None:
-        raise ValueError("Internal error with filename " + filename)
-
-    while filename.startswith("./"):
-        filename = filename[2:]
-
-    if filename in global_modules:
-        return global_modules[filename]
-
-    dir = os.path.dirname(filename)
-    path = dir.replace("/", ".")
-
-    # strip tailing/leading dots
-    while len(path) and path[0] == '.':
-        path = path[1:]
-    while len(path) and path[-1] != '.':
-        path = path + "."
-
-    module2 = (path + module)
-    logg.debug("Loading module %s", module2)
-
-    m = importlib.import_module(module2)
-    global_modules[filename] = m
-    return m
 
 system_modules = sys.modules.copy()
 stdlib, x = os.path.split(os.__file__)
@@ -3312,60 +1982,6 @@ def _purge_all_modules():
                 path, x = os.path.split(f)
                 if not path.startswith(stdlib):
                     del sys.modules[m]
-
-
-class WebContext:
-
-    def __init__(self, name, root=None):
-        self.name = name
-        self.files = []
-        self.startupfile = None
-        if root:
-            self.root = qualify_path(root)
-        self.pattern_to_function = OrderedDict()
-        self.catchall_handler = None
-
-    def addFile(self, filename, module=None):
-        file = WebFile(self, filename, module)
-        self.files += [file]
-        return file
-
-    def setRoot(self, root):
-        self.root = qualify_path(root)
-        while self.root.startswith("./"):
-            self.root = self.root[2:]
-
-    def setStartupFile(self, startupfile):
-        self.startupfile = startupfile
-        logg.info("  executing startupfile")
-        self._load_module(self.startupfile)
-
-    def getStartupFile(self):
-        return self.startupfile
-
-    def match(self, path):
-        def call_and_close(f, req):
-            status = f(req)
-            if type("1") == type(status):
-                status = int(status)
-            if status is not None and type(1) == type(status) and status > 10:
-                req.reply_code = status
-                if(status >= 400 and status <= 500):
-                    return req.error(status)
-            return req.done()
-
-        for pattern, call in self.pattern_to_function.items():
-            if pattern.match(path):
-                function, desc = call
-                if verbose:
-                    logg.debug("Request %s matches (%s)", path, desc)
-                return lambda req: call_and_close(function, req)
-
-        # no pattern matched, use catchall handler if present
-        if self.catchall_handler:
-            return partial(call_and_close, self.catchall_handler.f)
-
-        return None
 
 
 class WSGIHandler(object):
@@ -3424,7 +2040,7 @@ class WSGIHandler(object):
             content = self.app(environ, self.start_response)
         except:
             logg.exception("exception in WSGI app:")
-            request.error(500, "WSGI app failed")
+            _request_handler.error(request, 500, "WSGI app failed")
             return
 
         for elem in content:
@@ -3435,7 +2051,7 @@ class WSGIHandler(object):
         reason = spl[1] if len(spl) == 2 else None
 
         request.setStatus(status_code)
-        request.done()
+        _request_handler.done(request)
 
 
 class WSGIContext(object):
@@ -3445,193 +2061,8 @@ class WSGIContext(object):
         self.app = app
 
     def match(self, path):
-        """we don't really "match" here, just for compatibility with Athana's WebContext"""
+        """we don't really "match" here, just for compatibility with request_handler's WebContext"""
         return WSGIHandler(self.app, self.name, path)
-
-
-class FileStore:
-
-    def __init__(self, name, root=None):
-        self.name = name
-        self.handlers = []
-        if type(root) == type(""):
-            self.addRoot(root)
-        elif type(root) == type([]):
-            for dir in root:
-                self.addRoot(dir)
-
-    def match(self, path):
-        return lambda req: self.findfile(req)
-
-    def findfile(self, request):
-        for handler in self.handlers:
-            if handler.can_handle(request):
-                return handler.handle_request(request)
-        request.path = cgi.escape(request.path)
-        return request.error(404, "File " + request.path + " not found")
-
-    def addRoot(self, dir):
-        if not os.path.isabs(dir):
-            dir = qualify_path(dir)
-            while dir.startswith("./"):
-                dir = dir[2:]
-            dir = os.path.join(GLOBAL_ROOT_DIR, dir)
-
-        if zipfile.is_zipfile(dir[:-1]) and dir.lower().endswith("zip/"):
-            self.handlers += [default_handler(zip_filesystem(dir[:-1]))]
-        else:
-            self.handlers += [default_handler(os_filesystem(dir))]
-
-
-class WebFile:
-
-    def __init__(self, context, filename, module=None):
-        self.context = context
-        if filename[0] == '/':
-            filename = filename[1:]
-        self.filename = filename
-        if module is None:
-            self.m = _load_module(join_paths(context.root, filename))
-        else:
-            self.m = module
-            global_modules[filename] = module
-        self.handlers = []
-
-    def addHandler(self, function):
-        handler = WebHandler(self, function)
-        self.handlers += [handler]
-        return handler
-
-    def addCatchallHandler(self, function):
-        handler = WebHandler(self, function)
-        self.context.catchall_handler = handler
-        return handler
-
-    def addFTPHandler(self, ftpclass):
-        global ftphandlers
-        m = self.m
-        try:
-            c = eval("m." + ftpclass)
-            if c is None:
-                raise
-            ftphandlers += [c]
-        except:
-            logg.error("Error in FTP Handler:", exc_info=1)
-            raise AthanaException("No such function " + ftpclass + " in file " + self.filename)
-
-    def getFileName(self):
-        return self.context.root + self.filename
-
-
-class WebHandler:
-
-    def __init__(self, file, function):
-        self.file = file
-        if isinstance(function, str):
-            self.function = function
-            m = file.m
-            try:
-                self.f = getattr(m, function)
-            except:
-                logg.error("Error in Handler", exc_info=1)
-                raise AthanaException("No such function " + function + " in file " + self.file.filename)
-        else:
-            self.f = function
-            self.function = function.func_name
-
-    def addPattern(self, pattern):
-        p = WebPattern(self, pattern)
-        desc = "pattern %s, file %s, function %s" % (pattern, self.file.filename, self.function)
-        self.file.context.pattern_to_function[p.getPattern()] = (self.f, desc)
-        return p
-
-
-class WebPattern:
-
-    def __init__(self, handler, pattern):
-        self.handler = handler
-        self.pattern = pattern
-        if not pattern.endswith('$'):
-            pattern = pattern + "$"
-        self.compiled = re.compile(pattern)
-
-    def getPattern(self):
-        return self.compiled
-
-    def getPatternString(self):
-        return self.pattern
-
-
-def read_ini_file(filename):
-    global GLOBAL_TEMP_DIR, GLOBAL_ROOT_DIR, number_of_threads, multithreading_enabled, contexts
-    lineno = 0
-    fi = open(filename, "rb")
-    file = None
-    function = None
-    context = None
-    GLOBAL_ROOT_DIR = '/'
-    for line in fi.readlines():
-        lineno = lineno + 1
-        hashpos = line.find("#")
-        if hashpos >= 0:
-            line = line[0:hashpos]
-        line = line.strip()
-
-        if line == "":
-            continue  # skip empty line
-
-        equals = line.find(":")
-        if equals < 0:
-            continue
-        key = line[0:equals].strip()
-        value = line[equals + 1:].strip()
-        if key == "tempdir":
-            GLOBAL_TEMP_DIR = qualify_path(value)
-        elif key == "threads":
-            number_of_threads = int(value)
-            multithreading_enabled = 1
-        elif key == "base":
-            GLOBAL_ROOT_DIR = qualify_path(value)
-            sys.path += [GLOBAL_ROOT_DIR]
-        elif key == "filestore":
-            if len(value) and value[0] != '/':
-                value = "/" + value
-            filestore = FileStore(value)
-            contexts += [filestore]
-            context = None
-        elif key == "context":
-            if len(value) and value[0] != '/':
-                value = "/" + value
-            contextname = value
-            context = WebContext(contextname)
-            contexts += [context]
-            filestore = None
-        elif key == "startupfile":
-            if context is not None:
-                context.setStartupFile(value)
-            else:
-                raise AthanaException("Error: startupfile must be below a context")
-        elif key == "root":
-            if value.startswith('/'):
-                value = value[1:]
-            if context:
-                context.setRoot(value)
-            if filestore:
-                filestore.addRoot(value)
-        elif key == "file":
-            filename = value
-            file = context.addFile(filename)
-        elif key == "ftphandler":
-            file.addFTPHandler(value)
-        elif key == "handler":
-            function = value
-            handler = file.addHandler(function)
-        elif key == "pattern":
-            handler.addPattern(value)
-        else:
-            raise AthanaException("Syntax error in line " + ustr(lineno) + " of file " + filename + ":\n" + line)
-    fi.close()
-    return context
 
 
 def headers_to_map(mylist):
@@ -3660,7 +2091,7 @@ class AthanaFile:
         self.param_list = param_list
         self.filename = filename
         self.content_type = content_type
-        self.tempname = GLOBAL_TEMP_DIR + ustr(int(random.random() * 999999)) + os.path.splitext(filename)[1]
+        self.tempname = _request_handler.GLOBAL_TEMP_DIR + ustr(int(random.random() * 999999)) + os.path.splitext(filename)[1]
         self.filesize = 0
         self.fi = open(self.tempname, "wb")
 
@@ -3723,7 +2154,7 @@ class simple_input_collector:
         r._data = self.data
         del self.data
         del self.request
-        self.handler.continue_request(r, pairs)
+        _request_handler.handle_request(self.handler, r, pairs)
 
 class upload_input_collector:
 
@@ -3843,38 +2274,17 @@ class upload_input_collector:
         r = self.request
         r._data = self._all_data.tostring()
         del self.request
-        self.handler.continue_request(r, self.form)
+        _request_handler.handle_request(self.handler, r, self.form)
 
 
 # XXX: hack for better testing, do not use this in production...
-USE_PERSISTENT_SESSIONS = False
-
-
-try:
-    import redis_collections
-except ImportError:
-    pass
-else:
-    class RedisSession(redis_collections.Dict):
-
-        def __init__(self, key):
-            super(RedisSession, self).__init__(key=key)
-            self.mediatum_form = MediatumForm(meta={'csrf_context': self})
-
-        @property
-        def id(self):
-            return self.key
-
-        def use(self):
-            pass
-
 
 class Session(dict):
 
     def __init__(self, id):
         self.id = id
         self.use()
-        self.mediatum_form = MediatumForm(meta={'csrf_context': self})
+        self.mediatum_form = _request_handler.MediatumForm(meta={'csrf_context': self})
 
     def use(self):
         self.lastuse = time.time()
@@ -3891,15 +2301,10 @@ def exception_string():
     s += "    %s\n" % l[3]
     return s
 
-BASENAME = re.compile("([^/]*/)*([^/.]*)(.py)?")
 MULTIPART = re.compile('multipart/form-data.*boundary=([^ ]*)', re.IGNORECASE)
 SESSION_PATTERN = re.compile("^;[a-z0-9]{6}-[a-z0-9]{6}-[a-z0-9]{6}$")
 SESSION_PATTERN2 = re.compile("[a-z0-9]{6}-[a-z0-9]{6}-[a-z0-9]{6}")
 
-SESSION_COOKIES_LIVE_SECS = 3600 * 2  # unused sessions may be valid for 2 hours
-session_cookies_live_secs = int(config.get('admin.session_expiration_time', SESSION_COOKIES_LIVE_SECS))
-session_check_period = session_cookies_live_secs / 10
-last_session_check_time = time.time()
 
 
 # COMPAT: flask style
@@ -3914,25 +2319,10 @@ def filter_out_files(param_list):
     return form, files
 
 
-def make_param_dict_utf8_values(param_list):
-    def decode(k):
-        try:
-            return unicode(k, encoding="utf8")
-        except UnicodeDecodeError as e:
-            logg.warn("tried to decode non-UTF8 string: %s", k.encode("string-escape"))
-            raise
-
-    return ImmutableMultiDict([(decode(k), decode(v)) for k, v in param_list])
-# /COMPAT
-
-# COMPAT: before / after request handlers and request / app context handling
-_request_started_handlers = []
-_request_finished_handlers = []
-
 app = None
 
 
-def call_handler_func(handler, handler_func, request):
+def call_handler_func(handler_func, request):
 
     # WSGI passthrough. WSGIHandler takes care of the rest
     if isinstance(handler_func, WSGIHandler):
@@ -3940,9 +2330,9 @@ def call_handler_func(handler, handler_func, request):
 
     elif app:
         with app.request_context(request, request.session):
-            handler.callhandler(handler_func, request)
+            _request_handler.callhandler(handler_func, request)
     else:
-        handler.callhandler(handler_func, request)
+        _request_handler.callhandler(handler_func, request)
 # /COMPAT
 
 
@@ -3951,10 +2341,10 @@ class AthanaHandler:
     def __init__(self):
         self.sessions = {}
         self.queue = []
-        self.queuelock = thread.allocate_lock()
+        self.queuelock = _named_lock('queuelock')
 
     def match(self, request):
-        path, params, query, fragment = request.split_uri()
+        path, params, query, fragment = _request_handler.split_uri(request)
         return 1
 
     def handle_request(self, request):
@@ -3976,7 +2366,7 @@ class AthanaHandler:
                 request.collector = simple_input_collector(self, request, size)
         else:
             request.type = "GET"
-            self.continue_request(request, form=[])
+            _request_handler.handle_request(self, request, form=[])
 
     def create_session_id(self):
         pid = abs((ustr(random.random())).__hash__())
@@ -4010,225 +2400,6 @@ class AthanaHandler:
         return args
     # / COMPAT
 
-    def continue_request(self, request, form):
-
-        global session_cookies_live_secs, session_check_period, last_session_check_time
-
-        act_time = time.time()
-
-        path, params, query, fragment = request.split_uri()
-
-        ip = request.request_headers.get("x-forwarded-for", None)
-        if ip is None:
-            with suppress(Exception, warn=False):
-                ip = request.channel.addr[0]
-        if ip:
-            request.channel.addr = (ip, request.channel.addr[1])
-
-        request.log()
-
-        # COMPAT: new param style like flask
-        if query is not None:
-            args = AthanaHandler.parse_query(query)
-        else:
-            args = []
-        # /COMPAT
-        path = unquote(path)
-        if params is not None:
-            params = unquote(params)
-        if fragment is not None:
-            fragment = unquote(fragment)
-
-        cookies = {}
-        if "cookie" in request.request_headers:
-            cookiestr = request.request_headers["cookie"]
-            if cookiestr.rfind(";") == len(cookiestr) - 1:
-                cookiestr = cookiestr[:-1]
-            items = cookiestr.split(';')
-            for a in items:
-                a = a.strip()
-                i = a.find('=')
-                if i > 0:
-                    key, value = a[:i], a[i + 1:]
-                    cookies[key] = value
-                else:
-                    logg.warn("corrupt cookie value: %s", a.encode("string-escape"))
-
-        request.Cookies = cookies
-
-        sessionid = None
-                
-        if "PSESSION" in cookies:
-            sessionid = cookies["PSESSION"]
-
-        if USE_PERSISTENT_SESSIONS:
-            if sessionid is None:
-                sessionid = self.create_session_id()
-                logg.debug("Creating new session %s", sessionid)
-
-            session = RedisSession(sessionid)
-        else:
-            session_expiration_time = act_time - session_cookies_live_secs
-            session = None
-            if sessionid is None:
-
-                if act_time - last_session_check_time > session_check_period:
-                    # delete all sessions with lastuse older than act_time - session_cookies_live_secs
-                    sessionids_to_be_deleted = [sid for sid in self.sessions if self.sessions[sid].lastuse < session_expiration_time]
-                    for sid in sessionids_to_be_deleted:
-                        del self.sessions[sid]
-                    last_session_check_time = act_time
-
-                sessionid = self.create_session_id()
-                logg.debug("Creating new session %s", sessionid)
-
-            else:
-                if sessionid in self.sessions:
-                    session = self.sessions[sessionid]
-                    if session.lastuse < session_expiration_time:
-                        del self.sessions[sessionid]
-                        session = None
-                    else:
-                        session.use()
-
-            if session is None:
-                session = Session(sessionid)
-                self.sessions[sessionid] = session
-
-        request['Content-Type'] = 'text/html; encoding=utf-8; charset=utf-8'
-
-        maxlen = -1
-        context = None
-        global contexts
-        for c in contexts:
-            if path.startswith(c.name) and len(c.name) > maxlen:
-                context = c
-                maxlen = len(context.name)
-                
-        if context is None:
-            request.error(404)
-            return
-
-        fullpath = path
-        path = path[len(context.name):]
-        if len(path) == 0 or path[0] != '/':
-            path = "/" + path
-
-        request.session = session
-        request.sessionid = sessionid
-        request.context = context
-        request.path = path
-        request.fullpath = fullpath
-        request.paramstring = params
-        request.query = query
-        request.fragment = fragment
-
-        # COMPAT: new param style like flask
-        # we don't need this for WSGI, args / form parsing is done by the WSGI app
-
-        if not isinstance(context, WSGIContext):
-            form, files = filter_out_files(form)
-            try:
-                request.args = make_param_dict_utf8_values(args)
-                if "csrf_token" in request.args:
-                    form.append(('csrf_token', str(request.args["csrf_token"])))
-                request.form = make_param_dict_utf8_values(form)
-            except UnicodeDecodeError:
-                return request.error(400)
-
-            if form and request.method == 'POST':
-                if 'csrf_token' not in request.form:
-                    raise ValueError("csrf_token not in form of request path " + request.fullpath)
-                else:
-                    session.mediatum_form.csrf_token.process_data(request.form["csrf_token"].replace("!!!!!", "##"))
-                    session.mediatum_form.validate()
-
-            request.csrf_token = session.mediatum_form.csrf_token
-            request.files = ImmutableMultiDict(files)
-            request.make_legacy_params_dict()
-
-        # /COMPAT
-        request.request = request
-        request.ip = ip
-        request.uri = request.uri.replace(context.name, "/")
-        request._split_uri = None
-
-        request.channel.current_request = None
-
-        if path == "/threadstatus":
-            return thread_status(request)
-        if path == "/profilingstatus":
-            return profiling_status(request)
-
-        function = context.match(path)
-
-        if function is None:
-            logg.debug("Request %s matches no pattern (context: %s)", request.path, context.name)
-            request.path = cgi.escape(request.path)
-            return request.error(404, "File %s not found" % request.path)
-        if multithreading_enabled:
-            self.queuelock.acquire()
-            self.queue += [(function, request)]
-            self.queuelock.release()
-        else:
-            call_handler_func(self, function, request)
-
-    def callhandler(self, handler_func, req):
-        for handler in _request_started_handlers:
-            handler(req)
-
-        try:
-            status = handler_func(req)
-        except Exception as e:
-            # XXX: this shouldn't be in Athana, most of it is mediaTUM-specific...
-            # TODO: add some kind of exception handler system for Athana
-            import core.config as config
-            request = req.request
-            if config.get('host.type') != 'testing':
-                from utils.log import make_xid_and_errormsg_hash, extra_log_info_from_req
-                from core.translation import translate
-                from core import db
-
-                # Roll back if the error was caused by a database problem. 
-                # DB requests in this error handler will fail until rollback is called, so let's do it here.
-                db.session.rollback()
-                
-                xid, hashed_errormsg, hashed_tb = make_xid_and_errormsg_hash()
-
-                mail_to_address = config.get('email.support')
-                if not mail_to_address:
-                    logg.warn("no support mail address configured, consider setting it with `email.support`", trace=False)
-
-                log_extra = {"xid": xid,
-                             "error_hash": hashed_errormsg,
-                             "trace_hash": hashed_tb}
-                
-                log_extra["req"] = extra_log_info_from_req(req)
-
-                logg.exception(u"exception (xid=%s) while handling request %s %s, %s",
-                               xid, req.method, req.path, dict(req.args), extra=log_extra)
-
-                if mail_to_address:
-                    msg = translate("core_snipped_internal_server_error_with_mail", request=req).replace('${email}', mail_to_address)
-                else:
-                    msg = translate("core_snipped_internal_server_error_without_mail", request=req)
-                s = msg.replace('${XID}', xid)
-
-                req.reply_headers["X-XID"] = xid
-
-                return request.error(500, s.encode("utf8"), content_type='text/html; encoding=utf-8; charset=utf-8')
-
-            else:
-                logg.error("Error in page: '%s %s', session '%s'",
-                           request.type, request.fullpath, request.session.id, exc_info=1)
-                s = "<pre>" + traceback.format_exc() + "</pre>"
-
-                return request.error(500, s)
-
-        finally:
-            for handler in _request_finished_handlers:
-                handler(req)
-
 
 class fs:
     pass
@@ -4252,131 +2423,14 @@ class ftp_authorizer:
         return 'ftp_authorizer'
 
 
-class zip_filesystem:
-
-    def __init__(self, filename):
-        self.filename = filename
-        self.wd = '/'
-        self.m = {}
-        self.z = zipfile.ZipFile(filename)
-        self.lock = thread.allocate_lock()
-        for f in self.z.filelist:
-            self.m['/' + f.filename] = f
-
-        if "/index.html" in self.m:
-            self.m['/'] = self.m['/index.html']
-
-    def current_directory(self):
-        return self.wd
-
-    def isfile(self, path):
-        if len(path) and path[-1] == '/':
-            return 0
-        return (self.wd + path) in self.m
-
-    def isdir(self, path):
-        if not (len(path) and path[-1] == '/'):
-            path += '/'
-        return path in self.m
-
-    def cwd(self, path):
-        path = join_paths(self.wd, path)
-        if not self.isdir(path):
-            return 0
-        else:
-            self.wd = path
-            return 1
-
-    def cdup(self):
-        try:
-            i = self.wd[:-1].rindex('/')
-            self.wd = self.wd[0:i + 1]
-        except ValueError:
-            self.wd = '/'
-        return 1
-
-    def listdir(self, path, long=0):
-        raise NotImplementedError()
-
-    # TODO: implement a cache w/timeout for stat()
-    def stat(self, path):
-        fullpath = join_paths(self.wd, path)
-        if self.isfile(path):
-            size = self.m[fullpath].file_size
-            return (33188, 77396L, 10L, 1, 1000, 1000, size, 0, 0, 0)
-        elif self.isdir(path):
-            return (16895, 117481L, 10L, 20, 1000, 1000, 4096L, 0, 0, 0)
-        else:
-            raise IOError("No such file or directory " + path)
-
-    def open(self, path, mode):
-        class zFile:
-
-            def __init__(self, content):
-                self.content = content
-                self.pos = 0
-                self.len = len(content)
-
-            def read(self, l=None):
-                if l is None:
-                    l = self.len - self.pos
-                if self.len < self.pos + l:
-                    l = self.len - self.pos
-                s = self.content[self.pos: self.pos + l]
-                self.pos += l
-                return s
-
-            def close(self):
-                del self.content
-                del self.len
-                del self.pos
-        self.lock.acquire()
-        try:
-            data = self.z.read(path)
-        finally:
-            self.lock.release()
-        return zFile(data)
-
-    def unlink(self, path):
-        raise NotImplementedError()
-
-    def mkdir(self, path):
-        raise NotImplementedError()
-
-    def rmdir(self, path):
-        raise NotImplementedError()
-
-    def longify(self, (path, stat_info)):
-        return unix_longify(path, stat_info)
-
-    def __repr__(self):
-        return '<zipfile fs root:%s wd:%s>' % (self.filename, self.wd)
-
-
-def setBase(base):
-    global GLOBAL_ROOT_DIR
-    GLOBAL_ROOT_DIR = qualify_path(base)
-
-
-def setTempDir(tempdir):
-    global GLOBAL_TEMP_DIR
-    GLOBAL_TEMP_DIR = qualify_path(tempdir)
-
-
 def addFTPHandler(m):
     global ftphandlers
     ftphandlers += [m]
 
 
-def addContext(webpath, localpath):
-    global contexts
-    c = WebContext(webpath, localpath)
-    contexts += [c]
-    return c
-
 def add_wsgi_context(webpath, wsgi_app):
     c = WSGIContext(webpath, wsgi_app)
-    contexts.append(c)
+    _request_handler.contexts.append(c)
 
 def setServiceUser(u):
     global service_user
@@ -4389,39 +2443,12 @@ def setServicePwd(p):
 
 
 def flush():
-    global contexts, translators, ftphandlers, global_modules
-    contexts[:] = []
+    global translators, ftphandlers
+    _request_handler.contexts[:] = []
     translators[:] = []
     ftphandlers[:] = []
-    global_modules.clear()
+    _request_handler.global_modules.clear()
     _purge_all_modules()
-
-
-def addFileStore(webpath, localpaths):
-    global contexts
-    if len(webpath) and webpath[0] != '/':
-        webpath = "/" + webpath
-    c = FileStore(webpath, localpaths)
-    contexts += [c]
-    return c
-
-
-def getFileStorePaths(webpath):
-    global contexts
-    ret = []
-    for context in contexts:
-        if context.name == webpath:
-            for h in context.handlers:
-                ret.append(h.filesystem.root)
-    return ret
-
-
-def addFileStorePath(webpath, path):
-    global contexts
-    for context in contexts:
-        if context.name == webpath:
-            if path not in context.handlers:
-                context.addRoot(path)
 
 
 def setThreads(number):
@@ -4470,7 +2497,7 @@ def thread_status(req):
     req.write("""</body></html>""")
     req.channel.current_request = None
     req.reply_code = 200
-    return req.done()
+    return _request_handler.done(req)
 
 profiles = []
 
@@ -4494,9 +2521,9 @@ def profiling_status(req):
     req.write("""</body></html>""")
     req.channel.current_request = None
     req.reply_code = 200
-    return req.done()
+    return _request_handler.done(req)
 
-iolock = thread.allocate_lock()
+iolock = _named_lock('iolock')
 profiling = 0
 try:
     import hotshot
@@ -4525,24 +2552,24 @@ class AthanaThread:
     def worker_thread(self):
         server = self.server
         while 1:
-            server.queuelock.acquire()
-            if len(server.queue) == 0:
-                server.queuelock.release()
+            with server.queuelock:
+                queue_len = len(server.queue)
+                if queue_len > 0:
+                    function, req = server.queue.pop()
+                    self.lastrequest = time.time()
+                    self.status = "working"
+                    self.uri = req.fullpath
+            if queue_len == 0:
                 time.sleep(0.01)
             else:
-                function, req = server.queue.pop()
-                self.lastrequest = time.time()
-                self.status = "working"
-                self.uri = req.fullpath
-                server.queuelock.release()
                 if profiling:
                     self.prof = hotshot.Profile("/tmp/athana%d.prof" % self.number)
                     self.prof.start()
-                    
-                if log_request_time or profiling:  
+
+                if log_request_time or profiling:
                     timenow = time.time()
                 try:
-                    call_handler_func(server, function, req)
+                    call_handler_func(function, req)
                 except:
                     try:
                         logg.error("Error while processing request:", exc_info=1)
@@ -4573,12 +2600,11 @@ class AthanaThread:
                             else:
                                 self.old.write(txt)
 
-                    iolock.acquire()
-                    io = myio(sys.stdout)
-                    oldstdout, sys.stdout = sys.stdout, io
-                    st.print_stats(50)
-                    sys.stdout = oldstdout
-                    iolock.release()
+                    with iolock:
+                        io = myio(sys.stdout)
+                        oldstdout, sys.stdout = sys.stdout, io
+                        st.print_stats(50)
+                        sys.stdout = oldstdout
                     profiles += [(duration, self.uri, io.txt)]
                     profiles.sort()
                     profiles.reverse()
@@ -4588,25 +2614,6 @@ class AthanaThread:
                 self.duration = time.time() - self.lastrequest
 
 
-class MediatumForm(Form):
-    class Meta:
-        csrf = True
-        csrf_class = SessionCSRF
-        csrf_secret = str(config.get('csrf.secret_key'))
-        csrf_time_limit = timedelta(int(config.get('csrf.timeout', "7200")))
-
-    def validate_csrf_token(self, field):
-        try:
-            self._csrf.validate_csrf_token(self._csrf, field)
-        except ValidationError as e:
-            if (e.message == "CSRF token expired"):
-                self.csrf_token.current_token = self._csrf.generate_csrf_token(field)
-                csrf_errors = self.errors['csrf_token']
-                csrf_errors.remove("CSRF token expired")
-                if not any(csrf_errors):
-                    self.errors.pop("csrf_token")
-
-
 def runthread(athanathread):
     athanathread.worker_thread()
 
@@ -4614,19 +2621,15 @@ ATHANA_STARTED = False
 _ATHANA_HANDLER = None
 
 
-def run(host="0.0.0.0", port=8081, z3950_port=None):
+def run(host="0.0.0.0", port=8081):
     global ATHANA_STARTED, _ATHANA_HANDLER
-    check_date()
+    _request_handler.check_date()
     ph = _ATHANA_HANDLER = AthanaHandler()
     hs = http_server(host, port)
     hs.install_handler(ph)
 
     if len(ftphandlers) > 0:
         ftp = ftp_server(ftp_authorizer(), port=ftphandlers[0].getPort())
-
-    if z3950_port is not None:
-        import athana_z3950
-        z3950_server = athana_z3950.z3950_server(port=z3950_port)
 
     if multithreading_enabled:
         global threadlist
@@ -4687,23 +2690,3 @@ def stop_testrun():
     global _test_running
     _test_running = False
     _test_thread.join()
-
-
-# COMPAT: added functions
-
-def request_started(handler):
-    """Decorator for functions which should be run before the view handler is called"""
-    _request_started_handlers.append(handler)
-    return handler
-
-
-def request_finished(handler):
-    """Decorator for functions which should be run after the view handler is called"""
-    _request_finished_handlers.append(handler)
-    return handler
-
-
-def getBase():
-    return GLOBAL_ROOT_DIR
-
-

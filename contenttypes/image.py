@@ -28,7 +28,7 @@ from core import config, File, db
 from core.archive import Archive, get_archive_for_node
 from core.attachment import filebrowser
 from core.translation import t
-from core.transition.postgres import check_type_arg_with_schema
+from core.postgres import check_type_arg_with_schema
 from contenttypes.data import Content, prepare_node_data
 from utils.utils import isnewer, iso2utf8, utf8_decode_escape
 from utils.compat import iteritems

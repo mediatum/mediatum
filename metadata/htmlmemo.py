@@ -24,7 +24,7 @@ from collections import OrderedDict
 
 from mediatumtal import tal
 from core import config
-from core.transition import httpstatus
+from core import httpstatus
 from core.metatype import Metatype
 
 from core.translation import getDefaultLanguage

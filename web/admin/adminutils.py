@@ -26,7 +26,8 @@ from core import db, User, AuthenticatorInfo
 import core.users as users
 import core.config as config
 from core.translation import t, lang
-from core.transition import httpstatus, current_user, request
+from core.transition import current_user, request
+from core import httpstatus
 from core.systemtypes import Root
 from utils.strings import ensure_unicode_returned
 from utils.utils import Link, splitpath, parseMenuString, suppress

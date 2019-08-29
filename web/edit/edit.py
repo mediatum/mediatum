@@ -807,6 +807,10 @@ def content(req):
         v["notdirectory"] = 0
 
     current = req.params.get("tab", tabs)
+    # "_" was used as separator in tab name in early versions,
+    # but is not permitted anymore:
+    assert "_" not in tabs
+    assert "_" not in current
     logg.debug("... %s inside %s.%s: ->  !!! current = %s !!!", get_user_id(req), __name__, funcname(), current)
     msg = "%s selected editor module is %s" % (user.login_name, current)
     jsfunc = req.params.get("func", "")
@@ -905,9 +909,11 @@ def content(req):
                     break
 
     else:
-        t2 = current.split("_")[-1]
-        if t2 in editModules.keys():
-            c = editModules[t2].getContent(req, ids)
+        if tabs == 'upload' and current != 'publish':
+            current = 'upload'
+
+        if current in editModules.keys():
+            c = editModules[current].getContent(req, ids)
 
             if isinstance(c, int):
                 # module returned a custom http status code instead of HTML content

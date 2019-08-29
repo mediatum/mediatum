@@ -303,7 +303,8 @@ p.mediatum_templateerror #msg {font-family: Courier;}
 .mediatum_treecontent .mediatum_accordiontree div.mediatum_acc_content{border-right:1px solid #bbb!important;overflow:auto;}
 .mediatum_treecontent a{font-weight:normal!important; font-size:11px!important;padding:2px!important;width:100%;}
 .mediatum_treesouth{background-color:#bbb;}
-.mediatum_upload{border:1px solid silver;padding:5px;height:40px;display:block;float:left;margin:0px 5px;}
+.mediatum_upload{padding:5px;height:40px;display:block;float:left;margin:0px 5px;}
+.mediatum_upload:hover{background-color: #ddd;}
 .mediatum_upload_files{padding:20px;margin-left:150px;}
 .mediatum_uploadform_style{border:2px solid silver;}
 .mediatum_uploadform_widget{position:absolute;top:-7px;right:-7px;z-index:10002;}
@@ -428,7 +429,7 @@ iframe.ui-layout-center, div.ui-layout-north{border-width:0!important;padding:0;
     -moz-opacity: 0.5;-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";filter:alpha(opacity=50);}
 #previd{display:inline-block;}
 #schema{width:360px;}
-#search{float:right;border:1px solid silver}
+#search{float:right;}
 #selection {font-size:10px;padding:1px;}
 #select_target_dir{display:none;}
 #sub_content{border-width:1px 0 0 0!important;}

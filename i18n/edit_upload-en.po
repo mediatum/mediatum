@@ -80,8 +80,11 @@ msgstr "File(s) uploaded."
 msgid "edit_upload_bibtex_ok"
 msgstr "Bibtex file contains correct data and can be imported."
 
-msgid "upload_encoding_error"
-msgstr "Bibtex file has to be UTF-8 encoded!"
+msgid "upload_bibtex_unspecified_error"
+msgstr "Bibtex unspecified error, maybe not UTF-8 encoded!"
+
+msgid "upload_bibtex_date_error"
+msgstr "Bibtex error, incorrect date format"
 
 msgid "edit_upload_unpack"
 msgstr "unpack file content"

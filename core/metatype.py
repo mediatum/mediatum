@@ -47,6 +47,11 @@ class Metatype(object):
 
     joiner = '\n'
 
+    @classmethod
+    def get_name4schema(cls):
+        name = cls.__name__
+        return name[2:] if name.startswith("m_") else name
+
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
         return ""
 

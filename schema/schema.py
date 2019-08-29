@@ -1405,10 +1405,11 @@ class Maskitem(Node):
 mytypes = {}
 
 
-def _metatype_class(name, cls):
-    name = name[2:] if name.startswith("m_") else name
+def _metatype_class(cls):
+    name = cls.get_name4schema()
     logg.debug("loading metatype class %s", name)
     instance = cls()
+    assert name not in mytypes
     mytypes[name] = instance
     if hasattr(instance, "getLabels"):
         translation.addLabels(instance.getLabels())
@@ -1424,8 +1425,8 @@ def load_metatype_module(prefix_path, pkg_dir):
 
         def is_metatype_class(obj):
             return inspect.isclass(obj) and issubclass(obj, Metatype) and obj.__name__ != "Metatype"
-        for name, cls in inspect.getmembers(module, is_metatype_class):
-            _metatype_class(name, cls)
+        for _, cls in inspect.getmembers(module, is_metatype_class):
+            _metatype_class(cls)
 
 
 def init():

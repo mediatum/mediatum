@@ -23,6 +23,7 @@ import os
 import sys
 import codecs
 import tempfile
+from PIL import Image as _PILImage
 
 logg = logging.getLogger(__name__)
 
@@ -294,6 +295,10 @@ def initialize(config_filepath=None, prefer_config_filename=None):
     if log_dirpath:
         check_create_dir(log_dirpath, "log dir")
 
+    # set global PILImage max pixel size, a value of 0 means no limitation
+    _PILImage.MAX_IMAGE_PIXELS = int(get("image.upload_max_pixels", _PILImage.MAX_IMAGE_PIXELS))
+    if _PILImage.MAX_IMAGE_PIXELS == 0:
+        _PILImage.MAX_IMAGE_PIXELS = None
 
 
 def check_create_test_db_dir():

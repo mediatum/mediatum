@@ -40,6 +40,8 @@ def export(req):
     if p[0].isdigit():
         try:
             node = q(Data).get(p[0])
+            if not node:
+                return req.error(404, "Object not found")
         except:
             return _error(req, 404, "Object not found")
     else:

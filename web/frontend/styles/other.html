@@ -5,7 +5,7 @@
 
 <div id="object_main" >
     <div id="object_image">
-        <img tal:attributes="src python:'/thumb2/{}'.format(node.id)" style="width:200px;border:1px double silver;"/>
+        <img tal:attributes="src python:'/thumb2/{}'.format(node.id)"/>
         <tal:block replace="raw versions_html"></tal:block>
     </div>
     <div id="object_meta">

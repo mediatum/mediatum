@@ -9,7 +9,7 @@
 
 -block before_metadata
   if canseeoriginal
-    #object_image
+    .object_image.object_column.left.mediatum_paddingimg
       if zoom
         a(href=image_url, target='_blank')
           if node.get('width') >= node.get('height')
@@ -33,7 +33,7 @@
         = archive(highres_url, archive_fetch_url)
 
   else
-    #object_image
+    .object_image.object_column.left.mediatum_paddingimg
       if zoom
         a(href=image_url, target='_blank')
           if node.get('width') != ''

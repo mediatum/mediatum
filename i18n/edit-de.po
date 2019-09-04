@@ -417,3 +417,6 @@ msgstr "Vorschaubilder einblenden"
 
 msgid "preview_images_off"
 msgstr "Vorschaubilder ausblenden"
+
+msgid "edit_publish_selected_dirs"
+msgstr "Ausgewählte Verzeichnisse:"

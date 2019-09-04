@@ -58,7 +58,7 @@ button:hover, input[type="button"]:hover,input[type="submit"]:hover,input[type="
 }
 button:active, input[type="button"]:active,input[type="submit"]:active,input[type="reset"]:active, button:active, button[type="submit"]:active {
     position:relative;top:1px;}
-
+button[disabled]:hover{border: none;}
 textarea{
     font-family:arial, helvetica, sans-serif; resize: vertical;overflow: auto;
 }
@@ -103,11 +103,12 @@ div.mask_row {margin-bottom:6px;}
 .mediatum_childnodes{overflow:hidden;padding-top:2px;}
 .mediatum_clean-container {background-color:#ddd;position:relative;}
 .mediatum_clear_both{clear:both;}
-.mediatum_clear_left{clear:right;}
+.mediatum_clear_left{clear:left;}
 .mediatum_clear_right{clear:right;}
 .mediatum_color_red{color:red;}
 .mediatum_context-menu-home {overflow: hidden!important;}
 .mediatum_delbutton{padding-top:20px;}
+#mediatum_dest_names{width:auto;border:1px solid silver;padding:5px;margin:10px 20px;margin-left:200px;height:50px;overflow:auto;}
 .mediatum_edit_files_border{border:1px solid silver;height:225px;overflow:auto;}
 .mediatum_edit_files_cancel{width:150px;}
 .mediatum_edit_files_childobjects{border:1px solid #A4A4A4; width:129px;height:129px;float:left;margin-right:2px;text-align:center;margin-top:3px;}
@@ -256,6 +257,10 @@ div.mask_row {margin-bottom:6px;}
 .mediatum_paddingimg{padding-right:15px;padding-bottom:15px;}
 .mediatum_pagenumber{font-size:14px;margin-left:5px;margin-right:5px;}
 .mediatum_pagenumber_act{font-size:18px;}
+#mediatum_publish_error{left: 200px; top: 100px; position: absolute;}
+.mediatum_publish_form{margin:5px;}
+#mediatum_publish_operation{position:relative;margin-right:20px;overflow:hidden;}
+.mediatum_publish_op_div{width:200px;height:100px;float:left;}
 .mediatum_pluploadform-background{position:absolute;top:0px;left:0px;height:100%;width:100%;background-color:silver;opacity: 0.5;
     -moz-opacity: 0.5;-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";filter:alpha(opacity=50);}
 .mediatum_pointer{cursor:pointer;}
@@ -302,6 +307,18 @@ p.mediatum_templateerror #msg {font-family: Courier;}
 .mediatum_treecontent .mediatum_accordiontree h3 a{color:#fff;}
 .mediatum_treecontent .mediatum_accordiontree div.mediatum_acc_content{border-right:1px solid #bbb!important;overflow:auto;}
 .mediatum_treecontent a{font-weight:normal!important; font-size:11px!important;padding:2px!important;width:100%;}
+#mediatum_treeform{display:none;position:fixed;top:0px;left:0px;right:0px;bottom:0px;width:100%;height:100%;z-index:1000000;
+    height:auto;position:absolute;top:-10px;right:-7px;z-index:10002;}
+#mediatum_treeform-background{position:absolute;top:0px;left:0px;height:100%;width:100%;background-color:silver;opacity: 0.5; -moz-opacity: 0.5;
+    -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";filter:alpha(opacity=50);}
+#mediatum_treeform-form{position:absolute;top:0px;left:0px;bottom:0px;right:0px;padding:0px;margin:30px;z-index:1000001;
+    height:90%;width:80%;margin:auto;}
+.mediatum_treeform_btn_ok{width:200px;}
+.mediatum_treeform_btn_p{text-align:center;height:50px;margin-top:-15px;}
+.mediatum_treeform_close{position:absolute;top:-7px;right:-7px;z-index:10002;}
+.mediatum_treeform_dir{height:85%; overflow:auto;border:1px solid silver;margin:20px 20px;}
+.mediatum_treeform_div{height:90%;background-color:white;padding:5px;}
+/* #treeform-form form{background-color:white} */
 .mediatum_treesouth{background-color:#bbb;}
 .mediatum_upload{padding:5px;height:40px;display:block;float:left;margin:0px 5px;}
 .mediatum_upload:hover{background-color: #ddd;}

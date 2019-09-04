@@ -243,9 +243,9 @@ div.mask_row {margin-bottom:6px;}
 .mediatum_navigation_content{border-width:0 0 1px 1px!important;}
 .mediatum_new_name {width:300px;}
 .mediatum_new_value {width:305px;}
-.mediatum_node_grid_icons{display:flex;justify-content: center;padding-bottom:5px;}
+.mediatum_node_grid_icons{display:flex;justify-content: center;padding-bottom:5px;cursor:pointer;}
 .mediatum_node_grid_icon{width:30px;}
-.mediatum_node_icon{display:table-cell;width:30px;}
+.mediatum_node_icon{display:table-cell;width:30px;cursor:pointer;}
 .mediatum_node_icon_chk{width:30px;}
 .mediatum_node_icon_header{display:table-cell;padding-bottom: 5px;width:30px;}
 .mediatum_node_text {display:table-cell; font-size:10px; }

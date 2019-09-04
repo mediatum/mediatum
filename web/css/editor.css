@@ -264,6 +264,7 @@ div.mask_row {margin-bottom:6px;}
 .mediatum_pluploadform-background{position:absolute;top:0px;left:0px;height:100%;width:100%;background-color:silver;opacity: 0.5;
     -moz-opacity: 0.5;-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";filter:alpha(opacity=50);}
 .mediatum_pointer{cursor:pointer;}
+.mediatum_quick_publisher{background:aliceblue; padding:7px; border:1px solid #08088A; vertical-align:middle;text-align:center;width:50%;margin:auto;}
 .mediatum_searchdata {padding:20px;display:relative;}
 .mediatum_searchinfo {overflow:auto;width:100%;position:relative;max-height:200px;min-height:20px;border:1px solid silver;}
 .mediatum_subform_identifier{min-width:200px;padding:4px;}

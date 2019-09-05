@@ -37,7 +37,7 @@
         </div>
         <div id="mediatum_grid_check" class="mediatum_table_nodelist_row_header">
                 <div class="mediatum_node_icon_header mediatum_node_icon_chk">
-                    <input id="itemcheck" tal:attributes="name python:'node.id'; id python:u'check{}'.format('node.id')" onChange="doaction(this)"
+                    <input id="itemcheckall1" tal:attributes="name python:'node.id'; id python:u'check{}'.format('node.id')" onChange="doaction(this.checked)"
                     type="checkbox"/>
                 </div>
                 <div class="mediatum_nodelist_text" tal:content="python:'edit_selected_documents'" i18n:translate="">TEXT
@@ -54,7 +54,7 @@
                 <div tal:attributes="class python:'mediatum_showcontentthumb' if not node.id in faultyidlist else 'mediatum_showcontentthumb_error'">
                     <div class="mediatum_showcontentrow">
                         <div class="mediatum_node_icon mediatum_node_icon_chk">
-                            <input id="itemcheck" tal:attributes="name python:node.id; id python:u'check{}'.format(node.id)" onChange="checkObject(this)" type="checkbox"/>
+                            <input id="itemcheck1" tal:attributes="name python:node.id; id python:u'check{}'.format(node.id)" onChange="checkObject(this)" type="checkbox"/>
                         </div>
                     </div>
                         <div class="mediatum_showcontentthumbrow">
@@ -90,7 +90,7 @@
         <div id="mediatum_table_nodelist">
             <div class="mediatum_table_nodelist_row_header">
                 <div class="mediatum_node_icon_header mediatum_node_icon_chk">
-                    <input id="itemcheck" tal:attributes="name python:'node.id'; id python:u'check{}'.format('node.id')" onChange="doaction(this)"
+                    <input id="itemcheckall2" tal:attributes="name python:'node.id'; id python:u'check{}'.format('node.id')" onChange="doaction(this.checked)"
                     type="checkbox"/>
                 </div>
                 <div class="mediatum_node_icon"><p></p></div>
@@ -104,7 +104,7 @@
             <tal:block tal:repeat="node nodelist">
                 <div tal:attributes="class python:'mediatum_showcontent' if not node.id in faultyidlist else 'mediatum_showcontent_error'">
                     <div class="mediatum_node_icon mediatum_node_icon_chk">
-                        <input id="itemcheck" tal:attributes="name python:node.id; id python:u'check{}'.format(node.id)" onChange="checkObject(this)" type="checkbox"/>
+                        <input id="itemcheck2" tal:attributes="name python:node.id; id python:u'check{}'.format(node.id)" onChange="checkObject(this)" type="checkbox"/>
                     </div>
                     <div class="mediatum_node_icon mediatum_imgtooltipbase" tal:condition="python:hasattr(node, 'show_node_image')">
                         <a tal:attributes="href python:u'edit_content?id={}&tab=view'.format(node.id)" i18n:attributes="title edit_common_bigview_title" tabindex="-1">

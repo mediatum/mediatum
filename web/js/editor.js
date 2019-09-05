@@ -494,20 +494,21 @@ function getHelp(path){
 }
 
 /* edit operations */
-function doaction(action) {
-    $('input[id^="check"]').each(function(){
-        consoledb.log(value);
-        if(action.value=='markall') {
+function doaction(checked) {
+    console.log('list ' + checked);
+    if(checked)
+    {
+        $('input[id^="check"]').each(function(){
             $(this).prop('checked', true);
-        }else if(action.value=='marknone'){
+        });
+    }
+    else
+    {
+        $('input[id^="check"]').each(function(){
             $(this).prop('checked', false);
-        }else{ // invert
-            $(this).prop('checked', !($(this).is(':checked')));
-        }
-    });
-    action.value = "empty";
+        });
+    }
 }
-
 
 function checkObject(field) {
     if(field.checked) {

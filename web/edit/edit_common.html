@@ -54,7 +54,12 @@
                 <div tal:attributes="class python:'mediatum_showcontentthumb' if not node.id in faultyidlist else 'mediatum_showcontentthumb_error'">
                     <div class="mediatum_showcontentrow">
                         <div class="mediatum_node_icon mediatum_node_icon_chk">
-                            <input id="itemcheck1" tal:attributes="name python:node.id; id python:u'check{}'.format(node.id)" onChange="checkObject(this)" type="checkbox"/>
+                            <tal:block tal:condition="python:node in notpublished">
+                                <input id="itemcheck1" tal:attributes="name python:node.id; id python:u'check{}'.format(node.id)" checked="true" onChange="checkObject(this)" type="checkbox"/>
+                            </tal:block>
+                            <tal:block tal:condition="python:node not in notpublished">
+                                <input id="itemcheck1" tal:attributes="name python:node.id; id python:u'check{}'.format(node.id)" onChange="checkObject(this)" type="checkbox"/>
+                            </tal:block>
                         </div>
                     </div>
                         <div class="mediatum_showcontentthumbrow">
@@ -104,7 +109,12 @@
             <tal:block tal:repeat="node nodelist">
                 <div tal:attributes="class python:'mediatum_showcontent' if not node.id in faultyidlist else 'mediatum_showcontent_error'">
                     <div class="mediatum_node_icon mediatum_node_icon_chk">
-                        <input id="itemcheck2" tal:attributes="name python:node.id; id python:u'check{}'.format(node.id)" onChange="checkObject(this)" type="checkbox"/>
+                        <tal:block tal:condition="python:node in notpublished">
+                            <input id="itemcheck2" tal:attributes="name python:node.id; id python:u'check{}'.format(node.id)" checked="true" onChange="checkObject(this)" type="checkbox"/>
+                        </tal:block>
+                        <tal:block tal:condition="python:node not in notpublished">
+                            <input id="itemcheck2" tal:attributes="name python:node.id; id python:u'check{}'.format(node.id)" onChange="checkObject(this)" type="checkbox"/>
+                        </tal:block>
                     </div>
                     <div class="mediatum_node_icon mediatum_imgtooltipbase" tal:condition="python:hasattr(node, 'show_node_image')">
                         <a tal:attributes="href python:u'edit_content?id={}&tab=view'.format(node.id)" i18n:attributes="title edit_common_bigview_title" tabindex="-1">
@@ -133,7 +143,6 @@
             </tal:block>
         </div>
     </div>
-    <tal:block tal:content="raw chkjavascript"/>
     <div id="delete_text" i18n:translate="delete_object_question">TEXT</div>
     <div id="overlay_content">
         <div id="close">

@@ -331,25 +331,16 @@ def shownodelist(req, nodes, page, publishwarn=True, markunpublished=False, dir=
             script_array += "allobjects['%s'] = 0;\n" % child.id
             nodelist.append(child)
 
-    chkjavascript = ""
     notpublished = {}
     if publishwarn or markunpublished:
         homedirs = user.home_dir.all_children_by_query(q(Container))
-        if markunpublished:
-            chkjavascript = """<script language="javascript">"""
         for node in nodes_in_page:
             ok = 0
             for p in node.parents:
                 if p not in homedirs:
                     ok = 1
             if not ok:
-                if markunpublished:
-                    chkjavascript += """allobjects['check%s'] = 1;
-                                        document.getElementById('check%s').checked = true;
-                                     """ % (node.id, node.id)
-
                 notpublished[node] = node
-        chkjavascript += """</script>"""
         # if all nodes are properly published, don't bother
         # to warn the user
         if not notpublished:
@@ -364,7 +355,6 @@ def shownodelist(req, nodes, page, publishwarn=True, markunpublished=False, dir=
         unpublishedlink = "edit_content?tab=publish&id=" + unicode(uploaddir.id)
 
     html = req.getTAL("web/edit/edit_common.html", {"notpublished": notpublished,
-                                                    "chkjavascript": chkjavascript,
                                                     "unpublishedlink": unpublishedlink,
                                                     "nodelist": nodelist,
                                                     "faultyidlist": faultyidlist,

@@ -513,8 +513,15 @@ function doaction(checked) {
 function checkObject(field) {
     if(field.checked) {
         allobjects[field.name] = 1;
+        //check all objects with same field name because of two views
+        $('input[name^='+field.name+']').each(function(){
+            $(this).prop('checked', true);
+        });
     } else {
         allobjects[field.name] = 0;
+        $('input[name^='+field.name+']').each(function(){
+            $(this).prop('checked', false);
+        });
     }
 }
 

@@ -477,3 +477,7 @@ iframe.ui-layout-center, div.ui-layout-north{border-width:0!important;padding:0;
 .mediatum_edit_paging{padding-right:10px;padding-bottom:10px;float:right;}
 .mediatum_img_size{width:16px;height:16px;}
 .mediatum_img_size_big{width:20px;height:20px;}
+
+/* visual focus */
+a:focus{outline-style: dotted;outline-color: grey;outline-width: 1px;outline-offset: -1px;}
+.mediatum_tab_big:focus{outline-style: dotted;outline-color: grey;outline-width: 1px;outline-offset: 0px;}

@@ -42,10 +42,10 @@
                 </div>
                 <div class="mediatum_nodelist_text" tal:content="python:'edit_selected_documents'" i18n:translate="">TEXT
                 </div>
-                <div class="mediatum_node_icon" tal:attributes="onclick python:u'editSelected()'" target="content" i18n:attributes="title edit_common_edit_meta_selected"><img class="mediatum_img_size_big" src="/img/editor/mediatum_edit_black.svg" /></div>
-                <div class="mediatum_node_icon" tal:attributes="onclick python:u'movecopySelected(null, \'move\')'" target="content" i18n:attributes="title edit_common_edit_move_selected"><img class="mediatum_img_size_big" src="/img/editor/mediatum_move_black.svg"/></div>
-                <div class="mediatum_node_icon" tal:attributes="onclick python:u'movecopySelected(null, \'copy\')'" target="content" i18n:attributes="title edit_common_edit_copy_selected"><img class="mediatum_img_size_big" src="/img/editor/mediatum_copy_black.svg"/></div>
-                <div class="mediatum_node_icon" tal:attributes="onclick python:u'deleteSelected()'" i18n:attributes="title edit_common_edit_delete_selected" target="content"><img class="mediatum_img_size_big" src="/img/editor/mediatum_delete_black.svg"/></div>
+                <div class="mediatum_node_icon" tal:attributes="onclick python:u'editSelected()'" target="content" i18n:attributes="title edit_common_edit_meta_selected"><img class="mediatum_img_size_big" src="/img/editor/mediatum_edit_black.svg" tabindex="0"/></div>
+                <div class="mediatum_node_icon" tal:attributes="onclick python:u'movecopySelected(null, \'move\')'" target="content" i18n:attributes="title edit_common_edit_move_selected"><img class="mediatum_img_size_big" src="/img/editor/mediatum_move_black.svg" tabindex="0"/></div>
+                <div class="mediatum_node_icon" tal:attributes="onclick python:u'movecopySelected(null, \'copy\')'" target="content" i18n:attributes="title edit_common_edit_copy_selected"><img class="mediatum_img_size_big" src="/img/editor/mediatum_copy_black.svg" tabindex="0"/></div>
+                <div class="mediatum_node_icon" tal:attributes="onclick python:u'deleteSelected()'" i18n:attributes="title edit_common_edit_delete_selected" target="content"><img class="mediatum_img_size_big" src="/img/editor/mediatum_delete_black.svg" tabindex="0"/></div>
             </div>
         <!-- Show Thumbnail view-->
         <div id="mediatum_table_nodeview">
@@ -59,7 +59,7 @@
                     </div>
                         <div class="mediatum_showcontentthumbrow">
                     <div class="mediatum_showcontentthumbcellimg" tal:condition="python:hasattr(node, 'show_node_image')">
-                            <a tal:attributes="href python:u'edit_content?id={}&tab=view'.format(node.id)" i18n:attributes="title edit_common_bigview_title">
+                            <a tal:attributes="href python:u'edit_content?id={}&tab=view'.format(node.id)" i18n:attributes="title edit_common_bigview_title" class="mediatum_tab_big">
                         <img class="mediatum_thumbnail" tal:attributes="src python:u'/thumbs/{}'.format(node.id)"/></a>
                     </div>
                     <div tal:condition="python:not hasattr(node, 'show_node_image')">
@@ -76,10 +76,10 @@
                     </div>
                 </div>
                     <div class="mediatum_node_grid_icons">
-                        <div class="mediatum_node_grid_icon" tal:attributes="onclick python:u'editSelected({})'.format(node.id)" target="content" i18n:attributes="title edit_common_edit_meta"><img class="mediatum_center mediatum_img_size" src="/img/editor/mediatum_edit_black.svg"/></div>
-                        <div class="mediatum_node_grid_icon" tal:attributes="onclick python:u'return movecopySelected({}, \'move\')'.format(node.id)" target="content" i18n:attributes="title edit_common_edit_move"><img class="mediatum_center mediatum_img_size" src="/img/editor/mediatum_move_black.svg"/></div>
-                        <div class="mediatum_node_grid_icon" tal:attributes="onclick python:u'movecopySelected({}, \'copy\')'.format(node.id)" target="content" i18n:attributes="title edit_common_edit_copy"><img class="mediatum_center mediatum_img_size" src="/img/editor/mediatum_copy_black.svg"/></div>
-                        <div class="mediatum_node_grid_icon" tal:attributes="onclick python:u'deleteSelected({})'.format(node.id)" i18n:attributes="title edit_common_edit_delete" target="content"><img class="mediatum_center mediatum_img_size" src="/img/editor/mediatum_delete_black.svg"/></div>
+                        <div class="mediatum_node_grid_icon" tal:attributes="onclick python:u'editSelected({})'.format(node.id)" target="content" i18n:attributes="title edit_common_edit_meta"><img class="mediatum_center mediatum_img_size" src="/img/editor/mediatum_edit_black.svg" tabindex="0"/></div>
+                        <div class="mediatum_node_grid_icon" tal:attributes="onclick python:u'return movecopySelected({}, \'move\')'.format(node.id)" target="content" i18n:attributes="title edit_common_edit_move"><img class="mediatum_center mediatum_img_size" src="/img/editor/mediatum_move_black.svg" tabindex="0"/></div>
+                        <div class="mediatum_node_grid_icon" tal:attributes="onclick python:u'movecopySelected({}, \'copy\')'.format(node.id)" target="content" i18n:attributes="title edit_common_edit_copy"><img class="mediatum_center mediatum_img_size" src="/img/editor/mediatum_copy_black.svg" tabindex="0"/></div>
+                        <div class="mediatum_node_grid_icon" tal:attributes="onclick python:u'deleteSelected({})'.format(node.id)" i18n:attributes="title edit_common_edit_delete" target="content"><img class="mediatum_center mediatum_img_size" src="/img/editor/mediatum_delete_black.svg" tabindex="0"/></div>
                     </div>
                 </div>
             </tal:block>
@@ -95,10 +95,10 @@
                 <div class="mediatum_node_icon"><p></p></div>
                 <div class="mediatum_nodelist_text" tal:content="python:'edit_selected_documents'" i18n:translate="">TEXT
                 </div>
-                <div class="mediatum_node_icon" tal:attributes="onclick python:u'editSelected()'" target="content" i18n:attributes="title edit_common_edit_meta_selected"><img class="mediatum_img_size" src="/img/editor/mediatum_edit_black.svg"/></div>
-                <div class="mediatum_node_icon" tal:attributes="onclick python:u'movecopySelected(null, \'move\')'" target="content" i18n:attributes="title edit_common_edit_move_selected"><img class="mediatum_img_size" src="/img/editor/mediatum_move_black.svg"/></div>
-                <div class="mediatum_node_icon" tal:attributes="onclick python:u'movecopySelected(null, \'copy\')'" target="content" i18n:attributes="title edit_common_edit_copy_selected"><img class="mediatum_img_size" src="/img/editor/mediatum_copy_black.svg"/></div>
-                <div class="mediatum_node_icon" tal:attributes="onclick python:u'deleteSelected()'" i18n:attributes="title edit_common_edit_delete_selected" target="content"><img class="mediatum_img_size" src="/img/editor/mediatum_delete_black.svg"/></div>
+                <div class="mediatum_node_icon" tal:attributes="onclick python:u'editSelected()'" target="content" i18n:attributes="title edit_common_edit_meta_selected"><img class="mediatum_img_size" src="/img/editor/mediatum_edit_black.svg" tabindex="0"/></div>
+                <div class="mediatum_node_icon" tal:attributes="onclick python:u'movecopySelected(null, \'move\')'" target="content" i18n:attributes="title edit_common_edit_move_selected"><img class="mediatum_img_size" src="/img/editor/mediatum_move_black.svg" tabindex="0"/></div>
+                <div class="mediatum_node_icon" tal:attributes="onclick python:u'movecopySelected(null, \'copy\')'" target="content" i18n:attributes="title edit_common_edit_copy_selected"><img class="mediatum_img_size" src="/img/editor/mediatum_copy_black.svg" tabindex="0"/></div>
+                <div class="mediatum_node_icon" tal:attributes="onclick python:u'deleteSelected()'" i18n:attributes="title edit_common_edit_delete_selected" target="content"><img class="mediatum_img_size" src="/img/editor/mediatum_delete_black.svg" tabindex="0"/></div>
              </div>
             <tal:block tal:repeat="node nodelist">
                 <div tal:attributes="class python:'mediatum_showcontent' if not node.id in faultyidlist else 'mediatum_showcontent_error'">
@@ -106,29 +106,27 @@
                         <input id="itemcheck" tal:attributes="name python:node.id; id python:u'check{}'.format(node.id)" onChange="checkObject(this)" type="checkbox"/>
                     </div>
                     <div class="mediatum_node_icon mediatum_imgtooltipbase" tal:condition="python:hasattr(node, 'show_node_image')">
-                        <a tal:attributes="href python:u'edit_content?id={}&tab=view'.format(node.id)" i18n:attributes="title edit_common_bigview_title">
-                            <img class="mediatum_minithumb" tal:attributes="src python:u'/thumbs/{}'.format(node.id)"/>
+                        <a tal:attributes="href python:u'edit_content?id={}&tab=view'.format(node.id)" i18n:attributes="title edit_common_bigview_title" tabindex="-1">
+                            <img class="mediatum_minithumb" tal:attributes="src python:u'/thumbs/{}'.format(node.id)" tabindex="0"/>
                             <span class="mediatum_imghover"><img  tal:attributes="src python:u'/thumbs/{}'.format(node.id)"/></span>
                         </a>
                     </div>
                     <div class="mediatum_node_icon mediatum_imgtooltipbasedefault" tal:condition="python:not hasattr(node, 'show_node_image')">
-                        <a tal:attributes="href python:u'edit_content?id={}&tab=view'.format(node.id)" i18n:attributes="title edit_common_bigview_title">
-                            <img class="mediatum_minithumb" src="/img/doc_default.png"/>
+                        <a tal:attributes="href python:u'edit_content?id={}&tab=view'.format(node.id)" i18n:attributes="title edit_common_bigview_title" tabindex="-1">
+                            <img class="mediatum_minithumb" src="/img/doc_default.png" tabindex="0"/>
                             <span class="mediatum_imghoverdefault"><img tal:attributes="src python:u'/thumbs/{}'.format(node.id)"/></span>
                         </a>
                     </div>
                     <div class="mediatum_node_text no_overlap">
-                        <a tal:attributes="href python:u'edit_content?id={}&tab=view'.format(node.id)" i18n:attributes="title edit_common_bigview_title">
-                        <p>
+                        <a tal:attributes="href python:u'edit_content?id={}&tab=view'.format(node.id)" i18n:attributes="title edit_common_bigview_title" tabindex="0">
                             <tal:block tal:condition="python:hasattr(node, 'show_node_text')" tal:replace="raw python:node.show_node_text(None, language=language, separator='&'+'nbsp;')[:200]"/>
                             <tal:block tal:condition="python:not hasattr(node, 'show_node_text')" tal:replace="raw python:node.name"/>
-                        </p>
                         </a>
                     </div>
-                        <div class="mediatum_node_icon" tal:attributes="onclick python:u'editSelected({})'.format(node.id)" target="content" i18n:attributes="title edit_common_edit_meta"><img class="mediatum_img_size" src="/img/editor/mediatum_edit_black.svg"/></div>
-                        <div class="mediatum_node_icon" tal:attributes="onclick python:u'movecopySelected({}, \'move\')'.format(node.id)" target="content" i18n:attributes="title edit_common_edit_move"><img class="mediatum_img_size" src="/img/editor/mediatum_move_black.svg"/></div>
-                        <div class="mediatum_node_icon" tal:attributes="onclick python:u'movecopySelected({}, \'copy\')'.format(node.id)" target="content" i18n:attributes="title edit_common_edit_copy"><img class="mediatum_img_size" src="/img/editor/mediatum_copy_black.svg"/></div>
-                        <div class="mediatum_node_icon" tal:attributes="onclick python:u'deleteSelected({})'.format(node.id)" i18n:attributes="title edit_common_edit_delete" target="content"><img class="mediatum_img_size" src="/img/editor/mediatum_delete_black.svg"/></div>
+                        <div class="mediatum_node_icon" tal:attributes="onclick python:u'editSelected({})'.format(node.id)" target="content" i18n:attributes="title edit_common_edit_meta"><img class="mediatum_img_size" src="/img/editor/mediatum_edit_black.svg" tabindex="0"/></div>
+                        <div class="mediatum_node_icon" tal:attributes="onclick python:u'movecopySelected({}, \'move\')'.format(node.id)" target="content" i18n:attributes="title edit_common_edit_move"><img class="mediatum_img_size" src="/img/editor/mediatum_move_black.svg" tabindex="0"/></div>
+                        <div class="mediatum_node_icon" tal:attributes="onclick python:u'movecopySelected({}, \'copy\')'.format(node.id)" target="content" i18n:attributes="title edit_common_edit_copy"><img class="mediatum_img_size" src="/img/editor/mediatum_copy_black.svg" tabindex="0"/></div>
+                        <div class="mediatum_node_icon" tal:attributes="onclick python:u'deleteSelected({})'.format(node.id)" i18n:attributes="title edit_common_edit_delete" target="content"><img class="mediatum_img_size" src="/img/editor/mediatum_delete_black.svg" tabindex="0"/></div>
                 </div>
             </tal:block>
         </div>

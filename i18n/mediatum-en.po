@@ -587,10 +587,10 @@ msgid "tab_admin"
 msgstr "Administration"
 
 msgid "tab_imports"
-msgstr "System module Upload"
+msgstr "Upload"
 
 msgid "tab_publish"
-msgstr "System module Publish"
+msgstr "Publish"
 
 msgid "tab_statsaccess"
 msgstr "User statistics"

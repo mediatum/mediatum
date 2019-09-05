@@ -603,10 +603,10 @@ msgid "tab_admin"
 msgstr "Administration"
 
 msgid "tab_imports"
-msgstr "Systemmodul Upload"
+msgstr "Upload"
 
 msgid "tab_publish"
-msgstr "Systemmodul Publizieren"
+msgstr "Publizieren"
 
 msgid "tab_statsaccess"
 msgstr "Zugriffsstatistiken"

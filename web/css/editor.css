@@ -285,6 +285,7 @@ div.mask_row {margin-bottom:6px;}
 .mediatum_showcontentthumb_error:hover .actions{display:block;}
 .mediatum_showpreview{margin: 10px;clear:both;overflow:hidden;}
 .mediatum_showpreview_input{float:right;margin-bottom:10px;}
+.mediatum_showpreview_input_publish{float:left;margin-bottom:10px;}
 .mediatum_sortable_default{float:left; width:130px; height:130px; position:relative;cursor:move;border:1px solid silver;margin:0 5px 5px 0;}
 .mediatum_sub_content_content{padding:0!important;border-width:0 0 0 1px!important;}
 .mediatum_subcontent_form {height:100%;padding:0;}

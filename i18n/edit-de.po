@@ -264,7 +264,7 @@ msgid "unpublished_objects1"
 msgstr "Hinweis: Dieser Ordner enthält unpublizierte Objekte (Objekte die bisher nach aussen nicht sichtbar sind)."
 
 msgid "unpublished_objects2"
-msgstr "Quick-Publisher: Veröffentlichungsverzeichnisse auswählen"
+msgstr "Veröffentlichungs-Assistent"
 
 msgid "user_trash"
 msgstr "Papierkorb"

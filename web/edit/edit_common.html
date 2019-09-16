@@ -21,16 +21,16 @@
         $('#mediatum_showpreviewoff').show();
         $("#mediatum_showpreviewon").hide();
     };
+    function visitPage(id){
+        window.location = $("#unpub").attr("href");
+    }
     </script>
     <div id="scrollcontainer">
         <div id="scrollcontent">
-        <div id="publish" tal:condition="unpublishedlink">
-            <p class="mediatum_quick_publisher">
-                <a i18n:translate="unpublished_objects2" tal:attributes="href unpublishedlink">TEXT</a>
-            </p>
-        </div>
-
         <div class="mediatum_showpreview">
+            <div id="publish" tal:condition="unpublishedlink" class="mediatum_showpreview_input_publish">
+                <button class="mediatum_showpreview_btn" i18n:translate="unpublished_objects2" id="unpub" tal:attributes="href unpublishedlink;" onclick="visitPage('unpub');event.preventDefault();">TEXT</button>
+            </div>
             <div class="mediatum_showpreview_input">
                 <button class="mediatum_showpreview_btn" id="mediatum_showpreviewon" i18n:translate="preview_images_on" onclick="previewimageson();event.preventDefault();">TEXT</button>
                 <button class="mediatum_showpreview_btn" id="mediatum_showpreviewoff" i18n:translate="preview_images_off" onclick="previewimagesoff();event.preventDefault();">TEXT</button>

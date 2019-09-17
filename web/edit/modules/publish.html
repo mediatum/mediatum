@@ -84,9 +84,8 @@ method="post" id="mediatum_publish_form" name="publishform">
     <div class="mediatum_clear_left"> </div>
     <div>
         <p tal:condition="python:len(faultyerrlist)>0" id="mediatum_publish_error" class="error">
-                Objekte mit folgender ID konnten nicht publiziert werden:<br/>
-                <tal:block tal:repeat="item faultyerrlist" tal:replace="raw python:u'- {}<br/>'.format(item)"/>
-            </p>
+            <tal:block tal:repeat="item faultyerrlist" tal:replace="raw python:u'{}<br/>'.format(item)"/>
+        </p>
     </div>
     
     <div id="mediatum_publish_operation">

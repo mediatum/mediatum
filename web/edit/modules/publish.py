@@ -25,6 +25,8 @@ import logging
 from contenttypes import Collections, Container
 from core import Node
 from core import db
+from core.translation import lang as _lang
+from core.translation import t as _t
 
 logg = logging.getLogger(__name__)
 q = db.query
@@ -33,14 +35,19 @@ def getInformation():
     return {"version":"1.1", "system":1}
 
 def getContent(req, ids):
+    logg.error("publish.getContent")
     user = current_user
     publishdir = q(Node).get(ids[0])
     ret = ""
 
-    actionerror = []
+    errorids = []
+    publisherror = []
     changes = []
     if "dopublish" in req.params.keys():
-
+        logg.debug("dopublish")
+        num_req_err_nodes = 0
+        num_db_err_nodes = 0
+        num_rights_err_nodes = 0
         objlist = []
         for key in req.params.keys():
             if key.isdigit():
@@ -55,10 +62,13 @@ def getContent(req, ids):
             for mask in metadatatype.getMasks(type="edit"): # check required fields
                 if mask.has_read_access() and mask.getName() == obj.system_attrs.get("edit.lastmask"):
                     for f in mask.validateNodelist([obj]):
-                        actionerror.append(f)
+                        errorids.append(f)
                     mask_validated = True
 
-            if len(actionerror)>0: # object faulty
+            logg.error(errorids)
+            if len(errorids)>0: # object faulty
+                num_req_err_nodes +=1
+                # if object faulty, it is not necessary to do the rest of error handling for this object
                 continue
 
             if not mask_validated:
@@ -74,7 +84,7 @@ def getContent(req, ids):
 
                 # XXX: this error handling should be revised, I think...
 
-                error = False
+                error = False # general rights error
                 if not src.has_read_access():
                     logg.error("Error in publishing of node %r: source position %r has no read access.", obj.id, src.id)
                     error = True
@@ -84,10 +94,8 @@ def getContent(req, ids):
                 if not obj.has_write_access():
                     logg.error("Error in publishing of node %r: object has no write access.", obj.id)
                     error = True
-                if not isinstance(dest, Container):
-                    logg.error("Error in publishing of node %r: destination %r is not a directory.", obj.id, dest.id)
-                    error = True
-                if dest == src:
+                if not isinstance(dest, Container) or dest == src:
+                    # cannot happen normally due to selection tree
                     logg.error("Error in publishing of node %r: destination %r is not a directory.", obj.id, dest.id)
                     error = True
 
@@ -105,19 +113,40 @@ def getContent(req, ids):
                                   src.id, src.name, src.type,
                                   dest.id, dest.name, dest.type)
                     else:
-                        error_str = "Error in publishing of node %s: Destination node %s is child of node." % (obj_id, dest.id)
-                        actionerror.append((obj.id, error_str))
-                        logg.error(error_str)
+                        num_rights_err_nodes += 1
+                        errorids.append(obj.id)
+                        logg.error("Error in publishing of node {}: Destination node {} is child of node.".format(obj_id, dest.id))
+                else:
+                    # error already logged
+                    num_rights_err_nodes += 1
+                    errorids.append(obj.id)
 
             if remove_from_src:
                 try:
                     src.children.remove(obj)
                     db.session.commit()
                 except:
-                    error_str = "Error in publishing of node %s: Database error" % obj.id
-                    logg.exception(error_str)
-                    actionerror.append((obj.id, error_str))
-                    
+                    num_db_err_nodes += 1
+                    logg.exception("Error in publishing of node {}: Database error".format(obj.id))
+                    errorids.append(obj.id)
+
+
+        # error messages for publishing assistant
+        if num_req_err_nodes > 0:
+            if num_req_err_nodes < 2:
+                publisherror.append(_t(_lang(req), "error_publish_single_node"))
+            else:
+                publisherror.append(_t(_lang(req), "error_publish_multiple_nodes"))
+        if num_rights_err_nodes > 0:
+            if num_rights_err_nodes < 2:
+                publisherror.append(_t(_lang(req), "error_publish_rights_single"))
+            else:
+                publisherror.append(_t(_lang(req), "error_publish_rights_multiple"))
+        if num_db_err_nodes > 0:
+            if num_db_err_nodes < 2:
+                publisherror.append(_t(_lang(req), "error_publish_database_single"))
+            else:
+                publisherror.append(_t(_lang(req), "error_publish_database_multiple"))
 
         v = {}
         v["id"] = publishdir.id
@@ -135,10 +164,12 @@ def getContent(req, ids):
                             publishdir,
                             publishwarn=None,
                             markunpublished=1,
-                            faultyidlist=[id for (id, error_str) in actionerror]),
+                            faultyidlist=errorids,
+                            ),
          "basedir": q(Collections).one(),
          "script": "var currentitem = '%s';\nvar currentfolder = '%s'" % (publishdir.id, publishdir.id), "idstr": ids,
-         "faultyerrlist": [error_str for (id, error_str) in actionerror]}
+         "faultyerrlist": publisherror,
+        }
     v["csrf"] = req.csrf_token.current_token
     ret += req.getTAL("web/edit/modules/publish.html", v, macro="publish_form")
     return ret

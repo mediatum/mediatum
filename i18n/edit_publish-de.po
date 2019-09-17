@@ -31,3 +31,21 @@ msgstr "OK"
 
 msgid "edit_publish_cancel"
 msgstr "Abbrechen"
+
+msgid "error_publish_single_node"
+msgstr "Ein Datensatz konnte nicht veröffentlicht werden. Bitte prüfen Sie, ob alle Pflichtfelder ausgefüllt sind und Datum-Angaben das richtige Format besitzen."
+
+msgid "error_publish_multiple_nodes"
+msgstr "Mehrere Datensätze konnten nicht veröffentlicht werden. Bitte prüfen Sie, ob alle Pflichtfelder ausgefüllt sind und Datum-Angaben das richtige Format besitzen."
+
+msgid "error_publish_rights_single"
+msgstr "Ein Datensatz konnte nicht veröffentlicht werden. Bitte prüfen Sie Ihre Berechtigungen für das Zielverzeichnis."
+
+msgid "error_publish_rights_multiple"
+msgstr "Mehrere Datensätze konnten nicht veröffentlicht werden. Bitte prüfen Sie Ihre Berechtigungen für das Zielverzeichnis."
+
+msgid "error_publish_database_single"
+msgstr "Ein Datensatz konnte nicht veröffentlicht werden. Datenbankfehler. Bitte setzen Sie sich mit dem mediaTUM-Support in Verbindung."
+
+msgid "error_publish_database_multiple"
+msgstr "Mehrere Datensätze konnten nicht veröffentlicht werden. Datenbankfehler. Bitte setzen Sie sich mit dem mediaTUM-Support in Verbindung."

@@ -909,7 +909,7 @@ def content(req):
                     break
 
     else:
-        if tabs == 'upload' and current != 'publish':
+        if tabs == 'upload' and current == 'content':
             current = 'upload'
 
         if current in editModules.keys():

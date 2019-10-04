@@ -32,6 +32,10 @@ import os
 import hashlib
 import random
 import string
+try:
+    import uwsgi as _uwsgi
+except ImportError:
+    _uwsgi = None
 
 ROOT_STREAM_LOGFORMAT = '%(asctime)s [%(process)d/%(threadName)s] %(name)s %(levelname)s | %(message)s'
 # this also logs filename and line number, which is great for debugging
@@ -296,11 +300,14 @@ def initialize(level=None, log_filepath=None, log_filename=None, use_logstash=No
         logstash_handler = logstash.TCPLogstashHandler("localhost", 5959, version=1, message_type="mediatum")
         root_logger.addHandler(logstash_handler)
 
+    if _uwsgi:
+        return
+
     if log_filepath is None:
         log_filepath = config.get('logging.file', None)
-        
+
     if log_filepath is None:
-        log_dir = config.get("logging.dir", None) 
+        log_dir = config.get("logging.dir", None)
         if log_dir:
             if not log_filename:
                 # use name of start script as log file name

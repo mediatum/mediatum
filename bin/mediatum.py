@@ -150,12 +150,6 @@ def make_flask_app():
     args = parser.parse_args()
     print("start.py args:", args)
 
-    def signal_handler_usr1(signum, stack):
-        import utils.log
-        utils.log.reopen_log(None, None)
-
-    import signal
-    signal.signal(signal.SIGUSR1, signal_handler_usr1)
 
     if args.stackdump:
         stackdump_setup()

@@ -1,8 +1,27 @@
 # Change Log
 All notable changes to mediaTUM will be documented in this file.
 
-We mostly follow the conventions given in [Keep a Changelog](http://keepachangelog.com/) and relase a new version roughly once a month.
+We mostly follow the conventions given in [Keep a Changelog](http://keepachangelog.com/) and relase a new version several times a year
 Calendar Versioning is used for our version numbers: http://calver.org/
+
+
+## [v2019.100] - 2019-10-10
+
+### Added
+
+- workflowstop `addtofolder`
+
+### Changed
+
+- new editor layout with a new menu structure, which needs an "alembic upgrade head"
+- refactor code to prepare for migration from athana to flask; this changes some module paths (might require adaption of plugins)
+
+### Fixed
+
+- maximum size of uploaded images is configurable
+- bibtex import: correct error handling for incorrect date format
+- pdf text extraction with NULL bytes
+- editor: folders at uppermost level can be moved
 
 
 ## [v2019.021] - 2019-04-02

@@ -17,8 +17,7 @@ Go to the `mediatum` directory and run:
 
     nix-shell
 
-All binaries including the python interpreter with all needed dependencies are available from this shell.
-Updates are done automatically every time `nix-shell` is run.
+All binaries including the python interpreter with all needed dependencies are available from within this shell.
 
 The python interpreter link can be built with
 
@@ -27,17 +26,13 @@ The python interpreter link can be built with
 The interpreter at `pythonenv/bin/python` can be used to run mediaTUM, like in a virtualenv.
 This interpreter path should be used for IDEs like PyCharm or PyDev.
 
-### Nix Package Installation (Server)
-
-TODO
-
 
 ## Manual Installation
 
 You should use Nix instead. We don't support this installation method at the moment.
 If you really want to install everything by yourself, here are some hints:
 
-* install `python 2.7`, `postgresql 9.5`
+* install `python 2.7`, `postgresql 10.3`
 * optional external program for video support: `ffmpeg`
 * optional for image support: `exiftool`, `imagemagick`
 * optional for workflow graphics: `graphviz`
@@ -96,18 +91,3 @@ Default data for an empty mediaTUM instance can be loaded by:
 MediaTUM can be started like that if you want to use the python interpreter in your PATH (possibly in a virtualenv or nix shell):
 
     python mediatum.py
-
-
-## Running the tests
-
-Create the test database :
-
-    CREATE DATABASE test_mediatum OWNER mediatum;
-    \c test_mediatum
-    CREATE EXTENSION hstore SCHEMA public;
-
-The test configuration is defined in `test_mediatum.cfg`
-
-Then start the tests with (in a virtualenv or nix shell): 
-    
-    py.test

@@ -19,13 +19,9 @@ the Free Software Foundation.
 The documentation has its own repository at https://github.com/mediatum/mediatum-docs
 Browseable version at https://mediatum.readthedocs.org
 
-## Used Tools
+## Quick Installation In Three Steps
 
-* We use [PyVMMonitor](http://pyvmmonitor.com) for profiling, which is free for open source projects
-
-## Quick Test Installation In Three Steps
-
-This should work on all Linux distributions and MacOS. You need the [Nix package manager](https://nixos.org/nix) (version > 1.8) to run this.
+This should work on all Linux distributions, possibly also on MacOS. You need the [Nix package manager](https://nixos.org/nix) (version > 1.8) to run this.
 On non-NixOS machines, about 1,5GB disk space is required. On NixOS, about 1GB is required.
 
 1. Clone the repository: `git clone https://github.com/mediatum/mediatum`
@@ -39,5 +35,3 @@ The last step downloads all missing dependencies, it may take some minutes on th
 By default, database, upload and log files are written to `$HOME/mediatum_data`.
 
 See `INSTALL.md` for more details on installation and usage.
-
-

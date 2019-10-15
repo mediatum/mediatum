@@ -22,7 +22,6 @@ import os.path
 import urllib
 import flask as _flask
 from mediatumtal import tal
-import core.athana as athana
 import core.config as config
 from core.styles import CustomTheme, DefaultTheme
 from core import db

@@ -914,7 +914,7 @@ def makeSelfLink(req, params):
 
 # COMPAT: new param style like flask
 def make_legacy_params_dict(req):
-    """convert new-style params to old style athana params dict"""
+    """convert new-style params to old style params dict"""
     req.params = params = {}
     for key, values in _chain(req.form.iterlists(), req.args.iterlists()):
         value = ";".join(values)

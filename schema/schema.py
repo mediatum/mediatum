@@ -974,7 +974,7 @@ class Mask(Node):
                             continue
                         if not validateDateString(node.get(field.getName())):
                             ret.append(node.id)
-                            logg.error(error_str = "Error in publishing of node {}: The date field {} with content {} is not valid."
+                            logg.error("Error in publishing of node {}: The date field {} with content {} is not valid."
                                 .format(node.id, field.name, node.get(field.getName())))
         return ret
 

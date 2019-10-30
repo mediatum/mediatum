@@ -369,10 +369,12 @@ def importBibTeX(infile, node=None, req=None):
                 if k in datefields.keys():  # format date field
                     try:
                         v = str(parse_date(v, datefields[k]))
-                        # if date format does not contains '%' the result  must not be longer than the date format
+                        # if date format does not contains '%' the valid digit of the result must not be longer than the date format
                         # e.g. if datefields[k] is 'yyyy' then the result v must be clipped after 4 characters
+                        # afterwards the result is expanded again (without the invalid digits)
                         if datefields[k].find('%') < 0:
                             v = v[:len(datefields[k])]
+                            v = str(parse_date(v, datefields[k]))
                     except ValueError as e:
                         logg.exception("bibtex exception: %s: %s", k, v)
                         raise ValueError("bibtex_date_error")

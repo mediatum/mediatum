@@ -466,7 +466,7 @@ def search_nodes(query, mapping_prefix='Z3950_search_'):
         node = _core.db.query(_core.Node).get(node_id)
         return node
 
-    mapping_nodes = _core.db.query(_schema.Mapping).filter(_schema.Mapping.name.startswith(mapping_prefix))
+    mapping_nodes = _core.db.query(_schema.mapping.Mapping).filter(_schema.mapping.Mapping.name.startswith(mapping_prefix))
     roots_and_mappings = [(get_root_for_mapping(m), m) for m in mapping_nodes]
 
     if not roots_and_mappings:
@@ -492,7 +492,7 @@ def search_nodes(query, mapping_prefix='Z3950_search_'):
         # XXX: just to parse it afterwards?
         # XXX: better: create search tree and apply it to a query instead of using node.search()
         query_string = query.build_query_string(field_mapping)
-        searchtree = search.parse_searchquery_old_style(query_string)
+        searchtree = _core.search.parse_searchquery_old_style(query_string)
         if query_string is None:
             logg.info('unable to map query: [%r] using mapping %s', query, field_mapping)
             continue

@@ -150,7 +150,7 @@ def make_app():
         _uwsgi.cache_set("secret_key", secret_key)
         secret_key = _uwsgi.cache_get("secret_key")
     admin_app.config["SECRET_KEY"] = secret_key
-    admin_app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(int(config.get('flask.timeout', "7200")))
+    admin_app.config['PERMANENT_SESSION_LIFETIME'] = int(config.get('admin.session_expiration_time', 7200))
 
     if DEBUG:
         admin_app.debug = True

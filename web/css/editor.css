@@ -337,7 +337,7 @@ p.mediatum_templateerror #msg {font-family: Courier;}
 div.metaeditor{overflow:hidden;}
 div.metaeditor div.label{width:100px;}
 div.metaeditor div#editor_content{margin-left:110px;}
-.no_overlap{ overflow: hidden;text-overflow: ellipsis;}
+.no_overlap{ overflow: hidden;text-overflow: ellipsis; white-space: nowrap; max-width: 50px; }
 .readonly span.fancytree-title{color:#666!important;font-weight:normal!important;margin-left:3px;cursor:not-allowed}
 td.silver{background-color:#efefef;}
 span.required {color:#ff0000;}

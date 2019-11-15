@@ -130,7 +130,7 @@
                     </div>
                     <div class="mediatum_node_text no_overlap">
                         <a tal:attributes="href python:u'edit_content?id={}&tab=view'.format(node.id)" i18n:attributes="title edit_common_bigview_title" tabindex="0">
-                            <tal:block tal:condition="python:hasattr(node, 'show_node_text')" tal:replace="raw python:node.show_node_text(None, language=language, separator='&'+'nbsp;')[:200]"/>
+                            <tal:block tal:condition="python:hasattr(node, 'show_node_text')" tal:replace="raw python:node.show_node_text(None, language=language, separator='&'+'nbsp;')"/>
                             <tal:block tal:condition="python:not hasattr(node, 'show_node_text')" tal:replace="raw python:node.name"/>
                             <span class="mediatum_color_red" tal:condition="python:node in notpublished" i18n:translate="notpublished">TEXT</span>
                         </a>

@@ -370,7 +370,7 @@ def extra_log_info_from_req(req, add_user_info=True):
         extra["files"] = [{"filename": f.filename,
                            "tempname": f.tempname,
                            "content_type": f.content_type,
-                           "filesize": f.filesize} for f in req.files.values()]
+                           "filesize": os.path.getsize(f.filename)} for f in req.files.values()]
 
     if add_user_info:
         from core.users import user_from_session

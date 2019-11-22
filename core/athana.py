@@ -722,11 +722,11 @@ class http_channel (_athana_z3950.async_chat):
                         (file, fun, line), t, v, tbinfo = asyncore.compact_traceback()
                         logg.error('Server Error: %s, %s: file: %s line: %s', t, v, file, line, exc_info=1)
                         with suppress(Exception, warn=False):
-                            error(r, 500)
+                            _request_handler.error(r, 500)
                     return
 
             # no handlers, so complain
-            error(r, 404)
+            _request_handler.error(r, 404)
 
 # ===========================================================================
 #                                                HTTP Server Object

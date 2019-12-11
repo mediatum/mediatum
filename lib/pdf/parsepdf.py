@@ -24,6 +24,7 @@ from PIL import Image, ImageDraw
 from core import config
 import os
 from subprocess import CalledProcessError
+from utils.utils import suppress as _suppress
 import utils.process
 import codecs
 
@@ -145,8 +146,10 @@ def parsePDF(filename, tempdir):
     except CalledProcessError:
         logg.exception("failed to normalize fulltext from file %s", filename)
 
-    os.remove(fulltext_from_pdftotext)
-    os.remove(imgfile)
+    with _suppress(OSError, warn=False):
+        os.remove(fulltext_from_pdftotext)
+    with _suppress(OSError, warn=False):
+        os.remove(imgfile)
 
 
 def makeThumbs(src, thumb128, thumb300):

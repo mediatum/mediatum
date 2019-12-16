@@ -1274,8 +1274,6 @@ def handle_request(req):
     req.app_cache = {}
     req.use_chunked = 0
 
-    _logg.info('%s - - %s "%s"', req.remote_addr, _time.strftime('[%d/%b/%Y:%H:%M:%S ]', _time.gmtime()), req)
-
     path = _urllib.unquote(path)
 
     req.full_path = _urllib.unquote(req.full_path)

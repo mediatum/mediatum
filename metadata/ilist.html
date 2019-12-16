@@ -152,17 +152,14 @@
                         <th>
                             <span i18n:translate="popup_index_header">TEXT</span>: 
                             <div style="position:absolute; right:8px;top:8px">
-                                <a tal:attributes="href python:u'/metatype/ilist?print=do&name={}'.format(fieldname)"><img src="/img/print_icon.gif" border="0px"/></a>
+                              <a tal:attributes="href python:u'/metatype/ilist?print=do&name={}&schema={}'.format(fieldname,schema)"><img src="/img/print_icon.gif" border="0px"/></a>
                             </div>
                         </th>
                     </tr>
                     <tr>
                         <td class="content">
-                            <select multiple id="values" class="sel" onchange="setNumber()">
-                                <tal:block tal:repeat="word index">
-                                    <option tal:condition="python:word and len(word)" tal:attributes="value word" tal:content="word"/>
-                                </tal:block>
-                            </select>
+                            <select multiple id="values" class="sel" onchange="setNumber()" tal:content="raw option_list"/>
+
                             <div style="text-align:right;float:right">
                                 <small style="font-size:9px"><span id="count">2</span> <span i18n:translate="popup_indexnumber">TEXT</span></small>
                             </div>

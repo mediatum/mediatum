@@ -19,8 +19,11 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import itertools as _itertools
 import logging
+import operator as _operator
 import locale
+import html as _html
 from sqlalchemy import func, sql
 from mediatumtal import tal
 from utils.utils import esc, suppress
@@ -107,11 +110,13 @@ class m_ilist(Metatype):
 
         if req.params.get("print", "") != "":
             req.reply_headers["Content-Disposition"] = "attachment; filename=index.txt"
-            for word in index:
-                req.write(word.strip() + "\r\n")
+            req.write(u"".join(_itertools.imap(u"{}\r\n".format,
+                               _itertools.imap(_operator.methodcaller("strip"), index))))
             return
 
-        req.writeTAL("metadata/ilist.html", {"index": index, "fieldname": fieldname}, macro="popup")
+        option_list = _itertools.imap(_html.escape,index)
+        option_list = u"".join(_itertools.imap(u"<option value=\"{0}\">{0}</option>\n".format,option_list))
+        req.writeTAL("metadata/ilist.html", {"option_list": option_list, "fieldname": fieldname, "schema": schema}, macro="popup")
         return httpstatus.HTTP_OK
 
     # method for additional keys of type spctext

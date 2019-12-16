@@ -97,8 +97,8 @@ CREATE OR REPLACE FUNCTION count_list_values_for_all_content_children(parent_id 
     AS $f$
 DECLARE
 BEGIN
-    RETURN QUERY SELECT val, count(val) 
-    FROM (SELECT trim(unnest(regexp_split_to_array(attrs->>attr, ';'))) AS val 
+    RETURN QUERY SELECT val, count(val)
+    FROM (SELECT trim(unnest(string_to_array(attrs->>attr, ';'))) AS val
             FROM node
             JOIN noderelation nr on node.id=nr.cid
             WHERE nr.nid=parent_id
@@ -119,7 +119,7 @@ CREATE OR REPLACE FUNCTION get_list_values_for_nodes_with_schema(schema_ text, a
 DECLARE
 BEGIN
     RETURN QUERY SELECT DISTINCT val
-    FROM (SELECT trim(unnest(regexp_split_to_array(attrs->>attr, ';'))) AS val 
+    FROM (SELECT trim(unnest(string_to_array(attrs->>attr, ';'))) AS val
             FROM node
             WHERE node.schema=schema_) q
     WHERE val IS NOT NULL

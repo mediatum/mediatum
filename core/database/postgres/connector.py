@@ -271,7 +271,6 @@ class PostgresSQLAConnector(object):
         from core.database.postgres.user import User, UserGroup, UserToUserGroup, AuthenticatorInfo, OAuthUserCredentials
         from core.database.postgres.permission import AccessRule, AccessRuleset, NodeToAccessRule, NodeToAccessRuleset, AccessRulesetToRule
         from core.database.postgres.setting import Setting
-        from core.database.postgres.search import Fts
         return (
             File,
             NodeToFile,
@@ -287,7 +286,6 @@ class PostgresSQLAConnector(object):
             NodeToAccessRuleset,
             AccessRulesetToRule,
             Setting,
-            Fts,
             NodeType,
             NodeAlias)
 
@@ -390,8 +388,6 @@ class PostgresSQLAConnector(object):
         return False
 
     def create_tables(self, conn):
-        # Fts is imported nowhere else, make it known to SQLAlchemy by importing it here
-        from core.database.postgres.search import Fts
         self.metadata.create_all(conn)
 
     def drop_tables(self, conn):

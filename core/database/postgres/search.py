@@ -10,8 +10,12 @@ import itertools as _itertools
 import operator as _operator
 
 import logging
-from sqlalchemy import func
+from sqlalchemy import func, Index as _Index
 
+import utils.utils as _utils
+import utils.locks as _locks
+from core.database.postgres import DB_SCHEMA_NAME as _DB_SCHEMA_NAME
+from core import db
 from core.search import SearchQueryException
 from core.search.config import get_default_search_languages
 from core.search.representation import AttributeMatch, FullMatch, SchemaMatch, FulltextMatch, AttributeCompare, TypeMatch, And, Or
@@ -186,3 +190,60 @@ def apply_searchtree_to_query(query, searchtree, languages=None):
             raise NotImplementedError(str(n))
 
     return query.filter(walk(searchtree))
+
+
+def _check_search_indexes_node(type, languages):
+    """
+    checks if search indexes exists and create them if they not exists
+    :param type: "attrs" or "fulltext"
+    :param languages: tuple of languages
+    :return: None
+    """
+
+    index_prefix = "ix_{type}_node".format(type=type)
+    index_auto_prefix = _utils.make_db_auto_prefix(index_prefix)
+    current_indexnames = set()
+    res = db.session.execute(
+        "SELECT indexname FROM pg_indexes WHERE schemaname = '{schema}' AND tablename = 'node'".format(schema=_DB_SCHEMA_NAME))
+    for index in res.fetchall():
+        indexname = index[0]
+        if indexname.startswith(index_auto_prefix):
+            current_indexnames.add(indexname)
+
+    wanted_indexnames = set()
+    wanted_indexes_lang = {}
+    for lang in languages:
+        indexname = _utils.make_db_auto_name(index_prefix, "index", lang)
+        wanted_indexnames.add(indexname)
+        wanted_indexes_lang[indexname] = lang
+
+    needed_indexnames = wanted_indexnames - current_indexnames
+    needed_indexes = []
+    for indexname in needed_indexnames:
+        lang = wanted_indexes_lang[indexname]
+        if type == "attrs":
+            indexfunc = func.jsonb_object_values_to_tsvector(lang, Node.attrs)
+        else:
+            indexfunc = func.to_tsvector_safe(lang, Node.fulltext)
+        needed_indexes.append(_Index(indexname, indexfunc, postgresql_using="gin"))
+        logg.info('_check_search_indexes_node: create index {}'.format(indexname))
+
+    if needed_indexes:
+        map(_operator.methodcaller("create"), needed_indexes)
+
+    for unneeded_index in current_indexnames - wanted_indexnames:
+        db.session.execute(
+            "DROP INDEX {}".format(unneeded_index))
+    db.session.commit()
+
+
+def check_fulltext_attrs_search_indexes_node():
+    """
+    checks if search indexes for attributes and fulltext exists and create them if not
+    unused indexes are removed
+    :return: None
+    """
+    languages = get_default_search_languages()
+    with _locks.named_lock('createsearchindices'):
+        _check_search_indexes_node("attrs", languages)
+        _check_search_indexes_node("fulltext", languages)

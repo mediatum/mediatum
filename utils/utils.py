@@ -27,6 +27,8 @@ import hashlib
 import re
 import random
 import io
+import json as _json
+import base64 as _base64
 from warnings import warn
 from urlparse import parse_qsl, urlsplit, urlunsplit
 from urllib import quote, urlencode
@@ -1058,6 +1060,44 @@ def find_free_port():
     finally:
         s.close()
     return port
+
+
+_db_auto_name_match_allowed_chars = re.compile("^([_a-zA-Z0-9_]+)$").match
+_db_auto_name_match_allowed_sql_types = ("function", "trigger", "index", "column")
+
+
+def make_db_auto_prefix(prefix):
+    """
+    appends "_auto" at the prefix
+    :param prefix: prefix with allowed characters: _a-zA-Z0-9
+    :return: <prefix>_auto
+    """
+    assert _db_auto_name_match_allowed_chars(prefix)
+    return "{prefix}_auto".format(prefix=prefix)
+
+
+def make_db_auto_name(prefix, sql_type, name):
+    """
+    creates a unique name assambled with prefix, sql_type and name and a hash value with an length
+    not longer than 63 characters of the form <prefix>_auto_<hash>_<name>
+    name is truncated if the result is longer than 63 characters
+    :param prefix: prefix with allowed characters: _a-zA-Z0-9
+    :param sql_type: must be "function", "trigger", "index" or "column", used for hash creation
+    :param name: name
+    :return: <prefix>_auto_<hash>_<name>
+    """
+    assert _db_auto_name_match_allowed_chars(prefix)
+    assert sql_type in _db_auto_name_match_allowed_sql_types
+    s = _json.dumps({"prefix": prefix, "sql_type": sql_type, "name": name},sort_keys=True)
+    # 128bit hash is guaranteed to be unique
+    h = hashlib.sha512(s).digest()[:128/8]
+    hashb32 = _base64.b32encode(h).lower().replace("=", "")
+    rv = "{prefix_auto}_{hash}".format(prefix_auto=make_db_auto_prefix(prefix), hash=hashb32)
+    if len(rv) > 62:
+        raise ValueError("prefix too long")
+    rv = "{rv}_{name}".format(rv=rv, name=name)[:63]
+    assert _db_auto_name_match_allowed_chars(rv)
+    return rv
 
 
 if __name__ == "__main__":

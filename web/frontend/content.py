@@ -17,6 +17,9 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+
+import operator as _operator
+
 from collections import OrderedDict
 import logging
 from warnings import warn
@@ -166,38 +169,32 @@ def make_cond(name_to_comp, invert=False):
         return comparisons[op_name](node_expr, val) | (node_expr == None)
 
 
-def _position_filter(sortfields_to_comp, after=False, before=False):
+def _position_filter(sortfields_to_comp, before):
 
-    assert before or after
+    conds = list()
+    prev_sortfields_to_comp = list()
 
-    iter_sortfield = iteritems(sortfields_to_comp)
-    prev_sortfields_to_comp = []
+    # collect sortfields
+    for sortfield_to_comp in sortfields_to_comp.iteritems():
+        # We are doing a "tuple" comparision here.
+        # If the first field is equivalent, we have to compare the seconds field and so on.
 
-    first_sortfield = next(iter_sortfield)
-    cond = make_cond(first_sortfield, invert=before)
-    prev_sortfields_to_comp.append(first_sortfield)
+        # XXX: There are cases where `sub_cond` becomes `None`.
+        # This leads to an error that we have to fix somehow.
 
-    # add remaining sortfields if present
-    for sortfield_to_comp in iter_sortfield:
-        # We are doing a "tuple" comparision here. If the first field is equivalent, we have to compare the seconds field and so on.
         # first add comparison for current field...
         sub_cond = make_cond(sortfield_to_comp, invert=before)
+
         # ... and add equivalence conditions for previous fields
-        for prev in prev_sortfields_to_comp:
-            expr = node_value_expression(prev[0])
-            # XXX: can we replace this by make_cond or something like that?
-            eq_cond = expr == _prepare_value(prev[0], prev[1][1])
-            sub_cond &= eq_cond
+        prevs = ((prev[0], prev[1][1]) for prev in prev_sortfields_to_comp)
+        # XXX: can we replace this by make_cond or something like that?
+        prevs = (node_value_expression(prev[0]) == _prepare_value(*prev) for prev in prevs)
+        conds.append(reduce(_operator.and_,prevs,sub_cond))
 
         prev_sortfields_to_comp.append(sortfield_to_comp)
 
-        # or-append condition for current field to full condition
-        if cond is None:
-            cond = sub_cond
-        else:
-            cond |= sub_cond
-
-    return cond
+    conds = (cond for cond in conds if cond is not None) # sometimes `make_cond` returns None
+    return reduce(_operator.or_,conds)  # or-link all conditions
 
 
 def apply_order_by_for_sortfields(query, sortfields_to_comp, before=False):
@@ -476,7 +473,7 @@ class ContentList(ContentBase):
                 # we want to display the node _after_ or _before_ `show_node`
                 sortfields_to_comp = prepare_sortfields(show_node, self.sortfields)
                 before = nav == "prev"
-                position_cond = _position_filter(sortfields_to_comp, after=nav=="next", before=before)
+                position_cond = _position_filter(sortfields_to_comp, before)
                 q_nodes = self.node_query.filter(position_cond)
                 q_nodes = apply_order_by_for_sortfields(q_nodes, sortfields_to_comp, before=before)
 
@@ -504,9 +501,10 @@ class ContentList(ContentBase):
         # nothing set <=> first page
 
         if self.after or self.before:
+            assert not (self.after and self.before)
             comp_node = q(Node).get(self.after or self.before)
             sortfields_to_comp = prepare_sortfields(comp_node, self.sortfields)
-            position_cond = _position_filter(sortfields_to_comp, self.after, self.before)
+            position_cond = _position_filter(sortfields_to_comp, self.before)
             q_nodes = q_nodes.filter(position_cond)
         else:
             # first page
@@ -540,7 +538,7 @@ class ContentList(ContentBase):
                 refetch_limit = refetch_limit * limit_count / node_count + 1
                 limit_count += refetch_limit
                 sortfields_to_comp = prepare_sortfields(nodes[-1], self.sortfields)
-                position_cond = _position_filter(sortfields_to_comp, self.after or not self.before, self.before)
+                position_cond = _position_filter(sortfields_to_comp, self.before)
                 q_additional_nodes = self.node_query.filter(position_cond)
                 q_additional_nodes = apply_order_by_for_sortfields(q_additional_nodes, sortfields_to_comp, self.before)
 

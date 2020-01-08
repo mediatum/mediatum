@@ -357,6 +357,11 @@ class ContentList(ContentBase):
         self.before = req.args.get("before", type=int)
         self.after = req.args.get("after", type=int)
 
+        if self.before and self.after:  # this would be an intentional user error
+            self.before = 0
+            self.after = 0
+            raise RuntimeError("cannot use 'before' AND 'after' simultaneously")
+
         for i in range(SORT_FIELDS):
             key = "sortfield" + str(i)
             if key not in req.args:

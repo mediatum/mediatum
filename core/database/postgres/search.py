@@ -46,17 +46,21 @@ def _rewrite_prefix_search(t):
     return term_without_leading_wildcard[:starpos] + u":*"
 
 
+_escape_postgres_ts_replacements = tuple(z.split() for z in (
+    u'\\ \\\\',
+    u"& \&",
+    u"| \|",
+    u"! \!",
+    u": \:",
+    u'" \"',
+    u'( \(',
+    u') \)',
+   ))
+
 def _escape_postgres_ts_operators(t):
-    return (t
-            .replace(u'\\', ur'\\')
-            .replace(u"&", ur"\&")
-            .replace(u"|", ur"\|")
-            .replace(u"!", ur"\!")
-            .replace(u":", ur"\:")
-            .replace(u'"', ur'\"')
-            .replace(u'(', ur'\(')
-            .replace(u')', ur'\)')
-    )
+    for x,y in _escape_postgres_ts_replacements:
+        t = t.replace(x,y)
+    return t
 
 
 def _prepare_searchstring(op, searchstring):

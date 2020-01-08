@@ -19,11 +19,11 @@ from core.database.postgres.node import Node
 
 
 comparisons = {
-    ">": (lambda l, r: l > r),
-    "<": (lambda l, r: l < r),
-    ">=": (lambda l, r: l >= r),
-    "<=": (lambda l, r: l <= r),
-    "eq": (lambda l, r: l == r)
+    ">": _operator.gt,
+    "<": _operator.lt,
+    ">=": _operator.ge,
+    "<=": _operator.le,
+    "eq": _operator.eq,
 }
 
 logg = logging.getLogger(__name__)

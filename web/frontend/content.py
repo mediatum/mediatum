@@ -481,6 +481,9 @@ class ContentList(ContentBase):
                 sortfields_to_comp = prepare_sortfields(None, self.sortfields)
                 q_nodes = apply_order_by_for_sortfields(self.node_query, sortfields_to_comp, before=nav=="last")
 
+            else:
+                raise RuntimeError("unknown 'nav' value")
+
             # replace show_node with our navigation result if something was found. Else, just display the old node.
             new_node = q_nodes.first()
             if new_node:

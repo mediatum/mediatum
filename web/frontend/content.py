@@ -166,7 +166,7 @@ def make_cond(name_to_comp, invert=False):
         return comparisons[op_name](node_expr, val) | (node_expr == None)
 
 
-def position_filter(sortfields_to_comp, after=False, before=False):
+def _position_filter(sortfields_to_comp, after=False, before=False):
 
     assert before or after
 
@@ -471,7 +471,7 @@ class ContentList(ContentBase):
                 # we want to display the node _after_ or _before_ `show_node`
                 sortfields_to_comp = prepare_sortfields(show_node, self.sortfields)
                 before = nav == "prev"
-                position_cond = position_filter(sortfields_to_comp, after=nav=="next", before=before)
+                position_cond = _position_filter(sortfields_to_comp, after=nav=="next", before=before)
                 q_nodes = self.node_query.filter(position_cond)
                 q_nodes = apply_order_by_for_sortfields(q_nodes, sortfields_to_comp, before=before)
 
@@ -501,7 +501,7 @@ class ContentList(ContentBase):
         if self.after or self.before:
             comp_node = q(Node).get(self.after or self.before)
             sortfields_to_comp = prepare_sortfields(comp_node, self.sortfields)
-            position_cond = position_filter(sortfields_to_comp, self.after, self.before)
+            position_cond = _position_filter(sortfields_to_comp, self.after, self.before)
             q_nodes = q_nodes.filter(position_cond)
         else:
             # first page
@@ -535,7 +535,7 @@ class ContentList(ContentBase):
                 refetch_limit = refetch_limit * limit_count / node_count + 1
                 limit_count += refetch_limit
                 sortfields_to_comp = prepare_sortfields(nodes[-1], self.sortfields)
-                position_cond = position_filter(sortfields_to_comp, self.after or not self.before, self.before)
+                position_cond = _position_filter(sortfields_to_comp, self.after or not self.before, self.before)
                 q_additional_nodes = self.node_query.filter(position_cond)
                 q_additional_nodes = apply_order_by_for_sortfields(q_additional_nodes, sortfields_to_comp, self.before)
 

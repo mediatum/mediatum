@@ -7,6 +7,7 @@
 """
 
 import itertools as _itertools
+import operator as _operator
 
 import logging
 from sqlalchemy import func
@@ -81,15 +82,13 @@ def make_fulltext_expr_tsvec(languages, searchstring, op="&"):
     """
     prepared_searchstring = _prepare_searchstring(op, searchstring)
 
-    ts_query = func.to_tsquery(languages[0], prepared_searchstring)
+    mk_query = lambda lang: func.to_tsquery(lang, prepared_searchstring)
+    ts_queries = _itertools.imap(mk_query, languages)
+    ts_query = reduce(lambda query1, query2: query1.op("||")(query2), ts_queries)
 
-    for language in languages[1:]:
-        ts_query = ts_query.op("||")(func.to_tsquery(language, prepared_searchstring))
-
-    cond = func.to_tsvector_safe(languages[0], Node.fulltext).op("@@")(ts_query)
-    for language in languages[1:]:
-        cond = cond.op("or")(func.to_tsvector_safe(language, Node.fulltext).op("@@")(ts_query))
-    return cond
+    mk_cond = lambda lang: func.to_tsvector_safe(lang, Node.fulltext).op("@@")(ts_query)
+    conds = _itertools.imap(mk_cond, languages)
+    return reduce(lambda cond1, cond2: cond1.op("or")(cond2), conds)
 
 
 def _make_attrs_expr_tsvec(languages, searchstring, op="&"):
@@ -100,15 +99,13 @@ def _make_attrs_expr_tsvec(languages, searchstring, op="&"):
     """
     prepared_searchstring = _prepare_searchstring(op, searchstring)
 
-    ts_query = func.to_tsquery(languages[0], prepared_searchstring)
+    mk_query = lambda lang: func.to_tsquery(lang, prepared_searchstring)
+    ts_queries = _itertools.imap(mk_query, languages)
+    ts_query = reduce(lambda query1, query2: query1.op("||")(query2), ts_queries)
 
-    for language in languages[1:]:
-        ts_query = ts_query.op("||")(func.to_tsquery(language, prepared_searchstring))
-
-    cond = func.jsonb_object_values_to_tsvector(languages[0], Node.attrs).op("@@")(ts_query)
-    for language in languages[1:]:
-        cond = cond.op("or")(func.jsonb_object_values_to_tsvector(language, Node.attrs).op("@@")(ts_query))
-    return cond
+    mk_cond = lambda lang: func.jsonb_object_values_to_tsvector(lang, Node.attrs).op("@@")(ts_query)
+    conds = _itertools.imap(mk_cond, languages)
+    return reduce(lambda cond1, cond2: cond1.op("or")(cond2), conds)
 
 
 def _make_fts_expr_tsvec(languages, target, searchstring, op="&"):
@@ -120,10 +117,9 @@ def _make_fts_expr_tsvec(languages, target, searchstring, op="&"):
     """
     prepared_searchstring = _prepare_searchstring(op, searchstring)
 
-    ts_query = func.to_tsquery(languages[0], prepared_searchstring)
-
-    for language in languages[1:]:
-        ts_query = ts_query.op("||")(func.to_tsquery(language, prepared_searchstring))
+    mk_query = lambda lang: func.to_tsquery(lang, prepared_searchstring)
+    ts_queries = _itertools.imap(mk_query, languages)
+    ts_query = reduce(lambda query1, query2: query1.op("||")(query2), ts_queries)
 
     return target.op("@@")(ts_query)
 
@@ -139,14 +135,12 @@ def _make_attribute_fts_cond(languages, target, searchstring, op="&"):
     prepared_searchstring = _prepare_searchstring(op, searchstring)
 
     def cond_func(lang):
-        return func.to_tsvector(lang, func.replace(target, ";", " ")).op("@@")(func.to_tsquery(lang, prepared_searchstring))
+        tsvector = func.to_tsvector(lang, func.replace(target, ";", " "))
+        tsquery = func.to_tsquery(lang, prepared_searchstring)
+        return tsvector.op("@@")(tsquery)
 
-    cond = cond_func(languages[0])
-
-    for language in languages[1:]:
-        cond |= cond_func(language)
-
-    return cond
+    conds = _itertools.imap(cond_func, languages)
+    return reduce(_operator.or_, conds)
 
 
 def apply_searchtree_to_query(query, searchtree, languages=None):

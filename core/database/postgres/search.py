@@ -76,7 +76,7 @@ def _prepare_searchstring(op, searchstring):
 
 def make_fulltext_expr_tsvec(languages, searchstring, op="&"):
     """Searches fulltext column. fulltext should have a gin index.
-    :param language: postgresql language string
+    :param languages: postgresql language string
     :param searchstring: string of space-separated words to search
     :param op: operator used to join searchterms separated by space, | or &
     """
@@ -93,7 +93,7 @@ def make_fulltext_expr_tsvec(languages, searchstring, op="&"):
 
 def _make_attrs_expr_tsvec(languages, searchstring, op="&"):
     """Searches attrs column. attrs should have a gin index.
-    :param language: postgresql language string
+    :param languages: postgresql language string
     :param searchstring: string of space-separated words to search
     :param op: operator used to join searchterms separated by space, | or &
     """
@@ -110,7 +110,7 @@ def _make_attrs_expr_tsvec(languages, searchstring, op="&"):
 
 def _make_fts_expr_tsvec(languages, target, searchstring, op="&"):
     """Searches tsvector column. `target` should have a gin index.
-    :param language: postgresql language string
+    :param languages: postgresql language string
     :param target: SQLAlchemy expression with type tsvector
     :param searchstring: string of space-separated words to search
     :param op: operator used to join searchterms separated by space, | or &
@@ -127,7 +127,7 @@ def _make_fts_expr_tsvec(languages, target, searchstring, op="&"):
 def _make_attribute_fts_cond(languages, target, searchstring, op="&"):
     """Searches fulltext column, building ts_vector on the fly.
     `target` must have a gin index built with an ts_vector or this will be extremly slow.
-    :param language: postgresql language string
+    :param languages: postgresql language string
     :param target: SQLAlchemy expression with type text
     :param searchstring: string of space-separated words to search
     :param op: operator used to join searchterms separated by space, | or &

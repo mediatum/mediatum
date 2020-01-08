@@ -188,11 +188,14 @@ class MtQuery(Query):
     def _find_nodeclass(self):
         from core import Node
         """Returns the query's underlying model classes."""
-        return [
-            d['entity']
-            for d in self.column_descriptions
-            if issubclass(d['entity'], Node)
-        ]
+        nodeclass = dict()  # stores node class in key 0
+        for d in self.column_descriptions:
+            d = d["entity"]
+            if issubclass(d, Node):
+                # class found: memorize it, but fail if it's not unique
+                if nodeclass.setdefault(0,d) is not d:
+                    raise AssertionError("Non-unique node class")
+        return nodeclass.get(0)
 
     def filter_read_access(self, user=None, ip=None, req=None):
         return self._filter_access("read", user, ip, req)
@@ -214,8 +217,6 @@ class MtQuery(Query):
         nodeclass = self._find_nodeclass()
         if not nodeclass:
             return self
-        else:
-            nodeclass = nodeclass[0]
 
         db_funcs = {
             "read": mediatumfunc.has_read_access_to_node,
@@ -235,8 +236,6 @@ class MtQuery(Query):
         nodeclass = self._find_nodeclass()
         if not nodeclass:
             return Query.get(self, ident)
-        else:
-            nodeclass = nodeclass[0]
         active_version = Query.get(self, ident)
         Transaction = versioning_manager.transaction_cls
         if active_version is None:

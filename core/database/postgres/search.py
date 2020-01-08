@@ -74,8 +74,10 @@ def _prepare_searchstring(op, searchstring):
     return rewritten_searchstring
 
 
-def make_fulltext_expr_tsvec(languages, searchstring, op="&"):
-    """Searches fulltext column. fulltext should have a gin index.
+def _make_languages_tsquery(languages, searchstring, op):
+    """
+    Prepares a `tsquery` expression to be used
+    in the construction of search expressions.
     :param languages: postgresql language string
     :param searchstring: string of space-separated words to search
     :param op: operator used to join searchterms separated by space, | or &
@@ -84,8 +86,16 @@ def make_fulltext_expr_tsvec(languages, searchstring, op="&"):
 
     mk_query = lambda lang: func.to_tsquery(lang, prepared_searchstring)
     ts_queries = _itertools.imap(mk_query, languages)
-    ts_query = reduce(lambda query1, query2: query1.op("||")(query2), ts_queries)
+    return reduce(lambda query1, query2: query1.op("||")(query2), ts_queries)
 
+
+def make_fulltext_expr_tsvec(languages, searchstring, op="&"):
+    """Searches fulltext column. fulltext should have a gin index.
+    :param languages: postgresql language string
+    :param searchstring: string of space-separated words to search
+    :param op: operator used to join searchterms separated by space, | or &
+    """
+    ts_query = _make_languages_tsquery(languages, searchstring, op)
     mk_cond = lambda lang: func.to_tsvector_safe(lang, Node.fulltext).op("@@")(ts_query)
     conds = _itertools.imap(mk_cond, languages)
     return reduce(lambda cond1, cond2: cond1.op("or")(cond2), conds)
@@ -97,12 +107,7 @@ def _make_attrs_expr_tsvec(languages, searchstring, op="&"):
     :param searchstring: string of space-separated words to search
     :param op: operator used to join searchterms separated by space, | or &
     """
-    prepared_searchstring = _prepare_searchstring(op, searchstring)
-
-    mk_query = lambda lang: func.to_tsquery(lang, prepared_searchstring)
-    ts_queries = _itertools.imap(mk_query, languages)
-    ts_query = reduce(lambda query1, query2: query1.op("||")(query2), ts_queries)
-
+    ts_query = _make_languages_tsquery(languages, searchstring, op)
     mk_cond = lambda lang: func.jsonb_object_values_to_tsvector(lang, Node.attrs).op("@@")(ts_query)
     conds = _itertools.imap(mk_cond, languages)
     return reduce(lambda cond1, cond2: cond1.op("or")(cond2), conds)
@@ -115,12 +120,7 @@ def _make_fts_expr_tsvec(languages, target, searchstring, op="&"):
     :param searchstring: string of space-separated words to search
     :param op: operator used to join searchterms separated by space, | or &
     """
-    prepared_searchstring = _prepare_searchstring(op, searchstring)
-
-    mk_query = lambda lang: func.to_tsquery(lang, prepared_searchstring)
-    ts_queries = _itertools.imap(mk_query, languages)
-    ts_query = reduce(lambda query1, query2: query1.op("||")(query2), ts_queries)
-
+    ts_query = _make_languages_tsquery(languages, searchstring, op)
     return target.op("@@")(ts_query)
 
 

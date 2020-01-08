@@ -5,6 +5,9 @@
     :copyright: (c) 2015 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
+
+import itertools as _itertools
+
 import logging
 from sqlalchemy import func
 
@@ -59,10 +62,10 @@ def _prepare_searchstring(op, searchstring):
     searchstring_cleaned = searchstring.strip().strip('"').strip()
     terms = searchstring_cleaned.split()
     # escape chars with special meaning in postgres tsearch
-    terms = [_escape_postgres_ts_operators(t) for t in terms]
+    terms = _itertools.imap(_escape_postgres_ts_operators,terms)
     # Postgres needs the form term:* for prefix search, we allow simple stars at the end of the word
-    terms = [_rewrite_prefix_search(t) if u"*" in t else t for t in terms]
-    rewritten_searchstring = op.join(t for t in terms if t)
+    terms = (_rewrite_prefix_search(t) if u"*" in t else t for t in terms)
+    rewritten_searchstring = op.join(_itertools.ifilter(None,terms))
 
     if not rewritten_searchstring:
         raise SearchQueryException("invalid query for postgres full text search: " + searchstring)

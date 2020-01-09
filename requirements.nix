@@ -19,7 +19,7 @@ let
     '';
   });
 
-  inherit ((import (fetchTarball https://releases.nixos.org/nixos/18.03/nixos-18.03.133402.cb0e20d6db9/nixexprs.tar.xz) {}).pkgs) ghostscript graphicsmagick;
+  inherit ((import ./nixpkgs.nix {}).pkgs1803a) ghostscript graphicsmagick;
 
   ### production deps
 

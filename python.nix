@@ -1,7 +1,6 @@
-{ nixpkgs ? import ./nixpkgs.nix }:
+{ pkgs ? (import ./nixpkgs.nix {}).pkgs }:
 
 let
-  pkgs = import nixpkgs {};
   requirements = pkgs.callPackage ./requirements.nix {};
 
 in pkgs.python.buildEnv.override {

@@ -375,17 +375,15 @@ class Node(DeclarativeBase, NodeMixin):
             searchtree = parse_searchquery(searchquery)
         return searchtree
 
-    def _search_query_object(self):
+    def _query_subtree(self):
         """Builds the query object that is used as basis for content node searches below this node"""
-        from contenttypes import Content, Collections
+        from contenttypes import Collections
         q = object_session(self).query
-        sq = _subquery_subtree(self)
+        subtree = _subquery_subtree(self)
         if self == q(Collections).one():
             # no need to filter, the whole tree can be searched
-            base_query = q(Content)
-        else:
-            base_query = q(Content).filter(Node.id.in_(sq))
-        return base_query
+            subtree = None
+        return subtree
 
     def search(self, searchquery, languages=None):
         """Creates a search query.
@@ -394,9 +392,10 @@ class Node(DeclarativeBase, NodeMixin):
         :returns: Node Query
         """
         from core.database.postgres.search import apply_searchtree_to_query
+        from contenttypes import Content
+        q = object_session(self).query
         searchtree = self._parse_searchquery(searchquery)
-        query = self._search_query_object()
-        return apply_searchtree_to_query(query, searchtree, languages)
+        return apply_searchtree_to_query(q(Content), searchtree, languages), self._query_subtree()
 
     @property
     def tagged_versions(self):

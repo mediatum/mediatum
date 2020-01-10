@@ -6,6 +6,7 @@
 import datetime
 import logging
 import time
+import itertools as _itertools
 
 import pyaml
 from ipaddr import IPv4Network, IPv4Address, AddressValueError
@@ -15,6 +16,7 @@ import sqlalchemy as sqla
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, ForeignKey, event, Integer, DateTime, func as sqlfunc
 from sqlalchemy.orm import relationship, backref, Query, Mapper, undefer
+from sqlalchemy.orm import defer as _defer, ColumnProperty as _ColumnProperty, class_mapper as _class_mapper
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy_continuum.utils import version_class
 from sqlalchemy_continuum.plugins.transaction_meta import TransactionMetaPlugin
@@ -176,6 +178,13 @@ def build_accessfunc_arguments(user=None, ip=None, date=None, req=None):
         
 
 class MtQuery(Query):
+
+    def node_offset0(self):
+        from core import Node
+        query = self.options(undefer("*")).offset(0).from_self()
+        deferred_columns = (prop.key for prop in _class_mapper(Node).iterate_properties
+                                 if isinstance(prop, _ColumnProperty) and prop.deferred)
+        return query.options(*_itertools.imap(_defer,deferred_columns))
 
     def prefetch_attrs(self):
         from core import Node

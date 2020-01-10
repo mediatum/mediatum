@@ -524,34 +524,7 @@ class ContentList(ContentBase):
 
         # we fetch one more to see if more nodes are available (on the next page)
         nodes = q_nodes.limit(nodes_per_page+1).prefetch_attrs().all()
-        limit_count = nodes_per_page + 1
         self.nodes = nodes
-
-        # Check if we got enough nodes and try to load more if needed.
-        # Maybe there were enough results for the database LIMIT, but SQLAlchemy filtered out some duplicates.
-        node_count = len(nodes)
-        # It doesn't make sense to try again if no results were returned. Empty container is empty...
-        # If it is a distinct query, there is no need to search for more nodes
-        if node_count and not q_nodes._distinct:
-            while node_count <= nodes_per_page:
-                refetch_limit = nodes_per_page - node_count + 1
-                # set the refetch_limit high enough to fetch the remaining nodes with the next query, because if the
-                # previous queries have duplicate nodes in the result, the next query may have also duplicates
-                # consider the percentage of the fetched nodes with the limitations and enlarge refetch_limit accordingly
-                refetch_limit = refetch_limit * limit_count / node_count + 1
-                limit_count += refetch_limit
-                sortfields_to_comp = prepare_sortfields(nodes[-1], self.sortfields)
-                position_cond = _position_filter(sortfields_to_comp, self.before)
-                q_additional_nodes = self.node_query.filter(position_cond)
-                q_additional_nodes = apply_order_by_for_sortfields(q_additional_nodes, sortfields_to_comp, self.before)
-
-                additional_nodes = q_additional_nodes.limit(refetch_limit).prefetch_attrs().all()
-                if not additional_nodes:
-                    # no more nodes found (first or last page), stop trying
-                    break
-                nodes += additional_nodes
-                self.nodes = nodes
-                node_count += len(additional_nodes)
 
         if len(nodes) > nodes_per_page:
             # more nodes available when navigating in the same direction

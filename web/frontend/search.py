@@ -87,7 +87,11 @@ def search(searchtype, searchquery, readable_query, paths, req, container_id = N
         container = get_collections_node()
 
     try:
-        result = container.search(searchquery).filter_read_access()
+        result, subtree = container.search(searchquery)
+        result = result.filter_read_access()
+        result = result.node_offset0()
+        if subtree is not None:
+            result = result.filter(Node.id.in_(subtree))
     except SearchQueryException as e:
         # query parsing went wrong or the search backend complained about something
         return NoSearchResult(readable_query, container, readable_query, error=True)

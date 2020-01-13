@@ -398,17 +398,6 @@ class Node(DeclarativeBase, NodeMixin):
         query = self._search_query_object()
         return apply_searchtree_to_query(query, searchtree, languages)
 
-    def search_multilang(self, searchquery, languages=None):
-        """Creates search queries for a sequence of languages.
-        :param searchquery: query in search language or parsed query (search tree) as `SearchTreeElement`:
-        :param languages: language config strings matching Fts.config
-        :returns list of Node Query
-        """
-        from core.database.postgres.search import apply_searchtree_to_query
-        searchtree = self._parse_searchquery(searchquery)
-        query = self._search_query_object()
-        return [apply_searchtree_to_query(query, searchtree, l) for l in languages]
-
     @property
     def tagged_versions(self):
         Transaction = versioning_manager.transaction_cls

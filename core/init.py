@@ -22,6 +22,7 @@ import sys
 import importlib
 import logging
 import locale
+import tempfile as _tempfile
 from pprint import pformat
 from utils.locks import register_lock as _register_lock
 
@@ -294,6 +295,7 @@ def basic_init(root_loglevel=None, config_filepath=None, prefer_config_filename=
     add_ustr_builtin()
     import core.config
     core.config.initialize(config_filepath, prefer_config_filename)
+    _tempfile.tempdir = config.get("paths.tempdir")
     import utils.log
     utils.log.initialize(root_loglevel, log_filepath, log_filename, use_logstash)
     log_basic_sys_info()

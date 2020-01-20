@@ -23,6 +23,7 @@ import importlib
 import logging
 import locale
 import tempfile as _tempfile
+import os as _os
 from pprint import pformat
 from utils.locks import register_lock as _register_lock
 
@@ -285,6 +286,17 @@ def _init_locks():
     _register_lock('zipfile', 9)
 
 
+def _init_web_roots():
+    import core.webconfig
+    import web.frontend.filehandlers as _filehandlers
+    webroots = config.get('paths.webroots', '').split('|')
+    if any(webroots):
+        map(_filehandlers.add_web_root, webroots)
+    if core.webconfig.theme:
+        _filehandlers.add_web_root(core.webconfig.theme.path)
+    _filehandlers.add_web_root(_os.path.join(config.basedir, "web/root"))
+
+
 def basic_init(root_loglevel=None, config_filepath=None, prefer_config_filename=None, log_filepath=None, log_filename=None,
                use_logstash=None, force_test_db=None, automigrate=False):
     init_state = "basic"
@@ -310,6 +322,7 @@ def basic_init(root_loglevel=None, config_filepath=None, prefer_config_filename=
     from core import medmarc as _  # mustn't be imported too early
     from core import db
     db.session.rollback()
+    _init_web_roots()
 
 
 def _additional_init():

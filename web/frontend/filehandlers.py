@@ -32,6 +32,7 @@ from core import httpstatus
 
 logg = logging.getLogger(__name__)
 q = db.query
+_webroots = []
 
 
 def _send_thumbnail(thumb_type, req):
@@ -401,14 +402,7 @@ def fetch_archived(req):
 
 
 def send_from_webroot(req):
-    import core.webconfig
-
-    if core.webconfig.theme is not None:
-        webroot_dirs = [core.webconfig.theme.path, "web/root"]
-    else:
-        webroot_dirs = ["web/root"]
-    
-    for webroot_dir in webroot_dirs:
+    for webroot_dir in _webroots:
         filepath = os.path.join(config.basedir, webroot_dir, req.path.strip("/"))
         if os.path.isfile(filepath):
             return _request_handler.sendFile(req, filepath, getMimeType(filepath)[0])
@@ -421,3 +415,9 @@ def redirect_images(req):
     req.response.headers["Location"] = "/image" + req.path[7:]
     req.response.status_code = 301
     return 301
+
+
+def add_web_root(webroot):
+    if not (os.path.isdir(webroot) and os.path.isabs(webroot)):
+        raise ValueError('Directory is not an absolute path {}'.format(webroot))
+    _webroots.append(webroot)

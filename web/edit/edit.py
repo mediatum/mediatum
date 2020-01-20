@@ -944,8 +944,6 @@ def content(req):
             content["body"] += req.getTAL("web/edit/edit.html", {"module": current}, macro="module_error")
 
     if req.params.get("style", "") != "popup":  # normal page with header
-        v['sortchoices'] = sortchoices
-        v['npp_choices'] = [_sort.SortChoice(str(x), x) for x in edit_node_per_page_values]
         v["tabs"] = handletabs(req, ids, tabs, sortchoices)
         v["script"] = content["script"]
         v["body"] = content["body"]

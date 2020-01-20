@@ -443,13 +443,6 @@ def getContent(req, ids):
 
         assert node.type not in ["root", "collections", "home"]
 
-        v['sortchoices'] = tuple(_sort.get_sort_choices(
-            container=node,
-            off="off",
-            t_off=translation_t(req, "off"),
-            t_desc=translation_t(req, "descending"),
-        ))
-        v['npp_choices'] = [_sort.SortChoice(str(x), x) for x in edit_node_per_page_values]
         v['language'] = lang(req)
         v['t'] = translation_t
 

@@ -83,7 +83,7 @@ def _get_metadata_type_for_sort(metadatatype, t_desc, selected_value=None):
     Takes a metadatatype and yields back all SortChoices for that metadatatype sorted by name.
     Per sortfield two SortChoices - in ascending and descending order, respectively.
     """
-    fields = metadatatype.metafields.all()
+    fields = metadatatype.metafields.prefetch_attrs().all()
     fields = filter(_operator.methodcaller("Sortfield"), fields)
     fields = sorted(fields, key=_operator.attrgetter("name"))
     for field in fields:

@@ -12,13 +12,6 @@ let
   pythonPackages = pkgs.python27Packages;
   self = pythonPackages;
 
-  postgresql100patched = pkgs.lib.overrideDerivation pkgs.postgresql100 ( oldAttrs: {
-    postInstall = oldAttrs.postInstall +
-    ''
-      cp ${./legacy/unaccent_german_umlauts_special.rules} $out/share/tsearch_data/unaccent_german_umlauts_special.rules
-    '';
-  });
-
   inherit ((import ./nixpkgs.nix {}).pkgs1803a) ghostscript graphicsmagick;
 
   ### production deps
@@ -443,27 +436,9 @@ let
     };
   };
 
-  uwsgi = self.buildPythonPackage rec {
-    name = "uwsgi-2.0.18";
-    src = fetchurl {
-        url = "http://projects.unbit.it/downloads/uwsgi-2.0.18.tar.gz";
-        sha256 = "1zvj28wp3c1hacpd4c6ra5ilwvvfq3l8y6gn8i7mnncpddlzjbjp";
-    };
-    doCheck = false;
-    propagatedBuildInputs = [ pkgs.pcre ];
-    meta = with stdenv.lib; {
-        homepage = http://uwsgi-docs.readthedocs.org/en/latest/;
-        description = "A fast, self-healing and developer/sysadmin-friendly application container server coded in pure C";
-        license = licenses.gpl2;
-        maintainers = with maintainers; [ abbradar schneefux ];
-        platforms = platforms.linux;
-    };
-  };
-
 in {
   production = [
       # python deps
-      uwsgi
       alembic
       attrs
       bibtexparser
@@ -516,8 +491,10 @@ in {
       pkgs.pdftk
       pkgs.perlPackages.ImageExifTool
       pkgs.poppler_utils
-      postgresql100patched
       pkgs.glibcLocales
+      (pkgs.callPackage ./uwsgi.nix {})
+      (pkgs.callPackage ./postgresql.nix {})
+      (pkgs.callPackage ./nginx.nix {})
     ];
 
     devel = [
@@ -536,7 +513,6 @@ in {
     system = with pkgs; [
       git
       pkgs.python27Packages.psycopg2
-      pkgs.nginx
       zsh
     ];
 

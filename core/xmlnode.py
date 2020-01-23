@@ -106,7 +106,7 @@ def add_node_to_xmldoc(
         child_query = node.children
 
         if exclude_childtypes:
-            child_query = child_query.filter(~Node.type.in_(exclude_childtypes))
+            child_query = child_query.filter(~((Node.type + u'/' + Node.schema).in_(exclude_childtypes)))
 
         for child in child_query.order_by("orderpos"):
             add_child_to_xmlnode(child, xmlnode)

@@ -54,27 +54,15 @@ def _find_unique_destname(filename, prefix=""):
     return destname
 
 
-def importFile(realname, tempname, prefix=""):
-    if not os.path.exists(tempname):
-        raise IOError("temporary file " + tempname + "does not exist")
+def importFile(realname, source, prefix="", typeprefix=""):
 
-    filename = os.path.basename(tempname)
+    filename = os.path.basename(source.filename)
     destname = _find_unique_destname(filename, prefix)
 
-    shutil.copyfile(tempname, destname)
+    with open(destname,"wb") as destfile:
+        shutil.copyfileobj(source, destfile)
+
     r = realname.lower()
-    mimetype, filetype = getMimeType(r)
-
-    return File(destname, filetype, mimetype)
-
-
-def importFileToRealname(realname, tempname, prefix="", typeprefix=""):
-    filename = os.path.basename(realname)
-    destname = _find_unique_destname(filename, prefix)
-
-    shutil.copyfile(tempname, destname)
-    r = realname.lower()
-
     mimetype, filetype = getMimeType(r)
 
     return File(destname, typeprefix + filetype, mimetype)

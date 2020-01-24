@@ -35,7 +35,7 @@ import core.config as config
 from .workflow import WorkflowStep, getNodeWorkflow, getNodeWorkflowStep, registerStep
 from core.translation import t, lang, addLabels
 from utils.utils import getMimeType, suppress
-from utils.fileutils import importFileToRealname
+from utils.fileutils import importFile
 from utils.date import format_date
 
 from metadata.upload import getFilelist
@@ -281,8 +281,9 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
                         break
 
                 date_str = format_date().replace('T', '-').replace(' ', '').replace(':', '-')
-                nodeFile = importFileToRealname("_has_been_processed_%s.pdf" % (date_str), filetempname, prefix='addpic2pdf_%s_node_%s_' % (
-                    unicode(current_workflow_step.id), unicode(node.id), ), typeprefix="p_")
+                with open(filetempname, "rb") as f:
+                    nodeFile = importFile("_has_been_processed_%s.pdf" % (date_str), f, prefix='addpic2pdf_%s_node_%s_' % (
+                        unicode(current_workflow_step.id), unicode(node.id), ), typeprefix="p_")
                 node.files.append(nodeFile)
                 db.session.commit()
                 with suppress(Exception, warn=False):

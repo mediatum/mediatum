@@ -23,6 +23,7 @@ import logging
 
 import sqlalchemy as _sqlalchemy
 
+import werkzeug.datastructures as _werkzeug_datastructures
 from lxml import etree
 from core import File, db
 from core.systemtypes import Mappings, Root
@@ -158,7 +159,7 @@ class _NodeLoader:
         parser = etree.XMLParser(target = handler)
         if type(fi) in [unicode, str]:
             xml = fi
-        elif type(fi) in [file]:
+        elif type(fi) in [file, _werkzeug_datastructures.FileStorage]:
             xml = fi.read()
             fi.close()
         else:
@@ -332,11 +333,8 @@ class _NodeLoader:
 
 
 
-def readNodeXML(filename):
-    try:
-        return _NodeLoader(open(filename, "rb")).root
-    except IOError:
-        return None
+def readNodeXML(file):
+    return _NodeLoader(file).root
 
 
 def getNodeXML(

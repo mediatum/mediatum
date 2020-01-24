@@ -714,7 +714,8 @@ def buildStatAll_(collection_ids, collection_ids_keys, data, period="", fname=No
                 print "copy %s to %s" % (file, destfile)
             else:
                 print "importFile %s" % file
-                statfile = importFile(file.split("/")[-1], file)
+                with open(file, "rb") as f:
+                    statfile = importFile(os.path.basename(file), f)
                 if statfile:
                     statfile.filetype = u"statistic"
                     col_id.collection.files.append(statfile)

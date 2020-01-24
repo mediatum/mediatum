@@ -31,7 +31,7 @@ import core.users as users
 
 from core.metatype import Metatype
 from core.translation import getDefaultLanguage, t, lang
-from utils.fileutils import importFileToRealname
+from utils.fileutils import importFile
 from utils.utils import suppress
 from core import Node
 from core import db
@@ -358,7 +358,6 @@ def handle_request(req):
 
             filename = file.filename
             filesize = file.filesize
-            filetempname = file.tempname
 
         else:
             msg = t(lang(req), "no file for this field submitted")
@@ -367,7 +366,7 @@ def handle_request(req):
         if filename:
 
             diskname = normalizeFilename(filename)
-            nodeFile = importFileToRealname(diskname, filetempname, prefix='m_upload_%s_' % (submitter, ), typeprefix="u_")
+            nodeFile = importFile(diskname, file, prefix='m_upload_%s_' % (submitter,), typeprefix="u_")
 
             if not nodeFile:
                 msg = "metadata m_upload: could not create file node for request from '%s'" % (ustr(req.remote_addr))

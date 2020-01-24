@@ -528,62 +528,60 @@ def upload_for_html(req):
         # browser
         file = req.params["file"]
         del req.params["file"]
-        if hasattr(file, "filesize") and file.filesize > 0:
-            try:
-                logg.info("file %s (temp %s) uploaded by user %s (%s)", file.filename, file.tempname, user.login_name, user.id)
-                nodefile = importFile(file.filename, file.tempname)
-                node.files.append(nodefile)
-                db.session.commit()
-                req.response.headers["Location"] = _build_url_from_path_and_params("nodefile_browser/%s/" % id, {})
-            except EncryptionException:
-                req.response.headers["Location"] = _build_url_from_path_and_params("content", {
-                                                       "id": id, "tab": "tab_editor", "error": "EncryptionError_" + datatype[:datatype.find("/")]})
-            except:
-                logg.exception("error during upload")
-                req.response.headers["Location"] = _build_url_from_path_and_params("content", {
-                                                       "id": id, "tab": "tab_editor", "error": "PostprocessingError_" + datatype[:datatype.find("/")]})
-            return send_nodefile_tal(req)
+        try:
+            logg.info("file %s (temp %s) uploaded by user %s (%s)", file.filename, user.login_name, user.id)
+            nodefile = importFile(file.filename, file)
+            node.files.append(nodefile)
+            db.session.commit()
+            req.response.headers["Location"] = _build_url_from_path_and_params("nodefile_browser/%s/" % id, {})
+        except EncryptionException:
+            req.response.headers["Location"] = _build_url_from_path_and_params("content", {
+                                                   "id": id, "tab": "tab_editor", "error": "EncryptionError_" + datatype[:datatype.find("/")]})
+        except:
+            logg.exception("error during upload")
+            req.response.headers["Location"] = _build_url_from_path_and_params("content", {
+                                                   "id": id, "tab": "tab_editor", "error": "PostprocessingError_" + datatype[:datatype.find("/")]})
+        return send_nodefile_tal(req)
 
     if "upload" in req.params.keys():  # NewFile
         # file upload via CKeditor Image Properties / Upload tab
         file = req.params["upload"]
         del req.params["upload"]
-        if hasattr(file, "filesize") and file.filesize > 0:
-            try:
-                logg.info("%s upload via ckeditor %s (%s)", user.login_name , file.filename, file.tempname)
-                nodefile = importFile(file.filename, file.tempname)
-                node.files.append(nodefile)
-                db.session.commit()
-            except EncryptionException:
-                req.response.headers["Location"] = _build_url_from_path_and_params("content", {
-                                                       "id": id, "tab": "tab_editor", "error": "EncryptionError_" + datatype[:datatype.find("/")]})
-            except:
-                logg.exception("error during upload")
-                req.response.headers["Location"] = _build_url_from_path_and_params("content", {
-                                                       "id": id, "tab": "tab_editor", "error": "PostprocessingError_" + datatype[:datatype.find("/")]})
+        try:
+            logg.info("%s upload via ckeditor %s", user.login_name , file.filename)
+            nodefile = importFile(file.filename, file)
+            node.files.append(nodefile)
+            db.session.commit()
+        except EncryptionException:
+            req.response.headers["Location"] = _build_url_from_path_and_params("content", {
+                                                   "id": id, "tab": "tab_editor", "error": "EncryptionError_" + datatype[:datatype.find("/")]})
+        except:
+            logg.exception("error during upload")
+            req.response.headers["Location"] = _build_url_from_path_and_params("content", {
+                                                   "id": id, "tab": "tab_editor", "error": "PostprocessingError_" + datatype[:datatype.find("/")]})
 
-            url = '/file/' + id + '/' + file.tempname.split('/')[-1]
+        url = '/file/' + id + '/' + file.filename.split('/')[-1]
 
-            res = """<script type="text/javascript">
+        res = """<script type="text/javascript">
 
-                // Helper function to get parameters from the query string.
-                function getUrlParam(paramName)
-                {
-                  var reParam = new RegExp('(?:[\?&]|&amp;)' + paramName + '=([^&]+)', 'i') ;
-                  var match = window.location.search.match(reParam) ;
+            // Helper function to get parameters from the query string.
+            function getUrlParam(paramName)
+            {
+              var reParam = new RegExp('(?:[\?&]|&amp;)' + paramName + '=([^&]+)', 'i') ;
+              var match = window.location.search.match(reParam) ;
 
-                  return (match && match.length > 1) ? match[1] : '' ;
-                }
-            funcNum = getUrlParam('CKEditorFuncNum');
-
-            window.parent.CKEDITOR.tools.callFunction(funcNum, "%(fileUrl)s","%(customMsg)s");
-
-            </script>;""" % {
-                'fileUrl': url.replace('"', '\\"'),
-                'customMsg': (t(lang(req), "edit_fckeditor_cfm_uploadsuccess")),
+              return (match && match.length > 1) ? match[1] : '' ;
             }
+        funcNum = getUrlParam('CKEditorFuncNum');
 
-            return res
+        window.parent.CKEDITOR.tools.callFunction(funcNum, "%(fileUrl)s","%(customMsg)s");
+
+        </script>;""" % {
+            'fileUrl': url.replace('"', '\\"'),
+            'customMsg': (t(lang(req), "edit_fckeditor_cfm_uploadsuccess")),
+        }
+
+        return res
 
     return send_nodefile_tal(req)
 

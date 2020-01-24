@@ -32,7 +32,7 @@ from schema.schema import VIEW_DEFAULT
 from schema.bibtex import getAllBibTeXTypes
 from schema import citeproc
 
-from utils.fileutils import importFileToRealname
+from utils.fileutils import importFile
 # metafield methods
 from .metatype_field import showDetailList, FieldDetail
 # meta mask methods
@@ -150,11 +150,10 @@ def validate(req, op):
     if len(path) == 2 and path[1] == "info":
         return showInfo(req)
 
-    if "file" in req.params and hasattr(req.params["file"], "filesize") and req.params["file"].filesize > 0:
-        # import scheme from xml-file
-        importfile = req.params.get("file")
-        if importfile.tempname != "":
-            xmlimport(req, importfile.tempname)
+    # import scheme from xml-file
+    importfile = req.params.get("file")
+    if importfile:
+        importMetaSchema(importfile)
 
     if req.params.get("acttype", "schema") == "schema":
         # section for schema
@@ -260,7 +259,8 @@ def validate(req, op):
             _filenode = None
             if "valuesfile" in req.params.keys():
                 valuesfile = req.params.pop("valuesfile")
-                _filenode = importFileToRealname(valuesfile.filename, valuesfile.tempname)
+                if hasattr(valuesfile, "filename"):
+                    _filenode = importFile(valuesfile.filename, valuesfile)
 
             _attr_dict = {}
             if req.params.get("mtype", "") + "_handle_attrs" in req.params.keys():

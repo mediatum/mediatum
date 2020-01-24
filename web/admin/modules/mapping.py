@@ -45,12 +45,10 @@ def validate(req, op):
             db.session.commit()
             return view(req)
 
-        if "file" in req.params and hasattr(req.params["file"], "filesize") and req.params["file"].filesize > 0:
-            # import mapping from xml-file
-            importfile = req.params.get("file")
-            if importfile.tempname != "":
-                xmlimport(req, importfile.tempname)
-
+        # import mapping from xml-file
+        importfile = req.params.get("file")
+        if importfile:
+            importMapping(importfile)
         #  section for mapping
         for key in req.params.keys():
             if key.startswith("fieldlist_"):

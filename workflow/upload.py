@@ -67,15 +67,14 @@ class WorkflowStep_Upload(WorkflowStep):
 
                 if fileExtension in self.get("limit").lower().split(";") or self.get("limit").strip() in ['*', '']:
                     orig_filename = file.filename
-                    if hasattr(file, "filename") and file.filename:
-                        file = fileutils.importFile(file.filename, file.tempname)
-                        node.files.append(file)
-                        node.name = orig_filename
-                        try:
-                            node.event_files_changed()
-                        except Exception as ex:
-                            logg.exception("exception in workflow step upload while running event_files_changed")
-                            error = ex.value
+                    file = fileutils.importFile(file.filename, file)
+                    node.files.append(file)
+                    node.name = orig_filename
+                    try:
+                        node.event_files_changed()
+                    except Exception as ex:
+                        logg.exception("exception in workflow step upload while running event_files_changed")
+                        error = ex.value
                 else:
                     error = t(req, "WorkflowStep_InvalidFileType")
         db.session.commit()

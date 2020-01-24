@@ -74,7 +74,7 @@ def getContent(req, ids):
                 req.response.status_code = httpstatus.HTTP_INTERNAL_SERVER_ERROR
                 return _tal.processTAL({}, file="web/edit/modules/logo.html", macro="filetype_error", request=req)
             else:
-                file = importFile(file.filename, file.tempname)
+                file = importFile(file.filename, file)
                 node.files.append(file)
                 db.session.commit()
 

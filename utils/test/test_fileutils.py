@@ -6,7 +6,7 @@
 from __future__ import absolute_import
 import os
 import tempfile
-from utils.fileutils import importFile, importFileToRealname, _find_unique_destname, getImportDir, importFileIntoDir,\
+from utils.fileutils import importFile, _find_unique_destname, getImportDir, importFileIntoDir,\
     importFileRandom
 
 REALNAME_ROOT = "test"
@@ -62,7 +62,7 @@ def test_importFile():
 
 
 def test_importFileToRealname():
-    imported_file = _test_import_function_with_tempfile(importFileToRealname, REALNAME)
+    imported_file = _test_import_function_with_tempfile(importFile, REALNAME)
     assert imported_file.base_name == REALNAME
 
 

@@ -26,7 +26,7 @@ import core.users as users
 import logging
 import mediatumtal.tal as _tal
 from utils.utils import getMimeType, get_user_id, suppress
-from utils.fileutils import importFile, getImportDir, importFileIntoDir, importFileToRealname
+from utils.fileutils import importFile, getImportDir, importFileIntoDir
 from contenttypes.image import make_thumbnail_image, make_presentation_image
 from core.users import getUploadDir as _getUploadDir
 from core import httpstatus
@@ -58,12 +58,12 @@ def _finish_change(node, change_file, user, uploadfile, req):
             if f.filetype in node.get_sys_filetypes():
                 node.files.remove(f)
 
-        file = importFile(uploadfile.filename, uploadfile.tempname)  # add new file
+        file = importFile(uploadfile.filename, uploadfile)  # add new file
         file.filetype = node.get_upload_filetype()
         node.files.append(file)
         # this should re-create all dependent files
         node.event_files_changed()
-        logg.info(u"%s changed file of node %s to %s (%s)", user.login_name, node.id, uploadfile.filename, uploadfile.tempname)
+        logg.info(u"%s changed file of node %s to %s", user.login_name, node.id, uploadfile.filename)
         return
 
     attpath = ""
@@ -75,27 +75,28 @@ def _finish_change(node, change_file, user, uploadfile, req):
     if change_file == "attfile":  # add file as attachment
         if attpath == "":
             # no attachment directory existing
-            file = importFileToRealname(uploadfile.filename, uploadfile.tempname)  # add new file
+            file = importFile(uploadfile.filename, uploadfile)  # add new file
             file.mimetype = "inode/file"
             file.filetype = "attachment"
             node.files.append(file)
         else:
             # import attachment file into existing attachment directory
-            importFileIntoDir(getImportDir() + "/" + attpath, uploadfile.tempname)  # add new file
+            importFileIntoDir(uploadfile.filename, os.path.join(getImportDir(), attpath))  # add new file
 
         # this should re-create all dependent files
         node.event_files_changed()
-        logg.info(u"%s changed file of node %s to %s (%s)", user.login_name, node.id, uploadfile.filename, uploadfile.tempname)
+        logg.info(u"%s changed file of node %s to %s", user.login_name, node.id, uploadfile.filename)
 
     if change_file == "addthumb": # create new thumbanil from uploaded file
-        thumbname = os.path.join(getImportDir(), hashlib.md5(ustr(random.random())).hexdigest()[0:8]) + ".thumb"
-
-        file = importFile(thumbname, uploadfile.tempname)  # add new file
+        file = importFile(uploadfile.filename, uploadfile)  # add new file
+        filename, ext = os.path.splitext(file.abspath)
+        thumbname = "{}.thumb".format(filename)
         make_thumbnail_image(file.abspath, thumbname)
-        make_presentation_image(file.abspath, thumbname + "2")
+        thumbname2 = "{}2".format(thumbname)
+        make_presentation_image(file.abspath, thumbname2)
 
         if os.path.exists(file.abspath):  # remove uploaded original
-            os.remove(file.abspath)
+                os.remove(file.abspath)
 
         for f in node.files:
             if f.type in ["thumb", "presentation"]:
@@ -104,11 +105,11 @@ def _finish_change(node, change_file, user, uploadfile, req):
                 node.files.remove(f)
 
         node.files.append(File(thumbname, "thumb", "image/jpeg"))
-        node.files.append(File(thumbname + "2", "presentation", "image/jpeg"))
+        node.files.append(File(thumbname2, "presentation", "image/jpeg"))
         logg.info("%s changed thumbnail of node %s", user.login_name, node.id)
         # this should re-create all dependent files
         node.event_files_changed()
-        logg.info(u"%s changed file of node %s to %s (%s)", user.login_name, node.id, uploadfile.filename, uploadfile.tempname)
+        logg.info(u"%s changed file of node %s to %s", user.login_name, node.id, uploadfile.filename)
 
 
 def _handle_change(node, req):

@@ -36,7 +36,7 @@ from web.edit.edit_common import showdir, shownav, showoperations, searchbox_nav
 from web.edit.edit import getTreeLabel, get_ids_from_req
 from utils.url import build_url_from_path_and_params
 from utils.utils import join_paths, getMimeType, funcname, get_user_id, dec_entry_log, suppress
-from utils.fileutils import importFileToRealname, importFileRandom
+from utils.fileutils import importFile, importFileRandom
 from schema.bibtex import importBibTeX, MissingMapping
 
 from core.translation import translate, lang, addLabels
@@ -330,14 +330,10 @@ def getContent(req, ids):
         proceed_to_uploadcomplete = False
         # upload file to current node as attachment
         if req.params.get('action') == "upload":
-            if 'file' in req.params:  # plupload
-                realname = mybasename(req.params['file'].filename.decode("utf8"))
-                tempname = req.params['file'].tempname.decode("utf8")
-                proceed_to_uploadcomplete = True
-
-            realname = realname.replace(' ', '_')
+            uploadfile = req.params.get("file")
+            proceed_to_uploadcomplete = True
             # XXX: check this: import to realnamne or random name ?
-            f = importFileToRealname(realname, tempname)
+            f = importFile(uploadfile.filename, uploadfile)
             node = q(Node).get(req.params.get('id'))
             node.files.append(f)
             db.session.commit()
@@ -351,7 +347,7 @@ def getContent(req, ids):
             logg.debug("upload done -> deliver view of object")
 
             if proceed_to_uploadcomplete:
-                req.params['file'] = realname
+                req.params['file'] = uploadfile.filename
 
             mime = getMimeType(req.params.get('file'))
             data_extra = req.params.get('data_extra', '')
@@ -543,7 +539,7 @@ def upload_ziphandler(req):
                 with codecs.open(newfilename, "wb") as fi:
                     fi.write(z.read(f))
 
-                fn = importFileToRealname(mybasename(name.replace(" ", "_")), newfilename)
+                fn = importFile(mybasename(name.replace(" ", "_")), z)
                 basenode.files.append(fn)
                 if os.path.exists(newfilename):
                     os.unlink(newfilename)

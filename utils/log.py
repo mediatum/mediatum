@@ -350,7 +350,7 @@ def extra_log_info_from_req(req, add_user_info=True):
     if req.method == "POST":
         extra["form"] = dict(req.form)
         extra["files"] = [{"filename": f.filename,
-                           "tempname": f.tempname,
+                           "tempname": f.tempname if hasattr(f, "tempname") else f.filename,
                            "content_type": f.content_type,
                            "filesize": os.path.getsize(f.filename)} for f in req.files.values()]
 

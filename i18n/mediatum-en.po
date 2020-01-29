@@ -181,6 +181,9 @@ msgstr "Switch to search area"
 msgid "sub_header_frontend_title"
 msgstr "Switch to search area"
 
+msgid "sub_header_server_status"
+msgstr "server status"
+
 msgid "sub_header_inquest"
 msgstr "Search"
 

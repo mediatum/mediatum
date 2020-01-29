@@ -237,8 +237,9 @@ def initContexts():
         file = context.addFile("web/handlers/become.py")
         file.addHandler("become_user").addPattern("/_become/.*")
         file = context.addFile("web/admin/main.py")
-        file.addHandler("show_node").addPattern("/(?!export/).*")
+        file.addHandler("show_node").addPattern("/(?!export/)(?!serverstatus/).*")
         file.addHandler("export").addPattern("/export/.*")
+        file.addHandler("stats_server").addPattern("/serverstatus/.*")
 
     if edit_enabled:
         # === edit area ===

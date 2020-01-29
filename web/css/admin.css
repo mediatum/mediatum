@@ -136,3 +136,34 @@ button.admin_filter:hover{color:#000000; background:#CCCCCC;}
 #mediatum_admin_frame{margin-top:0; margin-right:0; margin-left:0;}
 #mediatum_admin_frame_div{position:absolute;left:0px;right:0px;min-width:100%;}
 .mediatum_td_option{width:20px; text-align:center;}
+
+.admin-serverstatus {
+  font-size: 14px;
+}
+
+.admin-serverstatus-title {
+  color: blue;
+  text-align:left;
+  margin-left: 5px;
+  font-size: 16px;
+}
+
+.admin-serverstatus-warning {
+  color: yellow;
+}
+
+.admin-serverstatus-alert {
+  color: read;
+}
+
+.admin-serverstatus-busy {
+  color: orange;
+}
+
+.admin-serverstatus-idle {
+  color: green;
+}
+
+.admin-serverstatus-fspath {
+  font-family:monospace;
+}

@@ -1,0 +1,90 @@
+doctype html
+html
+  head
+    link(rel='stylesheet', href='/css/admin.css')
+
+  h2 Server Status
+  h3.admin-serverstatus-title Workers
+  if workers == 'Application is not running under uwsgi'
+    | #{workers}
+  else
+    table.admin-serverstatus
+      thead
+        each t in workers[0]
+          if t[0] == 'id'
+            tooltip = 'worker id'
+          elif t[0] == 'pid'
+            tooltip = 'process id of the worker'
+          elif t[0] == 'requests'
+            tooltip = 'number of managed requests'
+          elif t[0] == 'delta_requests'
+            tooltip = 'number of current requests handled per second'
+          elif t[0] == 'exceptions'
+            tooltip = 'number of raised exceptions'
+          elif t[0] == 'signals'
+            tooltip = 'number of managed uwsgi signals'
+          elif t[0] == 'status'
+            tooltip = 'can be idle, busy, pause, cheaped or sig'
+          elif t[0] == 'rss'
+            tooltip = 'RSS memory'
+          elif t[0] == 'running_time'
+            tooltip = 'running time'
+          elif t[0] == 'last_spawn'
+            tooltip = 'last spawning time'
+          elif t[0] == 'respawn_count'
+            tooltip = 'respawn number'
+          elif t[0] == 'avg_rt'
+            tooltip = 'average response time for the worker'
+          elif t[0] == 'remote_addr'
+            tooltip = 'IP address of the client'
+          elif t[0] == 'request_uri'
+            tooltip = 'full request path including the querystring'
+          th(data-toggle="tooltip" title="#{tooltip}") #{t[0]}
+      tbody
+        each worker in workers
+          tr
+            each t in worker
+              if t[1] == 'busy'
+                td.admin-serverstatus-busy= t[1]
+              elif t[1] == 'idle'
+                td.admin-serverstatus-idle= t[1]
+              else
+                td= t[1]
+
+  h3.admin-serverstatus-title Memory Information
+  for i in range(4)
+    if i == 0
+      prefix = 'Used Physical Memory '
+      dir = ''
+      data = meminfo
+    elif i == 1
+      prefix = 'Used Space On Data File System '
+      dir = datadir
+      data = uploadmem
+    elif i == 2
+      prefix = 'Used Space On Temp File System '
+      dir = tempdir
+      data = tempdirmem
+    elif i == 3
+      prefix = 'Used Space On Root File System '
+      dir = '/'
+      data = rootmem
+
+    table.admin-serverstatus
+      tr
+        td #{prefix}
+        if dir != ''
+          td (
+        td.admin-serverstatus-fspath #{dir}
+        if dir != ''
+          td )
+        td :
+        td #{data.used} GB
+        td of
+        td #{data.total} GB
+        if data.used_percent > 90
+          td.admin-serverstatus-warning (#{data.used_percent}%)
+        elif data.used_percent > 95
+          td.admin-serverstatus-alert (#{data.used_percent}%)
+        else
+          td (#{data.used_percent}%)

@@ -188,6 +188,9 @@ msgstr "Zur Rechercheoberfläche wechseln"
 msgid "sub_header_frontend_title"
 msgstr "Zur Rechercheoberfläche wechseln"
 
+msgid "sub_header_server_status"
+msgstr "server status"
+
 msgid "sub_header_inquest"
 msgstr "Recherche"
 

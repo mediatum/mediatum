@@ -277,6 +277,7 @@ def _init_locks():
     _register_lock('queuelock')
     _register_lock('workflow')
     _register_lock('zipfile')
+    _register_lock('createsearchindices')
 
 
 def basic_init(root_loglevel=None, config_filepath=None, prefer_config_filename=None, log_filepath=None, log_filename=None,
@@ -309,6 +310,7 @@ def basic_init(root_loglevel=None, config_filepath=None, prefer_config_filename=
 def _additional_init():
     from core import db
     from core.database import validity
+    from core.database.postgres.search import check_fulltext_attrs_search_indexes_node as _check_fulltext_attrs_search_indexes_node
     enable_startup_checks = config.getboolean("config.enable_startup_checks", True)
     if enable_startup_checks:
         db.check_db_structure_validity()
@@ -323,6 +325,7 @@ def _additional_init():
     update_nodetypes_in_db()
     if config.getboolean("search.activate", True):
         init_fulltext_search()
+        _check_fulltext_attrs_search_indexes_node()
     tal_setup()
     db.session.rollback()
 

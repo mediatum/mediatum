@@ -6,6 +6,7 @@
 import datetime
 import logging
 import time
+import itertools as _itertools
 
 import pyaml
 from ipaddr import IPv4Network, IPv4Address, AddressValueError
@@ -15,6 +16,7 @@ import sqlalchemy as sqla
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, ForeignKey, event, Integer, DateTime, func as sqlfunc
 from sqlalchemy.orm import relationship, backref, Query, Mapper, undefer
+from sqlalchemy.orm import defer as _defer, ColumnProperty as _ColumnProperty, class_mapper as _class_mapper
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy_continuum.utils import version_class
 from sqlalchemy_continuum.plugins.transaction_meta import TransactionMetaPlugin
@@ -177,6 +179,13 @@ def build_accessfunc_arguments(user=None, ip=None, date=None, req=None):
 
 class MtQuery(Query):
 
+    def node_offset0(self):
+        from core import Node
+        query = self.options(undefer("*")).offset(0).from_self()
+        deferred_columns = (prop.key for prop in _class_mapper(Node).iterate_properties
+                                 if isinstance(prop, _ColumnProperty) and prop.deferred)
+        return query.options(*_itertools.imap(_defer,deferred_columns))
+
     def prefetch_attrs(self):
         from core import Node
         return self.options(undefer(Node.attrs))
@@ -188,11 +197,14 @@ class MtQuery(Query):
     def _find_nodeclass(self):
         from core import Node
         """Returns the query's underlying model classes."""
-        return [
-            d['entity']
-            for d in self.column_descriptions
-            if issubclass(d['entity'], Node)
-        ]
+        nodeclass = dict()  # stores node class in key 0
+        for d in self.column_descriptions:
+            d = d["entity"]
+            if issubclass(d, Node):
+                # class found: memorize it, but fail if it's not unique
+                if nodeclass.setdefault(0,d) is not d:
+                    raise AssertionError("Non-unique node class")
+        return nodeclass.get(0)
 
     def filter_read_access(self, user=None, ip=None, req=None):
         return self._filter_access("read", user, ip, req)
@@ -214,8 +226,6 @@ class MtQuery(Query):
         nodeclass = self._find_nodeclass()
         if not nodeclass:
             return self
-        else:
-            nodeclass = nodeclass[0]
 
         db_funcs = {
             "read": mediatumfunc.has_read_access_to_node,
@@ -235,8 +245,6 @@ class MtQuery(Query):
         nodeclass = self._find_nodeclass()
         if not nodeclass:
             return Query.get(self, ident)
-        else:
-            nodeclass = nodeclass[0]
         active_version = Query.get(self, ident)
         Transaction = versioning_manager.transaction_cls
         if active_version is None:

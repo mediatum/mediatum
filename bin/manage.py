@@ -218,30 +218,6 @@ def fulltext(args):
             logg.info("nothing imported for node # %s", nid)
 
 
-def searchindex(args):
-    global search_initialized
-    if not search_initialized:
-        init.init_fulltext_search()
-        search_initialized = True
-
-    index_type = args.type
-
-    action = args.action.lower()
-
-    if action == "recreate":
-
-        if index_type in ("all", "attrs"):
-            logg.info("recreating search indices from node attributes...")
-            s.execute(mediatumfunc.recreate_all_tsvectors_attrs())
-
-        if index_type in ("all", "fulltext"):
-            logg.info("recreating search indices from node fulltexts...")
-            s.execute(mediatumfunc.recreate_all_tsvectors_fulltext())
-
-        logg.info("searchindex recreate finished")
-
-
-
 def vacuum(args):
     action = args.action.lower() if args.action else None
 
@@ -316,12 +292,6 @@ def main():
     fulltext_subparser.add_argument("--overwrite", "-o", action="store_true", help="overwrite existing fulltexts")
     fulltext_subparser.add_argument("nid_mod_or_all", help="node ID, 'all' or 'mod n i' to partition the list of node IDs")
     fulltext_subparser.set_defaults(func=fulltext)
-
-    searchindex_subparser = subparsers.add_parser("searchindex", help="manage full text search indexing")
-    searchindex_subparser.add_argument("action", choices=["recreate"], help="recreate search index from node data")
-    searchindex_subparser.add_argument("--type", "-t", choices=["fulltext", "attrs", "all"], default="all",
-                                     help="which index type to create (fulltext / attrs / all)")
-    searchindex_subparser.set_defaults(func=searchindex)
 
     sql_subparser = subparsers.add_parser(
         "sql",

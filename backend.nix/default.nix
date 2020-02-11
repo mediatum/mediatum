@@ -33,13 +33,13 @@ in let
     in
       pythonSuper.override { inherit packageOverrides; };
 
-  dependencies.production =
-    (with (python.pkgs); [
+  dependencies_production = lib.attrsets.attrValues {
+    inherit (python.pkgs)
+      ConfigArgParse
       alembic
       attrs_18
       bibtexparser
       coffeescript
-      ConfigArgParse
       decorator
       fdfgen
       flask-admin
@@ -51,6 +51,7 @@ in let
       ipython
       ipython-sql
       jinja2
+      ldap
       lxml
       magic
       mediatumfsm
@@ -58,7 +59,9 @@ in let
       mollyZ3950
       parcon
       pillow
-      ldap
+      psycopg2
+      pyPdf
+      py_scrypt
       pyaml
       pydot2
       pyexiftool
@@ -66,52 +69,45 @@ in let
       pyjade
       pymarc
       pympler
-      pyPdf
       python-logstash
       pyyaml
       reportlab
       requests
-      psycopg2
-      py_scrypt
       sqlalchemy
       sqlalchemy-continuum
       sqlalchemy-utils
       sympy
       unicodecsv
       werkzeug
-    ]) ++ (with pkgs; [
+    ;
+    inherit (pkgs)
       ffmpeg
-      pkgs1803a.ghostscript
-      pkgs1803a.graphicsmagick
+      glibcLocales
       graphviz-nox
       icu
       pdftk
       poppler_utils
-      glibcLocales
-    ]) ++ [
-      pkgs.perlPackages.ImageExifTool
-      (pkgs.callPackage ../uwsgi.nix {})
-      (pkgs.callPackage ../postgresql.nix {})
-      (pkgs.callPackage ../nginx.nix {})
-    ];
+    ;
+    inherit (pkgs1803a) ghostscript graphicsmagick;
+    inherit (pkgs.perlPackages) ImageExifTool;
+    nginx = pkgs.callPackage ../nginx.nix {};
+    postgresql = pkgs.callPackage ../postgresql.nix {};
+    uwsgi = pkgs.callPackage ../uwsgi.nix {};
+  };
 
-  dependencies.devel = (with python.pkgs; [
-      ipykernel
-      munch
-    ]);
+  dependencies_devel = lib.attrsets.attrValues {
+    inherit (python.pkgs) ipykernel munch;
+  };
 
 in
 
 python.pkgs.buildPythonApplication {
   name = "mediatum-backend";
   src = ./../.;
-  passthru = {
-    inherit dependencies;
-    python = python;
-  };
   nativeBuildInputs = [ python.pkgs.setuptools-git ];
   propagatedBuildInputs = lib.lists.concatLists [
-    dependencies.production
-    dependencies.devel
+    dependencies_production
+    dependencies_devel
   ];
+  passthru = { inherit python; };
 }

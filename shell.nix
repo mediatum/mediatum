@@ -1,19 +1,9 @@
-{ pkgs ? (import ./nixpkgs.nix {}).pkgs
-, lib ? pkgs.lib
-, stdenv ? pkgs.stdenv
-}:
+{ pkgs ? (import ./nixpkgs.nix {}).pkgs }:
 
 let
 
   backend = pkgs.callPackage ./backend.nix {};
-  inherit (backend.passthru) dependencies;
 
 in
 
-pkgs.stdenv.mkDerivation {
-  name = "mediatumenv";
-  propagatedBuildInputs = lib.lists.concatLists [
-    dependencies.production
-    dependencies.devel
-  ];
-}
+pkgs.mkShell { inputsFrom = [ backend ]; }

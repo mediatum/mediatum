@@ -3,11 +3,10 @@
 let
 
   backend = pkgs.callPackage ./backend.nix {};
-  inherit (backend.passthru) dependencies python;
 
 in
 
-python.buildEnv.override {
-  extraLibs = dependencies.production ++ dependencies.devel;
+backend.passthru.python.buildEnv.override {
+  extraLibs = backend.propagatedBuildInputs;
   ignoreCollisions = true;
 }

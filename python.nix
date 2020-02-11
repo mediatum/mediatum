@@ -1,9 +1,13 @@
 { pkgs ? (import ./nixpkgs.nix {}).pkgs }:
 
 let
-  requirements = pkgs.callPackage ./requirements.nix {};
 
-in pkgs.python.buildEnv.override {
-    extraLibs = requirements.production ++ requirements.devel;
-    ignoreCollisions = true;
+  backend = pkgs.callPackage ./backend.nix {};
+  inherit (backend.passthru) dependencies python;
+
+in
+
+python.buildEnv.override {
+  extraLibs = dependencies.production ++ dependencies.devel;
+  ignoreCollisions = true;
 }

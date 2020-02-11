@@ -33,7 +33,7 @@ in let
     in
       pythonSuper.override { inherit packageOverrides; };
 
-  dependencies_production = lib.attrsets.attrValues {
+  propagatedBuildInputs = lib.attrsets.attrValues {
     inherit (python.pkgs)
       ConfigArgParse
       alembic
@@ -56,6 +56,7 @@ in let
       magic
       mediatumfsm
       mediatumtal
+      munch
       mollyZ3950
       parcon
       pillow
@@ -92,19 +93,12 @@ in let
     inherit (pkgs.perlPackages) ImageExifTool;
   };
 
-  dependencies_devel = lib.attrsets.attrValues {
-    inherit (python.pkgs) ipykernel munch;
-  };
-
 in
 
 python.pkgs.buildPythonApplication {
   name = "mediatum-backend";
   src = ./../.;
   nativeBuildInputs = [ python.pkgs.setuptools-git ];
-  propagatedBuildInputs = lib.lists.concatLists [
-    dependencies_production
-    dependencies_devel
-  ];
+  inherit propagatedBuildInputs;
   passthru = { inherit python; };
 }

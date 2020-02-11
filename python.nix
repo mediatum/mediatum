@@ -6,7 +6,5 @@ let
 
 in
 
-backend.passthru.python.buildEnv.override {
-  extraLibs = backend.propagatedBuildInputs;
-  ignoreCollisions = true;
-}
+backend.passthru.python.withPackages
+(_: backend.propagatedBuildInputs)

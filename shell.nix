@@ -15,6 +15,5 @@ pkgs.stdenv.mkDerivation {
   propagatedBuildInputs = lib.lists.concatLists [
     dependencies.production
     dependencies.devel
-    dependencies.system
   ];
 }

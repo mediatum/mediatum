@@ -119,7 +119,6 @@ def login(req):
     language = lang(req)
     ctx = {"error": error, "user": user, "email": config.get("email.support"), "language": language, "csrf": req.csrf_token.current_token}
     login_html = webconfig.theme.render_macro("login.j2.jade", "login", ctx)
-    # following import is also needed for pytest monkeypatch for render_page
     from web.frontend.frame import render_page
     html = render_page(req, None, login_html)
     req.response.status_code = httpstatus.HTTP_OK
@@ -172,7 +171,6 @@ def pwdchange(req):
                 return httpstatus.HTTP_MOVED_TEMPORARILY
 
     content_html = webconfig.theme.render_macro("login.j2.jade", "change_pwd", {"error": error, "user": user, "csrf": req.csrf_token.current_token})
-    # following import is also needed for pytest monkeypatch for render_page
     from web.frontend.frame import render_page
     html = render_page(req, None, content_html)
     req.response.set_data(html)

@@ -71,6 +71,7 @@ in let
       pyyaml
       reportlab
       requests
+      psycopg2
       py_scrypt
       sqlalchemy
       sqlalchemy-continuum
@@ -95,27 +96,9 @@ in let
     ];
 
   dependencies.devel = (with python.pkgs; [
-      factory-boy
       ipykernel
-      mock
       munch
-      pytest_2
-      pytest-catchlog
-      pytest-base-url
-      pytest-splinter
-      sphinx_1_4
-      yappi
     ]);
-
-  dependencies.system = [
-    pkgs.git
-    pkgs.zsh
-    python.pkgs.psycopg2
-  ];
-
-  dependencies.build = [
-    pkgs.setuptools-git
-  ];
 
 in
 
@@ -126,9 +109,9 @@ python.pkgs.buildPythonApplication {
     inherit dependencies;
     python = python;
   };
+  nativeBuildInputs = [ python.pkgs.setuptools-git ];
   propagatedBuildInputs = lib.lists.concatLists [
     dependencies.production
     dependencies.devel
-    dependencies.system
   ];
 }

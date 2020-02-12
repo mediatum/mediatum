@@ -106,16 +106,20 @@ def init_database_values(s, default_admin_password=None):
 
     # add example metadatatypes
     example_path_collection = os.path.join(config.basedir, u"examples/content/collection.xml")
-    metadatatype_collection = readNodeXML(example_path_collection)
+    with open(example_path_collection, "rb") as f:
+        metadatatype_collection = readNodeXML(f)
 
     example_path_directory = os.path.join(config.basedir, u"examples/content/directory.xml")
-    metadatatype_directory = readNodeXML(example_path_directory)
+    with open(example_path_directory, "rb") as f:
+        metadatatype_directory = readNodeXML(f)
 
     example_path_image = os.path.join(config.basedir, u"examples/content/image.xml")
-    metadatatype_image = readNodeXML(example_path_image)
+    with open(example_path_image, "rb") as f:
+        metadatatype_image = readNodeXML(f)
 
     example_path_document = os.path.join(config.basedir, u"examples/content/document.xml")
-    metadatatype_document = readNodeXML(example_path_document)
+    with open(example_path_document, "rb") as f:
+        metadatatype_document = readNodeXML(f)
 
     metadatatypes.children.extend([metadatatype_collection, metadatatype_directory, metadatatype_image,
                                    metadatatype_document])

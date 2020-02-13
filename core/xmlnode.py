@@ -21,6 +21,8 @@ from core import Node
 import random
 import logging
 
+import sqlalchemy as _sqlalchemy
+
 from lxml import etree
 from core import File, db
 from core.systemtypes import Mappings, Root
@@ -106,7 +108,7 @@ def add_node_to_xmldoc(
         child_query = node.children
 
         if exclude_childtypes:
-            child_query = child_query.filter(~((Node.type + u'/' + Node.schema).in_(exclude_childtypes)))
+            child_query = child_query.filter(_sqlalchemy.or_(Node.schema == None, ~((Node.type + u'/' + Node.schema).in_(exclude_childtypes))))
 
         for child in child_query.order_by("orderpos"):
             add_child_to_xmlnode(child, xmlnode)

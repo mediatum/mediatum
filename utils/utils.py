@@ -17,18 +17,22 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import base64 as _base64
 import cgi
-import inspect
-import logging
-import traceback
-import sys
-import os
+import functools as _functools
 import hashlib
-import re
-import random
+import inspect
 import io
 import json as _json
-import base64 as _base64
+import logging
+import math as _math
+import os
+import random as _random
+import re
+import string as _string
+import sys
+import traceback
+
 from warnings import warn
 from urlparse import parse_qsl, urlsplit, urlunsplit
 from urllib import quote, urlencode
@@ -778,12 +782,23 @@ def getFormatedString(s):
     return s
 
 
-def mkKey():
-    alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-    s = ""
-    for i in range(0, 16):
-        s += alphabet[random.randrange(0, len(alphabet) - 1)]
-    return s
+def gen_secure_token(entropy=256):
+    """
+    Generate a random ascii string of lowercase
+    letters and digits, with the given entropy.
+    If `mixed_case` is True, capital letters are also
+    allowed, shortening the output string a bit.
+    If security is not important (e.g. unique filename),
+    an entropy of 128 should be enough.
+    """
+    symbols = set(_string.digits + _string.ascii_lowercase)
+    symbols = list(symbols)
+    get_symbol = _functools.partial(_random.SystemRandom().choice, symbols)
+    num_symbols = int(_math.ceil(entropy/_math.log(len(symbols), 2)))
+    return "".join(get_symbol() for _ in xrange(num_symbols))
+
+
+mkKey = _functools.partial(gen_secure_token)
 
 
 class Template(object):

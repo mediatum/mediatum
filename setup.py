@@ -1,21 +1,8 @@
 from setuptools import setup, find_packages
-import os
-
-here = os.path.abspath(os.path.dirname(__file__))
-
-# Read the version number from a source file.
-# Why read it, and not import?
-# see https://groups.google.com/d/topic/pypa-dev/0PkjVpcxTzQ/discussion
-
-
-def find_version():
-    with open(os.path.join(here, 'VERSION')) as version_file:
-        return version_file.read().strip()
-
 
 setup(
     name="mediatum",
-    version=find_version(),
+    version="2020.04",
     description="mediaTUM",
     url='https://mediatum.github.io/mediatum',
     author='mediaTUM authors, see git log',

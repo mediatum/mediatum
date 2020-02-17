@@ -25,9 +25,9 @@ import os.path
 import shutil
 import logging
 import codecs
-import random
 import fdfgen
 
+import utils.utils as _utils_utils
 from .workflow import WorkflowStep, getNodeWorkflow, getNodeWorkflowStep, registerStep
 from core.translation import t, addLabels
 from metadata.upload import getFilelist
@@ -82,8 +82,9 @@ def fillPDFForm(formPdf, fields, outputPdf="filled.pdf", input_is_fullpath=False
         fill given pdf file with form fields with given attributes and store result in pdf file
     """
     # build data file
-    fdffilename = "{}{}infdata.fdf".format(config.get('paths.tempdir'), str(random.random())[2:])
-    outputPdf = "{}{}filled.pdf".format(config.get('paths.tempdir'), str(random.random())[2:])
+    filenamebase = os.path.join(config.get('paths.tempdir'), _utils_utils.gen_secure_token(128))
+    fdffilename = "{}.infdata.fdf".format(filenamebase)
+    outputPdf = "{}.filled.pdf".format(filenamebase)
     try:
         with open(fdffilename, 'wb') as fdf_file:
             fdf_file.write(fdfgen.forge_fdf(fdf_data_strings=fields))

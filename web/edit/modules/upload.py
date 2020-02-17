@@ -25,12 +25,12 @@ import core.users as users
 import re
 import core.config as config
 import zipfile
-import random
 import time
 import logging
 
 import json
 import mediatumtal.tal as _tal
+import utils.utils as _utils_utils
 
 from web.edit.edit_common import showdir, shownav, showoperations, searchbox_navlist_height
 from web.edit.edit import getTreeLabel, get_ids_from_req
@@ -522,7 +522,7 @@ def upload_ziphandler(req):
             for f in z.namelist():
                 #strip unwanted garbage from string
                 name = mybasename(f).decode('utf8', 'ignore').encode('utf8')
-                random_str = ustr(random.random())[2:]
+                random_str = _utils_utils.gen_secure_token(128)
                 if name.startswith("._"):  # ignore Mac OS X junk
                     continue
                 if name.split('.')[0] == '':

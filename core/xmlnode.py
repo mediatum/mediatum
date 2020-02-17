@@ -18,13 +18,13 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from core import Node
-import random
 import logging
 
 import sqlalchemy as _sqlalchemy
 
 import werkzeug.datastructures as _werkzeug_datastructures
 from lxml import etree
+import utils.utils as _utils_utils
 from core import File, db
 from core.systemtypes import Mappings, Root
 from utils.compat import iteritems
@@ -246,7 +246,7 @@ class _NodeLoader:
                     datatype = "directory"
 
             if "id" not in attrs:
-                attrs["id"] = ustr(random.random())
+                attrs["id"] = _utils_utils.gen_secure_token(128)
 
             old_id = attrs["id"]
 

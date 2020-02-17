@@ -7,8 +7,8 @@ from __future__ import absolute_import
 import logging
 import os
 import re
-import random
 import zipfile
+import utils.utils as _utils_utils
 from core import config, db, Node
 from contenttypes import Content
 from utils.utils import getMimeType, get_filesize, suppress
@@ -89,7 +89,7 @@ def get_node_or_version(nid, version_id=None, nodeclass=Node):
 
 
 def sendZipFile(req, path):
-    tempfile = os.path.join(config.get("paths.tempdir"), unicode(random.random())) + ".zip"
+    tempfile = os.path.join(config.get("paths.tempdir"), "{}.zip".format(_utils_utils.gen_secure_token(128)))
     zip = zipfile.ZipFile(tempfile, "w")
     zip.debug = 3
 

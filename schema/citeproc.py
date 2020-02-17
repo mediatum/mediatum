@@ -26,12 +26,12 @@ from collections import defaultdict
 import datetime
 import logging
 import re
-import random
 from pprint import pformat
 
 from sqlalchemy.orm.exc import NoResultFound
 import requests
 
+import utils.utils as _utils_utils
 from core import Node
 from core import db
 from contenttypes import Document
@@ -281,7 +281,7 @@ def import_csl(record, target=None, name=None, testing=False):
     if not mask:
         raise NoMappingFound("target schema does not have a citeproc mask", typ)
     if name is None:
-        name = record.get(u"DOI") or u"".join(random.choice(u'0123456789abcdef') for _ in xrange(16))
+        name = record.get(u"DOI") or _utils_utils.gen_secure_token(128)
     node = Document(name, schema=schema)
 
     def get_converted_from_csl_record(key):

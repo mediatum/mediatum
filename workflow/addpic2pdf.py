@@ -24,10 +24,10 @@
 import json
 import os
 import logging
-import random
 import flask as _flask
 
 import mediatumtal.tal as _tal
+import utils.utils as _utils_utils
 import core.users as users
 from core import request_handler as _request_handler
 import core.config as config
@@ -256,11 +256,13 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
                     #dpi = 72
                     #scale = 1.0
 
-                tmppath = config.get("paths.datadir") + "tmp/"
-                date_str = format_date().replace('T', '-').replace(' ', '').replace(':', '-')
-                filetempname = tmppath + \
-                    "temp_addpic_pdf_wfs_%s_node_%s_%s_%s_.pdf" % (
-                        unicode(current_workflow_step.id), unicode(node.id), date_str, unicode(random.random()))
+                filetempname = "temp_addpic_pdf.wfs_{cwfs_id}.node_{node_id}.{date}.{rand}.pdf".format(
+                    cwfs_id=ustr(current_workflow_step.id),
+                    node_id=ustr(node.id),
+                    date=format_date().replace(*"'T-").replace(" ", "").replace(*":-"),
+                    rand=_utils_utils.gen_secure_token(128),
+                )
+                filetempname = os.path.join(config.get("paths.tempdir"), filetempname)
 
                 url = req.params.get('input_drag_logo_url', '')
 

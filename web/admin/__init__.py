@@ -12,9 +12,6 @@
 """
 import os
 import flask_login as _flask_login
-import functools as _functools
-import random as _random
-import string as _string
 
 try:
     import uwsgi as _uwsgi
@@ -41,6 +38,7 @@ from werkzeug.utils import cached_property as _cached_property
 from core.templating import PyJadeExtension as _PyJadeExtension
 from jinja2.loaders import FileSystemLoader as _FileSystemLoader, ChoiceLoader as _ChoiceLoader
 from utils.utils import counter as _counter
+import utils.utils as _utils_utils
 from core.request_handler import handle_request as _handle_request
 
 
@@ -162,8 +160,7 @@ def make_app():
     admin_app = MediatumFlask("mediaTUM admin", template_folder="web/templates")
     admin_app.debug = True
     # Generate seed for signed session cookies
-    make_key_char = _functools.partial(_random.SystemRandom().choice, _string.ascii_letters)
-    secret_key = "".join(make_key_char() for _ in xrange(80))
+    secret_key = _utils_utils.gen_secure_token()
     if _uwsgi:
         _uwsgi.cache_set("secret_key", secret_key)
         secret_key = _uwsgi.cache_get("secret_key")

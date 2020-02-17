@@ -19,12 +19,12 @@
 """
 
 import hashlib
-import random
 
 import os
 import core.users as users
 import logging
 import mediatumtal.tal as _tal
+import utils.utils as _utils_utils
 from utils.utils import getMimeType, get_user_id, suppress
 from utils.fileutils import importFile, getImportDir, importFileIntoDir
 from contenttypes.image import make_thumbnail_image, make_presentation_image

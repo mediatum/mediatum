@@ -19,8 +19,8 @@
 """
 
 import logging
-import random
 from PIL import Image, ImageDraw
+import utils.utils as _utils_utils
 from core import config
 import os
 from subprocess import CalledProcessError
@@ -90,7 +90,7 @@ def parsePDF(filename, tempdir):
         return PDFInfo(data)
 
     name = ".".join(filename.split(".")[:-1])
-    imgfile = os.path.join(tempdir, "tmp" + str(random.random()) + ".png")
+    imgfile = os.path.join(tempdir, "pdfpreview.{}.png".format(_utils_utils.gen_secure_token()))
     thumb128 = name + ".thumb"
     thumb300 = name + ".thumb2"
     fulltext_from_pdftotext = name + ".pdftotext"  # output of pdf to text, possibly not normalized utf-8

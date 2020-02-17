@@ -1,6 +1,6 @@
 import hashlib
-import random
 from sqlalchemy import func
+import utils.utils as _utils_utils
 from . import schema
 from core.postgres import check_type_arg
 from core import Node
@@ -24,12 +24,7 @@ class SearchMaskItem(Node):
 
 def newMask(node):
     searchmask_root = q(Searchmasks).one()
-    while True:
-        maskname = unicode(hashlib.md5(ustr(random.random())).hexdigest()[0:8])
-        if maskname in searchmask_root.children.all():
-            continue
-        else:
-            break
+    maskname = _utils_utils.gen_secure_token(128)
     mask = Node(name=maskname, type=u"searchmask")
     searchmask_root.children.append(mask)
     node.set("searchmaskname", maskname)

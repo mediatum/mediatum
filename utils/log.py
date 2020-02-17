@@ -30,12 +30,12 @@ from core import config
 from .date import format_date
 import os
 import hashlib
-import random
 import string
 try:
     import uwsgi as _uwsgi
 except ImportError:
     _uwsgi = None
+import utils as _utils_utils
 
 ROOT_STREAM_LOGFORMAT = '%(asctime)s [%(process)d/%(threadName)s] %(name)s %(levelname)s | %(message)s'
 # this also logs filename and line number, which is great for debugging
@@ -335,8 +335,7 @@ def make_xid_and_errormsg_hash():
     formatted_traceback = "\n".join(traceback.format_tb(sys.exc_info()[2]))
     hashed_errormsg = hashlib.md5(error_msg).hexdigest()[:6]
     hashed_tb = hashlib.md5(formatted_traceback).hexdigest()[:6]
-    # http://stackoverflow.com/questions/2257441/random-string-generation-with-upper-case-letters-and-digits
-    random_string = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(4))
+    random_string = _utils_utils.gen_secure_token(64).upper()
     xid = "%s__%s__%s__%s" % (date_now, hashed_tb, hashed_errormsg, random_string)
     return xid, hashed_errormsg, hashed_tb
 

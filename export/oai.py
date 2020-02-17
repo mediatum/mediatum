@@ -21,12 +21,12 @@
 """
 
 import socket
-import random
 import re
 import time
 import logging
 from collections import OrderedDict
 
+import utils.utils as _utils_utils
 import core.config as config
 import core.httpstatus as _httpstatus
 
@@ -502,7 +502,7 @@ def retrieveNodes(req, setspec, date_from=None, date_to=None, metadataformat=Non
 
 
 def new_token(req):
-    token = ustr(random.random())
+    token = _utils_utils.gen_secure_token()
     with _utils_lock.named_lock("oaitoken"):
         # limit length to 32
         if len(tokenpositions) >= 32:

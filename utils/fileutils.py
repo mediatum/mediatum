@@ -20,9 +20,9 @@
 import codecs
 import logging
 import os
-import random
 import shutil
 import time
+import utils as _utils_utils
 from core import db, File, config
 from .utils import getMimeType
 from core.config import resolve_datadir_path
@@ -41,23 +41,14 @@ def getImportDir():
     return uploaddir
 
 
-def _find_unique_destname(filename, prefix=""):
-    uploaddir = getImportDir()
-    destname = os.path.join(uploaddir, prefix + filename)
-
-    i = 0
-    while os.path.exists(destname):
-        i += 1
-        p = prefix + str(i) + "_"
-        destname = os.path.join(uploaddir, p + filename)
-
-    return destname
-
-
 def importFile(realname, source, prefix="", typeprefix=""):
-
-    filename = os.path.basename(source.filename)
-    destname = _find_unique_destname(filename, prefix)
+    # create destname as "{random_string}.{prefix}.{given_name}"
+    destname = list()
+    destname.append(_utils_utils.gen_secure_token(128))
+    if prefix:
+        destname.append(prefix)
+    destname.append(os.path.basename(source.filename))
+    destname = os.path.join(getImportDir(), ".".join(destname))
 
     with open(destname,"wb") as destfile:
         shutil.copyfileobj(source, destfile)
@@ -89,7 +80,7 @@ def importFileRandom(tempname):
     filename = os.path.basename(tempname)
     uploaddir = getImportDir()
 
-    destfile = unicode(random.random())[2:] + os.path.splitext(filename)[1]
+    destfile = _utils_utils.gen_secure_token(128) + os.path.splitext(filename)[1]
     destname = os.path.join(uploaddir, destfile)
     shutil.copyfile(tempname, destname)
 

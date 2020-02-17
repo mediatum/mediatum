@@ -5,8 +5,8 @@
     
     Various handlers for testing handlers.
 """
-import random
 import string
+import utils.utils as _utils_utils
 
 
 def error(req):
@@ -14,11 +14,11 @@ def error(req):
 
 
 def error_variable_msg(req):
-    random_string = ''.join(random.choice(string.ascii_uppercase) for _ in range(6))
+    random_string = _utils_utils.gen_secure_token(128)
     raise Exception("this is a test exception with random stuff:" + random_string)
 
 
 def db_error(req):
     from core import db
-    random_sql = '|'.join(random.choice(string.ascii_uppercase) for _ in range(6))
+    random_sql = '|'.join(_utils_utils.gen_secure_token(128))
     db.session.execute(random_sql)

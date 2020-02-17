@@ -5,8 +5,7 @@
 """
 import logging
 import hashlib
-import random
-import time
+import utils.utils as _utils_utils
 from core import db
 from core.database.postgres.user import OAuthUserCredentials
 
@@ -86,7 +85,7 @@ def get_oauth_key_for_user(user):
 def generate_new_oauth_key_for_user(user):
     s = db.session
 
-    generated_key = hashlib.md5(str(time.time()) + str(''.join(str(random.randint(0, 9)) for i in range(40)))).hexdigest()[0:15] # generate key
+    generated_key = _utils_utils.gen_secure_token() # generate key
 
     user_login_name = user.login_name
 

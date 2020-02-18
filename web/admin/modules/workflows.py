@@ -96,8 +96,9 @@ def validate(req, op):
 
                 wf = getWorkflow(req.params.get("name"))
                 if wf:
-                    if "wf_language" in req.params:
-                        wf.set('languages', req.params.get('wf_language'))
+                    language_list = [lang for lang in config.languages if "wf_language_" + lang in req.params]
+                    if language_list:
+                        wf.set('languages', ';'.join(language_list))
                     else:
                         if wf.get('languages'):
                             del wf.attrs['languages']

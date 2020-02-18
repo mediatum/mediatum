@@ -152,7 +152,7 @@
                 <td><tal:block i18n:translate="admin_wf_languages">TEXT</tal:block>:</td>
                 <td>
                     <tal:block tal:repeat="language languages">
-                        <input type="checkbox" name="wf_language" tal:attributes="value language;checked python:'checked' if language in workflow.get('languages').split(';;') else None"/> <tal:block tal:content="language" i18n:translate=""/><br/>
+                        <input type="checkbox" value="1" tal:attributes="name python:'wf_language_'+language;checked python:'checked' if language in workflow.get('languages').split(';;') else None"/> <tal:block tal:content="language" i18n:translate=""/><br/>
                     </tal:block>
                 </td>
             </tr>

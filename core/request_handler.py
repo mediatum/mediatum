@@ -1,6 +1,5 @@
 import re as _re
 import time as _time
-import random as _random
 import os as _os
 import stat as _stat
 import string as _string
@@ -179,11 +178,8 @@ def unpack_rfc850(m):
 def build_http_date(when):
     return _time.strftime('%a, %d %b %Y %H:%M:%S GMT', _time.gmtime(when))
 
-time_offset = 0
-
 
 def parse_http_date(d):
-    global time_offset
     d = _string.lower(d)
     tz = _time.timezone
     m = rfc850_reg.match(d)
@@ -202,17 +198,7 @@ def parse_http_date(d):
     # out the DST discrepancy
     if _time.daylight and _time.localtime(retval)[-1] == 1:  # DST correction
         retval = retval + (tz - _time.altzone)
-    return retval - time_offset
-
-
-def check_date():
-    global time_offset
-    tmpfile = join_paths(GLOBAL_TEMP_DIR, "datetest" + ustr(_random.random()) + ".tmp")
-    open(tmpfile, "wb").close()
-    time1 = _os.stat(tmpfile)[_stat.ST_MTIME]
-    _os.unlink(tmpfile)
-    time2 = parse_http_date(build_http_date(_time.time()))
-    time_offset = time2 - time1
+    return retval
 
 
 def join_paths(p1, p2):

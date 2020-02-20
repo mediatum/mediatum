@@ -19,18 +19,17 @@
 """
 import logging
 import os
-import random
 import codecs
 
 import core
 import mediatumtal.tal as _tal
+import core.request_handler as _core_request_handler
 from core import config
 from core.users import get_guest_user
 from core import httpstatus
 from utils.utils import join_paths, Menu
 from web.admin.adminutils import findmodule, show_content, adminNavigation, getMenuItemID
 from core.users import user_from_session as _user_from_session
-from core.request_handler import sendFile as _sendFile
 
 
 logg = logging.getLogger(__name__)
@@ -77,18 +76,13 @@ def export(req):
         return httpstatus.HTTP_FORBIDDEN
 
     path = req.path[1:].split("/")
+    module = findmodule(path[1])
     try:
-        module = findmodule(path[1])
+        xml_result = module.export(req, path[2])
+    except AttributeError as err:
+        req.response.status_code = httpstatus.HTTP_NOT_FOUND
+        _core_request_handler.error(req, httpstatus.HTTP_NOT_FOUND, str(err))
 
-        tempfile = join_paths(config.get("paths.tempdir"), str(random.random()))
-        with codecs.open(tempfile, "w", encoding='utf8') as f:
-            try:
-                f.write(module.export(req, path[2]))
-            except UnicodeDecodeError:
-                f.write(module.export(req, path[2]).decode('utf-8'))
-
-        _sendFile(req, tempfile, u"application/xml", nginx_x_accel_redirect_enabled=False)
-        if os.sep == '/':  # Unix?
-            os.unlink(tempfile)  # unlinking files while still reading them only works on Unix/Linux
-    except:
-        logg.info("module has no export method")
+    req.response.status_code = httpstatus.HTTP_OK
+    req.response.mimetype = "application/xml"
+    req.response.set_data(xml_result)

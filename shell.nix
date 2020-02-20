@@ -3,7 +3,13 @@
 let
 
   backend = pkgs.callPackage ./backend.nix {};
+  nginx = pkgs.callPackage ./nginx.nix {};
+  postgresql = pkgs.callPackage ./postgresql.nix {};
+  uwsgi = pkgs.callPackage ./uwsgi.nix {};
 
 in
 
-pkgs.mkShell { inputsFrom = [ backend ]; }
+pkgs.mkShell {
+  nativeBuildInputs = [ nginx postgresql uwsgi ];
+  inputsFrom = [ backend ];
+}

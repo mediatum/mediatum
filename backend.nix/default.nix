@@ -90,9 +90,6 @@ in let
     ;
     inherit (pkgs1803a) ghostscript graphicsmagick;
     inherit (pkgs.perlPackages) ImageExifTool;
-    nginx = pkgs.callPackage ../nginx.nix {};
-    postgresql = pkgs.callPackage ../postgresql.nix {};
-    uwsgi = pkgs.callPackage ../uwsgi.nix {};
   };
 
   dependencies_devel = lib.attrsets.attrValues {

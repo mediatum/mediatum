@@ -523,7 +523,7 @@ class ContentList(ContentBase):
         }
 
         # we fetch one more to see if more nodes are available (on the next page)
-        nodes = q_nodes.limit(nodes_per_page+1).prefetch_attrs().all()
+        nodes = q_nodes.distinct().limit(nodes_per_page+1).prefetch_attrs().all()
         self.nodes = nodes
 
         if len(nodes) > nodes_per_page:

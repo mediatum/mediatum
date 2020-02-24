@@ -32,8 +32,7 @@ logg = logging.getLogger(__name__)
 
 class NodeToFile(DeclarativeBase):
     __tablename__ = "node_to_file"
-    __versioned__ = {}
-    
+
     nid = C(Integer, FK(Node.id, ondelete="CASCADE"), primary_key=True)
     file_id = C(Integer, FK("file.id"), primary_key=True)
 

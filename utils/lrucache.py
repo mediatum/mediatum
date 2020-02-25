@@ -5,7 +5,7 @@
 
 from collections import namedtuple
 from functools import update_wrapper
-from threading import RLock
+import locks as _utils_locks
 
 _CacheInfo = namedtuple("CacheInfo", ["hits", "misses", "maxsize", "currsize"])
 
@@ -74,7 +74,6 @@ def lru_cache(maxsize=100, typed=False):
         make_key = _make_key
         cache_get = cache.get           # bound method to lookup key or return None
         _len = len                      # localize the global len() function
-        lock = RLock()                  # because linkedlist updates aren't threadsafe
         root = []                       # root of the circular doubly linked list
         root[:] = [root, root, None, None]      # initialize by pointing to self
         nonlocal_root = [root]                  # make updateable non-locally
@@ -108,7 +107,7 @@ def lru_cache(maxsize=100, typed=False):
                 def wrapper(*args, **kwds):
                     # size limited caching that tracks accesses by recency
                     key = make_key(args, kwds, typed) if kwds or typed else args
-                    with lock:
+                    with _utils_locks.named_lock("lrucachelock"):
                         link = cache_get(key)
                         if link is not None:
                             # record recent use of the key by moving it to the front of the list
@@ -123,7 +122,7 @@ def lru_cache(maxsize=100, typed=False):
                             stats[HITS] += 1
                             return result
                     result = func(*args, **kwds)
-                    with lock:
+                    with _utils_locks.named_lock("lrucachelock"):
                         root, = nonlocal_root
                         if key in cache:
                             # getting here means that this same key was added to the
@@ -155,12 +154,12 @@ def lru_cache(maxsize=100, typed=False):
 
         def cache_info():
             """Report cache statistics"""
-            with lock:
+            with _utils_locks.named_lock("lrucachelock"):
                 return _CacheInfo(stats[HITS], stats[MISSES], maxsize, len(cache))
 
         def cache_clear():
             """Clear the cache and cache statistics"""
-            with lock:
+            with _utils_locks.named_lock("lrucachelock"):
                 cache.clear()
                 root = nonlocal_root[0]
                 root[:] = [root, root, None, None]
@@ -171,7 +170,7 @@ def lru_cache(maxsize=100, typed=False):
             key = make_key(args, kwds, typed) if kwds or typed else args
             link = cache_get(key)
             link_prev, link_next, key, _ = link
-            with lock:
+            with _utils_locks.named_lock("lrucachelock"):
                 # set next field of prev
                 link_prev[NEXT] = link_next
                 link_next[PREV] = link_prev

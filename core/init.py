@@ -272,6 +272,8 @@ def update_nodetypes_in_db():
 def _init_locks():
     _register_lock('cache')
     _register_lock('iolock')
+    _register_lock('lrucachelock')
+    _register_lock('oaitoken')
     _register_lock('pofile')
     _register_lock('producer')
     _register_lock('queuelock')

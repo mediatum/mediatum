@@ -19,8 +19,12 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import functools as _functools
+import itertools as _itertools
 import logging
+import operator as _operator
 import locale
+import html as _html
 from sqlalchemy import func, sql
 from mediatumtal import tal
 from utils.utils import esc, suppress
@@ -43,7 +47,7 @@ def count_list_values_for_all_content_children(collection_id, attribute_name):
     func_call = mediatumfunc.count_list_values_for_all_content_children(collection_id, attribute_name)
     stmt = sql.select([sql.text("*")], from_obj=func_call)
     res = db.session.execute(stmt)
-    return res.fetchall()
+    return map(_operator.itemgetter(0,1), res.fetchall())
 
 
 def get_list_values_for_nodes_with_schema(schema, attribute_name):
@@ -51,7 +55,7 @@ def get_list_values_for_nodes_with_schema(schema, attribute_name):
     func_call = mediatumfunc.get_list_values_for_nodes_with_schema(schema, attribute_name)
     stmt = sql.select([sql.text("*")], from_obj=func_call)
     res = db.session.execute(stmt)
-    return [t[0] for t in res.fetchall()]
+    return map(_operator.itemgetter(0), res.fetchall())
 
 
 class m_ilist(Metatype):
@@ -67,11 +71,39 @@ class m_ilist(Metatype):
                           language=language)
 
     def getSearchHTML(self, context):
-        field_name = context.field.getName()
-        value_and_count = count_list_values_for_all_content_children(context.collection.id, field_name)
+        # `value_and_count` contains a list of options,
+        # each option is represented by a tuple of its name and its count.
+        value_and_count = count_list_values_for_all_content_children(context.collection.id,
+                                                                     context.field.getName())
 
-        return tal.getTAL("metadata/ilist.html", {"context": context, "valuelist": value_and_count},
-                          macro="searchfield", language=context.language)
+        # We build three iterators here:
+        # `value` contains all option names, properly escaped for HTML.
+        # `count` contains the respective count of each option (i.e. its number of occurrences).
+        # `ifselected` contains (in the end) empty strings for each option,
+        #     but the special string 'selected="selected"' for the one and only selected option.
+        #     It is constructed by comparing each value name with the context value
+        #     (this leads to many "False" values and one "True" value),
+        #     then turning the result into an int (that is 0 or 1),
+        #     then multiplying the int with the special string.
+        # Note: tee created three iterators that all contain the entries of `value_and_count`.
+        ifselected, value, count = _itertools.tee(value_and_count, 3)
+        count = _itertools.imap(_operator.itemgetter(1), count)
+        value = _itertools.imap(_operator.itemgetter(0), value)
+        value = _itertools.imap(_html.escape, value)
+        ifselected = _itertools.imap(_operator.itemgetter(0), ifselected)
+        ifselected = _itertools.imap(_functools.partial(_operator.eq, context.value), ifselected)
+        ifselected = _itertools.imap(int, ifselected)
+        ifselected = _itertools.imap(_functools.partial(_operator.mul, 'selected="selected" '), ifselected)
+
+        # Now we apply all iterators to the format function
+        # and create the long HTML option list.
+        format_option = u'<option {0}value="{1}">{1} ({2})</option>\n'.format
+        option_list = u"".join(_itertools.starmap(format_option, _itertools.izip(ifselected, value, count)))
+
+        return tal.getTAL("metadata/ilist.html", {
+                "context": context,
+                "option_list": option_list,
+            }, macro="searchfield", language=context.language)
 
     def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
         value = node.get(metafield.getName())
@@ -107,11 +139,13 @@ class m_ilist(Metatype):
 
         if req.params.get("print", "") != "":
             req.reply_headers["Content-Disposition"] = "attachment; filename=index.txt"
-            for word in index:
-                req.write(word.strip() + "\r\n")
+            req.write(u"".join(_itertools.imap(u"{}\r\n".format,
+                               _itertools.imap(_operator.methodcaller("strip"), index))))
             return
 
-        req.writeTAL("metadata/ilist.html", {"index": index, "fieldname": fieldname}, macro="popup")
+        option_list = _itertools.imap(_html.escape,index)
+        option_list = u"".join(_itertools.imap(u"<option value=\"{0}\">{0}</option>\n".format,option_list))
+        req.writeTAL("metadata/ilist.html", {"option_list": option_list, "fieldname": fieldname, "schema": schema}, macro="popup")
         return httpstatus.HTTP_OK
 
     # method for additional keys of type spctext

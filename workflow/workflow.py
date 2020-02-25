@@ -121,22 +121,25 @@ def getNodeWorkflowStep(node):
 # execute step operation and set node step
 
 
-def runWorkflowStep(node, op):
+def runWorkflowStep(node, op, forward=True):
     workflow = getNodeWorkflow(node)
     workflowstep = getNodeWorkflowStep(node)
 
     if workflowstep is None:
         return
 
-    newstep = None
-    if op == "true":
-        newstep = workflow.getStep(workflowstep.getTrueId())
-    else:
-        newstep = workflow.getStep(workflowstep.getFalseId())
+    if forward:
+        newstep = None
+        if op == "true":
+            newstep = workflow.getStep(workflowstep.getTrueId())
+        else:
+            newstep = workflow.getStep(workflowstep.getFalseId())
 
-    workflowstep.children.remove(node)
-    newstep.children.append(node)
-    db.session.commit()
+        workflowstep.children.remove(node)
+        newstep.children.append(node)
+        db.session.commit()
+    else:
+        newstep = workflowstep
     newstep.runAction(node, op)
     logg.info('workflow run action "%s" (op="%s") for node %s', newstep.name, op, node.id)
     return getNodeWorkflowStep(node)
@@ -563,12 +566,12 @@ class WorkflowStep(Node):
         if self.getTrueId() == '':
             logg.error("No Workflow action defined for workflowstep %s (op=%s)", self.getId(), op)
 
-    def forward(self, node, op):
+    def forward(self, node, op, forward=True):
         op_str = "true" if op else "false"
-        return runWorkflowStep(node, op_str)
+        return runWorkflowStep(node, op_str, forward)
 
-    def forwardAndShow(self, node, op, req, link=None, data=None):
-        newnode = self.forward(node, op)
+    def forwardAndShow(self, node, op, req, link=None, data=None, forward=True):
+        newnode = self.forward(node, op, forward)
 
         if newnode is None:
             return req.getTAL("workflow/workflow.html", {"node": node}, macro="workflow_forward")

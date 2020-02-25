@@ -30,7 +30,7 @@ from schema.schema import parseEditorData
 from web.common.acl_web import makeList
 from utils.utils import removeEmptyStrings
 from core.translation import t, lang
-from core import db
+from core import db, Node as _Node
 from core.database.postgres.permission import NodeToAccessRuleset
 
 logg = logging.getLogger(__name__)
@@ -96,8 +96,9 @@ def validate(req, op):
 
                 wf = getWorkflow(req.params.get("name"))
                 if wf:
-                    if "wf_language" in req.params:
-                        wf.set('languages', req.params.get('wf_language'))
+                    language_list = [lang for lang in config.languages if "wf_language_" + lang in req.params]
+                    if language_list:
+                        wf.set('languages', ';'.join(language_list))
                     else:
                         if wf.get('languages'):
                             del wf.attrs['languages']
@@ -404,7 +405,7 @@ def WorkflowStepList(req, wid):
 
 def WorkflowStepDetail(req, wid, wnid, err=0):
     workflow = getWorkflow(wid)
-    nodelist = workflow.getSteps()
+    nodelist = workflow.getSteps().order_by(_Node.name)
     v = getAdminStdVars(req)
 
     if err == 0 and wnid == "":

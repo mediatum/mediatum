@@ -303,40 +303,38 @@ def error(req):
 
 
 # delivers all edit modules
-editModules = {}
+_editModules = {}
 
 
-def getEditModules(force=0):
-    if len(editModules) == 0:
-        for modpath in core.editmodulepaths:  # paths with edit modules
-            if os.path.isabs(modpath[1]):
-                mod_dirpath = modpath[1]
-            else:
-                mod_dirpath = os.path.join(config.basedir, modpath[1])
+def getEditModules():
+    global _editModules
+    if _editModules:
+        return _editModules
+    for modpath in core.editmodulepaths:  # paths with edit modules
+        if os.path.isabs(modpath[1]):
+            mod_dirpath = modpath[1]
+        else:
+            mod_dirpath = os.path.join(config.basedir, modpath[1])
 
-            walk = os.walk(mod_dirpath)
-            for dirpath, subdirs, files in walk:
-                if os.path.basename(dirpath) not in ("test", "__pycache__"):
-                    for name in [f for f in files if f.endswith(".py") and f != "__init__.py"]:
-                        basename = name[:-3]
-                        try:
-                            path, module = splitpath(mod_dirpath)
-                            if not modpath[0]:
-                                m = __import__("web.edit.modules." + basename)
-                                m = eval("m.edit.modules." + basename)
-                            else:
-                                sys.path += [path]
-                                m = __import__(
-                                    module.replace("/", ".") + "." + basename)
-                                m = eval("m." + name[:-3])
-                            editModules[name[:-3]] = m
-                        except ImportError as e:
-                            print e
-                            logg.exception("import error in module %s", basename)
-                        except SyntaxError:
-                            logg.exception("syntax error in module %s", basename)
+        for dirpath, subdirs, files in os.walk(mod_dirpath):
+            if os.path.basename(dirpath) in ("test", "__pycache__"):
+                continue
+            for name in files:
+                if (not name.endswith(".py")) or (name == "__init__.py"):
+                    continue
+                basename,_ = os.path.splitext(name)
+                with suppress(ImportError,SyntaxError):
+                    path, module = splitpath(mod_dirpath)
+                    if not modpath[0]:
+                        m = __import__("web.edit.modules." + basename)
+                        m = eval("m.edit.modules." + basename)
+                    else:
+                        sys.path += [path]
+                        m = __import__(module.replace("/", ".") + "." + basename)
+                        m = eval("m." + basename)
+                    _editModules[basename] = m
 
-    return editModules
+    return _editModules
 
 
 def getIDs(req):
@@ -466,7 +464,7 @@ def edit_tree(req):
 
 @dec_entry_log
 def action(req):
-    global editModules
+    global _editModules
     language = lang(req)
     user = _user_from_session()
 
@@ -484,7 +482,7 @@ def action(req):
 
     if "tab" in req.params:
         tab = req.params.get("tab").split("_")[-1]
-        return editModules[tab].getContent(req, [req.params.get("id")])
+        return _editModules[tab].getContent(req, [req.params.get("id")])
 
     if action == "getlabels":
         nids = req.params.get('ids', [])
@@ -898,8 +896,8 @@ def content(req):
         if tabs == 'upload' and current == 'content':
             current = 'upload'
 
-        if current in editModules.keys():
-            c = editModules[current].getContent(req, ids)
+        if current in _editModules:
+            c = _editModules[current].getContent(req, ids)
 
             if isinstance(c, int):
                 # module returned a custom http status code instead of HTML content

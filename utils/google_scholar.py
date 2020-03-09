@@ -17,13 +17,13 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import collections as _collections
 from datetime import datetime
-from utils import esc
+import utils as _utils
 from core.systemtypes import Metadatatypes
 from core import Node, db
 import core.config as config
 import logging
-import time
 import flask as _flask
 from core.request_handler import make_param_dict_utf8_values
 
@@ -39,7 +39,6 @@ logg = logging.getLogger(__name__)
         "creation_time": creation time in seconds, if creation time is older than 24 hours, the cacheentry for this
                          schema is renewed
 """
-head_meta_cache = {}
 
 def convert_date(date_str):
     """
@@ -183,66 +182,31 @@ def google_scholar(node):
     author_flag = False
     publication_date_flag = False
 
-    head_meta_entry = {}
-    mappings = {}
+    mappings = _collections.defaultdict(list)
     attributes = []
 
     if not config.get("websearch.google_scholar", "").lower() == "true" or not node or node.isContainer():
         return ""
 
-    use_cache = config.get("websearch.google_scholar_cache", "").lower() == "true"
-
-    if use_cache and node.schema in head_meta_cache.keys():
-        head_meta_entry = head_meta_cache[node.schema]
-        if time.time() - head_meta_entry['last_timestamp'] > (24 * 60 * 60): # expired after 24 hours
-            head_meta_cache.pop(node.schema)
-
-    if not use_cache or node.schema not in head_meta_cache.keys():
-        if use_cache:
-            head_meta_entry = {"last_timestamp": time.time(), "mappings" : {}, "attributes": []}
-            head_meta_cache[node.schema] = head_meta_entry
-        mtype = q(Metadatatypes).one().children.filter_by(name=node.schema).scalar()
-        if not mtype:
-            return ""
-        mask = mtype.getMask('head_meta')
-        if not mask:
-            return ""
-        for item in mask.children:
-            fieldtype = item.get('fieldtype')
-            if fieldtype == 'mapping':
-                try:
-                    mappingfield = int(item.get('mappingfield'))
-                    attribute = int(item.get('attribute'))
-                    mapping = q(Node).get(mappingfield)
-                    if not mapping:
-                        continue
-                    metafield = q(Node).get(attribute)
-                    if not metafield:
-                        continue
-                    if mapping.name in mappings.keys():
-                        mappings[mapping.name].append(metafield.name)
-                    else:
-                        mappings[mapping.name] = [metafield.name]
-                except ValueError as e:
-                    continue
-            elif fieldtype == 'attribute':
-                attributes.append(item.get('mappingfield'))
-                continue
-            else:
-                continue
-
-        if use_cache:
-            head_meta_entry['mappings'] = mappings
-            head_meta_entry['attributes'] = attributes
-            head_meta_cache[node.schema] = head_meta_entry
-
-    if use_cache:
-        head_meta_entry = head_meta_cache[node.schema]
-        if not head_meta_entry and not head_meta_entry["mappings"] and not head_meta_entry["attributes"]:
-            return ""
-
-        mappings = head_meta_entry['mappings']
-        attributes = head_meta_entry['attributes']
+    mtype = q(Metadatatypes).one().children.filter_by(name=node.schema).scalar()
+    if not mtype:
+        return ""
+    mask = mtype.getMask('head_meta')
+    if not mask:
+        return ""
+    for item in mask.children:
+        fieldtype = item.get('fieldtype')
+        if fieldtype == 'attribute':
+            attributes.append(item.get('mappingfield'))
+        if fieldtype != 'mapping':
+            continue
+        with _utils.suppress(ValueError, warn=False):
+            mappingfield = int(item.get('mappingfield'))
+            attribute = int(item.get('attribute'))
+            mapping = q(Node).get(mappingfield)
+            metafield = q(Node).get(attribute)
+            if mapping and metafield:
+                mappings[mapping.name].append(metafield.name)
 
     for mapping_name in mappings.keys():
 
@@ -256,7 +220,7 @@ def google_scholar(node):
                     author_flag = True
 
                 for author in authors:
-                    result += u'<meta name="citation_author" content="%s">\n' % esc(author)
+                    result += u'<meta name="citation_author" content="%s">\n' % _utils.esc(author)
             else:
                 if mapping_name == u'citation_publication_date':
                     mfield = convert_date(mfield)
@@ -265,7 +229,7 @@ def google_scholar(node):
 
                 if mapping_name == u'citation_title' or mapping_name == u"citation_conference_title":
                     title_flag = True
-                result += u'<meta name="%s" content="%s">\n' % (mapping_name, esc(mfield))
+                result += u'<meta name="%s" content="%s">\n' % (mapping_name, _utils.esc(mfield))
 
     for item in attributes:
         mappingfield = item.replace('[att:id]', str(node.id))

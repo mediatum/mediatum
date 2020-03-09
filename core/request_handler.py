@@ -375,20 +375,6 @@ class WebFile:
         self.handlers += [handler]
         return handler
 
-    def addCatchallHandler(self, function):
-        handler = WebHandler(self, function)
-        self.context.catchall_handler = handler
-        return handler
-
-    def addFTPHandler(self, ftpclass):
-        global ftphandlers
-        m = self.m
-        with _nullcontext():
-            c = eval("m." + ftpclass)
-            if c is None:
-                raise Exception("")
-            ftphandlers += [c]
-
     def getFileName(self):
         return self.context.root + self.filename
 

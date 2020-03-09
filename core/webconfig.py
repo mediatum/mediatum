@@ -166,10 +166,6 @@ def initContexts():
     def set_lang(req, *args):
         set_language(req)
 
-    # XXX: init our temporary child count cahche
-    from web.frontend import frame
-    frame.init_child_count_cache()
-
     context = _request_handler.addContext("/", ".")
 
     workflows_enabled = config.getboolean("workflows.activate", True)

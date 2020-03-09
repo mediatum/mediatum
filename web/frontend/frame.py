@@ -47,19 +47,6 @@ from core.request_handler import get_header as _get_header
 q = db.query
 logg = logging.getLogger(__name__)
 
-child_count_cache = None
-
-
-def init_child_count_cache():
-    """XXX very simple and conservative directory child count cache. Cleared after each commit.
-    """
-    global child_count_cache
-    child_count_cache = {}
-
-    @event.listens_for(db.Session, "after_commit")
-    def clear_directory_child_count_cache_after_commit(session):
-        child_count_cache.clear()
-
 
 def getSearchMask(collection):
     if collection.get("searchtype") == "none":
@@ -261,10 +248,7 @@ class NavTreeEntry(object):
         self.orderpos = 0
         self.show_childcount = node.show_childcount
 
-        if self.id in child_count_cache:
-            self.count = child_count_cache[self.id]
-        else:
-            child_count_cache[self.id] = self.count = self.node.childcount()
+        self.count = self.node.childcount()
 
         if self.count:
             self.hassubdir = 1

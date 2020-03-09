@@ -16,14 +16,13 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import mediatumtal.tal as _tal
 
+import mediatumtal.tal as _tal
 from web.edit.edit import get_ids_from_req as _get_ids_from_req
 
 def getContent(req, ids):
-
-    def _get_ids_from_query():
-        _ids = _get_ids_from_req(req)
-        return ",".join(_ids)
-
-    return _tal.processTAL({'ids': _get_ids_from_query(), 'action': 'copy'}, file="web/edit/modules/movecopyall.html", macro="view_node", request=req)
+    return _tal.processTAL({'ids': ",".join(_get_ids_from_req(req)), 'action': 'copy'},
+            file="web/edit/modules/movecopyall.html",
+            macro="view_node",
+            request=req,
+           )

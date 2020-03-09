@@ -18,7 +18,6 @@
 """
 import mediatumtal.tal as _tal
 
-from web.edit.edit import get_ids_from_req as _get_ids_from_req
 from contenttypes import Data as _Data
 from core import db as _db
 

@@ -18,7 +18,7 @@ from StringIO import StringIO as _StringIO
 from core import config as _config
 from werkzeug.datastructures import MIMEAccept as _MIMEAccept, ImmutableMultiDict as _ImmutableMultiDict
 from werkzeug.http import parse_accept_header as _parse_accept_header
-from utils.utils import suppress as _suppress, nullcontext as _nullcontext, counter as _counter
+from utils.utils import suppress as _suppress, nullcontext as _nullcontext
 from utils.url import build_url_from_path_and_params as _build_url_from_path_and_params
 from itertools import chain as _chain
 from collections import OrderedDict as _OrderedDict
@@ -981,21 +981,6 @@ class default_handler:
 
     def __init__(self, filesystem):
         self.filesystem = filesystem
-        # count total hits
-        self.hit_counter = _counter()
-        # count file deliveries
-        self.file_counter = _counter()
-        # count cache hits
-        self.cache_counter = _counter()
-
-    hit_counter = 0
-
-    def __repr__(self):
-        return '<%s (%s hits) at %x>' % (
-            self.IDENT,
-            self.hit_counter,
-            id(self)
-        )
 
     # always match, since this is a default
     def match(self, request):
@@ -1033,7 +1018,6 @@ class default_handler:
             error(request, 400)  # bad request
             return
 
-        self.hit_counter.increment()
         path, params, query, fragment = split_uri(request)
 
         if '%' in path:
@@ -1099,7 +1083,6 @@ class default_handler:
             if mtime <= ims_date:
                 request.response.status_code = 304
                 done(request)
-                self.cache_counter.increment()
                 # print "File "+path+" was not modified since "+ustr(ims_date)+" (current filedate is "+ustr(mtime)+")"
                 return
         try:
@@ -1115,7 +1098,6 @@ class default_handler:
         if request.method == 'GET':
             request.response.set_data(file.read())
 
-        self.file_counter.increment()
         done(request)
 
     def set_content_type(self, path, request):

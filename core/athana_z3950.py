@@ -26,7 +26,7 @@ import random  # FIXME: drop dependency!
 from PyZ3950 import z3950, zdefs, asn1
 from sqlalchemy.orm import undefer
 from core.search.config import get_service_search_languages
-from utils.utils import suppress, counter
+from utils.utils import suppress
 import core as _core
 import schema as _schema
 
@@ -652,11 +652,9 @@ class z3950_channel(async_chat):
         class ChannelInterface(object):
 
             def write(self, data):
-                server.total_bytes_out.increment(len(data))
                 push(data)
 
             def close(self):
-                server.closed_sessions.increment()
                 server.close_when_done()
 
         self.z3950_server = AsyncPyZ3950Server(conn, ChannelInterface())
@@ -669,11 +667,9 @@ class z3950_channel(async_chat):
         try:
             data = self.recv(self.ac_in_buffer_size)
             logg.debug('received %i bytes of data: %r' % (len(data), data))
-            self.server.total_bytes_in.increment(len(data))
             self.z3950_server.handle_incoming_data(data)
         except:
             logg.exception('handle_read %i bytes of data: %r' % (len(data), data))
-            self.server.total_exceptions.increment()
             self.handle_error()
             self.close()
 
@@ -685,13 +681,6 @@ class z3950_server(asyncore.dispatcher):
         self.ip = ip
         self.port = port
 
-        # statistics
-        self.total_sessions = counter()
-        self.closed_sessions = counter()
-        self.total_bytes_out = counter()
-        self.total_bytes_in = counter()
-        self.total_exceptions = counter()
-        #
         asyncore.dispatcher.__init__(self)
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -703,7 +692,6 @@ class z3950_server(asyncore.dispatcher):
 
     def handle_accept(self):
         conn, addr = self.accept()
-        self.total_sessions.increment()
         logg.info('Incoming connection from %s:%d', addr[0], addr[1])
         self.z3950_channel_class(self, conn, addr)
 

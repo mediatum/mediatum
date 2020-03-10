@@ -26,6 +26,7 @@ import flask as _flask
 import core.config as config
 import core.translation
 import mediatumtal.tal as _tal
+import web.edit.edit_common as _web_edit_edit_common
 from core import Node, NodeType, db, User, UserGroup, UserToUserGroup
 from core.systemtypes import Metadatatypes
 from core.database.postgres.permission import NodeToAccessRuleset, AccessRulesetToRule, AccessRule
@@ -40,7 +41,6 @@ from core import httpstatus
 from utils.utils import funcname, get_user_id, dec_entry_log, Menu, splitpath, parse_menu_struct, isDirectory, isCollection, suppress
 from schema.schema import Metadatatype
 from web.edit.edit_common import get_edit_label, default_edit_nodes_per_page, get_searchparams
-from web.frontend.content import get_make_search_content_function
 from web.frontend.search import NoSearchResult
 from utils.pathutils import get_accessible_paths
 import web.common.sort as _sort
@@ -93,7 +93,6 @@ def getIDPaths(nid, sep="/", containers_only=True):
             return []
     except:
         return []
-    from utils.pathutils import get_accessible_paths
     paths = get_accessible_paths(node)
     res = []
     for path in paths:
@@ -358,14 +357,6 @@ def getIDs(req):
 
     # look for a pattern, a source folder and an id list
     ids = req.params.get('ids', '')
-
-    try:
-        srcid = req.params.get("src")
-        if not srcid:
-            raise KeyError
-        src = q(Node).get(srcid)
-    except KeyError:
-        src = None
 
     if type(ids) == str:
         idlist = ids.split(',')
@@ -714,19 +705,6 @@ def showPaging(req, tab, ids):
     return _tal.processTAL(v, file="web/edit/edit.html", macro="edit_paging", request=req)
 
 
-def get_ids_from_req(req):
-    from web.edit.edit_common import g_nodes
-    nid = req.params.get("src", req.params.get("id"))
-    if nid:
-        node = q(Node).get(nid)
-        nodes = node.content_children  # XXX: ?? correct
-        make_search_content = get_make_search_content_function(req)
-        paths = get_accessible_paths(node, q(Node).prefetch_attrs())
-        if make_search_content:
-            nodes = g_nodes[req.request_number]
-        ids = [str(n.id) for n in nodes]
-        return ids
-
 @dec_entry_log
 def content(req):
 
@@ -779,7 +757,8 @@ def content(req):
 
     if len(ids) > 0:
         if ids[0] == "all":
-            ids = get_ids_from_req(req)
+            show_dir_nav = _web_edit_edit_common.ShowDirNav(req)
+            ids = show_dir_nav.get_ids_from_req()
         node = q(Node).get(long(ids[0]))
     tabs = "content"
     if isinstance(node, Root):

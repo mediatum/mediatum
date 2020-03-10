@@ -1241,7 +1241,6 @@ def handle_request(req):
 
     path, params, query, fragment = split_uri(req)
     req.port = req.host.split(":")[1]
-    req.request_number += 1
     req._header_cache = {}
     req.app_cache = {}
     req.use_chunked = 0

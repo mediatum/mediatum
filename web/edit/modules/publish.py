@@ -19,7 +19,7 @@
 """
 import mediatumtal.tal as _tal
 
-from web.edit.edit_common import showdir
+import web.edit.edit_common as _web_edit_edit_common
 from core.users import getHomeDir
 from core.users import user_from_session as _user_from_session
 import logging
@@ -157,16 +157,14 @@ def getContent(req, ids):
     # build normal window
     stddir = ""  # preset value for destination ids
     stdname = ""
-
+    show_dir_nav = _web_edit_edit_common.ShowDirNav(req, publishdir)
     v = {"id": publishdir.id,
          "stddir": stddir,
          "stdname": stdname,
-         "showdir": showdir(req,
-                            publishdir,
-                            publishwarn=None,
-                            markunpublished=1,
-                            faultyidlist=errorids,
-                            ),
+         "showdir": show_dir_nav.showdir(publishwarn=None,
+                                    markunpublished=1,
+                                    faultyidlist=errorids,
+                                    ),
          "basedir": q(Collections).one(),
          "script": "var currentitem = '%s';\nvar currentfolder = '%s'" % (publishdir.id, publishdir.id), "idstr": ids,
          "faultyerrlist": publisherror,

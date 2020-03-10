@@ -18,10 +18,11 @@
 """
 
 import mediatumtal.tal as _tal
-from web.edit.edit import get_ids_from_req as _get_ids_from_req
+import web.edit.edit_common as _web_edit_edit_common
 
 def getContent(req, ids):
-    return _tal.processTAL({'ids': ",".join(_get_ids_from_req(req)), 'action': 'move'},
+    show_dir_nav = _web_edit_edit_common.ShowDirNav(req)
+    return _tal.processTAL({'ids': ",".join(show_dir_nav.get_ids_from_req()), 'action': 'move'},
             file="web/edit/modules/movecopyall.html",
             macro="view_node",
             request=req,

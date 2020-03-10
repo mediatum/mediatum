@@ -37,7 +37,6 @@ from werkzeug.datastructures import ImmutableDict as _ImmutableDict
 from werkzeug.utils import cached_property as _cached_property
 from core.templating import PyJadeExtension as _PyJadeExtension
 from jinja2.loaders import FileSystemLoader as _FileSystemLoader, ChoiceLoader as _ChoiceLoader
-from utils.utils import counter as _counter
 import utils.utils as _utils_utils
 from core.request_handler import handle_request as _handle_request
 
@@ -218,9 +217,6 @@ def flask_routes(app):
     @app.route('/download/<path:action>')
     @app.route('/<path:action>')
     def action(action=None):
-        if not hasattr(session, "request_counter"):
-            session.request_counter = _counter()
-        request.request_number = session.request_counter.increment()
         req = _handle_request(request)
         return req.response
 

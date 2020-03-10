@@ -20,17 +20,17 @@
 import json
 import mediatumtal.tal as _tal
 
+import web.edit.edit_common as _web_edit_edit_common
 from core import db
 from contenttypes import Data, Home, Collection, Collections
 from core.systemtypes import Root
-from web.edit.edit_common import showdir, shownav, showoperations, default_edit_nodes_per_page,\
+from web.edit.edit_common import showoperations, default_edit_nodes_per_page,\
     edit_node_per_page_values, searchbox_navlist_height
 from web.frontend.frame import render_edit_search_box
 from utils.utils import dec_entry_log
 from core.translation import translate, lang, t
 from schema.schema import get_permitted_schemas
-from web.edit.edit import get_ids_from_req
-from web.edit.edit_common import get_searchparams, delete_g_nodes_entry
+from web.edit.edit_common import get_searchparams
 import urllib
 import web.common.sort as _sort
 
@@ -59,16 +59,13 @@ def getContent(req, ids):
         _dtypes.sort(lambda x, y: cmp(translate(x.getLongName(), request=_req).lower(), translate(y.getLongName(), request=req).lower()))
         return _dtypes
 
-    def get_ids_from_query():
-        ids = get_ids_from_req(req)
-        return ",".join(ids)
-
     node = q(Data).get(long(ids[0]))
+    show_dir_nav = _web_edit_edit_common.ShowDirNav(req, node)
 
     if "action" in req.params:
         if req.params.get('action') == "resort":
             field = req.params.get('value', '').strip()
-            res = showdir(req, node, sortfield=field)
+            res = show_dir_nav.showdir(sortfield=field)
             res = json.dumps({'state': 'ok', 'values': res}, ensure_ascii=False)
             req.response.set_data(res)
             return None
@@ -96,8 +93,9 @@ def getContent(req, ids):
         dtypes = []
 
         item_count = []
-        items = showdir(req, node, item_count=item_count)
-        nav = shownav(req, node)
+
+        items = show_dir_nav.showdir(item_count=item_count)
+        nav = show_dir_nav.shownav()
         v = {"operations": showoperations(req, node), "items": items, "nav": nav}
         if node.has_write_access():
             schemes = get_permitted_schemas()
@@ -139,11 +137,11 @@ def getContent(req, ids):
         searchparams = get_searchparams(req)
         searchparams = {k: unicode(v).encode("utf8") for k, v in searchparams.items()}
         v['searchparams'] = urllib.urlencode(searchparams)
-        v['get_ids_from_query'] = get_ids_from_query
+        v['get_ids_from_query'] = ",".join(show_dir_nav.get_ids_from_req())
         v['edit_all_objects'] = t(lang(req), "edit_all_objects").format(item_count[1])
         v['t'] = t
         res = _tal.processTAL(v, file="web/edit/modules/content.html", macro="edit_content", request=req)
-        delete_g_nodes_entry(req)
+        show_dir_nav.nodes = None
         return res
     if hasattr(node, "editContentDefault"):
         return node.editContentDefault(req)

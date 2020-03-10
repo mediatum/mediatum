@@ -32,8 +32,9 @@ import json
 import mediatumtal.tal as _tal
 import utils.utils as _utils_utils
 
-from web.edit.edit_common import showdir, shownav, showoperations, searchbox_navlist_height
-from web.edit.edit import getTreeLabel, get_ids_from_req
+import web.edit.edit_common as _web_edit_edit_common
+from web.edit.edit import getTreeLabel
+from web.edit.edit_common import showoperations, searchbox_navlist_height
 from utils.url import build_url_from_path_and_params
 from utils.utils import join_paths, getMimeType, funcname, get_user_id, dec_entry_log, suppress
 from utils.fileutils import importFile, importFileRandom
@@ -47,7 +48,7 @@ from core import Node
 from schema.schema import Metadatatype, get_permitted_schemas, get_permitted_schemas_for_datatype
 from sqlalchemy import func
 from utils.compat import iteritems
-from web.edit.edit_common import default_edit_nodes_per_page, edit_node_per_page_values, get_searchparams, delete_g_nodes_entry
+from web.edit.edit_common import default_edit_nodes_per_page, edit_node_per_page_values, get_searchparams
 from web.frontend.frame import render_edit_search_box
 import urllib
 import web.common.sort as _sort
@@ -90,10 +91,6 @@ def getContent(req, ids):
 
     user = users.user_from_session()
     language = lang(req)
-
-    def get_ids_from_query():
-        ids = get_ids_from_req(req)
-        return ",".join(ids)
 
     if "action" in req.params:
         state = 'ok'
@@ -443,8 +440,9 @@ def getContent(req, ids):
     search_html = render_edit_search_box(q(Node).get(ids[0]), language, req, edit=True)
     searchmode = req.params.get("searchmode")
     item_count = []
-    items = showdir(req, node, sortfield=req.params.get("sortfield"), item_count=item_count)
-    nav = shownav(req, node, sortfield=req.params.get("sortfield"))
+    show_dir_nav = _web_edit_edit_common.ShowDirNav(req, node)
+    items = show_dir_nav.showdir(sortfield=req.params.get("sortfield"), item_count=item_count)
+    nav = show_dir_nav.shownav()
     navigation_height = searchbox_navlist_height(req, item_count)
     count = item_count[0] if item_count[0] == item_count[1] else "%d from %d" % (item_count[0], item_count[1])
     searchparams = get_searchparams(req)
@@ -462,13 +460,13 @@ def getContent(req, ids):
         "search": search_html,
         "query" : req.query_string.replace('id=', 'src='),
         "searchparams" : urllib.urlencode(searchparams),
-        "get_ids_from_query" : get_ids_from_query,
+        "get_ids_from_query" : ",".join(show_dir_nav.get_ids_from_req()),
         "edit_all_objects" : translation_t(lang(req), "edit_all_objects").format(item_count[1]),
         "navigation_height": navigation_height,
         "csrf": str(req.csrf_token.current_token),
     })
     html = _tal.processTAL(v, file="web/edit/modules/upload.html", macro="upload_form", request=req)
-    delete_g_nodes_entry(req)
+    show_dir_nav.nodes = None
     return html
 
 

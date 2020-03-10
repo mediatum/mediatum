@@ -18,10 +18,11 @@
 """
 
 import mediatumtal.tal as _tal
-from web.edit.edit import get_ids_from_req as _get_ids_from_req
+import web.edit.edit_common as _web_edit_edit_common
 
 def getContent(req, ids):
-    return _tal.processTAL({'ids': ",".join(_get_ids_from_req(req))},
+    show_dir_nav = _web_edit_edit_common.ShowDirNav(req)
+    return _tal.processTAL({'ids': ",".join(show_dir_nav._get_ids_from_req())},
             file="web/edit/modules/deleteall.html",
             macro="view_node",
             request=req,

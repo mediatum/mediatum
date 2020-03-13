@@ -90,11 +90,6 @@ def _mklink(req):
 
 def _write_head(req, attributes=""):
     request = _mklink(req)
-    d = _iso8601(date.now())
-    try:
-        verb = req.params["verb"]
-    except KeyError:
-        verb = ""
     req.response.headers['charset'] = 'utf-8'
     req.response.headers['Content-Type'] = 'text/xml; charset=utf-8'
     resp = """<?xml version="1.0" encoding="UTF-8"?>
@@ -115,9 +110,6 @@ def _write_tail():
 
 
 def _write_error(req, code, detail=""):
-    if "verb" not in req.params:
-        verb = ""
-
     if detail != "":
         desc = errordesc[detail]
     else:
@@ -334,8 +326,6 @@ def _parent_is_media(n):
 
 def _retrieve_nodes(req, setspec, date_from=None, date_to=None, metadataformat=None):
     schemata = []
-
-    nodequery = None
     res = []
 
     if metadataformat == 'mediatum':
@@ -403,7 +393,6 @@ def _new_token(req):
 
 def _get_nodes(req):
     global tokenpositions, CHUNKSIZE
-    nodes = None
     nids = None
 
     if "resumptionToken" in req.params:

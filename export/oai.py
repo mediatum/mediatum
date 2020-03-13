@@ -52,7 +52,6 @@ DATEFIELD = config.get("oai.datefield", "updatetime")
 EARLIEST_YEAR = int(config.get("oai.earliest_year", "1960"))
 CHUNKSIZE = int(config.get("oai.chunksize", "10"))
 IDPREFIX = config.get("oai.idprefix", "oai:mediatum.org:node/")
-SAMPLE_IDENTIFIER = config.get("oai.sample_identifier", "oai:mediatum.org:node/123")
 tokenpositions = OrderedDict()
 
 SET_LIST = []
@@ -246,7 +245,7 @@ def _identify(req):
                   <sampleIdentifier>%s</sampleIdentifier>
                 </oai-identifier>
               </description>
-            </Identify>""" % (name, _mklink(req), config.get("email.admin"), ustr(EARLIEST_YEAR - 1), config.get("host.name", socket.gethostname()), SAMPLE_IDENTIFIER)
+            </Identify>""" % (name, _mklink(req), config.get("email.admin"), ustr(EARLIEST_YEAR - 1), config.get("host.name", socket.gethostname()), config.get("oai.sample_identifier", "oai:mediatum.org:node/123"))
 
 
 def _get_set_specs_for_node(node):

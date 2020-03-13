@@ -49,8 +49,8 @@ q = db.query
 logg = logging.getLogger(__name__)
 
 DATEFIELD = config.get("oai.datefield", "updatetime")
-EARLIEST_YEAR = int(config.get("oai.earliest_year", "1960"))
-CHUNKSIZE = int(config.get("oai.chunksize", "10"))
+EARLIEST_YEAR = config.getint("oai.earliest_year", 1960)
+CHUNKSIZE = config.getint("oai.chunksize", 10)
 IDPREFIX = config.get("oai.idprefix", "oai:mediatum.org:node/")
 tokenpositions = OrderedDict()
 

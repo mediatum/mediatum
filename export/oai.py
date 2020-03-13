@@ -72,10 +72,6 @@ def filterFormat(node, oai_format):
     return True
 
 
-def make_lookup_key(req):
-    return "%s:%s" % (req.remote_addr, req.port)
-
-
 def timetable_update(req, msg):
     if req:
         req._tt['tlist'].append((msg, time.clock()))

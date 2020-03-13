@@ -324,7 +324,7 @@ def writeRecord(req, node, metadataformat, mask=None):
                        <datestamp>%sZ</datestamp>
                        %s
                </header>
-               <metadata>""" % (mkIdentifier(node.id), d, set_specs)
+               <metadata>""" % (IDPREFIX + ustr(node.id), d, set_specs)
 
     if DEBUG:
         timetable_update(req, " in writeRecord: writing header: node.id='%s', metadataformat='%s'" % (ustr(node.id), metadataformat))
@@ -362,10 +362,6 @@ def writeRecord(req, node, metadataformat, mask=None):
         timetable_update(req, "leaving writeRecord: node.id='%s', metadataformat='%s'" % (ustr(node.id), metadataformat))
 
     return record_str
-
-
-def mkIdentifier(id):
-    return IDPREFIX + ustr(id)
 
 
 def identifier2id(identifier):
@@ -605,10 +601,12 @@ def ListIdentifiers(req):
             d = ISO8601(date.parse_date(updatetime))
         else:
             d = ISO8601()
-        res += '<header><identifier>%s</identifier><datestamp>%sZ</datestamp>%s\n</header>\n' % (mkIdentifier(n.id), d, getSetSpecsForNode(n))
-        res += tokenstring
+        res += '<header><identifier>%s</identifier><datestamp>%sZ</datestamp>%s\n</header>\n' % (IDPREFIX + ustr(n.id), d, getSetSpecsForNode(n))
 
+    if tokenstring:
+        res += tokenstring
     res += '</ListIdentifiers>'
+
     if DEBUG:
         timetable_update(req, "leaving ListIdentifiers")
 

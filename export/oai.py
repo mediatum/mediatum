@@ -48,7 +48,6 @@ q = db.query
 
 logg = logging.getLogger(__name__)
 
-CHUNKSIZE = config.getint("oai.chunksize", 10)
 IDPREFIX = config.get("oai.idprefix", "oai:mediatum.org:node/")
 tokenpositions = OrderedDict()
 
@@ -389,7 +388,8 @@ def _new_token(req):
 
 
 def _get_nodes(req):
-    global tokenpositions, CHUNKSIZE
+    global tokenpositions
+    chunksize = config.getint("oai.chunksize", 10)
     nids = None
     earliest_year = config.getint("oai.earliest_year", 1960)
 
@@ -471,17 +471,17 @@ def _get_nodes(req):
             etime = time.time()
             logg.info('retrieving %d nids for tokenposition took %.3f sec.' % (len(nids), etime - atime))
 
-        tokenpositions[token] = pos + CHUNKSIZE, nids, metadataformat
+        tokenpositions[token] = pos + chunksize, nids, metadataformat
 
 
     tokenstring = '<resumptionToken expirationDate="' + _iso8601(date.now().add(3600 * 24)) + '" ' + \
         'completeListSize="' + ustr(len(nids)) + '" cursor="' + ustr(pos) + '">' + token + '</resumptionToken>'
-    if pos + CHUNKSIZE >= len(nids):
+    if pos + chunksize >= len(nids):
         tokenstring = None
         with _utils_lock.named_lock("oaitoken"):
             del tokenpositions[token]
     logg.info("%s : set=%s, objects=%s, format=%s", req.params.get('verb'), req.params.get('set'), len(nids), metadataformat)
-    res = nids[pos:pos + CHUNKSIZE]
+    res = nids[pos:pos + chunksize]
     return res, tokenstring, metadataformat
 
 

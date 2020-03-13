@@ -186,16 +186,6 @@ def getExportMasks(regexp):
     return dict_metadatatype2exportmask.items()
 
 
-def getOAIExportFormatsForSchema(schema_name):
-    try:
-        schema_node = [x for x in q(Metadatatypes).one().children if x.name == schema_name][0]
-        res = [x.name for x in schema_node.children if (x.type == 'mask' and x.get('masktype') == 'export')]
-        return [x.replace('oai_', '', 1) for x in res if x.startswith('oai_')]
-    except:
-        logg.exception("ERROR in getOAIExportMasksForSchema('%s')", schema_name)
-        return []
-
-
 def nodeHasOAIExportMask(node, metadataformat):
     if node.getSchema() in [x[0][1] for x in getExportMasks('oai_%s$' % metadataformat)]:
         return True

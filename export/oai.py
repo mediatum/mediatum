@@ -48,7 +48,6 @@ q = db.query
 
 logg = logging.getLogger(__name__)
 
-IDPREFIX = config.get("oai.idprefix", "oai:mediatum.org:node/")
 tokenpositions = OrderedDict()
 
 SET_LIST = []
@@ -262,6 +261,7 @@ def _get_oai_export_mask_for_schema_name_and_metadataformat(schema_name, metadat
 
 
 def _write_record(node, metadataformat, mask=None):
+    id_prefix = config.get("oai.idprefix", "oai:mediatum.org:node/")
     if not SET_LIST:
         _init_set_list()
     updatetime = node.get(config.get("oai.datefield", "updatetime"))
@@ -277,7 +277,7 @@ def _write_record(node, metadataformat, mask=None):
                        <datestamp>%sZ</datestamp>
                        %s
                </header>
-               <metadata>""" % (IDPREFIX + ustr(node.id), d, set_specs)
+               <metadata>""" % (id_prefix + ustr(node.id), d, set_specs)
     if metadataformat == "mediatum":
         record_str += core.xmlnode.getSingleNodeXML(node)
     # in [masknode.name for masknode in getMetaType(node.getSchema()).getMasks() if masknode.get('masktype')=='exportmask']:
@@ -296,8 +296,9 @@ def _write_record(node, metadataformat, mask=None):
 
 
 def _identifier_to_id(identifier):
-    if identifier.startswith(IDPREFIX):
-        nid = identifier[len(IDPREFIX):]
+    id_prefix = config.get("oai.idprefix", "oai:mediatum.org:node/")
+    if identifier.startswith(id_prefix):
+        nid = identifier[len(id_prefix):]
         # nid should be long int
         try:
             long(nid)
@@ -486,6 +487,7 @@ def _get_nodes(req):
 
 
 def _list_identifiers(req):
+    id_prefix = config.get("oai.idprefix", "oai:mediatum.org:node/")
     if not SET_LIST:
         _init_set_list()
 
@@ -504,7 +506,8 @@ def _list_identifiers(req):
             d = _iso8601(date.parse_date(updatetime))
         else:
             d = _iso8601()
-        res += '<header><identifier>%s</identifier><datestamp>%sZ</datestamp>%s\n</header>\n' % (IDPREFIX + ustr(n.id), d, _get_set_specs_for_node(n))
+
+        res += '<header><identifier>%s</identifier><datestamp>%sZ</datestamp>%s\n</header>\n' %(id_prefix + ustr(n.id), d, _get_set_specs_for_node(n))
 
     if tokenstring:
         res += tokenstring

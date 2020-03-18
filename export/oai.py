@@ -30,11 +30,9 @@ import utils.utils as _utils_utils
 import core.config as config
 import core.httpstatus as _httpstatus
 
-from .oaisearchparser import OAISearchParser as OAISearchParser
 from . import oaisets
 import utils.date as date
 import utils.locks as _utils_lock
-import core.xmlnode
 from utils.utils import esc
 from schema.schema import getMetaType
 from utils.pathutils import isDescendantOf
@@ -468,7 +466,6 @@ def _get_nodes(req):
 
     with _utils_lock.named_lock("oaitoken"):
         if not nids:
-            import time
             from sqlalchemy.orm import load_only
             atime = time.time()
             nodes = nodequery.options(load_only('id')).all()

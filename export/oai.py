@@ -48,7 +48,6 @@ q = db.query
 
 logg = logging.getLogger(__name__)
 
-DATEFIELD = config.get("oai.datefield", "updatetime")
 EARLIEST_YEAR = config.getint("oai.earliest_year", 1960)
 CHUNKSIZE = config.getint("oai.chunksize", 10)
 IDPREFIX = config.get("oai.idprefix", "oai:mediatum.org:node/")
@@ -267,8 +266,7 @@ def _get_oai_export_mask_for_schema_name_and_metadataformat(schema_name, metadat
 def _write_record(node, metadataformat, mask=None):
     if not SET_LIST:
         _init_set_list()
-
-    updatetime = node.get(DATEFIELD)
+    updatetime = node.get(config.get("oai.datefield", "updatetime"))
     if updatetime:
         d = _iso8601(date.parse_date(updatetime))
     else:
@@ -326,6 +324,7 @@ def _parent_is_media(n):
 def _retrieve_nodes(req, setspec, date_from=None, date_to=None, metadataformat=None):
     schemata = []
     res = []
+    datefield = config.get("oai.datefield", "updatetime")
 
     if metadataformat == 'mediatum':
         metadatatypes = q(Metadatatypes).one().children
@@ -352,9 +351,9 @@ def _retrieve_nodes(req, setspec, date_from=None, date_to=None, metadataformat=N
         nodequery = collections_root.all_children
         nodequery = nodequery.filter(Node.schema.in_(schemata))
     if date_from:
-        nodequery = nodequery.filter(Node.attrs[DATEFIELD].astext >= str(date_from))
+        nodequery = nodequery.filter(Node.attrs[datefield].astext >= str(date_from))
     if date_to:
-        nodequery = nodequery.filter(Node.attrs[DATEFIELD].astext <= str(date_to))
+        nodequery = nodequery.filter(Node.attrs[datefield].astext <= str(date_to))
     if nodequery:
         guest_user = get_guest_user()
         nodequery = nodequery.filter_read_access(user=guest_user)
@@ -500,7 +499,7 @@ def _list_identifiers(req):
     res = '<ListIdentifiers>'
 
     for n in nodes:
-        updatetime = n.get(DATEFIELD)
+        updatetime = n.get(config.get("oai.datefield", "updatetime"))
         if updatetime:
             d = _iso8601(date.parse_date(updatetime))
         else:

@@ -487,7 +487,6 @@ def _get_nodes(req):
 
 
 def _list_identifiers(req):
-    id_prefix = config.get("oai.idprefix", "oai:mediatum.org:node/")
     if not SET_LIST:
         _init_set_list()
 
@@ -506,8 +505,8 @@ def _list_identifiers(req):
             d = _iso8601(date.parse_date(updatetime))
         else:
             d = _iso8601()
-
-        res += '<header><identifier>%s</identifier><datestamp>%sZ</datestamp>%s\n</header>\n' %(id_prefix + ustr(n.id), d, _get_set_specs_for_node(n))
+        res += '<header><identifier>%s</identifier><datestamp>%sZ</datestamp>%s\n</header>\n' % \
+              (config.get("oai.idprefix", "oai:mediatum.org:node/") + ustr(n.id), d, _get_set_specs_for_node(n))
 
     if tokenstring:
         res += tokenstring

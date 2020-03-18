@@ -94,7 +94,9 @@ def _write_head(req, attributes=""):
     if attributes != "noatt":
         for n in ["verb", "identifier", "metadataprefix", "from", "until", "set"]:
             if n in req.params:
-                resp += ' %s="%s"' % (n, esc(req.params[n]))
+                resp += ' %s="%s"' % (
+                            n,
+                            esc(req.params[n]))
     resp += '>%s</request>' % (request)
 
     return resp
@@ -119,7 +121,14 @@ def _iso8601(t=None):
     # MET summer time
     if not t:
         t = date.now()
-    return "%0.4d-%0.2d-%0.2dT%0.2d:%0.2d:%0.2d" % (t.year, t.month, t.day, t.hour, t.minute, t.second)
+    return "%0.4d-%0.2d-%0.2dT%0.2d:%0.2d:%0.2d" % (
+            t.year,
+            t.month,
+            t.day,
+            t.hour,
+            t.minute,
+            t.second
+        )
 
 
 def _parse_date(string):
@@ -199,7 +208,11 @@ def _list_metadata_formats(req):
                <schema>%s</schema>
                <metadataNamespace>%s</metadataNamespace>
              </metadataFormat>
-             """ % (mdf, d["schema.%s" % mdf], d["namespace.%s" % mdf])
+             """ % (
+                    mdf,
+                    d["schema.%s" % mdf],
+                    d["namespace.%s" % mdf]
+                    )
         except:
             logg.exception("%s: OAI error reading oai metadata format %s from config file", __file__, mdf)
     res += '\n</ListMetadataFormats>'
@@ -241,7 +254,13 @@ def _identify(req):
                   <sampleIdentifier>%s</sampleIdentifier>
                 </oai-identifier>
               </description>
-            </Identify>""" % (name, _mklink(req), config.get("email.admin"), ustr(config.getint("oai.earliest_year", 1960) - 1), config.get("host.name", socket.gethostname()), config.get("oai.sample_identifier", "oai:mediatum.org:node/123"))
+            </Identify>""" % (
+                            name, _mklink(req),
+                            config.get("email.admin"),
+                            ustr(config.getint("oai.earliest_year", 1960) - 1),
+                            config.get("host.name", socket.gethostname()),
+                            config.get("oai.sample_identifier", "oai:mediatum.org:node/123")
+                            )
 
 
 def _get_set_specs_for_node(node):
@@ -277,7 +296,11 @@ def _write_record(node, metadataformat, mask=None):
                        <datestamp>%sZ</datestamp>
                        %s
                </header>
-               <metadata>""" % (id_prefix + ustr(node.id), d, set_specs)
+               <metadata>""" % (
+                                id_prefix + ustr(node.id),
+                                d,
+                                set_specs
+                                )
     if metadataformat == "mediatum":
         record_str += core.xmlnode.getSingleNodeXML(node)
     # in [masknode.name for masknode in getMetaType(node.getSchema()).getMasks() if masknode.get('masktype')=='exportmask']:
@@ -506,7 +529,11 @@ def _list_identifiers(req):
         else:
             d = _iso8601()
         res += '<header><identifier>%s</identifier><datestamp>%sZ</datestamp>%s\n</header>\n' % \
-              (config.get("oai.idprefix", "oai:mediatum.org:node/") + ustr(n.id), d, _get_set_specs_for_node(n))
+              (
+              config.get("oai.idprefix", "oai:mediatum.org:node/") + ustr(n.id),
+              d,
+              _get_set_specs_for_node(n)
+              )
 
     if tokenstring:
         res += tokenstring

@@ -72,17 +72,13 @@ def filterFormat(node, oai_format):
     return True
 
 
-def now():
-    return time.clock()
-
-
 def make_lookup_key(req):
     return "%s:%s" % (req.remote_addr, req.port)
 
 
 def timetable_update(req, msg):
     if req:
-        req._tt['tlist'].append((msg, now()))
+        req._tt['tlist'].append((msg, time.clock()))
 
 
 def timetable_string(req):
@@ -759,7 +755,7 @@ def initSetList(req=None):
 def oaiRequest(req):
 
     start_time = time.clock()
-    req._tt = {'atime': now(), 'tlist': []}
+    req._tt = {'atime': time.clock(), 'tlist': []}
 
     if "until" in req.params:
         try:
@@ -824,7 +820,7 @@ def oaiRequest(req):
     except:
         pass
 
-    exit_time = now()
+    exit_time = time.clock()
 
     logg.info("%s:%s OAI (exit after %.3f sec.) %s - (user-agent: %s)",
               req.remote_addr, req.port, (exit_time - start_time), req.path.replace('//', '/'), useragent)

@@ -175,17 +175,6 @@ def parseDate(string):
             return date.parse_date(string[12:], "%Y-%m-%d")
 
 
-def checkParams(req, list):
-    params = req.params.copy()
-    for entry in list:
-        if entry not in params:
-            return 0
-        del params[entry]
-    if len(params) > 0:
-        return 0
-    return 1
-
-
 def getExportMasks(regexp):
     exportmasks = q(Node).filter(Node.a.masktype == 'export').all()
     exportmasks = [(n, n.name) for n in exportmasks if re.match(regexp, n.name) and n.type == 'mask']
@@ -280,7 +269,7 @@ def checkMetaDataFormat(format):
 
 
 def Identify(req):
-    if not checkParams(req, ["verb"]):
+    if tuple(req.params) != ("verb", ):
         return writeError(req, "badArgument")
     if config.get("config.oaibasename") == "":
         root = q(Root).one()
@@ -521,8 +510,7 @@ def getNodes(req):
             pos, nids, metadataformat = tokenpositions[token]
         else:
             return None, "badResumptionToken", None
-
-        if not checkParams(req, ["verb", "resumptionToken"]):
+        if frozenset(req.params) != frozenset(("verb", "resumptionToken")):
             logg.info("OAI: getNodes: additional arguments (only verb and resumptionToken allowed)")
             return None, "badArgument", None
     else:

@@ -48,7 +48,6 @@ q = db.query
 
 logg = logging.getLogger(__name__)
 
-EARLIEST_YEAR = config.getint("oai.earliest_year", 1960)
 CHUNKSIZE = config.getint("oai.chunksize", 10)
 IDPREFIX = config.get("oai.idprefix", "oai:mediatum.org:node/")
 tokenpositions = OrderedDict()
@@ -244,7 +243,7 @@ def _identify(req):
                   <sampleIdentifier>%s</sampleIdentifier>
                 </oai-identifier>
               </description>
-            </Identify>""" % (name, _mklink(req), config.get("email.admin"), ustr(EARLIEST_YEAR - 1), config.get("host.name", socket.gethostname()), config.get("oai.sample_identifier", "oai:mediatum.org:node/123"))
+            </Identify>""" % (name, _mklink(req), config.get("email.admin"), ustr(config.getint("oai.earliest_year", 1960) - 1), config.get("host.name", socket.gethostname()), config.get("oai.sample_identifier", "oai:mediatum.org:node/123"))
 
 
 def _get_set_specs_for_node(node):
@@ -270,7 +269,7 @@ def _write_record(node, metadataformat, mask=None):
     if updatetime:
         d = _iso8601(date.parse_date(updatetime))
     else:
-        d = _iso8601(date.DateTime(EARLIEST_YEAR - 1, 12, 31, 23, 59, 59))
+        d = _iso8601(date.DateTime(config.getint("oai.earliest_year", 1960) - 1, 12, 31, 23, 59, 59))
 
     set_specs = _get_set_specs_for_node(node)
     record_str = """
@@ -392,6 +391,7 @@ def _new_token(req):
 def _get_nodes(req):
     global tokenpositions, CHUNKSIZE
     nids = None
+    earliest_year = config.getint("oai.earliest_year", 1960)
 
     if "resumptionToken" in req.params:
         token = req.params.get("resumptionToken")
@@ -414,7 +414,7 @@ def _get_nodes(req):
         try:
             string_from = req.params["from"]
             date_from = _parse_date(string_from)
-            if date_from.year < EARLIEST_YEAR:
+            if date_from.year < earliest_year:
                 date_from = date.DateTime(0, 0, 0, 0, 0, 0)
         except:
             if "from" in req.params:
@@ -428,7 +428,7 @@ def _get_nodes(req):
                 date_to.hour = 23
                 date_to.minute = 59
                 date_to.second = 59
-            if date_to.year < EARLIEST_YEAR - 1:
+            if date_to.year < earliest_year - 1:
                 raise
         except:
             if "until" in req.params:
@@ -514,7 +514,7 @@ def _list_identifiers(req):
 
 
 def _list_records(req):
-    eyear = ustr(EARLIEST_YEAR - 1) + """-01-01T12:00:00Z"""
+    eyear = ustr(config.getint("oai.earliest_year", 1960) - 1) + """-01-01T12:00:00Z"""
     if "until" in req.params.keys() and req.params.get("until") < eyear and len(req.params.get("until")) == len(eyear):
         return _write_error(req, 'noRecordsMatch')
     if "resumptionToken" in req.params.keys() and "until" in req.params.keys():

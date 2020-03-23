@@ -302,11 +302,8 @@ def _write_record(node, metadataformat, mask=None):
                                 set_specs
                                 )
     if metadataformat == "mediatum":
-        record_str += core.xmlnode.getSingleNodeXML(node)
-    # in [masknode.name for masknode in getMetaType(node.getSchema()).getMasks() if masknode.get('masktype')=='exportmask']:
+        record_str += core.xmlnode.getSingleNodeXML(node)       # function doesnt exist!!!!
 
-    #elif _node_has_oai_export_mask(node, metadataformat.lower()):
-    #    mask = getMetaType(node.getSchema()).getMask(u"oai_" + metadataformat.lower())
     elif mask:
         # XXX: fixXMLString is gone, do we need to sanitize XML here?
         record_str += mask.getViewHTML([node], flags=8).replace('lang=""', 'lang="unknown"')  # for testing only, remove!
@@ -384,15 +381,11 @@ def _retrieve_nodes(req, setspec, date_from=None, date_to=None, metadataformat=N
     if not nodequery:
         collections = q(Collections).one()
         res = [n for n in res if isDescendantOf(n, collections)]
-    # superflous ?!
-    #if schemata:
-    #    res = [n for n in res if n.getSchema() in schemata]
 
     if metadataformat and metadataformat.lower() in FORMAT_FILTERS:
         format_string = metadataformat.lower()
         format_filter = FORMAT_FILTERS[format_string]['filterQuery']
         nodequery = nodequery.filter(format_filter)
-        #res = [n for n in res if _filter_format(n, format_string)]
     if nodequery:
         res = nodequery
 
@@ -474,13 +467,10 @@ def _get_nodes(req):
             nodequery = nodequery.filter(Node.subnode == False)  #[n for n in nodes if not _parent_is_media(n)]
 
             # filter out nodes that are inactive or older versions of other nodes
-            #nodes = [n for n in nodes if n.isActiveVersion()]  # not needed anymore
         except:
             logg.exception('error retrieving nodes for oai')
             # collection doesn't exist
             return None, "badArgument", None
-        #if not nodes:
-        #    return None, "badArgument", None
 
     with _utils_lock.named_lock("oaitoken"):
         if not nids:

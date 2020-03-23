@@ -281,8 +281,7 @@ def _get_oai_export_mask_for_schema_name_and_metadataformat(schema_name, metadat
 
 def _write_record(node, metadataformat, mask=None):
     id_prefix = config.get("oai.idprefix", "oai:mediatum.org:node/")
-    if not SET_LIST:
-        _init_set_list()
+    _init_set_list()
     updatetime = node.get(config.get("oai.datefield", "updatetime"))
     if updatetime:
         d = _iso8601(date.parse_date(updatetime))
@@ -500,8 +499,7 @@ def _get_nodes(req):
 
 
 def _list_identifiers(req):
-    if not SET_LIST:
-        _init_set_list()
+    _init_set_list()
 
     nids, tokenstring, metadataformat = _get_nodes(req)
 
@@ -624,12 +622,13 @@ def _list_sets():
 
     return res
 
+
 def _init_set_list():
     global SET_LIST
-
-    oaisets.loadGroups()
-    SET_LIST = oaisets.GROUPS
-    logg.info('OAI: initSetList: found %s set groups: %s', len(SET_LIST), SET_LIST)
+    if not SET_LIST:
+        oaisets.loadGroups()
+        SET_LIST = oaisets.GROUPS
+        logg.info('OAI: initSetList: found %s set groups: %s', len(SET_LIST), SET_LIST)
 
 
 def oaiRequest(req):

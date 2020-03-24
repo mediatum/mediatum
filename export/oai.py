@@ -300,12 +300,9 @@ def _write_record(node, metadataformat, mask=None):
                                 d,
                                 set_specs
                                 )
-    if metadataformat == "mediatum":
-        record_str += core.xmlnode.getSingleNodeXML(node)       # function doesnt exist!!!!
-
-    elif mask:
-        # XXX: fixXMLString is gone, do we need to sanitize XML here?
-        record_str += mask.getViewHTML([node], flags=8).replace('lang=""', 'lang="unknown"')  # for testing only, remove!
+    assert metadataformat != "mediatum", "export/oai.py: assertion 'metadataformat != mediatum' failed"
+    if mask:
+        record_str += mask.getViewHTML([node], flags=8).replace('lang=""', 'lang="unknown"')
     else:
         record_str += '<recordHasNoXMLRepresentation/>'
 

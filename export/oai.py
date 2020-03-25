@@ -50,7 +50,6 @@ logg = logging.getLogger(__name__)
 
 tokenpositions = OrderedDict()
 
-SET_LIST = []
 FORMAT_FILTERS = {}
 
 
@@ -281,7 +280,6 @@ def _get_oai_export_mask_for_schema_name_and_metadataformat(schema_name, metadat
 
 def _write_record(node, metadataformat, mask=None):
     id_prefix = config.get("oai.idprefix", "oai:mediatum.org:node/")
-    _init_set_list()
     updatetime = node.get(config.get("oai.datefield", "updatetime"))
     if updatetime:
         d = _iso8601(date.parse_date(updatetime))
@@ -496,8 +494,6 @@ def _get_nodes(req):
 
 
 def _list_identifiers(req):
-    _init_set_list()
-
     nids, tokenstring, metadataformat = _get_nodes(req)
 
     if nids is None:
@@ -610,22 +606,12 @@ def _get_record(req):
 
 def _list_sets():
     # new container sets may have been added
-    _init_set_list()
     res = '\n<ListSets>'
-
     for setspec, setname in oaisets.getSets():
         res += '\n <set><setSpec>%s</setSpec><setName>%s</setName></set>' % (setspec, setname)
     res += '\n</ListSets>'
 
     return res
-
-
-def _init_set_list():
-    global SET_LIST
-    if not SET_LIST:
-        oaisets.loadGroups()
-        SET_LIST = oaisets.GROUPS
-        logg.info('OAI: initSetList: found %s set groups: %s', len(SET_LIST), SET_LIST)
 
 
 def oaiRequest(req):

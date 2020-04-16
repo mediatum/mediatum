@@ -284,8 +284,8 @@ def getMenuItemID(menulist, path):
     p = path.split('/')
     for item in menulist:
         for subitem in item.getItemList():
-            if subitem[1].endswith(p[0]):
-                return [item.name, "admin_menu_" + subitem[0]]
+            if subitem.endswith(p[0]):
+                return ["admin_menu_" + item.name, "admin_menu_" + subitem]
 
     return ["admin_menu_menumain"]
 

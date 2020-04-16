@@ -32,11 +32,11 @@ import core.config as config
 from .oaisearchparser import OAISearchParser as OAISearchParser
 from . import oaisets
 import utils.date as date
+import utils.locks as _utils_lock
 import core.xmlnode
 from utils.utils import esc
 from schema.schema import getMetaType
 from utils.pathutils import isDescendantOf
-from threading import Lock
 from core.systemtypes import Root, Metadatatypes
 from contenttypes import Collections
 from core import Node
@@ -56,7 +56,6 @@ CHUNKSIZE = int(config.get("oai.chunksize", "10"))
 IDPREFIX = config.get("oai.idprefix", "oai:mediatum.org:node/")
 SAMPLE_IDENTIFIER = config.get("oai.sample_identifier", "oai:mediatum.org:node/123")
 tokenpositions = OrderedDict()
-token_lock = Lock()
 
 SET_LIST = []
 FORMAT_FILTERS = {}
@@ -495,7 +494,7 @@ def retrieveNodes(req, setspec, date_from=None, date_to=None, metadataformat=Non
 
 def new_token(req):
     token = ustr(random.random())
-    with token_lock:
+    with _utils_lock.named_lock("oaitoken"):
         # limit length to 32
         if len(tokenpositions) >= 32:
             tokenpositions.popitem(last=False)
@@ -576,7 +575,7 @@ def getNodes(req):
         #if not nodes:
         #    return None, "badArgument", None
 
-    with token_lock:
+    with _utils_lock.named_lock("oaitoken"):
         if not nids:
             import time
             from sqlalchemy.orm import load_only
@@ -596,7 +595,7 @@ def getNodes(req):
         'completeListSize="' + ustr(len(nids)) + '" cursor="' + ustr(pos) + '">' + token + '</resumptionToken>'
     if pos + CHUNKSIZE >= len(nids):
         tokenstring = None
-        with token_lock:
+        with _utils_lock.named_lock("oaitoken"):
             del tokenpositions[token]
     logg.info("%s : set=%s, objects=%s, format=%s", req.params.get('verb'), req.params.get('set'), len(nids), metadataformat)
     res = nids[pos:pos + CHUNKSIZE]

@@ -5,6 +5,39 @@ We mostly follow the conventions given in [Keep a Changelog](http://keepachangel
 Calendar Versioning is used for our version numbers: http://calver.org/
 
 
+## [v2020.04] - 2020-04-17
+
+- This version requires changes to the database scheme:
+  before running an existing installation with this version,
+  the command "`alembic upgrade head`" must be invoked
+
+### Added
+
+### Changed
+
+- `fts` table is dropped, search is made in the attrs und fulltext column of the node table;
+  missing search indices are created at mediatum startup,
+  this make need a considerable amount of time
+- use ghostscript 9.25 for security reasons
+- editor: expand datefields to standard format in doi/bibtex import
+- improve server performance when handling
+  sorfields or metafield value lists
+- admin: sort workflowstep nodes alphabetically
+- enhancements for logging and threadstatus
+
+### Fixed
+
+- editor: fix (display of) error message if
+    - publishing fails
+    - processing an uploaded file fails
+    - a bibtex/doi import with broken date is to be published
+- editor: enable upload of images with suffix .tif again
+- editor: fix error that could lead to invalid html
+- admin: fix css to show menu
+- admin: workflow export no longer exports its data nodes
+- workflow: Step `TextPage` no longer skips its next stop
+
+
 ## [v2019.100] - 2019-10-10
 
 ### Added

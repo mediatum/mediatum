@@ -76,12 +76,7 @@ errordesc = {
 }
 
 
-def _mklink(req):
-    return "http://" + config.get("host.name", socket.gethostname() + ":8081") + "/oai/oai"
-
-
 def _write_head(req, attributes=""):
-    request = _mklink(req)
     req.response.headers['charset'] = 'utf-8'
     req.response.headers['Content-Type'] = 'text/xml; charset=utf-8'
     resp = """<?xml version="1.0" encoding="UTF-8"?>
@@ -94,7 +89,8 @@ def _write_head(req, attributes=""):
                 resp += ' %s="%s"' % (
                             n,
                             esc(req.params[n]))
-    resp += '>%s</request>' % (request)
+
+    resp += '>http://%s/oai/oai</request>' % config.get("host.name", socket.gethostname() + ":8081")
 
     return resp
 
@@ -252,7 +248,8 @@ def _identify(req):
                 </oai-identifier>
               </description>
             </Identify>""" % (
-                            name, _mklink(req),
+                            name,
+                            config.get("host.name", socket.gethostname() + ":8081"),
                             config.get("email.admin"),
                             ustr(config.getint("oai.earliest_year", 1960) - 1),
                             config.get("host.name", socket.gethostname()),

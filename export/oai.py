@@ -76,14 +76,14 @@ errordesc = {
 }
 
 
-def _write_head(req, attributes=""):
+def _write_head(req, include_params=True):
     req.response.headers['charset'] = 'utf-8'
     req.response.headers['Content-Type'] = 'text/xml; charset=utf-8'
     resp = """<?xml version="1.0" encoding="UTF-8"?>
     <OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">
         <responseDate>%sZ</responseDate>
         <request""" % (_iso8601(date.now()))
-    if attributes != "noatt":
+    if include_params:
         for n in ["verb", "identifier", "metadataprefix", "from", "until", "set"]:
             if n in req.params:
                 resp += ' %s="%s"' % (
@@ -616,7 +616,7 @@ def oaiRequest(req):
         try:
             date_to = _parse_date(req.params.get("until"))
         except:
-            res = _write_head(req, "noatt")
+            res = _write_head(req, False)
             res += _write_error(req, "badArgument", "badDateformatUntil")
             res += _write_tail()
             req.response.status_code = _httpstatus.HTTP_BAD_REQUEST
@@ -627,7 +627,7 @@ def oaiRequest(req):
         try:
             date_from = _parse_date(req.params.get("from"))
         except:
-            res = _write_head(req, "noatt")
+            res = _write_head(req, False)
             res += _write_error(req, "badArgument", "badDateformatFrom")
             res += _write_tail()
             req.response.status_code = _httpstatus.HTTP_BAD_REQUEST
@@ -635,7 +635,7 @@ def oaiRequest(req):
             return
 
     if "verb" not in req.params:
-        res = _write_head(req, "noatt")
+        res = _write_head(req, False)
         res += _write_error(req, "badVerb")
         req.response.status_code = _httpstatus.HTTP_BAD_REQUEST
         req.response.set_data(res)
@@ -661,7 +661,7 @@ def oaiRequest(req):
             res = _write_head(req)
             res += _get_record(req)
         else:
-            res = _write_head(req, "noatt")
+            res = _write_head(req, False)
             res += _write_error(req, "badVerb")
 
     res += _write_tail()

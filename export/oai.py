@@ -110,10 +110,8 @@ def _write_error(req, code, detail=""):
     return '<error code="%s">%s</error>' % (code, desc)
 
 
-def _iso8601(t=None):
+def _iso8601(t):
     # MET summer time
-    if not t:
-        t = date.now()
     return "%0.4d-%0.2d-%0.2dT%0.2d:%0.2d:%0.2d" % (
             t.year,
             t.month,
@@ -502,7 +500,7 @@ def _list_identifiers(req):
         if updatetime:
             d = _iso8601(date.parse_date(updatetime))
         else:
-            d = _iso8601()
+            d = _iso8601(date.now())
         res += '<header><identifier>%s</identifier><datestamp>%sZ</datestamp>%s\n</header>\n' % \
               (
               config.get("oai.idprefix", "oai:mediatum.org:node/") + ustr(n.id),

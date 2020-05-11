@@ -60,7 +60,7 @@ class Video(Content):
 
     @classmethod
     def get_default_edit_menu_tabs(cls):
-        return "menulayout(view);menumetadata(metadata;files;admin);menuclasses(classes);menusecurity(acls)"
+        return "parentcontent;view;metadata;files;menuoperation(acls;classes;changeschema;menueditobject(moveobject;copyobject;deleteobject);admin)"
 
     @classmethod
     def get_sys_filetypes(cls):

@@ -191,7 +191,7 @@ class Data(Node):
 
     @classmethod
     def get_default_edit_menu_tabs(cls):
-        return "menuglobals()"
+        return "parentcontent;view;metadata;files;menuoperation(acls;classes;changeschema;menueditobject(moveobject;copyobject;deleteobject);admin)"
 
     @classmethod
     def get_default_edit_tab(cls):

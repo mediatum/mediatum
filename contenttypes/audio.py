@@ -27,6 +27,7 @@ from utils.date import parse_date, format_date, make_date
 from schema.schema import VIEW_HIDE_EMPTY
 from core.translation import lang
 from core.postgres import check_type_arg_with_schema
+from core.attachment import filebrowser as _filebrowser
 from core import File
 from core import db
 import utils.process
@@ -148,6 +149,11 @@ class Audio(Content):
             return obj
 
         node = self
+
+        files, sum_size = _filebrowser(node, req)
+
+        obj['attachment'] = files
+        obj['sum_size'] = sum_size
 
         # adapted from video.py
         # user must have data access for audio playback

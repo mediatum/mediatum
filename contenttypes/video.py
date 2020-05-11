@@ -29,6 +29,7 @@ from mediatumtal import tal
 from contenttypes.data import Content, prepare_node_data
 from contenttypes.image import make_thumbnail_image, make_presentation_image
 from core.postgres import check_type_arg_with_schema
+from core.attachment import filebrowser as _filebrowser
 from core import db, File, config
 from core.config import resolve_datadir_path
 from core.translation import t
@@ -72,6 +73,13 @@ class Video(Content):
             # no more processing needed if this object version has been deleted
             # rendering has been delegated to current version
             return obj
+
+        node = self
+
+        files, sum_size = _filebrowser(node, req)
+
+        obj['attachment'] = files
+        obj['sum_size'] = sum_size
 
         # user must have data access for video playback
         if self.has_data_access():

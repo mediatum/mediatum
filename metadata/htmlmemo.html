@@ -1,5 +1,5 @@
 <div tal:attributes="id python:'div_'+lang+'__'+name" style="float:left;">
-<textarea class="htmlmemo_text" tal:attributes="required required disabled python:{0:None,1:'disabled'}[lock]; name python:lang+'__'+name; id python:lang+'__'+name; onkeyup python:'countMeta(this,'+(field.getValues() or '-1')+')';style python:'width:'+str(width-20)+'px';" rows="4"><tal:block tal:replace="python:langdict[lang] or ''"/>
+<textarea class="htmlmemo_text" tal:attributes="required required disabled python:{0:None,1:'disabled'}[lock]; name python:lang+'__'+name; id python:lang+'__'+name; onkeyup python:'countMeta(this,'+(field.getValues() or '-1')+')';style python:'width:'+str(width-20)+'px';" rows="4"><tal:block tal:replace="python:value"/>
 </textarea>
 </div>
 <tal:block metal:define-macro="editorfield">
@@ -7,24 +7,16 @@
     <!-- for mask editor html memo -->
     <script type="text/javascript" language="javascript" src="/js/jquery-1.12.4.js"> </script>
     <script type="text/javascript" language="javascript" src="/js/jquery.textarearesizer.js"> </script>
-    <script type="text/javascript" language="javascript" src="/metatype/htmlmemo?type=javascript"> </script>
     <script type="text/javascript" src="/ckeditor/ckeditor.js"> </script>
-
-    <div id="text_show_multilang" style="display:none" i18n:translate="htmlmemo_show_multilang">TEXT</div>
-    <div id="text_hide_multilang" style="display:none" i18n:translate="htmlmemo_hide_multilang">TEXT</div>
 
     <div>
         <div style="float:left;position:relative;">
-            <div style="position:absolute;left:-20px;"> 
-                <label tal:attributes="id python:u'{}_label'.format(ident); style python: multilang_display;" tal:content="python:u'{}:'.format(defaultlang)">TEXT</label>
-            </div>
-<textarea tal:attributes="required required; disabled python:{0:None,1:'disabled'}[lock]; name python:u'{}__{}'.format(defaultlang, name); id python:u'{}__{}'.format(defaultlang, name); onkeyup python:'countMeta(this,'+(field.getValues() or '-1')+')';style python:u'width:{}px'.format(width-20)" rows="4"><tal:block tal:replace="python:langdict[defaultlang] or u''"/>
+<textarea tal:attributes="required required; disabled python:{0:None,1:'disabled'}[lock]; name python:u'{}'.format(name); id python:u'{}'.format(name); onkeyup python:'countMeta(this,'+(field.getValues() or '-1')+')';style python:u'width:{}px'.format(width-20)" rows="4"><tal:block tal:replace="python:value"/>
 </textarea>
         </div>
-        <img tal:condition="python: enable_multilang" i18n:attributes="title" tal:attributes="title python:'memo_hide_multilang' if expand_multilang else 'memo_show_multilang'; id python:u'button_toggle_{}'.format(ident); onclick python:u'toggleHTMLMemoDiv(this, \'{}\')'.format(ident); src python:'/img/slang.png' if expand_multilang else '/img/mlang.png'" style="margin-left:5px;cursor:pointer;"/>
     </div>
 
-    <span tal:content="raw python:'<script> var _editor = \''+defaultlang+'__'+name+'\';var editor = CKEDITOR.replace(_editor, {customConfig: \'/metatype/htmlmemo?type=configfile\',});editor.on(\'required\', function(evt){alert(\'Please fill out the htmlmemo field.\');evt.cancel();});</script>'" />
+    <span tal:content="raw python:'<script> var _editor = \''+name+'\';var editor = CKEDITOR.replace(_editor, {customConfig: \'/metatype/htmlmemo?type=configfile\',});editor.on(\'required\', function(evt){alert(\'Please fill out the htmlmemo field.\');evt.cancel();});</script>'" />
 
     <div tal:attributes="style python:u'width:{}px'.format(width)">
         <div tal:condition="python:field.getValues()!=''" style="text-align:right;padding-right:7px; margin-bottom:7px">
@@ -40,53 +32,7 @@
         <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
     </span>
 
-    <div style="clear:both"> </div>
-
-<tal:block tal:condition="python: name and enable_multilang">
-    <div tal:attributes="id python:u'{}_multilang'.format(ident); style python: multilang_display" tal:repeat="lang languages">
-        <div style="margin-top:5px;position:relative;">
-            <label tal:content="python:u'{}: '.format(lang)" style="position:absolute;left:-20px;">TEXT</label>
-            <div tal:attributes="id python:u'div_{}__{}'.format(lang, name)" style="float:left;">
-<textarea class="htmlmemo_text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; name python:u'{}__{}'.format(lang, name); id python:u'{}__{}'.format(lang, name); onkeyup python:'countMeta(this,'+(field.getValues() or '-1')+')';style python:u'width:{}px'.format(width-20)" rows="4"><tal:block tal:replace="python:langdict[lang] or u''"/>
-</textarea>
-                <tal:block tal:replace="raw python:('<script> var _editor_'+ident+' = \''+lang+'__'+name+'\';CKEDITOR.replace(_editor_REPLACE_WITH_IDENT, {customConfig: \'/metatype/htmlmemo?type=configfile\',});editor.on(\'required\', function(evt){alert(\'Please fill out the htmlmemo field.\');evt.cancel();});</script>')" > </tal:block>
-                
-                <div tal:attributes="style python:u'width:{}px'.format(width)">
-                    <div tal:condition="python:field.getValues()!=''" style="text-align:right;padding-right:7px; margin-bottom:7px">
-                        <small>
-                            <span tal:attributes="id python:u'number{}'.format(name)" tal:content="python:int(field.getValues())-len(value)"/>
-                            <span i18n:translate="editor_htmlmemo_label">TEXT</span>
-                        </small>
-                    </div>
-                </div>
-                <span tal:condition="python:lock!=0" tal:attributes="id python:u'lockspan_{}'.format(name)">&nbsp;
-                    <input tal:attributes="name python:u'lock_{}'.format(name); id python:u'lock_{}'.format(name); onclick python:u'handlelock(\'{}\')'.format(name)" type="checkbox"/>
-                    <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
-               </span>
-            </div>
-            <div style="clear:both"> </div>
-        </div>
-    </div>
-</tal:block>
-
     <div style="clear:left"> </div>
-    <input tal:attributes="id python:u'{}_show_multilang'.format(ident); name python:u'{}_show_multilang'.format(ident); value python: value_is_multilang" type="hidden"/>
-</tal:block>
-
-<tal:block metal:define-macro="javascript">
-    var src_img_show_multilang = "/img/mlang.png";
-    var src_img_hide_multilang = "/img/slang.png";
-    var CKEDITOR_BASEPATH = '/ckeditor/';
-    
-    function toggleHTMLMemoDiv(src, id) {
-        $("#"+id+"_multilang").toggle();
-        $("#"+id+"_label").toggle();
-        $("#"+id+"_show_multilang").val($("#"+id+"_show_multilang").val() == 'multi' ? 'single' : 'multi');
-        $("#"+src.id).attr("title", (src.title == $('#text_show_multilang:first').html() ? $('#text_hide_multilang:first').html() : $('#text_show_multilang:first').html()));
-        $("#"+src.id).attr("src", ($("#"+src.id).attr("src") == src_img_show_multilang ? src_img_hide_multilang : src_img_show_multilang));
-        $("#"+src.id).css("margin-left", (src.title == $('#text_show_multilang:first').html() ? "5px": "25px"));
-        return false;
-    }
 </tal:block>
 
 
@@ -122,8 +68,4 @@ CKEDITOR.editorConfig = function( config ){
     <div class="label" i18n:translate="mask_edit_max_length">TEXT</div>
     <input tal:attributes="value value" type="text" name="htmlmemo_value" rows="4" style="width:250px"/><br/>
 
-    <div class="label" i18n:translate="mask_edit_enable_multilang">TEXT</div>
-    <input name="htmlmemo_handle_attrs" type="hidden" tal:attributes="value python: additional_attrs" />
-    <input name="htmlmemo_attr_multilang" value="1" type="checkbox" tal:attributes="checked python:'checked' if multilang=='1' else None" />
-    
 </div>

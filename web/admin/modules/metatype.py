@@ -670,7 +670,6 @@ def showEditor(req):
         item.setSeparator(req.params.get("separator", u""))
         item.setDescription(req.params.get("description", u""))
         item.setTestNodes(req.params.get("testnodes", u""))
-        item.setMultilang(req.params.get("multilang", u""))
         db.session.commit()
 
         if "required" in req.params.keys():

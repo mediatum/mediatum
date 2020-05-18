@@ -35,43 +35,7 @@ logg = logging.getLogger(__name__)
 
 class m_text(Metatype):
 
-    def language_snipper(self, s, language, joiner="\n"):
-
-        if s.find(joiner) <= 0:
-            return s
-
-        valueList = s.split(joiner)
-
-        # copied from self.getEditorHTML
-        lang2value = dict()
-        i = 0
-        while i + 1 < len(valueList):
-            lang2value[valueList[i]] = valueList[i + 1]
-            i = i + 2
-
-        return lang2value.get(language, '')
-
     def getEditorHTML(self, field, value="", width=40, lock=0, language=None, required=None):
-        lang = None
-        languages = config.languages
-        if language is None:
-            language = languages[0]
-        if field.getValues() and "multilingual" in field.getValues():
-            lang = [l.strip() for l in languages if (l != language)]
-        valueList = value.split("\n")
-        values = dict()
-        i = 0
-        while i + 1 < len(valueList):
-            values[valueList[i] + "__" + field.getName()] = valueList[i + 1]
-            i = i + 2
-
-        if language:
-            defaultlang = language
-        elif lang:
-            defaultlang = lang[0]
-        else:
-            defaultlang = ""
-
         try:
             field_node_name = field.name
         except:
@@ -79,17 +43,12 @@ class m_text(Metatype):
 
         context = {
             "lock": lock,
-            "values": values,
             "value": value,
             "width": width,
             "name": field_node_name,
             "field": field,
             "ident": field.id if field.id else "",
-            "languages": lang,
-            "defaultlang": defaultlang,
-            "expand_multilang": True if value.find('\n') != -1 else False,
             "required": self.is_required(required),
-            "required_multilang": True if value.find('\n') != -1 and self.is_required(required) else None,
         }
         return tal.getTAL("metadata/text.html", context, macro="editorfield", language=language)
 
@@ -97,11 +56,7 @@ class m_text(Metatype):
         return tal.getTAL("metadata/text.html", {"context": context}, macro="searchfield", language=context.language)
 
     def getMaskEditorHTML(self, field, metadatatype=None, language=None):
-        try:
-            multilingual = field.getValues()
-        except AttributeError:
-            multilingual = u""
-        return tal.getTAL("metadata/text.html", {"multilingual": multilingual}, macro="maskeditor", language=language)
+        return tal.getTAL("metadata/text.html", {}, macro="maskeditor", language=language)
 
     def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True, template_from_caller=None):
 
@@ -113,26 +68,6 @@ class m_text(Metatype):
 
         # ignore trailing newlines for textfields
         value = value.rstrip("\r\n")
-
-        if value.find('\n') != -1:
-            valuesList = value.split('\n')
-            if any(lang in valuesList for lang in config.languages):  # treat as multilingual
-                index = 0
-                try:
-                    index = valuesList.index(language)
-                    value = valuesList[index + 1]
-                except ValueError as e:
-                    msg = "Exception in getFormattedValue for textfield:\n"
-                    msg += " valuesList=%r\n" % valuesList
-                    msg += " node.name=%r, node.id=%r, node.type=%r\n" % (node.name, node.id, node.type)
-                    msg += " metafield.name=%r, metafield.id=%r, metafield.type=%r\n" % (metafield.name, metafield.id, metafield.type)
-                    msg += " language=%r, mask=%r" % (language, mask)
-                    logg.exception(msg)
-
-                    value = u""
-            else:
-                # treat as monolingual
-                pass
 
         if html:
             value = esc(value)
@@ -195,9 +130,6 @@ class m_text(Metatype):
                   ("text_italic_title", "Markierten Text 'Kursiv' setzen"),
                   ("text_sub_title", "Markierten Text 'tiefstellen'"),
                   ("text_sup_title", "Markierten Text 'hochstellen'"),
-                  ("text_show_multilang", "umschalten zu mehrsprachig"),
-                  ("text_hide_multilang", "umschalten zu einsprachig"),
-                  ("text_multilingual", "Mehrsprachigkeit aktivieren")
               ],
               "en":
               [
@@ -214,8 +146,5 @@ class m_text(Metatype):
                   ("text_italic_title", "set marked text 'italic'"),
                   ("text_sub_title", "set marked text 'subscript'"),
                   ("text_sup_title", "set marked text 'superscript'"),
-                  ("text_show_multilang", "switch to multilingual"),
-                  ("text_hide_multilang", "switch to monolingual"),
-                  ("text_multilingual", "Activate multilingual mode")
               ]
               }

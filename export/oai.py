@@ -327,7 +327,7 @@ def _parent_is_media(n):
         return True
 
 
-def _retrieve_nodes(req, setspec, date_from=None, date_to=None, metadataformat=None):
+def _retrieve_nodes(setspec, date_from=None, date_to=None, metadataformat=None):
     schemata = []
     res = []
     datefield = config.get("oai.datefield", "updatetime")
@@ -450,7 +450,7 @@ def _get_nodes(req):
             return None, "badArgument", None
 
         try:
-            nodequery = _retrieve_nodes(req, setspec, date_from, date_to, metadataformat)
+            nodequery = _retrieve_nodes(setspec, date_from, date_to, metadataformat)
             nodequery = nodequery.filter(Node.subnode == False)  #[n for n in nodes if not _parent_is_media(n)]
 
             # filter out nodes that are inactive or older versions of other nodes

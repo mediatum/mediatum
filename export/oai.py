@@ -664,21 +664,13 @@ def oaiRequest(req):
 
     res += _write_tail()
 
-    useragent = 'unknown'
-    try:
-        cutoff = 60
-        useragent = req.headers['user-agent']
-        if len(useragent) > cutoff:
-            useragent = useragent[0:cutoff] + '...'
-    except:
-        pass
-
-    exit_time = time.clock()
-
     logg.info("%s:%s OAI (exit after %.3f sec.) %s - (user-agent: %s)",
-              req.remote_addr, req.port, (exit_time - start_time), req.path.replace('//', '/'), useragent)
-
-
+            req.remote_addr,
+            req.port,
+            (time.clock() - start_time),
+            req.path.replace('//', '/'),
+            req.headers.get("user-agent", "unknown")[:60],
+           )
     req.response.status_code = _httpstatus.HTTP_OK
     req.response.mimetype = "application/xml"
     req.response.set_data(res)

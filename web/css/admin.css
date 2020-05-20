@@ -103,6 +103,7 @@ width: auto;margin-top: 0px;height: 20px;}
 .checkbox {padding-left: 10px;}
 iframe.preview  {background-color: #fff;margin: 10px;border: solid 1px #666;width: 95%;height: 400px;}
 div.pageerrorcontainer a {color: #fff;}
+.mediatum_clearb {clear: both;}
 .ajaxbutton  {clear: both;padding-top: 5px;padding-left: 1px;}
 form{padding:10px;}
 td{vertical-align:top; white-space:nowrap;}

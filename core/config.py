@@ -23,6 +23,9 @@ import os
 import sys
 import codecs
 import tempfile
+import functools as _functools
+import random as _random
+import string as _string
 from PIL import Image as _PILImage
 
 logg = logging.getLogger(__name__)
@@ -212,6 +215,11 @@ def check_create_dir(dirpath, label):
 
 
 def set_default_values():
+    if not "csrf.secret_key" in settings:
+        make_key_char = _functools.partial(_random.SystemRandom().choice, _string.ascii_letters)
+        secret_key = "".join(make_key_char() for _ in xrange(50))
+        settings["csrf.secret_key"] = secret_key
+
     if not "paths.datadir" in settings:
         settings["paths.datadir"] = get_default_data_dir()
 

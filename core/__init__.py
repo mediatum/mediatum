@@ -1,4 +1,4 @@
-__version__ = "16.1dev0"
+__version__ = "v2020.04"
 
 # set by core.database
 db = None

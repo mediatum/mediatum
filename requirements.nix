@@ -19,6 +19,8 @@ let
     '';
   });
 
+  inherit ((import (fetchTarball https://releases.nixos.org/nixos/18.03/nixos-18.03.133402.cb0e20d6db9/nixexprs.tar.xz) {}).pkgs) ghostscript graphicsmagick;
+
   ### production deps
 
   inherit (self) 
@@ -489,8 +491,8 @@ in {
       werkzeug
       # other
       pkgs.ffmpeg
-      pkgs.ghostscript
-      pkgs.graphicsmagick
+      ghostscript
+      graphicsmagick
       pkgs.graphviz-nox
       pkgs.icu
       pkgs.pdftk

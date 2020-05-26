@@ -49,7 +49,7 @@ q = db.query
 logg = logging.getLogger(__name__)
 
 
-DEBUG = True
+DEBUG = False
 
 DATEFIELD = config.get("oai.datefield", "updatetime")
 EARLIEST_YEAR = int(config.get("oai.earliest_year", "1960"))
@@ -132,19 +132,18 @@ def writeHead(req, attributes=""):
     if attributes != "noatt":
         for n in ["verb", "identifier", "metadataprefix", "from", "until", "set"]:
             if n in req.params:
-                resp = resp + ' %s="%s"' % (n, esc(req.params[n]))
-    resp = resp + '>%s</request>' % (request)
-    req.response.status_code = _httpstatus.HTTP_OK
-    req.response.set_data(resp)
+                resp += ' %s="%s"' % (n, esc(req.params[n]))
+    resp += '>%s</request>' % (request)
     if DEBUG:
         timetable_update(req, "leaving writeHead")
 
+    return resp
+
 
 def writeTail(req):
-    req.response.status_code = _httpstatus.HTTP_OK
-    req.response.set_data(req.response.get_data() + '</OAI-PMH>')
     if DEBUG:
         timetable_update(req, "leaving writeTail")
+    return '</OAI-PMH>'
 
 
 def writeError(req, code, detail=""):
@@ -155,10 +154,10 @@ def writeError(req, code, detail=""):
         desc = errordesc[detail]
     else:
         desc = errordesc[code]
-    req.response.status_code = _httpstatus.HTTP_OK
-    req.response.set_data(req.response.get_data() + '<error code="%s">%s</error>' % (code, desc))
-    logg.info("%s:%ds OAI (error code: %s) %s", req.remote_addr, req.port, (code),
-              (req.path + req.path).replace('//', '/'))
+
+    logg.info("%s:%s OAI (error code: %s) %s", req.remote_addr, req.port, (code),req.path.replace('//', '/'))
+
+    return '<error code="%s">%s</error>' % (code, desc)
 
 
 def ISO8601(t=None):
@@ -256,23 +255,24 @@ def ListMetadataFormats(req):
         formats = [x for x in formats if filterFormat(node, x.lower())]
 
     # write xml for metadata formats list
-    req.response.status_code = _httpstatus.HTTP_OK
-    req.response.set_data(req.response.get_data() + '\n      <ListMetadataFormats>\n')
+    res = '\n      <ListMetadataFormats>\n'
 
     for mdf in formats:
         try:
-            req.response.set_data(req.response.get_data() + """
+            res += """
              <metadataFormat>
                <metadataPrefix>%s</metadataPrefix>
                <schema>%s</schema>
                <metadataNamespace>%s</metadataNamespace>
              </metadataFormat>
-             """ % (mdf, d["schema.%s" % mdf], d["namespace.%s" % mdf]))
+             """ % (mdf, d["schema.%s" % mdf], d["namespace.%s" % mdf])
         except:
             logg.exception("%s: OAI error reading oai metadata format %s from config file", __file__, mdf)
-    req.response.set_data(req.response.get_data() + '\n</ListMetadataFormats>')
+    res += '\n</ListMetadataFormats>'
     if DEBUG:
         timetable_update(req, "leaving ListMetadataFormats")
+
+    return res
 
 
 def checkMetaDataFormat(format):
@@ -291,7 +291,11 @@ def Identify(req):
         name = root.getName()
     else:
         name = config.get("config.oaibasename")
-    req.response.set_data(req.response.get_data() + """
+
+    if DEBUG:
+        timetable_update(req, "leaving Identify")
+
+    return """
             <Identify>
               <repositoryName>%s</repositoryName>
               <baseURL>%s</baseURL>
@@ -308,9 +312,7 @@ def Identify(req):
                   <sampleIdentifier>%s</sampleIdentifier>
                 </oai-identifier>
               </description>
-            </Identify>""" % (name, mklink(req), config.get("email.admin"), ustr(EARLIEST_YEAR - 1), config.get("host.name", socket.gethostname()), SAMPLE_IDENTIFIER))
-    if DEBUG:
-        timetable_update(req, "leaving Identify")
+            </Identify>""" % (name, mklink(req), config.get("email.admin"), ustr(EARLIEST_YEAR - 1), config.get("host.name", socket.gethostname()), SAMPLE_IDENTIFIER)
 
 
 def getSetSpecsForNode(node):
@@ -375,7 +377,7 @@ def writeRecord(req, node, metadataformat, mask=None):
         if DEBUG:
             timetable_update(
                 req,
-                " in writeRecord: req.response.set_data(mask.getViewHTML([node], flags=8)): node.id='%s', metadataformat='%s'" %
+                " in writeRecord: mask.getViewHTML([node], flags=8): node.id='%s', metadataformat='%s'" %
                 (ustr(
                     node.id),
                     metadataformat))
@@ -385,11 +387,10 @@ def writeRecord(req, node, metadataformat, mask=None):
 
     record_str += '</metadata></record>'
 
-    req.response.status_code = _httpstatus.HTTP_OK
-    req.response.set_data(req.response.get_data() + record_str)
-
     if DEBUG:
         timetable_update(req, "leaving writeRecord: node.id='%s', metadataformat='%s'" % (ustr(node.id), metadataformat))
+
+    return record_str
 
 
 def mkIdentifier(id):
@@ -518,7 +519,6 @@ def getNodes(req):
     nodes = None
     nids = None
 
-    req.response.status_code = _httpstatus.HTTP_OK
     if "resumptionToken" in req.params:
         token = req.params.get("resumptionToken")
         if token in tokenpositions:
@@ -622,13 +622,12 @@ def ListIdentifiers(req):
 
     nids, tokenstring, metadataformat = getNodes(req)
 
-    req.response.status_code = _httpstatus.HTTP_OK
     if nids is None:
         return writeError(req, tokenstring)
     if not len(nids):
         return writeError(req, 'noRecordsMatch')
     nodes = q(Node).filter(Node.id.in_(nids)).all()
-    req.response.set_data(req.response.get_data() + '<ListIdentifiers>')
+    res = '<ListIdentifiers>'
 
     for n in nodes:
         updatetime = n.get(DATEFIELD)
@@ -636,16 +635,17 @@ def ListIdentifiers(req):
             d = ISO8601(date.parse_date(updatetime))
         else:
             d = ISO8601()
-        req.response.set_data(req.response.get_data() + '<header><identifier>%s</identifier><datestamp>%sZ</datestamp>%s\n</header>\n' % (mkIdentifier(n.id), d, getSetSpecsForNode(n)))
-        req.response.set_data(req.response.get_data() + tokenstring)
+        res += '<header><identifier>%s</identifier><datestamp>%sZ</datestamp>%s\n</header>\n' % (mkIdentifier(n.id), d, getSetSpecsForNode(n))
+        res += tokenstring
 
-    req.response.set_data(req.response.get_data() + '</ListIdentifiers>')
+    res += '</ListIdentifiers>'
     if DEBUG:
         timetable_update(req, "leaving ListIdentifiers")
 
+    return res
+
 
 def ListRecords(req):
-    req.response.status_code = _httpstatus.HTTP_OK
     eyear = ustr(EARLIEST_YEAR - 1) + """-01-01T12:00:00Z"""
     if "until" in req.params.keys() and req.params.get("until") < eyear and len(req.params.get("until")) == len(eyear):
         return writeError(req, 'noRecordsMatch')
@@ -665,7 +665,7 @@ def ListRecords(req):
     if not len(nodes):
         return writeError(req, 'noRecordsMatch')
 
-    req.response.set_data(req.response.get_data() + '<ListRecords>')
+    res = '<ListRecords>'
 
     mask_cache_dict = {}
     for n in nodes:
@@ -681,14 +681,16 @@ def ListRecords(req):
                 mask_cache_dict[look_up_key] = mask
 
         try:
-            writeRecord(req, n, metadataformat, mask=mask)
+            res += writeRecord(req, n, metadataformat, mask=mask)
         except Exception as e:
             logg.exception("n.id=%s, n.type=%s, metadataformat=%s" % (n.id, n.type, metadataformat))
     if tokenstring:
-        req.response.set_data(req.response.get_data() + tokenstring)
-    req.response.set_data(req.response.get_data() + '</ListRecords>')
+        res += tokenstring
+    res += '</ListRecords>'
     if DEBUG:
         timetable_update(req, "leaving ListRecords")
+
+    return res
 
 
 def GetRecord(req):
@@ -719,24 +721,28 @@ def GetRecord(req):
     schema_name = node.getSchema()
     mask = get_oai_export_mask_for_schema_name_and_metadataformat(schema_name, metadataformat)
 
-    req.response.set_data(req.response.get_data() + '<GetRecord>')
-    writeRecord(req, node, metadataformat, mask=mask)
-    req.response.set_data(req.response.set_data() + '<GetRecord>')
+    res = '<GetRecord>'
+    res += writeRecord(req, node, metadataformat, mask=mask)
+    res += '</GetRecord>'
     if DEBUG:
         timetable_update(req, "leaving GetRecord")
+
+    return res
 
 
 def ListSets(req):
     # new container sets may have been added
     initSetList(req)
 
-    req.response.set_data(req.response.get_data() + '\n<ListSets>')
+    res = '\n<ListSets>'
     for setspec, setname in oaisets.getSets():
-        req.response.set_data(req.response.get_data() + '\n <set><setSpec>%s</setSpec><setName>%s</setName></set>' % (setspec, setname))
-    req.response.set_data(req.response.get_data() + '\n</ListSets>')
+        res += '\n <set><setSpec>%s</setSpec><setName>%s</setName></set>' % (setspec, setname)
+    res += '\n</ListSets>'
 
     if DEBUG:
         timetable_update(req, "leaving ListSets")
+
+    return res
 
 
 def initSetList(req=None):
@@ -754,57 +760,60 @@ def oaiRequest(req):
 
     start_time = time.clock()
     req._tt = {'atime': now(), 'tlist': []}
-    req.response.headers["Content-Type"] = "text/xml"
-    req.response._tt = {'atime': now(), 'tlist': []}
-    req.response.status_code = _httpstatus.HTTP_OK
 
     if "until" in req.params:
         try:
             date_to = parseDate(req.params.get("until"))
         except:
-            writeHead(req, "noatt")
-            writeError(req, "badArgument", "badDateformatUntil")
-            writeTail(req)
+            res = writeHead(req, "noatt")
+            res += writeError(req, "badArgument", "badDateformatUntil")
+            res += writeTail(req)
+            req.response.status_code = _httpstatus.HTTP_BAD_REQUEST
+            req.response.set_data(res)
             return
 
     elif "from" in req.params:
         try:
             date_from = parseDate(req.params.get("from"))
         except:
-            writeHead(req, "noatt")
-            writeError(req, "badArgument", "badDateformatFrom")
-            writeTail(req)
+            res = writeHead(req, "noatt")
+            res += writeError(req, "badArgument", "badDateformatFrom")
+            res += writeTail(req)
+            req.response.status_code = _httpstatus.HTTP_BAD_REQUEST
+            req.response.set_data(res)
             return
 
     if "verb" not in req.params:
-        writeHead(req, "noatt")
-        writeError(req, "badVerb")
-
+        res = writeHead(req, "noatt")
+        res += writeError(req, "badVerb")
+        req.response.status_code = _httpstatus.HTTP_BAD_REQUEST
+        req.response.set_data(res)
+        return
     else:
         verb = req.params.get("verb")
         if verb == "Identify":
-            writeHead(req)
-            Identify(req)
+            res = writeHead(req)
+            res += Identify(req)
         elif verb == "ListMetadataFormats":
-            writeHead(req)
-            ListMetadataFormats(req)
+            res = writeHead(req)
+            res += ListMetadataFormats(req)
         elif verb == "ListSets":
-            writeHead(req)
-            ListSets(req)
+            res = writeHead(req)
+            res += ListSets(req)
         elif verb == "ListIdentifiers":
-            writeHead(req)
-            ListIdentifiers(req)
+            res = writeHead(req)
+            res += ListIdentifiers(req)
         elif verb == "ListRecords":
-            writeHead(req)
-            ListRecords(req)
+            res = writeHead(req)
+            res += ListRecords(req)
         elif verb == "GetRecord":
-            writeHead(req)
-            GetRecord(req)
+            res = writeHead(req)
+            res += GetRecord(req)
         else:
-            writeHead(req, "noatt")
-            writeError(req, "badVerb")
+            res = writeHead(req, "noatt")
+            res += writeError(req, "badVerb")
 
-    writeTail(req)
+    res += writeTail(req)
 
     useragent = 'unknown'
     try:
@@ -818,7 +827,11 @@ def oaiRequest(req):
     exit_time = now()
 
     logg.info("%s:%s OAI (exit after %.3f sec.) %s - (user-agent: %s)",
-              req.remote_addr, req.port, (exit_time - start_time), (req.path + req.path).replace('//', '/'), useragent)
+              req.remote_addr, req.port, (exit_time - start_time), req.path.replace('//', '/'), useragent)
 
     if DEBUG:
         logg.info(timetable_string(req))
+
+    req.response.status_code = _httpstatus.HTTP_OK
+    req.response.mimetype = "application/xml"
+    req.response.set_data(res)

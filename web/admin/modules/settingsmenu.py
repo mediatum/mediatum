@@ -22,7 +22,7 @@ import core.config as config
 
 from utils.utils import parseMenuString1
 from web.admin.adminutils import adminNavigation, getAdminModuleInformation, adminModules
-from web.edit.edit import getEditModules, editModules, get_edit_menu_tabs
+from web.edit.edit import getEditModules, editModules
 from core.systemtypes import Root
 from core import db
 from core import Node
@@ -104,7 +104,7 @@ def getEditModuleHierarchy(typename):
 
     _items = {}
 
-    menu_str = get_edit_menu_tabs(nodeclass)
+    menu_str = nodeclass.get_default_edit_menu_tabs()
 
     if menu_str != "":
         menus[nodeclass.name] = parseMenuString1(menu_str)
@@ -299,7 +299,7 @@ def editModuleActions(req):
 
         elif key.startswith("show|"):  # add menu
             item = key.split("|")[-1][:-2]
-            menu_str = get_edit_menu_tabs(nodeclass) + ";" + item + "()"
+            menu_str = "{};{}()".format(nodeclass.get_default_edit_menu_tabs(), item)
             root.system_attrs["edit.menu." + datatype] = menu_str
             break
 

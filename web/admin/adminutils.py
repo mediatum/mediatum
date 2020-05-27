@@ -203,7 +203,7 @@ def show_content(req, op):
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/admin/frame.html", {}, macro="errormessage")
     else:
-        if op == "" or op not in q(Root).one().system_attrs.get("admin.menu", _menu):
+        if op == "" or op not in _menu:
             if op != "memstats":
                 op = "menumain"
         module = findmodule(op.split("_")[0])
@@ -249,16 +249,7 @@ def adminNavigation():
             if hasattr(mods[mod], "getInformation"):
                 adminModules[mod] = (mods[mod])
 
-    # get module configuration
-    root = q(Root).one()
-    admin_configuration = root.system_attrs.get("admin.menu", "")
-
-    if admin_configuration == "":
-        # no confguration found -> use default
-        admin_configuration = _menu
-        root.system_attrs["admin.menu"] = admin_configuration
-
-    return parseMenuString1(admin_configuration)
+    return parseMenuString1(_menu)
 
 
 def getAdminModulesVisible():

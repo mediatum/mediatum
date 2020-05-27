@@ -278,7 +278,7 @@ def handletabs(req, ids, tabs, sort_choices):
     if n.type.startswith("workflow"):
         n = q(Root).one()
 
-    menu = filterMenu(get_edit_menu_tabs(n.__class__), user)
+    menu = filterMenu(n.get_default_edit_menu_tabs(), user)
     nodes_per_page = req.args.get("nodes_per_page", type=int)
     if not nodes_per_page:
         nodes_per_page = 20
@@ -474,11 +474,6 @@ def edit_tree(req):
         data.append(nodedata)
 
     return req.write(json.dumps(data, indent=4, ensure_ascii=False))
-
-
-def get_edit_menu_tabs(nodeclass):
-    root = q(Root).one()
-    return root.system_attrs.get("edit.menu." + nodeclass.__name__.lower()) or nodeclass.get_default_edit_menu_tabs()
 
 
 @dec_entry_log

@@ -278,7 +278,7 @@ def handletabs(req, ids, tabs, sort_choices):
     if n.type.startswith("workflow"):
         n = q(Root).one()
 
-    menu = filterMenu(n.get_default_edit_menu_tabs(), user)
+    menu = filterMenu(n.editor_menu, user)
     nodes_per_page = req.args.get("nodes_per_page", type=int)
     if not nodes_per_page:
         nodes_per_page = 20

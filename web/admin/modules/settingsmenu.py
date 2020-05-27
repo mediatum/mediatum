@@ -104,7 +104,7 @@ def getEditModuleHierarchy(typename):
 
     _items = {}
 
-    menu_str = nodeclass.get_default_edit_menu_tabs()
+    menu_str = nodeclass.editor_menu
 
     if menu_str != "":
         menus[nodeclass.name] = parseMenuString1(menu_str)
@@ -280,7 +280,7 @@ def editModuleActions(req):
 
     for key in req.params.keys():
         if key == "editmodules_default":
-            root.system_attrs["edit.menu." + datatype] = nodeclass.get_default_edit_menu_tabs()
+            root.system_attrs["edit.menu." + datatype] = nodeclass.editor_menu
             break
 
         elif key.startswith("del|"):
@@ -299,7 +299,7 @@ def editModuleActions(req):
 
         elif key.startswith("show|"):  # add menu
             item = key.split("|")[-1][:-2]
-            menu_str = "{};{}()".format(nodeclass.get_default_edit_menu_tabs(), item)
+            menu_str = "{};{}()".format(nodeclass.editor_menu, item)
             root.system_attrs["edit.menu." + datatype] = menu_str
             break
 

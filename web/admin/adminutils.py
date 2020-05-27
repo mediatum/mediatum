@@ -30,7 +30,7 @@ from core.transition import current_user, request
 from core import httpstatus
 from core.systemtypes import Root
 from utils.strings import ensure_unicode_returned
-from utils.utils import Link, splitpath, parseMenuString, suppress
+from utils.utils import Link, splitpath, parseMenuString1, suppress
 from utils.list import filter_scalar
 from core.exceptions import SecurityException
 
@@ -254,7 +254,7 @@ def adminNavigation():
         admin_configuration = "menumain();menudata(metatype;mapping);menuworkflow(workflows);menusystem(settingsmenu)"
         root.system_attrs["admin.menu"] = admin_configuration
 
-    return parseMenuString(admin_configuration[:-1])
+    return parseMenuString1(admin_configuration)
 
 
 def getAdminModulesVisible():

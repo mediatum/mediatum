@@ -94,7 +94,34 @@ class Container(Data, ContainerMixin, SchemaMixin):
     # Subclasses can set this to False if they want to display something else via show_node_big().
     show_list_view = True
 
-    editor_menu = "content;metadata;menuoperation(acls;menueditall(editall;moveall;copyall;deleteall);menunodesperpage(nodesperpage20;nodesperpage50;nodesperpage100;nodesperpage200);startpagesmenu(startpages;logo;searchmask);admin;subfolder;sortfiles)"
+    editor_menu = (
+        "content",
+        "metadata",
+        { "menuoperation": (
+            "acls",
+            { "menueditall": (
+                "editall",
+                "moveall",
+                "copyall",
+                "deleteall",
+                )},
+            { "menunodesperpage": (
+                "nodesperpage20",
+                "nodesperpage50",
+                "nodesperpage100",
+                "nodesperpage200",
+                )},
+            { "startpagesmenu": (
+                "startpages",
+                "logo",
+                "searchmask",
+                )},
+            "admin",
+            "subfolder",
+            "sortfiles",
+        )},
+    )
+
 
     @classmethod
     def isContainer(cls):

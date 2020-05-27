@@ -40,7 +40,7 @@
                                     <a tal:attributes="class python:'selected' if navitem.name==breadcrumbs[0] else None" i18n:translate="" tal:content="python:u'admin_menu_{}'.format(navitem.getName())"/>
                                     <ul>
                                         <li tal:repeat="item python:navitem.getItemList()">
-                                            <a i18n:translate="" tal:content="python:u'admin_menu_{}'.format(item)" tal:attributes="href python:u'/admin/{}'.format(item)"/>
+                                            <a i18n:translate="" tal:content="python:u'admin_menu_{}'.format(item.name)" tal:attributes="href python:u'/admin/{}'.format(item.name)"/>
                                         </li>
                                     </ul>
                                 </tal:block>                            

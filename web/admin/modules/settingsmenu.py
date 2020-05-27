@@ -20,7 +20,7 @@
 import logging
 import core.config as config
 
-from utils.utils import parseMenuString1
+from utils.utils import parse_menu_struct
 from web.admin.adminutils import adminNavigation, getAdminModuleInformation, adminModules
 from web.edit.edit import getEditModules, editModules
 from core.systemtypes import Root
@@ -107,7 +107,7 @@ def getEditModuleHierarchy(typename):
     menu_str = nodeclass.editor_menu
 
     if menu_str != "":
-        menus[nodeclass.name] = parseMenuString1(menu_str)
+        menus[nodeclass.name] = parse_menu_struct(menu_str)
         _menu = {}
         _menu[-1] = []
 

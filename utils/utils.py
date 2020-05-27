@@ -742,56 +742,34 @@ class Menu:
         return self.default
 
 
-def parseSubMenu(uppermenu, data):
-    for item in data:
+def parse_menu_struct(menu, filter_item=lambda mi:True, _upper=None):
+    if _upper:
+        add = _upper.addItem
+    else:
+        result = list()
+        add = result.append
+    for item in menu:
         if isinstance(item, basestring):
-            submenu = Menu(item)
-            uppermenu.addItem(submenu)
-        elif isinstance(item, list):
-            parseSubMenu(submenu, item)
+            if filter_item(item):
+                add(Menu(item))
+            continue
+        (sub_title, sub_items), = item.iteritems()
+        sub_menu = Menu(sub_title)
+        parse_menu_struct(sub_items, filter_item, sub_menu)
+        add(sub_menu)
+    if not _upper:
+        return result
 
 
-def parseMenuString(menustring):
-    import json
-    s = '["' + menustring.replace('(', '",["').replace('))', '"]]').replace(');', '"],"').replace(')', '"]').replace(';', '","') + ']'
-
-    try:
-        data = json.loads(s)
-    except ValueError as e:
-        logg.exception(e)
-        return parseMenuString1(menustring)
-
-    menu = []
-    submenu = None
-    for item in data:
+def get_menu_strings(menu):
+    for item in menu:
         if isinstance(item, basestring):
-            submenu = Menu(item)
-            menu.append(submenu)
-        elif isinstance(item, list) and submenu:
-            parseSubMenu(submenu, item)
-
-    return menu
-
-
-def parseMenuString1(menustring):
-    menu = []
-    submenu = None
-    if menustring.endswith(")"):
-        menustring = menustring[:-1]
-    menus = re.split("\);", menustring)
-    for m in menus:
-        items = re.split("\(|;", m)
-        for item in items:
-
-            if items.index(item) == 0 and item.startswith("menu"):
-                # menu
-                submenu = Menu(item)  # do not optimize, submenu obj needed
-                menu.append(submenu)
-            else:
-                # submenu
-                if (item != ""):
-                    submenu.addItem(item)
-    return menu
+            yield item
+            continue
+        (sub_title, sub_items), = item.iteritems()
+        yield sub_title
+        for i in get_menu_strings(sub_items):
+            yield i
 
 
 def getFormatedString(s):

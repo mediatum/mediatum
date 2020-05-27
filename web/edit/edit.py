@@ -35,8 +35,7 @@ from edit_common import *
 
 from core.transition import current_user
 from core import httpstatus
-from utils.utils import funcname, get_user_id, dec_entry_log, Menu, splitpath, parseMenuString,\
-    isDirectory, isCollection, suppress
+from utils.utils import funcname, get_user_id, dec_entry_log, Menu, splitpath, parse_menu_struct, isDirectory, isCollection, suppress
 from schema.schema import Metadatatype
 from web.edit.edit_common import get_edit_label, default_edit_nodes_per_page, get_searchparams
 from web.frontend.content import get_make_search_content_function
@@ -255,21 +254,6 @@ def getBreadcrumbs(menulist, tab):
                 return [menuitem.name, "*" + item.name]
     return [tab]
 
-
-def filterMenu(menuitems, user):
-    hide = user.hidden_edit_functions
-    ret = []
-    for menu in parseMenuString(menuitems):
-        i = []
-        for item in menu.getItemList():
-            if item not in hide:
-                i.append(item)
-        menu.item = i
-        ret.append(menu)
-
-    return ret
-
-
 def handletabs(req, ids, tabs, sort_choices):
     user = current_user
     language = lang(req)
@@ -278,7 +262,7 @@ def handletabs(req, ids, tabs, sort_choices):
     if n.type.startswith("workflow"):
         n = q(Root).one()
 
-    menu = filterMenu(n.editor_menu, user)
+    menu = parse_menu_struct(n.editor_menu, lambda mi: mi not in user.hidden_edit_functions)
     nodes_per_page = req.args.get("nodes_per_page", type=int)
     if not nodes_per_page:
         nodes_per_page = 20

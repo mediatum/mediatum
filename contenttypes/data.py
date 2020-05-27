@@ -160,7 +160,23 @@ class Data(Node):
 
     content_children = children_rel("Content")
 
-    editor_menu = "parentcontent;view;metadata;files;menuoperation(acls;classes;changeschema;menueditobject(moveobject;copyobject;deleteobject);admin)"
+    editor_menu = (
+        "parentcontent",
+        "view",
+        "metadata",
+        "files",
+        { "menuoperation": (
+            "acls",
+            "classes",
+            "changeschema",
+            { "menueditobject": (
+                "moveobject",
+                "copyobject",
+                "deleteobject",
+                )},
+            "admin",
+        )},
+    )
 
     @classmethod
     def get_all_datatypes(cls):

@@ -14,7 +14,7 @@
                 <tal:block tal:condition="python:len(navitem['submenu'])>0">
                     <span i18n:translate="admin_submenu">TEXT</span>
                     <tal:block tal:repeat="item python:navitem['submenu']">
-                        <a class="mediatum_itemsublink" i18n:translate="" tal:content="python:u'admin_menu_{}'.format(item)" tal:attributes="href python:u'/admin/{}'.format(item)"></a><span tal:condition="python: navitem['submenu'].index(item)<len(navitem['submenu'])-1">, </span>
+                        <a class="mediatum_itemsublink" i18n:translate="" tal:content="python:u'admin_menu_{}'.format(item.name)" tal:attributes="href python:u'/admin/{}'.format(item.name)"></a><span tal:condition="python: navitem['submenu'].index(item)<len(navitem['submenu'])-1">, </span>
                     </tal:block>                
                 </tal:block>
             </p>  

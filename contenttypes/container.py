@@ -301,10 +301,6 @@ class Directory(Container):
     def treeiconclass(cls):
         return "directory"
 
-    @classmethod
-    def get_default_edit_menu_tabs(cls):
-        return "content;metadata;menuoperation(acls;menueditall(editall;moveall;copyall;deleteall);menunodesperpage(nodesperpage20;nodesperpage50;nodesperpage100;nodesperpage200);startpagesmenu(startpages;logo;searchmask);admin;subfolder;sortfiles)"
-
     def get_directory(self):
         return self
 
@@ -315,10 +311,6 @@ class Collection(Container):
     @classmethod
     def treeiconclass(cls):
         return "collection"
-
-    @classmethod
-    def get_default_edit_menu_tabs(cls):
-        return "content;metadata;menuoperation(acls;menueditall(editall;moveall;copyall;deleteall);menunodesperpage(nodesperpage20;nodesperpage50;nodesperpage100;nodesperpage200);startpagesmenu(startpages;logo;searchmask);admin;subfolder;sortfiles)"
 
     def metaFields(self, lang=None):
         metafields = Container.metaFields(self, lang=lang)

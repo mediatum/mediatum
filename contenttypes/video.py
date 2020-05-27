@@ -59,10 +59,6 @@ class Video(Content):
         return u"video"
 
     @classmethod
-    def get_default_edit_menu_tabs(cls):
-        return "parentcontent;view;metadata;files;menuoperation(acls;classes;changeschema;menueditobject(moveobject;copyobject;deleteobject);admin)"
-
-    @classmethod
     def get_sys_filetypes(cls):
         return [u"presentation", u"thumb", u"video"]
 

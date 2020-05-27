@@ -62,12 +62,6 @@ msgstr "Log-Dateien"
 msgid "admin_menu_flush"
 msgstr "Caches"
 
-msgid "admin_menu_settings"
-msgstr "Mediatum Konfiguration"
-
-msgid "admin_menu_settingsmenu"
-msgstr "Menü Konfiguration"
-
 msgid "admin_error"
 msgstr "Sie besitzen nicht die notwendigen Rechte, um den Administrationsbereich zu betreten.<br/> Falls Sie nicht angemeldet sein sollten, können Sie das ${link}"
 

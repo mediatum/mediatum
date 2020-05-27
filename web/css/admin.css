@@ -4,7 +4,7 @@ a:hover  {text-decoration: none;}
 .MainMenu a, .mediatum_itemmenucontainer a {text-decoration: none;}
 a:hover img {background: transparent;}
 body  {font-size: 70%;font-family: Tahoma,Verdana, Arial, Helvetica, sans-serif; margin: 0px; padding: 0px;
-    background:#fff url(/img/layout/body.jpg) repeat-x scroll left top; text-align:center;}
+    background:#fff; text-align:center;}
 h1  {font-size: 2em;}
 h2  {font-size: 1.2em;}
 h3  {font-size: 1.2em;}
@@ -67,11 +67,9 @@ z-index:999;border-top: 1px solid #FFFFFF;border-bottom: 1px solid #374B51;}
 ul#nav li li  {float: none;margin: 0px;padding: 0px;}
 ul#nav li:hover ul ul, ul#nav li.cssHover ul ul  {display: none;}
 ul#nav li:hover ul, ul#nav li.cssHover ul  {display: block;}
-a.module  {background: #E1E8EA;}
-a.first_module  {background: #E1E8EA;border-top: 1px solid #BBCCD0;}
 ul#nav1 li.sep  {line-height: 2px;border-bottom: 1px solid #333333;}
 /* Nav Tools  */
-.mediatum_MainMenu { margin-left: auto;margin-top: 50px;margin-bottom: 30px;float:left;height: auto;width: auto;padding: 10px;}
+.mediatum_MainMenu { float:left;height: auto;width: auto;padding: 10px;min-width:80%}
 .visible  {display: block;}
 /* Page Tabs - used for all page tabs */
 #page_tabs  {overflow: hidden;margin-top:20px;margin-left:20px;height:1%; /*IE6*/}
@@ -103,22 +101,21 @@ width: auto;margin-top: 0px;height: 20px;}
 .checkbox {padding-left: 10px;}
 iframe.preview  {background-color: #fff;margin: 10px;border: solid 1px #666;width: 95%;height: 400px;}
 div.pageerrorcontainer a {color: #fff;}
-.mediatum_clearb {clear: both;}
 .ajaxbutton  {clear: both;padding-top: 5px;padding-left: 1px;}
 form{padding:10px;}
 td{vertical-align:top; white-space:nowrap;}
 th{background-color:#CCCCCC; height:20px; padding:1px 10px 1px 5px; border-bottom:1px #7d85a6 solid; font-variant:small-caps; white-space:nowrap;
     vertical-align:middle;}
 table.overview td{height:15px; vertical-align:middle;}
-table.overview tr.norm{background-color:white; height:15px; vertical-align:middle; padding:1px 5px 1px 5px; border-bottom:1px #696969 solid;}
-table.overview tr.silver{background-color:#EFEFEF; height:15px; vertical-align:middle; padding:1px 5px 1px 5px; border-bottom:1px #696969 solid;}
+table.overview tr.norm{background-color:white; height:15px; vertical-align:middle; padding:1px 5px 1px 5px;}
+table.overview tr.silver{background-color:#EFEFEF; height:15px; vertical-align:middle; padding:1px 5px 1px 5px;}
 table.overview{font-size:10px; font-weight:lighter; text-decoration:none; border-collapse:collapse; width:100%;}
 table.overview input{background-color:transparent;}
 table.overview tbody tr:hover{background-color:#cccccc;}
 table.overview input[type="file"]{border:1px solid black;}
 form{background-color:white; border:1px silver solid; margin:2px 10px 0px 0px; padding:2px 0px 10px 0px;}
 form.edit{border-width:0px; border-style:none;}
-p.error{background:#FFE7E7; color:#AF0101; padding:7px; border:1px solid #AF0101; margin-left:20px; margin-right:20px; vertical-align:middle;}
+p.error{background:#FFE7E7; color:#AF0101; padding:7px; border:1px solid #AF0101; margin-left:20px; margin-right:20px; vertical-align:middle;text-align:center;}
 span.required{color:#ff0000;}
 label{width:10em; float:left; text-align:left; margin-right:1em; display:block;}
 div.label {display:inline;}
@@ -135,4 +132,7 @@ button.admin_page:hover{color:#000000;}
 button.admin_filter{border-color:#CCCCCC; background:#FFFFFF; color:#424242; margin:0px 2px 0px 2px; padding:1px;}
 button.admin_filter_sel{border-color:#CCCCCC; background:#CCCCCC; color:#000000; margin:0px 2px 0px 2px; padding:1px;}
 button.admin_filter:hover{color:#000000; background:#CCCCCC;}
-
+.mediatum_clear {clear: both;}
+#mediatum_admin_frame{margin-top:0; margin-right:0; margin-left:0;}
+#mediatum_admin_frame_div{position:absolute;left:0px;right:0px;min-width:100%;}
+.mediatum_td_option{width:20px; text-align:center;}

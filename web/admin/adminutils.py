@@ -37,6 +37,10 @@ from core.exceptions import SecurityException
 logg = logging.getLogger(__name__)
 q = db.query
 
+
+_menu = "menumain();menudata(metatype;mapping);menuworkflow(workflows);menusystem(settingsmenu)"
+
+
 def getAdminStdVars(req):
     page = ""
     if req.params.get("page", "") == "0":
@@ -199,7 +203,7 @@ def show_content(req, op):
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/admin/frame.html", {}, macro="errormessage")
     else:
-        if op == "" or op not in q(Root).one().system_attrs.get("admin.menu", ""):
+        if op == "" or op not in q(Root).one().system_attrs.get("admin.menu", _menu):
             if op != "memstats":
                 op = "menumain"
         module = findmodule(op.split("_")[0])
@@ -251,7 +255,7 @@ def adminNavigation():
 
     if admin_configuration == "":
         # no confguration found -> use default
-        admin_configuration = "menumain();menudata(metatype;mapping);menuworkflow(workflows);menusystem(settingsmenu)"
+        admin_configuration = _menu
         root.system_attrs["admin.menu"] = admin_configuration
 
     return parseMenuString1(admin_configuration)

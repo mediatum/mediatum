@@ -61,12 +61,6 @@ msgstr "Log Files"
 msgid "admin_menu_flush"
 msgstr "Caches"
 
-msgid "admin_menu_settings"
-msgstr "mediatum configuration"
-
-msgid "admin_menu_settingsmenu"
-msgstr "Menu configuration"
-
 msgid "admin_error"
 msgstr "You're not allowed to access the administration area.<br/> You can logon here: ${link}"
 

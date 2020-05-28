@@ -19,8 +19,8 @@
              <![endif]-->
         </head>
         
-        <body topmargin="0" rightmargin="0" leftmargin="0">           
-            <div style="position:absolute;left:0px;right:0px;min-width:100%">
+        <body id="mediatum_admin_frame">
+            <div id="mediatum_admin_frame_div">
                 <div class="mediatum_clean-container">
                     <div class="mediatum_logocontainer">
                         <div class="logotext">
@@ -40,13 +40,13 @@
                                     <a tal:attributes="class python:'selected' if navitem.name==breadcrumbs[0] else None" i18n:translate="" tal:content="python:u'admin_menu_{}'.format(navitem.getName())"/>
                                     <ul>
                                         <li tal:repeat="item python:navitem.getItemList()">
-                                            <a i18n:translate="" tal:content="python:u'admin_menu_{}'.format(item)" tal:attributes="href python:u'/admin/{}'.format(item)"/>
+                                            <a i18n:translate="" tal:content="python:u'admin_menu_{}'.format(item.name)" tal:attributes="href python:u'/admin/{}'.format(item.name)"/>
                                         </li>
                                     </ul>
                                 </tal:block>                            
                             </li>
                         </ul>
-                        <div class="mediatum_clearb"></div>
+                        <br class="mediatum_clear" />
                     </div>
                     <div class="breadcrumbs">
                         <h2 class="breadcrumbs">
@@ -57,12 +57,14 @@
                                 </tal:block>
                             </tal:block>
                         </h2>
+                        <br class="mediatum_clear" />
                     </div>
                     <div class="hstippled">&nbsp;</div>
                 </div>  
                 <!-- content start -->
-                <div class="mediatum_MainMenu" style="min-width:80%">
+                <div class="mediatum_MainMenu">
                     <div tal:replace="raw content"/>
+                    <br class="mediatum_clear" />
                 </div>
                 <!-- content end -->
                 <div id="footer">
@@ -75,7 +77,7 @@
 
 <table metal:define-macro="optionheader">
     <tr>
-        <td tal:repeat="option options" style="width:20px; text-align:center">
+        <td tal:repeat="option options" class="mediatum_td_option">
             <img i18n:attributes="title" tal:attributes="src python:u'/{}'.format(option.getImagesource()); title python:option.getName()"/>
         </td>
     </tr>
@@ -85,7 +87,7 @@
 <metal:block metal:define-macro="errormessage">
     <br/>
     <br/>
-    <p i18n:translate="admin_error" class="error" style="text-align:center">
+    <p i18n:translate="admin_error" class="error">
         TEXT <span i18n:name="link"><a i18n:translate="admin_linktext" href="../login">TEXT</a></span>
     </p>
 </metal:block>

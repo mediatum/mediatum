@@ -1,7 +1,7 @@
 
 ### workflows ###
 msgid "admin_wf_existing"
-msgstr "Vorhandene Work"
+msgstr "Vorhandene Workflows"
 
 msgid "admin_wf_col_1"
 msgstr "Name"

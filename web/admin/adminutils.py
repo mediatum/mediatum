@@ -30,12 +30,23 @@ from core.transition import current_user, request
 from core import httpstatus
 from core.systemtypes import Root
 from utils.strings import ensure_unicode_returned
-from utils.utils import Link, splitpath, parseMenuString, suppress
+from utils.utils import Link, splitpath, parse_menu_struct, suppress, get_menu_strings
 from utils.list import filter_scalar
 from core.exceptions import SecurityException
 
 logg = logging.getLogger(__name__)
 q = db.query
+
+_menu = (
+    "menumain",
+    { "menudata": (
+        "metatype",
+        "mapping",
+        )},
+    { "menuworkflow": (
+        "workflows",
+        )},
+)
 
 def getAdminStdVars(req):
     page = ""
@@ -199,7 +210,7 @@ def show_content(req, op):
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/admin/frame.html", {}, macro="errormessage")
     else:
-        if op == "" or op not in q(Root).one().system_attrs.get("admin.menu", ""):
+        if op == "" or op not in get_menu_strings(_menu):
             if op != "memstats":
                 op = "menumain"
         module = findmodule(op.split("_")[0])
@@ -245,16 +256,7 @@ def adminNavigation():
             if hasattr(mods[mod], "getInformation"):
                 adminModules[mod] = (mods[mod])
 
-    # get module configuration
-    root = q(Root).one()
-    admin_configuration = root.system_attrs.get("admin.menu", "")
-
-    if admin_configuration == "":
-        # no confguration found -> use default
-        admin_configuration = "menumain();menudata(metatype;mapping);menuworkflow(workflows);menusystem(settingsmenu)"
-        root.system_attrs["admin.menu"] = admin_configuration
-
-    return parseMenuString(admin_configuration[:-1])
+    return parse_menu_struct(_menu)
 
 
 def getAdminModulesVisible():
@@ -278,16 +280,13 @@ def getAdminModuleInformation(mod, key=""):
 
 
 def getMenuItemID(menulist, path):
-    if path == "":
-        return ["admin_menu_menumain"]
-
     p = path.split('/')
     for item in menulist:
         for subitem in item.getItemList():
-            if subitem.endswith(p[0]):
-                return ["admin_menu_" + item.name, "admin_menu_" + subitem]
+            if subitem.getName() == p[0]:
+                return map("admin_menu_{}".format,(item.name,subitem.name))
 
-    return ["admin_menu_menumain"]
+    return ("admin_menu_menumain",)
 
 
 def become_user(login_name, authenticator_key=None):

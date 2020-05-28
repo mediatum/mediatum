@@ -106,10 +106,6 @@ class Document(Content):
     def get_sys_filetypes(cls):
         return [u"document", u"thumb", u"thumb2", u"presentation", u"fulltext", u"fileinfo"]
 
-    @classmethod
-    def get_default_edit_menu_tabs(cls):
-        return "menulayout(view);menumetadata(metadata;files;admin);menuclasses(classes);menusecurity(acls)"
-
     def _prepareData(self, req, words=""):
         return _prepare_document_data(self, req)
 

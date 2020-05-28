@@ -136,10 +136,6 @@ class Audio(Content):
     def get_sys_filetypes(cls):
         return [u"audio", u"thumb", u"presentation", u"mp3"]
 
-    @classmethod
-    def get_default_edit_menu_tabs(cls):
-        return "menulayout(view);menumetadata(metadata;files;admin);menuclasses(classes);menusecurity(acls)"
-
     # prepare hash table with values for TAL-template
     def _prepareData(self, req):
         obj = prepare_node_data(self, req)

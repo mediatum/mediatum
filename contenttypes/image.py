@@ -251,10 +251,6 @@ class Image(Content):
     EXTENSION_FOR_MIMETYPE = {v:k for k, v in iteritems(MIMETYPE_FOR_EXTENSION)}
 
     @classmethod
-    def get_default_edit_menu_tabs(cls):
-        return "menulayout(view);menumetadata(metadata;files;admin);menuclasses(classes);menusecurity(acls)"
-
-    @classmethod
     def get_sys_filetypes(cls):
         return [u"original", u"thumb", u"image", u"presentation", u"zoom"]
 

@@ -94,6 +94,35 @@ class Container(Data, ContainerMixin, SchemaMixin):
     # Subclasses can set this to False if they want to display something else via show_node_big().
     show_list_view = True
 
+    editor_menu = (
+        "content",
+        "metadata",
+        { "menuoperation": (
+            "acls",
+            { "menueditall": (
+                "editall",
+                "moveall",
+                "copyall",
+                "deleteall",
+                )},
+            { "menunodesperpage": (
+                "nodesperpage20",
+                "nodesperpage50",
+                "nodesperpage100",
+                "nodesperpage200",
+                )},
+            { "startpagesmenu": (
+                "startpages",
+                "logo",
+                "searchmask",
+                )},
+            "admin",
+            "subfolder",
+            "sortfiles",
+        )},
+    )
+
+
     @classmethod
     def isContainer(cls):
         warn("use isinstance(node, Container) or issubclass(nodecls, Container)", DeprecationWarning)
@@ -102,10 +131,6 @@ class Container(Data, ContainerMixin, SchemaMixin):
     @classmethod
     def get_sys_filetypes(cls):
         return [u"statistic", u"image"]
-
-    @classmethod
-    def get_default_edit_menu_tabs(cls):
-        return "menulayout(content;startpages);menusecurity(acls);menuoperation(search;subfolder)"
 
     @classmethod
     def get_default_edit_tab(cls):
@@ -301,10 +326,6 @@ class Directory(Container):
     def treeiconclass(cls):
         return "directory"
 
-    @classmethod
-    def get_default_edit_menu_tabs(cls):
-        return "menulayout(content;startpages);menumetadata(metadata;files;admin);menusecurity(acls);menuoperation(search;subfolder)"
-
     def get_directory(self):
         return self
 
@@ -315,10 +336,6 @@ class Collection(Container):
     @classmethod
     def treeiconclass(cls):
         return "collection"
-
-    @classmethod
-    def get_default_edit_menu_tabs(cls):
-        return "menulayout(content;startpages);menumetadata(metadata;logo;files;admin;searchmask;sortfiles);menusecurity(acls);menuoperation(search;subfolder)"
 
     def metaFields(self, lang=None):
         metafields = Container.metaFields(self, lang=lang)

@@ -60,10 +60,6 @@ class Video(Content):
         return u"video"
 
     @classmethod
-    def get_default_edit_menu_tabs(cls):
-        return "menulayout(view);menumetadata(metadata;files;admin);menuclasses(classes);menusecurity(acls)"
-
-    @classmethod
     def get_sys_filetypes(cls):
         return [u"presentation", u"thumb", u"video"]
 

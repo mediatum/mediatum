@@ -139,13 +139,11 @@ def _get_export_masks(regexp):
     exportmasks = [(n, n.name) for n in exportmasks if re.match(regexp, n.name) and n.type == 'mask']
     dict_metadatatype2exportmask = {}
     for exportmask in exportmasks:
-        parents = exportmask[0].parents
-        try:
-            mdt_node = [p for p in parents if p.type == 'metadatatype'][0]
-            mdt = (mdt_node, mdt_node.name)
-            dict_metadatatype2exportmask[mdt] = dict_metadatatype2exportmask.setdefault(mdt, []) + [exportmask]
-        except:
-            pass
+        for parent in exportmask[0].parents:
+            if parent.type == 'metadatatype':
+                mdt = parent, parent.name
+                dict_metadatatype2exportmask[mdt] = dict_metadatatype2exportmask.setdefault(mdt, []) + [exportmask]
+                break
     return dict_metadatatype2exportmask.items()
 
 

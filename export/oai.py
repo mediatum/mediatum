@@ -76,19 +76,18 @@ errordesc = {
 }
 
 
-def _write_head(req, include_params=True):
+def _write_head(req):
     req.response.headers['charset'] = 'utf-8'
     req.response.headers['Content-Type'] = 'text/xml; charset=utf-8'
     resp = """<?xml version="1.0" encoding="UTF-8"?>
     <OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">
         <responseDate>%sZ</responseDate>
         <request""" % (_iso8601(date.now()))
-    if include_params:
-        for n in ["verb", "identifier", "metadataprefix", "from", "until", "set"]:
-            if n in req.params:
-                resp += ' %s="%s"' % (
-                            n,
-                            esc(req.params[n]))
+
+    for n in req.params:
+        resp += ' %s="%s"' % (
+                    n,
+                    esc(req.params[n]))
 
     resp += '>http://%s/oai/oai</request>' % config.get("host.name", socket.gethostname() + ":8081")
 
@@ -560,57 +559,25 @@ def oaiRequest(req):
 
     start_time = time.clock()
 
-    if "until" in req.params:
-        try:
-            date_to = _parse_date(req.params.get("until"))
-        except:
-            res = _write_head(req, False)
-            res += _write_error(req, "badArgument", "badDateformatUntil")
-            res += _write_tail()
-            req.response.status_code = _httpstatus.HTTP_BAD_REQUEST
-            req.response.set_data(res)
-            return
+    verb = req.params.get("verb")
+    res = _write_head(req)
+    req.response.status_code = _httpstatus.HTTP_OK
 
-    elif "from" in req.params:
-        try:
-            date_from = _parse_date(req.params.get("from"))
-        except:
-            res = _write_head(req, False)
-            res += _write_error(req, "badArgument", "badDateformatFrom")
-            res += _write_tail()
-            req.response.status_code = _httpstatus.HTTP_BAD_REQUEST
-            req.response.set_data(res)
-            return
-
-    if "verb" not in req.params:
-        res = _write_head(req, False)
-        res += _write_error(req, "badVerb")
-        req.response.status_code = _httpstatus.HTTP_BAD_REQUEST
-        req.response.set_data(res)
-        return
+    if verb == "Identify":
+        res += _identify(req)
+    elif verb == "ListMetadataFormats":
+        res += _list_metadata_formats(req)
+    elif verb == "ListSets":
+        res += _list_sets()
+    elif verb == "ListIdentifiers":
+        res += _list_identifiers(req)
+    elif verb == "ListRecords":
+        res += _list_records(req)
+    elif verb == "GetRecord":
+        res += _get_record(req)
     else:
-        verb = req.params.get("verb")
-        if verb == "Identify":
-            res = _write_head(req)
-            res += _identify(req)
-        elif verb == "ListMetadataFormats":
-            res = _write_head(req)
-            res += _list_metadata_formats(req)
-        elif verb == "ListSets":
-            res = _write_head(req)
-            res += _list_sets()
-        elif verb == "ListIdentifiers":
-            res = _write_head(req)
-            res += _list_identifiers(req)
-        elif verb == "ListRecords":
-            res = _write_head(req)
-            res += _list_records(req)
-        elif verb == "GetRecord":
-            res = _write_head(req)
-            res += _get_record(req)
-        else:
-            res = _write_head(req, False)
-            res += _write_error(req, "badVerb")
+        req.response.status_code = _httpstatus.HTTP_BAD_REQUEST
+        res += _write_error(req, "badVerb")
 
     res += _write_tail()
 
@@ -621,6 +588,6 @@ def oaiRequest(req):
             req.path.replace('//', '/'),
             req.headers.get("user-agent", "unknown")[:60],
            )
-    req.response.status_code = _httpstatus.HTTP_OK
+
     req.response.mimetype = "application/xml"
     req.response.set_data(res)

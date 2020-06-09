@@ -38,7 +38,6 @@ import core.httpstatus as _httpstatus
 
 from . import oaisets
 import utils.date as date
-from utils.utils import esc
 from schema.schema import getMetaType
 from core.systemtypes import Root, Metadatatypes
 from contenttypes import Collections
@@ -80,24 +79,19 @@ def _filter_format(node, oai_format):
     return True
 
 
-def _write_head(params):
-    resp = """<?xml version="1.0" encoding="UTF-8"?>
-    <OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">
-        <responseDate>%sZ</responseDate>
-        <request""" % (_iso8601(date.now()))
+def _make_toplevel_element(params):
+    xsi_schemaLocation = _lxml_etree.QName("http://www.w3.org/2001/XMLSchema-instance", "schemaLocation")
+    oai_pmh = _lxml_etree.Element('OAI-PMH', nsmap={
+        None: "http://www.openarchives.org/OAI/2.0/",
+    }, attrib={
+        xsi_schemaLocation: "http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd",
+    })
 
-    for n in params:
-        resp += ' %s="%s"' % (
-                    n,
-                    esc(params[n]))
+    _lxml_etree.SubElement(oai_pmh, "responseDate").text = "{}Z".format(_iso8601(date.now()))
+    _lxml_etree.SubElement(oai_pmh, "request", attrib=dict(params)).text = \
+        'http://{}/oai/oai'.format(config.get("host.name", "{}:8081".format(socket.gethostname())))
 
-    resp += '>http://%s/oai/oai</request>' % config.get("host.name", socket.gethostname() + ":8081")
-
-    return resp
-
-
-def _write_tail():
-    return '</OAI-PMH>'
+    return oai_pmh
 
 
 def _iso8601(t):
@@ -176,26 +170,15 @@ def _list_metadata_formats(params):
         formats = [x for x in formats if _node_has_oai_export_mask(node, x.lower())]
         formats = [x for x in formats if _filter_format(node, x.lower())]
 
-    # write xml for metadata formats list
-    res = '\n      <ListMetadataFormats>\n'
+    list_metadata_formats = _lxml_etree.Element("ListMetadataFormats")
 
     for mdf in formats:
-        res += """
-         <metadataFormat>
-           <metadataPrefix>%s</metadataPrefix>
-           <schema>%s</schema>
-           <metadataNamespace>%s</metadataNamespace>
-         </metadataFormat>
-         """ % (
-                mdf,
-                d["schema.%s" % mdf],
-                d["namespace.%s" % mdf]
-                )
+        metadata_format = _lxml_etree.SubElement(list_metadata_formats, "metadataFormat")
+        _lxml_etree.SubElement(metadata_format, "metadataPrefix").text = mdf
+        _lxml_etree.SubElement(metadata_format, "schema").text = d["schema.{}".format(mdf)]
+        _lxml_etree.SubElement(metadata_format, "metadataNamespace").text = d["namespace.{}".format(mdf)]
 
-    res += '\n</ListMetadataFormats>'
-
-    return res
-
+    return list_metadata_formats
 
 def _check_metadata_format(format):
     d = config.getsubset('oai')
@@ -214,38 +197,48 @@ def _identify(params):
     else:
         name = config.get("config.oaibasename")
 
-    return """
-            <Identify>
-              <repositoryName>%s</repositoryName>
-              <baseURL>%s</baseURL>
-              <protocolVersion>2.0</protocolVersion>
-              <adminEmail>%s</adminEmail>
-              <earliestDatestamp>%s-01-01T12:00:00Z</earliestDatestamp>
-              <deletedRecord>no</deletedRecord>
-              <granularity>YYYY-MM-DDThh:mm:ssZ</granularity>
-              <description>
-                <oai-identifier xmlns="http://www.openarchives.org/OAI/2.0/oai-identifier" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai-identifier http://www.openarchives.org/OAI/2.0/oai-identifier.xsd">
-                  <scheme>oai</scheme>
-                  <repositoryIdentifier>%s</repositoryIdentifier>
-                  <delimiter>:</delimiter>
-                  <sampleIdentifier>%s</sampleIdentifier>
-                </oai-identifier>
-              </description>
-            </Identify>""" % (
-                            name,
-                            config.get("host.name", socket.gethostname() + ":8081"),
-                            config.get("email.admin"),
-                            ustr(config.getint("oai.earliest_year", 1960) - 1),
-                            config.get("host.name", socket.gethostname()),
-                            config.get("oai.sample_identifier", "oai:mediatum.org:node/123")
-                            )
+    identify = _lxml_etree.Element("Identify")
+
+    for tag, txt in dict(
+        repositoryName = name,
+        baseURL = config.get("host.name", "{}:8081".format(socket.gethostname())),
+        protocolVersion = "2.0",
+        adminEmail = config.get("email.admin"),
+        earliestDatestamp = "{}-01-01T12:00:00Z".format(ustr(config.getint("oai.earliest_year", 1960) - 1)),
+        deletedRecord = "no",
+        granularity = "YYYY-MM-DDThh:mm:ssZ",
+    ).iteritems():
+        _lxml_etree.SubElement(identify, tag).text = txt
+
+    description = _lxml_etree.SubElement(identify, "description")
+
+    xsi_schemaLocation = _lxml_etree.QName("http://www.w3.org/2001/XMLSchema-instance", "schemaLocation")
+    oai_identifier = _lxml_etree.SubElement(description, "oai-identifier", nsmap={
+        None: "http://www.openarchives.org/OAI/2.0/oai-identifier",
+    }, attrib={
+        xsi_schemaLocation: "http://www.openarchives.org/OAI/2.0/oai-identifier "
+                    "http://www.openarchives.org/OAI/2.0/oai-identifier.xsd",
+    })
+
+    for tag, txt in dict(
+        scheme = "oai",
+        repositoryIdentifier = config.get("host.name", socket.gethostname()),
+        delimiter = ";",
+        sampleIdentifier = config.get("oai.sample_identifier", "oai:mediatum.org:node/123"),
+    ).iteritems():
+        _lxml_etree.SubElement(oai_identifier, tag).text = txt
+
+    return identify
 
 
 def _get_set_specs_for_node(node):
     setspecs = oaisets.getSetSpecsForNode(node)
-    setspecs_elements = ["<setSpec>%s</setSpec>" % setspec for setspec in setspecs]
-    indent = '\n    '
-    return indent + (indent.join(setspecs_elements))
+    setSpecs = set()
+    for setspec in setspecs:
+        set_spec = _lxml_etree.Element("setSpec")
+        set_spec.text = setspec
+        setSpecs.add(set_spec)
+    return setSpecs
 
 
 def _get_oai_export_mask_for_schema_name_and_metadataformat(schema_name, metadataformat):
@@ -257,7 +250,7 @@ def _get_oai_export_mask_for_schema_name_and_metadataformat(schema_name, metadat
     return mask
 
 
-def _write_record(node, metadataformat, mask=None):
+def _make_record_element(node, metadataformat, mask=None):
     id_prefix = config.get("oai.idprefix", "oai:mediatum.org:node/")
     updatetime = node.get(config.get("oai.datefield", "updatetime"))
     if updatetime:
@@ -265,27 +258,24 @@ def _write_record(node, metadataformat, mask=None):
     else:
         d = _iso8601(date.DateTime(config.getint("oai.earliest_year", 1960) - 1, 12, 31, 23, 59, 59))
 
-    set_specs = _get_set_specs_for_node(node)
-    record_str = """
-           <record>
-               <header><identifier>%s</identifier>
-                       <datestamp>%sZ</datestamp>
-                       %s
-               </header>
-               <metadata>""" % (
-                                id_prefix + ustr(node.id),
-                                d,
-                                set_specs
-                                )
+    record = _lxml_etree.Element("record")
+    header = _lxml_etree.SubElement(record, "header")
+    setSpecs = _get_set_specs_for_node(node)
+    for setSpec in setSpecs:
+        header.append(setSpec)
+    _lxml_etree.SubElement(header, "identifier").text = "{}{}".format(id_prefix, ustr(node.id))
+    _lxml_etree.SubElement(header, "datestamp").text = "{}Z".format(d)
+    metadata = _lxml_etree.SubElement(record, "metadata")
     assert metadataformat != "mediatum", "export/oai.py: assertion 'metadataformat != mediatum' failed"
     if mask:
-        record_str += mask.getViewHTML([node], flags=8).replace('lang=""', 'lang="unknown"')
-    else:
-        record_str += '<recordHasNoXMLRepresentation/>'
+        html_tree = mask.getViewHTML([node], flags=8).replace('lang=""', 'lang="unknown"')
+        if html_tree:
+            html_tree = _lxml_etree.fromstring(html_tree.encode("utf-8"))
+            metadata.append(html_tree)
+            return record
 
-    record_str += '</metadata></record>'
-
-    return record_str
+    _lxml_etree.SubElement(metadata, "recordHasNoXMLRepresentation")
+    return record
 
 
 # exclude children of media
@@ -448,53 +438,41 @@ def _get_nodes(params):
 
 def _list_identifiers(params):
     nodes, token, metadataformat = _get_nodes(params)
-    res = '<ListIdentifiers>'
-
+    list_identifiers = _lxml_etree.Element("ListIdentifiers")
     for n in nodes:
         updatetime = n.get(config.get("oai.datefield", "updatetime"))
         if updatetime:
             d = _iso8601(date.parse_date(updatetime))
         else:
             d = _iso8601(date.now())
-        res += '<header><identifier>%s</identifier><datestamp>%sZ</datestamp>%s\n</header>\n' % \
-              (
-              config.get("oai.idprefix", "oai:mediatum.org:node/") + ustr(n.id),
-              d,
-              _get_set_specs_for_node(n)
-              )
-
-    if token:
-        res += _lxml_etree.tostring(token, encoding="utf8")
-    res += '</ListIdentifiers>'
-
-    return res
+        header = _lxml_etree.SubElement(list_identifiers, "header")
+        _lxml_etree.SubElement(header, "identifier").text = \
+            "{}{}".format(config.get("oai.idprefix", "oai:mediatum.org:node/"), ustr(n.id))
+        _lxml_etree.SubElement(header, "datestamp").text = "{}Z".format(d)
+        setSpecs = _get_set_specs_for_node(n)
+        for setSpec in setSpecs:
+            header.append(setSpec)
+    return list_identifiers, token
 
 
 def _list_records(params):
     nodes, token, metadataformat = _get_nodes(params)
-
-    res = '<ListRecords>'
-
+    list_records = _lxml_etree.Element("ListRecords")
     mask_cache_dict = {}
     for n in nodes:
 
         # retrieve mask from cache dict or insert
         schema_name = n.getSchema()
-        look_up_key = u"%s_%s" % (schema_name, metadataformat)
+        look_up_key = u"{}_{}".format(schema_name, metadataformat)
         if look_up_key in mask_cache_dict:
             mask = mask_cache_dict.get(look_up_key)
         else:
             mask = _get_oai_export_mask_for_schema_name_and_metadataformat(schema_name, metadataformat)
             if mask:
                 mask_cache_dict[look_up_key] = mask
+        list_records.append(_make_record_element(n, metadataformat, mask=mask))
 
-        res += _write_record(n, metadataformat, mask=mask)
-
-    if token:
-        res += _lxml_etree.tostring(token, encoding="utf8")
-    res += '</ListRecords>'
-
-    return res
+    return list_records, token
 
 
 def _get_record(params):
@@ -510,52 +488,51 @@ def _get_record(params):
 
     schema_name = node.getSchema()
     mask = _get_oai_export_mask_for_schema_name_and_metadataformat(schema_name, metadataformat)
-
-    res = '<GetRecord>'
-    res += _write_record(node, metadataformat, mask=mask)
-    res += '</GetRecord>'
-
-    return res
+    get_record = _lxml_etree.Element("GetRecord")
+    get_record.append(_make_record_element(node, metadataformat, mask=mask))
+    return get_record
 
 
 def _list_sets():
     # new container sets may have been added
-    res = '\n<ListSets>'
+    list_sets = _lxml_etree.Element("ListSets")
     for setspec, setname in oaisets.getSets():
-        res += '\n <set><setSpec>%s</setSpec><setName>%s</setName></set>' % (setspec, setname)
-    res += '\n</ListSets>'
-
-    return res
+        set = _lxml_etree.SubElement(list_sets, "set")
+        _lxml_etree.SubElement(set, "setSpec").text = setspec
+        _lxml_etree.SubElement(set, "setName").text = setname
+    return list_sets
 
 
 def oaiRequest(req):
 
     start_time = time.clock()
     verb = req.params.get("verb")
-    res = _write_head(req.params)
+    oai_pmh = _make_toplevel_element(req.params)
     req.response.status_code = _httpstatus.HTTP_OK
     req.response.headers['charset'] = 'utf-8'
     req.response.headers['Content-Type'] = 'text/xml; charset=utf-8'
+    subtree = None
+    token = None
     try:
         if verb == "Identify":
-            res += _identify(req.params)
+            subtree = _identify(req.params)
         elif verb == "ListMetadataFormats":
-            res += _list_metadata_formats(req.params)
+            subtree = _list_metadata_formats(req.params)
         elif verb == "ListSets":
-            res += _list_sets()
+            subtree = _list_sets()
         elif verb == "ListIdentifiers":
-            res += _list_identifiers(req.params)
+            subtree, token = _list_identifiers(req.params)
         elif verb == "ListRecords":
-            res += _list_records(req.params)
+            subtree, token = _list_records(req.params)
         elif verb == "GetRecord":
-            res += _get_record(req.params)
+            subtree = _get_record(req.params)
         else:
             raise _OAIError("badVerb")
     except _OAIError as ex:
         req.response.status_code = _httpstatus.HTTP_BAD_REQUEST
-        res += '<error code="{}">{}</error>'.format(ex.code, ex.details)
-
-    res += _write_tail()
+        error = _lxml_etree.Element("error", attrib=dict(code= ex.code,))
+        error.text = ex.details
+        oai_pmh.append(error)
 
     logg.info("%s:%s OAI (exit after %.3f sec.) %s - (user-agent: %s)",
             req.remote_addr,
@@ -565,5 +542,10 @@ def oaiRequest(req):
             req.headers.get("user-agent", "unknown")[:60],
            )
 
+    if subtree is not None:
+        oai_pmh.append(subtree)
+    if token is not None:
+        oai_pmh.append(token)
+    res = _lxml_etree.tostring(oai_pmh, encoding='utf-8', method="xml")
     req.response.mimetype = "application/xml"
     req.response.set_data(res)

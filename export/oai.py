@@ -28,6 +28,8 @@ import socket
 import re
 import time
 import logging
+
+import lxml.etree as _lxml_etree
 import sqlalchemy.orm as _sqlalchemy_orm
 import collections as _collections
 
@@ -432,16 +434,20 @@ def _get_nodes(params):
         token["pos"] = pos
         token = _json.dumps(token)
         token = _base64.b32encode(token).lower()
-        tokenstring = '<resumptionToken expirationDate="{}" completeListSize="{}" cursor="{}">{}</resumptionToken>'.format(
-            _iso8601(date.now().add(3600 * 24)), len(nids), pos, token)
+        token_element = _lxml_etree.Element("resumptionToken", attrib=dict(
+            expirationDate = _iso8601(date.now().add(3600 * 24)),
+            completeListSize = str(len(nids)),
+            cursor = str(pos),
+        ))
+        token_element.text = token
     else:
-        tokenstring = ""
+        token_element = None
 
-    return nodes, tokenstring, metadataformat
+    return nodes, token_element, metadataformat
 
 
 def _list_identifiers(params):
-    nodes, tokenstring, metadataformat = _get_nodes(params)
+    nodes, token, metadataformat = _get_nodes(params)
     res = '<ListIdentifiers>'
 
     for n in nodes:
@@ -457,14 +463,15 @@ def _list_identifiers(params):
               _get_set_specs_for_node(n)
               )
 
-    res += tokenstring
+    if token:
+        res += _lxml_etree.tostring(token, encoding="utf8")
     res += '</ListIdentifiers>'
 
     return res
 
 
 def _list_records(params):
-    nodes, tokenstring, metadataformat = _get_nodes(params)
+    nodes, token, metadataformat = _get_nodes(params)
 
     res = '<ListRecords>'
 
@@ -483,7 +490,8 @@ def _list_records(params):
 
         res += _write_record(n, metadataformat, mask=mask)
 
-    res += tokenstring
+    if token:
+        res += _lxml_etree.tostring(token, encoding="utf8")
     res += '</ListRecords>'
 
     return res

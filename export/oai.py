@@ -36,7 +36,6 @@ import utils.date as date
 import utils.locks as _utils_lock
 from utils.utils import esc
 from schema.schema import getMetaType
-from utils.pathutils import isDescendantOf
 from core.systemtypes import Root, Metadatatypes
 from contenttypes import Collections
 from core import Node
@@ -313,56 +312,44 @@ def _parent_is_media(n):
         return True
 
 
-def _retrieve_nodes(setspec, date_from=None, date_to=None, metadataformat=None):
-    schemata = []
-    res = []
+def _retrieve_nodes(setspec, date_from, date_to, metadataformat):
+    assert metadataformat
+
     datefield = config.get("oai.datefield", "updatetime")
 
     if metadataformat == 'mediatum':
         metadatatypes = q(Metadatatypes).one().children
         schemata = [m.name for m in metadatatypes if m.type == 'metadatatype' and m.name not in ['directory', 'collection']]
-    elif metadataformat:
+    else:
         schemata = _get_schemata_for_metadataformat(metadataformat)
 
-    if setspec:
-        nodequery = oaisets.getNodesQueryForSetSpec(setspec, schemata)
-        # if for this oai group set no function is defined that retrieve the nodes query, use the filters
-        if not nodequery:
-            collections_root = q(Collections).one()
-            nodequery = collections_root.all_children
-            setspecFilter = oaisets.getNodesFilterForSetSpec(setspec, schemata)
-            if schemata:
-                nodequery = nodequery.filter(Node.schema.in_(schemata))
-            if type(setspecFilter) == list:
-                for sFilter in setspecFilter:
-                    nodequery = nodequery.filter(sFilter)
-            else:
-                nodequery = nodequery.filter(setspecFilter)
-    else:
+    nodequery = oaisets.getNodesQueryForSetSpec(setspec, schemata)
+    # if for this oai group set no function is defined that retrieve the nodes query, use the filters
+    if not nodequery:
         collections_root = q(Collections).one()
         nodequery = collections_root.all_children
+        setspecFilter = oaisets.getNodesFilterForSetSpec(setspec, schemata)
         nodequery = nodequery.filter(Node.schema.in_(schemata))
+        if isinstance(setspecFilter, _collections.Iterable):
+            for sFilter in setspecFilter:
+                nodequery = nodequery.filter(sFilter)
+        else:
+            nodequery = nodequery.filter(setspecFilter)
+
     if date_from:
         nodequery = nodequery.filter(Node.attrs[datefield].astext >= str(date_from))
     if date_to:
         nodequery = nodequery.filter(Node.attrs[datefield].astext <= str(date_to))
-    if nodequery:
-        guest_user = get_guest_user()
-        nodequery = nodequery.filter_read_access(user=guest_user)
-    else:
-        res = [n for n in res if n.has_read_access(user=get_guest_user())]
-    if not nodequery:
-        collections = q(Collections).one()
-        res = [n for n in res if isDescendantOf(n, collections)]
 
-    if metadataformat and metadataformat.lower() in FORMAT_FILTERS:
+    guest_user = get_guest_user()
+    nodequery = nodequery.filter_read_access(user=guest_user)
+
+    if metadataformat.lower() in FORMAT_FILTERS:
         format_string = metadataformat.lower()
         format_filter = FORMAT_FILTERS[format_string]['filterQuery']
         nodequery = nodequery.filter(format_filter)
-    if nodequery:
-        res = nodequery
 
-    return res
+    return nodequery
 
 
 def _new_token(req):

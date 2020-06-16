@@ -317,8 +317,6 @@ def handle_request(req):
             req.response.set_data(req.params.get("jsoncallback") + "(%s)" % json.dumps(s, indent=4))
             return 200
 
-    filesize = 0
-
     s = {}
 
     if "submitter" in req.params.keys():
@@ -357,7 +355,6 @@ def handle_request(req):
             del req.params[file_key]
 
             filename = file.filename
-            filesize = file.filesize
 
         else:
             msg = t(lang(req), "no file for this field submitted")
@@ -379,7 +376,7 @@ def handle_request(req):
             targetnode.set(submitter, filecount + 1)
             db.session.commit()
 
-            copy_report = t(lang(req), "uploaded file: %s; size: %d bytes") % (filename, filesize)
+            copy_report = t(lang(req), "uploaded file: %s") % (filename)
 
         else:
             copy_report = ""

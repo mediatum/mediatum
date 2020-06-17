@@ -25,6 +25,7 @@ import re
 import time
 import logging
 from collections import OrderedDict
+import collections as _collections
 
 import utils.utils as _utils_utils
 import core.config as config
@@ -137,12 +138,11 @@ def _parse_date(string):
 def _get_export_masks(regexp):
     exportmasks = q(Node).filter(Node.a.masktype == 'export').all()
     exportmasks = [(n, n.name) for n in exportmasks if re.match(regexp, n.name) and n.type == 'mask']
-    dict_metadatatype2exportmask = {}
+    dict_metadatatype2exportmask = _collections.defaultdict(list)
     for exportmask in exportmasks:
         for parent in exportmask[0].parents:
             if parent.type == 'metadatatype':
-                mdt = parent, parent.name
-                dict_metadatatype2exportmask[mdt] = dict_metadatatype2exportmask.setdefault(mdt, []) + [exportmask]
+                dict_metadatatype2exportmask[(parent, parent.name)].append(exportmask)
                 break
     return dict_metadatatype2exportmask.items()
 

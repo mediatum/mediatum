@@ -60,6 +60,14 @@ _error_codes = set((
 ))
 
 
+class _OAIError(Exception):
+    def __init__(self, code, details=""):
+        assert code in _error_codes
+        super(_OAIError, self).__init__(code, details)
+        self.code = code
+        self.details = details
+
+
 def registerFormatFilter(key, filterFunc, filterQuery):
     FORMAT_FILTERS[key.lower()] = {'filterFunc': filterFunc, 'filterQuery': filterQuery}
 
@@ -90,13 +98,6 @@ def _write_head(req):
 
 def _write_tail():
     return '</OAI-PMH>'
-
-
-def _write_error(req, code, detail=""):
-    assert code in _error_codes
-    logg.info("%s:%s OAI (error code: %s) %s", req.remote_addr, req.port, (code),req.path.replace('//', '/'))
-
-    return '<error code="%s">%s</error>' % (code, detail)
 
 
 def _iso8601(t):
@@ -149,21 +150,21 @@ def _get_schemata_for_metadataformat(metadataformat):
 
 def _identifier_to_node(identifier):
     if not identifier:
-        return "badArgument"
+        raise _OAIError("badArgument")
     id_prefix = config.get("oai.idprefix", "oai:mediatum.org:node/")
     if not identifier.startswith(id_prefix):
-        return "idDoesNotExist"
+        raise _OAIError("idDoesNotExist")
     node = q(Node).get(int(identifier[len(id_prefix):]))
     if not node:
-        return "noRecordsMatch"
+        raise _OAIError("noRecordsMatch")
     if not node.has_read_access(user=get_guest_user()):
-        return "noPermission"
+        raise _OAIError("noPermission")
     return node
 
 
 def _list_metadata_formats(req):
     if "set" in req.params:
-        return _write_error(req, "badArgument")
+        raise _OAIError("badArgument")
 
     # supported oai metadata formats are configured in section
     # oai.formats in the mediatum.cfg file
@@ -172,8 +173,6 @@ def _list_metadata_formats(req):
 
     if "identifier" in req.params:
         node = _identifier_to_node(req.params.get("identifier"))
-        if isinstance(node, str):
-            return _write_error(req, node)
         formats = [x for x in formats if _node_has_oai_export_mask(node, x.lower())]
         formats = [x for x in formats if _filter_format(node, x.lower())]
 
@@ -208,7 +207,7 @@ def _check_metadata_format(format):
 
 def _identify(req):
     if tuple(req.params) != ("verb", ):
-        return _write_error(req, "badArgument")
+        raise _OAIError("badArgument")
     if config.get("config.oaibasename") == "":
         root = q(Root).one()
         name = root.getName()
@@ -349,7 +348,7 @@ def _get_nids(metadataformat, fromParam, untilParam, setParam):
             if date_from.year < earliest_year:
                 date_from = date.DateTime(0, 0, 0, 0, 0, 0)
         except:
-            return None, "badArgument"
+            raise _OAIError("badArgument")
 
     if untilParam:
         try:
@@ -359,20 +358,22 @@ def _get_nids(metadataformat, fromParam, untilParam, setParam):
                 date_to.minute = 59
                 date_to.second = 59
         except:
-            return None, "badArgument"
+            raise _OAIError("badArgument")
 
         if date_to.year < earliest_year - 1:
-            return None, "badArgument"
+            raise _OAIError("badArgument")
 
     if fromParam and untilParam and (fromParam > untilParam or len(fromParam) != len(untilParam)):
-        return None, "badArgument"
+        raise _OAIError("badArgument")
 
     nodequery = _retrieve_nodes(setParam, date_from, date_to, metadataformat)
     nodequery = nodequery.filter(Node.subnode == False)
     # filter out nodes that are inactive or older versions of other nodes
     nodes = nodequery.options(_sqlalchemy_orm.load_only('id')).all()
+    if not nodes:
+        raise _OAIError("noRecordsMatch")
 
-    return sorted(n.id for n in nodes), "noRecordsMatch"
+    return sorted(n.id for n in nodes)
 
 
 def _get_nodes(params):
@@ -395,10 +396,10 @@ def _get_nodes(params):
         try:
             token =  _base64.b32decode(token.upper())
         except TypeError:
-            return None, "badResumptionToken", None
+            raise _OAIError("badResumptionToken")
         if frozenset(params) != frozenset(("verb", "resumptionToken")):
             logg.info("OAI: getNodes: additional arguments (only verb and resumptionToken allowed)")
-            return None, "badArgument", None
+            raise _OAIError("badArgument")
         token = _json.loads(token)
     else:
         token = {
@@ -410,11 +411,9 @@ def _get_nodes(params):
         }
         if not _check_metadata_format(token["metadataPrefix"]):
             logg.info('OAI: ListRecords: metadataPrefix missing')
-            return None, "badArgument", None
+            raise _OAIError("badArgument")
 
-    nids, code = _get_nids(token["metadataPrefix"], token["from"], token["until"], token["set"])
-    if not nids:
-        return nids, code, None
+    nids = _get_nids(token["metadataPrefix"], token["from"], token["until"], token["set"])
 
     logg.info("%s : set=%s, objects=%s, format=%s", params.get('verb'), token["set"], len(nids),
               token["metadataPrefix"])
@@ -423,7 +422,7 @@ def _get_nodes(params):
     new_hash = _base64.b64encode(_hashlib.sha512(new_hash).digest()[:8])
 
     if token.get("hash", new_hash) != new_hash:
-        return "badResumptionToken", None, None
+        raise _OAIError("badResumptionToken")
 
     chunksize = config.getint("oai.chunksize", 10)
     pos = token["pos"] + chunksize
@@ -445,8 +444,6 @@ def _get_nodes(params):
 
 def _list_identifiers(req):
     nodes, tokenstring, metadataformat = _get_nodes(req.params)
-    if not nodes:
-        return _write_error(req, tokenstring)
     res = '<ListIdentifiers>'
 
     for n in nodes:
@@ -470,8 +467,6 @@ def _list_identifiers(req):
 
 def _list_records(req):
     nodes, tokenstring, metadataformat = _get_nodes(req.params)
-    if not nodes:
-        return _write_error(req, tokenstring)
 
     res = '<ListRecords>'
 
@@ -498,17 +493,14 @@ def _list_records(req):
 
 def _get_record(req):
     node = _identifier_to_node(req.params.get("identifier"))
-    if isinstance(node, str):
-        return _write_error(req, node)
     if _parent_is_media(node):
-        return _write_error(req, "noPermission")
+        raise _OAIError("noPermission")
 
-    metadataformat = req.params.get("metadataPrefix", None)
+    metadataformat = req.params.get("metadataPrefix")
     if not _check_metadata_format(metadataformat):
-        return _write_error(req, "badArgument")
-
-    if metadataformat and (metadataformat.lower() in FORMAT_FILTERS) and not _filter_format(node, metadataformat.lower()):
-        return _write_error(req, "noPermission")
+        raise _OAIError("badArgument")
+    if metadataformat.lower() in FORMAT_FILTERS and not _filter_format(node, metadataformat.lower()):
+        raise _OAIError("noPermission")
 
     schema_name = node.getSchema()
     mask = _get_oai_export_mask_for_schema_name_and_metadataformat(schema_name, metadataformat)
@@ -533,26 +525,27 @@ def _list_sets():
 def oaiRequest(req):
 
     start_time = time.clock()
-
     verb = req.params.get("verb")
     res = _write_head(req)
     req.response.status_code = _httpstatus.HTTP_OK
-
-    if verb == "Identify":
-        res += _identify(req)
-    elif verb == "ListMetadataFormats":
-        res += _list_metadata_formats(req)
-    elif verb == "ListSets":
-        res += _list_sets()
-    elif verb == "ListIdentifiers":
-        res += _list_identifiers(req)
-    elif verb == "ListRecords":
-        res += _list_records(req)
-    elif verb == "GetRecord":
-        res += _get_record(req)
-    else:
+    try:
+        if verb == "Identify":
+            res += _identify(req)
+        elif verb == "ListMetadataFormats":
+            res += _list_metadata_formats(req)
+        elif verb == "ListSets":
+            res += _list_sets()
+        elif verb == "ListIdentifiers":
+            res += _list_identifiers(req)
+        elif verb == "ListRecords":
+            res += _list_records(req)
+        elif verb == "GetRecord":
+            res += _get_record(req)
+        else:
+            raise _OAIError("badVerb")
+    except _OAIError as ex:
         req.response.status_code = _httpstatus.HTTP_BAD_REQUEST
-        res += _write_error(req, "badVerb")
+        res += '<error code="{}">{}</error>'.format(ex.code, ex.details)
 
     res += _write_tail()
 

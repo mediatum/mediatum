@@ -516,11 +516,6 @@ def _list_records(req):
         return _write_error(req, 'noRecordsMatch')
     nodes = q(Node).filter(Node.id.in_(nids)).all()
 
-    if nodes is None:
-        return _write_error(req, tokenstring)
-    if not len(nodes):
-        return _write_error(req, 'noRecordsMatch')
-
     res = '<ListRecords>'
 
     mask_cache_dict = {}

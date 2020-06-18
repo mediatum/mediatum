@@ -191,20 +191,18 @@ def _list_metadata_formats(req):
     res = '\n      <ListMetadataFormats>\n'
 
     for mdf in formats:
-        try:
-            res += """
-             <metadataFormat>
-               <metadataPrefix>%s</metadataPrefix>
-               <schema>%s</schema>
-               <metadataNamespace>%s</metadataNamespace>
-             </metadataFormat>
-             """ % (
-                    mdf,
-                    d["schema.%s" % mdf],
-                    d["namespace.%s" % mdf]
-                    )
-        except:
-            logg.exception("%s: OAI error reading oai metadata format %s from config file", __file__, mdf)
+        res += """
+         <metadataFormat>
+           <metadataPrefix>%s</metadataPrefix>
+           <schema>%s</schema>
+           <metadataNamespace>%s</metadataNamespace>
+         </metadataFormat>
+         """ % (
+                mdf,
+                d["schema.%s" % mdf],
+                d["namespace.%s" % mdf]
+                )
+
     res += '\n</ListMetadataFormats>'
 
     return res
@@ -391,18 +389,12 @@ def _get_nids(metadataformat, fromParam, untilParam, setParam):
     if fromParam and untilParam and (fromParam > untilParam or len(fromParam) != len(untilParam)):
         return None, "badArgument"
 
-    try:
-        nodequery = _retrieve_nodes(setParam, date_from, date_to, metadataformat)
-        nodequery = nodequery.filter(Node.subnode == False)
-        # filter out nodes that are inactive or older versions of other nodes
-    except:
-        logg.exception('error retrieving nodes for oai')
-        # collection doesn't exist
-        return None, "badArgument"
+    nodequery = _retrieve_nodes(setParam, date_from, date_to, metadataformat)
+    nodequery = nodequery.filter(Node.subnode == False)
+    # filter out nodes that are inactive or older versions of other nodes
+    nodes = nodequery.options(_sqlalchemy_orm.load_only('id')).all()
 
-    with _utils_lock.named_lock("oaitoken"):
-        nodes = nodequery.options(_sqlalchemy_orm.load_only('id')).all()
-        return tuple(n.id for n in nodes), "noRecordsMatch"
+    return tuple(n.id for n in nodes), "noRecordsMatch"
 
 
 def _get_nodes(params):
@@ -494,10 +486,8 @@ def _list_records(req):
             if mask:
                 mask_cache_dict[look_up_key] = mask
 
-        try:
-            res += _write_record(n, metadataformat, mask=mask)
-        except Exception as e:
-            logg.exception("n.id=%s, n.type=%s, metadataformat=%s" % (n.id, n.type, metadataformat))
+        res += _write_record(n, metadataformat, mask=mask)
+
     if tokenstring:
         res += tokenstring
     res += '</ListRecords>'

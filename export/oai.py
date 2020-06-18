@@ -502,14 +502,7 @@ def _list_identifiers(req):
 
 
 def _list_records(req):
-    eyear = ustr(config.getint("oai.earliest_year", 1960) - 1) + """-01-01T12:00:00Z"""
-    if "until" in req.params.keys() and req.params.get("until") < eyear and len(req.params.get("until")) == len(eyear):
-        return _write_error(req, 'noRecordsMatch')
-    if "resumptionToken" in req.params.keys() and "until" in req.params.keys():
-        return _write_error(req, 'badArgument')
-
     nids, tokenstring, metadataformat = _get_nodes(req)
-
     if nids is None:
         return _write_error(req, tokenstring)
     if not len(nids):

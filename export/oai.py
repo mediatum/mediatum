@@ -71,7 +71,6 @@ errordesc = {
     "noRecordsMatch": "The combination of the values of the from, until, set and metadataPrefix arguments results in an empty list.",
     "noMetadataFormats": "There are no metadata formats available for the specified item.",
     "noSetHierarchy": "The repository does not support sets.",
-    "noPermission": "The requested records are protected",
     "badDateformatUntil": "Bad argument (until): Date not in OAI format (yyyy-mm-dd or yyyy-mm-ddThh:mm:ssZ)",
     "badDateformatFrom": "Bad argument (from): Date not in OAI format (yyyy-mm-dd or yyyy-mm-ddThh:mm:ssZ)",
 }
@@ -366,37 +365,35 @@ def _new_token(params):
 
 def _get_nids(metadataformat, fromParam, untilParam, setParam):
     earliest_year = config.getint("oai.earliest_year", 1960)
-    try:
-        date_from = _parse_date(fromParam)
-        if date_from.year < earliest_year:
-            date_from = date.DateTime(0, 0, 0, 0, 0, 0)
-    except:
-        if fromParam:
+    date_from = None
+    date_to = None
+    if fromParam:
+        try:
+            date_from = _parse_date(fromParam)
+            if date_from.year < earliest_year:
+                date_from = date.DateTime(0, 0, 0, 0, 0, 0)
+        except:
             return None, "badArgument"
-        date_from = None
 
-    try:
-        date_to = _parse_date(untilParam)
-        if not date_to.has_time:
-            date_to.hour = 23
-            date_to.minute = 59
-            date_to.second = 59
+    if untilParam:
+        try:
+            date_to = _parse_date(untilParam)
+            if not date_to.has_time:
+                date_to.hour = 23
+                date_to.minute = 59
+                date_to.second = 59
+        except:
+            return None, "badArgument"
+
         if date_to.year < earliest_year - 1:
-            raise
-    except:
-        if untilParam:
-            return None, "badARgument"
-        date_to = None
-
-    if setParam and not oaisets.existsSetSpec(setParam):
-        return None, "noRecordsMatch"
+            return None, "badArgument"
 
     if fromParam and untilParam and (fromParam > untilParam or len(fromParam) != len(untilParam)):
-        return None, "badDateformat"
+        return None, "badArgument"
 
     try:
         nodequery = _retrieve_nodes(setParam, date_from, date_to, metadataformat)
-        nodequery = nodequery.filter(Node.subnode == False)  # [n for n in nodes if not _parent_is_media(n)]
+        nodequery = nodequery.filter(Node.subnode == False)
         # filter out nodes that are inactive or older versions of other nodes
     except:
         logg.exception('error retrieving nodes for oai')
@@ -404,15 +401,8 @@ def _get_nids(metadataformat, fromParam, untilParam, setParam):
         return None, "badArgument"
 
     with _utils_lock.named_lock("oaitoken"):
-        atime = time.time()
         nodes = nodequery.options(_sqlalchemy_orm.load_only('id')).all()
-        etime = time.time()
-        logg.info('querying %d nodes for tokenposition took %.3f sec.' % (len(nodes), etime - atime))
-        atime = time.time()
-        nids = [n.id for n in nodes]
-        etime = time.time()
-        logg.info('retrieving %d nids for tokenposition took %.3f sec.' % (len(nids), etime - atime))
-        return nids, "noRecordsMatch"
+        return tuple(n.id for n in nodes), "noRecordsMatch"
 
 
 def _get_nodes(params):

@@ -67,7 +67,7 @@ def registerFormatFilter(key, filterFunc, filterQuery):
 
 
 def filterFormat(node, oai_format):
-    if oai_format.lower() in FORMAT_FILTERS.keys():
+    if oai_format.lower() in FORMAT_FILTERS:
         return FORMAT_FILTERS[oai_format.lower()]['filterFunc'](node)
     return True
 
@@ -488,7 +488,7 @@ def retrieveNodes(req, setspec, date_from=None, date_to=None, metadataformat=Non
     #    if DEBUG:
     #        timetable_update(req, "in retrieveNodes: after schemata (%s) filter --> %d nodes" % (ustr(schemata), len(res)))
 
-    if metadataformat and metadataformat.lower() in FORMAT_FILTERS.keys():
+    if metadataformat and metadataformat.lower() in FORMAT_FILTERS:
         format_string = metadataformat.lower()
         format_filter = FORMAT_FILTERS[format_string]['filterQuery']
         nodequery = nodequery.filter(format_filter)
@@ -709,7 +709,7 @@ def GetRecord(req):
     if node is None:
         return writeError(req, "idDoesNotExist")
 
-    if metadataformat and (metadataformat.lower() in FORMAT_FILTERS.keys()) and not filterFormat(node, metadataformat.lower()):
+    if metadataformat and (metadataformat.lower() in FORMAT_FILTERS) and not filterFormat(node, metadataformat.lower()):
         return writeError(req, "noPermission")
 
     if parentIsMedia(node):

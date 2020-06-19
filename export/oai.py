@@ -24,6 +24,7 @@ import socket
 import re
 import time
 import logging
+import sqlalchemy.orm as _sqlalchemy_orm
 from collections import OrderedDict
 import collections as _collections
 
@@ -363,11 +364,61 @@ def _new_token(params):
     return token, metadataformat
 
 
+def _get_nids(metadataformat, fromParam, untilParam, setParam):
+    earliest_year = config.getint("oai.earliest_year", 1960)
+    try:
+        date_from = _parse_date(fromParam)
+        if date_from.year < earliest_year:
+            date_from = date.DateTime(0, 0, 0, 0, 0, 0)
+    except:
+        if fromParam:
+            return None, "badArgument"
+        date_from = None
+
+    try:
+        date_to = _parse_date(untilParam)
+        if not date_to.has_time:
+            date_to.hour = 23
+            date_to.minute = 59
+            date_to.second = 59
+        if date_to.year < earliest_year - 1:
+            raise
+    except:
+        if untilParam:
+            return None, "badARgument"
+        date_to = None
+
+    if setParam and not oaisets.existsSetSpec(setParam):
+        return None, "noRecordsMatch"
+
+    if fromParam and untilParam and (fromParam > untilParam or len(fromParam) != len(untilParam)):
+        return None, "badDateformat"
+
+    try:
+        nodequery = _retrieve_nodes(setParam, date_from, date_to, metadataformat)
+        nodequery = nodequery.filter(Node.subnode == False)  # [n for n in nodes if not _parent_is_media(n)]
+        # filter out nodes that are inactive or older versions of other nodes
+    except:
+        logg.exception('error retrieving nodes for oai')
+        # collection doesn't exist
+        return None, "badArgument"
+
+    with _utils_lock.named_lock("oaitoken"):
+        atime = time.time()
+        nodes = nodequery.options(_sqlalchemy_orm.load_only('id')).all()
+        etime = time.time()
+        logg.info('querying %d nodes for tokenposition took %.3f sec.' % (len(nodes), etime - atime))
+        atime = time.time()
+        nids = [n.id for n in nodes]
+        etime = time.time()
+        logg.info('retrieving %d nids for tokenposition took %.3f sec.' % (len(nids), etime - atime))
+        return nids, "noRecordsMatch"
+
+
 def _get_nodes(params):
     global tokenpositions
     chunksize = config.getint("oai.chunksize", 10)
     nids = None
-    earliest_year = config.getint("oai.earliest_year", 1960)
 
     if "resumptionToken" in params:
         token = params.get("resumptionToken")
@@ -386,65 +437,12 @@ def _get_nodes(params):
         pos = 0
 
     if not nids:
-        string_from, string_to = None, None
-        try:
-            string_from = params["from"]
-            date_from = _parse_date(string_from)
-            if date_from.year < earliest_year:
-                date_from = date.DateTime(0, 0, 0, 0, 0, 0)
-        except:
-            if "from" in params:
-                return None, "badArgument", None
-            date_from = None
-
-        try:
-            date_to = _parse_date(params["until"])
-            string_to = params.get("until")
-            if not date_to.has_time:
-                date_to.hour = 23
-                date_to.minute = 59
-                date_to.second = 59
-            if date_to.year < earliest_year - 1:
-                raise
-        except:
-            if "until" in params:
-                return None, "badArgument", None
-            date_to = None
-
-        setspec = None
-        if "set" in params:
-            setspec = params.get("set")
-            if not oaisets.existsSetSpec(setspec):
-                return None, "noRecordsMatch", None
-
-
-        if string_from and string_to and (string_from > string_to or len(string_from) != len(string_to)):
-            return None, "badArgument", None
-
-        try:
-            nodequery = _retrieve_nodes(setspec, date_from, date_to, metadataformat)
-            nodequery = nodequery.filter(Node.subnode == False)  #[n for n in nodes if not _parent_is_media(n)]
-
-            # filter out nodes that are inactive or older versions of other nodes
-        except:
-            logg.exception('error retrieving nodes for oai')
-            # collection doesn't exist
-            return None, "badArgument", None
+        nids, code = _get_nids(metadataformat, params.get("from"), params.get("until"), params.get("set"))
+    if not nids:
+        return nids, code, None
 
     with _utils_lock.named_lock("oaitoken"):
-        if not nids:
-            from sqlalchemy.orm import load_only
-            atime = time.time()
-            nodes = nodequery.options(load_only('id')).all()
-            etime = time.time()
-            logg.info('querying %d nodes for tokenposition took %.3f sec.' % (len(nodes), etime - atime))
-            atime = time.time()
-            nids = [n.id for n in nodes]
-            etime = time.time()
-            logg.info('retrieving %d nids for tokenposition took %.3f sec.' % (len(nids), etime - atime))
-
         tokenpositions[token] = pos + chunksize, nids, metadataformat
-
 
     tokenstring = '<resumptionToken expirationDate="' + _iso8601(date.now().add(3600 * 24)) + '" ' + \
         'completeListSize="' + ustr(len(nids)) + '" cursor="' + ustr(pos) + '">' + token + '</resumptionToken>'

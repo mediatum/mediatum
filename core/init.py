@@ -278,12 +278,11 @@ def _init_locks():
     _register_lock('createsearchindices', 1)
     _register_lock('iolock', 2)
     _register_lock('lrucachelock', 3)
-    _register_lock('oaitoken', 4)
-    _register_lock('pofile', 5)
-    _register_lock('producer', 6)
-    _register_lock('queuelock', 7)
-    _register_lock('workflow', 8)
-    _register_lock('zipfile', 9)
+    _register_lock('pofile', 4)
+    _register_lock('producer', 5)
+    _register_lock('queuelock', 6)
+    _register_lock('workflow', 7)
+    _register_lock('zipfile', 8)
 
 
 def _init_web_roots():

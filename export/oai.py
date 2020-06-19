@@ -20,21 +20,22 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import base64 as _base64
+import json as _json
+import hashlib as _hashlib
+import itertools as _itertools
 import socket
 import re
 import time
 import logging
 import sqlalchemy.orm as _sqlalchemy_orm
-from collections import OrderedDict
 import collections as _collections
 
-import utils.utils as _utils_utils
 import core.config as config
 import core.httpstatus as _httpstatus
 
 from . import oaisets
 import utils.date as date
-import utils.locks as _utils_lock
 from utils.utils import esc
 from schema.schema import getMetaType
 from core.systemtypes import Root, Metadatatypes
@@ -46,8 +47,6 @@ from core.users import get_guest_user
 q = db.query
 
 logg = logging.getLogger(__name__)
-
-tokenpositions = OrderedDict()
 
 FORMAT_FILTERS = {}
 
@@ -349,18 +348,6 @@ def _retrieve_nodes(setspec, date_from, date_to, metadataformat):
     return nodequery
 
 
-def _new_token(params):
-    token = _utils_utils.gen_secure_token()
-    with _utils_lock.named_lock("oaitoken"):
-        # limit length to 32
-        if len(tokenpositions) >= 32:
-            tokenpositions.popitem(last=False)
-        tokenpositions[token] = 0
-
-    metadataformat = params.get("metadataPrefix", None)
-    return token, metadataformat
-
-
 def _get_nids(metadataformat, fromParam, untilParam, setParam):
     earliest_year = config.getint("oai.earliest_year", 1960)
     date_from = None
@@ -394,46 +381,74 @@ def _get_nids(metadataformat, fromParam, untilParam, setParam):
     # filter out nodes that are inactive or older versions of other nodes
     nodes = nodequery.options(_sqlalchemy_orm.load_only('id')).all()
 
-    return tuple(n.id for n in nodes), "noRecordsMatch"
+    return sorted(n.id for n in nodes), "noRecordsMatch"
 
 
 def _get_nodes(params):
-    global tokenpositions
-    chunksize = config.getint("oai.chunksize", 10)
-    nids = None
-
+    # OAI permits to deliver only a subset of the results,
+    # together with a so-called "resumption token" that may be
+    # submittet in another request to retrieve more results.
+    # To avoid storing informations about previous requests,
+    # we encode all request parameters in the token,
+    # so if the token is part of another request,
+    # we can resume the response with the token string alone.
+    # Besides request paramteres, the token contains the
+    # current position within the list of search results,
+    # and a hash of all search results.
+    # The hash is needed to detect if the set of results
+    # changed between requests;  if that happened,
+    # we return an error as  we cannot answer the request
+    # without risking inconsistencies in the results.
     if "resumptionToken" in params:
         token = params.get("resumptionToken")
-        if token in tokenpositions:
-            pos, nids, metadataformat = tokenpositions[token]
-        else:
+        try:
+            token =  _base64.b32decode(token.upper())
+        except TypeError:
             return None, "badResumptionToken", None
         if frozenset(params) != frozenset(("verb", "resumptionToken")):
             logg.info("OAI: getNodes: additional arguments (only verb and resumptionToken allowed)")
             return None, "badArgument", None
+        token = _json.loads(token)
     else:
-        token, metadataformat = _new_token(params)
-        if not _check_metadata_format(metadataformat):
+        token = {
+            "metadataPrefix": params.get("metadataPrefix"),
+            "pos": 0,
+            "from": params.get("from"),
+            "until": params.get("until"),
+            "set": params.get("set"),
+        }
+        if not _check_metadata_format(token["metadataPrefix"]):
             logg.info('OAI: ListRecords: metadataPrefix missing')
             return None, "badArgument", None
-        pos = 0
 
-    if not nids:
-        nids, code = _get_nids(metadataformat, params.get("from"), params.get("until"), params.get("set"))
+    nids, code = _get_nids(token["metadataPrefix"], token["from"], token["until"], token["set"])
     if not nids:
         return nids, code, None
 
-    with _utils_lock.named_lock("oaitoken"):
-        tokenpositions[token] = pos + chunksize, nids, metadataformat
+    logg.info("%s : set=%s, objects=%s, format=%s", params.get('verb'), token["set"], len(nids),
+              token["metadataPrefix"])
 
-    tokenstring = '<resumptionToken expirationDate="' + _iso8601(date.now().add(3600 * 24)) + '" ' + \
-        'completeListSize="' + ustr(len(nids)) + '" cursor="' + ustr(pos) + '">' + token + '</resumptionToken>'
-    if pos + chunksize >= len(nids):
-        tokenstring = None
-        with _utils_lock.named_lock("oaitoken"):
-            del tokenpositions[token]
-    logg.info("%s : set=%s, objects=%s, format=%s", params.get('verb'), params.get('set'), len(nids), metadataformat)
-    res = nids[pos:pos + chunksize]
+    new_hash = " ".join(_itertools.imap(str, nids)).encode("ascii")
+    new_hash = _base64.b64encode(_hashlib.sha512(new_hash).digest()[:8])
+
+    if token.get("hash", new_hash) != new_hash:
+        return "badResumptionToken", None, None
+
+    chunksize = config.getint("oai.chunksize", 10)
+    pos = token["pos"] + chunksize
+    res = nids[token["pos"]: pos]
+    metadataformat = token["metadataPrefix"]
+
+    if pos < len(nids):
+        token["hash"] = new_hash
+        token["pos"] = pos
+        token = _json.dumps(token)
+        token = _base64.b32encode(token).lower()
+        tokenstring = '<resumptionToken expirationDate="{}" completeListSize="{}" cursor="{}">{}</resumptionToken>'.format(
+            _iso8601(date.now().add(3600 * 24)), len(nids), pos, token)
+    else:
+        tokenstring = ""
+
     return res, tokenstring, metadataformat
 
 
@@ -458,8 +473,7 @@ def _list_identifiers(req):
               _get_set_specs_for_node(n)
               )
 
-    if tokenstring:
-        res += tokenstring
+    res += tokenstring
     res += '</ListIdentifiers>'
 
     return res
@@ -488,8 +502,7 @@ def _list_records(req):
 
         res += _write_record(n, metadataformat, mask=mask)
 
-    if tokenstring:
-        res += tokenstring
+    res += tokenstring
     res += '</ListRecords>'
 
     return res

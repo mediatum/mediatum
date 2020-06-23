@@ -26,6 +26,7 @@ from lib.pdf import printview
 
 from schema.schema import VIEW_DATA_ONLY, VIEW_HIDE_EMPTY
 from core.translation import t, lang
+import utils as _utils
 from utils.utils import getCollection
 from core import webconfig
 from core import db
@@ -168,22 +169,25 @@ def show_printview(req):
         getPrintChildren(req, node, ret)
         logg.debug("getPrintChildren done")
 
-        maskcache = {}
+        nid2node = {n.id:n for n in ret}
+        schema2node = {n.schema:n for n in ret}
+
+        @_utils.lrucache.lru_cache(maxsize=2*len(ret))
+        def get_mask(schema):
+            mtype = schema2node[schema].metadatatype
+            return mtype.getMask("printlist") or mtype.getMask("nodesmall")
+
+        @_utils.lrucache.lru_cache(maxsize=2*len(ret))
+        def get_view(nid):
+            node = nid2node[nid]
+            return get_mask(node.schema).getViewHTML([node], VIEW_DATA_ONLY)
 
         for c in ret:
             if not isinstance(c, Container):
                 # items
-                if c.schema in maskcache:
-                    c_mask = maskcache[c.schema]
-                else:
-                    c_mtype = c.metadatatype
-                    c_mask = c_mtype.getMask("printlist")
-                    if not c_mask:
-                        c_mask = c_mtype.getMask("nodesmall")
-                    maskcache[c.schema] = c_mask
-                _c = c_mask.getViewHTML([c], VIEW_DATA_ONLY)
-                if len(_c) > 0:
-                    children.append(_c)
+                c_view = get_view(c.id)
+                if len(c_view) > 0:
+                    children.append(c_view)
             else:
                 # header
                 items = getPaths(c)

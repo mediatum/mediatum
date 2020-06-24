@@ -20,6 +20,8 @@
 import logging
 import shutil
 import re
+import functools as _functools
+import itertools as _itertools
 
 from schema.schema import getMetadataType
 from lib.pdf import printview
@@ -168,6 +170,8 @@ def show_printview(req):
         nodes = q(Node, node_ids_cte.c.sortpath).join(node_ids_cte, Node.id == node_ids_cte.c.nodeid)\
                     .order_by(node_ids_cte.c.sortpath).prefetch_attrs().all()[1:]
 
+        base_path = _functools.partial(_itertools.chain, tuple(n.name for n in getPaths(node)[0][1:]) + (node.name,))
+
         nid2node = {n.id:n for n,_ in nodes}
         schema2node = {n.schema:n for n,_ in nodes}
 
@@ -189,14 +193,9 @@ def show_printview(req):
                     children.append(c_view)
             else:
                 # header
-                items = getPaths(c)
-                if not items:
-                    continue
-                p = []
-                for item in items[0]:
-                    p.append(item.getName())
-                p.append(c.getName())
-                children.append([(c.id, " > ".join(p[1:]), c.getName(), "header")])
+                path_nids = tuple(_itertools.imap(int, path.split("/")[1:]))
+                pathname = " > ".join(base_path(nid2node[nid].name for nid in path_nids))
+                children.append([(c.id, pathname, c.name, "header")])
 
         if len(children) > 1:
             col = []

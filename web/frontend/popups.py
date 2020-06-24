@@ -24,6 +24,8 @@ import re
 from schema.schema import getMetadataType
 from lib.pdf import printview
 
+import sqlalchemy as _sqlalchemy
+
 from schema.schema import VIEW_DATA_ONLY, VIEW_HIDE_EMPTY
 from core.translation import t, lang
 import utils as _utils
@@ -36,6 +38,8 @@ from utils.pathutils import getPaths
 from utils import userinput
 from core import httpstatus
 from core.request_handler import sendFile as _sendFile
+import core.database.postgres as _database_postgres
+import core.database.postgres.node as _database_postgres_node
 
 #
 # execute fullsize method from node-type
@@ -100,23 +104,6 @@ def show_attachmentbrowser(req):
     getAttachmentBrowser(node, req)
 
 
-def getPrintChildren(req, node, ret):
-    for c in node.children.filter_read_access().prefetch_attrs():
-        ret.append(c)
-        if c.isContainer():
-            getPrintChildren(req, c, ret)
-        else:
-            # this is a content node which has only in rare cases children
-            # use nodemapping to detect children before calling getPrintChildren
-            children_ids = db.session.execute("select cid from nodemapping where nid = %d" % c.id)
-            cids = [row['cid'] for row in children_ids]
-            del children_ids
-            if len(cids):
-                getPrintChildren(req, c, ret)
-
-    return ret
-
-
 RE_PRINT_URL = re.compile("/print/(\d+).pdf")
 
 
@@ -165,24 +152,36 @@ def show_printview(req):
     # children
     children = []
     if isinstance(node, Container):
-        ret = []
-        getPrintChildren(req, node, ret)
-        logg.debug("getPrintChildren done")
+        group_ids, ip, date = _database_postgres.build_accessfunc_arguments()
+        node_ids_cte = q(_database_postgres_node.t_nodemapping.c.cid.label('nodeid'),
+                         _sqlalchemy.sql.expression.literal('').label('sortpath'))\
+            .filter(_database_postgres_node.t_nodemapping.c.cid == node.id).cte(recursive=True)
+        node_ids_recursive = node_ids_cte.alias()
+        node_ids_cte = node_ids_cte.union(
+            q(_database_postgres_node.t_nodemapping.c.cid,
+              _sqlalchemy.func.concat(node_ids_recursive.c.sortpath, '/', _database_postgres_node.t_nodemapping.c.cid))
+                .filter(_sqlalchemy.and_(_database_postgres_node.t_nodemapping.c.nid == node_ids_recursive.c.nodeid,
+                                         _sqlalchemy.func
+                                         .has_read_access_to_node(_database_postgres_node.t_nodemapping.c.cid,
+                                                                  group_ids, ip, date))))
 
-        nid2node = {n.id:n for n in ret}
-        schema2node = {n.schema:n for n in ret}
+        nodes = q(Node, node_ids_cte.c.sortpath).join(node_ids_cte, Node.id == node_ids_cte.c.nodeid)\
+                    .order_by(node_ids_cte.c.sortpath).prefetch_attrs().all()[1:]
 
-        @_utils.lrucache.lru_cache(maxsize=2*len(ret))
+        nid2node = {n.id:n for n,_ in nodes}
+        schema2node = {n.schema:n for n,_ in nodes}
+
+        @_utils.lrucache.lru_cache(maxsize=2*len(nodes))
         def get_mask(schema):
             mtype = schema2node[schema].metadatatype
             return mtype.getMask("printlist") or mtype.getMask("nodesmall")
 
-        @_utils.lrucache.lru_cache(maxsize=2*len(ret))
+        @_utils.lrucache.lru_cache(maxsize=2*len(nodes))
         def get_view(nid):
             node = nid2node[nid]
             return get_mask(node.schema).getViewHTML([node], VIEW_DATA_ONLY)
 
-        for c in ret:
+        for c,path in nodes:
             if not isinstance(c, Container):
                 # items
                 c_view = get_view(c.id)

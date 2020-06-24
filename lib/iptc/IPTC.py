@@ -19,10 +19,13 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import sys
-sys.path.append('.')
-import logging
+
 import os
+import sys
+
+sys.path.append(os.path.normpath(os.path.join(__file__, "..", "..", "..")))
+
+import logging
 import subprocess
 import exiftool
 from utils.date import parse_date

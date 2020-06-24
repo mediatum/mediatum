@@ -21,7 +21,8 @@
 
 import os
 import sys
-sys.path += ['../..', '../', '.']
+
+sys.path.append(os.path.normpath(os.path.join(__file__, "..", "..")))
 
 import core.config as config
 import logging

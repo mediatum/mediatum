@@ -18,10 +18,11 @@ followed by update_mediatum_iplist to store the list in the database.
 
 
 from ipaddr import IPAddress, IPNetwork, collapse_address_list
+import os.path as _os_path
 import re
 import sys
 
-sys.path += (".",)
+sys.path.append(_os_path.normpath(_os_path.join(__file__, "..", "..")))
 
 from core import db
 from core.database.postgres.permission import IPNetworkList

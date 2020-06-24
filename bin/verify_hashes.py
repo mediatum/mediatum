@@ -1,10 +1,11 @@
 #! /usr/bin/env nix-shell
 #! nix-shell -i python -p python
 
-import sys
-sys.path.append(".")  # run from mediatum root: bin/verify_hashes.py
-
 import os
+import sys
+
+sys.path.append(os.path.normpath(os.path.join(__file__, "..", "..")))
+
 import time
 import logging
 import configargparse

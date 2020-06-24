@@ -22,11 +22,12 @@ import os
 import sys
 import tempfile
 import warnings
+
+sys.path.append(os.path.normpath(os.path.join(__file__, "..", "..")))
+
 import pyaml
 import sqlalchemy
 from sqlalchemy_continuum import remove_versioning
-
-sys.path.append(".")
 
 from core import init
 init.basic_init(prefer_config_filename="manage.cfg")

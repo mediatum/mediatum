@@ -16,8 +16,15 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+
+import argparse
+import os
+import re
 import sys
-sys.path += ["../", "."]
+import tempfile
+
+sys.path.append(os.path.normpath(os.path.join(__file__, "..", "..")))
+
 import time
 
 from core.init import basic_init
@@ -28,7 +35,6 @@ from core.stats import buildStatAll
 from core import init, db, Node
 from core import config
 from contenttypes import Collections, Collection
-import os, re, argparse, tempfile
 from itertools import imap, ifilter, repeat
 import operator
 

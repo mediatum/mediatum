@@ -1,4 +1,6 @@
 from __future__ import with_statement, print_function
+
+import os.path as _os_path
 import sys
 from alembic import context
 from logging.config import fileConfig
@@ -8,7 +10,7 @@ import sqlalchemy.orm
 # access to the values within the .ini file in use.
 config = context.config
 
-sys.path.append(".")
+sys.path.append(_os_path.normpath(_os_path.join(__file__, "..", "..")))
 
 # Don't run DB initialization when we are running alembic commands from within the mediaTUM process.
 if not config.attributes.get("running_in_mediatum"):

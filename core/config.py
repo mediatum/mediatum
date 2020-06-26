@@ -29,8 +29,6 @@ import utils.utils as _utils_utils
 logg = logging.getLogger(__name__)
 
 basedir = os.path.abspath(__file__).rsplit(os.sep, 2)[0]
-# append our own fallback lib directory
-sys.path.append(os.path.join(basedir, "external"))
 
 #: set to True in initialize() if no config file was found
 is_default_config = None

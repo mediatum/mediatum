@@ -8,12 +8,12 @@ import logging as _logging
 import mimetypes as _mimetypes
 import importlib as _importlib
 import zipfile as _zipfile
-import thread as _thread
 import httpstatus as _httpstatus
 import traceback as _traceback
 import urllib as _urllib
 import athana as _athana
 import athana_z3950 as _athana_z3950
+import utils.locks as _utils_lock
 from functools import partial as _partial
 from cgi import escape as _escape
 from StringIO import StringIO as _StringIO
@@ -455,7 +455,6 @@ class zip_filesystem:
         self.wd = '/'
         self.m = {}
         self.z = _zipfile.ZipFile(filename)
-        self.lock = _thread.allocate_lock()
         for f in self.z.filelist:
             self.m['/' + f.filename] = f
 
@@ -526,11 +525,10 @@ class zip_filesystem:
                 del self.content
                 del self.len
                 del self.pos
-        self.lock.acquire()
-        try:
+
+        with _utils_lock.named_lock("zipfile"):
             data = self.z.read(path)
-        finally:
-            self.lock.release()
+
         return zFile(data)
 
     def unlink(self, path):

@@ -50,6 +50,15 @@ logg = logging.getLogger(__name__)
 
 FORMAT_FILTERS = {}
 
+_error_codes = set((
+    "badArgument",
+    "badResumptionToken" ,
+    "badVerb",
+    "idDoesNotExist",
+    "noRecordsMatch",
+    "noPermission",
+))
+
 
 def registerFormatFilter(key, filterFunc, filterQuery):
     FORMAT_FILTERS[key.lower()] = {'filterFunc': filterFunc, 'filterQuery': filterQuery}
@@ -59,20 +68,6 @@ def _filter_format(node, oai_format):
     if oai_format.lower() in FORMAT_FILTERS:
         return FORMAT_FILTERS[oai_format.lower()]['filterFunc'](node)
     return True
-
-
-errordesc = {
-    "badArgument": "The request includes illegal arguments, is missing required arguments, includes a repeated argument, or values for arguments have an illegal syntax.",
-    "badResumptionToken": "The value of the resumptionToken argument is invalid or expired.",
-    "badVerb": "none or no valid OAI verb",
-    "cannotDisseminateFormat": "The metadata format identified by the value given for the metadataPrefix argument is not supported by the item or by the repository.",
-    "idDoesNotExist": "The value of the identifier argument is unknown or illegal in this repository.",
-    "noRecordsMatch": "The combination of the values of the from, until, set and metadataPrefix arguments results in an empty list.",
-    "noMetadataFormats": "There are no metadata formats available for the specified item.",
-    "noSetHierarchy": "The repository does not support sets.",
-    "badDateformatUntil": "Bad argument (until): Date not in OAI format (yyyy-mm-dd or yyyy-mm-ddThh:mm:ssZ)",
-    "badDateformatFrom": "Bad argument (from): Date not in OAI format (yyyy-mm-dd or yyyy-mm-ddThh:mm:ssZ)",
-}
 
 
 def _write_head(req):
@@ -98,14 +93,10 @@ def _write_tail():
 
 
 def _write_error(req, code, detail=""):
-    if detail != "":
-        desc = errordesc[detail]
-    else:
-        desc = errordesc[code]
-
+    assert code in _error_codes
     logg.info("%s:%s OAI (error code: %s) %s", req.remote_addr, req.port, (code),req.path.replace('//', '/'))
 
-    return '<error code="%s">%s</error>' % (code, desc)
+    return '<error code="%s">%s</error>' % (code, detail)
 
 
 def _iso8601(t):

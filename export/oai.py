@@ -159,6 +159,20 @@ def _get_schemata_for_metadataformat(metadataformat):
     return schemata
 
 
+def _identifier_to_node(identifier):
+    if not identifier:
+        return "badArgument"
+    id_prefix = config.get("oai.idprefix", "oai:mediatum.org:node/")
+    if not identifier.startswith(id_prefix):
+        return "idDoesNotExist"
+    node = q(Node).get(int(identifier[len(id_prefix):]))
+    if not node:
+        return "noRecordsMatch"
+    if not node.has_read_access(user=get_guest_user()):
+        return "noPermission"
+    return node
+
+
 def _list_metadata_formats(req):
     if "set" in req.params:
         return _write_error(req, "badArgument")
@@ -169,20 +183,9 @@ def _list_metadata_formats(req):
     formats = [x.strip() for x in d['formats'].split(',') if x.strip()]
 
     if "identifier" in req.params:
-        # list only formats available for the given identifier
-        try:
-            nid = _identifier_to_id(req.params.get("identifier"))
-            if nid is None:
-                return _write_error(req, "idDoesNotExist")
-            node = q(Node).get(nid)
-        except (TypeError, KeyError):
-            return _write_error(req, "badArgument")
-        if node is None:
-            return _write_error(req, "badArgument")
-
-        if not node.has_read_access(user=get_guest_user()):
-            return _write_error(req, "noPermission")
-
+        node = _identifier_to_node(req.params.get("identifier"))
+        if isinstance(node, str):
+            return _write_error(req, node)
         formats = [x for x in formats if _node_has_oai_export_mask(node, x.lower())]
         formats = [x for x in formats if _filter_format(node, x.lower())]
 
@@ -300,22 +303,7 @@ def _write_record(node, metadataformat, mask=None):
     return record_str
 
 
-def _identifier_to_id(identifier):
-    id_prefix = config.get("oai.idprefix", "oai:mediatum.org:node/")
-    if identifier.startswith(id_prefix):
-        nid = identifier[len(id_prefix):]
-        # nid should be long int
-        try:
-            long(nid)
-        except:
-            nid = None
-        return nid
-    else:
-        return None
-
 # exclude children of media
-
-
 def _parent_is_media(n):
     try:
         p = n.getParents()[0]
@@ -560,28 +548,17 @@ def _list_records(req):
 
 
 def _get_record(req):
-    if "identifier" in req.params:
-        nid = _identifier_to_id(req.params.get("identifier"))
-        if nid is None:
-            return _write_error(req, "idDoesNotExist")
-    else:
-        return _write_error(req, "badArgument")
+    node = _identifier_to_node(req.params.get("identifier"))
+    if isinstance(node, str):
+        return _write_error(req, node)
+    if _parent_is_media(node):
+        return _write_error(req, "noPermission")
 
     metadataformat = req.params.get("metadataPrefix", None)
     if not _check_metadata_format(metadataformat):
         return _write_error(req, "badArgument")
 
-    node = q(Node).get(nid)
-    if node is None:
-        return _write_error(req, "idDoesNotExist")
-
     if metadataformat and (metadataformat.lower() in FORMAT_FILTERS) and not _filter_format(node, metadataformat.lower()):
-        return _write_error(req, "noPermission")
-
-    if _parent_is_media(node):
-        return _write_error(req, "noPermission")
-
-    if not node.has_read_access(user=get_guest_user()):
         return _write_error(req, "noPermission")
 
     schema_name = node.getSchema()

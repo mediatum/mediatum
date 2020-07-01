@@ -351,7 +351,7 @@ def _retrieve_nodes(setspec, date_from, date_to, metadataformat):
     return nodequery
 
 
-def _new_token(req):
+def _new_token(params):
     token = _utils_utils.gen_secure_token()
     with _utils_lock.named_lock("oaitoken"):
         # limit length to 32
@@ -359,27 +359,27 @@ def _new_token(req):
             tokenpositions.popitem(last=False)
         tokenpositions[token] = 0
 
-    metadataformat = req.params.get("metadataPrefix", None)
+    metadataformat = params.get("metadataPrefix", None)
     return token, metadataformat
 
 
-def _get_nodes(req):
+def _get_nodes(params):
     global tokenpositions
     chunksize = config.getint("oai.chunksize", 10)
     nids = None
     earliest_year = config.getint("oai.earliest_year", 1960)
 
-    if "resumptionToken" in req.params:
-        token = req.params.get("resumptionToken")
+    if "resumptionToken" in params:
+        token = params.get("resumptionToken")
         if token in tokenpositions:
             pos, nids, metadataformat = tokenpositions[token]
         else:
             return None, "badResumptionToken", None
-        if frozenset(req.params) != frozenset(("verb", "resumptionToken")):
+        if frozenset(params) != frozenset(("verb", "resumptionToken")):
             logg.info("OAI: getNodes: additional arguments (only verb and resumptionToken allowed)")
             return None, "badArgument", None
     else:
-        token, metadataformat = _new_token(req)
+        token, metadataformat = _new_token(params)
         if not _check_metadata_format(metadataformat):
             logg.info('OAI: ListRecords: metadataPrefix missing')
             return None, "badArgument", None
@@ -388,18 +388,18 @@ def _get_nodes(req):
     if not nids:
         string_from, string_to = None, None
         try:
-            string_from = req.params["from"]
+            string_from = params["from"]
             date_from = _parse_date(string_from)
             if date_from.year < earliest_year:
                 date_from = date.DateTime(0, 0, 0, 0, 0, 0)
         except:
-            if "from" in req.params:
+            if "from" in params:
                 return None, "badArgument", None
             date_from = None
 
         try:
-            date_to = _parse_date(req.params["until"])
-            string_to = req.params.get("until")
+            date_to = _parse_date(params["until"])
+            string_to = params.get("until")
             if not date_to.has_time:
                 date_to.hour = 23
                 date_to.minute = 59
@@ -407,13 +407,13 @@ def _get_nodes(req):
             if date_to.year < earliest_year - 1:
                 raise
         except:
-            if "until" in req.params:
+            if "until" in params:
                 return None, "badArgument", None
             date_to = None
 
         setspec = None
-        if "set" in req.params:
-            setspec = req.params.get("set")
+        if "set" in params:
+            setspec = params.get("set")
             if not oaisets.existsSetSpec(setspec):
                 return None, "noRecordsMatch", None
 
@@ -452,13 +452,13 @@ def _get_nodes(req):
         tokenstring = None
         with _utils_lock.named_lock("oaitoken"):
             del tokenpositions[token]
-    logg.info("%s : set=%s, objects=%s, format=%s", req.params.get('verb'), req.params.get('set'), len(nids), metadataformat)
+    logg.info("%s : set=%s, objects=%s, format=%s", params.get('verb'), params.get('set'), len(nids), metadataformat)
     res = nids[pos:pos + chunksize]
     return res, tokenstring, metadataformat
 
 
 def _list_identifiers(req):
-    nids, tokenstring, metadataformat = _get_nodes(req)
+    nids, tokenstring, metadataformat = _get_nodes(req.params)
 
     if nids is None:
         return _write_error(req, tokenstring)
@@ -488,7 +488,7 @@ def _list_identifiers(req):
 
 
 def _list_records(req):
-    nids, tokenstring, metadataformat = _get_nodes(req)
+    nids, tokenstring, metadataformat = _get_nodes(req.params)
     if nids is None:
         return _write_error(req, tokenstring)
     if not len(nids):

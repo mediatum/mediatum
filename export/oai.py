@@ -448,10 +448,8 @@ def _get_nodes(params):
 def _list_identifiers(req):
     nids, tokenstring, metadataformat = _get_nodes(req.params)
 
-    if nids is None:
+    if not nids:
         return _write_error(req, tokenstring)
-    if not len(nids):
-        return _write_error(req, 'noRecordsMatch')
     nodes = q(Node).filter(Node.id.in_(nids)).all()
     res = '<ListIdentifiers>'
 
@@ -477,10 +475,8 @@ def _list_identifiers(req):
 
 def _list_records(req):
     nids, tokenstring, metadataformat = _get_nodes(req.params)
-    if nids is None:
+    if not nids:
         return _write_error(req, tokenstring)
-    if not len(nids):
-        return _write_error(req, 'noRecordsMatch')
     nodes = q(Node).filter(Node.id.in_(nids)).all()
 
     res = '<ListRecords>'

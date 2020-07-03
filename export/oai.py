@@ -436,7 +436,7 @@ def _get_nodes(params):
 
     chunksize = config.getint("oai.chunksize", 10)
     pos = token["pos"] + chunksize
-    res = nids[token["pos"]: pos]
+    nodes = q(Node).filter(Node.id.in_(nids[token["pos"]: pos])).all()
     metadataformat = token["metadataPrefix"]
 
     if pos < len(nids):
@@ -449,15 +449,13 @@ def _get_nodes(params):
     else:
         tokenstring = ""
 
-    return res, tokenstring, metadataformat
+    return nodes, tokenstring, metadataformat
 
 
 def _list_identifiers(req):
-    nids, tokenstring, metadataformat = _get_nodes(req.params)
-
-    if not nids:
+    nodes, tokenstring, metadataformat = _get_nodes(req.params)
+    if not nodes:
         return _write_error(req, tokenstring)
-    nodes = q(Node).filter(Node.id.in_(nids)).all()
     res = '<ListIdentifiers>'
 
     for n in nodes:
@@ -480,10 +478,9 @@ def _list_identifiers(req):
 
 
 def _list_records(req):
-    nids, tokenstring, metadataformat = _get_nodes(req.params)
-    if not nids:
+    nodes, tokenstring, metadataformat = _get_nodes(req.params)
+    if not nodes:
         return _write_error(req, tokenstring)
-    nodes = q(Node).filter(Node.id.in_(nids)).all()
 
     res = '<ListRecords>'
 

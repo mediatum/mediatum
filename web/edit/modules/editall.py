@@ -17,13 +17,10 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import re as _re
-from contenttypes import Data
 from core import db
-from utils.utils import getFormatedString
 
 q = db.query
 
 def getContent(req, ids):
 
-    return req.getTAL("web/edit/modules/editall.html", {'query': req.query.replace('id=', 'src=')}, macro="view_node")
+    return req.getTAL("web/edit/modules/editall.html", {'src': req.params.get("id")}, macro="view_node")

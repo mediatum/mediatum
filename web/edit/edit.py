@@ -338,11 +338,8 @@ def getEditModules():
 
 def getIDs(req):
     # update nodelist, if necessary
-    if "nodelist" in req.params:
-        nodelist = []
-        for id in req.params.get("nodelist").split(","):
-            nodelist.append(q(Node).get(id))
-        _flask.session.nodelist = EditorNodeList(nodelist)
+    if "scr" in req.params:
+        _flask.session["srcid"] = req.params.get("src")
 
     # look for one "id" parameter, containing an id or a list of ids
 
@@ -681,7 +678,13 @@ def action(req):
 
 
 def showPaging(req, tab, ids):
-    nodelist = _flask.session.nodelist
+    nodelist = None
+    if "srcid" in _flask.session:
+        node = q(Node).get(_flask.session["srcid"])
+        _show_dir_nav = _web_edit_edit_common.ShowDirNav(req)
+        nodes = _show_dir_nav.get_children(node, req.params.get('sortfield'))
+        nodelist = EditorNodeList(nodes)
+
     nextid = previd = None
     position = absitems = '&nbsp;'
     combodata = ""

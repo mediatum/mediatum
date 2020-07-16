@@ -243,6 +243,7 @@ class ShowDirNav(object):
         # set self.nodes to be used by shownav which must be called after showdir
         self.nodes = nodes
         page = int(self.req.params.get('page', 1))
+        _flask.session["srcid"] = self.node.id
         return shownodelist(self.req, nodes, page, publishwarn=publishwarn, markunpublished=markunpublished, dir=self.node,
                             item_count=item_count, all_nodes=all_nodes, faultyidlist=faultyidlist)
 
@@ -330,7 +331,6 @@ def shownavlist(req, node, nodes, page, dir=None):
 @dec_entry_log
 def shownodelist(req, nodes, page, publishwarn=True, markunpublished=False, dir=None, item_count=None, all_nodes=None,
                  faultyidlist=[]):
-    _flask.session.nodelist = EditorNodeList(nodes)
     script_array = "allobjects = new Array();\n"
     nodelist = []
     nodes_per_page = get_nodes_per_page(req, dir)

@@ -79,8 +79,6 @@ def _filter_format(node, oai_format):
 
 
 def _write_head(req):
-    req.response.headers['charset'] = 'utf-8'
-    req.response.headers['Content-Type'] = 'text/xml; charset=utf-8'
     resp = """<?xml version="1.0" encoding="UTF-8"?>
     <OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">
         <responseDate>%sZ</responseDate>
@@ -528,6 +526,8 @@ def oaiRequest(req):
     verb = req.params.get("verb")
     res = _write_head(req)
     req.response.status_code = _httpstatus.HTTP_OK
+    req.response.headers['charset'] = 'utf-8'
+    req.response.headers['Content-Type'] = 'text/xml; charset=utf-8'
     try:
         if verb == "Identify":
             res += _identify(req)

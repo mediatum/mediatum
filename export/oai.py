@@ -78,16 +78,16 @@ def _filter_format(node, oai_format):
     return True
 
 
-def _write_head(req):
+def _write_head(params):
     resp = """<?xml version="1.0" encoding="UTF-8"?>
     <OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">
         <responseDate>%sZ</responseDate>
         <request""" % (_iso8601(date.now()))
 
-    for n in req.params:
+    for n in params:
         resp += ' %s="%s"' % (
                     n,
-                    esc(req.params[n]))
+                    esc(params[n]))
 
     resp += '>http://%s/oai/oai</request>' % config.get("host.name", socket.gethostname() + ":8081")
 
@@ -160,8 +160,8 @@ def _identifier_to_node(identifier):
     return node
 
 
-def _list_metadata_formats(req):
-    if "set" in req.params:
+def _list_metadata_formats(params):
+    if "set" in params:
         raise _OAIError("badArgument")
 
     # supported oai metadata formats are configured in section
@@ -169,8 +169,8 @@ def _list_metadata_formats(req):
     d = config.getsubset('oai')
     formats = [x.strip() for x in d['formats'].split(',') if x.strip()]
 
-    if "identifier" in req.params:
-        node = _identifier_to_node(req.params.get("identifier"))
+    if "identifier" in params:
+        node = _identifier_to_node(params.get("identifier"))
         formats = [x for x in formats if _node_has_oai_export_mask(node, x.lower())]
         formats = [x for x in formats if _filter_format(node, x.lower())]
 
@@ -203,8 +203,8 @@ def _check_metadata_format(format):
         return False
 
 
-def _identify(req):
-    if tuple(req.params) != ("verb", ):
+def _identify(params):
+    if tuple(params) != ("verb", ):
         raise _OAIError("badArgument")
     if config.get("config.oaibasename") == "":
         root = q(Root).one()
@@ -440,8 +440,8 @@ def _get_nodes(params):
     return nodes, tokenstring, metadataformat
 
 
-def _list_identifiers(req):
-    nodes, tokenstring, metadataformat = _get_nodes(req.params)
+def _list_identifiers(params):
+    nodes, tokenstring, metadataformat = _get_nodes(params)
     res = '<ListIdentifiers>'
 
     for n in nodes:
@@ -463,8 +463,8 @@ def _list_identifiers(req):
     return res
 
 
-def _list_records(req):
-    nodes, tokenstring, metadataformat = _get_nodes(req.params)
+def _list_records(params):
+    nodes, tokenstring, metadataformat = _get_nodes(params)
 
     res = '<ListRecords>'
 
@@ -489,12 +489,12 @@ def _list_records(req):
     return res
 
 
-def _get_record(req):
-    node = _identifier_to_node(req.params.get("identifier"))
+def _get_record(params):
+    node = _identifier_to_node(params.get("identifier"))
     if _parent_is_media(node):
         raise _OAIError("noPermission")
 
-    metadataformat = req.params.get("metadataPrefix")
+    metadataformat = params.get("metadataPrefix")
     if not _check_metadata_format(metadataformat):
         raise _OAIError("badArgument")
     if metadataformat.lower() in FORMAT_FILTERS and not _filter_format(node, metadataformat.lower()):
@@ -524,23 +524,23 @@ def oaiRequest(req):
 
     start_time = time.clock()
     verb = req.params.get("verb")
-    res = _write_head(req)
+    res = _write_head(req.params)
     req.response.status_code = _httpstatus.HTTP_OK
     req.response.headers['charset'] = 'utf-8'
     req.response.headers['Content-Type'] = 'text/xml; charset=utf-8'
     try:
         if verb == "Identify":
-            res += _identify(req)
+            res += _identify(req.params)
         elif verb == "ListMetadataFormats":
-            res += _list_metadata_formats(req)
+            res += _list_metadata_formats(req.params)
         elif verb == "ListSets":
             res += _list_sets()
         elif verb == "ListIdentifiers":
-            res += _list_identifiers(req)
+            res += _list_identifiers(req.params)
         elif verb == "ListRecords":
-            res += _list_records(req)
+            res += _list_records(req.params)
         elif verb == "GetRecord":
-            res += _get_record(req)
+            res += _get_record(req.params)
         else:
             raise _OAIError("badVerb")
     except _OAIError as ex:

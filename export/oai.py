@@ -241,10 +241,7 @@ def _get_set_specs_header_element(node):
 def _get_oai_export_mask_for_schema_name_and_metadataformat(schema_name, metadataformat):
     schema = getMetaType(schema_name)
     if schema:
-        mask = schema.getMask(u"oai_" + metadataformat.lower())
-    else:
-        mask = None
-    return mask
+        return schema.getMask(u"oai_{}".format(metadataformat.lower()))
 
 
 def _make_record_element(node, metadataformat, mask=None):

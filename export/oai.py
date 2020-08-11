@@ -231,15 +231,12 @@ def _identify(params):
     return identify
 
 
-def _get_set_specs_for_node(node):
+def _get_set_specs_header_element(node):
+    header = _lxml_etree.Element("header")
     setspecs = oaisets.getSetSpecsForNode(node)
-    setSpecs = set()
     for setspec in setspecs:
-        set_spec = _lxml_etree.Element("setSpec")
-        set_spec.text = setspec
-        setSpecs.add(set_spec)
-    return setSpecs
-
+        _lxml_etree.SubElement(header, "setSpec").text = setspec
+    return header
 
 def _get_oai_export_mask_for_schema_name_and_metadataformat(schema_name, metadataformat):
     schema = getMetaType(schema_name)
@@ -259,10 +256,8 @@ def _make_record_element(node, metadataformat, mask=None):
         d = _iso8601(date.DateTime(config.getint("oai.earliest_year", 1960) - 1, 12, 31, 23, 59, 59))
 
     record = _lxml_etree.Element("record")
-    header = _lxml_etree.SubElement(record, "header")
-    setSpecs = _get_set_specs_for_node(node)
-    for setSpec in setSpecs:
-        header.append(setSpec)
+    header = _get_set_specs_header_element(node)
+    record.append(header)
     _lxml_etree.SubElement(header, "identifier").text = "{}{}".format(id_prefix, ustr(node.id))
     _lxml_etree.SubElement(header, "datestamp").text = "{}Z".format(d)
     metadata = _lxml_etree.SubElement(record, "metadata")
@@ -445,13 +440,11 @@ def _list_identifiers(params):
             d = _iso8601(date.parse_date(updatetime))
         else:
             d = _iso8601(date.now())
-        header = _lxml_etree.SubElement(list_identifiers, "header")
+        header = _get_set_specs_header_element(n)
         _lxml_etree.SubElement(header, "identifier").text = \
             "{}{}".format(config.get("oai.idprefix", "oai:mediatum.org:node/"), ustr(n.id))
         _lxml_etree.SubElement(header, "datestamp").text = "{}Z".format(d)
-        setSpecs = _get_set_specs_for_node(n)
-        for setSpec in setSpecs:
-            header.append(setSpec)
+        list_identifiers.append(header)
     return list_identifiers, token
 
 

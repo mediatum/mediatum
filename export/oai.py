@@ -168,7 +168,7 @@ def _list_metadata_formats(params):
     formats = _itertools.ifilter(None,formats)  # drop empty elements
 
     if "identifier" in params:
-        node = _identifier_to_node(params.get("identifier"))
+        node = _identifier_to_node(params["identifier"])
         formats = (x for x in formats if _node_has_oai_export_mask(node, x.lower()))
         formats = (x for x in formats if _filter_format(node, x.lower()))
 
@@ -375,7 +375,7 @@ def _get_nodes(params):
     # we return an error as  we cannot answer the request
     # without risking inconsistencies in the results.
     if "resumptionToken" in params:
-        token = params.get("resumptionToken")
+        token = params["resumptionToken"]
         try:
             token =  _base64.b32decode(token.upper())
         except TypeError:

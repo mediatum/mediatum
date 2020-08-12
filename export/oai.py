@@ -192,11 +192,10 @@ def _check_metadata_format(format):
 def _identify(params):
     if tuple(params) != ("verb", ):
         raise _OAIError("badArgument")
-    if config.get("config.oaibasename") == "":
+    name = config.get("config.oaibasename")
+    if not name:
         root = q(Root).one()
         name = root.getName()
-    else:
-        name = config.get("config.oaibasename")
 
     identify = _lxml_etree.Element("Identify")
 

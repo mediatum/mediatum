@@ -22,7 +22,9 @@ import os.path
 from pydot import Node, Edge, Dot
 import core.config as config
 from ..workflow import getWorkflow
+from core import httpstatus as _httpstatus
 from core.request_handler import sendFile as _sendFile
+from core.users import user_from_session as _user_from_session
 
 logg = logging.getLogger(__name__)
 
@@ -154,6 +156,9 @@ def send_workflow_diagram(req, media_type="png"):
     """Delivers workflow image, pdf or dot code to client.
     :param media_type: one of: 'png','svg', 'pdf', 'dot' (...)
     """
+    user = _user_from_session()
+    if not user.is_admin:
+        return _httpstatus.HTTP_FORBIDDEN
     workflow = getWorkflow(req.params.get("wid", ""))
     diag = GraphvizWorkflowDiagram(workflow)
     if media_type == "png":

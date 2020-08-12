@@ -782,47 +782,6 @@ def getMaskTypes(key="."):
             return MaskType()
 
 
-def update_multilang_field(node, field, mdt, req, updated_attrs):
-    """TODO: extracted from updateNode(), rework multilang...
-    if multilingual textfields were used, their names are
-    saved in form en__Name, de__Name, de-AU__Name, en-US__Name etc.
-    """
-    field_name = field.name
-    for item in req.params.keys():
-        langPos = item.find('__')
-        if langPos != -1 and item[langPos + 2:] == field_name:
-            # cut the language identifier (en__, fr__, etc)
-            if (req.params.get(unicode(field.id) + '_show_multilang', '') == 'multi'
-                    and hasattr(mdt, "language_update")):
-                value_old = node.get(field_name)
-                value_new = req.params.get(item)
-                value = mdt.language_update(value_old, value_new, item[:langPos])
-                updated_attrs[field_name] = value
-            elif req.params.get(unicode(field.id) + '_show_multilang', '') == 'single':
-                if item[0:langPos] == translation.lang(req):
-                    new_value = req.params.get(item)
-                    updated_attrs[field_name] = new_value
-            elif (req.params.get(unicode(field.id) + '_show_multilang', '') == 'multi'
-                  and not hasattr(mdt, "language_update")):
-                value = mdt.format_request_value_for_db(field, req.params, item)
-                oldValue = node.get(field_name)
-                position = oldValue.find(item[:langPos] + mdt.joiner)
-                if position != -1:
-                    # there is already a value for this language
-                    newValue = (oldValue[:position + langPos + len(mdt.joiner)]
-                                + value
-                                + oldValue[oldValue.find(mdt.joiner,
-                                                         position + langPos + len(mdt.joiner)):])
-                    updated_attrs[field_name] = newValue
-                else:  # there is no value for this language yet
-                    if oldValue.find(mdt.joiner) == -1:
-                        # there are no values at all yet
-                        updated_attrs[field_name] = item[:langPos] + mdt.joiner + value + mdt.joiner
-                    else:
-                        # there are some values for other languages, but not for the current
-                        updated_attrs[field_name] = oldValue + item[:langPos] + mdt.joiner + value + mdt.joiner
-
-
 @check_type_arg
 class Mask(Node):
 
@@ -1029,9 +988,6 @@ class Mask(Node):
                     elif current_language + '__nodename' in form:
                         value = form.get(current_language + '__nodename')
                         node.name = value
-
-                else:
-                    update_multilang_field(node, field, t, req, updated_attrs)
 
                 if hasattr(t, "event_metafield_changed"):
                     t.event_metafield_changed(node, field)
@@ -1367,18 +1323,6 @@ class Maskitem(Node):
 
     def setTestNodes(self, value):
         self.set("testnodes", value)
-
-    def getMultilang(self):
-        field = [c for c in self.getChildren() if c.type == "metafield"]
-        if len(field) > 0:
-            if field[0].get("multilang"):
-                return 1
-        return 0
-
-    def setMultilang(self, value):
-        field = [c for c in self.getChildren() if c.type == "metafield"]
-        if len(field) > 0:
-            field[0].set("multilang", value)
 
     def getUnit(self):
         # XXX: we don't want empty units, better sanitize user input instead of stripping here

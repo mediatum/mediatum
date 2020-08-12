@@ -24,6 +24,9 @@ from utils.utils import esc
 from utils.pathutils import isDescendantOf
 from .oaisetgroup import OAISetGroup as OAISetGroup
 from core import db, config, Node
+import logging as _logging
+
+logg = _logging.getLogger(__name__)
 
 q = db.query
 
@@ -51,6 +54,7 @@ def loadGroups():
         for g in get_groups():
             registerGroup(g)
     GROUPS = sorted(DICT_GROUPS.values(), key=lambda x: x.sortorder)
+    logg.info('oaisets: loadGroups: found %s set groups: %s', len(GROUPS), GROUPS)
 
 
 def func_getNodesForSetSpec(self, setspec, schemata):

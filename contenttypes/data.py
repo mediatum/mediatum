@@ -116,12 +116,6 @@ def render_mask_template(node, mask, field_descriptors, language, words=None, se
         else:
             value = node.get_special(node_attribute)
 
-            if hasattr(metatype, "language_snipper"):
-                if (metafield.get("type") == "text" and metafield.get("valuelist") == "multilingual") \
-                    or \
-                   (metafield.get("type") in ['memo', 'htmlmemo'] and metafield.get("multilang") == '1'):
-                    value = metatype.language_snipper(value, language)
-
             if value.find('&lt;') >= 0:
                 # replace variables
                 value = replace_attribute_variables(value, node.id, node.get_special, r'&lt;(.+?)&gt;', "&lt;", "&gt;")

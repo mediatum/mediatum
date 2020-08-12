@@ -474,7 +474,6 @@ def _get_record(params):
 
 
 def _list_sets():
-    # new container sets may have been added
     list_sets = _lxml_etree.Element("ListSets")
     for setspec, setname in oaisets.getSets():
         set = _lxml_etree.SubElement(list_sets, "set")

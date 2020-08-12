@@ -17,15 +17,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import re as _re
 import mediatumtal.tal as _tal
 
-from contenttypes import Data
-from core import db
-from utils.utils import getFormatedString
-
-q = db.query
-
 def getContent(req, ids):
-
-    return _tal.processTAL({'query': req.query_string.replace('id=', 'src=')}, file="web/edit/modules/editall.html", macro="view_node", request=req)
+    return _tal.processTAL({'src': req.params.get("id")}, file="web/edit/modules/editall.html", macro="view_node", request=req)

@@ -38,6 +38,7 @@ import core.httpstatus as _httpstatus
 
 from . import oaisets
 import utils.date as date
+import utils.lrucache as _utils_lrucache
 from schema.schema import getMetaType
 from core.systemtypes import Root, Metadatatypes
 from contenttypes import Collections
@@ -448,20 +449,9 @@ def _list_identifiers(params):
 def _list_records(params):
     nodes, token, metadataformat = _get_nodes(params)
     list_records = _lxml_etree.Element("ListRecords")
-    mask_cache_dict = {}
+    get_mask = _utils_lrucache.lru_cache()(_get_oai_export_mask_for_schema_name_and_metadataformat)
     for n in nodes:
-
-        # retrieve mask from cache dict or insert
-        schema_name = n.getSchema()
-        look_up_key = u"{}_{}".format(schema_name, metadataformat)
-        if look_up_key in mask_cache_dict:
-            mask = mask_cache_dict.get(look_up_key)
-        else:
-            mask = _get_oai_export_mask_for_schema_name_and_metadataformat(schema_name, metadataformat)
-            if mask:
-                mask_cache_dict[look_up_key] = mask
-        list_records.append(_make_record_element(n, metadataformat, mask=mask))
-
+        list_records.append(_make_record_element(n, metadataformat, mask=get_mask(n.getSchema(), metadataformat)))
     return list_records, token
 
 

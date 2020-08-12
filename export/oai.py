@@ -164,12 +164,13 @@ def _list_metadata_formats(params):
     # supported oai metadata formats are configured in section
     # oai.formats in the mediatum.cfg file
     d = config.getsubset('oai')
-    formats = [x.strip() for x in d['formats'].split(',') if x.strip()]
+    formats = (x.strip() for x in d['formats'].split(','))
+    formats = _itertools.ifilter(None,formats)  # drop empty elements
 
     if "identifier" in params:
         node = _identifier_to_node(params.get("identifier"))
-        formats = [x for x in formats if _node_has_oai_export_mask(node, x.lower())]
-        formats = [x for x in formats if _filter_format(node, x.lower())]
+        formats = (x for x in formats if _node_has_oai_export_mask(node, x.lower()))
+        formats = (x for x in formats if _filter_format(node, x.lower()))
 
     list_metadata_formats = _lxml_etree.Element("ListMetadataFormats")
 

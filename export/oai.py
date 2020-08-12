@@ -119,28 +119,14 @@ def _parse_date(string):
             return date.parse_date(string[12:], "%Y-%m-%d")
 
 
-def _get_export_masks(regexp):
-    exportmasks = q(Node).filter(Node.a.masktype == 'export').all()
-    exportmasks = [(n, n.name) for n in exportmasks if re.match(regexp, n.name) and n.type == 'mask']
-    dict_metadatatype2exportmask = _collections.defaultdict(list)
-    for exportmask in exportmasks:
-        for parent in exportmask[0].parents:
-            if parent.type == 'metadatatype':
-                dict_metadatatype2exportmask[(parent, parent.name)].append(exportmask)
-                break
-    return dict_metadatatype2exportmask.items()
-
-
-def _node_has_oai_export_mask(node, metadataformat):
-    if node.getSchema() in [x[0][1] for x in _get_export_masks('oai_%s$' % metadataformat)]:
-        return True
-    return False
-
-
-def _get_schemata_for_metadataformat(metadataformat):
-    mdt_masks_list = _get_export_masks("oai_" + metadataformat.lower() + "$")  # check exact name
-    schemata = [x[0][1] for x in mdt_masks_list if x[1]]
-    return schemata
+def _yield_export_mask_metatype_names(metadataformat):
+    re_mdf = re.compile("oai_{}$".format(metadataformat.lower())).match
+    for exportmask in q(Node).filter(Node.a.masktype == 'export').all():
+        if re_mdf(exportmask.name) and exportmask.type == "mask":
+            for parent in exportmask.parents:
+                if parent.type == 'metadatatype':
+                    yield parent.name
+                    break
 
 
 def _identifier_to_node(identifier):
@@ -169,7 +155,7 @@ def _list_metadata_formats(params):
 
     if "identifier" in params:
         node = _identifier_to_node(params["identifier"])
-        formats = (x for x in formats if _node_has_oai_export_mask(node, x.lower()))
+        formats = (x for x in formats if node.getSchema() in _yield_export_mask_metatype_names(x))
         formats = (x for x in formats if _filter_format(node, x.lower()))
 
     list_metadata_formats = _lxml_etree.Element("ListMetadataFormats")
@@ -290,7 +276,7 @@ def _retrieve_nodes(setspec, date_from, date_to, metadataformat):
         metadatatypes = q(Metadatatypes).one().children
         schemata = [m.name for m in metadatatypes if m.type == 'metadatatype' and m.name not in ['directory', 'collection']]
     else:
-        schemata = _get_schemata_for_metadataformat(metadataformat)
+        schemata = list(_yield_export_mask_metatype_names(metadataformat))
 
     nodequery = oaisets.getNodesQueryForSetSpec(setspec, schemata)
     # if for this oai group set no function is defined that retrieve the nodes query, use the filters

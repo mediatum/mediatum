@@ -1,23 +1,20 @@
 - extends "styles/base.j2.jade"
 - from "styles/macros.j2.jade" import metis, archive, format
 
-
--block top
- if metis_url
-   = metis(metis_url)
-
+- block top
+  = metis(metis_url)
 
 -block before_metadata
   if canseeoriginal
     .object_image.object_column.left.mediatum_paddingimg
       if zoom
-        a(href=image_url, target='_blank')
+        a(href=image_url, onclick="vgwPixelCall();", target='_blank')
           if node.get('width') >= node.get('height')
             img(src=presentation_url, style="width:300px;cursor:pointer;border:1px double silver;", border="1px")
           else
             img(src=presentation_url, style="cursor:pointer;border:1px double silver;", border="1px")
       else
-        a(href=image_url, target='_blank')
+        a(href=image_url, onclick="vgwPixelCall();", target='_blank')
           if node.get('width') != ''
             if node.get('width') >= node.get('height')
               img(src=presentation_url, style="width:300px;cursor:pointer;border:1px double silver;", border="1px")
@@ -35,7 +32,7 @@
   else
     .object_image.object_column.left.mediatum_paddingimg
       if zoom
-        a(href=image_url, target='_blank')
+        a(href=image_url, onclick="vgwPixelCall();", target='_blank')
           if node.get('width') != ''
             if node.get('width') >= node.get('height')
               img(src=presentation_url, style="width:300px;cursor:pointer;border:1px double silver;", border="1px")

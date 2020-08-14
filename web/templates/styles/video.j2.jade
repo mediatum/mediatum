@@ -1,17 +1,14 @@
 - extends "styles/base.j2.jade"
 - from "styles/macros.j2.jade" import metis
 
-
--block top
- if metis_url
-   = metis(metis_url)
-
+- block top
+  = metis(metis_url)
 
 - block before_metadata
   if video_url
     .object_video.object_column.left
       .video_container
-        video(controls="controls", preload="metadata")
+        video(controls="controls", preload="metadata", onplay="vgwPixelCall();")
           source(type="video/mp4", src=video_url)
 
   else

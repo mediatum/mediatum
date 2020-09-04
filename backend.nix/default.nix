@@ -67,7 +67,7 @@ in let
       pyaml
       pydot2
       pyexiftool
-      pygeoip-0-1-3
+      pygeoip
       pygments
       pyjade
       pymarc

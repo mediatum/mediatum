@@ -25,96 +25,15 @@
 </tal:block>
 
 <metal:block metal:define-macro="edit_startpages">
-    <style>
-        #editform{display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;z-index:10;}
-        #editform-background{position:absolute;top:0;left:0;height:100%;width:100%;background-color:silver;opacity: 0.5; -moz-opacity: 0.5;-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";filter:alpha(opacity=50);}
-        #editform-form{position:absolute;top:0;left:0;bottom:0;right:0;padding:0;margin:30px;z-index:11;height:80%;width:80%;margin:auto;}
-        #editform-form form{min-height:100%;padding:0}
-
-        .ui-accordion .ui-accordion-header {border:1px solid silver;color:#fff;background-color:#333; display: block; cursor: pointer; position: relative; margin-top: 2px;margin-bottom:0; padding: .5em .5em .5em .7em; zoom: 1; }
-        #accordion h3 {border-left:0;margin:0}
-        #accordion h3 a{color:#fff;}
-        #printdiv a{display:none}
-        #filetable{border:1px solid silver; border-width:1px 1px 0 0; width:100%}
-        #filetable input{background-color:transparent; margin:1px; border-width:0}
-        #filetable input:hover{border-width:0}
-        #filetable input[type="text"]{border:1px solid silver}
-        #filetable input[type="text"]:hover{border:1px solid black; background-color:#ffffff}
-
-        #filetable th{background-color:#d8d8d8; padding:3px 5px 2px 3px; border-bottom:1px solid silver; font-variant:small-caps}
-        #filetable tr{border:1px solid silver}
-        #filetable td{vertical-align:middle; padding:2px; border-bottom:1px solid silver}
-        #filetable tr:hover{background-color:silver}
-        #filetable a{color:#000000; padding:1px; margin:0}
-        td.silver{background-color:#efefef}
-
-        #sub_content_content{padding:0!important}
-        #navigation_content{border-width:0 0 1px 1px!important}
-    </style>
+    <link rel="stylesheet" href="/css/edit/modules/startpages1.css" type="text/css" />
 
     <script type="text/javascript" src="/ckeditor/ckeditor.js"> </script>
     <script type="text/javascript" src="/js/jquery.layout.resizePaneAccordions-latest.min.js"> </script>
-
     <script tal:content="python:u'var id = {};'.format(id)"> </script>
     <script tal:content="python:u'var csrf = \'{}\';'.format(csrf)"> </script>
-    <script type="text/javascript">
-        var CKEDITOR_BASEPATH = '/ckeditor/';
-
-        function questionDel(filename) { //old
-            yes = confirm(unescape(document.getElementById("deleteconfirm").innerHTML));
-            if (!yes) return;
-
-            csrf = csrf.replace("##", "!!!!!");
-            $.ajax({
-                url: '/edit/edit_content?id='+id+'&tab=startpages',
-                async: false,
-                type: 'POST',
-                data : { delete_: filename, csrf_token: csrf},
-                success: function (response) {
-                   document.getElementById("filetable").tBodies[0].innerHTML = response;
-                },
-                error: function (msg) {
-                    alert("error: " + msg.toSource());
-                }
-            });
-        }
-
-        function editFile(filename){ // edit file click
-            $("#filename").val(filename);
-            $.getJSON('/edit/edit_content?id='+id+'&tab=startpages&action=getfile&filename='+filename, function(data) {
-                CKEDITOR.instances['page_content'].setData(data.filecontent);
-                $('#editform').css('display','block');
-                parent.$('#overlay').css('display', 'block');
-                CKEDITOR.instances['page_content'].resize('100%', $('#editform-form').height());
-            });
-        }
-
-        function addFile(){ // create new file
-            $("#filename").val('add');
-            CKEDITOR.instances['page_content'].setData('');
-            $('#editform').css('display','block');
-            parent.$('#overlay').css('display', 'block');
-            CKEDITOR.instances['page_content'].resize('100%', $('#editform-form').height());
-        }
-
-        function closeForm(){ // close form
-            $('#editform').css('display','none');
-        }
-
-        function handleCKEditorPost(){ // save data
-            csrf = csrf.replace("##", "!!!!!");
-            $.ajax({ type :"post",
-                data : { data: CKEDITOR.instances['page_content'].getData(), csrf_token: csrf },
-                url : '/edit/edit_content?id='+id+'&tab=startpages&action=save&filename='+$("#filename").val()
-            }).done(function(ret){
-                $('#editform').css('display','none');
-                document.getElementById("filetable").tBodies[0].innerHTML = ret;
-            });
-        }
-    </script>
+    <script src="/js/edit/modules/startpages.js"> </script>
 
     <div id="deleteconfirm" i18n:translate="edit_startpages_deleteconfirm" style="display:none">TEXT</div>
-
      <div id="editform">
         <div id="editform-background">&nbsp;</div>
         <div id="editform-form">
@@ -122,30 +41,7 @@
             <form action="javascript:handleCKEditorPost();void(0);">
                 <input type="hidden" id="filename" name="filename"/>
                 <textarea id="page_content" name="page_content"> </textarea>
-                <script>
-                    var ckeditor = CKEDITOR.replace('page_content');
-                    ckeditor.config.filebrowserBrowseUrl = '/edit/edit_content?id='+id+'&'+'tab=startpages'+'&'+'option=filebrowser';
-                    ckeditor.config.filebrowserUploadUrl = '/edit/edit_content?id='+id+'&'+'tab=startpages'+'&'+'option=filebrowser';
-                    ckeditor.config.filebrowserImageUploadUrl = '/edit/edit_content?id='+id+'&'+'tab=startpages'+'&'+'option=htmlupload';
-                    ckeditor.config.filebrowserImageBrowserUrl = '/edit/edit_content?id='+id+'&'+'tab=startpages'+'&'+'option=filebrowser';
-                    ckeditor.config.filebrowserWindowWidth = '500';
-                    ckeditor.config.filebrowserWindowHeight= '500';
-                    ckeditor.config.allowedContent = true;
-                    ckeditor.config.height = '100%';
-                    ckeditor.config.toolbar = 'Full';
-                    ckeditor.config.toolbar_Full = [
-                            ['Source', 'Save', 'cancel', 'Preview'],
-                            ['Cut','Copy','Paste','PasteText','PasteFromWord','-', 'SpellChecker', 'Scayt'],
-                            ['Undo','Redo','-','Find','Replace','-','SelectAll','RemoveFormat'],
-                            '/',
-                            ['Bold','Italic','Underline','Strike','-','Subscript','Superscript'],
-                            ['JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'],
-                            ['NumberedList','BulletedList','-','Outdent','Indent','Blockquote','CreateDiv', 'Image'],
-                            ['Link','Unlink','Anchor','Table','HorizontalRule','Smiley','SpecialChar'],
-                            '/',
-                            ['Styles','Format','Font','FontSize','TextColor','BGColor','ShowBlocks']
-                        ];
-                </script>
+                <script>ckeditor_config();</script>
             </form>
         </div>
     </div>
@@ -190,21 +86,7 @@
         </div>
         <div id="sub_footer_module"> </div>
     </form>
-
-    <script>
-        $(document).ready(function () {
-           var sublayout = $('#sub_content').layout({applyDemoStyles: true,
-                center:{paneSelector: "#sub_content_content", onresize: $.layout.callbacks.resizePaneAccordions},
-                north:{paneSelector: "#navigation_content", size:40,resizable:false,closable:false},
-                south:{paneSelector: "#sub_footer_module",size:20,closable:false, resizable:false, spacing_open: 0, spacing_closed: 0},
-                togglerTip_open: js_edit_layout_togglertip_open,
-                togglerTip_closed: js_edit_layout_togglertip_closed
-                });
-            $("#accordion").accordion({heightStyle: "fill"});
-        });
-    </script>
 </metal:block>
-
 
 <p metal:define-macro="header">
     <span i18n:translate="edit_editor_header">TEXT</span>
@@ -220,41 +102,21 @@
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
         <meta name="robots" content="noindex, nofollow">
         <link href="/module/editor/filemanager/browser/default/browser.css" type="text/css" rel="stylesheet">
-        <style type="text/css">
-            html body{font-family:Arial;padding:0;margin:0;height:100%}
-            .imagecontainer { height:150px; width: 146px; float:left; border:1px solid #888; padding:10px; margin:0 0 3px 3px; text-align:center; display:block; vertical-align:middle;}
-            .innerimagecontainer { height:110px; width:144px}
-            .image { border:1px solid #888;}
-            #closewindowdiv{ clear:left;}
-        </style>
+        <link rel="stylesheet" href="/css/edit/modules/startpages2.css" type="text/css" />
         <script type="text/javascript" language="javascript" src="/js/jquery-1.12.4.js"> </script>
         <script type="text/javascript" language="javascript" src="/js/jquery-migrate-1.4.1.js"> </script>
         <script tal:content="python:u'var id = {};'.format(id)"> </script>
-        <script type="text/javascript">
-            function SelectFile( fileUrl ){
-                // Helper function to get parameters from the query string.
-                function getUrlParam(paramName){
-                  var reParam = new RegExp('(?:[\?&]|&amp;)' + paramName + '=([^&]+)', 'i') ;
-                  var match = window.location.search.match(reParam) ;
-                  return (match && match.length > 1) ? match[1] : '' ;
-                }
-                var funcNum = getUrlParam('CKEditorFuncNum');
-                window.opener.CKEDITOR.tools.callFunction(funcNum, fileUrl);
-                window.close() ;
-            }
-        </script>
+        <script src="/js/edit/modules/startpages.js"> </script>
     </head>
     <body>
         <div id="deleteconfirm" i18n:translate="edit_fckeditor_cfm_deleteconfirm" style="display:none">TEXT</div>
         <div style="background-color:silver;padding:5px;margin-0px;overflow:hidden" i18n:translate="edit_fckeditor_cfm_clicktochoose">TEXT</div>
-
         <div id="nofiles" style="display:none;position:absolute:top:400px">
             <p i18n:translate="edit_fckeditor_cfm_hasnoimages" style="text-align:center;padding-top:30px">TEXT</p>
         </div>
         <div id="nofiles" style="position:absolute:top:400px" tal:condition="python:len(files)==0">
             <p i18n:translate="edit_fckeditor_cfm_hasnoimages" style="text-align:center;padding-top:30px">TEXT</p>
         </div>
-
         <div style="position:absolute;top:40px;left:0px;right:0px;bottom:20px;overflow:auto" id="files">
             <div class="imagecontainer" tal:repeat="file files" tal:attributes="id python:file.getName()">
                 <div class="innerimagecontainer"  tal:attributes="onclick python:u'return SelectFile(\'/file/{}/{}\', {})'.format(node.id, file.getName(), node.id)">
@@ -268,18 +130,6 @@
                 </div>
             </div>
         </div>
-        <script tal:condition="python: True" type="text/javascript">
-            function delete_nodefile(obj){
-                o = $(obj);
-                if(confirm($('#deleteconfirm').html())){
-                    $.get('/edit/edit_content/'+id+'/startpages/'+o.attr('name')+'?delete=True', function(data) {});
-                    o.parent().parent().remove();
-                    if(($('#files').children().length)==0){
-                        $('#nofiles').show();
-                    }
-                }
-            }
-        </script>
     </body>
 </html>
 </tal:block>

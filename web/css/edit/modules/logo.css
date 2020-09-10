@@ -1,0 +1,38 @@
+/*
+  Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+  SPDX-License-Identifier: AGPL-3.0-or-later
+*/
+#uploadform{display:none;position:fixed;top:0px;left:0px;right:0px;bottom:0px;width:100%;height:100%;z-index:99;}
+#uploadform-background{position:absolute;top:0px;left;0px;height:100%;width:100%;background-color:silver;opacity: 0.5; -moz-opacity: 0.5;-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";filter:alpha(opacity=50);}
+#uploadform-form{width:390px;height:350px;overflow:auto;position:absolute;top:0px;left:0px;bottom:0px;right:0px;padding:5px;margin:auto;z-index:100}
+#uploadform-form form{padding:20px;width:340px;height:310px;overflow:auto;background-color:white;border:1px solid silver}
+#uploadform-form form p, h2{margin-left:18px;}
+
+.progressWrapper {width: 100%;overflow: hidden;position;relative}
+.progressContainer {margin: 5px;padding: 4px;border: solid 1px #E8E8E8;background-color: #F7F7F7;overflow: visible;position:relative}
+
+.message {margin: 1em 0;padding: 10px 20px;border: solid 1px #FFDD99;background-color: #FFFFCC;overflow: visible;position:relative}
+.red {border: solid 1px #B50000;background-color: #FFEBEB;}
+.green {border: solid 1px #DDF0DD;background-color: #EBFFEB;}
+.blue {border: solid 1px #CEE2F2;background-color: #F0F5FF;}
+.progressName {font-size: 8pt;font-weight: 700;color: #555;width: 323px;height: 14px;text-align: left;white-space: nowrap;overflow: visible;}
+.progressBarInProgress, .progressBarComplete, .progressBarError {font-size: 0;width: 0%;height: 2px;background-color: blue;margin-top: 2px;}
+.progressBarComplete {width: 100%;background-color: green;visibility: hidden;}
+.progressBarError {width: 100%;background-color: red;visibility: hidden;}
+.progressBarStatus {margin-top: 2px;width: 90%;font-size: 7pt;font-family: Arial;text-align: left;white-space: nowrap;}
+a.progressCancel {font-size: 0;display: block;height: 14px;width: 14px;background-image: url(/img/delete.png);background-repeat: no-repeat;background-position: -14px 0px;float: right;}
+a.progressCancel:hover {background-position: 0px 0px;}
+#fsUploadProgress{height:100px}
+
+div.fieldset {border:  1px solid #afe14c;margin: 10px 0;padding: 20px 10px; height:200px;width:90%;overflow:auto}
+div.flash {width:95%;margin: 10px 5px;border-color: #D9E4FF;position:relative}
+
+#navigation_content{border:1px solid silver!important;border-width:0px 0px 1px 1px !important;}
+#logo{border:1px solid silver;height:200px;width:200px;float:right;margin-right:30px;padding:2px}
+#operation{position:relative;margin-right:200px;padding-left:30px;min-height:40px;}
+#previewlogo{max-height:200px;max-width:200px}
+#logoform{margin-left:150px;overflow:auto;position:relative;max-height:200px;margin-right:230px;padding-top:20px}
+
+.imageblock{float:left;width:200px;height:200px;border:1px solid silver;display:block;margin:5px 5px 0px 0px;padding:2px;background-color:white;position:relative}
+.imageblock:hover{border-color:red;cursor:pointer}
+div.options{position:absolute;top:4px;right:4px;}

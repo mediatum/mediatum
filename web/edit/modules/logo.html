@@ -5,84 +5,18 @@
 <tal:block metal:define-macro="edit_logo">
 
     <script tal:content="python:u'var id = {};'.format(id)"> </script>
-
-    <style>
-        #uploadform{display:none;position:fixed;top:0px;left:0px;right:0px;bottom:0px;width:100%;height:100%;z-index:99;}
-        #uploadform-background{position:absolute;top:0px;left;0px;height:100%;width:100%;background-color:silver;opacity: 0.5; -moz-opacity: 0.5;-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";filter:alpha(opacity=50);}
-        #uploadform-form{width:390px;height:350px;overflow:auto;position:absolute;top:0px;left:0px;bottom:0px;right:0px;padding:5px;margin:auto;z-index:100}
-        #uploadform-form form{padding:20px;width:340px;height:310px;overflow:auto;background-color:white;border:1px solid silver}
-        #uploadform-form form p, h2{margin-left:18px;}
-
-        .progressWrapper {width: 100%;overflow: hidden;position;relative}
-        .progressContainer {margin: 5px;padding: 4px;border: solid 1px #E8E8E8;background-color: #F7F7F7;overflow: visible;position:relative}
-
-        .message {margin: 1em 0;padding: 10px 20px;border: solid 1px #FFDD99;background-color: #FFFFCC;overflow: visible;position:relative}
-        .red {border: solid 1px #B50000;background-color: #FFEBEB;}
-        .green {border: solid 1px #DDF0DD;background-color: #EBFFEB;}
-        .blue {border: solid 1px #CEE2F2;background-color: #F0F5FF;}
-        .progressName {font-size: 8pt;font-weight: 700;color: #555;width: 323px;height: 14px;text-align: left;white-space: nowrap;overflow: visible;}
-        .progressBarInProgress, .progressBarComplete, .progressBarError {font-size: 0;width: 0%;height: 2px;background-color: blue;margin-top: 2px;}
-        .progressBarComplete {width: 100%;background-color: green;visibility: hidden;}
-        .progressBarError {width: 100%;background-color: red;visibility: hidden;}
-        .progressBarStatus {margin-top: 2px;width: 90%;font-size: 7pt;font-family: Arial;text-align: left;white-space: nowrap;}
-         a.progressCancel {font-size: 0;display: block;height: 14px;width: 14px;background-image: url(/img/delete.png);background-repeat: no-repeat;background-position: -14px 0px;float: right;}
-         a.progressCancel:hover {background-position: 0px 0px;}
-        #fsUploadProgress{height:100px}
-        
-        div.fieldset {border:  1px solid #afe14c;margin: 10px 0;padding: 20px 10px; height:200px;width:90%;overflow:auto}
-        div.flash {width:95%;margin: 10px 5px;border-color: #D9E4FF;position:relative}
-
-        </style>
-    <script type="text/javascript">
-
-        function setImage(path){
-            $("#previewlogo").attr("src", path);
-        }
-        
-        function deleteLogo(path){
-            if (confirm($("#delquestion").html())){
-                $.get('/edit/edit_content?id='+id+'&tab=logo&action=delete&file='+$(path).parent().parent().attr('id'), function(data) {
-                    if (data=='ok'){
-                        o = $("#logo").children().get(0);
-                        if (o.getAttribute('src')=='/file/'+id+'/'+$(path).parent().parent().attr('id')){
-                            o.setAttribute('src', '/img/empty.gif');
-                        }
-                        $(path).parent().parent().remove();
-                    }
-                    return false;
-                });
-            }
-        }
-        
-        function setLogo(){
-            $("#logofield").val($("#logo").children().get(0).getAttribute('src'));
-            return false;
-        }
-    </script>
+    <link rel="stylesheet" href="/css/edit/modules/logo.css" type="text/css" />
+    <script src="/js/edit/modules/logo.js"> </script>
 
     <script tal:content="python:u'var js_edit_layout_togglertip_open = \'{}\';'.format(t(language, 'edit_layout_togglertip_open'))">;</script>
     <script tal:content="python:u'var js_edit_layout_togglertip_closed = \'{}\';'.format(t(language, 'edit_layout_togglertip_closed'))">;</script>
 
-    <script>
-        $(document).ready(function () {
-            showDebugMessages: true;
-            sublayout = $('#sub_content').layout({applyDemoStyles: true,
-                center:{paneSelector: "#sub_content_content"},
-                north:{paneSelector: "#navigation_content", size:230,resizable:false},
-                south:{paneSelector: "#sub_footer_module",size:20,closable:false, resizable:false, spacing_open: 0, spacing_closed: 0},
-
-                togglerTip_open: js_edit_layout_togglertip_open,
-                togglerTip_closed: js_edit_layout_togglertip_closed,
-                });
-        });
-    </script>
-
-    <div id="navigation_content" style="border:1px solid silver!important;border-width:0px 0px 1px 1px !important;">
-        <div id="logo" style="border:1px solid silver;height:200px;width:200px;float:right;margin-right:30px;padding:2px">
-            <img tal:condition="python:logo==''" id="previewlogo" src="/img/empty.gif" style="max-height:200px;max-width:200px"/>
-            <img tal:condition="python:logo!=''" tal:attributes="src python:u'/file/{}/{}'.format(id, logo)" id="previewlogo" style="max-height:200px;max-width:200px"/>
+    <div id="navigation_content">
+        <div id="logo">
+            <img tal:condition="python:logo==''" id="previewlogo" src="/img/empty.gif"/>
+            <img tal:condition="python:logo!=''" tal:attributes="src python:u'/file/{}/{}'.format(id, logo)" id="previewlogo"/>
         </div>
-        <div style="margin-left:150px;overflow:auto;position:relative;max-height:200px;margin-right:230px;padding-top:20px">
+        <div id="logoform">
             <form tal:attributes="action python:u'edit_content?id={}&tab={}'.format(id, tab)" tal:define="files python:node.getFiles()" method="post" enctype="multipart/form-data" name="logo">
                 <input tal:attributes="value csrf" type="hidden" name="csrf_token">
                 <p>
@@ -106,16 +40,10 @@
         </div>
     </div>>
     <div style="clear:left"> </div>
-    <div id="operation" style="position:relative;margin-right:200px;padding-left:30px;min-height:40px;">  </div>
+    <div id="operation">  </div>
 
     <div id="sub_content_content">
         <div id="scrollcontainer" style="width:99%">
-            <style>
-                .imageblock{float:left;width:200px;height:200px;border:1px solid silver;display:block;margin:5px 5px 0px 0px;padding:2px;background-color:white;position:relative}
-                .imageblock:hover{border-color:red;cursor:pointer}
-                div.options{position:absolute;top:4px;right:4px;}
-            </style>
-        
             <div id="scrollcontent">
                 <div class="imageblock" onclick="setImage('/img/empty.gif')">
                     <p style="text-align:center;padding-top:80px" i18n:translate="edit_logo_no_logo">TEXT</p>
@@ -133,11 +61,6 @@
         </div>
     </div>>
     <div id="delquestion" i18n:translate="edit_logo_del_button" style="display:none">TEXT</div>
-    <script>
-        $(document).ready(function () { // set correct height of scrollable content
-           $('#scrollcontainer').css('top', $('#operation').position().top + $('#operation').height());
-        });
-    </script>
 
     <div id="sub_footer_module" style="overflow:hidden!important;border-width:0px!important;height:20xp;padding:0px!important;">
         <div style="position:absolute;right:5px;top:2px;font-size:11px"> </div>

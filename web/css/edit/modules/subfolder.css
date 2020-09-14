@@ -1,0 +1,10 @@
+/*
+  Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+  SPDX-License-Identifier: AGPL-3.0-or-later
+*/
+#sortable { list-style-type: none; margin: 0; padding: 0; width: 99%; }
+#sortable li { margin: 0 3px 3px 3px; padding: 0.4em; padding-left: 1.5em; border:1px solid silver;min-height:1.2em;position:relative;background-color:#fff}
+#sortable li:hover {cursor:move}
+#sortable li span {position: absolute; margin-left: -1.3em}
+.ids{position:absolute;right:5px;}
+#navigation_content{border-width:0 0 1px 1px!important}

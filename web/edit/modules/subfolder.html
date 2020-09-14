@@ -3,18 +3,12 @@
   SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 <tal:block metal:define-macro="edit_subfolder">
-    <style>
-        #sortable { list-style-type: none; margin: 0; padding: 0; width: 99%; }
-        #sortable li { margin: 0 3px 3px 3px; padding: 0.4em; padding-left: 1.5em; border:1px solid silver;min-height:1.2em;position:relative;background-color:#fff}
-        #sortable li:hover {cursor:move}
-        #sortable li span {position: absolute; margin-left: -1.3em}
-        .ids{position:absolute;right:5px;}
-        #navigation_content{border-width:0 0 1px 1px!important}
-    </style>
+    <link rel="stylesheet" href="/css/edit/modules/subfolder.css" type="text/css" />
 
     <script tal:content="python:u'var id = {};'.format(node.id)"> </script>
     <script tal:content="python:u'var cid_list = {};'.format([n.id for n in nodelist])"> </script>
     <script tal:content="python:u'var csrf = \'{}\';'.format(csrf)"> </script>
+    <script src="/js/edit/modules/subfolder.js"> </script>
     <div id="navigation_content">
         <h3 i18n:translate="edit_sort_label">TEXT</h3>
         <input type="hidden" name="tab" value="subfolder">
@@ -52,50 +46,6 @@
         </form>
     </div>
     <div id="sub_footer_module"> </div>
-    <script>
-        var htree = parent.gethometree();
-        var ctree = parent.getcoltree();
-
-
-        $(document).ready(function () {
-            sublayout = $('#sub_content').layout({applyDemoStyles: true,
-                center:{paneSelector: "#sub_content_content"},
-                north:{paneSelector: "#navigation_content", size:110,resizable:false},
-                south:{paneSelector: "#sub_footer_module",size:20,closable:false, resizable:false, spacing_open: 0, spacing_closed: 0},
-
-                togglerTip_open: js_edit_layout_togglertip_open,
-                togglerTip_closed: js_edit_layout_togglertip_closed
-                });
-            $(function() {
-                $( "#sortable" ).sortable({
-                    update: function(event, ui) {
-                        $.ajax({
-                             type: "POST",
-                             url: "/edit/edit_content",
-                             data: "id="+id+"&tab=subfolder&popup=popup&order="+$("#sortable").sortable('toArray').toString()+"&csrf_token="+csrf,
-                             success: function (data) {
-                                 $("#sortable").html(data);
-                                 parent.reload_tree_nodes_children([ctree, htree], [id]);
-                             }
-                         });
-                    }
-                }).disableSelection();
-            });
-
-            $("#sort").button().click(function(){
-                $.ajax({
-                     type: "POST",
-                     url: "/edit/edit_content",
-                     data: "id="+id+"&tab=subfolder&popup=popup&sortdirection="+$("#sortdirection").val()+"&sortattribute="+$("#sortattribute").val()+"&csrf_token="+csrf,
-                     success: function (data) {
-                         $('#sortable').html(data);
-                         parent.reload_tree_nodes_children([htree, ctree], [id]);
-                       }
-                 });
-            });
-        });
-    </script>
-
 </tal:block>
 
 <tal:block metal:define-macro="ordered_list">

@@ -6,165 +6,98 @@
     <div id="editcontent">
         <p><img src="/img/wait.gif"/></p>
     </div>
-    <script tal:content="python:u'getEditPage(\'editcontent\', {}, \'statsfiles\', \'content\')'.format(id)">
-    </script>
+    <script tal:content="python:u'getEditPage(\'editcontent\', {}, \'statsfiles\', \'content\')'.format(id)"/>
 </metal:block>
 
-
 <metal:block metal:define-macro="edit_stats_popup">
-  <style>
-
-    #div_legend {
-        width: 260px;
-        height: 40px;
-        float: left;
-        display: table;
-    }
-
-    #div_state {
-        height: 40px;
-        margin-left: 10px;
-        float: left;
-        display: table;
-    }
-
-    #div_button {
-        float: left;
-        display: table;
-    }
-
-    .child_vcentered {
-        display: table-cell;
-        vertical-align: middle;
-    }
-
-  </style>
-
-  <style>
-        #addform{display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;z-index:99;}
-        #addform-background{position:absolute;top:0;left:0;height:100%;width:100%;background-color:silver;opacity: 0.5; -moz-opacity: 0.5;-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";filter:alpha(opacity=50);}
-        #addform-form{width:390px;min-height:250px;overflow:auto;position:absolute;top:100px;left:0;bottom:0;right:0;padding:5px;margin:auto;z-index:100}
-        #addform-form form{padding:20px;width:340px;min-height:210px;overflow:auto;background-color:white;border:1px solid silver}
-        #addform-form form p, h2{margin-left:18px;}
-        input[type=text]{width:300px}
-        div.label{width:200px;float:left;padding-left:15px;height:100%}
-        div.content{white-space:normal;margin-left:220px;border:1px solid #E6E6E6;min-width:20px;min-height:16px;margin-right:40px;overflow:auto}
-        div#entry{padding:5px;margin-right:10px;position:relative}
-        div#entry:hover{background-color:#E6E6E6}
-        div#entry input{position:absolute;right:20px;top:4px}
-
-        .ui-accordion .ui-accordion-header {border:1px solid silver;color:#fff;background-color:#333; display: block; cursor: pointer; position: relative; margin-top: 2px;margin-bottom:0; padding: .5em .5em .5em .7em; zoom: 1; }
-        #accordion form{padding:0!important;}
-        #accordion h3 {border-left:0;margin:0}
-        #accordion h3 a{color:#fff;}
-
-        #sub_content_content{padding:0!important}
-        #navigation_content{border-width:0 0 1px 1px!important}
-  </style>
-
-  <div id="navigation_content">
-    <div>
-      <div id="div_legend" i18n:attributes="title edit_stats_legend">
-        <div class="child_vcentered" style="border:1px solid silver; width:250px;padding:2px;">
-           <img src="/img/stat_bar.png" style="width:20px;height:10px"/>
-           <tal:block i18n:translate="edit_stats_allobjlabel"/>
-           <br/>
-           <img src="/img/stat_baruser.png" style="width:20px;height:10px"/>
-           <tal:block i18n:translate="edit_stats_digobjlabel"/>
-        </div>
-      </div>
-      <div id="div_state">
-        <div class="child_vcentered">
-          <tal:block i18n:translate="edit_stats_stand"/>: <tal:block tal:replace="stand"/>
-        </div>
-      </div>
-      <div id="div_button">
-        <form method="post" class="child_vcentered">
-            <input tal:attributes="value csrf" type="hidden" name="csrf_token">
-          <input name="update_stat" type="hidden"/>
-          <button type="button" onclick="form.submit()" i18n:translate="edit_stats_updatebutton" style="min-width:200px">TEXT</button>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <div id="sub_content_content" style="border-width:0 0 0 1px!important">
-    <div id="scrollcontainer">
-        <div id="scrollcontent" style="padding-left:0px;padding-bottom:10px">
-
-            <div id="accordion">
-                <h3><a href="#" i18n:translate="edit_stats_overview">TEXT</a></h3>
-                <div id="section" style="min-height:150px">
-                    <!-- section 1 -->
-                    <table style="padding-top:5px">
-                        <tr tal:repeat="type python:data.data" tal:define="max python:data.getMax()">
-                            <td>&nbsp;</td>
-                            <td style="vertical-align:center">
-                                <tal:block i18n:translate="" tal:content="python:type.getName()"/>
-                                <small><a href="#" tal:attributes="onclick python:u'return activateTab({})'.format(data.data.index(type)+1)" i18n:translate="edit_stats_details">TEXT</a></small>
-                            </td>
-                            <td>
-                                <img tal:attributes="width python:u'{}px'.format(int(type.getSum())*400/max)" src="/img/stat_bar.png" style="height:10px">
-                                <small tal:content="python:type.getSum()"/>
-                                <br/>
-                                <img tal:attributes="width python:u'{}px'.format(int(type.getSumDigit())*400/max)" src="/img/stat_baruser.png" style="height:10px">
-                                <small tal:content="python:type.getSumDigit()"/> <small tal:content="python:u'({}%)'.format(100*type.getSumDigit()/type.getSum())"/>
-                            </td>
-                        </tr>
-                    </table>
-                    <!-- section 1 -->
+    <link rel="stylesheet" href="/css/edit/modules/statsfiles.css" type="text/css" />
+    <script src="/js/edit/modules/statsfiles.js"> </script>
+    <div id="navigation_content">
+        <div>
+            <div id="div_legend" i18n:attributes="title edit_stats_legend">
+                <div class="child_vcentered" style="border:1px solid silver; width:250px;padding:2px;">
+                    <img src="/img/stat_bar.png" style="width:20px;height:10px"/>
+                    <tal:block i18n:translate="edit_stats_allobjlabel"/>
+                    <br/>
+                    <img src="/img/stat_baruser.png" style="width:20px;height:10px"/>
+                    <tal:block i18n:translate="edit_stats_digobjlabel"/>
                 </div>
-
-                <tal:block tal:repeat="type python:data.data">
-                <h3><a href="#" i18n:translate="" tal:content="python:type.getName()">TEXT</a></h3>
-                <div id="section" style="position:relative;min-height:150px">
-                    <!-- section  -->
-                    <div style="position:absolute; top:5px;right:5px">
-                        <a href="#" onclick="return activateTab(0)" i18n:attributes="title edit_stats_top_title"><img src="/img/up.gif"/></a>
-                    </div>
-                    <table style="padding-top:5px">
-                        <tr>
-                            <td colspan="3">
-                                <h4 style="padding-left:5px" i18n:translate="edit_stats_schema">TEXT</h4>
-                            </td>
-                        </tr>
-                        <tr tal:repeat="items python:type.getTypes()" tal:define="maxt python:type.getMax()">
-                            <td>&nbsp;</td>
-                            <td tal:content="python:items[0]"></td>
-                            <td>
-                                <img src="/img/stat_bar.png" tal:attributes="width python:u'{}px'.format(int(items[1])*400/maxt)" style="height:10px">
-                                <small tal:content="python:items[1]"/>
-                                <br/>
-                                <img src="/img/stat_baruser.png" tal:attributes="width python:u'{}px'.format(int(items[2])*400/maxt)" style="height:10px">
-                                <small tal:content="python:items[2]"/> <small tal:content="python:u'({}%)'.format(100*items[2]/items[1])"/>
-                            </td>
-                        </tr>
-                    </table>
-                    <!-- section -->
+            </div>
+            <div id="div_state">
+                <div class="child_vcentered">
+                  <tal:block i18n:translate="edit_stats_stand"/>: <tal:block tal:replace="stand"/>
                 </div>
-                </tal:block>
+            </div>
+            <div id="div_button">
+                <form method="post" class="child_vcentered">
+                    <input tal:attributes="value csrf" type="hidden" name="csrf_token">
+                    <input name="update_stat" type="hidden"/>
+                    <button type="button" onclick="form.submit()" i18n:translate="edit_stats_updatebutton" style="min-width:200px"/>
+                </form>
             </div>
         </div>
     </div>
-  </div>
 
-  <div id="sub_footer_module"> </div>
+    <div id="sub_content_content" style="border-width:0 0 0 1px!important">
+        <div id="scrollcontainer">
+            <div id="scrollcontent" style="padding-left:0px;padding-bottom:10px">
+                <div id="accordion">
+                    <h3><a href="#" i18n:translate="edit_stats_overview"/></h3>
+                    <div id="section" style="min-height:150px">
+                        <!-- section 1 -->
+                        <table style="padding-top:5px">
+                            <tr tal:repeat="type python:data.data" tal:define="max python:data.getMax()">
+                                <td>&nbsp;</td>
+                                <td style="vertical-align:center">
+                                    <tal:block i18n:translate="" tal:content="python:type.getName()"/>
+                                    <small><a href="#" tal:attributes="onclick python:u'return activateTab({})'.format(data.data.index(type)+1)" i18n:translate="edit_stats_details"/></small>
+                                </td>
+                                <td>
+                                    <img tal:attributes="width python:u'{}px'.format(int(type.getSum())*400/max)" src="/img/stat_bar.png" style="height:10px">
+                                    <small tal:content="python:type.getSum()"/>
+                                    <br/>
+                                    <img tal:attributes="width python:u'{}px'.format(int(type.getSumDigit())*400/max)" src="/img/stat_baruser.png" style="height:10px">
+                                    <small tal:content="python:type.getSumDigit()"/> <small tal:content="python:u'({}%)'.format(100*type.getSumDigit()/type.getSum())"/>
+                                </td>
+                            </tr>
+                        </table>
+                        <!-- section 1 -->
+                    </div>
 
-    <script>
+                    <tal:block tal:repeat="type python:data.data">
+                        <h3><a href="#" i18n:translate="" tal:content="python:type.getName()"/></h3>
+                        <div id="section" style="position:relative;min-height:150px">
+                            <!-- section  -->
+                            <div style="position:absolute; top:5px;right:5px">
+                                <a href="#" onclick="return activateTab(0)" i18n:attributes="title edit_stats_top_title">
+                                    <img src="/img/up.gif"/>
+                                </a>
+                            </div>
+                            <table style="padding-top:5px">
+                                <tr>
+                                    <td colspan="3">
+                                        <h4 style="padding-left:5px" i18n:translate="edit_stats_schema"/>
+                                    </td>
+                                </tr>
+                                <tr tal:repeat="items python:type.getTypes()" tal:define="maxt python:type.getMax()">
+                                    <td>&nbsp;</td>
+                                    <td tal:content="python:items[0]"></td>
+                                    <td>
+                                        <img src="/img/stat_bar.png" tal:attributes="width python:u'{}px'.format(int(items[1])*400/maxt)" style="height:10px">
+                                        <small tal:content="python:items[1]"/>
+                                        <br/>
+                                        <img src="/img/stat_baruser.png" tal:attributes="width python:u'{}px'.format(int(items[2])*400/maxt)" style="height:10px">
+                                        <small tal:content="python:items[2]"/> <small tal:content="python:u'({}%)'.format(100*items[2]/items[1])"/>
+                                    </td>
+                                </tr>
+                            </table>
+                            <!-- section -->
+                        </div>
+                    </tal:block>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        $(document).ready(function () { // set correct height of scrollable content
-           var sublayout = $('#sub_content').layout({applyDemoStyles: true,
-                center:{paneSelector: "#sub_content_content", onresize: $.layout.callbacks.resizePaneAccordions},
-                north:{paneSelector: "#navigation_content", size:60,resizable:false, closable:false},
-                south:{paneSelector: "#sub_footer_module",size:20,closable:false, resizable:false, spacing_open: 0, spacing_closed: 0}
-                });
-            $("#accordion").accordion({heightStyle: "pane"});
-        });
-
-        $(window).resize(function(){
-            $("#accordion").accordion("resize");
-        });
-
-    </script>
-
+    <div id="sub_footer_module"> </div>
 </metal:block>

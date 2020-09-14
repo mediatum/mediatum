@@ -3,75 +3,35 @@
   SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 <metal:block metal:define-macro="edit_stats">
-
-<style>
-
-#div_select {
-    width: 260px;
-    height: 40px;
-    float: left;
-    display: table;
-}
-
-#div_button {
-    height: 30px;
-    float: left;
-    display: table;
-    margin-top: 5px;
-}
-
-</style>
-
-  <style>
-        #addform{display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;z-index:99;}
-        #addform-background{position:absolute;top:0;left:0;height:100%;width:100%;background-color:silver;opacity: 0.5; -moz-opacity: 0.5;-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";filter:alpha(opacity=50);}
-        #addform-form{width:390px;min-height:250px;overflow:auto;position:absolute;top:100px;left:0;bottom:0;right:0;padding:5px;margin:auto;z-index:100}
-        #addform-form form{padding:20px;width:340px;min-height:210px;overflow:auto;background-color:white;border:1px solid silver}
-        #addform-form form p, h2{margin-left:18px;}
-        input[type=text]{width:300px}
-        div.label{width:200px;float:left;padding-left:15px;height:100%}
-        div.content{white-space:normal;margin-left:220px;border:1px solid #E6E6E6;min-width:20px;min-height:16px;margin-right:40px;overflow:auto}
-        div#entry{padding:5px;margin-right:10px;position:relative}
-        div#entry:hover{background-color:#E6E6E6}
-        div#entry input{position:absolute;right:20px;top:4px}
-
-        .ui-accordion .ui-accordion-header {border:1px solid silver;color:#fff;background-color:#333; display: block; cursor: pointer; position: relative; margin-top: 2px;margin-bottom:0; padding: .5em .5em .5em .7em; zoom: 1; }
-        #accordion form{padding:0!important;}
-        #accordion h3 {border-left:0;margin:0}
-        #accordion h3 a{color:#fff;}
-
-        #sub_content_content{padding:0!important}
-        #navigation_content{border-width:0 0 1px 1px!important}
-  </style>
+    <link rel="stylesheet" href="/css/edit/modules/statsaccess1.css" type="text/css" />
+    <script src="/js/edit/modules/statsaccess.js"> </script>
 
     <div id="navigation_content">
         <div style="position:relative">
             <form method="post">
-                <input tal:attributes="value csrf" type="hidden" name="csrf_token">
-              <div id="div_select">
-                <div><tal:block i18n:translate="edit_stats_period_header"/>:<br/>
-                <select name="select_period" onchange="javascript:submit()" style="min-width:200px">
-                    <optgroup tal:repeat="t python:list(files)" tal:attributes="label t">
-                        <option tal:repeat="p python:sorted(list(files[t]),reverse=True)" tal:content="p" tal:attributes="value python:u'{}_{}'.format(t, p); selected python:'selected' if u'{}_{}'.format(t, p)==current_period else None"/>
-                    </optgroup>
-                </select>
+                <input tal:attributes="value csrf" type="hidden" name="csrf_token" />
+                <div id="div_select">
+                    <div><tal:block i18n:translate="edit_stats_period_header"/>:<br/>
+                        <select name="select_period" onchange="javascript:submit()" style="min-width:200px">
+                            <optgroup tal:repeat="t python:list(files)" tal:attributes="label t">
+                                <option tal:repeat="p python:sorted(list(files[t]),reverse=True)" tal:content="p" tal:attributes="value python:u'{}_{}'.format(t, p); selected python:'selected' if u'{}_{}'.format(t, p)==current_period else None"/>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <small ><tal:block i18n:translate="edit_stats_stand"/>: <tal:block tal:replace="python:current_file.getCreationDate()"/></small>
                 </div>
-                <small ><tal:block i18n:translate="edit_stats_stand"/>: <tal:block tal:replace="python:current_file.getCreationDate()"/></small>
-              </div>
-              <script tal:content="python:u'var url= \'/edit/edit_content?id={}&tab=statsaccess&style=popup\';'.format(id)"> </script>
-              <div id="div_button">
-                <button id="div_button" type="button" onclick="openPopup(url, 'test', 300, 200)" i18n:translate="edit_stats_popupupdatebutton" i18n:attributes="title edit_stats_popupheader" style="min-width:200px;margin-top:50">TEXT</button>
-             </div>
+                <script tal:content="python:u'var url= \'/edit/edit_content?id={}&tab=statsaccess&style=popup\';'.format(id)"> </script>
+                <div id="div_button">
+                    <button id="div_button" type="button" onclick="openPopup(url, 'test', 300, 200)" i18n:translate="edit_stats_popupupdatebutton" i18n:attributes="title edit_stats_popupheader" style="min-width:200px;margin-top:50"/>
+                </div>
             </form>
             <div id="pdfdiv" style="position:absolute;right:5px">
-            <p style="text-align:right"><a tal:attributes="href python:u'/edit/print/{}_statsaccess_{}.pdf'.format(id, current_period)" target="_blank"><img src="/img/print_icon.gif"/></a></p>
+                <p style="text-align:right"><a tal:attributes="href python:u'/edit/print/{}_statsaccess_{}.pdf'.format(id, current_period)" target="_blank">
+                    <img src="/img/print_icon.gif"/></a>
+                </p>
             </div>
         </div>
     </div>
-
-    <style tal:condition="python:len(files)==0">
-        #pdfdiv{display:none}
-    </style>
 
     <div id="sub_content_content" style="border-width:0 0 0 1px!important">
         <div id="scrollcontainer">
@@ -82,12 +42,6 @@
                     <div class="section" tal:define="ids python:current_file.getIDs(); max python:ids[0][1]">
                         <!-- section 1 -->
                         <p tal:condition="python:max==0" i18n:translate="edit_stats_noaccess" style="text-align:center">TEXT</p>
-                        <script tal:condition="python:max>0">
-                            function showDetailAccess(){
-                                $("#access_all").toggle();
-                                $("#access_top10").toggle();
-                            }
-                        </script>
                         <div id="access_top10" tal:condition="python:max>0">
                             <table style="margin-left:10px">
                                 <tr>
@@ -144,12 +98,6 @@
                     <h3><a href="#" i18n:translate="edit_stats_country">TEXT</a></h3>
                     <div class="section" tal:define="items python:current_file.getProgress('country'); max python:int(items[0]['max']); max_p python:int(items[0]['max_p']); max_u python:int(items[0]['max_u']);">
                         <!-- section 2 -->
-                        <script tal:condition="python:max>0">
-                            function showDetailAccessCountry(){
-                                $("#country_all").toggle();
-                                $("#country_top10").toggle();
-                            }
-                        </script>
                         <p tal:condition="python:max==0" i18n:translate="edit_stats_noaccess" style="text-align:center">TEXT</p>
                         <div id="country_top10" tal:condition="python:max>0">
                             <table style="margin-left:10px">
@@ -181,13 +129,6 @@
                     <h3><a href="#" i18n:translate="edit_stats_spreading">TEXT</a></h3>
                     <div class="section" tal:define="items python:current_file.getProgress(); max python:items[0]['max']; max_p python:items[0]['max_p']; max_u python:items[0]['max_u']" style="overflow:auto">
                         <!-- section 3 -->
-                        <style>
-                            table.progress{border:1px solid #E6E6E6}
-                            table.progress th{padding:2px; text-align:center;width:100px}
-                            table.progress td.week{border:1px solid #E6E6E6;text-align:center}
-                            table.progress td.weekend{background-color:#E6E6E6;text-align:center}
-                            table.progress td.bar{text-align:center;vertical-align:bottom; padding:0px 2px;font-size:0px}
-                        </style>
                         <p tal:condition="python:max==0" i18n:translate="edit_stats_noaccess" style="text-align:center">TEXT</p>
                         <table class="progress" align="center" tal:condition="python:len(items)>1">
                             <tr>
@@ -236,13 +177,6 @@
                     <h3><a href="#" i18n:translate="edit_stats_spreading_day">TEXT</a></h3>
                     <div class="section" tal:define="items python:current_file.getProgress('day'); max python:int(items[0]['max']); max_p python:int(items[0]['max_p']); max_u python:int(items[0]['max_u'])">
                         <!-- section 4 -->
-                        <style>
-                            table.progressday{border:1px solid #E6E6E6}
-                            table.progressday th{padding:5px; text-align:center;width:100px}
-                            table.progressday td.week{border:1px solid #E6E6E6;text-align:center}
-                            table.progressday td.weekend{background-color:#E6E6E6;text-align:center}
-                            table.progressday td.bar{text-align:center;vertical-align:bottom;padding:0px 5px;font-size:0px}
-                        </style>
                         <p tal:condition="python:max==0" i18n:translate="edit_stats_noaccess" style="text-align:center">TEXT</p>
                         <table class="progressday" align="center" tal:condition="python:max>0">
                             <tr>
@@ -283,11 +217,6 @@
                     <h3><a href="#" i18n:translate="edit_stats_spreading_time">TEXT</a></h3>
                     <div class="section" tal:define="items python:current_file.getProgress('time'); max python:int(items[0]['max']); max_p python:int(items[0]['max_p']); max_u python:int(items[0]['max_u']);" style="overflow:auto">
                         <!-- section 5 -->
-                        <style>
-                            table.progresstime{border:1px solid #E6E6E6}
-                            table.progresstime td.bar{text-align:center;vertical-align:bottom;text-align:center;padding:0px 5px;font-size:0px}
-                            table.progresstime td.legend{border:1px solid #E6E6E6;text-align:center}
-                        </style>
                         <p tal:condition="python:max==0" i18n:translate="edit_stats_noaccess" style="text-align:center">TEXT</p>
                         <table class="progresstime" align="center" tal:condition="python:max>0">
                             <tr>
@@ -331,17 +260,6 @@
     </div>
 
     <div id="sub_footer_module"> </div>
-
-    <script>
-        $(document).ready(function () { // set correct height of scrollable content
-           var sublayout = $('#sub_content').layout({applyDemoStyles: true,
-                center:{paneSelector: "#sub_content_content", onresize: $.layout.callbacks.resizePaneAccordions},
-                north:{paneSelector: "#navigation_content", size:100,resizable:false, closable:false},
-                south:{paneSelector: "#sub_footer_module",size:20,closable:false, resizable:false, spacing_open: 0, spacing_closed: 0}
-                });
-            $("#accordion").accordion({heightStyle: "pane"});
-        });
-    </script>
 </metal:block>
 
 
@@ -352,14 +270,8 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
         <meta content="text/html;charset=UTF-8" http-equiv="content-type"/>
         <link rel="stylesheet" href="/css/editor.css">
-        <script type="text/javascript" src="/js/editor.js">
-        </script>
-        <style>
-            body{margin:20px;text-align:center}
-            div.footer{position:absolute;left:0px;bottom:0px;text-align:center}
-            div.message{border:1px solid silver;background-color:#ffffff;pading:10px;text-align:center}
-            form{text-align:center}
-        </style>
+        <script src="/js/editor.js"> </script>
+        <link rel="stylesheet" href="/css/edit/modules/statsaccess2.css">
         <title i18n:translate="edit_stats_popuptitle">TEXT</title>
     </head>
 

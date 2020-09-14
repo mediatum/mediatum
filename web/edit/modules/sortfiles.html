@@ -3,16 +3,7 @@
   SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 <tal:block metal:define-macro="edit_sortfiles">
-
-    <script>
-        $(document).ready(function () { // set correct height of scrollable content
-            var sublayout = $('#sub_content').layout({applyDemoStyles: true,
-                center:{paneSelector: "#sub_content_content", onresize: $.layout.callbacks.resizePaneAccordions},
-                south:{paneSelector: "#sub_footer_module",size:20,closable:false, resizable:false, spacing_open: 0, spacing_closed: 0}
-                });
-            });
-    </script>
-
+    <script src="/js/edit/modules/sortfiles.js"> </script>
     <div id="sub_content_content" style="border-width:0 0 0 1px!important">
         <h2 tal:content="name">TEXT</h2>
         <h3 i18n:translate="edit_sort_header_auto">TEXT</h3>
@@ -28,5 +19,4 @@
     </div>
 
     <div id="sub_footer_module" > </div>
-
 </tal:block>

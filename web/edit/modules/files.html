@@ -8,32 +8,7 @@
 
 <tal:block metal:define-macro="edit_files_file">
     <script type="text/javascript" src="/js/jquery.layout.resizePaneAccordions-latest.min.js"> </script>
-
-    <script>
-        function removeItem(id, parent){
-            $.get('/edit/edit_content?id='+parent+'&tab=files&style=popup&data=translate&msgstr=edit_files_removequestion&jsoncallback=?', function(data) {
-                if (confirm(data)){
-                    $.get('/edit/edit_content?id='+parent+'&tab=files&style=popup&data=removeitem&remove='+id+'&jsoncallback=?', function(data) {
-                      $('#childnodes').html(data);
-                      return false;
-                    });
-                }
-            });
-            return false;
-        }
-
-        function saveOrder(id){
-            $.get('/edit/edit_content?id='+id+'&tab=files&style=popup&data=reorder&order='+$(".sortlist").html()+'&jsoncallback=?', function(data){});
-            $("#orderdiv").css("display", "none");
-            return false;
-        }
-
-        function sel(part){
-                $('div[id^="file_"]').css('display', 'none');
-                $('#'+part).css('display', 'block');
-                return false;
-            }
-    </script>
+    <script src="/js/edit/modules/files1.js"> </script>
 
     <div id="navigation_content" class="mediatum_navigation_content"> </div>
 
@@ -244,43 +219,6 @@
     </div>
 
     <div id="sub_footer_module"> </div>
-
-    <script>
-        $(document).ready(function () { // set correct height of scrollable content
-           var sublayout = $('#sub_content').layout({applyDemoStyles: true,
-                center:{paneSelector: "#sub_content_content", onresize: $.layout.callbacks.resizePaneAccordions},
-                north:{paneSelector: "#navigation_content", size:10,resizable:false, closable:false},
-                south:{paneSelector: "#sub_footer_module",size:20,closable:false, resizable:false, spacing_open: 0, spacing_closed: 0}
-                });
-            $("#accordion").accordion({heightStyle: "fill"});
-        });
-
-        function setInput(item){
-            if(item=="dir"){
-                $('#inputname').css('display', 'block');
-            }else{
-                $('#inputname').css('display', 'none');
-            }
-        }
-
-        $("#sortable" ).sortable({
-            connectWith: ".connectedSortable",
-            stop: function(event, ui) {
-                $('.connectedSortable').each(function() {
-                    result = "";
-                    $(this).find("img").each(function(){
-                        if ($(this).attr("id")){
-                            result += $(this).attr("id") + ",";
-                        }
-                    });
-                    if(result!=""){
-                        $("#orderdiv").css("display", "block");
-                        $(".sortlist").html(result);
-                    }
-                });
-            }
-        });
-    </script>
 </tal:block>
 
 <tal:block metal:define-macro="edit_files_children_list">
@@ -332,62 +270,7 @@
     </head>
     <body>
         <script type="text/javascript" tal:content="script"> </script>
-        <script type="text/javascript">
-            function setFolder(){
-                markFolder(true, "", this.id);
-                getFolderItems(this.id);
-                getGrandchildren(this.id);
-                return false;
-            }
-
-            function getFolderItems(id){
-                $.get('/edit/edit_content?style=popup&tab=files&data=children&id='+id+'&excludeid='+node+'&jsoncallback=?', function(data) {
-                  $('#files').html(data);
-                });
-            }
-
-            function getFolderItemsExclude(folderid, excludeid){
-                $.get('/edit/edit_content?style=popup&tab=files&data=children&id='+folderid+'&excludeid='+excludeid+'&jsoncallback=?', function(data) {
-                  $('#files').html(data);
-                });
-            }
-
-            function getGrandchildren(folderid){
-                $.get('/edit/edit_content?style=popup&tab=files&data=grandchildren&id='+folderid+'&excludeid='+node+'&jsoncallback=?', function(data) {
-                  $('#grandchildren').html(data);
-                });
-            }
-
-            function selectedItems(srcnodeid){
-                var val = "";
-                $(":checkbox:checked[name=items_add]").each(
-                    function() {
-                        val += $(this).val()+";";
-                    }
-                );
-                $.get('/edit/edit_content?style=popup&tab=files&data=additems&srcnodeid='+srcnodeid+'&id='+node+'&items='+val, function(data) {
-                  opener.$('#childnodes').html(data);
-                  self.close();
-                });
-            }
-
-            function select_all_grand(obj){
-                $(':checkbox').each(function() {
-                    if(this.id=='grands_add'){
-                        this.checked = obj.checked;
-                    }
-                });
-            }
-
-            function select_all_child(obj){
-                $(':checkbox').each(function() {
-                    if(this.id=='child_add'){
-                        this.checked = obj.checked;
-                    }
-                });
-            }
-
-        </script>
+        <script src="/js/edit/modules/files2.js" > </script>
         <form>
             <h1 i18n:translate="edit_files_choosedirectory">TEXT</h1>
             <div class="mediatum_edit_files_choosedirectory">

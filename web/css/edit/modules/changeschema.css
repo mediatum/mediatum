@@ -1,0 +1,8 @@
+/*
+  Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+  SPDX-License-Identifier: AGPL-3.0-or-later
+*/
+#datatable{border:0px solid silver; border-width:1px 1px 0px 1px; width:90%}
+#datatable th{background-color:#d8d8d8; padding:3px 5px 2px 3px; border-bottom:1px solid silver; font-variant:small-caps}
+#datatable tr{border:1px solid silver}
+#datatable td{vertical-align:middle; padding:2px;border-bottom:1px solid silver}

@@ -86,3 +86,15 @@ def find_plugin_with_theme(theme_name):
         theme_path = os.path.join(plugin_path, "themes", theme_name)
         if os.path.exists(theme_path):
             return plugin_path
+
+
+def init_web_routes():
+    """
+    Call init_web_route for each plugin.
+    This allows plugin to add web routes after the flask app object is initialized.
+    :return:
+    """
+    for name, module in plugins.iteritems():
+        if hasattr(module, "init_web_route") and callable(module.init_web_route):
+            logg.info("Initializing web route for '%s'", name)
+            module.init_web_route()

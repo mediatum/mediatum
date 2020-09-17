@@ -3,22 +3,12 @@
   SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 <metal:block metal:define-macro="view_type">
-    <script type="text/javascript">
-        function openwindow(url)
-        {
-            popup = window.open(url, "popup", "resizable=1,width=700,height=450,scrollbars");
-            popup.focus();
-        }
-
-        function showInfo(){
-            document.getElementById("message").style.display="block";
-        }
-    </script>
+    <script src="/js/admin/modules/admin.js"> </script>
     <!--[if lt IE 7]>
-            <script type="text/javascript">
-                window.attachEvent("onload", buttonfix);
-            </script>
-        <![endif]-->
+        <script type="text/javascript">
+            window.attachEvent("onload", buttonfix);
+        </script>
+    <![endif]-->
     <p><a i18n:translate="admin_overview" href=".">TEXT</a></p>
     <form name="useroverview" method="post" action="#" enctype="multipart/form-data" tal:attributes="action page">
         <input tal:attributes="value csrf" type="hidden" name="csrf_token">
@@ -52,10 +42,9 @@
                         <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:u'sortcol_{}'.format(col.link)" class="admin_sortcol" type="submit" value="">TEXT</button>
                     </th>
                     <th>&nbsp;</th>
-
                     <th>
                         <a i18n:attributes="title admin_meta_exportall_title" href="/admin/export/metatype/all" target="_blank">
-                                <img src="/img/export.png" border="0"/>
+                            <img src="/img/export.png" border="0"/>
                         </a>
                     </th>
                     <th align="right">
@@ -67,7 +56,6 @@
                 <tr tal:condition="python:len(metadatatypes)==0">
                     <td colspan="10"><small i18n:translate="admin_meta_nometa">TEXT</small></td>
                 </tr>
-
                 <tal:block tal:repeat="metadatatype python:metadatatypes[pages.getStart():pages.getEnd()]">
                 <tr tal:define="cssclass python:metadatatypes.index(metadatatype)%2 and 'norm' or 'silver'" tal:attributes="class cssclass">
                     <td tal:content="python:u'{}.'.format(metadatatypes.index(metadatatype)+1)"/>
@@ -84,7 +72,6 @@
                         </tal:block>
                     </td>
                     <td>
-                        &nbsp;&nbsp;
                         <img tal:condition="python:metadatatype.access_ruleset_assocs.filter_by(ruletype='read').count()>0" i18n:attributes="title admin_meta_acl_title" src="/img/archive.png"/>
                         <img tal:condition="python:metadatatype.access_ruleset_assocs.filter_by(ruletype='read').count()==0" i18n:attributes="title admin_meta_acl_title" src="/img/mark_empty.png"/>
                     </td>
@@ -96,14 +83,12 @@
                         <a tal:attributes="href python:u'./metatype/{}/overview?style=popup'.format(metadatatype.getName())" i18n:attributes="title admin_meta_fieldoverview_title" target="_blank">
                             <img src="/img/search.gif" border="0"/>
                         </a>
-
                         <a tal:attributes="href python:u'/admin/export/metatype/{}'.format(metadatatype.getName())" i18n:attributes="title admin_meta_export_title" target="_blank">
                             <img src="/img/export.png" border="0"/>
                         </a>
                     </td>
                     <td>
                         <input tal:attributes="name python:u'edit_{}'.format(metadatatype.getName())" i18n:attributes="title admin_meta_edit_title" type="image" src="/img/edit.png"/>
-                        &nbsp;&nbsp;
                         <input
                          tal:condition="python:metadatatype.name not in used_by"
                          tal:attributes="name python:u'delete_{}'.format(metadatatype.getName()); onclick python:u'return questionDelName(\'{} ({})\')'.format(metadatatype.getLongName(), metadatatype.getName())"
@@ -164,19 +149,12 @@
 </metal:block>
 
 <metal:block metal:define-macro="modify_type" tal:define="id python:metadatatype.getName()">
+    <script src="/js/admin/modules/admin.js"> </script>
     <!--[if lt IE 7]>
-            <script type="text/javascript">
-                window.attachEvent("onload", buttonfix);
-            </script>
-        <![endif]-->
-    <script>
-        function selectacl(objname){
-            obj = document.getElementById(objname);
-            for (i=0; i<obj.length; i++){
-                obj.options[i].selected=true;
-            }
-        }
+    <script type="text/javascript">
+        window.attachEvent("onload", buttonfix);
     </script>
+    <![endif]-->
     <p><a tal:attributes="href python:u'./metatype{}'.format(page)" i18n:translate="admin_overview">TEXT</a></p>
     <form tal:attributes="action page" name="editmetatype" method="post">
         <input tal:attributes="value csrf" type="hidden" name="csrf_token">
@@ -225,7 +203,6 @@
                     </select>
                 </td>
             </tr>
-
             <tr>
                 <td><tal:block i18n:translate="admin_meta_bibtex">TEXT</tal:block>: <br>
                     <tal:block i18n:translate="admin_meta_bibtex_warning">TEXT</tal:block>
@@ -244,12 +221,11 @@
                         <option tal:repeat="citeproctype citeproctypes"
                             tal:attributes="value python:citeproctype; selected python:'selected' if citeproctype in citeprocselected else None"
                             tal:content="python:citeproctype"
-                            i18n:translate=""
-                        />
+                            i18n:translate="">
+                        </option>
                     </select>
                 </td>
             </tr>
-
             <tr>
                 <td><tal:block i18n:translate="admin_meta_rights">TEXT</tal:block>:</td>
                 <td>
@@ -292,7 +268,6 @@
     </form>
 </metal:block>
 
-
 <metal:block metal:define-macro="show_info">
     <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
     <html>
@@ -303,7 +278,6 @@
             <title i18n:translate="admin_infopopup_title">TEXT</title>
             <link rel="stylesheet" href="/css/admin.css">
         </head>
-
         <body>
             <table cellpadding="20" cellspacing="0" width="100%" class="header">
                 <tr>
@@ -331,21 +305,7 @@
 
             <title i18n:translate="admin_defpopup_title">TEXT</title>
             <link rel="stylesheet" href="/css/admin.css">
-
-
-            <style type="text/css">
-                body{
-                    margin: 10px;
-                }
-                table.list{
-                    width: 100%;
-                    border: 1px solid silver;
-                }
-
-                table.list td.list{
-                    border: 1px solid silver;
-                }
-            </style>
+            <link rel="stylesheet" href="/css/admin/modules/metatype.css">
         </head>
         <body>
             <h3 i18n:translate="admin_defpopup_header">TEXT '<span tal:content="python:metadatatype.getName()" i18n:name="name"/>'</h3>
@@ -395,7 +355,6 @@
     </html>
 </metal:block>
 
-
 <html metal:define-macro="editor_popup">
     <head>
         <script type="text/javascript" language="javascript" src="/js/metaeditor.js">selected==false;</script>
@@ -406,7 +365,6 @@
     </head>
     <body class="form">
         <tal:block tal:replace="raw editor"/>
-
         <tal:block tal:condition="python:edit==''">
             <form method="post" name="op">
                 <input tal:attributes="value csrf" type="hidden" name="csrf_token">

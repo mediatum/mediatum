@@ -4,10 +4,10 @@
 -->
 <metal:block metal:define-macro="view">
     <!--[if lt IE 7]>
-            <script type="text/javascript">
-                window.attachEvent("onload", buttonfix);
-            </script>
-        <![endif]-->
+        <script type="text/javascript">
+            window.attachEvent("onload", buttonfix);
+        </script>
+    <![endif]-->
     <p><a i18n:translate="admin_overview" href=".">TEXT</a></p>
     <form tal:attributes="action python:page" name="addnewworkflow" method="post" action="#" enctype="multipart/form-data">
         <input tal:attributes="value csrf" type="hidden" name="csrf_token">
@@ -107,16 +107,7 @@
 </metal:block>
 
 <metal:block metal:define-macro="modify" tal:define="id python:workflow.getName()">
-    <script>
-        function selectacl(objnames){
-            for (objname in objnames){
-                obj = document.getElementById(objnames[objname]);
-                for (i=0; i<obj.length; i++){
-                    obj.options[i].selected=true;
-                }
-            }
-        }
-    </script>
+    <script src="/js/admin/modules/admin.js"> </script>
     <p><a tal:attributes="href python:u'./workflows{}'.format(page)" i18n:translate="admin_overview">TEXT</a></p>
     <form tal:attributes="action page" name="editworkflow" method="post" action="#">
         <input tal:attributes="value csrf" type="hidden" name="csrf_token">
@@ -222,15 +213,14 @@
         <input type="hidden" name="actpage" tal:attributes="value actpage"/>
         <input type="hidden" name="actfilter" tal:attributes="value actfilter"/>
     </form>
-
 </metal:block>
 
 <metal:block metal:define-macro="view_step">
     <!--[if lt IE 7]>
-            <script type="text/javascript">
-                window.attachEvent("onload", buttonfix);
-            </script>
-        <![endif]-->
+        <script type="text/javascript">
+            window.attachEvent("onload", buttonfix);
+        </script>
+    <![endif]-->
     <p><a href="./workflows" i18n:translate="admin_overview">TEXT</a></p>
     <form tal:attributes="action page" name="metafields" method="post" action="#">
         <input tal:attributes="value csrf" type="hidden" name="csrf_token">
@@ -325,26 +315,7 @@
 </metal:block>
 
 <metal:block metal:define-macro="modify_step" tal:define="id python:workflowstep.id; language_count python:len(languages)">
-    <script type="text/javascript">
-        function openwindow(url) {
-          popup = window.open(url, "popup", "width=600,height=650,scrollbars");
-          popup.focus();
-        }
-
-        function sendForm(){
-            document.getElementById("form_op").value = "update";
-            document.forms.addmfield.submit();
-        }
-
-        function selectacl(objnames){
-            for (objname in objnames){
-                obj = document.getElementById(objnames[objname]);
-                for (i=0; i<obj.length; i++){
-                    obj.options[i].selected=true;
-                }
-            }
-        }
-    </script>
+    <script src="/js/admin/modules/admin.js"> </script>
     <p><a tal:attributes="href python:u'./workflows?detailof={}{}'.format(workflow_id, page)" i18n:translate="admin_overview">TEXT</a></p>
     <form tal:attributes="action page" name="addmfield" id="addmfield" method="post" action="#">
         <input tal:attributes="value csrf" type="hidden" name="csrf_token">
@@ -497,7 +468,7 @@
             <tr>
                 <td>&nbsp;</td>
                 <td>
-                    <button i18n:attributes="title admin_save_title" i18n:translate="admin_save" tal:attributes="onclick python:u'selectacl(Array(\'left_read{}\', \'left_write{}\'))'.format(acl_read['name'], acl_write['name']);" type="submit" name="submitbutton" value="submit">TEXT</button>&nbsp;&nbsp;
+                    <button i18n:attributes="title admin_save_title" i18n:translate="admin_save" tal:attributes="onclick python:u'selectacls(Array(\'left_read{}\', \'left_write{}\'))'.format(acl_read['name'], acl_write['name']);" type="submit" name="submitbutton" value="submit">TEXT</button>&nbsp;&nbsp;
                     <button i18n:attributes="title admin_cancel_title" i18n:translate="admin_cancel" type="submit" name="cancel" value="cancel" onclick="setCancel()">TEXT</button>
                 </td>
             </tr>
@@ -513,7 +484,7 @@
 
 <metal:block metal:define-macro="view_editor">
     <tr tal:condition="python:len(fields)>0">
-            <td colspan="2"><b i18n:translate="admin_wfstep_additional">TEXT</b>:</td>
+        <td colspan="2"><b i18n:translate="admin_wfstep_additional">TEXT</b>:</td>
     </tr>
     <tal:block tal:repeat="field fields">
         <tr tal:define="name python:field.getName(); value python:node.get(name)">

@@ -19,3 +19,17 @@ function selectacl(objname){
         obj.options[i].selected=true;
     }
 }
+
+function sendForm(){
+    document.getElementById("form_op").value = "update";
+    document.forms.addmfield.submit();
+}
+
+function selectacls(objnames){
+    for (objname in objnames){
+        obj = document.getElementById(objnames[objname]);
+        for (i=0; i<obj.length; i++){
+            obj.options[i].selected=true;
+        }
+    }
+}

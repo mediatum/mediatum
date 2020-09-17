@@ -33,3 +33,18 @@ function selectacls(objnames){
         }
     }
 }
+
+function changetype(doc){
+    obj = doc.getElementById("mtype");
+    t = obj.value;
+
+    for(var i=0; i< obj.options.length; i++){
+        o = doc.getElementById("div_"+obj.options[i].value);
+        if (o){
+            o.style.display = "none";
+        }
+    }
+    if (doc.getElementById("div_"+obj.value)){
+        doc.getElementById("div_"+obj.value).style.display = "block";
+    }
+}

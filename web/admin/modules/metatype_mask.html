@@ -4,19 +4,12 @@
 -->
 <metal:block metal:define-macro="view_mask">
     <!--[if lt IE 7]>
-            <script type="text/javascript">
-                window.attachEvent("onload", buttonfix);
-            </script>
-        <![endif]-->
-    <p><a tal:attributes="href python:u'./metatype{}'.format(page)" i18n:translate="admin_overview">TEXT</a> | <a href="?detaillist_x=1" tal:attributes="href python:u'?detaillist_{}__=1'.format(metadatatype.getName())" i18n:translate="admin_meta_editdetail">TEXT</a></p>
     <script type="text/javascript">
-        function openwindow(url)
-        {
-            popup = window.open(url, "popup", "resizable=1,width=700,height=450,scrollbars");
-            popup.focus();
-        }
+        window.attachEvent("onload", buttonfix);
     </script>
-
+    <![endif]-->
+    <p><a tal:attributes="href python:u'./metatype{}'.format(page)" i18n:translate="admin_overview">TEXT</a> | <a href="?detaillist_x=1" tal:attributes="href python:u'?detaillist_{}__=1'.format(metadatatype.getName())" i18n:translate="admin_meta_editdetail">TEXT</a></p>
+    <script src="/js/admin/modules/admin.js"> </script>
     <form name="fieldoverview" method="post" action="#" tal:attributes="action page">
         <input tal:attributes="value csrf" type="hidden" name="csrf_token">
         <table class="overview">
@@ -65,7 +58,9 @@
                         <img tal:condition="python:mask.getDefaultMask()" src="/img/haken.gif"/>
                         <img tal:condition="python:not mask.getDefaultMask()" src="/img/emtyDot1Pix.gif"/>
                     </td>
-                    <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img tal:attributes="src python:lang_icons.get(mask.getLanguage())"/></td>
+                    <td>
+                        <img tal:attributes="src python:lang_icons.get(mask.getLanguage())"/>
+                    </td>
                     <td>
                         <img tal:condition="python:mask.access_ruleset_assocs.filter_by(ruletype='read').count()>0" i18n:attributes="title admin_mask_acl_title" src="/img/archive.png"/>
                         <img tal:condition="python:mask.access_ruleset_assocs.filter_by(ruletype='read').count()==0" i18n:attributes="title admin_mask_acl_title" src="/img/mark_empty.png"/>
@@ -92,13 +87,11 @@
                     <th align="right" colspan="4"><small tal:content="structure python:pages.printPageAll()"/></th>
                 </tr>
                 <tr>
-                    <td colspan="8">
-                        &nbsp;
-                    </td>
+                    <td colspan="8"></td>
                 </tr>
             </tfoot>
         </table>
-        <br />
+        <br/>
         <input type="hidden" name="acttype" value="mask"/>
         <input type="hidden" name="parent" tal:attributes="value python:metadatatype.id"/>
         <input type="hidden" name="actpage" tal:attributes="value actpage"/>
@@ -107,29 +100,7 @@
 </metal:block>
 
 <metal:block metal:define-macro="modify_mask">
-    <script type="text/javascript">
-    function changetype(doc){
-        obj = doc.getElementById("mtype");
-        t = obj.value;
-        
-        for(var i=0; i< obj.options.length; i++){
-            o = doc.getElementById("div_"+obj.options[i].value);
-            if (o){
-                o.style.display = "none";
-            }
-        }
-        if (doc.getElementById("div_"+obj.value)){
-            doc.getElementById("div_"+obj.value).style.display = "block";
-        }
-    }
-    
-    function selectacl(objname){
-        obj = document.getElementById(objname);
-        for (i=0; i<obj.length; i++){
-            obj.options[i].selected=true;
-        }
-    }
-    </script>
+    <script src="/js/admin/modules/admin.js"> </script>
     <p><a tal:attributes="href python:u'./metatype{}'.format(page)" i18n:translate="admin_overview">TEXT</a></p>
     <form tal:attributes="action page" name="editmetatype" method="post">
         <input tal:attributes="value csrf" type="hidden" name="csrf_token">
@@ -249,7 +220,6 @@
                     </table> 
                 </td>
             </tr>
-            
             <tr>
                 <td>&nbsp;</td>
                 <td><small>(<span class="required">*</span> <span i18n:translate="admin_mandatory_info">TEXT</span>)</small></td>

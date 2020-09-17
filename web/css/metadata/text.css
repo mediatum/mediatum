@@ -1,0 +1,14 @@
+/*
+  Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+  SPDX-License-Identifier: AGPL-3.0-or-later
+*/
+body{font-size:12px;margin:5px;font-family:arial;background:#fff url(/img/layout/edit_body.jpg) repeat-x scroll left top}
+#items{width:20px;height:20px;border:1px solid silver;text-align:center;margin:1px;padding:0px;cursor:hand;font-size: 9px}
+#style{margin:0px;padding:0px;border:1px solid silver;cursor:hand}
+#value{border:1px solid silver;width:400px}
+#spcvalue{width:80px;height:80px;border:1px solid silver;float:right;margin:1px;padding-top:20px;font-size: 50px;text-align:center;background-color:#fff}
+#spcname{width:80px;height:80px;float:right}
+#formatedvalue{width:400px;height:40px;display:block;font-size:14px;border:1px solid silver;float:left}
+#spccontainer{width:450px;height:313px;border:1px solid silver;display:block;padding:2px 1px 1px 2px;float:left;background-color:#fff;margin-top:1px}
+#buttons{float:right;margin-top:14px;backgrond-color:#fff}
+#style:hover, #items:hover{ border:1px solid black}

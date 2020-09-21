@@ -499,9 +499,8 @@ def oaiRequest(req):
         error.text = ex.details
         oai_pmh.append(error)
 
-    logg.info("%s:%s OAI (exit after %.3f sec.) %s - (user-agent: %s)",
+    logg.info("%s OAI (exit after %.3f sec.) %s - (user-agent: %s)",
             req.remote_addr,
-            req.port,
             (time.clock() - start_time),
             req.path.replace('//', '/'),
             req.headers.get("user-agent", "unknown")[:60],

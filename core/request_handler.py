@@ -701,9 +701,11 @@ def error(req, code, s=None, content_type='text/html'):
 
 
 @_lru_cache(maxsize=128)
+def _accept_mimetypes(accept):
+    return _parse_accept_header(accept, _MIMEAccept)
+
 def accept_mimetypes(req):
-    accept = _parse_accept_header(get_header(req, "ACCEPT"), _MIMEAccept)
-    return accept
+    return _accept_mimetypes(get_header(req, "ACCEPT"))
 
 
 def unlink_tempfiles(req):

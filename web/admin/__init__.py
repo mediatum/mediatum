@@ -204,6 +204,7 @@ def flask_routes(app):
     @app.route('/pwdchange', methods=['GET', 'POST'])
     @app.route('/pwdforgotten')
     @app.route('/mask', methods=['GET', 'POST'])
+    @app.route('/node', methods=['GET', 'POST'])
     @app.route('/edit/<path:action>', methods=['GET', 'POST'])
     @app.route('/admin/<path:action>', methods=['GET', 'POST'])
     @app.route('/services/<path:action>')

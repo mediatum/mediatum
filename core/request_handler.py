@@ -9,7 +9,6 @@ import importlib as _importlib
 import zipfile as _zipfile
 import httpstatus as _httpstatus
 import traceback as _traceback
-import urllib as _urllib
 import flask as _flask
 import utils.locks as _utils_lock
 from functools import partial as _partial
@@ -232,19 +231,6 @@ def setTempDir(tempdir):
 
 def getBase():
     return GLOBAL_ROOT_DIR
-
-
-# --------------------------------------------------
-# split a uri according to https://tools.ietf.org/html/rfc3986
-# --------------------------------------------------
-def split_uri(req):
-    # <path>;<params>?<query>#<fragment>
-    path_regex = _re.compile(
-        #      path      params    query   fragment
-        r'([^;?#]*)(;[^?#]*)?(\?[^#]*)?(#.*)?'
-    )
-    m = path_regex.match(req.full_path)
-    return m.groups()
 
 
 def get_header(req, header):
@@ -989,9 +975,7 @@ class default_handler:
         return 1
 
     def can_handle(self, request):
-        path, params, query, fragment = split_uri(request)
-        if '%' in path:
-            path = _urllib.unquote(path)
+        path = request.path
         while path and path[0] == '/':
             path = path[1:]
         if self.filesystem.isdir(path):
@@ -1020,10 +1004,7 @@ class default_handler:
             error(request, 400)  # bad request
             return
 
-        path, params, query, fragment = split_uri(request)
-
-        if '%' in path:
-            path = _urllib.unquote(path)
+        path = request.path
 
         # strip off all leading slashes
         while path and path[0] == '/':
@@ -1222,15 +1203,10 @@ def callhandler(handler_func, req):
 
 
 def handle_request(req):
-
-    path, params, query, fragment = split_uri(req)
     req._header_cache = {}
     req.app_cache = {}
     req.use_chunked = 0
 
-    path = _urllib.unquote(path)
-
-    req.full_path = _urllib.unquote(req.full_path)
     req.response = _flask.make_response()
     req.response.headers['Content-Type'] = 'text/html; encoding=utf-8; charset=utf-8'
 
@@ -1240,7 +1216,7 @@ def handle_request(req):
     context = None
     global contexts
     for c in contexts:
-        if path.startswith(c.name) and len(c.name) > maxlen:
+        if req.path.startswith(c.name) and len(c.name) > maxlen:
             context = c
             maxlen = len(context.name)
 
@@ -1248,11 +1224,9 @@ def handle_request(req):
         error(req, 404)
         return req
 
-    path = path[len(context.name):]
-    if len(path) == 0 or path[0] != '/':
-        path = "/" + path
-
-    req.path = path
+    req.path = req.path[len(context.name):]
+    if len(req.path) == 0 or req.path[0] != '/':
+        req.path = "/" + req.path
 
     if not req.form:
         data = req.get_data()
@@ -1261,15 +1235,13 @@ def handle_request(req):
             data = data.split('&')
             for e in data:
                 if '=' in e:
-                    pairs.append(tuple(map(_urllib.unquote_plus, e.split("=", 1))))
+                    pairs.append(tuple(e.split("=", 1)))
                 elif e.strip():
                     _logg.warn("corrupt parameter: %s", e.encode("string-escape"))
             req.form = make_param_dict_utf8_values(pairs)
             del pairs, data
 
     make_legacy_params_dict(req)
-    req.params = {_urllib.unquote(k) if isinstance(k, str) else k: _urllib.unquote(v) if isinstance(v, str) else v
-                  for k, v in req.params.items()}
 
     if req.form and req.method == 'POST':
         csrf_token = req.params.get("csrf_token")
@@ -1284,7 +1256,7 @@ def handle_request(req):
     req.csrf_token = mediatum_form.csrf_token
     req.full_path = req.full_path.replace(context.name, "/")
 
-    function = context.match(path)
+    function = context.match(req.path)
     if function is not None:
         callhandler(function, req)
     else:

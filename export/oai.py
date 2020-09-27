@@ -518,7 +518,7 @@ def oaiRequest(req):
     logg.info("%s OAI (exit after %.3f sec.) %s - (user-agent: %s)",
             req.remote_addr,
             (time.clock() - start_time),
-            req.path.replace('//', '/'),
+            req.mediatum_contextfree_path.replace('//', '/'),
             req.headers.get("user-agent", "unknown")[:60],
            )
 

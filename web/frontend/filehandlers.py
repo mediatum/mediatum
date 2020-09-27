@@ -142,7 +142,7 @@ send_doc = partial(_send_file_with_type, u"document", None)
 
 def send_image(req):
     try:
-        nid, file_ext = split_image_path(req.path)
+        nid, file_ext = split_image_path(req.mediatum_contextfree_path)
     except ValueError:
         req.response.status_code = 404
         return 400
@@ -228,7 +228,7 @@ def send_original_file(req):
 
 
 def send_file(req):
-    parts = splitpath(req.path)
+    parts = splitpath(req.mediatum_contextfree_path)
     if len(parts) != 2:
         req.response.status_code = 400
         return 400
@@ -324,7 +324,7 @@ def send_attachment(req):
 
 def send_attfile(req):
     """send single attachment file to user"""
-    parts = req.path[9:].split('/')
+    parts = req.mediatum_contextfree_path[9:].split('/')
 
     if len(parts) < 2:
         req.response.status_code = 404
@@ -403,7 +403,7 @@ def fetch_archived(req):
 
 def send_from_webroot(req):
     for webroot_dir in _webroots:
-        filepath = os.path.join(config.basedir, webroot_dir, req.path.strip("/"))
+        filepath = os.path.join(config.basedir, webroot_dir, req.mediatum_contextfree_path.strip("/"))
         if os.path.isfile(filepath):
             return _request_handler.sendFile(req, filepath, getMimeType(filepath)[0])
 
@@ -412,7 +412,7 @@ def send_from_webroot(req):
 ### redirects for legacy handlers
 
 def redirect_images(req):
-    req.response.headers["Location"] = "/image" + req.path[7:]
+    req.response.headers["Location"] = "/image" + req.mediatum_contextfree_path[7:]
     req.response.status_code = 301
     return 301
 

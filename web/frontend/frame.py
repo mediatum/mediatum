@@ -411,10 +411,10 @@ class UserLinks(object):
 
         self.id = nid
         self.language = lang(req)
-        self.path = req.path
+        self.path = req.mediatum_contextfree_path
         self.args = req.args
         # XXX: hack to show the frontend link when workflows are displayed
-        self.is_workflow_area = req.path.startswith("/publish")
+        self.is_workflow_area = req.mediatum_contextfree_path.startswith("/publish")
 
     def getLinks(self):
         guest_user = get_guest_user()

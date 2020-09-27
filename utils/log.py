@@ -339,7 +339,7 @@ def make_xid_and_errormsg_hash():
 def extra_log_info_from_req(req, add_user_info=True):
 
     extra = {"args": dict(req.args),
-             "path": req.path,
+             "path": req.mediatum_contextfree_path,
              "method": req.method}
 
     if req.method == "POST":

@@ -606,7 +606,7 @@ def handle_request(req):
     if not PYPDF_MODULE_PRESENT:
         return
 
-    if req.path.startswith("/serve_page/"):
+    if req.mediatum_contextfree_path.startswith("/serve_page/"):
 
         node_id = req.params.get("node_id", None)
         if node_id:
@@ -638,13 +638,13 @@ def handle_request(req):
             req.response.status_code = 403
             return 403  # forbidden
 
-        if req.path == '/serve_page/document.pdf':
+        if req.mediatum_contextfree_path == '/serve_page/document.pdf':
             filepath = [f.abspath for f in node.filrd if f.filetype.startswith('document')][0]
             return_code, file_size, abspath = serve_file(req, filepath)
             req.response.status_code = return_code
             return return_code
 
-        if req.path == '/serve_page/p_document.pdf':
+        if req.mediatum_contextfree_path == '/serve_page/p_document.pdf':
             filepath = (
                 [f.abspath for f in node.files if f.filetype.startswith('p_document') and f.base_name.startswith(
                     'addpic2pdf_%s_node_%s_' % (unicode(current_workflow_step.id), unicode(node.id), )) and f.filetype.startswith('p_document')]
@@ -654,7 +654,7 @@ def handle_request(req):
             return_code, file_size, abspath = serve_file(req, filepath)
             return return_code
 
-        pageno = req.path.replace("/serve_page/", "")
+        pageno = req.mediatum_contextfree_path.replace("/serve_page/", "")
         pageno = pageno.split('?')[0]
 
         pdf_in_filepath = getPdfFilepathForProcessing(current_workflow_step, node)
@@ -666,7 +666,7 @@ def handle_request(req):
         req.response.status_code = return_code
         return return_code
 
-    if req.path.startswith("/grid"):
+    if req.mediatum_contextfree_path.startswith("/grid"):
         pdf_w = float(req.params.get('pdf_w', 595.275))
         pdf_h = float(req.params.get('pdf_h', 841.890))
 

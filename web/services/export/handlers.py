@@ -822,7 +822,7 @@ def get_node_data_struct(
     res['nodelist_start'] = offset
     res['nodelist_limit'] = limit
     res['nodelist_count'] = node_count
-    res['path'] = req.path
+    res['path'] = req.mediatum_contextfree_path
     res['status'] = 'ok'
     res['html_response_code'] = '200'  # ok
     res['build_response_end'] = time.time()

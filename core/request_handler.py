@@ -327,8 +327,8 @@ class FileStore:
         for handler in self.handlers:
             if handler.can_handle(request):
                 return handler.handle_request(request)
-        request.path = _escape(request.path)
-        return error(request, 404, "File " + request.path + " not found")
+        request.mediatum_contextfree_path = _escape(request.mediatum_contextfree_path)
+        return error(request, 404, "File " + request.mediatum_contextfree_path + " not found")
 
     def addRoot(self, dir):
         if not _os.path.isabs(dir):
@@ -975,7 +975,7 @@ class default_handler:
         return 1
 
     def can_handle(self, request):
-        path = request.path
+        path = request.mediatum_contextfree_path
         while path and path[0] == '/':
             path = path[1:]
         if self.filesystem.isdir(path):
@@ -1004,7 +1004,7 @@ class default_handler:
             error(request, 400)  # bad request
             return
 
-        path = request.path
+        path = request.mediatum_contextfree_path
 
         # strip off all leading slashes
         while path and path[0] == '/':
@@ -1180,7 +1180,7 @@ def callhandler(handler_func, req):
             log_extra["req"] = extra_log_info_from_req(req)
 
             _logg.exception(u"exception (xid=%s) while handling request %s %s, %s",
-                           xid, req.method, req.path, dict(req.args), extra=log_extra)
+                           xid, req.method, req.mediatum_contextfree_path, dict(req.args), extra=log_extra)
 
             if mail_to_address:
                 msg = translate("core_snipped_internal_server_error_with_mail", request=req).replace('${email}',
@@ -1207,6 +1207,8 @@ def handle_request(req):
     req.app_cache = {}
     req.use_chunked = 0
 
+    mediatum_contextfree_path = req.path
+
     req.response = _flask.make_response()
     req.response.headers['Content-Type'] = 'text/html; encoding=utf-8; charset=utf-8'
 
@@ -1216,7 +1218,7 @@ def handle_request(req):
     context = None
     global contexts
     for c in contexts:
-        if req.path.startswith(c.name) and len(c.name) > maxlen:
+        if mediatum_contextfree_path.startswith(c.name) and len(c.name) > maxlen:
             context = c
             maxlen = len(context.name)
 
@@ -1224,9 +1226,11 @@ def handle_request(req):
         error(req, 404)
         return req
 
-    req.path = req.path[len(context.name):]
-    if len(req.path) == 0 or req.path[0] != '/':
-        req.path = "/" + req.path
+    mediatum_contextfree_path = mediatum_contextfree_path[len(context.name):]
+    if not mediatum_contextfree_path.startswith("/"):
+        mediatum_contextfree_path = "/" + mediatum_contextfree_path
+
+    req.mediatum_contextfree_path = mediatum_contextfree_path
 
     if not req.form:
         data = req.get_data()
@@ -1256,7 +1260,7 @@ def handle_request(req):
     req.csrf_token = mediatum_form.csrf_token
     req.full_path = req.full_path.replace(context.name, "/")
 
-    function = context.match(req.path)
+    function = context.match(mediatum_contextfree_path)
     if function is not None:
         callhandler(function, req)
     else:

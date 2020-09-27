@@ -23,7 +23,7 @@ def become_user(req):
 
     before_user_id = user.id
 
-    match = BECOME_RE.match(req.path)
+    match = BECOME_RE.match(req.mediatum_contextfree_path)
     if match:
         p1, p2 = match.groups()
         if p1 and p2:
@@ -31,13 +31,13 @@ def become_user(req):
         else:
             login_name, authenticator_key = p1, None
     else:
-        logg.warn("become_user handler: bad request from user %s, path %s", before_user_id, req.path)
+        logg.warn("become_user handler: bad request from user %s, path %s", before_user_id, req.mediatum_contextfree_path)
         return 400
 
     try:
         user = web.admin.adminutils.become_user(login_name, authenticator_key)
     except Exception as e:
-        logg.exception("become_user handler: becoming user failed for user %s, path %s", before_user_id, req.path)
+        logg.exception("become_user handler: becoming user failed for user %s, path %s", before_user_id, req.mediatum_contextfree_path)
         return 400
 
     if user is not None:

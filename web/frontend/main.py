@@ -90,7 +90,7 @@ def change_language_request(req):
         switch_language(req, language)
         params = req.args.copy()
         del params["change_language"]
-        req.response.headers["Location"] = build_url_from_path_and_params(req.path, params)
+        req.response.headers["Location"] = build_url_from_path_and_params(req.mediatum_contextfree_path, params)
         # set the language cookie for caching
         _request_handler.setCookie(req, "language", language)
         req.response.status_code = httpstatus.HTTP_MOVED_TEMPORARILY
@@ -131,7 +131,7 @@ def overwrite_id_in_req(nid, req):
 
 @check_change_language_request
 def display_alias(req):
-    match = DISPLAY_PATH.match(req.path)
+    match = DISPLAY_PATH.match(req.mediatum_contextfree_path)
     if match:
         alias_name = match.group(1).rstrip("/").lower()
         node_alias = q(NodeAlias).get(unicode(alias_name))
@@ -146,7 +146,7 @@ def display_alias(req):
         # redirect to regular display handler
         display(req)
     else:
-        raise RuntimeError(u"illegal alias '{}', should not be passed to this handler!".format(req.path))
+        raise RuntimeError(u"illegal alias '{}', should not be passed to this handler!".format(req.mediatum_contextfree_path))
 
 
 RE_NEWSTYLE_NODE_URL = re.compile("/(nodes/)?(\d+).*")
@@ -158,7 +158,7 @@ def display_newstyle(req):
     /nodes/<nid> OR
     /<nid> (can be interpreted as alias, too)
     """
-    nodes_path, nid_or_alias = RE_NEWSTYLE_NODE_URL.match(req.path).groups()
+    nodes_path, nid_or_alias = RE_NEWSTYLE_NODE_URL.match(req.mediatum_contextfree_path).groups()
     if nodes_path is None:
         # check first if nid_or_alias is an alias
         maybe_node_alias = q(NodeAlias).get(unicode(nid_or_alias))
@@ -225,7 +225,7 @@ PUBPATH = re.compile("/?(publish|pub)/(.*)$")
 
 @check_change_language_request
 def publish(req):
-    m = PUBPATH.match(req.path)
+    m = PUBPATH.match(req.mediatum_contextfree_path)
 
     node = workflow_root = q(Workflows).one()
     if m:

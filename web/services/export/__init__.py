@@ -76,7 +76,7 @@ def request_handler(req):
 
     handle_starttime = time.time()
     matched = False
-    req_path = req.path
+    req_path = req.mediatum_contextfree_path
 
     for method, pattern, handler_func, rewrite_target, url_flags, data in urls:
         if method and method == req.method:
@@ -86,7 +86,7 @@ def request_handler(req):
                 matched = True
 
                 if url_flags == SERVICES_URL_HAS_HANDLER:
-                    handle_path = req.path
+                    handle_path = req.mediatum_contextfree_path
                     handle_params = req.params
                     response_code, bytes_sent, d = handler_func(req, handle_path, handle_params, data, **m.groupdict())
                     break
@@ -167,7 +167,7 @@ def request_handler(req):
     sys.stdout.flush()
 
     if not matched:
-        req.path = cgi.escape(req.path)
-        return _error(req, 404, "File " + req.path + " not found")
+        req.mediatum_contextfree_path = cgi.escape(req.mediatum_contextfree_path)
+        return _error(req, 404, "File " + req.mediatum_contextfree_path + " not found")
 
     return response_code

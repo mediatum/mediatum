@@ -141,14 +141,14 @@ def request_handler(req):
                                                                                                                    1),
                                                                                                                request_count,
                                                                                                                req.method,
-                                                                                                               req.full_path + req_query,
+                                                                                                               req.path + req_query,
                                                                                                                req.params,
                                                                                                                useragent)
 
     if logg.isEnabledFor(logging.INFO) and matched and 'timetable' in d:
         timesum = 0.0
         s += '\n' + ('-' * 80)
-        s += "\n| timetable for request (%s, %s, %s)" % (req.method, req.full_path, handle_params)
+        s += "\n| timetable for request (%s, %s, %s)" % (req.method, req.path, handle_params)
         for i, timetable_step in enumerate(d['timetable']):
             if len(timetable_step) == 2:
                 step, executiontime = timetable_step

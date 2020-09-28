@@ -161,8 +161,8 @@ def getContent(req, ids):
     update_error = False
     update_error_extension = False
 
-    logg.debug("%s|web.edit.modules.files.getContend|req.full_path=%s|req.mediatum_contextfree_path=%s|req.params=%s|ids=%s",
-               get_user_id(), req.full_path, req.mediatum_contextfree_path, req.params, ids)
+    logg.debug("%s|web.edit.modules.files.getContend|req.path=%s|req.mediatum_contextfree_path=%s|req.params=%s|ids=%s",
+               get_user_id(), req.path, req.mediatum_contextfree_path, req.params, ids)
 
     if not node.has_write_access() or "files" in user.hidden_edit_functions:
         req.response.status_code = httpstatus.HTTP_FORBIDDEN

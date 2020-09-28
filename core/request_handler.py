@@ -868,7 +868,7 @@ def makeSelfLink(req, params):
         else:
             with _suppress(Exception, warn=False):
                 del params2[k]
-    ret = _build_url_from_path_and_params(req.full_path, params2)
+    ret = _build_url_from_path_and_params(req.path, params2)
     return ret
 
 
@@ -1193,7 +1193,7 @@ def callhandler(handler_func, req):
             return error(req, 500, s.encode("utf8"), content_type='text/html; encoding=utf-8; charset=utf-8')
 
         else:
-            _logg.error("Error in page: '%s %s'", req.type, req.fullpath, exc_info=1)
+            _logg.error("Error in page: '%s %s'", req.type, req.path, exc_info=1)
             s = "<pre>" + _traceback.format_exc() + "</pre>"
             return error(req, 500, s)
 
@@ -1252,20 +1252,19 @@ def handle_request(req):
         if not csrf_token:
             csrf_token = req.form.get("csrf_token")
         if not csrf_token:
-            raise ValueError("csrf_token not in form of request path " + req.full_path)
+            raise ValueError("csrf_token not in form of request path " + req.path)
         else:
             mediatum_form.csrf_token.process_data(csrf_token.replace("!!!!!", "##"))
             mediatum_form.validate()
 
     req.csrf_token = mediatum_form.csrf_token
-    req.full_path = req.full_path.replace(context.name, "/")
 
     function = context.match(mediatum_contextfree_path)
     if function is not None:
         callhandler(function, req)
     else:
-        _logg.debug("Request %s matches no pattern (context: %s)", req.full_path, context.name)
-        error(req, 404, "File %s not found" % req.full_path)
+        _logg.debug("Request %s matches no pattern (context: %s)", req.path, context.name)
+        error(req, 404, "File %s not found" % req.path)
 
     return req
 

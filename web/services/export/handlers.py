@@ -496,7 +496,7 @@ def struct2rss(req, path, params, data, struct, debug=False, singlenode=False, s
     fcd['pubdate'] = pubDate
     fcd['lastbuild'] = lastBuildDate
     fcd['link'] = host
-    fcd['atom_link'] = host + req.full_path
+    fcd['atom_link'] = host + req.path
     fcd['image_title'] = 'testlogo'
     fcd['image_link'] = host + u'/img/testlogo.png'
     fcd['image_url'] = host + u'/img/testlogo.png'
@@ -505,7 +505,7 @@ def struct2rss(req, path, params, data, struct, debug=False, singlenode=False, s
         for k, v in params['feed_info'].items():
             fcd[k] = v
     else:
-        fcd['title'] = host + req.full_path + req.query_string
+        fcd['title'] = host + req.path + req.query_string
     fcd['items'] = items
     s = template_rss_channel % fcd  # params['feed_info']
 
@@ -520,7 +520,7 @@ supported_formats = [
 ]
 
 
-def _handle_oauth(res, fullpath, params, timetable):
+def _handle_oauth(res, path, params, timetable):
     atime = time.time()
     username = params.get('user')
     res['oauthuser'] = username
@@ -541,7 +541,7 @@ def _handle_oauth(res, fullpath, params, timetable):
                       (username, user, user.login_name, user.id, user.group_names)), time.time() - atime])
 
     atime = time.time()
-    valid = oauth.verify_request_signature(fullpath, params)
+    valid = oauth.verify_request_signature(path, params)
 
     timetable.append([('''oauth: verify_request_signature returned %r for authname %r, userid: %r, groups: %r''' %
                       (valid, username, user.id, user.group_names)), time.time() - atime])
@@ -581,7 +581,7 @@ def _prepare_response():
     retrievaldate = format_date()
     res['retrievaldate'] = retrievaldate
     res['method'] = _flask.request.method
-    res['path'] = _flask.request.full_path
+    res['path'] = _flask.request.path
     res['query'] = _flask.request.query_string
     res['timetable'] = []
     return res
@@ -606,7 +606,7 @@ def get_node_data_struct(
 
     # verify signature if a user is given, otherwise use guest user
     if params.get('user'):
-        user = _handle_oauth(res, req.full_path, params, timetable)
+        user = _handle_oauth(res, req.path, params, timetable)
     else:
         user = get_guest_user()
         res['oauthuser'] = ''  # username supplied for authentication (login name) in query parameter user

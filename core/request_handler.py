@@ -1196,32 +1196,24 @@ def handle_request(req):
     req.app_cache = {}
     req.use_chunked = 0
 
-    mediatum_contextfree_path = req.path
-
-    req.response = _flask.make_response()
-    req.response.headers['Content-Type'] = 'text/html; encoding=utf-8; charset=utf-8'
-
-    mediatum_form = MediatumForm(meta={'csrf_context': _flask.session})
-
     maxlen = -1
     context = None
     global contexts
     for c in contexts:
-        if mediatum_contextfree_path.startswith(c.name) and len(c.name) > maxlen:
+        if req.path.startswith(c.name) and len(c.name) > maxlen:
             context = c
             maxlen = len(context.name)
-
     if context is None:
         error(req, 404)
         return req
 
-    mediatum_contextfree_path = mediatum_contextfree_path[len(context.name):]
+    mediatum_contextfree_path = req.path[len(context.name):]
     if not mediatum_contextfree_path.startswith("/"):
         mediatum_contextfree_path = "/" + mediatum_contextfree_path
-
     req.mediatum_contextfree_path = mediatum_contextfree_path
     make_legacy_params_dict(req)
 
+    mediatum_form = MediatumForm(meta={'csrf_context': _flask.session})
     if req.form and req.method == 'POST':
         csrf_token = req.form.get("csrf_token")
         if not csrf_token:
@@ -1231,6 +1223,8 @@ def handle_request(req):
             mediatum_form.validate()
 
     req.csrf_token = mediatum_form.csrf_token
+    req.response = _flask.make_response()
+    req.response.headers['Content-Type'] = 'text/html; encoding=utf-8; charset=utf-8'
 
     function = context.match(mediatum_contextfree_path)
     if function is not None:

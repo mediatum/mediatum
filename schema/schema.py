@@ -1079,6 +1079,7 @@ class Mask(Node):
                 if hasattr(t, "event_metafield_changed"):
                     t.event_metafield_changed(node, field)
 
+        updated_system_attrs["edit.lastmask"] = self.name
         updated_attrs["updateuser"] = user.getName()
         updated_attrs["updatetime"] = format_date()
 

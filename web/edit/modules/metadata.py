@@ -218,11 +218,6 @@ def getContent(req, ids):
         mask = default
         maskname = default.name
 
-    for n in nodes:
-        n.system_attrs["edit.lastmask"] = maskname
-
-    db.session.commit()
-
     if not mask:
         return _tal.processTAL({}, file="web/edit/modules/metadata.html", macro="no_mask", request=req)
 

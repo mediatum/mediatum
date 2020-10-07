@@ -151,7 +151,7 @@ def validate(req, op):
         return showInfo(req)
 
     # import scheme from xml-file
-    importfile = req.params.get("file")
+    importfile = req.files.get("file")
     if importfile:
         importMetaSchema(importfile)
 

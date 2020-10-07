@@ -113,7 +113,7 @@ def _finish_change(node, change_file, user, uploadfile, req):
 
 
 def _handle_change(node, req):
-    uploadfile = req.params.get("updatefile")
+    uploadfile = req.files.get("updatefile")
 
     if not uploadfile:
         return

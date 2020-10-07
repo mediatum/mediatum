@@ -49,7 +49,7 @@ def validate(req, op):
         return WorkflowPopup(req)
 
     # import scheme from xml-file
-    importfile = req.params.get("file")
+    importfile = req.files.get("file")
     if importfile:
         importWorkflow(importfile)
 

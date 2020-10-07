@@ -46,7 +46,7 @@ def validate(req, op):
             return view(req)
 
         # import mapping from xml-file
-        importfile = req.params.get("file")
+        importfile = req.files.get("file")
         if importfile:
             importMapping(importfile)
         #  section for mapping

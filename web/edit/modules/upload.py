@@ -327,7 +327,7 @@ def getContent(req, ids):
         proceed_to_uploadcomplete = False
         # upload file to current node as attachment
         if req.params.get('action') == "upload":
-            uploadfile = req.params.get("file")
+            uploadfile = req.files.get("file")
             proceed_to_uploadcomplete = True
             # XXX: check this: import to realnamne or random name ?
             f = importFile(uploadfile.filename, uploadfile)
@@ -336,8 +336,6 @@ def getContent(req, ids):
             db.session.commit()
             req.response.set_data("")
             logg.debug("%s|%s.%s: added file to node %s (%s, %s)", get_user_id(), __name__, funcname(), node.id, node.name, node.type)
-            if not proceed_to_uploadcomplete:
-                return None
 
         # upload done -> deliver view of object
         if proceed_to_uploadcomplete or req.params.get('action') == "uploadcomplete":
@@ -346,14 +344,14 @@ def getContent(req, ids):
             if proceed_to_uploadcomplete:
                 req.params['file'] = uploadfile.filename
 
-            mime = getMimeType(req.params.get('file'))
+            mime = getMimeType(uploadfile.filename)
             data_extra = req.params.get('data_extra', '')
             if data_extra == 'tofile':
 
                 ctx = {
                     'filename': f.getName(),
                 }
-                ctx.update(upload_to_filetype_filehandler(req))
+                ctx.update(upload_to_filetype_filehandler(req.params.get('file')))
                 content = _tal.processTAL(ctx, file='web/edit/modules/upload.html', macro="uploadfileok_plupload", request=req)
                 basenode = q(Node).get(req.params.get('id'))
                 new_tree_labels = [{'id': basenode.id, 'label': getTreeLabel(basenode, lang=language)}]
@@ -378,23 +376,23 @@ def getContent(req, ids):
                     macro = "uploadzipfileok_plupload"
                 else:
                     macro = "uploadzipfileok"
-                content = _tal.processTAL(upload_ziphandler(req), file='web/edit/modules/upload.html', macro=macro, request=req)
+                content = _tal.processTAL(upload_ziphandler(req.params.get('file'), req.params.get('id')), file='web/edit/modules/upload.html', macro=macro, request=req)
             elif mime[1] == "bibtex":  # bibtex file
                 if req.params.get('uploader', '') == 'plupload':
                     macro = "uploadbibfileok_plupload"
                 else:
                     macro = "uploadbibfileok"
-                content = _tal.processTAL(upload_bibhandler(req), file='web/edit/modules/upload.html', macro=macro, request=req)
+                content = _tal.processTAL(upload_bibhandler(req.params.get('file'), req.params.get('id')), file='web/edit/modules/upload.html', macro=macro, request=req)
             else:  # standard file
                 if req.params.get('uploader', '') == 'plupload':
                     ctx = {
                         'filename': f.getName(),
                     }
 
-                    ctx.update(upload_filehandler(req))
+                    ctx.update(upload_filehandler(req.params.get('file')))
                     content = _tal.processTAL(ctx, file='web/edit/modules/upload.html', macro="uploadfileok_plupload", request=req)
                 else:
-                    content = _tal.processTAL(upload_filehandler(req), file='web/edit/modules/upload.html', macro="uploadfileok", request=req)
+                    content = _tal.processTAL(upload_filehandler(req.params.get('file')), file='web/edit/modules/upload.html', macro="uploadfileok", request=req)
             basenode = q(Node).get(req.params.get('id'))
             new_tree_labels = [{'id': basenode.id, 'label': getTreeLabel(basenode, lang=language)}]
             _d = {
@@ -485,19 +483,19 @@ def mybasename(filename):
     return basename
 
 @dec_entry_log
-def upload_filehandler(req):
-    mime = getMimeType(req.params.get('file'))
+def upload_filehandler(filename):
+    mime = getMimeType(filename)
     scheme_type = {mime[1]: []}
     for scheme in get_permitted_schemas():
         if mime[1] in scheme.getDatatypes():
             scheme_type[mime[1]].append(scheme)
             # break
 
-    return {'files': [req.params.get('file')], 'schemes': scheme_type}
+    return {'files': [filename], 'schemes': scheme_type}
 
 
 @dec_entry_log
-def upload_to_filetype_filehandler(req):
+def upload_to_filetype_filehandler(filename):
     datatype = 'file'
     scheme_type = {datatype: []}
     for scheme in get_permitted_schemas():
@@ -505,17 +503,17 @@ def upload_to_filetype_filehandler(req):
             scheme_type[datatype].append(scheme)
             # break
 
-    return {'files': [req.params.get('file')], 'schemes': scheme_type}
+    return {'files': [filename], 'schemes': scheme_type}
 
 
 @dec_entry_log
-def upload_ziphandler(req):
+def upload_ziphandler(filename, id):
     schemes = get_permitted_schemas()
     files = []
     scheme_type = {}
-    basenode = q(Node).get(req.params.get('id'))
+    basenode = q(Node).get(id)
     for file in basenode.files:
-        if file.abspath.endswith(req.params.get('file')):
+        if file.abspath.endswith(filename):
             z = zipfile.ZipFile(file.abspath)
             for f in z.namelist():
                 #strip unwanted garbage from string
@@ -556,15 +554,15 @@ def upload_ziphandler(req):
 
 
 @dec_entry_log
-def upload_bibhandler(req):
+def upload_bibhandler(filename, id):
     error = ""
-    n = q(Node).get(req.params.get('id'))
+    n = q(Node).get(id)
     for f in n.files:
-        if f.abspath.endswith(req.params.get('file')):
+        if f.abspath.endswith(filename):
             try:
                 retrieved_file = f.abspath
                 logg.debug('going to call importBibTex(%s), import will be logged to backend!', retrieved_file)
-                importBibTeX(retrieved_file, req=req)
+                importBibTeX(retrieved_file, req=True)
                 logg.info('importBibTex(%s) done, import logged to backend!', retrieved_file)
             except ValueError, e:
                 logg.exception('calling importBibTex(%s)', retrieved_file)
@@ -573,7 +571,7 @@ def upload_bibhandler(req):
                 logg.exception('calling importBibTex(%s): missing mapping', retrieved_file)
                 error = ustr(e)
             break
-    return {'files': [req.params.get('file')], 'error': error}
+    return {'files': [filename], 'error': error}
 
 
 # used in plugins?

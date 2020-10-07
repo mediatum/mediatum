@@ -63,7 +63,7 @@ def getContent(req, ids):
 
     # add logo file
     if "addfile" in req.params.keys():
-        file = req.params.get("updatefile")
+        file = req.files.get("updatefile")
         if file:
             mimetype = "application/x-download"
             type = "file"

@@ -509,6 +509,6 @@ def oaiRequest(req):
         oai_pmh.append(subtree)
     if token is not None:
         oai_pmh.append(token)
-    res = _lxml_etree.tostring(oai_pmh, encoding='utf-8', method="xml")
+    res = _lxml_etree.tostring(oai_pmh, encoding='utf-8', method="xml", pretty_print=True)
     req.response.mimetype = "application/xml"
     req.response.set_data(res)

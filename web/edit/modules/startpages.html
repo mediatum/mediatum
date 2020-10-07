@@ -63,8 +63,8 @@
         function handleCKEditorPost(){ // save data
             csrf = csrf.replace("##", "!!!!!");
             $.ajax({ type :"post",
-                data : { data: CKEDITOR.instances['page_content'].getData() },
-                url : '/edit/edit_content?id='+id+'&tab=startpages&action=save&filename='+$("#filename").val()+'&csrf_token='+csrf
+                data : { data: CKEDITOR.instances['page_content'].getData(), csrf_token: csrf },
+                url : '/edit/edit_content?id='+id+'&tab=startpages&action=save&filename='+$("#filename").val()
             }).done(function(ret){
                 ret = jQuery.parseJSON(ret);
                 $('#editform').css('display','none');

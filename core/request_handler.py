@@ -1231,26 +1231,10 @@ def handle_request(req):
         mediatum_contextfree_path = "/" + mediatum_contextfree_path
 
     req.mediatum_contextfree_path = mediatum_contextfree_path
-
-    if not req.form:
-        data = req.get_data()
-        if any(data):
-            pairs = []
-            data = data.split('&')
-            for e in data:
-                if '=' in e:
-                    pairs.append(tuple(e.split("=", 1)))
-                elif e.strip():
-                    _logg.warn("corrupt parameter: %s", e.encode("string-escape"))
-            req.form = make_param_dict_utf8_values(pairs)
-            del pairs, data
-
     make_legacy_params_dict(req)
 
     if req.form and req.method == 'POST':
-        csrf_token = req.params.get("csrf_token")
-        if not csrf_token:
-            csrf_token = req.form.get("csrf_token")
+        csrf_token = req.form.get("csrf_token")
         if not csrf_token:
             raise ValueError("csrf_token not in form of request path " + req.path)
         else:

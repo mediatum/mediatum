@@ -1088,7 +1088,7 @@ function reload_htree_filtered(homenodefilter) {
   }
   var ht = gethometree();
 
-  ht.widget.tree.options.ajax.data.homenodefilter = homenodefilter;
+  ht.widget.tree.options.source.data.homenodefilter = homenodefilter;
   ht.reload().done(function(){
     var homedir_key = user_folders['homedir'];
     var homedir = ht.getNodeByKey(homedir_key);
@@ -1149,10 +1149,11 @@ function reload_htree_filtered(homenodefilter) {
         if (iconpath == "") {data.node.data.icon = FANCYTREE_DEFAULT_ICON;}
       },
 
-    ajax: {type: "POST", contentType: "application/json", data: {key: tree_root_key, mode: "edittree", homenodefilter: $('#homenodefilter').val(), csrf_token: csrf}},  // tree-dependent
-
     source: {
-      url: "/edit/treedata"
+      url: '/edit/treedata',
+      type: "POST",
+      data: {key: tree_root_key, mode: "edittree", homenodefilter: $('#homenodefilter').val(), csrf_token: csrf},
+      dataType: "json"
     },
 
     loadChildren: function(event, data) {

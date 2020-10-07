@@ -315,7 +315,7 @@
             // General settings
             runtimes : 'html5,silverlight,flash,html4',
             autostart: false,
-            url : '/edit/edit_content?action=upload&func=init_plupload_widget_file&uploader=plupload&id='+id+'&csrf_token='+csrf,
+            url : '/edit/edit_content?action=upload&func=init_plupload_widget_file&uploader=plupload&id='+id,
             // User can upload no more then 20 files in one go (sets multiple_queues to false)
             max_file_count: 0,  // default is 0 -> no limit
             //multipart_params : mpv,
@@ -362,7 +362,7 @@
                     log('[UploadFile]', file);
                     // You can override settings before the file is uploaded
                     // up.setOption('url', 'upload.php?id=' + file.id);
-                    // up.setOption('multipart_params', {param1 : 'value1', param2 : 'value2'});
+                    up.setOption('multipart_params', {csrf_token : csrf});
                 }
             },
             // Post init events, bound after the internal events
@@ -636,7 +636,7 @@
                 // General settings
                 runtimes : 'html5,flash,silverlight,html4',
                 autostart: false,
-                url : '/edit/edit_content?action=upload&func=init_plupload_widget_bib&uploader=plupload&id='+id+'&csrf_token='+csrf,
+                url : '/edit/edit_content?action=upload&func=init_plupload_widget_bib&uploader=plupload&id='+id,
                 // User can upload no more then 20 files in one go (sets multiple_queues to false)
                 max_file_count: 0,  // default is 0 -> no limit
                 //multipart_params : mpv,
@@ -679,7 +679,7 @@
                         log('[UploadFile]', file);
                         // You can override settings before the file is uploaded
                         // up.setOption('url', 'upload.php?id=' + file.id);
-                        // up.setOption('multipart_params', {param1 : 'value1', param2 : 'value2'});
+                        up.setOption('multipart_params', {csrf_token : csrf});
                     }
                 },
                 // Post init events, bound after the internal events

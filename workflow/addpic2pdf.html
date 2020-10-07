@@ -146,7 +146,7 @@
 
     $("#img_pdf_page").replaceWith(x);
 
-    var url = '/wfs_addpic2pdf?jsoncallback=?&csrf_token=' + csrf;
+    var url = '/wfs_addpic2pdf?jsoncallback=?;
 
     var options = {
       type: 'POST',
@@ -154,6 +154,7 @@
       pageno: pageno,
       node_id: node_id,
       selection_name: selection_name,
+      data: {csrf_token: csrf},
       };
 
       $.getJSON(url, options, function(data) {

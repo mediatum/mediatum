@@ -21,7 +21,7 @@ import logging
 import shutil
 from PIL import Image, ImageDraw
 from contenttypes.data import Content, prepare_node_data
-from lib.audio import File as AudioFile
+from mutagen import File as AudioFile
 from utils.utils import splitfilename
 from utils.date import parse_date, format_date, make_date
 from schema.schema import VIEW_HIDE_EMPTY

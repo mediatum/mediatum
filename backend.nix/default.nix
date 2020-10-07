@@ -57,6 +57,7 @@ in let
       mediatumfsm
       mediatumtal
       munch
+      mutagen-1-19
       mollyZ3950
       parcon
       pillow

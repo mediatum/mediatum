@@ -218,12 +218,15 @@ def _identify(params):
     return identify
 
 
-def _get_set_specs_header_element(node):
+def _get_header_element(id_prefix, date, node):
     header = _lxml_etree.Element("header")
+    _lxml_etree.SubElement(header, "identifier").text = "{}{}".format(id_prefix, ustr(node.id))
+    _lxml_etree.SubElement(header, "datestamp").text = "{}Z".format(date)
     setspecs = oaisets.getSetSpecsForNode(node)
     for setspec in setspecs:
         _lxml_etree.SubElement(header, "setSpec").text = setspec
     return header
+
 
 def _get_oai_export_mask_for_schema_name_and_metadataformat(schema_name, metadataformat):
     schema = getMetaType(schema_name)
@@ -240,10 +243,9 @@ def _make_record_element(node, metadataformat, mask=None):
         d = _iso8601(date.DateTime(config.getint("oai.earliest_year", 1960) - 1, 12, 31, 23, 59, 59))
 
     record = _lxml_etree.Element("record")
-    header = _get_set_specs_header_element(node)
+    header = _get_header_element(id_prefix, d, node)
     record.append(header)
-    _lxml_etree.SubElement(header, "identifier").text = "{}{}".format(id_prefix, ustr(node.id))
-    _lxml_etree.SubElement(header, "datestamp").text = "{}Z".format(d)
+
     metadata = _lxml_etree.SubElement(record, "metadata")
     assert metadataformat != "mediatum", "export/oai.py: assertion 'metadataformat != mediatum' failed"
     if mask:
@@ -424,10 +426,7 @@ def _list_identifiers(params):
             d = _iso8601(date.parse_date(updatetime))
         else:
             d = _iso8601(date.now())
-        header = _get_set_specs_header_element(n)
-        _lxml_etree.SubElement(header, "identifier").text = \
-            "{}{}".format(config.get("oai.idprefix", "oai:mediatum.org:node/"), ustr(n.id))
-        _lxml_etree.SubElement(header, "datestamp").text = "{}Z".format(d)
+        header = _get_header_element(config.get("oai.idprefix", "oai:mediatum.org:node/"), d, n)
         list_identifiers.append(header)
     return list_identifiers, token
 

@@ -192,7 +192,9 @@ IPYTHON_NOTEBOOK = False
 
 
 # use default connection specified by mediatum config for ipython-sql magic
-SQLMAGICS_CONNECTION_FACTORY = lambda: core.db.connectstr
+# https://docs.sqlalchemy.org/en/14/dialects/postgresql.html#module-sqlalchemy.dialects.postgresql.psycopg2
+SQLMAGICS_CONNECTION_STRING = "{}?host={}".format(core.db.connectstr, core.db.host)
+SQLMAGICS_CONNECTION_FACTORY = lambda: SQLMAGICS_CONNECTION_STRING
 # TODO: changing the connection string should be possible for the postgres connector, too
 
 
@@ -968,6 +970,7 @@ def load_ipython_extensions(ip):
     if SQLMagics:
         ip.register_magics(SqlMagic)
         ip.register_magics(SQLMagics)
+        logg.info("for ipython-sql magics using database connection string: '%s'", SQLMAGICS_CONNECTION_STRING)
         ip.magic("sql {SQLMAGICS_CONNECTION_FACTORY()}")
 
 load_ipython_extensions(ip)

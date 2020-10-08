@@ -8,6 +8,7 @@ import atexit
 import pwd
 import os.path
 import time
+import urllib as _urllib
 
 from sqlalchemy import create_engine, event
 from sqlalchemy.engine import Engine
@@ -33,9 +34,9 @@ from core.database.postgres.continuumext import MtVersionBase
 DEBUG = None
 DEBUG_SHOW_TRACE = None
 
-CONNECTSTR_TEMPLATE = "postgresql+psycopg2://{user}:{passwd}@{host}:{port}/{database}?application_name={application_name}"
+CONNECTSTR_TEMPLATE = "postgresql+psycopg2://{user}:{passwd}@:{port}/{database}"
 CONNECTSTR_TEMPLATE_TEST_DB = "postgresql+psycopg2://{user}@:{port}/{database}?host={socketdir}"
-CONNECTSTR_TEMPLATE_WITHOUT_PW = "postgresql+psycopg2://{user}:<passwd>@{host}:{port}/{database}"
+CONNECTSTR_TEMPLATE_WITHOUT_PW = "postgresql+psycopg2://{user}@:{port}/{database}"
 
 logg = logging.getLogger(__name__)
 
@@ -111,11 +112,14 @@ class PostgresSQLAConnector(object):
             self.port = config.getint("database.port", "5432")
             self.database = config.get("database.db", "mediatum")
             self.user = config.get("database.user", "mediatum")
-            self.passwd = config.get("database.passwd", "mediatum")
+            self.passwd = config.get("database.passwd")
             self.pool_size = config.getint("database.pool_size", 20)
             self.slow_query_seconds = config.getfloat("database.slow_query_seconds", 0.2)
-            self.application_name = "{}({})".format(os.path.basename(sys.argv[0]), os.getpid())
-            self.connectstr = CONNECTSTR_TEMPLATE.format(**self.__dict__)
+            if self.passwd:
+                self.passwd = _urllib.quote_plus(self.passwd)
+                self.connectstr = CONNECTSTR_TEMPLATE.format(**self.__dict__)
+            else:
+                self.connectstr = CONNECTSTR_TEMPLATE_WITHOUT_PW.format(**self.__dict__)
             logg.info("using database connection string: %s", CONNECTSTR_TEMPLATE_WITHOUT_PW.format(**self.__dict__))
         # test_db is handled in create_engine / check_run_test_db_server
 
@@ -196,14 +200,16 @@ class PostgresSQLAConnector(object):
                 logg.warn("slow query %.1fms:\n%s", total * 1000, statement)
 
     def create_engine(self):
+        connect_args = dict(
+            host=self.host,
+            application_name="{}({})".format(os.path.basename(sys.argv[0]), os.getpid())
+        )
         if self.debug:
             if DEBUG_SHOW_TRACE is None:
                 show_trace = config.get("database.debug_show_trace", "").lower() == "true"
             else:
                 show_trace = DEBUG_SHOW_TRACE
-            connect_args = {"connection_factory": make_debug_connection_factory(show_trace)}
-        else:
-            connect_args = {}
+            connect_args["connection_factory"] = make_debug_connection_factory(show_trace)
 
         if self.test_db:
             self.check_run_test_db_server()

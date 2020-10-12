@@ -169,6 +169,7 @@ def make_app():
         secret_key = _uwsgi.cache_get("secret_key")
     admin_app.config["SECRET_KEY"] = secret_key
     admin_app.config['PERMANENT_SESSION_LIFETIME'] = int(config.get('admin.session_expiration_time', 7200))
+    admin_app.config["SESSION_COOKIE_NAME"] = 'mediatum_session'
 
     if DEBUG:
         admin_app.debug = True

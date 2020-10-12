@@ -25,6 +25,7 @@ import logging
 import operator as _operator
 import locale
 import html as _html
+import backports.functools_lru_cache as _backports_functools_lru_cache
 from sqlalchemy import func, sql
 from mediatumtal import tal
 from utils.utils import esc, suppress
@@ -36,13 +37,12 @@ from contenttypes import Collections
 from web.edit.modules.manageindex import getAllAttributeValues
 from core.database.postgres import mediatumfunc
 from core.database.postgres.alchemyext import exec_sqlfunc
-from utils.lrucache import lru_cache
 
 q = db.query
 logg = logging.getLogger(__name__)
 
 
-@lru_cache(maxsize=16)
+@_backports_functools_lru_cache.lru_cache(maxsize=16)
 def count_list_values_for_all_content_children(collection_id, attribute_name):
     func_call = mediatumfunc.count_list_values_for_all_content_children(collection_id, attribute_name)
     stmt = sql.select([sql.text("*")], from_obj=func_call)

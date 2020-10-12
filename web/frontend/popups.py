@@ -27,10 +27,10 @@ from schema.schema import getMetadataType
 from lib.pdf import printview
 
 import sqlalchemy as _sqlalchemy
+import backports.functools_lru_cache as _backports_functools_lru_cache
 
 from schema.schema import VIEW_DATA_ONLY, VIEW_HIDE_EMPTY
 from core.translation import t, lang
-import utils as _utils
 from utils.utils import getCollection
 from core import webconfig
 from core import db
@@ -184,12 +184,12 @@ def show_printview(req):
         nid2node = {n.id:n for n,_ in nodes}
         schema2node = {n.schema:n for n,_ in nodes}
 
-        @_utils.lrucache.lru_cache(maxsize=2*len(nodes))
+        @_backports_functools_lru_cache.lru_cache(maxsize=2*len(nodes))
         def get_mask(schema):
             mtype = schema2node[schema].metadatatype
             return mtype.getMask("printlist") or mtype.getMask("nodesmall")
 
-        @_utils.lrucache.lru_cache(maxsize=2*len(nodes))
+        @_backports_functools_lru_cache.lru_cache(maxsize=2*len(nodes))
         def get_view(nid):
             node = nid2node[nid]
             return get_mask(node.schema).getViewHTML([node], VIEW_DATA_ONLY)

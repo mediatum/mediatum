@@ -32,12 +32,12 @@ import logging
 import lxml.etree as _lxml_etree
 import sqlalchemy.orm as _sqlalchemy_orm
 import collections as _collections
+import backports.functools_lru_cache as _backports_functools_lru_cache
 
 import core.config as config
 import core.httpstatus as _httpstatus
 from . import oaisets
 import utils.date as date
-import utils.lrucache as _utils_lrucache
 from schema.schema import getMetaType
 from core.systemtypes import Root, Metadatatypes
 from contenttypes import Collections
@@ -439,7 +439,7 @@ def _list_records(set=None, metadataPrefix=None, until=None, resumptionToken=Non
         raise _OAIError("badArgument")
     nodes, token, metadataformat = _get_nodes(set, metadataPrefix, from_, until, resumptionToken)
     list_records = _lxml_etree.Element("ListRecords")
-    get_mask = _utils_lrucache.lru_cache()(_get_oai_export_mask_for_schema_name_and_metadataformat)
+    get_mask = _backports_functools_lru_cache.lru_cache()(_get_oai_export_mask_for_schema_name_and_metadataformat)
     for n in nodes:
         list_records.append(_make_record_element(n, metadataformat, mask=get_mask(n.getSchema(), metadataformat)))
     if token is not None:

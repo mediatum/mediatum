@@ -6,12 +6,12 @@
 from __future__ import absolute_import
 from sqlalchemy.orm import undefer, joinedload
 from sqlalchemy.orm.exc import NoResultFound
+import backports.functools_lru_cache as _backports_functools_lru_cache
 
 from core import db as _db
-from utils.lrucache import lru_cache as _lru_cache
 
 
-@_lru_cache(maxsize=128)
+@_backports_functools_lru_cache.lru_cache(maxsize=128)
 def get_singleton_node_from_cache(nodeclass):    
     """Returns the singleton instance for the given node class. 
     Fetches the requested singleton from the DB if it's not in the cache.

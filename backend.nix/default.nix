@@ -52,6 +52,7 @@ in let
       ipython-sql
       jinja2
       ldap
+      lrucache-1-0-2
       lxml
       magic
       mediatumfsm

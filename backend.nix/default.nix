@@ -41,6 +41,7 @@ in let
       bibtexparser
       coffeescript
       decorator
+      exif-1-0-10
       fdfgen
       flask-admin
       flask_login

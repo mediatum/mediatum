@@ -18,6 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import itertools as _itertools
 import pkgutil
 import importlib
 import flask as _flask
@@ -538,7 +539,7 @@ class WorkflowStep(Node):
         c = []
         display_name_attr = self.parents[0].display_name_attribute
         i = 0
-        for item in self.children:
+        for item in self.children.prefetch_attrs():
             c.append({"id": unicode(item.id), "creationtime": date.format_date(
                 date.parse_date(item.get('creationtime')), 'dd.mm.yyyy HH:MM:SS')})
             if display_name_attr:
@@ -547,13 +548,34 @@ class WorkflowStep(Node):
                 c[i]["name"] = item.name
             i += 1
         c.sort(lambda x, y: cmp(x['name'], y['name']))
-        return _tal.processTAL({"children": c,
-                               "workflow": self.parents[0],
-                               "step": self,
-                               "nodelink": "/mask?id={}&obj=".format(self.id),
-                               'currentlang': lang(req),
-                               "csrf": req.csrf_token.current_token},
-                               file="workflow/workflow.html", macro="workflow_show", request=req)
+        nodelink = "/mask?id={}&obj=".format(self.id)
+
+        def mk_row(child):
+            context = dict(
+                child_id=child["id"],
+                child_creationtime=child["creationtime"],
+                child_name=child["name"],
+                step=self,
+                nodelink=nodelink,
+            )
+            return _tal.processTAL(context,
+                                   file="workflow/workflow.html",
+                                   macro="workflow_show_table",
+                                   request=req,
+                                   )
+
+        context = dict(
+            len_children=len(c),
+            table="".join(_itertools.imap(mk_row, c)),
+            workflow=self.parents[0],
+            step=self,
+            nodelink=nodelink,
+        )
+        return _tal.processTAL(context,
+                               file="workflow/workflow.html",
+                               macro="workflow_show",
+                               request=req,
+                               )
 
     def show_node_image(node):
         return '<img border="0" src="/img/directory.png">'

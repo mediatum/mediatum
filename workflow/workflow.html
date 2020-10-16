@@ -129,6 +129,33 @@
     <p i18n:translate="wf_node_msg2">TEXT<span tal:content="name" i18n:name="name"/></p>
 </tal:block>
 
+
+<tal:block metal:define-macro="workflow_show_table">
+        <tr>
+            <tal:block tal:define="truestep python:step.getTrueLabel(); falsestep python:step.getFalseLabel()">
+                <td tal:content="child_id"/>
+                <td tal:content="child_creationtime"/>
+                <td tal:content="child_name"/>
+
+                <td><a tal:attributes="href python:u'{}{}&type=editor'.format(nodelink, child_id)" i18n:translate="workflow_show_step">TEXT</a></td>
+                <td><a target="editorwindow" tal:attributes="href python:u'/edit/edit?id={}'.format(child_id)" i18n:translate="sub_header_edit">TEXT</a></td>
+
+                <td>
+                    <a tal:condition="python:falsestep!=''" tal:attributes="href python:u'{}{}&forcefalse=1'.format(nodelink, child_id)" tal:content="raw falsestep"/>
+                    <tal:block tal:condition="python:falsestep==''">-</tal:block>
+                </td>
+                <td>
+                    <a tal:condition="python:truestep!=''" tal:attributes="href python:u'{}{}&forcetrue=1'.format(nodelink, child_id)" tal:content="raw truestep"/>
+                    <tal:block tal:condition="python:truestep==''">-</tal:block>
+                </td>
+                <td style="vertical-align: middle; text-align: center;">
+                    <input tal:attributes="id child_id" class="checkbox" id="" type="checkbox"/>
+                </td>
+            </tal:block>
+        </tr>
+</tal:block>
+
+
 <div metal:define-macro="workflow_show" id="workflow">
 
     <div style="display:none" id="confirm_delete"  i18n:translate="workflow_confirm_msg_delete">TEXT</div>
@@ -219,7 +246,7 @@
     <span style="text-align:left"><a tal:attributes="href python:u'/publish/{}'.format(workflow.getName())" i18n:translate="workflow_back">TEXT</a></span>
     </p>
     <h2 i18n:translate="workflow_msg3">TEXT <span tal:content="python:step.name" i18n:name="name"/>:</h2>
-    <table id="workflowtable" cellspacing="0px" tal:define="mylist python:children">
+    <table id="workflowtable" cellspacing="0px">
         <tr>
             <th i18n:translate="workflow_label_id">TEXT</th>
             <th i18n:translate="workflow_label_date">TEXT</th>
@@ -232,32 +259,11 @@
                 <a href="#" class="toggled_text" style="display: none" onclick="toggleAll()" i18n:translate="workflow_label_deselect_all">TEXT</a>
             </th>
         </tr>
-        <tr tal:repeat="i python:range(len(mylist))" tal:define="truestep python:step.getTrueLabel(); falsestep python:step.getFalseLabel()">
-            <tal:block tal:define="cssclass python:i%2 and 'norm' or 'silver';node python:mylist[i]">
-                <td tal:attributes="class cssclass" tal:content="python:node['id']"/>
-                <td tal:attributes="class cssclass" tal:content="python:node['creationtime']"/>
-                <td tal:attributes="class cssclass" tal:content="python:node['name']"/>
-
-                <td tal:attributes="class cssclass"><a tal:attributes="href python:u'{}{}&type=editor'.format(nodelink, node['id'])" i18n:translate="workflow_show_step">TEXT</a></td>
-                <td tal:attributes="class cssclass"><a target="editorwindow" tal:attributes="href python:u'/edit/edit?id={}'.format(node['id'])" i18n:translate="sub_header_edit">TEXT</a></td>
-
-                <td tal:attributes="class cssclass">
-                    <a tal:condition="python:falsestep!=''" tal:attributes="href python:u'{}{}&forcefalse=1'.format(nodelink, node['id'])" tal:content="raw falsestep"/>
-                    <tal:block tal:condition="python:falsestep==''">-</tal:block>
-                </td>
-                <td tal:attributes="class cssclass">
-                    <a tal:condition="python:truestep!=''" tal:attributes="href python:u'{}{}&forcetrue=1'.format(nodelink, node['id'])" tal:content="raw truestep"/>
-                    <tal:block tal:condition="python:truestep==''">-</tal:block>
-                </td>
-                <td style="vertical-align: middle; text-align: center;" tal:attributes="class cssclass">
-                    <input tal:attributes="id python:node['id']" class="checkbox" id="" type="checkbox"/>
-                </td>
-            </tal:block>
-        </tr>
+        <tal:block tal:content="raw python:table">TEXT</tal:block>
         <tr>
             <th colspan="6" align="left">
                 <small i18n:translate="workflow_footer">
-                    <tal:block tal:content="python:unicode(len(children))" i18n:name="number"/>
+                    <tal:block tal:content="python:unicode(len_children)" i18n:name="number"/>
                 </small>
             </th>
             <th colspan="2" style="text-align: right;">

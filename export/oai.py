@@ -428,7 +428,10 @@ def _list_identifiers(params):
             d = _iso8601(date.now())
         header = _get_header_element(config.get("oai.idprefix", "oai:mediatum.org:node/"), d, n)
         list_identifiers.append(header)
-    return list_identifiers, token
+    if token is not None:
+        list_identifiers.append(token)
+
+    return list_identifiers
 
 
 def _list_records(params):
@@ -437,7 +440,10 @@ def _list_records(params):
     get_mask = _utils_lrucache.lru_cache()(_get_oai_export_mask_for_schema_name_and_metadataformat)
     for n in nodes:
         list_records.append(_make_record_element(n, metadataformat, mask=get_mask(n.getSchema(), metadataformat)))
-    return list_records, token
+    if token is not None:
+        list_records.append(token)
+
+    return list_records
 
 
 def _get_record(params):
@@ -476,7 +482,6 @@ def oaiRequest(req):
     req.response.headers['charset'] = 'utf-8'
     req.response.headers['Content-Type'] = 'text/xml; charset=utf-8'
     subtree = None
-    token = None
     try:
         if verb == "Identify":
             subtree = _identify(req.params)
@@ -485,9 +490,9 @@ def oaiRequest(req):
         elif verb == "ListSets":
             subtree = _list_sets()
         elif verb == "ListIdentifiers":
-            subtree, token = _list_identifiers(req.params)
+            subtree = _list_identifiers(req.params)
         elif verb == "ListRecords":
-            subtree, token = _list_records(req.params)
+            subtree = _list_records(req.params)
         elif verb == "GetRecord":
             subtree = _get_record(req.params)
         else:
@@ -507,8 +512,6 @@ def oaiRequest(req):
 
     if subtree is not None:
         oai_pmh.append(subtree)
-    if token is not None:
-        oai_pmh.append(token)
     res = _lxml_etree.tostring(oai_pmh, encoding='utf-8', method="xml", pretty_print=True)
     req.response.mimetype = "application/xml"
     req.response.set_data(res)

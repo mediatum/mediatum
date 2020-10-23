@@ -85,14 +85,12 @@ class WorkflowStep_SendEmail(WorkflowStep):
                     raise MailError("No from address defined")
                 attachments_paths_and_filenames = []
                 if attach_pdf_form:
-                    pdf_form_files = [f for f in node.files if f.filetype == 'pdf_form']
-                    for i, f in enumerate(pdf_form_files):
+                    for f in node.files:
+                        if f.filetype != 'pdf_form':
+                            continue
                         if not os.path.isfile(f.abspath):
                             raise MailError("Attachment file not found: '%s'" % f.abspath)
-                        else:
-                            #attachments_paths_and_filenames.append((f.retrieveFile(), 'contract_%s_%s.pdf' %(i, node.id)))
-                            attachments_paths_and_filenames.append((f.abspath, '%s' % (f.abspath.split('_')[-1])))
-                    pass
+                        attachments_paths_and_filenames.append((f.abspath, f.abspath.split('_')[-1]))
 
                 mail.sendmail(xfrom, to, node.get("system.mailtmp.subject"), node.get(
                     "system.mailtmp.text"), attachments_paths_and_filenames=attachments_paths_and_filenames)

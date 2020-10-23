@@ -234,12 +234,15 @@ class WorkflowStep_AddFormPage(WorkflowStep):
                 return
             importdir = getImportDir()
             try:
-                new_form_path = join_paths(importdir, "%s_%s" % (node.id, f_name))
-                counter = 0
-                if not pdf_form_overwrite:  # build correct filename
-                    while os.path.isfile(new_form_path):
-                        counter += 1
-                        new_form_path = join_paths(importdir, "%s_%s_%s" % (node.id, counter, f_name))
+                # Build the filename of the form file on disk.
+                # Note that the filename is underscore separated
+                # and the part after the last underscore is
+                # visible to the user when the file gets
+                # emailed in ``email.py``.
+                new_form_path = [str(node.id), f_name]
+                if pdf_form_overwrite:
+                    new_form_path.insert(1, _utils_utils.gen_secure_token(128))
+                new_form_path = join_paths(importdir, "_".join(new_form_path))
                 # copy new file and remove tmp
                 shutil.copy(pages, new_form_path)
                 if os.path.exists(pages):

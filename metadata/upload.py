@@ -19,6 +19,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import functools as _functools
 import json
 import os.path
 import logging
@@ -60,17 +61,7 @@ def mkfilelist(targetnode, files, deletebutton=0, language=None, request=None, m
             "metadata/upload.html", {"files": files, "node": targetnode, "delbutton": deletebutton}, macro=macro, language=language)
 
 
-ALLOWED_CHARACTERS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ' + '0123456789' + '+-_.'
-
-
-def normalizeFilename(s, chars=ALLOWED_CHARACTERS):
-    res = ''
-    for c in s:
-        if c in chars:
-            res += c
-        else:
-            res += '_'
-    return res
+_normalize_filename = _functools.partial(re.compile("[^a-zA-Z9-9._+-]").sub, "_")
 
 
 def getFilelist(node, fieldname=''):
@@ -361,9 +352,12 @@ def handle_request(req):
             errors.append(msg)
 
         if filename:
-
-            diskname = normalizeFilename(filename)
-            nodeFile = importFile(diskname, file, prefix='m_upload_%s_' % (submitter,), typeprefix="u_")
+            nodeFile = importFile(
+                _normalize_filename(filename),
+                file,
+                prefix='m_upload_{}_'.format(submitter),
+                typeprefix="u_",
+               )
 
             if not nodeFile:
                 msg = "metadata m_upload: could not create file node for request from '%s'" % (ustr(req.remote_addr))

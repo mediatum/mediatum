@@ -610,7 +610,7 @@ def buildStatAll_(collection_ids, collection_ids_keys, data, period="", fname=No
 
     print "buildStatAll_ called for %d collections" % len(collection_ids_keys)
 
-    gi = GeoIP(flags=MEMORY_CACHE)
+    gi = GeoIP(filename=os.environ["MEDIATUM_GEOIP_PATH"], flags=MEMORY_CACHE)
 
     time0 = time.time()
     last_access = None

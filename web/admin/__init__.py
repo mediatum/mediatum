@@ -220,6 +220,7 @@ def flask_routes(app):
     @app.route('/doc/<path:action>')
     @app.route('/file/<path:action>')
     @app.route('/download/<path:action>')
+    @app.route('/md_upload', methods=['GET', 'POST'])
     @app.route('/<path:action>')
     def action(action=None):
         req = _handle_request(request)

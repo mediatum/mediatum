@@ -1,0 +1,8 @@
+/*
+  Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+  SPDX-License-Identifier: AGPL-3.0-or-later
+*/
+div.grippie{background:#EEEEEE url(/img/grippie.png) no-repeat scroll center 2px; cursor:s-resize; height:9px; width:100%; margin-bottom:10px !important; padding:0px;}
+.surr{float:left; margin:0px; padding:0px; display:inline;}
+div .resizable-textarea{overflow:hidden;position:relative;}
+textarea.memo_text{margin-bottom:0px !important;}

@@ -443,10 +443,25 @@ def sendFile(req, path, content_type, force=0, nginx_x_accel_redirect_enabled=Tr
     if isinstance(content_type, unicode):
         content_type = content_type.encode("utf8")
 
-    x_accel_redirect = _config.get("nginx.X-Accel-Redirect", "").lower() == "true" and nginx_x_accel_redirect_enabled
+    _logg.debug("sendFile: %s", path)
+
+    assert _os.path.isabs(path), "sendFile: path: {} is not an absolute path".format(path)
+
+    if nginx_x_accel_redirect_enabled:
+        # TODO: It should be checked if a path is a subdirectory of another path.
+        #       This would be a configuration error by the admin.
+        for nginx_alias, nginx_dir in _config.getsubset("nginx-redirect").iteritems():
+            assert _os.path.isabs(nginx_dir), "sendFile: nginx_dir: {} is not an absolute path".format(nginx_dir)
+            if not _os.path.relpath(path, nginx_dir).startswith("../"):
+                break
+        else:
+            nginx_alias = None
+    else:
+        nginx_alias = None
+
     file_length = 0
 
-    if not x_accel_redirect:
+    if not nginx_alias:
         try:
             file_length = _os.stat(path)[_stat.ST_SIZE]
         except OSError:
@@ -467,10 +482,10 @@ def sendFile(req, path, content_type, force=0, nginx_x_accel_redirect_enabled=Tr
     req.response.last_modified = mtime
     req.response.content_length = file_length
     req.response.content_type = content_type
-    if x_accel_redirect:
-        req.response.headers['X-Accel-Redirect'] = path
+    if nginx_alias:
+        req.response.headers['X-Accel-Redirect'] = _os.path.join("/{}".format(nginx_alias), _os.path.relpath(path, nginx_dir))
     if req.method == 'GET':
-        if x_accel_redirect:
+        if nginx_alias:
             done(req)
         else:
             req.response = _flask.send_file(path, conditional=True)

@@ -64,21 +64,17 @@ def mkfilelist(targetnode, files, deletebutton=0, language=None, request=None, m
 _normalize_filename = _functools.partial(re.compile("[^a-zA-Z9-9._+-]").sub, "_")
 
 
-def getFilelist(node, fieldname=''):
+def getFilelist(node, fieldname=None):
 
     fs = node.files
-    if fieldname:
-        # get files for this fieldname only
-        pattern = r'metafield-upload.{}'.format(fieldname)
-    else:
-        # get files for all m_upload fields
-        pattern = r'metafield-upload.'
+    # filter files for this fieldname, or for all fields
+    pattern = "metafield-upload.{}".format(fieldname or "")
 
     filelist = []
 
     for f in fs:
         f_type = f.filetype
-        if re.match(pattern, f_type):
+        if f_type.startswith(pattern):
             f_retrieve = f.abspath
             try:
                 f_mtime = unicode(datetime.datetime.fromtimestamp(os.path.getmtime(f_retrieve)))

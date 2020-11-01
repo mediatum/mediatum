@@ -35,7 +35,6 @@ import collections as _collections
 
 import core.config as config
 import core.httpstatus as _httpstatus
-
 from . import oaisets
 import utils.date as date
 import utils.lrucache as _utils_lrucache
@@ -186,15 +185,15 @@ def _identify(params):
 
     identify = _lxml_etree.Element("Identify")
 
-    for tag, txt in dict(
-        repositoryName = name,
-        baseURL = config.get("host.name", "{}:8081".format(socket.gethostname())),
-        protocolVersion = "2.0",
-        adminEmail = config.get("email.admin"),
-        earliestDatestamp = "{}-01-01T12:00:00Z".format(ustr(config.getint("oai.earliest_year", 1960) - 1)),
-        deletedRecord = "no",
-        granularity = "YYYY-MM-DDThh:mm:ssZ",
-    ).iteritems():
+    for tag, txt in (
+        ("repositoryName", name),
+        ("baseURL", config.get("host.name", "{}:8081".format(socket.gethostname()))),
+        ("protocolVersion", "2.0"),
+        ("adminEmail", config.get("email.admin")),
+        ("earliestDatestamp", "{}-01-01T12:00:00Z".format(ustr(config.getint("oai.earliest_year", 1960) - 1))),
+        ("deletedRecord", "no"),
+        ("granularity", "YYYY-MM-DDThh:mm:ssZ"),
+    ):
         _lxml_etree.SubElement(identify, tag).text = txt
 
     description = _lxml_etree.SubElement(identify, "description")
@@ -207,12 +206,12 @@ def _identify(params):
                     "http://www.openarchives.org/OAI/2.0/oai-identifier.xsd",
     })
 
-    for tag, txt in dict(
-        scheme = "oai",
-        repositoryIdentifier = config.get("host.name", socket.gethostname()),
-        delimiter = ";",
-        sampleIdentifier = config.get("oai.sample_identifier", "oai:mediatum.org:node/123"),
-    ).iteritems():
+    for tag, txt in (
+        ("scheme", "oai"),
+        ("repositoryIdentifier", config.get("host.name", socket.gethostname())),
+        ("delimiter", ";"),
+        ("sampleIdentifier", config.get("oai.sample_identifier", "oai:mediatum.org:node/123")),
+    ):
         _lxml_etree.SubElement(oai_identifier, tag).text = txt
 
     return identify

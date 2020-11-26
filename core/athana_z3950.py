@@ -639,25 +639,25 @@ def parse_rpn_query(query):
 
 # Athana support
 
+class _ChannelInterface(object):
+
+    def __init__(self, channel):
+        self._channel = channel
+
+    def write(self, data):
+        self._channel.push(data)
+
+    def close(self):
+        self._channel.close_when_done()
+
+
 class z3950_channel(async_chat):
     ac_in_buffer_size = 4096
     ac_out_buffer_size = 4096
 
-    def __init__(self, server, conn, addr):
-        self.server = server
+    def __init__(self, conn):
         async_chat.__init__(self, conn)
-
-        push = self.push
-
-        class ChannelInterface(object):
-
-            def write(self, data):
-                push(data)
-
-            def close(self):
-                server.close_when_done()
-
-        self.z3950_server = AsyncPyZ3950Server(conn, ChannelInterface())
+        self.z3950_server = AsyncPyZ3950Server(conn, _ChannelInterface(self))
 
     def readable(self):
         return 1  # always
@@ -694,7 +694,7 @@ class z3950_server(asyncore.dispatcher):
     def handle_accept(self):
         conn, addr = self.accept()
         logg.info('Incoming connection from %s:%d', addr[0], addr[1])
-        self.z3950_channel_class(self, conn, addr)
+        self.z3950_channel_class(conn)
 
     def writable(self):
         return 0

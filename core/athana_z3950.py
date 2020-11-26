@@ -667,7 +667,8 @@ class z3950_channel(async_chat):
         try:
             data = self.recv(self.ac_in_buffer_size)
             logg.debug('received %i bytes of data: %r' % (len(data), data))
-            self.z3950_server.handle_incoming_data(data)
+            if data and self.connected:
+                self.z3950_server.handle_incoming_data(data)
         except:
             logg.exception('handle_read %i bytes of data: %r' % (len(data), data))
             self.handle_error()

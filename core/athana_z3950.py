@@ -21,7 +21,6 @@ import codecs
 import logging
 import socket
 import asyncore
-import random  # FIXME: drop dependency!
 
 from PyZ3950 import z3950, zdefs, asn1
 from sqlalchemy.orm import undefer

@@ -32,11 +32,6 @@ import schema as _schema
 
 logg = logging.getLogger(__name__)
 
-try:
-    set
-except NameError:
-    from sets import Set as set
-
 
 class async_chat (asyncore.dispatcher):
 

@@ -374,9 +374,30 @@ def shownodelist(req, nodes, page, publishwarn=True, markunpublished=False, dir=
             uploaddir = user.upload_dir
         unpublishedlink = "edit_content?tab=publish&id=" + unicode(uploaddir.id)
 
+    html_list_nodes = ""
+    html_thumb_nodes = ""
+    for node in nodelist:
+
+        html_list_nodes += _tal.processTAL({"notpublished": notpublished,
+                            "unpublishedlink": unpublishedlink,
+                            "node": node,
+                            "faultyidlist": faultyidlist,
+                            "script_array": script_array,
+                            "language": lang(req)},
+                           file="web/edit/edit_common.html", macro="show_list_node", request=req)
+        html_thumb_nodes += _tal.processTAL({"notpublished": notpublished,
+                            "unpublishedlink": unpublishedlink,
+                            "node": node,
+                            "faultyidlist": faultyidlist,
+                            "script_array": script_array,
+                            "language": lang(req)},
+                           file="web/edit/edit_common.html", macro="show_thumb_node", request=req)
+
     html = _tal.processTAL({"notpublished": notpublished,
                             "unpublishedlink": unpublishedlink,
                             "nodelist": nodelist,
+                            "html_list_nodes": html_list_nodes,
+                            "html_thumb_nodes": html_thumb_nodes,
                             "faultyidlist": faultyidlist,
                             "script_array": script_array,
                             "language": lang(req)},

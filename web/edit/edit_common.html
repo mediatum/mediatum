@@ -2,6 +2,84 @@
 </div>
 
 
+<tal:block metal:define-macro="show_list_node">
+                <div tal:attributes="class python:'mediatum_showcontent' if not node.id in faultyidlist else 'mediatum_showcontent_error'">
+                    <div class="mediatum_node_icon mediatum_node_icon_chk">
+                        <tal:block tal:condition="python:node in notpublished">
+                            <input id="itemcheck2" tal:attributes="name python:node.id; id python:u'check{}'.format(node.id)" checked="true" onChange="checkObject(this)" type="checkbox"/>
+                        </tal:block>
+                        <tal:block tal:condition="python:node not in notpublished">
+                            <input id="itemcheck2" tal:attributes="name python:node.id; id python:u'check{}'.format(node.id)" onChange="checkObject(this)" type="checkbox"/>
+                        </tal:block>
+                    </div>
+                    <div class="mediatum_node_icon mediatum_imgtooltipbase" tal:condition="python:hasattr(node, 'show_node_image')">
+                        <a tal:attributes="href python:u'edit_content?id={}&tab=view'.format(node.id)" i18n:attributes="title edit_common_bigview_title" tabindex="-1">
+                            <img class="mediatum_minithumb" tal:attributes="src python:u'/thumbs/{}'.format(node.id)" tabindex="0"/>
+                            <span class="mediatum_imghover"><img  tal:attributes="src python:u'/thumbs/{}'.format(node.id)"/></span>
+                        </a>
+                    </div>
+                    <div class="mediatum_node_icon mediatum_imgtooltipbasedefault" tal:condition="python:not hasattr(node, 'show_node_image')">
+                        <a tal:attributes="href python:u'edit_content?id={}&tab=view'.format(node.id)" i18n:attributes="title edit_common_bigview_title" tabindex="-1">
+                            <img class="mediatum_minithumb" src="/img/doc_default.png" tabindex="0"/>
+                            <span class="mediatum_imghoverdefault"><img tal:attributes="src python:u'/thumbs/{}'.format(node.id)"/></span>
+                        </a>
+                    </div>
+                    <div class="mediatum_node_text no_overlap">
+                        <a tal:attributes="href python:u'edit_content?id={}&tab=view'.format(node.id)" i18n:attributes="title edit_common_bigview_title" tabindex="0">
+                            <tal:block tal:condition="python:hasattr(node, 'show_node_text')" tal:replace="raw python:node.show_node_text(None, language=language, separator='&'+'nbsp;')"/>
+                            <tal:block tal:condition="python:not hasattr(node, 'show_node_text')" tal:replace="raw python:node.name"/>
+                            <span class="mediatum_color_red" tal:condition="python:node in notpublished" i18n:translate="notpublished">TEXT</span>
+                        </a>
+                    </div>
+                        <div class="mediatum_node_icon" tal:attributes="onclick python:u'editSelected({})'.format(node.id)" target="content" i18n:attributes="title edit_common_edit_meta"><img class="mediatum_img_size" src="/img/editor/mediatum_edit_black.svg" tabindex="0"/></div>
+                        <div class="mediatum_node_icon" tal:attributes="onclick python:u'movecopySelected({}, \'move\')'.format(node.id)" target="content" i18n:attributes="title edit_common_edit_move"><img class="mediatum_img_size" src="/img/editor/mediatum_move_black.svg" tabindex="0"/></div>
+                        <div class="mediatum_node_icon" tal:attributes="onclick python:u'movecopySelected({}, \'copy\')'.format(node.id)" target="content" i18n:attributes="title edit_common_edit_copy"><img class="mediatum_img_size" src="/img/editor/mediatum_copy_black.svg" tabindex="0"/></div>
+                        <div class="mediatum_node_icon" tal:attributes="onclick python:u'deleteSelected({})'.format(node.id)" i18n:attributes="title edit_common_edit_delete" target="content"><img class="mediatum_img_size" src="/img/editor/mediatum_delete_black.svg" tabindex="0"/></div>
+                </div>
+</tal:block>
+
+
+<tal:block metal:define-macro="show_thumb_node">
+                <div tal:attributes="class python:'mediatum_showcontentthumb' if not node.id in faultyidlist else 'mediatum_showcontentthumb_error'">
+                    <div class="mediatum_showcontentrow">
+                        <div class="mediatum_node_icon mediatum_node_icon_chk">
+                            <tal:block tal:condition="python:node in notpublished">
+                                <input id="itemcheck1" tal:attributes="name python:node.id; id python:u'check{}'.format(node.id)" checked="true" onChange="checkObject(this)" type="checkbox"/>
+                            </tal:block>
+                            <tal:block tal:condition="python:node not in notpublished">
+                                <input id="itemcheck1" tal:attributes="name python:node.id; id python:u'check{}'.format(node.id)" onChange="checkObject(this)" type="checkbox"/>
+                            </tal:block>
+                        </div>
+                    </div>
+                        <div class="mediatum_showcontentthumbrow">
+                    <div class="mediatum_showcontentthumbcellimg" tal:condition="python:hasattr(node, 'show_node_image')">
+                            <a tal:attributes="href python:u'edit_content?id={}&tab=view'.format(node.id)" i18n:attributes="title edit_common_bigview_title" class="mediatum_tab_big">
+                        <img class="mediatum_thumbnail" tal:attributes="src python:u'/thumbs/{}'.format(node.id)"/></a>
+                    </div>
+                    <div tal:condition="python:not hasattr(node, 'show_node_image')">
+                            <a tal:attributes="href python:u'edit_content?id={}&tab=view'.format(node.id)" i18n:attributes="title edit_common_bigview_title">
+                        <img class="mediatum_thumbnail" src="/img/doc_default.png"/></a>
+                    </div>
+                    <div class="mediatum_showcontentthumbcellimg mediatum_node_text_grid">
+                        <a tal:attributes="href python:u'edit_content?id={}&tab=view'.format(node.id)" i18n:attributes="title edit_common_bigview_title">
+                        <p>
+                            <tal:block tal:condition="python:hasattr(node, 'show_node_text')" tal:replace="raw python:node.show_node_text(None, language=language, separator=u'<br>')"/>
+                            <tal:block tal:condition="python:not hasattr(node, 'show_node_text')" tal:replace="raw python:node.name"/>
+                            <span class="mediatum_color_red" tal:condition="python:node in notpublished" i18n:translate="notpublished">TEXT</span>
+                        </p>
+                        </a>
+                    </div>
+                </div>
+                    <div class="mediatum_node_grid_icons">
+                        <div class="mediatum_node_grid_icon" tal:attributes="onclick python:u'editSelected({})'.format(node.id)" target="content" i18n:attributes="title edit_common_edit_meta"><img class="mediatum_center mediatum_img_size" src="/img/editor/mediatum_edit_black.svg" tabindex="0"/></div>
+                        <div class="mediatum_node_grid_icon" tal:attributes="onclick python:u'return movecopySelected({}, \'move\')'.format(node.id)" target="content" i18n:attributes="title edit_common_edit_move"><img class="mediatum_center mediatum_img_size" src="/img/editor/mediatum_move_black.svg" tabindex="0"/></div>
+                        <div class="mediatum_node_grid_icon" tal:attributes="onclick python:u'movecopySelected({}, \'copy\')'.format(node.id)" target="content" i18n:attributes="title edit_common_edit_copy"><img class="mediatum_center mediatum_img_size" src="/img/editor/mediatum_copy_black.svg" tabindex="0"/></div>
+                        <div class="mediatum_node_grid_icon" tal:attributes="onclick python:u'deleteSelected({})'.format(node.id)" i18n:attributes="title edit_common_edit_delete" target="content"><img class="mediatum_center mediatum_img_size" src="/img/editor/mediatum_delete_black.svg" tabindex="0"/></div>
+                    </div>
+                </div>
+</tal:block>
+
+
 <tal:block metal:define-macro="show_nodelist">
     <script>
     $(document).ready(function() {
@@ -50,45 +128,7 @@
         <!-- Show Thumbnail view-->
         <div id="mediatum_table_nodeview">
             <div id="mediatum_table_nodeview_grid">
-            <tal:block tal:repeat="node nodelist">
-                <div tal:attributes="class python:'mediatum_showcontentthumb' if not node.id in faultyidlist else 'mediatum_showcontentthumb_error'">
-                    <div class="mediatum_showcontentrow">
-                        <div class="mediatum_node_icon mediatum_node_icon_chk">
-                            <tal:block tal:condition="python:node in notpublished">
-                                <input id="itemcheck1" tal:attributes="name python:node.id; id python:u'check{}'.format(node.id)" checked="true" onChange="checkObject(this)" type="checkbox"/>
-                            </tal:block>
-                            <tal:block tal:condition="python:node not in notpublished">
-                                <input id="itemcheck1" tal:attributes="name python:node.id; id python:u'check{}'.format(node.id)" onChange="checkObject(this)" type="checkbox"/>
-                            </tal:block>
-                        </div>
-                    </div>
-                        <div class="mediatum_showcontentthumbrow">
-                    <div class="mediatum_showcontentthumbcellimg" tal:condition="python:hasattr(node, 'show_node_image')">
-                            <a tal:attributes="href python:u'edit_content?id={}&tab=view'.format(node.id)" i18n:attributes="title edit_common_bigview_title" class="mediatum_tab_big">
-                        <img class="mediatum_thumbnail" tal:attributes="src python:u'/thumbs/{}'.format(node.id)"/></a>
-                    </div>
-                    <div tal:condition="python:not hasattr(node, 'show_node_image')">
-                            <a tal:attributes="href python:u'edit_content?id={}&tab=view'.format(node.id)" i18n:attributes="title edit_common_bigview_title">
-                        <img class="mediatum_thumbnail" src="/img/doc_default.png"/></a>
-                    </div>
-                    <div class="mediatum_showcontentthumbcellimg mediatum_node_text_grid">
-                        <a tal:attributes="href python:u'edit_content?id={}&tab=view'.format(node.id)" i18n:attributes="title edit_common_bigview_title">
-                        <p>
-                            <tal:block tal:condition="python:hasattr(node, 'show_node_text')" tal:replace="raw python:node.show_node_text(None, language=language, separator=u'<br>')"/>
-                            <tal:block tal:condition="python:not hasattr(node, 'show_node_text')" tal:replace="raw python:node.name"/>
-                            <span class="mediatum_color_red" tal:condition="python:node in notpublished" i18n:translate="notpublished">TEXT</span>
-                        </p>
-                        </a>
-                    </div>
-                </div>
-                    <div class="mediatum_node_grid_icons">
-                        <div class="mediatum_node_grid_icon" tal:attributes="onclick python:u'editSelected({})'.format(node.id)" target="content" i18n:attributes="title edit_common_edit_meta"><img class="mediatum_center mediatum_img_size" src="/img/editor/mediatum_edit_black.svg" tabindex="0"/></div>
-                        <div class="mediatum_node_grid_icon" tal:attributes="onclick python:u'return movecopySelected({}, \'move\')'.format(node.id)" target="content" i18n:attributes="title edit_common_edit_move"><img class="mediatum_center mediatum_img_size" src="/img/editor/mediatum_move_black.svg" tabindex="0"/></div>
-                        <div class="mediatum_node_grid_icon" tal:attributes="onclick python:u'movecopySelected({}, \'copy\')'.format(node.id)" target="content" i18n:attributes="title edit_common_edit_copy"><img class="mediatum_center mediatum_img_size" src="/img/editor/mediatum_copy_black.svg" tabindex="0"/></div>
-                        <div class="mediatum_node_grid_icon" tal:attributes="onclick python:u'deleteSelected({})'.format(node.id)" i18n:attributes="title edit_common_edit_delete" target="content"><img class="mediatum_center mediatum_img_size" src="/img/editor/mediatum_delete_black.svg" tabindex="0"/></div>
-                    </div>
-                </div>
-            </tal:block>
+             <tal:block tal:content="raw python:html_thumb_nodes">TEXT</tal:block>
         </div>
     </div>
         <!-- Show List view -->
@@ -106,41 +146,7 @@
                 <div class="mediatum_node_icon" tal:attributes="onclick python:u'movecopySelected(null, \'copy\')'" target="content" i18n:attributes="title edit_common_edit_copy_selected"><img class="mediatum_img_size" src="/img/editor/mediatum_copy_black.svg" tabindex="0"/></div>
                 <div class="mediatum_node_icon" tal:attributes="onclick python:u'deleteSelected()'" i18n:attributes="title edit_common_edit_delete_selected" target="content"><img class="mediatum_img_size" src="/img/editor/mediatum_delete_black.svg" tabindex="0"/></div>
              </div>
-            <tal:block tal:repeat="node nodelist">
-                <div tal:attributes="class python:'mediatum_showcontent' if not node.id in faultyidlist else 'mediatum_showcontent_error'">
-                    <div class="mediatum_node_icon mediatum_node_icon_chk">
-                        <tal:block tal:condition="python:node in notpublished">
-                            <input id="itemcheck2" tal:attributes="name python:node.id; id python:u'check{}'.format(node.id)" checked="true" onChange="checkObject(this)" type="checkbox"/>
-                        </tal:block>
-                        <tal:block tal:condition="python:node not in notpublished">
-                            <input id="itemcheck2" tal:attributes="name python:node.id; id python:u'check{}'.format(node.id)" onChange="checkObject(this)" type="checkbox"/>
-                        </tal:block>
-                    </div>
-                    <div class="mediatum_node_icon mediatum_imgtooltipbase" tal:condition="python:hasattr(node, 'show_node_image')">
-                        <a tal:attributes="href python:u'edit_content?id={}&tab=view'.format(node.id)" i18n:attributes="title edit_common_bigview_title" tabindex="-1">
-                            <img class="mediatum_minithumb" tal:attributes="src python:u'/thumbs/{}'.format(node.id)" tabindex="0"/>
-                            <span class="mediatum_imghover"><img  tal:attributes="src python:u'/thumbs/{}'.format(node.id)"/></span>
-                        </a>
-                    </div>
-                    <div class="mediatum_node_icon mediatum_imgtooltipbasedefault" tal:condition="python:not hasattr(node, 'show_node_image')">
-                        <a tal:attributes="href python:u'edit_content?id={}&tab=view'.format(node.id)" i18n:attributes="title edit_common_bigview_title" tabindex="-1">
-                            <img class="mediatum_minithumb" src="/img/doc_default.png" tabindex="0"/>
-                            <span class="mediatum_imghoverdefault"><img tal:attributes="src python:u'/thumbs/{}'.format(node.id)"/></span>
-                        </a>
-                    </div>
-                    <div class="mediatum_node_text no_overlap">
-                        <a tal:attributes="href python:u'edit_content?id={}&tab=view'.format(node.id)" i18n:attributes="title edit_common_bigview_title" tabindex="0">
-                            <tal:block tal:condition="python:hasattr(node, 'show_node_text')" tal:replace="raw python:node.show_node_text(None, language=language, separator='&'+'nbsp;')"/>
-                            <tal:block tal:condition="python:not hasattr(node, 'show_node_text')" tal:replace="raw python:node.name"/>
-                            <span class="mediatum_color_red" tal:condition="python:node in notpublished" i18n:translate="notpublished">TEXT</span>
-                        </a>
-                    </div>
-                        <div class="mediatum_node_icon" tal:attributes="onclick python:u'editSelected({})'.format(node.id)" target="content" i18n:attributes="title edit_common_edit_meta"><img class="mediatum_img_size" src="/img/editor/mediatum_edit_black.svg" tabindex="0"/></div>
-                        <div class="mediatum_node_icon" tal:attributes="onclick python:u'movecopySelected({}, \'move\')'.format(node.id)" target="content" i18n:attributes="title edit_common_edit_move"><img class="mediatum_img_size" src="/img/editor/mediatum_move_black.svg" tabindex="0"/></div>
-                        <div class="mediatum_node_icon" tal:attributes="onclick python:u'movecopySelected({}, \'copy\')'.format(node.id)" target="content" i18n:attributes="title edit_common_edit_copy"><img class="mediatum_img_size" src="/img/editor/mediatum_copy_black.svg" tabindex="0"/></div>
-                        <div class="mediatum_node_icon" tal:attributes="onclick python:u'deleteSelected({})'.format(node.id)" i18n:attributes="title edit_common_edit_delete" target="content"><img class="mediatum_img_size" src="/img/editor/mediatum_delete_black.svg" tabindex="0"/></div>
-                </div>
-            </tal:block>
+             <tal:block tal:content="raw python:html_list_nodes">TEXT</tal:block>
         </div>
     </div>
     <div id="delete_text" i18n:translate="delete_object_question">TEXT</div>

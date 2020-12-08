@@ -508,6 +508,8 @@ def oaiRequest(req):
         else:
             raise _OAIError("badVerb")
     except _OAIError as ex:
+        if ex.code in ("badArgument", "badVerb"):
+            oai_pmh = _make_toplevel_element()
         req.response.status_code = _httpstatus.HTTP_BAD_REQUEST
         error = _lxml_etree.Element("error", attrib=dict(code= ex.code,))
         error.text = ex.details

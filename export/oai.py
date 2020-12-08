@@ -79,7 +79,7 @@ def _filter_format(node, oai_format):
     return True
 
 
-def _make_toplevel_element(params):
+def _make_toplevel_element(**params):
     xsi_schemaLocation = _lxml_etree.QName("http://www.w3.org/2001/XMLSchema-instance", "schemaLocation")
     oai_pmh = _lxml_etree.Element('OAI-PMH', nsmap={
         None: "http://www.openarchives.org/OAI/2.0/",
@@ -142,8 +142,8 @@ def _identifier_to_node(identifier):
     return node
 
 
-def _list_metadata_formats(params):
-    if "set" in params:
+def _list_metadata_formats(identifier=None, **excess):
+    if excess:
         raise _OAIError("badArgument")
 
     # supported oai metadata formats are configured in section
@@ -152,8 +152,8 @@ def _list_metadata_formats(params):
     formats = (x.strip() for x in d['formats'].split(','))
     formats = _itertools.ifilter(None,formats)  # drop empty elements
 
-    if "identifier" in params:
-        node = _identifier_to_node(params["identifier"])
+    if identifier:
+        node = _identifier_to_node(identifier)
         formats = (x for x in formats if node.getSchema() in _yield_export_mask_metatype_names(x))
         formats = (x for x in formats if _filter_format(node, x.lower()))
 
@@ -175,8 +175,8 @@ def _check_metadata_format(format):
         return False
 
 
-def _identify(params):
-    if tuple(params) != ("verb", ):
+def _identify(**excess):
+    if excess:
         raise _OAIError("badArgument")
     name = config.get("config.oaibasename")
     if not name:
@@ -346,7 +346,7 @@ def _get_nids(metadataformat, fromParam, untilParam, setParam):
     return sorted(n.id for n in nodes)
 
 
-def _get_nodes(params):
+def _get_nodes(set_param=None, metadataPrefix=None, date_from=None, until=None, resumptionToken=None):
     # OAI permits to deliver only a subset of the results,
     # together with a so-called "resumption token" that may be
     # submittet in another request to retrieve more results.
@@ -361,23 +361,21 @@ def _get_nodes(params):
     # changed between requests;  if that happened,
     # we return an error as  we cannot answer the request
     # without risking inconsistencies in the results.
-    if "resumptionToken" in params:
-        token = params["resumptionToken"]
+    if resumptionToken:
         try:
-            token =  _base64.b32decode(token.upper())
+            token =  _base64.b32decode(resumptionToken.upper())
         except TypeError:
             raise _OAIError("badResumptionToken")
-        if frozenset(params) != frozenset(("verb", "resumptionToken")):
-            logg.info("OAI: getNodes: additional arguments (only verb and resumptionToken allowed)")
+        if metadataPrefix or date_from or until:
             raise _OAIError("badArgument")
         token = _json.loads(token)
     else:
         token = {
-            "metadataPrefix": params.get("metadataPrefix"),
+            "metadataPrefix": metadataPrefix,
             "pos": 0,
-            "from": params.get("from"),
-            "until": params.get("until"),
-            "set": params.get("set"),
+            "from": date_from,
+            "until": until,
+            "set": set_param,
         }
         if not _check_metadata_format(token["metadataPrefix"]):
             logg.info('OAI: ListRecords: metadataPrefix missing')
@@ -385,8 +383,7 @@ def _get_nodes(params):
 
     nids = _get_nids(token["metadataPrefix"], token["from"], token["until"], token["set"])
 
-    logg.info("%s : set=%s, objects=%s, format=%s", params.get('verb'), token["set"], len(nids),
-              token["metadataPrefix"])
+    logg.info("_get_nodes : set=%s, objects=%s, format=%s", token["set"], len(nids), token["metadataPrefix"])
 
     new_hash = " ".join(_itertools.imap(str, nids)).encode("ascii")
     new_hash = _base64.b64encode(_hashlib.sha512(new_hash).digest()[:8])
@@ -416,8 +413,11 @@ def _get_nodes(params):
     return nodes, token_element, metadataformat
 
 
-def _list_identifiers(params):
-    nodes, token, metadataformat = _get_nodes(params)
+def _list_identifiers(set=None, metadataPrefix=None, until=None, resumptionToken=None, **excess):
+    from_ = excess.pop("from", None)
+    if excess:
+        raise _OAIError("badArgument")
+    nodes, token, metadataformat = _get_nodes(set, metadataPrefix, from_, until, resumptionToken)
     list_identifiers = _lxml_etree.Element("ListIdentifiers")
     for n in nodes:
         updatetime = n.get(config.get("oai.datefield", "updatetime"))
@@ -433,8 +433,11 @@ def _list_identifiers(params):
     return list_identifiers
 
 
-def _list_records(params):
-    nodes, token, metadataformat = _get_nodes(params)
+def _list_records(set=None, metadataPrefix=None, until=None, resumptionToken=None, **excess):
+    from_ = excess.pop("from", None)
+    if excess:
+        raise _OAIError("badArgument")
+    nodes, token, metadataformat = _get_nodes(set, metadataPrefix, from_, until, resumptionToken)
     list_records = _lxml_etree.Element("ListRecords")
     get_mask = _utils_lrucache.lru_cache()(_get_oai_export_mask_for_schema_name_and_metadataformat)
     for n in nodes:
@@ -445,12 +448,14 @@ def _list_records(params):
     return list_records
 
 
-def _get_record(params):
-    node = _identifier_to_node(params.get("identifier"))
+def _get_record(identifier=None, metadataPrefix=None , **excess):
+    if excess or (None in (identifier, metadataPrefix)):
+        raise _OAIError("badArgument")
+    node = _identifier_to_node(identifier)
     if _parent_is_media(node):
         raise _OAIError("noPermission")
 
-    metadataformat = params.get("metadataPrefix")
+    metadataformat = metadataPrefix
     if not _check_metadata_format(metadataformat):
         raise _OAIError("badArgument")
     if metadataformat.lower() in FORMAT_FILTERS and not _filter_format(node, metadataformat.lower()):
@@ -463,7 +468,11 @@ def _get_record(params):
     return get_record
 
 
-def _list_sets():
+def _list_sets(resumptionToken=None, **excess):
+    if resumptionToken:
+        raise _OAIError("badResumptionToken")
+    if excess:
+        raise _OAIError("badArgument")
     list_sets = _lxml_etree.Element("ListSets")
     for setspec, setname in oaisets.getSets():
         set = _lxml_etree.SubElement(list_sets, "set")
@@ -472,28 +481,30 @@ def _list_sets():
     return list_sets
 
 
+_verb_handlers = dict(
+        Identify=_identify,
+        ListMetadataFormats=_list_metadata_formats,
+        ListSets=_list_sets,
+        ListIdentifiers=_list_identifiers,
+        ListRecords=_list_records,
+        GetRecord=_get_record
+)
+
+
 def oaiRequest(req):
 
     start_time = time.clock()
-    verb = req.params.get("verb")
-    oai_pmh = _make_toplevel_element(req.params)
+
+    params = dict(req.params)
+    oai_pmh = _make_toplevel_element(**params)
+    verb = params.pop("verb", None)
+
     req.response.status_code = _httpstatus.HTTP_OK
     req.response.headers['charset'] = 'utf-8'
     req.response.headers['Content-Type'] = 'text/xml; charset=utf-8'
-    subtree = None
     try:
-        if verb == "Identify":
-            subtree = _identify(req.params)
-        elif verb == "ListMetadataFormats":
-            subtree = _list_metadata_formats(req.params)
-        elif verb == "ListSets":
-            subtree = _list_sets()
-        elif verb == "ListIdentifiers":
-            subtree = _list_identifiers(req.params)
-        elif verb == "ListRecords":
-            subtree = _list_records(req.params)
-        elif verb == "GetRecord":
-            subtree = _get_record(req.params)
+        if verb in _verb_handlers:
+            oai_pmh.append(_verb_handlers[verb](**params))
         else:
             raise _OAIError("badVerb")
     except _OAIError as ex:
@@ -509,8 +520,6 @@ def oaiRequest(req):
             req.headers.get("user-agent", "unknown")[:60],
            )
 
-    if subtree is not None:
-        oai_pmh.append(subtree)
     res = _lxml_etree.tostring(oai_pmh, encoding='utf-8', method="xml", pretty_print=True)
     req.response.mimetype = "application/xml"
     req.response.set_data(res)

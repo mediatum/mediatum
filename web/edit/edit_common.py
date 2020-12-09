@@ -207,7 +207,7 @@ class ShowDirNav(object):
         return shownavlist(self.req, self.node, self.nodes, page, dir=self.node)
 
     def get_children(self, node, sortfield):
-        nodes = node.content_children # XXX: ?? correct
+        nodes = node.content_children.prefetch_attrs() # XXX: ?? correct
         make_search_content = get_make_search_content_function(self.req)
         paths = get_accessible_paths(node, q(Node).prefetch_attrs())
         if make_search_content:
@@ -374,30 +374,30 @@ def shownodelist(req, nodes, page, publishwarn=True, markunpublished=False, dir=
             uploaddir = user.upload_dir
         unpublishedlink = "edit_content?tab=publish&id=" + unicode(uploaddir.id)
 
-    html_list_nodes = ""
-    html_thumb_nodes = ""
+    html_list_nodes = []
+    html_thumb_nodes = []
     for node in nodelist:
 
-        html_list_nodes += _tal.processTAL({"notpublished": notpublished,
-                            "unpublishedlink": unpublishedlink,
-                            "node": node,
-                            "faultyidlist": faultyidlist,
-                            "script_array": script_array,
-                            "language": lang(req)},
-                           file="web/edit/edit_common.html", macro="show_list_node", request=req)
-        html_thumb_nodes += _tal.processTAL({"notpublished": notpublished,
-                            "unpublishedlink": unpublishedlink,
-                            "node": node,
-                            "faultyidlist": faultyidlist,
-                            "script_array": script_array,
-                            "language": lang(req)},
-                           file="web/edit/edit_common.html", macro="show_thumb_node", request=req)
+        html_list_nodes.append(_tal.processTAL({"notpublished": notpublished,
+                                "unpublishedlink": unpublishedlink,
+                                "node": node,
+                                "faultyidlist": faultyidlist,
+                                "script_array": script_array,
+                                "language": lang(req)},
+                               file="web/edit/edit_common.html", macro="show_list_node", request=req))
+        html_thumb_nodes.append(_tal.processTAL({"notpublished": notpublished,
+                                "unpublishedlink": unpublishedlink,
+                                "node": node,
+                                "faultyidlist": faultyidlist,
+                                "script_array": script_array,
+                                "language": lang(req)},
+                               file="web/edit/edit_common.html", macro="show_thumb_node", request=req))
 
     html = _tal.processTAL({"notpublished": notpublished,
                             "unpublishedlink": unpublishedlink,
                             "nodelist": nodelist,
-                            "html_list_nodes": html_list_nodes,
-                            "html_thumb_nodes": html_thumb_nodes,
+                            "html_list_nodes": "".join(html_list_nodes),
+                            "html_thumb_nodes": "".join(html_thumb_nodes),
                             "faultyidlist": faultyidlist,
                             "script_array": script_array,
                             "language": lang(req)},

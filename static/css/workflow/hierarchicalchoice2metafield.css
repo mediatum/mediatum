@@ -1,0 +1,13 @@
+/*
+  Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+  SPDX-License-Identifier: AGPL-3.0-or-later
+*/
+#hierarchicalchoice2metafield ul {
+    list-style-position: outside;
+    padding-bottom: 0px;
+    list-style-type: square;
+    margin: 0px 0px 0px 1.22em;
+    padding-left: 0px;
+    padding-right: 0px;
+    padding-top: 0px
+}

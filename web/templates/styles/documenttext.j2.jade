@@ -1,20 +1,17 @@
 - extends "styles/base.j2.jade"
 - from "styles/macros.j2.jade" import metis
-
-
-- block top
- if metis_url
-   = metis(metis_url)
   
+- block top
+  = metis(metis_url)
 
 - block after_metadata
   if canseeoriginal
     .action_icon
-      a(href=documentlink, target="documentdownload", title=_t("doc_fulltext_title"))
+      a(href=documentlink, target="documentdownload", onclick="vgwPixelCall();", title=_t("doc_fulltext_title"))
         img(src="/img/pdf.gif") 
         |&nbsp;PDF
     .clear
-    a(href=documentdownload)= _t("alternative_pdf_link")
+    a(href=documentdownload, onclick="vgwPixelCall();")= _t("alternative_pdf_link")
 
 
 // generated from jade

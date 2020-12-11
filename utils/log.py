@@ -42,9 +42,6 @@ ROOT_STREAM_LOGFORMAT = '%(asctime)s [%(process)d/%(threadName)s] %(name)s %(lev
 # ROOT_STREAM_LOGFORMAT = '%(asctime)s %(name)s/%(module)s [%(threadName)s] %(levelname)s | %(message)s - %(pathname)s:%(lineno)d'
 ROOT_FILE_LOGFORMAT = ROOT_STREAM_LOGFORMAT
 
-# path's will be required in web/admin/modules/logfile.py
-dlogfiles = {}
-
 
 def tal_traceback_info():
     info = {}
@@ -316,8 +313,7 @@ def initialize(level=None, log_filepath=None, log_filename=None, use_logstash=No
             log_filepath = os.path.join(log_dir, log_filename)
 
     if log_filepath:
-        dlogfiles['mediatum'] = {'path': log_filepath, 'filename': log_filepath}
-        file_handler = logging.FileHandler(log_filepath)
+        file_handler = logging.handlers.WatchedFileHandler(log_filepath)
         file_handler.setFormatter(logging.Formatter(ROOT_FILE_LOGFORMAT))
         root_logger.addHandler(file_handler)
         logg.info('--- logging everything to %s ---', log_filepath)

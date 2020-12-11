@@ -1,5 +1,15 @@
 - macro metis(metis_url)
-  img(src=metis_url, width=1, height=1)
+  if metis_url
+    div(id="metis-url", data-metis-url="{{metis_url}}")
+    script(type='text/javascript').
+      function vgwPixelCall() {
+        div_metis_url = document.getElementById("metis-url");
+        var image = new Image();
+        image.src = div_metis_url.getAttribute("data-metis-url");
+        image.width = "1";
+        image.height = "1";
+        div_metis_url.appendChild(image);
+      }
 
 
 - macro format(image_formats)

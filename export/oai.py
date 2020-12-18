@@ -522,6 +522,6 @@ def oaiRequest(req):
             req.headers.get("user-agent", "unknown")[:60],
            )
 
-    res = _lxml_etree.tostring(oai_pmh, encoding='utf-8', method="xml", pretty_print=True)
+    res = _lxml_etree.tostring(oai_pmh, encoding='utf-8', method="xml", xml_declaration=True, pretty_print=True)
     req.response.mimetype = "application/xml"
     req.response.set_data(res)

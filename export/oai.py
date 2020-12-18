@@ -523,5 +523,5 @@ def oaiRequest(req):
            )
 
     res = _lxml_etree.tostring(oai_pmh, encoding='utf-8', method="xml", xml_declaration=True, pretty_print=True)
-    req.response.mimetype = "application/xml"
+    req.response.mimetype = "text/xml"
     req.response.set_data(res)

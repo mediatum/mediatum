@@ -984,6 +984,7 @@ class Mask(Node):
                 if item.getRequired() == 1:
                     if node.get(field.getName()) == "":
                         ret.append(field.id)
+                        continue
 
                 if field and field.getContentType() == "metafield" and field.getFieldtype() == "date":
                     if not node.get(field.getName()) == "" and not validateDateString(node.get(field.getName())):
@@ -995,12 +996,15 @@ class Mask(Node):
     def validateNodelist(self, nodes):
         ret = []
         for node in nodes:
+            if node.id in ret:
+                continue
             for item in self.getMaskFields():
                 field = item.getField()
                 if item.getRequired() == 1:
                     if node.get(field.getName()) == "":
                         ret.append(node.id)
                         logg.error("Error in publishing of node %s: The required field %s is empty.", node.id, field.name)
+                        continue
 
                 if field and field.getContentType() == "metafield" and field.getFieldtype() == "date":
                     if not node.get(field.getName()) == "":

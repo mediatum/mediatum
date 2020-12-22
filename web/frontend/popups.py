@@ -177,7 +177,9 @@ def show_printview(req):
         nodes = q(Node, node_ids_cte.c.sortpath).join(node_ids_cte, Node.id == node_ids_cte.c.nodeid)\
                     .order_by(node_ids_cte.c.sortpath).prefetch_attrs().all()[1:]
 
-        base_path = _functools.partial(_itertools.chain, tuple(n.name for n in getPaths(node)[0][1:]) + (node.name,))
+        base_path = tuple((getPaths(node) or ((),))[0][1:]) + (node,)
+        base_path = _functools.partial(_itertools.chain, tuple(n.name for n in base_path))
+
 
         nid2node = {n.id:n for n,_ in nodes}
         schema2node = {n.schema:n for n,_ in nodes}

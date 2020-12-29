@@ -14,6 +14,7 @@ import logging
 import os
 import pkgutil
 import sys
+import collections as _collections
 from warnings import warn
 
 from sqlalchemy.orm.exc import NoResultFound
@@ -130,12 +131,12 @@ VIEW_HIDE_EMPTY = 2     # show only fields with 'non-empty' values
 VIEW_DATA_ONLY = 4      # deliver list with values (not html)
 VIEW_DATA_EXPORT = 8    # deliver export format
 
+_EditUpdateAttrs = _collections.namedtuple("edit_update_attrs", "nodename fields attrs system_attrs")
 
 _MetafieldsDependency = _collections.namedtuple(
     "_MetafieldsDependency",
     "metadatatypes_id schema_name mask_name maskitem_name metafield_name metafield_id"
 )
-
 
 
 def _get_metafields_dependencies():
@@ -171,7 +172,6 @@ def _get_metafields_dependencies():
         query = query.join(noderelation, noderelation.c.nid == parent.id)
         query = query.join(child, child.id == noderelation.c.cid)
     return tuple(_MetafieldsDependency(**row._asdict()) for row in query.all())
-
 
 #
 # return metadata object by given name
@@ -1038,53 +1038,70 @@ class Mask(Node):
                 mandfields.remove(item.get("mappingfield"))
         return len(mandfields) == 0
 
-
-    def update_node(self, node, req, user):
-        ''' update given node with given request values '''
+    def get_edit_update_attrs(self, req, user):
+        """
+        Computes and returns a structure that contains all to-be-updated attributes, independent of a node
+        :param req:
+        :param user:
+        :return: attributes to update
+        """
+        assert self.masktype == "edit"
         form = req.form
-        # collect all changes first and apply them at the end because SQLAlchemy would issue an UPDATE for each attr assignment
-        updated_attrs = {}
-        updated_system_attrs = {}
+        attrs = {}
+        system_attrs = {}
+        nodename = None
+        fields = list()
         current_language = translation.set_language(req.accept_languages)
         default_language = config.languages[0]
         for item in self.all_maskitems:
             field = item.metafield
-
             if field and form.get(field.name, "").find("?") != 0:
                 t = getMetadataType(field.get("type"))
-
                 if field.name in form:
                     if field.name == 'nodename':
                         value = form.get('nodename')
-                        node.name = value
+                        nodename = value
                     else:
                         value = t.format_request_value_for_db(field, form, field.name)
                         if field.name.startswith("system."):
-                            updated_system_attrs[field.name[len("system."):]] = value
+                            system_attrs[field.name[len("system."):]] = value
                         else:
-                            updated_attrs[field.name] = value
-
+                            attrs[field.name] = value
                 elif field["type"] == "check":
-                    updated_attrs[field.name] = "0"
-
+                    attrs[field.name] = "0"
                 # handle multilang heritage
                 elif field.name == 'nodename':
                     if default_language + '__nodename' in form:
                         value = form.get(default_language + '__nodename')
-                        node.name = value
+                        nodename = value
                     elif current_language + '__nodename' in form:
                         value = form.get(current_language + '__nodename')
-                        node.name = value
+                        nodename = value
+                fields.append(field)
 
-                if hasattr(t, "event_metafield_changed"):
-                    t.event_metafield_changed(node, field)
+        system_attrs["edit.lastmask"] = self.name
+        attrs["updateuser"] = user.getName()
+        attrs["updatetime"] = format_date()
 
-        updated_system_attrs["edit.lastmask"] = self.name
-        updated_attrs["updateuser"] = user.getName()
-        updated_attrs["updatetime"] = format_date()
+        return _EditUpdateAttrs(nodename, fields, attrs, system_attrs)
 
-        node.attrs.update(updated_attrs)
-        node.system_attrs.update(updated_system_attrs)
+    def apply_edit_update_attrs_to_node(self, node, attrs):
+        """
+        Uses the precomputed structure to update a single node
+        :param node: node to be updated
+        :param attrs: attributes to update
+        :return:
+        """
+        for field in attrs.fields:
+            t = getMetadataType(field.get("type"))
+            if hasattr(t, "event_metafield_changed"):
+                t.event_metafield_changed(node, field)
+
+        if attrs.nodename and node.name != attrs.nodename:
+            node.name = attrs.nodename
+
+        node.attrs.update(attrs.attrs)
+        node.system_attrs.update(attrs.system_attrs)
 
         if hasattr(node, "event_metadata_changed"):
             node.event_metadata_changed()

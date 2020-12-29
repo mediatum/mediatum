@@ -126,8 +126,9 @@ def _handle_edit_metadata(req, mask, nodes):
         # if nodes:
         old_nodename = nodes[0].name
 
+        attrs = mask.get_edit_update_attrs(req, user)
         for node in nodes:
-            mask.update_node(node, req, user)
+            mask.apply_edit_update_attrs_to_node(node, attrs)
 
         # XXX: why check here?
         # if nodes:

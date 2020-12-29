@@ -41,7 +41,7 @@ class WorkflowStep_EditMetadata(WorkflowStep):
             mask = getMetaType(node.schema).getMask(maskname)
 
         if "metaDataEditor" in req.params:
-            mask.update_node(node, req, user)
+            mask.apply_edit_update_attrs_to_node(node, mask.get_edit_update_attrs(req, user))
             db.session.commit()
             missing = mask.validate([node])
             if not missing or "gofalse" in req.params:

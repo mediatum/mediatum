@@ -18,6 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import collections as _collections
+import werkzeug.datastructures as _werkzeug_datastructures
 from datetime import datetime
 import utils as _utils
 from core.systemtypes import Metadatatypes
@@ -25,7 +26,6 @@ from core import Node, db
 import core.config as config
 import logging
 import flask as _flask
-from core.request_handler import make_param_dict_utf8_values
 
 q = db.query
 
@@ -163,7 +163,7 @@ def chk_citation_pdf_url(mappingfield):
     else:
         return False
     path = path[path.find('/'):]
-    dummy_request.args = make_param_dict_utf8_values([])
+    dummy_request.args = _werkzeug_datastructures.ImmutableMultiDict()
     dummy_request.path = path
     status =_send_file_with_type("document", None, dummy_request, checkonly=True)
     return status == 200

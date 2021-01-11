@@ -15,7 +15,7 @@ from functools import partial as _partial
 from cgi import escape as _escape
 from StringIO import StringIO as _StringIO
 from core import config as _config
-from werkzeug.datastructures import MIMEAccept as _MIMEAccept, ImmutableMultiDict as _ImmutableMultiDict
+from werkzeug.datastructures import MIMEAccept as _MIMEAccept
 from werkzeug.http import parse_accept_header as _parse_accept_header
 from utils.utils import suppress as _suppress, nullcontext as _nullcontext
 from utils.url import build_url_from_path_and_params as _build_url_from_path_and_params
@@ -895,17 +895,6 @@ def request_finished(handler):
     """Decorator for functions which should be run after the view handler is called"""
     _request_finished_handlers.append(handler)
     return handler
-
-
-def make_param_dict_utf8_values(param_list):
-    def decode(k):
-        try:
-            return unicode(k, encoding="utf8")
-        except UnicodeDecodeError as e:
-            _logg.warn("tried to decode non-UTF8 string: %s", k.encode("string-escape"))
-            raise
-
-    return _ImmutableMultiDict([(decode(k), decode(v)) for k, v in param_list])
 
 
 def _load_module(filename):

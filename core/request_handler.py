@@ -19,7 +19,6 @@ from werkzeug.datastructures import MIMEAccept as _MIMEAccept
 from werkzeug.http import parse_accept_header as _parse_accept_header
 from utils.utils import suppress as _suppress, nullcontext as _nullcontext
 from utils.url import build_url_from_path_and_params as _build_url_from_path_and_params
-from itertools import chain as _chain
 from collections import OrderedDict as _OrderedDict
 from wtforms.csrf.session import SessionCSRF as _SessionCSRF
 from wtforms import Form as _Form
@@ -872,17 +871,6 @@ def makeSelfLink(req, params):
     return ret
 
 
-# COMPAT: new param style like flask
-def make_legacy_params_dict(req):
-    """convert new-style params to old style params dict"""
-    req.params = params = {}
-    for key, values in _chain(req.form.iterlists(), req.args.iterlists()):
-        value = ";".join(values)
-        params[key] = value
-#             params[key.encode("utf8")] = value.encode("utf8")
-    params.update(req.files.iteritems())
-
-
 # COMPAT: added functions
 
 def request_started(handler):
@@ -1211,7 +1199,8 @@ def handle_request(req):
     if not mediatum_contextfree_path.startswith("/"):
         mediatum_contextfree_path = "/" + mediatum_contextfree_path
     req.mediatum_contextfree_path = mediatum_contextfree_path
-    make_legacy_params_dict(req)
+
+    req.params = {key: ";".join(value) for key, value in req.values.iterlists()}
 
     mediatum_form = MediatumForm(meta={'csrf_context': _flask.session})
     if req.form and req.method == 'POST':

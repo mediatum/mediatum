@@ -145,6 +145,7 @@ def getContent(req, ids):
                     del node.system_attrs["startpagedescr." + file_shortpath]
                 node.system_attrs["startpage_selector"] = node.system_attrs["startpage_selector"].replace(file_shortpath, "")
                 node.files.remove(filenode)
+                q(File).filter_by(id=filenode.id).delete()
                 db.session.commit()
                 logg.info("%s - startpages - deleted File and file for node %s (%s): %s, %s, %s, %s",
                         user.login_name, node.id, node.name, page, filenode.path, filenode.filetype, filenode.mimetype)

@@ -130,28 +130,35 @@ def getContent(req, ids):
             return ""
 
     for key in req.params.keys():
-        if key.startswith("delete_"):  # delete page
-            page = key[7:-2]
-            try:
-                file_shortpath = page.replace(config.get("paths.datadir"), "")
-                fullpath = os.path.join(config.get("paths.datadir"), page)
-                if os.path.exists(fullpath):
-                    os.remove(fullpath)
-                    logg.info("%s removed file %s from disk", user.login_name, fullpath)
-                else:
-                    logg.warn("%s could not remove file %s from disk: not existing", user.login_name, fullpath)
-                filenode = q(File).filter_by(path=page, mimetype=u"text/html").one()
-                with suppress(KeyError, warn=False):
-                    del node.system_attrs["startpagedescr." + file_shortpath]
-                node.system_attrs["startpage_selector"] = node.system_attrs["startpage_selector"].replace(file_shortpath, "")
-                node.files.remove(filenode)
-                q(File).filter_by(id=filenode.id).delete()
-                db.session.commit()
-                logg.info("%s - startpages - deleted File and file for node %s (%s): %s, %s, %s, %s",
-                        user.login_name, node.id, node.name, page, filenode.path, filenode.filetype, filenode.mimetype)
-            except:
-                logg.exception("%s - startpages - error while delete File and file for %s, exception ignored", user.login_name, page)
-            break
+        if not key.startswith("delete_"):  # delete page
+            continue
+        page = key[7:-2]
+        try:
+            filenode = q(File).filter_by(path=page, mimetype=u"text/html").one()
+            if filenode not in node.files:
+                logg.error(
+                    "%s - startpages - error while delete File and file for %s that does not belong to node %d",
+                    user.login_name, page, node.id,
+                )
+                break
+            file_shortpath = page.replace(config.get("paths.datadir"), "")
+            fullpath = os.path.join(config.get("paths.datadir"), page)
+            if os.path.exists(fullpath):
+                os.remove(fullpath)
+                logg.info("%s removed file %s from disk", user.login_name, fullpath)
+            else:
+                logg.warn("%s could not remove file %s from disk: not existing", user.login_name, fullpath)
+            with suppress(KeyError, warn=False):
+                del node.system_attrs["startpagedescr." + file_shortpath]
+            node.system_attrs["startpage_selector"] = node.system_attrs["startpage_selector"].replace(file_shortpath, "")
+            node.files.remove(filenode)
+            q(File).filter_by(id=filenode.id).delete()
+            db.session.commit()
+            logg.info("%s - startpages - deleted File and file for node %s (%s): %s, %s, %s, %s",
+                    user.login_name, node.id, node.name, page, filenode.path, filenode.filetype, filenode.mimetype)
+        except:
+            logg.exception("%s - startpages - error while delete File and file for %s, exception ignored", user.login_name, page)
+        break
 
     if "save_page" in req.params:  # save page
         content = ""

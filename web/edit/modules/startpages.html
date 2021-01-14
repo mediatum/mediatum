@@ -1,3 +1,25 @@
+<tal:block metal:define-macro="named_filelist" tal:repeat="item named_filelist">
+    <tr tal:define="cssclass python:named_filelist.index(item)%2 and 'silver' or 'norm'" tal:attributes="class cssclass; id python:item[0];">
+        <td tal:repeat="lang languages">
+            <input type="radio" i18n:attributes="title edit_startpages_selectlanguage" tal:attributes="name python:u'radio_{}'.format(lang); value python:item[0]; checked python:'checked' if lang in item[7] else None"/>
+        </td>
+        <td style="border-left:1px solid silver">
+            <input type="text" tal:attributes="name python:u'descr.{}'.format(item[0]); value python:item[1]" style="width:300px"/>
+        </td>
+        <td tal:content="python:unicode(item[8])"/>
+        <td style="width:20px;text-align:right">
+            <a target="_blank" tal:attributes="href python:item[8]"  i18n:attributes="title edit_startpages_link">
+                <img src="/img/rightarrow.png"/>
+            </a>
+        </td>
+        <td style="text-align:right; font-size:9px" tal:content="python:unicode(item[5])"/>
+        <td style="text-align:right">
+            <a href="#" tal:attributes="onclick python:u'editFile(\'{}\')'.format(item[0])" i18n:attributes="title edit_startpages_edit"><img src="/img/edit_opt.png"/></a>
+            <input tal:attributes="name python:u'delete_{}'.format(item[0])" i18n:attributes="title edit_startpages_delete" type="image" src="/img/delete.png" onclick="return questionDel()"/>
+        </td>
+    </tr>
+</tal:block>
+
 <metal:block metal:define-macro="edit_startpages">
     <style>
         #editform{display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;z-index:10;}
@@ -121,27 +143,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tal:block tal:repeat="item named_filelist">
-                                <tr tal:define="cssclass python:named_filelist.index(item)%2 and 'silver' or 'norm'" tal:attributes="class cssclass; id python:item[0];">
-                                    <td tal:repeat="lang languages">
-                                        <input type="radio" i18n:attributes="title edit_startpages_selectlanguage" tal:attributes="name python:u'radio_{}'.format(lang); value python:item[0]; checked python:'checked' if lang in item[7] else None"/>
-                                    </td>
-                                    <td style="border-left:1px solid silver">
-                                        <input type="text" tal:attributes="name python:u'descr.{}'.format(item[0]); value python:item[1]" style="width:300px"/>
-                                    </td>
-                                    <td tal:content="python:unicode(item[8])"/>
-                                    <td style="width:20px;text-align:right">
-                                        <a target="_blank" tal:attributes="href python:item[8]"  i18n:attributes="title edit_startpages_link">
-                                            <img src="/img/rightarrow.png"/>
-                                        </a>
-                                    </td>
-                                    <td style="text-align:right; font-size:9px" tal:content="python:unicode(item[5])"/>
-                                    <td style="text-align:right">
-                                        <a href="#" tal:attributes="onclick python:u'editFile(\'{}\')'.format(item[0])" i18n:attributes="title edit_startpages_edit"><img src="/img/edit_opt.png"/></a>
-                                        <input tal:attributes="name python:u'delete_{}'.format(item[0])" i18n:attributes="title edit_startpages_delete" type="image" src="/img/delete.png" onclick="return questionDel()"/>
-                                    </td>
-                                </tr>
-                            </tal:block>
+                            <tal:block metal:use-macro="named_filelist"/>
                         </tbody>
                         <tfoot>
                             <tr style="background-color:#d8d8d8">

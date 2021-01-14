@@ -122,9 +122,17 @@ def getContent(req, ids):
                     fil.write(req.params.get('data'))
                 node.files.append(File(filename, u"content", u"text/html"))
                 db.session.commit()
-                req.response.set_data(json.dumps({'filename': '', 'state': 'ok'}))
+
+                req.response.set_data(_tal.processTAL(
+                        dict(
+                            named_filelist=_get_named_filelist(node, req.params.get("id", "0")),
+                            languages=config.languages,
+                            ),
+                        file="web/edit/modules/startpages.html",
+                        macro="named_filelist",
+                        request=req,
+                    ))
                 logg.info("%s added startpage %s for node %s (%s, %s)", user.login_name, filename, node.id, node.name, node.type)
-                return None
             else:
                 for f in [f for f in node.files if f.mimetype == "text/html"]:
                     filepath = f.abspath.replace(config.get("paths.datadir"), '')

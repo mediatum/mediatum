@@ -88,14 +88,8 @@
                 data : { data: CKEDITOR.instances['page_content'].getData() },
                 url : '/edit/edit_content?id='+id+'&tab=startpages&action=save&filename='+$("#filename").val()+'&csrf_token='+csrf
             }).done(function(ret){
-                ret = jQuery.parseJSON(ret);
                 $('#editform').css('display','none');
-                if (ret.filename==""){
-                    document.getElementById("01").submit();
-                    return false;
-                }
-                o = $(document.getElementById(ret.filename)).children();
-                o.get(o.length-2).innerHTML = ret.filesize;
+                document.getElementById("filetable").tBodies[0].innerHTML = ret;
             });
         }
     </script>

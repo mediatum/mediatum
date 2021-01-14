@@ -69,23 +69,23 @@ def getFilelist(node, fieldname=''):
     fs = node.files
     if fieldname:
         # get files for this fieldname only
-        pattern = r'm_upload_%s_' % fieldname
+        pattern = r'metafield-upload.{}'.format(fieldname)
     else:
         # get files for all m_upload fields
-        pattern = r'm_upload_'
+        pattern = r'metafield-upload.'
 
     filelist = []
 
     for f in fs:
-        f_name = f.base_name
-        if re.match(pattern, f_name):
+        f_type = f.filetype
+        if re.match(pattern, f_type):
             f_retrieve = f.abspath
             try:
                 f_mtime = unicode(datetime.datetime.fromtimestamp(os.path.getmtime(f_retrieve)))
             except:
                 logg.exception("exception in getFilelist, formatting datestr failed, using fake date")
-                f_mtime = "2099-01-01 12:00:00.00 " + f_name
-            _t = (f_mtime, f_name, f.mimetype, f.size, f.filetype, f_retrieve, f)
+                f_mtime = "2099-01-01 12:00:00.00 " + f.base_name
+            _t = (f_mtime, f.base_name, f.mimetype, f.size, f_type, f_retrieve, f)
             filelist.append(_t)
 
     filelist.sort()
@@ -355,8 +355,7 @@ def handle_request(req):
             nodeFile = importFile(
                 _normalize_filename(filename),
                 file,
-                prefix='m_upload_{}_'.format(submitter),
-                typeprefix="u_",
+                override_filetype='metafield-upload.{}'.format(submitter)
                )
 
             if not nodeFile:

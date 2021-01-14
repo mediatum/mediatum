@@ -256,7 +256,7 @@ class WorkflowStep_AddFormPage(WorkflowStep):
                     found = 1
                     break
             if found == 0 or (found == 1 and not pdf_form_overwrite):
-                node.files.append(File(new_form_path, 'pdf_form', 'application/pdf'))
+                node.files.append(File(new_form_path, 'metafield-upload.upload_pdfform', 'application/pdf'))
                 db.session.commit()
 
             logg.info(

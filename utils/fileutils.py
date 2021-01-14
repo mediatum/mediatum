@@ -41,13 +41,9 @@ def getImportDir():
     return uploaddir
 
 
-def importFile(realname, source, prefix="", typeprefix=""):
-    # create destname as "{random_string}.{prefix}.{given_name}"
-    destname = list()
-    destname.append(_utils_utils.gen_secure_token(128))
-    if prefix:
-        destname.append(prefix)
-    destname.append(os.path.basename(source.filename))
+def importFile(realname, source, override_filetype=""):
+    # create destname as "{random_string}.{given_name}"
+    destname = (_utils_utils.gen_secure_token(128), os.path.basename(source.filename))
     destname = os.path.join(getImportDir(), ".".join(destname))
 
     with open(destname,"wb") as destfile:
@@ -56,7 +52,7 @@ def importFile(realname, source, prefix="", typeprefix=""):
     r = realname.lower()
     mimetype, filetype = getMimeType(r)
 
-    return File(destname, typeprefix + filetype, mimetype)
+    return File(destname, override_filetype or filetype, mimetype)
 
 
 def importFileIntoDir(destdir, tempname):

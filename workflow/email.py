@@ -86,7 +86,7 @@ class WorkflowStep_SendEmail(WorkflowStep):
                 attachments_paths_and_filenames = []
                 if attach_pdf_form:
                     for f in node.files:
-                        if f.filetype != 'pdf_form':
+                        if f.filetype != 'metafield-upload.upload_pdfform':
                             continue
                         if not os.path.isfile(f.abspath):
                             raise MailError("Attachment file not found: '%s'" % f.abspath)

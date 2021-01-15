@@ -15,7 +15,7 @@
         <td style="text-align:right; font-size:9px" tal:content="python:unicode(item.file_size)"/>
         <td style="text-align:right">
             <a href="#" tal:attributes="onclick python:u'editFile(\'{}\')'.format(item.short_path)" i18n:attributes="title edit_startpages_edit"><img src="/img/edit_opt.png"/></a>
-            <input tal:attributes="name python:u'delete_{}'.format(item.short_path)" i18n:attributes="title edit_startpages_delete" type="image" src="/img/delete.png" onclick="return questionDel()"/>
+            <input tal:attributes="onclick python:u'questionDel(\'{}\')'.format(item.short_path);" i18n:attributes="title edit_startpages_delete" type="image" src="/img/delete.png"/>
         </td>
     </tr>
 </tal:block>
@@ -56,8 +56,23 @@
     <script type="text/javascript">
         var CKEDITOR_BASEPATH = '/ckeditor/';
 
-        function questionDel(){ //old
-            return confirm(unescape(document.getElementById("deleteconfirm").innerHTML));
+        function questionDel(filename) { //old
+            yes = confirm(unescape(document.getElementById("deleteconfirm").innerHTML));
+            if (!yes) return;
+
+            csrf = csrf.replace("##", "!!!!!");
+            $.ajax({
+                url: '/edit/edit_content?id='+id+'&tab=startpages',
+                async: false,
+                type: 'POST',
+                data : { delete_: filename, csrf_token: csrf},
+                success: function (response) {
+                   document.getElementById("filetable").tBodies[0].innerHTML = response;
+                },
+                error: function (msg) {
+                    alert("error: " + msg.toSource());
+                }
+            });
         }
 
         function editFile(filename){ // edit file click

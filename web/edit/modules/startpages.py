@@ -181,7 +181,7 @@ def getContent(req, ids):
     for key in req.params.keys():
         if not key.startswith("delete_"):  # delete page
             continue
-        page = key[7:-2]
+        page = req.params.get(key)
         try:
             filenode = q(File).filter_by(path=page, mimetype=u"text/html").one()
             if filenode not in node.files:
@@ -203,8 +203,19 @@ def getContent(req, ids):
             node.files.remove(filenode)
             q(File).filter_by(id=filenode.id).delete()
             db.session.commit()
+
             logg.info("%s - startpages - deleted File and file for node %s (%s): %s, %s, %s, %s",
                     user.login_name, node.id, node.name, page, filenode.path, filenode.filetype, filenode.mimetype)
+            req.response.set_data(_tal.processTAL(
+                    dict(
+                        named_filelist=_get_named_filelist(node, req.params.get("id", "0")),
+                        languages=config.languages,
+                        ),
+                    file="web/edit/modules/startpages.html",
+                    macro="named_filelist",
+                    request=req,
+                ))
+            return
         except:
             logg.exception("%s - startpages - error while delete File and file for %s, exception ignored", user.login_name, page)
         break

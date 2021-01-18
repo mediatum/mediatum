@@ -187,7 +187,7 @@ def _identify(**excess):
 
     for tag, txt in (
         ("repositoryName", name),
-        ("baseURL", config.get("host.name", "{}:8081".format(socket.gethostname()))),
+        ("baseURL", 'http://{}/oai/oai'.format(config.get("host.name", "{}:8081".format(socket.gethostname())))),
         ("protocolVersion", "2.0"),
         ("adminEmail", config.get("email.admin")),
         ("earliestDatestamp", "{}-01-01T12:00:00Z".format(ustr(config.getint("oai.earliest_year", 1960) - 1))),

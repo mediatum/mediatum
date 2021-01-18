@@ -44,12 +44,12 @@ def getInformation():
 
 
 def validate(req, op):
-    path = req.path[1:].split("/")
+    path = req.mediatum_contextfree_path[1:].split("/")
     if len(path) == 3 and path[2] == "overview":
         return WorkflowPopup(req)
 
     # import scheme from xml-file
-    importfile = req.params.get("file")
+    importfile = req.files.get("file")
     if importfile:
         importWorkflow(importfile)
 
@@ -490,7 +490,7 @@ def WorkflowStepDetail(req, wid, wnid, err=0):
 
 
 def WorkflowPopup(req):
-    path = req.path[1:].split("/")
+    path = req.mediatum_contextfree_path[1:].split("/")
     return _tal.processTAL({"id": path[1], "csrf": req.csrf_token.current_token}, file="web/admin/modules/workflows.html", macro="view_popup", request=req)
 
 """ export workflow-definition (XML) """

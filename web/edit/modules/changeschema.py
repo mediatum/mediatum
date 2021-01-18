@@ -36,7 +36,7 @@ logg = logging.getLogger(__name__)
 
 
 def _redirect_to_view(req):
-    req.response.headers["Location"] = "{}?id={}&tab=changeschema".format(req.full_path, req.args["id"])
+    req.response.headers["Location"] = "{}?id={}&tab=changeschema".format(req.path, req.args["id"])
     return httpstatus.HTTP_MOVED_TEMPORARILY
 
 

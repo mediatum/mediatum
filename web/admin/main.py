@@ -48,7 +48,7 @@ logg = logging.getLogger(__name__)
 def show_node(req):
     """ opens administration window with content """
 
-    p = req.path[1:].split("/")
+    p = req.mediatum_contextfree_path[1:].split("/")
     style = req.params.get("style", u"")
     user = _user_from_session()
 
@@ -58,7 +58,7 @@ def show_node(req):
     v["version"] = core.__version__
     v["content"] = show_content(req, p[0])
     v["navigation"] = adminNavigation()
-    v["breadcrumbs"] = getMenuItemID(v["navigation"], req.path[1:])
+    v["breadcrumbs"] = getMenuItemID(v["navigation"], req.mediatum_contextfree_path[1:])
 
     spc = [
         Menu("sub_header_frontend", u"/"),
@@ -86,7 +86,7 @@ def export(req):
     if not user.is_admin:
         return httpstatus.HTTP_FORBIDDEN
 
-    path = req.path[1:].split("/")
+    path = req.mediatum_contextfree_path[1:].split("/")
     module = findmodule(path[1])
     try:
         xml_result = module.export(req, path[2])

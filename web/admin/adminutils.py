@@ -71,7 +71,7 @@ class Overview:
 
     def __init__(self, req, list):
         self.req = req
-        self.path = req.path[1:]
+        self.path = req.mediatum_contextfree_path[1:]
         self.language = lang(req)
         self.stdVars = getAdminStdVars(self.req)
 

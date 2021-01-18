@@ -95,7 +95,7 @@ def show_help(req):
     req.response.set_data(html)
 #
 # show attachmentbrowser for given node
-# parameter: req.id, req.path
+# parameter: req.id, req.mediatum_contextfree_path
 #
 
 
@@ -115,14 +115,14 @@ RE_PRINT_URL = re.compile("/print/(\d+).pdf")
 
 
 def redirect_old_printview(req):
-    req.response.headers["Location"] = req.path + ".pdf"
+    req.response.headers["Location"] = req.mediatum_contextfree_path + ".pdf"
     req.response.status_code = httpstatus.HTTP_TEMPORARY_REDIRECT
     return httpstatus.HTTP_TEMPORARY_REDIRECT
 
 
 def show_printview(req):
     """ create a pdf preview of given node (id in path e.g. /print/[id].pdf)"""
-    match = RE_PRINT_URL.match(req.path)
+    match = RE_PRINT_URL.match(req.mediatum_contextfree_path)
     nodeid = int(match.group(1))
 
     node = q(Node).get(nodeid)
@@ -276,7 +276,7 @@ def show_printview(req):
 
 # use popup method of  metadatatype
 def popup_metatype(req):
-    mtype = getMetadataType(req.path.split("/")[-1])
+    mtype = getMetadataType(req.mediatum_contextfree_path.split("/")[-1])
     if mtype and hasattr(mtype, "getPopup"):
         mtype.getPopup(req)
     else:

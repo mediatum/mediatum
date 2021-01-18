@@ -942,7 +942,7 @@ def dec_entry_log(func):
             ("kwargs", kwargs)]:
 
             if ("%r" % value).find('Request ') > 0:
-                _v = "req.path=%r|req.params=%r" % (value.path, value.params)
+                _v = "req.mediatum_contextfree_path=%r|req.params=%r" % (value.mediatum_contextfree_path, value.params)
                 value = _v
             arg_info.append('%s=%r' % (arg_name, value))
         s_arg_info = ', '.join(arg_info)

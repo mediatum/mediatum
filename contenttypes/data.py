@@ -83,7 +83,7 @@ def log_maskcache_accesscount(req, *args):
         maskcache_accesscount = req.app_cache.get('maskcache_accesscount', {})
         if maskcache_accesscount:
             maskcache_report = get_maskcache_report(maskcache_accesscount)
-            logg.debug("mask cache status for req to %s: %s", req.path, maskcache_report)
+            logg.debug("mask cache status for req to %s: %s", req.mediatum_contextfree_path, maskcache_report)
 
 
 def render_mask_template(node, mask, field_descriptors, language, words=None, separator="", skip_empty_fields=True):
@@ -431,7 +431,7 @@ def prepare_node_data(node, req):
     if children:
         # link to child detail in frontend and editor differ
         # hack: is this flask compatible?
-        in_editor = (req and req.path.startswith("/edit"))
+        in_editor = req and req.mediatum_contextfree_path.startswith("/edit")
         if in_editor:
             get_detail_url = lambda cid, pid: "?id={}&pid={}".format(cid, pid)
         else:

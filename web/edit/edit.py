@@ -740,7 +740,7 @@ def content(req):
     except:
         v['nodeiconpath'] = "webtree/directory.gif"
 
-    path = req.path[1:].split("/")
+    path = req.mediatum_contextfree_path[1:].split("/")
     if len(path) >= 4:
         req.params["style"] = "popup"
         req.params["id"] = path[1]
@@ -947,7 +947,7 @@ RE_EDIT_PRINT_URL = re.compile("/print/(\d+)_([a-z]+)(?:_(.+)?)?\.pdf")
 
 def edit_print(req):
     edit_modules = getEditModules()
-    match = RE_EDIT_PRINT_URL.match(req.path)
+    match = RE_EDIT_PRINT_URL.match(req.mediatum_contextfree_path)
     nid = int(match.group(1))
     module_name = match.group(2)
     mod = edit_modules.get(module_name)

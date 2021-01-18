@@ -286,11 +286,8 @@ def _retrieve_nodes(setspec, date_from, date_to, metadataformat):
         nodequery = collections_root.all_children
         setspecFilter = oaisets.getNodesFilterForSetSpec(setspec, schemata)
         nodequery = nodequery.filter(Node.schema.in_(schemata))
-        if isinstance(setspecFilter, _collections.Iterable):
-            for sFilter in setspecFilter:
-                nodequery = nodequery.filter(sFilter)
-        else:
-            nodequery = nodequery.filter(setspecFilter)
+        for sFilter in setspecFilter:
+            nodequery = nodequery.filter(sFilter)
 
     if date_from:
         nodequery = nodequery.filter(Node.attrs[datefield].astext >= str(date_from))
@@ -518,7 +515,7 @@ def oaiRequest(req):
     logg.info("%s OAI (exit after %.3f sec.) %s - (user-agent: %s)",
             req.remote_addr,
             (time.clock() - start_time),
-            req.path.replace('//', '/'),
+            req.full_path.replace('//', '/'),
             req.headers.get("user-agent", "unknown")[:60],
            )
 

@@ -559,6 +559,7 @@ def upload_for_html(req):
                     node.files.remove(file)
             db.session.commit()
 
+    req.params.update(req.files)
     if "file" in req.params.keys():  # file
 
         # file upload via (possibly disabled) upload form in custom image

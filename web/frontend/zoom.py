@@ -93,7 +93,7 @@ class ImageZoomData(object):
 
 
 def send_imageproperties_xml(req):
-    nid, data = splitpath(req.path)
+    nid, data = splitpath(req.mediatum_contextfree_path)
 
     if not Node.req_has_access_to_node_id(nid, u"read", req):
         req.response.status_code = 404
@@ -106,18 +106,18 @@ def send_imageproperties_xml(req):
 
 
 def send_tile(req):
-    nid, data = splitpath(req.path)
+    nid, data = splitpath(req.mediatum_contextfree_path)
 
     if not Node.req_has_access_to_node_id(nid, u"read", req):
         req.response.status_code = 404
         return 404
 
-    if not req.path.endswith(".jpg"):
-        logg.error("invalid tile request %s", req.path)
+    if not req.mediatum_contextfree_path.endswith(".jpg"):
+        logg.error("invalid tile request %s", req.mediatum_contextfree_path)
         req.response.status_code = 404
         return 404
 
-    jpg = req.path[req.path.rindex("/") + 1:-4]
+    jpg = req.mediatum_contextfree_path[req.mediatum_contextfree_path.rindex("/") + 1:-4]
     zoom, x, y = map(int, jpg.split("-"))
 
     try:

@@ -80,7 +80,7 @@ def add_remove_rulesets_from_metadatatype(mtype, new_ruleset_names):
 
 
 def validate(req, op):
-    path = req.path[1:].split("/")
+    path = req.mediatum_contextfree_path[1:].split("/")
 
     if len(path) == 3 and path[2] == "overview":
         return showFieldOverview(req)
@@ -151,7 +151,7 @@ def validate(req, op):
         return showInfo(req)
 
     # import scheme from xml-file
-    importfile = req.params.get("file")
+    importfile = req.files.get("file")
     if importfile:
         importMetaSchema(importfile)
 
@@ -504,7 +504,7 @@ def showInfo(req):
 
 
 def showFieldOverview(req):
-    path = req.path[1:].split("/")
+    path = req.mediatum_contextfree_path[1:].split("/")
     fields = getFieldsForMeta(path[1])
     fields.sort(lambda x, y: cmp(x.orderpos, y.orderpos))
 
@@ -530,7 +530,7 @@ def xmlimport(req, filename):
 
 
 def showEditor(req):
-    path = req.path[1:].split("/")
+    path = req.mediatum_contextfree_path[1:].split("/")
     mtype = getMetaType(path[1])
     editor = mtype.getMask(path[2])
 

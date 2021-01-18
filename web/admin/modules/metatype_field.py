@@ -48,7 +48,7 @@ def showDetailList(req, id):
 
     # resets filter to all if adding mask in /metatype view
     # if req.params.get('acttype') == 'mask' or req.params.get('acttype') == 'schema':
-    #     if req.path == '/metatype' and 'filterbutton' not in req.params:
+    #     if req.mediatum_contextfree_path == '/metatype' and 'filterbutton' not in req.params:
     #         actfilter = '*'
 
     # resets filter when going to a new view

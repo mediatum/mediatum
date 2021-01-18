@@ -32,7 +32,7 @@ logg = logging.getLogger(__name__)
 
 
 def export(req):
-    p = req.path[1:].split("/")
+    p = req.mediatum_contextfree_path[1:].split("/")
 
     if len(p) != 2:
         _error(req, 404, "Object not found")

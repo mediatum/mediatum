@@ -159,7 +159,11 @@ def make_app():
     admin_app = MediatumFlask("mediaTUM admin", template_folder="web/templates")
     admin_app.debug = True
     # Generate seed for signed session cookies
-    secret_key = _utils_utils.gen_secure_token()
+    if "admin.session_secret_key_file" in config.settings:
+        with open(config.settings["admin.session_secret_key_file"], "rb") as f:
+            secret_key = f.read()
+    else:
+        secret_key = _utils_utils.gen_secure_token()
     if _uwsgi:
         _uwsgi.cache_set("secret_key", secret_key)
         secret_key = _uwsgi.cache_get("secret_key")

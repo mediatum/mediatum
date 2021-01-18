@@ -9,18 +9,16 @@ import importlib as _importlib
 import zipfile as _zipfile
 import httpstatus as _httpstatus
 import traceback as _traceback
-import urllib as _urllib
 import flask as _flask
 import utils.locks as _utils_lock
 from functools import partial as _partial
 from cgi import escape as _escape
 from StringIO import StringIO as _StringIO
 from core import config as _config
-from werkzeug.datastructures import MIMEAccept as _MIMEAccept, ImmutableMultiDict as _ImmutableMultiDict
+from werkzeug.datastructures import MIMEAccept as _MIMEAccept
 from werkzeug.http import parse_accept_header as _parse_accept_header
 from utils.utils import suppress as _suppress, nullcontext as _nullcontext
 from utils.url import build_url_from_path_and_params as _build_url_from_path_and_params
-from itertools import chain as _chain
 from collections import OrderedDict as _OrderedDict
 from wtforms.csrf.session import SessionCSRF as _SessionCSRF
 from wtforms import Form as _Form
@@ -234,19 +232,6 @@ def getBase():
     return GLOBAL_ROOT_DIR
 
 
-# --------------------------------------------------
-# split a uri according to https://tools.ietf.org/html/rfc3986
-# --------------------------------------------------
-def split_uri(req):
-    # <path>;<params>?<query>#<fragment>
-    path_regex = _re.compile(
-        #      path      params    query   fragment
-        r'([^;?#]*)(;[^?#]*)?(\?[^#]*)?(#.*)?'
-    )
-    m = path_regex.match(req.full_path)
-    return m.groups()
-
-
 def get_header(req, header):
     header = header.lower()
     if header not in req._header_cache:
@@ -341,8 +326,8 @@ class FileStore:
         for handler in self.handlers:
             if handler.can_handle(request):
                 return handler.handle_request(request)
-        request.path = _escape(request.path)
-        return error(request, 404, "File " + request.path + " not found")
+        request.mediatum_contextfree_path = _escape(request.mediatum_contextfree_path)
+        return error(request, 404, "File " + request.mediatum_contextfree_path + " not found")
 
     def addRoot(self, dir):
         if not _os.path.isabs(dir):
@@ -882,19 +867,8 @@ def makeSelfLink(req, params):
         else:
             with _suppress(Exception, warn=False):
                 del params2[k]
-    ret = _build_url_from_path_and_params(req.full_path, params2)
+    ret = _build_url_from_path_and_params(req.path, params2)
     return ret
-
-
-# COMPAT: new param style like flask
-def make_legacy_params_dict(req):
-    """convert new-style params to old style params dict"""
-    req.params = params = {}
-    for key, values in _chain(req.form.iterlists(), req.args.iterlists()):
-        value = ";".join(values)
-        params[key] = value
-#             params[key.encode("utf8")] = value.encode("utf8")
-    params.update(req.files.iteritems())
 
 
 # COMPAT: added functions
@@ -909,17 +883,6 @@ def request_finished(handler):
     """Decorator for functions which should be run after the view handler is called"""
     _request_finished_handlers.append(handler)
     return handler
-
-
-def make_param_dict_utf8_values(param_list):
-    def decode(k):
-        try:
-            return unicode(k, encoding="utf8")
-        except UnicodeDecodeError as e:
-            _logg.warn("tried to decode non-UTF8 string: %s", k.encode("string-escape"))
-            raise
-
-    return _ImmutableMultiDict([(decode(k), decode(v)) for k, v in param_list])
 
 
 def _load_module(filename):
@@ -989,9 +952,7 @@ class default_handler:
         return 1
 
     def can_handle(self, request):
-        path, params, query, fragment = split_uri(request)
-        if '%' in path:
-            path = _urllib.unquote(path)
+        path = request.mediatum_contextfree_path
         while path and path[0] == '/':
             path = path[1:]
         if self.filesystem.isdir(path):
@@ -1020,10 +981,7 @@ class default_handler:
             error(request, 400)  # bad request
             return
 
-        path, params, query, fragment = split_uri(request)
-
-        if '%' in path:
-            path = _urllib.unquote(path)
+        path = request.mediatum_contextfree_path
 
         # strip off all leading slashes
         while path and path[0] == '/':
@@ -1199,7 +1157,7 @@ def callhandler(handler_func, req):
             log_extra["req"] = extra_log_info_from_req(req)
 
             _logg.exception(u"exception (xid=%s) while handling request %s %s, %s",
-                           xid, req.method, req.path, dict(req.args), extra=log_extra)
+                           xid, req.method, req.mediatum_contextfree_path, dict(req.args), extra=log_extra)
 
             if mail_to_address:
                 msg = translate("core_snipped_internal_server_error_with_mail", request=req).replace('${email}',
@@ -1212,7 +1170,7 @@ def callhandler(handler_func, req):
             return error(req, 500, s.encode("utf8"), content_type='text/html; encoding=utf-8; charset=utf-8')
 
         else:
-            _logg.error("Error in page: '%s %s'", req.type, req.fullpath, exc_info=1)
+            _logg.error("Error in page: '%s %s'", req.type, req.path, exc_info=1)
             s = "<pre>" + _traceback.format_exc() + "</pre>"
             return error(req, 500, s)
 
@@ -1222,74 +1180,47 @@ def callhandler(handler_func, req):
 
 
 def handle_request(req):
-
-    path, params, query, fragment = split_uri(req)
     req._header_cache = {}
     req.app_cache = {}
     req.use_chunked = 0
-
-    path = _urllib.unquote(path)
-
-    req.full_path = _urllib.unquote(req.full_path)
-    req.response = _flask.make_response()
-    req.response.headers['Content-Type'] = 'text/html; encoding=utf-8; charset=utf-8'
-
-    mediatum_form = MediatumForm(meta={'csrf_context': _flask.session})
 
     maxlen = -1
     context = None
     global contexts
     for c in contexts:
-        if path.startswith(c.name) and len(c.name) > maxlen:
+        if req.path.startswith(c.name) and len(c.name) > maxlen:
             context = c
             maxlen = len(context.name)
-
     if context is None:
         error(req, 404)
         return req
 
-    path = path[len(context.name):]
-    if len(path) == 0 or path[0] != '/':
-        path = "/" + path
+    mediatum_contextfree_path = req.path[len(context.name):]
+    if not mediatum_contextfree_path.startswith("/"):
+        mediatum_contextfree_path = "/" + mediatum_contextfree_path
+    req.mediatum_contextfree_path = mediatum_contextfree_path
 
-    req.path = path
+    req.params = {key: ";".join(value) for key, value in req.values.iterlists()}
 
-    if not req.form:
-        data = req.get_data()
-        if any(data):
-            pairs = []
-            data = data.split('&')
-            for e in data:
-                if '=' in e:
-                    pairs.append(tuple(map(_urllib.unquote_plus, e.split("=", 1))))
-                elif e.strip():
-                    _logg.warn("corrupt parameter: %s", e.encode("string-escape"))
-            req.form = make_param_dict_utf8_values(pairs)
-            del pairs, data
-
-    make_legacy_params_dict(req)
-    req.params = {_urllib.unquote(k) if isinstance(k, str) else k: _urllib.unquote(v) if isinstance(v, str) else v
-                  for k, v in req.params.items()}
-
+    mediatum_form = MediatumForm(meta={'csrf_context': _flask.session})
     if req.form and req.method == 'POST':
-        csrf_token = req.params.get("csrf_token")
+        csrf_token = req.form.get("csrf_token")
         if not csrf_token:
-            csrf_token = req.form.get("csrf_token")
-        if not csrf_token:
-            raise ValueError("csrf_token not in form of request path " + req.full_path)
+            raise ValueError("csrf_token not in form of request path " + req.path)
         else:
             mediatum_form.csrf_token.process_data(csrf_token.replace("!!!!!", "##"))
             mediatum_form.validate()
 
     req.csrf_token = mediatum_form.csrf_token
-    req.full_path = req.full_path.replace(context.name, "/")
+    req.response = _flask.make_response()
+    req.response.headers['Content-Type'] = 'text/html; encoding=utf-8; charset=utf-8'
 
-    function = context.match(path)
+    function = context.match(mediatum_contextfree_path)
     if function is not None:
         callhandler(function, req)
     else:
-        _logg.debug("Request %s matches no pattern (context: %s)", req.full_path, context.name)
-        error(req, 404, "File %s not found" % req.full_path)
+        _logg.debug("Request %s matches no pattern (context: %s)", req.path, context.name)
+        error(req, 404, "File %s not found" % req.path)
 
     return req
 

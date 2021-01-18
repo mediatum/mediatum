@@ -57,12 +57,11 @@ class WorkflowStep_Upload(WorkflowStep):
                     for file in node.files:
                         node.files.remove(file)
 
-        if "file" in req.params:
-            file = req.params["file"]
+        if "file" in req.files:
+            file = req.files["file"]
             if not file:
                 error = t(req, "workflowstep_file_not_uploaded")
             else:
-                del req.params["file"]
                 fileExtension = os.path.splitext(file.filename)[1][1:].strip().lower()
 
                 if fileExtension in self.get("limit").lower().split(";") or self.get("limit").strip() in ['*', '']:

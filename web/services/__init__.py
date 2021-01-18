@@ -64,7 +64,7 @@ def dec_handle_exception(func):
 
             
             logg.exception(u"exception (xid=%s) while handling request %s %s, %s", 
-                           xid, req.method, req.path, dict(req.args), extra=log_extra)
+                           xid, req.method, req.mediatum_contextfree_path, dict(req.args), extra=log_extra)
 
             response_format = req.params.get('format', '').lower()
             response_template, response_mimetype = supported_formats.get(response_format, supported_formats.get('xml'))

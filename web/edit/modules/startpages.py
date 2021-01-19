@@ -24,6 +24,8 @@ import json
 import codecs
 
 import logging
+import collections as _collections
+import operator as _operator
 import core.config as config
 import mediatumtal.tal as _tal
 
@@ -38,6 +40,45 @@ from core import File
 
 q = db.query
 logg = logging.getLogger(__name__)
+
+
+_NamedFile = _collections.namedtuple(
+    "_NamedFile",
+    "short_path description file_size language_list technical_name sidebar"
+    )
+
+
+def _get_named_filelist(node, id_from_req):
+    files = []
+    for f in node.files:
+        if f.mimetype != 'text/html' or f.getType() != 'content':
+            continue
+
+        short_path = os.path.relpath(f.abspath, config.get("paths.datadir"))
+        assert not short_path.startswith("../"), "file absolute path not in data dir"
+
+        langlist = []
+        sidebar = []
+        for language in config.languages:
+            spn = node.getStartpageFileNode(language)
+            if spn and spn.abspath == f.abspath:
+                langlist.append(language)
+            if "{}:{}".format(language, short_path) in node.system_attrs.get('sidebar', ''):
+                sidebar.append(language)
+
+        files.append(
+            _NamedFile(
+                short_path=short_path,
+                description=node.system_attrs.get('startpagedescr.' + short_path),
+                file_size=format_filesize(os.path.getsize(f.abspath) if os.path.isfile(f.abspath) else "-"),
+                language_list=tuple(langlist),
+                technical_name=os.path.join("/file", str(id_from_req), short_path.split('/')[-1]),
+                sidebar=tuple(sidebar),
+            )
+        )
+
+    files.sort(key=_operator.attrgetter("description"))
+    return files
 
 
 @dec_entry_log
@@ -180,13 +221,6 @@ def getContent(req, ids):
         del req.params['cancel_page']
         return getContent(req, [node.id])
 
-    filelist = []
-    for f in node.files:
-        if f.mimetype == 'text/html' and f.getType() in ['content']:
-            filelist.append(f)
-
-    db.session.commit()
-
     if "startpages_save" in req.params.keys():  # user saves startpage configuration
         logg.info("%s going to save startpage configuration for node %s (%s, %s): %s",
                   user.login_name, node.id, node.name, node.type, req.params)
@@ -204,41 +238,12 @@ def getContent(req, ids):
         for language in config.languages:
             startpage_selector += "%s:%s;" % (language, req.params.get('radio_' + language))
         node.system_attrs['startpage_selector'] = startpage_selector[0:-1]
-    named_filelist = []
 
-    for f in filelist:
-        long_path = f.abspath
-        short_path = long_path.replace(config.get("paths.datadir"), '')
-
-        file_exists = os.path.isfile(long_path)
-        file_size = "-"
-        if file_exists:
-            file_size = os.path.getsize(long_path)
-
-        langlist = []
-        sidebar = []
-        for language in config.languages:
-            spn = node.getStartpageFileNode(language)
-            if spn and spn.abspath == long_path:
-                langlist.append(language)
-            if node.system_attrs.get('sidebar', '').find(language + ":" + short_path) >= 0:
-                sidebar.append(language)
-
-        named_filelist.append((short_path,
-                               node.system_attrs.get('startpagedescr.' + short_path),
-                               f.type,
-                               f,
-                               file_exists,
-                               format_filesize(file_size),
-                               long_path,
-                               langlist,
-                               "/file/%s/%s" % (req.params.get("id", "0"), short_path.split('/')[-1]),
-                               sidebar))
     lang2file = node.getStartpageDict()
-
+    named_filelist = _get_named_filelist(node, req.params.get("id", "0"))
     # compatibility: there may be old startpages in the database that
     # are not described by node attributes
-    initial = filelist and not lang2file
+    initial = named_filelist and not lang2file
 
     # node may not have startpage set for some language
     # compatibilty: node may not have system attribute startpage_selector
@@ -246,7 +251,11 @@ def getContent(req, ids):
     startpage_selector = ""
     for language in config.languages:
         if initial:
-            lang2file[language] = named_filelist[0][0]
+            datadir = config.get("paths.datadir")
+            for f in node.files:
+                if f.mimetype == 'text/html' and f.getType() == 'content':
+                    lang2file[language] = os.path.relpath(f.abspath, datadir)
+                    break
         else:
             lang2file[language] = lang2file.setdefault(language, '')
         startpage_selector += "%s:%s;" % (language, lang2file[language])
@@ -254,8 +263,6 @@ def getContent(req, ids):
     node.system_attrs['startpage_selector'] = startpage_selector[0:-1]
 
     db.session.commit()
-
-    named_filelist.sort(lambda x, y: cmp(x[1], y[1]))
 
     v = {"id": req.params.get("id", "0"),
          "tab": req.params.get("tab", ""),

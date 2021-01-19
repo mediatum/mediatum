@@ -209,7 +209,7 @@ def _identify(**excess):
     for tag, txt in (
         ("scheme", "oai"),
         ("repositoryIdentifier", config.get("host.name", socket.gethostname())),
-        ("delimiter", ";"),
+        ("delimiter", ":"),
         ("sampleIdentifier", config.get("oai.sample_identifier", "oai:mediatum.org:node/123")),
     ):
         _lxml_etree.SubElement(oai_identifier, tag).text = txt

@@ -1,3 +1,25 @@
+<tal:block metal:define-macro="named_filelist" tal:repeat="item named_filelist">
+    <tr tal:define="cssclass python:named_filelist.index(item)%2 and 'silver' or 'norm'" tal:attributes="class cssclass; id python:item.short_path;">
+        <td tal:repeat="lang languages">
+            <input type="radio" i18n:attributes="title edit_startpages_selectlanguage" tal:attributes="name python:u'radio_{}'.format(lang); value python:item.short_path; checked python:'checked' if lang in item.language_list else None"/>
+        </td>
+        <td style="border-left:1px solid silver">
+            <input type="text" tal:attributes="name python:u'descr.{}'.format(item.short_path); value python:item.description" style="width:300px"/>
+        </td>
+        <td tal:content="python:unicode(item.technical_name)"/>
+        <td style="width:20px;text-align:right">
+            <a target="_blank" tal:attributes="href python:item.technical_name"  i18n:attributes="title edit_startpages_link">
+                <img src="/img/rightarrow.png"/>
+            </a>
+        </td>
+        <td style="text-align:right; font-size:9px" tal:content="python:unicode(item.file_size)"/>
+        <td style="text-align:right">
+            <a href="#" tal:attributes="onclick python:u'editFile(\'{}\')'.format(item.short_path)" i18n:attributes="title edit_startpages_edit"><img src="/img/edit_opt.png"/></a>
+            <input tal:attributes="onclick python:u'questionDel(\'{}\')'.format(item.short_path);" i18n:attributes="title edit_startpages_delete" type="image" src="/img/delete.png"/>
+        </td>
+    </tr>
+</tal:block>
+
 <metal:block metal:define-macro="edit_startpages">
     <style>
         #editform{display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;z-index:10;}
@@ -34,8 +56,23 @@
     <script type="text/javascript">
         var CKEDITOR_BASEPATH = '/ckeditor/';
 
-        function questionDel(){ //old
-            return confirm(unescape(document.getElementById("deleteconfirm").innerHTML));
+        function questionDel(filename) { //old
+            yes = confirm(unescape(document.getElementById("deleteconfirm").innerHTML));
+            if (!yes) return;
+
+            csrf = csrf.replace("##", "!!!!!");
+            $.ajax({
+                url: '/edit/edit_content?id='+id+'&tab=startpages',
+                async: false,
+                type: 'POST',
+                data : { delete_: filename, csrf_token: csrf},
+                success: function (response) {
+                   document.getElementById("filetable").tBodies[0].innerHTML = response;
+                },
+                error: function (msg) {
+                    alert("error: " + msg.toSource());
+                }
+            });
         }
 
         function editFile(filename){ // edit file click
@@ -66,14 +103,8 @@
                 data : { data: CKEDITOR.instances['page_content'].getData(), csrf_token: csrf },
                 url : '/edit/edit_content?id='+id+'&tab=startpages&action=save&filename='+$("#filename").val()
             }).done(function(ret){
-                ret = jQuery.parseJSON(ret);
                 $('#editform').css('display','none');
-                if (ret.filename==""){
-                    document.location.reload();
-                    return false;
-                }
-                o = $(document.getElementById(ret.filename)).children();
-                o.get(o.length-2).innerHTML = ret.filesize;
+                document.getElementById("filetable").tBodies[0].innerHTML = ret;
             });
         }
     </script>
@@ -121,27 +152,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tal:block tal:repeat="item named_filelist">
-                                <tr tal:define="cssclass python:named_filelist.index(item)%2 and 'silver' or 'norm'" tal:attributes="class cssclass; id python:item[0];">
-                                    <td tal:repeat="lang languages">
-                                        <input type="radio" i18n:attributes="title edit_startpages_selectlanguage" tal:attributes="name python:u'radio_{}'.format(lang); value python:item[0]; checked python:'checked' if lang in item[7] else None"/>
-                                    </td>
-                                    <td style="border-left:1px solid silver">
-                                        <input type="text" tal:attributes="name python:u'descr.{}'.format(item[0]); value python:item[1]" style="width:300px"/>
-                                    </td>
-                                    <td tal:content="python:unicode(item[8])"/>
-                                    <td style="width:20px;text-align:right">
-                                        <a target="_blank" tal:attributes="href python:item[8]"  i18n:attributes="title edit_startpages_link">
-                                            <img src="/img/rightarrow.png"/>
-                                        </a>
-                                    </td>
-                                    <td style="text-align:right; font-size:9px" tal:content="python:unicode(item[5])"/>
-                                    <td style="text-align:right">
-                                        <a href="#" tal:attributes="onclick python:u'editFile(\'{}\')'.format(item[0])" i18n:attributes="title edit_startpages_edit"><img src="/img/edit_opt.png"/></a>
-                                        <input tal:attributes="name python:u'delete_{}'.format(item[0])" i18n:attributes="title edit_startpages_delete" type="image" src="/img/delete.png" onclick="return questionDel()"/>
-                                    </td>
-                                </tr>
-                            </tal:block>
+                            <tal:block metal:use-macro="named_filelist"/>
                         </tbody>
                         <tfoot>
                             <tr style="background-color:#d8d8d8">
@@ -166,9 +177,9 @@
                         <tbody>
                             <tr tal:repeat="item named_filelist">
                                 <td tal:repeat="lang languages">
-                                    <input type="radio" i18n:attributes="title edit_startpages_selectlanguage" tal:attributes="name python:u'sidebar_{}'.format(lang); value python:item[0]; checked python:'checked' if lang in item[9] else None"/>
+                                    <input type="radio" i18n:attributes="title edit_startpages_selectlanguage" tal:attributes="name python:u'sidebar_{}'.format(lang); value python:item.short_path; checked python:'checked' if lang in item.sidebar else None"/>
                                 </td>
-                                <td style="border-left:1px solid silver" tal:content="python:u'{} ({})'.format(item[1], item[8])"/>
+                                <td style="border-left:1px solid silver" tal:content="python:u'{} ({})'.format(item.description, item.technical_name)"/>
                             </tr>
                         </tbody>
                         <tfoot>

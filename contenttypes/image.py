@@ -22,6 +22,7 @@
 import logging
 import os
 import tempfile
+import exifread as _exifread
 from PIL import Image as PILImage, ImageDraw
 from PIL.Image import DecompressionBombError as _DecompressionBombError
 
@@ -36,7 +37,6 @@ from utils.utils import isnewer, iso2utf8, utf8_decode_escape
 from utils.compat import iteritems
 
 import lib.iptc.IPTC
-from lib.Exif import EXIF
 from utils.list import filter_scalar
 from utils.compat import iteritems
 import utils.process
@@ -498,7 +498,7 @@ class Image(Content):
         unwanted_attrs = Image.get_unwanted_exif_attributes()
 
         with open(image_file.abspath, 'rb') as f:
-            tags = EXIF.process_file(f)
+            tags = _exifread.process_file(f)
 
         for k in tags.keys():
             # don't set unwanted exif attributes

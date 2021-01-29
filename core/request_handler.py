@@ -10,6 +10,7 @@ import zipfile as _zipfile
 import httpstatus as _httpstatus
 import traceback as _traceback
 import flask as _flask
+import backports.functools_lru_cache as _backports_functools_lru_cache
 import utils.locks as _utils_lock
 from functools import partial as _partial
 from cgi import escape as _escape
@@ -24,7 +25,6 @@ from wtforms.csrf.session import SessionCSRF as _SessionCSRF
 from wtforms import Form as _Form
 from wtforms.validators import ValidationError as _ValidationError
 from datetime import timedelta as _timedelta
-from utils.lrucache import lru_cache as _lru_cache
 
 
 _logg = _logging.getLogger(__name__)
@@ -685,7 +685,7 @@ def error(req, code, s=None, content_type='text/html'):
     done(req)
 
 
-@_lru_cache(maxsize=128)
+@_backports_functools_lru_cache.lru_cache(maxsize=128)
 def _accept_mimetypes(accept):
     return _parse_accept_header(accept, _MIMEAccept)
 

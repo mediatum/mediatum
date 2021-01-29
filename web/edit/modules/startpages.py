@@ -122,16 +122,6 @@ def getContent(req, ids):
                     fil.write(req.params.get('data'))
                 node.files.append(File(filename, u"content", u"text/html"))
                 db.session.commit()
-
-                req.response.set_data(_tal.processTAL(
-                        dict(
-                            named_filelist=_get_named_filelist(node, req.params.get("id", "0")),
-                            languages=config.languages,
-                            ),
-                        file="web/edit/modules/startpages.html",
-                        macro="named_filelist",
-                        request=req,
-                    ))
                 logg.info("%s added startpage %s for node %s (%s, %s)", user.login_name, filename, node.id, node.name, node.type)
             else:
                 for f in [f for f in node.files if f.mimetype == "text/html"]:
@@ -145,13 +135,19 @@ def getContent(req, ids):
                                 # html entity by the current ckeditor version
                                 fil.write(req.params.get('data').encode('ascii', 'xmlcharrefreplace'))
 
-                        req.response.set_data(json.dumps(
-                            {'filesize': format_filesize(os.path.getsize(config.get("paths.datadir") + filepath)),
-                             'filename': req.params.get('filename'), 'state': 'ok'}, ensure_ascii=False))
-                        req.response.mimetype = 'application/json'
                         logg.info("%s saved startpage %s for node %s (%s, %s)", user.login_name, filepath, node.id, node.name, node.type)
                         break
-        return None
+
+            req.response.set_data(_tal.processTAL(
+                dict(
+                    named_filelist=_get_named_filelist(node, req.params.get("id", "0")),
+                    languages=config.languages,
+                ),
+                file="web/edit/modules/startpages.html",
+                macro="named_filelist",
+                request=req,
+            ))
+        return
 
     if "option" in req.params:
         if req.params.get("option") == "filebrowser":  # open filebrowser

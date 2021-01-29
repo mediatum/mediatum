@@ -30,10 +30,10 @@ import time
 from sets import Set
 import shutil
 import calendar
+import pygeoip as _pygeoip
 
 from core import db, Node
 import core.config as config
-from lib.geoip.geoip import GeoIP, getFullCountyName, MEMORY_CACHE
 from utils.date import parse_date, format_date, now, make_date
 from utils.utils import splitpath
 from utils.fileutils import importFile
@@ -349,7 +349,15 @@ class StatisticFile:
         return items
 
     def getCountryName(self, id):
-        return getFullCountyName(id)
+        try:
+            i = _pygeoip.COUNTRY_CODES.index(id)
+        except:
+            return id
+
+        try:
+            return _pygeoip.COUNTRY_NAMES[i]
+        except:
+            return id + "_err"
 
     def getWeekDay(self, day):
         dt = make_date(self.period_year, self.period_month, day)
@@ -610,7 +618,7 @@ def buildStatAll_(collection_ids, collection_ids_keys, data, period="", fname=No
 
     print "buildStatAll_ called for %d collections" % len(collection_ids_keys)
 
-    gi = GeoIP(filename=os.environ["MEDIATUM_GEOIP_PATH"], flags=MEMORY_CACHE)
+    gi = _pygeoip.GeoIP(filename=os.environ["MEDIATUM_GEOIP_PATH"], flags=_pygeoip.MEMORY_CACHE)
 
     time0 = time.time()
     last_access = None

@@ -20,9 +20,9 @@
 import logging
 import re
 import zipfile
+import backports.functools_lru_cache as _backports_functools_lru_cache
 import core.httpstatus as _httpstatus
 from core import db, Node, File, NodeToFile
-from utils.lrucache import lru_cache
 from contenttypes import Image
 
 
@@ -44,7 +44,7 @@ def splitpath(path):
         return m.group(1), None
 
 
-@lru_cache(maxsize=100000)
+@_backports_functools_lru_cache.lru_cache(maxsize=100000)
 def get_cached_image_zoom_data(nid):
     return ImageZoomData(nid)
 

@@ -41,6 +41,7 @@ in let
       bibtexparser
       coffeescript
       decorator
+      exifread_2_3_2
       fdfgen
       flask-admin
       flask_login
@@ -52,11 +53,13 @@ in let
       ipython-sql
       jinja2
       ldap
+      lrucache-1-6-1
       lxml
       magic
       mediatumfsm
       mediatumtal
       munch
+      mutagen
       mollyZ3950
       parcon
       pillow
@@ -66,6 +69,7 @@ in let
       pyaml
       pydot2
       pyexiftool
+      pygeoip
       pygments
       pyjade
       pymarc

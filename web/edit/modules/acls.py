@@ -20,7 +20,7 @@ import web.common.accessuser_editor_web as _accessuser_editor_web
 import web.common.acl_editor_web as _acl_editor_web
 
 
-_rule_types = ["read", "write", "data"]
+_rule_types = ("read", "write", "data")
 
 _log = _logging.getLogger(__name__)
 

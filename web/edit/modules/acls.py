@@ -59,8 +59,11 @@ def _get_access_rules_info(node, ruletype):
                 tuple(r.to_dict() for r in remaining_rule_assocs),
               )
     special_ruleset = node.get_special_access_ruleset(ruletype)
-    special_rule_assocs = special_ruleset.rule_assocs if special_ruleset else []
-    return inherited_ruleset_assocs, own_ruleset_assocs, special_ruleset, special_rule_assocs
+    return inherited_ruleset_assocs, own_ruleset_assocs, special_ruleset
+
+
+def _get_rule_assocs(ruleset):
+    return ruleset.rule_assocs if ruleset else []
 
 
 def _get_or_add_private_access_rule_for_user(user):
@@ -107,8 +110,7 @@ def getContent(req, ids):
 
                 inherited_ruleset_assocs, \
                 own_ruleset_assocs, \
-                special_ruleset, \
-                special_rule_assocs = _get_access_rules_info(node, rule_type)
+                special_ruleset = _get_access_rules_info(node, rule_type)
 
                 own_ruleset_names_not_private = [r.ruleset_name for r in own_ruleset_assocs if not r.private]
 
@@ -135,10 +137,7 @@ def getContent(req, ids):
                 user_ids_from_request = [rsn for rsn in req.params.get(u"leftuser%s" % rule_type, u"").split(u";") if rsn.strip()]
 
                 special_ruleset = node.get_special_access_ruleset(rule_type)
-                if special_ruleset:
-                    special_rule_assocs = special_ruleset.rule_assocs
-                else:
-                    special_rule_assocs = []
+                special_rule_assocs = _get_rule_assocs(special_ruleset)
 
                 special_access_rules = [ra.rule for ra in special_rule_assocs]
                 user_test_results = [_accessuser_editor_web.decider_is_private_user_group_access_rule(ar) for ar in special_access_rules]
@@ -186,12 +185,12 @@ def getContent(req, ids):
         for rule_type in _rule_types:
             inherited_ruleset_assocs, \
             own_ruleset_assocs, \
-            special_ruleset, special_rule_assocs = _get_access_rules_info(node, rule_type)
+            special_ruleset = _get_access_rules_info(node, rule_type)
             retacl += _tal.processTAL(_acl_editor_web.makeList(req,
                                           own_ruleset_assocs,  #not_inherited_ruleset_names[rule_type],  # rights
                                           inherited_ruleset_assocs,  #inherited_ruleset_names[rule_type],  # readonlyrights
                                           special_ruleset,  #additional_rules_inherited[rule_type],
-                                          special_rule_assocs,  #additional_rules_not_inherited[rule_type],
+                                          _get_rule_assocs(special_ruleset),  #additional_rules_not_inherited[rule_type],
                                           rulesetnamelist,
                                           private_ruleset_names,
                                           rule_type=rule_type), file="web/edit/modules/acls.html", macro="edit_acls_selectbox", request=req)
@@ -206,12 +205,12 @@ def getContent(req, ids):
         for rule_type in _rule_types:
             inherited_ruleset_assocs, \
             own_ruleset_assocs, \
-            special_ruleset, special_rule_assocs = _get_access_rules_info(node, rule_type)
+            special_ruleset = _get_access_rules_info(node, rule_type)
             retuser += _tal.processTAL(_accessuser_editor_web.makeUserList(req,
                                                own_ruleset_assocs,  # not_inherited_ruleset_names[rule_type],  # rights
                                                inherited_ruleset_assocs,  # inherited_ruleset_names[rule_type],  # readonlyrights
                                                special_ruleset,  # additional_rules_inherited[rule_type],
-                                               special_rule_assocs,  # additional_rules_not_inherited[rule_type],
+                                               _get_rule_assocs(special_ruleset),  # additional_rules_not_inherited[rule_type],
                                                rulesetnamelist,
                                                private_ruleset_names,
                                                rule_type=rule_type), file="web/edit/modules/acls.html", macro="edit_acls_userselectbox", request=req)

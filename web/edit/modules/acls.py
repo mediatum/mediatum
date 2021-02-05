@@ -83,10 +83,8 @@ def _get_or_add_private_access_rule_for_user(user):
     :param user:
     :return: AccessRule
     '''
-    private_group = user.get_or_add_private_group()
-    pug_id = private_group.id
-    private_access_rule = _permission.get_or_add_access_rule(group_ids=[pug_id])
-    return private_access_rule
+    return _permission.get_or_add_access_rule(group_ids=
+                                          (user.get_or_add_private_group().id,))
 
 
 @_utils.dec_entry_log

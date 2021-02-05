@@ -28,7 +28,7 @@ _assoc_filter_key = _operator.attrgetter(*"rule invert blocking".split())
 
 
 def getInformation():
-    return {"version": "1.0", "system": 0}
+    return dict(version="1.0", system=0)
 
 
 def _assoc_filter(assocs, to_remove):

@@ -28,11 +28,6 @@ def getInformation():
     return {"version": "1.0", "system": 0}
 
 
-def get_user_for_login_name(login_name):
-    cand = q(User).filter_by(login_name=login_name).scalar()
-    return cand
-
-
 # from bin/mediatumipython.py (make_info_producer_access_rules)
 def get_access_rules_info(node, ruletype):
     rule_assocs = node.access_rule_assocs.filter_by(ruletype=ruletype).all()

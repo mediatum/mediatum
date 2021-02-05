@@ -53,8 +53,11 @@ def _get_access_rules_info(node, ruletype):
 
     remaining_rule_assocs = _assoc_filter(rule_assocs, rule_assocs_in_rulesets)
     if remaining_rule_assocs:
-        msg = "node %r: ruletype: %r: REMAINING RULEASSOCS %r (INVALID!)" % (node, ruletype, [r.to_dict() for r in remaining_rule_assocs])
-        _log.error(msg)
+        _log.error("node %r: ruletype: %r: REMAINING RULEASSOCS %r (INVALID!)",
+                node,
+                ruletype,
+                tuple(r.to_dict() for r in remaining_rule_assocs),
+              )
     special_ruleset = node.get_special_access_ruleset(ruletype)
     special_rule_assocs = special_ruleset.rule_assocs if special_ruleset else []
     return inherited_ruleset_assocs, own_ruleset_assocs, special_ruleset, special_rule_assocs
@@ -113,15 +116,13 @@ def getContent(req, ids):
                 to_be_added_rulesets = set(ruleset_names_from_request) - set(own_ruleset_names_not_private) - {'__special_rule__'}
 
                 if to_be_removed_rulesets:
-                    msg = "node %r: %r removing rulesets %r" % (node, rule_type, to_be_removed_rulesets)
-                    _log.info(msg)
+                    _log.info("node %r: %r removing rulesets %r", node, rule_type, to_be_removed_rulesets)
                     for ruleset_name in to_be_removed_rulesets:
                         node.access_ruleset_assocs.filter_by(ruleset_name=ruleset_name,
                                                              ruletype=rule_type).delete()
 
                 if to_be_added_rulesets:
-                    msg = "node %r: %r adding rulesets %r" % (node, rule_type, to_be_added_rulesets)
-                    _log.info(msg)
+                    _log.info("node %r: %r adding rulesets %r", node, rule_type, to_be_added_rulesets)
                     for ruleset_name in to_be_added_rulesets:
                         node.access_ruleset_assocs.append(_db_permission.NodeToAccessRuleset(ruleset_name=ruleset_name, ruletype=rule_type))
 

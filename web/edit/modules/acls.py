@@ -109,10 +109,11 @@ def getContent(req, ids):
         req.response.status_code = _httpstatus.HTTP_FORBIDDEN
         return _tal.processTAL({}, file="web/edit/modules/acls.html", macro="acl_editor_error", request=req)
 
+    idstr, = ids
+    node = _core.db.query(_core.Node).get(int(idstr))
+    del ids
+
     # check write access to node
-    idstr = ids[0]
-    nid = long(idstr)
-    node = _core.db.query(_core.Node).get(nid)
     if not node.has_write_access():
         req.response.status_code = _httpstatus.HTTP_FORBIDDEN
         return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)

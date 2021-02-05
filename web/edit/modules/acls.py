@@ -18,8 +18,6 @@ import web.common.accessuser_editor_web as _accessuser_editor_web
 import web.common.acl_editor_web as _acl_editor_web
 
 
-q = _core.db.query
-
 logg = _logging.getLogger(__name__)
 rule_types = ["read", "write", "data"]
 
@@ -87,7 +85,7 @@ def getContent(req, ids):
     # check write access to node
     idstr = ids[0]
     nid = long(idstr)
-    node = q(_core.Node).get(nid)
+    node = _core.db.query(_core.Node).get(nid)
     if not node.has_write_access():
         req.response.status_code = _httpstatus.HTTP_FORBIDDEN
         return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
@@ -148,7 +146,7 @@ def getContent(req, ids):
                     special_rule_assocs = special_ruleset.rule_assocs
 
                 for uid in uids_to_add:
-                    user = q(_core.User).get(uid)
+                    user = _core.db.query(_core.User).get(uid)
                     access_rule = get_or_add_private_access_rule_for_user(user)
                     rule_assoc = _db_permission.AccessRulesetToRule(rule=access_rule,
                                                      #ruleset=special_ruleset,
@@ -159,7 +157,7 @@ def getContent(req, ids):
                 # remove uids_to_remove *after* having added uids_to_add: a trigger may delete empty rulesets
                 for uid in uids_to_remove:
 
-                    user = q(_core.User).get(uid)
+                    user = _core.db.query(_core.User).get(uid)
                     access_rule = get_or_add_private_access_rule_for_user(user)
 
                     for rule_assoc in special_rule_assocs:
@@ -176,8 +174,8 @@ def getContent(req, ids):
     retacl = ""
     if not action:
 
-        rulesetnamelist = [t[0] for t in q(_db_permission.AccessRuleset.name).order_by(_db_permission.AccessRuleset.name).all()]
-        private_ruleset_names = [t[0] for t in q(_db_permission.NodeToAccessRuleset.ruleset_name).filter_by(private=True).all()]
+        rulesetnamelist = [t[0] for t in _core.db.query(_db_permission.AccessRuleset.name).order_by(_db_permission.AccessRuleset.name).all()]
+        private_ruleset_names = [t[0] for t in _core.db.query(_db_permission.NodeToAccessRuleset.ruleset_name).filter_by(private=True).all()]
         rulesetnamelist = [rulesetname for rulesetname in rulesetnamelist if not rulesetname in private_ruleset_names]
 
         for rule_type in rule_types:
@@ -195,8 +193,8 @@ def getContent(req, ids):
 
     if action == 'get_userlist':  # load additional rights by ajax
 
-        rulesetnamelist = [t[0] for t in q(_db_permission.AccessRuleset.name).order_by(_db_permission.AccessRuleset.name).all()]
-        private_ruleset_names = [t[0] for t in q(_db_permission.NodeToAccessRuleset.ruleset_name).filter_by(private=True).all()]
+        rulesetnamelist = [t[0] for t in _core.db.query(_db_permission.AccessRuleset.name).order_by(_db_permission.AccessRuleset.name).all()]
+        private_ruleset_names = [t[0] for t in _core.db.query(_db_permission.NodeToAccessRuleset.ruleset_name).filter_by(private=True).all()]
         rulesetnamelist = [rulesetname for rulesetname in rulesetnamelist if not rulesetname in private_ruleset_names]
 
         retuser = ""

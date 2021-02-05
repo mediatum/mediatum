@@ -86,6 +86,15 @@ def _get_or_add_private_access_rule_for_user(user):
     return _permission.get_or_add_access_rule(group_ids=
                                           (user.get_or_add_private_group().id,))
 
+def _split_from_request(param):
+    """
+    Split param at ";" and return as frozenset.
+    Drop all elements that are empty after stripping.
+    `None` is allowed and yields an empty result.
+    """
+    param = (param or u"").split(u";")
+    return frozenset(_itertools.ifilter(_operator.methodcaller("strip"), param))
+
 
 @_utils.dec_entry_log
 def getContent(req, ids):
@@ -114,7 +123,8 @@ def getContent(req, ids):
 
             for rule_type in _rule_types:
 
-                ruleset_names_from_request = [rsn for rsn in req.params.get(u"left%s" % rule_type, u"").split(u";") if rsn.strip()]
+                ruleset_names_from_request = req.params.get(u"left{}".format(rule_type))
+                ruleset_names_from_request = _split_from_request(ruleset_names_from_request)
 
                 inherited_ruleset_assocs, \
                 own_ruleset_assocs, \
@@ -142,7 +152,8 @@ def getContent(req, ids):
 
             for rule_type in _rule_types:
 
-                user_ids_from_request = [rsn for rsn in req.params.get(u"leftuser%s" % rule_type, u"").split(u";") if rsn.strip()]
+                user_ids_from_request = req.params.get(u"leftuser{}".format(rule_type))
+                user_ids_from_request = _split_from_request(user_ids_from_request)
 
                 special_ruleset = node.get_special_access_ruleset(rule_type)
                 special_rule_assocs = _get_rule_assocs(special_ruleset)

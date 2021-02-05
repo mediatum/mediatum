@@ -3,23 +3,24 @@
     :copyright: (c) 2015 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
-import logging
+
+import logging as _logging
+
 import mediatumtal.tal as _tal
 
-from core import db, Node, User
-from core.permission import get_or_add_access_rule
-from core.database.postgres.permission import NodeToAccessRuleset, EffectiveNodeToAccessRuleset, AccessRuleset, AccessRulesetToRule
+import core as _core
+import core.database.postgres.permission as _db_permission
+import core.httpstatus as _httpstatus
+import core.permission as _permission
+import core.users as _users
+import utils.utils as _utils
+import web.common.accessuser_editor_web as _accessuser_editor_web
+import web.common.acl_editor_web as _acl_editor_web
 
-from core.users import user_from_session as _user_from_session
-from core import httpstatus
-from web.common.acl_editor_web import makeList
-from web.common.accessuser_editor_web import makeUserList, decider_is_private_user_group_access_rule
 
-from utils.utils import dec_entry_log
+q = _core.db.query
 
-q = db.query
-
-logg = logging.getLogger(__name__)
+logg = _logging.getLogger(__name__)
 rule_types = ["read", "write", "data"]
 
 
@@ -32,7 +33,7 @@ def get_access_rules_info(node, ruletype):
     rule_assocs = node.access_rule_assocs.filter_by(ruletype=ruletype).all()
     own_ruleset_assocs = node.access_ruleset_assocs.filter_by(ruletype=ruletype).all()
     effective_ruleset_assocs = node.effective_access_ruleset_assocs.filter(
-        EffectiveNodeToAccessRuleset.c.ruletype == ruletype).all()
+        _db_permission.EffectiveNodeToAccessRuleset.c.ruletype == ruletype).all()
     inherited_ruleset_assocs = set(effective_ruleset_assocs) - set(own_ruleset_assocs)
 
     effective_rulesets = [rsa.ruleset for rsa in effective_ruleset_assocs]
@@ -66,29 +67,29 @@ def get_or_add_private_access_rule_for_user(user):
     '''
     private_group = user.get_or_add_private_group()
     pug_id = private_group.id
-    private_access_rule = get_or_add_access_rule(group_ids=[pug_id])
+    private_access_rule = _permission.get_or_add_access_rule(group_ids=[pug_id])
     return private_access_rule
 
 
-@dec_entry_log
+@_utils.dec_entry_log
 def getContent(req, ids):
-    user = _user_from_session()
+    user = _users.user_from_session()
     hidden_edit_functions_for_current_user = user.hidden_edit_functions
 
     if 'acls' in hidden_edit_functions_for_current_user:
-        req.response.status_code = httpstatus.HTTP_FORBIDDEN
+        req.response.status_code = _httpstatus.HTTP_FORBIDDEN
         return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
     if len(ids) != 1:  # should not happen
-        req.response.status_code = httpstatus.HTTP_FORBIDDEN
+        req.response.status_code = _httpstatus.HTTP_FORBIDDEN
         return _tal.processTAL({}, file="web/edit/modules/acls.html", macro="acl_editor_error", request=req)
 
     # check write access to node
     idstr = ids[0]
     nid = long(idstr)
-    node = q(Node).get(nid)
+    node = q(_core.Node).get(nid)
     if not node.has_write_access():
-        req.response.status_code = httpstatus.HTTP_FORBIDDEN
+        req.response.status_code = _httpstatus.HTTP_FORBIDDEN
         return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
     if "save" in req.params:
@@ -120,9 +121,9 @@ def getContent(req, ids):
                     msg = "node %r: %r adding rulesets %r" % (node, rule_type, to_be_added_rulesets)
                     logg.info(msg)
                     for ruleset_name in to_be_added_rulesets:
-                        node.access_ruleset_assocs.append(NodeToAccessRuleset(ruleset_name=ruleset_name, ruletype=rule_type))
+                        node.access_ruleset_assocs.append(_db_permission.NodeToAccessRuleset(ruleset_name=ruleset_name, ruletype=rule_type))
 
-            db.session.commit()
+            _core.db.session.commit()
 
         if req.params.get("type") == "user":
 
@@ -137,8 +138,8 @@ def getContent(req, ids):
                     special_rule_assocs = []
 
                 special_access_rules = [ra.rule for ra in special_rule_assocs]
-                user_test_results = [decider_is_private_user_group_access_rule(ar) for ar in special_access_rules]
-                uids = [u.id for u in user_test_results if isinstance(u, User)]
+                user_test_results = [_accessuser_editor_web.decider_is_private_user_group_access_rule(ar) for ar in special_access_rules]
+                uids = [u.id for u in user_test_results if isinstance(u, _core.User)]
 
                 uids_to_remove = list(set(uids) - set(user_ids_from_request))
                 uids_to_add = list(set(user_ids_from_request) - set(uids))
@@ -147,9 +148,9 @@ def getContent(req, ids):
                     special_rule_assocs = special_ruleset.rule_assocs
 
                 for uid in uids_to_add:
-                    user = q(User).get(uid)
+                    user = q(_core.User).get(uid)
                     access_rule = get_or_add_private_access_rule_for_user(user)
-                    rule_assoc = AccessRulesetToRule(rule=access_rule,
+                    rule_assoc = _db_permission.AccessRulesetToRule(rule=access_rule,
                                                      #ruleset=special_ruleset,
                                                      invert=False,
                                                      blocking=False)
@@ -158,32 +159,32 @@ def getContent(req, ids):
                 # remove uids_to_remove *after* having added uids_to_add: a trigger may delete empty rulesets
                 for uid in uids_to_remove:
 
-                    user = q(User).get(uid)
+                    user = q(_core.User).get(uid)
                     access_rule = get_or_add_private_access_rule_for_user(user)
 
                     for rule_assoc in special_rule_assocs:
                         if rule_assoc.rule_id == access_rule.id:
-                            db.session.delete(rule_assoc)
+                            _core.db.session.delete(rule_assoc)
 
-                    db.session.flush()
+                    _core.db.session.flush()
 
 
-            db.session.commit()
+            _core.db.session.commit()
 
     action = req.params.get("action", "")
 
     retacl = ""
     if not action:
 
-        rulesetnamelist = [t[0] for t in q(AccessRuleset.name).order_by(AccessRuleset.name).all()]
-        private_ruleset_names = [t[0] for t in q(NodeToAccessRuleset.ruleset_name).filter_by(private=True).all()]
+        rulesetnamelist = [t[0] for t in q(_db_permission.AccessRuleset.name).order_by(_db_permission.AccessRuleset.name).all()]
+        private_ruleset_names = [t[0] for t in q(_db_permission.NodeToAccessRuleset.ruleset_name).filter_by(private=True).all()]
         rulesetnamelist = [rulesetname for rulesetname in rulesetnamelist if not rulesetname in private_ruleset_names]
 
         for rule_type in rule_types:
             inherited_ruleset_assocs, \
             own_ruleset_assocs, \
             special_ruleset, special_rule_assocs = get_access_rules_info(node, rule_type)
-            retacl += _tal.processTAL(makeList(req,
+            retacl += _tal.processTAL(_acl_editor_web.makeList(req,
                                           own_ruleset_assocs,  #not_inherited_ruleset_names[rule_type],  # rights
                                           inherited_ruleset_assocs,  #inherited_ruleset_names[rule_type],  # readonlyrights
                                           special_ruleset,  #additional_rules_inherited[rule_type],
@@ -194,8 +195,8 @@ def getContent(req, ids):
 
     if action == 'get_userlist':  # load additional rights by ajax
 
-        rulesetnamelist = [t[0] for t in q(AccessRuleset.name).order_by(AccessRuleset.name).all()]
-        private_ruleset_names = [t[0] for t in q(NodeToAccessRuleset.ruleset_name).filter_by(private=True).all()]
+        rulesetnamelist = [t[0] for t in q(_db_permission.AccessRuleset.name).order_by(_db_permission.AccessRuleset.name).all()]
+        private_ruleset_names = [t[0] for t in q(_db_permission.NodeToAccessRuleset.ruleset_name).filter_by(private=True).all()]
         rulesetnamelist = [rulesetname for rulesetname in rulesetnamelist if not rulesetname in private_ruleset_names]
 
         retuser = ""
@@ -203,7 +204,7 @@ def getContent(req, ids):
             inherited_ruleset_assocs, \
             own_ruleset_assocs, \
             special_ruleset, special_rule_assocs = get_access_rules_info(node, rule_type)
-            retuser += _tal.processTAL(makeUserList(req,
+            retuser += _tal.processTAL(_accessuser_editor_web.makeUserList(req,
                                                own_ruleset_assocs,  # not_inherited_ruleset_names[rule_type],  # rights
                                                inherited_ruleset_assocs,  # inherited_ruleset_names[rule_type],  # readonlyrights
                                                special_ruleset,  # additional_rules_inherited[rule_type],

@@ -18,7 +18,6 @@ from web.common.accessuser_editor_web import makeUserList, decider_is_private_us
 from utils.utils import dec_entry_log
 
 q = db.query
-s = db.session
 
 logg = logging.getLogger(__name__)
 rule_types = ["read", "write", "data"]

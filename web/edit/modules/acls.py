@@ -4,6 +4,7 @@
     :license: GPL3, see COPYING for details
 """
 
+import functools as _functools
 import itertools as _itertools
 import logging as _logging
 import operator as _operator
@@ -25,6 +26,7 @@ _rule_types = ("read", "write", "data")
 _log = _logging.getLogger(__name__)
 
 _assoc_filter_key = _operator.attrgetter(*"rule invert blocking".split())
+_map_get_item_0 = _functools.partial(_itertools.imap, _operator.itemgetter(0))
 
 
 def getInformation():
@@ -129,21 +131,29 @@ def getContent(req, ids):
 
                 _1, own_ruleset_assocs, _2 = _get_access_rules_info(node, rule_type)
 
-                own_ruleset_names_not_private = [r.ruleset_name for r in own_ruleset_assocs if not r.private]
+                own_ruleset_names_not_private = _itertools.ifilterfalse(
+                        _operator.attrgetter("private"),
+                        own_ruleset_assocs,
+                      )
+                own_ruleset_names_not_private = _itertools.imap(
+                        _operator.attrgetter("ruleset_name"),
+                        own_ruleset_names_not_private,
+                      )
+                own_ruleset_names_not_private = frozenset(own_ruleset_names_not_private)
 
-                to_be_removed_rulesets = set(own_ruleset_names_not_private) - set(ruleset_names_from_request)
-                to_be_added_rulesets = set(ruleset_names_from_request) - set(own_ruleset_names_not_private) - {'__special_rule__'}
+                to_be_removed_rulesets = own_ruleset_names_not_private-ruleset_names_from_request
+                to_be_added_rulesets = ruleset_names_from_request-own_ruleset_names_not_private-{'__special_rule__'}
 
                 if to_be_removed_rulesets:
                     _log.info("node %r: %r removing rulesets %r", node, rule_type, to_be_removed_rulesets)
-                    for ruleset_name in to_be_removed_rulesets:
-                        node.access_ruleset_assocs.filter_by(ruleset_name=ruleset_name,
-                                                             ruletype=rule_type).delete()
-
+                for ruleset_name in to_be_removed_rulesets:
+                    node.access_ruleset_assocs.filter_by(ruleset_name=ruleset_name,
+                                                                 ruletype=rule_type).delete()
                 if to_be_added_rulesets:
                     _log.info("node %r: %r adding rulesets %r", node, rule_type, to_be_added_rulesets)
-                    for ruleset_name in to_be_added_rulesets:
-                        node.access_ruleset_assocs.append(_db_permission.NodeToAccessRuleset(ruleset_name=ruleset_name, ruletype=rule_type))
+                node.access_ruleset_assocs.extend(
+                        _db_permission.NodeToAccessRuleset(ruleset_name=rsn, ruletype=rule_type)
+                                                                 for rsn in to_be_added_rulesets)
 
             _core.db.session.commit()
 
@@ -157,33 +167,37 @@ def getContent(req, ids):
                 special_ruleset = node.get_special_access_ruleset(rule_type)
                 special_rule_assocs = _get_rule_assocs(special_ruleset)
 
-                special_access_rules = [ra.rule for ra in special_rule_assocs]
-                user_test_results = [_accessuser_editor_web.decider_is_private_user_group_access_rule(ar) for ar in special_access_rules]
-                uids = [u.id for u in user_test_results if isinstance(u, _core.User)]
+                uids = _itertools.imap(_operator.attrgetter("rule"), special_rule_assocs)
+                uids = _itertools.imap(
+                        _accessuser_editor_web.decider_is_private_user_group_access_rule,
+                        uids,
+                      )
+                uids = frozenset(u.id for u in uids if isinstance(u, _core.User))
 
-                uids_to_remove = list(set(uids) - set(user_ids_from_request))
-                uids_to_add = list(set(user_ids_from_request) - set(uids))
-                if uids_to_add and not special_ruleset:  # in this case uids_to_remove will be empty
-                    special_ruleset = node.get_or_add_special_access_ruleset(rule_type)
-                    special_rule_assocs = special_ruleset.rule_assocs
+                users_to_add = tuple(_itertools.imap(
+                        _core.db.query(_core.User).get,
+                        user_ids_from_request-uids,
+                      ))
+                if users_to_add and not special_ruleset:  # in this case uids_to_remove will be empty
+                    special_rule_assocs = node.get_or_add_special_access_ruleset(rule_type).rule_assocs
 
-                for uid in uids_to_add:
+                special_rule_assocs.extend(
+                        _db_permission.AccessRulesetToRule(
+                                rule=_get_or_add_private_access_rule_for_user(user),
+                                #ruleset=special_ruleset,
+                                invert=False,
+                                blocking=False,
+                              )
+                      for user in users_to_add)
+
+                # remove *after* having added users_to_add: a trigger may delete empty rulesets
+                for uid in uids-user_ids_from_request:  # this would be `uids_to_remove`
+
                     user = _core.db.query(_core.User).get(uid)
-                    access_rule = _get_or_add_private_access_rule_for_user(user)
-                    rule_assoc = _db_permission.AccessRulesetToRule(rule=access_rule,
-                                                     #ruleset=special_ruleset,
-                                                     invert=False,
-                                                     blocking=False)
-                    special_rule_assocs.append(rule_assoc)
-
-                # remove uids_to_remove *after* having added uids_to_add: a trigger may delete empty rulesets
-                for uid in uids_to_remove:
-
-                    user = _core.db.query(_core.User).get(uid)
-                    access_rule = _get_or_add_private_access_rule_for_user(user)
+                    access_rule_id = _get_or_add_private_access_rule_for_user(user).id
 
                     for rule_assoc in special_rule_assocs:
-                        if rule_assoc.rule_id == access_rule.id:
+                        if rule_assoc.rule_id == access_rule_id:
                             _core.db.session.delete(rule_assoc)
 
                     _core.db.session.flush()
@@ -193,49 +207,64 @@ def getContent(req, ids):
 
     action = req.params.get("action", "")
 
-    retacl = ""
-    if not action:
+    ret = []
 
-        rulesetnamelist = [t[0] for t in _core.db.query(_db_permission.AccessRuleset.name).order_by(_db_permission.AccessRuleset.name).all()]
-        private_ruleset_names = [t[0] for t in _core.db.query(_db_permission.NodeToAccessRuleset.ruleset_name).filter_by(private=True).all()]
-        rulesetnamelist = [rulesetname for rulesetname in rulesetnamelist if not rulesetname in private_ruleset_names]
+    if action in ("get_userlist", ""):
+
+        private_ruleset_names = _core.db.query(_db_permission.NodeToAccessRuleset.ruleset_name)
+        private_ruleset_names = private_ruleset_names.filter_by(private=True)
+        private_ruleset_names = private_ruleset_names.all()
+        private_ruleset_names = _map_get_item_0(private_ruleset_names)
+        private_ruleset_names = frozenset(private_ruleset_names)
+
+        rulesetnamelist = _core.db.query(_db_permission.AccessRuleset.name)
+        rulesetnamelist = rulesetnamelist.all()
+        rulesetnamelist = _map_get_item_0(rulesetnamelist)
+        rulesetnamelist = frozenset(rulesetnamelist)
+        rulesetnamelist -= private_ruleset_names
+
+        make_context = _acl_editor_web.makeList if not action else _accessuser_editor_web.makeUserList
 
         for rule_type in _rule_types:
             inherited_ruleset_assocs, own_ruleset_assocs, special_ruleset = _get_access_rules_info(node, rule_type)
-            retacl += _tal.processTAL(_acl_editor_web.makeList(req,
-                                          own_ruleset_assocs,  #not_inherited_ruleset_names[rule_type],  # rights
-                                          inherited_ruleset_assocs,  #inherited_ruleset_names[rule_type],  # readonlyrights
-                                          special_ruleset,  #additional_rules_inherited[rule_type],
-                                          _get_rule_assocs(special_ruleset),  #additional_rules_not_inherited[rule_type],
-                                          rulesetnamelist,
-                                          private_ruleset_names,
-                                          rule_type=rule_type), file="web/edit/modules/acls.html", macro="edit_acls_selectbox", request=req)
+            context = make_context(
+                    req,
+                    own_ruleset_assocs,  # not_inherited_ruleset_names[rule_type],  # rights
+                    inherited_ruleset_assocs,  # inherited_ruleset_names[rule_type],  # readonlyrights
+                    special_ruleset,  # additional_rules_inherited[rule_type],
+                    _get_rule_assocs(special_ruleset),  # additional_rules_not_inherited[rule_type],
+                    sorted(rulesetnamelist),
+                    tuple(private_ruleset_names),
+                    rule_type=rule_type,
+                  )
+            ret.append(_tal.processTAL(
+                    context,
+                    file="web/edit/modules/acls.html",
+                    macro="edit_acls_selectbox" if not action else "edit_acls_userselectbox",
+                    request=req,
+                  ))
 
-    if action == 'get_userlist':  # load additional rights by ajax
+        if action == 'get_userlist':  # load additional rights by ajax
+            req.response.set_data("".join(ret))
+            return ""
 
-        rulesetnamelist = [t[0] for t in _core.db.query(_db_permission.AccessRuleset.name).order_by(_db_permission.AccessRuleset.name).all()]
-        private_ruleset_names = [t[0] for t in _core.db.query(_db_permission.NodeToAccessRuleset.ruleset_name).filter_by(private=True).all()]
-        rulesetnamelist = [rulesetname for rulesetname in rulesetnamelist if not rulesetname in private_ruleset_names]
-
-        retuser = ""
-        for rule_type in _rule_types:
-            inherited_ruleset_assocs, own_ruleset_assocs, special_ruleset = _get_access_rules_info(node, rule_type)
-            retuser += _tal.processTAL(_accessuser_editor_web.makeUserList(req,
-                                               own_ruleset_assocs,  # not_inherited_ruleset_names[rule_type],  # rights
-                                               inherited_ruleset_assocs,  # inherited_ruleset_names[rule_type],  # readonlyrights
-                                               special_ruleset,  # additional_rules_inherited[rule_type],
-                                               _get_rule_assocs(special_ruleset),  # additional_rules_not_inherited[rule_type],
-                                               rulesetnamelist,
-                                               private_ruleset_names,
-                                               rule_type=rule_type), file="web/edit/modules/acls.html", macro="edit_acls_userselectbox", request=req)
-        req.response.set_data(retuser)
-        return ""
-
-    runsubmit = "\nfunction runsubmit(){\n"
+    runsubmit = ["function runsubmit(){"]
     for rule_type in _rule_types:
-        runsubmit += "\tmark(document.myform.left" + rule_type + ");\n"
-        runsubmit += "\tmark(document.myform.leftuser" + rule_type + ");\n"
-    runsubmit += "\tdocument.myform.submit();\n}\n"
+        runsubmit.append("\tmark(document.myform.left{});".format(rule_type))
+        runsubmit.append("\tmark(document.myform.leftuser{});".format(rule_type))
+    runsubmit.append("\tdocument.myform.submit();")
+    runsubmit.append("}")
 
-    return _tal.processTAL({"runsubmit": runsubmit, "idstr": idstr, "contentacl": retacl,
-                       "adminuser": user.is_admin, "csrf": req.csrf_token.current_token}, file="web/edit/modules/acls.html", macro="edit_acls", request=req)
+    context = dict(
+            runsubmit="\n{}\n".format("\n".join(runsubmit)),
+            idstr=idstr,
+            contentacl="".join(ret),
+            adminuser=user.is_admin,
+            csrf=req.csrf_token.current_token,
+          )
+    return _tal.processTAL(
+            context,
+            file="web/edit/modules/acls.html",
+            macro="edit_acls",
+            request=req,
+          )

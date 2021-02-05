@@ -42,24 +42,34 @@ def _assoc_filter(assocs, to_remove):
     return tuple(a for a in assocs if _assoc_filter_key(a) not in to_remove)
 
 def _get_access_rules_info(node, ruletype):
-    rule_assocs = node.access_rule_assocs.filter_by(ruletype=ruletype).all()
-    own_ruleset_assocs = node.access_ruleset_assocs.filter_by(ruletype=ruletype).all()
-    effective_ruleset_assocs = node.effective_access_ruleset_assocs.filter(
-        _db_permission.EffectiveNodeToAccessRuleset.c.ruletype == ruletype).all()
-    inherited_ruleset_assocs = set(effective_ruleset_assocs) - set(own_ruleset_assocs)
+    own_ruleset_assocs = node.access_ruleset_assocs.filter_by(ruletype=ruletype)
+    own_ruleset_assocs = own_ruleset_assocs.all()
 
-    effective_rulesets = [rsa.ruleset for rsa in effective_ruleset_assocs]
-    rule_assocs_in_rulesets = [r for rs in effective_rulesets for r in rs.rule_assocs]
+    effective_ruleset_assocs = node.effective_access_ruleset_assocs
+    effective_ruleset_assocs = effective_ruleset_assocs.filter(
+            _db_permission.EffectiveNodeToAccessRuleset.c.ruletype==ruletype)
+    effective_ruleset_assocs = effective_ruleset_assocs.all()
 
-    remaining_rule_assocs = _assoc_filter(rule_assocs, rule_assocs_in_rulesets)
+    # warn about remaining rule assocs
+    remaining_rule_assocs = _assoc_filter(
+            node.access_rule_assocs.filter_by(ruletype=ruletype).all(),
+            (r
+                    for rsa in effective_ruleset_assocs
+                    for r in rsa.ruleset.rule_assocs
+                  ),
+          )
     if remaining_rule_assocs:
         _log.error("node %r: ruletype: %r: REMAINING RULEASSOCS %r (INVALID!)",
                 node,
                 ruletype,
                 tuple(r.to_dict() for r in remaining_rule_assocs),
               )
-    special_ruleset = node.get_special_access_ruleset(ruletype)
-    return inherited_ruleset_assocs, own_ruleset_assocs, special_ruleset
+
+    return (
+            frozenset(effective_ruleset_assocs).difference(own_ruleset_assocs),
+            own_ruleset_assocs,
+            node.get_special_access_ruleset(ruletype),
+          )
 
 
 def _get_rule_assocs(ruleset):

@@ -4,12 +4,11 @@
     :license: GPL3, see COPYING for details
 """
 import logging
-import json
 import mediatumtal.tal as _tal
 
-from core import db, Node, User, UserGroup
+from core import db, Node, User
 from core.permission import get_or_add_access_rule
-from core.database.postgres.permission import NodeToAccessRule, NodeToAccessRuleset, EffectiveNodeToAccessRuleset, AccessRule, AccessRuleset, AccessRulesetToRule
+from core.database.postgres.permission import NodeToAccessRuleset, EffectiveNodeToAccessRuleset, AccessRuleset, AccessRulesetToRule
 
 from core.users import user_from_session as _user_from_session
 from core import httpstatus

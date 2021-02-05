@@ -4,7 +4,9 @@
     :license: GPL3, see COPYING for details
 """
 
+import itertools as _itertools
 import logging as _logging
+import operator as _operator
 
 import mediatumtal.tal as _tal
 
@@ -22,10 +24,22 @@ _rule_types = ["read", "write", "data"]
 
 _log = _logging.getLogger(__name__)
 
+_assoc_filter_key = _operator.attrgetter(*"rule invert blocking".split())
+
 
 def getInformation():
     return {"version": "1.0", "system": 0}
 
+
+def _assoc_filter(assocs, to_remove):
+    """
+    Return those rules in `assocs` that
+    do not match any rule in `to_remove`.
+    Rules are compared by their attributes
+    `rule`, `invert` and `blocking`.
+    """
+    to_remove = frozenset(_itertools.imap(_assoc_filter_key, to_remove))
+    return tuple(a for a in assocs if _assoc_filter_key(a) not in to_remove)
 
 def _get_access_rules_info(node, ruletype):
     rule_assocs = node.access_rule_assocs.filter_by(ruletype=ruletype).all()
@@ -37,17 +51,7 @@ def _get_access_rules_info(node, ruletype):
     effective_rulesets = [rsa.ruleset for rsa in effective_ruleset_assocs]
     rule_assocs_in_rulesets = [r for rs in effective_rulesets for r in rs.rule_assocs]
 
-    def assoc_filter(assocs, to_remove):
-
-        def _f(a):
-            for rem in to_remove:
-                if a.rule == rem.rule and a.invert == rem.invert and a.blocking == rem.blocking:
-                    return False
-            return True
-
-        return [a for a in assocs if _f(a)]
-
-    remaining_rule_assocs = assoc_filter(rule_assocs, rule_assocs_in_rulesets)
+    remaining_rule_assocs = _assoc_filter(rule_assocs, rule_assocs_in_rulesets)
     if remaining_rule_assocs:
         msg = "node %r: ruletype: %r: REMAINING RULEASSOCS %r (INVALID!)" % (node, ruletype, [r.to_dict() for r in remaining_rule_assocs])
         _log.error(msg)

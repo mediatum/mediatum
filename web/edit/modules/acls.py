@@ -126,9 +126,7 @@ def getContent(req, ids):
                 ruleset_names_from_request = req.params.get(u"left{}".format(rule_type))
                 ruleset_names_from_request = _split_from_request(ruleset_names_from_request)
 
-                inherited_ruleset_assocs, \
-                own_ruleset_assocs, \
-                special_ruleset = _get_access_rules_info(node, rule_type)
+                _1, own_ruleset_assocs, _2 = _get_access_rules_info(node, rule_type)
 
                 own_ruleset_names_not_private = [r.ruleset_name for r in own_ruleset_assocs if not r.private]
 
@@ -202,9 +200,7 @@ def getContent(req, ids):
         rulesetnamelist = [rulesetname for rulesetname in rulesetnamelist if not rulesetname in private_ruleset_names]
 
         for rule_type in _rule_types:
-            inherited_ruleset_assocs, \
-            own_ruleset_assocs, \
-            special_ruleset = _get_access_rules_info(node, rule_type)
+            inherited_ruleset_assocs, own_ruleset_assocs, special_ruleset = _get_access_rules_info(node, rule_type)
             retacl += _tal.processTAL(_acl_editor_web.makeList(req,
                                           own_ruleset_assocs,  #not_inherited_ruleset_names[rule_type],  # rights
                                           inherited_ruleset_assocs,  #inherited_ruleset_names[rule_type],  # readonlyrights
@@ -222,9 +218,7 @@ def getContent(req, ids):
 
         retuser = ""
         for rule_type in _rule_types:
-            inherited_ruleset_assocs, \
-            own_ruleset_assocs, \
-            special_ruleset = _get_access_rules_info(node, rule_type)
+            inherited_ruleset_assocs, own_ruleset_assocs, special_ruleset = _get_access_rules_info(node, rule_type)
             retuser += _tal.processTAL(_accessuser_editor_web.makeUserList(req,
                                                own_ruleset_assocs,  # not_inherited_ruleset_names[rule_type],  # rights
                                                inherited_ruleset_assocs,  # inherited_ruleset_names[rule_type],  # readonlyrights

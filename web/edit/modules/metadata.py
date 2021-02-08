@@ -21,7 +21,7 @@ import logging
 import mediatumtal.tal as _tal
 
 from utils.date import format_date, parse_date, now
-from utils.utils import funcname, dec_entry_log
+from utils.utils import funcname
 from core.translation import lang, t, getDefaultLanguage
 from pprint import pformat as pf
 from core import httpstatus
@@ -163,7 +163,6 @@ def _handle_edit_metadata(req, mask, nodes):
     return flag_nodename_changed
 
 
-@dec_entry_log
 def getContent(req, ids):
     ret = ""
     user = user_from_session()

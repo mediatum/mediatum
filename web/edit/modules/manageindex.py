@@ -20,7 +20,7 @@
 
 import mediatumtal.tal as _tal
 from schema.schema import loadTypesFromDB, getMetaType, get_permitted_schemas
-from utils.utils import u, dec_entry_log, suppress
+from utils.utils import u, suppress
 from contenttypes import Data
 from core import Node
 from core import db
@@ -55,7 +55,6 @@ def replaceValue(value, oldvalue, replacement):
     return ";".join(ret)
 
 
-@dec_entry_log
 def getContent(req, ids):
 
     def getSchemes(req):

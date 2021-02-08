@@ -38,7 +38,7 @@ from edit_common import *
 
 from core.users import user_from_session as _user_from_session
 from core import httpstatus
-from utils.utils import funcname, get_user_id, dec_entry_log, Menu, splitpath, parse_menu_struct, isDirectory, isCollection, suppress
+from utils.utils import funcname, get_user_id, Menu, splitpath, parse_menu_struct, isDirectory, isCollection, suppress
 from schema.schema import Metadatatype
 from web.edit.edit_common import get_edit_label, default_edit_nodes_per_page, get_searchparams
 from web.frontend.search import NoSearchResult
@@ -365,7 +365,6 @@ def getIDs(req):
     return idlist
 
 
-@dec_entry_log
 def edit_tree(req):
     language = lang(req)
     user = _user_from_session()
@@ -450,7 +449,6 @@ def edit_tree(req):
     req.response.set_data(json.dumps(data, indent=4, ensure_ascii=False))
 
 
-@dec_entry_log
 def action(req):
     global _editModules
     language = lang(req)
@@ -708,7 +706,6 @@ def showPaging(req, tab, ids):
     return _tal.processTAL(v, file="web/edit/edit.html", macro="edit_paging", request=req)
 
 
-@dec_entry_log
 def content(req):
 
     user = _user_from_session()

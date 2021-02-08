@@ -27,7 +27,6 @@ from core.systemtypes import Root
 from web.edit.edit_common import showoperations, default_edit_nodes_per_page,\
     edit_node_per_page_values, searchbox_navlist_height
 from web.frontend.frame import render_edit_search_box
-from utils.utils import dec_entry_log
 from core.translation import translate, lang, t
 from schema.schema import get_permitted_schemas
 from web.edit.edit_common import get_searchparams
@@ -44,7 +43,6 @@ def elemInList(elemlist, name):
     return False
 
 
-@dec_entry_log
 def getContent(req, ids):
 
     def getDatatypes(_req, _schemes):

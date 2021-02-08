@@ -22,7 +22,7 @@
 import logging
 import mediatumtal.tal as _tal
 
-from utils.utils import formatTechAttrs, dec_entry_log, suppress
+from utils.utils import formatTechAttrs, suppress
 from utils.date import format_date, parse_date
 from core import httpstatus
 from core import Node, db
@@ -34,7 +34,6 @@ q = db.query
 logg = logging.getLogger(__name__)
 
 
-@dec_entry_log
 def getContent(req, ids):
     user = user_from_session()
     node = q(Node).get(ids[0])

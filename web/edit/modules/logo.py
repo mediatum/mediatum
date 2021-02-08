@@ -23,7 +23,7 @@ import os
 import logging
 import mediatumtal.tal as _tal
 
-from utils.utils import getMimeType, splitpath, dec_entry_log
+from utils.utils import getMimeType, splitpath
 from utils.fileutils import importFile
 
 from core.translation import lang
@@ -40,7 +40,6 @@ logg = logging.getLogger(__name__)
 
 # to do: limit number of logos
 
-@dec_entry_log
 def getContent(req, ids):
     user = _user_from_session()
     node = q(Node).get(ids[0])

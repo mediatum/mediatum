@@ -26,7 +26,6 @@ from schema.schema import get_permitted_schemas
 from core.translation import translate
 from core.users import user_from_session as _user_from_session
 from core import httpstatus
-from utils.utils import dec_entry_log
 from core import Node
 from contenttypes import Data, Content, Container
 from core import db
@@ -40,7 +39,6 @@ def _redirect_to_view(req):
     return httpstatus.HTTP_MOVED_TEMPORARILY
 
 
-@dec_entry_log
 def getContent(req, ids):
     user = _user_from_session()
     node = q(Node).get(ids[0])

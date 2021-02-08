@@ -20,7 +20,6 @@
 import logging
 
 import mediatumtal.tal as _tal
-from utils.utils import dec_entry_log
 from schema.schema import getMetaType
 from core.translation import lang
 from core.users import user_from_session as _user_from_session
@@ -33,7 +32,6 @@ q = db.query
 logg = logging.getLogger(__name__)
 
 
-@dec_entry_log
 def getContent(req, ids):
     user = _user_from_session()
     language = lang(req)

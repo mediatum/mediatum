@@ -36,7 +36,7 @@ import web.edit.edit_common as _web_edit_edit_common
 from web.edit.edit import getTreeLabel
 from web.edit.edit_common import showoperations, searchbox_navlist_height
 from utils.url import build_url_from_path_and_params
-from utils.utils import join_paths, getMimeType, funcname, get_user_id, dec_entry_log, suppress
+from utils.utils import join_paths, getMimeType, funcname, get_user_id, suppress
 from utils.fileutils import importFile, importFileRandom
 from schema.bibtex import importBibTeX, MissingMapping
 
@@ -69,7 +69,6 @@ def elemInList(list, name):
     return False
 
 
-@dec_entry_log
 def getDatatypes(req, schemes):
     dtypes = []
     datatypes = Data.get_all_datatypes()
@@ -86,7 +85,6 @@ def getDatatypes(req, schemes):
     return dtypes
 
 
-@dec_entry_log
 def getContent(req, ids):
 
     user = users.user_from_session()
@@ -482,7 +480,7 @@ def mybasename(filename):
 
     return basename
 
-@dec_entry_log
+
 def upload_filehandler(filename):
     mime = getMimeType(filename)
     scheme_type = {mime[1]: []}
@@ -494,7 +492,6 @@ def upload_filehandler(filename):
     return {'files': [filename], 'schemes': scheme_type}
 
 
-@dec_entry_log
 def upload_to_filetype_filehandler(filename):
     datatype = 'file'
     scheme_type = {datatype: []}
@@ -506,7 +503,6 @@ def upload_to_filetype_filehandler(filename):
     return {'files': [filename], 'schemes': scheme_type}
 
 
-@dec_entry_log
 def upload_ziphandler(filename, id):
     schemes = get_permitted_schemas()
     files = []
@@ -553,7 +549,6 @@ def upload_ziphandler(filename, id):
     return {'files': files, 'schemes': scheme_type}
 
 
-@dec_entry_log
 def upload_bibhandler(filename, id):
     error = ""
     n = q(Node).get(id)

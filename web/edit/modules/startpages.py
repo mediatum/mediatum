@@ -29,7 +29,7 @@ import operator as _operator
 import core.config as config
 import mediatumtal.tal as _tal
 
-from utils.utils import format_filesize, dec_entry_log, suppress
+from utils.utils import format_filesize, suppress
 from core.translation import lang
 from web.edit.edit_common import send_nodefile_tal, upload_for_html
 from core.users import user_from_session as _user_from_session
@@ -81,7 +81,6 @@ def _get_named_filelist(node, id_from_req):
     return files
 
 
-@dec_entry_log
 def getContent(req, ids):
     node = q(Node).get(ids[0])
     user = _user_from_session()

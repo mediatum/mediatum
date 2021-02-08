@@ -98,7 +98,6 @@ def _split_from_request(param):
     return frozenset(_itertools.ifilter(_operator.methodcaller("strip"), param))
 
 
-@_utils.dec_entry_log
 def getContent(req, ids):
     user = _users.user_from_session()
     hidden_edit_functions_for_current_user = user.hidden_edit_functions

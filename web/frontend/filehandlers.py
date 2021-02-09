@@ -79,14 +79,26 @@ def _send_thumbnail(thumb_type, req):
             req.response.status_code = 404
             return 404
 
-    for p in _request_handler.getFileStorePaths("/img/"):
-        for test in ["default_thumb_%s_%s.*" % (ntype, schema),
-                     "default_thumb_%s.*" % schema,
-                     "default_thumb_%s.*" % ntype]:
-            fps = glob.glob(os.path.join(p, test))
+    # looking in all img filestores for default thumb for this
+    # a) node type and schema, or
+    # b) schema, or
+    # c) node type
+    img_filestorepaths = _request_handler.getFileStorePaths("/img/")
+
+    for pattern_fmt in (
+            "default_thumb_{ntype}_{schema}.*",
+            "default_thumb_{schema}.*",
+            "default_thumb_{ntype}.*",
+    ):
+
+        for p in img_filestorepaths:
+            fps = glob.glob(os.path.join(p, pattern_fmt.format(schema=schema, ntype=ntype)))
             if fps:
-                thumb_mimetype, thumb_type = utils.utils.getMimeType(fps[0])
-                return _request_handler.sendFile(req, fps[0], thumb_mimetype, force=1)
+                thumb_path, = fps  # implicit: raises ValueError if not len(fps)==1
+                thumb_mimetype, thumb_type = utils.utils.getMimeType(thumb_path)
+                logg.debug("serving default thumb for node '%s': %s", node, thumb_path)
+                return _request_handler.sendFile(req, thumb_path, thumb_mimetype, force=1)
+
 
     return _request_handler.sendFile(req, config.basedir + "/web/img/questionmark.png", "image/png", force=1)
 

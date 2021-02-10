@@ -98,3 +98,15 @@ def init_web_routes():
         if hasattr(module, "init_web_route") and callable(module.init_web_route):
             logg.info("Initializing web route for '%s'", name)
             module.init_web_route()
+
+
+def add_plugin_file_store_paths():
+    """
+    Call add_file_store_paths for each plugin.
+    This allows plugin to add filestore paths after the flask app object is initialized.
+    :return:
+    """
+    for name, module in plugins.iteritems():
+        if hasattr(module, "add_file_store_paths") and callable(module.add_file_store_paths):
+            logg.info("Adding filestore paths for '%s'", name)
+            module.add_file_store_paths()

@@ -29,7 +29,7 @@ link(rel="stylesheet", href="/css/jade_style.css")
     // additional download links, etc...
   .clear
 
-if attachment
+if attachment and canseeoriginal
   #object_attachment
     a(onclick="javascript:openPopup('/attachmentbrowser?id={{ node.id }}&path={{ path }}')", href="#")
       = _t("doc_att_browser")

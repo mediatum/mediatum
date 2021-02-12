@@ -77,8 +77,11 @@ class Video(Content):
         obj['attachment'] = files
         obj['sum_size'] = sum_size
 
+        can_see_original = self.has_data_access()
+        obj['canseeoriginal'] = can_see_original
+
         # user must have data access for video playback
-        if self.has_data_access():
+        if can_see_original:
             video = self.files.filter_by(filetype=u"video").scalar()
             obj["video_url"] = u"/file/{}/{}".format(self.id, video.base_name) if video is not None else None
             if not self.isActiveVersion():

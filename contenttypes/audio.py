@@ -151,9 +151,12 @@ class Audio(Content):
         obj['attachment'] = files
         obj['sum_size'] = sum_size
 
+        can_see_original = self.has_data_access()
+        obj['canseeoriginal'] = can_see_original
+
         # adapted from video.py
         # user must have data access for audio playback
-        if self.has_data_access():
+        if can_see_original:
             audio_file = self.files.filter_by(filetype=u"audio").scalar()
             obj["audio_url"] = u"/file/{}/{}".format(self.id, audio_file.base_name) if audio_file is not None else None
             versions = self.tagged_versions.all()

@@ -11,7 +11,7 @@ import logging
 import time
 import itertools as _itertools
 
-import pyaml
+import ruamel.yaml as _ruamel_yaml
 from ipaddr import IPv4Network, IPv4Address, AddressValueError
 import psycopg2.extensions
 from psycopg2.extensions import adapt, AsIs
@@ -84,7 +84,7 @@ def to_dict(self):
 
 
 def to_yaml(self):
-    return pyaml.dump(self.to_dict())
+    return _ruamel_yaml.round_trip_dump(self.to_dict())
 
 
 def update(self, **kwargs):

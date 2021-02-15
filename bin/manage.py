@@ -27,7 +27,7 @@ import warnings
 
 sys.path.append(os.path.normpath(os.path.join(__file__, "..", "..")))
 
-import pyaml
+import ruamel.yaml as _ruamel_yaml
 import sqlalchemy
 from sqlalchemy_continuum import remove_versioning
 
@@ -232,7 +232,7 @@ def vacuum(args):
 def result_proxy_to_yaml(resultproxy):
     rows = resultproxy.fetchall()
     as_list = [OrderedDict(sorted(r.items(), key=lambda e:e[0])) for r in rows]
-    formatted = pyaml.dumps(as_list)
+    formatted = _ruamel_yaml.round_trip_dump(as_list)
     return formatted
 
 

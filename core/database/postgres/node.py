@@ -12,7 +12,7 @@ import logging
 from json import dumps
 from warnings import warn
 
-import pyaml
+import ruamel.yaml as _ruamel_yaml
 from sqlalchemy import (Table, Sequence, Integer, Unicode, Boolean, sql, text, select, func)
 from sqlalchemy.orm import deferred, object_session
 from sqlalchemy.orm.dynamic import AppenderQuery, AppenderMixin
@@ -514,7 +514,7 @@ class Node(DeclarativeBase, NodeMixin):
         node_dict = self.to_dict()
         node_dict["attrs"] = dict(node_dict["attrs"])
         node_dict["system_attrs"] = dict(node_dict["system_attrs"])
-        return pyaml.dump(node_dict)
+        return _ruamel_yaml.round_trip_dump(node_dict)
 
 
 # view for direct parent-child relationship (distance = 1), also used for inserting new node connections

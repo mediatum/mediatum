@@ -62,7 +62,6 @@ let
       psycopg2
       pyPdf
       py_scrypt
-      pyaml
       pydot2
       pyexiftool
       pygeoip
@@ -73,6 +72,7 @@ let
       pyyaml
       reportlab
       requests
+      ruamel_yaml
       sqlalchemy
       sqlalchemy-continuum
       sqlalchemy-utils

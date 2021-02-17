@@ -33,7 +33,7 @@ from core.attachment import filebrowser
 from core.translation import t
 from core.postgres import check_type_arg_with_schema
 from contenttypes.data import Content, prepare_node_data, BadFile as _BadFile
-from utils.utils import isnewer, iso2utf8, utf8_decode_escape
+from utils.utils import isnewer
 from utils.compat import iteritems
 
 import lib.iptc.IPTC
@@ -500,12 +500,11 @@ class Image(Content):
         with open(image_file.abspath, 'rb') as f:
             tags = _exifread.process_file(f)
 
-        for k in tags.keys():
+        for k, v in tags.iteritems():
             # don't set unwanted exif attributes
-            if any(tag in k for tag in unwanted_attrs):
+            if any(tag in k for tag in unwanted_attrs) or not v:
                 continue
-            if tags[k]:
-                self.set("exif_" + k.replace(" ", "_"), utf8_decode_escape(str(tags[k])))
+            self.set("exif_{}".format(k.replace(" ", "_")), v.printable)
 
         # IPTC
         iptc_metadata = lib.iptc.IPTC.get_iptc_tags(image_file.abspath)

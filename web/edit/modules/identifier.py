@@ -27,7 +27,6 @@ import utils.urn as urn
 import utils.mail as mail
 import utils.pathutils as pathutils
 from core.translation import lang, t
-from utils.utils import dec_entry_log
 from core.users import user_from_session as _user_from_session
 from core import httpstatus
 import logging
@@ -41,7 +40,6 @@ q = db.query
 logg = logging.getLogger(__name__)
 
 
-@dec_entry_log
 def getContent(req, ids):
     """
     The standard method,  which has to be implemented by every module.

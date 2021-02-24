@@ -20,7 +20,6 @@
 import logging
 
 import mediatumtal.tal as _tal
-from utils.utils import dec_entry_log
 from utils.date import format_date
 from core.users import user_from_session as _user_from_session
 from core import httpstatus
@@ -130,7 +129,6 @@ class StatTypes:
         return sum
 
 
-@dec_entry_log
 def getContent(req, ids):
     if len(ids) > 0:
         ids = ids[0]

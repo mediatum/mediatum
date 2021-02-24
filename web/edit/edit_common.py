@@ -27,7 +27,7 @@ from core.translation import t, lang
 from core.users import user_from_session as _user_from_session
 from contenttypes import Container
 from utils.fileutils import importFile
-from utils.utils import EncryptionException, dec_entry_log, suppress
+from utils.utils import EncryptionException, suppress
 from utils.pathutils import get_accessible_paths
 from utils.compat import iteritems
 from web.frontend.content import get_make_search_content_function
@@ -200,7 +200,6 @@ class ShowDirNav(object):
         self.req = req
         self.node = node
 
-    @dec_entry_log
     def shownav(self):
         page = int(self.req.params.get('page', 1))
         # showdir must be called before shownav, so nodes can be used from showdir
@@ -228,7 +227,6 @@ class ShowDirNav(object):
 
         return nodes
 
-    @dec_entry_log
     def showdir(self, publishwarn="auto", markunpublished=False, sortfield=None, item_count=None, all_nodes=None, faultyidlist=[]):
         user = _user_from_session()
         if publishwarn == "auto":
@@ -265,7 +263,6 @@ def getAllSubDirs(node):
     return dirs
 
 
-@dec_entry_log
 def showoperations(req, node):
     return ""
 
@@ -289,7 +286,6 @@ def get_searchparams(req):
     return searchparams
 
 
-@dec_entry_log
 def shownavlist(req, node, nodes, page, dir=None):
     nodes_per_page = get_nodes_per_page(req, dir)
 
@@ -328,7 +324,6 @@ def shownavlist(req, node, nodes, page, dir=None):
     return page_nav
 
 
-@dec_entry_log
 def shownodelist(req, nodes, page, publishwarn=True, markunpublished=False, dir=None, item_count=None, all_nodes=None,
                  faultyidlist=[]):
     script_array = "allobjects = new Array();\n"
@@ -413,7 +408,6 @@ def isUnFolded(unfoldedids, id):
         return 0
 
 
-@dec_entry_log
 def writenode(req, node, unfoldedids, f, indent, key, ret=""):
     if node.type not in ["directory", "collection", "root", "home", "collections", "navigation"] and not node.type.startswith("directory"):
         return ret
@@ -451,7 +445,6 @@ def writenode(req, node, unfoldedids, f, indent, key, ret=""):
     return ret
 
 
-@dec_entry_log
 def writetree(req, node, f, key="", openednodes=None, sessionkey="unfoldedids", omitroot=0):
     ret = ""
 
@@ -496,7 +489,6 @@ def upload_help(req):
         None
 
 
-@dec_entry_log
 def send_nodefile_tal(req):
     if "file" in req.params:
         return upload_for_html(req)
@@ -539,7 +531,7 @@ def send_nodefile_tal(req):
                             "delbutton": True},
                            file="web/edit/modules/startpages.html", macro="fckeditor_customs_filemanager", request=req)
 
-@dec_entry_log
+
 def upload_for_html(req):
     user = _user_from_session()
     datatype = req.params.get("datatype", "image")

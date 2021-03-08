@@ -349,10 +349,10 @@ def handle_request(req):
         filename = None
         file_key = "m_upload_file_FOR_" + submitter
 
-        if file_key in req.params:
+        if file_key in req.files:
 
-            file = req.params[file_key]
-            del req.params[file_key]
+            file = req.files[file_key]
+            req.params.pop(file_key, None)
 
             filename = file.filename
 

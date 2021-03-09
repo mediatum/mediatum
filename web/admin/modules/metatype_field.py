@@ -167,8 +167,7 @@ def FieldDetail(req, pid, id, err=0):
 
     metafields = {}
     for fields in getFieldsForMeta(pid):
-        if fields.getType() != "union":
-            metafields[fields.name] = fields
+        metafields[fields.name] = fields
 
     v = getAdminStdVars(req)
     v["metadatatype"] = metadatatype

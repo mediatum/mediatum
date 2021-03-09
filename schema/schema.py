@@ -316,20 +316,15 @@ def generateMask(metatype, masktype="", force=0):
     mask = metatype.children.filter_by(name=masktype).scalar()
     if mask is not None:
         return  # mask is already there- nothing to do!
-    else:
-        mask = Mask(u"-auto-")
-        metatype.children.append(mask)
-        i = 0
-        for c in metatype.children.order_by(Node.orderpos):
-            if c.type != "mask":
-                if c.getFieldtype() != "union":
-                    field = Maskitem(c.get("label"))
-                    field.orderpos = i
-                    i += 1
-                    mask.children.append(field)
-                    field.set("width", "400")
-                    field.set("type", "field")
-                    field.children.append(c)
+    mask = Mask(u"-auto-")
+    metatype.children.append(mask)
+    for i, c in enumerate(metatype.children.filter(Node.type!='mask').order_by(Node.orderpos)):
+        field = Maskitem(c.get("label"))
+        field.orderpos = i
+        mask.children.append(field)
+        field.set("width", "400")
+        field.set("type", "field")
+        field.children.append(c)
     db.session.commit()
 
 def cloneMask(mask, newmaskname):

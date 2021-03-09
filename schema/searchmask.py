@@ -75,12 +75,7 @@ def generateMask(node):
             d = metafield.getName()
         new_maskitem = Node(d, type="searchmaskitem")
         mask.children.append(new_maskitem)
-        if metafield.get("type") == "union":
-            for t in metafield.get("valuelist").split(";"):
-                if t and t in allfieldnames:
-                    new_maskitem.children.append(allfields_parent.children.filter_by(name=t).one())
-        else:
-            new_maskitem.children.append(metafield)
+        new_maskitem.children.append(metafield)
 
     db.session.commit()
     return mask

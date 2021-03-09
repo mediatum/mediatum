@@ -164,8 +164,6 @@ def getContent(req, ids):
             return 0
         if not schemafield.Searchfield():
             return 0
-        if schemafield.get('type') == 'union':
-            return 0
         return 1
     data["display"] = display
     data["csrf"] = req.csrf_token.current_token

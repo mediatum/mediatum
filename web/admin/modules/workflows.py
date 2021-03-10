@@ -471,7 +471,8 @@ def WorkflowStepDetail(req, wid, wnid, err=0):
     v["acl_read"] = makeList(req, "read", removeEmptyStrings(rule["read"]), {}, overload=0, type="read")
     v["acl_write"] = makeList(req, "write", removeEmptyStrings(rule["write"]), {}, overload=0, type="write")
     v["editor"] = _tal.processTAL(v_part, file="web/admin/modules/workflows.html", macro="view_editor", request=req)
-    v["workflow"] = workflow
+    v["workflow_id"] = workflow.id
+    v["languages"] = filter(None, workflow.get('languages').split(';'))
     v["workflowstep"] = workflowstep
     v["nodelist"] = nodelist
     v["workflowtypes"] = getWorkflowTypes()

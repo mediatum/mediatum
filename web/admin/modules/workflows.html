@@ -400,9 +400,9 @@
             <tr>
                 <td><tal:block i18n:translate="admin_wfstep_sidebar">TEXT</tal:block>:</td>
                 <td>
-                    <textarea tal:condition="python:len(workflow.get('languages').split(';'))<2" tal:content="python:workflowstep.getSidebarText()" name="nsidebartext" style="width:400px"/>
-                    <tal:block tal:condition="python:len(workflow.get('languages').split(';'))>1">
-                        <div tal:repeat="language python:workflow.get('languages').split(';')">
+                    <textarea tal:condition="python:language_count<2" tal:content="python:workflowstep.getSidebarText()" name="nsidebartext" style="width:400px"/>
+                    <tal:block tal:condition="python:language_count>1">
+                        <div tal:repeat="language python:languages">
                             <div style="float:left;width:50px;"><span tal:content="language"/>:</div>
                             <textarea tal:content="python:workflowstep.getSidebarText(language)" tal:attributes="name python:u'{}.nsidebartext'.format(language)" style="width:350px;margin-bottom:10px;"/><br/>
                         </div>
@@ -412,9 +412,9 @@
             <tr>
                 <td><tal:block i18n:translate="admin_wfstep_pretext">TEXT</tal:block>:</td>
                 <td>
-                    <textarea tal:condition="python:len(workflow.get('languages').split(';'))<2" tal:content="python:workflowstep.getPreText()" name="npretext" style="width:400px"/>
-                    <tal:block tal:condition="python:len(workflow.get('languages').split(';'))>1">
-                        <div tal:repeat="language python:workflow.get('languages').split(';')">
+                    <textarea tal:condition="python:language_count<2" tal:content="python:workflowstep.getPreText()" name="npretext" style="width:400px"/>
+                    <tal:block tal:condition="python:language_count>1">
+                        <div tal:repeat="language python:languages">
                             <div style="float:left;width:50px;"><span tal:content="language"/>:</div>
                             <textarea tal:content="python:workflowstep.getPreText(language)" tal:attributes="name python:u'{}.npretext'.format(language)" style="width:350px;margin-bottom:10px;"/><br/>
                         </div>
@@ -424,9 +424,9 @@
             <tr>
                 <td><tal:block i18n:translate="admin_wfstep_posttext">TEXT</tal:block>:</td>
                 <td>
-                    <textarea tal:condition="python:len(workflow.get('languages').split(';'))<2" tal:content="python:workflowstep.getPostText()" name="nposttext" style="width:400px"/>
-                    <tal:block tal:condition="python:len(workflow.get('languages').split(';'))>1">
-                        <div tal:repeat="language python:workflow.get('languages').split(';')">
+                    <textarea tal:condition="python:language_count<2" tal:content="python:workflowstep.getPostText()" name="nposttext" style="width:400px"/>
+                    <tal:block tal:condition="python:language_count>1">
+                        <div tal:repeat="language python:languages">
                             <div style="float:left;width:50px;"><span tal:content="language"/>:</div>
                             <textarea tal:content="python:workflowstep.getPostText(language)" tal:attributes="name python:u'{}.nposttext'.format(language)" style="width:350px;margin-bottom:10px;"/><br/>
                         </div>
@@ -440,9 +440,9 @@
             <tr>
                 <td><tal:block i18n:translate="admin_wfstep_truelabel">TEXT</tal:block>:</td>
                 <td>
-                    <textarea tal:condition="python:len(workflow.get('languages').split(';'))<2" tal:content="python:workflowstep.getTrueLabel()" name="ntruelabel" style="width:400px"/>
-                    <tal:block tal:condition="python:len(workflow.get('languages').split(';'))>1">
-                        <div tal:repeat="language python:workflow.get('languages').split(';')">
+                    <textarea tal:condition="python:language_count<2" tal:content="python:workflowstep.getTrueLabel()" name="ntruelabel" style="width:400px"/>
+                    <tal:block tal:condition="python:language_count>1">
+                        <div tal:repeat="language python:languages">
                             <div style="float:left;width:50px;"><span tal:content="language"/>:</div>
                             <textarea tal:content="python:workflowstep.getTrueLabel(language)"  tal:attributes="name python:u'{}.ntruelabel'.format(language)" style="width:350px;margin-bottom:10px;"/><br/>
                         </div>
@@ -464,9 +464,9 @@
             <tr>
                 <td><tal:block i18n:translate="admin_wfstep_falselabel">TEXT</tal:block>:</td>
                 <td>
-                    <textarea tal:condition="python:len(workflow.get('languages').split(';'))<2" tal:content="python:workflowstep.getFalseLabel()" name="nfalselabel" style="width:400px"/>
-                    <tal:block tal:condition="python:len(workflow.get('languages').split(';'))>1">
-                        <div tal:repeat="language python:workflow.get('languages').split(';')">
+                    <textarea tal:condition="python:language_count<2" tal:content="python:workflowstep.getFalseLabel()" name="nfalselabel" style="width:400px"/>
+                    <tal:block tal:condition="python:language_count>1">
+                        <div tal:repeat="language python:languages">
                             <div style="float:left;width:50px;"><span tal:content="language"/>:</div>
                             <textarea tal:content="python:workflowstep.getFalseLabel(language)" tal:attributes="name python:u'{}.nfalselabel'.format(language)" style="width:350px;margin-bottom:10px;"/><br/>
                         </div>
@@ -545,7 +545,7 @@
         <input tal:attributes="value python:id is None and 'save_newdetail' or 'save_editdetail'" type="hidden" name="form_op" id="form_op"/>
         <input tal:attributes="value id" type="hidden" name="stepid"/>
         <input type="hidden" name="acttype" value="step"/>
-        <input tal:attributes="value python:workflow.id" type="hidden" name="parent"/>
+        <input tal:attributes="value python:workflow_id" type="hidden" name="parent"/>
         <input type="hidden" name="actpage" tal:attributes="value actpage"/>
         <input type="hidden" name="actfilter" tal:attributes="value actfilter"/>
     </form>

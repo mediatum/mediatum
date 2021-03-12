@@ -277,59 +277,52 @@
         var current_form_id = '#addmfield';
 
         if (we_are_now == "admin_workflow_step_editor") {
-          current_form_id = '#addmfield';
-        }
-        else if (we_are_now == "edit_metadata_editor") {
-          current_form_id = '#myform';
+            current_form_id = '#addmfield';
+        } else if (we_are_now == "edit_metadata_editor") {
+            current_form_id = '#myform';
         }
 
         var options = {
-          url: '/md_upload',
-          type: 'POST',
-          success:   function(data) {
+            url: '/md_upload',
+            type: 'POST',
+            success:   function(data) {
+                var res = jQuery.parseJSON(data);
 
-                      var res = jQuery.parseJSON(data);
-
-                      $("#response_FOR_____FIELDNAME____").html("");
-
-                      var errors = res['errors'];
-                      if (errors) {
-
-                          $.each(errors, function(index, value) {
+                $("#response_FOR_____FIELDNAME____").html("");
+                var errors = res['errors'];
+                if (errors) {
+                    $.each(errors, function(index, value) {
                             $("<div/>").html(value).attr('style', 'color:red').appendTo("#response_FOR_____FIELDNAME____");
-                          }
-                        );
-                      }
+                        }
+                    );
+                }
 
-                      var copy_report = res['copy_report'];
-                      if (copy_report) {
-                        $("<div/>").html(copy_report).attr('style', 'color:blue').appendTo("#response_FOR_____FIELDNAME____");
-                      }
-
-          },
-          error: function() { alert("error_FOR_____FIELDNAME____"); },
-          complete: function() {
-                                $(current_form_id).unbind();
-                               },
+                var copy_report = res['copy_report'];
+                if (copy_report) {
+                    $("<div/>").html(copy_report).attr('style', 'color:blue').appendTo("#response_FOR_____FIELDNAME____");
+                }
+            },
+            error: function() { alert("error_FOR_____FIELDNAME____"); },
+            complete: function() {
+                $(current_form_id).unbind();
+            },
         };
-
-            var res = $(current_form_id).submit(function() {
-               $(this).ajaxSubmit(options);
-             return false;
-            });
-            var targetnodeid = getTargetNodeID();
-
-            setTimeout(function() {
-                                    load_file_list_json_for_targetnode_FOR_____FIELDNAME____(getTargetNodeID());
-
-                                    var x = $('input[name=m_upload_file_FOR_____FIELDNAME____]');
-                                        x.replaceWith($('<input/>').attr('type', 'file').attr('name', 'm_upload_file_FOR_____FIELDNAME____').attr('id', '____FIELDNAME____').attr('size', '60%'));
-
-                                  }, 1000);
-
+        var res = $(current_form_id).submit(function() {
+            $(this).ajaxSubmit(options);
             return false;
-    }
+        });
+        var targetnodeid = getTargetNodeID();
 
+        setTimeout(function() {
+                load_file_list_json_for_targetnode_FOR_____FIELDNAME____(getTargetNodeID());
+
+                var x = $('input[name=m_upload_file_FOR_____FIELDNAME____]');
+                x.replaceWith($('<input/>').attr('type', 'file').attr('name', 'm_upload_file_FOR_____FIELDNAME____').attr('id', '____FIELDNAME____').attr('size', '60%'));
+            }, 1000
+        );
+
+        return false;
+    }
     </script>
 
 <div class="mediatum_blue_border" tal:attributes="id python:'upload_div_FOR_____FIELDNAME____'; name python:'upload_div_FOR_____FIELDNAME____'; style python:u'width:{}px'.format(width)">

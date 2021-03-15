@@ -17,6 +17,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import division
+
 import os
 import re
 from PIL import Image
@@ -212,7 +214,7 @@ class PrintPreview:
 
         else:
             self.image_w = 9.5 * cm
-            self.image_h = self.image_w / im.size[0] * im.size[1]
+            self.image_h = self.image_w // im.size[0] * im.size[1]
             self.image = 1
             wt, ht = self.image_w, self.image_h
 

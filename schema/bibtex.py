@@ -17,6 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import division
 
 """ We want to parse even badly broken bibtex files, no longer adhering to
     the "official" bibtex grammar. In particular, we need to handle

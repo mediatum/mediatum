@@ -1,6 +1,7 @@
 """
 old acl parser
 """
+from __future__ import division
 
 from utils.boolparser import BoolParser
 

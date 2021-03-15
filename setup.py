@@ -1,3 +1,5 @@
+from __future__ import division
+
 from setuptools import setup, find_packages
 
 setup(

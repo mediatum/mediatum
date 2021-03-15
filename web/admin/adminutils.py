@@ -17,6 +17,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import division
+
 import logging
 import os
 import math
@@ -88,7 +90,7 @@ class Overview:
             
         items_per_page = config.getint("admin.pageitems", 20)
             
-        max_page = len(list) / items_per_page
+        max_page = len(list) // items_per_page
         if max_page + 1 < self.page:
             self.page = 1
             req.params["page"] = 1

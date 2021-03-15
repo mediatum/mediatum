@@ -4,6 +4,8 @@ datamodel.py
 Created on 06.06.2013
 @author: stenzel
 '''
+from __future__ import division
+
 import codecs
 import sqlalchemy as sqla
 from sqlalchemy import Column, ForeignKey, String, Text, Integer, Index, Table, Boolean, Unicode

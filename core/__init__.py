@@ -1,3 +1,5 @@
+from __future__ import division
+
 __version__ = "v2020.04"
 
 # set by core.database

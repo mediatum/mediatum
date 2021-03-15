@@ -1,3 +1,5 @@
+from __future__ import division
+
 import hashlib
 from sqlalchemy import func
 import utils.utils as _utils_utils

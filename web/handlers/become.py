@@ -4,6 +4,9 @@
     :license: GPL3, see COPYING for details
 """
 from __future__ import absolute_import
+from __future__ import division
+
+
 import logging
 import re
 from core.users import user_from_session as _user_from_session

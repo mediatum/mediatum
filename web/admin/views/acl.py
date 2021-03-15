@@ -3,6 +3,8 @@
     :copyright: (c) 2016 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
+from __future__ import division
+
 from core import db
 from core.database.postgres.permission import AccessRule, AccessRuleset, AccessRulesetToRule
 from web.admin.views import BaseAdminView

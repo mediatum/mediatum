@@ -17,6 +17,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import division
+
 import base64 as _base64
 import cgi
 import functools as _functools
@@ -247,11 +249,11 @@ def format_filesize(size):
     if size < 1024:
         return "%d Byte" % size
     elif size < 1048576:
-        return "%d KByte" % (size / 1024)
+        return "%d KByte" % (size // 1024)
     elif size < 1073741824:
-        return "%d MByte" % (size / 1048576)
+        return "%d MByte" % (size // 1048576)
     else:
-        return "%d GByte" % (size / 1073741824)
+        return "%d GByte" % (size // 1073741824)
 
 
 def get_hash(filename):
@@ -928,7 +930,7 @@ def make_db_auto_name(prefix, sql_type, name):
     assert sql_type in _db_auto_name_match_allowed_sql_types
     s = _json.dumps({"prefix": prefix, "sql_type": sql_type, "name": name},sort_keys=True)
     # 128bit hash is guaranteed to be unique
-    h = hashlib.sha512(s).digest()[:128/8]
+    h = hashlib.sha512(s).digest()[:128//8]
     hashb32 = _base64.b32encode(h).lower().replace("=", "")
     rv = "{prefix_auto}_{hash}".format(prefix_auto=make_db_auto_prefix(prefix), hash=hashb32)
     if len(rv) > 62:

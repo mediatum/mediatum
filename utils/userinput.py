@@ -6,6 +6,8 @@
     Various functions for checking and converting unsafe user input.
 """
 from __future__ import absolute_import
+from __future__ import division
+
 import logging
 
 

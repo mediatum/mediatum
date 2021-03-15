@@ -23,3 +23,4 @@
     :copyright: (C) 2014 by the mediaTUM authors
     :license: GPL 3, see COPYING for more details.
 """
+from __future__ import division

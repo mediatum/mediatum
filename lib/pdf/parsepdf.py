@@ -17,6 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import division
 
 import logging
 from PIL import Image, ImageDraw
@@ -161,14 +162,14 @@ def makeThumbs(src, thumb128, thumb300):
     height = pic.size[1]
 
     if width > height:
-        newwidth, newheight = 300, height * 300 / width
+        newwidth, newheight = 300, height * 300 // width
     else:
-        newwidth, newheight = width * 300 / height, 300
+        newwidth, newheight = width * 300 // height, 300
 
     pic = pic.resize((newwidth, newheight), Image.ANTIALIAS)
     im = Image.new("RGB", (300, 300), (255, 255, 255))
-    x = (300 - newwidth) / 2
-    y = (300 - newheight) / 2
+    x = (300 - newwidth) // 2
+    y = (300 - newheight) // 2
     im.paste(pic, (x, y, x + newwidth, y + newheight))
     draw = ImageDraw.ImageDraw(im)
     draw.line([(x, y), (x + newwidth, y), (x + newwidth, y + newheight), (x, y + newheight), (x, y)], (200, 200, 200))

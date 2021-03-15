@@ -1,3 +1,5 @@
+from __future__ import division
+
 import json
 import operator
 from collections import OrderedDict

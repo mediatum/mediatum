@@ -1,3 +1,5 @@
+from __future__ import division
+
 import flask as _flask
 from flask_admin.form import SecureForm
 from datetime import timedelta

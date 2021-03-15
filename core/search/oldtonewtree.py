@@ -4,6 +4,8 @@
     :license: GPL3, see COPYING for details
 """
 from __future__ import absolute_import
+from __future__ import division
+
 from core.search.representation import FulltextMatch, FullMatch, SchemaMatch, TypeMatch, AttributeMatch, AttributeCompare, And, Or, Not
 from core.search.oldparser import FtsSearchAndCondition, FtsSearchOrCondition, FtsSearchFieldCondition
 from utils.boolparser import NotCondition

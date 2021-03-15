@@ -16,6 +16,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import division
 
 import logging
 import shutil
@@ -62,17 +63,17 @@ def make_thumbnail_image(self, audiofile):
 
                 if width > height:
                     newwidth = 128
-                    newheight = height * newwidth / width
+                    newheight = height * newwidth // width
                 else:
                     newheight = 128
-                    newwidth = width * newheight / height
+                    newwidth = width * newheight // height
                 pic = pic.resize((newwidth, newheight), Image.ANTIALIAS)
                 pic.save(path + ".thumb", "jpeg")
                 pic = pic.resize((newwidth, newheight), Image.ANTIALIAS)
                 im = Image.new(pic.mode, (128, 128), (255, 255, 255))
 
-                x = (128 - newwidth) / 2
-                y = (128 - newheight) / 2
+                x = (128 - newwidth) // 2
+                y = (128 - newheight) // 2
                 im.paste(pic, (x, y, x + newwidth, y + newheight))
 
                 draw = ImageDraw.ImageDraw(im)
@@ -101,10 +102,10 @@ def convert_image(self, audiofile):
 
                 if width > height:
                     newwidth = 320
-                    newheight = height * newwidth / width
+                    newheight = height * newwidth // width
                 else:
                     newheight = 320
-                    newwidth = width * newheight / height
+                    newwidth = width * newheight // height
                 pic = pic.resize((newwidth, newheight), Image.ANTIALIAS)
                 pic.save(path + ".thumb2", "jpeg")
                 self.files.append(File(path + ".thumb2", "presentation", audiofile.tags[k].mime))
@@ -114,12 +115,12 @@ def convert_image(self, audiofile):
 def makeMetaData(self, audiofile):
     self.attrs["mp3.version"] = audiofile.info.version
     self.attrs["mp3.layer"] = audiofile.info.layer
-    self.attrs["mp3.bitrate"] = u"{} kBit/s".format(audiofile.info.bitrate / 1000)
-    self.attrs["mp3.sample_rate"] = u"{} kHz".format(audiofile.info.sample_rate / 1000)
+    self.attrs["mp3.bitrate"] = u"{} kBit/s".format(audiofile.info.bitrate // 1000)
+    self.attrs["mp3.sample_rate"] = u"{} kHz".format(audiofile.info.sample_rate // 1000)
 
     _s = int(audiofile.info.length % 60)
-    _m = audiofile.info.length / 60
-    _h = int(audiofile.info.length) / 3600
+    _m = audiofile.info.length // 60
+    _h = int(audiofile.info.length) // 3600
 
     self.attrs["mp3.length"] = format_date(make_date(0, 0, 0, _h, _m, _s), '%Y-%m-%dT%H:%M:%S')
 

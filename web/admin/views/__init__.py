@@ -8,6 +8,8 @@
     :license: GPL3, see COPYING for details
 """
 from __future__ import absolute_import
+from __future__ import division
+
 from core import db
 from flask_admin.contrib.sqla import ModelView
 from flask_login import current_user

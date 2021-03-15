@@ -25,6 +25,8 @@ attribute_autoindex_languages=german,english,simple
 
 """
 from __future__ import absolute_import
+from __future__ import division
+
 import logging
 from sqlalchemy import text
 

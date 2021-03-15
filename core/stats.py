@@ -17,6 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import division
 
 import os
 import pickle
@@ -527,7 +528,7 @@ def buildStatAll(period, fname):  # period format = yyyy-mm
     n = 1
     while collection_chunk > 300:
         n += 1
-        collection_chunk = collection_count / n
+        collection_chunk = collection_count // n
 
     collection_chunk += 1
     start_idx = 0
@@ -585,7 +586,7 @@ def buildStatAll_(collection_ids, collection_ids_keys, data, period):  # period 
     count = 0
     for access in data:
         if (count % 10000) == 0:
-            print "writing stat files: %d lines from %d processed: %d%%" % (count, len(data), count * 100 / len(data))
+            print "writing stat files: %d lines from %d processed: %d%%" % (count, len(data), count * 100 // len(data))
         count += 1
 
         if last_access and last_access.getID() == access.getID():

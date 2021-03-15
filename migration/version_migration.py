@@ -5,6 +5,8 @@
 
     Migrate old version nodes to sqlalchemy-continuum tables
 """
+from __future__ import division
+
 from core import db, Node, File
 import logging
 from sqlalchemy import Integer

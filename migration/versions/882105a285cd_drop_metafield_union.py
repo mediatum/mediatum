@@ -7,6 +7,8 @@ Create Date: 2021-03-09 09:40:34.978921
 """
 
 # revision identifiers, used by Alembic.
+from __future__ import division
+
 revision = '882105a285cd'
 down_revision = 'f543090df491'
 branch_labels = None

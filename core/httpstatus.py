@@ -2,6 +2,8 @@
 '''
 HTTP status codes from athana used by mediaTUM
 '''
+from __future__ import division
+
 import string as _string
 HTTP_OK = 200
 HTTP_MOVED_TEMPORARILY = HTTP_FOUND = 302

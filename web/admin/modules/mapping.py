@@ -17,8 +17,10 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import collections as _collections
+from __future__ import division
+
 import itertools as _itertools
+import collections as _collections
 import re
 
 import sqlalchemy as _sqlalchemy

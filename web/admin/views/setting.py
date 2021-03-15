@@ -4,6 +4,8 @@
     :license: GPL3, see COPYING for details
 """
 from __future__ import absolute_import
+from __future__ import division
+
 import logging
 from core import db, Setting
 from web.admin.views import BaseAdminView

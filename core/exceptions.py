@@ -6,6 +6,7 @@
     Common mediaTUM exceptions. More to come...
 """
 from __future__ import absolute_import
+from __future__ import division
 
 
 class MediatumException(Exception):

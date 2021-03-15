@@ -17,7 +17,9 @@ Whitespace around commas is stripped from values.
 
 A list can be fetched with `config.getlist()`.
 """
+from __future__ import division
 from __future__ import print_function
+
 import logging
 import os
 import sys

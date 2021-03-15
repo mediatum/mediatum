@@ -18,6 +18,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import division
+
 import shutil
 import json
 import logging
@@ -178,7 +180,7 @@ class Video(Content):
         except ValueError:
             return 0
         else:
-            return format_date(make_date(0, 0, 0, int(duration) / 3600, duration / 60, int(duration % 60)), '%H:%M:%S')
+            return format_date(make_date(0, 0, 0, int(duration) // 3600, duration / 60, int(duration % 60)), '%H:%M:%S')
 
     def get_unwanted_exif_attributes(self):
         '''

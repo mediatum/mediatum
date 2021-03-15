@@ -9,6 +9,7 @@
 XXX: Old search parser, this is only used for the (soon-to-be legacy) export webservice.
 XXX: Will be deleted someday...
 """
+from __future__ import division
 
 import re
 from utils.utils import u, intersection, union

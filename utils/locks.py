@@ -1,3 +1,5 @@
+from __future__ import division
+
 import logging as _logging
 try:
     import uwsgi as _uwsgi

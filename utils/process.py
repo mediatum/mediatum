@@ -7,9 +7,8 @@
     that allow to override the executable's name with a
     path given in the config file's section "external".
 """
-
-
 from __future__ import absolute_import
+from __future__ import division
 
 
 import logging

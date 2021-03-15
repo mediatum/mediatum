@@ -19,4 +19,6 @@
 """
 
 # graphviz is our only implementation, just import it, ignoring the config value `config.workflowdiagram_type`
+from __future__ import division
+
 from .graphviz import send_workflow_diagram

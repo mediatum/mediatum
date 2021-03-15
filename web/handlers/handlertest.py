@@ -5,6 +5,8 @@
     
     Various handlers for testing handlers.
 """
+from __future__ import division
+
 import string
 import utils.utils as _utils_utils
 

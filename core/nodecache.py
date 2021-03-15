@@ -7,18 +7,21 @@ objects from the database so these object
 do not have to be loaded in each request.
 """
 
+from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+
 from itertools import imap as map
 from itertools import ifilter as filter
 range = xrange
 
+
+from sqlalchemy.orm import undefer, joinedload
 import backports.functools_lru_cache as _backports_functools_lru_cache
 import sqlalchemy.orm as _sa_orm
 
 import core as _core
-
 
 
 @_backports_functools_lru_cache.lru_cache(maxsize=None)

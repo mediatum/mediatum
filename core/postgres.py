@@ -3,6 +3,7 @@
     :copyright: (c) 2014 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
+from __future__ import division
 from warnings import warn
 
 

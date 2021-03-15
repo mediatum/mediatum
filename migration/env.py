@@ -1,3 +1,4 @@
+from __future__ import division
 from __future__ import with_statement, print_function
 
 import os.path as _os_path

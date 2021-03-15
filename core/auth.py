@@ -3,6 +3,8 @@
     :copyright: (c) 2015 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
+from __future__ import division
+
 from base64 import b64encode
 import logging
 import os

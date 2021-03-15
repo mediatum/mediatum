@@ -1,6 +1,8 @@
 #! /usr/bin/env nix-shell
 #! nix-shell -i python -p python
 
+from __future__ import division
+
 import os
 import sys
 

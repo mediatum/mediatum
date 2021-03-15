@@ -1,3 +1,5 @@
+from __future__ import division
+
 import re as _re
 import time as _time
 import os as _os

@@ -8,6 +8,7 @@ Create Date: 2019-12-06 08:26:38.015226
 
 # revision identifiers, used by Alembic.
 from __future__ import division
+from __future__ import print_function
 
 revision = '5f09bbe431bb'
 down_revision = '299e62976649'

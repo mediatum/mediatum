@@ -16,6 +16,7 @@ followed by update_mediatum_iplist to store the list in the database.
 #  * oldiplist : a dictionary containing many ip address ranges;
 #                this was used in the old mysql world in tumips.py
 from __future__ import division
+from __future__ import print_function
 
 from ipaddr import IPAddress, IPNetwork, collapse_address_list
 import os.path as _os_path

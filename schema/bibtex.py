@@ -18,6 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from __future__ import division
+from __future__ import print_function
 
 """ We want to parse even badly broken bibtex files, no longer adhering to
     the "official" bibtex grammar. In particular, we need to handle

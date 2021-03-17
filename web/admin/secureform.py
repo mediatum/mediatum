@@ -1,4 +1,5 @@
 from __future__ import division
+from __future__ import print_function
 
 import flask as _flask
 from flask_admin.form import SecureForm

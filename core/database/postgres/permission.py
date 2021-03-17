@@ -4,6 +4,7 @@
     :license: GPL3, see COPYING for details
 """
 from __future__ import division
+from __future__ import print_function
 
 from sqlalchemy import Integer, Unicode, Boolean, Text, sql, UniqueConstraint
 from sqlalchemy.dialects.postgresql import ARRAY, CIDR

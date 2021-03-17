@@ -6,6 +6,7 @@
     :license: GPL3, see COPYING for details
 """
 from __future__ import division
+from __future__ import print_function
 
 from utils.classmagic import Case
 

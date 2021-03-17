@@ -5,6 +5,7 @@ Created on 06.06.2013
 @author: stenzel
 '''
 from __future__ import division
+from __future__ import print_function
 
 import codecs
 import sqlalchemy as sqla

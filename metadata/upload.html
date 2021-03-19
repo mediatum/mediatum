@@ -307,8 +307,7 @@
                 $(current_form_id).unbind();
                 load_file_list_json_for_targetnode_FOR_____FIELDNAME____(getTargetNodeID());
 
-                var x = $('input[name=m_upload_file_FOR_____FIELDNAME____]');
-                x.replaceWith($('<input/>').attr('type', 'file').attr('name', 'm_upload_file_FOR_____FIELDNAME____').attr('id', '____FIELDNAME____').attr('size', '60%'));
+                $('input[name=m_upload_file_FOR_____FIELDNAME____]').attr('value', '');
             },
         };
         var res = $(current_form_id).submit(function() {

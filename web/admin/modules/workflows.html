@@ -336,7 +336,17 @@
     </form>
 </metal:block>
 
-<metal:block metal:define-macro="modify_step" tal:define="id python:workflowstep.id">
+<metal:block metal:define-macro="workflowstep_field">
+    <textarea tal:condition="python:language_count<2" tal:content="python:content()" tal:attributes="name python:name" style="width:400px"/>
+    <tal:block tal:condition="python:language_count>1">
+        <div tal:repeat="language python:languages">
+            <div style="float:left;width:50px;"><span tal:content="language"/>:</div>
+            <textarea tal:content="python:content(language)" tal:attributes="name python:u'{}.{}'.format(language, name)" style="width:350px;margin-bottom:10px;"/><br/>
+        </div>
+    </tal:block>
+</metal:block>
+
+<metal:block metal:define-macro="modify_step" tal:define="id python:workflowstep.id; language_count python:len(languages)">
     <script type="text/javascript">
         function openwindow(url) {
           popup = window.open(url, "popup", "width=600,height=650,scrollbars");
@@ -347,7 +357,7 @@
             document.getElementById("form_op").value = "update";
             document.forms.addmfield.submit();
         }
-        
+
         function selectacl(objnames){
             for (objname in objnames){
                 obj = document.getElementById(objnames[objname]);
@@ -357,7 +367,7 @@
             }
         }
     </script>
-    <p><a tal:attributes="href python:u'./workflows?detailof={}{}'.format(workflow.getId(), page)" i18n:translate="admin_overview">TEXT</a></p>
+    <p><a tal:attributes="href python:u'./workflows?detailof={}{}'.format(workflow_id, page)" i18n:translate="admin_overview">TEXT</a></p>
     <form tal:attributes="action page" name="addmfield" id="addmfield" method="post" action="#">
         <input tal:attributes="value csrf" type="hidden" name="csrf_token">
         <table>
@@ -400,36 +410,24 @@
             <tr>
                 <td><tal:block i18n:translate="admin_wfstep_sidebar">TEXT</tal:block>:</td>
                 <td>
-                    <textarea tal:condition="python:language_count<2" tal:content="python:workflowstep.getSidebarText()" name="nsidebartext" style="width:400px"/>
-                    <tal:block tal:condition="python:language_count>1">
-                        <div tal:repeat="language python:languages">
-                            <div style="float:left;width:50px;"><span tal:content="language"/>:</div>
-                            <textarea tal:content="python:workflowstep.getSidebarText(language)" tal:attributes="name python:u'{}.nsidebartext'.format(language)" style="width:350px;margin-bottom:10px;"/><br/>
-                        </div>
-                    </tal:block>
+                     <tal:block define="content python:workflowstep.getSidebarText; name python:'nsidebartext'">
+                         <tal:block metal:use-macro="workflowstep_field"/>
+                     </tal:block>
                 </td>
             </tr>
             <tr>
                 <td><tal:block i18n:translate="admin_wfstep_pretext">TEXT</tal:block>:</td>
                 <td>
-                    <textarea tal:condition="python:language_count<2" tal:content="python:workflowstep.getPreText()" name="npretext" style="width:400px"/>
-                    <tal:block tal:condition="python:language_count>1">
-                        <div tal:repeat="language python:languages">
-                            <div style="float:left;width:50px;"><span tal:content="language"/>:</div>
-                            <textarea tal:content="python:workflowstep.getPreText(language)" tal:attributes="name python:u'{}.npretext'.format(language)" style="width:350px;margin-bottom:10px;"/><br/>
-                        </div>
+                    <tal:block tal:define="content python:workflowstep.getPreText; name python:'npretext'">
+                        <tal:block metal:use-macro="workflowstep_field"/>
                     </tal:block>
                 </td>
             </tr>
             <tr>
                 <td><tal:block i18n:translate="admin_wfstep_posttext">TEXT</tal:block>:</td>
                 <td>
-                    <textarea tal:condition="python:language_count<2" tal:content="python:workflowstep.getPostText()" name="nposttext" style="width:400px"/>
-                    <tal:block tal:condition="python:language_count>1">
-                        <div tal:repeat="language python:languages">
-                            <div style="float:left;width:50px;"><span tal:content="language"/>:</div>
-                            <textarea tal:content="python:workflowstep.getPostText(language)" tal:attributes="name python:u'{}.nposttext'.format(language)" style="width:350px;margin-bottom:10px;"/><br/>
-                        </div>
+                    <tal:block tal:define="content python:workflowstep.getPostText; name python:'nposttext'">
+                        <tal:block metal:use-macro="workflowstep_field"/>
                     </tal:block>
                 </td>
             </tr>
@@ -440,12 +438,8 @@
             <tr>
                 <td><tal:block i18n:translate="admin_wfstep_truelabel">TEXT</tal:block>:</td>
                 <td>
-                    <textarea tal:condition="python:language_count<2" tal:content="python:workflowstep.getTrueLabel()" name="ntruelabel" style="width:400px"/>
-                    <tal:block tal:condition="python:language_count>1">
-                        <div tal:repeat="language python:languages">
-                            <div style="float:left;width:50px;"><span tal:content="language"/>:</div>
-                            <textarea tal:content="python:workflowstep.getTrueLabel(language)"  tal:attributes="name python:u'{}.ntruelabel'.format(language)" style="width:350px;margin-bottom:10px;"/><br/>
-                        </div>
+                    <tal:block tal:define="content python:workflowstep.getTrueLabel; name python:'ntruelabel'">
+                        <tal:block metal:use-macro="workflowstep_field"/>
                     </tal:block>
                 </td>
             </tr>
@@ -464,12 +458,8 @@
             <tr>
                 <td><tal:block i18n:translate="admin_wfstep_falselabel">TEXT</tal:block>:</td>
                 <td>
-                    <textarea tal:condition="python:language_count<2" tal:content="python:workflowstep.getFalseLabel()" name="nfalselabel" style="width:400px"/>
-                    <tal:block tal:condition="python:language_count>1">
-                        <div tal:repeat="language python:languages">
-                            <div style="float:left;width:50px;"><span tal:content="language"/>:</div>
-                            <textarea tal:content="python:workflowstep.getFalseLabel(language)" tal:attributes="name python:u'{}.nfalselabel'.format(language)" style="width:350px;margin-bottom:10px;"/><br/>
-                        </div>
+                    <tal:block tal:define="content python:workflowstep.getFalseLabel; name python:'nfalselabel'">
+                        <tal:block metal:use-macro="workflowstep_field"/>
                     </tal:block>
                 </td>
             </tr>

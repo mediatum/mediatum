@@ -266,7 +266,7 @@ def send_file(req):
 
     def _send_attachment(filepath, mimetype):
         file_ext = os.path.splitext(filepath)[1]
-        if existMetaField(node.schema, u'nodename'):
+        if node.schema and existMetaField(node.schema, u'nodename'):
             display_file_name = u'{}{}'.format(os.path.splitext(os.path.basename(node.name))[0], file_ext)
         else:
             display_file_name = filename

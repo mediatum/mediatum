@@ -27,8 +27,8 @@ import core.config as config
 import core.translation
 import mediatumtal.tal as _tal
 import web.edit.edit_common as _web_edit_edit_common
+import core.systemtypes as _core_systemtypes
 from core import Node, NodeType, db, User, UserGroup, UserToUserGroup
-from core.systemtypes import Metadatatypes
 from core.database.postgres.permission import NodeToAccessRuleset, AccessRulesetToRule, AccessRule
 
 from contenttypes import Container, Collections, Data, Home
@@ -263,7 +263,7 @@ def handletabs(req, ids, tabs, sort_choices):
 
     n = q(Data).get(ids[0])
     if n.type.startswith("workflow"):
-        n = q(Root).one()
+        n = q(_core_systemtypes.Root).one()
 
     menu = parse_menu_struct(n.editor_menu, lambda mi: mi not in user.hidden_edit_functions)
     nodes_per_page = req.args.get("nodes_per_page", type=int)
@@ -761,7 +761,7 @@ def content(req):
             ids = show_dir_nav.get_ids_from_req()
         node = q(Node).get(long(ids[0]))
     tabs = "content"
-    if isinstance(node, Root):
+    if isinstance(node, _core_systemtypes.Root):
         tabs = "content"
     elif node is user.upload_dir:
         tabs = "upload"
@@ -844,7 +844,7 @@ def content(req):
                      (n.id, n.id, get_edit_label(n, language))] + s
 
             p = n.parents
-            if p and not isinstance(p[0], Root):
+            if p and not isinstance(p[0], _core_systemtypes.Root):
                 n = p[0]
             else:
                 n = None
@@ -896,7 +896,7 @@ def content(req):
             else:
                 v['collection_sortfield'] = node.get("sortfield")
 
-            if not isinstance(node, (Root, Collections, Home)):
+            if not isinstance(node, (_core_systemtypes.Root, Collections, Home)):
                 sortchoices = _sort.get_sort_choices(container=node, off="off", t_off=t(req, "off"), t_desc=t(req, "descending"))
                 sortchoices = tuple(sortchoices)
             else:

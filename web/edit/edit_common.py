@@ -21,13 +21,12 @@ import logging
 import flask as _flask
 import mediatumtal.tal as _tal
 
-from core import Node, db, webconfig
-from core.systemtypes import Root
+from core import Node, db
 from core.translation import t, lang
 from core.users import user_from_session as _user_from_session
 from contenttypes import Container
 from utils.fileutils import importFile
-from utils.utils import EncryptionException, suppress
+from utils.utils import EncryptionException
 from utils.pathutils import get_accessible_paths
 from utils.compat import iteritems
 from web.frontend.content import get_make_search_content_function
@@ -42,18 +41,6 @@ q = db.query
 
 default_edit_nodes_per_page = 20
 edit_node_per_page_values = [20, 50, 100, 200]
-
-class NodeWrapper:
-
-    def __init__(self, node, nodenumber):
-        self.node = node
-        self.nodenumber = nodenumber
-
-    def getNode(self):
-        return self.node
-
-    def getNodeNumber(self):
-        return self.nodenumber
 
 
 class EditorNavList:
@@ -398,87 +385,6 @@ def shownodelist(req, nodes, page, publishwarn=True, markunpublished=False, dir=
                             "language": lang(req)},
                            file="web/edit/edit_common.html", macro="show_nodelist", request=req)
     return html
-
-
-def isUnFolded(unfoldedids, id):
-    try:
-        return unfoldedids[id]
-    except:
-        unfoldedids[id] = 0
-        return 0
-
-
-def writenode(req, node, unfoldedids, f, indent, key, ret=""):
-    if node.type not in ["directory", "collection", "root", "home", "collections", "navigation"] and not node.type.startswith("directory"):
-        return ret
-    if not node.has_read_access():
-        return ret
-
-    isunfolded = isUnFolded(unfoldedids, node.id)
-
-    num = 0
-    objnum = 0
-    children = node.getChildren().sort_by_orderpos()
-
-    num = len(node.getContainerChildren())
-    objnum = len(node.getContentChildren())
-
-    # for c in children:
-    #     if c.type in["directory", "collection"] or c.type.startswith("directory"):
-    #         num += 1
-    #     else:
-    #         objnum += 1
-
-    if num:
-        if isunfolded:
-            ret += f(req, node, objnum, "edit_tree?tree_fold=" +
-                     node.id, indent, type=1)
-        else:
-            ret += f(req, node, objnum, "edit_tree?tree_unfold=" +
-                     node.id, indent, type=2)
-    else:
-        ret += f(req, node, objnum, "", indent, type=3)
-
-    if isunfolded:
-        for c in children:
-            ret += writenode(req, c, unfoldedids, f, indent + 1, key)
-    return ret
-
-
-def writetree(req, node, f, key="", openednodes=None, sessionkey="unfoldedids", omitroot=0):
-    ret = ""
-
-    try:
-        unfoldedids = _flask.session[sessionkey]
-        len(unfoldedids)
-    except:
-        _flask.session[sessionkey] = unfoldedids = {unicode(q(Root).one().id): 1}
-
-    if openednodes:
-        # open all selected nodes and their parent nodes
-        def o(u, n):
-            u[n.id] = 1
-            for n in n.parents:
-                o(u, n)
-        for n in openednodes:
-            o(unfoldedids, n)
-        _flask.session[sessionkey] = unfoldedids
-
-    with suppress(KeyError, warn=False):
-        unfold = req.params["tree_unfold"]
-        unfoldedids[unfold] = 1
-
-    with suppress(KeyError, warn=False):
-        fold = req.params["tree_fold"]
-        unfoldedids[fold] = 0
-
-    if omitroot:
-        for c in node.getChildren().sort("name"):
-            ret += writenode(req, c, unfoldedids, f, 0, key)
-    else:
-        ret += writenode(req, node, unfoldedids, f, 0, key)
-
-    return ret
 
 
 def upload_help(req):

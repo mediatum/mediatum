@@ -58,6 +58,7 @@ def _make_collection_root_link():
 def _handle_login_submit(req):
     login_name = req.form.get("user")
     password = req.form.get("password", "")
+    return_after_login = req.form.get("return_after_login")
 
     if not login_name.strip() and "user" in req.form:
         # empty username
@@ -70,8 +71,8 @@ def _handle_login_submit(req):
         _flask.session["user_id"] = user.id
         logg.info("%s logged in", user.login_name)
 
-        if _flask.session.get('return_after_login'):
-            req.response.location = _flask.session['return_after_login']
+        if return_after_login:
+            req.response.location = return_after_login
         elif config.get("config.ssh", "") == "yes":
             req.response.location = ''.join(["https://", config.get("host.name"), _make_collection_root_link()])
         else:
@@ -90,16 +91,19 @@ def _set_return_after_login(req):
     host = req.host
 
     if referer is None or any(uri in referer for uri in ('/login', '/logout', '/pwdforgotten', '/pwdchange', '/pnode')):
-        _flask.session['return_after_login'] = False
+        return_after_login = False
     # check if referrer is mediatum and not a search engine
     elif not referer.startswith('http://' + host + '/') and not referer.startswith('https://' + host + '/'):
-        _flask.session['return_after_login'] = False
+        return_after_login = False
     else:
         if '/edit_content' in referer:
             # returns the user to /edit/ instead of /edit/edit_content?id=604993, which has no sidebar
-            _flask.session['return_after_login'] = referer.replace("/edit_content", "")
+            return_after_login = referer.replace("/edit_content", "")
         else:
-            _flask.session['return_after_login'] = referer
+            return_after_login = referer
+
+    return return_after_login
+
 
 def login(req):
 
@@ -111,12 +115,19 @@ def login(req):
     else:
         error = None
 
-    _set_return_after_login(req)
+    return_after_login = _set_return_after_login(req)
 
     # show login form
     user = users.user_from_session()
     language = lang(req)
-    ctx = {"error": error, "user": user, "email": config.get("email.support"), "language": language, "csrf": req.csrf_token.current_token}
+    ctx = dict(
+        error=error,
+        user=user,
+        email=config.get("email.support"),
+        language=language,
+        return_after_login=return_after_login,
+        csrf=req.csrf_token.current_token,
+    )
     login_html = webconfig.theme.render_macro("login.j2.jade", "login", ctx)
     from web.frontend.frame import render_page
     html = render_page(req, None, login_html)

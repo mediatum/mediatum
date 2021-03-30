@@ -1,4 +1,4 @@
-- macro login(error, user, email, language, csrf)
+- macro login(error, user, email, language, csrf, return_after_login)
   #object_main(style='margin-left:20px')
     p &nbsp;
     if error > 0
@@ -11,6 +11,7 @@
     br
     form.login(method='post', name='login')
       input(type='hidden',name='csrf_token', value=csrf)
+      input(type='hidden',name='return_after_login', value=return_after_login)
       .label &nbsp;
       span
         = _t('login_currentuser_msg')

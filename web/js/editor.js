@@ -285,7 +285,7 @@ function edit_action(action, src, ids, add){
         url = '&action='+escape(action)+'&dest='+add;
     }
     
-    $.get('/edit/edit_action?src='+src+'&ids='+ids+'&style=popup'+url, function(data){
+    $.get('/edit/edit_action?srcnodeid='+src+'&ids='+ids+'&style=popup'+url, function(data){
        
         if (data!=""){
             return data;
@@ -420,7 +420,7 @@ function edit_action_sync(action, src, ids, add) {
     }    
 
     var options = {
-          url: '/edit/edit_action?src='+src+'&ids='+ids+'&style=popup'+url,
+          url: '/edit/edit_action?srcnodeid='+src+'&ids='+ids+'&style=popup'+url,
           async: false,
           dataType: 'json',
           success: function (response) {
@@ -558,7 +558,7 @@ function editSelected(ids){
         ids = getAllObjectsString();
     }
     if (ids!=""){
-        document.location.href = '/edit/edit_content?ids='+ids+'&src='+parent.idselection+'&tab=metadata';
+        document.location.href = '/edit/edit_content?ids='+ids+'&srcnodeid='+parent.idselection+'&tab=metadata';
     }
 }
 

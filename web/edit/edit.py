@@ -339,7 +339,7 @@ def getEditModules():
 def getIDs(req):
     # update nodelist, if necessary
     if "scr" in req.params:
-        _flask.session["srcid"] = req.params.get("src")
+        _flask.session["srcnodeid"] = req.params.get("srcnodeid")
 
     # look for one "id" parameter, containing an id or a list of ids
 
@@ -487,19 +487,19 @@ def action(req):
     else:
         # all 'action's except 'getlabels' require a base dir (src)
         # but expanding of a subdir in the edit-tree via fancytree has
-        # not a srcid, so no action is necessary
-        srcid = req.params.get("src")
-        if not srcid:
+        # not a srcnodeid, so no action is necessary
+        srcnodeid = req.params.get("srcnodeid")
+        if not srcnodeid:
             return
         try:
-            src = q(Node).get(srcid)
+            src = q(Node).get(srcnodeid)
         except:
             req.response.status_code = httpstatus.HTTP_OK
-            req.response.set_data(_tal.processTAL({"edit_action_error": srcid}, file="web/edit/edit.html", macro="edit_action_error", request=req))
+            req.response.set_data(_tal.processTAL({"edit_action_error": srcnodeid}, file="web/edit/edit.html", macro="edit_action_error", request=req))
             return
 
     if req.params.get('action') == 'addcontainer':
-        node = q(Node).get(srcid)
+        node = q(Node).get(srcnodeid)
         if not node.has_write_access():
             # deliver errorlabel
             req.response.status_code = httpstatus.HTTP_FORBIDDEN
@@ -566,7 +566,7 @@ def action(req):
     except:
         destid = None
         dest = None
-        folderid = srcid
+        folderid = srcnodeid
 
     idlist = getIDs(req)
     mysrc = None
@@ -677,8 +677,8 @@ def action(req):
 
 def showPaging(req, tab, ids):
     nodelist = None
-    if "srcid" in _flask.session:
-        node = q(Node).get(_flask.session["srcid"])
+    if "srcnodeid" in _flask.session:
+        node = q(Node).get(_flask.session["srcnodeid"])
         _show_dir_nav = _web_edit_edit_common.ShowDirNav(req)
         nodes = _show_dir_nav.get_children(node, req.params.get('sortfield'))
         nodelist = EditorNodeList(nodes)
@@ -803,9 +803,9 @@ def content(req):
             logg.debug("... %s inside %s.%s: -> display current images: items: %s",
                        get_user_id(), __name__, funcname(), [_t[0] for _t in items])
 
-        nid = req.params.get('src', req.params.get('id'))
+        nid = req.params.get('srcnodeid', req.params.get('id'))
         if nid is None:
-            raise ValueError("invalid request, neither 'src' not 'id' parameter is set!")
+            raise ValueError("invalid request, neither 'srcnodeid' not 'id' parameter is set!")
 
         folders_only = False
         if nid.find(',') > 0:

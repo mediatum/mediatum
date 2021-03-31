@@ -705,7 +705,7 @@ function addNewContainerToRoot(type){ /* add new container */
     consoledb.log('addNewContainerToRoot: collectionsid=', collectionsid);
     var parent_id = collectionsid;
     var options = {
-          url: '/edit/edit_action?src='+parent_id+'&action=addcontainer&type='+type,
+          url: '/edit/edit_action?srcnodeid='+parent_id+'&action=addcontainer&type='+type,
           async: false,
           dataType: 'json',
           success: function (response) {
@@ -728,7 +728,7 @@ function addNewContainer(parent_node, type){ /* add new container */
     var parent_id = parent_node.key;
     consoledb.log('addNewContainer: parent_node.key '+parent_node.key);
     var options = {
-          url: '/edit/edit_action?src='+parent_id+'&action=addcontainer&type='+type,
+          url: '/edit/edit_action?srcnodeid='+parent_id+'&action=addcontainer&type='+type,
           async: false,
           dataType: 'json',
           success: function (response) {
@@ -1205,7 +1205,7 @@ function reload_htree_filtered(homenodefilter) {
         var ajax_response;
 
         var options = {
-              url: '/edit/edit_action?src='+idselection+'&ids='+currentselection+'&style=popup'+url,
+              url: '/edit/edit_action?srcnodeid='+idselection+'&ids='+currentselection+'&style=popup'+url,
               async: false,
               dataType: 'json',
               success: function (data) {

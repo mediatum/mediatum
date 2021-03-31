@@ -3,7 +3,7 @@
     <script tal:content="python:u'var src = \'{}\';'.format(src)"> </script>
     <script>
         $(document).ready(function () {
-          var url = '/edit/edit_content?src='+src+'&ids=all&tab=metadata';
+          var url = '/edit/edit_content?srcnodeid='+src+'&ids=all&tab=metadata';
           reloadURL(url);
         });
     </script>

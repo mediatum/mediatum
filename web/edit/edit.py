@@ -22,7 +22,6 @@ import os
 import re
 import time
 import json
-import flask as _flask
 import core.config as config
 import core.translation
 import mediatumtal.tal as _tal
@@ -337,10 +336,6 @@ def getEditModules():
 
 
 def getIDs(req):
-    # update nodelist, if necessary
-    if "scr" in req.params:
-        _flask.session["srcnodeid"] = req.params.get("srcnodeid")
-
     # look for one "id" parameter, containing an id or a list of ids
 
     try:
@@ -677,8 +672,9 @@ def action(req):
 
 def showPaging(req, tab, ids):
     nodelist = None
-    if "srcnodeid" in _flask.session:
-        node = q(Node).get(_flask.session["srcnodeid"])
+    srcnodeid = req.params.get("srcnodeid")
+    if srcnodeid:
+        node = q(Node).get(srcnodeid)
         _show_dir_nav = _web_edit_edit_common.ShowDirNav(req)
         nodes = _show_dir_nav.get_children(node, req.params.get('sortfield'))
         nodelist = EditorNodeList(nodes)
@@ -693,14 +689,17 @@ def showPaging(req, tab, ids):
         position, absitems = nodelist.getPositionString(ids[0])
         combodata, script = nodelist.getPositionCombo(tab)
 
-    v = {"nextid": nextid,
-         "previd": previd,
-         "position": position,
-         "absitems": absitems,
-         "tab": tab,
-         "combodata": combodata,
-         "script": script,
-         "nodeid": int(ids[0])}
+    v = dict(
+            nextid=nextid,
+            previd=previd,
+            position=position,
+            absitems=absitems,
+            tab=tab,
+            combodata=combodata,
+            script=script,
+            srcnodeid=srcnodeid,
+            nodeid=int(ids[0]),
+        )
 
     req.response.status_code = httpstatus.HTTP_OK
     return _tal.processTAL(v, file="web/edit/edit.html", macro="edit_paging", request=req)
@@ -820,8 +819,11 @@ def content(req):
         s = []
         while n:
             if not folders_only:
-                s = ['<a onClick="activateEditorTreeNode(%r); return true;" href="/edit/edit_content?id=%s">%s</a>' %
-                     (n.id, n.id, get_edit_label(n, language))] + s
+                s.insert(0,
+                        u"<a onClick='activateEditorTreeNode({id}); return true;'"
+                        " href='/edit/edit_content?srcnodeid={id}&id={id}'>{label}</a>"
+                        .format(id=n.id, label=get_edit_label(n, language))
+                    )
 
             folders_only = False
             p = n.parents
@@ -838,10 +840,13 @@ def content(req):
         s = []
         while n:
             if len(s) == 0:
-                s = ['%s' % (get_edit_label(n, language))]
+                s = [get_edit_label(n, language)]
             else:
-                s = ['<a onClick="activateEditorTreeNode(%r); return true;" href="/edit/edit_content?id=%s">%s</a>' %
-                     (n.id, n.id, get_edit_label(n, language))] + s
+                s.insert(0,
+                        u"<a onClick='activateEditorTreeNode({id}); return true;'"
+                        " href='/edit/edit_content?srcnodeid={id}&id={id}'>{label}</a>"
+                        .format(id=n.id, label=get_edit_label(n, language))
+                    )
 
             p = n.parents
             if p and not isinstance(p[0], _core_systemtypes.Root):

@@ -260,7 +260,7 @@ function showACLUser(){
 
 
 function getEditPage(destname, nodeid, tab, action){
-    var url = '/edit/edit_content?id='+nodeid;
+    var url = '/edit/edit_content?srcnodeid='+nodeid+'&id='+nodeid;
     if (tab!=""){
         url+='&tab='+tab;
     }
@@ -454,7 +454,7 @@ function setFolder(folderid)
 {
     var src = tree.getFolder();
     if(action=="") {
-        this.content.location.href = "edit_content?id="+folderid;
+        this.content.location.href = "edit_content?srcnodeid="+folderid+"&id="+folderid;
         this.buttons.location.href = "edit_buttons?id="+folderid;
     } else {
         edit_action(action, src, idselection, folderid);
@@ -668,7 +668,7 @@ function sortItems_sync(o){
 
     var ajax_response;
     var options = {
-          url: '/edit/edit_content?action=resort&id='+id+'&tab=content&value='+$(o).val(),
+          url: '/edit/edit_content?action=resort&srcnodeid='+id+'&id='+id+'&tab=content&value='+$(o).val(),
           async: false,
           dataType: 'json',
           success: function (data) {
@@ -694,15 +694,15 @@ function sortItemsPage_sync(o1, o2, o3){
 
     var url
     if (o3 == '')
-       url = '/edit/edit_content?id='+id+'&sortfield='+$(o1).val()+'&nodes_per_page='+$(o2).val();
+       url = '/edit/edit_content?srcnodeid='+id+'&id='+id+'&sortfield='+$(o1).val()+'&nodes_per_page='+$(o2).val();
     else
-       url = '/edit/edit_content?id='+id+'&'+o3+'&sortfield='+$(o1).val()+'&nodes_per_page='+$(o2).val();
+       url = '/edit/edit_content?srcnodeid='+id+'&id='+id+'&'+o3+'&sortfield='+$(o1).val()+'&nodes_per_page='+$(o2).val();
     reloadURL(url);
 }
 
 
 function saveSort(o){
-    $.getJSON('/edit/edit_content?action=save&id='+id+'&tab=content&value='+$(o).val(), function(data) {
+    $.getJSON('/edit/edit_content?action=save&srcnodeid='+id+'&id='+id+'&tab=content&value='+$(o).val(), function(data) {
         // save done
         $("#message").html(data.message);
         $("#message").show().delay(5000).fadeOut();
@@ -711,7 +711,7 @@ function saveSort(o){
 
 
 function saveSortPage(o1, o2){
-    $.getJSON('/edit/edit_content?action=save&id='+id+'&tab=content&value='+$(o1).val()+'&nodes_per_page='+$(o2).val(), function(data) {
+    $.getJSON('/edit/edit_content?action=save&srcnodeid='+id+'&id='+id+'&tab=content&value='+$(o1).val()+'&nodes_per_page='+$(o2).val(), function(data) {
         // save done
         $("#message").html(data.message);
         $("#message").show().delay(5000).fadeOut();

@@ -4,6 +4,7 @@
       form#search-box(name='search', action=action)
         input#search-field(value=search.simple_search_query, placeholder=search_placeholder, name='query', style='width:180px')
         input#search-button(value=_t('search'), title=_t('search_title'), type='submit')
+        input(type='hidden', name='srcnodeid', value=container_id)
         input(type='hidden', name='id', value=container_id)
         if liststyle
           input(type='hidden', name='liststyle', value=liststyle)
@@ -13,6 +14,7 @@
   if search.isExtendedNormal() or search.isExtendedSuper()
     - var bgcolor = ['#edf1f4', '#ffffff'][search.inEditor()]
     form#advancedsearch-box(name='xsearch', action=action, accept-charset='utf-8', style='margin:0px;padding:0px;background-color:#{bgcolor}')
+      input(type='hidden', name='srcnodeid', value=container_id)
       input(type='hidden', name='id', value=container_id)
       input(type='hidden', name='searchmode', value=['extendedsuper','extended'][search.isExtendedNormal()])
       - var max = [4,11][search.isExtendedSuper()]

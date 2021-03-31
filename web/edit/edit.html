@@ -395,7 +395,7 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curnode)
               hideContextMenuForNode(node); // hide the contextMenu
               switch( action ) {
               case "edit":
-                $('.ui-layout-center').attr('src', '/edit/edit_content?id='+node.key+'&tab=metadata');
+                $('.ui-layout-center').attr('src', '/edit/edit_content?srcnodeid='+node.key+'&id='+node.key+'&tab=metadata');
                 res = false;
                 break;
               case "create_container":
@@ -416,7 +416,7 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curnode)
                 consoledb.log(1);
                 if (currentpath) {
                     consoledb.log(2);
-                    $('.ui-layout-center').attr('src', '/edit/edit_content?id='+new_path_endpoint+'&tab=metadata');
+                    $('.ui-layout-center').attr('src', '/edit/edit_content?srcnodeid='+new_path_endpoint+'&id='+new_path_endpoint+'&tab=metadata');
                 }
                 consoledb.log(3);
 
@@ -466,7 +466,7 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curnode)
                 new_path_endpoint = obj;
                 if (currentpath) {
                     consoledb.log(2);
-                    $('.ui-layout-center').attr('src', '/edit/edit_content?id='+new_path_endpoint+'&tab=content');
+                    $('.ui-layout-center').attr('src', '/edit/edit_content?srcnodeid='+new_path_endpoint+'&id='+new_path_endpoint+'&tab=content');
                 }
                 consoledb.log("finished paste to: ", dest);
                 reloadHomeTree();
@@ -546,7 +546,7 @@ function contextmenu_collections(selector) {
                         var m = "clicked: " + key;
                         window.console && consoledb.log(m);
 
-                        $('.ui-layout-center').attr('src', '/edit/edit_content?id='+collectionsid+'&tab=metadata');
+                        $('.ui-layout-center').attr('src', '/edit/edit_content?srcnodeid='+collectionsid+'&id='+collectionsid+'&tab=metadata');
                       }
 
                     if (key == "create_container_collection") {
@@ -581,7 +581,7 @@ function contextmenu_collections(selector) {
                             flag_cut_mode = false;
                             new_path_endpoint = obj;
                             if (currentpath) {
-                                $('.ui-layout-center').attr('src', '/edit/edit_content?id='+new_path_endpoint+'&tab=content');
+                                $('.ui-layout-center').attr('src', '/edit/edit_content?srcnodeid='+new_path_endpoint+'&id='+new_path_endpoint+'&tab=content');
                             }
                             consoledb.log("finished paste to: ", dest);
                             reloadColTree();
@@ -666,7 +666,7 @@ function reloadPage(id, path, tree_selector){
     action = "";
     idselection = id;
     consoledb.log(path);
-    $('.ui-layout-center').attr('src', '/edit/edit_content?id='+id);
+    $('.ui-layout-center').attr('src', '/edit/edit_content?srcnodeid='+id+'&id='+id);
     $('.mediatum_accordiontree').accordion("option", "active", active_accordion);
     $(tree_selector).fancytree("getTree").loadKeyPath(path, function(node, status){
         consoledb.log('arguments: ', arguments);
@@ -871,7 +871,7 @@ function addItem(id, path){  // currently unused
     action = "";
     idselection = "";
     consoledb.log(path);
-    $('.ui-layout-center').attr('src', '/edit/edit_content?id='+id+"&upload=visible&r="+""+Math.random()*10000);
+    $('.ui-layout-center').attr('src', '/edit/edit_content?srcnodeid='+id+'&id='+id+"&upload=visible&r="+""+Math.random()*10000);
     $('.mediatum_accordiontree').accordion("option", "active", 0);
     $("#hometree").fancytree("getTree").loadKeyPath(path, function(node, status){
         if(status=="loaded"){
@@ -892,7 +892,7 @@ function addItem(id, path){  // currently unused
 }
 
 function loadEditArea(id){
-    $('.ui-layout-center').attr('src', '/edit/edit_content?id='+ id);
+    $('.ui-layout-center').attr('src', '/edit/edit_content?srcnodeid='+ id + '&id=' + id);
 }
 
 function set_cm_to_default() {
@@ -904,7 +904,7 @@ function set_cm_to_default() {
 </head>
         <body>
 
-          <iframe class="ui-layout-center" tal:attributes="src python:u'/edit/edit_content?id={}&page={}&nodes_per_page={}&sortfield={}&value={}{}'.format(id, page, nodes_per_page,sortfield, value, searchitems)"> </iframe>
+          <iframe class="ui-layout-center" tal:attributes="src python:u'/edit/edit_content?srcnodeid={}&id={}&page={}&nodes_per_page={}&sortfield={}&value={}{}'.format(id, id, page, nodes_per_page,sortfield, value, searchitems)"> </iframe>
 
             <div class="ui-layout-north">
                 <div class="mediatum_logocontainer">
@@ -1425,17 +1425,17 @@ function rct() {
 
 <div metal:define-macro="edit_paging" class="mediatum_edit_paging">
     <div tal:condition="python:previd" id="previd">
-        <a tal:attributes="href python:u'/edit/edit_content?id={}&tab={}'.format(previd, tab)"><img border="0" src="/img/pageleft.gif"/></a>
+        <a tal:attributes="href python:u'/edit/edit_content?srcnodeid={}&id={}&tab={}'.format(srcnodeid, previd, tab)"><img border="0" src="/img/pageleft.gif"/></a>
     </div>
     <div tal:condition="python:previd or nextid" id="orid" >
         <tal:block tal:replace="raw script"/>
-        <select id="goto" tal:attributes="onchange python:u'gotoContent(document.getElementById(\'goto\').value,\'{}\')'.format(tab)">
+        <select id="goto" tal:attributes="onchange python:u'gotoContent(\'{}\', document.getElementById(\'goto\').value,\'{}\')'.format(srcnodeid, tab)">
             <option tal:repeat="item combodata" tal:attributes="value python:item[0]; selected python:[None,'selected'][item[0]==nodeid]" tal:content="python:item[1]" ></option>
         </select>
         / <tal:block tal:replace="absitems" />
     </div>
     <div tal:condition="python:nextid" id="nextid">
-         <a tal:attributes="href python:u'/edit/edit_content?id={}&tab={}'.format(nextid, tab)"><img border="0" src="/img/pageright.gif"/></a>
+         <a tal:attributes="href python:u'/edit/edit_content?srcnodeid={}&id={}&tab={}'.format(srcnodeid, nextid, tab)"><img border="0" src="/img/pageright.gif"/></a>
     </div>
 </div>
 

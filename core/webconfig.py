@@ -128,10 +128,9 @@ def edit_node_url(nid=None, version=None, **kwargs):
         params["v"] = version
     params.update(kwargs)
     params = {k: unicode(v).encode("utf8") for k, v in params.items()}
-    if params:
-        return "/edit/edit_content?id={}&{}".format(nid or "", urllib.urlencode(params))
-    else:
-        return "/edit/edit_content?id=" + str(nid)
+    params["id"] = params["srcnodeid"] = nid or ""
+
+    return "/edit/edit_content?srcnodeid={}&id={}&{}".format(nid or "", nid or "", urllib.urlencode(params))
 
 
 def current_node_url(**kwargs):

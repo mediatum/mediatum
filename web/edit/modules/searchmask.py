@@ -141,16 +141,18 @@ def getContent(req, ids):
         fields = mask.children.all()
     db.session.commit()
 
-    data = {"idstr": ",".join(ids),
-            "node": node,
-            "searchtype": searchtype,
-            "schemas": q(Metadatatypes).one().children.sort_by_name().all(),
-            "searchfields": fields,
-            "selectedfield": selectedfield,
-            "newfieldlink": "edit_content?id=%s&tab=searchmask" % node.id,
-            "defaultschemaid": None,
-            "defaultfieldid": None,
-            "id": req.params.get("id")}
+    data = dict(
+            idstr=",".join(ids),
+            node=node,
+            searchtype=searchtype,
+            schemas=q(Metadatatypes).one().children.sort_by_name().all(),
+            searchfields=fields,
+            selectedfield=selectedfield,
+            newfieldlink="edit_content?srcnodeid={nid}&id={nid}&tab=searchmask".format(nid=node.id),
+            defaultschemaid=None,
+            defaultfieldid=None,
+            id=req.params.get("id"),
+        )
 
     if schema:
         data["defaultschemaid"] = schema.id

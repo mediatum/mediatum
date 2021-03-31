@@ -18,7 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
-import flask as _flask
+import functools as _functools
 import mediatumtal.tal as _tal
 
 from core import Node, db
@@ -107,11 +107,13 @@ class EditorNodeList:
         return pos + 1, len(self.nodeids)
 
     def getPositionCombo(self, tab):
-        script = """<script language="javascript">
-        function gotoContent(cid, tab) {
-          window.location.assign('/edit/edit_content?id='+cid+'&tab='+tab);
+        script = """
+        <script language="javascript">
+        function gotoContent(srcnodeid, cid, tab) {
+          window.location.assign('/edit/edit_content?srcnodeid='+srcnodeid+'&id='+cid+'&tab='+tab);
         }
-        </script>"""
+        </script>
+        """
         data = []
         for nid in self.nodeids:
             data.append((nid, len(data) + 1))
@@ -228,7 +230,6 @@ class ShowDirNav(object):
         # set self.nodes to be used by shownav which must be called after showdir
         self.nodes = nodes
         page = int(self.req.params.get('page', 1))
-        _flask.session["srcnodeid"] = self.node.id
         return shownodelist(self.req, nodes, page, publishwarn=publishwarn, markunpublished=markunpublished, dir=self.node,
                             item_count=item_count, all_nodes=all_nodes, faultyidlist=faultyidlist)
 
@@ -292,10 +293,14 @@ def shownavlist(req, node, nodes, page, dir=None):
         sortfield = req.params.get("sortfield", "")
     if not sortfield:
         sortfield = node.get("sortfield")
-    node_id = req.params.get("id", "")
-    end_idx = nodes_len/nodes_per_page + (1 if nodes_len % nodes_per_page == 0 else 2)
-    nav_page = [x for x in range(1, end_idx)]
-    nav_list = [c.nav_link(id=node_id, page=p, nodes_per_page=nodes_per_page, sortfield=sortfield) for p in nav_page]
+    nav_page = range(1, nodes_len/nodes_per_page + (1 if nodes_len % nodes_per_page == 0 else 2))
+    nav_list = _functools.partial(c.nav_link,
+            id=req.params.get("id", ""),
+            srcnodeid=req.params.get("id", ""),
+            nodes_per_page=nodes_per_page,
+            sortfield=sortfield,
+        )
+    nav_list = [nav_list(page=p) for p in nav_page]
     nav_tooltip = []
     node_idx = 0
     if nodes_len:
@@ -354,42 +359,67 @@ def shownodelist(req, nodes, page, publishwarn=True, markunpublished=False, dir=
             uploaddir = dir
         else:
             uploaddir = user.upload_dir
-        unpublishedlink = "edit_content?tab=publish&id=" + unicode(uploaddir.id)
+        unpublishedlink = "edit_content?tab=publish&srcnodeid={dirid}&id={dirid}".format(dirid=uploaddir.id)
 
     html_list_nodes = []
     html_thumb_nodes = []
     for node in nodelist:
 
-        html_list_nodes.append(_tal.processTAL({"notpublished": notpublished,
-                                "unpublishedlink": unpublishedlink,
-                                "node": node,
-                                "faultyidlist": faultyidlist,
-                                "script_array": script_array,
-                                "language": lang(req)},
-                               file="web/edit/edit_common.html", macro="show_list_node", request=req))
-        html_thumb_nodes.append(_tal.processTAL({"notpublished": notpublished,
-                                "unpublishedlink": unpublishedlink,
-                                "node": node,
-                                "faultyidlist": faultyidlist,
-                                "script_array": script_array,
-                                "language": lang(req)},
-                               file="web/edit/edit_common.html", macro="show_thumb_node", request=req))
+        html_list_nodes.append(_tal.processTAL(dict(
+                        notpublished=notpublished,
+                        unpublishedlink=unpublishedlink,
+                        srcnodeid=dir.id,
+                        node=node,
+                        faultyidlist=faultyidlist,
+                        script_array=script_array,
+                        language=lang(req),
+                    ),
+                    file="web/edit/edit_common.html",
+                    macro="show_list_node",
+                    request=req,
+                )
+            )
+        html_thumb_nodes.append(_tal.processTAL(dict(
+                        notpublished=notpublished,
+                        unpublishedlink=unpublishedlink,
+                        srcnodeid=dir.id,
+                        node=node,
+                        faultyidlist=faultyidlist,
+                        script_array=script_array,
+                        language=lang(req),
+                    ),
+                    file="web/edit/edit_common.html",
+                    macro="show_thumb_node",
+                    request=req,
+                )
+            )
 
-    html = _tal.processTAL({"notpublished": notpublished,
-                            "unpublishedlink": unpublishedlink,
-                            "nodelist": nodelist,
-                            "html_list_nodes": "".join(html_list_nodes),
-                            "html_thumb_nodes": "".join(html_thumb_nodes),
-                            "faultyidlist": faultyidlist,
-                            "script_array": script_array,
-                            "language": lang(req)},
-                           file="web/edit/edit_common.html", macro="show_nodelist", request=req)
+    html = _tal.processTAL(dict(
+                notpublished=notpublished,
+                unpublishedlink=unpublishedlink,
+                srcnodeid=dir.id,
+                nodelist=nodelist,
+                html_list_nodes="".join(html_list_nodes),
+                html_thumb_nodes="".join(html_thumb_nodes),
+                faultyidlist=faultyidlist,
+                script_array=script_array,
+                language=lang(req),
+            ),
+            file="web/edit/edit_common.html",
+            macro="show_nodelist",
+            request=req,
+        )
     return html
 
 
 def upload_help(req):
     try:
-        req.response.set_data(_tal.processTAL({}, file="contenttypes/" + req.params.get("objtype", "") + ".html", macro="upload_help", request=req))
+        req.response.set_data(_tal.processTAL(dict(),
+                file="contenttypes/" + req.params.get("objtype", "") + ".html",
+                macro="upload_help",
+                request=req,
+                )
+            )
         return
     except:
         None
@@ -429,13 +459,18 @@ def send_nodefile_tal(req):
     # file browser in web/edit/modules/startpages.html
     showdelbutton = True
 
-    return _tal.processTAL({"id": id,
-                            "node": node,
-                            "files": files,
-                            "fit": fit,
-                            "logoname": node.get("system.logo"),
-                            "delbutton": True},
-                           file="web/edit/modules/startpages.html", macro="fckeditor_customs_filemanager", request=req)
+    return _tal.processTAL(dict(
+                id=id,
+                node=node,
+                files=files,
+                fit=fit,
+                logoname=node.get("system.logo"),
+                delbutton=True,
+            ),
+            file="web/edit/modules/startpages.html",
+            macro="fckeditor_customs_filemanager",
+            request=req,
+        )
 
 
 def upload_for_html(req):
@@ -498,24 +533,24 @@ def upload_for_html(req):
 
         url = '/file/' + id + '/' + file.filename.split('/')[-1]
 
-        res = """<script type="text/javascript">
-
+        res = """
+        <script type="text/javascript">
             // Helper function to get parameters from the query string.
-            function getUrlParam(paramName)
-            {
+            function getUrlParam(paramName) {
               var reParam = new RegExp('(?:[\?&]|&amp;)' + paramName + '=([^&]+)', 'i') ;
               var match = window.location.search.match(reParam) ;
 
               return (match && match.length > 1) ? match[1] : '' ;
             }
-        funcNum = getUrlParam('CKEditorFuncNum');
+            funcNum = getUrlParam('CKEditorFuncNum');
 
-        window.parent.CKEDITOR.tools.callFunction(funcNum, "%(fileUrl)s","%(customMsg)s");
+            window.parent.CKEDITOR.tools.callFunction(funcNum, "{fileUrl}","{customMsg}");
 
-        </script>;""" % {
-            'fileUrl': url.replace('"', '\\"'),
-            'customMsg': (t(lang(req), "edit_fckeditor_cfm_uploadsuccess")),
-        }
+        </script>;
+        """.format(
+            fileUrl=url.replace('"', '\\"'),
+            customMsg=t(lang(req), "edit_fckeditor_cfm_uploadsuccess"),
+        )
 
         return res
 

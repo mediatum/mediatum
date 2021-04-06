@@ -184,11 +184,7 @@ class PostgresSQLAConnector(object):
             application_name="{}({})".format(os.path.basename(sys.argv[0]), os.getpid())
         )
         if self.debug:
-            if DEBUG_SHOW_TRACE is None:
-                show_trace = config.get("database.debug_show_trace", "").lower() == "true"
-            else:
-                show_trace = DEBUG_SHOW_TRACE
-            connect_args["connection_factory"] = make_debug_connection_factory(show_trace)
+            connect_args["connection_factory"] = make_debug_connection_factory(True)
 
         if self.test_db:
             self.check_run_test_db_server()

@@ -58,7 +58,6 @@ def main():
     period = "{:4}-{:0>2}".format(args.year, args.month)
     skip_ip = args.skip_ip
 
-    outdir = os.path.join(config.get("logging.save", config.get("logging.path", "/tmp")))
     match = re.compile('^({period}.{{17}}).*(INFO).{{2}}(.*(?:GET|POST|HEAD).*)'.format(period=period)).match
     lines = sys.stdin
     lines = imap(match, lines)
@@ -72,7 +71,7 @@ def main():
     lines = imap(operator.concat, lines, repeat(("\n",)))
     lines = imap("".join,lines)
 
-    with tempfile.NamedTemporaryFile(dir=outdir) as tmpfile:
+    with tempfile.NamedTemporaryFile() as tmpfile:
         tmpfile.writelines(lines)
         tmpfile.flush()
         init.full_init()

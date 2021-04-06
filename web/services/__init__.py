@@ -9,7 +9,7 @@ import datetime
 
 import core.config as config
 from core import httpstatus
-from utils.log import make_xid_and_errormsg_hash, extra_log_info_from_req
+from utils.log import make_xid_and_errormsg_hash
 from functools import wraps
 
 logg = logging.getLogger(__name__)
@@ -56,15 +56,8 @@ def dec_handle_exception(func):
             iso_datetime_now = datetime.datetime.now().isoformat()
             xid, hashed_errormsg, hashed_tb = make_xid_and_errormsg_hash()
             
-            log_extra = {"xid": xid,
-                         "error_hash": hashed_errormsg,
-                         "trace_hash": hashed_tb}
-            
-            log_extra["req"] = extra_log_info_from_req(req)
-
-            
             logg.exception(u"exception (xid=%s) while handling request %s %s, %s", 
-                           xid, req.method, req.mediatum_contextfree_path, dict(req.args), extra=log_extra)
+                           xid, req.method, req.mediatum_contextfree_path, dict(req.args))
 
             response_format = req.params.get('format', '').lower()
             response_template, response_mimetype = supported_formats.get(response_format, supported_formats.get('xml'))

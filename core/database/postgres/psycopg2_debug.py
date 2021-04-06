@@ -157,8 +157,7 @@ def make_debug_connection_factory(log_statement_trace=False):
         def log(self, msg, timestamp, duration, curs):
             notices = [notice.strip() for notice in self.notices]
             msg_with_duration = "%.2fms: " % (duration * 1000) + msg
-            sql_log.debug(msg_with_duration, trace=log_statement_trace, 
-                          extra={"duration": duration, "timestamp": timestamp, "notices": notices})
+            sql_log.debug(msg_with_duration, trace=log_statement_trace)
             self._history.append(msg, timestamp, duration, notices)
 
         def _check(self):

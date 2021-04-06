@@ -1135,7 +1135,7 @@ def callhandler(handler_func, req):
         # XXX: this shouldn't be in Athana, most of it is mediaTUM-specific...
         # TODO: add some kind of exception handler system for Athana
         if _config.get('host.type') != 'testing':
-            from utils.log import make_xid_and_errormsg_hash, extra_log_info_from_req
+            from utils.log import make_xid_and_errormsg_hash
             from core.translation import translate
             from core import db
 
@@ -1150,14 +1150,8 @@ def callhandler(handler_func, req):
                 _logg.warn("no support mail address configured, consider setting it with `email.support`",
                           trace=False)
 
-            log_extra = {"xid": xid,
-                         "error_hash": hashed_errormsg,
-                         "trace_hash": hashed_tb}
-
-            log_extra["req"] = extra_log_info_from_req(req)
-
             _logg.exception(u"exception (xid=%s) while handling request %s %s, %s",
-                           xid, req.method, req.mediatum_contextfree_path, dict(req.args), extra=log_extra)
+                           xid, req.method, req.mediatum_contextfree_path, dict(req.args))
 
             if mail_to_address:
                 msg = translate("core_snipped_internal_server_error_with_mail", request=req).replace('${email}',

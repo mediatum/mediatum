@@ -282,32 +282,3 @@ def make_xid_and_errormsg_hash():
     random_string = _utils_utils.gen_secure_token(64).upper()
     xid = "%s__%s__%s__%s" % (date_now, hashed_tb, hashed_errormsg, random_string)
     return xid, hashed_errormsg, hashed_tb
-
-
-def extra_log_info_from_req(req, add_user_info=True):
-
-    extra = {"args": dict(req.args),
-             "path": req.mediatum_contextfree_path,
-             "method": req.method}
-
-    if req.method == "POST":
-        extra["form"] = dict(req.form)
-        extra["files"] = [{
-            "filename": f.filename,
-            "tempname": f.tempname if hasattr(f, "tempname") else f.filename,
-            "content_type": f.content_type,
-            } for f in req.files.values()]
-
-    if add_user_info:
-        from core.users import user_from_session
-        user = user_from_session()
-        extra["user_is_anonymous"] = user.is_anonymous
-
-        if not user.is_anonymous:
-            extra["user_id"] = user.id
-            extra["user_is_editor"] = user.is_editor
-            extra["user_is_admin"] = user.is_admin
-
-        extra["headers"] = {k.lower(): v for k, v in req.headers}
-
-    return extra

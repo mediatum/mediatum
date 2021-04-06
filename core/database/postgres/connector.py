@@ -32,7 +32,6 @@ from core.database.postgres.continuumext import MtVersionBase
 
 # set this to True or False to override debug config settings
 DEBUG = None
-DEBUG_SHOW_TRACE = None
 
 CONNECTSTR_TEMPLATE = "postgresql+psycopg2://{user}:{passwd}@:{port}/{database}"
 CONNECTSTR_TEMPLATE_TEST_DB = "postgresql+psycopg2://{user}@:{port}/{database}?host={socketdir}"
@@ -98,12 +97,12 @@ class PostgresSQLAConnector(object):
             self.debug = DEBUG
 
         if force_test_db:
-            logg.warn("WARNING: force_test_db requested, creating / using test database server", trace=False)
+            logg.warn("WARNING: force_test_db requested, creating / using test database server")
             test_db = True
         else:
             test_db = config.get("database.test_db", "false").lower() == "true"
             if test_db:
-                logg.warn("WARNING: database.test_db enabled in config, creating / using test database server", trace=False)
+                logg.warn("WARNING: database.test_db enabled in config, creating / using test database server")
 
         self.test_db = test_db
 
@@ -184,7 +183,7 @@ class PostgresSQLAConnector(object):
             application_name="{}({})".format(os.path.basename(sys.argv[0]), os.getpid())
         )
         if self.debug:
-            connect_args["connection_factory"] = make_debug_connection_factory(True)
+            connect_args["connection_factory"] = make_debug_connection_factory()
 
         if self.test_db:
             self.check_run_test_db_server()

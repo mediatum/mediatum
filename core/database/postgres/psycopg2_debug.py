@@ -143,9 +143,8 @@ class DebugCursor(_cursor):
             return super(DebugCursor, self).callproc(procname, vars)
 
 
-def make_debug_connection_factory(log_statement_trace=False):
+def make_debug_connection_factory():
     """Creates a DebugConnection which can be used as connection_factory for Psycopg2.connect()
-    :param log_statement_trace: add trace to all SQL statement logs
     """
 
     class DebugConnection(_connection):
@@ -157,7 +156,7 @@ def make_debug_connection_factory(log_statement_trace=False):
         def log(self, msg, timestamp, duration, curs):
             notices = [notice.strip() for notice in self.notices]
             msg_with_duration = "%.2fms: " % (duration * 1000) + msg
-            sql_log.debug(msg_with_duration, trace=log_statement_trace)
+            sql_log.debug(msg_with_duration)
             self._history.append(msg, timestamp, duration, notices)
 
         def _check(self):

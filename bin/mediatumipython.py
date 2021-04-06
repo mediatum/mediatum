@@ -179,7 +179,6 @@ import core.database.postgres.connector
 SQLALCHEMY_LOGGING = logging.WARN
 SQL_LOGGING = logging.WARN
 
-core.database.postgres.connector.DEBUG_SHOW_TRACE = False
 core.database.postgres.connector.DEBUG = True
 # / log settings #
 

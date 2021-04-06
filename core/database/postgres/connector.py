@@ -114,7 +114,6 @@ class PostgresSQLAConnector(object):
             self.user = config.get("database.user", "mediatum")
             self.passwd = config.get("database.passwd")
             self.pool_size = config.getint("database.pool_size", 20)
-            self.slow_query_seconds = config.getfloat("database.slow_query_seconds", 0.2)
             if self.passwd:
                 self.passwd = _urllib.quote_plus(self.passwd)
                 self.connectstr = CONNECTSTR_TEMPLATE.format(**self.__dict__)
@@ -177,27 +176,7 @@ class PostgresSQLAConnector(object):
         self.socketdir = socketdir
         self.connectstr = CONNECTSTR_TEMPLATE_TEST_DB.format(**self.__dict__)
         self.pool_size = 5
-        self.slow_query_seconds = 0.2
         logg.info("using test database connection string: %s", self.connectstr)
-
-    def _setup_slow_query_logging(self):
-        """Registers cursor execute event handlers that measure query time and 
-            log warnings when `self.slow_query_seconds` is exceeded.
-        """
-        @event.listens_for(Engine, "before_cursor_execute")
-        def before_cursor_execute(conn, cursor, statement,
-                                  parameters, context, executemany):
-            conn.info.setdefault('query_start_time', []).append(time.time())
-            conn.info.setdefault('current_query', []).append(statement)
-
-        @event.listens_for(Engine, "after_cursor_execute")
-        def after_cursor_execute(conn, cursor, statement,
-                                 parameters, context, executemany):
-            total = time.time() - conn.info['query_start_time'].pop(-1)
-            statement = conn.info['current_query'].pop(-1)
-            # total in seconds
-            if total > self.slow_query_seconds:
-                logg.warn("slow query %.1fms:\n%s", total * 1000, statement)
 
     def create_engine(self):
         connect_args = dict(
@@ -237,8 +216,6 @@ class PostgresSQLAConnector(object):
         DeclarativeBase.metadata.bind = engine
         self.engine = engine
         self.Session.configure(bind=engine)
-        
-        self._setup_slow_query_logging()
 
         if self.test_db:
             # create schema with default data in test_db mode if not present

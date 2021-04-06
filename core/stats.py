@@ -23,7 +23,6 @@ import pickle
 import re
 import xml.parsers.expat
 import logging
-import glob
 import codecs
 import sys
 import time
@@ -39,6 +38,7 @@ from utils.utils import splitpath
 from utils.fileutils import importFile
 from array import array
 
+_logg = logging.getLogger(__name__)
 q = db.query
 
 EDIT = 1
@@ -401,70 +401,53 @@ visitor_num = 2
 count = 0
 
 
-def readLogFiles(period, fname=None):
+def _read_log_files(fname):
     """
     read the logfile fname and create a list of accesses
-    :param period: format yyyy-mm
-    :param fname: optional logfile name, default <period>.log
+    :param fname: logfile name
     :return: list of accesses
     """
     global logdata
     global logitem_set
-    path = config.get("logging.path")
-    files = []
-
-    if not fname:
-        if len(logdata) != 0:
-            return logdata
-
-        for name in glob.glob(path + '[0-9]*-[0-9]*.log'):
-            if period in name:
-                files.append(name)
-    else:
-        files.append(fname)
-        print "using given filename", fname
-
     list = []
-    line_count = 0
     time0 = time.time()
     prog = re.compile("/[0-9]+ ")
-    for file in files:
-        print "reading logfile", file
-        if os.path.exists(file):
-            # for line in codecs.open(file, "r", encoding='utf8'):
-            for line in open(file, "r"):
-                line_count += 1
-                if line_count % 50000 == 0:
-                    print "reading log file: %d lines processed" % line_count
+    _logg.info("reading logfile %s", fname)
 
-                create_info = False
-                is_download = False
-                idx = line.find('GET /')
-                if idx > 0:
-                    # ignore robots-access from mediatumtest
-                    if line.find('129.187.87.37') >= 0:
-                        continue
-                    url = line[idx + 4:]
-                    if url.find('change_language') >= 0 or url.find('result_nav') >= 0:
-                        continue
-                    if url.startswith('/doc/') or url.startswith('/download/') or url.startswith('/file/') or \
-                            url.startswith('/image/') or url.startswith('/fullsize?id='):
+    with open(fname, "rb") as logfile:
+        # for line in codecs.open(file, "r", encoding='utf8'):
+        for line_count, line in enumerate(logfile):
+            if line_count % 50000 == 0:
+                _logg.info("reading log file: %d lines processed", line_count)
+
+            create_info = False
+            is_download = False
+            idx = line.find('GET /')
+            if idx > 0:
+                # ignore robots-access from mediatumtest
+                if line.find('129.187.87.37') >= 0:
+                    continue
+                url = line[idx + 4:]
+                if url.find('change_language') >= 0 or url.find('result_nav') >= 0:
+                    continue
+                if url.startswith('/doc/') or url.startswith('/download/') or url.startswith('/file/') or \
+                        url.startswith('/image/') or url.startswith('/fullsize?id='):
+                    create_info = True
+                    is_download = True
+                elif "id=" in url:
+                    create_info = True
+                else:
+                    if prog.match(url):
                         create_info = True
-                        is_download = True
-                    elif "id=" in url:
-                        create_info = True
-                    else:
-                        if prog.match(url):
-                            create_info = True
 
-                if create_info:
-                    info = LogItem(line, is_download)
-                    if not info or info.getID() <= 0 or info.getID() > 10000000:
-                        continue
+            if create_info:
+                info = LogItem(line, is_download)
+                if not info or info.getID() <= 0 or info.getID() > 10000000:
+                    continue
 
-                    if info.getID() not in logitem_set:
-                        logitem_set.add(info.getID())
-                    list.append(info)
+                if info.getID() not in logitem_set:
+                    logitem_set.add(info.getID())
+                list.append(info)
 
     time1 = time.time()
     print time1 - time0
@@ -494,15 +477,15 @@ class CollectionId:
         self.statfiles = []
 
 
-def buildStatAll(period="", fname=None):  # period format = yyyy-mm
+def buildStatAll(period, fname):  # period format = yyyy-mm
     """
     build the statistic files with name stat_<collection_id>_yyyy-mm_<type> where type is in
     'frontend', 'download' or 'edit'
     :param period: period for which the statistic files should be build, format yyyy-mm
-    :param fname: optional name of the logfile, default <period>.log
+    :param fname: name of the logfile
     :return: None
     """
-    data = readLogFiles(period, fname)
+    data = _read_log_files(fname)
 
     time0 = time.time()
     collection_ids = {}
@@ -551,11 +534,11 @@ def buildStatAll(period="", fname=None):  # period format = yyyy-mm
     while start_idx < collection_count:
         end_idx = start_idx + collection_chunk
         print "start_idx:", start_idx, "end_idx:", end_idx
-        buildStatAll_(collection_ids, collection_ids_keys[start_idx:end_idx], data, period, fname)
+        buildStatAll_(collection_ids, collection_ids_keys[start_idx:end_idx], data, period)
         start_idx = end_idx
 
 
-def buildStatAll_(collection_ids, collection_ids_keys, data, period="", fname=None):  # period format = yyyy-mm
+def buildStatAll_(collection_ids, collection_ids_keys, data, period):  # period format = yyyy-mm
 
     # read data from logfiles
     def getStatFile(col_id, timestamp, type, period=period):
@@ -710,7 +693,3 @@ def buildStatAll_(collection_ids, collection_ids_keys, data, period="", fname=No
                 os.remove(file)
             except:
                 pass
-
-
-if __name__ == "__main__":
-    readLogFiles()

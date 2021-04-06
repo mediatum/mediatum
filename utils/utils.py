@@ -153,7 +153,7 @@ def suppress(*exceptions, **kwwarn):
         yield
     except exceptions:
         if warn:
-            logg.warning("Here passed an exception by!", exc_info=True)
+            logg.exception("exception was suppressed")
 
 
 def nullcontext():

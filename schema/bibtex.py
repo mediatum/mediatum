@@ -319,7 +319,7 @@ def importBibTeX(infile, node=None, req=None):
             # XXX TODO (even things like full disk or other parsing errors).
             # XXX TODO We should at least reformulate the error message,
             # XXX TODO and -- even better -- only catch errors that are to be expected.
-            logg.error("getentries failed", exc_info=1)
+            logg.exception("getentries failed")
             msg = "bibtex import: getentries failed, import stopped (encoding error)"
             logg.error(msg)
             raise ValueError("bibtex_unspecified_error")

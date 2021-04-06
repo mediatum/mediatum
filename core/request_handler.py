@@ -1170,7 +1170,7 @@ def callhandler(handler_func, req):
             return error(req, 500, s.encode("utf8"), content_type='text/html; encoding=utf-8; charset=utf-8')
 
         else:
-            _logg.error("Error in page: '%s %s'", req.method, req.full_path, exc_info=1)
+            _logg.exception("Error in page: '%s %s'", req.method, req.full_path)
             s = "<pre>" + _traceback.format_exc() + "</pre>"
             return error(req, 500, s)
 

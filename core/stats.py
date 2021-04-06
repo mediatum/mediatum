@@ -494,66 +494,43 @@ class CollectionId:
         self.statfiles = []
 
 
-def buildStatAll(collections, period="", fname=None):  # period format = yyyy-mm
+def buildStatAll(period="", fname=None):  # period format = yyyy-mm
     """
     build the statistic files with name stat_<collection_id>_yyyy-mm_<type> where type is in
     'frontend', 'download' or 'edit'
-    :param collections: list of collections for which the statistic files should be build
-                        if this is an empty list, all collections and their children are
-                        fetched as an psql command
     :param period: period for which the statistic files should be build, format yyyy-mm
     :param fname: optional name of the logfile, default <period>.log
     :return: None
     """
-
     data = readLogFiles(period, fname)
 
     time0 = time.time()
     collection_ids = {}
-    for collection in collections:
-        print collection
-        in_logitem_set = False
-        items = [collection] + collection.all_children.all()
-        ids_set = Set()
-        for item in items:
-            ids_set.add(item.id)
-            if item.id in logitem_set:
-                in_logitem_set = True
 
-        if in_logitem_set:
-            collection_ids[collection.id] = CollectionId(ids_set, collection)
-
-    if not collections:
-        # read all collections and its children with a single psql command which is much more faster
-        # than the use of collection.all_children
-        import core
-        out = core.db.run_psql_command("select nid, id from node, noderelation where cid=id and" +
-                                       " nid in (select id from node where type in ('collection', 'collections'))" +
-                                       " order by nid",
-                                       output=True, database=config.get("database.db"))
-        lines = out.split('\n')
-        last_collection = 0
-        for line in lines:
-            if line:
-                collection_s, id_s = line.split('|')
-                collection = int(collection_s)
-                id = int(id_s)
-                if last_collection != collection:
-                    if last_collection:
-                        if in_logitem_set:
-                            collection_ids[last_collection] = CollectionId(ids_set, db.query(Node).get(last_collection))
-                    in_logitem_set = False
-                    ids_set = Set()
-                    # add also collection itself
-                    ids_set.add(collection)
-                ids_set.add(id)
-                if id in logitem_set:
-                    in_logitem_set = True
-                last_collection = collection
-
-        if last_collection:
-            if in_logitem_set:
+    # read all collections and its children with a single psql command which is much more faster
+    # than the use of collection.all_children
+    import core
+    out = core.db.run_psql_command("select nid, id from node, noderelation where cid=id and" +
+                                   " nid in (select id from node where type in ('collection', 'collections'))" +
+                                   " order by nid",
+                                   output=True, database=config.get("database.db"))
+    last_collection = 0
+    for line in filter(None, out.split('\n')):
+        collection, nid = map(int, line.split('|'))
+        if last_collection != collection:
+            if last_collection and in_logitem_set:
                 collection_ids[last_collection] = CollectionId(ids_set, db.query(Node).get(last_collection))
+            in_logitem_set = False
+            ids_set = Set()
+            # add also collection itself
+            ids_set.add(collection)
+        ids_set.add(nid)
+        if nid in logitem_set:
+            in_logitem_set = True
+        last_collection = collection
+
+    if last_collection and in_logitem_set:
+        collection_ids[last_collection] = CollectionId(ids_set, db.query(Node).get(last_collection))
 
     time1 = time.time()
     print "time to collect all %d collections: %f" % (len(collection_ids), time1 - time0)

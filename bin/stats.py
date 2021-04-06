@@ -76,7 +76,7 @@ def main():
         tmpfile.writelines(lines)
         tmpfile.flush()
         init.full_init()
-        buildStatAll([], period, tmpfile.name)
+        buildStatAll(period, tmpfile.name)
 
 if __name__ == '__main__':
     main()

@@ -295,7 +295,7 @@ def _init_web_roots():
     _filehandlers.add_web_root(_os.path.join(config.basedir, "web/root"))
 
 
-def basic_init(root_loglevel=None, config_filepath=None, prefer_config_filename=None, log_filepath=None, log_filename=None,
+def basic_init(root_loglevel=None, config_filepath=None, prefer_config_filename=None, log_filepath=None,
                 force_test_db=None, automigrate=False):
     init_state = "basic"
     if init_state_reached(init_state):
@@ -307,7 +307,7 @@ def basic_init(root_loglevel=None, config_filepath=None, prefer_config_filename=
     core.config.initialize(config_filepath, prefer_config_filename)
     _tempfile.tempdir = config.get("paths.tempdir")
     import utils.log
-    utils.log.initialize(root_loglevel, log_filepath, log_filename)
+    utils.log.initialize(root_loglevel, log_filepath)
     log_basic_sys_info()
     if config.getboolean("config.enable_startup_checks", True):
         check_imports()
@@ -346,13 +346,13 @@ def _additional_init():
     db.session.rollback()
 
 
-def full_init(root_loglevel=None, config_filepath=None, prefer_config_filename=None, log_filepath=None, log_filename=None,
+def full_init(root_loglevel=None, config_filepath=None, prefer_config_filename=None, log_filepath=None,
               force_test_db=None, automigrate=False):
     init_state = "full"
     if init_state_reached(init_state):
         return
 
-    basic_init(root_loglevel, config_filepath, log_filepath, log_filename, prefer_config_filename, force_test_db, automigrate)
+    basic_init(root_loglevel, config_filepath, log_filepath, prefer_config_filename, force_test_db, automigrate)
     _additional_init()
     _set_current_init_state(init_state)
     init_app()

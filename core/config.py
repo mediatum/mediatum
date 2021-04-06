@@ -292,11 +292,6 @@ def initialize(config_filepath=None, prefer_config_filename=None):
     if log_filepath:
         log_dirpath = os.path.dirname(log_filepath)
         check_create_dir(log_dirpath, "dir for logging.file")
-        
-    # create log dir if specified
-    log_dirpath = settings.get("logging.dir")
-    if log_dirpath:
-        check_create_dir(log_dirpath, "log dir")
 
     # set global PILImage max pixel size, a value of 0 means no limitation
     _PILImage.MAX_IMAGE_PIXELS = int(get("image.upload_max_pixels", _PILImage.MAX_IMAGE_PIXELS))

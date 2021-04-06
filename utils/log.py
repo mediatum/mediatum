@@ -238,7 +238,7 @@ logging.captureWarnings(True)
 logg = logging.getLogger(__name__)
 
 
-def initialize(level=None, log_filepath=None, log_filename=None):
+def initialize(level=None, log_filepath=None):
     root_logger = logging.getLogger()
 
     if level is None:
@@ -259,15 +259,6 @@ def initialize(level=None, log_filepath=None, log_filename=None):
 
     if log_filepath is None:
         log_filepath = config.get('logging.file', None)
-
-    if log_filepath is None:
-        log_dir = config.get("logging.dir", None)
-        if log_dir:
-            if not log_filename:
-                # use name of start script as log file name
-                log_filename = os.path.basename(os.path.splitext(sys.argv[0])[0]) + ".log"
-
-            log_filepath = os.path.join(log_dir, log_filename)
 
     if log_filepath:
         file_handler = _logging_handlers.WatchedFileHandler(log_filepath)

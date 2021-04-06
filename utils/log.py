@@ -20,8 +20,8 @@
 """
 import datetime
 import logging
+import logging.handlers as _logging_handlers
 import sys
-import logstash
 import inspect
 import traceback
 from logging import LogRecord
@@ -274,7 +274,7 @@ logging.captureWarnings(True)
 logg = logging.getLogger(__name__)
 
 
-def initialize(level=None, log_filepath=None, log_filename=None, use_logstash=None):
+def initialize(level=None, log_filepath=None, log_filename=None):
     root_logger = logging.getLogger()
 
     if level is None:
@@ -289,13 +289,6 @@ def initialize(level=None, log_filepath=None, log_filename=None, use_logstash=No
     stream_handler.setFormatter(logging.Formatter(ROOT_STREAM_LOGFORMAT))
     root_logger.handlers = []
     root_logger.addHandler(stream_handler)
-
-    if use_logstash is None:
-        use_logstash = config.get('logging.use_logstash', "true") == "true"
-
-    if use_logstash:
-        logstash_handler = logstash.TCPLogstashHandler("localhost", 5959, version=1, message_type="mediatum")
-        root_logger.addHandler(logstash_handler)
 
     if _uwsgi:
         return
@@ -313,7 +306,7 @@ def initialize(level=None, log_filepath=None, log_filename=None, use_logstash=No
             log_filepath = os.path.join(log_dir, log_filename)
 
     if log_filepath:
-        file_handler = logging.handlers.WatchedFileHandler(log_filepath)
+        file_handler = _logging_handlers.WatchedFileHandler(log_filepath)
         file_handler.setFormatter(logging.Formatter(ROOT_FILE_LOGFORMAT))
         root_logger.addHandler(file_handler)
         logg.info('--- logging everything to %s ---', log_filepath)

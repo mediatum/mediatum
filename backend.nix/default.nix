@@ -74,7 +74,6 @@ in let
       pyjade
       pymarc
       pympler
-      python-logstash
       pyyaml
       reportlab
       requests

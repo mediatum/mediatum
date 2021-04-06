@@ -87,36 +87,6 @@ def tal_traceback_info():
     return info, tal_traceback_line
 
 
-class ConsoleHandler(logging.StreamHandler):
-
-    """A handler that logs to console in the sensible way.
-
-    StreamHandler can log to *one of* sys.stdout or sys.stderr.
-
-    It is more sensible to log to sys.stdout by default with only error
-    (logging.ERROR and above) messages going to sys.stderr. This is how
-    ConsoleHandler behaves.
-
-    from: http://code.activestate.com/recipes/576819-logging-to-console-without-surprises/
-
-    added: copy trace attribute to exc_text for TraceLogger support
-    """
-
-    def __init__(self):
-        logging.StreamHandler.__init__(self)
-        self.stream = None  # reset it; we are not going to use it anyway
-
-    def emit(self, record):
-        if record.levelno >= logging.ERROR:
-            self.__emit(record, sys.stderr)
-        else:
-            self.__emit(record, sys.stdout)
-
-    def __emit(self, record, strm):
-        self.stream = strm
-        logging.StreamHandler.emit(self, record)
-
-
 class TraceLogger(logging.Logger):
 
     """Adds an optional traceback for some messages.
@@ -279,7 +249,7 @@ def initialize(level=None, log_filepath=None, log_filename=None):
             print "unknown loglevel specified in logging config:", levelname
 
     root_logger.setLevel(level)
-    stream_handler = ConsoleHandler()
+    stream_handler = logging.StreamHandler()
     stream_handler.setFormatter(logging.Formatter(ROOT_STREAM_LOGFORMAT))
     root_logger.handlers = []
     root_logger.addHandler(stream_handler)

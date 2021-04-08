@@ -64,7 +64,6 @@ urls = [
     ["GET", "/node/(?P<id>\d+)/parents/{0,1}$", handlers.get_node_parents, None, SERVICES_URL_HAS_HANDLER, None],
 
     ["GET", "/static/(?P<filepath>.*)$", handlers.serve_file, None, SERVICES_URL_HAS_HANDLER, None],
-    ["GET", "/cachestatus/{0,1}$", handlers.get_cachestatus, None, SERVICES_URL_HAS_HANDLER, None],
 ]
 
 request_count = 0

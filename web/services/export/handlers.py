@@ -896,7 +896,7 @@ def write_formatted_response(
         d['errormessage'] = 'unsupported format'
         d['build_response_end'] = time.time()
 
-        s = struct2xml(req, path, params, data, d, singlenode=True, send_children=False, fetch_files=True)
+        s = struct2xml(req, path, params, data, d, singlenode=True, send_children=False)
         content_type = "text/xml; charset=utf-8"
 
     s = modify_tex(s.decode("utf8"), 'strip').encode("utf8")

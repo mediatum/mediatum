@@ -107,9 +107,6 @@ class ConsoleHandler(logging.StreamHandler):
         self.stream = None  # reset it; we are not going to use it anyway
 
     def emit(self, record):
-        if hasattr(record, "trace"):
-            record.exc_text = record.trace
-
         if record.levelno >= logging.ERROR:
             self.__emit(record, sys.stderr)
         else:
@@ -146,12 +143,13 @@ class TraceLogger(logging.Logger):
         # activate special debugging code for TAL templates, will be set later when config is avaiable
         self.use_tal_extension = None
 
-    def _log(self, level, msg, args, exc_info=None, extra=None, trace=None):
+    def makeRecord(self, name, level, fn, lno, msg, args, exc_info, func=None, extra=None, trace=None):
         """Adds an optional traceback for some messages and calls Logger._log.
-        A traceback is added if the logging level is at least `trace_level` or requested in the logging call.
+                A traceback is added if the logging level is at least `trace_level` or requested in the logging call.
 
-        :param trace: Always add trace if true, never add one if false. Use trace_level if None. Defaults to None.
-        """
+                :param trace: Always add trace if true, never add one if false. Use trace_level if None. Defaults to None.
+                """
+        record = LogRecord(name, level, fn, lno, msg, args, exc_info, func)
         if trace or (trace is None and level >= self.trace_level and not exc_info):
             if extra is None:
                 extra = {}
@@ -212,7 +210,7 @@ class TraceLogger(logging.Logger):
             if end_cutoff:
                 final_tracelines.append("[omitting lines starting at '{}' ...]".format(end_cutoff))
 
-            extra["trace"] = "".join(final_tracelines)
+            record.exc_text = "".join(final_tracelines)
 
             if self.use_tal_extension is None and config.settings is not None:
                 self.use_tal_extension = config.getboolean("logging.tal_extension", True)
@@ -221,12 +219,8 @@ class TraceLogger(logging.Logger):
                 tal_info, maybe_tal_traceback_line = tal_traceback_info()
                 extra.update(tal_info)
                 if maybe_tal_traceback_line:
-                    extra["trace"] += maybe_tal_traceback_line
+                    record.exc_text += maybe_tal_traceback_line
 
-        logging.Logger._log(self, level, msg, args, exc_info=exc_info, extra=extra)
-
-    def makeRecord(self, name, level, fn, lno, msg, args, exc_info, func=None, extra=None):
-        record = LogRecord(name, level, fn, lno, msg, args, exc_info, func)
         if exc_info:
             if extra is None:
                 extra = {}

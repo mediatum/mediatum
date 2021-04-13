@@ -38,9 +38,6 @@ import configargparse
 
 logg = logging.getLogger("manage.py")
 
-from utils.log import TraceLogger
-TraceLogger.trace_level = logging.ERROR
-
 from core.database.init import init_database_values
 from core import db, Node
 import utils.search

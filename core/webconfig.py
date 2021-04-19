@@ -262,6 +262,9 @@ def initContexts():
     context = _request_handler.addContext("/md_upload", ".")
     context.addFile("metadata/upload.py").addHandler("handle_request").addPattern("/.*")
 
+    context = _request_handler.addContext("/wfs_addpic2pdf", ".")
+    context.addFile("workflow/addpic2pdf.py").addHandler("handle_request").addPattern("/.*")
+
     # === services handling ===
     loadServices()
 

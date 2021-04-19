@@ -65,17 +65,6 @@ if PYPDF_MODULE_PRESENT:
 logg = logging.getLogger(__name__)
 
 
-def check_context():
-    webcontexts = _request_handler.contexts
-    if (not filter(lambda x: x.name == '/wfs_addpic2pdf', webcontexts)) and _request_handler.GLOBAL_ROOT_DIR != "no-root-dir-set":
-        print 'going to add context wfs_addpic2pdf'
-        webcontext = _request_handler.addContext("/wfs_addpic2pdf", ".")
-        webcontext_file = webcontext.addFile("workflow/addpic2pdf.py")
-        webcontext_file.addHandler("handle_request").addPattern("/.*")
-
-check_context()
-
-
 def getPdfFilepathForProcessing(workflowstep_node, node):
     res = ([f.abspath for f in node.files if f.base_name.startswith('addpic2pdf_%s_node_%s_' % (
         unicode(workflowstep_node.id), unicode(node.id))) and f.filetype.startswith('p_document')] +
@@ -104,9 +93,6 @@ def register():
 class WorkflowStep_AddPic2Pdf(WorkflowStep):
 
     def show_workflow_node(self, node, req, data=None):
-
-        check_context()
-
         user = users.user_from_session()
 
         current_workflow = getNodeWorkflow(node)

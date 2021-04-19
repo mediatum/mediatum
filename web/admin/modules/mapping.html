@@ -265,7 +265,8 @@
                     </td>
                     <td tal:attributes="class cssclass" class="_norm_">
                         <input tal:attributes="name python:u'editfield_{}'.format(field.id)" i18n:attributes="title admin_mappingfield_edit_title" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
-                        <input tal:attributes="name python:u'deletefield_{}'.format(field.id); onclick python:u'return questionDelName(\'{}\')'.format(field.getName())" i18n:attributes="title admin_mappingfield_delete_title" type="image" src="/img/delete.png"/>
+                        <input tal:condition="python:not used_by[field.id]" tal:attributes="name python:u'deletefield_{}'.format(field.id); onclick python:u'return questionDelName(\'{}\')'.format(field.getName())" i18n:attributes="title admin_mappingfield_delete_title" type="image" src="/img/delete.png"/>
+                        <input tal:condition="python:used_by[field.id]" tal:attributes="onclick python:u'alert(\'{}\')'.format(translate('admin_mappingfield_used_title', language).format(used_by[field.id]).replace('\n','\\n')); title python:translate('admin_mappingfield_used_title', language).format(used_by[field.id])" type="image" src="/img/archive.png">
                     </td>
                 </tr>
             </tal:block>

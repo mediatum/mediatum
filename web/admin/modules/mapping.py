@@ -17,19 +17,67 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import collections as _collections
+import itertools as _itertools
 import re
+
+import sqlalchemy as _sqlalchemy
+
 import mediatumtal.tal as _tal
 
 from schema.mapping import getMappings, getMapping, getMappingTypes, updateMapping, deleteMapping, updateMappingField, deleteMappingField, exportMapping, importMapping
 from web.admin.adminutils import Overview, getAdminStdVars, getFilter, getSortCol
 from core.translation import lang, t
+import core.translation as _translation
 
 from core import Node
 from core import db
 from core.systemtypes import Mappings
 from schema.mapping import Mapping, MappingField
+import schema.schema as _schema
+import core.database.postgres.node as _node
 
 q = db.query
+
+
+_MaskitemsDependency = _collections.namedtuple(
+    "_MaskitemsDependency",
+    "metadatatypes_id mappingfield schema_name mask_name metafield_name"
+)
+
+
+def _get_maskitems_dependencies():
+    """
+    collect a list of all maskitems of all importmasks together with metadatatype and mask to which the maskitem belongs
+     and the metafield specified in the attribute 'attribute' of the maskitem.
+    :return: list of _MaskitemsDependency
+    """
+    metadatatype, mask, maskitem, metafield = (
+        _sqlalchemy.orm.aliased(_node.Node) for _ in xrange(4))
+
+    query = q(
+        _schema.Metadatatypes.id,
+        maskitem.attrs['mappingfield'].astext,
+        metadatatype.name,
+        mask.name,
+        metafield.name,
+    )
+
+    joins = (
+        _schema.Metadatatypes,
+        metadatatype,
+        mask,
+        maskitem,
+    )
+
+    for parent, child in zip(joins[:-1], joins[1:]):
+        nodemapping = _sqlalchemy.orm.aliased(_node.t_nodemapping)
+        query = query.join(nodemapping, nodemapping.c.nid == parent.id)
+        query = query.join(child, child.id == nodemapping.c.cid)
+    query = query.join(metafield, metafield.id == maskitem.attrs['attribute'].astext.cast(_sqlalchemy.Integer))
+    query = query.filter(mask.attrs['masktype'].astext == 'export')
+    query = query.filter(maskitem.attrs['fieldtype'].astext == 'mapping')
+    return tuple(_itertools.starmap(_MaskitemsDependency, query.all()))
 
 
 def getInformation():
@@ -262,15 +310,23 @@ def viewlist(req, id):
     else:
         fields.sort(lambda x, y: cmp(x.name.lower(), y.name.lower()))
 
+    maskitems_dependencies = _get_maskitems_dependencies()
+    used_by = {field.id: "\n".join(['']+["{schema_name}: {mask_name}: {metafield_name}".format(**md._asdict())
+                                         for md in maskitems_dependencies if md.mappingfield == str(field.id)])
+               for field in fields}
+
     v = getAdminStdVars(req)
     v["sortcol"] = pages.OrderColHeader([t(lang(req), "admin_mappingfield_col_1"), t(lang(req), "admin_mappingfield_col_2"), t(
         lang(req), "admin_mappingfield_col_3")], addparams="&detailof=" + unicode(mapping.id))
     v["fields"] = fields
+    v["used_by"] = used_by
     v["mapping"] = mapping
     v["options"] = []
     v["pages"] = pages
     v["actfilter"] = actfilter
     v["csrf"] = req.csrf_token.current_token
+    v["translate"] = _translation.translate
+    v["language"] = lang(req)
     return _tal.processTAL(v, file="web/admin/modules/mapping.html", macro="viewlist", request=req)
 
 

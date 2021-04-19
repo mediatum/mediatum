@@ -117,6 +117,9 @@ msgstr "Mappingfeld anlegen/bearbeiten"
 msgid "admin_mappingfield_delete_title"
 msgstr "Mappingfeld löschen"
 
+msgid "admin_mappingfield_used_title"
+msgstr "Mappingfeld wird benutzt von:{}"
+
 msgid "admin_mappingfield_new_label"
 msgstr "Neues Mappingfeld anlegen"
 

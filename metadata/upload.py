@@ -41,17 +41,6 @@ q = db.query
 logg = logging.getLogger(__name__)
 
 
-def check_context():
-    webcontexts = _request_handler.contexts
-    if (not filter(lambda x: x.name == '/md_upload', webcontexts)) and _request_handler.GLOBAL_ROOT_DIR != "no-root-dir-set":
-        logg.info('adding context md_upload')
-        webcontext = _request_handler.addContext("/md_upload", ".")
-        webcontext_file = webcontext.addFile("metadata/upload.py")
-        webcontext_file.addHandler("handle_request").addPattern("/.*")
-
-check_context()
-
-
 def mkfilelist(targetnode, files, deletebutton=0, language=None, request=None, macro="m_upload_filelist"):
     if request:
         return tal.processTAL({"files": files, "node": targetnode, "delbutton": deletebutton}, file="metadata/upload.html", macro=macro, request=request)
@@ -109,8 +98,6 @@ class m_upload(Metatype):
     disabled = "0"
 
     def getEditorHTML(self, field, value="", width=40, lock=0, language=None, required=None):
-        check_context()
-
         try:
             fieldname = field.name
         except:
@@ -150,9 +137,6 @@ class m_upload(Metatype):
         return s
 
     def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
-
-        check_context()
-
         fieldname = metafield.getName()
         value = node.get(metafield.getName())
 

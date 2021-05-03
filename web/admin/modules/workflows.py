@@ -44,6 +44,32 @@ def getInformation():
 """ standard validator to execute correct method """
 
 
+def _aggregate_workflowstep_text_parameters(req_params, languages):
+    """
+    Parse workflow step http parameters from req_params dict,
+    return dict with params.
+    If languages are defined, parameters in req-params are expected
+    to be prefixed with "{language}.n", otherwise just "n".
+    Return dict values contain texts of all languages,
+    prefixed with "{language}:" and newline-separated,
+    or just the language-independent content.
+    """
+    # generate a list of request parameter prefixes for each language,
+    # e.g. ("de.n", "en.n"),
+    # or just generate a single prefix "n" if no languages are defined
+    lang_prefixes = {"{}.n".format(lang): "{}:".format(lang) for lang in languages} or {"n": ""}
+    labeltexts = dict()
+    for key in u"truelabel falselabel sidebartext pretext posttext".split():
+        labeltexts[key] = u"\n".join(
+            u"{}{}".format(v, req_params.get(u"{}{}".format(k, key)).replace("\n", ""))
+            for k, v in lang_prefixes.iteritems()
+        )
+    for key in u"name trueid falseid comment".split():
+        labeltexts[key] = req_params.get(u"n{}".format(key), u"")
+
+    return labeltexts
+
+
 def validate(req, op):
     path = req.mediatum_contextfree_path[1:].split("/")
     if len(path) == 3 and path[2] == "overview":
@@ -161,15 +187,14 @@ def validate(req, op):
                     workflowstep = workflow.getStep(req.params.get("nname", ""), test_only=True)
                     if workflowstep:
                         raise ValueError("a workflowstep with the same name already exists")
+
                     wnode = create_update_workflow_step(
-                            name=req.params.get("nname", ""),
                             typ=req.params.get("ntype", ""),
-                            trueid=req.params.get("ntrueid", ""),
-                            falseid=req.params.get("nfalseid", ""),
-                            truelabel=req.params.get("ntruelabel", ""),
-                            falselabel=req.params.get("nfalselabel", ""),
-                            comment=req.params.get("ncomment", ""),
                             adminstep=req.params.get("adminstep", ""),
+                            **_aggregate_workflowstep_text_parameters(
+                                req.params,
+                                workflow.getLanguages(),
+                            )
                         )
                     workflow.addStep(wnode)
 
@@ -180,45 +205,15 @@ def validate(req, op):
                         workflowstep = workflow.getStep(req.params.get("nname", ""), test_only=True)
                         if workflowstep:
                             raise ValueError("a workflowstep with the same name already exists")
-                    truelabel = ''
-                    falselabel = ''
-                    for language in workflow.getLanguages():
-                        truelabel += '%s:%s\n' % (language, req.params.get('%s.ntruelabel' % language))
-                        falselabel += '%s:%s\n' % (language, req.params.get('%s.nfalselabel' % language))
-                    if truelabel == '':
-                        truelabel = req.params.get("ntruelabel", "")
-                    if falselabel == '':
-                        falselabel = req.params.get("nfalselabel", "")
-                    sidebartext = ''
-                    pretext = ''
-                    posttext = ''
-
-                    if len(workflow.getLanguages()) > 1:
-                        for language in workflow.getLanguages():
-                            sidebartext += '%s:%s\n' % (language, req.params.get('%s.nsidebartext' % language).replace('\n', ''))
-                            pretext += '%s:%s\n' % (language, req.params.get('%s.npretext' % language).replace('\n', ''))
-                            posttext += '%s:%s\n' % (language, req.params.get('%s.nposttext' % language).replace('\n', ''))
-
-                    if sidebartext == '':
-                        sidebartext = req.params.get("nsidebartext", "").replace('\n', '')
-                    if pretext == '':
-                        pretext = req.params.get("npretext", "").replace('\n', '')
-                    if posttext == '':
-                        posttext = req.params.get("nposttext", "").replace('\n', '')
 
                     wnode = create_update_workflow_step(
                             workflow.getStep(req.params.get("orig_name", "")),
-                            name=req.params.get("nname", ""),
-                            typ=req.params.get("ntype", ""),
-                            trueid=req.params.get("ntrueid", ""),
-                            falseid=req.params.get("nfalseid", ""),
-                            truelabel=truelabel,
-                            falselabel=falselabel,
-                            sidebartext=sidebartext,
-                            pretext=pretext,
-                            posttext=posttext,
-                            comment=req.params.get("ncomment", ""),
                             adminstep=req.params.get("adminstep", ""),
+                            typ=req.params.get("ntype", ""),
+                            **_aggregate_workflowstep_text_parameters(
+                                req.params,
+                                workflow.getLanguages(),
+                            )
                         )
                 else:
                     raise AssertionError("invalid form_op")
@@ -411,31 +406,26 @@ def WorkflowStepDetail(req, wid, wnid, err=0):
         # new workflowstep
         workflowstep = create_update_workflow_step()
         v["orig_name"] = req.params.get("orig_name", "")
-
     elif err == -1:
         # update steptype
         if req.params.get("stepid", ""):
             stepname = req.params.get("nname", "")
             workflowstep = create_update_workflow_step(
                     workflow.getStep(stepname),
-                    name=stepname,
                     typ=req.params.get("ntype", "workflowstep"),
-                    trueid=req.params.get("ntrueid", ""),
-                    falseid=req.params.get("nfalseid", ""),
-                    truelabel=req.params.get("ntruelabel", ""),
-                    falselabel=req.params.get("nfalselabel", ""),
-                    comment=req.params.get("ncomment", ""),
+                    **_aggregate_workflowstep_text_parameters(
+                        req.params,
+                        workflow.getLanguages(),
+                    )
                 )
         else:
             err = 0
             workflowstep = create_update_workflow_step(
-                    name=req.params.get("nname", ""),
                     typ=req.params.get("ntype", "workflowstep"),
-                    trueid=req.params.get("ntrueid", ""),
-                    falseid=req.params.get("nfalseid", ""),
-                    truelabel=req.params.get("ntruelabel", ""),
-                    falselabel=req.params.get("nfalselabel", ""),
-                    comment=req.params.get("ncomment", ""),
+                    **_aggregate_workflowstep_text_parameters(
+                        req.params,
+                        workflow.getLanguages(),
+                    )
                 )
         v["orig_name"] = workflowstep.name
 
@@ -449,13 +439,11 @@ def WorkflowStepDetail(req, wid, wnid, err=0):
         if typ == "":
             typ = "workflowstep"
         workflowstep = create_update_workflow_step(
-                name=req.params.get("nname", ""),
                 typ=typ,
-                trueid=req.params.get("ntrueid", ""),
-                falseid=req.params.get("nfalseid", ""),
-                truelabel=req.params.get("ntruelabel", ""),
-                falselabel=req.params.get("nfalselabel", ""),
-                comment=req.params.get("ncomment", ""),
+                **_aggregate_workflowstep_text_parameters(
+                    req.params,
+                    workflow.getLanguages(),
+                )
             )
         v["orig_name"] = req.params.get("orig_name", "")
 

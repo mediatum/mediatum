@@ -337,13 +337,11 @@
 </metal:block>
 
 <metal:block metal:define-macro="workflowstep_field">
-    <textarea tal:condition="python:language_count<2" tal:content="python:content()" tal:attributes="name python:name" style="width:400px"/>
-    <tal:block tal:condition="python:language_count>1">
-        <div tal:repeat="language python:languages">
-            <div style="float:left;width:50px;"><span tal:content="language"/>:</div>
-            <textarea tal:content="python:content(language)" tal:attributes="name python:u'{}.{}'.format(language, name)" style="width:350px;margin-bottom:10px;"/><br/>
-        </div>
-    </tal:block>
+    <textarea tal:condition="python:not languages" tal:content="python:content()" tal:attributes="name python:name" style="width:400px"/>
+    <div tal:repeat="language python:languages">
+        <div style="float:left;width:50px;"><span tal:content="language"/>:</div>
+        <textarea tal:content="python:content(language)" tal:attributes="name python:u'{}.{}'.format(language, name)" style="width:350px;margin-bottom:10px;"/><br/>
+    </div>
 </metal:block>
 
 <metal:block metal:define-macro="modify_step" tal:define="id python:workflowstep.id; language_count python:len(languages)">

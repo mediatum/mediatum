@@ -163,52 +163,60 @@ def setNodeWorkflow(node, workflow):
     return getNodeWorkflowStep(node)
 
 
-def createWorkflowStep(name="", type="workflowstep", trueid="", falseid="", truelabel="", falselabel="", comment='', adminstep=""):
-    n = WorkflowStep(name)
-    n.set_class(type)
-    n.type = type
-    n.set("truestep", trueid)
-    n.set("falsestep", falseid)
-    n.set("truelabel", truelabel)
-    n.set("falselabel", falselabel)
-    n.set("comment", comment)
-    n.set("adminstep", adminstep)
-    db.session.commit()
-    return n
+def create_update_workflow_step(
+        step=None,
+        name="",
+        typ="workflowstep",
+        trueid="",
+        falseid="",
+        truelabel="",
+        falselabel="",
+        sidebartext="",
+        pretext="",
+        posttext="",
+        comment="",
+        adminstep="",
+       ):
+    """
+    :param step: update workflowstep if it is not None
+    :return: updated or created workflowstep
+    """
+    if step is None:
+        step = WorkflowStep(name)
+        step.set_class(typ)
+    else:
+        if step.name != name:
+            # the button targets of the other workflow steps are adjusted for update case
+            for node in step.parents.one().children:
+                if node.get("truestep") == step.name:
+                    node.set("truestep", name)
+                if node.get("falsestep") == step.name:
+                    node.set("falsestep", name)
+        if step.type != typ:
+            # if the type has changed every access to n after db.session.comm() leads to the error:
+            # ObjectDeletedError: Instance '' has been deleted, or its row is otherwise not present.
+            # Workarround: create a temporary workflowstep n_new with the new type and set the id to the same id of n
+            stepid = step.id  # save n.id, after db.session.commit() n.id is no longer accessible
+            step.type = typ
+            db.session.commit()
+            step = WorkflowStep(typ)
+            step.set_class(typ)
+            step.id = stepid
+    step.name = name
+    step.type = typ
+    step.set("truestep", trueid)
+    step.set("falsestep", falseid)
+    step.set("truelabel", truelabel)
+    step.set("falselabel", falselabel)
+    step.set("sidebartext", sidebartext)
+    step.set("pretext", pretext)
+    step.set("posttext", posttext)
+    step.set("comment", comment)
+    step.set("adminstep", adminstep)
 
-
-def updateWorkflowStep(workflow, oldname="", newname="", type="workflowstep", trueid="", falseid="", truelabel="",
-                       falselabel="", sidebartext='', pretext="", posttext="", comment='', adminstep=""):
-    n = workflow.getStep(oldname)
-    if n.type != type:
-        # if the type has changed every access to n after db.session.comm() leads to the error:
-        # ObjectDeletedError: Instance '' has been deleted, or its row is otherwise not present.
-        # Workarround: create a temporary workflowstep n_new with the new type and set the id to the same id of n
-        nodeid = n.id # save n.id, after db.session.commit() n.id is no longer accessible
-        n.type = type
-        db.session.commit()
-        n_new = WorkflowStep(type)
-        n_new.set_class(type)
-        n_new.id = nodeid
-        n = n_new
-    n.name = newname
-    n.type = type
-    n.set("truestep", trueid)
-    n.set("falsestep", falseid)
-    n.set("truelabel", truelabel)
-    n.set("falselabel", falselabel)
-    n.set("sidebartext", sidebartext)
-    n.set("pretext", pretext)
-    n.set("posttext", posttext)
-    n.set("comment", comment)
-    n.set("adminstep", adminstep)
-    for node in workflow.children:
-        if node.get("truestep") == oldname:
-            node.set("truestep", newname)
-        if node.get("falsestep") == oldname:
-            node.set("falsestep", newname)
     db.session.commit()
-    return n
+
+    return step
 
 
 def deleteWorkflowStep(workflowid, stepid):

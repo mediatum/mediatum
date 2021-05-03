@@ -25,7 +25,8 @@ import mediatumtal.tal as _tal
 
 import core.config as config
 
-from workflow.workflow import Workflow, getWorkflowList, getWorkflow, updateWorkflow, addWorkflow, deleteWorkflow, inheritWorkflowRights, getWorkflowTypes, updateWorkflowStep, createWorkflowStep, deleteWorkflowStep, exportWorkflow, importWorkflow
+from workflow.workflow import Workflow, getWorkflowList, getWorkflow, updateWorkflow, addWorkflow, deleteWorkflow, \
+    inheritWorkflowRights, getWorkflowTypes, create_update_workflow_step, deleteWorkflowStep, exportWorkflow, importWorkflow
 from web.admin.adminutils import Overview, getAdminStdVars, getFilter, getSortCol
 from schema.schema import parseEditorData
 from web.common.acl_web import makeList
@@ -153,15 +154,16 @@ def validate(req, op):
                 if req.params.get("nname", "") == "":  # no Name was given
                     return WorkflowStepDetail(req, req.params.get("parent"), req.params.get("stepid", ""), 1)
 
+                workflow = getWorkflow(req.params.get("parent"))
                 if req.params.get("form_op", "") == "save_newdetail":
                     # save workflowstep values -> create
                     # don't create a new workflowstep if a workflowstep with the same name already exists
-                    workflowstep = getWorkflow(req.params.get("parent")).getStep(req.params.get("nname", ""), test_only=True)
+                    workflowstep = workflow.getStep(req.params.get("nname", ""), test_only=True)
                     if workflowstep:
                         raise ValueError("a workflowstep with the same name already exists")
-                    wnode = createWorkflowStep(
+                    wnode = create_update_workflow_step(
                             name=req.params.get("nname", ""),
-                            type=req.params.get("ntype", ""),
+                            typ=req.params.get("ntype", ""),
                             trueid=req.params.get("ntrueid", ""),
                             falseid=req.params.get("nfalseid", ""),
                             truelabel=req.params.get("ntruelabel", ""),
@@ -169,19 +171,18 @@ def validate(req, op):
                             comment=req.params.get("ncomment", ""),
                             adminstep=req.params.get("adminstep", ""),
                         )
-                    getWorkflow(req.params.get("parent")).addStep(wnode)
+                    workflow.addStep(wnode)
 
                 elif req.params.get("form_op") == "save_editdetail":
                     # update workflowstep
-                    wf = getWorkflow(req.params.get("parent"))
                     # don't update a workflowstep if the name is changed and a workflowstep with the same name already exists
                     if req.params.get("orig_name", "") != req.params.get("nname", ""):
-                        workflowstep = wf.getStep(req.params.get("nname", ""), test_only=True)
+                        workflowstep = workflow.getStep(req.params.get("nname", ""), test_only=True)
                         if workflowstep:
                             raise ValueError("a workflowstep with the same name already exists")
                     truelabel = ''
                     falselabel = ''
-                    for language in wf.getLanguages():
+                    for language in workflow.getLanguages():
                         truelabel += '%s:%s\n' % (language, req.params.get('%s.ntruelabel' % language))
                         falselabel += '%s:%s\n' % (language, req.params.get('%s.nfalselabel' % language))
                     if truelabel == '':
@@ -192,8 +193,8 @@ def validate(req, op):
                     pretext = ''
                     posttext = ''
 
-                    if len(wf.getLanguages()) > 1:
-                        for language in wf.getLanguages():
+                    if len(workflow.getLanguages()) > 1:
+                        for language in workflow.getLanguages():
                             sidebartext += '%s:%s\n' % (language, req.params.get('%s.nsidebartext' % language).replace('\n', ''))
                             pretext += '%s:%s\n' % (language, req.params.get('%s.npretext' % language).replace('\n', ''))
                             posttext += '%s:%s\n' % (language, req.params.get('%s.nposttext' % language).replace('\n', ''))
@@ -205,11 +206,10 @@ def validate(req, op):
                     if posttext == '':
                         posttext = req.params.get("nposttext", "").replace('\n', '')
 
-                    wnode = updateWorkflowStep(
-                            wf,
-                            oldname=req.params.get("orig_name", ""),
-                            newname=req.params.get("nname", ""),
-                            type=req.params.get("ntype", ""),
+                    wnode = create_update_workflow_step(
+                            workflow.getStep(req.params.get("orig_name", "")),
+                            name=req.params.get("nname", ""),
+                            typ=req.params.get("ntype", ""),
                             trueid=req.params.get("ntrueid", ""),
                             falseid=req.params.get("nfalseid", ""),
                             truelabel=truelabel,
@@ -223,6 +223,7 @@ def validate(req, op):
                 else:
                     raise AssertionError("invalid form_op")
 
+                wnode = workflow.getStep(wnode.name)
                 for r in wnode.access_ruleset_assocs.filter_by(ruletype=u'read'):
                     db.session.delete(r)
 
@@ -408,24 +409,17 @@ def WorkflowStepDetail(req, wid, wnid, err=0):
 
     if err == 0 and wnid == "":
         # new workflowstep
-        workflowstep = createWorkflowStep(
-                name="",
-                trueid="",
-                falseid="",
-                truelabel="",
-                falselabel="",
-                comment="",
-            )
+        workflowstep = create_update_workflow_step()
         v["orig_name"] = req.params.get("orig_name", "")
 
     elif err == -1:
         # update steptype
         if req.params.get("stepid", ""):
-            workflowstep = updateWorkflowStep(
-                    workflow,
-                    oldname=req.params.get("nname", ""),
-                    newname=req.params.get("nname", ""),
-                    type=req.params.get("ntype", "workflowstep"),
+            stepname = req.params.get("nname", "")
+            workflowstep = create_update_workflow_step(
+                    workflow.getStep(stepname),
+                    name=stepname,
+                    typ=req.params.get("ntype", "workflowstep"),
                     trueid=req.params.get("ntrueid", ""),
                     falseid=req.params.get("nfalseid", ""),
                     truelabel=req.params.get("ntruelabel", ""),
@@ -434,9 +428,9 @@ def WorkflowStepDetail(req, wid, wnid, err=0):
                 )
         else:
             err = 0
-            workflowstep = createWorkflowStep(
+            workflowstep = create_update_workflow_step(
                     name=req.params.get("nname", ""),
-                    type=req.params.get("ntype", "workflowstep"),
+                    typ=req.params.get("ntype", "workflowstep"),
                     trueid=req.params.get("ntrueid", ""),
                     falseid=req.params.get("nfalseid", ""),
                     truelabel=req.params.get("ntruelabel", ""),
@@ -451,12 +445,12 @@ def WorkflowStepDetail(req, wid, wnid, err=0):
         v["orig_name"] = workflowstep.name
     else:
         # error while filling values
-        type = req.params.get("ntype", "workflowstep")
-        if type == "":
-            type = "workflowstep"
-        workflowstep = createWorkflowStep(
+        typ = req.params.get("ntype", "workflowstep")
+        if typ == "":
+            typ = "workflowstep"
+        workflowstep = create_update_workflow_step(
                 name=req.params.get("nname", ""),
-                type=type,
+                typ=typ,
                 trueid=req.params.get("ntrueid", ""),
                 falseid=req.params.get("nfalseid", ""),
                 truelabel=req.params.get("ntruelabel", ""),

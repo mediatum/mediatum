@@ -127,47 +127,38 @@ def add_node_to_xmldoc(
     return xmlnode
 
 
-class HandlerTarget(object):
+class _HandlerTarget(object):
     def start(self, tag, attrib):
-        logg.info("default handler start %s %r" % (tag, dict(attrib)))
+        raise NotImplementedError
     def end(self, tag):
-        logg.info("default handler end %s" % tag)
+        raise NotImplementedError
     def data(self, data):
-        logg.info("default handler data %r" % data)
+        raise NotImplementedError
     def comment(self, text):
-        logg.info("default handler comment %s" % text)
+        pass
     def close(self):
-        logg.info("default handler close")
         return "closed!"
 
 
-class _NodeLoader:
+class _NodeLoader(object):
 
-    def __init__(self, fi, verbose=True):
+    def __init__(self, xml):
         self.root = None
         self.nodes = []
         self.attributename = None
         self.id2node = {}
-        self.verbose = verbose
         self.node_already_seen = False
 
-        handler = HandlerTarget()
+        handler = _HandlerTarget()
         handler.start = lambda name, attrs: self.xml_start_element(name, attrs)
         handler.end = lambda name: self.xml_end_element(name)
         handler.data = lambda d: self.xml_char_data(d)
-
         parser = etree.XMLParser(target = handler)
-        if type(fi) in [unicode, str]:
-            xml = fi
-        elif type(fi) in [file, _werkzeug_datastructures.FileStorage]:
-            xml = fi.read()
-            fi.close()
-        else:
-            raise NotImplementedError()
+
         try:
             result = etree.XML(xml, parser)
-        except Exception as e:
-            logg.exception("\tfile not well-formed. %s", e)
+        except:
+            logg.exception("xml import: xml file not well-formed.")
             return
 
         mappings = q(Mappings).scalar()
@@ -176,58 +167,40 @@ class _NodeLoader:
             logg.info("no mappings root found: added mappings root")
 
         for node in self.nodes:
-            if node.type == "mapping":
-                if node.name not in [n.name for n in mappings.children if n.type == "mapping"]:
-                    mappings.children.append(node)
-                    if self.verbose:
-                        logg.info("xml import: added  mapping id=%s, type='%s', name='%s'", node.id, node.type, node.name)
+            if (node.type == "mapping") and not any(node.name == n.name for n in mappings.children if n.type == "mapping"):
+                mappings.children.append(node)
+                logg.debug("xml import: added  mapping id=%s, type='%s', name='%s'", node.id, node.type, node.name)
 
-        if self.verbose:
-            logg.info("linking children to parents")
+        logg.debug("xml import: linking children to parents")
         for node in self.nodes:
-            d = {}
-            for id in node.tmpchilds:
-                child = self.id2node[id]
-                node.children.append(child)
-                d[child.id] = child
-            if self.verbose and node.tmpchilds:
-                added = [(cid, d[cid].type, d[cid].name) for cid in d.keys()]
-                logg.info("added %d children to node id='%s', type='%s', name='%s': %s",
-                          len(node.tmpchilds), node.id, node.type, node.name, added)
+            node.children.extend(self.id2node[i] for i in node.tmpchilds)
+            logg.debug("xml import: added %d children to node id='%s', type='%s', name='%s'",
+                    len(node.tmpchilds), node.id, node.type, node.name)
 
         for node in self.nodes:
             if node.type == "maskitem":
-                attr = node.get("attribute")
-                if attr and attr in self.id2node:
-                    attr_new = self.id2node[attr].id
-                    node.set("attribute", attr_new)
-                    if self.verbose:
-                        logg.info("adjusting node attribute for maskitem '%s', name='attribute', value: old='%s' -> new='%s'",
-                                  node.id, attr, attr_new)
-                mappingfield = node.get("mappingfield")
-                if mappingfield and mappingfield in self.id2node:
-                    mappingfield_new = self.id2node[mappingfield].id
-                    node.set("mappingfield", ustr(mappingfield_new))
-                    if self.verbose:
-                        logg.info("adjusting node attribute for maskitem '%s', name='mappingfield', value old='%s' -> new='%s'",
-                                  node.id, mappingfield, mappingfield_new)
+                attrs_to_map = ("attribute", "mappingfield")
             elif node.type == "mask":
-                exportmapping = node.get("exportmapping")
-                if exportmapping and exportmapping in self.id2node:
-                    exportmapping_new = self.id2node[exportmapping].id
-                    node.set("exportmapping", ustr(exportmapping_new))
-                    if self.verbose:
-                        logg.info("adjusting node attribute for mask '%s',  name='exportmapping':, value old='%s' -> new='%s'",
-                                  node.id, exportmapping, exportmapping_new)
+                attrs_to_map = ("exportmapping", )
+            else:
+                attrs_to_map = ()
+            for attr_name in attrs_to_map:
+                attr = node.get(attr_name)
+                if attr in self.id2node:
+                    logg.debug(
+                            "xml import: "
+                            "adjusting node attribute '%s' for %s: %s -> %s",
+                            attr_name, node.type, attr, ustr(self.id2node[attr].id)
+                           )
+                    node.set(attr_name, ustr(self.id2node[attr].id))
 
         logg.info("xml import done")
         db.session.commit()
 
     def xml_start_element(self, name, attrs):
-        try:
+        node = None
+        with _utils_utils.suppress(Exception):
             node = self.nodes[-1]
-        except:
-            node = None
         if name == "nodelist":
             if "exportversion" in attrs:
                 logg.info("starting xml import: %s", attrs)
@@ -235,43 +208,31 @@ class _NodeLoader:
         elif name == "node":
             self.node_already_seen = False
             parent = node
-            try:
-                datatype = attrs["datatype"]
-            except KeyError:
-                # compatibility for old xml files created with mediatum
-                t = attrs.get("type")
-                if t is not None:
-                    datatype = t
-                else:
-                    datatype = "directory"
 
-            if "id" not in attrs:
-                attrs["id"] = _utils_utils.gen_secure_token(128)
+            # compatibility for old xml files created with mediatum:
+            # old files use "type", new files use "datatype"
+            datatype = attrs.get("datatype", attrs.get("type", "directory"))
 
-            old_id = attrs["id"]
+            old_id = attrs.setdefault("id", _utils_utils.gen_secure_token(128))
+            assert old_id
 
             if old_id in self.id2node:
                 node = self.id2node[old_id]
                 self.node_already_seen = True
                 return
-            elif datatype in ["mapping"]:
-                content_class = Node.get_class_for_typestring(datatype)
-                node = content_class(name=(attrs["name"] + "_imported_" + old_id))
+
+            content_class = Node.get_class_for_typestring(datatype)
+            if datatype=="mapping":
+                node = content_class(name="{}_imported_{}".format(attrs["name"], old_id))
             else:
-                content_class = Node.get_class_for_typestring(datatype)
                 node = content_class(name=attrs["name"])
 
-            # todo: handle access
-
-            #if "read" in attrs:
-            #    node.setAccess("read", attrs["read"].encode("utf-8"))
-            #if "write" in attrs:
-            #    node.setAccess("write", attrs["write"].encode("utf-8"))
-            #if "data" in attrs:
-            #    node.setAccess("data", attrs["data"].encode("utf-8"))
-
-            if self.verbose:
-                logg.info("created node '%s', '%s', '%s', old_id from attr='%s'", node.name, node.type, node.id, attrs["id"])
+            logg.debug(
+                    "xml import: "
+                    "created node '%s', '%s', '%s', "
+                    "old_id from attr='%s'",
+                    node.name, node.type, node.id, attrs["id"],
+                   )
 
             self.id2node[attrs["id"]] = node
             node.tmpchilds = []
@@ -279,62 +240,64 @@ class _NodeLoader:
             if self.root is None:
                 self.root = node
             return
-        elif name == "attribute" and not self.node_already_seen:
+
+        if self.node_already_seen:
+            return
+
+        if name == "attribute":
             attr_name = attrs["name"]
-            if "value" in attrs:
-                if attr_name in ["valuelist"]:
-                    node.set(attr_name, attrs["value"].replace("\n\n", "\n").replace("\n", ";").replace(";;", ";"))
-                else:
-                    node.set(attr_name, attrs["value"])
-            else:
+            if "value" not in attrs:
                 self.attributename = attr_name
+                return
+            attr_value = attrs["value"]
+            if attr_name=="valuelist":
+                attr_value = attr_value.replace("\n\n", "\n").replace("\n", ";").replace(";;", ";")
+            node.set(attr_name, attr_value)
 
-        elif name == "child" and not self.node_already_seen:
-            nid = attrs["id"]
-            node.tmpchilds += [nid]
-        elif name == "file" and not self.node_already_seen:
-            try:
-                datatype = attrs["type"]
-            except:
-                datatype = None
-
-            try:
-                mimetype = attrs["mime-type"]
-            except:
-                mimetype = None
-
-            filename = attrs["filename"]
-            node.files.append(File(path=filename, filetype=datatype, mimetype=mimetype))
+        elif name == "child":
+            node.tmpchilds.append(attrs["id"])
+        elif name == "file":
+            # note: this likely doesn't work if export/import
+            # is done on different mediatum installations
+            node.files.append(File(
+                    path=attrs["filename"],
+                    filetype=attrs.get("type"),
+                    mimetype=attrs.get("mime-type"),
+                   ))
 
     def xml_end_element(self, name):
-        if self.node_already_seen:
-            return
-        if name == "node":
-            pass
-        elif name == "attribute":
-            if self.verbose:
-                logg.info("  -> : added attribute '%s': '%s'", self.attributename, self.nodes[-1].get(self.attributename))
-        self.attributename = None
+        if not self.node_already_seen:
+            if name == "attribute":
+                logg.debug(
+                        "xml import: "
+                        "added attribute '%s': '%s'",
+                        self.attributename, self.nodes[-1].get(self.attributename),
+                       )
+            self.attributename = None
 
     def xml_char_data(self, data):
-        if self.node_already_seen:
+        if self.node_already_seen or not self.attributename:
             return
-        if self.attributename:
-            try:
-                val = self.nodes[-1].get(self.attributename)
-                n = self.nodes[-1]
-            except:
-                val = ""
-            if self.attributename in ["valuelist"]:
-                self.nodes[-1].set(self.attributename,
-                                   (val + data).replace("\n\n", "\n").replace("\n", ";").replace(";;", ";"))
-            else:
-                self.nodes[-1].set(self.attributename, val + data)
+        val = ""
+        with _utils_utils.suppress(Exception):
+            val = self.nodes[-1].get(self.attributename)
+            n = self.nodes[-1]
+        val += data
+        if self.attributename=="valuelist":
+            val = val.replace("\n\n", "\n").replace("\n", ";").replace(";;", ";")
+        self.nodes[-1].set(self.attributename, val)
 
 
 
-def readNodeXML(file):
-    return _NodeLoader(file).root
+def readNodeXML(fi):
+    if type(fi) in (unicode, str):
+        xml = fi
+    elif type(fi) in (file, _werkzeug_datastructures.FileStorage):
+        xml = fi.read()
+        fi.close()
+    else:
+        raise NotImplementedError()
+    return _NodeLoader(xml).root
 
 
 def getNodeXML(

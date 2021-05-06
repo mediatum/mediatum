@@ -169,6 +169,7 @@ class _NodeLoader(object):
         for node in self.nodes:
             if (node.type == "mapping") and not any(node.name == n.name for n in mappings.children if n.type == "mapping"):
                 mappings.children.append(node)
+                db.session.commit()
                 logg.debug("xml import: added  mapping id=%s, type='%s', name='%s'", node.id, node.type, node.name)
 
         logg.debug("xml import: linking children to parents")
@@ -176,6 +177,7 @@ class _NodeLoader(object):
             node.children.extend(self.id2node[i] for i in node.tmpchilds)
             logg.debug("xml import: added %d children to node id='%s', type='%s', name='%s'",
                     len(node.tmpchilds), node.id, node.type, node.name)
+        db.session.commit()
 
         for node in self.nodes:
             if node.type == "maskitem":
@@ -239,6 +241,13 @@ class _NodeLoader(object):
             self.nodes.append(node)
             if self.root is None:
                 self.root = node
+                # temporarly add self.root to 'root' to get an node.id for self.root
+                # so all children of self.root gets a node.id after db.session.commit()
+                # this is neccessary to get a node.id for the attribute 'attribute' for maskitems of exportmasks
+                root = q(Root).one()
+                root.children.append(self.root)
+                root.children.remove(self.root)
+                db.session.commit()
             return
 
         if self.node_already_seen:

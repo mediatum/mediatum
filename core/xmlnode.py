@@ -181,7 +181,9 @@ class _NodeLoader(object):
 
         for node in self.nodes:
             if node.type == "maskitem":
-                attrs_to_map = ("attribute", "mappingfield")
+                attrs_to_map = ["attribute"]
+                if node.get("fieldtype") == u"mapping":
+                    attrs_to_map.append("mappingfield")
             elif node.type == "mask":
                 attrs_to_map = ("exportmapping", )
             else:

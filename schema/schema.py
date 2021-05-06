@@ -43,6 +43,7 @@ from core.postgres import check_type_arg
 from core.database.postgres.node import children_rel, parents_rel
 from utils.date import parse_date, format_date, validateDateString
 from utils.utils import Option, esc, suppress
+import utils as _utils
 from mediatumtal import tal as _tal
 
 
@@ -518,7 +519,7 @@ def importMetaSchema(filename):
 
     metadatatypes = q(Metadatatypes).one()
     for m in importlist:
-        m.name = u"import-" + m.name
+        m.name = u"{}_import_{}".format(m.name, _utils.utils.gen_secure_token(128))
         if not metadatatypes.children.filter_by(name=m.name).all():
             metadatatypes.children.append(m)
     db.session.commit()

@@ -148,6 +148,7 @@ class _NodeLoader(object):
         self.attributename = None
         self.id2node = {}
         self.node_already_seen = False
+        self.rand =_utils_utils.gen_secure_token(128)
 
         handler = _HandlerTarget()
         handler.start = lambda name, attrs: self.xml_start_element(name, attrs)
@@ -227,7 +228,7 @@ class _NodeLoader(object):
 
             content_class = Node.get_class_for_typestring(datatype)
             if datatype=="mapping":
-                node = content_class(name="{}_imported_{}".format(attrs["name"], old_id))
+                node = content_class(name=u"{}_import_{}".format(attrs["name"], self.rand))
             else:
                 node = content_class(name=attrs["name"])
 

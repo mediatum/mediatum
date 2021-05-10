@@ -336,7 +336,7 @@ def existMetaField(pid, name):
 """ update/create metadatafield """
 
 def updateMetaField(parent, name, label, orderpos, fieldtype, option="", description="",
-                    fieldvalues="", fieldvaluenum="", fieldid="",  attr_dict={}):
+                    fieldvalues="", fieldid="",  attr_dict={}):
     metatype = getMetaType(parent)
     field = None
 
@@ -368,7 +368,6 @@ def updateMetaField(parent, name, label, orderpos, fieldtype, option="", descrip
     field.set("type", fieldtype)
     field.set("opts", option)
     field.set("valuelist", fieldvalues.replace("\r\n", ";"))
-    field.set("valuelistnum", fieldvaluenum)
     field.set("description", description)
 
     for attr_name, attr_value in attr_dict.items():
@@ -778,12 +777,6 @@ class Metafield(Node):
 
     def setDescription(self, value):
         self.set("description", value)
-
-    def getFieldValueNum(self):
-        return self.get("valuelistnum")
-
-    def setFieldValueNum(self, fnum):
-        self.set("valuelistnum", fnum)
 
     def getValues(self):
         return self.get("valuelist").replace(";", "\r\n")

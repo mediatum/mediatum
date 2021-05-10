@@ -20,6 +20,7 @@
 """
 import collections as _collections
 import datetime
+import functools as _functools
 import inspect
 import importlib
 import itertools as _itertools
@@ -46,7 +47,7 @@ from core.translation import lang
 from core.postgres import check_type_arg
 from core.database.postgres.node import children_rel, parents_rel
 from utils.date import parse_date, format_date, validateDateString
-from utils.utils import Option, esc, suppress
+from utils.utils import esc, suppress
 import utils as _utils
 from mediatumtal import tal as _tal
 import core.database.postgres.node as _node
@@ -55,40 +56,87 @@ import core.database.postgres.node as _node
 log = logg = logging.getLogger(__name__)
 q = db.query
 
-requiredoption = []
-requiredoption += [Option("Kein Pflichtfeld", "notmandatory", "0", "/img/req2_opt.png")]
-requiredoption += [Option("Pflichtfeld, darf nicht leer sein", "mandatory1", "1", "/img/req0_opt.png")]
-requiredoption += [Option("Pflichtfeld, muss eine Zahl sein", "mandatory2", "2", "/img/req1_opt.png")]
 
-fieldoption = []
-fieldoption += [Option("metafield_option1", "search", "s", "/img/folder_plus.gif")]
-fieldoption += [Option("metafield_option2", "sort", "o", "/img/ordersel.png")]
+_Option = _functools.partial(
+    _collections.namedtuple(
+        "_Option",
+        "name shortname value imgsource optiontype validation_regex",
+    ), imgsource='', optiontype='', validation_regex='',
+)
 
-dateoption = []
-dateoption += [Option("metafield_dateformat_std",
-                      "dd.mm.yyyy",
-                      "%d.%m.%Y",
-                      validation_regex='^(0[0-9]|1[0-9]|2[0-9]|3[01])\.(0[0-9]|1[012])\.[0-9]{4}$')]
-dateoption += [Option("metafield_dateformat_long",
-                      "dd.mm.yyyy hh:mm:ss",
-                      "%d.%m.%Y %H:%M:%S",
-                      validation_regex='^(0[0-9]|1[0-9]|2[0-9]|3[01])\.(0[0-9]|1[012])\.[0-9]{4} (0[0-9]|1[0-9]|2[0-3])(:[0-5][0-9]){2}$')]
-dateoption += [Option("metafield_dateformat_year",
-                      "yyyy",
-                      "%Y",
-                      validation_regex='^[0-9]{4}$')]
-dateoption += [Option("metafield_dateformat_yearmonth",
-                      "yyyy-mm",
-                      "%Y-%m",
-                      validation_regex='^[0-9]{4}-(0[0-9]|1[012])$')]
-dateoption += [Option("metafield_dateformat_month",
-                      "mm",
-                      "%m",
-                      validation_regex='^(0[0-9]|1[012])$')]
-dateoption += [Option("metafield_dateformat_time",
-                      "hh:mm:ss",
-                      "%H:%M:%S",
-                      validation_regex='^(0[0-9]|1[0-9]|2[0-3])(:[0-5][0-9]){2}$')]
+
+requiredoption = (
+    _Option(
+        name="Kein Pflichtfeld",
+        shortname="notmandatory",
+        value="0",
+        imgsource="/img/req2_opt.png",
+    ),
+    _Option(
+        name="Pflichtfeld, darf nicht leer sein",
+        shortname="mandatory1", value="1",
+        imgsource="/img/req0_opt.png",
+    ),
+    _Option(
+        name="Pflichtfeld, muss eine Zahl sein",
+        shortname="mandatory2",
+        value="2",
+        imgsource="/img/req1_opt.png",
+    ),
+)
+
+fieldoption = (
+    _Option(
+        name="metafield_option1",
+        shortname="search", value="s",
+        imgsource="/img/folder_plus.gif",
+    ),
+    _Option(
+        name="metafield_option2",
+        shortname="sort",
+        value="o",
+        imgsource="/img/ordersel.png",
+    ),
+)
+
+dateoption = (
+    _Option(
+        name="metafield_dateformat_std",
+        shortname="dd.mm.yyyy",
+        value="%d.%m.%Y",
+        validation_regex='^(0[0-9]|1[0-9]|2[0-9]|3[01])\.(0[0-9]|1[012])\.[0-9]{4}$',
+    ),
+    _Option(
+        name="metafield_dateformat_long",
+        shortname="dd.mm.yyyy hh:mm:ss",
+        value="%d.%m.%Y %H:%M:%S",
+        validation_regex='^(0[0-9]|1[0-9]|2[0-9]|3[01])\.(0[0-9]|1[012])\.[0-9]{4} (0[0-9]|1[0-9]|2[0-3])(:[0-5][0-9]){2}$',
+    ),
+    _Option(
+        name="metafield_dateformat_year",
+        shortname="yyyy",
+        value="%Y",
+        validation_regex='^[0-9]{4}$',
+    ),
+    _Option(
+        name="metafield_dateformat_yearmonth",
+        shortname="yyyy-mm",
+        value="%Y-%m",
+        validation_regex='^[0-9]{4}-(0[0-9]|1[012])$',
+    ),
+    _Option(
+        name="metafield_dateformat_month",
+        shortname="mm",
+        value="%m",
+        validation_regex='^(0[0-9]|1[012])$',
+    ),
+    _Option(
+        name="metafield_dateformat_time",
+        shortname="hh:mm:ss",
+        value="%H:%M:%S",
+        validation_regex='^(0[0-9]|1[0-9]|2[0-3])(:[0-5][0-9]){2}$',
+    ),
+)
 
 VIEW_DEFAULT = 0        # default view for masks
 VIEW_SUB_ELEMENT = 1    # internal parameter
@@ -542,7 +590,7 @@ def parseEditorData(req, node):
             if field.get('type') == "date":
                 f = field.getSystemFormat(field.fieldvalues)
                 try:
-                    date = parse_date(ustr(value), f.getValue())
+                    date = parse_date(ustr(value), f.value)
                 except ValueError:
                     date = None
                 if date:
@@ -760,7 +808,7 @@ class Metafield(Node):
 
     def getSystemFormat(self, shortname):
         for option in dateoption:
-            if option.getShortName() == shortname:
+            if option.shortname == shortname:
                 return option
         return dateoption[0]
 

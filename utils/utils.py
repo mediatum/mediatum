@@ -294,52 +294,6 @@ def get_filesize(filename):
         return 0
 
 
-class Option:
-    def __init__(self, name="", shortname="", value="", imgsource="", optiontype="", validation_regex=""):
-        self.name = name
-        self.shortname = shortname
-        self.value = value
-        self.imgsource = imgsource
-        self.optiontype = optiontype
-        self.validation_regex = validation_regex
-
-    def getName(self):
-        return self.name
-
-    def setName(self, value):
-        self.name = value
-
-    def getShortName(self):
-        return self.shortname
-
-    def setShortName(self, value):
-        self.shortname = value
-
-    def getValue(self):
-        return self.value
-
-    def setValue(self, value):
-        self.value = value
-
-    def getImagesource(self):
-        return self.imgsource
-
-    def setImagesource(self, value):
-        self.imagesource = value
-
-    def getOptionType(self):
-        return self.optiontype
-
-    def setOptionType(self, value):
-        self.optiontype = value
-
-    def get_validation_regex(self):
-        return self.validation_regex
-
-    def set_validation_regex(self, value):
-        self.validation_regex = value
-
-
 def isCollection(node):
     warn("use isinstance(node, (Collection, Collections))", DeprecationWarning)
     from contenttypes import Collection, Collections

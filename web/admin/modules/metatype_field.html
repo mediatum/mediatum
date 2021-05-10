@@ -51,7 +51,7 @@
                         <table>
                             <tr>
                                 <td tal:repeat="fieldoption fieldoptions" width="20px" align="center">
-                                    <img tal:attributes="src python:fieldoption.getImagesource(); title python:fieldoption.name" i18n:attributes="title"/>
+                                    <img tal:attributes="src python:fieldoption.imgsource; title python:fieldoption.name" i18n:attributes="title"/>
                                 </td>
                             </tr>
                         </table>
@@ -229,7 +229,7 @@
                     <fieldset style="width:390px;">
                         <legend i18n:translate="admin_metafield_options">TEXT</legend>
                         <tal:block  tal:repeat="fieldoption fieldoptions">
-                            <input tal:define="index python:fieldoptions.index(fieldoption)" tal:attributes="name python:u'option_{}'.format(fieldoption.getValue()); value python:fieldoption.getValue(); checked python:'checked' if metafield.getFieldOptionList()[index] else None" type="checkbox">
+                            <input tal:define="index python:fieldoptions.index(fieldoption)" tal:attributes="name python:u'option_{}'.format(fieldoption.value); value python:fieldoption.value; checked python:'checked' if metafield.getFieldOptionList()[index] else None" type="checkbox">
                             <span tal:content="python:fieldoption.name" i18n:translate=""/>
                             <br/>
                             </tal:block>

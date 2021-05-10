@@ -764,19 +764,6 @@ class Metafield(Node):
                 return option
         return dateoption[0]
 
-    def getValue(self, node):
-        logg.warn("who uses getValue?")
-        if self.get("fieldtype") == "date":
-            d = self.getSystemFormat(ustr(self.fieldvalues))
-            v = node.get(self.name)
-            try:
-                value = format_date(parse_date(v), d.getValue())
-            except ValueError:
-                value = v
-        else:
-            value = node.get(self.name)
-        return value
-
     def getEditorHTML(self, val="", width=400, lock=0, language=None, required=None):
         try:
             t = getMetadataType(self.getFieldtype())

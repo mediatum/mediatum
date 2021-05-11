@@ -308,12 +308,6 @@ function hideContextMenuForNode(node) {
 }
 
 
-function callCommandForVisibleContextMenu(ctx, action, opt) {
-  var ctx_data = ctx.data();
-  var res = ctx_data.contextMenu.callback(action, opt);
-  return res;
-}
-
 function callContextMenuCommandForNode(node, action, opt) {
   // opt: optional, may be omitted
   // important: node has to be active
@@ -322,44 +316,6 @@ function callContextMenuCommandForNode(node, action, opt) {
   var res = ctx_data.contextMenu.callback(action, opt);
   hideContextMenuForNode(node);
   return res;
-}
-
-function destroyAllContextMenus() {
-  $.contextMenu('destroy');
-}
-
-function cd_cmd(node) {
-  node.setActive();
-  return node;
-}
-
-function cmd_cmd(action, opt) {
-  return callContextMenuCommandForNode(last_activated_node, action, opt);
-}
-
-function getContextMenuCommands() {
-  // node has to be active
-  var node = last_activated_node;
-  var ctx = showContextMenuForNode(node);
-  var ctx_data = ctx.data();
-  var res = Object.keys(ctx_data.contextMenu.commands)
-  hideContextMenuForNode(node);
-  return res;
-}
-
-function expandAll(fcytree){
-  var root = fcytree.getRootNode();
-  root.visit(function(node){
-    node.setExpanded(true);
-  });
-}
-
-function expandSubTree(fcynode){
-  // call repeatedly to expand levels
-  fcynode.setExpanded(true);
-  fcynode.visit(function(node){
-    node.setExpanded(true);
-  });
 }
 
 var _tmp_opt_menu = null;
@@ -644,22 +600,6 @@ function contextmenu_collections(selector) {
 contextmenu_collections('#collections');
 
 
-function loadKeyPath_callback_dont_activate(node, status){
-    if(status=="loaded"){
-        node.setExpanded();
-    }else if(status=="ok"){
-        //node.setActive();
-    }
-}
-
-function loadKeyPath_callback_activate(node, status){
-    if(status=="loaded"){
-        node.setExpanded();
-    }else if(status=="ok"){
-        node.setActive();
-    }
-}
-
 function getcoltree() {
     return $("#mediatum_collectionstree").fancytree("getTree");
 }
@@ -667,26 +607,6 @@ function getcoltree() {
 function gethometree() {
     return $("#hometree").fancytree("getTree");
 }
-
-function get_expanded_nodes(dtree) {
-    var cands = [];
-
-    function fnx(node) {
-      if (node.isExpanded()) {
-        cands.push(node);
-      }
-      return true;
-    }
-
-    dtree.visit(fnx, false);
-    return cands;
-};
-
-function expand_nodearray(nodearray) {
-    nodearray.forEach(function(node) {
-      node.setExpanded(true);
-    });
-};
 
 function removeByKey(dtree, ckey) {
     var cnode = dtree.getNodeByKey(ckey);
@@ -708,22 +628,6 @@ function removeByKey(dtree, ckey) {
     }
   }
 
-function nodearray2keyarray(nodearray) {
-    var res = [];
-    nodearray.forEach(function(node) {
-        res.push(node.key);
-    });
-    return res;
-}
-
-function keyarray2nodearray(dtree, keyarray) {
-    var res = [];
-    keyarray.forEach(function(key) {
-        res.push(dtree.getNodeByKey(key));
-    });
-    return res;
-}
-
 function reloadColTree(){
     $("#mediatum_collectionstree").fancytree("getTree").reload();
 }
@@ -732,16 +636,6 @@ function reloadHomeTree(){
     $("#hometree").fancytree("getTree").reload();
 }
 
-
-function reloadTree(id){
-    var src;
-    if(id) {
-        src = id;
-    } else {
-        src = tree.currentfolder;
-    }
-    this.tree.location.href = "/edit/edit_tree?id="+src+"&r="+""+Math.random()*10000+"#"+src;
-}
 
 // source: http://stackoverflow.com/questions/123999/how-to-tell-if-a-dom-element-is-visible-in-the-current-viewport/7557433#7557433
 function isElementInViewport(el) {

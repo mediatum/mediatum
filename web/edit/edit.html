@@ -513,6 +513,7 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curnode)
                     $('.ui-layout-center').attr('src', '/edit/edit_content?id='+new_path_endpoint+'&tab=content');
                 }
                 consoledb.log("finished paste to: ", dest);
+                reloadHomeTree();
                 reloadColTree();
                 res = false;
                 break;

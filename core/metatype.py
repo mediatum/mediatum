@@ -9,6 +9,8 @@ from warnings import warn
 
 class Metatype(object):
 
+    default_settings = None
+
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
         return ""
 
@@ -33,6 +35,9 @@ class Metatype(object):
     def get_metafieldeditor_html(self, field, metadatatype, language):
         pass
 
+
+    def parse_metafieldeditor_settings(self, data):
+        assert not data
 
     translation_labels = {}
 

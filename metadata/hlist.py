@@ -22,37 +22,41 @@ class m_hlist(Metatype):
 
     name = "hlist"
 
-    def get_metafieldeditor_html(self, field, metadatatype, language):
-        values = field.get("valuelist").split(u';')
-        values.extend(("",)*3)
-        values = values[:3]
+    default_settings = dict(
+        parentnode="",
+        attrname="",
+        onlylast=False,
+    )
+
+    def get_metafieldeditor_html(self, fielddata, metadatatype, language):
         return tal.getTAL(
-                "metadata/hlist.html",
-                dict(
-                    value=dict(
-                        parentnode=values[0],
-                        attrname=values[1],
-                        onlylast=values[2],
-                       ),
-                   ),
-                macro="metafieldeditor",
-                language=language,
-               )
+            "metadata/hlist.html",
+            dict(
+                parentnode=fielddata.get("parentnode"),
+                attrname=fielddata.get("attrname"),
+                onlylast=fielddata.get("onlylast"),
+            ),
+            macro="metafieldeditor",
+            language=language,
+        )
+
+    def parse_metafieldeditor_settings(self, data):
+        assert data.get("onlylast") in (None, "1")
+        return dict(
+            parentnode=data["parentnode"],
+            attrname=data["attrname"],
+            onlylast=bool(data.get("onlylast")),
+        )
 
     def getEditorHTML(self, field, value="", width=40, lock=0, language=None, required=None):
-        try:
-            values = field.get("valuelist").split(';')
-        except AttributeError:
-            values = field.split('\r\n')
-        while len(values) < 3:
-            values.append(u'')
+        metacfg = field.metatype_data
         return tal.getTAL(
                 "metadata/hlist.html",
                 dict(
                     lock=lock,
-                    startnode=values[0],
-                    attrname=values[1],
-                    onlylast=values[2],
+                    startnode=metacfg["parentnode"],
+                    attrname=metacfg["attrname"],
+                    onlylast=metacfg["onlylast"],
                     value=value,
                     width=width,
                     name=field.getName(),
@@ -71,10 +75,7 @@ class m_hlist(Metatype):
                 vn = q(Node).get(n)
                 if vn is not None:
                     value.append(vn.getName())
-        values = metafield.get("valuelist").split(';')
-        while len(values) < 3:
-            values.append(u'')
-        if values[2] == '1':
+        if metafield.metatype_data["onlylast"]:
             return metafield.getLabel(), value[-1]
         return metafield.getLabel(), u' - '.join(value)
 

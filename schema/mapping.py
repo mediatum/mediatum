@@ -235,9 +235,6 @@ class MappingField(Node):
     def getMapping(self):
         return self.parents.filter_by(type=u"mapping").first()
 
-    def getValues(self):
-        return ""
-
     def getFieldtype(self):
         return "mappingfield"
 

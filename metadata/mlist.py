@@ -24,12 +24,16 @@ q = db.query
 
 
 def _format_elements(field, *args):
-    return _common_list.format_elements(field.getValueList(), field, *args)
+    return _common_list.format_elements(field.metatype_data["listelements"], field, *args)
 
 
 class m_mlist(Metatype):
 
     name = "mlist"
+
+    default_settings = dict(
+        listelements=(),
+    )
 
     def get_default_value(self, field):
         valuelist = next(_format_elements(field))
@@ -77,16 +81,24 @@ class m_mlist(Metatype):
             value = value_unprepared.replace("; ", ";")
         return value
 
-    def get_metafieldeditor_html(self, field, metadatatype, language):
+    def get_metafieldeditor_html(self, fielddata, metadatatype, language):
         return tal.getTAL(
-                "metadata/mlist.html",
-                dict(
-                    value=field.getValues(),
-                   ),
-                macro="metafieldeditor",
-                language=language,
-               )
+            "metadata/mlist.html",
+            dict(value=u"\r\n".join(fielddata['listelements']),
+                 ),
+            macro="metafieldeditor",
+            language=language
+        )
 
+    def parse_metafieldeditor_settings(self, data):
+        if "listelements" in data:
+            listelements = data["listelements"].split("\r\n")
+        else:
+            listelements = ()
+
+        return dict(
+            listelements=listelements,
+        )
 
     translation_labels = dict(
         de=dict(

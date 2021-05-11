@@ -162,14 +162,20 @@ def _extended_searchquery_from_req(req):
             from_value = req.args.get(query_from_key)
             if from_value:
                 try:
-                    date_from = date.format_date(date.parse_date(from_value, field.getValues()), "%Y-%m-%dT%H:%M:%S")
+                    date_from = date.format_date(
+                            date.parse_date(from_value, field.metatype_data['format']),
+                            "%Y-%m-%dT%H:%M:%S",
+                           )
                 except ValueError:
                     date_from = "9999-00-00T00:00:00"
 
             to_value = req.args.get(query_to_key)
             if to_value:
                 try:
-                    date_to = date.format_date(date.parse_date(to_value, field.getValues()), "%Y-%m-%dT%H:%M:%S")
+                    date_to = date.format_date(
+                            date.parse_date(to_value, field.metatype_data['format']),
+                            "%Y-%m-%dT%H:%M:%S",
+                           )
                 except ValueError:
                     date_from = "0000-00-00T00:00:00"
 

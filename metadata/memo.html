@@ -16,8 +16,12 @@
 
     <div style="float:left;position:relative;">  
         <div class="surr">
-<textarea class="memo_text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; name python:u'{}'.format(name); id python:u'{}'.format(name); onkeyup python:'countMeta(this,'+(field.getValues() or '-1')+')';style python:u'width:{}px'.format(width-20); required required" rows="4">
-<tal:block tal:replace="python:value"/></textarea>
+          <textarea
+              class="memo_text"
+              rows="4"
+              tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; name python:u'{}'.format(name); id python:u'{}'.format(name); onkeyup python:'countMeta(this,{})'.format(max_length);style python:u'width:{}px'.format(width-20); required required"
+              tal:content="python:value"
+            />
         </div>
         <button name="button" tal:attributes="onclick python:u'openPopup(\'/metatype/memo?name={}\', \'\', 550, 600)'.format(name)" style="margin-left:5px;horizontal-align:middle;min-width:20px;width:20px;padding:4px 4px" type="button" i18n:attributes="title memo_titlepopupbutton"><img src="/img/edit_spc.png" style="height:14px;"/></button>
 
@@ -37,7 +41,7 @@
 
 <tal:block metal:define-macro="metafieldeditor">
     <div class="label" i18n:translate="mask_edit_max_length">TEXT</div>
-    <input tal:attributes="value value" type="text" name="memo_value" rows="4" style="width:250px"/><br/>
+    <input tal:attributes="value value" type="text" name="fieldsetting_max_length" rows="4" style="width:250px"/><br/>
 </tal:block>
 
 <tal:block metal:define-macro="popup">

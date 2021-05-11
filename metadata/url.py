@@ -33,24 +33,22 @@ class m_url(Metatype):
 
     name = "url"
 
-    def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
-        fielddef = field.getValues().split("\r\n")
-        if len(fielddef) != 4:
-            fielddef = ("", "", "", "")
-        # separate url and urltext
-        val = value.split(";")
-        if len(val) == 1:
-            # only url given
-            val = [val[0], ""]
-        elif len(val) > 2:
-            val = val[0:2]
+    default_settings = dict(
+        link="",
+        text="",
+        icon="",
+        new_window=False,
+    )
 
+    def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
+        metacfg = field.metatype_data
+        link, text = (value.split(";")+[""])[:2]
         return tal.getTAL(
                 "metadata/url.html",
                 dict(
                     lock=lock,
-                    value=val,
-                    fielddef=fielddef,
+                    link=link or metacfg["link"],
+                    text=text or metacfg["text"],
                     width=width,
                     name=field.getName(),
                     field=field,
@@ -71,19 +69,18 @@ class m_url(Metatype):
                 language=language,
                )
 
-    #
-    # format node value depending on field definition
-    #
     def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
         try:
-            value = node.get(metafield.getName()).split(";")
-            fielddef = metafield.getValues().split("\r\n")
-
-            while len(fielddef) < 4:
-                fielddef.append(u"")
+            value = (node.get(metafield.getName()).split(";") + ["", "", "", ""])[0:4]
+            metacfg = metafield.metatype_data
+            fielddef = (
+                    metacfg["link"],
+                    metacfg["text"],
+                    metacfg["icon"],
+            )
 
             l = []
-            for i in range(0, 4):
+            for i in range(0, 3):
                 try:
                     if value[i]:
                         l.append(value[i])
@@ -92,30 +89,31 @@ class m_url(Metatype):
                 except:
                     l.append(fielddef[i])
 
-            uri, linktext, icon, target = [_replace_vars(node, p) for p in l]
+            link, text, icon = [_replace_vars(node, str(p)) for p in l]
+            new_window = value[3] != "same" or metacfg["new_window"]
 
             # find unsatisfied variables
-            if uri.find("____") >= 0:
-                uri = u''
-            if linktext.find("____") >= 0:
-                linktext = u''
+            if link.find("____") >= 0:
+                link = u''
+            if text.find("____") >= 0:
+                text = u''
 
             if len(fielddef) < 4:
                 target = u""
-            if uri != "" and linktext == "":
-                linktext = unquote(uri)
+            if link != "" and text == "":
+                text = unquote(link)
 
-            if uri == '' and linktext == '':
+            if link == '' and text == '':
                 value = icon = u""
             # XXX: ???
-            elif uri == '' and linktext != '':
-                value = linktext
+            elif link == '' and text != '':
+                value = text
                 icon = u""
             else:  # link and text given
-                if target in ["", "_blank"]:
-                    value = u'<a href="{}" target="_blank" title="{}">{}</a>'.format(uri, t(language, 'show in new window'), linktext)
+                if new_window:
+                    value = u'<a href="{}" target="_blank" title="{}">{}</a>'.format(link, t(language, 'show in new window'), text)
                 else:
-                    value = u'<a href="{}">{}</a>'.format(uri, linktext)
+                    value = u'<a href="{}">{}</a>'.format(link, text)
             if icon != "":
                 value += u'<img src="{}"/>'.format(icon)
 
@@ -135,21 +133,29 @@ class m_url(Metatype):
             return u"{}".format(quoted_uri)
         return u"{};{}".format(quoted_uri, linktext)
 
-    def get_metafieldeditor_html(self, field, metadatatype, language):
-        value = field.getValues().split("\r\n")
-        value.extend(("",)*4)
-        value = value[:4]
+    def get_metafieldeditor_html(self, fielddata, metadatatype, language):
         return tal.getTAL(
-                "metadata/url.html",
-                dict(
-                    value=value,
-                    icons=_icons,
-                    url_targets=_targets,
-                   ),
-                macro="metafieldeditor",
-                language=language,
-               )
+            "metadata/url.html",
+            dict(
+                link=fielddata["link"],
+                text=fielddata["text"],
+                icon=fielddata["icon"],
+                new_window=fielddata["new_window"],
+                icons=_icons,
+                url_targets=_targets,
+            ),
+            macro="metafieldeditor",
+            language=language,
+        )
 
+    def parse_metafieldeditor_settings(self, data):
+        assert data.get("new_window") in (None, "1")
+        return dict(
+            link=data["link"],
+            text=data["text"],
+            icon=data["icon"],
+            new_window=bool(data.get("new_window")),
+        )
 
     translation_labels = dict(
         de=dict(
@@ -158,7 +164,7 @@ class m_url(Metatype):
             url_edit_icon="Icon:",
             url_edit_noicon="-kein Icon-",
             url_edit_preview="Vorschau:",
-            url_urltarget="Linkziel:",
+            url_urltarget="Neues Fenster:",
             fieldtype_url="URL",
             fieldtype_url_desc="externer Link (neues Fenster)",
         ),
@@ -168,7 +174,7 @@ class m_url(Metatype):
             url_edit_icon="Icon:",
             url_edit_noicon="-kein Icon-",
             url_edit_preview="Preview:",
-            url_urltarget="Link target:",
+            url_urltarget="New window:",
             fieldtype_url="url",
             fieldtype_url_desc="external link (new window)",
         ),

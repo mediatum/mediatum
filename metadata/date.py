@@ -21,8 +21,13 @@ class m_date(Metatype):
 
     name = "date"
 
+    default_settings = dict(
+        format=dateoption[0].shortname,
+    )
+
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
-        d = field.getSystemFormat(field.getValues())
+        date_format = field.metatype_data['format']
+        d = field.getSystemFormat(date_format)
 
         if value == "?":
             value = date.format_date(date.now(), d.value)
@@ -35,11 +40,11 @@ class m_date(Metatype):
                     value=value,
                     width=width,
                     name=field.getName(),
-                    field=field,
+                    date_format=date_format,
                     pattern={date.shortname: date.validation_regex
-                                 for date in dateoption}[field.getValues()],
-                    title=field.getValues(),
-                    placeholder=field.getValues(),
+                                 for date in dateoption}[date_format],
+                    title=date_format,
+                    placeholder=date_format,
                     required=1 if required else None,
                    ),
                 macro="editorfield",
@@ -53,7 +58,7 @@ class m_date(Metatype):
         return tal.getTAL(
                 "metadata/date.html",
                 dict(
-                    field=field,
+                    date_format=field.metatype_data['format'],
                     name=name,
                     value=value,
                    ),
@@ -78,7 +83,7 @@ class m_date(Metatype):
                 d = parse_date(value)
             except ValueError:
                 return (metafield.getLabel(), value)
-            value = format_date(d, format=metafield.getValues())
+            value = format_date(d, format=metafield.metatype_data['format'])
 
         value_list = []
 
@@ -96,7 +101,7 @@ class m_date(Metatype):
 
     def format_request_value_for_db(self, field, params, item, language=None):
         value = params.get(item)
-        f = field.getSystemFormat(ustr(field.getValues()))
+        f = field.getSystemFormat(ustr(field.metatype_data['format']))
         if not f:
             return ""
         try:
@@ -107,17 +112,21 @@ class m_date(Metatype):
             return ""
         return format_date(d, format='%Y-%m-%dT%H:%M:%S')
 
-    def get_metafieldeditor_html(self, field, metadatatype, language):
+    def get_metafieldeditor_html(self, fielddata, metadatatype, language):
         return tal.getTAL(
                 "metadata/date.html",
                 dict(
-                    value=field.getValues(),
+                    value=fielddata['format'],
                     dateoption=dateoption,
                    ),
                 macro="metafieldeditor",
                 language=language,
                )
 
+    def parse_metafieldeditor_settings(self, data):
+        return dict(
+            format=data["format"],
+        )
 
     translation_labels = dict(
         de=dict(

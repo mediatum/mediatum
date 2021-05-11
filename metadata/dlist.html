@@ -27,20 +27,20 @@
 
 <tal:block metal:define-macro="metafieldeditor">
     <div class="label" i18n:translate="dlist_edit_source">TEXT</div>
-    <input type="text" class="text" name="dlist_value" tal:attributes="value python:value[0]" style="width:200px;"/>
+    <input type="text" class="text" name="fieldsetting_data_address" tal:attributes="value python:data_address" style="width:200px;"/>
     <br/>
     <div class="label" i18n:translate="dlist_edit_type">TEXT</div>
-    <select name="dlist_value" id="dlist_value" style="width:200px;">
-        <option tal:repeat="type types" tal:attributes="value type; selected python:'selected' if type==value[1] else None" tal:content="python:u'dlist_type_{}'.format(type)" i18n:translate=""/>
+    <select name="fieldsetting_data_type" style="width:200px;">
+        <option tal:repeat="type types" tal:attributes="value type; selected python:'selected' if type==data_type else None" tal:content="python:u'dlist_type_{}'.format(type)" i18n:translate=""/>
     </select>
     <br/>
     <div class="label" i18n:translate="dlist_edit_attr">TEXT</div>
-    <input type="text" class="text" name="dlist_value" tal:attributes="value python:value[2]" style="width:200px;"/>
+    <input type="text" class="text" name="fieldsetting_attribute" tal:attributes="value python:attribute" style="width:200px;"/>
     <br/>
     <div class="label" i18n:translate="dlist_edit_valattr">TEXT</div>
-    <input type="text" class="text" name="dlist_value" tal:attributes="value python:value[3]" style="width:200px;"/>
+    <input type="text" class="text" name="fieldsetting_value" tal:attributes="value python:value" style="width:200px;"/>
     <br/>
     <div class="label" i18n:translate="dlist_edit_format">TEXT</div>
-    <input type="text" class="text" name="dlist_value" tal:attributes="value python:value[4]" style="width:200px;"/>
+    <input type="text" class="text" name="fieldsetting_selection_format" tal:attributes="value python:selection_format" style="width:200px;"/>
     <br/>
 </tal:block>

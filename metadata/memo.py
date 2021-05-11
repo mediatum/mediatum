@@ -26,6 +26,10 @@ class m_memo(Metatype):
 
     name = "memo"
 
+    default_settings = dict(
+        max_length=None,
+    )
+
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
 
         try:
@@ -40,7 +44,7 @@ class m_memo(Metatype):
                     value=value,
                     width=width,
                     name=field_node_name,
-                    field=field,
+                    max_length=field.metatype_data['max_length'] or -1,
                     t=_core_translation.t,
                     ident=ustr(field.id),
                     required=1 if required else None,
@@ -63,16 +67,18 @@ class m_memo(Metatype):
         value = node.get(metafield.getName()).replace(";", "; ")
         return (metafield.getLabel(), value)
 
-    def get_metafieldeditor_html(self, field, metadatatype, language):
+    def get_metafieldeditor_html(self, fielddata, metadatatype, language):
         return tal.getTAL(
-                "metadata/memo.html",
-                dict(
-                    value=field.getValues(),
-                   ),
-                macro="metafieldeditor",
-                language=language,
-               )
+            "metadata/memo.html",
+            dict(value=fielddata["max_length"]),
+            macro="metafieldeditor",
+            language=language,
+        )
 
+    def parse_metafieldeditor_settings(self, data):
+        return dict(
+            max_length=int(data["max_length"]) if data["max_length"] else None,
+        )
 
     # method for popup methods of type memo
     def getPopup(self, req):

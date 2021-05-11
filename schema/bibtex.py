@@ -313,7 +313,7 @@ def importBibTeX(infile, node=None, req=None):
                     mfield = q(Node).get(maskitem.get(u"attribute"))
                     metafield_name = mfield.name
                     if mfield.get(u"type") == u"date":
-                        datefields[metafield_name] = mfield.get(u"valuelist")
+                        datefields[metafield_name] = mfield.metatype_data["format"]
                 except AttributeError as e:
                     logg.error(
                             "bibtex import docid='%s': field error for bibtex mask for type %s and bibtex-type '%s': %s",

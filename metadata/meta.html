@@ -3,7 +3,7 @@
   SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 <tal:block metal:define-macro="editorfield">
-    <i>[<span i18n:translate="metafield_metadata_field">TEXT</span>: <span tal:replace="python:field.getValues()"/>]</i> <span tal:content="value"/>
+    <i>[<span i18n:translate="metafield_fieldname">TEXT</span>: <span tal:replace="python:fieldname"/>]</i> <span tal:content="value"/>
     <br/>&nbsp;
 </tal:block>
 
@@ -14,12 +14,12 @@
 
 <tal:block metal:define-macro="metafieldeditor">
     <div class="label" i18n:translate="metafield_tech_meta">TEXT</div>
-    <select id="meta_value" name="meta_value" style="width:250px;">
+    <select name="fieldsetting_fieldname" style="width:250px;">
         <optgroup tal:repeat="t_attr python:list(t_attrs)" tal:attributes="label python:t_attr">
-            <option tal:repeat="val python:list(t_attrs[t_attr].keys())" tal:attributes="value val; selected python:{'True':'selected', 'False':None}[str(value[0]==val)]" tal:content="raw python:t_attrs[t_attr][val]"/>
+            <option tal:repeat="val python:list(t_attrs[t_attr].keys())" tal:attributes="value val; selected python:{'True':'selected', 'False':None}[str(fieldname==val)]" tal:content="raw python:t_attrs[t_attr][val]"/>
         </optgroup>
     </select>
     <br/>
-    <input type="checkbox" name="meta_value" tal:attributes="checked python:{'True':'checked', 'False':None}[str(len(value)>1 and value[1]=='on')]"/>
+    <input type="checkbox" name="fieldsetting_synchronize" value="1" tal:attributes="checked python:'checked' if synchronize else None"/>
     <span class="label" i18n:translate="write_information_back">TEXT</span>
 </tal:block>

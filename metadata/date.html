@@ -4,7 +4,7 @@
 -->
 <tal:block metal:define-macro="editorfield">
     <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:u'width:{}px'.format(width-100); name name; id name; value value; maxlenght python:unicode(len(value)); pattern pattern; title title; placeholder placeholder; required required;"/>
-    <small tal:content="python:u'({})'.format(field.getValues())"/>
+    <small tal:content="python:u'({})'.format(date_format)"/>
 
     <span tal:condition="python:lock!=0" tal:attributes="id python:u'lockspan_{}'.format(name)">&nbsp;
         <input tal:attributes="name python:u'lock_{}'.format(name); id python:u'lock_{}'.format(name); onclick python:u'handlelock(\'{}\')'.format(name)" type="checkbox"/>
@@ -24,14 +24,14 @@
             <td> <input tal:attributes="name python:u'{}-to'.format(name); id python:u'{}-to'.format(name); value python:value[1]" type="text" style="width:123px" class="searchfield"/></td>
     </tr>
     <tr>
-            <td colspan="2" align="right"><small><tal:block i18n:translate="editor_input_format"/><tal:block tal:content="python:field.getValues()"/></small>&nbsp;</td>
+            <td colspan="2" align="right"><small><tal:block i18n:translate="editor_input_format"/><tal:block tal:content="python:date_format"/></small>&nbsp;</td>
     </tr>
 </table>
 
 
 <tal:block metal:define-macro="metafieldeditor">
     <div class="label" i18n:translate="date_edit_date_format">TEXT</div>
-    <select id="date_value" name="date_value" style="width:250px;">
+    <select name="fieldsetting_format" style="width:250px;">
         <option tal:repeat="option dateoption" tal:attributes="value python:option.shortname; selected python:'selected' if option.shortname==value else None" tal:content="python:option.name" i18n:translate=""/>
     </select>
 </tal:block>

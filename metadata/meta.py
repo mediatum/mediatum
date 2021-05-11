@@ -16,6 +16,11 @@ class m_meta(Metatype):
 
     name = "meta"
 
+    default_settings = dict(
+        fieldname=u"",
+        synchronize=False,
+    )
+
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
         return tal.getTAL(
                 "metadata/meta.html",
@@ -24,7 +29,7 @@ class m_meta(Metatype):
                     value=value,
                     width=width,
                     name=field.getName(),
-                    field=field,
+                    fieldname=field.metatype_data['fieldname'],
                    ),
                 macro="editorfield",
                 language=language,
@@ -42,13 +47,9 @@ class m_meta(Metatype):
                )
 
     def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
-        return (metafield.getLabel(), node.get(metafield.getValues()))
+        return (metafield.getLabel(), node.get(metafield.metatype_data['fieldname']))
 
-    def get_metafieldeditor_html(self, field, metadatatype, language):
-        value = field.getValues().split("\r\n")
-        value.extend(("",)*2)
-        value = value[:2]
-
+    def get_metafieldeditor_html(self, fielddata, metadatatype, language):
         attr = {}
         if metadatatype:
             for t in metadatatype.getDatatypes():
@@ -62,25 +63,34 @@ class m_meta(Metatype):
                     continue
 
         return tal.getTAL(
-                "metadata/meta.html",
-                dict(
-                    value=value,
-                    t_attrs=attr,
-                   ),
-                macro="metafieldeditor",
-                language=language,
-               )
+            "metadata/meta.html",
+            dict(
+                fieldname=fielddata["fieldname"],
+                synchronize= fielddata["synchronize"],
+                t_attrs=attr,
+            ),
+            macro="metafieldeditor",
+            language=language,
+        )
+
+    def parse_metafieldeditor_settings(self, data):
+        assert data.get("synchronize") in (None, "1")
+        return dict(
+            fieldname=data["fieldname"],
+            synchronize=bool(data.get("synchronize")),
+        )
 
 
     translation_labels = dict(
         de=dict(
             metafield_tech_meta="Technisches Metadatenfeld:",
-            metafield_metadata_field="Metadatenfeld",
+            metafield_fieldname="Metadatenfeld",
             fieldtype_meta="Technisches Metadatum",
             fieldtype_meta_desc="Technisches Metadatum (automatisch vom System erstellt)",
         ),
         en=dict(
             metafield_tech_meta="Technical metadata field:",
+            metafield_fieldname="metafield",
             fieldtype_meta="technical metadata",
             fieldtype_meta_desc="field for technical metadata (automatically filled in by mediatum)",
         ),

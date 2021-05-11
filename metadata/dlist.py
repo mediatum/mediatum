@@ -27,7 +27,7 @@ q = db.query
 logg = logging.getLogger(__name__)
 
 
-def _download_list(url, format_, key_attr, key_value, display_format):
+def _download_list(metafield):
     """
     Download the list from the `url`.
     `format_` may be "json" or "list".
@@ -41,8 +41,10 @@ def _download_list(url, format_, key_attr, key_value, display_format):
     Results are yielded as individual dicts with
     `select_text` and `select_value` keys.
     """
-    with _contextlib.closing(urllib2.urlopen(url)) as data:
-        if format_=="list":
+
+    metacfg = metafield.metatype_data
+    with _contextlib.closing(urllib2.urlopen(metacfg["data_address"])) as data:
+        if metacfg["data_type"]=="list":
             for item in data:
                 item = item.rstrip("\n")
                 if item.startswith("#"):
@@ -53,22 +55,20 @@ def _download_list(url, format_, key_attr, key_value, display_format):
                     text = value = item
                 yield dict(select_text=text, select_value=value)
             return
-        assert format_=="json"
+        assert metacfg["data_type"]=="json"
         data = json.load(data)
+    key_attr, key_value = metacfg["attribute"], metacfg["value"]
     data.sort(key=_operator.itemgetter(key_attr))
     for item in data:
         yield dict(
-                select_text=display_format.replace(key_attr, item[key_attr]).replace(key_value, item[key_value]),
+                select_text=metacfg["selection_format"].replace(key_attr, item[key_attr]).replace(key_value, item[key_value]),
                 select_value=item[key_value],
                )
 
 
 def _format_elements(node, field, value):
-    fielddef = field.getValues().split("\r\n")  # url(source), type, name variable, value variable
-    while len(fielddef) < 5:
-        fielddef.append("")
     return _common_list.format_elements(
-        _itertools.imap(_operator.itemgetter("select_value"), _download_list(*fielddef[:5])),
+        _itertools.imap(_operator.itemgetter("select_value"), _download_list(field)),
         field,
         value.split(";"),
         node,
@@ -79,18 +79,23 @@ class m_dlist(Metatype):
 
     name = "dlist"
 
+    default_settings = dict(
+        data_address="",
+        data_type="",
+        attribute="",
+        value="",
+        selection_format="",
+    )
+
     def get_default_value(self, field):
         element = next(_format_elements(None, field, ""))
         if element.opt in ("option", "optionselected"):
             return element.item
 
     def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None, required=None):
-        fielddef = field.getValues().split("\r\n")  # url(source), type, name variable, value variable
-        while len(fielddef) < 5:
-            fielddef.append("")
         valuelist = []
         with suppress(ValueError, warn=False):
-            valuelist = list(_download_list(*fielddef[:5]))
+            valuelist = list(_download_list(field))
 
         if name == "":
             name = field.getName()
@@ -102,7 +107,6 @@ class m_dlist(Metatype):
                     width=width,
                     value=value,
                     valuelist=valuelist,
-                    fielddef=fielddef,
                     required=1 if required else None,
                   ),
                 macro="editorfield",
@@ -128,20 +132,29 @@ class m_dlist(Metatype):
             value = esc(value)
         return (metafield.getLabel(), value)
 
-    def get_metafieldeditor_html(self, field, metadatatype, language):
-        value = field.getValues().split("\r\n")
-        value.extend(("",)*5)
-        value = value[:5] # url(source), name variable, value variable
+    def get_metafieldeditor_html(self, fielddata, metadatatype, language):
         return tal.getTAL(
-                "metadata/dlist.html",
-                dict(
-                    value=value,
-                    types=['json', 'list'],
-                   ),
-                macro="metafieldeditor",
-                language=language,
-               )
+            "metadata/dlist.html",
+            dict(
+                data_address=fielddata["data_address"],
+                data_type=fielddata["data_type"],
+                attribute=fielddata["attribute"],
+                value=fielddata["value"],
+                selection_format=fielddata["selection_format"],
+                types=['json', 'list'],
+            ),
+            macro="metafieldeditor",
+            language=language,
+        )
 
+    def parse_metafieldeditor_settings(self, data):
+        return dict(
+            data_address=data["data_address"],
+            data_type=data["data_type"],
+            attribute=data["attribute"],
+            value=data["value"],
+            selection_format=data["selection_format"],
+        )
 
     translation_labels = dict(
         de=dict(

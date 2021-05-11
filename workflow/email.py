@@ -211,7 +211,10 @@ class WorkflowStep_SendEmail(WorkflowStep):
         field = Metafield("allowedit")
         field.set("label", _core_translation.t(lang, "admin_wfstep_email_text_editable"))
         field.set("type", "list")
-        field.set("valuelist", _core_translation.t(lang, "admin_wfstep_email_text_editable_options"))
+        field.metatype_data = dict(
+                multiple=False,
+                listelements=_core_translation.t(lang, "admin_wfstep_email_text_editable_options").split(";"),
+               )
         ret.append(field)
 
         field = Metafield("sendcondition")

@@ -21,12 +21,17 @@ logg = logging.getLogger(__name__)
 
 
 def _format_elements(field, *args):
-    return _common_list.format_elements(field.getValueList(), field, *args)
+    return _common_list.format_elements(field.metatype_data["listelements"], field, *args)
 
 
 class m_list(Metatype):
 
     name = "list"
+
+    default_settings = dict(
+        listelements=(),
+        multiple=False,
+    )
 
     def get_default_value(self, field):
         valuelist = next(_format_elements(field))
@@ -39,7 +44,7 @@ class m_list(Metatype):
                 dict(
                     field=field,
                     lock=lock,
-                    multiple=field.get('multiple'),
+                    multiple=field.metatype_data['multiple'],
                     name=field.getName(),
                     required=1 if required else None,
                     valuelist=_format_elements(field, value.split(";")),
@@ -68,24 +73,35 @@ class m_list(Metatype):
         return (metafield.getLabel(), value)
 
     def format_request_value_for_db(self, field, params, item, language=None):
-        if field.get('multiple'):
+        if field.metatype_data['multiple']:
             valuelist = params.getlist(item)
             value = ";".join(valuelist)
         else:
             value = params.get(item)
         return value.replace("; ", ";")
 
-    def get_metafieldeditor_html(self, field, metadatatype, language):
+    def get_metafieldeditor_html(self, fielddata, metadatatype, language):
         return tal.getTAL(
-                "metadata/list.html",
-                dict(
-                    value=field.getValues(),
-                    multiple_list=field.get('multiple'),
-                   ),
-                macro="metafieldeditor",
-                language=language,
-               )
+            "metadata/list.html",
+            dict(
+                    multiple_list=fielddata['multiple'],
+                    value=u"\r\n".join(fielddata['listelements']),
+               ),
+            macro="metafieldeditor",
+            language=language,
+        )
 
+    def parse_metafieldeditor_settings(self, data):
+        if "listelements" in data:
+            listelements = data["listelements"].split("\r\n")
+        else:
+            listelements = ()
+
+        assert data.get("multiple") in (None, "1")
+        return dict(
+            listelements=listelements,
+            multiple=bool(data.get("multiple")),
+        )
 
     translation_labels = dict(
         de=dict(

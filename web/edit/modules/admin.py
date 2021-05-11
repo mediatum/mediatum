@@ -101,10 +101,8 @@ def getContent(req, ids):
     for key, value in sorted(iteritems(node.attrs), key=lambda t: t[0].lower()):
         if value or user.is_admin:
             # display all values for admins, even if they are "empty" (= a false value)
-            if key in fieldnames:
-                metafields[key] = formatdate(value, getFormat(fields, key))
-            elif key in tattr.keys():
-                technfields[key] = formatdate(value)
+            if (key in fieldnames) or (key in tattr.keys()):
+                metafields[key] = _format_date(value)
             else:
                 obsoletefields[key] = value
 
@@ -130,8 +128,7 @@ def getContent(req, ids):
                 fields=fields,
                 technfields=technfields,
                 tattr=tattr,
-                fd=formatdate,
-                gf=getFormat,
+                fd=_format_date,
                 user_is_admin=user.is_admin,
                 canedit=node.has_write_access(),
                 csrf=_core_csrfform.get_token(),
@@ -142,13 +139,7 @@ def getContent(req, ids):
         )
 
 
-def getFormat(fields, name):
-    for field in fields:
-        if field.name == name:
-            return field.getValues()
-
-
-def formatdate(value, f='%d.%m.%Y %H:%M:%S'):
+def _format_date(value, f='%d.%m.%Y %H:%M:%S'):
     if not isinstance(value, unicode):
         value = unicode(value)
     try:

@@ -10,6 +10,7 @@ import functools as _functools
 import inspect
 import importlib
 import itertools as _itertools
+import json as _json
 import logging
 import os
 import pkgutil
@@ -332,6 +333,7 @@ def updateMetaField(
         fieldid,
        ):
     assert bool(fieldid) != bool(fieldtype)
+    assert fieldid or not fieldvalues
 
     metatype = getMetaType(parent)
 
@@ -340,6 +342,7 @@ def updateMetaField(
     if fieldid:
         field = q(Node).get(fieldid)
         field.name = name
+        fieldvalues = getMetadataType(field.get("type")).parse_metafieldeditor_settings(fieldvalues)
     else:
         field = metatype.children.filter_by(name=name).filter(Node.type=="metafield").scalar()
     if not field:
@@ -348,18 +351,12 @@ def updateMetaField(
         metatype.children.append(field)
         field.orderpos = len(metatype.children) - 1
         db.session.commit()
-    # <----- Begin: For fields of list type ----->
-    if fieldvalues.startswith("multiple"):
-        field.set("multiple", True)
-        fieldvalues = fieldvalues.replace("multiple;", "", 1)
-    else:
-        if field.get("multiple"):
-            del field.attrs["multiple"]
-    #<----- End: For fields of list type ----->
+        fieldvalues = getMetadataType(field.get("type")).default_settings
+
+    field.metatype_data = fieldvalues
 
     field.set("label", label)
     field.set("opts", "".join(option))
-    field.set("valuelist", fieldvalues.replace("\r\n", ";"))
     field.set("description", description)
 
     db.session.commit()
@@ -770,26 +767,11 @@ class Metafield(Node):
     def setDescription(self, value):
         self.set("description", value)
 
-    def getValues(self):
-        return self.get("valuelist").replace(";", "\r\n")
-
-    def setValues(self, value):
-        self.set("valuelist", value)
-
-    def removeValue(self, value):
-        self.set("valuelist", self.get("valuelist").replace(value, ""))
-
     def Sortfield(self):
         return "o" in self.getOption()
 
     def Searchfield(self):
         return "s" in self.getOption()
-
-    def getValueList(self):
-        return self.getValues().split("\r\n")
-
-    def setValuelist(self, valuelist):
-        self.set("valuelist", "; ".join(["%s" % k for k in valuelist]))
 
     def getSystemFormat(self, shortname):
         for option in dateoption:
@@ -805,6 +787,14 @@ class Metafield(Node):
 
     def getFormattedValue(self, node, language=None):
         return getMetadataType(self.getFieldtype()).getFormattedValue(self, None, None, node, language=language)
+
+    @property
+    def metatype_data(self):
+        return _json.loads(self.attrs['metatype-data'])
+
+    @metatype_data.setter
+    def metatype_data(self, data):
+        self.attrs['metatype-data'] = _json.dumps(data)
 
 # helper class for masks
 

@@ -11,6 +11,7 @@ import sys
 import logging
 import mediatumtal.tal as _tal
 import sqlalchemy as _sqlalchemy
+import werkzeug.datastructures as _datastructures
 
 from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter
 from web.common.acl_web import makeList
@@ -198,12 +199,9 @@ def validate(req, op):
             elif not checkString(req.params.get("mname", "")):
                 return FieldDetail(req, error="admin_metafield_error_badchars")
 
-            # metafield settings may only be passed for
-            # pre-existing fields, i.e., fields with an id
-            if req.values.get("fieldid"):
-                fieldvalue = req.params.get("{}_value".format(q(Node).get(int(req.values.get("fieldid"))).get("type")), "")
-            else:
-                fieldvalue = ""
+            fieldsetting = "fieldsetting_"
+            fieldsettings = {k[len(fieldsetting):]:v for k,v in req.values.lists() if k.startswith(fieldsetting)}
+            fieldsettings = _datastructures.CombinedMultiDict((_datastructures.ImmutableMultiDict(fieldsettings),))
 
             updateMetaField(
                     req.values["parent"],
@@ -212,7 +210,7 @@ def validate(req, op):
                     req.values.get("mtype"),
                     tuple(o[7] for o in req.params if o.startswith("option_")),
                     req.values.get("mdescription", ""),
-                    fieldvalue,
+                    fieldsettings,
                     req.values.get("fieldid"),
                    )
 

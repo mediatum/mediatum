@@ -4,13 +4,13 @@
 -->
 <tal:block metal:define-macro="editorfield">
         <span i18n:translate="url_edit_link">TEXT</span>
-        <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:u'width:{}px'.format(width-51); name name; id name; value python:value[0] or fielddef[0]; required required"/>
+        <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:u'width:{}px'.format(width-51); name name; id name; value python:link; required required"/>
         <span tal:condition="python:lock!=0" tal:attributes="id python:u'lockspan_{}'.format(name)">&nbsp;
             <input tal:attributes="name python:u'lock_{}'.format(name); id python:u'lock_{}'.format(name); onclick python:u'handlelock(\'{}\')'.format(name)" type="checkbox"/>
             <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
         </span>
         <br/> <span i18n:translate="url_edit_linktext">TEXT</span>
-        <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:u'width:{}px'.format(width-116); name python:u'{}_text'.format(name); id python: u'{}_text'.format(name); value python:value[1] or fielddef[1]; required required"/>
+        <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:u'width:{}px'.format(width-116); name python:u'{}_text'.format(name); id python: u'{}_text'.format(name); value python:text; required required"/>
         <span tal:condition="python:lock!=0" tal:attributes="id python:u'lockspan_{}'.format(name)">&nbsp;
             <input tal:attributes="name python:u'lock_{}'.format(name); id python:u'lock_{}'.format(name); onclick python:u'handlelock(\'{}\')'.format(name)" type="checkbox"/><small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
         </span>
@@ -23,20 +23,18 @@
 
 <tal:block metal:define-macro="metafieldeditor">
     <div class="label" i18n:translate="url_edit_link">TEXT</div>
-    <input tal:attributes="value python:value[0]" type="text" name="url_value" style="width:250px;"/>
+    <input tal:attributes="value python:link" type="text" name="fieldsetting_link" style="width:250px;"/>
     <br/>
     <div class="label" i18n:translate="url_edit_linktext">TEXT</div>
-    <input tal:attributes="value python:value[1]" type="text" name="url_value" style="width:200px;"/>
+    <input tal:attributes="value python:text" type="text" name="fieldsetting_text" style="width:200px;"/>
     <br/>
     <div class="label" i18n:translate="url_edit_icon">TEXT</div>
-    <select onchange="showPreview(document, this.value)" name="url_value" id="url_value">
-        <option value="" tal:attributes="selected python:'selected' if value[2]=='' else None" i18n:translate="url_edit_noicon">TEXT</option>
-        <option tal:repeat="pos python:list(icons)" tal:attributes="value python:icons[pos]; selected python:'selected' if value[2]==icons[pos] else None" tal:content="pos"/>
+    <select onchange="showPreview(document, this.value)" name="fieldsetting_icon" >
+        <option value="" tal:attributes="selected python:'selected' if icon=='' else None" i18n:translate="url_edit_noicon">TEXT</option>
+        <option tal:repeat="pos python:list(icons)" tal:attributes="value python:icons[pos]; selected python:'selected' if icon==icons[pos] else None" tal:content="pos"/>
     </select>
-    <span i18n:translate="url_edit_preview">TEXT</span> <img tal:attributes="src python:'/img/emtyDot1Pix.gif' if value[2]=='' else value[2]" id="image_preview"/>
+    <span i18n:translate="url_edit_preview">TEXT</span> <img tal:attributes="src python:'/img/emtyDot1Pix.gif' if icon=='' else icon" id="image_preview"/>
     <br/>
     <div class="label" i18n:translate="url_urltarget">TEXT</div>
-    <select name="url_value">
-        <option tal:repeat="index python:list(url_targets)" tal:attributes="value python:url_targets[index]; selected python:'selected' if value[3]==url_targets[index] else None" tal:content="index" value="_value_"/>
-    </select>
+    <input type="checkbox" name="fieldsetting_new_window" value="1" tal:attributes="checked python:'checked' if new_window else None" />
 </tal:block>

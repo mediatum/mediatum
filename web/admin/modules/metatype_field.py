@@ -162,10 +162,10 @@ def FieldDetail(req, name=None, error=None):
     if field.id:
         tal_ctx["field"] = field
         tal_ctx["fieldsettings_html"] = getMetadataType(field.getFieldtype()).get_metafieldeditor_html(
-                field,
+                field.metatype_data,
                 metadatatype,
                 _translation.set_language(req.accept_languages),
-            )
+               )
 
     db.session.commit()
     return _tal.processTAL(

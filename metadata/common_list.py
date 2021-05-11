@@ -62,7 +62,7 @@ def format_elements(elements, field, values=(), node=None):
         indentstr = 2 * max(0, indent-1) * "&nbsp;"
         value = value.lstrip("*")
         selectable = (not indent) or value.startswith(" ")
-        value = _utils.esc(value.strip())
+        value = value.strip()
 
         num = int(items.get(value, 0))
         if num<0:

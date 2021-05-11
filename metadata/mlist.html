@@ -5,8 +5,8 @@
 <tal:block metal:define-macro="editorfield">
     <select class="mediatum_multitext" tal:attributes="disabled python:{0:None,1:'disabled'}[int(lock)]; style python:u'width:{}px'.format(width-16); name python: name; id python: name; required required" multiple="multiple">
         <tal:block tal:repeat="v valuelist">
-            <option tal:condition="python:v.opt=='optionselected'" tal:attributes="value python:v.item" tal:content="raw python:v.indent+v.item+v.count" selected="selected"/>
-            <option tal:condition="python:v.opt=='option'" tal:attributes="value python:v.item" tal:content="raw python:v.indent+v.item+v.count"/>
+            <option tal:condition="python:v.opt=='optionselected'" tal:attributes="value python:v.item" tal:content="python:v.indent+v.item+v.count" selected="selected"/>
+            <option tal:condition="python:v.opt=='option'" tal:attributes="value python:v.item" tal:content="python:v.indent+v.item+v.count"/>
             <optgroup tal:condition="python:v.opt=='optgroup'" tal:replace="raw python:v.indent"/>
         </tal:block>
     </select>
@@ -19,8 +19,8 @@
 
 <select metal:define-macro="searchfield" tal:attributes="name python:name; id python:name" class="searchfield">
     <tal:block tal:repeat="v valuelist">
-        <option tal:condition="python:v.opt=='optionselected' and v.item in value.split(';') and value!=''" tal:attributes="value python:v.item" tal:content="raw python:v.indent+v.item+v.count" selected="selected"/>
-        <option tal:condition="python:v.opt=='option' and v.item not in (value.split(';') or value=='')" tal:attributes="value python:v.item" tal:content="raw python:v.indent+v.item+v.count"/>
+        <option tal:condition="python:v.opt=='optionselected' and v.item in value.split(';') and value!=''" tal:attributes="value python:v.item" tal:content="python:v.indent+v.item+v.count" selected="selected"/>
+        <option tal:condition="python:v.opt=='option' and v.item not in (value.split(';') or value=='')" tal:attributes="value python:v.item" tal:content="python:v.indent+v.item+v.count"/>
         <optgroup tal:condition="python:v.opt=='optgroup'" tal:replace="raw python:v.indent"/>
     </tal:block>
 </select>
@@ -29,5 +29,6 @@
 <tal:block metal:define-macro="metafieldeditor">
     <br/>
     <div class="label" i18n:translate="mlist_list_values">TEXT</div>
-    <textarea name="mlist_value" rows="4" style="width:500px;margin-bottom:5px"><tal:block tal:replace="value"/></textarea>
+    <textarea name="fieldsetting_listelements" rows="4" style="width:500px;margin-bottom:5px">
+<tal:block tal:replace="value"/></textarea>
 </tal:block>

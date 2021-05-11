@@ -75,8 +75,8 @@
                 <div id="meta" class="mediatum_subcontent_padding">
                      <div class="mediatum_entry" tal:repeat="key python: list(metafields)">
                          <div class="label" tal:content="key">TEXT</div>
-                         <div class="content" tal:content="python:fd(node.get(key), gf(fields, key))">TEXT</div>
-                         <img tal:condition="canedit" tal:attributes="name python:key;value python:fd(node.get(key), gf(fields, key))"
+                         <div class="content" tal:content="python:fd(node.get(key))">TEXT</div>
+                         <img tal:condition="canedit" tal:attributes="name python:key;value python:fd(node.get(key))"
                          i18n:attributes="title edit_admin_editattr_title" type="image" src="/img/edit.png"
                          onClick="return openFilledForm(this)" class="mediatum_subcontent_position"/>
                          <input tal:condition="user_is_admin" tal:attributes="name python:u'attr_{}'.format(key)"
@@ -93,8 +93,8 @@
                 <div id="obsolete" class="mediatum_subcontent_padding">
                     <div class="mediatum_entry" tal:repeat="key python:list(obsoletefields)">
                         <div class="label" tal:content="key">TEXT</div>
-                        <div class="content" tal:content="python:fd(node.get(key), gf(fields, key))">TEXT</div>
-                        <img tal:condition="canedit" tal:attributes="name python:key;value python:fd(node.get(key), gf(fields, key))" i18n:attributes="title edit_admin_editattr_title" type="image" src="/img/edit.png" onClick="return openFilledForm(this)" class="mediatum_subcontent_position"/>
+                        <div class="content" tal:content="python:fd(node.get(key))">TEXT</div>
+                        <img tal:condition="canedit" tal:attributes="name python:key;value python:fd(node.get(key))" i18n:attributes="title edit_admin_editattr_title" type="image" src="/img/edit.png" onClick="return openFilledForm(this)" class="mediatum_subcontent_position"/>
                         <input tal:condition="user_is_admin" tal:attributes="name python:u'attr_{}'.format(key)" i18n:attributes="title edit_admin_del_attribute" type="image" src="/img/delete.png" onClick="return questionDel()" class="mediatum_subcontent_top"/>
                     </div>
 
@@ -127,7 +127,7 @@
                             </div>
                         </tal:block>
                         <div class="content" tal:content="python:fd(node.get(key))">TEXT</div>
-                        <img tal:condition="canedit" tal:attributes="name python:key;value python:fd(node.get(key), gf(fields, key))" i18n:attributes="title edit_admin_editattr_title" type="image" src="/img/edit.png" onClick="return openFilledForm(this)" class="mediatum_subcontent_position"/>
+                        <img tal:condition="canedit" tal:attributes="name python:key;value python:fd(node.get(key))" i18n:attributes="title edit_admin_editattr_title" type="image" src="/img/edit.png" onClick="return openFilledForm(this)" class="mediatum_subcontent_position"/>
                         <input tal:condition="user_is_admin" tal:attributes="name python:u'attr_{}'.format(key)" i18n:attributes="title edit_admin_del_attribute" type="image" src="/img/delete.png" onClick="return questionDel()" class="mediatum_subcontent_top"/>
                     </div>
                     <div tal:condition="python:len(list(technfields))==0" class="mediatum_entry">

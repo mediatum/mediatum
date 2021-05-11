@@ -37,7 +37,7 @@ class m_field(Metatype):
         key = metafield.getName()
         if node.get_special(key) or maskitem.getDefault():
             return
-        value = getMetadataType(metafield.get("type")).get_default_value(element)
+        value = getMetadataType(metafield.get("type")).get_default_value(metafield)
         if value is not None:
             node.set(key, value)
 

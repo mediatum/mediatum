@@ -3,9 +3,14 @@
   SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 <div tal:attributes="id python:'div_'+lang+'__'+name" style="float:left;">
-<textarea class="htmlmemo_text" tal:attributes="required required disabled python:{0:None,1:'disabled'}[lock]; name python:lang+'__'+name; id python:lang+'__'+name; onkeyup python:'countMeta(this,'+(field.getValues() or '-1')+')';style python:'width:'+str(width-20)+'px';" rows="4"><tal:block tal:replace="python:value"/>
-</textarea>
+  <textarea
+      class="htmlmemo_text"
+      rows="4"
+      tal:attributes="required required disabled python:{0:None,1:'disabled'}[lock]; name python:lang+'__'+name; id python:lang+'__'+name; onkeyup python:'countMeta(this,{})'.format(max_length);style python:'width:'+str(width-20)+'px';"
+      tal:content="python:value"
+     />
 </div>
+
 <tal:block metal:define-macro="editorfield">
 
     <!-- for mask editor html memo -->
@@ -15,17 +20,20 @@
 
     <div>
         <div style="float:left;position:relative;">
-<textarea tal:attributes="required required; disabled python:{0:None,1:'disabled'}[lock]; name python:u'{}'.format(name); id python:u'{}'.format(name); onkeyup python:'countMeta(this,'+(field.getValues() or '-1')+')';style python:u'width:{}px'.format(width-20)" rows="4"><tal:block tal:replace="python:value"/>
-</textarea>
+          <textarea
+              rows="4"
+              tal:attributes="required required; disabled python:{0:None,1:'disabled'}[lock]; name python:u'{}'.format(name); id python:u'{}'.format(name); onkeyup python:'countMeta(this,{})'.format(max_length);style python:u'width:{}px'.format(width-20)"
+              tal:content="python:value"
+            />
         </div>
     </div>
 
     <span tal:content="raw python:'<script> var _editor = \''+name+'\';var editor = CKEDITOR.replace(_editor, {customConfig: \'/metatype/htmlmemo?type=configfile\',});editor.on(\'required\', function(evt){alert(\'Please fill out the htmlmemo field.\');evt.cancel();});</script>'" />
 
     <div tal:attributes="style python:u'width:{}px'.format(width)">
-        <div tal:condition="python:field.getValues()!=''" style="text-align:right;padding-right:7px; margin-bottom:7px">
+        <div tal:condition="python:max_length" style="text-align:right;padding-right:7px; margin-bottom:7px">
             <small>
-                <span tal:attributes="id python:u'number{}'.format(name)" tal:content="python:int(field.getValues())-len(value)"/>
+                <span tal:attributes="id python:u'number{}'.format(name)" tal:content="python:max_length-len(value)"/>
                 <span i18n:translate="editor_htmlmemo_label">TEXT</span>
             </small>
         </div>
@@ -68,6 +76,6 @@ CKEDITOR.editorConfig = function( config ){
 
 <tal:block metal:define-macro="metafieldeditor">
     <div class="label" i18n:translate="mask_edit_max_length">TEXT</div>
-    <input tal:attributes="value value" type="text" name="htmlmemo_value" rows="4" style="width:250px"/><br/>
+    <input tal:attributes="value value" type="text" name="fieldsetting_max_length" rows="4" style="width:250px"/><br/>
 
 </tal:block>

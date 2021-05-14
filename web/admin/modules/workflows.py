@@ -44,11 +44,11 @@ def getInformation():
 """ standard validator to execute correct method """
 
 
-def _aggregate_workflowstep_text_parameters(req_params, languages):
+def _aggregate_workflowstep_text_parameters(req_values, languages):
     """
-    Parse workflow step http parameters from req_params dict,
-    return dict with params.
-    If languages are defined, parameters in req-params are expected
+    Parse workflow step http parameters from req_values dict,
+    return dict with values.
+    If languages are defined, parameters in req_values are expected
     to be prefixed with "{language}.n", otherwise just "n".
     Return dict values contain texts of all languages,
     prefixed with "{language}:" and newline-separated,
@@ -61,11 +61,11 @@ def _aggregate_workflowstep_text_parameters(req_params, languages):
     labeltexts = dict()
     for key in u"truelabel falselabel sidebartext pretext posttext".split():
         labeltexts[key] = u"\n".join(
-            u"{}{}".format(v, req_params[u"{}{}".format(k, key)].replace("\n", ""))
+            u"{}{}".format(v, req_values[u"{}{}".format(k, key)].replace("\n", ""))
             for k, v in lang_prefixes.iteritems()
         )
     for key in u"name trueid falseid comment".split():
-        labeltexts[key] = req_params[u"n{}".format(key)]
+        labeltexts[key] = req_values[u"n{}".format(key)]
 
     return labeltexts
 
@@ -80,14 +80,14 @@ def validate(req, op):
     if importfile:
         importWorkflow(importfile)
 
-    if req.params.get("form_op", "") == "update":
-        return WorkflowStepDetail(req, req.params["parent"], req.params["nname"], -1)
+    if req.values.get("form_op", "") == "update":
+        return WorkflowStepDetail(req, req.values["parent"], req.values["nname"], -1)
 
     try:
 
-        if req.params.get("acttype", "workflow") == "workflow":
+        if req.values.get("acttype", "workflow") == "workflow":
             # workflow section
-            for key in req.params.keys():
+            for key in req.values:
                 if key.startswith("new_"):
                     # create new workflow
                     return WorkflowDetail(req, "")
@@ -103,31 +103,30 @@ def validate(req, op):
 
                 elif key.startswith("detaillist_"):
                     # show nodes for given workflow
-                    #req.params["detailof"] = key[11:-2]
                     return WorkflowStepList(req, key[11:-2])
 
-            if "form_op" in req.params.keys():
-                if req.params["form_op"] == "cancel":
+            if "form_op" in req.values:
+                if req.values["form_op"] == "cancel":
                     return view(req)
 
-                if not req.params["name"]:
-                    return WorkflowDetail(req, req.params["id"], 1)  # no name was given
+                if not req.values["name"]:
+                    return WorkflowDetail(req, req.values["id"], 1)  # no name was given
 
-                if req.params["form_op"] == "save_new":
+                if req.values["form_op"] == "save_new":
                     # save workflow values
-                    wf = addWorkflow(req.params["name"], req.params["description"])
-                elif req.params["form_op"] == "save_edit":
+                    wf = addWorkflow(req.values["name"], req.values["description"])
+                elif req.values["form_op"] == "save_edit":
                     # save workflow values
                     wf = updateWorkflow(
-                            req.params["name"],
-                            req.params["description"],
-                            req.params["name_attr"],
-                            req.params["orig_name"],
+                            req.values["name"],
+                            req.values["description"],
+                            req.values["name_attr"],
+                            req.values["orig_name"],
                         )
                 else:
                     raise AssertionError("invalid form_op")
 
-                language_list = filter(lambda lang : "wf_language_{}".format(lang) in req.params, config.languages)
+                language_list = filter(lambda lang : "wf_language_{}".format(lang) in req.values, config.languages)
                 if language_list:
                     wf.set('languages', ';'.join(language_list))
                 else:
@@ -136,82 +135,81 @@ def validate(req, op):
                 for r in wf.access_ruleset_assocs.filter_by(ruletype=u'read'):
                     db.session.delete(r)
 
-                for key in req.params.keys():
+                for key in req.values:
                     if key.startswith("left_read"):
-                        for r in req.params.get(key).split(';'):
+                        for r in req.values.getlist(key):
                             wf.access_ruleset_assocs.append(NodeToAccessRuleset(ruleset_name=r, ruletype=key[9:]))
                         break
 
                 for r in wf.access_ruleset_assocs.filter_by(ruletype=u'write'):
                     db.session.delete(r)
 
-                for key in req.params.keys():
+                for key in req.values:
                     if key.startswith("left_write"):
-                        for r in req.params.get(key).split(';'):
+                        for r in req.values.getlist(key):
                             wf.access_ruleset_assocs.append(NodeToAccessRuleset(ruleset_name=r, ruletype=key[10:]))
                         break
 
                 # check for right inheritance
-                if "write_inherit" in req.params:
-                    inheritWorkflowRights(req.params["name"], "write")
-                if "read_inherit" in req.params:
-                    inheritWorkflowRights(req.params["name"], "read")
+                if "write_inherit" in req.values:
+                    inheritWorkflowRights(req.values["name"], "write")
+                if "read_inherit" in req.values:
+                    inheritWorkflowRights(req.values["name"], "read")
                 db.session.commit()
 
         else:
             # workflowstep section
-            for key in req.params.keys():
+            for key in req.values:
                 if key.startswith("newdetail_"):
                     # create new workflow
-                    return WorkflowStepDetail(req, req.params["parent"], "")
+                    return WorkflowStepDetail(req, req.values["parent"], "")
                 elif key.startswith("editdetail_"):
                     # edit workflowstep
-                    return WorkflowStepDetail(req, req.params["parent"], key[11:-2].split("|")[1])
-
+                    return WorkflowStepDetail(req, req.values["parent"], key[11:-2].split("|")[1])
                 elif key.startswith("deletedetail_"):
                     # delete workflow step id: deletedetail_[workflowid]|[stepid]
                     deleteWorkflowStep(key[13:-2].split("|")[0], key[13:-2].split("|")[1])
                     break
 
-            if "form_op" in req.params.keys():
-                if req.params["form_op"] == "cancel":
-                    return WorkflowStepList(req, req.params["parent"])
+            if "form_op" in req.values:
+                if req.values["form_op"] == "cancel":
+                    return WorkflowStepList(req, req.values["parent"])
 
-                if not req.params["nname"]:  # no Name was given
-                    return WorkflowStepDetail(req, req.params["parent"], req.params["stepid"], 1)
+                if not req.values["nname"]:  # no Name was given
+                    return WorkflowStepDetail(req, req.values["parent"], req.values["stepid"], 1)
 
-                workflow = getWorkflow(req.params["parent"])
-                if req.params["form_op"] == "save_newdetail":
+                workflow = getWorkflow(req.values["parent"])
+                if req.values["form_op"] == "save_newdetail":
                     # save workflowstep values -> create
                     # don't create a new workflowstep if a workflowstep with the same name already exists
-                    workflowstep = workflow.getStep(req.params["nname"], test_only=True)
+                    workflowstep = workflow.getStep(req.values["nname"], test_only=True)
                     if workflowstep:
                         raise ValueError("a workflowstep with the same name already exists")
 
                     wnode = create_update_workflow_step(
-                            typ=req.params["ntype"],
-                            adminstep=req.params.get("adminstep", ""),
+                            typ=req.values["ntype"],
+                            adminstep=req.values.get("adminstep", ""),
                             **_aggregate_workflowstep_text_parameters(
-                                req.params,
+                                req.values,
                                 workflow.getLanguages(),
                             )
                         )
                     workflow.addStep(wnode)
 
-                elif req.params["form_op"] == "save_editdetail":
+                elif req.values["form_op"] == "save_editdetail":
                     # update workflowstep
                     # don't update a workflowstep if the name is changed and a workflowstep with the same name already exists
-                    if req.params["orig_name"] != req.params["nname"]:
-                        workflowstep = workflow.getStep(req.params["nname"], test_only=True)
+                    if req.values["orig_name"] != req.values["nname"]:
+                        workflowstep = workflow.getStep(req.values["nname"], test_only=True)
                         if workflowstep:
                             raise ValueError("a workflowstep with the same name already exists")
 
                     wnode = create_update_workflow_step(
-                            workflow.getStep(req.params["orig_name"]),
-                            adminstep=req.params.get("adminstep", ""),
-                            typ=req.params["ntype"],
+                            workflow.getStep(req.values["orig_name"]),
+                            adminstep=req.values.get("adminstep", ""),
+                            typ=req.values["ntype"],
                             **_aggregate_workflowstep_text_parameters(
-                                req.params,
+                                req.values,
                                 workflow.getLanguages(),
                             )
                         )
@@ -222,26 +220,26 @@ def validate(req, op):
                 for r in wnode.access_ruleset_assocs.filter_by(ruletype=u'read'):
                     db.session.delete(r)
 
-                for key in req.params.keys():
+                for key in req.values:
                     if key.startswith("left_read"):
-                        for r in req.params.get(key).split(';'):
+                        for r in req.values.getlist(key):
                             wnode.access_ruleset_assocs.append(NodeToAccessRuleset(ruleset_name=r, ruletype=key[9:]))
                         break
 
                 for r in wnode.access_ruleset_assocs.filter_by(ruletype=u'write'):
                     db.session.delete(r)
 
-                for key in req.params.keys():
+                for key in req.values:
                     if key.startswith("left_write"):
-                        for r in req.params.get(key).split(';'):
+                        for r in req.values.getlist(key):
                             wnode.access_ruleset_assocs.append(NodeToAccessRuleset(ruleset_name=r, ruletype=key[10:]))
                         break
                 db.session.commit()
 
-                if "metaDataEditor" in req.params.keys():
+                if "metaDataEditor" in req.values:
                     parseEditorData(req, wnode)
 
-            return WorkflowStepList(req, req.params["parent"])
+            return WorkflowStepList(req, req.values["parent"])
 
         return view(req)
     except Exception as ex:
@@ -313,11 +311,10 @@ def WorkflowDetail(req, id, err=0):
     else:
         # error
         workflow = Workflow(u"")
-        workflow.name = req.params["name"]
-        workflow.set("description", req.params["description"])
-        #workflow.setAccess("write", req.params.get("writeaccess", ""))
-        v["original_name"] = req.params["orig_name"]
-        workflow.id = req.params["id"]
+        workflow.name = req.values["name"]
+        workflow.set("description", req.values["description"])
+        v["original_name"] = req.values["orig_name"]
+        workflow.id = req.values["id"]
         db.session.commit()
 
     try:
@@ -333,7 +330,7 @@ def WorkflowDetail(req, id, err=0):
     v["workflow"] = workflow
     v["languages"] = config.languages
     v["error"] = err
-    v["actpage"] = req.params["actpage"]
+    v["actpage"] = req.values["actpage"]
     v["csrf"] = req.csrf_token.current_token
     return _tal.processTAL(v, file="web/admin/modules/workflows.html", macro="modify", request=req)
 
@@ -408,47 +405,47 @@ def WorkflowStepDetail(req, wid, wnid, err=0):
         v["orig_name"] = ""
     elif err == -1:
         # update steptype
-        if req.params["stepid"]:
-            stepname = req.params["nname"]
+        if req.values["stepid"]:
+            stepname = req.values["nname"]
             workflowstep = create_update_workflow_step(
                     workflow.getStep(stepname),
-                    typ=req.params.get("ntype", "workflowstep"),
+                    typ=req.values.get("ntype", "workflowstep"),
                     **_aggregate_workflowstep_text_parameters(
-                        req.params,
+                        req.values,
                         workflow.getLanguages(),
                     )
                 )
         else:
             err = 0
             workflowstep = create_update_workflow_step(
-                    typ=req.params.get("ntype", "workflowstep"),
+                    typ=req.values.get("ntype", "workflowstep"),
                     **_aggregate_workflowstep_text_parameters(
-                        req.params,
+                        req.values,
                         workflow.getLanguages(),
                     )
                 )
         v["orig_name"] = workflowstep.name
 
-    elif wnid != "" and "nname" not in req.params:
+    elif wnid != "" and "nname" not in req.values:
         # edit field
         workflowstep = workflow.getStep(wnid)
         v["orig_name"] = workflowstep.name
     else:
         # error while filling values
-        typ = req.params.get("ntype", "workflowstep")
+        typ = req.values.get("ntype", "workflowstep")
         if typ == "":
             typ = "workflowstep"
         workflowstep = create_update_workflow_step(
                 typ=typ,
                 **_aggregate_workflowstep_text_parameters(
-                    req.params,
+                    req.values,
                     workflow.getLanguages(),
                 )
             )
-        v["orig_name"] = req.params["orig_name"]
+        v["orig_name"] = req.values["orig_name"]
 
-    if req.params.get("nytype", "") != "":
-        workflowstep.setType(req.params.get("nytype", ""))
+    if req.values.get("nytype", "") != "":
+        workflowstep.setType(req.values.get("nytype", ""))
 
     v_part = {}
     v_part["fields"] = workflowstep.metaFields(lang(req)) or []
@@ -472,8 +469,8 @@ def WorkflowStepDetail(req, wid, wnid, err=0):
     v["nodelist"] = nodelist
     v["workflowtypes"] = getWorkflowTypes()
     v["error"] = err
-    v["update_type"] = req.params.get("ntype", u"")
-    v["actpage"] = req.params.get("actpage")
+    v["update_type"] = req.values.get("ntype", u"")
+    v["actpage"] = req.values["actpage"]
     v["csrf"] = req.csrf_token.current_token
     return _tal.processTAL(v, file="web/admin/modules/workflows.html", macro="modify_step", request=req)
 

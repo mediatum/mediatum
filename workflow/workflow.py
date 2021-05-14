@@ -318,8 +318,8 @@ class Workflows(Node):
             if workflow.children.filter_write_access().first() is not None:
                 list += [workflow]
         return _tal.processTAL({"list": list,
-                               "search": req.params.get("workflow_search", ""),
-                               "items": workflowSearch(list, req.params.get("workflow_search", "")),
+                               "search": req.values.get("workflow_search", ""),
+                               "items": workflowSearch(list, req.values.get("workflow_search", "")),
                                "getStep": getNodeWorkflowStep,
                                "format_date": formatItemDate,
                                "csrf": req.csrf_token.current_token},
@@ -345,8 +345,8 @@ class Workflow(Node):
         if self.children.filter_write_access().first() is None:
             return '<i>' + t(lang(req), "permission_denied") + '</i>'
         return _tal.processTAL({"workflow": self,
-                               "search": req.params.get("workflow_search", ""),
-                               "items": workflowSearch([self], req.params.get("workflow_search", "")),
+                               "search": req.values.get("workflow_search", ""),
+                               "items": workflowSearch([self], req.values.get("workflow_search", "")),
                                "getStep": getNodeWorkflowStep,
                                "format_date": formatItemDate,
                                "csrf": req.csrf_token.current_token},
@@ -466,7 +466,7 @@ class WorkflowStep(Node):
             # stop caching
             req.response.set_cookie("nocache", "1")
 
-            key = req.params.get("key", _flask.session.get("key", ""))
+            key = req.values.get("key", _flask.session.get("key", ""))
             _flask.session["key"] = key
 
             if "obj" in req.params:
@@ -483,14 +483,14 @@ class WorkflowStep(Node):
                             logg.exception("exception in show_node_big, ignoring")
                             return ""
 
-                if 'action' in req.params:
+                if 'action' in req.values:
                     if self.has_write_access():
-                        if req.params.get('action') == 'delete':
+                        if req.values.get('action') == 'delete':
                             for node in nodes:
                                 for parent in node.parents:
                                     parent.children.remove(node)
-                        elif req.params.get('action').startswith('move_'):
-                            step = q(Node).get(req.params.get('action').replace('move_', ''))
+                        elif req.values.get('action').startswith('move_'):
+                            step = q(Node).get(req.values.get('action').replace('move_', ''))
                             for node in nodes:
                                 for parent in node.parents:
                                     parent.children.remove(node)
@@ -508,9 +508,9 @@ class WorkflowStep(Node):
                         switch_language(req, node.get('system.wflanguage'))
 
                     link = _build_url_from_path_and_params("/mask", {"id": self.id})
-                    if "forcetrue" in req.params:
+                    if "forcetrue" in req.values:
                         return self.forwardAndShow(node, True, req, link=link)
-                    if "forcefalse" in req.params:
+                    if "forcefalse" in req.values:
                         return self.forwardAndShow(node, False, req, link=link)
 
                     return self.show_workflow_node(node, req)
@@ -537,9 +537,9 @@ class WorkflowStep(Node):
             return '<i>%s</i>' % (t(lang(req), "permission_denied"))
 
     def show_workflow_node(self, node, req):
-        if "gotrue" in req.params:
+        if "gotrue" in req.values:
             return self.forwardAndShow(node, True, req)
-        if "gofalse" in req.params:
+        if "gofalse" in req.values:
             return self.forwardAndShow(node, False, req)
 
         # to be overloaded

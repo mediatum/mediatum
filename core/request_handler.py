@@ -998,6 +998,7 @@ def callhandler(handler_func, req):
 
 def handle_request(req):
     req.app_cache = {}
+    _flask.g.mediatum = {}
 
     maxlen = -1
     context = None

@@ -37,7 +37,6 @@ from core.auth import PasswordsDoNotMatch, WrongPassword, PasswordChangeNotAllow
 from core.users import get_guest_user
 from datetime import datetime
 from mediatumtal import tal
-from core.request_handler import get_header as _get_header
 from core.request_handler import setCookie as _setCookie
 
 q = db.query
@@ -87,8 +86,8 @@ def _handle_login_submit(req):
 
 
 def _set_return_after_login(req):
-    referer = _get_header(req, "Referer")
-    host = _get_header(req, "host")
+    referer = req.referrer
+    host = req.host
 
     if referer is None or any(uri in referer for uri in ('/login', '/logout', '/pwdforgotten', '/pwdchange', '/pnode')):
         _flask.session['return_after_login'] = False

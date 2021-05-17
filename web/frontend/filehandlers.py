@@ -197,10 +197,8 @@ def send_image(req):
     # figure out what we want to send, in that order:
     server_preferred_mimetypes = preference_sorted_image_mimetypes(node, iterkeys(image_files_by_mimetype))
 
-    accept_mimetypes = _request_handler.accept_mimetypes(req)
-
-    if accept_mimetypes:
-        client_mimetype = accept_mimetypes.best_match(server_preferred_mimetypes)
+    if req.accept_mimetypes:
+        client_mimetype = req.accept_mimetypes.best_match(server_preferred_mimetypes)
         if client_mimetype:
             # file for mimetype must exist here
             image_file = image_files_by_mimetype[client_mimetype]

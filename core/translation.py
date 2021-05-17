@@ -27,7 +27,6 @@ from utils.locks import named_lock as _named_lock
 import codecs
 from utils.strings import ensure_unicode_returned
 from werkzeug import parse_accept_header, LanguageAccept
-from core.request_handler import get_header as _get_header
 from core.request_handler import setCookie as _setCookie
 
 
@@ -152,10 +151,8 @@ def set_language(req):
         return language_from_cookie
 
     language = allowed_languages[0]
-    
-    accept_languages_header = _get_header(req, "Accept-Language")
-    accept_languages = parse_accept_header(accept_languages_header, cls=LanguageAccept)
-    best_match = accept_languages.best_match(allowed_languages)
+
+    best_match = req.accept_languages.best_match(allowed_languages)
     
     if best_match:
         language = best_match

@@ -50,7 +50,6 @@ from core.nodecache import get_collections_node, get_home_root_node
 import core.oauth as oauth
 from core.search.config import get_service_search_languages
 from array import array
-from core.request_handler import get_header as _get_header
 from core.request_handler import sendAsBuffer as _sendAsBuffer, sendFile as _sendFile
 
 
@@ -380,7 +379,7 @@ def struct2rss(req, path, params, data, struct, debug=False, singlenode=False, s
     language = params.get('lang', 'en')
     items_list = []
 
-    host = u"http://" + unicode(_get_header(req, "HOST") or configured_host)
+    host = u"http://" + unicode(req.host or configured_host)
     collections = get_collections_node()
     user = get_guest_user()
 

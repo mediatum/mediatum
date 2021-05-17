@@ -10,14 +10,11 @@ import zipfile as _zipfile
 import httpstatus as _httpstatus
 import traceback as _traceback
 import flask as _flask
-import backports.functools_lru_cache as _backports_functools_lru_cache
 import utils.locks as _utils_lock
 from functools import partial as _partial
 from cgi import escape as _escape
 from StringIO import StringIO as _StringIO
 from core import config as _config
-from werkzeug.datastructures import MIMEAccept as _MIMEAccept
-from werkzeug.http import parse_accept_header as _parse_accept_header
 from utils.utils import suppress as _suppress, nullcontext as _nullcontext
 from utils.url import build_url_from_path_and_params as _build_url_from_path_and_params
 from collections import OrderedDict as _OrderedDict
@@ -31,14 +28,10 @@ _logg = _logging.getLogger(__name__)
 
 GLOBAL_TEMP_DIR = "/tmp/"
 GLOBAL_ROOT_DIR = "no-root-dir-set"
-CONNECTION = _re.compile('Connection:\s*(.*)', _re.IGNORECASE)
 # HTTP/1.0 doesn't say anything about the "; length=nnnn" addition
 # to this header.  I suppose its purpose is to avoid the overhead
 # of parsing dates...
-IF_MODIFIED_SINCE = _re.compile(
-    'If-Modified-Since:\s*([^;]+)((; length=([0-9]+)$)|$)',
-    _re.IGNORECASE
-)
+IF_MODIFIED_SINCE = _re.compile('([^;]+)((; length=([0-9]+)$)|$)', _re.IGNORECASE)
 
 
 # COMPAT: before / after request handlers and request / app context handling
@@ -51,9 +44,6 @@ global_modules = {}
 BASENAME = _re.compile("([^/]*/)*([^/.]*)(.py)?")
 verbose = 1
 
-months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-          'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-
 mode_table = {
     '0': '---',
     '1': '--x',
@@ -65,112 +55,7 @@ mode_table = {
     '7': 'rwx'
 }
 
-
-# http_date
-def concat(*args):
-    return ''.join(args)
-
-
-def join(seq, field=' '):
-    return field.join(seq)
-
-
-def group(s):
-    return '(' + s + ')'
-
-short_days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
-long_days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
-
-short_day_reg = group(join(short_days, '|'))
-long_day_reg = group(join(long_days, '|'))
-
-daymap = {}
-for i in range(7):
-    daymap[short_days[i]] = i
-    daymap[long_days[i]] = i
-
-hms_reg = join(3 * [group('[0-9][0-9]')], ':')
-
 months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
-
-monmap = {}
-for i in range(12):
-    monmap[months[i]] = i + 1
-
-months_reg = group(join(months, '|'))
-
-# From draft-ietf-http-v11-spec-07.txt/3.3.1
-#       Sun, 06 Nov 1994 08:49:37 GMT  ; RFC 822, updated by RFC 1123
-#       Sunday, 06-Nov-94 08:49:37 GMT ; RFC 850, obsoleted by RFC 1036
-#       Sun Nov  6 08:49:37 1994       ; ANSI C's asctime() format
-
-# rfc822 format
-rfc822_date = join(
-    [concat(short_day_reg, ','),    # day
-     group('[0-9][0-9]?'),                  # date
-     months_reg,                                    # month
-     group('[0-9]+'),                               # year
-     hms_reg,                                               # hour minute second
-     'gmt'
-     ],
-    ' '
-)
-
-rfc822_reg = _re.compile(rfc822_date)
-
-
-def unpack_rfc822(m):
-    g = m.group
-    a = _string.atoi
-    return (
-        a(g(4)),                # year
-        monmap[g(3)],   # month
-        a(g(2)),                # day
-        a(g(5)),                # hour
-        a(g(6)),                # minute
-        a(g(7)),                # second
-        0,
-        0,
-        0
-    )
-
-# rfc850 format
-rfc850_date = join(
-    [concat(long_day_reg, ','),
-     join(
-        [group('[0-9][0-9]?'),
-         months_reg,
-         group('[0-9]+')
-         ],
-        '-'
-    ),
-        hms_reg,
-        'gmt'
-    ],
-    ' '
-)
-
-rfc850_reg = _re.compile(rfc850_date)
-# they actually unpack the same way
-
-
-def unpack_rfc850(m):
-    g = m.group
-    a = _string.atoi
-    return (
-        a(g(4)),                # year
-        monmap[g(3)],   # month
-        a(g(2)),                # day
-        a(g(5)),                # hour
-        a(g(6)),                # minute
-        a(g(7)),                # second
-        0,
-        0,
-        0
-    )
-
-# parsdate.parsedate    - ~700/sec.
-# parse_http_date       - ~1333/sec.
 
 
 def build_http_date(when):
@@ -178,20 +63,11 @@ def build_http_date(when):
 
 
 def parse_http_date(d):
-    d = _string.lower(d)
     tz = _time.timezone
-    m = rfc850_reg.match(d)
-    if m and m.end() == len(d):
-        retval = int(_time.mktime(unpack_rfc850(m)) - tz)
-    else:
-        m = rfc822_reg.match(d)
-        if m and m.end() == len(d):
-            try:
-                retval = int(_time.mktime(unpack_rfc822(m)) - tz)
-            except OverflowError:
-                return 0
-        else:
-            return 0
+    try:
+        retval = int(_time.mktime(d) - tz)
+    except OverflowError:
+        return 0
     # Thanks to Craig Silverstein <csilvers@google.com> for pointing
     # out the DST discrepancy
     if _time.daylight and _time.localtime(retval)[-1] == 1:  # DST correction
@@ -230,16 +106,6 @@ def setTempDir(tempdir):
 
 def getBase():
     return GLOBAL_ROOT_DIR
-
-
-def get_header(req, header):
-    header = header.lower()
-    if header not in req._header_cache:
-        for k, v in req.headers:
-            if k.lower() == header:
-                req._header_cache[header] = v
-                return v
-    return req._header_cache.get(header)
 
 
 # standard wrapper around a unix-like filesystem, with a 'false root'
@@ -624,7 +490,7 @@ def done(req):
 
     #  --- BUCKLE UP! ----
 
-    connection = _string.lower(get_header_from_match(CONNECTION, req.headers))
+    connection = req.headers.get("connection")
 
     close_it = 0
 
@@ -685,14 +551,6 @@ def error(req, code, s=None, content_type='text/html'):
     done(req)
 
 
-@_backports_functools_lru_cache.lru_cache(maxsize=128)
-def _accept_mimetypes(accept):
-    return _parse_accept_header(accept, _MIMEAccept)
-
-def accept_mimetypes(req):
-    return _accept_mimetypes(get_header(req, "ACCEPT"))
-
-
 def unlink_tempfiles(req):
     unlinked_tempfiles = []
     if hasattr(req, "tempfiles"):
@@ -701,22 +559,6 @@ def unlink_tempfiles(req):
             unlinked_tempfiles.append(f)
             _logg.debug("unlinked tempfile %s", f)
     return unlinked_tempfiles
-
-
-def get_header_from_match(head_reg, headers, group=1):
-    for k, v in headers:
-        m = head_reg.match("{}:{}".format(k, v))
-        if m:
-            return m.group(group)
-    return ''
-
-
-def get_header_match(head_reg, headers):
-    for k, v in headers:
-        m = head_reg.match("{}:{}".format(k, v))
-        if m:
-            return m
-    return ''
 
 
 def sendFile(req, path, content_type, force=0, nginx_x_accel_redirect_enabled=True):
@@ -736,8 +578,9 @@ def sendFile(req, path, content_type, force=0, nginx_x_accel_redirect_enabled=Tr
             error(req, 404)
             return
 
-    ims = get_header_match(IF_MODIFIED_SINCE, req.headers)
+    ims = IF_MODIFIED_SINCE.match(req.headers["if-modified-since"]) if "if-modified-since" in req.headers else None
     length_match = 1
+    ims_date = 0
     if ims:
         length = ims.group(4)
         if length:
@@ -745,10 +588,7 @@ def sendFile(req, path, content_type, force=0, nginx_x_accel_redirect_enabled=Tr
                 length = _string.atoi(length)
                 if length != file_length:
                     length_match = 0
-
-    ims_date = 0
-    if ims:
-        ims_date = parse_http_date(ims.group(1))
+        ims_date = parse_http_date(req.if_modified_since.timetuple())
 
     try:
         mtime = _os.stat(path)[_stat.ST_MTIME]
@@ -801,8 +641,9 @@ def sendAsBuffer(req, text, content_type, force=0, allow_cross_origin=False):
         error(req, 404)
         return
 
-    ims = get_header_match(IF_MODIFIED_SINCE, req.headers)
+    ims = IF_MODIFIED_SINCE.match(req.headers["if-modified-since"]) if "if-modified-since" in req.headers else None
     length_match = 1
+    ims_date = 0
     if ims:
         length = ims.group(4)
         if length:
@@ -810,10 +651,7 @@ def sendAsBuffer(req, text, content_type, force=0, allow_cross_origin=False):
                 length = _string.atoi(length)
                 if length != file_length:
                     length_match = 0
-
-    ims_date = 0
-    if ims:
-        ims_date = parse_http_date(ims.group(1))
+        ims_date = parse_http_date(req.if_modified_since.timetuple())
 
     try:
         import time
@@ -1018,9 +856,10 @@ class default_handler:
 
         file_length = self.filesystem.stat(path)[_stat.ST_SIZE]
 
-        ims = get_header_match(IF_MODIFIED_SINCE, request.headers)
+        ims = IF_MODIFIED_SINCE.match(request.headers["if-modified-since"]) if "if-modified-since" in request.headers else None
 
         length_match = 1
+        ims_date = 0
         if ims:
             length = ims.group(4)
             if length:
@@ -1028,10 +867,7 @@ class default_handler:
                     length = _string.atoi(length)
                     if length != file_length:
                         length_match = 0
-        ims_date = 0
-
-        if ims:
-            ims_date = parse_http_date(ims.group(1))
+            ims_date = parse_http_date(request.if_modified_since.timetuple())
 
         try:
             mtime = self.filesystem.stat(path)[_stat.ST_MTIME]
@@ -1180,7 +1016,6 @@ def callhandler(handler_func, req):
 
 
 def handle_request(req):
-    req._header_cache = {}
     req.app_cache = {}
     req.use_chunked = 0
 

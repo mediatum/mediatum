@@ -35,7 +35,6 @@ from contenttypes.data import Content, prepare_node_data
 from core.postgres import check_type_arg_with_schema
 from core import File
 from core import db
-from core.request_handler import get_header as _get_header
 from core.request_handler import sendFile as _sendFile
 from contenttypes.data import BadFile as _BadFile
 
@@ -82,7 +81,7 @@ def _prepare_document_data(node, req, words=""):
         obj['tag'] = version_id
 
     # XXX: do we really need this spider filtering?
-    user_agent = _get_header(req, "user-agent") or ""
+    user_agent = req.user_agent.string or ""
     is_spider = "oogle" in user_agent or "aidu" in user_agent
     
     if is_spider:

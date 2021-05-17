@@ -516,7 +516,7 @@ def oaiRequest(req):
             req.remote_addr,
             (time.clock() - start_time),
             req.full_path.replace('//', '/'),
-            req.headers.get("user-agent", "unknown")[:60],
+            req.user_agent.string[:60],
            )
 
     res = _lxml_etree.tostring(oai_pmh, encoding='utf-8', method="xml", xml_declaration=True, pretty_print=True)

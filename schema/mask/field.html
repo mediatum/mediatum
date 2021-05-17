@@ -127,7 +127,7 @@
                 <tal:block tal:repeat="mapping mappings">
                     <optgroup tal:attributes="label python:mapping.getName()">
                     <tal:block tal:repeat="mappingfield python:mapping.getFields()">
-                        <option tal:content="python:mappingfield.getFullName()" tal:attributes="value python:mappingfield.id; selected python:'selected' if item.get('mappingfield')==mappingfield.id else None"/>
+                        <option tal:content="python:mappingfield.getFullName()" tal:attributes="value python:mappingfield.id; selected python:'selected' if item.get('mappingfield')==str(mappingfield.id) else None"/>
                     </tal:block>
                     </optgroup>
                 </tal:block>
@@ -148,7 +148,7 @@
         <div i18n:translate="mask_edit_field" class="label">TEXT<span class="required">*</span></div>
         <select name="attribute" id="attribute" style="width:250px;">
             <tal:block tal:repeat="field python:metafields">
-                <option tal:content="python:field.getName()" tal:attributes="value python:field.id; selected python:'selected' if item.get('attribute')==field.id else None"/>
+                <option tal:content="python:field.getName()" tal:attributes="value python:field.id; selected python:'selected' if item.get('attribute')==str(field.id) else None"/>
             </tal:block>
         </select>
         

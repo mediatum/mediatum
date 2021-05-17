@@ -112,6 +112,9 @@ msgstr "Create new Mapping field"
 msgid "admin_mappingfield_edit_title"
 msgstr "Edit Mapping field"
 
+msgid "admin_mappingfield_used_title"
+msgstr "Mapping field is used by:{}"
+
 msgid "admin_mappingfield_delete_title"
 msgstr "delete Mapping field"
 

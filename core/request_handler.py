@@ -503,17 +503,8 @@ def done(req):
                 req.response.headers['Connection'] = 'Keep-Alive'
         else:
             close_it = 1
-    elif version == '1.1':
-        if connection == 'close':
+    elif version == '1.1' and (connection == 'close' or 'Content-Length' not in req.headers):
             close_it = 1
-        elif 'Content-Length' not in req.headers:
-            if 'Transfer-Encoding' in req.headers:
-                if not req.headers['Transfer-Encoding'] == 'chunked':
-                    close_it = 1
-            elif req.use_chunked:
-                req.response.headers['Transfer-Encoding'] = 'chunked'
-            else:
-                close_it = 1
     elif version is None:
         # Although we don't *really* support http/0.9 (because we'd have to
         # use \r\n as a terminator, and it would just yuck up a lot of stuff)
@@ -522,16 +513,6 @@ def done(req):
         close_it = 1
 
     req.response.headers["Cache-Control"] = "no-cache"
-
-    if req.response.status_code == 500:
-        # don't use Transfer-Encoding chunked because only an error message is displayed
-        # this code is only necessary if a reply-header contains invalid characters but has
-        # Transfer-Encoding chunked set
-        req.use_chunked = 0
-
-        if 'Transfer-Encoding' in req.headers:
-            if req.headers['Transfer-Encoding'] == 'chunked':
-                req.response.headers['Transfer-Encoding'] = ''
 
     if close_it:
         req.response.headers['Connection'] = 'close'
@@ -1017,7 +998,6 @@ def callhandler(handler_func, req):
 
 def handle_request(req):
     req.app_cache = {}
-    req.use_chunked = 0
 
     maxlen = -1
     context = None

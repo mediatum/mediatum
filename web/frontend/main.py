@@ -21,10 +21,10 @@ import json
 from functools import partial, wraps
 import logging
 import re
+import flask as _flask
 from werkzeug.datastructures import ImmutableMultiDict
 
 import core.config as config
-import core.request_handler as _request_handler
 from core.metatype import Context
 from core.translation import lang, switch_language
 from core import httpstatus
@@ -92,7 +92,7 @@ def change_language_request(req):
         del params["change_language"]
         req.response.location = build_url_from_path_and_params(req.mediatum_contextfree_path, params)
         # set the language cookie for caching
-        _request_handler.setCookie(req, "language", language)
+        _flask.session["language"] = language
         req.response.status_code = httpstatus.HTTP_MOVED_TEMPORARILY
         return httpstatus.HTTP_MOVED_TEMPORARILY
 
@@ -102,11 +102,8 @@ def check_change_language_request(func):
     def checked(req, *args, **kwargs):
         change_lang_http_status = change_language_request(req)
         if change_lang_http_status:
-            if "Set-Cookie" in req.response.headers:
-                cookie = req.response.headers["Set-Cookie"]
-                i = cookie.find("language")
-                lteil = cookie[i:]
-                req._lang = lteil.split(";")[0].split("=")[1]
+            if "language" in _flask.session:
+                req._lang = _flask.session["language"]
 
         return func(req, *args, **kwargs)
 

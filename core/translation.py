@@ -27,7 +27,6 @@ from utils.locks import named_lock as _named_lock
 import codecs
 from utils.strings import ensure_unicode_returned
 from werkzeug import parse_accept_header, LanguageAccept
-from core.request_handler import setCookie as _setCookie
 
 
 class _POFile:
@@ -145,10 +144,10 @@ def lang(req):
 def set_language(req):
     allowed_languages = config.languages
 
-    language_from_cookie = req.cookies.get("language")
-    if language_from_cookie in allowed_languages:
-        req._lang = language_from_cookie
-        return language_from_cookie
+    language = _flask.session.get("language")
+    if language in allowed_languages:
+        req._lang = language
+        return language
 
     language = allowed_languages[0]
 
@@ -158,7 +157,7 @@ def set_language(req):
         language = best_match
     
     if language != default_language:
-        _setCookie(req, "language", language, path="/")
+        _flask.session["language"] = language
     
     req._lang = language
     return language
@@ -170,7 +169,7 @@ def switch_language(req, language):
         language = allowed_languages[0]
     elif language not in allowed_languages:
         language = allowed_languages[0]
-    _setCookie(req, "language", language, path="/")
+    _flask.session["language"] = language
 
 
 def t(target, key):

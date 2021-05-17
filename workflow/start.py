@@ -80,7 +80,7 @@ class WorkflowStep_Start(WorkflowStep):
 
             node.set("creator", "workflow-" + self.parents[0].name)
             node.set("creationtime", date.format_date())
-            node.set("system.wflanguage", req.params.get('workflow_language', req.cookies.get('language')))
+            node.set("system.wflanguage", req.params.get('workflow_language', _flask.session.get('language')))
             node.set("key", mkKey())
             node.set("system.key", node.get("key"))  # initial key identifier
             _flask.session["key"] = node.get("key")

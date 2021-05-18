@@ -532,22 +532,6 @@ def sendAsBuffer(req, text, content_type, force=0, allow_cross_origin=False):
     return
 
 
-def setCookie(req, name, value, expire=None, path=None, http_only=True, secure=False):
-    req.response.set_cookie(name, value=value)
-    if expire:
-        datestr = _time.strftime("%a, %d-%b-%Y %H:%M:%S GMT", _time.gmtime(expire))
-        req.response.set_cookie('expires', value=datestr)
-
-    if path:
-        req.response.set_cookie('path', value=path)
-
-    if http_only:
-        req.response.set_cookie('HttpOnly', value="1")
-
-    if secure:
-        req.response.set_cookie('Secure', value=True)
-
-
 def makeSelfLink(req, params):
     params2 = req.params.copy()
     for k, v in params.items():

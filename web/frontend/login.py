@@ -37,7 +37,6 @@ from core.auth import PasswordsDoNotMatch, WrongPassword, PasswordChangeNotAllow
 from core.users import get_guest_user
 from datetime import datetime
 from mediatumtal import tal
-from core.request_handler import setCookie as _setCookie
 
 q = db.query
 logg = logging.getLogger(__name__)
@@ -67,7 +66,7 @@ def _handle_login_submit(req):
     user = auth.authenticate_user_credentials(login_name, password, req)
     if user:
         # stop caching
-        _setCookie(req, "nocache", "1", path="/")
+        req.response.set_cookie("nocache", "1")
         _flask.session["user_id"] = user.id
         logg.info("%s logged in", user.login_name)
 
@@ -147,7 +146,7 @@ def logout(req):
     req.response.location = '/'
     req.response.status_code = httpstatus.HTTP_MOVED_TEMPORARILY
     # return to caching
-    _setCookie(req, "nocache", "0", path="/")
+    req.response.set_cookie("nocache", "0")
     return httpstatus.HTTP_MOVED_TEMPORARILY
 
 

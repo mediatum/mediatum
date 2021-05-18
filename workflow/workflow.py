@@ -39,7 +39,6 @@ from utils.locks import named_lock as _named_lock
 
 from core import db
 from core import Node
-from core.request_handler import setCookie as _setCookie
 from utils.url import build_url_from_path_and_params as _build_url_from_path_and_params
 
 
@@ -452,7 +451,7 @@ class WorkflowStep(Node):
 
         with workflow_lock:
             # stop caching
-            _setCookie(req, "nocache", "1", path="/")
+            req.response.set_cookie("nocache", "1")
 
             key = req.params.get("key", _flask.session.get("key", ""))
             _flask.session["key"] = key

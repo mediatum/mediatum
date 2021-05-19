@@ -60,12 +60,6 @@ q = db.query
 
 configured_host = config.get("host.name", "")
 allow_cross_origin = config.getboolean("services.allow_cross_origin", False)
-DEFAULT_CACHE_VALID = config.getint("services.default_cache_valid", 0)
-
-from web.services.cache import Cache
-from web.services.cache import date2string as cache_date2string
-
-resultcache = Cache(maxcount=25, verbose=True)
 
 SEND_TIMETABLE = False
 DEFAULT_NODEQUERY_LIMIT = config.getint("services.default_limit", 1000)
@@ -834,8 +828,7 @@ def get_node_data_struct(
 def write_formatted_response(
         req, path, params, data, id, debug=True, allchildren=False, singlenode=False, parents=False):
 
-    atime = starttime = time.time()
-    r_timetable = []
+    atime = time.time()
 
     _p = params.copy()
     if "jsoncallback" in _p:
@@ -845,124 +838,68 @@ def write_formatted_response(
 
     send_children = "send_children" in params
 
-    cache_key = '|'.join(map(str, [path, _p, allchildren, singlenode, parents, send_children]))
-    cache_key = cache_key.replace(' ', '_')
+    res_format = params.get('format', 'xml').lower()
 
-    acceptcached = float(params.get('acceptcached', DEFAULT_CACHE_VALID))
+    d = get_node_data_struct(
+            req,
+            path,
+            params,
+            data,
+            id,
+            debug=debug,
+            allchildren=allchildren,
+            singlenode=singlenode,
+            send_children=send_children,
+            parents=parents,
+            # XXX: hack because we want all files for the XML format only
+            fetch_files=res_format=="xml",
+            csv=res_format==u'csv'
+        )
 
-    result_from_cache = None
-    if acceptcached > 0.0:
-        resultcode, cachecontent = resultcache.retrieve(cache_key, acceptcached)
-        if resultcode == 'hit':
-            cache_name = 'resultcache'
-            timestamp_from_cache = time_cached = resultcache.getTimestamp(cache_key)
-            time_delta = starttime - time_cached
-            result_from_cache, mimetype_from_cache = cachecontent[-1]
-            # replace jQuery, jsonp callback value
-            if result_from_cache.startswith('jQuery') or result_from_cache.startswith('jsonp'):
-                result_from_cache = params['jsoncallback'] + result_from_cache[result_from_cache.find("({"):]
+    d.setdefault('timetable', [])
 
-            r_timetable.append(["retrieved filtered result from 'resultcache': (%d bytes), time_delta: %.3f lower acceptcached %.3f sec." % (
-                len(result_from_cache), time_delta, acceptcached), time.time() - atime])
-            atime = time.time()
-        elif resultcode == 'refused':
-            time_cached = resultcache.getTimestamp(cache_key)
-            time_delta = starttime - time_cached
-            r_timetable.append(["cached result exists in 'resultcache', but not used: time_delta: %.3f sec. higher acceptcached %.3f sec." % (
-                time_delta, acceptcached), time.time() - atime])
-            atime = time.time()
-
-    if not result_from_cache:
-
-        res_format = (params.get('format', 'xml')).lower()
-
-        # XXX: hack because we want all files for the XML format only
-        if res_format == "xml":
-            fetch_files = True
-        else:
-            fetch_files = False
-                    
-        d = get_node_data_struct(req, path, params, data, id, debug=debug, allchildren=allchildren,
-                                     singlenode=singlenode, send_children=send_children, parents=parents,
-                                     fetch_files=fetch_files, csv=res_format==u'csv')
-
-        if r_timetable:
-            d['timetable'] = r_timetable + d.setdefault('timetable', [])
-            r_timetable = []
-
-        formatIsSupported = False
-
-        for supported_format in supported_formats:
-            if res_format in supported_format[0]:
-                atime = time.time()
-                formatIsSupported = True
-                s = supported_format[1](req, path, params, data, d, debug=debug, singlenode=singlenode, send_children=send_children)
-                if res_format == 'json' and 'jsoncallback' in params:
-                    s = params['jsoncallback'] + '(' + s + ')'
-                    # the return value of this kind of call must be interpreted as javascript, 
-                    # so we must set the mimetype or browsers will complain
-                    mimetype = "application/javascript"
-                else:
-                    # XXX: clients can override the content_type by setting the mimetype param
-                    # XXX: this is ugly, but we keep it for compatibility
-                    mimetype = params.get('mimetype', supported_format[2])
-
-                # append correct charset if client didn't force another value
-                # it doesn't make sense to set it in the client to a different charset than utf8, but it was possible in the past...
-                if "charset=" in mimetype:
-                    content_type = mimetype
-                else:
-                    content_type = mimetype + "; charset=utf-8"
-
-                d['timetable'].append(["formatted for '%s'" % res_format, time.time() - atime])
-                atime = time.time()
-
-                disposition = params.get('disposition', '')
-                if disposition:
-                    # ex.: (direct to download) value: "attachment; filename=myfilename.txt"
-                    # ex.: (open in browser) value: "filename=myfilename.txt"
-                    req.response.headers['Content-Disposition'] = disposition
-                    d['timetable'].append(["wrote disposition %r to reply header" % (disposition), time.time() - atime])
-                    atime = time.time()
-
-                break
-
-        if not formatIsSupported:
-            d['status'] = 'fail'
-            d['html_response_code'] = '404'  # not found
-            d['errormessage'] = 'unsupported format'
-            d['build_response_end'] = time.time()
-
-            s = struct2xml(req, path, params, data, d, singlenode=True, send_children=False, fetch_files=True)
-            content_type = "text/xml; charset=utf-8"
-
-        if acceptcached > 0:  # only write to cache for these requests
-            resultcache.update(cache_key, [s, mimetype])
-            d['timetable'].append(["wrote result to 'resultcache' (%d bytes), now in cache: %d entries" %
-                                   (len(s), resultcache.getKeysCount()), time.time() - atime])
-            atime = time.time()
-            #d['timetable'].append(["wrote result to 'resultcache' (%d bytes), now in cache: %d entries: \r\n%s" % (len(s), resultcache.getKeysCount(), resultcache.report()), time.time()-atime]); atime = time.time()
-            # d['timetable'].append(["wrote result to 'resultcache' (%d bytes), now in
-            # cache: %d entries: %s" % (len(s), resultcache.getKeysCount(),
-            # "#".join(resultcache.getKeys())), time.time()-atime]); atime =
-            # time.time()
-
-        s = modify_tex(s.decode("utf8"), 'strip').encode("utf8")
-
-    else:
-        d = {}
-        d['status'] = 'ok'
-        d['html_response_code'] = '200'  # ok
-        d['build_response_end'] = time.time()
-        if r_timetable:
-            d['timetable'] = r_timetable
-        s = result_from_cache
-        d['timetable'].append(["serving %.3f sec. old response (%d bytes) from '%s', cache_key: %s" %
-                               (time.time() - timestamp_from_cache, len(s), cache_name, cache_key), time.time() - atime])
+    for supported_format in supported_formats:
+        if res_format not in supported_format[0]:
+            continue
         atime = time.time()
-        mimetype = mimetype_from_cache
-        content_type = mimetype + "; charset=utf-8"
-        req.response.headers['Content-Type'] = content_type
+        s = supported_format[1](req, path, params, data, d, debug=debug, singlenode=singlenode, send_children=send_children)
+        if res_format == 'json' and 'jsoncallback' in params:
+            s = "{}({})".format(params['jsoncallback'], s)
+            # the return value of this kind of call must be interpreted as javascript,
+            # so we must set the mimetype or browsers will complain
+            content_type = "application/javascript"
+        else:
+            # XXX: clients can override the content_type by setting the mimetype param
+            # XXX: this is ugly, but we keep it for compatibility
+            content_type = params.get('mimetype', supported_format[2])
+
+        # append correct charset if client didn't force another value
+        # it doesn't make sense to set it in the client to a different charset than utf8, but it was possible in the past...
+        if "charset=" not in content_type:
+            content_type += "; charset=utf-8"
+
+        d['timetable'].append(["formatted for '{}'".format(res_format), time.time() - atime])
+        atime = time.time()
+
+        disposition = params.get('disposition', '')
+        if disposition:
+            # ex.: (direct to download) value: "attachment; filename=myfilename.txt"
+            # ex.: (open in browser) value: "filename=myfilename.txt"
+            req.response.headers['Content-Disposition'] = disposition
+            d['timetable'].append(["wrote disposition {()} to reply header".format(disposition), time.time() - atime])
+            atime = time.time()
+
+        break
+    else:
+        d['status'] = 'fail'
+        d['html_response_code'] = '404'  # not found
+        d['errormessage'] = 'unsupported format'
+        d['build_response_end'] = time.time()
+
+        s = struct2xml(req, path, params, data, d, singlenode=True, send_children=False)
+        content_type = "text/xml; charset=utf-8"
+
+    s = modify_tex(s.decode("utf8"), 'strip').encode("utf8")
 
     def compressForDeflate(s):
         import gzip
@@ -987,8 +924,13 @@ def write_formatted_response(
         except:
             percentage = 100.0
         req.response.headers['Content-Encoding'] = "deflate"
-        d['timetable'].append(["'deflate' in request: executed compressForDeflate(s), %d bytes -> %d bytes (compressed to: %.1f %%)" %
-                               (size_uncompressed, size_compressed, percentage), time.time() - atime])
+        d['timetable'].append(
+            [
+                "'deflate' in request: executed compressForDeflate(s), {} bytes -> {} bytes (compressed to: {} %%)".format(
+                    size_uncompressed, size_compressed, percentage),
+                time.time() - atime,
+            ]
+        )
         atime = time.time()
 
     elif 'gzip' in params:
@@ -1001,8 +943,13 @@ def write_formatted_response(
         except:
             percentage = 100.0
         req.response.headers['Content-Encoding'] = "gzip"
-        d['timetable'].append(["'gzip' in request: executed compressForGzip(s), %d bytes -> %d bytes (compressed to: %.1f %%)" %
-                               (size_uncompressed, size_compressed, percentage), time.time() - atime])
+        d['timetable'].append(
+            [
+                "'gzip' in request: executed compressForGzip(s), {} bytes -> {} bytes (compressed to: {} %%)".format(
+                    size_uncompressed, size_compressed, percentage),
+                time.time() - atime,
+            ]
+        )
         atime = time.time()
 
     # (format) Expires: Mon, 28 Nov 2011 12:41:22 GMT
@@ -1012,8 +959,8 @@ def write_formatted_response(
     # remark: on 2011-12-01 switched response from req.write to sendAsBuffer for performance reasons
     # (before: ) req.write(s)
     _sendAsBuffer(req, s, content_type, force=1, allow_cross_origin=allow_cross_origin)
-    d['timetable'].append(["executed sendAsBuffer, %d bytes, content type='%s'" % (len(s), content_type), time.time() - atime])
-    atime = time.time()
+    d['timetable'].append(["executed sendAsBuffer, {} bytes, content type='{}'".format(len(s), content_type), time.time() - atime])
+
     return d['html_response_code'], len(s), d
 
 
@@ -1031,29 +978,6 @@ def get_node_allchildren(req, path, params, data, id):
 
 def get_node_parents(req, path, params, data, id):
     return write_formatted_response(req, path, params, data, id, debug=True, singlenode=False, parents=True)
-
-
-def get_cachestatus(req, path, params, data):
-    atime = time.time()
-    timetable = []
-    d = {}
-    d['status'] = 'ok'
-    d['html_response_code'] = '200'
-    d['timetable'] = timetable
-    req.response.headers['Content-Type'] = "text/plain" + "; charset=utf-8"
-
-    atime = time.time()
-
-    s = '\r\n\r\nresultcache content: %s\r\n' % cache_date2string(time.time(), '%04d-%02d-%02d-%02d-%02d-%02d')
-    s += resultcache.report()
-    d['timetable'].append(["retrieved report for resultcache", time.time() - atime])
-    atime = time.time()
-
-    req.response.set_data(s)
-
-    d['timetable'].append(["writing cache reports to request", time.time() - atime])
-    atime = time.time()
-    return d['html_response_code'], len(s), d
 
 
 # alternative base dir for static html files

@@ -12,9 +12,9 @@
   .object_column {vertical-align: top; display: table-cell;}
 }
 
-.object_column {vertical-align: top;}
+.object_column {vertical-align: top; padding-right: 10px;}
 
-.object_column.left>div {width: 325px; margin-bottom: 15px;}
+.object_column.left>div {max-width: 325px; margin-bottom: 15px; margin-right: 5px;}
 
 video {width:300px; border:1px solid silver;text-align:center;}
 

@@ -95,6 +95,7 @@ a.link-parent { padding-bottom: 1px; margin: 0.25em 0px 0.4em; padding-left: 20p
 div#search-form { margin-left: -2px; padding-bottom: 10px; background-color: white;}
 input#search-button { width: 88px; border: none; padding-top: 6.5px; padding-bottom: 6.5px; margin-left: 0px;
     margin-right: 0px; background-color: rgb(48,112,179); color: white;}
+input#search-field {width:180px;}
 form#advancedsearch-box { background-color: white !important;}
 #advancedsearch-box select { padding: 0px; margin: 0px 5px 0px 0px; font-size: 9px; width: 90px; color: rgb(71,71,71);}
 #advancedsearch-box select.searchfield { padding: 1px 2px 1px 2px; font-size: 9px; vertical-align: middle;
@@ -392,3 +393,4 @@ ul#navigationlist li div a:visited { color: #004682;}
     margin: 2px 4px 2px 0px;
     padding: 2px;
 }
+

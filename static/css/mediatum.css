@@ -107,42 +107,41 @@ button#reset-button { padding: 0px 1px 0px 0px; margin: 0px 5px 0px 0px; font-si
     cursor: pointer; color: rgb(71,71,71); border-style: none; background-color: transparent; text-align: left;}
 a#advancedsearchlink { padding-top: 5px; padding-left: 0.5em; padding-bottom: 1em;}
 a#advancedmorelink { padding: 1px 1.33em 0.5em 0.75em; margin: 0px; display: block; color: #333333; font-size: 90%; text-decoration: none;}
-
 h3#navigationheading { padding-bottom: 0.5em; margin: 0px; padding-left: 0.75em; padding-right: 1.33em;
     background: url(/static/img/5pxgradient_nav_depth03.gif) #fff repeat-y right 50%; color: #fff; font-size: 100%; padding-top: 0.4em;}
 
 /* navigation start*/
 div#frame-tree { margin-left: -2px; background-color: white;}
-
-/* navigation start*/
-ul#navigationlist { margin: 0px; padding: 0px; background-color: green;}
+ul#navigationlist { margin: 0px; padding: 0px; list-style-type: none; background-color: #e6e6e6;
+    padding-bottom: 9px; padding-top: 6px;}
 ul#navigationlist li { padding: 0px; margin: 0px; border: none; list-style-type: none; position: relative;}
-ul#navigationlist li div a { margin: 0px; padding: 0.4em 0px 0.5em 22px; display: block; font-size: 100%;}
 ul#navigationlist li.lv0 { padding: 0px; margin: 0px; background-color: #e6e6e6;}
-ul#navigationlist li.lv0  div { padding: 0px; margin: 0px;}
-ul#navigationlist li.lv0 div a { margin: 0px; font-size: 100%; text-decoration: none; outline: none; background-color: #e6e6e6;
-    padding: 0.4em 0px 0.5em 22px; display: block;}
-ul#navigationlist li.lv1 { padding: 0px; margin: 0px; background-color: #e6e6e6;}
-ul#navigationlist li.lv1 div a { margin: 0px; padding: 0.4em 0px 0.5em 22px; display: block; font-size: 100%;
-    text-decoration: none; outline: none; background-color: #e6e6e6;}
-ul#navigationlist li.lv2 { padding: 0px; margin: 0px; background-color: #e6e6e6;}
-ul#navigationlist li.lv2 div a { margin: 0px; padding: 0.2em 0px 0.2em 22px; display: block; background-color: #e6e6e6;
-    font-size: 100%; text-decoration: none;}
-
-li.lv0 div.linknotselected { padding: 0px; margin: 0px; position: relative;}
-li.lv1 div.linknotselected { padding: 0px; margin: 0px; position: relative;}
-div.linkselected { padding: 0px; margin: 0px; position: relative;}
-
+ul#navigationlist li.lv2 { background-color: #e6e6e6;}
+ul#navigationlist li.lv1 div, ul#navigationlist li.lv2 div { background-color: #f7f7f7;}
+ul#navigationlist li.lv1 div:hover, ul#navigationlist li.lv2 div:hover { border-bottom-width: 0;
+    background-color: #e6e6e6;}
+ul#navigationlist li.lv1 div, ul#navigationlist li.lv2 div{ background-color: #f7f7f7;}
+.linknotselected { border-left: 3px solid transparent;}
+.linkselected { border-left: 3px solid #3070b3; font-weight: bold;}
 ul#navigationlist li div a:hover { color: rgb(71,71,71);}
-ul#navigationlist li div a.collapsed { margin: 0px; padding: 0.4em 0px 0.5em 0px;
-    background: url(/static/img/nav-arrow-left-to-right.gif) no-repeat left center; width: 16px; height: 1em;
-    text-indent: -99999px; position: absolute; top: 0px;}
-ul#navigationlist li div a.collapsed:hover { background-image: url(/static/img/nav-arrow-top-to-bottom.gif);}
-ul#navigationlist li div a.expanded { margin: 0px; width: 16px; height: 1em; top: 3px; padding: 4px 0px 1px 0px; text-indent: -99999px;
-    position: absolute; background: url(/static/img/nav-arrow-top-to-bottom.gif) no-repeat left center;}
-ul#navigationlist ul { padding: 0px 3px 0.1em 0px; margin: 0px;}
-ul#navigationlist li ul.nav_depth02 a { background-color: #e6e6e6;}
-ul#navigationlist li ul.nav_depth03 a { background-color: #fff; display: inline; padding: 0px; margin: 0px 1px 0px 3px; height: 12px;}
+ul#navigationlist li div a.expanded { font-weight: bold;}
+ul#navigationlist li div a.collapsed::after { background-image: url("/static/img/nav/nav-plus.svg");
+    content: ""; display: block; height: 7px; margin-top: -4px; position: absolute;
+    right: 5px; top: 50%; width: 7px;}
+ul#navigationlist li div a.expanded:after { background-image: url("/static/img/nav/nav-minus.svg");
+    height: 1px; content: ""; display: block; margin-top: -4px; position: absolute;
+    right: 5px; top: 50%; width: 7px;}
+.mediatum_portal_tree_subnav { word-wrap: break-word;}
+.mediatum_portal_tree_subnav_link { border-bottom: none; line-height: inherit;
+    display: block; font-size: 14px; line-height: 1.2em; position: relative;
+    transition: background-color 0.15s ease-in; padding-top: 5px; padding-bottom: 4px;
+    padding-right: 10px; padding-left: 12px;}
+.mediatum_portal_tree_subnav_link:link{ text-decoration: none; color: #333 !important;}
+.mediatum_portal_tree_subnav_link:hover { border-bottom-width: 0; color: #333;}
+.mediatum_portal_tree_subnav_link:active { background-color: transparent; color: #333;}
+.mediatum_portal_tree_subnav_link:visited { color: #333 !important;;}
+.mediatum_portal_tree_subnav_link:focus { color: #333;}
+ul#navigationlist li div:hover{ background-color: #f7f7f7;}
 
 div#portal-column-content div#startpage { max-width: 56em;}
 #portal-column-content { padding-bottom: 11px; line-height: 133%; background-color: #fff; padding-left: 1.8em;
@@ -150,7 +149,6 @@ div#portal-column-content div#startpage { max-width: 56em;}
 select[name="nodes_per_page"] { margin-right: 38px !important;}
 #portal-column-content #page-nav { margin: 2px 5px 2px 0px;}
 #portal-column-content #page-nav a { color: #0A5096; text-decoration: none;}
-
 a.page-nav { font-size: 130% !important;}
 a.page-nav-previous { margin-right: 10px;}
 a.page-nav-previous:before { content: "<<< ";}

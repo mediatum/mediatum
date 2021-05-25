@@ -280,7 +280,7 @@ div.preview_list { width: 99%; padding-top: 5px; margin-bottom: 5px; border: sil
 #portal-column-content #object_image { width: 320px; float: left; padding-bottom: 20px;}
 #portal-column-content div.mask_row { margin-bottom: 5px; position: relative;}
 #portal-column-content div.mask_label { width: 200px; float: left; position: relative;}
-#portal-column-content  div.mask_value { margin-left: 202px; position: relative;}
+#portal-column-content div.mask_value { margin-left: 202px; position: relative;}
 #portal-column-content div#pages { position: relative;}
 
 * html #visual-portal-wrapper { position: relative; margin: 0px auto;}
@@ -348,11 +348,11 @@ div#portal-column-one { margin-right: 215px; margin-left: 0px; padding-left: 0px
 div#portal-column-two { background-color: #f5f7f7; border: 1px solid silver; width: 200px; padding: 5px; margin: 0px; top: 0px;
     bottom: 0px; right: -3px; float: right; position: absolute;}
 
-a#takemetothecontent { line-height: 0; text-indent: -99999px; display: block; font-size: 0px}
+a#takemetothecontent { line-height: 0; text-indent: -99999px; display: block; font-size: 0px;}
 
 hr.netscape4 { display: none;}
 
-a:link { color: #0a5096}
+a:link { color: #0a5096;}
 a:active { color: #0a5096;}
 a:visited { color: #0a5096;}
 

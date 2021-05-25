@@ -93,6 +93,8 @@ def validate(req, op):
                     # save workflow values
                     updateWorkflow(req.params.get("name", ""), req.params.get("description"),
                                    req.params.get("name_attr"), req.params.get("orig_name"))
+                else:
+                    raise AssertionError("invalid form_op")
 
                 wf = getWorkflow(req.params.get("name"))
                 if wf:
@@ -211,11 +213,14 @@ def validate(req, op):
                             "nfalseid", ""), truelabel=truelabel, falselabel=falselabel, sidebartext=sidebartext, pretext=pretext, posttext=posttext, comment=req.params.get(
                             "ncomment", ""), adminstep=req.params.get(
                                 "adminstep", ""))
+                else:
+                    raise AssertionError("invalid form_op")
 
                 try:
                     wfs = getWorkflow(req.params.get("parent")).getStep(req.params.get("orig_name", ""))
                 except:
                     wfs = getWorkflow(req.params.get("parent")).getStep(req.params.get("nname", ""))
+
                 if wfs:
                     for r in wfs.access_ruleset_assocs.filter_by(ruletype=u'read'):
                         db.session.delete(r)

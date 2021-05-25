@@ -110,7 +110,7 @@ class Video(Content):
 
         captions_info = getCaptionInfoDict(self)
         if captions_info:
-            logg.debug("video: '%s' (%s): captions: dictionary 'captions_info': %s" % (self.name, str(self.id), str(captions_info)))
+            logg.debug("video: '%s' (%s): captions: dictionary 'captions_info': %s", self.name, str(self.id), str(captions_info))
 
         obj["captions_info"] = json.dumps(captions_info)
         return obj

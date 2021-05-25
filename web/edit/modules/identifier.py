@@ -109,7 +109,12 @@ def getContent(req, ids):
                                   mailtext)
 
                 except mail.SocketError:
-                    logg.exception('failed to send Autorenvertrag mail to user %r (%s): %r' % (user.login_name, user.getName(), user.getEmail()))
+                    logg.exception(
+                        'failed to send Autorenvertrag mail to user %r (%s): %r',
+                        user.login_name,
+                        user.getName(),
+                        user.getEmail(),
+                    )
                     v['msg'] = t(lang(req), 'edit_identifier_mail_fail')
 
         if node.get('system.identifierstate') != '2':
@@ -231,5 +236,5 @@ def createDOI(node):
                                                                                      meta_content,
                                                                                      doi_response,
                                                                                      doi_content)
-            logg.error(msg)
+            logg.error("%s", msg)
             raise Exception(msg)

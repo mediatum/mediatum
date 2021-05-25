@@ -85,7 +85,7 @@ def run_maint_command_for_tables(command, s, table_fullnames=None, db_metadata=N
 
     for fullname in table_fullnames:
         cmd = command + " " + fullname
-        logg.info(cmd)
+        logg.info("%s", cmd)
         conn.execute(cmd)
 
     logg.info("completed %s", command)

@@ -232,7 +232,7 @@ def check_undefined_nodeclasses(stub_undefined_nodetypes=None, fail_if_undefined
         if fail_if_undefined_nodetypes:
             raise Exception(msg)
         else:
-            logg.warn(msg)
+            logg.warn("%s", msg)
 
         if stub_undefined_nodetypes is None:
             stub_undefined_nodetypes = config.get("config.stub_undefined_nodetypes", "false") == "true"

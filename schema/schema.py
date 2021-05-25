@@ -1017,7 +1017,7 @@ class Mask(Node):
                 if item.getRequired() == 1:
                     if node.get(field.getName()) == "":
                         ret.append(node.id)
-                        logg.error("Error in publishing of node {}: The required field {} is empty.".format(node.id, field.name))
+                        logg.error("Error in publishing of node %s: The required field %s is empty.", node.id, field.name)
 
                 if field and field.getContentType() == "metafield" and field.getFieldtype() == "date":
                     if not node.get(field.getName()) == "":
@@ -1026,13 +1026,20 @@ class Mask(Node):
                                 datetime.datetime.strptime(node.get(field.getName())[:7], '%Y-%m')
                             except ValueError:
                                 ret.append(node.id)
-                                logg.error("Error in publishing of node {}: The date field 'yearmonth' with content {} is not valid."
-                                    .format(node.id, node.get(field.getName())))
+                                logg.error(
+                                    "Error in publishing of node %s: The date field 'yearmonth' with content %s is not valid.",
+                                    node.id,
+                                    node.get(field.getName()),
+                                )
                             continue
                         if not validateDateString(node.get(field.getName())):
                             ret.append(node.id)
-                            logg.error("Error in publishing of node {}: The date field {} with content {} is not valid."
-                                .format(node.id, field.name, node.get(field.getName())))
+                            logg.error(
+                                "Error in publishing of node %s: The date field %s with content %s is not valid.",
+                                node.id,
+                                field.name,
+                                node.get(field.getName()),
+                            )
         return ret
 
     ''' returns True if all mandatory fields of mappingdefinition are used -> valid format'''

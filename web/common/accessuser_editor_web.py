@@ -62,14 +62,14 @@ def decider_is_private_user_group_access_rule(ar):
         else:
             msg = u"data integrity error (?): usergroup %r is 'private' to more than one (%d) user" % (usergroup,
                                                                                                      len(cand_uids))
-        logg.warning(msg)
+        logg.warning("%s", msg)
         raise ValueError(msg)
     else:
         user = None
 
     if not user:
         msg = "no user with private group id %r for access rule %r" % (gid, ar.to_dict())
-        logg.warning(msg)
+        logg.warning("%s", msg)
         return msg
 
     return user

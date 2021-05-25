@@ -266,7 +266,7 @@ def getentries(filename):
             break
 
     if error:
-        logg.error("bibtex import: bibtexparser failed: {}".format(e))
+        logg.error("bibtex import: bibtexparser failed: %s", e)
         raise ValueError("bibtexparser failed")
 
     return bibtex.entries
@@ -282,7 +282,7 @@ def importBibTeX(infile, node=None, req=None):
             msg = "bibtex import: starting import (unable to identify user)"
     else:
         msg = "bibtex import: starting import (%s)" % ustr(sys.argv)
-    logg.info(msg)
+    logg.info("%s", msg)
 
     bibtextypes = getbibtexmappings()
     result = []
@@ -301,7 +301,7 @@ def importBibTeX(infile, node=None, req=None):
             # XXX TODO and -- even better -- only catch errors that are to be expected.
             logg.exception("getentries failed")
             msg = "bibtex import: getentries failed, import stopped (encoding error)"
-            logg.error(msg)
+            logg.error("%s", msg)
             raise ValueError("bibtex_unspecified_error")
 
     logg.info("bibtex import: %d entries", len(entries))
@@ -337,7 +337,7 @@ def importBibTeX(infile, node=None, req=None):
                     except AttributeError as e:
                         msg = "bibtex import docid='{}': field error for bibtex mask for type {} and bibtex-type '{}': {}"
                         msg = msg.format(docid_utf8, metatype, mytype, e)
-                        logg.error(msg)
+                        logg.error("%s", msg)
                     else:
                         fieldnames[_bib_name] = _med_name
 

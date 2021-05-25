@@ -213,7 +213,7 @@ def handle_request(req):
             if not n.has_read_access():
                 msg = "m_upload: no access for user '%s' to node %s ('%s', '%s') from '%s'" % (
                     user.login_name, n.id, n.name, n.type, ustr(req.remote_addr))
-                logg.info(msg)
+                logg.info("%s", msg)
 
                 errors.append(msg)
                 s['errors'] = errors
@@ -252,7 +252,7 @@ def handle_request(req):
             if not n.has_data_access():
                 msg = "m_upload: no access for user '%s' to node %s ('%s', '%s') from '%s'" % (
                     user.login_name, n.id, n.name, n.type, ustr(req.remote_addr))
-                logg.info(msg)
+                logg.info("%s", msg)
                 errors.append(msg)
 
                 s['errors'] = errors
@@ -273,7 +273,7 @@ def handle_request(req):
                     except Exception, e:
                         msg = "metadata m_upload: could not remove file %r from disk for node %r for request from '%s': %s" % (filepath, n, ustr(req.remote_addr), str(e))
                         errors.append(msg)
-                        logg.exception(msg)
+                        logg.exception("%s", msg)
                     break
 
             db.session.commit()
@@ -300,16 +300,16 @@ def handle_request(req):
             if targetnode is None:
                 msg = "metadata m_upload: targetnodeid='%s' for non-existant node for upload from '%s'" % (ustr(targetnodeid), ustr(req.remote_addr))
                 errors.append(msg)
-                logg.error(msg)
+                logg.error("%s", msg)
         else:
             msg = "metadata m_upload could not find 'targetnodeid' for upload from '%s'" % ustr(req.remote_addr)
             errors.append(msg)
-            logg.error(msg)
+            logg.error("%s", msg)
 
         if targetnode and not targetnode.has_data_access():
             msg = "m_upload: no access for user '%s' to node %s ('%s', '%s') from '%s'" % (
                 user.login_name, ustr(targetnode.id), targetnode.name, targetnode.type, ustr(req.remote_addr))
-            logg.error(msg)
+            logg.error("%s", msg)
             errors.append(msg)
 
             s['errors'] = errors
@@ -340,7 +340,7 @@ def handle_request(req):
             if not nodeFile:
                 msg = "metadata m_upload: could not create file node for request from '%s'" % (ustr(req.remote_addr))
                 errors.append(msg)
-                logg.error(msg)
+                logg.error("%s", msg)
 
         if targetnode and filename:
             filecount = len(getFilelist(targetnode, submitter)[0])
@@ -356,7 +356,7 @@ def handle_request(req):
     else:
         msg = "metadata m_upload: could not find submitter for request from '%s'" % (ustr(req.remote_addr))
         errors.append(msg)
-        logg.error(msg)
+        logg.error("%s", msg)
 
     s = {
         'errors': errors,

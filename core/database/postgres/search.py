@@ -241,7 +241,7 @@ def _check_search_indexes_node(type, languages):
         else:
             indexfunc = func.to_tsvector_safe(lang, Node.fulltext)
         needed_indexes.append(_Index(indexname, indexfunc, postgresql_using="gin"))
-        logg.info('_check_search_indexes_node: create index {}'.format(indexname))
+        logg.info('_check_search_indexes_node: create index %s', indexname)
 
     if needed_indexes:
         map(_operator.methodcaller("create"), needed_indexes)

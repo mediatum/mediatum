@@ -25,7 +25,6 @@ import mediatumtal.tal as _tal
 from utils.date import format_date, parse_date, now
 from utils.utils import funcname
 from core.translation import lang, t, getDefaultLanguage
-from pprint import pformat as pf
 from core import httpstatus
 from core import Node, db
 from contenttypes import Container
@@ -272,7 +271,7 @@ def getContent(req, ids):
     if "edit_metadata" in req.params:
         flag_nodename_changed = _handle_edit_metadata(req, mask, nodes)
         logg.debug("%s change metadata %s", user.login_name, idstr)
-        logg.debug(pf(req.params))
+        logg.debug("%r", req.params)
 
     if "edit_metadata" in req.params or node.system_attrs.get("faulty") == "true":
         if not hasattr(mask, "i_am_not_a_mask"):

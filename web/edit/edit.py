@@ -763,7 +763,7 @@ def content(req):
     jsfunc = req.values.get("func", "")
     if jsfunc:
         msg = msg + (', js-function: %r' % jsfunc)
-    logg.info(msg)
+    logg.info("%s", msg)
 
     # some tabs operate on only one file
     # if current in ["files", "view", "upload"]:

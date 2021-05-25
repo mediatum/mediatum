@@ -97,11 +97,14 @@ def getContent(req, ids):
                     logg.warn(u"changeschema: illegal schema %s", new_schema)
                     return httpstatus.HTTP_BAD_REQUEST
 
-            logg.info(u"{} changed node schema for node {} '{}' from '{}' to '{}'".format(user.login_name,
-                                                                                         node.id,
-                                                                                         node.name,
-                                                                                         node.type,
-                                                                                         new_type))
+            logg.info(
+                    u"%s changed node schema for node %s '%s' from '%s' to '%s'",
+                    user.login_name,
+                    node.id,
+                    node.name,
+                    node.type,
+                    new_type,
+                )
             node.type = new_type
             node.schema = new_schema
 

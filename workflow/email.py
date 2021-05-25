@@ -101,7 +101,7 @@ class WorkflowStep_SendEmail(WorkflowStep):
                 logg.exception("Error while sending mail- node stays in workflowstep %s %s", self.id, self.name)
                 return
         else:
-            logg.info("sending mail prevented by condition %s " % (sendcondition))
+            logg.info("sending mail prevented by condition %s ", sendcondition)
             return
         for s in ["mailtmp.from", "mailtmp.to", "mailtmp.subject", "mailtmp.text",
                   "mailtmp.error", "mailtmp.talerror", "mailtmp.send"]:

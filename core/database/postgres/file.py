@@ -119,7 +119,7 @@ class File(DeclarativeBase, FileMixin):
         Use with caution, should not be necessary under usual circumstances!"""
         if not self.exists:
             return None
-        logg.info('Updating sha512 for file ID: %s.' % self.id)
+        logg.info('Updating sha512 for file ID: %s.', self.id)
         self.sha512 = self.calculate_sha512()
         self.sha512_ok = True
         self.sha512_created_at = self.sha512_checked_at = datetime.utcnow()
@@ -133,7 +133,7 @@ class File(DeclarativeBase, FileMixin):
         created = False
         if not self.sha512:
             created = True
-            logg.info('Checksum not in DB, creating it for file ID: %s.' % self.id)
+            logg.info('Checksum not in DB, creating it for file ID: %s.', self.id)
             self.update_sha512()
         return self.sha512, created
 
@@ -141,7 +141,7 @@ class File(DeclarativeBase, FileMixin):
         """Make sure the file exists and has the same checksum as before"""
         if not self.exists:
             #raise IOError()
-            logg.warn('check_checksum: file %s does not exist at %s!' % (self.id, self.abspath))
+            logg.warn('check_checksum: file %s does not exist at %s!', self.id, self.abspath)
             self.sha512_ok = None
             return None
         self.sha512_checked_at = datetime.utcnow()
@@ -152,10 +152,10 @@ class File(DeclarativeBase, FileMixin):
         else:
             sha_calculated = self.calculate_sha512()
             if sha_stored == sha_calculated and sha_calculated is not None:
-                logg.debug('Matching checksums :) for file ID: %s.' % self.id)
+                logg.debug('Matching checksums :) for file ID: %s.', self.id)
                 self.sha512_ok = True
             else:
-                logg.warn('Checksum mismatch for file ID: %s.' % self.id)
+                logg.warn('Checksum mismatch for file ID: %s.', self.id)
                 self.sha512_ok = False
         return self.sha512_ok
 

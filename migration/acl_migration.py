@@ -71,13 +71,13 @@ def convert_node_rulestrings_to_symbolic_rules(nid_to_rulestr, fail_on_first_err
         msg = "{} rules failed with syntax error".format(len(converter.syntax_errors))
         if not ignore_errors:
             raise Exception(msg)
-        logg.warn(msg)
+        logg.warn("%s", msg)
 
     if converter.conversion_exceptions:
         msg = "{} rules failed with a conversion error".format(len(converter.conversion_exceptions))
         if not ignore_errors:
             raise Exception(msg)
-        logg.warn(msg)
+        logg.warn("%s", msg)
 
     # map node ids to bool expression results
     nid_to_symbolic_rule = {nid: None if not rulestr.strip() else rulestr_to_symbolic_rule[rulestr]
@@ -102,19 +102,19 @@ def convert_node_symbolic_rules_to_access_rules(nid_to_symbolic_rule, symbol_to_
         msg = "conversion failed for {} rules".format(len(converter.conversion_exceptions))
         if not ignore_errors:
             raise Exception(msg)
-        logg.warn(msg)
+        logg.warn("%s", msg)
 
     if converter.missing_users:
         msg = "missing users: {}".format(converter.missing_users.values())
         if not ignore_missing_user_groups:
             raise Exception(msg)
-        logg.warn(msg)
+        logg.warn("%s", msg)
 
     if converter.missing_groups:
         msg = "missing groups: {}".format(converter.missing_groups.values())
         if not ignore_missing_user_groups:
             raise Exception(msg)
-        logg.warn(msg)
+        logg.warn("%s", msg)
 
     if converter.fake_groups:
         logg.warn("inserted fake group ids for missing groups / users:\n%s", pformat(converter.fake_groups))

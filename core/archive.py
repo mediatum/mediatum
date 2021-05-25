@@ -68,4 +68,4 @@ def get_archive_for_node(node):
     if manager:
         return manager
 
-    logg.warn("archive manager {} for node {} not loaded".format(archive_type, node.id))
+    logg.warn("archive manager %s for node %s not loaded", archive_type, node.id)

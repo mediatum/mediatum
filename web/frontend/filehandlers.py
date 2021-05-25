@@ -371,7 +371,7 @@ def fetch_archived(req):
         msg = "archive for node not found"
         req.response.status_code = 400
         req.response.set_data(msg)
-        logg.warn(msg)
+        logg.warn("%s", msg)
 
     db.session.commit()
 

@@ -161,9 +161,9 @@ def request_handler(req):
             timesum += executiontime
         s += "\n| sum of execution times: %.3f sec.: %s bytes returned" % (timesum, locale.format("%d", bytes_sent, 1))
         s += '\n' + ('-' * 80)
-        logg.info(s)
+        logg.info("%s", s)
     else:
-        logg.info(s)
+        logg.info("%s", s)
     sys.stdout.flush()
 
     if not matched:

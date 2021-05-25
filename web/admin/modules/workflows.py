@@ -91,8 +91,12 @@ def validate(req, op):
                     wf = addWorkflow(req.params.get("name", ""), req.params.get("description"))
                 elif req.params.get("form_op") == "save_edit":
                     # save workflow values
-                    wf = updateWorkflow(req.params.get("name", ""), req.params.get("description"),
-                                   req.params.get("name_attr"), req.params.get("orig_name"))
+                    wf = updateWorkflow(
+                            req.params.get("name", ""),
+                            req.params.get("description"),
+                            req.params.get("name_attr"),
+                            req.params.get("orig_name"),
+                        )
                 else:
                     raise AssertionError("invalid form_op")
 
@@ -156,15 +160,15 @@ def validate(req, op):
                     if workflowstep:
                         raise ValueError("a workflowstep with the same name already exists")
                     wnode = createWorkflowStep(
-                        name=req.params.get(
-                            "nname", ""), type=req.params.get(
-                            "ntype", ""), trueid=req.params.get(
-                            "ntrueid", ""), falseid=req.params.get(
-                            "nfalseid", ""), truelabel=req.params.get(
-                            "ntruelabel", ""), falselabel=req.params.get(
-                            "nfalselabel", ""), comment=req.params.get(
-                                "ncomment", ""), adminstep=req.params.get(
-                                    "adminstep", ""))
+                            name=req.params.get("nname", ""),
+                            type=req.params.get("ntype", ""),
+                            trueid=req.params.get("ntrueid", ""),
+                            falseid=req.params.get("nfalseid", ""),
+                            truelabel=req.params.get("ntruelabel", ""),
+                            falselabel=req.params.get("nfalselabel", ""),
+                            comment=req.params.get("ncomment", ""),
+                            adminstep=req.params.get("adminstep", ""),
+                        )
                     getWorkflow(req.params.get("parent")).addStep(wnode)
 
                 elif req.params.get("form_op") == "save_editdetail":
@@ -202,14 +206,20 @@ def validate(req, op):
                         posttext = req.params.get("nposttext", "").replace('\n', '')
 
                     wnode = updateWorkflowStep(
-                        wf, oldname=req.params.get(
-                            "orig_name", ""), newname=req.params.get(
-                            "nname", ""), type=req.params.get(
-                            "ntype", ""), trueid=req.params.get(
-                            "ntrueid", ""), falseid=req.params.get(
-                            "nfalseid", ""), truelabel=truelabel, falselabel=falselabel, sidebartext=sidebartext, pretext=pretext, posttext=posttext, comment=req.params.get(
-                            "ncomment", ""), adminstep=req.params.get(
-                                "adminstep", ""))
+                            wf,
+                            oldname=req.params.get("orig_name", ""),
+                            newname=req.params.get("nname", ""),
+                            type=req.params.get("ntype", ""),
+                            trueid=req.params.get("ntrueid", ""),
+                            falseid=req.params.get("nfalseid", ""),
+                            truelabel=truelabel,
+                            falselabel=falselabel,
+                            sidebartext=sidebartext,
+                            pretext=pretext,
+                            posttext=posttext,
+                            comment=req.params.get("ncomment", ""),
+                            adminstep=req.params.get("adminstep", ""),
+                        )
                 else:
                     raise AssertionError("invalid form_op")
 
@@ -280,8 +290,7 @@ def view(req):
             workflows.reverse()
 
     v = getAdminStdVars(req)
-    v["sortcol"] = pages.OrderColHeader(
-        [t(lang(req), "admin_wf_col_1"), t(lang(req), "admin_wf_col_2"), t(lang(req), "admin_wf_col_3"), t(lang(req), "admin_wf_col_4")])
+    v["sortcol"] = pages.OrderColHeader([t(lang(req), "admin_wf_col_{}".format(col)) for col in xrange(1, 5)])
     v["workflows"] = workflows
     v["pages"] = pages
     v["actfilter"] = actfilter
@@ -316,8 +325,10 @@ def WorkflowDetail(req, id, err=0):
         db.session.commit()
 
     try:
-        rule = {"read": [r.ruleset_name for r in workflow.access_ruleset_assocs.filter_by(ruletype='read')],
-                "write": [r.ruleset_name for r in workflow.access_ruleset_assocs.filter_by(ruletype='write')]}
+        rule = {
+                "read": [r.ruleset_name for r in workflow.access_ruleset_assocs.filter_by(ruletype='read')],
+                "write": [r.ruleset_name for r in workflow.access_ruleset_assocs.filter_by(ruletype='write')],
+            }
     except:
         rule = {"read": [], "write": []}
 
@@ -378,16 +389,7 @@ def WorkflowStepList(req, wid):
         workflowsteps.sort(lambda x, y: cmp(x.name.lower(), y.name.lower()))
 
     v = getAdminStdVars(req)
-    v["sortcol"] = pages.OrderColHeader(
-        [
-            t(
-                lang(req), "admin_wfstep_col_1"), t(
-                lang(req), "admin_wfstep_col_2"), t(
-                    lang(req), "admin_wfstep_col_3"), t(
-                        lang(req), "admin_wfstep_col_4"), t(
-                            lang(req), "admin_wfstep_col_5"), t(
-                                lang(req), "admin_wfstep_col_6"), t(
-                                    lang(req), "admin_wfstep_col_7")])
+    v["sortcol"] = pages.OrderColHeader([t(lang(req), "admin_wf_col_{}".format(col)) for col in xrange(1, 8)])
     v["workflow"] = workflow
     v["workflowsteps"] = workflowsteps
     v["pages"] = pages
@@ -406,33 +408,41 @@ def WorkflowStepDetail(req, wid, wnid, err=0):
 
     if err == 0 and wnid == "":
         # new workflowstep
-        workflowstep = createWorkflowStep(name="", trueid="", falseid="", truelabel="", falselabel="", comment="")
+        workflowstep = createWorkflowStep(
+                name="",
+                trueid="",
+                falseid="",
+                truelabel="",
+                falselabel="",
+                comment="",
+            )
         v["orig_name"] = req.params.get("orig_name", "")
 
     elif err == -1:
         # update steptype
         if req.params.get("stepid", ""):
             workflowstep = updateWorkflowStep(
-                workflow, oldname=req.params.get(
-                    "nname", ""), newname=req.params.get(
-                    "nname", ""), type=req.params.get(
-                    "ntype", "workflowstep"), trueid=req.params.get(
-                    "ntrueid", ""), falseid=req.params.get(
-                        "nfalseid", ""), truelabel=req.params.get(
-                            "ntruelabel", ""), falselabel=req.params.get(
-                                "nfalselabel", ""), comment=req.params.get(
-                                    "ncomment", ""))
+                    workflow,
+                    oldname=req.params.get("nname", ""),
+                    newname=req.params.get("nname", ""),
+                    type=req.params.get("ntype", "workflowstep"),
+                    trueid=req.params.get("ntrueid", ""),
+                    falseid=req.params.get("nfalseid", ""),
+                    truelabel=req.params.get("ntruelabel", ""),
+                    falselabel=req.params.get("nfalselabel", ""),
+                    comment=req.params.get("ncomment", ""),
+                )
         else:
             err = 0
             workflowstep = createWorkflowStep(
-                name=req.params.get(
-                    "nname", ""), type=req.params.get(
-                    "ntype", "workflowstep"), trueid=req.params.get(
-                    "ntrueid", ""), falseid=req.params.get(
-                    "nfalseid", ""), truelabel=req.params.get(
-                        "ntruelabel", ""), falselabel=req.params.get(
-                            "nfalselabel", ""), comment=req.params.get(
-                                "ncomment", ""))
+                    name=req.params.get("nname", ""),
+                    type=req.params.get("ntype", "workflowstep"),
+                    trueid=req.params.get("ntrueid", ""),
+                    falseid=req.params.get("nfalseid", ""),
+                    truelabel=req.params.get("ntruelabel", ""),
+                    falselabel=req.params.get("nfalselabel", ""),
+                    comment=req.params.get("ncomment", ""),
+                )
         v["orig_name"] = workflowstep.name
 
     elif wnid != "" and req.params.get("nname") != "":
@@ -445,13 +455,14 @@ def WorkflowStepDetail(req, wid, wnid, err=0):
         if type == "":
             type = "workflowstep"
         workflowstep = createWorkflowStep(
-            name=req.params.get(
-                "nname", ""), type=type, trueid=req.params.get(
-                "ntrueid", ""), falseid=req.params.get(
-                "nfalseid", ""), truelabel=req.params.get(
-                    "ntruelabel", ""), falselabel=req.params.get(
-                        "nfalselabel", ""), comment=req.params.get(
-                            "ncomment", ""))
+                name=req.params.get("nname", ""),
+                type=type,
+                trueid=req.params.get("ntrueid", ""),
+                falseid=req.params.get("nfalseid", ""),
+                truelabel=req.params.get("ntruelabel", ""),
+                falselabel=req.params.get("nfalselabel", ""),
+                comment=req.params.get("ncomment", ""),
+            )
         v["orig_name"] = req.params.get("orig_name", "")
 
     if req.params.get("nytype", "") != "":
@@ -463,8 +474,10 @@ def WorkflowStepDetail(req, wid, wnid, err=0):
     v_part["hiddenvalues"] = {"wnodeid": workflowstep.name}
 
     try:
-        rule = {"read": [r.ruleset_name for r in workflowstep.access_ruleset_assocs.filter_by(ruletype='read')],
-                "write": [r.ruleset_name for r in workflowstep.access_ruleset_assocs.filter_by(ruletype='write')]}
+        rule = {
+                "read": [r.ruleset_name for r in workflowstep.access_ruleset_assocs.filter_by(ruletype='read')],
+                "write": [r.ruleset_name for r in workflowstep.access_ruleset_assocs.filter_by(ruletype='write')],
+            }
     except:
         rule = {"read": [], "write": []}
 
@@ -488,7 +501,15 @@ def WorkflowStepDetail(req, wid, wnid, err=0):
 
 def WorkflowPopup(req):
     path = req.mediatum_contextfree_path[1:].split("/")
-    return _tal.processTAL({"id": path[1], "csrf": req.csrf_token.current_token}, file="web/admin/modules/workflows.html", macro="view_popup", request=req)
+    return _tal.processTAL(
+            dict(
+                id=path[1],
+                csrf=req.csrf_token.current_token,
+            ),
+            file="web/admin/modules/workflows.html",
+            macro="view_popup",
+            request=req,
+        )
 
 """ export workflow-definition (XML) """
 

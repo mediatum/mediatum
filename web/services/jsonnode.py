@@ -98,11 +98,11 @@ def buildNodeDescriptor(params, node, indent=None, written=None, children=True, 
         from contenttypes.data import make_lookup_key, get_maskcache_entry
         language = params.get('lang', '')
         lookup_key = make_lookup_key(node, language=language, labels=False)
-        if 'maskcache' not in _flask.request.app_cache or lookup_key not in _flask.request.app_cache['maskcache']:
+        if lookup_key not in _flask.g.mediatum.get('maskcache', {}):
             # fill cache
             node.show_node_text(labels=False, language=language)
 
-        mask_id, field_descriptors = get_maskcache_entry(lookup_key, _flask.request.app_cache['maskcache'])
+        mask_id, field_descriptors = get_maskcache_entry(lookup_key)
 
         try:
             for field_descriptor in field_descriptors:

@@ -61,9 +61,9 @@ def make_lookup_key(node, language=None, labels=True):
         return "%s/%s_%s_%s" % (node.type, node.schema, languages[0], flaglabels)
 
 
-def get_maskcache_entry(lookup_key, maskcache):
+def get_maskcache_entry(lookup_key):
     try:
-        res = maskcache[lookup_key]
+        res = _flask.g.mediatum["maskcache"][lookup_key]
     except:
         res = (None, None)
     return res
@@ -220,11 +220,10 @@ class Data(Node):
         # if the lookup_key is already in the cache dict: render the cached mask_template
         # else: build the mask_template
 
-        if not 'maskcache' in _flask.request.app_cache:
-            _flask.request.app_cache['maskcache'] = {}
+        _flask.g.mediatum.setdefault("maskcache", {})
 
-        if lookup_key in _flask.request.app_cache['maskcache']:
-            mask, field_descriptors = _flask.request.app_cache['maskcache'][lookup_key]
+        if lookup_key in _flask.g.mediatum['maskcache']:
+            mask, field_descriptors = _flask.g.mediatum['maskcache'][lookup_key]
             res = render_mask_template(self, mask, field_descriptors, language, words=words, separator=separator)
 
         else:
@@ -285,7 +284,7 @@ class Data(Node):
                     long_field_descriptor = (node_attribute, fd)
                     field_descriptors.append(long_field_descriptor)
 
-                _flask.request.app_cache['maskcache'][lookup_key] = (mask, field_descriptors)
+                _flask.g.mediatum["maskcache"][lookup_key] = (mask, field_descriptors)
                 res = render_mask_template(self, mask, field_descriptors, language, words=words, separator=separator)
 
             else:

@@ -102,7 +102,7 @@ def buildNodeDescriptor(params, node, indent=None, written=None, children=True, 
             # fill cache
             node.show_node_text(labels=False, language=language)
 
-        mask_id, field_descriptors = get_maskcache_entry(lookup_key, _flask.request.app_cache['maskcache'], _flask.request.app_cache['maskcache_accesscount'])
+        mask_id, field_descriptors = get_maskcache_entry(lookup_key, _flask.request.app_cache['maskcache'])
 
         try:
             for field_descriptor in field_descriptors:

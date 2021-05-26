@@ -47,13 +47,6 @@ context = default_context.copy()
 context['host'] = "http://" + config.get("host.name", "")
 
 
-def get_maskcache_report(maskcache_accesscount):
-    sorted_entries = [(k, v) for k, v in sorted(iteritems(maskcache_accesscount))]
-    total_access_count = sum(v for k, v in sorted_entries)
-    num_cache_keys = len(sorted_entries)
-    return "keys: %s, total access count: %s, %s" % (num_cache_keys, total_access_count, sorted_entries)
-
-
 def make_lookup_key(node, language=None, labels=True):
     languages = config.languages
     if language is None:
@@ -68,22 +61,12 @@ def make_lookup_key(node, language=None, labels=True):
         return "%s/%s_%s_%s" % (node.type, node.schema, languages[0], flaglabels)
 
 
-def get_maskcache_entry(lookup_key, maskcache, maskcache_accesscount):
+def get_maskcache_entry(lookup_key, maskcache):
     try:
         res = maskcache[lookup_key]
-        maskcache_accesscount[lookup_key] += 1
     except:
         res = (None, None)
     return res
-
-
-@_request_finished
-def log_maskcache_accesscount(req, *args):
-    if logg.isEnabledFor(logging.DEBUG):
-        maskcache_accesscount = req.app_cache.get('maskcache_accesscount', {})
-        if maskcache_accesscount:
-            maskcache_report = get_maskcache_report(maskcache_accesscount)
-            logg.debug("mask cache status for req to %s: %s", req.mediatum_contextfree_path, maskcache_report)
 
 
 def render_mask_template(node, mask, field_descriptors, language, words=None, separator="", skip_empty_fields=True):
@@ -239,12 +222,10 @@ class Data(Node):
 
         if not 'maskcache' in _flask.request.app_cache:
             _flask.request.app_cache['maskcache'] = {}
-            _flask.request.app_cache['maskcache_accesscount'] = {}
 
         if lookup_key in _flask.request.app_cache['maskcache']:
             mask, field_descriptors = _flask.request.app_cache['maskcache'][lookup_key]
             res = render_mask_template(self, mask, field_descriptors, language, words=words, separator=separator)
-            _flask.request.app_cache['maskcache_accesscount'][lookup_key] = _flask.request.app_cache['maskcache_accesscount'].get(lookup_key, 0) + 1
 
         else:
             mask = self.metadatatype.get_mask(u"nodesmall")
@@ -305,7 +286,6 @@ class Data(Node):
                     field_descriptors.append(long_field_descriptor)
 
                 _flask.request.app_cache['maskcache'][lookup_key] = (mask, field_descriptors)
-                _flask.request.app_cache['maskcache_accesscount'][lookup_key] = 0
                 res = render_mask_template(self, mask, field_descriptors, language, words=words, separator=separator)
 
             else:

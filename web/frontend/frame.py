@@ -210,6 +210,7 @@ class NavTreeEntry(object):
         self.indent = indent
         self.defaultopen = indent == 0
         self.hassubdir = 0
+        self.isSelected = 0
         self.folded = 1
         self.active = 0
         self.small = small
@@ -219,8 +220,9 @@ class NavTreeEntry(object):
         self.show_childcount = node.show_childcount
 
         self.count = self.node.childcount()
+        self.container_children = self.node.container_children
 
-        if self.count:
+        if self.container_children:
             self.hassubdir = 1
             self.folded = 1
 
@@ -292,6 +294,7 @@ def make_navtree_entries(language, collection, container):
     hide_empty = collection.get("style_hide_empty") == "1"
 
     opened = {t[0] for t in container.all_parents.with_entities(Node.id)}
+    activelist = {t[0] for t in container.all_parents.with_entities(Node.id)}
     opened.add(container.id)
 
     navtree_entries = []
@@ -301,6 +304,11 @@ def make_navtree_entries(language, collection, container):
         e = NavTreeEntry(node, indent, small, hide_empty, language)
         if node.id == collection.id or node.id == container.id:
             e.active = 1
+
+        # 2021-05-27 KL: Need only one active navtree entry, not both container and collection
+        if node.id in activelist:
+            e.active = 0
+
         navtree_entries.append(e)
         if node.id in opened:
             e.folded = 0

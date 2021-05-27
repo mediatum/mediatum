@@ -9,9 +9,9 @@
         - var label = data.getText()
         if label
           li(class=data.getClass())
-            div(style=data.getStyle(), class=['linknotselected','linkselected'][data.active])
+            div(style=data.getStyle(), class=['mediatum_portal_tree_link','mediatum_portal_tree_link_current'][data.active])
               if data.hassubdir
-                - var sd = ['expanded','collapsed'][data.isFolded()]
+                - var sd = 'mediatum_portal_tree_has_submenu ' + ['mediatum_portal_tree_active',''][data.isFolded()]
               else
                 - var sd = ''
               a(href=data.getFoldLink(), class=sd + " mediatum_portal_tree_subnav_link")

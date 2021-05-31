@@ -63,15 +63,18 @@ def addWorkflow(name, description):
     node.set("description", description)
     db.session.commit()
 
+    return node
+
 
 def updateWorkflow(name, description, nameattribute="", origname="", writeaccess=""):
+    workflows_root = q(Workflows).one()
     if origname == "":
-        node = q(Workflows).one()
-        if node.children.filter_by(name=name).scalar() is None:
-            addWorkflow(name, description)
-        w = q(Workflows).one().children.filter_by(name=name).one()
+        if workflows_root.children.filter_by(name=name).scalar() is None:
+            w = addWorkflow(name, description)
+        else:
+            w = workflows_root.children.filter_by(name=name).one()
     else:
-        w = q(Workflows).one().children.filter_by(name=origname).one()
+        w = workflows_root.children.filter_by(name=origname).one()
         w.name = name
     w.set("description", description)
     w.display_name_attribute = nameattribute
@@ -83,6 +86,8 @@ def updateWorkflow(name, description, nameattribute="", origname="", writeaccess
     else:
         w.access_ruleset_assocs.append(NodeToAccessRuleset(ruleset_name=writeaccess, ruletype=u'write'))
     db.session.commit()
+
+    return w
 
 
 def deleteWorkflow(id):

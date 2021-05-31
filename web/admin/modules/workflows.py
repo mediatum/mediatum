@@ -88,47 +88,44 @@ def validate(req, op):
 
                 if req.params.get("form_op") == "save_new":
                     # save workflow values
-                    addWorkflow(req.params.get("name", ""), req.params.get("description"))
+                    wf = addWorkflow(req.params.get("name", ""), req.params.get("description"))
                 elif req.params.get("form_op") == "save_edit":
                     # save workflow values
-                    updateWorkflow(req.params.get("name", ""), req.params.get("description"),
+                    wf = updateWorkflow(req.params.get("name", ""), req.params.get("description"),
                                    req.params.get("name_attr"), req.params.get("orig_name"))
                 else:
                     raise AssertionError("invalid form_op")
 
-                wf = getWorkflow(req.params.get("name"))
-                if wf:
-                    language_list = [lang for lang in config.languages if "wf_language_" + lang in req.params]
-                    if language_list:
-                        wf.set('languages', ';'.join(language_list))
-                    else:
-                        if wf.get('languages'):
-                            del wf.attrs['languages']
+                language_list = filter(lambda lang : "wf_language_{}".format(lang) in req.params, config.languages)
+                if language_list:
+                    wf.set('languages', ';'.join(language_list))
+                else:
+                    wf.attrs.pop("languages", None)
 
-                    for r in wf.access_ruleset_assocs.filter_by(ruletype=u'read'):
-                        db.session.delete(r)
+                for r in wf.access_ruleset_assocs.filter_by(ruletype=u'read'):
+                    db.session.delete(r)
 
-                    for key in req.params.keys():
-                        if key.startswith("left_read"):
-                            for r in req.params.get(key).split(';'):
-                                wf.access_ruleset_assocs.append(NodeToAccessRuleset(ruleset_name=r, ruletype=key[9:]))
-                            break
+                for key in req.params.keys():
+                    if key.startswith("left_read"):
+                        for r in req.params.get(key).split(';'):
+                            wf.access_ruleset_assocs.append(NodeToAccessRuleset(ruleset_name=r, ruletype=key[9:]))
+                        break
 
-                    for r in wf.access_ruleset_assocs.filter_by(ruletype=u'write'):
-                        db.session.delete(r)
+                for r in wf.access_ruleset_assocs.filter_by(ruletype=u'write'):
+                    db.session.delete(r)
 
-                    for key in req.params.keys():
-                        if key.startswith("left_write"):
-                            for r in req.params.get(key).split(';'):
-                                wf.access_ruleset_assocs.append(NodeToAccessRuleset(ruleset_name=r, ruletype=key[10:]))
-                            break
+                for key in req.params.keys():
+                    if key.startswith("left_write"):
+                        for r in req.params.get(key).split(';'):
+                            wf.access_ruleset_assocs.append(NodeToAccessRuleset(ruleset_name=r, ruletype=key[10:]))
+                        break
 
-                    # check for right inheritance
-                    if "write_inherit" in req.params:
-                        inheritWorkflowRights(req.params.get("name", ""), "write")
-                    if "read_inherit" in req.params:
-                        inheritWorkflowRights(req.params.get("name", ""), "read")
-                    db.session.commit()
+                # check for right inheritance
+                if "write_inherit" in req.params:
+                    inheritWorkflowRights(req.params.get("name", ""), "write")
+                if "read_inherit" in req.params:
+                    inheritWorkflowRights(req.params.get("name", ""), "read")
+                db.session.commit()
 
         else:
             # workflowstep section
@@ -216,30 +213,24 @@ def validate(req, op):
                 else:
                     raise AssertionError("invalid form_op")
 
-                try:
-                    wfs = getWorkflow(req.params.get("parent")).getStep(req.params.get("orig_name", ""))
-                except:
-                    wfs = getWorkflow(req.params.get("parent")).getStep(req.params.get("nname", ""))
+                for r in wnode.access_ruleset_assocs.filter_by(ruletype=u'read'):
+                    db.session.delete(r)
 
-                if wfs:
-                    for r in wfs.access_ruleset_assocs.filter_by(ruletype=u'read'):
-                        db.session.delete(r)
+                for key in req.params.keys():
+                    if key.startswith("left_read"):
+                        for r in req.params.get(key).split(';'):
+                            wnode.access_ruleset_assocs.append(NodeToAccessRuleset(ruleset_name=r, ruletype=key[9:]))
+                        break
 
-                    for key in req.params.keys():
-                        if key.startswith("left_read"):
-                            for r in req.params.get(key).split(';'):
-                                wfs.access_ruleset_assocs.append(NodeToAccessRuleset(ruleset_name=r, ruletype=key[9:]))
-                            break
+                for r in wnode.access_ruleset_assocs.filter_by(ruletype=u'write'):
+                    db.session.delete(r)
 
-                    for r in wfs.access_ruleset_assocs.filter_by(ruletype=u'write'):
-                        db.session.delete(r)
-
-                    for key in req.params.keys():
-                        if key.startswith("left_write"):
-                            for r in req.params.get(key).split(';'):
-                                wfs.access_ruleset_assocs.append(NodeToAccessRuleset(ruleset_name=r, ruletype=key[10:]))
-                            break
-                    db.session.commit()
+                for key in req.params.keys():
+                    if key.startswith("left_write"):
+                        for r in req.params.get(key).split(';'):
+                            wnode.access_ruleset_assocs.append(NodeToAccessRuleset(ruleset_name=r, ruletype=key[10:]))
+                        break
+                db.session.commit()
 
                 if "metaDataEditor" in req.params.keys():
                     parseEditorData(req, wnode)

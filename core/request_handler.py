@@ -44,19 +44,6 @@ global_modules = {}
 BASENAME = _re.compile("([^/]*/)*([^/.]*)(.py)?")
 verbose = 1
 
-mode_table = {
-    '0': '---',
-    '1': '--x',
-    '2': '-w-',
-    '3': '-wx',
-    '4': 'r--',
-    '5': 'r-x',
-    '6': 'rw-',
-    '7': 'rwx'
-}
-
-months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
-
 
 def build_http_date(when):
     return _time.strftime('%a, %d %b %Y %H:%M:%S GMT', _time.gmtime(when))
@@ -106,72 +93,6 @@ def setTempDir(tempdir):
 
 def getBase():
     return GLOBAL_ROOT_DIR
-
-
-# standard wrapper around a unix-like filesystem, with a 'false root'
-# capability.
-
-# security considerations: can symbolic links be used to 'escape' the
-# root?  should we allow it?  if not, then we could scan the
-# filesystem on startup, but that would not help if they were added
-# later.  We will probably need to check for symlinks in the cwd method.
-
-# what to do if wd is an invalid directory?
-
-def safe_stat(path):
-    try:
-        return (path, _os.stat(path))
-    except:
-        return None
-
-
-# Emulate the unix 'ls' command's date field.
-# it has two formats - if the date is more than 180
-# days in the past, then it's like this:
-# Oct 19  1995
-# otherwise, it looks like this:
-# Oct 19 17:33
-
-def ls_date(now, t):
-    try:
-        info = _time.gmtime(t)
-    except:
-        info = _time.gmtime(0)
-    # 15,600,000 == 86,400 * 180
-    if (now - t) > 15600000:
-        return '%s %2d  %d' % (
-            months[info[1] - 1],
-            info[2],
-            info[0]
-        )
-    else:
-        return '%s %2d %02d:%02d' % (
-            months[info[1] - 1],
-            info[2],
-            info[3],
-            info[4]
-        )
-
-
-def unix_longify(file, stat_info):
-    # for now, only pay attention to the lower bits
-    mode = ('%o' % stat_info[_stat.ST_MODE])[-3:]
-    mode = _string.join(map(lambda x: mode_table[x], mode), '')
-    if _stat.S_ISDIR(stat_info[_stat.ST_MODE]):
-        dirchar = 'd'
-    else:
-        dirchar = '-'
-    date = ls_date(long(_time.time()), stat_info[_stat.ST_MTIME])
-    return '%s%s %3d %-8d %-8d %8d %s %s' % (
-        dirchar,
-        mode,
-        stat_info[_stat.ST_NLINK],
-        stat_info[_stat.ST_UID],
-        stat_info[_stat.ST_GID],
-        stat_info[_stat.ST_SIZE],
-        date,
-        file
-    )
 
 
 class FileStore:
@@ -358,9 +279,6 @@ class zip_filesystem:
     def rmdir(self, path):
         raise NotImplementedError()
 
-    def longify(self, (path, stat_info)):
-        return unix_longify(path, stat_info)
-
     def __repr__(self):
         return '<zipfile fs root:%s wd:%s>' % (self.filename, self.wd)
 
@@ -450,9 +368,6 @@ class os_filesystem:
         p = self.normalize(self.path_module.join(self.wd, path))
         p = self.normalize(self.path_module.join(self.root, p[1:]))
         return p
-
-    def longify(self, (path, stat_info)):
-        return unix_longify(path, stat_info)
 
     def __repr__(self):
         return '<unix-style fs root:%s wd:%s>' % (

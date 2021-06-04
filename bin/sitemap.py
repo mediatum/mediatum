@@ -92,7 +92,7 @@ class Sitemap:
                     if matched:
                         try:
                             timestruct = time.strptime(date, date_format_tuple[1])
-                            timedatetime = datetime.datetime.fromtimestamp(time.mktime(timestruct))
+                            timedatetime = datetime.datetime.utcfromtimestamp(time.mktime(timestruct))
                             return timedatetime.strftime('%Y-%m-%dT%H:%M:%S')
                         except ValueError:
                             continue

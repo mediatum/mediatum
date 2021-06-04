@@ -28,10 +28,6 @@ _logg = _logging.getLogger(__name__)
 
 GLOBAL_TEMP_DIR = "/tmp/"
 GLOBAL_ROOT_DIR = "no-root-dir-set"
-# HTTP/1.0 doesn't say anything about the "; length=nnnn" addition
-# to this header.  I suppose its purpose is to avoid the overhead
-# of parsing dates...
-IF_MODIFIED_SINCE = _re.compile('([^;]+)((; length=([0-9]+)$)|$)', _re.IGNORECASE)
 
 
 # COMPAT: before / after request handlers and request / app context handling
@@ -43,19 +39,6 @@ global_modules = {}
 
 BASENAME = _re.compile("([^/]*/)*([^/.]*)(.py)?")
 verbose = 1
-
-
-def parse_http_date(d):
-    tz = _time.timezone
-    try:
-        retval = int(_time.mktime(d) - tz)
-    except OverflowError:
-        return 0
-    # Thanks to Craig Silverstein <csilvers@google.com> for pointing
-    # out the DST discrepancy
-    if _time.daylight and _time.localtime(retval)[-1] == 1:  # DST correction
-        retval = retval + (tz - _time.altzone)
-    return retval
 
 
 def join_paths(p1, p2):
@@ -470,30 +453,18 @@ def sendFile(req, path, content_type, force=0, nginx_x_accel_redirect_enabled=Tr
             error(req, 404)
             return
 
-    ims = IF_MODIFIED_SINCE.match(req.headers["if-modified-since"]) if "if-modified-since" in req.headers else None
-    length_match = 1
-    ims_date = 0
-    if ims:
-        length = ims.group(4)
-        if length:
-            with _suppress(Exception, warn=False):
-                length = _string.atoi(length)
-                if length != file_length:
-                    length_match = 0
-        ims_date = parse_http_date(req.if_modified_since.timetuple())
-
     try:
-        mtime = _os.stat(path)[_stat.ST_MTIME]
+        mtime = _datetime.datetime.utcfromtimestamp(_os.stat(path)[_stat.ST_MTIME])
     except:
         error(req, 404)
         return
-    if length_match and ims_date:
-        if mtime <= ims_date and not force:
+    if req.if_modified_since:
+        if mtime <= req.if_modified_since and not force:
             # print "File "+path+" was not modified since "+ustr(ims_date)+" (current filedate is "+ustr(mtime)+")-> 304"
             req.response.status_code = 304
             return
 
-    req.response.last_modified = _datetime.datetime.fromtimestamp(mtime)
+    req.response.last_modified = mtime
     req.response.content_length = file_length
     req.response.content_type = content_type
     if x_accel_redirect:
@@ -533,27 +504,15 @@ def sendAsBuffer(req, text, content_type, force=0, allow_cross_origin=False):
         error(req, 404)
         return
 
-    ims = IF_MODIFIED_SINCE.match(req.headers["if-modified-since"]) if "if-modified-since" in req.headers else None
-    length_match = 1
-    ims_date = 0
-    if ims:
-        length = ims.group(4)
-        if length:
-            with _suppress(Exception, warn=False):
-                length = _string.atoi(length)
-                if length != file_length:
-                    length_match = 0
-        ims_date = parse_http_date(req.if_modified_since.timetuple())
-
     try:
         import time
-        mtime = _time.time()  # _os.stat (path)[stat.ST_MTIME]
+        mtime = _datetime.datetime.utcfromtimestamp(_time.time())  # _os.stat (path)[stat.ST_MTIME]
     except:
         error(req, 404)
         return
 
-    if length_match and ims_date:
-        if mtime <= ims_date and not force:
+    if req.if_modified_since:
+        if mtime <= req.if_modified_since and not force:
             req.response.status_code = 304
             return
     try:
@@ -562,7 +521,7 @@ def sendAsBuffer(req, text, content_type, force=0, allow_cross_origin=False):
         error(req, 404)
         return
 
-    req.response.last_modified = _datetime.datetime.fromtimestamp(mtime)
+    req.response.last_modified = mtime
     req.response.content_length = file_length
     req.response.content_type = content_type
     if allow_cross_origin:
@@ -745,27 +704,14 @@ class default_handler:
 
         file_length = self.filesystem.stat(path)[_stat.ST_SIZE]
 
-        ims = IF_MODIFIED_SINCE.match(request.headers["if-modified-since"]) if "if-modified-since" in request.headers else None
-
-        length_match = 1
-        ims_date = 0
-        if ims:
-            length = ims.group(4)
-            if length:
-                with _suppress(Exception, warn=False):
-                    length = _string.atoi(length)
-                    if length != file_length:
-                        length_match = 0
-            ims_date = parse_http_date(request.if_modified_since.timetuple())
-
         try:
-            mtime = self.filesystem.stat(path)[_stat.ST_MTIME]
+            mtime = _datetime.datetime.utcfromtimestamp(self.filesystem.stat(path)[_stat.ST_MTIME])
         except:
             error(request, 404)
             return
 
-        if length_match and ims_date:
-            if mtime <= ims_date:
+        if request.if_modified_since:
+            if mtime <= request.if_modified_since:
                 request.response.status_code = 304
                 done(request)
                 # print "File "+path+" was not modified since "+ustr(ims_date)+" (current filedate is "+ustr(mtime)+")"
@@ -776,7 +722,7 @@ class default_handler:
             error(request, 404)
             return
 
-        request.response.last_modified = _datetime.datetime.fromtimestamp(mtime)
+        request.response.last_modified = mtime
         request.response.content_length = file_length
         self.set_content_type(path, request)
 

@@ -66,7 +66,7 @@ def getFilelist(node, fieldname=None):
         if f_type.startswith(pattern):
             f_retrieve = f.abspath
             try:
-                f_mtime = unicode(datetime.datetime.fromtimestamp(os.path.getmtime(f_retrieve)))
+                f_mtime = unicode(datetime.datetime.utcfromtimestamp(os.path.getmtime(f_retrieve)))
             except:
                 logg.exception("exception in getFilelist, formatting datestr failed, using fake date")
                 f_mtime = "2099-01-01 12:00:00.00 " + f.base_name

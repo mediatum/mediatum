@@ -10,6 +10,7 @@ import zipfile as _zipfile
 import httpstatus as _httpstatus
 import traceback as _traceback
 import flask as _flask
+import datetime as _datetime
 import utils.locks as _utils_lock
 from functools import partial as _partial
 from cgi import escape as _escape
@@ -21,7 +22,6 @@ from collections import OrderedDict as _OrderedDict
 from wtforms.csrf.session import SessionCSRF as _SessionCSRF
 from wtforms import Form as _Form
 from wtforms.validators import ValidationError as _ValidationError
-from datetime import timedelta as _timedelta
 
 
 _logg = _logging.getLogger(__name__)
@@ -43,10 +43,6 @@ global_modules = {}
 
 BASENAME = _re.compile("([^/]*/)*([^/.]*)(.py)?")
 verbose = 1
-
-
-def build_http_date(when):
-    return _time.strftime('%a, %d %b %Y %H:%M:%S GMT', _time.gmtime(when))
 
 
 def parse_http_date(d):
@@ -381,7 +377,7 @@ class MediatumForm(_Form):
         csrf = True
         csrf_class = _SessionCSRF
         csrf_secret = str(_config.get('csrf.secret_key'))
-        csrf_time_limit = _timedelta(int(_config.get('csrf.timeout', "7200")))
+        csrf_time_limit = _datetime.timedelta(int(_config.get('csrf.timeout', "7200")))
 
     def validate_csrf_token(self, field):
         try:
@@ -441,8 +437,8 @@ def error(req, code, s=None, content_type='text/html'):
             'code': code,
             'message': message,
         }
-    req.response.headers['Content-Length'] = len(s)
-    req.response.headers['Content-Type'] = content_type
+    req.response.content_length = len(s)
+    req.response.content_type = content_type
     req.response.set_data(s)
     done(req)
 
@@ -497,9 +493,9 @@ def sendFile(req, path, content_type, force=0, nginx_x_accel_redirect_enabled=Tr
             req.response.status_code = 304
             return
 
-    req.response.headers['Last-Modified'] = build_http_date(mtime)
-    req.response.headers['Content-Length'] = file_length
-    req.response.headers['Content-Type'] = content_type
+    req.response.last_modified = _datetime.datetime.fromtimestamp(mtime)
+    req.response.content_length = file_length
+    req.response.content_type = content_type
     if x_accel_redirect:
         req.response.headers['X-Accel-Redirect'] = path
     if req.method == 'GET':
@@ -566,9 +562,9 @@ def sendAsBuffer(req, text, content_type, force=0, allow_cross_origin=False):
         error(req, 404)
         return
 
-    req.response.headers['Last-Modified'] = build_http_date(mtime)
-    req.response.headers['Content-Length'] = file_length
-    req.response.headers['Content-Type'] = content_type
+    req.response.last_modified = _datetime.datetime.fromtimestamp(mtime)
+    req.response.content_length = file_length
+    req.response.content_type = content_type
     if allow_cross_origin:
         req.response.headers['Access-Control-Allow-Origin'] = '*'
     if req.method == 'GET':
@@ -723,10 +719,7 @@ class default_handler:
 
         if self.filesystem.isdir(path):
             if path and path[-1] != '/':
-                request.response.headers['Location'] = '%s%s/' % (
-                    request.host_url,
-                    path
-                )
+                request.response.location = '%s%s/' % (request.host_url, path)
                 error(request, 301)
                 return
 
@@ -783,8 +776,8 @@ class default_handler:
             error(request, 404)
             return
 
-        request.response.headers['Last-Modified'] = build_http_date(mtime)
-        request.response.headers['Content-Length'] = file_length
+        request.response.last_modified = _datetime.datetime.fromtimestamp(mtime)
+        request.response.content_length = file_length
         self.set_content_type(path, request)
 
         if request.method == 'GET':
@@ -796,11 +789,11 @@ class default_handler:
         ext = _string.lower(get_extension(path))
         typ, encoding = _mimetypes.guess_type(path)
         if typ is not None:
-            request.response.headers['Content-Type'] = typ
+            request.response.content_type = typ
         else:
             # TODO: test a chunk off the front of the file for 8-bit
             # characters, and use application/octet-stream instead.
-            request.response.headers['Content-Type'] = 'text/plain'
+            request.response.content_type = 'text/plain'
 
 
 class WebContext:
@@ -943,7 +936,7 @@ def handle_request(req):
 
     req.csrf_token = mediatum_form.csrf_token
     req.response = _flask.make_response()
-    req.response.headers['Content-Type'] = 'text/html; encoding=utf-8; charset=utf-8'
+    req.response.content_type = 'text/html; encoding=utf-8; charset=utf-8'
 
     function = context.match(mediatum_contextfree_path)
     if function is not None:

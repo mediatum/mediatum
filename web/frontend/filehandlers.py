@@ -422,7 +422,7 @@ def send_from_webroot(req):
 ### redirects for legacy handlers
 
 def redirect_images(req):
-    req.response.headers["Location"] = "/image" + req.full_path[7:]
+    req.response.location = "/image" + req.full_path[7:]
     req.response.status_code = 301
     return 301
 

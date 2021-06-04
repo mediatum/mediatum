@@ -19,7 +19,6 @@
 """
 
 import operator as _operator
-
 from collections import OrderedDict
 import logging
 from warnings import warn

@@ -115,7 +115,7 @@ RE_PRINT_URL = re.compile("/print/(\d+).pdf")
 
 
 def redirect_old_printview(req):
-    req.response.headers["Location"] = req.mediatum_contextfree_path + ".pdf"
+    req.response.location = req.mediatum_contextfree_path + ".pdf"
     req.response.status_code = httpstatus.HTTP_TEMPORARY_REDIRECT
     return httpstatus.HTTP_TEMPORARY_REDIRECT
 

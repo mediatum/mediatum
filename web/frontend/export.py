@@ -58,7 +58,7 @@ def export(req):
         try:
             req.response.status_code = _httpstatus.HTTP_OK
             req.response.set_data(mask.getViewHTML([node], flags=8))
-            req.response.headers['Content-Type'] = "text/plain; charset=utf-8"
+            req.response.content_type = "text/plain; charset=utf-8"
         except NoResultFound:
             return _error(req, 404, "Object not found")
     else:

@@ -90,7 +90,7 @@ def change_language_request(req):
         switch_language(req, language)
         params = req.args.copy()
         del params["change_language"]
-        req.response.headers["Location"] = build_url_from_path_and_params(req.mediatum_contextfree_path, params)
+        req.response.location = build_url_from_path_and_params(req.mediatum_contextfree_path, params)
         # set the language cookie for caching
         _request_handler.setCookie(req, "language", language)
         req.response.status_code = httpstatus.HTTP_MOVED_TEMPORARILY

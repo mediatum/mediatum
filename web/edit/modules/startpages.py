@@ -89,7 +89,7 @@ def getContent(req, ids):
         return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
     if req.params.get('file') == "config":  # configuration file for ckeditor
-        req.response.headers['Content-Type'] = "application/javascript"
+        req.response.content_type = "application/javascript"
         req.response.set_data(_tal.processTAL({'id': ids[0], 'lang': lang(req)}, file="web/edit/modules/startpages.html", macro="ckconfig", request=req))
         return
 

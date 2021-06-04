@@ -81,7 +81,7 @@ class m_htmlmemo(Metatype):
 
     def getPopup(self, req):
         if "type" in req.params:
-            req.response.headers['Content-Type'] = "application/javascript"
+            req.response.content_type = "application/javascript"
             if req.params.get('type') == "configfile":
                 from core.translation import lang
                 req.response.set_data(tal.processTAL({'lang': lang(req)}, file="metadata/htmlmemo.html", macro="ckconfig", request=req))

@@ -45,6 +45,6 @@ def become_user(req):
     else:
         logg.info("become user handler: user with login_name %s not found", login_name)
 
-    req.response.headers["Location"] = "/"
+    req.response.location = "/"
     req.response.status_code = httpstatus.HTTP_MOVED_TEMPORARILY
     return httpstatus.HTTP_MOVED_TEMPORARILY

@@ -563,13 +563,13 @@ def upload_for_html(req):
             nodefile = importFile(file.filename, file)
             node.files.append(nodefile)
             db.session.commit()
-            req.response.headers["Location"] = _build_url_from_path_and_params("nodefile_browser/%s/" % id, {})
+            req.response.location = _build_url_from_path_and_params("nodefile_browser/%s/" % id, {})
         except EncryptionException:
-            req.response.headers["Location"] = _build_url_from_path_and_params("content", {
+            req.response.location = _build_url_from_path_and_params("content", {
                                                    "id": id, "tab": "tab_editor", "error": "EncryptionError_" + datatype[:datatype.find("/")]})
         except:
             logg.exception("error during upload")
-            req.response.headers["Location"] = _build_url_from_path_and_params("content", {
+            req.response.location = _build_url_from_path_and_params("content", {
                                                    "id": id, "tab": "tab_editor", "error": "PostprocessingError_" + datatype[:datatype.find("/")]})
         return send_nodefile_tal(req)
 
@@ -583,11 +583,11 @@ def upload_for_html(req):
             node.files.append(nodefile)
             db.session.commit()
         except EncryptionException:
-            req.response.headers["Location"] = _build_url_from_path_and_params("content", {
+            req.response.location = _build_url_from_path_and_params("content", {
                                                    "id": id, "tab": "tab_editor", "error": "EncryptionError_" + datatype[:datatype.find("/")]})
         except:
             logg.exception("error during upload")
-            req.response.headers["Location"] = _build_url_from_path_and_params("content", {
+            req.response.location = _build_url_from_path_and_params("content", {
                                                    "id": id, "tab": "tab_editor", "error": "PostprocessingError_" + datatype[:datatype.find("/")]})
 
         url = '/file/' + id + '/' + file.filename.split('/')[-1]

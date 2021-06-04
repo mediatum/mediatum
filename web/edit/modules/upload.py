@@ -590,7 +590,7 @@ def import_from_doi(identifier, importdir, req=None):
     def handle_error(req, error_msgstr):
         if req:
             errormsg = translation_t(req, error_msgstr)
-            req.response.headers["Location"] = build_url_from_path_and_params("content", {"id": importdir.id, "error": errormsg})
+            req.response.location = build_url_from_path_and_params("content", {"id": importdir.id, "error": errormsg})
             req.params["error"] = errormsg
 
     import schema.citeproc as citeproc
@@ -624,7 +624,7 @@ def import_from_doi(identifier, importdir, req=None):
         handle_error(req, "doi_error_connecting_external_server")
     else:
         if req:
-            req.response.headers["Location"] = build_url_from_path_and_params("content", {"id": importdir.id})
+            req.response.location = build_url_from_path_and_params("content", {"id": importdir.id})
 
 
 class IdentifierImporter(object):

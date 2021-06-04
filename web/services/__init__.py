@@ -70,7 +70,7 @@ def dec_handle_exception(func):
             response_template, response_mimetype = supported_formats.get(response_format, supported_formats.get('xml'))
             response = response_template % dict(iso_datetime_now=iso_datetime_now, errormsg=xid)
             response = response.strip()  # remove whitespaces at least from xml response
-            req.response.headers['Content-Type'] = response_mimetype
+            req.response.content_type = response_mimetype
             req.response.status_code = httpstatus.HTTP_INTERNAL_SERVER_ERROR
             req.response.set_data(response)
             return None  # do not send status code 500, ..., athana would overwrite response

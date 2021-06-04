@@ -922,7 +922,7 @@ def write_formatted_response(
             percentage = 100.0 * size_compressed / size_uncompressed
         except:
             percentage = 100.0
-        req.response.headers['Content-Encoding'] = "deflate"
+        req.response.content_encoding = "deflate"
         d['timetable'].append(
             [
                 "'deflate' in request: executed compressForDeflate(s), {} bytes -> {} bytes (compressed to: {} %%)".format(
@@ -941,7 +941,7 @@ def write_formatted_response(
             percentage = 100.0 * size_compressed / size_uncompressed
         except:
             percentage = 100.0
-        req.response.headers['Content-Encoding'] = "gzip"
+        req.response.content_encoding = "gzip"
         d['timetable'].append(
             [
                 "'gzip' in request: executed compressForGzip(s), {} bytes -> {} bytes (compressed to: {} %%)".format(
@@ -1006,7 +1006,7 @@ def serve_file(req, path, params, data, filepath):
     else:
         mimetype = getMimeType(filepath)
 
-    req.response.headers['Content-Type'] = mimetype
+    req.response.content_type = mimetype
 
     if WEBROOT:
         basedir = WEBROOT

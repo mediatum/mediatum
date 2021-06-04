@@ -954,7 +954,7 @@ def edit_print(req):
         
     additional_data = match.group(3)
     print_content = mod.getPrintView(nid, additional_data, req)
-    req.response.headers['Content-Type'] = "application/pdf"
+    req.response.content_type = "application/pdf"
     req.response.headers['Content-Disposition'] = u'inline; filename="{}_{}_{}.pdf"'.format(nid, module_name,
                                                                                               additional_data)
     req.response.set_data(print_content)

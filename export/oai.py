@@ -497,8 +497,8 @@ def oaiRequest(req):
     verb = params.pop("verb", None)
 
     req.response.status_code = _httpstatus.HTTP_OK
-    req.response.headers['charset'] = 'utf-8'
-    req.response.headers['Content-Type'] = 'text/xml; charset=utf-8'
+    req.response.charset = 'utf-8'
+    req.response.content_type = 'text/xml; charset=utf-8'
     try:
         if verb in _verb_handlers:
             oai_pmh.append(_verb_handlers[verb](**params))

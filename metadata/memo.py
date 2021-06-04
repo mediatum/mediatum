@@ -91,7 +91,7 @@ class m_memo(Metatype):
     def getPopup(self, req):
         if "type" in req.params:
             if req.params.get('type') == 'javascript':
-                req.response.headers['Content-Type'] = "application/javascript"
+                req.response.content_type = "application/javascript"
                 from core.translation import lang
                 req.response.set_data(tal.processTAL({'lang': lang(req)}, file="metadata/memo.html", macro="javascript", request=req))
         else:

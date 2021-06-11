@@ -83,25 +83,18 @@ DISPLAY_PATH = re.compile("/([_a-zA-Z][_/a-zA-Z0-9]+)$")
 known_node_aliases = {}
 
 
-def change_language_request(req):
-    language = req.args.get("change_language")
-    if language:
-        # change language cookie if language is configured
-        switch_language(req, language)
-        params = req.args.copy()
-        del params["change_language"]
-        req.response.location = build_url_from_path_and_params(req.mediatum_contextfree_path, params)
-        # set the language cookie for caching
-        _flask.session["language"] = language
-        req.response.status_code = httpstatus.HTTP_MOVED_TEMPORARILY
-        return httpstatus.HTTP_MOVED_TEMPORARILY
-
-
 def check_change_language_request(func):
     @wraps(func)
     def checked(req, *args, **kwargs):
-        change_lang_http_status = change_language_request(req)
-        if change_lang_http_status:
+        language = req.args.get("change_language")
+        if language:
+            # change language cookie if language is configured
+            switch_language(req, language)
+            params = req.args.copy()
+            del params["change_language"]
+            req.response.location = build_url_from_path_and_params(req.mediatum_contextfree_path, params)
+            # set the language cookie for caching
+            _flask.session["language"] = language
             if "language" in _flask.session:
                 req._lang = _flask.session["language"]
 

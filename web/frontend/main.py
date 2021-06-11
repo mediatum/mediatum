@@ -83,7 +83,7 @@ DISPLAY_PATH = re.compile("/([_a-zA-Z][_/a-zA-Z0-9]+)$")
 known_node_aliases = {}
 
 
-def check_change_language_request(func):
+def _check_change_language_request(func):
     @wraps(func)
     def checked(req, *args, **kwargs):
         language = req.args.get("change_language")
@@ -103,7 +103,7 @@ def check_change_language_request(func):
     return checked
 
 
-@check_change_language_request
+@_check_change_language_request
 def display_404(req):
     req.response.status_code = httpstatus.HTTP_NOT_FOUND
     return httpstatus.HTTP_NOT_FOUND
@@ -119,7 +119,7 @@ def overwrite_id_in_req(nid, req):
     return req
 
 
-@check_change_language_request
+@_check_change_language_request
 def display_alias(req):
     match = DISPLAY_PATH.match(req.mediatum_contextfree_path)
     if match:
@@ -142,7 +142,7 @@ def display_alias(req):
 RE_NEWSTYLE_NODE_URL = re.compile("/(nodes/)?(\d+).*")
 
 
-@check_change_language_request
+@_check_change_language_request
 def display_newstyle(req):
     """Handles requests for new style frontend node URLs matching
     /nodes/<nid> OR
@@ -161,7 +161,7 @@ def display_newstyle(req):
     return _display(req)
 
 
-@check_change_language_request
+@_check_change_language_request
 def _display(req, show_navbar=True, render_paths=True, params=None):
     if "jsonrequest" in req.params:
         return handle_json_request(req)
@@ -195,12 +195,12 @@ def _display(req, show_navbar=True, render_paths=True, params=None):
     # instead, req.response.status_code = ? can be used in the rendering code
 
 
-@check_change_language_request
+@_check_change_language_request
 def display(req):
     _display(req)
 
 
-@check_change_language_request
+@_check_change_language_request
 def workflow(req):
     if req.method == "POST":
         params = req.form
@@ -213,7 +213,7 @@ def workflow(req):
 #: needed for workflows:
 PUBPATH = re.compile("/?(publish|pub)/(.*)$")
 
-@check_change_language_request
+@_check_change_language_request
 def publish(req):
     m = PUBPATH.match(req.mediatum_contextfree_path)
 
@@ -229,7 +229,7 @@ def publish(req):
     return _display(req, False, render_paths=False)
 
 
-@check_change_language_request
+@_check_change_language_request
 def show_parent_node(req):
     parent = None
     node = q(Node).get(req.params.get("id"))

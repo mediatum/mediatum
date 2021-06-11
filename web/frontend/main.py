@@ -96,7 +96,7 @@ def _check_change_language_request(func):
             # set the language cookie for caching
             _flask.session["language"] = language
             if "language" in _flask.session:
-                req._lang = _flask.session["language"]
+                _flask.g.mediatum["language"] = _flask.session["language"]
 
         return func(req, *args, **kwargs)
 

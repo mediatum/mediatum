@@ -136,7 +136,7 @@ def addPoFilepath(filepath=[]):
 def lang(req):
     # simple cache, lang won't change in the current request
     if hasattr(req, "_lang"):
-        return req._lang
+        return _flask.g.mediatum["language"]
     
     return set_language(req)
 
@@ -146,7 +146,7 @@ def set_language(req):
 
     language = _flask.session.get("language")
     if language in allowed_languages:
-        req._lang = language
+        _flask.g.mediatum["language"] = language
         return language
 
     language = allowed_languages[0]
@@ -158,8 +158,8 @@ def set_language(req):
     
     if language != default_language:
         _flask.session["language"] = language
-    
-    req._lang = language
+
+    _flask.g.mediatum["language"] = language
     return language
 
 

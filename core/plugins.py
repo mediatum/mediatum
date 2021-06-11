@@ -49,7 +49,7 @@ def import_plugin_module(name, location):
         m = importlib.import_module(name)
         return m
     except ImportError:
-        logg.error("Exception while loading plugin '%s' from '%s', plugin path '%s'", name, containing_dir_path, location, exc_info=1)
+        logg.exception("Exception while loading plugin '%s' from '%s', plugin path '%s'", name, containing_dir_path, location)
         logg.error("sys path was\n%s", sys.path)
         return None
 

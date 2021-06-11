@@ -396,7 +396,7 @@ class AsyncPyZ3950Server(z3950.Server):
         try:
             parsed_query = parse_rpn_query(query)
         except Exception:
-            logg.error("error while unpacking Z3950 search query '%s':", query, exc_info=1)
+            logg.exception("error while unpacking Z3950 search query '%s':", query)
             raise
         logg.debug('%r', parsed_query)
         node_ids = search_nodes(parsed_query)  # , self._log)

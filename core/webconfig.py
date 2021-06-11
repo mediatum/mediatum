@@ -56,7 +56,7 @@ def init_theme():
 
     theme = DefaultTheme()
     theme.activate()
-    logg.warn("using (broken) standard theme, you should create your own theme :)", trace=False)
+    logg.warn("using (broken) standard theme, you should create your own theme :)")
 
 
 def loadServices():

@@ -32,7 +32,6 @@ from core.database.postgres.continuumext import MtVersionBase
 
 # set this to True or False to override debug config settings
 DEBUG = None
-DEBUG_SHOW_TRACE = None
 
 CONNECTSTR_TEMPLATE = "postgresql+psycopg2://{user}:{passwd}@:{port}/{database}"
 CONNECTSTR_TEMPLATE_TEST_DB = "postgresql+psycopg2://{user}@:{port}/{database}?host={socketdir}"
@@ -98,12 +97,12 @@ class PostgresSQLAConnector(object):
             self.debug = DEBUG
 
         if force_test_db:
-            logg.warn("WARNING: force_test_db requested, creating / using test database server", trace=False)
+            logg.warn("WARNING: force_test_db requested, creating / using test database server")
             test_db = True
         else:
             test_db = config.get("database.test_db", "false").lower() == "true"
             if test_db:
-                logg.warn("WARNING: database.test_db enabled in config, creating / using test database server", trace=False)
+                logg.warn("WARNING: database.test_db enabled in config, creating / using test database server")
 
         self.test_db = test_db
 
@@ -114,7 +113,6 @@ class PostgresSQLAConnector(object):
             self.user = config.get("database.user", "mediatum")
             self.passwd = config.get("database.passwd")
             self.pool_size = config.getint("database.pool_size", 20)
-            self.slow_query_seconds = config.getfloat("database.slow_query_seconds", 0.2)
             if self.passwd:
                 self.passwd = _urllib.quote_plus(self.passwd)
                 self.connectstr = CONNECTSTR_TEMPLATE.format(**self.__dict__)
@@ -177,27 +175,7 @@ class PostgresSQLAConnector(object):
         self.socketdir = socketdir
         self.connectstr = CONNECTSTR_TEMPLATE_TEST_DB.format(**self.__dict__)
         self.pool_size = 5
-        self.slow_query_seconds = 0.2
         logg.info("using test database connection string: %s", self.connectstr)
-
-    def _setup_slow_query_logging(self):
-        """Registers cursor execute event handlers that measure query time and 
-            log warnings when `self.slow_query_seconds` is exceeded.
-        """
-        @event.listens_for(Engine, "before_cursor_execute")
-        def before_cursor_execute(conn, cursor, statement,
-                                  parameters, context, executemany):
-            conn.info.setdefault('query_start_time', []).append(time.time())
-            conn.info.setdefault('current_query', []).append(statement)
-
-        @event.listens_for(Engine, "after_cursor_execute")
-        def after_cursor_execute(conn, cursor, statement,
-                                 parameters, context, executemany):
-            total = time.time() - conn.info['query_start_time'].pop(-1)
-            statement = conn.info['current_query'].pop(-1)
-            # total in seconds
-            if total > self.slow_query_seconds:
-                logg.warn("slow query %.1fms:\n%s", total * 1000, statement)
 
     def create_engine(self):
         connect_args = dict(
@@ -205,11 +183,7 @@ class PostgresSQLAConnector(object):
             application_name="{}({})".format(os.path.basename(sys.argv[0]), os.getpid())
         )
         if self.debug:
-            if DEBUG_SHOW_TRACE is None:
-                show_trace = config.get("database.debug_show_trace", "").lower() == "true"
-            else:
-                show_trace = DEBUG_SHOW_TRACE
-            connect_args["connection_factory"] = make_debug_connection_factory(show_trace)
+            connect_args["connection_factory"] = make_debug_connection_factory()
 
         if self.test_db:
             self.check_run_test_db_server()
@@ -237,8 +211,6 @@ class PostgresSQLAConnector(object):
         DeclarativeBase.metadata.bind = engine
         self.engine = engine
         self.Session.configure(bind=engine)
-        
-        self._setup_slow_query_logging()
 
         if self.test_db:
             # create schema with default data in test_db mode if not present

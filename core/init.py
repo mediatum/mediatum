@@ -352,7 +352,14 @@ def full_init(root_loglevel=None, config_filepath=None, prefer_config_filename=N
     if init_state_reached(init_state):
         return
 
-    basic_init(root_loglevel, config_filepath, log_filepath, prefer_config_filename, force_test_db, automigrate)
+    basic_init(
+        root_loglevel=root_loglevel,
+        config_filepath=config_filepath,
+        prefer_config_filename=prefer_config_filename,
+        log_filepath=log_filepath,
+        force_test_db=force_test_db,
+        automigrate=automigrate,
+    )
     _additional_init()
     _set_current_init_state(init_state)
     init_app()

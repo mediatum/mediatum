@@ -10,5 +10,5 @@ body{font-size:12px;margin:5px;font-family:arial;background:#fff url(/static/img
 #spcname{width:80px;height:80px;float:right}
 #formatedvalue{width:400px;height:40px;display:block;font-size:14px;border:1px solid silver;float:left}
 #spccontainer{width:450px;height:313px;border:1px solid silver;display:block;padding:2px 1px 1px 2px;float:left;background-color:#fff;margin-top:1px}
-#buttons{float:right;margin-top:14px;backgrond-color:#fff}
+#buttons{float:right;margin-top:14px;}
 #style:hover, #items:hover{ border:1px solid black}

@@ -89,11 +89,10 @@ def getContent(req, ids):
     user = users.user_from_session()
     language = lang(req)
 
-    if "action" in req.params:
+    if "action" in req.values:
         state = 'ok'
-
-        if req.params.get('action') == "removefiles":
-            basenode = q(Node).get(req.params.get('id'))
+        basenode = q(Node).get(req.values['id'])
+        if req.values['action'] == "removefiles":
             for f in basenode.files:
                 try:
                     os.remove(f.abspath)
@@ -105,17 +104,16 @@ def getContent(req, ids):
             req.response.set_data(json.dumps({'state': state}, ensure_ascii=False))
             return None
 
-        if req.params.get('action') == "buildnode":  # create nodes
-            basenode = q(Node).get(req.params.get('id'))
+        if req.values['action'] == "buildnode":  # create nodes
             newnodes = []
             errornodes = []
             basenodefiles_processed = []
-            if req.params.get('uploader', '') == 'plupload':
+            if req.values.get('uploader', '') == 'plupload':
                 filename2scheme = {}
-                for k in req.params:
+                for k in req.values:
                     if k.startswith("scheme_"):
                         filename2scheme[
-                            k.replace('scheme_', '', 1)] = req.params.get(k)
+                            k.replace('scheme_', '', 1)] = req.values[k]
 
                 for f in basenode.files:
                     filename = f.name
@@ -152,15 +150,15 @@ def getContent(req, ids):
                              filename, basenode.id, basenode.name, basenode.type)
 
             else:
-                for filename in req.params.get('files').split('|'):
+                for filename in req.values['files'].split('|'):
                     mimetype = _utils_utils.getMimeType(filename)
-                    logg.debug("... in %s.%s: getMimeType(filename=%s)=%s", __name__, _utils_utils.funcname(), filename, mimetype)
-                    if mimetype[1] == req.params.get('type') or req.params.get('type') == 'file':
+                    logg.debug("... in %s.%s: getMimeType(filename=%s)=%s", __name__, funcname(), filename, mimetype)
+                    if mimetype[1] == req.values['type'] or req.values['type'] == 'file':
                         for f in basenode.files:
                             # ambiguity here ?
                             if f.abspath.endswith(filename):
                                 # bibtex import handler
-                                if mimetype[1] == "bibtex" and not req.params.get('type') == 'file':
+                                if mimetype[1] == "bibtex" and not req.values['type'] == 'file':
                                     try:
                                         new_node = importBibTeX(f.abspath, basenode, req=req)
                                         newnodes.append(new_node.id)
@@ -173,8 +171,8 @@ def getContent(req, ids):
                                     logg.debug("creating new node: filename: %s", filename)
                                     logg.debug("files at basenode: %s", [(x.getName(), x.abspath) for x in basenode.files])
 
-                                    content_class = Node.get_class_for_typestring(req.params.get('type'))
-                                    node = content_class(name=filename, schema=req.params.get('value'))
+                                    content_class = Node.get_class_for_typestring(req.values['type'])
+                                    node = content_class(name=filename, schema=req.values['value'])
 
                                     basenode.children.append(node)
                                     node.set("creator", user.login_name)
@@ -226,7 +224,7 @@ def getContent(req, ids):
             return None
 
         # add new object, only metadata
-        if req.params.get('action') == "addmeta":
+        if req.values['action'] == "addmeta":
             ret = []
             schemes = get_permitted_schemas()
             dtypes = getDatatypes(req, schemes)
@@ -249,7 +247,7 @@ def getContent(req, ids):
             return None
 
         # add new object, only doi
-        if req.params.get('action') == "adddoi":
+        if req.values['action'] == "adddoi":
             content = _tal.processTAL({"language": lang(req), "identifier_importers": identifier_importers.values()},
                                       file='web/edit/modules/upload.html', macro="adddoi", request=req)
 
@@ -257,33 +255,32 @@ def getContent(req, ids):
             return None
 
         # deliver schemes for given contenttype
-        if req.params.get('action') == 'getschemes':
+        if req.values['action'] == 'getschemes':
             ret = []
-            for scheme in get_permitted_schemas_for_datatype(req.params.get('contenttype')):
+            for scheme in get_permitted_schemas_for_datatype(req.values.get('contenttype')):
                 ret.append({'id': scheme.name, 'name': scheme.getLongName()})
             req.response.set_data(json.dumps({'schemes': ret}, ensure_ascii=False))
             return None
 
         # create node with given type/schema
-        if req.params.get('action') == "createobject":
-            schema = req.params.get('schema')
-            ctype = req.params.get('contenttype')
+        if req.values['action'] == "createobject":
+            schema = req.values.get('schema')
+            ctype = req.values.get('contenttype')
 
             node = Node(name=u"", type=ctype, schema=schema)
-            basenode = q(Node).get(req.params.get('id'))
             basenode.children.append(node)
             node.set("creator", user.login_name)
             node.set("creationtime",  ustr(time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
             db.session.commit()
             res = {'newid': node.id,
-                   'id': req.params.get('id')}
+                   'id': req.values.get('id')}
             req.response.set_data(json.dumps(res, ensure_ascii=False))
             return None
 
         # create node using given identifier (doi, ...)
-        if req.params.get('action') == "obj_from_identifier":
-            identifier_importer = req.params.get('identifier_importer')
-            identifier = req.params.get('identifier')
+        if req.values['action'] == "obj_from_identifier":
+            identifier_importer = req.values['identifier_importer']
+            identifier = req.values['identifier']
 
             logg.debug("... in %s.%s: going to create new node without file from identifier (%s)",
                 __name__, _utils_utils.funcname(), identifier)
@@ -297,7 +294,7 @@ def getContent(req, ids):
 
                 new_node = importer_func(identifier, importdir, req=req)
 
-                res = {'id': req.params.get('id'), 'error': req.params.get('error', ''), 'error_detail': req.params.get('error_detail', '')}
+                res = {'id': req.values['id'], 'error': req.values.get('error', ''), 'error_detail': req.values.get('error_detail', '')}
 
                 if new_node:
                     new_node.set("creator", user.login_name)
@@ -323,39 +320,35 @@ def getContent(req, ids):
 
         proceed_to_uploadcomplete = False
         # upload file to current node as attachment
-        if req.params.get('action') == "upload":
-            uploadfile = req.files.get("file")
+        if req.values['action'] == "upload":
+            uploadfile = req.files["file"]
             proceed_to_uploadcomplete = True
             # XXX: check this: import to realnamne or random name ?
             f = _utils_fileutils.importFile(uploadfile.filename, uploadfile)
-            node = q(Node).get(req.params.get('id'))
+            node = q(Node).get(req.values['id'])
             node.files.append(f)
             db.session.commit()
             req.response.set_data("")
             logg.debug("%s|%s.%s: added file to node %s (%s, %s)", _utils_utils.get_user_id(), __name__, _utils_utils.funcname(), node.id, node.name, node.type)
 
         # upload done -> deliver view of object
-        if proceed_to_uploadcomplete or req.params.get('action') == "uploadcomplete":
+        if proceed_to_uploadcomplete or req.values['action'] == "uploadcomplete":
             logg.debug("upload done -> deliver view of object")
 
-            if proceed_to_uploadcomplete:
-                req.params['file'] = uploadfile.filename
-
             mime = _utils_utils.getMimeType(uploadfile.filename)
-            data_extra = req.params.get('data_extra', '')
+            data_extra = req.values.get('data_extra', '')
             if data_extra == 'tofile':
 
                 ctx = {
                     'filename': f.getName(),
                 }
-                ctx.update(upload_to_filetype_filehandler(req.params.get('file')))
+                ctx.update(upload_to_filetype_filehandler(uploadfile.filename))
                 content = _tal.processTAL(ctx, file='web/edit/modules/upload.html', macro="uploadfileok_plupload", request=req)
-                basenode = q(Node).get(req.params.get('id'))
                 new_tree_labels = [{'id': basenode.id, 'label': getTreeLabel(basenode, lang=language)}]
                 req.response.set_data(json.dumps({'type': 'file',
                                                   'ret': content,
                                                   'state': state,
-                                                  'filename': req.params.get('file'),
+                                                  'filename': uploadfile.filename,
                                                   'new_tree_labels': new_tree_labels}, ensure_ascii=False))
                 return None
 
@@ -363,40 +356,39 @@ def getContent(req, ids):
                 req.response.set_data(json.dumps({'type': mime[1],
                                                   'ret': _tal.processTAL({}, file='web/edit/modules/upload.html', macro="uploadfileerror", request=req),
                                                   'state': 'error',
-                                                  'filename': req.params.get('file')}, ensure_ascii=False))
+                                                  'filename': uploadfile.filename}, ensure_ascii=False))
                 logg.debug("%s|%s.%s: added file to node %s (%s, %s) -> file type not supported",
                              _utils_utils.get_user_id(), __name__, _utils_utils.funcname(), node.id, node.name, node.type)
                 return None
 
             elif mime[1] == "zip":  # zip file
-                if req.params.get('uploader', '') == 'plupload':
+                if req.values.get('uploader', '') == 'plupload':
                     macro = "uploadzipfileok_plupload"
                 else:
                     macro = "uploadzipfileok"
-                content = _tal.processTAL(upload_ziphandler(req.params.get('file'), req.params.get('id')), file='web/edit/modules/upload.html', macro=macro, request=req)
+                content = _tal.processTAL(upload_ziphandler(uploadfile.filename, req.values['id']), file='web/edit/modules/upload.html', macro=macro, request=req)
             elif mime[1] == "bibtex":  # bibtex file
-                if req.params.get('uploader', '') == 'plupload':
+                if req.values.get('uploader', '') == 'plupload':
                     macro = "uploadbibfileok_plupload"
                 else:
                     macro = "uploadbibfileok"
-                content = _tal.processTAL(upload_bibhandler(req.params.get('file'), req.params.get('id')), file='web/edit/modules/upload.html', macro=macro, request=req)
+                content = _tal.processTAL(upload_bibhandler(uploadfile.filename, req.values['id']), file='web/edit/modules/upload.html', macro=macro, request=req)
             else:  # standard file
-                if req.params.get('uploader', '') == 'plupload':
+                if req.values.get('uploader', '') == 'plupload':
                     ctx = {
                         'filename': f.getName(),
                     }
 
-                    ctx.update(upload_filehandler(req.params.get('file')))
+                    ctx.update(upload_filehandler(uploadfile.filename))
                     content = _tal.processTAL(ctx, file='web/edit/modules/upload.html', macro="uploadfileok_plupload", request=req)
                 else:
-                    content = _tal.processTAL(upload_filehandler(req.params.get('file')), file='web/edit/modules/upload.html', macro="uploadfileok", request=req)
-            basenode = q(Node).get(req.params.get('id'))
+                    content = _tal.processTAL(upload_filehandler(uploadfile.filename), file='web/edit/modules/upload.html', macro="uploadfileok", request=req)
             new_tree_labels = [{'id': basenode.id, 'label': getTreeLabel(basenode, lang=language)}]
             _d = {
                   'type': mime[1],
                   'ret': content,
                   'state': state,
-                  'filename': req.params.get('file'),
+                  'filename': uploadfile.filename,
                   'new_tree_labels': new_tree_labels
             }
 
@@ -414,14 +406,14 @@ def getContent(req, ids):
             schemes = get_permitted_schemas()
             dtypes = getDatatypes(req, schemes)
 
-        if "globalsort" in req.params:
-            node.set("sortfield", req.params.get("globalsort"))
-        if req.params.get("sortfield", "") != "":
-            v['collection_sortfield'] = req.params.get("sortfield")
+        if "globalsort" in req.values:
+            node.set("sortfield", req.values["globalsort"])
+        if req.values.get("sortfield", "") != "":
+            v['collection_sortfield'] = req.values.get("sortfield")
         else:
             v['collection_sortfield'] = node.get("sortfield")
-        if req.params.get("nodes_per_page", "") != "":
-            v['npp_field'] = req.params.get("nodes_per_page", default_edit_nodes_per_page)
+        if req.values.get("nodes_per_page", "") != "":
+            v['npp_field'] = req.values.get("nodes_per_page", default_edit_nodes_per_page)
         else:
             v['npp_field'] = node.get("nodes_per_page")
         if not v['npp_field']:
@@ -433,10 +425,10 @@ def getContent(req, ids):
         v['t'] = translation_t
 
     search_html = render_edit_search_box(q(Node).get(ids[0]), language, req, edit=True)
-    searchmode = req.params.get("searchmode")
+    searchmode = req.values.get("searchmode")
     item_count = []
     show_dir_nav = _web_edit_edit_common.ShowDirNav(req, node)
-    items = show_dir_nav.showdir(sortfield=req.params.get("sortfield"), item_count=item_count)
+    items = show_dir_nav.showdir(sortfield=req.values.get("sortfield"), item_count=item_count)
     nav = show_dir_nav.shownav()
     navigation_height = searchbox_navlist_height(req, item_count)
     count = item_count[0] if item_count[0] == item_count[1] else "%d from %d" % (item_count[0], item_count[1])
@@ -444,10 +436,10 @@ def getContent(req, ids):
     searchparams = {k: unicode(v).encode("utf8") for k, v in searchparams.items()}
 
     v.update({
-        "id": req.params.get("id"),
+        "id": req.values["id"],
         "datatypes": getDatatypes(req, schemes),
         "schemes": schemes,
-        "uploadstate": req.params.get("upload"),
+        "uploadstate": req.values.get("upload"),
         "operations": showoperations(req, node),
         "nodelist": items,
         "nav": nav,
@@ -590,7 +582,7 @@ def import_from_doi(identifier, importdir, req=None):
         if req:
             errormsg = translation_t(req, error_msgstr)
             req.response.location = build_url_from_path_and_params("content", {"id": importdir.id, "error": errormsg})
-            req.params["error"] = errormsg
+            req.values["error"] = errormsg
 
     import schema.citeproc as citeproc
     import schema.importbase as importbase

@@ -108,96 +108,58 @@ def getContent(req, ids):
             newnodes = []
             errornodes = []
             basenodefiles_processed = []
-            if req.values.get('uploader', '') == 'plupload':
-                filename2scheme = {}
-                for k in req.values:
-                    if k.startswith("scheme_"):
-                        filename2scheme[
-                            k.replace('scheme_', '', 1)] = req.values[k]
 
+            for filename in req.values['files'].split('|'):
+                mimetype = _utils_utils.getMimeType(filename)
+                logg.debug("getMimeType(filename=%s)=%s", filename, mimetype)
+                if req.values['type'] not in (mimetype[1], 'file'):
+                    continue
                 for f in basenode.files:
-                    filename = f.name
-                    if filename in filename2scheme:
-                        mimetype = _utils_utils.getMimeType(filename)
-
-                        if mimetype[1] == "bibtex":  # bibtex import handler
-                            try:
-                                new_node = importBibTeX(f.abspath, basenode, req=req)
-                                newnodes.append(new_node.id)
-                                basenodefiles_processed.append(f)
-                            except ValueError, e:
-                                errornodes.append((filename, translate(unicode(e), request=req), unicode(hash(f.getName()))))
-
-                        logg.debug("filename: %s, mimetype: %s", filename, mimetype)
-                        logg.debug("__name__=%s, func=%s; _m=%s, _m[1]=%s", __name__, _utils_utils.funcname(), mimetype, mimetype[1])
-
-                        content_class = Node.get_class_for_typestring(mimetype[1])
-                        node = content_class(name=filename, schema=filename2scheme[filename])
-
-                        basenode.children.append(node)
-                        node.set("creator", user.login_name)
-                        node.set("creationtime",  unicode(time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
-                        # set filetype for uploaded file as requested by the content class
-                        f.filetype = content_class.get_upload_filetype()
-                        node.files.append(f)
-                        node.event_files_changed()
-                        newnodes.append(node.id)
-                        basenodefiles_processed.append(f)
-                        basenode.files.remove(f)
+                    # ambiguity here ?
+                    if not f.abspath.endswith(filename):
+                        continue
+                    # bibtex import handler
+                    if mimetype[1] == "bibtex" and not req.values['type'] == 'file':
+                        try:
+                            new_node = importBibTeX(f.abspath, basenode, req=req)
+                            newnodes.append(new_node.id)
+                            basenodefiles_processed.append(f)
+                        except ValueError, e:
+                            errornodes.append((filename, translate(unicode(e), request=req), unicode(hash(f.getName()))))
                         db.session.commit()
-                        logg.info("%s created new node id=%s (name=%s, type=%s) by uploading file %s, "
-                            "node is child of base node id=%s (name=%s, type=%s)", user.login_name, node.id, node.name, node.type,
-                             filename, basenode.id, basenode.name, basenode.type)
+                        continue
 
-            else:
-                for filename in req.values['files'].split('|'):
-                    mimetype = _utils_utils.getMimeType(filename)
-                    logg.debug("... in %s.%s: getMimeType(filename=%s)=%s", __name__, funcname(), filename, mimetype)
-                    if mimetype[1] == req.values['type'] or req.values['type'] == 'file':
-                        for f in basenode.files:
-                            # ambiguity here ?
-                            if f.abspath.endswith(filename):
-                                # bibtex import handler
-                                if mimetype[1] == "bibtex" and not req.values['type'] == 'file':
-                                    try:
-                                        new_node = importBibTeX(f.abspath, basenode, req=req)
-                                        newnodes.append(new_node.id)
-                                        basenodefiles_processed.append(f)
-                                    except ValueError, e:
-                                        errornodes.append((filename, translate(unicode(e), request=req), unicode(hash(f.getName()))))
-                                    db.session.commit()
-                                else:
+                    logg.debug("creating new node: filename: %s", filename)
 
-                                    logg.debug("creating new node: filename: %s", filename)
-                                    logg.debug("files at basenode: %s", [(x.getName(), x.abspath) for x in basenode.files])
+                    content_class = Node.get_class_for_typestring(req.values['type'])
+                    node = content_class(name=filename, schema=req.values['value'])
 
-                                    content_class = Node.get_class_for_typestring(req.values['type'])
-                                    node = content_class(name=filename, schema=req.values['value'])
+                    basenode.children.append(node)
+                    node.set("creator", user.login_name)
+                    node.set("creationtime",  unicode(time.strftime('%Y-%m-%dT%H:%M:%S',
+                                                                    time.localtime(time.time()))))
 
-                                    basenode.children.append(node)
-                                    node.set("creator", user.login_name)
-                                    node.set("creationtime",  unicode(time.strftime('%Y-%m-%dT%H:%M:%S',
-                                                                                    time.localtime(time.time()))))
+                    # clones to a file with random name
+                    cloned_file = _utils_fileutils.importFileRandom(f.abspath)
+                    # set filetype for uploaded file as requested by the content class
+                    cloned_file.filetype = content_class.get_upload_filetype()
+                    node.files.append(cloned_file)
+                    try:
+                        node.event_files_changed()
+                    except Exception as e:
+                        errornodes.append((filename, translate(unicode(e), request=req), unicode(hash(f.getName()))))
+                        db.session.rollback()
+                        continue
+                    newnodes.append(node.id)
+                    basenodefiles_processed.append(f)
 
-                                    # clones to a file with random name
-                                    cloned_file = _utils_fileutils.importFileRandom(f.abspath)
-                                    # set filetype for uploaded file as requested by the content class
-                                    cloned_file.filetype = content_class.get_upload_filetype()
-                                    node.files.append(cloned_file)
-                                    try:
-                                        node.event_files_changed()
-                                    except Exception as e:
-                                        errornodes.append((filename, translate(unicode(e), request=req), unicode(hash(f.getName()))))
-                                        db.session.rollback()
-                                        continue
-                                    newnodes.append(node.id)
-                                    basenodefiles_processed.append(f)
+                    logg.info(
+                            "%s created new node id=%s (name=%s, type=%s) by uploading file %s, "
+                            "node is child of base node id=%s (name=%s, type=%s)",
+                            user.login_name, node.id, node.name, node.type, filename, basenode.id, basenode.name, basenode.type
+                        )
 
-                                    logg.info("%s created new node id=%s (name=%s, type=%s) by uploading file %s, "
-                                    "node is child of base node id=%s (name=%s, type=%s)", user.login_name, node.id, node.name, node.type, filename,
-                                    basenode.id, basenode.name, basenode.type)
-
-                                    break  # filename may not be unique
+                    break  # filename may not be unique
 
             for f in basenodefiles_processed:
                 basenode.files.remove(f)
@@ -307,8 +269,7 @@ def getContent(req, ids):
             identifier_importer = req.values['identifier_importer']
             identifier = req.values['identifier']
 
-            logg.debug("... in %s.%s: going to create new node without file from identifier (%s)",
-                __name__, _utils_utils.funcname(), identifier)
+            logg.debug("going to create new node without file from identifier (%s)", identifier)
 
             if identifier_importer in identifier_importers:
                 identifierImporter = identifier_importers[identifier_importer]
@@ -336,7 +297,7 @@ def getContent(req, ids):
                               "node is child of base node id=%s (name=%s, type=%s)", user.login_name, new_node.id, new_node.name, new_node.type,
                              identifier, importdir.id, importdir.name, importdir.type)
                 else:  # import failed, no new_node created
-                    logg.info("... in %s.%s: import failed, no new_node created for identifier (%s)", __name__, _utils_utils.funcname(), identifier)
+                    logg.info("import failed, no new_node created for identifier (%s)", identifier)
 
                 req.response.set_data(json.dumps(res, ensure_ascii=False))
 
@@ -354,7 +315,7 @@ def getContent(req, ids):
             node.files.append(f)
             db.session.commit()
             req.response.set_data("")
-            logg.debug("%s|%s.%s: added file to node %s (%s, %s)", _utils_utils.get_user_id(), __name__, _utils_utils.funcname(), node.id, node.name, node.type)
+            logg.debug("%s: added file to node %s (%s, %s)", _utils_utils.get_user_id(), node.id, node.name, node.type)
 
         # upload done -> deliver view of object
         if proceed_to_uploadcomplete or req.values['action'] == "uploadcomplete":

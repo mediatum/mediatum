@@ -318,9 +318,8 @@ def getContent(req, ids):
             logg.debug("%s: added file to node %s (%s, %s)", _utils_utils.get_user_id(), node.id, node.name, node.type)
 
         # upload done -> deliver view of object
-        if proceed_to_uploadcomplete or req.values['action'] == "uploadcomplete":
+        if proceed_to_uploadcomplete:
             logg.debug("upload done -> deliver view of object")
-
             mime = _utils_utils.getMimeType(uploadfile.filename)
             data_extra = req.values.get('data_extra', '')
             if data_extra == 'tofile':

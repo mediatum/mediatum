@@ -841,12 +841,6 @@ msgstr "Possible variables:<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* [value] = attrib
 msgid "mask_edit_separator"
 msgstr "Separator"
 
-msgid "mask_edit_testnodes"
-msgstr "Test nodes"
-
-msgid "mask_edit_show_testnodes"
-msgstr "Show"
-
 msgid "PostprocessingError_document"
 msgstr "Document could not be uploaded into the system.<br>This may be caused by a possibly copy-protected or damaged PDF file."
 

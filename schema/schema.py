@@ -1412,12 +1412,6 @@ class Maskitem(Node):
     def setDefault(self, value):
         self.set("default", value)
 
-    def getTestNodes(self):
-        return self.get("testnodes")
-
-    def setTestNodes(self, value):
-        self.set("testnodes", value)
-
     def getUnit(self):
         # XXX: we don't want empty units, better sanitize user input instead of stripping here
         return self.get("unit").strip()

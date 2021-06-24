@@ -111,64 +111,6 @@ def validate(req, op):
         res = showEditor(req)
         return res
 
-    if len(path) == 5 and path[3] == "editor" and path[4] == "show_testnodes":
-        
-        raise NotImplementedError("")
-
-        template = req.params.get('template', '')
-        testnodes_list = req.params.get('testnodes', '')
-        width = req.params.get('width', '400')
-        item_id = req.params.get('item_id', None)
-
-        mdt_name = path[1]
-        mask_name = path[2]
-
-        mdt = q(Metadatatypes).one().children.filter_by(name=mdt_name).one()
-        mask = mdt.children.filter_by(name=mask_name).one()
-
-        sectionlist = []
-        for nid in [x.strip() for x in testnodes_list.split(',') if x.strip()]:
-            section_descr = {}
-            section_descr['nid'] = nid
-            section_descr['error_flag'] = ''  # in case of no error
-
-            node = q(Node).get(nid)
-            section_descr['node'] = node
-            if node and node.has_data_access():
-                try:
-                    node_html = mask.getViewHTML([node], VIEW_DEFAULT, template_from_caller=[template, mdt, mask, item_id])
-                    section_descr['node_html'] = node_html
-                except:
-                    logg.exception("exception while evaluating template")
-                    error_text = str(sys.exc_info()[1])
-                    template_line = 'for node id ' + ustr(nid) + ': ' + error_text
-                    with suppress(Exception, warn=False):
-                        m = re.match(r".*line (?P<line>\d*), column (?P<column>\d*)", error_text)
-                        if m:
-                            mdict = m.groupdict()
-                            line = int(mdict.get('line', 0))
-                            column = int(mdict.get('column', 0))
-                            error_text = error_text.replace('line %d' % line, 'template line %d' % (line - 1))
-                            template_line = 'for node id ' + ustr(nid) + '<br/>' + error_text + '<br/><code>' + esc(
-                                template.split(
-                                    "\n")[line - 2][0:column - 1]) + '<span style="color:red">' + esc(
-                                template.split("\n")[line - 2][column - 1:]) + '</span></code>'
-                    section_descr['error_flag'] = 'Error while evaluating template:'
-                    section_descr['node_html'] = template_line
-            elif node and not node.has_data_access():
-                section_descr['error_flag'] = 'no access'
-                section_descr['node_html'] = ''
-            if node is None:
-                section_descr['node'] = None
-                section_descr['error_flag'] = 'NoSuchNodeError'
-                section_descr['node_html'] = 'for node id ' + ustr(nid)
-            sectionlist.append(section_descr)
-
-        # remark: error messages will be served untranslated in English
-        # because messages from the python interpreter (in English) will be added
-
-        return _tal.processTAL({'sectionlist': sectionlist, 'csrf': req.csrf_token.current_token}, file="web/admin/modules/metatype.html", macro="view_testnodes", request=req)
-
     if len(path) == 2 and path[1] == "info":
         return showInfo(req)
 
@@ -685,7 +627,6 @@ def showEditor(req):
         item.setFormat(req.params.get("format", u""))
         item.setSeparator(req.params.get("separator", u""))
         item.setDescription(req.params.get("description", u""))
-        item.setTestNodes(req.params.get("testnodes", u""))
         db.session.commit()
 
         if "required" in req.params.keys():

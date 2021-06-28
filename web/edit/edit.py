@@ -189,9 +189,11 @@ def frameset(req):
         db.session.commit()
         logg.info("created new home dir for user #%s (%s)", user.id, user.login_name)
 
-    folders = {'homedir': getPathToFolder(user.home_dir),
-               'trashdir': getPathToFolder(user.trash_dir),
-               'uploaddir': getPathToFolder(user.upload_dir)}
+    folders = dict(
+            homedir=getPathToFolder(user.home_dir),
+            trashdir=getPathToFolder(user.trash_dir),
+            uploaddir=getPathToFolder(user.upload_dir),
+        )
 
     containertypes = Container.get_all_subclasses(filter_classnames=("collections", "home", "container"))
 
@@ -219,31 +221,35 @@ def frameset(req):
 
     homenodefilter = req.params.get('homenodefilter', '')
 
-    v = {
-        "id": id,
-        "page": page,
-        "nodes_per_page": nodes_per_page,
-        "sortfield": sortfield,
-        "value": value,
-        "searchitems": get_searchitems(req),
-        "tab": (tab and "&tab=" + tab) or "",
-        'user': user,
-        'spc': spc,
-        'folders': folders,
-        'collectionsid': q(Collections).one().id,
-        "basedirs": [q(Home).one(), q(Collections).one()],
-        'cmenu_iconpaths': cmenu_iconpaths,
-        'path': path,
-        'containerpath': containerpath,
-        'language': lang(req),
-        't': t,
-        '_getIDPath': _getIDPath,
-        'homenodefilter': homenodefilter,
-        'csrf': req.csrf_token.current_token,
-    }
-
     req.response.status_code = httpstatus.HTTP_OK
-    req.response.set_data(_tal.processTAL(v, file="web/edit/edit.html", macro="edit_main", request=req))
+    req.response.set_data(_tal.processTAL(
+            dict(
+                id=id,
+                page=page,
+                nodes_per_page=nodes_per_page,
+                sortfield=sortfield,
+                value=value,
+                searchitems=get_searchitems(req),
+                tab=(tab and "&tab=" + tab) or "",
+                user=user,
+                spc=spc,
+                folders=folders,
+                collectionsid=q(Collections).one().id,
+                basedirs=[q(Home).one(), q(Collections).one()],
+                cmenu_iconpaths=cmenu_iconpaths,
+                path=path,
+                containerpath=containerpath,
+                language=lang(req),
+                t=t,
+                _getIDPath=_getIDPath,
+                homenodefilter=homenodefilter,
+                csrf=req.csrf_token.current_token,
+            ),
+            file="web/edit/edit.html",
+            macro="edit_main",
+            request=req,
+        ),
+    )
 
 
 def getBreadcrumbs(menulist, tab):
@@ -277,21 +283,30 @@ def handletabs(req, ids, tabs, sort_choices):
         n.removeAttribute("sortfield")
     db.session.commit()
 
-    ctx = {
-        "user": user,
-        "ids": ids,
-        "idstr": ",".join(ids),
-        "menu": menu,
-        "breadcrumbs": getBreadcrumbs(menu, req.params.get("tab", tabs)),
-        "sort_choices" : sort_choices,
-        "sortfield" : sortfield,
-        "nodes_per_page" : nodes_per_page,
-    }
-
-    return _tal.processTAL(ctx, file="web/edit/edit.html", macro="edit_tabs", request=req)
+    return _tal.processTAL(
+            dict(
+                user=user,
+                ids=ids,
+                idstr=",".join(ids),
+                menu=menu,
+                breadcrumbs=getBreadcrumbs(menu, req.params.get("tab", tabs)),
+                sort_choices=sort_choices,
+                sortfield=sortfield,
+                nodes_per_page=nodes_per_page,
+            ),
+            file="web/edit/edit.html",
+            macro="edit_tabs",
+            request=req,
+        )
 
 def error(req):
-    req.response.set_data(_tal.processTAL({"errormsg": req.params.get("errmsg", "")}, string="<tal:block tal:replace=\"errormsg\"/>", macro="edit_errorpage", request=req))
+    req.response.set_data(_tal.processTAL(
+            dict(errormsg=req.params.get("errmsg", "")),
+            string="<tal:block tal:replace=\"errormsg\"/>",
+            macro="edit_errorpage",
+            request=req,
+        ),
+    )
     req.response.status_code = httpstatus.HTTP_OK
     return httpstatus.HTTP_OK
 
@@ -395,13 +410,15 @@ def edit_tree(req):
 
         label = getTreeLabel(node, language)
 
-        nodedata = {'title': label,
-                    'key': node.id,
-                    'lazy': True,
-                    'folder': True,
-                    'readonly': 0,
-                    'tooltip': '%s (%s)' % (node.getLabel(lang=language), node.id),
-                    'icon': getEditorIconPath(node, home_dir=home_dir, upload_dir=upload_dir, trash_dir=trash_dir)}
+        nodedata = dict(
+                title=label,
+                key=node.id,
+                lazy=True,
+                folder=True,
+                readonly=0,
+                tooltip='%s (%s)' % (node.getLabel(lang=language), node.id),
+                icon=getEditorIconPath(node, home_dir=home_dir, upload_dir=upload_dir, trash_dir=trash_dir),
+            )
 
         if len(node.container_children) == 0:
             nodedata['lazy'] = False
@@ -459,9 +476,8 @@ def action(req):
                 changednodes[nid] = getTreeLabel(q(Node).get(nid), language)
             except:
                 logg.exception("exception ignored: could not make fancytree label for node %s", nid)
-        res_dict = {'changednodes': changednodes}
         req.response.status_code = httpstatus.HTTP_OK
-        req.response.set_data(json.dumps(res_dict, indent=4, ensure_ascii=False))
+        req.response.set_data(json.dumps(dict(changednodes=changednodes), indent=4, ensure_ascii=False))
         return
     else:
         # all 'action's except 'getlabels' require a base dir (src)
@@ -474,7 +490,13 @@ def action(req):
             src = q(Node).get(srcnodeid)
         except:
             req.response.status_code = httpstatus.HTTP_OK
-            req.response.set_data(_tal.processTAL({"edit_action_error": srcnodeid}, file="web/edit/edit.html", macro="edit_action_error", request=req))
+            req.response.set_data(_tal.processTAL(
+                    dict(edit_action_error=srcnodeid),
+                    file="web/edit/edit.html",
+                    macro="edit_action_error",
+                    request=req,
+                ),
+            )
             return
 
     if req.params.get('action') == 'addcontainer':
@@ -482,7 +504,13 @@ def action(req):
         if not node.has_write_access():
             # deliver errorlabel
             req.response.status_code = httpstatus.HTTP_FORBIDDEN
-            req.response.set_data(_tal.processTAL({}, string='<tal:block i18n:translate="edit_nopermission"/>', macro=None, request=req))
+            req.response.set_data(_tal.processTAL(
+                    {},
+                    string='<tal:block i18n:translate="edit_nopermission"/>',
+                    macro=None,
+                    request=req,
+                ),
+            )
             return
         # create new container
         newnode_type = req.params.get('type')
@@ -521,19 +549,21 @@ def action(req):
 
         label = getTreeLabel(newnode, lang=language)
 
-        fancytree_nodedata = {
-            'title': label,
-            'key': newnode.id,
-            'isLazy': False,
-            'isFolder': True,
-            'icon': getEditorIconPath(newnode),
-            'readonly': 0,
-            'tooltip': '%s (%s)' % (label, newnode.id),
-            'children': [],
-        }
-
         req.response.status_code = httpstatus.HTTP_OK
-        req.response.set_data(json.dumps(fancytree_nodedata, ensure_ascii=False))
+        req.response.set_data(json.dumps(
+                dict(
+                    title=label,
+                    key=newnode.id,
+                    isLazy=False,
+                    isFolder=True,
+                    icon=getEditorIconPath(newnode),
+                    readonly=0,
+                    tooltip='%s (%s)' % (label, newnode.id),
+                    children=[],
+                ),
+                ensure_ascii=False,
+            ),
+        )
         logg.info("%s adding new container %s (%s) to %s (%s, %s)",
                   user.login_name, newnode.id, newnode.type, node.id, node.name, node.type)
         return
@@ -586,7 +616,15 @@ def action(req):
                                   user.login_name, obj.id, obj.name, obj.type, mysrc.id, mysrc.name, mysrc.type)
                 else:
                     logg.info("%s has no write access for node %s", user.login_name, mysrc.id)
-                    req.response.set_data(req.response.get_data() + _tal.processTAL({}, file='<tal:block i18n:translate="edit_nopermission"/>', macro=None, request=req))
+                    req.response.set_data(
+                        req.response.get_data() +
+                        _tal.processTAL(
+                            {},
+                            file='<tal:block i18n:translate="edit_nopermission"/>',
+                            macro=None,
+                            request=req,
+                        ),
+                    )
                 dest = mysrc
             elif action in ["move", "copy"]:
                 if (dest != mysrc) and \
@@ -622,9 +660,8 @@ def action(req):
                     q(Node).get(nid), lang=language)
             except:
                 logg.exception("exception ignored: could not make fancytree label for node %s", nid)
-        res_dict = {'changednodes': changednodes}
         req.response.status_code = httpstatus.HTTP_OK
-        req.response.set_data(json.dumps(res_dict, indent=4, ensure_ascii=False))
+        req.response.set_data(json.dumps(dict(changednodes=changednodes), indent=4, ensure_ascii=False))
     else:
         try:
             req.response.status_code = httpstatus.HTTP_OK
@@ -657,20 +694,23 @@ def showPaging(req, tab, ids):
         position, absitems = nodelist.getPositionString(ids[0])
         combodata, script = nodelist.getPositionCombo(tab)
 
-    v = dict(
-            nextid=nextid,
-            previd=previd,
-            position=position,
-            absitems=absitems,
-            tab=tab,
-            combodata=combodata,
-            script=script,
-            srcnodeid=srcnodeid,
-            nodeid=int(ids[0]),
-        )
-
     req.response.status_code = httpstatus.HTTP_OK
-    return _tal.processTAL(v, file="web/edit/edit.html", macro="edit_paging", request=req)
+    return _tal.processTAL(
+            dict(
+                nextid=nextid,
+                previd=previd,
+                position=position,
+                absitems=absitems,
+                tab=tab,
+                combodata=combodata,
+                script=script,
+                srcnodeid=srcnodeid,
+                nodeid=int(ids[0]),
+            ),
+            file="web/edit/edit.html",
+            macro="edit_paging",
+            request=req,
+        )
 
 
 def content(req):
@@ -828,13 +868,23 @@ def content(req):
         v['collection_sortfield'] = req.params.get("sortfield", node.get("sortfield"))
 
         if not isinstance(node, (_core_systemtypes.Root, Collections, Home)):
-            sortchoices = _sort.get_sort_choices(container=node, off="off", t_off=t(req, "off"), t_desc=t(req, "descending"))
+            sortchoices = _sort.get_sort_choices(
+                    container=node,
+                    off="off",
+                    t_off=t(req, "off"),
+                    t_desc=t(req, "descending"),
+                )
             sortchoices = tuple(sortchoices)
         else:
             sortchoices = ()
     else:
         req.response.status_code = httpstatus.HTTP_OK
-        content["body"] += _tal.processTAL({"module": current}, file="web/edit/edit.html", macro="module_error", request=req)
+        content["body"] += _tal.processTAL(
+                dict(module=current),
+                file="web/edit/edit.html",
+                macro="module_error",
+                request=req,
+            )
 
     if req.params.get("style", "") != "popup":  # normal page with header
         v["tabs"] = handletabs(req, ids, tabs, sortchoices)
@@ -846,7 +896,12 @@ def content(req):
         if req.params.get("ids", "") == "":
             v["ids"] = req.params.get("id", "").split(",")
         v["tab"] = current
-        v["operations"] = _tal.processTAL({'iscontainer': node.isContainer()}, file="web/edit/edit_common.html", macro="show_operations", request=req)
+        v["operations"] = _tal.processTAL(
+                dict(iscontainer=node.isContainer()),
+                file="web/edit/edit_common.html",
+                macro="show_operations",
+                request=req,
+            )
         v['user'] = user
         v['language'] = lang(req)
         v['t'] = t

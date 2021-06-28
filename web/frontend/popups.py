@@ -55,13 +55,15 @@ q = db.query
 def popup_fullsize(req):
     nid = userinput.string_to_int(req.args.get("id", type=int))
     if nid is None:
-        req.response.status_code = 400
-        return 400
+        req.response.status_code = httpstatus.HTTP_BAD_REQUEST
+        req.response.set_data(t(lang(req), "edit_common_noobjectsfound"))
+        return
     
     node = q(Node).get(nid)
     if not isinstance(node, Node):
-        req.response.status_code = 404
-        return 404
+        req.response.status_code = httpstatus.HTTP_NOT_FOUND
+        req.response.set_data(t(lang(req), "edit_common_noobjectsfound"))
+        return
     
     version_id = req.params.get("v")
     version = node.get_tagged_version(unicode(version_id))
@@ -76,8 +78,9 @@ def popup_fullsize(req):
 def popup_thumbbig(req):
     node = q(Node).get(req.params["id"])
     if not isinstance(node, Node):
-        req.response.status_code = 404
-        return 404
+        req.response.status_code = httpstatus.HTTP_NOT_FOUND
+        req.response.set_data(t(lang(req), "edit_common_noobjectsfound"))
+        return
     return node.popup_thumbbig(req)
 
 
@@ -103,7 +106,7 @@ def show_attachmentbrowser(req):
     nid = req.params.get("id")
     node = q(Node).get(nid)
     if not node.has_data_access():
-        req.response.set_data(t(req, "permission_denied"))
+        req.response.set_data(t(lang(req), "permission_denied"))
         req.response.status_code = httpstatus.HTTP_FORBIDDEN
         return
 
@@ -117,7 +120,7 @@ RE_PRINT_URL = re.compile("/print/(\d+).pdf")
 def redirect_old_printview(req):
     req.response.location = req.mediatum_contextfree_path + ".pdf"
     req.response.status_code = httpstatus.HTTP_TEMPORARY_REDIRECT
-    return httpstatus.HTTP_TEMPORARY_REDIRECT
+    return
 
 
 def show_printview(req):
@@ -126,9 +129,14 @@ def show_printview(req):
     nodeid = int(match.group(1))
 
     node = q(Node).get(nodeid)
-    if node.system_attrs.get("print") == "0" or not node.has_read_access():
-        req.response.status_code = 404
-        return 404
+    if node.system_attrs.get("print") == "0":
+        req.response.status_code = httpstatus.HTTP_NOT_FOUND
+        req.response.set_data(t(lang(req), "edit_common_noobjectsfound"))
+        return
+    if not node.has_read_access():
+        req.response.status_code = httpstatus.HTTP_FORBIDDEN
+        req.response.set_data(t(lang(req), "permission_denied"))
+        return
 
     style = int(req.params.get("style", 2))
 

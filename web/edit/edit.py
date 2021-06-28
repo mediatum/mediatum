@@ -934,7 +934,9 @@ def edit_print(req):
     mod = _editModules.get(module_name)
     
     if not mod:
-        return 400
+        req.response.status_code = httpstatus.HTTP_BAD_REQUEST
+        req.response.set_data(t(lang(req), "admin_settings_nomodule"))
+        return
         
     additional_data = match.group(3)
     print_content = mod.getPrintView(nid, additional_data, req)

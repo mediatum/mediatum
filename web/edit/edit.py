@@ -487,7 +487,7 @@ def action(req):
         if not srcnodeid:
             return
         try:
-            src = q(Node).get(srcnodeid)
+            srcnode = q(Node).get(srcnodeid)
         except:
             req.response.status_code = httpstatus.HTTP_OK
             req.response.set_data(_tal.processTAL(
@@ -500,8 +500,7 @@ def action(req):
             return
 
     if req.params.get('action') == 'addcontainer':
-        node = q(Node).get(srcnodeid)
-        if not node.has_write_access():
+        if not srcnode.has_write_access():
             # deliver errorlabel
             req.response.status_code = httpstatus.HTTP_FORBIDDEN
             req.response.set_data(_tal.processTAL(
@@ -524,7 +523,7 @@ def action(req):
 
         content_class = Node.get_class_for_typestring(newnode_type)
         newnode = content_class(name=translated_label)
-        node.children.append(newnode)
+        srcnode.children.append(newnode)
         newnode.set("creator", user.login_name)
         newnode.set("creationtime", unicode(
             time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
@@ -532,17 +531,17 @@ def action(req):
         # place newnode at top of the children by setting the orderpos to the lowest orderpos - 1
         # if the orderpos gets negative, shift the oderpos of all children by incrementing with a positive number
         # make this number large enough, to avoid the next shifting of orderpos if more containers are added
-        if len(node.children) == 1:
+        if len(srcnode.children) == 1:
             # newnode is the only one child
             newnode.orderpos = 1000
         else:
-            newnode.orderpos = node.children[0].orderpos
-            newnode.orderpos = min([c.orderpos for c in node.children]) - 1
+            newnode.orderpos = srcnode.children[0].orderpos
+            newnode.orderpos = min([c.orderpos for c in srcnode.children]) - 1
             while newnode.orderpos < 0:
                 # in order to avoid negative orderpos, add a positive number to the orderpos of all children
                 # make this number large enough, so there is no shift of orderpos is necessary if the next
                 # container is added to the children
-                for c in node.children:
+                for c in srcnode.children:
                     c.orderpos += 1000
         db.session.commit()
         req.params["dest"] = newnode.id
@@ -565,7 +564,7 @@ def action(req):
             ),
         )
         logg.info("%s adding new container %s (%s) to %s (%s, %s)",
-                  user.login_name, newnode.id, newnode.type, node.id, node.name, node.type)
+                  user.login_name, newnode.id, newnode.type, srcnode.id, srcnode.name, srcnode.type)
         return
 
     try:
@@ -599,7 +598,7 @@ def action(req):
     else:
         for id in idlist:
             obj = q(Node).get(id)
-            mysrc = src
+            mysrc = srcnode
 
             if isDirectory(obj) or isCollection(obj):
                 mysrc = obj.parents[0]

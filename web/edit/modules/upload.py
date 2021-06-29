@@ -199,7 +199,6 @@ def getContent(req, ids):
 
                                     break  # filename may not be unique
 
-            new_tree_labels = [{'id': basenode.id, 'label': getTreeLabel(basenode, lang=language)}]
             for f in basenodefiles_processed:
                 basenode.files.remove(f)
                 f_path = f.abspath
@@ -216,11 +215,21 @@ def getContent(req, ids):
 
             db.session.commit()
             # standard file
-            content = _tal.processTAL({'files': [filename], 'schemes': scheme_type}, file='web/edit/modules/upload.html', macro="uploadfileok", request=req)
-            res = {'state': state, 'newnodes': newnodes, 'errornodes':
-                              errornodes, 'new_tree_labels': new_tree_labels, 'ret': content}
-            res = json.dumps(res, ensure_ascii=False)
-            req.response.set_data(res)
+            req.response.set_data(json.dumps(
+                dict(
+                    state=state,
+                    newnodes=newnodes,
+                    errornodes=errornodes,
+                    new_tree_labels=[dict(id=basenode.id, label=getTreeLabel(basenode, lang=language))],
+                    ret=_tal.processTAL(
+                            dict(files=[filename], schemes=scheme_type),
+                            file='web/edit/modules/upload.html',
+                            macro="uploadfileok",
+                            request=req,
+                        ),
+                ),
+                ensure_ascii=False,
+            ))
             return None
 
         # add new object, only metadata
@@ -233,33 +242,51 @@ def getContent(req, ids):
                 datatypes = scheme.getDatatypes()
                 for datatype in datatypes:
                     if datatype in dtypenames.keys():
-                        ret.append({'id': scheme.name,
-                                    'name': u'{} / {}'.format(scheme.getLongName(), translate(dtypenames[datatype], request=req)),
-                                    'description': scheme.getDescription(), 'datatype': datatype})
+                        ret.append(
+                            dict(
+                                id=scheme.name,
+                                name=u'{} / {}'.format(scheme.getLongName(), translate(dtypenames[datatype], request=req)),
+                                description=scheme.getDescription(), datatype=datatype,
+                            ),
+                        )
             if len(dtypes) == 1:  # load schemes for type
                 schemes = get_permitted_schemas_for_datatype(dtypes[0].__name__.lower())
-            content = _tal.processTAL({"datatypes": dtypes,
-                                      "schemes": ret,
-                                      "language": lang(req),
-                                      "identifier_importers": identifier_importers.values()}, file='web/edit/modules/upload.html', macro="addmeta", request=req)
 
-            req.response.set_data(json.dumps({'content': content}, ensure_ascii=False))
+            req.response.set_data(json.dumps(
+                dict(content=_tal.processTAL(
+                    dict(
+                        datatypes=dtypes,
+                        schemes=ret,
+                        language=lang(req),
+                        identifier_importers=identifier_importers.values(),
+                    ),
+                    file='web/edit/modules/upload.html',
+                    macro="addmeta",
+                    request=req,
+                )),
+                ensure_ascii=False,
+            ))
             return None
 
         # add new object, only doi
         if req.values['action'] == "adddoi":
-            content = _tal.processTAL({"language": lang(req), "identifier_importers": identifier_importers.values()},
-                                      file='web/edit/modules/upload.html', macro="adddoi", request=req)
-
-            req.response.set_data(json.dumps({'content': content}, ensure_ascii=False))
+            req.response.set_data(json.dumps(
+                dict(content=_tal.processTAL(
+                    dict(language=lang(req), identifier_importers=identifier_importers.values()),
+                    file='web/edit/modules/upload.html',
+                    macro="adddoi",
+                    request=req,
+                )),
+                ensure_ascii=False,
+            ))
             return None
 
         # deliver schemes for given contenttype
         if req.values['action'] == 'getschemes':
             ret = []
             for scheme in get_permitted_schemas_for_datatype(req.values.get('contenttype')):
-                ret.append({'id': scheme.name, 'name': scheme.getLongName()})
-            req.response.set_data(json.dumps({'schemes': ret}, ensure_ascii=False))
+                ret.append(dict(id=scheme.name, name=scheme.getLongName()))
+            req.response.set_data(json.dumps(dict(schemes=ret), ensure_ascii=False))
             return None
 
         # create node with given type/schema
@@ -272,9 +299,7 @@ def getContent(req, ids):
             node.set("creator", user.login_name)
             node.set("creationtime",  ustr(time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
             db.session.commit()
-            res = {'newid': node.id,
-                   'id': req.values.get('id')}
-            req.response.set_data(json.dumps(res, ensure_ascii=False))
+            req.response.set_data(json.dumps(dict(newid=node.id, id=req.values.get('id')), ensure_ascii=False))
             return None
 
         # create node using given identifier (doi, ...)
@@ -294,7 +319,7 @@ def getContent(req, ids):
 
                 new_node = importer_func(identifier, importdir, req=req)
 
-                res = {'id': req.values['id'], 'error': req.values.get('error', ''), 'error_detail': req.values.get('error_detail', '')}
+                res = dict(id=req.values['id'], error=req.values.get('error', ''), error_detail=req.values.get('error_detail', ''))
 
                 if new_node:
                     new_node.set("creator", user.login_name)
@@ -338,25 +363,35 @@ def getContent(req, ids):
             mime = _utils_utils.getMimeType(uploadfile.filename)
             data_extra = req.values.get('data_extra', '')
             if data_extra == 'tofile':
-
-                ctx = {
-                    'filename': f.getName(),
-                }
+                ctx = dict(filename=f.getName())
                 ctx.update(upload_to_filetype_filehandler(uploadfile.filename))
-                content = _tal.processTAL(ctx, file='web/edit/modules/upload.html', macro="uploadfileok_plupload", request=req)
-                new_tree_labels = [{'id': basenode.id, 'label': getTreeLabel(basenode, lang=language)}]
-                req.response.set_data(json.dumps({'type': 'file',
-                                                  'ret': content,
-                                                  'state': state,
-                                                  'filename': uploadfile.filename,
-                                                  'new_tree_labels': new_tree_labels}, ensure_ascii=False))
+                req.response.set_data(json.dumps(
+                    dict(
+                        type='file',
+                        ret=_tal.processTAL(
+                                  ctx,
+                                  file='web/edit/modules/upload.html',
+                                  macro="uploadfileok_plupload",
+                                  request=req,
+                              ),
+                        state=state,
+                        filename=uploadfile.filename,
+                        new_tree_labels=[dict(id=basenode.id, label=getTreeLabel(basenode, lang=language))],
+                    ),
+                    ensure_ascii=False,
+                ))
                 return None
 
             if mime[1] == "other":  # file type not supported
-                req.response.set_data(json.dumps({'type': mime[1],
-                                                  'ret': _tal.processTAL({}, file='web/edit/modules/upload.html', macro="uploadfileerror", request=req),
-                                                  'state': 'error',
-                                                  'filename': uploadfile.filename}, ensure_ascii=False))
+                req.response.set_data(json.dumps(
+                    dict(
+                        type=mime[1],
+                        ret=_tal.processTAL({}, file='web/edit/modules/upload.html', macro="uploadfileerror", request=req),
+                        state='error',
+                        filename=uploadfile.filename,
+                    ),
+                    ensure_ascii=False,
+                ))
                 logg.debug("%s|%s.%s: added file to node %s (%s, %s) -> file type not supported",
                              _utils_utils.get_user_id(), __name__, _utils_utils.funcname(), node.id, node.name, node.type)
                 return None
@@ -366,33 +401,51 @@ def getContent(req, ids):
                     macro = "uploadzipfileok_plupload"
                 else:
                     macro = "uploadzipfileok"
-                content = _tal.processTAL(upload_ziphandler(uploadfile.filename, req.values['id']), file='web/edit/modules/upload.html', macro=macro, request=req)
+                content = _tal.processTAL(
+                        upload_ziphandler(uploadfile.filename, req.values['id']),
+                        file='web/edit/modules/upload.html',
+                        macro=macro,
+                        request=req,
+                    )
             elif mime[1] == "bibtex":  # bibtex file
                 if req.values.get('uploader', '') == 'plupload':
                     macro = "uploadbibfileok_plupload"
                 else:
                     macro = "uploadbibfileok"
-                content = _tal.processTAL(upload_bibhandler(uploadfile.filename, req.values['id']), file='web/edit/modules/upload.html', macro=macro, request=req)
+                content = _tal.processTAL(
+                        upload_bibhandler(uploadfile.filename, req.values['id']),
+                        file='web/edit/modules/upload.html',
+                        macro=macro,
+                        request=req,
+                    )
             else:  # standard file
                 if req.values.get('uploader', '') == 'plupload':
-                    ctx = {
-                        'filename': f.getName(),
-                    }
-
+                    ctx = dict(filename=f.getName())
                     ctx.update(upload_filehandler(uploadfile.filename))
-                    content = _tal.processTAL(ctx, file='web/edit/modules/upload.html', macro="uploadfileok_plupload", request=req)
+                    content = _tal.processTAL(
+                            ctx,
+                            file='web/edit/modules/upload.html',
+                            macro="uploadfileok_plupload",
+                            request=req,
+                        )
                 else:
-                    content = _tal.processTAL(upload_filehandler(uploadfile.filename), file='web/edit/modules/upload.html', macro="uploadfileok", request=req)
-            new_tree_labels = [{'id': basenode.id, 'label': getTreeLabel(basenode, lang=language)}]
-            _d = {
-                  'type': mime[1],
-                  'ret': content,
-                  'state': state,
-                  'filename': uploadfile.filename,
-                  'new_tree_labels': new_tree_labels
-            }
+                    content = _tal.processTAL(
+                            upload_filehandler(uploadfile.filename),
+                            file='web/edit/modules/upload.html',
+                            macro="uploadfileok",
+                            request=req,
+                        )
 
-            req.response.set_data(json.dumps(_d, ensure_ascii=False))
+            req.response.set_data(json.dumps(
+                dict(
+                    type=mime[1],
+                    ret=content,
+                    state=state,
+                    filename=uploadfile.filename,
+                    new_tree_labels=[dict(id=basenode.id, label=getTreeLabel(basenode, lang=language))],
+                ),
+                ensure_ascii=False,
+            ))
             return None
     schemes = get_permitted_schemas()
 
@@ -435,23 +488,23 @@ def getContent(req, ids):
     searchparams = get_searchparams(req)
     searchparams = {k: unicode(v).encode("utf8") for k, v in searchparams.items()}
 
-    v.update({
-        "id": req.values["id"],
-        "datatypes": getDatatypes(req, schemes),
-        "schemes": schemes,
-        "uploadstate": req.values.get("upload"),
-        "operations": showoperations(req, node),
-        "nodelist": items,
-        "nav": nav,
-        "count": count,
-        "search": search_html,
-        "query" : req.query_string.replace('id=', 'src='),
-        "searchparams" : urllib.urlencode(searchparams),
-        "get_ids_from_query" : ",".join(show_dir_nav.get_ids_from_req()),
-        "edit_all_objects" : translation_t(lang(req), "edit_all_objects").format(item_count[1]),
-        "navigation_height": navigation_height,
-        "csrf": str(req.csrf_token.current_token),
-    })
+    v.update(
+        id=req.values["id"],
+        datatypes=getDatatypes(req, schemes),
+        schemes=schemes,
+        uploadstate=req.values.get("upload"),
+        operations=showoperations(req, node),
+        nodelist=items,
+        nav=nav,
+        count=count,
+        search=search_html,
+        query=req.query_string.replace('id=', 'src='),
+        searchparams=urllib.urlencode(searchparams),
+        get_ids_from_query=",".join(show_dir_nav.get_ids_from_req()),
+        edit_all_objects=translation_t(lang(req), "edit_all_objects").format(item_count[1]),
+        navigation_height=navigation_height,
+        csrf=str(req.csrf_token.current_token),
+    )
     html = _tal.processTAL(v, file="web/edit/modules/upload.html", macro="upload_form", request=req)
     show_dir_nav.nodes = None
     return html
@@ -480,7 +533,7 @@ def upload_filehandler(filename):
             scheme_type[mime[1]].append(scheme)
             # break
 
-    return {'files': [filename], 'schemes': scheme_type}
+    return dict(files=[filename], schemes=scheme_type)
 
 
 def upload_to_filetype_filehandler(filename):
@@ -491,7 +544,7 @@ def upload_to_filetype_filehandler(filename):
             scheme_type[datatype].append(scheme)
             # break
 
-    return {'files': [filename], 'schemes': scheme_type}
+    return dict(files=[filename], schemes=scheme_type)
 
 
 def upload_ziphandler(filename, id):
@@ -537,7 +590,7 @@ def upload_ziphandler(filename, id):
                 os.remove(file.abspath)
             basenode.files.remove(file)
             db.session.commit()
-    return {'files': files, 'schemes': scheme_type}
+    return dict(files=files, schemes=scheme_type)
 
 
 def upload_bibhandler(filename, id):
@@ -557,7 +610,7 @@ def upload_bibhandler(filename, id):
                 logg.exception('calling importBibTex(%s): missing mapping', retrieved_file)
                 error = ustr(e)
             break
-    return {'files': [filename], 'error': error}
+    return dict(files=[filename], error=error)
 
 
 # used in plugins?
@@ -638,44 +691,42 @@ def register_identifier_importer(uniquename, identifierImporter):
     else:
         identifier_importers[uniquename] = identifierImporter
 
-doi_labels = {
-    "de":
-    [
-        ("identifier_importer_longname", "Via DOI importieren"),
-        ("identifier_importer_explain", u"""Bitte DOI eingeben und <i>OK</i> klicken, um die Metadaten einer Publikation in mediaTUM zu importieren.
-      <p>Beispiele:</p>
-      doi:10.1371/journal.pbio.0020449
-      <br/>DOI:10.1002/nme.4628 """),
+doi_labels = dict(
+    de=[
+            ("identifier_importer_longname", "Via DOI importieren"),
+            ("identifier_importer_explain", u"""Bitte DOI eingeben und <i>OK</i> klicken, um die Metadaten einer Publikation in mediaTUM zu importieren.
+          <p>Beispiele:</p>
+          doi:10.1371/journal.pbio.0020449
+          <br/>DOI:10.1002/nme.4628 """),
 
-        # error messages written by importer-function into request
-        ("edit_import_nothing", 'Es wurde kein DOI angegeben.'),
-        ("doi_unknown", 'Der angegebene DOI existiert nicht'),
-        ("doi_invalid",
-         u'Dies sieht nicht wie eine gültige DOI aus! (muss eine Zeichenkette enthalten, die mit 10. beginnt)'),
-        ("doi_type_not_mapped",
-         u'Für den Typ der angegebenen DOI ist kein Mapping definiert.'),
-        ("doi_error_connecting_external_server",
-         'Verbindungsfehler zum externen Server'),
-    ],
-    "en":
-    [
-        ("identifier_importer_longname", "Import via DOI"),
-        ("identifier_importer_explain", """Please enter DOI to import metadata of publication.
-      <p>Examples:</p>
-      doi:10.1371/journal.pbio.0020449
-      <br/>DOI:10.1002/nme.4628 """),
+            # error messages written by importer-function into request
+            ("edit_import_nothing", 'Es wurde kein DOI angegeben.'),
+            ("doi_unknown", 'Der angegebene DOI existiert nicht'),
+            ("doi_invalid",
+             u'Dies sieht nicht wie eine gültige DOI aus! (muss eine Zeichenkette enthalten, die mit 10. beginnt)'),
+            ("doi_type_not_mapped",
+             u'Für den Typ der angegebenen DOI ist kein Mapping definiert.'),
+            ("doi_error_connecting_external_server",
+             'Verbindungsfehler zum externen Server'),
+        ],
+    en=[
+            ("identifier_importer_longname", "Import via DOI"),
+            ("identifier_importer_explain", """Please enter DOI to import metadata of publication.
+          <p>Examples:</p>
+          doi:10.1371/journal.pbio.0020449
+          <br/>DOI:10.1002/nme.4628 """),
 
-        # error messages written by importer-function into request
-        ("edit_import_nothing", 'No DOI was given.'),
-        ("doi_unknown", "The specified DOI doesn't exist."),
-        ("doi_invalid",
-         "This doesn't look like an valid DOI (must contain a string starting with 10.)"),
-        ("doi_type_not_mapped",
-         'No mapping defined for type of given DOI.'),
-        ("doi_error_connecting_external_server",
-         'Error connecting to external server'),
-    ]
-}
+            # error messages written by importer-function into request
+            ("edit_import_nothing", 'No DOI was given.'),
+            ("doi_unknown", "The specified DOI doesn't exist."),
+            ("doi_invalid",
+             "This doesn't look like an valid DOI (must contain a string starting with 10.)"),
+            ("doi_type_not_mapped",
+             'No mapping defined for type of given DOI.'),
+            ("doi_error_connecting_external_server",
+             'Error connecting to external server'),
+        ],
+)
 
 
 doi_importer = IdentifierImporter('doi_importer', import_from_doi)

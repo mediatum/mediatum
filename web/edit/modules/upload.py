@@ -310,9 +310,9 @@ def getContent(req, ids):
             uploadfile = req.files["file"]
             proceed_to_uploadcomplete = True
             # XXX: check this: import to realnamne or random name ?
-            f = _utils_fileutils.importFile(uploadfile.filename, uploadfile)
+            incoming_file = _utils_fileutils.importFile(uploadfile.filename, uploadfile)
             node = q(Node).get(req.values['id'])
-            node.files.append(f)
+            node.files.append(incoming_file)
             db.session.commit()
             req.response.set_data("")
             logg.debug("%s: added file to node %s (%s, %s)", _utils_utils.get_user_id(), node.id, node.name, node.type)
@@ -323,7 +323,7 @@ def getContent(req, ids):
             mime = _utils_utils.getMimeType(uploadfile.filename)
             data_extra = req.values.get('data_extra', '')
             if data_extra == 'tofile':
-                ctx = dict(filename=f.getName())
+                ctx = dict(filename=incoming_file.getName())
                 ctx.update(upload_to_filetype_filehandler(uploadfile.filename))
                 req.response.set_data(json.dumps(
                     dict(
@@ -380,7 +380,7 @@ def getContent(req, ids):
                     )
             else:  # standard file
                 if req.values.get('uploader', '') == 'plupload':
-                    ctx = dict(filename=f.getName())
+                    ctx = dict(filename=incoming_file.getName())
                     ctx.update(upload_filehandler(uploadfile.filename))
                     content = _tal.processTAL(
                             ctx,

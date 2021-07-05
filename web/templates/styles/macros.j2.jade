@@ -53,7 +53,7 @@
       a(href=highres_url)
         = _t("image_high_res_title")
 
-- macro itemsperpage(nodesperpage)
+- macro itemsperpage(nodesperpage, nodesperpage_options)
   script.
     function insertParameter(k, v){
       // add a parameter to the url
@@ -84,9 +84,10 @@
     label(style='font-size:10px;')
       = _t("items_per_page")
     select(name='nodes_per_page', onchange='insertParameter(name, this.value)', style='font-size:10px;')
-      for n in [5, 10, 15, 20, 25, 50]
+      for n in nodesperpage_options
         option(value=n, selected=n == nodesperpage)
-          = n
+           = _t(n)
+
   p(style='margin-top:30px;')
 
 // generated from jade

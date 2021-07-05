@@ -30,7 +30,6 @@ from core.webconfig import node_url
 import core.database.postgres.search as _postgres_search
 from contenttypes.container import includetemplate
 from utils.strings import ensure_unicode_returned
-from utils.utils import getFormatedString
 from utils.compat import iteritems
 from web.frontend.search import simple_search, extended_search
 import web.frontend.search as _frontend_search
@@ -44,7 +43,9 @@ from utils.pathutils import get_accessible_paths
 from web.frontend.contentbase import ContentBase
 from utils.url import build_url_from_path_and_params
 from markupsafe import Markup
+import web.common.pagination as _web_common_pagination
 import web.common.sort as _sort
+import utils.utils as _utils_utils
 
 
 logg = logging.getLogger(__name__)
@@ -401,13 +402,9 @@ class ContentList(ContentBase):
         
         self.liststyle = liststyle
 
-        self.nodes_per_page_from_req = req.args.get("nodes_per_page", type=int)
-        
-        if self.nodes_per_page_from_req:
-            self.nodes_per_page = self.nodes_per_page_from_req
-        else:
-            self.nodes_per_page = liststyle.nodes_per_page
-        
+        self.nodes_per_page_from_req = _web_common_pagination.get_nodes_per_page(req.args.get("nodes_per_page"), None, False)
+        self.nodes_per_page = self.node_query.count() if self.nodes_per_page_from_req == "all" else self.nodes_per_page_from_req
+
         self.nav_params = {k: v for k, v in req.args.items()
                            if k not in ("before", "after", "style", "sortfield", "page", "nodes_per_page")}
 
@@ -583,7 +580,13 @@ class ContentList(ContentBase):
         content_nav_list_header_html = webconfig.theme.render_template("content_nav_list_header.j2.jade", ctx)
 
         # use template of style and build html content
-        ctx = {"files": self.files, "op": "", "language": self.lang, "nodesperpage": self.nodes_per_page}
+        ctx = dict(
+                files=self.files,
+                op="",
+                language=self.lang,
+                nodesperpage="all" if self.nodes_per_page_from_req == "all" else self.nodes_per_page,
+                nodesperpage_options=_web_common_pagination.get_config_nodes_per_page(False),
+            )
 
         content_list_html = self.liststyle.render_template(req, ctx)
 
@@ -648,7 +651,7 @@ class ContentNode(ContentBase):
     def html(self, req):
         show_node_big = ensure_unicode_returned(self._node.show_node_big, name="show_node_big of %s" % self._node)
         style_name = self.full_style_name or DEFAULT_FULL_STYLE_NAME
-        node_html = getFormatedString(show_node_big(req, style_name))
+        node_html = _utils_utils.getFormatedString(show_node_big(req, style_name))
 
         if not self.paths:
             # self.node may be result of a query and/or element of a contentlist, in this case

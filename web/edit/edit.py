@@ -39,7 +39,7 @@ from edit_common import *
 from core.users import user_from_session as _user_from_session
 from core import httpstatus
 from schema.schema import Metadatatype
-from web.edit.edit_common import get_edit_label, default_edit_nodes_per_page, get_searchparams
+from web.edit.edit_common import get_edit_label, get_searchparams
 from web.frontend.search import NoSearchResult
 from utils.pathutils import get_accessible_paths
 import web.common.sort as _sort

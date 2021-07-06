@@ -35,14 +35,13 @@ from web.frontend.content import get_make_search_content_function
 from web.frontend.search import NoSearchResult
 import re
 import urllib
+
+import web.common.pagination as _web_common_pagination
 from utils.url import build_url_from_path_and_params as _build_url_from_path_and_params
 
 
 logg = logging.getLogger(__name__)
 q = db.query
-
-default_edit_nodes_per_page = 20
-edit_node_per_page_values = [20, 50, 100, 200]
 
 
 class EditorNavList:
@@ -50,7 +49,7 @@ class EditorNavList:
     def __init__(self):
         self.nav_params = None
         self.nav_searchparams = {}
-        self.nodes_per_page = default_edit_nodes_per_page
+        self.nodes_per_page = _web_common_pagination.default_edit_nodes_per_page
         self.page = 1
 
     def nav_link(self, **param_overrides):
@@ -257,18 +256,6 @@ def getAllSubDirs(node):
 def showoperations(req, node):
     return ""
 
-def get_nodes_per_page(req, dir):
-    nodes_per_page = req.params.get('nodes_per_page', '')
-    if nodes_per_page:
-        nodes_per_page = int(nodes_per_page)
-    else:
-        if dir:
-            nodes_per_page = dir.get('nodes_per_page')
-            if nodes_per_page:
-                nodes_per_page = int(nodes_per_page)
-    if not nodes_per_page:
-        nodes_per_page = default_edit_nodes_per_page
-    return nodes_per_page
 
 re_searchparams = re.compile("(query\d*|field\d+|searchmode)")
 

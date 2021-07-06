@@ -20,12 +20,12 @@
 import json
 import mediatumtal.tal as _tal
 
+import web.common.pagination as _web_common_pagination
 import web.edit.edit_common as _web_edit_edit_common
 from core import db
 from contenttypes import Data, Home, Collection, Collections
 from core.systemtypes import Root
-from web.edit.edit_common import showoperations, default_edit_nodes_per_page,\
-    edit_node_per_page_values, searchbox_navlist_height
+from web.edit.edit_common import showoperations, searchbox_navlist_height
 from web.frontend.frame import render_edit_search_box
 from core.translation import translate, lang, t
 from schema.schema import get_permitted_schemas
@@ -106,12 +106,12 @@ def getContent(req, ids):
         else:
             v['collection_sortfield'] = node.get("sortfield")
 
-        if req.params.get("nodes_per_page"):
-            v['npp_field'] = req.params.get("nodes_per_page", default_edit_nodes_per_page)
+        if req.values.get("nodes_per_page"):
+            v['npp_field'] = req.values["nodes_per_page"]
         else:
             v['npp_field'] = node.get("nodes_per_page")
         if not v['npp_field']:
-            v['npp_field'] = default_edit_nodes_per_page
+            v['npp_field'] = _web_common_pagination.default_edit_nodes_per_page
 
         search_html = render_edit_search_box(node, lang(req), req, edit=True)
         searchmode = req.params.get("searchmode")

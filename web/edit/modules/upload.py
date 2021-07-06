@@ -33,6 +33,7 @@ import mediatumtal.tal as _tal
 import utils.fileutils as _utils_fileutils
 import utils.utils as _utils_utils
 
+import web.common.pagination as _web_common_pagination
 import web.edit.edit_common as _web_edit_edit_common
 from web.edit.edit import getTreeLabel
 from web.edit.edit_common import showoperations, searchbox_navlist_height
@@ -47,7 +48,7 @@ from core import Node
 from schema.schema import Metadatatype, get_permitted_schemas, get_permitted_schemas_for_datatype
 from sqlalchemy import func
 from utils.compat import iteritems
-from web.edit.edit_common import default_edit_nodes_per_page, edit_node_per_page_values, get_searchparams
+from web.edit.edit_common import get_searchparams
 from web.frontend.frame import render_edit_search_box
 import urllib
 import web.common.sort as _sort
@@ -426,11 +427,11 @@ def getContent(req, ids):
         else:
             v['collection_sortfield'] = node.get("sortfield")
         if req.values.get("nodes_per_page", "") != "":
-            v['npp_field'] = req.values.get("nodes_per_page", default_edit_nodes_per_page)
+            v['npp_field'] = req.values["nodes_per_page"]
         else:
             v['npp_field'] = node.get("nodes_per_page")
         if not v['npp_field']:
-            v['npp_field'] = default_edit_nodes_per_page
+            v['npp_field'] = _web_common_pagination.default_edit_nodes_per_page
 
         assert node.type not in ["root", "collections", "home"]
 

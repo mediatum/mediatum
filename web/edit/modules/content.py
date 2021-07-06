@@ -111,7 +111,7 @@ def getContent(req, ids):
         else:
             v['npp_field'] = node.get("nodes_per_page")
         if not v['npp_field']:
-            v['npp_field'] = _web_common_pagination.default_edit_nodes_per_page
+            v['npp_field'] = _web_common_pagination.get_default_nodes_per_page(True)
 
         search_html = render_edit_search_box(node, lang(req), req, edit=True)
         searchmode = req.params.get("searchmode")

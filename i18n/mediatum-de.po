@@ -1246,3 +1246,6 @@ msgstr "Gast"
 
 msgid "audio_download_link"
 msgstr "Download"
+
+msgid "all"
+msgstr "alle"

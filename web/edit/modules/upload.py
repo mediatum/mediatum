@@ -431,7 +431,7 @@ def getContent(req, ids):
         else:
             v['npp_field'] = node.get("nodes_per_page")
         if not v['npp_field']:
-            v['npp_field'] = _web_common_pagination.default_edit_nodes_per_page
+            v['npp_field'] = _web_common_pagination.get_default_nodes_per_page(True)
 
         assert node.type not in ["root", "collections", "home"]
 

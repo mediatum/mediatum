@@ -30,14 +30,13 @@ import logging
 
 import json
 import mediatumtal.tal as _tal
+import utils.fileutils as _utils_fileutils
 import utils.utils as _utils_utils
 
 import web.edit.edit_common as _web_edit_edit_common
 from web.edit.edit import getTreeLabel
 from web.edit.edit_common import showoperations, searchbox_navlist_height
 from utils.url import build_url_from_path_and_params
-from utils.utils import join_paths, getMimeType, funcname, get_user_id, suppress
-from utils.fileutils import importFile, importFileRandom
 from schema.bibtex import importBibTeX, MissingMapping
 
 from core.translation import translate, lang, addLabels
@@ -121,7 +120,7 @@ def getContent(req, ids):
                 for f in basenode.files:
                     filename = f.name
                     if filename in filename2scheme:
-                        mimetype = getMimeType(filename)
+                        mimetype = _utils_utils.getMimeType(filename)
 
                         if mimetype[1] == "bibtex":  # bibtex import handler
                             try:
@@ -132,7 +131,7 @@ def getContent(req, ids):
                                 errornodes.append((filename, translate(unicode(e), request=req), unicode(hash(f.getName()))))
 
                         logg.debug("filename: %s, mimetype: %s", filename, mimetype)
-                        logg.debug("__name__=%s, func=%s; _m=%s, _m[1]=%s", __name__, funcname(), mimetype, mimetype[1])
+                        logg.debug("__name__=%s, func=%s; _m=%s, _m[1]=%s", __name__, _utils_utils.funcname(), mimetype, mimetype[1])
 
                         content_class = Node.get_class_for_typestring(mimetype[1])
                         node = content_class(name=filename, schema=filename2scheme[filename])
@@ -154,8 +153,8 @@ def getContent(req, ids):
 
             else:
                 for filename in req.params.get('files').split('|'):
-                    mimetype = getMimeType(filename)
-                    logg.debug("... in %s.%s: getMimeType(filename=%s)=%s", __name__, funcname(), filename, mimetype)
+                    mimetype = _utils_utils.getMimeType(filename)
+                    logg.debug("... in %s.%s: getMimeType(filename=%s)=%s", __name__, _utils_utils.funcname(), filename, mimetype)
                     if mimetype[1] == req.params.get('type') or req.params.get('type') == 'file':
                         for f in basenode.files:
                             # ambiguity here ?
@@ -183,7 +182,7 @@ def getContent(req, ids):
                                                                                     time.localtime(time.time()))))
 
                                     # clones to a file with random name
-                                    cloned_file = importFileRandom(f.abspath)
+                                    cloned_file = _utils_fileutils.importFileRandom(f.abspath)
                                     # set filetype for uploaded file as requested by the content class
                                     cloned_file.filetype = content_class.get_upload_filetype()
                                     node.files.append(cloned_file)
@@ -210,7 +209,7 @@ def getContent(req, ids):
                     logg.debug("%s going to remove file %s from disk", user.login_name, f_path)
                     os.remove(f_path)
 
-            mime = getMimeType(filename)
+            mime = _utils_utils.getMimeType(filename)
             scheme_type = {mime[1]: []}
             for scheme in get_permitted_schemas():
                 if mime[1] in scheme.getDatatypes():
@@ -237,7 +236,7 @@ def getContent(req, ids):
                 for datatype in datatypes:
                     if datatype in dtypenames.keys():
                         ret.append({'id': scheme.name,
-                                    'name': scheme.getLongName() + ' / ' + translate(dtypenames[datatype], request=req),
+                                    'name': u'{} / {}'.format(scheme.getLongName(), translate(dtypenames[datatype], request=req)),
                                     'description': scheme.getDescription(), 'datatype': datatype})
             if len(dtypes) == 1:  # load schemes for type
                 schemes = get_permitted_schemas_for_datatype(dtypes[0].__name__.lower())
@@ -287,7 +286,7 @@ def getContent(req, ids):
             identifier = req.params.get('identifier')
 
             logg.debug("... in %s.%s: going to create new node without file from identifier (%s)",
-                __name__, funcname(), identifier)
+                __name__, _utils_utils.funcname(), identifier)
 
             if identifier_importer in identifier_importers:
                 identifierImporter = identifier_importers[identifier_importer]
@@ -315,7 +314,7 @@ def getContent(req, ids):
                               "node is child of base node id=%s (name=%s, type=%s)", user.login_name, new_node.id, new_node.name, new_node.type,
                              identifier, importdir.id, importdir.name, importdir.type)
                 else:  # import failed, no new_node created
-                    logg.info("... in %s.%s: import failed, no new_node created for identifier (%s)", __name__, funcname(), identifier)
+                    logg.info("... in %s.%s: import failed, no new_node created for identifier (%s)", __name__, _utils_utils.funcname(), identifier)
 
                 req.response.set_data(json.dumps(res, ensure_ascii=False))
 
@@ -328,12 +327,12 @@ def getContent(req, ids):
             uploadfile = req.files.get("file")
             proceed_to_uploadcomplete = True
             # XXX: check this: import to realnamne or random name ?
-            f = importFile(uploadfile.filename, uploadfile)
+            f = _utils_fileutils.importFile(uploadfile.filename, uploadfile)
             node = q(Node).get(req.params.get('id'))
             node.files.append(f)
             db.session.commit()
             req.response.set_data("")
-            logg.debug("%s|%s.%s: added file to node %s (%s, %s)", get_user_id(), __name__, funcname(), node.id, node.name, node.type)
+            logg.debug("%s|%s.%s: added file to node %s (%s, %s)", _utils_utils.get_user_id(), __name__, _utils_utils.funcname(), node.id, node.name, node.type)
 
         # upload done -> deliver view of object
         if proceed_to_uploadcomplete or req.params.get('action') == "uploadcomplete":
@@ -342,7 +341,7 @@ def getContent(req, ids):
             if proceed_to_uploadcomplete:
                 req.params['file'] = uploadfile.filename
 
-            mime = getMimeType(uploadfile.filename)
+            mime = _utils_utils.getMimeType(uploadfile.filename)
             data_extra = req.params.get('data_extra', '')
             if data_extra == 'tofile':
 
@@ -366,7 +365,7 @@ def getContent(req, ids):
                                                   'state': 'error',
                                                   'filename': req.params.get('file')}, ensure_ascii=False))
                 logg.debug("%s|%s.%s: added file to node %s (%s, %s) -> file type not supported",
-                             get_user_id(), __name__, funcname(), node.id, node.name, node.type)
+                             _utils_utils.get_user_id(), __name__, _utils_utils.funcname(), node.id, node.name, node.type)
                 return None
 
             elif mime[1] == "zip":  # zip file
@@ -482,7 +481,7 @@ def mybasename(filename):
 
 
 def upload_filehandler(filename):
-    mime = getMimeType(filename)
+    mime = _utils_utils.getMimeType(filename)
     scheme_type = {mime[1]: []}
     for scheme in get_permitted_schemas():
         if mime[1] in scheme.getDatatypes():
@@ -521,17 +520,17 @@ def upload_ziphandler(filename, id):
                     name = random_str + name
 
                 files.append(name.replace(" ", "_"))
-                _m = getMimeType(name)
+                _m = _utils_utils.getMimeType(name)
 
                 if random_str in name:
-                    newfilename = join_paths(config.get("paths.tempdir"), name.replace(" ", "_"))
+                    newfilename = _utils_utils.join_paths(config.get("paths.tempdir"), name.replace(" ", "_"))
                 else:
-                    newfilename = join_paths(config.get("paths.tempdir"),  random_str + name.replace(" ", "_"))
+                    newfilename = _utils_utils.join_paths(config.get("paths.tempdir"),  random_str + name.replace(" ", "_"))
 
                 with codecs.open(newfilename, "wb") as fi:
                     fi.write(z.read(f))
 
-                fn = importFile(mybasename(name.replace(" ", "_")), z)
+                fn = _utils_fileutils.importFile(mybasename(name.replace(" ", "_")), z)
                 basenode.files.append(fn)
                 if os.path.exists(newfilename):
                     os.unlink(newfilename)
@@ -541,7 +540,7 @@ def upload_ziphandler(filename, id):
                     for scheme in schemes:
                         if _m[1] in scheme.getDatatypes():
                             scheme_type[_m[1]].append(scheme)
-            with suppress(Exception, warn=False):
+            with _utils_utils.suppress(Exception, warn=False):
                 z.close()
                 os.remove(file.abspath)
             basenode.files.remove(file)

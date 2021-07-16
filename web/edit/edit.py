@@ -230,7 +230,7 @@ def frameset(req):
                 sortfield=sortfield,
                 value=value,
                 searchitems=get_searchitems(req),
-                tab=(tab and "&tab=" + tab) or "",
+                tab="&tab={}".format(tab) if tab else "",
                 user=user,
                 spc=spc,
                 folders=folders,
@@ -409,14 +409,13 @@ def edit_tree(req):
             continue
 
         label = getTreeLabel(node, language)
-
         nodedata = dict(
                 title=label,
                 key=node.id,
                 lazy=True,
                 folder=True,
                 readonly=0,
-                tooltip='%s (%s)' % (node.getLabel(lang=language), node.id),
+                tooltip=u'{} ({})'.format(node.getLabel(lang=language), node.id),
                 icon=getEditorIconPath(node, home_dir=home_dir, upload_dir=upload_dir, trash_dir=trash_dir),
             )
 
@@ -557,7 +556,7 @@ def action(req):
                     isFolder=True,
                     icon=getEditorIconPath(newnode),
                     readonly=0,
-                    tooltip='%s (%s)' % (label, newnode.id),
+                    tooltip=u'{} ({})'.format(label, newnode.id),
                     children=[],
                 ),
                 ensure_ascii=False,

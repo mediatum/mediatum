@@ -47,13 +47,6 @@ class m_mlist(Metatype):
             None
 
         tempvalues = context.field.getValueList()
-        valuesfiles = context.field.getFiles()
-
-        if len(valuesfiles) > 0:  # a text file with list values was uploaded
-            if os.path.isfile(valuesfiles[0].retrieveFile()):
-                with codecs.open(valuesfiles[0].retrieveFile(), 'r', encoding='utf8') as valuesfile:
-                    tempvalues = valuesfile.readlines()
-
         if tempvalues[0].find('|') > 0:  # there are values in different languages available
             languages = [x.strip() for x in tempvalues[0].split('|')]  # find out the languages
             valuesdict = dict((lang, []) for lang in languages)        # create a dictionary with languages as keys,
@@ -159,14 +152,12 @@ class m_mlist(Metatype):
 
     labels = {"de":
               [
-                  ("list_list_values_file", "Datei mit Listenwerten:"),
                   ("mlist_list_values", "Listenwerte:"),
                   ("fieldtype_mlist", "Mehrfachauswahl"),
                   ("fieldtype_mlist_desc", "Werte-Auswahlfeld als Multiselect-Liste")
               ],
               "en":
               [
-                  ("list_list_values_file", "Textfile with list values:"),
                   ("mlist_list_values", "List values:"),
                   ("fieldtype_mlist", "multilist"),
                   ("fieldtype_mlist_desc", "selection list for multiple values")

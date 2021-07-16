@@ -288,7 +288,7 @@ def existMetaField(pid, name):
 """ update/create metadatafield """
 
 def updateMetaField(parent, name, label, orderpos, fieldtype, option="", description="",
-                    fieldvalues="", fieldvaluenum="", fieldid="", filenode=None, attr_dict={}):
+                    fieldvalues="", fieldvaluenum="", fieldid="",  attr_dict={}):
     metatype = getMetaType(parent)
     field = None
 
@@ -308,34 +308,12 @@ def updateMetaField(parent, name, label, orderpos, fieldtype, option="", descrip
         field.orderpos = len(metatype.children) - 1
         db.session.commit()
     # <----- Begin: For fields of list type ----->
-
-    if filenode:
-        # all files of the field will be removed before a new file kann be added
-        for fnode in field.files:
-            field.files.remove(fnode)         # remove the file from the node tree
-            try:
-                os.remove(fnode.abspath)  # delete the file from the hard drive
-            except:
-                logg.exception("exception in updateMetaField")
-        field.files.append(filenode)
-
     if fieldvalues.startswith("multiple"):
         field.set("multiple", True)
         fieldvalues = fieldvalues.replace("multiple;", "", 1)
     else:
         if field.get("multiple"):
             del field.attrs["multiple"]
-
-    if fieldvalues.endswith("delete"):  # the checkbox 'delete' was checked
-        # all files of the field will be removed
-        for fnode in field.files:
-            field.files.remove(fnode)         # remove the file from the node tree
-            try:
-                os.remove(fnode.abspath)  # delete the file from the hard drive
-            except:
-                logg.exception("exception in updateMetaField")
-        fieldvalues = fieldvalues.replace(";delete", "", 1)
-
     #<----- End: For fields of list type ----->
 
     field.set("label", label)

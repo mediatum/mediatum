@@ -49,13 +49,6 @@ class m_list(Metatype):
             None
 
         tempvalues = context.field.getValueList()
-        valuesfiles = context.field.files.all()
-
-        if len(valuesfiles):  # a text file with list values was uploaded
-            if os.path.isfile(valuesfiles[0].abspath):
-                with codecs.open(valuesfiles[0].abspath, 'r', encoding='utf8') as valuesfile:
-                    tempvalues = valuesfile.readlines()
-
         if len(tempvalues):  # Has the user entered any values?
             if tempvalues[0].find('|') > 0:  # there are values in different languages available
                 languages = [x.strip() for x in tempvalues[0].split('|')]  # find out the languages
@@ -146,7 +139,6 @@ class m_list(Metatype):
 
     def getMaskEditorHTML(self, field, metadatatype=None, language=None):
         value = u""
-        filename = u""
         multiple_list = u""
         try:
             if field:
@@ -158,7 +150,6 @@ class m_list(Metatype):
             value = field
         return tal.getTAL("metadata/list.html",
                           {"value": value,
-                           "filename": filename,
                            "multiple_list": multiple_list},
                           macro="maskeditor",
                           language=language)
@@ -176,9 +167,6 @@ class m_list(Metatype):
     labels = {"de":
               [
                   ("list_multiple", "Mehrfachauswahl:"),
-                  ("current_file", "Aktuelle Textdatei: "),
-                  ("delete_valuesfile", "Vorhandene Datei l&ouml;schen"),
-                  ("list_list_values_file", "Datei mit Listenwerten:"),
                   ("list_list_values", "Listenwerte:"),
                   ("fieldtype_list", "Werteliste"),
                   ("fieldtype_list_desc", "Werte-Auswahlfeld als Drop-Down Liste")
@@ -186,9 +174,6 @@ class m_list(Metatype):
               "en":
               [
                   ("list_multiple", "Multiple choice:"),
-                  ("current_file", "Current values file: "),
-                  ("delete_valuesfile", "Delete the current text file"),
-                  ("list_list_values_file", "Textfile with list values:"),
                   ("list_list_values", "List values:"),
                   ("fieldtype_list", "valuelist"),
                   ("fieldtype_list_desc", "drop down valuelist")

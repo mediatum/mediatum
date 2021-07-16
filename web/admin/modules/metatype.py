@@ -224,12 +224,6 @@ def validate(req, op):
             if req.params.get("mtype", "") + "_value" in req.params.keys():
                 _fieldvalue = req.params.get(req.params.get("mtype") + "_value")
 
-            _filenode = None
-            if "valuesfile" in req.params.keys():
-                valuesfile = req.params.pop("valuesfile")
-                if hasattr(valuesfile, "filename"):
-                    _filenode = importFile(valuesfile.filename, valuesfile)
-
             _attr_dict = {}
             if req.params.get("mtype", "") + "_handle_attrs" in req.params.keys():
 
@@ -244,7 +238,6 @@ def validate(req, op):
                             req.params.get("mlabel", ""), req.params.get("orderpos", ""),
                             req.params.get("mtype", ""), _option, req.params.get("mdescription", ""),
                             _fieldvalue, fieldid=req.params.get("fieldid", ""),
-                            filenode=_filenode,
                             attr_dict=_attr_dict)
 
         return showDetailList(req, req.params.get("parent"))

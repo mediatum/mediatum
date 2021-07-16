@@ -121,25 +121,25 @@ def frameset(req):
         req.response.status_code = httpstatus.HTTP_FORBIDDEN
         return
 
-    id = req.params.get("id", q(Collections).one().id)
+    id = req.values.get("id", q(Collections).one().id)
     currentdir = q(Data).get(id)
     if currentdir is None:
         currentdir = q(Collections).one()
         req.params["id"] = currentdir.id
-        id = req.params.get("id")
+        id = req.values.get("id")
     # use always the newest version
     currentdir = currentdir.getActiveVersion()
     if unicode(currentdir.id) != id:
         req.params["id"] = unicode(currentdir.id)
-        id = req.params.get("id")
+        id = req.values.get("id")
 
-    page = int(req.params.get("page", 1))
-    nodes_per_page = req.params.get("nodes_per_page", "")
+    page = int(req.values.get("page", 1))
+    nodes_per_page = req.values.get("nodes_per_page", "")
     if nodes_per_page:
         nodes_per_page = int(nodes_per_page)
-    sortfield = req.params.get("sortfield", "")
-    value = req.params.get("value", "")
-    tab = req.params.get("tab", None)
+    sortfield = req.values.get("sortfield", "")
+    value = req.values.get("value", "")
+    tab = req.values.get("tab")
     language = lang(req)
 
     nodepath = []
@@ -219,7 +219,7 @@ def frameset(req):
         cmenu_iconpaths.append(
             [ct_name.lower(), t(language, ct_name), get_editor_icon_path_from_nodeclass(ct)])
 
-    homenodefilter = req.params.get('homenodefilter', '')
+    homenodefilter = req.values.get('homenodefilter', '')
 
     req.response.status_code = httpstatus.HTTP_OK
     req.response.set_data(_tal.processTAL(
@@ -289,7 +289,7 @@ def handletabs(req, ids, tabs, sort_choices):
                 ids=ids,
                 idstr=",".join(ids),
                 menu=menu,
-                breadcrumbs=getBreadcrumbs(menu, req.params.get("tab", tabs)),
+                breadcrumbs=getBreadcrumbs(menu, req.values.get("tab", tabs)),
                 sort_choices=sort_choices,
                 sortfield=sortfield,
                 nodes_per_page=nodes_per_page,
@@ -301,7 +301,7 @@ def handletabs(req, ids, tabs, sort_choices):
 
 def error(req):
     req.response.set_data(_tal.processTAL(
-            dict(errormsg=req.params.get("errmsg", "")),
+            dict(errormsg=req.values.get("errmsg", "")),
             string="<tal:block tal:replace=\"errormsg\"/>",
             macro="edit_errorpage",
             request=req,
@@ -345,7 +345,7 @@ def getIDs(req):
     # look for one "id" parameter, containing an id or a list of ids
 
     try:
-        id = req.params["id"]
+        id = req.values["id"]
     except KeyError:
         pass
     else:
@@ -354,7 +354,7 @@ def getIDs(req):
             return idlist
 
     # look for a pattern, a source folder and an id list
-    ids = req.params.get('ids', '')
+    ids = req.values.get('ids', '')
 
     if type(ids) == str:
         idlist = ids.split(',')
@@ -375,13 +375,13 @@ def edit_tree(req):
     match_result = ''
     match_error = False
 
-    if req.params.get('key') == 'root':
+    if req.values['key'] == 'root':
         nodes = q(Collections).one().container_children.sort_by_orderpos()
-    elif req.params.get('key') == 'home':
+    elif req.values['key'] == 'home':
         if not user.is_admin:
             nodes = [home_dir]
         else:
-            homenodefilter = req.params.get('homenodefilter', '')
+            homenodefilter = req.values.get('homenodefilter', '')
             if homenodefilter:
                 pattern = "%" + homenodefilter.strip() + "%"
                 nodes = (q(Node).join(User, User.home_dir_id == Node.id)
@@ -399,7 +399,7 @@ def edit_tree(req):
             else:
                 nodes = [home_dir]
     else:
-        nodes = q(Data).get(req.params.get('key')).container_children.sort_by_orderpos()
+        nodes = q(Data).get(req.values['key']).container_children.sort_by_orderpos()
         nodes = [n for n in nodes if n.isContainer()]
 
     data = []
@@ -424,7 +424,7 @@ def edit_tree(req):
             nodedata['children'] = []
 
         if not node.has_write_access():
-            if req.params.get('key') == 'home':
+            if req.values['key'] == 'home':
                 continue
             nodedata['readonly'] = 1
             nodedata['noLink'] = True
@@ -459,15 +459,15 @@ def action(req):
     trashdir = user.trash_dir
     uploaddir = user.upload_dir
     trashdir_parents = trashdir.parents
-    action = req.params.get("action", "")
+    action = req.values["action"]
     changednodes = {}
 
-    if "tab" in req.params:
-        tab = req.params.get("tab").split("_")[-1]
-        return _editModules[tab].getContent(req, [req.params.get("id")])
+    if "tab" in req.values:
+        tab = req.values["tab"].split("_")[-1]
+        return _editModules[tab].getContent(req, [req.values.get("id")])
 
     if action == "getlabels":
-        nids = req.params.get('ids', [])
+        nids = req.values['ids']
         nids = [nid.strip() for nid in nids.split(',') if nid.strip()]
 
         for nid in set(nids + [_n.id for _n in [trashdir, uploaddir]]):
@@ -482,7 +482,7 @@ def action(req):
         # all 'action's except 'getlabels' require a base dir (src)
         # but expanding of a subdir in the edit-tree via fancytree has
         # not a srcnodeid, so no action is necessary
-        srcnodeid = req.params.get("srcnodeid")
+        srcnodeid = req.values.get("srcnodeid")
         if not srcnodeid:
             return
         try:
@@ -498,7 +498,7 @@ def action(req):
             )
             return
 
-    if req.params.get('action') == 'addcontainer':
+    if req.values['action'] == 'addcontainer':
         if not srcnode.has_write_access():
             # deliver errorlabel
             req.response.status_code = httpstatus.HTTP_FORBIDDEN
@@ -511,7 +511,7 @@ def action(req):
             )
             return
         # create new container
-        newnode_type = req.params.get('type')
+        newnode_type = req.values['type']
         if newnode_type in ['bare_collection', 'bare_directory']:
             newnode_type = newnode_type.replace('bare_', '')
 
@@ -543,7 +543,6 @@ def action(req):
                 for c in srcnode.children:
                     c.orderpos += 1000
         db.session.commit()
-        req.params["dest"] = newnode.id
 
         label = getTreeLabel(newnode, lang=language)
 
@@ -567,7 +566,7 @@ def action(req):
         return
 
     if action in ("move", "copy"):
-        dest = q(Node).get(req.params["dest"])
+        dest = q(Node).get(req.values["dest"])
 
     idlist = getIDs(req)
 
@@ -673,11 +672,11 @@ def action(req):
 
 def showPaging(req, tab, ids):
     nodelist = None
-    srcnodeid = req.params.get("srcnodeid")
+    srcnodeid = req.values.get("srcnodeid")
     if srcnodeid:
         node = q(Node).get(srcnodeid)
         _show_dir_nav = _web_edit_edit_common.ShowDirNav(req)
-        nodes = _show_dir_nav.get_children(node, req.params.get('sortfield'))
+        nodes = _show_dir_nav.get_children(node, req.values.get('sortfield'))
         nodelist = EditorNodeList(nodes)
 
     nextid = previd = None
@@ -716,8 +715,8 @@ def content(req):
         req.response.set_data(_tal.processTAL({}, file="web/edit/edit.html", macro="error", request=req))
         return
 
-    if 'id' in req.params and len(req.params) == 1:
-        nid = long(req.params.get('id'))
+    if 'id' in req.values and len(req.values) == 1:
+        nid = long(req.values['id'])
         node = q(Data).get(nid)
         if node is not None:
             cmd = "cd (%s %r, %r)" % (nid, node.name, node.type)
@@ -733,7 +732,7 @@ def content(req):
             ids = show_dir_nav.get_ids_from_req()
         node = q(Node).get(long(ids[0]))
 
-    if req.params.get("type", "") == "help" and req.params.get("tab", "") == "upload":
+    if req.values.get("type", "") == "help" and req.values.get("tab", "") == "upload":
         return upload_help(req)
 
     language = lang(req)
@@ -748,14 +747,14 @@ def content(req):
         tabs = node.get_default_edit_tab()
         v["notdirectory"] = 0
 
-    current = req.params.get("tab", tabs)
+    current = req.values.get("tab", tabs)
     # "_" was used as separator in tab name in early versions,
     # but is not permitted anymore:
     assert "_" not in tabs
     assert "_" not in current
     logg.debug("... %s inside %s.%s: ->  !!! current = %s !!!", get_user_id(), __name__, funcname(), current)
     msg = "%s selected editor module is %s" % (user.login_name, current)
-    jsfunc = req.params.get("func", "")
+    jsfunc = req.values.get("func", "")
     if jsfunc:
         msg = msg + (', js-function: %r' % jsfunc)
     logg.info(msg)
@@ -795,7 +794,7 @@ def content(req):
             logg.debug("... %s inside %s.%s: -> display current images: items: %s",
                        get_user_id(), __name__, funcname(), [_t[0] for _t in items])
 
-        nid = req.params.get('srcnodeid', req.params.get('id'))
+        nid = req.values.get('srcnodeid', req.values.get('id'))
         if nid is None:
             raise ValueError("invalid request, neither 'srcnodeid' not 'id' parameter is set!")
 
@@ -858,10 +857,10 @@ def content(req):
             return c
         content["body"] += c
 
-        if "globalsort" in req.params:
-            node.set("sortfield", req.params.get("globalsort"))
+        if "globalsort" in req.values:
+            node.set("sortfield", req.values["globalsort"])
 
-        v['collection_sortfield'] = req.params.get("sortfield", node.get("sortfield"))
+        v['collection_sortfield'] = req.values.get("sortfield", node.get("sortfield"))
 
         if not isinstance(node, (_core_systemtypes.Root, Collections, Home)):
             sortchoices = _sort.get_sort_choices(
@@ -882,15 +881,13 @@ def content(req):
                 request=req,
             )
 
-    if req.params.get("style", "") != "popup":  # normal page with header
+    if req.values.get("style") != "popup":  # normal page with header
         v["tabs"] = handletabs(req, ids, tabs, sortchoices)
         v["script"] = content["script"]
         v["body"] = content["body"]
         v["paging"] = showPaging(req, current, ids)
         v["node"] = node
-        v["ids"] = req.params.get("ids", "").split(",")
-        if req.params.get("ids", "") == "":
-            v["ids"] = req.params.get("id", "").split(",")
+        v["ids"] = (req.values.get("ids") or req.values.get("id", "")).split(",")
         v["tab"] = current
         v["operations"] = _tal.processTAL(
                 dict(iscontainer=node.isContainer()),

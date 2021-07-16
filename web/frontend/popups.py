@@ -65,7 +65,7 @@ def popup_fullsize(req):
         req.response.set_data(t(lang(req), "edit_common_noobjectsfound"))
         return
     
-    version_id = req.params.get("v")
+    version_id = req.values.get("v")
     version = node.get_tagged_version(unicode(version_id))
 
     node_or_version = version if version else node
@@ -76,7 +76,7 @@ def popup_fullsize(req):
 
 
 def popup_thumbbig(req):
-    node = q(Node).get(req.params["id"])
+    node = q(Node).get(req.values["id"])
     if not isinstance(node, Node):
         req.response.status_code = httpstatus.HTTP_NOT_FOUND
         req.response.set_data(t(lang(req), "edit_common_noobjectsfound"))
@@ -88,10 +88,10 @@ def popup_thumbbig(req):
 # help window for metadata field
 #
 def show_help(req):
-    if req.params.get("maskid", "") != "":
-        field = q(Node).get(req.params.get("maskid", ""))
+    if req.values.get("maskid", "") != "":
+        field = q(Node).get(req.values["maskid"])
     else:
-        field = q(Node).get(req.params.get("id", ""))
+        field = q(Node).get(req.values["id"])
     html = webconfig.theme.render_macro("popups.j2.jade", "show_help", {"field": field})
 
     req.response.status_code = httpstatus.HTTP_OK
@@ -103,8 +103,7 @@ def show_help(req):
 
 
 def show_attachmentbrowser(req):
-    nid = req.params.get("id")
-    node = q(Node).get(nid)
+    node = q(Node).get(req.values["id"])
     if not node.has_data_access():
         req.response.set_data(t(lang(req), "permission_denied"))
         req.response.status_code = httpstatus.HTTP_FORBIDDEN
@@ -138,7 +137,7 @@ def show_printview(req):
         req.response.set_data(t(lang(req), "permission_denied"))
         return
 
-    style = int(req.params.get("style", 2))
+    style = int(req.values.get("style", 2))
 
     # nodetype
     mtype = node.metadatatype
@@ -226,8 +225,8 @@ def show_printview(req):
             for i in range(0, 2):
                 col.append((0, ""))
                 order.append(1)
-                if req.params.get("sortfield" + str(i)) != "":
-                    sort = req.params.get("sortfield" + unicode(i), sort)
+                if req.values.get("sortfield" + str(i)) != "":
+                    sort = req.values.get("sortfield" + unicode(i), sort)
 
                 if sort != "":
                     if sort.startswith("-"):

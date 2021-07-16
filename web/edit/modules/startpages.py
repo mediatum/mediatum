@@ -88,17 +88,17 @@ def getContent(req, ids):
         req.response.status_code = httpstatus.HTTP_FORBIDDEN
         return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
-    if req.params.get('file') == "config":  # configuration file for ckeditor
+    if req.values.get('file') == "config":  # configuration file for ckeditor
         req.response.content_type = "application/javascript"
         req.response.set_data(_tal.processTAL({'id': ids[0], 'lang': lang(req)}, file="web/edit/modules/startpages.html", macro="ckconfig", request=req))
         return
 
-    if "action" in req.params:
-        if req.params.get('action') == "getfile":  # deliver filecontent
+    if "action" in req.values:
+        if req.values['action'] == "getfile":  # deliver filecontent
             data = ""
             for f in [f for f in node.files if f.mimetype == "text/html"]:
                 filepath = f.abspath.replace(config.get("paths.datadir"), '')
-                if req.params.get('filename') == filepath and os.path.exists(config.get("paths.datadir") + filepath):
+                if req.values.get('filename') == filepath and os.path.exists(config.get("paths.datadir") + filepath):
                     with codecs.open(config.get("paths.datadir") + filepath, "r", encoding='utf8') as fil:
                         data = fil.read()
                     logg.info("%s opened startpage %s for node %s (%s, %s)", user.login_name, filepath, node.id, node.name, node.type)
@@ -106,40 +106,40 @@ def getContent(req, ids):
             req.response.set_data(json.dumps({'filecontent': data}, ensure_ascii=False))
             req.response.mimetype = 'application/json'
 
-        if req.params.get('action') == "save":  # save filedata
-            if req.params.get('filename') == "add":  # add new file
+        if req.values['action'] == "save":  # save filedata
+            if req.values.get('filename') == "add":  # add new file
                 maxid = 0
                 for f in [f for f in node.files if f.type == "content"]:
                     with suppress(ValueError, warn=False):
                         if int(f.abspath[:-5].split("_")[-1]) >= maxid:
                             maxid = int(f.abspath[:-5].split("_")[-1]) + 1
-                filename = 'html/%s_%s.html' % (req.params.get('id'), maxid)
+                filename = 'html/{}_{}.html'.format(req.values['id'], maxid)
                 while os.path.exists(config.get("paths.datadir") + filename):
                     maxid = maxid + 1
-                    filename = 'html/%s_%s.html' % (req.params.get('id'), maxid)
+                    filename = 'html/{}_{}.html'.format(req.values['id'], maxid)
                 with codecs.open(config.get("paths.datadir") + filename, "w", encoding='utf8') as fil:
-                    fil.write(req.params.get('data'))
+                    fil.write(req.values['data'])
                 node.files.append(File(filename, u"content", u"text/html"))
                 db.session.commit()
                 logg.info("%s added startpage %s for node %s (%s, %s)", user.login_name, filename, node.id, node.name, node.type)
             else:
                 for f in [f for f in node.files if f.mimetype == "text/html"]:
                     filepath = f.abspath.replace(config.get("paths.datadir"), '')
-                    if req.params.get('filename') == filepath and os.path.exists(config.get("paths.datadir") + filepath):
+                    if req.values.get('filename') == filepath and os.path.exists(config.get("paths.datadir") + filepath):
                         with open(config.get("paths.datadir") + filepath, "w") as fil:
                             try:
-                                fil.write(req.params.get('data'))
+                                fil.write(req.values.get('data'))
                             except UnicodeEncodeError:
                                 # some unicode characters like 'Black Circle' &#9679; are not translated in the
                                 # html entity by the current ckeditor version
-                                fil.write(req.params.get('data').encode('ascii', 'xmlcharrefreplace'))
+                                fil.write(req.values.get('data').encode('ascii', 'xmlcharrefreplace'))
 
                         logg.info("%s saved startpage %s for node %s (%s, %s)", user.login_name, filepath, node.id, node.name, node.type)
                         break
 
             req.response.set_data(_tal.processTAL(
                 dict(
-                    named_filelist=_get_named_filelist(node, req.params.get("id", "0")),
+                    named_filelist=_get_named_filelist(node, req.values.get("id", "0")),
                     languages=config.languages,
                 ),
                 file="web/edit/modules/startpages.html",
@@ -148,21 +148,21 @@ def getContent(req, ids):
             ))
         return
 
-    if "option" in req.params:
-        if req.params.get("option") == "filebrowser":  # open filebrowser
+    if "option" in req.values:
+        if req.values["option"] == "filebrowser":  # open filebrowser
             logg.info("%s opening ckeditor filebrowser for node %s (%r, %r)", user.login_name, node.id, node.name, node.type)
             req.response.set_data(send_nodefile_tal(req))
             return ""
 
-        if req.params.get("option") == "htmlupload":  # use fileupload
+        if req.values["option"] == "htmlupload":  # use fileupload
             logg.info("%s going to use ckeditor fileupload (htmlupload) for node %s (%s, %s)",
                       user.login_name, node.id, node.name, node.type)
             req.response.set_data(upload_for_html(req))
             return ""
 
-        if "delete" in req.params:  # delete file via CKeditor
+        if "delete" in req.values:  # delete file via CKeditor
             for f in node.files:
-                if f.abspath.endswith(req.params.get('option')):
+                if f.abspath.endswith(req.values['option']):
                     filepath = f.abspath.replace(config.get("paths.datadir"), '')
                     logg.info("%s going to delete ckeditor filebrowser file %s for node %s (%s, %s)",
                               user.login_name, filepath, node.id, node.name, node.type)
@@ -173,10 +173,10 @@ def getContent(req, ids):
             db.session.commit()
             return ""
 
-    for key in req.params.keys():
+    for key in req.values:
         if not key.startswith("delete_"):  # delete page
             continue
-        page = req.params.get(key)
+        page = req.values[key]
         try:
             filenode = q(File).filter_by(path=page, mimetype=u"text/html").one()
             if filenode not in node.files:
@@ -203,7 +203,7 @@ def getContent(req, ids):
                     user.login_name, node.id, node.name, page, filenode.path, filenode.filetype, filenode.mimetype)
             req.response.set_data(_tal.processTAL(
                     dict(
-                        named_filelist=_get_named_filelist(node, req.params.get("id", "0")),
+                        named_filelist=_get_named_filelist(node, req.values.get("id", "0")),
                         languages=config.languages,
                         ),
                     file="web/edit/modules/startpages.html",
@@ -215,26 +215,26 @@ def getContent(req, ids):
             logg.exception("%s - startpages - error while delete File and file for %s, exception ignored", user.login_name, page)
         break
 
-    if "startpages_save" in req.params.keys():  # user saves startpage configuration
+    if "startpages_save" in req.values:  # user saves startpage configuration
         logg.info("%s going to save startpage configuration for node %s (%s, %s): %s",
-                  user.login_name, node.id, node.name, node.type, req.params)
+                  user.login_name, node.id, node.name, node.type, req.values)
 
         sidebar = ""
-        for k in [k for k in req.params if k.startswith('sidebar_')]:
-            sidebar += "%s:%s;" % (k[8:], req.params[k])
+        for k in [k for k in req.values if k.startswith('sidebar_')]:
+            sidebar += "%s:%s;" % (k[8:], req.values[k])
         node.set('system.sidebar', sidebar)
 
-        for k in [k for k in req.params if k.startswith('descr.')]:
-            node.system_attrs['startpage' + k] = req.params[k]
+        for k in [k for k in req.values if k.startswith('descr.')]:
+            node.system_attrs['startpage' + k] = req.values[k]
 
         # build startpage_selector
         startpage_selector = ""
         for language in config.languages:
-            startpage_selector += "%s:%s;" % (language, req.params.get('radio_' + language))
+            startpage_selector += "%s:%s;" % (language, req.values.get('radio_' + language))
         node.system_attrs['startpage_selector'] = startpage_selector[0:-1]
 
     lang2file = node.getStartpageDict()
-    named_filelist = _get_named_filelist(node, req.params.get("id", "0"))
+    named_filelist = _get_named_filelist(node, req.values.get("id", "0"))
     # compatibility: there may be old startpages in the database that
     # are not described by node attributes
     initial = named_filelist and not lang2file
@@ -258,8 +258,8 @@ def getContent(req, ids):
 
     db.session.commit()
 
-    v = {"id": req.params.get("id", "0"),
-         "tab": req.params.get("tab", ""),
+    v = {"id": req.values.get("id", "0"),
+         "tab": req.values.get("tab", ""),
          "node": node,
          "named_filelist": named_filelist,
          "languages": config.languages,

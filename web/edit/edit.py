@@ -765,12 +765,6 @@ def content(req):
         v['nodeiconpath'] = "webtree/directory.gif"
 
     content = {'script': '', 'body': ''}
-    path = req.mediatum_contextfree_path[1:].split("/")
-    if len(path) >= 4:
-        req.params["style"] = "popup"
-        req.params["id"] = path[1]
-        req.params["tab"] = path[2]
-        req.params["option"] = path[3]
 
     # display current images
     if not isinstance(q(Data).get(ids[0]), Container):

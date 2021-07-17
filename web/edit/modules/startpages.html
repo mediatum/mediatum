@@ -293,10 +293,10 @@
 <tal:block metal:define-macro="ckconfig">
 CKEDITOR.editorConfig = function( config ){
     config.language = '<tal:block tal:replace="lang"/>';
-    config.filebrowserBrowseUrl = '/edit/edit_content/<tal:block tal:replace="id"/>/startpages/filebrowser';
-    config.filebrowserUploadUrl = '/edit/edit_content/<tal:block tal:replace="id"/>/startpages/filebrowser';
-    config.filebrowserImageUploadUrl = '/edit/edit_content/<tal:block tal:replace="id"/>/startpages/htmlupload';
-    config.filebrowserImageBrowserUrl = '/edit/edit_content/<tal:block tal:replace="id"/>/startpages/filebrowser',
+    config.filebrowserBrowseUrl = '/edit/edit_content?id=<tal:block tal:replace="id"/>'+'&'+'tab=startpages'+'&'+'option=filebrowser';
+    config.filebrowserUploadUrl = '/edit/edit_content?id=<tal:block tal:replace="id"/>'+'&'+'tab=startpages'+'&'+'option=filebrowser';
+    config.filebrowserImageUploadUrl = '/edit/edit_content?id=<tal:block tal:replace="id"/>'+'&'+'tab=startpages'+'&'+'option=htmlupload';
+    config.filebrowserImageBrowserUrl = '/edit/edit_content?id=<tal:block tal:replace="id"/>'+'&'+'tab=startpages'+'&'+'option=filebrowser';
     config.filebrowserWindowWidth = '500';
     config.filebrowserWindowHeight= '500';
     config.allowedContent = true;
@@ -319,5 +319,3 @@ CKEDITOR.editorConfig = function( config ){
         ];
 };
 </tal:block>
-
-

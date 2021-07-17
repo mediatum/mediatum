@@ -112,7 +112,27 @@ def get_searchitems(req):
     return searchitems
 
 def frameset(req):
+    user = _user_from_session()
+    if not user.is_editor:
+        data = _tal.processTAL({}, file="web/edit/edit.html", macro="error", request=req)
+        data += _tal.processTAL({}, file="web/edit/edit.html", macro="edit_notree_permission", request=req)
+        req.response.set_data(data)
+        req.response.mimetype = "text/html"
+        req.response.status_code = httpstatus.HTTP_FORBIDDEN
+        return
+
     id = req.params.get("id", q(Collections).one().id)
+    currentdir = q(Data).get(id)
+    if currentdir is None:
+        currentdir = q(Collections).one()
+        req.params["id"] = currentdir.id
+        id = req.params.get("id")
+    # use always the newest version
+    currentdir = currentdir.getActiveVersion()
+    if unicode(currentdir.id) != id:
+        req.params["id"] = unicode(currentdir.id)
+        id = req.params.get("id")
+
     page = int(req.params.get("page", 1))
     nodes_per_page = req.params.get("nodes_per_page", "")
     if nodes_per_page:
@@ -121,29 +141,6 @@ def frameset(req):
     value = req.params.get("value", "")
     tab = req.params.get("tab", None)
     language = lang(req)
-    user = _user_from_session()
-
-    if not user.is_editor:
-        data = _tal.processTAL({}, file="web/edit/edit.html", macro="error", request=req)
-        data += _tal.processTAL({"id": id, "tab": (tab and "&tab=" + tab) or ""}, file="web/edit/edit.html", macro="edit_notree_permission", request=req)
-        req.response.set_data(data)
-        req.response.mimetype = "text/html"
-        req.response.status_code = httpstatus.HTTP_FORBIDDEN
-        return
-
-    currentdir = q(Data).get(id)
-
-    if currentdir is None:
-        currentdir = q(Collections).one()
-        req.params["id"] = currentdir.id
-        id = req.params.get("id")
-
-    # use always the newest version
-    currentdir = currentdir.getActiveVersion()
-
-    if unicode(currentdir.id) != id:
-        req.params["id"] = unicode(currentdir.id)
-        id = req.params.get("id")
 
     nodepath = []
     n = currentdir
@@ -258,7 +255,6 @@ def getBreadcrumbs(menulist, tab):
 
 def handletabs(req, ids, tabs, sort_choices):
     user = _user_from_session()
-    language = lang(req)
 
     n = q(Data).get(ids[0])
     if n.type.startswith("workflow"):
@@ -305,7 +301,6 @@ _editModules = {}
 
 
 def getEditModules():
-    global _editModules
     if _editModules:
         return _editModules
     for modpath in core.editmodulepaths:  # paths with edit modules
@@ -399,7 +394,6 @@ def edit_tree(req):
     data = []
 
     for node in nodes:
-
         if not node.has_read_access():
             continue
 
@@ -422,9 +416,7 @@ def edit_tree(req):
                 continue
             nodedata['readonly'] = 1
             nodedata['noLink'] = True
-
             nodedata['extraClasses'] = 'readonly'  # fancytree
-
         else:
             nodedata['readonly'] = 0
 
@@ -445,21 +437,18 @@ def edit_tree(req):
 
 
 def action(req):
-    global _editModules
-    language = lang(req)
     user = _user_from_session()
-
-    trashdir = user.trash_dir
-    uploaddir = user.upload_dir
-
-    trashdir_parents = trashdir.parents
-    action = req.params.get("action", "")
-    changednodes = {}
-
     if not user.is_editor:
         req.response.set_data("""permission denied""")
         req.response.status_code = httpstatus.HTTP_FORBIDDEN
         return
+
+    language = lang(req)
+    trashdir = user.trash_dir
+    uploaddir = user.upload_dir
+    trashdir_parents = trashdir.parents
+    action = req.params.get("action", "")
+    changednodes = {}
 
     if "tab" in req.params:
         tab = req.params.get("tab").split("_")[-1]
@@ -478,7 +467,6 @@ def action(req):
         req.response.status_code = httpstatus.HTTP_OK
         req.response.set_data(json.dumps(res_dict, indent=4, ensure_ascii=False))
         return
-
     else:
         # all 'action's except 'getlabels' require a base dir (src)
         # but expanding of a subdir in the edit-tree via fancytree has
@@ -555,17 +543,11 @@ def action(req):
         return
 
     try:
-        destid = req.params.get("dest", None)
-        dest = q(Node).get(destid)
-        folderid = destid
+        dest = q(Node).get(req.params.get("dest", None))
     except:
-        destid = None
         dest = None
-        folderid = srcnodeid
 
     idlist = getIDs(req)
-    mysrc = None
-    errorobj = None
 
     # try:
     if action == "clear_trash":
@@ -606,15 +588,11 @@ def action(req):
                         changednodes[trashdir.id] = 1
                         logg.info("%s moved to trash bin %s (%s, %s) from %s (%s, %s)",
                                   user.login_name, obj.id, obj.name, obj.type, mysrc.id, mysrc.name, mysrc.type)
-                        dest = mysrc
-
                 else:
                     logg.info("%s has no write access for node %s", user.login_name, mysrc.id)
                     req.response.set_data(req.response.get_data() + _tal.processTAL({}, file='<tal:block i18n:translate="edit_nopermission"/>', macro=None, request=req))
                 dest = mysrc
-
             elif action in ["move", "copy"]:
-
                 if (dest != mysrc) and \
                             mysrc.has_write_access() and \
                             dest.has_write_access() and \
@@ -636,18 +614,12 @@ def action(req):
                             _to = "to %s (%s, %s)" % (
                                 dest.id, dest.name, dest.type)
                             logg.info(_what + _from + _to)
-
                     else:
                         logg.error("%s could not %s %s from %s to %s", user.login_name, action, obj.id, mysrc.id, dest.id)
                 else:
                     return
-                mysrc = None
-
-    if not mysrc:
-        mysrc = src
 
     if action in ["move", "copy", "delete", "clear_trash"]:
-
         for nid in changednodes:
             try:
                 changednodes[nid] = getTreeLabel(
@@ -706,10 +678,7 @@ def showPaging(req, tab, ids):
 
 
 def content(req):
-
     user = _user_from_session()
-    language = lang(req)
-
     if not user.is_editor:
         req.response.status_code = httpstatus.HTTP_OK
         req.response.set_data(_tal.processTAL({}, file="web/edit/edit.html", macro="error", request=req))
@@ -718,7 +687,6 @@ def content(req):
     if 'id' in req.params and len(req.params) == 1:
         nid = long(req.params.get('id'))
         node = q(Data).get(nid)
-
         if node is not None:
             cmd = "cd (%s %r, %r)" % (nid, node.name, node.type)
             logg.info("%s: %s", user.login_name, cmd)
@@ -726,40 +694,20 @@ def content(req):
             cmd = "ERROR-cd to non-existing id=%r" % nid
             logg.error("%s: %s", user.login_name, cmd)
 
-    if 'action' in req.params and req.params['action'] == 'upload':
-        pass
-
-    content = {'script': '', 'body': ''}
-    v = {'dircontent': '', 'notdirectory': 0, 'operations': ''}
-    try:
-        v['nodeiconpath'] = getEditorIconPath(node)
-    except:
-        v['nodeiconpath'] = "webtree/directory.gif"
-
-    path = req.mediatum_contextfree_path[1:].split("/")
-    if len(path) >= 4:
-        req.params["style"] = "popup"
-        req.params["id"] = path[1]
-        req.params["tab"] = path[2]
-        req.params["option"] = path[3]
-    getEditModules()
-
-    if not user.is_editor:
-        req.response.status_code = httpstatus.HTTP_OK
-        req.response.set_data(_tal.processTAL({}, file="web/edit/edit.html", macro="error", request=req))
-        return
-
     ids = getIDs(req)
-
-    if req.params.get("type", "") == "help" and req.params.get("tab", "") == "upload":
-        return upload_help(req)
-
     if len(ids) > 0:
         if ids[0] == "all":
             show_dir_nav = _web_edit_edit_common.ShowDirNav(req)
             ids = show_dir_nav.get_ids_from_req()
         node = q(Node).get(long(ids[0]))
-    tabs = "content"
+
+    if req.params.get("type", "") == "help" and req.params.get("tab", "") == "upload":
+        return upload_help(req)
+
+    language = lang(req)
+
+    v = {'dircontent': '', 'notdirectory': 0, 'operations': ''}
+
     if isinstance(node, _core_systemtypes.Root):
         tabs = "content"
     elif node is user.upload_dir:
@@ -784,6 +732,20 @@ def content(req):
     # if current in ["files", "view", "upload"]:
     if current in ["files", "upload"]:
         ids = ids[0:1]
+
+    try:
+        v['nodeiconpath'] = getEditorIconPath(node)
+    except:
+        v['nodeiconpath'] = "webtree/directory.gif"
+
+    content = {'script': '', 'body': ''}
+    path = req.mediatum_contextfree_path[1:].split("/")
+    if len(path) >= 4:
+        req.params["style"] = "popup"
+        req.params["id"] = path[1]
+        req.params["tab"] = path[2]
+        req.params["option"] = path[3]
+    getEditModules()
 
     # display current images
     if not isinstance(q(Data).get(ids[0]), Container):
@@ -814,8 +776,6 @@ def content(req):
             nid = nid.split(',')[0]
             folders_only = True
         n = q(Data).get(nid)
-        if current == 'metadata' and 'save' in req.params:
-            pass
         s = []
         while n:
             if not folders_only:
@@ -834,7 +794,6 @@ def content(req):
             else:
                 n = None
         v["dircontent"] = ' <b>&raquo;</b> '.join(s)
-
     else:  # or current directory
         n = q(Data).get(long(ids[0]))
         s = []
@@ -893,7 +852,6 @@ def content(req):
                 logg.debug('empty content')
                 return
 
-            item_count = []
             if "globalsort" in req.params:
                 node.set("sortfield", req.params.get("globalsort"))
             if req.params.get("sortfield", "") != "":
@@ -906,7 +864,6 @@ def content(req):
                 sortchoices = tuple(sortchoices)
             else:
                 sortchoices = ()
-
         else:
             req.response.status_code = httpstatus.HTTP_OK
             content["body"] += _tal.processTAL({"module": current}, file="web/edit/edit.html", macro="module_error", request=req)
@@ -948,11 +905,11 @@ RE_EDIT_PRINT_URL = re.compile("/print/(\d+)_([a-z]+)(?:_(.+)?)?\.pdf")
 
 
 def edit_print(req):
-    edit_modules = getEditModules()
+    getEditModules()
     match = RE_EDIT_PRINT_URL.match(req.mediatum_contextfree_path)
     nid = int(match.group(1))
     module_name = match.group(2)
-    mod = edit_modules.get(module_name)
+    mod = _editModules.get(module_name)
     
     if not mod:
         return 400

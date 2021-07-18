@@ -121,17 +121,13 @@ def frameset(req):
         req.response.status_code = httpstatus.HTTP_FORBIDDEN
         return
 
+    language = lang(req)
     id = req.values.get("id", q(Collections).one().id)
     currentdir = q(Data).get(id)
     if currentdir is None:
-        currentdir = q(Collections).one()
-        req.params["id"] = currentdir.id
-        id = req.values.get("id")
-    # use always the newest version
-    currentdir = currentdir.getActiveVersion()
-    if unicode(currentdir.id) != id:
-        req.params["id"] = unicode(currentdir.id)
-        id = req.values.get("id")
+        req.response.status_code = httpstatus.HTTP_NOT_FOUND
+        req.response.set_data(t("error_msg_objectnotfound", language))
+        return
 
     page = int(req.values.get("page", 1))
     nodes_per_page = req.values.get("nodes_per_page", "")
@@ -140,7 +136,6 @@ def frameset(req):
     sortfield = req.values.get("sortfield", "")
     value = req.values.get("value", "")
     tab = req.values.get("tab")
-    language = lang(req)
 
     nodepath = []
     n = currentdir

@@ -301,8 +301,6 @@ _editModules = {}
 
 
 def getEditModules():
-    if _editModules:
-        return _editModules
     for modpath in core.editmodulepaths:  # paths with edit modules
         if os.path.isabs(modpath[1]):
             mod_dirpath = modpath[1]
@@ -326,8 +324,6 @@ def getEditModules():
                         m = __import__(module.replace("/", ".") + "." + basename)
                         m = eval("m." + basename)
                     _editModules[basename] = m
-
-    return _editModules
 
 
 def getIDs(req):
@@ -745,7 +741,6 @@ def content(req):
         req.params["id"] = path[1]
         req.params["tab"] = path[2]
         req.params["option"] = path[3]
-    getEditModules()
 
     # display current images
     if not isinstance(q(Data).get(ids[0]), Container):
@@ -878,7 +873,6 @@ RE_EDIT_PRINT_URL = re.compile("/print/(\d+)_([a-z]+)(?:_(.+)?)?\.pdf")
 
 
 def edit_print(req):
-    getEditModules()
     match = RE_EDIT_PRINT_URL.match(req.mediatum_contextfree_path)
     nid = int(match.group(1))
     module_name = match.group(2)

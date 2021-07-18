@@ -67,8 +67,11 @@ def popup_fullsize(req):
     
     version_id = req.values.get("v")
     version = node.get_tagged_version(unicode(version_id))
-
     node_or_version = version if version else node
+    if not node_or_version.has_read_access():
+        req.response.set_data(t(lang(req), "permission_denied"))
+        return httpstatus.HTTP_FORBIDDEN
+
     return node_or_version.popup_fullsize(req)
 #
 # execute thumbBig method from node-type
@@ -76,11 +79,15 @@ def popup_fullsize(req):
 
 
 def popup_thumbbig(req):
-    node = q(Node).get(req.values["id"])
+    node = q(Node).get(req.params["id"])
     if not isinstance(node, Node):
         req.response.status_code = httpstatus.HTTP_NOT_FOUND
         req.response.set_data(t(lang(req), "edit_common_noobjectsfound"))
         return
+    if not node.has_read_access():
+        req.response.set_data(t(lang(req), "permisssion_denied"))
+        return httpstatus.HTTP_FORBIDDEN
+
     return node.popup_thumbbig(req)
 
 
@@ -92,9 +99,12 @@ def show_help(req):
         field = q(Node).get(req.values["maskid"])
     else:
         field = q(Node).get(req.values["id"])
-    html = webconfig.theme.render_macro("popups.j2.jade", "show_help", {"field": field})
-
-    req.response.status_code = httpstatus.HTTP_OK
+    if field.has_read_access():
+        html = webconfig.theme.render_macro("popups.j2.jade", "show_help", {"field": field})
+        req.response.status_code = httpstatus.HTTP_OK
+    else:
+        html = t(lang(req), "permission_denied")
+        req.response.status_code = httpstatus.HTTP_FORBIDDEN
     req.response.set_data(html)
 #
 # show attachmentbrowser for given node

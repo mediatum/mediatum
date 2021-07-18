@@ -126,7 +126,12 @@ def frameset(req):
     currentdir = q(Data).get(id)
     if currentdir is None:
         req.response.status_code = httpstatus.HTTP_NOT_FOUND
-        req.response.set_data(t("error_msg_objectnotfound", language))
+        req.response.set_data(t(language, "error_msg_objectnotfound"))
+        return
+
+    if not currentdir.has_read_access():
+        req.response.status_code = httpstatus.HTTP_FORBIDDEN
+        req.response.set_data(t(language, "permission_denied"))
         return
 
     page = int(req.values.get("page", 1))
@@ -444,22 +449,32 @@ def edit_tree(req):
 
 
 def action(req):
+    language = lang(req)
     user = _user_from_session()
     if not user.is_editor:
-        req.response.set_data("""permission denied""")
+        req.response.set_data(t(language, "permission_denied"))
         req.response.status_code = httpstatus.HTTP_FORBIDDEN
         return
 
-    language = lang(req)
+    if "tab" in req.values:
+        nid = req.values.get("id")
+        node = q(Node).get(nid)
+        if not node:
+            req.response.status_code = httpstatus.HTTP_NOT_FOUND
+            req.response.set_data(t(language, "error_msg_objectnotfound"))
+            return
+        if not node.has_read_access():
+            req.response.status_code = httpstatus.HTTP_FORBIDDEN
+            req.response.set_data(t(language, "permission_denied"))
+            return
+        tab = req.values["tab"].split("_")[-1]
+        return _editModules[tab].getContent(req, [nid])
+
     trashdir = user.trash_dir
     uploaddir = user.upload_dir
     trashdir_parents = trashdir.parents
     action = req.values["action"]
     changednodes = {}
-
-    if "tab" in req.values:
-        tab = req.values["tab"].split("_")[-1]
-        return _editModules[tab].getContent(req, [req.values.get("id")])
 
     if action == "getlabels":
         nids = req.values['ids']
@@ -731,6 +746,10 @@ def content(req):
         return upload_help(req)
 
     language = lang(req)
+    if not node.has_read_access():
+        req.response.status_code = httpstatus.HTTP_FORBIDDEN
+        req.response.set_data(t(language, "permission_denied"))
+        return
 
     v = {'dircontent': '', 'notdirectory': 0, 'operations': ''}
 
@@ -912,6 +931,14 @@ RE_EDIT_PRINT_URL = re.compile("/print/(\d+)_([a-z]+)(?:_(.+)?)?\.pdf")
 def edit_print(req):
     match = RE_EDIT_PRINT_URL.match(req.mediatum_contextfree_path)
     nid = int(match.group(1))
+    node = q(Node).get(nid)
+    if not node:
+        req.response.set_data(t(lang(req), "error_msg_objectnotfound"))
+        return
+    if not node.has_read_access():
+        req.response.set_data(t(lang(req), "permission_denied"))
+        return
+
     module_name = match.group(2)
     mod = _editModules.get(module_name)
     

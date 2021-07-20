@@ -59,6 +59,9 @@ _escape_postgres_ts_replacements = tuple(z.split() for z in (
     u'" \"',
     u'( \(',
     u') \)',
+    u'< \<',
+    u'> \>',
+    u"' \\'",
    ))
 
 def _escape_postgres_ts_operators(t):

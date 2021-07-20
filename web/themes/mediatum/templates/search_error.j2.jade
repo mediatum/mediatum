@@ -3,7 +3,7 @@ if language == 'de'
     br
     p
         | Der Suchbegriff&nbsp;
-        b= query
+        b #{query}
         |  ergab einen Fehler bei Ausführung der Suche.
 
     p Bitte ändern Sie Ihren Suchbegriff und starten Sie die Suche erneut.
@@ -13,7 +13,7 @@ else
     br
     p
         | Your query&nbsp;
-        b= query
+        b #{query}
         |  resulted in an error during execution.
 
     p Please try a different search query and start a new search.

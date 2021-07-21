@@ -215,26 +215,6 @@ def getContent(req, ids):
             logg.exception("%s - startpages - error while delete File and file for %s, exception ignored", user.login_name, page)
         break
 
-    if "save_page" in req.params:  # save page
-        content = ""
-        for key in req.params.keys():
-            if key.startswith("page_content"):
-                content = req.params.get(key, "")
-                break
-
-        with open(req.params.get('file_path'), "w", encoding='utf8') as fi:
-            fi.writelines(content)
-
-        del req.params['save_page']
-        del req.params['file_to_edit']
-        req.params['tab'] = 'startpages'
-        return getContent(req, [node.id])
-
-    if "cancel_page" in req.params:
-        del req.params['file_to_edit']
-        del req.params['cancel_page']
-        return getContent(req, [node.id])
-
     if "startpages_save" in req.params.keys():  # user saves startpage configuration
         logg.info("%s going to save startpage configuration for node %s (%s, %s): %s",
                   user.login_name, node.id, node.name, node.type, req.params)

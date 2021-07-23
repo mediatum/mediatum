@@ -73,6 +73,12 @@ class Video(Content):
         node = self
 
         files, sum_size = _filebrowser(node, req)
+        for file in files:
+            if os.path.splitext(file["path"])[1] == ".vtt":
+                obj["webvtt_url"] = u"/file/{}/{}".format(self.id, os.path.basename(file["path"]))
+                break
+        else:
+            obj['webvtt'] = None
 
         obj['attachment'] = files
         obj['sum_size'] = sum_size

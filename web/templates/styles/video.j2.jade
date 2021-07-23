@@ -10,7 +10,8 @@
       .video_container
         video(controls="controls", preload="metadata", onplay="vgwPixelCall();")
           source(type="video/mp4", src=video_url)
-
+          if webvtt_url
+            track(src=webvtt_url, kind="subtitles", default)
   else
     .document_thumb
       img(src="/thumb2/{{ node.id }}", width="300")

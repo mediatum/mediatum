@@ -304,8 +304,9 @@ class m_field(Metatype):
         fields.sort(lambda x, y: cmp(x.getOrderPos(), y.getOrderPos()))
         add_values = []
         val = u""
-        if item.getField():
-            val = item.getField().getValues()
+        field = item.getField()
+        if field:
+            val = field.getValues()
             db.session.commit()
 
         for t in getMetaFieldTypeNames():

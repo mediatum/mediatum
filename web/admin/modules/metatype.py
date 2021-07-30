@@ -34,6 +34,7 @@ from schema.schema import getMetaFieldTypeNames, getMetaType, updateMetaType, ex
 from schema.schema import VIEW_DEFAULT
 from schema.bibtex import getAllBibTeXTypes
 from schema import citeproc
+import schema.schema as _schema
 
 from utils.fileutils import importFile
 # metafield methods
@@ -246,6 +247,7 @@ def validate(req, op):
             # delete metafield: key[13:-2] = pid | n
             elif key.startswith("deletedetail_"):
                 deleteMetaField(req.params.get("parent"), key[13:-2])
+                db.session.commit()
                 return showDetailList(req, req.params.get("parent"))
 
             # change field order up
@@ -320,8 +322,7 @@ def validate(req, op):
 
             # delete mask
             elif key.startswith("deletemask_"):
-                mtype = getMetaType(req.params.get("parent"))
-                mtype.children.remove(q(Node).get(key[11:-2]))
+                _schema.delete_mask(q(Node).get(key[11:-2]))
                 db.session.commit()
                 return showMaskList(req, req.params.get("parent"))
 
@@ -578,6 +579,7 @@ def showEditor(req):
 
         if key.startswith("delete_"):
             editor.deleteMaskitem(key[7:-2])
+            db.session.commit()
             break
 
         if key.startswith("edit_"):

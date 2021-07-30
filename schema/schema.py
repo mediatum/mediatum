@@ -200,15 +200,53 @@ def updateMetaType(name, description="", longname="", active=0, datatypes="", bi
     metadatatype.set("citeprocmapping", citeprocmapping)
     db.session.commit()
 
+
+def delete_mask(mask):
+    """
+    delete all maskitems of mask and the mask itself
+    :param mask:
+    :return:
+    """
+    for maskitem in mask.children:
+        mask.deleteMaskitem(maskitem.id)
+    db.session.delete(mask)
+
+
+def _delete_metadatatype_children(metadatatype):
+    """
+    delete all masks and metafields of metadatatype
+    :param metadatatype:
+    :return:
+    """
+    for mask in metadatatype.children.filter_by(type='mask'):
+        delete_mask(mask)
+    for metafield in metadatatype.children.filter_by(type='metafield'):
+        deleteMetaField(str(metadatatype.id), metafield.name)
+
+
+def _delete_metadatatype(metadatatype):
+    """
+    delete a metadatatype together with its children
+    :param metadatatype:
+    :return:
+    """
+    _delete_metadatatype_children(metadatatype)
+    db.session.delete(metadatatype)
+
 #
 # delete metatype by given name
 #
 
 def deleteMetaType(name):
-    metadatatypes = q(Metadatatypes).one()
+    """
+    delete all metadatatypes with name=name together with their children
+    metadatatypes which are children of Metadatatypes are unlinked from
+    Metadatatypes
+    :param name:
+    :return:
+    """
     for metadatatype in q(Metadatatype).filter_by(name=name).all():
-        if metadatatype in metadatatypes.children:
-            metadatatypes.children.remove(metadatatype)
+        _delete_metadatatype(metadatatype)
     db.session.commit()
 
 ###################################################
@@ -315,10 +353,10 @@ def updateMetaField(parent, name, label, orderpos, fieldtype, option="", descrip
 def deleteMetaField(pid, name):
     metadatatype = getMetaType(pid)
     field = getMetaField(pid, name)
-    metadatatype.children.remove(field)
+    db.session.delete(field)
 
     i = 0
-    for field in metadatatype.children.order_by(Node.orderpos):
+    for field in metadatatype.children.filter(Node.type == 'metafield').order_by(Node.orderpos):
         field.orderpos = i
         i += 1
     db.session.commit()
@@ -1283,14 +1321,28 @@ class Mask(Node):
     ''' delete given  maskitem '''
 
     def deleteMaskitem(self, itemid):
+
+        def delete_maskitems_recursive(item):
+            if item.type != 'maskitem':
+                return
+            for child in item.children:
+                delete_maskitems_recursive(child)
+            db.session.delete(item)
+
         item = q(Node).get(itemid)
+
+        assert item.type == 'maskitem'
+
         for parent in item.parents:
-            parent.children.remove(item)
             i = 0
             for child in parent.children.order_by(Node.orderpos):
+                if child.id == item.id:
+                    continue
                 child.orderpos = i
                 i += 1
-        db.session.commit()
+
+        delete_maskitems_recursive(item)
+
 
 """ class for editor/view masks """
 

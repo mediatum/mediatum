@@ -135,6 +135,7 @@ def validate(req, op):
                 if schema_name in _get_nodecount_per_metaschema():
                     raise RuntimeError(u"schema '{}' is used!".format(schema_name))
                 deleteMetaType(schema_name)
+                db.session.commit()
                 break
 
             # show details for given metadatatype

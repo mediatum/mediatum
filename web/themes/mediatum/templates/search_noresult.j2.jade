@@ -2,7 +2,7 @@ if language == 'de'
   h2 Keine Suchergebnisse
   p
     | Für Ihre Suchanfrage "
-    b= query
+    b #{query}
     | " wurden keine Ergebnisse gefunden.
   h2 Gesucht wurde in:
   ul(type='square')
@@ -44,7 +44,7 @@ else
   h2 No search results
   p
     | For your query "
-    b= query
+    b #{query}
     | " no results were found.
   h2 The following has been searched:
   ul(type='square')

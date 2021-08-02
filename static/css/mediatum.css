@@ -190,7 +190,6 @@ div#portal-breadcrumbs #collectionlogo { margin: 0px 0px 10px 0px; width: 100%; 
 #portal-column-content a img { border-bottom: medium none; border-left: medium none; vertical-align: middle; border-top: medium none;
     border-right: medium none; max-width: 100%;}
 #portal-column-content a img.thumbnail { max-width: 100%;display: block; margin-left: auto; margin-right: auto;}
-
 #portal-column-content h1 { font-size: 170%; color: rgb(71,71,71); line-height: 120%; text-transform: none; margin: 0px 0px 1em;}
 #portal-column-content h2 { font-size: 140%; color: rgb(71,71,71); line-height: 130%; margin: 0px;}
 #portal-column-content h3 { font-size: 120%; line-height: 140%; margin: 0px;}
@@ -200,7 +199,7 @@ div#portal-breadcrumbs #collectionlogo { margin: 0px 0px 10px 0px; width: 100%; 
     padding-right: 0px; font-size: 100%; border-top: #cdd9dd 3px solid; padding-top: 0.2em;}
 * html #portal-column-content h5 { height: 1.3em;}
 #portal-column-content h6 { margin: 0px; font-size: 100%;}
-#portal-column-content p { margin: 0px 0px 1em;}
+#portal-column-content p { margin: 1em; text-align:left;overflow:hidden;}
 #portal-column-content .img-caption-floatleft { margin: 0.35em 12px 0.5em 0px; float: left;}
 #portal-column-content .break { clear: left;}
 #portal-column-content p.error { padding: 20px; padding-left: 55px; border: 1px solid #FD9999; background: #FEDADA;

@@ -43,7 +43,7 @@ div.logotext  {color: #fff;font-weight: bold;font-size: 1.0em;text-align: right;
 div.logotext a, div.logotext a:visited{color: silver;margin: 5px;}
 div.logotext a:hover{color: #FFFFFF;}
 /* Login - Clean  */
-.clear:after {content: ".";display: block;height: 0;clear: both;visibility: hidden;}
+.clear::after {content: ".";display: block;height: 0;clear: both;visibility: hidden;}
 * html .clear {height: 1%;} 
 .clear {display: block;} 
 .info p , .info ol li{list-style: decimal inside;padding: 2px;margin: 0px;}

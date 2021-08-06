@@ -628,7 +628,7 @@ class Metadatatype(Node):
 
     def getMetaFields(self, type=None):
         fields = []
-        for item in self.children.sort_by_orderpos():
+        for item in self.children.sort_by_orderpos().prefetch_attrs():
             if item.type == "metafield":
                 if not type or type in item.getOption():
                     fields.append(item)

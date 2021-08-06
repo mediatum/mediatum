@@ -28,6 +28,9 @@ msgstr "edit metadata scheme"
 msgid "admin_meta_delete_title"
 msgstr "delete metadata scheme"
 
+msgid "admin_meta_used_title"
+msgstr "metadata scheme is used by {} nodes"
+
 msgid "admin_meta_footer"
 msgstr "${number} schemes"
 

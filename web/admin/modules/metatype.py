@@ -22,11 +22,14 @@ import sys
 
 import logging
 import mediatumtal.tal as _tal
+import sqlalchemy as _sqlalchemy
 
 from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter
 from web.common.acl_web import makeList
 from utils.utils import removeEmptyStrings, esc, suppress
 from core.translation import lang, t
+import core.nodecache as _nodecache
+import core.translation as _translation
 from schema.schema import getMetaFieldTypeNames, getMetaType, updateMetaType, existMetaType, deleteMetaType, fieldoption, moveMetaField, getMetaField, deleteMetaField, getFieldsForMeta, dateoption, requiredoption, existMetaField, updateMetaField, generateMask, cloneMask, exportMetaScheme, importMetaSchema
 from schema.schema import VIEW_DEFAULT
 from schema.bibtex import getAllBibTeXTypes
@@ -39,12 +42,15 @@ from .metatype_field import showDetailList, FieldDetail
 from .metatype_mask import showMaskList, MaskDetails
 
 from contenttypes.data import Data
+import contenttypes as _contenttypes
 
 from core import Node
 from core import db
 from core.systemtypes import Metadatatypes
+import core.systemtypes as _systemtypes
 from schema.schema import Metadatatype, Mask
 from core.database.postgres.permission import NodeToAccessRuleset
+import core.database.postgres.node as _node
 
 q = db.query
 
@@ -77,6 +83,21 @@ def add_remove_rulesets_from_metadatatype(mtype, new_ruleset_names):
     
     for ruleset_name in added_ruleset_names:
         mtype.access_ruleset_assocs.append(NodeToAccessRuleset(ruleset_name=ruleset_name, ruletype=u"read"))
+
+
+def _get_nodecount_per_metaschema():
+    """
+    evaluate the number of linked nodes per schema for all schemata's
+    :return: dict with schema as key and number of linked nodes of this schema as value
+    """
+
+    root_id = _nodecache.get_root_node().id
+    noderelation = _sqlalchemy.orm.aliased(_node.t_noderelation)
+    return dict(q(Node.schema, _sqlalchemy.func.count(_sqlalchemy.func.distinct(Node.id)))
+                .join(noderelation, noderelation.c.cid == Node.id)
+                .filter(noderelation.c.nid == root_id)
+                .group_by(Node.schema)
+                )
 
 
 def validate(req, op):
@@ -168,7 +189,10 @@ def validate(req, op):
 
             # delete metadata
             elif key.startswith("delete_"):
-                deleteMetaType(key[7:-2])
+                schema_name = key[7:-2]
+                if schema_name in _get_nodecount_per_metaschema():
+                    raise RuntimeError(u"schema '{}' is used!".format(schema_name))
+                deleteMetaType(schema_name)
                 break
 
             # show details for given metadatatype
@@ -376,10 +400,10 @@ def validate(req, op):
 
 """ show all defined metadatatypes """
 
-
 def view(req):
     mtypes = q(Metadatatypes).one().children.order_by("name").all()
     actfilter = getFilter(req)
+    used_by = _get_nodecount_per_metaschema()
 
     # filter
     if actfilter != "":
@@ -434,6 +458,7 @@ def view(req):
                             lang(req), "admin_meta_col_5"), t(
                                 lang(req), "admin_meta_col_6")])
     v["metadatatypes"] = mtypes
+    v["used_by"] = used_by
     v["get_classname_for_typestring"] = Node.get_classname_for_typestring
     v['dtypes'] = Node.__mapper__.polymorphic_map  # is used to prevent missing plugins from causing error
     v["pages"] = pages
@@ -441,6 +466,8 @@ def view(req):
     v["filterattrs"] = [("id", "admin_metatype_filter_id"), ("name", "admin_metatype_filter_name")]
     v["filterarg"] = req.params.get("filtertype", "id")
     v["csrf"] = req.csrf_token.current_token
+    v["translate"] = _translation.translate
+    v["language"] = lang(req)
     return _tal.processTAL(v, file="web/admin/modules/metatype.html", macro="view_type", request=req)
 
 

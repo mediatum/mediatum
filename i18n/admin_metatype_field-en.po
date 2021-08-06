@@ -34,6 +34,9 @@ msgstr "edit metadata field"
 msgid "admin_metafield_delete_title"
 msgstr "delete metadata field"
 
+msgid "admin_metafield_used_title"
+msgstr "metadata field is used by:{}"
+
 msgid "admin_metafield_footer"
 msgstr "${number} fields"
 

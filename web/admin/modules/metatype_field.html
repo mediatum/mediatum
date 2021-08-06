@@ -106,7 +106,20 @@
 
                             <td>
                                 <input tal:attributes="name python:u'editdetail_{}'.format(metafield.name)" i18n:attributes="title admin_metafield_edit_title" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
-                                <input tal:attributes="name python:u'deletedetail_{}'.format(metafield.name); onclick python:u'return questionDelName(\'{} ({})\')'.format(metafield.getLabel(), metafield.name)" i18n:attributes="title admin_metafield_delete_title" type="image" src="/img/delete.png" alt="delete"/>
+                                <input
+                                       tal:condition="python:not used_by[metafield.id]"
+                                       tal:attributes="name python:u'deletedetail_{}'.format(metafield.name); onclick python:u'return questionDelName(\'{} ({})\')'.format(metafield.getLabel(), metafield.name)"
+                                       i18n:attributes="title admin_metafield_delete_title"
+                                       type="image"
+                                       src="/img/delete.png"
+                                       alt="delete"
+                                       />
+                                <input
+                                       tal:condition="python:used_by[metafield.id]"
+                                       tal:attributes="onclick python:u'alert(\'{}\')'.format(translate('admin_metafield_used_title', language).format(used_by[metafield.id]).replace('\n','\\n')); title python:translate('admin_metafield_used_title', language).format(used_by[metafield.id])"
+                                       type="image"
+                                       src="/img/archive.png"
+                                       />
                             </td>
                         </tr>
                     </tal:block>

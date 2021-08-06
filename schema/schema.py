@@ -18,9 +18,11 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import collections as _collections
 import datetime
 import inspect
 import importlib
+import itertools as _itertools
 import logging
 import os
 import pkgutil
@@ -30,6 +32,7 @@ from warnings import warn
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import undefer
+import sqlalchemy as _sqlalchemy
 from werkzeug.utils import cached_property
 import core.config as config
 import core.translation as translation
@@ -45,11 +48,11 @@ from utils.date import parse_date, format_date, validateDateString
 from utils.utils import Option, esc, suppress
 import utils as _utils
 from mediatumtal import tal as _tal
+import core.database.postgres.node as _node
 
 
 log = logg = logging.getLogger(__name__)
 q = db.query
-
 
 requiredoption = []
 requiredoption += [Option("Kein Pflichtfeld", "notmandatory", "0", "/img/req2_opt.png")]
@@ -91,6 +94,49 @@ VIEW_SUB_ELEMENT = 1    # internal parameter
 VIEW_HIDE_EMPTY = 2     # show only fields with 'non-empty' values
 VIEW_DATA_ONLY = 4      # deliver list with values (not html)
 VIEW_DATA_EXPORT = 8    # deliver export format
+
+
+_MetafieldsDependency = _collections.namedtuple(
+    "_MetafieldsDependency",
+    "metadatatypes_id schema_name mask_name maskitem_name metafield_name metafield_id"
+)
+
+
+
+def _get_metafields_dependencies():
+    """
+    collect a list of all metafields together with metadatatype and mask and maskitems to which the metafield belongs
+    :return: list of _MetafieldsDependency
+    """
+    metadatatype, mask, maskitem, metafield = (
+        _sqlalchemy.orm.aliased(_node.Node) for _ in xrange(4))
+
+    query = q(
+        Metadatatypes.id.label('metadatatypes_id'),
+        metadatatype.name.label('schema_name'),
+        mask.name.label('mask_name'),
+        maskitem.name.label('maskitem_name'),
+        metafield.name.label('metafield_name'),
+        metafield.id.label('metafield_id'),
+    )
+
+    joins = (
+        Metadatatypes,
+        metadatatype,
+        mask,
+        maskitem,
+        metafield,
+    )
+
+    for parent, child in zip(joins[:-1], joins[1:]):
+        # maskitems can be nested, which means that a masktitem can have another maskitem as child
+        # so use noderelation for maskitems to get all childs instead of nodemapping
+        node2node = _node.t_noderelation if (parent, child) == (mask, maskitem) else _node.t_nodemapping
+        noderelation = _sqlalchemy.orm.aliased(node2node)
+        query = query.join(noderelation, noderelation.c.nid == parent.id)
+        query = query.join(child, child.id == noderelation.c.cid)
+    return tuple(_MetafieldsDependency(**row._asdict()) for row in query.all())
+
 
 #
 # return metadata object by given name

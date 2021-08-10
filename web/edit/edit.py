@@ -814,59 +814,32 @@ def content(req):
                 n = None
         v["dircontent"] = ' <b>&raquo;</b> '.join(s)
 
-    if current == "globals":
-        basedir = config.get("paths.datadir")
-        file_to_edit = None
+    if tabs == 'upload' and current == 'content':
+        current = 'upload'
 
-        if "file_to_edit" in req.params:
-            file_to_edit = req.params["file_to_edit"]
+    if current in _editModules:
+        c = _editModules[current].getContent(req, ids)
+        if not c:
+            logg.debug('empty content')
+            return
+        if isinstance(c, int):
+            # module returned a custom http status code instead of HTML content
+            return c
+        content["body"] += c
 
-        if not file_to_edit:
-            # todo: getstartpagedict doesnt exist
-            d = node.getStartpageDict()
-            if d and language in d:
-                file_to_edit = d[language]
+        if "globalsort" in req.params:
+            node.set("sortfield", req.params.get("globalsort"))
 
-        found = False
-        for f in node.files:
-            if f.mimetype == 'text/html':
-                filepath = f.abspath.replace(basedir, '')
-                if file_to_edit == filepath:
-                    found = True
-                    break
+        v['collection_sortfield'] = req.params.get("sortfield", node.get("sortfield"))
 
-    else:
-        if tabs == 'upload' and current == 'content':
-            current = 'upload'
-
-        if current in _editModules:
-            c = _editModules[current].getContent(req, ids)
-
-            if isinstance(c, int):
-                # module returned a custom http status code instead of HTML content
-                return c
-
-            elif c:
-                content["body"] += c
-            else:
-                logg.debug('empty content')
-                return
-
-            if "globalsort" in req.params:
-                node.set("sortfield", req.params.get("globalsort"))
-            if req.params.get("sortfield", "") != "":
-                v['collection_sortfield'] = req.params.get("sortfield")
-            else:
-                v['collection_sortfield'] = node.get("sortfield")
-
-            if not isinstance(node, (_core_systemtypes.Root, Collections, Home)):
-                sortchoices = _sort.get_sort_choices(container=node, off="off", t_off=t(req, "off"), t_desc=t(req, "descending"))
-                sortchoices = tuple(sortchoices)
-            else:
-                sortchoices = ()
+        if not isinstance(node, (_core_systemtypes.Root, Collections, Home)):
+            sortchoices = _sort.get_sort_choices(container=node, off="off", t_off=t(req, "off"), t_desc=t(req, "descending"))
+            sortchoices = tuple(sortchoices)
         else:
-            req.response.status_code = httpstatus.HTTP_OK
-            content["body"] += _tal.processTAL({"module": current}, file="web/edit/edit.html", macro="module_error", request=req)
+            sortchoices = ()
+    else:
+        req.response.status_code = httpstatus.HTTP_OK
+        content["body"] += _tal.processTAL({"module": current}, file="web/edit/edit.html", macro="module_error", request=req)
 
     if req.params.get("style", "") != "popup":  # normal page with header
         v["tabs"] = handletabs(req, ids, tabs, sortchoices)

@@ -9,12 +9,12 @@
 each file in files
   .preview(onmouseover="this.style.backgroundColor='#cccccc'", onmouseout="this.style.backgroundColor='white'")
     if file.attachment
-      div(style='position:absolute; right:25px; top:3px; overflow:hidden')
+      div(class='mediatum-stylethumb-attach')
         img(title=_t('view_list_att_title'), src='/static/img/attach.png')
     a(href=file.getLink())
-      div(style='float:left; margin: 3px;position:absolute')
+      div(class='mediatum-stylethumb-img')
         = file.image
-      div(style='margin-left:132px; position: absolute')
-        p(style='padding-top:15px')
+      div(class='mediatum-stylethumb-div')
+        p(class='mediatum-stylethumb-p')
           = file.text
 .break

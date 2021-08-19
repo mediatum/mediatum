@@ -208,7 +208,7 @@ div#portal-breadcrumbs #collectionlogo { margin: 0px 0px 10px 0px; width: 100%; 
 #portal-column-content div#nodes div.preview a { color: #666666; text-decoration: none; width: 98%;}
 #portal-column-content div#nodes div.preview a:hover { color: #000000; text-decoration: none;}
 
-div.preview_list { width: 99%; padding-top: 5px; margin-bottom: 5px; border: silver solid 1px;}
+div.preview_list { width: 99%; padding-top: 5px; margin-bottom: 5px; border: silver solid 1px;position: relative;}
 
 #portal-column-content div#nodes div.preview_list a { color: #666666; text-decoration: none; width: 100%;}
 #portal-column-content div#nodes div.preview_list a:hover { color: #000000; text-decoration: none;}
@@ -390,4 +390,39 @@ ul#navigationlist li div a:visited { color: #004682;}
     position: relative;
     margin: 2px 4px 2px 0px;
     padding: 2px;
+}
+.mediatum-stylethumb-p {
+    width: 90%;
+    text-overflow: ellipsis;
+    max-height: 235px;
+    padding-right: 1em;
+    position: relative;
+}
+.mediatum-stylethumb-p-big {
+    text-overflow: ellipsis;
+    max-height: 235px;
+    position: relative;
+    margin-left: 5px;
+    margin-right: 5px;;
+}
+
+.mediatum-stylethumb-div {
+    margin-left: 138px;
+}
+.mediatum-stylethumb-img {
+    float:left; margin: 3px;position:absolute;
+}
+.mediatum-stylethumb-attach {
+    position:absolute; right:25px; top:3px; overflow:hidden;
+}
+
+.mediatum-stylelist-img {
+    float:left; width:128px; height:128px; margin: 5px;
+}
+.mediatum-stylelist-attach {
+    position:absolute; right:25px; top:3px; overflow:hidden;
+}
+
+.mediatum-stylelist-div{
+    padding-top:5px;
 }

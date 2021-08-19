@@ -720,10 +720,13 @@ def showPaging(req, tab, ids):
 
 def content(req):
     user = _user_from_session()
+    req.response.status_code = httpstatus.HTTP_OK
     if not user.is_editor:
-        req.response.status_code = httpstatus.HTTP_OK
         req.response.set_data(_tal.processTAL({}, file="web/edit/edit.html", macro="error", request=req))
         return
+
+    if req.values.get("type", "") == "help" and req.values.get("tab", "") == "upload":
+        return upload_help(req)
 
     if 'id' in req.values and len(req.values) == 1:
         nid = long(req.values['id'])
@@ -741,9 +744,6 @@ def content(req):
             show_dir_nav = _web_edit_edit_common.ShowDirNav(req)
             ids = show_dir_nav.get_ids_from_req()
         node = q(Node).get(long(ids[0]))
-
-    if req.values.get("type", "") == "help" and req.values.get("tab", "") == "upload":
-        return upload_help(req)
 
     language = lang(req)
     if not node.has_read_access():
@@ -881,7 +881,6 @@ def content(req):
         else:
             sortchoices = ()
     else:
-        req.response.status_code = httpstatus.HTTP_OK
         content["body"] += _tal.processTAL(
                 dict(module=current),
                 file="web/edit/edit.html",
@@ -889,40 +888,41 @@ def content(req):
                 request=req,
             )
 
-    if req.values.get("style") != "popup":  # normal page with header
-        v["tabs"] = handletabs(req, ids, tabs, sortchoices)
-        v["script"] = content["script"]
-        v["body"] = content["body"]
-        v["paging"] = showPaging(req, current, ids)
-        v["node"] = node
-        v["ids"] = (req.values.get("ids") or req.values.get("id", "")).split(",")
-        v["tab"] = current
-        v["operations"] = _tal.processTAL(
-                dict(iscontainer=node.isContainer()),
-                file="web/edit/edit_common.html",
-                macro="show_operations",
-                request=req,
-            )
-        v['user'] = user
-        v['language'] = lang(req)
-        v['t'] = t
+    if req.values.get("style") == "popup":  # normal page with header
+        return
 
-        # add icons to breadcrumbs
-        ipath = 'webtree/directory.gif'
-        if node and node.isContainer():
-            if node.name == 'home' or 'Arbeitsverzeichnis' in node.name or node == user.home_dir:
-                ipath = 'webtree/homeicon.gif'
-            elif node.name in ('Uploads', 'upload'):
-                ipath = 'webtree/uploadicon.gif'
-            elif node.name in ('Papierkorb', 'trash'):
-                ipath = 'webtree/trashicon.gif'
-            else:
-                ipath = getEditorIconPath(node)
+    v["tabs"] = handletabs(req, ids, tabs, sortchoices)
+    v["script"] = content["script"]
+    v["body"] = content["body"]
+    v["paging"] = showPaging(req, current, ids)
+    v["node"] = node
+    v["ids"] = (req.values.get("ids") or req.values.get("id", "")).split(",")
+    v["tab"] = current
+    v["operations"] = _tal.processTAL(
+            dict(iscontainer=node.isContainer()),
+            file="web/edit/edit_common.html",
+            macro="show_operations",
+            request=req,
+        )
+    v['user'] = user
+    v['language'] = lang(req)
+    v['t'] = t
 
-        v["dircontent"] += '&nbsp;&nbsp;<img src="' + '/img/' + ipath + '" />'
+    # add icons to breadcrumbs
+    ipath = 'webtree/directory.gif'
+    if node and node.isContainer():
+        if node.name == 'home' or 'Arbeitsverzeichnis' in node.name or node == user.home_dir:
+            ipath = 'webtree/homeicon.gif'
+        elif node.name in ('Uploads', 'upload'):
+            ipath = 'webtree/uploadicon.gif'
+        elif node.name in ('Papierkorb', 'trash'):
+            ipath = 'webtree/trashicon.gif'
+        else:
+            ipath = getEditorIconPath(node)
 
-        req.response.status_code = httpstatus.HTTP_OK
-        req.response.set_data(_tal.processTAL(v, file="web/edit/edit.html", macro="frame_content", request=req))
+    v["dircontent"] += '&nbsp;&nbsp;<img src="' + '/img/' + ipath + '" />'
+
+    req.response.set_data(_tal.processTAL(v, file="web/edit/edit.html", macro="frame_content", request=req))
 
 
 RE_EDIT_PRINT_URL = re.compile("/print/(\d+)_([a-z]+)(?:_(.+)?)?\.pdf")

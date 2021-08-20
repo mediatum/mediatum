@@ -566,10 +566,8 @@ def action(req):
                   user.login_name, newnode.id, newnode.type, srcnode.id, srcnode.name, srcnode.type)
         return
 
-    try:
-        dest = q(Node).get(req.params.get("dest", None))
-    except:
-        dest = None
+    if action in ("move", "copy"):
+        dest = q(Node).get(req.params["dest"])
 
     idlist = getIDs(req)
 

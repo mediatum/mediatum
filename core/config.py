@@ -193,23 +193,23 @@ def check_create_dir(dirpath, label):
     dirpath = os.path.expanduser(dirpath)
 
     if not os.path.isabs(dirpath):
-        print("CONFIG ERROR 1, path must be absolute: {} ({})".format(dirpath, label))
+        logg.error("CONFIG ERROR 1, path must be absolute: %s (%s)", dirpath, label)
         sys.exit(1)
 
     if not os.path.exists(dirpath):
         try:
             os.mkdir(dirpath)
         except OSError as e:
-            print("CONFIG ERROR 2, couldn't create directory '{}' ({}): {}".format(dirpath, label, e.strerror))
+            logg.exception("CONFIG ERROR 2, couldn't create directory '%s' (%s): %s", dirpath, label, e.strerror)
             sys.exit(2)
 
-        print("created directory '{}' ({})".format(dirpath, label))
+        logg.debug("created directory '%s' (%s)", dirpath, label)
 
     elif not os.path.isdir(dirpath):
-        print("CONFIG ERROR 3, path is not a directory: '{}' ({})".format(dirpath, label))
+        logg.error("CONFIG ERROR 3, path is not a directory: '%s' (%s)", dirpath, label)
         sys.exit(3)
     else:
-        print("found dir '{}' ({})".format(label, dirpath))
+        logg.debug("found dir '%s' (%s)", label, dirpath)
 
 
 def set_default_values():
@@ -266,11 +266,11 @@ def initialize(config_filepath=None, prefer_config_filename=None):
     global settings, languages, is_default_config
 
     if config_filepath is not None:
-        print("using config file at", config_filepath)
+        logg.debug("using config file at %s", config_filepath)
         settings = _read_ini_file(basedir, config_filepath)
         is_default_config = False
     else:
-        print("WARNING: config file", config_filepath, "not found, using default test config!")
+        logg.warn("config file %s not found, using default test config!", config_filepath)
         settings = {}
         is_default_config = True
 

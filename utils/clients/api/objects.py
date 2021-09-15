@@ -7,9 +7,12 @@
 """
 from __future__ import division
 
+import logging as _logging
 from itertools import imap
 from munch import Munch
 
+
+logg = _logging.getLogger(__name__)
 
 class APINode(Munch):
 
@@ -107,4 +110,4 @@ class NodeAPIResult(object):
         return imap(APINode.from_dict, (l[0] for l in self.nodelist))
 
     def print_info(self):
-        print(self.info.toYAML())
+        logg.info("%s", self.info.toYAML())

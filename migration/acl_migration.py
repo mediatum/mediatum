@@ -9,7 +9,6 @@ from __future__ import division
 
 import datetime
 import logging
-from pprint import pformat
 from ipaddr import IPv4Network
 from psycopg2.extras import DateRange
 from sympy import Symbol
@@ -117,7 +116,7 @@ def convert_node_symbolic_rules_to_access_rules(nid_to_symbolic_rule, symbol_to_
         logg.warning("%s", msg)
 
     if converter.fake_groups:
-        logg.warning("inserted fake group ids for missing groups / users:%s", pformat(converter.fake_groups))
+        logg.warning("inserted fake group ids for missing groups / users:%r", converter.fake_groups)
 
     nid_to_access_rules = {nid: [] if symbolic_rule is None else symbolic_rule_to_access_rules[symbolic_rule]
                            for nid, symbolic_rule in nid_to_symbolic_rule.iteritems()}

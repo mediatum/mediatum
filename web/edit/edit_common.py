@@ -143,7 +143,7 @@ def edit_sort_by_fields(query, field, idx=-1):
             return query.order_by(Node.name.desc())
         elif field == "orderpos":
             if idx >= 0:
-                print idx
+                logg.debug("idx: %s", idx)
                 return nodes[idx].orderpos
             return query.order_by(Node.orderpos)
         elif field == "-orderpos":

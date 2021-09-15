@@ -464,7 +464,6 @@ def sendFile(req, path, content_type, force=0, nginx_x_accel_redirect_enabled=Tr
         return
     if req.if_modified_since:
         if mtime <= req.if_modified_since and not force:
-            # print "File "+path+" was not modified since "+ustr(ims_date)+" (current filedate is "+ustr(mtime)+")-> 304"
             req.response.status_code = 304
             return
 
@@ -702,7 +701,6 @@ class default_handler:
             if mtime <= request.if_modified_since:
                 request.response.status_code = 304
                 done(request)
-                # print "File "+path+" was not modified since "+ustr(ims_date)+" (current filedate is "+ustr(mtime)+")"
                 return
         try:
             file = self.filesystem.open(path, 'rb')

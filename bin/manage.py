@@ -246,7 +246,7 @@ def sql(args):
         else:
             logg.info("result:\n%s", res.fetchall())
 
-        print(result_proxy_to_yaml(res).strip())
+        logg.debug(result_proxy_to_yaml(res).strip())
     else:
         logg.info("finished, no results returned")
 

@@ -21,7 +21,6 @@ from __future__ import division
 
 import logging
 import importlib
-from pprint import pformat
 import os.path
 import sys
 

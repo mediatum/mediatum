@@ -20,7 +20,6 @@ class UntilRegex(parcon._RParser):
         position = start = space.consume(text, position, end)
         regex_match = self.regex.search(text, position, end)
         if regex_match:
-            # print regex_match.start()
             position = regex_match.start()
             return parcon.match(position, text[start:position].strip(), [(position, parcon.EUnsatisfiable())])
         else:

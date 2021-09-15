@@ -22,6 +22,10 @@ from __future__ import division
 
 import re
 import sys
+import logging as _logging
+
+
+_logg = _logging.getLogger(__name__)
 
 pattern_bracket = re.compile("\\([^)(]*\\)")
 pattern_string = re.compile('"([^"]*)"')
@@ -214,12 +218,12 @@ class BoolParser:
 
 if __name__ == "__main__":
     b = BoolParser()
-    print ustr(b.parse("not true or not false"))
-    print ustr(b.parse("true and (true and (true and (true)))"))
-    print ustr(b.parse("((((true) and false) and true) and false) and true"))
-    print ustr(b.parse("true or (true or (true or (true)))"))
-    print ustr(b.parse("((((true) or false) or (true or false)) or (false or true)) or true"))
-    print ustr(b.parse("((true and false and ((false))))"))
+    _logg.info("%s", ustr(b.parse("not true or not false")))
+    _logg.info("%s", ustr(b.parse("true and (true and (true and (true)))")))
+    _logg.info("%s", ustr(b.parse("((((true) and false) and true) and false) and true")))
+    _logg.info("%s", ustr(b.parse("true or (true or (true or (true)))")))
+    _logg.info("%s", ustr(b.parse("((((true) or false) or (true or false)) or (false or true)) or true")))
+    _logg.info("%s", ustr(b.parse("((true and false and ((false))))")))
 
     class StringCondition:
 
@@ -240,5 +244,5 @@ if __name__ == "__main__":
             return StringCondition(s2)
     bb = StringParser()
 
-    print ustr(bb.parse("""test2=test(test)"""))
-    print ustr(bb.parse('(("bla (and) bla" and user "blupp" and (("bli bla blo"))))'))
+    _logg.info("%s", ustr(bb.parse("""test2=test(test)""")))
+    _logg.info("%s", ustr(bb.parse('(("bla (and) bla" and user "blupp" and (("bli bla blo"))))')))

@@ -169,7 +169,7 @@ def getContent(req, ids):
     user = user_from_session()
 
     if "metadata" in user.hidden_edit_functions:
-        print "error 1"
+        logg.error("edit function is hidden")
         req.response.status_code = httpstatus.HTTP_FORBIDDEN
         return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 

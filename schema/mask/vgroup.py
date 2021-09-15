@@ -19,6 +19,8 @@
 """
 from __future__ import division
 
+import logging as _logging
+
 import mediatumtal.tal as _tal
 from schema.schema import getMetadataType, getAllMetaFields, VIEW_DATA_ONLY, Maskitem
 from core.translation import lang
@@ -26,6 +28,8 @@ from core.metatype import Metatype
 from core import Node, db
 from utils.utils import suppress
 
+
+_logg = _logging.getLogger(__name__)
 q = db.query
 
 
@@ -41,7 +45,7 @@ class m_vgroup(Metatype):
                 f = getMetadataType(item.get("type"))
                 ret += f.getFormHTML(item, nodes, req)
             else:
-                print "...wrong field..."
+                _logg.error("wrong field")
         ret += '</fieldset>'
         return ret
 

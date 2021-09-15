@@ -42,8 +42,6 @@ def register():
 class WorkflowStep_FileAttachment(WorkflowStep):
 
     def show_workflow_node(self, node, req):
-        # print req.params
-
         # set access for download same as edit (only once needed)
         for r in self.access_ruleset_assocs.filter_by(ruletype='write'):
             if self.access_ruleset_assocs.filter_by(ruleset_name=r.ruleset_name, ruletype='data').first() is None:

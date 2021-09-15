@@ -194,9 +194,9 @@ def checkMappings():
     s = getbibtexmappings()
     for bibname, description, required, optional in article_types:
         if bibname not in s:
-            print bibname, "is not associated with any metatype"
+            logg.info("%s is not associated with any metatype", bibname)
         else:
-            print bibname, "->", s[bibname]
+            logg.info("%s -> %s", bibname, s[bibname])
 
 
 def detecttype(doctype, fields):

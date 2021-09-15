@@ -26,7 +26,6 @@ import logging
 import locale
 import tempfile as _tempfile
 import os as _os
-from pprint import pformat
 from utils.locks import register_lock as _register_lock
 
 import core.config as config
@@ -96,8 +95,8 @@ def tal_setup():
 
 def log_basic_sys_info():
     logg.info("Python Version is %s, base path ist at %s", sys.version.split("\n")[0], config.basedir)
-    logg.debug("sys.path is %s", pformat(sys.path))
-
+    for path in sys.path:
+        logg.debug("sys.path: %s", path)
 
 def check_imports():
     external_modules = [

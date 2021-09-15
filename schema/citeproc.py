@@ -28,7 +28,6 @@ from collections import defaultdict
 import datetime
 import logging
 import re
-from pprint import pformat
 
 from sqlalchemy.orm.exc import NoResultFound
 import requests
@@ -160,11 +159,11 @@ def check_mappings():
     types, ambiguous_types = importbase.get_all_import_mappings("citeproc")
     for typ in TYPES:
         if typ not in types:
-            print typ, "is not associated with any metatype"
+            logg.debug("%s is not associated with any metatype", type)
         else:
-            print typ, "->", types[typ]
+            logg.debug("%s -> %s", typ, types[typ])
     for typ, schemas in ambiguous_types.iteritems():
-        print "warning: ambiguous mapping", typ, "->", schemas
+        logg.warning("ambiguous mapping %s -> %s", typ, schemas)
 
 
 def convert_csl_date(date_value):
@@ -361,5 +360,5 @@ def import_doi(doi, target=None, name=None, testing=False):
     :raises: DOINotImported if no valid metadata has been found for the DOI
     """
     record = get_citeproc_json(doi)
-    logg.debug("got citeproc data from server: %s", pformat(record))
+    logg.debug("got citeproc data from server: %r", record)
     return import_csl(record, target, doi, testing=testing)

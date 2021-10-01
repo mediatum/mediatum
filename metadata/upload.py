@@ -32,11 +32,13 @@ q = db.query
 logg = logging.getLogger(__name__)
 
 
-def _mkfilelist(targetnode, files, deletebutton=0, language=None, request=None, macro="m_upload_filelist"):
+def _mkfilelist(targetnode, files, fieldname, deletebutton=0, language=None, request=None, macro="m_upload_filelist"):
+    assert '"' not in fieldname
     context = dict(
             files=files,
             node=targetnode,
             delbutton=deletebutton,
+            fieldname=fieldname,
            )
     if request:
         return tal.processTAL(context, file="metadata/upload.html", macro=macro, request=request)
@@ -124,11 +126,9 @@ class m_upload(Metatype):
         _, filelist = getFilelist(node, fieldname)
 
         if not mask:
-            value = _mkfilelist(node, filelist, language=language)
-            value = value.replace("____FIELDNAME____", fieldname)
+            value = _mkfilelist(node, filelist, fieldname, language=language)
         elif mask.get('masktype') not in ('shortview', 'export'):
-            value = _mkfilelist(node, filelist, language=language, macro="m_upload_filelist_nodebig")
-            value = value.replace("____FIELDNAME____", fieldname)
+            value = _mkfilelist(node, filelist, fieldname, language=language, macro="m_upload_filelist_nodebig")
 
         return (metafield.getLabel(), value)
 
@@ -202,12 +202,10 @@ def handle_request(req):
             filelist, filelist2 = getFilelist(n, m_upload_field_name)
             filelist = [_t[0:-1] for _t in filelist]
 
-            s['filelist'] = filelist
-
-            html_filelist = _mkfilelist(n, filelist2, deletebutton=1, request=req)
-            html_filelist = html_filelist.replace("____FIELDNAME____", m_upload_field_name)
-
-            s['html_filelist'] = html_filelist
+            s.update(
+                    filelist=filelist,
+                    html_filelist=_mkfilelist(n, filelist2, m_upload_field_name, deletebutton=1, request=req),
+                   )
 
             req.response.set_data(req.params.get("jsoncallback") + "(%s)" % json.dumps(s, indent=4))
             req.response.status_code = 200

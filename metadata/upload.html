@@ -21,7 +21,12 @@
                  tal:content="python:file.getName()"/>
             </td>
             <td tal:condition="delbutton">
-                <input tal:attributes="name python:u'delete_{}'.format(file.getName())" i18n:attributes="title upload_filelist_delete_title"  onclick="return delete_file_json_for_targetnode_FOR_____FIELDNAME____(this.name)" type="image" src="/img/delete.png" />
+                <input
+                        i18n:attributes="title upload_filelist_delete_title"
+                        src="/img/delete.png"
+                        tal:attributes="name python:u'delete_{}'.format(file.getName());onclick python:u'return m_upload_delete_file_json_for_targetnode(&quot;{}&quot;,this.name)'.format(fieldname)"
+                        type="image"
+                       />
             </td>
         </tr>
     </table>
@@ -42,7 +47,12 @@
             </td>
             <td tal:content="python:u'{} bytes'.format(file.getSize())"/>
             <td tal:condition="delbutton">
-                <input tal:attributes="name python:u'delete_{}'.format(file.getName())" i18n:attributes="title upload_filelist_delete_title"  onclick="return delete_file_json_for_targetnode_FOR_____FIELDNAME____(this.name)" type="image" src="/img/delete.png" />
+                <input
+                        i18n:attributes="title upload_filelist_delete_title"
+                        src="/img/delete.png"
+                        tal:attributes="name python:u'delete_{}'.format(file.getName());onclick python:u'return m_upload_delete_file_json_for_targetnode(&quot;{}&quot;, this.name)'.format(fieldname)"
+                        type="image"
+                       />
             </td>
         </tr>
     </table>
@@ -130,7 +140,7 @@
         }
     }
 
-    function delete_file_json_for_targetnode_FOR_____FIELDNAME____(filename) {
+    function m_upload_delete_file_json_for_targetnode(fieldname, filename) {
 
       if (!questionDelName(filename)){
           return false;
@@ -142,26 +152,26 @@
         type: 'POST',
         cmd: 'delete_file',
         targetnodeid: getTargetNodeID(),
-        m_upload_field_name: '____FIELDNAME____',
+        m_upload_field_name: fieldname,
         prefixed_filename: filename,
         };
         $.getJSON(url, options, function(data) {
 
                       var errors=data['errors'];
                       if (errors) {
-                        $("#response_FOR_____FIELDNAME____").html("");
+                        $("#response_FOR_"+fieldname).html("");
                           $.each(errors, function(index, value) {
-                            $("<div/>").html(value).attr('style', 'color:red').appendTo("#response_FOR_____FIELDNAME____");
+                            $("<div/>").html(value).attr('style', 'color:red').appendTo("#response_FOR_"+fieldname);
                           }
                         );
                       }
                       else {
-                        $("#response_FOR_____FIELDNAME____").html("");
+                        $("#response_FOR_"+fieldname).html("");
                       }
 
                       var filelist=data['filelist'];
                       if (filelist) {
-                        $("<div/>").html(data['html_filelist']).appendTo("#file_list_FOR_____FIELDNAME____");
+                        $("<div/>").html(data['html_filelist']).appendTo("#file_list_FOR_"+fieldname);
                       }
 
                     });

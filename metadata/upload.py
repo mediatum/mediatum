@@ -32,29 +32,16 @@ q = db.query
 logg = logging.getLogger(__name__)
 
 
-def mkfilelist(targetnode, files, deletebutton=0, language=None, request=None, macro="m_upload_filelist"):
+def _mkfilelist(targetnode, files, deletebutton=0, language=None, request=None, macro="m_upload_filelist"):
+    context = dict(
+            files=files,
+            node=targetnode,
+            delbutton=deletebutton,
+           )
     if request:
-        return tal.processTAL(
-                dict(
-                    files=files,
-                    node=targetnode,
-                    delbutton=deletebutton,
-                   ),
-                file="metadata/upload.html",
-                macro=macro,
-                request=request,
-               )
+        return tal.processTAL(context, file="metadata/upload.html", macro=macro, request=request)
     else:
-        return tal.getTAL(
-                "metadata/upload.html",
-                dict(
-                    files=files,
-                    node=targetnode,
-                    delbutton=deletebutton,
-                   ),
-                macro=macro,
-                language=language,
-               )
+        return tal.getTAL("metadata/upload.html", context, macro=macro, language=language)
 
 
 def getFilelist(node, fieldname=None):
@@ -134,21 +121,14 @@ class m_upload(Metatype):
         fieldname = metafield.getName()
         value = node.get(metafield.getName())
 
-        filelist, filelist2 = getFilelist(node, fieldname)
+        _, filelist = getFilelist(node, fieldname)
 
-        if mask:
-            masktype = mask.get('masktype')
-            if masktype in ['shortview', 'export']:
-                pass
-            else:
-                html_filelist = mkfilelist(
-                    node, filelist2, deletebutton=0, language=language, request=None, macro="m_upload_filelist_nodebig")
-                html_filelist = html_filelist.replace("____FIELDNAME____", "%s" % fieldname)
-                value = html_filelist
-        else:
-            html_filelist = mkfilelist(node, filelist2, deletebutton=0, language=language, request=None, macro="m_upload_filelist")
-            html_filelist = html_filelist.replace("____FIELDNAME____", "%s" % fieldname)
-            value = html_filelist
+        if not mask:
+            value = _mkfilelist(node, filelist, language=language)
+            value = value.replace("____FIELDNAME____", fieldname)
+        elif mask.get('masktype') not in ('shortview', 'export'):
+            value = _mkfilelist(node, filelist, language=language, macro="m_upload_filelist_nodebig")
+            value = value.replace("____FIELDNAME____", fieldname)
 
         return (metafield.getLabel(), value)
 
@@ -224,8 +204,8 @@ def handle_request(req):
 
             s['filelist'] = filelist
 
-            html_filelist = mkfilelist(n, filelist2, deletebutton=1, language=None, request=req)
-            html_filelist = html_filelist.replace("____FIELDNAME____", "%s" % m_upload_field_name)
+            html_filelist = _mkfilelist(n, filelist2, deletebutton=1, request=req)
+            html_filelist = html_filelist.replace("____FIELDNAME____", m_upload_field_name)
 
             s['html_filelist'] = html_filelist
 

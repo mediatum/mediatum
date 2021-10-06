@@ -270,7 +270,7 @@ def handle_request(req):
 
         submitter = req.params.get("submitter", "").split(';')[0]
 
-        targetnodeid = req.params.get("targetnodeid_FOR_" + submitter, None)
+        targetnodeid = req.params.get("targetnodeid_for_" + submitter, None)
         targetnode = None
         if targetnodeid:
             targetnode = q(Node).get(targetnodeid)
@@ -294,7 +294,7 @@ def handle_request(req):
             return
 
         filename = None
-        file_key = "m_upload_file_FOR_" + submitter
+        file_key = "m_upload_file_for_" + submitter
 
         if file_key in req.files:
 

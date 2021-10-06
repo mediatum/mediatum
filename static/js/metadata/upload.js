@@ -85,17 +85,17 @@ function m_upload_delete_file_json_for_targetnode(fieldname, filename) {
     $.getJSON(url, options, function(data) {
         var errors=data['errors'];
         if (errors) {
-            $("#response_FOR_"+fieldname).html("");
+            $("#response_for_"+fieldname).html("");
             $.each(errors, function(index, value) {
-                $("<div/>").html(value).attr('style', 'color:red').appendTo("#response_FOR_"+fieldname);
+                $("<div/>").html(value).attr('style', 'color:red').appendTo("#response_for_"+fieldname);
             });
         } else {
-            $("#response_FOR_"+fieldname).html("");
+            $("#response_for_"+fieldname).html("");
         }
 
         var filelist=data['filelist'];
         if (filelist) {
-            $("<div/>").html(data['html_filelist']).appendTo("#file_list_FOR_"+fieldname);
+            $("<div/>").html(data['html_filelist']).appendTo("#file_list_for_"+fieldname);
         }
     });
 
@@ -117,8 +117,8 @@ function m_upload_load_file_list_json_for_targetnode(targetnodeid, fieldname) {
     $.getJSON(url, options, function(data) {
         var filelist=data['filelist'];
         if (filelist) {
-            $("#file_list_FOR_"+fieldname).html("");
-            $("<div/>").html(data['html_filelist']).appendTo("#file_list_FOR_"+fieldname);
+            $("#file_list_for_"+fieldname).html("");
+            $("<div/>").html(data['html_filelist']).appendTo("#file_list_for_"+fieldname);
         }
     });
 }
@@ -127,21 +127,21 @@ function m_upload_register_fieldname(fieldname) {
     $(document).ready(function () {
         var targetnodeid = getTargetNodeID();
         if (! targetnodeid=="") {
-            $('input[name=targetnodeid_FOR_' + fieldname + ']').val(targetnodeid);
-            $('input[name=upload_submit_FOR_' + fieldname + ']').val("Submit");
-            $('div[name=upload_warn_div_FOR_' + fieldname + ']').hide();
+            $('input[name=targetnodeid_for_' + fieldname + ']').val(targetnodeid);
+            $('input[name=upload_submit_for_' + fieldname + ']').val("Submit");
+            $('div[name=upload_warn_div_for_' + fieldname + ']').hide();
 
-            $('input[name=m_upload_file_FOR_' + fieldname + ']').removeAttr("disabled"); // type=file
-            $('input[name=upload_submit_FOR_' + fieldname + ']').removeAttr("disabled"); // type=submit
-            $('input[name=upload_submit_FOR_' + fieldname + ']').val("Submit");
-            $('div[name=upload_warn_div_FOR_' + fieldname + ']').hide();
+            $('input[name=m_upload_file_for_' + fieldname + ']').removeAttr("disabled"); // type=file
+            $('input[name=upload_submit_for_' + fieldname + ']').removeAttr("disabled"); // type=submit
+            $('input[name=upload_submit_for_' + fieldname + ']').val("Submit");
+            $('div[name=upload_warn_div_for_' + fieldname + ']').hide();
 
             m_upload_load_file_list_json_for_targetnode(targetnodeid, fieldname);
         } else {
-            $('input[name=m_upload_file_FOR_' + fieldname + ']').attr("disabled","disabled"); // type=file
-            $('input[name=upload_submit_FOR_' + fieldname + ']').attr("disabled","disabled"); // type=submit
-            $('input[name=upload_submit_FOR_' + fieldname + ']').val("Submit (disabled)");
-            $('div[name=upload_warn_div_FOR_' + fieldname + ']').show();
+            $('input[name=m_upload_file_for_' + fieldname + ']').attr("disabled","disabled"); // type=file
+            $('input[name=upload_submit_for_' + fieldname + ']').attr("disabled","disabled"); // type=submit
+            $('input[name=upload_submit_for_' + fieldname + ']').val("Submit (disabled)");
+            $('div[name=upload_warn_div_for_' + fieldname + ']').show();
         }
     });
 }
@@ -149,7 +149,7 @@ function m_upload_register_fieldname(fieldname) {
 function m_upload_submit(fieldname) {
 
     $('#submitter_class_'+fieldname).val('m_upload');
-    $('input[name=submitter_FOR_'+fieldname+']').val(fieldname);
+    $('input[name=submitter_for_'+fieldname+']').val(fieldname);
     $('input[name=submitter]').val(fieldname);
 
     var we_are_now = whereAreWe();
@@ -167,25 +167,25 @@ function m_upload_submit(fieldname) {
         success:   function(data) {
             var res = jQuery.parseJSON(data);
 
-            $("#response_FOR_"+fieldname).html("");
+            $("#response_for_"+fieldname).html("");
             var errors = res['errors'];
             if (errors) {
                 $.each(errors, function(index, value) {
-                    $("<div/>").html(value).attr('style', 'color:red').appendTo("#response_FOR_"+fieldname);
+                    $("<div/>").html(value).attr('style', 'color:red').appendTo("#response_for_"+fieldname);
                 });
             }
 
             var copy_report = res['copy_report'];
             if (copy_report) {
-                $("<div/>").html(copy_report).attr('style', 'color:blue').appendTo("#response_FOR_"+fieldname);
+                $("<div/>").html(copy_report).attr('style', 'color:blue').appendTo("#response_for_"+fieldname);
             }
         },
-        error: function() { alert("error_FOR_"+fieldname); },
+        error: function() { alert("error_for_"+fieldname); },
         complete: function() {
             $(current_form_id).unbind();
             m_upload_load_file_list_json_for_targetnode(getTargetNodeID(), fieldname);
 
-            $('input[name=m_upload_file_FOR_'+fieldname+']').attr('value', '');
+            $('input[name=m_upload_file_for_'+fieldname+']').attr('value', '');
         },
     };
     var res = $(current_form_id).submit(function() {

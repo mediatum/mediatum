@@ -51,7 +51,7 @@ BEGIN
             GET STACKED DIAGNOSTICS exc_text = MESSAGE_TEXT,
                                     exc_detail = PG_EXCEPTION_DETAIL,
                                     exc_hint = PG_EXCEPTION_HINT;
-            RAISE NOTICE 'exception:  %\n%\nHINT: %', exc_text, exc_detail, exc_hint;
+            -- RAISE DEBUG 'exception:  %\n%\nHINT: %', exc_text, exc_detail, exc_hint;
 
             RETURN NULL;
     END;
@@ -81,7 +81,7 @@ BEGIN
 
     FOREACH config IN ARRAY configs LOOP
         tsvec = to_tsvector(config, text);
-        RAISE NOTICE 'test %, length of tsvector is %', config, length(tsvec);
+        -- RAISE DEBUG 'test %, length of tsvector is %', config, length(tsvec);
 
         IF min_tsvec IS NULL OR length(tsvec) < length(min_tsvec) THEN
             min_tsvec = tsvec;

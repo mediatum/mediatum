@@ -400,7 +400,7 @@ ELSE
 END IF;
 IF rec.ruletype IN ('read', 'data') THEN
     FOR c IN SELECT cid FROM noderelation WHERE nid = rec.nid LOOP
-        RAISE NOTICE 'updating access rules for node %', c;
+        -- RAISE DEBUG 'updating access rules for node %', c;
         -- ignore nodes that have their own access rules
         IF NOT EXISTS (SELECT FROM node_to_access_rule WHERE nid=c.cid AND ruletype = rec.ruletype AND inherited = false) THEN
             DELETE FROM node_to_access_rule WHERE nid=c.cid AND inherited = true AND ruletype = rec.ruletype;

@@ -468,9 +468,6 @@ def getMimeType(filename):
     elif filename.endswith(".bib"):
         mimetype = "text/x-bibtex"
         type = "bibtex"
-    elif filename.endswith(".sur"):
-        mimetype = "text/plain"
-        type = "survey"
 
     else:
         mimetype = "other"

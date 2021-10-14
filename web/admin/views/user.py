@@ -37,13 +37,13 @@ class UserView(BaseAdminView):
     form_base_class = MediatumSecureForm
 
     column_exclude_list = ("created", "password_hash", "salt", "comment",
-                           "private_group", "can_edit_shoppingbag", "can_change_password")
+                           "private_group", "can_change_password")
     column_filters = ("authenticator_info", "display_name", "login_name", "organisation", "active")
     can_export = True
 
     column_details_list = ("home_dir", "authenticator_info", "id", "login_name", "display_name", "lastname",
                            "firstname", "telephone", "organisation", "comment", "email", "password_hash",
-                           "salt", "last_login", "active", "can_edit_shoppingbag", "can_change_password",
+                           "salt", "last_login", "active", "can_change_password",
                            "created_at", "group_names")
     """
     """
@@ -56,7 +56,7 @@ class UserView(BaseAdminView):
     column_searchable_list = ("display_name", "login_name", "organisation")
     column_editable_list = ("login_name", "email")
     form_excluded_columns = ("home_dir", "created", "password_hash", "salt",
-                             "versions", "shoppingbags", "private_group", "group_assocs")
+                             "versions", "private_group", "group_assocs")
 
     form_overrides = {
         "email": StringField

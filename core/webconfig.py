@@ -182,7 +182,6 @@ def initContexts():
     handler = file.addHandler("send_file")
     handler.addPattern("/file/.*")
     handler.addPattern("/download/.*")
-    file.addHandler("send_attachment").addPattern("/attachment/.*")
     file.addHandler("send_attfile").addPattern("/attfile/.*")
     file.addHandler("fetch_archived").addPattern("/archive/.*")
     file.addHandler("send_from_webroot").addPattern("/[a-z,0-9,-]*\.[a-z]*")  # root directory added /web/root (only files with extensions)

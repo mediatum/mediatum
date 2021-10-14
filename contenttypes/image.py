@@ -666,69 +666,6 @@ class Image(Content):
     def popup_thumbbig(self, req):
         self.popup_fullsize(req)
 
-    def processImage(self, type="", value="", dest=""):
-        """XXX: this method is only called in shoppingbags.
-        What does it even do?!
-        """
-        img = None
-        for file in self.files:
-            if file.filetype == "image":
-                img = file
-                break
-
-        if img:
-            pic = PILImage.open(img.abspath)
-            pic.load()
-
-            if type == "percentage":
-                w = pic.size[0] * int(value) / 100
-                h = pic.size[1] * int(value) / 100
-
-            if type == "pixels":
-                if pic.size[0] > pic.size[1]:
-                    w = int(value)
-                    h = pic.size[1] * int(value) / pic.size[0]
-                else:
-                    h = int(value)
-                    w = pic.size[0] * int(value) / pic.size[1]
-
-            elif type == "standard":
-                w, h = value.split("x")
-                w = int(w)
-                h = int(h)
-
-                if pic.size[0] < pic.size[1]:
-                    factor_w = w * 1.0 / pic.size[0]
-                    factor_h = h * 1.0 / pic.size[1]
-
-                    if pic.size[0] * factor_w < w and pic.size[1] * factor_w < h:
-                        w = pic.size[0] * factor_w
-                        h = pic.size[1] * factor_w
-                    else:
-                        w = pic.size[0] * factor_h
-                        h = pic.size[1] * factor_h
-                else:
-                    factor_w = w * 1.0 / pic.size[0]
-                    factor_h = h * 1.0 / pic.size[1]
-
-                    if pic.size[0] * factor_w < w and pic.size[1] * factor_w < h:
-                        w = pic.size[0] * factor_h
-                        h = pic.size[1] * factor_h
-                    else:
-                        w = pic.size[0] * factor_w
-                        h = pic.size[1] * factor_w
-
-            else:  # do nothing but copy image
-                w = pic.size[0]
-                h = pic.size[1]
-
-            pic = pic.resize((int(w), int(h)), PILImage.ANTIALIAS)
-            if not os.path.isdir(dest):
-                os.mkdir(dest)
-            pic.save(dest + self.id + ".jpg", "jpeg")
-            return 1
-        return 0
-
     def event_metadata_changed(self):
         pass
         # XXX: IPTC writeback will be fixed in #782

@@ -43,7 +43,6 @@ def register():
     #tree.registerNodeClass("workflowstep-showdata", WorkflowStep_ShowData)
     #tree.registerNodeClass("workflowstep-wait", WorkflowStep_ShowData)
     registerStep("workflowstep_showdata")
-    registerStep("workflowstep_wait")
 
 
 class WorkflowStep_ShowData(WorkflowStep):

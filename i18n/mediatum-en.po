@@ -433,18 +433,6 @@ msgstr "Rights"
 msgid "tab_upload"
 msgstr "Uploads"
 
-msgid "tab_nodesperpage20"
-msgstr "20"
-
-msgid "tab_nodesperpage50"
-msgstr "50"
-
-msgid "tab_nodesperpage100"
-msgstr "100"
-
-msgid "tab_nodesperpage200"
-msgstr "200"
-
 msgid "tab_parentcontent"
 msgstr "Directory content"
 
@@ -549,9 +537,6 @@ msgstr "Manage rights"
 
 msgid "tab_acls_title"
 msgstr "Edit rights"
-
-msgid "tab_menunodesperpage"
-msgstr "Configure: objects per page"
 
 msgid "tab_menusortnodes"
 msgstr "Configure: sort objects"

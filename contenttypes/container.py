@@ -105,12 +105,6 @@ class Container(Data, ContainerMixin, SchemaMixin):
                 "copyall",
                 "deleteall",
                 )},
-            { "menunodesperpage": (
-                "nodesperpage20",
-                "nodesperpage50",
-                "nodesperpage100",
-                "nodesperpage200",
-                )},
             { "startpagesmenu": (
                 "startpages",
                 "logo",

@@ -42,6 +42,7 @@ from schema.schema import Metadatatype
 from web.edit.edit_common import get_edit_label, get_searchparams
 from web.frontend.search import NoSearchResult
 from utils.pathutils import get_accessible_paths
+import web.common.pagination as _web_common_pagination
 import web.common.sort as _sort
 
 logg = logging.getLogger(__name__)
@@ -897,6 +898,9 @@ def content(req):
             ipath = getEditorIconPath(node)
 
     v["dircontent"] += '&nbsp;&nbsp;<img src="' + '/img/' + ipath + '" />'
+    v["nodesperpage_options"] = _web_common_pagination.get_config_nodes_per_page(True)
+    v["sortfield"] = v.get("collection_sortfield", req.values.get("sortfield", node.get("sortfield"))) or "off"
+    v["nodesperpage_from_req"] = req.values.get("nodes_per_page")
 
     req.response.set_data(_tal.processTAL(v, file="web/edit/edit.html", macro="frame_content", request=req))
 

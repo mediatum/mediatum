@@ -399,6 +399,5 @@ def importBibTeX(infile, node=None, req=None):
                 raise ValueError()
 
     logg.debug("bibtex import: finished import")
-    print msg
 
     return node

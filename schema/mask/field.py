@@ -320,7 +320,7 @@ class m_field(Metatype):
 
         add_descriptions = []
         for metafield in metafields:
-            add_descriptions.append('<div style="display:none" id="div_%d" name="%s" description="%s"/>' %
+            add_descriptions.append('<div style="display:none" id="div_%d" name="%s" description="%s"></div>' %
                                     (metafield.id, metafield.name, metafield.getDescription()))
 
         v = {}

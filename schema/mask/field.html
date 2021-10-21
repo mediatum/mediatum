@@ -22,35 +22,17 @@
         <br/>
         <div class="label" i18n:translate="mask_edit_field_selection">TEXT</div> 
         <tal:block tal:condition="python:op=='new'">
-            <fieldset style="margin-top:5px;width:500px">
-                <input type="radio" name="fieldtype" value="common" onchange="metafieldchange(document)" checked="checked"/> 
-                <span i18n:translate="mask_edit_existing_field">TEXT</span>
-                <br/>
-                <div class="label" i18n:translate="mask_edit_field">TEXT</div>
-                <select id="existingfieldtype" tal:condition="python:len(metafields)>0" name="field" style="width:250px;" onchange="metafieldchange(document)">
+                <select id="existingfieldtype" tal:condition="python:metafields" name="field" style="width:500px;" onchange="metafieldchange(document)">
                     <tal:block tal:repeat="metafield metafields">
                         <option tal:attributes="value python:metafield.id" tal:content="python:u'{} ({})'.format(metafield.getName(), metafield.getFieldtype())"/>
                     </tal:block>
                 </select>
                 <span tal:condition="python:len(metafields)==0" style="color:red" i18n:translate="mask_editor_no_fields">TEXT</span>
                 <br/>
-                <br/>
-                <input type="radio" name="fieldtype" value="new" onchange="clear_description(document)"/> <span i18n:translate="mask_edit_new_field">TEXT</span><br/>
-                <div class="label" i18n:translate="mask_edit_nameid">TEXT</div> 
-                <input type="text" name="fieldname" style="width:250px;"/>
-                <br/>
-                <div class="label" i18n:translate="mask_edit_type">TEXT</div> 
-                <select name="newfieldtype" id="newfieldtype" style="width:250px;" onchange="metatypechange(document)">
-                    <tal:block tal:repeat="fieldtype fieldtypes">
-                        <option tal:condition="python:not fieldtype.isContainer()" tal:attributes="value python:fieldtype.getName().split('_')[1]" tal:content="python:fieldtype.getName()" i18n:translate=""/>
-                    </tal:block>
-                </select>
-                <br/>
                 <!-- automatic block from metatype start -->
                 <tal:block tal:repeat="values add_values" tal:content="raw values"/>
                 <tal:block tal:repeat="descriptions add_descriptions" tal:content="raw descriptions"/>
                 <!-- automatic block from metatype end -->
-            </fieldset>
             <br/>
         </tal:block>
         <tal:block tal:condition="python:op=='edit'">

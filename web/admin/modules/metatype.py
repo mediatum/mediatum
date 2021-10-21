@@ -614,28 +614,14 @@ def showEditor(req):
                 pass
 
         elif req.params.get("op", "") == "new":
-            if req.params.get("fieldtype", "") == "common" and req.params.get("field"):
-                # existing field used
-                fieldid = long(req.params.get("field"))
-            elif "mappingfield" in req.params.keys():
+            if "mappingfield" in req.params:
                 # new mapping field
                 fieldid = ""  # long(req.params.get("mappingfield"))
                 label = "mapping"
 
-            else:
-                # create new metaattribute
-                parent = req.params.get("metadatatype").getName()
-                fieldvalue = req.params.get(req.params.get("newfieldtype", "") + '_value', "")
-
-                if req.params.get("type") == "label":
-                    # new label
-                    fieldid = ""
-                else:
-                    # normal field
-                    updateMetaField(parent, req.params.get("fieldname"), label, 0,
-                                    req.params.get("newfieldtype"), option="", description=req.params.get("description", ""),
-                                    fieldvalues=fieldvalue, fieldvaluenum="", fieldid="")
-                    fieldid = ustr(getMetaField(parent, req.params.get("fieldname")).id)
+            elif req.params.get("field"):
+                # existing field used
+                fieldid = long(req.params.get("field"))
 
             item = editor.addMaskitem(label, req.params.get("type"), fieldid, req.params.get("pid", "0"))
 

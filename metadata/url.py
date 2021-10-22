@@ -45,8 +45,8 @@ class m_url(Metatype):
 
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
         fielddef = field.getValues().split("\r\n")
-        if len(fielddef) != 3:
-            fielddef = ("", "", "")
+        if len(fielddef) != 4:
+            fielddef = ("", "", "", "")
         # separate url and urltext
         val = value.split(";")
         if len(val) == 1:

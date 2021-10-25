@@ -320,7 +320,7 @@ function callContextMenuCommandForNode(node, action, opt) {
 
 var _tmp_opt_menu = null;
 
-function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curnode) {
+function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curkey) {
   // arguments: '#(h|c)tree-node-'+data.node.key, get(hometree|coltree)(), '(h|c)tree-node-', data.node
   $(function(){
       $.contextMenu({
@@ -332,7 +332,6 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curnode)
         zIndex:9999,
 
         build: function($trigger, e) {
-
           consoledb.groupCollapsed('contextMenu build for selector "' + selector + '"');
           consoledb.log("ctx_$trigger:", $trigger);
           consoledb.log("ctx_event:", e);
@@ -340,10 +339,10 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curnode)
           temp_ctx_event = e;
           temp_ctx_trigger = $trigger;
 
-          var node = curnode;
+          var node = curtree.getNodeByKey(curkey);
 
           // show contextMenu only for the active node
-          if (!curnode.isActive()) {curtree.widget.options.keyboard = FANCYTREE_KEYBOARD; return false;};
+          if (!node.isActive()) {curtree.widget.options.keyboard = FANCYTREE_KEYBOARD; return false;};
 
           //$('.context-menu-list .context-menu-root').focus();
           curtree.widget.options.keyboard = false;
@@ -353,7 +352,7 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curnode)
 
           return {
 
-            items: build_context_menu_items(curnode),
+            items: build_context_menu_items(node),
 
             events: {
               hide: function(opt) {current_tree.widget.options.keyboard = FANCYTREE_KEYBOARD;},
@@ -364,7 +363,7 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curnode)
                 // may be used to add help info as tooltext
 
                 consoledb.groupCollapsed('contextMenu events show');
-                var an = curnode;
+                var an = node;
                 consoledb.log(an.key, an.title, opt);
                 consoledb.log('opt: ', opt);
                 consoledb.log(opt.$menu);
@@ -786,7 +785,6 @@ function questionOperation(type){
                             node.setActive();
                         }
                     });
-
             node_to_clear.setActive();
             var activenode = $("#hometree").fancytree("getTree").activeNode;
 
@@ -836,7 +834,6 @@ function questionOperation(type){
                         node.setActive(true);
                     }
                 });
-
         parent_node.setActive(true);
         var activenode = cur_tree.activeNode;
         activenode.toggleExpanded();
@@ -1122,7 +1119,7 @@ function reload_htree_filtered(homenodefilter) {
       }
       if(event.key==" " && node.data.readonly==0 && action==""){
           // 2014-11-26
-          contextmenue_on_demand('#'+tree_node_id_prefix+data.node.key, $(tree_selector).fancytree("getTree"), tree_node_id_prefix, data.node);  // tree-dependent
+          contextmenue_on_demand('#'+tree_node_id_prefix+data.node.key, $(tree_selector).fancytree("getTree"), tree_node_id_prefix, data.node.key);  // tree-dependent
           $('#'+tree_node_id_prefix+node.key+' span').contextMenu(); // show contextmenu programatically
         $('.context-menu-list .context-menu-root').focus();
         current_tree.widget.options.keyboard = false;
@@ -1266,7 +1263,7 @@ function reload_htree_filtered(homenodefilter) {
       idselection = node.key;
       tree.currentfolder = node.key;
       // 2014-11-26
-      contextmenue_on_demand('#'+tree_node_id_prefix+data.node.key, $(tree_selector).fancytree("getTree"), tree_node_id_prefix, data.node);  // tree-dependent
+      contextmenue_on_demand('#'+tree_node_id_prefix+data.node.key, $(tree_selector).fancytree("getTree"), tree_node_id_prefix, data.node.key);  // tree-dependent
       $(node.span).removeClass('disabled');
       if( $(".contextMenu:visible").length > 0 ){
         $(".contextMenu").hide();

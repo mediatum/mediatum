@@ -38,8 +38,8 @@ from utils.utils import Link
 from utils.url import build_url_from_path_and_params
 from schema.searchmask import SearchMask
 from mediatumtal import tal
+import core.nodecache as _nodecache
 from core.nodecache import get_collections_node
-from utils.google_scholar import google_scholar
 import time
 
 
@@ -462,6 +462,19 @@ class UserLinks(object):
         return build_url_from_path_and_params(self.path, params)
 
 
+def _render_head_meta(node):
+    """
+    create meta tags for google_scholar by using the exportmask head_meta
+
+    :param node:
+    :return: rendered head_meta mask
+    """
+    if config.get("websearch.google_scholar", "").lower() == "true" or not node or node.isContainer():
+        mtype = _nodecache.get_metadatatypes_node().children.filter_by(name=node.schema).scalar()
+        mask = mtype and mtype.getMask('head_meta')
+        return mask and mask.getViewHTML([node], flags=8)
+
+
 def render_page(req, node, content_html, show_navbar=True, show_id=None):
     """Renders the navigation frame with the inserted content HTML and returns the whole page.
     """
@@ -527,7 +540,7 @@ def render_page(req, node, content_html, show_navbar=True, show_id=None):
         shown_node = q(Node).get(show_id)
     else:
         shown_node = node
-    frame_context["google_scholar"] = google_scholar(shown_node)
+    frame_context["google_scholar"] = _render_head_meta(shown_node) or ""
 
     html = theme.render_template("frame.j2.jade", frame_context)
 

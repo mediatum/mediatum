@@ -387,18 +387,11 @@ function path_to_pidlist(path, poplast) {
 
 // asynchronous version of editor_action: wait with javascript tree update until
 // server has responded
-function edit_action_sync(action, src, ids, add) {
+function edit_action_sync(action, src, nodeids, add) {
     consoledb.groupCollapsed('edit_action_sync');
-    consoledb.log('action: '+action+', src: '+src+', ids: '+ids+', add: '+add);
+    consoledb.log('action: '+action+', src: '+src+', nodeids: '+nodeids+', add: '+add);
     var url = '&action='+escape(action);
 
-/*
-    if(add==1){ // folder
-        url = '&newfolder='+escape(action);
-    }else if (add==2){ //collection
-        url = '&newcollection='+escape(action);
-    }
-*/
     if (action=="move" || action=="copy"){
         url = '&action='+escape(action)+'&dest='+add;
     }
@@ -420,7 +413,7 @@ function edit_action_sync(action, src, ids, add) {
     }    
 
     var options = {
-          url: '/edit/edit_action?srcnodeid='+src+'&ids='+ids+'&style=popup'+url,
+          url: '/edit/edit_action?srcnodeid='+src+'&ids='+nodeids+'&style=popup'+url,
           async: false,
           dataType: 'json',
           success: function (response) {
@@ -585,14 +578,14 @@ function movecopySelected(action, nodeids){
     return;
 }
 
-function deleteSelected(ids){
-    if (!ids){ /* use given id */
-        ids = getAllObjectsString();
+function deleteSelected(nodeids){
+    if (!nodeids){ /* use given id */
+        nodeids = getAllObjectsString();
     }
-    if(ids){
+    if(nodeids){
         if(confirm($('#delete_text').text())) {
             // function edit_action_sync(action, src, ids, add) ...
-            var ret = edit_action_sync('delete', parent.last_activated_node.key, ids);
+            var ret = edit_action_sync('delete', parent.last_activated_node.key, nodeids);
             /*
             ret.complete(function(){
                 //parent.tree.updateNodeLabel(parent.tree.currentfolder);

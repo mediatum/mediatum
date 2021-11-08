@@ -70,9 +70,6 @@
         });
 
     </script>
-    <tal:block tal:replace="raw python:'<script type=&quot;text/javascript&quot;>'"/>
-        <tal:block tal:repeat="id python:idstr.split(',')" tal:replace="python:u'allobjects[{}]=1;'.format(id)"/>
-    <tal:block tal:replace="raw python:'</script>'"/>
 
 </metal:block>
 

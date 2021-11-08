@@ -102,11 +102,8 @@ method="post" id="mediatum_publish_form" name="publishform">
         <div>
             <div><label for="mediatum_dest_names" i18n:translate="edit_publish_selected_dirs">Ausgewählte Verzeichnisse:</label></div>
             <div id="mediatum_dest_names" name="dest_names" tal:content="stdname"/>
-            <tal:block tal:replace="raw python:'<script type=&quot;text/javascript&quot;>'"/>
-                <tal:block tal:repeat="id python:idstr" tal:replace="python:u'allobjects[\'check{}\'] = 1;'.format(id)"/>
-            <tal:block tal:replace="raw python:'</script>'"/>
-            </div>
         </div>
+    </div>
     <tal:block tal:replace="raw showdir">TEXT</tal:block>
   </div>
     <div id="sub_footer_module"> </div>

@@ -343,7 +343,6 @@ def getEditModules():
 
 def getIDs(req):
     # look for one "id" parameter, containing an id or a list of ids
-
     try:
         id = req.values["id"]
     except KeyError:
@@ -353,17 +352,7 @@ def getIDs(req):
         if idlist != ['']:
             return idlist
 
-    # look for a pattern, a source folder and an id list
-    ids = req.values.get('ids', '')
-
-    if type(ids) == str:
-        idlist = ids.split(',')
-    elif type(ids) == unicode:
-        idlist = ids.split(u',')
-
-    if idlist == [''] or idlist == [u'']:
-        idlist = []
-    return idlist
+    return req.values.getlist('ids')
 
 
 def edit_tree(req):

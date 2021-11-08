@@ -546,8 +546,16 @@ function modal_confirm(msg) {
 
 function editSelected(nodeid){
     nodeid = nodeid ? [nodeid] : getAllObjectsNodeids();
-    if (nodeid.length > 0)
-        document.location.href = '/edit/edit_content?ids='+nodeid.join(",")+'&srcnodeid='+parent.idselection+'&tab=metadata';
+    if (nodeid.length == 0) return;
+
+    var form = $('<form action="/edit/edit_content" method="POST"></form>');
+    form.append($('<input name="srcnodeid" value="' + parent.idselection + '" type="hidden">'));
+    form.append($('<input name="tab" value="metadata" type="hidden">'));
+    form.append($('<input name="csrf_token" value="' + parent.csrf + '" type="hidden">'));
+    for (nid of nodeid)
+        form.append($('<input name="ids" value="' + nid + '" type="hidden">'))
+    $("body").append(form);
+    form.submit();
 }
 
 

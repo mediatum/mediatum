@@ -1202,7 +1202,7 @@ function reload_htree_filtered(homenodefilter) {
         var ajax_response;
 
         var options = {
-              url: '/edit/edit_action?srcnodeid='+idselection+'&ids='+currentselection+'&style=popup'+url,
+              url: '/edit/edit_action?srcnodeid='+idselection+'&ids='+currentselection.join(",")+'&style=popup'+url,
               async: false,
               dataType: 'json',
               success: function (data) {

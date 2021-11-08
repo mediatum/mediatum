@@ -413,7 +413,7 @@ function edit_action_sync(action, src, nodeids, add) {
     }    
 
     var options = {
-          url: '/edit/edit_action?srcnodeid='+src+'&ids='+nodeids+'&style=popup'+url,
+          url: '/edit/edit_action?srcnodeid='+src+'&ids='+nodeids.join(",")+'&style=popup'+url,
           async: false,
           dataType: 'json',
           success: function (response) {
@@ -545,75 +545,47 @@ function modal_confirm(msg) {
 
 
 function editSelected(nodeid){
-    if (!nodeid){ /* use given id */
-        nodeid = getAllObjectsString();
-    }
-    if (nodeid!=""){
-        document.location.href = '/edit/edit_content?ids='+nodeid+'&srcnodeid='+parent.idselection+'&tab=metadata';
-    }
+    nodeid = nodeid ? [nodeid] : getAllObjectsNodeids();
+    if (nodeid.length > 0)
+        document.location.href = '/edit/edit_content?ids='+nodeid.join(",")+'&srcnodeid='+parent.idselection+'&tab=metadata';
 }
 
 
 function movecopySelected(action, nodeids){
     consoledb.groupCollapsed('movecopySelected');
     consoledb.log('movecopySelected: action '+action+'   nodeids: '+nodeids);
-    consoledb.log('movecopySelected: getAllObjectsString(): '+getAllObjectsString());
+    consoledb.log('movecopySelected: getAllObjectsNodeids(): '+getAllObjectsNodeids());
 
-    if (!nodeids) nodeids = getAllObjectsString();
+    nodeids = nodeids ? nodeids.toString().split(',') : getAllObjectsNodeids();
 
-    //showOverlay();
     parent.currentselection = nodeids;
-    parent.action = action;
-    if (!nodeids) nodeids = getAllObjectsString(); /* use given id */
 
     var confirm_msg = parent.$('#select_target_dir').text().replace(/\\n/g, '\n');
-    if(ids && confirm(confirm_msg)){
-        //parent.idselection = ids;
-        parent.action = type;
-    }else{
-        parent.action = "";
-    }
+    parent.action = (nodeids.length > 0 && confirm(confirm_msg)) ? action : "";
+
     consoledb.log('parent.action:'+parent.action);
     consoledb.groupEnd('movecopySelected');
     return;
 }
 
+
 function deleteSelected(nodeids){
-    if (!nodeids){ /* use given id */
-        nodeids = getAllObjectsString();
-    }
-    if(nodeids){
-        if(confirm($('#delete_text').text())) {
-            // function edit_action_sync(action, src, ids, add) ...
-            var ret = edit_action_sync('delete', parent.last_activated_node.key, nodeids);
-            /*
-            ret.complete(function(){
-                //parent.tree.updateNodeLabel(parent.tree.currentfolder);
-                reloadPage(parent.tree.currentfolder, '');
-            });
-            */
-            reloadPage(parent.last_activated_node.key, '');
-            try {
-                //parent.last_activated_node.reloadChildren();
-                parent.last_activated_node.load(forceReload=true);
-                //parent.last_activated_node.setExpanded(true);
-                
-                
-            }    
-            catch(e) {
-                try {
-                  var nname = parent.last_activated_node.title;
-                  var nkey = parent.last_activated_node.key;
-                  consoledb.log('tried to reloadChildren() for node key='+nkey+', title='+nname+' caught: '+e);
-                }
-                catch(e) {
-                  consoledb.log('tried to reloadChildren() for node key='+nkey+', title='+nname+' caught: '+e);
-                }
-            }            
-            return true;
+    nodeids = nodeids ? nodeids.toString().split(',') : getAllObjectsNodeids();
+    if (nodeids.length == 0) return;
+
+    if(confirm($('#delete_text').text())) {
+        edit_action_sync('delete', parent.last_activated_node.key, nodeids);
+        reloadPage(parent.last_activated_node.key, '');
+        try {
+            parent.last_activated_node.load(forceReload=true);
         }
-      return false;
+        catch(e) {
+            consoledb.log('tried to reloadChildren() for node key='+
+                          parent.last_activated_node.key+', title='+parent.last_activated_node.title+' caught: '+e);
+        }
+        return true;
     }
+    return false;
 }
 
 
@@ -704,7 +676,7 @@ function saveSortPage(o1, o2){
 }
 
 
-function getAllObjectsString(){
+function getAllObjectsNodeids(){
     var s = [];
     $('input[id^="check"]:checked').each(function(){
         var nodeid = $(this).attr('id').substring(5);
@@ -712,5 +684,5 @@ function getAllObjectsString(){
             s.push(nodeid);
         }
     });
-    return s.join(',');
+    return s;
 }

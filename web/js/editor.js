@@ -551,12 +551,12 @@ function modal_confirm(msg) {
 }
 
 
-function editSelected(ids){
-    if (!ids){ /* use given id */
-        ids = getAllObjectsString();
+function editSelected(nodeid){
+    if (!nodeid){ /* use given id */
+        nodeid = getAllObjectsString();
     }
-    if (ids!=""){
-        document.location.href = '/edit/edit_content?ids='+ids+'&srcnodeid='+parent.idselection+'&tab=metadata';
+    if (nodeid!=""){
+        document.location.href = '/edit/edit_content?ids='+nodeid+'&srcnodeid='+parent.idselection+'&tab=metadata';
     }
 }
 

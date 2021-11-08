@@ -717,3 +717,15 @@ function saveSortPage(o1, o2){
         $("#message").show().delay(5000).fadeOut();
     });
 }
+
+
+function getAllObjectsString(){
+    var s = [];
+    $('input[id^="check"]:checked').each(function(){
+        var nodeid = $(this).attr('id').substring(5);
+        if (nodeid != 'node.id' & ! (s.includes(nodeid))){
+            s.push(nodeid);
+        }
+    });
+    return s.join(',');
+}

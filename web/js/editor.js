@@ -561,22 +561,18 @@ function editSelected(ids){
 }
 
 
-function movecopySelected(ids, type){
+function movecopySelected(action, nodeids){
     consoledb.groupCollapsed('movecopySelected');
-    consoledb.log('movecopySelected: ids '+ids+'   type: '+type);
+    consoledb.log('movecopySelected: action '+action+'   nodeids: '+nodeids);
     consoledb.log('movecopySelected: getAllObjectsString(): '+getAllObjectsString());
 
-    if (!ids){
-        ids = getAllObjectsString();
-    }
-    
-    //showOverlay();
-    parent.currentselection = ids;
-    parent.action = type;
+    if (!nodeids) nodeids = getAllObjectsString();
 
-    if(!ids){ /* use given id */
-        ids = getAllObjectsString();
-    }
+    //showOverlay();
+    parent.currentselection = nodeids;
+    parent.action = action;
+    if (!nodeids) nodeids = getAllObjectsString(); /* use given id */
+
     var confirm_msg = parent.$('#select_target_dir').text().replace(/\\n/g, '\n');
     if(ids && confirm(confirm_msg)){
         //parent.idselection = ids;

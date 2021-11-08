@@ -4,7 +4,7 @@
     <script tal:content="python:u'var ids = \'{}\';'.format(ids)"> </script>
     <script>
         $(document).ready(function () {
-          movecopySelected(ids, action);
+          movecopySelected(action, ids);
         });
     </script>
 </tal:block>

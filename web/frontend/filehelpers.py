@@ -50,16 +50,16 @@ def splitpath(path):
         return m.group(2), None
 
 
-def node_id_from_req_path(req):
-    parts = splitpath(req.mediatum_contextfree_path)
+def node_id_from_req_path(path):
+    parts = splitpath(path)
 
     if not parts:
-        raise ValueError("invalid node ID path '{}'".format(req.mediatum_contextfree_path))
+        raise ValueError("invalid node ID path '{}'".format(path))
 
     nid = userinput.string_to_int(parts[0])
 
     if nid is None:
-        raise ValueError("path contains an invalid node ID: '{}'".format(req.mediatum_contextfree_path))
+        raise ValueError("path contains an invalid node ID: '{}'".format(path))
 
     return nid
 

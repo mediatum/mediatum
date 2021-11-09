@@ -43,7 +43,7 @@ def _send_thumbnail(thumb_type, req):
         return 400
 
 
-    version_id = version_id_from_req(req)
+    version_id = version_id_from_req(req.args)
 
     node_or_version = get_node_or_version(nid, version_id, Data)
 
@@ -114,7 +114,7 @@ def _send_file_with_type(filetype, mimetype, req, checkonly=False):
         req.response.status_code = 400
         return 400
 
-    version_id = version_id_from_req(req)
+    version_id = version_id_from_req(req.args)
     node = get_node_or_version(nid, version_id, Content)
 
     if node is None or not node.has_data_access():
@@ -159,7 +159,7 @@ def send_image(req):
         req.response.status_code = 404
         return 400
 
-    version_id = version_id_from_req(req)
+    version_id = version_id_from_req(req.args)
 
     node = get_node_or_version(nid, version_id, Content)
 
@@ -221,7 +221,7 @@ def send_original_file(req):
         req.response.status_code = 400
         return 400
 
-    version_id = version_id_from_req(req)
+    version_id = version_id_from_req(req.args)
 
     node = get_node_or_version(nid, version_id, Data)
 
@@ -252,7 +252,7 @@ def send_file(req):
         req.response.status_code = 400
         return 400
 
-    version_id = version_id_from_req(req)
+    version_id = version_id_from_req(req.args)
 
     node = get_node_or_version(nid, version_id)
 
@@ -323,7 +323,7 @@ def send_attfile(req):
         req.response.status_code = 404
         return 400
 
-    version_id = version_id_from_req(req)
+    version_id = version_id_from_req(req.args)
 
     node = get_node_or_version(nid, version_id, Data)
 

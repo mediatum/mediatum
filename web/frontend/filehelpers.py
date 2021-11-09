@@ -64,10 +64,10 @@ def node_id_from_req_path(path):
     return nid
 
 
-def version_id_from_req(req):
-    version = req.args.get("v")
+def version_id_from_req(req_args):
+    version = req_args.get("v")
     if version != u"published":
-        return req.args.get("v", type=int)
+        return req_args.get("v", type=int)
     return version
 
 

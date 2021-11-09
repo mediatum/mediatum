@@ -69,13 +69,13 @@ def _prepare_document_data(node, req, words=""):
             obj['documentdownload'] = u'/download/{}/{}.pdf'.format(node.id, node.id)
 
             if not node.isActiveVersion():
-                version_id = unicode(version_id_from_req(req))
+                version_id = unicode(version_id_from_req(req.args))
                 obj['documentlink'] += "?v=" + version_id
                 obj['documentdownload'] += "?v=" + version_id
 
     obj['documentthumb'] = u'/thumb2/{}'.format(node.id)
     if not node.isActiveVersion():
-        version_id = unicode(version_id_from_req(req))
+        version_id = unicode(version_id_from_req(req.args))
         obj['documentthumb'] += "?v=" + version_id
         obj['tag'] = version_id
 

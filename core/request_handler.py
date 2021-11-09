@@ -375,9 +375,6 @@ class MediatumForm(_Form):
 
 
 def done(req):
-    "finalize this transaction - send output to the http channel"
-    unlink_tempfiles(req)
-
     # ----------------------------------------
     # persistent connection management
     # ----------------------------------------
@@ -424,16 +421,6 @@ def error(req, code, s=None, content_type='text/html'):
     req.response.content_type = content_type
     req.response.set_data(s)
     done(req)
-
-
-def unlink_tempfiles(req):
-    unlinked_tempfiles = []
-    if hasattr(req, "tempfiles"):
-        for f in req.tempfiles:
-            _os.unlink(f)
-            unlinked_tempfiles.append(f)
-            _logg.debug("unlinked tempfile %s", f)
-    return unlinked_tempfiles
 
 
 def sendFile(req, path, content_type, force=0, nginx_x_accel_redirect_enabled=True):

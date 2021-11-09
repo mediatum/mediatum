@@ -1202,9 +1202,12 @@ function reload_htree_filtered(homenodefilter) {
         var ajax_response;
 
         var options = {
-              url: '/edit/edit_action?srcnodeid='+idselection+'&ids='+currentselection.join(",")+'&style=popup'+url,
+              url: '/edit/edit_action?srcnodeid='+idselection+'&style=popup'+url,
               async: false,
               dataType: 'json',
+              type: 'POST',
+              traditional: true, //"would POST param "id[]" with brackets in the name otherwise
+              data: { ids: currentselection, csrf_token: csrf},
               success: function (data) {
                 consoledb.log('entering callback function ...');
                 if (data!=""){

@@ -413,9 +413,12 @@ function edit_action_sync(action, src, nodeids, add) {
     }    
 
     var options = {
-          url: '/edit/edit_action?srcnodeid='+src+'&ids='+nodeids.join(",")+'&style=popup'+url,
+          url: '/edit/edit_action?srcnodeid='+src+'&style=popup'+url,
           async: false,
           dataType: 'json',
+          type: 'POST',
+          traditional: true, //"would POST param "id[]" with brackets in the name otherwise
+          data: {ids: nodeids, csrf_token: parent.csrf},
           success: function (response) {
               ajax_response = response;
               new_path_endpoint = response.key;

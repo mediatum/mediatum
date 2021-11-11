@@ -196,7 +196,7 @@ class ShowDirNav(object):
 
     def get_children(self, node, sortfield):
         nodes = node.content_children.prefetch_attrs() # XXX: ?? correct
-        make_search_content = get_make_search_content_function(self.req)
+        make_search_content = get_make_search_content_function(self.req.args)
         paths = get_accessible_paths(node, q(Node).prefetch_attrs())
         if make_search_content:
             content_or_error = make_search_content(self.req, paths)

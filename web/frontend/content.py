@@ -758,15 +758,15 @@ def render_content_nav(req, node, logo, styles, select_style_link, print_url, pa
     return content_nav_html
 
 
-def get_make_search_content_function(req):
+def get_make_search_content_function(req_args):
     """Derives from query parameters if a simple or extended search should be run.
     Returns the function that renders the search content or None, if no search should be done.
     """
         
-    if req.args.get("query", "").strip():
+    if req_args.get("query", "").strip():
         return simple_search
     else:
-        searchmode = req.args.get("searchmode")
+        searchmode = req_args.get("searchmode")
 
         if searchmode in ("extended", "extendedsuper"):
             if searchmode == "extended":
@@ -775,9 +775,7 @@ def get_make_search_content_function(req):
                 field_range = xrange(1,11)
 
             for ii in field_range:
-                if req.args.get("query" + str(ii), "").strip() or \
-                        req.args.get("query" + str(ii) + "-from", "").strip() or \
-                        req.args.get("query" + str(ii) + "-to", "").strip():
+                if any(req_args.get("query{}{}".format(ii, iii).strip()) for iii in ("", "-from", "-to")):
                     return extended_search
 
 
@@ -806,7 +804,7 @@ def render_content_occurences(node, req, paths):
 
 
 def render_content(node, req, render_paths=True, show_id=None):
-    make_search_content = get_make_search_content_function(req)
+    make_search_content = get_make_search_content_function(req.args)
 
     if render_paths and node is not None:
         paths = get_accessible_paths(node, q(Node).prefetch_attrs())

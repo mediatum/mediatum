@@ -575,7 +575,7 @@ def importMetaSchema(filename):
 class Metadatatype(Node):
 
     masks = children_rel("Mask")
-    metafields = children_rel("Metafield")
+    metafields = children_rel("Metafield", viewonly=True)
 
     @property
     def description(self):
@@ -827,7 +827,7 @@ def getMaskTypes(key="."):
 @check_type_arg
 class Mask(Node):
 
-    maskitems = children_rel("Maskitem", lazy="joined", order_by="Maskitem.orderpos")
+    maskitems = children_rel("Maskitem", lazy="joined", order_by="Maskitem.orderpos", viewonly=True)
 
     _metadatatypes = parents_rel("Metadatatype")
 
@@ -1298,7 +1298,7 @@ class Mask(Node):
 @check_type_arg
 class Maskitem(Node):
 
-    _metafield_rel = children_rel("Metafield", backref="maskitems", lazy="joined")
+    _metafield_rel = children_rel("Metafield", backref="maskitems", lazy="joined", viewonly=True)
 
     @property
     def metafield(self):

@@ -739,7 +739,7 @@ def make_node_content(node, req, paths):
     return c
 
 
-def render_content_nav(req, node, logo, styles, select_style_link, print_url, paths):
+def render_content_nav(node, logo, styles, select_style_link, print_url, paths):
     if paths:
         shortest_path = sorted(paths, key=lambda p: (len(p), p[-1].id))[0]
     else:
@@ -841,7 +841,7 @@ def render_content(node, req, render_paths=True, show_id=None):
         select_style_link = content.select_style_link
         print_url = content.print_url
         styles = content.content_styles
-        content_nav_html = render_content_nav(req, node, logo, styles, select_style_link, print_url, paths)
+        content_nav_html = render_content_nav(node, logo, styles, select_style_link, print_url, paths)
 
 
     if isinstance(show_id, list) and hasattr(content, 'show_id'):

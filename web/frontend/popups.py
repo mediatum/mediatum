@@ -24,7 +24,6 @@ import functools as _functools
 import itertools as _itertools
 
 from schema.schema import getMetadataType
-from lib.pdf import printview
 
 import sqlalchemy as _sqlalchemy
 import backports.functools_lru_cache as _backports_functools_lru_cache
@@ -42,6 +41,7 @@ from core import httpstatus
 from core.request_handler import sendFile as _sendFile
 import core.database.postgres as _database_postgres
 import core.database.postgres.node as _database_postgres_node
+import web.frontend.printview as _printview
 
 #
 # execute fullsize method from node-type
@@ -284,8 +284,17 @@ def show_printview(req):
             children = sorted_children
 
     print_dir = []
-    printfile = printview.getPrintView(lang(req), imagepath, metadata, getPaths(node), style, children, getCollection(node),
-                                       return_file=True, print_dir = print_dir)
+    printfile = _printview.getPrintView(
+        lang(req),
+        imagepath,
+        metadata,
+        getPaths(node),
+        style,
+        children,
+        getCollection(node),
+        return_file=True,
+        print_dir=print_dir
+    )
     _sendFile(req, printfile, "application/pdf", nginx_x_accel_redirect_enabled=False)
     if print_dir:
         shutil.rmtree(print_dir[0], ignore_errors=True)

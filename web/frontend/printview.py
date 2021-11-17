@@ -26,14 +26,11 @@ from multiprocessing import Process
 import shutil
 import logging
 
-try:
-    from reportlab.platypus import Paragraph, BaseDocTemplate, SimpleDocTemplate, FrameBreak, Table, TableStyle, Image as PdfImage, Frame, PageBreak, PageTemplate
-    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-    from reportlab.lib.units import cm
-    from reportlab.rl_config import defaultPageSize
-    reportlab = 1
-except:
-    reportlab = 0
+from reportlab.platypus import Paragraph, BaseDocTemplate, SimpleDocTemplate, FrameBreak, Table, TableStyle, Image as PdfImage, Frame, PageBreak, PageTemplate
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import cm
+from reportlab.rl_config import defaultPageSize
+
 
 from core.translation import t
 from core.webconfig import node_url
@@ -275,8 +272,6 @@ class PrintPreview:
 
 def getPrintView(lang, imagepath, metadata, paths, style=1, children=[], collection=None, return_file=False, print_dir=None):  # style=1: object, style=3: liststyle
     """ returns pdf content of given item """
-    if not reportlab:
-        return None
     pv = PrintPreview(lang, config.get("host.name"))
     pv.setHeader(collection)
 

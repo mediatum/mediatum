@@ -290,12 +290,10 @@ def getPrintView(lang, imagepath, metadata, paths, style, children, collection, 
         # objectlist
         pv.addData(Paragraph(t(pv.language, "print_view_list"), pv.bp))
         pv.addChildren(children)
-    try:
-        p = Process(target=pv.build,args=(dest_file,))
-        p.start()
-        p.join(timeout=60)
-        if p.is_alive():
-            p.terminate()
 
-    except Exception as e:
-        logg.exception("exception in getPrintView")
+    p = Process(target=pv.build,args=(dest_file,))
+    p.start()
+    p.join(timeout=60)
+    if p.is_alive():
+        p.terminate()
+        raise RuntimeError("getPrintView")

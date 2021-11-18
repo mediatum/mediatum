@@ -959,27 +959,3 @@ def new_temp_download_file(filename):
     with tempfile.NamedTemporaryFile(prefix="tmp_", suffix=filename,  dir=tmppath, delete=False) as outfile:
         os.chmod(outfile.name, 0o644)
         return outfile.name
-
-
-if __name__ == "__main__":
-    def tt(s):
-        t, f, l = splitname(s)
-        print "Title:", t, "| Vorname:", f, "| Nachname:", l
-
-
-    tt("Hans Maier (Prof. Dr.)")
-    tt("Hans Peter-Juergen Maier (Prof. Dr.)")
-    tt("Hans Peter-Juergen Maier (Prof. Dr. (univ))")
-    tt("Hans Peter-Juergen Maier (Prof. Dr. (Uni Berlin))")
-
-    print clean_path("../../etc/passwd")
-    print clean_path("../etc/passwd")
-    print clean_path("test.txt")
-    print clean_path("../test.txt")
-    print clean_path("//etc/passwd")
-    print clean_path("test^^.txt")
-
-    print union([[1, 2, 3], [3, 4, 5]])
-    print intersection([[1, 2, 3], [3, 4, 5]])
-    print union([{1: 1, 2: 2, 3: 3}, {3: 3, 4: 4, 5: 5}])
-    print intersection([{1: 1, 2: 2, 3: 3}, {3: 3, 4: 4, 5: 5}])

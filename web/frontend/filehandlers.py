@@ -20,7 +20,7 @@ from contenttypes import Container
 from contenttypes import Content
 from contenttypes.data import Data
 from schema.schema import existMetaField
-from web.frontend.filehelpers import sendZipFile, splitpath, build_transferzip, node_id_from_req_path, split_image_path,\
+from web.frontend.filehelpers import splitpath, build_transferzip, node_id_from_req_path, split_image_path,\
     preference_sorted_image_mimetypes, version_id_from_req, get_node_or_version
 from utils import userinput
 import utils.utils
@@ -308,28 +308,6 @@ def send_file(req):
 
     req.response.status_code = 404
     return 404
-
-
-def send_attachment(req):
-    try:
-        nid = node_id_from_req_path(req)
-        version_id = version_id_from_req(req)
-    except ValueError:
-        req.response.status_code = 400
-        return 400
-
-    node = get_node_or_version(nid, version_id, Data)
-
-    if (node is None
-            or isinstance(node, Container) and not node.has_read_access()
-            or isinstance(node, Content) and not node.has_data_access()):
-        req.response.status_code = 404
-        return 404
-
-    attachment_file = node.files.filter_by(filetype=u"attachment").first()
-    if attachment_file is not None:
-        # filename is attachment.zip
-        sendZipFile(req, file.abspath)
 
 
 def send_attfile(req):

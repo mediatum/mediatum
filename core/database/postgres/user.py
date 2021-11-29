@@ -112,7 +112,6 @@ class User(DeclarativeBase, TimeStamp, UserMixin):
     active = C(Boolean, server_default="true")
 
     # options
-    can_edit_shoppingbag = C(Boolean, server_default="false")
     can_change_password = C(Boolean, server_default="false")
 
     home_dir_id = integer_fk("node.id")

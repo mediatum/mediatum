@@ -88,29 +88,6 @@ def get_node_or_version(nid, version_id=None, nodeclass=Node):
     return version if version is not None else node
 
 
-def sendZipFile(req, path):
-    tempfile = os.path.join(config.get("paths.tempdir"), "{}.zip".format(_utils_utils.gen_secure_token(128)))
-    zip = zipfile.ZipFile(tempfile, "w")
-    zip.debug = 3
-
-    def r(p):
-        if os.path.isdir(os.path.join(path, p)):
-            for file in os.listdir(os.path.join(path, p)):
-                r(os.path.join(p, file))
-        else:
-            while len(p) > 0 and p[0] == "/":
-                p = p[1:]
-            with suppress(Exception, warn=False):
-                zip.write(os.path.join(path, p), p)
-
-    r("/")
-    zip.close()
-    req.response.headers['Content-Disposition'] = "attachment; filename=shoppingbag.zip"
-    _sendFile(req, tempfile, "application/zip", nginx_x_accel_redirect_enabled=False)
-    if os.sep == '/':  # Unix?
-        os.unlink(tempfile)  # unlinking files while still reading them only works on Unix/Linux
-
-
 def sendBibFile(req, path):
     req.response.headers['Content-Disposition'] = "attachment; filename=export.bib"
     _sendFile(req, path, getMimeType(path))

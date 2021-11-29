@@ -71,7 +71,6 @@ class SingleFile(object):
         if fullstyle_name:
             link_params["style"] = fullstyle_name
         self.link = node_url(**link_params)
-        self.shopping_bag_link = u'shoppingBag(\'{}\')'.format(node.id)
         self.node = node
 
     def getLink(self):

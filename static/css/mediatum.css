@@ -426,3 +426,8 @@ ul#navigationlist li div a:visited { color: #004682;}
 .mediatum-stylelist-div{
     padding-top:5px;
 }
+
+.mediatum_minithumb {
+    height: 128px;
+    width: 128px;
+}

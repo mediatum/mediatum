@@ -9,8 +9,6 @@ let
 
 in let
 
-  inherit (import ../nixpkgs.nix {}) pkgs1803a;
-
   python =
     # Each file in `python-packages` is treated as a package.
     # The name of the package is the filename (minus `.nix`).
@@ -86,13 +84,14 @@ in let
     ;
     inherit (pkgs)
       ffmpeg
+      ghostscript
       glibcLocales
+      graphicsmagick
       graphviz-nox
       icu
       pdftk
       poppler_utils
     ;
-    inherit (pkgs1803a) ghostscript graphicsmagick;
     inherit (pkgs.perlPackages) ImageExifTool;
   };
 

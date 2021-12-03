@@ -26,7 +26,6 @@ import flask as _flask
 from utils.locks import named_lock as _named_lock
 import codecs
 from utils.strings import ensure_unicode_returned
-from werkzeug import parse_accept_header, LanguageAccept
 
 
 class _POFile:

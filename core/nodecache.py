@@ -47,3 +47,9 @@ def get_workflows_node():
     """Workflows object may not change during runtime, so we can cache it indefinitely"""
     from workflow.workflow import Workflows
     return _get_singleton_node(Workflows)
+
+
+def get_mappings_node():
+    """Mappings object may not change during runtime, so we can cache it indefinitely"""
+    from core.systemtypes import Mappings
+    return _get_singleton_node(Mappings)

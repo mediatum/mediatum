@@ -32,7 +32,7 @@ import core.translation as _translation
 
 from core import Node
 from core import db
-from core.systemtypes import Mappings
+import core.nodecache as _nodecache
 from schema.mapping import Mapping, MappingField
 import schema.schema as _schema
 import core.database.postgres.node as _node
@@ -88,7 +88,7 @@ def validate(req, op):
     if req.params.get("acttype", "mapping") == "mapping":
 
         if req.params.get("formtype", "") == "configuration" and "save_config" in req.params:
-            mappingroot = q(Mappings).one()
+            mappingroot = _nodecache.get_mappings_node()
             mappingroot.set("mappingtypes", req.params.get("mappingtypes", "").replace("\r\n", ";").replace("\n", ";"))
             db.session.commit()
             return view(req)

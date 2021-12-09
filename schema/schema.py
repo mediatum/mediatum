@@ -165,7 +165,8 @@ def loadTypesFromDB():
     return list(_nodecache.get_metadatatypes_node().children.order_by("name"))
 
 def get_permitted_schemas():
-    return q(Metadatatype).filter(Metadatatype.a.active == "1").filter_read_access().order_by(Metadatatype.a.longname).all()
+    metadatatypes = _nodecache.get_metadatatypes_node()
+    return metadatatypes.children.filter(Metadatatype.a.active == "1").filter_read_access().order_by(Metadatatype.a.longname).all()
 
 def get_permitted_schemas_for_datatype(datatype):
     return [sc for sc in get_permitted_schemas() if datatype in sc.getDatatypes()]

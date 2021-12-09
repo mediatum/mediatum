@@ -136,6 +136,17 @@ class Audio(Content):
     def get_sys_filetypes(cls):
         return [u"audio", u"thumb", u"presentation", u"mp3"]
 
+    # compare document.py and
+    # core.database.postgres.file.File.ORIGINAL_FILETYPES:
+    # [u'document', u'original', u'video', u'audio']
+    @property
+    def audio(self):
+        # XXX: this should be one() instead of first(), but we must enforce this unique constraint in the DB first
+        return self.files.filter_by(filetype=u"audio").first()
+
+    def has_object(self):
+        return bool(self.audio)
+
     # prepare hash table with values for TAL-template
     def _prepareData(self, req):
         obj = prepare_node_data(self, req)
@@ -151,12 +162,12 @@ class Audio(Content):
         obj['attachment'] = files
         obj['sum_size'] = sum_size
 
-        can_see_original = self.has_data_access()
-        obj['canseeoriginal'] = can_see_original
+        obj['data_access'] = self.has_data_access()
+        obj['has_original'] = self.has_object()
 
         # adapted from video.py
         # user must have data access for audio playback
-        if can_see_original:
+        if obj['data_access']:
             audio_file = self.files.filter_by(filetype=u"audio").scalar()
             obj["audio_url"] = u"/file/{}/{}".format(self.id, audio_file.base_name) if audio_file is not None else None
             versions = self.tagged_versions.all()
@@ -176,12 +187,6 @@ class Audio(Content):
             obj["audio_url"] = None
 
         return obj
-
-    def has_object(self):
-        for f in self.files:
-            if f.type == "audio":
-                return True
-        return False
 
     """ postprocess method for object type 'audio'. called after object creation """
     def event_files_changed(self):

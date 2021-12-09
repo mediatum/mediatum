@@ -57,8 +57,10 @@ def _prepare_document_data(node, req, words=""):
     if node.getMask(u"bibtex"):
         obj['bibtex'] = True
 
-    if node.has_object():
-        obj['canseeoriginal'] = node.has_data_access()
+    obj['data_access'] = node.has_data_access()
+    obj['has_original'] = node.has_object()
+
+    if obj['has_original']:
         if node.system_attrs.get('origname') == "1":
             obj['documentlink'] = u'/doc/{}/{}'.format(node.id, node.name)
             obj['documentdownload'] = u'/download/{}/{}'.format(node.id, node.name)
@@ -70,9 +72,6 @@ def _prepare_document_data(node, req, words=""):
                 version_id = unicode(version_id_from_req(req))
                 obj['documentlink'] += "?v=" + version_id
                 obj['documentdownload'] += "?v=" + version_id
-
-    else:
-        obj['canseeoriginal'] = False
 
     obj['documentthumb'] = u'/thumb2/{}'.format(node.id)
     if not node.isActiveVersion():
@@ -115,7 +114,7 @@ class Document(Content):
         return self.files.filter_by(filetype=u"document").first()
 
     def has_object(self):
-        return self.document is not None
+        return bool(self.document)
 
     """ postprocess method for object type 'document'. called after object creation """
     def event_files_changed(self):

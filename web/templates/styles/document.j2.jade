@@ -5,7 +5,7 @@
   = metis(metis_url)
 
 - block before_metadata
-  if canseeoriginal
+  if data_access and has_original
     .object_image.object_column.left
       .document_thumb
         a(href=documentlink, target="documentdownload", onclick="vgwPixelCall();", title=_t("doc_fulltext_title"))

@@ -5,7 +5,7 @@
   = metis(metis_url)
 
 - block after_metadata
-  if canseeoriginal
+  if data_access and has_original
     .action_icon
       a(href=documentlink, target="documentdownload", onclick="vgwPixelCall();", title=_t("doc_fulltext_title"))
         img(src="/img/pdf.gif") 

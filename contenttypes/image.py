@@ -276,6 +276,17 @@ class Image(Content):
 
         return int(self.get("width") or 0) > Image.ZOOM_SIZE or int(self.get("height") or 0) > Image.ZOOM_SIZE
 
+    # compare document.py and
+    # core.database.postgres.file.File.ORIGINAL_FILETYPES:
+    # [u'document', u'original', u'video', u'audio']
+    @property
+    def original(self):
+        # XXX: this should be one() instead of first(), but we must enforce this unique constraint in the DB first
+        return self.files.filter_by(filetype=u"original").first()
+
+    def has_object(self):
+        return bool(self.original)
+
     def image_url_for_mimetype(self, mimetype):
         try:
             file_ext = Image.EXTENSION_FOR_MIMETYPE[mimetype]
@@ -318,7 +329,8 @@ class Image(Content):
 
         obj["highres_url"] = None
 
-        can_see_original = self.has_data_access()
+        obj['data_access'] = self.has_data_access()
+        obj['has_original'] = self.has_object()
 
         use_flash_zoom = config.getboolean("image.use_flash_zoom", True) and self.should_use_zoom
         image_url = '/fullsize?id=%d' % self.id if use_flash_zoom else '/image/%d' % self.id
@@ -326,7 +338,7 @@ class Image(Content):
 
         archive = get_archive_for_node(self)
         if archive:
-            if can_see_original:
+            if obj['has_original']:
                 obj['highres_url'] = u"/file/{nid}/{nid}.tif".format(nid=self.id)
                 archive_state = archive.get_file_state(self)
                 if archive_state == Archive.NOT_PRESENT:
@@ -338,7 +350,6 @@ class Image(Content):
 
         files, sum_size = filebrowser(self, req)
 
-        obj['canseeoriginal'] = can_see_original
         obj['preferred_image_url'] = self.preferred_image_url
         obj["image_formats"] = self.get_image_formats()
         obj['zoom'] = self.zoom_available

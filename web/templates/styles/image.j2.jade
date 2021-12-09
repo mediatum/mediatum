@@ -5,7 +5,7 @@
   = metis(metis_url)
 
 -block before_metadata
-  if canseeoriginal
+  if data_access
     .object_image.object_column.left.mediatum_paddingimg
       if zoom
         a(href=image_url, onclick="vgwPixelCall();", target='_blank')

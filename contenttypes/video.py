@@ -63,6 +63,17 @@ class Video(Content):
     def get_sys_filetypes(cls):
         return [u"presentation", u"thumb", u"video"]
 
+    # compare document.py and
+    # core.database.postgres.file.File.ORIGINAL_FILETYPES:
+    # [u'document', u'original', u'video', u'audio']
+    @property
+    def video(self):
+        # XXX: this should be one() instead of first(), but we must enforce this unique constraint in the DB first
+        return self.files.filter_by(filetype=u"video").first()
+
+    def has_object(self):
+        return bool(self.video)
+
     def _prepareData(self, req, words=""):
         obj = prepare_node_data(self, req)
         if obj["deleted"]:
@@ -83,11 +94,11 @@ class Video(Content):
         obj['attachment'] = files
         obj['sum_size'] = sum_size
 
-        can_see_original = self.has_data_access()
-        obj['canseeoriginal'] = can_see_original
+        obj['data_access'] = self.has_data_access()
+        obj['has_original'] = self.has_object()
 
         # user must have data access for video playback
-        if can_see_original:
+        if obj['data_access']:
             video = self.files.filter_by(filetype=u"video").scalar()
             obj["video_url"] = u"/file/{}/{}".format(self.id, video.base_name) if video is not None else None
             if not self.isActiveVersion():

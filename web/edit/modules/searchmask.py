@@ -25,7 +25,8 @@ from core import httpstatus
 import json
 from core import Node
 from core import db
-from core.systemtypes import Searchmasks, Metadatatypes
+import core.nodecache as _nodecache
+from core.systemtypes import Searchmasks
 
 q = db.query
 
@@ -145,7 +146,7 @@ def getContent(req, ids):
             idstr=",".join(ids),
             node=node,
             searchtype=searchtype,
-            schemas=q(Metadatatypes).one().children.sort_by_name().all(),
+            schemas=_nodecache.get_metadatatypes_node().children.sort_by_name().all(),
             searchfields=fields,
             selectedfield=selectedfield,
             newfieldlink="edit_content?srcnodeid={nid}&id={nid}&tab=searchmask".format(nid=node.id),

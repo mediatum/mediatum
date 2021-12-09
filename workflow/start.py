@@ -27,12 +27,12 @@ from schema.schema import getMetaType
 from core.translation import t, lang, addLabels, switch_language
 import utils.date as date
 from utils.utils import mkKey
-from core.systemtypes import Metadatatypes
 from core import Node
 from core import db
 from schema.schema import Metafield
 from core.database.postgres.permission import AccessRule, AccessRulesetToRule
 from core import UserGroup
+import core.nodecache as _nodecache
 from core.permission import get_or_add_access_rule
 
 q = db.query
@@ -55,7 +55,7 @@ class WorkflowStep_Start(WorkflowStep):
         message = ""
 
         # check existence of metadata types listed in the definition of the start node
-        mdts = q(Metadatatypes).one()
+        mdts = _nodecache.get_metadatatypes_node()
         for schema in typenames:
             if not mdts.children.filter_by(name=schema.strip().split("/")[-1]).scalar():
                 return ('<i>%s: %s </i>') % (schema, t(lang(req), "permission_denied"))

@@ -53,3 +53,9 @@ def get_mappings_node():
     """Mappings object may not change during runtime, so we can cache it indefinitely"""
     from core.systemtypes import Mappings
     return _get_singleton_node(Mappings)
+
+
+def get_metadatatypes_node():
+    """Metadatatypes object may not change during runtime, so we can cache it indefinitely"""
+    from core.systemtypes import Metadatatypes
+    return _get_singleton_node(Metadatatypes)

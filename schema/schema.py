@@ -40,6 +40,7 @@ from core import Node
 from core.xmlnode import getNodeXML, readNodeXML
 from core.metatype import Metatype
 from core import db
+import core.nodecache as _nodecache
 from core.systemtypes import Metadatatypes
 from core.translation import lang
 from core.postgres import check_type_arg
@@ -152,7 +153,7 @@ def getMetaType(name):
     if name.find("/") > 0:
         name = name[name.rfind("/") + 1:]
 
-    return q(Metadatatypes).one().children.filter_by(name=name).scalar()
+    return _nodecache.get_metadatatypes_node().children.filter_by(name=name).scalar()
 
 #
 # load all meta-types from db
@@ -161,7 +162,7 @@ def getMetaType(name):
 def loadTypesFromDB():
     warn("use q(Metadatatypes) instead", DeprecationWarning)
     # do not use list(q(Metadatatype).order_by("name")) which reports also deleted nodes from type metadatatype
-    return list(q(Metadatatypes).one().children.order_by("name"))
+    return list(_nodecache.get_metadatatypes_node().children.order_by("name"))
 
 def get_permitted_schemas():
     return q(Metadatatype).filter(Metadatatype.a.active == "1").filter_read_access().order_by(Metadatatype.a.longname).all()
@@ -183,7 +184,7 @@ def existMetaType(name):
 # update/create metatype by given object
 #
 def updateMetaType(name, description="", longname="", active=0, datatypes="", bibtexmapping="", orig_name="", citeprocmapping=""):
-    metadatatypes = q(Metadatatypes).one()
+    metadatatypes = _nodecache.get_metadatatypes_node()
     metadatatype = metadatatypes.children.filter_by(name=orig_name).scalar()
 
     if metadatatype is not None:
@@ -584,7 +585,7 @@ def parseEditorData(req, node):
 #
 def exportMetaScheme(name):
     if name == "all":
-        return getNodeXML(q(Metadatatypes).one())
+        return getNodeXML(_nodecache.get_metadatatypes_node())
     else:
         return getNodeXML(getMetaType(name))
 
@@ -601,7 +602,7 @@ def importMetaSchema(filename):
         for ch in n.children:
             importlist.append(ch)
 
-    metadatatypes = q(Metadatatypes).one()
+    metadatatypes = _nodecache.get_metadatatypes_node()
     for m in importlist:
         m.name = u"{}_import_{}".format(m.name, _utils.utils.gen_secure_token(128))
         if not metadatatypes.children.filter_by(name=m.name).all():

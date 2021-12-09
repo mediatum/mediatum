@@ -28,7 +28,6 @@ from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilte
 from web.common.acl_web import makeList
 from utils.utils import removeEmptyStrings, esc, suppress
 from core.translation import lang, t
-import core.nodecache as _nodecache
 import core.translation as _translation
 from schema.schema import getMetaFieldTypeNames, getMetaType, updateMetaType, existMetaType, deleteMetaType, fieldoption, moveMetaField, getMetaField, deleteMetaField, getFieldsForMeta, dateoption, requiredoption, existMetaField, updateMetaField, generateMask, cloneMask, exportMetaScheme, importMetaSchema
 from schema.schema import VIEW_DEFAULT
@@ -47,7 +46,7 @@ import contenttypes as _contenttypes
 
 from core import Node
 from core import db
-from core.systemtypes import Metadatatypes
+import core.nodecache as _nodecache
 import core.systemtypes as _systemtypes
 from schema.schema import Metadatatype, Mask
 from core.database.postgres.permission import NodeToAccessRuleset
@@ -344,7 +343,7 @@ def validate(req, op):
 """ show all defined metadatatypes """
 
 def view(req):
-    mtypes = q(Metadatatypes).one().children.order_by("name").all()
+    mtypes = _nodecache.get_metadatatypes_node().children.order_by("name").all()
     actfilter = getFilter(req)
     used_by = _get_nodecount_per_metaschema()
 

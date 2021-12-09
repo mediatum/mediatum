@@ -34,6 +34,7 @@ from core.translation import t, lang, addLabels, getDefaultLanguage, switch_lang
 from core.users import user_from_session as _user_from_session
 from core.postgres import check_type_arg
 from core.database.postgres.permission import NodeToAccessRuleset
+import core.nodecache as _nodecache
 
 from utils.locks import named_lock as _named_lock
 
@@ -47,19 +48,19 @@ logg = logging.getLogger(__name__)
 
 
 def getWorkflowList():
-    return q(Workflows).one().children.all()
+    return _nodecache.get_workflows_node().children.all()
 
 
 def getWorkflow(name):
     if name.isdigit():
         return q(Workflow).get(name)
     else:
-        return q(Workflows).one().children.filter_by(name=name).one()
+        return _nodecache.get_workflows_node().children.filter_by(name=name).one()
 
 
 def addWorkflow(name, description):
     node = Workflow(name=name, type=u'workflow')
-    q(Workflows).one().children.append(node)
+    _nodecache.get_workflows_node().children.append(node)
     node.set("description", description)
     db.session.commit()
 
@@ -67,14 +68,13 @@ def addWorkflow(name, description):
 
 
 def updateWorkflow(name, description, nameattribute="", origname="", writeaccess=""):
-    workflows_root = q(Workflows).one()
     if origname == "":
-        if workflows_root.children.filter_by(name=name).scalar() is None:
+        if _nodecache.get_workflows_node().children.filter_by(name=name).scalar() is None:
             w = addWorkflow(name, description)
         else:
-            w = workflows_root.children.filter_by(name=name).one()
+            w = _nodecache.get_workflows_node().children.filter_by(name=name).one()
     else:
-        w = workflows_root.children.filter_by(name=origname).one()
+        w = _nodecache.get_workflows_node().children.filter_by(name=origname).one()
         w.name = name
     w.set("description", description)
     w.display_name_attribute = nameattribute
@@ -91,7 +91,7 @@ def updateWorkflow(name, description, nameattribute="", origname="", writeaccess
 
 
 def deleteWorkflow(id):
-    workflows = q(Workflows).one()
+    workflows = _nodecache.get_workflows_node()
     w = workflows.children.filter_by(name=id).one()
     workflows.children.remove(w)
     db.session.commit()
@@ -220,7 +220,7 @@ def create_update_workflow_step(
 
 
 def deleteWorkflowStep(workflowid, stepid):
-    workflows = q(Workflows).one()
+    workflows = _nodecache.get_workflows_node()
     wf = workflows.children.filter_by(name=workflowid).one()
     ws = wf.children.filter_by(name=stepid).one()
     wf.children.remove(ws)
@@ -282,7 +282,7 @@ def formatItemDate(d):
 
 def exportWorkflow(name):
     if name == "all":
-        return getNodeXML(q(Workflows).one())
+        return getNodeXML(_nodecache.get_workflows_node())
     else:
         return getNodeXML(getWorkflow(name))
 
@@ -299,7 +299,7 @@ def importWorkflow(filename):
     elif n.type == "workflows":
         for ch in n.children:
             importlist.append(ch)
-    workflows = q(Workflows).one()
+    workflows = _nodecache.get_workflows_node()
     for w in importlist:
         w.name = "import_" + w.name
         workflows.children.append(w)

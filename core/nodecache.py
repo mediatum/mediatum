@@ -41,3 +41,9 @@ def get_home_root_node():
     """Home object may not change during runtime, so we can cache it indefinitely"""
     from contenttypes import Home
     return _get_singleton_node(Home)
+
+
+def get_workflows_node():
+    """Workflows object may not change during runtime, so we can cache it indefinitely"""
+    from workflow.workflow import Workflows
+    return _get_singleton_node(Workflows)

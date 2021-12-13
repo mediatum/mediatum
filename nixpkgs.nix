@@ -2,7 +2,7 @@
 
 let
 
-  url = https://releases.nixos.org/nixpkgs/nixpkgs-19.03pre161557.34efe45ef8b/nixexprs.tar.xz;
+  url = https://releases.nixos.org/nixpkgs/nixpkgs-19.09pre170721.e52396ce2c0/nixexprs.tar.xz;
 
 in
 

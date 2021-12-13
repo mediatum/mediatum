@@ -344,6 +344,8 @@ def validate(req, op):
 
 def view(req):
     mtypes = _nodecache.get_metadatatypes_node().children.order_by("name").all()
+    if set(q(Metadatatype).all()) - set(mtypes):
+        raise RuntimeError(u"unlinked metadatatypes found")
     actfilter = getFilter(req)
     used_by = _get_nodecount_per_metaschema()
 

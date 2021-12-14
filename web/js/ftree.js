@@ -208,8 +208,7 @@ Owner of DHTMLgoodies.com
             thisNode.src = thisNode.src.replace(minusImage,plusImage);
             parentNode.getElementsByTagName('UL')[0].style.display='none';
             initExpandedNodes = initExpandedNodes.replace(',' + inputId,'');
-        }    
-        Set_Cookie('tree_expandedNodes',initExpandedNodes,500);
+        }
         if (e==false) window.scrollTo(0, thisNode.offsetTop);
         return false;
     }

@@ -3,8 +3,11 @@
         <tal:block tal:repeat="navitem python:menu">
         <!-- Main Menu -->
         <li tal:condition="python:len(navitem.getItemList())==0" tal:attributes="class python:{0:None,1:'selected'}[navitem.name==breadcrumbs[0]]">
-            <a i18n:translate="" tal:content="python:u'tab_{}'.format(navitem.getName())"
-            tal:attributes="href python:u'?id={}&tab={}'.format(idstr, navitem.getName());class python:u'mediatum_img_nav mediatum_img_{}'.format(navitem.getName())"/>
+            <a
+                i18n:translate=""
+                tal:content="python:u'tab_{}'.format(navitem.getName())"
+                tal:attributes="href python:u'?srcnodeid={}&id={}&tab={}'.format(srcnodeid, idstr, navitem.getName());class python:u'mediatum_img_nav mediatum_img_{}'.format(navitem.getName())"
+            />
         </li>
 
         <li tal:condition="python:len(navitem.getItemList())>0" tal:attributes="class python:{0:None,1:'selected'}[navitem.name==breadcrumbs[0]]">
@@ -20,7 +23,11 @@
                        <a i18n:translate="" tal:content="python:u'tab_{}'.format(item.getName())" tal:attributes="class python:u'mediatum_img_nav mediatum_img_{}'.format(item.getName())"/>
                     </tal:block>
                     <tal:block tal:condition="python:len(item.getItemList())==0">
-                            <a i18n:translate="" tal:content="python:u'tab_{}'.format(item.getName())" tal:attributes="class python:u'mediatum_img_nav mediatum_img_{}'.format(item.getName());href python:u'?id={}&tab={}'.format(idstr, item.getName())"/>
+                        <a
+                            i18n:translate=""
+                            tal:content="python:u'tab_{}'.format(item.getName())"
+                            tal:attributes="class python:u'mediatum_img_nav mediatum_img_{}'.format(item.getName());href python:u'?srcnodeid={}&id={}&tab={}'.format(srcnodeid, idstr, item.getName())"
+                        />
                     </tal:block>
                         <!-- Third Menu -->
                         <tal:block tal:condition="python:len(item.getItemList())>0 and item.getName() != u'menusortnodes'">
@@ -28,9 +35,11 @@
                             <li tal:repeat="item1 python:item.getItemList()">
                             <div>
                             <tal:block tal:condition="python:item1.getName().startswith('mark')==False">
-                            <a i18n:translate="" tal:content="python:u'tab_{}'.format(item1.getName())"
-                            tal:attributes="id  python:u'{}'.format(item1.getName());href python:u'?id={}&tab={}'.format(idstr, item1.getName());class python:u'mediatum_img_nav mediatum_img_{}'.format(item1.getName())">
-                                </a>
+                            <a
+                                i18n:translate=""
+                                tal:content="python:u'tab_{}'.format(item1.getName())"
+                                tal:attributes="id  python:u'{}'.format(item1.getName());href python:u'?srcnodeid={}&id={}&tab={}'.format(srcnodeid, idstr, item1.getName());class python:u'mediatum_img_nav mediatum_img_{}'.format(item1.getName())"
+                            />
                             </tal:block>
                             <tal:block tal:condition="python:item1.getName().startswith('mark')==True">
                             <div i18n:translate="" tal:attributes="tag python:u'{}'.format(item1.getName())" tal:content="python:u'tab_{}'.format(item1.getName())">TEXT</div>
@@ -44,7 +53,11 @@
                             <ul>
                                 <li tal:repeat="sortfield python:sort_choices">
                                     <div>
-                                        <a i18n:translate="" tal:content="python:u'{}'.format(sortfield.label)" tal:attributes="value python:sortfield.value; href python:u'?id={}&sortfield={}&nodes_per_page={}'.format(idstr, sortfield.value,nodes_per_page)"/>
+                                        <a
+                                            i18n:translate=""
+                                            tal:content="python:u'{}'.format(sortfield.label)"
+                                            tal:attributes="value python:sortfield.value; href python:u'?srcnodeid={}&id={}&sortfield={}&nodes_per_page={}'.format(srcnodeid, idstr, sortfield.value,nodes_per_page)"
+                                        />
                                     </div>
                                 </li>
                             </ul>

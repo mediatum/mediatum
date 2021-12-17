@@ -288,6 +288,7 @@ def handletabs(req, ids, tabs, sort_choices):
                 user=user,
                 ids=ids,
                 idstr=",".join(ids),
+                srcnodeid=req.values.get('srcnodeid', ''),
                 menu=menu,
                 breadcrumbs=getBreadcrumbs(menu, req.values.get("tab", tabs)),
                 sort_choices=sort_choices,

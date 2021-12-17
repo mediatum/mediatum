@@ -35,7 +35,11 @@ logg = logging.getLogger(__name__)
 
 
 def _redirect_to_view(req):
-    req.response.location = "{}?id={}&tab=changeschema".format(req.path, req.args["id"])
+    req.response.location = "{}?srcnodeid={}&id={}&tab=changeschema".format(
+            req.path,
+            req.values.get("srcnodeid", ""),
+            req.args["id"],
+        )
     return httpstatus.HTTP_MOVED_TEMPORARILY
 
 
@@ -141,4 +145,5 @@ def getContent(req, ids):
             d['datatypes'] = admissible_content_types
 
         d["csrf"] = req.csrf_token.current_token
+        d["srcnodeid"] = req.values.get("srcnodeid", "")
         return _tal.processTAL(d, file="web/edit/modules/changeschema.html", macro="changeschema_popup", request=req)

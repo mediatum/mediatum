@@ -20,6 +20,11 @@
                 success: function(data){
                     ajax_response = data;
                     $('#metaformcontent').html(data.content);
+                    $('<input>').attr({
+                        type: 'hidden',
+                        name: 'srcnodeid',
+                        value: id,
+                    }).appendTo($('#metaformcontent'));
                     $('#metaform').show();
                 }
             };
@@ -958,7 +963,7 @@
                   success: function(data){
                       ajax_response = data;
                       $('#metaform').hide();
-                      document.location = '/edit/edit_content?id='+data.newid+'&func=createMetaObject&tab=metadata'
+                      document.location = '/edit/edit_content?srcnodeid='+id+'&id='+data.newid+'&func=createMetaObject&tab=metadata'
                   }
                 };
 

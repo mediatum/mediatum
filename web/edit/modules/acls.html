@@ -81,6 +81,7 @@
 
     <form class="edit" name="myform" method="post">
         <input tal:attributes="value csrf" type="hidden" name="csrf_token">
+        <input tal:attributes="value srcnodeid" type="hidden" name="srcnodeid">
         <input type="hidden" name="save" value="save"/>
         <input type="hidden" name="nodeid" tal:attributes="value idstr"/>
         <p><input i18n:attributes="value edit_save_title" type="button" name="save" onClick="runsubmit()"/></p>

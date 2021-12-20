@@ -304,6 +304,7 @@ def getContent(req, ids):
 
     data.update(ctx)
     data["flag_nodename_changed"] = flag_nodename_changed
+    data["srcnodeid"] = req.values.get("srcnodeid", "")
 
     ret += _tal.processTAL(data, file="web/edit/modules/metadata.html", macro="edit_metadata", request=req)
     return ret

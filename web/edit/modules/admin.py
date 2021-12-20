@@ -130,6 +130,7 @@ def getContent(req, ids):
 
     return _tal.processTAL(
             dict(
+                srcnodeid=req.values.get("srcnodeid", ""),
                 id=req.params.get("id", "0"),
                 tab=req.params.get("tab", ""),
                 node=node,

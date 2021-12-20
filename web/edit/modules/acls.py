@@ -256,6 +256,7 @@ def getContent(req, ids):
 
     context = dict(
             runsubmit="\n{}\n".format("\n".join(runsubmit)),
+            srcnodeid=req.values.get("srcnodeid", ""),
             idstr=idstr,
             contentacl="".join(ret),
             adminuser=user.is_admin,

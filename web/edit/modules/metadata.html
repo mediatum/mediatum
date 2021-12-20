@@ -60,6 +60,7 @@
                 <input tal:attributes="value csrf" type="hidden" name="csrf_token">
                 <input type="hidden" name="tab" value="metadata">
                 <input tal:attributes="value idstr" type="hidden" name="id">
+                <input tal:attributes="value srcnodeid" type="hidden" name="srcnodeid">
                 <tal:block tal:condition="python:len(masklist)>1">
                     <span i18n:translate="edit_meta_mask_selection">TEXT</span>:
                     <select name="mask" onChange="this.form.submit()">
@@ -86,6 +87,7 @@
         <!--<div id="scrollcontent">-->
             <form class="edit" action="edit_content" method="post" id="myform">
                 <input tal:attributes="value csrf" type="hidden" name="csrf_token">
+                <input tal:attributes="value srcnodeid" type="hidden" name="srcnodeid">
                 <div class="label" style="width:225px">&nbsp;</div>
                 <input i18n:attributes="value edit_meta_save" type="submit" name="save"/>
                 <input i18n:attributes="value edit_meta_reset" type="reset"/>

@@ -52,6 +52,7 @@
             <div class="mediatum_files_options">
                 <form method="post" enctype="multipart/form-data">
                     <input tal:attributes="value csrf" type="hidden" name="csrf_token">
+                    <input tal:attributes="value srcnodeid" type="hidden" name="srcnodeid">
                             <b><tal:block i18n:translate="edit_files_change"/>:</b>
                             <p>
                                 <tal:block tal:condition="python:node.has_upload_file">
@@ -114,6 +115,7 @@
             <div id="files">
                 <form method="post">
                     <input tal:attributes="value csrf" type="hidden" name="csrf_token">
+                    <input tal:attributes="value srcnodeid" type="hidden" name="srcnodeid">
                     <table class="mediatum_filetable_files" cellpadding="0px" cellspacing="0px">
                         <tr>
                             <th i18n:translate="edit_files_location">TEXT</th>
@@ -148,6 +150,7 @@
                 <div id="attfiles">
                     <form method="post">
                         <input tal:attributes="value csrf" type="hidden" name="csrf_token">
+                        <input tal:attributes="value srcnodeid" type="hidden" name="srcnodeid">
                             <table class="mediatum_filetable_files" cellpadding="0px" cellspacing="0px">
                                 <tr>
                                     <th i18n:translate="edit_files_type">TEXT</th>
@@ -194,6 +197,7 @@
                 <div id="statfiles">
                     <form method="post">
                         <input tal:attributes="value csrf" type="hidden" name="csrf_token">
+                        <input tal:attributes="value srcnodeid" type="hidden" name="srcnodeid">
                             <table class="mediatum_filetable_files" cellpadding="0px" cellspacing="0px">
                                 <tr>
                                     <th i18n:translate="edit_files_type">TEXT</th>
@@ -238,8 +242,12 @@
                                     tal:attributes="id python:child.id">
                                         <img tal:attributes="id python:child.id; src python:u'/thumbs/{}'.format(child.id)"/>
                                         <div class="mediatum_edit_files_edit_child">
-                                            <a tal:attributes="href python:u'/edit/edit_content?id={}&tab=metadata'.format(child.id)"
-                                            i18n:attributes="title edit_files_edit_child"><img src="/img/edit.png"/></a>
+                                            <a
+                                                tal:attributes="href python:u'/edit/edit_content?srcnodeid={}&id={}&tab=metadata'.format(srcnodeid, child.id)"
+                                                i18n:attributes="title edit_files_edit_child"
+                                                >
+                                                <img src="/img/edit.png"/>
+                                            </a>
                                             <a href="#" tal:attributes="onclick python:u'return removeItem(this.id, {})'.format(node.id);id python:child.id"
                                             i18n:attributes="title edit_files_delete_child"><img src="/img/delete.png"/></a>
                                         </div>
@@ -299,10 +307,10 @@
 
 <tal:block metal:define-macro="edit_files_children_list">
     <div class="mediatum_edit_files_children_list" tal:repeat="child children">
-        <a tal:attributes="href python:u'/edit/edit_content?id={}&tab={}'.format(child.id, child.get_default_edit_tab())">
+        <a tal:attributes="href python:u'/edit/edit_content?srcnodeid={}&id={}&tab={}'.format(srcnodeid, child.id, child.get_default_edit_tab())">
             <img tal:attributes="src python:u'/thumbs/{}'.format(child.id)"/></a>
         <div class="mediatum_edit_files_children_list_div">
-            <a tal:attributes="href python:u'/edit/edit_content?id={}&tab=metadata'.format(child.id)"><img src="/img/edit.png"/></a>
+            <a tal:attributes="href python:u'/edit/edit_content?srcnodeid={}&id={}&tab=metadata'.format(srcnodeid, child.id)"><img src="/img/edit.png"/></a>
             <a href="#" tal:attributes="onclick python:u'return removeItem(this.id, {})'.format(node.id);id python:child.id"><img src="/img/delete.png"/></a>
         </div>
     </div>

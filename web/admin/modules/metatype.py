@@ -501,21 +501,26 @@ def xmlimport(req, filename):
     importMetaSchema(filename)
 
 
-def _set_export_maskitem_fields(maskitem, mappingfield, fieldtype, attribute):
+def _set_export_maskitem_fields(maskitem, has_exportmapping, mappingfield, fieldtype, attribute):
     """
     sets the maskitem attributes of an exportmask
     :param maskitem:
+    :param has_exportmapping
     :param mappingfield: mappingfield as list
     :param fieldtype: 'mapping' or 'attribute
     :param attribute:
     :return:
+
     """
-    maskitem.set("attribute", attribute)
-    maskitem.set("fieldtype", fieldtype)
-    if fieldtype == "mapping":  # mapping field of mapping definition selected
-        maskitem.set("mappingfield", mappingfield[0])
+    if not has_exportmapping:
+        mappingfield = "".join(mappingfield);
+    elif fieldtype == "mapping":  # mapping field of mapping definition selected
+        mappingfield = mappingfield[0]
     else:  # attribute name as object name
-        maskitem.set("mappingfield", ";".join(mappingfield[1:]))
+        mappingfield = ";".join(mappingfield[1:])
+    maskitem.set("mappingfield", (mappingfield))
+    maskitem.set("fieldtype", fieldtype)
+    maskitem.set("attribute", attribute)
     db.session.commit()
 
 
@@ -580,7 +585,13 @@ def showEditor(req):
             item.setLabel(req.params.get("label", ""))
             db.session.commit()
             if "mappingfield" in req.params.keys():
-                _set_export_maskitem_fields(item, req.values.getlist("mappingfield"), req.values["fieldtype"], req.values["attribute"])
+                _set_export_maskitem_fields(
+                    item,
+                    editor.get("exportmapping"),
+                    req.values.getlist("mappingfield"),
+                    req.values["fieldtype"],
+                    req.values["attribute"]
+                )
             else:
                 f = q(Node).get(long(req.params.get("field")))
 
@@ -609,8 +620,13 @@ def showEditor(req):
             item = editor.addMaskitem(label, req.params.get("type"), fieldid, req.params.get("pid", "0"))
 
             if "mappingfield" in req.params.keys():
-                _set_export_maskitem_fields(item, req.values.getlist("mappingfield"), req.values["fieldtype"], req.values["attribute"])
-
+                _set_export_maskitem_fields(
+                    item,
+                    editor.get("exportmapping"),
+                    req.values.getlist("mappingfield"),
+                    req.values["fieldtype"],
+                    req.values["attribute"]
+                )
             position = req.params.get("insertposition", "end")
             if position == "end":
                 # insert at the end of existing mask

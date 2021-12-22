@@ -1024,7 +1024,7 @@ class Mask(Node):
 
     def validateMappingDef(self):
         mandfields = []
-        if self.getMasktype() == "export":
+        if self.getMasktype() == "export" and self.get("exportmapping"):
             for mapping in self.get("exportmapping").split(";"):
                 for c in q(Node).get(mapping).getMandatoryFields():
                     mandfields.append(c.id)
@@ -1092,6 +1092,8 @@ class Mask(Node):
         if len(self.get("exportmapping").split(";")) > 1:
             return self.getExportHeader()
         exportmapping_id = self.get("exportmapping")
+        if not exportmapping_id:
+            return
         c = q(Mapping).get(exportmapping_id)
         if c is not None:
             return c.getHeader()
@@ -1106,7 +1108,10 @@ class Mask(Node):
             return self.get("exportfooter")
         if len(self.get("exportmapping").split(";")) > 1:
             return self.getExportFooter()
-        c = q(Mapping).get(self.get("exportmapping"))
+        exportmapping_id = self.get("exportmapping")
+        if not exportmapping_id:
+            return
+        c = q(Mapping).get(exportmapping_id)
         if c is not None:
             return c.getFooter()
         logg.warn("exportmapping %s for mask %s not found", exportmapping_id, self.id)
@@ -1119,11 +1124,6 @@ class Mask(Node):
         ret = '<form method="post" name="myform">'
         ret += '<input value="' + req.csrf_token.current_token + '" type="hidden" name="csrf_token">'
         ret += '<div class="back"><h3 i18n:translate="mask_editor_field_definition">Felddefinition </h3>'
-        if self.getMasktype() == "export" and self.get("exportmapping") == "":
-            # no mapping defined, we just emit an error msg and skip the rest
-            ret += '<p i18n:translate="mask_editor_no_export_mapping_defined" class="error">TEXT</p></div><br/>'
-            return ret
-
         ret += '<div align="right"><input type="image" src="/img/install.png" name="newdetail_'
         ret += unicode(self.id)
         ret += '" i18n:attributes="title mask_editor_new_line_title"/></div><br/>'
@@ -1135,7 +1135,7 @@ class Mask(Node):
             ret += '<div i18n:translate="mask_editor_no_fields">- keine Felder definiert -</div>'
         else:
             mapping_header = self.getMappingHeader()
-            if mapping_header != "":
+            if mapping_header:
                 ret += '<div class="label" i18n:translate="mask_edit_header">TEXT</div><div class="row">%s</div>' % (
                     esc(mapping_header))
 
@@ -1157,7 +1157,7 @@ class Mask(Node):
 
         if len(self.children) > 0:
             mapping_footer = self.getMappingFooter()
-            if mapping_footer != "":
+            if mapping_footer:
                 ret += '<div class="label" i18n:translate="mask_edit_footer">TEXT</div><div class="row">%s</div>' % (
                     esc(mapping_footer))
         ret += '</form>'
@@ -1244,7 +1244,7 @@ class Mask(Node):
         self.set("masktype", value)
 
     def getExportMapping(self):
-        return self.get("exportmapping").split(";")
+        return self.get("exportmapping").replace(";", " ").split()
 
     def setExportMapping(self, exportmapping):
         self.set("exportmapping", exportmapping)

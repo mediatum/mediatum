@@ -213,8 +213,9 @@ class m_mappingfield(Metatype):
         mask = fields[0].parents.first()
         separator = ""
 
-        if mask.getMappingHeader() != "":
-            ret += mask.getMappingHeader() + "\r\n"
+        mapping_header = mask.getMappingHeader()
+        if mapping_header != "":
+            ret += mapping_header + "\r\n"
 
         field_vals = []
 
@@ -260,8 +261,9 @@ class m_mappingfield(Metatype):
         else:
             ret += u"".join(field_vals)
 
-        if mask.getMappingFooter() != "":
-            ret += "\r\n" + mask.getMappingFooter()
+        mapping_footer = mask.getMappingFooter()
+        if mapping_footer != "":
+            ret += "\r\n" + mapping_footer
 
         ret = modify_tex(ret, 'strip')
 

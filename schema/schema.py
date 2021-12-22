@@ -1085,32 +1085,32 @@ class Mask(Node):
 
     def getMappingHeader(self):
         from .mapping import Mapping
-        if self.getMasktype() == "export":
-            if len(self.get("exportheader")) > 0:
-                return self.get("exportheader")
-            elif len(self.get("exportmapping").split(";")) > 1:
-                return self.getExportHeader()
-            else:
-                exportmapping_id = self.get("exportmapping")
-                c = q(Mapping).get(exportmapping_id)
-                if c is not None:
-                    return c.getHeader()
-                else:
-                    logg.warn("exportmapping %s for mask %s not found", exportmapping_id, self.id)
-                    return u""
+        if self.getMasktype() != "export":
+            return u""
+        if len(self.get("exportheader")) > 0:
+            return self.get("exportheader")
+        if len(self.get("exportmapping").split(";")) > 1:
+            return self.getExportHeader()
+        exportmapping_id = self.get("exportmapping")
+        c = q(Mapping).get(exportmapping_id)
+        if c is not None:
+            return c.getHeader()
+        logg.warn("exportmapping %s for mask %s not found", exportmapping_id, self.id)
         return u""
 
     def getMappingFooter(self):
         from .mapping import Mapping
-        if self.getMasktype() == "export":
-            if len(self.get("exportfooter")) > 0:
-                return self.get("exportfooter")
-            elif len(self.get("exportmapping").split(";")) > 1:
-                return self.getExportFooter()
-            else:
-                c = q(Mapping).get(self.get("exportmapping"))
-                return c.getFooter()
-        return ""
+        if self.getMasktype() != "export":
+            return ""
+        if len(self.get("exportfooter")) > 0:
+            return self.get("exportfooter")
+        if len(self.get("exportmapping").split(";")) > 1:
+            return self.getExportFooter()
+        c = q(Mapping).get(self.get("exportmapping"))
+        if c is not None:
+            return c.getFooter()
+        logg.warn("exportmapping %s for mask %s not found", exportmapping_id, self.id)
+        return u""
 
     ''' show maskeditor - definition '''
 
@@ -1134,9 +1134,10 @@ class Mask(Node):
         if len(self.children) == 0:
             ret += '<div i18n:translate="mask_editor_no_fields">- keine Felder definiert -</div>'
         else:
-            if self.getMappingHeader() != "":
+            mapping_header = self.getMappingHeader()
+            if mapping_header != "":
                 ret += '<div class="label" i18n:translate="mask_edit_header">TEXT</div><div class="row">%s</div>' % (
-                    esc(self.getMappingHeader()))
+                    esc(mapping_header))
 
         # check if all the orderpos attributes are the same which causes problems with sorting
         z = [t for t in self.children.order_by(Node.orderpos)]
@@ -1155,9 +1156,10 @@ class Mask(Node):
             i += 1
 
         if len(self.children) > 0:
-            if self.getMappingFooter() != "":
+            mapping_footer = self.getMappingFooter()
+            if mapping_footer != "":
                 ret += '<div class="label" i18n:translate="mask_edit_footer">TEXT</div><div class="row">%s</div>' % (
-                    esc(self.getMappingFooter()))
+                    esc(mapping_footer))
         ret += '</form>'
         return ret
 

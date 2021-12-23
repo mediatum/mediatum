@@ -128,20 +128,27 @@ def getContent(req, ids):
         technfields = {}
         logg.info("technical attributes of node %s removed", node.id)
 
-    return _tal.processTAL({"id": req.params.get("id", "0"),
-                            "tab": req.params.get("tab", ""),
-                            "node": node,
-                            "obsoletefields": obsoletefields,
-                            "metafields": metafields,
-                            "system_attrs": system_attrs,
-                            "fields": fields,
-                            "technfields": technfields,
-                            "tattr": tattr,
-                            "fd": formatdate,
-                            "gf": getFormat,
-                            "user_is_admin": user.is_admin,
-                            "canedit": node.has_write_access(),
-                            "csrf": req.csrf_token.current_token}, file="web/edit/modules/admin.html", macro="edit_admin_file", request=req)
+    return _tal.processTAL(
+            dict(
+                id=req.params.get("id", "0"),
+                tab=req.params.get("tab", ""),
+                node=node,
+                obsoletefields=obsoletefields,
+                metafields=metafields,
+                system_attrs=system_attrs,
+                fields=fields,
+                technfields=technfields,
+                tattr=tattr,
+                fd=formatdate,
+                gf=getFormat,
+                user_is_admin=user.is_admin,
+                canedit=node.has_write_access(),
+                csrf=req.csrf_token.current_token,
+            ),
+            file="web/edit/modules/admin.html",
+            macro="edit_admin_file",
+            request=req,
+        )
 
 
 def getFormat(fields, name):

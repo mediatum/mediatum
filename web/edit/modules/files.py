@@ -226,10 +226,12 @@ def getContent(req, ids):
                             if isinstance(p, Container):
                                 p.children.remove(childnode)
                         node.children.append(childnode)
-            ret += _tal.processTAL({'children': node.children, 'node': node, "csrf": req.csrf_token.current_token},
-                                   file="web/edit/modules/files.html",
-                                   macro="edit_files_children_list",
-                                   request=req)
+            ret += _tal.processTAL(
+                    dict(children=node.children, node=node, csrf=req.csrf_token.current_token),
+                    file="web/edit/modules/files.html",
+                    macro="edit_files_children_list",
+                    request=req,
+                )
 
         if req.params.get('data') == 'removeitem':  # remove selected childnode node
             with suppress(Exception):
@@ -238,10 +240,12 @@ def getContent(req, ids):
                     _getUploadDir(user).children.append(remnode)
                 node.children.remove(remnode)
 
-            ret += _tal.processTAL({'children': node.children, 'node': node, "csrf": req.csrf_token.current_token},
-                                   file="web/edit/modules/files.html",
-                                   macro="edit_files_children_list",
-                                   request=req)
+            ret += _tal.processTAL(
+                    dict(children=node.children, node=node, csrf=req.csrf_token.current_token),
+                    file="web/edit/modules/files.html",
+                    macro="edit_files_children_list",
+                    request=req,
+                )
 
         if req.params.get('data') == 'reorder':
             i = 0
@@ -315,19 +319,20 @@ def getContent(req, ids):
 
     db.session.commit()
 
-    v = {"id": req.params.get("id", "0"),
-         "tab": req.params.get("tab", ""),
-         "node": node,
-         "update_error": update_error,
-         "update_error_extension": update_error_extension,
-         "user": user,
-         "files": filter(lambda x: x.type != 'statistic', node.files),
-         "statfiles": filter(lambda x: x.type == 'statistic', node.files),
-         "attfiles": filter(lambda x: x.type == 'attachment', node.files),
-         "att": [],
-         "nodes": [node],
-         "csrf": req.csrf_token.current_token
-        }
+    v = dict(
+            id=req.params.get("id", "0"),
+            tab=req.params.get("tab", ""),
+            node=node,
+            update_error=update_error,
+            update_error_extension=update_error_extension,
+            user=user,
+            files=filter(lambda x: x.type != 'statistic', node.files),
+            statfiles=filter(lambda x: x.type == 'statistic', node.files),
+            attfiles=filter(lambda x: x.type == 'attachment', node.files),
+            att=[],
+            nodes=[node],
+            csrf=req.csrf_token.current_token,
+        )
 
     for f in v["attfiles"]:  # collect all files in attachment directory
         if f.mimetype == "inode/directory":

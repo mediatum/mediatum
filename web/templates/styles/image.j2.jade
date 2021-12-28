@@ -6,7 +6,7 @@
 
 -block before_metadata
   .object_image.object_column.left.mediatum_paddingimg
-    if data_access
+    if data_access and (has_original or image_formats)
       a(href=image_url, onclick="vgwPixelCall();", target='_blank')
         if node.get('width') != '' and node.get('width') >= node.get('height')
             img(src=presentation_url, style="width:300px;cursor:pointer;border:1px double silver;", border="1px")
@@ -19,9 +19,11 @@
       if highres_url
         = archive(highres_url, archive_fetch_url)
 
-    else
+    elif image_formats
       a(href=preferred_image_url, onclick="vgwPixelCall();", target='_blank')
         img(src=presentation_url, style="width: 300px;border:1px double silver;", border="1px")
 
-      if image_formats
-        = format(image_formats)
+      = format(image_formats)
+
+    else
+      img(src=presentation_url, style="width: 300px;border:1px double silver;", border="1px")

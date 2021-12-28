@@ -69,11 +69,7 @@ class WorkflowStep_Upload(WorkflowStep):
                     file = fileutils.importFile(file.filename, file)
                     node.files.append(file)
                     node.name = orig_filename
-                    try:
-                        node.event_files_changed()
-                    except Exception as ex:
-                        logg.exception("exception in workflow step upload while running event_files_changed")
-                        error = ex.value
+                    node.event_files_changed()
                 else:
                     error = t(req, "WorkflowStep_InvalidFileType")
         db.session.commit()

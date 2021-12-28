@@ -5,23 +5,13 @@
   = metis(metis_url)
 
 -block before_metadata
-  if data_access
-    .object_image.object_column.left.mediatum_paddingimg
-      if zoom
-        a(href=image_url, onclick="vgwPixelCall();", target='_blank')
-          if node.get('width') >= node.get('height')
+  .object_image.object_column.left.mediatum_paddingimg
+    if data_access
+      a(href=image_url, onclick="vgwPixelCall();", target='_blank')
+        if node.get('width') != '' and node.get('width') >= node.get('height')
             img(src=presentation_url, style="width:300px;cursor:pointer;border:1px double silver;", border="1px")
-          else
-            img(src=presentation_url, style="cursor:pointer;border:1px double silver;", border="1px")
-      else
-        a(href=image_url, onclick="vgwPixelCall();", target='_blank')
-          if node.get('width') != ''
-            if node.get('width') >= node.get('height')
-              img(src=presentation_url, style="width:300px;cursor:pointer;border:1px double silver;", border="1px")
-            else
-              img(src=presentation_url, style="max-width:300px;max-height:300px;cursor:pointer;border:1px double silver;", border="1px")
-          else
-            img(src=presentation_url, style="max-width:300px;max-height:300px;cursor:pointer;border:1px double silver;", border="1px")
+        else
+          img(src=presentation_url, style="max-width:300px;max-height:300px;cursor:pointer;border:1px double silver;", border="1px")
 
       if image_formats
         = format(image_formats)
@@ -29,23 +19,9 @@
       if highres_url
         = archive(highres_url, archive_fetch_url)
 
-  else
-    .object_image.object_column.left.mediatum_paddingimg
-      if zoom
-        a(href=image_url, onclick="vgwPixelCall();", target='_blank')
-          if node.get('width') != ''
-            if node.get('width') >= node.get('height')
-              img(src=presentation_url, style="width:300px;cursor:pointer;border:1px double silver;", border="1px")
-            else
-              img(src=presentation_url, style="max-width:300px;max-height:300px;cursor:pointer;border:1px double silver;", border="1px")
-          else
-            img(src=presentation_url, style="max-width:300px;max-height:300px;cursor:pointer;border:1px double silver;", border="1px")
-      else
+    else
+      a(href=preferred_image_url, onclick="vgwPixelCall();", target='_blank')
         img(src=presentation_url, style="width: 300px;border:1px double silver;", border="1px")
 
       if image_formats
         = format(image_formats)
-
-
-// generated from jade
-//- vim: set filetype=jade sw=2 ts=2 sts=2 expandtab:

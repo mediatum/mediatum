@@ -63,15 +63,18 @@ def addWorkflow(name, description):
     node.set("description", description)
     db.session.commit()
 
+    return node
+
 
 def updateWorkflow(name, description, nameattribute="", origname="", writeaccess=""):
+    workflows_root = q(Workflows).one()
     if origname == "":
-        node = q(Workflows).one()
-        if node.children.filter_by(name=name).scalar() is None:
-            addWorkflow(name, description)
-        w = q(Workflows).one().children.filter_by(name=name).one()
+        if workflows_root.children.filter_by(name=name).scalar() is None:
+            w = addWorkflow(name, description)
+        else:
+            w = workflows_root.children.filter_by(name=name).one()
     else:
-        w = q(Workflows).one().children.filter_by(name=origname).one()
+        w = workflows_root.children.filter_by(name=origname).one()
         w.name = name
     w.set("description", description)
     w.display_name_attribute = nameattribute
@@ -83,6 +86,8 @@ def updateWorkflow(name, description, nameattribute="", origname="", writeaccess
     else:
         w.access_ruleset_assocs.append(NodeToAccessRuleset(ruleset_name=writeaccess, ruletype=u'write'))
     db.session.commit()
+
+    return w
 
 
 def deleteWorkflow(id):
@@ -158,52 +163,60 @@ def setNodeWorkflow(node, workflow):
     return getNodeWorkflowStep(node)
 
 
-def createWorkflowStep(name="", type="workflowstep", trueid="", falseid="", truelabel="", falselabel="", comment='', adminstep=""):
-    n = WorkflowStep(name)
-    n.set_class(type)
-    n.type = type
-    n.set("truestep", trueid)
-    n.set("falsestep", falseid)
-    n.set("truelabel", truelabel)
-    n.set("falselabel", falselabel)
-    n.set("comment", comment)
-    n.set("adminstep", adminstep)
-    db.session.commit()
-    return n
+def create_update_workflow_step(
+        step=None,
+        name="",
+        typ="workflowstep",
+        trueid="",
+        falseid="",
+        truelabel="",
+        falselabel="",
+        sidebartext="",
+        pretext="",
+        posttext="",
+        comment="",
+        adminstep="",
+       ):
+    """
+    :param step: update workflowstep if it is not None
+    :return: updated or created workflowstep
+    """
+    if step is None:
+        step = WorkflowStep(name)
+        step.set_class(typ)
+    else:
+        if step.name != name:
+            # the button targets of the other workflow steps are adjusted for update case
+            for node in step.parents.one().children:
+                if node.get("truestep") == step.name:
+                    node.set("truestep", name)
+                if node.get("falsestep") == step.name:
+                    node.set("falsestep", name)
+        if step.type != typ:
+            # if the type has changed every access to n after db.session.comm() leads to the error:
+            # ObjectDeletedError: Instance '' has been deleted, or its row is otherwise not present.
+            # Workarround: create a temporary workflowstep n_new with the new type and set the id to the same id of n
+            stepid = step.id  # save n.id, after db.session.commit() n.id is no longer accessible
+            step.type = typ
+            db.session.commit()
+            step = WorkflowStep(typ)
+            step.set_class(typ)
+            step.id = stepid
+    step.name = name
+    step.type = typ
+    step.set("truestep", trueid)
+    step.set("falsestep", falseid)
+    step.set("truelabel", truelabel)
+    step.set("falselabel", falselabel)
+    step.set("sidebartext", sidebartext)
+    step.set("pretext", pretext)
+    step.set("posttext", posttext)
+    step.set("comment", comment)
+    step.set("adminstep", adminstep)
 
-
-def updateWorkflowStep(workflow, oldname="", newname="", type="workflowstep", trueid="", falseid="", truelabel="",
-                       falselabel="", sidebartext='', pretext="", posttext="", comment='', adminstep=""):
-    n = workflow.getStep(oldname)
-    if n.type != type:
-        # if the type has changed every access to n after db.session.comm() leads to the error:
-        # ObjectDeletedError: Instance '' has been deleted, or its row is otherwise not present.
-        # Workarround: create a temporary workflowstep n_new with the new type and set the id to the same id of n
-        nodeid = n.id # save n.id, after db.session.commit() n.id is no longer accessible
-        n.type = type
-        db.session.commit()
-        n_new = WorkflowStep(type)
-        n_new.set_class(type)
-        n_new.id = nodeid
-        n = n_new
-    n.name = newname
-    n.type = type
-    n.set("truestep", trueid)
-    n.set("falsestep", falseid)
-    n.set("truelabel", truelabel)
-    n.set("falselabel", falselabel)
-    n.set("sidebartext", sidebartext)
-    n.set("pretext", pretext)
-    n.set("posttext", posttext)
-    n.set("comment", comment)
-    n.set("adminstep", adminstep)
-    for node in workflow.children:
-        if node.get("truestep") == oldname:
-            node.set("truestep", newname)
-        if node.get("falsestep") == oldname:
-            node.set("falsestep", newname)
     db.session.commit()
-    return n
+
+    return step
 
 
 def deleteWorkflowStep(workflowid, stepid):
@@ -305,8 +318,8 @@ class Workflows(Node):
             if workflow.children.filter_write_access().first() is not None:
                 list += [workflow]
         return _tal.processTAL({"list": list,
-                               "search": req.params.get("workflow_search", ""),
-                               "items": workflowSearch(list, req.params.get("workflow_search", "")),
+                               "search": req.values.get("workflow_search", ""),
+                               "items": workflowSearch(list, req.values.get("workflow_search", "")),
                                "getStep": getNodeWorkflowStep,
                                "format_date": formatItemDate,
                                "csrf": req.csrf_token.current_token},
@@ -332,8 +345,8 @@ class Workflow(Node):
         if self.children.filter_write_access().first() is None:
             return '<i>' + t(lang(req), "permission_denied") + '</i>'
         return _tal.processTAL({"workflow": self,
-                               "search": req.params.get("workflow_search", ""),
-                               "items": workflowSearch([self], req.params.get("workflow_search", "")),
+                               "search": req.values.get("workflow_search", ""),
+                               "items": workflowSearch([self], req.values.get("workflow_search", "")),
                                "getStep": getNodeWorkflowStep,
                                "format_date": formatItemDate,
                                "csrf": req.csrf_token.current_token},
@@ -453,7 +466,7 @@ class WorkflowStep(Node):
             # stop caching
             req.response.set_cookie("nocache", "1")
 
-            key = req.params.get("key", _flask.session.get("key", ""))
+            key = req.values.get("key", _flask.session.get("key", ""))
             _flask.session["key"] = key
 
             if "obj" in req.params:
@@ -470,14 +483,14 @@ class WorkflowStep(Node):
                             logg.exception("exception in show_node_big, ignoring")
                             return ""
 
-                if 'action' in req.params:
+                if 'action' in req.values:
                     if self.has_write_access():
-                        if req.params.get('action') == 'delete':
+                        if req.values.get('action') == 'delete':
                             for node in nodes:
                                 for parent in node.parents:
                                     parent.children.remove(node)
-                        elif req.params.get('action').startswith('move_'):
-                            step = q(Node).get(req.params.get('action').replace('move_', ''))
+                        elif req.values.get('action').startswith('move_'):
+                            step = q(Node).get(req.values.get('action').replace('move_', ''))
                             for node in nodes:
                                 for parent in node.parents:
                                     parent.children.remove(node)
@@ -495,9 +508,9 @@ class WorkflowStep(Node):
                         switch_language(req, node.get('system.wflanguage'))
 
                     link = _build_url_from_path_and_params("/mask", {"id": self.id})
-                    if "forcetrue" in req.params:
+                    if "forcetrue" in req.values:
                         return self.forwardAndShow(node, True, req, link=link)
-                    if "forcefalse" in req.params:
+                    if "forcefalse" in req.values:
                         return self.forwardAndShow(node, False, req, link=link)
 
                     return self.show_workflow_node(node, req)
@@ -524,9 +537,9 @@ class WorkflowStep(Node):
             return '<i>%s</i>' % (t(lang(req), "permission_denied"))
 
     def show_workflow_node(self, node, req):
-        if "gotrue" in req.params:
+        if "gotrue" in req.values:
             return self.forwardAndShow(node, True, req)
-        if "gofalse" in req.params:
+        if "gofalse" in req.values:
             return self.forwardAndShow(node, False, req)
 
         # to be overloaded

@@ -20,7 +20,7 @@
 import logging
 import os.path
 import codecs
-from werkzeug import ImmutableMultiDict
+from werkzeug.datastructures import ImmutableMultiDict
 from mediatumtal import tal
 from core import Node, db
 from utils.utils import esc

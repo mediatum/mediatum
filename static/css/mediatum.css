@@ -157,8 +157,8 @@ select[name="nodes_per_page"] { margin-right: 38px !important;}
 #portal-column-content #page-nav a { color: #0A5096; text-decoration: none;}
 a.page-nav { font-size: 130% !important;}
 a.page-nav-previous { margin-right: 10px;}
-a.page-nav-previous::before { content: "<<< ";}
-a.page-nav-next::after { content: " >>>";}
+a.page-nav-previous::before { content: "\2190\00A0";}
+a.page-nav-next::after { content: "\00A0\2192";}
 a.page-nav-next { margin-left: 10px;}
 
 #portal-column-content #page-nav a:hover { color: #000;}

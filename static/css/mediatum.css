@@ -394,6 +394,11 @@ ul#navigationlist li div a:visited { color: #004682;}
 .mediatum-stylethumb-p {
     width: 90%;
     text-overflow: ellipsis;
+    Word-wrap: break-Word;
+    display: -webkit-box;
+   -webkit-line-clamp: 12; /* number of lines to show */
+   -webkit-box-orient: vertical;
+	overflow: hidden;
     max-height: 235px;
     padding-right: 1em;
     position: relative;

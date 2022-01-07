@@ -751,20 +751,8 @@ msgstr "-last-"
 msgid "mask_edit_field_selection"
 msgstr "Field selection:"
 
-msgid "mask_edit_existing_field"
-msgstr "Existing field"
-
 msgid "mask_edit_field"
 msgstr "Field:"
-
-msgid "mask_edit_new_field"
-msgstr "new field"
-
-msgid "mask_edit_nameid"
-msgstr "Name/ID (english):"
-
-msgid "mask_edit_type"
-msgstr "Type:"
 
 msgid "mask_edit_help"
 msgstr "Help text:"

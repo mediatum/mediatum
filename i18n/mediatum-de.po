@@ -765,20 +765,8 @@ msgstr "-am Ende-"
 msgid "mask_edit_field_selection"
 msgstr "Feldauswahl:"
 
-msgid "mask_edit_existing_field"
-msgstr "vorhandenes Feld"
-
 msgid "mask_edit_field"
 msgstr "Feld:"
-
-msgid "mask_edit_new_field"
-msgstr "neues Feld"
-
-msgid "mask_edit_nameid"
-msgstr "Name/ID (englisch):"
-
-msgid "mask_edit_type"
-msgstr "Typ:"
 
 msgid "mask_edit_help"
 msgstr "Hilfetext:"

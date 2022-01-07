@@ -815,41 +815,27 @@ def content(req):
             folders_only = True
         n = q(Data).get(nid)
         s = []
-        while n:
-            if not folders_only:
-                s.insert(0,
-                        u"<a onClick='activateEditorTreeNode({id}); return true;'"
-                        " href='/edit/edit_content?srcnodeid={id}&id={id}'>{label}</a>"
-                        .format(id=n.id, label=get_edit_label(n, language))
-                    )
-
-            folders_only = False
-            p = n.parents
-            # XXX: we only check the first parent. This is wrong, how could be solve this? #
-            first_parent = p[0]
-            if isinstance(first_parent, Data) and first_parent.has_read_access():
-                n = p[0]
-            else:
-                n = None
+        path = (get_accessible_paths(n) or [[]])[0]
+        if not folders_only:
+            path.append(n)
+        for p in path:
+            s.append(
+                     u"<a onClick='activateEditorTreeNode({id}); return true;'"
+                     " href='/edit/edit_content?srcnodeid={id}&id={id}'>{label}</a>"
+                     .format(id=p.id, label=get_edit_label(p, language))
+                     )
         v["dircontent"] = ' <b>&raquo;</b> '.join(s)
     else:  # or current directory
         n = q(Data).get(long(ids[0]))
         s = []
-        while n:
-            if len(s) == 0:
-                s = [get_edit_label(n, language)]
-            else:
-                s.insert(0,
-                        u"<a onClick='activateEditorTreeNode({id}); return true;'"
-                        " href='/edit/edit_content?srcnodeid={id}&id={id}'>{label}</a>"
-                        .format(id=n.id, label=get_edit_label(n, language))
-                    )
-
-            p = n.parents
-            if p and not isinstance(p[0], _core_systemtypes.Root):
-                n = p[0]
-            else:
-                n = None
+        path = (get_accessible_paths(n) or [[]])[0]
+        for p in path:
+            s.append(
+                     u"<a onClick='activateEditorTreeNode({id}); return true;'"
+                     " href='/edit/edit_content?srcnodeid={id}&id={id}'>{label}</a>"
+                     .format(id=p.id, label=get_edit_label(p, language))
+                     )
+        s.append(get_edit_label(n, language))
         v["dircontent"] = ' <b>&raquo;</b> '.join(s)
 
     if tabs == 'upload' and current == 'content':

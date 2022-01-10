@@ -84,8 +84,7 @@ def _check_change_language_request(func):
             req.response.location = build_url_from_path_and_params(req.mediatum_contextfree_path, params)
             # set the language cookie for caching
             _flask.session["language"] = language
-            if "language" in _flask.session:
-                _flask.g.mediatum["language"] = _flask.session["language"]
+            _flask.g.mediatum["language"] = _flask.session["language"]
 
         return func(req, *args, **kwargs)
 

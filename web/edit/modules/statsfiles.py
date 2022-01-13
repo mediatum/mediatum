@@ -155,4 +155,9 @@ def getContent(req, ids):
         req.response.set_data(_tal.processTAL(v, file="web/edit/modules/statsfiles.html", macro="edit_stats_popup", request=req))
         return ""
 
-    return _tal.processTAL({"id": ids, "csrf": req.csrf_token.current_token}, file="web/edit/modules/statsfiles.html", macro="edit_stats", request=req)
+    return _tal.processTAL(
+            dict(id=ids, csrf=req.csrf_token.current_token),
+            file="web/edit/modules/statsfiles.html",
+            macro="edit_stats",
+            request=req,
+        )

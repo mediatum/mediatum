@@ -234,19 +234,19 @@ def getContent(req, ids):
         return _tal.processTAL({}, file="web/edit/modules/metadata.html", macro="no_mask", request=req)
 
     # context default for TAL interpreter
-    ctx = {}
-    ctx["user"] = user
-    ctx["metatypes"] = metatypes
-    ctx["idstr"] = idstr
-    ctx["node"] = nodes[0]  # ?
-    ctx["flag_nodename_changed"] = flag_nodename_changed
-    ctx["nodes"] = nodes
-    ctx["masklist"] = masklist
-    ctx["maskname"] = maskname
-    ctx["language"] = lang(req)
-    ctx["t"] = t
-    ctx["csrf"] = req.csrf_token.current_token
-
+    ctx = dict(
+            user=user,
+            metatypes=metatypes,
+            idstr=idstr,
+            node=nodes[0],  # ?
+            flag_nodename_changed=flag_nodename_changed,
+            nodes=nodes,
+            masklist=masklist,
+            maskname=maskname,
+            language=lang(req),
+            t=t,
+            csrf=req.csrf_token.current_token,
+        )
     if action == 'restore':
         raise NotImplementedError("restore version not implemented, later...")
 

@@ -166,7 +166,11 @@ def pwdchange(req):
                 req.response.status_code = httpstatus.HTTP_MOVED_TEMPORARILY
                 return httpstatus.HTTP_MOVED_TEMPORARILY
 
-    content_html = webconfig.theme.render_macro("login.j2.jade", "change_pwd", {"error": error, "user": user, "csrf": req.csrf_token.current_token})
+    content_html = webconfig.theme.render_macro(
+            "login.j2.jade",
+            "change_pwd",
+            dict(error=error, user=user, csrf=req.csrf_token.current_token),
+        )
     from web.frontend.frame import render_page
     html = render_page(req, content_html)
     req.response.set_data(html)

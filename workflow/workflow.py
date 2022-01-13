@@ -301,13 +301,19 @@ class Workflows(Node):
         for workflow in getWorkflowList():
             if workflow.children.filter_write_access().first() is not None:
                 list += [workflow]
-        return _tal.processTAL({"list": list,
-                               "search": req.values.get("workflow_search", ""),
-                               "items": workflowSearch(list, req.values.get("workflow_search", "")),
-                               "getStep": getNodeWorkflowStep,
-                               "format_date": formatItemDate,
-                               "csrf": req.csrf_token.current_token},
-                              file=template, macro=macro, request=req)
+        return _tal.processTAL(
+                dict(
+                    list=list,
+                    search=req.values.get("workflow_search", ""),
+                    items=workflowSearch(list, req.values.get("workflow_search", "")),
+                    getStep=getNodeWorkflowStep,
+                    format_date=formatItemDate,
+                    csrf=req.csrf_token.current_token,
+                ),
+                file=template,
+                macro=macro,
+                request=req,
+            )
 
     @classmethod
     def isContainer(cls):
@@ -328,13 +334,19 @@ class Workflow(Node):
         macro = "object_list"
         if self.children.filter_write_access().first() is None:
             return '<i>' + t(lang(req), "permission_denied") + '</i>'
-        return _tal.processTAL({"workflow": self,
-                               "search": req.values.get("workflow_search", ""),
-                               "items": workflowSearch([self], req.values.get("workflow_search", "")),
-                               "getStep": getNodeWorkflowStep,
-                               "format_date": formatItemDate,
-                               "csrf": req.csrf_token.current_token},
-                               file=template, macro=macro, request=req)
+        return _tal.processTAL(
+                dict(
+                    workflow=self,
+                    search=req.values.get("workflow_search", ""),
+                    items=workflowSearch([self], req.values.get("workflow_search", "")),
+                    getStep=getNodeWorkflowStep,
+                    format_date=formatItemDate,
+                    csrf=req.csrf_token.current_token,
+                ),
+                file=template,
+                macro=macro,
+                request=req,
+            )
 
     def getId(self):
         return self.name
@@ -462,7 +474,17 @@ class WorkflowStep(Node):
 
                         link = '(' + self.name + ')'
                         try:
-                            return _tal.processTAL({"node": node, "link": link, "email": config.get("email.workflow"), "csrf": req.csrf_token.current_token}, file=template, macro=macro, request=req)
+                            return _tal.processTAL(
+                                    dict(
+                                        node=node,
+                                        link=link,
+                                        email=config.get("email.workflow"),
+                                        csrf=req.csrf_token.current_token,
+                                    ),
+                                    file=template,
+                                    macro=macro,
+                                    request=req,
+                                )
                         except:
                             logg.exception("exception in show_node_big, ignoring")
                             return ""

@@ -39,7 +39,12 @@ def getContent(req, ids):
             children.append(child)
         db.session.commit()
 
-        req.response.set_data(_tal.processTAL({'nodelist': children, "language": language, "csrf": req.csrf_token.current_token}, file='web/edit/modules/subfolder.html', macro="ordered_list", request=req))
+        req.response.set_data(_tal.processTAL(
+                dict(nodelist=children, language=language, csrf=req.csrf_token.current_token),
+                file='web/edit/modules/subfolder.html',
+                macro="ordered_list",
+                request=req,
+            ))
         return ""
 
     elif "sortdirection" in req.params:  # do automatic re-order
@@ -49,7 +54,12 @@ def getContent(req, ids):
         for position, child in enumerate(sorted_children, start=1):
             child.orderpos = position
         db.session.commit()
-        req.response.set_data(_tal.processTAL({'nodelist': sorted_children, "language": language, "csrf": req.csrf_token.current_token}, file='web/edit/modules/subfolder.html', macro="ordered_list", request=req))
+        req.response.set_data(_tal.processTAL(
+                dict(nodelist=sorted_children, language=language, csrf=req.csrf_token.current_token),
+                file='web/edit/modules/subfolder.html',
+                macro="ordered_list",
+                request=req,
+            ))
         return ""
 
     nodelist = []
@@ -68,11 +78,15 @@ def getContent(req, ids):
     for field in fields:
         if i == fields[field]:
             attributes.append(field)
-    ctx = {
-            "node": node,
-            "nodelist": nodelist,
-            "sortattributes": sorted(attributes, lambda x, y: cmp(x.getLabel().lower(), y.getLabel().lower())),
-            "language": language,
-            "csrf": req.csrf_token.current_token
-           }
-    return _tal.processTAL(ctx, file="web/edit/modules/subfolder.html", macro="edit_subfolder", request=req)
+    return _tal.processTAL(
+            dict(
+                node=node,
+                nodelist=nodelist,
+                sortattributes=sorted(attributes, lambda x, y: cmp(x.getLabel().lower(), y.getLabel().lower())),
+                language=language,
+                csrf=req.csrf_token.current_token,
+            ),
+            file="web/edit/modules/subfolder.html",
+            macro="edit_subfolder",
+            request=req,
+        )

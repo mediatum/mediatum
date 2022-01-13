@@ -168,22 +168,32 @@ def getContent(req, ids):
                             if not isinstance(grandchild, Container):
                                 grandchildren.append(grandchild)
 
-                    ret += _tal.processTAL( {'children': [c for c in node.children.all() if str(c.id) != excludeid],
-                                            'grandchildren': grandchildren, "csrf": req.csrf_token.current_token},
-                                            file="web/edit/modules/files.html",
-                                            macro="edit_files_popup_children",
-                                            request=req)
+                    ret += _tal.processTAL(
+                            dict(
+                                children=[c for c in node.children.all() if str(c.id) != excludeid],
+                                grandchildren=grandchildren,
+                                csrf=req.csrf_token.current_token,
+                            ),
+                            file="web/edit/modules/files.html",
+                            macro="edit_files_popup_children",
+                            request=req,
+                        )
                 else:
                     grandchildren = []
                     for child in node.children.all():
                         for grandchild in child.children.all():
                             if not isinstance(grandchild, Container):
                                 grandchildren.append(grandchild)
-                    ret += _tal.processTAL({'children': [c for c in node.getChildren() if str(c.id) != excludeid],
-                                            'grandchildren': grandchildren, "csrf": req.csrf_token.current_token},
-                                           file="web/edit/modules/files.html",
-                                           macro="edit_files_popup_children",
-                                           request=req)
+                    ret += _tal.processTAL(
+                        dict(
+                            children=[c for c in node.getChildren() if str(c.id) != excludeid],
+                            grandchildren=grandchildren,
+                            csrf=req.csrf_token.current_token,
+                        ),
+                        file="web/edit/modules/files.html",
+                        macro="edit_files_popup_children",
+                        request=req,
+                    )
             elif req.params.get('data') =='grandchildren':
                 grandchildren = []
                 for child in node.children.all():
@@ -193,15 +203,19 @@ def getContent(req, ids):
                                     grandchildren.append(grandchild)
 
                 if len(node.getChildren())==0:
-                    ret += _tal.processTAL({'grandchildren': [], "csrf": req.csrf_token.current_token},
-                                           file="web/edit/modules/files.html",
-                                           macro="edit_files_popup_grandchildren",
-                                           request=req)
+                    ret += _tal.processTAL(
+                            dict(grandchildren=[], csrf=req.csrf_token.current_token),
+                            file="web/edit/modules/files.html",
+                            macro="edit_files_popup_grandchildren",
+                            request=req,
+                        )
                 else:
-                    ret += _tal.processTAL({'grandchildren': grandchildren, "csrf": req.csrf_token.current_token},
-                                           file="web/edit/modules/files.html",
-                                           macro="edit_files_popup_grandchildren",
-                                           request=req)
+                    ret += _tal.processTAL(
+                            dict(grandchildren=grandchildren, csrf=req.csrf_token.current_token),
+                            file="web/edit/modules/files.html",
+                            macro="edit_files_popup_grandchildren",
+                            request=req,
+                        )
 
         if req.params.get('data') == 'additems':  # add selected node as children
             for childid in req.params.get('items').split(";"):

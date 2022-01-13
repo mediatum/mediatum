@@ -437,7 +437,12 @@ def MetatypeDetail(req, id, err=0):
 
 
 def showInfo(req):
-    return _tal.processTAL({"fieldtypes": getMetaFieldTypeNames(), "csrf": req.csrf_token.current_token}, file="web/admin/modules/metatype.html", macro="show_info", request=req)
+        return _tal.processTAL(
+                dict(fieldtypes=getMetaFieldTypeNames(), csrf=req.csrf_token.current_token),
+                file="web/admin/modules/metatype.html",
+                macro="show_info",
+                request=req,
+            )
 
 """ popup form with field definition """
 
@@ -447,13 +452,18 @@ def showFieldOverview(req):
     fields = getFieldsForMeta(path[1])
     fields.sort(key=_operator.attrgetter("orderpos"))
 
-    v = {}
-    v["metadatatype"] = getMetaType(path[1])
-    v["metafields"] = fields
-    v["fieldoptions"] = fieldoption
-    v["fieldtypes"] = getMetaFieldTypeNames()
-    v["csrf"] = req.csrf_token.current_token
-    return _tal.processTAL(v, file="web/admin/modules/metatype.html", macro="show_fieldoverview", request=req)
+    return _tal.processTAL(
+            dict(
+                metadatatype=getMetaType(path[1]),
+                metafields=fields,
+                fieldoptions=fieldoption,
+                fieldtypes=getMetaFieldTypeNames(),
+                csrf=req.csrf_token.current_token,
+            ),
+            file="web/admin/modules/metatype.html",
+            macro="show_fieldoverview",
+            request=req,
+        )
 
 """ export metadatatype-definition (XML) """
 

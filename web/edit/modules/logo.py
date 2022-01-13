@@ -87,15 +87,18 @@ def getContent(req, ids):
         if f.filetype == "image":
             logofiles.append(splitpath(f.abspath))
     
-    v = {
-        "id": req.params.get("id", "0"),
-        "tab": req.params.get("tab", ""),
-        "node": node,
-        "logofiles": logofiles,
-        "logo": node.getLogoPath(),
-        "language": lang(req),
-        "t": translation_t,
-        "csrf": req.csrf_token.current_token
-    }
-
-    return _tal.processTAL(v, file="web/edit/modules/logo.html", macro="edit_logo", request=req)
+    return _tal.processTAL(
+            dict(
+                id=req.params.get("id", "0"),
+                tab=req.params.get("tab", ""),
+                node=node,
+                logofiles=logofiles,
+                logo=node.getLogoPath(),
+                language=lang(req),
+                t=translation_t,
+                csrf=req.csrf_token.current_token,
+            ),
+            file="web/edit/modules/logo.html",
+            macro="edit_logo",
+            request=req,
+        )

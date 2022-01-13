@@ -214,15 +214,19 @@ def getContent(req, ids):
     lang2file = {lang: "" for lang in config.languages}
     lang2file.update(node.getStartpageDict())
 
-    v = {"id": req.values.get("id", "0"),
-         "tab": req.values.get("tab", ""),
-         "node": node,
-         "named_filelist": named_filelist,
-         "languages": config.languages,
-         "lang2file": lang2file,
-         "types": ['content'],
-         "d": lang2file and True,
-         "csrf": req.csrf_token.current_token
-         }
-
-    return _tal.processTAL(v, file="web/edit/modules/startpages.html", macro="edit_startpages", request=req)
+    return _tal.processTAL(
+            dict(
+                id=req.values.get("id", "0"),
+                tab=req.values.get("tab", ""),
+                node=node,
+                named_filelist=named_filelist,
+                languages=config.languages,
+                lang2file=lang2file,
+                types=['content'],
+                d=lang2file and True,
+                csrf=req.csrf_token.current_token,
+            ),
+            file="web/edit/modules/startpages.html",
+            macro="edit_startpages",
+            request=req,
+        )

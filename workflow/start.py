@@ -112,17 +112,23 @@ class WorkflowStep_Start(WorkflowStep):
         cookie_test();
         </script>""" % cookie_error
 
-        return _tal.processTAL({'types': types,
-                                'id': self.id,
-                                'js': js,
-                                'starttext': self.get('starttext'),
-                                'languages': self.parents[0].getLanguages(),
-                                'currentlang': lang(req),
-                                'redirect': redirect,
-                                'message': message,
-                                'allowcontinue': self.get('allowcontinue'),
-                                "csrf": req.csrf_token.current_token, }, file="workflow/start.html",
-                               macro="workflow_start", request=req)
+        return _tal.processTAL(
+                dict(
+                    types=types,
+                    id=self.id,
+                    js=js,
+                    starttext=self.get('starttext'),
+                    languages=self.parents[0].getLanguages(),
+                    currentlang=lang(req),
+                    redirect=redirect,
+                    message=message,
+                    allowcontinue=self.get('allowcontinue'),
+                    csrf=req.csrf_token.current_token,
+                ),
+                file="workflow/start.html",
+                macro="workflow_start",
+                request=req,
+            )
 
     def metaFields(self, lang=None):
         ret = []

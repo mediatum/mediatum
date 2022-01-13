@@ -1046,7 +1046,7 @@ class Mask(Node):
         updated_attrs = {}
         updated_system_attrs = {}
         current_language = translation.set_language(req.accept_languages)
-        default_language = translation.getDefaultLanguage()
+        default_language = config.languages[0]
         for item in self.all_maskitems:
             field = item.metafield
 

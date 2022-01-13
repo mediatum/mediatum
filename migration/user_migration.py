@@ -10,7 +10,7 @@ import logging
 from sqlalchemy import text
 from core import config, db, Node, User
 from contenttypes import Directory, Home
-from core.translation import getDefaultLanguage, translate
+from core.translation import translate
 from sqlalchemy.orm.exc import NoResultFound
 
 logg = logging.getLogger(__name__)
@@ -54,7 +54,7 @@ def migrate_special_dirs():
     home_root = q(Home).one()
     for home_dir in home_root.children:
         logg.info("fixing special dirs in home dir %s (%s)", home_dir.name, home_dir.id)
-        lang = getDefaultLanguage()
+        lang = config.languages[0]
         special_dirs = [
             (translate(u"user_trash", lang), u"trash"),
             (translate(u"user_upload", lang), u"upload")

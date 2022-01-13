@@ -117,7 +117,7 @@ def addPoFilepath(filepath=[]):
         if f not in addlangfiles:
             addlangfiles.append(f)
 
-    
+
 def set_language(accept_languages, new_language=None):
     """
     Determine the UI language the user sees.
@@ -137,9 +137,9 @@ def set_language(accept_languages, new_language=None):
     if new_language not in config.languages:
         new_language = accept_languages.best_match(config.languages)
     if new_language not in config.languages:
-        new_language = getDefaultLanguage()
+        new_language = config.languages[0]
     _flask.session.pop("language", None)
-    if new_language != getDefaultLanguage() or new_language != accept_languages.best_match(config.languages):
+    if new_language != config.languages[0] or new_language != accept_languages.best_match(config.languages):
         _flask.session["language"] = new_language
     return new_language
 
@@ -149,17 +149,3 @@ def t(target, key):
         return translate(key, language=target)
     else:
         return translate(key, request=target)
-
-
-# XXX: cache the default language, we assume that the config doesn't change at runtime
-global default_language
-default_language = None
-
-
-def getDefaultLanguage():
-    global default_language
-
-    if default_language is None:
-        default_language = config.languages[0]
-
-    return default_language

@@ -15,14 +15,12 @@ import core.translation as _core_translation
 from core import config
 from core import httpstatus
 from core.metatype import Metatype
-from core.translation import getDefaultLanguage
 
 import re
 
 logg = logging.getLogger(__name__)
 
 max_lang_length = max([len(lang) for lang in config.languages])
-config_default_language = getDefaultLanguage()
 
 
 class m_htmlmemo(Metatype):

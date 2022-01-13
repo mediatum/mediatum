@@ -190,7 +190,7 @@ class Container(Data, ContainerMixin, SchemaMixin):
     def show_node_image(self, language=None):
         return tal.getTAL("contenttypes/container.html", {"node": self}, macro="thumbnail", language=language)
 
-    def getLabel(self, lang=_core_translation.getDefaultLanguage()):
+    def getLabel(self, lang=config.languages[0]):
 
         # try language-specific name first
         lang_value = self.get(u'{}.name'.format(lang))
@@ -198,7 +198,7 @@ class Container(Data, ContainerMixin, SchemaMixin):
             return self.get(u'{}.name'.format(lang))
 
         # always return the name if the requested lang matches the default language
-        if self.name and lang == _core_translation.getDefaultLanguage():
+        if self.name and lang == config.languages[0]:
             return self.name
 
         label = self.get(u"label")

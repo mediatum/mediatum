@@ -15,6 +15,7 @@ from core import httpstatus
 from core import Node, db
 from contenttypes import Container
 from core.users import user_from_session
+import core.config as _core_config
 import datetime
 
 q = db.query
@@ -105,9 +106,9 @@ def _handle_edit_metadata(req, mask, nodes):
             if field_name == 'nodename' and mask.name == 'settings':
                 if '__nodename' in form:
                     field_name = '__nodename'  # no multilang here !
-                elif "{}__nodename".format(_core_translation.getDefaultLanguage()) in form:
+                elif '{}__nodename'.format(_core_config.languages[0]) in form:
                     # no multilang here !
-                    field_name = "{}__nodename".format(_core_translation.getDefaultLanguage())
+                    field_name = '{}__nodename'.format(_core_config.languages[0])
                 value = form.get(field_name, None)
                 if value:
                     if value != node.name:

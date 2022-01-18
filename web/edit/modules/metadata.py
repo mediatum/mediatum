@@ -7,6 +7,7 @@ from __future__ import print_function
 import logging
 import mediatumtal.tal as _tal
 
+import core.csrfform as _core_csrfform
 import core.translation as _core_translation
 from utils.date import format_date, parse_date, now
 from utils.utils import funcname
@@ -251,7 +252,7 @@ def getContent(req, ids):
             maskname=maskname,
             language=_core_translation.set_language(req.accept_languages),
             t=_core_translation.t,
-            csrf=req.csrf_token.current_token,
+            csrf=_core_csrfform.get_token(),
         )
     if action == 'restore':
         raise NotImplementedError("restore version not implemented, later...")

@@ -22,6 +22,7 @@ from sqlalchemy.orm import undefer
 import sqlalchemy as _sqlalchemy
 from werkzeug.utils import cached_property
 import core.config as config
+import core.csrfform as _core_csrfform
 import core.translation as translation
 from core import Node
 from core.xmlnode import getNodeXML, readNodeXML
@@ -1129,7 +1130,7 @@ class Mask(Node):
     def getMetaMask(self, req):
         language = translation.set_language(req.accept_languages)
         ret = '<form method="post" name="myform">'
-        ret += '<input value="' + req.csrf_token.current_token + '" type="hidden" name="csrf_token">'
+        ret += '<input value="' + _core_csrfform.get_token() + '" type="hidden" name="csrf_token">'
         ret += '<div class="back"><h3 i18n:translate="mask_editor_field_definition">Felddefinition </h3>'
         ret += '<div align="right"><input type="image" src="/img/install.png" name="newdetail_'
         ret += unicode(self.id)
@@ -1179,7 +1180,7 @@ class Mask(Node):
                 item = q(Node).get(req.params.get("edit", ""))
                 t = getMetadataType(item.get("type"))
                 ret = '<form method="post" name="myform">'
-                ret += '<input value="' + req.csrf_token.current_token + '" type="hidden" name="csrf_token">'
+                ret += '<input value="' + _core_csrfform.get_token() + '" type="hidden" name="csrf_token">'
                 return ret + '%s</form>' % (t.getMetaEditor(item, req))
 
         if (req.params.get("op", "") == "new" and req.params.get("type", "") != "") or (
@@ -1198,7 +1199,7 @@ class Mask(Node):
             else:
                 req.params["edit"] = item.id
             ret = '<form method="post" name="myform">'
-            ret += '<input value="' + req.csrf_token.current_token + '" type="hidden" name="csrf_token">'
+            ret += '<input value="' + _core_csrfform.get_token() + '" type="hidden" name="csrf_token">'
             return ret + u'{}</form>'.format(t.getMetaEditor(item, req))
 
         if (req.params.get("type", "") == "" and self.getMasktype() != "export") or req.params.get('op') == 'newdetail':
@@ -1219,7 +1220,7 @@ class Mask(Node):
                 <br/>
                 <br/>
                 <input type="hidden" name="op" value="new"/>"""
-            ret += '<input value="' + req.csrf_token.current_token + '" type="hidden" name="csrf_token">'
+            ret += '<input value="' + _core_csrfform.get_token() + '" type="hidden" name="csrf_token">'
             ret += '<input type="hidden" name="pid" value="' + req.params.get("pid") + '"/>'
             ret += '<div class="label">&nbsp;</div><button type="submit" name="new_" style="width:100px" i18n:translate="mask_editor_ok"> OK </button>'
             ret += '&nbsp;&nbsp;<button type="submit" onclick="setCancel(document.myform.op)" i18n:translate="mask_editor_cancel">Abbrechen</button><br/>'
@@ -1231,7 +1232,7 @@ class Mask(Node):
             item = q(Node).get(req.params.get("id"))
             t = getMetadataType(req.params.get("type"))
             ret = '<form method="post" name="myform">'
-            ret += '<input value="' + req.csrf_token.current_token + '" type="hidden" name="csrf_token">'
+            ret += '<input value="' + _core_csrfform.get_token() + '" type="hidden" name="csrf_token">'
             return ret + '%s</form>' % (t.getMetaEditor(item, req))
 
 

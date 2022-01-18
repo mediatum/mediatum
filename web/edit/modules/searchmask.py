@@ -6,6 +6,7 @@ from __future__ import print_function
 
 import mediatumtal.tal as _tal
 
+import core.csrfform as _core_csrfform
 import schema.searchmask as searchmask
 from core.users import user_from_session as _user_from_session
 from core import httpstatus
@@ -156,7 +157,7 @@ def getContent(req, ids):
             return 0
         return 1
     data["display"] = display
-    data["csrf"] = req.csrf_token.current_token
+    data["csrf"] = _core_csrfform.get_token()
     searchtypechanged = False
     if req.params.get("searchtypechanged", "") == "true":
         searchtypechanged = True

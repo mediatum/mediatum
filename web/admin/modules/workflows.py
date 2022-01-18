@@ -11,6 +11,7 @@ import traceback
 import mediatumtal.tal as _tal
 
 import core.config as config
+import core.csrfform as _core_csrfform
 import core.translation as _core_translation
 from workflow.workflow import Workflow, getWorkflowList, getWorkflow, updateWorkflow, addWorkflow, deleteWorkflow, \
     inheritWorkflowRights, getWorkflowTypes, create_update_workflow_step, deleteWorkflowStep, exportWorkflow, importWorkflow
@@ -280,7 +281,7 @@ def view(req):
     v["workflows"] = workflows
     v["pages"] = pages
     v["actfilter"] = actfilter
-    v["csrf"] = req.csrf_token.current_token
+    v["csrf"] = _core_csrfform.get_token()
     return _tal.processTAL(v, file="web/admin/modules/workflows.html", macro="view", request=req)
 
 """ edit form for given workflow (create/update)
@@ -323,7 +324,7 @@ def WorkflowDetail(req, id, err=0):
     v["languages"] = config.languages
     v["error"] = err
     v["actpage"] = req.values["actpage"]
-    v["csrf"] = req.csrf_token.current_token
+    v["csrf"] = _core_csrfform.get_token()
     return _tal.processTAL(v, file="web/admin/modules/workflows.html", macro="modify", request=req)
 
 """ overview of all steps for given workflow
@@ -385,7 +386,7 @@ def WorkflowStepList(req, wid):
     v["workflowsteps"] = workflowsteps
     v["pages"] = pages
     v["actfilter"] = actfilter
-    v["csrf"] = req.csrf_token.current_token
+    v["csrf"] = _core_csrfform.get_token()
     return _tal.processTAL(v, file="web/admin/modules/workflows.html", macro="view_step", request=req)
 
 """ edit form for workflowstep for given workflow and given step
@@ -469,7 +470,7 @@ def WorkflowStepDetail(req, wid, wnid, err=0):
     v["error"] = err
     v["update_type"] = req.values.get("ntype", u"")
     v["actpage"] = req.values["actpage"]
-    v["csrf"] = req.csrf_token.current_token
+    v["csrf"] = _core_csrfform.get_token()
     return _tal.processTAL(v, file="web/admin/modules/workflows.html", macro="modify_step", request=req)
 
 """ popup window with image of workflow given by id
@@ -481,7 +482,7 @@ def WorkflowPopup(req):
     return _tal.processTAL(
             dict(
                 id=path[1],
-                csrf=req.csrf_token.current_token,
+                csrf=_core_csrfform.get_token(),
             ),
             file="web/admin/modules/workflows.html",
             macro="view_popup",

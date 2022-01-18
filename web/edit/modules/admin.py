@@ -7,6 +7,7 @@ from __future__ import print_function
 import logging
 import mediatumtal.tal as _tal
 
+import core.csrfform as _core_csrfform
 from utils.utils import formatTechAttrs, suppress
 from utils.date import format_date, parse_date
 from core import httpstatus
@@ -133,7 +134,7 @@ def getContent(req, ids):
                 gf=getFormat,
                 user_is_admin=user.is_admin,
                 canedit=node.has_write_access(),
-                csrf=req.csrf_token.current_token,
+                csrf=_core_csrfform.get_token(),
             ),
             file="web/edit/modules/admin.html",
             macro="edit_admin_file",

@@ -7,6 +7,7 @@ from __future__ import print_function
 import logging
 import mediatumtal.tal as _tal
 
+import core.csrfform as _core_csrfform
 import core.translation as _core_translation
 from .workflow import WorkflowStep, registerStep
 import utils.fileutils as fileutils
@@ -93,7 +94,7 @@ class WorkflowStep_Upload(WorkflowStep):
                     error=error,
                     pretext=self.getPreText(_core_translation.set_language(req.accept_languages)),
                     posttext=self.getPostText(_core_translation.set_language(req.accept_languages)),
-                    csrf=req.csrf_token.current_token,
+                    csrf=_core_csrfform.get_token(),
                 ),
                 file="workflow/upload.html",
                 macro="workflow_upload",

@@ -20,6 +20,7 @@ from core import Node
 from core import db
 import core.nodecache as _nodecache
 from schema.mapping import Mapping, MappingField
+import core.csrfform as _core_csrfform
 import core.database.postgres.node as _node
 import core.systemtypes as _core_systemtypes
 
@@ -220,7 +221,7 @@ def view(req):
     v["pages"] = pages
     v["actfilter"] = actfilter
     v["mappingtypes"] = "\n".join(getMappingTypes())
-    v["csrf"] = req.csrf_token.current_token
+    v["csrf"] = _core_csrfform.get_token()
     return _tal.processTAL(v, file="web/admin/modules/mapping.html", macro="view", request=req)
 
 
@@ -251,7 +252,7 @@ def editMapping_mask(req, id, err=0):
     v["id"] = id
     v["actpage"] = req.params.get("actpage")
     v["mappingtypes"] = getMappingTypes()
-    v["csrf"] = req.csrf_token.current_token
+    v["csrf"] = _core_csrfform.get_token()
     return _tal.processTAL(v, file="web/admin/modules/mapping.html", macro="modify", request=req)
 
 
@@ -312,7 +313,7 @@ def viewlist(req, id):
     v["options"] = []
     v["pages"] = pages
     v["actfilter"] = actfilter
-    v["csrf"] = req.csrf_token.current_token
+    v["csrf"] = _core_csrfform.get_token()
     v["translate"] = _translation.translate
     v["language"] = _translation.set_language(req.accept_languages)
     return _tal.processTAL(v, file="web/admin/modules/mapping.html", macro="viewlist", request=req)
@@ -341,7 +342,7 @@ def editMappingField_mask(req, id, parent, err=0):
     v["field"] = field
     v["parent"] = parent
     v["actpage"] = req.params.get("actpage")
-    v["csrf"] = req.csrf_token.current_token
+    v["csrf"] = _core_csrfform.get_token()
     return _tal.processTAL(v, file="web/admin/modules/mapping.html", macro="modifyfield", request=req)
 
 

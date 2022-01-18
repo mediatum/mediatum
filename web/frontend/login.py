@@ -11,6 +11,7 @@ import flask as _flask
 from core import db, User, auth
 from core import httpstatus
 from core.webconfig import node_url
+import core.csrfform as _core_csrfform
 import core.users as users
 import core.config as config
 import core.translation as _core_translation
@@ -91,6 +92,8 @@ def _set_return_after_login(req):
 
 
 def login(req):
+    if req.method == "POST":
+        _core_csrfform.validate_token(req.form)
 
     if "LoginSubmit" in req.form:
         error = _handle_login_submit(req)
@@ -111,7 +114,7 @@ def login(req):
         email=config.get("email.support"),
         language=language,
         return_after_login=return_after_login,
-        csrf=req.csrf_token.current_token,
+        csrf=_core_csrfform.get_token(),
     )
     login_html = webconfig.theme.render_macro("login.j2.jade", "login", ctx)
     from web.frontend.frame import render_page
@@ -136,6 +139,9 @@ def logout(req):
 
 
 def pwdchange(req):
+    if req.method == "POST":
+        _core_csrfform.validate_token(req.form)
+
     user = users.user_from_session()
     error = 0
 
@@ -167,7 +173,7 @@ def pwdchange(req):
     content_html = webconfig.theme.render_macro(
             "login.j2.jade",
             "change_pwd",
-            dict(error=error, user=user, csrf=req.csrf_token.current_token),
+            dict(error=error, user=user, csrf=_core_csrfform.get_token()),
         )
     from web.frontend.frame import render_page
     html = render_page(req, content_html)

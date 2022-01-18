@@ -19,6 +19,7 @@ import logging
 import json
 import mediatumtal.tal as _tal
 
+import core.csrfform as _core_csrfform
 import core.translation as _core_translation
 import utils.fileutils as _utils_fileutils
 import utils.utils as _utils_utils
@@ -467,7 +468,7 @@ def getContent(req, ids):
                 "edit_all_objects",
             ).format(item_count[1]),
         navigation_height=navigation_height,
-        csrf=str(req.csrf_token.current_token),
+        csrf=_core_csrfform.get_token(),
     )
     html = _tal.processTAL(v, file="web/edit/modules/upload.html", macro="upload_form", request=req)
     show_dir_nav.nodes = None

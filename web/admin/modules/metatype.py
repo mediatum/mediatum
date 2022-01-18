@@ -15,6 +15,7 @@ import sqlalchemy as _sqlalchemy
 from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter
 from web.common.acl_web import makeList
 from utils.utils import removeEmptyStrings, esc, suppress
+import core.csrfform as _core_csrfform
 import core.translation as _translation
 from schema.schema import getMetaFieldTypeNames, getMetaType, updateMetaType, existMetaType, deleteMetaType, fieldoption, moveMetaField, getMetaField, deleteMetaField, getFieldsForMeta, dateoption, requiredoption, existMetaField, updateMetaField, generateMask, cloneMask, exportMetaScheme, importMetaSchema
 from schema.schema import VIEW_DEFAULT
@@ -374,7 +375,7 @@ def view(req):
     v["actfilter"] = actfilter
     v["filterattrs"] = [("id", "admin_metatype_filter_id"), ("name", "admin_metatype_filter_name")]
     v["filterarg"] = req.params.get("filtertype", "id")
-    v["csrf"] = req.csrf_token.current_token
+    v["csrf"] = _core_csrfform.get_token()
     v["translate"] = _translation.translate
     v["language"] = _translation.set_language(req.accept_languages)
     return _tal.processTAL(v, file="web/admin/modules/metatype.html", macro="view_type", request=req)
@@ -426,7 +427,7 @@ def MetatypeDetail(req, id, err=0):
     v["acl"] = makeList(req, "read", removeEmptyStrings(rules), {}, overload=0, type="read")
     v["filtertype"] = req.params.get("filtertype", "")
     v["actpage"] = req.params.get("actpage")
-    v["csrf"] = req.csrf_token.current_token
+    v["csrf"] = _core_csrfform.get_token()
     return _tal.processTAL(v, file="web/admin/modules/metatype.html", macro="modify_type", request=req)
 
 
@@ -435,7 +436,7 @@ def MetatypeDetail(req, id, err=0):
 
 def showInfo(req):
         return _tal.processTAL(
-                dict(fieldtypes=getMetaFieldTypeNames(), csrf=req.csrf_token.current_token),
+                dict(fieldtypes=getMetaFieldTypeNames(), csrf=_core_csrfform.get_token()),
                 file="web/admin/modules/metatype.html",
                 macro="show_info",
                 request=req,
@@ -455,7 +456,7 @@ def showFieldOverview(req):
                 metafields=fields,
                 fieldoptions=fieldoption,
                 fieldtypes=getMetaFieldTypeNames(),
-                csrf=req.csrf_token.current_token,
+                csrf=_core_csrfform.get_token(),
             ),
             file="web/admin/modules/metatype.html",
             macro="show_fieldoverview",
@@ -695,7 +696,7 @@ def showEditor(req):
             v["editor"] = editor.getMetaMask(req)
 
     v["title"] = editor.name
-    v["csrf"] = req.csrf_token.current_token
+    v["csrf"] = _core_csrfform.get_token()
     return _tal.processTAL(v, file="web/admin/modules/metatype.html", macro="editor_popup", request=req)
 
 

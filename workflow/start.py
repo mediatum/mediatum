@@ -9,7 +9,9 @@ from __future__ import print_function
 import logging
 import flask as _flask
 import mediatumtal.tal as _tal
+
 import core.config as config
+import core.csrfform as _core_csrfform
 import core.translation as _core_translation
 from .workflow import WorkflowStep, registerStep
 from schema.schema import getMetaType
@@ -129,7 +131,7 @@ class WorkflowStep_Start(WorkflowStep):
                     redirect=redirect,
                     message=message,
                     allowcontinue=self.get('allowcontinue'),
-                    csrf=req.csrf_token.current_token,
+                    csrf=_core_csrfform.get_token(),
                 ),
                 file="workflow/start.html",
                 macro="workflow_start",

@@ -7,6 +7,7 @@ from __future__ import print_function
 import core.config as config
 import mediatumtal.tal as _tal
 
+import core.csrfform as _core_csrfform
 import core.translation as _core_translation
 from core.stats import StatisticFile
 from utils.utils import splitpath
@@ -77,7 +78,7 @@ def getContent(req, ids):
     else:
         v["current_file"] = StatisticFile(None)
     v["nodename"] = node.name
-    v["csrf"] = req.csrf_token.current_token
+    v["csrf"] = _core_csrfform.get_token()
     return _tal.processTAL(v, file="web/edit/modules/statsaccess.html", macro="edit_stats", request=req)
 
 
@@ -99,7 +100,7 @@ def getPopupWindow(req, ids):
     else:
         v["action"] = "showform"
         v["statsrun"] = q(Node).get(ids).get("system.statsrun")
-        v["csrf"] = req.csrf_token.current_token
+        v["csrf"] = _core_csrfform.get_token()
     req.response.set_data(req.response.get_data() + _tal.processTAL(v, file="web/edit/modules/statsaccess.html", macro="edit_stats_popup", request=req))
 
 

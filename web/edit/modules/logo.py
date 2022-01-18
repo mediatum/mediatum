@@ -8,6 +8,7 @@ import os
 import logging
 import mediatumtal.tal as _tal
 
+import core.csrfform as _core_csrfform
 import core.translation as _core_translation
 from utils.utils import getMimeType, splitpath
 from utils.fileutils import importFile
@@ -94,7 +95,7 @@ def getContent(req, ids):
                 logo=node.getLogoPath(),
                 language=_core_translation.set_language(req.accept_languages),
                 t=_core_translation.t,
-                csrf=req.csrf_token.current_token,
+                csrf=_core_csrfform.get_token(),
             ),
             file="web/edit/modules/logo.html",
             macro="edit_logo",

@@ -7,6 +7,7 @@ from __future__ import print_function
 import flask as _flask
 import mediatumtal.tal as _tal
 
+import core.csrfform as _core_csrfform
 import core.translation as _core_translation
 from .workflow import WorkflowStep, registerStep
 from schema.schema import getMetaType
@@ -66,7 +67,7 @@ class WorkflowStep_EditMetadata(WorkflowStep):
                     pretext=self.getPreText(_core_translation.set_language(req.accept_languages)),
                     posttext=self.getPostText(_core_translation.set_language(req.accept_languages)),
                     buttons=self.tableRowButtons(node),
-                    csrf=req.csrf_token.current_token,
+                    csrf=_core_csrfform.get_token(),
                 ),
                 file="workflow/editmetadata.html",
                 macro="workflow_metadateneditor",

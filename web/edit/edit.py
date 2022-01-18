@@ -11,11 +11,13 @@ import time
 import json
 import core as _core
 import core.config as config
+import core.csrfform as _core_csrfform
 import core.translation as _core_translation
 import mediatumtal.tal as _tal
 import web.edit.edit_common as _web_edit_edit_common
 import core.systemtypes as _core_systemtypes
 import utils.utils as _utils_utils
+
 from core import Node, NodeType, db, User, UserGroup, UserToUserGroup
 from core.database.postgres.permission import NodeToAccessRuleset, AccessRulesetToRule, AccessRule
 
@@ -99,6 +101,9 @@ def get_searchitems(req):
     return searchitems
 
 def frameset(req):
+    if req.method == "POST":
+        _core_csrfform.validate_token(req.form)
+
     user = _user_from_session()
     if not user.is_editor:
         data = _tal.processTAL({}, file="web/edit/edit.html", macro="error", request=req)
@@ -230,7 +235,7 @@ def frameset(req):
                 t=_core_translation.t,
                 _getIDPath=_getIDPath,
                 homenodefilter=homenodefilter,
-                csrf=req.csrf_token.current_token,
+                csrf=_core_csrfform.get_token(),
             ),
             file="web/edit/edit.html",
             macro="edit_main",
@@ -426,6 +431,9 @@ def edit_tree(req):
 
 
 def action(req):
+    if req.method == "POST":
+        _core_csrfform.validate_token(req.form)
+
     language = _core_translation.set_language(req.accept_languages)
     user = _user_from_session()
     if not user.is_editor:
@@ -705,6 +713,9 @@ def showPaging(req, tab, ids):
 
 
 def content(req):
+    if req.method == "POST":
+        _core_csrfform.validate_token(req.form)
+
     user = _user_from_session()
     req.response.status_code = httpstatus.HTTP_OK
     if not user.is_editor:

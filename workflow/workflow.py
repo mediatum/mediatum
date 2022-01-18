@@ -16,7 +16,9 @@ from utils.utils import *
 from core.xmlnode import getNodeXML, readNodeXML
 
 import utils.date as date
+import core.csrfform as _core_csrfform
 import core.translation as _core_translation
+
 from core.users import user_from_session as _user_from_session
 from core.postgres import check_type_arg
 from core.database.postgres.permission import NodeToAccessRuleset
@@ -308,7 +310,7 @@ class Workflows(Node):
                     items=workflowSearch(list, req.values.get("workflow_search", "")),
                     getStep=getNodeWorkflowStep,
                     format_date=formatItemDate,
-                    csrf=req.csrf_token.current_token,
+                    csrf=_core_csrfform.get_token(),
                 ),
                 file=template,
                 macro=macro,
@@ -341,7 +343,7 @@ class Workflow(Node):
                     items=workflowSearch([self], req.values.get("workflow_search", "")),
                     getStep=getNodeWorkflowStep,
                     format_date=formatItemDate,
-                    csrf=req.csrf_token.current_token,
+                    csrf=_core_csrfform.get_token(),
                 ),
                 file=template,
                 macro=macro,
@@ -478,7 +480,7 @@ class WorkflowStep(Node):
                                         node=node,
                                         link=link,
                                         email=config.get("email.workflow"),
-                                        csrf=req.csrf_token.current_token,
+                                        csrf=_core_csrfform.get_token(),
                                     ),
                                     file=template,
                                     macro=macro,
@@ -587,7 +589,7 @@ class WorkflowStep(Node):
             workflow=self.parents[0],
             step=self,
             nodelink=nodelink,
-            csrf=req.csrf_token.current_token,
+            csrf=_core_csrfform.get_token(),
         )
         return _tal.processTAL(context,
                                file="workflow/workflow.html",

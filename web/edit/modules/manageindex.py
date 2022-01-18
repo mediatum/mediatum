@@ -5,6 +5,8 @@ from __future__ import division
 from __future__ import print_function
 
 import mediatumtal.tal as _tal
+
+import core.csrfform as _core_csrfform
 from schema.schema import loadTypesFromDB, getMetaType, get_permitted_schemas
 from utils.utils import u, suppress
 from contenttypes import Data
@@ -127,5 +129,5 @@ def getContent(req, ids):
             return ""
 
     else:
-        v["csrf"] = req.csrf_token.current_token
+        v["csrf"] = _core_csrfform.get_token()
         return _tal.processTAL(v, file="web/edit/modules/manageindex.html", macro="manageform", request=req)

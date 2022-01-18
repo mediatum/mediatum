@@ -6,6 +6,7 @@ from __future__ import print_function
 
 import mediatumtal.tal as _tal
 
+import core.csrfform as _core_csrfform
 import core.translation as _core_translation
 import web.edit.edit_common as _web_edit_edit_common
 from core.users import getHomeDir
@@ -176,7 +177,7 @@ def getContent(req, ids):
                 script="var currentitem = '%s';\nvar currentfolder = '%s'" % (publishdir.id, publishdir.id),
                 idstr=ids,
                 faultyerrlist=publisherror,
-                csrf=req.csrf_token.current_token,
+                csrf=_core_csrfform.get_token(),
             ),
             file="web/edit/modules/publish.html",
             macro="publish_form",

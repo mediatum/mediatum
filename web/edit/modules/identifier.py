@@ -8,6 +8,7 @@ import os
 import mediatumtal.tal as _tal
 
 import core.config as config
+import core.csrfform as _core_csrfform
 import core.translation as _core_translation
 import utils.date as date
 import utils.urn as urn
@@ -111,7 +112,7 @@ def getContent(req, ids):
                     'edit_identifier_state_0_1_admin',
                 )
         else:
-            v['msg'] = t(_core_translation.set_language(req.accept_languages), 'edit_identifier_state_2_admin')
+            v['msg'] = _core_translation.t(_core_translation.set_language(req.accept_languages), 'edit_identifier_state_2_admin')
 
     else:
         if pathutils.isDescendantOf(node, q(Collections).one()):
@@ -185,7 +186,10 @@ def getContent(req, ids):
                 v['msg'] = t(_core_translation.set_language(req.accept_languages), 'edit_identifier_state_1_usr')
         else:
             v['show_form'] = False
-            v['msg'] = t(_core_translation.set_language(req.accept_languages), 'edit_identifier_state_published')
+            v['msg'] = _core_translation.t(
+                    _core_translation.set_language(req.accept_languages),
+                    'edit_identifier_state_published',
+                )
 
     v['urn_val'] = node.get('urn')
     v['doi_val'] = node.get('doi')
@@ -198,7 +202,7 @@ def getContent(req, ids):
                 'edit_identifier_all_types_set',
             )
 
-    v["csrf"] = req.csrf_token.current_token
+    v["csrf"] = _core_csrfform.get_token()
     return _tal.processTAL(v, file='web/edit/modules/identifier.html', macro='set_identifier', request=req)
 
 

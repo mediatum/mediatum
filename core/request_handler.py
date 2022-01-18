@@ -832,16 +832,6 @@ def handle_request(req):
 
     req.params = {key: ";".join(value) for key, value in req.values.iterlists()}
 
-    mediatum_form = _csrfform.CSRFForm()
-    if req.form and req.method == 'POST':
-        csrf_token = req.form.get("csrf_token")
-        if not csrf_token:
-            raise ValueError("csrf_token not in form of request path " + req.path)
-        else:
-            mediatum_form.csrf_token.process_data(csrf_token.replace("!!!!!", "##"))
-            mediatum_form.validate()
-
-    req.csrf_token = mediatum_form.csrf_token
     req.response = _flask.make_response()
     req.response.content_type = 'text/html; encoding=utf-8; charset=utf-8'
 

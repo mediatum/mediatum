@@ -44,3 +44,36 @@ class CSRFForm(_wtforms_Form):
         @property
         def csrf_time_limit(self):
             return _datetime.timedelta(seconds=_core_config.getint('csrf.timeout', 0)) or None
+
+
+def get_token():
+    """
+    This function may be called multiple times within a
+    request -- it will cache its result and serve the same token.
+    """
+    if "csrf_token" in _flask.g.mediatum:
+        return _flask.g.mediatum["csrf_token"]
+    else:
+        form_obj = CSRFForm()  # this adds csrf-info to session cookie
+        return _flask.g.mediatum.setdefault("csrf_token", form_obj.csrf_token.current_token)
+
+
+def validate_token(form_data):
+    """
+    If the current request answers a form,
+    ensure that a valid csrf-token is part of the form.
+    Return a csrf-token to be included in another
+    form that is being served as response,
+    also put the relevant validation information
+    into the session cookie.
+    `form_data` is the `request.form` object.
+    """
+    form_obj = CSRFForm()  # this adds csrf-info to session cookie
+    csrf_token = form_data.get("csrf_token")
+    if not csrf_token:
+        raise ValueError("csrf_token not in form !!!")
+    form_obj.csrf_token.process_data(csrf_token.replace("!!!!!", "##"))
+    if not form_obj.validate():
+        raise ValueError("csrf_token validation failed !!!")
+
+    _flask.g.mediatum.setdefault("csrf_token", form_obj.csrf_token.current_token)

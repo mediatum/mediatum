@@ -7,6 +7,7 @@ from __future__ import print_function
 import logging
 import mediatumtal.tal as _tal
 
+import core.csrfform as _core_csrfform
 import core.translation as _core_translation
 from .workflow import WorkflowStep, registerStep
 from schema.schema import getMetaType, VIEW_HIDE_EMPTY
@@ -64,7 +65,7 @@ class WorkflowStep_FileAttachment(WorkflowStep):
                     pretext=self.getPreText(_core_translation.set_language(req.accept_languages)),
                     posttext=self.getPostText(_core_translation.set_language(req.accept_languages)),
                     maskdata=maskdata,
-                    csrf=req.csrf_token.current_token,
+                    csrf=_core_csrfform.get_token(),
                 ),
                 file="workflow/fileattachment.html",
                 macro="fileattachment_show_node",

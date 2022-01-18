@@ -14,6 +14,7 @@ from mediatumtal import tal
 
 from utils.utils import formatException
 import core.config as config
+import core.csrfform as _core_csrfform
 import core.translation as _core_translation
 import utils.mail as mail
 from core import db
@@ -178,7 +179,7 @@ class WorkflowStep_SendEmail(WorkflowStep):
                         wfnode=self,
                         pretext=self.getPreText(_core_translation.set_language(req.accept_languages)),
                         posttext=self.getPostText(_core_translation.set_language(req.accept_languages)),
-                        csrf=req.csrf_token.current_token,
+                        csrf=_core_csrfform.get_token(),
                     ),
                     file="workflow/email.html",
                     macro="sendmail",

@@ -9,6 +9,7 @@ import inspect
 import logging
 import mediatumtal.tal as _tal
 
+import core.csrfform as _core_csrfform
 import utils.utils as _utils_utils
 from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter
 from schema.schema import Metadatatype
@@ -114,7 +115,7 @@ def showDetailList(req, id):
     v["actfilter"] = actfilter
 
     v["actpage"] = req.params.get("actpage")
-    v["csrf"] = req.csrf_token.current_token
+    v["csrf"] = _core_csrfform.get_token()
     v["translate"] = _translation.translate
     v["language"] = _translation.set_language(req.accept_languages)
     if ustr(req.params.get("page", "")).isdigit():
@@ -148,7 +149,7 @@ def FieldDetail(req, name=None, error=None):
     tal_ctx.update(
             actpage=req.params.get("actpage"),
             adminfields="",
-            csrf=req.csrf_token.current_token,
+            csrf= _core_csrfform.get_token(),
             error=error,
             fieldoptions=fieldoption,
             fieldtypes=getMetaFieldTypeNames(),

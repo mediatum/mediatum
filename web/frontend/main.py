@@ -13,6 +13,7 @@ from werkzeug.datastructures import ImmutableMultiDict
 import werkzeug.utils as _werkzeug_utils
 
 import core.config as config
+import core.csrfform as _core_csrfform
 import core.translation as _core_translation
 from core.metatype import Context
 from core import httpstatus
@@ -174,6 +175,8 @@ def display(req, show_navbar=True, render_paths=True, params=None):
 
 @_check_change_language_request
 def workflow(req):
+    if req.method == "POST":
+        _core_csrfform.validate_token(req.form)
     display(req, False, False, req.values)
 
 
@@ -182,6 +185,9 @@ PUBPATH = re.compile("/?(publish|pub)/(.*)$")
 
 @_check_change_language_request
 def publish(req):
+    if req.method == "POST":
+        _core_csrfform.validate_token(req.form)
+
     m = PUBPATH.match(req.mediatum_contextfree_path)
 
     node = _nodecache.get_workflows_node()

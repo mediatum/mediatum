@@ -7,6 +7,8 @@ from __future__ import print_function
 import logging
 
 import mediatumtal.tal as _tal
+
+import core.csrfform as _core_csrfform
 import core.translation as _core_translation
 from schema.schema import getMetaType
 from core.users import user_from_session as _user_from_session
@@ -40,7 +42,7 @@ def getContent(req, ids):
         db.session.commit()
 
         req.response.set_data(_tal.processTAL(
-                dict(nodelist=children, language=language, csrf=req.csrf_token.current_token),
+                dict(nodelist=children, language=language, csrf=_core_csrfform.get_token()),
                 file='web/edit/modules/subfolder.html',
                 macro="ordered_list",
                 request=req,
@@ -55,7 +57,7 @@ def getContent(req, ids):
             child.orderpos = position
         db.session.commit()
         req.response.set_data(_tal.processTAL(
-                dict(nodelist=sorted_children, language=language, csrf=req.csrf_token.current_token),
+                dict(nodelist=sorted_children, language=language, csrf=_core_csrfform.get_token()),
                 file='web/edit/modules/subfolder.html',
                 macro="ordered_list",
                 request=req,
@@ -84,7 +86,7 @@ def getContent(req, ids):
                 nodelist=nodelist,
                 sortattributes=sorted(attributes, lambda x, y: cmp(x.getLabel().lower(), y.getLabel().lower())),
                 language=language,
-                csrf=req.csrf_token.current_token,
+                csrf=_core_csrfform.get_token(),
             ),
             file="web/edit/modules/subfolder.html",
             macro="edit_subfolder",

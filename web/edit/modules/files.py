@@ -10,6 +10,8 @@ import os
 import core.users as users
 import logging
 import mediatumtal.tal as _tal
+
+import core.csrfform as _core_csrfform
 import utils.utils as _utils_utils
 from utils.utils import getMimeType, get_user_id, suppress
 from utils.fileutils import importFile, getImportDir, importFileIntoDir
@@ -172,7 +174,7 @@ def getContent(req, ids):
                             dict(
                                 children=[c for c in node.children.all() if str(c.id) != excludeid],
                                 grandchildren=grandchildren,
-                                csrf=req.csrf_token.current_token,
+                                csrf=_core_csrfform.get_token(),
                             ),
                             file="web/edit/modules/files.html",
                             macro="edit_files_popup_children",
@@ -188,7 +190,7 @@ def getContent(req, ids):
                         dict(
                             children=[c for c in node.getChildren() if str(c.id) != excludeid],
                             grandchildren=grandchildren,
-                            csrf=req.csrf_token.current_token,
+                            csrf=_core_csrfform.get_token(),
                         ),
                         file="web/edit/modules/files.html",
                         macro="edit_files_popup_children",
@@ -204,14 +206,14 @@ def getContent(req, ids):
 
                 if len(node.getChildren())==0:
                     ret += _tal.processTAL(
-                            dict(grandchildren=[], csrf=req.csrf_token.current_token),
+                            dict(grandchildren=[], csrf=_core_csrfform.get_token()),
                             file="web/edit/modules/files.html",
                             macro="edit_files_popup_grandchildren",
                             request=req,
                         )
                 else:
                     ret += _tal.processTAL(
-                            dict(grandchildren=grandchildren, csrf=req.csrf_token.current_token),
+                            dict(grandchildren=grandchildren, csrf=_core_csrfform.get_token()),
                             file="web/edit/modules/files.html",
                             macro="edit_files_popup_grandchildren",
                             request=req,
@@ -228,7 +230,7 @@ def getContent(req, ids):
                                 p.children.remove(childnode)
                         node.children.append(childnode)
             ret += _tal.processTAL(
-                    dict(srcnodeid=srcnodeid, children=node.children, node=node, csrf=req.csrf_token.current_token),
+                    dict(srcnodeid=srcnodeid, children=node.children, node=node, csrf=_core_csrfform.get_token()),
                     file="web/edit/modules/files.html",
                     macro="edit_files_children_list",
                     request=req,
@@ -242,7 +244,7 @@ def getContent(req, ids):
                 node.children.remove(remnode)
 
             ret += _tal.processTAL(
-                    dict(srcnodeid=srcnodeid, children=node.children, node=node, csrf=req.csrf_token.current_token),
+                    dict(srcnodeid=srcnodeid, children=node.children, node=node, csrf=_core_csrfform.get_token()),
                     file="web/edit/modules/files.html",
                     macro="edit_files_children_list",
                     request=req,
@@ -278,7 +280,7 @@ def getContent(req, ids):
                     idstr=",".join(ids),
                     srcnodeid=srcnodeid,
                     node=node,
-                    csrf=req.csrf_token.current_token,
+                    csrf=_core_csrfform.get_token(),
                 ),
                 file="web/edit/modules/files.html",
                 macro="edit_files_popup_selection",
@@ -343,7 +345,7 @@ def getContent(req, ids):
             attfiles=filter(lambda x: x.type == 'attachment', node.files),
             att=[],
             nodes=[node],
-            csrf=req.csrf_token.current_token,
+            csrf=_core_csrfform.get_token(),
         )
 
     for f in v["attfiles"]:  # collect all files in attachment directory

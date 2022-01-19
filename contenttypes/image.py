@@ -338,7 +338,7 @@ class Image(Content):
 
         archive = get_archive_for_node(self)
         if archive:
-            if obj['has_original']:
+            if obj['data_access']:
                 obj['highres_url'] = u"/file/{nid}/{nid}.tif".format(nid=self.id)
                 archive_state = archive.get_file_state(self)
                 if archive_state == Archive.NOT_PRESENT:

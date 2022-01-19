@@ -118,7 +118,7 @@ def getint(key, default=None):
     try:
         return int(val)
     except:
-        ConfigException(key + ": config value cannot be parsed as integer value")
+        raise ConfigException(key + ": config value cannot be parsed as integer value")
 
 
 def getfloat(key, default=None):
@@ -129,7 +129,7 @@ def getfloat(key, default=None):
     try:
         return float(val)
     except:
-        ConfigException(key + ": config value cannot be parsed as float value")
+        raise ConfigException(key + ": config value cannot be parsed as float value")
 
 
 def getsubset(prefix):

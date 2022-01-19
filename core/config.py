@@ -29,7 +29,12 @@ import os
 import sys
 import codecs
 import tempfile
+import backports.functools_lru_cache as _backports_functools_lru_cache
 from PIL import Image as _PILImage
+try:
+    import uwsgi as _uwsgi
+except ImportError:
+    _uwsgi = None
 import utils.utils as _utils_utils
 
 logg = logging.getLogger(__name__)
@@ -336,3 +341,37 @@ def resolve_filename(filename):
         elif filename.startswith("m_"):
             return pathlist[0] + "/metatypes/" + filename
     return filename
+
+
+@_backports_functools_lru_cache.lru_cache(maxsize=None)
+def _get_or_gen_secret_key(config_key):
+    """
+    Read a secret key from a file that is given in the config file.
+    If the configuration doesn't state a file, generate a secret key string.
+    :param config_key:
+    :return: random secret key
+    """
+    if config_key not in settings:
+        return _utils_utils.gen_secure_token()
+    with open(settings[config_key], "rb") as f:
+        return f.read()
+
+
+def get_secret_key(config_key, uwsgi_cache_key=None):
+    """
+    Read a secret key from a file
+    that is given in the config file.
+    If the configuration doesn't state a file,
+    generate a secret key string.
+    If uwsgi is used, put the key in the uwsgi
+    cache so that all processes share the same key.
+    :param config_key:
+    :param uwsgi_cache_key:
+    :return: secret key
+    """
+    secret_key = _get_or_gen_secret_key(config_key)
+    if _uwsgi and uwsgi_cache_key:
+        _uwsgi.cache_set(uwsgi_cache_key, secret_key)
+        secret_key = _uwsgi.cache_get(uwsgi_cache_key)
+
+    return secret_key

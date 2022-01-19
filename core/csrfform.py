@@ -39,7 +39,7 @@ class CSRFForm(_wtforms_Form):
 
         @property
         def csrf_secret(self):
-            return _core_config.get('csrf.secret_key')
+            return _core_config.get_secret_key('csrf.secret_key_file', uwsgi_cache_key='csrf_secret_key')
 
         @property
         def csrf_time_limit(self):

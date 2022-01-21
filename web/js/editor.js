@@ -567,7 +567,7 @@ function movecopySelected(action, nodeids){
     consoledb.log('movecopySelected: action '+action+'   nodeids: '+nodeids);
     consoledb.log('movecopySelected: getAllObjectsNodeids(): '+getAllObjectsNodeids());
 
-    nodeids = nodeids ? nodeids.toString().split(',') : getAllObjectsNodeids();
+    if (!nodeids) nodeids = getAllObjectsNodeids();
 
     parent.currentselection = nodeids;
 
@@ -581,7 +581,7 @@ function movecopySelected(action, nodeids){
 
 
 function deleteSelected(nodeids){
-    nodeids = nodeids ? nodeids.toString().split(',') : getAllObjectsNodeids();
+    if (!nodeids) nodeids = getAllObjectsNodeids();
     if (nodeids.length == 0) return;
 
     if(confirm($('#delete_text').text())) {

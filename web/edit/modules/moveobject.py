@@ -27,4 +27,9 @@ def getContent(req, ids):
 
     _node = _q(_Data).get(long(ids[0]))
 
-    return _tal.processTAL({'id': _node.id, 'action': 'move'}, file="web/edit/modules/movecopyobject.html", macro="view_node", request=req)
+    return _tal.processTAL(
+            dict(nodeid=_node.id, action='move'),
+            file="web/edit/modules/movecopyobject.html",
+            macro="view_node",
+            request=req,
+        )

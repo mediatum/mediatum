@@ -9,11 +9,12 @@ from __future__ import print_function
 import logging
 import os.path
 
-import core.translation as _core_translation
 from .workflow import WorkflowStep, registerStep
 from mediatumtal import tal
+
 from utils.utils import formatException
 import core.config as config
+import core.translation as _core_translation
 import utils.mail as mail
 from core import db
 from schema.schema import Metafield
@@ -155,10 +156,10 @@ class WorkflowStep_SendEmail(WorkflowStep):
 
         elif node.get("system.mailtmp.error"):
             return u'{}<br/><pre>{}</pre><br>&gt;<a href="{}">{}</a>&lt;'.format(
-                    _core_translation.t(_core_translation.lang(req), "workflow_email_msg_1"),
+                    _core_translation.t(_core_translation.set_language(req.accept_languages), "workflow_email_msg_1"),
                     node.get("system.mailtmp.error"),
                     _makeSelfLink(req, {"sendout": "true"}),
-                    _core_translation.t(_core_translation.lang(req), "workflow_email_resend"),
+                    _core_translation.t(_core_translation.set_language(req.accept_languages), "workflow_email_resend"),
                 )
         else:
             xfrom = node.get("system.mailtmp.from")
@@ -175,8 +176,8 @@ class WorkflowStep_SendEmail(WorkflowStep):
                         node=node,
                         sendcondition=self.get("sendcondition"),
                         wfnode=self,
-                        pretext=self.getPreText(_core_translation.lang(req)),
-                        posttext=self.getPostText(_core_translation.lang(req)),
+                        pretext=self.getPreText(_core_translation.set_language(req.accept_languages)),
+                        posttext=self.getPostText(_core_translation.set_language(req.accept_languages)),
                         csrf=req.csrf_token.current_token,
                     ),
                     file="workflow/email.html",

@@ -47,7 +47,11 @@ class WorkflowStep_FileAttachment(WorkflowStep):
 
         try:
             mask = q(Metadatatype).filter_by(name=node.schema).one().getMask(self.get("mask_fileatt"))
-            maskdata = mask.getViewHTML([node], VIEW_HIDE_EMPTY, language=_core_translation.lang(req))
+            maskdata = mask.getViewHTML(
+                    [node],
+                    VIEW_HIDE_EMPTY,
+                    language=_core_translation.set_language(req.accept_languages),
+                )
         except:
             logg.exception("exception in workflow step fileAttachment, getViewHTML failed, empty string")
             maskdata = ""
@@ -57,8 +61,8 @@ class WorkflowStep_FileAttachment(WorkflowStep):
                     buttons=buttons,
                     files=self.files,
                     wfnode=self,
-                    pretext=self.getPreText(_core_translation.lang(req)),
-                    posttext=self.getPostText(_core_translation.lang(req)),
+                    pretext=self.getPreText(_core_translation.set_language(req.accept_languages)),
+                    posttext=self.getPostText(_core_translation.set_language(req.accept_languages)),
                     maskdata=maskdata,
                     csrf=req.csrf_token.current_token,
                 ),

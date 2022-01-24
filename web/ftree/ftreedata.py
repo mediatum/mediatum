@@ -34,7 +34,7 @@ def getData(req):
                 cnum = c.container_children.count()
                 inum = c.content_children.count()
 
-                label = get_edit_label(c, _core_translation.lang(req))
+                label = get_edit_label(c, _core_translation.set_language(req.accept_languages))
                 title = label + " (" + unicode(c.id) + ")"
 
                 cls = "folder"

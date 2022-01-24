@@ -353,7 +353,7 @@ def shownodelist(req, nodes, page, publishwarn=True, markunpublished=False, dir=
                         srcnodeid=dir.id,
                         node=node,
                         faultyidlist=faultyidlist,
-                        language=_core_translation.lang(req),
+                        language=_core_translation.set_language(req.accept_languages),
                     ),
                     file="web/edit/edit_common.html",
                     macro="show_list_node",
@@ -366,7 +366,7 @@ def shownodelist(req, nodes, page, publishwarn=True, markunpublished=False, dir=
                         srcnodeid=dir.id,
                         node=node,
                         faultyidlist=faultyidlist,
-                        language=_core_translation.lang(req),
+                        language=_core_translation.set_language(req.accept_languages),
                     ),
                     file="web/edit/edit_common.html",
                     macro="show_thumb_node",
@@ -382,7 +382,7 @@ def shownodelist(req, nodes, page, publishwarn=True, markunpublished=False, dir=
                 html_list_nodes="".join(html_list_nodes),
                 html_thumb_nodes="".join(html_thumb_nodes),
                 faultyidlist=faultyidlist,
-                language=_core_translation.lang(req),
+                language=_core_translation.set_language(req.accept_languages),
             ),
             file="web/edit/edit_common.html",
             macro="show_nodelist",
@@ -528,7 +528,10 @@ def upload_for_html(req):
         </script>;
         """.format(
             fileUrl=url.replace('"', '\\"'),
-            customMsg=_core_translation.t(_core_translation.lang(req), "edit_fckeditor_cfm_uploadsuccess"),
+            customMsg=_core_translation.t(
+                    _core_translation.set_language(req.accept_languages),
+                    "edit_fckeditor_cfm_uploadsuccess",
+                ),
         )
 
         return res

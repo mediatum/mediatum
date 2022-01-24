@@ -48,7 +48,7 @@ class WorkflowStep_Start(WorkflowStep):
             if not mdts.children.filter_by(name=schema.strip().split("/")[-1]).scalar():
                 return ('<i>{}: {} </i>').format(
                         schema,
-                        _core_translation.t(_core_translation.lang(req), "permission_denied"),
+                        _core_translation.t(_core_translation.set_language(req.accept_languages), "permission_denied"),
                     )
 
         if "workflow_start" in req.params:
@@ -101,7 +101,10 @@ class WorkflowStep_Start(WorkflowStep):
                 # just take all specified metatypes, so that edit area
                 # and workflow are independent on this
                 types += [(m, a)]
-        cookie_error = _core_translation.t(_core_translation.lang(req), "Your browser doesn't support cookies")
+        cookie_error = _core_translation.t(
+                _core_translation.set_language(req.accept_languages),
+                "Your browser doesn't support cookies",
+            )
 
         js = """
         <script language="javascript">
@@ -122,7 +125,7 @@ class WorkflowStep_Start(WorkflowStep):
                     js=js,
                     starttext=self.get('starttext'),
                     languages=self.parents[0].getLanguages(),
-                    currentlang=_core_translation.lang(req),
+                    currentlang=_core_translation.set_language(req.accept_languages),
                     redirect=redirect,
                     message=message,
                     allowcontinue=self.get('allowcontinue'),

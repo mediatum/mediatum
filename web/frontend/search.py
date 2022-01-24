@@ -43,7 +43,7 @@ class NoSearchResult(ContentBase):
 
     @ensure_unicode_returned(name="searchresult:html")
     def html(self, req):
-        language = _core_translation.lang(req)
+        language = _core_translation.set_language(req.accept_languages)
         context = {"language": language,
                    "query": self.query,
                    "container": self.container.getLabel(language),
@@ -94,7 +94,7 @@ def search(searchtype, searchquery, readable_query, paths, req, container_id = N
         db.session.rollback()
         return NoSearchResult(readable_query, container, searchtype, error=True)
 
-    language = _core_translation.lang(req)
+    language = _core_translation.set_language(req.accept_languages)
     content_list.linkname = u"{}: {} \"{}\"".format(
             container.getLabel(language),
             _core_translation.translate("search_for", language=language),

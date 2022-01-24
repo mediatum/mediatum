@@ -71,7 +71,7 @@ class Searchlet(object):
         self.searchmaskitem_ids = [None] * 11
 
     def feedback(self, req):
-        self.lang = _core_translation.lang(req)
+        self.lang = _core_translation.set_language(req.accept_languages)
         self.ip = req.remote_addr
         self.url_params = {k: v for k, v in iteritems(req.args) if k not in ()}
 
@@ -396,7 +396,7 @@ class UserLinks(object):
             nid = req.args.get("id")
 
         self.id = nid
-        self.language = _core_translation.lang(req)
+        self.language = _core_translation.set_language(req.accept_languages)
         self.path = req.mediatum_contextfree_path
         self.args = req.args
         # XXX: hack to show the frontend link when workflows are displayed
@@ -501,7 +501,7 @@ def render_page(req, content_html, node=None, show_navbar=True, show_id=None):
     """
     user = _user_from_session()
     userlinks = UserLinks(user, req)
-    language = _core_translation.lang(req)
+    language = _core_translation.set_language(req.accept_languages)
     rootnode = get_collections_node()
     theme = webconfig.theme
 

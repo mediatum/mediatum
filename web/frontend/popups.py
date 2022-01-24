@@ -45,20 +45,29 @@ def popup_fullsize(req):
     nid = userinput.string_to_int(req.args.get("id", type=int))
     if nid is None:
         req.response.status_code = httpstatus.HTTP_BAD_REQUEST
-        req.response.set_data(_core_translation.t(_core_translation.lang(req), "edit_common_noobjectsfound"))
+        req.response.set_data(_core_translation.t(
+            _core_translation.set_language(req.accept_languages),
+                "edit_common_noobjectsfound",
+            ))
         return
     
     node = q(Node).get(nid)
     if not isinstance(node, Node):
         req.response.status_code = httpstatus.HTTP_NOT_FOUND
-        req.response.set_data(_core_translation.t(_core_translation.lang(req), "edit_common_noobjectsfound"))
+        req.response.set_data(_core_translation.t(
+                _core_translation.set_language(req.accept_languages),
+                "edit_common_noobjectsfound",
+            ))
         return
     
     version_id = req.values.get("v")
     version = node.get_tagged_version(unicode(version_id))
     node_or_version = version if version else node
     if not node_or_version.has_read_access():
-        req.response.set_data(_core_translation.t(_core_translation.lang(req), "permission_denied"))
+        req.response.set_data(_core_translation.t(
+                _core_translation.set_language(req.accept_languages),
+                "permission_denied",
+            ))
         return httpstatus.HTTP_FORBIDDEN
 
     return node_or_version.popup_fullsize(req)
@@ -71,10 +80,16 @@ def popup_thumbbig(req):
     node = q(Node).get(req.params["id"])
     if not isinstance(node, Node):
         req.response.status_code = httpstatus.HTTP_NOT_FOUND
-        req.response.set_data(_core_translation.t(_core_translation.lang(req), "edit_common_noobjectsfound"))
+        req.response.set_data(_core_translation.t(
+                _core_translation.set_language(req.accept_languages),
+                "edit_common_noobjectsfound",
+            ))
         return
     if not node.has_read_access():
-        req.response.set_data(_core_translation.t(_core_translation.lang(req), "permisssion_denied"))
+        req.response.set_data(_core_translation.t(
+                _core_translation.set_language(req.accept_languages),
+                "permisssion_denied",
+            ))
         return httpstatus.HTTP_FORBIDDEN
 
     return node.popup_thumbbig(req)
@@ -92,7 +107,7 @@ def show_help(req):
         html = webconfig.theme.render_macro("popups.j2.jade", "show_help", {"field": field})
         req.response.status_code = httpstatus.HTTP_OK
     else:
-        html = _core_translation.t(_core_translation.lang(req), "permission_denied")
+        html = _core_translation.t(_core_translation.set_language(req.accept_languages), "permission_denied")
         req.response.status_code = httpstatus.HTTP_FORBIDDEN
     req.response.set_data(html)
 #
@@ -104,7 +119,10 @@ def show_help(req):
 def show_attachmentbrowser(req):
     node = q(Node).get(req.values["id"])
     if not node.has_data_access():
-        req.response.set_data(_core_translation.t(_core_translation.lang(req), "permission_denied"))
+        req.response.set_data(_core_translation.t(
+                _core_translation.set_language(req.accept_languages),
+                "permission_denied",
+            ))
         req.response.status_code = httpstatus.HTTP_FORBIDDEN
         return
 
@@ -129,11 +147,14 @@ def show_printview(req):
     node = q(Node).get(nodeid)
     if node.system_attrs.get("print") == "0":
         req.response.status_code = httpstatus.HTTP_NOT_FOUND
-        req.response.set_data(_core_translation.t(_core_translation.lang(req), "edit_common_noobjectsfound"))
+        req.response.set_data(_core_translation.t(
+                _core_translation.set_language(req.accept_languages),
+                "edit_common_noobjectsfound",
+            ))
         return
     if not node.has_read_access():
         req.response.status_code = httpstatus.HTTP_FORBIDDEN
-        req.response.set_data(_core_translation.t(_core_translation.lang(req), "permission_denied"))
+        req.response.set_data(t(_core_translation.set_language(req.accept_languages), "permission_denied"))
         return
 
     style = int(req.values.get("style", 2))
@@ -274,7 +295,7 @@ def show_printview(req):
 
     temp_download_file = _utils_utils.new_temp_download_file(u"{}.printview.pdf".format(node.get_name()))
     _web_frontend_printview.getPrintView(
-        _core_translation.lang(req),
+        _core_translation.set_language(req.accept_languages),
         imagepath,
         metadata,
         getPaths(node),

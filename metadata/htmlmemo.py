@@ -60,7 +60,7 @@ class m_htmlmemo(Metatype):
     def getPopup(self, req):
         assert req.values["type"] == "configfile"
         req.response.set_data(tal.processTAL(
-                dict(lang=_core_translation.lang(req)),
+                dict(lang=_core_translation.set_language(req.accept_languages)),
                 file="metadata/htmlmemo.html",
                 macro="ckconfig",
                 request=req,

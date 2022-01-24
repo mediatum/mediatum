@@ -178,7 +178,7 @@ class Container(Data, ContainerMixin, SchemaMixin):
                     content = c.read()
                 return content
 
-        spn = self.getStartpageFileNode(_core_translation.lang(req))
+        spn = self.getStartpageFileNode(_core_translation.set_language(req.accept_languages))
         if spn:
             long_path = spn.retrieveFile()
             if os.path.isfile(long_path) and fileIsNotEmpty(long_path):

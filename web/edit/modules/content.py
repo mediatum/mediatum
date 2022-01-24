@@ -19,6 +19,7 @@ from schema.schema import get_permitted_schemas
 from web.edit.edit_common import get_searchparams
 import urllib
 import web.common.sort as _sort
+import core.translation as _core_translation
 
 q = db.query
 
@@ -100,7 +101,7 @@ def getContent(req, ids):
         if not v['npp_field']:
             v['npp_field'] = _web_common_pagination.get_default_nodes_per_page(True)
 
-        search_html = render_edit_search_box(node, _core_translation.lang(req), req, edit=True)
+        search_html = render_edit_search_box(node, _core_translation.set_language(req.accept_languages), req, edit=True)
         searchmode = req.params.get("searchmode")
         navigation_height = searchbox_navlist_height(req, item_count)
         if not isinstance(node, (Root, Collections, Home)):
@@ -119,7 +120,7 @@ def getContent(req, ids):
         v['schemes'] = schemes
         v['id'] = ids[0]
         v['count'] = count
-        v['language'] = _core_translation.lang(req)
+        v['language'] = _core_translation.set_language(req.accept_languages)
         v['search'] = search_html
         v['navigation_height'] = navigation_height
         v['parent'] = node.id
@@ -128,8 +129,10 @@ def getContent(req, ids):
         searchparams = {k: unicode(v).encode("utf8") for k, v in searchparams.items()}
         v['searchparams'] = urllib.urlencode(searchparams)
         v['get_ids_from_query'] = ",".join(show_dir_nav.get_ids_from_req())
-        v['edit_all_objects'] = _core_translation.t(_core_translation.lang(req), "edit_all_objects").format(item_count[1])
-        v['t'] = t
+        v['edit_all_objects'] = _core_translation.t(
+                _core_translation.set_language(req.accept_languages), "edit_all_objects",
+            ).format(item_count[1])
+        v['t'] = _core_translation.t
         res = _tal.processTAL(v, file="web/edit/modules/content.html", macro="edit_content", request=req)
         show_dir_nav.nodes = None
         return res

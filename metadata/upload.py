@@ -315,7 +315,7 @@ def handle_request(req):
             filename = file.filename
 
         else:
-            msg = _core_translation.t(_core_translation.lang(req), "no file for this field submitted")
+            msg = t(_core_translation.set_language(req.accept_languages), "no file for this field submitted")
             errors.append(msg)
 
         if filename:

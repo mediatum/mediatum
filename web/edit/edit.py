@@ -108,7 +108,7 @@ def frameset(req):
         req.response.status_code = httpstatus.HTTP_FORBIDDEN
         return
 
-    language = _core_translation.lang(req)
+    language = _core_translation.set_language(req.accept_languages)
     id = req.values.get("id", q(Collections).one().id)
     currentdir = q(Data).get(id)
     if currentdir is None:
@@ -226,7 +226,7 @@ def frameset(req):
                 cmenu_iconpaths=cmenu_iconpaths,
                 path=path,
                 containerpath=containerpath,
-                language=_core_translation.lang(req),
+                language=_core_translation.set_language(req.accept_languages),
                 t=_core_translation.t,
                 _getIDPath=_getIDPath,
                 homenodefilter=homenodefilter,
@@ -344,7 +344,7 @@ def getIDs(req):
 
 
 def edit_tree(req):
-    language = _core_translation.lang(req)
+    language = _core_translation.set_language(req.accept_languages)
     user = _user_from_session()
     home_dir = user.home_dir
     upload_dir = user.upload_dir
@@ -426,7 +426,7 @@ def edit_tree(req):
 
 
 def action(req):
-    language = _core_translation.lang(req)
+    language = _core_translation.set_language(req.accept_languages)
     user = _user_from_session()
     if not user.is_editor:
         req.response.set_data(_core_translation.t(language, "permission_denied"))
@@ -502,9 +502,13 @@ def action(req):
         if newnode_type in ['bare_collection', 'bare_directory']:
             newnode_type = newnode_type.replace('bare_', '')
 
-        translated_label = _core_translation.t(_core_translation.lang(req), 'edit_add_' + newnode_type)
+        translated_label = _core_translation.t(
+            _core_translation.set_language(req.accept_languages),
+            'edit_add_{}'.format(newnode_type),
+        )
         if translated_label.startswith('edit_add_'):
-            translated_label = _core_translation.t(_core_translation.lang(req), 'edit_add_container_default') + newnode_type
+            translated_label = t(
+                _core_translation.set_language(req.accept_languages), 'edit_add_container_default') + newnode_type
 
         content_class = Node.get_class_for_typestring(newnode_type)
         newnode = content_class(name=translated_label)
@@ -727,7 +731,7 @@ def content(req):
             ids = show_dir_nav.get_ids_from_req()
         node = q(Node).get(long(ids[0]))
 
-    language = _core_translation.lang(req)
+    language = _core_translation.set_language(req.accept_languages)
     if not node.has_read_access():
         req.response.status_code = httpstatus.HTTP_FORBIDDEN
         req.response.set_data(_core_translation.t(language, "permission_denied"))
@@ -863,7 +867,7 @@ def content(req):
                  request=req,
              ),
             user=user,
-            language=_core_translation.lang(req),
+            language=_core_translation.set_language(req.accept_languages),
             t=_core_translation.t,
            )
 
@@ -895,10 +899,16 @@ def edit_print(req):
     nid = int(match.group(1))
     node = q(Node).get(nid)
     if not node:
-        req.response.set_data(_core_translation.t(_core_translation.lang(req), "error_msg_objectnotfound"))
+        req.response.set_data(_core_translation.t(
+                _core_translation.set_language(req.accept_languages),
+                "error_msg_objectnotfound",
+            ))
         return
     if not node.has_read_access():
-        req.response.set_data(_core_translation.t(_core_translation.lang(req), "permission_denied"))
+        req.response.set_data(_core_translation.t(
+                _core_translation.set_language(req.accept_languages),
+                "permission_denied",
+            ))
         return
 
     module_name = match.group(2)
@@ -906,7 +916,10 @@ def edit_print(req):
     
     if not mod:
         req.response.status_code = httpstatus.HTTP_BAD_REQUEST
-        req.response.set_data(_core_translation.t(_core_translation.lang(req), "admin_settings_nomodule"))
+        req.response.set_data(_core_translation.t(
+                _core_translation.set_language(req.accept_languages),
+                "admin_settings_nomodule",
+            ))
         return
         
     additional_data = match.group(3)

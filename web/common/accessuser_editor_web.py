@@ -95,7 +95,7 @@ def makeUserList(req, own_ruleset_assocs, inherited_ruleset_assocs, special_rule
     for ai in q(AuthenticatorInfo).all():
         authenticator_id2user_prefix[ai.id] = _core_translation.translate(
                 u"{}:{}: ".format(ai.auth_type, ai.name),
-                _core_translation.lang(req),
+                _core_translation.set_language(req.accept_languages),
             )
 
     user_not_inherited_in_left_list = []

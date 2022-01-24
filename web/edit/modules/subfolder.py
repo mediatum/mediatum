@@ -7,7 +7,6 @@ from __future__ import print_function
 import logging
 
 import mediatumtal.tal as _tal
-
 import core.translation as _core_translation
 from schema.schema import getMetaType
 from core.users import user_from_session as _user_from_session
@@ -22,7 +21,7 @@ logg = logging.getLogger(__name__)
 
 def getContent(req, ids):
     user = _user_from_session()
-    language = _core_translation.lang(req)
+    language = _core_translation.set_language(req.accept_languages)
     node = q(Node).get(ids[0])
     
     if "sort" in user.hidden_edit_functions or not node.has_write_access():

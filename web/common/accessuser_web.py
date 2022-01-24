@@ -55,8 +55,11 @@ def makeUserList(req, name, rights, readonlyrights, overload=0, type=""):
     rorightsmap = {}
     for r in rights:
         for u in getRuleUsers(r, userlist):
-            if _core_translation.translate(u[0], _core_translation.lang(req)) != "":
-                rightsmap[_core_translation.translate(u[0], "{}: {}".format(_core_translation.lang(req)), u[1])] = None
+            if _core_translation.translate(u[0], _core_translation.set_language(req.accept_languages)) != "":
+                rightsmap[_core_translation.translate(
+                        u[0],
+                        "{}: {}".format(_core_translation.set_language(req.accept_languages)), u[1],
+                    )] = None
             else:
                 rightsmap[u[1]] = None
 
@@ -65,7 +68,7 @@ def makeUserList(req, name, rights, readonlyrights, overload=0, type=""):
         if r[0] == "{":
             for part in getRuleUsers(r, userlist):
                 rrights.append("{}: {}".format(
-                        _core_translation.translate(part[0], _core_translation.lang(req)),
+                        _core_translation.translate(part[0], _core_translation.set_language(req.accept_languages)),
                         part[1],
                     ))
         else:
@@ -95,7 +98,10 @@ def makeUserList(req, name, rights, readonlyrights, overload=0, type=""):
         susers.sort(lambda x, y: cmp(x.getName().lower(), y.getName().lower()))
 
         for user in susers:
-            val = u"{}: {}".format(_core_translation.translate(usertype, _core_translation.lang(req)), user.getName())
+            val = u"{}: {}".format(
+                    _core_translation.translate(usertype, _core_translation.set_language(req.accept_languages)),
+                    user.getName(),
+                )
             if val not in rightsmap and user.getName() not in rorightsmap and val not in readonlyrights:
                 val_right += '<option value="{0}">{0}</option>'.format(val)
 

@@ -206,7 +206,7 @@ def getContent(req, ids):
         masklist = [SystemMask(
                 "settings",
                 _core_translation.t(req, "settings"),
-                node.metaFields(_core_translation.lang(req)),
+                node.metaFields(_core_translation.set_language(req.accept_languages)),
             )] + masklist
 
     default = None
@@ -249,7 +249,7 @@ def getContent(req, ids):
             nodes=nodes,
             masklist=masklist,
             maskname=maskname,
-            language=_core_translation.lang(req),
+            language=_core_translation.set_language(req.accept_languages),
             t=_core_translation.t,
             csrf=req.csrf_token.current_token,
         )

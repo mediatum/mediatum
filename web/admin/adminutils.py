@@ -60,7 +60,7 @@ class Overview:
     def __init__(self, req, list):
         self.req = req
         self.path = req.mediatum_contextfree_path[1:]
-        self.language = _core_translation.lang(req)
+        self.language = _core_translation.set_language(req.accept_languages)
         self.stdVars = getAdminStdVars(self.req)
 
         # self.page = 0 or None -> all entries

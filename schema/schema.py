@@ -567,7 +567,7 @@ def checkMask(mask, fix=0, verbose=1, show_unused=0):
 def parseEditorData(req, node):
     nodes = [node]
     incorrect = False
-    defaultlang = translation.lang(req)
+    defaultlang = translation.set_language(req.accept_languages)
 
     for field in node.metaFields():
         name = field.getName()
@@ -1047,7 +1047,7 @@ class Mask(Node):
         # collect all changes first and apply them at the end because SQLAlchemy would issue an UPDATE for each attr assignment
         updated_attrs = {}
         updated_system_attrs = {}
-        current_language = translation.lang(req)
+        current_language = translation.set_language(req.accept_languages)
         default_language = translation.getDefaultLanguage()
         for item in self.all_maskitems:
             field = item.metafield
@@ -1127,7 +1127,7 @@ class Mask(Node):
     ''' show maskeditor - definition '''
 
     def getMetaMask(self, req):
-        language = translation.lang(req)
+        language = translation.set_language(req.accept_languages)
         ret = '<form method="post" name="myform">'
         ret += '<input value="' + req.csrf_token.current_token + '" type="hidden" name="csrf_token">'
         ret += '<div class="back"><h3 i18n:translate="mask_editor_field_definition">Felddefinition </h3>'

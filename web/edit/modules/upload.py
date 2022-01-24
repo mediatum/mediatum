@@ -73,7 +73,7 @@ def getDatatypes(req, schemes):
 def getContent(req, ids):
 
     user = users.user_from_session()
-    language = _core_translation.lang(req)
+    language = _core_translation.set_language(req.accept_languages)
 
     if "action" in req.values:
         state = 'ok'
@@ -172,20 +172,20 @@ def getContent(req, ids):
             db.session.commit()
             # standard file
             req.response.set_data(json.dumps(
-                dict(
-                    state=state,
-                    newnodes=newnodes,
-                    errornodes=errornodes,
-                    new_tree_labels=[dict(id=basenode.id, label=getTreeLabel(basenode, lang=language))],
-                    ret=_tal.processTAL(
-                            dict(files=[filename], schemes=scheme_type),
-                            file='web/edit/modules/upload.html',
-                            macro="uploadfileok",
-                            request=req,
-                        ),
-                ),
-                ensure_ascii=False,
-            ))
+                    dict(
+                        state=state,
+                        newnodes=newnodes,
+                        errornodes=errornodes,
+                        new_tree_labels=[dict(id=basenode.id, label=getTreeLabel(basenode, lang=language))],
+                        ret=_tal.processTAL(
+                                dict(files=[filename], schemes=scheme_type),
+                                file='web/edit/modules/upload.html',
+                                macro="uploadfileok",
+                                request=req,
+                            ),
+                    ),
+                    ensure_ascii=False,
+                ))
             return None
 
         # add new object, only metadata
@@ -216,7 +216,6 @@ def getContent(req, ids):
                     dict(
                         datatypes=dtypes,
                         schemes=ret,
-                        language=_core_translation.lang(req),
                         identifier_importers=identifier_importers.values(),
                     ),
                     file='web/edit/modules/upload.html',
@@ -230,12 +229,17 @@ def getContent(req, ids):
         # add new object, only doi
         if req.values['action'] == "adddoi":
             req.response.set_data(json.dumps(
-                dict(content=_tal.processTAL(
-                    dict(language=_core_translation.lang(req), identifier_importers=identifier_importers.values()),
-                    file='web/edit/modules/upload.html',
-                    macro="adddoi",
-                    request=req,
-                )),
+                dict(
+                    content=_tal.processTAL(
+                            dict(
+                                language=_core_translation.set_language(req.accept_languages),
+                                identifier_importers=identifier_importers.values(),
+                            ),
+                            file='web/edit/modules/upload.html',
+                            macro="adddoi",
+                            request=req,
+                        ),
+                ),
                 ensure_ascii=False,
             ))
             return None
@@ -431,7 +435,7 @@ def getContent(req, ids):
 
         assert node.type not in ["root", "collections", "home"]
 
-        v['language'] = _core_translation.lang(req)
+        v['language'] = _core_translation.set_language(req.accept_languages)
         v['t'] = _core_translation.t
 
     search_html = render_edit_search_box(q(Node).get(ids[0]), language, req, edit=True)
@@ -458,7 +462,10 @@ def getContent(req, ids):
         query=req.query_string.replace('id=', 'src='),
         searchparams=urllib.urlencode(searchparams),
         get_ids_from_query=",".join(show_dir_nav.get_ids_from_req()),
-        edit_all_objects=_core_translation.t(_core_translation.lang(req), "edit_all_objects").format(item_count[1]),
+        edit_all_objects=_core_translation.t(
+                _core_translation.set_language(req.accept_languages),
+                "edit_all_objects",
+            ).format(item_count[1]),
         navigation_height=navigation_height,
         csrf=str(req.csrf_token.current_token),
     )

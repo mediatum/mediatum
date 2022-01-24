@@ -60,7 +60,7 @@ def handle_json_request(req):
                     value=req.args.get("query_field_value"),
                     width=174,
                     name="query" + str(req.args.get("fieldno")),
-                    language=_core_translation.lang(req),
+                    language=_core_translation.set_language(req.accept_languages),
                     container=container,
                     user=user,
                     ip=req.remote_addr))]
@@ -83,7 +83,6 @@ def _check_change_language_request(func):
             del params["change_language"]
             req.response.location = build_url_from_path_and_params(req.mediatum_contextfree_path, params)
             # set the language cookie for caching
-            _flask.g.mediatum["language"] = language
 
         return func(req, *args, **kwargs)
 

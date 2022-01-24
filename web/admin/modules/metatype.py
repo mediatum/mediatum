@@ -323,7 +323,7 @@ def view(req):
 
     # filter
     if actfilter != "":
-        if actfilter in ("all", "*", _translation.t(_translation.lang(req), "admin_filter_all")):
+        if actfilter in ("all", "*", _translation.t(_translation.set_language(req.accept_languages), "admin_filter_all")):
             None  # all users
         elif actfilter == "0-9":
             num = re.compile(r'([0-9])')
@@ -331,7 +331,7 @@ def view(req):
                 mtypes = filter(lambda x: num.match(x.name), mtypes)
             else:
                 mtypes = filter(lambda x: num.match(x.getLongName()), mtypes)
-        elif actfilter == "else" or actfilter == _translation.t(_translation.lang(req), "admin_filter_else"):
+        elif actfilter == "else" or actfilter == _translation.t(_translation.set_language(req.accept_languages), "admin_filter_else"):
             all = re.compile(r'([a-z]|[A-Z]|[0-9]|\.)')
             if req.params.get("filtertype", "") == "id":
                 mtypes = filter(lambda x: not all.match(x.name), mtypes)
@@ -361,7 +361,7 @@ def view(req):
     v = getAdminStdVars(req)
     v["sortcol"] = pages.OrderColHeader(tuple(
         _translation.t(
-            _translation.lang(req),
+            _translation.set_language(req.accept_languages),
             "admin_meta_col_{}".format(col),
             )
         for col in xrange(1, 7)
@@ -376,7 +376,7 @@ def view(req):
     v["filterarg"] = req.params.get("filtertype", "id")
     v["csrf"] = req.csrf_token.current_token
     v["translate"] = _translation.translate
-    v["language"] = _translation.lang(req)
+    v["language"] = _translation.set_language(req.accept_languages)
     return _tal.processTAL(v, file="web/admin/modules/metatype.html", macro="view_type", request=req)
 
 
@@ -410,7 +410,7 @@ def MetatypeDetail(req, id, err=0):
         v["original_name"] = req.params["mname_orig"]
     d = Data()
     v["datatypes"] = d.get_all_datatypes()
-    v["datatypes"].sort(key=lambda dt:t(_translation.lang(req), dt.__name__))
+    v["datatypes"].sort(key=lambda dt: _translation.t(_translation.set_language(req.accept_languages), dt.__name__))
     v["metadatatype"] = metadatatype
     v["error"] = err
     v["bibtextypes"] = getAllBibTeXTypes()
@@ -684,7 +684,12 @@ def showEditor(req):
         # show metaEditor
         v["editor"] = ""
         try:
-            v["editor"] = _tal.processTAL({}, string=editor.getMetaMask(language=_translation.lang(req)), macro=None, request=req)
+            v["editor"] = _tal.processTAL(
+                    {},
+                    string=editor.getMetaMask(language=_translation.set_language(req.accept_languages)),
+                    macro=None,
+                    request=req,
+                )
         except:
             logg.exception("exception in showEditor")
             v["editor"] = editor.getMetaMask(req)

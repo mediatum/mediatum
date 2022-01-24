@@ -92,7 +92,7 @@ def getContent(req, ids):
                 node=node,
                 logofiles=logofiles,
                 logo=node.getLogoPath(),
-                language=_core_translation.lang(req),
+                language=_core_translation.set_language(req.accept_languages),
                 t=_core_translation.t,
                 csrf=req.csrf_token.current_token,
             ),

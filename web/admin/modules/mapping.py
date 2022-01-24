@@ -170,13 +170,13 @@ def view(req):
 
     # filter
     if actfilter != "":
-        if actfilter in ("all", "*", _translation.t(_translation.lang(req), "admin_filter_all")):
+        if actfilter in ("all", "*", _translation.t(_translation.set_language(req.accept_languages), "admin_filter_all")):
             None  # all users
         elif actfilter == "0-9":
             num = re.compile(r'([0-9])')
             mappings = filter(lambda x: num.match(x.name), mappings)
 
-        elif actfilter == "else" or actfilter == _translation.t(_translation.lang(req), "admin_filter_else"):
+        elif actfilter == "else" or actfilter == _translation.t(_translation.set_language(req.accept_languages), "admin_filter_else"):
             all = re.compile(r'([a-z]|[A-Z]|[0-9])')
             mappings = filter(lambda x: not all.match(x.name), mappings)
 
@@ -210,7 +210,7 @@ def view(req):
     v = getAdminStdVars(req)
     v["sortcol"] = pages.OrderColHeader(tuple(
         _translation.t(
-             _translation.lang(req),
+             _translation.set_language(req.accept_languages),
             "admin_mapping_col_{}".format(col),
             )
         for col in xrange(1, 8)
@@ -264,13 +264,13 @@ def viewlist(req, id):
 
     # filter
     if actfilter != "":
-        if actfilter in ("all", "*", (_translation.lang(req), "admin_filter_all")):
+        if actfilter in ("all", "*", (_translation.set_language(req.accept_languages), "admin_filter_all")):
             None  # all mappings
         elif actfilter == "0-9":
             num = re.compile(r'([0-9])')
             fields = filter(lambda x: num.match(x.name), fields)
 
-        elif actfilter == "else" or actfilter == _translation.t(_translation.lang(req), "admin_filter_else"):
+        elif actfilter == "else" or actfilter == _translation.t(_translation.set_language(req.accept_languages), "admin_filter_else"):
             all = re.compile(r'([a-z]|[A-Z]|[0-9])')
             fields = filter(lambda x: not all.match(x.name), fields)
 
@@ -301,7 +301,7 @@ def viewlist(req, id):
     v = getAdminStdVars(req)
     v["sortcol"] = pages.OrderColHeader(tuple(
         _translation.t(
-            _translation.lang(req),
+            _translation.set_language(req.accept_languages),
             "admin_mappingfield_col_{}".format(col),
             )
         for col in xrange(1, 4)
@@ -314,7 +314,7 @@ def viewlist(req, id):
     v["actfilter"] = actfilter
     v["csrf"] = req.csrf_token.current_token
     v["translate"] = _translation.translate
-    v["language"] = _translation.lang(req)
+    v["language"] = _translation.set_language(req.accept_languages)
     return _tal.processTAL(v, file="web/admin/modules/mapping.html", macro="viewlist", request=req)
 
 

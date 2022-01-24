@@ -711,5 +711,5 @@ def getPrintView(nid, p, req):
                 data = StatisticFile(f)
 
     if data:
-        pdf = StatsAccessPDF(data, p.split("_")[1], nid, _core_translation.lang(req))
+        pdf = StatsAccessPDF(data, p.split("_")[1], nid, _core_translation.set_language(req.accept_languages))
         return pdf.build()

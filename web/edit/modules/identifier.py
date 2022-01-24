@@ -100,12 +100,18 @@ def getContent(req, ids):
                         user.getName(),
                         user.getEmail(),
                     )
-                    v['msg'] = _core_translation.t(_core_translation.lang(req), 'edit_identifier_mail_fail')
+                    v['msg'] = _core_translation.t(
+                            _core_translation.set_language(req.accept_languages),
+                            'edit_identifier_mail_fail',
+                        )
 
         if node.get('system.identifierstate') != '2':
-            v['msg'] = _core_translation.t(_core_translation.lang(req), 'edit_identifier_state_0_1_admin')
+            v['msg'] = _core_translation.t(
+                    _core_translation.set_language(req.accept_languages),
+                    'edit_identifier_state_0_1_admin',
+                )
         else:
-            v['msg'] = _core_translation.t(_core_translation.lang(req), 'edit_identifier_state_2_admin')
+            v['msg'] = t(_core_translation.set_language(req.accept_languages), 'edit_identifier_state_2_admin')
 
     else:
         if pathutils.isDescendantOf(node, q(Collections).one()):
@@ -129,13 +135,18 @@ def getContent(req, ids):
                         mailtext_user = _tal.processTAL(
                                 v,
                                 file='web/edit/modules/identifier.html',
-                                macro='generate_identifier_usr_mail_1_{}'.format(_core_translation.lang(req)),
+                                macro='generate_identifier_usr_mail_1_{}'.format(
+                                        _core_translation.set_language(req.accept_languages),
+                                    ),
                                 request=req,
                             )
                         mail.sendmail(
                             config.get('email.admin'),
                             u"{};{}".format((config.get('email.admin'), user.getEmail())),
-                            unicode(_core_translation.t(_core_translation.lang(req), 'edit_identifier_mail_title_usr_1')),
+                            _core_translation.t(
+                                _core_translation.set_language(req.accept_languages),
+                                'edit_identifier_mail_title_usr_1',
+                            ),
                             mailtext_user,
                             attachments_paths_and_filenames=attachment,
                         )
@@ -159,16 +170,22 @@ def getContent(req, ids):
 
                     except mail.SocketError:
                         logg.exception('failed to send identifier request mail')
-                        v['msg'] = _core_translation.t(_core_translation.lang(req), 'edit_identifier_mail_fail')
+                        v['msg'] = _core_translation.t(
+                                _core_translation.set_language(req.accept_languages),
+                                'edit_identifier_mail_fail',
+                            )
                 else:
-                    v['msg'] = _core_translation.t(_core_translation.lang(req), 'edit_identifier_state_0_usr')
+                    v['msg'] = _core_translation.t(
+                            _core_translation.set_language(req.accept_languages),
+                            'edit_identifier_state_0_usr',
+                        )
 
             if node.get('system.identifierstate') == '1':
                 v['show_form'] = False
-                v['msg'] = _core_translation.t(_core_translation.lang(req), 'edit_identifier_state_1_usr')
+                v['msg'] = t(_core_translation.set_language(req.accept_languages), 'edit_identifier_state_1_usr')
         else:
             v['show_form'] = False
-            v['msg'] = _core_translation.t(_core_translation.lang(req), 'edit_identifier_state_published')
+            v['msg'] = t(_core_translation.set_language(req.accept_languages), 'edit_identifier_state_published')
 
     v['urn_val'] = node.get('urn')
     v['doi_val'] = node.get('doi')
@@ -176,7 +193,10 @@ def getContent(req, ids):
     # hides form if all identifier types are already set
     if all(idents != '' for idents in (v['urn_val'], v['doi_val'])):
         v['show_form'] = False
-        v['msg'] = _core_translation.t(_core_translation.lang(req), 'edit_identifier_all_types_set')
+        v['msg'] = _core_translation.t(
+                _core_translation.set_language(req.accept_languages),
+                'edit_identifier_all_types_set',
+            )
 
     v["csrf"] = req.csrf_token.current_token
     return _tal.processTAL(v, file='web/edit/modules/identifier.html', macro='set_identifier', request=req)

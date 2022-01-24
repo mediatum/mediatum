@@ -300,7 +300,7 @@ def _get_node_metadata_html(node, req):
     """Renders HTML data for displaying metadata using the the fullview mask.
     :rtype: unicode
     """
-    language = _core_translation.lang(req)
+    language = _core_translation.set_language(req.accept_languages)
     mask = node.getFullView(language)
     if mask is not None:
         return mask.getViewHTML([node], VIEW_HIDE_EMPTY, language)  # hide empty elements

@@ -105,7 +105,7 @@ def login(req):
 
     # show login form
     user = users.user_from_session()
-    language = _core_translation.lang(req)
+    language = _core_translation.set_language(req.accept_languages)
     ctx = dict(
         error=error,
         user=user,

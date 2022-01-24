@@ -124,7 +124,7 @@ class m_field(Metatype):
                             value=val,
                             width=field.getWidth(),
                             lock=lock,
-                            language=_core_translation.lang(req),
+                            language=_core_translation.set_language(req.accept_languages),
                             required=field.getRequired()) + unit + '</div>'
         if not sub:
             ret += '</div>'
@@ -291,7 +291,7 @@ class m_field(Metatype):
                 item=item,
                 fields=fields,
                 translate=_core_translation.translate,
-                language=_core_translation.lang(req),
+                language=_core_translation.set_language(req.accept_languages),
                )
         if tal_ctx["op"]=="new":
             tal_ctx["metafields"] = metafields

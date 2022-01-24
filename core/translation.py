@@ -68,10 +68,10 @@ addlangfiles = []
 @ensure_unicode_returned(silent=True)
 def translate(key, language=None, request=None):
     if request and not language:
-        language = lang(request)
+        language = set_language(request.accept_languages)
 
     if not request and not language:
-        language = lang(_flask.request)
+        language = set_language(_flask.request.accept_languages)
 
     if not language:
         return "?%s?" % key
@@ -117,14 +117,6 @@ def addPoFilepath(filepath=[]):
         if f not in addlangfiles:
             addlangfiles.append(f)
 
-
-def lang(req):
-    # simple cache, lang won't change in the current request
-    if "language" in _flask.g.mediatum:
-        return _flask.g.mediatum["language"]
-    
-    return set_language(req.accept_languages)
-
     
 def set_language(accept_languages, new_language=None):
     """
@@ -149,7 +141,6 @@ def set_language(accept_languages, new_language=None):
     _flask.session.pop("language", None)
     if new_language != getDefaultLanguage() or new_language != accept_languages.best_match(config.languages):
         _flask.session["language"] = new_language
-    _flask.g.mediatum["language"] = new_language
     return new_language
 
 

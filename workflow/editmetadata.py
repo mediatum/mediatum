@@ -48,7 +48,7 @@ class WorkflowStep_EditMetadata(WorkflowStep):
                 return self.forwardAndShow(node, op, req)
             else:
                 error = u'<p class="error">{}</p>'.format(
-                        _core_translation.t(_core_translation.lang(req), "workflow_error_msg"),
+                        _core_translation.t(_core_translation.set_language(req.accept_languages), "workflow_error_msg"),
                     )
                 req.params["errorlist"] = missing
 
@@ -63,8 +63,8 @@ class WorkflowStep_EditMetadata(WorkflowStep):
                     error=error,
                     key=key,
                     mask=maskcontent,
-                    pretext=self.getPreText(_core_translation.lang(req)),
-                    posttext=self.getPostText(_core_translation.lang(req)),
+                    pretext=self.getPreText(_core_translation.set_language(req.accept_languages)),
+                    posttext=self.getPostText(_core_translation.set_language(req.accept_languages)),
                     buttons=self.tableRowButtons(node),
                     csrf=req.csrf_token.current_token,
                 ),

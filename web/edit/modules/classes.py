@@ -40,5 +40,5 @@ def getContent(req, ids):
     v["idstr"] = ",".join(ids)
     v["nodes"] = nodes
     v["t"] = _core_translation.t
-    v["language"] = _core_translation.lang(req)
+    v["language"] = _core_translation.set_language(req.accept_languages)
     return _tal.processTAL(v, file="web/edit/modules/classes.html", macro="classtree", request=req)

@@ -54,7 +54,7 @@ def showDetailList(req, id):
 
     # filter
     if actfilter != "":
-        if actfilter in ("all", "*", _translation.t(_translation.lang(req), "admin_filter_all")):
+        if actfilter in ("all", "*", _translation.t(_translation.set_language(req.accept_languages), "admin_filter_all")):
             None  # all users
         elif actfilter == "0-9":
             num = re.compile(r'([0-9])')
@@ -63,7 +63,7 @@ def showDetailList(req, id):
             else:
                 metafields = filter(lambda x: num.match(x.getLabel()), metafields)
 
-        elif actfilter == "else" or actfilter == _translation.t(_translation.lang(req), "admin_filter_else"):
+        elif actfilter == "else" or actfilter == _translation.t(_translation.set_language(req.accept_languages), "admin_filter_else"):
             all = re.compile(r'([a-z]|[A-Z]|[0-9]|\.)')
             if req.params.get("filtertype", "") == "name":
                 metafields = filter(lambda x: not all.match(x.getName()), metafields)
@@ -99,7 +99,7 @@ def showDetailList(req, id):
 
     v["sortcol"] = pages.OrderColHeader(("",) + tuple(
         _translation.t(
-            _translation.lang(req),
+            _translation.set_language(req.accept_languages),
             "admin_metafield_col_{}".format(col),
             )
         for col in xrange(1, 4)
@@ -116,7 +116,7 @@ def showDetailList(req, id):
     v["actpage"] = req.params.get("actpage")
     v["csrf"] = req.csrf_token.current_token
     v["translate"] = _translation.translate
-    v["language"] = _translation.lang(req)
+    v["language"] = _translation.set_language(req.accept_languages)
     if ustr(req.params.get("page", "")).isdigit():
         v["actpage"] = req.params.get("page")
 
@@ -164,7 +164,7 @@ def FieldDetail(req, name=None, error=None):
         tal_ctx["adminfields"] = getMetadataType(field.getFieldtype()).get_metafieldeditor_html(
                 field,
                 metadatatype,
-                _translation.lang(req),
+                _translation.set_language(req.accept_languages),
             )
 
     if field.getFieldtype() == "url":

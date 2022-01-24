@@ -125,19 +125,37 @@ def getContent(req, ids):
         # error messages for publishing assistant
         if num_req_err_nodes > 0:
             if num_req_err_nodes < 2:
-                publisherror.append(_core_translation.t(_core_translation.lang(req), "error_publish_single_node"))
+                publisherror.append(_core_translation.t(
+                        _core_translation.set_language(req.accept_languages),
+                        "error_publish_single_node",
+                    ))
             else:
-                publisherror.append(_core_translation.t(_core_translation.lang(req), "error_publish_multiple_nodes"))
+                publisherror.append(_core_translation.t(
+                        _core_translation.set_language(req.accept_languages),
+                        "error_publish_multiple_nodes",
+                    ))
         if num_rights_err_nodes > 0:
             if num_rights_err_nodes < 2:
-                publisherror.append(_core_translation.t(_core_translation.lang(req), "error_publish_rights_single"))
+                publisherror.append(_core_translation.t(
+                        _core_translation.set_language(req.accept_languages),
+                        "error_publish_rights_single",
+                    ))
             else:
-                publisherror.append(_core_translation.t(_core_translation.lang(req), "error_publish_rights_multiple"))
+                publisherror.append(_core_translation.t(
+                        _core_translation.set_language(req.accept_languages),
+                        "error_publish_rights_multiple",
+                    ))
         if num_db_err_nodes > 0:
             if num_db_err_nodes < 2:
-                publisherror.append(_core_translation.t(_core_translation.lang(req), "error_publish_database_single"))
+                publisherror.append(_core_translation.t(
+                        _core_translation.set_language(req.accept_languages),
+                        "error_publish_database_single",
+                    ))
             else:
-                publisherror.append(_core_translation.t(_core_translation.lang(req), "error_publish_database_multiple"))
+                publisherror.append(_core_translation.t(
+                        _core_translation.set_language(req.accept_languages),
+                        "error_publish_database_multiple",
+                    ))
 
         v = {}
         v["id"] = publishdir.id

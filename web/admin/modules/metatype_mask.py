@@ -39,13 +39,13 @@ def showMaskList(req, id):
 
     # filter
     if actfilter != "":
-        if actfilter in ("all", "*", _core_translation.t(_core_translation.lang(req), "admin_filter_all")):
+        if actfilter in ("all", "*", _core_translation.t(_core_translation.set_language(req.accept_languages), "admin_filter_all")):
             None  # all users
         elif actfilter == "0-9":
             num = re.compile(r'([0-9])')
             masks = filter(lambda x: num.match(x.name), masks)
 
-        elif actfilter == "else" or actfilter == _core_translation.t(_core_translation.lang(req), "admin_filter_else"):
+        elif actfilter == "else" or actfilter == _core_translation.t(_core_translation.set_language(req.accept_languages), "admin_filter_else"):
             all = re.compile(r'([a-z]|[A-Z]|[0-9])')
             masks = filter(lambda x: not all.match(x.name), masks)
         else:
@@ -80,7 +80,7 @@ def showMaskList(req, id):
     v["filterarg"] = req.params.get("filtertype", "name")
     v["sortcol"] = pages.OrderColHeader(tuple(
         _core_translation.t(
-            _core_translation.lang(req),
+            _core_translation.set_language(req.accept_languages),
             "admin_mask_col_{}".format(col),
             )
         for col in xrange(1, 7)

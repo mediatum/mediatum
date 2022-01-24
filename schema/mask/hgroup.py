@@ -145,7 +145,7 @@ class m_hgroup(Metatype):
                         itemlist=req.params.get("sel_id")[:-1].split(";"),
                         ptype="hgroup",
                         fieldlist=fieldlist,
-                        language=_core_translation.lang(req),
+                        language=_core_translation.set_language(req.accept_languages),
                     )
                 i += 1
 

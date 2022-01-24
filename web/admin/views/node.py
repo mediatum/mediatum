@@ -13,9 +13,9 @@ from markupsafe import Markup
 from pygments import highlight
 from pygments.formatters import HtmlFormatter
 from pygments.lexers import JsonLexer
+import core.csrfform as _core_csrfform
 from core import Node, File, db
 from web.admin.views import BaseAdminView
-from web.admin.secureform import MediatumSecureForm
 from core.database.postgres.node import NodeAlias
 
 
@@ -35,7 +35,7 @@ def _format_as_json_html(data):
 
 
 class NodeView(BaseAdminView):
-    form_base_class = MediatumSecureForm
+    form_base_class = _core_csrfform.CSRFForm
 
     column_list = ("id", "name", "type", "schema", "orderpos")
     column_filters = ("name", "type", "schema")
@@ -52,7 +52,7 @@ class NodeView(BaseAdminView):
         super(NodeView, self).__init__(Node, session, category="Node", *args, **kwargs)
 
 class FileView(BaseAdminView):
-    form_base_class = MediatumSecureForm
+    form_base_class = _core_csrfform.CSRFForm
 
     column_filters = ("path", "filetype", "mimetype")
     column_editable_list = ("path", "filetype", "mimetype")
@@ -65,7 +65,7 @@ class FileView(BaseAdminView):
         super(FileView, self).__init__(File, session, category="Node", *args, **kwargs)
 
 class NodeAliasView(BaseAdminView):
-    form_base_class = MediatumSecureForm
+    form_base_class = _core_csrfform.CSRFForm
 
     def __init__(self, session=db.session, *args, **kwargs):
         super(NodeAliasView, self).__init__(NodeAlias, session, category="Node", *args, **kwargs)

@@ -12,17 +12,16 @@ from core import db, User, UserGroup, AuthenticatorInfo
 from markupsafe import Markup
 from wtforms.fields.core import StringField
 from web.admin.views import BaseAdminView
-from web.admin.secureform import MediatumSecureForm
 from wtforms.ext.sqlalchemy.fields import QuerySelectMultipleField
 from wtforms import SelectMultipleField
 from flask_admin import form, expose
 
+import core.csrfform as _core_csrfform
 from core.auth import INTERNAL_AUTHENTICATOR_KEY
 from core.permission import get_or_add_access_rule
 from core.database.postgres.permission import AccessRuleset, AccessRulesetToRule, NodeToAccessRuleset
 from schema.schema import Metadatatype
 from core.database.postgres.user import OAuthUserCredentials
-from web.admin.secureform import MediatumSecureForm
 
 q = db.query
 logg = logging.getLogger(__name__)
@@ -37,7 +36,7 @@ class UserView(BaseAdminView):
 
     can_delete = False
 
-    form_base_class = MediatumSecureForm
+    form_base_class = _core_csrfform.CSRFForm
 
     column_exclude_list = ("created", "password_hash", "salt", "comment",
                            "private_group", "can_change_password")
@@ -81,7 +80,7 @@ class UserView(BaseAdminView):
             user.change_password(form.password.data)
 
 class UserGroupView(BaseAdminView):
-    form_base_class = MediatumSecureForm
+    form_base_class = _core_csrfform.CSRFForm
 
     form_excluded_columns = "user_assocs"
     column_details_list = ["id", "name", "description", "hidden_edit_functions", "is_editor_group",
@@ -137,14 +136,14 @@ class UserGroupView(BaseAdminView):
 
 
 class AuthenticatorInfoView(BaseAdminView):
-    form_base_class = MediatumSecureForm
+    form_base_class = _core_csrfform.CSRFForm
 
     def __init__(self, session=None, *args, **kwargs):
         super(AuthenticatorInfoView, self).__init__(AuthenticatorInfo, session, category="User", *args, **kwargs)
 
 
 class OAuthUserCredentialsView(BaseAdminView):
-    form_base_class = MediatumSecureForm
+    form_base_class = _core_csrfform.CSRFForm
     form_columns = ("user", "oauth_user", "oauth_key")
 
     def __init__(self, session=None, *args, **kwargs):

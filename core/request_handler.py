@@ -21,13 +21,11 @@ import utils.locks as _utils_lock
 from functools import partial as _partial
 from cgi import escape as _escape
 from StringIO import StringIO as _StringIO
+import csrfform as _csrfform
 from core import config as _config
 from utils.utils import suppress as _suppress, nullcontext as _nullcontext
 from utils.url import build_url_from_path_and_params as _build_url_from_path_and_params
 from collections import OrderedDict as _OrderedDict
-from wtforms.csrf.session import SessionCSRF as _SessionCSRF
-from wtforms import Form as _Form
-from wtforms.validators import ValidationError as _ValidationError
 
 
 _logg = _logging.getLogger(__name__)
@@ -359,26 +357,6 @@ class os_filesystem:
             self.root,
             self.wd
         )
-
-
-class MediatumForm(_Form):
-    class Meta:
-        csrf = True
-        csrf_class = _SessionCSRF
-        csrf_secret = str(_config.get('csrf.secret_key'))
-        csrf_time_limit = _datetime.timedelta(int(_config.get('csrf.timeout', "7200")))
-
-    def validate_csrf_token(self, field):
-        try:
-            self._csrf.validate_csrf_token(self._csrf, field)
-        except _ValidationError as e:
-            if (e.message == "CSRF token expired"):
-                self.csrf_token.current_token = self._csrf.generate_csrf_token(field)
-                csrf_errors = self.errors['csrf_token']
-                csrf_errors.remove("CSRF token expired")
-                if not any(csrf_errors):
-                    self.errors.pop("csrf_token")
-
 
 def done(req):
     # ----------------------------------------
@@ -854,7 +832,7 @@ def handle_request(req):
 
     req.params = {key: ";".join(value) for key, value in req.values.iterlists()}
 
-    mediatum_form = MediatumForm(meta={'csrf_context': _flask.session})
+    mediatum_form = _csrfform.CSRFForm()
     if req.form and req.method == 'POST':
         csrf_token = req.form.get("csrf_token")
         if not csrf_token:

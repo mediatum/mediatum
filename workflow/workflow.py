@@ -460,7 +460,6 @@ class WorkflowStep(Node):
 
         with workflow_lock:
             # stop caching
-            req.response.set_cookie("nocache", "1")
 
             key = req.values.get("key", _flask.session.get("key", ""))
             _flask.session["key"] = key

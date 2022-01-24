@@ -53,7 +53,6 @@ def _handle_login_submit(req):
     user = auth.authenticate_user_credentials(login_name, password, req)
     if user:
         # stop caching
-        req.response.set_cookie("nocache", "1")
         _flask.session["user_id"] = user.id
         logg.info("%s logged in", user.login_name)
 
@@ -133,7 +132,6 @@ def logout(req):
     req.response.location = '/'
     req.response.status_code = httpstatus.HTTP_MOVED_TEMPORARILY
     # return to caching
-    req.response.set_cookie("nocache", "0")
     return httpstatus.HTTP_MOVED_TEMPORARILY
 
 

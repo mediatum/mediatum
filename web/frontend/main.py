@@ -13,8 +13,9 @@ from werkzeug.datastructures import ImmutableMultiDict
 import werkzeug.utils as _werkzeug_utils
 
 import core.config as config
+import core.translation as _core_translation
 from core.metatype import Context
-from core.translation import lang, switch_language
+from core.translation import lang
 from core import httpstatus
 from core import db
 from core import Node, NodeAlias
@@ -78,7 +79,7 @@ def _check_change_language_request(func):
         language = req.args.get("change_language")
         if language:
             # change language cookie if language is configured
-            switch_language(req, language)
+            _core_translation.set_language(req.accept_languages, language)
             params = req.args.copy()
             del params["change_language"]
             req.response.location = build_url_from_path_and_params(req.mediatum_contextfree_path, params)

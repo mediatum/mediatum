@@ -10,9 +10,10 @@ import logging
 import flask as _flask
 import mediatumtal.tal as _tal
 import core.config as config
+import core.translation as _core_translation
 from .workflow import WorkflowStep, registerStep
 from schema.schema import getMetaType
-from core.translation import t, lang, addLabels, switch_language
+from core.translation import t, lang, addLabels
 import utils.date as date
 from utils.utils import mkKey
 from core import Node
@@ -49,7 +50,7 @@ class WorkflowStep_Start(WorkflowStep):
                 return ('<i>%s: %s </i>') % (schema, t(lang(req), "permission_denied"))
 
         if "workflow_start" in req.params:
-            switch_language(req, req.params.get('workflow_language'))
+            _core_translation.set_language(req.accept_languages, req.values.get('workflow_language'))
             content_class = Node.get_class_for_typestring(req.params.get('selected_schema').split('/')[0])
             node = content_class(name=u'', schema=req.params.get('selected_schema').split('/')[1])
             self.children.append(node)

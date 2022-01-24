@@ -123,38 +123,34 @@ def lang(req):
     if "language" in _flask.g.mediatum:
         return _flask.g.mediatum["language"]
     
-    return set_language(req)
+    return set_language(req.accept_languages)
 
     
-def set_language(req):
-    allowed_languages = config.languages
-
-    language = _flask.session.get("language")
-    if language in allowed_languages:
-        _flask.g.mediatum["language"] = language
-        return language
-
-    language = allowed_languages[0]
-
-    best_match = req.accept_languages.best_match(allowed_languages)
-    
-    if best_match:
-        language = best_match
-    
-    if language != default_language:
-        _flask.session["language"] = language
-
-    _flask.g.mediatum["language"] = language
-    return language
-
-
-def switch_language(req, language):
-    allowed_languages = config.languages
-    if language is None and len(allowed_languages) > 0:
-        language = allowed_languages[0]
-    elif language not in allowed_languages:
-        language = allowed_languages[0]
-    _flask.session["language"] = language
+def set_language(accept_languages, new_language=None):
+    """
+    Determine the UI language the user sees.
+    Language is picked by following this order of preference:
+      1. wish of user, as given in `new_language`
+      2. language defined in cookie (set here previously)
+      3. language that matches the accept-language http header
+      4. our own default language (first configured language)
+    The final choice is stored in the session cookie
+    *unless* it is equal to the default langauge
+    *and* to the accept-language http header.
+    It also also stored in `flask.g` for further reference,
+    and returned to the function caller.
+    """
+    if new_language not in config.languages:
+        new_language = _flask.session.get("language")
+    if new_language not in config.languages:
+        new_language = accept_languages.best_match(config.languages)
+    if new_language not in config.languages:
+        new_language = getDefaultLanguage()
+    _flask.session.pop("language", None)
+    if new_language != getDefaultLanguage() or new_language != accept_languages.best_match(config.languages):
+        _flask.session["language"] = new_language
+    _flask.g.mediatum["language"] = new_language
+    return new_language
 
 
 def t(target, key):

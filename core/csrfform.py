@@ -43,15 +43,4 @@ class CSRFForm(_wtforms_Form):
 
         @property
         def csrf_time_limit(self):
-            return _datetime.timedelta(seconds=_core_config.getint('csrf.timeout', 7200))
-
-    def validate_csrf_token(self, field):
-        try:
-            self._csrf.validate_csrf_token(self._csrf, field)
-        except _ValidationError as e:
-            if (e.message == "CSRF token expired"):
-                self.csrf_token.current_token = self._csrf.generate_csrf_token(field)
-                csrf_errors = self.errors['csrf_token']
-                csrf_errors.remove("CSRF token expired")
-                if not any(csrf_errors):
-                    self.errors.pop("csrf_token")
+            return _datetime.timedelta(seconds=_core_config.getint('csrf.timeout', 0)) or None

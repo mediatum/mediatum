@@ -222,15 +222,14 @@ def validate(req, op):
                 fieldvalue = ""
 
             updateMetaField(
-                    req.params.get("parent", ""),
-                    req.params.get("mname", ""),
-                    req.params.get("mlabel", ""),
-                    req.params.get("orderpos", ""),
-                    req.params.get("mtype", ""),
+                    req.values["parent"],
+                    req.values["mname"],
+                    req.values.get("mlabel", ""),
+                    req.values["mtype"],
                     tuple(o[7] for o in req.params if o.startswith("option_")),
-                    req.params.get("mdescription", ""),
+                    req.values.get("mdescription", ""),
                     fieldvalue,
-                    req.params.get("fieldid", ""),
+                    req.values.get("fieldid", ""),
                    )
 
         return showDetailList(req, req.params.get("parent"))

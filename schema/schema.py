@@ -339,7 +339,6 @@ def updateMetaField(
         parent,
         name,
         label,
-        orderpos,
         fieldtype,
         option,
         description,

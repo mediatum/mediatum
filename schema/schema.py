@@ -335,8 +335,17 @@ def existMetaField(pid, name):
 
 """ update/create metadatafield """
 
-def updateMetaField(parent, name, label, orderpos, fieldtype, option="", description="",
-                    fieldvalues="", fieldid="",  attr_dict={}):
+def updateMetaField(
+        parent,
+        name,
+        label,
+        orderpos,
+        fieldtype,
+        option,
+        description,
+        fieldvalues,
+        fieldid,
+       ):
     metatype = getMetaType(parent)
     field = None
 
@@ -366,12 +375,10 @@ def updateMetaField(parent, name, label, orderpos, fieldtype, option="", descrip
 
     field.set("label", label)
     field.set("type", fieldtype)
-    field.set("opts", option)
+    field.set("opts", "".join(option))
     field.set("valuelist", fieldvalues.replace("\r\n", ";"))
     field.set("description", description)
 
-    for attr_name, attr_value in attr_dict.items():
-        field.set(attr_name, attr_value)
     db.session.commit()
 
 #

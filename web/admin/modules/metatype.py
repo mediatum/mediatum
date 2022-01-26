@@ -215,30 +215,23 @@ def validate(req, op):
                 # if the name contains wrong characters
                 return FieldDetail(req, req.params.get("parent"), req.params.get("orig_name", ""), 4)
 
-            _option = ""
-            for o in req.params.keys():
-                if o.startswith("option_"):
-                    _option += o[7]
+            fieldvalue = "{}_value".format(req.params.get("mtype", ""))
+            if fieldvalue in req.params:
+                fieldvalue = req.params.get(fieldvalue)
+            else:
+                fieldvalue = ""
 
-            _fieldvalue = ""
-            if req.params.get("mtype", "") + "_value" in req.params.keys():
-                _fieldvalue = req.params.get(req.params.get("mtype") + "_value")
-
-            _attr_dict = {}
-            if req.params.get("mtype", "") + "_handle_attrs" in req.params.keys():
-
-                attr_names = [s.strip() for s in req.params.get(req.params.get("mtype", "") + "_handle_attrs").split(",")]
-                key_prefix = req.params.get("mtype", "") + "_attr_"
-
-                for attr_name in attr_names:
-                    attr_value = req.params.get(key_prefix + attr_name, "")
-                    _attr_dict[attr_name] = attr_value
-
-            updateMetaField(req.params.get("parent", ""), req.params.get("mname", ""),
-                            req.params.get("mlabel", ""), req.params.get("orderpos", ""),
-                            req.params.get("mtype", ""), _option, req.params.get("mdescription", ""),
-                            _fieldvalue, fieldid=req.params.get("fieldid", ""),
-                            attr_dict=_attr_dict)
+            updateMetaField(
+                    req.params.get("parent", ""),
+                    req.params.get("mname", ""),
+                    req.params.get("mlabel", ""),
+                    req.params.get("orderpos", ""),
+                    req.params.get("mtype", ""),
+                    tuple(o[7] for o in req.params if o.startswith("option_")),
+                    req.params.get("mdescription", ""),
+                    fieldvalue,
+                    req.params.get("fieldid", ""),
+                   )
 
         return showDetailList(req, req.params.get("parent"))
 

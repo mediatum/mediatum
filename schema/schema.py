@@ -346,14 +346,15 @@ def updateMetaField(
         fieldid,
        ):
     metatype = getMetaType(parent)
-    field = None
 
+    # search the field by id, then by name,
+    # or create a new one if both searches didn't yield a result
+    field = None
     if fieldid:
         field = q(Node).get(fieldid)
-
     if field is not None:
         field.name = name
-    elif name in [c.name for c in metatype.children]:
+    elif name in (c.name for c in metatype.children):
         for c in metatype.children:
             if c.name == name:
                 field = c

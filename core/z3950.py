@@ -28,6 +28,7 @@ from sqlalchemy.orm import undefer
 from core.search.config import get_service_search_languages
 from utils.utils import suppress
 import core as _core
+import core.config as _config
 import schema as _schema
 
 
@@ -362,6 +363,7 @@ def search_nodes(query, mapping_prefix='Z3950_search_'):
     with a node ID, which is then used as root node for the search
     based on that field mapping.
     """
+    import core.database.postgres.search as _postgres_search
 
     def get_root_for_mapping(mapping_node):
         name = mapping_node.name
@@ -403,6 +405,7 @@ def search_nodes(query, mapping_prefix='Z3950_search_'):
             logg.info('unable to map query: [%r] using mapping %s', query, field_mapping)
             continue
         logg.info('executing query for node %s: %s', root_node.id, query_string)
+        _postgres_search.set_session_timeout(_config.getint('search.timeout_z3950', 600))
         for n in root_node.search(searchtree, search_languages, filter_dbquery=filter_dbquery_results):
             node_ids.append(n.id)
 

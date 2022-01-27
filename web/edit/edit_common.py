@@ -22,6 +22,8 @@ import functools as _functools
 import mediatumtal.tal as _tal
 
 from core import Node, db
+import core.database.postgres.search as _postgres_search
+import core.config as _config
 from core.translation import t, lang
 from core.users import user_from_session as _user_from_session
 from contenttypes import Container
@@ -199,6 +201,7 @@ class ShowDirNav(object):
         make_search_content = get_make_search_content_function(self.req.args)
         paths = get_accessible_paths(node, q(Node).prefetch_attrs())
         if make_search_content:
+            _postgres_search.set_session_timeout(_config.getint('search.timeout_edit', 300))
             content_or_error = make_search_content(self.req, paths)
             if content_or_error:
                 if isinstance(content_or_error, NoSearchResult):

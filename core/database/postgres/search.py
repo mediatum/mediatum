@@ -33,6 +33,17 @@ comparisons = {
 logg = logging.getLogger(__name__)
 
 
+def set_session_timeout(session_timeout):
+    """
+    set session timeout
+    for security reason the session is also set to readonly
+    :param session_timeout: session timeout in seconds
+    :return:
+    """
+    db.session.execute("SET transaction_read_only=true")
+    db.session.execute("SET statement_timeout={}".format(session_timeout * 1000))
+
+
 def _rewrite_prefix_search(t):
     # .* is stripped because some users try to use regex-like syntax. 
     # Just removing it should lead to better results in most cases.

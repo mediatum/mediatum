@@ -24,6 +24,7 @@ from utils.utils import esc
 from utils.pathutils import isDescendantOf
 from .oaisetgroup import OAISetGroup as OAISetGroup
 from core import db, config, Node
+import core.database.postgres.search as _postgres_search
 import logging as _logging
 
 logg = _logging.getLogger(__name__)
@@ -124,6 +125,7 @@ def getNodesFilterForSetSpec(setspec, schemata):
 
 
 def getNodesQueryForSetSpec(setspec, schemata):
+    _postgres_search.set_session_timeout(config.getint('search.timeout_oai', 600))
     for g in GROUPS:
         if setspec in g.d_names.keys():
             if g.func_get_nodes_query_for_setspec:

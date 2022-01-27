@@ -27,6 +27,7 @@ from core import db, config, Node, File, webconfig, styles
 from core.styles import get_list_style, get_styles_for_contenttype
 from core.translation import lang, t
 from core.webconfig import node_url
+import core.database.postgres.search as _postgres_search
 from contenttypes.container import includetemplate
 from utils.strings import ensure_unicode_returned
 from utils.utils import getFormatedString
@@ -807,8 +808,11 @@ def render_content(node, req, render_paths):
     make_search_content = get_make_search_content_function(req.args)
     paths = (get_accessible_paths(node, q(Node).prefetch_attrs())
                    if render_paths and node is not None else None)
-    content = (make_search_content(req, paths) if make_search_content else
-                                       make_node_content(node, req, paths))
+    if not make_search_content:
+        content = make_node_content(node, req, paths)
+    else:
+        _postgres_search.set_session_timeout(config.getint('search.timeout_research', 120))
+        content = make_search_content(req, paths)
 
     cache_duration = content.cache_duration
     req.response.headers["Cache-Control"] = ("max-age={}".format(cache_duration)

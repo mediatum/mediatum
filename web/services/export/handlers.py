@@ -42,6 +42,7 @@ from web.services.serviceutils import attribute_name_filter
 from lxml import etree
 from core.xmlnode import add_node_to_xmldoc, create_xml_nodelist
 from core.database.postgres.search import apply_searchtree_to_query
+import core.database.postgres.search as _postgres_search
 from sqlalchemy import sql
 from itertools import izip_longest
 from sqlalchemy import Unicode, Float, Integer
@@ -666,6 +667,7 @@ def get_node_data_struct(
         except search.SearchQueryException as e:
             return _client_error_response(400, str(e))
 
+        _postgres_search.set_session_timeout(config.getint('search.timeout_services', 600))
         nodequery = apply_searchtree_to_query(nodequery, searchtree, search_languages)
 
     if typefilter:

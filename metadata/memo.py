@@ -66,7 +66,7 @@ class m_memo(Metatype):
         value = node.get(metafield.getName()).replace(";", "; ")
         return (metafield.getLabel(), value)
 
-    def getMaskEditorHTML(self, field, metadatatype=None, language=None, attr_dict={}):
+    def getMaskEditorHTML(self, field, metadatatype=None, language=None):
 
         try:
             value = field.getValues()
@@ -76,8 +76,6 @@ class m_memo(Metatype):
         context = {
             "value": value,
         }
-
-        context.update(attr_dict)
 
         return tal.getTAL("metadata/memo.html", context, macro="maskeditor", language=language)
 

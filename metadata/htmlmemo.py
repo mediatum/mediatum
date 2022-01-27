@@ -66,7 +66,7 @@ class m_htmlmemo(Metatype):
         value = node.get(metafield.getName()).replace(";", "; ")
         return (metafield.getLabel(), value)
 
-    def getMaskEditorHTML(self, field, metadatatype=None, language=None, attr_dict={}):
+    def getMaskEditorHTML(self, field, metadatatype=None, language=None):
         try:
             value = field.getValues()
         except AttributeError:
@@ -76,7 +76,6 @@ class m_htmlmemo(Metatype):
             "value": value,
         }
 
-        context.update(attr_dict)
         return tal.getTAL("metadata/htmlmemo.html", context, macro="maskeditor", language=language)
 
     def getPopup(self, req):

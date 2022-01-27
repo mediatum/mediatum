@@ -209,11 +209,6 @@ def FieldDetail(req, pid, id, err=0):
     v["csrf"] = req.csrf_token.current_token
     for t in getMetaFieldTypeNames():
         f = getMetadataType(t)
-
-        if 'attr_dict' in inspect.getargspec(f.getMaskEditorHTML).args:
-            attr_dict = dict(field.attrs.items())
-            v["adminfields"] .append(f.getMaskEditorHTML(v["field"], metadatatype=metadatatype, language=lang(req), attr_dict=attr_dict))
-        else:
-            v["adminfields"] .append(f.getMaskEditorHTML(v["field"], metadatatype=metadatatype, language=lang(req)))
+        v["adminfields"] .append(f.getMaskEditorHTML(v["field"], metadatatype=metadatatype, language=lang(req)))
     db.session.commit()
     return _tal.processTAL(v, file="web/admin/modules/metatype_field.html", macro="modify_field", request=req)

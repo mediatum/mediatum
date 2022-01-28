@@ -312,8 +312,11 @@ class m_field(Metatype):
             db.session.commit()
 
         for t in getMetaFieldTypeNames():
-            f = getMetadataType(t)
-            add_values.append(f.get_metafieldeditor_html(val, metadatatype, lang(req)))
+            add_values.append(getMetadataType(t).get_metafieldeditor_html(
+                    val,
+                    metadatatype,
+                    lang(req),
+                   ))
 
         metafields = metadatatype.getMetaFields()
         metafields.sort(key=lambda mf:mf.getName().lower())

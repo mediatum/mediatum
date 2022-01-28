@@ -17,6 +17,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import operator as _operator
+
 import mediatumtal.tal as _tal
 
 from utils.utils import formatLongText
@@ -301,7 +303,7 @@ class m_field(Metatype):
                         for field in m.getChildren():
                             fields.append(field)
 
-        fields.sort(lambda x, y: cmp(x.getOrderPos(), y.getOrderPos()))
+        fields.sort(key=_operator.methodcaller("getOrderPos"))
         add_values = []
         val = u""
         field = item.getField()
@@ -314,10 +316,10 @@ class m_field(Metatype):
             add_values.append(f.get_metafieldeditor_html(val, metadatatype, lang(req)))
 
         metafields = metadatatype.getMetaFields()
-        metafields.sort(lambda x, y: cmp(x.getName().lower(), y.getName().lower()))
+        metafields.sort(key=lambda mf:mf.getName().lower())
 
         metafieldtypes = getMetaFieldTypes().values()
-        metafieldtypes.sort(lambda x, y: cmp(translate(x.getName(), request=req).lower(), translate(y.getName(), request=req).lower()))
+        metafieldtypes.sort(key=lambda mf:translate(mf.getName(), request=req).lower())
 
         add_descriptions = []
         for metafield in metafields:

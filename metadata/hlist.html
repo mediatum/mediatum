@@ -38,7 +38,7 @@
 </div>
 </tal:block>
 
-<div metal:define-macro="maskeditor" style="display:none" name="div_hlist" id="div_hlist">
+<div metal:define-macro="maskeditor" style="display:block" name="div_hlist" id="div_hlist">
     <div class="label" i18n:translate="hlist_edit_parentnodes">TEXT</div>
     <input type="text" name="hlist_value" tal:attributes="value python:value['parentnode']" style="width:200px;"/>
     <br/>

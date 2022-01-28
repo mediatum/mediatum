@@ -142,16 +142,11 @@ def FieldDetail(req, name=None, error=None):
         field = q(Metadatatype).get(req.params.get("parent")).children
         field = field.filter_by(name=name, type=u'metafield').scalar()
     elif error:  # new field, with error filling values
-        fieldvalue = ""
-        if req.params.get('mtype', '') + "_value" in req.params.keys():
-            fieldvalue = ustr(req.params[req.params.get('mtype', '') + "_value"])
-
         field = Metafield(req.params.get("mname") or req.params.get("orig_name"))
         field.setLabel(req.params.get("mlabel"))
         field.setOrderPos(req.params.get("orderpos"))
         field.setFieldtype(req.params.get("mtype"))
         field.setOption("".join(key[7] for key in req.params if key.startswith("option_")))
-        field.setValues(fieldvalue)
         field.setDescription(req.params.get("mdescription"))
         db.session.commit()
     else:  # new field, no error (yet)
@@ -162,7 +157,7 @@ def FieldDetail(req, name=None, error=None):
     tal_ctx = getAdminStdVars(req)
     tal_ctx.update(
             actpage=req.params.get("actpage"),
-            adminfields=[],
+            adminfields="",
             csrf=req.csrf_token.current_token,
             error=error,
             fieldoptions=fieldoption,
@@ -174,20 +169,18 @@ def FieldDetail(req, name=None, error=None):
             valuelist=field.getValueList(),
            )
 
+    if field.id:
+        tal_ctx["field"] = field
+        tal_ctx["adminfields"] = getMetadataType(field.getFieldtype()).get_metafieldeditor_html(field,metadatatype,lang(req))
+
     if field.getFieldtype() == "url":
         tal_ctx["valuelist"].extend(("",)*4)
         tal_ctx["valuelist"] = tal_ctx["valuelist"][:4]
-
-    tal_ctx["adminfields"].extend(getMetadataType(t).get_metafieldeditor_html(
-            field if field.id else u"",
-            metadatatype,
-            lang(req),
-           ) for t in getMetaFieldTypeNames())
 
     db.session.commit()
     return _tal.processTAL(
             tal_ctx,
             file="web/admin/modules/metatype_field.html",
-            macro="modify_field",
+            macro="modify_field" if field.id else "new_field",
             request=req,
            )

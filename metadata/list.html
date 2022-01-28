@@ -31,7 +31,7 @@
 </select>
 
 
-<div metal:define-macro="maskeditor" style="display:none" name="div_list" id="div_list">
+<div metal:define-macro="maskeditor" style="display:block" name="div_list" id="div_list">
     <div class="label" i18n:translate="list_multiple">TEXT</div>
     <input type="checkbox" name="list_value" value="multiple" tal:attributes="checked python:'checked' if multiple_list else None" />
     <br />

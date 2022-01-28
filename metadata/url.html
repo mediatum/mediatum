@@ -17,7 +17,7 @@
 <input metal:define-macro="searchfield" tal:attributes="name python:context.name; id python:context.name; value python:context.value" type="text" style="width:174px;" class="searchfield"/>
 
 
-<div metal:define-macro="maskeditor" style="display:none" id="div_url" name="div_url">
+<div metal:define-macro="maskeditor" style="display:block" id="div_url" name="div_url">
     <div class="label" i18n:translate="url_edit_link">TEXT</div>
     <input tal:attributes="value python:value[0]" type="text" name="url_value" style="width:250px;"/>
     <br/>

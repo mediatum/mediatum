@@ -143,8 +143,6 @@ class m_list(Metatype):
         try:
             if field:
                 value = field.getValues()
-                if field.id and len(field.files) > 0:
-                    filename = os.path.basename(field.files[0].abspath)
                 multiple_list = field.get('multiple')
         except AttributeError:
             value = field

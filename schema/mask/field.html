@@ -22,36 +22,24 @@
         <br/>
         <div class="label" i18n:translate="mask_edit_field_selection">TEXT</div> 
         <tal:block tal:condition="python:op=='new'">
-                <select id="existingfieldtype" tal:condition="python:metafields" name="field" style="width:500px;" onchange="metafieldchange(document)">
+                <select id="existingfieldtype" tal:condition="python:metafields" name="field" style="width:500px;">
                     <tal:block tal:repeat="metafield metafields">
                         <option tal:attributes="value python:metafield.id" tal:content="python:u'{} ({})'.format(metafield.getName(), metafield.getFieldtype())"/>
                     </tal:block>
                 </select>
                 <span tal:condition="python:len(metafields)==0" style="color:red" i18n:translate="mask_editor_no_fields">TEXT</span>
-                <br/>
-                <!-- automatic block from metatype start -->
-                <tal:block tal:repeat="values add_values" tal:content="raw values"/>
-                <tal:block tal:repeat="descriptions add_descriptions" tal:content="raw descriptions"/>
-                <!-- automatic block from metatype end -->
-            <br/>
         </tal:block>
         <tal:block tal:condition="python:op=='edit'">
-            <select name="field" style="width:250px;" id="newfieldtype" onchange="editmetatypechange(document)">
+            <select name="field" style="width:250px;" id="newfieldtype">
                 <tal:block tal:repeat="metafield metafields">
                     <option tal:condition="python:item.getField() and item.getField().id==metafield.id and item.getField()!=None" tal:attributes="value python:metafield.id" tal:content="python:u'{} ({})'.format(metafield.getName(), metafield.getFieldtype())" selected="selected"/>
                     <option tal:condition="python:(not item.getField() or item.getField().id!=metafield.id) and item.getField()!=None" tal:attributes="value python:metafield.id" tal:content="python:u'{} ({})'.format(metafield.getName(), metafield.getFieldtype())"/>
                 </tal:block>
             </select>
-            <br/>
-            <tal:block tal:repeat="values add_values" tal:content="raw values"/>
-            <br/>
-            <script>
-                editmetatypechange(document);
-            </script>
         </tal:block>
+        <br/>
         <div class="label" i18n:translate="mask_edit_help">TEXT</div>
-        <textarea id="edit_help" tal:condition="python:op=='edit'" tal:content="python:item.getDescription()" name="description" rows="4" style="width:500px"/>
-        <textarea id="edit_help" tal:condition="python:op=='new'" tal:content="python:metafields[0].getDescription()" name="description" rows="4" style="width:500px"/>
+        <textarea id="edit_help" tal:content="python:item.get('description')" name="description" rows="4" style="width:500px"/>
         <br/>
         <div class="label" i18n:translate="mask_edit_required">TEXT</div> 
         <input tal:condition="python:item.getRequired()==1" type="checkbox" name="required" value="1" checked="checked">

@@ -1400,10 +1400,7 @@ class Maskitem(Node):
             return self.get("description")
 
     def setDescription(self, value):
-        if not self.get("description") and self.getField():
-            self.getField().setDescription(value)
-        else:
-            self.set("description", value)
+        self.set("description", value)
 
     def getRequired(self):
         if self.get("required"):

@@ -582,7 +582,6 @@ def showEditor(req):
                 if ustr(field.id) != req.params.get("field"):
                     item.children.remove(field)
                     item.children.append(f)
-                field.setValues(req.params.get(u"{}_value".format(field.get("type")), u""))
                 db.session.commit()
             except:
                 logg.exception("exception in showEditor / saveedit, ignore")

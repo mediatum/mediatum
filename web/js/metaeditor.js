@@ -133,22 +133,6 @@ function metatypechange(doc){
     
 }
 
-function metafieldchange(doc){
-    for(var i=0; i< doc.getElementById("existingfieldtype").options.length; i++){
-        obj = doc.getElementById("div_" + doc.getElementById("existingfieldtype").options[i].value);
-        console.log("div_" + doc.getElementById("existingfieldtype").options[i].value)
-        if (obj){
-            if (doc.getElementById("existingfieldtype").value == doc.getElementById("existingfieldtype").options[i].value){
-              obj_help = doc.getElementById("edit_help");
-              if (obj_help) {
-                obj_help.value = obj.attributes.description.value;
-              }
-                
-            }
-        }
-    }
-}
-
 function clear_description(doc){
     obj_help = doc.getElementById("edit_help");
     if (obj_help) {
@@ -159,20 +143,6 @@ function clear_description(doc){
 function getTypeString(s){ 
     return s.substring(s.lastIndexOf('(')+1,s.length-1);
 }
-
-function editmetatypechange(doc){
-    seltype = getTypeString(doc.getElementById("newfieldtype").options[doc.getElementById("newfieldtype").selectedIndex].text);
-    for(var i=0; i< doc.getElementById("newfieldtype").options.length; i++){
-        obj = doc.getElementById("div_" + getTypeString(doc.getElementById("newfieldtype").options[i].text));
-        if (obj){
-            obj.style.display = "none";
-        }
-    }
-    if (doc.getElementById("div_"+seltype)){
-        doc.getElementById("div_"+seltype).style.display = "block";
-    }
-}
-
 
 function showPreview(doc, src){
     obj = doc.getElementById("image_preview");

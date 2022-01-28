@@ -25,7 +25,7 @@ import utils.utils as _utils_utils
 from utils.utils import formatLongText
 from utils.strings import ensure_unicode
 
-from schema.schema import getMetaFieldTypeNames, getMetadataType, VIEW_DATA_ONLY, VIEW_SUB_ELEMENT, VIEW_HIDE_EMPTY, VIEW_DATA_EXPORT
+from schema.schema import getMetadataType, VIEW_DATA_ONLY, VIEW_SUB_ELEMENT, VIEW_HIDE_EMPTY, VIEW_DATA_EXPORT
 from core.translation import lang, translate
 from core.metatype import Metatype, Context
 from core import db, Node
@@ -292,27 +292,9 @@ class m_field(Metatype):
                     fields.extend(m.getChildren())
 
         fields.sort(key=_operator.methodcaller("getOrderPos"))
-        add_values = []
-        val = u""
-        field = item.getField()
-        if field:
-            val = field.getValues()
-            db.session.commit()
-
-        for t in getMetaFieldTypeNames():
-            add_values.append(getMetadataType(t).get_metafieldeditor_html(
-                    val,
-                    metadatatype,
-                    lang(req),
-                   ))
 
         metafields = metadatatype.getMetaFields()
         metafields.sort(key=lambda mf:mf.getName().lower())
-
-        add_descriptions = []
-        for metafield in metafields:
-            add_descriptions.append('<div style="display:none" id="div_%d" name="%s" description="%s"></div>' %
-                                    (metafield.id, metafield.name, metafield.getDescription()))
 
         tal_ctx = dict(
                 op=req.params["op"],
@@ -320,8 +302,6 @@ class m_field(Metatype):
                 item=item,
                 metafields=metafields,
                 fields=fields,
-                add_values=add_values,
-                add_descriptions=add_descriptions,
                 translate=translate,
                 language=lang(req),
                )

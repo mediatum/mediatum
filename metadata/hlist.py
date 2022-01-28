@@ -12,7 +12,7 @@ q = db.query
 
 class m_hlist(Metatype):
 
-    def get_metafieldeditor_html(self, field, metadatatype=None, language=None, required=None):
+    def get_metafieldeditor_html(self, field, metadatatype=None, language=None):
         try:
             values = field.get("valuelist").split(u';')
         except AttributeError:

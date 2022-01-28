@@ -97,24 +97,7 @@ def _handle_edit_metadata(req, mask, nodes):
             req.response.status_code = httpstatus.HTTP_FORBIDDEN
             return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
-    if not hasattr(mask, "i_am_not_a_mask"):
-        # XXX: why check here?
-        # if nodes:
-        old_nodename = nodes[0].name
-
-        for node in nodes:
-            mask.update_node(node, req, user)
-
-        db.session.commit()
-
-        # XXX: why check here?
-        # if nodes:
-        new_nodename = nodes[0].name
-        if ( len(nodes) == 1 or old_nodename != new_nodename) and isinstance(nodes[0], Container):
-            # for updates of node label in editor tree
-            flag_nodename_changed = ustr(nodes[0].id)
-
-    else:
+    if hasattr(mask, "i_am_not_a_mask"):
         for field in mask.metaFields():
             logg.debug("in %s.%s: (hasattr(mask,'i_am_not_a_mask')) field: %s, field.id: %s, field.name: %s, mask: %s, maskname: %s",
                 __name__, funcname(), field, field.id, field.name, mask, mask.name)
@@ -138,6 +121,22 @@ def _handle_edit_metadata(req, mask, nodes):
             else:
                 node.set(field.getName(), "")
         db.session.commit()
+    else:
+        # XXX: why check here?
+        # if nodes:
+        old_nodename = nodes[0].name
+
+        for node in nodes:
+            mask.update_node(node, req, user)
+
+        db.session.commit()
+
+        # XXX: why check here?
+        # if nodes:
+        new_nodename = nodes[0].name
+        if (len(nodes) == 1 or old_nodename != new_nodename) and isinstance(nodes[0], Container):
+            # for updates of node label in editor tree
+            flag_nodename_changed = ustr(nodes[0].id)
 
     return flag_nodename_changed
 

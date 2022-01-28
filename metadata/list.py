@@ -94,7 +94,7 @@ class m_list(Metatype):
                 else:
                     num = " (" + ustr(num) + ")"
             except:
-                logg.exception("exception in getMaskEditorHTML, using empty string")
+                logg.exception("exception in get_metafieldeditor_html, using empty string")
                 num = ""
 
             val = esc(val)
@@ -137,7 +137,7 @@ class m_list(Metatype):
             value = params.get(item)
         return value.replace("; ", ";")
 
-    def getMaskEditorHTML(self, field, metadatatype=None, language=None):
+    def get_metafieldeditor_html(self, field, metadatatype=None, language=None):
         value = u""
         multiple_list = u""
         try:

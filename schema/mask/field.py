@@ -311,7 +311,7 @@ class m_field(Metatype):
 
         for t in getMetaFieldTypeNames():
             f = getMetadataType(t)
-            add_values.append(f.getMaskEditorHTML(val, metadatatype=metadatatype, language=lang(req)))
+            add_values.append(f.get_metafieldeditor_html(val, metadatatype=metadatatype, language=lang(req)))
 
         metafields = metadatatype.getMetaFields()
         metafields.sort(lambda x, y: cmp(x.getName().lower(), y.getName().lower()))

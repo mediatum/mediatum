@@ -140,7 +140,7 @@ class m_url(Metatype):
             return u"{}".format(quoted_uri)
         return u"{};{}".format(quoted_uri, linktext)
 
-    def getMaskEditorHTML(self, field, metadatatype=None, language=None):
+    def get_metafieldeditor_html(self, field, metadatatype=None, language=None):
         try:
             value = field.getValues().split("\r\n")
         except AttributeError:

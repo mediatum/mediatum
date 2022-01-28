@@ -103,7 +103,7 @@ class m_date(Metatype):
             return ""
         return format_date(d, format='%Y-%m-%dT%H:%M:%S')
 
-    def getMaskEditorHTML(self, field, metadatatype=None, language=None):
+    def get_metafieldeditor_html(self, field, metadatatype=None, language=None):
         try:
             value = field.getValues()
         except AttributeError:

@@ -66,7 +66,7 @@ class m_htmlmemo(Metatype):
         value = node.get(metafield.getName()).replace(";", "; ")
         return (metafield.getLabel(), value)
 
-    def get_metafieldeditor_html(self, field, metadatatype=None, language=None):
+    def get_metafieldeditor_html(self, field, metadatatype, language):
         try:
             value = field.getValues()
         except AttributeError:

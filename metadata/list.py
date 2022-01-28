@@ -137,7 +137,7 @@ class m_list(Metatype):
             value = params.get(item)
         return value.replace("; ", ";")
 
-    def get_metafieldeditor_html(self, field, metadatatype=None, language=None):
+    def get_metafieldeditor_html(self, field, metadatatype, language):
         value = u""
         multiple_list = u""
         try:

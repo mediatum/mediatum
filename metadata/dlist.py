@@ -146,7 +146,7 @@ class m_dlist(Metatype):
             value = esc(value)
         return (metafield.getLabel(), value)
 
-    def get_metafieldeditor_html(self, field, metadatatype=None, language=None):
+    def get_metafieldeditor_html(self, field, metadatatype, language):
         try:
             value = field.getValues().split("\r\n")
         except AttributeError:

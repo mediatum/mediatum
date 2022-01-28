@@ -42,7 +42,7 @@ class m_meta(Metatype):
     def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
         return (metafield.getLabel(), node.get(metafield.getValues()))
 
-    def get_metafieldeditor_html(self, field, metadatatype=None, language=None):
+    def get_metafieldeditor_html(self, field, metadatatype, language):
         try:
             value = field.getValues().split("\r\n")
         except AttributeError:

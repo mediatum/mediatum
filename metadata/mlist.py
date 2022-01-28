@@ -131,7 +131,7 @@ class m_mlist(Metatype):
             value = value_unprepared.replace("; ", ";")
         return value
 
-    def get_metafieldeditor_html(self, field, metadatatype=None, language=None):
+    def get_metafieldeditor_html(self, field, metadatatype, language):
         value = u""
         try:
             if field:

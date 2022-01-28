@@ -121,7 +121,6 @@ def _handle_edit_metadata(req, mask, nodes):
                     node.set(field.name, value)
             else:
                 node.set(field.getName(), "")
-        db.session.commit()
     else:
         # XXX: why check here?
         # if nodes:
@@ -130,8 +129,6 @@ def _handle_edit_metadata(req, mask, nodes):
         for node in nodes:
             mask.update_node(node, req, user)
 
-        db.session.commit()
-
         # XXX: why check here?
         # if nodes:
         new_nodename = nodes[0].name
@@ -139,6 +136,7 @@ def _handle_edit_metadata(req, mask, nodes):
             # for updates of node label in editor tree
             flag_nodename_changed = ustr(nodes[0].id)
 
+    db.session.commit()
     return flag_nodename_changed
 
 

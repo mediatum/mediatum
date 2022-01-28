@@ -201,14 +201,13 @@ def FieldDetail(req, pid, id, err=0):
     else:
         v["valuelist"] = field.getValueList()
 
-    v["field"] = None
-    if field.id:
-        v["field"] = field
-
     v["adminfields"] = []
     v["csrf"] = req.csrf_token.current_token
     for t in getMetaFieldTypeNames():
-        f = getMetadataType(t)
-        v["adminfields"] .append(f.get_metafieldeditor_html(v["field"], metadatatype, lang(req)))
+        v["adminfields"].append(getMetadataType(t).get_metafieldeditor_html(
+                field if field.id else u"",
+                metadatatype,
+                lang(req),
+               ))
     db.session.commit()
     return _tal.processTAL(v, file="web/admin/modules/metatype_field.html", macro="modify_field", request=req)

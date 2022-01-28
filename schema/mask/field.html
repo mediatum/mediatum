@@ -38,8 +38,8 @@
         <tal:block tal:condition="python:op=='edit'">
             <select name="field" style="width:250px;" id="newfieldtype" onchange="editmetatypechange(document)">
                 <tal:block tal:repeat="metafield metafields">
-                    <option tal:condition="python:item.getField() and item.getField().id==metafield.id and item.getField()!=None" tal:attributes="value python:metafield.id" tal:content="python:u'{} ({})'.format(metafield.getLabel(), metafield.getFieldtype())" selected="selected"/>
-                    <option tal:condition="python:(not item.getField() or item.getField().id!=metafield.id) and item.getField()!=None" tal:attributes="value python:metafield.id" tal:content="python:u'{} ({})'.format(metafield.getLabel(), metafield.getFieldtype())"/>
+                    <option tal:condition="python:item.getField() and item.getField().id==metafield.id and item.getField()!=None" tal:attributes="value python:metafield.id" tal:content="python:u'{} ({})'.format(metafield.getName(), metafield.getFieldtype())" selected="selected"/>
+                    <option tal:condition="python:(not item.getField() or item.getField().id!=metafield.id) and item.getField()!=None" tal:attributes="value python:metafield.id" tal:content="python:u'{} ({})'.format(metafield.getName(), metafield.getFieldtype())"/>
                 </tal:block>
             </select>
             <br/>

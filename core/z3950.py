@@ -633,8 +633,6 @@ def parse_rpn_query(query):
     return recursive_parse(rpn_query.rpn)
 
 
-# Athana support
-
 class _ChannelInterface(object):
 
     def __init__(self, channel):

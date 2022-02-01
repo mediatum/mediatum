@@ -5,7 +5,7 @@ import asyncore as _asyncore
 import configargparse as _configargparse
 import core.init as _core_init
 import core.config as _core_config
-import core.athana_z3950 as _core_athana_z3950
+import core.z3950 as _core_z3950
 import utils.utils as _utils_utils
 
 
@@ -21,7 +21,7 @@ def run():
     with open(_core_config.get("paths.pidfile"), "wb") as f:
         f.write(str(_os.getpid()))
 
-    _core_athana_z3950.z3950_server(port=args.port)
+    _core_z3950.z3950_server(port=args.port)
     while True:
         with _utils_utils.suppress(Exception, warn=False):
             _asyncore.loop(timeout=0.01)

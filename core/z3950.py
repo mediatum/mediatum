@@ -291,11 +291,6 @@ class simple_producer:
             return result
 
 
-class FormatError(Exception):
-
-    """Communication format not supported.
-    """
-
 def format_node(node, map_node):
     marc21_node = map_node(node)
 
@@ -499,38 +494,7 @@ def search_nodes(query, mapping_prefix='Z3950_search_'):
 
     # use a round-robin algorithm to merge the separate query results
     # in order to produce maximally diverse results in the first hits
-    # return merge_ids_as_round_robin(node_ids)
     return node_ids
-
-
-def merge_ids_as_round_robin(id_sets):
-    """
-    Round robin merge of multiple ID sets.
-
-    Examples::
-
-        >>> merge_ids_as_round_robin([('1','2'), ('3','4','5'), (), ('6',)])
-        ['1', '3', '6', '2', '4', '5']
-    """
-    nexts = [iter(id_set).next for id_set in id_sets if id_set]
-    seen = set()
-    ids = []
-    to_drop = []
-    while nexts:
-        for next_from_set in nexts:
-            try:
-                next_id = next_from_set()
-            except StopIteration:
-                to_drop.append(next_from_set)
-            else:
-                if next_id not in seen:
-                    seen.add(next_id)
-                    ids.append(next_id)
-        if to_drop:
-            for next_func in to_drop:
-                nexts.remove(next_func)
-            del to_drop[:]
-    return ids
 
 
 def protect(s):

@@ -159,11 +159,11 @@ def display_newstyle(req):
 
     # either coming from /nodes/ or nid_or_alias is not a valid alias
     req = overwrite_id_in_req(nid_or_alias, req)
-    return _display(req)
+    return display(req)
 
 
 @_check_change_language_request
-def _display(req, show_navbar=True, render_paths=True, params=None):
+def display(req, show_navbar=True, render_paths=True, params=None):
     if "jsonrequest" in req.params:
         return handle_json_request(req)
 
@@ -197,18 +197,8 @@ def _display(req, show_navbar=True, render_paths=True, params=None):
 
 
 @_check_change_language_request
-def display(req):
-    _display(req)
-
-
-@_check_change_language_request
 def workflow(req):
-    if req.method == "POST":
-        params = req.form
-    else:
-        params = req.args
-
-    _display(req, show_navbar=False, render_paths=False, params=params)
+    display(req, False, False, req.values)
 
 
 #: needed for workflows:
@@ -226,8 +216,7 @@ def publish(req):
                 if node is None:
                     return 404
 
-    req = overwrite_id_in_req(node.id, req)
-    return _display(req, False, render_paths=False)
+    return display(overwrite_id_in_req(node.id, req), False, False)
 
 
 @_check_change_language_request

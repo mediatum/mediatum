@@ -18,6 +18,7 @@
 """
 
 import codecs
+import collections as _collections
 import logging
 import socket
 import asyncore
@@ -46,7 +47,7 @@ class async_chat (asyncore.dispatcher):
     def __init__(self, conn=None):
         self.ac_in_buffer = ''
         self.ac_out_buffer = ''
-        self.producer_fifo = fifo()
+        self.producer_fifo = _collections.deque()
         asyncore.dispatcher.__init__(self, conn)
 
     def collect_incoming_data(self, data):
@@ -140,11 +141,11 @@ class async_chat (asyncore.dispatcher):
         self.close()
 
     def push(self, data):
-        self.producer_fifo.push(simple_producer(data))
+        self.producer_fifo.append(simple_producer(data))
         self.initiate_send()
 
     def push_with_producer(self, producer):
-        self.producer_fifo.push(producer)
+        self.producer_fifo.append(producer)
         self.initiate_send()
 
     def readable(self):
@@ -157,25 +158,25 @@ class async_chat (asyncore.dispatcher):
         # this is about twice as fast, though not as clear.
         return not (
             (self.ac_out_buffer == '') and
-            self.producer_fifo.is_empty() and
+            not self.producer_fifo and
             self.connected
         )
 
     def close_when_done(self):
         "automatically close this channel once the outgoing queue is empty"
-        self.producer_fifo.push(None)
+        self.producer_fifo.append(None)
 
     # refill the outgoing buffer by calling the more() method
     # of the first producer in the queue
     def refill_buffer(self):
         while 1:
-            if len(self.producer_fifo):
-                p = self.producer_fifo.first()
+            if self.producer_fifo:
+                p = self.producer_fifo[0]
                 # a 'None' in the producer fifo is a sentinel,
                 # telling us to close the channel.
                 if p is None:
                     if not self.ac_out_buffer:
-                        self.producer_fifo.pop()
+                        self.producer_fifo.popleft()
                         try:
                             self.close()
                         except KeyError:
@@ -186,7 +187,7 @@ class async_chat (asyncore.dispatcher):
                                 self.socket.close()
                     return
                 elif isinstance(p, str):
-                    self.producer_fifo.pop()
+                    self.producer_fifo.popleft()
                     self.ac_out_buffer = self.ac_out_buffer + p
                     return
                 data = p.more()
@@ -194,7 +195,7 @@ class async_chat (asyncore.dispatcher):
                     self.ac_out_buffer = self.ac_out_buffer + data
                     return
                 else:
-                    self.producer_fifo.pop()
+                    self.producer_fifo.popleft()
             else:
                 return
 
@@ -219,35 +220,7 @@ class async_chat (asyncore.dispatcher):
         # Emergencies only!
         self.ac_in_buffer = ''
         self.ac_out_buffer = ''
-        while self.producer_fifo:
-            self.producer_fifo.pop()
-
-
-class fifo:
-
-    def __init__(self, list=None):
-        if not list:
-            self.list = []
-        else:
-            self.list = list
-
-    def __len__(self):
-        return len(self.list)
-
-    def is_empty(self):
-        return self.list == []
-
-    def first(self):
-        return self.list[0]
-
-    def push(self, data):
-        self.list.append(data)
-
-    def pop(self):
-        if self.list:
-            return (1, self.list.pop(0))
-        else:
-            return (0, None)
+        self.producer_fifo.clear()
 
 
 # Given 'haystack', see if any prefix of 'needle' is at its end.  This

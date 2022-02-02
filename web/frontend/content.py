@@ -652,7 +652,7 @@ class ContentNode(ContentBase):
             # self.node may be result of a query and/or element of a contentlist, in this case
             # self.paths is not set - try to recalculate paths
             self.paths = get_accessible_paths(self.node, q(Node).prefetch_attrs())
-        
+
         if self.paths:
             occurences_html = render_content_occurences(self.node, req, self.paths)
         else:
@@ -666,26 +666,26 @@ class NodeNotAccessible(ContentBase):
     def __init__(self, error="no such node", status=404):
         self.error = error
         self.status = status
-        
+
     @property
     def cache_duration(self):
         return 30
-    
+
 
 class StartpageNotAccessible(ContentBase):
 
     def __init__(self, error="no such node", status=404):
         self.error = error
         self.status = status
-        
+
     @property
     def cache_duration(self):
         return 30
-    
+
 
 def make_node_content(node, req, paths):
     """Renders the inner parts of the content area.
-    The current node can be a container or a content node. 
+    The current node can be a container or a content node.
     A container can render a static HTML page, a node list view or a single node from that list.
     For a content node, the detail view is displayed.
     If the wanted node cannot be accessed, a NodeNotAccessible instance is returned.

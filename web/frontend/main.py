@@ -189,7 +189,7 @@ def _display(req, show_navbar=True, render_paths=True, params=None):
     if params.get("raw"):
         req.response.set_data(content_html)
     else:
-        html = render_page(req, node, content_html, show_navbar, show_id)
+        html = render_page(req, content_html, node, show_navbar, show_id)
         req.response.set_data(html)
     req.response.status_code = httpstatus.HTTP_OK
     # ... Don't return a code because Athana overwrites the content if an http error code is returned from a handler.

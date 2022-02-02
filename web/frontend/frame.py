@@ -475,8 +475,10 @@ def _render_head_meta(node):
         return mask and mask.getViewHTML([node], flags=8)
 
 
-def render_page(req, node, content_html, show_navbar=True, show_id=None):
-    """Renders the navigation frame with the inserted content HTML and returns the whole page.
+def render_page(req, content_html, node=None, show_navbar=True, show_id=None):
+    """
+    Renders the navigation frame with the
+    inserted content HTML and returns the whole page.
     """
     user = _user_from_session()
     userlinks = UserLinks(user, req)

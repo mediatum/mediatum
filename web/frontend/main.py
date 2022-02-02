@@ -170,14 +170,10 @@ def display(req, show_navbar=True, render_paths=True, params=None):
     if params is None:
         params = req.args
 
-    nid = params.get("id", type=int)
-    
-    if nid is None:
-        node = get_collections_node()
-    else:
-        node = q(Node).prefetch_attrs().prefetch_system_attrs().get(nid)
-        
-    if node is not None and not node.has_read_access():
+    node = params.get("id", type=int)
+    node = (get_collections_node() if node is None else
+            q(Node).prefetch_attrs().prefetch_system_attrs().get(node))
+    if not (node and node.has_read_access()):
         node = None
 
     if req.args.get("disable_content"):
@@ -185,15 +181,9 @@ def display(req, show_navbar=True, render_paths=True, params=None):
         show_id = None
     else:
         content_html, show_id = render_content(node, req, render_paths)
-
-    if params.get("raw"):
-        req.response.set_data(content_html)
-    else:
-        html = render_page(req, content_html, node, show_navbar, show_id)
-        req.response.set_data(html)
+    req.response.set_data(content_html if params.get("raw") else
+                          render_page(req, content_html, node, show_navbar, show_id))
     req.response.status_code = httpstatus.HTTP_OK
-    # ... Don't return a code because Athana overwrites the content if an http error code is returned from a handler.
-    # instead, req.response.status_code = ? can be used in the rendering code
 
 
 @_check_change_language_request

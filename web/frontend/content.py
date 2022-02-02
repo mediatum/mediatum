@@ -803,7 +803,7 @@ def render_content_occurences(node, req, paths):
     return html
 
 
-def render_content(node, req, render_paths=True, show_id=None):
+def render_content(node, req, render_paths):
     make_search_content = get_make_search_content_function(req.args)
 
     if render_paths and node is not None:
@@ -825,11 +825,11 @@ def render_content(node, req, render_paths=True, show_id=None):
 
     if isinstance(content_or_error, NodeNotAccessible):
         req.response.status_code = content_or_error.status
-        return render_content_error(content_or_error.error, lang(req))
+        return render_content_error(content_or_error.error, lang(req)), None
 
     if isinstance(content_or_error, StartpageNotAccessible):
         req.response.status_code = content_or_error.status
-        return render_startpage_error(node, lang(req))
+        return render_startpage_error(node, lang(req)), None
 
     content = content_or_error
     
@@ -843,11 +843,8 @@ def render_content(node, req, render_paths=True, show_id=None):
         styles = content.content_styles
         content_nav_html = render_content_nav(node, logo, styles, select_style_link, print_url, paths)
 
-
-    if isinstance(show_id, list) and hasattr(content, 'show_id'):
-        show_id.append(content.show_id)
-    content_html = content_nav_html + "\n" + content.html(req)
-    return content_html
+    return (u"{}\n{}".format(content_nav_html, content.html(req)),
+            content.show_id if hasattr(content,"show_id") else None)
 
 
 class CollectionLogo(object):

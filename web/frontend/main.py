@@ -180,11 +180,11 @@ def _display(req, show_navbar=True, render_paths=True, params=None):
     if node is not None and not node.has_read_access():
         node = None
 
-    show_id = []
     if req.args.get("disable_content"):
         content_html = u""
+        show_id = None
     else:
-        content_html = render_content(node, req, render_paths, show_id)
+        content_html, show_id = render_content(node, req, render_paths)
 
     if params.get("raw"):
         req.response.set_data(content_html)

@@ -489,8 +489,10 @@ def render_page(req, content_html, node=None, show_navbar=True, show_id=None):
     if node is None:
         node = rootnode
         container = rootnode
+        head_meta = ""
     else:
         container = node.get_container()
+        head_meta = _render_head_meta(q(Node).get(show_id) if show_id else node) or ""
 
     search_html = u""
     navtree_html = u""
@@ -519,8 +521,6 @@ def render_page(req, content_html, node=None, show_navbar=True, show_id=None):
             footer_right_items=rootnode.getCustomItems("footer_right"),
            ))
 
-    show_id = show_id or req.args.get("show_id")
-
     return theme.render_template("frame.j2.jade", dict(
             content=Markup(content_html),
             id=node.id,
@@ -530,6 +530,5 @@ def render_page(req, content_html, node=None, show_navbar=True, show_id=None):
             navtree=Markup(navtree_html),
             header=Markup(header_html),
             footer=Markup(footer_html),
-            google_scholar=_render_head_meta(q(Node).get(show_id)
-                                      if show_id else node) or "",
+            google_scholar=head_meta,
            ))

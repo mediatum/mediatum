@@ -805,44 +805,31 @@ def render_content_occurences(node, req, paths):
 
 def render_content(node, req, render_paths):
     make_search_content = get_make_search_content_function(req.args)
+    paths = (get_accessible_paths(node, q(Node).prefetch_attrs())
+                   if render_paths and node is not None else None)
+    content = (make_search_content(req, paths) if make_search_content else
+                                       make_node_content(node, req, paths))
 
-    if render_paths and node is not None:
-        paths = get_accessible_paths(node, q(Node).prefetch_attrs())
-    else:
-        paths = None
+    cache_duration = content.cache_duration
+    req.response.headers["Cache-Control"] = ("max-age={}".format(cache_duration)
+                                               if cache_duration else "no-cache")
 
-    if make_search_content is None:
-        content_or_error = make_node_content(node, req, paths)
-    else:
-        content_or_error = make_search_content(req, paths)
+    if isinstance(content, NodeNotAccessible):
+        req.response.status_code = content.status
+        return render_content_error(content.error, lang(req)), None
 
-    
-    cache_duration = content_or_error.cache_duration
-    if cache_duration:
-        req.response.headers["Cache-Control"] = "max-age=" + str(cache_duration)
-    else:
-        req.response.headers["Cache-Control"] = "no-cache"
-
-    if isinstance(content_or_error, NodeNotAccessible):
-        req.response.status_code = content_or_error.status
-        return render_content_error(content_or_error.error, lang(req)), None
-
-    if isinstance(content_or_error, StartpageNotAccessible):
-        req.response.status_code = content_or_error.status
+    if isinstance(content, StartpageNotAccessible):
+        req.response.status_code = content.status
         return render_startpage_error(node, lang(req)), None
 
-    content = content_or_error
-    
-    if "raw" in req.args:
-        content_nav_html = ""
-    else:
-        node = content.node
-        logo = content.logo
-        select_style_link = content.select_style_link
-        print_url = content.print_url
-        styles = content.content_styles
-        content_nav_html = render_content_nav(node, logo, styles, select_style_link, print_url, paths)
-
+    content_nav_html = "" if "raw" in req.args else render_content_nav(
+            content.node,
+            content.logo,
+            content.content_styles,
+            content.select_style_link,
+            content.print_url,
+            paths,
+           )
     return (u"{}\n{}".format(content_nav_html, content.html(req)),
             content.show_id if hasattr(content,"show_id") else None)
 

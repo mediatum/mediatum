@@ -33,6 +33,7 @@ from utils.strings import ensure_unicode_returned
 from utils.utils import getFormatedString
 from utils.compat import iteritems
 from web.frontend.search import simple_search, extended_search
+import web.frontend.search as _frontend_search
 from contenttypes.container import Container
 from mediatumtal import tal
 from schema.schema import Metadatatype
@@ -810,6 +811,8 @@ def render_content(node, req, render_paths):
                    if render_paths and node is not None else None)
     if not make_search_content:
         content = make_node_content(node, req, paths)
+    elif len(req.args.get("query", "").strip()) < 2:
+        content = _frontend_search.NoSearchResult(req.args.get("query", "").strip(), node, "simple")
     else:
         _postgres_search.set_session_timeout(config.getint('search.timeout_research', 120))
         content = make_search_content(req, paths)

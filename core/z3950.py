@@ -34,7 +34,7 @@ import schema as _schema
 logg = logging.getLogger(__name__)
 
 
-class async_chat (asyncore.dispatcher):
+class z3950_channel(asyncore.dispatcher):
 
     """This is an abstract class.  You must derive from this class, and add
     the two methods collect_incoming_data() and found_terminator()"""
@@ -49,6 +49,7 @@ class async_chat (asyncore.dispatcher):
         self.ac_out_buffer = ''
         self.producer_fifo = _collections.deque()
         asyncore.dispatcher.__init__(self, conn)
+        self.z3950_server = AsyncPyZ3950Server(conn, _ChannelInterface(self))
 
     def collect_incoming_data(self, data):
         raise NotImplementedError("must be implemented in subclass")
@@ -63,76 +64,17 @@ class async_chat (asyncore.dispatcher):
     def get_terminator(self):
         return self.terminator
 
-    # grab some more data from the socket,
-    # throw it to the collector method,
-    # check for the terminator,
-    # if found, transition to the next state.
-
     def handle_read(self):
-
+        data = '--- not read ---'
         try:
             data = self.recv(self.ac_in_buffer_size)
-        except socket.error, why:
+            logg.debug('received %i bytes of data: %r' % (len(data), data))
+            if data and self.connected:
+                self.z3950_server.handle_incoming_data(data)
+        except:
+            logg.exception('handle_read %i bytes of data: %r' % (len(data), data))
             self.handle_error()
-            return
-
-        self.ac_in_buffer = self.ac_in_buffer + data
-
-        # Continue to search for self.terminator in self.ac_in_buffer,
-        # while calling self.collect_incoming_data.  The while loop
-        # is necessary because we might read several data+terminator
-        # combos with a single recv(1024).
-
-        while self.ac_in_buffer:
-            lb = len(self.ac_in_buffer)
-            terminator = self.get_terminator()
-            if terminator is None or terminator == '':
-                # no terminator, collect it all
-                self.collect_incoming_data(self.ac_in_buffer)
-                self.ac_in_buffer = ''
-            elif isinstance(terminator, int):
-                # numeric terminator
-                n = terminator
-                if lb < n:
-                    self.collect_incoming_data(self.ac_in_buffer)
-                    self.ac_in_buffer = ''
-                    self.terminator = self.terminator - lb
-                else:
-                    self.collect_incoming_data(self.ac_in_buffer[:n])
-                    self.ac_in_buffer = self.ac_in_buffer[n:]
-                    self.terminator = 0
-                    self.found_terminator()
-            else:
-                # 3 cases:
-                # 1) end of buffer matches terminator exactly:
-                #    collect data, transition
-                # 2) end of buffer matches some prefix:
-                #    collect data to the prefix
-                # 3) end of buffer does not match any prefix:
-                #    collect data
-                terminator_len = len(terminator)
-                index = self.ac_in_buffer.find(terminator)
-                if index != -1:
-                    # we found the terminator
-                    if index > 0:
-                        # don't bother reporting the empty string (source of subtle bugs)
-                        self.collect_incoming_data(self.ac_in_buffer[:index])
-                    self.ac_in_buffer = self.ac_in_buffer[index + terminator_len:]
-                    # This does the Right Thing if the terminator is changed here.
-                    self.found_terminator()
-                else:
-                    # check for a prefix of the terminator
-                    index = find_prefix_at_end(self.ac_in_buffer, terminator)
-                    if index:
-                        if index != lb:
-                            # we found a prefix, collect up to the prefix
-                            self.collect_incoming_data(self.ac_in_buffer[:-index])
-                            self.ac_in_buffer = self.ac_in_buffer[-index:]
-                        break
-                    else:
-                        # no prefix, collect it all
-                        self.collect_incoming_data(self.ac_in_buffer)
-                        self.ac_in_buffer = ''
+            self.close()
 
     def handle_write(self):
         self.initiate_send()
@@ -149,8 +91,7 @@ class async_chat (asyncore.dispatcher):
         self.initiate_send()
 
     def readable(self):
-        "predicate for inclusion in the readable for select()"
-        return (len(self.ac_in_buffer) <= self.ac_in_buffer_size)
+        return 1
 
     def writable(self):
         "predicate for inclusion in the writable for select()"
@@ -580,30 +521,6 @@ class _ChannelInterface(object):
 
     def close(self):
         self._channel.close_when_done()
-
-
-class z3950_channel(async_chat):
-    ac_in_buffer_size = 4096
-    ac_out_buffer_size = 4096
-
-    def __init__(self, conn):
-        async_chat.__init__(self, conn)
-        self.z3950_server = AsyncPyZ3950Server(conn, _ChannelInterface(self))
-
-    def readable(self):
-        return 1  # always
-
-    def handle_read(self):
-        data = '--- not read ---'
-        try:
-            data = self.recv(self.ac_in_buffer_size)
-            logg.debug('received %i bytes of data: %r' % (len(data), data))
-            if data and self.connected:
-                self.z3950_server.handle_incoming_data(data)
-        except:
-            logg.exception('handle_read %i bytes of data: %r' % (len(data), data))
-            self.handle_error()
-            self.close()
 
 
 class z3950_server(asyncore.dispatcher):

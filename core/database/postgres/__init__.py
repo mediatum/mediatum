@@ -180,6 +180,8 @@ def build_accessfunc_arguments(user=None, ip=None, date=None, req=None):
 class MtQuery(Query):
 
     def node_offset0(self):
+        # offset0 is used to prevent the postgresql planner from using other (slower) scan
+        # methods than a Bitmap Index Scan
         from core import Node
         query = self.options(undefer("*")).offset(0).from_self()
         deferred_columns = (prop.key for prop in _class_mapper(Node).iterate_properties

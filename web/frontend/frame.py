@@ -484,25 +484,13 @@ def render_page(req, content_html, node=None, show_navbar=True, show_id=None):
     userlinks = UserLinks(user, req)
     language = lang(req)
     rootnode = get_collections_node()
+    theme = webconfig.theme
 
     if node is None:
         node = rootnode
         container = rootnode
     else:
         container = node.get_container()
-    
-    theme = webconfig.theme
-
-    front_lang = {
-        "name": config.languages,
-        "actlang": language
-    }
-    frame_context = {
-        "content": Markup(content_html),
-        "id": node.id,
-        "language": front_lang,
-        "show_navbar": show_navbar,
-    }
 
     search_html = u""
     navtree_html = u""
@@ -510,40 +498,38 @@ def render_page(req, content_html, node=None, show_navbar=True, show_id=None):
     if show_navbar and not req.args.get("disable_navbar"):
         if not req.args.get("disable_search"):
             search_html = render_search_box(container, language, req)
-
         if not req.args.get("disable_navtree"):
             navtree_html = render_navtree(language, node.id, user)
 
-    ctx_header = {
-        "user_name": user.getName(),
-        "userlinks": userlinks,
-        "header_items": rootnode.getCustomItems("header"),
-        "language": front_lang,
-        "show_language_switcher": (len(front_lang['name']) > 1)
-    }
-    header_html = theme.render_template("frame_header.j2.jade", ctx_header)
+    front_lang = dict(
+            actlang=language,
+            name=config.languages,
+           )
 
-    ctx_footer = {
-        "footer_left_items": rootnode.getCustomItems("footer_left"),
-        "footer_right_items": rootnode.getCustomItems("footer_right")
-    }
-    footer_html = theme.render_template("frame_footer.j2.jade", ctx_footer)
+    header_html = theme.render_template("frame_header.j2.jade", dict(
+            header_items=rootnode.getCustomItems("header"),
+            language=front_lang,
+            show_language_switcher=len(front_lang['name']) > 1,
+            user_name=user.getName(),
+            userlinks=userlinks,
+           ))
 
-    frame_context["search"] = Markup(search_html)
-    frame_context["navtree"] = Markup(navtree_html)
-    frame_context["header"] = Markup(header_html)
-    frame_context["footer"] = Markup(footer_html)
+    footer_html = theme.render_template("frame_footer.j2.jade", dict(
+            footer_left_items=rootnode.getCustomItems("footer_left"),
+            footer_right_items=rootnode.getCustomItems("footer_right"),
+           ))
 
-    if show_id and isinstance(show_id, list):
-        show_id = show_id[0]
-    else:
-        show_id = req.args.get("show_id")
-    if show_id:
-        shown_node = q(Node).get(show_id)
-    else:
-        shown_node = node
-    frame_context["google_scholar"] = _render_head_meta(shown_node) or ""
+    show_id = show_id or req.args.get("show_id")
 
-    html = theme.render_template("frame.j2.jade", frame_context)
-
-    return html
+    return theme.render_template("frame.j2.jade", dict(
+            content=Markup(content_html),
+            id=node.id,
+            language=front_lang,
+            show_navbar=show_navbar,
+            search=Markup(search_html),
+            navtree=Markup(navtree_html),
+            header=Markup(header_html),
+            footer=Markup(footer_html),
+            google_scholar=_render_head_meta(q(Node).get(show_id)
+                                      if show_id else node) or "",
+           ))

@@ -323,28 +323,28 @@ class m_field(Metatype):
             add_descriptions.append('<div style="display:none" id="div_%d" name="%s" description="%s"></div>' %
                                     (metafield.id, metafield.name, metafield.getDescription()))
 
-        v = {}
-        v["op"] = req.params.get("op", "")
-        v["pid"] = req.params.get("pid", "")
-        v["item"] = item
-        v["metafields"] = metafields
-        v["fields"] = fields
-        v["fieldtypes"] = metafieldtypes
-        v["dateoption"] = dateoption
-        v["t_attrs"] = attr
-        v["icons"] = {"externer Link": "/img/extlink.png", "Email": "/img/email.png"}
-        v["add_values"] = add_values
-        v["add_descriptions"] = add_descriptions
-        v["translate"] = translate
-        v["language"] = lang(req)
+        tal_ctx = dict(
+                op=req.params["op"],
+                pid=req.params.get("pid", ""),
+                item=item,
+                metafields=metafields,
+                fields=fields,
+                fieldtypes=metafieldtypes,
+                dateoption=dateoption,
+                t_attrs=attr,
+                icons={"externer Link": "/img/extlink.png", "Email": "/img/email.png"},
+                add_values=add_values,
+                add_descriptions=add_descriptions,
+                translate=translate,
+                language=lang(req),
+               )
+        assert tal_ctx["op"] in ("new", "edit")
 
         if pidnode and hasattr(pidnode, 'getMasktype') and pidnode.getMasktype() == "export":
-            v["mappings"] = []
-            for m in pidnode.getExportMapping():
-                v["mappings"].append(q(Node).get(m))
-            return _tal.processTAL(v, file="schema/mask/field.html", macro="metaeditor_" + pidnode.getMasktype(), request=req)
+            tal_ctx["mappings"] = tuple(q(Node).get(mapping) for mapping in pidnode.getExportMapping())
+            return _tal.processTAL(tal_ctx, file="schema/mask/field.html", macro="metaeditor_export", request=req)
         else:
-            return _tal.processTAL(v, file="schema/mask/field.html", macro="metaeditor", request=req)
+            return _tal.processTAL(tal_ctx, file="schema/mask/field.html", macro="metaeditor", request=req)
 
     @classmethod
     def isContainer(cls):

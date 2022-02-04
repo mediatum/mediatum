@@ -17,6 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import operator as _operator
 import re
 import sys
 
@@ -361,21 +362,16 @@ def view(req):
     order = getSortCol(req)
 
     # sorting
-    if order != "":
-        if int(order[0:1]) == 0:
-            mtypes.sort(lambda x, y: cmp(x.name.lower(), y.name.lower()))
-        elif int(order[0:1]) == 1:
-            mtypes.sort(lambda x, y: cmp(x.getLongName().lower(), y.getLongName().lower()))
-        elif int(order[0:1]) == 2:
-            mtypes.sort(lambda x, y: cmp(x.getDescription().lower(), y.getDescription().lower()))
-        elif int(order[0:1]) == 3:
-            mtypes.sort(lambda x, y: cmp(x.getActive(), y.getActive()))
-        elif int(order[0:1]) == 4:
-            mtypes.sort(lambda x, y: cmp(x.getDatatypeString().lower(), y.getDatatypeString().lower()))
-        if int(order[1:]) == 1:
-            mtypes.reverse()
+    if order:
+        mtypes.sort(reversed=int(order[1:])==1, key={
+            0:lambda mt:mt.name.lower(),
+            1:lambda mt:mt.getLongName().lower(),
+            2:lambda mt:mt.getDescription().lower(),
+            3:_operator.methodcaller("getActive"),
+            4:lambda mt:mt.getDatatypeString().lower(),
+           }[order[:1]])
     else:
-        mtypes.sort(lambda x, y: cmp(x.name.lower(), y.name.lower()))
+        mtypes.sort(key=lambda mt:mt.name.lower())
 
     v = getAdminStdVars(req)
     v["sortcol"] = pages.OrderColHeader(
@@ -431,7 +427,7 @@ def MetatypeDetail(req, id, err=0):
         v["original_name"] = req.params["mname_orig"]
     d = Data()
     v["datatypes"] = d.get_all_datatypes()
-    v["datatypes"].sort(lambda x, y: cmp(t(lang(req), x.__name__), t(lang(req), y.__name__)))
+    v["datatypes"].sort(key=lambda dt:t(lang(req), dt.__name__))
     v["metadatatype"] = metadatatype
     v["error"] = err
     v["bibtextypes"] = getAllBibTeXTypes()
@@ -463,7 +459,7 @@ def showInfo(req):
 def showFieldOverview(req):
     path = req.mediatum_contextfree_path[1:].split("/")
     fields = getFieldsForMeta(path[1])
-    fields.sort(lambda x, y: cmp(x.orderpos, y.orderpos))
+    fields.sort(key=_operator.attrgetter("orderpos"))
 
     v = {}
     v["metadatatype"] = getMetaType(path[1])
@@ -620,7 +616,7 @@ def showEditor(req):
             else:
                 # insert at special position
                 fields = editor.getMaskFields()
-                fields.all().sort(lambda x, y: cmp(x.orderpos, y.orderpos))
+                fields.all().sort(key=_operator.attrgetter("orderpos"))
                 for f in fields:
                     if f.orderpos >= q(Node).get(position).orderpos and f.id != item.id:
                         f.orderpos = f.orderpos + 1
@@ -680,7 +676,7 @@ def showEditor(req):
             for field in pidnode.getChildren():
                 if field.getType().getName() == "maskitem" and field.id != pidnode.id:
                     fields.append(field)
-            fields.sort(lambda x, y: cmp(x.orderpos, y.orderpos))
+            fields.sort(key=_operator.attrgetter("orderpos"))
             for f in fields:
                 if f.orderpos >= q(Node).get(position).orderpos and f.id != item.id:
                     f.orderpos = f.orderpos + 1

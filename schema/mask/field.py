@@ -21,6 +21,7 @@ import operator as _operator
 
 import mediatumtal.tal as _tal
 
+import utils.utils as _utils_utils
 from utils.utils import formatLongText
 from utils.strings import ensure_unicode
 
@@ -273,16 +274,16 @@ class m_field(Metatype):
         """ editor mask for field definition """
         attr = {}
         fields = []
-        pidnode = None
 
-        if "pid" not in req.params.keys():
-            for p in item.getParents():
-                try:
+        if "pid" in req.values:
+            pidnode = None
+        else:
+            for pidnode in item.getParents():
+                with _utils_utils.suppress(Exception,warn=False):
                     if p.getMasktype() == "export":
-                        pidnode = p
                         break
-                except:
-                    continue
+            else:
+                pidnode = None
 
         metadatatype = req.params.get("metadatatype")
         for t in metadatatype.getDatatypes():

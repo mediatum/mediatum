@@ -293,16 +293,9 @@ class m_field(Metatype):
 
         if req.params.get("op", "") == "new":
             pidnode = q(Node).get(req.params.get("pid"))
-            if hasattr(pidnode, 'getMasktype') and pidnode.getMasktype() in ("vgroup", "hgroup"):
-                # XXX: getAllChildren does not exist anymore, is this dead code?
-                for field in pidnode.getAllChildren():
-                    if field.getType().getName() == "maskitem" and field.id != pidnode.id:
-                        fields.append(field)
-            else:
-                for m in metadatatype.getMasks():
-                    if ustr(m.id) == ustr(req.params.get("pid")):
-                        for field in m.getChildren():
-                            fields.append(field)
+            for m in metadatatype.getMasks():
+                if ustr(m.id) == ustr(req.params.get("pid")):
+                    fields.extend(m.getChildren())
 
         fields.sort(key=_operator.methodcaller("getOrderPos"))
         add_values = []

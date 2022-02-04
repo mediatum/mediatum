@@ -25,7 +25,7 @@ import utils.utils as _utils_utils
 from utils.utils import formatLongText
 from utils.strings import ensure_unicode
 
-from schema.schema import getMetaFieldTypeNames, getMetaFieldTypes, getMetadataType, VIEW_DATA_ONLY, VIEW_SUB_ELEMENT, VIEW_HIDE_EMPTY, VIEW_DATA_EXPORT, dateoption
+from schema.schema import getMetaFieldTypeNames, getMetadataType, VIEW_DATA_ONLY, VIEW_SUB_ELEMENT, VIEW_HIDE_EMPTY, VIEW_DATA_EXPORT
 from core.translation import lang, translate
 from core.metatype import Metatype, Context
 from core import db, Node
@@ -272,7 +272,6 @@ class m_field(Metatype):
 
     def getMetaEditor(self, item, req):
         """ editor mask for field definition """
-        attr = {}
         fields = []
 
         if "pid" in req.values:
@@ -286,11 +285,6 @@ class m_field(Metatype):
                 pidnode = None
 
         metadatatype = req.params.get("metadatatype")
-        for t in metadatatype.getDatatypes():
-            content_class = Node.get_class_for_typestring(t)
-            node = content_class(name=u'')
-            attr.update(node.getTechnAttributes())
-
         if req.params.get("op", "") == "new":
             pidnode = q(Node).get(req.params.get("pid"))
             for m in metadatatype.getMasks():
@@ -315,9 +309,6 @@ class m_field(Metatype):
         metafields = metadatatype.getMetaFields()
         metafields.sort(key=lambda mf:mf.getName().lower())
 
-        metafieldtypes = getMetaFieldTypes().values()
-        metafieldtypes.sort(key=lambda mf:translate(mf.getName(), request=req).lower())
-
         add_descriptions = []
         for metafield in metafields:
             add_descriptions.append('<div style="display:none" id="div_%d" name="%s" description="%s"></div>' %
@@ -329,10 +320,6 @@ class m_field(Metatype):
                 item=item,
                 metafields=metafields,
                 fields=fields,
-                fieldtypes=metafieldtypes,
-                dateoption=dateoption,
-                t_attrs=attr,
-                icons={"externer Link": "/img/extlink.png", "Email": "/img/email.png"},
                 add_values=add_values,
                 add_descriptions=add_descriptions,
                 translate=translate,

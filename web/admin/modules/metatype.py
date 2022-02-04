@@ -573,19 +573,6 @@ def showEditor(req):
                     req.values["fieldtype"],
                     req.values["attribute"]
                 )
-            else:
-                f = q(Node).get(long(req.params.get("field")))
-
-            field = item.children
-            try:
-                field = list(field)[0]
-                if ustr(field.id) != req.params.get("field"):
-                    item.children.remove(field)
-                    item.children.append(f)
-                db.session.commit()
-            except:
-                logg.exception("exception in showEditor / saveedit, ignore")
-                pass
 
         elif req.params.get("op", "") == "new":
             if "mappingfield" in req.params:

@@ -27,16 +27,9 @@
                         <option tal:attributes="value python:metafield.id" tal:content="python:u'{} ({})'.format(metafield.getName(), metafield.getFieldtype())"/>
                     </tal:block>
                 </select>
-                <span tal:condition="python:len(metafields)==0" style="color:red" i18n:translate="mask_editor_no_fields">TEXT</span>
+                <span tal:condition="python:not metafields" style="color:red" i18n:translate="mask_editor_no_fields">TEXT</span>
         </tal:block>
-        <tal:block tal:condition="python:op=='edit'">
-            <select name="field" style="width:250px;" id="newfieldtype">
-                <tal:block tal:repeat="metafield metafields">
-                    <option tal:condition="python:item.getField() and item.getField().id==metafield.id and item.getField()!=None" tal:attributes="value python:metafield.id" tal:content="python:u'{} ({})'.format(metafield.getName(), metafield.getFieldtype())" selected="selected"/>
-                    <option tal:condition="python:(not item.getField() or item.getField().id!=metafield.id) and item.getField()!=None" tal:attributes="value python:metafield.id" tal:content="python:u'{} ({})'.format(metafield.getName(), metafield.getFieldtype())"/>
-                </tal:block>
-            </select>
-        </tal:block>
+        <tal:block tal:condition="python:op=='edit'" tal:content="python:u'{} ({})'.format(field.getName(), field.getFieldtype())"> </tal:block>
         <br/>
         <div class="label" i18n:translate="mask_edit_help">TEXT</div>
         <textarea id="edit_help" tal:content="python:item.get('description')" name="description" rows="4" style="width:500px"/>
@@ -112,12 +105,14 @@
         </fieldset>
         <br/>
         <div i18n:translate="mask_edit_field" class="label">TEXT<span class="required">*</span></div>
-        <select name="attribute" id="attribute" style="width:250px;">
-            <tal:block tal:repeat="field python:metafields">
-                <option tal:content="python:field.getName()" tal:attributes="value python:field.id; selected python:'selected' if item.get('attribute')==str(field.id) else None"/>
-            </tal:block>
-        </select>
-        
+        <tal:block tal:condition="python:op=='new'">
+            <select name="attribute" id="attribute" style="width:250px;">
+                <tal:block tal:repeat="field metafields">
+                    <option tal:content="python:field.getName()" tal:attributes="value python:field.id; selected python:'selected' if item.get('attribute')==str(field.id) else None"/>
+                </tal:block>
+            </select>
+        </tal:block>
+        <tal:block tal:condition="python:op=='edit'" tal:content="python:u'{} ({})'.format(field.getName(), field.getFieldtype())"> </tal:block>
         <input tal:attributes="value python:item.id" type="hidden" name="id"/>
         <input tal:attributes="value pid" type="hidden" name="pid"/>
         <input type="hidden" name="type" value="field"/>

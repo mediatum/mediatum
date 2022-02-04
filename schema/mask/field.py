@@ -300,12 +300,16 @@ class m_field(Metatype):
                 op=req.params["op"],
                 pid=req.params.get("pid", ""),
                 item=item,
-                metafields=metafields,
                 fields=fields,
                 translate=translate,
                 language=lang(req),
                )
-        assert tal_ctx["op"] in ("new", "edit")
+        if tal_ctx["op"]=="new":
+            tal_ctx["metafields"] = metafields
+        elif tal_ctx["op"]=="edit":
+            tal_ctx["field"] = item.getField()
+        else:
+            raise AssertionError("unknown op")
 
         if pidnode and hasattr(pidnode, 'getMasktype') and pidnode.getMasktype() == "export":
             tal_ctx["mappings"] = tuple(q(Node).get(mapping) for mapping in pidnode.getExportMapping())

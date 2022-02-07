@@ -99,7 +99,20 @@
                     </td>
                     <td>
                         <input tal:attributes="name python:u'edit_{}'.format(metadatatype.getName())" i18n:attributes="title admin_meta_edit_title" type="image" src="/img/edit.png"/>
-                        &nbsp;&nbsp;<input tal:attributes="name python:u'delete_{}'.format(metadatatype.getName()); onclick python:u'return questionDelName(\'{} ({})\')'.format(metadatatype.getLongName(), metadatatype.getName())" i18n:attributes="title admin_meta_delete_title" type="image" src="/img/delete.png"/>
+                        &nbsp;&nbsp;
+                        <input
+                         tal:condition="python:metadatatype.name not in used_by"
+                         tal:attributes="name python:u'delete_{}'.format(metadatatype.getName()); onclick python:u'return questionDelName(\'{} ({})\')'.format(metadatatype.getLongName(), metadatatype.getName())"
+                         i18n:attributes="title admin_meta_delete_title"
+                         type="image"
+                         src="/img/delete.png"
+                         />
+                        <input
+                         tal:condition="python:metadatatype.name in used_by"
+                         tal:attributes="onclick python:u'alert(\'{}\')'.format(translate('admin_meta_used_title', language).format(used_by[metadatatype.name]).replace('\n','\\n')); title python:translate('admin_meta_used_title', language).format(used_by[metadatatype.name])"
+                         type="image"
+                         src="/img/archive.png"
+                         />
                     </td>
                 </tr>
                 </tal:block>

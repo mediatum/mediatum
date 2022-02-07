@@ -28,6 +28,9 @@ msgstr "Metadatenschema bearbeiten"
 msgid "admin_meta_delete_title"
 msgstr "Metadatenschema löschen"
 
+msgid "admin_meta_used_title"
+msgstr "Metadatenschema wird von {} Knoten benutzt"
+
 msgid "admin_meta_footer"
 msgstr "${number} Metadatenschemata"
 

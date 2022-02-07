@@ -27,7 +27,9 @@ from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilte
 from schema.schema import getMetaType, getMetaFieldTypeNames, getMetaField, getFieldsForMeta, getMetadataType, dateoption, requiredoption,\
     fieldoption, Metadatatype
 from core.translation import lang, t
+import core.translation as _translation
 from schema.schema import Metafield
+import schema.schema as _schema
 from core import Node
 from core import db
 
@@ -42,6 +44,10 @@ logg = logging.getLogger(__name__)
 def showDetailList(req, id):
     metadatatype = getMetaType(id)
     metafields = metadatatype.getMetaFields()
+    metafields_dependencies = _schema._get_metafields_dependencies()
+    used_by = {metafield.id: u"".join(u"\n{schema_name}: {mask_name}: {metafield_name}".format(**md._asdict())
+                                         for md in metafields_dependencies if md.metafield_id == metafield.id)
+               for metafield in metafields}
 
     order = getSortCol(req)
     actfilter = getFilter(req)
@@ -104,6 +110,7 @@ def showDetailList(req, id):
         ["", t(lang(req), "admin_metafield_col_1"), t(lang(req), "admin_metafield_col_2"), t(lang(req), "admin_metafield_col_3")])
     v["metadatatype"] = metadatatype
     v["metafields"] = metafields
+    v["used_by"] = used_by
     v["fieldoptions"] = fieldoption
     v["fieldtypes"] = getMetaFieldTypeNames()
     v["pages"] = pages
@@ -112,6 +119,8 @@ def showDetailList(req, id):
 
     v["actpage"] = req.params.get("actpage")
     v["csrf"] = req.csrf_token.current_token
+    v["translate"] = _translation.translate
+    v["language"] = lang(req)
     if ustr(req.params.get("page", "")).isdigit():
         v["actpage"] = req.params.get("page")
 

@@ -82,11 +82,14 @@ in let
       unicodecsv
       werkzeug
     ;
+    graphicsmagick = pkgs.graphicsmagick.overrideAttrs
+      (oldAttrs: oldAttrs // {
+        buildInputs = oldAttrs.buildInputs ++ [ pkgs.lcms2 ];
+      });
     inherit (pkgs)
       ffmpeg
       ghostscript
       glibcLocales
-      graphicsmagick
       graphviz-nox
       icu
       pdftk

@@ -1592,8 +1592,6 @@ function rct() {
 
 <tal:block metal:define-macro="itemlist">
     <div id="items" >
-        <tal:block tal:repeat="item nodes">
-            <a href="#" tal:attributes="onclick python:u'return Thumb2Window({})'.format(item.id)"><img tal:attributes="src python:u'/thumbs/{}'.format(item.id)" style="width:80px;"/></a>
-        </tal:block>
+        <span i18n:translate="edit_meta_count_of_nodes"><span tal:content="python:unicode(len(nodes))" i18n:name="number"/> </span>
     </div>
 </tal:block>

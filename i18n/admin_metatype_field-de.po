@@ -117,5 +117,5 @@ msgstr "Suchfeld"
 msgid "metafield_option2"
 msgstr "Sortierfeld"
 
-msgid "admin_metafield_error_4"
+msgid "admin_metafield_error_badchars"
 msgstr "Der Name darf ausschliesslich aus den Zeichen a bis z, A bis Z, 0 bis 9 sowie '-', '_' und '.' bestehen!"

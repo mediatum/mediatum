@@ -115,5 +115,5 @@ msgstr "search field"
 msgid "metafield_option2"
 msgstr "sort field"
 
-msgid "admin_metafield_error_4"
+msgid "admin_metafield_error_badchars"
 msgstr "The name may only consist of the characters a to z, A to Z, 0 to 9 as well as '-', '_' and '.' !"

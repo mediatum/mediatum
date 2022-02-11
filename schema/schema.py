@@ -1446,15 +1446,15 @@ class Maskitem(Node):
         self.set("separator", value)
 
 
-mytypes = {}
+_metatypes = {}
 
 
 def _metatype_class(cls):
     name = cls.get_name4schema()
     logg.debug("loading metatype class %s", name)
     instance = cls()
-    assert name not in mytypes
-    mytypes[name] = instance
+    assert name not in _metatypes
+    _metatypes[name] = instance
     if hasattr(instance, "getLabels"):
         translation.addLabels(instance.getLabels())
 
@@ -1479,27 +1479,24 @@ def init():
         load_metatype_module(config.basedir, pkg_dir)
 
 
-def getMetadataType(mtype):
-    if mtype in mytypes:
-        return mytypes[mtype]
-    else:
-        raise LookupError("No such metatype: " + mtype)
+def getMetadataType(name):
+    try:
+        return _metatypes[name]
+    except KeyError:
+        raise LookupError("No such metatype: " + name)
 
 
 def getMetaFieldTypeNames():
-    ret = {}
-    for key in mytypes.keys():
-        if "meta" in ustr(mytypes[key]):
-            ret[key] = "fieldtype_" + key
-    return ret
+    return {
+            name:"fieldtype_{}".format(name)
+            for name,instance in _metatypes.iteritems()
+            if "meta" in ustr(instance)
+           }
 
 
 def getMetaFieldTypes():
-    ret = {}
-    for t in mytypes:
-        if getMetadataType(t).isFieldType():
-            ret[t] = getMetadataType(t)
-    return ret
+    ret = {name:getMetadataType(name) for name in _metatypes}
+    return {name:type_ for name,type_ in _metatypes.iteritems() if type_.isFieldType()}
 
 """ return fields based on the schema name """
 

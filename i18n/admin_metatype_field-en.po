@@ -52,9 +52,6 @@ msgstr "Create new field for scheme '${name}'"
 msgid "admin_metafield_edit_header"
 msgstr "Edit '${field}' of scheme '${name}'"
 
-msgid "admin_metafield_error_1"
-msgstr "Name already assigned for this scheme."
-
 msgid "admin_metafield_name"
 msgstr "Name"
 
@@ -120,7 +117,3 @@ msgstr "sort field"
 
 msgid "admin_metafield_error_4"
 msgstr "The name may only consist of the characters a to z, A to Z, 0 to 9 as well as '-', '_' and '.' !"
-
-msgid "admin_metafield_error_2"
-msgstr "The name may only consist of the characters a to z, A to Z, 0 to 9 as well as '-', '_' and '.' !"
-

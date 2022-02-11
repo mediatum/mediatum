@@ -53,9 +53,6 @@ msgstr "Neues Metadatenfeld im Schema '${name}' erstellen"
 msgid "admin_metafield_edit_header"
 msgstr "Metadatenfeld '${field}' des Metadatenschemas '${name}' bearbeiten"
 
-msgid "admin_metafield_error_1"
-msgstr "Ein Metadatenfeld mit gleichem Namen ist bereits für dieses Metadatenschema vorhanden."
-
 msgid "admin_metafield_name"
 msgstr "Name"
 
@@ -121,7 +118,4 @@ msgid "metafield_option2"
 msgstr "Sortierfeld"
 
 msgid "admin_metafield_error_4"
-msgstr "Der Name darf ausschliesslich aus den Zeichen a bis z, A bis Z, 0 bis 9 sowie '-', '_' und '.' bestehen!"
-
-msgid "admin_metafield_error_2"
 msgstr "Der Name darf ausschliesslich aus den Zeichen a bis z, A bis Z, 0 bis 9 sowie '-', '_' und '.' bestehen!"

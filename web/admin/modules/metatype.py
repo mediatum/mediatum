@@ -209,12 +209,11 @@ def validate(req, op):
 
             if existMetaField(req.params.get("parent"), req.params.get("mname")) and \
                     (req.params.get("form_op", "")  == "save_newdetail" or req.params.get("mname") != req.params.get("mname_orig")):
-                return FieldDetail(req, err=3)  # field still existing
+                return FieldDetail(req, err=2)  # field already existing
             elif req.params.get("mname", "") == "" or req.params.get("mlabel", "") == "":
-                return FieldDetail(req, err=1)
+                return FieldDetail(req, err=1)  # mandatory field not set
             elif not checkString(req.params.get("mname", "")):
-                # if the name contains wrong characters
-                return FieldDetail(req, err=4)
+                return FieldDetail(req, err=4)  # bad name / forbidden characters
 
             fieldvalue = "{}_value".format(req.params.get("mtype", ""))
             if fieldvalue in req.params:

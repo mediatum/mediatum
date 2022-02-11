@@ -23,9 +23,15 @@ import inspect
 import logging
 import mediatumtal.tal as _tal
 
+import utils.utils as _utils_utils
 from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter
-from schema.schema import getMetaType, getMetaFieldTypeNames, getMetaField, getFieldsForMeta, getMetadataType, dateoption, requiredoption,\
-    fieldoption, Metadatatype
+from schema.schema import Metadatatype
+from schema.schema import fieldoption
+from schema.schema import getFieldsForMeta
+from schema.schema import getMetaField
+from schema.schema import getMetaFieldTypeNames
+from schema.schema import getMetaType
+from schema.schema import getMetadataType
 from core.translation import lang, t
 import core.translation as _translation
 from schema.schema import Metafield
@@ -130,30 +136,17 @@ def showDetailList(req, id):
 """ form for field of given metadatatype (edit/new) """
 
 
-def FieldDetail(req, name=None, err=None):
-    pid = req.params.get("parent")
-    if name is None:
-        name = req.params.get("orig_name", "")
-
-    if (not err) and name == "":
-        # new field
-        field = Metafield(u"")
-        db.session.commit()
-
-    elif name != "":
-        # edit field
-        field = q(Metadatatype).get(pid).children.filter_by(name=name, type=u'metafield').scalar()
-
-    else:
-        # error filling values
+def FieldDetail(req, name=None, error=None):
+    name = name or req.params.get("orig_name", "")
+    if name != "":  # edit field, irrespective of error
+        field = q(Metadatatype).get(req.params.get("parent")).children
+        field = field.filter_by(name=name, type=u'metafield').scalar()
+    elif error:  # new field, with error filling values
         fieldvalue = ""
         if req.params.get('mtype', '') + "_value" in req.params.keys():
             fieldvalue = ustr(req.params[req.params.get('mtype', '') + "_value"])
 
-        if (req.params.get("mname") == ""):
-            field = Metafield(req.params.get("orig_name"))
-        else:
-            field = Metafield(req.params.get("mname"))
+        field = Metafield(req.params.get("mname") or req.params.get("orig_name"))
         field.setLabel(req.params.get("mlabel"))
         field.setOrderPos(req.params.get("orderpos"))
         field.setFieldtype(req.params.get("mtype"))
@@ -161,52 +154,40 @@ def FieldDetail(req, name=None, err=None):
         field.setValues(fieldvalue)
         field.setDescription(req.params.get("mdescription"))
         db.session.commit()
+    else:  # new field, no error (yet)
+        field = Metafield(u"")
+        db.session.commit()
 
-    attr = {}
-    metadatatype = getMetaType(pid)
-    for t in metadatatype.getDatatypes():
-        content_class = Node.get_class_for_typestring(t)
-        node = content_class(name=u'')
-        try:
-            attr.update(node.getTechnAttributes())
-        except AttributeError:
-            logg.exception("attribute error in FieldDetail, continue")
-            continue
+    metadatatype = getMetaType(req.params.get("parent"))
+    tal_ctx = getAdminStdVars(req)
+    tal_ctx.update(
+            actpage=req.params.get("actpage"),
+            adminfields=[],
+            csrf=req.csrf_token.current_token,
+            error=error,
+            fieldoptions=fieldoption,
+            fieldtypes=getMetaFieldTypeNames(),
+            filtertype=req.params.get("filtertype", ""),
+            metadatatype=metadatatype,
+            metafield=field,
+            metafields={fields.name:fields for fields in getFieldsForMeta(req.params.get("parent"))},
+            valuelist=field.getValueList(),
+           )
 
-    metafields = {}
-    for fields in getFieldsForMeta(pid):
-        metafields[fields.name] = fields
-
-    v = getAdminStdVars(req)
-    v["metadatatype"] = metadatatype
-    v["metafield"] = field
-    v["error"] = err
-    v["fieldtypes"] = getMetaFieldTypeNames()
-    v["dateoptions"] = dateoption
-    v["datatypes"] = attr
-    v["requiredoptions"] = requiredoption
-    v["fieldoptions"] = fieldoption
-    v["metafields"] = metafields
-    v["filtertype"] = req.params.get("filtertype", "")
-    v["actpage"] = req.params.get("actpage")
-
-    v["icons"] = {"externer Link": "/img/extlink.png", "Email": "/img/email.png"}
-    v["url_targets"] = {"selbes Fenster": "same", "neues Fenster": "_blank"}
-    v["valuelist"] = ("", "", "", "")
     if field.getFieldtype() == "url":
-        v["valuelist"] = field.getValueList()
-        while len(v["valuelist"]) != 4:
-            v["valuelist"].append("")
-    else:
-        v["valuelist"] = field.getValueList()
+        tal_ctx["valuelist"].extend(("",)*4)
+        tal_ctx["valuelist"] = tal_ctx["valuelist"][:4]
 
-    v["adminfields"] = []
-    v["csrf"] = req.csrf_token.current_token
-    for t in getMetaFieldTypeNames():
-        v["adminfields"].append(getMetadataType(t).get_metafieldeditor_html(
-                field if field.id else u"",
-                metadatatype,
-                lang(req),
-               ))
+    tal_ctx["adminfields"].extend(getMetadataType(t).get_metafieldeditor_html(
+            field if field.id else u"",
+            metadatatype,
+            lang(req),
+           ) for t in getMetaFieldTypeNames())
+
     db.session.commit()
-    return _tal.processTAL(v, file="web/admin/modules/metatype_field.html", macro="modify_field", request=req)
+    return _tal.processTAL(
+            tal_ctx,
+            file="web/admin/modules/metatype_field.html",
+            macro="modify_field",
+            request=req,
+           )

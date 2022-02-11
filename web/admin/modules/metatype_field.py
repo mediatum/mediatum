@@ -130,26 +130,25 @@ def showDetailList(req, id):
 """ form for field of given metadatatype (edit/new) """
 
 
-def FieldDetail(req, pid, id, err=0):
-    _option = ""
-    for key in req.params.keys():
-        if key.startswith("option_"):
-            _option += key[7]
+def FieldDetail(req, name=None, err=0):
+    pid = req.params.get("parent")
+    if name is None:
+        name = req.params.get("orig_name", "")
 
-    if err == 0 and id == "":
+    if err == 0 and name == "":
         # new field
         field = Metafield(u"")
         db.session.commit()
 
-    elif id != "":
+    elif name != "":
         # edit field
-        field = q(Metadatatype).get(pid).children.filter_by(name=id, type=u'metafield').scalar()
+        field = q(Metadatatype).get(pid).children.filter_by(name=name, type=u'metafield').scalar()
 
     else:
         # error filling values
-        _fieldvalue = ""
+        fieldvalue = ""
         if req.params.get('mtype', '') + "_value" in req.params.keys():
-            _fieldvalue = ustr(req.params[req.params.get('mtype', '') + "_value"])
+            fieldvalue = ustr(req.params[req.params.get('mtype', '') + "_value"])
 
         if (req.params.get("mname") == ""):
             field = Metafield(req.params.get("orig_name"))
@@ -158,8 +157,8 @@ def FieldDetail(req, pid, id, err=0):
         field.setLabel(req.params.get("mlabel"))
         field.setOrderPos(req.params.get("orderpos"))
         field.setFieldtype(req.params.get("mtype"))
-        field.setOption(_option)
-        field.setValues(_fieldvalue)
+        field.setOption("".join(key[7] for key in req.params if key.startswith("option_")))
+        field.setValues(fieldvalue)
         field.setDescription(req.params.get("mdescription"))
         db.session.commit()
 

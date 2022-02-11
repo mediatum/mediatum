@@ -181,11 +181,11 @@ def validate(req, op):
         for key in req.params.keys():
             # create new meta field
             if key.startswith("newdetail_"):
-                return FieldDetail(req, req.params.get("parent"), "")
+                return FieldDetail(req, "")
 
             # edit meta field
             elif key.startswith("editdetail_"):
-                return FieldDetail(req, req.params.get("parent"), key[11:-2])
+                return FieldDetail(req, key[11:-2])
 
             # delete metafield: key[13:-2] = pid | n
             elif key.startswith("deletedetail_"):
@@ -209,12 +209,12 @@ def validate(req, op):
 
             if existMetaField(req.params.get("parent"), req.params.get("mname")) and \
                     (req.params.get("form_op", "")  == "save_newdetail" or req.params.get("mname") != req.params.get("mname_orig")):
-                return FieldDetail(req, req.params.get("parent"), req.params.get("orig_name", ""), 3)  # field still existing
+                return FieldDetail(req, err=3)  # field still existing
             elif req.params.get("mname", "") == "" or req.params.get("mlabel", "") == "":
-                return FieldDetail(req, req.params.get("parent"), req.params.get("orig_name", ""), 1)
+                return FieldDetail(req, err=1)
             elif not checkString(req.params.get("mname", "")):
                 # if the name contains wrong characters
-                return FieldDetail(req, req.params.get("parent"), req.params.get("orig_name", ""), 4)
+                return FieldDetail(req, err=4)
 
             fieldvalue = "{}_value".format(req.params.get("mtype", ""))
             if fieldvalue in req.params:

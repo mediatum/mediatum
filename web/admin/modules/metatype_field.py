@@ -130,12 +130,12 @@ def showDetailList(req, id):
 """ form for field of given metadatatype (edit/new) """
 
 
-def FieldDetail(req, name=None, err=0):
+def FieldDetail(req, name=None, err=None):
     pid = req.params.get("parent")
     if name is None:
         name = req.params.get("orig_name", "")
 
-    if err == 0 and name == "":
+    if (not err) and name == "":
         # new field
         field = Metafield(u"")
         db.session.commit()

@@ -174,11 +174,9 @@
                     <h3 tal:condition="python:id!=''" i18n:translate="admin_metafield_edit_header">TEXT '<span tal:content="id" i18n:name="field"/>' TEXT '<span tal:content="python:metadatatype.name" i18n:name="name"/>' </h3>
                 </td>
             </tr>
-            <tr tal:condition="python:error>0">
+            <tr tal:condition="python:error">
                 <td colspan="2">
-                    <p tal:condition="python:error==1" i18n:translate="admin_mandatory_error" class="error">TEXT</p>
-                    <p tal:condition="python:error==2" i18n:translate="admin_duplicate_error" class="error">TEXT</p>
-                    <p tal:condition="python:error==4" i18n:translate="admin_metafield_error_badchars" class="error">TEXT</p>
+                    <p tal:content="error" i18n:translate="" class="error"> </p>
                 </td>
             </tr>
             <tr>

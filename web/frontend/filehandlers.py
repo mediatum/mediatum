@@ -37,13 +37,13 @@ _webroots = []
 
 def _send_thumbnail(thumb_type, req):
     try:
-        nid = node_id_from_req_path(req)
+        nid = node_id_from_req_path(req.mediatum_contextfree_path)
     except ValueError:
         req.response.status_code = 400
         return 400
 
 
-    version_id = version_id_from_req(req)
+    version_id = version_id_from_req(req.args)
 
     node_or_version = get_node_or_version(nid, version_id, Data)
 
@@ -109,12 +109,12 @@ send_thumbnail2 = partial(_send_thumbnail, u"presentation")
 
 def _send_file_with_type(filetype, mimetype, req, checkonly=False):
     try:
-        nid = node_id_from_req_path(req)
+        nid = node_id_from_req_path(req.mediatum_contextfree_path)
     except ValueError:
         req.response.status_code = 400
         return 400
 
-    version_id = version_id_from_req(req)
+    version_id = version_id_from_req(req.args)
     node = get_node_or_version(nid, version_id, Content)
 
     if node is None or not node.has_data_access():
@@ -159,7 +159,7 @@ def send_image(req):
         req.response.status_code = 404
         return 400
 
-    version_id = version_id_from_req(req)
+    version_id = version_id_from_req(req.args)
 
     node = get_node_or_version(nid, version_id, Content)
 
@@ -216,12 +216,12 @@ def send_image(req):
 
 def send_original_file(req):
     try:
-        nid = node_id_from_req_path(req)
+        nid = node_id_from_req_path(req.mediatum_contextfree_path)
     except ValueError:
         req.response.status_code = 400
         return 400
 
-    version_id = version_id_from_req(req)
+    version_id = version_id_from_req(req.args)
 
     node = get_node_or_version(nid, version_id, Data)
 
@@ -252,7 +252,7 @@ def send_file(req):
         req.response.status_code = 400
         return 400
 
-    version_id = version_id_from_req(req)
+    version_id = version_id_from_req(req.args)
 
     node = get_node_or_version(nid, version_id)
 
@@ -323,7 +323,7 @@ def send_attfile(req):
         req.response.status_code = 404
         return 400
 
-    version_id = version_id_from_req(req)
+    version_id = version_id_from_req(req.args)
 
     node = get_node_or_version(nid, version_id, Data)
 
@@ -362,7 +362,7 @@ def send_attfile(req):
 
 def fetch_archived(req):
     try:
-        nid = node_id_from_req_path(req)
+        nid = node_id_from_req_path(req.mediatum_contextfree_path)
     except ValueError:
         req.response.status_code = 400
         return 400

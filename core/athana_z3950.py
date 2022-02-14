@@ -460,6 +460,9 @@ def search_nodes(query, mapping_prefix='Z3950_search_'):
         node = _core.db.query(_core.Node).get(node_id)
         return node
 
+    def filter_dbquery_results(dbquery):
+        return dbquery.filter_read_access(user=guest)
+
     mapping_nodes = _core.db.query(_schema.mapping.Mapping).filter(_schema.mapping.Mapping.name.startswith(mapping_prefix))
     roots_and_mappings = [(get_root_for_mapping(m), m) for m in mapping_nodes]
 
@@ -491,8 +494,7 @@ def search_nodes(query, mapping_prefix='Z3950_search_'):
             logg.info('unable to map query: [%r] using mapping %s', query, field_mapping)
             continue
         logg.info('executing query for node %s: %s', root_node.id, query_string)
-        node_query, subtree = root_node.search(searchtree, search_languages)
-        for n in node_query.filter_read_access(user=guest).filter(_core.Node.id.in_(subtree)):
+        for n in root_node.search(searchtree, search_languages, filter_dbquery=filter_dbquery_results):
             node_ids.append(n.id)
 
     # use a round-robin algorithm to merge the separate query results

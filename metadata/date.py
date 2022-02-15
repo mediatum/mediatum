@@ -104,11 +104,12 @@ class m_date(Metatype):
         return format_date(d, format='%Y-%m-%dT%H:%M:%S')
 
     def get_metafieldeditor_html(self, field, metadatatype, language):
-        try:
-            value = field.getValues()
-        except AttributeError:
-            value = u""
-        return tal.getTAL("metadata/date.html", {"value": value, "dateoption": dateoption}, macro="maskeditor", language=language)
+        return tal.getTAL(
+            "metadata/date.html",
+            dict(value=field.getValues(), dateoption=dateoption),
+            macro="maskeditor",
+            language=language,
+        )
 
     def getName(self):
         return "fieldtype_date"

@@ -147,12 +147,9 @@ class m_dlist(Metatype):
         return (metafield.getLabel(), value)
 
     def get_metafieldeditor_html(self, field, metadatatype, language):
-        try:
-            value = field.getValues().split("\r\n")
-        except AttributeError:
-            value = []
-        while len(value) < 5:
-            value.append("")  # url(source), name variable, value variable
+        value = field.getValues().split("\r\n")
+        value.extend(("",)*5)
+        value = value[:5] # url(source), name variable, value variable
         return tal.getTAL("metadata/dlist.html", {"value": value,
                                                   "types": ['json', 'list']},
                           macro="maskeditor",

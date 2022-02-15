@@ -13,17 +13,15 @@ q = db.query
 class m_hlist(Metatype):
 
     def get_metafieldeditor_html(self, field, metadatatype, language):
-        try:
-            values = field.get("valuelist").split(u';')
-        except AttributeError:
-            try:
-                values = field.split(u'\r\n')
-            except AttributeError:
-                values = []
-
-        while len(values) < 3:
-            values.append(u'')
-        return tal.getTAL("metadata/hlist.html", {"value": dict(parentnode=values[0], attrname=values[1], onlylast=values[2])}, macro="maskeditor", language=language)
+        values = field.get("valuelist").split(u';')
+        values.extend(("",)*3)
+        values = values[:3]
+        return tal.getTAL(
+            "metadata/hlist.html",
+            {"value": dict(parentnode=values[0], attrname=values[1], onlylast=values[2])},
+            macro="maskeditor",
+            language=language,
+        )
 
     def getEditorHTML(self, field, value="", width=40, lock=0, language=None, required=None):
         try:

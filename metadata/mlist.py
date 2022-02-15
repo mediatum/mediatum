@@ -132,13 +132,7 @@ class m_mlist(Metatype):
         return value
 
     def get_metafieldeditor_html(self, field, metadatatype, language):
-        value = u""
-        try:
-            if field:
-                value = field.getValues()
-        except AttributeError:
-            value = field
-        return tal.getTAL("metadata/mlist.html", {"value": value}, macro="maskeditor", language=language)
+        return tal.getTAL("metadata/mlist.html", dict(value=field.getValues()), macro="maskeditor", language=language)
 
     def getName(self):
         return "fieldtype_mlist"

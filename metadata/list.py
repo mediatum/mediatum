@@ -138,19 +138,12 @@ class m_list(Metatype):
         return value.replace("; ", ";")
 
     def get_metafieldeditor_html(self, field, metadatatype, language):
-        value = u""
-        multiple_list = u""
-        try:
-            if field:
-                value = field.getValues()
-                multiple_list = field.get('multiple')
-        except AttributeError:
-            value = field
-        return tal.getTAL("metadata/list.html",
-                          {"value": value,
-                           "multiple_list": multiple_list},
-                          macro="maskeditor",
-                          language=language)
+        return tal.getTAL(
+            "metadata/list.html",
+            dict(value=field.getValues(), multiple_list=field.get('multiple')),
+            macro="maskeditor",
+            language=language,
+        )
 
     def getName(self):
         return "fieldtype_list"

@@ -43,13 +43,9 @@ class m_meta(Metatype):
         return (metafield.getLabel(), node.get(metafield.getValues()))
 
     def get_metafieldeditor_html(self, field, metadatatype, language):
-        try:
-            value = field.getValues().split("\r\n")
-        except AttributeError:
-            #value = u""
-            value = []
-            while len(value) < 2:
-                value.append('')
+        value = field.getValues().split("\r\n")
+        value.extend(("",)*2)
+        value = value[:2]
 
         attr = {}
         if metadatatype:

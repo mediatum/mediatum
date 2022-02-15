@@ -141,12 +141,9 @@ class m_url(Metatype):
         return u"{};{}".format(quoted_uri, linktext)
 
     def get_metafieldeditor_html(self, field, metadatatype, language):
-        try:
-            value = field.getValues().split("\r\n")
-        except AttributeError:
-            value = []
-        while len(value) < 4:
-            value.append("")
+        value = field.getValues().split("\r\n")
+        value.extend(("",)*4)
+        value = value[:4]
         return tal.getTAL("metadata/url.html",
                           {"value": value,
                            "icons": m_url.icons,

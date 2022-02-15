@@ -67,17 +67,12 @@ class m_memo(Metatype):
         return (metafield.getLabel(), value)
 
     def get_metafieldeditor_html(self, field, metadatatype, language):
-
-        try:
-            value = field.getValues()
-        except AttributeError:
-            value = u""
-
-        context = {
-            "value": value,
-        }
-
-        return tal.getTAL("metadata/memo.html", context, macro="maskeditor", language=language)
+        return tal.getTAL(
+            "metadata/memo.html",
+            dict(value=field.getValues()),
+            macro="maskeditor",
+            language=language,
+        )
 
     def getName(self):
         return "fieldtype_memo"

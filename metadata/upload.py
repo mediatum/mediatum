@@ -33,6 +33,7 @@ import core.users as users
 from core.metatype import Metatype
 from core.translation import getDefaultLanguage, t, lang
 from utils.fileutils import importFile
+import utils.fileutils as _utils_fileutils
 from utils.utils import suppress
 from core import Node
 from core import db
@@ -48,9 +49,6 @@ def mkfilelist(targetnode, files, deletebutton=0, language=None, request=None, m
     else:
         return tal.getTAL(
             "metadata/upload.html", {"files": files, "node": targetnode, "delbutton": deletebutton}, macro=macro, language=language)
-
-
-_normalize_filename = _functools.partial(re.compile("[^a-zA-Z9-9._+-]").sub, "_")
 
 
 def getFilelist(node, fieldname=None):
@@ -333,7 +331,7 @@ def handle_request(req):
 
         if filename:
             nodeFile = importFile(
-                _normalize_filename(filename),
+                _utils_fileutils.sanitize_filename(filename),
                 file,
                 override_filetype='metafield-upload.{}'.format(submitter)
                )

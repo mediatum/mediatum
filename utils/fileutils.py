@@ -18,8 +18,10 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import codecs
+import functools as _functools
 import logging
 import os
+import re as _re
 import shutil
 import time
 import utils as _utils_utils
@@ -29,6 +31,9 @@ from core.config import resolve_datadir_path
 
 logg = logging.getLogger(__name__)
 q = db.query
+
+
+sanitize_filename = _functools.partial(_re.compile("[^a-zA-Z0-9._-]").sub, "")
 
 
 def getImportDir():

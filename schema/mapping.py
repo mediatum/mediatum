@@ -23,6 +23,7 @@ from core.xmlnode import getNodeXML, readNodeXML
 from core.postgres import check_type_arg
 
 from core import db
+import core.nodecache as _nodecache
 from core.systemtypes import Mappings, Root
 
 q = db.query
@@ -33,7 +34,7 @@ def getMappings():
     if mappings is None:
         root = q(Root).one()
         root.children.append(Mappings(u"mappings"))
-        mappings = q(Mappings).one()
+        mappings = _nodecache.get_mappings_node()
         db.session.commit()
 
     try:
@@ -45,7 +46,7 @@ def getMappings():
 def getMapping(id):
     n = q(Node).get(id)
     if n is None:
-        mappings = q(Mappings).one()
+        mappings = _nodecache.get_mappings_node()
         return mappings.getChild(id)
     return n
 
@@ -53,7 +54,7 @@ def getMapping(id):
 def getMappingTypes():
     ret = []
     try:
-        mappings = q(Mappings).one()
+        mappings = _nodecache.get_mappings_node()
         ret = mappings.get("mappingtypes").split(";")
         if len(ret) == 0 or ret[0] == "":
             mappings.set("mappingtypes", "default;bibtex;rss;marc21;z3950;citeproc")
@@ -69,7 +70,7 @@ def updateMapping(name, namespace="", namespaceurl="", description="", header=""
     if id != "" and int(id) > 0:
         mapping = q(Node).get(id)
     else:
-        mappings = q(Mappings).one()
+        mappings = _nodecache.get_mappings_node()
         mapping = Mapping(name=name)
         mappings.children.append(mapping)
     mapping.name = name
@@ -86,7 +87,7 @@ def updateMapping(name, namespace="", namespaceurl="", description="", header=""
 
 
 def deleteMapping(name):
-    mappings = q(Mappings).one()
+    mappings = _nodecache.get_mappings_node()
     mappings.children.remove(getMapping(name))
     db.session.commit()
 
@@ -117,7 +118,7 @@ def deleteMappingField(name):
 
 def exportMapping(name):
     if name == "all":
-        return getNodeXML(q(Mappings).one())
+        return getNodeXML(_nodecache.get_mappings_node())
     else:
         id = q(Node).filter_by(name=unicode(name)).one().id
         return getNodeXML(getMapping(id))
@@ -132,7 +133,7 @@ def importMapping(filename):
         for ch in n.children:
             importlist.append(ch)
 
-    mappings = q(Mappings).one()
+    mappings = _nodecache.get_mappings_node()
     for m in importlist:
         m.name = u"import-" + m.getName()
         mappings.children.append(m)

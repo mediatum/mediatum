@@ -21,9 +21,9 @@ import collections as _collections
 import werkzeug.datastructures as _werkzeug_datastructures
 from datetime import datetime
 import utils as _utils
-from core.systemtypes import Metadatatypes
 from core import Node, db
 import core.config as config
+import core.nodecache as _nodecache
 import logging
 import flask as _flask
 
@@ -188,7 +188,7 @@ def google_scholar(node):
     if not config.get("websearch.google_scholar", "").lower() == "true" or not node or node.isContainer():
         return ""
 
-    mtype = q(Metadatatypes).one().children.filter_by(name=node.schema).scalar()
+    mtype = _nodecache.get_metadatatypes_node().children.filter_by(name=node.schema).scalar()
     if not mtype:
         return ""
     mask = mtype.getMask('head_meta')

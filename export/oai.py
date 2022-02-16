@@ -39,10 +39,11 @@ import core.httpstatus as _httpstatus
 from . import oaisets
 import utils.date as date
 from schema.schema import getMetaType
-from core.systemtypes import Root, Metadatatypes
+from core.systemtypes import Root
 from contenttypes import Collections
 from core import Node
 from core import db
+import core.nodecache as _nodecache
 from core.users import get_guest_user
 
 q = db.query
@@ -274,7 +275,7 @@ def _retrieve_nodes(setspec, date_from, date_to, metadataformat):
     datefield = config.get("oai.datefield", "updatetime")
 
     if metadataformat == 'mediatum':
-        metadatatypes = q(Metadatatypes).one().children
+        metadatatypes = _nodecache.get_metadatatypes_node().children
         schemata = [m.name for m in metadatatypes if m.type == 'metadatatype' and m.name not in ['directory', 'collection']]
     else:
         schemata = list(_yield_export_mask_metatype_names(metadataformat))

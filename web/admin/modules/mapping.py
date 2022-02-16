@@ -32,10 +32,10 @@ import core.translation as _translation
 
 from core import Node
 from core import db
-from core.systemtypes import Mappings
+import core.nodecache as _nodecache
 from schema.mapping import Mapping, MappingField
-import schema.schema as _schema
 import core.database.postgres.node as _node
+import core.systemtypes as _core_systemtypes
 
 q = db.query
 
@@ -56,7 +56,7 @@ def _get_maskitems_dependencies():
         _sqlalchemy.orm.aliased(_node.Node) for _ in xrange(4))
 
     query = q(
-        _schema.Metadatatypes.id,
+        _core_systemtypes.Metadatatypes.id,
         maskitem.attrs['mappingfield'].astext,
         metadatatype.name,
         mask.name,
@@ -64,7 +64,7 @@ def _get_maskitems_dependencies():
     )
 
     joins = (
-        _schema.Metadatatypes,
+        _core_systemtypes.Metadatatypes,
         metadatatype,
         mask,
         maskitem,
@@ -88,7 +88,7 @@ def validate(req, op):
     if req.params.get("acttype", "mapping") == "mapping":
 
         if req.params.get("formtype", "") == "configuration" and "save_config" in req.params:
-            mappingroot = q(Mappings).one()
+            mappingroot = _nodecache.get_mappings_node()
             mappingroot.set("mappingtypes", req.params.get("mappingtypes", "").replace("\r\n", ";").replace("\n", ";"))
             db.session.commit()
             return view(req)

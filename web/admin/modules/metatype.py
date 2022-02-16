@@ -28,12 +28,12 @@ from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilte
 from web.common.acl_web import makeList
 from utils.utils import removeEmptyStrings, esc, suppress
 from core.translation import lang, t
-import core.nodecache as _nodecache
 import core.translation as _translation
 from schema.schema import getMetaFieldTypeNames, getMetaType, updateMetaType, existMetaType, deleteMetaType, fieldoption, moveMetaField, getMetaField, deleteMetaField, getFieldsForMeta, dateoption, requiredoption, existMetaField, updateMetaField, generateMask, cloneMask, exportMetaScheme, importMetaSchema
 from schema.schema import VIEW_DEFAULT
 from schema.bibtex import getAllBibTeXTypes
 from schema import citeproc
+import schema.schema as _schema
 
 from utils.fileutils import importFile
 # metafield methods
@@ -46,7 +46,7 @@ import contenttypes as _contenttypes
 
 from core import Node
 from core import db
-from core.systemtypes import Metadatatypes
+import core.nodecache as _nodecache
 import core.systemtypes as _systemtypes
 from schema.schema import Metadatatype, Mask
 from core.database.postgres.permission import NodeToAccessRuleset
@@ -109,64 +109,6 @@ def validate(req, op):
     if len(path) == 4 and path[3] == "editor":
         res = showEditor(req)
         return res
-
-    if len(path) == 5 and path[3] == "editor" and path[4] == "show_testnodes":
-        
-        raise NotImplementedError("")
-
-        template = req.params.get('template', '')
-        testnodes_list = req.params.get('testnodes', '')
-        width = req.params.get('width', '400')
-        item_id = req.params.get('item_id', None)
-
-        mdt_name = path[1]
-        mask_name = path[2]
-
-        mdt = q(Metadatatypes).one().children.filter_by(name=mdt_name).one()
-        mask = mdt.children.filter_by(name=mask_name).one()
-
-        sectionlist = []
-        for nid in [x.strip() for x in testnodes_list.split(',') if x.strip()]:
-            section_descr = {}
-            section_descr['nid'] = nid
-            section_descr['error_flag'] = ''  # in case of no error
-
-            node = q(Node).get(nid)
-            section_descr['node'] = node
-            if node and node.has_data_access():
-                try:
-                    node_html = mask.getViewHTML([node], VIEW_DEFAULT, template_from_caller=[template, mdt, mask, item_id])
-                    section_descr['node_html'] = node_html
-                except:
-                    logg.exception("exception while evaluating template")
-                    error_text = str(sys.exc_info()[1])
-                    template_line = 'for node id ' + ustr(nid) + ': ' + error_text
-                    with suppress(Exception, warn=False):
-                        m = re.match(r".*line (?P<line>\d*), column (?P<column>\d*)", error_text)
-                        if m:
-                            mdict = m.groupdict()
-                            line = int(mdict.get('line', 0))
-                            column = int(mdict.get('column', 0))
-                            error_text = error_text.replace('line %d' % line, 'template line %d' % (line - 1))
-                            template_line = 'for node id ' + ustr(nid) + '<br/>' + error_text + '<br/><code>' + esc(
-                                template.split(
-                                    "\n")[line - 2][0:column - 1]) + '<span style="color:red">' + esc(
-                                template.split("\n")[line - 2][column - 1:]) + '</span></code>'
-                    section_descr['error_flag'] = 'Error while evaluating template:'
-                    section_descr['node_html'] = template_line
-            elif node and not node.has_data_access():
-                section_descr['error_flag'] = 'no access'
-                section_descr['node_html'] = ''
-            if node is None:
-                section_descr['node'] = None
-                section_descr['error_flag'] = 'NoSuchNodeError'
-                section_descr['node_html'] = 'for node id ' + ustr(nid)
-            sectionlist.append(section_descr)
-
-        # remark: error messages will be served untranslated in English
-        # because messages from the python interpreter (in English) will be added
-
-        return _tal.processTAL({'sectionlist': sectionlist, 'csrf': req.csrf_token.current_token}, file="web/admin/modules/metatype.html", macro="view_testnodes", request=req)
 
     if len(path) == 2 and path[1] == "info":
         return showInfo(req)
@@ -246,6 +188,7 @@ def validate(req, op):
             # delete metafield: key[13:-2] = pid | n
             elif key.startswith("deletedetail_"):
                 deleteMetaField(req.params.get("parent"), key[13:-2])
+                db.session.commit()
                 return showDetailList(req, req.params.get("parent"))
 
             # change field order up
@@ -320,8 +263,7 @@ def validate(req, op):
 
             # delete mask
             elif key.startswith("deletemask_"):
-                mtype = getMetaType(req.params.get("parent"))
-                mtype.children.remove(q(Node).get(key[11:-2]))
+                _schema.delete_mask(q(Node).get(key[11:-2]))
                 db.session.commit()
                 return showMaskList(req, req.params.get("parent"))
 
@@ -401,7 +343,9 @@ def validate(req, op):
 """ show all defined metadatatypes """
 
 def view(req):
-    mtypes = q(Metadatatypes).one().children.order_by("name").all()
+    mtypes = _nodecache.get_metadatatypes_node().children.order_by("name").all()
+    if set(q(Metadatatype).all()) - set(mtypes):
+        raise RuntimeError(u"unlinked metadatatypes found")
     actfilter = getFilter(req)
     used_by = _get_nodecount_per_metaschema()
 
@@ -578,6 +522,7 @@ def showEditor(req):
 
         if key.startswith("delete_"):
             editor.deleteMaskitem(key[7:-2])
+            db.session.commit()
             break
 
         if key.startswith("edit_"):
@@ -683,7 +628,6 @@ def showEditor(req):
         item.setFormat(req.params.get("format", u""))
         item.setSeparator(req.params.get("separator", u""))
         item.setDescription(req.params.get("description", u""))
-        item.setTestNodes(req.params.get("testnodes", u""))
         db.session.commit()
 
         if "required" in req.params.keys():

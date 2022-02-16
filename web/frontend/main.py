@@ -30,6 +30,7 @@ from core.translation import lang, switch_language
 from core import httpstatus
 from core import db
 from core import Node, NodeAlias
+import core.nodecache as _nodecache
 from core.users import user_from_session as _user_from_session
 from contenttypes import Container
 from schema.schema import getMetadataType
@@ -217,7 +218,7 @@ PUBPATH = re.compile("/?(publish|pub)/(.*)$")
 def publish(req):
     m = PUBPATH.match(req.mediatum_contextfree_path)
 
-    node = workflow_root = q(Workflows).one()
+    node = _nodecache.get_workflows_node()
     if m:
         for a in m.group(2).split("/"):
             if a:

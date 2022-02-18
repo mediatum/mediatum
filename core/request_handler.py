@@ -806,7 +806,7 @@ def callhandler(handler_func, req):
 
             mail_to_address = _config.get('email.support')
             if not mail_to_address:
-                _logg.warn("no support mail address configured, consider setting it with `email.support`")
+                _logg.warning("no support mail address configured, consider setting it with `email.support`")
 
             _logg.exception(u"exception (xid=%s) while handling request %s %s, %s",
                            xid, req.method, req.mediatum_contextfree_path, dict(req.args))

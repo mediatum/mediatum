@@ -99,12 +99,12 @@ class PostgresSQLAConnector(object):
             self.debug = DEBUG
 
         if force_test_db:
-            logg.warn("WARNING: force_test_db requested, creating / using test database server")
+            logg.warning("force_test_db requested, creating / using test database server")
             test_db = True
         else:
             test_db = config.get("database.test_db", "false").lower() == "true"
             if test_db:
-                logg.warn("WARNING: database.test_db enabled in config, creating / using test database server")
+                logg.warning("database.test_db enabled in config, creating / using test database server")
 
         self.test_db = test_db
 

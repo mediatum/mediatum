@@ -135,19 +135,19 @@ def get_iptc_tags(image_path, tags=None):
         tags = get_wanted_iptc_tags()
 
     if not isinstance(tags, dict):
-        logg.warn('No Tags to read.')
+        logg.warning('No Tags to read.')
         return
 
     if image_path is None:
-        logg.warn('No file path for reading iptc.')
+        logg.warning('No file path for reading iptc.')
         return
 
     if not os.path.exists(image_path):
-        logg.warn('Could not read IPTC metadata from non existing file.')
+        logg.warning('Could not read IPTC metadata from non existing file.')
         return
 
     if os.path.basename(image_path).startswith('-'):
-        logg.warn('Will not read IPTC metadata to files starting with a hyphen, caused by exiftool security issues.')
+        logg.warning('Will not read IPTC metadata to files starting with a hyphen, caused by exiftool security issues.')
         return
 
     # fetch metadata dict from exiftool

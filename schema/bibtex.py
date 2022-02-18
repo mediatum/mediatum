@@ -299,9 +299,7 @@ def importBibTeX(infile, node=None, req=None):
             # XXX TODO (even things like full disk or other parsing errors).
             # XXX TODO We should at least reformulate the error message,
             # XXX TODO and -- even better -- only catch errors that are to be expected.
-            logg.exception("getentries failed")
-            msg = "bibtex import: getentries failed, import stopped (encoding error)"
-            logg.error("%s", msg)
+            logg.exception("bibtex import: getentries failed, import stopped (encoding error)")
             raise ValueError("bibtex_unspecified_error")
 
     logg.info("bibtex import: %d entries", len(entries))
@@ -335,9 +333,13 @@ def importBibTeX(infile, node=None, req=None):
                         if _mfield.get(u"type") == u"date":
                             datefields[_med_name] = _mfield.get(u"valuelist")
                     except AttributeError as e:
-                        msg = "bibtex import docid='{}': field error for bibtex mask for type {} and bibtex-type '{}': {}"
-                        msg = msg.format(docid_utf8, metatype, mytype, e)
-                        logg.error("%s", msg)
+                        logg.error(
+                            "bibtex import docid='%s': field error for bibtex mask for type %s and bibtex-type '%s': %s",
+                            docid_utf8,
+                            metatype,
+                            mytype,
+                            e,
+                        )
                     else:
                         fieldnames[_bib_name] = _med_name
 

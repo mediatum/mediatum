@@ -50,8 +50,12 @@ def getContent(req, ids):
             else:
             # non-admin user may not add / change system attributes, silently ignore the request.
             # XXX: an error msg would be better
-                logg.warn("denied writing a system attribute because user is not an admin user, node=%s attrname=%s current_user=%s",
-                          node.id, attrname, user.id)
+                logg.warning(
+                    "denied writing a system attribute because user is not an admin user, node=%s attrname=%s current_user=%s",
+                    node.id,
+                    attrname,
+                    user.id,
+                )
                 return httpstatus.HTTP_FORBIDDEN
 
         node.set(attrname, attrvalue)

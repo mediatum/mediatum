@@ -76,7 +76,7 @@ class WorkflowStep_Publish(WorkflowStep):
             elif self.get("publishsetupdatetime") != "":
                 node.set('updatetime', unicode(now()))
                 db.session.commit()
-        logg.debug("publish node id = %d: db.session.commit()", node.id);
+        logg.debug("publish node id = %d: db.session.commit()", node.id)
 
         self.forward(node, True)
 

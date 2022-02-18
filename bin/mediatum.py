@@ -75,7 +75,7 @@ def stackdump_setup():
         ultratb = None
 
     if ultratb is None:
-        logg.warn("IPython not installed, stack dumps not available!")
+        logg.warning("IPython not installed, stack dumps not available!")
     else:
         logg.info("IPython installed, write stack dumps to tmpdir with: `kill -QUIT <mediatum_pid>`")
 

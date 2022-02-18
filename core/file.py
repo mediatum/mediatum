@@ -68,7 +68,7 @@ class FileMixin(object):
         if self.exists:
             os.unlink(self.abspath)
         else:
-            logg.warn("tried to unlink missing physical file %s at %s, ignored", self.id, self.path)
+            logg.warning("tried to unlink missing physical file %s at %s, ignored", self.id, self.path)
 
     #  Deprecated methods
     def getType(self):

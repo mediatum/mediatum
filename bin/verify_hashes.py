@@ -44,8 +44,8 @@ def verify_hash(_file):
     logg.info('file found: %s', file_found)
     if file_found:
         logg.info('File: %s', _file.abspath)
-        logg.info('  - size: %s', _file.size_humanized)
-        logg.info('  - ismount: %s', os.path.ismount(_file.abspath))
+        logg.info('size: %s', _file.size_humanized)
+        logg.info('ismount: %s', os.path.ismount(_file.abspath))
     return hash_ok
 
 

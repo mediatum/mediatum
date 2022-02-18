@@ -187,7 +187,7 @@ def convert_csl_date(date_value):
             return datetime.date(year, 1, 1).isoformat()
         except:
             # well...
-            logg.warn("unrecognized raw date string %s, returning it unchanged", raw_value)
+            logg.warning("unrecognized raw date string %s, returning it unchanged", raw_value)
             return raw_value
 
 
@@ -265,10 +265,10 @@ def import_csl(record, target=None, name=None, testing=False):
     """
     typ = record[u"type"]
     if not typ:
-        logg.warn("no type given in CSL import, using _null")
+        logg.warning("no type given in CSL import, using _null")
         typ = "_null"
     if typ not in TYPE_SET:
-        logg.warn("unknown type %s given in CSL import, using _default", typ)
+        logg.warning("unknown type %s given in CSL import, using _default", typ)
         typ = "_default"
     schema = importbase.get_import_mapping(u"citeproc", typ)
     if not schema:
@@ -277,7 +277,7 @@ def import_csl(record, target=None, name=None, testing=False):
         if not schema:
             # no _default defined, fail
             raise NoMappingFound("No citeproc schema mapping could be found", typ)
-        logg.warn("no mapping found for type %s, using _default fallback mapping", typ)
+        logg.warning("no mapping found for type %s, using _default fallback mapping", typ)
     metatype = q(Metadatatype).filter_by(name=schema).one()
     mask = metatype.getMask(u"citeproc")
     if not mask:
@@ -297,7 +297,7 @@ def import_csl(record, target=None, name=None, testing=False):
                 return convert_csl_names(value)
             elif FIELDS[key].fieldtype == "number":
                 if not check_number(value):
-                    logg.warn("field '%s' is of type number and contains an illegal value: '%s'!"
+                    logg.warning("field '%s' is of type number and contains an illegal value: '%s'!"
                               "See http://citationstyles.org/downloads/specification.html#number",
                               key, value)
                 return unicode(value)

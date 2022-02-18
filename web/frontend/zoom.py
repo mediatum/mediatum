@@ -62,31 +62,34 @@ class ImageZoomData(object):
         self.width = int(node.get("origwidth") or node.get("width", 0))
 
         if not self.width:
-            logg.warn("original width for image %s is zero or missing!", self.node_id)
+            logg.warning("original width for image %s is zero or missing!", self.node_id)
 
         self.height = int(node.get("origheight") or node.get("width", 0))
 
         if not self.height:
-            logg.warn("original width for image %s is zero or missing!", self.node_id)
+            logg.warning("original width for image %s is zero or missing!", self.node_id)
 
         zoom_file = q(File).filter_by(filetype=u"zoom").join(NodeToFile).join(Image).filter_by(id=self.node_id).scalar()
         
         self.zoom_filepath = None
 
         if zoom_file is None:
-            logg.warn("no zoom file entry exists for image node %s, cannot provide tiles!", self.node_id)
+            logg.warning("no zoom file entry exists for image node %s, cannot provide tiles!", self.node_id)
             return
 
         if not zoom_file.exists:
-            logg.warn("zoom file for image node %s is missing on disk, cannot provide tiles! (should be at %s)",
-                      self.node_id, zoom_file.path)
+            logg.warning(
+                "zoom file for image node %s is missing on disk, cannot provide tiles! (should be at %s)",
+                self.node_id,
+                zoom_file.path,
+            )
             return
 
         self.zoom_filepath = zoom_file.abspath
 
     def get_tile(self, level, x, y):
         if not self.zoom_filepath:
-            logg.warn("zoom file missing for node %s, cannot provide zoom tile!", self.node_id)
+            logg.warning("zoom file missing for node %s, cannot provide zoom tile!", self.node_id)
             return
         
         tileid = "tile-%d-%d-%d" % (level, x, y)

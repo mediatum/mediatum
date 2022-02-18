@@ -160,7 +160,7 @@ def build_accessfunc_arguments(user=None, ip=None, date=None, req=None):
         try:
             ip = IPv4Address(req.remote_addr)
         except AddressValueError:
-            logg.warn("illegal IP address %s, refusing IP-based access", req.remote_addr)
+            logg.warning("illegal IP address %s, refusing IP-based access", req.remote_addr)
             ip = None
 
     if user is None:

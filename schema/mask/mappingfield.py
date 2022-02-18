@@ -228,7 +228,7 @@ class m_mappingfield(Metatype):
             try:
                 attribute_nid = int(attribute_nid)
             except ValueError:
-                logg.warn("ignoring field # %s with invalid attribute id: '%r'", field.id, attribute_nid)
+                logg.warning("ignoring field # %s with invalid attribute id: '%r'", field.id, attribute_nid)
                 continue
 
             attrnode = q(Node).get(attribute_nid)
@@ -239,7 +239,7 @@ class m_mappingfield(Metatype):
                 exportmapping_id = mask.get("exportmapping").split(";")[0]
                 mapping = q(Node).get(exportmapping_id)
                 if mapping is None:
-                    logg.warn("exportmapping %s for mask %s not found", exportmapping_id, mask.id)
+                    logg.warning("exportmapping %s for mask %s not found", exportmapping_id, mask.id)
                     return u""
                 separator = mapping.get("separator")
 

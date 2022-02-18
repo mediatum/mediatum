@@ -119,7 +119,7 @@ class m_upload(Metatype):
         elif fieldname:
             s = s.replace("____FIELDNAME____", "%s" % fieldname)
         else:
-            logg.warn("metadata: m_upload: no fieldname found")
+            logg.warning("metadata: m_upload: no fieldname found")
         return s
 
     def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):

@@ -47,7 +47,7 @@ def init_theme():
         theme_basepath = find_plugin_with_theme(theme_name)
 
         if theme_basepath is None:
-            logg.warn("theme from config file with name '%s' not found, maybe a plugin is missing?", theme_name)
+            logg.warning("theme from config file with name '%s' not found, maybe a plugin is missing?", theme_name)
             
         else:
             theme_dir = os.path.join(theme_basepath, "themes", theme_name)
@@ -58,7 +58,7 @@ def init_theme():
 
     theme = DefaultTheme()
     theme.activate()
-    logg.warn("using (broken) standard theme, you should create your own theme :)")
+    logg.warning("using (broken) standard theme, you should create your own theme :)")
 
 
 def loadServices():

@@ -209,7 +209,7 @@ def fulltext(args):
         nid = int(nid_mod_or_all)
         node = q(Node).get(nid)
         if node is None:
-            logg.warn("node # %s not found!", nid)
+            logg.warning("node # %s not found!", nid)
             return
         imported = utils.search.import_node_fulltext(node, args.overwrite)
         if imported:

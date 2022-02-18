@@ -290,7 +290,7 @@ def send_file(req):
         file_ext = os.path.splitext(filename)[1]
         for f in node.files:
             if os.path.splitext(f.base_name)[1] == file_ext and f.filetype in [u'document', u'original', u'mp3']:
-                logg.warn("serving file %s for node %s only by matched extension", f.path, node.id)
+                logg.warning("serving file %s for node %s only by matched extension", f.path, node.id)
                 return _send_attachment(f.abspath, f.mimetype)
 
     req.response.status_code = 404
@@ -371,7 +371,7 @@ def fetch_archived(req):
         msg = "archive for node not found"
         req.response.status_code = 400
         req.response.set_data(msg)
-        logg.warn("%s", msg)
+        logg.warning("%s", msg)
 
     db.session.commit()
 

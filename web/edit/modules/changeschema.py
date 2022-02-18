@@ -84,17 +84,17 @@ def getContent(req, ids):
 
             if isinstance(node, Container):
                 if not new_type in admissible_containers:
-                    logg.warn(u"changeschema: illegal container type %s", new_type)
+                    logg.warning(u"changeschema: illegal container type %s", new_type)
                     return httpstatus.HTTP_BAD_REQUEST
             else:
                 if not new_type in admissible_content_types:
-                    logg.warn(u"changeschema: illegal content type %s", new_type)
+                    logg.warning(u"changeschema: illegal content type %s", new_type)
                     return httpstatus.HTTP_BAD_REQUEST
 
             available_schema_names = [s.name for s in schemes if new_type in s.getDatatypes()]
 
             if not new_schema in available_schema_names:
-                    logg.warn(u"changeschema: illegal schema %s", new_schema)
+                    logg.warning(u"changeschema: illegal schema %s", new_schema)
                     return httpstatus.HTTP_BAD_REQUEST
 
             logg.info(

@@ -637,14 +637,20 @@ def action(req):
                         changednodes[dest.id] = 1  # getLabel(dest)
                         db.session.commit()
 
-                        if logg.isEnabledFor(logging.INFO):
-                            _what = "%s %s %r (%s, %s) " % (
-                                user.login_name, action, obj.id, obj.name, obj.type)
-                            _from = "from %s (%s, %s) " % (
-                                mysrc.id, mysrc.name, mysrc.type)
-                            _to = "to %s (%s, %s)" % (
-                                dest.id, dest.name, dest.type)
-                            logg.info(_what + _from + _to)
+                        logg.info(
+                            "%s %s %r (%s, %s) from %s (%s, %s) to %s (%s, %s)",
+                            user.login_name,
+                            action,
+                            obj.id,
+                            obj.name,
+                            obj.type,
+                            mysrc.id,
+                            mysrc.name,
+                            mysrc.type,
+                            dest.id,
+                            dest.name,
+                            dest.type,
+                        )
                     else:
                         logg.error("%s could not %s %s from %s to %s", user.login_name, action, obj.id, mysrc.id, dest.id)
                 else:

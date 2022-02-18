@@ -36,7 +36,7 @@ def import_node_fulltext(node, overwrite=False):
 
             logg.info("imported fulltext for node %s from %s", node.id, fi.path)
         else:
-            logg.warn("missing fulltext for node %s from %s", node.id, fi.path)
+            logg.warning("missing fulltext for node %s from %s", node.id, fi.path)
 
     if fulltexts:
         node.fulltext = u"\n---\n".join(fulltexts)

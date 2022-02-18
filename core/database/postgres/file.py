@@ -87,7 +87,7 @@ class File(DeclarativeBase, FileMixin):
         if self.exists:
             os.unlink(self.abspath)
         else:
-            logg.warn("tried to unlink missing physical file %s at %s, ignored", self.id, self.path)
+            logg.warning("tried to unlink missing physical file %s at %s, ignored", self.id, self.path)
 
     def __repr__(self):
         return "File #{} ({}:{}|{}) at {}".format(
@@ -141,7 +141,7 @@ class File(DeclarativeBase, FileMixin):
         """Make sure the file exists and has the same checksum as before"""
         if not self.exists:
             #raise IOError()
-            logg.warn('check_checksum: file %s does not exist at %s!', self.id, self.abspath)
+            logg.warning('check_checksum: file %s does not exist at %s!', self.id, self.abspath)
             self.sha512_ok = None
             return None
         self.sha512_checked_at = datetime.utcnow()
@@ -155,7 +155,7 @@ class File(DeclarativeBase, FileMixin):
                 logg.debug('Matching checksums :) for file ID: %s.', self.id)
                 self.sha512_ok = True
             else:
-                logg.warn('Checksum mismatch for file ID: %s.', self.id)
+                logg.warning('Checksum mismatch for file ID: %s.', self.id)
                 self.sha512_ok = False
         return self.sha512_ok
 

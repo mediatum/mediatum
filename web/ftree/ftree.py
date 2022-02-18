@@ -35,7 +35,7 @@ def ftree(req):
 
     user = _user_from_session()
     if not user.is_editor:
-        logg.warn("ftree permission denied for user: %s", user.id)
+        logg.warning("ftree permission denied for user: %s", user.id)
         req.response.status_code = 403
         return 403
 
@@ -53,7 +53,7 @@ def ftree(req):
             node = q(Content).get(id)
             parent = q(Container).get(req.params.get("changeCheck"))
             if not(node and parent and node.has_write_access() and parent.has_write_access()):
-                logg.warn("illegal ftree request: %s", req.params)
+                logg.warning("illegal ftree request: %s", req.params)
                 req.response.status_code = 403
                 return 403
 

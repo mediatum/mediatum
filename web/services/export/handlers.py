@@ -523,10 +523,10 @@ def _handle_oauth(res, path, params, timetable):
     users = q(User).filter_by(login_name=username).all()
 
     if not users:
-        logg.warn("oauth: invalid user given, login_name=%s", username)
+        logg.warning("oauth: invalid user given, login_name=%s", username)
         return
     elif len(users) > 1:
-        logg.warn("oauth: multiple users found, refusing request, login_name=%s", username)
+        logg.warning("oauth: multiple users found, refusing request, login_name=%s", username)
         return
 
     user = users[0]

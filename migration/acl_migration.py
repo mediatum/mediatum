@@ -71,13 +71,13 @@ def convert_node_rulestrings_to_symbolic_rules(nid_to_rulestr, fail_on_first_err
         msg = "{} rules failed with syntax error".format(len(converter.syntax_errors))
         if not ignore_errors:
             raise Exception(msg)
-        logg.warn("%s", msg)
+        logg.warning("%s", msg)
 
     if converter.conversion_exceptions:
         msg = "{} rules failed with a conversion error".format(len(converter.conversion_exceptions))
         if not ignore_errors:
             raise Exception(msg)
-        logg.warn("%s", msg)
+        logg.warning("%s", msg)
 
     # map node ids to bool expression results
     nid_to_symbolic_rule = {nid: None if not rulestr.strip() else rulestr_to_symbolic_rule[rulestr]
@@ -102,22 +102,22 @@ def convert_node_symbolic_rules_to_access_rules(nid_to_symbolic_rule, symbol_to_
         msg = "conversion failed for {} rules".format(len(converter.conversion_exceptions))
         if not ignore_errors:
             raise Exception(msg)
-        logg.warn("%s", msg)
+        logg.warning("%s", msg)
 
     if converter.missing_users:
         msg = "missing users: {}".format(converter.missing_users.values())
         if not ignore_missing_user_groups:
             raise Exception(msg)
-        logg.warn("%s", msg)
+        logg.warning("%s", msg)
 
     if converter.missing_groups:
         msg = "missing groups: {}".format(converter.missing_groups.values())
         if not ignore_missing_user_groups:
             raise Exception(msg)
-        logg.warn("%s", msg)
+        logg.warning("%s", msg)
 
     if converter.fake_groups:
-        logg.warn("inserted fake group ids for missing groups / users:\n%s", pformat(converter.fake_groups))
+        logg.warning("inserted fake group ids for missing groups / users:%s", pformat(converter.fake_groups))
 
     nid_to_access_rules = {nid: [] if symbolic_rule is None else symbolic_rule_to_access_rules[symbolic_rule]
                            for nid, symbolic_rule in nid_to_symbolic_rule.iteritems()}
@@ -205,7 +205,7 @@ def migrate_rules(ruletypes=["read", "write", "data"]):
     Disable database triggers (see `disabled_triggers`) in migration scripts when using this function!
     """
     for ruletype in ruletypes:
-        logg.info("------ migrating %s permissions ------", ruletype)
+        logg.info("migrating %s permissions", ruletype)
         nid_to_rulesets, nid_to_special_rulestrings = load_node_rules(ruletype + "access")
 
         nid_to_special_rulestrings = {nid: ",".join(r for r in rulestrings if r is not None) for nid, rulestrings in iteritems(nid_to_special_rulestrings)}
@@ -368,7 +368,10 @@ def get_iplist_from_cond(acl_cond):
     iplist = q(IPNetworkList).get(list_name)
 
     if iplist is None:
-        logg.warn("found iplist rule '%s', which does not exist in the database! Use manage.py iplist to import it.", list_name)
+        logg.warning(
+            "found iplist rule '%s', which does not exist in the database! Use manage.py iplist to import it.",
+            list_name,
+        )
         return [IPv4Network("127.0.0.0/8")]
     else:
         # SQLAlchemy returns simple string, we'd like to work with networks.

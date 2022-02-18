@@ -191,7 +191,7 @@ def getContent(req, ids):
                 os.remove(fullpath)
                 logg.info("%s removed file %s from disk", user.login_name, fullpath)
             else:
-                logg.warn("%s could not remove file %s from disk: not existing", user.login_name, fullpath)
+                logg.warning("%s could not remove file %s from disk: not existing", user.login_name, fullpath)
             with suppress(KeyError, warn=False):
                 del node.system_attrs["startpagedescr." + file_shortpath]
             node.system_attrs["startpage_selector"] = node.system_attrs["startpage_selector"].replace(file_shortpath, "")

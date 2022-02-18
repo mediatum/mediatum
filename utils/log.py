@@ -70,7 +70,7 @@ def initialize(level=None, log_filepath=None):
         file_handler = _logging_handlers.WatchedFileHandler(log_filepath)
         file_handler.setFormatter(logging.Formatter(ROOT_FILE_LOGFORMAT))
         root_logger.addHandler(file_handler)
-        logg.info('--- logging everything to %s ---', log_filepath)
+        logg.info('logging everything to %s', log_filepath)
 
 
 def make_xid_and_errormsg_hash():

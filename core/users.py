@@ -86,7 +86,7 @@ def user_from_session():
             if user is not None:
                 return user
 
-            logg.warn("invalid user id %s from session, falling back to guest user", user_id)
+            logg.warning("invalid user id %s from session, falling back to guest user", user_id)
             del _flask.session["user_id"]
 
         return get_guest_user()

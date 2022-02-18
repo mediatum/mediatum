@@ -197,7 +197,7 @@ def findmodule(type):
         m = __import__("web.admin.modules." + type)
         m = eval("m.admin.modules." + type)
     except:
-        logg.exception("Warning: couldn't load module for type %s", type)
+        logg.exception("couldn't load module for type %s", type)
         m = __import__("web.admin.modules.default")
         m = eval("m.admin.modules.default")
     return m

@@ -239,7 +239,7 @@ def _load_styles_from_path(dirpath):
                 styles_for_type = full_styles_from_path.setdefault(style.contenttype, {})
                 styles_for_type[style.name] = style
     else:
-        logg.warn("style path %s not found, ignoring", dirpath)
+        logg.warning("style path %s not found, ignoring", dirpath)
 
     return full_styles_from_path, list_styles_from_path
 

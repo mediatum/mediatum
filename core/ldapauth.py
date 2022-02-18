@@ -88,7 +88,7 @@ class LDAPAuthenticator(Authenticator):
                 count += 1
                 if count > 5:
                     raise
-                logg.warn("timeout while trying to connect to user database, retry %s", count)
+                logg.warning("timeout while trying to connect to user database, retry %s", count)
                 continue
             else:
                 return None, None
@@ -105,7 +105,7 @@ class LDAPAuthenticator(Authenticator):
             try:
                 return l2.result(ldap_result_id, 0, timeout=5)
             except ldap.TIMEOUT:
-                logg.info("timeout while authenticating user,  retrying...")
+                logg.error("timeout while authenticating user,  retrying...")
                 continue
             else:
                 return None, None
@@ -221,7 +221,7 @@ class LDAPAuthenticator(Authenticator):
             if user is not None:
                 # we already have an user object, update data
                 if config.getboolean("config.readonly"):
-                    logg.warn("cannot update existing user data for login name %s in read-only mode", login)
+                    logg.warning("cannot update existing user data for login name %s in read-only mode", login)
                 else:
                     self.update_ldap_user(login_result_data[0][1], user)
                     db.session.commit()
@@ -234,7 +234,7 @@ class LDAPAuthenticator(Authenticator):
                 user = self.add_ldap_user(data, login, authenticator_info)
 
                 if config.getboolean("config.readonly"):
-                    logg.warn("LDAP auth succeeded for login name %s, but cannot create user in read-only mode. Refusing login.",
+                    logg.warning("LDAP auth succeeded for login name %s, but cannot create user in read-only mode. Refusing login.",
                               login)
                     return 
                     

@@ -96,7 +96,7 @@ def tal_setup():
 
 def log_basic_sys_info():
     logg.info("Python Version is %s, base path ist at %s", sys.version.split("\n")[0], config.basedir)
-    logg.debug("sys.path is\n%s", pformat(sys.path))
+    logg.debug("sys.path is %s", pformat(sys.path))
 
 
 def check_imports():
@@ -192,7 +192,7 @@ def add_ustr_builtin():
 
     def ustr(s):
         if isinstance(s, unicode):
-            inspection_log.warn("ustr() called on unicode object, ignoring '%s'", s)
+            inspection_log.warning("ustr() called on unicode object, ignoring '%s'", s)
             return s
 
         return str(s)
@@ -232,7 +232,7 @@ def check_undefined_nodeclasses(stub_undefined_nodetypes=None, fail_if_undefined
         if fail_if_undefined_nodetypes:
             raise Exception(msg)
         else:
-            logg.warn("%s", msg)
+            logg.warning("%s", msg)
 
         if stub_undefined_nodetypes is None:
             stub_undefined_nodetypes = config.get("config.stub_undefined_nodetypes", "false") == "true"

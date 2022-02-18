@@ -129,7 +129,7 @@ class InternalAuthenticator(Authenticator):
                     rehashed = rehash_legacy_password(password)
                     # not rehashing md5 is NOT ok, let's warn...
                     if not rehashed:
-                        logg.warn("password rehashing failed or disabled in config, you really should rehash insecure md5 hashes!")
+                        logg.warning("password rehashing failed or disabled in config, you really should rehash insecure md5 hashes!")
                     logg.info("internal auth succeeded with md5 hash for login name %s", login_name)
                     return user
                 
@@ -206,7 +206,7 @@ def init():
     try:
         from core.ldapauth import LDAPAuthenticator
     except Exception as e:
-        logg.warn("LDAP authenticator is not available: '%s: %s'", e.__class__.__name__, e.message)
+        logg.warning("LDAP authenticator is not available: '%s: %s'", e.__class__.__name__, e.message)
     else:
         authenticator_types[LDAPAuthenticator.auth_type] = LDAPAuthenticator
 

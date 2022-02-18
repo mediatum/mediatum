@@ -46,5 +46,3 @@ def check_type_arg_with_schema(cls):
 
     cls.__init__ = init
     return cls
-
-

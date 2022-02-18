@@ -376,4 +376,3 @@ class Collections(Container):
 @check_type_arg_with_schema
 class Home(Container):
     pass
-

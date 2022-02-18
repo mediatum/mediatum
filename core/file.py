@@ -100,4 +100,3 @@ class FileVersionMixin(FileMixin):
         if self._size is None:
             self._size = get_filesize(self.path)
         return self._size
-

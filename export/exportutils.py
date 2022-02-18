@@ -281,5 +281,3 @@ def handleCommand(cmd, var, s, node, attrnode=None, field_value="", options=[], 
         result = runTALSnippet(s, context, mask)
 
         return result.replace("[" + var + "]", "")
-
-

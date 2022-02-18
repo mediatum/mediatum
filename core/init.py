@@ -192,8 +192,6 @@ def add_ustr_builtin():
         if isinstance(s, unicode):
             inspection_log.warn("ustr() called on unicode object, ignoring '%s'", s)
             return s
-    #     elif isinstance(s, int):
-    #         logg.warn("ustr() called on int object '%s'", s)
 
         return str(s)
 

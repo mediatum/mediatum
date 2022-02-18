@@ -23,5 +23,3 @@ def string_to_int(data):
         return None
 
     return nid
-
-

@@ -297,4 +297,3 @@ def initContexts():
     file.addHandler("error").addPattern("/error")
     file.addHandler("error_variable_msg").addPattern("/error_variable_msg")
     file.addHandler("db_error").addPattern("/db_error")
-

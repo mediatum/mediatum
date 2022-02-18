@@ -45,4 +45,3 @@ class UserGroupMixin(object):
 
     def setHideEdit(self, value):
         raise Exception("use UserGroup.hidden_edit_functions")
-

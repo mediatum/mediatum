@@ -53,5 +53,3 @@ def check_database():
     some_admin_group = q(UserGroup).filter_by(is_admin_group=True).first()
     if not some_admin_group:
         logg.warn("no admin group found. This works, but normally you should define at least one admin group.")
-
-

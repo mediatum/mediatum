@@ -93,4 +93,3 @@ reindex_tables = partial(run_maint_command_for_tables, "REINDEX TABLE")
 vacuum_tables = partial(run_maint_command_for_tables, "VACUUM")
 vacuum_analyze_tables = partial(run_maint_command_for_tables, "VACUUM ANALYZE")
 vacuum_full_tables = partial(run_maint_command_for_tables, "VACUUM FULL")
-

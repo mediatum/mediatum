@@ -82,4 +82,3 @@ def increaseURN(urn):
         # re-add checksum digit
         urn += buildChecksum(urn)
     return urn
-

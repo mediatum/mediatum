@@ -100,40 +100,35 @@ class m_text(Metatype):
         req.response.status_code = httpstatus.HTTP_OK
         return httpstatus.HTTP_OK
 
-    # method for additional keys of type text
-    def getLabels(self):
-        return m_text.labels
-
-    labels = {"de":
-              [
-                  ("text_popup_title", u"Eingabemaske für Sonderzeichen"),
-                  ("fieldtype_text", "Textfeld"),
-                  ("fieldtype_text_desc", "Normales Texteingabefeld"),
-                  ("text_titlepopupbutton", u"Editiermaske öffnen"),
-                  ("text_valuelabel", "Wert:"),
-                  ("text_formatedvalue", "Formatierter Wert:"),
-                  ("text_done", u"Übernehmen"),
-                  ("text_cancel", "Abbrechen"),
-                  ("text_spcchar", "Sonderzeichen:"),
-                  ("text_bold_title", "Markierten Text 'Fett' setzen"),
-                  ("text_italic_title", "Markierten Text 'Kursiv' setzen"),
-                  ("text_sub_title", "Markierten Text 'tiefstellen'"),
-                  ("text_sup_title", "Markierten Text 'hochstellen'"),
-              ],
-              "en":
-              [
-                  ("text_popup_title", "Editor mask for specialchars"),
-                  ("fieldtype_text", "text field"),
-                  ("fieldtype_text_desc", "normal text input field"),
-                  ("text_titlepopupbutton", "open editor mask"),
-                  ("text_valuelabel", "Value:"),
-                  ("text_formatedvalue", "Formated Value:"),
-                  ("text_done", "Done"),
-                  ("text_cancel", "Cancel"),
-                  ("text_spcchar", "Special chars:"),
-                  ("text_bold_title", "set marked text 'bold'"),
-                  ("text_italic_title", "set marked text 'italic'"),
-                  ("text_sub_title", "set marked text 'subscript'"),
-                  ("text_sup_title", "set marked text 'superscript'"),
-              ]
-              }
+    translation_labels = dict(
+        de=dict(
+            text_popup_title=u"Eingabemaske für Sonderzeichen",
+            fieldtype_text="Textfeld",
+            fieldtype_text_desc="Normales Texteingabefeld",
+            text_titlepopupbutton=u"Editiermaske öffnen",
+            text_valuelabel="Wert:",
+            text_formatedvalue="Formatierter Wert:",
+            text_done=u"Übernehmen",
+            text_cancel="Abbrechen",
+            text_spcchar="Sonderzeichen:",
+            text_bold_title="Markierten Text 'Fett' setzen",
+            text_italic_title="Markierten Text 'Kursiv' setzen",
+            text_sub_title="Markierten Text 'tiefstellen'",
+            text_sup_title="Markierten Text 'hochstellen'",
+        ),
+        en=dict(
+            text_popup_title="Editor mask for specialchars",
+            fieldtype_text="text field",
+            fieldtype_text_desc="normal text input field",
+            text_titlepopupbutton="open editor mask",
+            text_valuelabel="Value:",
+            text_formatedvalue="Formated Value:",
+            text_done="Done",
+            text_cancel="Cancel",
+            text_spcchar="Special chars:",
+            text_bold_title="set marked text 'bold'",
+            text_italic_title="set marked text 'italic'",
+            text_sub_title="set marked text 'subscript'",
+            text_sup_title="set marked text 'superscript'",
+        ),
+    )

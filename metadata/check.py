@@ -32,18 +32,13 @@ class m_check(Metatype):
     def getName(self):
         return "fieldtype_check"
 
-    # method for additional keys of type check
-    def getLabels(self):
-        return m_check.labels
-
-    labels = {"de":
-              [
-                  ("fieldtype_check", "Checkbox"),
-                  ("fieldtype_check_desc", u"Checkbox Auswahl (für Ja/Nein-Werte)")
-              ],
-              "en":
-              [
-                  ("fieldtype_check", "checkbox"),
-                  ("fieldtype_check_desc", "checkbox field (true/false)")
-              ]
-              }
+    translation_labels = dict(
+        de=dict(
+            fieldtype_check="Checkbox",
+            fieldtype_check_desc=u"Checkbox Auswahl (für Ja/Nein-Werte)",
+        ),
+        en=dict(
+            fieldtype_check="checkbox",
+            fieldtype_check_desc="checkbox field (true/false)",
+        ),
+    )

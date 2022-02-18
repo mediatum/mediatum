@@ -72,28 +72,23 @@ class m_htmlmemo(Metatype):
     def getInformation(self):
         return {"moduleversion": "1.0", "softwareversion": "1.1"}
 
-    # method for additional keys of type memo
-    def getLabels(self):
-        return m_htmlmemo.labels
-
-    labels = {"de":
-              [
-                  ("editor_memo_label", u"Zeichen übrig"),
-                  ("mask_edit_max_length", u"Maximallänge"),
-                  ("fieldtype_htmlmemo", "HTML Memofeld"),
-                  ("fieldtype_htmlmemo_desc", u"Memofeld mit HTML Markup"),
-                  ("htmlmemo_titlepopupbutton", u"Editiermaske öffnen"),
-                  ("htmlmemo_popup_title", u"Eingabemaske für HTML formatierte Texte"),
-                  ("htmlmemo_valuelabel", "Wert:"),
-              ],
-              "en":
-              [
-                  ("editor_htmlmemo_label", "characters remaining"),
-                  ("mask_edit_max_length", "Max. length"),
-                  ("fieldtype_htmlmemo", "html memo"),
-                  ("fieldtype_htmlmemo_desc", "memo field with html markup"),
-                  ("htmlmemo_titlepopupbutton", "open editor mask"),
-                  ("htmlmemo_popup_title", "Editor mask for HTML formatted text"),
-                  ("htmlmemo_valuelabel", "Value:"),
-              ]
-              }
+    translation_labels = dict(
+        de=dict(
+            editor_memo_label=u"Zeichen übrig",
+            mask_edit_max_length=u"Maximallänge",
+            fieldtype_htmlmemo="HTML Memofeld",
+            fieldtype_htmlmemo_desc=u"Memofeld mit HTML Markup",
+            htmlmemo_titlepopupbutton=u"Editiermaske öffnen",
+            htmlmemo_popup_title=u"Eingabemaske für HTML formatierte Texte",
+            htmlmemo_valuelabel="Wert:",
+        ),
+        en=dict(
+            editor_htmlmemo_label="characters remaining",
+            mask_edit_max_length="Max. length",
+            fieldtype_htmlmemo="html memo",
+            fieldtype_htmlmemo_desc="memo field with html markup",
+            htmlmemo_titlepopupbutton="open editor mask",
+            htmlmemo_popup_title="Editor mask for HTML formatted text",
+            htmlmemo_valuelabel="Value:",
+        ),
+    )

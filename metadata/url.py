@@ -145,32 +145,25 @@ class m_url(Metatype):
     def getInformation(self):
         return {"moduleversion": "1.1", "softwareversion": "1.1"}
 
-    # method for additional keys of type url
-    def getLabels(self):
-        return m_url.labels
-
-    labels = {"de":
-              [
-                  ("url_edit_link", "Link:"),
-                  ("url_edit_linktext", "Angezeigter Text:"),
-                  ("url_edit_icon", "Icon:"),
-                  ("url_edit_noicon", "-kein Icon-"),
-                  ("url_edit_preview", "Vorschau:"),
-                  ("url_urltarget", "Linkziel:"),
-                  ("fieldtype_url", "URL"),
-                  ("fieldtype_url_desc", "externer Link (neues Fenster)")
-
-              ],
-              "en":
-              [
-                  ("url_edit_link", "Link:"),
-                  ("url_edit_linktext", "Link Text:"),
-                  ("url_edit_icon", "Icon:"),
-                  ("url_edit_noicon", "-kein Icon-"),
-                  ("url_edit_preview", "Preview:"),
-                  ("url_urltarget", "Link target:"),
-                  ("fieldtype_url", "url"),
-                  ("fieldtype_url_desc", "external link (new window)")
-
-              ]
-              }
+    translation_labels = dict(
+        de=dict(
+            url_edit_link="Link:",
+            url_edit_linktext="Angezeigter Text:",
+            url_edit_icon="Icon:",
+            url_edit_noicon="-kein Icon-",
+            url_edit_preview="Vorschau:",
+            url_urltarget="Linkziel:",
+            fieldtype_url="URL",
+            fieldtype_url_desc="externer Link (neues Fenster)",
+        ),
+        en=dict(
+            url_edit_link="Link:",
+            url_edit_linktext="Link Text:",
+            url_edit_icon="Icon:",
+            url_edit_noicon="-kein Icon-",
+            url_edit_preview="Preview:",
+            url_urltarget="Link target:",
+            fieldtype_url="url",
+            fieldtype_url_desc="external link (new window)",
+        ),
+    )

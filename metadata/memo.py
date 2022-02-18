@@ -79,46 +79,39 @@ class m_memo(Metatype):
         req.response.status_code = httpstatus.HTTP_OK
         return httpstatus.HTTP_OK
 
-    # method for additional keys of type memo
-    def getLabels(self):
-        return m_memo.labels
-
-    labels = {"de":
-              [
-                  ("editor_memo_label", u"Zeichen übrig"),
-                  ("mask_edit_max_length", u"Maximallänge"),
-                  ("fieldtype_memo", "Memofeld"),
-                  ("fieldtype_memo_desc", u"Texteingabefeld beliebiger Länge"),
-                  ("memo_titlepopupbutton", u"Editiermaske öffnen"),
-                  ("memo_popup_title", u"Eingabemaske für Sonderzeichen"),
-                  ("memo_valuelabel", "Wert:"),
-                  ("memo_formatedvalue", "Formatierter Wert:"),
-                  ("memo_done", u"Übernehmen"),
-                  ("memo_cancel", "Abbrechen"),
-                  ("memo_spcchar", "Sonderzeichen:"),
-                  ("memo_bold_title", "Markierten Text 'Fett' setzen"),
-                  ("memo_italic_title", "Markierten Text 'Kursiv' setzen"),
-                  ("memo_sub_title", "Markierten Text 'tiefstellen'"),
-                  ("memo_sup_title", "Markierten Text 'hochstellen'"),
-
-
-              ],
-              "en":
-              [
-                  ("editor_memo_label", "characters remaining"),
-                  ("mask_edit_max_length", "Max. length"),
-                  ("fieldtype_memo", "memo"),
-                  ("fieldtype_memo_desc", "textfield for any text length"),
-                  ("memo_titlepopupbutton", "open editor mask"),
-                  ("memo_popup_title", "Editor mask for specialchars"),
-                  ("memo_valuelabel", "Value:"),
-                  ("memo_formatedvalue", "Formated Value:"),
-                  ("memo_done", "Done"),
-                  ("memo_cancel", "Cancel"),
-                  ("memo_spcchar", "Special chars:"),
-                  ("memo_bold_title", "set marked text 'bold'"),
-                  ("memo_italic_title", "set marked text 'italic'"),
-                  ("memo_sub_title", "set marked text 'subscript'"),
-                  ("memo_sup_title", "set marked text 'superscript'"),
-              ]
-              }
+    translation_labels = dict(
+        de=dict(
+            editor_memo_label=u"Zeichen übrig",
+            mask_edit_max_length=u"Maximallänge",
+            fieldtype_memo="Memofeld",
+            fieldtype_memo_desc=u"Texteingabefeld beliebiger Länge",
+            memo_titlepopupbutton=u"Editiermaske öffnen",
+            memo_popup_title=u"Eingabemaske für Sonderzeichen",
+            memo_valuelabel="Wert:",
+            memo_formatedvalue="Formatierter Wert:",
+            memo_done=u"Übernehmen",
+            memo_cancel="Abbrechen",
+            memo_spcchar="Sonderzeichen:",
+            memo_bold_title="Markierten Text 'Fett' setzen",
+            memo_italic_title="Markierten Text 'Kursiv' setzen",
+            memo_sub_title="Markierten Text 'tiefstellen'",
+            memo_sup_title="Markierten Text 'hochstellen'",
+        ),
+        en=dict(
+            editor_memo_label="characters remaining",
+            mask_edit_max_length="Max. length",
+            fieldtype_memo="memo",
+            fieldtype_memo_desc="textfield for any text length",
+            memo_titlepopupbutton="open editor mask",
+            memo_popup_title="Editor mask for specialchars",
+            memo_valuelabel="Value:",
+            memo_formatedvalue="Formated Value:",
+            memo_done="Done",
+            memo_cancel="Cancel",
+            memo_spcchar="Special chars:",
+            memo_bold_title="set marked text 'bold'",
+            memo_italic_title="set marked text 'italic'",
+            memo_sub_title="set marked text 'subscript'",
+            memo_sup_title="set marked text 'superscript'",
+        ),
+    )

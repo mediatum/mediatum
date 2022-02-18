@@ -38,10 +38,6 @@ class m_number(Metatype):
     def getName(self):
         return "fieldtype_number"
 
-    # method for additional keys of type number
-    def getLabels(self):
-        return m_number.labels
-
     def get_input_pattern(self):
         return '^\d*$'
 
@@ -51,14 +47,13 @@ class m_number(Metatype):
     def get_input_placeholder(self):
         return '#####'
 
-    labels = {"de":
-              [
-                  ("fieldtype_number", "Zahl"),
-                  ("fieldtype_number_desc", "Feld zur Eingabe eines Zahlenwertes")
-              ],
-              "en":
-              [
-                  ("fieldtype_number", "number"),
-                  ("fieldtype_number_desc", "field for digit input")
-              ]
-              }
+    translation_labels = dict(
+        de=dict(
+            fieldtype_number="Zahl",
+            fieldtype_number_desc="Feld zur Eingabe eines Zahlenwertes",
+        ),
+        en=dict(
+            fieldtype_number="number",
+            fieldtype_number_desc="field for digit input",
+        ),
+    )

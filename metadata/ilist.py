@@ -143,40 +143,35 @@ class m_ilist(Metatype):
         req.response.set_data(tal.processTAL({"option_list": option_list, "fieldname": fieldname, "schema": schema}, file="metadata/ilist.html", macro="popup", request=req))
         return httpstatus.HTTP_OK
 
-    # method for additional keys of type spctext
-    def getLabels(self):
-        return m_ilist.labels
-
-    labels = {"de":
-              [
-                  ("editor_index", "Index"),
-                  ("editor_index_title", "Indexwerte anzeigen"),
-                  ("popup_index_header", "Vorhandene Indexwerte"),
-                  ("popup_indexnumber", "Wert(e) selektiert"),
-                  ("popup_listvalue_title", "Listenwerte als Popup anzeigen"),
-                  ("popup_listvalue", "Listenwerte anzeigen"),
-                  ("popup_clearselection_title", "Auswahlliste leeren"),
-                  ("popup_clearselection", "Auwahl aufheben"),
-                  ("popup_ok", "OK"),
-                  ("popup_cancel", "Abbrechen"),
-                  ("fieldtype_ilist", "Werteliste mit Index"),
-                  ("fieldtype_ilist_desc", "Eingabefeld mit Index als Popup"),
-                  ("ilist_titlepopupbutton", u"Editiermaske öffnen")
-              ],
-              "en":
-              [
-                  ("editor_index", "Index"),
-                  ("editor_index_title", "show index values"),
-                  ("popup_index_header", "Existing Index values"),
-                  ("popup_ok", "OK"),
-                  ("popup_cancel", "Cancel"),
-                  ("popup_listvalue_title", "Show list values as popup"),
-                  ("popup_listvalue", "show list values"),
-                  ("popup_clearselection", "clear selection"),
-                  ("popup_clearselection_title", "Unselect all values"),
-                  ("popup_indexnumber", "values selected"),
-                  ("fieldtype_ilist", "indexlist"),
-                  ("fieldtype_ilist_desc", "input field with index"),
-                  ("ilist_titlepopupbutton", "open editor mask")
-              ]
-              }
+    translation_labels = dict(
+        de=dict(
+            editor_index="Index",
+            editor_index_title="Indexwerte anzeigen",
+            popup_index_header="Vorhandene Indexwerte",
+            popup_indexnumber="Wert(e) selektiert",
+            popup_listvalue_title="Listenwerte als Popup anzeigen",
+            popup_listvalue="Listenwerte anzeigen",
+            popup_clearselection_title="Auswahlliste leeren",
+            popup_clearselection="Auwahl aufheben",
+            popup_ok="OK",
+            popup_cancel="Abbrechen",
+            fieldtype_ilist="Werteliste mit Index",
+            fieldtype_ilist_desc="Eingabefeld mit Index als Popup",
+            ilist_titlepopupbutton=u"Editiermaske öffnen",
+        ),
+        en=dict(
+            editor_index="Index",
+            editor_index_title="show index values",
+            popup_index_header="Existing Index values",
+            popup_ok="OK",
+            popup_cancel="Cancel",
+            popup_listvalue_title="Show list values as popup",
+            popup_listvalue="show list values",
+            popup_clearselection="clear selection",
+            popup_clearselection_title="Unselect all values",
+            popup_indexnumber="values selected",
+            fieldtype_ilist="indexlist",
+            fieldtype_ilist_desc="input field with index",
+            ilist_titlepopupbutton="open editor mask",
+        ),
+    )

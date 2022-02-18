@@ -137,22 +137,17 @@ class m_list(Metatype):
     def getInformation(self):
         return {"moduleversion": "1.1", "softwareversion": "1.1"}
 
-    # method for additional keys of type list
-    def getLabels(self):
-        return m_list.labels
-
-    labels = {"de":
-              [
-                  ("list_multiple", "Mehrfachauswahl:"),
-                  ("list_list_values", "Listenwerte:"),
-                  ("fieldtype_list", "Werteliste"),
-                  ("fieldtype_list_desc", "Werte-Auswahlfeld als Drop-Down Liste")
-              ],
-              "en":
-              [
-                  ("list_multiple", "Multiple choice:"),
-                  ("list_list_values", "List values:"),
-                  ("fieldtype_list", "valuelist"),
-                  ("fieldtype_list_desc", "drop down valuelist")
-              ]
-              }
+    translation_labels = dict(
+        de=dict(
+            list_multiple="Mehrfachauswahl:",
+            list_list_values="Listenwerte:",
+            fieldtype_list="Werteliste",
+            fieldtype_list_desc="Werte-Auswahlfeld als Drop-Down Liste",
+        ),
+        en=dict(
+            list_multiple="Multiple choice:",
+            list_list_values="List values:",
+            fieldtype_list="valuelist",
+            fieldtype_list_desc="drop down valuelist",
+        ),
+    )

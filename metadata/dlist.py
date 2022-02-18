@@ -148,34 +148,29 @@ class m_dlist(Metatype):
     def getInformation(self):
         return {"moduleversion": "1.0", "softwareversion": "1.1"}
 
-    # method for additional keys of type list
-    def getLabels(self):
-        return m_dlist.labels
-
-    labels = {"de":
-              [
-                  ("dlist_list_values", "Dynamische Listenwerte:"),
-                  ("fieldtype_dlist", "Dynamische Werteliste"),
-                  ("fieldtype_dlist_desc", "Werte-Auswahlfeld als Drop-Down Liste"),
-                  ("dlist_edit_source", "Adresse der Daten:"),
-                  ("dlist_edit_type", "Typ der Daten:"),
-                  ("dlist_edit_attr", "Attribut-Variable:"),
-                  ("dlist_edit_valattr", "Werte-Variable:"),
-                  ("dlist_type_json", "Json:"),
-                  ("dlist_type_list", "Liste:"),
-                  ("dlist_edit_format", "Anzeigeformat:")
-              ],
-              "en":
-              [
-                  ("dlist_list_values", "Dynamic List values:"),
-                  ("fieldtype_dlist", "dynamic valuelist"),
-                  ("fieldtype_dlist_desc", "drop down valuelist"),
-                  ("dlist_edit_source", "address of data:"),
-                  ("dlist_edit_type", "type of data:"),
-                  ("dlist_edit_attr", "attribute variable:"),
-                  ("dlist_edit_valattr", "value variable:"),
-                  ("dlist_type_json", "Json:"),
-                  ("dlist_type_list", "List:"),
-                  ("dlist_edit_format", "format in selection:")
-              ]
-              }
+    translation_labels = dict(
+        de=dict(
+            dlist_list_values="Dynamische Listenwerte:",
+            fieldtype_dlist="Dynamische Werteliste",
+            fieldtype_dlist_desc="Werte-Auswahlfeld als Drop-Down Liste",
+            dlist_edit_source="Adresse der Daten:",
+            dlist_edit_type="Typ der Daten:",
+            dlist_edit_attr="Attribut-Variable:",
+            dlist_edit_valattr="Werte-Variable:",
+            dlist_type_json="Json:",
+            dlist_type_list="Liste:",
+            dlist_edit_format="Anzeigeformat:",
+        ),
+        en=dict(
+            dlist_list_values="Dynamic List values:",
+            fieldtype_dlist="dynamic valuelist",
+            fieldtype_dlist_desc="drop down valuelist",
+            dlist_edit_source="address of data:",
+            dlist_edit_type="type of data:",
+            dlist_edit_attr="attribute variable:",
+            dlist_edit_valattr="value variable:",
+            dlist_type_json="Json:",
+            dlist_type_list="List:",
+            dlist_edit_format="format in selection:",
+        ),
+    )

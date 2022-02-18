@@ -1469,8 +1469,7 @@ def _metatype_class(cls):
     instance = cls()
     assert name not in _metatypes
     _metatypes[name] = instance
-    if hasattr(instance, "getLabels"):
-        translation.addLabels(instance.getLabels())
+    translation.addLabels({lang: tuple(labels.iteritems()) for lang,labels in instance.translation_labels.iteritems()})
 
 
 def load_metatype_module(prefix_path, pkg_dir):

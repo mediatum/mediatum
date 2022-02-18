@@ -104,10 +104,6 @@ class m_date(Metatype):
     def getInformation(self):
         return {"moduleversion": "1.1", "softwareversion": "1.1"}
 
-    # method for additional keys
-    def getLabels(self):
-        return m_date.labels
-
     def get_input_pattern(self, field):
         regexes = {date.shortname: date.validation_regex for date in dateoption}
         try:
@@ -121,16 +117,15 @@ class m_date(Metatype):
     def get_input_placeholder(self, field):
         return field.getValues()
 
-    labels = {"de":
-              [
-                  ("date_edit_date_format", "Datums-/Zeitformat:"),
-                  ("fieldtype_date", "Datum"),
-                  ("fieldtype_date_desc", "Datumsauswahl (Tag / Monat / Jahr)")
-              ],
-              "en":
-              [
-                  ("date_edit_date_format", "Date-/Time-format:"),
-                  ("fieldtype_date", "date"),
-                  ("fieldtype_date_desc", "date field (day / month / year)")
-              ]
-              }
+    translation_labels = dict(
+        de=dict(
+            date_edit_date_format="Datums-/Zeitformat:",
+            fieldtype_date="Datum",
+            fieldtype_date_desc="Datumsauswahl (Tag / Monat / Jahr)",
+        ),
+        en=dict(
+            date_edit_date_format="Date-/Time-format:",
+            fieldtype_date="date",
+            fieldtype_date_desc="date field (day / month / year)",
+        ),
+    )

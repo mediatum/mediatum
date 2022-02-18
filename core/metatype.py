@@ -97,6 +97,8 @@ class Metatype(object):
         else:
             return None
 
+    translation_labels = {}
+
 charmap = [
     ['&nbsp;', '160', 'no-break space'],
     ['&amp;', '38', 'ampersand'],

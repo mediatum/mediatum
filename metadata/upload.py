@@ -76,10 +76,10 @@ class m_upload(Metatype):
             fieldname = None
 
         try:
-            warning = [t[1] for t in self.labels[language] if t[0] == 'upload_notarget_warning'][0]
+            warning = self.translation_labels[language]['upload_notarget_warning']
         except:
             logg.exception("exception in getEditorHTML, using default language")
-            warning = [t[1] for t in self.labels[_core_config.languages[0]] if t[0] == 'upload_notarget_warning'][0]
+            warning = self.translation_labels[_core_config.languages[0]]['upload_notarget_warning']
 
         context = {
             "lock": lock,
@@ -136,41 +136,36 @@ class m_upload(Metatype):
     def getInformation(self):
         return {"moduleversion": "1.0", "softwareversion": "1.1"}
 
-    def getLabels(self):
-        return m_upload.labels
-
-    labels = {"de":
-
-              [
-                  ("upload_popup_title", "MDT-m_upload"),
-                  ("fieldtype_upload", "MDT-m_upload Feld"),
-                  ("fieldtype_upload_desc", "Feld MDT-m_upload"),
-                  ("upload_titlepopupbutton", u"MDT-m_upload öffnen"),
-                  ("upload_done", u"Übernehmen"),
-                  ("upload_filelist_loc", "Link"),
-                  ("upload_filelist_size", u"Grösse"),
-                  ("upload_filelist_type", "Typ"),
-                  ("upload_filelist_mimetype", "Mimetype"),
-                  ("upload_filelist_delete_title", u"Datei löschen und zurück zum Upload"),
-                  ("upload_filelist_open_title", u"Datei öffnen"),
-                  ("upload_notarget_warning", "WARNUNG: Upload ist erst mit Zielknoten aktiv."),
-              ],
-              "en":
-              [
-                  ("upload_popup_title", "MDT-m_upload"),
-                  ("fieldtype_upload", "MDT-m_upload field"),
-                  ("fieldtype_upload_desc", "field for MDT-m_upload"),
-                  ("upload_titlepopupbutton", "open MDT-m_upload"),
-                  ("upload_done", "Done"),
-                  ("upload_filelist_loc", "Link"),
-                  ("upload_filelist_size", "Size"),
-                  ("upload_filelist_type", "Type"),
-                  ("upload_filelist_mimetype", "Mimetype"),
-                  ("upload_filelist_delete_title", "Delete File and back to Upload"),
-                  ("upload_filelist_open_title", "Open File"),
-                  ("upload_notarget_warning", "WARNING: upload will only be active with a targetnode"),
-              ]
-              }
+    translation_labels = dict(
+        de=dict(
+            upload_popup_title="MDT-m_upload",
+            fieldtype_upload="MDT-m_upload Feld",
+            fieldtype_upload_desc="Feld MDT-m_upload",
+            upload_titlepopupbutton=u"MDT-m_upload öffnen",
+            upload_done=u"Übernehmen",
+            upload_filelist_loc="Link",
+            upload_filelist_size=u"Grösse",
+            upload_filelist_type="Typ",
+            upload_filelist_mimetype="Mimetype",
+            upload_filelist_delete_title=u"Datei löschen und zurück zum Upload",
+            upload_filelist_open_title=u"Datei öffnen",
+            upload_notarget_warning="WARNUNG: Upload ist erst mit Zielknoten aktiv.",
+        ),
+        en=dict(
+            upload_popup_title="MDT-m_upload",
+            fieldtype_upload="MDT-m_upload field",
+            fieldtype_upload_desc="field for MDT-m_upload",
+            upload_titlepopupbutton="open MDT-m_upload",
+            upload_done="Done",
+            upload_filelist_loc="Link",
+            upload_filelist_size="Size",
+            upload_filelist_type="Type",
+            upload_filelist_mimetype="Mimetype",
+            upload_filelist_delete_title="Delete File and back to Upload",
+            upload_filelist_open_title="Open File",
+            upload_notarget_warning="WARNING: upload will only be active with a targetnode",
+        ),
+    )
 
 
 def handle_request(req):

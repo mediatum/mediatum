@@ -69,24 +69,19 @@ class m_treeselect(Metatype):
         req.response.status_code = httpstatus.HTTP_OK
         return httpstatus.HTTP_OK
 
-    # method for additional keys of type treeselect
-    def getLabels(self):
-        return m_treeselect.labels
-
-    labels = {"de":
-              [
-                  ("treeselect_popup_title", "Knotenauswahl"),
-                  ("fieldtype_treeselect", "Knotenauswahlfeld"),
-                  ("fieldtype_treeselect_desc", "Feld zur Knotenauswahl mit Hilfe eins Baumes"),
-                  ("treeselect_titlepopupbutton", u"Knotenauswahl öffnen"),
-                  ("treeselect_done", u"Übernehmen"),
-              ],
-              "en":
-              [
-                  ("treeselect_popup_title", "Node selection"),
-                  ("fieldtype_treeselect", "node selection field"),
-                  ("fieldtype_treeselect_desc", "field for node selection using a tree"),
-                  ("treeselect_titlepopupbutton", "open node selection"),
-                  ("treeselect_done", "Done"),
-              ]
-              }
+    translation_labels = dict(
+        de=dict(
+            treeselect_popup_title="Knotenauswahl",
+            fieldtype_treeselect="Knotenauswahlfeld",
+            fieldtype_treeselect_desc="Feld zur Knotenauswahl mit Hilfe eins Baumes",
+            treeselect_titlepopupbutton=u"Knotenauswahl öffnen",
+            treeselect_done=u"Übernehmen",
+        ),
+        en=dict(
+            treeselect_popup_title="Node selection",
+            fieldtype_treeselect="node selection field",
+            fieldtype_treeselect_desc="field for node selection using a tree",
+            treeselect_titlepopupbutton="open node selection",
+            treeselect_done="Done",
+        ),
+    )

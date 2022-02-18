@@ -108,18 +108,13 @@ class m_label(Metatype):
     def getInformation(self):
         return {"moduleversion": "1.0", "softwareversion": "1.1"}
 
-    # method for additional keys of type text
-    def getLabels(self):
-        return m_label.labels
-
-    labels = {"de":
-              [
-                  ("fieldtype_label", "Label"),
-                  ("fieldtype_label_desc", "Text als String"),
-              ],
-              "en":
-              [
-                  ("fieldtype_label", "label field"),
-                  ("fieldtype_label_desc", "text without input field"),
-              ]
-              }
+    translation_labels = dict(
+        de=dict(
+            fieldtype_label="Label",
+            fieldtype_label_desc="Text als String",
+        ),
+        en=dict(
+            fieldtype_label="label field",
+            fieldtype_label_desc="text without input field",
+        ),
+    )

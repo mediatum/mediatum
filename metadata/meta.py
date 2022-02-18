@@ -54,21 +54,16 @@ class m_meta(Metatype):
     def getName(self):
         return "fieldtype_meta"
 
-    # method for additional keys of type meta
-    def getLabels(self):
-        return m_meta.labels
-
-    labels = {"de":
-              [
-                  ("metafield_tech_meta", "Technisches Metadatenfeld:"),
-                  ("metafield_metadata_field", "Metadatenfeld"),
-                  ("fieldtype_meta", "Technisches Metadatum"),
-                  ("fieldtype_meta_desc", "Technisches Metadatum (automatisch vom System erstellt)")
-              ],
-              "en":
-              [
-                  ("metafield_tech_meta", "Technical metadata field:"),
-                  ("fieldtype_meta", "technical metadata"),
-                  ("fieldtype_meta_desc", "field for technical metadata (automatically filled in by mediatum)")
-              ]
-              }
+    translation_labels = dict(
+        de=dict(
+            metafield_tech_meta="Technisches Metadatenfeld:",
+            metafield_metadata_field="Metadatenfeld",
+            fieldtype_meta="Technisches Metadatum",
+            fieldtype_meta_desc="Technisches Metadatum (automatisch vom System erstellt)",
+        ),
+        en=dict(
+            metafield_tech_meta="Technical metadata field:",
+            fieldtype_meta="technical metadata",
+            fieldtype_meta_desc="field for technical metadata (automatically filled in by mediatum)",
+        ),
+    )

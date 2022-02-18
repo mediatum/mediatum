@@ -49,20 +49,8 @@
                     <td tal:content="python:workflow.name"/>
                     <td tal:content="python:workflow.get('description')">TEXT</td>
 
-                    <td style="text-align:center">
-                        <!--
-                        XXX: what is this actually doing? Do we need this?
-                        <img tal:condition="python:workflow.getAccess('read')" i18n:attributes="title admin_wf_acl_title" src="/img/archive.png"/>
-                        <img tal:condition="python:workflow.getAccess('read')==''" i18n:attributes="title admin_wf_acl_title" src="/img/mark_empty.png"/>
-                        -->
-                    </td>
-                    <td style="text-align:center">
-                        <!--
-                        XXX: what is this actually doing? Do we need this?
-                        <img tal:condition="python:workflow.getAccess('write')" i18n:attributes="title admin_wf_acl_title" src="/img/archive.png"/>
-                        <img tal:condition="python:workflow.getAccess('write')==''" i18n:attributes="title admin_wf_acl_title" src="/img/mark_empty.png"/>
-                        -->
-                    </td>
+                    <td style="text-align:center"> </td>
+                    <td style="text-align:center"> </td>
                     <td style="text-align:right;width:50px">
                         <input tal:attributes="name python:u'detaillist_{}'.format(workflow.getId())" i18n:attributes="title admin_wf_nodeedit_title" type="image" src="/img/rightarrow.png"/>
                         &nbsp;
@@ -297,20 +285,8 @@
                             <tal:block tal:content="python:unicode(len(workflowstep.getComment()))" i18n:name="number"/> Zeichen
                         </a>
                     </td>
-                    <td style="text-align:center">
-                        <!--
-                        XXX: what is this actually doing? Do we need this?
-                        <img tal:condition="python:workflowstep.getAccess('read')" i18n:attributes="title admin_wfstep_acl_title" src="/img/archive.png"/>
-                        <img tal:condition="python:workflowstep.getAccess('read')==''" i18n:attributes="title admin_wfstep_acl_title" src="/img/mark_empty.png"/>
-                        -->
-                    </td>
-                    <td style="text-align:center">
-                        <!--
-                        XXX: what is this actually doing? Do we need this?
-                        <img tal:condition="python:workflowstep.getAccess('write')" i18n:attributes="title admin_wf_acl_title" src="/img/archive.png"/>
-                        <img tal:condition="python:workflowstep.getAccess('write')==''" i18n:attributes="title admin_wf_acl_title" src="/img/mark_empty.png"/>
-                        -->
-                    </td>
+                    <td style="text-align:center"> </td>
+                    <td style="text-align:center"> </td>
                      <td>
                         <input tal:attributes="name python:u'editdetail_{}|{}'.format(workflow.getId(), workflowstep.getId())" i18n:attributes="title admin_wfstep_edit" type="image" src="/img/edit.png"/>
                         &nbsp;&nbsp;
@@ -541,10 +517,8 @@
     </tr>
     <tal:block tal:repeat="field fields">
         <tr tal:define="name python:field.getName(); value python:node.get(name)">
-            <!--<tr tal:define="name python:field['type']=='meta' and field.get('name') or field.name; value python:node.get(name)">-->
             <td>
                 <span tal:replace="python:field.getLabel()"/>
-                <!--<span tal:replace="python:field['label']"/>-->
             </td>
             <td>
                 <span tal:replace="raw python:field.getEditorHTML(value, width=400)"/>

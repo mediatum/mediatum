@@ -25,10 +25,11 @@ def _replace_vars(node, s):
     return s
 
 
-class m_url(Metatype):
+_icons = {"externer Link": "/img/extlink.png", "Email": "/img/email.png"}
+_targets = {"selbes Fenster": "same", "neues Fenster": "_blank"}
 
-    icons = {"externer Link": "/img/extlink.png", "Email": "/img/email.png"}
-    targets = {"selbes Fenster": "same", "neues Fenster": "_blank"}
+
+class m_url(Metatype):
 
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
         fielddef = field.getValues().split("\r\n")
@@ -55,8 +56,8 @@ class m_url(Metatype):
     def getAdminFieldsHTML(self, values={}):
         return tal.getTAL("metadata/url.html",
                           {"valuelist": values["valuelist"],
-                           "icons": m_url.icons,
-                           "url_targets": m_url.targets},
+                           "icons": _icons,
+                           "url_targets": _targets},
                           macro="fieldeditor",
                           language=values["language"])
 
@@ -133,8 +134,8 @@ class m_url(Metatype):
         value = value[:4]
         return tal.getTAL("metadata/url.html",
                           {"value": value,
-                           "icons": m_url.icons,
-                           "url_targets": m_url.targets},
+                           "icons": _icons,
+                           "url_targets": _targets},
                           macro="maskeditor",
                           language=language)
 

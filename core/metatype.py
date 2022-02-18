@@ -30,8 +30,6 @@ class Context(object):
 
 class Metatype(object):
 
-    joiner = '\n'
-
     @classmethod
     def get_name4schema(cls):
         name = cls.__name__

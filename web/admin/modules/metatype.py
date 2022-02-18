@@ -95,8 +95,7 @@ def validate(req, op):
         return showFieldOverview(req)
 
     if len(path) == 4 and path[3] == "editor":
-        res = showEditor(req)
-        return res
+        return showEditor(req)
 
     if len(path) == 2 and path[1] == "info":
         return showInfo(req)

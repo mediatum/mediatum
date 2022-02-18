@@ -78,7 +78,6 @@
                 </tal:block>
             </form>
         </div>
-        <!-- <div style="position:absolute;bottom:0px;right:10px"><img id="toggleSubNorth" src="/img/uparrowdisabled.png"/></div> -->
     </div>
 
     <div id="sub_content_content">
@@ -88,7 +87,6 @@
         </tal:block>
 
         <p tal:condition="python:len(metatypes)>1" class="error" style="margin-left:10px" i18n:translate="edit_meta_info2"><span i18n:name="n" tal:content="python:metatypes[0]">TEXT</span></p>
-        <!--<div id="scrollcontent">-->
             <form class="edit" action="edit_content" method="post" id="myform">
                 <input tal:attributes="value csrf" type="hidden" name="csrf_token">
                 <input tal:attributes="value srcnodeid" type="hidden" name="srcnodeid">
@@ -101,10 +99,14 @@
                 <tal:block tal:condition="fields">
                     <tal:block tal:repeat="field fields">
                         <div class="editorrow">
-                            <div class="label" tal:content="python:field.getLabel()">TEXT</div>
+                            <div class="label" tal:content="python:field.getLabel()"> </div>
                             <div id="description">&nbsp;</div>
                             <div id="editor_content">
-                                <span tal:on-error="python:field.__dict__" tal:define="name python:field.getFieldtype()=='meta' and field.getValue() or field.getName(); value python:node.get(name)" tal:replace="structure python:field.getEditorHTML(value)"/>
+                                <span
+                                        tal:on-error="python:field.__dict__"
+                                        tal:define="name python:field.getValue() if field.getFieldtype()=='meta' else field.getName(); value python:node.get(name)"
+                                        tal:replace="structure python:field.getEditorHTML(value)"
+                                       />
                              </div>
                         </div>
                     </tal:block>
@@ -131,7 +133,6 @@
                 <br/>
                 <br/>
             </form>
-        <!--</div>-->
     </div>
     <div id="sub_footer_module" style="overflow:hidden;">
         <div style="text-align:right;margin-right:5px;overflow:hidden;">

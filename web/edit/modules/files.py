@@ -12,6 +12,7 @@ import logging
 import mediatumtal.tal as _tal
 
 import core.csrfform as _core_csrfform
+import core.nodecache as _core_nodecache
 import utils.utils as _utils_utils
 from utils.utils import getMimeType, get_user_id, suppress
 from utils.fileutils import importFile, getImportDir, importFileIntoDir
@@ -22,8 +23,6 @@ from core.translation import t
 from core import Node
 from core import db
 from core import File
-from contenttypes import Home, Collections
-from core.systemtypes import Root
 
 q = db.query
 logg = logging.getLogger(__name__)
@@ -269,10 +268,10 @@ def getContent(req, ids):
         return ""
 
     if req.params.get("style") == "popup":
-        id = req.params.get("id", q(Root).one().id)
+        id = req.params.get("id", _core_nodecache.get_root_node().id)
         ret += _tal.processTAL(
                 dict(
-                    basedirs=[q(Home).one(), q(Collections).one()],
+                    basedirs=[_core_nodecache.get_home_root_node(), _core_nodecache.get_collections_node()],
                     script="var currentitem = '{0}';\nvar currentfolder = '{1}';\nvar node = {0};".format(
                             id,
                             req.params.get('parent'),

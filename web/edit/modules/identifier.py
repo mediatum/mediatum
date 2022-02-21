@@ -9,6 +9,7 @@ import mediatumtal.tal as _tal
 
 import core.config as config
 import core.csrfform as _core_csrfform
+import core.nodecache as _core_nodecache
 import core.translation as _core_translation
 import utils.date as date
 import utils.urn as urn
@@ -19,7 +20,6 @@ from core import httpstatus
 import logging
 from core import Node
 from core import db
-from contenttypes import Collections
 from core.database.postgres.permission import AccessRule, NodeToAccessRule
 from core.request_handler import error as _error
 
@@ -115,7 +115,7 @@ def getContent(req, ids):
             v['msg'] = _core_translation.t(_core_translation.set_language(req.accept_languages), 'edit_identifier_state_2_admin')
 
     else:
-        if pathutils.isDescendantOf(node, q(Collections).one()):
+        if pathutils.isDescendantOf(node, _core_nodecache.get_collections_node()):
             if not node.get('system.identifierstate'):
                 if 'id_type' in req.params:
                     try:

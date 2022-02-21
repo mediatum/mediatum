@@ -23,8 +23,6 @@ import core.httpstatus as _httpstatus
 from . import oaisets
 import utils.date as date
 from schema.schema import getMetaType
-from core.systemtypes import Root
-from contenttypes import Collections
 from core import Node
 from core import db
 import core.nodecache as _nodecache
@@ -163,15 +161,11 @@ def _check_metadata_format(format):
 def _identify(**excess):
     if excess:
         raise _OAIError("badArgument")
-    name = config.get("config.oaibasename")
-    if not name:
-        root = q(Root).one()
-        name = root.getName()
 
     identify = _lxml_etree.Element("Identify")
 
     for tag, txt in (
-        ("repositoryName", name),
+        ("repositoryName", config.get("config.oaibasename") or _nodecache.get_root_node().getName()),
         ("baseURL", 'http://{}/oai/oai'.format(config.get("host.name", "{}:8081".format(socket.gethostname())))),
         ("protocolVersion", "2.0"),
         ("adminEmail", config.get("email.admin")),
@@ -267,8 +261,7 @@ def _retrieve_nodes(setspec, date_from, date_to, metadataformat):
     nodequery = oaisets.getNodesQueryForSetSpec(setspec, schemata)
     # if for this oai group set no function is defined that retrieve the nodes query, use the filters
     if not nodequery:
-        collections_root = q(Collections).one()
-        nodequery = collections_root.all_children
+        nodequery = _nodecache.get_collections_node().all_children
         setspecFilter = oaisets.getNodesFilterForSetSpec(setspec, schemata)
         nodequery = nodequery.filter(Node.schema.in_(schemata))
         for sFilter in setspecFilter:

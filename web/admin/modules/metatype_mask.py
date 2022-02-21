@@ -9,10 +9,10 @@ import mediatumtal.tal as _tal
 
 import core.config as config
 import core.csrfform as _core_csrfform
+import core.nodecache as _core_nodecache
 import core.translation as _core_translation
 from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter
 from schema.schema import getMetaType, getMaskTypes
-from schema.mapping import getMappings
 from utils.utils import removeEmptyStrings
 from web.common.acl_web import makeList
 from schema.schema import Mask
@@ -128,7 +128,7 @@ def MaskDetails(req, pid, id, err=0):
 
     v = getAdminStdVars(req)
     v["mask"] = mask
-    v["mappings"] = getMappings()
+    v["mappings"] = _core_nodecache.get_mappings_node().children
     v["mtype"] = mtype
     v["error"] = err
     v["pid"] = pid

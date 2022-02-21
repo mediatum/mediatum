@@ -9,11 +9,14 @@ import os
 import re
 import time
 import json
+
+import mediatumtal.tal as _tal
+
 import core as _core
 import core.config as config
 import core.csrfform as _core_csrfform
+import core.nodecache as _core_nodecache
 import core.translation as _core_translation
-import mediatumtal.tal as _tal
 import web.edit.edit_common as _web_edit_edit_common
 import core.systemtypes as _core_systemtypes
 import utils.utils as _utils_utils
@@ -114,7 +117,7 @@ def frameset(req):
         return
 
     language = _core_translation.set_language(req.accept_languages)
-    id = req.values.get("id", q(Collections).one().id)
+    id = req.values.get("id", _core_nodecache.get_collections_node().id)
     currentdir = q(Data).get(id)
     if currentdir is None:
         req.response.status_code = httpstatus.HTTP_NOT_FOUND
@@ -226,8 +229,8 @@ def frameset(req):
                 user=user,
                 spc=spc,
                 folders=folders,
-                collectionsid=q(Collections).one().id,
-                basedirs=[q(Home).one(), q(Collections).one()],
+                collectionsid=_core_nodecache.get_collections_node().id,
+                basedirs=[_core_nodecache.get_home_root_node(), _core_nodecache.get_collections_node()],
                 cmenu_iconpaths=cmenu_iconpaths,
                 path=path,
                 containerpath=containerpath,
@@ -256,7 +259,7 @@ def _handletabs(req, ids, tabs, sort_choices):
 
     n = q(Data).get(ids[0])
     if n.type.startswith("workflow"):
-        n = q(_core_systemtypes.Root).one()
+        n = _core_nodecache.get_root_node()
 
     skip_items = set(_utils_utils.get_menu_strings(n.editor_menu))
     skip_items.intersection_update(user.hidden_edit_functions)
@@ -364,7 +367,7 @@ def edit_tree(req):
     match_error = False
 
     if req.values['key'] == 'root':
-        nodes = q(Collections).one().container_children.sort_by_orderpos()
+        nodes = _core_nodecache.get_collections_node().container_children.sort_by_orderpos()
     elif req.values['key'] == 'home':
         if not user.is_admin:
             nodes = [home_dir]

@@ -6,12 +6,11 @@ from __future__ import print_function
 
 import mediatumtal.tal as _tal
 
+import core.nodecache as _core_nodecache
 import core.translation as _core_translation
 from core.users import user_from_session as _user_from_session
 from core import httpstatus
 from core import Node
-from core.systemtypes import Root
-from contenttypes import Collections, Home
 from core import db
 
 q = db.query
@@ -35,9 +34,9 @@ def getContent(req, ids):
 
     return _tal.processTAL(
             dict(
-                basedirs=[q(Home).one(), q(Collections).one()],
+                basedirs=[_core_nodecache.get_home_root_node(), _core_nodecache.get_collections_node()],
                 script="var currentitem = '{0}';\nvar currentfolder = '{0}'".format(
-                        req.params.get("id", q(Root).one().id),
+                        req.params.get("id", _core_nodecache.get_root_node().id),
                     ),
                 idstr=",".join(ids),
                 nodes=nodes,

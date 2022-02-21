@@ -11,9 +11,10 @@ import sqlalchemy as _sqlalchemy
 
 import werkzeug.datastructures as _werkzeug_datastructures
 from lxml import etree
+
+import core.nodecache as _core_nodecache
 import utils.utils as _utils_utils
 from core import File, db
-from core.systemtypes import Mappings, Root
 from utils.compat import iteritems
 from utils.xml import xml_remove_illegal_chars
 from utils.list import filter_scalar
@@ -149,11 +150,7 @@ class _NodeLoader(object):
             logg.exception("xml import: xml file not well-formed.")
             return
 
-        mappings = q(Mappings).scalar()
-        if mappings is None:
-            mappings = q(Root).one().children.append(Node(name="mappings", type="mappings"))
-            logg.info("no mappings root found: added mappings root")
-
+        mappings = _core_nodecache.get_mappings_node()
         for node in self.nodes:
             if (node.type == "mapping") and not any(node.name == n.name for n in mappings.children if n.type == "mapping"):
                 mappings.children.append(node)
@@ -234,7 +231,7 @@ class _NodeLoader(object):
                 # temporarly add self.root to 'root' to get an node.id for self.root
                 # so all children of self.root gets a node.id after db.session.commit()
                 # this is neccessary to get a node.id for the attribute 'attribute' for maskitems of exportmasks
-                root = q(Root).one()
+                root = _core_nodecache.get_root_node()
                 root.children.append(self.root)
                 root.children.remove(self.root)
                 db.session.commit()

@@ -12,7 +12,7 @@ import sqlalchemy as _sqlalchemy
 
 import mediatumtal.tal as _tal
 
-from schema.mapping import getMappings, getMapping, getMappingTypes, updateMapping, deleteMapping, updateMappingField, deleteMappingField, exportMapping, importMapping
+from schema.mapping import getMapping, getMappingTypes, updateMapping, deleteMapping, updateMappingField, deleteMappingField, exportMapping, importMapping
 from web.admin.adminutils import Overview, getAdminStdVars, getFilter, getSortCol
 import core.translation as _translation
 
@@ -165,7 +165,7 @@ def validate(req, op):
 
 
 def view(req):
-    mappings = list(getMappings())
+    mappings = list(_nodecache.get_mappings_node().children)
     order = getSortCol(req)
     actfilter = getFilter(req)
 

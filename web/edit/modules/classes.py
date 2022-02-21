@@ -20,15 +20,7 @@ def getInformation():
 
 def getContent(req, ids):
     user = _user_from_session()
-    nodes = []
-    for nid in ids:
-        node = q(Node).get(nid)
-        if not node.has_write_access():
-            req.response.status_code = httpstatus.HTTP_FORBIDDEN
-            return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
-        nodes.append(node)
-
-    if "classes" in user.hidden_edit_functions:
+    if not all(q(Node).get(nid).has_write_access() for nid in ids) or "classes" in user.hidden_edit_functions:
         req.response.status_code = httpstatus.HTTP_FORBIDDEN
         return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
@@ -39,7 +31,7 @@ def getContent(req, ids):
                         req.params.get("id", _core_nodecache.get_root_node().id),
                     ),
                 idstr=",".join(ids),
-                nodes=nodes,
+                node_count=len(ids),
                 t=_core_translation.t,
                 language=_core_translation.set_language(req.accept_languages),
             ),

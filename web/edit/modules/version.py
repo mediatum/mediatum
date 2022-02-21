@@ -63,13 +63,13 @@ def getContent(req, ids):
     ctx = dict(
         idstr=idstr,
         node=node,
-        nodes=[node],
         language=_core_translation.set_language(req.accept_languages),
         t=_core_translation.t,
         csrf=_core_csrfform.get_token(),
         untagged_current_version=current_version,
         published_version=published_version,
         srcnodeid=req.values.get("srcnodeid", ""),
+        node_count=len(ids),
        )
 
     if tagged_node_versions:

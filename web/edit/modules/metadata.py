@@ -226,8 +226,8 @@ def getContent(req, ids):
             metatypes=metatypes,
             idstr=idstr,
             node=nodes[0], # ?
+            node_count=len(nodes),
             flag_nodename_changed=flag_nodename_changed,
-            nodes=nodes,
             masklist=masklist,
             maskname=maskname,
             language=_core_translation.set_language(req.accept_languages),

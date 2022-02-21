@@ -120,10 +120,10 @@ def getContent(req, ids):
                 # XXX: this is the only line that uses getTypeAlias. What is the real meaning?
                 type_alias=node.getTypeAlias(),
                 is_container=int(node.isContainer()),
-                nodes=[node],
                 long_current_schema=long_scheme_names.get(node.schema),
                 srcnodeid=req.values.get("srcnodeid", ""),
                 csrf=_core_csrfform.get_token(),
+                node_count=len(ids),
             )
 
         available_schemes = [s for s in schemes if node.type in s.getDatatypes()]

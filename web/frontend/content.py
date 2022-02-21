@@ -652,7 +652,7 @@ class ContentNode(ContentBase):
             # self.node may be result of a query and/or element of a contentlist, in this case
             # self.paths is not set - try to recalculate paths
             self.paths = get_accessible_paths(self.node, q(Node).prefetch_attrs())
-        
+
         if self.paths:
             occurences_html = render_content_occurences(self.node, req, self.paths)
         else:
@@ -666,26 +666,26 @@ class NodeNotAccessible(ContentBase):
     def __init__(self, error="no such node", status=404):
         self.error = error
         self.status = status
-        
+
     @property
     def cache_duration(self):
         return 30
-    
+
 
 class StartpageNotAccessible(ContentBase):
 
     def __init__(self, error="no such node", status=404):
         self.error = error
         self.status = status
-        
+
     @property
     def cache_duration(self):
         return 30
-    
+
 
 def make_node_content(node, req, paths):
     """Renders the inner parts of the content area.
-    The current node can be a container or a content node. 
+    The current node can be a container or a content node.
     A container can render a static HTML page, a node list view or a single node from that list.
     For a content node, the detail view is displayed.
     If the wanted node cannot be accessed, a NodeNotAccessible instance is returned.
@@ -739,7 +739,7 @@ def make_node_content(node, req, paths):
     return c
 
 
-def render_content_nav(req, node, logo, styles, select_style_link, print_url, paths):
+def render_content_nav(node, logo, styles, select_style_link, print_url, paths):
     if paths:
         shortest_path = sorted(paths, key=lambda p: (len(p), p[-1].id))[0]
     else:
@@ -758,15 +758,15 @@ def render_content_nav(req, node, logo, styles, select_style_link, print_url, pa
     return content_nav_html
 
 
-def get_make_search_content_function(req):
+def get_make_search_content_function(req_args):
     """Derives from query parameters if a simple or extended search should be run.
     Returns the function that renders the search content or None, if no search should be done.
     """
         
-    if req.args.get("query", "").strip():
+    if req_args.get("query", "").strip():
         return simple_search
     else:
-        searchmode = req.args.get("searchmode")
+        searchmode = req_args.get("searchmode")
 
         if searchmode in ("extended", "extendedsuper"):
             if searchmode == "extended":
@@ -775,9 +775,7 @@ def get_make_search_content_function(req):
                 field_range = xrange(1,11)
 
             for ii in field_range:
-                if req.args.get("query" + str(ii), "").strip() or \
-                        req.args.get("query" + str(ii) + "-from", "").strip() or \
-                        req.args.get("query" + str(ii) + "-to", "").strip():
+                if any(req_args.get("query{}{}".format(ii, iii).strip()) for iii in ("", "-from", "-to")):
                     return extended_search
 
 
@@ -805,51 +803,35 @@ def render_content_occurences(node, req, paths):
     return html
 
 
-def render_content(node, req, render_paths=True, show_id=None):
-    make_search_content = get_make_search_content_function(req)
+def render_content(node, req, render_paths):
+    make_search_content = get_make_search_content_function(req.args)
+    paths = (get_accessible_paths(node, q(Node).prefetch_attrs())
+                   if render_paths and node is not None else None)
+    content = (make_search_content(req, paths) if make_search_content else
+                                       make_node_content(node, req, paths))
 
-    if render_paths and node is not None:
-        paths = get_accessible_paths(node, q(Node).prefetch_attrs())
-    else:
-        paths = None
+    cache_duration = content.cache_duration
+    req.response.headers["Cache-Control"] = ("max-age={}".format(cache_duration)
+                                               if cache_duration else "no-cache")
 
-    if make_search_content is None:
-        content_or_error = make_node_content(node, req, paths)
-    else:
-        content_or_error = make_search_content(req, paths)
+    if isinstance(content, NodeNotAccessible):
+        req.response.status_code = content.status
+        return render_content_error(content.error, lang(req)), None
 
-    
-    cache_duration = content_or_error.cache_duration
-    if cache_duration:
-        req.response.headers["Cache-Control"] = "max-age=" + str(cache_duration)
-    else:
-        req.response.headers["Cache-Control"] = "no-cache"
+    if isinstance(content, StartpageNotAccessible):
+        req.response.status_code = content.status
+        return render_startpage_error(node, lang(req)), None
 
-    if isinstance(content_or_error, NodeNotAccessible):
-        req.response.status_code = content_or_error.status
-        return render_content_error(content_or_error.error, lang(req))
-
-    if isinstance(content_or_error, StartpageNotAccessible):
-        req.response.status_code = content_or_error.status
-        return render_startpage_error(node, lang(req))
-
-    content = content_or_error
-    
-    if "raw" in req.args:
-        content_nav_html = ""
-    else:
-        node = content.node
-        logo = content.logo
-        select_style_link = content.select_style_link
-        print_url = content.print_url
-        styles = content.content_styles
-        content_nav_html = render_content_nav(req, node, logo, styles, select_style_link, print_url, paths)
-
-
-    if isinstance(show_id, list) and hasattr(content, 'show_id'):
-        show_id.append(content.show_id)
-    content_html = content_nav_html + "\n" + content.html(req)
-    return content_html
+    content_nav_html = "" if "raw" in req.args else render_content_nav(
+            content.node,
+            content.logo,
+            content.content_styles,
+            content.select_style_link,
+            content.print_url,
+            paths,
+           )
+    return (u"{}\n{}".format(content_nav_html, content.html(req)),
+            content.show_id if hasattr(content,"show_id") else None)
 
 
 class CollectionLogo(object):

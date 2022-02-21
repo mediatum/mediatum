@@ -141,14 +141,6 @@ def _cte_subtree(node):
     return query
 
 
-def _subquery_subtree(node):
-    from core import db
-
-    return (db.query(t_noderelation.c.cid)
-            .filter(t_noderelation.c.nid == node.id)
-            .subquery())
-
-
 def _subquery_subtree_distinct(node):
     from core import db
 
@@ -376,27 +368,20 @@ class Node(DeclarativeBase, NodeMixin):
             searchtree = parse_searchquery(searchquery)
         return searchtree
 
-    def _query_subtree(self):
-        """Builds the query object that is used as basis for content node searches below this node"""
-        from contenttypes import Collections
-        q = object_session(self).query
-        subtree = _subquery_subtree(self)
-        if self == q(Collections).one():
-            # no need to filter, the whole tree can be searched
-            subtree = None
-        return subtree
-
-    def search(self, searchquery, languages=None):
+    def search(self, searchquery, languages=None, filter_dbquery=lambda q: q):
         """Creates a search query.
         :param searchquery: query in search language or parsed query (search tree) as `SearchTreeElement`:
         :param language: sequence of language config strings matching Fts.config
+        :param filter_dbquery: db query filter
         :returns: Node Query
         """
         from core.database.postgres.search import apply_searchtree_to_query
         from contenttypes import Content
         q = object_session(self).query
         searchtree = self._parse_searchquery(searchquery)
-        return apply_searchtree_to_query(q(Content), searchtree, languages), self._query_subtree()
+        query = apply_searchtree_to_query(q(Content), searchtree, languages)
+        query = filter_dbquery(query).node_offset0()
+        return query.join(t_noderelation, Content.id == t_noderelation.c.cid).filter_by(nid=self.id)
 
     @property
     def tagged_versions(self):

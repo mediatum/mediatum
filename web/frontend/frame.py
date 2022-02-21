@@ -38,8 +38,8 @@ from utils.utils import Link
 from utils.url import build_url_from_path_and_params
 from schema.searchmask import SearchMask
 from mediatumtal import tal
+import core.nodecache as _nodecache
 from core.nodecache import get_collections_node
-from utils.google_scholar import google_scholar
 import time
 
 
@@ -462,32 +462,37 @@ class UserLinks(object):
         return build_url_from_path_and_params(self.path, params)
 
 
-def render_page(req, node, content_html, show_navbar=True, show_id=None):
-    """Renders the navigation frame with the inserted content HTML and returns the whole page.
+def _render_head_meta(node):
+    """
+    create meta tags for google_scholar by using the exportmask head_meta
+
+    :param node:
+    :return: rendered head_meta mask
+    """
+    if config.get("websearch.google_scholar", "").lower() == "true" or not node or node.isContainer():
+        mtype = _nodecache.get_metadatatypes_node().children.filter_by(name=node.schema).scalar()
+        mask = mtype and mtype.getMask('head_meta')
+        return mask and mask.getViewHTML([node], flags=8)
+
+
+def render_page(req, content_html, node=None, show_navbar=True, show_id=None):
+    """
+    Renders the navigation frame with the
+    inserted content HTML and returns the whole page.
     """
     user = _user_from_session()
     userlinks = UserLinks(user, req)
     language = lang(req)
     rootnode = get_collections_node()
+    theme = webconfig.theme
 
     if node is None:
         node = rootnode
         container = rootnode
+        head_meta = ""
     else:
         container = node.get_container()
-    
-    theme = webconfig.theme
-
-    front_lang = {
-        "name": config.languages,
-        "actlang": language
-    }
-    frame_context = {
-        "content": Markup(content_html),
-        "id": node.id,
-        "language": front_lang,
-        "show_navbar": show_navbar,
-    }
+        head_meta = _render_head_meta(q(Node).get(show_id) if show_id else node) or ""
 
     search_html = u""
     navtree_html = u""
@@ -495,40 +500,35 @@ def render_page(req, node, content_html, show_navbar=True, show_id=None):
     if show_navbar and not req.args.get("disable_navbar"):
         if not req.args.get("disable_search"):
             search_html = render_search_box(container, language, req)
-
         if not req.args.get("disable_navtree"):
             navtree_html = render_navtree(language, node.id, user)
 
-    ctx_header = {
-        "user_name": user.getName(),
-        "userlinks": userlinks,
-        "header_items": rootnode.getCustomItems("header"),
-        "language": front_lang,
-        "show_language_switcher": (len(front_lang['name']) > 1)
-    }
-    header_html = theme.render_template("frame_header.j2.jade", ctx_header)
+    front_lang = dict(
+            actlang=language,
+            name=config.languages,
+           )
 
-    ctx_footer = {
-        "footer_left_items": rootnode.getCustomItems("footer_left"),
-        "footer_right_items": rootnode.getCustomItems("footer_right")
-    }
-    footer_html = theme.render_template("frame_footer.j2.jade", ctx_footer)
+    header_html = theme.render_template("frame_header.j2.jade", dict(
+            header_items=rootnode.getCustomItems("header"),
+            language=front_lang,
+            show_language_switcher=len(front_lang['name']) > 1,
+            user_name=user.getName(),
+            userlinks=userlinks,
+           ))
 
-    frame_context["search"] = Markup(search_html)
-    frame_context["navtree"] = Markup(navtree_html)
-    frame_context["header"] = Markup(header_html)
-    frame_context["footer"] = Markup(footer_html)
+    footer_html = theme.render_template("frame_footer.j2.jade", dict(
+            footer_left_items=rootnode.getCustomItems("footer_left"),
+            footer_right_items=rootnode.getCustomItems("footer_right"),
+           ))
 
-    if show_id and isinstance(show_id, list):
-        show_id = show_id[0]
-    else:
-        show_id = req.args.get("show_id")
-    if show_id:
-        shown_node = q(Node).get(show_id)
-    else:
-        shown_node = node
-    frame_context["google_scholar"] = google_scholar(shown_node)
-
-    html = theme.render_template("frame.j2.jade", frame_context)
-
-    return html
+    return theme.render_template("frame.j2.jade", dict(
+            content=Markup(content_html),
+            id=node.id,
+            language=front_lang,
+            show_navbar=show_navbar,
+            search=Markup(search_html),
+            navtree=Markup(navtree_html),
+            header=Markup(header_html),
+            footer=Markup(footer_html),
+            google_scholar=head_meta,
+           ))

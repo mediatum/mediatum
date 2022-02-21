@@ -37,13 +37,13 @@ _webroots = []
 
 def _send_thumbnail(thumb_type, req):
     try:
-        nid = node_id_from_req_path(req)
+        nid = node_id_from_req_path(req.mediatum_contextfree_path)
     except ValueError:
         req.response.status_code = 400
         return 400
 
 
-    version_id = version_id_from_req(req)
+    version_id = version_id_from_req(req.args)
 
     node_or_version = get_node_or_version(nid, version_id, Data)
 
@@ -107,14 +107,14 @@ send_thumbnail = partial(_send_thumbnail, u"thumb")
 send_thumbnail2 = partial(_send_thumbnail, u"presentation")
 
 
-def _send_file_with_type(filetype, mimetype, req, checkonly=False):
+def send_doc(req):
     try:
-        nid = node_id_from_req_path(req)
+        nid = node_id_from_req_path(req.mediatum_contextfree_path)
     except ValueError:
         req.response.status_code = 400
         return 400
 
-    version_id = version_id_from_req(req)
+    version_id = version_id_from_req(req.args)
     node = get_node_or_version(nid, version_id, Content)
 
     if node is None or not node.has_data_access():
@@ -122,7 +122,7 @@ def _send_file_with_type(filetype, mimetype, req, checkonly=False):
         return 404
 
     fileobj = None
-    file_query = node.files.filter_by(filetype=filetype)
+    file_query = node.files.filter_by(filetype=u'document')
     # if version_id == u"published":
     if version_id:
         file_query = file_query.filter_by(transaction_id=node.transaction_id)
@@ -132,24 +132,14 @@ def _send_file_with_type(filetype, mimetype, req, checkonly=False):
         if not fileobj:
             FileVersion = version_class(File)
             # this a long lasting query
-            file_query = node.files.filter_by(filetype=filetype)
+            file_query = node.files.filter_by(filetype=u'document')
             fileobj = file_query.filter(FileVersion.transaction_id <= node.transaction_id).\
                 order_by(FileVersion.transaction_id.desc()).first()
-    if mimetype:
-        file_query = file_query.filter_by(mimetype=mimetype)
 
     if not fileobj:
         fileobj = file_query.scalar()
-    if fileobj is not None:
-        if checkonly:
-            req.response.status_code = 200
-            return 200
-        return _request_handler.sendFile(req, fileobj.abspath, fileobj.mimetype)
 
-    return 404
-
-
-send_doc = partial(_send_file_with_type, u"document", None)
+    return _request_handler.sendFile(req, fileobj.abspath, fileobj.mimetype) if fileobj else 404
 
 
 def send_image(req):
@@ -159,7 +149,7 @@ def send_image(req):
         req.response.status_code = 404
         return 400
 
-    version_id = version_id_from_req(req)
+    version_id = version_id_from_req(req.args)
 
     node = get_node_or_version(nid, version_id, Content)
 
@@ -216,12 +206,12 @@ def send_image(req):
 
 def send_original_file(req):
     try:
-        nid = node_id_from_req_path(req)
+        nid = node_id_from_req_path(req.mediatum_contextfree_path)
     except ValueError:
         req.response.status_code = 400
         return 400
 
-    version_id = version_id_from_req(req)
+    version_id = version_id_from_req(req.args)
 
     node = get_node_or_version(nid, version_id, Data)
 
@@ -252,7 +242,7 @@ def send_file(req):
         req.response.status_code = 400
         return 400
 
-    version_id = version_id_from_req(req)
+    version_id = version_id_from_req(req.args)
 
     node = get_node_or_version(nid, version_id)
 
@@ -323,7 +313,7 @@ def send_attfile(req):
         req.response.status_code = 404
         return 400
 
-    version_id = version_id_from_req(req)
+    version_id = version_id_from_req(req.args)
 
     node = get_node_or_version(nid, version_id, Data)
 
@@ -362,7 +352,7 @@ def send_attfile(req):
 
 def fetch_archived(req):
     try:
-        nid = node_id_from_req_path(req)
+        nid = node_id_from_req_path(req.mediatum_contextfree_path)
     except ValueError:
         req.response.status_code = 400
         return 400

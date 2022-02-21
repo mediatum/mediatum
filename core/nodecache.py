@@ -12,7 +12,7 @@ from core import db as _db
 
 
 @_backports_functools_lru_cache.lru_cache(maxsize=128)
-def get_singleton_node_from_cache(nodeclass):    
+def _get_singleton_node_from_cache(nodeclass):
     """Returns the singleton instance for the given node class. 
     Fetches the requested singleton from the DB if it's not in the cache.
     """
@@ -21,19 +21,41 @@ def get_singleton_node_from_cache(nodeclass):
                                         joinedload(nodeclass.file_objects)).one()
 
 
+def _get_singleton_node(nodeclass):
+    return _db.session.merge(_get_singleton_node_from_cache(nodeclass), load=False)
+
+
 def get_root_node():
     """Root object may not change during runtime, so we can cache it indefinitely"""
     from core.systemtypes import Root
-    return _db.session.merge(get_singleton_node_from_cache(Root), load=False)
+    return _get_singleton_node(Root)
 
 
 def get_collections_node():
     """Collections object may not change during runtime, so we can cache it indefinitely"""
     from contenttypes import Collections
-    return _db.session.merge(get_singleton_node_from_cache(Collections), load=False)
+    return _get_singleton_node(Collections)
 
 
 def get_home_root_node():
     """Home object may not change during runtime, so we can cache it indefinitely"""
     from contenttypes import Home
-    return _db.session.merge(get_singleton_node_from_cache(Home), load=False)
+    return _get_singleton_node(Home)
+
+
+def get_workflows_node():
+    """Workflows object may not change during runtime, so we can cache it indefinitely"""
+    from workflow.workflow import Workflows
+    return _get_singleton_node(Workflows)
+
+
+def get_mappings_node():
+    """Mappings object may not change during runtime, so we can cache it indefinitely"""
+    from core.systemtypes import Mappings
+    return _get_singleton_node(Mappings)
+
+
+def get_metadatatypes_node():
+    """Metadatatypes object may not change during runtime, so we can cache it indefinitely"""
+    from core.systemtypes import Metadatatypes
+    return _get_singleton_node(Metadatatypes)

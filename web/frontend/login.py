@@ -129,7 +129,7 @@ def login(req):
     )
     login_html = webconfig.theme.render_macro("login.j2.jade", "login", ctx)
     from web.frontend.frame import render_page
-    html = render_page(req, None, login_html)
+    html = render_page(req, login_html)
     req.response.status_code = httpstatus.HTTP_OK
     req.response.set_data(html)
     return httpstatus.HTTP_OK
@@ -181,7 +181,7 @@ def pwdchange(req):
 
     content_html = webconfig.theme.render_macro("login.j2.jade", "change_pwd", {"error": error, "user": user, "csrf": req.csrf_token.current_token})
     from web.frontend.frame import render_page
-    html = render_page(req, None, content_html)
+    html = render_page(req, content_html)
     req.response.set_data(html)
     req.response.status_code = httpstatus.HTTP_OK
     return httpstatus.HTTP_OK

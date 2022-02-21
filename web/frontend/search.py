@@ -86,12 +86,11 @@ def search(searchtype, searchquery, readable_query, paths, req, container_id = N
         # XXX: We could check the read permission for Collections to decide if search is allowed.
         container = get_collections_node()
 
+    def filter_dbquery_results(dbquery):
+        return dbquery.filter_read_access()
+
     try:
-        result, subtree = container.search(searchquery)
-        result = result.filter_read_access()
-        result = result.node_offset0()
-        if subtree is not None:
-            result = result.filter(Node.id.in_(subtree))
+        result = container.search(searchquery, filter_dbquery=filter_dbquery_results)
     except SearchQueryException as e:
         # query parsing went wrong or the search backend complained about something
         return NoSearchResult(readable_query, container, readable_query, error=True)

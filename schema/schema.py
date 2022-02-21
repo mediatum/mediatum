@@ -40,6 +40,7 @@ from core import Node
 from core.xmlnode import getNodeXML, readNodeXML
 from core.metatype import Metatype
 from core import db
+import core.nodecache as _nodecache
 from core.systemtypes import Metadatatypes
 from core.translation import lang
 from core.postgres import check_type_arg
@@ -152,7 +153,7 @@ def getMetaType(name):
     if name.find("/") > 0:
         name = name[name.rfind("/") + 1:]
 
-    return q(Metadatatypes).one().children.filter_by(name=name).scalar()
+    return _nodecache.get_metadatatypes_node().children.filter_by(name=name).scalar()
 
 #
 # load all meta-types from db
@@ -161,10 +162,11 @@ def getMetaType(name):
 def loadTypesFromDB():
     warn("use q(Metadatatypes) instead", DeprecationWarning)
     # do not use list(q(Metadatatype).order_by("name")) which reports also deleted nodes from type metadatatype
-    return list(q(Metadatatypes).one().children.order_by("name"))
+    return list(_nodecache.get_metadatatypes_node().children.order_by("name"))
 
 def get_permitted_schemas():
-    return q(Metadatatype).filter(Metadatatype.a.active == "1").filter_read_access().order_by(Metadatatype.a.longname).all()
+    metadatatypes = _nodecache.get_metadatatypes_node()
+    return metadatatypes.children.filter(Metadatatype.a.active == "1").filter_read_access().order_by(Metadatatype.a.longname).all()
 
 def get_permitted_schemas_for_datatype(datatype):
     return [sc for sc in get_permitted_schemas() if datatype in sc.getDatatypes()]
@@ -183,7 +185,7 @@ def existMetaType(name):
 # update/create metatype by given object
 #
 def updateMetaType(name, description="", longname="", active=0, datatypes="", bibtexmapping="", orig_name="", citeprocmapping=""):
-    metadatatypes = q(Metadatatypes).one()
+    metadatatypes = _nodecache.get_metadatatypes_node()
     metadatatype = metadatatypes.children.filter_by(name=orig_name).scalar()
 
     if metadatatype is not None:
@@ -200,15 +202,53 @@ def updateMetaType(name, description="", longname="", active=0, datatypes="", bi
     metadatatype.set("citeprocmapping", citeprocmapping)
     db.session.commit()
 
+
+def delete_mask(mask):
+    """
+    delete all maskitems of mask and the mask itself
+    :param mask:
+    :return:
+    """
+    for maskitem in mask.children:
+        mask.deleteMaskitem(maskitem.id)
+    db.session.delete(mask)
+
+
+def _delete_metadatatype_children(metadatatype):
+    """
+    delete all masks and metafields of metadatatype
+    :param metadatatype:
+    :return:
+    """
+    for mask in metadatatype.children.filter_by(type='mask'):
+        delete_mask(mask)
+    for metafield in metadatatype.children.filter_by(type='metafield'):
+        deleteMetaField(str(metadatatype.id), metafield.name)
+
+
+def _delete_metadatatype(metadatatype):
+    """
+    delete a metadatatype together with its children
+    :param metadatatype:
+    :return:
+    """
+    _delete_metadatatype_children(metadatatype)
+    db.session.delete(metadatatype)
+
 #
 # delete metatype by given name
 #
 
 def deleteMetaType(name):
-    metadatatypes = q(Metadatatypes).one()
+    """
+    delete all metadatatypes with name=name together with their children
+    metadatatypes which are children of Metadatatypes are unlinked from
+    Metadatatypes
+    :param name:
+    :return:
+    """
     for metadatatype in q(Metadatatype).filter_by(name=name).all():
-        if metadatatype in metadatatypes.children:
-            metadatatypes.children.remove(metadatatype)
+        _delete_metadatatype(metadatatype)
     db.session.commit()
 
 ###################################################
@@ -315,10 +355,10 @@ def updateMetaField(parent, name, label, orderpos, fieldtype, option="", descrip
 def deleteMetaField(pid, name):
     metadatatype = getMetaType(pid)
     field = getMetaField(pid, name)
-    metadatatype.children.remove(field)
+    db.session.delete(field)
 
     i = 0
-    for field in metadatatype.children.order_by(Node.orderpos):
+    for field in metadatatype.children.filter(Node.type == 'metafield').order_by(Node.orderpos):
         field.orderpos = i
         i += 1
     db.session.commit()
@@ -546,7 +586,7 @@ def parseEditorData(req, node):
 #
 def exportMetaScheme(name):
     if name == "all":
-        return getNodeXML(q(Metadatatypes).one())
+        return getNodeXML(_nodecache.get_metadatatypes_node())
     else:
         return getNodeXML(getMetaType(name))
 
@@ -563,7 +603,7 @@ def importMetaSchema(filename):
         for ch in n.children:
             importlist.append(ch)
 
-    metadatatypes = q(Metadatatypes).one()
+    metadatatypes = _nodecache.get_metadatatypes_node()
     for m in importlist:
         m.name = u"{}_import_{}".format(m.name, _utils.utils.gen_secure_token(128))
         if not metadatatypes.children.filter_by(name=m.name).all():
@@ -575,7 +615,7 @@ def importMetaSchema(filename):
 class Metadatatype(Node):
 
     masks = children_rel("Mask")
-    metafields = children_rel("Metafield")
+    metafields = children_rel("Metafield", viewonly=True)
 
     @property
     def description(self):
@@ -827,7 +867,7 @@ def getMaskTypes(key="."):
 @check_type_arg
 class Mask(Node):
 
-    maskitems = children_rel("Maskitem", lazy="joined", order_by="Maskitem.orderpos")
+    maskitems = children_rel("Maskitem", lazy="joined", order_by="Maskitem.orderpos", viewonly=True)
 
     _metadatatypes = parents_rel("Metadatatype")
 
@@ -984,7 +1024,7 @@ class Mask(Node):
 
     def validateMappingDef(self):
         mandfields = []
-        if self.getMasktype() == "export":
+        if self.getMasktype() == "export" and self.get("exportmapping"):
             for mapping in self.get("exportmapping").split(";"):
                 for c in q(Node).get(mapping).getMandatoryFields():
                     mandfields.append(c.id)
@@ -1045,32 +1085,37 @@ class Mask(Node):
 
     def getMappingHeader(self):
         from .mapping import Mapping
-        if self.getMasktype() == "export":
-            if len(self.get("exportheader")) > 0:
-                return self.get("exportheader")
-            elif len(self.get("exportmapping").split(";")) > 1:
-                return self.getExportHeader()
-            else:
-                exportmapping_id = self.get("exportmapping")
-                c = q(Mapping).get(exportmapping_id)
-                if c is not None:
-                    return c.getHeader()
-                else:
-                    logg.warn("exportmapping %s for mask %s not found", exportmapping_id, self.id)
-                    return u""
+        if self.getMasktype() != "export":
+            return u""
+        if len(self.get("exportheader")) > 0:
+            return self.get("exportheader")
+        if len(self.get("exportmapping").split(";")) > 1:
+            return self.getExportHeader()
+        exportmapping_id = self.get("exportmapping")
+        if not exportmapping_id:
+            return
+        c = q(Mapping).get(exportmapping_id)
+        if c is not None:
+            return c.getHeader()
+        logg.warn("exportmapping %s for mask %s not found", exportmapping_id, self.id)
         return u""
 
     def getMappingFooter(self):
         from .mapping import Mapping
-        if self.getMasktype() == "export":
-            if len(self.get("exportfooter")) > 0:
-                return self.get("exportfooter")
-            elif len(self.get("exportmapping").split(";")) > 1:
-                return self.getExportFooter()
-            else:
-                c = q(Mapping).get(self.get("exportmapping"))
-                return c.getFooter()
-        return ""
+        if self.getMasktype() != "export":
+            return ""
+        if len(self.get("exportfooter")) > 0:
+            return self.get("exportfooter")
+        if len(self.get("exportmapping").split(";")) > 1:
+            return self.getExportFooter()
+        exportmapping_id = self.get("exportmapping")
+        if not exportmapping_id:
+            return
+        c = q(Mapping).get(exportmapping_id)
+        if c is not None:
+            return c.getFooter()
+        logg.warn("exportmapping %s for mask %s not found", exportmapping_id, self.id)
+        return u""
 
     ''' show maskeditor - definition '''
 
@@ -1079,11 +1124,6 @@ class Mask(Node):
         ret = '<form method="post" name="myform">'
         ret += '<input value="' + req.csrf_token.current_token + '" type="hidden" name="csrf_token">'
         ret += '<div class="back"><h3 i18n:translate="mask_editor_field_definition">Felddefinition </h3>'
-        if self.getMasktype() == "export" and self.get("exportmapping") == "":
-            # no mapping defined, we just emit an error msg and skip the rest
-            ret += '<p i18n:translate="mask_editor_no_export_mapping_defined" class="error">TEXT</p></div><br/>'
-            return ret
-
         ret += '<div align="right"><input type="image" src="/img/install.png" name="newdetail_'
         ret += unicode(self.id)
         ret += '" i18n:attributes="title mask_editor_new_line_title"/></div><br/>'
@@ -1094,9 +1134,10 @@ class Mask(Node):
         if len(self.children) == 0:
             ret += '<div i18n:translate="mask_editor_no_fields">- keine Felder definiert -</div>'
         else:
-            if self.getMappingHeader() != "":
+            mapping_header = self.getMappingHeader()
+            if mapping_header:
                 ret += '<div class="label" i18n:translate="mask_edit_header">TEXT</div><div class="row">%s</div>' % (
-                    esc(self.getMappingHeader()))
+                    esc(mapping_header))
 
         # check if all the orderpos attributes are the same which causes problems with sorting
         z = [t for t in self.children.order_by(Node.orderpos)]
@@ -1115,9 +1156,10 @@ class Mask(Node):
             i += 1
 
         if len(self.children) > 0:
-            if self.getMappingFooter() != "":
+            mapping_footer = self.getMappingFooter()
+            if mapping_footer:
                 ret += '<div class="label" i18n:translate="mask_edit_footer">TEXT</div><div class="row">%s</div>' % (
-                    esc(self.getMappingFooter()))
+                    esc(mapping_footer))
         ret += '</form>'
         return ret
 
@@ -1202,7 +1244,7 @@ class Mask(Node):
         self.set("masktype", value)
 
     def getExportMapping(self):
-        return self.get("exportmapping").split(";")
+        return self.get("exportmapping").replace(";", " ").split()
 
     def setExportMapping(self, exportmapping):
         self.set("exportmapping", exportmapping)
@@ -1283,14 +1325,28 @@ class Mask(Node):
     ''' delete given  maskitem '''
 
     def deleteMaskitem(self, itemid):
+
+        def delete_maskitems_recursive(item):
+            if item.type != 'maskitem':
+                return
+            for child in item.children:
+                delete_maskitems_recursive(child)
+            db.session.delete(item)
+
         item = q(Node).get(itemid)
+
+        assert item.type == 'maskitem'
+
         for parent in item.parents:
-            parent.children.remove(item)
             i = 0
             for child in parent.children.order_by(Node.orderpos):
+                if child.id == item.id:
+                    continue
                 child.orderpos = i
                 i += 1
-        db.session.commit()
+
+        delete_maskitems_recursive(item)
+
 
 """ class for editor/view masks """
 
@@ -1298,7 +1354,7 @@ class Mask(Node):
 @check_type_arg
 class Maskitem(Node):
 
-    _metafield_rel = children_rel("Metafield", backref="maskitems", lazy="joined")
+    _metafield_rel = children_rel("Metafield", backref="maskitems", lazy="joined", viewonly=True)
 
     @property
     def metafield(self):
@@ -1359,12 +1415,6 @@ class Maskitem(Node):
 
     def setDefault(self, value):
         self.set("default", value)
-
-    def getTestNodes(self):
-        return self.get("testnodes")
-
-    def setTestNodes(self, value):
-        self.set("testnodes", value)
 
     def getUnit(self):
         # XXX: we don't want empty units, better sanitize user input instead of stripping here

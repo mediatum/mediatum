@@ -30,6 +30,7 @@ from core.translation import lang, switch_language
 from core import httpstatus
 from core import db
 from core import Node, NodeAlias
+import core.nodecache as _nodecache
 from core.users import user_from_session as _user_from_session
 from contenttypes import Container
 from schema.schema import getMetadataType
@@ -158,56 +159,36 @@ def display_newstyle(req):
 
     # either coming from /nodes/ or nid_or_alias is not a valid alias
     req = overwrite_id_in_req(nid_or_alias, req)
-    return _display(req)
+    return display(req)
 
 
 @_check_change_language_request
-def _display(req, show_navbar=True, render_paths=True, params=None):
+def display(req, show_navbar=True, render_paths=True, params=None):
     if "jsonrequest" in req.params:
         return handle_json_request(req)
 
     if params is None:
         params = req.args
 
-    nid = params.get("id", type=int)
-    
-    if nid is None:
-        node = get_collections_node()
-    else:
-        node = q(Node).prefetch_attrs().prefetch_system_attrs().get(nid)
-        
-    if node is not None and not node.has_read_access():
+    node = params.get("id", type=int)
+    node = (get_collections_node() if node is None else
+            q(Node).prefetch_attrs().prefetch_system_attrs().get(node))
+    if not (node and node.has_read_access()):
         node = None
 
-    show_id = []
     if req.args.get("disable_content"):
         content_html = u""
+        show_id = None
     else:
-        content_html = render_content(node, req, render_paths, show_id)
-
-    if params.get("raw"):
-        req.response.set_data(content_html)
-    else:
-        html = render_page(req, node, content_html, show_navbar, show_id)
-        req.response.set_data(html)
+        content_html, show_id = render_content(node, req, render_paths)
+    req.response.set_data(content_html if params.get("raw") else
+                          render_page(req, content_html, node, show_navbar, show_id))
     req.response.status_code = httpstatus.HTTP_OK
-    # ... Don't return a code because Athana overwrites the content if an http error code is returned from a handler.
-    # instead, req.response.status_code = ? can be used in the rendering code
-
-
-@_check_change_language_request
-def display(req):
-    _display(req)
 
 
 @_check_change_language_request
 def workflow(req):
-    if req.method == "POST":
-        params = req.form
-    else:
-        params = req.args
-
-    _display(req, show_navbar=False, render_paths=False, params=params)
+    display(req, False, False, req.values)
 
 
 #: needed for workflows:
@@ -217,7 +198,7 @@ PUBPATH = re.compile("/?(publish|pub)/(.*)$")
 def publish(req):
     m = PUBPATH.match(req.mediatum_contextfree_path)
 
-    node = workflow_root = q(Workflows).one()
+    node = _nodecache.get_workflows_node()
     if m:
         for a in m.group(2).split("/"):
             if a:
@@ -225,8 +206,7 @@ def publish(req):
                 if node is None:
                     return 404
 
-    req = overwrite_id_in_req(node.id, req)
-    return _display(req, False, render_paths=False)
+    return display(overwrite_id_in_req(node.id, req), False, False)
 
 
 @_check_change_language_request

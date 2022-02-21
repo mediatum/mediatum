@@ -17,7 +17,6 @@ class m_number(Metatype):
                                                    "width": width,
                                                    "name": field.getName(),
                                                    "field": field,
-                                                   "title": self.get_input_title(),
                                                    "placeholder": self.get_input_placeholder(),
                                                    "required": self.is_required(required)},
                           macro="editorfield",
@@ -36,9 +35,6 @@ class m_number(Metatype):
 
     def getName(self):
         return "fieldtype_number"
-
-    def get_input_title(self):
-        return 'Only digits are allowed.'
 
     def get_input_placeholder(self):
         return '#####'

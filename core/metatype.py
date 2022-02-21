@@ -74,9 +74,6 @@ class Metatype(object):
     def event_metafield_changed(self, node, field):
         None
 
-    def get_input_title(self, field):
-        return ''
-
     def get_input_placeholder(self, field):
         return ''
 

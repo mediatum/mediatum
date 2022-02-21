@@ -33,7 +33,7 @@ class m_date(Metatype):
                                                  "field": field,
                                                  "pattern": {date.shortname: date.validation_regex
                                                              for date in dateoption}[field.getValues()],
-                                                 "title": self.get_input_title(field),
+                                                 "title": field.getValues(),
                                                  "placeholder": self.get_input_placeholder(field),
                                                  "required": self.is_required(required)},
                           macro="editorfield",
@@ -104,9 +104,6 @@ class m_date(Metatype):
 
     def getInformation(self):
         return {"moduleversion": "1.1", "softwareversion": "1.1"}
-
-    def get_input_title(self, field):
-        return field.getValues()
 
     def get_input_placeholder(self, field):
         return field.getValues()

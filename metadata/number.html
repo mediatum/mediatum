@@ -7,7 +7,8 @@
         class="text"
         type="text"
         pattern="^\d*$"
-        tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:u'width:{}px'.format(width-26); name name; id name; value value; placeholder placeholder; title title; maxlenght python:unicode(len(value)); required required;"
+        title="Only digits are allowed."
+        tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:u'width:{}px'.format(width-26); name name; id name; value value; placeholder placeholder; maxlenght python:unicode(len(value)); required required;"
         />
     <span tal:condition="python:lock!=0" tal:attributes="id python:u'lockspan_{}'.format(name)">&nbsp;
         <input tal:attributes="name python:u'lock_{}'.format(name); id python:u'lock_{}'.format(name); onclick python:u'handlelock(\'{}\')'.format(name)" type="checkbox"/>

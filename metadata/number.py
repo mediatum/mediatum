@@ -17,7 +17,6 @@ class m_number(Metatype):
                                                    "width": width,
                                                    "name": field.getName(),
                                                    "field": field,
-                                                   "placeholder": self.get_input_placeholder(),
                                                    "required": self.is_required(required)},
                           macro="editorfield",
                           language=language)
@@ -36,8 +35,6 @@ class m_number(Metatype):
     def getName(self):
         return "fieldtype_number"
 
-    def get_input_placeholder(self):
-        return '#####'
 
     translation_labels = dict(
         de=dict(

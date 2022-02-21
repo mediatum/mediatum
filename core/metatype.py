@@ -74,9 +74,6 @@ class Metatype(object):
     def event_metafield_changed(self, node, field):
         None
 
-    def get_input_placeholder(self, field):
-        return ''
-
     def is_required(self, required):
         """
         It's necessary to return different types in order for the template to render properly.

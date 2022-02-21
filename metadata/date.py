@@ -34,7 +34,7 @@ class m_date(Metatype):
                                                  "pattern": {date.shortname: date.validation_regex
                                                              for date in dateoption}[field.getValues()],
                                                  "title": field.getValues(),
-                                                 "placeholder": self.get_input_placeholder(field),
+                                                 "placeholder": field.getValues(),
                                                  "required": self.is_required(required)},
                           macro="editorfield",
                           language=language)
@@ -104,9 +104,6 @@ class m_date(Metatype):
 
     def getInformation(self):
         return {"moduleversion": "1.1", "softwareversion": "1.1"}
-
-    def get_input_placeholder(self, field):
-        return field.getValues()
 
     translation_labels = dict(
         de=dict(

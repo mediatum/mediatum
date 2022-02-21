@@ -114,7 +114,8 @@ class m_dlist(Metatype):
                                                   "value": value,
                                                   "valuelist": valuelist,
                                                   "fielddef": fielddef,
-                                                  "required": self.is_required(required)},
+                                                  "required": 1 if required else None,
+                                                  },
                           macro="editorfield",
                           language=language)
 

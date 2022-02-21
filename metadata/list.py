@@ -97,7 +97,8 @@ class m_list(Metatype):
         context = Context(field, value=value, width=width, name=field.getName(), lock=lock, language=language)
         return tal.getTAL("metadata/list.html", {"context": context,
                                                  "valuelist": filter(lambda x: x != "", self.formatValues(context)),
-                                                 "required": self.is_required(required)},
+                                                 "required": 1 if required else None,
+                                                 },
                           macro="editorfield",
                           language=language)
 

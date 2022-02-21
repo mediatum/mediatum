@@ -35,7 +35,7 @@ class m_text(Metatype):
             "name": field_node_name,
             "field": field,
             "ident": field.id if field.id else "",
-            "required": self.is_required(required),
+            "required": 1 if required else None,
         }
         return tal.getTAL("metadata/text.html", context, macro="editorfield", language=language)
 

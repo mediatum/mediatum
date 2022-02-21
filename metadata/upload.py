@@ -90,7 +90,7 @@ class m_upload(Metatype):
             "language": language,
             "warning": warning,
             "system_lock": 0,
-            "required": self.is_required(required)
+            "required": 1 if required else None,
         }
 
         if lock:

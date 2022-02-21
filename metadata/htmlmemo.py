@@ -39,7 +39,7 @@ class m_htmlmemo(Metatype):
             "name": field_node_name,
             "field": field,
             "ident": ustr(field.id),
-            "required": self.is_required(required)
+            "required": 1 if required else None,
         }
 
         s = tal.getTAL("metadata/htmlmemo.html", context, macro="editorfield", language=language)

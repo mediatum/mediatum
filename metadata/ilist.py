@@ -60,7 +60,8 @@ class m_ilist(Metatype):
                                                   "width": width,
                                                   "name": field.getName(),
                                                   "field": field,
-                                                  "required": self.is_required(required)},
+                                                  "required": 1 if required else None,
+                                                  },
                           macro="editorfield",
                           language=language)
 

@@ -74,20 +74,6 @@ class Metatype(object):
     def event_metafield_changed(self, node, field):
         None
 
-    def is_required(self, required):
-        """
-        It's necessary to return different types in order for the template to render properly.
-        Since required='' or even required='False' is still interpreted as a required field,
-        it needs to be completely removed from the template where applicable. TAL attributes
-        are removed if they evaluate to None.
-        @param required: 0 or 1
-        @return: str True or None object
-        """
-        if required:
-            return 'True'
-        else:
-            return None
-
     translation_labels = {}
 
 charmap = [

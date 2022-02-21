@@ -27,7 +27,8 @@ class m_treeselect(Metatype):
                                                        "width": width,
                                                        "name": metafield.getName(),
                                                        "metafield": metafield,
-                                                       "required": self.is_required(required)},
+                                                       "required": 1 if required else None,
+                                                       },
                           macro="editorfield",
                           language=language)
 

@@ -35,7 +35,8 @@ class m_date(Metatype):
                                                              for date in dateoption}[field.getValues()],
                                                  "title": field.getValues(),
                                                  "placeholder": field.getValues(),
-                                                 "required": self.is_required(required)},
+                                                 "required": 1 if required else None,
+                                                 },
                           macro="editorfield",
                           language=language)
 

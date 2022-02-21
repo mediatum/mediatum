@@ -40,7 +40,7 @@ class m_memo(Metatype):
             "field": field,
             "t": _core_translation.t,
             "ident": ustr(field.id),
-            "required": self.is_required(required)
+            "required": 1 if required else None,
         }
 
         return tal.getTAL("metadata/memo.html",

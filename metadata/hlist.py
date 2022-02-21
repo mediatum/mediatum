@@ -38,7 +38,22 @@ class m_hlist(Metatype):
             values = field.split('\r\n')
         while len(values) < 3:
             values.append(u'')
-        return tal.getTAL("metadata/hlist.html", {"lock": lock, "startnode": values[0], "attrname": values[1], "onlylast": values[2], "value": value, "width": width, "name": field.getName(), "field": field, "required": self.is_required(required)}, macro="editorfield", language=language)
+        return tal.getTAL(
+            "metadata/hlist.html",
+            {
+                "lock": lock,
+                "startnode": values[0],
+                "attrname": values[1],
+                "onlylast": values[2],
+                "value": value,
+                "width": width,
+                "name": field.getName(),
+                "field": field,
+                "required": 1 if required else None,
+            },
+            macro="editorfield",
+            language=language,
+        )
 
     def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
         value = []

@@ -33,12 +33,18 @@ def getContent(req, ids):
         req.response.status_code = httpstatus.HTTP_FORBIDDEN
         return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
-    v = {}
-    v["basedirs"] = [q(Home).one(), q(Collections).one()]
-    nid = req.params.get("id", q(Root).one().id)
-    v["script"] = "var currentitem = '%s';\nvar currentfolder = '%s'" % (nid, nid)
-    v["idstr"] = ",".join(ids)
-    v["nodes"] = nodes
-    v["t"] = _core_translation.t
-    v["language"] = _core_translation.set_language(req.accept_languages)
-    return _tal.processTAL(v, file="web/edit/modules/classes.html", macro="classtree", request=req)
+    return _tal.processTAL(
+            dict(
+                basedirs=[q(Home).one(), q(Collections).one()],
+                script="var currentitem = '{0}';\nvar currentfolder = '{0}'".format(
+                        req.params.get("id", q(Root).one().id),
+                    ),
+                idstr=",".join(ids),
+                nodes=nodes,
+                t=_core_translation.t,
+                language=_core_translation.set_language(req.accept_languages),
+            ),
+            file="web/edit/modules/classes.html",
+            macro="classtree",
+            request=req,
+        )

@@ -225,7 +225,7 @@ def getContent(req, ids):
             user=user,
             metatypes=metatypes,
             idstr=idstr,
-            node=nodes[0],  # ?
+            node=nodes[0], # ?
             flag_nodename_changed=flag_nodename_changed,
             nodes=nodes,
             masklist=masklist,

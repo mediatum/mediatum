@@ -1506,11 +1506,6 @@ def getMetaFieldTypeNames():
             if "meta" in ustr(instance)
            }
 
-
-def getMetaFieldTypes():
-    ret = {name:getMetadataType(name) for name in _metatypes}
-    return {name:type_ for name,type_ in _metatypes.iteritems() if type_.isFieldType()}
-
 """ return fields based on the schema name """
 
 

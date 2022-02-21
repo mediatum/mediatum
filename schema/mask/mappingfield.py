@@ -96,9 +96,6 @@ class m_mappingfield(Metatype):
     def getMetaEditor(self, item, req):
         return "<editor for mappingfield>"
 
-    def isFieldType(self):
-        return False
-
     def subStr(self, oriString, argString):
         grp = argString.split(",")
         try:

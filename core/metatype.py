@@ -60,9 +60,6 @@ class Metatype(object):
     def isContainer(cls):
         return False
 
-    def isFieldType(self):
-        return True
-
     def getName(self):
         return ""
 

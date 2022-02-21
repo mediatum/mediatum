@@ -56,10 +56,6 @@ class Metatype(object):
     def get_metafieldeditor_html(self, field, metadatatype, language):
         return ""
 
-    @classmethod
-    def isContainer(cls):
-        return False
-
     def getName(self):
         return ""
 

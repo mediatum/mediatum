@@ -175,10 +175,6 @@ class Mapping(Node):
     def getFieldtype(self):
         return "mapping"
 
-    @classmethod
-    def isContainer(cls):
-        return 0
-
     def getActive(self):
         if self.get("active") == "0":
             return 0

@@ -98,10 +98,6 @@ class m_label(Metatype):
             value = esc(value)
         return (metafield.getLabel(), value)
 
-    @classmethod
-    def isContainer(cls):
-        return True
-
     def getName(self):
         return "fieldtype_label"
 

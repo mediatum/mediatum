@@ -309,9 +309,5 @@ class m_field(Metatype):
         else:
             return _tal.processTAL(tal_ctx, file="schema/mask/field.html", macro="metaeditor", request=req)
 
-    @classmethod
-    def isContainer(cls):
-        return True
-
     def getName(self):
         return "maskfieldtype_field"

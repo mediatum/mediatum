@@ -17,7 +17,6 @@ class m_number(Metatype):
                                                    "width": width,
                                                    "name": field.getName(),
                                                    "field": field,
-                                                   "pattern": self.get_input_pattern(),
                                                    "title": self.get_input_title(),
                                                    "placeholder": self.get_input_placeholder(),
                                                    "required": self.is_required(required)},
@@ -37,9 +36,6 @@ class m_number(Metatype):
 
     def getName(self):
         return "fieldtype_number"
-
-    def get_input_pattern(self):
-        return '^\d*$'
 
     def get_input_title(self):
         return 'Only digits are allowed.'

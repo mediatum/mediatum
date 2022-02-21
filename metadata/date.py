@@ -31,7 +31,8 @@ class m_date(Metatype):
                                                  "width": width,
                                                  "name": field.getName(),
                                                  "field": field,
-                                                 "pattern": self.get_input_pattern(field),
+                                                 "pattern": {date.shortname: date.validation_regex
+                                                             for date in dateoption}[field.getValues()],
                                                  "title": self.get_input_title(field),
                                                  "placeholder": self.get_input_placeholder(field),
                                                  "required": self.is_required(required)},
@@ -103,13 +104,6 @@ class m_date(Metatype):
 
     def getInformation(self):
         return {"moduleversion": "1.1", "softwareversion": "1.1"}
-
-    def get_input_pattern(self, field):
-        regexes = {date.shortname: date.validation_regex for date in dateoption}
-        try:
-            return regexes[field.getValues()]
-        except KeyError:
-            return regexes[0]  # format: dd.mm.yyyy
 
     def get_input_title(self, field):
         return field.getValues()

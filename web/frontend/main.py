@@ -23,6 +23,7 @@ import logging
 import re
 import flask as _flask
 from werkzeug.datastructures import ImmutableMultiDict
+import werkzeug.utils as _werkzeug_utils
 
 import core.config as config
 from core.metatype import Context
@@ -117,6 +118,7 @@ def overwrite_id_in_req(nid, req):
     assert req.method == "GET"
     req.args = ImmutableMultiDict(dict(req.args, id=nid))
     req.params["id"] = nid
+    req.__dict__["values"] = _werkzeug_utils._missing
     return req
 
 

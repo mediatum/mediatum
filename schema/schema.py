@@ -1096,11 +1096,6 @@ class Mask(Node):
         :param attrs: attributes to update
         :return:
         """
-        for field in attrs.fields:
-            t = getMetadataType(field.get("type"))
-            if hasattr(t, "event_metafield_changed"):
-                t.event_metafield_changed(node, field)
-
         if attrs.nodename and node.name != attrs.nodename:
             node.name = attrs.nodename
 

@@ -59,11 +59,6 @@ class Metatype(object):
     def getInformation(self):
         return {"moduleversion": "1.0"}
 
-    ''' events '''
-
-    def event_metafield_changed(self, node, field):
-        None
-
     translation_labels = {}
 
 charmap = [

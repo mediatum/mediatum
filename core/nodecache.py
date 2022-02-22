@@ -1,28 +1,45 @@
-# -*- coding: utf-8 -*-
-"""
-    :copyright: (c) 2016 by the mediaTUM authors
-    :license: GPL3, see COPYING for details
-"""
-from __future__ import absolute_import
-from sqlalchemy.orm import undefer, joinedload
-from sqlalchemy.orm.exc import NoResultFound
-import backports.functools_lru_cache as _backports_functools_lru_cache
+# Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+# SPDX-License-Identifier: GPL-2.0-or-later
 
-from core import db as _db
+"""
+Provide (functions that return) singleton
+objects from the database so these object
+do not have to be loaded in each request.
+"""
+
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+from itertools import imap as map
+from itertools import ifilter as filter
+range = xrange
+
+import backports.functools_lru_cache as _backports_functools_lru_cache
+import sqlalchemy.orm as _sa_orm
+
+import core as _core
+
 
 
 @_backports_functools_lru_cache.lru_cache(maxsize=128)
 def _get_singleton_node_from_cache(nodeclass):
-    """Returns the singleton instance for the given node class. 
-    Fetches the requested singleton from the DB if it's not in the cache.
     """
-    return _db.session.query(nodeclass).options(undefer(nodeclass.attrs),
-                                        undefer(nodeclass.system_attrs),
-                                        joinedload(nodeclass.file_objects)).one()
+    Returns the singleton instance for the given node class.
+    Fetches the requested singleton
+    from the DB if it's not in the cache.
+    """
+    return _core.db.session.query(nodeclass).options(
+            _sa_orm.undefer(nodeclass.attrs),
+            _sa_orm.undefer(nodeclass.system_attrs),
+            _sa_orm.joinedload(nodeclass.file_objects),
+           ).one()
 
 
 def _get_singleton_node(nodeclass):
-    return _db.session.merge(_get_singleton_node_from_cache(nodeclass), load=False)
+    return _core.db.session.merge(
+            _get_singleton_node_from_cache(nodeclass),
+            load=False,
+           )
 
 
 def get_root_node():

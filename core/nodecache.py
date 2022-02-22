@@ -21,7 +21,7 @@ import core as _core
 
 
 
-@_backports_functools_lru_cache.lru_cache(maxsize=128)
+@_backports_functools_lru_cache.lru_cache(maxsize=None)
 def _get_singleton_node_from_cache(nodeclass):
     """
     Returns the singleton instance for the given node class.

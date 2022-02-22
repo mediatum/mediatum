@@ -28,11 +28,14 @@ def _get_singleton_node_from_cache(nodeclass):
     Fetches the requested singleton
     from the DB if it's not in the cache.
     """
-    return _core.db.session.query(nodeclass).options(
+    node = _core.db.session.query(nodeclass).options(
             _sa_orm.undefer(nodeclass.attrs),
             _sa_orm.undefer(nodeclass.system_attrs),
             _sa_orm.joinedload(nodeclass.file_objects),
            ).one()
+    # without expunge, we see random `DetachedInstanceError`s
+    _core.db.session.expunge(node)
+    return node
 
 
 def _get_singleton_node(nodeclass):

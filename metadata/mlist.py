@@ -122,8 +122,6 @@ class m_mlist(Metatype):
     def get_metafieldeditor_html(self, field, metadatatype, language):
         return tal.getTAL("metadata/mlist.html", dict(value=field.getValues()), macro="maskeditor", language=language)
 
-    def getInformation(self):
-        return {"moduleversion": "1.1", "softwareversion": "1.1", "files": "mlist.py;mlist.html"}
 
     translation_labels = dict(
         de=dict(

@@ -70,8 +70,6 @@ class m_hlist(Metatype):
             return metafield.getLabel(), value[-1]
         return metafield.getLabel(), u' - '.join(value)
 
-    def getInformation(self):
-        return {"moduleversion": "1.0", "softwareversion": "1.1"}
 
     def getPopup(self, req):
         allowed_nodes = []

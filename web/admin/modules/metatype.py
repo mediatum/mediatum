@@ -45,9 +45,6 @@ q = db.query
 logg = logging.getLogger(__name__)
 
 
-def getInformation():
-    return {"version": "1.0"}
-
 """ checks a string whether it only contains the alphanumeric chars as well as "-" "." """
 
 

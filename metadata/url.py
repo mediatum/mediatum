@@ -140,8 +140,6 @@ class m_url(Metatype):
                           macro="maskeditor",
                           language=language)
 
-    def getInformation(self):
-        return {"moduleversion": "1.1", "softwareversion": "1.1"}
 
     translation_labels = dict(
         de=dict(

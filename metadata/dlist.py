@@ -143,8 +143,6 @@ class m_dlist(Metatype):
                           macro="maskeditor",
                           language=language)
 
-    def getInformation(self):
-        return {"moduleversion": "1.0", "softwareversion": "1.1"}
 
     translation_labels = dict(
         de=dict(

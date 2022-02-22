@@ -56,8 +56,6 @@ class Metatype(object):
     def get_metafieldeditor_html(self, field, metadatatype, language):
         return ""
 
-    def getInformation(self):
-        return {"moduleversion": "1.0"}
 
     translation_labels = {}
 

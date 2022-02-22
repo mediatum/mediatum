@@ -132,8 +132,6 @@ class m_list(Metatype):
             language=language,
         )
 
-    def getInformation(self):
-        return {"moduleversion": "1.1", "softwareversion": "1.1"}
 
     translation_labels = dict(
         de=dict(

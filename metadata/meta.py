@@ -48,8 +48,6 @@ class m_meta(Metatype):
 
         return tal.getTAL("metadata/meta.html", {"value": value, "t_attrs": attr}, macro="maskeditor", language=language)
 
-    def getInformation(self):
-        return {"moduleversion": "1.1", "softwareversion": "1.1", "files": "meta.py;meta.html"}
 
     translation_labels = dict(
         de=dict(

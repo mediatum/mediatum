@@ -98,8 +98,6 @@ class m_label(Metatype):
             value = esc(value)
         return (metafield.getLabel(), value)
 
-    def getInformation(self):
-        return {"moduleversion": "1.0", "softwareversion": "1.1"}
 
     translation_labels = dict(
         de=dict(

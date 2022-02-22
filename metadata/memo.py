@@ -62,8 +62,6 @@ class m_memo(Metatype):
             language=language,
         )
 
-    def getInformation(self):
-        return {"moduleversion": "1.1", "softwareversion": "1.1"}
 
     # method for popup methods of type memo
     def getPopup(self, req):

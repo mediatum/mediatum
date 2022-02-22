@@ -83,8 +83,6 @@ class m_text(Metatype):
             logg.exception("exception in format_request_value_for_db, returning value")
             return value
 
-    def getInformation(self):
-        return {"moduleversion": "1.0", "softwareversion": "1.1"}
 
     # method for popup methods of type text
     def getPopup(self, req):

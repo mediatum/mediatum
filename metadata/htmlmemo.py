@@ -66,9 +66,6 @@ class m_htmlmemo(Metatype):
         req.response.status_code = httpstatus.HTTP_OK
         return httpstatus.HTTP_OK
 
-    def getName(self):
-        return "fieldtype_htmlmemo"
-
     def getInformation(self):
         return {"moduleversion": "1.0", "softwareversion": "1.1"}
 

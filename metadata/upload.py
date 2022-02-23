@@ -130,9 +130,6 @@ class m_upload(Metatype):
 
         return (metafield.getLabel(), value)
 
-    def getName(self):
-        return "fieldtype_upload"
-
     def getInformation(self):
         return {"moduleversion": "1.0", "softwareversion": "1.1"}
 

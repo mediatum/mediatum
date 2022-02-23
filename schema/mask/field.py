@@ -308,6 +308,3 @@ class m_field(Metatype):
             return _tal.processTAL(tal_ctx, file="schema/mask/field.html", macro="metaeditor_export", request=req)
         else:
             return _tal.processTAL(tal_ctx, file="schema/mask/field.html", macro="metaeditor", request=req)
-
-    def getName(self):
-        return "maskfieldtype_field"

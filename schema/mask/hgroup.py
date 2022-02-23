@@ -173,6 +173,3 @@ class m_hgroup(Metatype):
         v["fields"] = fields
         v["selid"] = req.params.get("sel_id", "")
         return _tal.processTAL(v, file="schema/mask/hgroup.html", macro="metaeditor", request=req)
-
-    def getName(self):
-        return "maskfieldtype_hgroup"

@@ -30,9 +30,6 @@ class m_check(Metatype):
         value = node.get(metafield.name)
         return (metafield.label, value)
 
-    def getName(self):
-        return "fieldtype_check"
-
     translation_labels = dict(
         de=dict(
             fieldtype_check="Checkbox",

@@ -31,12 +31,6 @@ class m_number(Metatype):
             value = esc(value)
         return (metafield.getLabel(), value)
 
-
-
-    def getName(self):
-        return "fieldtype_number"
-
-
     translation_labels = dict(
         de=dict(
             fieldtype_number="Zahl",

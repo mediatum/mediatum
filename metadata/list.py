@@ -132,9 +132,6 @@ class m_list(Metatype):
             language=language,
         )
 
-    def getName(self):
-        return "fieldtype_list"
-
     def getInformation(self):
         return {"moduleversion": "1.1", "softwareversion": "1.1"}
 

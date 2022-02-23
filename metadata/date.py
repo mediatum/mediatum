@@ -100,9 +100,6 @@ class m_date(Metatype):
             language=language,
         )
 
-    def getName(self):
-        return "fieldtype_date"
-
     def getInformation(self):
         return {"moduleversion": "1.1", "softwareversion": "1.1"}
 

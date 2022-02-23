@@ -143,9 +143,6 @@ class m_dlist(Metatype):
                           macro="maskeditor",
                           language=language)
 
-    def getName(self):
-        return "fieldtype_dlist"
-
     def getInformation(self):
         return {"moduleversion": "1.0", "softwareversion": "1.1"}
 

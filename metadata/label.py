@@ -98,9 +98,6 @@ class m_label(Metatype):
             value = esc(value)
         return (metafield.getLabel(), value)
 
-    def getName(self):
-        return "fieldtype_label"
-
     def getInformation(self):
         return {"moduleversion": "1.0", "softwareversion": "1.1"}
 

@@ -83,9 +83,6 @@ class m_text(Metatype):
             logg.exception("exception in format_request_value_for_db, returning value")
             return value
 
-    def getName(self):
-        return "fieldtype_text"
-
     def getInformation(self):
         return {"moduleversion": "1.0", "softwareversion": "1.1"}
 

@@ -51,9 +51,6 @@ class m_meta(Metatype):
     def getInformation(self):
         return {"moduleversion": "1.1", "softwareversion": "1.1", "files": "meta.py;meta.html"}
 
-    def getName(self):
-        return "fieldtype_meta"
-
     translation_labels = dict(
         de=dict(
             metafield_tech_meta="Technisches Metadatenfeld:",

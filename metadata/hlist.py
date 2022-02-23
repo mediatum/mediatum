@@ -70,9 +70,6 @@ class m_hlist(Metatype):
             return metafield.getLabel(), value[-1]
         return metafield.getLabel(), u' - '.join(value)
 
-    def getName(self):
-        return "fieldtype_hlist"
-
     def getInformation(self):
         return {"moduleversion": "1.0", "softwareversion": "1.1"}
 

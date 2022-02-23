@@ -62,9 +62,6 @@ class m_memo(Metatype):
             language=language,
         )
 
-    def getName(self):
-        return "fieldtype_memo"
-
     def getInformation(self):
         return {"moduleversion": "1.1", "softwareversion": "1.1"}
 

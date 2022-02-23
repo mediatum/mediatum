@@ -115,9 +115,6 @@ class m_ilist(Metatype):
         value = params.get(item)
         return value
 
-    def getName(self):
-        return "fieldtype_ilist"
-
     def getInformation(self):
         return {"moduleversion": "1.1", "softwareversion": "1.1"}
 

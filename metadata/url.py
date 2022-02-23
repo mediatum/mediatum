@@ -140,9 +140,6 @@ class m_url(Metatype):
                           macro="maskeditor",
                           language=language)
 
-    def getName(self):
-        return "fieldtype_url"
-
     def getInformation(self):
         return {"moduleversion": "1.1", "softwareversion": "1.1"}
 

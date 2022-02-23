@@ -142,37 +142,6 @@ def get_transfer_url(n):
     return transferurl
 
 
-def build_transferzip(dest_file, node):
-    nid = node.id
-
-    def _add_files_to_zip(zfile, node):
-        files_written = 0
-        for fo in node.files:
-            if fo.filetype in ['document', 'zip', 'attachment', 'other']:
-                fullpath = fo.abspath
-                if os.path.isfile(fullpath) and os.path.exists(fullpath):
-                    filename = fo.base_name
-                    logg.debug("adding to zip: %s as %s", fullpath, filename)
-                    zfile.write(fullpath, filename)
-                    files_written += 1
-                if os.path.isdir(fullpath):
-                    for filepath in get_all_file_paths(fullpath):
-                        relpath = filepath.replace(fullpath, "")
-                        logg.debug("adding from directory %s to zip as %s", fullpath, relpath)
-                        zfile.write(filepath, relpath)
-                        files_written += 1
-        return files_written
-
-    count_files_written = 0
-    logg.info("builing transfer zip for node %s", nid)
-
-    with zipfile.ZipFile(dest_file, "w", zipfile.ZIP_DEFLATED) as zfile:
-        if isinstance(node, Content) and node.has_data_access():
-            count_files_written = _add_files_to_zip(zfile, node)
-
-    return count_files_written
-
-
 def preference_sorted_image_mimetypes(image, mimetypes):
     preferred_mimetype = image.system_attrs.get("preferred_mimetype")
     original_file = image.files.filter_by(filetype=u"original").scalar()

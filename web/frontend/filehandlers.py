@@ -20,8 +20,12 @@ from contenttypes import Container
 from contenttypes import Content
 from contenttypes.data import Data
 from schema.schema import existMetaField
-from web.frontend.filehelpers import splitpath, build_transferzip, node_id_from_req_path, split_image_path,\
-    preference_sorted_image_mimetypes, version_id_from_req, get_node_or_version
+from web.frontend.filehelpers import get_node_or_version
+from web.frontend.filehelpers import node_id_from_req_path
+from web.frontend.filehelpers import preference_sorted_image_mimetypes
+from web.frontend.filehelpers import split_image_path
+from web.frontend.filehelpers import splitpath
+from web.frontend.filehelpers import version_id_from_req
 from utils import userinput
 import utils.utils
 from utils.utils import getMimeType, clean_path, get_filesize
@@ -234,8 +238,7 @@ def send_file(req):
         return 400
 
     nidstr, filename = parts
-    if nidstr.endswith("_transfer.zip"):
-        nidstr = nidstr[:-13]
+    assert not nidstr.endswith("_transfer.zip")
 
     nid = userinput.string_to_int(nidstr)
     if nid is None:
@@ -267,15 +270,7 @@ def send_file(req):
             req.response.headers["Content-Disposition"] = u'attachment; filename="{}"'.format(display_file_name)
         return _request_handler.sendFile(req, filepath, mimetype)
 
-    if filename is None:
-        # build zip-file and return it
-        with tempfile.NamedTemporaryFile() as tmpfile:
-            files_written = build_transferzip(tmpfile, node)
-            if files_written == 0:
-                req.response.status_code = 404
-                return 404
-            # don't enable nginx x_accel_redirect for temporary files
-            return _request_handler.sendFile(req, tmpfile.name, "application/zip", nginx_x_accel_redirect_enabled=False)
+    assert filename is not None
 
     # try full filename
     for f in node.files:

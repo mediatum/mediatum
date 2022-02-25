@@ -1,9 +1,9 @@
 <tal:block metal:define-macro="view_node">
 
-    <script tal:content="python:u'var ids = \'{}\';'.format(ids)"> </script>
+    <script tal:content="python:u'var nodeids = [ {} ];'.format(', '.join(map('\'{}\''.format, nodeids)))"> </script>
     <script>
         $(document).ready(function () {
-          deleteSelected(ids);
+          deleteSelected(nodeids);
         });
     </script>
 </tal:block>

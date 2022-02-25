@@ -387,18 +387,11 @@ function path_to_pidlist(path, poplast) {
 
 // asynchronous version of editor_action: wait with javascript tree update until
 // server has responded
-function edit_action_sync(action, src, ids, add) {
+function edit_action_sync(action, src, nodeids, add) {
     consoledb.groupCollapsed('edit_action_sync');
-    consoledb.log('action: '+action+', src: '+src+', ids: '+ids+', add: '+add);
+    consoledb.log('action: '+action+', src: '+src+', nodeids: '+nodeids+', add: '+add);
     var url = '&action='+escape(action);
 
-/*
-    if(add==1){ // folder
-        url = '&newfolder='+escape(action);
-    }else if (add==2){ //collection
-        url = '&newcollection='+escape(action);
-    }
-*/
     if (action=="move" || action=="copy"){
         url = '&action='+escape(action)+'&dest='+add;
     }
@@ -420,9 +413,12 @@ function edit_action_sync(action, src, ids, add) {
     }    
 
     var options = {
-          url: '/edit/edit_action?srcnodeid='+src+'&ids='+ids+'&style=popup'+url,
+          url: '/edit/edit_action?srcnodeid='+src+'&style=popup'+url,
           async: false,
           dataType: 'json',
+          type: 'POST',
+          traditional: true, //"would POST param "id[]" with brackets in the name otherwise
+          data: {ids: nodeids, csrf_token: parent.csrf},
           success: function (response) {
               ajax_response = response;
               new_path_endpoint = response.key;
@@ -512,13 +508,11 @@ function doaction(checked) {
 
 function checkObject(field) {
     if(field.checked) {
-        allobjects[field.name] = 1;
         //check all objects with same field name because of two views
         $('input[name^='+field.name+']').each(function(){
             $(this).prop('checked', true);
         });
     } else {
-        allobjects[field.name] = 0;
         $('input[name^='+field.name+']').each(function(){
             $(this).prop('checked', false);
         });
@@ -553,82 +547,56 @@ function modal_confirm(msg) {
 }
 
 
-function editSelected(ids){
-    if (!ids){ /* use given id */
-        ids = getAllObjectsString();
-    }
-    if (ids!=""){
-        document.location.href = '/edit/edit_content?ids='+ids+'&srcnodeid='+parent.idselection+'&tab=metadata';
-    }
+function editSelected(nodeid){
+    nodeid = nodeid ? [nodeid] : getAllObjectsNodeids();
+    if (nodeid.length == 0) return;
+
+    var form = $('<form action="/edit/edit_content" method="POST"></form>');
+    form.append($('<input name="srcnodeid" value="' + parent.idselection + '" type="hidden">'));
+    form.append($('<input name="tab" value="metadata" type="hidden">'));
+    form.append($('<input name="csrf_token" value="' + parent.csrf + '" type="hidden">'));
+    for (nid of nodeid)
+        form.append($('<input name="ids" value="' + nid + '" type="hidden">'))
+    $("body").append(form);
+    form.submit();
 }
 
 
-function movecopySelected(ids, type){
+function movecopySelected(action, nodeids){
     consoledb.groupCollapsed('movecopySelected');
-    consoledb.log('movecopySelected: ids '+ids+'   type: '+type);
-    consoledb.log('movecopySelected: getAllObjectsString(): '+getAllObjectsString());
+    consoledb.log('movecopySelected: action '+action+'   nodeids: '+nodeids);
+    consoledb.log('movecopySelected: getAllObjectsNodeids(): '+getAllObjectsNodeids());
 
-    if (!ids){
-        ids = getAllObjectsString();
-    }
-    
-    //showOverlay();
-    parent.currentselection = ids;
-    parent.action = type;
+    if (!nodeids) nodeids = getAllObjectsNodeids();
 
-    if(!ids){ /* use given id */
-        ids = getAllObjectsString();
-    }else{
-        allobjects[ids] = 1;
-    }
+    parent.currentselection = nodeids;
+
     var confirm_msg = parent.$('#select_target_dir').text().replace(/\\n/g, '\n');
-    if(ids && confirm(confirm_msg)){
-        //parent.idselection = ids;
-        parent.action = type;
-    }else{
-        parent.action = "";
-    }
+    parent.action = (nodeids.length > 0 && confirm(confirm_msg)) ? action : "";
+
     consoledb.log('parent.action:'+parent.action);
     consoledb.groupEnd('movecopySelected');
     return;
 }
 
-function deleteSelected(ids){
-    if (!ids){ /* use given id */
-        ids = getAllObjectsString();
-    }
-    if(ids){
-        if(confirm($('#delete_text').text())) {
-            // function edit_action_sync(action, src, ids, add) ...
-            var ret = edit_action_sync('delete', parent.last_activated_node.key, ids);
-            /*
-            ret.complete(function(){
-                //parent.tree.updateNodeLabel(parent.tree.currentfolder);
-                reloadPage(parent.tree.currentfolder, '');
-            });
-            */
-            reloadPage(parent.last_activated_node.key, '');
-            try {
-                //parent.last_activated_node.reloadChildren();
-                parent.last_activated_node.load(forceReload=true);
-                //parent.last_activated_node.setExpanded(true);
-                
-                
-            }    
-            catch(e) {
-                try {
-                  var nname = parent.last_activated_node.title;
-                  var nkey = parent.last_activated_node.key;
-                  consoledb.log('tried to reloadChildren() for node key='+nkey+', title='+nname+' caught: '+e);
-                }
-                catch(e) {
-                  consoledb.log('tried to reloadChildren() for node key='+nkey+', title='+nname+' caught: '+e);
-                }
-            }            
-            return true;
+
+function deleteSelected(nodeids){
+    if (!nodeids) nodeids = getAllObjectsNodeids();
+    if (nodeids.length == 0) return;
+
+    if(confirm($('#delete_text').text())) {
+        edit_action_sync('delete', parent.last_activated_node.key, nodeids);
+        reloadPage(parent.last_activated_node.key, '');
+        try {
+            parent.last_activated_node.load(forceReload=true);
         }
-      return false;
+        catch(e) {
+            consoledb.log('tried to reloadChildren() for node key='+
+                          parent.last_activated_node.key+', title='+parent.last_activated_node.title+' caught: '+e);
+        }
+        return true;
     }
+    return false;
 }
 
 
@@ -716,4 +684,16 @@ function saveSortPage(o1, o2){
         $("#message").html(data.message);
         $("#message").show().delay(5000).fadeOut();
     });
+}
+
+
+function getAllObjectsNodeids(){
+    var s = [];
+    $('input[id^="check"]:checked').each(function(){
+        var nodeid = $(this).attr('id').substring(5);
+        if (nodeid != 'node.id' & ! (s.includes(nodeid))){
+            s.push(nodeid);
+        }
+    });
+    return s;
 }

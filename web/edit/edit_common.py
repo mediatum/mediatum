@@ -318,7 +318,6 @@ def shownavlist(req, node, nodes, page, dir=None):
 
 def shownodelist(req, nodes, page, publishwarn=True, markunpublished=False, dir=None, item_count=None, all_nodes=None,
                  faultyidlist=[]):
-    script_array = "allobjects = new Array();\n"
     nodelist = []
     nodes_per_page = get_nodes_per_page(req, dir)
 
@@ -335,7 +334,6 @@ def shownodelist(req, nodes, page, publishwarn=True, markunpublished=False, dir=
     for child in nodes_in_page:
         from contenttypes import Content
         if isinstance(child, Content):
-            script_array += "allobjects['%s'] = 0;\n" % child.id
             nodelist.append(child)
 
     notpublished = {}
@@ -371,7 +369,6 @@ def shownodelist(req, nodes, page, publishwarn=True, markunpublished=False, dir=
                         srcnodeid=dir.id,
                         node=node,
                         faultyidlist=faultyidlist,
-                        script_array=script_array,
                         language=lang(req),
                     ),
                     file="web/edit/edit_common.html",
@@ -385,7 +382,6 @@ def shownodelist(req, nodes, page, publishwarn=True, markunpublished=False, dir=
                         srcnodeid=dir.id,
                         node=node,
                         faultyidlist=faultyidlist,
-                        script_array=script_array,
                         language=lang(req),
                     ),
                     file="web/edit/edit_common.html",
@@ -402,7 +398,6 @@ def shownodelist(req, nodes, page, publishwarn=True, markunpublished=False, dir=
                 html_list_nodes="".join(html_list_nodes),
                 html_thumb_nodes="".join(html_thumb_nodes),
                 faultyidlist=faultyidlist,
-                script_array=script_array,
                 language=lang(req),
             ),
             file="web/edit/edit_common.html",

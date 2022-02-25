@@ -22,8 +22,9 @@ import web.edit.edit_common as _web_edit_edit_common
 
 def getContent(req, ids):
     show_dir_nav = _web_edit_edit_common.ShowDirNav(req)
-    return _tal.processTAL({'ids': ",".join(show_dir_nav.get_ids_from_req()), 'action': 'move'},
+    return _tal.processTAL(
+            dict(nodeids=show_dir_nav.get_ids_from_req(), action='move'),
             file="web/edit/modules/movecopyall.html",
             macro="view_node",
             request=req,
-           )
+        )

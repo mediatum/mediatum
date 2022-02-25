@@ -534,8 +534,8 @@ def upload_ziphandler(filename, id):
 
                 with codecs.open(newfilename, "wb") as fi:
                     fi.write(z.read(f))
-
-                fn = _utils_fileutils.importFile(mybasename(name.replace(" ", "_")), z)
+                with codecs.open(newfilename, "rb") as fi:
+                    fn = _utils_fileutils.importFile(mybasename(name.replace(" ", "_")), fi)
                 basenode.files.append(fn)
                 if os.path.exists(newfilename):
                     os.unlink(newfilename)

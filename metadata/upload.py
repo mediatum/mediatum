@@ -333,7 +333,7 @@ def handle_request(req):
             nodeFile = importFile(
                 _utils_fileutils.sanitize_filename(filename),
                 file,
-                override_filetype='metafield-upload.{}'.format(submitter)
+                filetype='metafield-upload.{}'.format(submitter)
                )
 
             if not nodeFile:

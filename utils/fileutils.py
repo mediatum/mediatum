@@ -46,18 +46,27 @@ def getImportDir():
     return uploaddir
 
 
-def importFile(realname, source, override_filetype=""):
-    # create destname as "{random_string}.{given_name}"
-    destname = (_utils_utils.gen_secure_token(128), os.path.basename(source.filename))
+def importFile(destname, sourcefileobj, filetype=None):
+    """
+    copies an imported file to the incoming directory and returns a File-object (entry in file-table)
+    for it.
+    The name for the imported file is specified by the destname (only filename without path),
+    which gets a secure_token prefix and the path of the incoming directory
+    :param destname: name of the uploaded file (without path)
+    :param sourcefileobj: sourcefiledescriptor, e.g. werkzeug.Filestorage, used for copy
+    :param filetype: if specified overrides filetype
+    :return: File-object of the imported file.
+    """
+    assert destname > ""
+    destname = (_utils_utils.gen_secure_token(128), os.path.basename(destname))
     destname = os.path.join(getImportDir(), ".".join(destname))
 
     with open(destname,"wb") as destfile:
-        shutil.copyfileobj(source, destfile)
+        shutil.copyfileobj(sourcefileobj, destfile)
 
-    r = realname.lower()
-    mimetype, filetype = getMimeType(r)
+    mimetype, filetype_ = getMimeType(destname.lower())
 
-    return File(destname, override_filetype or filetype, mimetype)
+    return File(destname, filetype or filetype_, mimetype)
 
 
 def importFileIntoDir(destdir, tempname):

@@ -272,12 +272,9 @@
                   TEXT
                 </td>
             </tr>
-            <tr>
+            <tr tal:condition="python:fieldsettings_html">
                 <td>&nbsp;</td>
-                <td>
-                    <!-- automatic block from metatype start -->
-                    <div tal:attributes="id python:'div_'" tal:content="raw adminfields"/>
-                    <!-- automatic block from metatype end -->
+                <td tal:content="raw fieldsettings_html">
                     &nbsp;
                 </td>
             </tr>

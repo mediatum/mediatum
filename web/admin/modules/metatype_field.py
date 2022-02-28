@@ -148,7 +148,7 @@ def FieldDetail(req, name=None, error=None):
     tal_ctx = getAdminStdVars(req)
     tal_ctx.update(
             actpage=req.params.get("actpage"),
-            adminfields="",
+            fieldsettings_html="",
             csrf= _core_csrfform.get_token(),
             error=error,
             fieldoptions=fieldoption,
@@ -162,7 +162,7 @@ def FieldDetail(req, name=None, error=None):
 
     if field.id:
         tal_ctx["field"] = field
-        tal_ctx["adminfields"] = getMetadataType(field.getFieldtype()).get_metafieldeditor_html(
+        tal_ctx["fieldsettings_html"] = getMetadataType(field.getFieldtype()).get_metafieldeditor_html(
                 field,
                 metadatatype,
                 _translation.set_language(req.accept_languages),

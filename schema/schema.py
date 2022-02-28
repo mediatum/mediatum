@@ -331,19 +331,20 @@ def updateMetaField(
         fieldvalues,
         fieldid,
        ):
+    assert bool(fieldid) != bool(fieldtype)
+
     metatype = getMetaType(parent)
 
     # search the field by id, then by name,
     # or create a new one if both searches didn't yield a result
-    field = None
     if fieldid:
         field = q(Node).get(fieldid)
-    if field is not None:
         field.name = name
     else:
         field = metatype.children.filter_by(name=name).filter(Node.type=="metafield").scalar()
     if not field:
         field = Metafield(name)
+        field.set("type", fieldtype)
         metatype.children.append(field)
         field.orderpos = len(metatype.children) - 1
         db.session.commit()
@@ -357,7 +358,6 @@ def updateMetaField(
     #<----- End: For fields of list type ----->
 
     field.set("label", label)
-    field.set("type", fieldtype)
     field.set("opts", "".join(option))
     field.set("valuelist", fieldvalues.replace("\r\n", ";"))
     field.set("description", description)

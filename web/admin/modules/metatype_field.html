@@ -228,7 +228,6 @@
         <input type="hidden" name="form_op" value="save_newdetail" id="form_op"/>
         <input type="hidden" name="parent" tal:attributes="value python:metadatatype.id" />
         <input type="hidden" name="acttype" value="field"/>
-        <input type="hidden" name="fieldid" tal:attributes="value python:metafield.id"/>
         <input type="hidden" name="actpage" tal:attributes="value actpage"/>
         <input type="hidden" name="actfilter" tal:attributes="value actfilter"/>
         <input type="hidden" name="filtertype" tal:attributes="value filtertype"/>
@@ -272,7 +271,6 @@
                 <td tal:content="python:fieldtypes[field.get('type')]" i18n:translate="">
                   TEXT
                 </td>
-                <input style="display:none" name="mtype" tal:attributes="value python:field.get('type')"/>
             </tr>
             <tr>
                 <td>&nbsp;</td>

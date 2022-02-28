@@ -198,9 +198,10 @@ def validate(req, op):
             elif not checkString(req.params.get("mname", "")):
                 return FieldDetail(req, error="admin_metafield_error_badchars")
 
-            fieldvalue = "{}_value".format(req.params.get("mtype", ""))
-            if fieldvalue in req.params:
-                fieldvalue = req.params.get(fieldvalue)
+            # metafield settings may only be passed for
+            # pre-existing fields, i.e., fields with an id
+            if req.values.get("fieldid"):
+                fieldvalue = req.params.get("{}_value".format(q(Node).get(int(req.values.get("fieldid"))).get("type")), "")
             else:
                 fieldvalue = ""
 
@@ -208,11 +209,11 @@ def validate(req, op):
                     req.values["parent"],
                     req.values["mname"],
                     req.values.get("mlabel", ""),
-                    req.values["mtype"],
+                    req.values.get("mtype"),
                     tuple(o[7] for o in req.params if o.startswith("option_")),
                     req.values.get("mdescription", ""),
                     fieldvalue,
-                    req.values.get("fieldid", ""),
+                    req.values.get("fieldid"),
                    )
 
         return showDetailList(req, req.params.get("parent"))

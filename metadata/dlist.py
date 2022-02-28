@@ -22,6 +22,9 @@ logg = logging.getLogger(__name__)
 
 
 class m_dlist(Metatype):
+
+    name = "dlist"
+
     def formatValues(self, context):
         valuelist = []
 

@@ -54,6 +54,8 @@ def _get_list_values_for_nodes_with_schema(schema, attribute_name):
 
 class m_ilist(Metatype):
 
+    name = "ilist"
+
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
         return tal.getTAL("metadata/ilist.html", {"lock": lock,
                                                   "value": value,

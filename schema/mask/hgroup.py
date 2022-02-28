@@ -16,6 +16,8 @@ q = db.query
 
 class m_hgroup(Metatype):
 
+    name = "hgroup"
+
     def getFormHTML(self, field, nodes, req):
         cls = "editorrow"
         for item in field.getChildren().sort_by_orderpos():

@@ -19,6 +19,8 @@ logg = logging.getLogger(__name__)
 
 class m_date(Metatype):
 
+    name = "date"
+
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
         d = field.getSystemFormat(field.getValues())
 

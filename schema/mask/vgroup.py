@@ -21,6 +21,8 @@ q = db.query
 
 class m_vgroup(Metatype):
 
+    name = "vgroup"
+
     def getFormHTML(self, field, nodes, req):
         ret = '<fieldset>'
         if field.getLabel() != "":

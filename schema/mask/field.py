@@ -23,6 +23,8 @@ s = db.session
 
 class m_field(Metatype):
 
+    name = "field"
+
     def set_default_metadata(self, field, node):
         """
         create/set metadata of a document if the value is not set to a default value

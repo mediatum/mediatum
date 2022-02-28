@@ -1459,7 +1459,7 @@ _metatypes = {}
 
 
 def _metatype_class(cls):
-    name = cls.get_name4schema()
+    name = cls.name
     logg.debug("loading metatype class %s", name)
     instance = cls()
     assert name not in _metatypes

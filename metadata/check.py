@@ -12,6 +12,8 @@ from core.metatype import Metatype
 
 class m_check(Metatype):
 
+    name = "check"
+
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
         return tal.getTAL("metadata/check.html", {"lock": lock,
                                                   "value": value,

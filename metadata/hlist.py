@@ -20,6 +20,8 @@ q = db.query
 
 class m_hlist(Metatype):
 
+    name = "hlist"
+
     def get_metafieldeditor_html(self, field, metadatatype, language):
         values = field.get("valuelist").split(u';')
         values.extend(("",)*3)

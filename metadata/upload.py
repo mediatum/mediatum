@@ -69,6 +69,8 @@ def getFilelist(node, fieldname=None):
 
 class m_upload(Metatype):
 
+    name = "upload"
+
     def getEditorHTML(self, field, value="", width=40, lock=0, language=None, required=None):
         try:
             fieldname = field.name

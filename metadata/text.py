@@ -22,6 +22,8 @@ logg = logging.getLogger(__name__)
 
 class m_text(Metatype):
 
+    name = "text"
+
     def getEditorHTML(self, field, value="", width=40, lock=0, language=None, required=None):
         try:
             field_node_name = field.name

@@ -14,6 +14,8 @@ logg = logging.getLogger(__name__)
 
 class m_meta(Metatype):
 
+    name = "meta"
+
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
         return tal.getTAL("metadata/meta.html", {"lock": lock,
                                                  "value": value,

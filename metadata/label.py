@@ -15,6 +15,8 @@ q = db.query
 
 class m_label(Metatype):
 
+    name = "label"
+
     def getFormHTML(self, field, nodes, req):
         return '<b>' + field.getLabel() + '</b><br/>'
 

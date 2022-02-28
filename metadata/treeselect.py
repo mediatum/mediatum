@@ -21,6 +21,8 @@ logg = logging.getLogger(__name__)
 
 class m_treeselect(Metatype):
 
+    name = "treeselect"
+
     def getEditorHTML(self, metafield, value="", width=40, lock=0, language=None, required=None):
         return tal.getTAL("metadata/treeselect.html", {"lock": lock,
                                                        "value": value,

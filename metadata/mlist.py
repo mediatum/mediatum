@@ -20,6 +20,8 @@ q = db.query
 
 class m_mlist(Metatype):
 
+    name = "mlist"
+
     def formatValues(self, context):
         valuelist = []
 

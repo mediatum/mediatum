@@ -55,6 +55,8 @@ class MappingExtStdAttr(MappingReplacement):  # replace all 'att:X' types
 
 class m_mappingfield(Metatype):
 
+    name = "mappingfield"
+
     def __init__(self):
         self.extensions = [MappingExtStdAttr()]
 

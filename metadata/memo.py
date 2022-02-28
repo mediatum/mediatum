@@ -24,6 +24,7 @@ max_lang_length = max([len(lang) for lang in config.languages])
 
 class m_memo(Metatype):
 
+    name = "memo"
 
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
 

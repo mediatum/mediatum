@@ -31,6 +31,8 @@ _targets = {"selbes Fenster": "same", "neues Fenster": "_blank"}
 
 class m_url(Metatype):
 
+    name = "url"
+
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
         fielddef = field.getValues().split("\r\n")
         if len(fielddef) != 4:

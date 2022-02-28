@@ -44,9 +44,6 @@ class m_text(Metatype):
     def getSearchHTML(self, context):
         return tal.getTAL("metadata/text.html", {"context": context}, macro="searchfield", language=context.language)
 
-    def get_metafieldeditor_html(self, field, metadatatype, language):
-        return tal.getTAL("metadata/text.html", {}, macro="maskeditor", language=language)
-
     def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True, template_from_caller=None):
 
         value = node.get_special(metafield.name)

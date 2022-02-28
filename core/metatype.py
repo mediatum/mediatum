@@ -49,7 +49,7 @@ class Metatype(object):
         return params.get(item)
 
     def get_metafieldeditor_html(self, field, metadatatype, language):
-        return ""
+        pass
 
 
     translation_labels = {}

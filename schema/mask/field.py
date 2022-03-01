@@ -17,12 +17,15 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import operator as _operator
+
 import mediatumtal.tal as _tal
 
+import utils.utils as _utils_utils
 from utils.utils import formatLongText
 from utils.strings import ensure_unicode
 
-from schema.schema import getMetaFieldTypeNames, getMetaFieldTypes, getMetadataType, VIEW_DATA_ONLY, VIEW_SUB_ELEMENT, VIEW_HIDE_EMPTY, VIEW_DATA_EXPORT, dateoption
+from schema.schema import getMetadataType, VIEW_DATA_ONLY, VIEW_SUB_ELEMENT, VIEW_HIDE_EMPTY, VIEW_DATA_EXPORT
 from core.translation import lang, translate
 from core.metatype import Metatype, Context
 from core import db, Node
@@ -269,82 +272,50 @@ class m_field(Metatype):
 
     def getMetaEditor(self, item, req):
         """ editor mask for field definition """
-        attr = {}
         fields = []
-        pidnode = None
 
-        if "pid" not in req.params.keys():
-            for p in item.getParents():
-                try:
+        if "pid" in req.values:
+            pidnode = None
+        else:
+            for pidnode in item.getParents():
+                with _utils_utils.suppress(Exception,warn=False):
                     if p.getMasktype() == "export":
-                        pidnode = p
                         break
-                except:
-                    continue
+            else:
+                pidnode = None
 
         metadatatype = req.params.get("metadatatype")
-        for t in metadatatype.getDatatypes():
-            content_class = Node.get_class_for_typestring(t)
-            node = content_class(name=u'')
-            attr.update(node.getTechnAttributes())
-
         if req.params.get("op", "") == "new":
             pidnode = q(Node).get(req.params.get("pid"))
-            if hasattr(pidnode, 'getMasktype') and pidnode.getMasktype() in ("vgroup", "hgroup"):
-                # XXX: getAllChildren does not exist anymore, is this dead code?
-                for field in pidnode.getAllChildren():
-                    if field.getType().getName() == "maskitem" and field.id != pidnode.id:
-                        fields.append(field)
-            else:
-                for m in metadatatype.getMasks():
-                    if ustr(m.id) == ustr(req.params.get("pid")):
-                        for field in m.getChildren():
-                            fields.append(field)
+            for m in metadatatype.getMasks():
+                if ustr(m.id) == ustr(req.params.get("pid")):
+                    fields.extend(m.getChildren())
 
-        fields.sort(lambda x, y: cmp(x.getOrderPos(), y.getOrderPos()))
-        add_values = []
-        val = u""
-        if item.getField():
-            val = item.getField().getValues()
-            db.session.commit()
-
-        for t in getMetaFieldTypeNames():
-            f = getMetadataType(t)
-            add_values.append(f.getMaskEditorHTML(val, metadatatype=metadatatype, language=lang(req)))
+        fields.sort(key=_operator.methodcaller("getOrderPos"))
 
         metafields = metadatatype.getMetaFields()
-        metafields.sort(lambda x, y: cmp(x.getName().lower(), y.getName().lower()))
+        metafields.sort(key=lambda mf:mf.getName().lower())
 
-        metafieldtypes = getMetaFieldTypes().values()
-        metafieldtypes.sort(lambda x, y: cmp(translate(x.getName(), request=req).lower(), translate(y.getName(), request=req).lower()))
-
-        add_descriptions = []
-        for metafield in metafields:
-            add_descriptions.append('<div style="display:none" id="div_%d" name="%s" description="%s"></div>' %
-                                    (metafield.id, metafield.name, metafield.getDescription()))
-
-        v = {}
-        v["op"] = req.params.get("op", "")
-        v["pid"] = req.params.get("pid", "")
-        v["item"] = item
-        v["metafields"] = metafields
-        v["fields"] = fields
-        v["fieldtypes"] = metafieldtypes
-        v["dateoption"] = dateoption
-        v["t_attrs"] = attr
-        v["icons"] = {"externer Link": "/img/extlink.png", "Email": "/img/email.png"}
-        v["add_values"] = add_values
-        v["add_descriptions"] = add_descriptions
-        v["translate"] = translate
-        v["language"] = lang(req)
+        tal_ctx = dict(
+                op=req.params["op"],
+                pid=req.params.get("pid", ""),
+                item=item,
+                fields=fields,
+                translate=translate,
+                language=lang(req),
+               )
+        if tal_ctx["op"]=="new":
+            tal_ctx["metafields"] = metafields
+        elif tal_ctx["op"]=="edit":
+            tal_ctx["field"] = item.getField()
+        else:
+            raise AssertionError("unknown op")
 
         if pidnode and hasattr(pidnode, 'getMasktype') and pidnode.getMasktype() == "export":
-            v["mappings"] = []
-            for m in pidnode.getExportMapping():
-                v["mappings"].append(q(Node).get(m))
-            return _tal.processTAL(v, file="schema/mask/field.html", macro="metaeditor_" + pidnode.getMasktype(), request=req)
+            tal_ctx["mappings"] = tuple(q(Node).get(mapping) for mapping in pidnode.getExportMapping())
+            return _tal.processTAL(tal_ctx, file="schema/mask/field.html", macro="metaeditor_export", request=req)
         else:
-            return _tal.processTAL(v, file="schema/mask/field.html", macro="metaeditor", request=req)
+            return _tal.processTAL(tal_ctx, file="schema/mask/field.html", macro="metaeditor", request=req)
 
     @classmethod
     def isContainer(cls):

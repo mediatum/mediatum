@@ -544,8 +544,7 @@
             <td colspan="2"><b i18n:translate="admin_wfstep_additional">TEXT</b>:</td>
     </tr>
     <tal:block tal:repeat="field fields">
-        <tr tal:define="name python:field.getFieldtype()=='meta' and field.getValue() or field.getName(); value python:node.get(name)">
-
+        <tr tal:define="name python:field.getName(); value python:node.get(name)">
             <!--<tr tal:define="name python:field['type']=='meta' and field.get('name') or field.name; value python:node.get(name)">-->
             <td>
                 <span tal:replace="python:field.getLabel()"/>

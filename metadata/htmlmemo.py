@@ -66,18 +66,8 @@ class m_htmlmemo(Metatype):
         value = node.get(metafield.getName()).replace(";", "; ")
         return (metafield.getLabel(), value)
 
-    def getMaskEditorHTML(self, field, metadatatype=None, language=None, attr_dict={}):
-        try:
-            value = field.getValues()
-        except AttributeError:
-            value = u""
-
-        context = {
-            "value": value,
-        }
-
-        context.update(attr_dict)
-        return tal.getTAL("metadata/htmlmemo.html", context, macro="maskeditor", language=language)
+    def get_metafieldeditor_html(self, field, metadatatype, language):
+        return tal.getTAL("metadata/htmlmemo.html", dict(value=field.getValues()), macro="maskeditor", language=language)
 
     def getPopup(self, req):
         if "type" in req.params:

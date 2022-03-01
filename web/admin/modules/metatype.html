@@ -356,7 +356,7 @@
                             <table>
                                 <tr>
                                     <tal:block tal:repeat="fieldoption fieldoptions">
-                                        <td width="20px" align="center"><img tal:attributes="src python:fieldoption.getImagesource(); title python:fieldoption.getName()" i18n:attributes="title"/></td>
+                                        <td width="20px" align="center"><img tal:attributes="src python:fieldoption.imgsource; title python:fieldoption.name" i18n:attributes="title"/></td>
                                     </tal:block>
                                 </tr>
                             </table>

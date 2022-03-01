@@ -1,25 +1,15 @@
 <tal:block metal:define-macro="editorfield">
         <span i18n:translate="url_edit_link">TEXT</span>
-        <tal:block tal:condition="python:fielddef[0]==''">
-            <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:u'width:{}px'.format(width-51); name name; id name; value python:value[0]; required required"/>
-            <span tal:condition="python:lock!=0" tal:attributes="id python:u'lockspan_{}'.format(name)">&nbsp;
-                <input tal:attributes="name python:u'lock_{}'.format(name); id python:u'lock_{}'.format(name); onclick python:u'handlelock(\'{}\')'.format(name)" type="checkbox"/>
-                <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
-            </span>
-        </tal:block>
-        <tal:block tal:condition="python:fielddef[0]!=''">
-            <i>[<a tal:attributes="href python:unicode(fielddef[0])"><span tal:replace="python:unicode(fielddef[0])"/></a>]</i><input type="hidden" tal:attributes="name name; id name" value=""/>
-        </tal:block>
+        <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:u'width:{}px'.format(width-51); name name; id name; value python:value[0] or fielddef[0]; required required"/>
+        <span tal:condition="python:lock!=0" tal:attributes="id python:u'lockspan_{}'.format(name)">&nbsp;
+            <input tal:attributes="name python:u'lock_{}'.format(name); id python:u'lock_{}'.format(name); onclick python:u'handlelock(\'{}\')'.format(name)" type="checkbox"/>
+            <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
+        </span>
         <br/> <span i18n:translate="url_edit_linktext">TEXT</span>
-        <tal:block tal:condition="python:fielddef[1]==''">
-            <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:u'width:{}px'.format(width-116); name python:u'{}_text'.format(name); id python: u'{}_text'.format(name); value python:value[1]; required required"/>
-            <span tal:condition="python:lock!=0" tal:attributes="id python:u'lockspan_{}'.format(name)">&nbsp;
-                <input tal:attributes="name python:u'lock_{}'.format(name); id python:u'lock_{}'.format(name); onclick python:u'handlelock(\'{}\')'.format(name)" type="checkbox"/><small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
-            </span>
-        </tal:block>
-        <tal:block tal:condition="python:fielddef[1]!=''">
-            <i>[<span tal:replace="python:unicode(fielddef[1])"/>]</i><input type="hidden" tal:attributes="name python: u'{}_text'.format(name); id python: u'{}_text'.format(name)" value=""/>
-        </tal:block>
+        <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:u'width:{}px'.format(width-116); name python:u'{}_text'.format(name); id python: u'{}_text'.format(name); value python:value[1] or fielddef[1]; required required"/>
+        <span tal:condition="python:lock!=0" tal:attributes="id python:u'lockspan_{}'.format(name)">&nbsp;
+            <input tal:attributes="name python:u'lock_{}'.format(name); id python:u'lock_{}'.format(name); onclick python:u'handlelock(\'{}\')'.format(name)" type="checkbox"/><small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
+        </span>
 
 </tal:block>
 
@@ -27,7 +17,7 @@
 <input metal:define-macro="searchfield" tal:attributes="name python:context.name; id python:context.name; value python:context.value" type="text" style="width:174px;" class="searchfield"/>
 
 
-<div metal:define-macro="maskeditor" style="display:none" id="div_url" name="div_url">
+<div metal:define-macro="maskeditor" style="display:block" id="div_url" name="div_url">
     <div class="label" i18n:translate="url_edit_link">TEXT</div>
     <input tal:attributes="value python:value[0]" type="text" name="url_value" style="width:250px;"/>
     <br/>

@@ -36,9 +36,9 @@ class m_date(Metatype):
         d = field.getSystemFormat(field.getValues())
 
         if value == "?":
-            value = date.format_date(date.now(), d.getValue())
+            value = date.format_date(date.now(), d.value)
         with suppress(Exception, warn=False):
-            value = date.format_date(date.parse_date(value), d.getValue())
+            value = date.format_date(date.parse_date(value), d.value)
         return tal.getTAL("metadata/date.html", {"lock": lock,
                                                  "value": value,
                                                  "width": width,
@@ -96,19 +96,20 @@ class m_date(Metatype):
         if not f:
             return ""
         try:
-            d = parse_date(ustr(value), f.getValue())
+            d = parse_date(ustr(value), f.value)
         except ValueError:
             return ""
         if not validateDate(d):
             return ""
         return format_date(d, format='%Y-%m-%dT%H:%M:%S')
 
-    def getMaskEditorHTML(self, field, metadatatype=None, language=None):
-        try:
-            value = field.getValues()
-        except AttributeError:
-            value = u""
-        return tal.getTAL("metadata/date.html", {"value": value, "dateoption": dateoption}, macro="maskeditor", language=language)
+    def get_metafieldeditor_html(self, field, metadatatype, language):
+        return tal.getTAL(
+            "metadata/date.html",
+            dict(value=field.getValues(), dateoption=dateoption),
+            macro="maskeditor",
+            language=language,
+        )
 
     def getName(self):
         return "fieldtype_date"
@@ -121,7 +122,7 @@ class m_date(Metatype):
         return m_date.labels
 
     def get_input_pattern(self, field):
-        regexes = {date.getShortName(): date.get_validation_regex() for date in dateoption}
+        regexes = {date.shortname: date.validation_regex for date in dateoption}
         try:
             return regexes[field.getValues()]
         except KeyError:

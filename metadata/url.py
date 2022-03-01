@@ -139,7 +139,7 @@ class m_url(Metatype):
                           {"value": value,
                            "icons": _icons,
                            "url_targets": _targets},
-                          macro="maskeditor",
+                          macro="metafieldeditor",
                           language=language)
 
 

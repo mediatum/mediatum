@@ -122,7 +122,7 @@ class m_mlist(Metatype):
         return value
 
     def get_metafieldeditor_html(self, field, metadatatype, language):
-        return tal.getTAL("metadata/mlist.html", dict(value=field.getValues()), macro="maskeditor", language=language)
+        return tal.getTAL("metadata/mlist.html", dict(value=field.getValues()), macro="metafieldeditor", language=language)
 
 
     translation_labels = dict(

@@ -55,7 +55,7 @@ class m_htmlmemo(Metatype):
         return (metafield.getLabel(), value)
 
     def get_metafieldeditor_html(self, field, metadatatype, language):
-        return tal.getTAL("metadata/htmlmemo.html", dict(value=field.getValues()), macro="maskeditor", language=language)
+        return tal.getTAL("metadata/htmlmemo.html", dict(value=field.getValues()), macro="metafieldeditor", language=language)
 
     def getPopup(self, req):
         assert req.values["type"] == "configfile"

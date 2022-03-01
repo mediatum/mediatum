@@ -26,8 +26,8 @@
 </select>
 
 
-<div metal:define-macro="maskeditor" style="display:block" name="div_mlist" id="div_mlist">
+<tal:block metal:define-macro="metafieldeditor">
     <br/>
     <div class="label" i18n:translate="mlist_list_values">TEXT</div>
     <textarea name="mlist_value" rows="4" style="width:500px;margin-bottom:5px"><tal:block tal:replace="value"/></textarea>
-</div>
+</tal:block>

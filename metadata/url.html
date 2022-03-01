@@ -21,7 +21,7 @@
 <input metal:define-macro="searchfield" tal:attributes="name python:context.name; id python:context.name; value python:context.value" type="text" style="width:174px;" class="searchfield"/>
 
 
-<div metal:define-macro="maskeditor" style="display:block" id="div_url" name="div_url">
+<tal:block metal:define-macro="metafieldeditor">
     <div class="label" i18n:translate="url_edit_link">TEXT</div>
     <input tal:attributes="value python:value[0]" type="text" name="url_value" style="width:250px;"/>
     <br/>
@@ -39,7 +39,7 @@
     <select name="url_value">
         <option tal:repeat="index python:list(url_targets)" tal:attributes="value python:url_targets[index]; selected python:'selected' if value[3]==url_targets[index] else None" tal:content="index" value="_value_"/>
     </select>
-</div>
+</tal:block>
 
 
 <tal:block metal:define-macro="fieldeditor">

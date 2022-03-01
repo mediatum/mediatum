@@ -59,7 +59,7 @@ class m_memo(Metatype):
         return tal.getTAL(
             "metadata/memo.html",
             dict(value=field.getValues()),
-            macro="maskeditor",
+            macro="metafieldeditor",
             language=language,
         )
 

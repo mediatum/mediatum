@@ -98,7 +98,7 @@ class m_date(Metatype):
         return tal.getTAL(
             "metadata/date.html",
             dict(value=field.getValues(), dateoption=dateoption),
-            macro="maskeditor",
+            macro="metafieldeditor",
             language=language,
         )
 

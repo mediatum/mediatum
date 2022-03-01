@@ -29,9 +29,9 @@
 </table>
 
 
-<div metal:define-macro="maskeditor" style="display:block" name="div_date" id="div_date">
+<tal:block metal:define-macro="metafieldeditor">
     <div class="label" i18n:translate="date_edit_date_format">TEXT</div>
     <select id="date_value" name="date_value" style="width:250px;">
         <option tal:repeat="option dateoption" tal:attributes="value python:option.shortname; selected python:'selected' if option.shortname==value else None" tal:content="python:option.name" i18n:translate=""/>
     </select>
-</div>
+</tal:block>

@@ -48,7 +48,7 @@ class m_meta(Metatype):
                     logg.exception("attribute error in get_metafieldeditor_html, continue")
                     continue
 
-        return tal.getTAL("metadata/meta.html", {"value": value, "t_attrs": attr}, macro="maskeditor", language=language)
+        return tal.getTAL("metadata/meta.html", {"value": value, "t_attrs": attr}, macro="metafieldeditor", language=language)
 
 
     translation_labels = dict(

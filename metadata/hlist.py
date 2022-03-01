@@ -29,7 +29,7 @@ class m_hlist(Metatype):
         return tal.getTAL(
             "metadata/hlist.html",
             {"value": dict(parentnode=values[0], attrname=values[1], onlylast=values[2])},
-            macro="maskeditor",
+            macro="metafieldeditor",
             language=language,
         )
 

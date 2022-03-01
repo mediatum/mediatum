@@ -41,7 +41,7 @@
 </div>
 </tal:block>
 
-<div metal:define-macro="maskeditor" style="display:block" name="div_hlist" id="div_hlist">
+<tal:block metal:define-macro="metafieldeditor">
     <div class="label" i18n:translate="hlist_edit_parentnodes">TEXT</div>
     <input type="text" name="hlist_value" tal:attributes="value python:value['parentnode']" style="width:200px;"/>
     <br/>
@@ -51,4 +51,4 @@
     <div class="label" i18n:translate="hlist_edit_onlylast">TEXT</div>
     <input type="checkbox" class="text" name="hlist_value" value="1" tal:attributes="checked python:{'True':'checked', 'False':None}['{}'.format(value['onlylast']=='1')]" style="width:200px;"/>
     <br/>
-</div>
+</tal:block>

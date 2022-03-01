@@ -35,7 +35,7 @@
 </select>
 
 
-<div metal:define-macro="maskeditor" style="display:block" name="div_list" id="div_list">
+<tal:block metal:define-macro="metafieldeditor">
     <div class="label" i18n:translate="list_multiple">TEXT</div>
     <input type="checkbox" name="list_value" value="multiple" tal:attributes="checked python:'checked' if multiple_list else None" />
     <br />
@@ -43,4 +43,4 @@
     <div class="label" i18n:translate="list_list_values">TEXT</div>
     <textarea name="list_value" rows="4" style="width:500px;margin-bottom:5px">
 <tal:block tal:replace="value"/></textarea>
-</div>
+</tal:block>

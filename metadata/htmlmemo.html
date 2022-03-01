@@ -66,8 +66,8 @@ CKEDITOR.editorConfig = function( config ){
     <input tal:attributes="name python:context.name; id python:context.name; value python:context.value" type="text" style="width:174px;" class="searchfield"/>
 </tal:block>
 
-<div metal:define-macro="maskeditor" style="display:block" name="div_htmlmemo" id="div_htmlmemo">
+<tal:block metal:define-macro="metafieldeditor">
     <div class="label" i18n:translate="mask_edit_max_length">TEXT</div>
     <input tal:attributes="value value" type="text" name="htmlmemo_value" rows="4" style="width:250px"/><br/>
 
-</div>
+</tal:block>

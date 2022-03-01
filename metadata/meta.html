@@ -12,7 +12,7 @@
 </tal:block>
 
 
-<div metal:define-macro="maskeditor" style="display:block" name="div_meta" id="div_meta">
+<tal:block metal:define-macro="metafieldeditor">
     <div class="label" i18n:translate="metafield_tech_meta">TEXT</div>
     <select id="meta_value" name="meta_value" style="width:250px;">
         <optgroup tal:repeat="t_attr python:list(t_attrs)" tal:attributes="label python:t_attr">
@@ -22,4 +22,4 @@
     <br/>
     <input type="checkbox" name="meta_value" tal:attributes="checked python:{'True':'checked', 'False':None}[str(len(value)>1 and value[1]=='on')]"/>
     <span class="label" i18n:translate="write_information_back">TEXT</span>
-</div>
+</tal:block>

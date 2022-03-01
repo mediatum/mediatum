@@ -35,10 +35,10 @@
     <input tal:attributes="name python:context.name; id python:context.name; value python:context.value" type="text" style="width:174px;" class="searchfield"/>
 </tal:block>
 
-<div metal:define-macro="maskeditor" style="display:block" name="div_memo" id="div_memo">
+<tal:block metal:define-macro="metafieldeditor">
     <div class="label" i18n:translate="mask_edit_max_length">TEXT</div>
     <input tal:attributes="value value" type="text" name="memo_value" rows="4" style="width:250px"/><br/>
-</div>
+</tal:block>
 
 <tal:block metal:define-macro="popup">
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">

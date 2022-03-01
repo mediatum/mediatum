@@ -130,7 +130,7 @@ class m_list(Metatype):
         return tal.getTAL(
             "metadata/list.html",
             dict(value=field.getValues(), multiple_list=field.get('multiple')),
-            macro="maskeditor",
+            macro="metafieldeditor",
             language=language,
         )
 

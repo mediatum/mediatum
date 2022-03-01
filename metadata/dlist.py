@@ -143,7 +143,7 @@ class m_dlist(Metatype):
         value = value[:5] # url(source), name variable, value variable
         return tal.getTAL("metadata/dlist.html", {"value": value,
                                                   "types": ['json', 'list']},
-                          macro="maskeditor",
+                          macro="metafieldeditor",
                           language=language)
 
 

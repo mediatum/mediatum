@@ -21,7 +21,7 @@
 </select>
 
 
-<div metal:define-macro="maskeditor" style="display:block" name="div_dlist" id="div_dlist">
+<tal:block metal:define-macro="metafieldeditor">
     <div class="label" i18n:translate="dlist_edit_source">TEXT</div>
     <input type="text" class="text" name="dlist_value" tal:attributes="value python:value[0]" style="width:200px;"/>
     <br/>
@@ -39,4 +39,4 @@
     <div class="label" i18n:translate="dlist_edit_format">TEXT</div>
     <input type="text" class="text" name="dlist_value" tal:attributes="value python:value[4]" style="width:200px;"/>
     <br/>
-</div>
+</tal:block>

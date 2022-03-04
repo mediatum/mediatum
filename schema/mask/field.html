@@ -112,8 +112,9 @@
                 </tal:block>
             </select>
         </tal:block>
-        <tal:block tal:condition="python:op=='edit'" tal:content="python:u'{} ({})'.format(field.getName(), field.getFieldtype())"> </tal:block>
+        <tal:block tal:condition="python:op=='edit'" tal:content="python:u'{} ({})'.format(field.getName(), field.getFieldtype())"/>
         <input tal:attributes="value python:item.id" type="hidden" name="id"/>
+        <input tal:attributes="value python:item.get('attribute')" type="hidden" name="attribute"/>
         <input tal:attributes="value pid" type="hidden" name="pid"/>
         <input type="hidden" name="type" value="field"/>
         <br/>&nbsp;<br/><div class="label">&nbsp;</div>

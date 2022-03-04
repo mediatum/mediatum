@@ -279,7 +279,7 @@ class m_field(Metatype):
         else:
             for pidnode in item.getParents():
                 with _utils_utils.suppress(Exception,warn=False):
-                    if p.getMasktype() == "export":
+                    if pidnode.getMasktype() == "export":
                         break
             else:
                 pidnode = None

@@ -30,7 +30,6 @@
 
 import re
 import os
-import shutil
 import sys
 import codecs
 import logging
@@ -118,20 +117,6 @@ def getNow():
     now = now.replace('T', '_').replace(':', '-')
     now = now.split('.')[0]
     return now
-
-
-def save_import_file(filename):
-    import core.config as config
-
-    temppath = config.get("paths.tempdir")
-    _filename_only = filename.split(os.path.sep)[-1]
-    # leave following in for windows: "/" in path representation possible there
-    _filename_only = filename.split("/")[-1]
-    destname = os.path.join(temppath, "bibtex_import_saved_" + getNow() + "_" + _filename_only)
-    logg.info("bibtex import: going to copy/save import file %s -> %s", filename, destname)
-    shutil.copyfile(filename, destname)
-
-    return
 
 
 article_types = [
@@ -259,12 +244,6 @@ def _bibteximport_customize(record):
 
 
 def getentries(filename):
-    try:
-        save_import_file(filename)
-    except IOError as e:
-        logg.error("bibtex import: save import file failed: {}".format(e))
-        raise IOError("save import file failed")
-
     # use utf-8-sig instead of utf-8 to get rid of BOM_UTF8, which confuses bibtex parser
     for encoding in ('utf-8-sig', 'utf-16', None):
         try:

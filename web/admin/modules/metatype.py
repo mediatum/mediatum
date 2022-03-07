@@ -362,13 +362,13 @@ def view(req):
 
     # sorting
     if order:
-        mtypes.sort(reversed=int(order[1:])==1, key={
+        mtypes.sort(reverse=int(order[1:])==1, key={
             0:lambda mt:mt.name.lower(),
             1:lambda mt:mt.getLongName().lower(),
             2:lambda mt:mt.getDescription().lower(),
             3:_operator.methodcaller("getActive"),
             4:lambda mt:mt.getDatatypeString().lower(),
-           }[order[:1]])
+           }[int(order[:1])])
     else:
         mtypes.sort(key=lambda mt:mt.name.lower())
 

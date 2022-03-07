@@ -59,7 +59,7 @@ def _aggregate_workflowstep_text_parameters(req_values, languages):
     # or just generate a single prefix "n" if no languages are defined
     lang_prefixes = {"{}.n".format(lang): "{}:".format(lang) for lang in languages} or {"n": ""}
     labeltexts = dict()
-    for key in u"truelabel falselabel sidebartext pretext posttext".split():
+    for key in u"truelabel falselabel pretext posttext".split():
         labeltexts[key] = u"\n".join(
             u"{}{}".format(v, req_values[u"{}{}".format(k, key)].replace("\n", ""))
             for k, v in lang_prefixes.iteritems()

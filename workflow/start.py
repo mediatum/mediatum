@@ -130,7 +130,6 @@ class WorkflowStep_Start(WorkflowStep):
                                 'starttext': self.get('starttext'),
                                 'languages': self.parents[0].getLanguages(),
                                 'currentlang': lang(req),
-                                'sidebartext': self.getSidebarText(lang(req)),
                                 'redirect': redirect,
                                 'message': message,
                                 'allowcontinue': self.get('allowcontinue'),

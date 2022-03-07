@@ -406,14 +406,6 @@
                 </td>
             </tr>
             <tr>
-                <td><tal:block i18n:translate="admin_wfstep_sidebar">TEXT</tal:block>:</td>
-                <td>
-                     <tal:block define="content python:workflowstep.getSidebarText; name python:'nsidebartext'">
-                         <tal:block metal:use-macro="workflowstep_field"/>
-                     </tal:block>
-                </td>
-            </tr>
-            <tr>
                 <td><tal:block i18n:translate="admin_wfstep_pretext">TEXT</tal:block>:</td>
                 <td>
                     <tal:block tal:define="content python:workflowstep.getPreText; name python:'npretext'">

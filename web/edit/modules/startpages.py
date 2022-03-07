@@ -44,7 +44,7 @@ logg = logging.getLogger(__name__)
 
 _NamedFile = _collections.namedtuple(
     "_NamedFile",
-    "short_path description file_size language_list technical_name sidebar"
+    "short_path description file_size language_list technical_name"
     )
 
 
@@ -58,13 +58,10 @@ def _get_named_filelist(node, id_from_req):
         assert not short_path.startswith("../"), "file absolute path not in data dir"
 
         langlist = []
-        sidebar = []
         for language in config.languages:
             spn = node.getStartpageFileNode(language)
             if spn and spn.abspath == f.abspath:
                 langlist.append(language)
-            if "{}:{}".format(language, short_path) in node.system_attrs.get('sidebar', ''):
-                sidebar.append(language)
 
         files.append(
             _NamedFile(
@@ -73,7 +70,6 @@ def _get_named_filelist(node, id_from_req):
                 file_size=format_filesize(os.path.getsize(f.abspath) if os.path.isfile(f.abspath) else "-"),
                 language_list=tuple(langlist),
                 technical_name=os.path.join("/file", str(id_from_req), short_path.split('/')[-1]),
-                sidebar=tuple(sidebar),
             )
         )
 
@@ -218,11 +214,6 @@ def getContent(req, ids):
     if "startpages_save" in req.values:  # user saves startpage configuration
         logg.info("%s going to save startpage configuration for node %s (%s, %s): %s",
                   user.login_name, node.id, node.name, node.type, req.values)
-
-        sidebar = ""
-        for k in [k for k in req.values if k.startswith('sidebar_')]:
-            sidebar += "%s:%s;" % (k[8:], req.values[k])
-        node.set('system.sidebar', sidebar)
 
         for k in [k for k in req.values if k.startswith('descr.')]:
             node.system_attrs['startpage' + k] = req.values[k]

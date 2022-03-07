@@ -213,9 +213,6 @@ msgstr "Ja;Nein"
 msgid "admin_wfstep_textpage_text_to_display"
 msgstr "anzuzeigender Text"
 
-msgid "admin_wfstep_sidebar"
-msgstr "Sidebar-Inhalt"
-
 msgid "admin_wfstep_pretext"
 msgstr "Kopfzeile"
 

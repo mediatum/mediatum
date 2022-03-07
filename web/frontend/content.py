@@ -234,14 +234,13 @@ DEFAULT_FULL_STYLE_NAME = "full_standard"
 
 class ContentList(ContentBase):
 
-    def __init__(self, node_query, container, paths, words=None, show_sidebar=True):
+    def __init__(self, node_query, container, paths, words=None):
 
         self.node_query = node_query
         self.nodes = None
         self.container = container
         self.paths = paths
         self.words = words
-        self.show_sidebar = show_sidebar
         self.nodes_per_page = None
         self.nav_params = None
         self.before = None
@@ -589,20 +588,6 @@ class ContentList(ContentBase):
             )
 
         content_list_html = self.liststyle.render_template(req, ctx)
-
-        if self.show_sidebar:
-            sidebar_html = u""  # check for sidebar_html
-            if self.collection.get(u"system.sidebar_html") != "":
-                for sb in [s for s in self.collection.get("system.sidebar_html").split(";") if s != ""]:
-                    l, fn = sb.split(":")
-                    if l == lang(req):
-                        for f in [f for f in self.collection.getFiles() if fn.endswith(f.getName())]:
-                            sidebar_html = includetemplate(self, f.retrieveFile(), {}).strip()
-            if sidebar_html:
-                return u'<div id="portal-column-one">{0}<div id="nodes">{1}</div>{0}</div><div id="portal-column-two">{2}</div>'.format(
-                    content_nav_list_header_html,
-                    content_list_html,
-                    sidebar_html)
 
         return u'{0}<div id="nodes">{1}</div>{0}'.format(content_nav_list_header_html, content_list_html)
 

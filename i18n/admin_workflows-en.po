@@ -214,9 +214,6 @@ msgstr "Text to display"
 msgid "WorkflowStep_InvalidFileType"
 msgstr "Type of chosen file invalid"
 
-msgid "admin_wfstep_sidebar"
-msgstr "Sidebar Content"
-
 msgid "admin_wfstep_pretext"
 msgstr "Header text"
 

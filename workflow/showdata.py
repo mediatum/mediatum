@@ -92,7 +92,6 @@ class WorkflowStep_ShowData(WorkflowStep):
                     fields=fieldmap,
                     pretext=self.getPreText(lang(req)),
                     posttext=self.getPostText(lang(req)),
-                    sidebar=self.getSidebarText(lang(req)),
                     buttons=self.tableRowButtons(node),
                     csrf=req.csrf_token.current_token,
                 ),

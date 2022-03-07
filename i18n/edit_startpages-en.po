@@ -40,9 +40,6 @@ msgstr "The file has been uploaded."
 msgid "edit_startpages_header"
 msgstr "Startpages"
 
-msgid "edit_startpages_header2"
-msgstr "Sidebar"
-
 msgid "edit_startpages_explain_table"
 msgstr "HTML pages for this node"
 
@@ -85,11 +82,5 @@ msgstr "Descriptive name"
 msgid "edit_startpages_do_not_use_a_startpage"
 msgstr "Do not use a startpage for this language"
 
-msgid "edit_startpages_do_not_use_a_sidebar"
-msgstr "No sidebar for this language"
-
 msgid "edit_startpages_selectlanguage"
 msgstr "Select as startpage for this language"
-
-msgid "edit_startpages_sidebarfile"
-msgstr "Files"

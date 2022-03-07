@@ -95,7 +95,7 @@ def search(searchtype, searchquery, readable_query, paths, req, container_id = N
         # query parsing went wrong or the search backend complained about something
         return NoSearchResult(readable_query, container, readable_query, error=True)
 
-    content_list = ContentList(result, container, paths, words=readable_query, show_sidebar=False)
+    content_list = ContentList(result, container, paths, words=readable_query)
     try:
         content_list.feedback(req)
     except Exception as e:

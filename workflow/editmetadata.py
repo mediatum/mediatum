@@ -75,7 +75,6 @@ class WorkflowStep_EditMetadata(WorkflowStep):
                     mask=maskcontent,
                     pretext=self.getPreText(lang(req)),
                     posttext=self.getPostText(lang(req)),
-                    sidebartext=self.getSidebarText(lang(req)),
                     buttons=self.tableRowButtons(node),
                     csrf=req.csrf_token.current_token,
                 ),

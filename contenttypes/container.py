@@ -169,20 +169,7 @@ class Container(Data, ContainerMixin, SchemaMixin):
         user = _user_from_session()
         content = u""
         link = node_url(self.id, files=1)
-        sidebar = u""
         pages = self.getStartpageDict()
-        if self.get("system.sidebar") != "":
-            for sb in self.get("system.sidebar").split(";"):
-                if sb:
-                    l, fn = sb.split(":")
-                    if l == lang(req):
-                        for f in self.getFiles():
-                            if fn.endswith(f.getName()):
-                                sidebar = includetemplate(self, f.retrieveFile(), {})
-        if sidebar:
-            sidebar = tal.processTAL({"content": sidebar}, file="contenttypes/container.html", macro="addcolumn", request=req)
-        else:
-            sidebar = u""
 
         if "item" in req.params:
             fname = req.params.get("item")
@@ -201,9 +188,6 @@ class Container(Data, ContainerMixin, SchemaMixin):
             if fname_allowed and os.path.isfile(fpath):
                 with codecs.open(fpath, "r", encoding='utf8') as c:
                     content = c.read()
-                if sidebar:
-                    return u'<div id="portal-column-one">{}</div>{}'.format(content,
-                                                                           sidebar)
                 return content
 
         spn = self.getStartpageFileNode(lang(req))
@@ -211,13 +195,8 @@ class Container(Data, ContainerMixin, SchemaMixin):
             long_path = spn.retrieveFile()
             if os.path.isfile(long_path) and fileIsNotEmpty(long_path):
                 content = includetemplate(self, long_path, {'${next}': link})
-            if content:
-                if sidebar:
-                    return u'<div id="portal-column-one">{}</div>{}'.format(content,
-                                                                           sidebar)
-                return content
 
-        return u'{}{}'.format(content, sidebar)
+        return content
 
     """ format node image with standard template """
     def show_node_image(self, language=None):

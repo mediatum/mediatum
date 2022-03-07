@@ -164,34 +164,6 @@
                         </tfoot>
                     </table>
                 </div>
-
-                <h3><a href="#" i18n:translate="edit_startpages_header2">TEXT</a> <small i18n:translate="edit_startpages_explain_table">TEXT</small></h3>
-                <div id="sectionside">
-                    <table id="filetable" cellpadding="0px" cellspacing="0px">
-                        <thead>
-                            <tr>
-                                <th tal:repeat="lang languages" tal:content="lang" style="width:20px">TEXT</th>
-                                <th style="border-left:1px solid silver" i18n:translate="edit_startpages_sidebarfile">Datei</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr tal:repeat="item named_filelist">
-                                <td tal:repeat="lang languages">
-                                    <input type="radio" i18n:attributes="title edit_startpages_selectlanguage" tal:attributes="name python:u'sidebar_{}'.format(lang); value python:item.short_path; checked python:'checked' if lang in item.sidebar else None"/>
-                                </td>
-                                <td style="border-left:1px solid silver" tal:content="python:u'{} ({})'.format(item.description, item.technical_name)"/>
-                            </tr>
-                        </tbody>
-                        <tfoot>
-                            <tr style="background-color:#d8d8d8">
-                                <td tal:repeat="lang languages">
-                                    <input type="radio" i18n:attributes="title edit_startpages_selectlanguage" tal:attributes="name python:u'sidebar_{}'.format(lang); value python:''; checked python:'checked' if node.getStartpageFileNode(lang)==None else None"/>
-                                </td>
-                                <td style="border-left:1px solid silver" i18n:translate="edit_startpages_do_not_use_a_sidebar">TEXT</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
             </div>
         </div>
         <div id="sub_footer_module"> </div>

@@ -171,7 +171,6 @@ def create_update_workflow_step(
         falseid="",
         truelabel="",
         falselabel="",
-        sidebartext="",
         pretext="",
         posttext="",
         comment="",
@@ -208,7 +207,6 @@ def create_update_workflow_step(
     step.set("falsestep", falseid)
     step.set("truelabel", truelabel)
     step.set("falselabel", falselabel)
-    step.set("sidebartext", sidebartext)
     step.set("pretext", pretext)
     step.set("posttext", posttext)
     step.set("comment", comment)
@@ -676,13 +674,6 @@ class WorkflowStep(Node):
 
     def getFalseFunction(self):
         return self.get("falsefunction")
-
-    def getSidebarText(self, language=""):
-        value = self.get("sidebartext")
-        for line in value.split('\n'):
-            if line.startswith(language + ':'):
-                return line.replace(language + ':', '')
-        return value
 
     def getPreText(self, language=""):
         value = self.get("pretext")

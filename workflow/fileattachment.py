@@ -74,7 +74,6 @@ class WorkflowStep_FileAttachment(WorkflowStep):
                     wfnode=self,
                     pretext=self.getPreText(lang(req)),
                     posttext=self.getPostText(lang(req)),
-                    sidebar=self.getSidebarText(lang(req)),
                     maskdata=maskdata,
                     csrf=req.csrf_token.current_token,
                 ),

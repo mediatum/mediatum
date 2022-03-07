@@ -42,9 +42,6 @@ msgstr "Die Datei wurde hochgeladen."
 msgid "edit_startpages_header"
 msgstr "Startseiten"
 
-msgid "edit_startpages_header2"
-msgstr "Sidebar"
-
 msgid "edit_startpages_explain_table"
 msgstr "HTML-Seiten für diesen Node"
 
@@ -87,11 +84,5 @@ msgstr "Beschreibender Name"
 msgid "edit_startpages_do_not_use_a_startpage"
 msgstr "Keine Startseite für diese Sprache"
 
-msgid "edit_startpages_do_not_use_a_sidebar"
-msgstr "Keine Sidebar für diese Sprache"
-
 msgid "edit_startpages_selectlanguage"
 msgstr "als Startseite für diese Sprache wählen"
-
-msgid "edit_startpages_sidebarfile"
-msgstr "Dateien"

@@ -1,6 +1,4 @@
-<tal:block  metal:define-macro="workflow_metadateneditor"> 
-    <div class="sidebartext" tal:condition="python:sidebartext!=''" tal:content="raw sidebartext">TEXT</div>
-    
+<tal:block  metal:define-macro="workflow_metadateneditor">
     <form class="edit" action="/mask" method="post" style="position:relative!important;">
         <input tal:attributes="value csrf" type="hidden" name="csrf_token">
         <div class="mediatum_clean-container" style="overflow:hidden;position:relative;padding-right:10px;">

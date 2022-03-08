@@ -11,3 +11,4 @@ web/root/robots.txt
 .venv
 py
 docs/build
+mediatum.egg-info/

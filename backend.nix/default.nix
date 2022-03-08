@@ -35,7 +35,7 @@ in let
     inherit (python.pkgs)
       ConfigArgParse
       alembic
-      attrs_18
+      attrs
       bibtexparser
       coffeescript
       decorator

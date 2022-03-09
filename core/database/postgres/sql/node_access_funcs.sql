@@ -328,7 +328,11 @@ BEGIN
 END;
 $f$;
 
-CREATE TYPE integrity_check_inherited_access_rules AS (nid integer, rule_id integer, ruletype text, invert boolean, blocking boolean, reason text);
+DO $$ BEGIN
+    CREATE TYPE integrity_check_inherited_access_rules AS (nid integer, rule_id integer, ruletype text, invert boolean, blocking boolean, reason text);
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 
 CREATE OR REPLACE FUNCTION integrity_check_inherited_access_rules()
@@ -731,7 +735,11 @@ $f$;
 -- maintenance functions
 ----
 
-CREATE TYPE rule_duplication AS (surviving_rule_id integer, duplicates integer[]);
+DO $$ BEGIN
+    CREATE TYPE rule_duplication AS (surviving_rule_id integer, duplicates integer[]);
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- remove duplicate access rules with same content, but different id. Updates foreign keys in dependent tables.
 CREATE OR REPLACE FUNCTION deduplicate_access_rules ()

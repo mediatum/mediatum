@@ -742,22 +742,14 @@ def make_node_content(node, req, paths):
 
 
 def render_content_nav(node, logo, styles, select_style_link, print_url, paths):
-    if paths:
-        shortest_path = sorted(paths, key=lambda p: (len(p), p[-1].id))[0]
-    else:
-        shortest_path = None
-
-    ctx = {"path": shortest_path,
-           "styles": styles,
-           "logo": logo,
-           "select_style_link": select_style_link,
-           "node": node,
-           "printlink": print_url}
-
-    theme = webconfig.theme
-    content_nav_html = theme.render_template("content_nav.j2.jade", ctx)
-
-    return content_nav_html
+    return webconfig.theme.render_template("content_nav.j2.jade", dict(
+           path=min(paths, key=len) if paths else None,
+           styles=styles,
+           logo=logo,
+           select_style_link=select_style_link,
+           node=node,
+           printlink=print_url,
+          ))
 
 
 def get_make_search_content_function(req_args):
@@ -796,6 +788,9 @@ def render_startpage_error(node, language):
 
 
 def render_content_occurences(node, req, paths):
+    paths = frozenset(filter(None,paths))
+    if not paths:
+        return ""
     language = lang(req)
     ctx = {
             "paths": paths,

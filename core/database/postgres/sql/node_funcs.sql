@@ -89,7 +89,12 @@ END;
 $f$;
 
 
-CREATE TYPE value_and_count AS (value text, count bigint);
+DO $$ BEGIN
+    CREATE TYPE value_and_count AS (value text, count bigint);
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
 CREATE OR REPLACE FUNCTION count_list_values_for_all_content_children(parent_id integer,attr text) RETURNS setof value_and_count
     LANGUAGE plpgsql
     STABLE

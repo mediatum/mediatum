@@ -65,7 +65,12 @@ END;
 $$;
 
 
-CREATE TYPE :search_path.tsvector_with_config AS (config regconfig, tsvec tsvector);
+DO $$ BEGIN
+    CREATE TYPE :search_path.tsvector_with_config AS (config regconfig, tsvec tsvector);
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
 CREATE OR REPLACE FUNCTION shortest_tsvec(_fulltext_id integer, configs regconfig[]) RETURNS :search_path.tsvector_with_config
     LANGUAGE plpgsql
     SET search_path = :search_path

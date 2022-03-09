@@ -805,7 +805,7 @@ def content(req):
             folders_only = True
         n = q(Data).get(nid)
         s = []
-        path = (get_accessible_paths(n) or [[]])[0]
+        path = list(next(iter(get_accessible_paths(n) or ((),))))
         if not folders_only:
             path.append(n)
         for p in path:
@@ -818,8 +818,7 @@ def content(req):
     else:  # or current directory
         n = q(Data).get(long(ids[0]))
         s = []
-        path = (get_accessible_paths(n) or [[]])[0]
-        for p in path:
+        for p in next(iter(get_accessible_paths(n) or ((),))):
             s.append(
                      u"<a onClick='activateEditorTreeNode({id}); return true;'"
                      " href='/edit/edit_content?srcnodeid={id}&id={id}'>{label}</a>"

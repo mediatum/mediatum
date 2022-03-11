@@ -232,31 +232,11 @@ def getContent(req, ids):
         for language in config.languages:
             startpage_selector += "%s:%s;" % (language, req.values.get('radio_' + language))
         node.system_attrs['startpage_selector'] = startpage_selector[0:-1]
+        db.session.commit()
 
-    lang2file = node.getStartpageDict()
     named_filelist = _get_named_filelist(node, req.values.get("id", "0"))
-    # compatibility: there may be old startpages in the database that
-    # are not described by node attributes
-    initial = named_filelist and not lang2file
-
-    # node may not have startpage set for some language
-    # compatibilty: node may not have system attribute startpage_selector
-    # build startpage_selector and write back to node
-    startpage_selector = ""
-    for language in config.languages:
-        if initial:
-            datadir = config.get("paths.datadir")
-            for f in node.files:
-                if f.mimetype == 'text/html' and f.getType() == 'content':
-                    lang2file[language] = os.path.relpath(f.abspath, datadir)
-                    break
-        else:
-            lang2file[language] = lang2file.setdefault(language, '')
-        startpage_selector += "%s:%s;" % (language, lang2file[language])
-
-    node.system_attrs['startpage_selector'] = startpage_selector[0:-1]
-
-    db.session.commit()
+    lang2file = {lang: "" for lang in config.languages}
+    lang2file.update(node.getStartpageDict())
 
     v = {"id": req.values.get("id", "0"),
          "tab": req.values.get("tab", ""),

@@ -67,14 +67,21 @@ class WorkflowStep_FileAttachment(WorkflowStep):
             logg.exception("exception in workflow step fileAttachment, getViewHTML failed, empty string")
             maskdata = ""
 
-        return _tal.processTAL({"buttons": buttons,
-                           "files": self.files,
-                           "wfnode": self,
-                           "pretext": self.getPreText(lang(req)),
-                           "posttext": self.getPostText(lang(req)),
-                           "sidebar": self.getSidebarText(lang(req)),
-                           'maskdata': maskdata,
-                           "csrf": req.csrf_token.current_token,}, file="workflow/fileattachment.html", macro="fileattachment_show_node", request=req)
+        return _tal.processTAL(
+                dict(
+                    buttons=buttons,
+                    files=self.files,
+                    wfnode=self,
+                    pretext=self.getPreText(lang(req)),
+                    posttext=self.getPostText(lang(req)),
+                    sidebar=self.getSidebarText(lang(req)),
+                    maskdata=maskdata,
+                    csrf=req.csrf_token.current_token,
+                ),
+                file="workflow/fileattachment.html",
+                macro="fileattachment_show_node",
+                request=req,
+            )
 
     def metaFields(self, lang=None):
         field = Metafield("upload_fileatt")

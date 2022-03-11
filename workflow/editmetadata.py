@@ -67,15 +67,22 @@ class WorkflowStep_EditMetadata(WorkflowStep):
         else:
             maskcontent = _tal.processTAL({}, file="workflow/editmetadata.html", macro="maskerror", request=req)
 
-        return _tal.processTAL({"name": self.name,
-                                "error": error,
-                                "key": key,
-                                "mask": maskcontent,
-                                "pretext": self.getPreText(lang(req)),
-                                "posttext": self.getPostText(lang(req)),
-                                "sidebartext": self.getSidebarText(lang(req)),
-                                "buttons": self.tableRowButtons(node),
-                                "csrf": req.csrf_token.current_token,}, file="workflow/editmetadata.html", macro="workflow_metadateneditor", request=req)
+        return _tal.processTAL(
+                dict(
+                    name=self.name,
+                    error=error,
+                    key=key,
+                    mask=maskcontent,
+                    pretext=self.getPreText(lang(req)),
+                    posttext=self.getPostText(lang(req)),
+                    sidebartext=self.getSidebarText(lang(req)),
+                    buttons=self.tableRowButtons(node),
+                    csrf=req.csrf_token.current_token,
+                ),
+                file="workflow/editmetadata.html",
+                macro="workflow_metadateneditor",
+                request=req,
+            )
 
     def metaFields(self, lang=None):
         field = Metafield("mask")

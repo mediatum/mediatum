@@ -84,16 +84,22 @@ class WorkflowStep_ShowData(WorkflowStep):
             filelist = mkfilelist(node, request=req)
             filelistshort = mkfilelistshort(node, request=req)
 
-        return _tal.processTAL({"key": key,
-                                "filelist": filelist,
-                                "filelistshort": filelistshort,
-                                "fields": fieldmap,
-                                "pretext": self.getPreText(lang(req)),
-                                "posttext": self.getPostText(lang(req)),
-                                "sidebar": self.getSidebarText(lang(req)),
-                                "buttons": self.tableRowButtons(node),
-                                "csrf": req.csrf_token.current_token, }, file="workflow/showdata.html",
-                               macro="workflow_showdata", request=req)
+        return _tal.processTAL(
+                dict(
+                    key=key,
+                    filelist=filelist,
+                    filelistshort=filelistshort,
+                    fields=fieldmap,
+                    pretext=self.getPreText(lang(req)),
+                    posttext=self.getPostText(lang(req)),
+                    sidebar=self.getSidebarText(lang(req)),
+                    buttons=self.tableRowButtons(node),
+                    csrf=req.csrf_token.current_token,
+                ),
+                file="workflow/showdata.html",
+                macro="workflow_showdata",
+                request=req,
+            )
 
     def metaFields(self, lang=None):
         field = Metafield("masks")

@@ -9,13 +9,7 @@ from warnings import warn
 
 class Context(object):
 
-    def __init__(self, field, value="", width=400, name="", lock=0, language=None, collection=None, container=None, user=None, ip=""):
-        if collection is not None:
-            warn("collections argument is deprecated, use container", DeprecationWarning)
-            if container is not None:
-                raise ValueError("container and collection cannot be used together")
-            container = collection
-
+    def __init__(self, field, value="", width=400, name="", lock=0, language=None, container=None, user=None, ip=""):
         self.field = field
         self.value = value
         self.width = width

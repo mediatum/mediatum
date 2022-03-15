@@ -25,23 +25,20 @@ class m_dlist(Metatype):
 
     name = "dlist"
 
-    def formatValues(self, context):
-        valuelist = []
-
+    def formatValues(self, n, field, value):
         items = {}
         try:
-            n = context.collection
             if not isinstance(n, Node):
                 raise KeyError
-            field_name = context.field.getName()
+            field_name = field.getName()
             id_attr_val = n.all_children_by_query(q(Node.id, Node.a[field_name]).filter(Node.a[field_name] != None and Node.a[field_name] != '').distinct(Node.a[field_name]))
             items = {pair[0]: pair[1] for pair in id_attr_val}
         except KeyError:
             None
 
-        value = context.value.split(";")
+        value = value.split(";")
 
-        for val in context.field.getValueList():
+        for val in field.getValueList():
             indent = 0
             canbeselected = 0
             while val.startswith("*"):
@@ -74,12 +71,11 @@ class m_dlist(Metatype):
             val = esc(val)
 
             if not canbeselected:
-                valuelist.append(("optgroup", "<optgroup label=\"" + indentstr + val + "\">", "", ""))
+                yield ("optgroup", "<optgroup label=\"" + indentstr + val + "\">", "", "")
             elif (val in value):
-                valuelist.append(("optionselected", indentstr, val, num))
+                yield ("optionselected", indentstr, val, num)
             else:
-                valuelist.append(("option", indentstr, val, num))
-        return valuelist
+                yield ("option", indentstr, val, num)
 
     def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None, required=None):
         fielddef = field.getValues().split("\r\n")  # url(source), type, name variable, value variable
@@ -126,8 +122,8 @@ class m_dlist(Metatype):
     def getSearchHTML(self, context):
         return tal.getTAL("metadata/dlist.html",
                           {"context": context,
-                           "valuelist": filter(lambda x: x != "",
-                                               self.formatValues(context))},
+                           "valuelist": self.formatValues(context.collection, context.field, context.value),
+                          },
                           macro="searchfield",
                           language=context.language)
 

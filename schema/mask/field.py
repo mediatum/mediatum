@@ -45,10 +45,9 @@ class m_field(Metatype):
         if val == "":
             t = getMetadataType(elementtype)
             if hasattr(t, "formatValues"):
-                context = Context(element, value=val, width=field.getWidth(), name=field.getName(), lock=0, language=None)
-                valuelist = t.formatValues(context)
-                if valuelist[0][0] in ('option', 'optionselected'):
-                    node.set(key, valuelist[0][2])
+                valuelist = next(t.formatValues(None, element, val))
+                if valuelist[0] in ('option', 'optionselected'):
+                    node.set(key, valuelist[2])
             else:
                 node.set(key, "")
         return None

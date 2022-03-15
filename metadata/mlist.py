@@ -22,20 +22,17 @@ class m_mlist(Metatype):
 
     name = "mlist"
 
-    def formatValues(self, context):
-        valuelist = []
-
+    def formatValues(self, n, field, value):
         items = {}
         try:
-            n = context.collection
             if n is not None:
-                field_name = context.field.getName()
+                field_name = field.getName()
                 id_attr_val = n.all_children_by_query(q(Node.id, Node.a[field_name]).filter(Node.a[field_name] != None and Node.a[field_name] != '').distinct(Node.a[field_name]))
                 items = {pair[0]: pair[1] for pair in id_attr_val}
         except:
             None
 
-        for val in context.field.getValueList():
+        for val in field.getValueList():
             indent = 0
             canbeselected = 0
             while val.startswith("*"):
@@ -66,18 +63,16 @@ class m_mlist(Metatype):
             val = esc(val)
 
             if not canbeselected:
-                valuelist.append(("optgroup", "<optgroup label=\"" + indentstr + val + "\">", "", ""))
-            elif (val in context.value.split(";")):
-                valuelist.append(("optionselected", indentstr, val, num))
+                yield ("optgroup", "<optgroup label=\"" + indentstr + val + "\">", "", "")
+            elif (val in value.split(";")):
+                yield ("optionselected", indentstr, val, num)
             else:
-                valuelist.append(("option", indentstr, val, num))
-
-        return valuelist
+                yield ("option", indentstr, val, num)
 
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
         context = Context(field, value=value, width=width, name=field.getName(), lock=lock, language=language)
         return tal.getTAL("metadata/mlist.html", {"context": context,
-                                                  "valuelist": self.formatValues(context),
+                                                  "valuelist": self.formatValues(None, field, value),
                                                   "required": 1 if required else None,
                                                   },
                           macro="editorfield",
@@ -86,7 +81,7 @@ class m_mlist(Metatype):
     def getSearchHTML(self, context):
         return tal.getTAL("metadata/mlist.html",
                           {"context": context,
-                           "valuelist": self.formatValues(context)},
+                           "valuelist": self.formatValues(context.collection, context.field, context.value)},
                           macro="searchfield",
                           language=context.language)
 

@@ -36,26 +36,7 @@ class m_list(Metatype):
         except KeyError:
             None
 
-        tempvalues = context.field.getValueList()
-        if len(tempvalues):  # Has the user entered any values?
-            if tempvalues[0].find('|') > 0:  # there are values in different languages available
-                languages = [x.strip() for x in tempvalues[0].split('|')]  # find out the languages
-                valuesdict = dict((lang, []) for lang in languages)        # create a dictionary with languages as keys,
-                # and list of respective values as dictionary values
-                for i in range(len(tempvalues)):
-                    if i:  # if i not 0 - the language names itself shouldn't be included to the values
-                        tmp = tempvalues[i].split('|')
-                        for j in range(len(tmp)):
-                            valuesdict[languages[j]].append(tmp[j])
-
-                lang = context.language
-                # if there is no default language, the first language-value will be used
-                if (not lang) or (lang not in valuesdict.keys()):
-                    lang = languages[0]
-
-                tempvalues = valuesdict[lang]
-
-        for val in tempvalues:
+        for val in context.field.getValueList():
             indent = 0
             canbeselected = 0
             while val.startswith("*"):

@@ -14,6 +14,7 @@ import json
 from mediatumtal import tal
 
 import metadata.ilist as _ilist
+import utils.utils as _utils
 from utils.utils import esc, suppress
 from core.metatype import Metatype
 from core import Node
@@ -67,15 +68,12 @@ class m_dlist(Metatype):
     name = "dlist"
 
     def formatValues(self, n, field, value):
-        items = {}
-        try:
+        items = dict()
+        with _utils.suppress(KeyError, warn=False):
             if not isinstance(n, Node):
                 raise KeyError
             field_name = field.getName()
-            id_attr_val = _ilist.count_list_values_for_all_content_children(n.id, field_name)
-            items = {pair[0]: pair[1] for pair in id_attr_val}
-        except KeyError:
-            None
+            items = dict(_ilist.count_list_values_for_all_content_children(n.id, field_name))
 
         value = value.split(";")
 
@@ -83,40 +81,21 @@ class m_dlist(Metatype):
         while len(fielddef) < 5:
             fielddef.append("")
         for val in _itertools.imap(_operator.itemgetter("select_value"), _download_list(*fielddef[:5])):
-            indent = 0
-            canbeselected = 0
-            while val.startswith("*"):
-                val = val[1:]
-                indent = indent + 1
-            if val.startswith(" "):
-                canbeselected = 1
-            val = val.strip()
-            if not indent:
-                canbeselected = 1
-            if indent > 0:
-                indent = indent - 1
-            indentstr = "&nbsp;" * (2 * indent)
+            indent = len(val)-len(val.lstrip("*"))
+            indentstr = 2 * max(0, indent-1) * "&nbsp;"
+            val = val.lstrip("*")
+            selectable = (not indent) or val.startswith(" ")
+            val = esc(val.strip())
 
-            num = 0
-            if val in items.keys():
-                num = int(items[val])
+            num = int(items.get(val, 0))
+            if num<0:
+                logg.error("num<0, using empty string")
+            else:
+                num = u" ({})".format(unicode(num)) if num else u""
 
-            try:
-                if int(num) < 0:
-                    raise u""
-                elif int(num) == 0:
-                    num = u""
-                else:
-                    num = u" (" + unicode(num) + u")"
-            except:
-                logg.exception("exception in formatValues, using empty string")
-                num = u""
-
-            val = esc(val)
-
-            if not canbeselected:
-                yield ("optgroup", "<optgroup label=\"" + indentstr + val + "\">", "", "")
-            elif (val in value):
+            if not selectable:
+                yield ("optgroup", '<optgroup label="{}{}">'.format(indentstr,val), "", "")
+            elif val in value:
                 yield ("optionselected", indentstr, val, num)
             else:
                 yield ("option", indentstr, val, num)

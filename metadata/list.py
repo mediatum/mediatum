@@ -9,6 +9,7 @@ import os
 import codecs
 from mediatumtal import tal
 
+import utils.utils as _utils
 from utils.utils import esc
 from core.metatype import Metatype, Context
 from metadata.ilist import count_list_values_for_all_content_children
@@ -24,50 +25,31 @@ class m_list(Metatype):
     name = "list"
 
     def formatValues(self, n, field, value):
-        items = {}
-        try:
+        items = dict()
+        with _utils.suppress(KeyError, warn=False):
             if not isinstance(n, Node):
                 raise KeyError
             field_name = field.getName()
-            id_attr_val = count_list_values_for_all_content_children(n.id, field_name)
-            items = {pair[0]: pair[1] for pair in id_attr_val}
-        except KeyError:
-            None
+            items = dict(count_list_values_for_all_content_children(n.id, field_name))
+
+        value = value.split(";")
 
         for val in field.getValueList():
-            indent = 0
-            canbeselected = 0
-            while val.startswith("*"):
-                val = val[1:]
-                indent = indent + 1
-            if val.startswith(" "):
-                canbeselected = 1
-            val = val.strip()
-            if not indent:
-                canbeselected = 1
-            if indent > 0:
-                indent = indent - 1
-            indentstr = "&nbsp;" * (2 * indent)
+            indent = len(val)-len(val.lstrip("*"))
+            indentstr = 2 * max(0, indent-1) * "&nbsp;"
+            val = val.lstrip("*")
+            selectable = (not indent) or val.startswith(" ")
+            val = esc(val.strip())
 
-            num = 0
-            if val in items.keys():
-                num = int(items[val])
+            num = int(items.get(val, 0))
+            if num<0:
+                logg.error("num<0, using empty string")
+            else:
+                num = u" ({})".format(unicode(num)) if num else u""
 
-            try:
-                if int(num) < 0:
-                    raise Exception()
-                elif int(num) == 0:
-                    num = ""
-                else:
-                    num = " (" + ustr(num) + ")"
-            except:
-                logg.exception("exception in get_metafieldeditor_html, using empty string")
-                num = ""
-
-            val = esc(val)
-            if not canbeselected:
-                yield ("optgroup", "<optgroup label=\"" + indentstr + val + "\">", "", "")
-            elif (val in value.split(";")):
+            if not selectable:
+                yield ("optgroup", '<optgroup label="{}{}">'.format(indentstr,val), "", "")
+            elif val in value:
                 yield ("optionselected", indentstr, val, num)
             else:
                 yield ("option", indentstr, val, num)

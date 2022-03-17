@@ -55,11 +55,16 @@ class m_list(Metatype):
                 yield ("option", indentstr, val, num)
 
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
-        context = Context(field, value=value, width=width, name=field.getName(), lock=lock, language=language)
-        return tal.getTAL("metadata/list.html", {"context": context,
-                                                 "valuelist": self.formatValues(None, field, value),
-                                                 "required": 1 if required else None,
-                                                 },
+        return tal.getTAL("metadata/list.html",
+                          dict(
+                              field=field,
+                              lock=lock,
+                              multiple=field.get('multiple'),
+                              name=field.getName(),
+                              required=1 if required else None,
+                              valuelist=self.formatValues(None, field, value),
+                              width=width,
+                          ),
                           macro="editorfield",
                           language=language)
 

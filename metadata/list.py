@@ -11,7 +11,7 @@ from mediatumtal import tal
 
 import utils.utils as _utils
 from utils.utils import esc
-from core.metatype import Metatype, Context
+from core.metatype import Metatype
 from metadata.ilist import count_list_values_for_all_content_children
 from core import Node
 from core import db
@@ -68,15 +68,15 @@ class m_list(Metatype):
                           macro="editorfield",
                           language=language)
 
-    def getSearchHTML(self, context):
+    def getSearchHTML(self, collection, field, language, name, value):
         return tal.getTAL("metadata/list.html",
                           dict(
-                              name=context.name,
-                              value=context.value,
-                              valuelist=self.formatValues(context.collection, context.field, context.value),
+                              name=name,
+                              value=value,
+                              valuelist=self.formatValues(collection, field, value),
                           ),
                           macro="searchfield",
-                          language=context.language)
+                          language=language)
 
     def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
         value = node.get(metafield.getName()).replace(";", "; ")

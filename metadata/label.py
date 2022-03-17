@@ -91,12 +91,12 @@ class m_label(Metatype):
                           macro="editorfield",
                           language=language)
 
-    def getSearchHTML(self, context):
+    def getSearchHTML(self, collection, field, language, name, value):
         return tal.getTAL(
                 "metadata/label.html",
-                dict(name=context.name, value=context.value),
+                dict(name=name, value=value),
                 macro="searchfield",
-                language=context.language,
+                language=language,
                )
 
     def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):

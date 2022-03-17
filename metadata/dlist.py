@@ -122,15 +122,15 @@ class m_dlist(Metatype):
                           language=language)
 
 
-    def getSearchHTML(self, context):
+    def getSearchHTML(self, collection, field, language, name, value):
         return tal.getTAL("metadata/dlist.html",
                           dict(
-                              name=context.name,
-                              value=context.value,
-                              valuelist=self.formatValues(context.collection, context.field, context.value),
+                              name=name,
+                              value=value,
+                              valuelist=self.formatValues(collection, field, value),
                           ),
                           macro="searchfield",
-                          language=context.language)
+                          language=language)
 
     def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
         value = node.get(metafield.getName())

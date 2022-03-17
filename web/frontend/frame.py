@@ -13,7 +13,6 @@ from markupsafe import Markup
 import core.config as config
 import core.translation as _core_translation
 from core import db, Node
-from core.metatype import Context
 from core import webconfig
 from core.users import user_from_session as _user_from_session
 from core.users import get_guest_user
@@ -157,15 +156,7 @@ class Searchlet(object):
             if field is None:  # All Metadata
                 # quick&dirty
                 field = getMetadataType("text")
-            return field.getSearchHTML(Context(
-                field,
-                value=self.values[pos],
-                width=width,
-                name="query" + unicode(pos),
-                language=self.lang,
-                container=self.container,
-                user=user,
-                ip=self.ip))
+            return field.getSearchHTML(self.container, field, self.lang, "query" + unicode(pos), self.values[pos])
         except:
             # workaround for unknown error
             logg.exception("exception in getSearchField, return empty string")

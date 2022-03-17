@@ -15,7 +15,7 @@ import metadata.ilist as _ilist
 from core import Node, db
 import utils.utils as _utils
 from utils.utils import esc
-from core.metatype import Metatype, Context
+from core.metatype import Metatype
 
 
 logg = logging.getLogger(__name__)
@@ -68,15 +68,15 @@ class m_mlist(Metatype):
                           macro="editorfield",
                           language=language)
 
-    def getSearchHTML(self, context):
+    def getSearchHTML(self, collection, field, language, name, value):
         return tal.getTAL("metadata/mlist.html",
                           dict(
-                              name=context.name,
-                              value=context.value,
-                              valuelist=self.formatValues(context.collection, context.field, context.value),
+                              name=name,
+                              value=value,
+                              valuelist=self.formatValues(collection, field, value),
                           ),
                           macro="searchfield",
-                          language=context.language)
+                          language=language)
 
     def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
         value = node.get(metafield.getName()).replace(";", "; ")

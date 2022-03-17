@@ -15,7 +15,6 @@ import werkzeug.utils as _werkzeug_utils
 import core.config as config
 import core.csrfform as _core_csrfform
 import core.translation as _core_translation
-from core.metatype import Context
 from core import httpstatus
 from core import db
 from core import Node, NodeAlias
@@ -56,15 +55,12 @@ def handle_json_request(req):
 
         s = [
             f.getSearchHTML(
-                Context(
-                    g,
-                    value=req.args.get("query_field_value"),
-                    width=174,
-                    name="query" + str(req.args.get("fieldno")),
-                    language=_core_translation.set_language(req.accept_languages),
-                    container=container,
-                    user=user,
-                    ip=req.remote_addr))]
+                container,
+                g,
+                _core_translation.set_language(req.accept_languages),
+                "query" + str(req.args.get("fieldno")),
+                req.args.get("query_field_value"),
+            )]
     req.response.set_data(req.params.get("jsoncallback") + "(%s)" % json.dumps(s, indent=4))
     req.response.status_code = httpstatus.HTTP_OK
 

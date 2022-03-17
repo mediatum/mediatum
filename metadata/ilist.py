@@ -67,11 +67,11 @@ class m_ilist(Metatype):
                           macro="editorfield",
                           language=language)
 
-    def getSearchHTML(self, context):
+    def getSearchHTML(self, collection, field, language, name, value):
         # `value_and_count` contains a list of options,
         # each option is represented by a tuple of its name and its count.
-        value_and_count = count_list_values_for_all_content_children(context.collection.id,
-                                                                     context.field.getName())
+        value_and_count = count_list_values_for_all_content_children(collection.id,
+                                                                     field.getName())
 
         # We build three iterators here:
         # `value` contains all option names, properly escaped for HTML.
@@ -88,7 +88,7 @@ class m_ilist(Metatype):
         value = _itertools.imap(_operator.itemgetter(0), value)
         value = _itertools.imap(_html.escape, value)
         ifselected = _itertools.imap(_operator.itemgetter(0), ifselected)
-        ifselected = _itertools.imap(_functools.partial(_operator.eq, context.value), ifselected)
+        ifselected = _itertools.imap(_functools.partial(_operator.eq, value), ifselected)
         ifselected = _itertools.imap(int, ifselected)
         ifselected = _itertools.imap(_functools.partial(_operator.mul, 'selected="selected" '), ifselected)
 
@@ -99,9 +99,9 @@ class m_ilist(Metatype):
 
         return tal.getTAL(
                 "metadata/ilist.html",
-                dict(name=context.name, option_list=option_list),
+                dict(name=name, option_list=option_list),
                 macro="searchfield",
-                language=context.language,
+                language=language,
                )
 
     def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):

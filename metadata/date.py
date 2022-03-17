@@ -42,15 +42,15 @@ class m_date(Metatype):
                           macro="editorfield",
                           language=language)
 
-    def getSearchHTML(self, context):
-        context.value = context.value.split(";")
-        while len(context.value) < 2:
-            context.value.append('')
+    def getSearchHTML(self, collection, field, language, name, value):
+        value = value.split(";")
+        while len(value) < 2:
+            value.append('')
         return tal.getTAL(
                 "metadata/date.html",
-                dict(field=context.field, name=context.name, value=context.value),
+                dict(field=field, name=name, value=value),
                 macro="searchfield",
-                language=context.language,
+                language=language,
                )
 
     def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):

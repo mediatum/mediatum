@@ -64,12 +64,12 @@ class m_url(Metatype):
                           macro="fieldeditor",
                           language=values["language"])
 
-    def getSearchHTML(self, context):
+    def getSearchHTML(self, collection, field, language, name, value):
         return tal.getTAL(
                 "metadata/url.html",
-                dict(name=context.name, value=context.value),
+                dict(name=name, value=value),
                 macro="searchfield",
-                language=context.language,
+                language=language,
                )
 
     #

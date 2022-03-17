@@ -14,7 +14,7 @@ from utils.utils import formatLongText
 from utils.strings import ensure_unicode
 
 from schema.schema import getMetadataType, VIEW_DATA_ONLY, VIEW_SUB_ELEMENT, VIEW_HIDE_EMPTY, VIEW_DATA_EXPORT
-from core.metatype import Metatype, Context
+from core.metatype import Metatype
 from core import db, Node
 
 q = db.query

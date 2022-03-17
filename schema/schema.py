@@ -804,13 +804,12 @@ class Metafield(Node):
             t = getMetadataType("default")
         return t.getEditorHTML(self, val, width, lock, language=language, required=required)
 
-    def getSearchHTML(self, context):
+    def getSearchHTML(self, collection, field, language, name, value):
         try:
             t = getMetadataType(self.getFieldtype())
         except LookupError:
             t = getMetadataType("default")
-        context.field = self
-        return t.getSearchHTML(context)
+        return t.getSearchHTML(collection, self, language, name, value)
 
     def getFormattedValue(self, node, language=None):
         try:

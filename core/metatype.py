@@ -7,21 +7,6 @@ from __future__ import print_function
 from warnings import warn
 
 
-class Context(object):
-
-    def __init__(self, field, value="", width=400, name="", lock=0, language=None, container=None, user=None, ip=""):
-        self.field = field
-        self.value = value
-        self.width = width
-        self.name = name
-        self.language = language
-        self.collection = container
-        self.container = container
-        self.ip = ip
-        self.user = user
-        self.lock = lock
-
-
 class Metatype(object):
 
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):

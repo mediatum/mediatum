@@ -14,17 +14,17 @@
 </tal:block>
 
 
-<table metal:define-macro="searchfield" tal:attributes="id python:u'{}'.format(context.name)" cellspacing="0px" cellpadding="0px" style="border:0px">
+<table metal:define-macro="searchfield" tal:attributes="id python:u'{}'.format(name)" cellspacing="0px" cellpadding="0px" style="border:0px">
     <tr>
             <td>&nbsp;&nbsp;<span i18n:translate="editor_from">TEXT</span>: </td>
-            <td> <input tal:attributes="name python:u'{}-from'.format(context.name); id python:u'{}-from'.format(context.name); value python:context.value[0]" type="text" style="width:123px" class="searchfield"/></td>
+            <td> <input tal:attributes="name python:u'{}-from'.format(name); id python:u'{}-from'.format(name); value python:value[0]" type="text" style="width:123px" class="searchfield"/></td>
     </tr>
     <tr>
             <td>&nbsp;&nbsp;<span i18n:translate="editor_to">TEXT</span>: </td>
-            <td> <input tal:attributes="name python:u'{}-to'.format(context.name); id python:u'{}-to'.format(context.name); value python:context.value[1]" type="text" style="width:123px" class="searchfield"/></td>
+            <td> <input tal:attributes="name python:u'{}-to'.format(name); id python:u'{}-to'.format(name); value python:value[1]" type="text" style="width:123px" class="searchfield"/></td>
     </tr>
     <tr>
-            <td colspan="2" align="right"><small><tal:block i18n:translate="editor_input_format"/><tal:block tal:content="python:context.field.getValues()"/></small>&nbsp;</td>
+            <td colspan="2" align="right"><small><tal:block i18n:translate="editor_input_format"/><tal:block tal:content="python:field.getValues()"/></small>&nbsp;</td>
     </tr>
 </table>
 

@@ -48,7 +48,12 @@ class m_htmlmemo(Metatype):
         return s.replace("REPLACE_WITH_IDENT", unicode(field.id))
 
     def getSearchHTML(self, context):
-        return tal.getTAL("metadata/htmlmemo.html", {"context": context}, macro="searchfield", language=context.language)
+        return tal.getTAL(
+                "metadata/htmlmemo.html",
+                dict(name=context.name, value=context.value),
+                macro="searchfield",
+                language=context.language,
+               )
 
     def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
         value = node.get(metafield.getName()).replace(";", "; ")

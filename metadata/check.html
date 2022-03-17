@@ -11,4 +11,4 @@
    </span>
 </tal:block>
 
-<input metal:define-macro="searchfield" type="checkbox" tal:attributes="name python:context.name; id python:context.name; checked python:'checked' if context.value=='1' else None]" value="1"/>
+<input metal:define-macro="searchfield" type="checkbox" tal:attributes="name python:name; id python:name; checked python:'checked' if value=='1' else None]" value="1"/>

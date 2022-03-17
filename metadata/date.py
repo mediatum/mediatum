@@ -46,7 +46,12 @@ class m_date(Metatype):
         context.value = context.value.split(";")
         while len(context.value) < 2:
             context.value.append('')
-        return tal.getTAL("metadata/date.html", {"context": context}, macro="searchfield", language=context.language)
+        return tal.getTAL(
+                "metadata/date.html",
+                dict(field=context.field, name=context.name, value=context.value),
+                macro="searchfield",
+                language=context.language,
+               )
 
     def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
         ''' search with re if string could be a date

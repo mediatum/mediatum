@@ -124,9 +124,11 @@ class m_dlist(Metatype):
 
     def getSearchHTML(self, context):
         return tal.getTAL("metadata/dlist.html",
-                          {"context": context,
-                           "valuelist": self.formatValues(context.collection, context.field, context.value),
-                          },
+                          dict(
+                              name=context.name,
+                              value=context.value,
+                              valuelist=self.formatValues(context.collection, context.field, context.value),
+                          ),
                           macro="searchfield",
                           language=context.language)
 

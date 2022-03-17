@@ -97,10 +97,12 @@ class m_ilist(Metatype):
         format_option = u'<option {0}value="{1}">{1} ({2})</option>\n'.format
         option_list = u"".join(_itertools.starmap(format_option, _itertools.izip(ifselected, value, count)))
 
-        return tal.getTAL("metadata/ilist.html", {
-                "context": context,
-                "option_list": option_list,
-            }, macro="searchfield", language=context.language)
+        return tal.getTAL(
+                "metadata/ilist.html",
+                dict(name=context.name, option_list=option_list),
+                macro="searchfield",
+                language=context.language,
+               )
 
     def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
         value = node.get(metafield.getName())

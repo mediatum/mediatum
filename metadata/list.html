@@ -27,9 +27,9 @@
 </tal:block>
 
 
-<select metal:define-macro="searchfield" tal:attributes="name python:context.name; id python:context.name;" class="searchfield">
+<select metal:define-macro="searchfield" tal:attributes="name python:name; id python:name;" class="searchfield">
     <tal:block tal:repeat="v valuelist">
-       <option tal:condition="python:v[0]!='optgroup'" tal:attributes="value python:v[2]; selected python:'selected' if context.value==v[2] else None" tal:content="raw python:v[1]+v[2]+v[3]"/>
+       <option tal:condition="python:v[0]!='optgroup'" tal:attributes="value python:v[2]; selected python:'selected' if value==v[2] else None" tal:content="raw python:v[1]+v[2]+v[3]"/>
        <optgroup tal:condition="python:v[0]=='optgroup'" tal:replace="raw python:v[1]"/>
     </tal:block>
 </select>

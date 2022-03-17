@@ -26,7 +26,12 @@ class m_meta(Metatype):
                           language=language)
 
     def getSearchHTML(self, context):
-        return tal.getTAL("metadata/meta.html", {"context": context}, macro="searchfield", language=context.language)
+        return tal.getTAL(
+                "metadata/meta.html",
+                dict(name=context.name, value=context.value),
+                macro="searchfield",
+                language=context.language,
+               )
 
     def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
         return (metafield.getLabel(), node.get(metafield.getValues()))

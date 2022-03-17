@@ -65,7 +65,12 @@ class m_url(Metatype):
                           language=values["language"])
 
     def getSearchHTML(self, context):
-        return tal.getTAL("metadata/url.html", {"context": context}, macro="searchfield", language=context.language)
+        return tal.getTAL(
+                "metadata/url.html",
+                dict(name=context.name, value=context.value),
+                macro="searchfield",
+                language=context.language,
+               )
 
     #
     # format node value depending on field definition

@@ -42,7 +42,12 @@ class m_text(Metatype):
         return tal.getTAL("metadata/text.html", context, macro="editorfield", language=language)
 
     def getSearchHTML(self, context):
-        return tal.getTAL("metadata/text.html", {"context": context}, macro="searchfield", language=context.language)
+        return tal.getTAL(
+                "metadata/text.html",
+                dict(name=context.name, value=context.value),
+                macro="searchfield",
+                language=context.language,
+               )
 
     def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True, template_from_caller=None):
 

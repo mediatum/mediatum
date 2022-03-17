@@ -14,7 +14,7 @@
    </tal:block>
 </tal:block>
 
-<select metal:define-macro="searchfield" tal:attributes="name python:context.name; id python:context.name" class="searchfield" tal:content="raw option_list"/>
+<select metal:define-macro="searchfield" tal:attributes="name python:name; id python:name" class="searchfield" tal:content="raw option_list"/>
 
 <metal:block metal:define-macro="popup">
     <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">

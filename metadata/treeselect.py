@@ -35,7 +35,12 @@ class m_treeselect(Metatype):
                           language=language)
 
     def getSearchHTML(self, context):
-        return tal.getTAL("metadata/treeselect.html", {"context": context}, macro="searchfield", language=context.language)
+        return tal.getTAL(
+                "metadata/treeselect.html",
+                dict(name=context.name, value=context.value),
+                macro="searchfield",
+                language=context.language,
+               )
 
     def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True, template_from_caller=None):
         value = node.get(metafield.getName())

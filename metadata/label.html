@@ -6,7 +6,7 @@
     <tal:block tal:replace="structure value"/> <tal:block tal:replace="structure python:field.get('value')"/>
 </tal:block>
 
-<input metal:define-macro="searchfield" tal:attributes="name python:context.name; id python:context.name; value python:context.value" type="text" class="searchfield"/>
+<input metal:define-macro="searchfield" tal:attributes="name python:name; id python:name; value python:value" type="text" class="searchfield"/>
 
 <div metal:define-macro="metaeditor" class="back">
     <h3 tal:condition="python:op=='edit'" i18n:translate="mask_edit_edit_label">TEXT</h3>

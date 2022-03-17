@@ -49,7 +49,12 @@ class m_memo(Metatype):
                           macro="editorfield")
 
     def getSearchHTML(self, context):
-        return tal.getTAL("metadata/memo.html", {"context": context}, macro="searchfield", language=context.language)
+        return tal.getTAL(
+                "metadata/memo.html",
+                dict(name=context.name, value=context.value),
+                macro="searchfield",
+                language=context.language,
+               )
 
     def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
         value = node.get(metafield.getName()).replace(";", "; ")

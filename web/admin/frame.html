@@ -78,7 +78,7 @@
 <table metal:define-macro="optionheader">
     <tr>
         <td tal:repeat="option options" class="mediatum_td_option">
-            <img i18n:attributes="title" tal:attributes="src python:u'/{}'.format(option.getImagesource()); title python:option.getName()"/>
+            <img i18n:attributes="title" tal:attributes="src python:u'/{}'.format(option.imgsource); title python:option.name()"/>
         </td>
     </tr>
 </table>

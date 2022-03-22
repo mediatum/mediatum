@@ -70,7 +70,7 @@ class Metatype(object):
         # just fetch the unmodified alue from the params dict
         return params.get(item)
 
-    def getMaskEditorHTML(self, field, metadatatype=None, language=None):
+    def get_metafieldeditor_html(self, field, metadatatype, language):
         return ""
 
     @classmethod

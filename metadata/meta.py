@@ -42,14 +42,10 @@ class m_meta(Metatype):
     def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
         return (metafield.getLabel(), node.get(metafield.getValues()))
 
-    def getMaskEditorHTML(self, field, metadatatype=None, language=None):
-        try:
-            value = field.getValues().split("\r\n")
-        except AttributeError:
-            #value = u""
-            value = []
-            while len(value) < 2:
-                value.append('')
+    def get_metafieldeditor_html(self, field, metadatatype, language):
+        value = field.getValues().split("\r\n")
+        value.extend(("",)*2)
+        value = value[:2]
 
         attr = {}
         if metadatatype:
@@ -60,7 +56,7 @@ class m_meta(Metatype):
                     attr.update(node.getTechnAttributes())
                     attr['IPTC'] = get_wanted_iptc_tags()
                 except AttributeError:
-                    logg.exception("attribute error in getMaskEditorHTML, continue")
+                    logg.exception("attribute error in get_metafieldeditor_html, continue")
                     continue
 
         return tal.getTAL("metadata/meta.html", {"value": value, "t_attrs": attr}, macro="maskeditor", language=language)

@@ -1,13 +1,10 @@
 { pkgs ? (import ../nixpkgs.nix {}).pkgs
+, pkgsPy ? (import ../nixpkgs.nix {}).pkgsPy
 , lib ? pkgs.lib
-, python ? pkgs.python2
+, python2 ? pkgsPy.python2
 }:
 
 let
-
-  pythonSuper = python;
-
-in let
 
   python =
     # Each file in `python-packages` is treated as a package.
@@ -29,13 +26,13 @@ in let
           lib.attrsets.genAttrs pkgNames
           (name: old.callPackage (mkPkgPath name) {});
     in
-      pythonSuper.override { inherit packageOverrides; };
+      python2.override { inherit packageOverrides; };
 
   propagatedBuildInputs = lib.attrsets.attrValues {
     inherit (python.pkgs)
       ConfigArgParse
       alembic
-      attrs_18
+      attrs
       bibtexparser
       coffeescript
       decorator
@@ -82,11 +79,14 @@ in let
       unicodecsv
       werkzeug
     ;
+    graphicsmagick = pkgs.graphicsmagick.overrideAttrs
+      (oldAttrs: oldAttrs // {
+        buildInputs = oldAttrs.buildInputs ++ [ pkgs.lcms2 ];
+      });
     inherit (pkgs)
       ffmpeg
       ghostscript
       glibcLocales
-      graphicsmagick
       graphviz-nox
       icu
       pdftk

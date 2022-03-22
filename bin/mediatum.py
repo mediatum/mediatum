@@ -1,5 +1,4 @@
-#! /usr/bin/env nix-shell
-#! nix-shell -i python
+#! /usr/bin/env python2
 
 """
  mediatum - a multimedia content repository

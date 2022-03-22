@@ -20,6 +20,7 @@
 """
 import collections as _collections
 import datetime
+import functools as _functools
 import inspect
 import importlib
 import itertools as _itertools
@@ -46,7 +47,7 @@ from core.translation import lang
 from core.postgres import check_type_arg
 from core.database.postgres.node import children_rel, parents_rel
 from utils.date import parse_date, format_date, validateDateString
-from utils.utils import Option, esc, suppress
+from utils.utils import esc, suppress
 import utils as _utils
 from mediatumtal import tal as _tal
 import core.database.postgres.node as _node
@@ -55,40 +56,87 @@ import core.database.postgres.node as _node
 log = logg = logging.getLogger(__name__)
 q = db.query
 
-requiredoption = []
-requiredoption += [Option("Kein Pflichtfeld", "notmandatory", "0", "/img/req2_opt.png")]
-requiredoption += [Option("Pflichtfeld, darf nicht leer sein", "mandatory1", "1", "/img/req0_opt.png")]
-requiredoption += [Option("Pflichtfeld, muss eine Zahl sein", "mandatory2", "2", "/img/req1_opt.png")]
 
-fieldoption = []
-fieldoption += [Option("metafield_option1", "search", "s", "/img/folder_plus.gif")]
-fieldoption += [Option("metafield_option2", "sort", "o", "/img/ordersel.png")]
+_Option = _functools.partial(
+    _collections.namedtuple(
+        "_Option",
+        "name shortname value imgsource optiontype validation_regex",
+    ), imgsource='', optiontype='', validation_regex='',
+)
 
-dateoption = []
-dateoption += [Option("metafield_dateformat_std",
-                      "dd.mm.yyyy",
-                      "%d.%m.%Y",
-                      validation_regex='^(0[0-9]|1[0-9]|2[0-9]|3[01])\.(0[0-9]|1[012])\.[0-9]{4}$')]
-dateoption += [Option("metafield_dateformat_long",
-                      "dd.mm.yyyy hh:mm:ss",
-                      "%d.%m.%Y %H:%M:%S",
-                      validation_regex='^(0[0-9]|1[0-9]|2[0-9]|3[01])\.(0[0-9]|1[012])\.[0-9]{4} (0[0-9]|1[0-9]|2[0-3])(:[0-5][0-9]){2}$')]
-dateoption += [Option("metafield_dateformat_year",
-                      "yyyy",
-                      "%Y",
-                      validation_regex='^[0-9]{4}$')]
-dateoption += [Option("metafield_dateformat_yearmonth",
-                      "yyyy-mm",
-                      "%Y-%m",
-                      validation_regex='^[0-9]{4}-(0[0-9]|1[012])$')]
-dateoption += [Option("metafield_dateformat_month",
-                      "mm",
-                      "%m",
-                      validation_regex='^(0[0-9]|1[012])$')]
-dateoption += [Option("metafield_dateformat_time",
-                      "hh:mm:ss",
-                      "%H:%M:%S",
-                      validation_regex='^(0[0-9]|1[0-9]|2[0-3])(:[0-5][0-9]){2}$')]
+
+requiredoption = (
+    _Option(
+        name="Kein Pflichtfeld",
+        shortname="notmandatory",
+        value="0",
+        imgsource="/img/req2_opt.png",
+    ),
+    _Option(
+        name="Pflichtfeld, darf nicht leer sein",
+        shortname="mandatory1", value="1",
+        imgsource="/img/req0_opt.png",
+    ),
+    _Option(
+        name="Pflichtfeld, muss eine Zahl sein",
+        shortname="mandatory2",
+        value="2",
+        imgsource="/img/req1_opt.png",
+    ),
+)
+
+fieldoption = (
+    _Option(
+        name="metafield_option1",
+        shortname="search", value="s",
+        imgsource="/img/folder_plus.gif",
+    ),
+    _Option(
+        name="metafield_option2",
+        shortname="sort",
+        value="o",
+        imgsource="/img/ordersel.png",
+    ),
+)
+
+dateoption = (
+    _Option(
+        name="metafield_dateformat_std",
+        shortname="dd.mm.yyyy",
+        value="%d.%m.%Y",
+        validation_regex='^(0[0-9]|1[0-9]|2[0-9]|3[01])\.(0[0-9]|1[012])\.[0-9]{4}$',
+    ),
+    _Option(
+        name="metafield_dateformat_long",
+        shortname="dd.mm.yyyy hh:mm:ss",
+        value="%d.%m.%Y %H:%M:%S",
+        validation_regex='^(0[0-9]|1[0-9]|2[0-9]|3[01])\.(0[0-9]|1[012])\.[0-9]{4} (0[0-9]|1[0-9]|2[0-3])(:[0-5][0-9]){2}$',
+    ),
+    _Option(
+        name="metafield_dateformat_year",
+        shortname="yyyy",
+        value="%Y",
+        validation_regex='^[0-9]{4}$',
+    ),
+    _Option(
+        name="metafield_dateformat_yearmonth",
+        shortname="yyyy-mm",
+        value="%Y-%m",
+        validation_regex='^[0-9]{4}-(0[0-9]|1[012])$',
+    ),
+    _Option(
+        name="metafield_dateformat_month",
+        shortname="mm",
+        value="%m",
+        validation_regex='^(0[0-9]|1[012])$',
+    ),
+    _Option(
+        name="metafield_dateformat_time",
+        shortname="hh:mm:ss",
+        value="%H:%M:%S",
+        validation_regex='^(0[0-9]|1[0-9]|2[0-3])(:[0-5][0-9]){2}$',
+    ),
+)
 
 VIEW_DEFAULT = 0        # default view for masks
 VIEW_SUB_ELEMENT = 1    # internal parameter
@@ -287,17 +335,26 @@ def existMetaField(pid, name):
 
 """ update/create metadatafield """
 
-def updateMetaField(parent, name, label, orderpos, fieldtype, option="", description="",
-                    fieldvalues="", fieldvaluenum="", fieldid="", filenode=None, attr_dict={}):
+def updateMetaField(
+        parent,
+        name,
+        label,
+        fieldtype,
+        option,
+        description,
+        fieldvalues,
+        fieldid,
+       ):
     metatype = getMetaType(parent)
-    field = None
 
+    # search the field by id, then by name,
+    # or create a new one if both searches didn't yield a result
+    field = None
     if fieldid:
         field = q(Node).get(fieldid)
-
     if field is not None:
         field.name = name
-    elif name in [c.name for c in metatype.children]:
+    elif name in (c.name for c in metatype.children):
         for c in metatype.children:
             if c.name == name:
                 field = c
@@ -308,45 +365,20 @@ def updateMetaField(parent, name, label, orderpos, fieldtype, option="", descrip
         field.orderpos = len(metatype.children) - 1
         db.session.commit()
     # <----- Begin: For fields of list type ----->
-
-    if filenode:
-        # all files of the field will be removed before a new file kann be added
-        for fnode in field.files:
-            field.files.remove(fnode)         # remove the file from the node tree
-            try:
-                os.remove(fnode.abspath)  # delete the file from the hard drive
-            except:
-                logg.exception("exception in updateMetaField")
-        field.files.append(filenode)
-
     if fieldvalues.startswith("multiple"):
         field.set("multiple", True)
         fieldvalues = fieldvalues.replace("multiple;", "", 1)
     else:
         if field.get("multiple"):
             del field.attrs["multiple"]
-
-    if fieldvalues.endswith("delete"):  # the checkbox 'delete' was checked
-        # all files of the field will be removed
-        for fnode in field.files:
-            field.files.remove(fnode)         # remove the file from the node tree
-            try:
-                os.remove(fnode.abspath)  # delete the file from the hard drive
-            except:
-                logg.exception("exception in updateMetaField")
-        fieldvalues = fieldvalues.replace(";delete", "", 1)
-
     #<----- End: For fields of list type ----->
 
     field.set("label", label)
     field.set("type", fieldtype)
-    field.set("opts", option)
+    field.set("opts", "".join(option))
     field.set("valuelist", fieldvalues.replace("\r\n", ";"))
-    field.set("valuelistnum", fieldvaluenum)
     field.set("description", description)
 
-    for attr_name, attr_value in attr_dict.items():
-        field.set(attr_name, attr_value)
     db.session.commit()
 
 #
@@ -564,7 +596,7 @@ def parseEditorData(req, node):
             if field.get('type') == "date":
                 f = field.getSystemFormat(field.fieldvalues)
                 try:
-                    date = parse_date(ustr(value), f.getValue())
+                    date = parse_date(ustr(value), f.value)
                 except ValueError:
                     date = None
                 if date:
@@ -753,12 +785,6 @@ class Metafield(Node):
     def setDescription(self, value):
         self.set("description", value)
 
-    def getFieldValueNum(self):
-        return self.get("valuelistnum")
-
-    def setFieldValueNum(self, fnum):
-        self.set("valuelistnum", fnum)
-
     def getValues(self):
         return self.get("valuelist").replace(";", "\r\n")
 
@@ -782,22 +808,9 @@ class Metafield(Node):
 
     def getSystemFormat(self, shortname):
         for option in dateoption:
-            if option.getShortName() == shortname:
+            if option.shortname == shortname:
                 return option
         return dateoption[0]
-
-    def getValue(self, node):
-        logg.warn("who uses getValue?")
-        if self.get("fieldtype") == "date":
-            d = self.getSystemFormat(ustr(self.fieldvalues))
-            v = node.get(self.name)
-            try:
-                value = format_date(parse_date(v), d.getValue())
-            except ValueError:
-                value = v
-        else:
-            value = node.get(self.name)
-        return value
 
     def getEditorHTML(self, val="", width=400, lock=0, language=None, required=None):
         try:
@@ -1387,10 +1400,7 @@ class Maskitem(Node):
             return self.get("description")
 
     def setDescription(self, value):
-        if not self.get("description") and self.getField():
-            self.getField().setDescription(value)
-        else:
-            self.set("description", value)
+        self.set("description", value)
 
     def getRequired(self):
         if self.get("required"):
@@ -1436,15 +1446,15 @@ class Maskitem(Node):
         self.set("separator", value)
 
 
-mytypes = {}
+_metatypes = {}
 
 
 def _metatype_class(cls):
     name = cls.get_name4schema()
     logg.debug("loading metatype class %s", name)
     instance = cls()
-    assert name not in mytypes
-    mytypes[name] = instance
+    assert name not in _metatypes
+    _metatypes[name] = instance
     if hasattr(instance, "getLabels"):
         translation.addLabels(instance.getLabels())
 
@@ -1469,27 +1479,24 @@ def init():
         load_metatype_module(config.basedir, pkg_dir)
 
 
-def getMetadataType(mtype):
-    if mtype in mytypes:
-        return mytypes[mtype]
-    else:
-        raise LookupError("No such metatype: " + mtype)
+def getMetadataType(name):
+    try:
+        return _metatypes[name]
+    except KeyError:
+        raise LookupError("No such metatype: " + name)
 
 
 def getMetaFieldTypeNames():
-    ret = {}
-    for key in mytypes.keys():
-        if "meta" in ustr(mytypes[key]):
-            ret[key] = "fieldtype_" + key
-    return ret
+    return {
+            name:"fieldtype_{}".format(name)
+            for name,instance in _metatypes.iteritems()
+            if "meta" in ustr(instance)
+           }
 
 
 def getMetaFieldTypes():
-    ret = {}
-    for t in mytypes:
-        if getMetadataType(t).isFieldType():
-            ret[t] = getMetadataType(t)
-    return ret
+    ret = {name:getMetadataType(name) for name in _metatypes}
+    return {name:type_ for name,type_ in _metatypes.iteritems() if type_.isFieldType()}
 
 """ return fields based on the schema name """
 

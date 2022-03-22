@@ -9,7 +9,7 @@
 </tal:block>
 
 
-<div metal:define-macro="maskeditor" style="display:none" name="div_meta" id="div_meta">
+<div metal:define-macro="maskeditor" style="display:block" name="div_meta" id="div_meta">
     <div class="label" i18n:translate="metafield_tech_meta">TEXT</div>
     <select id="meta_value" name="meta_value" style="width:250px;">
         <optgroup tal:repeat="t_attr python:list(t_attrs)" tal:attributes="label python:t_attr">

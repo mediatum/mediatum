@@ -17,6 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import operator as _operator
 import re
 import sys
 
@@ -180,11 +181,11 @@ def validate(req, op):
         for key in req.params.keys():
             # create new meta field
             if key.startswith("newdetail_"):
-                return FieldDetail(req, req.params.get("parent"), "")
+                return FieldDetail(req, "")
 
             # edit meta field
             elif key.startswith("editdetail_"):
-                return FieldDetail(req, req.params.get("parent"), key[11:-2])
+                return FieldDetail(req, key[11:-2])
 
             # delete metafield: key[13:-2] = pid | n
             elif key.startswith("deletedetail_"):
@@ -208,44 +209,28 @@ def validate(req, op):
 
             if existMetaField(req.params.get("parent"), req.params.get("mname")) and \
                     (req.params.get("form_op", "")  == "save_newdetail" or req.params.get("mname") != req.params.get("mname_orig")):
-                return FieldDetail(req, req.params.get("parent"), req.params.get("orig_name", ""), 3)  # field still existing
+                return FieldDetail(req, error="admin_duplicate_error")
             elif req.params.get("mname", "") == "" or req.params.get("mlabel", "") == "":
-                return FieldDetail(req, req.params.get("parent"), req.params.get("orig_name", ""), 1)
+                return FieldDetail(req, error="admin_mandatory_error")
             elif not checkString(req.params.get("mname", "")):
-                # if the name contains wrong characters
-                return FieldDetail(req, req.params.get("parent"), req.params.get("orig_name", ""), 4)
+                return FieldDetail(req, error="admin_metafield_error_badchars")
 
-            _option = ""
-            for o in req.params.keys():
-                if o.startswith("option_"):
-                    _option += o[7]
+            fieldvalue = "{}_value".format(req.params.get("mtype", ""))
+            if fieldvalue in req.params:
+                fieldvalue = req.params.get(fieldvalue)
+            else:
+                fieldvalue = ""
 
-            _fieldvalue = ""
-            if req.params.get("mtype", "") + "_value" in req.params.keys():
-                _fieldvalue = req.params.get(req.params.get("mtype") + "_value")
-
-            _filenode = None
-            if "valuesfile" in req.params.keys():
-                valuesfile = req.params.pop("valuesfile")
-                if hasattr(valuesfile, "filename"):
-                    _filenode = importFile(valuesfile.filename, valuesfile)
-
-            _attr_dict = {}
-            if req.params.get("mtype", "") + "_handle_attrs" in req.params.keys():
-
-                attr_names = [s.strip() for s in req.params.get(req.params.get("mtype", "") + "_handle_attrs").split(",")]
-                key_prefix = req.params.get("mtype", "") + "_attr_"
-
-                for attr_name in attr_names:
-                    attr_value = req.params.get(key_prefix + attr_name, "")
-                    _attr_dict[attr_name] = attr_value
-
-            updateMetaField(req.params.get("parent", ""), req.params.get("mname", ""),
-                            req.params.get("mlabel", ""), req.params.get("orderpos", ""),
-                            req.params.get("mtype", ""), _option, req.params.get("mdescription", ""),
-                            _fieldvalue, fieldid=req.params.get("fieldid", ""),
-                            filenode=_filenode,
-                            attr_dict=_attr_dict)
+            updateMetaField(
+                    req.values["parent"],
+                    req.values["mname"],
+                    req.values.get("mlabel", ""),
+                    req.values["mtype"],
+                    tuple(o[7] for o in req.params if o.startswith("option_")),
+                    req.values.get("mdescription", ""),
+                    fieldvalue,
+                    req.values.get("fieldid", ""),
+                   )
 
         return showDetailList(req, req.params.get("parent"))
 
@@ -376,21 +361,16 @@ def view(req):
     order = getSortCol(req)
 
     # sorting
-    if order != "":
-        if int(order[0:1]) == 0:
-            mtypes.sort(lambda x, y: cmp(x.name.lower(), y.name.lower()))
-        elif int(order[0:1]) == 1:
-            mtypes.sort(lambda x, y: cmp(x.getLongName().lower(), y.getLongName().lower()))
-        elif int(order[0:1]) == 2:
-            mtypes.sort(lambda x, y: cmp(x.getDescription().lower(), y.getDescription().lower()))
-        elif int(order[0:1]) == 3:
-            mtypes.sort(lambda x, y: cmp(x.getActive(), y.getActive()))
-        elif int(order[0:1]) == 4:
-            mtypes.sort(lambda x, y: cmp(x.getDatatypeString().lower(), y.getDatatypeString().lower()))
-        if int(order[1:]) == 1:
-            mtypes.reverse()
+    if order:
+        mtypes.sort(reverse=int(order[1:])==1, key={
+            0:lambda mt:mt.name.lower(),
+            1:lambda mt:mt.getLongName().lower(),
+            2:lambda mt:mt.getDescription().lower(),
+            3:_operator.methodcaller("getActive"),
+            4:lambda mt:mt.getDatatypeString().lower(),
+           }[int(order[:1])])
     else:
-        mtypes.sort(lambda x, y: cmp(x.name.lower(), y.name.lower()))
+        mtypes.sort(key=lambda mt:mt.name.lower())
 
     v = getAdminStdVars(req)
     v["sortcol"] = pages.OrderColHeader(
@@ -446,7 +426,7 @@ def MetatypeDetail(req, id, err=0):
         v["original_name"] = req.params["mname_orig"]
     d = Data()
     v["datatypes"] = d.get_all_datatypes()
-    v["datatypes"].sort(lambda x, y: cmp(t(lang(req), x.__name__), t(lang(req), y.__name__)))
+    v["datatypes"].sort(key=lambda dt:t(lang(req), dt.__name__))
     v["metadatatype"] = metadatatype
     v["error"] = err
     v["bibtextypes"] = getAllBibTeXTypes()
@@ -478,7 +458,7 @@ def showInfo(req):
 def showFieldOverview(req):
     path = req.mediatum_contextfree_path[1:].split("/")
     fields = getFieldsForMeta(path[1])
-    fields.sort(lambda x, y: cmp(x.orderpos, y.orderpos))
+    fields.sort(key=_operator.attrgetter("orderpos"))
 
     v = {}
     v["metadatatype"] = getMetaType(path[1])
@@ -592,20 +572,6 @@ def showEditor(req):
                     req.values["fieldtype"],
                     req.values["attribute"]
                 )
-            else:
-                f = q(Node).get(long(req.params.get("field")))
-
-            field = item.children
-            try:
-                field = list(field)[0]
-                if ustr(field.id) != req.params.get("field"):
-                    item.children.remove(field)
-                    item.children.append(f)
-                field.setValues(req.params.get(u"{}_value".format(field.get("type")), u""))
-                db.session.commit()
-            except:
-                logg.exception("exception in showEditor / saveedit, ignore")
-                pass
 
         elif req.params.get("op", "") == "new":
             if "mappingfield" in req.params:
@@ -635,7 +601,7 @@ def showEditor(req):
             else:
                 # insert at special position
                 fields = editor.getMaskFields()
-                fields.all().sort(lambda x, y: cmp(x.orderpos, y.orderpos))
+                fields.all().sort(key=_operator.attrgetter("orderpos"))
                 for f in fields:
                     if f.orderpos >= q(Node).get(position).orderpos and f.id != item.id:
                         f.orderpos = f.orderpos + 1
@@ -695,7 +661,7 @@ def showEditor(req):
             for field in pidnode.getChildren():
                 if field.getType().getName() == "maskitem" and field.id != pidnode.id:
                     fields.append(field)
-            fields.sort(lambda x, y: cmp(x.orderpos, y.orderpos))
+            fields.sort(key=_operator.attrgetter("orderpos"))
             for f in fields:
                 if f.orderpos >= q(Node).get(position).orderpos and f.id != item.id:
                     f.orderpos = f.orderpos + 1

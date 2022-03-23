@@ -88,10 +88,10 @@ let
       ghostscript
       glibcLocales
       graphviz-nox
-      icu
       pdftk
       poppler_utils
     ;
+    icu = pkgs.icu.dev;
     inherit (pkgs.perlPackages) ImageExifTool;
   };
 

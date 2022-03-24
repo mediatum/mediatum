@@ -3,7 +3,7 @@
 let
 
   urls = {
-    pkgs   = https://releases.nixos.org/nixpkgs/nixpkgs-22.05pre336340.cdaa4ce25b7/nixexprs.tar.xz;
+    pkgs   = https://releases.nixos.org/nixpkgs/nixpkgs-22.05pre354783.3a641defd17/nixexprs.tar.xz;
     pkgsPy = https://releases.nixos.org/nixpkgs/nixpkgs-20.03pre197736.91d5b3f07d2/nixexprs.tar.xz;
   };
 

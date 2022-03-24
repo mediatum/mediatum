@@ -811,7 +811,7 @@ def render_content(node, req, render_paths):
                    if render_paths and node is not None else None)
     if not make_search_content:
         content = make_node_content(node, req, paths)
-    elif len(req.args.get("query", "").strip()) < 2:
+    elif len(req.args.get("query", "..").strip()) < 2:
         content = _frontend_search.NoSearchResult(req.args.get("query", "").strip(), node, "simple")
     else:
         _postgres_search.set_session_timeout(config.getint('search.timeout_research', 120))

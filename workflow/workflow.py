@@ -470,7 +470,7 @@ class WorkflowStep(Node):
             _flask.session["key"] = key
 
             if "obj" in req.params:
-                nodes = [q(Node).get(id) for id in req.params['obj'].split(',')]
+                nodes = [q(Node).get(int(id)) for id in req.values.getlist('obj')]
 
                 for node in nodes:
                     if not self.has_write_access() and \
@@ -582,6 +582,7 @@ class WorkflowStep(Node):
             workflow=self.parents[0],
             step=self,
             nodelink=nodelink,
+            csrf=req.csrf_token.current_token,
         )
         return _tal.processTAL(context,
                                file="workflow/workflow.html",

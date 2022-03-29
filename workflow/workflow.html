@@ -180,17 +180,17 @@
             });
         });
 
-        function submit()
+        function submit(csrf)
         {
             if ($('.checkbox:checked').size() > 0)
             {
                 if ($("#selectid").val() == "delete")
                 {
-                    confirmf('#confirm_delete');
+                    confirmf('#confirm_delete', csrf);
                 }
                 else
                 {
-                    confirmf('#confirm_move');
+                    confirmf('#confirm_move', csrf);
                 }
             }
             else
@@ -199,7 +199,7 @@
             }
         }
 
-        function confirmf(v)
+        function confirmf(v, csrf)
         {
             if (confirm($(v).html()))
             {
@@ -208,16 +208,15 @@
                 {
                     selected.push($(this).attr('id'));
                 });
-
-                $.get('/mask?id='+id+'&action='+$('select').val(), {obj: selected.join()})
-                    .done(function(data)
-                    {
-                        $('#workflow').replaceWith($(data).find('#workflow'));
-                    });
-            }
-            else
-            {
-                //do nothing
+                $.ajax({
+                    url: '/mask?id='+id+'&action='+$('select').val(),
+                    traditional: true, //would POST param "obj[]" with brackets in the name otherwise
+                    data: {obj: selected, csrf_token: csrf},
+                    type: 'POST',
+                    success: function (response) {
+                        $('#workflow').replaceWith($(response).find('#workflow'));
+                    },
+                });
             }
         }
 
@@ -273,7 +272,7 @@
                         <option tal:repeat="value steps" tal:content="python:value[0]" tal:attributes="value python:u'move_{}'.format(value[1])" />
                     </optgroup>
                 </select>
-                <button value="submit" type="submit" onclick="submit()" i18n:translate="workflow_label_button_submit">TEXT</button>
+                <button value="submit" type="submit" tal:attributes="onclick python:u'submit(&quot;{}&quot;)'.format(csrf)" i18n:translate="workflow_label_button_submit">TEXT</button>
             </th>
         </tr>
     </table>

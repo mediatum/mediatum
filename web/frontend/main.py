@@ -34,7 +34,7 @@ q = db.query
 logg = logging.getLogger(__name__)
 
 
-def handle_json_request(req):
+def _handle_json_request(req):
     user = _user_from_session()
     s = []
     if req.args.get("cmd") == "get_list_smi":
@@ -148,7 +148,7 @@ def display_newstyle(req):
 @_check_change_language_request
 def display(req, show_navbar=True, render_paths=True, params=None):
     if "jsonrequest" in req.params:
-        return handle_json_request(req)
+        return _handle_json_request(req)
 
     if params is None:
         params = req.args

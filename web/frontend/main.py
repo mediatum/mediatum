@@ -225,6 +225,7 @@ def show_parent_node(req):
         return workflow(req)
 
     req = overwrite_id_in_req(parent.id, req)
-    req.params["obj"] = str(node.id)
+    req.args = ImmutableMultiDict(dict(req.args, obj=str(node.id)))
+    req.params["obj"] = req.args["obj"]
 
     return workflow(req)

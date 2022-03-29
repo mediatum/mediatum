@@ -169,23 +169,17 @@ class Searchlet(object):
             None
 
 
-def render_search_box(container, language, req, edit=False):
+def _render_search_box(container, language, req, edit=False):
     search_portlet = Searchlet(container, edit)
     search_portlet.feedback(req)
-    liststyle = req.args.get("liststyle")
-
-    ctx = {
-        "search": search_portlet,
-        "container_id": container.id,
-        "liststyle": liststyle,
-        "language": language,
-        "search_placeholder": u"{} {}".format(_core_translation.t(language, "search_in"), container.getLabel(language)),
-        "action": '/' if not edit else '/edit/edit_content',
-    }
-
-    search_html = webconfig.theme.render_template("frame_search.j2.jade", ctx)
-
-    return search_html
+    return webconfig.theme.render_template("frame_search.j2.jade", dict(
+            search=search_portlet,
+            container_id=container.id,
+            liststyle=req.args.get("liststyle"),
+            language=language,
+            search_placeholder=u"{} {}".format(_core_translation.t(language, "search_in"), container.getLabel(language)),
+            action='/' if not edit else '/edit/edit_content',
+           ))
 
 
 def render_edit_search_box(container, language, req, edit=False):
@@ -509,7 +503,7 @@ def render_page(req, content_html, node=None, show_navbar=True, show_id=None):
 
     if show_navbar and not req.args.get("disable_navbar"):
         if not req.args.get("disable_search"):
-            search_html = render_search_box(container, language, req)
+            search_html = _render_search_box(container, language, req)
         if not req.args.get("disable_navtree"):
             navtree_html = render_navtree(language, node.id, user)
 

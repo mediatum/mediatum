@@ -157,7 +157,6 @@ def FieldDetail(req, name=None, error=None):
             metadatatype=metadatatype,
             metafield=field,
             metafields={fields.name:fields for fields in getFieldsForMeta(req.params.get("parent"))},
-            valuelist=field.getValueList(),
            )
 
     if field.id:
@@ -167,10 +166,6 @@ def FieldDetail(req, name=None, error=None):
                 metadatatype,
                 _translation.set_language(req.accept_languages),
             )
-
-    if field.getFieldtype() == "url":
-        tal_ctx["valuelist"].extend(("",)*4)
-        tal_ctx["valuelist"] = tal_ctx["valuelist"][:4]
 
     db.session.commit()
     return _tal.processTAL(

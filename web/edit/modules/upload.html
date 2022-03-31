@@ -438,13 +438,7 @@
                         filename = file.name;
                         file_ext = filename.split('.').pop().toLowerCase();
                         var sel = '';
-                        if (file_ext == 'zip') {
-                            var sel = " <select name='tofiletype' class='select_unpack' id='select_extra_" + fid + "'>" +
-                                "<option value='tofile' selected>" + js_upload_no_unpack + "</option>" +
-                                "<option value='totype'>" + js_upload_unpack + "</option>" +
-                            "</select>";
-                        }
-                        else if (file_ext == 'bib') {
+                        if (file_ext == 'bib') {
                             var sel = " <select name='tofiletype' class='select_unpack' id='select_extra_" + fid + "'>" +
                                 "<option value='tofile'>" + js_upload_no_unpack + "</option>" +
                                 "<option value='totype' selected>" + js_upload_unpack + "</option>" +
@@ -755,13 +749,7 @@
                             filename = file.name;
                             file_ext = filename.split('.').pop().toLowerCase();
                             var sel = '';
-                            if (file_ext == 'zip') {
-                                var sel = " <select name='tofiletype' class='select_unpack' id='select_extra_" + fid + "'>" +
-                                    "<option value='tofile' selected>" + js_upload_no_unpack + "</option>" +
-                                    "<option value='totype'>" + js_upload_unpack + "</option>" +
-                                "</select>";
-                            }
-                            else if (file_ext == 'bib') {
+                            if (file_ext == 'bib') {
                                 var sel = " <select name='tofiletype' class='select_unpack' id='select_extra_" + fid + "'>" +
                                     "<option value='tofile'>" + js_upload_no_unpack + "</option>" +
                                     "<option value='totype' selected>" + js_upload_unpack + "</option>" +

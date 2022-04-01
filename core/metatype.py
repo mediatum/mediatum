@@ -13,10 +13,10 @@ class Metatype(object):
         return ""
 
     def getSearchHTML(self, context):
-        None
+        pass
 
     def getFormattedValue(self, metafield, maskitem, mask, node, language, html):
-        None
+        pass
 
     def format_request_value_for_db(self, field, params, item, language=None):
         """Prepare value for the database from update request params.

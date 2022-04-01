@@ -90,35 +90,20 @@ class m_field(Metatype):
             elementname = node.get_special(element.getName())
             if elementname == "":
                 val = ""
-        valuelist = {}
 
-        lock = 0
-        differentvalues = 0
-        containsemptystring = val == ""
-
-        for node in nodes:
-            newvalue = node.get_special(element.getName())
-            containsemptystring = containsemptystring or newvalue == ""
-            if newvalue not in valuelist:
-                differentvalues += 1
-                valuelist[newvalue] = 1
-
-        if differentvalues == 2 and containsemptystring:
-            for t in valuelist.keys():
-                if t != "":
-                    val = t
-            lock = 1
-        elif differentvalues >= 2:
+        values = frozenset(node.get_special(element.getName()) for node in nodes)
+        lock = 1
+        if len(values) == 2 and (val=="" or "" in values):
+            for val in filter(None, values):
+                pass
+        elif len(values) >= 2:
             val = "? "
-            lock = 1
-
-        if val == "" and field.getDefault() != "":
+        else:
+            lock = 0
+        if val == "":
             val = field.getDefault()
-
         t = getMetadataType(elementtype)
-
-        if field.getUnit() != "":
-            unit += field.getUnit()
+        unit += field.getUnit()
 
         ret += '<div id="editor_content">' + \
             t.getEditorHTML(element,

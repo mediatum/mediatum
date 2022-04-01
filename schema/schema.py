@@ -798,26 +798,13 @@ class Metafield(Node):
         return dateoption[0]
 
     def getEditorHTML(self, val="", width=400, lock=0, language=None, required=None):
-        try:
-            t = getMetadataType(self.getFieldtype())
-        except LookupError:
-            t = getMetadataType("default")
-        return t.getEditorHTML(self, val, width, lock, language=language, required=required)
+        return getMetadataType(self.getFieldtype()).getEditorHTML(self, val, width, lock, language=language, required=required)
 
     def getSearchHTML(self, collection, field, language, name, value):
-        try:
-            t = getMetadataType(self.getFieldtype())
-        except LookupError:
-            t = getMetadataType("default")
-        return t.getSearchHTML(collection, self, language, name, value)
+        return getMetadataType(self.getFieldtype()).getSearchHTML(collection, self, language, name, value)
 
     def getFormattedValue(self, node, language=None):
-        try:
-            t = getMetadataType(self.getFieldtype())
-        except LookupError:
-            t = getMetadataType("default")
-
-        return t.getFormattedValue(self, None, None, node, language=language)
+        return getMetadataType(self.getFieldtype()).getFormattedValue(self, None, None, node, language=language)
 
 # helper class for masks
 
@@ -1487,10 +1474,7 @@ def init():
 
 
 def getMetadataType(name):
-    try:
-        return _metatypes[name]
-    except KeyError:
-        raise LookupError("No such metatype: " + name)
+    return _metatypes[name]
 
 
 def getMetaFieldTypeNames():

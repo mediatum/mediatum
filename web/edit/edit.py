@@ -773,8 +773,6 @@ def content(req):
     except:
         v['nodeiconpath'] = "webtree/directory.gif"
 
-    content = {'script': '', 'body': ''}
-
     # display current images
     if not isinstance(q(Data).get(ids[0]), Container):
         v["notdirectory"] = 1
@@ -838,7 +836,6 @@ def content(req):
     if isinstance(c, int):
         # module returned a custom http status code instead of HTML content
         return c
-    content["body"] += c
 
     if "globalsort" in req.values:
         node.set("sortfield", req.values["globalsort"])
@@ -859,8 +856,8 @@ def content(req):
         sortchoices = ()
 
     v["tabs"] = handletabs(req, ids, tabs, sortchoices)
-    v["script"] = content["script"]
-    v["body"] = content["body"]
+    v["script"] = ""
+    v["body"] = c
     v["paging"] = showPaging(req, current, ids)
     v["node"] = node
     v["ids"] = (req.values.get("ids") or req.values.get("id", "")).split(",")

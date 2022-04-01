@@ -741,15 +741,12 @@ def content(req):
         req.response.set_data(t(language, "permission_denied"))
         return
 
-    v = {'dircontent': '', 'notdirectory': 0, 'operations': ''}
-
     if isinstance(node, _core_systemtypes.Root):
         tabs = "content"
     elif node is user.upload_dir:
         tabs = "upload"
     else:
         tabs = node.get_default_edit_tab()
-        v["notdirectory"] = 0
 
     current = req.values.get("tab", tabs)
     # "_" was used as separator in tab name in early versions,
@@ -767,6 +764,8 @@ def content(req):
     # if current in ["files", "view", "upload"]:
     if current in ["files", "upload"]:
         ids = ids[0:1]
+
+    v = dict()
 
     try:
         v['nodeiconpath'] = getEditorIconPath(node)
@@ -814,6 +813,7 @@ def content(req):
                      )
         v["dircontent"] = ' <b>&raquo;</b> '.join(s)
     else:  # or current directory
+        v["notdirectory"] = 0
         n = q(Data).get(long(ids[0]))
         s = []
         path = (get_accessible_paths(n) or [[]])[0]

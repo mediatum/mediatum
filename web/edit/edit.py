@@ -831,38 +831,30 @@ def content(req):
     if tabs == 'upload' and current == 'content':
         current = 'upload'
 
-    if current in _editModules:
-        c = _editModules[current].getContent(req, ids)
-        if not c:
-            logg.debug('empty content')
-            return
-        if isinstance(c, int):
-            # module returned a custom http status code instead of HTML content
-            return c
-        content["body"] += c
+    c = _editModules[current].getContent(req, ids)
+    if not c:
+        logg.debug('empty content')
+        return
+    if isinstance(c, int):
+        # module returned a custom http status code instead of HTML content
+        return c
+    content["body"] += c
 
-        if "globalsort" in req.values:
-            node.set("sortfield", req.values["globalsort"])
+    if "globalsort" in req.values:
+        node.set("sortfield", req.values["globalsort"])
 
-        v['collection_sortfield'] = req.values.get("sortfield", node.get("sortfield"))
+    v['collection_sortfield'] = req.values.get("sortfield", node.get("sortfield"))
 
-        if not isinstance(node, (_core_systemtypes.Root, Collections, Home)):
-            sortchoices = _sort.get_sort_choices(
-                    container=node,
-                    off="off",
-                    t_off=t(req, "off"),
-                    t_desc=t(req, "descending"),
-                )
-            sortchoices = tuple(sortchoices)
-        else:
-            sortchoices = ()
-    else:
-        content["body"] += _tal.processTAL(
-                dict(module=current),
-                file="web/edit/edit.html",
-                macro="module_error",
-                request=req,
+    if not isinstance(node, (_core_systemtypes.Root, Collections, Home)):
+        sortchoices = _sort.get_sort_choices(
+                container=node,
+                off="off",
+                t_off=t(req, "off"),
+                t_desc=t(req, "descending"),
             )
+        sortchoices = tuple(sortchoices)
+    else:
+        sortchoices = ()
 
     if req.values.get("style") == "popup":  # normal page with header
         return

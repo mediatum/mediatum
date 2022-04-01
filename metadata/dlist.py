@@ -4,7 +4,10 @@
 from __future__ import division
 from __future__ import print_function
 
+import contextlib as _contextlib
+import itertools as _itertools
 import logging
+import operator as _operator
 import urllib2
 import json
 
@@ -21,6 +24,42 @@ from core.systemtypes import Root
 q = db.query
 
 logg = logging.getLogger(__name__)
+
+
+def _download_list(url, format_, key_attr, key_value, display_format):
+    """
+    Download the list from the `url`.
+    `format_` may be "json" or "list".
+    "json" assumes a list of dicts:
+    From each dict, the elements with names `key_attr`
+    and `_key_value` will be extracted ando
+    injected into the string `display_format` in
+    those places where the respective keys are.
+    "list" format will just drop comments,
+    and try to split at ";".
+    Results are yielded as individual dicts with
+    `select_text` and `select_value` keys.
+    """
+    with _contextlib.closing(urllib2.urlopen(url)) as data:
+        if format_=="list":
+            for item in data:
+                item = item.rstrip("\n")
+                if item.startswith("#"):
+                    continue
+                if ";" in item:
+                    text, value = item.split(";", maxsplit=1)
+                else:
+                    text = value = item
+                yield dict(select_text=text, select_value=value)
+            return
+        assert format_=="json"
+        data = json.load(data)
+    data.sort(key=_operator.itemgetter(key_attr))
+    for item in data:
+        yield dict(
+                select_text=display_format.replace(key_attr, item[key_attr]).replace(key_value, item[key_value]),
+                select_value=item[key_value],
+               )
 
 
 class m_dlist(Metatype):
@@ -40,7 +79,10 @@ class m_dlist(Metatype):
 
         value = value.split(";")
 
-        for val in field.getValueList():
+        fielddef = field.getValues().split("\r\n")  # url(source), type, name variable, value variable
+        while len(fielddef) < 5:
+            fielddef.append("")
+        for val in _itertools.imap(_operator.itemgetter("select_value"), _download_list(*fielddef[:5])):
             indent = 0
             canbeselected = 0
             while val.startswith("*"):
@@ -81,34 +123,14 @@ class m_dlist(Metatype):
 
     def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None, required=None):
         fielddef = field.getValues().split("\r\n")  # url(source), type, name variable, value variable
-        if name == "":
-            name = field.getName()
         while len(fielddef) < 5:
             fielddef.append("")
-
         valuelist = []
         with suppress(ValueError, warn=False):
-            # enables the field to be added without fields filled in without throwing an exception
-            if fielddef[1] == 'json':
-                opener = urllib2.build_opener()
-                f = opener.open(urllib2.Request(fielddef[0], None, {}))
-                data = json.load(f)
-                data.sort(lambda x, y: cmp(x[fielddef[2]], y[fielddef[2]]))
-                for item in data:
-                    valuelist.append({'select_text': fielddef[4].replace(fielddef[2], item[fielddef[2]]).replace(
-                        fielddef[3], item[fielddef[3]]), 'select_value': item[fielddef[3]]})
-                f.close()
-            elif fielddef[1] == 'list':
-                opener = urllib2.build_opener()
-                f = opener.open(urllib2.Request(fielddef[0], None, {}))
-                for item in f.read().split("\n"):
-                    if not item.startswith("#"):
-                        if ";" in item:
-                            _v, _t = item.split(";")
-                        else:
-                            _v = _t = item
-                        valuelist.append({'select_text': _t.strip(), 'select_value': _v.strip()})
-                f.close()
+            valuelist = list(_download_list(*fielddef[:5]))
+
+        if name == "":
+            name = field.getName()
         return tal.getTAL("metadata/dlist.html", {"lock": lock,
                                                   "name": name,
                                                   "width": width,

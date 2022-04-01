@@ -7,8 +7,11 @@ from __future__ import print_function
 import logging
 import os.path
 import codecs
+
 from werkzeug.datastructures import ImmutableMultiDict
 from mediatumtal import tal
+
+import metadata.ilist as _ilist
 from core import Node, db
 from utils.utils import esc
 from core.metatype import Metatype, Context
@@ -27,7 +30,7 @@ class m_mlist(Metatype):
         try:
             if n is not None:
                 field_name = field.getName()
-                id_attr_val = n.all_children_by_query(q(Node.id, Node.a[field_name]).filter(Node.a[field_name] != None and Node.a[field_name] != '').distinct(Node.a[field_name]))
+                id_attr_val = _ilist.count_list_values_for_all_content_children(n.id, field_name)
                 items = {pair[0]: pair[1] for pair in id_attr_val}
         except:
             None

@@ -9,6 +9,8 @@ import urllib2
 import json
 
 from mediatumtal import tal
+
+import metadata.ilist as _ilist
 from utils.utils import esc, suppress
 from core.metatype import Metatype
 from core import Node
@@ -31,7 +33,7 @@ class m_dlist(Metatype):
             if not isinstance(n, Node):
                 raise KeyError
             field_name = field.getName()
-            id_attr_val = n.all_children_by_query(q(Node.id, Node.a[field_name]).filter(Node.a[field_name] != None and Node.a[field_name] != '').distinct(Node.a[field_name]))
+            id_attr_val = _ilist.count_list_values_for_all_content_children(n.id, field_name)
             items = {pair[0]: pair[1] for pair in id_attr_val}
         except KeyError:
             None

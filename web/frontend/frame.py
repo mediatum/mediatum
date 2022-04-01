@@ -152,7 +152,6 @@ class Searchlet(object):
             searchmaskitem_id = self.searchmaskitem_ids[pos]
             searchmaskitem = self.searchmask.children.filter_by(id=searchmaskitem_id).scalar() if searchmaskitem_id else None
             field = searchmaskitem.children.first() if searchmaskitem else None
-            g = None
             if field is None:  # All Metadata
                 # quick&dirty
                 field = getMetadataType("text")

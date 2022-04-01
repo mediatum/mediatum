@@ -829,6 +829,24 @@ def content(req):
     if tabs == 'upload' and current == 'content':
         current = 'upload'
 
+    if "globalsort" in req.values:
+        node.set("sortfield", req.values["globalsort"])
+
+    v['collection_sortfield'] = req.values.get("sortfield", node.get("sortfield"))
+
+    if req.values.get("style") != "popup":
+        if not isinstance(node, (_core_systemtypes.Root, Collections, Home)):
+            sortchoices = tuple(_sort.get_sort_choices(
+                    container=node,
+                    off="off",
+                    t_off=t(req, "off"),
+                    t_desc=t(req, "descending"),
+                ))
+        else:
+            sortchoices = ()
+
+        v["tabs"] = handletabs(req, ids, tabs, sortchoices)
+
     c = _editModules[current].getContent(req, ids)
     if not c:
         logg.debug('empty content')
@@ -837,25 +855,9 @@ def content(req):
         # module returned a custom http status code instead of HTML content
         return c
 
-    if "globalsort" in req.values:
-        node.set("sortfield", req.values["globalsort"])
-
     if req.values.get("style") == "popup":  # normal page with header
         return
 
-    v['collection_sortfield'] = req.values.get("sortfield", node.get("sortfield"))
-
-    if not isinstance(node, (_core_systemtypes.Root, Collections, Home)):
-        sortchoices = tuple(_sort.get_sort_choices(
-                container=node,
-                off="off",
-                t_off=t(req, "off"),
-                t_desc=t(req, "descending"),
-            ))
-    else:
-        sortchoices = ()
-
-    v["tabs"] = handletabs(req, ids, tabs, sortchoices)
     v["script"] = ""
     v["body"] = c
     v["paging"] = showPaging(req, current, ids)

@@ -849,13 +849,12 @@ def content(req):
     v['collection_sortfield'] = req.values.get("sortfield", node.get("sortfield"))
 
     if not isinstance(node, (_core_systemtypes.Root, Collections, Home)):
-        sortchoices = _sort.get_sort_choices(
+        sortchoices = tuple(_sort.get_sort_choices(
                 container=node,
                 off="off",
                 t_off=t(req, "off"),
                 t_desc=t(req, "descending"),
-            )
-        sortchoices = tuple(sortchoices)
+            ))
     else:
         sortchoices = ()
 

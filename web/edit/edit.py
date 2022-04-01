@@ -858,21 +858,23 @@ def content(req):
     if req.values.get("style") == "popup":  # normal page with header
         return
 
-    v["script"] = ""
-    v["body"] = c
-    v["paging"] = showPaging(req, current, ids)
-    v["node"] = node
-    v["ids"] = (req.values.get("ids") or req.values.get("id", "")).split(",")
-    v["tab"] = current
-    v["operations"] = _tal.processTAL(
-            dict(iscontainer=node.isContainer()),
-            file="web/edit/edit_common.html",
-            macro="show_operations",
-            request=req,
-        )
-    v['user'] = user
-    v['language'] = lang(req)
-    v['t'] = t
+    v.update(
+            script="",
+            body=c,
+            paging=showPaging(req, current, ids),
+            node=node,
+            ids=(req.values.get("ids") or req.values.get("id", "")).split(","),
+            tab=current,
+            operations=_tal.processTAL(
+                 dict(iscontainer=node.isContainer()),
+                 file="web/edit/edit_common.html",
+                 macro="show_operations",
+                 request=req,
+             ),
+            user=user,
+            language=lang(req),
+            t=t,
+           )
 
     # add icons to breadcrumbs
     ipath = 'webtree/directory.gif'

@@ -843,6 +843,9 @@ def content(req):
     if "globalsort" in req.values:
         node.set("sortfield", req.values["globalsort"])
 
+    if req.values.get("style") == "popup":  # normal page with header
+        return
+
     v['collection_sortfield'] = req.values.get("sortfield", node.get("sortfield"))
 
     if not isinstance(node, (_core_systemtypes.Root, Collections, Home)):
@@ -855,9 +858,6 @@ def content(req):
         sortchoices = tuple(sortchoices)
     else:
         sortchoices = ()
-
-    if req.values.get("style") == "popup":  # normal page with header
-        return
 
     v["tabs"] = handletabs(req, ids, tabs, sortchoices)
     v["script"] = content["script"]

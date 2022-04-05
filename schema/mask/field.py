@@ -27,10 +27,8 @@ class m_field(Metatype):
 
     def set_default_metadata(self, maskitem, node):
         """
-        create/set metadata of a document if the value is not set to a default value
-        the default value is normally an empty string except the fieldtype has an attribute
-        "formatValues" (fieldtypes: list, mlist, dlist) an defines an option list. In this case the first listelement is
-        used as default value
+        create/set metadata of a document if the value is not set to a default value;
+        the default value is obtained from the field type class' method `get_default_value`.
         :param maskitem: field of mask defining metadata
         :param node: document
         :return: None
@@ -39,13 +37,9 @@ class m_field(Metatype):
         key = metafield.getName()
         if node.get_special(key) or maskitem.getDefault():
             return
-        metatype = getMetadataType(metafield.get("type"))
-        if not hasattr(metatype, "formatValues"):
-            node.set(key, "")
-            return
-        valuelist = next(metatype.formatValues(None, metafield, ""))
-        if valuelist[0] in ('option', 'optionselected'):
-            node.set(key, valuelist[2])
+        value = getMetadataType(metafield.get("type")).get_default_value(element)
+        if value is not None:
+            node.set(key, value)
 
 
     def getFormHTML(self, field, nodes, req, sub=False):

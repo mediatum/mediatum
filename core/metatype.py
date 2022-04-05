@@ -27,6 +27,9 @@ class Metatype(object):
         # just fetch the unmodified alue from the params dict
         return params.get(item)
 
+    def get_default_value(self, field):
+        return ""
+
     def get_metafieldeditor_html(self, field, metadatatype, language):
         pass
 

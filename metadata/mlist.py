@@ -26,6 +26,11 @@ class m_mlist(Metatype):
 
     name = "mlist"
 
+    def get_default_value(self, field):
+        valuelist = next(self.formatValues(None, field, ""))
+        if valuelist[0] in ("option", "optionselected"):
+            return valuelist[2]
+
     def formatValues(self, n, field, value):
         items = dict()
         with _utils.suppress(KeyError, warn=False):

@@ -333,7 +333,7 @@ def import_csl(record, target=None, name=None, testing=False):
     # this will be done in the same manner as if the document is loaded in editor and saved without
     # any changes (required fields are not considered)
     editmask = metatype.get_mask(u"editmask")
-    if editmask and hasattr(editmask, 'set_default_metadata'):
+    if editmask:
         editmask.set_default_metadata(node)
 
     return node

@@ -5,9 +5,9 @@
 <tal:block metal:define-macro="editorfield">
     <select class="mediatum_multitext" tal:attributes="disabled python:{0:None,1:'disabled'}[int(lock)]; style python:u'width:{}px'.format(width-16); name python: name; id python: name; required required" multiple="multiple">
         <tal:block tal:repeat="v valuelist">
-            <option tal:condition="python:v[0]=='optionselected'" tal:attributes="value python:v[2]" tal:content="raw python:v[1]+v[2]+v[3]" selected="selected"/>
-            <option tal:condition="python:v[0]=='option'" tal:attributes="value python:v[2]" tal:content="raw python:v[1]+v[2]+v[3]"/>
-            <optgroup tal:condition="python:v[0]=='optgroup'" tal:replace="raw python:v[1]"/>
+            <option tal:condition="python:v.opt=='optionselected'" tal:attributes="value python:v.item" tal:content="raw python:v.indent+v.item+v.count" selected="selected"/>
+            <option tal:condition="python:v.opt=='option'" tal:attributes="value python:v.item" tal:content="raw python:v.indent+v.item+v.count"/>
+            <optgroup tal:condition="python:v.opt=='optgroup'" tal:replace="raw python:v.indent"/>
         </tal:block>
     </select>
     <tal:block tal:condition="python:lock!=0" tal:attributes="id python:u'lockspan_{}'.format(name)">&nbsp;
@@ -19,9 +19,9 @@
 
 <select metal:define-macro="searchfield" tal:attributes="name python:name; id python:name" class="searchfield">
     <tal:block tal:repeat="v valuelist">
-        <option tal:condition="python:v[0]=='optionselected' and v[2] in value.split(';') and value!=''" tal:attributes="value python:v[2]" tal:content="raw python:v[1]+v[2]+v[3]" selected="selected"/>
-        <option tal:condition="python:v[0]=='option' and v[2] not in (value.split(';') or value=='')" tal:attributes="value python:v[2]" tal:content="raw python:v[1]+v[2]+v[3]"/>
-        <optgroup tal:condition="python:v[0]=='optgroup'" tal:replace="raw python:v[1]"/>
+        <option tal:condition="python:v.opt=='optionselected' and v.item in value.split(';') and value!=''" tal:attributes="value python:v.item" tal:content="raw python:v.indent+v.item+v.count" selected="selected"/>
+        <option tal:condition="python:v.opt=='option' and v.item not in (value.split(';') or value=='')" tal:attributes="value python:v.item" tal:content="raw python:v.indent+v.item+v.count"/>
+        <optgroup tal:condition="python:v.opt=='optgroup'" tal:replace="raw python:v.indent"/>
     </tal:block>
 </select>
 

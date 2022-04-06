@@ -13,7 +13,6 @@ import json
 
 from mediatumtal import tal
 
-import metadata.ilist as _ilist
 import utils.utils as _utils
 from utils.utils import esc, suppress
 from core.metatype import Metatype
@@ -21,6 +20,7 @@ from core import Node
 from core import db
 from contenttypes import Home, Collections
 from core.systemtypes import Root
+import metadata.common_list as _common_list
 
 q = db.query
 
@@ -63,47 +63,26 @@ def _download_list(url, format_, key_attr, key_value, display_format):
                )
 
 
+def _format_elements(node, field, value):
+    fielddef = field.getValues().split("\r\n")  # url(source), type, name variable, value variable
+    while len(fielddef) < 5:
+        fielddef.append("")
+    return _common_list.format_elements(
+        _itertools.imap(_operator.itemgetter("select_value"), _download_list(*fielddef[:5])),
+        field,
+        value.split(";"),
+        node,
+       )
+
+
 class m_dlist(Metatype):
 
     name = "dlist"
 
     def get_default_value(self, field):
-        valuelist = next(self.formatValues(None, field, ""))
-        if valuelist[0] in ("option", "optionselected"):
-            return valuelist[2]
-
-    def formatValues(self, n, field, value):
-        items = dict()
-        with _utils.suppress(KeyError, warn=False):
-            if not isinstance(n, Node):
-                raise KeyError
-            field_name = field.getName()
-            items = dict(_ilist.count_list_values_for_all_content_children(n.id, field_name))
-
-        value = value.split(";")
-
-        fielddef = field.getValues().split("\r\n")  # url(source), type, name variable, value variable
-        while len(fielddef) < 5:
-            fielddef.append("")
-        for val in _itertools.imap(_operator.itemgetter("select_value"), _download_list(*fielddef[:5])):
-            indent = len(val)-len(val.lstrip("*"))
-            indentstr = 2 * max(0, indent-1) * "&nbsp;"
-            val = val.lstrip("*")
-            selectable = (not indent) or val.startswith(" ")
-            val = esc(val.strip())
-
-            num = int(items.get(val, 0))
-            if num<0:
-                logg.error("num<0, using empty string")
-            else:
-                num = u" ({})".format(unicode(num)) if num else u""
-
-            if not selectable:
-                yield ("optgroup", '<optgroup label="{}{}">'.format(indentstr,val), "", "")
-            elif val in value:
-                yield ("optionselected", indentstr, val, num)
-            else:
-                yield ("option", indentstr, val, num)
+        element = next(_format_elements(None, field, ""))
+        if element.opt in ("option", "optionselected"):
+            return element.item
 
     def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None, required=None):
         fielddef = field.getValues().split("\r\n")  # url(source), type, name variable, value variable
@@ -132,7 +111,7 @@ class m_dlist(Metatype):
                           dict(
                               name=name,
                               value=value,
-                              valuelist=self.formatValues(collection, field, value),
+                              valuelist=_format_elements(collection, field, value),
                           ),
                           macro="searchfield",
                           language=language)

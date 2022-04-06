@@ -6,17 +6,17 @@
     <tal:block tal:condition="python:not multiple">
         <select class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[int(lock)]; style python:u'width:{}px'.format(width-16); name python:name; id python:name;">
             <tal:block tal:repeat="v valuelist">
-                <option tal:condition="python:v[0] in ['optionselected','option']" tal:attributes="value python:v[2]; selected python:'selected' if v[0]=='optionselected' else None" tal:content="raw python:v[1]+v[2]+v[3]"/>
-                <optgroup tal:condition="python:v[0]=='optgroup'" tal:replace="raw python:v[1]"/>
+                <option tal:condition="python:v.opt in ['optionselected','option']" tal:attributes="value python:v.item; selected python:'selected' if v.opt=='optionselected' else None" tal:content="raw python:v.indent+v.item+v.count"/>
+                <optgroup tal:condition="python:v.opt=='optgroup'" tal:replace="raw python:v.indent"/>
             </tal:block>
         </select>
     </tal:block>
     <tal:block tal:condition="python:multiple">
         <select class="mediatum_multitext" tal:attributes="disabled python:{0:None,1:'disabled'}[int(lock)]; style python:u'width:{}px'.format(width-16); name python: name; id python: name; required required" multiple="multiple">
             <tal:block tal:repeat="v valuelist">
-                <option tal:condition="python:v[0]=='optionselected'" tal:attributes="value python:v[2]" tal:content="raw python:v[1]+v[2]+v[3]" selected="selected"/>
-                <option tal:condition="python:v[0]=='option'" tal:attributes="value python:v[2]" tal:content="raw python:v[1]+v[2]+v[3]"/>
-                <optgroup tal:condition="python:v[0]=='optgroup'" tal:replace="raw python:v[1]"/>
+                <option tal:condition="python:v.opt=='optionselected'" tal:attributes="value python:v.item" tal:content="raw python:v.indent+v.item+v.count" selected="selected"/>
+                <option tal:condition="python:v.opt=='option'" tal:attributes="value python:v.item" tal:content="raw python:v.indent+v.item+v.count"/>
+                <optgroup tal:condition="python:v.opt=='optgroup'" tal:replace="raw python:v.indent"/>
             </tal:block>
         </select>
     </tal:block>
@@ -29,8 +29,8 @@
 
 <select metal:define-macro="searchfield" tal:attributes="name python:name; id python:name;" class="searchfield">
     <tal:block tal:repeat="v valuelist">
-       <option tal:condition="python:v[0]!='optgroup'" tal:attributes="value python:v[2]; selected python:'selected' if value==v[2] else None" tal:content="raw python:v[1]+v[2]+v[3]"/>
-       <optgroup tal:condition="python:v[0]=='optgroup'" tal:replace="raw python:v[1]"/>
+       <option tal:condition="python:v.opt!='optgroup'" tal:attributes="value python:v.item; selected python:'selected' if value==v.item else None" tal:content="raw python:v.indent+v.item+v.count"/>
+       <optgroup tal:condition="python:v.opt=='optgroup'" tal:replace="raw python:v.indent"/>
     </tal:block>
 </select>
 

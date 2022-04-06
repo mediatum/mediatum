@@ -25,17 +25,10 @@ from contenttypes import Collections
 from web.edit.modules.manageindex import getAllAttributeValues
 from core.database.postgres import mediatumfunc
 from core.database.postgres.alchemyext import exec_sqlfunc
+import metadata.common_list as _common_list
 
 q = db.query
 logg = logging.getLogger(__name__)
-
-
-@_backports_functools_lru_cache.lru_cache(maxsize=16)
-def count_list_values_for_all_content_children(collection_id, attribute_name):
-    func_call = mediatumfunc.count_list_values_for_all_content_children(collection_id, attribute_name)
-    stmt = sql.select([sql.text("*")], from_obj=func_call)
-    res = db.session.execute(stmt)
-    return map(_operator.itemgetter(0,1), res.fetchall())
 
 
 def _get_list_values_for_nodes_with_schema(schema, attribute_name):
@@ -70,8 +63,8 @@ class m_ilist(Metatype):
     def getSearchHTML(self, collection, field, language, name, value):
         # `value_and_count` contains a list of options,
         # each option is represented by a tuple of its name and its count.
-        value_and_count = count_list_values_for_all_content_children(collection.id,
-                                                                     field.getName())
+        value_and_count = _common_list.count_list_values_for_all_content_children(collection.id,
+                                                                                  field.getName())
 
         # We build three iterators here:
         # `value` contains all option names, properly escaped for HTML.

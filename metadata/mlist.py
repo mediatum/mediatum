@@ -11,55 +11,30 @@ import codecs
 from werkzeug.datastructures import ImmutableMultiDict
 from mediatumtal import tal
 
-import metadata.ilist as _ilist
 from core import Node, db
 import utils.utils as _utils
 from utils.utils import esc
 from core.metatype import Metatype
+import metadata.common_list as _common_list
 
 
 logg = logging.getLogger(__name__)
 
 q = db.query
 
+
+def _format_elements(field, *args):
+    return _common_list.format_elements(field.getValueList(), field, *args)
+
+
 class m_mlist(Metatype):
 
     name = "mlist"
 
     def get_default_value(self, field):
-        valuelist = next(self.formatValues(None, field, ""))
-        if valuelist[0] in ("option", "optionselected"):
-            return valuelist[2]
-
-    def formatValues(self, n, field, value):
-        items = dict()
-        with _utils.suppress(KeyError, warn=False):
-            if not isinstance(n, Node):
-                raise KeyError
-            field_name = field.getName()
-            items = dict(_ilist.count_list_values_for_all_content_children(n.id, field_name))
-
-        value = value.split(";")
-
-        for val in field.getValueList():
-            indent = len(val)-len(val.lstrip("*"))
-            indentstr = 2 * max(0, indent-1) * "&nbsp;"
-            val = val.lstrip("*")
-            selectable = (not indent) or val.startswith(" ")
-            val = esc(val.strip())
-
-            num = int(items.get(val, 0))
-            if num<0:
-                logg.error("num<0, using empty string")
-            else:
-                num = u" ({})".format(unicode(num)) if num else u""
-
-            if not selectable:
-                yield ("optgroup", '<optgroup label="{}{}">'.format(indentstr,val), "", "")
-            elif val in value:
-                yield ("optionselected", indentstr, val, num)
-            else:
-                yield ("option", indentstr, val, num)
+        valuelist = next(_format_elements(field))
+        if valuelist.opt in ("option", "optionselected"):
+            return valuelist.item
 
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
         return tal.getTAL("metadata/mlist.html",
@@ -67,7 +42,7 @@ class m_mlist(Metatype):
                               lock=lock,
                               name=field.getName(),
                               required=1 if required else None,
-                              valuelist=self.formatValues(None, field, value),
+                              valuelist=_format_elements(field, value.split(";")),
                               width=width,
                           ),
                           macro="editorfield",
@@ -78,7 +53,7 @@ class m_mlist(Metatype):
                           dict(
                               name=name,
                               value=value,
-                              valuelist=self.formatValues(collection, field, value),
+                              valuelist=_format_elements(field, value, collection),
                           ),
                           macro="searchfield",
                           language=language)

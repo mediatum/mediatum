@@ -279,7 +279,7 @@ class m_field(Metatype):
         else:
             for pidnode in item.getParents():
                 with _utils_utils.suppress(Exception,warn=False):
-                    if p.getMasktype() == "export":
+                    if pidnode.getMasktype() == "export":
                         break
             else:
                 pidnode = None
@@ -313,6 +313,9 @@ class m_field(Metatype):
 
         if pidnode and hasattr(pidnode, 'getMasktype') and pidnode.getMasktype() == "export":
             tal_ctx["mappings"] = tuple(q(Node).get(mapping) for mapping in pidnode.getExportMapping())
+            if tal_ctx["op"] == "edit":
+                assert tal_ctx.get("field") is None # export masks may not have their field as child
+                tal_ctx["field"] = q(Node).get(int(item.get('attribute')))
             return _tal.processTAL(tal_ctx, file="schema/mask/field.html", macro="metaeditor_export", request=req)
         else:
             return _tal.processTAL(tal_ctx, file="schema/mask/field.html", macro="metaeditor", request=req)

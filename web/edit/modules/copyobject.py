@@ -27,7 +27,10 @@ from core import db as _db
 _q = _db.query
 
 def getContent(req, ids):
-
     _node = _q(_Data).get(long(ids[0]))
-
-    return _tal.process({'id': _node.id, 'action': 'copy'}, file="web/edit/modules/movecopyobject.html", macro="view_node", request=req)
+    return _tal.processTAL(
+            dict(nodeid=_node.id, srcnodeid=req.values.get("srcnodeid", ""), action='copy'),
+            file="web/edit/modules/movecopyobject.html",
+            macro="view_node",
+            request=req,
+        )

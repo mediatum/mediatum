@@ -50,15 +50,19 @@ class m_ilist(Metatype):
     name = "ilist"
 
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
-        return tal.getTAL("metadata/ilist.html", {"lock": lock,
-                                                  "value": value,
-                                                  "width": width,
-                                                  "name": field.getName(),
-                                                  "field": field,
-                                                  "required": 1 if required else None,
-                                                  },
-                          macro="editorfield",
-                          language=language)
+        return tal.getTAL(
+                "metadata/ilist.html",
+                dict(
+                    lock=lock,
+                    value=value,
+                    width=width,
+                    name=field.getName(),
+                    field=field,
+                    required=1 if required else None,
+                   ),
+                macro="editorfield",
+                language=language,
+               )
 
     def getSearchHTML(self, collection, field, language, name, value):
         # `value_and_count` contains a list of options,
@@ -92,7 +96,10 @@ class m_ilist(Metatype):
 
         return tal.getTAL(
                 "metadata/ilist.html",
-                dict(name=name, option_list=option_list),
+                dict(
+                    name=name,
+                    option_list=option_list,
+                   ),
                 macro="searchfield",
                 language=language,
                )
@@ -133,7 +140,18 @@ class m_ilist(Metatype):
 
         option_list = _itertools.imap(_html.escape, index)
         option_list = u"".join(_itertools.imap(u"<option value=\"{0}\">{0}</option>\n".format, option_list))
-        req.response.set_data(tal.processTAL({"option_list": option_list, "fieldname": fieldname, "schema": schema}, file="metadata/ilist.html", macro="popup", request=req))
+        req.response.set_data(
+                tal.processTAL(
+                    dict(
+                        option_list=option_list,
+                        fieldname=fieldname,
+                        schema=schema,
+                       ),
+                    file="metadata/ilist.html",
+                    macro="popup",
+                    request=req,
+                   )
+               )
         return httpstatus.HTTP_OK
 
     translation_labels = dict(

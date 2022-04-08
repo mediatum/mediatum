@@ -94,27 +94,33 @@ class m_dlist(Metatype):
 
         if name == "":
             name = field.getName()
-        return tal.getTAL("metadata/dlist.html", {"lock": lock,
-                                                  "name": name,
-                                                  "width": width,
-                                                  "value": value,
-                                                  "valuelist": valuelist,
-                                                  "fielddef": fielddef,
-                                                  "required": 1 if required else None,
-                                                  },
-                          macro="editorfield",
-                          language=language)
+        return tal.getTAL(
+                "metadata/dlist.html",
+                dict(
+                    lock=lock,
+                    name=name,
+                    width=width,
+                    value=value,
+                    valuelist=valuelist,
+                    fielddef=fielddef,
+                    required=1 if required else None,
+                  ),
+                macro="editorfield",
+                language=language,
+               )
 
 
     def getSearchHTML(self, collection, field, language, name, value):
-        return tal.getTAL("metadata/dlist.html",
-                          dict(
-                              name=name,
-                              value=value,
-                              valuelist=_format_elements(collection, field, value),
-                          ),
-                          macro="searchfield",
-                          language=language)
+        return tal.getTAL(
+                "metadata/dlist.html",
+                dict(
+                    name=name,
+                    value=value,
+                    valuelist=_format_elements(collection, field, value),
+                   ),
+                macro="searchfield",
+                language=language,
+               )
 
     def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
         value = node.get(metafield.getName())
@@ -126,10 +132,15 @@ class m_dlist(Metatype):
         value = field.getValues().split("\r\n")
         value.extend(("",)*5)
         value = value[:5] # url(source), name variable, value variable
-        return tal.getTAL("metadata/dlist.html", {"value": value,
-                                                  "types": ['json', 'list']},
-                          macro="metafieldeditor",
-                          language=language)
+        return tal.getTAL(
+                "metadata/dlist.html",
+                dict(
+                    value=value,
+                    types=['json', 'list'],
+                   ),
+                macro="metafieldeditor",
+                language=language,
+               )
 
 
     translation_labels = dict(

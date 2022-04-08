@@ -27,11 +27,17 @@ class m_hlist(Metatype):
         values.extend(("",)*3)
         values = values[:3]
         return tal.getTAL(
-            "metadata/hlist.html",
-            {"value": dict(parentnode=values[0], attrname=values[1], onlylast=values[2])},
-            macro="metafieldeditor",
-            language=language,
-        )
+                "metadata/hlist.html",
+                dict(
+                    value=dict(
+                        parentnode=values[0],
+                        attrname=values[1],
+                        onlylast=values[2],
+                       ),
+                   ),
+                macro="metafieldeditor",
+                language=language,
+               )
 
     def getEditorHTML(self, field, value="", width=40, lock=0, language=None, required=None):
         try:
@@ -41,21 +47,21 @@ class m_hlist(Metatype):
         while len(values) < 3:
             values.append(u'')
         return tal.getTAL(
-            "metadata/hlist.html",
-            {
-                "lock": lock,
-                "startnode": values[0],
-                "attrname": values[1],
-                "onlylast": values[2],
-                "value": value,
-                "width": width,
-                "name": field.getName(),
-                "field": field,
-                "required": 1 if required else None,
-            },
-            macro="editorfield",
-            language=language,
-        )
+                "metadata/hlist.html",
+                dict(
+                    lock=lock,
+                    startnode=values[0],
+                    attrname=values[1],
+                    onlylast=values[2],
+                    value=value,
+                    width=width,
+                    name=field.getName(),
+                    field=field,
+                    required=1 if required else None,
+                   ),
+                macro="editorfield",
+                language=language,
+               )
 
     def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
         value = []

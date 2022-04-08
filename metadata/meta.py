@@ -17,18 +17,26 @@ class m_meta(Metatype):
     name = "meta"
 
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
-        return tal.getTAL("metadata/meta.html", {"lock": lock,
-                                                 "value": value,
-                                                 "width": width,
-                                                 "name": field.getName(),
-                                                 "field": field},
-                          macro="editorfield",
-                          language=language)
+        return tal.getTAL(
+                "metadata/meta.html",
+                dict(
+                    lock=lock,
+                    value=value,
+                    width=width,
+                    name=field.getName(),
+                    field=field,
+                   ),
+                macro="editorfield",
+                language=language,
+               )
 
     def getSearchHTML(self, collection, field, language, name, value):
         return tal.getTAL(
                 "metadata/meta.html",
-                dict(name=name, value=value),
+                dict(
+                    name=name,
+                    value=value,
+                    ),
                 macro="searchfield",
                 language=language,
                )
@@ -53,7 +61,15 @@ class m_meta(Metatype):
                     logg.exception("attribute error in get_metafieldeditor_html, continue")
                     continue
 
-        return tal.getTAL("metadata/meta.html", {"value": value, "t_attrs": attr}, macro="metafieldeditor", language=language)
+        return tal.getTAL(
+                "metadata/meta.html",
+                dict(
+                    value=value,
+                    t_attrs=attr,
+                   ),
+                macro="metafieldeditor",
+                language=language,
+               )
 
 
     translation_labels = dict(

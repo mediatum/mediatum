@@ -28,19 +28,23 @@ class m_date(Metatype):
             value = date.format_date(date.now(), d.value)
         with suppress(Exception, warn=False):
             value = date.format_date(date.parse_date(value), d.value)
-        return tal.getTAL("metadata/date.html", {"lock": lock,
-                                                 "value": value,
-                                                 "width": width,
-                                                 "name": field.getName(),
-                                                 "field": field,
-                                                 "pattern": {date.shortname: date.validation_regex
-                                                             for date in dateoption}[field.getValues()],
-                                                 "title": field.getValues(),
-                                                 "placeholder": field.getValues(),
-                                                 "required": 1 if required else None,
-                                                 },
-                          macro="editorfield",
-                          language=language)
+        return tal.getTAL(
+                "metadata/date.html",
+                dict(
+                    lock=lock,
+                    value=value,
+                    width=width,
+                    name=field.getName(),
+                    field=field,
+                    pattern={date.shortname: date.validation_regex
+                                 for date in dateoption}[field.getValues()],
+                    title=field.getValues(),
+                    placeholder=field.getValues(),
+                    required=1 if required else None,
+                   ),
+                macro="editorfield",
+                language=language,
+               )
 
     def getSearchHTML(self, collection, field, language, name, value):
         value = value.split(";")
@@ -48,7 +52,11 @@ class m_date(Metatype):
             value.append('')
         return tal.getTAL(
                 "metadata/date.html",
-                dict(field=field, name=name, value=value),
+                dict(
+                    field=field,
+                    name=name,
+                    value=value,
+                   ),
                 macro="searchfield",
                 language=language,
                )
@@ -101,11 +109,14 @@ class m_date(Metatype):
 
     def get_metafieldeditor_html(self, field, metadatatype, language):
         return tal.getTAL(
-            "metadata/date.html",
-            dict(value=field.getValues(), dateoption=dateoption),
-            macro="metafieldeditor",
-            language=language,
-        )
+                "metadata/date.html",
+                dict(
+                    value=field.getValues(),
+                    dateoption=dateoption,
+                   ),
+                macro="metafieldeditor",
+                language=language,
+               )
 
 
     translation_labels = dict(

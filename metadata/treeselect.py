@@ -24,20 +24,27 @@ class m_treeselect(Metatype):
     name = "treeselect"
 
     def getEditorHTML(self, metafield, value="", width=40, lock=0, language=None, required=None):
-        return tal.getTAL("metadata/treeselect.html", {"lock": lock,
-                                                       "value": value,
-                                                       "width": width,
-                                                       "name": metafield.getName(),
-                                                       "metafield": metafield,
-                                                       "required": 1 if required else None,
-                                                       },
-                          macro="editorfield",
-                          language=language)
+        return tal.getTAL(
+                "metadata/treeselect.html",
+                dict(
+                    lock=lock,
+                    value=value,
+                    width=width,
+                    name=metafield.getName(),
+                    metafield=metafield,
+                    required=1 if required else None,
+                   ),
+                macro="editorfield",
+                language=language,
+               )
 
     def getSearchHTML(self, collection, field, language, name, value):
         return tal.getTAL(
                 "metadata/treeselect.html",
-                dict(name=name, value=value),
+                dict(
+                    name=name,
+                    value=value,
+                   ),
                 macro="searchfield",
                 language=language,
                )

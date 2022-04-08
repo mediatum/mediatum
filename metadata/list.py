@@ -34,28 +34,32 @@ class m_list(Metatype):
             return valuelist.item
 
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
-        return tal.getTAL("metadata/list.html",
-                          dict(
-                              field=field,
-                              lock=lock,
-                              multiple=field.get('multiple'),
-                              name=field.getName(),
-                              required=1 if required else None,
-                              valuelist=_format_elements(field, value.split(";")),
-                              width=width,
-                          ),
-                          macro="editorfield",
-                          language=language)
+        return tal.getTAL(
+                "metadata/list.html",
+                dict(
+                    field=field,
+                    lock=lock,
+                    multiple=field.get('multiple'),
+                    name=field.getName(),
+                    required=1 if required else None,
+                    valuelist=_format_elements(field, value.split(";")),
+                    width=width,
+                  ),
+                macro="editorfield",
+                language=language,
+               )
 
     def getSearchHTML(self, collection, field, language, name, value):
-        return tal.getTAL("metadata/list.html",
-                          dict(
-                              name=name,
-                              value=value,
-                              valuelist=_format_elements(field, value, collection),
-                          ),
-                          macro="searchfield",
-                          language=language)
+        return tal.getTAL(
+                "metadata/list.html",
+                dict(
+                    name=name,
+                    value=value,
+                    valuelist=_format_elements(field, value, collection),
+                   ),
+                macro="searchfield",
+                language=language,
+               )
 
     def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
         value = node.get(metafield.getName()).replace(";", "; ")
@@ -73,11 +77,14 @@ class m_list(Metatype):
 
     def get_metafieldeditor_html(self, field, metadatatype, language):
         return tal.getTAL(
-            "metadata/list.html",
-            dict(value=field.getValues(), multiple_list=field.get('multiple')),
-            macro="metafieldeditor",
-            language=language,
-        )
+                "metadata/list.html",
+                dict(
+                    value=field.getValues(),
+                    multiple_list=field.get('multiple'),
+                   ),
+                macro="metafieldeditor",
+                language=language,
+               )
 
 
     translation_labels = dict(

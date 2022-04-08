@@ -34,23 +34,29 @@ class m_htmlmemo(Metatype):
         except:
             field_node_name = None
 
-        context = {
-            "lock": lock,
-            "value": value,
-            "width": width,
-            "name": field_node_name,
-            "field": field,
-            "ident": ustr(field.id),
-            "required": 1 if required else None,
-        }
-
-        s = tal.getTAL("metadata/htmlmemo.html", context, macro="editorfield", language=language)
+        s = tal.getTAL(
+                "metadata/htmlmemo.html",
+                dict(
+                    lock=lock,
+                    value=value,
+                    width=width,
+                    name=field_node_name,
+                    field=field,
+                    ident=ustr(field.id),
+                    required=1 if required else None,
+                   ),
+                macro="editorfield",
+                language=language,
+               )
         return s.replace("REPLACE_WITH_IDENT", unicode(field.id))
 
     def getSearchHTML(self, collection, field, language, name, value):
         return tal.getTAL(
                 "metadata/htmlmemo.html",
-                dict(name=name, value=value),
+                dict(
+                    name=name,
+                    value=value,
+                   ),
                 macro="searchfield",
                 language=language,
                )
@@ -60,7 +66,14 @@ class m_htmlmemo(Metatype):
         return (metafield.getLabel(), value)
 
     def get_metafieldeditor_html(self, field, metadatatype, language):
-        return tal.getTAL("metadata/htmlmemo.html", dict(value=field.getValues()), macro="metafieldeditor", language=language)
+        return tal.getTAL(
+                "metadata/htmlmemo.html",
+                dict(
+                    value=field.getValues(),
+                   ),
+                macro="metafieldeditor",
+                language=language,
+               )
 
     def getPopup(self, req):
         assert req.values["type"] == "configfile"

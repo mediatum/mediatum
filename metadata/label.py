@@ -75,26 +75,39 @@ class m_label(Metatype):
                             fields.append(field)
         fields.sort(lambda x, y: cmp(x.getOrderPos(), y.getOrderPos()))
 
-        v = {}
-        v["op"] = req.params.get("op", "")
-        v["pid"] = req.params.get("pid", "")
-        v["item"] = item
-        v["fields"] = fields
-        return tal.processTAL(v, file="metadata/label.html", macro="metaeditor", request=req)
+        return tal.processTAL(
+                dict(
+                    op=req.params.get("op", ""),
+                    pid=req.params.get("pid", ""),
+                    item=item,
+                    fields=fields,
+                   ),
+                file="metadata/label.html",
+                macro="metaeditor",
+                request=req,
+               )
 
     def getEditorHTML(self, field, value="", width=40, lock=0, language=None, required=None):
-        return tal.getTAL("metadata/label.html", {"lock": lock,
-                                                  "value": value,
-                                                  "width": width,
-                                                  "name": field.getName(),
-                                                  "field": field},
-                          macro="editorfield",
-                          language=language)
+        return tal.getTAL(
+                "metadata/label.html",
+                dict(
+                    lock=lock,
+                    value=value,
+                    width=width,
+                    name=field.getName(),
+                    field=field,
+                   ),
+                macro="editorfield",
+                language=language,
+               )
 
     def getSearchHTML(self, collection, field, language, name, value):
         return tal.getTAL(
                 "metadata/label.html",
-                dict(name=name, value=value),
+                dict(
+                    name=name,
+                    value=value,
+                   ),
                 macro="searchfield",
                 language=language,
                )

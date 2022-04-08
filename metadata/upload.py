@@ -34,10 +34,27 @@ logg = logging.getLogger(__name__)
 
 def mkfilelist(targetnode, files, deletebutton=0, language=None, request=None, macro="m_upload_filelist"):
     if request:
-        return tal.processTAL({"files": files, "node": targetnode, "delbutton": deletebutton}, file="metadata/upload.html", macro=macro, request=request)
+        return tal.processTAL(
+                dict(
+                    files=files,
+                    node=targetnode,
+                    delbutton=deletebutton,
+                   ),
+                file="metadata/upload.html",
+                macro=macro,
+                request=request,
+               )
     else:
         return tal.getTAL(
-            "metadata/upload.html", {"files": files, "node": targetnode, "delbutton": deletebutton}, macro=macro, language=language)
+                "metadata/upload.html",
+                dict(
+                    files=files,
+                    node=targetnode,
+                    delbutton=deletebutton,
+                   ),
+                macro=macro,
+                language=language,
+               )
 
 
 def getFilelist(node, fieldname=None):
@@ -83,25 +100,28 @@ class m_upload(Metatype):
             logg.exception("exception in getEditorHTML, using default language")
             warning = self.translation_labels[_core_config.languages[0]]['upload_notarget_warning']
 
-        context = {
-            "lock": lock,
-            "value": value,
-            "width": width,
-            "name": field.getName(),
-            "field": field,
-            "language": language,
-            "warning": warning,
-            "system_lock": 0,
-            "required": 1 if required else None,
-        }
+        context = dict(
+            lock=lock,
+            value=value,
+            width=width,
+            name=field.getName(),
+            field=field,
+            language=language,
+            warning=warning,
+            system_lock=1 if lock else 0,
+            required=1 if required else None,
+        )
 
-        if lock:
-            context['system_lock'] = 1
         with suppress(Exception, warn=False):
             if field.get("system.lock"):
                 context['system_lock'] = 1
 
-        s = tal.getTAL("metadata/upload.html", context, macro="editorfield", language=language)
+        s = tal.getTAL(
+                "metadata/upload.html",
+                context,
+                macro="editorfield",
+                language=language,
+               )
         if field.getName():
             s = s.replace("____FIELDNAME____", "%s" % field.getName())
         elif fieldname:

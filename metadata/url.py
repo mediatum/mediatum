@@ -45,29 +45,40 @@ class m_url(Metatype):
         elif len(val) > 2:
             val = val[0:2]
 
-        return tal.getTAL("metadata/url.html", {"lock": lock,
-                                                "value": val,
-                                                "fielddef": fielddef,
-                                                "width": width,
-                                                "name": field.getName(),
-                                                "field": field,
-                                                "required": 1 if required else None,
-                                                },
-                          macro="editorfield",
-                          language=language)
+        return tal.getTAL(
+                "metadata/url.html",
+                dict(
+                    lock=lock,
+                    value=val,
+                    fielddef=fielddef,
+                    width=width,
+                    name=field.getName(),
+                    field=field,
+                    required=1 if required else None,
+                   ),
+                macro="editorfield",
+                language=language,
+               )
 
     def getAdminFieldsHTML(self, values={}):
-        return tal.getTAL("metadata/url.html",
-                          {"valuelist": values["valuelist"],
-                           "icons": _icons,
-                           "url_targets": _targets},
-                          macro="fieldeditor",
-                          language=values["language"])
+        return tal.getTAL(
+                "metadata/url.html",
+                dict(
+                    valuelist=values["valuelist"],
+                    icons=_icons,
+                    url_targets=_targets,
+                    ),
+                macro="fieldeditor",
+                language=values["language"],
+               )
 
     def getSearchHTML(self, collection, field, language, name, value):
         return tal.getTAL(
                 "metadata/url.html",
-                dict(name=name, value=value),
+                dict(
+                    name=name,
+                    value=value,
+                   ),
                 macro="searchfield",
                 language=language,
                )
@@ -140,12 +151,16 @@ class m_url(Metatype):
         value = field.getValues().split("\r\n")
         value.extend(("",)*4)
         value = value[:4]
-        return tal.getTAL("metadata/url.html",
-                          {"value": value,
-                           "icons": _icons,
-                           "url_targets": _targets},
-                          macro="metafieldeditor",
-                          language=language)
+        return tal.getTAL(
+                "metadata/url.html",
+                dict(
+                    value=value,
+                    icons=_icons,
+                    url_targets=_targets,
+                   ),
+                macro="metafieldeditor",
+                language=language,
+               )
 
 
     translation_labels = dict(

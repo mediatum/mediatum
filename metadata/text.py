@@ -30,21 +30,28 @@ class m_text(Metatype):
         except:
             field_node_name = None
 
-        context = {
-            "lock": lock,
-            "value": value,
-            "width": width,
-            "name": field_node_name,
-            "field": field,
-            "ident": field.id if field.id else "",
-            "required": 1 if required else None,
-        }
-        return tal.getTAL("metadata/text.html", context, macro="editorfield", language=language)
+        return tal.getTAL(
+                "metadata/text.html",
+                dict(
+                    lock=lock,
+                    value=value,
+                    width=width,
+                    name=field_node_name,
+                    field=field,
+                    ident=field.id if field.id else "",
+                    required=1 if required else None,
+                   ),
+                macro="editorfield",
+                language=language,
+               )
 
     def getSearchHTML(self, collection, field, language, name, value):
         return tal.getTAL(
                 "metadata/text.html",
-                dict(name=name, value=value),
+                dict(
+                    name=name,
+                    value=value,
+                   ),
                 macro="searchfield",
                 language=language,
                )

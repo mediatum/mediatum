@@ -33,25 +33,28 @@ class m_memo(Metatype):
         except:
             field_node_name = None
 
-        context = {
-            "lock": lock,
-            "value": value,
-            "width": width,
-            "name": field_node_name,
-            "field": field,
-            "t": _core_translation.t,
-            "ident": ustr(field.id),
-            "required": 1 if required else None,
-        }
-
-        return tal.getTAL("metadata/memo.html",
-                          context,
-                          macro="editorfield")
+        return tal.getTAL(
+                "metadata/memo.html",
+                dict(
+                    lock=lock,
+                    value=value,
+                    width=width,
+                    name=field_node_name,
+                    field=field,
+                    t=_core_translation.t,
+                    ident=ustr(field.id),
+                    required=1 if required else None,
+                   ),
+                macro="editorfield",
+               )
 
     def getSearchHTML(self, collection, field, language, name, value):
         return tal.getTAL(
                 "metadata/memo.html",
-                dict(name=name, value=value),
+                dict(
+                    name=name,
+                    value=value,
+                   ),
                 macro="searchfield",
                 language=language,
                )
@@ -62,11 +65,13 @@ class m_memo(Metatype):
 
     def get_metafieldeditor_html(self, field, metadatatype, language):
         return tal.getTAL(
-            "metadata/memo.html",
-            dict(value=field.getValues()),
-            macro="metafieldeditor",
-            language=language,
-        )
+                "metadata/memo.html",
+                dict(
+                    value=field.getValues(),
+                   ),
+                macro="metafieldeditor",
+                language=language,
+               )
 
 
     # method for popup methods of type memo

@@ -29,6 +29,9 @@ q = db.query
 
 def getContent(req, ids):
     node = q(Data).get(long(ids[0]))
-    parent = node.parents[0]
-
-    return _tal.processTAL({'id': node.id, 'parent_id': parent.id}, file="web/edit/modules/deleteobject.html", macro="view_node", request=req)
+    return _tal.processTAL(
+            dict(srcnodeid=req.values.get("srcnodeid", ""), id=node.id),
+            file="web/edit/modules/deleteobject.html",
+            macro="view_node",
+            request=req,
+        )

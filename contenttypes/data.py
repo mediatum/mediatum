@@ -415,18 +415,21 @@ def prepare_node_data(node, req):
         # hack: is this flask compatible?
         in_editor = req and req.mediatum_contextfree_path.startswith("/edit")
         if in_editor:
-            get_detail_url = lambda cid, pid: "?id={}&pid={}".format(cid, pid)
+            get_detail_url = lambda srcnodeid, cid, pid: "?srcnodeid={}&id={}&pid={}".format(srcnodeid, cid, pid)
         else:
-            get_detail_url = lambda cid, pid: child_node_url(cid)
+            get_detail_url = lambda srcnodeid, cid, pid: child_node_url(cid, srcnodeid=srcnodeid)
 
-        ctx = {
-            "in_editor": in_editor,
-            "children": children,
-            "get_detail_url": get_detail_url,
-            "parent": node,
-        }
-
-        data['children_html'] = tal.getTAL("web/frontend/styles/macros.html", ctx, macro="bothView")
+        data['children_html'] = tal.getTAL(
+                "web/frontend/styles/macros.html",
+                dict(
+                    in_editor=in_editor,
+                    children=children,
+                    get_detail_url=get_detail_url,
+                    srcnodeid=req.values.get("srcnodeid", ""),
+                    parent=node,
+                ),
+                macro="bothView",
+            )
 
     return data
 

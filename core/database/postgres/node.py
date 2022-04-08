@@ -445,8 +445,7 @@ class Node(DeclarativeBase, NodeMixin):
             if last_tagged_version is not None:
                 next_version = int(last_tagged_version.tag) + 1
             else:
-                node.versions[-1].tag = u"1"
-                next_version = 2
+                next_version = 1
 
             tx.meta[u"tag"] = unicode(next_version)
 

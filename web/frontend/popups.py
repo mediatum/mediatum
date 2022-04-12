@@ -118,6 +118,9 @@ def show_help(req):
 
 def show_attachmentbrowser(req):
     node = q(Node).get(req.values["id"])
+    version_id = req.args.get("v")
+    if version_id:
+        node = node.get_tagged_version(unicode(version_id))
     if not node.has_data_access():
         req.response.set_data(_core_translation.t(
                 _core_translation.set_language(req.accept_languages),

@@ -290,8 +290,7 @@ def importBibTeX(infile, node=None, req=None):
     logg.info("bibtex import: %d entries", len(entries))
 
     for count, fields in enumerate(entries):
-        docid_utf8 = fields["ID"]
-        fields[u"key"] = fields.pop("ID")
+        fields[u"key"] = docid_utf8 = fields.pop("ID")
         doctype = fields.pop("ENTRYTYPE")
         mytype = _detecttype(doctype, fields)
 
@@ -327,11 +326,10 @@ def importBibTeX(infile, node=None, req=None):
                     fieldnames[bib_name] = metafield_name
 
             doc = Document(docid_utf8,schema=metatype)
-            for k, v in fields.items():
-                if k in fieldnames.keys():
-                    k = fieldnames[k]  # map bibtex name
+            for k, v in fields.iteritems():
+                k = fieldnames.get(k, k)  # map bibtex name
 
-                if k in datefields.keys():  # format date field
+                if k in datefields:  # format date field
                     try:
                         v = str(parse_date(v, datefields[k]))
                         # if date format does not contains '%' the valid digit of the result must not be longer than the date format

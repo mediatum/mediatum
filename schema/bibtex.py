@@ -299,8 +299,8 @@ def importBibTeX(infile, node=None, req=None):
             fieldnames = {}
             datefields = {}
             if mytype not in bibtextypes:
-                logg.error("bibtex mapping of bibtex type '%s' not defined - import stopped", mytype)
-                msg = "bibtex mapping of bibtex type '%s' not defined - import stopped" % mytype
+                msg = "bibtex mapping of bibtex type '{}' not defined - import stopped".format(mytype)
+                logg.error("%s", msg)
                 raise MissingMapping(msg)
 
             metatype = bibtextypes[mytype]

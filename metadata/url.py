@@ -60,18 +60,6 @@ class m_url(Metatype):
                 language=language,
                )
 
-    def getAdminFieldsHTML(self, values={}):
-        return tal.getTAL(
-                "metadata/url.html",
-                dict(
-                    valuelist=values["valuelist"],
-                    icons=_icons,
-                    url_targets=_targets,
-                    ),
-                macro="fieldeditor",
-                language=values["language"],
-               )
-
     def getSearchHTML(self, collection, field, language, name, value):
         return tal.getTAL(
                 "metadata/url.html",

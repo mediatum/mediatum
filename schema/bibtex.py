@@ -272,8 +272,6 @@ def importBibTeX(infile, node=None, req=None):
     logg.info("%s", msg)
 
     bibtextypes = getbibtexmappings()
-    result = []
-    entries = []
 
     if isinstance(infile, list):
         entries = infile
@@ -304,7 +302,6 @@ def importBibTeX(infile, node=None, req=None):
                 logg.error("bibtex mapping of bibtex type '%s' not defined - import stopped", mytype)
                 msg = "bibtex mapping of bibtex type '%s' not defined - import stopped" % mytype
                 raise MissingMapping(msg)
-            result += [(mytype.lower(), fields)]
 
             metatype = bibtextypes[mytype]
 

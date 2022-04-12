@@ -186,7 +186,7 @@ def checkMappings():
             logg.info("%s -> %s", bibname, s[bibname])
 
 
-def detecttype(doctype, fields):
+def _detecttype(doctype, fields):
     results = []
     for bibname, description, required, optional in article_types:
         score = 0
@@ -231,7 +231,7 @@ def _bibteximport_customize(record):
     return record
 
 
-def getentries(filename):
+def _getentries(filename):
     # use utf-8-sig instead of utf-8 to get rid of BOM_UTF8, which confuses bibtex parser
     for encoding in ('utf-8-sig', 'utf-16', None):
         try:
@@ -280,7 +280,7 @@ def importBibTeX(infile, node=None, req=None):
     else:
         node = node or Directory(utf8_decode_escape(os.path.basename(infile)))
         try:
-            entries = getentries(infile)
+            entries = _getentries(infile)
         except:
             # XXX TODO This reports *everything* as encoding error
             # XXX TODO (even things like full disk or other parsing errors).
@@ -295,7 +295,7 @@ def importBibTeX(infile, node=None, req=None):
         docid_utf8 = fields["ID"]
         fields[u"key"] = fields.pop("ID")
         doctype = fields.pop("ENTRYTYPE")
-        mytype = detecttype(doctype, fields)
+        mytype = _detecttype(doctype, fields)
 
         if mytype:
             fieldnames = {}

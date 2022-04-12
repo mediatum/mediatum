@@ -311,24 +311,23 @@ def importBibTeX(infile, node=None, req=None):
             # check for mask configuration
             metadatatype = q(Metadatatype).filter_by(name=metatype).one()
             mask = metadatatype.get_mask(u"bibtex_import") or metadatatype.get_mask(u"bibtex")
-            if mask:
-                for f in mask.all_maskitems:
-                    try:
-                        _bib_name = q(Node).get(f.get(u"mappingfield")).name
-                        _mfield = q(Node).get(f.get(u"attribute"))
-                        _med_name = _mfield.name
-                        if _mfield.get(u"type") == u"date":
-                            datefields[_med_name] = _mfield.get(u"valuelist")
-                    except AttributeError as e:
-                        logg.error(
+            for maskitem in (mask.all_maskitems if mask else ()):
+                try:
+                    bib_name = q(Node).get(maskitem.get(u"mappingfield")).name
+                    mfield = q(Node).get(maskitem.get(u"attribute"))
+                    metafield_name = mfield.name
+                    if mfield.get(u"type") == u"date":
+                        datefields[metafield_name] = mfield.get(u"valuelist")
+                except AttributeError as e:
+                    logg.error(
                             "bibtex import docid='%s': field error for bibtex mask for type %s and bibtex-type '%s': %s",
                             docid_utf8,
                             metatype,
                             mytype,
                             e,
-                        )
-                    else:
-                        fieldnames[_bib_name] = _med_name
+                           )
+                else:
+                    fieldnames[bib_name] = metafield_name
 
             doc = Document(docid_utf8,schema=metatype)
             for k, v in fields.items():

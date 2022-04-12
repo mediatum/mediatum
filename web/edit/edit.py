@@ -259,7 +259,7 @@ def getBreadcrumbs(menulist, tab):
                 return [menuitem.name, "*" + item.name]
     return [tab]
 
-def handletabs(req, ids, tabs, sort_choices):
+def _handletabs(req, ids, tabs, sort_choices):
     user = _user_from_session()
 
     n = q(Data).get(ids[0])
@@ -845,7 +845,7 @@ def content(req):
         else:
             sortchoices = ()
 
-        v["tabs"] = handletabs(req, ids, tabs, sortchoices)
+        v["tabs"] = _handletabs(req, ids, tabs, sortchoices)
 
     c = _editModules[current].getContent(req, ids)
     if not c:

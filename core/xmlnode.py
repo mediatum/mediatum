@@ -295,13 +295,7 @@ def readNodeXML(fi):
     return _NodeLoader(xml).root
 
 
-def getNodeXML(
-        node,
-        children=True,
-        exclude_filetypes=[],
-        exclude_childtypes=[],
-        attribute_name_filter=None):
-
+def getNodeXML(node):
     nodelist = create_xml_nodelist()
 
     nodelist.set('rootname', node.name)
@@ -311,23 +305,11 @@ def getNodeXML(
     nodelist.set('original_nodeid', unicode(node.id))
 
     from workflow.workflow import Workflow
+    exclude_childtypes = set()
     if EXCLUDE_WORKFLOW_NEWNODES and isinstance(node, Workflow):
         for c in node.children:
             if c.type == "workflowstep_start":
-                newnodetypes = c.get("newnodetype").strip().split(";")
-                for newnodetype in newnodetypes:
-                    if newnodetype not in exclude_childtypes:
-                        exclude_childtypes.append(newnodetype)
+                exclude_childtypes.update(c.get("newnodetype").strip().split(";"))
 
-    written = set()
-    add_node_to_xmldoc(
-        node,
-        nodelist,
-        written=written,
-        children=children,
-        exclude_filetypes=exclude_filetypes,
-        exclude_childtypes=exclude_childtypes,
-        attribute_name_filter=attribute_name_filter)
-
-    xmlstr = etree.tostring(nodelist, xml_declaration=True, pretty_print=True, encoding="utf8")
-    return xmlstr
+    add_node_to_xmldoc(node, nodelist, exclude_childtypes=exclude_childtypes)
+    return etree.tostring(nodelist, xml_declaration=True, pretty_print=True, encoding="utf8")

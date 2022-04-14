@@ -68,7 +68,7 @@ def din5007v2(input_value):
 
 
 def attribute_name_filter(attribute_name):
-    '''filter out node attributes that should not be served'''
-    if attribute_name.startswith("system."):
-        return False
-    return True
+    """
+    filter out system attributes
+    """
+    return not attribute_name.startswith("system.")

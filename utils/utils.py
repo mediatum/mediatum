@@ -101,6 +101,12 @@ def utf82iso(s):
         return s
 
 
+xml_remove_illegal_chars = _functools.partial(
+        re.compile(u'[^\u0020-\uD7FF\u0009\u000A\u000D\uE000-\uFFFD\u10000-\u10FFFF]+', re.UNICODE).sub,
+        u"",
+       )
+
+
 replacements = {'sub': {'regex': re.compile(r'(?<=\$_)(.*?)(?=\$)'),
                         'tex': '$_%s$',
                         'html': '<sub>%s</sub>'},

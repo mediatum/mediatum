@@ -16,7 +16,6 @@ import core.nodecache as _core_nodecache
 import utils.utils as _utils_utils
 from core import File, db
 from utils.compat import iteritems
-from utils.xml import xml_remove_illegal_chars
 from utils.list import filter_scalar
 
 
@@ -83,7 +82,7 @@ def add_node_to_xmldoc(
         xmlattr.set("name", name)
         # protect XML from invalid characters
         # XXX: is this ok?
-        xmlattr.text = etree.CDATA(xml_remove_illegal_chars(unicode(value)))
+        xmlattr.text = etree.CDATA(_utils_utils.xml_remove_illegal_chars(unicode(value)))
 
     files = [f for f in node.file_objects if f.filetype != u"metadata"]
  

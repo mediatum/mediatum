@@ -21,6 +21,7 @@ from schema.schema import VIEW_DATA_ONLY, Metadatatype
 from utils.date import format_date
 from utils.pathutils import getBrowsingPathList
 from utils.utils import esc, getMimeType, modify_tex
+from utils.utils import xml_remove_illegal_chars
 import web.services.jsonnode as jsonnode
 from web.services.rssnode import template_rss_channel, template_rss_item, feed_channel_dict, try_node_date
 from web.services.serviceutils import attribute_name_filter
@@ -31,7 +32,6 @@ import core.database.postgres.search as _postgres_search
 from sqlalchemy import sql
 from itertools import izip_longest
 from sqlalchemy import Unicode, Float, Integer
-from utils.xml import xml_remove_illegal_chars
 from core.nodecache import get_collections_node, get_home_root_node
 import core.oauth as oauth
 from core.search.config import get_service_search_languages

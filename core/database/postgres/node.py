@@ -6,6 +6,7 @@
 from __future__ import division
 from __future__ import print_function
 
+import contextlib as _contextlib
 import datetime
 import logging
 from json import dumps
@@ -405,6 +406,7 @@ class Node(DeclarativeBase, NodeMixin):
                 join(Transaction.meta_relation). filter(TransactionMeta.key == u"publish")
         return published_versions.scalar()
 
+    @_contextlib.contextmanager
     def new_tagged_version(self, tag=None, comment=None, publish=None, user=None):
         """Returns a context manager that manages the creation of a new tagged node version.
 
@@ -418,51 +420,45 @@ class Node(DeclarativeBase, NodeMixin):
         """
         node = self
 
-        class VersionContextManager(object):
+        self.session = s = object_session(node)
+        if s.new or s.dirty:
+            raise Exception("Refusing to create a new tagged node version. Session must be clean!")
 
-            def __enter__(self):
-                self.session = s = object_session(node)
-                if s.new or s.dirty:
-                    raise Exception("Refusing to create a new tagged node version. Session must be clean!")
+        uow = versioning_manager.unit_of_work(s)
+        tx = uow.create_transaction(s)
 
-                uow = versioning_manager.unit_of_work(s)
-                tx = uow.create_transaction(s)
+        if user is not None:
+            tx.user = user
 
-                if user is not None:
-                    tx.user = user
+        if tag:
+            if node.get_tagged_version(tag):
+                raise ValueError("tag already exists")
+            tx.meta[u"tag"] = tag
+        elif publish:
+            if node.get_published_version():
+                raise ValueError("publish version already exists")
+            tx.meta[u"publish"] = publish
+        else:
+            NodeVersion = version_class(node.__class__)
+            # in case you were wondering: order_by(None) resets the default order_by
+            last_tagged_version = node.tagged_versions.order_by(None).order_by(NodeVersion.transaction_id.desc()).first()
+            if last_tagged_version is not None:
+                next_version = int(last_tagged_version.tag) + 1
+            else:
+                node.versions[-1].tag = u"1"
+                next_version = 2
 
-                if tag:
-                    if node.get_tagged_version(tag):
-                        raise ValueError("tag already exists")
-                    tx.meta[u"tag"] = tag
-                elif publish:
-                    if node.get_published_version():
-                        raise ValueError("publish version already exists")
-                    tx.meta[u"publish"] = publish
-                else:
-                    NodeVersion = version_class(node.__class__)
-                    # in case you were wondering: order_by(None) resets the default order_by
-                    last_tagged_version = node.tagged_versions.order_by(None).order_by(NodeVersion.transaction_id.desc()).first()
-                    if last_tagged_version is not None:
-                        next_version = int(last_tagged_version.tag) + 1
-                    else:
-                        node.versions[-1].tag = u"1"
-                        next_version = 2
+            tx.meta[u"tag"] = unicode(next_version)
 
-                    tx.meta[u"tag"] = unicode(next_version)
+        if comment:
+            tx.meta[u"comment"] = comment
 
-                if comment:
-                    tx.meta[u"comment"] = comment
-
-                return tx
-
-            def __exit__(self, exc_type, exc_value, traceback):
-                if exc_type:
-                    self.session.rollback()
-                else:
-                    self.session.commit()
-
-        return VersionContextManager()
+        try:
+            yield
+        except:
+            self.session.rollback()
+            raise
+        self.session.commit()
 
     def is_descendant_of(self, node):
         return exec_sqlfunc(object_session(self), mediatumfunc.is_descendant_of(self.id, node.id))

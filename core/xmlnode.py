@@ -55,16 +55,20 @@ def add_child_to_xmlnode(child, xmlnode):
 def add_node_to_xmldoc(
         node,
         xmlroot,
-        written=set(),
         children=True,
-        exclude_filetypes=[],
-        exclude_childtypes=[],
-        attribute_name_filter=None):
+        exclude_filetypes=frozenset(),
+        exclude_childtypes=frozenset(),
+        attribute_name_filter=lambda name:True,
+        _written=None,
+       ):
 
     from schema.schema import Mask
     from schema.mapping import Mapping
 
-    written.add(node.id)
+    if _written is None:
+        _written = set()
+
+    _written.add(node.id)
 
     xmlnode = etree.SubElement(xmlroot, "node")
     xmlnode.set("name", node.name or u"")
@@ -73,24 +77,16 @@ def add_node_to_xmldoc(
     xmlnode.set("datatype", node.type)
     xmlnode.set("schema", (node.schema or u""))
 
-    # TODO: no access rights at the moment
-
-    for name, value in sorted(iteritems(node.attrs)):
-        if attribute_name_filter and not attribute_name_filter(name):
-            continue
+    for name in sorted(filter(attribute_name_filter, node.attrs)):
         xmlattr = etree.SubElement(xmlnode, "attribute")
         xmlattr.set("name", name)
-        # protect XML from invalid characters
-        # XXX: is this ok?
-        xmlattr.text = etree.CDATA(_utils_utils.xml_remove_illegal_chars(unicode(value)))
+        xmlattr.text = etree.CDATA(_utils_utils.xml_remove_illegal_chars(unicode(node.attrs[name])))
 
-    files = [f for f in node.file_objects if f.filetype != u"metadata"]
- 
-    if exclude_filetypes:
-        files = [f for f in files if f.filetype not in (exclude_filetypes)]
-
-    for fileobj in files:
-        add_file_to_xmlnode(fileobj, xmlnode)
+    exclude_filetypes = set(exclude_filetypes)
+    exclude_filetypes.add(u"metadata")
+    for fileobj in node.file_objects:
+        if fileobj.filetype not in exclude_filetypes:
+            add_file_to_xmlnode(fileobj, xmlnode)
 
     if children:
         child_query = node.children
@@ -101,16 +97,16 @@ def add_node_to_xmldoc(
         for child in child_query.order_by("orderpos"):
             add_child_to_xmlnode(child, xmlnode)
 
-            if child.id not in written:
-                add_node_to_xmldoc(child, xmlroot, written, children, exclude_filetypes, exclude_childtypes, attribute_name_filter)
+            if child.id not in _written:
+                add_node_to_xmldoc(child, xmlroot, children, exclude_filetypes, exclude_childtypes, attribute_name_filter, _written)
 
     if isinstance(node, Mask):
         exportmapping_id = node.get(u"exportmapping").strip()
-        if exportmapping_id and exportmapping_id not in written:
+        if exportmapping_id and exportmapping_id not in _written:
             mapping = q(Mapping).get(int(exportmapping_id))
             if mapping is not None:
-                written.add(mapping.id)
-                add_node_to_xmldoc(mapping, xmlroot, written, children, exclude_filetypes, exclude_childtypes, attribute_name_filter)
+                _written.add(mapping.id)
+                add_node_to_xmldoc(mapping, xmlroot, children, exclude_filetypes, exclude_childtypes, attribute_name_filter, _written)
     return xmlnode
 
 

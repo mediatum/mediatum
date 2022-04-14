@@ -80,7 +80,7 @@ def add_node_to_xmldoc(
     for name in sorted(filter(attribute_name_filter, node.attrs)):
         xmlattr = etree.SubElement(xmlnode, "attribute")
         xmlattr.set("name", name)
-        xmlattr.text = etree.CDATA(_utils_utils.xml_remove_illegal_chars(unicode(node.attrs[name])))
+        xmlattr.text = _utils_utils.xml_remove_illegal_chars(unicode(node.attrs[name]))
 
     exclude_filetypes = set(exclude_filetypes)
     exclude_filetypes.add(u"metadata")

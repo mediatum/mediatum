@@ -3,8 +3,10 @@ from __future__ import print_function
 
 import json
 import operator
-from collections import OrderedDict
+
 from mediatumtal import tal
+
+import contenttypes.container as _contenttypes_container
 from core.metatype import Metatype
 from core import httpstatus
 from core import Node
@@ -57,31 +59,26 @@ class m_hlist(Metatype):
         return {"moduleversion": "1.0", "softwareversion": "1.1"}
 
     def getPopup(self, req):
-        children = dict()
-        attrfilter = req.args.get(u'attrfilter')
-        pidlist = req.args.get(u'id').split(u'|')
-
-        def getAllContainerChildren(node, attrfilter=attrfilter):
-            from contenttypes import Container
-            nodes = node.all_children_by_query(q(Container).filter(Node.a[attrfilter] != ''))
-            return nodes
+        allowed_nodes = []
+        attr_filter = req.args.get(u'attrfilter')
+        attr_filter = operator.methodcaller("filter", Node.a[attr_filter] != '')
 
         # try direct container children
-        childlist = []
-        for _id in pidlist:
-            childlist.extend(filter(lambda c: c and (c.get(attrfilter) != u""), q(Node).get(_id).children))
-
-        for child in childlist:
-            children[child.id] = child.getName()
+        children = []
+        for nid in req.args.get(u'id').split(u'|'):
+            node = q(Node).get(nid)
+            if node.has_read_access():
+                allowed_nodes.append(node)
+                children.extend(attr_filter(node.children).filter_read_access())
 
         # if no direct children test all container children
-        if len(children) == 0:
-            for _id in pidlist:
-                for child in getAllContainerChildren(q(Node).get(_id)):
-                    children[child.id] = child.getName()
+        if not children:
+            for node in allowed_nodes:
+                children.extend(node.all_children_by_query(attr_filter(
+                        q(_contenttypes_container.Container),
+                    ).filter_read_access()))
 
-        sorted_children = sorted(children.items(), key=operator.itemgetter(1))
-        req.response.set_data(json.dumps(OrderedDict(sorted_children)))
+        req.response.set_data(json.dumps({c.id: c.getName() for c in children}))
         req.response.status_code = httpstatus.HTTP_OK
         return httpstatus.HTTP_OK
 

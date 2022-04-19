@@ -328,7 +328,11 @@ BEGIN
 END;
 $f$;
 
-CREATE TYPE integrity_check_inherited_access_rules AS (nid integer, rule_id integer, ruletype text, invert boolean, blocking boolean, reason text);
+DO $$ BEGIN
+    CREATE TYPE integrity_check_inherited_access_rules AS (nid integer, rule_id integer, ruletype text, invert boolean, blocking boolean, reason text);
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 
 CREATE OR REPLACE FUNCTION integrity_check_inherited_access_rules()
@@ -400,7 +404,7 @@ ELSE
 END IF;
 IF rec.ruletype IN ('read', 'data') THEN
     FOR c IN SELECT cid FROM noderelation WHERE nid = rec.nid LOOP
-        RAISE NOTICE 'updating access rules for node %', c;
+        -- RAISE DEBUG 'updating access rules for node %', c;
         -- ignore nodes that have their own access rules
         IF NOT EXISTS (SELECT FROM node_to_access_rule WHERE nid=c.cid AND ruletype = rec.ruletype AND inherited = false) THEN
             DELETE FROM node_to_access_rule WHERE nid=c.cid AND inherited = true AND ruletype = rec.ruletype;
@@ -731,7 +735,11 @@ $f$;
 -- maintenance functions
 ----
 
-CREATE TYPE rule_duplication AS (surviving_rule_id integer, duplicates integer[]);
+DO $$ BEGIN
+    CREATE TYPE rule_duplication AS (surviving_rule_id integer, duplicates integer[]);
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- remove duplicate access rules with same content, but different id. Updates foreign keys in dependent tables.
 CREATE OR REPLACE FUNCTION deduplicate_access_rules ()

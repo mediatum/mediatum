@@ -1,5 +1,8 @@
-DROP TYPE IF EXISTS mediatum_import.expanded_accessrule CASCADE;
-CREATE TYPE mediatum_import.expanded_accessrule AS (expanded_rule text, rulesets text[], special_rulestrings text[]);
+DO $$ BEGIN
+    CREATE TYPE mediatum_import.expanded_accessrule AS (expanded_rule text, rulesets text[], special_rulestrings text[]);
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 CREATE OR REPLACE FUNCTION mediatum_import.expand_acl_rule(rulestr text)
   RETURNS mediatum_import.expanded_accessrule

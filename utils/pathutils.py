@@ -18,6 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import operator as _operator
 import os
 import string
 from warnings import warn
@@ -113,24 +114,16 @@ def getPaths(node):
 
 
 def get_accessible_paths(node, node_query=None):
-    from core.nodecache import get_collections_node, get_root_node
-    if node_query is None:
-        node_query = q(Node)
+    from core.nodecache import get_root_node
 
-    group_ids, ip, date = build_accessfunc_arguments()
-    excluded_node_ids = [get_root_node().id]
-
-    f = mediatumfunc.accessible_container_paths(node.id, excluded_node_ids, group_ids, ip, date)
-    id_paths = [t[0] for t in db.session.execute(f).fetchall()]
-    # fetch all nodes at once to reduce DB load
-    
-    if not id_paths:
-        return []
-    
-    path_nodes = node_query.filter(Node.id.in_(chain(*id_paths)))
+    # fetch all paths (with nid and access right flag) from db
+    paths = mediatumfunc.accessible_container_paths(node.id, *build_accessfunc_arguments())
+    paths = map(_operator.itemgetter(0), db.session.execute(paths).fetchall())
 
     # convert node ids to nodes
-    nid_to_node ={n.id: n for n in path_nodes}
-    node_paths = [[nid_to_node.get(nid) for nid in id_path] for id_path in id_paths]
-    return node_paths
-    
+    # fetch all nodes at once to reduce DB load
+    nid2node = {node.id:node for node in (node_query or q(Node)).filter(
+                                Node.id.in_(chain(*(tuple(nid for nid,_ in path) for path in paths))))}
+
+    root_id = get_root_node().id
+    return frozenset(tuple(nid2node[nid] for nid,access in path if access and nid!=root_id) for path in paths)

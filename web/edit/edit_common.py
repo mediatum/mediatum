@@ -35,14 +35,13 @@ from web.frontend.content import get_make_search_content_function
 from web.frontend.search import NoSearchResult
 import re
 import urllib
+
+import web.common.pagination as _web_common_pagination
 from utils.url import build_url_from_path_and_params as _build_url_from_path_and_params
 
 
 logg = logging.getLogger(__name__)
 q = db.query
-
-default_edit_nodes_per_page = 20
-edit_node_per_page_values = [20, 50, 100, 200]
 
 
 class EditorNavList:
@@ -50,7 +49,7 @@ class EditorNavList:
     def __init__(self):
         self.nav_params = None
         self.nav_searchparams = {}
-        self.nodes_per_page = default_edit_nodes_per_page
+        self.nodes_per_page = _web_common_pagination.get_default_nodes_per_page(True)
         self.page = 1
 
     def nav_link(self, **param_overrides):
@@ -257,18 +256,6 @@ def getAllSubDirs(node):
 def showoperations(req, node):
     return ""
 
-def get_nodes_per_page(req, dir):
-    nodes_per_page = req.params.get('nodes_per_page', '')
-    if nodes_per_page:
-        nodes_per_page = int(nodes_per_page)
-    else:
-        if dir:
-            nodes_per_page = dir.get('nodes_per_page')
-            if nodes_per_page:
-                nodes_per_page = int(nodes_per_page)
-    if not nodes_per_page:
-        nodes_per_page = default_edit_nodes_per_page
-    return nodes_per_page
 
 re_searchparams = re.compile("(query\d*|field\d+|searchmode)")
 
@@ -278,7 +265,12 @@ def get_searchparams(req):
 
 
 def shownavlist(req, node, nodes, page, dir=None):
-    nodes_per_page = get_nodes_per_page(req, dir)
+    nodes_per_page = _web_common_pagination.get_nodes_per_page(req.values.get("nodes_per_page"), dir)
+    nodes_len = len(nodes) if isinstance(nodes, list) else nodes.count()
+    if nodes_per_page == "all":
+        nodes_per_page = nodes_len
+    if not nodes_per_page:
+        nodes_per_page = _web_common_pagination.get_default_nodes_per_page(True)
 
     c = EditorNavList()
     c.nodes_per_page = nodes_per_page
@@ -286,10 +278,7 @@ def shownavlist(req, node, nodes, page, dir=None):
     c.nav_params = {k: v for k, v in req.args.items()
                     if k not in ("style", "sortfield", "page", "nodes_per_page")}
     c.nav_searchparams = get_searchparams(req)
-    if isinstance(nodes, list):
-        nodes_len = len(nodes)
-    else:
-        nodes_len = nodes.count()
+
     if req.params.get("action", "") == "resort":
         sortfield = req.params.get("value", "")
     else:
@@ -322,14 +311,19 @@ def shownavlist(req, node, nodes, page, dir=None):
 def shownodelist(req, nodes, page, publishwarn=True, markunpublished=False, dir=None, item_count=None, all_nodes=None,
                  faultyidlist=[]):
     nodelist = []
-    nodes_per_page = get_nodes_per_page(req, dir)
+    nodes_per_page = _web_common_pagination.get_nodes_per_page(req.values.get("nodes_per_page"), dir)
+    all_nodes = nodes[:]
+    if nodes_per_page == "all":
+        nodes_per_page = len(all_nodes)
+    if not nodes_per_page:
+        nodes_per_page = _web_common_pagination.get_default_nodes_per_page(True)
 
     start = (page - 1) * nodes_per_page
     end = start + nodes_per_page
 
     user = _user_from_session()
     nodes_in_page = nodes[start:end]
-    all_nodes = nodes[:]
+
     if isinstance(item_count, list):
         item_count.append(len(nodes_in_page))
         item_count.append(len(all_nodes))

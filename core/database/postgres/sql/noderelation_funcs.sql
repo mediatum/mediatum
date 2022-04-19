@@ -298,7 +298,7 @@ affected_relations := 0;
 -- check all connections to children of root
 FOR rel IN SELECT cid, distance FROM noderelation WHERE nid = root_id LOOP
     
-    -- RAISE NOTICE 'DELETE FROM noderelation nr WHERE nr.cid = % AND nr.distance > %', rel.cid, rel.distance;
+    -- RAISE DEBUG 'DELETE FROM noderelation nr WHERE nr.cid = % AND nr.distance > %', rel.cid, rel.distance;
 
 	-- only delete tuples belonging to paths which could go through root_id
 	DELETE FROM noderelation nr 
@@ -307,7 +307,7 @@ FOR rel IN SELECT cid, distance FROM noderelation WHERE nid = root_id LOOP
 	;
 	GET DIAGNOSTICS del = ROW_COUNT;
 
-    -- RAISE NOTICE 'INSERT INTO noderelation SELECT DISTINCT * FROM transitive_closure_for_node(%)', rel.cid;
+    -- RAISE DEBUG 'INSERT INTO noderelation SELECT DISTINCT * FROM transitive_closure_for_node(%)', rel.cid;
 
 	INSERT INTO noderelation
     SELECT DISTINCT * FROM transitive_closure_for_node(rel.cid)
@@ -315,7 +315,7 @@ FOR rel IN SELECT cid, distance FROM noderelation WHERE nid = root_id LOOP
     ;
 	 GET DIAGNOSTICS ins = ROW_COUNT;
 
-	RAISE NOTICE 'cid % distance %, deleted %, inserted %', rel.cid, rel.distance, del, ins;
+	-- RAISE DEBUG 'cid % distance %, deleted %, inserted %', rel.cid, rel.distance, del, ins;
     
     PERFORM update_inherited_access_rules_for_node(rel.cid);
 	
@@ -333,15 +333,15 @@ CREATE OR REPLACE FUNCTION on_mapping_insert() RETURNS trigger
     SET search_path = :search_path
     AS $f$
 BEGIN
-RAISE NOTICE 'insert mapping % -> %', NEW.nid, NEW.cid;
+-- RAISE DEBUG 'insert mapping % -> %', NEW.nid, NEW.cid;
 
 -- check if parent is a content node (is_container = false)
 IF (SELECT type IN (SELECT name FROM nodetype WHERE is_container = false) FROM node WHERE id=NEW.nid) THEN
-    RAISE NOTICE 'parent is content';
+    -- RAISE DEBUG 'parent is content';
 
     -- should fail if someone wants to add a container as child of a content node
     IF (SELECT type IN (SELECT name FROM nodetype WHERE is_container = true) FROM node WHERE id=NEW.cid) THEN
-        RAISE EXCEPTION 'cannot add a container child to a content parent!';
+        -- RAISE DEBUG 'cannot add a container child to a content parent!';
     END IF;
     -- set subnode attribute because we are adding a content node as child of another content node
     UPDATE node SET subnode = true WHERE id = NEW.cid;
@@ -366,7 +366,7 @@ CREATE OR REPLACE FUNCTION on_mapping_delete() RETURNS trigger
     AS $f$
 BEGIN
 
-RAISE NOTICE 'remove mapping % -> %', OLD.nid, OLD.cid;
+-- RAISE DEBUG 'remove mapping % -> %', OLD.nid, OLD.cid;
 
 -- delete all transitive relations ending at cid
 -- ! we delete connections here that are still correct

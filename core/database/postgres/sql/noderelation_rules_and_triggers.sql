@@ -1,5 +1,7 @@
+DROP TRIGGER IF EXISTS mapping_insert ON :search_path.nodemapping;
 CREATE TRIGGER mapping_insert INSTEAD OF INSERT ON :search_path.nodemapping FOR EACH ROW EXECUTE PROCEDURE :search_path.on_mapping_insert();
 
+DROP TRIGGER IF EXISTS mapping_delete ON :search_path.nodemapping;
 CREATE TRIGGER mapping_delete INSTEAD OF DELETE ON :search_path.nodemapping FOR EACH ROW EXECUTE PROCEDURE :search_path.on_mapping_delete();
 
 

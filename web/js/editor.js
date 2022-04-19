@@ -146,55 +146,6 @@ function setValue(obj)
     }
 }
 
-function setPart()
-{
-    var value = document.getElementById("rule_part").innerHTML;
-    if (value.substring(0,1) != "(")
-    {
-        value= "( " + value + " )";
-    }
-    value = value.replace("&lt;","<");
-    value = value.replace("&gt;",">");
-    option = new Option(value, value, false, false);
-    document.getElementById("parts").options[document.getElementById("parts").length] = option;
-    document.getElementById("rule_part").innerHTML ="";
-    document.getElementById("argspan").innerHTML ="&nbsp;";
-}
-
-function changePart()
-{
-    if (selected==true)
-    {
-        var value= document.getElementById("rule_part").innerHTML;
-        if (value !="")
-        {
-
-            if (value.substring(0,1) != "(")
-            {
-                value= "( " + value + " )";
-            }
-            document.getElementById(spanid).innerHTML = replaceBracket(value);
-        }
-    }
-}
-
-function clearParts()
-{
-    document.getElementById("parts").length=null;
-}
-
-function setOperator()
-{
-
-    if (document.getElementById("op").checked)
-    {
-        document.getElementById("value1").value= document.getElementById("parts").value;
-    }
-    else
-    {
-        document.getElementById("value2").value= document.getElementById("parts").value;
-    }
-}
 
 function replaceBracket(value)
 {
@@ -227,16 +178,6 @@ function setMainRule()
     }
 }
 
-function setReturn()
-{
-    opener.getEditorValue( ReplaceTags(document.getElementById("MainRule").innerHTML));
-    self.close();
-}
-
-function getSelectedValue()
-{
-    document.getElementById("rule_part").innerHTML = document.getElementById("parts").value;
-}
 
 function showACLGroup(){
     obj = document.getElementById("acl_div");
@@ -375,15 +316,6 @@ function reload_tree_nodes_children(used_trees, pids) {
             consoledb.groupEnd('--- reload_tree_nodes_children ---');
 }
 
-function path_to_pidlist(path, poplast) {
-  var pids = path.split('/');
-  pids.shift();  // removing leading ""
-  if (poplast) {
-    pids.pop();
-  }
-  return pids;
-}
-
 
 // asynchronous version of editor_action: wait with javascript tree update until
 // server has responded
@@ -446,18 +378,6 @@ function edit_action_sync(action, src, nodeids, add) {
     return ajax_response;
 }
 
-function setFolder(folderid)
-{
-    var src = tree.getFolder();
-    if(action=="") {
-        this.content.location.href = "edit_content?srcnodeid="+folderid+"&id="+folderid;
-        this.buttons.location.href = "edit_buttons?id="+folderid;
-    } else {
-        edit_action(action, src, idselection, folderid);
-        reloadPage(folderid, "");
-    }
-}
-
 function activateEditorTreeNode(nid) {
   var ctree = parent.getcoltree();
   n = ctree.getNodeByKey(nid);
@@ -517,33 +437,6 @@ function checkObject(field) {
             $(this).prop('checked', false);
         });
     }
-}
-
-
-function modal_confirm(msg) {
-  var string = '<div id="dialog-confirm" title="Empty the recycle bin?"><p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>These items will be permanently deleted and cannot be recovered. Are you sure?</p></div>';
-  var res = false;
-  res = $(function() {
-    var elem = $('<div/>').html(string);
-    res = elem.dialog({
-      resizable: false,
-      height:140,
-      modal: true,
-      appendTo: "#mediatum_collectionstree",
-      closeOnEscape: true,
-      buttons: {
-        "Delete all items": function() { res = true;
-          $(this).dialog( "close" );
-
-        },
-        Cancel: function() { res = 7;
-          $(this).dialog( "close" );
-
-        }
-      }
-    });
-  });
-  return res;
 }
 
 
@@ -632,24 +525,6 @@ function updateNodeLabels(ids) {
 }
 
 
-function sortItems_sync(o){
-
-    var ajax_response;
-    var options = {
-          url: '/edit/edit_content?action=resort&srcnodeid='+id+'&id='+id+'&tab=content&value='+$(o).val(),
-          async: false,
-          dataType: 'json',
-          success: function (data) {
-              ajax_response = data;
-              $('#scrollcontent').html(data.values);
-          },
-        };
-
-    $.ajax(options);
-
-}
-
-
 function loadUrl(newLocation)
 {
   window.location = newLocation;
@@ -666,24 +541,6 @@ function sortItemsPage_sync(o1, o2, o3){
     else
        url = '/edit/edit_content?srcnodeid='+id+'&id='+id+'&'+o3+'&sortfield='+$(o1).val()+'&nodes_per_page='+$(o2).val();
     reloadURL(url);
-}
-
-
-function saveSort(o){
-    $.getJSON('/edit/edit_content?action=save&srcnodeid='+id+'&id='+id+'&tab=content&value='+$(o).val(), function(data) {
-        // save done
-        $("#message").html(data.message);
-        $("#message").show().delay(5000).fadeOut();
-    });
-}
-
-
-function saveSortPage(o1, o2){
-    $.getJSON('/edit/edit_content?action=save&srcnodeid='+id+'&id='+id+'&tab=content&value='+$(o1).val()+'&nodes_per_page='+$(o2).val(), function(data) {
-        // save done
-        $("#message").html(data.message);
-        $("#message").show().delay(5000).fadeOut();
-    });
 }
 
 

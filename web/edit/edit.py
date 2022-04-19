@@ -27,6 +27,7 @@ import core.translation
 import mediatumtal.tal as _tal
 import web.edit.edit_common as _web_edit_edit_common
 import core.systemtypes as _core_systemtypes
+import utils.utils as _utils_utils
 from core import Node, NodeType, db, User, UserGroup, UserToUserGroup
 from core.database.postgres.permission import NodeToAccessRuleset, AccessRulesetToRule, AccessRule
 
@@ -37,11 +38,11 @@ from edit_common import *
 
 from core.users import user_from_session as _user_from_session
 from core import httpstatus
-from utils.utils import funcname, get_user_id, Menu, splitpath, parse_menu_struct, isDirectory, isCollection, suppress
 from schema.schema import Metadatatype
-from web.edit.edit_common import get_edit_label, default_edit_nodes_per_page, get_searchparams
+from web.edit.edit_common import get_edit_label, get_searchparams
 from web.frontend.search import NoSearchResult
 from utils.pathutils import get_accessible_paths
+import web.common.pagination as _web_common_pagination
 import web.common.sort as _sort
 
 logg = logging.getLogger(__name__)
@@ -155,17 +156,17 @@ def frameset(req):
     path = ['%s' % p.id for p in nodepath]
     containerpath = [('%s' % p.id) for p in nodepath if isinstance(p, Container)]
 
-    spc = [Menu("sub_header_frontend", "../", target="_parent")]
+    spc = [_utils_utils.Menu("sub_header_frontend", "../", target="_parent")]
     if user.is_admin:
         spc.append(
-            Menu("sub_header_administration", "../admin", target="_parent"))
+            _utils_utils.Menu("sub_header_administration", "../admin", target="_parent"))
 
     if user.is_workflow_editor:
-        spc.append(Menu("sub_header_workflow", "../publish/", target="_parent"))
+        spc.append(_utils_utils.Menu("sub_header_workflow", "../publish/", target="_parent"))
 
-    spc.append(Menu("sub_header_help", "http://mediatum.readthedocs.io", target="_blank"))
+    spc.append(_utils_utils.Menu("sub_header_help", "http://mediatum.readthedocs.io", target="_blank"))
 
-    spc.append(Menu("sub_header_logout", "../logout", target="_parent"))
+    spc.append(_utils_utils.Menu("sub_header_logout", "../logout", target="_parent"))
 
     def getPathToFolder(node):
         n = node
@@ -266,7 +267,7 @@ def handletabs(req, ids, tabs, sort_choices):
     if n.type.startswith("workflow"):
         n = q(_core_systemtypes.Root).one()
 
-    menu = parse_menu_struct(n.editor_menu, lambda mi: mi not in user.hidden_edit_functions)
+    menu = _utils_utils.parse_menu_struct(n.editor_menu, lambda mi: mi not in user.hidden_edit_functions)
     nodes_per_page = req.args.get("nodes_per_page", type=int)
     if not nodes_per_page:
         nodes_per_page = 20
@@ -330,8 +331,8 @@ def getEditModules():
                 if (not name.endswith(".py")) or (name == "__init__.py"):
                     continue
                 basename,_ = os.path.splitext(name)
-                with suppress(ImportError,SyntaxError):
-                    path, module = splitpath(mod_dirpath)
+                with _utils_utils.suppress(ImportError,SyntaxError):
+                    path, module = _utils_utils.splitpath(mod_dirpath)
                     if not modpath[0]:
                         m = __import__("web.edit.modules." + basename)
                         m = eval("m.edit.modules." + basename)
@@ -596,7 +597,7 @@ def action(req):
             obj = q(Node).get(id)
             mysrc = srcnode
 
-            if isDirectory(obj) or isCollection(obj):
+            if _utils_utils.isDirectory(obj) or _utils_utils.isCollection(obj):
                 mysrc = obj.parents[0]
 
             if action == "delete":
@@ -756,7 +757,7 @@ def content(req):
     # but is not permitted anymore:
     assert "_" not in tabs
     assert "_" not in current
-    logg.debug("... %s inside %s.%s: ->  !!! current = %s !!!", get_user_id(), __name__, funcname(), current)
+    logg.debug("... %s inside %s.%s: ->  !!! current = %s !!!", _utils_utils.get_user_id(), __name__, _utils_utils.funcname(), current)
     msg = "%s selected editor module is %s" % (user.login_name, current)
     jsfunc = req.values.get("func", "")
     if jsfunc:
@@ -783,14 +784,14 @@ def content(req):
             for id in ids:
                 node = q(Data).get(id)
                 if hasattr(node, "show_node_image"):
-                    if not isDirectory(node) and not node.isContainer():
+                    if not _utils_utils.isDirectory(node) and not node.isContainer():
                         items.append((id, node.show_node_image()))
                     else:
                         items.append(("", node.show_node_image()))
         v["items"] = items
         if logg.isEnabledFor(logging.DEBUG):
             logg.debug("... %s inside %s.%s: -> display current images: items: %s",
-                       get_user_id(), __name__, funcname(), [_t[0] for _t in items])
+                       _utils_utils.get_user_id(), __name__, _utils_utils.funcname(), [_t[0] for _t in items])
 
         nid = req.values.get('srcnodeid', req.values.get('id'))
         if nid is None:
@@ -805,7 +806,7 @@ def content(req):
             folders_only = True
         n = q(Data).get(nid)
         s = []
-        path = (get_accessible_paths(n) or [[]])[0]
+        path = list(next(iter(get_accessible_paths(n) or ((),))))
         if not folders_only:
             path.append(n)
         for p in path:
@@ -818,8 +819,7 @@ def content(req):
     else:  # or current directory
         n = q(Data).get(long(ids[0]))
         s = []
-        path = (get_accessible_paths(n) or [[]])[0]
-        for p in path:
+        for p in next(iter(get_accessible_paths(n) or ((),))):
             s.append(
                      u"<a onClick='activateEditorTreeNode({id}); return true;'"
                      " href='/edit/edit_content?srcnodeid={id}&id={id}'>{label}</a>"
@@ -897,6 +897,9 @@ def content(req):
             ipath = getEditorIconPath(node)
 
     v["dircontent"] += '&nbsp;&nbsp;<img src="' + '/img/' + ipath + '" />'
+    v["nodesperpage_options"] = _web_common_pagination.get_config_nodes_per_page(True)
+    v["sortfield"] = v.get("collection_sortfield", req.values.get("sortfield", node.get("sortfield"))) or "off"
+    v["nodesperpage_from_req"] = req.values.get("nodes_per_page")
 
     req.response.set_data(_tal.processTAL(v, file="web/edit/edit.html", macro="frame_content", request=req))
 

@@ -73,14 +73,14 @@ BEGIN
     IF (SELECT to_regclass(idx::cstring) IS NULL) THEN
         EXECUTE 'CREATE INDEX ' || idx
         || ' ON node ((jsonb_limit_to_size(attrs->''' || attrname || ''')) NULLS LAST, id DESC)';
-        RAISE NOTICE 'created attribute sort index % (attr:%)', idx, attrname;
+        -- RAISE DEBUG 'created attribute sort index % (attr:%)', idx, attrname;
         created = array_append(created, 'asc');
     END IF;
 
     IF (SELECT to_regclass(idx_desc::cstring) IS NULL) THEN
         EXECUTE 'CREATE INDEX ' || idx_desc
         || ' ON node ((jsonb_limit_to_size(attrs->''' || attrname || ''')) DESC NULLS LAST, id DESC)';
-        RAISE NOTICE 'created attribute sort index % (attr:%)', idx_desc, attrname;
+        -- RAISE DEBUG 'created attribute sort index % (attr:%)', idx_desc, attrname;
         created = array_append(created, 'desc');
     END IF;
     
@@ -89,7 +89,12 @@ END;
 $f$;
 
 
-CREATE TYPE value_and_count AS (value text, count bigint);
+DO $$ BEGIN
+    CREATE TYPE value_and_count AS (value text, count bigint);
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
 CREATE OR REPLACE FUNCTION count_list_values_for_all_content_children(parent_id integer,attr text) RETURNS setof value_and_count
     LANGUAGE plpgsql
     STABLE

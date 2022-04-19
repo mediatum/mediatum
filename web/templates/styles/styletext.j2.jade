@@ -1,6 +1,6 @@
 - from "styles/macros.j2.jade" import itemsperpage
 
-= itemsperpage(nodesperpage)
+= itemsperpage(nodesperpage, nodesperpage_options)
 
 each file in files
   .preview_text(style="height: auto; padding-bottom: 10px", onmouseover="this.style.backgroundColor='#cccccc'", onmouseout="this.style.backgroundColor='white'")

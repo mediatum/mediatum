@@ -51,7 +51,7 @@ BEGIN
             GET STACKED DIAGNOSTICS exc_text = MESSAGE_TEXT,
                                     exc_detail = PG_EXCEPTION_DETAIL,
                                     exc_hint = PG_EXCEPTION_HINT;
-            RAISE NOTICE 'exception:  %\n%\nHINT: %', exc_text, exc_detail, exc_hint;
+            -- RAISE DEBUG 'exception:  %\n%\nHINT: %', exc_text, exc_detail, exc_hint;
 
             RETURN NULL;
     END;
@@ -65,7 +65,12 @@ END;
 $$;
 
 
-CREATE TYPE :search_path.tsvector_with_config AS (config regconfig, tsvec tsvector);
+DO $$ BEGIN
+    CREATE TYPE :search_path.tsvector_with_config AS (config regconfig, tsvec tsvector);
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
 CREATE OR REPLACE FUNCTION shortest_tsvec(_fulltext_id integer, configs regconfig[]) RETURNS :search_path.tsvector_with_config
     LANGUAGE plpgsql
     SET search_path = :search_path
@@ -81,7 +86,7 @@ BEGIN
 
     FOREACH config IN ARRAY configs LOOP
         tsvec = to_tsvector(config, text);
-        RAISE NOTICE 'test %, length of tsvector is %', config, length(tsvec);
+        -- RAISE DEBUG 'test %, length of tsvector is %', config, length(tsvec);
 
         IF min_tsvec IS NULL OR length(tsvec) < length(min_tsvec) THEN
             min_tsvec = tsvec;

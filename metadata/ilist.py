@@ -31,6 +31,7 @@ import html as _html
 import backports.functools_lru_cache as _backports_functools_lru_cache
 from sqlalchemy import func, sql
 from mediatumtal import tal
+
 from utils.utils import esc, suppress
 from core.metatype import Metatype
 from core import httpstatus
@@ -53,12 +54,18 @@ def count_list_values_for_all_content_children(collection_id, attribute_name):
     return map(_operator.itemgetter(0,1), res.fetchall())
 
 
-def get_list_values_for_nodes_with_schema(schema, attribute_name):
-    # XXX: more abstraction needed...
-    func_call = mediatumfunc.get_list_values_for_nodes_with_schema(schema, attribute_name)
-    stmt = sql.select([sql.text("*")], from_obj=func_call)
-    res = db.session.execute(stmt)
-    return map(_operator.itemgetter(0), res.fetchall())
+def _get_list_values_for_nodes_with_schema(schema, attribute_name):
+    res = q(Node.attrs[attribute_name]).filter_read_access()
+    # here we have filtered out node without access rights
+    res = res.filter(Node.schema == schema)
+    # here we have picked all nodes with the correct schema
+    res = _itertools.chain.from_iterable(res.yield_per(2**14))
+    res = _itertools.ifilter(None, res)
+    res = _itertools.imap(_operator.methodcaller("split", ";"), res)  # ( ("item1","item2"), ("item3","item4"), ...)
+    res = _itertools.chain.from_iterable(res)  # ( "item1", "item2", "item3", "item4", ...)
+    res = _itertools.imap(_operator.methodcaller("strip"), res)
+    res = _itertools.ifilter(None, res)
+    return frozenset(res)
 
 
 class m_ilist(Metatype):
@@ -139,16 +146,16 @@ class m_ilist(Metatype):
             req.response.status_code = httpstatus.HTTP_NOT_FOUND
             return httpstatus.HTTP_NOT_FOUND
 
-        index = get_list_values_for_nodes_with_schema(schema, fieldname)
+        index = sorted(_get_list_values_for_nodes_with_schema(schema, fieldname))
 
         req.response.status_code = httpstatus.HTTP_OK
         if req.params.get("print", "") != "":
             req.response.headers["Content-Disposition"] = "attachment; filename=index.txt"
-            req.response.set_data(u"".join(_itertools.imap(u"{}\r\n".format, _itertools.imap(_operator.methodcaller("strip"), index))))
+            req.response.set_data(u"".join(_itertools.imap(u"{}\r\n".format, index)))
             return
 
-        option_list = _itertools.imap(_html.escape,index)
-        option_list = u"".join(_itertools.imap(u"<option value=\"{0}\">{0}</option>\n".format,option_list))
+        option_list = _itertools.imap(_html.escape, index)
+        option_list = u"".join(_itertools.imap(u"<option value=\"{0}\">{0}</option>\n".format, option_list))
         req.response.set_data(tal.processTAL({"option_list": option_list, "fieldname": fieldname, "schema": schema}, file="metadata/ilist.html", macro="popup", request=req))
         return httpstatus.HTTP_OK
 

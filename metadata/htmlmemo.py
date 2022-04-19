@@ -26,10 +26,11 @@ import logging
 from collections import OrderedDict
 
 from mediatumtal import tal
+
+import core.translation as _core_translation
 from core import config
 from core import httpstatus
 from core.metatype import Metatype
-
 from core.translation import getDefaultLanguage
 
 import re
@@ -73,13 +74,13 @@ class m_htmlmemo(Metatype):
         return tal.getTAL("metadata/htmlmemo.html", dict(value=field.getValues()), macro="maskeditor", language=language)
 
     def getPopup(self, req):
-        if "type" in req.params:
-            req.response.content_type = "application/javascript"
-            if req.params.get('type') == "configfile":
-                from core.translation import lang
-                req.response.set_data(tal.processTAL({'lang': lang(req)}, file="metadata/htmlmemo.html", macro="ckconfig", request=req))
-            elif req.params.get('type') == "javascript":
-                req.response.set_data(tal.processTAL({}, file="metadata/htmlmemo.html", macro="javascript", request=req))
+        assert req.values["type"] == "configfile"
+        req.response.set_data(tal.processTAL(
+                dict(lang=_core_translation.lang(req)),
+                file="metadata/htmlmemo.html",
+                macro="ckconfig",
+                request=req,
+            ))
         req.response.status_code = httpstatus.HTTP_OK
         return httpstatus.HTTP_OK
 

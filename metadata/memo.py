@@ -85,14 +85,12 @@ class m_memo(Metatype):
 
     # method for popup methods of type memo
     def getPopup(self, req):
-        if "type" in req.params:
-            if req.params.get('type') == 'javascript':
-                req.response.content_type = "application/javascript"
-                from core.translation import lang
-                req.response.set_data(tal.processTAL({'lang': lang(req)}, file="metadata/memo.html", macro="javascript", request=req))
-        else:
-            req.response.set_data(tal.processTAL({"charmap": charmap, "name": req.params.get("name"), "value": req.params.get("value")},
-                                                 file="metadata/memo.html", macro="popup", request=req))
+        req.response.set_data(tal.processTAL(
+                dict(charmap=charmap, name=req.values.get("name"), value=req.values.get("value")),
+                file="metadata/memo.html",
+                macro="popup",
+                request=req,
+            ))
         req.response.status_code = httpstatus.HTTP_OK
         return httpstatus.HTTP_OK
 

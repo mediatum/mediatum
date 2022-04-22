@@ -131,9 +131,9 @@ class Data(Node):
         "files",
         { "menuoperation": (
             "acls",
-            "classes",
             "changeschema",
             { "menueditobject": (
+                "classes",
                 "moveobject",
                 "copyobject",
                 "deleteobject",

@@ -18,11 +18,9 @@ import core.httpstatus as _httpstatus
 from core import config, File, db
 from core.archive import Archive, get_archive_for_node
 from core.attachment import filebrowser
-from core.translation import t
 from core.postgres import check_type_arg_with_schema
 from contenttypes.data import Content, prepare_node_data, BadFile as _BadFile
 from utils.utils import isnewer
-from utils.compat import iteritems
 
 import lib.iptc.IPTC
 from utils.list import filter_scalar
@@ -33,7 +31,6 @@ from contextlib import contextmanager
 from StringIO import StringIO
 from collections import defaultdict
 import humanize
-from werkzeug.utils import cached_property
 from core import webconfig
 
 
@@ -543,9 +540,6 @@ class Image(Content):
                 # XXX: missing zoom tiles shouldn't abort the upload process
                 logg.exception("zoom image generation failed!")
 
-        # XXX: IPTC writeback will be fixed in #782
-        # self._writeback_iptc()
-
         db.session.commit()
 
     @classmethod
@@ -663,53 +657,3 @@ class Image(Content):
 
     def popup_thumbbig(self, req):
         self.popup_fullsize(req)
-
-    def event_metadata_changed(self):
-        pass
-        # XXX: IPTC writeback will be fixed in #782
-        # self._writeback_iptc()
-
-
-    def _writeback_iptc(self):
-        """ Handles metadata content if changed.
-            Creates a 'new' original [old == upload].
-        """
-        upload_file = None
-        original_path = None
-        original_file = None
-
-        for f in self.files:
-            if f.getType() == 'original':
-                original_file = f
-                if os.path.exists(f.abspath):
-                    original_path = f.abspath
-                if os.path.basename(original_path).startswith('-'):
-                    return
-
-            if f.type == 'upload':
-                if os.path.exists(f.abspath):
-                    upload_file = f
-
-        if not original_file:
-            logg.info('No original upload for writing IPTC.')
-            return
-
-        if not upload_file:
-            upload_path = '{}_upload{}'.format(os.path.splitext(original_path)[0], os.path.splitext(original_path)[-1])
-            import shutil
-            shutil.copy(original_path, upload_path)
-            self.files.append(File(upload_path, "upload", original_file.mimetype))
-            db.session.commit()
-
-        tag_dict = {}
-
-        for field in self.getMetaFields():
-            if field.get('type') == "meta" and field.getValueList()[0] != '' and 'on' in field.getValueList():
-                tag_name = field.getValueList()[0].split('iptc_')[-1]
-
-                field_value = self.get('iptc_{}'.format(field.getName()))
-
-                if field.getValueList()[0] != '' and 'on' in field.getValueList():
-                    tag_dict[tag_name] = field_value
-
-        lib.iptc.IPTC.write_iptc_tags(original_path, tag_dict)

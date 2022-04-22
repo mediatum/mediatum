@@ -4,11 +4,13 @@
 from __future__ import division
 from __future__ import print_function
 
-import sys
+import itertools as _itertools
+import json
 import os
 import re
+import sys
 import time
-import json
+
 import core as _core
 import core.config as config
 import core.csrfform as _core_csrfform
@@ -30,6 +32,7 @@ from schema.schema import Metadatatype
 from web.edit.edit_common import get_edit_label, get_searchparams
 from web.frontend.search import NoSearchResult
 from utils.pathutils import get_accessible_paths
+import core.database.postgres.node as _core_database_postgres_node
 import web.common.pagination as _web_common_pagination
 import web.common.sort as _sort
 
@@ -609,17 +612,33 @@ def action(req):
                 mysrc = obj.parents[0]
 
             if action == "delete":
-                if mysrc.has_write_access() and obj.has_write_access():
-                    if mysrc.id != trashdir.id:
-                        mysrc.children.remove(obj)
-                        changednodes[mysrc.id] = 1
-                        trashdir.children.append(obj)
-                        db.session.commit()
-                        changednodes[trashdir.id] = 1
-                        logg.info("%s moved to trash bin %s (%s, %s) from %s (%s, %s)",
-                                  user.login_name, obj.id, obj.name, obj.type, mysrc.id, mysrc.name, mysrc.type)
+                if obj.has_write_access():
+                    parentids = _itertools.chain.from_iterable(
+                        q(_core_database_postgres_node.t_nodemapping.c.nid).filter(
+                            _core_database_postgres_node.t_nodemapping.c.cid == id,
+                        ).all())
+                    for nid in parentids:
+                        srcnode = q(Node).get(nid)
+                        if srcnode is trashdir or not srcnode.has_write_access():
+                            continue
+                        srcnode.children.remove(obj)
+                        changednodes[nid] = 1
+                        logg.info(
+                            "%s moved to trash bin %s (%s, %s) from %s (%s, %s)",
+                            user.login_name,
+                            obj.id,
+                            obj.name,
+                            obj.type,
+                            nid,
+                            srcnode.name,
+                            srcnode.type,
+                        )
+                if changednodes:
+                    trashdir.children.append(obj)
+                    changednodes[trashdir.id] = 1
+                    db.session.commit()
                 else:
-                    logg.info("%s has no write access for node %s", user.login_name, mysrc.id)
+                    logg.info("%s has no write access", user.login_name)
                     req.response.set_data(
                         req.response.get_data() +
                         _tal.processTAL(

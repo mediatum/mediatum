@@ -599,7 +599,7 @@ def action(req):
             trashdir.children.remove(n)
             db.session.commit()
             dest = trashdir
-        changednodes[trashdir.id] = 1
+        changednodes[trashdir.id] = trashdir
         _parent_descr = [(p.name, p.id, p.type) for p in trashdir_parents]
         logg.info("%s cleared trash folder with id %s, child of %s", user.login_name, trashdir.id, _parent_descr)
         # return
@@ -622,7 +622,7 @@ def action(req):
                         if srcnode is trashdir or not srcnode.has_write_access():
                             continue
                         srcnode.children.remove(obj)
-                        changednodes[nid] = 1
+                        changednodes[nid] = srcnode
                         logg.info(
                             "%s moved to trash bin %s (%s, %s) from %s (%s, %s)",
                             user.login_name,
@@ -635,7 +635,7 @@ def action(req):
                         )
                 if changednodes:
                     trashdir.children.append(obj)
-                    changednodes[trashdir.id] = 1
+                    changednodes[trashdir.id] = trashdir
                     db.session.commit()
                 else:
                     logg.info("%s has no write access", user.login_name)
@@ -658,9 +658,9 @@ def action(req):
                     if not dest.is_descendant_of(obj):
                         if action == "move":
                             mysrc.children.remove(obj)
-                            changednodes[mysrc.id] = 1  # getLabel(mysrc)
+                            changednodes[mysrc.id] = mysrc  # getLabel(mysrc)
                         dest.children.append(obj)
-                        changednodes[dest.id] = 1  # getLabel(dest)
+                        changednodes[dest.id] = dest  # getLabel(dest)
                         db.session.commit()
 
                         logg.info(
@@ -685,8 +685,7 @@ def action(req):
     if action in ["move", "copy", "delete", "clear_trash"]:
         for nid in changednodes:
             try:
-                changednodes[nid] = getTreeLabel(
-                    q(Node).get(nid), lang=language)
+                changednodes[nid] = getTreeLabel(changednodes[nid], lang=language)
             except:
                 logg.exception("exception ignored: could not make fancytree label for node %s", nid)
         req.response.status_code = httpstatus.HTTP_OK

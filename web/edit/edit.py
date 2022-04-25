@@ -260,7 +260,7 @@ def getBreadcrumbs(menulist, tab):
                 return [menuitem.name, "*" + item.name]
     return [tab]
 
-def handletabs(req, ids, tabs, sort_choices):
+def _handletabs(req, ids, tabs, sort_choices):
     user = _user_from_session()
 
     n = q(Data).get(ids[0])
@@ -742,15 +742,12 @@ def content(req):
         req.response.set_data(t(language, "permission_denied"))
         return
 
-    v = {'dircontent': '', 'notdirectory': 0, 'operations': ''}
-
     if isinstance(node, _core_systemtypes.Root):
         tabs = "content"
     elif node is user.upload_dir:
         tabs = "upload"
     else:
         tabs = node.get_default_edit_tab()
-        v["notdirectory"] = 0
 
     current = req.values.get("tab", tabs)
     # "_" was used as separator in tab name in early versions,
@@ -769,12 +766,12 @@ def content(req):
     if current in ["files", "upload"]:
         ids = ids[0:1]
 
+    v = dict()
+
     try:
         v['nodeiconpath'] = getEditorIconPath(node)
     except:
         v['nodeiconpath'] = "webtree/directory.gif"
-
-    content = {'script': '', 'body': ''}
 
     # display current images
     if not isinstance(q(Data).get(ids[0]), Container):
@@ -817,6 +814,7 @@ def content(req):
                      )
         v["dircontent"] = ' <b>&raquo;</b> '.join(s)
     else:  # or current directory
+        v["notdirectory"] = 0
         n = q(Data).get(long(ids[0]))
         s = []
         for p in next(iter(get_accessible_paths(n) or ((),))):
@@ -831,58 +829,52 @@ def content(req):
     if tabs == 'upload' and current == 'content':
         current = 'upload'
 
-    if current in _editModules:
-        c = _editModules[current].getContent(req, ids)
-        if not c:
-            logg.debug('empty content')
-            return
-        if isinstance(c, int):
-            # module returned a custom http status code instead of HTML content
-            return c
-        content["body"] += c
+    if "globalsort" in req.values:
+        node.set("sortfield", req.values["globalsort"])
 
-        if "globalsort" in req.values:
-            node.set("sortfield", req.values["globalsort"])
+    v['collection_sortfield'] = req.values.get("sortfield", node.get("sortfield"))
 
-        v['collection_sortfield'] = req.values.get("sortfield", node.get("sortfield"))
-
+    if req.values.get("style") != "popup":
         if not isinstance(node, (_core_systemtypes.Root, Collections, Home)):
-            sortchoices = _sort.get_sort_choices(
+            sortchoices = tuple(_sort.get_sort_choices(
                     container=node,
                     off="off",
                     t_off=t(req, "off"),
                     t_desc=t(req, "descending"),
-                )
-            sortchoices = tuple(sortchoices)
+                ))
         else:
             sortchoices = ()
-    else:
-        content["body"] += _tal.processTAL(
-                dict(module=current),
-                file="web/edit/edit.html",
-                macro="module_error",
-                request=req,
-            )
+
+        v["tabs"] = _handletabs(req, ids, tabs, sortchoices)
+
+    c = _editModules[current].getContent(req, ids)
+    if not c:
+        logg.debug('empty content')
+        return
+    if isinstance(c, int):
+        # module returned a custom http status code instead of HTML content
+        return c
 
     if req.values.get("style") == "popup":  # normal page with header
         return
 
-    v["tabs"] = handletabs(req, ids, tabs, sortchoices)
-    v["script"] = content["script"]
-    v["body"] = content["body"]
-    v["paging"] = showPaging(req, current, ids)
-    v["node"] = node
-    v["ids"] = (req.values.get("ids") or req.values.get("id", "")).split(",")
-    v["tab"] = current
-    v["operations"] = _tal.processTAL(
-            dict(iscontainer=node.isContainer()),
-            file="web/edit/edit_common.html",
-            macro="show_operations",
-            request=req,
-        )
-    v['user'] = user
-    v['language'] = lang(req)
-    v['t'] = t
+    v.update(
+            script="",
+            body=c,
+            paging=showPaging(req, current, ids),
+            node=node,
+            ids=(req.values.get("ids") or req.values.get("id", "")).split(","),
+            tab=current,
+            operations=_tal.processTAL(
+                 dict(iscontainer=node.isContainer()),
+                 file="web/edit/edit_common.html",
+                 macro="show_operations",
+                 request=req,
+             ),
+            user=user,
+            language=lang(req),
+            t=t,
+           )
 
     # add icons to breadcrumbs
     ipath = 'webtree/directory.gif'

@@ -261,11 +261,15 @@ def _handletabs(req, ids, tabs, sort_choices):
     if n.type.startswith("workflow"):
         n = q(_core_systemtypes.Root).one()
 
+    srcnodeid = req.values.get('srcnodeid', '')
     skip_items = set(_utils_utils.get_menu_strings(n.editor_menu))
     skip_items.intersection_update(user.hidden_edit_functions)
     if len(ids) > 1:
         skip_items.add("version")
         skip_items.add("view")
+    if srcnodeid and q(Node).get(int(srcnodeid)) is user.trash_dir:
+        skip_items.add("deleteobject")
+        skip_items.add("deleteall")
     menu = _utils_utils.parse_menu_struct(n.editor_menu, skip_items)
 
     nodes_per_page = req.args.get("nodes_per_page", type=int)
@@ -289,7 +293,7 @@ def _handletabs(req, ids, tabs, sort_choices):
                 user=user,
                 ids=ids,
                 idstr=",".join(ids),
-                srcnodeid=req.values.get('srcnodeid', ''),
+                srcnodeid=srcnodeid,
                 menu=menu,
                 breadcrumbs=getBreadcrumbs(menu, req.values.get("tab", tabs)),
                 sort_choices=sort_choices,

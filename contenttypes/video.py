@@ -18,6 +18,9 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import division
+from __future__ import print_function
+
 import shutil
 import json
 import logging
@@ -108,7 +111,7 @@ class Video(Content):
 
         captions_info = getCaptionInfoDict(self)
         if captions_info:
-            logg.debug("video: '%s' (%s): captions: dictionary 'captions_info': %s" % (self.name, str(self.id), str(captions_info)))
+            logg.debug("video: '%s' (%s): captions: dictionary 'captions_info': %s", self.name, str(self.id), str(captions_info))
 
         obj["captions_info"] = json.dumps(captions_info)
         return obj
@@ -178,7 +181,7 @@ class Video(Content):
         except ValueError:
             return 0
         else:
-            return format_date(make_date(0, 0, 0, int(duration) / 3600, duration / 60, int(duration % 60)), '%H:%M:%S')
+            return format_date(make_date(0, 0, 0, int(duration) // 3600, duration / 60, int(duration % 60)), '%H:%M:%S')
 
     def get_unwanted_exif_attributes(self):
         '''

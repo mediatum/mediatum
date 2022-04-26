@@ -25,6 +25,9 @@ attribute_autoindex_languages=german,english,simple
 
 """
 from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 import logging
 from sqlalchemy import text
 
@@ -53,10 +56,10 @@ def _get_languages_from_config(key):
         if fts_config_exists(lang):
             default_languages.add(lang)
         else:
-            logg.warn("postgres search config '%s' not found, ignored", lang)
+            logg.warning("postgres search config '%s' not found, ignored", lang)
 
     if not default_languages:
-        logg.warn("no valid postgres search configs found, using 'simple' config")
+        logg.warning("no valid postgres search configs found, using 'simple' config")
         default_languages.add("simple")
 
     return default_languages

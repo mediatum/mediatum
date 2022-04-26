@@ -17,6 +17,9 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import division
+from __future__ import print_function
+
 import re
 import logging
 from warnings import warn
@@ -342,9 +345,9 @@ def get_license_urls(node):
     if license:
         parts = [p.strip() for p in license.split(",")]
         if len(parts) != 2:
-            logg.warn("invalid license string '%s', must be comma-separated and contain 2 elements", license)
+            logg.warning("invalid license string '%s', must be comma-separated and contain 2 elements", license)
         elif not parts[1].startswith("http"):
-            logg.warn("invalid license string '%s', second element must start with http", license)
+            logg.warning("invalid license string '%s', second element must start with http", license)
         else:
             license_name, license_url = parts
             # XXX: hardcoded URL
@@ -357,7 +360,7 @@ def get_metis_url(node):  # better: get_tracking_pixel_url(s)?
     """Reads the `metis_url` attribute of `node` and returns the metis URL"""
     metis_url = node.get("metis_url")
     if metis_url and not metis_url.startswith("http"):
-        logg.warn("omitting invalid metis_url string '%s', must start with http", metis_url)
+        logg.warning("omitting invalid metis_url string '%s', must start with http", metis_url)
         metis_url = None
 
     return metis_url

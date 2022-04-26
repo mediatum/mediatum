@@ -20,8 +20,13 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-
+from __future__ import division
 from __future__ import print_function
+
+import logging as _logging
+
+
+_logg = _logging.getLogger(__name__)
 
 
 # This code patches a potential security risk in `urlparse.urlsplit`.
@@ -61,9 +66,7 @@ SYSTEM_TMP_DIR = tempfile.gettempdir()
 
 def stackdump_setup():
     import codecs
-    import logging
     import sys
-    logg = logging.getLogger(__name__)
     # stackdump
 
     import os
@@ -75,12 +78,12 @@ def stackdump_setup():
         ultratb = None
 
     if ultratb is None:
-        logg.warn("IPython not installed, stack dumps not available!")
+        _logg.warning("IPython not installed, stack dumps not available!")
     else:
-        logg.info("IPython installed, write stack dumps to tmpdir with: `kill -QUIT <mediatum_pid>`")
+        _logg.info("IPython installed, write stack dumps to tmpdir with: `kill -QUIT <mediatum_pid>`")
 
         def dumpstacks(signal, frame):
-            print("dumping stack")
+            _logg.debug("dumping stack")
             # we must use the system temp dir here because mediaTUM config must not be loaded here
             filepath = os.path.join(SYSTEM_TMP_DIR, "mediatum_threadstatus")
             id2name = dict([(th.ident, th.name) for th in threading.enumerate()])
@@ -147,7 +150,7 @@ def make_flask_app():
                         help="run automatic database schema upgrades on startup")
 
     args = parser.parse_args()
-    print("start.py args:", args)
+    _logg.debug("start.py args: %s", args)
 
 
     if args.stackdump:

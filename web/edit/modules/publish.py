@@ -17,6 +17,9 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import division
+from __future__ import print_function
+
 import mediatumtal.tal as _tal
 
 import web.edit.edit_common as _web_edit_edit_common
@@ -66,7 +69,7 @@ def getContent(req, ids):
                         errorids.append(f)
                     mask_validated = True
 
-            logg.error(errorids)
+            logg.error("%s", errorids)
             if len(errorids)>0: # object faulty
                 num_req_err_nodes +=1
                 # if object faulty, it is not necessary to do the rest of error handling for this object
@@ -74,7 +77,7 @@ def getContent(req, ids):
 
             if not mask_validated:
                 msg = "user %r going to publish node %r without having validated edit.lastmask" % (user, obj)
-                logg.warning(msg)
+                logg.warning("%s", msg)
                 # should we validate standard edit mask here?
 
             for dest_id in req.params.get("destination", "").split(","):
@@ -116,7 +119,11 @@ def getContent(req, ids):
                     else:
                         num_rights_err_nodes += 1
                         errorids.append(obj.id)
-                        logg.error("Error in publishing of node {}: Destination node {} is child of node.".format(obj_id, dest.id))
+                        logg.error(
+                                "Error in publishing of node %s: Destination node %s is child of node.",
+                                obj_id,
+                                dest.id,
+                            )
                 else:
                     # error already logged
                     num_rights_err_nodes += 1
@@ -128,7 +135,7 @@ def getContent(req, ids):
                     db.session.commit()
                 except:
                     num_db_err_nodes += 1
-                    logg.exception("Error in publishing of node {}: Database error".format(obj.id))
+                    logg.exception("Error in publishing of node %s: Database error", obj.id)
                     errorids.append(obj.id)
 
 

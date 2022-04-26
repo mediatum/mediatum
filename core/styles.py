@@ -17,6 +17,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import division
+from __future__ import print_function
 
 import codecs
 import logging
@@ -238,7 +240,7 @@ def _load_styles_from_path(dirpath):
                 styles_for_type = full_styles_from_path.setdefault(style.contenttype, {})
                 styles_for_type[style.name] = style
     else:
-        logg.warn("style path %s not found, ignoring", dirpath)
+        logg.warning("style path %s not found, ignoring", dirpath)
 
     return full_styles_from_path, list_styles_from_path
 

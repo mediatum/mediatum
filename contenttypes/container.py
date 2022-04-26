@@ -17,6 +17,9 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import division
+from __future__ import print_function
+
 import re
 import os
 import logging
@@ -370,4 +373,3 @@ class Collections(Container):
 @check_type_arg_with_schema
 class Home(Container):
     pass
-

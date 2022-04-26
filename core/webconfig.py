@@ -17,6 +17,9 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import division
+from __future__ import print_function
+
 import logging
 import os.path
 import urllib
@@ -45,7 +48,7 @@ def init_theme():
         theme_basepath = find_plugin_with_theme(theme_name)
 
         if theme_basepath is None:
-            logg.warn("theme from config file with name '%s' not found, maybe a plugin is missing?", theme_name)
+            logg.warning("theme from config file with name '%s' not found, maybe a plugin is missing?", theme_name)
             
         else:
             theme_dir = os.path.join(theme_basepath, "themes", theme_name)
@@ -56,7 +59,7 @@ def init_theme():
 
     theme = DefaultTheme()
     theme.activate()
-    logg.warn("using (broken) standard theme, you should create your own theme :)")
+    logg.warning("using (broken) standard theme, you should create your own theme :)")
 
 
 def loadServices():
@@ -297,4 +300,3 @@ def initContexts():
     file.addHandler("error").addPattern("/error")
     file.addHandler("error_variable_msg").addPattern("/error_variable_msg")
     file.addHandler("db_error").addPattern("/db_error")
-

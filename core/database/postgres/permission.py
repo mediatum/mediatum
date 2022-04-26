@@ -3,6 +3,9 @@
     :copyright: (c) 2015 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
+from __future__ import division
+from __future__ import print_function
+
 from sqlalchemy import Integer, Unicode, Boolean, Text, sql, UniqueConstraint
 from sqlalchemy.dialects.postgresql import ARRAY, CIDR
 from sqlalchemy.orm import column_property, object_session

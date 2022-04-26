@@ -17,6 +17,9 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import division
+from __future__ import print_function
+
 import sys
 import os
 import re
@@ -636,14 +639,20 @@ def action(req):
                         changednodes[dest.id] = 1  # getLabel(dest)
                         db.session.commit()
 
-                        if logg.isEnabledFor(logging.INFO):
-                            _what = "%s %s %r (%s, %s) " % (
-                                user.login_name, action, obj.id, obj.name, obj.type)
-                            _from = "from %s (%s, %s) " % (
-                                mysrc.id, mysrc.name, mysrc.type)
-                            _to = "to %s (%s, %s)" % (
-                                dest.id, dest.name, dest.type)
-                            logg.info(_what + _from + _to)
+                        logg.info(
+                            "%s %s %r (%s, %s) from %s (%s, %s) to %s (%s, %s)",
+                            user.login_name,
+                            action,
+                            obj.id,
+                            obj.name,
+                            obj.type,
+                            mysrc.id,
+                            mysrc.name,
+                            mysrc.type,
+                            dest.id,
+                            dest.name,
+                            dest.type,
+                        )
                     else:
                         logg.error("%s could not %s %s from %s to %s", user.login_name, action, obj.id, mysrc.id, dest.id)
                 else:
@@ -759,7 +768,7 @@ def content(req):
     jsfunc = req.values.get("func", "")
     if jsfunc:
         msg = msg + (', js-function: %r' % jsfunc)
-    logg.info(msg)
+    logg.info("%s", msg)
 
     # some tabs operate on only one file
     # if current in ["files", "view", "upload"]:

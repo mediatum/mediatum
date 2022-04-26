@@ -17,6 +17,9 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import division
+from __future__ import print_function
+
 from functools import wraps
 import sys
 import importlib
@@ -24,7 +27,6 @@ import logging
 import locale
 import tempfile as _tempfile
 import os as _os
-from pprint import pformat
 from utils.locks import register_lock as _register_lock
 
 import core.config as config
@@ -94,8 +96,8 @@ def tal_setup():
 
 def log_basic_sys_info():
     logg.info("Python Version is %s, base path ist at %s", sys.version.split("\n")[0], config.basedir)
-    logg.debug("sys.path is\n%s", pformat(sys.path))
-
+    for path in sys.path:
+        logg.debug("sys.path: %s", path)
 
 def check_imports():
     external_modules = [
@@ -190,10 +192,8 @@ def add_ustr_builtin():
 
     def ustr(s):
         if isinstance(s, unicode):
-            inspection_log.warn("ustr() called on unicode object, ignoring '%s'", s)
+            inspection_log.warning("ustr() called on unicode object, ignoring '%s'", s)
             return s
-    #     elif isinstance(s, int):
-    #         logg.warn("ustr() called on int object '%s'", s)
 
         return str(s)
 
@@ -232,7 +232,7 @@ def check_undefined_nodeclasses(stub_undefined_nodetypes=None, fail_if_undefined
         if fail_if_undefined_nodetypes:
             raise Exception(msg)
         else:
-            logg.warn(msg)
+            logg.warning("%s", msg)
 
         if stub_undefined_nodetypes is None:
             stub_undefined_nodetypes = config.get("config.stub_undefined_nodetypes", "false") == "true"

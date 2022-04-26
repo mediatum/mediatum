@@ -7,9 +7,9 @@
     that allow to override the executable's name with a
     path given in the config file's section "external".
 """
-
-
 from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 
 import logging
@@ -44,7 +44,7 @@ def _resolve_wrapper(fctn):
         if not core.config.settings:
             core.config.initialize()
         if not core.config.settings:
-            logg.warn("cannot check executable name '%s' for replacement: failed to initialize config", name)
+            logg.warning("cannot check executable name '%s' for replacement: failed to initialize config", name)
             return name
         if core.config.get("external.{}".format(name)):
             new_name = core.config.get("external.{}".format(name), name)

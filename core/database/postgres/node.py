@@ -3,6 +3,9 @@
     :copyright: (c) 2014 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
+from __future__ import division
+from __future__ import print_function
+
 import datetime
 import logging
 from json import dumps
@@ -328,7 +331,7 @@ class Node(DeclarativeBase, NodeMixin):
         try:
             ip = IPv4Address(req.remote_addr)
         except AddressValueError:
-            logg.warn("illegal IP address %s, refusing IP-based access", req.remote_addr)
+            logg.warning("illegal IP address %s, refusing IP-based access", req.remote_addr)
             ip = None
 
         return Node.has_access_to_node_id(node_id, accesstype, user, ip, date)

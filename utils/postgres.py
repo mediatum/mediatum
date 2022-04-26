@@ -5,6 +5,9 @@
     :copyright: (c) 2015 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
+from __future__ import division
+from __future__ import print_function
+
 import logging
 import warnings
 from functools import partial
@@ -83,7 +86,7 @@ def run_maint_command_for_tables(command, s, table_fullnames=None, db_metadata=N
 
     for fullname in table_fullnames:
         cmd = command + " " + fullname
-        logg.info(cmd)
+        logg.info("%s", cmd)
         conn.execute(cmd)
 
     logg.info("completed %s", command)
@@ -93,4 +96,3 @@ reindex_tables = partial(run_maint_command_for_tables, "REINDEX TABLE")
 vacuum_tables = partial(run_maint_command_for_tables, "VACUUM")
 vacuum_analyze_tables = partial(run_maint_command_for_tables, "VACUUM ANALYZE")
 vacuum_full_tables = partial(run_maint_command_for_tables, "VACUUM FULL")
-

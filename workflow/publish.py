@@ -17,6 +17,9 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import division
+from __future__ import print_function
+
 from .workflow import WorkflowStep, registerStep
 from core.translation import t, addLabels
 from core import UserGroup, db
@@ -74,7 +77,7 @@ class WorkflowStep_Publish(WorkflowStep):
             elif self.get("publishsetupdatetime") != "":
                 node.set('updatetime', unicode(now()))
                 db.session.commit()
-        logg.debug("publish node id = %d: db.session.commit()", node.id);
+        logg.debug("publish node id = %d: db.session.commit()", node.id)
 
         self.forward(node, True)
 

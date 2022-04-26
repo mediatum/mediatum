@@ -18,6 +18,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import division
+from __future__ import print_function
 
 import logging
 
@@ -72,7 +74,7 @@ class OAISetGroup:
                 res = [n.id for n in res if nodefilter(setspec, n)]
             return res
         else:
-            logg.error("OAI: Error: no function 'getNodesForSetSpec' found for setSpec='%s', returning empty list", setspec)
+            logg.error("OAI: no function 'getNodesForSetSpec' found for setSpec='%s', returning empty list", setspec)
             return []
 
     def getNodesFilterForSetSpec(self, setspec, schemata):
@@ -80,7 +82,7 @@ class OAISetGroup:
             setspecFilter = self.d_filters.get(setspec)
             return setspecFilter
         else:
-            logg.error("OAI: Error: no function 'getNodesForSetSpec' found for setSpec='%s', returning empty list", setspec)
+            logg.error("OAI: no function 'getNodesForSetSpec' found for setSpec='%s', returning empty list", setspec)
             return []
 
     def getSetSpecsForNode(self, node, schemata=[]):
@@ -100,7 +102,7 @@ class OAISetGroup:
                         erg.append(setspec)
             return erg
         else:
-            logg.error("OAI: Error: set group %s: no function 'getSetSpecsForNode' found for node.id='%s', node.type='%s', returning empty list",
+            logg.error("OAI: set group %s: no function 'getSetSpecsForNode' found for node.id='%s', node.type='%s', returning empty list",
                 self, node.id, node.type)
             return []
 

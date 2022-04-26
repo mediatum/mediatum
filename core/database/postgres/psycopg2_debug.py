@@ -6,7 +6,9 @@
     :copyright: (c) 2015 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
+from __future__ import division
 from __future__ import print_function
+
 import logging
 import time
 from psycopg2.extensions import connection as _connection
@@ -101,23 +103,21 @@ class StatementHistory(object):
 
     def print_last_statement(self, show_time=True, highlight=True, pygments_style=DEFAULT_PYGMENTS_STYLE):
         if self.last_statement is None:
-            print("history is empty")
+            logg.info("history is empty")
             return
 
         highlight_format_stmt = _make_statement_formatter(show_time, highlight, pygments_style)
-        print()
-        print(highlight_format_stmt(self.last_statement, self.last_timestamp, self.last_duration))
+        logg.info("%s", highlight_format_stmt(self.last_statement, self.last_timestamp, self.last_duration))
 
     def print_statements(self, show_time=True, highlight=True, pygments_style=DEFAULT_PYGMENTS_STYLE):
         if self.last_statement is None:
-            print("history is empty")
+            logg.info("history is empty")
             return
 
         highlight_format_stmt = _make_statement_formatter(show_time, highlight, pygments_style)
-        print()
 
         for stmt, (timestamp, duration) in self._statements.items(multi=True):
-            print(highlight_format_stmt(stmt, timestamp, duration))
+            logg.info("%s", highlight_format_stmt(stmt, timestamp, duration))
 
 
 class DebugCursor(_cursor):

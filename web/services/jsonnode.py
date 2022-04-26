@@ -18,6 +18,9 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import division
+from __future__ import print_function
+
 import json
 import logging
 import flask as _flask
@@ -55,10 +58,6 @@ def buildNodeDescriptor(params, node, indent=None, written=None, children=True, 
 
     if mask == 'default':
         nodedict['defaultexport'] = node.show_node_text(labels=1, language=params.get('lang', ''))
-        # except:
-        #    logg.error('Error: web.services.jsonnode: could not get default mask content')
-        #    nodedict['defaultexport'] = []
-
     elif mask not in ["", "none"]:  # deliver every mask
         try:
             mask_obj = getMetaType(node.getSchema()).getMask(mask)
@@ -152,4 +151,3 @@ def buildNodeDescriptor(params, node, indent=None, written=None, children=True, 
     if 'nodeschema' in params:
         nodedict['schema'] = node.schema
     return nd
-

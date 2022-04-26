@@ -19,6 +19,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import division
+from __future__ import print_function
 
 import logging
 import os.path
@@ -100,7 +102,7 @@ class WorkflowStep_SendEmail(WorkflowStep):
                 logg.exception("Error while sending mail- node stays in workflowstep %s %s", self.id, self.name)
                 return
         else:
-            logg.info("sending mail prevented by condition %s " % (sendcondition))
+            logg.info("sending mail prevented by condition %s ", sendcondition)
             return
         for s in ["mailtmp.from", "mailtmp.to", "mailtmp.subject", "mailtmp.text",
                   "mailtmp.error", "mailtmp.talerror", "mailtmp.send"]:

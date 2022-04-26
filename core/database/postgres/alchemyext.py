@@ -8,6 +8,9 @@
     :copyright: (c) 2014 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
+from __future__ import division
+from __future__ import print_function
+
 from functools import partial
 import logging
 from warnings import warn
@@ -226,9 +229,9 @@ def toggle_triggers(action, table_fullnames=None):
 
     if not table_fullnames:
         table_fullnames = [t.fullname for t in reverse_sorted_tables()]
-        logg.warn("%s user triggers for all tables", action)
+        logg.warning("%s user triggers for all tables", action)
     else:
-        logg.warn("%s user triggers for tables: %s", action, table_fullnames)
+        logg.warning("%s user triggers for tables: %s", action, table_fullnames)
 
     for fullname in table_fullnames:
         s.execute('ALTER TABLE {} {} TRIGGER USER;'.format(fullname, action.upper()))

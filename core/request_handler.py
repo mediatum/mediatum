@@ -1,3 +1,6 @@
+from __future__ import division
+from __future__ import print_function
+
 import re as _re
 import time as _time
 import os as _os
@@ -462,7 +465,6 @@ def sendFile(req, path, content_type, force=0, nginx_x_accel_redirect_enabled=Tr
         return
     if req.if_modified_since:
         if mtime <= req.if_modified_since and not force:
-            # print "File "+path+" was not modified since "+ustr(ims_date)+" (current filedate is "+ustr(mtime)+")-> 304"
             req.response.status_code = 304
             return
 
@@ -700,7 +702,6 @@ class default_handler:
             if mtime <= request.if_modified_since:
                 request.response.status_code = 304
                 done(request)
-                # print "File "+path+" was not modified since "+ustr(ims_date)+" (current filedate is "+ustr(mtime)+")"
                 return
         try:
             file = self.filesystem.open(path, 'rb')
@@ -804,7 +805,7 @@ def callhandler(handler_func, req):
 
             mail_to_address = _config.get('email.support')
             if not mail_to_address:
-                _logg.warn("no support mail address configured, consider setting it with `email.support`")
+                _logg.warning("no support mail address configured, consider setting it with `email.support`")
 
             _logg.exception(u"exception (xid=%s) while handling request %s %s, %s",
                            xid, req.method, req.mediatum_contextfree_path, dict(req.args))

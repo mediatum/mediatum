@@ -3,6 +3,8 @@
     :copyright: (c) 2015 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
+from __future__ import division
+from __future__ import print_function
 
 import logging
 from sqlalchemy import func as sqlfunc
@@ -35,7 +37,7 @@ def import_node_fulltext(node, overwrite=False):
 
             logg.info("imported fulltext for node %s from %s", node.id, fi.path)
         else:
-            logg.warn("missing fulltext for node %s from %s", node.id, fi.path)
+            logg.warning("missing fulltext for node %s from %s", node.id, fi.path)
 
     if fulltexts:
         node.fulltext = u"\n---\n".join(fulltexts)

@@ -17,6 +17,9 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import division
+from __future__ import print_function
+
 from core.translation import translate, lang
 from core.database.postgres.permission import AccessRuleset
 from core import db

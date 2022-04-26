@@ -1,6 +1,9 @@
 #! /usr/bin/env nix-shell
 #! nix-shell -i python -p python
 
+from __future__ import division
+from __future__ import print_function
+
 import os
 import sys
 
@@ -9,7 +12,6 @@ sys.path.append(os.path.normpath(os.path.join(__file__, "..", "..")))
 import time
 import logging
 import configargparse
-from pprint import pprint
 
 # third-party imports
 from sqlalchemy import or_
@@ -32,9 +34,8 @@ HASH_FILETYPES = File.ORIGINAL_FILETYPES
 
 
 def verify_hash(_file):
-    print('\n--')
     logg.info('File: %s', _file)
-    pprint(_file.to_dict())
+    logg.debug("%r", _file.to_dict())
     hash_ok = _file.verify_checksum()
     s.commit()
 
@@ -42,8 +43,8 @@ def verify_hash(_file):
     logg.info('file found: %s', file_found)
     if file_found:
         logg.info('File: %s', _file.abspath)
-        logg.info('  - size: %s', _file.size_humanized)
-        logg.info('  - ismount: %s', os.path.ismount(_file.abspath))
+        logg.info('size: %s', _file.size_humanized)
+        logg.info('ismount: %s', os.path.ismount(_file.abspath))
     return hash_ok
 
 
@@ -55,7 +56,6 @@ def verify_hashes(files, **kwargs):
     start_time = time.time()
     if files is None:
         files = []
-    print('')
     for _file in files:
         file_size = _file.size
         if kwargs['ignore']:
@@ -87,10 +87,8 @@ def verify_hashes(files, **kwargs):
         if kwargs['limit'] and cnt == kwargs['limit']:
             logg.info('Verification of checksums interrupted after %i files as requested.', kwargs['limit'])
             break
-    print('')
     logg.info('Verified checksums of %i files, %i bytes processed in %.2f hours', cnt, total_size, total_hours)
     s.commit()
-    print('')
 
 
 def stats():
@@ -156,7 +154,7 @@ def main():
     parser.add_argument("-i", "--info", action="store_true",
                         help="Print checksum statistics and return")
 
-    print('\n** %s **' % __file__)
+    logg.debug('%s', __file__)
 
     args = parser.parse_args()
 
@@ -168,7 +166,7 @@ def main():
             ignored_ext.append(ext.lower())
         args.ignore = ignored_ext
 
-    pprint(args)
+    logg.debug("%s", args)
 
     if args.info:
         stats()
@@ -215,5 +213,5 @@ if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print("%s stopped by KeyboardInterrupt." % __file__)
+        logg.error("%s stopped by KeyboardInterrupt.",  __file__)
         sys.exit(1)

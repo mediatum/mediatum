@@ -3,6 +3,9 @@
     :copyright: (c) 2014 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
+from __future__ import division
+from __future__ import print_function
+
 from warnings import warn
 
 
@@ -46,5 +49,3 @@ def check_type_arg_with_schema(cls):
 
     cls.__init__ = init
     return cls
-
-

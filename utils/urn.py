@@ -18,6 +18,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import division
+from __future__ import print_function
 
 
 chkmap = {
@@ -36,7 +38,7 @@ def buildChecksum(urn):
         for digit in chkmap.get(char, ""):
             sum += int(digit) * i
             i = i + 1
-    return ustr(sum / int(digit))[-1:]
+    return ustr(sum // int(digit))[-1:]
 
 
 def buildNBN(snid1, snid2, niss):
@@ -82,4 +84,3 @@ def increaseURN(urn):
         # re-add checksum digit
         urn += buildChecksum(urn)
     return urn
-

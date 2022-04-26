@@ -5,7 +5,8 @@
     
     Python access layer for the mediaTUM web UI
 """
-
+from __future__ import division
+from __future__ import print_function
 
 from nap.url import Url
 from utils.clients.sessionurl import SessionUrl

@@ -738,13 +738,11 @@ class MediatumMagics(Magics):
         if args.all:
             def check_masks_of_mdt(mdt):
                 for mask in mdt.masks:
-                    print("-" * 80)
                     print(u"checking mask {} of mdt {}".format(mask.name, mdt.name))
                     metadatatypes.checkMask(mask, fix=args.fix, verbose=1, show_unused=1)
 
             if args.allmasks:
                 for mdt in q(Metadatatype):
-                    print("=" * 80)
                     print("checking metadatatype", mdt.name)
                     check_masks_of_mdt(mdt)
             else:
@@ -907,7 +905,6 @@ def explain(query, analyze=False, pygments_style="native"):
         stmt_start = 16 if analyze else 8
         stmt = db.statement_history.last_statement[stmt_start:]
         formatted_statement = db.statement_history.format_statement(stmt)
-        print()
         print(formatted_statement)
         print(explained)
 

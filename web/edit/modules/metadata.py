@@ -17,13 +17,15 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import division
+from __future__ import print_function
+
 import logging
 import mediatumtal.tal as _tal
 
 from utils.date import format_date, parse_date, now
 from utils.utils import funcname
 from core.translation import lang, t, getDefaultLanguage
-from pprint import pformat as pf
 from core import httpstatus
 from core import Node, db
 from contenttypes import Container
@@ -168,7 +170,7 @@ def getContent(req, ids):
     user = user_from_session()
 
     if "metadata" in user.hidden_edit_functions:
-        print "error 1"
+        logg.error("edit function is hidden")
         req.response.status_code = httpstatus.HTTP_FORBIDDEN
         return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
@@ -270,7 +272,7 @@ def getContent(req, ids):
     if "edit_metadata" in req.params:
         flag_nodename_changed = _handle_edit_metadata(req, mask, nodes)
         logg.debug("%s change metadata %s", user.login_name, idstr)
-        logg.debug(pf(req.params))
+        logg.debug("%r", req.params)
 
     if "edit_metadata" in req.params or node.system_attrs.get("faulty") == "true":
         if not hasattr(mask, "i_am_not_a_mask"):

@@ -1,4 +1,7 @@
-﻿CREATE TYPE integrity_check_noderelation AS (nid integer, cid integer, distance integer, reason text);
+﻿-- Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+-- SPDX-License-Identifier: AGPL-3.0-or-later
+
+CREATE TYPE integrity_check_noderelation AS (nid integer, cid integer, distance integer, reason text);
 
 -- calculates the transitive closure of the node tree and compares the result with the contents of noderelation
 CREATE OR REPLACE FUNCTION check_transitive_integrity() RETURNS SETOF integrity_check_noderelation

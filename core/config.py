@@ -1,4 +1,8 @@
 #!/usr/bin/python
+
+# Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 XXX: This module should be replaced by stdlib's `inifile` or something better.
 
@@ -12,11 +16,11 @@ Additionally, we have the convention to represent lists as comma-separated value
 
     key=value1,value2,value3
 
-
 Whitespace around commas is stripped from values.
 
 A list can be fetched with `config.getlist()`.
 """
+
 from __future__ import division
 from __future__ import print_function
 

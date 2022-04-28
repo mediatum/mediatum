@@ -10,8 +10,8 @@ For more information and contributions [contact us](mailto:mediatum@ub.tum.de).
 
 ## License
 
-All mediaTUM software is licensed under the [GNU General Public License 3](http://www.gnu.org/licenses/gpl.html).
-You can redistribute it and/or modify it under the terms of the GPL 3 as published by
+All mediaTUM software is licensed under the [GNU AFFERO GENERAL PUBLIC LICENSE 3](https://www.gnu.org/licenses/agpl-3.0.txt).
+You can redistribute it and/or modify it under the terms of the AGPL 3 as published by
 the Free Software Foundation.
 
 ## Documentation

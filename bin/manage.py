@@ -1,9 +1,10 @@
-#!/usr/bin/env python2
+# !/usr/bin/env python2
 # -*- coding: utf-8 -*-
-"""
-    :copyright: (c) 2015 by the mediaTUM authors
-    :license: GPL3, see COPYING for details
 
+# Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+"""
 mediaTUM management script.
 
 manage.py <subcommand> args...
@@ -12,8 +13,6 @@ see
 
 * ``python bin/manage.py --help`` for details
 * ``python bin/manage.py <subcommand> --help`` for details for a subcommand
-
-
 """
 from __future__ import division
 from __future__ import print_function

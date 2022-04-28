@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+
+# Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
     utils.compat
     ~~~~~~~~~~~~~
@@ -6,10 +10,8 @@
     Some py2/py3 compatibility support based on a stripped down
     version of six so we don't have to depend on a specific version
     of it.
-
-    :copyright: (c) 2013 by Armin Ronacher.
-    :license: BSD, see LICENSE for more details.
 """
+
 from __future__ import division
 from __future__ import print_function
 

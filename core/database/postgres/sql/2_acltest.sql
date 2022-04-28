@@ -1,4 +1,7 @@
-WITH RECURSIVE rootaccess(nid) AS 
+-- Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+-- SPDX-License-Identifier: AGPL-3.0-or-later
+
+WITH RECURSIVE rootaccess(nid) AS
     (SELECT nm.cid as nid
     FROM nodemapping nm
     WHERE nm.nid = 1

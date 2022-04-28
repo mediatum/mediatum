@@ -1,3 +1,6 @@
+-- Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+-- SPDX-License-Identifier: AGPL-3.0-or-later
+
 DROP TRIGGER IF EXISTS mapping_insert ON :search_path.nodemapping;
 CREATE TRIGGER mapping_insert INSTEAD OF INSERT ON :search_path.nodemapping FOR EACH ROW EXECUTE PROCEDURE :search_path.on_mapping_insert();
 

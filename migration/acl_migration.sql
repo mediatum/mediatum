@@ -1,8 +1,13 @@
+-- Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+-- SPDX-License-Identifier: AGPL-3.0-or-later
+
 DO $$ BEGIN
     CREATE TYPE mediatum_import.expanded_accessrule AS (expanded_rule text, rulesets text[], special_rulestrings text[]);
 EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;
+
+CREATE TYPE mediatum_import.expanded_accessrule AS (expanded_rule text, rulesets text[], special_rulestrings text[]);
 
 CREATE OR REPLACE FUNCTION mediatum_import.expand_acl_rule(rulestr text)
   RETURNS mediatum_import.expanded_accessrule

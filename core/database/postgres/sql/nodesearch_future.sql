@@ -1,3 +1,6 @@
+-- Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+-- SPDX-License-Identifier: AGPL-3.0-or-later
+
 -- we don't need these functions at the moment, but they could be useful in the future ;)
 
 CREATE OR REPLACE FUNCTION create_fts_entry(config regconfig, fulltext_id integer) RETURNS :search_path.fts

@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+# SPDX-License-Identifier: AGPL-3.0-or-later
 
 """
 This module converts ip address lists into ipaddr Network objects,
@@ -15,6 +17,7 @@ followed by update_mediatum_iplist to store the list in the database.
 #  * iprange : a string that represents a range of ip addresses
 #  * oldiplist : a dictionary containing many ip address ranges;
 #                this was used in the old mysql world in tumips.py
+
 from __future__ import division
 from __future__ import print_function
 

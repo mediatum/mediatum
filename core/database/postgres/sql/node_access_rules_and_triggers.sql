@@ -1,3 +1,6 @@
+-- Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+-- SPDX-License-Identifier: AGPL-3.0-or-later
+
 DROP TRIGGER IF EXISTS node_to_access_rule_insert on :search_path.node_to_access_rule;
 CREATE TRIGGER node_to_access_rule_insert
 AFTER INSERT ON :search_path.node_to_access_rule

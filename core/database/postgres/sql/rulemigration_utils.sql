@@ -1,4 +1,7 @@
--- predefined rules from the access table that are never used 
+-- Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+-- SPDX-License-Identifier: AGPL-3.0-or-later
+
+-- predefined rules from the access table that are never used
  
  
 SELECT name FROM mediatum_import.access 

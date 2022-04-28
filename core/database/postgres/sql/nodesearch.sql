@@ -1,3 +1,6 @@
+-- Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+-- SPDX-License-Identifier: AGPL-3.0-or-later
+
 CREATE OR REPLACE FUNCTION get_fulltext_autoindex_languages() RETURNS text[]
     LANGUAGE plpgsql
     SET search_path = :search_path

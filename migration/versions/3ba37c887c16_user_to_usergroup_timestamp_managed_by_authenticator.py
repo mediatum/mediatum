@@ -1,3 +1,6 @@
+# Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Add timestamp and managed_by_authenticator column to UserToUserGroup association class.
 
 Revision ID: 3ba37c887c16

@@ -1,3 +1,6 @@
+# Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """add Node.system_attrs column
 
 Revision ID: b8c946be109

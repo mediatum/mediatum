@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
+
+# Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
     Extensions for the sqlalchemy-continuum package
-
-    :copyright: (c) 2015 by the mediaTUM authors
-    :license: GPL3, see COPYING for details
 """
 from __future__ import division
 from __future__ import print_function

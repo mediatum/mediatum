@@ -1,3 +1,6 @@
+# Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """replace regexp_split_to_array by string_to_array
 
 Revision ID: 5f09bbe431bb

@@ -99,7 +99,7 @@ msgid "admin_user_msg1"
 msgstr "bei leerem Feld wird automatisch das Standardpasswort verwendet"
 
 msgid "admin_user_msg2"
-msgstr "Hinweis: Bei Anklicken des "Senden" Knopfes wird das Passwort des Users auf das Standardpasswort zurückgesetzt."
+msgstr "Hinweis: Bei Anklicken des \"Senden\" Knopfes wird das Passwort des Users auf das Standardpasswort zurückgesetzt."
 
 msgid "admin_user_options"
 msgstr "Optionen"

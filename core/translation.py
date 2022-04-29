@@ -4,72 +4,50 @@
 from __future__ import division
 from __future__ import print_function
 
-import codecs
 import collections as _collections
 import os
-import stat
-import time
 
+import backports.functools_lru_cache as _backports_functools_lru_cache
 import flask as _flask
+import polib as _polib
 
 from . import config
-from utils.locks import named_lock as _named_lock
 from utils.strings import ensure_unicode_returned
 
-
-class _POFile:
-    filedates = {}
-
-    def __init__(self, filenames):
-        self.lock = _named_lock('pofile')
-        self.filenames = filenames
-        self.map = {}
-        self.lastchecktime = None
-        for fil in self.filenames:
-            self.loadFile(fil)
-
-    def loadFile(self, filename):
-        self.filedates[filename] = os.stat(filename)[stat.ST_MTIME]
-        self.lastchecktime = time.time()
-
-        with codecs.open(filename, "rb", encoding='utf8') as fi:
-            id = None
-            for line in fi.readlines():
-                if line.startswith("msgid"):
-                    id = line[5:].strip()
-                    if id[0] == '"' and id[-1] == '"':
-                        id = id[1:-1]
-                elif line.startswith("msgstr"):
-                    text = line[6:].strip()
-                    if text[0] == '"' and text[-1] == '"':
-                        text = text[1:-1]
-                    self.map[id] = text
-
-    def getTranslation(self, key):
-        with self.lock:
-            if self.lastchecktime + 10 < time.time():
-                self.lastchecktime = time.time()
-                for fil in self.filenames:
-                    if os.stat(fil)[stat.ST_MTIME] != self.filedates[fil]:
-                        self.loadFile(fil)
-        return self.map[key]
-
-    def addKeys(self, items):
-        for item in items:
-            if item[0] not in self.map.keys():
-                self.map[item[0]] = item[1]
-
-    def addFilename(self, filepath):
-        if filepath not in self.filenames:
-            self.filenames.append(filepath)
-
-lang2po = {}
 _addlangitems = {}
 _addlangfiles = _collections.defaultdict(list)
 
 
+@_backports_functools_lru_cache.lru_cache(maxsize=None)
+def _parse_po_file_to_dict(po_file_path):
+    po = _polib.pofile(po_file_path, encoding='utf-8')
+    return {entry.msgid: entry.msgstr for entry in po.translated_entries()}
+
+
+@_backports_functools_lru_cache.lru_cache(maxsize=None)
+def _list_po_files(language):
+    plist = []
+    i18dir = os.path.join(config.basedir, "i18n")
+    lang_ext = "{}.po".format(language)
+    for root, dirs, files in os.walk(i18dir, topdown=True):
+        for f in files:
+            if f.endswith(lang_ext):
+                plist.append(os.path.join(i18dir, f))
+
+    plist.extend(filter(os.path.exists, _addlangfiles[language]))
+
+    return tuple(plist)
+
+
+def _translate_lang_and_key_to_translated_text(language, msg_id):
+    for pofile in _list_po_files(language):
+        po = _parse_po_file_to_dict(pofile)
+        if msg_id in po:
+            return po[msg_id]
+
+
 @ensure_unicode_returned(silent=True)
-def translate(key, language=None, request=None):
+def translate(msg_id, language=None, request=None):
     if request and not language:
         language = set_language(request.accept_languages)
 
@@ -77,33 +55,17 @@ def translate(key, language=None, request=None):
         language = set_language(_flask.request.accept_languages)
 
     if not language:
-        return "?%s?" % key
+        return "?{}?".format(msg_id)
 
-    if language not in lang2po:
-        plist = []
-        i18dir = os.path.join(config.basedir, "i18n")
-        for root, dirs, files in os.walk(i18dir, topdown=True):
-            for n in [f for f in files if f.endswith("%s.po" % language)]:
-                plist.append(os.path.join(i18dir, n))
+    msg_str = _translate_lang_and_key_to_translated_text(language, msg_id)
+    if msg_str:
+        return msg_str
 
-        for f in _addlangfiles[language]:
-            if os.path.exists(f):
-                plist.append(f)
-
-        if not plist:
-            return key
-
-        lang2po[language] = _POFile(plist)
-
+    # try additional keys
     try:
-        pofile = lang2po[language]
-        return pofile.getTranslation(key)
+        return _addlangitems[language][msg_id]
     except KeyError:
-        # try additional keys
-        try:
-            return _addlangitems[language][key]
-        except KeyError:
-            return key
+        return msg_id
 
 
 def addLabels(labels):

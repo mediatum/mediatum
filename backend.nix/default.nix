@@ -58,6 +58,7 @@ let
       mollyZ3950
       parcon
       pillow
+      polib
       psycopg2
       pyPdf
       py_scrypt

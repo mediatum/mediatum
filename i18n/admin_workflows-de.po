@@ -177,8 +177,8 @@ msgstr "Erl. Dateiendungen (;-separiert)"
 msgid "admin_wfstep_email_sendcondition"
 msgstr "Bedingung für Email-Versand"
 
-#msgid "admin_wfstep_node_types_to_create"
-#msgstr "erstellbare Node-Typen (;-separiert)"
+### msgid "admin_wfstep_node_types_to_create"
+### msgstr "erstellbare Node-Typen (;-separiert)"
 
 msgid "admin_wfstep_editor_mask"
 msgstr "Editor-Maske"

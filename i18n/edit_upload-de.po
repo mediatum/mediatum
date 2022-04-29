@@ -27,10 +27,10 @@ msgid "edit_upload_header4"
 msgstr "4. Schritt: Datensatz anlegen / ausgewählte Datei hochladen"
 
 msgid "edit_upload_msg3"
-msgstr "Dazu wählen Sie die ensprechende Datei auf Ihrem Computer aus ("Durchsuchen"-Button) und bestätigen Sie mit "Hochladen"."
+msgstr "Dazu wählen Sie die ensprechende Datei auf Ihrem Computer aus (\"Durchsuchen\"-Button) und bestätigen Sie mit \"Hochladen\"."
 
 msgid "edit_upload_msg4"
-msgstr "Wollen Sie mehrere Dateien auf einmal hochladen, so verpacken Sie diese bitte lokal bei sich in ein .ZIP Archiv (z.B. mit <a target="newwindow" href="http://www.winzip.com/">WinZip</a>), und laden dann das .ZIP Archiv hoch."
+msgstr "Wollen Sie mehrere Dateien auf einmal hochladen, so verpacken Sie diese bitte lokal bei sich in ein .ZIP Archiv (z.B. mit <a target=\"newwindow\" href=\"http://www.winzip.com/\">WinZip</a>), und laden dann das .ZIP Archiv hoch."
 
 msgid "edit_upload_scheme"
 msgstr "Metadatenschema wählen:"

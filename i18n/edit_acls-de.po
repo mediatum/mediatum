@@ -34,7 +34,6 @@ msgstr "Bearbeitung auf Gruppenebene/ACL-Regel"
 
 msgid "edit_acls_selectuser"
 msgstr "Benutzerebene"
-msgstr "Bearbeitung auf Benutzerebene"
 
 msgid "edit_acl_special_rule"
 msgstr "[Spezial-Benutzerregel]"

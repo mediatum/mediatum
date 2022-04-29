@@ -204,7 +204,6 @@ msgstr "Freischaltverzögerung"
 msgid "workflowstep_fileattachment"
 msgstr "Dateianhang"
 
-#datatypes
 msgid "WorkflowStep_ShowData"
 msgstr "Editor (Workflow)"
 

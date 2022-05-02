@@ -1,3 +1,6 @@
+from __future__ import division
+from __future__ import print_function
+
 import os as _os
 import sys as _sys
 _sys.path.append(_os.path.abspath(_os.path.join(_os.path.dirname(__file__), "..")))

@@ -167,10 +167,7 @@ msgid "delete_root_error_msg"
 msgstr "Die gewählte Kollektion kann nicht gelöscht werden!"
 
 msgid "delete_object_question"
-msgstr "Markierte Objekte in den Papierkorb verschieben?"
-
-msgid "delete_single_object_question"
-msgstr "Objekt in den Papierkorb verschieben?"
+msgstr "Ausgewählte(s) Objekt(e) in Papierkorb verschieben?"
 
 msgid "clear_trash_question"
 msgstr "Beim Leeren des Papierkorbs gehen alle enthaltenen Dateien und Unterverzeichnisse unwiderruflich verloren. Löschen durchführen?"

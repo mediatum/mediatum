@@ -17,6 +17,9 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import division
+from __future__ import print_function
+
 import logging
 import functools as _functools
 import mediatumtal.tal as _tal
@@ -140,7 +143,7 @@ def edit_sort_by_fields(query, field, idx=-1):
             return query.order_by(Node.name.desc())
         elif field == "orderpos":
             if idx >= 0:
-                print idx
+                logg.debug("idx: %s", idx)
                 return nodes[idx].orderpos
             return query.order_by(Node.orderpos)
         elif field == "-orderpos":
@@ -285,7 +288,7 @@ def shownavlist(req, node, nodes, page, dir=None):
         sortfield = req.params.get("sortfield", "")
     if not sortfield:
         sortfield = node.get("sortfield")
-    nav_page = range(1, nodes_len/nodes_per_page + (1 if nodes_len % nodes_per_page == 0 else 2))
+    nav_page = range(1, nodes_len//nodes_per_page + (1 if nodes_len % nodes_per_page == 0 else 2))
     nav_list = _functools.partial(c.nav_link,
             id=req.params.get("id", ""),
             srcnodeid=req.params.get("id", ""),
@@ -435,11 +438,11 @@ def send_nodefile_tal(req):
             sz = PIL.Image.open(imagefile).size
             (x, y) = (sz[0], sz[1])
             if x > cn[0]:
-                y = (y * cn[0]) / x
-                x = (x * cn[0]) / x
+                y = (y * cn[0]) // x
+                x = (x * cn[0]) // x
             if y > cn[1]:
-                x = (x * cn[1]) / y
-                y = (y * cn[1]) / y
+                x = (x * cn[1]) // y
+                y = (y * cn[1]) // y
             return (x, y)
         except:
             return cn

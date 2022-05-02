@@ -18,6 +18,9 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import division
+from __future__ import print_function
+
 import collections as _collections
 import datetime
 import functools as _functools
@@ -511,12 +514,12 @@ def checkMask(mask, fix=0, verbose=1, show_unused=0):
 
         if fix and node.get("orderpos"):
             if verbose:
-                print "Removing orderpos attribute from node", node.id
+                logg.info("Removing orderpos attribute from node %s", node.id)
             node.set("orderpos", "")
 
         if currentparent.type != "maskitem":
             if verbose:
-                print "Field", node.id, node.name, "is not below a maskitem (parent:", currentparent.id, currentparent.name, ")"
+                logg.info("Field %s %s is not below a maskitem (parent: %s %s)", node.id, node.name, currentparent.id, currentparent.name)
             error += 1
             if fix:
                 currentparent.removeChild(node)
@@ -528,37 +531,39 @@ def checkMask(mask, fix=0, verbose=1, show_unused=0):
             elif parent.type in ["maskitem", "mask"]:
                 pass
             else:
-                print "Node", node.id, node.name, "has strange parent", parent.id, parent.name
+                logg.warn("Node %s %s has strange parent %s %s", node.id, node.name, parent.id, parent.name)
 
         error += 1
 
         if node.name in field2node:
             node2 = field2node[node.name]
             if verbose:
-                print "Node", node.id, node.name, "has/had no entry in metadatatypes (but field with name", node.name, "exists there:", node2.id
+                logg.info("Node %s %s has/had no entry in metadatatypes (but field with name %s exists there: %s",
+                    node.id, node.name, node.name, node2.id
+                )
             c = 0
             if node.get("required") != node2.get("required"):
                 if verbose:
-                    print "required", node.get("required"), "<->", "required", node2.get("required")
+                    logg.info("required %s <-> required %s", node.get("required"), node2.get("required"))
                 c += 1
             elif node.get("type") != node2.get("type"):
                 if verbose:
-                    print "type", node.get("type"), "<->", "type", node2.get("type")
+                    logg.info("type %s <-> type %s", node.get("type"), node2.get("type"))
                 c += 1
             elif node.get("label") != node2.get("label"):
                 if verbose:
-                    print "label", node.get("label"), "<->", "label", node2.get("label")
+                    logg.info("label %s <-> label %s", node.get("label"), node2.get("label"))
                 c += 1
             elif node.get("opts") != node2.get("opts"):
                 if verbose:
-                    print "opts", node.get("opts"), "<->", "opts", node2.get("opts")
+                    logg.info("opts %s <-> opts %s", node.get("opts"), node2.get("opts"))
                 c += 1
             if c == 0 and fix:
                 currentparent.removeChild(node)
                 currentparent.addChild(node2)
         else:
             if verbose:
-                print "Node", node.id, node.name, "has/had no entry in metadatatypes"
+                logg.info("Node %s %s has/had no entry in metadatatypes", node.id, node.name)
             if fix:
                 metatypes.addChild(node)
 
@@ -573,7 +578,7 @@ def checkMask(mask, fix=0, verbose=1, show_unused=0):
             if not used:
                 field = metatypes.getChild(name)
                 if "s" not in field.get("opts"):
-                    print "Unused field:", field.id, field.name
+                    logg.debug("Unused field: %s %s", field.id, field.name)
     return error
 
 
@@ -1015,7 +1020,7 @@ class Mask(Node):
                 if item.getRequired() == 1:
                     if node.get(field.getName()) == "":
                         ret.append(node.id)
-                        logg.error("Error in publishing of node {}: The required field {} is empty.".format(node.id, field.name))
+                        logg.error("Error in publishing of node %s: The required field %s is empty.", node.id, field.name)
 
                 if field and field.getContentType() == "metafield" and field.getFieldtype() == "date":
                     if not node.get(field.getName()) == "":
@@ -1024,13 +1029,20 @@ class Mask(Node):
                                 datetime.datetime.strptime(node.get(field.getName())[:7], '%Y-%m')
                             except ValueError:
                                 ret.append(node.id)
-                                logg.error("Error in publishing of node {}: The date field 'yearmonth' with content {} is not valid."
-                                    .format(node.id, node.get(field.getName())))
+                                logg.error(
+                                    "Error in publishing of node %s: The date field 'yearmonth' with content %s is not valid.",
+                                    node.id,
+                                    node.get(field.getName()),
+                                )
                             continue
                         if not validateDateString(node.get(field.getName())):
                             ret.append(node.id)
-                            logg.error("Error in publishing of node {}: The date field {} with content {} is not valid."
-                                .format(node.id, field.name, node.get(field.getName())))
+                            logg.error(
+                                "Error in publishing of node %s: The date field %s with content %s is not valid.",
+                                node.id,
+                                field.name,
+                                node.get(field.getName()),
+                            )
         return ret
 
     ''' returns True if all mandatory fields of mappingdefinition are used -> valid format'''
@@ -1326,7 +1338,7 @@ class Mask(Node):
                     #    p.removeChild(field)
                     item.children.append(field)
                 except ValueError:
-                    print "node id error for id '", id, "'"
+                    logg.error("node id error for id '%s'", id)
         if ustr(pid) == "0":
             self.children.append(item)
         else:

@@ -1,5 +1,5 @@
 <tal:block metal:define-macro="view_node">
-
+    <div id="delete_text" style="display:none" i18n:translate="delete_object_question">TEXT</div>
     <script tal:content="python:u'var nodeids = [ {} ];'.format(', '.join(map('\'{}\''.format, nodeids)))"> </script>
     <script>
         $(document).ready(function () {

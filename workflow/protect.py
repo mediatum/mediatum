@@ -17,6 +17,9 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import division
+from __future__ import print_function
+
 from .workflow import WorkflowStep, registerStep
 from utils.utils import mkKey
 from core import db

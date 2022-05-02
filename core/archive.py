@@ -17,6 +17,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import division
+from __future__ import print_function
 
 import logging
 
@@ -67,4 +69,4 @@ def get_archive_for_node(node):
     if manager:
         return manager
 
-    logg.warn("archive manager {} for node {} not loaded".format(archive_type, node.id))
+    logg.warning("archive manager %s for node %s not loaded", archive_type, node.id)

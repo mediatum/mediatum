@@ -17,6 +17,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import division
+from __future__ import print_function
 
 import os
 import pickle
@@ -450,7 +452,7 @@ def _read_log_files(fname):
                 list.append(info)
 
     time1 = time.time()
-    print time1 - time0
+    logg.debug("%s", time1 - time0)
     sorted_list = sorted(list, key=lambda item: item.getID())
 
     logdata = sorted_list
@@ -516,7 +518,7 @@ def buildStatAll(period, fname):  # period format = yyyy-mm
         collection_ids[last_collection] = CollectionId(ids_set, db.query(Node).get(last_collection))
 
     time1 = time.time()
-    print "time to collect all %d collections: %f" % (len(collection_ids), time1 - time0)
+    logg.debug("time to collect all %s collections: %s", len(collection_ids), time1 - time0)
 
     # in buildStatAll_ for every collection 3 filedescriptors (frontend, download, edit) may be opened
     # to avoid running out of the available filedescriptors (currently 1024 per process)
@@ -527,13 +529,13 @@ def buildStatAll(period, fname):  # period format = yyyy-mm
     n = 1
     while collection_chunk > 300:
         n += 1
-        collection_chunk = collection_count / n
+        collection_chunk = collection_count // n
 
     collection_chunk += 1
     start_idx = 0
     while start_idx < collection_count:
         end_idx = start_idx + collection_chunk
-        print "start_idx:", start_idx, "end_idx:", end_idx
+        logg.debug("start_idx: %s end_idx: %s", start_idx, end_idx)
         buildStatAll_(collection_ids, collection_ids_keys[start_idx:end_idx], data, period)
         start_idx = end_idx
 
@@ -552,14 +554,14 @@ def buildStatAll_(collection_ids, collection_ids_keys, data, period):  # period 
                         if timestamp == format_date(now(), "yyyy-mm") or timestamp == period:  # update current month or given period
                             # orig_file = file.retrieveFile()
                             if os.path.exists(file.retrieveFile()):
-                                print 'removing %s' % file.retrieveFile()
+                                logg.debug('removing %s', file.retrieveFile())
                                 os.remove(file.retrieveFile())
                                 orig_file = file.retrieveFile()
                             # node.files.remove(file)
                             f = None
                             break
                         else:  # old month, do nothing
-                            print 'old file doing nothing'
+                            logg.debug('old file doing nothing')
                             return None
                 except:
                     return None
@@ -567,7 +569,7 @@ def buildStatAll_(collection_ids, collection_ids_keys, data, period):  # period 
             # create new file
             f_name = config.get("paths.tempdir") + u"stat_{}_{}_{}.xml".format(node.id, timestamp, type)
             # create new file and write header:j
-            print 'creating writing headers %s' % f_name
+            logg.debug('creating writing headers %s', f_name)
             f = codecs.open(f_name, "w", encoding='utf8')
             f.write('<?xml version="1.0" encoding="utf-8" ?>\n')
             f.write('<nodelist created="' + format_date(now(), "yyyy-mm-dd HH:MM:SS") + '">\n')
@@ -576,7 +578,7 @@ def buildStatAll_(collection_ids, collection_ids_keys, data, period):  # period 
                 col_id.statfiles.append((f_name, orig_file))
             return f
 
-    print "buildStatAll_ called for %d collections" % len(collection_ids_keys)
+    logg.debug("buildStatAll_ called for %s collections", len(collection_ids_keys))
 
     gi = _pygeoip.GeoIP(filename=os.environ["MEDIATUM_GEOIP_PATH"], flags=_pygeoip.MEMORY_CACHE)
 
@@ -585,7 +587,7 @@ def buildStatAll_(collection_ids, collection_ids_keys, data, period):  # period 
     count = 0
     for access in data:
         if (count % 10000) == 0:
-            print "writing stat files: %d lines from %d processed: %d%%" % (count, len(data), count * 100 / len(data))
+            logg.debug("writing stat files: %s lines from %s processed: %s", count, len(data), count * 100 // len(data))
         count += 1
 
         if last_access and last_access.getID() == access.getID():
@@ -642,7 +644,7 @@ def buildStatAll_(collection_ids, collection_ids_keys, data, period):  # period 
             try:
                 country_code = gi.country_code_by_name(access.getIp())
             except Exception as e:
-                print access.getIp(), e
+                logg.exception("%s %s", access.getIp(), e)
                 country_code = ""
             fin.write('\t\t<access date="%s" time="%s" country="%s" visitor_number="%s" bot="%s"/>\n' %
                       (access.getDate(),
@@ -670,7 +672,7 @@ def buildStatAll_(collection_ids, collection_ids_keys, data, period):  # period 
             col_id.fin_edit.close()
 
     time1 = time.time()
-    print "read collection: %f" % (time1 - time0)
+    logg.debug("read collection: %s", (time1 - time0))
 
     for col in collection_ids_keys:
         col_id = collection_ids[col]
@@ -679,9 +681,9 @@ def buildStatAll_(collection_ids, collection_ids_keys, data, period):  # period 
             if orig_file:
                 destfile = os.path.join(config.get("paths.datadir"), orig_file)
                 shutil.copyfile(file, destfile)
-                print "copy %s to %s" % (file, destfile)
+                logg.debug("copy %s to %s", file, destfile)
             else:
-                print "importFile %s" % file
+                logg.debug("importFile %s", file)
                 with open(file, "rb") as f:
                     statfile = importFile(os.path.basename(file), f)
                 if statfile:

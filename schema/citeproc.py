@@ -17,6 +17,9 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import division
+from __future__ import print_function
+
 from core.metatype import Metatype
 """
 import citeproc metadata in CSL, JSON variant as served by dx.doi.org.
@@ -26,7 +29,6 @@ from collections import defaultdict
 import datetime
 import logging
 import re
-from pprint import pformat
 
 from sqlalchemy.orm.exc import NoResultFound
 import requests
@@ -158,11 +160,11 @@ def check_mappings():
     types, ambiguous_types = importbase.get_all_import_mappings("citeproc")
     for typ in TYPES:
         if typ not in types:
-            print typ, "is not associated with any metatype"
+            logg.debug("%s is not associated with any metatype", type)
         else:
-            print typ, "->", types[typ]
+            logg.debug("%s -> %s", typ, types[typ])
     for typ, schemas in ambiguous_types.iteritems():
-        print "warning: ambiguous mapping", typ, "->", schemas
+        logg.warning("ambiguous mapping %s -> %s", typ, schemas)
 
 
 def convert_csl_date(date_value):
@@ -185,7 +187,7 @@ def convert_csl_date(date_value):
             return datetime.date(year, 1, 1).isoformat()
         except:
             # well...
-            logg.warn("unrecognized raw date string %s, returning it unchanged", raw_value)
+            logg.warning("unrecognized raw date string %s, returning it unchanged", raw_value)
             return raw_value
 
 
@@ -263,10 +265,10 @@ def import_csl(record, target=None, name=None, testing=False):
     """
     typ = record[u"type"]
     if not typ:
-        logg.warn("no type given in CSL import, using _null")
+        logg.warning("no type given in CSL import, using _null")
         typ = "_null"
     if typ not in TYPE_SET:
-        logg.warn("unknown type %s given in CSL import, using _default", typ)
+        logg.warning("unknown type %s given in CSL import, using _default", typ)
         typ = "_default"
     schema = importbase.get_import_mapping(u"citeproc", typ)
     if not schema:
@@ -275,7 +277,7 @@ def import_csl(record, target=None, name=None, testing=False):
         if not schema:
             # no _default defined, fail
             raise NoMappingFound("No citeproc schema mapping could be found", typ)
-        logg.warn("no mapping found for type %s, using _default fallback mapping", typ)
+        logg.warning("no mapping found for type %s, using _default fallback mapping", typ)
     metatype = q(Metadatatype).filter_by(name=schema).one()
     mask = metatype.getMask(u"citeproc")
     if not mask:
@@ -295,7 +297,7 @@ def import_csl(record, target=None, name=None, testing=False):
                 return convert_csl_names(value)
             elif FIELDS[key].fieldtype == "number":
                 if not check_number(value):
-                    logg.warn("field '%s' is of type number and contains an illegal value: '%s'!"
+                    logg.warning("field '%s' is of type number and contains an illegal value: '%s'!"
                               "See http://citationstyles.org/downloads/specification.html#number",
                               key, value)
                 return unicode(value)
@@ -359,5 +361,5 @@ def import_doi(doi, target=None, name=None, testing=False):
     :raises: DOINotImported if no valid metadata has been found for the DOI
     """
     record = get_citeproc_json(doi)
-    logg.debug("got citeproc data from server: %s", pformat(record))
+    logg.debug("got citeproc data from server: %r", record)
     return import_csl(record, target, doi, testing=testing)

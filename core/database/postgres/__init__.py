@@ -3,6 +3,9 @@
     :copyright: (c) 2014 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
+from __future__ import division
+from __future__ import print_function
+
 import datetime
 import logging
 import time
@@ -158,7 +161,7 @@ def build_accessfunc_arguments(user=None, ip=None, date=None, req=None):
         try:
             ip = IPv4Address(req.remote_addr)
         except AddressValueError:
-            logg.warn("illegal IP address %s, refusing IP-based access", req.remote_addr)
+            logg.warning("illegal IP address %s, refusing IP-based access", req.remote_addr)
             ip = None
 
     if user is None:

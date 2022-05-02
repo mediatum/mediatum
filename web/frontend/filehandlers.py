@@ -3,6 +3,9 @@
     :copyright: (c) 2016 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
+from __future__ import division
+from __future__ import print_function
+
 from functools import partial
 import logging
 import os
@@ -288,7 +291,7 @@ def send_file(req):
         file_ext = os.path.splitext(filename)[1]
         for f in node.files:
             if os.path.splitext(f.base_name)[1] == file_ext and f.filetype in [u'document', u'original', u'mp3']:
-                logg.warn("serving file %s for node %s only by matched extension", f.path, node.id)
+                logg.warning("serving file %s for node %s only by matched extension", f.path, node.id)
                 return _send_attachment(f.abspath, f.mimetype)
 
     req.response.status_code = 404
@@ -369,7 +372,7 @@ def fetch_archived(req):
         msg = "archive for node not found"
         req.response.status_code = 400
         req.response.set_data(msg)
-        logg.warn(msg)
+        logg.warning("%s", msg)
 
     db.session.commit()
 

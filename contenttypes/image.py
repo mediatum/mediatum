@@ -19,6 +19,9 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import division
+from __future__ import print_function
+
 import logging
 import os
 import tempfile
@@ -82,10 +85,10 @@ def make_thumbnail_image(src_filepath, dest_filepath):
 
         if width > height:
             newwidth = 128
-            newheight = height * newwidth / width
+            newheight = height * newwidth // width
         else:
             newheight = 128
-            newwidth = width * newheight / height
+            newwidth = width * newheight // height
 
         pic = pic.resize((newwidth, newheight), PILImage.ANTIALIAS)
 
@@ -94,8 +97,8 @@ def make_thumbnail_image(src_filepath, dest_filepath):
         except:
             im = PILImage.new("RGB", (128, 128), (255, 255, 255))
 
-        x = (128 - newwidth) / 2
-        y = (128 - newheight) / 2
+        x = (128 - newwidth) // 2
+        y = (128 - newheight) // 2
         im.paste(pic, (x, y, x + newwidth, y + newheight))
 
         draw = ImageDraw.ImageDraw(im)
@@ -133,10 +136,10 @@ def make_presentation_image(src_filepath, dest_filepath):
             # resize images only if they are actually too big
             if width > height:
                 newwidth = 320
-                newheight = height * newwidth / width
+                newheight = height * newwidth // width
             else:
                 newheight = 320
-                newwidth = width * newheight / height
+                newwidth = width * newheight // height
             pic = pic.resize((newwidth, newheight), PILImage.ANTIALIAS)
 
         try:
@@ -176,8 +179,8 @@ def _create_zoom_tile_buffer(img, max_level, tilesize, level, x, y):
     if y1 > img.size[1]:
         y1 = img.size[1]
 
-    xl = (x1 - x0) / level
-    yl = (y1 - y0) / level
+    xl = (x1 - x0) // level
+    yl = (y1 - y0) // level
 
     # do not resize to zero dimension (would cause exception when saving)
     xl = max(1, xl)
@@ -204,15 +207,15 @@ def _create_zoom_archive(tilesize, image_filepath, zoom_zip_filepath):
     l = max(width, height)
     max_level = 0
     while l > tilesize:
-        l = l / 2
+        l = l // 2
         max_level += 1
 
     logg.debug('Creating: %s', zoom_zip_filepath)
     with zipfile.ZipFile(zoom_zip_filepath, "w") as zfile:
         for level in range(max_level + 1):
             t = (tilesize << (max_level - level))
-            for x in range((width + (t - 1)) / t):
-                for y in range((height + (t - 1)) / t):
+            for x in range((width + (t - 1)) // t):
+                for y in range((height + (t - 1)) // t):
                     with _create_zoom_tile_buffer(img, max_level, tilesize, level, x, y) as buff:
                         tile_name = "tile-%d-%d-%d.jpg" % (level, x, y)
                         zfile.writestr(tile_name, buff.getvalue(), zipfile.ZIP_DEFLATED)

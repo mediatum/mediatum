@@ -18,6 +18,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import division
+from __future__ import print_function
 
 import copy
 import json
@@ -522,10 +524,10 @@ def _handle_oauth(res, path, params, timetable):
     users = q(User).filter_by(login_name=username).all()
 
     if not users:
-        logg.warn("oauth: invalid user given, login_name=%s", username)
+        logg.warning("oauth: invalid user given, login_name=%s", username)
         return
     elif len(users) > 1:
-        logg.warn("oauth: multiple users found, refusing request, login_name=%s", username)
+        logg.warning("oauth: multiple users found, refusing request, login_name=%s", username)
         return
 
     user = users[0]

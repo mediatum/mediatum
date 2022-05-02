@@ -3,6 +3,9 @@
     :copyright: (c) 2015 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
+from __future__ import division
+from __future__ import print_function
+
 import logging
 import hashlib
 import utils.utils as _utils_utils
@@ -23,16 +26,16 @@ def verify_request_signature(req_path, params):
 
     fmsg = "verify_request_signature going to return False: "
     if 'user' not in _p or 'sign' not in _p:
-        logg.info(fmsg + "'user' or 'sign' parameter missing in request")
+        logg.info("%s'user' or 'sign' parameter missing in request", fmsg)
         return False
 
     oauth_user = _p.get('user')
     oauth_user_credentials_count = q(OAuthUserCredentials).filter(OAuthUserCredentials.oauth_user == oauth_user).count()
     if oauth_user_credentials_count < 1:
-        logg.info(fmsg + "no oauth user credentials known for oauth_user %r", oauth_user)
+        logg.info("%sno oauth user credentials known for oauth_user %r", fmsg, oauth_user)
         return False
     if oauth_user_credentials_count > 1:
-        logg.info(fmsg + "multiple oauth user credentials stored for oauth_user %r", oauth_user)
+        logg.info("%smultiple oauth user credentials stored for oauth_user %r", fmsg, oauth_user)
         return False
     oauth_user_credentials = q(OAuthUserCredentials).filter(OAuthUserCredentials.oauth_user == oauth_user).one()
     workingString = oauth_user_credentials.oauth_key

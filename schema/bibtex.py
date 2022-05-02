@@ -17,6 +17,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import division
+from __future__ import print_function
 
 """ We want to parse even badly broken bibtex files, no longer adhering to
     the "official" bibtex grammar. In particular, we need to handle
@@ -193,9 +195,9 @@ def checkMappings():
     s = getbibtexmappings()
     for bibname, description, required, optional in article_types:
         if bibname not in s:
-            print bibname, "is not associated with any metatype"
+            logg.info("%s is not associated with any metatype", bibname)
         else:
-            print bibname, "->", s[bibname]
+            logg.info("%s -> %s", bibname, s[bibname])
 
 
 def detecttype(doctype, fields):
@@ -265,7 +267,7 @@ def getentries(filename):
             break
 
     if error:
-        logg.error("bibtex import: bibtexparser failed: {}".format(e))
+        logg.error("bibtex import: bibtexparser failed: %s", e)
         raise ValueError("bibtexparser failed")
 
     return bibtex.entries
@@ -281,7 +283,7 @@ def importBibTeX(infile, node=None, req=None):
             msg = "bibtex import: starting import (unable to identify user)"
     else:
         msg = "bibtex import: starting import (%s)" % ustr(sys.argv)
-    logg.info(msg)
+    logg.info("%s", msg)
 
     bibtextypes = getbibtexmappings()
     result = []
@@ -298,9 +300,7 @@ def importBibTeX(infile, node=None, req=None):
             # XXX TODO (even things like full disk or other parsing errors).
             # XXX TODO We should at least reformulate the error message,
             # XXX TODO and -- even better -- only catch errors that are to be expected.
-            logg.exception("getentries failed")
-            msg = "bibtex import: getentries failed, import stopped (encoding error)"
-            logg.error(msg)
+            logg.exception("bibtex import: getentries failed, import stopped (encoding error)")
             raise ValueError("bibtex_unspecified_error")
 
     logg.info("bibtex import: %d entries", len(entries))
@@ -334,9 +334,13 @@ def importBibTeX(infile, node=None, req=None):
                         if _mfield.get(u"type") == u"date":
                             datefields[_med_name] = _mfield.get(u"valuelist")
                     except AttributeError as e:
-                        msg = "bibtex import docid='{}': field error for bibtex mask for type {} and bibtex-type '{}': {}"
-                        msg = msg.format(docid_utf8, metatype, mytype, e)
-                        logg.error(msg)
+                        logg.error(
+                            "bibtex import docid='%s': field error for bibtex mask for type %s and bibtex-type '%s': %s",
+                            docid_utf8,
+                            metatype,
+                            mytype,
+                            e,
+                        )
                     else:
                         fieldnames[_bib_name] = _med_name
 

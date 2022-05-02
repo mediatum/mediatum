@@ -17,9 +17,11 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import division
+from __future__ import print_function
+
 import logging
 import importlib
-from pprint import pformat
 import os.path
 import sys
 
@@ -58,7 +60,7 @@ def init_plugins():
     for name, location in config.getsubset("plugins").items():
         m = import_plugin_module(name, location)
         if m is None:
-            logg.warn("couldn't load plugin %s!", name)
+            logg.warning("couldn't load plugin %s!", name)
         else:
             logg.info("Initializing plugin '%s' from '%s'", name, location or "pythonpath")
             plugins[name] = m

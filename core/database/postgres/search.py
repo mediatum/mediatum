@@ -5,6 +5,8 @@
     :copyright: (c) 2015 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
+from __future__ import division
+from __future__ import print_function
 
 import itertools as _itertools
 import operator as _operator
@@ -240,7 +242,7 @@ def _check_search_indexes_node(type, languages):
         else:
             indexfunc = func.to_tsvector_safe(lang, Node.fulltext)
         needed_indexes.append(_Index(indexname, indexfunc, postgresql_using="gin"))
-        logg.info('_check_search_indexes_node: create index {}'.format(indexname))
+        logg.info('_check_search_indexes_node: create index %s', indexname)
 
     if needed_indexes:
         map(_operator.methodcaller("create"), needed_indexes)

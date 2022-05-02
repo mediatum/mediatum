@@ -1,12 +1,12 @@
 <tal:block metal:define-macro="view_node">
 
     <script tal:content="python:u'var action = \'{}\';'.format(action)"> </script>
+    <script tal:content="python:u'var srcnodeid = \'{}\';'.format(srcnodeid)"> </script>
     <script tal:content="python:u'var nodeid = \'{}\';'.format(nodeid)"> </script>
-    <script tal:content="python:u'var nodeids = [ {} ];'.format(', '.join(map('\'{}\''.format, nodeid)))"> </script>
     <script>
         $(document).ready(function () {
-          movecopySelected(action, nodeids);
-          var url = '/edit/edit_content?id='+nodeid+'&tab=view';
+          movecopySelected(action, [nodeid]);
+          var url = '/edit/edit_content?srcnodeid='+srcnodeid+'&id='+nodeid+'&tab=view';
           reloadURL(url);
         });
     </script>

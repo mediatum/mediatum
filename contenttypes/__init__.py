@@ -7,6 +7,8 @@
     :copyright: (c) 2014 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
+from __future__ import division
+from __future__ import print_function
 
 from contenttypes.audio import Audio
 from contenttypes.data import Data, Content, Other, prepare_node_data

@@ -18,6 +18,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import division
+from __future__ import print_function
 
 import logging
 
@@ -83,24 +85,27 @@ def getContent(req, ids):
 
             if isinstance(node, Container):
                 if not new_type in admissible_containers:
-                    logg.warn(u"changeschema: illegal container type %s", new_type)
+                    logg.warning(u"changeschema: illegal container type %s", new_type)
                     return httpstatus.HTTP_BAD_REQUEST
             else:
                 if not new_type in admissible_content_types:
-                    logg.warn(u"changeschema: illegal content type %s", new_type)
+                    logg.warning(u"changeschema: illegal content type %s", new_type)
                     return httpstatus.HTTP_BAD_REQUEST
 
             available_schema_names = [s.name for s in schemes if new_type in s.getDatatypes()]
 
             if not new_schema in available_schema_names:
-                    logg.warn(u"changeschema: illegal schema %s", new_schema)
+                    logg.warning(u"changeschema: illegal schema %s", new_schema)
                     return httpstatus.HTTP_BAD_REQUEST
 
-            logg.info(u"{} changed node schema for node {} '{}' from '{}' to '{}'".format(user.login_name,
-                                                                                         node.id,
-                                                                                         node.name,
-                                                                                         node.type,
-                                                                                         new_type))
+            logg.info(
+                    u"%s changed node schema for node %s '%s' from '%s' to '%s'",
+                    user.login_name,
+                    node.id,
+                    node.name,
+                    node.type,
+                    new_type,
+                )
             node.type = new_type
             node.schema = new_schema
 

@@ -5,9 +5,15 @@
     :copyright: (c) 2014 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
+from __future__ import division
+from __future__ import print_function
+
+import logging as _logging
 from itertools import imap
 from munch import Munch
 
+
+logg = _logging.getLogger(__name__)
 
 class APINode(Munch):
 
@@ -105,4 +111,4 @@ class NodeAPIResult(object):
         return imap(APINode.from_dict, (l[0] for l in self.nodelist))
 
     def print_info(self):
-        print(self.info.toYAML())
+        logg.info("%s", self.info.toYAML())

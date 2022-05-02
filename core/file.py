@@ -3,6 +3,9 @@
     :copyright: (c) 2014 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
+from __future__ import division
+from __future__ import print_function
+
 import codecs
 import logging
 import os.path
@@ -66,7 +69,7 @@ class FileMixin(object):
         if self.exists:
             os.unlink(self.abspath)
         else:
-            logg.warn("tried to unlink missing physical file %s at %s, ignored", self.id, self.path)
+            logg.warning("tried to unlink missing physical file %s at %s, ignored", self.id, self.path)
 
     #  Deprecated methods
     def getType(self):
@@ -100,4 +103,3 @@ class FileVersionMixin(FileMixin):
         if self._size is None:
             self._size = get_filesize(self.path)
         return self._size
-

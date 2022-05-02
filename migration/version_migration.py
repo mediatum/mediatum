@@ -5,6 +5,9 @@
 
     Migrate old version nodes to sqlalchemy-continuum tables
 """
+from __future__ import division
+from __future__ import print_function
+
 from core import db, Node, File
 import logging
 from sqlalchemy import Integer
@@ -163,7 +166,7 @@ def insert_migrated_version_nodes(all_versioned_nodes):
             last_node_id = node.id
             node = q(Node).get(next_id)
             if node is None:
-                logg.warn("node version with id %s, successor of version %s not found!", next_id, last_node_id)
+                logg.warning("node version with id %s, successor of version %s not found!", next_id, last_node_id)
             else:
                 next_id = node.system_attrs.get(u"next_id")
 

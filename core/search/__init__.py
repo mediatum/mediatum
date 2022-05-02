@@ -1,3 +1,6 @@
+from __future__ import division
+from __future__ import print_function
+
 import logging
 from .language import parser
 from core.search.oldparser import FtsSearchParser
@@ -15,7 +18,7 @@ def parse_searchquery(searchquery):
         searchtree = parser.parse_string(searchquery)
     except Exception:
         msg = "search query cannot be parsed: %r" % searchquery
-        logg.exception(msg)
+        logg.exception("%s", msg)
         raise SearchQueryException(msg)
 
     return searchtree
@@ -28,7 +31,7 @@ def parse_searchquery_old_style(searchquery):
     except Exception:
         # XXX: can this be more specific?
         msg = "search query cannot be parsed: %r" % searchquery
-        logg.exception(msg)
+        logg.exception("%s", msg)
         raise SearchQueryException(msg)
 
     new_searchtree = old_searchtree_to_new(old_searchtree)

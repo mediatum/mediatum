@@ -17,6 +17,9 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import division
+from __future__ import print_function
+
 import logging
 from warnings import warn
 import flask as _flask
@@ -84,7 +87,7 @@ def user_from_session():
             if user is not None:
                 return user
 
-            logg.warn("invalid user id %s from session, falling back to guest user", user_id)
+            logg.warning("invalid user id %s from session, falling back to guest user", user_id)
             del _flask.session["user_id"]
 
         return get_guest_user()

@@ -17,7 +17,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-
+from __future__ import division
+from __future__ import print_function
 
 import logging
 import mediatumtal.tal as _tal
@@ -50,8 +51,12 @@ def getContent(req, ids):
             else:
             # non-admin user may not add / change system attributes, silently ignore the request.
             # XXX: an error msg would be better
-                logg.warn("denied writing a system attribute because user is not an admin user, node=%s attrname=%s current_user=%s",
-                          node.id, attrname, user.id)
+                logg.warning(
+                    "denied writing a system attribute because user is not an admin user, node=%s attrname=%s current_user=%s",
+                    node.id,
+                    attrname,
+                    user.id,
+                )
                 return httpstatus.HTTP_FORBIDDEN
 
         node.set(attrname, attrvalue)

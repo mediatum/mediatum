@@ -3,6 +3,9 @@
     :copyright: (c) 2015 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
+from __future__ import division
+from __future__ import print_function
+
 from sqlalchemy import Unicode
 from sqlalchemy.dialects.postgresql.json import JSONB
 from core.database.postgres import DeclarativeBase, C

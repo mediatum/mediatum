@@ -3,6 +3,9 @@
     :copyright: (c) 2015 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
+from __future__ import division
+from __future__ import print_function
+
 import logging
 from sqlalchemy import text
 from core import config, db, Node, User
@@ -67,7 +70,7 @@ def migrate_special_dirs():
                     home_dir.children.append(dirr)
                 else:
                     if len(old_dirrs) > 1:
-                        logg.warn("%s special dirs found for %s, using oldest dir", len(old_dirrs), home_dir.name)
+                        logg.warning("%s special dirs found for %s, using oldest dir", len(old_dirrs), home_dir.name)
                     dirr = old_dirrs[0]
                     dirr.name = new
 
@@ -80,7 +83,7 @@ def set_admin_group():
     try:
         admin_group = q(UserGroup).filter_by(name=admin_group_name).one()
     except NoResultFound:
-        logg.warn("admin group '%s' specified in config file does not exist, no admin group set!")
+        logg.warning("admin group '%s' specified in config file does not exist, no admin group set!")
 
     admin_group.is_admin_group = True
     admin_group.is_workflow_editor_group = True
@@ -97,4 +100,4 @@ def rehash_md5_password_hashes():
             else:
                 logg.info("user already has a secure password hash: %s", user.id)
         else:
-            logg.warn("internal user has no password: %s", user.id)
+            logg.warning("internal user has no password: %s", user.id)

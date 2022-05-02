@@ -230,8 +230,11 @@
                 <div id="children" class="mediatum_padding10">
                     <h2>Kindelemente</h2>
                             <b i18n:translate="edit_files_childobjects">TEXT</b><br/>
-                            <a tal:attributes="onclick python:u'openWindow(\'/edit/edit_content?id={}&tab=files&style=popup&parent=\'+parent.tree.currentfolder)'.format(node.id)" target="_blank" i18n:attributes="title edit_files_add_title"
-                            style="cursor:pointer">
+                            <a
+                                tal:attributes="onclick python:u'openWindow(\'/edit/edit_content?srcnodeid={}&id={}&tab=files&style=popup&parent=\'+parent.tree.currentfolder)'.format(srcnodeid, node.id)"
+                                target="_blank"
+                                i18n:attributes="title edit_files_add_title"
+                                style="cursor:pointer">
                                 <div class="mediatum_edit_files_childobjects">
                                     <div class="mediatum_edit_files_childobjects_plus">+</div>
                                 </div>
@@ -349,8 +352,7 @@
         <link rel="stylesheet" href="/css/ftree.css" type="text/css" />
 
         <script type="text/javascript" src="/js/ftree.js"> </script>
-        <script type="text/javascript" src="/js/ftree-context-menu.js"> </script>
-        <script type="text/javascript" language="javascript" src="https://code.jquery.com/jquery-latest.js"> </script>
+        <script type="text/javascript" language="javascript" src="/js/jquery-2.0.3.js"> </script>
         <script type="text/javascript" src="/js/mediatum.js"> </script>
     </head>
     <body>
@@ -381,14 +383,14 @@
                 });
             }
 
-            function selectedItems(){
+            function selectedItems(srcnodeid){
                 var val = "";
                 $(":checkbox:checked[name=items_add]").each(
                     function() {
                         val += $(this).val()+";";
                     }
                 );
-                $.get('/edit/edit_content?style=popup&tab=files&data=additems&id='+node+'&items='+val, function(data) {
+                $.get('/edit/edit_content?style=popup&tab=files&data=additems&srcnodeid='+srcnodeid+'&id='+node+'&items='+val, function(data) {
                   opener.$('#childnodes').html(data);
                   self.close();
                 });
@@ -434,8 +436,12 @@
             <div class="mediatum_edit_files_border" id="grandchildren">
             </div>
             <p class="mediatum_files_ta_center">
-                <button class="mediatum_edit_files_ok" type="button" onclick="selectedItems()"
-                i18n:translate="edit_ok">TEXT</button>
+                <button
+                    class="mediatum_edit_files_ok"
+                    type="button"
+                    tal:attributes="onclick python:'selectedItems({})'.format(srcnodeid)"
+                    i18n:translate="edit_ok">
+                </button>
                 <button class="mediatum_edit_files_cancel" type="button" onclick="self.close()" i18n:translate="edit_cancel">TEXT</button>
             </p>
         </form>

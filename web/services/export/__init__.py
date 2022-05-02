@@ -19,6 +19,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import division
+from __future__ import print_function
 
 import sys
 import re
@@ -146,7 +148,6 @@ def request_handler(req):
 
     if logg.isEnabledFor(logging.INFO) and matched and 'timetable' in d:
         timesum = 0.0
-        s += '\n' + ('-' * 80)
         s += "\n| timetable for request (%s, %s, %s)" % (req.method, req.path, handle_params)
         for i, timetable_step in enumerate(d['timetable']):
             if len(timetable_step) == 2:
@@ -159,10 +160,9 @@ def request_handler(req):
             s += "\n|  %2d. step: %.3f sec.: %s" % (i, executiontime, step)
             timesum += executiontime
         s += "\n| sum of execution times: %.3f sec.: %s bytes returned" % (timesum, locale.format("%d", bytes_sent, 1))
-        s += '\n' + ('-' * 80)
-        logg.info(s)
+        logg.info("%s", s)
     else:
-        logg.info(s)
+        logg.info("%s", s)
     sys.stdout.flush()
 
     if not matched:

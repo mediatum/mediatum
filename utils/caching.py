@@ -4,6 +4,8 @@
     :license: GPL3, see COPYING for details
 """
 from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 
 def cache_key_generator_for_node_argument(namespace, fn, **kw):

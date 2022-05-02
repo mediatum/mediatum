@@ -17,7 +17,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-
+from __future__ import division
+from __future__ import print_function
 
 import os
 import json
@@ -187,7 +188,7 @@ def getContent(req, ids):
                 os.remove(fullpath)
                 logg.info("%s removed file %s from disk", user.login_name, fullpath)
             else:
-                logg.warn("%s could not remove file %s from disk: not existing", user.login_name, fullpath)
+                logg.warning("%s could not remove file %s from disk: not existing", user.login_name, fullpath)
             with suppress(KeyError, warn=False):
                 del node.system_attrs["startpagedescr." + file_shortpath]
             node.system_attrs["startpage_selector"] = node.system_attrs["startpage_selector"].replace(file_shortpath, "")

@@ -5,6 +5,9 @@
     :copyright: (c) 2015 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
+from __future__ import division
+from __future__ import print_function
+
 import logging
 from sqlalchemy.orm.exc import NoResultFound
 from core.database.postgres.user import UserGroup
@@ -52,6 +55,4 @@ def check_database():
 
     some_admin_group = q(UserGroup).filter_by(is_admin_group=True).first()
     if not some_admin_group:
-        logg.warn("no admin group found. This works, but normally you should define at least one admin group.")
-
-
+        logg.warning("no admin group found. This works, but normally you should define at least one admin group.")

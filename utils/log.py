@@ -18,6 +18,9 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import division
+from __future__ import print_function
+
 import datetime
 import logging
 import logging.handlers as _logging_handlers
@@ -68,7 +71,7 @@ def initialize(level=None, log_filepath=None):
         file_handler = _logging_handlers.WatchedFileHandler(log_filepath)
         file_handler.setFormatter(logging.Formatter(ROOT_FILE_LOGFORMAT))
         root_logger.addHandler(file_handler)
-        logg.info('--- logging everything to %s ---', log_filepath)
+        logg.info('logging everything to %s', log_filepath)
 
 
 def make_xid_and_errormsg_hash():

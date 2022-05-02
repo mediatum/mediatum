@@ -17,6 +17,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import division
+from __future__ import print_function
 
 import hashlib
 
@@ -267,13 +269,23 @@ def getContent(req, ids):
         return ""
 
     if req.params.get("style") == "popup":
-        v = {"basedirs": [q(Home).one(), q(Collections).one()]}
         id = req.params.get("id", q(Root).one().id)
-        v["script"] = "var currentitem = '%s';\nvar currentfolder = '%s';\nvar node = %s;" % (id, req.params.get('parent'), id)
-        v["idstr"] = ",".join(ids)
-        v["node"] = node
-        v["csrf"] = req.csrf_token.current_token
-        ret += _tal.processTAL(v, file="web/edit/modules/files.html", macro="edit_files_popup_selection", request=req)
+        ret += _tal.processTAL(
+                dict(
+                    basedirs=[q(Home).one(), q(Collections).one()],
+                    script="var currentitem = '{0}';\nvar currentfolder = '{1}';\nvar node = {0};".format(
+                            id,
+                            req.params.get('parent'),
+                        ),
+                    idstr=",".join(ids),
+                    srcnodeid=srcnodeid,
+                    node=node,
+                    csrf=req.csrf_token.current_token,
+                ),
+                file="web/edit/modules/files.html",
+                macro="edit_files_popup_selection",
+                request=req,
+            )
         req.response.set_data(ret)
         return ""
 

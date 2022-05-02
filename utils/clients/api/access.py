@@ -6,6 +6,9 @@
 Python access layer for the mediaTUM export web service
 
 """
+from __future__ import division
+from __future__ import print_function
+
 from urlparse import urljoin
 from nap.url import Url
 

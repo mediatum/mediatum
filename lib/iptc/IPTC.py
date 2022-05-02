@@ -19,6 +19,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import division
+from __future__ import print_function
 
 import os
 import sys
@@ -134,19 +136,19 @@ def get_iptc_tags(image_path, tags=None):
         tags = get_wanted_iptc_tags()
 
     if not isinstance(tags, dict):
-        logg.warn('No Tags to read.')
+        logg.warning('No Tags to read.')
         return
 
     if image_path is None:
-        logg.warn('No file path for reading iptc.')
+        logg.warning('No file path for reading iptc.')
         return
 
     if not os.path.exists(image_path):
-        logg.warn('Could not read IPTC metadata from non existing file.')
+        logg.warning('Could not read IPTC metadata from non existing file.')
         return
 
     if os.path.basename(image_path).startswith('-'):
-        logg.warn('Will not read IPTC metadata to files starting with a hyphen, caused by exiftool security issues.')
+        logg.warning('Will not read IPTC metadata to files starting with a hyphen, caused by exiftool security issues.')
         return
 
     # fetch metadata dict from exiftool
@@ -166,7 +168,7 @@ def get_iptc_tags(image_path, tags=None):
                 if validateDate(parse_date(value, format='%Y:%m:%d')):
                     value = format_date(parse_date(value, format='%Y:%m:%d'))
                 else:
-                    logg.error('Could not validate: {} as date value.'.format(value))
+                    logg.error('Could not validate: %s as date value.', value)
 
             # join lists to strings
             if isinstance (value, list):
@@ -174,7 +176,7 @@ def get_iptc_tags(image_path, tags=None):
 
             ret[iptc_tag] = ensure_unicode(value, silent=True)
 
-    logg.info('{} read from file.'.format(ret))
+    logg.info('%s read from file.', ret)
 
     return ret
 
@@ -199,7 +201,7 @@ def write_iptc_tags(image_path, tag_dict):
     image_path = os.path.abspath(image_path)
 
     if not os.path.exists(image_path):
-        logg.info(u'Image {} for writing IPTC metadata does not exist.'.format(image_path))
+        logg.info(u'Image %s for writing IPTC metadata does not exist.', image_path)
         return
 
     if not isinstance(tag_dict, dict):
@@ -224,15 +226,15 @@ def write_iptc_tags(image_path, tag_dict):
             if validateDate(parse_date(tag_value.split('T')[0], format='%Y-%m-%d')):
                 tag_value = format_date(parse_date(tag_value.split('T')[0], format='%Y-%m-%d'), '%Y:%m:%d')
             else:
-                logg.error(u'Could not validate {}.'.format(tag_value))
+                logg.error(u'Could not validate %s.', tag_value)
 
         command_list.append(u'-charset iptc=UTF8')
         command_list.append(u'-{}={}'.format(tag_name, tag_value))
 
-    logg.info(u'Command: {} will be executed.'.format(command_list))
+    logg.info(u'Command: %s will be executed.', command_list)
     process = utils.process.Popen(command_list, stdout=subprocess.PIPE)
     output, error = process.communicate()
 
     if error is not None:
-        logg.info('Exiftool output: {}'.format(output))
-        logg.error('Exiftool error: {}'.format(error))
+        logg.info('Exiftool output: %s', output)
+        logg.error('Exiftool error: %s', error)

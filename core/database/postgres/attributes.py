@@ -3,6 +3,9 @@
     :copyright: (c) 2015 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
+from __future__ import division
+from __future__ import print_function
+
 from json import dumps
 from sqlalchemy import types as sqltypes
 from sqlalchemy.sql import elements, default_comparator

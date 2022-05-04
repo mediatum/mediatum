@@ -60,7 +60,7 @@ def init_plugins():
             if len(m.pofiles) > 0:
                 logg.debug("loading translation files for plugin %s", name)
                 for fp in m.pofiles:
-                    translation.addPoFilepath([fp])
+                    translation.register_po_file(fp[-5:-3], fp)
 
 
 def find_plugin_with_theme(theme_name):

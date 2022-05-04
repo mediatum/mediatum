@@ -5,6 +5,7 @@ from __future__ import division
 from __future__ import print_function
 
 import codecs
+import collections as _collections
 import os
 import stat
 import time
@@ -63,8 +64,8 @@ class _POFile:
             self.filenames.append(filepath)
 
 lang2po = {}
-addlangitems = {}
-addlangfiles = []
+_addlangitems = {}
+_addlangfiles = _collections.defaultdict(list)
 
 
 @ensure_unicode_returned(silent=True)
@@ -85,7 +86,7 @@ def translate(key, language=None, request=None):
             for n in [f for f in files if f.endswith("%s.po" % language)]:
                 plist.append(os.path.join(i18dir, n))
 
-        for f in addlangfiles:
+        for f in _addlangfiles[language]:
             if os.path.exists(f):
                 plist.append(f)
 
@@ -100,24 +101,23 @@ def translate(key, language=None, request=None):
     except KeyError:
         # try additional keys
         try:
-            return addlangitems[language][key]
+            return _addlangitems[language][key]
         except KeyError:
             return key
 
 
 def addLabels(labels):
     for key in labels:
-        if key not in addlangitems.keys():
-            addlangitems[key] = {}
+        if key not in _addlangitems.keys():
+            _addlangitems[key] = {}
 
         for item in labels[key]:
-            addlangitems[key][item[0]] = item[1]
+            _addlangitems[key][item[0]] = item[1]
 
 
-def addPoFilepath(filepath=[]):
-    for f in filepath:
-        if f not in addlangfiles:
-            addlangfiles.append(f)
+def register_po_file(language, path):
+    if path not in _addlangfiles[language]:
+        _addlangfiles[language].append(path)
 
 
 def set_language(accept_languages, new_language=None):

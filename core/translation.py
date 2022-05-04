@@ -4,13 +4,15 @@
 from __future__ import division
 from __future__ import print_function
 
-from . import config
+import codecs
 import os
 import stat
 import time
+
 import flask as _flask
+
+from . import config
 from utils.locks import named_lock as _named_lock
-import codecs
 from utils.strings import ensure_unicode_returned
 
 

@@ -74,6 +74,9 @@ msgstr "Datums-/Zeitformat"
 msgid "admin_memofield_maxlength"
 msgstr "Maximallänge"
 
+msgid "htmlmemo_wysiwyg"
+msgstr "WYSIYG"
+
 msgid "metafield_dateformat_std"
 msgstr "Standardformat (dd.mm.yyyy)"
 

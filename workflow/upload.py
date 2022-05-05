@@ -105,12 +105,12 @@ class WorkflowStep_Upload(WorkflowStep):
         ret = list()
         field = Metafield("prefix")
         field.set("label", _core_translation.t(lang, "admin_wfstep_text_before_upload_form"))
-        field.setFieldtype("memo")
+        field.setFieldtype("htmlmemo")
         ret.append(field)
 
         field = Metafield("suffix")
         field.set("label", _core_translation.t(lang, "admin_wfstep_text_after_upload_form"))
-        field.setFieldtype("memo")
+        field.setFieldtype("htmlmemo")
         ret.append(field)
 
         field = Metafield("singleobj")

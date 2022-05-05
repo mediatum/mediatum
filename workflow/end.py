@@ -56,7 +56,7 @@ class WorkflowStep_End(WorkflowStep):
         ret = []
         field = Metafield("endtext")
         field.set("label", t(lang, "admin_wfstep_endtext"))
-        field.setFieldtype("memo")
+        field.setFieldtype("htmlmemo")
         ret.append(field)
 
         field = Metafield("endremove")

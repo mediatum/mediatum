@@ -103,7 +103,7 @@ class WorkflowStep_Defer(WorkflowStep):
 
         field = Metafield("body")
         field.set("label", t(lang, "admin_wfstep_email_text"))
-        field.setFieldtype("memo")
+        field.setFieldtype("htmlmemo")
         ret.append(field)
 
         return ret

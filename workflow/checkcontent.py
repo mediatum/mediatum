@@ -59,7 +59,7 @@ class WorkflowStep_CheckContent(WorkflowStep):
 
         field = Metafield("text")
         field.set("label", _core_translation.t(lang, "admin_wfstep_checkcontent_text"))
-        field.setFieldtype("memo")
+        field.setFieldtype("htmlmemo")
         ret.append(field)
 
         return ret

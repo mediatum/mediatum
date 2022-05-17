@@ -574,6 +574,9 @@ msgstr "Classification"
 msgid "tab_admin"
 msgstr "Administration"
 
+msgid "tab_version"
+msgstr "Versioning"
+
 msgid "tab_imports"
 msgstr "Upload"
 

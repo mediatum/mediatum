@@ -139,6 +139,7 @@ class Data(Node):
                 "deleteobject",
                 )},
             "admin",
+            "version",
         )},
     )
 

@@ -16,6 +16,9 @@ msgstr "Maske"
 msgid "edit_meta_save"
 msgstr "Speichern"
 
+msgid "create_version_save"
+msgstr "Speichern"
+
 msgid "edit_meta_reset"
 msgstr "Zurücksetzen"
 
@@ -28,13 +31,13 @@ msgstr "erstellt"
 msgid "edit_meta_changed"
 msgstr "zuletzt geändert"
 
-msgid "edit_meta_version_information"
+msgid "create_version_information"
 msgstr "Versionierungs-Informationen"
 
-msgid "edit_meta_comment"
+msgid "edit_version_comment"
 msgstr "Kommentar"
 
-msgid "edit_meta_generate_new_version"
+msgid "create_version_generate_new_version"
 msgstr "Neue Version erstellen"
 
 msgid "edit_meta_version"
@@ -46,10 +49,10 @@ msgstr "Löschen"
 msgid "edit_meta_restore"
 msgstr "Wiederherstellen"
 
-msgid "edit_meta_timestamp_comment"
+msgid "create_version_timestamp_comment"
 msgstr "Timestamp / Kommentar"
 
-msgid "edit_meta_updateduser"
+msgid "create_version_updateduser"
 msgstr "Aktualisiert von"
 
 msgid "edit_meta_delete_confirm"

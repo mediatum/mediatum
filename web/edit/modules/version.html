@@ -1,0 +1,201 @@
+<tal:block metal:define-macro="create_version">
+    <style>
+        input, button, textarea, select{background-color:white}
+    </style>
+
+    <script language="javascript">
+        function openPopup(url, name, width, height){
+            var win1 = window.open(url,name,'width='+width+',height='+height+',screenX=50,screenY=50,directories=no,location=no,menubar=no,scrollbars=no,status=no,toolbar=no,resizable=no');
+            win1.focus();
+            return win1;
+        }
+
+        function handlelock(name){
+            if (document.getElementById('lock_'+name).checked){
+                document.getElementById(name).disabled = false;
+                document.getElementById(name).value = '';
+            }else{
+                document.getElementById(name).disabled = true;
+                document.getElementById(name).value = '? ';
+            }
+        }
+
+    </script>
+
+    <div id="navigation_content" style="border-top:0px!important">
+
+        <tal:block metal:use-macro="web/edit/edit.html/itemlist"/>
+
+        <div id="operation" style="position:relative;margin-right:200px;min-height:30px">
+            <form class="edit" action="edit_content" method="post" id="changeform" style="padding-bottom:3px">
+                <input tal:attributes="value csrf" type="hidden" name="csrf_token">
+                <input type="hidden" name="tab" value="version">
+                <input tal:attributes="value idstr" type="hidden" name="id">
+                <input tal:attributes="value srcnodeid" type="hidden" name="srcnodeid">
+            </form>
+        </div>
+        <!-- <div style="position:absolute;bottom:0px;right:10px"><img id="toggleSubNorth" src="/img/uparrowdisabled.png"/></div> -->
+    </div>
+
+    <div id="sub_content_content">
+
+        <!--<div id="scrollcontent">-->
+            <form class="edit" action="edit_content" method="post" id="myform">
+                <input tal:attributes="value csrf" type="hidden" name="csrf_token">
+                <input tal:attributes="value srcnodeid" type="hidden" name="srcnodeid">
+                <div class="label" style="width:225px">&nbsp;</div>
+                <br/>
+                <br/>
+                <div class="label" style="width:225px">&nbsp;</div>
+                <br/>
+                <br/>
+
+        <tal:block tal:condition="python:node.type not in ['collection', 'collections', 'directory'] and node.has_write_access()">
+        <div class="editorrow">
+            <div class="label"><tal:block i18n:translate="create_version_information"/></div>
+            <div id="div_description">&nbsp;</div>
+            <div id="editor_content">&nbsp;</div>
+        </div>
+        <br/>
+        <div class="editorrow">
+            <div class="label"><tal:block i18n:translate="create_version_generate_new_version"/></div>
+            <div id="div_description">&nbsp;</div>
+            <div id="editor_content">
+                <input type="checkbox" name="generate_new_version" onchange="onNewVersionChecked(this);return false;" />
+            </div>
+        </div>
+        <div class="editorrow" id="version_comment" style="display:none">
+            <div class="label"><tal:block i18n:translate="create_version_comment"/>:<span class="required">*</span></div>
+            <div id="div_description">&nbsp;</div>
+            <div id="editor_content">
+                <textarea name="version_comment" rows="4" style="width:380px" tal:content="python:''"> </textarea>
+            </div>
+        </div>
+        <style>
+            table.version-list td {
+                white-space:normal;
+            }
+            table.version-list td a {
+                font-weight: normal;
+                color: #000000;
+            }
+            table.version-list tr.active {
+                background: #f1f1f1;
+            }
+            table.version-list tr th {
+                background: #d6d6d6;
+                color: #5e5e5e;
+            }
+        </style>
+        <script language="javascript">
+            function onNewVersionChecked (self) {
+                if (self.checked) {
+                    $('#version_comment').show();
+                    $('#version_comment textarea').attr('required', '');
+                    $('#save_button').prop('disabled', false);
+                } else {
+                    $('#version_comment').hide();
+                    $('#version_comment textarea').removeAttr('required');
+                    $('#save_button').prop('disabled', true);
+                }
+            }
+        </script>
+        <div class="editorrow">
+            <div class="label">&nbsp;</div>
+            <div id="div_description">&nbsp;</div>
+            <div id="editor_content">
+                <table class="version-list" width="380" cellspacing="1" cellpadding="5">
+                    <tr>
+                        <th><tal:block i18n:translate="create_version_version"/></th>
+                        <th><tal:block i18n:translate="create_version_timestamp_comment"/></th>
+                        <th><tal:block i18n:translate="create_version_updateduser"/></th>
+                    </tr>
+                    <tr tal:condition="python: untagged_current_version" class="row active">
+						<td><a tal:attributes="href python:node_url(untagged_current_version.id)"
+						       i18n:translate="untagged_version"
+						       target="frontend">untagged</a>
+						</td>
+                        <td>
+                        <div tal:content="python:untagged_current_version.pretty_format_update_time"></div>
+                        </td>
+                        <td>
+                        <div tal:content="python:untagged_current_version.updateuser"></div>
+                        </td>
+                    </tr>
+                    <tal:block tal:repeat="v tagged_versions">
+                    <tr tal:attributes="class python:(v.isActiveVersion() and 'row active' or 'row') ">
+                      <td><a href="/" tal:attributes="href python:node_url(v.id, v.tag)" target="frontend"
+                             tal:content="python:v.tag">Version</a></td>
+                        <td>
+                        <div tal:content="python:v.pretty_format_update_time"></div>
+                        <div tal:content="python:v.comment"></div>
+                        </td>
+                        <td>
+                        <div tal:content="python:v.updateuser"></div>
+                        </td>
+                    </tr>
+                    </tal:block>
+                    <tr tal:condition="python: published_version" class="row active">
+						<td><a tal:attributes="href python:node_url(published_version.id, 'published')"
+						       i18n:translate="published_version"
+						       target="frontend">untagged</a>
+						</td>
+                        <td>
+                        <div tal:content="python:published_version.pretty_format_update_time"></div>
+                        </td>
+                        <td>
+                        <div tal:content="python:published_version.updateuser"></div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        </tal:block>
+        <br/>
+        <br/>
+                <br/>
+                <div class="label" style="width:225px">&nbsp;</div>
+                <input id="save_button" disabled="disabled" i18n:attributes="value create_version_save" type="submit" name="save"/>
+                <br/>
+                <br/>
+                <br/>
+                <input type="hidden" name="tab" value="version"/>
+                <input tal:attributes="value idstr" type="hidden" name="id"/>
+                <input type="hidden" name="nodename_changed" value="nodename_changed"/>
+                <br/>
+                <br/>
+            </form>
+        <!--</div>-->
+    </div>
+    <div id="sub_footer_module" style="overflow:hidden;">
+        <div style="text-align:right;margin-right:5px;overflow:hidden;">
+            <small>
+            </small>
+        </div>
+    </div>
+
+    <script tal:content="python:u'var js_edit_layout_togglertip_open = \'{}\';'.format(t(language, 'edit_layout_togglertip_open'))">;</script>
+    <script tal:content="python:u'var js_edit_layout_togglertip_closed = \'{}\';'.format(t(language, 'edit_layout_togglertip_closed'))">;</script>
+
+
+            <script type="text/javascript" src="/js/jquery.layout.min.js"> </script>
+            <script type="text/javascript" src="/js/jquery.layout.resizePaneAccordions-latest.min.js"> </script>
+
+
+    <script>
+
+        $(document).ready(function () {
+            sublayout = $('#sub_content').layout({applyDemoStyles: true,
+                center:{paneSelector: "#sub_content_content",},
+                north:{paneSelector: "#navigation_content", size:130,resizable:false,},
+                south:{paneSelector: "#sub_footer_module",size:20,closable:false, resizable:false, spacing_open: 0, spacing_closed: 0,},
+
+                togglerTip_open: js_edit_layout_togglertip_open,
+                togglerTip_closed: js_edit_layout_togglertip_closed,
+
+                });
+       });
+
+    </script>
+
+</tal:block>

@@ -179,6 +179,7 @@ div.mask_row {margin-bottom:6px;}
 .mediatum_img_menusortnodes::before {content: url(/img/editor/mediatum_stat.svg);} /* Einstellungen: Datensätze sortieren */
 .mediatum_img_startpagesmenu::before {content: url(/img/editor/mediatum_world.svg);} /* Startseiten verwalten */
 .mediatum_img_admin::before {content: url(/img/editor/mediatum_tools.svg);}  /* Administration */
+.mediatum_img_version::before {content: "V";}  /* Versionierung */
 .mediatum_img_classes::before {content: url(/img/editor/mediatum_tree.svg);} /* Klassifikation */
 .mediatum_img_menueditobject::before {content: url(/img/editor/mediatum_settings.svg);} /* Weitere Aktionen für Datensatz */
 /* Second Submenu */

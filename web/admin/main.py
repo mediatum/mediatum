@@ -45,8 +45,8 @@ def show_node(req):
     v["user"] = user
     v["guestuser"] = get_guest_user().login_name
     v["version"] = core.__version__
-    v["content"] = show_content(req, p[0])
     v["navigation"] = adminNavigation()
+    v["content"] = show_content(req, p[0])
     v["breadcrumbs"] = getMenuItemID(v["navigation"], req.mediatum_contextfree_path[1:])
 
     spc = [

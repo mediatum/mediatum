@@ -943,6 +943,7 @@ def make_db_auto_name(prefix, sql_type, name):
 
 def new_temp_download_file(filename):
     import core.config as _core_config
+    import fileutils as _fileutils
 
     tmppath = _core_config.get("paths.temp-download-dir", os.path.join(_core_config.get("paths.datadir"), "download-temp"))
     with suppress(OSError,warn=False):
@@ -959,6 +960,6 @@ def new_temp_download_file(filename):
                 os.unlink(tmpfile)
 
     #create tmporary file in tmppath
-    with tempfile.NamedTemporaryFile(prefix="tmp_", suffix=filename,  dir=tmppath, delete=False) as outfile:
+    with tempfile.NamedTemporaryFile(prefix="tmp_", suffix=_fileutils.sanitize_filename(filename), dir=tmppath, delete=False) as outfile:
         os.chmod(outfile.name, 0o644)
         return outfile.name

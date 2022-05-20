@@ -122,12 +122,12 @@ class m_url(Metatype):
             logg.exception("exception in getFormattedValue, error getting formatted value for URI")
             return (metafield.getLabel(), "")
 
-    def format_request_value_for_db(self, field, params, item, language=None):
-        uri = params.get(item)
+    def format_request_value_for_db(self, field, form):
+        uri = form.get(field.name)
         quoted_uri = quote_uri(uri)
-        linktext = params.get(item + "_text").replace(u";", u"\u037e")
         if not quoted_uri:
             return ""
+        linktext = form.get("{}_text".format(field.name)).replace(u";", u"\u037e")
         if not linktext:
             # don't add a single ';' add the end of the url (quoted_uri)
             return u"{}".format(quoted_uri)

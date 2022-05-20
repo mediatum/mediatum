@@ -72,12 +72,12 @@ class m_list(Metatype):
             value = esc(value)
         return (metafield.getLabel(), value)
 
-    def format_request_value_for_db(self, field, params, item, language=None):
+    def format_request_value_for_db(self, field, form):
         if field.metatype_data['multiple']:
-            valuelist = params.getlist(item)
+            valuelist = form.getlist(field.name)
             value = ";".join(valuelist)
         else:
-            value = params.get(item)
+            value = form.get(field.name)
         return value.replace("; ", ";")
 
     def get_metafieldeditor_html(self, fielddata, metadatatype, language):

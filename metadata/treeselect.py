@@ -55,15 +55,6 @@ class m_treeselect(Metatype):
             value = esc(value)
         return (metafield.getLabel(), value)
 
-    def format_request_value_for_db(self, field, params, item, language=None):
-        value = params.get(item)
-        try:
-            return value.replace("; ", ";")
-        except:
-            logg.exception("exception in format_request_value_for_db, returning value")
-            return value
-
-
     # method for popup methods of type treeselect
     def getPopup(self, req):
         req.response.set_data(tal.processTAL(

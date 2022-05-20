@@ -99,18 +99,18 @@ class m_date(Metatype):
 
         return (metafield.getLabel(), ''.join(value_list))
 
-    def format_request_value_for_db(self, field, params, item, language=None):
-        value = params.get(item)
+    def format_request_value_for_db(self, field, form):
         f = field.getSystemFormat(ustr(field.metatype_data['format']))
         if not f:
             return ""
+        value = form.get(field.name)
         try:
-            d = parse_date(ustr(value), f.value)
+            value = parse_date(ustr(value), f.value)
         except ValueError:
             return ""
-        if not validateDate(d):
+        if not validateDate(value):
             return ""
-        return format_date(d, format='%Y-%m-%dT%H:%M:%S')
+        return format_date(value, format='%Y-%m-%dT%H:%M:%S')
 
     def get_metafieldeditor_html(self, fielddata, metadatatype, language):
         return tal.getTAL(

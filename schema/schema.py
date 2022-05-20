@@ -1040,7 +1040,7 @@ class Mask(Node):
                         value = form.get('nodename')
                         nodename = value
                     else:
-                        value = t.format_request_value_for_db(field, form, field.name)
+                        value = t.format_request_value_for_db(field, form)
                         if field.name.startswith("system."):
                             system_attrs[field.name[len("system."):]] = value
                         else:

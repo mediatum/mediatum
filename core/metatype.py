@@ -20,14 +20,14 @@ class Metatype(object):
     def getFormattedValue(self, metafield, maskitem, mask, node, language, html):
         pass
 
-    def format_request_value_for_db(self, field, params, item, language=None):
+    def format_request_value_for_db(self, field, form):
         """Prepare value for the database from update request params.
         :param field:   associated field
         :param params: dict which contains POST form values
         :param item: field name prepended with language specifier. Is the same as field name for non-multilingual fields.
         """
-        # just fetch the unmodified alue from the params dict
-        return params.get(item)
+        # just fetch the unmodified value from the params dict
+        return form.get(field.name)
 
     def get_default_value(self, field):
         return ""

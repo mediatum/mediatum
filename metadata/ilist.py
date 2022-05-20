@@ -114,11 +114,6 @@ class m_ilist(Metatype):
             value = esc(value)
         return (metafield.getLabel(), value)
 
-    def format_request_value_for_db(self, field, params, item, language=None):
-        value = params.get(item)
-        return value
-
-
     def getPopup(self, req):
         try:
             name = req.params['name']

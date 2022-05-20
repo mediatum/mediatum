@@ -258,7 +258,10 @@ def _handletabs(req, ids, tabs, sort_choices):
     if n.type.startswith("workflow"):
         n = q(_core_systemtypes.Root).one()
 
-    menu = _utils_utils.parse_menu_struct(n.editor_menu, lambda mi: mi not in user.hidden_edit_functions)
+    skip_items = set(_utils_utils.get_menu_strings(n.editor_menu))
+    skip_items.intersection_update(user.hidden_edit_functions)
+    menu = _utils_utils.parse_menu_struct(n.editor_menu, skip_items)
+
     nodes_per_page = req.args.get("nodes_per_page", type=int)
     if not nodes_per_page:
         nodes_per_page = 20

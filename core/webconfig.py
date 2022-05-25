@@ -130,12 +130,11 @@ def current_node_url(**kwargs):
 def add_template_globals():
     from core.translation import translate
     from core import app
-    template_globals = dict(node_url=node_url, 
-                            current_node_url=current_node_url, 
-                            _t=translate)
+    template_globals = dict(node_url=node_url, current_node_url=current_node_url)
 
     tal.add_template_globals(**template_globals)
     app.add_template_globals(**template_globals)
+    app.add_template_globals(_t=translate)
 
 
 def initContexts():

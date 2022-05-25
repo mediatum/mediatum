@@ -99,7 +99,7 @@ def search(searchtype, searchquery, readable_query, paths, req, container_id = N
     language = _core_translation.set_language(req.accept_languages)
     content_list.linkname = u"{}: {} \"{}\"".format(
             container.getLabel(language),
-            _core_translation.translate("search_for", language=language),
+            _core_translation.translate(language, "search_for"),
             readable_query,
         )
     content_list.linktarget = ""
@@ -190,20 +190,20 @@ def _extended_searchquery_from_req(req):
                 q_str.append(u'({} >= {} and {} <= {})'.format(field.name, date_from, field.name, date_to))
                 q_user.append(u'({} {} "{}" {} "{}")'.format(
                         field.name,
-                        _core_translation.translate("search_between", request=req),
+                        _core_translation.translate_in_request("search_between", request=req),
                         from_value,
-                        _core_translation.translate("search_and", request=req),
+                        _core_translation.translate_in_request("search_and", request=req),
                         to_value,
                        ))
 
         yield (
                 u"({})".format(" or ".join(q_str)),
-                u" {} ".format(_core_translation.translate("search_or", request=req)).join(q_user),
+                u" {} ".format(_core_translation.translate_in_request("search_or", request=req)).join(q_user),
                )
 
 
 def extended_search(req, paths):
     searchquery, readable_query = _itertools.izip(*_extended_searchquery_from_req(req))
     searchquery =  " and ".join(searchquery)
-    readable_query = " {} ".format(_core_translation.translate("search_and", request=req)).join(readable_query)
+    readable_query = " {} ".format(_core_translation.translate_in_request("search_and", request=req)).join(readable_query)
     return search("extended", searchquery, readable_query, paths, req)

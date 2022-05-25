@@ -23,6 +23,7 @@ def makeList(req, name, rights, readonlyrights, overload=0, type=""):
 
     val_left = ""
     val_right = ""
+    language = _core_translation.set_language(req.accept_languages)
 
     if not (len(rightsmap) > 0 and overload):
         # inherited standard rules
@@ -30,8 +31,8 @@ def makeList(req, name, rights, readonlyrights, overload=0, type=""):
             if rule.name in readonlyrights:
                 if rule.description.startswith("{"):
                     val_left += '<optgroup label="{}"></optgroup>'.format(_core_translation.translate(
+                            language,
                             "edit_acl_special_rule",
-                            _core_translation.set_language(req.accept_languages),
                         ))
                 else:
                     val_left += """<optgroup label="%s"></optgroup>""" % rule.description
@@ -42,8 +43,8 @@ def makeList(req, name, rights, readonlyrights, overload=0, type=""):
             if rule not in rorightsmap:
                 if rule.startswith("{"):
                     val_left += '<optgroup label="{}"></optgroup>'.format(_core_translation.translate(
+                            language,
                             "edit_acl_special_rule",
-                            _core_translation.set_language(req.accept_languages),
                         ))
                 else:
                     val_left += """<optgroup label="%s"></optgroup>""" % rule
@@ -60,7 +61,7 @@ def makeList(req, name, rights, readonlyrights, overload=0, type=""):
             if r.startswith("{"):  # special rights not changeable in normal ACL area
                 val_left += """<option value="{}">{}</option>""".format(
                         r,
-                        translate("edit_acl_special_rule", _core_translation.set_language(req.accept_languages)),
+                        _core_translation.translate(language, "edit_acl_special_rule"),
                     )
             else:
                 val_left += """<option value="%s">%s</option>""" % (r, r)

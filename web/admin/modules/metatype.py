@@ -406,7 +406,10 @@ def MetatypeDetail(req, id, err=0):
         v["original_name"] = req.params["mname_orig"]
     d = Data()
     v["datatypes"] = d.get_all_datatypes()
-    v["datatypes"].sort(key=lambda dt: _translation.t(_translation.set_language(req.accept_languages), dt.__name__))
+    try:
+        v["datatypes"].sort(key=lambda dt: _translation.t(_translation.set_language(req.accept_languages), dt.__name__))
+    except _translation.MessageIdNotFound:
+        v["datatypes"].sort(key=_operator.attrgetter("__name__"))
     v["metadatatype"] = metadatatype
     v["error"] = err
     v["bibtextypes"] = getAllBibTeXTypes()

@@ -4,35 +4,37 @@
 from __future__ import division
 from __future__ import print_function
 
+import datetime as _datetime
 import re as _re
 import time as _time
 import os as _os
 import stat as _stat
 import string as _string
+import traceback as _traceback
 import logging as _logging
 import mimetypes as _mimetypes
 import importlib as _importlib
 import zipfile as _zipfile
-import httpstatus as _httpstatus
-import traceback as _traceback
-import flask as _flask
-import datetime as _datetime
-import utils.locks as _utils_lock
-from functools import partial as _partial
+
 from cgi import escape as _escape
+from functools import partial as _partial
 from StringIO import StringIO as _StringIO
+
+import flask as _flask
+
+import core.translation as _core_translation
+import httpstatus as _httpstatus
+import utils.locks as _utils_lock
 import csrfform as _csrfform
 from core import config as _config
 from utils.utils import suppress as _suppress, nullcontext as _nullcontext
 from utils.url import build_url_from_path_and_params as _build_url_from_path_and_params
 from collections import OrderedDict as _OrderedDict
 
-
 _logg = _logging.getLogger(__name__)
 
 GLOBAL_TEMP_DIR = "/tmp/"
 GLOBAL_ROOT_DIR = "no-root-dir-set"
-
 
 # COMPAT: before / after request handlers and request / app context handling
 _request_started_handlers = []
@@ -775,7 +777,6 @@ def callhandler(handler_func, req):
         # TODO: add some kind of exception handler system for Athana
         if _config.get('host.type') != 'testing':
             from utils.log import make_xid_and_errormsg_hash
-            from core.translation import translate
             from core import db
 
             # Roll back if the error was caused by a database problem.
@@ -792,10 +793,12 @@ def callhandler(handler_func, req):
                            xid, req.method, req.mediatum_contextfree_path, dict(req.args))
 
             if mail_to_address:
-                msg = translate("core_snipped_internal_server_error_with_mail", request=req).replace('${email}',
-                                                                                                     mail_to_address)
+                msg = _core_translation.translate_in_request(
+                        "core_snipped_internal_server_error_with_mail",
+                        request=req,
+                    ).replace('${email}', mail_to_address)
             else:
-                msg = translate("core_snipped_internal_server_error_without_mail", request=req)
+                msg = _core_translation.translate_in_request("core_snipped_internal_server_error_without_mail", request=req)
             s = msg.replace('${XID}', xid)
 
             req.response.headers["X-XID"] = xid

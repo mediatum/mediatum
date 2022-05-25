@@ -107,7 +107,7 @@
                                />
                             <input
                                 tal:condition="python:used_by[metafield.id]"
-                                tal:attributes="onclick python:u'alert(\'{}\')'.format(translate('admin_metafield_used_title', language).format(used_by[metafield.id]).replace('\n','\\n')); title python:translate('admin_metafield_used_title', language).format(used_by[metafield.id])"
+                                tal:attributes="onclick python:u'alert(\'{}\')'.format(translate(language, 'admin_metafield_used_title').format(used_by[metafield.id]).replace('\n','\\n')); title python:translate(language, 'admin_metafield_used_title').format(used_by[metafield.id])"
                                 type="image"
                                 src="/static/img/archive.png"
                                />

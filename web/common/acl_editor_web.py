@@ -17,12 +17,13 @@ def makeList(req, own_ruleset_assocs, inherited_ruleset_assocs, special_ruleset,
 
     # inherited rulesets
     inherited_ruleset_names = [r.ruleset_name for r in inherited_ruleset_assocs]
+    language = _core_translation.set_language(req.accept_languages)
     for rulesetname in inherited_ruleset_names:
         if rulesetname in private_ruleset_names:
             val_left.append(
                 '<optgroup label="{}"></optgroup>'.format(_core_translation.translate(
+                        language,
                         "edit_acl_special_rule",
-                        _core_translation.set_language(req.accept_languages),
                     )),
             )
         else:
@@ -33,10 +34,7 @@ def makeList(req, own_ruleset_assocs, inherited_ruleset_assocs, special_ruleset,
     own_ruleset_names = [r.ruleset_name for r in own_ruleset_assocs]
     for rulesetname in own_ruleset_names:
         if rulesetname in private_ruleset_names:
-            entry_text = _core_translation.translate(
-                    "edit_acl_special_rule",
-                    _core_translation.set_language(req.accept_languages),
-                )
+            entry_text = _core_translation.translate(language, "edit_acl_special_rule")
             val_left.append(
                 """<option value="__special_rule__">%s</optgroup>""" % (entry_text, ))
         else:

@@ -226,7 +226,7 @@ class m_field(Metatype):
             if field.getName() in fieldlist.keys():
                 if len(fieldlist[field.getName()]) > 1:
                     ret += '&nbsp;<img src="/static/img/attention.gif" title="{} '.format(
-                            _core_translation.translate("mask_edit_multi_label", language),
+                            _core_translation.translate(language, "mask_edit_multi_label"),
                         )
                     ret += ", ".join([schema.getName() for schema in fieldlist[field.getName()]]) + '"/>'
 

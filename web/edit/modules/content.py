@@ -5,6 +5,7 @@ from __future__ import division
 from __future__ import print_function
 
 import json
+
 import mediatumtal.tal as _tal
 
 import core.translation as _core_translation
@@ -41,7 +42,10 @@ def getContent(req, ids):
                     for _t in datatypes:
 #                         if _t.getName() == dtype and not elemInList(dtypes, _t.getName()):
                         dtypes.append(_t)
-        _dtypes.sort(key=lambda x: _core_translation.translate(x.getLongName(), request=req).lower())
+        try:
+            _dtypes.sort(key=lambda x: _core_translation.translate_in_request(x, req).lower())
+        except _core_translation.MessageIdNotFound:
+            _dtypes.sort(key=lambda x: x.__name__.lower())
         return _dtypes
 
     node = q(Data).get(long(ids[0]))

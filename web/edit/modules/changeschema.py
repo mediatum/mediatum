@@ -8,9 +8,9 @@ import logging
 
 import mediatumtal.tal as _tal
 
+import core.translation as _core_translation
 import core.csrfform as _core_csrfform
 from schema.schema import get_permitted_schemas
-from core.translation import translate
 from core.users import user_from_session as _user_from_session
 from core import httpstatus
 from core import Node
@@ -129,7 +129,7 @@ def getContent(req, ids):
         available_schemes = [s for s in schemes if node.type in s.getDatatypes()]
 
         if isinstance(node, Container):
-            admissible_containers.sort(key=lambda x: translate(x, request=req).lower())
+            admissible_containers.sort(key=lambda x: _core_translation.translate_in_request(x, request=req).lower())
             d['schemes'] = available_schemes
             d['datatypes'] = admissible_containers
         else:

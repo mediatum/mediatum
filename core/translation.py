@@ -18,6 +18,10 @@ _addlangitems = {}
 _addlangfiles = _collections.defaultdict(list)
 
 
+class MessageIdNotFound(KeyError):
+    pass
+
+
 @_backports_functools_lru_cache.lru_cache(maxsize=None)
 def _parse_po_file_to_dict(po_file_path):
     po = _polib.pofile(po_file_path, encoding='utf-8')
@@ -47,25 +51,30 @@ def _translate_lang_and_key_to_translated_text(language, msg_id):
 
 
 @ensure_unicode_returned(silent=True)
-def translate(msg_id, language=None, request=None):
-    if request and not language:
-        language = set_language(request.accept_languages)
-
-    if not request and not language:
-        language = set_language(_flask.request.accept_languages)
-
-    if not language:
-        return "?{}?".format(msg_id)
-
-    msg_str = _translate_lang_and_key_to_translated_text(language, msg_id)
-    if msg_str:
+def translate(language, msgid):
+    msg_str = _translate_lang_and_key_to_translated_text(language, msgid)
+    if msg_str is not None:
         return msg_str
 
     # try additional keys
     try:
-        return _addlangitems[language][msg_id]
+        return _addlangitems[language][msgid]
     except KeyError:
-        return msg_id
+        raise MessageIdNotFound(msgid)
+
+
+def translate_in_request(msgid, request=None):
+    return translate(set_language(request.accept_languages if request else _flask.request.accept_languages), msgid)
+
+
+def translate_in_template(msgid, language=None, request=None):
+    try:
+        if language:
+            return translate(language, msgid)
+        else:
+            return translate_in_request(msgid, request)
+    except MessageIdNotFound:
+        return msgid
 
 
 def addLabels(labels):
@@ -110,6 +119,6 @@ def set_language(accept_languages, new_language=None):
 
 def t(target, key):
     if isinstance(target, basestring):
-        return translate(key, language=target)
+        return translate(target, key)
     else:
-        return translate(key, request=target)
+        return translate_in_request(key, request=target)

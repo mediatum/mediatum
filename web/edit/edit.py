@@ -211,10 +211,12 @@ def frameset(req):
     cmenu_iconpaths = []
 
     for ct in containertypes:
-        ct_name = ct.__name__
         # translations of ct_name will be offered in editor tree context menu
-        cmenu_iconpaths.append(
-            [ct_name.lower(), _core_translation.t(language, ct_name), get_editor_icon_path_from_nodeclass(ct)])
+        try:
+            ct_name = _core_translation.t(language, ct.__name__)
+        except _core_translation.MessageIdNotFound:
+            ct_name = ct.__name__
+        cmenu_iconpaths.append([ct.__name__.lower(), ct_name, get_editor_icon_path_from_nodeclass(ct)])
 
     homenodefilter = req.values.get('homenodefilter', '')
 

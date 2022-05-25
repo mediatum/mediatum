@@ -68,7 +68,10 @@ def getDatatypes(req, schemes):
                 for t in datatypes:
                     if t.__name__.lower() == dtype and not elemInList(dtypes, t.__name__.lower()):
                         dtypes.append(t)
-    dtypes.sort(key=lambda x: _core_translation.translate(x.__name__.lower(), request=req).lower())
+    try:
+        dtypes.sort(key=lambda x: _core_translation.translate_in_request(x.__name__.lower(), request=req).lower())
+    except _core_translation.MessageIdNotFound:
+        dtypes.sort(key=lambda x: x.__name__.lower())
     return dtypes
 
 
@@ -119,7 +122,7 @@ def getContent(req, ids):
                         except ValueError, e:
                             errornodes.append((
                                 filename,
-                                _core_translation.translate(unicode(e), request=req),
+                                _core_translation.translate_in_request(unicode(e), request=req),
                                 unicode(hash(f.getName())),
                             ))
                         db.session.commit()
@@ -145,7 +148,7 @@ def getContent(req, ids):
                     except Exception as e:
                         errornodes.append((
                             filename,
-                            _core_translation.translate(unicode(e), request=req),
+                            _core_translation.translate_in_request(unicode(e), request=req),
                             unicode(hash(f.getName())),
                         ))
                         db.session.rollback()
@@ -209,7 +212,7 @@ def getContent(req, ids):
                                 id=scheme.name,
                                 name=u'{} / {}'.format(
                                         scheme.getLongName(),
-                                        _core_translation.translate(dtypenames[datatype], request=req),
+                                        _core_translation.translate_in_request(dtypenames[datatype], request=req),
                                     ),
                                 description=scheme.getDescription(), datatype=datatype,
                             ),
@@ -238,7 +241,7 @@ def getContent(req, ids):
                 dict(
                     content=_tal.processTAL(
                             dict(
-                                language=_core_translation.set_language(req.accept_languages),
+                                language=language,
                                 identifier_importers=identifier_importers.values(),
                             ),
                             file='web/edit/modules/upload.html',
@@ -441,8 +444,8 @@ def getContent(req, ids):
 
         assert node.type not in ["root", "collections", "home"]
 
-        v['language'] = _core_translation.set_language(req.accept_languages)
-        v['t'] = _core_translation.t
+        v['language'] = language
+        v['translate'] = _core_translation.translate
 
     search_html = render_edit_search_box(q(Node).get(ids[0]), language, req, edit=True)
     searchmode = req.values.get("searchmode")
@@ -469,7 +472,7 @@ def getContent(req, ids):
         searchparams=urllib.urlencode(searchparams),
         get_ids_from_query=",".join(show_dir_nav.get_ids_from_req()),
         edit_all_objects=_core_translation.t(
-                _core_translation.set_language(req.accept_languages),
+                language,
                 "edit_all_objects",
             ).format(item_count[1]),
         navigation_height=navigation_height,
@@ -607,7 +610,7 @@ def import_from_doi(identifier, importdir, req=None):
 
     def handle_error(req, error_msgstr):
         if req:
-            errormsg = _core_translation.t(req, error_msgstr)
+            errormsg = _core_translation.translate_in_request(error_msgstr, req)
             req.response.location = build_url_from_path_and_params("content", {"id": importdir.id, "error": errormsg})
             req.values["error"] = errormsg
 

@@ -53,24 +53,17 @@ def makeUserList(req, name, rights, readonlyrights, overload=0, type=""):
 
     rightsmap = {}
     rorightsmap = {}
+    language = _core_translation.set_language(req.accept_languages)
     for r in rights:
         for u in getRuleUsers(r, userlist):
-            if _core_translation.translate(u[0], _core_translation.set_language(req.accept_languages)) != "":
-                rightsmap[_core_translation.translate(
-                        u[0],
-                        "{}: {}".format(_core_translation.set_language(req.accept_languages)), u[1],
-                    )] = None
-            else:
-                rightsmap[u[1]] = None
+            u0 = _core_translation.translate(language, u[0])
+            rightsmap["{}: {}".format(u0, u[1]) if u0 else u[1]] = None
 
     rrights = []
     for r in readonlyrights:
         if r[0] == "{":
             for part in getRuleUsers(r, userlist):
-                rrights.append("{}: {}".format(
-                        _core_translation.translate(part[0], _core_translation.set_language(req.accept_languages)),
-                        part[1],
-                    ))
+                rrights.append("{}: {}".format(_core_translation.translate(language, part[0]), part[1]))
         else:
             rrights.append(r)
 
@@ -98,11 +91,10 @@ def makeUserList(req, name, rights, readonlyrights, overload=0, type=""):
         susers.sort(lambda x, y: cmp(x.getName().lower(), y.getName().lower()))
 
         for user in susers:
-            val = u"{}: {}".format(
-                    _core_translation.translate(usertype, _core_translation.set_language(req.accept_languages)),
-                    user.getName(),
-                )
-            if val not in rightsmap and user.getName() not in rorightsmap and val not in readonlyrights:
-                val_right += '<option value="{0}">{0}</option>'.format(val)
+            usertype_username = _core_translation.translate(language, usertype)
+            username = user.getName()
+            usertype_username = "{}: {}".format(usertype_username, username)
+            if usertype_username not in rightsmap and username not in rorightsmap and usertype_username not in readonlyrights:
+                val_right += """<option value="{0}">{0}</option>""".format(usertype_username)
 
     return {"name": name, "val_left": val_left, "val_right": val_right, "type": type}

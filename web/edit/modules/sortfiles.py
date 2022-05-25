@@ -7,13 +7,14 @@ from __future__ import print_function
 import mediatumtal.tal as _tal
 
 from sqlalchemy import func
-from core.translation import t as _t
+
 from utils.utils import getCollection
 from core.users import user_from_session as _user_from_session
 from core import httpstatus
 from core import Node
 from core import db
 from schema.schema import Metadatatype
+import core.translation as _core_translation
 import web.common.sort as _sort
 
 q = db.query
@@ -32,7 +33,12 @@ def getContent(req, ids):
     collection_sortfield = node.get("sortfield")
     db.session.commit()
 
-    sortchoices = _sort.get_sort_choices(container=node, off="off", t_off=_t(req, "off"), t_desc=_t(req, "descending"))
+    sortchoices = _sort.get_sort_choices(
+        container=node,
+        off="off",
+        t_off=_core_translation.translate_in_request("off", req),
+        t_desc=_core_translation.translate_in_request("descending", req),
+    )
     return _tal.processTAL(
             dict(
                 srcnodeid=req.values.get("srcnodeid", ""),

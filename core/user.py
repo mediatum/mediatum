@@ -5,9 +5,10 @@ from __future__ import division
 from __future__ import print_function
 
 from warnings import warn
-import core.config as config
+
 import flask_login
-from core.translation import translate
+
+import core.translation as _core_translation
 
 
 class UserMixin(object):
@@ -147,7 +148,7 @@ class GuestUser(UserMixin, flask_login.AnonymousUserMixin):
     
     @property
     def display_name(self):
-        return translate("guest")
+        return _core_translation.translate_in_request("guest")
     
     def __init__(self):
         self.id = None

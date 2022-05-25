@@ -58,8 +58,8 @@ def migrate_special_dirs():
         logg.info("fixing special dirs in home dir %s (%s)", home_dir.name, home_dir.id)
         lang = config.languages[0]
         special_dirs = [
-            (translate(u"user_trash", lang), u"trash"),
-            (translate(u"user_upload", lang), u"upload")
+            (translate(lang, u"user_trash"), u"trash"),
+            (translate(lang, u"user_upload"), u"upload")
         ]
 
         for old, new in special_dirs:

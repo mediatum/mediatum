@@ -7,8 +7,11 @@ from __future__ import print_function
 import logging
 import os.path
 import urllib
+
 import flask as _flask
 from mediatumtal import tal
+
+import core.translation as _core_translation
 import core.config as config
 from core.styles import CustomTheme, DefaultTheme
 from core import db
@@ -128,28 +131,26 @@ def current_node_url(**kwargs):
 
 
 def add_template_globals():
-    from core.translation import translate
     from core import app
     template_globals = dict(node_url=node_url, current_node_url=current_node_url)
 
     tal.add_template_globals(**template_globals)
     app.add_template_globals(**template_globals)
-    app.add_template_globals(translate=translate)
+    app.add_template_globals(translate=_core_translation.translate_in_template)
 
 
 def initContexts():
     _request_handler.setBase(config.basedir)
     _request_handler.setTempDir(config.get("paths.tempdir", "/tmp/"))
     from core.config import resolve_filename
-    from core.translation import translate, set_language
     tal.set_base(config.basedir)
     tal.add_macro_resolver(resolve_filename)
-    tal.add_translator(translate)
+    tal.add_translator(_core_translation.translate_in_template)
     add_template_globals()
 
     @_request_handler.request_started
     def set_lang(req, *args):
-        set_language(req.accept_languages)
+        _core_translation.set_language(req.accept_languages)
 
     context = _request_handler.addContext("/", ".")
 

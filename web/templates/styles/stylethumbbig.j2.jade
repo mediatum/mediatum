@@ -6,7 +6,7 @@ each file in files
   .preview(onmouseover="this.style.backgroundColor='#cccccc'", onmouseout="this.style.backgroundColor='white'")
     if file.attachment
       div
-        img(title=_t('view_list_att_title'), src='/static/img/attach.png')
+        img(title=translate('view_list_att_title'), src='/static/img/attach.png')
     a(href=file.getLink(), target='_parent')
       div
         if (file.node.get('width') or 0) > (file.node.get('height') or 0)

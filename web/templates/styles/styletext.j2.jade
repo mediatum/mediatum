@@ -9,9 +9,9 @@ each file in files
         = file.text
     div(style="position:absolute; right:23px; top:3px; overflow:hidden;")
       if file.attachment
-        img(title=_t('view_list_att_title'), src='/static/img/attach.png')
+        img(title=translate('view_list_att_title'), src='/static/img/attach.png')
       | &nbsp;
       if file.node.has_object()
-        img(title=_t('content_text_file_title'), src='/static/img/file.gif')
+        img(title=translate('content_text_file_title'), src='/static/img/file.gif')
     .break
       = ''

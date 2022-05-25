@@ -134,7 +134,7 @@ def add_template_globals():
 
     tal.add_template_globals(**template_globals)
     app.add_template_globals(**template_globals)
-    app.add_template_globals(_t=translate)
+    app.add_template_globals(translate=translate)
 
 
 def initContexts():

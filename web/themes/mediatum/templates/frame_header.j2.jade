@@ -8,7 +8,7 @@
       ul
         li
           a(href='/')
-            = _t('main_title')
+            = translate('main_title')
         li
           a(href='https://github.com/mediatum/mediatum', target='_blank') mediatum
 
@@ -18,7 +18,7 @@
         img(src='/static/img/logo.png', alt='Logo', width='110', height='59')
 
 #portal-personaltools
-  = _t("sub_header_user")
+  = translate("sub_header_user")
     | : {{ user_name }}
 
   for menuitem in userlinks.getLinks()
@@ -32,9 +32,9 @@
       a(href=item.getLink())
         if item.icon!=''
           img(border='0', height='16', src=item.icon)
-          = _t(item.getName())
+          = translate(item.getName())
     else
-      = _t(item.getName())
+      = translate(item.getName())
   if show_language_switcher
     #language_switch
       ul

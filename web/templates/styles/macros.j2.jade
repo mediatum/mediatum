@@ -17,7 +17,7 @@
 
 
 - macro format(image_formats)
-  h3= _t("image_available_formats")
+  h3= translate("image_available_formats")
   ul
     for type in image_formats
       li
@@ -48,14 +48,14 @@
           });
         }
       a(style="display:none;", id="high_resolution_link", href=highres_url)
-        = _t("image_high_res_title")
+        = translate("image_high_res_title")
       div(id="archive_div")
         a(id="get_archive_link", href="javascript:getArchivedFile('{}')".format(archive_fetch_url))
-          = _t("image_high_res_archive")
+          = translate("image_high_res_archive")
   if not archive_fetch_url
     div(style="padding-top:20px")
       a(href=highres_url)
-        = _t("image_high_res_title")
+        = translate("image_high_res_title")
 
 - macro itemsperpage(nodesperpage, nodesperpage_options)
   script.
@@ -86,11 +86,11 @@
     }
   div
     label(style='font-size:10px;')
-      = _t("items_per_page")
+      = translate("items_per_page")
     select(name='nodes_per_page', onchange='insertParameter(name, this.value)', style='font-size:10px;')
       for n in nodesperpage_options
         option(value=n, selected=n == nodesperpage)
-           = _t(n)
+           = translate(n)
 
 // generated from jade
 //- vim: set filetype=jade sw=2 ts=2 sts=2 expandtab:

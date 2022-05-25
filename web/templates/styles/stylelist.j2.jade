@@ -6,7 +6,7 @@ each file in files
   .preview_list(onmouseover="this.style.backgroundColor='#cccccc'", onmouseout="this.style.backgroundColor='white'")
     if file.attachment
       div(class='mediatum-stylelist-attach')
-        img(title=_t('view_list_att_title'), src='/static/img/attach.png')
+        img(title=translate('view_list_att_title'), src='/static/img/attach.png')
     a(href=file.getLink(), class='mediatum-stylelist-a')
       div(class='mediatum-stylelist-img')
         = file.image

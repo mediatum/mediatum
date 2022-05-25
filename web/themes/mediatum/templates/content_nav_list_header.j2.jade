@@ -18,15 +18,15 @@
                   td
                     if i==0
                       small
-                        = _t('sort_label')
+                        = translate('sort_label')
                     else
                       small
-                        = _t('sort_label2')
+                        = translate('sort_label2')
                   td
                     select(name='sortfield{}'.format(i), style='font-size: 9px', onchange='submit()')
                       for field in sortfieldslist[i]
                         option(value=field.getName(), selected=field.selected())
-                          = _t(field.getLabel())
+                          = translate(field.getLabel())
               tr
         td
           = page_nav

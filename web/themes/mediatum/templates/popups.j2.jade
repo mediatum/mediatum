@@ -9,7 +9,7 @@
       meta(http-equiv='Content-Type', content='text/html; charset=UTF-8')
       meta(content='text/html;charset=UTF-8', http-equiv='content-type')
       title
-        = _t('popup_help_header')
+        = translate('popup_help_header')
       link(rel='stylesheet', href='/static/css/mediatum.css')
       style(type='text/css').
         body {
@@ -19,7 +19,7 @@
     body
       div(style='width:100%; height:30px')
         h2
-          = _t('popup_help_title')
+          = translate('popup_help_title')
           b
             = '"' + field.getLabel() + '"'
       div(style='width:100%; height:150px')
@@ -29,7 +29,7 @@
       div(style='width:100%; height:50px', valign='bottom')
         p(align='center')
           button(type='button', onclick='self.close()')
-            = _t('close_window')
+            = translate('close_window')
 
 
 - macro attachmentbrowser(files, sum_size, id, path)
@@ -37,22 +37,22 @@
   html
     head
       title
-        = _t('att_browser_title')
+        = translate('att_browser_title')
       link(rel='stylesheet', href='/static/css/tum.css')
       link(rel='stylesheet', href='/static/css/admin/admin.css')
     body(style='margin:5px')
       h3
-        = _t('att_browser_title')
+        = translate('att_browser_title')
       form
         {{request.csrf_token}}
         table.overview
           tr
             th(width='30px')
-              = _t('att_browser_type')
+              = translate('att_browser_type')
             th(align='left')
-              =_t('att_browser_name')
+              =translate('att_browser_name')
             th(align='right')
-              =_t('att_browser_size')
+              =translate('att_browser_size')
           each file in files
             tr
               - var cssclass = files.index(file)%2 and 'norm' or 'silver'
@@ -78,6 +78,6 @@
           tr
             th(colspan='2', align='left')
               = '(' + files|length|string
-              = _t('att_browser_files') + ')'
+              = translate('att_browser_files') + ')'
             th(align='right')
               = sum_size

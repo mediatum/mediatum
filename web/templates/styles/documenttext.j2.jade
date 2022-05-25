@@ -11,11 +11,11 @@
 - block after_metadata
   if data_access and has_original
     .action_icon
-      a(href=documentlink, target="documentdownload", onclick="vgwPixelCall();", title=_t("doc_fulltext_title"))
+      a(href=documentlink, target="documentdownload", onclick="vgwPixelCall();", title=translate("doc_fulltext_title"))
         img(src="/static/img/pdf.gif")
         |&nbsp;PDF
     .clear
-    a(href=documentdownload, onclick="vgwPixelCall();")= _t("alternative_pdf_link")
+    a(href=documentdownload, onclick="vgwPixelCall();")= translate("alternative_pdf_link")
 
 // generated from jade
 //- vim: set filetype=jade sw=2 ts=2 sts=2 expandtab:

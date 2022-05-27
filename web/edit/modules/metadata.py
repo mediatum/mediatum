@@ -186,14 +186,11 @@ def getContent(req, ids):
             nodes += [node]
 
     idstr = ",".join(ids)
-    action = req.params.get('action', '').strip()
 
+    logg.info("%s in editor metadata: %r", user.login_name, [[n.id, n.name, n.type]for n in nodes])
     if len(ids) > 1 and len(metatypes) > 1:
-        logg.info("%s in editor metadata (action=%r) multiple documents not supported: %r",
-                  user.login_name, action, [[n.id, n.name, n.type]for n in nodes])
+        logg.info("%s user error: multiple metatypes in editor not supported", user.login_name)
         return _tal.processTAL({}, file="web/edit/modules/metadata.html", macro="multiple_documents_not_supported", request=req)
-
-    logg.info("%s in editor metadata (action=%r): %r", user.login_name, action, [[n.id, n.name, n.type]for n in nodes])
 
     metadatatype = node.metadatatype
 
@@ -254,11 +251,6 @@ def getContent(req, ids):
             t=_core_translation.t,
             csrf=_core_csrfform.get_token(),
         )
-    if action == 'restore':
-        raise NotImplementedError("restore version not implemented, later...")
-
-    if action == 'delete':
-        raise NotImplementedError("delete version not implemented, later...")
 
     if "edit_metadata" in req.params:
         flag_nodename_changed = _handle_edit_metadata(req, mask, nodes)

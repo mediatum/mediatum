@@ -262,6 +262,7 @@ def _handletabs(req, ids, tabs, sort_choices):
     skip_items.intersection_update(user.hidden_edit_functions)
     if len(ids) > 1:
         skip_items.add("version")
+        skip_items.add("view")
     menu = _utils_utils.parse_menu_struct(n.editor_menu, skip_items)
 
     nodes_per_page = req.args.get("nodes_per_page", type=int)

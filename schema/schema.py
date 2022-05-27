@@ -328,7 +328,7 @@ def getMetaField(pid, name):
     metatype = getMetaType(pid)
     if metatype is None:
         return None
-    return metatype.children.filter_by(name=name).scalar()
+    return metatype.children.filter_by(name=name).filter(Node.type=="metafield").scalar()
 
 #
 # check existance of field for given metadatatype
@@ -357,12 +357,9 @@ def updateMetaField(
         field = q(Node).get(fieldid)
     if field is not None:
         field.name = name
-    elif name in (c.name for c in metatype.children):
-        for c in metatype.children:
-            if c.name == name:
-                field = c
-                break
     else:
+        field = metatype.children.filter_by(name=name).filter(Node.type=="metafield").scalar()
+    if not field:
         field = Metafield(name)
         metatype.children.append(field)
         field.orderpos = len(metatype.children) - 1

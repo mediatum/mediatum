@@ -1,3 +1,6 @@
+# Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """menusortnodes submenu removed from editor menu
 
 Revision ID: 6cd40ed911a7

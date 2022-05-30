@@ -1,3 +1,6 @@
+-- Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+-- SPDX-License-Identifier: AGPL-3.0-or-later
+
 -- should be extended to a size limit function that also works for other JSON data types
 CREATE OR REPLACE FUNCTION jsonb_limit_to_size(input jsonb, bytesize integer = 2000) 
     RETURNS jsonb

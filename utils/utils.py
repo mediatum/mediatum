@@ -1,22 +1,6 @@
-"""
- mediatum - a multimedia content repository
+# Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+# SPDX-License-Identifier: AGPL-3.0-or-later
 
- Copyright (C) 2007 Arne Seifert <seiferta@in.tum.de>
- Copyright (C) 2007 Matthias Kramm <kramm@in.tum.de>
-
- This program is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
-"""
 from __future__ import division
 from __future__ import print_function
 
@@ -943,6 +927,7 @@ def make_db_auto_name(prefix, sql_type, name):
 
 def new_temp_download_file(filename):
     import core.config as _core_config
+    import fileutils as _fileutils
 
     tmppath = _core_config.get("paths.temp-download-dir", os.path.join(_core_config.get("paths.datadir"), "download-temp"))
     with suppress(OSError,warn=False):
@@ -959,6 +944,6 @@ def new_temp_download_file(filename):
                 os.unlink(tmpfile)
 
     #create tmporary file in tmppath
-    with tempfile.NamedTemporaryFile(prefix="tmp_", suffix=filename,  dir=tmppath, delete=False) as outfile:
+    with tempfile.NamedTemporaryFile(prefix="tmp_", suffix=_fileutils.sanitize_filename(filename), dir=tmppath, delete=False) as outfile:
         os.chmod(outfile.name, 0o644)
         return outfile.name

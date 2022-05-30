@@ -1,3 +1,7 @@
+<!--
+  Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
 <tal:block metal:define-macro="editorfield">
     <tal:block tal:condition="python:not bool(context.field.get('multiple'))">
         <select class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[int(context.lock)]; style python:u'width:{}px'.format(context.width-16); name python:context.name; id python:context.name;">

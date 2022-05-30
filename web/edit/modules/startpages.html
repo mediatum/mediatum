@@ -1,3 +1,7 @@
+<!--
+  Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
 <tal:block metal:define-macro="named_filelist" tal:repeat="item named_filelist">
     <tr tal:define="cssclass python:named_filelist.index(item)%2 and 'silver' or 'norm'" tal:attributes="class cssclass; id python:item.short_path;">
         <td tal:repeat="lang languages">

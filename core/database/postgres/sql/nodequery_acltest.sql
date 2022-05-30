@@ -1,4 +1,7 @@
-﻿--EXPLAIN ANALYZE
+﻿-- Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+-- SPDX-License-Identifier: AGPL-3.0-or-later
+
+--EXPLAIN ANALYZE
 
 SELECT distinct node.id, node.name, node.type, node.schema, node.orderpos FROM node
 JOIN noderelation ON node.id=cid

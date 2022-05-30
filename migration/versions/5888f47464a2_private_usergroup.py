@@ -1,3 +1,6 @@
+# Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Add private column and associated exclusion constraint to UserToUserGroup model
 WARNING: this is only the schema migration. permission and user data is not correct after applying this!
 

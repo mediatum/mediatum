@@ -1,14 +1,13 @@
 #!/usr/bin/python
+
+# Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
- mediatum - a multimedia content repository
-
- Copyright (C) 2008 Arne Seifert <seiferta@in.tum.de>
- Copyright (C) 2008 Matthias Kramm <kramm@in.tum.de>
-
-
 XXX: Old search parser, this is only used for the (soon-to-be legacy) export webservice.
 XXX: Will be deleted someday...
 """
+
 from __future__ import division
 from __future__ import print_function
 

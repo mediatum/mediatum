@@ -1,4 +1,7 @@
-CREATE OR REPLACE FUNCTION public.f_delfunc(_schema text, _del text = '') 
+-- Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+-- SPDX-License-Identifier: AGPL-3.0-or-later
+
+CREATE OR REPLACE FUNCTION public.f_delfunc(_schema text, _del text = '')
   RETURNS text
   LANGUAGE plpgsql 
 AS

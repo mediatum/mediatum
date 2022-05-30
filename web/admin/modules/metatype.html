@@ -1,3 +1,7 @@
+<!--
+  Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
 <metal:block metal:define-macro="view_type">
     <script type="text/javascript">
         function openwindow(url)
@@ -375,7 +379,7 @@
                                 <tr>
                                     <tal:block tal:repeat="fieldoption fieldoptions">
                                         <td tal:define="index python:fieldoptions.index(fieldoption)" width="20px" align="center">
-                                            <img tal:condition="python:flist[index]" tal:attributes="title python:flist[index] and fieldoption.getName() or ''; src python:flist[index] and '/img/haken.gif' or '/img/mark_empty.gif'" i18n:attributes="title"/>
+                                            <img tal:condition="python:flist[index]" tal:attributes="title python:flist[index] and fieldoption.name or ''; src python:flist[index] and '/img/haken.gif' or '/img/mark_empty.gif'" i18n:attributes="title"/>
                                         </td>
                                     </tal:block>
                                 </tr>

@@ -1,3 +1,6 @@
+-- Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+-- SPDX-License-Identifier: AGPL-3.0-or-later
+
 SELECT :id AS nid, rule_id, 'read' AS ruletype,
   (SELECT invert
    FROM node_to_access_rule na

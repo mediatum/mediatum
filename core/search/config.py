@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-"""
-    :copyright: (c) 2016 by the mediaTUM authors
-    :license: GPL3, see COPYING for details
 
+# Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+"""
 Search configuration. Currently, the following language configurations can be set:
 
 * default: used by default in node.search* methods
@@ -20,10 +21,9 @@ service_languages=simple
 fulltext_autoindex_languages=german,english
 attribute_autoindex_languages=german,english,simple
 
-
 # XXX: maybe we could do that in the database so that an admin could change search parameters at runtime?
-
 """
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function

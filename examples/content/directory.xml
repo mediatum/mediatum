@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
 <nodelist>
 <node name="directory" id="15" type="metadatatype" >
     <attribute name="active"><![CDATA[0]]></attribute>

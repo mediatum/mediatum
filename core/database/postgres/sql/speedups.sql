@@ -1,3 +1,6 @@
+-- Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+-- SPDX-License-Identifier: AGPL-3.0-or-later
+
 -- functions that are used to speed up important parts of mediaTUM.
 -- they could all be implemented in Python instead but this is faster ;)
 

@@ -1,3 +1,6 @@
+-- Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+-- SPDX-License-Identifier: AGPL-3.0-or-later
+
 -- Creates usergroup entries from imported group nodes
 CREATE OR REPLACE FUNCTION mediatum.migrate_usergroups() RETURNS void
     LANGUAGE plpgsql

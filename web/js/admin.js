@@ -1,3 +1,8 @@
+/*
+  Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+  SPDX-License-Identifier: AGPL-3.0-or-later
+*/
+
 function questionDelName(name){
     if (name==""){
         return confirm(unescape("Soll dieser Eintrag wirklich gel%F6scht werden?"));

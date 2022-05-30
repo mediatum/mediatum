@@ -87,7 +87,7 @@ class m_label(Metatype):
                 request=req,
                )
 
-    def getEditorHTML(self, field, value="", width=40, lock=0, language=None, required=None):
+    def editor_get_html_form(self, field, value="", width=40, lock=0, language=None, required=None):
         return tal.getTAL(
                 "metadata/label.html",
                 dict(
@@ -101,7 +101,7 @@ class m_label(Metatype):
                 language=language,
                )
 
-    def getSearchHTML(self, collection, field, language, name, value):
+    def search_get_html_form(self, collection, field, language, name, value):
         return tal.getTAL(
                 "metadata/label.html",
                 dict(
@@ -112,7 +112,7 @@ class m_label(Metatype):
                 language=language,
                )
 
-    def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
+    def viewer_get_data(self, metafield, maskitem, mask, node, language, html=True):
         value = node.get(metafield.getName())
         if html:
             value = esc(value)

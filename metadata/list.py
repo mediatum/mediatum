@@ -38,7 +38,7 @@ class m_list(Metatype):
         if valuelist.opt in ("option", "optionselected"):
             return valuelist.item
 
-    def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
+    def editor_get_html_form(self, field, value="", width=400, lock=0, language=None, required=None):
         return tal.getTAL(
                 "metadata/list.html",
                 dict(
@@ -54,7 +54,7 @@ class m_list(Metatype):
                 language=language,
                )
 
-    def getSearchHTML(self, collection, field, language, name, value):
+    def search_get_html_form(self, collection, field, language, name, value):
         return tal.getTAL(
                 "metadata/list.html",
                 dict(
@@ -66,13 +66,13 @@ class m_list(Metatype):
                 language=language,
                )
 
-    def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
+    def viewer_get_data(self, metafield, maskitem, mask, node, language, html=True):
         value = node.get(metafield.getName()).replace(";", "; ")
         if html:
             value = esc(value)
         return (metafield.getLabel(), value)
 
-    def format_request_value_for_db(self, field, form):
+    def editor_parse_form_data(self, field, form):
         if field.metatype_data['multiple']:
             valuelist = form.getlist(field.name)
             value = ";".join(valuelist)
@@ -80,7 +80,7 @@ class m_list(Metatype):
             value = form.get(field.name)
         return value.replace("; ", ";")
 
-    def get_metafieldeditor_html(self, fielddata, metadatatype, language):
+    def admin_settings_get_html_form(self, fielddata, metadatatype, language):
         return tal.getTAL(
             "metadata/list.html",
             dict(
@@ -91,7 +91,7 @@ class m_list(Metatype):
             language=language,
         )
 
-    def parse_metafieldeditor_settings(self, data):
+    def admin_settings_parse_form_data(self, data):
         if "listelements" in data:
             listelements = data["listelements"].split("\r\n")
         else:

@@ -48,7 +48,7 @@ class m_ilist(Metatype):
 
     name = "ilist"
 
-    def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
+    def editor_get_html_form(self, field, value="", width=400, lock=0, language=None, required=None):
         return tal.getTAL(
                 "metadata/ilist.html",
                 dict(
@@ -63,7 +63,7 @@ class m_ilist(Metatype):
                 language=language,
                )
 
-    def getSearchHTML(self, collection, field, language, name, value):
+    def search_get_html_form(self, collection, field, language, name, value):
         # `value_and_count` contains a list of options,
         # each option is represented by a tuple of its name and its count.
         value_and_count = _common_list.count_list_values_for_all_content_children(collection.id,
@@ -103,7 +103,7 @@ class m_ilist(Metatype):
                 language=language,
                )
 
-    def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
+    def viewer_get_data(self, metafield, maskitem, mask, node, language, html=True):
         value = node.get(metafield.getName())
         with suppress(Exception):
             if value and value[-1] == ";":

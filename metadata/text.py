@@ -24,7 +24,7 @@ class m_text(Metatype):
 
     name = "text"
 
-    def getEditorHTML(self, field, value="", width=40, lock=0, language=None, required=None):
+    def editor_get_html_form(self, field, value="", width=40, lock=0, language=None, required=None):
         try:
             field_node_name = field.name
         except:
@@ -45,7 +45,7 @@ class m_text(Metatype):
                 language=language,
                )
 
-    def getSearchHTML(self, collection, field, language, name, value):
+    def search_get_html_form(self, collection, field, language, name, value):
         return tal.getTAL(
                 "metadata/text.html",
                 dict(
@@ -56,7 +56,7 @@ class m_text(Metatype):
                 language=language,
                )
 
-    def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True, template_from_caller=None):
+    def viewer_get_data(self, metafield, maskitem, mask, node, language, html=True, template_from_caller=None):
 
         value = node.get_special(metafield.name)
         # consider int, long values like filesize

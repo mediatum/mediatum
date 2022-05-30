@@ -21,7 +21,7 @@ class m_meta(Metatype):
         synchronize=False,
     )
 
-    def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
+    def editor_get_html_form(self, field, value="", width=400, lock=0, language=None, required=None):
         return tal.getTAL(
                 "metadata/meta.html",
                 dict(
@@ -35,7 +35,7 @@ class m_meta(Metatype):
                 language=language,
                )
 
-    def getSearchHTML(self, collection, field, language, name, value):
+    def search_get_html_form(self, collection, field, language, name, value):
         return tal.getTAL(
                 "metadata/meta.html",
                 dict(
@@ -46,10 +46,10 @@ class m_meta(Metatype):
                 language=language,
                )
 
-    def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
+    def viewer_get_data(self, metafield, maskitem, mask, node, language, html=True):
         return (metafield.getLabel(), node.get(metafield.metatype_data['fieldname']))
 
-    def get_metafieldeditor_html(self, fielddata, metadatatype, language):
+    def admin_settings_get_html_form(self, fielddata, metadatatype, language):
         attr = {}
         if metadatatype:
             for t in metadatatype.getDatatypes():
@@ -59,7 +59,7 @@ class m_meta(Metatype):
                     attr.update(node.getTechnAttributes())
                     attr['IPTC'] = get_wanted_iptc_tags()
                 except AttributeError:
-                    logg.exception("attribute error in get_metafieldeditor_html, continue")
+                    logg.exception("attribute error in admin_settings_get_html_form, continue")
                     continue
 
         return tal.getTAL(
@@ -73,7 +73,7 @@ class m_meta(Metatype):
             language=language,
         )
 
-    def parse_metafieldeditor_settings(self, data):
+    def admin_settings_parse_form_data(self, data):
         assert data.get("synchronize") in (None, "1")
         return dict(
             fieldname=data["fieldname"],

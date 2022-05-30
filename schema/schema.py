@@ -342,7 +342,7 @@ def updateMetaField(
     if fieldid:
         field = q(Node).get(fieldid)
         field.name = name
-        fieldvalues = getMetadataType(field.get("type")).parse_metafieldeditor_settings(fieldvalues)
+        fieldvalues = getMetadataType(field.get("type")).admin_settings_parse_form_data(fieldvalues)
     else:
         field = metatype.children.filter_by(name=name).filter(Node.type=="metafield").scalar()
     if not field:
@@ -778,13 +778,13 @@ class Metafield(Node):
         return dateoption[0]
 
     def getEditorHTML(self, val="", width=400, lock=0, language=None, required=None):
-        return getMetadataType(self.getFieldtype()).getEditorHTML(self, val, width, lock, language=language, required=required)
+        return getMetadataType(self.getFieldtype()).editor_get_html_form(self, val, width, lock, language=language, required=required)
 
     def getSearchHTML(self, collection, field, language, name, value):
-        return getMetadataType(self.getFieldtype()).getSearchHTML(collection, self, language, name, value)
+        return getMetadataType(self.getFieldtype()).search_get_html_form(collection, self, language, name, value)
 
     def getFormattedValue(self, node, language=None):
-        return getMetadataType(self.getFieldtype()).getFormattedValue(self, None, None, node, language=language)
+        return getMetadataType(self.getFieldtype()).viewer_get_data(self, None, None, node, language=language)
 
     @property
     def metatype_data(self):
@@ -1040,7 +1040,7 @@ class Mask(Node):
                         value = form.get('nodename')
                         nodename = value
                     else:
-                        value = t.format_request_value_for_db(field, form)
+                        value = t.editor_parse_form_data(field, form)
                         if field.name.startswith("system."):
                             system_attrs[field.name[len("system."):]] = value
                         else:

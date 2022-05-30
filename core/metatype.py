@@ -11,16 +11,16 @@ class Metatype(object):
 
     default_settings = None
 
-    def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
+    def editor_get_html_form(self, field, value="", width=400, lock=0, language=None, required=None):
         return ""
 
-    def getSearchHTML(self, context):
+    def search_get_html_form(self, context):
         pass
 
-    def getFormattedValue(self, metafield, maskitem, mask, node, language, html):
+    def viewer_get_data(self, metafield, maskitem, mask, node, language, html):
         pass
 
-    def format_request_value_for_db(self, field, form):
+    def editor_parse_form_data(self, field, form):
         """Prepare value for the database from update request params.
         :param field:   associated field
         :param params: dict which contains POST form values
@@ -32,11 +32,11 @@ class Metatype(object):
     def get_default_value(self, field):
         return ""
 
-    def get_metafieldeditor_html(self, field, metadatatype, language):
+    def admin_settings_get_html_form(self, field, metadatatype, language):
         pass
 
 
-    def parse_metafieldeditor_settings(self, data):
+    def admin_settings_parse_form_data(self, data):
         assert not data
 
     translation_labels = {}

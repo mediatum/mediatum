@@ -28,7 +28,7 @@ class m_hlist(Metatype):
         onlylast=False,
     )
 
-    def get_metafieldeditor_html(self, fielddata, metadatatype, language):
+    def admin_settings_get_html_form(self, fielddata, metadatatype, language):
         return tal.getTAL(
             "metadata/hlist.html",
             dict(
@@ -40,7 +40,7 @@ class m_hlist(Metatype):
             language=language,
         )
 
-    def parse_metafieldeditor_settings(self, data):
+    def admin_settings_parse_form_data(self, data):
         assert data.get("onlylast") in (None, "1")
         return dict(
             parentnode=data["parentnode"],
@@ -48,7 +48,7 @@ class m_hlist(Metatype):
             onlylast=bool(data.get("onlylast")),
         )
 
-    def getEditorHTML(self, field, value="", width=40, lock=0, language=None, required=None):
+    def editor_get_html_form(self, field, value="", width=40, lock=0, language=None, required=None):
         metacfg = field.metatype_data
         return tal.getTAL(
                 "metadata/hlist.html",
@@ -67,7 +67,7 @@ class m_hlist(Metatype):
                 language=language,
                )
 
-    def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
+    def viewer_get_data(self, metafield, maskitem, mask, node, language, html=True):
         value = []
         ids = node.get(metafield.getName())
         if ids:

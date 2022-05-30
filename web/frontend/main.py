@@ -46,7 +46,7 @@ def _handle_json_request(req):
         if field:  # we have a field at hand
             get_html = field.getSearchHTML
         else:  # we have no field, we use the Metatype
-            get_html = getMetadataType("text").getSearchHTML
+            get_html = getMetadataType("text").search_get_html_form
 
         container_id = req.args.get("container_id")
 

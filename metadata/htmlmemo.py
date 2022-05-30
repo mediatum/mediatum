@@ -31,7 +31,7 @@ class m_htmlmemo(_core_metatype.Metatype):
         wysiwyg=False,
     )
 
-    def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
+    def editor_get_html_form(self, field, value="", width=400, lock=0, language=None, required=None):
 
         try:
             field_node_name = field.name
@@ -55,7 +55,7 @@ class m_htmlmemo(_core_metatype.Metatype):
                )
         return s.replace("REPLACE_WITH_IDENT", unicode(field.id))
 
-    def getSearchHTML(self, collection, field, language, name, value):
+    def search_get_html_form(self, collection, field, language, name, value):
         return tal.getTAL(
                 "metadata/htmlmemo.html",
                 dict(
@@ -66,11 +66,11 @@ class m_htmlmemo(_core_metatype.Metatype):
                 language=language,
                )
 
-    def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
+    def viewer_get_data(self, metafield, maskitem, mask, node, language, html=True):
         value = node.get(metafield.getName()).replace(";", "; ")
         return (metafield.getLabel(), value)
 
-    def get_metafieldeditor_html(self, fielddata, metadatatype, language):
+    def admin_settings_get_html_form(self, fielddata, metadatatype, language):
         return tal.getTAL(
             "metadata/htmlmemo.html",
             dict(value=fielddata["max_length"], wysiwyg=fielddata["wysiwyg"]),
@@ -78,7 +78,7 @@ class m_htmlmemo(_core_metatype.Metatype):
             language=language,
         )
 
-    def parse_metafieldeditor_settings(self, data):
+    def admin_settings_parse_form_data(self, data):
         assert data.get("wysiwyg") in (None, "1")
         assert not data["max_length"] or int(data["max_length"]) >= 0
         return dict(

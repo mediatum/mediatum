@@ -40,7 +40,7 @@ class m_url(Metatype):
         new_window=False,
     )
 
-    def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
+    def editor_get_html_form(self, field, value="", width=400, lock=0, language=None, required=None):
         metacfg = field.metatype_data
         link, text = (value.split(";")+[""])[:2]
         return tal.getTAL(
@@ -58,7 +58,7 @@ class m_url(Metatype):
                 language=language,
                )
 
-    def getSearchHTML(self, collection, field, language, name, value):
+    def search_get_html_form(self, collection, field, language, name, value):
         return tal.getTAL(
                 "metadata/url.html",
                 dict(
@@ -69,7 +69,7 @@ class m_url(Metatype):
                 language=language,
                )
 
-    def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
+    def viewer_get_data(self, metafield, maskitem, mask, node, language, html=True):
         try:
             value = (node.get(metafield.getName()).split(";") + ["", "", "", ""])[0:4]
             metacfg = metafield.metatype_data
@@ -119,10 +119,10 @@ class m_url(Metatype):
 
             return (metafield.getLabel(), value)
         except:
-            logg.exception("exception in getFormattedValue, error getting formatted value for URI")
+            logg.exception("exception in viewer_get_data, error getting formatted value for URI")
             return (metafield.getLabel(), "")
 
-    def format_request_value_for_db(self, field, form):
+    def editor_parse_form_data(self, field, form):
         uri = form.get(field.name)
         quoted_uri = quote_uri(uri)
         if not quoted_uri:
@@ -133,7 +133,7 @@ class m_url(Metatype):
             return u"{}".format(quoted_uri)
         return u"{};{}".format(quoted_uri, linktext)
 
-    def get_metafieldeditor_html(self, fielddata, metadatatype, language):
+    def admin_settings_get_html_form(self, fielddata, metadatatype, language):
         return tal.getTAL(
             "metadata/url.html",
             dict(
@@ -148,7 +148,7 @@ class m_url(Metatype):
             language=language,
         )
 
-    def parse_metafieldeditor_settings(self, data):
+    def admin_settings_parse_form_data(self, data):
         assert data.get("new_window") in (None, "1")
         return dict(
             link=data["link"],

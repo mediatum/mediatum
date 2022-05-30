@@ -95,7 +95,7 @@ class m_field(Metatype):
         unit += field.getUnit()
 
         ret += '<div id="editor_content">' + \
-            t.getEditorHTML(element,
+            t.editor_get_html_form(element,
                             value=val,
                             width=field.getWidth(),
                             lock=lock,
@@ -114,9 +114,9 @@ class m_field(Metatype):
         metatype = getMetadataType(fieldtype)
 
         if flags & VIEW_DATA_EXPORT:
-            return metatype.getFormattedValue(metafield, maskitem, mask, first_node, language, html=0)
+            return metatype.viewer_get_data(metafield, maskitem, mask, first_node, language, html=0)
         
-        value = metatype.getFormattedValue(metafield, maskitem, mask, first_node, language)[1]
+        value = metatype.viewer_get_data(metafield, maskitem, mask, first_node, language)[1]
         if not flags & VIEW_DATA_ONLY:
             if maskitem.getFormat() != "":
                 value = maskitem.getFormat().replace("<value>", value)
@@ -175,11 +175,11 @@ class m_field(Metatype):
 
         if field:
             f = getMetadataType(field.get("type"))
-            fieldstring = f.getEditorHTML(field, width=item.getWidth(), value=item.getDefault(), language=language) + ' ' + item.getUnit()
+            fieldstring = f.editor_get_html_form(field, width=item.getWidth(), value=item.getDefault(), language=language) + ' ' + item.getUnit()
         else:  # node for export mask
             attribute = q(Node).get(item.get("attribute"))
             field = item
-            fieldstring = getMetadataType("mappingfield").getEditorHTML(
+            fieldstring = getMetadataType("mappingfield").editor_get_html_form(
                 field, width=item.getWidth(), value=attribute.getName(), language=language) + ' ' + item.getUnit()
 
         if item.getDescription() != "":

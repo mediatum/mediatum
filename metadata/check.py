@@ -14,7 +14,7 @@ class m_check(Metatype):
 
     name = "check"
 
-    def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
+    def editor_get_html_form(self, field, value="", width=400, lock=0, language=None, required=None):
         return tal.getTAL(
                 "metadata/check.html",
                 dict(
@@ -29,7 +29,7 @@ class m_check(Metatype):
                 language=language,
                )
 
-    def getSearchHTML(self, collection, field, language, name, value):
+    def search_get_html_form(self, collection, field, language, name, value):
         return tal.getTAL(
                 "metadata/check.html",
                 dict(
@@ -40,7 +40,7 @@ class m_check(Metatype):
                 language=language,
                )
 
-    def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
+    def viewer_get_data(self, metafield, maskitem, mask, node, language, html=True):
         value = node.get(metafield.name)
         return (metafield.label, value)
 

@@ -77,7 +77,7 @@ class m_upload(Metatype):
 
     name = "upload"
 
-    def getEditorHTML(self, field, value="", width=40, lock=0, language=None, required=None):
+    def editor_get_html_form(self, field, value="", width=40, lock=0, language=None, required=None):
         try:
             fieldname = field.name
         except:
@@ -86,7 +86,7 @@ class m_upload(Metatype):
         try:
             warning = self.translation_labels[language]['upload_notarget_warning']
         except:
-            logg.exception("exception in getEditorHTML, using default language")
+            logg.exception("exception in editor_get_html_form, using default language")
             warning = self.translation_labels[_core_config.languages[0]]['upload_notarget_warning']
 
         context = dict(
@@ -120,7 +120,7 @@ class m_upload(Metatype):
             logg.warning("metadata: m_upload: no fieldname found")
         return s
 
-    def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
+    def viewer_get_data(self, metafield, maskitem, mask, node, language, html=True):
         fieldname = metafield.getName()
         value = node.get(metafield.getName())
 

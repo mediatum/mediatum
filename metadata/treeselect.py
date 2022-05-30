@@ -23,7 +23,7 @@ class m_treeselect(Metatype):
 
     name = "treeselect"
 
-    def getEditorHTML(self, metafield, value="", width=40, lock=0, language=None, required=None):
+    def editor_get_html_form(self, metafield, value="", width=40, lock=0, language=None, required=None):
         return tal.getTAL(
                 "metadata/treeselect.html",
                 dict(
@@ -38,7 +38,7 @@ class m_treeselect(Metatype):
                 language=language,
                )
 
-    def getSearchHTML(self, collection, field, language, name, value):
+    def search_get_html_form(self, collection, field, language, name, value):
         return tal.getTAL(
                 "metadata/treeselect.html",
                 dict(
@@ -49,7 +49,7 @@ class m_treeselect(Metatype):
                 language=language,
                )
 
-    def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True, template_from_caller=None):
+    def viewer_get_data(self, metafield, maskitem, mask, node, language, html=True, template_from_caller=None):
         value = node.get(metafield.getName())
         if html:
             value = esc(value)

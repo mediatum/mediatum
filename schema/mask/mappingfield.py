@@ -63,7 +63,7 @@ class m_mappingfield(Metatype):
     def addMappingExt(self, ext):
         self.extensions.append(ext)
 
-    def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
+    def editor_get_html_form(self, field, value="", width=400, lock=0, language=None, required=None):
 
         ns = ""
         if field.get("fieldtype") == "mapping":
@@ -153,7 +153,7 @@ class m_mappingfield(Metatype):
                 s = s.replace("[" + var + "]", s2)
 
             elif var == "value":
-                v = getMetadataType(attrnode.getFieldtype()).getFormattedValue(attrnode, None, None, node, "")[1]
+                v = getMetadataType(attrnode.getFieldtype()).viewer_get_data(attrnode, None, None, node, "")[1]
                 v = v or node.get(attrnode.getName()) or default
                 if "t" in options and not v.isdigit():
                     v = u'"{}"'.format(v)

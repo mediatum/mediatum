@@ -25,7 +25,7 @@ class m_date(Metatype):
         format=dateoption[0].shortname,
     )
 
-    def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
+    def editor_get_html_form(self, field, value="", width=400, lock=0, language=None, required=None):
         date_format = field.metatype_data['format']
         d = field.getSystemFormat(date_format)
 
@@ -51,7 +51,7 @@ class m_date(Metatype):
                 language=language,
                )
 
-    def getSearchHTML(self, collection, field, language, name, value):
+    def search_get_html_form(self, collection, field, language, name, value):
         value = value.split(";")
         while len(value) < 2:
             value.append('')
@@ -66,7 +66,7 @@ class m_date(Metatype):
                 language=language,
                )
 
-    def getFormattedValue(self, metafield, maskitem, mask, node, language, html=True):
+    def viewer_get_data(self, metafield, maskitem, mask, node, language, html=True):
         ''' search with re if string could be a date
             appends this to a list and returns this
 
@@ -99,7 +99,7 @@ class m_date(Metatype):
 
         return (metafield.getLabel(), ''.join(value_list))
 
-    def format_request_value_for_db(self, field, form):
+    def editor_parse_form_data(self, field, form):
         f = field.getSystemFormat(ustr(field.metatype_data['format']))
         if not f:
             return ""
@@ -112,7 +112,7 @@ class m_date(Metatype):
             return ""
         return format_date(value, format='%Y-%m-%dT%H:%M:%S')
 
-    def get_metafieldeditor_html(self, fielddata, metadatatype, language):
+    def admin_settings_get_html_form(self, fielddata, metadatatype, language):
         return tal.getTAL(
                 "metadata/date.html",
                 dict(
@@ -123,7 +123,7 @@ class m_date(Metatype):
                 language=language,
                )
 
-    def parse_metafieldeditor_settings(self, data):
+    def admin_settings_parse_form_data(self, data):
         return dict(
             format=data["format"],
         )

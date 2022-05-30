@@ -154,7 +154,8 @@ class Searchlet(object):
             field = searchmaskitem.children.first() if searchmaskitem else None
             if field is None:  # All Metadata
                 # quick&dirty
-                field = getMetadataType("text")
+                return getMetadataType("text").\
+                    search_get_html_form(self.container, None, self.lang, "query" + unicode(pos), self.values[pos])
             return field.getSearchHTML(self.container, field, self.lang, "query" + unicode(pos), self.values[pos])
         except:
             # workaround for unknown error

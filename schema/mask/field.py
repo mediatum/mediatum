@@ -8,12 +8,12 @@ import operator as _operator
 
 import mediatumtal.tal as _tal
 
+import core.translation as _core_translation
 import utils.utils as _utils_utils
 from utils.utils import formatLongText
 from utils.strings import ensure_unicode
 
 from schema.schema import getMetadataType, VIEW_DATA_ONLY, VIEW_SUB_ELEMENT, VIEW_HIDE_EMPTY, VIEW_DATA_EXPORT
-from core.translation import lang, translate
 from core.metatype import Metatype, Context
 from core import db, Node
 
@@ -124,7 +124,7 @@ class m_field(Metatype):
                             value=val,
                             width=field.getWidth(),
                             lock=lock,
-                            language=lang(req),
+                            language=_core_translation.lang(req),
                             required=field.getRequired()) + unit + '</div>'
         if not sub:
             ret += '</div>'
@@ -250,7 +250,9 @@ class m_field(Metatype):
 
             if field.getName() in fieldlist.keys():
                 if len(fieldlist[field.getName()]) > 1:
-                    ret += '&nbsp;<img src="/img/attention.gif" title="%s ' % (translate("mask_edit_multi_label", language))
+                    ret += '&nbsp;<img src="/img/attention.gif" title="{} '.format(
+                            _core_translation.translate("mask_edit_multi_label", language),
+                        )
                     ret += ", ".join([schema.getName() for schema in fieldlist[field.getName()]]) + '"/>'
 
             ret += ' <input type="image" src="/img/edit.png" name="edit_%s" i18n:attributes="title mask_edit_edit_row"/> <input type="image" src="/img/delete.png" name="delete_%s" i18n:attributes="title mask_edit_delete_row" onClick="return questionDel()"/></div></div>' % (item.id,
@@ -288,8 +290,8 @@ class m_field(Metatype):
                 pid=req.params.get("pid", ""),
                 item=item,
                 fields=fields,
-                translate=translate,
-                language=lang(req),
+                translate=_core_translation.translate,
+                language=_core_translation.lang(req),
                )
         if tal_ctx["op"]=="new":
             tal_ctx["metafields"] = metafields

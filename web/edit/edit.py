@@ -9,8 +9,9 @@ import os
 import re
 import time
 import json
+import core as _core
 import core.config as config
-import core.translation
+import core.translation as _core_translation
 import mediatumtal.tal as _tal
 import web.edit.edit_common as _web_edit_edit_common
 import core.systemtypes as _core_systemtypes
@@ -19,8 +20,6 @@ from core import Node, NodeType, db, User, UserGroup, UserToUserGroup
 from core.database.postgres.permission import NodeToAccessRuleset, AccessRulesetToRule, AccessRule
 
 from contenttypes import Container, Collections, Data, Home
-
-from core.translation import lang, t
 from edit_common import *
 
 from core.users import user_from_session as _user_from_session
@@ -109,17 +108,17 @@ def frameset(req):
         req.response.status_code = httpstatus.HTTP_FORBIDDEN
         return
 
-    language = lang(req)
+    language = _core_translation.lang(req)
     id = req.values.get("id", q(Collections).one().id)
     currentdir = q(Data).get(id)
     if currentdir is None:
         req.response.status_code = httpstatus.HTTP_NOT_FOUND
-        req.response.set_data(t(language, "error_msg_objectnotfound"))
+        req.response.set_data(_core_translation.t(language, "error_msg_objectnotfound"))
         return
 
     if not currentdir.has_read_access():
         req.response.status_code = httpstatus.HTTP_FORBIDDEN
-        req.response.set_data(t(language, "permission_denied"))
+        req.response.set_data(_core_translation.t(language, "permission_denied"))
         return
 
     page = int(req.values.get("page", 1))
@@ -205,7 +204,7 @@ def frameset(req):
         ct_name = ct.__name__
         # translations of ct_name will be offered in editor tree context menu
         cmenu_iconpaths.append(
-            [ct_name.lower(), t(language, ct_name), get_editor_icon_path_from_nodeclass(ct)])
+            [ct_name.lower(), _core_translation.t(language, ct_name), get_editor_icon_path_from_nodeclass(ct)])
 
     homenodefilter = req.values.get('homenodefilter', '')
 
@@ -227,8 +226,8 @@ def frameset(req):
                 cmenu_iconpaths=cmenu_iconpaths,
                 path=path,
                 containerpath=containerpath,
-                language=lang(req),
-                t=t,
+                language=_core_translation.lang(req),
+                t=_core_translation.t,
                 _getIDPath=_getIDPath,
                 homenodefilter=homenodefilter,
                 csrf=req.csrf_token.current_token,
@@ -305,7 +304,7 @@ _editModules = {}
 
 
 def getEditModules():
-    for modpath in core.editmodulepaths:  # paths with edit modules
+    for modpath in _core.editmodulepaths:  # paths with edit modules
         if os.path.isabs(modpath[1]):
             mod_dirpath = modpath[1]
         else:
@@ -345,7 +344,7 @@ def getIDs(req):
 
 
 def edit_tree(req):
-    language = lang(req)
+    language = _core_translation.lang(req)
     user = _user_from_session()
     home_dir = user.home_dir
     upload_dir = user.upload_dir
@@ -427,10 +426,10 @@ def edit_tree(req):
 
 
 def action(req):
-    language = lang(req)
+    language = _core_translation.lang(req)
     user = _user_from_session()
     if not user.is_editor:
-        req.response.set_data(t(language, "permission_denied"))
+        req.response.set_data(_core_translation.t(language, "permission_denied"))
         req.response.status_code = httpstatus.HTTP_FORBIDDEN
         return
 
@@ -439,11 +438,11 @@ def action(req):
         node = q(Node).get(nid)
         if not node:
             req.response.status_code = httpstatus.HTTP_NOT_FOUND
-            req.response.set_data(t(language, "error_msg_objectnotfound"))
+            req.response.set_data(_core_translation.t(language, "error_msg_objectnotfound"))
             return
         if not node.has_read_access():
             req.response.status_code = httpstatus.HTTP_FORBIDDEN
-            req.response.set_data(t(language, "permission_denied"))
+            req.response.set_data(_core_translation.t(language, "permission_denied"))
             return
         tab = req.values["tab"].split("_")[-1]
         return _editModules[tab].getContent(req, [nid])
@@ -503,10 +502,9 @@ def action(req):
         if newnode_type in ['bare_collection', 'bare_directory']:
             newnode_type = newnode_type.replace('bare_', '')
 
-        translated_label = t(lang(req), 'edit_add_' + newnode_type)
+        translated_label = _core_translation.t(_core_translation.lang(req), 'edit_add_' + newnode_type)
         if translated_label.startswith('edit_add_'):
-            translated_label = t(
-                lang(req), 'edit_add_container_default') + newnode_type
+            translated_label = _core_translation.t(_core_translation.lang(req), 'edit_add_container_default') + newnode_type
 
         content_class = Node.get_class_for_typestring(newnode_type)
         newnode = content_class(name=translated_label)
@@ -729,10 +727,10 @@ def content(req):
             ids = show_dir_nav.get_ids_from_req()
         node = q(Node).get(long(ids[0]))
 
-    language = lang(req)
+    language = _core_translation.lang(req)
     if not node.has_read_access():
         req.response.status_code = httpstatus.HTTP_FORBIDDEN
-        req.response.set_data(t(language, "permission_denied"))
+        req.response.set_data(_core_translation.t(language, "permission_denied"))
         return
 
     if isinstance(node, _core_systemtypes.Root):
@@ -832,8 +830,8 @@ def content(req):
             sortchoices = tuple(_sort.get_sort_choices(
                     container=node,
                     off="off",
-                    t_off=t(req, "off"),
-                    t_desc=t(req, "descending"),
+                    t_off=_core_translation.t(req, "off"),
+                    t_desc=_core_translation.t(req, "descending"),
                 ))
         else:
             sortchoices = ()
@@ -865,8 +863,8 @@ def content(req):
                  request=req,
              ),
             user=user,
-            language=lang(req),
-            t=t,
+            language=_core_translation.lang(req),
+            t=_core_translation.t,
            )
 
     # add icons to breadcrumbs
@@ -897,10 +895,10 @@ def edit_print(req):
     nid = int(match.group(1))
     node = q(Node).get(nid)
     if not node:
-        req.response.set_data(t(lang(req), "error_msg_objectnotfound"))
+        req.response.set_data(_core_translation.t(_core_translation.lang(req), "error_msg_objectnotfound"))
         return
     if not node.has_read_access():
-        req.response.set_data(t(lang(req), "permission_denied"))
+        req.response.set_data(_core_translation.t(_core_translation.lang(req), "permission_denied"))
         return
 
     module_name = match.group(2)
@@ -908,7 +906,7 @@ def edit_print(req):
     
     if not mod:
         req.response.status_code = httpstatus.HTTP_BAD_REQUEST
-        req.response.set_data(t(lang(req), "admin_settings_nomodule"))
+        req.response.set_data(_core_translation.t(_core_translation.lang(req), "admin_settings_nomodule"))
         return
         
     additional_data = match.group(3)

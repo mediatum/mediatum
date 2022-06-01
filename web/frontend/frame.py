@@ -11,8 +11,8 @@ from sqlalchemy import event
 from markupsafe import Markup
 
 import core.config as config
+import core.translation as _core_translation
 from core import db, Node
-from core.translation import lang, t
 from core.metatype import Context
 from core import webconfig
 from core.users import user_from_session as _user_from_session
@@ -71,7 +71,7 @@ class Searchlet(object):
         self.searchmaskitem_ids = [None] * 11
 
     def feedback(self, req):
-        self.lang = lang(req)
+        self.lang = _core_translation.lang(req)
         self.ip = req.remote_addr
         self.url_params = {k: v for k, v in iteritems(req.args) if k not in ()}
 
@@ -188,7 +188,7 @@ def render_search_box(container, language, req, edit=False):
         "container_id": container.id,
         "liststyle": liststyle,
         "language": language,
-        "search_placeholder": t(language, "search_in") + " " + container.getLabel(language),
+        "search_placeholder": u"{} {}".format(_core_translation.t(language, "search_in"), container.getLabel(language)),
         "action": '/' if not edit else '/edit/edit_content',
     }
 
@@ -207,7 +207,7 @@ def render_edit_search_box(container, language, req, edit=False):
         "container_id": container.id,
         "liststyle": liststyle,
         "language": language,
-        "search_placeholder": t(language, "search_in") + " " + container.getLabel(language),
+        "search_placeholder": u"{} {}".format(_core_translation.t(language, "search_in"), container.getLabel(language)),
         "action": '/' if not edit else '/edit/edit_content',
     }
 
@@ -396,7 +396,7 @@ class UserLinks(object):
             nid = req.args.get("id")
 
         self.id = nid
-        self.language = lang(req)
+        self.language = _core_translation.lang(req)
         self.path = req.mediatum_contextfree_path
         self.args = req.args
         # XXX: hack to show the frontend link when workflows are displayed
@@ -404,20 +404,35 @@ class UserLinks(object):
 
     def getLinks(self):
         guest_user = get_guest_user()
-        l = [Link("/logout", t(self.language, "sub_header_logout_title"),
-                  t(self.language, "sub_header_logout"), icon="/img/logout.gif")]
+        l = [Link(
+                "/logout",
+                _core_translation.t(self.language, "sub_header_logout_title"),
+                _core_translation.t(self.language, "sub_header_logout"),
+                icon="/img/logout.gif",
+            )]
         if self.user == guest_user:
             if config.get("config.ssh") == "yes":
                 host = config.get("host.name") or self.host
-                l = [Link("https://" + host + "/login", t(self.language, "sub_header_login_title"),
-                          t(self.language, "sub_header_login"), icon="/img/login.gif")]
+                l = [Link(
+                        "https://{}/login".format(host),
+                        _core_translation.t(self.language, "sub_header_login_title"),
+                        _core_translation.t(self.language, "sub_header_login"),
+                        icon="/img/login.gif",
+                    )]
             else:
-                l = [Link("/login", t(self.language, "sub_header_login_title"),
-                          t(self.language, "sub_header_login"), icon="/img/login.gif")]
+                l = [Link(
+                        "/login", _core_translation.t(self.language, "sub_header_login_title"),
+                        _core_translation.t(self.language, "sub_header_login"),
+                        icon="/img/login.gif",
+                    )]
 
         if self.is_workflow_area:
-            l += [Link("/", t(self.language, "sub_header_frontend_title"),
-                       t(self.language, "sub_header_frontend"), icon="/img/frontend.gif")]
+            l.append(Link(
+                    "/",
+                    _core_translation.t(self.language, "sub_header_frontend_title"),
+                    _core_translation.t(self.language, "sub_header_frontend"),
+                    icon="/img/frontend.gif",
+                ))
 
         if self.user.is_editor:
             idstr = ""
@@ -427,20 +442,37 @@ class UserLinks(object):
             if not self.id or int(self.id) == get_collections_node().id:
                 if self.user.upload_dir:
                     idstr = "?id=" + unicode(self.user.upload_dir.id)
-            l += [Link("/edit" + idstr, t(self.language, "sub_header_edit_title"),
-                       t(self.language, "sub_header_edit"), icon="/img/edit.gif")]
+            l.append(Link(
+                    "/edit{}".format(idstr),
+                    _core_translation.t(self.language, "sub_header_edit_title"),
+                    _core_translation.t(self.language, "sub_header_edit"),
+                    icon="/img/edit.gif",
+                ))
 
         if self.user.is_admin:
-            l += [Link("/admin", t(self.language, "sub_header_administration_title"),
-                       t(self.language, "sub_header_administration"), icon="/img/admin.gif")]
+            l.append(Link(
+                    "/admin",
+                    _core_translation.t(self.language, "sub_header_administration_title"),
+                    _core_translation.t(self.language, "sub_header_administration"),
+                    icon="/img/admin.gif",
+                ))
 
         if self.user.is_workflow_editor:
-            l += [Link("/publish/", t(self.language, "sub_header_workflow_title"),
-                       t(self.language, "sub_header_workflow"), icon="/img/workflow.gif")]
+            l.append(Link(
+                    "/publish/",
+                    _core_translation.t(self.language, "sub_header_workflow_title"),
+                    _core_translation.t(self.language, "sub_header_workflow"),
+                    icon="/img/workflow.gif",
+                ))
 
         if self.user.can_change_password:
-            l += [Link("/pwdchange", t(self.language, "sub_header_changepwd_title"),
-                       t(self.language, "sub_header_changepwd"), "_parent", icon="/img/changepwd.gif")]
+            l.append(Link(
+                    "/pwdchange",
+                    _core_translation.t(self.language, "sub_header_changepwd_title"),
+                    _core_translation.t(self.language, "sub_header_changepwd"),
+                    "_parent",
+                    icon="/img/changepwd.gif",
+                ))
         return l
 
     def change_language_link(self, language):
@@ -469,7 +501,7 @@ def render_page(req, content_html, node=None, show_navbar=True, show_id=None):
     """
     user = _user_from_session()
     userlinks = UserLinks(user, req)
-    language = lang(req)
+    language = _core_translation.lang(req)
     rootnode = get_collections_node()
     theme = webconfig.theme
 

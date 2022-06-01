@@ -7,7 +7,7 @@ from __future__ import print_function
 import logging
 
 import core.httpstatus as _httpstatus
-from core.translation import translate, lang
+import core.translation as _core_translation
 from core.users import user_from_session as _user_from_session
 from contenttypes import Collections, Container
 from core import Node
@@ -34,7 +34,7 @@ def getData(req):
                 cnum = c.container_children.count()
                 inum = c.content_children.count()
 
-                label = get_edit_label(c, lang(req))
+                label = get_edit_label(c, _core_translation.lang(req))
                 title = label + " (" + unicode(c.id) + ")"
 
                 cls = "folder"

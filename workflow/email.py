@@ -8,9 +8,10 @@ from __future__ import print_function
 
 import logging
 import os.path
+
+import core.translation as _core_translation
 from .workflow import WorkflowStep, registerStep
 from mediatumtal import tal
-from core.translation import t, lang, addLabels
 from utils.utils import formatException
 import core.config as config
 import utils.mail as mail
@@ -24,7 +25,7 @@ logg = logging.getLogger(__name__)
 def register():
     #tree.registerNodeClass("workflowstep-send_email", WorkflowStep_SendEmail)
     registerStep("workflowstep_sendemail")
-    addLabels(WorkflowStep_SendEmail.getLabels())
+    _core_translation.addLabels(WorkflowStep_SendEmail.getLabels())
 
 
 class MailError(Exception):
@@ -153,8 +154,12 @@ class WorkflowStep_SendEmail(WorkflowStep):
                 return """<pre>%s</pre>""" % node.system_attrs.get("mailtmp.talerror")
 
         elif node.get("system.mailtmp.error"):
-            return '%s<br/><pre>%s</pre><br>&gt;<a href="%s">%s</a>&lt;' % (t(lang(req), "workflow_email_msg_1"), node.get(
-                "system.mailtmp.error"), _makeSelfLink(req, {"sendout": "true"}), t(lang(req), "workflow_email_resend"))
+            return u'{}<br/><pre>{}</pre><br>&gt;<a href="{}">{}</a>&lt;'.format(
+                    _core_translation.t(_core_translation.lang(req), "workflow_email_msg_1"),
+                    node.get("system.mailtmp.error"),
+                    _makeSelfLink(req, {"sendout": "true"}),
+                    _core_translation.t(_core_translation.lang(req), "workflow_email_resend"),
+                )
         else:
             xfrom = node.get("system.mailtmp.from")
             to = node.get("system.mailtmp.to")
@@ -170,8 +175,8 @@ class WorkflowStep_SendEmail(WorkflowStep):
                         node=node,
                         sendcondition=self.get("sendcondition"),
                         wfnode=self,
-                        pretext=self.getPreText(lang(req)),
-                        posttext=self.getPostText(lang(req)),
+                        pretext=self.getPreText(_core_translation.lang(req)),
+                        posttext=self.getPostText(_core_translation.lang(req)),
                         csrf=req.csrf_token.current_token,
                     ),
                     file="workflow/email.html",
@@ -182,38 +187,38 @@ class WorkflowStep_SendEmail(WorkflowStep):
     def metaFields(self, lang=None):
         ret = list()
         field = Metafield("from")
-        field.set("label", t(lang, "admin_wfstep_email_sender"))
+        field.set("label", _core_translation.t(lang, "admin_wfstep_email_sender"))
         field.set("type", "text")
         ret.append(field)
 
         field = Metafield("email")
-        field.set("label", t(lang, "admin_wfstep_email_recipient"))
+        field.set("label", _core_translation.t(lang, "admin_wfstep_email_recipient"))
         field.set("type", "text")
         ret.append(field)
 
         field = Metafield("subject")
-        field.set("label", t(lang, "admin_wfstep_email_subject"))
+        field.set("label", _core_translation.t(lang, "admin_wfstep_email_subject"))
         field.set("type", "memo")
         ret.append(field)
 
         field = Metafield("text")
-        field.set("label", t(lang, "admin_wfstep_email_text"))
+        field.set("label", _core_translation.t(lang, "admin_wfstep_email_text"))
         field.set("type", "memo")
         ret.append(field)
 
         field = Metafield("allowedit")
-        field.set("label", t(lang, "admin_wfstep_email_text_editable"))
+        field.set("label", _core_translation.t(lang, "admin_wfstep_email_text_editable"))
         field.set("type", "list")
-        field.set("valuelist", t(lang, "admin_wfstep_email_text_editable_options"))
+        field.set("valuelist", _core_translation.t(lang, "admin_wfstep_email_text_editable_options"))
         ret.append(field)
 
         field = Metafield("sendcondition")
-        field.set("label", t(lang, "admin_wfstep_email_sendcondition"))
+        field.set("label", _core_translation.t(lang, "admin_wfstep_email_sendcondition"))
         field.set("type", "text")
         ret.append(field)
 
         field = Metafield("attach_pdf_form")
-        field.set("label", t(lang, "workflowstep-email_label_attach_pdf_form"))
+        field.set("label", _core_translation.t(lang, "workflowstep-email_label_attach_pdf_form"))
         field.set("type", "check")
         ret.append(field)
         return ret

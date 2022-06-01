@@ -7,8 +7,9 @@ from __future__ import print_function
 import logging
 import flask as _flask
 import mediatumtal.tal as _tal
+
+import core.translation as _core_translation
 from .workflow import WorkflowStep, registerStep
-from core.translation import t, lang
 from schema.schema import VIEW_HIDE_EMPTY, Metafield, Metadatatype
 from core import db
 
@@ -58,7 +59,7 @@ class WorkflowStep_ShowData(WorkflowStep):
                     mask = t.getMask(maskname)
 
                 try:
-                    fieldmap += [mask.getViewHTML([node], VIEW_HIDE_EMPTY, language=lang(req))]
+                    fieldmap += [mask.getViewHTML([node], VIEW_HIDE_EMPTY, language=_core_translation.lang(req))]
                 except:
                     logg.exception("exception for mask %s, returning empty string", mask)
                     return ""
@@ -76,8 +77,8 @@ class WorkflowStep_ShowData(WorkflowStep):
                     filelist=filelist,
                     filelistshort=filelistshort,
                     fields=fieldmap,
-                    pretext=self.getPreText(lang(req)),
-                    posttext=self.getPostText(lang(req)),
+                    pretext=self.getPreText(_core_translation.lang(req)),
+                    posttext=self.getPostText(_core_translation.lang(req)),
                     buttons=self.tableRowButtons(node),
                     csrf=req.csrf_token.current_token,
                 ),
@@ -88,6 +89,6 @@ class WorkflowStep_ShowData(WorkflowStep):
 
     def metaFields(self, lang=None):
         field = Metafield("masks")
-        field.set("label", t(lang, "admin_wfstep_masks_to_display"))
+        field.set("label", _core_translation.t(lang, "admin_wfstep_masks_to_display"))
         field.set("type", "text")
         return [field]

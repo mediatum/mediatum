@@ -6,9 +6,8 @@ from __future__ import print_function
 
 import mediatumtal.tal as _tal
 
+import core.translation as _core_translation
 from schema.schema import getMetadataType, getAllMetaFields, VIEW_DATA_ONLY, VIEW_SUB_ELEMENT, Maskitem
-
-from core.translation import lang
 from core.metatype import Metatype
 from core import Node, db
 
@@ -139,8 +138,15 @@ class m_hgroup(Metatype):
             i = 0
             for id in req.params.get("sel_id")[:-1].split(";"):
                 f = getMetadataType(q(Node).get(id).get("type"))
-                details += f.getMetaHTML(item, i, False, itemlist=req.params.get("sel_id")
-                                         [:-1].split(";"), ptype="hgroup", fieldlist=fieldlist, language=lang(req))
+                details += f.getMetaHTML(
+                        item,
+                        i,
+                        False,
+                        itemlist=req.params.get("sel_id")[:-1].split(";"),
+                        ptype="hgroup",
+                        fieldlist=fieldlist,
+                        language=_core_translation.lang(req),
+                    )
                 i += 1
 
         fields = []

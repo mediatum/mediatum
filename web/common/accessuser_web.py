@@ -4,11 +4,10 @@
 from __future__ import division
 from __future__ import print_function
 
+import core.translation as _core_translation
 import core.users as users
 import core.acl as acl
 import re
-
-from core.translation import translate, lang
 
 
 def getRuleUsers(s, userlist):
@@ -56,8 +55,8 @@ def makeUserList(req, name, rights, readonlyrights, overload=0, type=""):
     rorightsmap = {}
     for r in rights:
         for u in getRuleUsers(r, userlist):
-            if translate(u[0], lang(req)) != "":
-                rightsmap[translate(u[0], lang(req)) + ": " + u[1]] = None
+            if _core_translation.translate(u[0], _core_translation.lang(req)) != "":
+                rightsmap[_core_translation.translate(u[0], "{}: {}".format(_core_translation.lang(req)), u[1])] = None
             else:
                 rightsmap[u[1]] = None
 
@@ -65,7 +64,10 @@ def makeUserList(req, name, rights, readonlyrights, overload=0, type=""):
     for r in readonlyrights:
         if r[0] == "{":
             for part in getRuleUsers(r, userlist):
-                rrights.append(translate(part[0], lang(req)) + ": " + part[1])
+                rrights.append("{}: {}".format(
+                        _core_translation.translate(part[0], _core_translation.lang(req)),
+                        part[1],
+                    ))
         else:
             rrights.append(r)
 
@@ -93,9 +95,8 @@ def makeUserList(req, name, rights, readonlyrights, overload=0, type=""):
         susers.sort(lambda x, y: cmp(x.getName().lower(), y.getName().lower()))
 
         for user in susers:
-            if translate(usertype, lang(req)) + ": " + user.getName() not in rightsmap and user.getName() not in rorightsmap and translate(
-                    usertype, lang(req)) + ": " + user.getName() not in readonlyrights:
-                val_right += """<option value="%s">%s</option>""" % (
-                    translate(usertype, lang(req)) + ": " + user.getName(), translate(usertype, lang(req)) + ": " + user.getName())
+            val = u"{}: {}".format(_core_translation.translate(usertype, _core_translation.lang(req)), user.getName())
+            if val not in rightsmap and user.getName() not in rorightsmap and val not in readonlyrights:
+                val_right += '<option value="{0}">{0}</option>'.format(val)
 
     return {"name": name, "val_left": val_left, "val_right": val_right, "type": type}

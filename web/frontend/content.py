@@ -9,9 +9,9 @@ from collections import OrderedDict
 import logging
 from warnings import warn
 
+import core.translation as _core_translation
 from core import db, config, Node, File, webconfig, styles
 from core.styles import get_list_style, get_styles_for_contenttype
-from core.translation import lang, t
 from core.webconfig import node_url
 import core.database.postgres.search as _postgres_search
 from contenttypes.container import includetemplate
@@ -335,7 +335,7 @@ class ContentList(ContentBase):
 
     def feedback(self, req):
         self.container_id = req.args.get("id", type=int)
-        self.lang = lang(req)
+        self.lang = _core_translation.lang(req)
 
         self.before = req.args.get("before", type=int)
         self.after = req.args.get("after", type=int)
@@ -418,7 +418,13 @@ class ContentList(ContentBase):
         results = xrange(SORT_FIELDS)
         results = map(self.sortfields.get,results)
         results = (
-            _sort.get_sort_choices(metadatatype=node.metadatatype, t_off="", off="", t_desc=t(self.lang, "descending"), selected_value=sf)
+            _sort.get_sort_choices(
+                metadatatype=node.metadatatype,
+                t_off="",
+                off="",
+                t_desc=_core_translation.t(self.lang, "descending"),
+                selected_value=sf,
+            )
             for sf in results
         )
         return map(list,results)
@@ -765,7 +771,7 @@ def render_content_occurences(node, req, paths):
     paths = frozenset(filter(None,paths))
     if not paths:
         return ""
-    language = lang(req)
+    language = _core_translation.lang(req)
     ctx = {
             "paths": paths,
             "language": language
@@ -792,11 +798,11 @@ def render_content(node, req, render_paths):
 
     if isinstance(content, NodeNotAccessible):
         req.response.status_code = content.status
-        return render_content_error(content.error, lang(req)), None
+        return render_content_error(content.error, _core_translation.lang(req)), None
 
     if isinstance(content, StartpageNotAccessible):
         req.response.status_code = content.status
-        return render_startpage_error(node, lang(req)), None
+        return render_startpage_error(node, _core_translation.lang(req)), None
 
     content_nav_html = "" if "raw" in req.args else render_content_nav(
             content.node,

@@ -7,6 +7,7 @@ from __future__ import print_function
 import json
 import mediatumtal.tal as _tal
 
+import core.translation as _core_translation
 import web.common.pagination as _web_common_pagination
 import web.edit.edit_common as _web_edit_edit_common
 from core import db
@@ -14,7 +15,6 @@ from contenttypes import Data, Home, Collection, Collections
 from core.systemtypes import Root
 from web.edit.edit_common import showoperations, searchbox_navlist_height
 from web.frontend.frame import render_edit_search_box
-from core.translation import translate, lang, t
 from schema.schema import get_permitted_schemas
 from web.edit.edit_common import get_searchparams
 import urllib
@@ -100,11 +100,16 @@ def getContent(req, ids):
         if not v['npp_field']:
             v['npp_field'] = _web_common_pagination.get_default_nodes_per_page(True)
 
-        search_html = render_edit_search_box(node, lang(req), req, edit=True)
+        search_html = render_edit_search_box(node, _core_translation.lang(req), req, edit=True)
         searchmode = req.params.get("searchmode")
         navigation_height = searchbox_navlist_height(req, item_count)
         if not isinstance(node, (Root, Collections, Home)):
-            sortchoices = _sort.get_sort_choices(container=node,off="off",t_off=t(req, "off"),t_desc=t(req, "descending"))
+            sortchoices = _sort.get_sort_choices(
+                    container=node,
+                    off="off",
+                    t_off=_core_translation.t(req, "off"),
+                    t_desc=_core_translation.t(req, "descending"),
+                )
         else:
             sortchoices = ()
 
@@ -114,7 +119,7 @@ def getContent(req, ids):
         v['schemes'] = schemes
         v['id'] = ids[0]
         v['count'] = count
-        v['language'] = lang(req)
+        v['language'] = _core_translation.lang(req)
         v['search'] = search_html
         v['navigation_height'] = navigation_height
         v['parent'] = node.id
@@ -123,7 +128,7 @@ def getContent(req, ids):
         searchparams = {k: unicode(v).encode("utf8") for k, v in searchparams.items()}
         v['searchparams'] = urllib.urlencode(searchparams)
         v['get_ids_from_query'] = ",".join(show_dir_nav.get_ids_from_req())
-        v['edit_all_objects'] = t(lang(req), "edit_all_objects").format(item_count[1])
+        v['edit_all_objects'] = _core_translation.t(_core_translation.lang(req), "edit_all_objects").format(item_count[1])
         v['t'] = t
         res = _tal.processTAL(v, file="web/edit/modules/content.html", macro="edit_content", request=req)
         show_dir_nav.nodes = None

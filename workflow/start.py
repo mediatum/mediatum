@@ -13,7 +13,6 @@ import core.config as config
 import core.translation as _core_translation
 from .workflow import WorkflowStep, registerStep
 from schema.schema import getMetaType
-from core.translation import t, lang, addLabels
 import utils.date as date
 from utils.utils import mkKey
 from core import Node
@@ -32,7 +31,7 @@ logg = logging.getLogger(__name__)
 def register():
     #tree.registerNodeClass("workflowstep-start", WorkflowStep_Start)
     registerStep("workflowstep_start")
-    addLabels(WorkflowStep_Start.getLabels())
+    _core_translation.addLabels(WorkflowStep_Start.getLabels())
 
 
 class WorkflowStep_Start(WorkflowStep):
@@ -47,7 +46,10 @@ class WorkflowStep_Start(WorkflowStep):
         mdts = _nodecache.get_metadatatypes_node()
         for schema in typenames:
             if not mdts.children.filter_by(name=schema.strip().split("/")[-1]).scalar():
-                return ('<i>%s: %s </i>') % (schema, t(lang(req), "permission_denied"))
+                return ('<i>{}: {} </i>').format(
+                        schema,
+                        _core_translation.t(_core_translation.lang(req), "permission_denied"),
+                    )
 
         if "workflow_start" in req.params:
             _core_translation.set_language(req.accept_languages, req.values.get('workflow_language'))
@@ -99,7 +101,7 @@ class WorkflowStep_Start(WorkflowStep):
                 # just take all specified metatypes, so that edit area
                 # and workflow are independent on this
                 types += [(m, a)]
-        cookie_error = t(lang(req), "Your browser doesn't support cookies")
+        cookie_error = _core_translation.t(_core_translation.lang(req), "Your browser doesn't support cookies")
 
         js = """
         <script language="javascript">
@@ -120,7 +122,7 @@ class WorkflowStep_Start(WorkflowStep):
                     js=js,
                     starttext=self.get('starttext'),
                     languages=self.parents[0].getLanguages(),
-                    currentlang=lang(req),
+                    currentlang=_core_translation.lang(req),
                     redirect=redirect,
                     message=message,
                     allowcontinue=self.get('allowcontinue'),
@@ -134,15 +136,15 @@ class WorkflowStep_Start(WorkflowStep):
     def metaFields(self, lang=None):
         ret = []
         field = Metafield("newnodetype")
-        field.set("label", t(lang, "admin_wfstep_node_types_to_create"))
+        field.set("label", _core_translation.t(lang, "admin_wfstep_node_types_to_create"))
         field.set("type", "text")
         ret.append(field)
         field = Metafield("starttext")
-        field.set("label", t(lang, "admin_wfstep_starttext"))
+        field.set("label", _core_translation.t(lang, "admin_wfstep_starttext"))
         field.set("type", "htmlmemo")
         ret.append(field)
         field = Metafield("allowcontinue")
-        field.set("label", t(lang, "admin_wfstep_allowcontinue"))
+        field.set("label", _core_translation.t(lang, "admin_wfstep_allowcontinue"))
         field.set("type", "check")
         ret.append(field)
         return ret

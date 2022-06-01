@@ -29,7 +29,6 @@ from core.metatype import Metatype
 from core import db
 import core.nodecache as _nodecache
 from core.systemtypes import Metadatatypes
-from core.translation import lang
 from core.postgres import check_type_arg
 from core.database.postgres.node import children_rel, parents_rel
 from utils.date import parse_date, format_date, validateDateString
@@ -1128,7 +1127,7 @@ class Mask(Node):
     ''' show maskeditor - definition '''
 
     def getMetaMask(self, req):
-        language = lang(req)
+        language = translation.lang(req)
         ret = '<form method="post" name="myform">'
         ret += '<input value="' + req.csrf_token.current_token + '" type="hidden" name="csrf_token">'
         ret += '<div class="back"><h3 i18n:translate="mask_editor_field_definition">Felddefinition </h3>'

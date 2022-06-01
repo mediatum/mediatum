@@ -13,11 +13,11 @@ from core import httpstatus
 from core.webconfig import node_url
 import core.users as users
 import core.config as config
+import core.translation as _core_translation
 from core.nodecache import get_collections_node
 import utils.mail as mail
 import utils.date as date
 from web.frontend import frame
-from core.translation import lang, t
 from utils.utils import mkKey
 from core import webconfig
 from core.auth import PasswordsDoNotMatch, WrongPassword, PasswordChangeNotAllowed
@@ -105,7 +105,7 @@ def login(req):
 
     # show login form
     user = users.user_from_session()
-    language = lang(req)
+    language = _core_translation.lang(req)
     ctx = dict(
         error=error,
         user=user,

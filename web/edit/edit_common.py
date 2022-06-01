@@ -11,7 +11,7 @@ import mediatumtal.tal as _tal
 from core import Node, db
 import core.database.postgres.search as _postgres_search
 import core.config as _config
-from core.translation import t, lang
+import core.translation as _core_translation
 from core.users import user_from_session as _user_from_session
 from contenttypes import Container
 from utils.fileutils import importFile
@@ -353,7 +353,7 @@ def shownodelist(req, nodes, page, publishwarn=True, markunpublished=False, dir=
                         srcnodeid=dir.id,
                         node=node,
                         faultyidlist=faultyidlist,
-                        language=lang(req),
+                        language=_core_translation.lang(req),
                     ),
                     file="web/edit/edit_common.html",
                     macro="show_list_node",
@@ -366,7 +366,7 @@ def shownodelist(req, nodes, page, publishwarn=True, markunpublished=False, dir=
                         srcnodeid=dir.id,
                         node=node,
                         faultyidlist=faultyidlist,
-                        language=lang(req),
+                        language=_core_translation.lang(req),
                     ),
                     file="web/edit/edit_common.html",
                     macro="show_thumb_node",
@@ -382,7 +382,7 @@ def shownodelist(req, nodes, page, publishwarn=True, markunpublished=False, dir=
                 html_list_nodes="".join(html_list_nodes),
                 html_thumb_nodes="".join(html_thumb_nodes),
                 faultyidlist=faultyidlist,
-                language=lang(req),
+                language=_core_translation.lang(req),
             ),
             file="web/edit/edit_common.html",
             macro="show_nodelist",
@@ -528,7 +528,7 @@ def upload_for_html(req):
         </script>;
         """.format(
             fileUrl=url.replace('"', '\\"'),
-            customMsg=t(lang(req), "edit_fckeditor_cfm_uploadsuccess"),
+            customMsg=_core_translation.t(_core_translation.lang(req), "edit_fckeditor_cfm_uploadsuccess"),
         )
 
         return res
@@ -547,10 +547,10 @@ def get_edit_label(node, lang):
     if special_dir_type is None:
         label = node.getLabel(lang=lang)
     elif special_dir_type == "home":
-        label = t(lang, 'user_home')
+        label = _core_translation.t(lang, 'user_home')
         if user.is_admin:
             label += " (" + node.name + ")"
     else:
-        label = t(lang, 'user_' + special_dir_type)
+        label = _core_translation.t(lang, 'user_' + special_dir_type)
 
     return label

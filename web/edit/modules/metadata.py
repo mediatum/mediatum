@@ -7,9 +7,9 @@ from __future__ import print_function
 import logging
 import mediatumtal.tal as _tal
 
+import core.translation as _core_translation
 from utils.date import format_date, parse_date, now
 from utils.utils import funcname
-from core.translation import lang, t, getDefaultLanguage
 from core import httpstatus
 from core import Node, db
 from contenttypes import Container
@@ -99,7 +99,10 @@ def _handle_edit_metadata(req, mask, nodes):
     if not hasattr(mask, "i_am_not_a_mask"):
         if form.get('generate_new_version'):
             # Create new node version
-            comment = u'({})\n{}'.format(t(req, "document_new_version_comment"), form.get('version_comment', ''))
+            comment = u'({})\n{}'.format(
+                    _core_translation.t(req, "document_new_version_comment"),
+                    form.get('version_comment', ''),
+                )
 
             for node in nodes:
                 with node.new_tagged_version(comment=comment, user=user):
@@ -129,9 +132,9 @@ def _handle_edit_metadata(req, mask, nodes):
             if field_name == 'nodename' and mask.name == 'settings':
                 if '__nodename' in form:
                     field_name = '__nodename'  # no multilang here !
-                elif getDefaultLanguage() + '__nodename' in form:
+                elif "{}__nodename".format(_core_translation.getDefaultLanguage()) in form:
                     # no multilang here !
-                    field_name = getDefaultLanguage() + '__nodename'
+                    field_name = "{}__nodename".format(_core_translation.getDefaultLanguage())
                 value = form.get(field_name, None)
                 if value:
                     if value != node.name:
@@ -201,7 +204,10 @@ def getContent(req, ids):
     if hasattr(node, "metaFields"):
 
         masklist = [SystemMask(
-            "settings", t(req, "settings"), node.metaFields(lang(req)))] + masklist
+                "settings",
+                _core_translation.t(req, "settings"),
+                node.metaFields(_core_translation.lang(req)),
+            )] + masklist
 
     default = None
     for m in masklist:
@@ -243,8 +249,8 @@ def getContent(req, ids):
             nodes=nodes,
             masklist=masklist,
             maskname=maskname,
-            language=lang(req),
-            t=t,
+            language=_core_translation.lang(req),
+            t=_core_translation.t,
             csrf=req.csrf_token.current_token,
         )
     if action == 'restore':

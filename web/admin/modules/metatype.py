@@ -15,7 +15,6 @@ import sqlalchemy as _sqlalchemy
 from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter
 from web.common.acl_web import makeList
 from utils.utils import removeEmptyStrings, esc, suppress
-from core.translation import lang, t
 import core.translation as _translation
 from schema.schema import getMetaFieldTypeNames, getMetaType, updateMetaType, existMetaType, deleteMetaType, fieldoption, moveMetaField, getMetaField, deleteMetaField, getFieldsForMeta, dateoption, requiredoption, existMetaField, updateMetaField, generateMask, cloneMask, exportMetaScheme, importMetaSchema
 from schema.schema import VIEW_DEFAULT
@@ -324,7 +323,7 @@ def view(req):
 
     # filter
     if actfilter != "":
-        if actfilter in ("all", "*", t(lang(req), "admin_filter_all")):
+        if actfilter in ("all", "*", _translation.t(_translation.lang(req), "admin_filter_all")):
             None  # all users
         elif actfilter == "0-9":
             num = re.compile(r'([0-9])')
@@ -332,7 +331,7 @@ def view(req):
                 mtypes = filter(lambda x: num.match(x.name), mtypes)
             else:
                 mtypes = filter(lambda x: num.match(x.getLongName()), mtypes)
-        elif actfilter == "else" or actfilter == t(lang(req), "admin_filter_else"):
+        elif actfilter == "else" or actfilter == _translation.t(_translation.lang(req), "admin_filter_else"):
             all = re.compile(r'([a-z]|[A-Z]|[0-9]|\.)')
             if req.params.get("filtertype", "") == "id":
                 mtypes = filter(lambda x: not all.match(x.name), mtypes)
@@ -360,15 +359,13 @@ def view(req):
         mtypes.sort(key=lambda mt:mt.name.lower())
 
     v = getAdminStdVars(req)
-    v["sortcol"] = pages.OrderColHeader(
-        [
-            t(
-                lang(req), "admin_meta_col_1"), t(
-                lang(req), "admin_meta_col_2"), t(
-                    lang(req), "admin_meta_col_3"), t(
-                        lang(req), "admin_meta_col_4"), t(
-                            lang(req), "admin_meta_col_5"), t(
-                                lang(req), "admin_meta_col_6")])
+    v["sortcol"] = pages.OrderColHeader(tuple(
+        _translation.t(
+            _translation.lang(req),
+            "admin_meta_col_{}".format(col),
+            )
+        for col in xrange(1, 7)
+        ))
     v["metadatatypes"] = mtypes
     v["used_by"] = used_by
     v["get_classname_for_typestring"] = Node.get_classname_for_typestring
@@ -379,7 +376,7 @@ def view(req):
     v["filterarg"] = req.params.get("filtertype", "id")
     v["csrf"] = req.csrf_token.current_token
     v["translate"] = _translation.translate
-    v["language"] = lang(req)
+    v["language"] = _translation.lang(req)
     return _tal.processTAL(v, file="web/admin/modules/metatype.html", macro="view_type", request=req)
 
 
@@ -413,7 +410,7 @@ def MetatypeDetail(req, id, err=0):
         v["original_name"] = req.params["mname_orig"]
     d = Data()
     v["datatypes"] = d.get_all_datatypes()
-    v["datatypes"].sort(key=lambda dt:t(lang(req), dt.__name__))
+    v["datatypes"].sort(key=lambda dt:t(_translation.lang(req), dt.__name__))
     v["metadatatype"] = metadatatype
     v["error"] = err
     v["bibtextypes"] = getAllBibTeXTypes()
@@ -687,7 +684,7 @@ def showEditor(req):
         # show metaEditor
         v["editor"] = ""
         try:
-            v["editor"] = _tal.processTAL({}, string=editor.getMetaMask(language=lang(req)), macro=None, request=req)
+            v["editor"] = _tal.processTAL({}, string=editor.getMetaMask(language=_translation.lang(req)), macro=None, request=req)
         except:
             logg.exception("exception in showEditor")
             v["editor"] = editor.getMetaMask(req)

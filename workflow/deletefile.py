@@ -4,8 +4,8 @@
 from __future__ import division
 from __future__ import print_function
 
-from .workflow import WorkflowStep, registerStep, addLabels
-from core.translation import t
+import core.translation as _core_translation
+from .workflow import WorkflowStep, registerStep
 from core import db
 from schema.schema import Metafield
 
@@ -13,7 +13,7 @@ from schema.schema import Metafield
 def register():
     #tree.registerNodeClass("workflowstep-deletefile", WorkflowStep_DeleteFile)
     registerStep("workflowstep_deletefile")
-    addLabels(getLabels())
+    _core_translation.addLabels(getLabels())
 
 
 class WorkflowStep_DeleteFile(WorkflowStep):
@@ -33,7 +33,7 @@ class WorkflowStep_DeleteFile(WorkflowStep):
 
     def metaFields(self, lang=None):
         field = Metafield("filetype")
-        field.set("label", t(lang, "admin_wfstep_deletefiletype"))
+        field.set("label", _core_translation.t(lang, "admin_wfstep_deletefiletype"))
         field.set("type", "text")
         return [field]
 

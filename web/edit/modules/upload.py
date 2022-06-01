@@ -18,6 +18,8 @@ import logging
 
 import json
 import mediatumtal.tal as _tal
+
+import core.translation as _core_translation
 import utils.fileutils as _utils_fileutils
 import utils.utils as _utils_utils
 
@@ -28,8 +30,6 @@ from web.edit.edit_common import showoperations, searchbox_navlist_height
 from utils.url import build_url_from_path_and_params
 from schema.bibtex import importBibTeX, MissingMapping
 
-from core.translation import translate, lang, addLabels
-from core.translation import t as translation_t
 from core import db
 from contenttypes import Data
 from core import Node
@@ -66,17 +66,14 @@ def getDatatypes(req, schemes):
                 for t in datatypes:
                     if t.__name__.lower() == dtype and not elemInList(dtypes, t.__name__.lower()):
                         dtypes.append(t)
-    dtypes.sort(lambda x, y: cmp(translate(x.__name__.lower(),
-                                           request=req).lower(),
-                                 translate(y.__name__.lower(),
-                                           request=req).lower()))
+    dtypes.sort(key=lambda x: _core_translation.translate(x.__name__.lower(), request=req).lower())
     return dtypes
 
 
 def getContent(req, ids):
 
     user = users.user_from_session()
-    language = lang(req)
+    language = _core_translation.lang(req)
 
     if "action" in req.values:
         state = 'ok'
@@ -114,7 +111,11 @@ def getContent(req, ids):
                             newnodes.append(new_node.id)
                             basenodefiles_processed.append(f)
                         except ValueError, e:
-                            errornodes.append((filename, translate(unicode(e), request=req), unicode(hash(f.getName()))))
+                            errornodes.append((
+                                filename,
+                                _core_translation.translate(unicode(e), request=req),
+                                unicode(hash(f.getName())),
+                            ))
                         db.session.commit()
                         continue
 
@@ -136,7 +137,11 @@ def getContent(req, ids):
                     try:
                         node.event_files_changed()
                     except Exception as e:
-                        errornodes.append((filename, translate(unicode(e), request=req), unicode(hash(f.getName()))))
+                        errornodes.append((
+                            filename,
+                            _core_translation.translate(unicode(e), request=req),
+                            unicode(hash(f.getName())),
+                        ))
                         db.session.rollback()
                         continue
                     newnodes.append(node.id)
@@ -196,7 +201,10 @@ def getContent(req, ids):
                         ret.append(
                             dict(
                                 id=scheme.name,
-                                name=u'{} / {}'.format(scheme.getLongName(), translate(dtypenames[datatype], request=req)),
+                                name=u'{} / {}'.format(
+                                        scheme.getLongName(),
+                                        _core_translation.translate(dtypenames[datatype], request=req),
+                                    ),
                                 description=scheme.getDescription(), datatype=datatype,
                             ),
                         )
@@ -208,7 +216,7 @@ def getContent(req, ids):
                     dict(
                         datatypes=dtypes,
                         schemes=ret,
-                        language=lang(req),
+                        language=_core_translation.lang(req),
                         identifier_importers=identifier_importers.values(),
                     ),
                     file='web/edit/modules/upload.html',
@@ -223,7 +231,7 @@ def getContent(req, ids):
         if req.values['action'] == "adddoi":
             req.response.set_data(json.dumps(
                 dict(content=_tal.processTAL(
-                    dict(language=lang(req), identifier_importers=identifier_importers.values()),
+                    dict(language=_core_translation.lang(req), identifier_importers=identifier_importers.values()),
                     file='web/edit/modules/upload.html',
                     macro="adddoi",
                     request=req,
@@ -423,8 +431,8 @@ def getContent(req, ids):
 
         assert node.type not in ["root", "collections", "home"]
 
-        v['language'] = lang(req)
-        v['t'] = translation_t
+        v['language'] = _core_translation.lang(req)
+        v['t'] = _core_translation.t
 
     search_html = render_edit_search_box(q(Node).get(ids[0]), language, req, edit=True)
     searchmode = req.values.get("searchmode")
@@ -450,7 +458,7 @@ def getContent(req, ids):
         query=req.query_string.replace('id=', 'src='),
         searchparams=urllib.urlencode(searchparams),
         get_ids_from_query=",".join(show_dir_nav.get_ids_from_req()),
-        edit_all_objects=translation_t(lang(req), "edit_all_objects").format(item_count[1]),
+        edit_all_objects=_core_translation.t(_core_translation.lang(req), "edit_all_objects").format(item_count[1]),
         navigation_height=navigation_height,
         csrf=str(req.csrf_token.current_token),
     )
@@ -582,7 +590,7 @@ def import_from_doi(identifier, importdir, req=None):
 
     def handle_error(req, error_msgstr):
         if req:
-            errormsg = translation_t(req, error_msgstr)
+            errormsg = _core_translation.t(req, error_msgstr)
             req.response.location = build_url_from_path_and_params("content", {"id": importdir.id, "error": errormsg})
             req.values["error"] = errormsg
 
@@ -679,6 +687,6 @@ doi_labels = dict(
 
 
 doi_importer = IdentifierImporter('doi_importer', import_from_doi)
-addLabels(doi_labels)  # make labels known to TAL interpreter
+_core_translation.addLabels(doi_labels)  # make labels known to TAL interpreter
 doi_importer.set('labels', {k: dict(v) for (k, v) in doi_labels.items()})
 register_identifier_importer(doi_importer.name, doi_importer)

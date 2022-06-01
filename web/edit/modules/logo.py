@@ -8,11 +8,9 @@ import os
 import logging
 import mediatumtal.tal as _tal
 
+import core.translation as _core_translation
 from utils.utils import getMimeType, splitpath
 from utils.fileutils import importFile
-
-from core.translation import lang
-from core.translation import t as translation_t
 from core.users import user_from_session as _user_from_session
 from core import httpstatus
 from core import Node
@@ -94,8 +92,8 @@ def getContent(req, ids):
                 node=node,
                 logofiles=logofiles,
                 logo=node.getLogoPath(),
-                language=lang(req),
-                t=translation_t,
+                language=_core_translation.lang(req),
+                t=_core_translation.t,
                 csrf=req.csrf_token.current_token,
             ),
             file="web/edit/modules/logo.html",

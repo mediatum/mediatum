@@ -8,9 +8,9 @@ import re
 import mediatumtal.tal as _tal
 
 import core.config as config
+import core.translation as _core_translation
 from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter
 from schema.schema import getMetaType, getMaskTypes
-from core.translation import lang, t
 from schema.mapping import getMappings
 from utils.utils import removeEmptyStrings
 from web.common.acl_web import makeList
@@ -39,13 +39,13 @@ def showMaskList(req, id):
 
     # filter
     if actfilter != "":
-        if actfilter in ("all", "*", t(lang(req), "admin_filter_all")):
+        if actfilter in ("all", "*", _core_translation.t(_core_translation.lang(req), "admin_filter_all")):
             None  # all users
         elif actfilter == "0-9":
             num = re.compile(r'([0-9])')
             masks = filter(lambda x: num.match(x.name), masks)
 
-        elif actfilter == "else" or actfilter == t(lang(req), "admin_filter_else"):
+        elif actfilter == "else" or actfilter == _core_translation.t(_core_translation.lang(req), "admin_filter_else"):
             all = re.compile(r'([a-z]|[A-Z]|[0-9])')
             masks = filter(lambda x: not all.match(x.name), masks)
         else:
@@ -78,15 +78,13 @@ def showMaskList(req, id):
     v = getAdminStdVars(req)
     v["filterattrs"] = []
     v["filterarg"] = req.params.get("filtertype", "name")
-    v["sortcol"] = pages.OrderColHeader(
-        [
-            t(
-                lang(req), "admin_mask_col_1"), t(
-                lang(req), "admin_mask_col_2"), t(
-                    lang(req), "admin_mask_col_3"), t(
-                        lang(req), "admin_mask_col_4"), t(
-                            lang(req), "admin_mask_col_5"), t(
-                                lang(req), "admin_mask_col_6")])
+    v["sortcol"] = pages.OrderColHeader(tuple(
+        _core_translation.t(
+            _core_translation.lang(req),
+            "admin_mask_col_{}".format(col),
+            )
+        for col in xrange(1, 7)
+        ))
     v["metadatatype"] = metadatatype
     v["masktypes"] = getMaskTypes()
     v["lang_icons"] = {"de": "/img/flag_de.gif", "en": "/img/flag_en.gif", "no": "/img/emtyDot1Pix.gif"}

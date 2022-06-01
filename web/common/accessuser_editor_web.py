@@ -6,7 +6,7 @@ from __future__ import print_function
 
 import logging
 
-from core.translation import translate, lang
+import core.translation as _core_translation
 from core.database.postgres.permission import AccessRuleset, AccessRule
 from core import User, AuthenticatorInfo
 from core import db, UserToUserGroup, UserGroup
@@ -93,7 +93,10 @@ def makeUserList(req, own_ruleset_assocs, inherited_ruleset_assocs, special_rule
     userlist = q(User).order_by(User.display_name).all()
     authenticator_id2user_prefix = {}
     for ai in q(AuthenticatorInfo).all():
-        authenticator_id2user_prefix[ai.id] = translate(u"%s:%s: " % (ai.auth_type, ai.name), lang(req))
+        authenticator_id2user_prefix[ai.id] = _core_translation.translate(
+                u"{}:{}: ".format(ai.auth_type, ai.name),
+                _core_translation.lang(req),
+            )
 
     user_not_inherited_in_left_list = []
 

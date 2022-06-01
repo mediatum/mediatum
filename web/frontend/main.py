@@ -15,7 +15,6 @@ import werkzeug.utils as _werkzeug_utils
 import core.config as config
 import core.translation as _core_translation
 from core.metatype import Context
-from core.translation import lang
 from core import httpstatus
 from core import db
 from core import Node, NodeAlias
@@ -61,7 +60,7 @@ def handle_json_request(req):
                     value=req.args.get("query_field_value"),
                     width=174,
                     name="query" + str(req.args.get("fieldno")),
-                    language=lang(req),
+                    language=_core_translation.lang(req),
                     container=container,
                     user=user,
                     ip=req.remote_addr))]

@@ -14,8 +14,8 @@ import operator as _operator
 import core.config as config
 import mediatumtal.tal as _tal
 
+import core.translation as _core_translation
 from utils.utils import format_filesize, suppress
-from core.translation import lang
 from web.edit.edit_common import send_nodefile_tal, upload_for_html
 from core.users import user_from_session as _user_from_session
 from core import httpstatus
@@ -71,7 +71,12 @@ def getContent(req, ids):
 
     if req.values.get('file') == "config":  # configuration file for ckeditor
         req.response.content_type = "application/javascript"
-        req.response.set_data(_tal.processTAL({'id': ids[0], 'lang': lang(req)}, file="web/edit/modules/startpages.html", macro="ckconfig", request=req))
+        req.response.set_data(_tal.processTAL(
+                dict(id=ids[0], lang=_core_translation.lang(req)),
+                file="web/edit/modules/startpages.html",
+                macro="ckconfig",
+                request=req,
+            ))
         return
 
     if "action" in req.values:

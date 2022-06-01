@@ -14,7 +14,6 @@ import mediatumtal.tal as _tal
 
 from schema.mapping import getMappings, getMapping, getMappingTypes, updateMapping, deleteMapping, updateMappingField, deleteMappingField, exportMapping, importMapping
 from web.admin.adminutils import Overview, getAdminStdVars, getFilter, getSortCol
-from core.translation import lang, t
 import core.translation as _translation
 
 from core import Node
@@ -171,13 +170,13 @@ def view(req):
 
     # filter
     if actfilter != "":
-        if actfilter in ("all", "*", t(lang(req), "admin_filter_all")):
+        if actfilter in ("all", "*", _translation.t(_translation.lang(req), "admin_filter_all")):
             None  # all users
         elif actfilter == "0-9":
             num = re.compile(r'([0-9])')
             mappings = filter(lambda x: num.match(x.name), mappings)
 
-        elif actfilter == "else" or actfilter == t(lang(req), "admin_filter_else"):
+        elif actfilter == "else" or actfilter == _translation.t(_translation.lang(req), "admin_filter_else"):
             all = re.compile(r'([a-z]|[A-Z]|[0-9])')
             mappings = filter(lambda x: not all.match(x.name), mappings)
 
@@ -209,16 +208,13 @@ def view(req):
         mappings.sort(lambda x, y: cmp(x.name.lower(), y.name.lower()))
 
     v = getAdminStdVars(req)
-    v["sortcol"] = pages.OrderColHeader(
-        [
-            t(
-                lang(req), "admin_mapping_col_1"), t(
-                lang(req), "admin_mapping_col_2"), t(
-                    lang(req), "admin_mapping_col_3"), t(
-                        lang(req), "admin_mapping_col_4"), t(
-                            lang(req), "admin_mapping_col_5"), t(
-                                lang(req), "admin_mapping_col_6"), t(
-                                    lang(req), "admin_mapping_col_7")])
+    v["sortcol"] = pages.OrderColHeader(tuple(
+        _translation.t(
+             _translation.lang(req),
+            "admin_mapping_col_{}".format(col),
+            )
+        for col in xrange(1, 8)
+        ))
     v["mappings"] = mappings
     v["options"] = []
     v["pages"] = pages
@@ -268,13 +264,13 @@ def viewlist(req, id):
 
     # filter
     if actfilter != "":
-        if actfilter in ("all", "*", (lang(req), "admin_filter_all")):
+        if actfilter in ("all", "*", (_translation.lang(req), "admin_filter_all")):
             None  # all mappings
         elif actfilter == "0-9":
             num = re.compile(r'([0-9])')
             fields = filter(lambda x: num.match(x.name), fields)
 
-        elif actfilter == "else" or actfilter == t(lang(req), "admin_filter_else"):
+        elif actfilter == "else" or actfilter == _translation.t(_translation.lang(req), "admin_filter_else"):
             all = re.compile(r'([a-z]|[A-Z]|[0-9])')
             fields = filter(lambda x: not all.match(x.name), fields)
 
@@ -303,8 +299,13 @@ def viewlist(req, id):
                for field in fields}
 
     v = getAdminStdVars(req)
-    v["sortcol"] = pages.OrderColHeader([t(lang(req), "admin_mappingfield_col_1"), t(lang(req), "admin_mappingfield_col_2"), t(
-        lang(req), "admin_mappingfield_col_3")], addparams="&detailof=" + unicode(mapping.id))
+    v["sortcol"] = pages.OrderColHeader(tuple(
+        _translation.t(
+            _translation.lang(req),
+            "admin_mappingfield_col_{}".format(col),
+            )
+        for col in xrange(1, 4)
+        ), addparams=u"&detailof={}".format(unicode(mapping.id)))
     v["fields"] = fields
     v["used_by"] = used_by
     v["mapping"] = mapping
@@ -313,7 +314,7 @@ def viewlist(req, id):
     v["actfilter"] = actfilter
     v["csrf"] = req.csrf_token.current_token
     v["translate"] = _translation.translate
-    v["language"] = lang(req)
+    v["language"] = _translation.lang(req)
     return _tal.processTAL(v, file="web/admin/modules/mapping.html", macro="viewlist", request=req)
 
 

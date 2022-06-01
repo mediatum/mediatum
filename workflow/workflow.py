@@ -17,7 +17,6 @@ from core.xmlnode import getNodeXML, readNodeXML
 
 import utils.date as date
 import core.translation as _core_translation
-from core.translation import t, lang, addLabels, getDefaultLanguage
 from core.users import user_from_session as _user_from_session
 from core.postgres import check_type_arg
 from core.database.postgres.permission import NodeToAccessRuleset
@@ -227,7 +226,7 @@ def registerWorkflowStep(nodename, cls):
         name = nodename[nodename.index("_") + 1:]
     workflowtypes[nodename] = name
 
-    addLabels(cls.getLabels())
+    _core_translation.addLabels(cls.getLabels())
 
 
 def getWorkflowTypes():
@@ -334,7 +333,7 @@ class Workflow(Node):
         template = "workflow/workflow.html"
         macro = "object_list"
         if self.children.filter_write_access().first() is None:
-            return '<i>' + t(lang(req), "permission_denied") + '</i>'
+            return '<i>' + _core_translation.t(_core_translation.lang(req), "permission_denied") + '</i>'
         return _tal.processTAL(
                 dict(
                     workflow=self,
@@ -541,7 +540,7 @@ class WorkflowStep(Node):
             link = '/mask?id=%s&obj=%s' % (step.id, node.id)
             return '<script language="javascript">document.location.href = "%s";</script> <a href="%s">%s</a>' % (link, link, step.name)
         else:
-            return '<i>%s</i>' % (t(lang(req), "permission_denied"))
+            return '<i>{}</i>'.format(_core_translation.t(_core_translation.lang(req), "permission_denied"))
 
     def show_workflow_node(self, node, req):
         if "gotrue" in req.values:
@@ -554,7 +553,7 @@ class WorkflowStep(Node):
 
     def show_workflow_step(self, req):
         if not self.has_write_access():
-            return '<i>' + t(lang(req), "permission_denied") + '</i>'
+            return '<i>{}</i>'.format(_core_translation.t(_core_translation.lang(req), "permission_denied"))
         c = []
         display_name_attr = self.parents[0].display_name_attribute
         i = 0
@@ -715,14 +714,18 @@ class WorkflowStep(Node):
                               language=node.get('system.wflanguage'))
         else:
             # use standard language of request
-            return _tal.getTAL("workflow/workflow.html", {'node': node, 'wfstep': self, 'lang':
-                                                         getDefaultLanguage()}, macro="workflow_buttons", language=getDefaultLanguage())
+            return _tal.getTAL(
+                    "workflow/workflow.html",
+                    dict(node=node, wfstep=self, lang=_core_translation.getDefaultLanguage()),
+                    macro="workflow_buttons",
+                    language=_core_translation.getDefaultLanguage(),
+                )
 
     def getTypeName(self):
         return self.name
 
     def getShortName(self, req):
-        l = lang(req)
+        l = _core_translation.lang(req)
         if self.get('shortstepname_' + l) != "":
             return self.get('shortstepname_' + l)
         elif self.get('shortstepname') != "":

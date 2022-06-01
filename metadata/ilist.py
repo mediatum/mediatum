@@ -22,7 +22,6 @@ from core import httpstatus
 from core import db
 from core import Node
 from contenttypes import Collections
-from web.edit.modules.manageindex import getAllAttributeValues
 from core.database.postgres import mediatumfunc
 from core.database.postgres.alchemyext import exec_sqlfunc
 import metadata.common_list as _common_list

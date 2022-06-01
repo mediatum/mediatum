@@ -617,9 +617,6 @@ msgstr "Startseite bearbeiten"
 msgid "tab_techmeta_obj"
 msgstr "Digitales Objekt bearbeiten"
 
-msgid "tab_manageindex"
-msgstr "Indexlisten verwalten"
-
 msgid "tab_news"
 msgstr "Mitteilungen verwalten"
 

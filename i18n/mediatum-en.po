@@ -601,9 +601,6 @@ msgstr "Edit startpage"
 msgid "tab_techmeta_obj"
 msgstr "Edit digital object"
 
-msgid "tab_manageindex"
-msgstr "Manage index lists"
-
 msgid "tab_news"
 msgstr "Manage messages"
 

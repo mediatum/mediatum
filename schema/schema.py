@@ -566,10 +566,7 @@ def parseEditorData(req, node):
 
     for field in node.metaFields():
         name = field.getName()
-        if "%s__%s" % (defaultlang, name) in req.params:
-            value = req.params.get("%s__%s" % (defaultlang, name), "? ")
-        else:
-            value = req.params.get(name, "? ")
+        value = req.params.get(name, "? ")
 
         if value != "? ":
             for node in nodes:

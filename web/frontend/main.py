@@ -36,15 +36,17 @@ logg = logging.getLogger(__name__)
 
 def _handle_json_request(req):
     user = _user_from_session()
-    s = []
+    s = ()
     if req.args.get("cmd") == "get_list_smi":
         searchmaskitem_id = req.params.get("searchmaskitem_id")
-        f = None
-        g = None
         if searchmaskitem_id and searchmaskitem_id != "full":
-            f = q(Node).get(searchmaskitem_id).getFirstField()
-        if not f:  # All Metadata
-            f = g = getMetadataType("text")
+            field = q(Node).get(searchmaskitem_id).getFirstField()
+        else:
+            field = None
+        if field:  # we have a field at hand
+            get_html = field.getSearchHTML
+        else:  # we have no field, we use the Metatype
+            get_html = getMetadataType("text").getSearchHTML
 
         container_id = req.args.get("container_id")
 
@@ -53,15 +55,18 @@ def _handle_json_request(req):
         if container is None or not container.has_read_access():
             container = get_collections_node()
 
-        s = [
-            f.getSearchHTML(
+        s = (get_html(
                 container,
-                g,
+                None,
                 _core_translation.set_language(req.accept_languages),
-                "query" + str(req.args.get("fieldno")),
+                u"query{}".format(req.args["fieldno"]),
                 req.args.get("query_field_value"),
-            )]
-    req.response.set_data(req.params.get("jsoncallback") + "(%s)" % json.dumps(s, indent=4))
+            ),)
+
+    req.response.set_data(u"{}({})".format(
+        req.values["jsoncallback"],
+        json.dumps(s, indent=2),
+       ))
     req.response.status_code = httpstatus.HTTP_OK
 
 

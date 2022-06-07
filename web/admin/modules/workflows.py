@@ -72,6 +72,29 @@ def _aggregate_workflowstep_text_parameters(req_values, languages):
     return labeltexts
 
 
+def _update_nodetoaccessruleset_associations(node, req_values, ruletype):
+    """
+    Update `NodeToAccessRuleset` associations for a workflow step,
+    based on request parameters.
+    """
+    for ruleset_assoc in node.access_ruleset_assocs.filter_by(ruletype=ruletype):
+        db.session.delete(ruleset_assoc)
+
+    ruletype = "left_{}".format(ruletype)
+
+    for key in req_values:
+        if key.startswith(ruletype):
+            break
+    else:
+        return
+
+    for ruleset_name in req_values.getlist(key):
+        node.access_ruleset_assocs.append(NodeToAccessRuleset(
+                ruleset_name=ruleset_name,
+                ruletype=key[len(ruletype):],
+               ))
+
+
 def validate(req, op):
     """
     standard validator to execute correct method
@@ -145,32 +168,13 @@ def validate(req, op):
             else:
                 wf.attrs.pop("languages", None)
 
-            for r in wf.access_ruleset_assocs.filter_by(ruletype=u'read'):
-                db.session.delete(r)
+            for ruletype in ("read", "write"):
+                _update_nodetoaccessruleset_associations(wf, req.values, ruletype)
+                # check for right inheritance
+                if "{}_inherit".format(ruletype) in req.values:
+                    inheritWorkflowRights(req.values["name"], ruletype)
 
-            for key in req.values:
-                if key.startswith("left_read"):
-                    for r in req.values.getlist(key):
-                        wf.access_ruleset_assocs.append(NodeToAccessRuleset(ruleset_name=r, ruletype=key[9:]))
-                    break
-
-            for r in wf.access_ruleset_assocs.filter_by(ruletype=u'write'):
-                db.session.delete(r)
-
-            for key in req.values:
-                if key.startswith("left_write"):
-                    for r in req.values.getlist(key):
-                        wf.access_ruleset_assocs.append(NodeToAccessRuleset(ruleset_name=r, ruletype=key[10:]))
-                    break
-
-            # check for right inheritance
-            if "write_inherit" in req.values:
-                inheritWorkflowRights(req.values["name"], "write")
-            if "read_inherit" in req.values:
-                inheritWorkflowRights(req.values["name"], "read")
             db.session.commit()
-
-
 
         return _view(req)
 
@@ -233,23 +237,10 @@ def validate(req, op):
             raise AssertionError("invalid form_op")
 
         wnode = workflow.getStep(wnode.name)
-        for r in wnode.access_ruleset_assocs.filter_by(ruletype=u'read'):
-            db.session.delete(r)
 
-        for key in req.values:
-            if key.startswith("left_read"):
-                for r in req.values.getlist(key):
-                    wnode.access_ruleset_assocs.append(NodeToAccessRuleset(ruleset_name=r, ruletype=key[9:]))
-                break
+        for ruletype in ("read", "write"):
+            _update_nodetoaccessruleset_associations(wnode, req.values, ruletype)
 
-        for r in wnode.access_ruleset_assocs.filter_by(ruletype=u'write'):
-            db.session.delete(r)
-
-        for key in req.values:
-            if key.startswith("left_write"):
-                for r in req.values.getlist(key):
-                    wnode.access_ruleset_assocs.append(NodeToAccessRuleset(ruleset_name=r, ruletype=key[10:]))
-                break
         db.session.commit()
 
         if "metaDataEditor" in req.values:

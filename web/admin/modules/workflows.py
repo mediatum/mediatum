@@ -170,91 +170,93 @@ def validate(req, op):
                 inheritWorkflowRights(req.values["name"], "read")
             db.session.commit()
 
-    else:
-        # workflowstep section
-        for key in req.values:
-            if key.startswith("newdetail_"):
-                # create new workflow
-                return _workflow_step_detail(req, req.values["parent"], "")
-            elif key.startswith("editdetail_"):
-                # edit workflowstep
-                return _workflow_step_detail(req, req.values["parent"], key[11:-2].split("|")[1])
-            elif key.startswith("deletedetail_"):
-                # delete workflow step id: deletedetail_[workflowid]|[stepid]
-                deleteWorkflowStep(key[13:-2].split("|")[0], key[13:-2].split("|")[1])
-                break
 
-        if "form_op" in req.values:
-            if req.values["form_op"] == "cancel":
-                return _workflow_step_list(req, req.values["parent"])
 
-            if not req.values["nname"]:  # no Name was given
-                return _workflow_step_detail(req, req.values["parent"], req.values["stepid"], 1)
+        return _view(req)
 
-            workflow = getWorkflow(req.values["parent"])
-            if req.values["form_op"] == "save_newdetail":
-                # save workflowstep values -> create
-                # don't create a new workflowstep if a workflowstep with the same name already exists
+    # workflowstep section
+    for key in req.values:
+        if key.startswith("newdetail_"):
+            # create new workflow
+            return _workflow_step_detail(req, req.values["parent"], "")
+        elif key.startswith("editdetail_"):
+            # edit workflowstep
+            return _workflow_step_detail(req, req.values["parent"], key[11:-2].split("|")[1])
+        elif key.startswith("deletedetail_"):
+            # delete workflow step id: deletedetail_[workflowid]|[stepid]
+            deleteWorkflowStep(key[13:-2].split("|")[0], key[13:-2].split("|")[1])
+            break
+
+    if "form_op" in req.values:
+        if req.values["form_op"] == "cancel":
+            return _workflow_step_list(req, req.values["parent"])
+
+        if not req.values["nname"]:  # no Name was given
+            return _workflow_step_detail(req, req.values["parent"], req.values["stepid"], 1)
+
+        workflow = getWorkflow(req.values["parent"])
+        if req.values["form_op"] == "save_newdetail":
+            # save workflowstep values -> create
+            # don't create a new workflowstep if a workflowstep with the same name already exists
+            workflowstep = workflow.getStep(req.values["nname"], test_only=True)
+            if workflowstep:
+                return _workflow_step_detail(req, req.values["parent"], req.values["stepid"], 2)
+
+            wnode = create_update_workflow_step(
+                    typ=req.values["ntype"],
+                    adminstep=req.values.get("adminstep", ""),
+                    **_aggregate_workflowstep_text_parameters(
+                        req.values,
+                        workflow.getLanguages(),
+                    )
+                )
+            workflow.addStep(wnode)
+
+        elif req.values["form_op"] == "save_editdetail":
+            # update workflowstep
+            # don't update a workflowstep if the name is changed and a workflowstep with the same name already exists
+            if req.values["orig_name"] != req.values["nname"]:
                 workflowstep = workflow.getStep(req.values["nname"], test_only=True)
                 if workflowstep:
                     return _workflow_step_detail(req, req.values["parent"], req.values["stepid"], 2)
 
-                wnode = create_update_workflow_step(
-                        typ=req.values["ntype"],
-                        adminstep=req.values.get("adminstep", ""),
-                        **_aggregate_workflowstep_text_parameters(
-                            req.values,
-                            workflow.getLanguages(),
-                        )
+            wnode = create_update_workflow_step(
+                    workflow.getStep(req.values["orig_name"]),
+                    adminstep=req.values.get("adminstep", ""),
+                    typ=req.values["ntype"],
+                    **_aggregate_workflowstep_text_parameters(
+                        req.values,
+                        workflow.getLanguages(),
                     )
-                workflow.addStep(wnode)
+                )
+        else:
+            raise AssertionError("invalid form_op")
 
-            elif req.values["form_op"] == "save_editdetail":
-                # update workflowstep
-                # don't update a workflowstep if the name is changed and a workflowstep with the same name already exists
-                if req.values["orig_name"] != req.values["nname"]:
-                    workflowstep = workflow.getStep(req.values["nname"], test_only=True)
-                    if workflowstep:
-                        return _workflow_step_detail(req, req.values["parent"], req.values["stepid"], 2)
+        wnode = workflow.getStep(wnode.name)
+        for r in wnode.access_ruleset_assocs.filter_by(ruletype=u'read'):
+            db.session.delete(r)
 
-                wnode = create_update_workflow_step(
-                        workflow.getStep(req.values["orig_name"]),
-                        adminstep=req.values.get("adminstep", ""),
-                        typ=req.values["ntype"],
-                        **_aggregate_workflowstep_text_parameters(
-                            req.values,
-                            workflow.getLanguages(),
-                        )
-                    )
-            else:
-                raise AssertionError("invalid form_op")
+        for key in req.values:
+            if key.startswith("left_read"):
+                for r in req.values.getlist(key):
+                    wnode.access_ruleset_assocs.append(NodeToAccessRuleset(ruleset_name=r, ruletype=key[9:]))
+                break
 
-            wnode = workflow.getStep(wnode.name)
-            for r in wnode.access_ruleset_assocs.filter_by(ruletype=u'read'):
-                db.session.delete(r)
+        for r in wnode.access_ruleset_assocs.filter_by(ruletype=u'write'):
+            db.session.delete(r)
 
-            for key in req.values:
-                if key.startswith("left_read"):
-                    for r in req.values.getlist(key):
-                        wnode.access_ruleset_assocs.append(NodeToAccessRuleset(ruleset_name=r, ruletype=key[9:]))
-                    break
+        for key in req.values:
+            if key.startswith("left_write"):
+                for r in req.values.getlist(key):
+                    wnode.access_ruleset_assocs.append(NodeToAccessRuleset(ruleset_name=r, ruletype=key[10:]))
+                break
+        db.session.commit()
 
-            for r in wnode.access_ruleset_assocs.filter_by(ruletype=u'write'):
-                db.session.delete(r)
+        if "metaDataEditor" in req.values:
+            parseEditorData(req, wnode)
 
-            for key in req.values:
-                if key.startswith("left_write"):
-                    for r in req.values.getlist(key):
-                        wnode.access_ruleset_assocs.append(NodeToAccessRuleset(ruleset_name=r, ruletype=key[10:]))
-                    break
-            db.session.commit()
+    return _workflow_step_list(req, req.values["parent"])
 
-            if "metaDataEditor" in req.values:
-                parseEditorData(req, wnode)
-
-        return _workflow_step_list(req, req.values["parent"])
-
-    return _view(req)
 
 
 

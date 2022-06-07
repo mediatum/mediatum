@@ -520,11 +520,3 @@ def export(req, name):
     export workflow-definition (XML)
     """
     return exportWorkflow(name)
-
-
-
-def xmlimport(req, filename):
-    """
-    import definition from file
-    """
-    importWorkflow(filename)

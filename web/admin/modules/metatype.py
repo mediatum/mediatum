@@ -529,11 +529,6 @@ def showFieldOverview(req):
 def export(req, name):
     return exportMetaScheme(name)
 
-""" import definition from file """
-
-
-def xmlimport(req, filename):
-    importMetaSchema(filename)
 
 
 def _set_export_maskitem_fields(maskitem, has_exportmapping, mappingfield, fieldtype, attribute):

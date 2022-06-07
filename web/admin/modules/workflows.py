@@ -78,7 +78,17 @@ def validate(req, op):
     """
     path = req.mediatum_contextfree_path[1:].split("/")
     if len(path) == 3 and path[2] == "overview":
-        return WorkflowPopup(req)
+        return _tal.processTAL(
+                dict(
+                    id=path[1],
+                    csrf=_core_csrfform.get_token(),
+                    html_head_style_src=_web_frontend.html_head_style_src,
+                    html_head_javascript_src=_web_frontend.html_head_javascript_src,
+                ),
+                file="web/admin/modules/workflows.html",
+                macro="view_popup",
+                request=req,
+            )
 
     # import scheme from xml-file
     importfile = req.files.get("file")
@@ -492,27 +502,6 @@ def WorkflowStepDetail(req, wid, wnid, err=0):
     v["actpage"] = req.values["actpage"]
     v["csrf"] = _core_csrfform.get_token()
     return _tal.processTAL(v, file="web/admin/modules/workflows.html", macro="modify_step", request=req)
-
-
-
-def WorkflowPopup(req):
-    """
-    popup window with image of workflow given by id
-    parameter: req=request
-    """
-    path = req.mediatum_contextfree_path[1:].split("/")
-    return _tal.processTAL(
-            dict(
-                id=path[1],
-                csrf=_core_csrfform.get_token(),
-                html_head_style_src=_web_frontend.html_head_style_src,
-                html_head_javascript_src=_web_frontend.html_head_javascript_src,
-            ),
-            file="web/admin/modules/workflows.html",
-            macro="view_popup",
-            request=req,
-        )
-
 
 
 def export(req, name):

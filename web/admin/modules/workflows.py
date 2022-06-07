@@ -44,7 +44,6 @@ logg = logging.getLogger(__name__)
 def getInformation():
     return{"version": "1.0"}
 
-""" standard validator to execute correct method """
 
 
 def _aggregate_workflowstep_text_parameters(req_values, languages):
@@ -74,6 +73,9 @@ def _aggregate_workflowstep_text_parameters(req_values, languages):
 
 
 def validate(req, op):
+    """
+    standard validator to execute correct method
+    """
     path = req.mediatum_contextfree_path[1:].split("/")
     if len(path) == 3 and path[2] == "overview":
         return WorkflowPopup(req)
@@ -245,11 +247,12 @@ def validate(req, op):
     return view(req)
 
 
-""" overview of all defined workflows
-    parameter: req=request """
-
 
 def view(req):
+    """
+    overview of all defined workflows
+    parameter: req=request
+    """
     workflows = list(getWorkflowList())
     order = getSortCol(req)
     actfilter = getFilter(req)
@@ -295,11 +298,13 @@ def view(req):
     v["csrf"] = _core_csrfform.get_token()
     return _tal.processTAL(v, file="web/admin/modules/workflows.html", macro="view", request=req)
 
-""" edit form for given workflow (create/update)
-    parameter: req=request, id=workflowid (name), err=error code as integer """
 
 
 def WorkflowDetail(req, id, err=0):
+    """
+    edit form for given workflow (create/update)
+    parameter: req=request, id=workflowid (name), err=error code as integer
+    """
     v = getAdminStdVars(req)
     if err == 0 and id == "":
         # new workflow
@@ -338,11 +343,13 @@ def WorkflowDetail(req, id, err=0):
     v["csrf"] = _core_csrfform.get_token()
     return _tal.processTAL(v, file="web/admin/modules/workflows.html", macro="modify", request=req)
 
-""" overview of all steps for given workflow
-    parameter: req=request, wid=wordflow id (name) """
 
 
 def WorkflowStepList(req, wid):
+    """
+    overview of all steps for given workflow
+    parameter: req=request, wid=wordflow id (name)
+    """
     global _cssclass, _page
     workflow = getWorkflow(wid)
     workflowsteps = list(workflow.getSteps())
@@ -400,11 +407,13 @@ def WorkflowStepList(req, wid):
     v["csrf"] = _core_csrfform.get_token()
     return _tal.processTAL(v, file="web/admin/modules/workflows.html", macro="view_step", request=req)
 
-""" edit form for workflowstep for given workflow and given step
-    parameter: req=request, wid=workflowid(name), wnid=workflow step id (name), err=error code as integer """
 
 
 def WorkflowStepDetail(req, wid, wnid, err=0):
+    """
+    edit form for workflowstep for given workflow and given step
+    parameter: req=request, wid=workflowid(name), wnid=workflow step id (name), err=error code as integer
+    """
     workflow = getWorkflow(wid)
     nodelist = workflow.getSteps().order_by(_Node.name)
     v = getAdminStdVars(req)
@@ -484,11 +493,13 @@ def WorkflowStepDetail(req, wid, wnid, err=0):
     v["csrf"] = _core_csrfform.get_token()
     return _tal.processTAL(v, file="web/admin/modules/workflows.html", macro="modify_step", request=req)
 
-""" popup window with image of workflow given by id
-    parameter: req=request """
 
 
 def WorkflowPopup(req):
+    """
+    popup window with image of workflow given by id
+    parameter: req=request
+    """
     path = req.mediatum_contextfree_path[1:].split("/")
     return _tal.processTAL(
             dict(
@@ -502,14 +513,18 @@ def WorkflowPopup(req):
             request=req,
         )
 
-""" export workflow-definition (XML) """
 
 
 def export(req, name):
+    """
+    export workflow-definition (XML)
+    """
     return exportWorkflow(name)
 
-""" import definition from file """
 
 
 def xmlimport(req, filename):
+    """
+    import definition from file
+    """
     importWorkflow(filename)

@@ -344,7 +344,7 @@ def getEditModules():
         if os.path.isabs(modpath[1]):
             mod_dirpath = modpath[1]
         else:
-            mod_dirpath = os.path.join(config.basedir, modpath[1])
+            mod_dirpath = os.path.join(config.codebasedir, modpath[1])
 
         for dirpath, subdirs, files in os.walk(mod_dirpath):
             if os.path.basename(dirpath) in ("test", "__pycache__"):

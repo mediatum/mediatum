@@ -92,9 +92,9 @@ def add_template_globals():
 
 
 def initContexts():
-    _request_handler.setBase(config.basedir)
+    _request_handler.setBase(config.codebasedir)
     from core.config import resolve_filename
-    tal.set_base(config.basedir)
+    tal.set_base(config.codebasedir)
     tal.add_macro_resolver(resolve_filename)
     tal.add_translator(_core_translation.translate_in_template)
     add_template_globals()

@@ -1405,7 +1405,7 @@ def load_metatype_module(prefix_path, pkg_dir):
 def init():
     pkg_dirs = ["schema/mask", "metadata"]
     for pkg_dir in pkg_dirs:
-        load_metatype_module(config.basedir, pkg_dir)
+        load_metatype_module(config.codebasedir, pkg_dir)
 
 
 def getMetadataType(name):

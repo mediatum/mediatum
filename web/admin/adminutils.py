@@ -242,7 +242,7 @@ def getAdminModules(path):
         path, module = splitpath(v)
         with suppress(ImportError,warn=False): # no admin modules in plugin
             sys.path += [path + ".adminmodules"]
-            for root, dirs, files in os.walk(os.path.join(config.basedir, v + "/adminmodules")):
+            for root, dirs, files in os.walk(os.path.join(config.codebasedir, v,  "adminmodules")):
                 for name in [f for f in files if f.endswith(".py") and f != "__init__.py"]:
                     m = __import__(module + ".adminmodules." + name[:-3])
                     m = eval("m.adminmodules." + name[:-3])
@@ -256,7 +256,7 @@ adminModules = {}
 def adminNavigation():
     if len(adminModules) == 0:
         # load admin modules
-        mods = getAdminModules(os.walk(os.path.join(config.basedir, 'web/admin/modules')))
+        mods = getAdminModules(os.walk(os.path.join(config.codebasedir, 'web/admin/modules')))
         for mod in mods:
             if hasattr(mods[mod], "getInformation"):
                 adminModules[mod] = (mods[mod])

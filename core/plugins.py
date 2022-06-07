@@ -25,7 +25,7 @@ def import_plugin_module(name, location):
     location = location.rstrip(os.sep)
 
     if not os.path.isabs(location):
-        location = os.path.join(config.basedir, location)
+        location = os.path.join(config.codebasedir, location)
 
     containing_dir_path = os.path.realpath(os.path.dirname(location))
 

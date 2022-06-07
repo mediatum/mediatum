@@ -677,23 +677,14 @@ def make_node_content(node, req, paths):
 
     if isinstance(node, Container):
         # try to find a start page
-        if "files" not in req.args and len(filter(None, node.getStartpageDict().values())) > 0 and \
-            not req.params.get('after') and not req.params.get('before'):
-
-            html_files = node.files.filter_by(filetype=u"content", mimetype=u"text/html").all()
-            show_startpage = False
-            for f in html_files:
-                if f.exists and f.size > 0:
-                    show_startpage = True
-                else:
-                    logg.error("Startpage: %s is missing for node %d: %s", f.path, node.id, node.name)
-
-            if show_startpage:
-                return ContentNode(node)
-
-            if html_files:
-                # startpage is configured but missing
-                return StartpageNotAccessible()
+        language = _core_translation.set_language(req.accept_languages)
+        startpage = node.getStartpageDict().get(language)
+        if not ("files" in req.args or req.values.get('after') or req.values.get('before') or not startpage):
+            html_file = node.files.filter_by(filetype=u"content", mimetype=u"text/html", path=startpage).scalar()
+            if html_file:
+                # return `StartpageNotAccessible` if startpage is configured but missing
+                return ContentNode(node) if html_file.exists and html_file.size > 0 else StartpageNotAccessible()
+            logg.error("Startpage in language %s is missing for node %d: %s", language, node.id, node.name)
 
         if node.show_list_view:
             # no startpage found, list view requested

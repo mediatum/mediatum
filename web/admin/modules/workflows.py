@@ -8,20 +8,35 @@ import logging
 import re
 import sys
 import traceback
+
 import mediatumtal.tal as _tal
 
 import core.config as config
+from core import Node as _Node
+from core import db
 import core.csrfform as _core_csrfform
-import core.translation as _core_translation
-from workflow.workflow import Workflow, getWorkflowList, getWorkflow, updateWorkflow, addWorkflow, deleteWorkflow, \
-    inheritWorkflowRights, getWorkflowTypes, create_update_workflow_step, deleteWorkflowStep, exportWorkflow, importWorkflow
-from web.admin.adminutils import Overview, getAdminStdVars, getFilter, getSortCol
-from schema.schema import parseEditorData
-from web.common.acl_web import makeList
-from utils.utils import removeEmptyStrings
-from core import db, Node as _Node
 from core.database.postgres.permission import NodeToAccessRuleset
 from web import frontend as _web_frontend
+import core.translation as _core_translation
+from schema.schema import parseEditorData
+from utils.utils import removeEmptyStrings
+from web.admin.adminutils import Overview
+from web.admin.adminutils import getAdminStdVars
+from web.admin.adminutils import getFilter
+from web.admin.adminutils import getSortCol
+from web.common.acl_web import makeList
+from workflow.workflow import Workflow
+from workflow.workflow import addWorkflow
+from workflow.workflow import create_update_workflow_step
+from workflow.workflow import deleteWorkflow
+from workflow.workflow import deleteWorkflowStep
+from workflow.workflow import exportWorkflow
+from workflow.workflow import getWorkflow
+from workflow.workflow import getWorkflowList
+from workflow.workflow import getWorkflowTypes
+from workflow.workflow import importWorkflow
+from workflow.workflow import inheritWorkflowRights
+from workflow.workflow import updateWorkflow
 
 logg = logging.getLogger(__name__)
 

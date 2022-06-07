@@ -95,7 +95,7 @@ def validate(req, op):
     if importfile:
         importWorkflow(importfile)
 
-    if req.values.get("form_op", "") == "update":
+    if req.values.get("form_op") == "update":
         return _workflow_step_detail(req, req.values["parent"], req.values["nname"], -1)
 
     if req.values.get("acttype", "workflow") == "workflow":

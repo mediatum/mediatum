@@ -65,7 +65,7 @@ def get_maskform_and_fields(nodes, mask, req):
     return _maskform, _fields
 
 
-class SystemMask:
+class _SystemMask:
 
     def __init__(self, name, description, fields):
         self.name, self.description, self.fields = name, description, fields
@@ -180,20 +180,18 @@ def getContent(req, ids):
         logg.info("%s user error: multiple metatypes in editor not supported", user.login_name)
         return _tal.processTAL({}, file="web/edit/modules/metadata.html", macro="multiple_documents_not_supported", request=req)
 
-    metadatatype = node.metadatatype
+    if hasattr(node, "metaFields"):
+        masklist.append(_SystemMask(
+                "settings",
+                _core_translation.translate_in_request("settings", req),
+                node.metaFields(_core_translation.set_language(req.accept_languages)),
+               ))
 
+    metadatatype = node.metadatatype
     if metadatatype:
         for m in metadatatype.filter_masks(masktype='edit'):
             if m.has_read_access():
                 masklist.append(m)
-
-    if hasattr(node, "metaFields"):
-
-        masklist = [SystemMask(
-                "settings",
-                _core_translation.translate_in_request("settings", req),
-                node.metaFields(_core_translation.set_language(req.accept_languages)),
-            )] + masklist
 
     default = None
     for m in masklist:

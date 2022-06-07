@@ -96,18 +96,18 @@ def validate(req, op):
         importWorkflow(importfile)
 
     if req.values.get("form_op", "") == "update":
-        return WorkflowStepDetail(req, req.values["parent"], req.values["nname"], -1)
+        return _workflow_step_detail(req, req.values["parent"], req.values["nname"], -1)
 
     if req.values.get("acttype", "workflow") == "workflow":
         # workflow section
         for key in req.values:
             if key.startswith("new_"):
                 # create new workflow
-                return WorkflowDetail(req, "")
+                return _workflow_detail(req, "")
 
             elif key.startswith("edit_"):
                 # edit workflow
-                return WorkflowDetail(req, unicode(key[5:-2]))
+                return _workflow_detail(req, unicode(key[5:-2]))
 
             elif key.startswith("delete_"):
                 # delete workflow
@@ -116,14 +116,14 @@ def validate(req, op):
 
             elif key.startswith("detaillist_"):
                 # show nodes for given workflow
-                return WorkflowStepList(req, key[11:-2])
+                return _workflow_step_list(req, key[11:-2])
 
         if "form_op" in req.values:
             if req.values["form_op"] == "cancel":
-                return view(req)
+                return _view(req)
 
             if not req.values["name"]:
-                return WorkflowDetail(req, req.values["id"], 1)  # no name was given
+                return _workflow_detail(req, req.values["id"], 1)  # no name was given
 
             if req.values["form_op"] == "save_new":
                 # save workflow values
@@ -175,10 +175,10 @@ def validate(req, op):
         for key in req.values:
             if key.startswith("newdetail_"):
                 # create new workflow
-                return WorkflowStepDetail(req, req.values["parent"], "")
+                return _workflow_step_detail(req, req.values["parent"], "")
             elif key.startswith("editdetail_"):
                 # edit workflowstep
-                return WorkflowStepDetail(req, req.values["parent"], key[11:-2].split("|")[1])
+                return _workflow_step_detail(req, req.values["parent"], key[11:-2].split("|")[1])
             elif key.startswith("deletedetail_"):
                 # delete workflow step id: deletedetail_[workflowid]|[stepid]
                 deleteWorkflowStep(key[13:-2].split("|")[0], key[13:-2].split("|")[1])
@@ -186,10 +186,10 @@ def validate(req, op):
 
         if "form_op" in req.values:
             if req.values["form_op"] == "cancel":
-                return WorkflowStepList(req, req.values["parent"])
+                return _workflow_step_list(req, req.values["parent"])
 
             if not req.values["nname"]:  # no Name was given
-                return WorkflowStepDetail(req, req.values["parent"], req.values["stepid"], 1)
+                return _workflow_step_detail(req, req.values["parent"], req.values["stepid"], 1)
 
             workflow = getWorkflow(req.values["parent"])
             if req.values["form_op"] == "save_newdetail":
@@ -252,13 +252,13 @@ def validate(req, op):
             if "metaDataEditor" in req.values:
                 parseEditorData(req, wnode)
 
-        return WorkflowStepList(req, req.values["parent"])
+        return _workflow_step_list(req, req.values["parent"])
 
-    return view(req)
+    return _view(req)
 
 
 
-def view(req):
+def _view(req):
     """
     overview of all defined workflows
     parameter: req=request
@@ -310,7 +310,7 @@ def view(req):
 
 
 
-def WorkflowDetail(req, id, err=0):
+def _workflow_detail(req, id, err=0):
     """
     edit form for given workflow (create/update)
     parameter: req=request, id=workflowid (name), err=error code as integer
@@ -355,7 +355,7 @@ def WorkflowDetail(req, id, err=0):
 
 
 
-def WorkflowStepList(req, wid):
+def _workflow_step_list(req, wid):
     """
     overview of all steps for given workflow
     parameter: req=request, wid=wordflow id (name)
@@ -419,7 +419,7 @@ def WorkflowStepList(req, wid):
 
 
 
-def WorkflowStepDetail(req, wid, wnid, err=0):
+def _workflow_step_detail(req, wid, wnid, err=0):
     """
     edit form for workflowstep for given workflow and given step
     parameter: req=request, wid=workflowid(name), wnid=workflow step id (name), err=error code as integer

@@ -6,7 +6,6 @@ from __future__ import print_function
 
 from functools import wraps
 import sys
-import importlib
 import logging
 import tempfile as _tempfile
 import os as _os
@@ -76,44 +75,6 @@ def log_basic_sys_info():
     logg.info("Python Version is %s, base path ist at %s", sys.version.split("\n")[0], config.basedir)
     for path in sys.path:
         logg.debug("sys.path: %s", path)
-
-def check_imports():
-    external_modules = [
-        "alembic",
-        "coffeescript",
-        "configargparse",
-        "decorator",
-        "exiftool",
-        "flask_admin",
-        "httplib2",
-        "humanize",
-        "ipaddr",
-        "jinja2",
-        "lxml",
-        "mediatumfsm",
-        "mediatumtal",
-        "parcon",
-        "PIL",
-        "psycopg2",
-        "pydot",
-        "pyjade",
-        "pymarc",
-        "pyPdf",
-        "reportlab",
-        "requests",
-        "ruamel",
-        "scrypt",
-        "sqlalchemy",
-        "sqlalchemy_continuum",
-        "sqlalchemy_utils",
-        "unicodecsv",
-        "werkzeug",
-        "yaml",
-    ]
-
-    for modname in external_modules:
-        mod = importlib.import_module(modname)
-        logg.debug("import version '%s' of %s", mod.__version__ if hasattr(mod, "__version__") else "unknown", mod)
 
 
 def init_app():
@@ -285,8 +246,6 @@ def basic_init(root_loglevel=None, config_filepath=None, prefer_config_filename=
     import utils.log
     utils.log.initialize(root_loglevel, log_filepath)
     log_basic_sys_info()
-    if config.getboolean("config.enable_startup_checks", True):
-        check_imports()
     init_db_connector()
     load_system_types()
     load_types()

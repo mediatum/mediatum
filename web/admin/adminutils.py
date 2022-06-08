@@ -21,7 +21,9 @@ from core.database.postgres.user import AuthenticatorInfo
 from core.database.postgres.user import User
 from core.systemtypes import Root
 from utils.strings import ensure_unicode_returned
-from utils.utils import Link, splitpath, parse_menu_struct, suppress, get_menu_strings
+from utils.utils import get_menu_strings
+from utils.utils import Link
+from utils.utils import parse_menu_struct
 from utils.list import filter_scalar
 from core.exceptions import SecurityException
 
@@ -237,16 +239,6 @@ def getAdminModules(path):
                 m = eval("m.admin.modules." + name[:-3])
                 mods[name[:-3]] = m
 
-    # test for external modules by plugin
-    for k, v in config.getsubset("plugins").items():
-        path, module = splitpath(v)
-        with suppress(ImportError,warn=False): # no admin modules in plugin
-            sys.path += [path + ".adminmodules"]
-            for root, dirs, files in os.walk(os.path.join(config.codebasedir, v,  "adminmodules")):
-                for name in [f for f in files if f.endswith(".py") and f != "__init__.py"]:
-                    m = __import__(module + ".adminmodules." + name[:-3])
-                    m = eval("m.adminmodules." + name[:-3])
-                    mods[name[:-3]] = m
     return mods
 
 # delivers all active admin modules in navigations

@@ -113,10 +113,9 @@
                     <h3 tal:condition="python:id!=''" i18n:translate="admin_wf_edit_header">TEXT</h3>
                 </td>
             </tr>
-            <tr tal:condition="python:error>0">
+            <tr tal:condition="python:error">
                 <td colspan="2">
-                    <p tal:condition="python:error==1" class="error" i18n:translate="admin_mandatory_error">TEXT</p>
-                    <p tal:condition="python:error==2" class="error" i18n:translate="admin_duplicate_error">TEXT</p>
+                    <p class="error" i18n:translate="" tal:content="python:error"/>
                 </td>
             </tr>
             <tr>
@@ -336,10 +335,9 @@
                     <h3 tal:condition="python:id!=''" i18n:translate="admin_wfstep_edit_header">TEXT</h3>
                 </td>
             </tr>
-            <tr tal:condition="python:error>0">
+            <tr tal:condition="python:error">
                 <td colspan="2">
-                    <p tal:condition="python:error==1" i18n:translate="admin_mandatory_error" class="error">TEXT</p>
-                    <p tal:condition="python:error==2" i18n:translate="admin_duplicate_error" class="error">TEXT</p>
+                    <p class="error" i18n:translate="" tal:content="python:error"/>
                 </td>
             </tr>
             <tr>

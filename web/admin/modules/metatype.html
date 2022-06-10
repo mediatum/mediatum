@@ -4,11 +4,6 @@
 -->
 <metal:block metal:define-macro="view_type">
     <script src="/static/js/admin/modules/admin.js"> </script>
-    <!--[if lt IE 7]>
-        <script type="text/javascript">
-            window.attachEvent("onload", buttonfix);
-        </script>
-    <![endif]-->
     <p><a i18n:translate="admin_overview" href=".">TEXT</a></p>
     <form name="useroverview" method="post" action="#" enctype="multipart/form-data" tal:attributes="action page">
         <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
@@ -150,11 +145,6 @@
 
 <metal:block metal:define-macro="modify_type" tal:define="id python:metadatatype.getName()">
     <script src="/static/js/admin/modules/admin.js"> </script>
-    <!--[if lt IE 7]>
-    <script type="text/javascript">
-        window.attachEvent("onload", buttonfix);
-    </script>
-    <![endif]-->
     <p><a tal:attributes="href python:u'./metatype{}'.format(page)" i18n:translate="admin_overview">TEXT</a></p>
     <form tal:attributes="action page" name="editmetatype" method="post">
         <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>

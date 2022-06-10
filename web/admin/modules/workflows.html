@@ -3,11 +3,6 @@
   SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 <metal:block metal:define-macro="view">
-    <!--[if lt IE 7]>
-        <script type="text/javascript">
-            window.attachEvent("onload", buttonfix);
-        </script>
-    <![endif]-->
     <p><a i18n:translate="admin_overview" href=".">TEXT</a></p>
     <form tal:attributes="action python:page" name="addnewworkflow" method="post" action="#" enctype="multipart/form-data">
         <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
@@ -228,11 +223,6 @@
 </metal:block>
 
 <metal:block metal:define-macro="view_step">
-    <!--[if lt IE 7]>
-        <script type="text/javascript">
-            window.attachEvent("onload", buttonfix);
-        </script>
-    <![endif]-->
     <p><a href="./workflows" i18n:translate="admin_overview">TEXT</a></p>
     <form tal:attributes="action page" name="metafields" method="post" action="#">
         <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>

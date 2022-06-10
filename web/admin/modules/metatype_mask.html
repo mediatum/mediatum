@@ -3,11 +3,6 @@
   SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 <metal:block metal:define-macro="view_mask">
-    <!--[if lt IE 7]>
-    <script type="text/javascript">
-        window.attachEvent("onload", buttonfix);
-    </script>
-    <![endif]-->
     <p><a tal:attributes="href python:u'./metatype{}'.format(page)" i18n:translate="admin_overview">TEXT</a> | <a href="?detaillist_x=1" tal:attributes="href python:u'?detaillist_{}__=1'.format(metadatatype.getName())" i18n:translate="admin_meta_editdetail">TEXT</a></p>
     <script src="/static/js/admin/modules/admin.js"> </script>
     <form name="fieldoverview" method="post" action="#" tal:attributes="action page">

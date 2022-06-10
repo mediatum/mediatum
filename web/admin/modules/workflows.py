@@ -109,7 +109,7 @@ def validate(req, op):
                     html_head_javascript_src=_web_frontend.html_head_javascript_src,
                 ),
                 file="web/admin/modules/workflows.html",
-                macro="view_popup",
+                macro="workflowimage_popup",
                 request=req,
             )
 
@@ -119,18 +119,18 @@ def validate(req, op):
         importWorkflow(importfile)
 
     if req.values.get("form_op") == "update":
-        return _workflow_step_detail(req, req.values["parent"], req.values["nname"], -1)
+        return _get_workflow_step_config_form_html(req, req.values["parent"], req.values["nname"], -1)
 
     if req.values.get("acttype", "workflow") == "workflow":
         # workflow section
         for key in req.values:
             if key.startswith("new_"):
                 # create new workflow
-                return _workflow_detail(req, "")
+                return _get_workflow_config_form_html(req, "")
 
             elif key.startswith("edit_"):
                 # edit workflow
-                return _workflow_detail(req, unicode(key[5:-2]))
+                return _get_workflow_config_form_html(req, unicode(key[5:-2]))
 
             elif key.startswith("delete_"):
                 # delete workflow
@@ -139,14 +139,14 @@ def validate(req, op):
 
             elif key.startswith("detaillist_"):
                 # show nodes for given workflow
-                return _workflow_step_list(req, key[11:-2])
+                return _get_workflow_step_list_html(req, key[11:-2])
 
         if "form_op" in req.values:
             if req.values["form_op"] == "cancel":
-                return _view(req)
+                return _get_workflow_list_html(req)
 
             if not req.values["name"]:
-                return _workflow_detail(req, req.values["id"], 1)  # no name was given
+                return _get_workflow_config_form_html(req, req.values["id"], 1)  # no name was given
 
             if req.values["form_op"] == "save_new":
                 # save workflow values
@@ -176,16 +176,24 @@ def validate(req, op):
 
             db.session.commit()
 
-        return _view(req)
+        return _get_workflow_list_html(req)
 
     # workflowstep section
     for key in req.values:
         if key.startswith("newdetail_"):
             # create new workflow
-            return _workflow_step_detail(req, req.values["parent"], "")
+            return _get_workflow_step_config_form_html(
+                req,
+                req.values["parent"],
+                "",
+               )
         elif key.startswith("editdetail_"):
             # edit workflowstep
-            return _workflow_step_detail(req, req.values["parent"], key[11:-2].split("|")[1])
+            return _get_workflow_step_config_form_html(
+                req,
+                req.values["parent"],
+                key[11:-2].split("|")[1],
+               )
         elif key.startswith("deletedetail_"):
             # delete workflow step id: deletedetail_[workflowid]|[stepid]
             deleteWorkflowStep(key[13:-2].split("|")[0], key[13:-2].split("|")[1])
@@ -193,10 +201,15 @@ def validate(req, op):
 
     if "form_op" in req.values:
         if req.values["form_op"] == "cancel":
-            return _workflow_step_list(req, req.values["parent"])
+            return _get_workflow_step_list_html(req, req.values["parent"])
 
         if not req.values["nname"]:  # no Name was given
-            return _workflow_step_detail(req, req.values["parent"], req.values["stepid"], 1)
+            return _get_workflow_step_config_form_html(
+                req,
+                req.values["parent"],
+                req.values["stepid"],
+                1,
+               )
 
         workflow = getWorkflow(req.values["parent"])
         if req.values["form_op"] == "save_newdetail":
@@ -204,7 +217,7 @@ def validate(req, op):
             # don't create a new workflowstep if a workflowstep with the same name already exists
             workflowstep = workflow.getStep(req.values["nname"], test_only=True)
             if workflowstep:
-                return _workflow_step_detail(req, req.values["parent"], req.values["stepid"], 2)
+                return _get_workflow_step_config_form_html(req, req.values["parent"], req.values["stepid"], 2)
 
             wnode = create_update_workflow_step(
                     typ=req.values["ntype"],
@@ -222,7 +235,7 @@ def validate(req, op):
             if req.values["orig_name"] != req.values["nname"]:
                 workflowstep = workflow.getStep(req.values["nname"], test_only=True)
                 if workflowstep:
-                    return _workflow_step_detail(req, req.values["parent"], req.values["stepid"], 2)
+                    return _get_workflow_step_config_form_html(req, req.values["parent"], req.values["stepid"], 2)
 
             wnode = create_update_workflow_step(
                     workflow.getStep(req.values["orig_name"]),
@@ -246,14 +259,14 @@ def validate(req, op):
         if "metaDataEditor" in req.values:
             parseEditorData(req, wnode)
 
-    return _workflow_step_list(req, req.values["parent"])
+    return _get_workflow_step_list_html(req, req.values["parent"])
 
 
 
 
-def _view(req):
+def _get_workflow_list_html(req):
     """
-    overview of all defined workflows
+    overview of all defined workflows as html page
     parameter: req=request
     """
     workflows = list(getWorkflowList())
@@ -299,11 +312,11 @@ def _view(req):
     v["pages"] = pages
     v["actfilter"] = actfilter
     v["csrf"] = _core_csrfform.get_token()
-    return _tal.processTAL(v, file="web/admin/modules/workflows.html", macro="view", request=req)
+    return _tal.processTAL(v, file="web/admin/modules/workflows.html", macro="list_workflows", request=req)
 
 
 
-def _workflow_detail(req, id, err=0):
+def _get_workflow_config_form_html(req, id, err=0):
     """
     edit form for given workflow (create/update)
     parameter: req=request, id=workflowid (name), err=error code as integer
@@ -344,11 +357,11 @@ def _workflow_detail(req, id, err=0):
     v["error"] = err
     v["actpage"] = req.values["actpage"]
     v["csrf"] = _core_csrfform.get_token()
-    return _tal.processTAL(v, file="web/admin/modules/workflows.html", macro="modify", request=req)
+    return _tal.processTAL(v, file="web/admin/modules/workflows.html", macro="workflow_config", request=req)
 
 
 
-def _workflow_step_list(req, wid):
+def _get_workflow_step_list_html(req, wid):
     """
     overview of all steps for given workflow
     parameter: req=request, wid=wordflow id (name)
@@ -408,11 +421,11 @@ def _workflow_step_list(req, wid):
     v["pages"] = pages
     v["actfilter"] = actfilter
     v["csrf"] = _core_csrfform.get_token()
-    return _tal.processTAL(v, file="web/admin/modules/workflows.html", macro="view_step", request=req)
+    return _tal.processTAL(v, file="web/admin/modules/workflows.html", macro="workflow_steps_list", request=req)
 
 
 
-def _workflow_step_detail(req, wid, wnid, err=0):
+def _get_workflow_step_config_form_html(req, wid, wnid, err=0):
     """
     edit form for workflowstep for given workflow and given step
     parameter: req=request, wid=workflowid(name), wnid=workflow step id (name), err=error code as integer
@@ -482,19 +495,31 @@ def _workflow_step_detail(req, wid, wnid, err=0):
     except:
         rule = {"read": [], "write": []}
 
-    v["acl_read"] = makeList(req, "read", removeEmptyStrings(rule["read"]), {}, overload=0, type="read")
-    v["acl_write"] = makeList(req, "write", removeEmptyStrings(rule["write"]), {}, overload=0, type="write")
-    v["editor"] = _tal.processTAL(v_part, file="web/admin/modules/workflows.html", macro="view_editor", request=req)
-    v["workflow_id"] = workflow.id
-    v["languages"] = filter(None, workflow.get('languages').split(';'))
-    v["workflowstep"] = workflowstep
-    v["nodelist"] = nodelist
-    v["workflowtypes"] = getWorkflowTypes()
-    v["error"] = err
-    v["update_type"] = req.values.get("ntype", u"")
-    v["actpage"] = req.values["actpage"]
-    v["csrf"] = _core_csrfform.get_token()
-    return _tal.processTAL(v, file="web/admin/modules/workflows.html", macro="modify_step", request=req)
+    v.update(
+        acl_read=makeList(req, "read", removeEmptyStrings(rule["read"]), {}, overload=0, type="read"),
+        acl_write=makeList(req, "write", removeEmptyStrings(rule["write"]), {}, overload=0, type="write"),
+        editor=_tal.processTAL(
+            v_part,
+            file="web/admin/modules/workflows.html",
+            macro="workflow_step_type_config",
+            request=req,
+           ),
+        workflow_id=workflow.id,
+        languages=filter(None, workflow.get('languages').split(';')),
+        workflowstep=workflowstep,
+        nodelist=nodelist,
+        workflowtypes=getWorkflowTypes(),
+        error=err,
+        update_type=req.values.get("ntype", u""),
+        actpage=req.values["actpage"],
+        csrf=_core_csrfform.get_token(),
+       )
+    return _tal.processTAL(
+        v,
+        file="web/admin/modules/workflows.html",
+        macro="workflow_step_config",
+        request=req,
+       )
 
 
 def export(req, name):

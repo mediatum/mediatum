@@ -36,6 +36,8 @@ import core.config as _core_config
 import contenttypes as _contenttypes
 import schema.schema as _schema
 import utils.utils as _utils
+from core.database.postgres.file import File
+from core.database.postgres.node import Node
 
 _q = _core.db.query
 _logg = _logging.getLogger(__name__)
@@ -51,10 +53,12 @@ def upgrade():
 
     metafields = dict()
     for metadataschema in _q(_schema.Metadatatype):
-        for metadatafield in metadataschema.children.filter(_sqlalchemy.and_(_core.Node.type=='metafield',
-                                                          _core.Node.attrs["type"].astext=="upload")).prefetch_attrs():
+        for metadatafield in metadataschema.children.filter(
+                _sqlalchemy.and_(Node.type=='metafield',
+                Node.attrs["type"].astext=="upload"),
+            ).prefetch_attrs():
             nodes = _collections.defaultdict(dict)
-            for node in _q(_contenttypes.data.Content).filter(_core.Node.schema==metadataschema.name):
+            for node in _q(_contenttypes.data.Content).filter(Node.schema==metadataschema.name):
                 filenames = list()
                 for f in node.files:
                     if f.filetype != "metafield-upload.{}".format(metadatafield.name):
@@ -98,7 +102,7 @@ def downgrade():
             continue
         metafield.attrs['type'] = 'upload'
         for nid, files in data["nodes"].iteritems():
-            node = _q(_core.Node).get(int(nid))
+            node = _q(Node).get(int(nid))
             if not node:
                 _logg.warning("node with id = %s not found", nid)
                 continue
@@ -107,7 +111,7 @@ def downgrade():
                 continue
             file_count = 0
             for fid, mimetype in files.iteritems():
-                file = _q(_core.File).get(int(fid))
+                file = _q(File).get(int(fid))
                 if not file:
                     _logg.warning("file with id %s not found", fid)
                     continue

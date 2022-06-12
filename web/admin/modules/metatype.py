@@ -46,7 +46,7 @@ from .metatype_mask import showMaskList
 
 from contenttypes.data import Data
 
-from core import Node
+from core.database.postgres.node import Node
 from core import db
 import core.nodecache as _nodecache
 from schema.schema import Metadatatype, Mask

@@ -26,7 +26,7 @@ import utils.utils as _utils_utils
 from . import oaisets
 import utils.date as date
 from schema.schema import getMetaType
-from core import Node
+from core.database.postgres.node import Node
 from core import db
 import core.nodecache as _nodecache
 from core.users import get_guest_user

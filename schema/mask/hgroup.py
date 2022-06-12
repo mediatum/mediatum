@@ -8,8 +8,10 @@ import mediatumtal.tal as _tal
 
 import core.translation as _core_translation
 from schema.schema import getMetadataType, getAllMetaFields, VIEW_DATA_ONLY, VIEW_SUB_ELEMENT, Maskitem
+
+from core import db
+from core.database.postgres.node import Node
 from core.metatype import Metatype
-from core import Node, db
 from utils import utils as _utils_utils
 
 q = db.query

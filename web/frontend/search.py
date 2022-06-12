@@ -5,12 +5,11 @@ from __future__ import division
 from __future__ import print_function
 
 import itertools as _itertools
-
-import utils.date as date
 import logging
 
 import core.translation as _core_translation
-from core import Node, db
+import utils.date as date
+from core import db
 from core.search import SearchQueryException
 from core import webconfig
 from utils.strings import ensure_unicode_returned

@@ -25,8 +25,8 @@ _sys.path.append(_os.path.abspath(_os.path.join(_os.path.dirname(__file__), "../
 import core as _core
 import core.init as _core_init
 _core_init.full_init()
-import core.systemtypes as _systemtypes
 import schema.schema as _schema
+from core.database.postgres import node as _postgres_node
 
 _q = _core.db.query
 
@@ -72,11 +72,11 @@ def _new_meta_attribute(mapping, attribute):
 
 def _get_tal_expression(mask):
     for maskitem in mask.children:
-        attribute = _q(_core.Node).get(maskitem.get("attribute")).name
+        attribute = _q(_postgres_node.Node).get(maskitem.get("attribute")).name
         mapping = maskitem.get("mappingfield")
         fieldtype = maskitem.get("fieldtype")
         if fieldtype == "mapping":
-            mapping = _q(_core.Node).get(mapping).name
+            mapping = _q(_postgres_node.Node).get(mapping).name
             if mapping == "citation_author":
                 yield _new_author(attribute)
             elif mapping == "citation_pdf_url":
@@ -110,7 +110,9 @@ def _create_new_mask(metadatatype, tal_expression, mask_name):
     metadatatype.children.append(mask)
     _core.db.session.commit()
     maskitem = mask.addMaskitem("mapping", "field", "", unicode(mask.id))
-    metafield = metadatatype.all_children.filter(_core.Node.type=='metafield').order_by(_core.Node.name).first()
+    metafield = metadatatype.all_children.filter(_postgres_node.Node.type=='metafield').order_by(
+            _postgres_node.Node.name,
+        ).first()
     maskitem.set("attribute", unicode(metafield.id))
     maskitem.set("fieldtype", "attribute")
     maskitem.set("mappingfield", tal_expression)

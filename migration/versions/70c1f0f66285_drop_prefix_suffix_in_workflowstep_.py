@@ -24,6 +24,7 @@ _sys.path.append(_os.path.abspath(_os.path.join(_os.path.dirname(__file__), "../
 import core as _core
 import core.init as _core_init
 _core_init.full_init()
+from core.database.postgres.node import Node
 
 # revision identifiers, used by Alembic.
 revision = '70c1f0f66285'
@@ -33,7 +34,7 @@ depends_on = None
 
 
 def upgrade():
-    for node in _core.db.query(_core.Node).filter(_core.Node.type == 'workflowstep_upload').prefetch_attrs():
+    for node in _core.db.query(Node).filter(Node.type == 'workflowstep_upload').prefetch_attrs():
         node.attrs.pop("prefix", None)
         node.attrs.pop("suffix", None)
     _core.db.session.commit()

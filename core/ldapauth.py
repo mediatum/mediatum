@@ -7,10 +7,13 @@ from __future__ import print_function
 import logging
 import ldap
 
-from core import db, Node, User, UserGroup, UserToUserGroup
+from core import db
+from core.database.postgres.user import AuthenticatorInfo
+from core.database.postgres.user import User
+from core.database.postgres.user import UserGroup
+from core.database.postgres.user import UserToUserGroup
 from core.auth import Authenticator
 import core.config as config
-from core.auth import AuthenticatorInfo
 from utils.compat import iteritems
 
 

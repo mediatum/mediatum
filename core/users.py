@@ -9,7 +9,7 @@ from warnings import warn
 import flask as _flask
 
 import core.config as config
-from core import User
+from core.database.postgres.user import User
 from core import db
 from core.user import GuestUser
 

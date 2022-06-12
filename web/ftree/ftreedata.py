@@ -20,7 +20,6 @@ import web.edit.edit_common as _web_edit_common
 import web.edit.edit as _web_edit_edit
 
 
-
 def getData(req):
     pid = int(req.values.get("parentId"))
     language = _core_translation.set_language(req.accept_languages)
@@ -33,7 +32,7 @@ def getData(req):
     initial_opened_nids = frozenset(int(p) for p in initial_opened_nids if p[0] not in "x(")
     del nids
 
-    write_access_alias = _sqlalchemy_orm.aliased(_core.Node)
+    write_access_alias = _sqlalchemy_orm.aliased(_node.Node)
     write_access_stmt = (_core.db.query(_sqlalchemy.func.has_write_access_to_node(write_access_alias.id, group_ids, ip, date))
             .filter(write_access_alias.id == _contenttypes.Container.id)
             .label('write_access')
@@ -75,7 +74,7 @@ def getData(req):
         .filter(_sqlalchemy.func.has_read_access_to_node(_contenttypes.Container.id, group_ids, ip, date))
         .prefetch_attrs()
         .prefetch_system_attrs()
-        .order_by(_core.Node.orderpos)
+        .order_by(_node.Node.orderpos)
        )
 
     for c in query_container:
@@ -122,7 +121,7 @@ def getData(req):
 
 
 def getLabel(req):
-    node = _core.db.query(_core.Node).get(req.params.get("getLabel"))
+    node = _core.db.query(_node.Node).get(req.params.get("getLabel"))
 
     inum = len(node.content_children)
     label = node.getLabel()
@@ -170,7 +169,7 @@ def _get_path_to(path_to, style, multiselect):
     checked = set()
     for nid in path_to:
         checked.clear()
-        node = _core.db.query(_core.Node).get(nid)
+        node = _core.db.query(_node.Node).get(nid)
 
         for path in _get_paths(node):
             if node.id not in path and node.isContainer():  # add node if container

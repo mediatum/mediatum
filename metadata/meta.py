@@ -7,7 +7,7 @@ from __future__ import print_function
 import logging
 from mediatumtal import tal
 from core.metatype import Metatype
-from core import Node
+from core.database.postgres.node import Node
 from lib.iptc.IPTC import get_wanted_iptc_tags
 logg = logging.getLogger(__name__)
 

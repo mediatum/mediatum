@@ -28,7 +28,7 @@ import core.nodecache as _nodecache
 from utils.locks import named_lock as _named_lock
 
 from core import db
-from core import Node
+from core.database.postgres.node import Node
 from utils.url import build_url_from_path_and_params as _build_url_from_path_and_params
 
 

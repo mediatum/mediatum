@@ -12,7 +12,6 @@ import mediatumtal.tal as _tal
 import sqlalchemy as _sqlalchemy
 import sqlalchemy.dialects.postgresql as _dialects_postgresql
 
-from core import Node, db
 import core as _core
 import core.database.postgres.node as _node
 import core.database.postgres.permission as _permission
@@ -20,6 +19,9 @@ import core.database.postgres.search as _postgres_search
 import core.config as _config
 import core.nodecache as _core_nodecache
 import core.translation as _core_translation
+from core import db
+from core.database.postgres.node import Node
+from core.database.postgres.user import UserToUserGroup
 from core.users import user_from_session as _user_from_session
 from contenttypes import Container
 from utils.fileutils import importFile
@@ -591,15 +593,15 @@ def get_writable_container_parent_nids(user):
     if user.is_admin:
         return frozenset((collections_id, ))
 
-    usergroup_ids = (q(_sqlalchemy.func.array_agg(_core.UserToUserGroup.usergroup_id))
-            .filter(_core.UserToUserGroup.user_id == user.id)
+    usergroup_ids = (q(_sqlalchemy.func.array_agg(UserToUserGroup.usergroup_id))
+            .filter(UserToUserGroup.user_id == user.id)
             .subquery()
            )
 
-    rule_ids = (q(_core.AccessRule.id)
+    rule_ids = (q(_permission.AccessRule.id)
             .filter(_sqlalchemy.or_(
-                _core.AccessRule.group_ids == None,
-                _core.AccessRule.group_ids.overlap(usergroup_ids),
+                _permission.AccessRule.group_ids == None,
+                _permission.AccessRule.group_ids.overlap(usergroup_ids),
                )
               )
             .subquery()

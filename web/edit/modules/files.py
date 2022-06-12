@@ -13,15 +13,14 @@ import mediatumtal.tal as _tal
 
 import core.csrfform as _core_csrfform
 import core.nodecache as _core_nodecache
-import utils.utils as _utils_utils
 from utils.utils import getMimeType, get_user_id, suppress
 from utils.fileutils import importFile, getImportDir, importFileIntoDir
 from contenttypes.image import make_thumbnail_image
 from core.users import getUploadDir as _getUploadDir
 from core import httpstatus
-from core import Node
 from core import db
-from core import File
+from core.database.postgres.file import File
+from core.database.postgres.node import Node
 from web import frontend as _web_frontend
 import web.edit.edit_common as _web_edit_edit_common
 

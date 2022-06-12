@@ -18,7 +18,9 @@ from sympy import Symbol
 from sympy.logic import boolalg, Not, And, Or
 from sqlalchemy import sql, func
 
-from core import db, User, UserGroup
+from core import db
+from core.database.postgres.user import User
+from core.database.postgres.user import UserGroup
 from core.database.postgres import mediatumfunc
 from core.database.postgres.permission import AccessRule, NodeToAccessRule, AccessRulesetToRule, AccessRuleset, NodeToAccessRuleset,\
     IPNetworkList, _create_private_ruleset_assoc_for_nid
@@ -177,7 +179,7 @@ def save_node_to_ruleset_mappings(nid_to_rulesets, ruletype):
 
 
 def save_node_to_special_rules(nid_to_special_rules, ruletype):
-    from core import Node
+    from core.database.postgres.node import Node
     logg.info("saving special %s rules for %d nodes", ruletype, len(nid_to_special_rules))
     for nid, rules_with_flags in iteritems(nid_to_special_rules):
         ruleset_assoc = _create_private_ruleset_assoc_for_nid(nid, ruletype)

@@ -11,7 +11,8 @@ import core.csrfform as _core_csrfform
 from utils.utils import formatTechAttrs, suppress
 from utils.date import format_date, parse_date
 from core import httpstatus
-from core import Node, db
+from core import db
+from core.database.postgres.node import Node
 from core.users import user_from_session
 from collections import OrderedDict
 from utils.compat import iteritems

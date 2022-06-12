@@ -12,11 +12,13 @@ import flask as _flask
 
 import mediatumtal.tal as _tal
 
-from core import db, User, AuthenticatorInfo
+import core.config as config
 import core.translation as _core_translation
 import core.users as users
-import core.config as config
+from core import db
 from core import httpstatus
+from core.database.postgres.user import AuthenticatorInfo
+from core.database.postgres.user import User
 from core.systemtypes import Root
 from utils.strings import ensure_unicode_returned
 from utils.utils import Link, splitpath, parse_menu_struct, suppress, get_menu_strings

@@ -16,11 +16,11 @@ from .workflow import WorkflowStep, registerStep
 from schema.schema import getMetaType
 import utils.date as date
 from utils.utils import mkKey
-from core import Node
+from core.database.postgres.node import Node
 from core import db
 import schema.schema as _schema
 from core.database.postgres.permission import AccessRule, AccessRulesetToRule
-from core import UserGroup
+from core.database.postgres.user import UserGroup
 import core.nodecache as _nodecache
 from core.permission import get_or_add_access_rule
 

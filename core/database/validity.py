@@ -13,8 +13,8 @@ from __future__ import print_function
 import logging
 from sqlalchemy.orm.exc import NoResultFound
 from core.database.postgres.user import UserGroup
-from core import config, User
-
+from core import config
+from core.database.postgres.user import User
 
 logg = logging.getLogger(__name__)
 
@@ -28,7 +28,8 @@ def check_database():
     Structural validity of the database should be checked by the database connector.
     """
     from core.systemtypes import Root
-    from core import db, Node
+    from core import db
+    from core.database.postgres.node import Node
     q = db.query
     # root check
     possible_root_nodes = q(Root).all()

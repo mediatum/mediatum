@@ -34,7 +34,7 @@ basic_init(prefer_config_filename="stats.log")
 
 
 from core.stats import buildStatAll
-from core import init, db, Node
+from core import init
 from core import config
 from contenttypes import Collections, Collection
 from itertools import imap, ifilter, repeat

@@ -14,7 +14,8 @@ from mediatumtal import tal
 
 import core.config as config
 import core.translation as _core_translation
-from core import Node, db
+from core import db
+from core.database.postgres.node import Node
 from core.webconfig import node_url
 from contenttypes.data import Data
 

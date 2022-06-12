@@ -20,7 +20,7 @@ from schema.schema import VIEW_DATA_ONLY, VIEW_HIDE_EMPTY
 from utils.utils import getCollection
 from core import webconfig
 from core import db
-from core import Node
+from core.database.postgres.node import Node
 from contenttypes import Container
 from core import httpstatus
 from core.request_handler import sendFile as _sendFile

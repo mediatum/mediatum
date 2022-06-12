@@ -5,9 +5,11 @@ from __future__ import division
 from __future__ import print_function
 
 import os
+
 import core.config as config
 import core.httpstatus as _httpstatus
-from core import File, Node
+from core.database.postgres.file import File
+from core.database.postgres.node import Node
 
 from utils.utils import getMimeType, format_filesize
 from core import webconfig

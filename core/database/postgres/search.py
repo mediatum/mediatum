@@ -166,7 +166,7 @@ def apply_searchtree_to_query(query, searchtree, languages=None):
     languages = tuple(languages)
 
     def walk(n):
-        from core import Node
+        from core.database.postgres.node import Node
         if isinstance(n, And):
             return walk(n.left) & walk(n.right)
 

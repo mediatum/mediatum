@@ -10,7 +10,10 @@ import logging
 from sqlalchemy import text
 
 import core.nodecache as _core_nodecache
-from core import config, db, Node, User
+from core import config
+from core import db
+from core.database.postgres.node import Node
+from core.database.postgres.user import User
 from contenttypes import Directory
 from core.translation import translate
 from sqlalchemy.orm.exc import NoResultFound
@@ -80,7 +83,7 @@ def migrate_special_dirs():
 
 
 def set_admin_group():
-    from core import UserGroup
+    from core.database.postgres.user import UserGroup
     admin_group_name = config.get(u"user.admingroup", u"administration")
     try:
         admin_group = q(UserGroup).filter_by(name=admin_group_name).one()

@@ -11,7 +11,7 @@ import schema.searchmask as searchmask
 from core.users import user_from_session as _user_from_session
 from core import httpstatus
 import json
-from core import Node
+from core.database.postgres.node import Node
 from core import db
 import core.nodecache as _nodecache
 from core.systemtypes import Searchmasks

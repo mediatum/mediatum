@@ -11,7 +11,7 @@ from warnings import warn
 
 import core.nodecache as _core_nodecache
 from core import db
-from core import Node
+from core.database.postgres.node import Node
 from contenttypes import Collections
 from core.systemtypes import Root
 from core.database.postgres.alchemyext import exec_sqlfunc

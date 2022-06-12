@@ -24,6 +24,7 @@ _sys.path.append(_os.path.abspath(_os.path.join(_os.path.dirname(__file__), "../
 import core as _core
 import core.init as _core_init
 _core_init.full_init()
+from core.database.postgres.node import Node
 
 # revision identifiers, used by Alembic.
 revision = 'b82c9d319b5a'
@@ -36,7 +37,7 @@ _q = _core.db.query
 def upgrade():
     for wfstep in ('addformpage', 'metafield2metadata', 'hierarchicalchoice2metafield', 'updateattributesfixed'):
         suffix = 'pdfform' if wfstep == 'addformpage' else 'fileatt'
-        for node in _core.db.query(_core.Node).filter(_core.Node.type == 'workflowstep_{}'.format(wfstep)).prefetch_attrs():
+        for node in _core.db.query(Node).filter(Node.type == 'workflowstep_{}'.format(wfstep)).prefetch_attrs():
             for f in node.files:
                 try:
                     if f.filetype != 'metafield-upload.upload_{}'.format(suffix):
@@ -50,7 +51,7 @@ def upgrade():
                 files.pop().filetype = "wfstep-{}".format(wfstep)
             for f in files:
                 node.files.remove(f)
-    for node in _core.db.query(_core.Node).filter(_core.Node.type == 'workflowstep_deletefile').prefetch_attrs():
+    for node in _core.db.query(Node).filter(Node.type == 'workflowstep_deletefile').prefetch_attrs():
         types = set(node.get("filetype", "").split(";"))
         if "metafield-upload.upload_pdfform" in types:
             types.add("wfstep-addformpage")
@@ -62,10 +63,10 @@ def upgrade():
 def downgrade():
     for wfstep in ('addformpage', 'metafield2metadata', 'hierarchicalchoice2metafield', 'updateattributesfixed'):
         suffix = 'pdfform' if wfstep == 'addformpage' else 'fileatt'
-        for node in _core.db.query(_core.Node).filter(_core.Node.type == 'workflowstep_{}'.format(wfstep)).prefetch_attrs():
+        for node in _core.db.query(Node).filter(Node.type == 'workflowstep_{}'.format(wfstep)).prefetch_attrs():
             for f in node.files:
                 f.filetype = 'metafield-upload.upload_{}'.format(suffix)
-    for node in _core.db.query(_core.Node).filter(_core.Node.type == 'workflowstep_deletefile').prefetch_attrs():
+    for node in _core.db.query(Node).filter(Node.type == 'workflowstep_deletefile').prefetch_attrs():
         types = set(node.get("filetype", "").split(";"))
         if "wfstep-addformpage" in types:
             types.add("metafield-upload.upload_pdfform")

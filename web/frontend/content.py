@@ -10,7 +10,12 @@ import logging
 from warnings import warn
 
 import core.translation as _core_translation
-from core import db, config, Node, File, webconfig, styles
+from core import config
+from core import db
+from core import styles
+from core import webconfig
+from core.database.postgres.file import File
+from core.database.postgres.node import Node
 from core.styles import get_list_style, get_styles_for_contenttype
 from core.webconfig import node_url
 import core.database.postgres.search as _postgres_search

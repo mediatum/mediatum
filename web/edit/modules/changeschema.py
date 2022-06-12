@@ -13,7 +13,7 @@ import core.csrfform as _core_csrfform
 from schema.schema import get_permitted_schemas
 from core.users import user_from_session as _user_from_session
 from core import httpstatus
-from core import Node
+from core.database.postgres.node import Node
 from contenttypes import Data, Content, Container
 from core import db
 

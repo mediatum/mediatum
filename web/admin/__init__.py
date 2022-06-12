@@ -12,8 +12,11 @@ from flask import Flask, request, session, url_for, redirect, flash
 from flask_admin import Admin
 from web.admin.views.user import UserView, UserGroupView, AuthenticatorInfoView, OAuthUserCredentialsView
 from wtforms import fields, validators
-from core import db, User, config
+
 from core import translation as _core_translation
+from core import db
+from core import config
+from core.database.postgres.user import User
 from core.auth import authenticate_user_credentials, logout_user
 from flask_admin import AdminIndexView
 from flask_admin import helpers, expose

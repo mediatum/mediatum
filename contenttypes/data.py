@@ -16,7 +16,7 @@ import flask as _flask
 
 from mediatumtal import tal
 
-from core import Node, db
+from core.database.postgres.node import Node
 from core.database.postgres.node import children_rel
 import core.config as config
 import core.translation as _core_translation

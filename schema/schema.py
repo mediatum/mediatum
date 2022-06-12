@@ -26,7 +26,7 @@ from werkzeug.utils import cached_property
 import core.config as config
 import core.csrfform as _core_csrfform
 import core.translation as translation
-from core import Node
+from core.database.postgres.node import Node
 from core.xmlnode import getNodeXML, readNodeXML
 from core.metatype import Metatype
 from core import db

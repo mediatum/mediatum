@@ -128,9 +128,6 @@ def init_db_connector():
     import core
     from core.database.postgres.connector import PostgresSQLAConnector  # init DB connector
     core.db = PostgresSQLAConnector()
-    # assign model classes for selected DB connector to the core package
-    for cls in core.db.get_model_classes():
-        setattr(core, cls.__name__, cls)
 
 
 def connect_db(force_test_db=None, automigrate=False):
@@ -194,7 +191,8 @@ def check_undefined_nodeclasses(stub_undefined_nodetypes=None, fail_if_undefined
     * fail_if_undefined_nodetypes is False, stub_undefined_nodetypes is False (default):
         => just emit a warning that classes are missing
     """
-    from core import Node, db
+    from core import db
+    from core.database.postgres.node import Node
 
     known_nodetypes = set(c.__mapper__.polymorphic_identity for c in Node.get_all_subclasses())
     nodetypes_in_db = set(t[0] for t in db.query(Node.type.distinct()))
@@ -230,7 +228,8 @@ def update_nodetypes_in_db():
     They will be moved to their own tables later.
     """
     from contenttypes import Content, Container
-    from core import db, NodeType
+    from core import db
+    from core.database.postgres.node import NodeType
     q = db.query
     s = db.session
 

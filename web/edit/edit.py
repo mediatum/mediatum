@@ -22,12 +22,11 @@ import web.edit.edit_common as _web_edit_edit_common
 import core.systemtypes as _core_systemtypes
 import utils.utils as _utils_utils
 
-from core import Node, NodeType, db, User, UserGroup, UserToUserGroup
-from core.database.postgres.permission import NodeToAccessRuleset, AccessRulesetToRule, AccessRule
-
-from contenttypes import Container, Collections, Data, Home
+from contenttypes.container import Collections
+from contenttypes.container import Home
+from contenttypes.data import Data
+from core.database.postgres.user import User
 from edit_common import *
-
 from core.users import user_from_session as _user_from_session
 from core import httpstatus
 from schema.schema import Metadatatype

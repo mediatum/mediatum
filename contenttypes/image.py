@@ -13,7 +13,7 @@ import exifread as _exifread
 from PIL import Image as PILImage
 
 import contenttypes.data as _contenttypes_data
-from core import File
+from core.database.postgres.file import File
 from core import db
 from core.archive import Archive, get_archive_for_node
 from core.attachment import filebrowser

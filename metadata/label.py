@@ -7,7 +7,7 @@ from __future__ import print_function
 from mediatumtal import tal
 from schema.schema import VIEW_DATA_ONLY, VIEW_DEFAULT
 from core.metatype import Metatype
-from core import Node
+from core.database.postgres.node import Node
 from core import db
 from utils.utils import esc
 

@@ -35,7 +35,7 @@ from schema.bibtex import getentries, importBibTeX, MissingMapping
 from core import db
 import contenttypes as _contenttypes
 from contenttypes import Data
-from core import Node
+from core.database.postgres.node import Node
 from schema.schema import Metadatatype, get_permitted_schemas, get_permitted_schemas_for_datatype
 from sqlalchemy import func
 from utils.compat import iteritems

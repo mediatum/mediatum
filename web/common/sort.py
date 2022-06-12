@@ -6,7 +6,7 @@ from __future__ import print_function
 
 import operator as _operator
 
-from core import Node as _Node
+from core.database.postgres.node import Node as _Node
 from core import db as _db
 from schema.schema import Metadatatype as _Metadatatype
 from sqlalchemy import func as _func

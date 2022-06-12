@@ -213,10 +213,14 @@ logging.getLogger("core.init").setLevel(logging.ERROR)
 initmodule.check_undefined_nodeclasses(stub_undefined_nodetypes=True)
 logging.getLogger("core.init").setLevel(_core_init_loglevel)
 
-from core import db, Node, File, NodeToFile
-from core import User, UserGroup, AuthenticatorInfo
-from core import AccessRule, AccessRuleset, NodeToAccessRule, NodeToAccessRuleset
-from core import Setting
+from core import db
+from core.database.postgres.file import File
+from core.database.postgres.permission import AccessRule
+from core.database.postgres.permission import AccessRuleset
+from core.database.postgres.node import Node
+from core.database.postgres.user import User
+from core.database.postgres.user import UserGroup
+
 from core import app
 
 q = core.db.query
@@ -1002,7 +1006,9 @@ def replace_or_add_defer_date(node, iso_date_old, iso_date_new, access_types=[u'
     import utils.date as date
     from psycopg2.extras import DateRange
     import datetime
-    from core import AccessRule, AccessRulesetToRule, db
+    from core import db
+    from core.database.postgres.permission import AccessRule
+    from core.database.postgres.permission import AccessRulesetToRule
 
     q = db.query
     from core.permission import get_or_add_access_rule

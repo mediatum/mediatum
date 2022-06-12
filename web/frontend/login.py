@@ -9,7 +9,8 @@ import hashlib
 
 import flask as _flask
 
-from core import db, User, auth
+from core import auth
+from core import db
 from core import httpstatus
 from core.webconfig import node_url
 import core.csrfform as _core_csrfform

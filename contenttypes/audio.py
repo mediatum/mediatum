@@ -13,7 +13,7 @@ from utils.date import parse_date, format_date, make_date
 from schema.schema import VIEW_HIDE_EMPTY
 from core.postgres import check_type_arg_with_schema
 from core.attachment import filebrowser as _filebrowser
-from core import File
+from core.database.postgres.file import File
 from core import db
 import contenttypes.data as _contenttypes_data
 import utils.process

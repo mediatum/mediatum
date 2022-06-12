@@ -20,7 +20,8 @@ import core.csrfform as _core_csrfform
 import core.translation as _core_translation
 from utils.date import format_date
 from core import httpstatus
-from core import Node, db
+from core import db
+from core.database.postgres import node as _postgres_node
 from core.users import user_from_session
 
 q = db.query
@@ -36,7 +37,7 @@ def getContent(req, ids):
         return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
     nid, = ids
-    node = q(Node).get(nid)
+    node = q(_postgres_node.Node).get(nid)
     if not node.has_write_access() or node is userdir:
         req.response.status_code = httpstatus.HTTP_FORBIDDEN
         return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)

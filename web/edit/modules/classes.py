@@ -10,7 +10,8 @@ import core.nodecache as _core_nodecache
 import core.translation as _core_translation
 from core.users import user_from_session as _user_from_session
 from core import httpstatus
-from core import Node
+
+from core.database.postgres.node import Node
 from core import db
 import web.edit.edit_common as _web_edit_edit_common
 

@@ -8,7 +8,8 @@ from __future__ import print_function
 
 import logging
 from sqlalchemy import func as sqlfunc
-from core import db, File
+from core import db
+from core.database.postgres.file import File
 from contenttypes import Data
 
 q = db.query

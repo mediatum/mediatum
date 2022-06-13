@@ -94,6 +94,7 @@ class WorkflowStep_Start(WorkflowStep):
             except:
                 logg.exception("exception in workflow step start (workflow_start_auth)")
                 message = "workflow_start_err_wrongkey"
+                db.session.rollback()
 
         types = []
         for a in typenames:

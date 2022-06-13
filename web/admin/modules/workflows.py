@@ -197,7 +197,7 @@ def validate(req, op):
                 # don't create a new workflowstep if a workflowstep with the same name already exists
                 workflowstep = workflow.getStep(req.values["nname"], test_only=True)
                 if workflowstep:
-                    raise ValueError("a workflowstep with the same name already exists")
+                    return _workflow_step_detail(req, req.values["parent"], req.values["stepid"], 2)
 
                 wnode = create_update_workflow_step(
                         typ=req.values["ntype"],
@@ -215,7 +215,7 @@ def validate(req, op):
                 if req.values["orig_name"] != req.values["nname"]:
                     workflowstep = workflow.getStep(req.values["nname"], test_only=True)
                     if workflowstep:
-                        raise ValueError("a workflowstep with the same name already exists")
+                        return _workflow_step_detail(req, req.values["parent"], req.values["stepid"], 2)
 
                 wnode = create_update_workflow_step(
                         workflow.getStep(req.values["orig_name"]),

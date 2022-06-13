@@ -163,17 +163,17 @@ class WorkflowStep_SendEmail(WorkflowStep):
                     _core_translation.t(_core_translation.set_language(req.accept_languages), "workflow_email_resend"),
                 )
         else:
-            xfrom = node.get("system.mailtmp.from")
-            to = node.get("system.mailtmp.to")
-            text = node.get("system.mailtmp.text")
-            subject = tal.getTALstr(node.get("system.mailtmp.subject"), {}, language=node.get("system.wflanguage"))
             return tal.processTAL(
                     dict(
                         page=u"node?id={}&obj={}".format(self.id, node.id),
-                        _from=xfrom,
-                        to=to,
-                        text=text,
-                        subject=subject,
+                        from_=node.get("system.mailtmp.from"),
+                        to=node.get("system.mailtmp.to"),
+                        text=node.get("system.mailtmp.text"),
+                        subject=tal.getTALstr(
+                            node.get("system.mailtmp.subject"),
+                            {},
+                            language=node.get("system.wflanguage"),
+                           ),
                         node=node,
                         sendcondition=self.get("sendcondition"),
                         wfnode=self,

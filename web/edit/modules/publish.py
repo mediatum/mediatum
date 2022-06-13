@@ -6,6 +6,8 @@ from __future__ import print_function
 
 import mediatumtal.tal as _tal
 
+import core.csrfform as _core_csrfform
+import core.translation as _core_translation
 import web.edit.edit_common as _web_edit_edit_common
 from core.users import getHomeDir
 from core.users import user_from_session as _user_from_session
@@ -13,8 +15,6 @@ import logging
 from contenttypes import Collections, Container
 from core import Node
 from core import db
-from core.translation import lang as _lang
-from core.translation import t as _t
 
 logg = logging.getLogger(__name__)
 q = db.query
@@ -126,19 +126,37 @@ def getContent(req, ids):
         # error messages for publishing assistant
         if num_req_err_nodes > 0:
             if num_req_err_nodes < 2:
-                publisherror.append(_t(_lang(req), "error_publish_single_node"))
+                publisherror.append(_core_translation.t(
+                        _core_translation.set_language(req.accept_languages),
+                        "error_publish_single_node",
+                    ))
             else:
-                publisherror.append(_t(_lang(req), "error_publish_multiple_nodes"))
+                publisherror.append(_core_translation.t(
+                        _core_translation.set_language(req.accept_languages),
+                        "error_publish_multiple_nodes",
+                    ))
         if num_rights_err_nodes > 0:
             if num_rights_err_nodes < 2:
-                publisherror.append(_t(_lang(req), "error_publish_rights_single"))
+                publisherror.append(_core_translation.t(
+                        _core_translation.set_language(req.accept_languages),
+                        "error_publish_rights_single",
+                    ))
             else:
-                publisherror.append(_t(_lang(req), "error_publish_rights_multiple"))
+                publisherror.append(_core_translation.t(
+                        _core_translation.set_language(req.accept_languages),
+                        "error_publish_rights_multiple",
+                    ))
         if num_db_err_nodes > 0:
             if num_db_err_nodes < 2:
-                publisherror.append(_t(_lang(req), "error_publish_database_single"))
+                publisherror.append(_core_translation.t(
+                        _core_translation.set_language(req.accept_languages),
+                        "error_publish_database_single",
+                    ))
             else:
-                publisherror.append(_t(_lang(req), "error_publish_database_multiple"))
+                publisherror.append(_core_translation.t(
+                        _core_translation.set_language(req.accept_languages),
+                        "error_publish_database_multiple",
+                    ))
 
         v = {}
         v["id"] = publishdir.id
@@ -149,17 +167,20 @@ def getContent(req, ids):
     stddir = ""  # preset value for destination ids
     stdname = ""
     show_dir_nav = _web_edit_edit_common.ShowDirNav(req, publishdir)
-    v = {"id": publishdir.id,
-         "stddir": stddir,
-         "stdname": stdname,
-         "showdir": show_dir_nav.showdir(publishwarn=None,
-                                    markunpublished=1,
-                                    faultyidlist=errorids,
-                                    ),
-         "basedir": q(Collections).one(),
-         "script": "var currentitem = '%s';\nvar currentfolder = '%s'" % (publishdir.id, publishdir.id), "idstr": ids,
-         "faultyerrlist": publisherror,
-        }
-    v["csrf"] = req.csrf_token.current_token
-    ret += _tal.processTAL(v, file="web/edit/modules/publish.html", macro="publish_form", request=req)
+    ret += _tal.processTAL(
+            dict(
+                id=publishdir.id,
+                stddir=stddir,
+                stdname=stdname,
+                showdir=show_dir_nav.showdir(publishwarn=None, markunpublished=1, faultyidlist=errorids),
+                basedir=q(Collections).one(),
+                script="var currentitem = '%s';\nvar currentfolder = '%s'" % (publishdir.id, publishdir.id),
+                idstr=ids,
+                faultyerrlist=publisherror,
+                csrf=_core_csrfform.get_token(),
+            ),
+            file="web/edit/modules/publish.html",
+            macro="publish_form",
+            request=req,
+        )
     return ret

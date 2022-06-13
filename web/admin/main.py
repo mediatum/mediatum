@@ -19,6 +19,7 @@ except ImportError:
 
 import core
 import mediatumtal.tal as _tal
+import core.csrfform as _core_csrfform
 import core.request_handler as _core_request_handler
 import core.webconfig as _core_webconfig
 from core import config
@@ -34,6 +35,8 @@ logg = logging.getLogger(__name__)
 
 def show_node(req):
     """ opens administration window with content """
+    if req.method == "POST":
+        _core_csrfform.validate_token(req.form)
 
     p = req.mediatum_contextfree_path[1:].split("/")
     style = req.params.get("style", u"")

@@ -11,13 +11,14 @@ import flask as _flask
 from core import db, User, auth
 from core import httpstatus
 from core.webconfig import node_url
+import core.csrfform as _core_csrfform
 import core.users as users
 import core.config as config
+import core.translation as _core_translation
 from core.nodecache import get_collections_node
 import utils.mail as mail
 import utils.date as date
 from web.frontend import frame
-from core.translation import lang, t
 from utils.utils import mkKey
 from core import webconfig
 from core.auth import PasswordsDoNotMatch, WrongPassword, PasswordChangeNotAllowed
@@ -53,7 +54,6 @@ def _handle_login_submit(req):
     user = auth.authenticate_user_credentials(login_name, password, req)
     if user:
         # stop caching
-        req.response.set_cookie("nocache", "1")
         _flask.session["user_id"] = user.id
         logg.info("%s logged in", user.login_name)
 
@@ -92,6 +92,8 @@ def _set_return_after_login(req):
 
 
 def login(req):
+    if req.method == "POST":
+        _core_csrfform.validate_token(req.form)
 
     if "LoginSubmit" in req.form:
         error = _handle_login_submit(req)
@@ -105,14 +107,14 @@ def login(req):
 
     # show login form
     user = users.user_from_session()
-    language = lang(req)
+    language = _core_translation.set_language(req.accept_languages)
     ctx = dict(
         error=error,
         user=user,
         email=config.get("email.support"),
         language=language,
         return_after_login=return_after_login,
-        csrf=req.csrf_token.current_token,
+        csrf=_core_csrfform.get_token(),
     )
     login_html = webconfig.theme.render_macro("login.j2.jade", "login", ctx)
     from web.frontend.frame import render_page
@@ -133,11 +135,13 @@ def logout(req):
     req.response.location = '/'
     req.response.status_code = httpstatus.HTTP_MOVED_TEMPORARILY
     # return to caching
-    req.response.set_cookie("nocache", "0")
     return httpstatus.HTTP_MOVED_TEMPORARILY
 
 
 def pwdchange(req):
+    if req.method == "POST":
+        _core_csrfform.validate_token(req.form)
+
     user = users.user_from_session()
     error = 0
 
@@ -166,7 +170,11 @@ def pwdchange(req):
                 req.response.status_code = httpstatus.HTTP_MOVED_TEMPORARILY
                 return httpstatus.HTTP_MOVED_TEMPORARILY
 
-    content_html = webconfig.theme.render_macro("login.j2.jade", "change_pwd", {"error": error, "user": user, "csrf": req.csrf_token.current_token})
+    content_html = webconfig.theme.render_macro(
+            "login.j2.jade",
+            "change_pwd",
+            dict(error=error, user=user, csrf=_core_csrfform.get_token()),
+        )
     from web.frontend.frame import render_page
     html = render_page(req, content_html)
     req.response.set_data(html)

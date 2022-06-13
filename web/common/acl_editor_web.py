@@ -4,7 +4,7 @@
 from __future__ import division
 from __future__ import print_function
 
-from core.translation import translate, lang
+import core.translation as _core_translation
 
 
 def makeList(req, own_ruleset_assocs, inherited_ruleset_assocs, special_ruleset, special_rule_assocs,
@@ -20,7 +20,11 @@ def makeList(req, own_ruleset_assocs, inherited_ruleset_assocs, special_ruleset,
     for rulesetname in inherited_ruleset_names:
         if rulesetname in private_ruleset_names:
             val_left.append(
-                """<optgroup label="%s"></optgroup>""" % (translate("edit_acl_special_rule", lang(req))))
+                '<optgroup label="{}"></optgroup>'.format(_core_translation.translate(
+                        "edit_acl_special_rule",
+                        _core_translation.set_language(req.accept_languages),
+                    )),
+            )
         else:
             val_left.append("""<optgroup label="%s"></optgroup>""" % rulesetname)
             already_shown_left[rulesetname] = 1
@@ -29,7 +33,10 @@ def makeList(req, own_ruleset_assocs, inherited_ruleset_assocs, special_ruleset,
     own_ruleset_names = [r.ruleset_name for r in own_ruleset_assocs]
     for rulesetname in own_ruleset_names:
         if rulesetname in private_ruleset_names:
-            entry_text = translate("edit_acl_special_rule", lang(req))
+            entry_text = _core_translation.translate(
+                    "edit_acl_special_rule",
+                    _core_translation.set_language(req.accept_languages),
+                )
             val_left.append(
                 """<option value="__special_rule__">%s</optgroup>""" % (entry_text, ))
         else:

@@ -12,7 +12,6 @@ from mutagen import File as AudioFile
 from utils.utils import splitfilename
 from utils.date import parse_date, format_date, make_date
 from schema.schema import VIEW_HIDE_EMPTY
-from core.translation import lang
 from core.postgres import check_type_arg_with_schema
 from core.attachment import filebrowser as _filebrowser
 from core import File

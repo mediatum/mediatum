@@ -8,11 +8,14 @@ from __future__ import print_function
 
 import logging
 import os.path
+
 from .workflow import WorkflowStep, registerStep
 from mediatumtal import tal
-from core.translation import t, lang, addLabels
+
 from utils.utils import formatException
 import core.config as config
+import core.csrfform as _core_csrfform
+import core.translation as _core_translation
 import utils.mail as mail
 from core import db
 from schema.schema import Metafield
@@ -24,7 +27,7 @@ logg = logging.getLogger(__name__)
 def register():
     #tree.registerNodeClass("workflowstep-send_email", WorkflowStep_SendEmail)
     registerStep("workflowstep_sendemail")
-    addLabels(WorkflowStep_SendEmail.getLabels())
+    _core_translation.addLabels(WorkflowStep_SendEmail.getLabels())
 
 
 class MailError(Exception):
@@ -153,60 +156,71 @@ class WorkflowStep_SendEmail(WorkflowStep):
                 return """<pre>%s</pre>""" % node.system_attrs.get("mailtmp.talerror")
 
         elif node.get("system.mailtmp.error"):
-            return '%s<br/><pre>%s</pre><br>&gt;<a href="%s">%s</a>&lt;' % (t(lang(req), "workflow_email_msg_1"), node.get(
-                "system.mailtmp.error"), _makeSelfLink(req, {"sendout": "true"}), t(lang(req), "workflow_email_resend"))
+            return u'{}<br/><pre>{}</pre><br>&gt;<a href="{}">{}</a>&lt;'.format(
+                    _core_translation.t(_core_translation.set_language(req.accept_languages), "workflow_email_msg_1"),
+                    node.get("system.mailtmp.error"),
+                    _makeSelfLink(req, {"sendout": "true"}),
+                    _core_translation.t(_core_translation.set_language(req.accept_languages), "workflow_email_resend"),
+                )
         else:
             xfrom = node.get("system.mailtmp.from")
             to = node.get("system.mailtmp.to")
             text = node.get("system.mailtmp.text")
             subject = tal.getTALstr(node.get("system.mailtmp.subject"), {}, language=node.get("system.wflanguage"))
-            return tal.processTAL({"page": u"node?id={}&obj={}".format(self.id, node.id),
-                                   "from": xfrom,
-                                   "to": to,
-                                   "text": text,
-                                   "subject": subject,
-                                   "node": node,
-                                   "sendcondition": self.get("sendcondition"),
-                                   "wfnode": self,
-                                   "pretext": self.getPreText(lang(req)),
-                                   "posttext": self.getPostText(lang(req)),
-                                   "csrf": req.csrf_token.current_token,}, file="workflow/email.html", macro="sendmail", request=req)
+            return tal.processTAL(
+                    dict(
+                        page=u"node?id={}&obj={}".format(self.id, node.id),
+                        _from=xfrom,
+                        to=to,
+                        text=text,
+                        subject=subject,
+                        node=node,
+                        sendcondition=self.get("sendcondition"),
+                        wfnode=self,
+                        pretext=self.getPreText(_core_translation.set_language(req.accept_languages)),
+                        posttext=self.getPostText(_core_translation.set_language(req.accept_languages)),
+                        csrf=_core_csrfform.get_token(),
+                    ),
+                    file="workflow/email.html",
+                    macro="sendmail",
+                    request=req,
+                )
 
     def metaFields(self, lang=None):
         ret = list()
         field = Metafield("from")
-        field.set("label", t(lang, "admin_wfstep_email_sender"))
+        field.set("label", _core_translation.t(lang, "admin_wfstep_email_sender"))
         field.set("type", "text")
         ret.append(field)
 
         field = Metafield("email")
-        field.set("label", t(lang, "admin_wfstep_email_recipient"))
+        field.set("label", _core_translation.t(lang, "admin_wfstep_email_recipient"))
         field.set("type", "text")
         ret.append(field)
 
         field = Metafield("subject")
-        field.set("label", t(lang, "admin_wfstep_email_subject"))
+        field.set("label", _core_translation.t(lang, "admin_wfstep_email_subject"))
         field.set("type", "memo")
         ret.append(field)
 
         field = Metafield("text")
-        field.set("label", t(lang, "admin_wfstep_email_text"))
+        field.set("label", _core_translation.t(lang, "admin_wfstep_email_text"))
         field.set("type", "memo")
         ret.append(field)
 
         field = Metafield("allowedit")
-        field.set("label", t(lang, "admin_wfstep_email_text_editable"))
+        field.set("label", _core_translation.t(lang, "admin_wfstep_email_text_editable"))
         field.set("type", "list")
-        field.set("valuelist", t(lang, "admin_wfstep_email_text_editable_options"))
+        field.set("valuelist", _core_translation.t(lang, "admin_wfstep_email_text_editable_options"))
         ret.append(field)
 
         field = Metafield("sendcondition")
-        field.set("label", t(lang, "admin_wfstep_email_sendcondition"))
+        field.set("label", _core_translation.t(lang, "admin_wfstep_email_sendcondition"))
         field.set("type", "text")
         ret.append(field)
 
         field = Metafield("attach_pdf_form")
-        field.set("label", t(lang, "workflowstep-email_label_attach_pdf_form"))
+        field.set("label", _core_translation.t(lang, "workflowstep-email_label_attach_pdf_form"))
         field.set("type", "check")
         ret.append(field)
         return ret

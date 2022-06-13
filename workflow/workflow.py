@@ -16,7 +16,9 @@ from utils.utils import *
 from core.xmlnode import getNodeXML, readNodeXML
 
 import utils.date as date
-from core.translation import t, lang, addLabels, getDefaultLanguage, switch_language
+import core.csrfform as _core_csrfform
+import core.translation as _core_translation
+
 from core.users import user_from_session as _user_from_session
 from core.postgres import check_type_arg
 from core.database.postgres.permission import NodeToAccessRuleset
@@ -226,7 +228,7 @@ def registerWorkflowStep(nodename, cls):
         name = nodename[nodename.index("_") + 1:]
     workflowtypes[nodename] = name
 
-    addLabels(cls.getLabels())
+    _core_translation.addLabels(cls.getLabels())
 
 
 def getWorkflowTypes():
@@ -301,13 +303,19 @@ class Workflows(Node):
         for workflow in getWorkflowList():
             if workflow.children.filter_write_access().first() is not None:
                 list += [workflow]
-        return _tal.processTAL({"list": list,
-                               "search": req.values.get("workflow_search", ""),
-                               "items": workflowSearch(list, req.values.get("workflow_search", "")),
-                               "getStep": getNodeWorkflowStep,
-                               "format_date": formatItemDate,
-                               "csrf": req.csrf_token.current_token},
-                              file=template, macro=macro, request=req)
+        return _tal.processTAL(
+                dict(
+                    list=list,
+                    search=req.values.get("workflow_search", ""),
+                    items=workflowSearch(list, req.values.get("workflow_search", "")),
+                    getStep=getNodeWorkflowStep,
+                    format_date=formatItemDate,
+                    csrf=_core_csrfform.get_token(),
+                ),
+                file=template,
+                macro=macro,
+                request=req,
+            )
 
     @classmethod
     def isContainer(cls):
@@ -327,14 +335,20 @@ class Workflow(Node):
         template = "workflow/workflow.html"
         macro = "object_list"
         if self.children.filter_write_access().first() is None:
-            return '<i>' + t(lang(req), "permission_denied") + '</i>'
-        return _tal.processTAL({"workflow": self,
-                               "search": req.values.get("workflow_search", ""),
-                               "items": workflowSearch([self], req.values.get("workflow_search", "")),
-                               "getStep": getNodeWorkflowStep,
-                               "format_date": formatItemDate,
-                               "csrf": req.csrf_token.current_token},
-                               file=template, macro=macro, request=req)
+            return '<i>' + _core_translation.t(_core_translation.set_language(req.accept_languages), "permission_denied") + '</i>'
+        return _tal.processTAL(
+                dict(
+                    workflow=self,
+                    search=req.values.get("workflow_search", ""),
+                    items=workflowSearch([self], req.values.get("workflow_search", "")),
+                    getStep=getNodeWorkflowStep,
+                    format_date=formatItemDate,
+                    csrf=_core_csrfform.get_token(),
+                ),
+                file=template,
+                macro=macro,
+                request=req,
+            )
 
     def getId(self):
         return self.name
@@ -448,7 +462,6 @@ class WorkflowStep(Node):
 
         with workflow_lock:
             # stop caching
-            req.response.set_cookie("nocache", "1")
 
             key = req.values.get("key", _flask.session.get("key", ""))
             _flask.session["key"] = key
@@ -462,7 +475,17 @@ class WorkflowStep(Node):
 
                         link = '(' + self.name + ')'
                         try:
-                            return _tal.processTAL({"node": node, "link": link, "email": config.get("email.workflow"), "csrf": req.csrf_token.current_token}, file=template, macro=macro, request=req)
+                            return _tal.processTAL(
+                                    dict(
+                                        node=node,
+                                        link=link,
+                                        email=config.get("email.workflow"),
+                                        csrf=_core_csrfform.get_token(),
+                                    ),
+                                    file=template,
+                                    macro=macro,
+                                    request=req,
+                                )
                         except:
                             logg.exception("exception in show_node_big, ignoring")
                             return ""
@@ -489,7 +512,7 @@ class WorkflowStep(Node):
                     # set correct language for workflow for guest user only
                     user = _user_from_session()
                     if node.get('key') == node.get('system.key') and user.is_anonymous:
-                        switch_language(req, node.get('system.wflanguage'))
+                        _core_translation.set_language(req.accept_languages, node.get('system.wflanguage'))
 
                     link = _build_url_from_path_and_params("/mask", {"id": self.id})
                     if "forcetrue" in req.values:
@@ -518,7 +541,7 @@ class WorkflowStep(Node):
             link = '/mask?id=%s&obj=%s' % (step.id, node.id)
             return '<script language="javascript">document.location.href = "%s";</script> <a href="%s">%s</a>' % (link, link, step.name)
         else:
-            return '<i>%s</i>' % (t(lang(req), "permission_denied"))
+            return '<i>{}</i>'.format(_core_translation.t(_core_translation.set_language(req.accept_languages), "permission_denied"))
 
     def show_workflow_node(self, node, req):
         if "gotrue" in req.values:
@@ -531,7 +554,7 @@ class WorkflowStep(Node):
 
     def show_workflow_step(self, req):
         if not self.has_write_access():
-            return '<i>' + t(lang(req), "permission_denied") + '</i>'
+            return '<i>{}</i>'.format(_core_translation.t(_core_translation.set_language(req.accept_languages), "permission_denied"))
         c = []
         display_name_attr = self.parents[0].display_name_attribute
         i = 0
@@ -566,7 +589,7 @@ class WorkflowStep(Node):
             workflow=self.parents[0],
             step=self,
             nodelink=nodelink,
-            csrf=req.csrf_token.current_token,
+            csrf=_core_csrfform.get_token(),
         )
         return _tal.processTAL(context,
                                file="workflow/workflow.html",
@@ -692,14 +715,18 @@ class WorkflowStep(Node):
                               language=node.get('system.wflanguage'))
         else:
             # use standard language of request
-            return _tal.getTAL("workflow/workflow.html", {'node': node, 'wfstep': self, 'lang':
-                                                         getDefaultLanguage()}, macro="workflow_buttons", language=getDefaultLanguage())
+            return _tal.getTAL(
+                    "workflow/workflow.html",
+                    dict(node=node, wfstep=self, lang=_core_translation.getDefaultLanguage()),
+                    macro="workflow_buttons",
+                    language=_core_translation.getDefaultLanguage(),
+                )
 
     def getTypeName(self):
         return self.name
 
     def getShortName(self, req):
-        l = lang(req)
+        l = _core_translation.set_language(req.accept_languages)
         if self.get('shortstepname_' + l) != "":
             return self.get('shortstepname_' + l)
         elif self.get('shortstepname') != "":

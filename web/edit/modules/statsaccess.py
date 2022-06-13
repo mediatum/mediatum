@@ -7,8 +7,9 @@ from __future__ import print_function
 import core.config as config
 import mediatumtal.tal as _tal
 
+import core.csrfform as _core_csrfform
+import core.translation as _core_translation
 from core.stats import StatisticFile
-from core.translation import t, lang
 from utils.utils import splitpath
 from utils.date import format_date, now
 from core.users import user_from_session as _user_from_session
@@ -77,7 +78,7 @@ def getContent(req, ids):
     else:
         v["current_file"] = StatisticFile(None)
     v["nodename"] = node.name
-    v["csrf"] = req.csrf_token.current_token
+    v["csrf"] = _core_csrfform.get_token()
     return _tal.processTAL(v, file="web/edit/modules/statsaccess.html", macro="edit_stats", request=req)
 
 
@@ -99,7 +100,7 @@ def getPopupWindow(req, ids):
     else:
         v["action"] = "showform"
         v["statsrun"] = q(Node).get(ids).get("system.statsrun")
-        v["csrf"] = req.csrf_token.current_token
+        v["csrf"] = _core_csrfform.get_token()
     req.response.set_data(req.response.get_data() + _tal.processTAL(v, file="web/edit/modules/statsaccess.html", macro="edit_stats_popup", request=req))
 
 
@@ -185,7 +186,7 @@ class StatsAccessPDF:
 
         # data
         if type == "data":
-            items.append(Paragraph(t(self.language, "edit_stats_access"), self.chartheader))
+            items.append(Paragraph(_core_translation.t(self.language, "edit_stats_access"), self.chartheader))
             items.append((FrameBreak()))
 
             for i in range(0, 45):
@@ -240,7 +241,7 @@ class StatsAccessPDF:
                     i += 1
 
         if type == "data":
-            items.append(Paragraph(t(self.language, "edit_stats_country"), self.chartheader))
+            items.append(Paragraph(_core_translation.t(self.language, "edit_stats_country"), self.chartheader))
             items.append((FrameBreak()))
 
             for v in sorted([(len(d[k]['items']), k) for k in filter(lambda x:x != 0, d.keys())], reverse=True)[:50]:
@@ -299,7 +300,7 @@ class StatsAccessPDF:
             items.append(Frame(1 * cm, 1 * cm, 19 * cm, 16 * cm, leftPadding=4, rightPadding=0, id='normal', showBoundary=0))
 
         if type == "data":
-            items.append(Paragraph(t(self.language, "edit_stats_spreading"), self.chartheader))
+            items.append(Paragraph(_core_translation.t(self.language, "edit_stats_spreading"), self.chartheader))
             items.append(FrameBreak())
 
             for k in d:
@@ -321,7 +322,13 @@ class StatsAccessPDF:
                 if k > 0:  # first item holds max values
                     if self.stats.getWeekDay(k) > 4:
                         weekend.append(('BACKGROUND', (k - 1, 0), (k - 1, -1), colors.HexColor('#E6E6E6')))
-                    t_data.append('%02d \n%s' % (k, t(self.language, "monthname_" + ustr(int(self.period[-2:])) + "_short")))
+                    t_data.append(u'{} \n{}'.format(
+                            k,
+                            _core_translation.t(
+                                self.language,
+                                u"monthname_{}".format("{}_short".format(self.period[-2:])),
+                            ),
+                        ))
 
             tb = Table([t_data], 31 * [17], 30)
             tb.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'TOP'),
@@ -334,15 +341,27 @@ class StatsAccessPDF:
             items.append(tb)
             items.append(FrameBreak())
 
-            t_data = [[t(self.language, "edit_stats_day"), t(self.language, "edit_stats_diffusers").replace(
-                "<br/>", "\n"), t(self.language, "edit_stats_pages"), t(self.language, "edit_stats_access")]]  # +31*[4*[2]]
+            t_data = [[
+                    _core_translation.t(self.language, "edit_stats_day"),
+                    _core_translation.t(self.language, "edit_stats_diffusers").replace("<br/>", "\n"),
+                    _core_translation.t(self.language, "edit_stats_pages"),
+                    _core_translation.t(self.language, "edit_stats_access"),
+                ]]  # +31*[4*[2]]
             weekend = []
             for k in d:
                 if k > 0:  # first item holds max values
                     if self.stats.getWeekDay(k) > 4:
                         weekend.append(('BACKGROUND', (0, k), (-1, k), colors.HexColor('#E6E6E6')))
-                    t_data.append(['%02d.%s %s' % (k, t(self.language, "monthname_" + ustr(int(self.period[-2:])) + "_short"),
-                                                   self.period[:4]), len(d[k]["visitors"]), len(d[k]["different"]), len(d[k]["items"])])
+                    t_data.append([
+                            u'{}.{} {}'.format(
+                                k,
+                                _core_translation.t(self.language, u"monthname_{}_short".format(self.period[-2:])),
+                                self.period[:4],
+                            ),
+                            len(d[k]["visitors"]),
+                            len(d[k]["different"]),
+                            len(d[k]["items"]),
+                        ])
 
             tb = Table(t_data, 4 * [100], [25] + (len(d) - 1) * [12])
             tb.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
@@ -402,7 +421,7 @@ class StatsAccessPDF:
             items.append(Frame(8 * cm, b - 1.4 * cm, 11 * cm, 6 * cm, id='normal', showBoundary=0))
 
         if type == "data":
-            items.append(Paragraph(t(self.language, "edit_stats_spreading_day"), self.chartheader))
+            items.append(Paragraph(_core_translation.t(self.language, "edit_stats_spreading_day"), self.chartheader))
 
             for k in d:
                 if k == 0:
@@ -433,7 +452,11 @@ class StatsAccessPDF:
                     PdfImage(config.basedir + "/web/img/stat_bar_vert.gif", width=6, height=len(d[k]["items"]) * h / max["max"] + 1))
                 items.append(FrameBreak())
 
-            tb = Table([[t(self.language, "dayname_" + ustr(x) + "_short") for x in range(0, 7)]], 7 * [17], 17)
+            tb = Table(
+                    [[_core_translation.t(self.language, "dayname_{}_short".fomat(x)) for x in range(0, 7)]],
+                    7 * [17],
+                    17,
+                )
             tb.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'TOP'),
                                     ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
                                     ('INNERGRID', (0, 0), (-1, -1), 1, colors.black),
@@ -445,14 +468,18 @@ class StatsAccessPDF:
             items.append(tb)
             items.append(FrameBreak())
 
-            t_data = [[t(self.language, "dayname_" + ustr(x) + "_long")] for x in range(0, 7)]
+            t_data = [[_core_translation.t(self.language, "dayname_{}_long".format(x) + "_long")] for x in range(0, 7)]
 
             for k in d:
                 if k == 0:
                     continue
                 t_data[k - 1] += [len(d[k][key]) for key in d[k].keys()]
-            t_data = [[t(self.language, "edit_stats_weekday"), t(self.language, "edit_stats_diffusers").replace(
-                "<br/>", "\n"), t(self.language, "edit_stats_pages"), t(self.language, "edit_stats_access")]] + t_data
+            t_data.insert(0, [
+                    _core_translation.t(self.language, "edit_stats_weekday"),
+                    _core_translation.t(self.language, "edit_stats_diffusers").replace("<br/>", "\n"),
+                    _core_translation.t(self.language, "edit_stats_pages"),
+                    _core_translation.t(self.language, "edit_stats_access"),
+                ])
 
             tb = Table(t_data, 4 * [70], [25] + 7 * [16])
             tb.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
@@ -511,7 +538,7 @@ class StatsAccessPDF:
             items.append(Frame(1 * cm, 1.0 * cm, 19 * cm, 12.5 * cm, leftPadding=0, rightPadding=0, id='normal', showBoundary=0))
 
         if type == "data":
-            items.append(Paragraph(t(self.language, "edit_stats_spreading_time"), self.chartheader))
+            items.append(Paragraph(_core_translation.t(self.language, "edit_stats_spreading_time"), self.chartheader))
 
             for k in d:
                 if k == 0:
@@ -563,8 +590,12 @@ class StatsAccessPDF:
                 if k == 0:
                     continue
                 t_data[k - 1] += [len(d[k][key]) for key in d[k].keys()]
-            t_data = [[t(self.language, "edit_stats_daytime"), t(self.language, "edit_stats_diffusers").replace(
-                "<br/>", "\n"), t(self.language, "edit_stats_pages"), t(self.language, "edit_stats_access")]] + t_data
+            t_data.insert(0, [
+                    _core_translation.t(self.language, "edit_stats_daytime"),
+                    _core_translation.t(self.language, "edit_stats_diffusers").replace("<br/>", "\n"),
+                    _core_translation.t(self.language, "edit_stats_pages"),
+                    _core_translation.t(self.language, "edit_stats_access"),
+                ])
 
             tb = Table(t_data, 4 * [70], [25] + [13] * 24)
             tb.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
@@ -600,7 +631,7 @@ class StatsAccessPDF:
 
         while True:
             # page 1
-            p = Paragraph("%s \n'%s'" % (t(self.language, "edit_stats_header"), nameColl), self.h1)
+            p = Paragraph(u"{} \n'{}'".format(_core_translation.t(self.language, "edit_stats_header"), nameColl), self.h1)
             p.wrap(defaultPageSize[0], defaultPageSize[1])
 
             if p.getActualLineWidths0()[0] < 19 * cm:
@@ -610,32 +641,44 @@ class StatsAccessPDF:
 
         self.data.append(p)
 
-        self.data.append(Paragraph("%s: %s" % (t(self.language, "edit_stats_period_header"), self.period), self.chartheader))
-        self.data.append(Paragraph(t(self.language, "edit_stats_pages_of") % ("1", "4"), self.formatRight))
+        self.data.append(Paragraph("{}: {}".format(
+                _core_translation.t(self.language, "edit_stats_period_header"),
+                self.period
+            ), self.chartheader))
+        self.data.append(Paragraph(_core_translation.t(self.language, "edit_stats_pages_of").format("1", "4"), self.formatRight))
 
         self.data.append((FrameBreak()))
         # top 10
         self.data += self.getStatTop("data", namecut=60)
 
         # page 2
-        self.data.append(Paragraph("%s \n'%s' %s - " % (t(self.language, "edit_stats_header"), self.collection.name,
-                                                        self.period) + t(self.language, "edit_stats_pages_of") % ("2", "4"), self.bv))
+        self.data.append(Paragraph(u"{} \n'{}' {} - ".format(
+                _core_translation.t(self.language, "edit_stats_header"),
+                self.collection.name,
+                self.period,
+            ) + _core_translation.t(self.language, "edit_stats_pages_of").format("2", "4"), self.bv))
         self.data.append((FrameBreak()))
         # country
         self.data += self.getStatCountry("data")
         self.data.append(PageBreak())
 
         # page 3
-        self.data.append(Paragraph("%s \n'%s' %s - " % (t(self.language, "edit_stats_header"), self.collection.name,
-                                                        self.period) + t(self.language, "edit_stats_pages_of") % ("3", "4"), self.bv))
+        self.data.append(Paragraph(u"{} \n'{}' {} - ".format(
+                _core_translation.t(self.language, "edit_stats_header"),
+                self.collection.name,
+                self.period,
+            ) + _core_translation.t(self.language, "edit_stats_pages_of").format("3", "4"), self.bv))
         self.data.append((FrameBreak()))
         # date
         self.data += self.getStatDate("data")
         self.data.append(PageBreak())
 
         # page 4
-        self.data.append(Paragraph("%s \n'%s' %s - " % (t(self.language, "edit_stats_header"), self.collection.name,
-                                                        self.period) + t(self.language, "edit_stats_pages_of") % ("4", "4"), self.bv))
+        self.data.append(Paragraph(u"{} \n'{}' {} - ".format(
+                _core_translation.t(self.language, "edit_stats_header"),
+                self.collection.name,
+                self.period,
+            ) + _core_translation.t(self.language, "edit_stats_pages_of").format("4", "4"), self.bv))
         self.data.append((FrameBreak()))
         # weekday
         self.data += self.getStatDay("data")
@@ -650,13 +693,13 @@ class StatsAccessPDF:
         template.allowSplitting = 1
         BaseDocTemplate.build(template, self.data)
 
-        template.canv.setAuthor(t(self.language, "main_title"))
-        template.canv.setTitle("%s \n'%s' - %s: %s" % (t(self.language,
-                                                         "edit_stats_header"),
-                                                       self.collection.name,
-                                                       t(self.language,
-                                                         "edit_stats_period_header"),
-                                                       self.period))
+        template.canv.setAuthor(_core_translation.t(self.language, "main_title"))
+        template.canv.setTitle(u"{} \n'{}' - {}: {}".format(
+                _core_translation.t(self.language, "edit_stats_header"),
+                self.collection.name,
+                _core_translation.t(self.language, "edit_stats_period_header"),
+                self.period,
+            ))
         return template.canv._doc.GetPDFData(template.canv)
 
 
@@ -669,5 +712,5 @@ def getPrintView(nid, p, req):
                 data = StatisticFile(f)
 
     if data:
-        pdf = StatsAccessPDF(data, p.split("_")[1], nid, lang(req))
+        pdf = StatsAccessPDF(data, p.split("_")[1], nid, _core_translation.set_language(req.accept_languages))
         return pdf.build()

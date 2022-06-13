@@ -7,8 +7,9 @@ from __future__ import print_function
 import logging as _logging
 
 import mediatumtal.tal as _tal
+
+import core.translation as _core_translation
 from schema.schema import getMetadataType, getAllMetaFields, VIEW_DATA_ONLY, Maskitem
-from core.translation import lang
 from core.metatype import Metatype
 from core import Node, db
 from utils.utils import suppress
@@ -112,7 +113,13 @@ class m_vgroup(Metatype):
         i = 0
         for field in item.getChildren().sort_by_orderpos():
             f = getMetadataType(field.get("type"))
-            details += f.getMetaHTML(item, i, False, fieldlist=fieldlist, language=lang(req))
+            details += f.getMetaHTML(
+                    item,
+                    i,
+                    False,
+                    fieldlist=fieldlist,
+                    language=_core_translation.set_language(req.accept_languages),
+                )
             i += 1
 
         if req.params.get("sel_id", "") != "":

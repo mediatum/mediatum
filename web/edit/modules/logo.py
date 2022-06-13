@@ -8,11 +8,10 @@ import os
 import logging
 import mediatumtal.tal as _tal
 
+import core.csrfform as _core_csrfform
+import core.translation as _core_translation
 from utils.utils import getMimeType, splitpath
 from utils.fileutils import importFile
-
-from core.translation import lang
-from core.translation import t as translation_t
 from core.users import user_from_session as _user_from_session
 from core import httpstatus
 from core import Node
@@ -87,15 +86,18 @@ def getContent(req, ids):
         if f.filetype == "image":
             logofiles.append(splitpath(f.abspath))
     
-    v = {
-        "id": req.params.get("id", "0"),
-        "tab": req.params.get("tab", ""),
-        "node": node,
-        "logofiles": logofiles,
-        "logo": node.getLogoPath(),
-        "language": lang(req),
-        "t": translation_t,
-        "csrf": req.csrf_token.current_token
-    }
-
-    return _tal.processTAL(v, file="web/edit/modules/logo.html", macro="edit_logo", request=req)
+    return _tal.processTAL(
+            dict(
+                id=req.params.get("id", "0"),
+                tab=req.params.get("tab", ""),
+                node=node,
+                logofiles=logofiles,
+                logo=node.getLogoPath(),
+                language=_core_translation.set_language(req.accept_languages),
+                t=_core_translation.t,
+                csrf=_core_csrfform.get_token(),
+            ),
+            file="web/edit/modules/logo.html",
+            macro="edit_logo",
+            request=req,
+        )

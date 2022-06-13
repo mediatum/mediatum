@@ -11,11 +11,11 @@ import os
 import shutil
 import codecs
 import core.httpstatus as _httpstatus
+import core.translation as _core_translation
 from utils.utils import splitfilename, u, OperationException, utf8_decode_escape
 from utils.search import import_node_fulltext
 from web.frontend.filehelpers import version_id_from_req
 from schema.schema import VIEW_HIDE_EMPTY, Metafield
-from core.translation import lang, t
 from lib.pdf import parsepdf
 from core.attachment import filebrowser
 from contenttypes.data import Content, prepare_node_data
@@ -212,7 +212,7 @@ class Document(Content):
     """ popup window for actual nodetype """
     def popup_fullsize(self, req):
         if not self.has_data_access() or not self.has_read_access():
-            req.response.set_data(t(req, "permission_denied"))
+            req.response.set_data(_core_translation.t(req, "permission_denied"))
             req.response.status_code = _httpstatus.HTTP_FORBIDDEN
             return
 
@@ -238,7 +238,7 @@ class Document(Content):
         metafields = []
 
         field = Metafield(u"nodename", attrs={
-            "label": t(lang, "node name"),
+            "label": _core_translation.t(lang, "node name"),
             "type": u"text"
         })
         metafields.append(field)

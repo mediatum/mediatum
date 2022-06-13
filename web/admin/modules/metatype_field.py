@@ -9,6 +9,7 @@ import inspect
 import logging
 import mediatumtal.tal as _tal
 
+import core.csrfform as _core_csrfform
 import utils.utils as _utils_utils
 from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter
 from schema.schema import Metadatatype
@@ -18,7 +19,6 @@ from schema.schema import getMetaField
 from schema.schema import getMetaFieldTypeNames
 from schema.schema import getMetaType
 from schema.schema import getMetadataType
-from core.translation import lang, t
 import core.translation as _translation
 from schema.schema import Metafield
 import schema.schema as _schema
@@ -55,7 +55,7 @@ def showDetailList(req, id):
 
     # filter
     if actfilter != "":
-        if actfilter in ("all", "*", t(lang(req), "admin_filter_all")):
+        if actfilter in ("all", "*", _translation.t(_translation.set_language(req.accept_languages), "admin_filter_all")):
             None  # all users
         elif actfilter == "0-9":
             num = re.compile(r'([0-9])')
@@ -64,7 +64,7 @@ def showDetailList(req, id):
             else:
                 metafields = filter(lambda x: num.match(x.getLabel()), metafields)
 
-        elif actfilter == "else" or actfilter == t(lang(req), "admin_filter_else"):
+        elif actfilter == "else" or actfilter == _translation.t(_translation.set_language(req.accept_languages), "admin_filter_else"):
             all = re.compile(r'([a-z]|[A-Z]|[0-9]|\.)')
             if req.params.get("filtertype", "") == "name":
                 metafields = filter(lambda x: not all.match(x.getName()), metafields)
@@ -98,8 +98,13 @@ def showDetailList(req, id):
     v["filterattrs"] = [("name", "admin_metafield_filter_name"), ("label", "admin_metafield_filter_label")]
     v["filterarg"] = req.params.get("filtertype", "name")
 
-    v["sortcol"] = pages.OrderColHeader(
-        ["", t(lang(req), "admin_metafield_col_1"), t(lang(req), "admin_metafield_col_2"), t(lang(req), "admin_metafield_col_3")])
+    v["sortcol"] = pages.OrderColHeader(("",) + tuple(
+        _translation.t(
+            _translation.set_language(req.accept_languages),
+            "admin_metafield_col_{}".format(col),
+            )
+        for col in xrange(1, 4)
+        ))
     v["metadatatype"] = metadatatype
     v["metafields"] = metafields
     v["used_by"] = used_by
@@ -110,9 +115,9 @@ def showDetailList(req, id):
     v["actfilter"] = actfilter
 
     v["actpage"] = req.params.get("actpage")
-    v["csrf"] = req.csrf_token.current_token
+    v["csrf"] = _core_csrfform.get_token()
     v["translate"] = _translation.translate
-    v["language"] = lang(req)
+    v["language"] = _translation.set_language(req.accept_languages)
     if ustr(req.params.get("page", "")).isdigit():
         v["actpage"] = req.params.get("page")
 
@@ -144,7 +149,7 @@ def FieldDetail(req, name=None, error=None):
     tal_ctx.update(
             actpage=req.params.get("actpage"),
             adminfields="",
-            csrf=req.csrf_token.current_token,
+            csrf= _core_csrfform.get_token(),
             error=error,
             fieldoptions=fieldoption,
             fieldtypes=getMetaFieldTypeNames(),
@@ -157,7 +162,11 @@ def FieldDetail(req, name=None, error=None):
 
     if field.id:
         tal_ctx["field"] = field
-        tal_ctx["adminfields"] = getMetadataType(field.getFieldtype()).get_metafieldeditor_html(field,metadatatype,lang(req))
+        tal_ctx["adminfields"] = getMetadataType(field.getFieldtype()).get_metafieldeditor_html(
+                field,
+                metadatatype,
+                _translation.set_language(req.accept_languages),
+            )
 
     if field.getFieldtype() == "url":
         tal_ctx["valuelist"].extend(("",)*4)

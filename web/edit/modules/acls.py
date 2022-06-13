@@ -262,7 +262,7 @@ def getContent(req, ids):
             idstr=idstr,
             contentacl="".join(ret),
             adminuser=user.is_admin,
-            csrf=req.csrf_token.current_token,
+            csrf=_core.csrfform.get_token(),
           )
     return _tal.processTAL(
             context,

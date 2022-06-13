@@ -7,9 +7,10 @@ from __future__ import print_function
 import logging
 import mediatumtal.tal as _tal
 
+import core.csrfform as _core_csrfform
+import core.translation as _core_translation
 from utils.date import format_date, parse_date, now
 from utils.utils import funcname
-from core.translation import lang, t, getDefaultLanguage
 from core import httpstatus
 from core import Node, db
 from contenttypes import Container
@@ -99,7 +100,10 @@ def _handle_edit_metadata(req, mask, nodes):
     if not hasattr(mask, "i_am_not_a_mask"):
         if form.get('generate_new_version'):
             # Create new node version
-            comment = u'({})\n{}'.format(t(req, "document_new_version_comment"), form.get('version_comment', ''))
+            comment = u'({})\n{}'.format(
+                    _core_translation.t(req, "document_new_version_comment"),
+                    form.get('version_comment', ''),
+                )
 
             for node in nodes:
                 with node.new_tagged_version(comment=comment, user=user):
@@ -129,9 +133,9 @@ def _handle_edit_metadata(req, mask, nodes):
             if field_name == 'nodename' and mask.name == 'settings':
                 if '__nodename' in form:
                     field_name = '__nodename'  # no multilang here !
-                elif getDefaultLanguage() + '__nodename' in form:
+                elif "{}__nodename".format(_core_translation.getDefaultLanguage()) in form:
                     # no multilang here !
-                    field_name = getDefaultLanguage() + '__nodename'
+                    field_name = "{}__nodename".format(_core_translation.getDefaultLanguage())
                 value = form.get(field_name, None)
                 if value:
                     if value != node.name:
@@ -201,7 +205,10 @@ def getContent(req, ids):
     if hasattr(node, "metaFields"):
 
         masklist = [SystemMask(
-            "settings", t(req, "settings"), node.metaFields(lang(req)))] + masklist
+                "settings",
+                _core_translation.t(req, "settings"),
+                node.metaFields(_core_translation.set_language(req.accept_languages)),
+            )] + masklist
 
     default = None
     for m in masklist:
@@ -234,19 +241,19 @@ def getContent(req, ids):
         return _tal.processTAL({}, file="web/edit/modules/metadata.html", macro="no_mask", request=req)
 
     # context default for TAL interpreter
-    ctx = {}
-    ctx["user"] = user
-    ctx["metatypes"] = metatypes
-    ctx["idstr"] = idstr
-    ctx["node"] = nodes[0]  # ?
-    ctx["flag_nodename_changed"] = flag_nodename_changed
-    ctx["nodes"] = nodes
-    ctx["masklist"] = masklist
-    ctx["maskname"] = maskname
-    ctx["language"] = lang(req)
-    ctx["t"] = t
-    ctx["csrf"] = req.csrf_token.current_token
-
+    ctx = dict(
+            user=user,
+            metatypes=metatypes,
+            idstr=idstr,
+            node=nodes[0],  # ?
+            flag_nodename_changed=flag_nodename_changed,
+            nodes=nodes,
+            masklist=masklist,
+            maskname=maskname,
+            language=_core_translation.set_language(req.accept_languages),
+            t=_core_translation.t,
+            csrf=_core_csrfform.get_token(),
+        )
     if action == 'restore':
         raise NotImplementedError("restore version not implemented, later...")
 

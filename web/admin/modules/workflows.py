@@ -11,14 +11,14 @@ import traceback
 import mediatumtal.tal as _tal
 
 import core.config as config
-
+import core.csrfform as _core_csrfform
+import core.translation as _core_translation
 from workflow.workflow import Workflow, getWorkflowList, getWorkflow, updateWorkflow, addWorkflow, deleteWorkflow, \
     inheritWorkflowRights, getWorkflowTypes, create_update_workflow_step, deleteWorkflowStep, exportWorkflow, importWorkflow
 from web.admin.adminutils import Overview, getAdminStdVars, getFilter, getSortCol
 from schema.schema import parseEditorData
 from web.common.acl_web import makeList
 from utils.utils import removeEmptyStrings
-from core.translation import t, lang
 from core import db, Node as _Node
 from core.database.postgres.permission import NodeToAccessRuleset
 
@@ -244,12 +244,12 @@ def view(req):
     actfilter = getFilter(req)
     # filter
     if actfilter != "":
-        if actfilter in ("all", "*", t(lang(req), "admin_filter_all")):
+        if actfilter in ("all", "*", _core_translation.t(_core_translation.set_language(req.accept_languages), "admin_filter_all")):
             None  # all users
         elif actfilter == "0-9":
             num = re.compile(r'([0-9])')
             workflows = filter(lambda x: num.match(x.name), workflows)
-        elif actfilter == "else" or actfilter == t(lang(req), "admin_filter_else"):
+        elif actfilter == "else" or actfilter == _core_translation.t(_core_translation.set_language(req.accept_languages), "admin_filter_else"):
             all = re.compile(r'([a-z]|[A-Z]|[0-9])')
             workflows = filter(lambda x: not all.match(x.name), workflows)
         else:
@@ -271,11 +271,17 @@ def view(req):
             workflows.reverse()
 
     v = getAdminStdVars(req)
-    v["sortcol"] = pages.OrderColHeader([t(lang(req), "admin_wf_col_{}".format(col)) for col in xrange(1, 5)])
+    v["sortcol"] = pages.OrderColHeader(tuple(
+        _core_translation.t(
+            _core_translation.set_language(req.accept_languages),
+            "admin_wf_col_{}".format(col),
+            )
+        for col in xrange(1, 5)
+        ))
     v["workflows"] = workflows
     v["pages"] = pages
     v["actfilter"] = actfilter
-    v["csrf"] = req.csrf_token.current_token
+    v["csrf"] = _core_csrfform.get_token()
     return _tal.processTAL(v, file="web/admin/modules/workflows.html", macro="view", request=req)
 
 """ edit form for given workflow (create/update)
@@ -318,7 +324,7 @@ def WorkflowDetail(req, id, err=0):
     v["languages"] = config.languages
     v["error"] = err
     v["actpage"] = req.values["actpage"]
-    v["csrf"] = req.csrf_token.current_token
+    v["csrf"] = _core_csrfform.get_token()
     return _tal.processTAL(v, file="web/admin/modules/workflows.html", macro="modify", request=req)
 
 """ overview of all steps for given workflow
@@ -334,12 +340,12 @@ def WorkflowStepList(req, wid):
 
     # filter
     if actfilter != "":
-        if actfilter in ("all", "*", t(lang(req), "admin_filter_all")):
+        if actfilter in ("all", "*", _core_translation.t(_core_translation.set_language(req.accept_languages), "admin_filter_all")):
             None  # all users
         elif actfilter == "0-9":
             num = re.compile(r'([0-9])')
             workflowsteps = filter(lambda x: num.match(x.name), workflowsteps)
-        elif actfilter == "else" or actfilter == t(lang(req), "admin_filter_else"):
+        elif actfilter == "else" or actfilter == _core_translation.t(_core_translation.set_language(req.accept_languages), "admin_filter_else"):
             all = re.compile(r'([a-z]|[A-Z]|[0-9])')
             workflowsteps = filter(lambda x: not all.match(x.name), workflowsteps)
         else:
@@ -369,12 +375,18 @@ def WorkflowStepList(req, wid):
         workflowsteps.sort(lambda x, y: cmp(x.name.lower(), y.name.lower()))
 
     v = getAdminStdVars(req)
-    v["sortcol"] = pages.OrderColHeader([t(lang(req), "admin_wf_col_{}".format(col)) for col in xrange(1, 8)])
+    v["sortcol"] = pages.OrderColHeader(tuple(
+        _core_translation.t(
+            _core_translation.set_language(req.accept_languages),
+            "admin_wf_col_{}".format(col),
+            )
+        for col in xrange(1, 8)
+        ))
     v["workflow"] = workflow
     v["workflowsteps"] = workflowsteps
     v["pages"] = pages
     v["actfilter"] = actfilter
-    v["csrf"] = req.csrf_token.current_token
+    v["csrf"] = _core_csrfform.get_token()
     return _tal.processTAL(v, file="web/admin/modules/workflows.html", macro="view_step", request=req)
 
 """ edit form for workflowstep for given workflow and given step
@@ -435,7 +447,7 @@ def WorkflowStepDetail(req, wid, wnid, err=0):
         workflowstep.setType(req.values.get("nytype", ""))
 
     v_part = {}
-    v_part["fields"] = workflowstep.metaFields(lang(req)) or []
+    v_part["fields"] = workflowstep.metaFields(_core_translation.set_language(req.accept_languages)) or []
     v_part["node"] = workflowstep
     v_part["hiddenvalues"] = {"wnodeid": workflowstep.name}
 
@@ -458,7 +470,7 @@ def WorkflowStepDetail(req, wid, wnid, err=0):
     v["error"] = err
     v["update_type"] = req.values.get("ntype", u"")
     v["actpage"] = req.values["actpage"]
-    v["csrf"] = req.csrf_token.current_token
+    v["csrf"] = _core_csrfform.get_token()
     return _tal.processTAL(v, file="web/admin/modules/workflows.html", macro="modify_step", request=req)
 
 """ popup window with image of workflow given by id
@@ -470,7 +482,7 @@ def WorkflowPopup(req):
     return _tal.processTAL(
             dict(
                 id=path[1],
-                csrf=req.csrf_token.current_token,
+                csrf=_core_csrfform.get_token(),
             ),
             file="web/admin/modules/workflows.html",
             macro="view_popup",

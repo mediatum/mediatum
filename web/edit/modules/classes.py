@@ -6,7 +6,7 @@ from __future__ import print_function
 
 import mediatumtal.tal as _tal
 
-from core.translation import lang, t
+import core.translation as _core_translation
 from core.users import user_from_session as _user_from_session
 from core import httpstatus
 from core import Node
@@ -39,6 +39,6 @@ def getContent(req, ids):
     v["script"] = "var currentitem = '%s';\nvar currentfolder = '%s'" % (nid, nid)
     v["idstr"] = ",".join(ids)
     v["nodes"] = nodes
-    v["t"] = t
-    v["language"] = lang(req)
+    v["t"] = _core_translation.t
+    v["language"] = _core_translation.set_language(req.accept_languages)
     return _tal.processTAL(v, file="web/edit/modules/classes.html", macro="classtree", request=req)

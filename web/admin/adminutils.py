@@ -11,10 +11,11 @@ import sys
 import flask as _flask
 
 import mediatumtal.tal as _tal
+
 from core import db, User, AuthenticatorInfo
+import core.translation as _core_translation
 import core.users as users
 import core.config as config
-from core.translation import t, lang
 from core import httpstatus
 from core.systemtypes import Root
 from utils.strings import ensure_unicode_returned
@@ -59,7 +60,7 @@ class Overview:
     def __init__(self, req, list):
         self.req = req
         self.path = req.mediatum_contextfree_path[1:]
-        self.language = lang(req)
+        self.language = _core_translation.set_language(req.accept_languages)
         self.stdVars = getAdminStdVars(self.req)
 
         # self.page = 0 or None -> all entries
@@ -108,23 +109,26 @@ class Overview:
                 b_class = "admin_page"
                 if p == self.page:
                     b_class = "admin_page_act"
-                ret += '<button type="submit" name="page" class="' + b_class + '" title="' + \
-                    t(self.language, "admin_page") + ' ' + unicode(p) + '" value="' + unicode(p) + '">' + unicode(p) + '</button> '
+                ret += '<button type="submit" name="page" class="{0}" title="{1}" value="{2}">{2}</button>'.format(
+                        b_class,
+                        _core_translation.t(self.language, "admin_page"),
+                        unicode(p),
+                    )
         if len(ret) == 0:
             return ""
         return '[' + ret + '] '
 
     def printPageAll(self):
         if self.page != 0:
-            return '<button name="resetpage" title="' + \
-                t(self.language,
-                  "admin_allelements_title") + '" class="admin_page" type="submit" value="">' + t(self.language,
-                                                                                                  "admin_allelements") + '</button>'
+            return '<button name="resetpage" title="{}" class="admin_page" type="submit" value="">{}</button>'.format(
+                    _core_translation.t(self.language, "admin_allelements_title"),
+                    _core_translation.t(self.language, "admin_allelements"),
+                )
         else:
-            return '<button name="firstpage" title="' + \
-                t(self.language,
-                  "admin_pageelements_title") + '" class="admin_page" type="submit" value="">' + t(self.language,
-                                                                                                   "admin_pageelements_title") + '</button>'
+            return '<button name="firstpage" title="{}" class="admin_page" type="submit" value="">{}</button>'.format(
+                    _core_translation.t(self.language, "admin_pageelements_title"),
+                    _core_translation.t(self.language, "admin_pageelements_title"),
+                )
 
     def OrderColHeader(self, cols, order="", addparams=""):
         order = self.req.params.get("order", "")
@@ -140,11 +144,23 @@ class Overview:
             if col != "":
                 if i == ordercol:
                     if orderdir == 0:
-                        retList += [Link(unicode(i) + "1", t(self.language, "admin_sort_label"), col + ' <img src="/img/az.png" border="0" />')]
+                        retList.append(Link(
+                                "1{}".format(unicode(i)),
+                                _core_translation.t(self.language, "admin_sort_label"),
+                                '{} <img src="/img/az.png" border="0" />'.format(col),
+                            ))
                     else:
-                        retList += [Link(unicode(i) + "0", t(self.language, "admin_sort_label"), col + ' <img src="/img/za.png" border="0" />')]
+                        retList.append(Link(
+                                "{}0".format(unicode(i)),
+                                _core_translation.t(self.language, "admin_sort_label"),
+                                '{} <img src="/img/za.png" border="0" />'.format(col),
+                            ))
                 else:
-                    retList += [Link(unicode(i) + "0", t(self.language, "admin_sort_label"), col)]
+                    retList.append(Link(
+                            "{}0".format(unicode(i)),
+                            _core_translation.t(self.language, "admin_sort_label"),
+                            col,
+                        ))
             i += 1
         return retList
 

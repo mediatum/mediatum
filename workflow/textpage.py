@@ -6,6 +6,7 @@ from __future__ import print_function
 
 import mediatumtal.tal as _tal
 
+import core.csrfform as _core_csrfform
 from .workflow import WorkflowStep, registerStep
 from core.translation import t, addLabels
 from schema.schema import Metafield
@@ -44,7 +45,12 @@ class WorkflowStep_TextPage(WorkflowStep):
             self.forward(node, True)
         else:
             buttons = self.tableRowButtons(node)
-        return _tal.processTAL({"text": self.get("text"), "buttons": buttons, "csrf": req.csrf_token.current_token,}, file="workflow/textpage.html", macro="textpage_show_node", request=req)
+        return _tal.processTAL(
+                dict(text=self.get("text"), buttons=buttons, csrf=_core_csrfform.get_token()),
+                file="workflow/textpage.html",
+                macro="textpage_show_node",
+                request=req,
+            )
 
     def metaFields(self, lang=None):
         field = Metafield("text")

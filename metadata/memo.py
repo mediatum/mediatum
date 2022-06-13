@@ -9,17 +9,18 @@ from __future__ import print_function
 import logging
 from collections import OrderedDict
 from mediatumtal import tal
+
+import core.translation as _core_translation
 from core import config
 from core import httpstatus
 from core.metatype import Metatype, charmap
-from core.translation import t, getDefaultLanguage
 
 import re
 
 logg = logging.getLogger(__name__)
 
 max_lang_length = max([len(lang) for lang in config.languages])
-config_default_language = getDefaultLanguage()
+config_default_language = _core_translation.getDefaultLanguage()
 
 
 class m_memo(Metatype):
@@ -38,7 +39,7 @@ class m_memo(Metatype):
             "width": width,
             "name": field_node_name,
             "field": field,
-            "t": t,
+            "t": _core_translation.t,
             "ident": ustr(field.id),
             "required": self.is_required(required)
         }

@@ -13,8 +13,9 @@ from werkzeug.datastructures import ImmutableMultiDict
 import werkzeug.utils as _werkzeug_utils
 
 import core.config as config
+import core.csrfform as _core_csrfform
+import core.translation as _core_translation
 from core.metatype import Context
-from core.translation import lang, switch_language
 from core import httpstatus
 from core import db
 from core import Node, NodeAlias
@@ -60,7 +61,7 @@ def handle_json_request(req):
                     value=req.args.get("query_field_value"),
                     width=174,
                     name="query" + str(req.args.get("fieldno")),
-                    language=lang(req),
+                    language=_core_translation.set_language(req.accept_languages),
                     container=container,
                     user=user,
                     ip=req.remote_addr))]
@@ -78,14 +79,11 @@ def _check_change_language_request(func):
         language = req.args.get("change_language")
         if language:
             # change language cookie if language is configured
-            switch_language(req, language)
+            _core_translation.set_language(req.accept_languages, language)
             params = req.args.copy()
             del params["change_language"]
             req.response.location = build_url_from_path_and_params(req.mediatum_contextfree_path, params)
             # set the language cookie for caching
-            _flask.session["language"] = language
-            if "language" in _flask.session:
-                _flask.g.mediatum["language"] = _flask.session["language"]
 
         return func(req, *args, **kwargs)
 
@@ -177,6 +175,8 @@ def display(req, show_navbar=True, render_paths=True, params=None):
 
 @_check_change_language_request
 def workflow(req):
+    if req.method == "POST":
+        _core_csrfform.validate_token(req.form)
     display(req, False, False, req.values)
 
 
@@ -185,6 +185,9 @@ PUBPATH = re.compile("/?(publish|pub)/(.*)$")
 
 @_check_change_language_request
 def publish(req):
+    if req.method == "POST":
+        _core_csrfform.validate_token(req.form)
+
     m = PUBPATH.match(req.mediatum_contextfree_path)
 
     node = _nodecache.get_workflows_node()

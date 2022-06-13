@@ -7,8 +7,9 @@ from __future__ import print_function
 import logging
 import mediatumtal.tal as _tal
 
+import core.csrfform as _core_csrfform
+import core.translation as _core_translation
 from .workflow import WorkflowStep, registerStep
-from core.translation import t, lang, addLabels
 from schema.schema import getMetaType, VIEW_HIDE_EMPTY
 from schema.schema import Metafield, Metadatatype
 from core.database.postgres.permission import NodeToAccessRuleset
@@ -22,7 +23,7 @@ logg = logging.getLogger(__name__)
 def register():
     #tree.registerNodeClass("workflowstep-fileattachment", WorkflowStep_FileAttachment)
     registerStep("workflowstep_fileattachment")
-    addLabels(WorkflowStep_FileAttachment.getLabels())
+    _core_translation.addLabels(WorkflowStep_FileAttachment.getLabels())
 
 
 class WorkflowStep_FileAttachment(WorkflowStep):
@@ -47,7 +48,11 @@ class WorkflowStep_FileAttachment(WorkflowStep):
 
         try:
             mask = q(Metadatatype).filter_by(name=node.schema).one().getMask(self.get("mask_fileatt"))
-            maskdata = mask.getViewHTML([node], VIEW_HIDE_EMPTY, language=lang(req))
+            maskdata = mask.getViewHTML(
+                    [node],
+                    VIEW_HIDE_EMPTY,
+                    language=_core_translation.set_language(req.accept_languages),
+                )
         except:
             logg.exception("exception in workflow step fileAttachment, getViewHTML failed, empty string")
             maskdata = ""
@@ -57,10 +62,10 @@ class WorkflowStep_FileAttachment(WorkflowStep):
                     buttons=buttons,
                     files=self.files,
                     wfnode=self,
-                    pretext=self.getPreText(lang(req)),
-                    posttext=self.getPostText(lang(req)),
+                    pretext=self.getPreText(_core_translation.set_language(req.accept_languages)),
+                    posttext=self.getPostText(_core_translation.set_language(req.accept_languages)),
                     maskdata=maskdata,
-                    csrf=req.csrf_token.current_token,
+                    csrf=_core_csrfform.get_token(),
                 ),
                 file="workflow/fileattachment.html",
                 macro="fileattachment_show_node",
@@ -69,10 +74,10 @@ class WorkflowStep_FileAttachment(WorkflowStep):
 
     def metaFields(self, lang=None):
         field = Metafield("upload_fileatt")
-        field.set("label", t(lang, "workflowstep-fileatt_label_upload_file"))
+        field.set("label", _core_translation.t(lang, "workflowstep-fileatt_label_upload_file"))
         field.set("type", "upload")
         field2 = Metafield("mask_fileatt")
-        field2.set("label", t(lang, "workflowstep-fileatt_label_mask"))
+        field2.set("label", _core_translation.t(lang, "workflowstep-fileatt_label_mask"))
         field2.set("type", "text")
         return [field, field2]
 

@@ -7,8 +7,10 @@ from __future__ import print_function
 import logging
 
 import mediatumtal.tal as _tal
+
+import core.csrfform as _core_csrfform
+import core.translation as _core_translation
 from schema.schema import getMetaType
-from core.translation import lang
 from core.users import user_from_session as _user_from_session
 from core import httpstatus
 from core import Node
@@ -21,7 +23,7 @@ logg = logging.getLogger(__name__)
 
 def getContent(req, ids):
     user = _user_from_session()
-    language = lang(req)
+    language = _core_translation.set_language(req.accept_languages)
     node = q(Node).get(ids[0])
     
     if "sort" in user.hidden_edit_functions or not node.has_write_access():
@@ -39,7 +41,12 @@ def getContent(req, ids):
             children.append(child)
         db.session.commit()
 
-        req.response.set_data(_tal.processTAL({'nodelist': children, "language": language, "csrf": req.csrf_token.current_token}, file='web/edit/modules/subfolder.html', macro="ordered_list", request=req))
+        req.response.set_data(_tal.processTAL(
+                dict(nodelist=children, language=language, csrf=_core_csrfform.get_token()),
+                file='web/edit/modules/subfolder.html',
+                macro="ordered_list",
+                request=req,
+            ))
         return ""
 
     elif "sortdirection" in req.params:  # do automatic re-order
@@ -49,7 +56,12 @@ def getContent(req, ids):
         for position, child in enumerate(sorted_children, start=1):
             child.orderpos = position
         db.session.commit()
-        req.response.set_data(_tal.processTAL({'nodelist': sorted_children, "language": language, "csrf": req.csrf_token.current_token}, file='web/edit/modules/subfolder.html', macro="ordered_list", request=req))
+        req.response.set_data(_tal.processTAL(
+                dict(nodelist=sorted_children, language=language, csrf=_core_csrfform.get_token()),
+                file='web/edit/modules/subfolder.html',
+                macro="ordered_list",
+                request=req,
+            ))
         return ""
 
     nodelist = []
@@ -68,11 +80,15 @@ def getContent(req, ids):
     for field in fields:
         if i == fields[field]:
             attributes.append(field)
-    ctx = {
-            "node": node,
-            "nodelist": nodelist,
-            "sortattributes": sorted(attributes, lambda x, y: cmp(x.getLabel().lower(), y.getLabel().lower())),
-            "language": language,
-            "csrf": req.csrf_token.current_token
-           }
-    return _tal.processTAL(ctx, file="web/edit/modules/subfolder.html", macro="edit_subfolder", request=req)
+    return _tal.processTAL(
+            dict(
+                node=node,
+                nodelist=nodelist,
+                sortattributes=sorted(attributes, lambda x, y: cmp(x.getLabel().lower(), y.getLabel().lower())),
+                language=language,
+                csrf=_core_csrfform.get_token(),
+            ),
+            file="web/edit/modules/subfolder.html",
+            macro="edit_subfolder",
+            request=req,
+        )

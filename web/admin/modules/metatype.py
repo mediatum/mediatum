@@ -15,7 +15,7 @@ import sqlalchemy as _sqlalchemy
 from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter
 from web.common.acl_web import makeList
 from utils.utils import removeEmptyStrings, esc, suppress
-from core.translation import lang, t
+import core.csrfform as _core_csrfform
 import core.translation as _translation
 from schema.schema import getMetaFieldTypeNames, getMetaType, updateMetaType, existMetaType, deleteMetaType, fieldoption, moveMetaField, getMetaField, deleteMetaField, getFieldsForMeta, dateoption, requiredoption, existMetaField, updateMetaField, generateMask, cloneMask, exportMetaScheme, importMetaSchema
 from schema.schema import VIEW_DEFAULT
@@ -324,7 +324,7 @@ def view(req):
 
     # filter
     if actfilter != "":
-        if actfilter in ("all", "*", t(lang(req), "admin_filter_all")):
+        if actfilter in ("all", "*", _translation.t(_translation.set_language(req.accept_languages), "admin_filter_all")):
             None  # all users
         elif actfilter == "0-9":
             num = re.compile(r'([0-9])')
@@ -332,7 +332,7 @@ def view(req):
                 mtypes = filter(lambda x: num.match(x.name), mtypes)
             else:
                 mtypes = filter(lambda x: num.match(x.getLongName()), mtypes)
-        elif actfilter == "else" or actfilter == t(lang(req), "admin_filter_else"):
+        elif actfilter == "else" or actfilter == _translation.t(_translation.set_language(req.accept_languages), "admin_filter_else"):
             all = re.compile(r'([a-z]|[A-Z]|[0-9]|\.)')
             if req.params.get("filtertype", "") == "id":
                 mtypes = filter(lambda x: not all.match(x.name), mtypes)
@@ -360,15 +360,13 @@ def view(req):
         mtypes.sort(key=lambda mt:mt.name.lower())
 
     v = getAdminStdVars(req)
-    v["sortcol"] = pages.OrderColHeader(
-        [
-            t(
-                lang(req), "admin_meta_col_1"), t(
-                lang(req), "admin_meta_col_2"), t(
-                    lang(req), "admin_meta_col_3"), t(
-                        lang(req), "admin_meta_col_4"), t(
-                            lang(req), "admin_meta_col_5"), t(
-                                lang(req), "admin_meta_col_6")])
+    v["sortcol"] = pages.OrderColHeader(tuple(
+        _translation.t(
+            _translation.set_language(req.accept_languages),
+            "admin_meta_col_{}".format(col),
+            )
+        for col in xrange(1, 7)
+        ))
     v["metadatatypes"] = mtypes
     v["used_by"] = used_by
     v["get_classname_for_typestring"] = Node.get_classname_for_typestring
@@ -377,9 +375,9 @@ def view(req):
     v["actfilter"] = actfilter
     v["filterattrs"] = [("id", "admin_metatype_filter_id"), ("name", "admin_metatype_filter_name")]
     v["filterarg"] = req.params.get("filtertype", "id")
-    v["csrf"] = req.csrf_token.current_token
+    v["csrf"] = _core_csrfform.get_token()
     v["translate"] = _translation.translate
-    v["language"] = lang(req)
+    v["language"] = _translation.set_language(req.accept_languages)
     return _tal.processTAL(v, file="web/admin/modules/metatype.html", macro="view_type", request=req)
 
 
@@ -413,7 +411,7 @@ def MetatypeDetail(req, id, err=0):
         v["original_name"] = req.params["mname_orig"]
     d = Data()
     v["datatypes"] = d.get_all_datatypes()
-    v["datatypes"].sort(key=lambda dt:t(lang(req), dt.__name__))
+    v["datatypes"].sort(key=lambda dt: _translation.t(_translation.set_language(req.accept_languages), dt.__name__))
     v["metadatatype"] = metadatatype
     v["error"] = err
     v["bibtextypes"] = getAllBibTeXTypes()
@@ -429,7 +427,7 @@ def MetatypeDetail(req, id, err=0):
     v["acl"] = makeList(req, "read", removeEmptyStrings(rules), {}, overload=0, type="read")
     v["filtertype"] = req.params.get("filtertype", "")
     v["actpage"] = req.params.get("actpage")
-    v["csrf"] = req.csrf_token.current_token
+    v["csrf"] = _core_csrfform.get_token()
     return _tal.processTAL(v, file="web/admin/modules/metatype.html", macro="modify_type", request=req)
 
 
@@ -437,7 +435,12 @@ def MetatypeDetail(req, id, err=0):
 
 
 def showInfo(req):
-    return _tal.processTAL({"fieldtypes": getMetaFieldTypeNames(), "csrf": req.csrf_token.current_token}, file="web/admin/modules/metatype.html", macro="show_info", request=req)
+        return _tal.processTAL(
+                dict(fieldtypes=getMetaFieldTypeNames(), csrf=_core_csrfform.get_token()),
+                file="web/admin/modules/metatype.html",
+                macro="show_info",
+                request=req,
+            )
 
 """ popup form with field definition """
 
@@ -447,13 +450,18 @@ def showFieldOverview(req):
     fields = getFieldsForMeta(path[1])
     fields.sort(key=_operator.attrgetter("orderpos"))
 
-    v = {}
-    v["metadatatype"] = getMetaType(path[1])
-    v["metafields"] = fields
-    v["fieldoptions"] = fieldoption
-    v["fieldtypes"] = getMetaFieldTypeNames()
-    v["csrf"] = req.csrf_token.current_token
-    return _tal.processTAL(v, file="web/admin/modules/metatype.html", macro="show_fieldoverview", request=req)
+    return _tal.processTAL(
+            dict(
+                metadatatype=getMetaType(path[1]),
+                metafields=fields,
+                fieldoptions=fieldoption,
+                fieldtypes=getMetaFieldTypeNames(),
+                csrf=_core_csrfform.get_token(),
+            ),
+            file="web/admin/modules/metatype.html",
+            macro="show_fieldoverview",
+            request=req,
+        )
 
 """ export metadatatype-definition (XML) """
 
@@ -677,13 +685,18 @@ def showEditor(req):
         # show metaEditor
         v["editor"] = ""
         try:
-            v["editor"] = _tal.processTAL({}, string=editor.getMetaMask(language=lang(req)), macro=None, request=req)
+            v["editor"] = _tal.processTAL(
+                    {},
+                    string=editor.getMetaMask(language=_translation.set_language(req.accept_languages)),
+                    macro=None,
+                    request=req,
+                )
         except:
             logg.exception("exception in showEditor")
             v["editor"] = editor.getMetaMask(req)
 
     v["title"] = editor.name
-    v["csrf"] = req.csrf_token.current_token
+    v["csrf"] = _core_csrfform.get_token()
     return _tal.processTAL(v, file="web/admin/modules/metatype.html", macro="editor_popup", request=req)
 
 

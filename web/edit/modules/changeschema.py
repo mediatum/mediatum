@@ -7,6 +7,8 @@ from __future__ import print_function
 import logging
 
 import mediatumtal.tal as _tal
+
+import core.csrfform as _core_csrfform
 from schema.schema import get_permitted_schemas
 from core.translation import translate
 from core.users import user_from_session as _user_from_session
@@ -132,6 +134,7 @@ def getContent(req, ids):
             d['schemes'] = available_schemes
             d['datatypes'] = admissible_content_types
 
-        d["csrf"] = req.csrf_token.current_token
+        d["csrf"] = _core_csrfform.get_token()
         d["srcnodeid"] = req.values.get("srcnodeid", "")
+
         return _tal.processTAL(d, file="web/edit/modules/changeschema.html", macro="changeschema_popup", request=req)

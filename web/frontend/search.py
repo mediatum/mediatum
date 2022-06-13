@@ -6,8 +6,9 @@ from __future__ import print_function
 
 import utils.date as date
 import logging
+
+import core.translation as _core_translation
 from core import Node, db
-from core.translation import lang, translate
 from core.search import SearchQueryException
 from core import webconfig
 from utils.strings import ensure_unicode_returned
@@ -42,7 +43,7 @@ class NoSearchResult(ContentBase):
 
     @ensure_unicode_returned(name="searchresult:html")
     def html(self, req):
-        language = lang(req)
+        language = _core_translation.set_language(req.accept_languages)
         context = {"language": language,
                    "query": self.query,
                    "container": self.container.getLabel(language),
@@ -93,10 +94,12 @@ def search(searchtype, searchquery, readable_query, paths, req, container_id = N
         db.session.rollback()
         return NoSearchResult(readable_query, container, searchtype, error=True)
 
-    language = lang(req)
-    content_list.linkname = u"{}: {} \"{}\"".format(container.getLabel(language),
-                                                    translate("search_for", language=language),
-                                                    readable_query)
+    language = _core_translation.set_language(req.accept_languages)
+    content_list.linkname = u"{}: {} \"{}\"".format(
+            container.getLabel(language),
+            _core_translation.translate("search_for", language=language),
+            readable_query,
+        )
     content_list.linktarget = ""
 
     if content_list.has_elements:
@@ -137,7 +140,7 @@ def _extended_searchquery_from_req(req):
 
         if not first2:
             q_str += " and "
-            q_user += translate("search_and", request=req) + " "
+            q_user += "{} ".format(_core_translation.translate("search_and", request=req))
 
         first2 = 0
 
@@ -151,7 +154,7 @@ def _extended_searchquery_from_req(req):
             for field in searchmaskitem.children:
                 if not first:
                     q_str += " or "
-                    q_user += " %s " % (translate("search_or", request=req))
+                    q_user += " {} ".format(_core_translation.translate("search_or", request=req))
                 first = 0
                 field_type = field.getFieldtype()
                 if query_to_key in req.args and field_type == "date":
@@ -182,11 +185,13 @@ def _extended_searchquery_from_req(req):
                     else:
                         q_str += u'({} >= {} and {} <= {})'.format(field.name, date_from, field.name, date_to)
 
-                        q_user += "(%s %s \"%s\" %s \"%s\")" % (field.name,
-                                                                translate("search_between", request=req),
-                                                                from_value,
-                                                                translate("search_and", request=req),
-                                                                to_value)
+                        q_user += u"({} {} \"{}\" {} \"{}\")".format(
+                                field.name,
+                                _core_translation.translate("search_between", request=req),
+                                from_value,
+                                _core_translation.translate("search_and", request=req),
+                                to_value,
+                            )
                 else:
                     # XXX: what about dates?
                     if field_type == "number":

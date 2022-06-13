@@ -14,8 +14,9 @@ import operator as _operator
 import core.config as config
 import mediatumtal.tal as _tal
 
+import core.csrfform as _core_csrfform
+import core.translation as _core_translation
 from utils.utils import format_filesize, suppress
-from core.translation import lang
 from web.edit.edit_common import send_nodefile_tal, upload_for_html
 from core.users import user_from_session as _user_from_session
 from core import httpstatus
@@ -71,7 +72,12 @@ def getContent(req, ids):
 
     if req.values.get('file') == "config":  # configuration file for ckeditor
         req.response.content_type = "application/javascript"
-        req.response.set_data(_tal.processTAL({'id': ids[0], 'lang': lang(req)}, file="web/edit/modules/startpages.html", macro="ckconfig", request=req))
+        req.response.set_data(_tal.processTAL(
+                dict(id=ids[0], lang=_core_translation.set_language(req.accept_languages)),
+                file="web/edit/modules/startpages.html",
+                macro="ckconfig",
+                request=req,
+            ))
         return
 
     if "action" in req.values:
@@ -214,15 +220,19 @@ def getContent(req, ids):
     lang2file = {lang: "" for lang in config.languages}
     lang2file.update(node.getStartpageDict())
 
-    v = {"id": req.values.get("id", "0"),
-         "tab": req.values.get("tab", ""),
-         "node": node,
-         "named_filelist": named_filelist,
-         "languages": config.languages,
-         "lang2file": lang2file,
-         "types": ['content'],
-         "d": lang2file and True,
-         "csrf": req.csrf_token.current_token
-         }
-
-    return _tal.processTAL(v, file="web/edit/modules/startpages.html", macro="edit_startpages", request=req)
+    return _tal.processTAL(
+            dict(
+                id=req.values.get("id", "0"),
+                tab=req.values.get("tab", ""),
+                node=node,
+                named_filelist=named_filelist,
+                languages=config.languages,
+                lang2file=lang2file,
+                types=['content'],
+                d=lang2file and True,
+                csrf=_core_csrfform.get_token(),
+            ),
+            file="web/edit/modules/startpages.html",
+            macro="edit_startpages",
+            request=req,
+        )

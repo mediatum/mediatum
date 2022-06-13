@@ -11,13 +11,14 @@ import codecs
 from warnings import warn
 
 from mediatumtal import tal
+
 import core.config as config
+import core.translation as _core_translation
 from core import Node, db
 from core.webconfig import node_url
 from contenttypes.data import Data
 
 from core.database.helpers import ContainerMixin
-from core.translation import t, lang, getDefaultLanguage
 from utils.utils import CustomItem
 from core.users import user_from_session as _user_from_session
 from core.postgres import check_type_arg_with_schema
@@ -177,7 +178,7 @@ class Container(Data, ContainerMixin, SchemaMixin):
                     content = c.read()
                 return content
 
-        spn = self.getStartpageFileNode(lang(req))
+        spn = self.getStartpageFileNode(_core_translation.set_language(req.accept_languages))
         if spn:
             long_path = spn.retrieveFile()
             if os.path.isfile(long_path) and fileIsNotEmpty(long_path):
@@ -189,7 +190,7 @@ class Container(Data, ContainerMixin, SchemaMixin):
     def show_node_image(self, language=None):
         return tal.getTAL("contenttypes/container.html", {"node": self}, macro="thumbnail", language=language)
 
-    def getLabel(self, lang=getDefaultLanguage()):
+    def getLabel(self, lang=_core_translation.getDefaultLanguage()):
 
         # try language-specific name first
         lang_value = self.get(u'{}.name'.format(lang))
@@ -197,7 +198,7 @@ class Container(Data, ContainerMixin, SchemaMixin):
             return self.get(u'{}.name'.format(lang))
 
         # always return the name if the requested lang matches the default language
-        if self.name and lang == getDefaultLanguage():
+        if self.name and lang == _core_translation.getDefaultLanguage():
             return self.name
 
         label = self.get(u"label")
@@ -230,20 +231,20 @@ class Container(Data, ContainerMixin, SchemaMixin):
         metafields = []
 
         field = Metafield(u"nodename", attrs={
-            "label": t(lang, "node name"),
+            "label": _core_translation.t(lang, "node name"),
             "type": u"text"
         })
         metafields.append(field)
 
         field = Metafield(u"style_full", attrs={
-            "label": t(lang, "full view style"),
+            "label": _core_translation.t(lang, "full view style"),
             "type": u"list",
             "valuelist": u"full_standard;full_text"
         })
         metafields.append(field)
 
         field = Metafield(u"style", attrs={
-            "label": t(lang, "style"),
+            "label": _core_translation.t(lang, "style"),
             "type": u"list",
             "valuelist": u"thumbnail;list;text",
         })
@@ -302,7 +303,7 @@ class Collection(Container):
         metafields = Container.metaFields(self, lang=lang)
         field = Metafield(u"style_hide_empty")
 
-        field.set("label", t(lang, "hide empty directories"))
+        field.set("label", _core_translation.t(lang, "hide empty directories"))
         field.set("type", u"check")
         metafields.append(field)
         return metafields

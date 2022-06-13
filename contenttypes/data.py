@@ -14,7 +14,7 @@ from mediatumtal import tal
 from core import Node, db
 from core.database.postgres.node import children_rel
 import core.config as config
-from core.translation import lang, t
+import core.translation as _core_translation
 from core.styles import get_full_style
 from core.postgres import check_type_arg_with_schema
 from export.exportutils import default_context
@@ -300,12 +300,12 @@ def _get_node_metadata_html(node, req):
     """Renders HTML data for displaying metadata using the the fullview mask.
     :rtype: unicode
     """
-    language = lang(req)
+    language = _core_translation.set_language(req.accept_languages)
     mask = node.getFullView(language)
     if mask is not None:
         return mask.getViewHTML([node], VIEW_HIDE_EMPTY, language)  # hide empty elements
     else:
-        return t(req, "no_metadata_to_display")
+        return _core_translation.t(req, "no_metadata_to_display")
 
 
 def child_node_url(child_id, **kwargs):

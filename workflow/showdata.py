@@ -7,8 +7,10 @@ from __future__ import print_function
 import logging
 import flask as _flask
 import mediatumtal.tal as _tal
+
+import core.csrfform as _core_csrfform
+import core.translation as _core_translation
 from .workflow import WorkflowStep, registerStep
-from core.translation import t, lang
 from schema.schema import VIEW_HIDE_EMPTY, Metafield, Metadatatype
 from core import db
 
@@ -58,7 +60,11 @@ class WorkflowStep_ShowData(WorkflowStep):
                     mask = t.getMask(maskname)
 
                 try:
-                    fieldmap += [mask.getViewHTML([node], VIEW_HIDE_EMPTY, language=lang(req))]
+                    fieldmap.append(mask.getViewHTML(
+                            [node],
+                            VIEW_HIDE_EMPTY,
+                            language=_core_translation.set_language(req.accept_languages),
+                        ))
                 except:
                     logg.exception("exception for mask %s, returning empty string", mask)
                     return ""
@@ -76,10 +82,10 @@ class WorkflowStep_ShowData(WorkflowStep):
                     filelist=filelist,
                     filelistshort=filelistshort,
                     fields=fieldmap,
-                    pretext=self.getPreText(lang(req)),
-                    posttext=self.getPostText(lang(req)),
+                    pretext=self.getPreText(_core_translation.set_language(req.accept_languages)),
+                    posttext=self.getPostText(_core_translation.set_language(req.accept_languages)),
                     buttons=self.tableRowButtons(node),
-                    csrf=req.csrf_token.current_token,
+                    csrf=_core_csrfform.get_token(),
                 ),
                 file="workflow/showdata.html",
                 macro="workflow_showdata",
@@ -88,6 +94,6 @@ class WorkflowStep_ShowData(WorkflowStep):
 
     def metaFields(self, lang=None):
         field = Metafield("masks")
-        field.set("label", t(lang, "admin_wfstep_masks_to_display"))
+        field.set("label", _core_translation.t(lang, "admin_wfstep_masks_to_display"))
         field.set("type", "text")
         return [field]

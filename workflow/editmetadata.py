@@ -6,8 +6,10 @@ from __future__ import print_function
 
 import flask as _flask
 import mediatumtal.tal as _tal
+
+import core.csrfform as _core_csrfform
+import core.translation as _core_translation
 from .workflow import WorkflowStep, registerStep
-from core.translation import t, lang, addLabels
 from schema.schema import getMetaType
 from schema.schema import Metafield
 from core import db
@@ -19,7 +21,7 @@ q = db.query
 def register():
     #tree.registerNodeClass("workflowstep-edit", WorkflowStep_EditMetadata)
     registerStep("workflowstep_editmetadata")
-    addLabels(WorkflowStep_EditMetadata.getLabels())
+    _core_translation.addLabels(WorkflowStep_EditMetadata.getLabels())
 
 
 class WorkflowStep_EditMetadata(WorkflowStep):
@@ -46,7 +48,9 @@ class WorkflowStep_EditMetadata(WorkflowStep):
                 op = "gotrue" in req.params
                 return self.forwardAndShow(node, op, req)
             else:
-                error = '<p class="error">%s</p>' % (t(lang(req), "workflow_error_msg"))
+                error = u'<p class="error">{}</p>'.format(
+                        _core_translation.t(_core_translation.set_language(req.accept_languages), "workflow_error_msg"),
+                    )
                 req.params["errorlist"] = missing
 
         if mask:
@@ -60,10 +64,10 @@ class WorkflowStep_EditMetadata(WorkflowStep):
                     error=error,
                     key=key,
                     mask=maskcontent,
-                    pretext=self.getPreText(lang(req)),
-                    posttext=self.getPostText(lang(req)),
+                    pretext=self.getPreText(_core_translation.set_language(req.accept_languages)),
+                    posttext=self.getPostText(_core_translation.set_language(req.accept_languages)),
                     buttons=self.tableRowButtons(node),
-                    csrf=req.csrf_token.current_token,
+                    csrf=_core_csrfform.get_token(),
                 ),
                 file="workflow/editmetadata.html",
                 macro="workflow_metadateneditor",
@@ -72,7 +76,7 @@ class WorkflowStep_EditMetadata(WorkflowStep):
 
     def metaFields(self, lang=None):
         field = Metafield("mask")
-        field.set("label", t(lang, "admin_wfstep_editor_mask"))
+        field.set("label", _core_translation.t(lang, "admin_wfstep_editor_mask"))
         field.set("type", "text")
         return [field]
 

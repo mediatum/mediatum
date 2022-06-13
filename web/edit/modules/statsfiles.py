@@ -7,6 +7,8 @@ from __future__ import print_function
 import logging
 
 import mediatumtal.tal as _tal
+
+import core.csrfform as _core_csrfform
 from utils.date import format_date
 from core.users import user_from_session as _user_from_session
 from core import httpstatus
@@ -155,4 +157,9 @@ def getContent(req, ids):
         req.response.set_data(_tal.processTAL(v, file="web/edit/modules/statsfiles.html", macro="edit_stats_popup", request=req))
         return ""
 
-    return _tal.processTAL({"id": ids, "csrf": req.csrf_token.current_token}, file="web/edit/modules/statsfiles.html", macro="edit_stats", request=req)
+    return _tal.processTAL(
+            dict(id=ids, csrf=_core_csrfform.get_token()),
+            file="web/edit/modules/statsfiles.html",
+            macro="edit_stats",
+            request=req,
+        )

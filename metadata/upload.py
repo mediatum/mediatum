@@ -14,11 +14,11 @@ import re
 import datetime
 
 from mediatumtal import tal
-from core import request_handler as _request_handler
-import core.users as users
 
+from core import request_handler as _request_handler
+import core.translation as _core_translation
+import core.users as users
 from core.metatype import Metatype
-from core.translation import getDefaultLanguage, t, lang
 from utils.fileutils import importFile
 import utils.fileutils as _utils_fileutils
 from utils.utils import suppress
@@ -79,7 +79,9 @@ class m_upload(Metatype):
             warning = [t[1] for t in self.labels[language] if t[0] == 'upload_notarget_warning'][0]
         except:
             logg.exception("exception in getEditorHTML, using default language")
-            warning = [t[1] for t in self.labels[getDefaultLanguage()] if t[0] == 'upload_notarget_warning'][0]
+            warning = [
+                    t[1] for t in self.labels[_core_translation.getDefaultLanguage()] if t[0] == 'upload_notarget_warning'
+                ][0]
 
         context = {
             "lock": lock,
@@ -313,7 +315,7 @@ def handle_request(req):
             filename = file.filename
 
         else:
-            msg = t(lang(req), "no file for this field submitted")
+            msg = t(_core_translation.set_language(req.accept_languages), "no file for this field submitted")
             errors.append(msg)
 
         if filename:
@@ -334,7 +336,7 @@ def handle_request(req):
             targetnode.set(submitter, filecount + 1)
             db.session.commit()
 
-            copy_report = t(lang(req), "uploaded file: %s") % (filename)
+            copy_report = "uploaded file: {}".format(filename)
 
         else:
             copy_report = ""

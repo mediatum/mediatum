@@ -150,7 +150,7 @@ def initContexts():
 
     @_request_handler.request_started
     def set_lang(req, *args):
-        set_language(req)
+        set_language(req.accept_languages)
 
     context = _request_handler.addContext("/", ".")
 

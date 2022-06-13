@@ -8,18 +8,10 @@ from __future__ import print_function
 
 import os
 import flask_login as _flask_login
-
-try:
-    import uwsgi as _uwsgi
-except ImportError:
-    _uwsgi = None
-
 from flask import Flask, request, session, url_for, redirect, flash
 from flask_admin import Admin
-from flask_admin.form import SecureForm
 from web.admin.views.user import UserView, UserGroupView, AuthenticatorInfoView, OAuthUserCredentialsView
-from wtforms import form, fields, validators
-from wtforms.validators import ValidationError
+from wtforms import fields, validators
 from core import db, User, config
 from core.auth import authenticate_user_credentials, logout_user
 from flask_admin import AdminIndexView
@@ -34,6 +26,7 @@ from werkzeug.utils import cached_property as _cached_property
 from core.templating import PyJadeExtension as _PyJadeExtension
 from jinja2.loaders import FileSystemLoader as _FileSystemLoader, ChoiceLoader as _ChoiceLoader
 import utils.utils as _utils_utils
+import core.csrfform as _core_csrfform
 from core.request_handler import handle_request as _handle_request
 
 
@@ -112,14 +105,7 @@ class IndexView(AdminIndexView):
         return redirect(url_for('.index'))
 
 
-class LoginForm(form.Form):
-    class Meta(SecureForm.Meta):
-        csrf_time_limit = timedelta(seconds=int(config.get('csrf.timeout', "7200")))
-
-        @property
-        def csrf_context(self):
-            return session
-
+class LoginForm(_core_csrfform.CSRFForm):
     """Creates login form for flask-Login."""
     login = fields.StringField(validators=[validators.required()])
     password = fields.PasswordField(validators=[validators.required()])
@@ -132,17 +118,6 @@ class LoginForm(form.Form):
             raise validators.ValidationError('Invalid password')
         flash('Logged in successfully')
 
-    def validate_csrf_token(self, field):
-        try:
-            self._csrf.validate_csrf_token(self._csrf, field)
-        except ValidationError as e:
-            if (e.message == "CSRF token expired"):
-                self.csrf_token.current_token = self._csrf.generate_csrf_token(field)
-                csrf_errors = self.errors['csrf_token']
-                csrf_errors.remove("CSRF token expired")
-                if not any(csrf_errors):
-                    self.errors.pop("csrf_token")
-
     def get_user(self):
         return q(User).filter_by(login_name=self.login.data).first()
 
@@ -154,16 +129,7 @@ def make_app():
     """
     admin_app = MediatumFlask("mediaTUM admin", template_folder="web/templates")
     admin_app.debug = True
-    # Generate seed for signed session cookies
-    if "admin.session_secret_key_file" in config.settings:
-        with open(config.settings["admin.session_secret_key_file"], "rb") as f:
-            secret_key = f.read()
-    else:
-        secret_key = _utils_utils.gen_secure_token()
-    if _uwsgi:
-        _uwsgi.cache_set("secret_key", secret_key)
-        secret_key = _uwsgi.cache_get("secret_key")
-    admin_app.config["SECRET_KEY"] = secret_key
+    admin_app.config["SECRET_KEY"] = config.get_secret_key("admin.session_secret_key_file", uwsgi_cache_key="session_secret_key")
     admin_app.config['PERMANENT_SESSION_LIFETIME'] = int(config.get('admin.session_expiration_time', 7200))
     admin_app.config["SESSION_COOKIE_NAME"] = 'mediatum_session'
 

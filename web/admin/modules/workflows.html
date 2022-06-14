@@ -322,7 +322,7 @@
 
 <metal:block
         metal:define-macro="workflow_step_config"
-        tal:define="id python:workflowstep.id; language_count python:len(languages)"
+        tal:define="id python:workflowstep.id"
        >
     <script src="/static/js/admin/modules/admin.js"> </script>
     <p><a tal:attributes="href python:u'./workflows?detailof={}{}'.format(workflow_id, page)" i18n:translate="admin_overview">TEXT</a></p>

@@ -176,7 +176,7 @@ class WorkflowStep_Start(WorkflowStep):
                     ("workflow_start_key_m", u"Schlüssel / Key"),
                     ("workflow_start_continue", "Fortsetzen"),
                     ("workflow_start_continue_m", "Fortsetzen / Continue"),
-                    ("workflow_start_err_wrongkey", "Fehler bei der Eingabe."),
+                    ("workflow_start_err_wrongkey", u"Identifikationsnummer oder Schlüssel ist nicht korrekt."),
                     ("workflow_start_err_protected", "Keine Bearbeitung erforderlich."),
                 ],
                 "en":
@@ -198,7 +198,7 @@ class WorkflowStep_Start(WorkflowStep):
                     ("workflow_start_key_m", u"Key / Schlüssel"),
                     ("workflow_start_continue", "Continue"),
                     ("workflow_start_continue_m", "Continue / Fortsetzen"),
-                    ("workflow_start_err_wrongkey", "wrong Identificator/Key."),
+                    ("workflow_start_err_wrongkey", 'In order to proceed, please fill out fields "Identification Number" and "Key" properly'),
                     ("workflow_start_err_protected", "no changes needed."),
                 ]
                 }

@@ -19,12 +19,11 @@ from core.database.postgres.permission import NodeToAccessRuleset
 from web import frontend as _web_frontend
 import core.translation as _core_translation
 from schema.schema import parseEditorData
-from utils.utils import removeEmptyStrings
 from web.admin.adminutils import Overview
 from web.admin.adminutils import getAdminStdVars
 from web.admin.adminutils import getFilter
 from web.admin.adminutils import getSortCol
-from web.common.acl_web import makeList
+import web.common.acl_web as _acl_web
 from workflow.workflow import Workflow
 from workflow.workflow import addWorkflow
 from workflow.workflow import create_update_workflow_step
@@ -356,17 +355,9 @@ def _get_workflow_config_form_html(req, id, error=None):
         workflow.id = req.values["id"]
         db.session.commit()
 
-    try:
-        rule = {
-                "read": [r.ruleset_name for r in workflow.access_ruleset_assocs.filter_by(ruletype='read')],
-                "write": [r.ruleset_name for r in workflow.access_ruleset_assocs.filter_by(ruletype='write')],
-            }
-    except:
-        rule = {"read": [], "write": []}
-
     v.update(
-        acl_read=makeList(req, "read", removeEmptyStrings(rule["read"]), {}, overload=0, type="read"),
-        acl_write=makeList(req, "write", removeEmptyStrings(rule["write"]), {}, overload=0, type="write"),
+        acl_read=_acl_web.make_acl_html_options(workflow, "read", _core_translation.set_language(req.accept_languages)),
+        acl_write=_acl_web.make_acl_html_options(workflow, "write", _core_translation.set_language(req.accept_languages)),
         workflow=workflow,
         languages=config.languages,
         error=error,
@@ -485,17 +476,9 @@ def _get_workflow_step_config_form_html(req, wid, wnid, error=None):
     v_part["node"] = workflowstep
     v_part["hiddenvalues"] = {"wnodeid": workflowstep.name}
 
-    try:
-        rule = {
-                "read": [r.ruleset_name for r in workflowstep.access_ruleset_assocs.filter_by(ruletype='read')],
-                "write": [r.ruleset_name for r in workflowstep.access_ruleset_assocs.filter_by(ruletype='write')],
-            }
-    except:
-        rule = {"read": [], "write": []}
-
     v.update(
-        acl_read=makeList(req, "read", removeEmptyStrings(rule["read"]), {}, overload=0, type="read"),
-        acl_write=makeList(req, "write", removeEmptyStrings(rule["write"]), {}, overload=0, type="write"),
+        acl_read=_acl_web.make_acl_html_options(workflowstep, "read", _core_translation.set_language(req.accept_languages)),
+        acl_write=_acl_web.make_acl_html_options(workflowstep, "write", _core_translation.set_language(req.accept_languages)),
         editor=_tal.processTAL(
             v_part,
             file="web/admin/modules/workflows.html",

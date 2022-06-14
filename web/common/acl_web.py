@@ -3,78 +3,56 @@
 
 from __future__ import division
 from __future__ import print_function
+from __future__ import unicode_literals
+from itertools import imap as map
+from itertools import ifilter as filter
+range = xrange
+
+import functools as _functools
+import itertools as _itertools
+
+import sqlalchemy.orm.exc as _sqlalchemy_orm_exc
 
 import cgi as _cgi
 
 import core.translation as _core_translation
 from core.database.postgres.permission import AccessRuleset
 from core import db
-from collections import OrderedDict
+import utils.utils as _utils_utils
 
 q = db.query
 
 
-def makeList(req, name, rights, readonlyrights, overload=0, type=""):
-    rightsmap = {}
-    rorightsmap = {}
-    for r in rights:
-        rightsmap[r] = None
+def make_acl_html_options(node, ruletype, language):
+    rights = []
+    with _utils_utils.suppress(_sqlalchemy_orm_exc.DetachedInstanceError, warn=False):
+        rights.extend(r.ruleset_name for r in node.access_ruleset_assocs.filter_by(ruletype=ruletype))
+    rights = list(filter(None, rights))
 
     # ignore private rulesets starting with _
     rulelist = q(AccessRuleset).filter(~AccessRuleset.name.like("\_%")).order_by(AccessRuleset.name).all()
 
-    val_left = ""
-    val_right = ""
-    language = _core_translation.set_language(req.accept_languages)
-
-    if not (len(rightsmap) > 0 and overload):
-        # inherited standard rules
-        for rule in rulelist:
-            if rule.name in readonlyrights:
-                if rule.description.startswith("{"):
-                    val_left += '<optgroup label="{}"></optgroup>'.format(_core_translation.translate(
-                            language,
-                            "edit_acl_special_rule",
-                        ))
-                else:
-                    val_left += u'<optgroup label="{}"/>'.format(_cgi.escape(rule.description, quote=True))
-                rorightsmap[rule.name] = 1
-
-        # inherited implicit rules
-        for rule in readonlyrights:
-            if rule not in rorightsmap:
-                if rule.startswith("{"):
-                    val_left += '<optgroup label="{}"></optgroup>'.format(_core_translation.translate(
-                            language,
-                            "edit_acl_special_rule",
-                        ))
-                else:
-                    val_left += u'<optgroup label="{}"/>'.format(_cgi.escape(rule, quote=True))
+    left = []
+    right = []
 
     # node-level standard rules
     for rule in rulelist:
-        if rule.name in rightsmap:
-            val_left += u'<option value="{}">{}</option>'.format(
-                    _cgi.escape(rule.name, quote=True),
-                    _cgi.escape(rule.description, quote=True),
-                )
-            rightsmap[rule.name] = 1
+        if rule.name in rights:
+            left.append((rule.name, rule.description))
+            rights.remove(rule.name)
+        else:
+            right.append((rule.name, rule.description))
 
     # node-level implicit rules
-    for r in rightsmap.keys():
-        if not rightsmap[r] and r not in rorightsmap:
-            if r.startswith("{"):  # special rights not changeable in normal ACL area
-                val_left += """<option value="{}">{}</option>""".format(
-                        r,
-                        _core_translation.translate(language, "edit_acl_special_rule"),
-                    )
-            else:
-                val_left += u'<option value="{0}">{0}</option>'.format(_cgi.escape(r, quote=True))
+    for right in rights:
+        # special rights starting with "{" not changeable in normal ACL area
+        left.append((
+            right,
+            _core_translation.translate(language, "edit_acl_special_rule") if right.startswith("{") else right,
+           ))
 
-    for rule in rulelist:
-        if rule.name not in rightsmap and rule.name not in rorightsmap:
-            val_right += u'<option value="{}">{}</option>'.format(
-                    _cgi.escape(rule.name, quote=True),
-                    _cgi.escape(rule.description, quote=True),
-                )
-    return {"name": name, "val_left": val_left, "val_right": val_right, "type": type}
+    esc_map = _functools.partial(map, _functools.partial(_cgi.escape, quote=True))
+    return dict(
+        left="\n".join(_itertools.starmap("<option value=\"{}\">{}</option>".format, map(esc_map, left))),
+        right="\n".join(_itertools.starmap("<option value=\"{}\">{}</option>".format, map(esc_map, right))),
+       )

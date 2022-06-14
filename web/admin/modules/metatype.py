@@ -14,11 +14,11 @@ import sqlalchemy as _sqlalchemy
 import werkzeug.datastructures as _datastructures
 
 from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter
-from web.common.acl_web import makeList
-from utils.utils import removeEmptyStrings, esc, suppress
 import core.config as _config
 import core.csrfform as _core_csrfform
 import core.nodecache as _core_nodecache
+import web.common.acl_web as _acl_web
+from utils.utils import suppress
 import core.translation as _translation
 from schema.schema import getMetaFieldTypeNames, getMetaType, updateMetaType, existMetaType, deleteMetaType, fieldoption, moveMetaField, getMetaField, deleteMetaField, getFieldsForMeta, dateoption, requiredoption, existMetaField, updateMetaField, generateMask, cloneMask, exportMetaScheme, importMetaSchema
 from schema.schema import VIEW_DEFAULT
@@ -33,12 +33,10 @@ from .metatype_field import showDetailList
 from .metatype_mask import showMaskList
 
 from contenttypes.data import Data
-import contenttypes as _contenttypes
 
 from core import Node
 from core import db
 import core.nodecache as _nodecache
-import core.systemtypes as _systemtypes
 from schema.schema import Metadatatype, Mask
 from core.database.postgres.permission import NodeToAccessRuleset
 import core.database.postgres.node as _node
@@ -120,13 +118,7 @@ def _mask_details(req, nid=None, err=0):
     v["morig_name"] = morig_name
     v["langs"] = _config.languages
     v["actpage"] = req.values["actpage"]
-
-    try:
-        rules = [r.ruleset_name for r in mask.access_ruleset_assocs.filter_by(ruletype=u'read')]
-    except:
-        rules = []
-
-    v["acl"] = makeList(req, "read", removeEmptyStrings(rules), {}, overload=0, type=u"read")
+    v["acl"] = _acl_web.make_acl_html_options(mask, "read", _translation.set_language(req.accept_languages))
     v["csrf"] = _core_csrfform.get_token()
 
     return _tal.processTAL(v, file="web/admin/modules/metatype_mask.html", macro="modify_mask", request=req)
@@ -471,13 +463,7 @@ def MetatypeDetail(req, id, err=0):
     v["bibtexselected"] = metadatatype.get("bibtexmapping").split(";")
     v["citeproctypes"] = citeproc.TYPES
     v["citeprocselected"] = metadatatype.get("citeprocmapping").split(";")
-
-    try:
-        rules = [r.ruleset_name for r in metadatatype.access_ruleset_assocs.filter_by(ruletype=u'read')]
-    except:
-        rules = []
-
-    v["acl"] = makeList(req, "read", removeEmptyStrings(rules), {}, overload=0, type="read")
+    v["acl"] = _acl_web.make_acl_html_options(metadatatype, "read", _translation.set_language(req.accept_languages))
     v["filtertype"] = req.params.get("filtertype", "")
     v["actpage"] = req.params.get("actpage")
     v["csrf"] = _core_csrfform.get_token()

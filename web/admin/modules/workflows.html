@@ -145,16 +145,16 @@
                     <table border="0px" cellpadding="0px" cellspacing="0px">
                         <tr>
                             <td align="left" valign="top">
-                                <select tal:content="raw python:acl_write['val_left']" tal:attributes="name python:u'left_write{}'.format(acl_write['name']);id python:u'left_write{}'.format(acl_write['name']); ondblclick python:u'moveRight(document.editworkflow.left_write{},document.editworkflow.right_write{})'.format(acl_write['name'], acl_write['name'])" style="width:320px" size="6" multiple="multiple">
+                                <select tal:content="raw python:acl_write['left']" tal:attributes="name python:u'left_writewrite';id python:u'left_writewrite'; ondblclick python:u'moveRight(document.editworkflow.left_writewrite,document.editworkflow.right_writewrite)'" style="width:320px" size="6" multiple="multiple">
                                 </select>
                             </td>
                             <td style="padding-left:10px;padding-right:10px;" align="left" valign="center">
-                                <input tal:attributes="onclick python:u'moveLeft(document.editworkflow.left_write{},document.editworkflow.right_write{})'.format(acl_write['name'], acl_write['name'])" type="button" value="<<"/>
+                                <input tal:attributes="onclick python:u'moveLeft(document.editworkflow.left_writewrite,document.editworkflow.right_writewrite)'" type="button" value="<<"/>
                                 <br/>
-                                <input tal:attributes="onclick python:u'moveRight(document.editworkflow.left_write{},document.editworkflow.right_write{})'.format(acl_write['name'], acl_write['name'])" type="button" value=">>"/>
+                                <input tal:attributes="onclick python:u'moveRight(document.editworkflow.left_writewrite,document.editworkflow.right_writewrite)'" type="button" value=">>"/>
                             </td>
                             <td align="left" valign="top">
-                                <select tal:content="raw python:acl_write['val_right']" tal:attributes="name python:u'right_write{}'.format(acl_write['name']); ondblclick python:u'moveLeft(document.editworkflow.left_write{},document.editworkflow.right_write{})'.format(acl_write['name'], acl_write['name'])" style="width:320px" size="6" multiple="multiple">
+                                <select tal:content="raw python:acl_write['right']" tal:attributes="name python:u'right_writewrite'; ondblclick python:u'moveLeft(document.editworkflow.left_writewrite,document.editworkflow.right_writewrite)'" style="width:320px" size="6" multiple="multiple">
                                 </select>
                             </td>
                         </tr>
@@ -168,16 +168,16 @@
                     <table border="0px" cellpadding="0px" cellspacing="0px">
                         <tr>
                             <td align="left" valign="top">
-                                <select tal:content="raw python:acl_read['val_left']" tal:attributes="name python:u'left_read{}'.format(acl_read['name']);id python:u'left_read{}'.format(acl_read['name']); ondblclick python:u'moveRight(document.editworkflow.left_read{},document.editworkflow.right_read{})'.format(acl_read['name'], acl_read['name'])" style="width:320px" size="6" multiple="multiple">
+                                <select tal:content="raw python:acl_read['left']" tal:attributes="name python:u'left_readread';id python:u'left_readread'; ondblclick python:u'moveRight(document.editworkflow.left_readread,document.editworkflow.right_readread)'" style="width:320px" size="6" multiple="multiple">
                                 </select>
                             </td>
                             <td style="padding-left:10px;padding-right:10px;" align="left" valign="center">
-                                <input tal:attributes="onclick python:u'moveLeft(document.editworkflow.left_read{},document.editworkflow.right_read{})'.format(acl_read['name'], acl_read['name'])" type="button" value="<<"/>
+                                <input tal:attributes="onclick python:u'moveLeft(document.editworkflow.left_readread,document.editworkflow.right_readread)'" type="button" value="<<"/>
                                 <br/>
-                                <input tal:attributes="onclick python:u'moveRight(document.editworkflow.left_read{},document.editworkflow.right_read{})'.format(acl_read['name'], acl_read['name'])" type="button" value=">>"/>
+                                <input tal:attributes="onclick python:u'moveRight(document.editworkflow.left_readread,document.editworkflow.right_readread)'" type="button" value=">>"/>
                             </td>
                             <td align="left" valign="top">
-                                <select tal:content="raw python:acl_read['val_right']" tal:attributes="name python:u'right_read{}'.format(acl_read['name']);  ondblclick python:u'moveLeft(document.editworkflow.left_read{},document.editworkflow.right_read{})'.format(acl_read['name'], acl_read['name'])" style="width:320px" size="6" multiple="multiple">
+                                <select tal:content="raw python:acl_read['right']" tal:attributes="name python:u'right_readread';  ondblclick python:u'moveLeft(document.editworkflow.left_readread,document.editworkflow.right_readread)'" style="width:320px" size="6" multiple="multiple">
                                 </select>
                             </td>
                         </tr>
@@ -208,7 +208,7 @@
             <tr>
                 <td>&nbsp;</td>
                 <td>
-                    <button i18n:attributes="title admin_save_title" tal:attributes="onclick python:u'selectacl(Array(\'left_read{}\', \'left_write{}\'))'.format(acl_read['name'], acl_write['name']);" i18n:translate="admin_save" type="submit" name="submit" value="submit">TEXT</button>&nbsp;&nbsp;
+                    <button i18n:attributes="title admin_save_title" tal:attributes="onclick python:u'selectacl(Array(\'left_readread\', \'left_writewrite\'))';" i18n:translate="admin_save" type="submit" name="submit" value="submit">TEXT</button>&nbsp;&nbsp;
                     <button i18n:attributes="title admin_cancel_title" i18n:translate="admin_cancel" type="submit" name="cancel" value="cancel" onclick="setCancel()">TEXT</button>
                 </td>
             </tr>
@@ -443,16 +443,16 @@
                     <table border="0px" cellpadding="0px" cellspacing="0px">
                         <tr>
                             <td align="left" valign="top">
-                                <select tal:content="raw python:acl_write['val_left']" tal:attributes="name python:u'left_write{}'.format(acl_write['name']);id python:u'left_write{}'.format(acl_write['name']); ondblclick python:u'moveRight(document.addmfield.left_write{},document.addmfield.right_write{})'.format(acl_write['name'], acl_write['name'])" style="width:320px" size="6" multiple="multiple">
+                                <select tal:content="raw python:acl_write['left']" tal:attributes="name python:u'left_writewrite';id python:u'left_writewrite'; ondblclick python:u'moveRight(document.addmfield.left_writewrite,document.addmfield.right_writewrite)'" style="width:320px" size="6" multiple="multiple">
                                 </select>
                             </td>
                             <td style="padding-left:10px;padding-right:10px;" align="left" valign="center">
-                                <input tal:attributes="onclick python:u'moveLeft(document.addmfield.left_write{},document.addmfield.right_write{})'.format(acl_write['name'], acl_write['name'])" type="button" value="<<"/>
+                                <input tal:attributes="onclick python:u'moveLeft(document.addmfield.left_writewrite,document.addmfield.right_writewrite)'" type="button" value="<<"/>
                                 <br/>
-                                <input tal:attributes="onclick python:u'moveRight(document.addmfield.left_write{},document.addmfield.right_write{})'.format(acl_write['name'], acl_write['name'])" type="button" value=">>"/>
+                                <input tal:attributes="onclick python:u'moveRight(document.addmfield.left_writewrite,document.addmfield.right_writewrite)'" type="button" value=">>"/>
                             </td>
                             <td align="left" valign="top">
-                                <select tal:content="raw python:acl_write['val_right']" tal:attributes="name python:u'right_write{}'.format(acl_write['name']);  ondblclick python:u'moveLeft(document.addmfield.left_write{},document.addmfield.right_write{})'.format(acl_write['name'], acl_write['name'])" style="width:320px" size="6" multiple="multiple">
+                                <select tal:content="raw python:acl_write['right']" tal:attributes="name python:u'right_writewrite';  ondblclick python:u'moveLeft(document.addmfield.left_writewrite,document.addmfield.right_writewrite)'" style="width:320px" size="6" multiple="multiple">
                                 </select>
                             </td>
                         </tr>
@@ -465,16 +465,16 @@
                     <table border="0px" cellpadding="0px" cellspacing="0px">
                         <tr>
                             <td align="left" valign="top">
-                                <select tal:content="raw python:acl_read['val_left']" tal:attributes="name python:u'left_read{}'.format(acl_read['name']);id python:u'left_read{}'.format(acl_read['name']); ondblclick python:u'moveRight(document.addmfield.left_read{},document.addmfield.right_read{})'.format(acl_read['name'], acl_read['name'])" style="width:320px" size="6" multiple="multiple">
+                                <select tal:content="raw python:acl_read['left']" tal:attributes="name python:u'left_readread';id python:u'left_readread'; ondblclick python:u'moveRight(document.addmfield.left_readread,document.addmfield.right_readread)'" style="width:320px" size="6" multiple="multiple">
                                 </select>
                             </td>
                             <td style="padding-left:10px;padding-right:10px;" align="left" valign="center">
-                                <input tal:attributes="onclick python:u'moveLeft(document.addmfield.left_read{},document.addmfield.right_read{})'.format(acl_read['name'], acl_read['name'])" type="button" value="<<"/>
+                                <input tal:attributes="onclick python:u'moveLeft(document.addmfield.left_readread,document.addmfield.right_readread)'" type="button" value="<<"/>
                                 <br/>
-                                <input tal:attributes="onclick python:u'moveRight(document.addmfield.left_read{},document.addmfield.right_read{})'.format(acl_read['name'], acl_read['name'])" type="button" value=">>"/>
+                                <input tal:attributes="onclick python:u'moveRight(document.addmfield.left_readread,document.addmfield.right_readread)'" type="button" value=">>"/>
                             </td>
                             <td align="left" valign="top">
-                                <select tal:content="raw python:acl_read['val_right']" tal:attributes="name python:u'right_read{}'.format(acl_read['name']);  ondblclick python:u'moveLeft(document.addmfield.left_read{},document.addmfield.right_read{})'.format(acl_read['name'], acl_read['name'])" style="width:320px" size="6" multiple="multiple">
+                                <select tal:content="raw python:acl_read['right']" tal:attributes="name python:u'right_readread';  ondblclick python:u'moveLeft(document.addmfield.left_readread,document.addmfield.right_readread)'" style="width:320px" size="6" multiple="multiple">
                                 </select>
                             </td>
                         </tr>
@@ -488,7 +488,7 @@
             <tr>
                 <td>&nbsp;</td>
                 <td>
-                    <button i18n:attributes="title admin_save_title" i18n:translate="admin_save" tal:attributes="onclick python:u'selectacls(Array(\'left_read{}\', \'left_write{}\'))'.format(acl_read['name'], acl_write['name']);" type="submit" name="submitbutton" value="submit">TEXT</button>&nbsp;&nbsp;
+                    <button i18n:attributes="title admin_save_title" i18n:translate="admin_save" tal:attributes="onclick python:u'selectacls(Array(\'left_readread\', \'left_writewrite\'))';" type="submit" name="submitbutton" value="submit">TEXT</button>&nbsp;&nbsp;
                     <button i18n:attributes="title admin_cancel_title" i18n:translate="admin_cancel" type="submit" name="cancel" value="cancel" onclick="setCancel()">TEXT</button>
                 </td>
             </tr>

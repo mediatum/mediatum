@@ -208,7 +208,7 @@ def apply_order_by_for_sortfields(query, sortfields_to_comp, before=False):
     return query
 
 
-def get_accessible_node(nid):
+def _get_accessible_node(nid):
     """Fetches node by ID, checking read access.
     Returns a Node or Node if node not found or not accessible by user."""
     return q(Node).filter_by(id=nid).filter_read_access().prefetch_attrs().prefetch_system_attrs().scalar()
@@ -396,7 +396,7 @@ class ContentList(ContentBase):
         self.show_id = req.args.get("show_id")
         self.result_nav = req.args.get("result_nav")
 
-        if self.show_id or self.result_nav:
+        if (self.show_id and _get_accessible_node(self.show_id)) or (self.result_nav and not self.show_id):
             # single result view
             self.content = self._single_result()
             return self.content.feedback(req)
@@ -449,7 +449,7 @@ class ContentList(ContentBase):
 
         if self.show_id:
             # show_id needed for all cases except first and last
-            show_node = get_accessible_node(self.show_id)
+            show_node = _get_accessible_node(self.show_id)
             
             if show_node is None:
                 return NodeNotAccessible()

@@ -34,15 +34,13 @@ global_modules = {}
 BASENAME = _re.compile("([^/]*/)*([^/.]*)(.py)?")
 
 
-def qualify_path(p):
-    if p[-1] != '/':
-        return p + "/"
-    return p
+def _qualify_path(p):
+    return "{}/".format(p.rstrip("/"))
 
 
 def setBase(base):
     global _basedir
-    _basedir = qualify_path(base)
+    _basedir = _qualify_path(base)
 
 
 class _WebFile:
@@ -244,7 +242,7 @@ class _WebContext:
         self.files = []
         self.startupfile = None
         if root:
-            self.root = qualify_path(root)
+            self.root = _qualify_path(root)
         self.pattern_to_function = _OrderedDict()
         self.catchall_handler = None
 

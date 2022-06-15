@@ -26,14 +26,12 @@ from collections import OrderedDict as _OrderedDict
 
 _logg = _logging.getLogger(__name__)
 
-GLOBAL_TEMP_DIR = "/tmp/"
-GLOBAL_ROOT_DIR = "no-root-dir-set"
+_basedir = "no-root-dir-set"
 
 contexts = []
 global_modules = {}
 
 BASENAME = _re.compile("([^/]*/)*([^/.]*)(.py)?")
-verbose = 1
 
 
 def join_paths(p1, p2):
@@ -56,17 +54,8 @@ def qualify_path(p):
 
 
 def setBase(base):
-    global GLOBAL_ROOT_DIR
-    GLOBAL_ROOT_DIR = qualify_path(base)
-
-
-def setTempDir(tempdir):
-    global GLOBAL_TEMP_DIR
-    GLOBAL_TEMP_DIR = qualify_path(tempdir)
-
-
-def getBase():
-    return GLOBAL_ROOT_DIR
+    global _basedir
+    _basedir = qualify_path(base)
 
 
 class _WebFile:
@@ -211,14 +200,6 @@ def sendFile(req, path, content_type, force=0):
     req.response.headers['X-Accel-Redirect'] = _os.path.join("/{}".format(nginx_alias), _os.path.relpath(path, nginx_dir))
 
 
-def html_repr(object):
-    so = _escape(repr(object))
-    if hasattr(object, 'hyper_respond'):
-        return '<a href="/status/object/%d/">%s</a>' % (id(object), so)
-    else:
-        return so
-
-
 def makeSelfLink(req, params):
     params2 = req.params.copy()
     for k, v in params.items():
@@ -285,19 +266,6 @@ class _WebContext:
         self.files += [file]
         return file
 
-    def setRoot(self, root):
-        self.root = qualify_path(root)
-        while self.root.startswith("./"):
-            self.root = self.root[2:]
-
-    def setStartupFile(self, startupfile):
-        self.startupfile = startupfile
-        _logg.info("  executing startupfile")
-        self._load_module(self.startupfile)
-
-    def getStartupFile(self):
-        return self.startupfile
-
     def match(self, path):
         def call_and_close(f, req):
             status = f(req)
@@ -314,8 +282,7 @@ class _WebContext:
         for pattern, call in self.pattern_to_function.items():
             if pattern.match(path):
                 function, desc = call
-                if verbose:
-                    _logg.debug("Request %s matches (%s)", path, desc)
+                _logg.debug("Request %s matches (%s)", path, desc)
                 return lambda req: call_and_close(function, req)
 
         # no pattern matched, use catchall handler if present

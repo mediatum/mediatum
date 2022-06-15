@@ -93,7 +93,6 @@ def add_template_globals():
 
 def initContexts():
     _request_handler.setBase(config.basedir)
-    _request_handler.setTempDir(config.get("paths.tempdir", "/tmp/"))
     from core.config import resolve_filename
     tal.set_base(config.basedir)
     tal.add_macro_resolver(resolve_filename)

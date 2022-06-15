@@ -20,7 +20,7 @@ import flask as _flask
 import core.translation as _core_translation
 import httpstatus as _httpstatus
 from core import config as _config
-from utils.utils import suppress as _suppress, nullcontext as _nullcontext
+from utils import utils as _utils_utils
 from utils.url import build_url_from_path_and_params as _build_url_from_path_and_params
 from collections import OrderedDict as _OrderedDict
 
@@ -32,19 +32,6 @@ contexts = []
 global_modules = {}
 
 BASENAME = _re.compile("([^/]*/)*([^/.]*)(.py)?")
-
-
-def join_paths(p1, p2):
-    if p1.endswith("/"):
-        if p2.startswith("/"):
-            return p1[:-1] + p2
-        else:
-            return p1 + p2
-    else:
-        if p2.startswith("/"):
-            return p1 + p2
-        else:
-            return p1 + "/" + p2
 
 
 def qualify_path(p):
@@ -66,7 +53,7 @@ class _WebFile:
             filename = filename[1:]
         self.filename = filename
         if module is None:
-            self.m = _load_module(join_paths(context.root, filename))
+            self.m = _load_module(_utils_utils.join_paths(context.root, filename))
         else:
             self.m = module
             global_modules[filename] = module
@@ -88,7 +75,7 @@ class _WebHandler:
         if isinstance(function, str):
             self.function = function
             m = file.m
-            with _nullcontext():
+            with _utils_utils.nullcontext():
                 self.f = getattr(m, function)
         else:
             self.f = function
@@ -206,7 +193,7 @@ def makeSelfLink(req, params):
         if v is not None:
             params2[k] = v
         else:
-            with _suppress(Exception, warn=False):
+            with _utils_utils.suppress(Exception, warn=False):
                 del params2[k]
     ret = _build_url_from_path_and_params(req.path, params2)
     return ret

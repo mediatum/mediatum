@@ -515,8 +515,13 @@ def action(req):
             'edit_add_{}'.format(newnode_type),
         )
         if translated_label.startswith('edit_add_'):
-            translated_label = t(
-                _core_translation.set_language(req.accept_languages), 'edit_add_container_default') + newnode_type
+            translated_label = "{}{}".format(
+                    _core_translation.t(
+                        _core_translation.set_language(req.accept_languages),
+                        'edit_add_container_default',
+                    ),
+                    newnode_type,
+                )
 
         content_class = Node.get_class_for_typestring(newnode_type)
         newnode = content_class(name=translated_label)

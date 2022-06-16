@@ -154,7 +154,10 @@ def show_printview(req):
         return
     if not node.has_read_access():
         req.response.status_code = httpstatus.HTTP_FORBIDDEN
-        req.response.set_data(t(_core_translation.set_language(req.accept_languages), "permission_denied"))
+        req.response.set_data(_core_translation.t(
+                _core_translation.set_language(req.accept_languages),
+                "permission_denied",
+            ))
         return
 
     style = int(req.values.get("style", 2))

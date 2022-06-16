@@ -183,7 +183,10 @@ def getContent(req, ids):
 
             if node.get('system.identifierstate') == '1':
                 v['show_form'] = False
-                v['msg'] = t(_core_translation.set_language(req.accept_languages), 'edit_identifier_state_1_usr')
+                v['msg'] = _core_translation.t(
+                        _core_translation.set_language(req.accept_languages),
+                        'edit_identifier_state_1_usr',
+                    )
         else:
             v['show_form'] = False
             v['msg'] = _core_translation.t(

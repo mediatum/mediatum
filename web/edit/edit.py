@@ -340,7 +340,65 @@ _editModules = {}
 
 
 def getEditModules():
-    for modpath in _core.editmodulepaths:  # paths with edit modules
+    global _editModules
+
+    from web.edit.modules import acls
+    from web.edit.modules import admin
+    from web.edit.modules import changeschema
+    from web.edit.modules import classes
+    from web.edit.modules import content
+    from web.edit.modules import copyall
+    from web.edit.modules import copyobject
+    from web.edit.modules import deleteall
+    from web.edit.modules import deleteobject
+    from web.edit.modules import editall
+    from web.edit.modules import files
+    from web.edit.modules import logo
+    from web.edit.modules import metadata
+    from web.edit.modules import moveall
+    from web.edit.modules import moveobject
+    from web.edit.modules import parentcontent
+    from web.edit.modules import publish
+    from web.edit.modules import searchmask
+    from web.edit.modules import sortfiles
+    from web.edit.modules import startpages
+    from web.edit.modules import statsfiles
+    from web.edit.modules import subfolder
+    from web.edit.modules import upload
+    from web.edit.modules import version
+    from web.edit.modules import view
+
+    modules_list = (
+        acls,
+        admin,
+        changeschema,
+        classes,
+        content,
+        copyall,
+        copyobject,
+        deleteall,
+        deleteobject,
+        editall,
+        files,
+        logo,
+        metadata,
+        moveall,
+        moveobject,
+        parentcontent,
+        publish,
+        searchmask,
+        sortfiles,
+        startpages,
+        statsfiles,
+        subfolder,
+        upload,
+        version,
+        view,
+    )
+
+    _editModules = {m.__name__.replace("web.edit.modules.", ""): m for m in modules_list}
+
+    for modpath in _core.editmodulepaths:  # plugins paths with edit modules
         if os.path.isabs(modpath[1]):
             mod_dirpath = modpath[1]
         else:
@@ -352,16 +410,12 @@ def getEditModules():
             for name in files:
                 if (not name.endswith(".py")) or (name == "__init__.py"):
                     continue
-                basename,_ = os.path.splitext(name)
-                with _utils_utils.suppress(ImportError,SyntaxError):
+                basename, _ = os.path.splitext(name)
+                with _utils_utils.suppress(ImportError, SyntaxError):
                     path, module = _utils_utils.splitpath(mod_dirpath)
-                    if not modpath[0]:
-                        m = __import__("web.edit.modules." + basename)
-                        m = eval("m.edit.modules." + basename)
-                    else:
-                        sys.path += [path]
-                        m = __import__(module.replace("/", ".") + "." + basename)
-                        m = eval("m." + basename)
+                    sys.path += [path]
+                    m = __import__(module.replace("/", ".") + "." + basename)
+                    m = eval("m." + basename)
                     _editModules[basename] = m
 
 

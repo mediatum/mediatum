@@ -11,7 +11,6 @@ import stat as _stat
 import string as _string
 import logging as _logging
 import mimetypes as _mimetypes
-import importlib as _importlib
 from cgi import escape as _escape
 from functools import partial as _partial
 
@@ -45,16 +44,13 @@ def setBase(base):
 
 class _WebFile:
 
-    def __init__(self, context, filename, module=None):
+    def __init__(self, context, filename, module):
         self.context = context
         if filename[0] == '/':
             filename = filename[1:]
         self.filename = filename
-        if module is None:
-            self.m = _load_module(_utils_utils.join_paths(context.root, filename))
-        else:
-            self.m = module
-            global_modules[filename] = module
+        self.m = module
+        global_modules[filename] = module
         self.handlers = []
 
     def addHandler(self, function):
@@ -200,41 +196,6 @@ def makeSelfLink(req, params):
 # COMPAT: added functions
 
 
-def _load_module(filename):
-    b = BASENAME.match(filename)
-
-    # filename e.g. /my/modules/test.py
-    # b.group(1) = /my/modules/
-    # b.group(2) = test.py
-    if b is None:
-        raise ValueError("Internal error with filename " + filename)
-    module = b.group(2)
-    if module is None:
-        raise ValueError("Internal error with filename " + filename)
-
-    while filename.startswith("./"):
-        filename = filename[2:]
-
-    if filename in global_modules:
-        return global_modules[filename]
-
-    dir = _os.path.dirname(filename)
-    path = dir.replace("/", ".")
-
-    # strip tailing/leading dots
-    while len(path) and path[0] == '.':
-        path = path[1:]
-    while len(path) and path[-1] != '.':
-        path = path + "."
-
-    module2 = (path + module)
-    _logg.debug("Loading module %s", module2)
-
-    m = _importlib.import_module(module2)
-    global_modules[filename] = m
-    return m
-
-
 class _WebContext:
 
     def __init__(self, name, root=None):
@@ -246,7 +207,7 @@ class _WebContext:
         self.pattern_to_function = _OrderedDict()
         self.catchall_handler = None
 
-    def addFile(self, filename, module=None):
+    def addFile(self, filename, module):
         file = _WebFile(self, filename, module)
         self.files += [file]
         return file

@@ -13,10 +13,9 @@ from mediatumtal import tal
 
 import core.translation as _core_translation
 import core.config as config
-from core.styles import CustomTheme, DefaultTheme
-
-from core.plugins import find_plugin_with_theme
 import request_handler as _request_handler
+from core.styles import CustomTheme, DefaultTheme
+from core.plugins import find_plugin_with_theme
 from utils import utils as _utils_utils
 
 logg = logging.getLogger(__name__)
@@ -107,7 +106,8 @@ def initContexts():
     oai_enabled = config.getboolean("oai.activate", False)
 
     # === public area ===
-    filehandlers = context.addFile("web/frontend/filehandlers.py")
+    from web.frontend import filehandlers as filehandlers_
+    filehandlers = context.addFile("web/frontend/filehandlers.py", filehandlers_)
     filehandlers.addHandler("send_thumbnail").addPattern("/thumbnail/.*")
     filehandlers.addHandler("send_doc").addPattern("/doc/.*")
     filehandlers.addHandler("send_image").addPattern("/image/.*")
@@ -118,7 +118,8 @@ def initContexts():
     filehandlers.addHandler("send_attfile").addPattern("/attfile/.*")
     filehandlers.addHandler("fetch_archived").addPattern("/archive/.*")
 
-    main_file = file = context.addFile("web/frontend/main.py")
+    from web.frontend import main
+    main_file = file = context.addFile("web/frontend/main.py", main)
     handler = file.addHandler("display")
     handler.addPattern("/")
     handler.addPattern("/node")
@@ -132,7 +133,8 @@ def initContexts():
 
     file.addHandler("show_parent_node").addPattern("/pnode")
     file.addHandler("publish").addPattern("/publish/.*")
-    file = context.addFile("web/frontend/popups.py")
+    from web.frontend import popups
+    file = context.addFile("web/frontend/popups.py", popups)
     file.addHandler("popup_metatype").addPattern("/metatype/.*")
     # file.addHandler("show_index").addPattern("/popup_index")
     file.addHandler("show_help").addPattern("/popup_help")
@@ -142,21 +144,25 @@ def initContexts():
         file.addHandler("show_printview").addPattern("/print/\d+\.pdf")
         file.addHandler("redirect_old_printview").addPattern("/print/.*")
 
-    file = context.addFile("web/frontend/login.py")
+    from web.frontend import login
+    file = context.addFile("web/frontend/login.py", login)
     file.addHandler("login").addPattern("/login")
     file.addHandler("logout").addPattern("/logout")
     file.addHandler("pwdforgotten").addPattern("/pwdforgotten")
     file.addHandler("pwdchange").addPattern("/pwdchange")
 
     if workflows_enabled:
-        file = context.addFile("workflow/diagram/__init__.py")
+        from workflow import diagram
+        file = context.addFile("workflow/diagram/__init__.py", diagram)
         file.addHandler("send_workflow_diagram").addPattern("/workflowimage")
 
     if admin_enabled:
+        from web.handlers import become
         context = _request_handler.addContext("/admin", ".")
-        file = context.addFile("web/handlers/become.py")
+        file = context.addFile("web/handlers/become.py", become)
         file.addHandler("become_user").addPattern("/_become/.*")
-        file = context.addFile("web/admin/main.py")
+        from web.admin import main
+        file = context.addFile("web/admin/main.py", main)
         file.addHandler("show_node").addPattern("/(?!export/)(?!serverstatus/).*")
         file.addHandler("export").addPattern("/export/.*")
         file.addHandler("stats_server").addPattern("/serverstatus/.*")
@@ -164,7 +170,8 @@ def initContexts():
     if edit_enabled:
         # === edit area ===
         context = _request_handler.addContext("/edit", ".")
-        file = context.addFile("web/edit/edit.py")
+        from web.edit import edit
+        file = context.addFile("web/edit/edit.py", edit)
         handler = file.addHandler("frameset")
         handler.addPattern("/")
         handler.addPattern("/edit")
@@ -180,7 +187,8 @@ def initContexts():
         # === ajax tree ===
         context = _request_handler.addContext("/ftree", ".")
         handler.addPattern("/ftree")
-        file = context.addFile("web/ftree/ftree.py")
+        from web.ftree import ftree
+        file = context.addFile("web/ftree/ftree.py", ftree)
         file.addHandler("ftree").addPattern("/.*")
 
     # === services handling ===
@@ -190,12 +198,14 @@ def initContexts():
     # === OAI ===
     if oai_enabled:
         context = _request_handler.addContext("/oai/", ".")
-        file = context.addFile("export/oai.py")
+        from export import oai
+        file = context.addFile("export/oai.py", oai)
         file.addHandler("oaiRequest").addPattern(".*")
 
     # === Export ===
     context = _request_handler.addContext("/export", ".")
-    file = context.addFile("web/frontend/export.py")
+    from web.frontend import export
+    file = context.addFile("web/frontend/export.py", export)
     file.addHandler("export").addPattern("/.*")
 
     # handle rest pattern
@@ -203,7 +213,8 @@ def initContexts():
 
     # testing global exception handler
     context = _request_handler.addContext("/_test", ".")
-    file = context.addFile("web/handlers/handlertest.py")
+    from web.handlers import handlertest
+    file = context.addFile("web/handlers/handlertest.py", handlertest)
     file.addHandler("error").addPattern("/error")
     file.addHandler("error_variable_msg").addPattern("/error_variable_msg")
     file.addHandler("db_error").addPattern("/db_error")

@@ -28,7 +28,6 @@ _logg = _logging.getLogger(__name__)
 _basedir = "no-root-dir-set"
 
 contexts = []
-global_modules = {}
 
 BASENAME = _re.compile("([^/]*/)*([^/.]*)(.py)?")
 
@@ -44,22 +43,15 @@ def setBase(base):
 
 class _WebFile:
 
-    def __init__(self, context, filename, module):
+    def __init__(self, context, module):
         self.context = context
-        if filename[0] == '/':
-            filename = filename[1:]
-        self.filename = filename
         self.m = module
-        global_modules[filename] = module
         self.handlers = []
 
     def addHandler(self, function):
         handler = _WebHandler(self, function)
         self.handlers += [handler]
         return handler
-
-    def getFileName(self):
-        return self.context.root + self.filename
 
 
 class _WebHandler:
@@ -77,7 +69,7 @@ class _WebHandler:
 
     def addPattern(self, pattern):
         p = _WebPattern(self, pattern)
-        desc = "pattern %s, file %s, function %s" % (pattern, self.file.filename, self.function)
+        desc = u"pattern {}, module {} function {}".format(pattern, self.file.m.__name__, self.function)
         self.file.context.pattern_to_function[p.getPattern()] = (self.f, desc)
         return p
 
@@ -207,8 +199,8 @@ class _WebContext:
         self.pattern_to_function = _OrderedDict()
         self.catchall_handler = None
 
-    def addFile(self, filename, module):
-        file = _WebFile(self, filename, module)
+    def addModule(self, module):
+        file = _WebFile(self, module)
         self.files += [file]
         return file
 

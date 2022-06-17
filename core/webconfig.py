@@ -107,7 +107,7 @@ def initContexts():
 
     # === public area ===
     from web.frontend import filehandlers as filehandlers_
-    filehandlers = context.addFile("web/frontend/filehandlers.py", filehandlers_)
+    filehandlers = context.addModule(filehandlers_)
     filehandlers.addHandler("send_thumbnail").addPattern("/thumbnail/.*")
     filehandlers.addHandler("send_doc").addPattern("/doc/.*")
     filehandlers.addHandler("send_image").addPattern("/image/.*")
@@ -119,7 +119,7 @@ def initContexts():
     filehandlers.addHandler("fetch_archived").addPattern("/archive/.*")
 
     from web.frontend import main
-    main_file = file = context.addFile("web/frontend/main.py", main)
+    main_file = file = context.addModule(main)
     handler = file.addHandler("display")
     handler.addPattern("/")
     handler.addPattern("/node")
@@ -134,7 +134,7 @@ def initContexts():
     file.addHandler("show_parent_node").addPattern("/pnode")
     file.addHandler("publish").addPattern("/publish/.*")
     from web.frontend import popups
-    file = context.addFile("web/frontend/popups.py", popups)
+    file = context.addModule(popups)
     file.addHandler("popup_metatype").addPattern("/metatype/.*")
     # file.addHandler("show_index").addPattern("/popup_index")
     file.addHandler("show_help").addPattern("/popup_help")
@@ -145,7 +145,7 @@ def initContexts():
         file.addHandler("redirect_old_printview").addPattern("/print/.*")
 
     from web.frontend import login
-    file = context.addFile("web/frontend/login.py", login)
+    file = context.addModule(login)
     file.addHandler("login").addPattern("/login")
     file.addHandler("logout").addPattern("/logout")
     file.addHandler("pwdforgotten").addPattern("/pwdforgotten")
@@ -153,16 +153,16 @@ def initContexts():
 
     if workflows_enabled:
         from workflow import diagram
-        file = context.addFile("workflow/diagram/__init__.py", diagram)
+        file = context.addModule(diagram)
         file.addHandler("send_workflow_diagram").addPattern("/workflowimage")
 
     if admin_enabled:
         from web.handlers import become
         context = _request_handler.addContext("/admin", ".")
-        file = context.addFile("web/handlers/become.py", become)
+        file = context.addModule(become)
         file.addHandler("become_user").addPattern("/_become/.*")
         from web.admin import main
-        file = context.addFile("web/admin/main.py", main)
+        file = context.addModule(main)
         file.addHandler("show_node").addPattern("/(?!export/)(?!serverstatus/).*")
         file.addHandler("export").addPattern("/export/.*")
         file.addHandler("stats_server").addPattern("/serverstatus/.*")
@@ -171,7 +171,7 @@ def initContexts():
         # === edit area ===
         context = _request_handler.addContext("/edit", ".")
         from web.edit import edit
-        file = context.addFile("web/edit/edit.py", edit)
+        file = context.addModule(edit)
         handler = file.addHandler("frameset")
         handler.addPattern("/")
         handler.addPattern("/edit")
@@ -188,24 +188,25 @@ def initContexts():
         context = _request_handler.addContext("/ftree", ".")
         handler.addPattern("/ftree")
         from web.ftree import ftree
-        file = context.addFile("web/ftree/ftree.py", ftree)
+        file = context.addModule(ftree)
         file.addHandler("ftree").addPattern("/.*")
 
     # === services handling ===
+    from web.services import export
     context = _request_handler.addContext("/services/export", ".")
-    context.addFile("web/services/export.py").addHandler("request_handler").addPattern("/node/(?P<id>\d+).*")
+    context.addModule(export).addHandler("request_handler").addPattern("/node/(?P<id>\d+).*")
 
     # === OAI ===
     if oai_enabled:
         context = _request_handler.addContext("/oai/", ".")
         from export import oai
-        file = context.addFile("export/oai.py", oai)
+        file = context.addModule(oai)
         file.addHandler("oaiRequest").addPattern(".*")
 
     # === Export ===
     context = _request_handler.addContext("/export", ".")
     from web.frontend import export
-    file = context.addFile("web/frontend/export.py", export)
+    file = context.addModule(export)
     file.addHandler("export").addPattern("/.*")
 
     # handle rest pattern
@@ -214,7 +215,7 @@ def initContexts():
     # testing global exception handler
     context = _request_handler.addContext("/_test", ".")
     from web.handlers import handlertest
-    file = context.addFile("web/handlers/handlertest.py", handlertest)
+    file = context.addModule(handlertest)
     file.addHandler("error").addPattern("/error")
     file.addHandler("error_variable_msg").addPattern("/error_variable_msg")
     file.addHandler("db_error").addPattern("/db_error")

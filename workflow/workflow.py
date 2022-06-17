@@ -5,8 +5,7 @@ from __future__ import division
 from __future__ import print_function
 
 import itertools as _itertools
-import pkgutil
-import importlib
+
 import flask as _flask
 import json as _json
 
@@ -703,10 +702,57 @@ def register():
     # tree.registerNodeClass("workflowstep", WorkflowStep)
 
     # run register method of step types
-    path = os.path.dirname(__file__)
-    for _, name, _ in pkgutil.iter_modules([path]):
-        if name != "workflow":
-            m = importlib.import_module("workflow." + name)
-            if hasattr(m, 'register'):
-                logg.debug("registering workflow step '%s'", name)
-                m.register()
+    from . import addformpage
+    from . import checkcontent
+    from . import classify
+    from . import classifybyattribute
+    from . import condition
+    from . import defer
+    from . import delete
+    from . import deletefile
+    from . import editmetadata
+    from . import email
+    from . import end
+    from . import hierarchicalchoice2metafield
+    from . import logoadd_utils
+    from . import metafield2metadata
+    from . import protect
+    from . import publish
+    from . import reauth
+    from . import showdata
+    from . import start
+    from . import textpage
+    from . import updateattributesfixed
+    from . import upload
+    from . import urn
+
+    modules_list = (
+        addformpage,
+        checkcontent,
+        classify,
+        classifybyattribute,
+        condition,
+        defer,
+        delete,
+        deletefile,
+        editmetadata,
+        email,
+        end,
+        hierarchicalchoice2metafield,
+        logoadd_utils,
+        metafield2metadata,
+        protect,
+        publish,
+        reauth,
+        showdata,
+        start,
+        textpage,
+        updateattributesfixed,
+        upload,
+        urn,
+    )
+
+    for module in modules_list:
+        if hasattr(module, 'register'):
+            logg.debug("registering workflow step '%s'", module.__name__)
+            module.register()

@@ -8,13 +8,9 @@ import collections as _collections
 import datetime
 import functools as _functools
 import inspect
-import importlib
 import itertools as _itertools
 import json as _json
 import logging
-import os
-import pkgutil
-import sys
 import collections as _collections
 from warnings import warn
 
@@ -1388,24 +1384,46 @@ def _metatype_class(cls):
     _metatypes[name] = instance
 
 
-def load_metatype_module(prefix_path, pkg_dir):
-    logg.debug("loading modules from '%s', prefix path %s", pkg_dir, prefix_path)
-    if prefix_path not in sys.path:
-        logg.debug("%s added to pythonpath", prefix_path)
-        sys.path.append(prefix_path)
-    for _, name, _ in pkgutil.iter_modules([os.path.join(prefix_path, pkg_dir)]):
-        module = importlib.import_module(pkg_dir.replace("/", ".") + "." + name)
-
-        def is_metatype_class(obj):
-            return inspect.isclass(obj) and issubclass(obj, Metatype) and obj.__name__ != "Metatype"
-        for _, cls in inspect.getmembers(module, is_metatype_class):
-            _metatype_class(cls)
+def _is_metatype_class(obj):
+    return inspect.isclass(obj) and issubclass(obj, Metatype) and obj.__name__ != "Metatype"
 
 
 def init():
-    pkg_dirs = ["schema/mask", "metadata"]
-    for pkg_dir in pkg_dirs:
-        load_metatype_module(config.codebasedir, pkg_dir)
+    from mask import field
+    from mask import hgroup
+    from mask import vgroup
+    from mask import mappingfield
+    from metadata import check
+    from metadata import date
+    from metadata import htmlmemo
+    from metadata import ilist
+    from metadata import label
+    from metadata import list
+    from metadata import meta
+    from metadata import number
+    from metadata import text
+    from metadata import url
+
+    modules_list = (
+        field,
+        hgroup,
+        vgroup,
+        mappingfield,
+        check,
+        date,
+        htmlmemo,
+        ilist,
+        label,
+        list,
+        meta,
+        number,
+        text,
+        url,
+    )
+
+    for module in modules_list:
+        for _, cls in inspect.getmembers(module, _is_metatype_class):
+            _metatype_class(cls)
 
 
 def getMetadataType(name):

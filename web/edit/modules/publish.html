@@ -2,8 +2,13 @@
   Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
   SPDX-License-Identifier: AGPL-3.0-or-later
 -->
-<form metal:define-macro="publish_form" tal:attributes="action python:u'/edit/edit_content?id={}&tab=publish'.format(id)"
-method="post" id="mediatum_publish_form" name="publishform">
+<form
+    metal:define-macro="publish_form"
+    tal:attributes="action python:u'/edit/edit_content?srcnodeid={}&id={}&tab=publish'.format(srcnodeid, id)"
+    method="post"
+    id="mediatum_publish_form"
+    name="publishform"
+>
     <input tal:attributes="value csrf" type="hidden" name="csrf_token">
     <link rel="stylesheet" href="/css/ftree.css" type="text/css" />
     <script type="text/javascript" src="/js/ftree.js"> </script>

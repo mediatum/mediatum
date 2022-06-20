@@ -33,7 +33,15 @@ def getContent(req, ids):
     db.session.commit()
 
     sortchoices = _sort.get_sort_choices(container=node, off="off", t_off=_t(req, "off"), t_desc=_t(req, "descending"))
-    return _tal.processTAL({"node": node,
-                            "collection_sortfield": collection_sortfield,
-                            "sortchoices": tuple(sortchoices),
-                            "name": node.name}, file="web/edit/modules/sortfiles.html", macro="edit_sortfiles", request=req)
+    return _tal.processTAL(
+            dict(
+                srcnodeid=req.values.get("srcnodeid", ""),
+                node=node,
+                collection_sortfield=collection_sortfield,
+                sortchoices=tuple(sortchoices),
+                name=node.name,
+            ),
+            file="web/edit/modules/sortfiles.html",
+            macro="edit_sortfiles",
+            request=req,
+        )

@@ -168,19 +168,20 @@ def getContent(req, ids):
     stdname = ""
     show_dir_nav = _web_edit_edit_common.ShowDirNav(req, publishdir)
     ret += _tal.processTAL(
-            dict(
-                id=publishdir.id,
-                stddir=stddir,
-                stdname=stdname,
-                showdir=show_dir_nav.showdir(publishwarn=None, markunpublished=1, faultyidlist=errorids),
-                basedir=q(Collections).one(),
-                script="var currentitem = '%s';\nvar currentfolder = '%s'" % (publishdir.id, publishdir.id),
-                idstr=ids,
-                faultyerrlist=publisherror,
-                csrf=_core_csrfform.get_token(),
-            ),
-            file="web/edit/modules/publish.html",
-            macro="publish_form",
-            request=req,
-        )
+        dict(
+            srcnodeid=req.values.get("srcnodeid", ""),
+            id=publishdir.id,
+            stddir=stddir,
+            stdname=stdname,
+            showdir=show_dir_nav.showdir(publishwarn=None, markunpublished=1, faultyidlist=errorids),
+            basedir=q(Collections).one(),
+            script="var currentitem = '{}';\nvar currentfolder = '{}'".format(publishdir.id, publishdir.id),
+            idstr=ids,
+            faultyerrlist=publisherror,
+            csrf=_core_csrfform.get_token(),
+        ),
+        file="web/edit/modules/publish.html",
+        macro="publish_form",
+        request=req,
+    )
     return ret

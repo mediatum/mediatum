@@ -44,22 +44,22 @@ class WorkflowStep_CheckContent(WorkflowStep):
         ret = []
         field = Metafield("from")
         field.set("label", _core_translation.t(lang, "admin_wfstep_checkcontent_sender"))
-        field.set("type", "text")
+        field.setFieldtype("text")
         ret.append(field)
 
         field = Metafield("email")
         field.set("label", _core_translation.t(lang, "admin_wfstep_checkcontent_recipient"))
-        field.set("type", "text")
+        field.setFieldtype("text")
         ret.append(field)
 
         field = Metafield("subject")
         field.set("label", _core_translation.t(lang, "admin_wfstep_checkcontent_subject"))
-        field.set("type", "text")
+        field.setFieldtype("text")
         ret.append(field)
 
         field = Metafield("text")
         field.set("label", _core_translation.t(lang, "admin_wfstep_checkcontent_text"))
-        field.set("type", "memo")
+        field.setFieldtype("memo")
         ret.append(field)
 
         return ret

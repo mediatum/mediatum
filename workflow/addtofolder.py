@@ -83,11 +83,11 @@ class WorkflowStep_AddToFolder(WorkflowStep):
         ret = []
         field = Metafield("destination")
         field.set("label", t(lang, "admin_wfstep_addtofolder_destination"))
-        field.set("type", "treeselect")
+        field.setFieldtype("treeselect")
         ret.append(field)
         field = Metafield("destination_subfolder")
         field.set("label", t(lang, "admin_wfstep_addtofolder_destination_subfolder"))
-        field.set("type", "text")
+        field.setFieldtype("text")
         ret.append(field)
         return ret
 

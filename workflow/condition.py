@@ -62,7 +62,7 @@ class WorkflowStep_Condition(WorkflowStep):
     def metaFields(self, lang=None):
         field = Metafield("condition")
         field.set("label", t(lang, "admin_wfstep_condition"))
-        field.set("type", "text")
+        field.setFieldtype("text")
         return [field]
 
     @staticmethod

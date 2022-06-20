@@ -75,15 +75,15 @@ class WorkflowStep_Classify(WorkflowStep):
         ret = []
         field = Metafield("destination")
         field.set("label", t(lang, "admin_wfstep_classify_destination"))
-        field.set("type", "treeselect")
+        field.setFieldtype("treeselect")
         ret.append(field)
         field = Metafield("destination_attr")
         field.set("label", t(lang, "admin_wfstep_classify_destination_attr"))
-        field.set("type", "text")
+        field.setFieldtype("text")
         ret.append(field)
         field = Metafield("only_sub")
         field.set("label", t(lang, "admin_wfstep_classify_only_sub"))
-        field.set("type", "check")
+        field.setFieldtype("check")
         ret.append(field)
         return ret
 

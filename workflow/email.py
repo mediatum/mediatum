@@ -190,27 +190,27 @@ class WorkflowStep_SendEmail(WorkflowStep):
         ret = list()
         field = Metafield("from")
         field.set("label", _core_translation.t(lang, "admin_wfstep_email_sender"))
-        field.set("type", "text")
+        field.setFieldtype("text")
         ret.append(field)
 
         field = Metafield("email")
         field.set("label", _core_translation.t(lang, "admin_wfstep_email_recipient"))
-        field.set("type", "text")
+        field.setFieldtype("text")
         ret.append(field)
 
         field = Metafield("subject")
         field.set("label", _core_translation.t(lang, "admin_wfstep_email_subject"))
-        field.set("type", "memo")
+        field.setFieldtype("memo")
         ret.append(field)
 
         field = Metafield("text")
         field.set("label", _core_translation.t(lang, "admin_wfstep_email_text"))
-        field.set("type", "memo")
+        field.setFieldtype("memo")
         ret.append(field)
 
         field = Metafield("allowedit")
         field.set("label", _core_translation.t(lang, "admin_wfstep_email_text_editable"))
-        field.set("type", "list")
+        field.setFieldtype("list")
         field.metatype_data = dict(
                 multiple=False,
                 listelements=_core_translation.t(lang, "admin_wfstep_email_text_editable_options").split(";"),
@@ -219,12 +219,12 @@ class WorkflowStep_SendEmail(WorkflowStep):
 
         field = Metafield("sendcondition")
         field.set("label", _core_translation.t(lang, "admin_wfstep_email_sendcondition"))
-        field.set("type", "text")
+        field.setFieldtype("text")
         ret.append(field)
 
         field = Metafield("attach_pdf_form")
         field.set("label", _core_translation.t(lang, "workflowstep-email_label_attach_pdf_form"))
-        field.set("type", "check")
+        field.setFieldtype("check")
         ret.append(field)
         return ret
 

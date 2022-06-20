@@ -57,22 +57,22 @@ class WorkflowStep_Urn(WorkflowStep):
         ret = list()
         field = Metafield("attrname")
         field.set("label", t(lang, "admin_wfstep_urn_attrname"))
-        field.set("type", "text")
+        field.setFieldtype("text")
         ret.append(field)
 
         field = Metafield("snid1")
         field.set("label", t(lang, "admin_wfstep_urn_snid1"))
-        field.set("type", "text")
+        field.setFieldtype("text")
         ret.append(field)
 
         field = Metafield("snid2")
         field.set("label", t(lang, "admin_wfstep_urn_snid2"))
-        field.set("type", "text")
+        field.setFieldtype("text")
         ret.append(field)
 
         field = Metafield("niss")
         field.set("label", t(lang, "admin_wfstep_urn_niss"))
-        field.set("type", "text")
+        field.setFieldtype("text")
         ret.append(field)
         return ret
 

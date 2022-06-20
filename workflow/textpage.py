@@ -55,7 +55,7 @@ class WorkflowStep_TextPage(WorkflowStep):
     def metaFields(self, lang=None):
         field = Metafield("text")
         field.set("label", t(lang, "admin_wfstep_textpage_text_to_display"))
-        field.set("type", "htmlmemo")
+        field.setFieldtype("htmlmemo")
         return [field]
 
     @staticmethod

@@ -69,12 +69,12 @@ class WorkflowStep_Publish(WorkflowStep):
         ret = list()
         field = Metafield("publishsetpublishedversion")
         field.set("label", t(lang, "admin_wfstep_publishsetpublishedversion"))
-        field.set("type", "check")
+        field.setFieldtype("check")
         ret.append(field)
 
         field = Metafield("publishsetupdatetime")
         field.set("label", t(lang, "admin_wfstep_publishsetupdatetime"))
-        field.set("type", "check")
+        field.setFieldtype("check")
         ret.append(field)
         return ret
 

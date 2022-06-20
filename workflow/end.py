@@ -56,17 +56,17 @@ class WorkflowStep_End(WorkflowStep):
         ret = []
         field = Metafield("endtext")
         field.set("label", t(lang, "admin_wfstep_endtext"))
-        field.set("type", "memo")
+        field.setFieldtype("memo")
         ret.append(field)
 
         field = Metafield("endremove")
         field.set("label", t(lang, "admin_wfstep_endremove"))
-        field.set("type", "check")
+        field.setFieldtype("check")
         ret.append(field)
 
         field = Metafield("endsetupdatetime")
         field.set("label", t(lang, "admin_wfstep_endsetupdatetime"))
-        field.set("type", "check")
+        field.setFieldtype("check")
         ret.append(field)
         return ret
 

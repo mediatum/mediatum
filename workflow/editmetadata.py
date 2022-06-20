@@ -77,7 +77,7 @@ class WorkflowStep_EditMetadata(WorkflowStep):
     def metaFields(self, lang=None):
         field = Metafield("mask")
         field.set("label", _core_translation.t(lang, "admin_wfstep_editor_mask"))
-        field.set("type", "text")
+        field.setFieldtype("text")
         return [field]
 
     @staticmethod

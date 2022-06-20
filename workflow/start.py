@@ -143,15 +143,15 @@ class WorkflowStep_Start(WorkflowStep):
         ret = []
         field = Metafield("newnodetype")
         field.set("label", _core_translation.t(lang, "admin_wfstep_node_types_to_create"))
-        field.set("type", "text")
+        field.setFieldtype("text")
         ret.append(field)
         field = Metafield("starttext")
         field.set("label", _core_translation.t(lang, "admin_wfstep_starttext"))
-        field.set("type", "htmlmemo")
+        field.setFieldtype("htmlmemo")
         ret.append(field)
         field = Metafield("allowcontinue")
         field.set("label", _core_translation.t(lang, "admin_wfstep_allowcontinue"))
-        field.set("type", "check")
+        field.setFieldtype("check")
         ret.append(field)
         return ret
 

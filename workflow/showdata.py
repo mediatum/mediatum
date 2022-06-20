@@ -95,5 +95,5 @@ class WorkflowStep_ShowData(WorkflowStep):
     def metaFields(self, lang=None):
         field = Metafield("masks")
         field.set("label", _core_translation.t(lang, "admin_wfstep_masks_to_display"))
-        field.set("type", "text")
+        field.setFieldtype("text")
         return [field]

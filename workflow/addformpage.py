@@ -264,22 +264,22 @@ class WorkflowStep_AddFormPage(WorkflowStep):
         ret = list()
         field = Metafield("upload_pdfform")
         field.set("label", t(lang, "workflowstep-addformpage_label_upload_pdfform"))
-        field.set("type", "upload")
+        field.setFieldtype("upload")
         ret.append(field)
 
         field = Metafield("pdf_fields_editable")
         field.set("label", t(lang, "workflowstep-addformpage_label_pdf_fields_editable"))
-        field.set("type", "check")
+        field.setFieldtype("check")
         ret.append(field)
 
         field = Metafield("pdf_form_separate")
         field.set("label", t(lang, "workflowstep-addformpage_label_pdf_form_separate"))
-        field.set("type", "check")
+        field.setFieldtype("check")
         ret.append(field)
 
         field = Metafield("pdf_form_overwrite")
         field.set("label", t(lang, "workflowstep-addformpage_label_pdf_overwrite"))
-        field.set("type", "check")
+        field.setFieldtype("check")
         ret.append(field)
         return ret
 

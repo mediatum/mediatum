@@ -745,6 +745,7 @@ class Metafield(Node):
 
     def setFieldtype(self, value):
         self.set("type", value)
+        self.metatype_data = getMetadataType(value).default_settings
 
     def getOption(self):
         return self.get("opts")

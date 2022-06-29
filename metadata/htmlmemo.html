@@ -2,15 +2,6 @@
   Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
   SPDX-License-Identifier: AGPL-3.0-or-later
 -->
-<div tal:attributes="id python:'div_'+lang+'__'+name" style="float:left;">
-  <textarea
-      class="htmlmemo_text"
-      rows="4"
-      tal:attributes="required required disabled python:{0:None,1:'disabled'}[lock]; name python:lang+'__'+name; id python:lang+'__'+name; onkeyup python:'countMeta(this,{})'.format(max_length);style python:'width:'+str(width-20)+'px';"
-      tal:content="python:value"
-     />
-</div>
-
 <tal:block metal:define-macro="editorfield">
     <style type="text/css">
         div.grippie{background:#EEEEEE url(/img/grippie.png) no-repeat scroll center 2px; cursor:s-resize; height:9px; width:100%; margin-bottom:10px !important; padding:0px;}

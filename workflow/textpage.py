@@ -6,7 +6,7 @@ from __future__ import print_function
 
 import mediatumtal.tal as _tal
 
-import core.translation as _core_translation
+from core import db as _db
 import core.csrfform as _core_csrfform
 from .workflow import WorkflowStep, registerStep
 from core.translation import addLabels
@@ -53,14 +53,18 @@ class WorkflowStep_TextPage(WorkflowStep):
                 request=req,
             )
 
-    def metaFields(self, lang=None):
-        field = Metafield("text")
-        if lang:
-            field.set("label", _core_translation.translate(lang, "admin_wfstep_textpage_text_to_display"))
-        else:
-            field.set("label", _core_translation.translate_in_request("admin_wfstep_textpage_text_to_display"))
-        field.setFieldtype("htmlmemo")
-        return [field]
+    def admin_settings_get_html_form(self, req):
+        return _tal.processTAL(
+            dict(text=self.get('text'),),
+            file="workflow/textpage.html",
+            macro="workflow_step_type_config",
+            request=req,
+           )
+
+    def admin_settings_save_form_data(self, data):
+        assert set(data)=={"text"}
+        self.set('text', data['text'])
+        _db.session.commit()
 
     @staticmethod
     def getLabels():

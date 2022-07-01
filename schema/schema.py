@@ -559,39 +559,6 @@ def checkMask(mask, fix=0, verbose=1, show_unused=0):
     return error
 
 
-def parseEditorData(req, node):
-    nodes = [node]
-    incorrect = False
-    defaultlang = translation.set_language(req.accept_languages)
-
-    for field in node.metaFields():
-        name = field.getName()
-        value = req.params.get(name, "? ")
-
-        if value != "? ":
-            for node in nodes:
-                node.set(name, value)
-
-            if field.get('type') == "date":
-                f = field.getSystemFormat(field.fieldvalues)
-                try:
-                    date = parse_date(ustr(value), f.value)
-                except ValueError:
-                    date = None
-                if date:
-                    value = format_date(date, format='%Y-%m-%dT%H:%M:%S')
-                    for node in nodes:
-                        node.set(name, value)
-            else:
-                for node in nodes:
-                    node.set(name, value)
-        else:  # value not in request -> remove attribute
-            with suppress(KeyError, warn=False):
-                node.removeAttribute(field.getName())
-    db.session.commit()
-    return not incorrect
-
-
 #
 # export metadatascheme
 #

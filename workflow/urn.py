@@ -7,7 +7,8 @@ from __future__ import print_function
 import logging
 import re
 
-import core.translation as _core_translation
+import mediatumtal.tal as _tal
+
 from .workflow import WorkflowStep, registerStep
 import utils.urn as utilsurn
 from core.translation import addLabels
@@ -54,22 +55,25 @@ class WorkflowStep_Urn(WorkflowStep):
         db.session.commit()
         return self.forwardAndShow(node, True, req)
 
-    def metaFields(self, lang=None):
-        ret = list()
-        for name, label in (
-                ("attrname", "admin_wfstep_urn_attrname"),
-                ("snid1", "admin_wfstep_urn_snid1"),
-                ("snid2", "admin_wfstep_urn_snid2"),
-                ("niss", "admin_wfstep_urn_niss"),
-        ):
-            field = Metafield(name)
-            field.set(
-                "label",
-                _core_translation.translate(lang, label) if lang else _core_translation.translate_in_request(label),
-            )
-            field.setFieldtype("text")
-            ret.append(field)
-        return ret
+    def admin_settings_get_html_form(self, req):
+        return _tal.processTAL(
+            dict(
+                attrname=self.get('attrname'),
+                snid1=self.get('snid1'),
+                snid2=self.get('snid2'),
+                niss=self.get('niss'),
+            ),
+            file="workflow/urn.html",
+            macro="workflow_step_type_config",
+            request=req,
+           )
+
+    def admin_settings_save_form_data(self, data):
+        data = data.to_dict()
+        for attr in ('attrname', 'snid1', 'snid2', 'niss'):
+            self.set(attr, data.pop(attr))
+        assert not data
+        db.session.commit()
 
     @staticmethod
     def getLabels():

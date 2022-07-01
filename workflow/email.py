@@ -13,7 +13,7 @@ import urlparse as _urlparse
 import flask as _flask
 
 from .workflow import WorkflowStep, registerStep
-from mediatumtal import tal
+from mediatumtal import tal as _tal
 
 from utils.utils import formatException
 import core.csrfform as _core_csrfform
@@ -45,7 +45,7 @@ def getTALtext(text, context):
     #text = tal.getTALstr('<body xmlns:tal="http://xml.zope.org/namespaces/tal">%s</body>' %(text), context)
     #text = text.replace("<body>","").replace("</body>","").replace("<body/>","")
     # return text.replace("\n","").strip()
-    return tal.getTALstr(text, context).replace('\n', '').strip()
+    return _tal.getTALstr(text, context).replace('\n', '').strip()
 
 
 class WorkflowStep_SendEmail(WorkflowStep):
@@ -64,7 +64,7 @@ class WorkflowStep_SendEmail(WorkflowStep):
             attachments_paths_and_filenames = []
             if attach_pdf_form:
                 for f in node.files:
-                    if f.filetype != 'metafield-upload.upload_pdfform':
+                    if f.filetype != 'wfstep-addformpage':
                         continue
                     if not os.path.isfile(f.abspath):
                         raise MailError("Attachment file not found: '%s'" % f.abspath)
@@ -150,13 +150,13 @@ class WorkflowStep_SendEmail(WorkflowStep):
                     _core_translation.translate(_core_translation.set_language(req.accept_languages), "workflow_email_resend"),
                 )
         else:
-            return tal.processTAL(
+            return _tal.processTAL(
                     dict(
                         page=u"node?id={}&obj={}".format(self.id, node.id),
                         from_=node.get("system.mailtmp.from"),
                         to=node.get("system.mailtmp.to"),
                         text=node.get("system.mailtmp.text"),
-                        subject=tal.getTALstr(
+                        subject=_tal.getTALstr(
                             node.get("system.mailtmp.subject"),
                             {},
                             language=node.get("system.wflanguage"),
@@ -172,24 +172,29 @@ class WorkflowStep_SendEmail(WorkflowStep):
                     request=req,
                 )
 
-    def metaFields(self, lang=None):
-        ret = list()
-        for name, label, type_ in (
-                ("from", "admin_wfstep_email_sender", "text"),
-                ("email", "admin_wfstep_email_recipient", "text"),
-                ("subject", "admin_wfstep_email_subject", "text"),
-                ("text", "admin_wfstep_email_text", "htmlmemo"),
-                ("allowedit", "admin_wfstep_email_text_editable", "check"),
-                ("attach_pdf_form", "workflowstep-email_label_attach_pdf_form", "check"),
-        ):
-            field = Metafield(name)
-            field.set(
-                "label",
-                _core_translation.translate(lang, label) if lang else _core_translation.translate_in_request(label),
-            )
-            field.setFieldtype(type_)
-            ret.append(field)
-        return ret
+    def admin_settings_get_html_form(self, req):
+        return _tal.processTAL(
+            dict(
+                sender=self.get('from'),
+                email=self.get('email'),
+                subject=self.get('subject'),
+                text=self.get('text'),
+                allowedit=self.get('allowedit'),
+                attach_pdf_form=self.get('attach_pdf_form'),
+            ),
+            file="workflow/email.html",
+            macro="workflow_step_type_config",
+            request=req,
+           )
+
+    def admin_settings_save_form_data(self, data):
+        data = data.to_dict()
+        for attr in ("from", "email", "subject", "text"):
+            self.set(attr, data.pop(attr))
+        for attr in ("allowedit", "attach_pdf_form"):
+            self.set(attr, "1" if data.pop(attr, None) else "")
+        assert not data
+        db.session.commit()
 
     @staticmethod
     def getLabels():

@@ -4,7 +4,8 @@
 from __future__ import division
 from __future__ import print_function
 
-import core.translation as _core_translation
+from mediatumtal import tal as _tal
+
 from .workflow import WorkflowStep, registerStep
 from core.translation import addLabels
 from core import UserGroup, db
@@ -66,24 +67,23 @@ class WorkflowStep_Publish(WorkflowStep):
 
         self.forward(node, True)
 
-    def metaFields(self, lang=None):
-        ret = list()
-        field = Metafield("publishsetpublishedversion")
-        if lang:
-            field.set("label", _core_translation.translate(lang, "admin_wfstep_publishsetpublishedversion"))
-        else:
-            field.set("label", _core_translation.translate_in_request("admin_wfstep_publishsetpublishedversion"))
-        field.setFieldtype("check")
-        ret.append(field)
+    def admin_settings_get_html_form(self, req):
+        return _tal.processTAL(
+            dict(
+                set_version=self.get('publishsetpublishedversion'),
+                set_updatetime=self.get('publishsetupdatetime'),
+            ),
+            file="workflow/publish.html",
+            macro="workflow_step_type_config",
+            request=req,
+           )
 
-        field = Metafield("publishsetupdatetime")
-        if lang:
-            field.set("label", _core_translation.translate(lang, "admin_wfstep_publishsetupdatetime"))
-        else:
-            field.set("label", _core_translation.translate_in_request("admin_wfstep_publishsetupdatetime"))
-        field.setFieldtype("check")
-        ret.append(field)
-        return ret
+    def admin_settings_save_form_data(self, data):
+        data = data.to_dict()
+        self.set('publishsetpublishedversion', "1" if data.pop('set_version', None) else "")
+        self.set('publishsetupdatetime', "1" if data.pop('set_updatetime', None) else "")
+        assert not data
+        db.session.commit()
 
     @staticmethod
     def getLabels():

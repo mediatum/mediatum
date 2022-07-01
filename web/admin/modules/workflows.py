@@ -10,6 +10,7 @@ import sys
 import traceback
 
 import mediatumtal.tal as _tal
+import werkzeug.datastructures as _datastructures
 
 import core.config as config
 from core import Node as _Node
@@ -18,7 +19,6 @@ import core.csrfform as _core_csrfform
 from core.database.postgres.permission import NodeToAccessRuleset
 from web import frontend as _web_frontend
 import core.translation as _core_translation
-from schema.schema import parseEditorData
 from web.admin.adminutils import Overview
 from web.admin.adminutils import getAdminStdVars
 from web.admin.adminutils import getFilter
@@ -252,8 +252,14 @@ def validate(req, op):
 
         db.session.commit()
 
-        if "metaDataEditor" in req.values:
-            parseEditorData(req, wnode)
+        # we know that this must be a POST request,
+        # so that files can be transported
+        assert not set(req.files).intersection(set(req.form))
+        stepsetting = "stepsetting_"
+        stepsettings = {k[len(stepsetting):]:v for k,v in req.form.lists() if k.startswith(stepsetting)}
+        stepsettings.update({k[len(stepsetting):]:v for k,v in req.files.lists() if k.startswith(stepsetting)})
+        stepsettings = _datastructures.ImmutableMultiDict(stepsettings)
+        wnode.admin_settings_save_form_data(stepsettings)
 
     return _get_workflow_step_list_html(req, req.values["parent"])
 
@@ -462,15 +468,8 @@ def _get_workflow_step_config_form_html(req, wid, wnid, error=None):
     v=dict(
         acl_read=_acl_web.make_acl_html_options(workflowstep, "read", _core_translation.set_language(req.accept_languages)),
         acl_write=_acl_web.make_acl_html_options(workflowstep, "write", _core_translation.set_language(req.accept_languages)),
-        editor=_tal.processTAL(
-            dict(
-                fields=workflowstep.metaFields(_core_translation.set_language(req.accept_languages)) or [],
-                node=workflowstep,
-            ),
-            file="web/admin/modules/workflows.html",
-            macro="workflow_step_type_config",
-            request=req,
-           ),
+        workflow_step_type_settings_html=workflowstep.admin_settings_get_html_form(req),
+
         orig_name=workflowstep.name if not error else req.values["orig_name"],
         workflow_id=workflow.id,
         languages=filter(None, workflow.get('languages').split(';')),

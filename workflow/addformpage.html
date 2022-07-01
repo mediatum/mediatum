@@ -1,0 +1,29 @@
+<!--
+  Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<metal:block metal:define-macro="workflow_step_type_config">
+    <div>
+      <h4 i18n:translate="workflowstep-addformpage"> </h4>
+      <tal:block tal:condition="python:fileurl">
+      <tal:block i18n:translate="workflowstep-addformpage_label_current_pdfform"/>
+      <a tal:attributes="href fileurl" tal:content="python:'{}  {} Bytes'.format(filebasename, filesize)"/>
+        <br/>
+      <label for="stepsetting_pdfform" i18n:translate="workflowstep-addformpage_label_replace_pdfform"> </label>
+      </tal:block>
+      <label tal:condition="python:not fileurl" for="stepsetting_pdfform" i18n:translate="workflowstep-addformpage_label_upload_pdfform"> </label>
+      <input id="stepsetting_pdfform" name="stepsetting_pdfform" type="file"/>
+    </div>
+    <div>
+        <label for="stepsetting_fields_editable" i18n:translate="workflowstep-addformpage_label_fields_editable"> </label>
+        <input type="checkbox" name="stepsetting_fields_editable" id="stepsetting_fields_editable" tal:attributes="checked python:'checked' if fields_editable=='1' else None" value="1"/>
+    </div>
+    <div>
+        <label for="stepsetting_form_separate" i18n:translate="workflowstep-addformpage_label_form_separate"> </label>
+        <input type="checkbox" name="stepsetting_form_separate" id="stepsetting_form_separate" tal:attributes="checked python:'checked' if form_separate=='1' else None" value="1"/>
+    </div>
+    <div>
+        <label for="stepsetting_form_overwrite" i18n:translate="workflowstep-addformpage_label_overwrite"> </label>
+        <input type="checkbox" name="stepsetting_form_overwrite" id="stepsetting_form_overwrite" tal:attributes="checked python:'checked' if form_overwrite=='1' else None" value="1"/>
+    </div>
+</metal:block>

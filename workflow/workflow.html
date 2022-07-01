@@ -242,3 +242,26 @@
         </td>
     </tr>
 </table>
+
+
+<metal:block metal:define-macro="workflow_step_type_config">
+    <tr tal:condition="python:len(settings)>0">
+            <td colspan="2"><b i18n:translate="admin_wfstep_additional">TEXT</b>:</td>
+    </tr>
+    <tal:block tal:repeat="setting settings">
+        <tr>
+            <td>
+                <span tal:replace="python:setting['label']"/>
+            </td>
+            <td>
+                <span tal:replace="raw python:setting['html']"/>
+            </td>
+        </tr>
+    </tal:block>
+    <tr>
+        <td colspan="2">
+            <input type="hidden" name="metaDataEditor" value="metaDataEditor"/>
+            <input tal:attributes="value python:node.name" type="hidden" name="wnodeid"/>
+        </td>
+    </tr>
+</metal:block>

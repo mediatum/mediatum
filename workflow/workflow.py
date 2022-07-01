@@ -668,9 +668,6 @@ class WorkflowStep(Node):
     def getComment(self):
         return self.get("comment")
 
-    def metaFields(self, lang=None):
-        return list()
-
     def tableRowButtons(self, node):
         if node.get('system.key') == node.get('key'):
             # user has permission -> use users language
@@ -706,6 +703,12 @@ class WorkflowStep(Node):
             self.set('shortstepname_' + lang, value.strip())
         else:
             self.set('shortstepname', value.strip())
+
+    def admin_settings_get_html_form(self, req):
+        pass
+
+    def admin_settings_save_form_data(self, data):
+        assert not data
 
 
 def register():

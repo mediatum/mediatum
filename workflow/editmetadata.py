@@ -75,14 +75,18 @@ class WorkflowStep_EditMetadata(WorkflowStep):
                 request=req,
             )
 
-    def metaFields(self, lang=None):
-        field = Metafield("mask")
-        if lang:
-            field.set("label", _core_translation.translate(lang, "admin_wfstep_editor_mask"))
-        else:
-            field.set("label", _core_translation.translate_in_request("admin_wfstep_editor_mask"))
-        field.setFieldtype("text")
-        return [field]
+    def admin_settings_get_html_form(self, req):
+        return _tal.processTAL(
+            dict(mask=self.get('mask'),),
+            file="workflow/editmetadata.html",
+            macro="workflow_step_type_config",
+            request=req,
+           )
+
+    def admin_settings_save_form_data(self, data):
+        assert set(data)=={"mask"}
+        self.set('mask', data['mask'])
+        db.session.commit()
 
     @staticmethod
     def getLabels():

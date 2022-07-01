@@ -52,3 +52,31 @@
         }
     </script>
 </tal:block>
+
+
+<metal:block metal:define-macro="workflow_step_type_config">
+    <div>
+        <label for="stepsetting_from" i18n:translate="admin_wfstep_email_sender"> </label>
+        <input type="text" name="stepsetting_from" id="stepsetting_from" tal:attributes="value sender"/>
+    </div>
+    <div>
+        <label for="stepsetting_email" i18n:translate="admin_wfstep_email_recipient"> </label>
+        <input type="text" name="stepsetting_email" id="stepsetting_email" tal:attributes="value email"/>
+    </div>
+    <div>
+        <label for="stepsetting_subject" i18n:translate="admin_wfstep_email_subject"> </label>
+        <input type="text" name="stepsetting_subject" id="stepsetting_subject" tal:attributes="value subject"/>
+    </div>
+    <div>
+        <label for="stepsetting_text" i18n:translate="admin_wfstep_email_text"> </label>
+        <textarea rows="4" type="text" name="stepsetting_text" id="stepsetting_text" tal:content="python:text"/>
+    </div>
+    <div>
+        <label for="stepsetting_allowedit" i18n:translate="admin_wfstep_email_text_editable"> </label>
+        <input type="checkbox" name="stepsetting_allowedit" id="stepsetting_allowedit" tal:attributes="checked python:'checked' if allowedit=='1' else None" value="1"/>
+    </div>
+    <div>
+        <label for="stepsetting_attach_pdf_form" i18n:translate="workflowstep-email_label_attach_pdf_form"> </label>
+        <input type="checkbox" name="stepsetting_attach_pdf_form" id="stepsetting_attach_pdf_form" tal:attributes="checked python:'checked' if attach_pdf_form=='1' else None" value="1"/>
+    </div>
+</metal:block>

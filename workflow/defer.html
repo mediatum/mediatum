@@ -1,0 +1,18 @@
+<!--
+  Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<metal:block metal:define-macro="workflow_step_type_config">
+    <div>
+        <label for="stepsetting_attrname" i18n:translate="attributname"> </label>
+        <input type="text" name="stepsetting_attrname" id="stepsetting_attrname" tal:attributes="value attrname"/>
+    </div>
+    <div>
+        <label for="stepsetting_accesstype" i18n:translate="accesstype"> </label>
+        <select name="stepsetting_accesstype" id="stepsetting_accesstype" multiple="multiple" size="3">
+          <option tal:attributes="selected python:'1' if 'read' in accesstype else None" value="read">read</option>
+          <option tal:attributes="selected python:'1' if 'write' in accesstype else None" value="write">write</option>
+          <option tal:attributes="selected python:'1' if 'data' in accesstype else None" value="data">data</option>
+        </select>
+    </div>
+</metal:block>

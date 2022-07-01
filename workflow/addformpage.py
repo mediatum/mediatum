@@ -6,6 +6,7 @@
 from __future__ import division
 from __future__ import print_function
 
+import datetime as _datetime
 import os
 import subprocess
 import re
@@ -15,17 +16,18 @@ import logging
 import codecs
 import fdfgen
 
+from mediatumtal import tal as _tal
+
 import utils.utils as _utils_utils
 from .workflow import WorkflowStep, getNodeWorkflow, getNodeWorkflowStep, registerStep
 from core.translation import addLabels
-from metadata.upload import getFilelist
 from schema.schema import getMetaType, Metafield
+import utils.fileutils as _fileutils
 from utils.fileutils import getImportDir
 from utils.utils import join_paths, desc
 from utils.date import format_date, now
 
 import core.config as config
-import core.translation as _core_translation
 import utils.process
 
 from core import db
@@ -38,6 +40,15 @@ def register():
     #tree.registerNodeClass("workflowstep-addformpage", WorkflowStep_AddFormPage)
     registerStep("workflowstep_addformpage")
     addLabels(WorkflowStep_AddFormPage.getLabels())
+
+
+def _reformat_authors(s):
+    authors = s.strip().split(";")
+    if len(authors) > 1:
+        authors = ", ".join(authors[:-1]) + " and " + authors[-1]
+    else:
+        authors = authors[0]
+    return authors
 
 
 def get_pdftk_fields_dump(path_to_pdf):
@@ -114,18 +125,9 @@ class WorkflowStep_AddFormPage(WorkflowStep):
             if fnode.filetype == "document":
                 break
 
-        def reformatAuthors(s):
-            authors = s.strip().split(";")
-            if len(authors) > 1:
-                authors = ", ".join(authors[:-1]) + " and " + authors[-1]
-            else:
-                authors = authors[0]
-            return authors
-
         # get pdf form appended to this workflow step through upload field 'upload_pdfform'
         current_workflow = getNodeWorkflow(node)
         current_workflow_step = getNodeWorkflowStep(node)
-        formfilelist, formfilelist2 = getFilelist(current_workflow_step, 'upload_pdfform')
 
         pdf_fields_editable = current_workflow_step.get("pdf_fields_editable")
         pdf_form_separate = current_workflow_step.get("pdf_form_separate")
@@ -142,15 +144,14 @@ class WorkflowStep_AddFormPage(WorkflowStep):
             pdf_form_separate = False
 
         fields = []
-        f_retrieve_path = None
+        form = None
 
         schema = getMetaType(node.schema)
 
-        if formfilelist:
-            # take newest (mtime)
-            f_mtime, f_name, f_mimetype, f_size, f_type, f_retrieve_path, f = formfilelist[-1]
+        if current_workflow_step.files:
+            form, = current_workflow_step.files
 
-            for field_dict in parse_pdftk_fields_dump(get_pdftk_fields_dump(f_retrieve_path)):
+            for field_dict in parse_pdftk_fields_dump(get_pdftk_fields_dump(form.abspath)):
                 fieldname = field_dict.get('FieldName', None)
                 if fieldname:
                     value = ''
@@ -158,7 +159,7 @@ class WorkflowStep_AddFormPage(WorkflowStep):
                         schemafield = schema.children.filter_by(name=fieldname).first()
                         value = schemafield.getFormattedValue(node)[1]
                         if fieldname.find('author') >= 0:
-                            value = reformatAuthors(value)
+                            value = _reformat_authors(value)
                     elif fieldname.lower() == 'node.schema':
                         value = getMetaType(node.schema).getLongName()
                     elif fieldname.lower() == 'node.id':
@@ -194,8 +195,8 @@ class WorkflowStep_AddFormPage(WorkflowStep):
                                        current_workflow_step.name, current_workflow_step.id, fieldname, node.name, node.id)
                     fields.append((fieldname, remove_tags(desc(value))))
 
-        if not pdf_form_separate and fnode and f_retrieve_path and os.path.isfile(f_retrieve_path):
-            pages = fillPDFForm(f_retrieve_path, fields, input_is_fullpath=True, editable=pdf_fields_editable)
+        if not pdf_form_separate and fnode and form and form.abspath and os.path.isfile(form.abspath):
+            pages = fillPDFForm(form.abspath, fields, input_is_fullpath=True, editable=pdf_fields_editable)
             if pages == "":  # error in pdf creation -> forward to false operation
                 logg.error("workflowstep %s (%s): could not create pdf file - node: '%s' (%s)" %
                            (current_workflow_step.name, current_workflow_step.id, node.name, node.id))
@@ -214,8 +215,8 @@ class WorkflowStep_AddFormPage(WorkflowStep):
             logg.info("workflow '%s' (%s), workflowstep '%s' (%s): added pdf form to pdf (node '%s' (%s)) fields: %s",
                 current_workflow.name, current_workflow.id, current_workflow_step.name, current_workflow_step.id, node.name, node.id, fields)
             
-        elif pdf_form_separate and f_retrieve_path and os.path.isfile(f_retrieve_path):
-            pages = fillPDFForm(f_retrieve_path, fields, input_is_fullpath=True, editable=pdf_fields_editable)
+        elif pdf_form_separate and form and form.abspath and os.path.isfile(form.abspath):
+            pages = fillPDFForm(form.abspath, fields, input_is_fullpath=True, editable=pdf_fields_editable)
             if pages == "":  # error in pdf creation -> forward to false operation
                 logg.error("workflowstep %s (%s): could not create pdf file - node: '%s' (%s)" %
                            (current_workflow_step.name, current_workflow_step.id, node.name, node.id))
@@ -228,7 +229,7 @@ class WorkflowStep_AddFormPage(WorkflowStep):
                 # and the part after the last underscore is
                 # visible to the user when the file gets
                 # emailed in ``email.py``.
-                new_form_path = [str(node.id), f_name]
+                new_form_path = [str(node.id), form.base_name]
                 if pdf_form_overwrite:
                     new_form_path.insert(1, _utils_utils.gen_secure_token(128))
                 new_form_path = join_paths(importdir, "_".join(new_form_path))
@@ -245,7 +246,7 @@ class WorkflowStep_AddFormPage(WorkflowStep):
                     found = 1
                     break
             if found == 0 or (found == 1 and not pdf_form_overwrite):
-                node.files.append(File(new_form_path, 'metafield-upload.upload_pdfform', 'application/pdf'))
+                node.files.append(File(new_form_path, 'wfstep-addformpage', 'application/pdf'))
                 db.session.commit()
 
             logg.info(
@@ -261,39 +262,61 @@ class WorkflowStep_AddFormPage(WorkflowStep):
     def show_workflow_node(self, node, req):
         self.forward(node, True)
 
-    def metaFields(self, lang=None):
-        ret = list()
-        for name, label, type_ in (
-                ("upload_pdfform", "workflowstep-addformpage_label_upload_pdfform", "upload"),
-                ("pdf_fields_editable", "workflowstep-addformpage_label_pdf_fields_editable", "check"),
-                ("pdf_form_separate", "workflowstep-addformpage_label_pdf_form_separate", "check"),
-                ("pdf_form_overwrite", "workflowstep-addformpage_label_pdf_overwrite", "check"),
-        ):
-            field = Metafield(name)
-            field.set(
-                "label",
-                _core_translation.translate(lang, label) if lang else _core_translation.translate_in_request(label),
-            )
-            field.setFieldtype(type_)
-            ret.append(field)
-        return ret
+    def admin_settings_get_html_form(self, req):
+        pdfs = tuple(f for f in self.files if f.filetype=="wfstep-addformpage")
+        if len(pdfs) == 1:
+            context = dict(
+                    filebasename=pdfs[0].base_name,
+                    filesize=pdfs[0].size,
+                    fileurl=u'/file/{}/{}'.format(self.id, pdfs[0].base_name),
+                   )
+        else:
+            context = dict(filebasename=None, filesize=None, fileurl=None)
+        context.update(dict(
+                fields_editable=self.get('pdf_fields_editable'),
+                form_separate=self.get('pdf_form_separate'),
+                form_overwrite=self.get('pdf_form_overwrite'),
+               ))
+
+        return _tal.processTAL(
+            context,
+            file="workflow/addformpage.html",
+            macro="workflow_step_type_config",
+            request=req,
+           )
+
+    def admin_settings_save_form_data(self, data):
+        data = data.to_dict()
+        pdfform = data.pop('pdfform', None)
+        if pdfform:
+            for f in self.files:
+                self.files.remove(f)
+            self.files.append(_fileutils.importFile(_fileutils.sanitize_filename(pdfform.filename), pdfform,
+                                              filetype="wfstep-addformpage"))
+        for attr in ('fields_editable', 'form_separate', 'form_overwrite'):
+            self.set("pdf_{}".format(attr), "1" if data.pop(attr, None) else "")
+        assert not data
+        db.session.commit()
 
     @staticmethod
     def getLabels():
         return {"de":
                 [
                     ("workflowstep-addformpage", u"PDF-Seiten hinzufügen"),
+                    ("workflowstep-addformpage_label_current_pdfform", "Aktuelles Formular:"),
+                    ("workflowstep-addformpage_label_replace_pdfform", "Eine PDF-Form hier ersetzen"),
                     ("workflowstep-addformpage_label_upload_pdfform", "Eine PDF-Form hier hochladen"),
-                    ("workflowstep-addformpage_label_pdf_fields_editable", "PDF-Form-Felder editierbar"),
-                    ("workflowstep-addformpage_label_pdf_form_separate", u"PDF-Form separat an Knoten anhängen"),
-                    ("workflowstep-addformpage_label_pdf_overwrite", u"PDF-Form überschreiben"),
+                    ("workflowstep-addformpage_label_fields_editable", "PDF-Form-Felder editierbar"),
+                    ("workflowstep-addformpage_label_form_separate", u"PDF-Form separat an Knoten anhängen"),
+                    ("workflowstep-addformpage_label_overwrite", u"PDF-Form überschreiben"),
                 ],
                 "en":
                 [
                     ("workflowstep-addformpage", "add PDF pages"),
-                    ("workflowstep-addformpage_label_upload_pdfform", "Upload one PDF form here"),
-                    ("workflowstep-addformpage_label_pdf_fields_editable", "PDF form fields editable"),
-                    ("workflowstep-addformpage_label_pdf_form_separate", "append PDF form separately to node"),
-                    ("workflowstep-addformpage_label_pdf_overwrite", "Overwrite existing form"),
+                    ("workflowstep-addformpage_label_current_pdfform", "Current PDF form:"),
+                    ("workflowstep-addformpage_label_replace_pdfform", "Replace one PDF form here"),
+                    ("workflowstep-addformpage_label_fields_editable", "PDF form fields editable"),
+                    ("workflowstep-addformpage_label_form_separate", "append PDF form separately to node"),
+                    ("workflowstep-addformpage_label_overwrite", "Overwrite existing form"),
                 ]
                 }

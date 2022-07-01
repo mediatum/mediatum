@@ -68,3 +68,18 @@
     </div>
     <p>&nbsp;</p>
 </tal:block>
+
+<metal:block metal:define-macro="workflow_step_type_config">
+    <div>
+        <label for="stepsetting_newnodetype" i18n:translate="admin_wfstep_node_types_to_create"> </label>
+        <input type="text" name="stepsetting_newnodetype" id="stepsetting_newnodetype" tal:attributes="value newnodetype"/>
+    </div>
+    <div>
+        <label for="stepsetting_starttext" i18n:translate="admin_wfstep_starttext"> </label>
+        <textarea rows="4" type="text" name="stepsetting_starttext" id="stepsetting_starttext" tal:content="python:starttext"/>
+    </div>
+    <div>
+        <label for="stepsetting_allowcontinue" i18n:translate="admin_wfstep_allowcontinue"> </label>
+        <input type="checkbox" name="stepsetting_allowcontinue" id="stepsetting_allowcontinue" tal:attributes="checked python:'checked' if allowcontinue=='1' else None" value="1"/>
+    </div>
+</metal:block>

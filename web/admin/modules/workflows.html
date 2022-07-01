@@ -429,7 +429,7 @@
             tal:content="python:'admin_overview'"
         />
     </p>
-    <form name="addmfield" id="addmfield" method="post" action="#">
+    <form name="addmfield" id="addmfield" method="post" enctype="multipart/form-data" action="#">
         <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
         <table>
             <tr>
@@ -586,7 +586,12 @@
                     </table>
                 </td>
             </tr>
-            <div tal:replace="raw editor"/>
+        </table>
+        <tal:block tal:condition="python:workflow_step_type_settings_html is not None">
+          <div class="mediatum-admin-workflow-settings-head" i18n:translate="admin_wfstep_additional"> </div>
+          <tal:block tal:replace="structure workflow_step_type_settings_html"/>
+        </tal:block>
+        <table>
             <tr>
                 <td>&nbsp;</td>
                 <td><small>(<span class="required">*</span> <span i18n:translate="admin_mandatory_info">TEXT</span>)</small></td>
@@ -607,28 +612,6 @@
         <input type="hidden" name="actfilter" value="all"/>
         <input type="hidden" name="ntype" tal:attributes="value ntype"/>
     </form>
-</metal:block>
-
-<metal:block metal:define-macro="workflow_step_type_config">
-    <tr tal:condition="python:len(fields)>0">
-        <td colspan="2"><b i18n:translate="admin_wfstep_additional">TEXT</b>:</td>
-    </tr>
-    <tal:block tal:repeat="field fields">
-        <tr tal:define="name python:field.getName(); value python:node.get(name)">
-            <td>
-                <span tal:replace="python:field.getLabel()"/>
-            </td>
-            <td>
-                <span tal:replace="raw python:field.getEditorHTML(value, width=400)"/>
-            </td>
-        </tr>
-    </tal:block>
-    <tr>
-        <td colspan="2">
-            <input type="hidden" name="metaDataEditor" value="metaDataEditor"/>
-            <input tal:attributes="value python:node.name" type="hidden" name="wnodeid"/>
-        </td>
-    </tr>
 </metal:block>
 
 <metal:block metal:define-macro="workflowimage_popup">

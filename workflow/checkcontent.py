@@ -6,6 +6,9 @@
 from __future__ import division
 from __future__ import print_function
 
+from mediatumtal import tal as _tal
+
+from core import db as _db
 from .workflow import WorkflowStep, registerStep
 from utils.utils import checkXMLString, suppress
 import core.translation as _core_translation
@@ -40,22 +43,26 @@ class WorkflowStep_CheckContent(WorkflowStep):
 
         self.forward(node, True)
 
-    def metaFields(self, lang=None):
-        ret = []
-        for name, label, type_ in (
-                ("from", "admin_wfstep_checkcontent_sender", "text"),
-                ("email", "admin_wfstep_checkcontent_recipient", "text"),
-                ("subject", "admin_wfstep_checkcontent_subject", "text"),
-                ("text", "admin_wfstep_checkcontent_text", "htmlmemo"),
-        ):
-            field = Metafield(name)
-            field.set(
-                "label",
-                _core_translation.translate(lang, label) if lang else _core_translation.translate_in_request(label),
-            )
-            field.setFieldtype(type_)
-            ret.append(field)
-        return ret
+    def admin_settings_get_html_form(self, req):
+        return _tal.processTAL(
+            dict(
+                sender=self.get('from'),
+                email=self.get('email'),
+                subject=self.get('subject'),
+                text=self.get('text'),
+            ),
+            file="workflow/checkcontent.html",
+            macro="workflow_step_type_config",
+            request=req,
+           )
+
+    def admin_settings_save_form_data(self, data):
+        data = data.to_dict()
+        for attr in ('email', 'subject', 'text'):
+            self.set(attr, data.pop(attr))
+        self.set('from', data.pop('sender'))
+        assert not data
+        _db.session.commit()
 
     @staticmethod
     def getLabels():

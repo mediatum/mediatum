@@ -30,3 +30,10 @@
 <div metal:define-macro="maskerror">
     <p class="error" i18n:translate="wf_nomaskfound">TEXT</p>
 </div>
+
+<metal:block metal:define-macro="workflow_step_type_config">
+    <div>
+        <label for="stepsetting_mask" i18n:translate="admin_wfstep_editor_mask"> </label>
+        <input type="text" name="stepsetting_mask" id="stepsetting_mask" tal:attributes="value mask"/>
+    </div>
+</metal:block>

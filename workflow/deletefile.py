@@ -4,6 +4,8 @@
 from __future__ import division
 from __future__ import print_function
 
+from mediatumtal import tal as _tal
+
 import core.translation as _core_translation
 from .workflow import WorkflowStep, registerStep
 from core import db
@@ -31,15 +33,18 @@ class WorkflowStep_DeleteFile(WorkflowStep):
         self.forward(node, True)
         db.session.commit()
 
-    def metaFields(self, lang=None):
-        field = Metafield("filetype")
-        if lang:
-            field.set("label", _core_translation.translate(lang, "admin_wfstep_deletefiletype"))
-        else:
-            field.set("label", _core_translation.translate_in_request("admin_wfstep_deletefiletype"))
-        field.setFieldtype("text")
-        return [field]
+    def admin_settings_get_html_form(self, req):
+        return _tal.processTAL(
+            dict(filetype=self.get('filetype'),),
+            file="workflow/deletefile.html",
+            macro="workflow_step_type_config",
+            request=req,
+           )
 
+    def admin_settings_save_form_data(self, data):
+        assert set(data)=={"filetype"}
+        self.set('filetype', data['filetype'])
+        db.session.commit()
 
 def getLabels(key=None, lang=None):
     return {"de":

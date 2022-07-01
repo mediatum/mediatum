@@ -138,21 +138,25 @@ class WorkflowStep_Start(WorkflowStep):
                 request=req,
             )
 
-    def metaFields(self, lang=None):
-        ret = []
-        for name, label, type_ in (
-                ("newnodetype", "admin_wfstep_node_types_to_create", "text"),
-                ("starttext", "admin_wfstep_starttext", "htmlmemo"),
-                ("allowcontinue", "admin_wfstep_allowcontinue", "check"),
-        ):
-            field = Metafield(name)
-            field.set(
-                "label",
-                _core_translation.translate(lang, label) if lang else _core_translation.translate_in_request(label),
-            )
-            field.setFieldtype(type_)
-            ret.append(field)
-        return ret
+    def admin_settings_get_html_form(self, req):
+        return _tal.processTAL(
+            dict(
+                newnodetype=self.get('newnodetype'),
+                starttext=self.get('starttext'),
+                allowcontinue=self.get('allowcontinue'),
+            ),
+            file="workflow/start.html",
+            macro="workflow_step_type_config",
+            request=req,
+           )
+
+    def admin_settings_save_form_data(self, data):
+        data = data.to_dict()
+        for attr in ('newnodetype', 'starttext'):
+            self.set(attr, data.pop(attr))
+        self.set('allowcontinue', "1" if data.pop('allowcontinue', None) else "")
+        assert not data
+        db.session.commit()
 
     @staticmethod
     def getLabels():

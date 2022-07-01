@@ -121,7 +121,7 @@ form{background-color:white; border:1px silver solid; margin:2px 10px 0px 0px; p
 form.edit{border-width:0px; border-style:none;}
 p.error{background:#FFE7E7; color:#AF0101; padding:7px; border:1px solid #AF0101; margin-left:20px; margin-right:20px; vertical-align:middle;text-align:center;}
 span.required{color:#ff0000;}
-label{width:10em; float:left; text-align:left; margin-right:1em; display:block;}
+label{width:200px; float:left; text-align:left; margin-right:1em; display:block;}
 div.label {display:inline;}
 button.opbutton{margin:1px; width:19px; height:19px;}
 table.xmlmeta{width:100%;}
@@ -139,6 +139,7 @@ button.admin_filter:hover{color:#000000; background:#CCCCCC;}
 .mediatum_clear {clear: both;}
 #mediatum_admin_frame{margin-top:0; margin-right:0; margin-left:0;}
 #mediatum_admin_frame_div{position:absolute;left:0px;right:0px;min-width:100%;}
+.mediatum-admin-workflow-settings-head{font-weight:bold;}
 .mediatum_td_option{width:20px; text-align:center;}
 
 .admin-serverstatus {

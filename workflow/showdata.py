@@ -91,12 +91,18 @@ class WorkflowStep_ShowData(WorkflowStep):
                 macro="workflow_showdata",
                 request=req,
             )
+    def admin_settings_get_html_form(self, req):
+        return _tal.processTAL(
+            dict(
+                masks=self.get('masks'),
+            ),
+            file="workflow/showdata.html",
+            macro="workflow_step_type_config",
+            request=req,
+           )
 
-    def metaFields(self, lang=None):
-        field = Metafield("masks")
-        if lang:
-            field.set("label", _core_translation.translate(lang, "admin_wfstep_masks_to_display"))
-        else:
-            field.set("label", _core_translation.translate_in_request("admin_wfstep_masks_to_display"))
-        field.setFieldtype("text")
-        return [field]
+    def admin_settings_save_form_data(self, data):
+        data = data.to_dict()
+        self.set('masks', data.pop('masks'))
+        assert not data
+        db.session.commit()

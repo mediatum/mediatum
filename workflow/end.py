@@ -48,21 +48,25 @@ class WorkflowStep_End(WorkflowStep):
             except:
                 logg.exception("exception in workflow step end, runAction failed")
 
-    def metaFields(self, lang=None):
-        ret = []
-        for name, label, type_ in (
-                ("endtext", "admin_wfstep_endtext", "htmlmemo"),
-                ("endremove", "admin_wfstep_endremove", "check"),
-                ("endsetupdatetime", "admin_wfstep_endsetupdatetime", "check"),
-        ):
-            field = Metafield(name)
-            field.set(
-                "label",
-                _core_translation.translate(lang, label) if lang else _core_translation.translate_in_request(label),
-            )
-            field.setFieldtype(type_)
-            ret.append(field)
-        return ret
+    def admin_settings_get_html_form(self, req):
+        return _tal.processTAL(
+            dict(
+                endtext=self.get('endtext'),
+                endremove=self.get('endremove'),
+                endsetupdatetime=self.get('endsetupdatetime'),
+            ),
+            file="workflow/end.html",
+            macro="workflow_step_type_config",
+            request=req,
+           )
+
+    def admin_settings_save_form_data(self, data):
+        data = data.to_dict()
+        self.set('endtext', data.pop('endtext'))
+        for attr in ('endremove', 'endsetupdatetime'):
+            self.set(attr, "1" if data.pop(attr, None) else "")
+        assert not data
+        db.session.commit()
 
     @staticmethod
     def getLabels():

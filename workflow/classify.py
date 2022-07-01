@@ -4,7 +4,8 @@
 from __future__ import division
 from __future__ import print_function
 
-import core.translation as _core_translation
+from mediatumtal import tal as _tal
+
 from .upload import WorkflowStep
 from .workflow import registerStep
 from core.translation import addLabels
@@ -72,21 +73,25 @@ class WorkflowStep_Classify(WorkflowStep):
                         pnode.children.append(node)
                     db.session.commit()
 
-    def metaFields(self, lang=None):
-        ret = []
-        for name, label, type_ in (
-                ("destination", "admin_wfstep_classify_destination", "text"),
-                ("destination_attr", "admin_wfstep_classify_destination_attr", "text"),
-                ("only_sub", "admin_wfstep_classify_only_sub", "check"),
-        ):
-            field = Metafield(name)
-            field.set(
-                "label",
-                _core_translation.translate(lang, label) if lang else _core_translation.translate_in_request(label),
-            )
-            field.setFieldtype(type_)
-            ret.append(field)
-        return ret
+    def admin_settings_get_html_form(self, req):
+        return _tal.processTAL(
+            dict(
+                destination=self.get('destination'),
+                destination_attr=self.get('destination_attr'),
+                only_sub=self.get('only_sub'),
+            ),
+            file="workflow/classify.html",
+            macro="workflow_step_type_config",
+            request=req,
+           )
+
+    def admin_settings_save_form_data(self, data):
+        data = data.to_dict()
+        for attr in ('destination', 'destination_attr'):
+            self.set(attr, data.pop(attr))
+        self.set('only_sub', "1" if data.pop('only_sub', None) else "")
+        assert not data
+        db.session.commit()
 
     @staticmethod
     def getLabels():

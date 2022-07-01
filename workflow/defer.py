@@ -8,8 +8,10 @@ from __future__ import print_function
 
 import logging
 
-import core.translation as _core_translation
 import utils.date as date
+
+from mediatumtal import tal as _tal
+
 from .workflow import WorkflowStep, registerStep
 from core.translation import addLabels
 from core import db
@@ -77,22 +79,24 @@ class WorkflowStep_Defer(WorkflowStep):
     def show_workflow_node(self, node, req):
         return self.forwardAndShow(node, True, req)
 
-    def metaFields(self, lang=None):
-        ret = list()
-        for name, label, type_ in (
-                ("attrname", "attributname", "text"),
-                ("accesstype", "accesstype", "list"),
-        ):
-            field = Metafield(name)
-            field.set(
-                "label",
-                _core_translation.translate(lang, label) if lang else _core_translation.translate_in_request(label),
-            )
-            field.setFieldtype(type_)
-            if name == "accesstype":
-                field.metatype_data = dict(multiple=True, listelements=("", "read", "write", "data"))
-            ret.append(field)
-        return ret
+    def admin_settings_get_html_form(self, req):
+        return _tal.processTAL(
+            dict(
+                attrname=self.get('attrname'),
+                accesstype=frozenset(("read", "write", "data")).intersection(self.get('accesstype').split(";"))
+            ),
+            file="workflow/defer.html",
+            macro="workflow_step_type_config",
+            request=req,
+           )
+
+    def admin_settings_save_form_data(self, data):
+        assert frozenset(data)==frozenset(("accesstype","attrname"))
+        accesstype = data.getlist("accesstype")
+        assert not frozenset(accesstype).difference(("read", "write", "data"))
+        self.set("attrname",data["attrname"])
+        self.set("accesstype",";".join(accesstype))
+        db.session.commit()
 
     @staticmethod
     def getLabels():

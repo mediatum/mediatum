@@ -5,6 +5,7 @@ from __future__ import division
 from __future__ import print_function
 
 import logging
+
 import mediatumtal.tal as _tal
 
 import core.csrfform as _core_csrfform
@@ -97,14 +98,15 @@ class WorkflowStep_Upload(WorkflowStep):
                 macro="workflow_upload",
                 request=req,
             )
-
-    def metaFields(self, lang=None):
-        field = Metafield("limit")
-        field.set(
-            "label",
-            _core_translation.translate(lang, "admin_wfstep_uploadtype")
-            if lang
-            else _core_translation.translate_in_request("admin_wfstep_uploadtype"),
+    def admin_settings_get_html_form(self, req):
+        return _tal.processTAL(
+            dict(limit=self.get('limit'),),
+            file="workflow/upload.html",
+            macro="workflow_step_type_config",
+            request=req,
            )
-        field.setFieldtype("text")
-        return [field]
+
+    def admin_settings_save_form_data(self, data):
+        assert set(data)=={"limit"}
+        self.set('limit', data['limit'])
+        db.session.commit()

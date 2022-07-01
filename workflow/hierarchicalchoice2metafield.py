@@ -26,6 +26,7 @@ import ruamel.yaml as _ruamel_yaml
 import core as _core
 import core.csrfform as _core_csrfform
 import schema.schema as _schema_schema
+import utils.fileutils as _fileutils
 import workflow as _workflow
 
 
@@ -122,22 +123,36 @@ class WorkflowStep_HierarchicalChoice2Metafield(_workflow.WorkflowStep):
             request=req,
         )
 
-    def metaFields(self, lang=None):
-        field = _schema_schema.Metafield("upload_fileatt")
-        label = "hierarchicalchoice-upload-fileatt"
-        field.set(
-            "label",
-            _core.translation.translate(lang, label) if lang else _core.translation.translate_in_request(label),
-        )
-        field.set("type", "upload")
-        field2 = _schema_schema.Metafield("target-attribute-name")
-        label = "hierarchicalchoice-target-attribute-name"
-        field2.set(
-            "label",
-            _core.translation.translate(lang, label) if lang else _core.translation.translate_in_request(label),
-        )
-        field2.set("type", "text")
-        return [field, field2]
+    def admin_settings_get_html_form(self, req):
+        files = tuple(f for f in self.files if f.filetype=="wfstep-hierarchicalchoice2metafield")
+        if len(files) == 1:
+            context = dict(
+                    filebasename=files[0].base_name,
+                    filesize=files[0].size,
+                    fileurl=u'/file/{}/{}'.format(self.id, files[0].base_name),
+                   )
+        else:
+            context = dict(filebasename=None, filesize=None, fileurl=None)
+        context.update['target-attribute-name'] = self.get('target-attribute-name')
+
+        return _mediatumtal.tal.processTAL(
+            context,
+            file="workflow/hierarchicalchoice2metafield.html",
+            macro="workflow_step_type_config",
+            request=req,
+           )
+
+    def admin_settings_save_form_data(self, data):
+        data = data.to_dict()
+        fileatt = data.pop('fileatt', None)
+        if fileatt:
+            for f in self.files:
+                self.files.remove(f)
+            self.files.append(_fileutils.importFile(_fileutils.sanitize_filename(fileatt.filename), fileatt,
+                                              filetype="wfstep-hierarchicalchoice2metafield"))
+        self.set('target-attribute-name', data.pop('target-attribute-name'))
+        assert not data
+        _core.db.session.commit()
 
     @staticmethod
     def getLabels():

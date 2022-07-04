@@ -86,10 +86,7 @@ def popup_thumbbig(req):
             ))
         return
     if not node.has_read_access():
-        req.response.set_data(_core_translation.t(
-                _core_translation.set_language(req.accept_languages),
-                "permisssion_denied",
-            ))
+        req.response.set_data("permisssion_denied")
         return httpstatus.HTTP_FORBIDDEN
 
     return node.popup_thumbbig(req)

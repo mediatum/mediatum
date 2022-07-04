@@ -239,7 +239,7 @@ class Document(Content):
         metafields = []
 
         field = Metafield(u"nodename", attrs={
-            "label": _core_translation.t(lang, "node name"),
+            "label": "node name",
             "type": u"text"
         })
         metafields.append(field)

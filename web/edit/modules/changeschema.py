@@ -133,7 +133,6 @@ def getContent(req, ids):
             d['schemes'] = available_schemes
             d['datatypes'] = admissible_containers
         else:
-            admissible_content_types.sort(key=lambda x: translate(x, request=req).lower())
             d['schemes'] = available_schemes
             d['datatypes'] = admissible_content_types
 

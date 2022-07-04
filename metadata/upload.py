@@ -304,11 +304,7 @@ def handle_request(req):
             filename = file.filename
 
         else:
-            msg = _core_translation.t(
-                    _core_translation.set_language(req.accept_languages),
-                    "no file for this field submitted",
-                )
-            errors.append(msg)
+            errors.append("no file for this field submitted")
 
         if filename:
             nodeFile = importFile(

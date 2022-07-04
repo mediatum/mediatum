@@ -105,7 +105,7 @@ class WorkflowStep_Start(WorkflowStep):
                 types += [(m, a)]
         cookie_error = _core_translation.t(
                 _core_translation.set_language(req.accept_languages),
-                "Your browser doesn't support cookies",
+                "Your_browser_doesnt_support_cookies",
             )
 
         js = """

@@ -98,32 +98,21 @@ def _handle_edit_metadata(req, mask, nodes):
             return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
     if not hasattr(mask, "i_am_not_a_mask"):
-        if form.get('generate_new_version'):
-            # Create new node version
-            comment = u'({})\n{}'.format(
-                    _core_translation.t(req, "document_new_version_comment"),
-                    form.get('version_comment', ''),
-                )
+        # XXX: why check here?
+        # if nodes:
+        old_nodename = nodes[0].name
 
-            for node in nodes:
-                with node.new_tagged_version(comment=comment, user=user):
-                    mask.update_node(node, req, user)
-        else:
-            # XXX: why check here?
-            # if nodes:
-            old_nodename = nodes[0].name
+        for node in nodes:
+            mask.update_node(node, req, user)
 
-            for node in nodes:
-                mask.update_node(node, req, user)
+        db.session.commit()
 
-            db.session.commit()
-
-            # XXX: why check here?
-            # if nodes:
-            new_nodename = nodes[0].name
-            if ( len(nodes) == 1 or old_nodename != new_nodename) and isinstance(nodes[0], Container):
-                # for updates of node label in editor tree
-                flag_nodename_changed = ustr(nodes[0].id)
+        # XXX: why check here?
+        # if nodes:
+        new_nodename = nodes[0].name
+        if ( len(nodes) == 1 or old_nodename != new_nodename) and isinstance(nodes[0], Container):
+            # for updates of node label in editor tree
+            flag_nodename_changed = ustr(nodes[0].id)
 
     else:
         for field in mask.metaFields():
@@ -186,14 +175,11 @@ def getContent(req, ids):
             nodes += [node]
 
     idstr = ",".join(ids)
-    action = req.params.get('action', '').strip()
 
+    logg.info("%s in editor metadata: %r", user.login_name, [[n.id, n.name, n.type]for n in nodes])
     if len(ids) > 1 and len(metatypes) > 1:
-        logg.info("%s in editor metadata (action=%r) multiple documents not supported: %r",
-                  user.login_name, action, [[n.id, n.name, n.type]for n in nodes])
+        logg.info("%s user error: multiple metatypes in editor not supported", user.login_name)
         return _tal.processTAL({}, file="web/edit/modules/metadata.html", macro="multiple_documents_not_supported", request=req)
-
-    logg.info("%s in editor metadata (action=%r): %r", user.login_name, action, [[n.id, n.name, n.type]for n in nodes])
 
     metadatatype = node.metadatatype
 
@@ -254,11 +240,6 @@ def getContent(req, ids):
             t=_core_translation.t,
             csrf=_core_csrfform.get_token(),
         )
-    if action == 'restore':
-        raise NotImplementedError("restore version not implemented, later...")
-
-    if action == 'delete':
-        raise NotImplementedError("delete version not implemented, later...")
 
     if "edit_metadata" in req.params:
         flag_nodename_changed = _handle_edit_metadata(req, mask, nodes)
@@ -272,21 +253,6 @@ def getContent(req, ids):
     update_date, creation_date = get_datelists(nodes)
     data = {}
     
-    # version handling
-    current_version = nodes[0].versions[-1]
-    tagged_node_versions = nodes[0].tagged_versions.all()
-    published_version = nodes[0].get_published_version()
-    
-    data["untagged_current_version"] = current_version
-    data["published_version"] = published_version
-
-    if tagged_node_versions:
-        data["tagged_versions"] = tagged_node_versions[::-1] # descending version tag
-        if current_version == tagged_node_versions[-1]:
-            data["untagged_current_version"] = None
-    else:
-        data["tagged_versions"] = []
-        
     data["creation_date"] = creation_date
     data["update_date"] = update_date
     data["err"] = err

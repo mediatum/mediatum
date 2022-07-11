@@ -45,6 +45,7 @@ def _prepare_document_data(node, req, words=""):
         obj['bibtex'] = True
 
     obj['data_access'] = node.has_data_access()
+    obj['version'] = req.args.get("v", "")
     obj['has_original'] = node.has_object()
 
     if obj['has_original']:

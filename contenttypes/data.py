@@ -139,6 +139,7 @@ class Data(Node):
                 "deleteobject",
                 )},
             "admin",
+            "version",
         )},
     )
 
@@ -380,11 +381,14 @@ def prepare_node_data(node, req):
 
     versions = node.tagged_versions.all()
 
-    # a single version is ignored
-    if len(versions) > 1:
+    if versions:
+        if node.isActiveVersion():
+            version = versions[-1]
+        else:
+            version, = (v for v in versions if v.transaction_id == node.transaction_id)
         ctx = {
             "node": node,
-            "tag": versions[-1].tag,
+            "tag": version.tag,
             "versions": versions,
         }
         data['versions_html'] = Markup(tal.getTAL("web/frontend/styles/macros.html", ctx, macro="object_versions"))

@@ -590,6 +590,9 @@ msgstr "Klassifikation"
 msgid "tab_admin"
 msgstr "Administration"
 
+msgid "tab_version"
+msgstr "Versionierung"
+
 msgid "tab_imports"
 msgstr "Upload"
 

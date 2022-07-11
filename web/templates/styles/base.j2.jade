@@ -35,7 +35,7 @@ link(rel="stylesheet", href="/css/jade_style.css")
 
 if attachment and data_access
   #object_attachment
-    a(onclick="javascript:openPopup('/attachmentbrowser?id={{ node.id }}&path={{ path }}')", href="#")
+    a(onclick="javascript:openPopup('/attachmentbrowser?id={{ node.id }}&v={{ version }}&path={{ path }}')", href="#")
       = _t("doc_att_browser")
 
 if versions_html

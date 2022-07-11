@@ -686,7 +686,7 @@ class Menu:
         return self.default
 
 
-def parse_menu_struct(menu, filter_item=lambda mi:True, _upper=None):
+def parse_menu_struct(menu, skip_items=frozenset(), _upper=None):
     if _upper:
         add = _upper.addItem
     else:
@@ -694,12 +694,12 @@ def parse_menu_struct(menu, filter_item=lambda mi:True, _upper=None):
         add = result.append
     for item in menu:
         if isinstance(item, basestring):
-            if filter_item(item):
+            if item not in skip_items:
                 add(Menu(item))
             continue
         (sub_title, sub_items), = item.iteritems()
         sub_menu = Menu(sub_title)
-        parse_menu_struct(sub_items, filter_item, sub_menu)
+        parse_menu_struct(sub_items, skip_items, sub_menu)
         add(sub_menu)
     if not _upper:
         return result

@@ -118,9 +118,6 @@ def validate(req, op):
     if importfile:
         importWorkflow(importfile)
 
-    if req.values.get("form_op") == "update":
-        return _get_workflow_step_config_form_html(req, req.values["parent"], req.values["nname"], -1)
-
     if req.values.get("acttype", "workflow") == "workflow":
         # workflow section
         for key in req.values:
@@ -438,28 +435,6 @@ def _get_workflow_step_config_form_html(req, wid, wnid, err=0):
         # new workflowstep
         workflowstep = create_update_workflow_step()
         v["orig_name"] = ""
-    elif err == -1:
-        # update steptype
-        if req.values["stepid"]:
-            stepname = req.values["nname"]
-            workflowstep = create_update_workflow_step(
-                    workflow.getStep(stepname),
-                    typ=req.values.get("ntype", "workflowstep"),
-                    **_aggregate_workflowstep_text_parameters(
-                        req.values,
-                        workflow.getLanguages(),
-                    )
-                )
-        else:
-            err = 0
-            workflowstep = create_update_workflow_step(
-                    typ=req.values.get("ntype", "workflowstep"),
-                    **_aggregate_workflowstep_text_parameters(
-                        req.values,
-                        workflow.getLanguages(),
-                    )
-                )
-        v["orig_name"] = workflowstep.name
 
     elif wnid != "" and "nname" not in req.values:
         # edit field

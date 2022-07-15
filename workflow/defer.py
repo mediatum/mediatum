@@ -7,9 +7,11 @@ from __future__ import division
 from __future__ import print_function
 
 import logging
+
+import core.translation as _core_translation
 import utils.date as date
 from .workflow import WorkflowStep, registerStep
-from core.translation import t, addLabels
+from core.translation import addLabels
 from core import db
 from schema.schema import Metafield
 from core.database.postgres.permission import AccessRulesetToRule
@@ -77,35 +79,22 @@ class WorkflowStep_Defer(WorkflowStep):
 
     def metaFields(self, lang=None):
         ret = list()
-        field = Metafield("attrname")
-        field.set("label", t(lang, "attributname"))
-        field.setFieldtype("text")
-        ret.append(field)
-
-        field = Metafield("accesstype")
-        field.set("label", t(lang, "accesstype"))
-        field.setFieldtype("list")
-        field.metatype_data = dict(
-            multiple=True,
-            listelements=("", "read", "write", "data"),
-        )
-        ret.append(field)
-
-        field = Metafield("recipient")
-        field.set("label", t(lang, "admin_wfstep_email_recipient"))
-        field.setFieldtype("text")
-        ret.append(field)
-
-        field = Metafield("subject")
-        field.set("label", t(lang, "admin_wfstep_email_subject"))
-        field.setFieldtype("text")
-        ret.append(field)
-
-        field = Metafield("body")
-        field.set("label", t(lang, "admin_wfstep_email_text"))
-        field.setFieldtype("htmlmemo")
-        ret.append(field)
-
+        for name, label, type_ in (
+                ("attrname", "attributname", "text"),
+                ("accesstype", "accesstype", "list"),
+                ("recipient", "admin_wfstep_email_recipient", "text"),
+                ("subject", "admin_wfstep_email_subject", "text"),
+                ("body", "admin_wfstep_email_text", "htmlmemo"),
+        ):
+            field = Metafield(name)
+            field.set(
+                "label",
+                _core_translation.translate(lang, label) if lang else _core_translation.translate_in_request(label),
+            )
+            field.setFieldtype(type_)
+            if name == "accesstype":
+                field.metatype_data = dict(multiple=True, listelements=("", "read", "write", "data"))
+            ret.append(field)
         return ret
 
     @staticmethod

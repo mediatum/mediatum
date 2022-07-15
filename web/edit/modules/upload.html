@@ -18,11 +18,11 @@
 
     <script tal:content="python:u'var id = \'{}\';'.format(id)"> </script>
     <script tal:content="python:u'var uploadstate = \'{}\';'.format(uploadstate)"/>
-    <script tal:content="python:u'var js_upload_unpack = \'{}\';'.format(t(language, 'edit_upload_unpack'))"/>
-    <script tal:content="python:u'var js_upload_no_unpack = \'{}\';'.format(t(language, 'edit_upload_no_unpack'))"/>
+    <script tal:content="python:u'var js_upload_unpack = \'{}\';'.format(translate(language, 'edit_upload_unpack'))"/>
+    <script tal:content="python:u'var js_upload_no_unpack = \'{}\';'.format(translate(language, 'edit_upload_no_unpack'))"/>
     <script tal:content="python:u'var csrf = \'{}\';'.format(csrf)"/>
-    <script tal:content="python:u'var js_edit_layout_togglertip_open = \'{}\';'.format(t(language, 'edit_layout_togglertip_open'))"/>
-    <script tal:content="python:u'var js_edit_layout_togglertip_closed = \'{}\';'.format(t(language, 'edit_layout_togglertip_closed'))"/>
+    <script tal:content="python:u'var js_edit_layout_togglertip_open = \'{}\';'.format(translate(language, 'edit_layout_togglertip_open'))"/>
+    <script tal:content="python:u'var js_edit_layout_togglertip_closed = \'{}\';'.format(translate(language, 'edit_layout_togglertip_closed'))"/>
     <script tal:content="python:u'var north_size = {};'.format(navigation_height + 30)"/>
 
     <div id="navigation_content">

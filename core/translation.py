@@ -115,10 +115,3 @@ def set_language(accept_languages, new_language=None):
     if new_language != config.languages[0] or new_language != accept_languages.best_match(config.languages):
         _flask.session["language"] = new_language
     return new_language
-
-
-def t(target, key):
-    if isinstance(target, basestring):
-        return translate(target, key)
-    else:
-        return translate_in_request(key, request=target)

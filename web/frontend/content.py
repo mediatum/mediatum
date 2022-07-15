@@ -422,7 +422,7 @@ class ContentList(ContentBase):
                 metadatatype=node.metadatatype,
                 t_off="",
                 off="",
-                t_desc=_core_translation.t(self.lang, "descending"),
+                t_desc=_core_translation.translate(self.lang, "descending"),
                 selected_value=sf,
             )
             for sf in results

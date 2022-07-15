@@ -45,7 +45,7 @@ def popup_fullsize(req):
     nid = userinput.string_to_int(req.args.get("id", type=int))
     if nid is None:
         req.response.status_code = httpstatus.HTTP_BAD_REQUEST
-        req.response.set_data(_core_translation.t(
+        req.response.set_data(_core_translation.translate(
             _core_translation.set_language(req.accept_languages),
                 "edit_common_noobjectsfound",
             ))
@@ -54,7 +54,7 @@ def popup_fullsize(req):
     node = q(Node).get(nid)
     if not isinstance(node, Node):
         req.response.status_code = httpstatus.HTTP_NOT_FOUND
-        req.response.set_data(_core_translation.t(
+        req.response.set_data(_core_translation.translate(
                 _core_translation.set_language(req.accept_languages),
                 "edit_common_noobjectsfound",
             ))
@@ -64,7 +64,7 @@ def popup_fullsize(req):
     version = node.get_tagged_version(unicode(version_id))
     node_or_version = version if version else node
     if not node_or_version.has_read_access():
-        req.response.set_data(_core_translation.t(
+        req.response.set_data(_core_translation.translate(
                 _core_translation.set_language(req.accept_languages),
                 "permission_denied",
             ))
@@ -80,7 +80,7 @@ def popup_thumbbig(req):
     node = q(Node).get(req.params["id"])
     if not isinstance(node, Node):
         req.response.status_code = httpstatus.HTTP_NOT_FOUND
-        req.response.set_data(_core_translation.t(
+        req.response.set_data(_core_translation.translate(
                 _core_translation.set_language(req.accept_languages),
                 "edit_common_noobjectsfound",
             ))
@@ -104,7 +104,7 @@ def show_help(req):
         html = webconfig.theme.render_macro("popups.j2.jade", "show_help", {"field": field})
         req.response.status_code = httpstatus.HTTP_OK
     else:
-        html = _core_translation.t(_core_translation.set_language(req.accept_languages), "permission_denied")
+        html = _core_translation.translate(_core_translation.set_language(req.accept_languages), "permission_denied")
         req.response.status_code = httpstatus.HTTP_FORBIDDEN
     req.response.set_data(html)
 #
@@ -119,7 +119,7 @@ def show_attachmentbrowser(req):
     if version_id:
         node = node.get_tagged_version(unicode(version_id))
     if not node.has_data_access():
-        req.response.set_data(_core_translation.t(
+        req.response.set_data(_core_translation.translate(
                 _core_translation.set_language(req.accept_languages),
                 "permission_denied",
             ))
@@ -147,14 +147,14 @@ def show_printview(req):
     node = q(Node).get(nodeid)
     if node.system_attrs.get("print") == "0":
         req.response.status_code = httpstatus.HTTP_NOT_FOUND
-        req.response.set_data(_core_translation.t(
+        req.response.set_data(_core_translation.translate(
                 _core_translation.set_language(req.accept_languages),
                 "edit_common_noobjectsfound",
             ))
         return
     if not node.has_read_access():
         req.response.status_code = httpstatus.HTTP_FORBIDDEN
-        req.response.set_data(_core_translation.t(
+        req.response.set_data(_core_translation.translate(
                 _core_translation.set_language(req.accept_languages),
                 "permission_denied",
             ))

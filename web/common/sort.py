@@ -6,7 +6,6 @@ from __future__ import print_function
 
 import operator as _operator
 
-from core.translation import t as _t
 from core import Node as _Node
 from core import db as _db
 from schema.schema import Metadatatype as _Metadatatype

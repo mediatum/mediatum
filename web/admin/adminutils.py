@@ -111,7 +111,7 @@ class Overview:
                     b_class = "admin_page_act"
                 ret += '<button type="submit" name="page" class="{0}" title="{1}" value="{2}">{2}</button>'.format(
                         b_class,
-                        _core_translation.t(self.language, "admin_page"),
+                        _core_translation.translate(self.language, "admin_page"),
                         unicode(p),
                     )
         if len(ret) == 0:
@@ -121,13 +121,13 @@ class Overview:
     def printPageAll(self):
         if self.page != 0:
             return '<button name="resetpage" title="{}" class="admin_page" type="submit" value="">{}</button>'.format(
-                    _core_translation.t(self.language, "admin_allelements_title"),
-                    _core_translation.t(self.language, "admin_allelements"),
+                    _core_translation.translate(self.language, "admin_allelements_title"),
+                    _core_translation.translate(self.language, "admin_allelements"),
                 )
         else:
             return '<button name="firstpage" title="{}" class="admin_page" type="submit" value="">{}</button>'.format(
-                    _core_translation.t(self.language, "admin_pageelements_title"),
-                    _core_translation.t(self.language, "admin_pageelements_title"),
+                    _core_translation.translate(self.language, "admin_pageelements_title"),
+                    _core_translation.translate(self.language, "admin_pageelements_title"),
                 )
 
     def OrderColHeader(self, cols, order="", addparams=""):
@@ -146,19 +146,19 @@ class Overview:
                     if orderdir == 0:
                         retList.append(Link(
                                 "{}1".format(unicode(i)),
-                                _core_translation.t(self.language, "admin_sort_label"),
+                                _core_translation.translate(self.language, "admin_sort_label"),
                                 '{} <img src="/static/img/az.png" border="0" />'.format(col),
                             ))
                     else:
                         retList.append(Link(
                                 "{}0".format(unicode(i)),
-                                _core_translation.t(self.language, "admin_sort_label"),
+                                _core_translation.translate(self.language, "admin_sort_label"),
                                 '{} <img src="/static/img/za.png" border="0" />'.format(col),
                             ))
                 else:
                     retList.append(Link(
                             "{}0".format(unicode(i)),
-                            _core_translation.t(self.language, "admin_sort_label"),
+                            _core_translation.translate(self.language, "admin_sort_label"),
                             col,
                         ))
             i += 1

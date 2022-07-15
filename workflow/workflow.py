@@ -307,7 +307,7 @@ class Workflow(Node):
         template = "workflow/workflow.html"
         macro = "object_list"
         if self.children.filter_write_access().first() is None:
-            return '<i>' + _core_translation.t(_core_translation.set_language(req.accept_languages), "permission_denied") + '</i>'
+            return '<i>' + _core_translation.translate(_core_translation.set_language(req.accept_languages), "permission_denied") + '</i>'
         return _tal.processTAL(
                 dict(
                     workflow=self,
@@ -513,7 +513,7 @@ class WorkflowStep(Node):
             link = '/mask?id=%s&obj=%s' % (step.id, node.id)
             return '<script language="javascript">document.location.href = "%s";</script> <a href="%s">%s</a>' % (link, link, step.name)
         else:
-            return '<i>{}</i>'.format(_core_translation.t(_core_translation.set_language(req.accept_languages), "permission_denied"))
+            return '<i>{}</i>'.format(_core_translation.translate(_core_translation.set_language(req.accept_languages), "permission_denied"))
 
     def show_workflow_node(self, node, req):
         if "gotrue" in req.values:
@@ -526,7 +526,7 @@ class WorkflowStep(Node):
 
     def show_workflow_step(self, req):
         if not self.has_write_access():
-            return '<i>{}</i>'.format(_core_translation.t(_core_translation.set_language(req.accept_languages), "permission_denied"))
+            return '<i>{}</i>'.format(_core_translation.translate(_core_translation.set_language(req.accept_languages), "permission_denied"))
         c = []
         display_name_attr = self.parents[0].display_name_attribute
         i = 0

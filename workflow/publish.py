@@ -4,8 +4,9 @@
 from __future__ import division
 from __future__ import print_function
 
+import core.translation as _core_translation
 from .workflow import WorkflowStep, registerStep
-from core.translation import t, addLabels
+from core.translation import addLabels
 from core import UserGroup, db
 from core.permission import get_all_access_rules
 from core.users import user_from_session as _user_from_session
@@ -68,12 +69,18 @@ class WorkflowStep_Publish(WorkflowStep):
     def metaFields(self, lang=None):
         ret = list()
         field = Metafield("publishsetpublishedversion")
-        field.set("label", t(lang, "admin_wfstep_publishsetpublishedversion"))
+        if lang:
+            field.set("label", _core_translation.translate(lang, "admin_wfstep_publishsetpublishedversion"))
+        else:
+            field.set("label", _core_translation.translate_in_request("admin_wfstep_publishsetpublishedversion"))
         field.setFieldtype("check")
         ret.append(field)
 
         field = Metafield("publishsetupdatetime")
-        field.set("label", t(lang, "admin_wfstep_publishsetupdatetime"))
+        if lang:
+            field.set("label", _core_translation.translate(lang, "admin_wfstep_publishsetupdatetime"))
+        else:
+            field.set("label", _core_translation.translate_in_request("admin_wfstep_publishsetupdatetime"))
         field.setFieldtype("check")
         ret.append(field)
         return ret

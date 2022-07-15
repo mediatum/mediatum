@@ -6,9 +6,10 @@
 from __future__ import division
 from __future__ import print_function
 
+import core.translation as _core_translation
 from .upload import WorkflowStep
 from .workflow import registerStep
-from core.translation import t, addLabels
+from core.translation import addLabels
 from utils.utils import isNumeric
 from core import Node
 from core import db
@@ -82,11 +83,17 @@ class WorkflowStep_AddToFolder(WorkflowStep):
     def metaFields(self, lang=None):
         ret = []
         field = Metafield("destination")
-        field.set("label", t(lang, "admin_wfstep_addtofolder_destination"))
+        if lang:
+            field.set("label", _core_translation.translate(lang, "admin_wfstep_addtofolder_destination"))
+        else:
+            field.set("label", _core_translation.translate_in_request("admin_wfstep_addtofolder_destination"))
         field.setFieldtype("treeselect")
         ret.append(field)
         field = Metafield("destination_subfolder")
-        field.set("label", t(lang, "admin_wfstep_addtofolder_destination_subfolder"))
+        if lang:
+            field.set("label", _core_translation.translate(lang, "admin_wfstep_addtofolder_destination_subfolder"))
+        else:
+            field.set("label", _core_translation.translate_in_request("admin_wfstep_addtofolder_destination_subfolder"))
         field.setFieldtype("text")
         ret.append(field)
         return ret

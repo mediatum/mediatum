@@ -21,8 +21,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import cm
 from reportlab.rl_config import defaultPageSize
 
-
-from core.translation import t
+import core.translation as _core_translation
 from core.webconfig import node_url
 from utils.utils import u, esc
 
@@ -73,16 +72,20 @@ class PrintPreview:
     def myPages(self, canvas, doc):
         canvas.saveState()
         canvas.setFont('Helvetica', 8)
-        canvas.drawString(10 * cm, 1.9 * cm, "- %s %d -" % (t(self.language, "print_view_page"), doc.page))
+        canvas.drawString(
+            10 * cm,
+            1.9 * cm,
+            "- {} {} -".format(_core_translation.translate(self.language, "print_view_page"), doc.page),
+        )
         canvas.restoreState()
 
     def setHeader(self, collection):
         h1 = self.styleSheet['Heading1']
         h1.fontName = 'Helvetica'
         if not collection:
-            self.header = Paragraph(t(self.language, "print_view_header"), h1)
+            self.header = Paragraph(_core_translation.translate(self.language, "print_view_header"), h1)
         else:
-            p = Paragraph(t(self.language, collection.name), h1)
+            p = Paragraph(_core_translation.translate(self.language, collection.name), h1)
             p.wrap(defaultPageSize[0], defaultPageSize[1])
             self.headerWidth = p.getActualLineWidths0()[0]
             self.header = p
@@ -210,7 +213,7 @@ class PrintPreview:
 
     def addPaths(self, pathlist):
         if len(pathlist) > 0:
-            self.addData(Paragraph(t(self.language, "print_preview_occurences") + ":", self.bp))
+            self.addData(Paragraph(_core_translation.translate(self.language, "print_preview_occurences") + ":", self.bp))
             p = ' '
             for path in pathlist:
 
@@ -223,7 +226,7 @@ class PrintPreview:
                 p = ' '
 
     def addChildren(self, children):
-        self.addData(Paragraph('%s:' % t(self.language, "print_view_children"), self.bp))
+        self.addData(Paragraph('{}:'.format(_core_translation.translate(self.language, "print_view_children"), self.bp)))
 
         _head = 0  # count headers
         for c in children:
@@ -278,7 +281,7 @@ def getPrintView(lang, imagepath, metadata, paths, style, children, collection, 
         pv.addChildren(children)
     elif style == 3:
         # objectlist
-        pv.addData(Paragraph(t(pv.language, "print_view_list"), pv.bp))
+        pv.addData(Paragraph(_core_translation.translate(pv.language, "print_view_list"), pv.bp))
         pv.addChildren(children)
 
     p = Process(target=pv.build,args=(dest_file,))

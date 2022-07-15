@@ -300,7 +300,7 @@ def _get_node_metadata_html(node, req):
     if mask is not None:
         return mask.getViewHTML([node], VIEW_HIDE_EMPTY, language)  # hide empty elements
     else:
-        return _core_translation.t(req, "no_metadata_to_display")
+        return _core_translation.translate_in_request("no_metadata_to_display", req)
 
 
 def child_node_url(child_id, **kwargs):

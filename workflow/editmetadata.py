@@ -48,9 +48,10 @@ class WorkflowStep_EditMetadata(WorkflowStep):
                 op = "gotrue" in req.params
                 return self.forwardAndShow(node, op, req)
             else:
-                error = u'<p class="error">{}</p>'.format(
-                        _core_translation.t(_core_translation.set_language(req.accept_languages), "workflow_error_msg"),
-                    )
+                error = u'<p class="error">{}</p>'.format(_core_translation.translate(
+                        _core_translation.set_language(req.accept_languages),
+                        "workflow_error_msg",
+                    ))
                 req.params["errorlist"] = missing
 
         if mask:
@@ -76,7 +77,10 @@ class WorkflowStep_EditMetadata(WorkflowStep):
 
     def metaFields(self, lang=None):
         field = Metafield("mask")
-        field.set("label", _core_translation.t(lang, "admin_wfstep_editor_mask"))
+        if lang:
+            field.set("label", _core_translation.translate(lang, "admin_wfstep_editor_mask"))
+        else:
+            field.set("label", _core_translation.translate_in_request("admin_wfstep_editor_mask"))
         field.setFieldtype("text")
         return [field]
 

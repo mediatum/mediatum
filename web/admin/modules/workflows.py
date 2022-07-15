@@ -239,12 +239,12 @@ def view(req):
     actfilter = getFilter(req)
     # filter
     if actfilter != "":
-        if actfilter in ("all", "*", _core_translation.t(_core_translation.set_language(req.accept_languages), "admin_filter_all")):
+        if actfilter in ("all", "*", _core_translation.translate(_core_translation.set_language(req.accept_languages), "admin_filter_all")):
             None  # all users
         elif actfilter == "0-9":
             num = re.compile(r'([0-9])')
             workflows = filter(lambda x: num.match(x.name), workflows)
-        elif actfilter == "else" or actfilter == _core_translation.t(_core_translation.set_language(req.accept_languages), "admin_filter_else"):
+        elif actfilter == "else" or actfilter == _core_translation.translate(_core_translation.set_language(req.accept_languages), "admin_filter_else"):
             all = re.compile(r'([a-z]|[A-Z]|[0-9])')
             workflows = filter(lambda x: not all.match(x.name), workflows)
         else:
@@ -267,7 +267,7 @@ def view(req):
 
     v = getAdminStdVars(req)
     v["sortcol"] = pages.OrderColHeader(tuple(
-        _core_translation.t(
+        _core_translation.translate(
             _core_translation.set_language(req.accept_languages),
             "admin_wf_col_{}".format(col),
             )
@@ -335,12 +335,12 @@ def WorkflowStepList(req, wid):
 
     # filter
     if actfilter != "":
-        if actfilter in ("all", "*", _core_translation.t(_core_translation.set_language(req.accept_languages), "admin_filter_all")):
+        if actfilter in ("all", "*", _core_translation.translate(_core_translation.set_language(req.accept_languages), "admin_filter_all")):
             None  # all users
         elif actfilter == "0-9":
             num = re.compile(r'([0-9])')
             workflowsteps = filter(lambda x: num.match(x.name), workflowsteps)
-        elif actfilter == "else" or actfilter == _core_translation.t(_core_translation.set_language(req.accept_languages), "admin_filter_else"):
+        elif actfilter == "else" or actfilter == _core_translation.translate(_core_translation.set_language(req.accept_languages), "admin_filter_else"):
             all = re.compile(r'([a-z]|[A-Z]|[0-9])')
             workflowsteps = filter(lambda x: not all.match(x.name), workflowsteps)
         else:
@@ -371,7 +371,7 @@ def WorkflowStepList(req, wid):
 
     v = getAdminStdVars(req)
     v["sortcol"] = pages.OrderColHeader(tuple(
-        _core_translation.t(
+        _core_translation.translate(
             _core_translation.set_language(req.accept_languages),
             "admin_wfstep_col_{}".format(col),
             )

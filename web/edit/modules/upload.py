@@ -69,7 +69,7 @@ def getDatatypes(req, schemes):
                     if t.__name__.lower() == dtype and not elemInList(dtypes, t.__name__.lower()):
                         dtypes.append(t)
     try:
-        dtypes.sort(key=lambda x: _core_translation.translate_in_request(x.__name__.lower(), request=req).lower())
+        dtypes.sort(key=lambda x: _core_translation.translate_in_request(x.__name__.lower(), req).lower())
     except _core_translation.MessageIdNotFound:
         dtypes.sort(key=lambda x: x.__name__.lower())
     return dtypes
@@ -122,7 +122,7 @@ def getContent(req, ids):
                         except ValueError, e:
                             errornodes.append((
                                 filename,
-                                _core_translation.translate_in_request(unicode(e), request=req),
+                                _core_translation.translate_in_request(unicode(e), req),
                                 unicode(hash(f.getName())),
                             ))
                         db.session.commit()
@@ -148,7 +148,7 @@ def getContent(req, ids):
                     except Exception as e:
                         errornodes.append((
                             filename,
-                            _core_translation.translate_in_request(unicode(e), request=req),
+                            _core_translation.translate_in_request(unicode(e), req),
                             unicode(hash(f.getName())),
                         ))
                         db.session.rollback()
@@ -212,7 +212,7 @@ def getContent(req, ids):
                                 id=scheme.name,
                                 name=u'{} / {}'.format(
                                         scheme.getLongName(),
-                                        _core_translation.translate_in_request(dtypenames[datatype], request=req),
+                                        _core_translation.translate_in_request(dtypenames[datatype], req),
                                     ),
                                 description=scheme.getDescription(), datatype=datatype,
                             ),
@@ -471,7 +471,7 @@ def getContent(req, ids):
         query=req.query_string.replace('id=', 'src='),
         searchparams=urllib.urlencode(searchparams),
         get_ids_from_query=",".join(show_dir_nav.get_ids_from_req()),
-        edit_all_objects=_core_translation.t(
+        edit_all_objects=_core_translation.translate(
                 language,
                 "edit_all_objects",
             ).format(item_count[1]),

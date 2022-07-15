@@ -4,9 +4,10 @@
 from __future__ import division
 from __future__ import print_function
 
+import core.translation as _core_translation
 from .upload import WorkflowStep
 from .workflow import registerStep
-from core.translation import t, addLabels
+from core.translation import addLabels
 from utils.utils import isNumeric
 from core import Node
 from core import db
@@ -73,18 +74,18 @@ class WorkflowStep_Classify(WorkflowStep):
 
     def metaFields(self, lang=None):
         ret = []
-        field = Metafield("destination")
-        field.set("label", t(lang, "admin_wfstep_classify_destination"))
-        field.setFieldtype("treeselect")
-        ret.append(field)
-        field = Metafield("destination_attr")
-        field.set("label", t(lang, "admin_wfstep_classify_destination_attr"))
-        field.setFieldtype("text")
-        ret.append(field)
-        field = Metafield("only_sub")
-        field.set("label", t(lang, "admin_wfstep_classify_only_sub"))
-        field.setFieldtype("check")
-        ret.append(field)
+        for name, label, type_ in (
+                ("destination", "admin_wfstep_classify_destination", "treeselect"),
+                ("destination_attr", "admin_wfstep_classify_destination_attr", "text"),
+                ("only_sub", "admin_wfstep_classify_only_sub", "check"),
+        ):
+            field = Metafield(name)
+            field.set(
+                "label",
+                _core_translation.translate(lang, label) if lang else _core_translation.translate_in_request(label),
+            )
+            field.setFieldtype(type_)
+            ret.append(field)
         return ret
 
     @staticmethod

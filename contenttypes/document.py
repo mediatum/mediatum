@@ -213,7 +213,7 @@ class Document(Content):
     """ popup window for actual nodetype """
     def popup_fullsize(self, req):
         if not self.has_data_access() or not self.has_read_access():
-            req.response.set_data(_core_translation.t(req, "permission_denied"))
+            req.response.set_data(_core_translation.translate_in_request("permission_denied", req))
             req.response.status_code = _httpstatus.HTTP_FORBIDDEN
             return
 

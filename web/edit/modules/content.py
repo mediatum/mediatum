@@ -111,8 +111,8 @@ def getContent(req, ids):
             sortchoices = _sort.get_sort_choices(
                     container=node,
                     off="off",
-                    t_off=_core_translation.t(req, "off"),
-                    t_desc=_core_translation.t(req, "descending"),
+                    t_off=_core_translation.translate_in_request("off", req),
+                    t_desc=_core_translation.translate_in_request("descending", req),
                 )
         else:
             sortchoices = ()
@@ -132,10 +132,10 @@ def getContent(req, ids):
         searchparams = {k: unicode(v).encode("utf8") for k, v in searchparams.items()}
         v['searchparams'] = urllib.urlencode(searchparams)
         v['get_ids_from_query'] = ",".join(show_dir_nav.get_ids_from_req())
-        v['edit_all_objects'] = _core_translation.t(
+        v['edit_all_objects'] = _core_translation.translate(
                 _core_translation.set_language(req.accept_languages), "edit_all_objects",
             ).format(item_count[1])
-        v['t'] = _core_translation.t
+        v['translate'] = _core_translation.translate
         res = _tal.processTAL(v, file="web/edit/modules/content.html", macro="edit_content", request=req)
         show_dir_nav.nodes = None
         return res

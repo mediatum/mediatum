@@ -129,7 +129,7 @@ def getContent(req, ids):
         available_schemes = [s for s in schemes if node.type in s.getDatatypes()]
 
         if isinstance(node, Container):
-            admissible_containers.sort(key=lambda x: _core_translation.translate_in_request(x, request=req).lower())
+            admissible_containers.sort(key=lambda x: _core_translation.translate_in_request(x, req).lower())
             d['schemes'] = available_schemes
             d['datatypes'] = admissible_containers
         else:

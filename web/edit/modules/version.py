@@ -64,7 +64,7 @@ def getContent(req, ids):
         idstr=idstr,
         node=node,
         language=_core_translation.set_language(req.accept_languages),
-        t=_core_translation.t,
+        translate=_core_translation.translate,
         csrf=_core_csrfform.get_token(),
         untagged_current_version=current_version,
         published_version=published_version,

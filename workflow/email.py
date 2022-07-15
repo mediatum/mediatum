@@ -159,10 +159,10 @@ class WorkflowStep_SendEmail(WorkflowStep):
 
         elif node.get("system.mailtmp.error"):
             return u'{}<br/><pre>{}</pre><br>&gt;<a href="{}">{}</a>&lt;'.format(
-                    _core_translation.t(_core_translation.set_language(req.accept_languages), "workflow_email_msg_1"),
+                    _core_translation.translate(_core_translation.set_language(req.accept_languages), "workflow_email_msg_1"),
                     node.get("system.mailtmp.error"),
                     _makeSelfLink(req, {"sendout": "true"}),
-                    _core_translation.t(_core_translation.set_language(req.accept_languages), "workflow_email_resend"),
+                    _core_translation.translate(_core_translation.set_language(req.accept_languages), "workflow_email_resend"),
                 )
         else:
             return tal.processTAL(
@@ -190,44 +190,27 @@ class WorkflowStep_SendEmail(WorkflowStep):
 
     def metaFields(self, lang=None):
         ret = list()
-        field = Metafield("from")
-        field.set("label", _core_translation.t(lang, "admin_wfstep_email_sender"))
-        field.setFieldtype("text")
-        ret.append(field)
-
-        field = Metafield("email")
-        field.set("label", _core_translation.t(lang, "admin_wfstep_email_recipient"))
-        field.setFieldtype("text")
-        ret.append(field)
-
-        field = Metafield("subject")
-        field.set("label", _core_translation.t(lang, "admin_wfstep_email_subject"))
-        field.setFieldtype("htmlmemo")
-        ret.append(field)
-
-        field = Metafield("text")
-        field.set("label", _core_translation.t(lang, "admin_wfstep_email_text"))
-        field.setFieldtype("htmlmemo")
-        ret.append(field)
-
-        field = Metafield("allowedit")
-        field.set("label", _core_translation.t(lang, "admin_wfstep_email_text_editable"))
-        field.setFieldtype("list")
-        field.metatype_data = dict(
-                multiple=False,
-                listelements=_core_translation.t(lang, "admin_wfstep_email_text_editable_options").split(";"),
-               )
-        ret.append(field)
-
-        field = Metafield("sendcondition")
-        field.set("label", _core_translation.t(lang, "admin_wfstep_email_sendcondition"))
-        field.setFieldtype("text")
-        ret.append(field)
-
-        field = Metafield("attach_pdf_form")
-        field.set("label", _core_translation.t(lang, "workflowstep-email_label_attach_pdf_form"))
-        field.setFieldtype("check")
-        ret.append(field)
+        for name, label, type_ in (
+                ("from", "admin_wfstep_email_sender", "text"),
+                ("email", "admin_wfstep_email_recipient", "text"),
+                ("subject", "admin_wfstep_email_subject", "htmlmemo"),
+                ("text", "admin_wfstep_email_text", "htmlmemo"),
+                ("allowedit", "admin_wfstep_email_text_editable", "list"),
+                ("sendcondition", "admin_wfstep_email_sendcondition", "text"),
+                ("attach_pdf_form", "workflowstep-email_label_attach_pdf_form", "check"),
+        ):
+            field = Metafield(name)
+            field.set(
+                "label",
+                _core_translation.translate(lang, label) if lang else _core_translation.translate_in_request(label),
+            )
+            field.setFieldtype(type_)
+            if name == "allowedit":
+                field.metatype_data = dict(
+                        multiple=False,
+                        listelements=_core_translation.translate(lang, "admin_wfstep_email_text_editable_options").split(";"),
+                    )
+            ret.append(field)
         return ret
 
     @staticmethod

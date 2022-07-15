@@ -319,7 +319,7 @@ def view(req):
 
     # filter
     if actfilter != "":
-        if actfilter in ("all", "*", _translation.t(_translation.set_language(req.accept_languages), "admin_filter_all")):
+        if actfilter in ("all", "*", _translation.translate(_translation.set_language(req.accept_languages), "admin_filter_all")):
             None  # all users
         elif actfilter == "0-9":
             num = re.compile(r'([0-9])')
@@ -327,7 +327,7 @@ def view(req):
                 mtypes = filter(lambda x: num.match(x.name), mtypes)
             else:
                 mtypes = filter(lambda x: num.match(x.getLongName()), mtypes)
-        elif actfilter == "else" or actfilter == _translation.t(_translation.set_language(req.accept_languages), "admin_filter_else"):
+        elif actfilter == "else" or actfilter == _translation.translate(_translation.set_language(req.accept_languages), "admin_filter_else"):
             all = re.compile(r'([a-z]|[A-Z]|[0-9]|\.)')
             if req.params.get("filtertype", "") == "id":
                 mtypes = filter(lambda x: not all.match(x.name), mtypes)
@@ -356,7 +356,7 @@ def view(req):
 
     v = getAdminStdVars(req)
     v["sortcol"] = pages.OrderColHeader(tuple(
-        _translation.t(
+        _translation.translate(
             _translation.set_language(req.accept_languages),
             "admin_meta_col_{}".format(col),
             )
@@ -407,7 +407,10 @@ def MetatypeDetail(req, id, err=0):
     d = Data()
     v["datatypes"] = d.get_all_datatypes()
     try:
-        v["datatypes"].sort(key=lambda dt: _translation.t(_translation.set_language(req.accept_languages), dt.__name__))
+        v["datatypes"].sort(key=lambda dt: _translation.translate(
+                _translation.set_language(req.accept_languages),
+                dt.__name__,
+            ))
     except _translation.MessageIdNotFound:
         v["datatypes"].sort(key=_operator.attrgetter("__name__"))
     v["metadatatype"] = metadatatype

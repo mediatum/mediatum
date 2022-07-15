@@ -19,7 +19,6 @@ from utils.fileutils import importFile, getImportDir, importFileIntoDir
 from contenttypes.image import make_thumbnail_image, make_presentation_image
 from core.users import getUploadDir as _getUploadDir
 from core import httpstatus
-from core.translation import t
 from core import Node
 from core import db
 from core import File

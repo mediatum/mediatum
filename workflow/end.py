@@ -7,8 +7,8 @@ from __future__ import print_function
 import logging
 import mediatumtal.tal as _tal
 
+import core.translation as _core_translation
 from .workflow import WorkflowStep, registerStep
-from core.translation import t, addLabels
 from utils.date import now
 from schema.schema import Metafield
 from core import db
@@ -19,7 +19,7 @@ logg = logging.getLogger(__name__)
 def register():
     #tree.registerNodeClass("workflowstep-end", WorkflowStep_End)
     registerStep("workflowstep_end")
-    addLabels(WorkflowStep_End.getLabels())
+    _core_translation.addLabels(WorkflowStep_End.getLabels())
 
 
 class WorkflowStep_End(WorkflowStep):
@@ -50,20 +50,18 @@ class WorkflowStep_End(WorkflowStep):
 
     def metaFields(self, lang=None):
         ret = []
-        field = Metafield("endtext")
-        field.set("label", t(lang, "admin_wfstep_endtext"))
-        field.setFieldtype("htmlmemo")
-        ret.append(field)
-
-        field = Metafield("endremove")
-        field.set("label", t(lang, "admin_wfstep_endremove"))
-        field.setFieldtype("check")
-        ret.append(field)
-
-        field = Metafield("endsetupdatetime")
-        field.set("label", t(lang, "admin_wfstep_endsetupdatetime"))
-        field.setFieldtype("check")
-        ret.append(field)
+        for name, label, type_ in (
+                ("endtext", "admin_wfstep_endtext", "htmlmemo"),
+                ("endremove", "admin_wfstep_endremove", "check"),
+                ("endsetupdatetime", "admin_wfstep_endsetupdatetime", "check"),
+        ):
+            field = Metafield(name)
+            field.set(
+                "label",
+                _core_translation.translate(lang, label) if lang else _core_translation.translate_in_request(label),
+            )
+            field.setFieldtype(type_)
+            ret.append(field)
         return ret
 
     @staticmethod

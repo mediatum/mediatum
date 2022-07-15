@@ -6,9 +6,10 @@ from __future__ import print_function
 
 import mediatumtal.tal as _tal
 
+import core.translation as _core_translation
 import core.csrfform as _core_csrfform
 from .workflow import WorkflowStep, registerStep
-from core.translation import t, addLabels
+from core.translation import addLabels
 from schema.schema import Metafield
 
 
@@ -54,7 +55,10 @@ class WorkflowStep_TextPage(WorkflowStep):
 
     def metaFields(self, lang=None):
         field = Metafield("text")
-        field.set("label", t(lang, "admin_wfstep_textpage_text_to_display"))
+        if lang:
+            field.set("label", _core_translation.translate(lang, "admin_wfstep_textpage_text_to_display"))
+        else:
+            field.set("label", _core_translation.translate_in_request("admin_wfstep_textpage_text_to_display"))
         field.setFieldtype("htmlmemo")
         return [field]
 

@@ -47,7 +47,7 @@ class WorkflowStep_Upload(WorkflowStep):
         if "file" in req.files:
             file = req.files["file"]
             if not file:
-                error = _core_translation.t(req, "workflowstep_file_not_uploaded")
+                error = _core_translation.translate_in_request("workflowstep_file_not_uploaded", req)
             else:
                 fileExtension = os.path.splitext(file.filename)[1][1:].strip().lower()
 
@@ -58,7 +58,7 @@ class WorkflowStep_Upload(WorkflowStep):
                     node.name = orig_filename
                     node.event_files_changed()
                 else:
-                    error = _core_translation.t(req, "WorkflowStep_InvalidFileType")
+                    error = _core_translation.translate_in_request("WorkflowStep_InvalidFileType", req)
         db.session.commit()
         if "gotrue" in req.params:
             if hasattr(node, "event_files_changed"):
@@ -66,7 +66,7 @@ class WorkflowStep_Upload(WorkflowStep):
             if len(node.files) > 0:
                 return self.forwardAndShow(node, True, req)
             elif not error:
-                error = _core_translation.t(req, "no_file_transferred")
+                error = _core_translation.translate_in_request("no_file_transferred", req)
 
         if "gofalse" in req.params:
             if hasattr(node, "event_files_changed"):
@@ -103,24 +103,17 @@ class WorkflowStep_Upload(WorkflowStep):
 
     def metaFields(self, lang=None):
         ret = list()
-        field = Metafield("prefix")
-        field.set("label", _core_translation.t(lang, "admin_wfstep_text_before_upload_form"))
-        field.setFieldtype("htmlmemo")
-        ret.append(field)
-
-        field = Metafield("suffix")
-        field.set("label", _core_translation.t(lang, "admin_wfstep_text_after_upload_form"))
-        field.setFieldtype("htmlmemo")
-        ret.append(field)
-
-        field = Metafield("singleobj")
-        field.set("label", _core_translation.t(lang, "admin_wfstep_single_upload"))
-        field.setFieldtype("check")
-        ret.append(field)
-
-        field = Metafield("limit")
-        field.set("label", _core_translation.t(lang, "admin_wfstep_uploadtype"))
-        field.setFieldtype("text")
-        ret.append(field)
-
+        for name, label, type_ in (
+                ("prefix", "admin_wfstep_text_before_upload_form", "htmlmemo"),
+                ("suffix", "admin_wfstep_text_after_upload_form", "htmlmemo"),
+                ("singleobj", "admin_wfstep_single_upload", "check"),
+                ("limit", "admin_wfstep_uploadtype", "text"),
+        ):
+            field = Metafield(name)
+            field.set(
+                "label",
+                _core_translation.translate(lang, label) if lang else _core_translation.translate_in_request(label),
+            )
+            field.setFieldtype(type_)
+            ret.append(field)
         return ret

@@ -795,10 +795,10 @@ def callhandler(handler_func, req):
             if mail_to_address:
                 msg = _core_translation.translate_in_request(
                         "core_snipped_internal_server_error_with_mail",
-                        request=req,
+                        req,
                     ).replace('${email}', mail_to_address)
             else:
-                msg = _core_translation.translate_in_request("core_snipped_internal_server_error_without_mail", request=req)
+                msg = _core_translation.translate_in_request("core_snipped_internal_server_error_without_mail", req)
             s = msg.replace('${XID}', xid)
 
             req.response.headers["X-XID"] = xid

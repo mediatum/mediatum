@@ -20,7 +20,6 @@ from core.postgres import check_type_arg_with_schema
 from core.attachment import filebrowser as _filebrowser
 from core import db, File, config
 from core.config import resolve_datadir_path
-from core.translation import t
 from utils.utils import splitfilename
 from utils.date import format_date, make_date
 import utils.process

@@ -7,9 +7,10 @@ from __future__ import print_function
 import logging
 import re
 
+import core.translation as _core_translation
 from .workflow import WorkflowStep, registerStep
 import utils.urn as utilsurn
-from core.translation import t, addLabels
+from core.translation import addLabels
 import utils.date as date
 from core import db
 from schema.schema import Metafield
@@ -55,25 +56,19 @@ class WorkflowStep_Urn(WorkflowStep):
 
     def metaFields(self, lang=None):
         ret = list()
-        field = Metafield("attrname")
-        field.set("label", t(lang, "admin_wfstep_urn_attrname"))
-        field.setFieldtype("text")
-        ret.append(field)
-
-        field = Metafield("snid1")
-        field.set("label", t(lang, "admin_wfstep_urn_snid1"))
-        field.setFieldtype("text")
-        ret.append(field)
-
-        field = Metafield("snid2")
-        field.set("label", t(lang, "admin_wfstep_urn_snid2"))
-        field.setFieldtype("text")
-        ret.append(field)
-
-        field = Metafield("niss")
-        field.set("label", t(lang, "admin_wfstep_urn_niss"))
-        field.setFieldtype("text")
-        ret.append(field)
+        for name, label in (
+                ("attrname", "admin_wfstep_urn_attrname"),
+                ("snid1", "admin_wfstep_urn_snid1"),
+                ("snid2", "admin_wfstep_urn_snid2"),
+                ("niss", "admin_wfstep_urn_niss"),
+        ):
+            field = Metafield(name)
+            field.set(
+                "label",
+                _core_translation.translate(lang, label) if lang else _core_translation.translate_in_request(label),
+            )
+            field.setFieldtype("text")
+            ret.append(field)
         return ret
 
     @staticmethod

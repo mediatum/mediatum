@@ -177,7 +177,10 @@ def _render_search_box(container, language, req, edit=False):
             container_id=container.id,
             liststyle=req.args.get("liststyle"),
             language=language,
-            search_placeholder=u"{} {}".format(_core_translation.t(language, "search_in"), container.getLabel(language)),
+            search_placeholder=u"{} {}".format(
+                    _core_translation.translate(language, "search_in"),
+                    container.getLabel(language),
+                ),
             action='/' if not edit else '/edit/edit_content',
            ))
 
@@ -192,7 +195,10 @@ def render_edit_search_box(container, language, req, edit=False):
         "container_id": container.id,
         "liststyle": liststyle,
         "language": language,
-        "search_placeholder": u"{} {}".format(_core_translation.t(language, "search_in"), container.getLabel(language)),
+        "search_placeholder": u"{} {}".format(
+            _core_translation.translate(language, "search_in"),
+            container.getLabel(language),
+        ),
         "action": '/' if not edit else '/edit/edit_content',
     }
 
@@ -399,22 +405,22 @@ class UserLinks(object):
         guest_user = get_guest_user()
         l = [Link(
                 "/logout",
-                _core_translation.t(self.language, "sub_header_logout_title"),
-                _core_translation.t(self.language, "sub_header_logout"),
+                _core_translation.translate(self.language, "sub_header_logout_title"),
+                _core_translation.translate(self.language, "sub_header_logout"),
                 icon="/static/img/logout.png",
             )]
         if self.user == guest_user:
             l = [Link(
-                    "/login", _core_translation.t(self.language, "sub_header_login_title"),
-                    _core_translation.t(self.language, "sub_header_login"),
+                    "/login", _core_translation.translate(self.language, "sub_header_login_title"),
+                    _core_translation.translate(self.language, "sub_header_login"),
                     icon="/static/img/login.png",
                 )]
 
         if self.is_workflow_area:
             l.append(Link(
                     "/",
-                    _core_translation.t(self.language, "sub_header_frontend_title"),
-                    _core_translation.t(self.language, "sub_header_frontend"),
+                    _core_translation.translate(self.language, "sub_header_frontend_title"),
+                    _core_translation.translate(self.language, "sub_header_frontend"),
                     icon="/static/img/frontend.gif",
                 ))
 
@@ -428,32 +434,32 @@ class UserLinks(object):
                     idstr = "?id=" + unicode(self.user.upload_dir.id)
             l.append(Link(
                     "/edit{}".format(idstr),
-                    _core_translation.t(self.language, "sub_header_edit_title"),
-                    _core_translation.t(self.language, "sub_header_edit"),
+                    _core_translation.translate(self.language, "sub_header_edit_title"),
+                    _core_translation.translate(self.language, "sub_header_edit"),
                     icon="/static/img/edit.gif",
                 ))
 
         if self.user.is_admin:
             l.append(Link(
                     "/admin",
-                    _core_translation.t(self.language, "sub_header_administration_title"),
-                    _core_translation.t(self.language, "sub_header_administration"),
+                    _core_translation.translate(self.language, "sub_header_administration_title"),
+                    _core_translation.translate(self.language, "sub_header_administration"),
                     icon="/static/img/admin.gif",
                 ))
 
         if self.user.is_workflow_editor:
             l.append(Link(
                     "/publish/",
-                    _core_translation.t(self.language, "sub_header_workflow_title"),
-                    _core_translation.t(self.language, "sub_header_workflow"),
+                    _core_translation.translate(self.language, "sub_header_workflow_title"),
+                    _core_translation.translate(self.language, "sub_header_workflow"),
                     icon="/static/img/workflow.gif",
                 ))
 
         if self.user.can_change_password:
             l.append(Link(
                     "/pwdchange",
-                    _core_translation.t(self.language, "sub_header_changepwd_title"),
-                    _core_translation.t(self.language, "sub_header_changepwd"),
+                    _core_translation.translate(self.language, "sub_header_changepwd_title"),
+                    _core_translation.translate(self.language, "sub_header_changepwd"),
                     "_parent",
                     icon="/static/img/changepwd.gif",
                 ))

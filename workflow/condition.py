@@ -4,8 +4,9 @@
 from __future__ import division
 from __future__ import print_function
 
+import core.translation as _core_translation
 from .workflow import WorkflowStep, registerStep, getNodeWorkflow
-from core.translation import t, addLabels
+from core.translation import addLabels
 from core import db
 from schema.schema import Metafield
 
@@ -61,7 +62,10 @@ class WorkflowStep_Condition(WorkflowStep):
 
     def metaFields(self, lang=None):
         field = Metafield("condition")
-        field.set("label", t(lang, "admin_wfstep_condition"))
+        if lang:
+            field.set("label", _core_translation.translate(lang, "admin_wfstep_condition"))
+        else:
+            field.set("label", _core_translation.translate_in_request("admin_wfstep_condition"))
         field.setFieldtype("text")
         return [field]
 

@@ -49,7 +49,7 @@ class WorkflowStep_Start(WorkflowStep):
             if not mdts.children.filter_by(name=schema.strip().split("/")[-1]).scalar():
                 return ('<i>{}: {} </i>').format(
                         schema,
-                        _core_translation.t(_core_translation.set_language(req.accept_languages), "permission_denied"),
+                        _core_translation.translate(_core_translation.set_language(req.accept_languages), "permission_denied"),
                     )
 
         if "workflow_start" in req.params:
@@ -103,7 +103,7 @@ class WorkflowStep_Start(WorkflowStep):
                 # just take all specified metatypes, so that edit area
                 # and workflow are independent on this
                 types += [(m, a)]
-        cookie_error = _core_translation.t(
+        cookie_error = _core_translation.translate(
                 _core_translation.set_language(req.accept_languages),
                 "Your_browser_doesnt_support_cookies",
             )
@@ -140,18 +140,18 @@ class WorkflowStep_Start(WorkflowStep):
 
     def metaFields(self, lang=None):
         ret = []
-        field = Metafield("newnodetype")
-        field.set("label", _core_translation.t(lang, "admin_wfstep_node_types_to_create"))
-        field.setFieldtype("text")
-        ret.append(field)
-        field = Metafield("starttext")
-        field.set("label", _core_translation.t(lang, "admin_wfstep_starttext"))
-        field.setFieldtype("htmlmemo")
-        ret.append(field)
-        field = Metafield("allowcontinue")
-        field.set("label", _core_translation.t(lang, "admin_wfstep_allowcontinue"))
-        field.setFieldtype("check")
-        ret.append(field)
+        for name, label, type_ in (
+                ("newnodetype", "admin_wfstep_node_types_to_create", "text"),
+                ("starttext", "admin_wfstep_starttext", "htmlmemo"),
+                ("allowcontinue", "admin_wfstep_allowcontinue", "check"),
+        ):
+            field = Metafield(name)
+            field.set(
+                "label",
+                _core_translation.translate(lang, label) if lang else _core_translation.translate_in_request(label),
+            )
+            field.setFieldtype(type_)
+            ret.append(field)
         return ret
 
     @staticmethod

@@ -32,7 +32,7 @@ def getContent(req, ids):
                     ),
                 idstr=",".join(ids),
                 node_count=len(ids),
-                t=_core_translation.t,
+                translate=_core_translation.translate,
                 language=_core_translation.set_language(req.accept_languages),
             ),
             file="web/edit/modules/classes.html",

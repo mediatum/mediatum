@@ -17,7 +17,7 @@ import fdfgen
 
 import utils.utils as _utils_utils
 from .workflow import WorkflowStep, getNodeWorkflow, getNodeWorkflowStep, registerStep
-from core.translation import t, addLabels
+from core.translation import addLabels
 from metadata.upload import getFilelist
 from schema.schema import getMetaType, Metafield
 from utils.fileutils import getImportDir
@@ -25,6 +25,7 @@ from utils.utils import join_paths, desc
 from utils.date import format_date, now
 
 import core.config as config
+import core.translation as _core_translation
 import utils.process
 
 from core import db
@@ -262,25 +263,19 @@ class WorkflowStep_AddFormPage(WorkflowStep):
 
     def metaFields(self, lang=None):
         ret = list()
-        field = Metafield("upload_pdfform")
-        field.set("label", t(lang, "workflowstep-addformpage_label_upload_pdfform"))
-        field.setFieldtype("upload")
-        ret.append(field)
-
-        field = Metafield("pdf_fields_editable")
-        field.set("label", t(lang, "workflowstep-addformpage_label_pdf_fields_editable"))
-        field.setFieldtype("check")
-        ret.append(field)
-
-        field = Metafield("pdf_form_separate")
-        field.set("label", t(lang, "workflowstep-addformpage_label_pdf_form_separate"))
-        field.setFieldtype("check")
-        ret.append(field)
-
-        field = Metafield("pdf_form_overwrite")
-        field.set("label", t(lang, "workflowstep-addformpage_label_pdf_overwrite"))
-        field.setFieldtype("check")
-        ret.append(field)
+        for name, label, type_ in (
+                ("upload_pdfform", "workflowstep-addformpage_label_upload_pdfform", "upload"),
+                ("pdf_fields_editable", "workflowstep-addformpage_label_pdf_fields_editable", "check"),
+                ("pdf_form_separate", "workflowstep-addformpage_label_pdf_form_separate", "check"),
+                ("pdf_form_overwrite", "workflowstep-addformpage_label_pdf_overwrite", "check"),
+        ):
+            field = Metafield(name)
+            field.set(
+                "label",
+                _core_translation.translate(lang, label) if lang else _core_translation.translate_in_request(label),
+            )
+            field.setFieldtype(type_)
+            ret.append(field)
         return ret
 
     @staticmethod

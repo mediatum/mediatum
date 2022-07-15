@@ -531,7 +531,7 @@ def upload_for_html(req):
         </script>;
         """.format(
             fileUrl=url.replace('"', '\\"'),
-            customMsg=_core_translation.t(
+            customMsg=_core_translation.translate(
                     _core_translation.set_language(req.accept_languages),
                     "edit_fckeditor_cfm_uploadsuccess",
                 ),
@@ -553,10 +553,10 @@ def get_edit_label(node, lang):
     if special_dir_type is None:
         label = node.getLabel(lang=lang)
     elif special_dir_type == "home":
-        label = _core_translation.t(lang, 'user_home')
+        label = _core_translation.translate(lang, 'user_home')
         if user.is_admin:
             label += " (" + node.name + ")"
     else:
-        label = _core_translation.t(lang, 'user_' + special_dir_type)
+        label = _core_translation.translate(lang, 'user_' + special_dir_type)
 
     return label

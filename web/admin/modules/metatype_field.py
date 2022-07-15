@@ -55,7 +55,7 @@ def showDetailList(req, id):
 
     # filter
     if actfilter != "":
-        if actfilter in ("all", "*", _translation.t(_translation.set_language(req.accept_languages), "admin_filter_all")):
+        if actfilter in ("all", "*", _translation.translate(_translation.set_language(req.accept_languages), "admin_filter_all")):
             None  # all users
         elif actfilter == "0-9":
             num = re.compile(r'([0-9])')
@@ -64,7 +64,7 @@ def showDetailList(req, id):
             else:
                 metafields = filter(lambda x: num.match(x.getLabel()), metafields)
 
-        elif actfilter == "else" or actfilter == _translation.t(_translation.set_language(req.accept_languages), "admin_filter_else"):
+        elif actfilter == "else" or actfilter == _translation.translate(_translation.set_language(req.accept_languages), "admin_filter_else"):
             all = re.compile(r'([a-z]|[A-Z]|[0-9]|\.)')
             if req.params.get("filtertype", "") == "name":
                 metafields = filter(lambda x: not all.match(x.getName()), metafields)
@@ -99,7 +99,7 @@ def showDetailList(req, id):
     v["filterarg"] = req.params.get("filtertype", "name")
 
     v["sortcol"] = pages.OrderColHeader(("",) + tuple(
-        _translation.t(
+        _translation.translate(
             _translation.set_language(req.accept_languages),
             "admin_metafield_col_{}".format(col),
             )

@@ -74,10 +74,16 @@ class WorkflowStep_FileAttachment(WorkflowStep):
 
     def metaFields(self, lang=None):
         field = Metafield("upload_fileatt")
-        field.set("label", _core_translation.t(lang, "workflowstep-fileatt_label_upload_file"))
+        if lang:
+            field.set("label", _core_translation.translate(lang, "workflowstep-fileatt_label_upload_file"))
+        else:
+            field.set("label", _core_translation.translate_in_request("workflowstep-fileatt_label_upload_file"))
         field.setFieldtype("upload")
         field2 = Metafield("mask_fileatt")
-        field2.set("label", _core_translation.t(lang, "workflowstep-fileatt_label_mask"))
+        if lang:
+            field2.set("label", _core_translation.translate(lang, "workflowstep-fileatt_label_mask"))
+        else:
+            field2.set("label", _core_translation.translate_in_request("workflowstep-fileatt_label_mask"))
         field2.setFieldtype("text")
         return [field, field2]
 

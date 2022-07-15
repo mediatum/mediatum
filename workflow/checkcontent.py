@@ -42,26 +42,19 @@ class WorkflowStep_CheckContent(WorkflowStep):
 
     def metaFields(self, lang=None):
         ret = []
-        field = Metafield("from")
-        field.set("label", _core_translation.t(lang, "admin_wfstep_checkcontent_sender"))
-        field.setFieldtype("text")
-        ret.append(field)
-
-        field = Metafield("email")
-        field.set("label", _core_translation.t(lang, "admin_wfstep_checkcontent_recipient"))
-        field.setFieldtype("text")
-        ret.append(field)
-
-        field = Metafield("subject")
-        field.set("label", _core_translation.t(lang, "admin_wfstep_checkcontent_subject"))
-        field.setFieldtype("text")
-        ret.append(field)
-
-        field = Metafield("text")
-        field.set("label", _core_translation.t(lang, "admin_wfstep_checkcontent_text"))
-        field.setFieldtype("htmlmemo")
-        ret.append(field)
-
+        for name, label, type_ in (
+                ("from", "admin_wfstep_checkcontent_sender", "text"),
+                ("email", "admin_wfstep_checkcontent_recipient", "text"),
+                ("subject", "admin_wfstep_checkcontent_subject", "text"),
+                ("text", "admin_wfstep_checkcontent_text", "htmlmemo"),
+        ):
+            field = Metafield(name)
+            field.set(
+                "label",
+                _core_translation.translate(lang, label) if lang else _core_translation.translate_in_request(label),
+            )
+            field.setFieldtype(type_)
+            ret.append(field)
         return ret
 
     @staticmethod

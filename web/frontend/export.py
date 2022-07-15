@@ -5,9 +5,10 @@ from __future__ import division
 from __future__ import print_function
 
 import logging
+
 import core.httpstatus as _httpstatus
+import core.translation as _core_translation
 from core import db
-from core.translation import t
 from contenttypes import Data
 from sqlalchemy.orm.exc import NoResultFound
 from core.request_handler import error as _error
@@ -36,7 +37,7 @@ def export(req):
 
     if not node.has_read_access():
         req.response.status_code = _httpstatus.HTTP_FORBIDDEN
-        req.response.set_data(t(req, "permission_denied"))
+        req.response.set_data(_core_translation.translate_in_request("permission_denied", req))
         return
 
     mask = node.metadatatype.getMask(p[1])

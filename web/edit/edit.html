@@ -128,13 +128,13 @@
             <script tal:content="python:u'var user_folders = {};'.format({k: str(folders[k][0].id) for k in folders})">TEXT</script>
             <script tal:content="python:u'var collectionsid = \'{}\';'.format(collectionsid)">TEXT</script>
             <script tal:content="python:u'var containertype2iconpath = {};'.format([[str(i) for i in j] for j in cmenu_iconpaths])">;</script>
-            <script tal:content="python:u'var edit_t = \'{}\';'.format(t(language, 'edit_edit_container_node'))">;</script>
-            <script tal:content="python:u'var cut_t = \'{}\';'.format(t(language, 'edit_cut_container'))">;</script>
-            <script tal:content="python:u'var paste_t = \'{}\';'.format(t(language, 'edit_paste_container_here'))">;</script>
-            <script tal:content="python:u'var addcontainer_t = \'{}\';'.format(t(language, 'edit_add_new_container'))">;</script>
-            <script tal:content="python:u'var emptybin_t = \'{}\';'.format(t(language, 'edit_empty_recycle_bin'))">;</script>
-            <script tal:content="python:u'var delete_t = \'{}\';'.format(t(language, 'edit_delete_container'))">;</script>
-            <script tal:content="python:u'var add_col_t = \'{}\';'.format(t(language, 'edit_add_new_collection'))">;</script>
+            <script tal:content="python:u'var edit_t = \'{}\';'.format(translate(language, 'edit_edit_container_node'))">;</script>
+            <script tal:content="python:u'var cut_t = \'{}\';'.format(translate(language, 'edit_cut_container'))">;</script>
+            <script tal:content="python:u'var paste_t = \'{}\';'.format(translate(language, 'edit_paste_container_here'))">;</script>
+            <script tal:content="python:u'var addcontainer_t = \'{}\';'.format(translate(language, 'edit_add_new_container'))">;</script>
+            <script tal:content="python:u'var emptybin_t = \'{}\';'.format(translate(language, 'edit_empty_recycle_bin'))">;</script>
+            <script tal:content="python:u'var delete_t = \'{}\';'.format(translate(language, 'edit_delete_container'))">;</script>
+            <script tal:content="python:u'var add_col_t = \'{}\';'.format(translate(language, 'edit_add_new_collection'))">;</script>
             <tal:block metal:use-macro="include_javascript_script_tags"/>
         </head>
         <body id="body1">
@@ -193,9 +193,9 @@
             <script tal:content="python:u'var currentid = {};'.format(id)">TEXT</script>
             <script tal:content="python:u'var currentpath = \'/{}\';'.format('/'.join(path[2:]))">TEXT</script>
             <script tal:content="python:u'var currentcpath = \'/{}\';'.format('/'.join(containerpath[1:]))">TEXT</script>
-            <script tal:content="python:u'var js_edit_layout_togglertip_open = \'{}\';'.format(t(language, 'edit_layout_togglertip_open'))">;</script>
-            <script tal:content="python:u'var js_edit_layout_togglertip_closed = \'{}\';'.format(t(language, 'edit_layout_togglertip_closed'))">;</script>
-            <script tal:content="python:u'var js_edit_layout_resizertip = \'{}\';'.format(t(language, 'edit_layout_resizertip'))">;</script>
+            <script tal:content="python:u'var js_edit_layout_togglertip_open = \'{}\';'.format(translate(language, 'edit_layout_togglertip_open'))">;</script>
+            <script tal:content="python:u'var js_edit_layout_togglertip_closed = \'{}\';'.format(translate(language, 'edit_layout_togglertip_closed'))">;</script>
+            <script tal:content="python:u'var js_edit_layout_resizertip = \'{}\';'.format(translate(language, 'edit_layout_resizertip'))">;</script>
             <script tal:content="python:u'var csrf = \'{}\';'.format(csrf)"> </script>
             <!-- Definition of context menu -->
             <tal:block tal:repeat="ct_iconpath cmenu_iconpaths">
@@ -268,9 +268,9 @@
 
             <tal:block metal:use-macro="include_javascript_script_tags_frame"/>
             <script type="text/javascript" tal:content="python:U'var tab=\'{}\';'.format(tab)"/>
-            <script tal:content="python:u'var js_edit_layout_togglertip_open = \'{}\';'.format(t(language, 'edit_layout_togglertip_open'))"/>
-            <script tal:content="python:u'var js_edit_layout_togglertip_closed = \'{}\';'.format(t(language, 'edit_layout_togglertip_closed'))"/>
-            <script tal:content="python:u'var js_edit_layout_resizertip = \'{}\';'.format(t(language, 'edit_layout_resizertip'))"/>
+            <script tal:content="python:u'var js_edit_layout_togglertip_open = \'{}\';'.format(translate(language, 'edit_layout_togglertip_open'))"/>
+            <script tal:content="python:u'var js_edit_layout_togglertip_closed = \'{}\';'.format(translate(language, 'edit_layout_togglertip_closed'))"/>
+            <script tal:content="python:u'var js_edit_layout_resizertip = \'{}\';'.format(translate(language, 'edit_layout_resizertip'))"/>
             <script src="/static/js/edit/edit_frame.js"> </script>
             <tal:block tal:replace="script"/>
         </head>

@@ -94,7 +94,7 @@ def getContent(req, ids):
                 logofiles=logofiles,
                 logo=node.getLogoPath(),
                 language=_core_translation.set_language(req.accept_languages),
-                t=_core_translation.t,
+                translate=_core_translation.translate,
                 csrf=_core_csrfform.get_token(),
             ),
             file="web/edit/modules/logo.html",

@@ -7,8 +7,9 @@ from __future__ import print_function
 from mediatumtal import tal
 import logging
 import re
+
+import core.translation as _core_translation
 from core.metatype import Metatype
-from core.translation import t
 from urllib import unquote
 from utils.utils import quote_uri
 from utils.strings import ensure_unicode_returned
@@ -109,9 +110,13 @@ class m_url(Metatype):
             elif link == '' and text != '':
                 value = text
                 icon = u""
-            else:  # link and text given
+            else:
                 if new_window:
-                    value = u'<a href="{}" target="_blank" title="{}">{}</a>'.format(link, t(language, 'show in new window'), text)
+                    value = u'<a href="{}" target="_blank" title="{}">{}</a>'.format(
+                            link,
+                            _core_translation.translate(language, 'show in new window'),
+                            text,
+                        )
                 else:
                     value = u'<a href="{}">{}</a>'.format(link, text)
             if icon != "":

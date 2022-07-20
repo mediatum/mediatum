@@ -82,9 +82,6 @@ class WorkflowStep_Defer(WorkflowStep):
         for name, label, type_ in (
                 ("attrname", "attributname", "text"),
                 ("accesstype", "accesstype", "list"),
-                ("recipient", "admin_wfstep_email_recipient", "text"),
-                ("subject", "admin_wfstep_email_subject", "text"),
-                ("body", "admin_wfstep_email_text", "htmlmemo"),
         ):
             field = Metafield(name)
             field.set(

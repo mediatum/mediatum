@@ -53,46 +53,31 @@ class WorkflowStep_SendEmail(WorkflowStep):
     def sendOut(self, node):
         xfrom = node.get("system.mailtmp.from")
         to = node.get("system.mailtmp.to")
-        sendcondition = self.get("sendcondition")
         attach_pdf_form = bool(self.get("attach_pdf_form"))
-        sendOk = 1
 
         try:
-            if sendcondition.startswith("attr:") and "=" in sendcondition:
-                arrname, value = sendcondition[5:].split("=")
-                if node.get(arrname) != value:
-                    sendOk = 0
-            elif (sendcondition.startswith("schema=") and node.schema not in sendcondition[7:].split(";")) or (sendcondition.startswith("type=") and not node.get("type") in sendcondition[5:].split(";")) or (sendcondition == "hasfile" and len(node.files) == 0):
-                sendOk = 0
+            logg.info("sending mail to %s (%s)", to, self.get("email"))
+            if not to:
+                raise MailError("No receiver address defined")
+            if not xfrom:
+                raise MailError("No from address defined")
+            attachments_paths_and_filenames = []
+            if attach_pdf_form:
+                for f in node.files:
+                    if f.filetype != 'metafield-upload.upload_pdfform':
+                        continue
+                    if not os.path.isfile(f.abspath):
+                        raise MailError("Attachment file not found: '%s'" % f.abspath)
+                    attachments_paths_and_filenames.append((f.abspath, f.abspath.split('_')[-1]))
+
+            mail.sendmail(xfrom, to, node.get("system.mailtmp.subject"), node.get(
+                "system.mailtmp.text"), attachments_paths_and_filenames=attachments_paths_and_filenames)
         except:
-            logg.exception("syntax error in email condition: %s", sendcondition)
-
-        if sendOk:
-            try:
-                logg.info("sending mail to %s (%s)", to, self.get("email"))
-                if not to:
-                    raise MailError("No receiver address defined")
-                if not xfrom:
-                    raise MailError("No from address defined")
-                attachments_paths_and_filenames = []
-                if attach_pdf_form:
-                    for f in node.files:
-                        if f.filetype != 'metafield-upload.upload_pdfform':
-                            continue
-                        if not os.path.isfile(f.abspath):
-                            raise MailError("Attachment file not found: '%s'" % f.abspath)
-                        attachments_paths_and_filenames.append((f.abspath, f.abspath.split('_')[-1]))
-
-                mail.sendmail(xfrom, to, node.get("system.mailtmp.subject"), node.get(
-                    "system.mailtmp.text"), attachments_paths_and_filenames=attachments_paths_and_filenames)
-            except:
-                node.set("system.mailtmp.error", formatException())
-                db.session.commit()
-                logg.exception("Error while sending mail- node stays in workflowstep %s %s", self.id, self.name)
-                return
-        else:
-            logg.info("sending mail prevented by condition %s ", sendcondition)
+            node.set("system.mailtmp.error", formatException())
+            db.session.commit()
+            logg.exception("Error while sending mail- node stays in workflowstep %s %s", self.id, self.name)
             return
+
         for s in ["mailtmp.from", "mailtmp.to", "mailtmp.subject", "mailtmp.text",
                   "mailtmp.error", "mailtmp.talerror", "mailtmp.send"]:
             try:
@@ -177,7 +162,6 @@ class WorkflowStep_SendEmail(WorkflowStep):
                             language=node.get("system.wflanguage"),
                            ),
                         node=node,
-                        sendcondition=self.get("sendcondition"),
                         wfnode=self,
                         pretext=self.getPreText(_core_translation.set_language(req.accept_languages)),
                         posttext=self.getPostText(_core_translation.set_language(req.accept_languages)),
@@ -196,7 +180,6 @@ class WorkflowStep_SendEmail(WorkflowStep):
                 ("subject", "admin_wfstep_email_subject", "htmlmemo"),
                 ("text", "admin_wfstep_email_text", "htmlmemo"),
                 ("allowedit", "admin_wfstep_email_text_editable", "list"),
-                ("sendcondition", "admin_wfstep_email_sendcondition", "text"),
                 ("attach_pdf_form", "workflowstep-email_label_attach_pdf_form", "check"),
         ):
             field = Metafield(name)

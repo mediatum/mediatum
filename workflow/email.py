@@ -177,7 +177,7 @@ class WorkflowStep_SendEmail(WorkflowStep):
         for name, label, type_ in (
                 ("from", "admin_wfstep_email_sender", "text"),
                 ("email", "admin_wfstep_email_recipient", "text"),
-                ("subject", "admin_wfstep_email_subject", "htmlmemo"),
+                ("subject", "admin_wfstep_email_subject", "text"),
                 ("text", "admin_wfstep_email_text", "htmlmemo"),
                 ("allowedit", "admin_wfstep_email_text_editable", "list"),
                 ("attach_pdf_form", "workflowstep-email_label_attach_pdf_form", "check"),

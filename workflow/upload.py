@@ -83,8 +83,6 @@ class WorkflowStep_Upload(WorkflowStep):
                 dict(
                     obj=node.id,
                     id=self.id,
-                    prefix=self.get("prefix"),
-                    suffix=self.get("suffix"),
                     limit=self.get("limit"),
                     filelist=filelist,
                     filelistshort=filelistshort,
@@ -104,8 +102,6 @@ class WorkflowStep_Upload(WorkflowStep):
     def metaFields(self, lang=None):
         ret = list()
         for name, label, type_ in (
-                ("prefix", "admin_wfstep_text_before_upload_form", "htmlmemo"),
-                ("suffix", "admin_wfstep_text_after_upload_form", "htmlmemo"),
                 ("singleobj", "admin_wfstep_single_upload", "check"),
                 ("limit", "admin_wfstep_uploadtype", "text"),
         ):

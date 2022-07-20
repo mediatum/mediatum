@@ -163,12 +163,6 @@ msgstr "Additional information for current node type"
 msgid "admin_wf_definition"
 msgstr "Workflow definition"
 
-msgid "admin_wfstep_text_before_upload_form"
-msgstr "Text before upload form"
-
-msgid "admin_wfstep_text_after_upload_form"
-msgstr "Text after upload form"
-
 msgid "admin_wfstep_uploadtype"
 msgstr "Allowed file types (;-separated)"
 

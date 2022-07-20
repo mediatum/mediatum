@@ -165,12 +165,6 @@ msgstr "Zusätzliche Daten für den gewählten Knotentyp"
 msgid "admin_wf_definition"
 msgstr "Workflow Definition"
 
-msgid "admin_wfstep_text_before_upload_form"
-msgstr "Text vor dem Upload-Formular"
-
-msgid "admin_wfstep_text_after_upload_form"
-msgstr "Text nach dem Upload-Formular"
-
 msgid "admin_wfstep_uploadtype"
 msgstr "Erl. Dateiendungen (;-separiert)"
 

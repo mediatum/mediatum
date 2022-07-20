@@ -88,7 +88,6 @@ class WorkflowStep_Upload(WorkflowStep):
                     filelistshort=filelistshort,
                     node=node,
                     buttons=self.tableRowButtons(node),
-                    singlefile=self.get('singleobj'),
                     error=error,
                     pretext=self.getPreText(_core_translation.set_language(req.accept_languages)),
                     posttext=self.getPostText(_core_translation.set_language(req.accept_languages)),
@@ -100,16 +99,12 @@ class WorkflowStep_Upload(WorkflowStep):
             )
 
     def metaFields(self, lang=None):
-        ret = list()
-        for name, label, type_ in (
-                ("singleobj", "admin_wfstep_single_upload", "check"),
-                ("limit", "admin_wfstep_uploadtype", "text"),
-        ):
-            field = Metafield(name)
-            field.set(
-                "label",
-                _core_translation.translate(lang, label) if lang else _core_translation.translate_in_request(label),
-            )
-            field.setFieldtype(type_)
-            ret.append(field)
-        return ret
+        field = Metafield("limit")
+        field.set(
+            "label",
+            _core_translation.translate(lang, "admin_wfstep_uploadtype")
+            if lang
+            else _core_translation.translate_in_request("admin_wfstep_uploadtype"),
+           )
+        field.setFieldtype("text")
+        return [field]

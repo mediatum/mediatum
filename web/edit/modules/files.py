@@ -108,38 +108,8 @@ def _handle_change(node, req):
     change_file = req.params.get("change_file")
     user = users.user_from_session()
 
-    if (req.params.get('generate_new_version') and not hasattr(node, "metaFields")):
-        # Create new version when changing files
-        version_comment = req.params.get('version_comment', '').strip()
-        if not version_comment or version_comment == '&nbsp;':
-            # comment must be given, abort
-            req.response.status_code = httpstatus.HTTP_INTERNAL_SERVER_ERROR
-            return _tal.processTAL({}, file="web/edit/modules/files.html", macro="version_error", request=req)
-        else:
-            if change_file == "yes":
-                translation_msg_id = "edit_files_new_version_exchanging_comment"
-            elif change_file == "no":
-                translation_msg_id = "edit_files_new_version_adding_comment"
-            elif change_file == "attdir":
-                translation_msg_id = "edit_files_new_version_attachment_directory_comment"
-            elif change_file == "attfile":
-                translation_msg_id = "edit_files_new_version_attachment_comment"
-
-            version_comment_full = u'({})\n{}'.format(t(req, translation_msg_id), version_comment)
-
-            with node.new_tagged_version(comment=version_comment_full, user=user):
-                node.set_legacy_update_attributes(user)
-                _finish_change(node, change_file, user, uploadfile, req)
-
-            req.response.status_code = httpstatus.HTTP_MOVED_TEMPORARILY
-            return _tal.processTAL({'url': '?id={}&tab=files'.format(node.id), 'pid': None},
-                                   file="web/edit/modules/metadata.html",
-                                   macro="redirect",
-                                   request=req)
-    else:
-        # no new version
-        node.set_legacy_update_attributes(user)
-        _finish_change(node, change_file, user, uploadfile, req)
+    node.set_legacy_update_attributes(user)
+    _finish_change(node, change_file, user, uploadfile, req)
 
 
 def getContent(req, ids):

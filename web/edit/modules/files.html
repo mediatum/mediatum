@@ -6,9 +6,6 @@
     TEXT
 </p>
 
-<p class="error" metal:define-macro="version_error"><tal:block i18n:translate="fieldsmissing">TEXT</tal:block><br/>
-    <tal:block i18n:translate="saved_in_inconsistent_data">TEXT</tal:block></p>
-
 <tal:block metal:define-macro="edit_files_file">
     <script type="text/javascript" src="/js/jquery.layout.resizePaneAccordions-latest.min.js"> </script>
 
@@ -80,37 +77,11 @@
                                 <input type="text" name="inputname" size="60"/></span>
                             <br/>
                             <span id="updatefile"><tal:block i18n:translate="edit_files_choosefile"/> <input name="updatefile"  type="file" size="50"/></span>
-                            <span id="generate_new_version" tal:condition="python:not hasattr(node, 'metaFields') and node.has_write_access()">
-                                <br/>
-                                <br/>
-                                <br/>
-                                <input type="checkbox" name="generate_new_version" onchange="onNewVersionChecked(this);return false;" />
-                                <tal:block i18n:translate="edit_files_create_a_new_version_with_uploading">TEXT</tal:block>
-                                <br/>
-                                <span id="version_comment">
-                                <br/>
-                                <b><tal:block i18n:translate="edit_files_comment">TEXT</tal:block>:<span class="required">*</span></b>
-                                <br/>
-                                <textarea name="version_comment" rows="4" tal:content="python:''">TEXT </textarea>
-                                </span>
-                            </span>
                             <p>
                                 <button i18n:attributes="title edit_upload_upload_label" i18n:translate="edit_upload_upload_label" type="submit"
                                 name="addfile" value="submit">TEXT</button>
                             </p>
                             <input type="hidden" name="operation" value="change"/>
-                            <script language="javascript">
-                                $('#version_comment').hide();
-                                function onNewVersionChecked (self) {
-                                    if (self.checked) {
-                                        $('#version_comment').show();
-                                        $('#version_comment textarea').attr('required', '');
-                                    } else {
-                                        $('#version_comment').hide();
-                                        $('#version_comment textarea').removeAttr('required');
-                                    }
-                                }
-                            </script>
                         </form>
                 </div>
 

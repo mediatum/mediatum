@@ -113,7 +113,7 @@ class WorkflowStep_SendEmail(WorkflowStep):
             node.system_attrs['mailtmp.talerror'] = formatException()
             db.session.commit()
             return
-        if self.get("allowedit").lower().startswith("n"):
+        if not self.get("allowedit"):
             if(self.sendOut(node)):
                 self.forward(node, True)
 
@@ -179,7 +179,7 @@ class WorkflowStep_SendEmail(WorkflowStep):
                 ("email", "admin_wfstep_email_recipient", "text"),
                 ("subject", "admin_wfstep_email_subject", "text"),
                 ("text", "admin_wfstep_email_text", "htmlmemo"),
-                ("allowedit", "admin_wfstep_email_text_editable", "list"),
+                ("allowedit", "admin_wfstep_email_text_editable", "check"),
                 ("attach_pdf_form", "workflowstep-email_label_attach_pdf_form", "check"),
         ):
             field = Metafield(name)
@@ -188,11 +188,6 @@ class WorkflowStep_SendEmail(WorkflowStep):
                 _core_translation.translate(lang, label) if lang else _core_translation.translate_in_request(label),
             )
             field.setFieldtype(type_)
-            if name == "allowedit":
-                field.metatype_data = dict(
-                        multiple=False,
-                        listelements=_core_translation.translate(lang, "admin_wfstep_email_text_editable_options").split(";"),
-                    )
             ret.append(field)
         return ret
 

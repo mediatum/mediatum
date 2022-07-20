@@ -198,9 +198,6 @@ msgstr "Text"
 msgid "admin_wfstep_email_text_editable"
 msgstr "Angaben editierbar?"
 
-msgid "admin_wfstep_email_text_editable_options"
-msgstr "Ja;Nein"
-
 msgid "admin_wfstep_textpage_text_to_display"
 msgstr "anzuzeigender Text"
 

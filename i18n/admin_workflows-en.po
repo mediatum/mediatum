@@ -196,9 +196,6 @@ msgstr "Text"
 msgid "admin_wfstep_email_text_editable"
 msgstr "Details editable?"
 
-msgid "admin_wfstep_email_text_editable_options"
-msgstr "Yes;No"
-
 msgid "admin_wfstep_textpage_text_to_display"
 msgstr "Text to display"
 

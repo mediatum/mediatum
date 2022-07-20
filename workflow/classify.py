@@ -75,7 +75,7 @@ class WorkflowStep_Classify(WorkflowStep):
     def metaFields(self, lang=None):
         ret = []
         for name, label, type_ in (
-                ("destination", "admin_wfstep_classify_destination", "treeselect"),
+                ("destination", "admin_wfstep_classify_destination", "text"),
                 ("destination_attr", "admin_wfstep_classify_destination_attr", "text"),
                 ("only_sub", "admin_wfstep_classify_only_sub", "check"),
         ):
@@ -93,14 +93,14 @@ class WorkflowStep_Classify(WorkflowStep):
         return {"de":
                 [
                     ("workflowstep-classify", "Klassifizieren"),
-                    ("admin_wfstep_classify_destination", "Zielknoten-ID"),
+                    ("admin_wfstep_classify_destination", "Zielknoten-IDs ;-getrennt"),
                     ("admin_wfstep_classify_destination_attr", "Unterknoten Attribut"),
                     ("admin_wfstep_classify_only_sub", "Nur Unterknoten"),
                 ],
                 "en":
                 [
                     ("workflowstep-classify", "classify"),
-                    ("admin_wfstep_classify_destination", "ID of destination node"),
+                    ("admin_wfstep_classify_destination", "IDs of destination node ;-separated"),
                     ("admin_wfstep_classify_destination_attr", "attribute name"),
                     ("admin_wfstep_classify_only_sub", "only subnode"),
                 ]

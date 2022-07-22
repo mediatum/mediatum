@@ -19,7 +19,6 @@ from schema.schema import get_permitted_schemas
 from web.edit.edit_common import get_searchparams
 import urllib
 import web.common.sort as _sort
-import core.translation as _core_translation
 
 q = db.query
 
@@ -42,7 +41,7 @@ def getContent(req, ids):
                     for _t in datatypes:
 #                         if _t.getName() == dtype and not elemInList(dtypes, _t.getName()):
                         dtypes.append(_t)
-        _dtypes.sort(lambda x, y: cmp(translate(x.getLongName(), request=_req).lower(), translate(y.getLongName(), request=req).lower()))
+        _dtypes.sort(key=lambda x: _core_translation.translate(x.getLongName(), request=req).lower())
         return _dtypes
 
     node = q(Data).get(long(ids[0]))

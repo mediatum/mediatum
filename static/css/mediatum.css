@@ -477,50 +477,6 @@ div#portal-breadcrumbs #collectionlogo { margin: 0px 0px 10px 0px; width: 100%; 
 }
 #portal-column-content img.banner { margin: 0px 0px 0px -1.4em;}
 
-#portal-column-content .documentactions {
-    position: relative;
-    padding-bottom: 0px;
-    margin: 1em 0px 0px;
-    padding-left: 0px;
-    padding-right: 0px;
-    height: 0.5em;
-    border-top: #eee 1px solid;
-    padding-top: 0.35em;
-}
-#portal-column-content .documentactions span { position: absolute; right: 9px;}
-#portal-column-content .documentactions a:link {
-    border-bottom: medium none;
-    border-left: medium none;
-    color: #333333;
-    border-top: medium none;
-    border-right: medium none;
-    text-decoration: none;
-}
-#portal-column-content .documentactions a:visited {
-    border-bottom: medium none;
-    border-left: medium none;
-    color: #333333;
-    border-top: medium none;
-    border-right: medium none;
-    text-decoration: none;
-}
-#portal-column-content .documentactions a:hover {
-    border-bottom: medium none;
-    border-left: medium none;
-    color: #333333;
-    border-top: medium none;
-    border-right: medium none;
-    text-decoration: none;
-}
-#portal-column-content .documentactions a:active {
-    border-bottom: medium none;
-    border-left: medium none;
-    color: #333333;
-    border-top: medium none;
-    border-right: medium none;
-    text-decoration: none;
-}
-#portal-column-content .documentactions a img { vertical-align: middle;}
 #portal-column-content #calendarview_switch {
     padding-bottom: 0.3em;
     margin: 1.5em 0px 0px;

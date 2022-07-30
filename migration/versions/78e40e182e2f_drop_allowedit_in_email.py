@@ -22,7 +22,6 @@ import core as _core
 import core.init as _core_init
 _core_init.full_init()
 import workflow.email as _workflow_email
-from utils import utils as _utils_utils
 # revision identifiers, used by Alembic.
 revision = '78e40e182e2f'
 down_revision = u'4c3416dedd02'

@@ -5,9 +5,8 @@ from __future__ import division
 from __future__ import print_function
 
 import collections as _collections
-import core as _core
-from warnings import warn
 
+import core as _core
 
 EditorHTMLForm = _collections.namedtuple("EditorHTMLForm", "html conflict");
 

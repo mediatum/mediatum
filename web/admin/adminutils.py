@@ -6,9 +6,7 @@ from __future__ import print_function
 
 import httplib as _httplib
 import logging
-import os
 import math
-import sys
 import flask as _flask
 
 import mediatumtal.tal as _tal
@@ -17,9 +15,7 @@ import core.config as config
 import core.translation as _core_translation
 import core.users as users
 from core import db
-from core.database.postgres.user import AuthenticatorInfo
 from core.database.postgres.user import User
-from core.systemtypes import Root
 from utils.strings import ensure_unicode_returned
 from utils.utils import get_menu_strings
 from utils.utils import Link

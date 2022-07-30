@@ -7,12 +7,10 @@ from __future__ import division
 from __future__ import print_function
 
 import os
-import pickle
 import re
 import xml.parsers.expat
 import logging
 import codecs
-import sys
 import time
 from sets import Set
 import shutil
@@ -25,7 +23,6 @@ import core.config as config
 from utils.date import parse_date, format_date, now, make_date
 from utils.utils import splitpath
 from utils.fileutils import importFile
-from array import array
 
 _logg = logging.getLogger(__name__)
 q = db.query

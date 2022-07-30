@@ -4,10 +4,8 @@
 from __future__ import division
 from __future__ import print_function
 
-import re as _re
 from contenttypes import Data
 from core import db
-from utils.utils import getFormatedString
 from mediatumtal import tal as _tal
 
 q = db.query

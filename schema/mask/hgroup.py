@@ -4,8 +4,6 @@
 from __future__ import division
 from __future__ import print_function
 
-import itertools as _itertools
-
 import mediatumtal.tal as _tal
 
 import core.translation as _core_translation

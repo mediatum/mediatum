@@ -5,20 +5,15 @@ from __future__ import division
 from __future__ import print_function
 
 import re
-import inspect
 import logging
 import mediatumtal.tal as _tal
 
 import core.csrfform as _core_csrfform
-import utils.utils as _utils_utils
-from schema.schema import Metadatatype
 from schema.schema import fieldoption
-from schema.schema import getMetaField
 from schema.schema import getMetaFieldTypeNames
 from schema.schema import getMetaType
 import core.translation as _translation
 import schema.schema as _schema
-from core.database.postgres.node import Node
 from core import db
 from web import admin as _web_admin
 

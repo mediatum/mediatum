@@ -8,7 +8,7 @@ import logging
 import re
 
 from core.metatype import Metatype
-from utils.utils import esc, desc, modify_tex
+from utils.utils import esc, modify_tex
 from utils.date import parse_date, format_date
 from schema.schema import getMetadataType
 import export.exportutils as exportutils

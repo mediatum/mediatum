@@ -8,7 +8,6 @@ import httplib as _httplib
 import itertools as _itertools
 import json
 import os
-import re
 import time
 
 import mediatumtal.tal as _tal
@@ -23,13 +22,11 @@ import utils.utils as _utils_utils
 from contenttypes.container import Collections
 from contenttypes.container import Home
 from contenttypes.data import Data
-from core import plugins as _core_plugins
 from core.database.postgres.user import User
 from edit_common import *
 from core.users import user_from_session as _user_from_session
 from schema.schema import Metadatatype
 from web.edit.edit_common import get_edit_label, get_searchparams
-from web.frontend.search import NoSearchResult
 from utils.pathutils import get_accessible_paths
 import core.database.postgres.node as _core_database_postgres_node
 import web.common.pagination as _web_common_pagination

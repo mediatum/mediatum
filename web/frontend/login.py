@@ -6,7 +6,6 @@ from __future__ import print_function
 
 import httplib as _httplib
 import logging
-import hashlib
 
 import flask as _flask
 
@@ -18,15 +17,9 @@ import core.users as users
 import core.config as config
 import core.translation as _core_translation
 from core.nodecache import get_collections_node
-import utils.mail as mail
-import utils.date as date
-from web.frontend import frame
-from utils.utils import mkKey
 from core import webconfig
 from core.auth import PasswordsDoNotMatch, WrongPassword, PasswordChangeNotAllowed
-from core.users import get_guest_user
 from datetime import datetime
-from mediatumtal import tal
 
 q = db.query
 logg = logging.getLogger(__name__)

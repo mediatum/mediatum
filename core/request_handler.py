@@ -11,8 +11,6 @@ import os as _os
 import stat as _stat
 import string as _string
 import logging as _logging
-import mimetypes as _mimetypes
-from cgi import escape as _escape
 from functools import partial as _partial
 
 import flask as _flask

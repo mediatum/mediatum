@@ -4,7 +4,6 @@
 from __future__ import division
 from __future__ import print_function
 
-import os
 import httplib as _httplib
 import logging
 import mediatumtal.tal as _tal

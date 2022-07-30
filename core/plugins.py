@@ -11,7 +11,7 @@ import importlib
 import os.path
 import sys
 
-from core import config, translation
+from core import config
 from utils.compat import iteritems
 
 

@@ -6,7 +6,6 @@
 from __future__ import division
 from __future__ import print_function
 
-from functools import partial
 import httplib as _httplib
 import logging
 import os
@@ -31,7 +30,6 @@ from web.frontend.filehelpers import version_id_from_req
 from web.frontend import main as _frontend_main
 
 from utils.utils import getMimeType, clean_path, get_filesize
-import tempfile
 from utils.compat import iterkeys
 
 

@@ -6,8 +6,6 @@ from __future__ import print_function
 
 import httplib as _httplib
 import logging
-import os as _os
-import shutil
 import re
 import functools as _functools
 import itertools as _itertools

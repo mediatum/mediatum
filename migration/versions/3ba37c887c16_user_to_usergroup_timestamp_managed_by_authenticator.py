@@ -20,7 +20,7 @@ depends_on = None
 
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
+
 
 def upgrade():
     op.add_column('user_to_usergroup', sa.Column('created_at', sa.DateTime(), nullable=True))

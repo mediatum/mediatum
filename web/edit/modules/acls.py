@@ -20,7 +20,6 @@ import core.database.postgres.permission as _db_permission
 import core.database.postgres.user as _postgres_user
 import core.permission as _permission
 import core.users as _users
-import utils.utils as _utils
 import web.common.accessuser_editor_web as _accessuser_editor_web
 import web.common.acl_editor_web as _acl_editor_web
 

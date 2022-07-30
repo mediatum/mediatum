@@ -4,7 +4,6 @@
 from __future__ import division
 from __future__ import print_function
 
-import codecs
 import functools as _functools
 import logging
 import os

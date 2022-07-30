@@ -11,7 +11,6 @@ import mediatumtal.tal as _tal
 import core.csrfform as _core_csrfform
 import core.translation as _core_translation
 import web.edit.edit_common as _web_edit_edit_common
-from core.users import getHomeDir
 from core.users import user_from_session as _user_from_session
 import logging
 import core.nodecache as _core_nodecache

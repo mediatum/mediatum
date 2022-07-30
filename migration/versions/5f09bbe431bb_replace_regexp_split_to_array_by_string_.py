@@ -20,7 +20,6 @@ depends_on = None
 
 import textwrap as _textwrap
 from alembic import op
-import sqlalchemy as sa
 
 
 def upgrade():

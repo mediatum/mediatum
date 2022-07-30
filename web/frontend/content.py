@@ -19,15 +19,12 @@ from core.database.postgres.node import Node
 from core.styles import get_list_style, get_styles_for_contenttype
 from core.webconfig import node_url
 import core.database.postgres.search as _postgres_search
-from contenttypes.container import includetemplate
 from utils.strings import ensure_unicode_returned
 from utils.compat import iteritems
 from web import frontend as _web_frontend
 from web.frontend.search import simple_search, extended_search
 import web.frontend.search as _frontend_search
 from contenttypes.container import Container
-from mediatumtal import tal
-from schema.schema import Metadatatype
 from core.database.postgres import mediatumfunc
 from sqlalchemy_continuum.utils import version_class
 import json

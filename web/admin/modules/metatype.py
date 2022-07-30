@@ -6,7 +6,6 @@ from __future__ import print_function
 
 import operator as _operator
 import re
-import sys
 
 import logging
 import mediatumtal.tal as _tal
@@ -24,7 +23,6 @@ import schema.schema as _schema
 from schema.schema import cloneMask
 from schema.schema import deleteMetaField
 from schema.schema import deleteMetaType
-from schema.schema import existMetaField
 from schema.schema import exportMetaScheme
 from schema.schema import fieldoption
 from schema.schema import generateMask
@@ -38,7 +36,6 @@ from schema.schema import updateMetaType
 from schema.bibtex import getAllBibTeXTypes
 from schema import citeproc
 
-from utils.fileutils import importFile
 # metafield methods
 from .metatype_field import showDetailList
 # meta mask methods

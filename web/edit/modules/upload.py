@@ -36,13 +36,10 @@ from core import db
 import contenttypes as _contenttypes
 from contenttypes import Data
 from core.database.postgres.node import Node
-from schema.schema import Metadatatype, get_permitted_schemas, get_permitted_schemas_for_datatype
-from sqlalchemy import func
-from utils.compat import iteritems
+from schema.schema import get_permitted_schemas, get_permitted_schemas_for_datatype
 from web.edit.edit_common import get_searchparams
 from web.frontend.frame import render_edit_search_box
 import urllib
-import web.common.sort as _sort
 
 logg = logging.getLogger(__name__)
 identifier_importers = {}

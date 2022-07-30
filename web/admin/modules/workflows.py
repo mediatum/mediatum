@@ -6,8 +6,6 @@ from __future__ import print_function
 
 import logging
 import re
-import sys
-import traceback
 
 import mediatumtal.tal as _tal
 import werkzeug.datastructures as _datastructures

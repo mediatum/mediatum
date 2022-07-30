@@ -7,15 +7,13 @@ from __future__ import division
 from __future__ import print_function
 
 import contextlib as _contextlib
-import datetime
 import logging
-from json import dumps
 from warnings import warn
 
 import ruamel.yaml as _ruamel_yaml
 from sqlalchemy import (Table, Sequence, Integer, Unicode, Boolean, sql, text, select, func)
 from sqlalchemy.orm import deferred, object_session
-from sqlalchemy.orm.dynamic import AppenderQuery, AppenderMixin
+from sqlalchemy.orm.dynamic import AppenderMixin
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative.api import DeclarativeMeta
 from sqlalchemy.ext.mutable import MutableDict
@@ -26,16 +24,14 @@ import flask as _flask
 import core.nodecache as _core_nodecache
 from core import config
 from core.node import NodeMixin, NodeVersionMixin
-from core.database.postgres import db_metadata, DeclarativeBase, MtQuery, mediatumfunc, MtVersionBase, integer_fk
+from core.database.postgres import db_metadata, DeclarativeBase, MtQuery, mediatumfunc, MtVersionBase
 from core.database.postgres import rel, bref, C, FK
 from core.database.postgres.alchemyext import LenMixin, view, exec_sqlfunc
 from core.database.postgres.attributes import Attributes, AttributesExpressionAdapter
 from ipaddr import IPv4Address, AddressValueError
 from sqlalchemy_continuum import versioning_manager
 from sqlalchemy_continuum.utils import version_class
-from werkzeug.utils import cached_property
 from core.search.representation import SearchTreeElement
-from utils.date import format_date
 
 
 logg = logging.getLogger(__name__)

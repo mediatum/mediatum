@@ -11,7 +11,7 @@ from __future__ import division
 from __future__ import print_function
 
 import logging
-from sqlalchemy.orm.exc import NoResultFound
+
 from core.database.postgres.user import UserGroup
 from core import config
 from core.database.postgres.user import User

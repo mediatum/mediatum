@@ -5,7 +5,6 @@ from __future__ import division
 from __future__ import print_function
 
 import os as _os
-import re
 import functools as _functools
 import logging
 import humanize
@@ -22,11 +21,9 @@ import core.config as config
 import core.translation as _core_translation
 from core.styles import get_full_style
 from core.postgres import check_type_arg_with_schema
-from export.exportutils import default_context
 from schema.schema import getMetadataType, VIEW_HIDE_EMPTY, SchemaMixin
 from utils import utils as _utils_utils
 from utils.utils import highlight
-from utils.compat import iteritems, string_types
 from markupsafe import Markup
 from utils.strings import replace_attribute_variables
 

@@ -11,9 +11,7 @@ import sys
 import traceback
 
 from core import config
-from .date import format_date
 import hashlib
-import string
 try:
     import uwsgi as _uwsgi
 except ImportError:

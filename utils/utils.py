@@ -34,7 +34,6 @@ from contextlib import contextmanager
 from lxml import etree
 from HTMLParser import HTMLParser
 
-from .compat import iteritems
 from .strings import ensure_unicode_returned
 
 logg = logging.getLogger(__name__)

@@ -12,8 +12,7 @@ import itertools as _itertools
 import logging
 import operator as _operator
 import html as _html
-import backports.functools_lru_cache as _backports_functools_lru_cache
-from sqlalchemy import func, sql
+
 from mediatumtal import tal
 
 import utils.utils as _utils
@@ -22,9 +21,6 @@ import core.metatype as _core_metatype
 from core.metatype import Metatype
 from core import db
 from core.database.postgres.node import Node
-from contenttypes import Collections
-from core.database.postgres import mediatumfunc
-from core.database.postgres.alchemyext import exec_sqlfunc
 import metadata.common_list as _common_list
 import schema.schema as _schema
 from web import frontend as _web_frontend

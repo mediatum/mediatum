@@ -17,7 +17,6 @@ from __future__ import division
 from __future__ import print_function
 
 import re
-import os
 import sys
 import codecs
 import logging
@@ -31,9 +30,7 @@ import bibtexparser.customization
 from core import db
 from core.database.postgres.node import Node
 from .schema import Metadatatype
-import core.users as users
 from contenttypes.document import Document
-from utils.utils import u
 from utils.date import parse_date
 
 q = db.query

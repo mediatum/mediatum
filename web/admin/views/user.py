@@ -22,7 +22,7 @@ from wtforms.fields.core import StringField
 from web.admin.views import BaseAdminView
 from wtforms.ext.sqlalchemy.fields import QuerySelectMultipleField
 from wtforms import SelectMultipleField
-from flask_admin import form, expose
+from flask_admin import form
 
 import core.csrfform as _core_csrfform
 from core.auth import INTERNAL_AUTHENTICATOR_KEY

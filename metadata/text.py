@@ -7,10 +7,8 @@ from __future__ import division
 from __future__ import print_function
 
 import logging
-import re
+
 from mediatumtal import tal
-import core as _core
-import core.config as config
 import utils.utils as _utils
 from utils.utils import esc
 from utils.utils import modify_tex

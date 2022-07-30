@@ -8,7 +8,6 @@ from __future__ import print_function
 
 import datetime
 import logging
-import time
 import itertools as _itertools
 
 import ruamel.yaml as _ruamel_yaml
@@ -17,18 +16,14 @@ import psycopg2.extensions
 from psycopg2.extensions import adapt, AsIs
 import sqlalchemy as sqla
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, ForeignKey, event, Integer, DateTime, func as sqlfunc
-from sqlalchemy.orm import relationship, backref, Query, Mapper, undefer
+from sqlalchemy import Column, ForeignKey, Integer, DateTime, func as sqlfunc
+from sqlalchemy.orm import relationship, backref, Query, undefer
 from sqlalchemy.orm import defer as _defer, ColumnProperty as _ColumnProperty, class_mapper as _class_mapper
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy_continuum.utils import version_class
-from sqlalchemy_continuum.plugins.transaction_meta import TransactionMetaPlugin
 from sqlalchemy_continuum import versioning_manager
-from sqlalchemy_continuum import make_versioned
-from sqlalchemy_continuum.utils import parent_class
 
 import flask as _flask
-from core import config
 from core.database.postgres.continuumext import MtVersionBase
 from utils.compat import iteritems
 

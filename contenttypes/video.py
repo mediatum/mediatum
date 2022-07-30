@@ -13,7 +13,6 @@ import os
 from subprocess import CalledProcessError
 import tempfile
 
-from mediatumtal import tal
 from contenttypes.data import Content, prepare_node_data
 from contenttypes.image import make_thumbnail_image
 from core.postgres import check_type_arg_with_schema

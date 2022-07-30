@@ -11,7 +11,6 @@ import logging
 from warnings import warn
 from datetime import datetime
 
-from sqlalchemy import Table
 from sqlalchemy import event
 from sqlalchemy import String
 from sqlalchemy import Boolean
@@ -21,7 +20,7 @@ from sqlalchemy import DateTime
 from sqlalchemy import BigInteger
 import humanize
 
-from core import db, config
+from core import config
 from core.file import FileMixin, FileVersionMixin
 from core.database.postgres.node import Node
 from core.database.postgres.alchemyext import AppenderQueryWithLen

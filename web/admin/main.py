@@ -7,7 +7,6 @@ from __future__ import print_function
 import httplib as _httplib
 import logging
 import os
-import codecs
 import operator as _operator
 import socket as _socket
 import contextlib as _contextlib
@@ -24,7 +23,7 @@ import core.csrfform as _core_csrfform
 import core.webconfig as _core_webconfig
 from core import config
 from core.users import get_guest_user
-from utils.utils import join_paths, Menu
+from utils.utils import Menu
 from web.admin.adminutils import adminModules, show_content, adminNavigation, getMenuItemID
 from core.users import user_from_session as _user_from_session
 from web import frontend as _web_frontend

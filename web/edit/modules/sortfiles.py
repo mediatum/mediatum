@@ -8,13 +8,9 @@ import httplib as _httplib
 
 import mediatumtal.tal as _tal
 
-from sqlalchemy import func
-
-from utils.utils import getCollection
 from core.users import user_from_session as _user_from_session
 from core.database.postgres.node import Node
 from core import db
-from schema.schema import Metadatatype
 import core.translation as _core_translation
 import web.common.sort as _sort
 

@@ -4,12 +4,11 @@
 from __future__ import division
 from __future__ import print_function
 
-import collections as _collections
 import datetime
 import functools as _functools
 import inspect
-import itertools as _itertools
 import json as _json
+
 import logging
 import re as _re
 import collections as _collections
@@ -21,6 +20,7 @@ from sqlalchemy.orm import undefer
 import sqlalchemy as _sqlalchemy
 import werkzeug.datastructures as _datastructures
 from werkzeug.utils import cached_property
+
 import core.config as config
 import core.csrfform as _core_csrfform
 import core.translation as translation
@@ -33,7 +33,7 @@ import core.nodecache as _nodecache
 from core.systemtypes import Metadatatypes
 from core.postgres import check_type_arg
 from core.database.postgres.node import children_rel, parents_rel
-from utils.date import parse_date, format_date, validateDateString
+from utils.date import format_date, validateDateString
 from utils.utils import esc, suppress
 import utils as _utils
 from mediatumtal import tal as _tal

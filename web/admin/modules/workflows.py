@@ -373,7 +373,7 @@ def WorkflowStepList(req, wid):
     v["sortcol"] = pages.OrderColHeader(tuple(
         _core_translation.t(
             _core_translation.set_language(req.accept_languages),
-            "admin_wf_col_{}".format(col),
+            "admin_wfstep_col_{}".format(col),
             )
         for col in xrange(1, 8)
         ))

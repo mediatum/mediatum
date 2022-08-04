@@ -9,9 +9,9 @@ from collections import OrderedDict
 import logging
 from warnings import warn
 
+import core as _core
 import core.translation as _core_translation
 from core import config
-from core import db
 from core import styles
 from core import webconfig
 from core.database.postgres.file import File
@@ -35,9 +35,7 @@ import web.common.pagination as _web_common_pagination
 import web.common.sort as _sort
 import utils.utils as _utils_utils
 
-
 logg = logging.getLogger(__name__)
-q = db.query
 
 
 class SingleFile(object):
@@ -209,7 +207,7 @@ def apply_order_by_for_sortfields(query, sortfields_to_comp, before=False):
 def _get_accessible_node(nid):
     """Fetches node by ID, checking read access.
     Returns a Node or Node if node not found or not accessible by user."""
-    return q(Node).filter_by(id=nid).filter_read_access().prefetch_attrs().prefetch_system_attrs().scalar()
+    return _core.db.query(Node).filter_by(id=nid).filter_read_access().prefetch_attrs().prefetch_system_attrs().scalar()
     
 
 SORT_FIELDS = 2
@@ -463,7 +461,7 @@ class ContentList(ContentBase):
 
         if self.after or self.before:
             assert not (self.after and self.before)
-            comp_node = q(Node).get(self.after or self.before)
+            comp_node = _core.db.query(Node).get(self.after or self.before)
             sortfields_to_comp = prepare_sortfields(comp_node, self.sortfields)
             position_cond = _position_filter(sortfields_to_comp, self.before)
             q_nodes = q_nodes.filter(position_cond)
@@ -598,7 +596,7 @@ class ContentNode(ContentBase):
         if not self.paths:
             # self.node may be result of a query and/or element of a contentlist, in this case
             # self.paths is not set - try to recalculate paths
-            self.paths = get_accessible_paths(self.node, q(Node).prefetch_attrs())
+            self.paths = get_accessible_paths(self.node, _core.db.query(Node).prefetch_attrs())
 
         if self.paths:
             occurences_html = render_content_occurences(self.node, req, self.paths)
@@ -744,7 +742,7 @@ def render_content_occurences(node, req, paths):
 
 def render_content(node, req, render_paths):
     make_search_content = get_make_search_content_function(req.args)
-    paths = get_accessible_paths(node, q(Node).prefetch_attrs()) if render_paths and node is not None else None
+    paths = get_accessible_paths(node, _core.db.query(Node).prefetch_attrs()) if render_paths and node is not None else None
     if not make_search_content:
         content = make_node_content(node, req, paths)
     elif len(req.args.get("query", "..").strip()) < 2:

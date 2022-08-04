@@ -11,15 +11,14 @@ import logging
 import flask as _flask
 import mediatumtal.tal as _tal
 
+import core as _core
 import core.csrfform as _core_csrfform
 import core.translation as _core_translation
 from utils.date import format_date, parse_date
-from core import db
 from core.database.postgres.node import Node
 from core.users import user_from_session
 import schema.schema as _schema
 
-q = db.query
 logg = logging.getLogger(__name__)
 
 
@@ -69,7 +68,7 @@ def _handle_edit_metadata(req, mask, nodes):
         for node in nodes:
             mask.apply_edit_update_attrs_to_node(node, attrs)
 
-    db.session.commit()
+    _core.db.session.commit()
     return attrs.errors
 
 
@@ -83,7 +82,7 @@ def getContent(req, ids):
 
     err = 0
 
-    nodes = map(q(Node).get, ids)
+    nodes = map(_core.db.query(Node).get, ids)
 
     if not all(node.has_write_access() for node in nodes):
         req.response.status_code = _httplib.FORBIDDEN

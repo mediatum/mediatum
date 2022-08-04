@@ -4,8 +4,8 @@
 from __future__ import division
 from __future__ import print_function
 
+import core as _core
 from .workflow import WorkflowStep, registerStep
-from core import db
 
 
 def register():
@@ -16,5 +16,5 @@ class WorkflowStep_Reauth(WorkflowStep):
 
     def runAction(self, node, op=""):
         node.set("key", node.get("system.key"))
-        db.session.commit()
+        _core.db.session.commit()
         self.forward(node, True)

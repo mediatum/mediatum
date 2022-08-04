@@ -34,14 +34,12 @@ down_revision = u'a0f87284aaa4'
 branch_labels = None
 depends_on = None
 
-_q = _core.db.query
-
 
 def upgrade():
     for metadatatype in _nodecache.get_metadatatypes_node().children:
         for metafield in metadatatype.children.filter(_schema.Metafield.a.type=='dlist'):
             listelements = _nodecache.get_root_node().all_children_by_query(
-                _q(_postgres_node.Node.a[metafield.name])
+                _core.db.query(_postgres_node.Node.a[metafield.name])
                 .filter(_postgres_node.Node.schema==metadatatype.name)
                ).all()
             listelements = set(elem for elem, in listelements)

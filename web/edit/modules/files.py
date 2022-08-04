@@ -10,6 +10,7 @@ import core.users as users
 import logging
 import mediatumtal.tal as _tal
 
+import core as _core
 import core.csrfform as _core_csrfform
 import core.nodecache as _core_nodecache
 
@@ -17,13 +18,11 @@ from utils.utils import getMimeType, get_user_id, suppress
 from utils.fileutils import importFile
 from contenttypes.image import make_thumbnail_image
 from core.users import getUploadDir as _getUploadDir
-from core import db
 from core.database.postgres.file import File
 from core.database.postgres.node import Node
 from web import frontend as _web_frontend
 import web.edit.edit_common as _web_edit_edit_common
 
-q = db.query
 logg = logging.getLogger(__name__)
 
 
@@ -100,7 +99,7 @@ def _handle_change(node, req):
 def getContent(req, ids):
     ret = ""
     user = users.user_from_session()
-    node = q(Node).get(ids[0])
+    node = _core.db.query(Node).get(ids[0])
     update_error = False
     update_error_extension = False
 
@@ -177,7 +176,7 @@ def getContent(req, ids):
         if req.params.get('data') == 'additems':  # add selected node as children
             for childid in req.params.get('items').split(";"):
                 if childid.strip() != "":
-                    childnode = q(Node).get(childid.strip())
+                    childnode = _core.db.query(Node).get(childid.strip())
                     # don't try to add node as child to itself !
                     if childnode != node:
                         for p in childnode.parents:
@@ -193,7 +192,7 @@ def getContent(req, ids):
 
         if req.params.get('data') == 'removeitem':  # remove selected childnode node
             with suppress(Exception):
-                remnode = q(Node).get(req.params.get('remove'))
+                remnode = _core.db.query(Node).get(req.params.get('remove'))
                 if len(remnode.parents) == 1:
                     _getUploadDir(user).children.append(remnode)
                 node.children.remove(remnode)
@@ -209,7 +208,7 @@ def getContent(req, ids):
             i = 0
             for id in req.params.get('order').split(","):
                 if id != "":
-                    n = q(Node).get(id)
+                    n = _core.db.query(Node).get(id)
                     n.setOrderPos(i)
                     i += 1
 
@@ -220,7 +219,7 @@ def getContent(req, ids):
                                    request=req)
 
         req.response.set_data(ret)
-        db.session.commit()
+        _core.db.session.commit()
         return ""
 
     if req.params.get("style") == "popup":
@@ -271,7 +270,7 @@ def getContent(req, ids):
                 else:
                     update_error = True
 
-    db.session.commit()
+    _core.db.session.commit()
 
     v = dict(
             srcnodeid=srcnodeid,

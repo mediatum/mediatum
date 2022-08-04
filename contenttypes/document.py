@@ -13,11 +13,11 @@ import subprocess as _subprocess
 
 import PIL.Image as _PIL_Image
 
+import core as _core
 import contenttypes.data as _contenttypes_data
 import utils.process as _utils_process
 import utils.utils as _utils_utils
 from core.database.postgres.file import File
-from core import db
 from core.attachment import filebrowser
 from core.postgres import check_type_arg_with_schema
 from schema.schema import Metafield
@@ -233,7 +233,7 @@ class Document(_contenttypes_data.Content):
                 elif f.type == "fulltext":
                     self.files.remove(f)
 
-            db.session.commit()
+            _core.db.session.commit()
             return
 
         if thumbnail or fulltext:
@@ -246,7 +246,7 @@ class Document(_contenttypes_data.Content):
             pdfinfo = _process_pdf(doc.abspath, thumbnailname, fulltextname)
         except _PdfEncryptedError:
             # allow upload of encrypted document
-            db.session.commit()
+            _core.db.session.commit()
             return
         except _PIL_Image.DecompressionBombError:
             # must match error string in parsepdf.py
@@ -263,7 +263,7 @@ class Document(_contenttypes_data.Content):
 
         import_node_fulltext(self, overwrite=True)
 
-        db.session.commit()
+        _core.db.session.commit()
 
 
     def get_unwanted_exif_attributes(self):

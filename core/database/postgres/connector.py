@@ -243,9 +243,7 @@ class PostgresSQLAConnector(object):
 
         Example:
 
-        from core import db
-        q = db.query
-        q(Node).get(42)
+        core.db.query(Node).get(42)
         """
         return self.Session().query(*entities, **kwargs)
 
@@ -264,10 +262,9 @@ class PostgresSQLAConnector(object):
     # database manipulation helpers
 
     def drop_schema(self):
-        s = self.session
-        if schema_exists(s, "mediatum"):
-            s.execute("DROP SCHEMA mediatum CASCADE")
-            s.commit()
+        if schema_exists(self.session, "mediatum"):
+            self.session.execute("DROP SCHEMA mediatum CASCADE")
+            self.session.commit()
             logg.info("dropped database structure")
         else:
             logg.info("schema mediatum does not exist, cannot drop it")
@@ -277,10 +274,9 @@ class PostgresSQLAConnector(object):
         :param set_alembic_version: Stamp database with current alembic revision information. Defaults to True.
         Can be disabled if a schema for testing is going to be created.
         """
-        s = self.session
         logg.info("creating DB schema...")
-        s.execute("CREATE SCHEMA mediatum")
-        s.commit()
+        self.session.execute("CREATE SCHEMA mediatum")
+        self.session.commit()
         try:
             self.create_all()
             if set_alembic_version:
@@ -290,12 +286,12 @@ class PostgresSQLAConnector(object):
                 alembic_cfg = Config(os.path.join(config.basedir, "alembic.ini"))
                 alembic_cfg.attributes["running_in_mediatum"] = True
                 command.stamp(alembic_cfg, "head")
-            s.commit()
+            self.session.commit()
             logg.info("commited database structure")
         except:
             # I tried to use a transaction to enclose everything, but sqlalchemy (?) fails when the schema is created within the transaction
             # solution: just drop the schema it if something fails after schema creation
-            s.execute("DROP SCHEMA mediatum CASCADE")
+            self.session.execute("DROP SCHEMA mediatum CASCADE")
             raise
 
     def check_create_schema(self, set_alembic_version=True):
@@ -310,12 +306,11 @@ class PostgresSQLAConnector(object):
         command.upgrade(alembic_cfg, "head")
 
     def check_load_initial_database_values(self, default_admin_password=None):
-        s = self.session
         stmt = "SELECT EXISTS (SELECT FROM node)"
-        nodes_exist = s.execute(stmt).fetchone()[0]
+        nodes_exist = self.session.execute(stmt).fetchone()[0]
         if not nodes_exist:
-            init_database_values(s, default_admin_password=default_admin_password)
-            s.commit()
+            init_database_values(self.session, default_admin_password=default_admin_password)
+            self.session.commit()
             return True
         return False
 
@@ -361,21 +356,20 @@ class PostgresSQLAConnector(object):
 
     def init_fulltext_search(self):
         from core.database.postgres.setting import Setting
-        s = self.session
 
         fulltext_autoindex_languages = get_fulltext_autoindex_languages()
 
         if fulltext_autoindex_languages:
             fulltext_autoindex_languages_setting = Setting(key=u"search.fulltext_autoindex_languages", value=list(fulltext_autoindex_languages))
-            s.merge(fulltext_autoindex_languages_setting)
+            self.session.merge(fulltext_autoindex_languages_setting)
 
         attribute_autoindex_languages = get_attribute_autoindex_languages()
 
         if attribute_autoindex_languages:
             attribute_autoindex_languages_setting = Setting(key=u"search.attribute_autoindex_languages", value=list(attribute_autoindex_languages))
-            s.merge(attribute_autoindex_languages_setting)
+            self.session.merge(attribute_autoindex_languages_setting)
 
-        s.commit()
+        self.session.commit()
 
     def run_psql_command(self, command, output=False, database=None):
         """Executes a single SQL command via an external psql call.

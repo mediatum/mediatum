@@ -13,12 +13,10 @@ import itertools as _itertools
 
 import sqlalchemy.orm.exc as _sqlalchemy_orm_exc
 
+import core as _core
 import core.translation as _core_translation
 from core.database.postgres.permission import AccessRuleset
-from core import db
 import utils.utils as _utils_utils
-
-q = db.query
 
 
 def make_acl_html_options(node, ruletype, language):
@@ -28,7 +26,7 @@ def make_acl_html_options(node, ruletype, language):
     rights = list(filter(None, rights))
 
     # ignore private rulesets starting with _
-    rulelist = q(AccessRuleset).filter(~AccessRuleset.name.like("\_%")).order_by(AccessRuleset.name).all()
+    rulelist = _core.db.query(AccessRuleset).filter(~AccessRuleset.name.like("\_%")).order_by(AccessRuleset.name).all()
 
     left = []
     right = []

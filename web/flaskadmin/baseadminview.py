@@ -7,7 +7,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from core import db
+import core as _core
 from flask_admin.contrib.sqla import ModelView
 from flask_login import current_user
 
@@ -21,7 +21,7 @@ class BaseAdminView(ModelView):
     can_view_details = True
 
     def __init__(self, model, session=None, *args, **kwargs):
-        super(BaseAdminView, self).__init__(model, session or db.Session, *args, **kwargs)
+        super(BaseAdminView, self).__init__(model, session or _core.db.Session, *args, **kwargs)
 
     def is_accessible(self):
         # view access only allowed for admins!

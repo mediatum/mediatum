@@ -9,14 +9,12 @@ import logging
 
 import mediatumtal.tal as _tal
 
+import core as _core
 import core.csrfform as _core_csrfform
 import core.translation as _core_translation
 from schema.schema import getMetaType
 from core.users import user_from_session as _user_from_session
 from core.database.postgres.node import Node
-from core import db
-
-q = db.query
 
 logg = logging.getLogger(__name__)
 
@@ -24,7 +22,7 @@ logg = logging.getLogger(__name__)
 def getContent(req, ids):
     user = _user_from_session()
     language = _core_translation.set_language(req.accept_languages)
-    node = q(Node).get(ids[0])
+    node = _core.db.query(Node).get(ids[0])
     
     if "sort" in user.hidden_edit_functions or not node.has_write_access():
         req.response.status_code = _httplib.FORBIDDEN
@@ -36,10 +34,10 @@ def getContent(req, ids):
         ids = req.params.get('order').split(',')
         children = []
         for n in ids:
-            child = q(Node).get(n)
+            child = _core.db.query(Node).get(n)
             child.orderpos = ids.index(n)
             children.append(child)
-        db.session.commit()
+        _core.db.session.commit()
 
         req.response.set_data(_tal.processTAL(
                 dict(nodelist=children, language=language, csrf=_core_csrfform.get_token()),
@@ -55,7 +53,7 @@ def getContent(req, ids):
             sorted_children.reverse()
         for position, child in enumerate(sorted_children, start=1):
             child.orderpos = position
-        db.session.commit()
+        _core.db.session.commit()
         req.response.set_data(_tal.processTAL(
                 dict(nodelist=sorted_children, language=language, csrf=_core_csrfform.get_token()),
                 file='web/edit/modules/subfolder.html',

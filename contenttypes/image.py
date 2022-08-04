@@ -13,9 +13,9 @@ import os
 import exifread as _exifread
 from PIL import Image as PILImage
 
+import core as _core
 import contenttypes.data as _contenttypes_data
 from core.database.postgres.file import File
-from core import db
 from core.archive import Archive, get_archive_for_node
 from core.attachment import filebrowser
 from core.postgres import check_type_arg_with_schema
@@ -332,7 +332,7 @@ class Image(_contenttypes_data.Content):
         # should we skip this sometimes? Do we want to overwrite everything?
         self._extract_metadata(files)
 
-        db.session.commit()
+        _core.db.session.commit()
 
     @classmethod
     def get_unwanted_exif_attributes(cls):

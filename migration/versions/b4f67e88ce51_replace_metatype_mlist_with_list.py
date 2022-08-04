@@ -33,11 +33,9 @@ down_revision = u'f6f331204e0b'
 branch_labels = None
 depends_on = None
 
-_q = _core.db.query
-
 
 def upgrade():
-    for metafield in _q(_schema.Metafield).filter(_schema.Metafield.a.type == 'mlist').prefetch_attrs():
+    for metafield in _core.db.query(_schema.Metafield).filter(_schema.Metafield.a.type == 'mlist').prefetch_attrs():
         data = metafield.metatype_data
         metafield.setFieldtype("list")
         data["multiple"] = True

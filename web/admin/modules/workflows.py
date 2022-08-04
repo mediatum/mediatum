@@ -10,8 +10,8 @@ import re
 import mediatumtal.tal as _tal
 import werkzeug.datastructures as _datastructures
 
+import core as _core
 import core.config as config
-from core import db
 import core.csrfform as _core_csrfform
 from core.database.postgres.node import Node as _Node
 from core.database.postgres.permission import NodeToAccessRuleset
@@ -44,7 +44,7 @@ def _update_nodetoaccessruleset_associations(node, req_values, ruletype):
     based on request parameters.
     """
     for ruleset_assoc in node.access_ruleset_assocs.filter_by(ruletype=ruletype):
-        db.session.delete(ruleset_assoc)
+        _core.db.session.delete(ruleset_assoc)
 
     ruletype = "left_{}".format(ruletype)
 
@@ -141,7 +141,7 @@ def validate(req, op):
                 if "{}_inherit".format(ruletype) in req.values:
                     inheritWorkflowRights(req.values["name"], ruletype)
 
-            db.session.commit()
+            _core.db.session.commit()
 
         return _get_workflow_list_html(req)
 
@@ -253,7 +253,7 @@ def validate(req, op):
         for ruletype in ("read", "write"):
             _update_nodetoaccessruleset_associations(wnode, req.values, ruletype)
 
-        db.session.commit()
+        _core.db.session.commit()
 
     return _get_workflow_step_list_html(req, req.values["parent"])
 
@@ -324,7 +324,7 @@ def _get_workflow_config_form_html(req, id, error=None):
     if id == "" and not error:
         # new workflow
         workflow = Workflow(u"")
-        db.session.commit()
+        _core.db.session.commit()
         v["original_name"] = ""
 
     elif id != "" and not error:
@@ -339,7 +339,7 @@ def _get_workflow_config_form_html(req, id, error=None):
         workflow.set("description", req.values["description"])
         v["original_name"] = req.values["orig_name"]
         workflow.id = req.values["id"]
-        db.session.commit()
+        _core.db.session.commit()
 
     v.update(
         acl_read=_acl_web.make_acl_html_options(workflow, "read", _core_translation.set_language(req.accept_languages)),

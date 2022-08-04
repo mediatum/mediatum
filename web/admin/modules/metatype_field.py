@@ -14,10 +14,7 @@ from schema.schema import getMetaFieldTypeNames
 from schema.schema import getMetaType
 import core.translation as _translation
 import schema.schema as _schema
-from core import db
 from web import admin as _web_admin
-
-q = db.query
 
 logg = logging.getLogger(__name__)
 

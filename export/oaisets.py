@@ -6,18 +6,16 @@ from __future__ import print_function
 
 from collections import OrderedDict
 
+import core as _core
 from utils.utils import esc
 from utils.pathutils import isDescendantOf
 from .oaisetgroup import OAISetGroup as OAISetGroup
 from core import config
-from core import db
 from core.database.postgres.node import Node
 import core.database.postgres.search as _postgres_search
 import logging as _logging
 
 logg = _logging.getLogger(__name__)
-
-q = db.query
 
 DEBUG = False
 DICT_GROUPS = {}
@@ -47,21 +45,21 @@ def loadGroups():
 
 
 def func_getNodesForSetSpec(self, setspec, schemata):
-    collection = q(Node).get(setspec)
+    collection = _core.db.query(Node).get(setspec)
     return [n for n in collection.all_children if n.schema in schemata]
 
 
 def func_getSetSpecsForNode(self, node, schemata):
     res = []
     for setspec in self.d_names.keys():
-        if isDescendantOf(node, q(Node).get(setspec)):
+        if isDescendantOf(node, _core.db.query(Node).get(setspec)):
             res.append(setspec)
     return res
 
 
 def get_nodes_query_for_container_setspec(self, setspec, schemata):
 
-    container_node = q(Node).get(setspec)
+    container_node = _core.db.query(Node).get(setspec)
     nodequery = container_node.all_children
     nodequery = nodequery.filter(Node.schema.in_(schemata))
 
@@ -69,7 +67,7 @@ def get_nodes_query_for_container_setspec(self, setspec, schemata):
 
 
 def build_container_group():
-    node_list = q(Node).filter(Node.attrs['oai.setname'].isnot(None))
+    node_list = _core.db.query(Node).filter(Node.attrs['oai.setname'].isnot(None))
     node_list = node_list.order_by(Node.attrs['oai.setname'])
     node_list = [node for node in node_list if node.type in ['collection', 'directory']]
     node_list = [node for node in node_list if node.get('oai.setname').strip()]

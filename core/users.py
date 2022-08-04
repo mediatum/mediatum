@@ -8,13 +8,11 @@ import logging
 from warnings import warn
 import flask as _flask
 
+import core as _core
 from core.database.postgres.user import User
-from core import db
 from core.user import GuestUser
 
-
 logg = logging.getLogger(__name__)
-q = db.query
 
 
 def create_user(name, email, groups, pwd="", lastname="", firstname="", telephone="",
@@ -42,10 +40,10 @@ def getUser(name_or_id):
         pass
     else:
         warn("use q(User).get(id)", DeprecationWarning)
-        return q(User).get(nid)
+        return _core.db.query(User).get(nid)
 
     warn("use q(User).filter_by(login_name=login_name)", DeprecationWarning)
-    return q(User).filter_by(login_name=name_or_id).scalar()
+    return _core.db.query(User).filter_by(login_name=name_or_id).scalar()
 
 
 def getExternalAuthentificator(name):
@@ -65,7 +63,7 @@ def user_from_session():
     def _user_from_session():
         user_id = _flask.session.get("user_id")
         if user_id is not None:
-            user = q(User).get(user_id)
+            user = _core.db.query(User).get(user_id)
 
             if user is not None:
                 return user

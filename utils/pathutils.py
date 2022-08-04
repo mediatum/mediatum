@@ -7,13 +7,11 @@ from __future__ import print_function
 import operator as _operator
 from warnings import warn
 
+import core as _core
 import core.nodecache as _core_nodecache
-from core import db
 from core.database.postgres.node import Node
 from core.database.postgres import mediatumfunc, build_accessfunc_arguments
 from itertools import chain
-
-q = db.query
 
 
 def getBrowsingPathList(node):
@@ -61,11 +59,11 @@ def get_accessible_paths(node, node_query=None):
 
     # fetch all paths (with nid and access right flag) from db
     paths = mediatumfunc.accessible_container_paths(node.id, *build_accessfunc_arguments())
-    paths = map(_operator.itemgetter(0), db.session.execute(paths).fetchall())
+    paths = map(_operator.itemgetter(0), _core.db.session.execute(paths).fetchall())
 
     # convert node ids to nodes
     # fetch all nodes at once to reduce DB load
-    nid2node = {node.id:node for node in (node_query or q(Node)).filter(
+    nid2node = {node.id:node for node in (node_query or _core.db.query(Node)).filter(
                                 Node.id.in_(chain(*(tuple(nid for nid,_ in path) for path in paths))))}
 
     root_id = get_root_node().id

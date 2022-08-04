@@ -17,9 +17,9 @@ import re
 
 import requests
 
+import core as _core
 import utils.utils as _utils_utils
 from core.database.postgres.node import Node
-from core import db
 from contenttypes import Document
 from .schema import Metadatatype
 from . import importbase
@@ -27,9 +27,6 @@ from .importbase import NoMappingFound
 
 DX_DOI_URL = "http://dx.doi.org/"
 logg = logging.getLogger(__name__)
-
-
-q = db.query
 
 
 class CSLField(object):
@@ -262,7 +259,7 @@ def import_csl(record, target=None, name=None, testing=False):
             # no _default defined, fail
             raise NoMappingFound("No citeproc schema mapping could be found", typ)
         logg.warning("no mapping found for type %s, using _default fallback mapping", typ)
-    metatype = q(Metadatatype).filter_by(name=schema).one()
+    metatype = _core.db.query(Metadatatype).filter_by(name=schema).one()
     mask = metatype.getMask(u"citeproc")
     if not mask:
         raise NoMappingFound("target schema does not have a citeproc mask", typ)
@@ -300,8 +297,8 @@ def import_csl(record, target=None, name=None, testing=False):
             csl_name = "not defined"
             mfield = "not defined"
             med_name = "not defined"
-            csl_name = q(Node).get(int(maskitem[u"mappingfield"])).name
-            mfield = q(Node).get(int(maskitem[u"attribute"]))
+            csl_name = _core.db.query(Node).get(int(maskitem[u"mappingfield"])).name
+            mfield = _core.db.query(Node).get(int(maskitem[u"attribute"]))
             med_name = mfield.name
         except:
             logg.exception("citeproc import name='%s': field error for citeproc mask for type '%s and " +

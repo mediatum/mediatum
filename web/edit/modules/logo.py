@@ -8,15 +8,13 @@ import httplib as _httplib
 import logging
 import mediatumtal.tal as _tal
 
+import core as _core
 import core.csrfform as _core_csrfform
 import core.translation as _core_translation
 from utils.utils import getMimeType, splitpath
 from utils.fileutils import importFile
 from core.users import user_from_session as _user_from_session
 from core.database.postgres.node import Node
-from core import db
-
-q = db.query
 
 logg = logging.getLogger(__name__)
 
@@ -25,7 +23,7 @@ logg = logging.getLogger(__name__)
 
 def getContent(req, ids):
     user = _user_from_session()
-    node = q(Node).get(ids[0])
+    node = _core.db.query(Node).get(ids[0])
 
     if "logo" in user.hidden_edit_functions or not node.has_write_access():
         req.response.status_code = _httplib.FORBIDDEN
@@ -37,7 +35,7 @@ def getContent(req, ids):
         for f in node.files:
             if f.abspath.endswith(file):
                 node.files.remove(f)
-                db.session.commit()
+                _core.db.session.commit()
                 req.response.set_data('ok')
                 return None
         req.response.set_data("not found")
@@ -58,7 +56,7 @@ def getContent(req, ids):
             else:
                 file = importFile(file.filename, file)
                 node.files.append(file)
-                db.session.commit()
+                _core.db.session.commit()
 
     # save logo
     if "logo_save" in req.params.keys():
@@ -73,7 +71,7 @@ def getContent(req, ids):
         node.set("system.logo", req.params.get("logo").split("/")[-1])
         logg.info("%s set logo for node %s (%s, %s) to %s", user.login_name, node.id, node.name, node.type, node.get("system.logo"))
 
-        db.session.commit()
+        _core.db.session.commit()
 
     logofiles = []
     for f in node.files:

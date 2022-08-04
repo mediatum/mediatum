@@ -4,18 +4,15 @@
 from __future__ import division
 from __future__ import print_function
 
+import core as _core
 from core.database.postgres.node import Node
 from core.xmlnode import getNodeXML, readNodeXML
 from core.postgres import check_type_arg
-
-from core import db
 import core.nodecache as _nodecache
-
-q = db.query
 
 
 def getMapping(nid):
-    return q(Node).get(nid) or _nodecache.get_mappings_node().getChild(nid)
+    return _core.db.query(Node).get(nid) or _nodecache.get_mappings_node().getChild(nid)
 
 
 def getMappingTypes():
@@ -25,7 +22,7 @@ def getMappingTypes():
         ret = mappings.get("mappingtypes").split(";")
         if len(ret) == 0 or ret[0] == "":
             mappings.set("mappingtypes", ";".join(("default", "bibtex", "rss", "marc21", "citeproc")))
-            db.session.commit()
+            _core.db.session.commit()
             ret = getMappingTypes()
     except:
         pass
@@ -35,7 +32,7 @@ def getMappingTypes():
 def updateMapping(name, namespace="", namespaceurl="", description="", header="", footer="",
                   separator="", standardformat="", id=0, mappingtype="", active=""):
     if id != "" and int(id) > 0:
-        mapping = q(Node).get(id)
+        mapping = _core.db.query(Node).get(id)
     else:
         mappings = _nodecache.get_mappings_node()
         mapping = Mapping(name=name)
@@ -50,19 +47,19 @@ def updateMapping(name, namespace="", namespaceurl="", description="", header=""
     mapping.setStandardFormat(standardformat)
     mapping.setMappingType(mappingtype)
     mapping.setActive(active)
-    db.session.commit()
+    _core.db.session.commit()
 
 
 def deleteMapping(name):
     mappings = _nodecache.get_mappings_node()
     mappings.children.remove(getMapping(name))
-    db.session.commit()
+    _core.db.session.commit()
 
 
 def updateMappingField(parentid, name, description="", exportformat="", mandatory=False, default="", id=0):
-    mapping = q(Node).get(parentid)
+    mapping = _core.db.query(Node).get(parentid)
     if id != "" and int(id) > 0:
-        mappingfield = q(Node).get(id)
+        mappingfield = _core.db.query(Node).get(id)
     else:
         mappingfield = MappingField(name=name)
         mapping.children.append(mappingfield)
@@ -71,15 +68,15 @@ def updateMappingField(parentid, name, description="", exportformat="", mandator
     mappingfield.setExportFormat(exportformat)
     mappingfield.setMandatory(mandatory)
     mappingfield.setDefault(default)
-    db.session.commit()
+    _core.db.session.commit()
 
 
 def deleteMappingField(name):
-    node = q(Node).get(name)
+    node = _core.db.query(Node).get(name)
     for p in node.parents:
         if p.type == "mapping":
             p.children.remove(node)
-            db.session.commit()
+            _core.db.session.commit()
             return
 
 
@@ -87,7 +84,7 @@ def exportMapping(name):
     if name == "all":
         return getNodeXML(_nodecache.get_mappings_node())
     else:
-        id = q(Node).filter_by(name=unicode(name)).one().id
+        id = _core.db.query(Node).filter_by(name=unicode(name)).one().id
         return getNodeXML(getMapping(id))
 
 
@@ -104,7 +101,7 @@ def importMapping(filename):
     for m in importlist:
         m.name = u"import-{}".format(m.getName())
         mappings.children.append(m)
-    db.session.commit()
+    _core.db.session.commit()
 
 
 @check_type_arg

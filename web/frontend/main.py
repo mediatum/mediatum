@@ -12,9 +12,9 @@ import re
 from werkzeug.datastructures import ImmutableMultiDict
 import werkzeug.utils as _werkzeug_utils
 
+import core as _core
 import core.csrfform as _core_csrfform
 import core.translation as _core_translation
-from core import db
 from core.database.postgres.node import Node
 import core.nodecache as _nodecache
 from core.users import user_from_session as _user_from_session
@@ -25,9 +25,6 @@ from web.frontend.frame import render_page
 from web.frontend.content import render_content
 from core.nodecache import get_collections_node
 
-q = db.query
-
-
 logg = logging.getLogger(__name__)
 
 
@@ -37,7 +34,7 @@ def _handle_json_request(req):
     if req.args.get("cmd") == "get_list_smi":
         searchmaskitem_id = req.params.get("searchmaskitem_id")
         if searchmaskitem_id and searchmaskitem_id != "full":
-            field = q(Node).get(searchmaskitem_id).getFirstField()
+            field = _core.db.query(Node).get(searchmaskitem_id).getFirstField()
         else:
             field = None
         if field:  # we have a field at hand
@@ -47,7 +44,7 @@ def _handle_json_request(req):
 
         container_id = req.args.get("container_id")
 
-        container = q(Container).get(container_id) if container_id else None
+        container = _core.db.query(Container).get(container_id) if container_id else None
 
         if container is None or not container.has_read_access():
             container = get_collections_node()
@@ -125,7 +122,7 @@ def display(req, show_navbar=True, render_paths=True, params=None):
 
     node = params.get("id", type=int)
     node = (get_collections_node() if node is None else
-            q(Node).prefetch_attrs().prefetch_system_attrs().get(node))
+            _core.db.query(Node).prefetch_attrs().prefetch_system_attrs().get(node))
     if not (node and node.has_read_access()):
         node = None
 
@@ -170,7 +167,7 @@ def publish(req):
 @_check_change_language_request
 def show_parent_node(req):
     parent = None
-    node = q(Node).get(req.params.get("id"))
+    node = _core.db.query(Node).get(req.params.get("id"))
     if node is None:
         return workflow(req)
 

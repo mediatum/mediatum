@@ -6,8 +6,8 @@ from __future__ import print_function
 
 import logging
 
+import core as _core
 import core.translation as _core_translation
-from core import db
 from core.database.postgres.permission import AccessRuleset
 from core.database.postgres.user import AuthenticatorInfo
 from core.database.postgres.user import User
@@ -15,7 +15,6 @@ from core.database.postgres.user import UserGroup
 from core.database.postgres.user import UserToUserGroup
 from utils import utils as _utils_utils
 
-q = db.query
 logg = logging.getLogger(__name__)
 
 def decider_is_private_user_group_access_rule(ar):
@@ -37,8 +36,11 @@ def decider_is_private_user_group_access_rule(ar):
 
     gid = ar.group_ids[0]
     if gid:
-        usergroup = q(UserGroup).get(gid)
-        cand_uids = [t[0] for t in q(UserToUserGroup.user_id).filter_by(usergroup_id=gid).filter_by(private=True).all()]
+        usergroup = _core.db.query(UserGroup).get(gid)
+        cand_uids = [
+            t[0] for t in _core.db.query(UserToUserGroup.user_id).filter_by(usergroup_id=gid).filter_by(
+                private=True,
+                ).all()]
         if not cand_uids:
             # for mediatums migrated from mysql - may be removed after migration
             if gid >= 99990000:
@@ -46,7 +48,7 @@ def decider_is_private_user_group_access_rule(ar):
             return None
         elif len(cand_uids) == 1:
             uid = cand_uids[0]
-            user = q(User).get(uid)
+            user = _core.db.query(User).get(uid)
             return user
         else:
             msg = u"data integrity error (?): usergroup %r is 'private' to more than one (%d) user" % (usergroup,
@@ -94,10 +96,10 @@ def makeUserList(req, own_ruleset_assocs, inherited_ruleset_assocs, special_rule
 
     val_left = ""
     val_right = ""
-    userlist = q(User).order_by(User.display_name).all()
+    userlist = _core.db.query(User).order_by(User.display_name).all()
     authenticator_id2user_prefix = {}
     language = _core_translation.set_language(req.accept_languages)
-    for ai in q(AuthenticatorInfo).all():
+    for ai in _core.db.query(AuthenticatorInfo).all():
         id2user_prefix = u"{}:{}: ".format(ai.auth_type, ai.name)
         with _utils_utils.suppress(_core_translation.MessageIdNotFound, warn=False):
             id2user_prefix = _core_translation.translate(language, id2user_prefix)
@@ -107,7 +109,7 @@ def makeUserList(req, own_ruleset_assocs, inherited_ruleset_assocs, special_rule
     own_ruleset_names = [r.ruleset_name for r in own_ruleset_assocs]
     for ruleset_name in own_ruleset_names:
         if ruleset_name in private_ruleset_names:
-            ruleset = q(AccessRuleset).filter_by(name=ruleset_name).scalar()
+            ruleset = _core.db.query(AccessRuleset).filter_by(name=ruleset_name).scalar()
             for rule_assoc in ruleset.rule_assocs:
                 rule = rule_assoc.rule
                 test_result = decider_is_private_user_group_access_rule(rule)
@@ -136,7 +138,7 @@ def makeUserList(req, own_ruleset_assocs, inherited_ruleset_assocs, special_rule
     inherited_ruleset_names = [r.ruleset_name for r in inherited_ruleset_assocs]
     for ruleset_name in inherited_ruleset_names:
         if ruleset_name in private_ruleset_names:
-            ruleset = q(AccessRuleset).filter_by(name=ruleset_name).scalar()
+            ruleset = _core.db.query(AccessRuleset).filter_by(name=ruleset_name).scalar()
             for rule_assoc in ruleset.rule_assocs:
                 rule = rule_assoc.rule
                 test_result = decider_is_private_user_group_access_rule(rule)

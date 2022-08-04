@@ -10,6 +10,7 @@ import logging
 import flask as _flask
 import mediatumtal.tal as _tal
 
+import core as _core
 import core.csrfform as _core_csrfform
 import core.translation as _core_translation
 from .workflow import WorkflowStep, registerStep
@@ -17,14 +18,11 @@ from schema.schema import getMetaType
 import utils.date as date
 from utils.utils import mkKey
 from core.database.postgres.node import Node
-from core import db
 import schema.schema as _schema
 from core.database.postgres.permission import AccessRulesetToRule
 from core.database.postgres.user import UserGroup
 import core.nodecache as _nodecache
 from core.permission import get_or_add_access_rule
-
-q = db.query
 
 logg = logging.getLogger(__name__)
 
@@ -69,10 +67,10 @@ class WorkflowStep_Start(WorkflowStep):
             self.children.append(node)
 
             # create user group named '_workflow' if it doesn't exist
-            workflow_group = q(UserGroup).filter_by(name=u'_workflow').scalar()
+            workflow_group = _core.db.query(UserGroup).filter_by(name=u'_workflow').scalar()
             if workflow_group is None:
                 workflow_group = UserGroup(name=u'_workflow', description=u'internal dummy group for nodes in workflows')
-                db.session.add(workflow_group)
+                _core.db.session.add(workflow_group)
 
             # create access rule with '_workflow' user group
             workflow_rule = get_or_add_access_rule(group_ids=[workflow_group.id])
@@ -86,12 +84,12 @@ class WorkflowStep_Start(WorkflowStep):
             node.set("key", mkKey())
             node.set("system.key", node.get("key"))  # initial key identifier
             _flask.session["key"] = node.get("key")
-            db.session.commit()
+            _core.db.session.commit()
             return self.forwardAndShow(node, True, req)
 
         elif "workflow_start_auth" in req.params:  # auth node by id and key
             try:
-                node = q(Node).get(req.params.get('nodeid'))
+                node = _core.db.query(Node).get(req.params.get('nodeid'))
 
                 # startkey, but protected
                 if node.get('system.key') == req.params.get('nodekey') and node.get('key') != req.params.get('nodekey'):
@@ -103,7 +101,7 @@ class WorkflowStep_Start(WorkflowStep):
             except:
                 logg.exception("exception in workflow step start (workflow_start_auth)")
                 message = "workflow_start_err_wrongkey"
-                db.session.rollback()
+                _core.db.session.rollback()
 
         return _tal.processTAL(
                 dict(
@@ -142,4 +140,4 @@ class WorkflowStep_Start(WorkflowStep):
         data["schemas"] = tuple(s.split("/") for s in schemas)
         assert frozenset(data) == frozenset(("schemas", "starthtmltext", "allowcontinue"))
         self.settings = data
-        db.session.commit()
+        _core.db.session.commit()

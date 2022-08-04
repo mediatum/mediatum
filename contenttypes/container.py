@@ -12,9 +12,10 @@ from warnings import warn
 
 from mediatumtal import tal
 
+import core as _core
 import core.config as config
 import core.translation as _core_translation
-from core import db
+
 from core.database.postgres.node import Node
 from core.webconfig import node_url
 from contenttypes.data import Data
@@ -24,7 +25,6 @@ from utils.utils import CustomItem
 from core.users import user_from_session as _user_from_session
 from core.postgres import check_type_arg_with_schema
 from schema.schema import Metafield, SchemaMixin
-
 
 logg = logging.getLogger(__name__)
 
@@ -169,7 +169,7 @@ class Container(Data, ContainerMixin, SchemaMixin):
             node_id_list = self.item_file_pattern.findall(fname)
             if node_id_list:
                 node_id = node_id_list[0]
-                node = db.query(Node).get(node_id)
+                node = _core.db.query(Node).get(node_id)
                 fname_allowed = node and node.has_read_access(user=user)
 
             fpath = "{}html/{}".format(config.get("paths.datadir"),

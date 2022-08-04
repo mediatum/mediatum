@@ -16,10 +16,10 @@ import logging
 import re as _re
 from sqlalchemy import func, Index as _Index
 
+import core as _core
 import utils.utils as _utils
 import utils.locks as _locks
 from core.database.postgres import DB_SCHEMA_NAME as _DB_SCHEMA_NAME
-from core import db
 from core.search import SearchQueryException
 from core.search.config import get_default_search_languages
 from core.search.representation import AttributeMatch, FullMatch, SchemaMatch, FulltextMatch, AttributeCompare, TypeMatch, And, Or
@@ -44,8 +44,8 @@ def set_session_timeout(session_timeout):
     :param session_timeout: session timeout in seconds
     :return:
     """
-    db.session.execute("SET transaction_read_only=true")
-    db.session.execute("SET statement_timeout={}".format(session_timeout * 1000))
+    _core.db.session.execute("SET transaction_read_only=true")
+    _core.db.session.execute("SET statement_timeout={}".format(session_timeout * 1000))
 
 
 def _rewrite_prefix_search(t):
@@ -210,8 +210,10 @@ def _check_search_indexes_node(type, languages):
     index_prefix = "ix_{type}_node".format(type=type)
     index_auto_prefix = _utils.make_db_auto_prefix(index_prefix)
     current_indexnames = set()
-    res = db.session.execute(
-        "SELECT indexname FROM pg_indexes WHERE schemaname = '{schema}' AND tablename = 'node'".format(schema=_DB_SCHEMA_NAME))
+    res = _core.db.session.execute(
+        "SELECT indexname FROM pg_indexes WHERE schemaname = '{schema}' AND tablename = 'node'".format(
+            schema=_DB_SCHEMA_NAME,
+        ))
     for index in res.fetchall():
         indexname = index[0]
         if indexname.startswith(index_auto_prefix):
@@ -239,9 +241,9 @@ def _check_search_indexes_node(type, languages):
         map(_operator.methodcaller("create"), needed_indexes)
 
     for unneeded_index in current_indexnames - wanted_indexnames:
-        db.session.execute(
+        _core.db.session.execute(
             "DROP INDEX {}".format(unneeded_index))
-    db.session.commit()
+    _core.db.session.commit()
 
 
 def check_fulltext_attrs_search_indexes_node():

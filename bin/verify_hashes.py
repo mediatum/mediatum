@@ -23,15 +23,12 @@ from sqlalchemy import or_
 from core.init import basic_init
 basic_init()
 
-from core import db
+import core as _core
 from core.database.postgres.file import File
 from core.database.postgres.node import Node
 
-
 logg = logging.getLogger(__file__)
 identifier_importers = {}
-q = db.query
-s = db.session
 
 HASH_FILETYPES = File.ORIGINAL_FILETYPES
 
@@ -40,7 +37,7 @@ def verify_hash(_file):
     logg.info('File: %s', _file)
     logg.debug("%r", _file.to_dict())
     hash_ok = _file.verify_checksum()
-    s.commit()
+    _core.db.session.commit()
 
     file_found = os.path.isfile(_file.abspath)
     logg.info('file found: %s', file_found)
@@ -91,12 +88,12 @@ def verify_hashes(files, **kwargs):
             logg.info('Verification of checksums interrupted after %i files as requested.', kwargs['limit'])
             break
     logg.info('Verified checksums of %i files, %i bytes processed in %.2f hours', cnt, total_size, total_hours)
-    s.commit()
+    _core.db.session.commit()
 
 
 def stats():
     """ Return some statistics about checksum coverage. """
-    all_files = q(File).filter(File.filetype.in_(HASH_FILETYPES))
+    all_files = _core.db.query(File).filter(File.filetype.in_(HASH_FILETYPES))
     count_files = all_files.count()
     count_ok = all_files.filter(File.sha512_ok).count()
     pct_ok = count_ok / float(count_files) * 100.
@@ -175,7 +172,7 @@ def main():
         stats()
         return
 
-    files = q(File).filter(File.filetype.in_(HASH_FILETYPES)).order_by(File.id)
+    files = _core.db.query(File).filter(File.filetype.in_(HASH_FILETYPES)).order_by(File.id)
     # test queries:
     #   files = files.filter(File.path.like(u'%820042226488%'))
     #   files = q(File).filter(File.mimetype == 'image/jpeg').limit(10)
@@ -196,7 +193,7 @@ def main():
     if args.unknown:
         files = files.filter(File.sha512_ok == None)
     if args.node_id:
-        node = q(Node).get(args.node_id)
+        node = _core.db.query(Node).get(args.node_id)
         if node:
             files = node.files.filter(File.filetype.in_(HASH_FILETYPES))
         else:

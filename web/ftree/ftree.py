@@ -8,13 +8,11 @@ import httplib as _httplib
 import logging
 import mediatumtal.tal as _tal
 
-from core import db
+import core as _core
 from core.users import user_from_session as _user_from_session
 from contenttypes import Container, Content
 from .ftreedata import getData, getPathTo, getLabel
 
-
-q = db.query
 logg = logging.getLogger(__name__)
 
 
@@ -38,8 +36,8 @@ def ftree(req):
     if "changeCheck" in req.params:
         currentitems = req.values["currentitem"].split(",")
         for id in currentitems[-1:] if req.values["style"] == "classification" else currentitems:
-            node = q(Content).get(id)
-            parent = q(Container).get(req.params.get("changeCheck"))
+            node = _core.db.query(Content).get(id)
+            parent = _core.db.query(Container).get(req.params.get("changeCheck"))
             if not(node and parent and node.has_write_access() and parent.has_write_access()):
                 logg.warning("illegal ftree request: %s", req.params)
                 req.response.status_code = 403
@@ -50,11 +48,11 @@ def ftree(req):
                     parent.content_children.remove(node)
                     logg.info("ftree change ")
                     req.response.status_code = _httplib.OK
-                    db.session.commit()
+                    _core.db.session.commit()
                 else:
                     req.response.status_code = _httplib.OK
                     req.response.set_data(_tal.processTAL({}, string='<tal:block i18n:translate="edit_classes_noparent"/>', macro=None, request=req))
             else:
                 req.response.status_code = _httplib.OK
                 parent.content_children.append(node)
-                db.session.commit()
+                _core.db.session.commit()

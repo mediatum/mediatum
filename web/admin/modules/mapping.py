@@ -13,20 +13,17 @@ import sqlalchemy as _sqlalchemy
 
 import mediatumtal.tal as _tal
 
+import core as _core
 from schema.mapping import getMapping, getMappingTypes, updateMapping, deleteMapping, updateMappingField, deleteMappingField, exportMapping, importMapping
 import core.translation as _translation
 
 from core.database.postgres.node import Node
-from core import db
 import core.nodecache as _nodecache
 from schema.mapping import Mapping, MappingField
 import core.csrfform as _core_csrfform
 import core.database.postgres.node as _node
 import core.systemtypes as _core_systemtypes
 from web import admin as _web_admin
-
-q = db.query
-
 
 _MaskitemsDependency = _collections.namedtuple(
     "_MaskitemsDependency",
@@ -48,7 +45,7 @@ def _get_maskitems_dependencies():
     metadatatype, mask, maskitem, metafield = (
         _sqlalchemy.orm.aliased(_node.Node) for _ in xrange(4))
 
-    query = q(
+    query = _core.db.query(
         _core_systemtypes.Metadatatypes.id,
         maskitem.attrs['mappingfield'].astext,
         metadatatype.name,
@@ -81,12 +78,12 @@ def _get_masks_dependencies():
     metadatatype, mask = (
         _sqlalchemy.orm.aliased(_node.Node) for _ in xrange(2))
 
-    query = q(
+    query = _core.db.query(
         _core_systemtypes.Metadatatypes.id,
         mask.attrs['exportmapping'].astext,
         metadatatype.name,
         mask.name,
-    )
+        )
 
     joins = (
         _core_systemtypes.Metadatatypes,
@@ -112,7 +109,7 @@ def validate(req, op):
         if req.params.get("formtype", "") == "configuration" and "save_config" in req.params:
             mappingroot = _nodecache.get_mappings_node()
             mappingroot.set("mappingtypes", req.params.get("mappingtypes", "").replace("\r\n", ";").replace("\n", ";"))
-            db.session.commit()
+            _core.db.session.commit()
             return view(req)
 
         # import mapping from xml-file
@@ -164,11 +161,11 @@ def validate(req, op):
 
             if key.startswith("newfield_"):
                 # create new mapping field
-                return editMappingField_mask(req, u"", q(Node).get(key[9:-2]))
+                return editMappingField_mask(req, u"", _core.db.query(Node).get(key[9:-2]))
 
             elif key.startswith("editfield_"):
                 # create new mapping field
-                return editMappingField_mask(req, key[10:-2], q(Node).get(req.params.get("parent")))
+                return editMappingField_mask(req, key[10:-2], _core.db.query(Node).get(req.params.get("parent")))
 
             elif key.startswith("deletefield_"):
                 # delete mapping field
@@ -179,12 +176,21 @@ def validate(req, op):
             if req.params.get("form_op", "") == "cancel":
                 return viewlist(req, req.params.get("parent"))
             # save mapping field values
-            mapping = q(Node).get(req.values.get("parent"))
+            mapping = _core.db.query(Node).get(req.values.get("parent"))
             if ustr(req.params["name"]) == "":
                 # empty required field
-                return editMappingField_mask(req, req.params.get("id", ""), q(Node).get(req.params.get("parent")), 1)
+                return editMappingField_mask(
+                    req, req.params.get("id", ""),
+                    _core.db.query(Node).get(req.params.get("parent")),
+                    1,
+                    )
             elif req.values.get("name") in (mappingfield.name for mappingfield in mapping.getFields()):
-                return editMappingField_mask(req, req.params.get("id", ""), q(Node).get(req.params.get("parent")), 2)
+                return editMappingField_mask(
+                    req,
+                    req.params.get("id", ""),
+                    _core.db.query(Node).get(req.params.get("parent")),
+                    2,
+                    )
             else:
                 _mandatory = False
                 if "mandatory" in req.params.keys():
@@ -276,7 +282,7 @@ def editMapping_mask(req, id, err=0):
     if err == 0 and id == "":
         # new mapping
         mapping = Mapping(u"")
-        db.session.commit()
+        _core.db.session.commit()
     elif id != "":
         # edit mapping
         mapping = getMapping(id)
@@ -291,7 +297,7 @@ def editMapping_mask(req, id, err=0):
         mapping.setFooter(req.params.get("footer"))
         mapping.setSeparator(req.params.get("separator"))
         mapping.setStandardFormat(req.params.get("standardformat"))
-        db.session.commit()
+        _core.db.session.commit()
 
     v = _web_admin.adminutils.getAdminStdVars(req)
     v["error"] = err
@@ -370,10 +376,10 @@ def editMappingField_mask(req, id, parent, err=0):
     if err == 0 and id == "":
         # new mapping field
         field = MappingField(u"")
-        db.session.add(field)
+        _core.db.session.add(field)
     elif id != "":
         # edit mapping field
-        field = q(Node).get(id)
+        field = _core.db.query(Node).get(id)
     else:
         # error while filling values
         field = MappingField(u"")
@@ -382,7 +388,7 @@ def editMappingField_mask(req, id, parent, err=0):
         field.setExportFormat(req.params.get("exportformat", u""))
         if "mandatory" in req.params.keys():
             field.setMandatory("True")
-        db.session.add(field)
+        _core.db.session.add(field)
 
     v = _web_admin.adminutils.getAdminStdVars(req)
     v["error"] = err

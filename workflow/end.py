@@ -7,9 +7,9 @@ from __future__ import print_function
 import logging
 import mediatumtal.tal as _tal
 
+import core as _core
 from .workflow import WorkflowStep, registerStep
 from utils.date import now
-from core import db
 
 logg = logging.getLogger(__name__)
 
@@ -31,8 +31,7 @@ class WorkflowStep_End(WorkflowStep):
         if self.settings["endremove"]:
             # remove obj from workflownode
             self.children.remove(node)
-
-        db.session.commit()
+        _core.db.session.commit()
         if self.settings["endtext"] is not None:
             link = u"/pnode?id={}&key={}".format(node.id, node.get("key"))
             link2 = u"/node?id={}".format(node.id)
@@ -56,7 +55,7 @@ class WorkflowStep_End(WorkflowStep):
             try:
                 if node.get('updatetime') <= unicode(now()):  # do only if date in the past
                     node.set('updatetime', unicode(now()))
-                db.session.commit()
+                _core.db.session.commit()
             except:
                 logg.exception("exception in workflow step end, runAction failed")
 
@@ -75,4 +74,4 @@ class WorkflowStep_End(WorkflowStep):
         data["endtext"] = data["endtext"] or None
         assert frozenset(data) == frozenset(("endremove", "endsetupdatetime", "endtext"))
         self.settings = data
-        db.session.commit()
+        _core.db.session.commit()

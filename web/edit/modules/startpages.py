@@ -14,15 +14,14 @@ import operator as _operator
 import core.config as config
 import mediatumtal.tal as _tal
 
+import core as _core
 import core.csrfform as _core_csrfform
 from utils.utils import format_filesize, suppress
 from web.edit.edit_common import send_nodefile_tal, upload_for_html
 from core.users import user_from_session as _user_from_session
 from core.database.postgres.node import Node
-from core import db
 from core.database.postgres.file import File
 
-q = db.query
 logg = logging.getLogger(__name__)
 
 
@@ -62,7 +61,7 @@ def _get_named_filelist(node, id_from_req):
 
 
 def getContent(req, ids):
-    node = q(Node).get(ids[0])
+    node = _core.db.query(Node).get(ids[0])
     user = _user_from_session()
     if not node.has_write_access() or "editor" in user.hidden_edit_functions:
         req.response.status_code = _httplib.FORBIDDEN
@@ -96,7 +95,7 @@ def getContent(req, ids):
                 with codecs.open(config.get("paths.datadir") + filename, "w", encoding='utf8') as fil:
                     fil.write(req.values['data'])
                 node.files.append(File(filename, u"content", u"text/html"))
-                db.session.commit()
+                _core.db.session.commit()
                 logg.info("%s added startpage %s for node %s (%s, %s)", user.login_name, filename, node.id, node.name, node.type)
             else:
                 for f in [f for f in node.files if f.mimetype == "text/html"]:
@@ -147,7 +146,7 @@ def getContent(req, ids):
                         os.remove(f.abspath)
                         node.files.remove(f)
                     break
-            db.session.commit()
+            _core.db.session.commit()
             return ""
 
     for key in req.values:
@@ -155,7 +154,7 @@ def getContent(req, ids):
             continue
         page = req.values[key]
         try:
-            filenode = q(File).filter_by(path=page, mimetype=u"text/html").one()
+            filenode = _core.db.query(File).filter_by(path=page, mimetype=u"text/html").one()
             if filenode not in node.files:
                 logg.error(
                     "%s - startpages - error while delete File and file for %s that does not belong to node %d",
@@ -173,8 +172,8 @@ def getContent(req, ids):
                 del node.system_attrs["startpagedescr." + file_shortpath]
             node.system_attrs["startpage_selector"] = node.system_attrs["startpage_selector"].replace(file_shortpath, "")
             node.files.remove(filenode)
-            q(File).filter_by(id=filenode.id).delete()
-            db.session.commit()
+            _core.db.query(File).filter_by(id=filenode.id).delete()
+            _core.db.session.commit()
 
             logg.info("%s - startpages - deleted File and file for node %s (%s): %s, %s, %s, %s",
                     user.login_name, node.id, node.name, page, filenode.path, filenode.filetype, filenode.mimetype)
@@ -205,7 +204,7 @@ def getContent(req, ids):
         for language in config.languages:
             startpage_selector += "%s:%s;" % (language, req.values.get('radio_' + language))
         node.system_attrs['startpage_selector'] = startpage_selector[0:-1]
-        db.session.commit()
+        _core.db.session.commit()
 
     named_filelist = _get_named_filelist(node, id)
     lang2file = {lang: "" for lang in config.languages}

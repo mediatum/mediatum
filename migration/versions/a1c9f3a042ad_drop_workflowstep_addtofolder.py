@@ -32,8 +32,6 @@ down_revision = u'94661459481f'
 branch_labels = None
 depends_on = None
 
-_q = _core.db.query
-
 
 def upgrade():
     for node in _core.db.query(Node).filter(Node.type == 'workflowstep_addtofolder').prefetch_attrs():

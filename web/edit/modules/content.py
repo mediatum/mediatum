@@ -8,10 +8,10 @@ import json
 
 import mediatumtal.tal as _tal
 
+import core as _core
 import core.translation as _core_translation
 import web.common.pagination as _web_common_pagination
 import web.edit.edit_common as _web_edit_edit_common
-from core import db
 from contenttypes import Data, Home, Collections
 from core.systemtypes import Root
 from web.edit.edit_common import showoperations, searchbox_navlist_height
@@ -20,8 +20,6 @@ from schema.schema import get_permitted_schemas
 from web.edit.edit_common import get_searchparams
 import urllib
 import web.common.sort as _sort
-
-q = db.query
 
 
 def getDatatypes(req, schemes):
@@ -39,7 +37,7 @@ def getDatatypes(req, schemes):
 
 def getContent(req, ids):
 
-    node = q(Data).get(long(ids[0]))
+    node = _core.db.query(Data).get(long(ids[0]))
     show_dir_nav = _web_edit_edit_common.ShowDirNav(req, node)
 
     if "action" in req.params:
@@ -65,7 +63,7 @@ def getContent(req, ids):
                 node.set('nodes_per_page', nodes_per_page)
             req.response.set_data(json.dumps({'state': 'ok'}))
 
-            db.session.commit()
+            _core.db.session.commit()
         return None
 
     if node.isContainer():

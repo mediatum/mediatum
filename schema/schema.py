@@ -21,6 +21,7 @@ import sqlalchemy as _sqlalchemy
 import werkzeug.datastructures as _datastructures
 from werkzeug.utils import cached_property
 
+import core as _core
 import core.config as config
 import core.csrfform as _core_csrfform
 import core.translation as translation
@@ -28,7 +29,6 @@ from core.database.postgres.node import Node
 from core.xmlnode import getNodeXML, readNodeXML
 import core.metatype as _core_metatype
 from core.metatype import Metatype
-from core import db
 import core.nodecache as _nodecache
 from core.systemtypes import Metadatatypes
 from core.postgres import check_type_arg
@@ -39,10 +39,7 @@ import utils as _utils
 from mediatumtal import tal as _tal
 import core.database.postgres.node as _node
 
-
 log = logg = logging.getLogger(__name__)
-q = db.query
-
 
 _Option = _functools.partial(
     _collections.namedtuple(
@@ -50,7 +47,6 @@ _Option = _functools.partial(
         "name shortname value imgsource optiontype validation_regex",
     ), imgsource='', optiontype='', validation_regex='',
 )
-
 
 requiredoption = (
     _Option(
@@ -150,7 +146,7 @@ def _get_metafields_dependencies():
     metadatatype, mask, maskitem, metafield = (
         _sqlalchemy.orm.aliased(_node.Node) for _ in xrange(4))
 
-    query = q(
+    query = _core.db.query(
         metadatatype.name.label('schema_name'),
         mask.name.label('mask_name'),
         maskitem.name.label('maskitem_name'),
@@ -187,7 +183,7 @@ def getMetaType(name):
     warn("use q(Metadatatype) instead", DeprecationWarning)
     if name.isdigit():
         nid = int(name)
-        return q(Metadatatype).get(nid)
+        return _core.db.query(Metadatatype).get(nid)
 
     if name.find("/") > 0:
         name = name[name.rfind("/") + 1:]
@@ -229,7 +225,7 @@ def updateMetaType(name, description="", longname="", active=0, datatypes="", bi
     metadatatype.set("datatypes", datatypes)
     metadatatype.set("bibtexmapping", bibtexmapping)
     metadatatype.set("citeprocmapping", citeprocmapping)
-    db.session.commit()
+    _core.db.session.commit()
 
 
 def delete_mask(mask):
@@ -240,7 +236,7 @@ def delete_mask(mask):
     """
     for maskitem in mask.children:
         mask.deleteMaskitem(maskitem.id)
-    db.session.delete(mask)
+    _core.db.session.delete(mask)
 
 
 def _delete_metadatatype_children(metadatatype):
@@ -262,7 +258,7 @@ def _delete_metadatatype(metadatatype):
     :return:
     """
     _delete_metadatatype_children(metadatatype)
-    db.session.delete(metadatatype)
+    _core.db.session.delete(metadatatype)
 
 #
 # delete metatype by given name
@@ -276,9 +272,9 @@ def deleteMetaType(name):
     :param name:
     :return:
     """
-    for metadatatype in q(Metadatatype).filter_by(name=name).all():
+    for metadatatype in _core.db.query(Metadatatype).filter_by(name=name).all():
         _delete_metadatatype(metadatatype)
-    db.session.commit()
+    _core.db.session.commit()
 
 ###################################################
 #                detail section                   #
@@ -316,12 +312,12 @@ def existMetaField(pid, name):
 
 
 def exist_metafield_sanitizedname(pid, name):
-    metadatatype = q(Metadatatype).get(pid)
+    metadatatype = _core.db.query(Metadatatype).get(pid)
     return sanitize_metafield_name(name) in (sanitize_metafield_name(metafield.name) for metafield in metadatatype.metafields)
 
 
 def exist_maskitem_sanitizedname(pid, name):
-    mask = q(Mask).get(pid)
+    mask = _core.db.query(Mask).get(pid)
     return sanitize_metafield_name(name) in (sanitize_metafield_name(maskitem.metafield.name)
                                              for maskitem in mask.all_maskitems if maskitem.metafield)
 
@@ -345,7 +341,7 @@ def updateMetaField(
     # search the field by id, then by name,
     # or create a new one if both searches didn't yield a result
     if fieldid:
-        field = q(Node).get(fieldid)
+        field = _core.db.query(Node).get(fieldid)
         field.name = name
         fieldvalues = getMetadataType(field.get("type")).admin_settings_parse_form_data(fieldvalues)
     else:
@@ -355,7 +351,7 @@ def updateMetaField(
         field.set("type", fieldtype)
         metatype.children.append(field)
         field.orderpos = len(metatype.children) - 1
-        db.session.commit()
+        _core.db.session.commit()
         fieldvalues = getMetadataType(field.get("type")).default_settings
 
     field.metatype_data = fieldvalues
@@ -364,7 +360,7 @@ def updateMetaField(
     field.set("opts", "".join(option))
     field.set("description", description)
 
-    db.session.commit()
+    _core.db.session.commit()
 
 #
 # delete metadatafield
@@ -372,19 +368,19 @@ def updateMetaField(
 def deleteMetaField(pid, name):
     metadatatype = getMetaType(pid)
     field = getMetaField(pid, name)
-    db.session.delete(field)
+    _core.db.session.delete(field)
 
     i = 0
     for field in metadatatype.children.filter(Node.type == 'metafield').order_by(Node.orderpos):
         field.orderpos = i
         i += 1
-    db.session.commit()
+    _core.db.session.commit()
 
 def generateMask(metatype, masktype="", force=0):
     if force:
         with suppress(Exception, warn=False): # if we can't remove the existing mask, it wasn't there, which is ok
             metatype.children.remove(metatype.children.filter_by(name=masktype).one())
-            db.session.commit()
+            _core.db.session.commit()
 
     mask = metatype.children.filter_by(name=masktype).scalar()
     if mask is not None:
@@ -398,7 +394,7 @@ def generateMask(metatype, masktype="", force=0):
         field.set("width", "400")
         field.set("type", "field")
         field.children.append(c)
-    db.session.commit()
+    _core.db.session.commit()
 
 def cloneMask(mask, newmaskname):
     def recurse(m1, m2):
@@ -424,7 +420,7 @@ def cloneMask(mask, newmaskname):
     newmask = Mask(newmaskname)
     p[0].children.append(newmask)
     recurse(mask, newmask)
-    db.session.commit()
+    _core.db.session.commit()
 
 def checkMask(mask, fix=0, verbose=1, show_unused=0):
     if mask.type != "mask":
@@ -560,7 +556,7 @@ def importMetaSchema(filename):
         m.name = u"{}_import_{}".format(m.name, _utils.utils.gen_secure_token(128))
         if not metadatatypes.children.filter_by(name=m.name).all():
             metadatatypes.children.append(m)
-    db.session.commit()
+    _core.db.session.commit()
 
 
 @check_type_arg
@@ -775,7 +771,7 @@ class Mask(Node):
     def all_maskitems(self):
         """Recursively get all maskitems, they can be nested
         """
-        return self.all_children_by_query(q(Maskitem))
+        return self.all_children_by_query(_core.db.query(Maskitem))
 
     def set_default_metadata(self, node):
         """
@@ -900,7 +896,7 @@ class Mask(Node):
         mandfields = []
         if self.getMasktype() == "export" and self.get("exportmapping"):
             for mapping in self.get("exportmapping").split(";"):
-                for c in q(Node).get(mapping).getMandatoryFields():
+                for c in _core.db.query(Node).get(mapping).getMandatoryFields():
                     mandfields.append(c.id)
         for item in self.all_maskitems:
             with suppress(ValueError, warn=False):   # id not in list
@@ -975,7 +971,7 @@ class Mask(Node):
         exportmapping_id = self.get("exportmapping")
         if not exportmapping_id:
             return
-        c = q(Mapping).get(exportmapping_id)
+        c = _core.db.query(Mapping).get(exportmapping_id)
         if c is not None:
             return c.getHeader()
         logg.warn("exportmapping %s for mask %s not found", exportmapping_id, self.id)
@@ -992,7 +988,7 @@ class Mask(Node):
         exportmapping_id = self.get("exportmapping")
         if not exportmapping_id:
             return
-        c = q(Mapping).get(exportmapping_id)
+        c = _core.db.query(Mapping).get(exportmapping_id)
         if c is not None:
             return c.getFooter()
         logg.warn("exportmapping %s for mask %s not found", exportmapping_id, self.id)
@@ -1010,7 +1006,7 @@ class Mask(Node):
             for elem in z:
                 elem.orderpos = elem.orderpos + k
                 k += 1
-            db.session.commit()
+            _core.db.session.commit()
 
         html_form = u"".join(
             getMetadataType(item.get("type")).getMetaHTML(self, idx, language=language)
@@ -1039,7 +1035,7 @@ class Mask(Node):
         for key in req.params.keys():
             # edit field
             if key.startswith("edit_"):
-                item = q(Node).get(req.params.get("edit", ""))
+                item = _core.db.query(Node).get(req.params.get("edit", ""))
                 t = getMetadataType(item.get("type"))
                 ret = '<form method="post">'
                 ret += '<input value="{}" type="hidden" name="csrf_token"/>'.format(_core_csrfform.get_token())
@@ -1049,7 +1045,7 @@ class Mask(Node):
                 self.getMasktype() == "export" and req.params.get("op", "") in ["newdetail", "new"]):
             # add field
             item = Maskitem(u'')
-            db.session.add(item)
+            _core.db.session.add(item)
             if self.getMasktype() == "export":  # export mask has no selection of fieldtype -> only field
                 t = getMetadataType("field")
                 req.params["op"] = "new"
@@ -1091,7 +1087,7 @@ class Mask(Node):
 
         if req.params.get("edit", " ") == " " and req.params.get("op", "") != "new":
             # create new node
-            item = q(Node).get(req.params.get("id"))
+            item = _core.db.query(Node).get(req.params.get("id"))
             t = getMetadataType(req.params.get("type"))
             ret = '<form method="post">'
             ret += '<input value="{}" type="hidden" name="csrf_token"/>'.format(_core_csrfform.get_token())
@@ -1175,7 +1171,7 @@ class Mask(Node):
         if fieldid != 0:
             for id in ustr(fieldid).split(";"):
                 try:
-                    field = q(Node).get(long(id))
+                    field = _core.db.query(Node).get(long(id))
                     # don't remove field- it may
                     # (a) be used for some other mask item or
                     # (b) still be in the global metadatafield list
@@ -1187,9 +1183,9 @@ class Mask(Node):
         if ustr(pid) == "0":
             self.children.append(item)
         else:
-            node = q(Node).get(pid)
+            node = _core.db.query(Node).get(pid)
             node.children.append(item)
-        db.session.commit()
+        _core.db.session.commit()
         return item
 
     ''' delete given  maskitem '''
@@ -1201,9 +1197,9 @@ class Mask(Node):
                 return
             for child in item.children:
                 delete_maskitems_recursive(child)
-            db.session.delete(item)
+            _core.db.session.delete(item)
 
-        item = q(Node).get(itemid)
+        item = _core.db.query(Node).get(itemid)
 
         assert item.type == 'maskitem'
 
@@ -1400,7 +1396,7 @@ class SchemaMixin(object):
     @cached_property
     def metadatatype(self):
         try:
-            return q(Metadatatype).filter_by(name=self.schema).one()
+            return _core.db.query(Metadatatype).filter_by(name=self.schema).one()
         except NoResultFound:
             raise Exception("metadatatype '{}' is missing, needed for node {}".format(self.schema, self))
 

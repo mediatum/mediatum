@@ -8,16 +8,15 @@ from __future__ import print_function
 
 import logging
 from sqlalchemy import func as sqlfunc
-from core import db
+
+import core as _core
 from core.database.postgres.file import File
 from contenttypes import Data
 
-q = db.query
 logg = logging.getLogger(__name__)
 
 
 def import_node_fulltext(node, overwrite=False):
-    s = db.session
 
     if not overwrite and node.fulltext:
         logg.info("node %s already has a fulltext, not overwriting it", node.id)
@@ -42,14 +41,14 @@ def import_node_fulltext(node, overwrite=False):
 
     if fulltexts:
         node.fulltext = u"\n---\n".join(fulltexts)
-        s.commit()
+        _core.db.session.commit()
         return True
 
     return False
 
 
 def import_fulltexts(overwrite=False, mod_n=None, mod_i=None):
-    nodes = q(Data).filter(Data.files.any(File.filetype == "fulltext")).order_by(Data.id)
+    nodes = _core.db.query(Data).filter(Data.files.any(File.filetype == "fulltext")).order_by(Data.id)
     
     if mod_n:
         if mod_i is None:

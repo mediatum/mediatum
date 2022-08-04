@@ -7,25 +7,23 @@ from __future__ import print_function
 import httplib as _httplib
 import logging
 
+import core as _core
 from schema.schema import getMetadataType
-
 from core import webconfig
-from core import db
 from core.database.postgres.node import Node
 import core.translation as _core_translation
 from web import frontend as _web_frontend
 
 logg = logging.getLogger(__name__)
-q = db.query
 
 #
 # help window for metadata field
 #
 def show_help(req):
     if req.values.get("maskid", "") != "":
-        field = q(Node).get(req.values["maskid"])
+        field = _core.db.query(Node).get(req.values["maskid"])
     else:
-        field = q(Node).get(req.values["id"])
+        field = _core.db.query(Node).get(req.values["id"])
     if field.has_read_access():
         html = webconfig.theme.render_macro(
                 "popups.j2.jade",
@@ -48,7 +46,7 @@ def show_help(req):
 
 
 def show_attachmentbrowser(req):
-    node = q(Node).get(req.values["id"])
+    node = _core.db.query(Node).get(req.values["id"])
     version_id = req.args.get("v")
     if version_id:
         node = node.get_tagged_version(unicode(version_id))
@@ -62,6 +60,7 @@ def show_attachmentbrowser(req):
 
     from core.attachment import getAttachmentBrowser
     getAttachmentBrowser(node, req)
+
 # use popup method of  metadatatype
 def popup_metatype(req):
     mtype = getMetadataType(req.mediatum_contextfree_path.split("/")[-1])

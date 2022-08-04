@@ -14,7 +14,7 @@ import urlparse as _urlparse
 
 import flask as _flask
 
-from core import db
+import core as _core
 from core.database.postgres.node import Node
 from contenttypes import Content
 from utils.utils import getMimeType, get_filesize
@@ -26,8 +26,6 @@ FILEHANDLER_RE = re.compile("/?(attachment|doc|images|thumbnail|file|download|ar
 IMAGE_HANDLER_RE = re.compile("^/?image/(\d+)(?:\.(.{1,5}))?$")
 
 logg = logging.getLogger(__name__)
-
-q = db.query
 
 
 def split_image_path(path):
@@ -73,7 +71,7 @@ def get_node_or_version(nid, version_id=None, nodeclass=Node):
     if nid is None:
         return None
 
-    node = q(nodeclass).get(nid)
+    node = _core.db.query(nodeclass).get(nid)
 
     version = None
 

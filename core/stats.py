@@ -17,7 +17,7 @@ import shutil
 import calendar
 import pygeoip as _pygeoip
 
-from core import db
+import core as _core
 from core.database.postgres.node import Node
 import core.config as config
 from utils.date import parse_date, format_date, now, make_date
@@ -25,7 +25,6 @@ from utils.utils import splitpath
 from utils.fileutils import importFile
 
 _logg = logging.getLogger(__name__)
-q = db.query
 
 EDIT = 1
 DOWNLOAD = 2
@@ -209,7 +208,7 @@ class StatisticFile:
         return self.period_year
 
     def getName(self, id):
-        node = q(Node).get(id)
+        node = _core.db.query(Node).get(id)
 
         if node is None:
             return id
@@ -478,8 +477,7 @@ def buildStatAll(period, fname):  # period format = yyyy-mm
 
     # read all collections and its children with a single psql command which is much more faster
     # than the use of collection.all_children
-    import core
-    out = core.db.run_psql_command("select nid, id from node, noderelation where cid=id and" +
+    out = _core.db.run_psql_command("select nid, id from node, noderelation where cid=id and" +
                                    " nid in (select id from node where type in ('collection', 'collections'))" +
                                    " order by nid",
                                    output=True, database=config.get("database.db"))
@@ -488,7 +486,7 @@ def buildStatAll(period, fname):  # period format = yyyy-mm
         collection, nid = map(int, line.split('|'))
         if last_collection != collection:
             if last_collection and in_logitem_set:
-                collection_ids[last_collection] = CollectionId(ids_set, db.query(Node).get(last_collection))
+                collection_ids[last_collection] = CollectionId(ids_set, _core.db.query(Node).get(last_collection))
             in_logitem_set = False
             ids_set = Set()
             # add also collection itself
@@ -499,7 +497,7 @@ def buildStatAll(period, fname):  # period format = yyyy-mm
         last_collection = collection
 
     if last_collection and in_logitem_set:
-        collection_ids[last_collection] = CollectionId(ids_set, db.query(Node).get(last_collection))
+        collection_ids[last_collection] = CollectionId(ids_set, _core.db.query(Node).get(last_collection))
 
     time1 = time.time()
     logg.debug("time to collect all %s collections: %s", len(collection_ids), time1 - time0)
@@ -673,7 +671,7 @@ def buildStatAll_(collection_ids, collection_ids_keys, data, period):  # period 
                 if statfile:
                     statfile.filetype = u"statistic"
                     col_id.collection.files.append(statfile)
-                    db.session.commit()
+                    _core.db.session.commit()
 
             try:
                 os.remove(file)

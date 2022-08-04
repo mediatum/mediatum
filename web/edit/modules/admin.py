@@ -8,22 +8,21 @@ import httplib as _httplib
 import logging
 import mediatumtal.tal as _tal
 
+import core as _core
 import core.csrfform as _core_csrfform
 from utils.utils import formatTechAttrs, suppress
 from utils.date import format_date, parse_date
-from core import db
 from core.database.postgres.node import Node
 from core.users import user_from_session
 from collections import OrderedDict
 from utils.compat import iteritems
 
-q = db.query
 logg = logging.getLogger(__name__)
 
 
 def getContent(req, ids):
     user = user_from_session()
-    node = q(Node).get(ids[0])
+    node = _core.db.query(Node).get(ids[0])
     if not node.has_write_access() or "admin" in user.hidden_edit_functions:
         req.response.status_code = _httplib.FORBIDDEN
         return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
@@ -46,7 +45,7 @@ def getContent(req, ids):
                 return _httplib.FORBIDDEN
 
         node.set(attrname, attrvalue)
-        db.session.commit()
+        _core.db.session.commit()
         logg.info("new attribute %s for node %s added", req.params.get("new_name", ""), node.id)
 
     for key in req.params.keys():
@@ -64,7 +63,7 @@ def getContent(req, ids):
                 return _httplib.FORBIDDEN
 
             del node.attrs[key[5:-2]]
-            db.session.commit()
+            _core.db.session.commit()
             logg.info("attribute %s of node %s removed", key[5:-2], node.id)
             break
 
@@ -75,7 +74,7 @@ def getContent(req, ids):
 
             attrname = key[12:-2]
             del node.system_attrs[attrname]
-            db.session.commit()
+            _core.db.session.commit()
             logg.info("system attribute %s of node %s removed", attrname, node.id)
             break
 

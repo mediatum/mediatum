@@ -8,18 +8,16 @@ import httplib as _httplib
 
 import mediatumtal.tal as _tal
 
+import core as _core
 from core.users import user_from_session as _user_from_session
 from core.database.postgres.node import Node
-from core import db
 import core.translation as _core_translation
 import web.common.sort as _sort
-
-q = db.query
 
 
 def getContent(req, ids):
     user = _user_from_session()
-    node = q(Node).get(ids[0])
+    node = _core.db.query(Node).get(ids[0])
 
     if "sortfiles" in user.hidden_edit_functions or not node.has_write_access():
         req.response.status_code = _httplib.FORBIDDEN
@@ -28,7 +26,7 @@ def getContent(req, ids):
     if "globalsort" in req.params:
         node.set("sortfield", req.params["globalsort"])
     collection_sortfield = node.get("sortfield")
-    db.session.commit()
+    _core.db.session.commit()
 
     sortchoices = _sort.get_sort_choices(
         container=node,

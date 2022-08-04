@@ -9,15 +9,14 @@ import logging
 
 import mediatumtal.tal as _tal
 
+import core as _core
 import core.translation as _core_translation
 import core.csrfform as _core_csrfform
 from schema.schema import get_permitted_schemas
 from core.users import user_from_session as _user_from_session
 from core.database.postgres.node import Node
 from contenttypes import Content, Container
-from core import db
 
-q = db.query
 logg = logging.getLogger(__name__)
 
 
@@ -32,7 +31,7 @@ def _redirect_to_view(req):
 
 def getContent(req, ids):
     user = _user_from_session()
-    node = q(Node).get(ids[0])
+    node = _core.db.query(Node).get(ids[0])
     if not node.has_write_access() or "changeschema" in user.hidden_edit_functions:
         req.response.status_code = _httplib.FORBIDDEN
         return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
@@ -94,7 +93,7 @@ def getContent(req, ids):
             node.type = new_type
             node.schema = new_schema
 
-            db.session.commit()
+            _core.db.session.commit()
 
             return _redirect_to_view(req)
 

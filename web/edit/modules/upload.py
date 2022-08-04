@@ -20,11 +20,11 @@ import logging
 import json
 import mediatumtal.tal as _tal
 
+import core as _core
 import core.csrfform as _core_csrfform
 import core.translation as _core_translation
 import utils.fileutils as _utils_fileutils
 import utils.utils as _utils_utils
-
 import web.common.pagination as _web_common_pagination
 import web.edit.edit_common as _web_edit_edit_common
 from web.edit.edit import getTreeLabel
@@ -32,7 +32,6 @@ from web.edit.edit_common import showoperations, searchbox_navlist_height
 from utils.url import build_url_from_path_and_params
 from schema.bibtex import getentries, importBibTeX, MissingMapping
 
-from core import db
 import contenttypes as _contenttypes
 from contenttypes import Data
 from core.database.postgres.node import Node
@@ -43,7 +42,6 @@ import urllib
 
 logg = logging.getLogger(__name__)
 identifier_importers = {}
-q = db.query
 
 
 def getInformation():
@@ -74,7 +72,7 @@ def getContent(req, ids):
     id = req.values["id"]
     if "action" in req.values:
         state = 'ok'
-        basenode = q(Node).get(id)
+        basenode = _core.db.query(Node).get(id)
         if req.values['action'] == "removefiles":
             for f in basenode.files:
                 try:
@@ -83,7 +81,7 @@ def getContent(req, ids):
                 except:
                     state = "error"
             basenode.files = []
-            db.session.commit()
+            _core.db.session.commit()
             req.response.mimetype = "application/json"
             req.response.set_data(json.dumps({'state': state}, ensure_ascii=False))
             return None
@@ -121,7 +119,7 @@ def getContent(req, ids):
                                 msgerr,
                                 unicode(hash(f.getName())),
                             ))
-                        db.session.commit()
+                        _core.db.session.commit()
                         continue
 
                     logg.debug("creating new node: filename: %s", filename)
@@ -150,7 +148,7 @@ def getContent(req, ids):
                             msgerr,
                             unicode(hash(f.getName())),
                         ))
-                        db.session.rollback()
+                        _core.db.session.rollback()
                         continue
                     newnodes.append(node.id)
                     basenodefiles_processed.append(f)
@@ -177,7 +175,7 @@ def getContent(req, ids):
                     scheme_type[mime[1]].append(scheme)
                     # break
 
-            db.session.commit()
+            _core.db.session.commit()
             # standard file
             req.response.mimetype = "application/json"
             req.response.set_data(json.dumps(
@@ -271,7 +269,7 @@ def getContent(req, ids):
             basenode.children.append(node)
             node.set("creator", user.login_name)
             node.set("creationtime",  ustr(time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
-            db.session.commit()
+            _core.db.session.commit()
             req.response.mimetype = "application/json"
             req.response.set_data(json.dumps(dict(newid=node.id, id=req.values.get('id')), ensure_ascii=False))
             return None
@@ -303,7 +301,7 @@ def getContent(req, ids):
                     new_node.set("system.identifier_imported_from", identifier)
 
                     res['newid'] = new_node.id
-                    db.session.commit()
+                    _core.db.session.commit()
 
                     logg.info("%s created new node id=%s (name=%s, type=%s) by importing identifier %s, "
                               "node is child of base node id=%s (name=%s, type=%s)", user.login_name, new_node.id, new_node.name, new_node.type,
@@ -324,9 +322,9 @@ def getContent(req, ids):
             proceed_to_uploadcomplete = True
             # XXX: check this: import to realnamne or random name ?
             incoming_file = _utils_fileutils.importFile(uploadfile.filename, uploadfile)
-            node = q(Node).get(id)
+            node = _core.db.query(Node).get(id)
             node.files.append(incoming_file)
-            db.session.commit()
+            _core.db.session.commit()
             req.response.set_data("")
             logg.debug("%s: added file to node %s (%s, %s)", _utils_utils.get_user_id(), node.id, node.name, node.type)
 
@@ -425,7 +423,7 @@ def getContent(req, ids):
             return None
     schemes = get_permitted_schemas()
 
-    node = q(Node).get(ids[0])
+    node = _core.db.query(Node).get(ids[0])
     v = {}
     if node.isContainer():
         schemes = []
@@ -453,7 +451,7 @@ def getContent(req, ids):
         v['language'] = language
         v['translate'] = _core_translation.translate
 
-    search_html = render_edit_search_box(q(Node).get(ids[0]), language, req, edit=True)
+    search_html = render_edit_search_box(_core.db.query(Node).get(ids[0]), language, req, edit=True)
     searchmode = req.values.get("searchmode")
     item_count = []
     show_dir_nav = _web_edit_edit_common.ShowDirNav(req, node)
@@ -528,7 +526,7 @@ def upload_ziphandler(filename, id):
     schemes = get_permitted_schemas()
     files = []
     scheme_type = {}
-    basenode = q(Node).get(id)
+    basenode = _core.db.query(Node).get(id)
     for file in basenode.files:
         if file.abspath.endswith(filename):
             z = zipfile.ZipFile(file.abspath)
@@ -556,13 +554,13 @@ def upload_ziphandler(filename, id):
                 z.close()
                 os.remove(file.abspath)
             basenode.files.remove(file)
-            db.session.commit()
+            _core.db.session.commit()
     return dict(files=files, schemes=scheme_type)
 
 
 def upload_bibhandler(filename, id):
     error = ""
-    n = q(Node).get(id)
+    n = _core.db.query(Node).get(id)
     for f in n.files:
         if f.abspath.endswith(filename):
             try:
@@ -596,7 +594,7 @@ def adduseropts(user):
     field.set("label", "text_schema")
     field.set("type", "text")
     ret.append(field)
-    db.session.commit()
+    _core.db.session.commit()
     return ret
 
 

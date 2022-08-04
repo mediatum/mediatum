@@ -27,14 +27,11 @@ from bibtexparser import load as bibtex_load
 from bibtexparser.bparser import BibTexParser
 import bibtexparser.customization
 
-from core import db
+import core as _core
 from core.database.postgres.node import Node
 from .schema import Metadatatype
 from contenttypes.document import Document
 from utils.date import parse_date
-
-q = db.query
-
 
 logg = logging.getLogger(__name__)
 
@@ -276,12 +273,12 @@ def importBibTeX(entries, node, creator=None):
             metatype = bibtextypes[mytype]
 
             # check for mask configuration
-            metadatatype = q(Metadatatype).filter_by(name=metatype).one()
+            metadatatype = _core.db.query(Metadatatype).filter_by(name=metatype).one()
             mask = metadatatype.get_mask(u"bibtex_import") or metadatatype.get_mask(u"bibtex")
             for maskitem in (mask.all_maskitems if mask else ()):
                 try:
-                    bib_name = q(Node).get(maskitem.get(u"mappingfield")).name
-                    mfield = q(Node).get(maskitem.get(u"attribute"))
+                    bib_name = _core.db.query(Node).get(maskitem.get(u"mappingfield")).name
+                    mfield = _core.db.query(Node).get(maskitem.get(u"attribute"))
                     metafield_name = mfield.name
                     if mfield.get(u"type") == u"date":
                         datefields[metafield_name] = mfield.metatype_data["format"]

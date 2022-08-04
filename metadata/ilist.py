@@ -15,22 +15,21 @@ import html as _html
 
 from mediatumtal import tal
 
+import core as _core
 import utils.utils as _utils
 from utils.utils import esc, suppress
 import core.metatype as _core_metatype
 from core.metatype import Metatype
-from core import db
 from core.database.postgres.node import Node
 import metadata.common_list as _common_list
 import schema.schema as _schema
 from web import frontend as _web_frontend
 
-q = db.query
 logg = logging.getLogger(__name__)
 
 
 def _get_list_values_for_nodes_with_schema(schema, attribute_name):
-    res = q(Node.attrs[attribute_name]).filter_read_access()
+    res = _core.db.query(Node.attrs[attribute_name]).filter_read_access()
     # here we have filtered out node without access rights
     res = res.filter(Node.schema == schema)
     # here we have picked all nodes with the correct schema

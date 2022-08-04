@@ -32,8 +32,6 @@ down_revision = u'a1c9f3a042ad'
 branch_labels = None
 depends_on = None
 
-_q = _core.db.query
-
 
 def upgrade():
     for node in _core.db.query(Node).filter(Node.type == 'workflowstep_sendemail').prefetch_attrs():

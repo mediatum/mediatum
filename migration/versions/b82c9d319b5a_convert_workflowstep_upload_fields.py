@@ -32,7 +32,6 @@ down_revision = u'975b96703a01'
 branch_labels = None
 depends_on = None
 
-_q = _core.db.query
 
 def upgrade():
     for wfstep in ('addformpage', 'metafield2metadata', 'hierarchicalchoice2metafield', 'updateattributesfixed'):

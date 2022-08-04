@@ -39,7 +39,7 @@ import utils.utils as _utils
 from core.database.postgres.file import File
 from core.database.postgres.node import Node
 
-_q = _core.db.query
+
 _logg = _logging.getLogger(__name__)
 
 def upgrade():
@@ -52,13 +52,13 @@ def upgrade():
         _os.mkdir(backup_dir_join())
 
     metafields = dict()
-    for metadataschema in _q(_schema.Metadatatype):
+    for metadataschema in _core.db.query(_schema.Metadatatype):
         for metadatafield in metadataschema.children.filter(
                 _sqlalchemy.and_(Node.type=='metafield',
                 Node.attrs["type"].astext=="upload"),
             ).prefetch_attrs():
             nodes = _collections.defaultdict(dict)
-            for node in _q(_contenttypes.data.Content).filter(Node.schema==metadataschema.name):
+            for node in _core.db.query(_contenttypes.data.Content).filter(Node.schema==metadataschema.name):
                 filenames = list()
                 for f in node.files:
                     if f.filetype != "metafield-upload.{}".format(metadatafield.name):
@@ -89,7 +89,7 @@ def downgrade():
         metafields = _json.load(f)
 
     for id_, data in metafields.iteritems():
-        metafield = _q(_schema.Metafield).get(int(id_))
+        metafield = _core.db.query(_schema.Metafield).get(int(id_))
         if not metafield:
             _logg.warning("metafield with id = %s not found", id_)
             continue
@@ -102,7 +102,7 @@ def downgrade():
             continue
         metafield.attrs['type'] = 'upload'
         for nid, files in data["nodes"].iteritems():
-            node = _q(Node).get(int(nid))
+            node = _core.db.query(Node).get(int(nid))
             if not node:
                 _logg.warning("node with id = %s not found", nid)
                 continue
@@ -111,7 +111,7 @@ def downgrade():
                 continue
             file_count = 0
             for fid, mimetype in files.iteritems():
-                file = _q(File).get(int(fid))
+                file = _core.db.query(File).get(int(fid))
                 if not file:
                     _logg.warning("file with id %s not found", fid)
                     continue

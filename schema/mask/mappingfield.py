@@ -7,16 +7,16 @@ from __future__ import print_function
 import logging
 import re
 
+import core as _core
 from core.metatype import Metatype
 from utils.utils import esc, modify_tex
 from utils.date import parse_date, format_date
 from schema.schema import getMetadataType
 import export.exportutils as exportutils
 from core.database.postgres.node import Node
-from core import db
 
 logg = logging.getLogger(__name__)
-q = db.query
+
 
 class MappingReplacement():
 
@@ -67,7 +67,7 @@ class m_mappingfield(Metatype):
 
         ns = ""
         if field.get("fieldtype") == "mapping":
-            field = q(Node).get(field.get("mappingfield"))
+            field = _core.db.query(Node).get(field.get("mappingfield"))
             ns = field.getMapping().getNamespace()
             if ns != "":
                 ns += ":"
@@ -147,7 +147,7 @@ class m_mappingfield(Metatype):
 
             elif var.startswith("value|nodename"):
                 try:
-                    s2 = q(Node).get(node.get(attrnode.getName())).getName()
+                    s2 = _core.db.query(Node).get(node.get(attrnode.getName())).getName()
                 except:
                     s2 = node.getName()
                 s = s.replace("[" + var + "]", s2)
@@ -162,7 +162,7 @@ class m_mappingfield(Metatype):
             elif var == "ns":
                 ns = ""
                 for mapping in attrnode.get("exportmapping").split(";"):
-                    n = q(Node).get(mapping)
+                    n = _core.db.query(Node).get(mapping)
                     if n.getNamespace() != "" and n.getNamespaceUrl() != "":
                         ns += 'xmlns:' + n.getNamespace() + '="' + n.getNamespaceUrl() + '" '
                 s = s.replace("[" + var + "]", ns)
@@ -196,13 +196,13 @@ class m_mappingfield(Metatype):
                 logg.warning("ignoring field # %s with invalid attribute id: '%r'", field.id, attribute_nid)
                 continue
 
-            attrnode = q(Node).get(attribute_nid)
+            attrnode = _core.db.query(Node).get(attribute_nid)
             if attrnode is None:
                 continue
 
             if field.get("fieldtype") == "mapping":  # mapping to mapping definition
                 exportmapping_id = mask.get("exportmapping").split(";")[0]
-                mapping = q(Node).get(exportmapping_id)
+                mapping = _core.db.query(Node).get(exportmapping_id)
                 if mapping is None:
                     logg.warning("exportmapping %s for mask %s not found", exportmapping_id, mask.id)
                     return u""
@@ -211,7 +211,7 @@ class m_mappingfield(Metatype):
                 ns = mapping.getNamespace()
                 if ns != "":
                     ns += ":"
-                fld = q(Node).get(field.get("mappingfield"))
+                fld = _core.db.query(Node).get(field.get("mappingfield"))
                 fmt = fld.getExportFormat()
                 field_value = ns + fld.getName()
                 default = fld.getDefault().strip()

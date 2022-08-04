@@ -19,17 +19,15 @@ import lxml.etree as _lxml_etree
 import sqlalchemy.orm as _sqlalchemy_orm
 import backports.functools_lru_cache as _backports_functools_lru_cache
 
+import core as _core
 import core.config as config
 import utils.utils as _utils_utils
 from . import oaisets
 import utils.date as date
 from schema.schema import getMetaType
 from core.database.postgres.node import Node
-from core import db
 import core.nodecache as _nodecache
 from core.users import get_guest_user
-
-q = db.query
 
 logg = logging.getLogger(__name__)
 
@@ -104,7 +102,7 @@ def _parse_date(string):
 
 def _yield_export_mask_metatype_names(metadataformat):
     re_mdf = re.compile("oai_{}$".format(metadataformat.lower())).match
-    for exportmask in q(Node).filter(Node.a.masktype == 'export').all():
+    for exportmask in _core.db.query(Node).filter(Node.a.masktype == 'export').all():
         if re_mdf(exportmask.name) and exportmask.type == "mask":
             for parent in exportmask.parents:
                 if parent.type == 'metadatatype':
@@ -117,7 +115,7 @@ def _identifier_to_node(identifier, idprefix):
         raise _OAIError("badArgument")
     if not identifier.startswith(idprefix):
         raise _OAIError("idDoesNotExist")
-    node = q(Node).get(int(identifier[len(idprefix):]))
+    node = _core.db.query(Node).get(int(identifier[len(idprefix):]))
     if not node:
         raise _OAIError("noRecordsMatch")
     if not node.has_read_access(user=get_guest_user()):
@@ -366,7 +364,7 @@ def _get_nodes(set_param=None, metadataPrefix=None, date_from=None, until=None, 
 
     chunksize = config.getint("oai.chunksize", 10)
     pos = token["pos"] + chunksize
-    nodes = q(Node).filter(Node.id.in_(nids[token["pos"]: pos])).all()
+    nodes = _core.db.query(Node).filter(Node.id.in_(nids[token["pos"]: pos])).all()
     metadataformat = token["metadataPrefix"]
 
     if pos < len(nids):

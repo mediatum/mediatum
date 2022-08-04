@@ -11,10 +11,7 @@ import core.csrfform as _core_csrfform
 import core.translation as _core_translation
 import schema.schema as _schema
 from schema.schema import getMetaType
-from core import db
 from web import admin as _web_admin
-
-q = db.query
 
 """ mask overview """
 

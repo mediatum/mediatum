@@ -12,11 +12,11 @@ import sqlalchemy as _sqlalchemy
 import sqlalchemy.orm as _orm
 from markupsafe import Markup
 
+import core as _core
 import core.database.postgres as _database_postgres
 import core.database.postgres.node as _node
 import core.config as config
 import core.translation as _core_translation
-from core import db
 from core.database.postgres.node import Node
 from core import webconfig
 from core.users import user_from_session as _user_from_session
@@ -34,7 +34,6 @@ from core.nodecache import get_collections_node
 from web import frontend as _web_frontend
 
 
-q = db.query
 logg = logging.getLogger(__name__)
 
 
@@ -52,7 +51,7 @@ def getSearchMask(collection):
                 break
             n = n.parents[0]
     if n.get("searchtype") == "own":
-        mask = q(SearchMask).filter_by(name=n.get("searchmaskname")).scalar()
+        mask = _core.db.query(SearchMask).filter_by(name=n.get("searchmaskname")).scalar()
     return mask
 
 
@@ -249,29 +248,28 @@ def _make_navtree_entries(language, container):
     # (which will form a column in the main query later)
     # that will detect if a container has any container children
     container_alias = _orm.aliased(Container)
-    container_children_exist_column = (q(container_alias.id)
-            .join(_node.t_nodemapping, _node.t_nodemapping.c.cid == container_alias.id)
-            .filter(_node.t_nodemapping.c.nid == Container.id)
-            .exists()
-           )
+    container_children_exist_column = (
+        _core.db.query(container_alias.id).join(
+            _node.t_nodemapping,
+            _node.t_nodemapping.c.cid == container_alias.id,
+            ).filter(_node.t_nodemapping.c.nid == Container.id).exists())
 
     # this subquery lists all "opened" containers, i.e.,
     # the ids of all parent container nodes of our `container`,
     # including the `container` itself
-    opened_containers_subquery = (q(_node.t_noderelation.c.nid)
-            .filter(_node.t_noderelation.c.cid == container.id)
-            .union(_sqlalchemy.select([_sqlalchemy.sql.expression.literal(container.id)])
-           ).subquery())
+    opened_containers_subquery = (
+        _core.db.query(_node.t_noderelation.c.nid).filter(
+            _node.t_noderelation.c.cid == container.id,
+            ).union(_sqlalchemy.select([_sqlalchemy.sql.expression.literal(container.id)])).subquery())
     if config.getboolean("database.use_cached_childcount"):
         count_content_children_for_all_subcontainers = _sqlalchemy.func.count_content_children_for_all_subcontainers(Node.id)
     else:
         content_alias = _orm.aliased(_contenttypes.Content)
         noderelation_alias = _orm.aliased(_node.t_noderelation)
-        count_content_children_for_all_subcontainers_dir = (q(_sqlalchemy.func.count(content_alias.id.distinct()))
-                .filter(content_alias.id == noderelation_alias.c.cid)
-                .filter(noderelation_alias.c.nid == Container.id)
-                .filter(content_alias.subnode == False)
-               )
+        count_content_children_for_all_subcontainers_dir = (
+            _core.db.query(_sqlalchemy.func.count(content_alias.id.distinct())).filter(
+                content_alias.id == noderelation_alias.c.cid,
+                ).filter(noderelation_alias.c.nid == Container.id).filter(content_alias.subnode == False))
         count_content_children_for_all_subcontainers = _sqlalchemy.case(
                 ((
                     Container.type.in_(
@@ -287,12 +285,12 @@ def _make_navtree_entries(language, container):
     # this will permit us to show unfolded containers, i.e.,
     # for each parent container, we will not only show the child
     # in the path to the root, but also all direct siblings
-    tree_elements = q(
-            Container,
-            _node.t_nodemapping.c.nid.label("parent_id"),
-            count_content_children_for_all_subcontainers.label('count_content_children'),
-            container_children_exist_column.label('container_children_exists'),
-           )
+    tree_elements = _core.db.query(
+        Container,
+        _node.t_nodemapping.c.nid.label("parent_id"),
+        count_content_children_for_all_subcontainers.label('count_content_children'),
+        container_children_exist_column.label('container_children_exists'),
+        )
     tree_elements = (tree_elements
             .join(_node.t_nodemapping, _node.t_nodemapping.c.cid == Container.id)
             .filter(_node.t_nodemapping.c.nid.in_(opened_containers_subquery))
@@ -432,7 +430,7 @@ def render_page(req, content_html, node=None, show_navbar=True, show_id=None):
         head_meta = ""
     else:
         container = node.get_container()
-        head_meta = _render_head_meta(q(Node).get(show_id) if show_id else node) or ""
+        head_meta = _render_head_meta(_core.db.query(Node).get(show_id) if show_id else node) or ""
 
     search_html = u""
     navtree_html = u""

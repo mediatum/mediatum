@@ -9,13 +9,13 @@ import itertools as _itertools
 import flask as _flask
 import json as _json
 
+import core as _core
 import core.config as config
 import mediatumtal.tal as _tal
 
 import utils.utils as _utils_utils
 from utils.utils import *
 from core.xmlnode import getNodeXML, readNodeXML
-
 import utils.date as date
 import core.csrfform as _core_csrfform
 import core.translation as _core_translation
@@ -23,15 +23,10 @@ from core.users import user_from_session as _user_from_session
 from core.postgres import check_type_arg
 from core.database.postgres.permission import NodeToAccessRuleset
 import core.nodecache as _nodecache
-
 from utils.locks import named_lock as _named_lock
-
-from core import db
 from core.database.postgres.node import Node
 from utils.url import build_url_from_path_and_params as _build_url_from_path_and_params
 
-
-q = db.query
 logg = logging.getLogger(__name__)
 
 
@@ -41,7 +36,7 @@ def getWorkflowList():
 
 def getWorkflow(name):
     if name.isdigit():
-        return q(Workflow).get(name)
+        return _core.db.query(Workflow).get(name)
     else:
         return _nodecache.get_workflows_node().children.filter_by(name=name).one()
 
@@ -50,7 +45,7 @@ def addWorkflow(name, description):
     node = Workflow(name=name, type=u'workflow')
     _nodecache.get_workflows_node().children.append(node)
     node.set("description", description)
-    db.session.commit()
+    _core.db.session.commit()
 
     return node
 
@@ -75,8 +70,8 @@ def create_or_update_workflow(name, description, nameattribute, origname):
 
     # TODO: is this part necessary?
     for r in w.access_ruleset_assocs.filter_by(ruletype=u'write'):
-        db.session.delete(r)
-    db.session.commit()
+        _core.db.session.delete(r)
+    _core.db.session.commit()
 
     return w
 
@@ -85,7 +80,7 @@ def deleteWorkflow(id):
     workflows = _nodecache.get_workflows_node()
     w = workflows.children.filter_by(name=id).one()
     workflows.children.remove(w)
-    db.session.commit()
+    _core.db.session.commit()
 
 
 def inheritWorkflowRights(name, type):
@@ -95,7 +90,7 @@ def inheritWorkflowRights(name, type):
         for r in ac:
             if step.access_ruleset_assocs.filter_by(ruleset_name=r.ruleset_name, ruletype=type).first() is None:
                 step.access_ruleset_assocs.append(NodeToAccessRuleset(ruleset_name=r.ruleset_name, ruletype=type))
-    db.session.commit()
+    _core.db.session.commit()
 
 
 def getNodeWorkflow(node):
@@ -149,7 +144,7 @@ def create_update_workflow_step(
             # Workarround: create a temporary workflowstep n_new with the new type and set the id to the same id of n
             stepid = step.id  # save n.id, after db.session.commit() n.id is no longer accessible
             step.type = typ
-            db.session.commit()
+            _core.db.session.commit()
             step = WorkflowStep(typ)
             step.set_class(typ)
             step.id = stepid
@@ -164,7 +159,7 @@ def create_update_workflow_step(
     step.set("comment", comment)
     step.set("adminstep", adminstep)
 
-    db.session.commit()
+    _core.db.session.commit()
 
     return step
 
@@ -174,7 +169,7 @@ def deleteWorkflowStep(workflowid, stepid):
     wf = workflows.children.filter_by(name=workflowid).one()
     ws = wf.children.filter_by(name=stepid).one()
     wf.children.remove(ws)
-    db.session.commit()
+    _core.db.session.commit()
 
 workflowtypes = {}
 
@@ -244,7 +239,7 @@ def importWorkflow(filename):
     for w in importlist:
         w.name = "{}-{}-import".format(w.name, _utils_utils.gen_secure_token())
         workflows.children.append(w)
-    db.session.commit()
+    _core.db.session.commit()
 
 
 @check_type_arg
@@ -375,7 +370,7 @@ class Workflow(Node):
 
     def getStep(self, name, test_only=False):
         if name.isdigit():
-            return q(Node).get(name)
+            return _core.db.query(Node).get(name)
         else:
             if test_only:
                 return self.children.filter_by(name=name).scalar()
@@ -389,7 +384,7 @@ class Workflow(Node):
 
     def addStep(self, step):
         self.children.append(step)
-        db.session.commit()
+        _core.db.session.commit()
         return step
 
 
@@ -420,7 +415,7 @@ class WorkflowStep(Node):
             _flask.session["key"] = key
 
             if "obj" in req.params:
-                nodes = [q(Node).get(int(id)) for id in req.values.getlist('obj')]
+                nodes = [_core.db.query(Node).get(int(id)) for id in req.values.getlist('obj')]
 
                 for node in nodes:
                     if not self.has_write_access() and \
@@ -450,12 +445,12 @@ class WorkflowStep(Node):
                                 for parent in node.parents:
                                     parent.children.remove(node)
                         elif req.values.get('action').startswith('move_'):
-                            step = q(Node).get(req.values.get('action').replace('move_', ''))
+                            step = _core.db.query(Node).get(req.values.get('action').replace('move_', ''))
                             for node in nodes:
                                 for parent in node.parents:
                                     parent.children.remove(node)
                                 step.children.append(node)
-                    db.session.commit()
+                    _core.db.session.commit()
                     return self.show_workflow_step(req)
 
                 else:
@@ -582,7 +577,7 @@ class WorkflowStep(Node):
             newstep = workflow.getStep(workflowstep.getTrueId() if op else workflowstep.getFalseId())
             workflowstep.children.remove(node)
             newstep.children.append(node)
-            db.session.commit()
+            _core.db.session.commit()
         else:
             newstep = workflowstep
         newstep.runAction(node, "true" if op else "false")

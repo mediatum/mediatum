@@ -23,12 +23,13 @@ from sqlalchemy.sql.ddl import CreateTable, _CreateDropBase, DropTable, sort_tab
 from sqlalchemy.sql.elements import quoted_name, ClauseElement, _literal_as_text, Executable
 from sqlalchemy.sql.type_api import UserDefinedType
 from sqlalchemy.orm.dynamic import AppenderQuery
+
+import core as _core
 from core.database.postgres import DeclarativeBase, db_metadata
 from utils.compat import string_types
 from sqlalchemy import Table, bindparam, select, column
 from sqlalchemy.orm import aliased, mapper
 from decorator import contextmanager
-
 
 logg = logging.getLogger(__name__)
 
@@ -171,14 +172,13 @@ def get_table(obj):
 
 def drop_tables(objs, cascade=False):
     """DROP (CASCADE) tables. `objs` can be a sequence of table names, tables or Declarative models """
-    from core import db
     tables = [get_table(m) for m in objs]
     dropped = []
     drop_ddl = DropTableCascade if cascade else DropTable
 
     for table in reversed(sort_tables(tables)):
-        if db.engine.dialect.has_table(db.session.connection(), table.name, schema=table.schema):
-            db.session.execute(drop_ddl(table))
+        if _core.db.engine.dialect.has_table(_core.db.session.connection(), table.name, schema=table.schema):
+            _core.db.session.execute(drop_ddl(table))
             dropped.append(table.fullname)
         else:
             logg.info("ignored missing table '%s' while dropping", table.fullname)
@@ -188,13 +188,12 @@ def drop_tables(objs, cascade=False):
 
 def create_tables(objs):
     """CREATE tables. `objs` can be a sequence of table names, tables or Declarative models """
-    from core import db
     tables = [get_table(m) for m in objs]
     created = []
 
     for table in sort_tables(tables):
-        if not db.engine.dialect.has_table(db.session.connection(), table.name, schema=table.schema):
-            db.session.execute(CreateTable(table))
+        if not _core.db.engine.dialect.has_table(_core.db.session.connection(), table.name, schema=table.schema):
+            _core.db.session.execute(CreateTable(table))
             created.append(table.fullname)
         else:
             logg.info("ignored existing table '%s' while creating", table.fullname)
@@ -215,19 +214,15 @@ def recreate_tables(objs, cascade=False):
 
 
 def truncate_tables(table_fullnames=None):
-    from core import db
-    s = db.session
     if not table_fullnames:
         table_fullnames = [t.fullname for t in reverse_sorted_tables()]
 
     table_fullname_str = ",".join(table_fullnames)
-    s.execute('TRUNCATE {} RESTART IDENTITY;'.format(table_fullname_str))
+    _core.db.session.execute('TRUNCATE {} RESTART IDENTITY;'.format(table_fullname_str))
     logg.info("truncated %s", table_fullname_str)
 
 
 def toggle_triggers(action, table_fullnames=None):
-    from core import db
-    s = db.session
 
     if not table_fullnames:
         table_fullnames = [t.fullname for t in reverse_sorted_tables()]
@@ -236,7 +231,7 @@ def toggle_triggers(action, table_fullnames=None):
         logg.warning("%s user triggers for tables: %s", action, table_fullnames)
 
     for fullname in table_fullnames:
-        s.execute('ALTER TABLE {} {} TRIGGER USER;'.format(fullname, action.upper()))
+        _core.db.session.execute('ALTER TABLE {} {} TRIGGER USER;'.format(fullname, action.upper()))
 
 
 enable_triggers = partial(toggle_triggers, "enable")

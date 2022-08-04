@@ -15,7 +15,6 @@ import core as _core
 import core.database.postgres.permission as _
 import web as _web
 import web.flaskadmin.baseadminview as _
-from core import db
 from core.database.postgres.user import AuthenticatorInfo
 from core.database.postgres.user import User
 from core.database.postgres.user import UserGroup
@@ -23,6 +22,7 @@ from markupsafe import Markup
 from wtforms.fields.core import StringField
 from wtforms.ext.sqlalchemy.fields import QuerySelectMultipleField
 from wtforms import SelectMultipleField
+
 from flask_admin import form
 
 import core.csrfform as _core_csrfform
@@ -31,7 +31,6 @@ from core.permission import get_or_add_access_rule
 from schema.schema import Metadatatype
 from core.database.postgres.user import OAuthUserCredentials
 
-q = db.query
 logg = logging.getLogger(__name__)
 
 
@@ -45,7 +44,7 @@ def _update_access_ruleset_assocs(ruleset_name, add_metadatatypes, drop_metadata
     add/remove access to Metadatatypes
     """
     mkquery = _functools.partial(
-        q(_core.database.postgres.permission.NodeToAccessRuleset).filter_by,
+        _core.db.query(_core.database.postgres.permission.NodeToAccessRuleset).filter_by,
         ruleset_name=ruleset_name,
         )
     mknodetoaccessruleset = _functools.partial(
@@ -94,8 +93,10 @@ class UserView(_web.flaskadmin.baseadminview.BaseAdminView):
     }
 
     form_extra_fields = {
-        "groups": QuerySelectMultipleField(query_factory=lambda: db.query(UserGroup).order_by(UserGroup.name),
-                                           widget=form.Select2Widget(multiple=True)),
+        "groups": QuerySelectMultipleField(
+            query_factory=lambda: _core.db.query(UserGroup).order_by(UserGroup.name),
+            widget=form.Select2Widget(multiple=True),
+            ),
         "password": StringField(),
 
     }
@@ -142,10 +143,14 @@ class UserGroupView(_web.flaskadmin.baseadminview.BaseAdminView):
     edit_function_choices = [(x, x) for x in edit_functions]
 
     form_extra_fields = {
-        "users": QuerySelectMultipleField(query_factory=lambda: db.query(User).order_by(User.login_name),
-                                          widget=form.Select2Widget(multiple=True)),
-        "metadatatypes": QuerySelectMultipleField(query_factory=lambda: db.query(Metadatatype).order_by(Metadatatype.name),
-                                          widget=form.Select2Widget(multiple=True)),
+        "users": QuerySelectMultipleField(
+            query_factory=lambda: _core.db.query(User).order_by(User.login_name),
+            widget=form.Select2Widget(multiple=True),
+            ),
+        "metadatatypes": QuerySelectMultipleField(
+            query_factory=lambda: _core.db.query(Metadatatype).order_by(Metadatatype.name),
+            widget=form.Select2Widget(multiple=True),
+            ),
         "hidden_edit_functions": SelectMultipleField(choices=edit_function_choices,
                                           widget=form.Select2Widget(multiple=True)),
     }
@@ -156,12 +161,14 @@ class UserGroupView(_web.flaskadmin.baseadminview.BaseAdminView):
         return form
 
     def on_form_prefill(self, form, id):
-        form.metadatatypes.data = q(UserGroup).filter_by(id=id).scalar().metadatatype_access
+        form.metadatatypes.data = _core.db.query(UserGroup).filter_by(id=id).scalar().metadatatype_access
 
     def on_model_change(self, form, model, is_created):
         if is_created:
             """ create ruleset for group """
-            existing_ruleset = q(_core.database.postgres.permission.AccessRuleset).filter_by(name=model.name).scalar()
+            existing_ruleset = _core.db.query(_core.database.postgres.permission.AccessRuleset).filter_by(
+                name=model.name,
+                ).scalar()
             if existing_ruleset is None:
                 rule = get_or_add_access_rule(group_ids=(model.id, ))
                 ruleset = _core.database.postgres.permission.AccessRuleset(name=model.name, description=model.name)
@@ -173,7 +180,7 @@ class UserGroupView(_web.flaskadmin.baseadminview.BaseAdminView):
 
     def on_model_delete(self, model):
         _update_access_ruleset_assocs(model.name, (), model.metadatatype_access)
-        get_db_obj = lambda cls, **flt: q(cls).filter_by(**flt).scalar()
+        get_db_obj = lambda cls, **flt: _core.db.query(cls).filter_by(**flt).scalar()
         ruleset = get_db_obj(_core.database.postgres.permission.AccessRuleset, name=model.name)
         rule = get_db_obj(_core.database.postgres.permission.AccessRule, group_ids=(model.id,))
         ruleset2rule = ruleset and rule and get_db_obj(
@@ -181,7 +188,7 @@ class UserGroupView(_web.flaskadmin.baseadminview.BaseAdminView):
             ruleset_name=ruleset.name,
             rule=rule,
             )
-        map(db.session.delete, _itertools.ifilter(None, (ruleset2rule, rule, ruleset)))
+        map(_core.db.session.delete, _itertools.ifilter(None, (ruleset2rule, rule, ruleset)))
 
     def __init__(self, session=None, *args, **kwargs):
         super(UserGroupView, self).__init__(UserGroup, session, category="User", *args, **kwargs)

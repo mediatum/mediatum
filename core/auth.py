@@ -12,12 +12,11 @@ import os
 import hashlib
 from collections import OrderedDict
 import scrypt
-from core import db
+
+import core as _core
 from core import config
 from core.database.postgres.user import AuthenticatorInfo
 from core.database.postgres.user import User
-
-q = db.query
 
 logg = logging.getLogger(__name__)
 
@@ -100,7 +99,7 @@ class InternalAuthenticator(Authenticator):
         Successful means: login and password hash match the db values
         """
         user = (
-            q(User).filter_by(login_name=login_name)
+            _core.db.query(User).filter_by(login_name=login_name)
             .join(AuthenticatorInfo).filter_by(auth_type=InternalAuthenticator.auth_type, name=self.name).scalar()
         )
 
@@ -109,7 +108,7 @@ class InternalAuthenticator(Authenticator):
                 return
             try:
                 user.change_password(password)
-                db.session.commit()
+                _core.db.session.commit()
             except:
                 logg.exception("cannot rehash legacy password for user", user.id)
             else:
@@ -144,13 +143,16 @@ class InternalAuthenticator(Authenticator):
             raise WrongPassword()
 
         user.change_password(new_password)
-        db.session.commit()
+        _core.db.session.commit()
 
     def create_user(self, login_name, password, **kwargs):
         password_hash, salt = create_password_hash(password)
-        authenticator_id = q(AuthenticatorInfo.id).filter_by(auth_type=InternalAuthenticator.auth_type, name=self.name).scalar()
+        authenticator_id = _core.db.query(AuthenticatorInfo.id).filter_by(
+            auth_type=InternalAuthenticator.auth_type,
+            name=self.name,
+            ).scalar()
         user = User(login_name=login_name, password_hash=password_hash, salt=salt, authenticator_id=authenticator_id, **kwargs)
-        db.session.add(user)
+        _core.db.session.add(user)
         return user
 
 

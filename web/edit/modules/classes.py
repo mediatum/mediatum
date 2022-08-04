@@ -8,22 +8,22 @@ import httplib as _httplib
 
 import mediatumtal.tal as _tal
 
+import core as _core
 import core.nodecache as _core_nodecache
 import core.translation as _core_translation
 from core.users import user_from_session as _user_from_session
 
 from core.database.postgres.node import Node
-from core import db
 import web.edit.edit_common as _web_edit_edit_common
 
-q = db.query
+
 def getInformation():
     return {"version": "1.1", "system": 0}
 
 
 def getContent(req, ids):
     user = _user_from_session()
-    if not all(q(Node).get(nid).has_write_access() for nid in ids) or "classes" in user.hidden_edit_functions:
+    if not all(_core.db.query(Node).get(nid).has_write_access() for nid in ids) or "classes" in user.hidden_edit_functions:
         req.response.status_code = _httplib.FORBIDDEN
         return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 

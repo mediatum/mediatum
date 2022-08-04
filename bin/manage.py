@@ -37,17 +37,13 @@ import configargparse
 
 logg = logging.getLogger("manage.py")
 
+
+import core as _core
 from core.database.init import init_database_values
-from core import db
 from core.database.postgres.node import Node
 import utils.search
 import utils.iplist
 from utils.postgres import truncate_tables, run_single_sql, vacuum_tables, vacuum_full_tables, vacuum_analyze_tables
-
-
-s = db.session
-q = db.query
-
 
 global search_initialized
 search_initialized = False
@@ -55,10 +51,10 @@ search_initialized = False
 
 def import_dump(s, dump_filepath):
     disable_triggers()
-    db.session.commit()
-    db.run_psql_file(dump_filepath)
+    _core.db.session.commit()
+    _core.db.run_psql_file(dump_filepath)
     enable_triggers()
-    db.session.commit()
+    _core.db.session.commit()
     logg.info("imported dump from %s", dump_filepath)
 
 
@@ -74,29 +70,29 @@ def _drop_index_for_attribute(name_or_all, index_type):
         elif index_type == "sort":
             flags = "%o%"
 
-        metafield_names = (t[0] for t in q(Metafield.name).filter(Metafield.a.opts.like(flags)).distinct())
+        metafield_names = (t[0] for t in _core.db.query(Metafield.name).filter(Metafield.a.opts.like(flags)).distinct())
         dropped_indices = []
         failed_indices = []
 
         for attrname in metafield_names:
             try:
-                created = exec_sqlfunc(s, drop_func(attrname))
+                created = exec_sqlfunc(_core.db.session, drop_func(attrname))
             except sqlalchemy.exc.OperationalError:
                 logg.exception("failed to drop %s index for %s", index_type, attrname)
-                s.rollback()
+                _core.db.session.rollback()
                 failed_indices.append(attrname)
             else:
                 if created:
-                    s.commit()
+                    _core.db.session.commit()
                     dropped_indices.append(attrname)
 
         logg.info("dropped %s indices for %s attributes, %s failed: %s",
                   index_type, len(dropped_indices), len(failed_indices), failed_indices)
     else:
         name = name_or_all
-        dropped = exec_sqlfunc(s, drop_func(name))
+        dropped = exec_sqlfunc(_core.db.session, drop_func(name))
         if dropped:
-            s.commit()
+            _core.db.session.commit()
             logg.info("dropped %s index for attribute '%s'", index_type, name)
         else:
             logg.info("%s index for attribute '%s' does not exist, ignoring", index_type, name)
@@ -114,29 +110,29 @@ def _create_index_for_attribute(name_or_all, index_type, recreate=False):
         elif index_type == "sort":
             flags = "%o%"
 
-        metafield_names = (t[0] for t in q(Metafield.name).filter(Metafield.a.opts.like(flags)).distinct())
+        metafield_names = (t[0] for t in _core.db.query(Metafield.name).filter(Metafield.a.opts.like(flags)).distinct())
         created_indices = []
         failed_indices = []
 
         for attrname in metafield_names:
             try:
-                created = exec_sqlfunc(s, creation_func(attrname, recreate))
+                created = exec_sqlfunc(_core.db.session, creation_func(attrname, recreate))
             except sqlalchemy.exc.OperationalError:
                 logg.exception("failed to create %s index for %s", index_type, attrname)
-                s.rollback()
+                _core.db.session.rollback()
                 failed_indices.append(attrname)
             else:
                 if created:
-                    s.commit()
+                    _core.db.session.commit()
                     created_indices.append(attrname)
 
         logg.info("created %s indices for %s attributes, %s failed: %s",
                   index_type, len(created_indices), len(failed_indices), failed_indices)
     else:
         name = name_or_all
-        created = exec_sqlfunc(s, creation_func(name, recreate))
+        created = exec_sqlfunc(_core.db.session, creation_func(name, recreate))
         if created:
-            s.commit()
+            _core.db.session.commit()
             logg.info("created %s index for attribute '%s'", index_type, name)
         else:
             logg.info("%s index for attribute '%s' already exists", index_type, name)
@@ -147,24 +143,24 @@ def _create_index_for_attribute(name_or_all, index_type, recreate=False):
 def schema(args):
     action = args.action.lower()
     if action == "drop":
-        db.drop_schema()
+        _core.db.drop_schema()
     elif action == "create":
-        db.create_schema()
+        _core.db.create_schema()
     elif action == "recreate":
-        db.drop_schema()
-        db.create_schema()
+        _core.db.drop_schema()
+        _core.db.create_schema()
     elif action == "upgrade":
-        db.upgrade_schema()
+        _core.db.upgrade_schema()
 
 
 def data(args):
     action = args.action.lower()
     if action == "init":
-        init_database_values(s)
+        init_database_values(_core.db.session)
     elif action == "truncate":
-        truncate_tables(s, db_metadata=db_metadata)
+        truncate_tables(_core.db.session, db_metadata=db_metadata)
     elif action == "import":
-        import_dump(s, args.sql_dumpfile)
+        import_dump(_core.db.session, args.sql_dumpfile)
 
 
 def attrindex(args):
@@ -205,7 +201,7 @@ def fulltext(args):
         
     else:
         nid = int(nid_mod_or_all)
-        node = q(Node).get(nid)
+        node = _core.db.query(Node).get(nid)
         if node is None:
             logg.warning("node # %s not found!", nid)
             return
@@ -220,11 +216,11 @@ def vacuum(args):
     action = args.action.lower() if args.action else None
 
     if action is None:
-        vacuum_tables(s, db_metadata=db_metadata)
+        vacuum_tables(_core.db.session, db_metadata=db_metadata)
     elif action == "analyze":
-        vacuum_analyze_tables(s, db_metadata=db_metadata)
+        vacuum_analyze_tables(_core.db.session, db_metadata=db_metadata)
     elif action == "full":
-        vacuum_full_tables(s, db_metadata=db_metadata)
+        vacuum_full_tables(_core.db.session, db_metadata=db_metadata)
 
 
 def result_proxy_to_yaml(resultproxy):
@@ -237,7 +233,7 @@ def result_proxy_to_yaml(resultproxy):
 def sql(args):
     # multiple args can be given if the user didn't quote the query
     stmt = " ". join(args.sql)
-    res = run_single_sql(stmt, s)
+    res = run_single_sql(stmt, _core.db.session)
     if res.returns_rows:
         if args.yaml:
             logg.info("got %s rows", res.rowcount)
@@ -306,7 +302,7 @@ def main():
     args = parser.parse_args()
     args.func(args)
 
-    s.commit()
+    _core.db.session.commit()
 
 
 if __name__ == "__main__":

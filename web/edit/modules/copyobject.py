@@ -6,13 +6,12 @@ from __future__ import print_function
 
 import mediatumtal.tal as _tal
 
+import core as _core
 from contenttypes import Data as _Data
-from core import db as _db
 
-_q = _db.query
 
 def getContent(req, ids):
-    _node = _q(_Data).get(long(ids[0]))
+    _node = _core.db.query(_Data).get(long(ids[0]))
     return _tal.processTAL(
             dict(nodeid=_node.id, srcnodeid=req.values.get("srcnodeid", ""), action='copy'),
             file="web/edit/modules/movecopyobject.html",

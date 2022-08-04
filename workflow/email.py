@@ -14,8 +14,8 @@ import flask as _flask
 from .workflow import WorkflowStep, registerStep
 from mediatumtal import tal as _tal
 
+import core as _core
 import utils.mail as mail
-from core import db
 
 logg = logging.getLogger(__name__)
 
@@ -99,4 +99,4 @@ class WorkflowStep_SendEmail(WorkflowStep):
         for attr in ("from_name", "from_envelope", "reply_to_email", "reply_to_name"):
             data[attr] = data[attr] or None
         self.settings = data
-        db.session.commit()
+        _core.db.session.commit()

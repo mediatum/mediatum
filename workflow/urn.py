@@ -13,9 +13,9 @@ import ruamel.yaml as _ruamel_yaml
 
 import mediatumtal.tal as _tal
 
+import core as _core
 from .workflow import WorkflowStep, registerStep
 import utils.date as date
-from core import db
 from core import config as _core_config
 
 logg = logging.getLogger(__name__)
@@ -116,7 +116,7 @@ class WorkflowStep_Urn(WorkflowStep):
 
                     niss = niss.replace("[" + var + "]", val)
             node.set(attrname, _build_bnb(self.settings["snid1"], self.settings["snid2"], niss))
-        db.session.commit()
+        _core.db.session.commit()
         return self.forwardAndShow(node, True, req)
 
     def admin_settings_get_html_form(self, req):
@@ -131,4 +131,4 @@ class WorkflowStep_Urn(WorkflowStep):
         data = data.to_dict()
         assert frozenset(data) == frozenset(("attrname", "snid1", "snid2", "niss"))
         self.settings = data
-        db.session.commit()
+        _core.db.session.commit()

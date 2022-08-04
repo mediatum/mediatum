@@ -8,21 +8,18 @@ import operator as _operator
 
 import mediatumtal.tal as _tal
 
+import core as _core
 import core.translation as _core_translation
 import utils.utils as _utils_utils
 from utils.utils import formatLongText
 from utils.strings import ensure_unicode
 
 import re as _re
+
 import schema.schema as _schema
 from schema.schema import getMetadataType, VIEW_DATA_ONLY, VIEW_SUB_ELEMENT, VIEW_HIDE_EMPTY, VIEW_DATA_EXPORT
 from core.metatype import Metatype
-from core import db
 from core.database.postgres.node import Node
-
-q = db.query
-s = db.session
-
 
 _metafield_type_allowed_chars = _re.compile(r'[a-z]').match
 
@@ -123,7 +120,7 @@ class m_field(Metatype):
         """ return formated row for metaeditor """
         if len(itemlist) > 0:
             # parent still not existing
-            item = q(Node).get(itemlist[index])
+            item = _core.db.query(Node).get(itemlist[index])
             pitems = len(itemlist)
         else:
             item = parent.getChildren().sort_by_orderpos()[index]
@@ -144,7 +141,7 @@ class m_field(Metatype):
                 item.getUnit(),
             )
         else:  # node for export mask
-            attribute = q(Node).get(item.get("attribute"))
+            attribute = _core.db.query(Node).get(item.get("attribute"))
             field = item
             html_form = u"{} {}".format(
                 getMetadataType("mappingfield").editor_get_html_form(
@@ -201,7 +198,7 @@ class m_field(Metatype):
 
         metadatatype = req.params.get("metadatatype")
         if req.params.get("op", "") == "new":
-            pidnode = q(Node).get(req.params.get("pid"))
+            pidnode = _core.db.query(Node).get(req.params.get("pid"))
             mask = pidnode
             while (mask.type == 'maskitem'):
                 mask = mask.parents[0]
@@ -238,10 +235,10 @@ class m_field(Metatype):
             raise AssertionError("unknown op")
 
         if pidnode and hasattr(pidnode, 'getMasktype') and pidnode.getMasktype() == "export":
-            tal_ctx["mappings"] = tuple(q(Node).get(mapping) for mapping in pidnode.getExportMapping())
+            tal_ctx["mappings"] = tuple(_core.db.query(Node).get(mapping) for mapping in pidnode.getExportMapping())
             if tal_ctx["op"] == "edit":
                 assert tal_ctx.get("field") is None # export masks may not have their field as child
-                tal_ctx["field"] = q(Node).get(int(item.get('attribute')))
+                tal_ctx["field"] = _core.db.query(Node).get(int(item.get('attribute')))
             return _tal.processTAL(tal_ctx, file="schema/mask/field.html", macro="metaeditor_export", request=req)
         else:
             return _tal.processTAL(tal_ctx, file="schema/mask/field.html", macro="metaeditor", request=req)

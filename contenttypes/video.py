@@ -13,11 +13,11 @@ import os
 from subprocess import CalledProcessError
 import tempfile
 
+import core as _core
 from contenttypes.data import Content, prepare_node_data
 from contenttypes.image import make_thumbnail_image
 from core.postgres import check_type_arg_with_schema
 from core.attachment import filebrowser as _filebrowser
-from core import db
 from core.database.postgres.file import File
 from core.config import resolve_datadir_path
 import utils as _utils
@@ -25,7 +25,6 @@ import utils.utils as _
 from utils.utils import splitfilename
 from utils.date import format_date, make_date
 import utils.process
-
 
 logg = logging.getLogger(__name__)
 
@@ -147,7 +146,7 @@ class Video(Content):
 
             self.files.append(File(thumbname, u'thumbnail', u'image/jpeg'))
 
-            db.session.commit()
+            _core.db.session.commit()
 
     def getDuration(self):
         duration = self.get("duration")

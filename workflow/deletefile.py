@@ -6,8 +6,8 @@ from __future__ import print_function
 
 from mediatumtal import tal as _tal
 
+import core as _core
 from .workflow import WorkflowStep, registerStep
-from core import db
 
 
 def register():
@@ -30,7 +30,7 @@ class WorkflowStep_DeleteFile(WorkflowStep):
                 if f.filetype in self.settings['filetype']:
                     node.files.remove(f)
         self.forward(node, True)
-        db.session.commit()
+        _core.db.session.commit()
 
     def admin_settings_get_html_form(self, req):
         return _tal.processTAL(
@@ -45,4 +45,4 @@ class WorkflowStep_DeleteFile(WorkflowStep):
         data["filetype"] = filter(None, (s.strip() for s in data["filetype"].split("\r\n")))
         assert tuple(data) == ("filetype",)
         self.settings = data
-        db.session.commit()
+        _core.db.session.commit()

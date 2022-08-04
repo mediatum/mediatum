@@ -39,18 +39,16 @@ down_revision = u'81a3d17301ab'
 branch_labels = None
 depends_on = None
 
-_q = _core.db.query
-
 
 def upgrade():
-    for metafield in _q(_schema.Metafield).filter(_schema.Metafield.a.type == "htmlmemo").prefetch_attrs():
+    for metafield in _core.db.query(_schema.Metafield).filter(_schema.Metafield.a.type == "htmlmemo").prefetch_attrs():
         data = metafield.metatype_data
         data["wysiwyg_entermode"] = "p"
         metafield.metatype_data = data
     _core.db.session.commit()
 
 def downgrade():
-    for metafield in _q(_schema.Metafield).filter(_schema.Metafield.a.type == "htmlmemo").prefetch_attrs():
+    for metafield in _core.db.query(_schema.Metafield).filter(_schema.Metafield.a.type == "htmlmemo").prefetch_attrs():
         data = metafield.metatype_data
         del data["wysiwyg_entermode"]
         metafield.metatype_data = data

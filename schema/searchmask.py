@@ -5,14 +5,14 @@ from __future__ import division
 from __future__ import print_function
 
 from sqlalchemy import func
+
+import core as _core
 import utils.utils as _utils_utils
 from core.postgres import check_type_arg
 from core.database.postgres.node import Node
-from core import db
 from core.systemtypes import Searchmasks
 from .schema import Metadatatype
 
-q = db.query
 
 class SearchMask(Node):
     pass
@@ -27,7 +27,7 @@ class SearchMaskItem(Node):
 
 
 def newMask(node):
-    searchmask_root = q(Searchmasks).one()
+    searchmask_root = _core.db.query(Searchmasks).one()
     maskname = _utils_utils.gen_secure_token(128)
     mask = Node(name=maskname, type=u"searchmask")
     searchmask_root.children.append(mask)
@@ -37,7 +37,7 @@ def newMask(node):
 
 def getMask(node):
     maskname = node.get("searchmaskname")
-    mask = q(Searchmasks).one().children.filter_by(name=maskname).scalar()
+    mask = _core.db.query(Searchmasks).one().children.filter_by(name=maskname).scalar()
     if not maskname or mask is None:
         return newMask(node)
     else:
@@ -48,10 +48,15 @@ def getMainContentType(node):
     #todo this needs acl checks
 
     occurrence = node.all_children_by_query(
-        q(Node.schema, func.count(Node.schema)).group_by(Node.schema).order_by(func.count(Node.schema).desc()))
+        _core.db.query(
+            Node.schema,
+            func.count(Node.schema),
+            ).group_by(Node.schema).order_by(func.count(Node.schema).desc()))
 
     for schema_name, count in occurrence:
-        metadatatype = q(Metadatatype).filter_by(name=schema_name).filter(Metadatatype.a.active == "1").filter_read_access().first()
+        metadatatype = _core.db.query(Metadatatype).filter_by(name=schema_name).filter(
+            Metadatatype.a.active == "1",
+            ).filter_read_access().first()
         if metadatatype:
             return metadatatype
     return None
@@ -81,5 +86,5 @@ def generateMask(node):
         mask.children.append(new_maskitem)
         new_maskitem.children.append(metafield)
 
-    db.session.commit()
+    _core.db.session.commit()
     return mask

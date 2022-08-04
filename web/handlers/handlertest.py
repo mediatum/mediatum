@@ -10,6 +10,7 @@
 from __future__ import division
 from __future__ import print_function
 
+import core as _core
 import utils.utils as _utils_utils
 
 
@@ -23,6 +24,5 @@ def error_variable_msg(req):
 
 
 def db_error(req):
-    from core import db
     random_sql = '|'.join(_utils_utils.gen_secure_token(128))
-    db.session.execute(random_sql)
+    _core.db.session.execute(random_sql)

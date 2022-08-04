@@ -17,9 +17,9 @@ import urlparse as _urlparse
 import flask as _flask
 from sqlalchemy.orm import undefer, joinedload
 
+import core as _core
 from core.users import get_guest_user
 from core import config, search
-from core import db
 from core.database.postgres.node import Node
 from core.database.postgres.user import User
 from schema.schema import VIEW_DATA_ONLY, Metadatatype
@@ -43,7 +43,6 @@ from core.search.config import get_service_search_languages
 from array import array
 
 logg = logging.getLogger(__name__)
-q = db.query
 
 SEND_TIMETABLE = False
 DEFAULT_NODEQUERY_LIMIT = config.getint("services.default_limit", 1000)
@@ -358,7 +357,7 @@ def struct2csv(path, qualifier, query_string, host_url, params, d, sep=u';', str
         rd_i_attributes = rd_i['attributes']
         for attr in attr_header:
             if attr in ['node.orderpos']:
-                row.append(q(Node).get(rd_i['id']).orderpos)
+                row.append(_core.db.query(Node).get(rd_i['id']).orderpos)
             else:
                 row.append(rd_i_attributes.setdefault(attr, u''))
         r_row = join_row(row) + u'\r\n'
@@ -512,7 +511,7 @@ def _handle_oauth(res, path, params, timetable):
     username = params.get('user')
     res['oauthuser'] = username
     # XXX: We allow duplicate login names, how can we solve this better here?
-    users = q(User).filter_by(login_name=username).all()
+    users = _core.db.query(User).filter_by(login_name=username).all()
 
     if not users:
         logg.warning("oauth: invalid user given, login_name=%s", username)
@@ -629,7 +628,7 @@ def get_node_data_struct(
     csv_allchildren = csv and allchildren
 
     # check node existence
-    node = q(Node).get(id)
+    node = _core.db.query(Node).get(id)
     if node is None:
         return _client_error_response(404, u"node not found")
 
@@ -642,14 +641,16 @@ def get_node_data_struct(
         return _client_error_response(403, u"forbidden")
 
     if mdt_name:
-        mdt = q(Metadatatype).filter_by(name=mdt_name).count()
+        mdt = _core.db.query(Metadatatype).filter_by(name=mdt_name).count()
         if not mdt:
             return _client_error_response(404, u'no such metadata type: ' + mdt_name)
 
     if allchildren:
         if csv:
             # fetch only those columns which are needed, this is faster than fetch all columns and need less space
-            nodequery = node.all_children_by_query(q(Node.attrs.label("attributes"), Node.id, Node.name, Node.schema, Node.type))
+            nodequery = node.all_children_by_query(
+                _core.db.query(Node.attrs.label("attributes"), Node.id, Node.name, Node.schema, Node.type),
+                )
         else:
             nodequery = node.all_children
     elif qualifier == "parents":

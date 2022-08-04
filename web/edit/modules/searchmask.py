@@ -8,20 +8,19 @@ import httplib as _httplib
 
 import mediatumtal.tal as _tal
 
+import core as _core
 import core.csrfform as _core_csrfform
 import schema.searchmask as searchmask
 from core.users import user_from_session as _user_from_session
 import json
 from core.database.postgres.node import Node
-from core import db
 import core.nodecache as _nodecache
 from core.systemtypes import Searchmasks
 
-q = db.query
 
 def getContent(req, ids):
     user = _user_from_session()
-    node = q(Node).get(ids[0])
+    node = _core.db.query(Node).get(ids[0])
 
     if not node.has_write_access() or "searchmask" in user.hidden_edit_functions:
         req.response.status_code = _httplib.FORBIDDEN
@@ -65,14 +64,14 @@ def getContent(req, ids):
     if schema:
         if schema.endswith(";"):
             schema = schema[:-1]
-        schema = q(Node).get(schema)
+        schema = _core.db.query(Node).get(schema)
         if not isinstance(schema, Node):
             schema = None
 
     if schemafield:
         if schemafield.endswith(";"):
             schemafield = schemafield[:-1]
-        schemafield = q(Node).get(schemafield)
+        schemafield = _core.db.query(Node).get(schemafield)
         if not isinstance(schemafield, Node):
             schemafield = None
 
@@ -90,19 +89,19 @@ def getContent(req, ids):
     if searchtype == "own":
         maskname = node.get("searchmaskname")
 
-        mask = q(Searchmasks).one().children.filter_by(name=maskname).scalar()
+        mask = _core.db.query(Searchmasks).one().children.filter_by(name=maskname).scalar()
         if not maskname or mask is None:
             mask = searchmask.generateMask(node)
 
         if selectedfieldid:  # edit
-            selectedfield = q(Node).get(selectedfieldid)
+            selectedfield = _core.db.query(Node).get(selectedfieldid)
             assert selectedfield in mask.children
             selectedfield.name = req.params["fieldname"]
             if "createsub" in req.params and schemafield:
                 createsub = True
                 selectedfield.children.append(schemafield)
             if delsubfield:
-                selectedfield.children.remove(q(Node).get(delsubfield))
+                selectedfield.children.remove(_core.db.query(Node).get(delsubfield))
 
         if req.params.get("isnewfield", "") == "yes":  # create a new field
             isnewfield = True
@@ -110,7 +109,7 @@ def getContent(req, ids):
             mask.children.append(Node("Suchfeld %s" % l, "searchmaskitem"))
 
         elif delfield:  # del a field
-            delfield = q(Node).get(delfield)
+            delfield = _core.db.query(Node).get(delfield)
             assert delfield in mask.children
             mask.children.remove(delfield)
 
@@ -122,14 +121,14 @@ def getContent(req, ids):
             selectedfieldid = None
 
         if selectedfieldid:
-            selectedfield = q(Node).get(selectedfieldid)
+            selectedfield = _core.db.query(Node).get(selectedfieldid)
             if selectedfield not in mask.children:  # this usually happens if the field was just deleted
                 selectedfield = None
         else:
             selectedfield = None
 
         fields = mask.children.all()
-    db.session.commit()
+    _core.db.session.commit()
 
     data = dict(
             idstr=",".join(ids),

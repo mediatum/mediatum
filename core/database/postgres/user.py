@@ -14,6 +14,7 @@ from sqlalchemy.orm.session import object_session
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy_utils.types import EmailType
 
+import core as _core
 import core.nodecache as _core_nodecache
 from core.database.postgres import DeclarativeBase
 from core.database.postgres import rel, C, FK, bref
@@ -21,11 +22,7 @@ from core.database.postgres import TimeStamp, integer_fk, integer_pk
 from core import config
 from core.user import UserMixin
 from core.usergroup import UserGroupMixin
-from core import db
 from core.database.postgres.permission import NodeToAccessRuleset
-
-q = db.query
-
 
 logg = logging.getLogger(__name__)
 
@@ -76,7 +73,7 @@ class UserGroup(DeclarativeBase, TimeStamp, UserGroupMixin):
     @property
     def metadatatype_access(self):
         from schema.schema import Metadatatype
-        return db.query(Metadatatype).join(NodeToAccessRuleset).filter_by(ruleset_name=self.name).all()
+        return _core.db.query(Metadatatype).join(NodeToAccessRuleset).filter_by(ruleset_name=self.name).all()
 
     def __unicode__(self):
         return self.name

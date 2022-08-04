@@ -6,7 +6,7 @@ from __future__ import print_function
 
 import mediatumtal.tal as _tal
 
-from core import db as _db
+import core as _core
 import core.csrfform as _core_csrfform
 from .workflow import WorkflowStep, registerStep
 
@@ -66,4 +66,4 @@ class WorkflowStep_TextPage(WorkflowStep):
         data.setdefault("htmltext", "")
         assert tuple(data) == ("htmltext",)
         self.settings = data
-        _db.session.commit()
+        _core.db.session.commit()

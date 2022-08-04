@@ -6,14 +6,12 @@ from __future__ import print_function
 
 from mediatumtal import tal as _tal
 
+import core as _core
 from .upload import WorkflowStep
 from .workflow import registerStep
 from utils.utils import isNumeric
 from core.database.postgres.node import Node
-from core import db
 from contenttypes.container import Directory
-
-q = db.query
 
 
 def register():
@@ -58,7 +56,7 @@ class WorkflowStep_Classify(WorkflowStep):
             name = name[int(start):]
 
         for nid in self.settings['destination']:
-            pnode = q(Node).get(nid)
+            pnode = _core.db.query(Node).get(nid)
             if pnode:
                 if name != "":
                     cnode = pnode.children.filter_by(name=name).scalar()
@@ -68,7 +66,7 @@ class WorkflowStep_Classify(WorkflowStep):
                     cnode.children.append(node)
                 if not self.settings['only_sub']:  # add to node (no hierarchy)
                     pnode.children.append(node)
-                db.session.commit()
+                _core.db.session.commit()
 
     def admin_settings_get_html_form(self, req):
         return _tal.processTAL(
@@ -84,4 +82,4 @@ class WorkflowStep_Classify(WorkflowStep):
         data["destination"] = filter(None, (s.strip() for s in data["destination"].split("\r\n")))
         assert frozenset(data) == frozenset(("destination", "destination_attr", "only_sub"))
         self.settings = data
-        db.session.commit()
+        _core.db.session.commit()

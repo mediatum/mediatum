@@ -6,14 +6,13 @@ from __future__ import print_function
 
 import mediatumtal.tal as _tal
 
+import core as _core
 from contenttypes import Data
-from core import db
 from utils.utils import getFormatedString
 
-q = db.query
 
 def getContent(req, ids):
-    node = q(Data).get(long(ids[0]))
+    node = _core.db.query(Data).get(long(ids[0]))
 
     if hasattr(node, "show_node_big"):
         return _tal.processTAL({'content': getFormatedString(node.show_node_big(req))}, file="web/edit/modules/view.html", macro="view_node", request=req)

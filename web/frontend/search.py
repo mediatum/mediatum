@@ -7,9 +7,9 @@ from __future__ import print_function
 import itertools as _itertools
 import logging
 
+import core as _core
 import core.translation as _core_translation
 import utils.date as date
-from core import db
 from core.search import SearchQueryException
 from core import webconfig
 from utils.strings import ensure_unicode_returned
@@ -19,9 +19,6 @@ from core.webconfig import node_url
 from core.search.representation import FullMatch
 from core.nodecache import get_collections_node
 from web.frontend.contentbase import ContentBase
-
-q = db.query
-
 
 logg = logging.getLogger(__name__)
 
@@ -67,7 +64,7 @@ def search(searchtype, searchquery, readable_query, paths, req, container_id = N
     from web.frontend.content import ContentList
     if not container_id:
         container_id = req.args.get("id", type=int)
-    container = q(Container).get(container_id) if container_id else None
+    container = _core.db.query(Container).get(container_id) if container_id else None
 
     # if the current node is not a Container or not accessible by the user, use the collections root instead
     if container is None or not container.has_read_access():
@@ -92,7 +89,7 @@ def search(searchtype, searchquery, readable_query, paths, req, container_id = N
         # just show 0 result view and don't confuse the user with unhelpful error messages ;)
         logg.exception("exception executing %(searchtype)s search for query %(readable_query)s",
                        dict(searchtype=searchtype, readable_query=readable_query, error=True))
-        db.session.rollback()
+        _core.db.session.rollback()
         return NoSearchResult(readable_query, container, searchtype, error=True)
 
     language = _core_translation.set_language(req.accept_languages)
@@ -139,7 +136,7 @@ def _extended_searchquery_from_req(req):
 
         q_str = list()
         q_user = list()
-        for field in q(SearchMaskItem).get(field_id_or_name).children:
+        for field in _core.db.query(SearchMaskItem).get(field_id_or_name).children:
             field_type = field.getFieldtype()
             if not (query_to_key in req.args and field_type == "date"):
                 if field_type == "number":

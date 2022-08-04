@@ -31,8 +31,8 @@ from __future__ import print_function
 import logging
 from sqlalchemy import text
 
+import core as _core
 from core import config
-
 
 logg = logging.getLogger(__name__)
 
@@ -44,9 +44,8 @@ attribute_autoindex_languages = None
 
 
 def fts_config_exists(config_name):
-    from core import db
     stmt = text("SELECT FROM pg_catalog.pg_ts_config WHERE cfgname = :config_name")
-    return db.session.execute(stmt, {"config_name": config_name}).fetchone() is not None
+    return _core.db.session.execute(stmt, {"config_name": config_name}).fetchone() is not None
 
 
 def _get_languages_from_config(key):

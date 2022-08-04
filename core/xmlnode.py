@@ -12,14 +12,13 @@ import sqlalchemy as _sqlalchemy
 import werkzeug.datastructures as _werkzeug_datastructures
 from lxml import etree
 
+import core as _core
 import core.nodecache as _core_nodecache
 import utils.utils as _utils_utils
-from core import db
 from core.database.postgres.file import File
 
 EXCLUDE_WORKFLOW_NEWNODES = True
 
-q = db.query
 logg = logging.getLogger(__name__)
 
 EXPORTVERSION = u"1.1a"
@@ -101,7 +100,7 @@ def add_node_to_xmldoc(
     if isinstance(node, Mask):
         exportmapping_id = node.get(u"exportmapping").strip()
         if exportmapping_id and exportmapping_id not in _written:
-            mapping = q(Mapping).get(int(exportmapping_id))
+            mapping = _core.db.query(Mapping).get(int(exportmapping_id))
             if mapping is not None:
                 _written.add(mapping.id)
                 add_node_to_xmldoc(mapping, xmlroot, children, exclude_filetypes, exclude_childtypes, attribute_name_filter, _written)
@@ -147,7 +146,7 @@ class _NodeLoader(object):
         for node in self.nodes:
             if (node.type == "mapping") and not any(node.name == n.name for n in mappings.children if n.type == "mapping"):
                 mappings.children.append(node)
-                db.session.commit()
+                _core.db.session.commit()
                 logg.debug("xml import: added  mapping id=%s, type='%s', name='%s'", node.id, node.type, node.name)
 
         logg.debug("xml import: linking children to parents")
@@ -155,7 +154,7 @@ class _NodeLoader(object):
             node.children.extend(self.id2node[i] for i in node.tmpchilds)
             logg.debug("xml import: added %d children to node id='%s', type='%s', name='%s'",
                     len(node.tmpchilds), node.id, node.type, node.name)
-        db.session.commit()
+        _core.db.session.commit()
 
         for node in self.nodes:
             if node.type == "maskitem":
@@ -177,7 +176,7 @@ class _NodeLoader(object):
                     node.set(attr_name, ustr(self.id2node[attr].id))
 
         logg.info("xml import done")
-        db.session.commit()
+        _core.db.session.commit()
 
     def xml_start_element(self, name, attrs):
         node = None
@@ -227,7 +226,7 @@ class _NodeLoader(object):
                 root = _core_nodecache.get_root_node()
                 root.children.append(self.root)
                 root.children.remove(self.root)
-                db.session.commit()
+                _core.db.session.commit()
             return
 
         if self.node_already_seen:

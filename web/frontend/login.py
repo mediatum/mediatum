@@ -9,8 +9,8 @@ import logging
 
 import flask as _flask
 
+import core as _core
 from core import auth
-from core import db
 from core.webconfig import node_url
 import core.csrfform as _core_csrfform
 import core.users as users
@@ -21,9 +21,7 @@ from core import webconfig
 from core.auth import PasswordsDoNotMatch, WrongPassword, PasswordChangeNotAllowed
 from datetime import datetime
 
-q = db.query
 logg = logging.getLogger(__name__)
-
 
 _collection_root_link = None
 
@@ -59,7 +57,7 @@ def _handle_login_submit(req):
     # stores the date/time when a user logs in except in read-only mode
     if not config.getboolean("config.readonly", False):
         user.last_login = datetime.now()
-        db.session.commit()
+        _core.db.session.commit()
 
 
 def _set_return_after_login(req):

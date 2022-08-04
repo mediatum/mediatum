@@ -8,11 +8,10 @@ from __future__ import print_function
 
 import logging
 import hashlib
-import utils.utils as _utils_utils
-from core import db
-from core.database.postgres.user import OAuthUserCredentials
 
-q = db.query
+import core as _core
+import utils.utils as _utils_utils
+from core.database.postgres.user import OAuthUserCredentials
 
 logg = logging.getLogger(__name__)
 
@@ -28,14 +27,16 @@ def verify_request_signature(req_path, params):
         return False
 
     oauth_user = _p.get('user')
-    oauth_user_credentials_count = q(OAuthUserCredentials).filter(OAuthUserCredentials.oauth_user == oauth_user).count()
+    oauth_user_credentials_count = _core.db.query(OAuthUserCredentials).filter(OAuthUserCredentials.oauth_user == oauth_user).count()
     if oauth_user_credentials_count < 1:
         logg.info("%sno oauth user credentials known for oauth_user %r", fmsg, oauth_user)
         return False
     if oauth_user_credentials_count > 1:
         logg.info("%smultiple oauth user credentials stored for oauth_user %r", fmsg, oauth_user)
         return False
-    oauth_user_credentials = q(OAuthUserCredentials).filter(OAuthUserCredentials.oauth_user == oauth_user).one()
+    oauth_user_credentials = _core.db.query(OAuthUserCredentials).filter(
+        OAuthUserCredentials.oauth_user == oauth_user,
+        ).one()
     workingString = oauth_user_credentials.oauth_key
 
     #try:
@@ -70,12 +71,16 @@ def verify_request_signature(req_path, params):
 
 def get_oauth_key_for_user(user):
         login_name = user.login_name
-        oauth_user_credentials_count = q(OAuthUserCredentials).filter(OAuthUserCredentials.oauth_user == login_name).filter(OAuthUserCredentials.user_id == user.id).count()
+        oauth_user_credentials_count = _core.db.query(OAuthUserCredentials).filter(
+            OAuthUserCredentials.oauth_user == login_name,
+            ).filter(OAuthUserCredentials.user_id == user.id).count()
         if oauth_user_credentials_count == 0:
             oauthkey = ''
         elif oauth_user_credentials_count == 1:
             # retrieve that key
-            oauth_user_credentials = q(OAuthUserCredentials).filter(OAuthUserCredentials.oauth_user == login_name).filter(OAuthUserCredentials.user_id == user.id).one()
+            oauth_user_credentials = _core.db.query(OAuthUserCredentials).filter(
+                OAuthUserCredentials.oauth_user == login_name,
+                ).filter(OAuthUserCredentials.user_id == user.id).one()
             oauthkey = oauth_user_credentials.oauth_key
         else:
             oauthkey = ''
@@ -84,13 +89,15 @@ def get_oauth_key_for_user(user):
 
 
 def generate_new_oauth_key_for_user(user):
-    s = db.session
+    s = _core.db.session
 
     generated_key = _utils_utils.gen_secure_token() # generate key
 
     user_login_name = user.login_name
 
-    oauth_user_credentials_count = q(OAuthUserCredentials).filter(OAuthUserCredentials.oauth_user == user_login_name).filter(OAuthUserCredentials.user_id == user.id).count()
+    oauth_user_credentials_count = _core.db.query(OAuthUserCredentials).filter(
+        OAuthUserCredentials.oauth_user == user_login_name,
+        ).filter(OAuthUserCredentials.user_id == user.id).count()
     if oauth_user_credentials_count == 0:
         oauth_user_credentials = OAuthUserCredentials(oauth_user=user_login_name, oauth_key=generated_key, user_id=user.id)
         s.add(oauth_user_credentials)

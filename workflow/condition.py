@@ -6,10 +6,9 @@ from __future__ import print_function
 
 from mediatumtal import tal as _tal
 
+import core as _core
 from .workflow import WorkflowStep, registerStep, getNodeWorkflow
-from core import db
 
-q = db.query
 
 def register():
     registerStep("workflowstep_condition")
@@ -57,7 +56,7 @@ class WorkflowStep_Condition(WorkflowStep):
         # move node to correct next step depending on condition evaluation
         self.children.remove(node)
         newstep.children.append(node)
-        db.session.commit()
+        _core.db.session.commit()
 
         newstep.runAction(node, True)  # always run true operation
 
@@ -73,4 +72,4 @@ class WorkflowStep_Condition(WorkflowStep):
         data = data.to_dict()
         assert tuple(data) == ("condition",)
         self.settings = data
-        db.session.commit()
+        _core.db.session.commit()

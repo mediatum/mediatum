@@ -150,9 +150,8 @@ class BaseNodeMeta(DeclarativeMeta):
 
 
 def _cte_subtree(node):
-    from core import db
 
-    query = db.query(t_noderelation.c.cid).\
+    query = _core.db.query(t_noderelation.c.cid).\
         filter(t_noderelation.c.nid == node.id).\
         distinct().\
         cte(name="subtree")
@@ -161,9 +160,8 @@ def _cte_subtree(node):
 
 
 def _subquery_subtree_distinct(node):
-    from core import db
 
-    return (db.query(t_noderelation.c.cid)
+    return (_core.db.query(t_noderelation.c.cid)
             .filter(t_noderelation.c.nid == node.id)
             .distinct()
             .subquery())
@@ -173,7 +171,7 @@ def _subquery_subtree_container(node):
     from contenttypes.container import Container
     from core import db
 
-    query = (db.query(t_noderelation.c.cid)
+    query = (_core.db.query(t_noderelation.c.cid)
              .filter(t_noderelation.c.nid == node.id)
              .join(Container, Container.id == t_noderelation.c.cid)
              .subquery())
@@ -304,7 +302,6 @@ class Node(DeclarativeBase, NodeMixin):
         This excludes content nodes that are children of other content nodes.
         """
         from contenttypes.data import Content
-        from core import db
         sq = _subquery_subtree_distinct(self)
         return object_session(self).query(Content).filter(Node.id.in_(sq)).filter_by(subnode=False)
 

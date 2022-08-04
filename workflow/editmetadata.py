@@ -9,16 +9,14 @@ import json as _json
 import flask as _flask
 import mediatumtal.tal as _tal
 
+import core as _core
 import core.csrfform as _core_csrfform
 import core.translation as _core_translation
 from .workflow import WorkflowStep, registerStep
 import schema.schema as _schema
 from schema.schema import getMetaType
-from core import db
 from core.users import user_from_session as _user_from_session
 import utils.utils as _utils
-
-q = db.query
 
 
 def register():
@@ -58,7 +56,7 @@ class WorkflowStep_EditMetadata(WorkflowStep):
             mask.apply_edit_update_attrs_to_node(node, attrs)
             key = _utils.gen_secure_token(64).upper()
             node.set("system.wfstep-editmetadata.key", key)
-            db.session.commit()
+            _core.db.session.commit()
             return '<div id="mediatum-workflow-editmetadata-submitkey">{}</div>'.format(key)
 
         if mask:
@@ -96,4 +94,4 @@ class WorkflowStep_EditMetadata(WorkflowStep):
         data = data.to_dict()
         assert tuple(data) == ("mask",)
         self.settings = data
-        db.session.commit()
+        _core.db.session.commit()

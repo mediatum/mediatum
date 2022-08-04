@@ -10,15 +10,13 @@ import os
 import re as _re
 import shutil
 import time
+
 import utils as _utils_utils
-from core import db
 from core.database.postgres.file import File
 from .utils import getMimeType
 from core.config import resolve_datadir_path
 
 logg = logging.getLogger(__name__)
-q = db.query
-
 
 sanitize_filename = _functools.partial(_re.compile("[^a-zA-Z0-9._-]").sub, "")
 

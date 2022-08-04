@@ -12,6 +12,7 @@ from __future__ import print_function
 
 import logging
 
+import core as _core
 from core.database.postgres.user import UserGroup
 from core import config
 from core.database.postgres.user import User
@@ -28,13 +29,11 @@ def check_database():
     Structural validity of the database should be checked by the database connector.
     """
     from core.systemtypes import Root
-    from core import db
     from core.database.postgres.node import Node
-    q = db.query
     # root check
-    possible_root_nodes = q(Root).all()
+    possible_root_nodes = _core.db.query(Root).all()
     if not possible_root_nodes:
-        node_count = q(Node).count()
+        node_count = _core.db.query(Node).count()
         if node_count == 0:
             raise InvalidDatabase("the database doesn't contain any nodes"\
                             "\nHINT: Did you forget to load initial data or import a database dump?"\
@@ -47,7 +46,7 @@ def check_database():
 
     # user check
     guest_user_login_name = config.get_guest_name()
-    possible_guest_users = q(User).filter_by(login_name=guest_user_login_name).all()
+    possible_guest_users = _core.db.query(User).filter_by(login_name=guest_user_login_name).all()
     if not possible_guest_users:
         raise InvalidDatabase("guest user named '" + guest_user_login_name +"' not found."\
                         "\nHINT: Check user.guestuser setting. The value must be a login_name of an user.")
@@ -56,6 +55,6 @@ def check_database():
         raise InvalidDatabase("multiple guest users named '" + guest_user_login_name +"' found."\
                         "\nHINT: Check user.guestuser setting. The value must be the login_name of a single user.")
 
-    some_admin_group = q(UserGroup).filter_by(is_admin_group=True).first()
+    some_admin_group = _core.db.query(UserGroup).filter_by(is_admin_group=True).first()
     if not some_admin_group:
         logg.warning("no admin group found. This works, but normally you should define at least one admin group.")

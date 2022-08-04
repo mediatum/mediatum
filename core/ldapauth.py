@@ -7,7 +7,7 @@ from __future__ import print_function
 import logging
 import ldap
 
-from core import db
+import core as _core
 from core.database.postgres.user import AuthenticatorInfo
 from core.database.postgres.user import User
 from core.database.postgres.user import UserGroup
@@ -18,7 +18,6 @@ from utils.compat import iteritems
 
 
 logg = logging.getLogger(__name__)
-q = db.query
 
 ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
 ldap.set_option(ldap.OPT_X_TLS, ldap.OPT_X_TLS_DEMAND)
@@ -127,7 +126,7 @@ class LDAPAuthenticator(Authenticator):
                 user.group_assocs.remove(group_assoc)
 
         # add missing groups from LDAP if we have a mediaTUM usergroup with that name
-        groups = q(UserGroup).filter(UserGroup.name.in_(ldap_group_names)).all()
+        groups = _core.db.query(UserGroup).filter(UserGroup.name.in_(ldap_group_names)).all()
         for group in groups:
             if group not in user.groups:
                 user.group_assocs.append(UserToUserGroup(usergroup=group, managed_by_authenticator=True))
@@ -137,7 +136,7 @@ class LDAPAuthenticator(Authenticator):
     def add_ldap_user(self, data, uname, authenticator_info):
         """Creates LDAP user and adds it to the session if there's at least one group associated with that user.
         :returns: User or None if user was not added."""
-        s = db.session
+        s = _core.db.session
         user_data = self.get_user_data(data)
         user = User(can_change_password=False, active=True, authenticator_info=authenticator_info, **user_data)
 
@@ -200,7 +199,7 @@ class LDAPAuthenticator(Authenticator):
             return
 
         if login_result_data[0][0] == user_dn:
-            user = q(User).filter_by(
+            user = _core.db.query(User).filter_by(
                 login_name=dir_id.decode("utf8")).join(AuthenticatorInfo).filter_by(
                 name=self.name,
                 auth_type=LDAPAuthenticator.auth_type).scalar()
@@ -211,13 +210,16 @@ class LDAPAuthenticator(Authenticator):
                     logg.warning("cannot update existing user data for login name %s in read-only mode", login)
                 else:
                     self.update_ldap_user(login_result_data[0][1], user)
-                    db.session.commit()
+                    _core.db.session.commit()
 
                 logg.info("LDAP auth succeeded for known login name %s", login)
                 return user
             else:
                 data = login_result_data[0][1]
-                authenticator_info = q(AuthenticatorInfo).filter_by(name=self.name, auth_type=LDAPAuthenticator.auth_type).scalar()
+                authenticator_info = _core.db.query(AuthenticatorInfo).filter_by(
+                    name=self.name,
+                    auth_type=LDAPAuthenticator.auth_type,
+                    ).scalar()
                 user = self.add_ldap_user(data, login, authenticator_info)
 
                 if config.getboolean("config.readonly"):
@@ -227,7 +229,7 @@ class LDAPAuthenticator(Authenticator):
                     
                 # refuse login if no user was created (if no matching group was found)
                 if user is not None:
-                    db.session.commit()
+                    _core.db.session.commit()
                     logg.info("LDAP auth succeeded for login name %s, created new user", login)
                     return user
                 else:

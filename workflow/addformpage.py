@@ -17,6 +17,7 @@ import itertools as _itertools
 import fdfgen
 from mediatumtal import tal as _tal
 
+import core as _core
 import utils.utils as _utils_utils
 from .workflow import WorkflowStep
 from .workflow import registerStep
@@ -29,7 +30,6 @@ from utils.date import format_date, now
 import core.config as config
 import utils.process
 
-from core import db
 from core.database.postgres.file import File
 
 logg = logging.getLogger(__name__)
@@ -183,7 +183,7 @@ class WorkflowStep_AddFormPage(WorkflowStep):
                 node.files.append(File(origname, 'upload', 'application/pdf'))  # store original filename
                 tuple(_itertools.imap(node.files.remove, old_files))
                 node.event_files_changed()
-                db.session.commit()
+                _core.db.session.commit()
                 logg.info("workflowstep '%s' (%s): added pdf form to pdf (node '%s' (%s)) fields: %s",
                           self.name, self.id, node.name, node.id, fields)
                 self.forward(node, True)
@@ -204,7 +204,7 @@ class WorkflowStep_AddFormPage(WorkflowStep):
             shutil.copy(tmpdirjoin("filled.pdf"), new_form_path)
 
         node.files.append(File(new_form_path, 'wfstep-addformpage', 'application/pdf'))
-        db.session.commit()
+        _core.db.session.commit()
         logg.info("workflowstep '%s' (%s): added separate pdf form to node (node '%s' (%s)) fields: %s, path: '%s'",
                   self.name, self.id, node.name, node.id, fields, new_form_path)
         self.forward(node, True)
@@ -243,4 +243,4 @@ class WorkflowStep_AddFormPage(WorkflowStep):
             data[attr] = bool(data.get(attr))
         assert frozenset(data) == frozenset(("fields_editable", "form_separate", "form_overwrite"))
         self.settings = data
-        db.session.commit()
+        _core.db.session.commit()

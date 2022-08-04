@@ -6,12 +6,11 @@ from __future__ import print_function
 
 import operator as _operator
 
+import core as _core
 from core.database.postgres.node import Node as _Node
-from core import db as _db
 from schema.schema import Metadatatype as _Metadatatype
 from sqlalchemy import func as _func
 
-q = _db.query
 
 class SortChoice(object):
     """
@@ -48,12 +47,10 @@ def get_sort_choices(container=None, metadatatype=None, off="", t_off="", t_desc
         metadatatypes = (metadatatype,)
     else:
         schemanames = container.all_children_by_query(
-            q(_Node.schema)
-            .filter_by(subnode=False)
-            .group_by(_Node.schema)
-            .order_by(_func.count(_Node.schema).desc())
-        )
-        metadatatypes = (q(_Metadatatype).filter_by(name=s[0]).one() for s in schemanames)
+            _core.db.query(_Node.schema).filter_by(subnode=False).group_by(_Node.schema).order_by(
+                _func.count(_Node.schema).desc(),
+                ))
+        metadatatypes = (_core.db.query(_Metadatatype).filter_by(name=s[0]).one() for s in schemanames)
 
     yield SortChoice(t_off, off, False, "not selected" if selected_value else "")
     for m in metadatatypes:

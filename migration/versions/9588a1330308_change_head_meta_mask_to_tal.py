@@ -28,8 +28,6 @@ _core_init.full_init()
 import schema.schema as _schema
 from core.database.postgres import node as _postgres_node
 
-_q = _core.db.query
-
 
 def _new_author(attribute):
     assert '"' not in attribute and "'" not in attribute
@@ -72,11 +70,11 @@ def _new_meta_attribute(mapping, attribute):
 
 def _get_tal_expression(mask):
     for maskitem in mask.children:
-        attribute = _q(_postgres_node.Node).get(maskitem.get("attribute")).name
+        attribute = _core.db.query(_postgres_node.Node).get(maskitem.get("attribute")).name
         mapping = maskitem.get("mappingfield")
         fieldtype = maskitem.get("fieldtype")
         if fieldtype == "mapping":
-            mapping = _q(_postgres_node.Node).get(mapping).name
+            mapping = _core.db.query(_postgres_node.Node).get(mapping).name
             if mapping == "citation_author":
                 yield _new_author(attribute)
             elif mapping == "citation_pdf_url":
@@ -120,7 +118,7 @@ def _create_new_mask(metadatatype, tal_expression, mask_name):
 
 
 def upgrade():
-    for metadatatype in _q(_schema.Metadatatypes).one().children:
+    for metadatatype in _core.db.query(_schema.Metadatatypes).one().children:
         head_meta = metadatatype.get_mask('head_meta')
         if not head_meta:
             continue
@@ -137,7 +135,7 @@ def upgrade():
 
 
 def downgrade():
-    for metadatatype in _q(_schema.Metadatatypes).one().children:
+    for metadatatype in _core.db.query(_schema.Metadatatypes).one().children:
         head_meta_old = metadatatype.get_mask('head_meta_old_nontal')
         if not head_meta_old:
             continue

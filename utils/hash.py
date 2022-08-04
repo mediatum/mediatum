@@ -7,9 +7,7 @@ from __future__ import print_function
 import logging
 import os
 import hashlib
-from core import db
 
-q = db.query
 logg = logging.getLogger(__name__)
 
 

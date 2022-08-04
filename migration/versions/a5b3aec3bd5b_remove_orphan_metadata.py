@@ -27,10 +27,8 @@ import schema.schema as _schema
 import core.database.postgres.node as _node
 
 
-_q = _core.db.query
-
 def upgrade():
-    cids = _q(_node.t_noderelation.c.cid).filter(_node.t_noderelation.c.nid == 1)
+    cids = _core.db.query(_node.t_noderelation.c.cid).filter(_node.t_noderelation.c.nid == 1)
 
     for ntype, nfctn in (
             # Order matters!
@@ -42,7 +40,7 @@ def upgrade():
             (_schema.Mask, _schema.delete_mask),
             (_schema.Metadatatype, _schema._delete_metadatatype),
            ):
-        map(nfctn, _q(ntype).filter(_node.Node.id.notin_(cids)))
+        map(nfctn, _core.db.query(ntype).filter(_node.Node.id.notin_(cids)))
         _core.db.session.commit()
 
 

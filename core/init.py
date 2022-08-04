@@ -177,23 +177,20 @@ def init_app():
 
 
 def init_db_connector():
-    import core
     from core.database.postgres.connector import PostgresSQLAConnector  # init DB connector
-    core.db = PostgresSQLAConnector()
+    _core.db = PostgresSQLAConnector()
 
 
 def connect_db(force_test_db=None, automigrate=False):
-    import core
-    core.db.configure(force_test_db)
-    core.db.create_engine()
+    _core.db.configure(force_test_db)
+    _core.db.create_engine()
 
     if automigrate:
-        core.db.upgrade_schema()
+        _core.db.upgrade_schema()
 
 
 def init_fulltext_search():
-    import core
-    core.db.init_fulltext_search()
+    _core.db.init_fulltext_search()
 
 
 def init_modules():
@@ -243,11 +240,10 @@ def check_undefined_nodeclasses(stub_undefined_nodetypes=None, fail_if_undefined
     * fail_if_undefined_nodetypes is False, stub_undefined_nodetypes is False (default):
         => just emit a warning that classes are missing
     """
-    from core import db
     from core.database.postgres.node import Node
 
     known_nodetypes = set(c.__mapper__.polymorphic_identity for c in Node.get_all_subclasses())
-    nodetypes_in_db = set(t[0] for t in db.query(Node.type.distinct()))
+    nodetypes_in_db = set(t[0] for t in _core.db.query(Node.type.distinct()))
     undefined_nodetypes = nodetypes_in_db - known_nodetypes - set(ignore_nodetypes)
 
     if undefined_nodetypes:
@@ -280,26 +276,23 @@ def update_nodetypes_in_db():
     They will be moved to their own tables later.
     """
     from contenttypes import Content, Container
-    from core import db
     from core.database.postgres.node import NodeType
-    q = db.query
-    s = db.session
 
-    db_nodetypes = set(t[0] for t in q(NodeType.name))
+    db_nodetypes = set(t[0] for t in _core.db.query(NodeType.name))
 
     for cls in Content.get_all_subclasses():
         typename = cls.__mapper__.polymorphic_identity
         if typename not in db_nodetypes:
-            s.add(NodeType(name=unicode(typename), is_container=False))
+            _core.db.session.add(NodeType(name=unicode(typename), is_container=False))
             logg.debug("added new content type '%s' to DB", typename)
 
     for cls in Container.get_all_subclasses():
         typename = cls.__mapper__.polymorphic_identity
         if typename not in db_nodetypes:
-            s.add(NodeType(name=unicode(typename), is_container=True))
+            _core.db.session.add(NodeType(name=unicode(typename), is_container=True))
             logg.debug("added new container type '%s' to DB", typename)
 
-    s.commit()
+    _core.db.session.commit()
 
 
 def _init_locks():
@@ -343,17 +336,15 @@ def basic_init(root_loglevel=None, config_filepath=None, prefer_config_filename=
     connect_db(force_test_db, automigrate)
     _set_current_init_state(init_state)
     _init_default_thumbnail()
-    from core import db
-    db.session.rollback()
+    _core.db.session.rollback()
 
 
 def _additional_init():
-    from core import db
     from core.database import validity
     from core.database.postgres.search import check_fulltext_attrs_search_indexes_node as _check_fulltext_attrs_search_indexes_node
     enable_startup_checks = config.getboolean("config.enable_startup_checks", True)
     if enable_startup_checks:
-        db.check_db_structure_validity()
+        _core.db.check_db_structure_validity()
         validity.check_database()
     if config.getboolean("workflows.activate", True):
         register_workflow()
@@ -375,7 +366,7 @@ def _additional_init():
         _check_fulltext_attrs_search_indexes_node()
     tal_setup()
     _core_webconfig.init_theme()
-    db.session.rollback()
+    _core.db.session.rollback()
 
 
 def full_init(root_loglevel=None, config_filepath=None, prefer_config_filename=None, log_filepath=None,

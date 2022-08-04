@@ -8,13 +8,11 @@ import logging
 import flask as _flask
 import mediatumtal.tal as _tal
 
+import core as _core
 import core.csrfform as _core_csrfform
 import core.translation as _core_translation
 from .workflow import WorkflowStep, registerStep
 from schema.schema import VIEW_HIDE_EMPTY, Metadatatype
-from core import db
-
-q = db.query
 
 logg = logging.getLogger(__name__)
 
@@ -49,7 +47,7 @@ class WorkflowStep_ShowData(WorkflowStep):
         fieldmap = []
         mask = None
         for maskname in self.settings["masks"]:
-            t = q(Metadatatype).filter_by(name=node.schema).scalar()
+            t = _core.db.query(Metadatatype).filter_by(name=node.schema).scalar()
             if t:
                 if node.get('system.wflanguage') != '':  # use correct language
                     mask = t.getMask("%s.%s" % (node.get('system.wflanguage'), maskname))
@@ -100,4 +98,4 @@ class WorkflowStep_ShowData(WorkflowStep):
         assert tuple(data) == ("masks",)
         masks = (m.strip() for m in data["masks"].split("\r\n"))
         self.settings = dict(masks=filter(None, masks))
-        db.session.commit()
+        _core.db.session.commit()

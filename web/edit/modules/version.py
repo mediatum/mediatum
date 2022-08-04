@@ -16,14 +16,13 @@ import httplib as _httplib
 import logging
 import mediatumtal.tal as _tal
 
+import core as _core
 import core.csrfform as _core_csrfform
 import core.translation as _core_translation
 from utils.date import format_date
-from core import db
 from core.database.postgres import node as _postgres_node
 from core.users import user_from_session
 
-q = db.query
 logg = logging.getLogger(__name__)
 
 
@@ -36,7 +35,7 @@ def getContent(req, ids):
         return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
     nid, = ids
-    node = q(_postgres_node.Node).get(nid)
+    node = _core.db.query(_postgres_node.Node).get(nid)
     if not node.has_write_access() or node is userdir:
         req.response.status_code = _httplib.FORBIDDEN
         return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
@@ -51,7 +50,7 @@ def getContent(req, ids):
 
         with node.new_tagged_version(comment=comment, user=user):
             node.attrs["updatetime"] = format_date()
-        db.session.commit()
+        _core.db.session.commit()
         logg.debug("%s create version %s", user.login_name, idstr)
 
     # version handling

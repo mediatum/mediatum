@@ -4,9 +4,10 @@
 from __future__ import division
 from __future__ import print_function
 
+import core as _core
 from .workflow import WorkflowStep, registerStep
-from core import db
 from utils.utils import suppress
+
 
 def register():
     registerStep("workflowstep_delete")
@@ -18,4 +19,4 @@ class WorkflowStep_Delete(WorkflowStep):
         for p in node.parents:
             with suppress(Exception, warn=False):
                 p.children.remove(node)
-                db.session.commit()
+                _core.db.session.commit()

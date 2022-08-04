@@ -12,7 +12,8 @@ import os
 
 from sqlalchemy_continuum.utils import version_class
 from urllib import quote
-from core import db
+
+import core as _core
 from core.database.postgres.file import File
 import core.config as config
 from core import request_handler as _request_handler
@@ -34,7 +35,6 @@ from utils.compat import iterkeys
 
 
 logg = logging.getLogger(__name__)
-q = db.query
 _webroots = []
 
 
@@ -291,7 +291,7 @@ def fetch_archived(req):
         req.response.status_code = 400
         return 400
 
-    node = q(Content).get(nid)
+    node = _core.db.query(Content).get(nid)
 
     archive = get_archive_for_node(node)
     if archive:
@@ -310,7 +310,7 @@ def fetch_archived(req):
         req.response.set_data(msg)
         logg.warning("%s", msg)
 
-    db.session.commit()
+    _core.db.session.commit()
 
 
 def send_from_webroot(req):

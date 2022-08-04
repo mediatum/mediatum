@@ -7,12 +7,10 @@ from __future__ import print_function
 import httplib as _httplib
 import logging
 
+import core as _core
 import core.translation as _core_translation
-from core import db
 from contenttypes import Data
 from sqlalchemy.orm.exc import NoResultFound
-
-q = db.query
 
 logg = logging.getLogger(__name__)
 
@@ -25,7 +23,7 @@ def export(req):
         return
 
     try:
-        node = q(Data).get(p[0])
+        node = _core.db.query(Data).get(p[0])
     except:
         req.response.set_data("Object not found")
         req.response.status_code = _httplib.NOT_FOUND

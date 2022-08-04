@@ -9,9 +9,9 @@ from __future__ import print_function
 import logging
 from sqlalchemy import text
 
+import core as _core
 import core.nodecache as _core_nodecache
 from core import config
-from core import db
 from core.database.postgres.node import Node
 from core.database.postgres.user import User
 from contenttypes import Directory
@@ -20,27 +20,27 @@ from sqlalchemy.orm.exc import NoResultFound
 
 logg = logging.getLogger(__name__)
 
-q = db.query
-
 
 def migrate_home_dirs(orphan_dir_id):
     """ Moves orphaned home dirs (not associated with an user) to a directory with id `orphan_dir_id`.
         The remaining home dirs are renamed: Arbeitsverzeichnis(<name>) -> <user_login_name>_<user_id>.
     """
-    s = db.session
     home_root = _core_nodecache.get_home_root_node()
-    orphan_dir = q(Directory).get(orphan_dir_id)
+    orphan_dir = _core.db.query(Directory).get(orphan_dir_id)
 
     for home_dir in home_root.children:
         # XXX: fix DB later, we have multiple users for a single home dir
-        user = q(User).filter_by(home_dir_id=home_dir.id).first()
+        user = _core.db.query(User).filter_by(home_dir_id=home_dir.id).first()
 
         if user is None:
             logg.info("orphaned home dir name=%s id=%s", home_dir.name, home_dir.id)
             home_dir.system_attrs[u"migration"] = u"moved by mysql -> postgres migration"
             # we go "low-level" here because we don't want to trigger noderelation updates via nodemapping
-            s.execute(text("DELETE FROM noderelation WHERE cid=:cid").bindparams(cid=home_dir.id))
-            s.execute(text("INSERT INTO noderelation VALUES(:nid, :cid, 1)").bindparams(nid=orphan_dir.id, cid=home_dir.id))
+            _core.db.session.execute(text("DELETE FROM noderelation WHERE cid=:cid").bindparams(cid=home_dir.id))
+            _core.db.session.execute(text("INSERT INTO noderelation VALUES(:nid, :cid, 1)").bindparams(
+                nid=orphan_dir.id,
+                cid=home_dir.id,
+                ))
         else:
             new_name = u"{}_{}".format(user.id, user.login_name)
             if home_dir.name == new_name:
@@ -86,7 +86,7 @@ def set_admin_group():
     from core.database.postgres.user import UserGroup
     admin_group_name = config.get(u"user.admingroup", u"administration")
     try:
-        admin_group = q(UserGroup).filter_by(name=admin_group_name).one()
+        admin_group = _core.db.query(UserGroup).filter_by(name=admin_group_name).one()
     except NoResultFound:
         logg.warning("admin group '%s' specified in config file does not exist, no admin group set!")
 
@@ -97,7 +97,7 @@ def set_admin_group():
 
 def rehash_md5_password_hashes():
     """Double-hash unsalted md5 hashes for internal users with our new hashing alg scrypt"""
-    for user in q(User).filter_by(authenticator_id=0):
+    for user in _core.db.query(User).filter_by(authenticator_id=0):
         if user.password_hash:
             if not user.salt:
                 user.change_password(user.password_hash)

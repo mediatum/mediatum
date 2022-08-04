@@ -15,6 +15,7 @@ from functools import partial as _partial
 
 import flask as _flask
 
+import core as _core
 import core.translation as _core_translation
 from core import config as _config
 from utils import utils as _utils_utils
@@ -235,11 +236,9 @@ def _callhandler(handler_func, req):
         # XXX: this shouldn't be in Athana, most of it is mediaTUM-specific...
         # TODO: add some kind of exception handler system for Athana
         from utils.log import make_xid_and_errormsg_hash
-        from core import db
-
         # Roll back if the error was caused by a database problem.
         # DB requests in this error handler will fail until rollback is called, so let's do it here.
-        db.session.rollback()
+        _core.db.session.rollback()
 
         xid, hashed_errormsg, hashed_tb = make_xid_and_errormsg_hash()
 

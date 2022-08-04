@@ -28,7 +28,7 @@ import sys
 
 sys.path.append(_os_path.normpath(_os_path.join(__file__, "..", "..")))
 
-from core import db
+import core as _core
 from core.database.postgres.permission import IPNetworkList
 
 
@@ -103,12 +103,12 @@ def update_mediatum_iplist(name, addresses):
     Create or update the IPNetworkList with give
     name with the ip objects in 'addresses'.
     """
-    iplist = db.query(IPNetworkList).filter(IPNetworkList.name == name).scalar()
+    iplist = _core.db.query(IPNetworkList).filter(IPNetworkList.name == name).scalar()
     if not iplist:
         iplist = IPNetworkList(name=name)
-        db.session.add(iplist)
+        _core.db.session.add(iplist)
     iplist.subnets = addresses
-    db.session.commit()
+    _core.db.session.commit()
 
 
 def get_mediatum_iplist(name):
@@ -116,7 +116,7 @@ def get_mediatum_iplist(name):
     Fetch the IPNetworkList with given name
     and return its subnets list of ip ranges.
     """
-    query = db.query(IPNetworkList).filter(IPNetworkList.name == name)
+    query = _core.db.query(IPNetworkList).filter(IPNetworkList.name == name)
     return query.one().subnets
 
 

@@ -34,8 +34,6 @@ down_revision = u'ed88eef38764'
 branch_labels = None
 depends_on = None
 
-_q = _core.db.query
-
 
 def _parse_item(item):
     element = dict(subelements=list())
@@ -120,7 +118,7 @@ def _upgrade_items(items):
 
 
 def upgrade():
-    for metafield in _q(_schema.Metafield).filter(_schema.Metafield.a.type == 'list').prefetch_attrs():
+    for metafield in _core.db.query(_schema.Metafield).filter(_schema.Metafield.a.type == 'list').prefetch_attrs():
         data = metafield.metatype_data
         data['listelements'] = _upgrade_items(data['listelements'])
         metafield.metatype_data = data
@@ -142,7 +140,7 @@ def _downgrade_element(elements, _indent=1):
 
 
 def downgrade():
-    for metafield in _q(_schema.Metafield).filter(_schema.Metafield.a.type == 'list').prefetch_attrs():
+    for metafield in _core.db.query(_schema.Metafield).filter(_schema.Metafield.a.type == 'list').prefetch_attrs():
         data = metafield.metatype_data
         data['listelements'] = tuple(_downgrade_element(data['listelements']))
         metafield.metatype_data = data

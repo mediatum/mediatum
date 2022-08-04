@@ -18,7 +18,7 @@ from sympy import Symbol
 from sympy.logic import boolalg, Not, And, Or
 from sqlalchemy import sql, func
 
-from core import db
+import core as _core
 from core.database.postgres.user import User
 from core.database.postgres.user import UserGroup
 from core.database.postgres import mediatumfunc
@@ -28,9 +28,6 @@ from migration import oldaclparser
 from migration.oldaclparser import ACLAndCondition, ACLDateAfterClause, ACLDateBeforeClause, ACLOrCondition, ACLNotCondition,\
     ACLTrueCondition, ACLFalseCondition, ACLGroupCondition, ACLIPCondition, ACLUserCondition, ACLParseException, ACLIPListCondition
 from utils.compat import iteritems
-
-
-q = db.query
 
 logg = logging.getLogger(__name__)
 
@@ -53,7 +50,7 @@ def load_node_rules(ruletype):
         " AND name NOT LIKE 'Arbeitsverzeichnis (%'"
         " AND id IN (SELECT id FROM mediatum.node)".format(ruletype)))
 
-    node_rules = db.session.execute(stmt)
+    node_rules = _core.db.session.execute(stmt)
     res = node_rules.fetchall()
     nid_to_rulesets = {r[0]: [rs for rs in r[1]["rulesets"] if rs is not None] for r in res}
     nid_to_special_rulestrings = {r[0]: [rs for rs in r[1]["special_rulestrings"] if rs is not None] for r in res}
@@ -129,7 +126,7 @@ def convert_node_symbolic_rules_to_access_rules(nid_to_symbolic_rule, symbol_to_
 
 def expand_rulestr(rulestr):
     expanded_accessrule = mediatumfunc.to_json(mediatumfunc.expand_acl_rule(rulestr))
-    res = db.session.execute(sql.select([expanded_accessrule])).scalar()
+    res = _core.db.session.execute(sql.select([expanded_accessrule])).scalar()
     return res["expanded_rule"], res["rulesets"]
 
 
@@ -156,8 +153,14 @@ def convert_old_acl(rulestr):
 
 
 def find_equivalent_access_rule(a):
-    return q(AccessRule).filter_by(invert_date=a.invert_date, invert_group=a.invert_group, invert_subnet=a.invert_subnet,
-                                   group_ids=a.group_ids, subnets=a.subnets, dateranges=a.dateranges).scalar()
+    return _core.db.query(AccessRule).filter_by(
+        invert_date=a.invert_date,
+        invert_group=a.invert_group,
+        invert_subnet=a.invert_subnet,
+        group_ids=a.group_ids,
+        subnets=a.subnets,
+        dateranges=a.dateranges
+        ).scalar()
 
 
 def convert_symbolic_rules_to_dnf(nid_to_symbolic_rule, simplify=False):
@@ -165,7 +168,6 @@ def convert_symbolic_rules_to_dnf(nid_to_symbolic_rule, simplify=False):
 
 
 def save_node_to_ruleset_mappings(nid_to_rulesets, ruletype):
-    s = db.session
     logg.info("saving %s ruleset mappings for %d nodes", ruletype, len(nid_to_rulesets))
     node_to_access_ruleset_it = (
         NodeToAccessRuleset(
@@ -174,14 +176,14 @@ def save_node_to_ruleset_mappings(nid_to_rulesets, ruletype):
             ruletype=ruletype) for nid,
         ruleset_names in nid_to_rulesets.items() for r in set(ruleset_names) if r is not None)
 
-    s.add_all(node_to_access_ruleset_it)
+    _core.db.session.add_all(node_to_access_ruleset_it)
 
 
 def save_node_to_special_rules(nid_to_special_rules, ruletype):
     logg.info("saving special %s rules for %d nodes", ruletype, len(nid_to_special_rules))
     for nid, rules_with_flags in iteritems(nid_to_special_rules):
         ruleset_assoc = _create_private_ruleset_assoc_for_nid(nid, ruletype)
-        db.session.add(ruleset_assoc)
+        _core.db.session.add(ruleset_assoc)
         rs = ruleset_assoc.ruleset
         assert rules_with_flags, "tried to save a special ruleset with no rules"
         for rule, (invert, blocking) in rules_with_flags:
@@ -214,18 +216,18 @@ def migrate_rules(ruletypes=["read", "write", "data"]):
         nid_to_special_rules = convert_nid_to_rulestr(nid_to_special_rulestrings)
 
         save_node_to_ruleset_mappings(nid_to_rulesets, ruletype)
-        db.session.flush()
+        _core.db.session.flush()
         save_node_to_special_rules({k: v for k, v in iteritems(nid_to_special_rules) if v}, ruletype)
-        db.session.flush()
+        _core.db.session.flush()
         create_rulemappings_stmt = sql.select([mediatumfunc.create_node_rulemappings_from_rulesets(ruletype)])
-        db.session.execute(create_rulemappings_stmt)
+        _core.db.session.execute(create_rulemappings_stmt)
 
 
 def set_home_dir_permissions():
-    users_with_home_dir = db.query(User).filter(User.home_dir_id != None)
+    users_with_home_dir = _core.db.query(User).filter(User.home_dir_id != None)
     for user in users_with_home_dir:
         private_group = user.get_or_add_private_group()
-        db.session.flush()
+        _core.db.session.flush()
         assert private_group.id
         rule = AccessRule(group_ids=[private_group.id])
 
@@ -235,11 +237,10 @@ def set_home_dir_permissions():
 
 
 def migrate_access_entries():
-    s = db.session
     # we need a "internal" ruleset for workflows that is empty
     workflow_ruleset = AccessRuleset(name=u"workflow", description=u"dummy access ruleset for workflow nodes")
-    s.add(workflow_ruleset)
-    access = s.execute("select * from mediatum_import.access").fetchall()
+    _core.db.session.add(workflow_ruleset)
+    access = _core.db.session.execute("select * from mediatum_import.access").fetchall()
     for a in access:
         rulestr = a["rule"]
         ruleset = AccessRuleset(name=a["name"], description=a["description"])
@@ -258,7 +259,7 @@ def migrate_access_entries():
                 rule = existing_rule
 
             rule_assoc = AccessRulesetToRule(rule=rule, ruleset=ruleset, invert=invert, blocking=blocking)
-            s.add(rule_assoc)
+            _core.db.session.add(rule_assoc)
 
 
 class OldACLToBoolExprConverter(object):
@@ -367,7 +368,7 @@ def make_ipnetwork_from_rule(acl_cond):
 
 def get_iplist_from_cond(acl_cond):
     list_name = acl_cond.listid
-    iplist = q(IPNetworkList).get(list_name)
+    iplist = _core.db.query(IPNetworkList).get(list_name)
 
     if iplist is None:
         logg.warning(
@@ -400,13 +401,13 @@ class SymbolicExprToAccessRuleConverter(object):
     def get_private_user_group_id_from_cond(self, acl_cond):
         """Returns the private user group id or a fake id if nothing was found."""
         username = acl_cond.name
-        user = q(User).filter_by(login_name=username).scalar()
+        user = _core.db.query(User).filter_by(login_name=username).scalar()
         if user is None:
             logg.debug("user %s not found", username)
             self.missing_users[acl_cond] = username
             return self._fake_groupid(username)
         group = user.get_or_add_private_group()
-        db.session.flush()
+        _core.db.session.flush()
         assert group.id
         return group.id
 
@@ -420,7 +421,7 @@ class SymbolicExprToAccessRuleConverter(object):
 
     def get_group_id_from_cond(self, acl_cond):
         groupname = acl_cond.group
-        group = q(UserGroup).filter_by(name=groupname).first()
+        group = _core.db.query(UserGroup).filter_by(name=groupname).first()
         if not group:
             logg.debug("group %s not found", groupname)
             self.missing_groups[acl_cond] = groupname

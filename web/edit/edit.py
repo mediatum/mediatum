@@ -12,13 +12,13 @@ import time
 
 import mediatumtal.tal as _tal
 
+import core as _core
 import core.csrfform as _core_csrfform
 import core.nodecache as _core_nodecache
 import core.translation as _core_translation
 import web.edit.edit_common as _web_edit_edit_common
 import core.systemtypes as _core_systemtypes
 import utils.utils as _utils_utils
-
 from contenttypes.container import Collections
 from contenttypes.container import Home
 from contenttypes.data import Data
@@ -34,7 +34,6 @@ import web.common.sort as _sort
 from web import frontend as _web_frontend
 
 logg = logging.getLogger(__name__)
-q = db.query
 
 
 def getTreeLabel(node, lang):
@@ -76,7 +75,7 @@ def getIDPaths(nid, sep="/", containers_only=True):
     return list of sep-separated id lists for paths to node with id nid
     '''
     try:
-        node = q(Node).get(nid)
+        node = _core.db.query(Node).get(nid)
         if not node.has_read_access():
             return []
     except:
@@ -123,7 +122,7 @@ def frameset(req):
 
     language = _core_translation.set_language(req.accept_languages)
     id = req.values.get("id", _core_nodecache.get_collections_node().id)
-    currentdir = q(Data).get(id)
+    currentdir = _core.db.query(Data).get(id)
     if currentdir is None:
         req.response.status_code = _httplib.NOT_FOUND
         req.response.set_data(_core_translation.translate(language, "error_msg_objectnotfound"))
@@ -186,7 +185,7 @@ def frameset(req):
     # does the user have a homedir? if not, create one
     if user.home_dir is None:
         user.create_home_dir()
-        db.session.commit()
+        _core.db.session.commit()
         logg.info("created new home dir for user #%s (%s)", user.id, user.login_name)
 
     folders = dict(
@@ -200,8 +199,10 @@ def frameset(req):
     if not user.is_admin:
         # search all metadatatypes which are container
         container_nodetype_names = [c.__name__.lower() for c in containertypes]
-        allowed_container_metadatanames = [x[0] for x in q(Metadatatype.name)
-                                                  .filter(Metadatatype.name.in_(container_nodetype_names)).filter_read_access()]
+        allowed_container_metadatanames = [
+            x[0] for x in _core.db.query(Metadatatype.name).filter(Metadatatype.name.in_(
+                container_nodetype_names),
+                ).filter_read_access()]
 
         # remove all elements from containertypes which names are not in container_metadatanames
         new_containertypes = []
@@ -273,7 +274,7 @@ def _handletabs(req, node, ids, tabs, sort_choices, has_child):
     if len(ids) > 1:
         skip_items.add("version")
         skip_items.add("view")
-    if srcnodeid and q(Node).get(int(srcnodeid)) is user.trash_dir:
+    if srcnodeid and _core.db.query(Node).get(int(srcnodeid)) is user.trash_dir:
         skip_items.add("deleteobject")
         skip_items.add("deleteall")
     if not has_child:
@@ -418,7 +419,7 @@ def edit_tree(req):
             homenodefilter = req.values.get('homenodefilter', '')
             if homenodefilter:
                 pattern = "%" + homenodefilter.strip() + "%"
-                nodes = (q(Node).join(User, User.home_dir_id == Node.id)
+                nodes = (_core.db.query(Node).join(User, User.home_dir_id == Node.id)
                          .filter(User.login_name.ilike(pattern) | User.display_name.ilike(pattern)).all())
                 if nodes:
                     match_result = u'#={}'.format(len(nodes))
@@ -433,7 +434,7 @@ def edit_tree(req):
             else:
                 nodes = [home_dir]
     else:
-        nodes = q(Data).get(req.values['key']).container_children.sort_by_orderpos()
+        nodes = _core.db.query(Data).get(req.values['key']).container_children.sort_by_orderpos()
         nodes = [n for n in nodes if n.isContainer()]
 
     data = []
@@ -496,7 +497,7 @@ def action(req):
 
     if "tab" in req.values:
         nid = req.values.get("id")
-        node = q(Node).get(nid)
+        node = _core.db.query(Node).get(nid)
         if not node:
             req.response.status_code = _httplib.NOT_FOUND
             req.response.set_data(_core_translation.translate(language, "error_msg_objectnotfound"))
@@ -520,7 +521,7 @@ def action(req):
 
         for nid in set(nids + [_n.id for _n in [trashdir, uploaddir]]):
             try:
-                changednodes[nid] = getTreeLabel(q(Node).get(nid), language)
+                changednodes[nid] = getTreeLabel(_core.db.query(Node).get(nid), language)
             except:
                 logg.exception("exception ignored: could not make fancytree label for node %s", nid)
         req.response.status_code = _httplib.OK
@@ -535,7 +536,7 @@ def action(req):
         if not srcnodeid:
             return
         try:
-            srcnode = q(Node).get(srcnodeid)
+            srcnode = _core.db.query(Node).get(srcnodeid)
         except:
             req.response.status_code = _httplib.OK
             req.response.set_data(_tal.processTAL(
@@ -602,7 +603,7 @@ def action(req):
                 # container is added to the children
                 for c in srcnode.children:
                     c.orderpos += 1000
-        db.session.commit()
+        _core.db.session.commit()
 
         label = getTreeLabel(newnode, lang=language)
 
@@ -627,7 +628,7 @@ def action(req):
         return
 
     if action in ("move", "copy"):
-        dest = q(Node).get(req.values["dest"])
+        dest = _core.db.query(Node).get(req.values["dest"])
 
     idlist = getIDs(req)
 
@@ -646,7 +647,7 @@ def action(req):
                         logg.info("%s going to remove file %r from disk", user.login_name, f_path)
                         os.remove(f_path)
             trashdir.children.remove(n)
-            db.session.commit()
+            _core.db.session.commit()
             dest = trashdir
         changednodes[trashdir.id] = trashdir
         _parent_descr = [(p.name, p.id, p.type) for p in trashdir_parents]
@@ -654,7 +655,7 @@ def action(req):
         # return
     else:
         for id in idlist:
-            obj = q(Node).get(id)
+            obj = _core.db.query(Node).get(id)
             mysrc = srcnode
 
             if _utils_utils.isDirectory(obj) or _utils_utils.isCollection(obj):
@@ -663,11 +664,11 @@ def action(req):
             if action == "delete":
                 if obj.has_write_access():
                     parentids = _itertools.chain.from_iterable(
-                        q(_core_database_postgres_node.t_nodemapping.c.nid).filter(
+                        _core.db.query(_core_database_postgres_node.t_nodemapping.c.nid).filter(
                             _core_database_postgres_node.t_nodemapping.c.cid == id,
-                        ).all())
+                            ).all())
                     for nid in parentids:
-                        srcnode = q(Node).get(nid)
+                        srcnode = _core.db.query(Node).get(nid)
                         if srcnode is trashdir or not srcnode.has_write_access():
                             continue
                         srcnode.children.remove(obj)
@@ -685,7 +686,7 @@ def action(req):
                 if changednodes:
                     trashdir.children.append(obj)
                     changednodes[trashdir.id] = trashdir
-                    db.session.commit()
+                    _core.db.session.commit()
                 else:
                     logg.info("%s has no write access", user.login_name)
                     req.response.set_data(
@@ -710,7 +711,7 @@ def action(req):
                             changednodes[mysrc.id] = mysrc  # getLabel(mysrc)
                         dest.children.append(obj)
                         changednodes[dest.id] = dest  # getLabel(dest)
-                        db.session.commit()
+                        _core.db.session.commit()
 
                         logg.info(
                             "%s %s %r (%s, %s) from %s (%s, %s) to %s (%s, %s)",
@@ -773,7 +774,7 @@ def content(req):
 
     if 'id' in req.values and len(req.values) == 1:
         nid = long(req.values['id'])
-        node = q(Data).get(nid)
+        node = _core.db.query(Data).get(nid)
         if node is not None:
             cmd = "cd (%s %r, %r)" % (nid, node.name, node.type)
             logg.info("%s: %s", user.login_name, cmd)
@@ -785,7 +786,7 @@ def content(req):
     if len(ids) > 0:
         if ids[0] == "all":
             ids[0] = req.values["srcnodeid"]
-        node = q(Node).get(long(ids[0]))
+        node = _core.db.query(Node).get(long(ids[0]))
 
     language = _core_translation.set_language(req.accept_languages)
     if not node.has_read_access():
@@ -824,7 +825,7 @@ def content(req):
         node.set("sortfield", req.values["globalsort"])
 
     if req.values.get("style") != "popup":
-        n = q(Data).get(ids[0])
+        n = _core.db.query(Data).get(ids[0])
         if n.type.startswith("workflow"):
             n = _core_nodecache.get_root_node()
 
@@ -834,7 +835,7 @@ def content(req):
         else:
             n.set("sortfield", sortfield)
 
-        db.session.commit()
+        _core.db.session.commit()
 
     if req.values.get("srcnodeid"):
         paging_nodelist = EditorNodeList(
@@ -923,7 +924,7 @@ def content(req):
             # and display only folders
             nid = nid.split(',')[0]
             folders_only = True
-        n = q(Data).get(nid)
+        n = _core.db.query(Data).get(nid)
         s = []
         path = list(next(iter(get_accessible_paths(n) or ((),))))
         if not folders_only:
@@ -938,7 +939,7 @@ def content(req):
             )
         dircontent = ' <b>&raquo;</b> '.join(s)
     else:  # or current directory
-        n = q(Data).get(long(ids[0]))
+        n = _core.db.query(Data).get(long(ids[0]))
         s = []
         for p in next(iter(get_accessible_paths(n) or ((),))):
             s.append(

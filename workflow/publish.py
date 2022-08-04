@@ -6,15 +6,15 @@ from __future__ import print_function
 
 from mediatumtal import tal as _tal
 
+import core as _core
 from .workflow import WorkflowStep, registerStep
-from core import db
 from core.database.postgres.user import UserGroup
 from core.permission import get_all_access_rules
 from core.users import user_from_session as _user_from_session
 from utils.date import now
+
 import logging
 
-q = db.query
 logg = logging.getLogger(__name__)
 
 
@@ -30,7 +30,7 @@ class WorkflowStep_Publish(WorkflowStep):
     )
 
     def runAction(self, node, op=""):
-        ugid = q(UserGroup).filter_by(name=u'_workflow').one().id
+        ugid = _core.db.query(UserGroup).filter_by(name=u'_workflow').one().id
         user = _user_from_session()
 
         # remove access rule with '_workflow' user group id
@@ -50,10 +50,10 @@ class WorkflowStep_Publish(WorkflowStep):
                 if rule_assoc.rule == workflow_rule:
                     logg.debug("publish node id = %d: delete rule_id = %d ruleset_name = '%s'",
                                node.id, rule_assoc.rule_id, rule_assoc.ruleset_name)
-                    db.session.delete(rule_assoc)
+                    _core.db.session.delete(rule_assoc)
                     break
 
-        db.session.commit()
+        _core.db.session.commit()
 
         # set updatetime (possibly publish tag),
         # but refrain from doing so if updatetime is
@@ -65,7 +65,7 @@ class WorkflowStep_Publish(WorkflowStep):
                     node.set_legacy_update_attributes(user) # note: also updatetime is set
             elif self.settings["set_updatetime"]:
                 node.set('updatetime', unicode(now()))
-                db.session.commit()
+                _core.db.session.commit()
         logg.debug("publish node id = %d: db.session.commit()", node.id)
 
         self.forward(node, True)
@@ -84,4 +84,4 @@ class WorkflowStep_Publish(WorkflowStep):
             data[attr] = bool(data.get(attr))
         assert frozenset(data) == frozenset(("set_updatetime", "set_version"))
         self.settings = data
-        db.session.commit()
+        _core.db.session.commit()

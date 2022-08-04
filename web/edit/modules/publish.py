@@ -8,6 +8,7 @@ import flask as _flask
 
 import mediatumtal.tal as _tal
 
+import core as _core
 import core.csrfform as _core_csrfform
 import core.translation as _core_translation
 import web.edit.edit_common as _web_edit_edit_common
@@ -16,10 +17,9 @@ import logging
 import core.nodecache as _core_nodecache
 from contenttypes import Container
 from core.database.postgres.node import Node
-from core import db
 
 logg = logging.getLogger(__name__)
-q = db.query
+
 
 def getInformation():
     return {"version":"1.1", "system":1}
@@ -28,7 +28,7 @@ def getInformation():
 def getContent(req, ids):
     logg.error("publish.getContent")
     user = _user_from_session()
-    publishdir = q(Node).get(ids[0])
+    publishdir = _core.db.query(Node).get(ids[0])
     ret = ""
 
     errorids = []
@@ -43,11 +43,11 @@ def getContent(req, ids):
         for key in req.params.keys():
             if key.isdigit():
                 objlist.append(key)
-                src = q(Node).get(req.params.get("id"))
+                src = _core.db.query(Node).get(req.params.get("id"))
 
         for obj_id in objlist:
             remove_from_src = False
-            obj = q(Node).get(obj_id)
+            obj = _core.db.query(Node).get(obj_id)
             metadatatype = obj.metadatatype
             mask_validated = False
             for mask in metadatatype.getMasks(type="edit"): # check required fields
@@ -71,7 +71,7 @@ def getContent(req, ids):
                 if not dest_id: # no destination given
                     continue
 
-                dest = q(Node).get(dest_id)
+                dest = _core.db.query(Node).get(dest_id)
 
                 # XXX: this error handling should be revised, I think...
 
@@ -119,7 +119,7 @@ def getContent(req, ids):
             if remove_from_src:
                 try:
                     src.children.remove(obj)
-                    db.session.commit()
+                    _core.db.session.commit()
                 except:
                     num_db_err_nodes += 1
                     logg.exception("Error in publishing of node %s: Database error", obj.id)

@@ -22,13 +22,13 @@ import hashlib as _hashlib
 
 import mediatumtal.tal as _tal
 
+import core as _core
 import core.csrfform as _core_csrfform
 import core.translation as _core_translation
 from .workflow import WorkflowStep, registerStep
 import utils.fileutils as fileutils
 import utils.utils as _utils_utils
 from .showdata import mkfilelist, mkfilelistshort
-from core import db
 
 logg = logging.getLogger(__name__)
 _known_prefix = "known_mimetypes_"
@@ -88,7 +88,7 @@ class WorkflowStep_Upload(WorkflowStep):
                     node.files.append(file)
                     node.name = orig_filename
                     node.event_files_changed()
-        db.session.commit()
+        _core.db.session.commit()
         if "gotrue" in req.params:
             if hasattr(node, "event_files_changed"):
                 node.event_files_changed()
@@ -174,4 +174,4 @@ class WorkflowStep_Upload(WorkflowStep):
         settings["mimetypes"] = tuple(new_mimetypes.union(hashes.itervalues()))
         self.settings = settings
 
-        db.session.commit()
+        _core.db.session.commit()

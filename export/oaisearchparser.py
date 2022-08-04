@@ -6,13 +6,12 @@ from __future__ import print_function
 
 import re
 import logging
+
+import core as _core
 from utils.utils import intersection, union
 from utils.boolparser import BoolParser
 from core.database.postgres.node import Node
-from core import db
 from core.database.postgres.search import comparisons
-
-q = db.query
 
 pattern_op = re.compile('^([\:a-zA-Z0-9._-]+)\s*(=|>=|<=|<|>|[Ll][Ii][Kk][Ee])\s*"?([^"]*)"?$')
 
@@ -64,14 +63,14 @@ class OAISearchFieldCondition:
 
         if self.field == 'schema' and self.op == '=':
             logg.debug('OAISearchParser: ---> getting nodes with schema %s', self.value)
-            nodes = q(Node).filter_by(schema=self.value).all()
+            nodes = _core.db.query(Node).filter_by(schema=self.value).all()
 
         elif self.field and self.op and self.value:
             logg.debug('OAISearchParser: ---> going to make the query: Node.attrs["%s"] %s %s', self.field, self.op, self.value)
             if self.op.lower() == 'like':
-                nodes = q(Node).filter(Node.a[self.field].like(self.value)).all()
+                nodes = _core.db.query(Node).filter(Node.a[self.field].like(self.value)).all()
             else:
-                nodes = q(Node).filter(comparisons[self.op](Node.attrs[self.field].astext, self.value)).all()
+                nodes = _core.db.query(Node).filter(comparisons[self.op](Node.attrs[self.field].astext, self.value)).all()
         else:
             logg.debug('OAISearchParser: ---> OAISearchParser: Error evaluating FieldCondition')
             return []

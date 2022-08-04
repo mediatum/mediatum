@@ -5,13 +5,13 @@ from __future__ import division
 from __future__ import print_function
 
 from mediatumtal import tal
+
+import core as _core
 from schema.schema import VIEW_DATA_ONLY, VIEW_DEFAULT
 from core.metatype import Metatype
 from core.database.postgres.node import Node
-from core import db
 from utils.utils import esc
 
-q = db.query
 
 class m_label(Metatype):
 
@@ -99,7 +99,7 @@ class m_label(Metatype):
         metadatatype = req.params.get("metadatatype")
 
         if req.params.get("op", "") == "new":
-            pidnode = q(Node).get(req.params.get("pid"))
+            pidnode = _core.db.query(Node).get(req.params.get("pid"))
             if pidnode.get("type") in ("vgroup", "hgroup"):
                 for field in pidnode.all_children:
                     if field.type == "maskitem" and field.id != pidnode.id:

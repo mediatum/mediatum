@@ -28,10 +28,9 @@ import core.init as _core_init
 _core_init.full_init()
 import schema.schema as _schema
 
-_q = _core.db.query
 
 def upgrade():
-    for metafield in _q(_schema.Metafield).filter(_schema.Metafield.a.type == 'message').prefetch_attrs():
+    for metafield in _core.db.query(_schema.Metafield).filter(_schema.Metafield.a.type == 'message').prefetch_attrs():
         metafield.attrs['type'] = u'text'
     _core.db.session.commit()
 

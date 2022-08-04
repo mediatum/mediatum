@@ -6,15 +6,12 @@ from __future__ import print_function
 
 import mediatumtal.tal as _tal
 
+import core as _core
 import core.translation as _core_translation
 from schema.schema import getMetadataType, getAllMetaFields, VIEW_DATA_ONLY, VIEW_SUB_ELEMENT, Maskitem
-
-from core import db
 from core.database.postgres.node import Node
 from core.metatype import Metatype
 from utils import utils as _utils_utils
-
-q = db.query
 
 
 class m_hgroup(Metatype):
@@ -135,7 +132,7 @@ class m_hgroup(Metatype):
         if req.params.get("sel_id", "") != "":
             i = 0
             for id in req.params.get("sel_id")[:-1].split(";"):
-                f = getMetadataType(q(Node).get(id).get("type"))
+                f = getMetadataType(_core.db.query(Node).get(id).get("type"))
                 details += f.getMetaHTML(
                         item,
                         i,
@@ -151,7 +148,7 @@ class m_hgroup(Metatype):
         metadatatype = req.params.get("metadatatype")
 
         if req.params.get("op", "") == "new":
-            pidnode = q(Node).get(req.params.get("pid"))
+            pidnode = _core.db.query(Node).get(req.params.get("pid"))
             if pidnode.get("type") in ("vgroup", "hgroup"):
                 for field in pidnode.all_children:
                     if field.getType().getName() == "maskitem" and field.id != pidnode.id:

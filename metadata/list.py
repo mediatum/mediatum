@@ -13,10 +13,7 @@ import ruamel.yaml as _ruamel_yaml
 from utils.utils import esc
 import core.metatype as _core_metatype
 from core.metatype import Metatype
-from core import db
 import metadata.common_list as _common_list
-
-q = db.query
 
 _Element = _collections.namedtuple("_Element", "label optgroup indent count selected");
 # label: just the name from the elements list
@@ -24,6 +21,7 @@ _Element = _collections.namedtuple("_Element", "label optgroup indent count sele
 # counts: number of occurences in the data base (to be displayed in parentheses)
 # optgroup: True/False
 # selected: True/False
+
 
 def _format_elements(elements, selected_elements=frozenset(), counts={}, _indent=0):
     for element in elements:

@@ -31,8 +31,6 @@ down_revision = u'7e8416106379'
 branch_labels = None
 depends_on = None
 
-_q = _core.db.query
-
 
 def upgrade():
     for node in _core.db.query(Node).filter(Node.type == 'workflowstep_fileattachment').prefetch_attrs():

@@ -12,6 +12,7 @@ import mediatumtal.tal as _tal
 import sqlalchemy as _sqlalchemy
 import werkzeug.datastructures as _datastructures
 
+import core as _core
 import core.config as _config
 import core.csrfform as _core_csrfform
 import core.nodecache as _core_nodecache
@@ -43,14 +44,11 @@ from .metatype_mask import showMaskList
 from contenttypes.data import Data
 
 from core.database.postgres.node import Node
-from core import db
 import core.nodecache as _nodecache
 from schema.schema import Metadatatype, Mask
 from core.database.postgres.permission import NodeToAccessRuleset
 import core.database.postgres.node as _node
 from web import frontend as _web_frontend
-
-q = db.query
 
 logg = logging.getLogger(__name__)
 
@@ -88,7 +86,7 @@ def _get_nodecount_per_metaschema():
 
     root_id = _nodecache.get_root_node().id
     noderelation = _sqlalchemy.orm.aliased(_node.t_noderelation)
-    return dict(q(Node.schema, _sqlalchemy.func.count(_sqlalchemy.func.distinct(Node.id)))
+    return dict(_core.db.query(Node.schema, _sqlalchemy.func.count(_sqlalchemy.func.distinct(Node.id)))
                 .join(noderelation, noderelation.c.cid == Node.id)
                 .filter(noderelation.c.nid == root_id)
                 .group_by(Node.schema)
@@ -96,7 +94,7 @@ def _get_nodecount_per_metaschema():
 
 
 def _mask_details(req, nid=None, err=0):
-    mtype = q(Metadatatype).get(int(req.values["parent"]))
+    mtype = _core.db.query(Metadatatype).get(int(req.values["parent"]))
     morig_name = req.values.get("morig_name")
 
     if err == 0 and nid is None and morig_name is None :
@@ -104,7 +102,7 @@ def _mask_details(req, nid=None, err=0):
         mask = Mask(u"")
     elif nid is not None and err == 0:
         # edit mask
-        mask = q(Mask).get(nid)
+        mask = _core.db.query(Mask).get(nid)
         morig_name = mask.name
     elif err == 0:
         # edit mask
@@ -166,7 +164,7 @@ def validate(req, op):
                 if schema_name in _get_nodecount_per_metaschema():
                     raise RuntimeError(u"schema '{}' is used!".format(schema_name))
                 deleteMetaType(schema_name)
-                db.session.commit()
+                _core.db.session.commit()
                 break
 
             # show details for given metadatatype
@@ -199,12 +197,12 @@ def validate(req, op):
                            bibtexmapping=req.params.get("mbibtex", ""),
                            citeprocmapping=req.params.get("mciteproc", ""),
                            orig_name=req.params.get("mname_orig", ""))
-            mtype = q(Metadatatype).filter_by(name=req.params.get("mname")).scalar()
+            mtype = _core.db.query(Metadatatype).filter_by(name=req.params.get("mname")).scalar()
             if mtype:
                 new_ruleset_names = set(req.form.getlist("leftread"))
                 add_remove_rulesets_from_metadatatype(mtype, new_ruleset_names)
 
-            db.session.commit()
+            _core.db.session.commit()
 
     elif req.params.get("acttype") == "field":
         # section for fields
@@ -220,7 +218,7 @@ def validate(req, op):
             # delete metafield: key[13:-2] = pid | n
             elif key.startswith("deletedetail_"):
                 deleteMetaField(req.params.get("parent"), key[13:-2])
-                db.session.commit()
+                _core.db.session.commit()
                 return showDetailList(req, req.params.get("parent"))
 
         if "form_op" in req.params.keys():
@@ -274,8 +272,8 @@ def validate(req, op):
 
             # delete mask
             elif key.startswith("deletemask_"):
-                _schema.delete_mask(q(Node).get(key[11:-2]))
-                db.session.commit()
+                _schema.delete_mask(_core.db.query(Node).get(key[11:-2]))
+                _core.db.session.commit()
                 return showMaskList(req, req.params.get("parent"))
 
             # create autmatic mask with all fields
@@ -287,7 +285,7 @@ def validate(req, op):
             if key.startswith("copymask_"):
                 k = key[9:-2]
                 if k.isdigit():
-                    mask = q(Mask).get(k)
+                    mask = _core.db.query(Mask).get(k)
                 else:
                     mtype = getMetaType(req.params.get("parent"))
                     mask = mtype.getMask(k)
@@ -304,7 +302,9 @@ def validate(req, op):
                 # if the name contains wrong characters
                 return _mask_details(req, err=4)
 
-            mtype = q(Metadatatype).filter_by(name=q(Node).get(req.params.get("parent", "")).name).one()
+            mtype = _core.db.query(Metadatatype).filter_by(name=_core.db.query(Node).get(
+                req.params.get("parent", ""),
+                ).name).one()
             if (
                     ((req.values["form_op"] == "save_newmask") or
                      (req.values["form_op"] == "save_editmask" and req.values["mname"] != req.values.get("morig_name", "")))
@@ -322,12 +322,12 @@ def validate(req, op):
             elif req.params.get("form_op") == "save_newmask":
                 mask = Mask(req.params.get("mname", ""))
                 mtype.children.append(mask)
-                db.session.commit()
+                _core.db.session.commit()
             mask.name = req.params.get("mname")
             mask.setDescription(req.params.get("mdescription"))
             mask.setMasktype(req.params.get("mtype"))
             mask.setSeparator(req.params.get("mseparator"))
-            db.session.commit()
+            _core.db.session.commit()
 
             if req.params.get("mtype") == "export":
                 mask.setExportMapping(req.params.get("exportmapping") or "")
@@ -339,20 +339,20 @@ def validate(req, op):
                 if "notlast" in req.params.keys():
                     _opt += "l"
                 mask.setExportOptions(_opt)
-                db.session.commit()
+                _core.db.session.commit()
 
             mask.setLanguage(req.params.get("mlanguage", ""))
             mask.setDefaultMask("mdefault" in req.params.keys())
 
             for r in mask.access_ruleset_assocs.filter_by(ruletype=u'read'):
-                db.session.delete(r)
+                _core.db.session.delete(r)
 
             for key in req.params.keys():
                 if key.startswith("left"):
                     for r in req.params.get(key).split(';'):
                         mask.access_ruleset_assocs.append(NodeToAccessRuleset(ruleset_name=r, ruletype=key[4:]))
                     break
-            db.session.commit()
+            _core.db.session.commit()
         return showMaskList(req, ustr(req.params.get("parent", "")))
     return view(req)
 
@@ -361,7 +361,7 @@ def validate(req, op):
 
 def view(req):
     mtypes = _nodecache.get_metadatatypes_node().children.order_by("name").all()
-    if set(q(Metadatatype).all()) - set(mtypes):
+    if set(_core.db.query(Metadatatype).all()) - set(mtypes):
         raise RuntimeError(u"unlinked metadatatypes found")
     actfilter = _web_admin.adminutils.getFilter(req)
     used_by = _get_nodecount_per_metaschema()
@@ -434,7 +434,7 @@ def MetatypeDetail(req, id, err=0):
     if err == 0 and id == "":
         # new metadatatype
         metadatatype = Metadatatype(u"")
-        db.session.commit()
+        _core.db.session.commit()
         v["original_name"] = ""
 
     elif id != "" and err == 0:
@@ -451,7 +451,7 @@ def MetatypeDetail(req, id, err=0):
         metadatatype.set("datatypes", req.params.get("mdatatypes", "").replace(";", ", "))
         metadatatype.set("bibtexmapping", req.params.get("mbibtex", ""))
         metadatatype.set("citeprocmapping", req.params.get("mciteproc", ""))
-        db.session.commit()
+        _core.db.session.commit()
         v["original_name"] = req.params["mname_orig"]
     d = Data()
     v["datatypes"] = d.get_all_datatypes()
@@ -542,7 +542,7 @@ def _set_export_maskitem_fields(maskitem, has_exportmapping, mappingfield, field
     maskitem.set("mappingfield", (mappingfield))
     maskitem.set("fieldtype", fieldtype)
     maskitem.set("attribute", attribute)
-    db.session.commit()
+    _core.db.session.commit()
 
 
 def showEditor(req):
@@ -559,16 +559,24 @@ def showEditor(req):
             break
 
         if key.startswith("up_"):
-            changeOrder(q(Node).get(key[3:-2]).parents[0], q(Node).get(key[3:-2]).orderpos, -1)
+            changeOrder(
+                _core.db.query(Node).get(key[3:-2]).parents[0],
+                _core.db.query(Node).get(key[3:-2]).orderpos,
+                -1,
+                )
             break
 
         if key.startswith("down_"):
-            changeOrder(q(Node).get(key[5:-2]).parents[0], -1, q(Node).get(key[5:-2]).orderpos)
+            changeOrder(
+                _core.db.query(Node).get(key[5:-2]).parents[0],
+                -1,
+                _core.db.query(Node).get(key[5:-2]).orderpos,
+                )
             break
 
         if key.startswith("delete_"):
             editor.deleteMaskitem(key[7:-2])
-            db.session.commit()
+            _core.db.session.commit()
             break
 
         if key.startswith("edit_"):
@@ -596,9 +604,9 @@ def showEditor(req):
         # update node
         label = req.params.get("label", "-new-")
         if req.params.get("op", "") == "edit":
-            item = q(Node).get(req.params.get("id"))
+            item = _core.db.query(Node).get(req.params.get("id"))
             item.setLabel(req.params.get("label", ""))
-            db.session.commit()
+            _core.db.session.commit()
             if "mappingfield" in req.params.keys():
                 _set_export_maskitem_fields(
                     item,
@@ -617,15 +625,15 @@ def showEditor(req):
             elif req.params.get("field"):
                 # existing field used
                 fieldid = long(req.params.get("field"))
-                if _schema.exist_maskitem_sanitizedname(editor.id, q(Node).get(fieldid).name):
+                if _schema.exist_maskitem_sanitizedname(editor.id, _core.db.query(Node).get(fieldid).name):
                     error = _translation.translate(_translation.set_language(req.accept_languages), "admin_duplicate_error")
 
-                for p in q(Node).get(fieldid).parents:
+                for p in _core.db.query(Node).get(fieldid).parents:
                     if p in editor.all_maskitems:
                         error = _translation.translate(
                                 _translation.set_language(req.accept_languages),
                                 'admin_meta_field_used_by_maskitem',
-                                mapping=dict(metafield=q(Node).get(fieldid).name,maskitem=p.name),
+                                mapping=dict(metafield=_core.db.query(Node).get(fieldid).name,maskitem=p.name),
                                )
                         break
 
@@ -643,17 +651,17 @@ def showEditor(req):
                 position = req.params.get("insertposition", "end")
                 if position == "end":
                     # insert at the end of existing mask
-                    item.orderpos = len(q(Node).get(req.params.get("pid")).children) - 1
-                    db.session.commit()
+                    item.orderpos = len(_core.db.query(Node).get(req.params.get("pid")).children) - 1
+                    _core.db.session.commit()
                 else:
                     # insert at special position
                     fields = editor.getMaskFields()
                     fields.all().sort(key=_operator.attrgetter("orderpos"))
                     for f in fields:
-                        if f.orderpos >= q(Node).get(position).orderpos and f.id != item.id:
+                        if f.orderpos >= _core.db.query(Node).get(position).orderpos and f.id != item.id:
                             f.orderpos = f.orderpos + 1
-                    item.orderpos = q(Node).get(position).orderpos - 1
-                    db.session.commit()
+                    item.orderpos = _core.db.query(Node).get(position).orderpos - 1
+                    _core.db.session.commit()
 
         if error is None:
             item.setWidth(req.params.get("width", u'400'))
@@ -663,13 +671,13 @@ def showEditor(req):
             item.setSeparator(req.params.get("separator", u""))
             item.setDescription(req.params.get("description", u""))
             item.set_required("required" in req.values)
-            db.session.commit()
+            _core.db.session.commit()
 
     if "savedetail" in req.params.keys():
         label = req.params.get("label", "-new-")
         # save details (used for hgroup)
         if req.params.get("op", "") == "edit":
-            item = q(Node).get(req.params.get("id"))
+            item = _core.db.query(Node).get(req.params.get("id"))
             item.setLabel(req.params.get("label", ""))
         elif req.params.get("op", "") == "new":
             if req.params.get("sel_id", "") != "":
@@ -677,39 +685,39 @@ def showEditor(req):
                     "sel_id", "")[:-1], long(req.params.get("pid", "0")))
             else:
                 item = editor.addMaskitem(label, req.params.get("type"), 0, long(req.params.get("pid", "0")))
-        db.session.commit()
+        _core.db.session.commit()
 
         # move selected elementd to new item-container
         if req.params.get("sel_id", "") != "":
             pos = 0
             for i in req.params.get("sel_id")[:-1].split(";"):
-                n = q(Node).get(i)  # node to move
+                n = _core.db.query(Node).get(i)  # node to move
                 n.setOrderPos(pos)
-                p = q(Node).get(n.parents()[0].id)  # parentnode
+                p = _core.db.query(Node).get(n.parents()[0].id)  # parentnode
                 p.children.remove(n)
                 item.children.append(n)  # new group
                 pos += 1
-            db.session.commit()
+            _core.db.session.commit()
 
         # position:
         position = req.params.get("insertposition", "end")
         if position == "end":
             # insert at the end of existing mask
-            item.setOrderPos(len(q(Node).get(req.params.get("pid")).children) - 1)
-            db.session.commit()
+            item.setOrderPos(len(_core.db.query(Node).get(req.params.get("pid")).children) - 1)
+            _core.db.session.commit()
         else:
             # insert at special position
             fields = []
-            pidnode = q(Node).get(req.params.get("pid"))
+            pidnode = _core.db.query(Node).get(req.params.get("pid"))
             for field in pidnode.getChildren():
                 if field.type == "maskitem" and field.id != pidnode.id:
                     fields.append(field)
             fields.sort(key=_operator.attrgetter("orderpos"))
             for f in fields:
-                if f.orderpos >= q(Node).get(position).orderpos and f.id != item.id:
+                if f.orderpos >= _core.db.query(Node).get(position).orderpos and f.id != item.id:
                     f.orderpos = f.orderpos + 1
-            item.orderpos = q(Node).get(position).orderpos - 1
-            db.session.commit()
+            item.orderpos = _core.db.query(Node).get(position).orderpos - 1
+            _core.db.session.commit()
 
         if "edit" not in req.params.keys():
             item.set("type", req.params.get("type", u""))
@@ -720,7 +728,7 @@ def showEditor(req):
         item.setSeparator(req.params.get("separator", u""))
         item.setDescription(req.params.get("description", u""))
         item.set_required("required" in req.values)
-        db.session.commit()
+        _core.db.session.commit()
 
     v = {}
     v["edit"] = req.params.get("edit", "")
@@ -748,7 +756,7 @@ def changeOrder(parent, up, down):
             else:
                 pos = i
             child.orderpos = pos
-            db.session.commit()
+            _core.db.session.commit()
             i = i + 1
 
 

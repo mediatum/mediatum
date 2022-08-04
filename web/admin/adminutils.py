@@ -11,10 +11,10 @@ import flask as _flask
 
 import mediatumtal.tal as _tal
 
+import core as _core
 import core.config as config
 import core.translation as _core_translation
 import core.users as users
-from core import db
 from core.database.postgres.user import User
 from utils.strings import ensure_unicode_returned
 from utils.utils import get_menu_strings
@@ -34,7 +34,6 @@ from .modules import metatype as _modules_metatype
 from .modules import workflows as _modules_workflows
 
 logg = logging.getLogger(__name__)
-q = db.query
 
 _menu = (
     "menumain",
@@ -288,7 +287,7 @@ def become_user(login_name, authenticator_key=None):
     if not user.is_admin:
         raise SecurityException("becoming other users not allowed for non-admin users")
 
-    candidate_users = q(User).filter_by(login_name=login_name).all()
+    candidate_users = _core.db.query(User).filter_by(login_name=login_name).all()
     if not candidate_users:
         raise ValueError("unknown user login name " + login_name)
 

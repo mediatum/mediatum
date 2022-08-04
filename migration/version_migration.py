@@ -10,7 +10,7 @@
 from __future__ import division
 from __future__ import print_function
 
-from core import db
+import core as _core
 from core.database.postgres.file import File
 from core.database.postgres.node import Node
 import logging
@@ -20,7 +20,6 @@ from core.database.postgres.file import NodeToFile
 
 
 logg = logging.getLogger(__name__)
-q = db.query
 
 # fake query to initalize sqlalchemy-continuum
 #q(Node).first()
@@ -28,25 +27,25 @@ q = db.query
 
 def fix_versioning_attributes():
     """There are 3 ways to say 'there is no next node'. Fix it..."""
-    s = db.session
+    s = _core.db.session
     s.execute("UPDATE node SET system_attrs=jsonb_object_delete_keys(system_attrs, 'prev_id') WHERE system_attrs->>'prev_id' IN (id::text, '0')")
     s.execute("UPDATE node SET system_attrs=jsonb_object_delete_keys(system_attrs, 'next_id') WHERE system_attrs->>'next_id' IN (id::text, '0')")
 
 
 def reset_version_data():
     """Delete irrelevant version data created in the migration process before creating node versions"""
-    s = db.session
+    s = _core.db.session
     # XXX: continuum does not define foreign keys, so we cannot use CASCADE...
     s.execute("TRUNCATE nodemapping_version") # created by user_finish while fixing user special dirs
     s.execute("TRUNCATE transaction")
 
 
 def all_version_nodes():
-    return q(Node).filter(Node.system_attrs.has_key(u"next_id"))
+    return _core.db.query(Node).filter(Node.system_attrs.has_key(u"next_id"))
 
 
 def create_alias_version(current_version_node, old_version_node):
-    s = db.session
+    s = _core.db.session
     Transaction = versioning_manager.transaction_cls
     tx = Transaction()
     version_id = int(old_version_node.system_attrs[u"version.id"])
@@ -74,7 +73,7 @@ def create_alias_version(current_version_node, old_version_node):
 
 
 def create_current_version(current_version_node):
-    s = db.session
+    s = _core.db.session
     Transaction = versioning_manager.transaction_cls
     tx = Transaction()
     version_id = current_version_node.system_attrs[u"version.id"]
@@ -110,7 +109,7 @@ def create_file_versions(previous_node, node, current_version_node, transaction)
     
     NodeToFileVersion = version_class(NodeToFile)
     FileVersion = version_class(File)
-    s = db.session
+    s = _core.db.session
     
     new_files = set(node.files) - set(previous_node.files)
     removed_files = set(previous_node.files) - set(node.files)
@@ -139,7 +138,7 @@ def create_file_versions(previous_node, node, current_version_node, transaction)
                          transaction=transaction)
         
         # previous_file_version must be the file version with the highest transaction id
-        previous_file_version = q(FileVersion).filter_by(id=fi.id).order_by(FileVersion.transaction_id.desc()).limit(1).scalar()
+        previous_file_version = _core.db.query(FileVersion).filter_by(id=fi.id).order_by(FileVersion.transaction_id.desc()).limit(1).scalar()
         if previous_file_version is not None:
             previous_file_version.end_transaction_id = transaction.id
 
@@ -149,7 +148,7 @@ def create_file_versions(previous_node, node, current_version_node, transaction)
                                  transaction=transaction)
 
         # previous_file_version must be the file version with the highest transaction id
-        previous_node_to_file_version = (q(NodeToFileVersion).filter_by(nid=current_version_node.id, file_id=fi.id)
+        previous_node_to_file_version = (_core.db.query(NodeToFileVersion).filter_by(nid=current_version_node.id, file_id=fi.id)
                                                              .order_by(NodeToFileVersion.transaction_id.desc()).limit(1).scalar())
         if previous_node_to_file_version is not None:
             previous_node_to_file_version.end_transaction_id = transaction.id
@@ -167,7 +166,7 @@ def insert_migrated_version_nodes(all_versioned_nodes):
         while node and next_id:
             version_nodes.append(node)
             last_node_id = node.id
-            node = q(Node).get(next_id)
+            node = _core.db.query(Node).get(next_id)
             if node is None:
                 logg.warning("node version with id %s, successor of version %s not found!", next_id, last_node_id)
             else:
@@ -201,7 +200,7 @@ def insert_migrated_version_nodes(all_versioned_nodes):
 
 
 def finish():
-    s = db.session
+    s = _core.db.session
     # delete version nodes and dependent information
     s.execute("DELETE FROM node_to_file WHERE nid IN (SELECT CAST(value AS INTEGER) FROM transaction_meta WHERE key = 'alias_id')")
     s.execute("DELETE FROM nodemapping WHERE cid IN (SELECT CAST(value AS INTEGER) FROM transaction_meta WHERE key = 'alias_id')")

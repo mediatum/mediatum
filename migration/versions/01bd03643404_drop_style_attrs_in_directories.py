@@ -32,10 +32,9 @@ down_revision = u'04ca61e54c2d'
 branch_labels = None
 depends_on = None
 
-_q = _core.db.query
 
 def upgrade():
-    for directory in _q(_contenttypes.Directory).prefetch_attrs():
+    for directory in _core.db.query(_contenttypes.Directory).prefetch_attrs():
         directory.attrs.pop("style", None)
         directory.attrs.pop("style_full", None)
     _core.db.session.commit()

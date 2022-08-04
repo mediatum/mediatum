@@ -9,11 +9,7 @@ from __future__ import print_function
 from warnings import warn
 from sqlalchemy.ext.declarative import declared_attr
 
-from core import db
 from core.database.postgres.node import children_rel
-
-
-q = db.query
 
 
 class ContainerMixin(object):

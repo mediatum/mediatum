@@ -4,14 +4,13 @@
 from __future__ import division
 from __future__ import print_function
 
+import core as _core
 from contenttypes import Data
-from core import db
 from mediatumtal import tal as _tal
 
-q = db.query
 
 def getContent(req, ids):
-    node = q(Data).get(long(ids[0]))
+    node = _core.db.query(Data).get(long(ids[0]))
     return _tal.processTAL(
             dict(srcnodeid=req.values.get("srcnodeid", ""), id=node.id),
             file="web/edit/modules/deleteobject.html",

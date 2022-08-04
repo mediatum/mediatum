@@ -11,13 +11,13 @@ import backports.functools_lru_cache as _backports_functools_lru_cache
 import mediatumtal.tal as _tal
 import sqlalchemy as _sqlalchemy
 
+import core as _core
 import core.database.postgres.node as _node
 import core.database.postgres.permission as _permission
 import core.database.postgres.search as _postgres_search
 import core.config as _config
 import core.nodecache as _core_nodecache
 import core.translation as _core_translation
-from core import db
 from core.database.postgres.node import Node
 from core.database.postgres.user import UserToUserGroup
 from core.users import user_from_session as _user_from_session
@@ -35,9 +35,7 @@ import urllib
 import web.common.pagination as _web_common_pagination
 from utils.url import build_url_from_path_and_params as _build_url_from_path_and_params
 
-
 logg = logging.getLogger(__name__)
-q = db.query
 
 
 class EditorNavList:
@@ -194,10 +192,10 @@ class ShowDirNav(object):
         return shownavlist(self._req, self._node, self._nodes, page, dir=self._node)
 
     def get_children(self, node_id, sortfield):
-        node = q(Node).get(node_id)
+        node = _core.db.query(Node).get(node_id)
         nodes = node.content_children.prefetch_attrs() # XXX: ?? correct
         make_search_content = get_make_search_content_function(self._req.args)
-        paths = get_accessible_paths(node, q(Node).prefetch_attrs())
+        paths = get_accessible_paths(node, _core.db.query(Node).prefetch_attrs())
         if make_search_content:
             _postgres_search.set_session_timeout(_config.getint('search.timeout_edit', 300))
             content_or_error = make_search_content(self._req, paths)
@@ -220,7 +218,7 @@ class ShowDirNav(object):
     def showdir(self, publishwarn="auto", markunpublished=False, sortfield=None, item_count=None, faultyidlist=[]):
         user = _user_from_session()
         if publishwarn == "auto":
-            homedirs = user.home_dir.all_children_by_query(q(Container))
+            homedirs = user.home_dir.all_children_by_query(_core.db.query(Container))
             publishwarn = self._node in homedirs
 
         if sortfield is None:
@@ -237,7 +235,7 @@ class ShowDirNav(object):
     def get_ids_from_req(self):
         nid = self._req.params.get("srcnodeid", self._req.params.get("id"))
         if nid:
-            node = q(Node).get(nid)
+            node = _core.db.query(Node).get(nid)
             sortfield = self._req.params.get('sortfield')
             nodes = self.get_children(node.id, sortfield)
             ids = [str(n.id) for n in nodes]
@@ -334,7 +332,7 @@ def _shownodelist(req, nodes, page, publishwarn=True, markunpublished=False, dir
 
     notpublished = {}
     if publishwarn or markunpublished:
-        homedirs = user.home_dir.all_children_by_query(q(Container))
+        homedirs = user.home_dir.all_children_by_query(_core.db.query(Container))
         for node in nodes_in_page:
             ok = 0
             for p in node.parents:
@@ -427,7 +425,7 @@ def send_nodefile_tal(req):
         return upload_for_html(req)
 
     id = req.params.get("id")
-    node = q(Node).get(id)
+    node = _core.db.query(Node).get(id)
 
     if not (node.has_read_access() and node.has_write_access() and node.has_data_access() and isinstance(node, Container)):
         return ""
@@ -477,7 +475,7 @@ def upload_for_html(req):
     datatype = req.params.get("datatype", "image")
 
     id = req.params.get("id")
-    node = q(Node).get(id)
+    node = _core.db.query(Node).get(id)
 
     if not (node.has_read_access() and node.has_write_access() and node.has_data_access()):
         return 403
@@ -489,7 +487,7 @@ def upload_for_html(req):
             for file in node.files:
                 if file.base_name == filename:
                     node.files.remove(file)
-            db.session.commit()
+            _core.db.session.commit()
 
     req.params.update(req.files)
     if "file" in req.params.keys():  # file
@@ -502,7 +500,7 @@ def upload_for_html(req):
             logg.info("file %s (temp %s) uploaded by user %s (%s)", file.filename, user.login_name, user.id)
             nodefile = importFile(file.filename, file)
             node.files.append(nodefile)
-            db.session.commit()
+            _core.db.session.commit()
             req.response.location = _build_url_from_path_and_params("nodefile_browser/%s/" % id, {})
         except EncryptionException:
             req.response.location = _build_url_from_path_and_params("content", {
@@ -521,7 +519,7 @@ def upload_for_html(req):
             logg.info("%s upload via ckeditor %s", user.login_name , file.filename)
             nodefile = importFile(file.filename, file)
             node.files.append(nodefile)
-            db.session.commit()
+            _core.db.session.commit()
         except EncryptionException:
             req.response.location = _build_url_from_path_and_params("content", {
                                                    "id": id, "tab": "tab_editor", "error": "EncryptionError_" + datatype[:datatype.find("/")]})
@@ -597,37 +595,33 @@ def get_writable_container_parent_nids(user):
     if user.is_admin:
         return frozenset((collections_id, ))
 
-    usergroup_ids = (q(_sqlalchemy.func.array_agg(UserToUserGroup.usergroup_id))
-            .filter(UserToUserGroup.user_id == user.id)
-            .subquery()
-           )
+    usergroup_ids = (
+        _core.db.query(_sqlalchemy.func.array_agg(UserToUserGroup.usergroup_id)).filter(
+            UserToUserGroup.user_id == user.id,
+            ).subquery())
 
-    rule_ids = (q(_permission.AccessRule.id)
-            .filter(_sqlalchemy.or_(
+    rule_ids = (
+        _core.db.query(_permission.AccessRule.id).filter(
+            _sqlalchemy.or_(
                 _permission.AccessRule.group_ids == None,
                 _permission.AccessRule.group_ids.overlap(usergroup_ids),
-               )
-              )
-            .subquery()
-           )
+                )).subquery())
 
-    writable_container_query = (q(Container.id)
-            .join(_node.t_noderelation, _node.t_noderelation.c.cid == Container.id)
-            .join(_permission.NodeToAccessRule, _permission.NodeToAccessRule.nid == Container.id)
-            .filter_read_access()
-            .filter(_permission.NodeToAccessRule.rule_id.in_(rule_ids))
-            .filter(_node.t_noderelation.c.nid == collections_id)
-            .filter(_permission.NodeToAccessRule.ruletype == 'write')
-            .offset(0)
-            .from_self()
-            .filter_write_access()
-            .cte()
-           )
+    writable_container_query = (
+        _core.db.query(Container.id).join(
+            _node.t_noderelation,
+            _node.t_noderelation.c.cid == Container.id,
+            ).join(
+                _permission.NodeToAccessRule,
+                _permission.NodeToAccessRule.nid == Container.id,
+            ).filter_read_access().filter(_permission.NodeToAccessRule.rule_id.in_(rule_ids)).filter(
+                _node.t_noderelation.c.nid == collections_id,
+                ).filter(
+                    _permission.NodeToAccessRule.ruletype == 'write',
+                    ).offset(0).from_self().filter_write_access().cte())
 
-    writable_container_nids = (q(_node.t_nodemapping.c.nid)
-            .filter(~_node.t_nodemapping.c.nid.in_(q(writable_container_query)))
-            .filter(_node.t_nodemapping.c.cid.in_(q(writable_container_query)))
-            .distinct()
-            .all()
-           )
+    writable_container_nids = (
+        _core.db.query(_node.t_nodemapping.c.nid).filter(
+            ~_node.t_nodemapping.c.nid.in_(_core.db.query(writable_container_query)),
+            ).filter(_node.t_nodemapping.c.cid.in_(_core.db.query(writable_container_query))).distinct().all())
     return frozenset(nid[0] for nid in writable_container_nids)

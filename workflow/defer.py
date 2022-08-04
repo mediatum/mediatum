@@ -12,14 +12,12 @@ import utils.date as date
 
 from mediatumtal import tal as _tal
 
+import core as _core
 from .workflow import WorkflowStep, registerStep
-from core import db
 from core.database.postgres.permission import AccessRulesetToRule
 from psycopg2.extras import DateRange
 import datetime
 from core.permission import get_or_add_access_rule
-
-q = db.query
 
 logg = logging.getLogger(__name__)
 
@@ -72,7 +70,7 @@ class WorkflowStep_Defer(WorkflowStep):
                         special_access_ruleset = node.get_or_add_special_access_ruleset(ruletype=access_type)
                         special_access_ruleset.rule_assocs.append(AccessRulesetToRule(rule=rule))
 
-                    db.session.commit()
+                    _core.db.session.commit()
 
                 except ValueError:
                     logg.exception("exception in workflow step defer, runAction failed")
@@ -95,4 +93,4 @@ class WorkflowStep_Defer(WorkflowStep):
         data = data.to_dict()
         data["accesstype"] = accesstype
         self.settings = data
-        db.session.commit()
+        _core.db.session.commit()

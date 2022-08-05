@@ -11,15 +11,12 @@ from collections import OrderedDict
 
 from mediatumtal import tal
 
-from core import config
 from core import httpstatus
 import core.metatype as _core_metatype
 from web import frontend as _web_frontend
 import re
 
 logg = logging.getLogger(__name__)
-
-max_lang_length = max([len(lang) for lang in config.languages])
 
 
 class m_htmlmemo(_core_metatype.Metatype):

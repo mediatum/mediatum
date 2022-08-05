@@ -391,9 +391,6 @@ class Workflow(Node):
         return step
 
 
-workflow_lock = _named_lock('workflow')
-
-
 @check_type_arg
 class WorkflowStep(Node):
 
@@ -413,9 +410,8 @@ class WorkflowStep(Node):
         # the workflow operations (node forwarding, key assignment,
         # parent node handling) are highly non-reentrant, so protect
         # everything with a global lock
-        global workflow_lock
 
-        with workflow_lock:
+        with _named_lock('workflow'):
             # stop caching
 
             key = req.values.get("key", _flask.session.get("key", ""))

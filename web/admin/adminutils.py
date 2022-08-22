@@ -145,7 +145,7 @@ class Overview:
                 if i == ordercol:
                     if orderdir == 0:
                         retList.append(Link(
-                                "1{}".format(unicode(i)),
+                                "{}1".format(unicode(i)),
                                 _core_translation.t(self.language, "admin_sort_label"),
                                 '{} <img src="/img/az.png" border="0" />'.format(col),
                             ))

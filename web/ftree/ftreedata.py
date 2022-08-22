@@ -7,14 +7,14 @@ from __future__ import print_function
 import logging
 
 import core.httpstatus as _httpstatus
+import core.nodecache as _core_nodecache
 import core.translation as _core_translation
 from core.users import user_from_session as _user_from_session
-from contenttypes import Collections, Container
+from contenttypes import Container
 from core import Node
 from core import db
 from web.edit.edit import get_special_dir_type
 from web.edit.edit_common import get_edit_label
-from core.systemtypes import Root
 from utils.pathutils import getPaths
 
 logg = logging.getLogger(__name__)
@@ -99,7 +99,7 @@ def getLabel(req):
 def getPathTo(req):
     # returns path(s) to selected node, 'x' separated, with selected nodes in ()
     # parameters: pathTo=selected Node
-    collectionsid = q(Collections).one().id
+    collectionsid = _core_nodecache.get_collections_node().id
     # if more than one node selected use the first to get the path to
     nid = req.args.get("pathTo", collectionsid).split(',')[0]
     if not nid:

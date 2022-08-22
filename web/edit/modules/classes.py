@@ -6,12 +6,11 @@ from __future__ import print_function
 
 import mediatumtal.tal as _tal
 
+import core.nodecache as _core_nodecache
 import core.translation as _core_translation
 from core.users import user_from_session as _user_from_session
 from core import httpstatus
 from core import Node
-from core.systemtypes import Root
-from contenttypes import Collections, Home
 from core import db
 
 q = db.query
@@ -21,24 +20,22 @@ def getInformation():
 
 def getContent(req, ids):
     user = _user_from_session()
-    nodes = []
-    for nid in ids:
-        node = q(Node).get(nid)
-        if not node.has_write_access():
-            req.response.status_code = httpstatus.HTTP_FORBIDDEN
-            return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
-        nodes.append(node)
-
-    if "classes" in user.hidden_edit_functions:
+    if not all(q(Node).get(nid).has_write_access() for nid in ids) or "classes" in user.hidden_edit_functions:
         req.response.status_code = httpstatus.HTTP_FORBIDDEN
         return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
-    v = {}
-    v["basedirs"] = [q(Home).one(), q(Collections).one()]
-    nid = req.params.get("id", q(Root).one().id)
-    v["script"] = "var currentitem = '%s';\nvar currentfolder = '%s'" % (nid, nid)
-    v["idstr"] = ",".join(ids)
-    v["nodes"] = nodes
-    v["t"] = _core_translation.t
-    v["language"] = _core_translation.set_language(req.accept_languages)
-    return _tal.processTAL(v, file="web/edit/modules/classes.html", macro="classtree", request=req)
+    return _tal.processTAL(
+            dict(
+                basedirs=[_core_nodecache.get_home_root_node(), _core_nodecache.get_collections_node()],
+                script="var currentitem = '{0}';\nvar currentfolder = '{0}'".format(
+                        req.params.get("id", _core_nodecache.get_root_node().id),
+                    ),
+                idstr=",".join(ids),
+                node_count=len(ids),
+                t=_core_translation.t,
+                language=_core_translation.set_language(req.accept_languages),
+            ),
+            file="web/edit/modules/classes.html",
+            macro="classtree",
+            request=req,
+        )

@@ -15,6 +15,7 @@ from sqlalchemy.orm.session import object_session
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy_utils.types import EmailType
 
+import core.nodecache as _core_nodecache
 from core.database.postgres import DeclarativeBase, db_metadata
 from core.database.postgres import rel, C, FK, bref
 from core.database.postgres import TimeStamp, integer_fk, integer_pk
@@ -190,14 +191,13 @@ class User(DeclarativeBase, TimeStamp, UserMixin):
         self.password_hash, self.salt = create_password_hash(password)
 
     def create_home_dir(self):
-        from contenttypes.container import Directory, Home
+        from contenttypes.container import Directory
         from core.database.postgres.permission import AccessRulesetToRule
         from core.permission import get_or_add_access_rule
         s = object_session(self)
-        home_root = s.query(Home).one()
         homedir_name = self.login_name
         home = Directory(homedir_name)
-        home_root.container_children.append(home)
+        _core_nodecache.get_home_root_node().container_children.append(home)
         home.children.extend(create_special_user_dirs())
         # add access rules so only the user itself can access the home dir
         private_group = self.get_or_add_private_group()

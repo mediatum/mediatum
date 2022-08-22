@@ -8,6 +8,8 @@ import operator as _operator
 import os
 import string
 from warnings import warn
+
+import core.nodecache as _core_nodecache
 from core import db
 from core import Node
 from contenttypes import Collections
@@ -15,7 +17,6 @@ from core.systemtypes import Root
 from core.database.postgres.alchemyext import exec_sqlfunc
 from core.database.postgres import mediatumfunc, build_accessfunc_arguments
 from itertools import chain
-from core.nodecache import get_home_root_node
 
 q = db.query
 
@@ -26,8 +27,8 @@ def getBrowsingPathList(node):
     warn("use get_accessible_paths()", DeprecationWarning)
     from contenttypes import Container
     list = []
-    collections = q(Collections).one()
-    root = q(Root).one()
+    collections = _core_nodecache.get_collections_node()
+    root = _core_nodecache.get_root_node()
 
     def r(node, path):
         if node is root:

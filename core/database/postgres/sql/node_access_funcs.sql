@@ -192,7 +192,7 @@ $f$;
 --
 
 -- blocking is not supported for read-type access rules, so the blocking attribute is always returned as NULL
-CREATE OR REPLACE FUNCTION _inherited_access_rules_read_type(node_id integer, _ruletype text) 
+CREATE OR REPLACE FUNCTION _inherited_access_rules_read_type(node_id integer, _ruletype text)
     RETURNS SETOF node_to_access_rule
     LANGUAGE plpgsql
     SET search_path TO :search_path
@@ -202,35 +202,36 @@ BEGIN
 IF EXISTS (SELECT FROM node_to_access_rule WHERE nid=node_id AND ruletype=_ruletype AND inherited = false) THEN
     RETURN;
 END IF;
-
 RETURN QUERY
-    SELECT DISTINCT node_id AS nid, rule_id, _ruletype,
-      (SELECT invert
-       FROM node_to_access_rule na
-       WHERE na.nid=q.nid
-         AND na.rule_id=q.rule_id
-        AND na.ruletype=_ruletype) as inverted, 
-        TRUE AS inherited, FALSE AS blocking
-    FROM (WITH RECURSIVE ra(nid, rule_ids) AS
-            (SELECT nm.nid,
-               (SELECT array_agg(rule_id) AS rule_ids
-                FROM node_to_access_rule na
-                WHERE nid=nm.nid
-                  AND na.ruletype=_ruletype)
-             FROM nodemapping nm
-             WHERE nm.cid = node_id
-             UNION ALL SELECT nm.nid,
-               (SELECT array_agg(rule_id) AS rule_ids
-                FROM node_to_access_rule na
-                WHERE nid=nm.nid
-                  AND na.ruletype=_ruletype)
-             FROM nodemapping nm,
-                              ra
-             WHERE nm.cid = ra.nid
-               AND ra.rule_ids IS NULL)
-          SELECT DISTINCT nid,
-                          unnest(rule_ids) AS rule_id
-          FROM ra) q;
+  WITH
+    RECURSIVE parent_rule_ids_nested(nid, rule_ids) AS (
+        SELECT nodemapping.nid,
+        (SELECT array_agg(rule_id) FROM node_to_access_rule WHERE node_to_access_rule.nid=nodemapping.nid)
+        FROM  nodemapping
+        WHERE nodemapping.cid = node_id
+      UNION ALL
+        SELECT nodemapping.nid,
+        (SELECT array_agg(rule_id) FROM node_to_access_rule WHERE node_to_access_rule.nid=nodemapping.nid)
+        FROM nodemapping
+        JOIN parent_rule_ids_nested ON nodemapping.cid = parent_rule_ids_nested.nid
+        WHERE parent_rule_ids_nested.rule_ids IS NULL
+    )
+  ,
+    parent_rule_ids AS (
+      SELECT nid,unnest(rule_ids) AS rule_id
+      FROM parent_rule_ids_nested
+    )
+  SELECT DISTINCT
+     node_id AS nid
+    ,node_to_access_rule.rule_id
+    ,_ruletype
+    ,node_to_access_rule.invert
+    ,TRUE AS inherited
+    ,FALSE AS blocking
+  FROM node_to_access_rule
+  JOIN parent_rule_ids
+    ON parent_rule_ids.nid=node_to_access_rule.nid AND parent_rule_ids.rule_id=node_to_access_rule.rule_id
+  WHERE node_to_access_rule.ruletype=_ruletype;
 END;
 $f$;
 

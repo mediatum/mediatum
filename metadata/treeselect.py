@@ -8,11 +8,12 @@ from __future__ import print_function
 
 import logging
 from mediatumtal import tal
+
+import core.nodecache as _core_nodecache
 from core import httpstatus
 from utils.utils import esc
 from core.metatype import Metatype
 from core import db
-from contenttypes import Collections
 
 q = db.query
 logg = logging.getLogger(__name__)
@@ -55,9 +56,16 @@ class m_treeselect(Metatype):
 
     # method for popup methods of type treeselect
     def getPopup(self, req):
-        req.response.set_data(tal.processTAL({"basedir": q(Collections).one(),
-                                                "name": req.params.get("name", ''),
-                                                "value": req.params.get("value")}, file="metadata/treeselect.html", macro="popup", request=req))
+        req.response.set_data(tal.processTAL(
+                dict(
+                    basedir=_core_nodecache.get_collections_node(),
+                    name=req.params.get("name", ''),
+                    value=req.params.get("value"),
+                ),
+                file="metadata/treeselect.html",
+                macro="popup",
+                request=req,
+            ))
         req.response.status_code = httpstatus.HTTP_OK
         return httpstatus.HTTP_OK
 

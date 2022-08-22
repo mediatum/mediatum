@@ -563,13 +563,10 @@ msgid "tab_workflow_title"
 msgstr "Open workflow"
 
 msgid "tab_classes"
-msgstr "Classification"
+msgstr "Directory tree"
 
 msgid "tab_classes_title"
 msgstr "Show classification"
-
-msgid "tab_menuclasses"
-msgstr "Classification"
 
 msgid "tab_admin"
 msgstr "Administration"

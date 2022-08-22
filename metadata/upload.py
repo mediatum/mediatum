@@ -18,6 +18,8 @@ from mediatumtal import tal
 from core import request_handler as _request_handler
 import core.translation as _core_translation
 import core.users as users
+import core.config as _core_config
+
 from core.metatype import Metatype
 from utils.fileutils import importFile
 import utils.fileutils as _utils_fileutils
@@ -79,9 +81,7 @@ class m_upload(Metatype):
             warning = [t[1] for t in self.labels[language] if t[0] == 'upload_notarget_warning'][0]
         except:
             logg.exception("exception in getEditorHTML, using default language")
-            warning = [
-                    t[1] for t in self.labels[_core_translation.getDefaultLanguage()] if t[0] == 'upload_notarget_warning'
-                ][0]
+            warning = [t[1] for t in self.labels[_core_config.languages[0]] if t[0] == 'upload_notarget_warning'][0]
 
         context = {
             "lock": lock,

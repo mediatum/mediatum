@@ -18,7 +18,6 @@ from core.xmlnode import getNodeXML, readNodeXML
 import utils.date as date
 import core.csrfform as _core_csrfform
 import core.translation as _core_translation
-
 from core.users import user_from_session as _user_from_session
 from core.postgres import check_type_arg
 from core.database.postgres.permission import NodeToAccessRuleset
@@ -717,9 +716,9 @@ class WorkflowStep(Node):
             # use standard language of request
             return _tal.getTAL(
                     "workflow/workflow.html",
-                    dict(node=node, wfstep=self, lang=_core_translation.getDefaultLanguage()),
+                    dict(node=node, wfstep=self, lang=config.languages[0]),
                     macro="workflow_buttons",
-                    language=_core_translation.getDefaultLanguage(),
+                    language=config.languages[0],
                 )
 
     def getTypeName(self):

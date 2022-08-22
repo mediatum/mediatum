@@ -579,13 +579,10 @@ msgid "tab_workflow_title"
 msgstr "Workflow anzeigen"
 
 msgid "tab_classes"
-msgstr "Klassifikation"
+msgstr "Verzeichnisbaum"
 
 msgid "tab_classes_title"
 msgstr "Klassifizierung anzeigen"
-
-msgid "tab_menuclasses"
-msgstr "Klassifikation"
 
 msgid "tab_admin"
 msgstr "Administration"

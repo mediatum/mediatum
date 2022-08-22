@@ -15,6 +15,7 @@ from core import httpstatus
 from core import Node, db
 from contenttypes import Container
 from core.users import user_from_session
+import core.config as _core_config
 import datetime
 
 q = db.query
@@ -97,24 +98,7 @@ def _handle_edit_metadata(req, mask, nodes):
             req.response.status_code = httpstatus.HTTP_FORBIDDEN
             return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
-    if not hasattr(mask, "i_am_not_a_mask"):
-        # XXX: why check here?
-        # if nodes:
-        old_nodename = nodes[0].name
-
-        for node in nodes:
-            mask.update_node(node, req, user)
-
-        db.session.commit()
-
-        # XXX: why check here?
-        # if nodes:
-        new_nodename = nodes[0].name
-        if ( len(nodes) == 1 or old_nodename != new_nodename) and isinstance(nodes[0], Container):
-            # for updates of node label in editor tree
-            flag_nodename_changed = ustr(nodes[0].id)
-
-    else:
+    if hasattr(mask, "i_am_not_a_mask"):
         for field in mask.metaFields():
             logg.debug("in %s.%s: (hasattr(mask,'i_am_not_a_mask')) field: %s, field.id: %s, field.name: %s, mask: %s, maskname: %s",
                 __name__, funcname(), field, field.id, field.name, mask, mask.name)
@@ -122,9 +106,9 @@ def _handle_edit_metadata(req, mask, nodes):
             if field_name == 'nodename' and mask.name == 'settings':
                 if '__nodename' in form:
                     field_name = '__nodename'  # no multilang here !
-                elif "{}__nodename".format(_core_translation.getDefaultLanguage()) in form:
+                elif '{}__nodename'.format(_core_config.languages[0]) in form:
                     # no multilang here !
-                    field_name = "{}__nodename".format(_core_translation.getDefaultLanguage())
+                    field_name = '{}__nodename'.format(_core_config.languages[0])
                 value = form.get(field_name, None)
                 if value:
                     if value != node.name:
@@ -137,8 +121,23 @@ def _handle_edit_metadata(req, mask, nodes):
                     node.set(field.name, value)
             else:
                 node.set(field.getName(), "")
-        db.session.commit()
+    else:
+        # XXX: why check here?
+        # if nodes:
+        old_nodename = nodes[0].name
 
+        attrs = mask.get_edit_update_attrs(req, user)
+        for node in nodes:
+            mask.apply_edit_update_attrs_to_node(node, attrs)
+
+        # XXX: why check here?
+        # if nodes:
+        new_nodename = nodes[0].name
+        if (len(nodes) == 1 or old_nodename != new_nodename) and isinstance(nodes[0], Container):
+            # for updates of node label in editor tree
+            flag_nodename_changed = ustr(nodes[0].id)
+
+    db.session.commit()
     return flag_nodename_changed
 
 
@@ -218,11 +217,6 @@ def getContent(req, ids):
         mask = default
         maskname = default.name
 
-    for n in nodes:
-        n.system_attrs["edit.lastmask"] = maskname
-
-    db.session.commit()
-
     if not mask:
         return _tal.processTAL({}, file="web/edit/modules/metadata.html", macro="no_mask", request=req)
 
@@ -231,9 +225,9 @@ def getContent(req, ids):
             user=user,
             metatypes=metatypes,
             idstr=idstr,
-            node=nodes[0],  # ?
+            node=nodes[0], # ?
+            node_count=len(nodes),
             flag_nodename_changed=flag_nodename_changed,
-            nodes=nodes,
             masklist=masklist,
             maskname=maskname,
             language=_core_translation.set_language(req.accept_languages),

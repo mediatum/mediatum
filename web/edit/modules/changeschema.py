@@ -111,17 +111,20 @@ def getContent(req, ids):
         return ""
 
     else:
-        d = {'id': req.params.get('id'),
-             'error': error,
-             'node': node,
-             'current_type': node.type,
-             'current_schema': node.schema,
-             # XXX: this is the only line that uses getTypeAlias. What is the real meaning?
-             'type_alias': node.getTypeAlias(),
-             'is_container': int(node.isContainer()),
-             'nodes': [node]}
-
-        d['long_current_schema'] = long_scheme_names.get(node.schema)
+        d = dict(
+                id=req.params.get('id'),
+                error=error,
+                node=node,
+                current_type=node.type,
+                current_schema=node.schema,
+                # XXX: this is the only line that uses getTypeAlias. What is the real meaning?
+                type_alias=node.getTypeAlias(),
+                is_container=int(node.isContainer()),
+                long_current_schema=long_scheme_names.get(node.schema),
+                srcnodeid=req.values.get("srcnodeid", ""),
+                csrf=_core_csrfform.get_token(),
+                node_count=len(ids),
+            )
 
         available_schemes = [s for s in schemes if node.type in s.getDatatypes()]
 
@@ -133,8 +136,5 @@ def getContent(req, ids):
             admissible_content_types.sort(key=lambda x: translate(x, request=req).lower())
             d['schemes'] = available_schemes
             d['datatypes'] = admissible_content_types
-
-        d["csrf"] = _core_csrfform.get_token()
-        d["srcnodeid"] = req.values.get("srcnodeid", "")
 
         return _tal.processTAL(d, file="web/edit/modules/changeschema.html", macro="changeschema_popup", request=req)

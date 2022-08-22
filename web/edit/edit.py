@@ -4,16 +4,20 @@
 from __future__ import division
 from __future__ import print_function
 
-import sys
+import itertools as _itertools
+import json
 import os
 import re
+import sys
 import time
-import json
+
+import mediatumtal.tal as _tal
+
 import core as _core
 import core.config as config
 import core.csrfform as _core_csrfform
+import core.nodecache as _core_nodecache
 import core.translation as _core_translation
-import mediatumtal.tal as _tal
 import web.edit.edit_common as _web_edit_edit_common
 import core.systemtypes as _core_systemtypes
 import utils.utils as _utils_utils
@@ -30,6 +34,7 @@ from schema.schema import Metadatatype
 from web.edit.edit_common import get_edit_label, get_searchparams
 from web.frontend.search import NoSearchResult
 from utils.pathutils import get_accessible_paths
+import core.database.postgres.node as _core_database_postgres_node
 import web.common.pagination as _web_common_pagination
 import web.common.sort as _sort
 
@@ -114,7 +119,7 @@ def frameset(req):
         return
 
     language = _core_translation.set_language(req.accept_languages)
-    id = req.values.get("id", q(Collections).one().id)
+    id = req.values.get("id", _core_nodecache.get_collections_node().id)
     currentdir = q(Data).get(id)
     if currentdir is None:
         req.response.status_code = httpstatus.HTTP_NOT_FOUND
@@ -226,8 +231,8 @@ def frameset(req):
                 user=user,
                 spc=spc,
                 folders=folders,
-                collectionsid=q(Collections).one().id,
-                basedirs=[q(Home).one(), q(Collections).one()],
+                collectionsid=_core_nodecache.get_collections_node().id,
+                basedirs=[_core_nodecache.get_home_root_node(), _core_nodecache.get_collections_node()],
                 cmenu_iconpaths=cmenu_iconpaths,
                 path=path,
                 containerpath=containerpath,
@@ -256,13 +261,17 @@ def _handletabs(req, ids, tabs, sort_choices):
 
     n = q(Data).get(ids[0])
     if n.type.startswith("workflow"):
-        n = q(_core_systemtypes.Root).one()
+        n = _core_nodecache.get_root_node()
 
+    srcnodeid = req.values.get('srcnodeid', '')
     skip_items = set(_utils_utils.get_menu_strings(n.editor_menu))
     skip_items.intersection_update(user.hidden_edit_functions)
     if len(ids) > 1:
         skip_items.add("version")
         skip_items.add("view")
+    if srcnodeid and q(Node).get(int(srcnodeid)) is user.trash_dir:
+        skip_items.add("deleteobject")
+        skip_items.add("deleteall")
     menu = _utils_utils.parse_menu_struct(n.editor_menu, skip_items)
 
     nodes_per_page = req.args.get("nodes_per_page", type=int)
@@ -286,7 +295,7 @@ def _handletabs(req, ids, tabs, sort_choices):
                 user=user,
                 ids=ids,
                 idstr=",".join(ids),
-                srcnodeid=req.values.get('srcnodeid', ''),
+                srcnodeid=srcnodeid,
                 menu=menu,
                 breadcrumbs=getBreadcrumbs(menu, req.values.get("tab", tabs)),
                 sort_choices=sort_choices,
@@ -364,7 +373,7 @@ def edit_tree(req):
     match_error = False
 
     if req.values['key'] == 'root':
-        nodes = q(Collections).one().container_children.sort_by_orderpos()
+        nodes = _core_nodecache.get_collections_node().container_children.sort_by_orderpos()
     elif req.values['key'] == 'home':
         if not user.is_admin:
             nodes = [home_dir]
@@ -596,7 +605,7 @@ def action(req):
             trashdir.children.remove(n)
             db.session.commit()
             dest = trashdir
-        changednodes[trashdir.id] = 1
+        changednodes[trashdir.id] = trashdir
         _parent_descr = [(p.name, p.id, p.type) for p in trashdir_parents]
         logg.info("%s cleared trash folder with id %s, child of %s", user.login_name, trashdir.id, _parent_descr)
         # return
@@ -609,17 +618,33 @@ def action(req):
                 mysrc = obj.parents[0]
 
             if action == "delete":
-                if mysrc.has_write_access() and obj.has_write_access():
-                    if mysrc.id != trashdir.id:
-                        mysrc.children.remove(obj)
-                        changednodes[mysrc.id] = 1
-                        trashdir.children.append(obj)
-                        db.session.commit()
-                        changednodes[trashdir.id] = 1
-                        logg.info("%s moved to trash bin %s (%s, %s) from %s (%s, %s)",
-                                  user.login_name, obj.id, obj.name, obj.type, mysrc.id, mysrc.name, mysrc.type)
+                if obj.has_write_access():
+                    parentids = _itertools.chain.from_iterable(
+                        q(_core_database_postgres_node.t_nodemapping.c.nid).filter(
+                            _core_database_postgres_node.t_nodemapping.c.cid == id,
+                        ).all())
+                    for nid in parentids:
+                        srcnode = q(Node).get(nid)
+                        if srcnode is trashdir or not srcnode.has_write_access():
+                            continue
+                        srcnode.children.remove(obj)
+                        changednodes[nid] = srcnode
+                        logg.info(
+                            "%s moved to trash bin %s (%s, %s) from %s (%s, %s)",
+                            user.login_name,
+                            obj.id,
+                            obj.name,
+                            obj.type,
+                            nid,
+                            srcnode.name,
+                            srcnode.type,
+                        )
+                if changednodes:
+                    trashdir.children.append(obj)
+                    changednodes[trashdir.id] = trashdir
+                    db.session.commit()
                 else:
-                    logg.info("%s has no write access for node %s", user.login_name, mysrc.id)
+                    logg.info("%s has no write access", user.login_name)
                     req.response.set_data(
                         req.response.get_data() +
                         _tal.processTAL(
@@ -639,9 +664,9 @@ def action(req):
                     if not dest.is_descendant_of(obj):
                         if action == "move":
                             mysrc.children.remove(obj)
-                            changednodes[mysrc.id] = 1  # getLabel(mysrc)
+                            changednodes[mysrc.id] = mysrc  # getLabel(mysrc)
                         dest.children.append(obj)
-                        changednodes[dest.id] = 1  # getLabel(dest)
+                        changednodes[dest.id] = dest  # getLabel(dest)
                         db.session.commit()
 
                         logg.info(
@@ -666,8 +691,7 @@ def action(req):
     if action in ["move", "copy", "delete", "clear_trash"]:
         for nid in changednodes:
             try:
-                changednodes[nid] = getTreeLabel(
-                    q(Node).get(nid), lang=language)
+                changednodes[nid] = getTreeLabel(changednodes[nid], lang=language)
             except:
                 logg.exception("exception ignored: could not make fancytree label for node %s", nid)
         req.response.status_code = httpstatus.HTTP_OK

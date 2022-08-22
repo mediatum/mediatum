@@ -10,23 +10,9 @@ from core.postgres import check_type_arg
 
 from core import db
 import core.nodecache as _nodecache
-from core.systemtypes import Mappings, Root
+from core.systemtypes import Mappings
 
 q = db.query
-
-
-def getMappings():
-    mappings = q(Mappings).scalar()
-    if mappings is None:
-        root = q(Root).one()
-        root.children.append(Mappings(u"mappings"))
-        mappings = _nodecache.get_mappings_node()
-        db.session.commit()
-
-    try:
-        return mappings.children
-    except:
-        return []
 
 
 def getMapping(id):

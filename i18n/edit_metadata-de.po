@@ -60,3 +60,6 @@ msgstr "Möchten Sie Version ${version} wirklich löschen?"
 
 msgid "edit_meta_restore_confirm"
 msgstr "Wollen Sie wirklich Version ${version} wiederherstellen?"
+
+msgid "edit_meta_count_of_nodes"
+msgstr "${number}  Datensatz/Datensätze werden bearbeitet"

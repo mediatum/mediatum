@@ -8,9 +8,11 @@ from __future__ import print_function
 
 import logging
 from sqlalchemy import text
+
+import core.nodecache as _core_nodecache
 from core import config, db, Node, User
-from contenttypes import Directory, Home
-from core.translation import getDefaultLanguage, translate
+from contenttypes import Directory
+from core.translation import translate
 from sqlalchemy.orm.exc import NoResultFound
 
 logg = logging.getLogger(__name__)
@@ -23,7 +25,7 @@ def migrate_home_dirs(orphan_dir_id):
         The remaining home dirs are renamed: Arbeitsverzeichnis(<name>) -> <user_login_name>_<user_id>.
     """
     s = db.session
-    home_root = q(Home).one()
+    home_root = _core_nodecache.get_home_root_node()
     orphan_dir = q(Directory).get(orphan_dir_id)
 
     for home_dir in home_root.children:
@@ -51,10 +53,10 @@ def migrate_home_dirs(orphan_dir_id):
 def migrate_special_dirs():
     """Special dirs are found by special system attribute used_as, not the directory name as before.
     """
-    home_root = q(Home).one()
+    home_root = _core_nodecache.get_home_root_node()
     for home_dir in home_root.children:
         logg.info("fixing special dirs in home dir %s (%s)", home_dir.name, home_dir.id)
-        lang = getDefaultLanguage()
+        lang = config.languages[0]
         special_dirs = [
             (translate(u"user_trash", lang), u"trash"),
             (translate(u"user_upload", lang), u"upload")

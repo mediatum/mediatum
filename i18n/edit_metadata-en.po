@@ -60,3 +60,6 @@ msgstr "Do you really want to delete version ${version}?"
 
 msgid "edit_meta_restore_confirm"
 msgstr "Do you really want to restore version ${version}?"
+
+msgid "edit_meta_count_of_nodes"
+msgstr "${number} record(s) are being edited"

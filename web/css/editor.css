@@ -424,7 +424,7 @@ iframe.ui-layout-center, div.ui-layout-north{border-width:0!important;padding:0;
 #identifier_importer{width:360px;}
 #identifier_subform{display:none;}
 #input_identifier{width:362px;}
-#items{float:left;width:100%;height:82px;overflow:auto;border:1px solid silver;}
+#items{text-align:center;border:1px solid silver;}
 #list-page-nav{margin-left:5px;margin-right:35px;z-index: 9999;}
 #mediatum_clear_trash_question{display:none;}
 #mediatum_collectionstree{overflow:hidden!important;}

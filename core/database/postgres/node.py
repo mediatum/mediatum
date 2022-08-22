@@ -23,6 +23,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 
 import flask as _flask
 
+import core.nodecache as _core_nodecache
 from core import config
 from core.node import NodeMixin, NodeVersionMixin
 from core.database.postgres import db_metadata, DeclarativeBase, MtQuery, mediatumfunc, MtVersionBase, integer_fk
@@ -476,8 +477,7 @@ class Node(DeclarativeBase, NodeMixin):
                 .order_by(nr.c.distance).limit(1).first())
 
         if maybe_ancestor is None:
-            from contenttypes import Collections
-            return q(Collections).one()
+            return _core_nodecache.get_collections_node()
 
         return maybe_ancestor
 

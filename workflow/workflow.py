@@ -99,18 +99,16 @@ def getNodeWorkflow(node):
         for p2 in p.parents:
             if p2.type == "workflow":
                 return p2
-    return None
 
 
 def getNodeWorkflowStep(node):
     workflow = getNodeWorkflow(node)
     if workflow is None:
         return None
-    steps = [n.id for n in workflow.getSteps()]
+    steps = frozenset(n.id for n in workflow.getSteps())
     for p in node.parents:
         if p.id in steps:
             return p
-    return None
 
 
 # set workflow for node

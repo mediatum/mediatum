@@ -515,9 +515,9 @@ class WorkflowStep(Node):
 
                     link = _build_url_from_path_and_params("/mask", {"id": self.id})
                     if "forcetrue" in req.values:
-                        return self.forwardAndShow(node, True, req, link=link)
+                        return self.forwardAndShow(node, True, req, _link=link)
                     if "forcefalse" in req.values:
-                        return self.forwardAndShow(node, False, req, link=link)
+                        return self.forwardAndShow(node, False, req, _link=link)
 
                     return self.show_workflow_node(node, req)
                 else:
@@ -621,33 +621,19 @@ class WorkflowStep(Node):
         op_str = "true" if op else "false"
         return runWorkflowStep(node, op_str, forward)
 
-    def forwardAndShow(self, node, op, req, link=None, data=None, forward=True):
+    def forwardAndShow(self, node, op, req, forward=True, _link=None):
         newnode = self.forward(node, op, forward)
-
         if newnode is None:
             return _tal.processTAL({"node": node}, file="workflow/workflow.html", macro="workflow_forward", request=req)
-
-        if link is None:
-            context = {"id": newnode.id, "obj": node.id}
-            if data and isinstance(data, type({})):
-                for k in data:
-                    if k not in context:
-                        context[k] = data[k]
-                    else:
-                        logg.warning("workflow '%s', step '%s', node %s: ignored data key '%s' (value='%s')",
-                                     getNodeWorkflow(node).name, getNodeWorkflowStep(node).name, node.id, k, data[k])
-
-            newloc = _build_url_from_path_and_params("/mask", context)
-        else:
-            newloc = link
-        redirect = 1
-        if redirect == 0:
-            return _tal.processTAL(context, file="workflow/workflow.html", macro="workflow_forward2", request=req)
-        else:
-            if config.get("config.ssh", "") == "yes":
-                if not newloc.lower().startswith("https:"):
-                    newloc = "https://" + config.get("host.name") + newloc.replace("http://" + config.get("host.name"), "")
-            return '<script language="javascript">document.location.href = "%s";</script>' % newloc
+        if _link is None:
+            _link = _build_url_from_path_and_params("/mask", dict(id=newnode.id, obj=node.id))
+        if config.get("config.ssh", "") == "yes":
+            if not _link.lower().startswith("https:"):
+                _link = "https://{}{}".format(
+                    config.get("host.name"),
+                    _link.replace("http://" + config.get("host.name"), ""),
+                   )
+        return '<script>document.location.href = "{}";</script>'.format(_link)
 
     def getTrueId(self):
         """XXX: misleading name: returns name, not node id!"""

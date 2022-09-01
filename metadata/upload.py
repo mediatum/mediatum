@@ -94,6 +94,7 @@ class m_upload(Metatype):
             value=value,
             width=width,
             name=field.getName(),
+            fieldname = field.getName() or fieldname,
             field=field,
             language=language,
             warning=warning,

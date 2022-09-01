@@ -280,22 +280,19 @@
     }
     </script>
 
-<div class="mediatum_blue_border" tal:attributes="id python:'upload_div_FOR_____FIELDNAME____'; name python:'upload_div_FOR_____FIELDNAME____'; style python:u'width:{}px'.format(width)">
-
+    <div class="mediatum_blue_border" tal:attributes="id python:u'upload_div_FOR_{}'.format(fieldname); name python:'upload_div_FOR_{}'.format(fieldname); style python:u'width:{}px'.format(width)">
         <input type="hidden" tal:attributes="id python:u'submitter_class_{}'.format(name)" name="submitter_class" value="" />
-        <input type="hidden" tal:attributes="id python:'submitter02_FOR_____FIELDNAME____'; value python:name" name="submitter_FOR_____FIELDNAME____" />
-        <input type="hidden" tal:attributes="id python:'submitter_FOR_____FIELDNAME____'; value python:name" name="submitter" />
-        <input type="hidden" tal:attributes="id python:u'targetnodeid_{}'.format(name)" name="targetnodeid_FOR_____FIELDNAME____" value="" />
-        <div class="mediatum_color_red" name="upload_warn_div_FOR_____FIELDNAME____" tal:content="python:warning"> TEXT </div>
-
-<!-- zero width spaces (#8203) needed for IE(8) and metadata mask editor -->
-&#8203;<input type="file" size="60%" disabled="disabled" tal:attributes="name python:'m_upload_file_FOR_____FIELDNAME____'; id name; value value; required required" />
-&#8203;<br/>
-&#8203;<input id="upload_submit_FOR_____FIELDNAME____" name="upload_submit_FOR_____FIELDNAME____" type="submit" value="Submit (disabled)" disabled="disabled" onclick="submit_FOR_____FIELDNAME____()" />
-      <div id="response_FOR_____FIELDNAME____"> </div>
-      <div id="file_list_FOR_____FIELDNAME____"> </div>
-
-</div>
+        <input type="hidden" tal:attributes="id python:u'submitter02_FOR_{}'.format(fieldname); name python:u'submitter_FOR_{}'.format(fieldname); value python:name" />
+        <input type="hidden" tal:attributes="id python:u'submitter_FOR_{}'.format(fieldname); value python:name" name="submitter" />
+        <input type="hidden" tal:attributes="id python:u'targetnodeid_{}'.format(name); name python:u'targetnodeid_FOR_{}'.format(fieldname)" value="" />
+        <div class="mediatum_color_red" tal:attributes="name python:u'upload_warn_div_FOR_{}'.format(fieldname)" tal:content="python:warning"> TEXT </div>
+        <!-- zero width spaces (#8203) needed for IE(8) and metadata mask editor -->
+        &#8203;<input type="file" size="60%" disabled="disabled" tal:attributes="id name; value value; required required; name python:u'm_upload_file_FOR_{}'.format(fieldname)" />
+        &#8203;<br/>
+        &#8203;<input tal:attributes="id python:u'upload_submit_FOR_{}'.format(fieldname); name python: u'upload_submit_FOR_{}'.format(fieldname);" type="submit" value="Submit (disabled)" disabled="disabled" onclick="submit_FOR_____FIELDNAME____()" />
+          <div tal:attributes="id python:u'response_FOR_{}'.format(fieldname)"> </div>
+          <div tal:attributes="id python:u'file_list_FOR_{}'.format(fieldname)"> </div>
+    </div>
 
 </tal:block>
 

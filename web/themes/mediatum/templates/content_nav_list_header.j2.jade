@@ -7,7 +7,7 @@
     for param in nav.nav_params.items()
       if not param[0].startswith('sortfield')
         input(type='hidden',name=param[0], value=param[1])
-    table(cellspacing='0', cellpadding='0', style='padding:0px;margin:0px')
+    table(cellspacing='0', cellpadding='0', style='padding:0px;margin:0px;width:auto')
       for i in range(sortfieldslist|length)
         tr
           td

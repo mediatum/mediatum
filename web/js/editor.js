@@ -15,6 +15,26 @@ var groupSelection = ""; //""" + groupsel + """;
 var dateSelection = ""; // """ + datesel + """;
 var ipSelection = ""; //""" + ipsel + """;
 
+var allobjects = new Array();
+
+function getAllObjectsString(){
+    var s = [];
+    $('input[id^="check"]:checked').each(function(){
+        var nodeid = $(this).attr('id').substring(5);
+        if (nodeid != 'node.id' & ! (s.includes(nodeid))){
+            s.push(nodeid);
+        }
+    });
+    return s.join(',');
+}
+
+function Thumb2Window(id){
+    var win1 = window.open('/thumbbig?id='+id,'thumbbig','width=100,height=100,directories=no,location=no,menubar=no,scrollbars=no,status=no,toolbar=no,resizable=1');
+    win1.focus();
+    return false;
+}
+
+var sublayout;
 
 function init(userstr, groupstr, datestr, ipstr)
 {

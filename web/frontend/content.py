@@ -581,7 +581,7 @@ class ContentList(ContentBase):
 
         content_list_html = self.liststyle.render_template(req, ctx)
 
-        return u'{0}<div id="nodes">{1}</div>{0}'.format(content_nav_list_header_html, content_list_html)
+        return u'{}<div id="nodes">{}</div>'.format(content_nav_list_header_html, content_list_html)
 
 
 class ContentNode(ContentBase):

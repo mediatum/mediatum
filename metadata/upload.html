@@ -202,31 +202,28 @@
                     });
     }
 
-    $(document).ready(function() {
+    function m_upload_register_fieldname(fieldname) {
+        $(document).ready(function () {
+            var targetnodeid = getTargetNodeID();
+            if (! targetnodeid=="") {
+                $('input[name=targetnodeid_FOR_' + fieldname + ']').val(targetnodeid);
+                $('input[name=upload_submit_FOR_' + fieldname + ']').val("Submit");
+                $('div[name=upload_warn_div_FOR_' + fieldname + ']').hide();
 
-        var targetnodeid = getTargetNodeID();
+                $('input[name=m_upload_file_FOR_' + fieldname + ']').removeAttr("disabled"); // type=file
+                $('input[name=upload_submit_FOR_' + fieldname + ']').removeAttr("disabled"); // type=submit
+                $('input[name=upload_submit_FOR_' + fieldname + ']').val("Submit");
+                $('div[name=upload_warn_div_FOR_' + fieldname + ']').hide();
 
-        if (! targetnodeid=="") {
-           $('input[name=targetnodeid_FOR_____FIELDNAME____]').val(targetnodeid);
-           $('input[name=upload_submit_FOR_____FIELDNAME____]').val("Submit");
-           $('div[name=upload_warn_div_FOR_____FIELDNAME____]').hide();
-
-            $('input[name=m_upload_file_FOR_____FIELDNAME____]').removeAttr("disabled"); // type=file
-            $('input[name=upload_submit_FOR_____FIELDNAME____]').removeAttr("disabled"); // type=submit
-            $('input[name=upload_submit_FOR_____FIELDNAME____]').val("Submit");
-            $('div[name=upload_warn_div_FOR_____FIELDNAME____]').hide();
-
-           load_file_list_json_for_targetnode_FOR_____FIELDNAME____(targetnodeid);
-
-        }
-        else {
-            $('input[name=m_upload_file_FOR_____FIELDNAME____]').attr("disabled","disabled"); // type=file
-            $('input[name=upload_submit_FOR_____FIELDNAME____]').attr("disabled","disabled"); // type=submit
-            $('input[name=upload_submit_FOR_____FIELDNAME____]').val("Submit (disabled)");
-            $('div[name=upload_warn_div_FOR_____FIELDNAME____]').show();
-        }
-    });
-
+                load_file_list_json_for_targetnode_FOR_____FIELDNAME____(targetnodeid);
+            } else {
+                $('input[name=m_upload_file_FOR_' + fieldname + ']').attr("disabled","disabled"); // type=file
+                $('input[name=upload_submit_FOR_' + fieldname + ']').attr("disabled","disabled"); // type=submit
+                $('input[name=upload_submit_FOR_' + fieldname + ']').val("Submit (disabled)");
+                $('div[name=upload_warn_div_FOR_' + fieldname + ']').show();
+            }
+        });
+    }
 
     function m_upload_submit(fieldname) {
 
@@ -294,5 +291,5 @@
           <div tal:attributes="id python:u'file_list_FOR_{}'.format(fieldname)"> </div>
     </div>
 
+    <script tal:content="python:u'm_upload_register_fieldname(&quot;{}&quot;)'.format(fieldname)" />
 </tal:block>
-

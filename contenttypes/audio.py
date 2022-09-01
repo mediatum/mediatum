@@ -30,32 +30,6 @@ def makeAudioThumb(self, audiofile):
     self.files.append(File(path + ".mp3", "mp3", "audio/mpeg"))
     return ret
 
-# """ make thumbnail (jpeg 128x128) """
-
-
-def make_thumbnail_image(self, audiofile):
-    if "APIC:thumbnail" not in (audiofile.tags or ()):
-        return
-
-    tag = audiofile.tags["APIC:thumbnail"]
-    path, ext = splitfilename(audiofile.filename)
-    with open("{}.thumb".format(path), "wb") as fout:
-        fout.write(tag.data)
-
-    with Image.open("{}.thumb2".format(path)) as pic:
-        width = pic.size[0]
-        height = pic.size[1]
-        if width > height:
-            newwidth = 128
-            newheight = height * newwidth // width
-        else:
-            newheight = 128
-            newwidth = width * newheight // height
-        pic.thumbnail((newwidth, newheight))
-        pic = pic.convert("RGB")
-        pic.save("{}.thumb".format(path), "JPEG", quality="web_high")
-        self.files.append(File(path + ".thumb", "thumb", tag.mime))
-
 
 # """ make presentation format (jpeg 320x320) """
 def convert_image(self, audiofile):
@@ -107,7 +81,7 @@ class Audio(Content):
 
     @classmethod
     def get_sys_filetypes(cls):
-        return [u"audio", u"thumb", u"presentation", u"mp3"]
+        return [u"audio", u"presentation", u"mp3"]
 
     # compare document.py and
     # core.database.postgres.file.File.ORIGINAL_FILETYPES:
@@ -167,7 +141,6 @@ class Audio(Content):
 
         original = None
         audiothumb = None
-        thumb = None
         thumb2 = None
 
         for f in self.files:
@@ -177,15 +150,11 @@ class Audio(Content):
                 audiothumb = f
             if f.type.startswith("present"):
                 thumb2 = f
-            if f.type == "thumb":
-                thumb = f
 
         if original:
 
             if audiothumb:
                 self.files.remove(audiothumb)
-            if thumb:  # delete old thumb
-                self.files.remove(thumb)
             if thumb2:  # delete old thumb2
                 self.files.remove(thumb2)
 
@@ -195,7 +164,6 @@ class Audio(Content):
             else:
                 _original = AudioFile(original.abspath)
             convert_image(self, _original)
-            make_thumbnail_image(self, _original)
             makeMetaData(self, _original)
 
         db.session.commit()

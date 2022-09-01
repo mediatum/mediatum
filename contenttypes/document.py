@@ -82,7 +82,7 @@ def _pdfinfo(filename):
     return data
 
 
-def _makeThumbs(src, thumb128, thumb300):
+def _makeThumbs(src, thumb300):
     """create preview image for given pdf """
     with _PIL_Image.open(src) as pic:
         width = pic.size[0]
@@ -95,13 +95,8 @@ def _makeThumbs(src, thumb128, thumb300):
         pic = pic.convert("RGB")
         pic.save(thumb300, "JPEG", quality="web_high")
 
-    with _PIL_Image.open(src) as pic:
-        pic.thumbnail((128, 128))
-        pic = pic.convert("RGB")
-        pic.save(thumb128, "JPEG", quality="web_high")
 
-
-def _process_pdf(filename, thumbname, thumb2name, fulltextname, infoname):
+def _process_pdf(filename, thumb2name, fulltextname, infoname):
     tempdir = config.get("paths.tempdir")
     imgfile = os.path.join(tempdir, "pdfpreview.{}.png".format(_utils_utils.gen_secure_token()))
     name = ".".join(filename.split(".")[:-1])
@@ -130,7 +125,7 @@ def _process_pdf(filename, thumbname, thumb2name, fulltextname, infoname):
     except _subprocess.CalledProcessError:
         logg.exception("failed to create PDF thumbnail for file " + filename)
     else:
-        _makeThumbs(imgfile, thumbname, thumb2name)
+        _makeThumbs(imgfile, thumb2name)
 
     # extract fulltext (xpdf)
     try:
@@ -221,7 +216,7 @@ class Document(Content):
 
     @classmethod
     def get_sys_filetypes(cls):
-        return [u"document", u"thumb", u"thumb2", u"presentation", u"fulltext", u"fileinfo"]
+        return [u"document", u"thumb2", u"presentation", u"fulltext", u"fileinfo"]
 
     def _prepareData(self, req, words=""):
         return _prepare_document_data(self, req)
@@ -238,15 +233,12 @@ class Document(Content):
     def event_files_changed(self):
         logg.debug("Postprocessing node %s", self.id)
 
-        thumb = 0
         fulltext = 0
         doc = None
         present = 0
         fileinfo = 0
         for f in self.files:
-            if f.type == "thumb":
-                thumb = 1
-            elif f.type.startswith("present"):
+            if f.type.startswith("present"):
                 present = 1
             elif f.type == "fulltext":
                 fulltext = 1
@@ -256,9 +248,7 @@ class Document(Content):
                 doc = f
         if not doc:
             for f in self.files:
-                if f.type == "thumb":
-                    self.files.remove(f)
-                elif f.type.startswith("present"):
+                if f.type.startswith("present"):
                     self.files.remove(f)
                 elif f.type == "fileinfo":
                     self.files.remove(f)
@@ -272,12 +262,11 @@ class Document(Content):
             return
 
         path, ext = _utils_utils.splitfilename(doc.abspath)
-        thumbname = "{}.thumb".format(path)
         thumb2name = "{}.thumb2".format(path)
         fulltextname = "{}.txt".format(path)
         infoname = "{}.info".format(path)
         try:
-            _process_pdf(doc.abspath, thumbname, thumb2name, fulltextname, infoname)
+            _process_pdf(doc.abspath, thumb2name, fulltextname, infoname)
         except _PdfEncryptedError:
             # allow upload of encrypted document
             db.session.commit()
@@ -295,7 +284,6 @@ class Document(Content):
                         continue
                     self.set("pdf_" + line[0:i].strip().lower(), _utils_utils.utf8_decode_escape(line[i + 1:].strip()))
 
-        self.files.append(File(thumbname, "thumb", "image/jpeg"))
         self.files.append(File(thumb2name, "presentation", "image/jpeg"))
         self.files.append(File(fulltextname, "fulltext", "text/plain"))
         self.files.append(File(infoname, "fileinfo", "text/plain"))

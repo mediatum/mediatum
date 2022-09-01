@@ -48,7 +48,7 @@ class Video(Content):
 
     @classmethod
     def get_sys_filetypes(cls):
-        return [u"presentation", u"thumb", u"video"]
+        return [u"presentation", u"video"]
 
     # compare document.py and
     # core.database.postgres.file.File.ORIGINAL_FILETYPES:
@@ -140,20 +140,17 @@ class Video(Content):
                     raise
 
                 name_without_ext = os.path.splitext(video_file.path)[0]
-                thumbname = u'{}.thumb'.format(name_without_ext)
                 thumbname2 = u'{}.presentation'.format(name_without_ext)
-                make_thumbnail_image(temp_thumbnail_path, resolve_datadir_path(thumbname))
                 make_presentation_image(temp_thumbnail_path, resolve_datadir_path(thumbname2))
             finally:
                 os.unlink(temp_thumbnail_path)
 
-            old_thumb_files = self.files.filter(File.filetype.in_([u'thumb', u'presentation']))
+            old_thumb_files = self.files.filter(File.filetype == u'presentation')
             
             for old_thumb_file in old_thumb_files:
                 self.files.remove(old_thumb_file)
                 old_thumb_file.unlink()
-            
-            self.files.append(File(thumbname, u'thumb', u'image/jpeg'))
+
             self.files.append(File(thumbname2, u'presentation', u'image/jpeg'))
 
             db.session.commit()

@@ -12,14 +12,13 @@ import os
 import tempfile
 import exifread as _exifread
 from PIL import Image as PILImage, ImageDraw
-from PIL.Image import DecompressionBombError as _DecompressionBombError
 
 import core.httpstatus as _httpstatus
 from core import config, File, db
 from core.archive import Archive, get_archive_for_node
 from core.attachment import filebrowser
 from core.postgres import check_type_arg_with_schema
-from contenttypes.data import Content, prepare_node_data, BadFile as _BadFile
+from contenttypes.data import Content, prepare_node_data
 from utils.utils import isnewer
 
 import lib.iptc.IPTC
@@ -35,32 +34,6 @@ from core import webconfig
 
 
 logg = logging.getLogger(__name__)
-
-# XXX: some refactoring has to be done for the next two methods, many similarities ...
-
-def make_thumbnail_image(src_filepath, dest_filepath):
-    """make thumbnail (jpeg 128x128)"""
-    if isnewer(dest_filepath, src_filepath):
-        return
-
-    try:
-        with PILImage.open(src_filepath) as pic:
-            width = pic.size[0]
-            height = pic.size[1]
-            if width > height:
-                newwidth = 128
-                newheight = height * newwidth // width
-            else:
-                newheight = 128
-                newwidth = width * newheight // height
-            pic.thumbnail((newwidth, newheight))
-            pic = pic.convert("RGB")
-            pic.save(dest_filepath, "JPEG", quality="web_high")
-    except IOError as exe:
-        raise _BadFile("unknown_image_format")
-    except _DecompressionBombError as exe:
-        raise _BadFile("image_too_big")
-
 
 def make_presentation_image(src_filepath, dest_filepath):
     if isnewer(dest_filepath, src_filepath):
@@ -178,7 +151,7 @@ class Image(Content):
 
     @classmethod
     def get_sys_filetypes(cls):
-        return [u"original", u"thumb", u"image", u"presentation", u"zoom"]
+        return [u"image", u"original", u"presentation", u"zoom"]
 
     @classmethod
     def get_upload_filetype(cls):
@@ -384,10 +357,9 @@ class Image(Content):
         path = os.path.splitext(image_file.abspath)[0]
 
         # XXX: we really should use the correct file ending and find another way of naming
-        thumbname = path + ".thumb"
         thumbname2 = path + ".presentation"
 
-        old_thumb_files = filter(lambda f: f.filetype in (u"thumb", u"presentation"), files)
+        old_thumb_files = filter(lambda f: f.filetype == u"presentation", files)
 
         # XXX: removing files before the new ones are created is bad, that should happen later (use File.unlink_after_deletion).
         # XXX: But we need better thumbnail naming first.
@@ -395,10 +367,8 @@ class Image(Content):
             self.files.remove(old)
             old.unlink()
 
-        make_thumbnail_image(image_file.abspath, thumbname)
         make_presentation_image(image_file.abspath, thumbname2)
 
-        self.files.append(File(thumbname, u"thumb", u"image/jpeg"))
         self.files.append(File(thumbname2, u"presentation", u"image/jpeg"))
 
     def _generate_zoom_archive(self, files=None):
@@ -468,8 +438,7 @@ class Image(Content):
         files = self.files.all()
 
         # generate both thumbnail sizes if one is missing because they should always display the same
-        if (filter_scalar(lambda f: f.filetype == u"thumb", files) is None
-            or filter_scalar(lambda f: f.filetype == u"presentation", files) is None):
+        if filter_scalar(lambda f: f.filetype == u"presentation", files) is None:
             self._generate_thumbnails(files)
 
         # should we skip this sometimes? Do we want to overwrite everything?

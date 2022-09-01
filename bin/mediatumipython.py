@@ -428,7 +428,6 @@ def chk_mimetype(fname, mimetype, m):
     err_txt = ""
     type_relations = {'jpg': ['image/jpeg', 'inode/file'],
                       'jpeg' : ['image/jpeg'],
-                      'thumb' : ['image/jpeg'],
                       'thumb2' : ['image/jpeg'],
                       'tif' : ['image/tiff', 'inode/file'],
                       'tiff' : ['image/tiff'],
@@ -479,7 +478,6 @@ def db_check_image(node):
     warn_str = ""
     original_list = []
     image_list = []
-    thumb_list = []
     presentation_list = []
     image_mimetype = ""
     original_mimetype = ""
@@ -497,48 +495,50 @@ def db_check_image(node):
             original_mimetype = f.mimetype
         elif f.filetype == 'presentation':
             presentation_list += [fpath]
-        elif f.filetype == 'thumb':
-            thumb_list += [fpath]
         err_txt = chk_mimetype(fpath, f.mimetype, m)
         if err_txt:
-            warn_str += "warning: %d: %s\n" % (node.id, err_txt)
+            warn_str += "warning: {}: {}\n".format(node.id, err_txt)
 
     # multiple images
     if len(image_list) > 1:
         errtxt = ""
         equals, errtxt = cmp_filelist(image_list)
-        warn_str += "warning: %d: more than one image files (%d, equal: %d)\n" % \
-                    (node.id, len(image_list), equals)
+        warn_str += "warning: {}: more than one image files ({}, equal: {})\n".format(node.id, len(image_list), equals)
         if errtxt:
-            warn_str += "warning: %d: %s\n" % (node.id, errtxt)
+            warn_str += "warning: {}: {}\n".format(node.id, errtxt)
     # must not have multiple files with type = 'original'
     if len(original_list) > 1:
-        warn_str += "warning: %d: too many original files (%d, equal: %d)\n" % \
-                    (node.id, len(original_list), cmp_filelist(original_list)[0])
+        warn_str += "warning: {}: too many original files ({}, equal: {})\n".format(
+                node.id,
+                len(original_list),
+                cmp_filelist(original_list)[0],
+            )
     # either original or archiv
     if original_list and archive_avail:
-        warn_str += "warning: %d: original and archive files\n" % node.id
+        warn_str += "warning: {}: original and archive files\n".format(node.id)
     # must have an 'original' file or a system attribute archive_type + archive_path
     # if it has a file with type 'image'
     if image_list and not original_list and not archive_avail:
-        warn_str += "warning: %d: image files but no original or archive files\n" % node.id
-    # files with type 'image' must have a 'thumbnail' and 'presentation' file
-    if image_list and (not thumb_list or not presentation_list):
-        warn_str += "warning: %d: image without thumb or presentation\n" % node.id
-    # files must have no duplicate 'thumbnail' or 'presentation' files
-    if len(thumb_list) > 1 or len(presentation_list) > 1:
-        warn_str += "warning: %d: multiple thumb (%d, equal: %d) or presentation (%d, equal: %d) files\n" % \
-                    (node.id, len(thumb_list), cmp_filelist(thumb_list)[0],
-                     len(presentation_list), cmp_filelist(presentation_list)[0])
+        warn_str += "warning: {}: image files but no original or archive files\n".format(node.id)
+    # files with type 'image' must have a 'presentation' file
+    if image_list and not presentation_list:
+        warn_str += "warning: {}: image without presentation\n".format(node.id)
+    # files must have no duplicate 'presentation' files
+    if len(presentation_list) > 1:
+        warn_str += "warning: {}: presentation ({}, equal: {}) files\n".format(
+                node.id,
+                len(presentation_list),
+                cmp_filelist(presentation_list)[0],
+            )
     # files with type 'image' or 'original' must have a mimetype like 'image/%'
     if image_list and not image_mimetype.startswith("image/"):
-        warn_str += "warning: %d: image has no mimetype like 'image/%%'\n" % node.id
+        warn_str += "warning: {}: image has no mimetype like 'image/%%'\n".format(node.id)
     if original_list and not original_mimetype.startswith("image/"):
-        warn_str += "warning: %d: original has no mimetype like 'image/%%'\n" % node.id
+        warn_str += "warning: {}: original has no mimetype like 'image/%%'\n".format(node.id)
     # TIFF: file with type 'original' must have mimetype = 'image/tiff'
     #       and type 'image' must have mimetype = 'image/png'
     if original_mimetype == "image/tiff" and not image_mimetype == "image/png":
-        warn_str += "warning: %d: tiff-original has no png-image\n" % node.id
+        warn_str += "warning: {}: tiff-original has no png-image\n".format(node.id)
 
     if warn_str:
         print(warn_str)

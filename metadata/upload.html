@@ -228,11 +228,11 @@
     });
 
 
-    function submit_FOR_____FIELDNAME____() {
+    function m_upload_submit(fieldname) {
 
-        $('#submitter_class_____FIELDNAME____').val('m_upload');
-        $('input[name=submitter_FOR_____FIELDNAME____]').val("____FIELDNAME____");
-        $('input[name=submitter]').val("____FIELDNAME____");
+        $('#submitter_class_'+fieldname).val('m_upload');
+        $('input[name=submitter_FOR_'+fieldname+']').val(fieldname);
+        $('input[name=submitter]').val(fieldname);
 
         var we_are_now = whereAreWe();
         var current_form_id = '#addmfield';
@@ -249,26 +249,26 @@
             success:   function(data) {
                 var res = jQuery.parseJSON(data);
 
-                $("#response_FOR_____FIELDNAME____").html("");
+                $("#response_FOR_"+fieldname).html("");
                 var errors = res['errors'];
                 if (errors) {
                     $.each(errors, function(index, value) {
-                            $("<div/>").html(value).attr('style', 'color:red').appendTo("#response_FOR_____FIELDNAME____");
+                            $("<div/>").html(value).attr('style', 'color:red').appendTo("#response_FOR_"+fieldname);
                         }
                     );
                 }
 
                 var copy_report = res['copy_report'];
                 if (copy_report) {
-                    $("<div/>").html(copy_report).attr('style', 'color:blue').appendTo("#response_FOR_____FIELDNAME____");
+                    $("<div/>").html(copy_report).attr('style', 'color:blue').appendTo("#response_FOR_"+fieldname);
                 }
             },
-            error: function() { alert("error_FOR_____FIELDNAME____"); },
+            error: function() { alert("error_FOR_"+fieldname); },
             complete: function() {
                 $(current_form_id).unbind();
                 load_file_list_json_for_targetnode_FOR_____FIELDNAME____(getTargetNodeID());
 
-                $('input[name=m_upload_file_FOR_____FIELDNAME____]').attr('value', '');
+                $('input[name=m_upload_file_FOR_'+fieldname+']').attr('value', '');
             },
         };
         var res = $(current_form_id).submit(function() {
@@ -289,7 +289,7 @@
         <!-- zero width spaces (#8203) needed for IE(8) and metadata mask editor -->
         &#8203;<input type="file" size="60%" disabled="disabled" tal:attributes="id name; value value; required required; name python:u'm_upload_file_FOR_{}'.format(fieldname)" />
         &#8203;<br/>
-        &#8203;<input tal:attributes="id python:u'upload_submit_FOR_{}'.format(fieldname); name python: u'upload_submit_FOR_{}'.format(fieldname);" type="submit" value="Submit (disabled)" disabled="disabled" onclick="submit_FOR_____FIELDNAME____()" />
+        &#8203;<input tal:attributes="id python:u'upload_submit_FOR_{}'.format(fieldname); name python: u'upload_submit_FOR_{}'.format(fieldname); onclick python: u'm_upload_submit(&quot;{}&quot;)'.format(fieldname)" type="submit" value="Submit (disabled)" disabled="disabled" />
           <div tal:attributes="id python:u'response_FOR_{}'.format(fieldname)"> </div>
           <div tal:attributes="id python:u'file_list_FOR_{}'.format(fieldname)"> </div>
     </div>

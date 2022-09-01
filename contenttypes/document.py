@@ -11,7 +11,6 @@ import shutil
 import subprocess as _subprocess
 
 import PIL.Image as _PIL_Image
-import PIL.ImageDraw as _PIL_ImageDraw
 
 import core.config as config
 import core.httpstatus as _httpstatus
@@ -85,32 +84,21 @@ def _pdfinfo(filename):
 
 def _makeThumbs(src, thumb128, thumb300):
     """create preview image for given pdf """
-    pic = _PIL_Image.open(src)
-    pic.load()
-    pic = pic.convert("RGB")
-    width = pic.size[0]
-    height = pic.size[1]
+    with _PIL_Image.open(src) as pic:
+        width = pic.size[0]
+        height = pic.size[1]
+        if width > height:
+            newwidth, newheight = 300, height * 300 // width
+        else:
+            newwidth, newheight = width * 300 // height, 300
+        pic.thumbnail((newwidth, newheight))
+        pic = pic.convert("RGB")
+        pic.save(thumb300, "JPEG", quality="web_high")
 
-    if width > height:
-        newwidth, newheight = 300, height * 300 / width
-    else:
-        newwidth, newheight = width * 300 / height, 300
-
-    pic = pic.resize((newwidth, newheight), _PIL_Image.ANTIALIAS)
-    im = _PIL_Image.new("RGB", (300, 300), (255, 255, 255))
-    x = (300 - newwidth) / 2
-    y = (300 - newheight) / 2
-    im.paste(pic, (x, y, x + newwidth, y + newheight))
-    draw = _PIL_ImageDraw.ImageDraw(im)
-    draw.line([(x, y), (x + newwidth, y), (x + newwidth, y + newheight), (x, y + newheight), (x, y)], (200, 200, 200))
-
-    draw.line([(0, 0), (299, 0), (299, 299), (0, 299), (0, 0)], (128, 128, 128))
-    im.save(thumb300, "jpeg")
-
-    im = im.resize((128, 128), _PIL_Image.ANTIALIAS)
-    draw = _PIL_ImageDraw.ImageDraw(im)
-    draw.line([(0, 0), (127, 0), (127, 127), (0, 127), (0, 0)], (128, 128, 128))
-    im.save(thumb128, "jpeg")
+    with _PIL_Image.open(src) as pic:
+        pic.thumbnail((128, 128))
+        pic = pic.convert("RGB")
+        pic.save(thumb128, "JPEG", quality="web_high")
 
 
 def _process_pdf(filename, thumbname, thumb2name, fulltextname, infoname):

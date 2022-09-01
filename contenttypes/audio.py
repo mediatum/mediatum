@@ -42,32 +42,19 @@ def make_thumbnail_image(self, audiofile):
     with open("{}.thumb".format(path), "wb") as fout:
         fout.write(tag.data)
 
-    pic = Image.open(path + ".thumb2")
-    width = pic.size[0]
-    height = pic.size[1]
-
-    if width > height:
-        newwidth = 128
-        newheight = height * newwidth // width
-    else:
-        newheight = 128
-        newwidth = width * newheight // height
-    pic = pic.resize((newwidth, newheight), Image.ANTIALIAS)
-    pic.save(path + ".thumb", "jpeg")
-    pic = pic.resize((newwidth, newheight), Image.ANTIALIAS)
-    im = Image.new(pic.mode, (128, 128), (255, 255, 255))
-
-    x = (128 - newwidth) // 2
-    y = (128 - newheight) // 2
-    im.paste(pic, (x, y, x + newwidth, y + newheight))
-
-    draw = ImageDraw.ImageDraw(im)
-    draw.line([(0, 0), (127, 0), (127, 127), (0, 127), (0, 0)], (128, 128, 128))
-
-    im = im.convert("RGB")
-    im.save(path + ".thumb", "jpeg")
-
-    self.files.append(File(path + ".thumb", "thumb", tag.mime))
+    with Image.open("{}.thumb2".format(path)) as pic:
+        width = pic.size[0]
+        height = pic.size[1]
+        if width > height:
+            newwidth = 128
+            newheight = height * newwidth // width
+        else:
+            newheight = 128
+            newwidth = width * newheight // height
+        pic.thumbnail((newwidth, newheight))
+        pic = pic.convert("RGB")
+        pic.save("{}.thumb".format(path), "JPEG", quality="web_high")
+        self.files.append(File(path + ".thumb", "thumb", tag.mime))
 
 
 # """ make presentation format (jpeg 320x320) """
@@ -81,19 +68,20 @@ def convert_image(self, audiofile):
     with open(path, "wb") as fout:
         fout.write(tag.data)
 
-    pic = Image.open(path)
-    width = pic.size[0]
-    height = pic.size[1]
+    with Image.open(path) as pic:
+        width = pic.size[0]
+        height = pic.size[1]
 
-    if width > height:
-        newwidth = 320
-        newheight = height * newwidth // width
-    else:
-        newheight = 320
-        newwidth = width * newheight // height
-    pic = pic.resize((newwidth, newheight), Image.ANTIALIAS)
-    pic.save(path, "jpeg")
-    self.files.append(File(path, "presentation", tags.mime))
+        if width > height:
+            newwidth = 320
+            newheight = height * newwidth // width
+        else:
+            newheight = 320
+            newwidth = width * newheight // height
+        pic.thumbnail((newwidth, newheight))
+        pic = pic.convert("RGB")
+        pic.save(path, "JPEG", quality="web_high")
+        self.files.append(File(path, "presentation", tag.mime))
 
 
 def makeMetaData(self, audiofile):

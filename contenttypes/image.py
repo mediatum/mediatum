@@ -40,96 +40,45 @@ logg = logging.getLogger(__name__)
 
 def make_thumbnail_image(src_filepath, dest_filepath):
     """make thumbnail (jpeg 128x128)"""
-
     if isnewer(dest_filepath, src_filepath):
         return
 
     try:
-        pic = PILImage.open(src_filepath)
+        with PILImage.open(src_filepath) as pic:
+            width = pic.size[0]
+            height = pic.size[1]
+            if width > height:
+                newwidth = 128
+                newheight = height * newwidth // width
+            else:
+                newheight = 128
+                newwidth = width * newheight // height
+            pic.thumbnail((newwidth, newheight))
+            pic = pic.convert("RGB")
+            pic.save(dest_filepath, "JPEG", quality="web_high")
     except IOError as exe:
         raise _BadFile("unknown_image_format")
     except _DecompressionBombError as exe:
         raise _BadFile("image_too_big")
-    temp_jpg_file = tempfile.NamedTemporaryFile(suffix=".jpg", delete=False)
-
-    try:
-        temp_jpg_file.close()
-        tmpjpg = temp_jpg_file.name
-
-        if pic.mode == "CMYK" and (src_filepath.endswith("jpg") or src_filepath.endswith("jpeg")) or pic.mode in ["P", "L"]:
-            convert_image(src_filepath, tmpjpg, ["-quality", "100", "-draw", "rectangle 0,0 1,1"])
-            pic = PILImage.open(tmpjpg)
-
-        pic.load()
-        width = pic.size[0]
-        height = pic.size[1]
-
-        if width > height:
-            newwidth = 128
-            newheight = height * newwidth // width
-        else:
-            newheight = 128
-            newwidth = width * newheight // height
-
-        pic = pic.resize((newwidth, newheight), PILImage.ANTIALIAS)
-
-        try:
-            im = PILImage.new(pic.mode, (128, 128), (255, 255, 255))
-        except:
-            im = PILImage.new("RGB", (128, 128), (255, 255, 255))
-
-        x = (128 - newwidth) // 2
-        y = (128 - newheight) // 2
-        im.paste(pic, (x, y, x + newwidth, y + newheight))
-
-        draw = ImageDraw.ImageDraw(im)
-        draw.line([(0, 0), (127, 0), (127, 127), (0, 127), (0, 0)], (128, 128, 128))
-
-        im = im.convert("RGB")
-        im.save(dest_filepath, "jpeg")
-    finally:
-        os.unlink(tmpjpg)
 
 
 def make_presentation_image(src_filepath, dest_filepath):
-
     if isnewer(dest_filepath, src_filepath):
         return
 
-    pic = PILImage.open(src_filepath)
-    temp_jpg_file = tempfile.NamedTemporaryFile(suffix=".jpg", delete=False)
-
-    try:
-        temp_jpg_file.close()
-        tmpjpg = temp_jpg_file.name
-
-        if pic.mode == "CMYK" and (src_filepath.endswith("jpg") or src_filepath.endswith("jpeg")) or pic.mode in ["P", "L"]:
-            convert_image(src_filepath, tmpjpg, ["-quality", "100", "-draw", "rectangle 0,0 1,1"])
-            pic = PILImage.open(tmpjpg)
-
-        pic.load()
-
+    with PILImage.open(src_filepath) as pic:
         width = pic.size[0]
         height = pic.size[1]
-
-        resize = 1
-        if resize:
-            # resize images only if they are actually too big
-            if width > height:
-                newwidth = 320
-                newheight = height * newwidth // width
-            else:
-                newheight = 320
-                newwidth = width * newheight // height
-            pic = pic.resize((newwidth, newheight), PILImage.ANTIALIAS)
-
-        try:
-            pic.save(dest_filepath, "jpeg")
-        except IOError:
-            pic.convert('RGB').save(dest_filepath, "jpeg")
-
-    finally:
-        os.unlink(tmpjpg)
+        # resize images only if they are actually too big
+        if width > height:
+            newwidth = 320
+            newheight = height * newwidth // width
+        else:
+            newheight = 320
+            newwidth = width * newheight // height
+        pic.thumbnail((newwidth, newheight))
+        pic = pic.convert("RGB")
+        pic.save(dest_filepath, "JPEG", quality="web_high")
 
 
 def convert_image(src_filepath, dest_filepath, options=[]):
@@ -137,13 +86,6 @@ def convert_image(src_filepath, dest_filepath, options=[]):
     :param options: additional command line option list passed to convert
     """
     utils.process.check_call(["gm", "convert"] + options + [src_filepath, dest_filepath])
-
-
-def get_image_dimensions(image):
-    pic = PILImage.open(image.abspath)
-    width = pic.size[0]
-    height = pic.size[1]
-    return width, height
 
 
 @contextmanager
@@ -181,25 +123,24 @@ def get_zoom_zip_filename(nid):
 
 def _create_zoom_archive(tilesize, image_filepath, zoom_zip_filepath):
     """Create tiles in zip file that will be displayed by zoom.swf"""
-    img = PILImage.open(image_filepath)
-    img = img.convert("RGB")
+    with PILImage.open(image_filepath) as img:
+        img = img.convert("RGB")
+        width, height = img.size
+        l = max(width, height)
+        max_level = 0
+        while l > tilesize:
+            l = l // 2
+            max_level += 1
 
-    width, height = img.size
-    l = max(width, height)
-    max_level = 0
-    while l > tilesize:
-        l = l // 2
-        max_level += 1
-
-    logg.debug('Creating: %s', zoom_zip_filepath)
-    with zipfile.ZipFile(zoom_zip_filepath, "w") as zfile:
-        for level in range(max_level + 1):
-            t = (tilesize << (max_level - level))
-            for x in range((width + (t - 1)) // t):
-                for y in range((height + (t - 1)) // t):
-                    with _create_zoom_tile_buffer(img, max_level, tilesize, level, x, y) as buff:
-                        tile_name = "tile-%d-%d-%d.jpg" % (level, x, y)
-                        zfile.writestr(tile_name, buff.getvalue(), zipfile.ZIP_DEFLATED)
+        logg.debug('Creating: %s', zoom_zip_filepath)
+        with zipfile.ZipFile(zoom_zip_filepath, "w") as zfile:
+            for level in range(max_level + 1):
+                t = (tilesize << (max_level - level))
+                for x in range((width + (t - 1)) // t):
+                    for y in range((height + (t - 1)) // t):
+                        with _create_zoom_tile_buffer(img, max_level, tilesize, level, x, y) as buff:
+                            tile_name = "tile-%d-%d-%d.jpg" % (level, x, y)
+                            zfile.writestr(tile_name, buff.getvalue(), zipfile.ZIP_DEFLATED)
 
 
 @check_type_arg_with_schema
@@ -481,8 +422,10 @@ class Image(Content):
 
     def _extract_metadata(self, files=None):
         image_file = self._find_processing_file(files)
-        width, height = get_image_dimensions(image_file)
-        # XXX: this is a bit redundant...
+        with PILImage.open(image_file.abspath) as pic:
+            # XXX: this is a bit redundant...
+            width = pic.size[0]
+            height = pic.size[1]
         self.set("origwidth", width)
         self.set("origheight", height)
         self.set("origsize", image_file.size)

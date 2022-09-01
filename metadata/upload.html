@@ -176,12 +176,12 @@
 
                     });
 
-    setTimeout(function() {load_file_list_json_for_targetnode_FOR_____FIELDNAME____(getTargetNodeID()); }, 1000);
+    setTimeout(function() {m_upload_load_file_list_json_for_targetnode(getTargetNodeID(), fieldname); }, 1000);
     return false;
 
     }
 
-    function load_file_list_json_for_targetnode_FOR_____FIELDNAME____(targetnodeid) {
+    function m_upload_load_file_list_json_for_targetnode(targetnodeid, fieldname) {
 
       var url = '/md_upload?jsoncallback=?';
 
@@ -189,14 +189,14 @@
         type: 'POST',
         cmd: 'list_files',
         targetnodeid: targetnodeid,
-        m_upload_field_name: '____FIELDNAME____',
+        m_upload_field_name: fieldname,
         };
         $.getJSON(url, options, function(data) {
 
                       var filelist=data['filelist'];
                       if (filelist) {
-                        $("#file_list_FOR_____FIELDNAME____").html("");
-                        $("<div/>").html(data['html_filelist']).appendTo("#file_list_FOR_____FIELDNAME____");
+                        $("#file_list_FOR_"+fieldname).html("");
+                        $("<div/>").html(data['html_filelist']).appendTo("#file_list_FOR_"+fieldname);
                       }
 
                     });
@@ -215,7 +215,7 @@
                 $('input[name=upload_submit_FOR_' + fieldname + ']').val("Submit");
                 $('div[name=upload_warn_div_FOR_' + fieldname + ']').hide();
 
-                load_file_list_json_for_targetnode_FOR_____FIELDNAME____(targetnodeid);
+                m_upload_load_file_list_json_for_targetnode(targetnodeid, fieldname);
             } else {
                 $('input[name=m_upload_file_FOR_' + fieldname + ']').attr("disabled","disabled"); // type=file
                 $('input[name=upload_submit_FOR_' + fieldname + ']').attr("disabled","disabled"); // type=submit
@@ -263,7 +263,7 @@
             error: function() { alert("error_FOR_"+fieldname); },
             complete: function() {
                 $(current_form_id).unbind();
-                load_file_list_json_for_targetnode_FOR_____FIELDNAME____(getTargetNodeID());
+                m_upload_load_file_list_json_for_targetnode(getTargetNodeID(), fieldname);
 
                 $('input[name=m_upload_file_FOR_'+fieldname+']').attr('value', '');
             },

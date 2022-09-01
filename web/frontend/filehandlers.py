@@ -109,7 +109,6 @@ def _send_thumbnail(thumb_type, req):
     return _request_handler.sendFile(req, config.basedir + "/static/img/questionmark.png", "image/png", force=1)
 
 
-send_thumbnail = partial(_send_thumbnail, u"thumb")
 send_thumbnail2 = partial(_send_thumbnail, u"presentation")
 
 

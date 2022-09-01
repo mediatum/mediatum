@@ -29,7 +29,7 @@
 
 <div metal:define-macro="workflow_filelist_short" id="workflowtableshort">
     <tal:block tal:repeat="file files">
-        <tal:block tal:condition="python:file.type=='thumb'">
+        <tal:block tal:condition="python:file.type=='thumb2'">
             <div id="thumb" style="float:left">
                 <img tal:attributes="src python:u'/file/{}/{}'.format(node.id, file.getName())"/>
             </div>

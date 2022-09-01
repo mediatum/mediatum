@@ -102,7 +102,7 @@ class Video(Content):
 
     def show_node_image(self):
         """Returns preview image"""
-        return '<img src="/thumbs/%s" class="thumbnail" border="0"/>' % self.id
+        return '<img src="/thumb2/%s" class="thumbnail" border="0"/>' % self.id
 
     def event_files_changed(self):
         """Generates thumbnails (a small and a larger one) from a MP4 video file.

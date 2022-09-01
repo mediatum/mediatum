@@ -181,7 +181,6 @@ def flask_routes(app):
     @app.route('/services/<path:action>')
     @app.route('/ftree/<path:action>')
     @app.route('/publish/<path:action>')
-    @app.route('/thumbs/<path:action>')
     @app.route('/thumb2/<path:action>')
     @app.route('/image/<path:action>')
     @app.route('/doc/<path:action>')

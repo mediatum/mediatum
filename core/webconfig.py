@@ -161,7 +161,6 @@ def initContexts():
 
     # === public area ===
     file = context.addFile("web/frontend/filehandlers.py")
-    file.addHandler("send_thumbnail").addPattern("/thumbs/.*")
     file.addHandler("send_thumbnail2").addPattern("/thumb2/.*")
     file.addHandler("send_doc").addPattern("/doc/.*")
     file.addHandler("send_image").addPattern("/image/.*")

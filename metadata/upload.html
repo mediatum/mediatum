@@ -217,32 +217,6 @@
         }
     });
 
-    function remove_other_parentdiv__FOR_____FIELDNAME____() {
-
-            var disabled_fields = {};
-            fieldid = 'upload_div_FOR_____FIELDNAME____';
-            flds = $('div[id^=upload_div_FOR_]');
-            $.each(flds, function(index, fld) {
-              fld_id = $(fld).attr('id');
-              if (fld_id != ''+fieldid) {
-                var html = $('#'+fld_id).html();
-                $(fld).html('---');
-                disabled_fields[fld_id] = html;
-              }
-            });
-
-            return disabled_fields;
-    }
-
-    function restore_other_parentdiv__FOR_____FIELDNAME____(d) {
-
-                for(var key in d){
-                    if (d.hasOwnProperty(key)){
-                        var html=d[key];
-                        $("#"+key).html(html);
-                    }
-                }
-    }
 
     function submit_FOR_____FIELDNAME____() {
 

@@ -396,7 +396,7 @@ ul#navigationlist li div a:visited { color: #004682;}
     text-overflow: ellipsis;
     Word-wrap: break-Word;
     display: -webkit-box;
-   -webkit-line-clamp: 12; /* number of lines to show */
+   -webkit-line-clamp: 8; /* number of lines to show */
    -webkit-box-orient: vertical;
 	overflow: hidden;
     max-height: 235px;
@@ -412,7 +412,7 @@ ul#navigationlist li div a:visited { color: #004682;}
 }
 
 .mediatum-stylethumb-div {
-    margin-left: 138px;
+    margin-left: 145px;
 }
 .mediatum-stylethumb-img {
     float:left; margin: 3px;position:absolute;

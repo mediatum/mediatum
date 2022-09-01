@@ -4,26 +4,26 @@
 from __future__ import division
 from __future__ import print_function
 
+import codecs
 import logging
-
-import core.config as config
 import os
 import shutil
-import codecs
+
+import core.config as config
 import core.httpstatus as _httpstatus
 import core.translation as _core_translation
-from utils.utils import splitfilename, u, OperationException, utf8_decode_escape
-from utils.search import import_node_fulltext
-from web.frontend.filehelpers import version_id_from_req
-from schema.schema import VIEW_HIDE_EMPTY, Metafield
-from lib.pdf import parsepdf
-from core.attachment import filebrowser
+import utils.utils as _utils_utils
+from contenttypes.data import BadFile as _BadFile
 from contenttypes.data import Content, prepare_node_data
-from core.postgres import check_type_arg_with_schema
 from core import File
 from core import db
+from core.attachment import filebrowser
+from core.postgres import check_type_arg_with_schema
 from core.request_handler import sendFile as _sendFile
-from contenttypes.data import BadFile as _BadFile
+from lib.pdf import parsepdf
+from schema.schema import VIEW_HIDE_EMPTY, Metafield
+from utils.search import import_node_fulltext
+from web.frontend.filehelpers import version_id_from_req
 
 logg = logging.getLogger(__name__)
 
@@ -139,7 +139,7 @@ class Document(Content):
         unwanted_attrs = self.get_unwanted_exif_attributes()
 
         if doc:
-            path, ext = splitfilename(doc.abspath)
+            path, ext = _utils_utils.splitfilename(doc.abspath)
 
             if not (thumb and present and fulltext and fileinfo):
                 thumbname = path + ".thumb"
@@ -166,7 +166,7 @@ class Document(Content):
                         if i > 0:
                             if any(tag in line[0:i].strip().lower() for tag in unwanted_attrs):
                                 continue
-                            self.set("pdf_" + line[0:i].strip().lower(), utf8_decode_escape(line[i + 1:].strip()))
+                            self.set("pdf_" + line[0:i].strip().lower(), _utils_utils.utf8_decode_escape(line[i + 1:].strip()))
 
                 self.files.append(File(thumbname, "thumb", "image/jpeg"))
                 self.files.append(File(thumb2name, "presentation", "image/jpeg"))

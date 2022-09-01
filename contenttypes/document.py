@@ -14,7 +14,6 @@ import PIL.Image as _PIL_Image
 
 import contenttypes.data as _contenttypes_data
 import core.config as config
-import core.httpstatus as _httpstatus
 import core.translation as _core_translation
 import utils.process as _utils_process
 import utils.utils as _utils_utils
@@ -22,7 +21,6 @@ from core import File
 from core import db
 from core.attachment import filebrowser
 from core.postgres import check_type_arg_with_schema
-from core.request_handler import sendFile as _sendFile
 from schema.schema import VIEW_HIDE_EMPTY, Metafield
 from utils.search import import_node_fulltext
 from web.frontend.filehelpers import version_id_from_req
@@ -317,21 +315,6 @@ class Document(_contenttypes_data.Content):
                            "pdf_addnotes": "kommentierbar"},
                 "Standard": {"creationtime": "Erstelldatum",
                              "creator": "Ersteller"}}
-
-    """ popup window for actual nodetype """
-    def popup_fullsize(self, req):
-        if not self.has_data_access() or not self.has_read_access():
-            req.response.set_data(_core_translation.translate_in_request("permission_denied", req))
-            req.response.status_code = _httpstatus.HTTP_FORBIDDEN
-            return
-
-        document = self.document
-
-        if document is not None:
-            _sendFile(req, document.abspath, document.mimetype)
-
-    def popup_thumbbig(self, req):
-        self.popup_fullsize(req)
 
     def processDocument(self, dest):
         for file in self.files:

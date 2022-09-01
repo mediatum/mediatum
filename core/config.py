@@ -153,10 +153,6 @@ def resolve_datadir_path(path):
     return os.path.join(get("paths.datadir"), path)
 
 
-def get_default_zoom_dir():
-    return resolve_datadir_path(u"zoom_tiles")
-
-
 def _read_ini_file(basedir, filepath):
     lineno = 0
     params = {}
@@ -232,11 +228,9 @@ def set_default_values():
     if not "paths.tempdir" in settings:
         settings["paths.tempdir"] = tempfile.gettempdir()
 
-    if not "paths.zoomdir" in settings:
-        settings["paths.zoomdir"] = get_default_zoom_dir()
 
 def expand_paths():
-    for confkey in ["paths.datadir", "paths.tempdir", "paths.zoomdir", "logging.file"]:
+    for confkey in ["paths.datadir", "paths.tempdir", "logging.file"]:
         if confkey in settings:
             settings[confkey] = os.path.expanduser(settings[confkey])
 
@@ -293,7 +287,6 @@ def initialize(config_filepath=None, prefer_config_filename=None):
     check_create_dir(os.path.join(data_path, "html"), "datadir/html")
     check_create_dir(settings.get("paths.tempdir"), "tempdir")
     check_create_dir(os.path.join(data_path, "incoming"), "incoming")
-    check_create_dir(settings.get("paths.zoomdir"), "zoomdir")
 
     # extract log dir from log file path and create it if neccessary
     log_filepath = settings.get("logging.file")

@@ -172,10 +172,6 @@ def initContexts():
     file.addHandler("fetch_archived").addPattern("/archive/.*")
     file.addHandler("send_from_webroot").addPattern("/[a-z,0-9,-]*\.[a-z]*")  # root directory added /web/root (only files with extensions)
 
-    file = context.addFile("web/frontend/zoom.py")
-    file.addHandler("send_imageproperties_xml").addPattern("/tile/[0-9]*/ImageProperties.xml")
-    file.addHandler("send_tile").addPattern("/tile/[0-9]*/[^I].*")
-
     main_file = file = context.addFile("web/frontend/main.py")
     handler = file.addHandler("display")
     handler.addPattern("/")
@@ -192,8 +188,6 @@ def initContexts():
     file.addHandler("publish").addPattern("/publish/.*")
     file = context.addFile("web/frontend/popups.py")
     file.addHandler("popup_metatype").addPattern("/metatype/.*")
-    file.addHandler("popup_fullsize").addPattern("/fullsize")
-    file.addHandler("popup_thumbbig").addPattern("/thumbbig")
     # file.addHandler("show_index").addPattern("/popup_index")
     file.addHandler("show_help").addPattern("/popup_help")
     file.addHandler("show_attachmentbrowser").addPattern("/attachmentbrowser")

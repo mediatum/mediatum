@@ -334,9 +334,6 @@ msgstr "  File being loaded..."
 msgid "image_high_res_archive"
 msgstr "Load high resolution from archive"
 
-msgid "image_no_flash_link"
-msgstr "Click here to show the image with its original size (without Flash zoom). Use this link if you experience problems with the current view."
-
 msgid "doc_fulltext_title"
 msgstr "Open fulltext in new window"
 

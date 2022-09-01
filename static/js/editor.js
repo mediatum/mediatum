@@ -28,12 +28,6 @@ function getAllObjectsString(){
     return s.join(',');
 }
 
-function Thumb2Window(id){
-    var win1 = window.open('/thumbbig?id='+id,'thumbbig','width=100,height=100,directories=no,location=no,menubar=no,scrollbars=no,status=no,toolbar=no,resizable=1');
-    win1.focus();
-    return false;
-}
-
 var sublayout;
 
 function init(userstr, groupstr, datestr, ipstr)

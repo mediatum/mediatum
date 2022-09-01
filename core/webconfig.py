@@ -262,7 +262,7 @@ def initContexts():
     file.addHandler("export").addPattern("/.*")
 
     # === static files ===
-    _request_handler.addFileStore("/ckeditor/", "lib/CKeditor/files.zip")
+    _request_handler.addFileStore("/static/ckeditor/", "static/CKeditor/files.zip")
     _request_handler.addFileStore("/static/js/", "static/js/")
     _request_handler.addFileStore("/static/css/", "static/css/")
     _request_handler.addFileStore("/static/img/", "static/img/")

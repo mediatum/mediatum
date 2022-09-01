@@ -8,10 +8,15 @@ import codecs
 import logging
 import os
 import shutil
+import subprocess as _subprocess
+
+import PIL.Image as _PIL_Image
+import PIL.ImageDraw as _PIL_ImageDraw
 
 import core.config as config
 import core.httpstatus as _httpstatus
 import core.translation as _core_translation
+import utils.process as _utils_process
 import utils.utils as _utils_utils
 from contenttypes.data import BadFile as _BadFile
 from contenttypes.data import Content, prepare_node_data
@@ -20,12 +25,149 @@ from core import db
 from core.attachment import filebrowser
 from core.postgres import check_type_arg_with_schema
 from core.request_handler import sendFile as _sendFile
-from lib.pdf import parsepdf
 from schema.schema import VIEW_HIDE_EMPTY, Metafield
 from utils.search import import_node_fulltext
 from web.frontend.filehelpers import version_id_from_req
 
 logg = logging.getLogger(__name__)
+
+class _PdfEncryptedError(Exception):
+    pass
+
+_pdfinfo_attribute_names = frozenset((
+        "Title",
+        "Subject",
+        "Keywords",
+        "Author",
+        "Creator",
+        "Producer",
+        "CreationDate",
+        "ModDate",
+        "Tagged",
+        "Pages",
+        "Encrypted",
+        "Page size",
+        "File size",
+        "Optimized",
+        "PDF Version",
+        "Metadata",
+    ))
+
+
+def _pdfinfo(filename):
+    # process info file
+    try:
+        out = _utils_process.check_output(("pdfinfo", filename))
+    except _subprocess.CalledProcessError:
+        logg.exception("failed to extract metadata from file %s")
+        return {}
+    data = {}
+    for line in out.splitlines():
+        for attr in _pdfinfo_attribute_names:
+            parts = line.replace("\n", "").replace("\r", "").split(attr + ":")
+            if len(parts) != 2:
+                continue
+            # pdfinfo cannot handle strings in utf-16, they are clipped after BOM_UTF16_BE:
+            if parts[1].strip() == codecs.BOM_UTF16_BE:
+                break
+            data[attr] = parts[1].strip()
+
+            if attr == "Encrypted" and parts[1].strip().startswith("yes"):
+                for s_option in parts[1].strip()[5:-1].split(" "):
+                    option = s_option.split(":")
+                    if option[1] == "":
+                        break
+                    data[option[0]] = option[1]
+                data[attr] = "yes"
+            break
+    return data
+
+
+def _makeThumbs(src, thumb128, thumb300):
+    """create preview image for given pdf """
+    pic = _PIL_Image.open(src)
+    pic.load()
+    pic = pic.convert("RGB")
+    width = pic.size[0]
+    height = pic.size[1]
+
+    if width > height:
+        newwidth, newheight = 300, height * 300 / width
+    else:
+        newwidth, newheight = width * 300 / height, 300
+
+    pic = pic.resize((newwidth, newheight), _PIL_Image.ANTIALIAS)
+    im = _PIL_Image.new("RGB", (300, 300), (255, 255, 255))
+    x = (300 - newwidth) / 2
+    y = (300 - newheight) / 2
+    im.paste(pic, (x, y, x + newwidth, y + newheight))
+    draw = _PIL_ImageDraw.ImageDraw(im)
+    draw.line([(x, y), (x + newwidth, y), (x + newwidth, y + newheight), (x, y + newheight), (x, y)], (200, 200, 200))
+
+    draw.line([(0, 0), (299, 0), (299, 299), (0, 299), (0, 0)], (128, 128, 128))
+    im.save(thumb300, "jpeg")
+
+    im = im.resize((128, 128), _PIL_Image.ANTIALIAS)
+    draw = _PIL_ImageDraw.ImageDraw(im)
+    draw.line([(0, 0), (127, 0), (127, 127), (0, 127), (0, 0)], (128, 128, 128))
+    im.save(thumb128, "jpeg")
+
+
+def _process_pdf(filename, thumbname, thumb2name, fulltextname, infoname):
+    tempdir = config.get("paths.tempdir")
+    imgfile = os.path.join(tempdir, "pdfpreview.{}.png".format(_utils_utils.gen_secure_token()))
+    name = ".".join(filename.split(".")[:-1])
+    fulltext_from_pdftotext = name + ".pdftotext"  # output of pdf to text, possibly not normalized utf-8
+
+    info = _pdfinfo(filename)
+    # test for correct rights
+    if info.get("Encrypted") == "yes":
+        raise _PdfEncryptedError("error:document encrypted")
+
+    with open(infoname, "w") as finfo:
+        finfo.writelines("{}:{}{}\n".format(key, " "*(15-len(key)), value) for key, value in info.iteritems())
+
+    # convert first page to image (graphicsmagick + ghostview)
+    try:
+        _utils_process.check_call((
+            "gm",
+            "convert",
+            "-colorspace", "RGB",
+            "-density", "300",
+            "{}[0]".format(filename),
+            "-background", "white",
+            "-thumbnail", "x300",
+            imgfile,
+        ))
+    except _subprocess.CalledProcessError:
+        logg.exception("failed to create PDF thumbnail for file " + filename)
+    else:
+        _makeThumbs(imgfile, thumbname, thumb2name)
+
+    # extract fulltext (xpdf)
+    try:
+        _utils_process.check_call(("pdftotext", "-enc", "UTF-8", filename, fulltext_from_pdftotext))
+    except _subprocess.CalledProcessError:
+        logg.exception("failed to extract fulltext from file %s", filename)
+
+    # normalization of fulltext (uconv)
+    try:
+        _utils_process.check_call((
+            "uconv",
+            "-x", "any-nfc",
+            "-f", "UTF-8",
+            "-t", "UTF-8",
+            "--output",
+            fulltextname,
+            fulltext_from_pdftotext,
+        ))
+    except _subprocess.CalledProcessError:
+        logg.exception("failed to normalize fulltext from file %s", filename)
+
+    with _utils_utils.suppress(OSError, warn=False):
+        os.remove(fulltext_from_pdftotext)
+    with _utils_utils.suppress(OSError, warn=False):
+        os.remove(imgfile)
 
 
 def _prepare_document_data(node, req, words=""):
@@ -135,48 +277,45 @@ class Document(Content):
                 elif f.type == "fulltext":
                     self.files.remove(f)
 
-        #fetch unwanted tags to be omitted
+            db.session.commit()
+            return
+
+        if thumb or present or fulltext or fileinfo:
+            return
+
+        path, ext = _utils_utils.splitfilename(doc.abspath)
+        thumbname = "{}.thumb".format(path)
+        thumb2name = "{}.thumb2".format(path)
+        fulltextname = "{}.txt".format(path)
+        infoname = "{}.info".format(path)
+        try:
+            _process_pdf(doc.abspath, thumbname, thumb2name, fulltextname, infoname)
+        except _PdfEncryptedError:
+            # allow upload of encrypted document
+            db.session.commit()
+            return
+        except _PIL_Image.DecompressionBombError:
+            # must match error string in parsepdf.py
+            raise _BadFile("image_too_big")
+
         unwanted_attrs = self.get_unwanted_exif_attributes()
+        with codecs.open(infoname, "rb", encoding='utf8') as fi:
+            for line in fi:
+                i = line.find(':')
+                if i > 0:
+                    if any(tag in line[0:i].strip().lower() for tag in unwanted_attrs):
+                        continue
+                    self.set("pdf_" + line[0:i].strip().lower(), _utils_utils.utf8_decode_escape(line[i + 1:].strip()))
 
-        if doc:
-            path, ext = _utils_utils.splitfilename(doc.abspath)
+        self.files.append(File(thumbname, "thumb", "image/jpeg"))
+        self.files.append(File(thumb2name, "presentation", "image/jpeg"))
+        self.files.append(File(fulltextname, "fulltext", "text/plain"))
+        self.files.append(File(infoname, "fileinfo", "text/plain"))
 
-            if not (thumb and present and fulltext and fileinfo):
-                thumbname = path + ".thumb"
-                thumb2name = path + ".thumb2"
-                fulltextname = path + ".txt"
-                infoname = path + ".info"
-                tempdir = config.get("paths.tempdir")
-
-                try:
-                    pdfdata = parsepdf.parsePDF(doc.abspath, tempdir)
-                except parsepdf.PDFException as ex:
-                    if ex.value == 'error:document encrypted':
-                        # allow upload of encrypted document
-                        db.session.commit()
-                        return
-                    raise OperationException(ex.value)
-                except Exception as exc:
-                    if str(exc)=="DecompressionBombError":  # must match error string in parsepdf.py
-                        raise _BadFile("image_too_big")
-                    raise
-                with codecs.open(infoname, "rb", encoding='utf8') as fi:
-                    for line in fi.readlines():
-                        i = line.find(':')
-                        if i > 0:
-                            if any(tag in line[0:i].strip().lower() for tag in unwanted_attrs):
-                                continue
-                            self.set("pdf_" + line[0:i].strip().lower(), _utils_utils.utf8_decode_escape(line[i + 1:].strip()))
-
-                self.files.append(File(thumbname, "thumb", "image/jpeg"))
-                self.files.append(File(thumb2name, "presentation", "image/jpeg"))
-                self.files.append(File(fulltextname, "fulltext", "text/plain"))
-                self.files.append(File(infoname, "fileinfo", "text/plain"))
-
-        if doc:
-            import_node_fulltext(self, overwrite=True)
+        import_node_fulltext(self, overwrite=True)
 
         db.session.commit()
+
 
     def get_unwanted_exif_attributes(self):
             '''

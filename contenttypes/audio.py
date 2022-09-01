@@ -7,7 +7,6 @@ from __future__ import print_function
 import logging
 import shutil
 from PIL import Image, ImageDraw
-from contenttypes.data import Content, prepare_node_data
 from mutagen import File as AudioFile
 from utils.utils import splitfilename
 from utils.date import parse_date, format_date, make_date
@@ -16,6 +15,7 @@ from core.postgres import check_type_arg_with_schema
 from core.attachment import filebrowser as _filebrowser
 from core import File
 from core import db
+import contenttypes.data as _contenttypes_data
 import utils.process
 
 logg = logging.getLogger(__name__)
@@ -77,7 +77,7 @@ def makeMetaData(self, audiofile):
 
 
 @check_type_arg_with_schema
-class Audio(Content):
+class Audio(_contenttypes_data.Content):
 
     @classmethod
     def get_sys_filetypes(cls):
@@ -96,7 +96,7 @@ class Audio(Content):
 
     # prepare hash table with values for TAL-template
     def _prepareData(self, req):
-        obj = prepare_node_data(self, req)
+        obj = _contenttypes_data.prepare_node_data(self, req)
         if obj["deleted"]:
             # no more processing needed if this object version has been deleted
             # rendering has been delegated to current version

@@ -13,12 +13,12 @@ import tempfile
 import exifread as _exifread
 from PIL import Image as PILImage, ImageDraw
 
+import contenttypes.data as _contenttypes_data
 import core.httpstatus as _httpstatus
 from core import config, File, db
 from core.archive import Archive, get_archive_for_node
 from core.attachment import filebrowser
 from core.postgres import check_type_arg_with_schema
-from contenttypes.data import Content, prepare_node_data
 from utils.utils import isnewer
 
 import lib.iptc.IPTC
@@ -117,7 +117,7 @@ def _create_zoom_archive(tilesize, image_filepath, zoom_zip_filepath):
 
 
 @check_type_arg_with_schema
-class Image(Content):
+class Image(_contenttypes_data.Content):
 
     #: create zoom tiles when width or height of image exceeds this value
     ZOOM_SIZE = 2000
@@ -219,7 +219,7 @@ class Image(Content):
 
     # prepare hash table with values for TAL-template
     def _prepareData(self, req):
-        obj = prepare_node_data(self, req)
+        obj = _contenttypes_data.prepare_node_data(self, req)
         if obj["deleted"]:
             # no more processing needed if this object version has been deleted
             # rendering has been delegated to current version

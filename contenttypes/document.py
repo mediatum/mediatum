@@ -12,13 +12,12 @@ import subprocess as _subprocess
 
 import PIL.Image as _PIL_Image
 
+import contenttypes.data as _contenttypes_data
 import core.config as config
 import core.httpstatus as _httpstatus
 import core.translation as _core_translation
 import utils.process as _utils_process
 import utils.utils as _utils_utils
-from contenttypes.data import BadFile as _BadFile
-from contenttypes.data import Content, prepare_node_data
 from core import File
 from core import db
 from core.attachment import filebrowser
@@ -154,7 +153,7 @@ def _process_pdf(filename, thumbnailname, fulltextname, infoname):
 
 
 def _prepare_document_data(node, req, words=""):
-    obj = prepare_node_data(node, req)
+    obj = _contenttypes_data.prepare_node_data(node, req)
     if obj["deleted"]:
         # no more processing needed if this object version has been deleted
         # rendering has been delegated to current version
@@ -208,7 +207,7 @@ def _prepare_document_data(node, req, words=""):
 
 
 @check_type_arg_with_schema
-class Document(Content):
+class Document(_contenttypes_data.Content):
 
     @classmethod
     def get_original_filetype(cls):
@@ -273,7 +272,7 @@ class Document(Content):
             return
         except _PIL_Image.DecompressionBombError:
             # must match error string in parsepdf.py
-            raise _BadFile("image_too_big")
+            raise _contenttypes_data.BadFile("image_too_big")
 
         unwanted_attrs = self.get_unwanted_exif_attributes()
         with codecs.open(infoname, "rb", encoding='utf8') as fi:

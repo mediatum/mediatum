@@ -70,16 +70,6 @@ def getContent(req, ids):
         req.response.status_code = httpstatus.HTTP_FORBIDDEN
         return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
-    if req.values.get('file') == "config":  # configuration file for ckeditor
-        req.response.content_type = "application/javascript"
-        req.response.set_data(_tal.processTAL(
-                dict(id=ids[0], lang=_core_translation.set_language(req.accept_languages)),
-                file="web/edit/modules/startpages.html",
-                macro="ckconfig",
-                request=req,
-            ))
-        return
-
     if "action" in req.values:
         if req.values['action'] == "getfile":  # deliver filecontent
             data = ""

@@ -24,8 +24,27 @@
           />
       </div>
 
-    <span tal:content="raw python:'<script> var _editor = \''+name+'\';var editor = CKEDITOR.replace(_editor, {customConfig: \'/metatype/htmlmemo?type=configfile\',});editor.on(\'required\', function(evt){alert(\'Please fill out the htmlmemo field.\');evt.cancel();});</script>'" />
-
+      <script tal:content="python:u'var _editor = \'{}\';'.format(name)"/>
+      <script>
+          var ckeditor = CKEDITOR.replace(_editor);
+          ckeditor.config.toolbar = 'Meta';
+          ckeditor.config.toolbar_Meta = [
+                ['Source','Preview'],
+                ['Cut','Copy','Paste','PasteText','PasteFromWord','-', 'SpellChecker', 'Scayt'],
+                ['Undo','Redo','RemoveFormat'],
+                '/',
+                ['Bold','Italic','Underline','Strike','-','Subscript','Superscript'],
+                ['JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'],
+                ['NumberedList','BulletedList','-','Outdent','Indent','Blockquote'],
+                [ 'Link', 'Unlink', 'Anchor' ],
+                '/',
+                ['Styles','Format','Font','FontSize','TextColor','BGColor','ShowBlocks']
+            ];
+          ckeditor.on('required', function(evt) {
+                alert('Please fill out the htmlmemo field.');
+                evt.cancel();
+            });
+      </script>
     <div tal:attributes="style python:u'width:{}px'.format(width)">
         <div tal:condition="python:max_length" style="text-align:right;padding-right:7px; margin-bottom:7px">
             <small>
@@ -65,29 +84,6 @@
 
     <div style="clear:left"> </div>
 </tal:block>
-
-
-<tal:block metal:define-macro="ckconfig">
-CKEDITOR.editorConfig = function( config ){
-    config.language = '<tal:block tal:replace="lang"/>';
-    config.toolbar = 'Meta';
-
-    config.toolbar_Meta =
-        [
-            ['Source','Preview'],
-            ['Cut','Copy','Paste','PasteText','PasteFromWord','-', 'SpellChecker', 'Scayt'],
-            ['Undo','Redo','RemoveFormat'],
-            '/',
-            ['Bold','Italic','Underline','Strike','-','Subscript','Superscript'],
-            ['JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'],
-            ['NumberedList','BulletedList','-','Outdent','Indent','Blockquote'],
-            [ 'Link', 'Unlink', 'Anchor' ],
-            '/',
-            ['Styles','Format','Font','FontSize','TextColor','BGColor','ShowBlocks']
-        ];
-};
-</tal:block>
-
 
 <tal:block metal:define-macro="searchfield">
     <input tal:attributes="name python:name; id python:name; value python:value" type="text" style="width:174px;" class="searchfield"/>

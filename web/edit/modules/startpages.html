@@ -123,10 +123,28 @@
                 <input type="hidden" id="filename" name="filename"/>
                 <textarea id="page_content" name="page_content"> </textarea>
                 <script>
-                    CKEDITOR.replace('page_content', {
-                         customConfig: '/edit/edit_content?tab=startpages&file=config&id='+id
-                        }
-                    );
+                    var ckeditor = CKEDITOR.replace('page_content');
+                    ckeditor.config.filebrowserBrowseUrl = '/edit/edit_content?id='+id+'&'+'tab=startpages'+'&'+'option=filebrowser';
+                    ckeditor.config.filebrowserUploadUrl = '/edit/edit_content?id='+id+'&'+'tab=startpages'+'&'+'option=filebrowser';
+                    ckeditor.config.filebrowserImageUploadUrl = '/edit/edit_content?id='+id+'&'+'tab=startpages'+'&'+'option=htmlupload';
+                    ckeditor.config.filebrowserImageBrowserUrl = '/edit/edit_content?id='+id+'&'+'tab=startpages'+'&'+'option=filebrowser';
+                    ckeditor.config.filebrowserWindowWidth = '500';
+                    ckeditor.config.filebrowserWindowHeight= '500';
+                    ckeditor.config.allowedContent = true;
+                    ckeditor.config.height = '100%';
+                    ckeditor.config.toolbar = 'Full';
+                    ckeditor.config.toolbar_Full = [
+                            ['Source', 'Save', 'cancel', 'Preview'],
+                            ['Cut','Copy','Paste','PasteText','PasteFromWord','-', 'SpellChecker', 'Scayt'],
+                            ['Undo','Redo','-','Find','Replace','-','SelectAll','RemoveFormat'],
+                            '/',
+                            ['Bold','Italic','Underline','Strike','-','Subscript','Superscript'],
+                            ['JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'],
+                            ['NumberedList','BulletedList','-','Outdent','Indent','Blockquote','CreateDiv', 'Image'],
+                            ['Link','Unlink','Anchor','Table','HorizontalRule','Smiley','SpecialChar'],
+                            '/',
+                            ['Styles','Format','Font','FontSize','TextColor','BGColor','ShowBlocks']
+                        ];
                 </script>
             </form>
         </div>
@@ -264,34 +282,4 @@
         </script>
     </body>
 </html>
-</tal:block>
-
-<tal:block metal:define-macro="ckconfig">
-CKEDITOR.editorConfig = function( config ){
-    config.language = '<tal:block tal:replace="lang"/>';
-    config.filebrowserBrowseUrl = '/edit/edit_content?id=<tal:block tal:replace="id"/>'+'&'+'tab=startpages'+'&'+'option=filebrowser';
-    config.filebrowserUploadUrl = '/edit/edit_content?id=<tal:block tal:replace="id"/>'+'&'+'tab=startpages'+'&'+'option=filebrowser';
-    config.filebrowserImageUploadUrl = '/edit/edit_content?id=<tal:block tal:replace="id"/>'+'&'+'tab=startpages'+'&'+'option=htmlupload';
-    config.filebrowserImageBrowserUrl = '/edit/edit_content?id=<tal:block tal:replace="id"/>'+'&'+'tab=startpages'+'&'+'option=filebrowser';
-    config.filebrowserWindowWidth = '500';
-    config.filebrowserWindowHeight= '500';
-    config.allowedContent = true;
-
-    config.height = '100%';
-    config.toolbar = 'Full';
-
-    config.toolbar_Full =
-        [
-            ['Source', 'Save', 'cancel', 'Preview'],
-            ['Cut','Copy','Paste','PasteText','PasteFromWord','-', 'SpellChecker', 'Scayt'],
-            ['Undo','Redo','-','Find','Replace','-','SelectAll','RemoveFormat'],
-            '/',
-            ['Bold','Italic','Underline','Strike','-','Subscript','Superscript'],
-            ['JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'],
-            ['NumberedList','BulletedList','-','Outdent','Indent','Blockquote','CreateDiv', 'Image'],
-            ['Link','Unlink','Anchor','Table','HorizontalRule','Smiley','SpecialChar'],
-            '/',
-            ['Styles','Format','Font','FontSize','TextColor','BGColor','ShowBlocks']
-        ];
-};
 </tal:block>

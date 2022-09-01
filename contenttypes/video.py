@@ -15,7 +15,7 @@ import tempfile
 
 from mediatumtal import tal
 from contenttypes.data import Content, prepare_node_data
-from contenttypes.image import make_thumbnail_image, make_presentation_image
+from contenttypes.image import make_thumbnail_image
 from core.postgres import check_type_arg_with_schema
 from core.attachment import filebrowser as _filebrowser
 from core import db, File, config
@@ -48,7 +48,7 @@ class Video(Content):
 
     @classmethod
     def get_sys_filetypes(cls):
-        return [u"presentation", u"video"]
+        return [u"thumbnail", u"video"]
 
     # compare document.py and
     # core.database.postgres.file.File.ORIGINAL_FILETYPES:
@@ -102,7 +102,7 @@ class Video(Content):
 
     def show_node_image(self):
         """Returns preview image"""
-        return '<img src="/thumb2/%s" class="thumbnail" border="0"/>' % self.id
+        return '<img src="/thumbnail/{}" class="thumbnail" border="0"/>'.format(self.id)
 
     def event_files_changed(self):
         """Generates thumbnails (a small and a larger one) from a MP4 video file.
@@ -140,18 +140,18 @@ class Video(Content):
                     raise
 
                 name_without_ext = os.path.splitext(video_file.path)[0]
-                thumbname2 = u'{}.presentation'.format(name_without_ext)
-                make_presentation_image(temp_thumbnail_path, resolve_datadir_path(thumbname2))
+                thumbname = u'{}.thumbnail.jpeg'.format(name_without_ext)
+                make_thumbnail_image(temp_thumbnail_path, resolve_datadir_path(thumbname))
             finally:
                 os.unlink(temp_thumbnail_path)
 
-            old_thumb_files = self.files.filter(File.filetype == u'presentation')
-            
+            old_thumb_files = self.files.filter(File.filetype == u'thumbnail')
+
             for old_thumb_file in old_thumb_files:
                 self.files.remove(old_thumb_file)
                 old_thumb_file.unlink()
 
-            self.files.append(File(thumbname2, u'presentation', u'image/jpeg'))
+            self.files.append(File(thumbname, u'thumbnail', u'image/jpeg'))
 
             db.session.commit()
 

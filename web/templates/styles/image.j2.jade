@@ -13,7 +13,7 @@
     if data_access and (has_original or image_formats)
       div.mediatum-image-div
         a(href=image_url, onclick="vgwPixelCall();", target='_blank')
-          img(src=presentation_url, width="300", border="1px")
+          img(src=thumbnail_url, width="300", border="1px")
 
       if image_formats
         = format(image_formats)
@@ -24,10 +24,10 @@
     elif image_formats
       div.mediatum-image-div
         a(href=preferred_image_url, onclick="vgwPixelCall();", target='_blank')
-          img(src=presentation_url, width="300", border="1px")
+          img(src=thumbnail_url, width="300", border="1px")
 
       = format(image_formats)
 
     else
       div.mediatum-image-div
-        img(src=presentation_url, width="300", border="1px")
+        img(src=thumbnail_url, width="300", border="1px")

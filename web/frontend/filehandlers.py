@@ -42,7 +42,7 @@ q = db.query
 _webroots = []
 
 
-def _send_thumbnail(thumb_type, req):
+def send_thumbnail(req):
     try:
         nid = node_id_from_req_path(req.mediatum_contextfree_path)
     except ValueError:
@@ -61,11 +61,11 @@ def _send_thumbnail(thumb_type, req):
     FileVersion = version_class(File)
     if version_id:
         version = node_or_version
-        files = version.files.filter_by(filetype=thumb_type, transaction_id=version.transaction_id).all()
+        files = version.files.filter_by(filetype="thumbnail", transaction_id=version.transaction_id).all()
         if not files:
             # files may be None if in this version only metadata changed
             # then try previous transaction_ids
-            files = version.files.filter(FileVersion.filetype==thumb_type, FileVersion.transaction_id<=version.transaction_id). \
+            files = version.files.filter(FileVersion.filetype=="thumbnail", FileVersion.transaction_id<=version.transaction_id). \
                 order_by(FileVersion.transaction_id.desc())
         for f in files:
             if f.exists:
@@ -76,7 +76,7 @@ def _send_thumbnail(thumb_type, req):
         # no version id given
         # XXX: better to use scalar(), but we must ensure that we have no dupes first
         node = node_or_version
-        for f in node.files.filter_by(filetype=thumb_type):
+        for f in node.files.filter_by(filetype="thumbnail"):
             if f.exists:
                 return _request_handler.sendFile(req, f.abspath, f.mimetype)
 
@@ -107,9 +107,6 @@ def _send_thumbnail(thumb_type, req):
 
 
     return _request_handler.sendFile(req, config.basedir + "/static/img/questionmark.png", "image/png", force=1)
-
-
-send_thumbnail2 = partial(_send_thumbnail, u"presentation")
 
 
 def send_doc(req):

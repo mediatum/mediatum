@@ -24,7 +24,7 @@ from utils.compat import text_type
 from core.request_handler import sendFile as _sendFile
 
 
-FILEHANDLER_RE = re.compile("/?(attachment|doc|images|thumb2|file|download|archive)/([^/]*)(/(.*))?$")
+FILEHANDLER_RE = re.compile("/?(attachment|doc|images|thumbnail|file|download|archive)/([^/]*)(/(.*))?$")
 IMAGE_HANDLER_RE = re.compile("^/?image/(\d+)(?:\.(.{1,5}))?$")
 
 logg = logging.getLogger(__name__)

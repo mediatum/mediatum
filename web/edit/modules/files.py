@@ -16,7 +16,7 @@ import core.nodecache as _core_nodecache
 import utils.utils as _utils_utils
 from utils.utils import getMimeType, get_user_id, suppress
 from utils.fileutils import importFile, getImportDir, importFileIntoDir
-from contenttypes.image import make_presentation_image
+from contenttypes.image import make_thumbnail_image
 from core.users import getUploadDir as _getUploadDir
 from core import httpstatus
 from core import Node
@@ -39,7 +39,7 @@ def _finish_change(node, change_file, user, uploadfile, req):
             req.response.status_code = httpstatus.HTTP_NOT_ACCEPTABLE
             return
 
-        # sys files are always cleared to delete remaining thumbnails, presentation images etc.
+        # sys files are always cleared to delete remaining thumbnails etc.
         for f in node.files:
             if f.filetype in node.get_sys_filetypes():
                 node.files.remove(f)
@@ -76,19 +76,19 @@ def _finish_change(node, change_file, user, uploadfile, req):
     if change_file == "addthumb": # create new thumbanil from uploaded file
         file = importFile(uploadfile.filename, uploadfile)  # add new file
         filename, ext = os.path.splitext(file.abspath)
-        thumbname2 = "{}.thumb2".format(filename)
-        make_presentation_image(file.abspath, thumbname2)
+        thumbname = "{}.thumbnail.jpeg".format(filename)
+        make_thumbnail_image(file.abspath, thumbname)
 
         if os.path.exists(file.abspath):  # remove uploaded original
                 os.remove(file.abspath)
 
         for f in node.files:
-            if f.type == "presentation":
+            if f.type == "thumbnail":
                 if os.path.exists(f.abspath):
                     os.remove(f.abspath)
                 node.files.remove(f)
 
-        node.files.append(File(thumbname2, "presentation", "image/jpeg"))
+        node.files.append(File(thumbname, "thumbnail", "image/jpeg"))
         logg.info("%s changed thumbnail of node %s", user.login_name, node.id)
         # this should re-create all dependent files
         node.event_files_changed()

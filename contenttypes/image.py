@@ -35,7 +35,7 @@ from core import webconfig
 
 logg = logging.getLogger(__name__)
 
-def make_presentation_image(src_filepath, dest_filepath):
+def make_thumbnail_image(src_filepath, dest_filepath):
     if isnewer(dest_filepath, src_filepath):
         return
 
@@ -151,7 +151,7 @@ class Image(Content):
 
     @classmethod
     def get_sys_filetypes(cls):
-        return [u"image", u"original", u"presentation", u"zoom"]
+        return [u"image", u"original", u"thumbnail", u"zoom"]
 
     @classmethod
     def get_upload_filetype(cls):
@@ -201,8 +201,8 @@ class Image(Content):
         return self._add_version_tag_to_url(url)
 
     @property
-    def presentation_url(self):
-        url = u"/thumb2/" + unicode(self.id)
+    def thumbnail_url(self):
+        url = u"/thumbnail/{}".format(self.id)
         return self._add_version_tag_to_url(url)
 
     def get_image_formats(self):
@@ -254,7 +254,7 @@ class Image(Content):
         obj['image_url'] = image_url
         obj['attachment'] = files
         obj['sum_size'] = sum_size
-        obj['presentation_url'] = self.presentation_url
+        obj['thumbnail_url'] = self.thumbnail_url
         obj['fullsize'] = str(self.id)
         if not self.isActiveVersion():
             obj['tag'] = self.tag
@@ -357,9 +357,9 @@ class Image(Content):
         path = os.path.splitext(image_file.abspath)[0]
 
         # XXX: we really should use the correct file ending and find another way of naming
-        thumbname2 = path + ".presentation"
+        thumbname = "{}.thumbnail.jpeg".format(path)
 
-        old_thumb_files = filter(lambda f: f.filetype == u"presentation", files)
+        old_thumb_files = filter(lambda f: f.filetype == u"thumbnail", files)
 
         # XXX: removing files before the new ones are created is bad, that should happen later (use File.unlink_after_deletion).
         # XXX: But we need better thumbnail naming first.
@@ -367,9 +367,9 @@ class Image(Content):
             self.files.remove(old)
             old.unlink()
 
-        make_presentation_image(image_file.abspath, thumbname2)
+        make_thumbnail_image(image_file.abspath, thumbname)
 
-        self.files.append(File(thumbname2, u"presentation", u"image/jpeg"))
+        self.files.append(File(thumbname, u"thumbnail", u"image/jpeg"))
 
     def _generate_zoom_archive(self, files=None):
         if files is None:
@@ -438,7 +438,7 @@ class Image(Content):
         files = self.files.all()
 
         # generate both thumbnail sizes if one is missing because they should always display the same
-        if filter_scalar(lambda f: f.filetype == u"presentation", files) is None:
+        if filter_scalar(lambda f: f.filetype == u"thumbnail", files) is None:
             self._generate_thumbnails(files)
 
         # should we skip this sometimes? Do we want to overwrite everything?

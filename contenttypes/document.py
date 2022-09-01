@@ -82,7 +82,7 @@ def _pdfinfo(filename):
     return data
 
 
-def _makeThumbs(src, thumb300):
+def _makeThumbs(src, thumbnailname):
     """create preview image for given pdf """
     with _PIL_Image.open(src) as pic:
         width = pic.size[0]
@@ -93,10 +93,10 @@ def _makeThumbs(src, thumb300):
             newwidth, newheight = width * 300 // height, 300
         pic.thumbnail((newwidth, newheight))
         pic = pic.convert("RGB")
-        pic.save(thumb300, "JPEG", quality="web_high")
+        pic.save(thumbnailname, "JPEG", quality="web_high")
 
 
-def _process_pdf(filename, thumb2name, fulltextname, infoname):
+def _process_pdf(filename, thumbnailname, fulltextname, infoname):
     tempdir = config.get("paths.tempdir")
     imgfile = os.path.join(tempdir, "pdfpreview.{}.png".format(_utils_utils.gen_secure_token()))
     name = ".".join(filename.split(".")[:-1])
@@ -125,7 +125,7 @@ def _process_pdf(filename, thumb2name, fulltextname, infoname):
     except _subprocess.CalledProcessError:
         logg.exception("failed to create PDF thumbnail for file " + filename)
     else:
-        _makeThumbs(imgfile, thumb2name)
+        _makeThumbs(imgfile, thumbnailname)
 
     # extract fulltext (xpdf)
     try:
@@ -186,7 +186,7 @@ def _prepare_document_data(node, req, words=""):
                 obj['documentlink'] += "?v=" + version_id
                 obj['documentdownload'] += "?v=" + version_id
 
-    obj['documentthumb'] = u'/thumb2/{}'.format(node.id)
+    obj['documentthumb'] = u'/thumbnail/{}'.format(node.id)
     if not node.isActiveVersion():
         version_id = unicode(version_id_from_req(req.args))
         obj['documentthumb'] += "?v=" + version_id
@@ -216,7 +216,7 @@ class Document(Content):
 
     @classmethod
     def get_sys_filetypes(cls):
-        return [u"document", u"thumb2", u"presentation", u"fulltext", u"fileinfo"]
+        return [u"document", u"fileinfo", u"fulltext", u"thumbnail"]
 
     def _prepareData(self, req, words=""):
         return _prepare_document_data(self, req)
@@ -233,13 +233,13 @@ class Document(Content):
     def event_files_changed(self):
         logg.debug("Postprocessing node %s", self.id)
 
+        thumbnail = 0
         fulltext = 0
         doc = None
-        present = 0
         fileinfo = 0
         for f in self.files:
-            if f.type.startswith("present"):
-                present = 1
+            if f.type == "thumbnail":
+                thumbnail = 1
             elif f.type == "fulltext":
                 fulltext = 1
             elif f.type == "fileinfo":
@@ -248,7 +248,7 @@ class Document(Content):
                 doc = f
         if not doc:
             for f in self.files:
-                if f.type.startswith("present"):
+                if f.type == "thumbnail":
                     self.files.remove(f)
                 elif f.type == "fileinfo":
                     self.files.remove(f)
@@ -258,15 +258,15 @@ class Document(Content):
             db.session.commit()
             return
 
-        if thumb or present or fulltext or fileinfo:
+        if thumbnail or fulltext or fileinfo:
             return
 
         path, ext = _utils_utils.splitfilename(doc.abspath)
-        thumb2name = "{}.thumb2".format(path)
+        thumbnailname = "{}.thumbnail.jpeg".format(path)
         fulltextname = "{}.txt".format(path)
         infoname = "{}.info".format(path)
         try:
-            _process_pdf(doc.abspath, thumb2name, fulltextname, infoname)
+            _process_pdf(doc.abspath, thumbnailname, fulltextname, infoname)
         except _PdfEncryptedError:
             # allow upload of encrypted document
             db.session.commit()
@@ -284,7 +284,7 @@ class Document(Content):
                         continue
                     self.set("pdf_" + line[0:i].strip().lower(), _utils_utils.utf8_decode_escape(line[i + 1:].strip()))
 
-        self.files.append(File(thumb2name, "presentation", "image/jpeg"))
+        self.files.append(File(thumbnailname, "thumbnail", "image/jpeg"))
         self.files.append(File(fulltextname, "fulltext", "text/plain"))
         self.files.append(File(infoname, "fileinfo", "text/plain"))
 

@@ -31,14 +31,14 @@ def makeAudioThumb(self, audiofile):
     return ret
 
 
-# """ make presentation format (jpeg 320x320) """
+# """ make thumbnail format (jpeg 320x320) """
 def convert_image(self, audiofile):
     if "APIC:thumbnail" not in (audiofile.tags or ()):
         return
 
     tag = audiofile.tags["APIC:thumbnail"]
     path, ext = splitfilename(audiofile.filename)
-    path = "{}.thumb2".format(path)
+    path = "{}.thumbnail.jpeg".format(path)
     with open(path, "wb") as fout:
         fout.write(tag.data)
 
@@ -55,7 +55,7 @@ def convert_image(self, audiofile):
         pic.thumbnail((newwidth, newheight))
         pic = pic.convert("RGB")
         pic.save(path, "JPEG", quality="web_high")
-        self.files.append(File(path, "presentation", tag.mime))
+        self.files.append(File(path, "thumbnail", tag.mime))
 
 
 def makeMetaData(self, audiofile):
@@ -81,7 +81,7 @@ class Audio(Content):
 
     @classmethod
     def get_sys_filetypes(cls):
-        return [u"audio", u"presentation", u"mp3"]
+        return [u"audio", u"thumbnail", u"mp3"]
 
     # compare document.py and
     # core.database.postgres.file.File.ORIGINAL_FILETYPES:
@@ -141,22 +141,21 @@ class Audio(Content):
 
         original = None
         audiothumb = None
-        thumb2 = None
+        thumbnail = None
 
         for f in self.files:
             if f.type == "audio":
                 original = f
             if f.type == "mp3":
                 audiothumb = f
-            if f.type.startswith("present"):
-                thumb2 = f
+            if f.type == "thumbnail":
+                thumbnail = f
 
         if original:
-
             if audiothumb:
                 self.files.remove(audiothumb)
-            if thumb2:  # delete old thumb2
-                self.files.remove(thumb2)
+            if thumbnail:  # delete old thumb
+                self.files.remove(thumnail)
 
             athumb = makeAudioThumb(self, original)
             if athumb:

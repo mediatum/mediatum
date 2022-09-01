@@ -10,9 +10,9 @@ each file in files
     a(href=file.getLink(), target='_parent')
       div
         if (file.node.get('width') or 0) > (file.node.get('height') or 0)
-          img.thumbnail(src='/thumb2/{}'.format(file.node.id), border='0')
+          img.thumbnail(src='/thumbnail/{}'.format(file.node.id), border='0')
         if (file.node.get('width') or 0) < (file.node.get('height') or 0)
-          img.thumbnail(src='/thumb2/{}'.format(file.node.id), border='0')
+          img.thumbnail(src='/thumbnail/{}'.format(file.node.id), border='0')
         if file.node.get('width') == file.node.get('height')
           p(class='mediatum-stylethumb-p-big')
             = file.text

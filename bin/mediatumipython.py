@@ -428,7 +428,7 @@ def chk_mimetype(fname, mimetype, m):
     err_txt = ""
     type_relations = {'jpg': ['image/jpeg', 'inode/file'],
                       'jpeg' : ['image/jpeg'],
-                      'thumb2' : ['image/jpeg'],
+                      'thumbnail' : ['image/jpeg'],
                       'tif' : ['image/tiff', 'inode/file'],
                       'tiff' : ['image/tiff'],
                       'png' : ['image/png'],
@@ -478,7 +478,7 @@ def db_check_image(node):
     warn_str = ""
     original_list = []
     image_list = []
-    presentation_list = []
+    thumb_list = []
     image_mimetype = ""
     original_mimetype = ""
     archive_avail = False
@@ -493,8 +493,8 @@ def db_check_image(node):
         elif f.filetype == 'original':
             original_list += [fpath]
             original_mimetype = f.mimetype
-        elif f.filetype == 'presentation':
-            presentation_list += [fpath]
+        elif f.filetype == 'thumbnail':
+            thumb_list.append(fpath)
         err_txt = chk_mimetype(fpath, f.mimetype, m)
         if err_txt:
             warn_str += "warning: {}: {}\n".format(node.id, err_txt)
@@ -524,11 +524,11 @@ def db_check_image(node):
     if image_list and not presentation_list:
         warn_str += "warning: {}: image without presentation\n".format(node.id)
     # files must have no duplicate 'presentation' files
-    if len(presentation_list) > 1:
+    if len(thumb_list) > 1:
         warn_str += "warning: {}: presentation ({}, equal: {}) files\n".format(
                 node.id,
-                len(presentation_list),
-                cmp_filelist(presentation_list)[0],
+                len(thumb_list),
+                cmp_filelist(thumb_list)[0],
             )
     # files with type 'image' or 'original' must have a mimetype like 'image/%'
     if image_list and not image_mimetype.startswith("image/"):

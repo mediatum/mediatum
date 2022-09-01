@@ -18,14 +18,14 @@
         </div>
         <div class="mediatum_node_icon mediatum_imgtooltipbase" tal:condition="python:hasattr(node, 'show_node_image')">
             <a tal:attributes="href python:u'edit_content?srcnodeid={}&id={}&tab=view'.format(srcnodeid, node.id)" i18n:attributes="title edit_common_bigview_title" tabindex="-1">
-                <img class="mediatum_minithumb" tal:attributes="src python:u'/thumb2/{}'.format(node.id)" tabindex="0"/>
-                <span class="mediatum_imghover"><img  tal:attributes="src python:u'/thumb2/{}'.format(node.id)"/></span>
+                <img class="mediatum_minithumb" tal:attributes="src python:u'/thumbnail/{}'.format(node.id)" tabindex="0"/>
+                <span class="mediatum_imghover"><img  tal:attributes="src python:u'/thumbnail/{}'.format(node.id)"/></span>
             </a>
         </div>
         <div class="mediatum_node_icon mediatum_imgtooltipbasedefault" tal:condition="python:not hasattr(node, 'show_node_image')">
             <a tal:attributes="href python:u'edit_content?srcnodeid={}&id={}&tab=view'.format(srcnodeid, node.id)" i18n:attributes="title edit_common_bigview_title" tabindex="-1">
                 <img class="mediatum_minithumb" src="/static/img/doc_default.png" tabindex="0"/>
-                <span class="mediatum_imghoverdefault"><img tal:attributes="src python:u'/thumb2/{}'.format(node.id)"/></span>
+                <span class="mediatum_imghoverdefault"><img tal:attributes="src python:u'/thumbnail/{}'.format(node.id)"/></span>
             </a>
         </div>
         <div class="mediatum_node_text no_overlap">
@@ -80,7 +80,7 @@
         <div class="mediatum_showcontentthumbrow">
             <div class="mediatum_showcontentthumbcellimg" tal:condition="python:hasattr(node, 'show_node_image')">
                     <a tal:attributes="href python:u'edit_content?srcnodeid={}&id={}&tab=view'.format(srcnodeid, node.id)" i18n:attributes="title edit_common_bigview_title" class="mediatum_tab_big">
-                <img class="mediatum_thumbnail" tal:attributes="src python:u'/thumb2/{}'.format(node.id)"/></a>
+                <img class="mediatum_thumbnail" tal:attributes="src python:u'/thumbnail/{}'.format(node.id)"/></a>
             </div>
             <div tal:condition="python:not hasattr(node, 'show_node_image')">
                     <a tal:attributes="href python:u'edit_content?srcnodeid={}&id={}&tab=view'.format(srcnodeid, node.id)" i18n:attributes="title edit_common_bigview_title">

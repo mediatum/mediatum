@@ -185,8 +185,8 @@ def show_printview(req):
         metadata = [['nodename', node.getName(), 'Name', 'text']]
 
     # XXX: use scalar() after duplicate cleanup
-    presentation_file = node.files.filter_by(filetype=u"presentation").first()
-    imagepath = presentation_file.abspath if presentation_file is not None else None
+    thumbnail_file = node.files.filter_by(filetype=u"thumbnail").first()
+    imagepath = thumbnail_file.abspath if thumbnail_file is not None else None
 
     # children
     children = []

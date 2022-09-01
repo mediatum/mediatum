@@ -40,16 +40,7 @@ def make_thumbnail_image(src_filepath, dest_filepath):
         return
 
     with PILImage.open(src_filepath) as pic:
-        width = pic.size[0]
-        height = pic.size[1]
-        # resize images only if they are actually too big
-        if width > height:
-            newwidth = 320
-            newheight = height * newwidth // width
-        else:
-            newheight = 320
-            newwidth = width * newheight // height
-        pic.thumbnail((newwidth, newheight))
+        pic.thumbnail(_contenttypes_data.get_thumbnail_size(*pic.size))
         pic = pic.convert("RGB")
         pic.save(dest_filepath, "JPEG", quality="web_high")
 

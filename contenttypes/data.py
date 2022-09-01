@@ -9,6 +9,8 @@ import logging
 from warnings import warn
 import humanize
 import flask as _flask
+import math as _math
+
 from mediatumtal import tal
 
 from core import Node, db
@@ -106,6 +108,11 @@ def render_mask_template(node, mask, field_descriptors, language, words=None, se
         res.append(fd["template"] % value)
 
     return separator.join(res)
+
+
+def get_thumbnail_size(width, height):
+    scale = max(min(512 / width, 512 / height), _math.sqrt(65536 / (width * height)))
+    return max(1, round(width*scale)), max(1, round(height*scale))
 
 
 class Data(Node):

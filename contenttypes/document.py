@@ -84,13 +84,7 @@ def _pdfinfo(filename):
 def _makeThumbs(src, thumbnailname):
     """create preview image for given pdf """
     with _PIL_Image.open(src) as pic:
-        width = pic.size[0]
-        height = pic.size[1]
-        if width > height:
-            newwidth, newheight = 300, height * 300 // width
-        else:
-            newwidth, newheight = width * 300 // height, 300
-        pic.thumbnail((newwidth, newheight))
+        pic.thumbnail(_contenttypes_data.get_thumbnail_size(*pic.size))
         pic = pic.convert("RGB")
         pic.save(thumbnailname, "JPEG", quality="web_high")
 

@@ -43,16 +43,7 @@ def convert_image(self, audiofile):
         fout.write(tag.data)
 
     with Image.open(path) as pic:
-        width = pic.size[0]
-        height = pic.size[1]
-
-        if width > height:
-            newwidth = 320
-            newheight = height * newwidth // width
-        else:
-            newheight = 320
-            newwidth = width * newheight // height
-        pic.thumbnail((newwidth, newheight))
+        pic.thumbnail(_contenttypes_data.get_thumbnail_size(*pic.size))
         pic = pic.convert("RGB")
         pic.save(path, "JPEG", quality="web_high")
         self.files.append(File(path, "thumbnail", tag.mime))

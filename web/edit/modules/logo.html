@@ -13,7 +13,7 @@
 
     <div id="navigation_content">
         <div id="logo">
-            <img tal:condition="python:logo==''" id="previewlogo" src="/img/empty.gif"/>
+            <img tal:condition="python:logo==''" id="previewlogo" src="/static/img/empty.gif"/>
             <img tal:condition="python:logo!=''" tal:attributes="src python:u'/file/{}/{}'.format(id, logo)" id="previewlogo"/>
         </div>
         <div id="logoform">
@@ -29,7 +29,7 @@
                     <br/>
                     <input type="text" name="logo_link" id="logo_link" tal:attributes="value python:node.get('url')" style="min-width:200px;max-width:100%"/>
                     <br/>
-                    <img i18n:attributes="title edit_logo_test_title" src="/img/extlink.png" onclick="window.open($('#logo_link').val())" style="cursor:pointer"/>
+                    <img i18n:attributes="title edit_logo_test_title" src="/static/img/extlink.png" onclick="window.open($('#logo_link').val())" style="cursor:pointer"/>
                     <br/>
                     <br/>
                     <input type="hidden" name="logo" id="logofield" value=""/>
@@ -45,7 +45,7 @@
     <div id="sub_content_content">
         <div id="scrollcontainer" style="width:99%">
             <div id="scrollcontent">
-                <div class="imageblock" onclick="setImage('/img/empty.gif')">
+                <div class="imageblock" onclick="setImage('/static/img/empty.gif')">
                     <p style="text-align:center;padding-top:80px" i18n:translate="edit_logo_no_logo">TEXT</p>
                 </div>
   
@@ -53,7 +53,9 @@
                 <div class="imageblock" tal:attributes="id python:item[1]">
                     <img tal:attributes="onclick python:u'setImage(\'/file/{}/{}\')'.format(id, item[1]); src python:u'/file/{}/{}'.format(id, item[1])" style="max-height:200px;max-width:200px" />
                     <div class="options">
-                        <a href="#" tal:attributes="onclick python:'deleteLogo(this)'"><img src="/img/delete.png"/></a>
+                        <a href="#" tal:attributes="onclick python:'deleteLogo(this)'">
+                            <img src="/static/img/delete.png"/>
+                        </a>
                     </div>
                 </div>
                 </tal:block>
@@ -73,7 +75,7 @@
 
 <tal:block metal:define-macro="uploadlogook">
     <div style="position:absolute;top:2px;right:2px;">
-        <a href="#" onclick="return removeItem(this)"><img src="/img/delete.png" /></a>
+        <a href="#" onclick="return removeItem(this)"><img src="/static/img/delete.png" /></a>
     </div>
     <input type="input" class="typesel" id="image" tal:attributes="value filename"/>
 </tal:block>

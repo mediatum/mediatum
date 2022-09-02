@@ -203,7 +203,7 @@ class StatsAccessPDF:
                         n = ustr(d[i][0])
                     items.append(Paragraph(n, self.bv))
                     items.append((FrameBreak()))
-                    items.append(PdfImage(config.basedir + "/web/img/stat_bar.png", width=d[i][1] * 280 / max, height=10))
+                    items.append(PdfImage(config.basedir + "/static/img/stat_bar.png", width=d[i][1] * 280 / max, height=10))
                     items.append((FrameBreak()))
                     items.append(Paragraph(ustr(d[i][1]), self.bv))
                     items.append((FrameBreak()))
@@ -248,7 +248,7 @@ class StatsAccessPDF:
                 if v[0] != 0:
                     items.append(Paragraph(ustr(v[1]), self.bv))
                     items.append((FrameBreak()))
-                    items.append(PdfImage(config.basedir + "/web/img/stat_bar.png", width=v[0] * 400 / max, height=10))
+                    items.append(PdfImage(config.basedir + "/static/img/stat_bar.png", width=v[0] * 400 / max, height=10))
                     items.append((FrameBreak()))
                     items.append(Paragraph(ustr(v[0]), self.bv))
                     items.append((FrameBreak()))
@@ -306,13 +306,13 @@ class StatsAccessPDF:
             for k in d:
                 if k == 0:
                     continue
-                items.append(PdfImage(config.basedir + "/web/img/stat_baruser_vert.png", width=5,
+                items.append(PdfImage(config.basedir + "/static/img/stat_baruser_vert.png", width=5,
                                       height=((len(d[k]["visitors"]) * (6 * cm) / max["max_u"] + 1) or 1)))
                 items.append(FrameBreak())
-                items.append(PdfImage(config.basedir + "/web/img/stat_barpage_vert.png", width=5,
+                items.append(PdfImage(config.basedir + "/static/img/stat_barpage_vert.png", width=5,
                                       height=((len(d[k]["different"]) * (6 * cm) / max["max_p"] + 1) or 1)))
                 items.append(FrameBreak())
-                items.append(PdfImage(config.basedir + "/web/img/stat_bar_vert.gif", width=5,
+                items.append(PdfImage(config.basedir + "/static/img/stat_bar_vert.gif", width=5,
                                       height=((len(d[k]["items"]) * (6 * cm) / max["max"] + 1) or 1)))
                 items.append(FrameBreak())
 
@@ -429,7 +429,7 @@ class StatsAccessPDF:
                 items.append(
                     PdfImage(
                         config.basedir +
-                        "/web/img/stat_baruser_vert.png",
+                        "/static/img/stat_baruser_vert.png",
                         width=5,
                         height=len(
                             d[k]["visitors"]) *
@@ -440,7 +440,7 @@ class StatsAccessPDF:
                 items.append(
                     PdfImage(
                         config.basedir +
-                        "/web/img/stat_barpage_vert.png",
+                        "/static/img/stat_barpage_vert.png",
                         width=5,
                         height=len(
                             d[k]["different"]) *
@@ -449,7 +449,7 @@ class StatsAccessPDF:
                         1))
                 items.append(FrameBreak())
                 items.append(
-                    PdfImage(config.basedir + "/web/img/stat_bar_vert.gif", width=6, height=len(d[k]["items"]) * h / max["max"] + 1))
+                    PdfImage(config.basedir + "/static/img/stat_bar_vert.gif", width=6, height=len(d[k]["items"]) * h / max["max"] + 1))
                 items.append(FrameBreak())
 
             tb = Table(
@@ -546,7 +546,7 @@ class StatsAccessPDF:
                 items.append(
                     PdfImage(
                         config.basedir +
-                        "/web/img/stat_baruser_vert.png",
+                        "/static/img/stat_baruser_vert.png",
                         width=6,
                         height=len(
                             d[k]["visitors"]) *
@@ -557,7 +557,7 @@ class StatsAccessPDF:
                 items.append(
                     PdfImage(
                         config.basedir +
-                        "/web/img/stat_barpage_vert.png",
+                        "/static/img/stat_barpage_vert.png",
                         width=6,
                         height=len(
                             d[k]["different"]) *
@@ -566,12 +566,12 @@ class StatsAccessPDF:
                         1))
                 items.append(FrameBreak())
                 items.append(
-                    PdfImage(config.basedir + "/web/img/stat_bar_vert.gif", width=6, height=len(d[k]["items"]) * h / max["max"] + 1))
+                    PdfImage(config.basedir + "/static/img/stat_bar_vert.gif", width=6, height=len(d[k]["items"]) * h / max["max"] + 1))
                 items.append(FrameBreak())
 
             t_data = []
             for i in range(0, 24):
-                im = PdfImage(config.basedir + "/web/img/stat_hr" + ustr(i % 12 + 1) + ".png", width=14, height=14)
+                im = PdfImage(config.basedir + "/static/img/stat_hr" + ustr(i % 12 + 1) + ".png", width=14, height=14)
                 p = Paragraph((ustr(i) + "-" + ustr(i + 1)), self.bv)
                 t_data.append([p, im])
 

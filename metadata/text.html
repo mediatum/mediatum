@@ -10,7 +10,7 @@
             <button name="button" tal:attributes="onclick python:u'openPopup(\'/metatype/text?name={}\', \'\', 550, 470)'.format(name)"
                     style="horizontal-align:middle;min-width:20px;width:20px;padding:4px 4px;" type="button"
                     i18n:attributes="title text_titlepopupbutton">
-                <img src="/img/edit_spc.png" style="height:14px"/>
+                <img src="/static/img/edit_spc.png" style="height:14px"/>
             </button>
         </span>
         <span tal:condition="python:lock!=0" tal:attributes="id python:u'lockspan_{}'.format(name)">&nbsp;
@@ -40,10 +40,18 @@
         <form>
             <div>
                 <div id="buttons">
-                    <button i18n:attributes="title text_bold_title" type="button" id="style" onclick="insert('<b>','</b>')"><img src="/img/bold.gif" alt="bold"/></button>
-                    <button i18n:attributes="title text_italic_title" type="button" id="style" onclick="insert('<em>','</em>')"><img src="/img/italic.gif" alt="italic"/></button>
-                    <button i18n:attributes="title text_sub_title" type="button" id="style" onclick="insert('<sub>','</sub>')"><img src="/img/subscript.gif" alt="subscript"/></button>
-                    <button i18n:attributes="title text_sup_title" type="button" id="style" onclick="insert('<sup>','</sup>')"><img src="/img/superscript.gif" alt="superscript"/></button>
+                    <button i18n:attributes="title text_bold_title" type="button" id="style" onclick="insert('<b>','</b>')">
+                        <img src="/static/img/bold.gif" alt="bold"/>
+                    </button>
+                    <button i18n:attributes="title text_italic_title" type="button" id="style" onclick="insert('<em>','</em>')">
+                        <img src="/static/img/italic.gif" alt="italic"/>
+                    </button>
+                    <button i18n:attributes="title text_sub_title" type="button" id="style" onclick="insert('<sub>','</sub>')">
+                        <img src="/static/img/subscript.gif" alt="subscript"/>
+                    </button>
+                    <button i18n:attributes="title text_sup_title" type="button" id="style" onclick="insert('<sup>','</sup>')">
+                        <img src="/static/img/superscript.gif" alt="superscript"/>
+                    </button>
                 </div>
                 <span i18n:translate="text_valuelabel">TEXT</span><br/><input type="text" name="value" id="value" onkeyup="setFormated(this)"/>
             </div>

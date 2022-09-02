@@ -266,7 +266,7 @@ def initContexts():
     _request_handler.addFileStore("/static/js/", "static/js/")
     _request_handler.addFileStore("/static/css/", "static/css/")
     _request_handler.addFileStore("/xml/", "web/xml/")
-    _request_handler.addFileStore("/img/", ["web/img/", "web/admin/img/", "web/edit/img/"])
+    _request_handler.addFileStore("/static/img/", "static/img/")
 
     # === last: path aliasing for collections ===
     handler = main_file.addHandler("display_alias")

@@ -4,7 +4,7 @@
 -->
 <metal:block metal:define-macro="edit_stats">
     <div id="editcontent">
-        <p><img src="/img/wait.gif"/></p>
+        <p><img src="/static/img/wait.gif"/></p>
     </div>
     <script tal:content="python:u'getEditPage(\'editcontent\', {}, \'statsfiles\', \'content\')'.format(id)"/>
 </metal:block>
@@ -16,10 +16,10 @@
         <div>
             <div id="div_legend" i18n:attributes="title edit_stats_legend">
                 <div class="child_vcentered" style="border:1px solid silver; width:250px;padding:2px;">
-                    <img src="/img/stat_bar.png" style="width:20px;height:10px"/>
+                    <img src="/static/img/stat_bar.png" style="width:20px;height:10px"/>
                     <tal:block i18n:translate="edit_stats_allobjlabel"/>
                     <br/>
-                    <img src="/img/stat_baruser.png" style="width:20px;height:10px"/>
+                    <img src="/static/img/stat_baruser.png" style="width:20px;height:10px"/>
                     <tal:block i18n:translate="edit_stats_digobjlabel"/>
                 </div>
             </div>
@@ -53,10 +53,10 @@
                                     <small><a href="#" tal:attributes="onclick python:u'return activateTab({})'.format(data.data.index(type)+1)" i18n:translate="edit_stats_details"/></small>
                                 </td>
                                 <td>
-                                    <img tal:attributes="width python:u'{}px'.format(int(type.getSum())*400/max)" src="/img/stat_bar.png" style="height:10px">
+                                    <img tal:attributes="width python:u'{}px'.format(int(type.getSum())*400/max)" src="/static/img/stat_bar.png" style="height:10px">
                                     <small tal:content="python:type.getSum()"/>
                                     <br/>
-                                    <img tal:attributes="width python:u'{}px'.format(int(type.getSumDigit())*400/max)" src="/img/stat_baruser.png" style="height:10px">
+                                    <img tal:attributes="width python:u'{}px'.format(int(type.getSumDigit())*400/max)" src="/static/img/stat_baruser.png" style="height:10px">
                                     <small tal:content="python:type.getSumDigit()"/> <small tal:content="python:u'({}%)'.format(100*type.getSumDigit()/type.getSum())"/>
                                 </td>
                             </tr>
@@ -70,7 +70,7 @@
                             <!-- section  -->
                             <div style="position:absolute; top:5px;right:5px">
                                 <a href="#" onclick="return activateTab(0)" i18n:attributes="title edit_stats_top_title">
-                                    <img src="/img/up.gif"/>
+                                    <img src="/static/img/up.gif"/>
                                 </a>
                             </div>
                             <table style="padding-top:5px">
@@ -83,10 +83,10 @@
                                     <td>&nbsp;</td>
                                     <td tal:content="python:items[0]"></td>
                                     <td>
-                                        <img src="/img/stat_bar.png" tal:attributes="width python:u'{}px'.format(int(items[1])*400/maxt)" style="height:10px">
+                                        <img src="/static/img/stat_bar.png" tal:attributes="width python:u'{}px'.format(int(items[1])*400/maxt)" style="height:10px">
                                         <small tal:content="python:items[1]"/>
                                         <br/>
-                                        <img src="/img/stat_baruser.png" tal:attributes="width python:u'{}px'.format(int(items[2])*400/maxt)" style="height:10px">
+                                        <img src="/static/img/stat_baruser.png" tal:attributes="width python:u'{}px'.format(int(items[2])*400/maxt)" style="height:10px">
                                         <small tal:content="python:items[2]"/> <small tal:content="python:u'({}%)'.format(100*items[2]/items[1])"/>
                                     </td>
                                 </tr>

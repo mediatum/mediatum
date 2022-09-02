@@ -149,7 +149,7 @@ function showPreview(doc, src){
     if (src!=""){
         obj.src = src;
     }else{
-        obj.src = "/img/emtyDot1Pix.gif";
+        obj.src = "/static/img/emtyDot1Pix.gif";
     }
 }
 

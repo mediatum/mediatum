@@ -44,11 +44,11 @@
                     <th>&nbsp;</th>
                     <th>
                         <a i18n:attributes="title admin_meta_exportall_title" href="/admin/export/metatype/all" target="_blank">
-                            <img src="/img/export.png" border="0"/>
+                            <img src="/static/img/export.png" border="0"/>
                         </a>
                     </th>
                     <th align="right">
-                        <input i18n:attributes="title admin_meta_create" type="image" src="/img/install.png" name="new"/>
+                        <input i18n:attributes="title admin_meta_create" type="image" src="/static/img/install.png" name="new"/>
                     </th>
                 </tr>
             <thead>
@@ -64,7 +64,7 @@
                     <td tal:condition="python:len(metadatatype.getDescription())<=10" tal:content="python:metadatatype.getDescription()"/>
                     <td tal:condition="python:len(metadatatype.getDescription())>10" tal:attributes="title python:metadatatype.getDescription()" tal:content="python:u'{}...'.format(metadatatype.getDescription()[:10])"/>
                     <td>
-                        &nbsp;&nbsp;&nbsp;<img tal:condition="python:metadatatype.isActive()" i18n:attributes="title admin_meta_active_title" src="/img/haken.gif"/>
+                        &nbsp;&nbsp;&nbsp;<img tal:condition="python:metadatatype.isActive()" i18n:attributes="title admin_meta_active_title" src="/static/img/haken.gif"/>
                     </td>
                     <td>
                         <tal:block tal:repeat="datatype python:metadatatype.getDatatypes()">
@@ -72,35 +72,35 @@
                         </tal:block>
                     </td>
                     <td>
-                        <img tal:condition="python:metadatatype.access_ruleset_assocs.filter_by(ruletype='read').count()>0" i18n:attributes="title admin_meta_acl_title" src="/img/archive.png"/>
-                        <img tal:condition="python:metadatatype.access_ruleset_assocs.filter_by(ruletype='read').count()==0" i18n:attributes="title admin_meta_acl_title" src="/img/mark_empty.png"/>
+                        <img tal:condition="python:metadatatype.access_ruleset_assocs.filter_by(ruletype='read').count()>0" i18n:attributes="title admin_meta_acl_title" src="/static/img/archive.png"/>
+                        <img tal:condition="python:metadatatype.access_ruleset_assocs.filter_by(ruletype='read').count()==0" i18n:attributes="title admin_meta_acl_title" src="/static/img/mark_empty.png"/>
                     </td>
                     <td>
-                        <input tal:attributes="name python:u'detaillist_{}'.format(metadatatype.getName())" i18n:attributes="title admin_meta_editdetail" type="image" src="/img/rightarrow.png"/>&nbsp;
-                        <input tal:attributes="name python:u'masks_{}'.format(metadatatype.getName())" i18n:attributes="title admin_meta_maskdetail_title" type="image" src="/img/styles.png"/>
+                        <input tal:attributes="name python:u'detaillist_{}'.format(metadatatype.getName())" i18n:attributes="title admin_meta_editdetail" type="image" src="/static/img/rightarrow.png"/>&nbsp;
+                        <input tal:attributes="name python:u'masks_{}'.format(metadatatype.getName())" i18n:attributes="title admin_meta_maskdetail_title" type="image" src="/static/img/styles.png"/>
                     </td>
                     <td>
                         <a tal:attributes="href python:u'./metatype/{}/overview?style=popup'.format(metadatatype.getName())" i18n:attributes="title admin_meta_fieldoverview_title" target="_blank">
-                            <img src="/img/search.gif" border="0"/>
+                            <img src="/static/img/search.gif" border="0"/>
                         </a>
                         <a tal:attributes="href python:u'/admin/export/metatype/{}'.format(metadatatype.getName())" i18n:attributes="title admin_meta_export_title" target="_blank">
-                            <img src="/img/export.png" border="0"/>
+                            <img src="/static/img/export.png" border="0"/>
                         </a>
                     </td>
                     <td>
-                        <input tal:attributes="name python:u'edit_{}'.format(metadatatype.getName())" i18n:attributes="title admin_meta_edit_title" type="image" src="/img/edit.png"/>
+                        <input tal:attributes="name python:u'edit_{}'.format(metadatatype.getName())" i18n:attributes="title admin_meta_edit_title" type="image" src="/static/img/edit.png"/>
                         <input
                          tal:condition="python:metadatatype.name not in used_by"
                          tal:attributes="name python:u'delete_{}'.format(metadatatype.getName()); onclick python:u'return questionDelName(\'{} ({})\')'.format(metadatatype.getLongName(), metadatatype.getName())"
                          i18n:attributes="title admin_meta_delete_title"
                          type="image"
-                         src="/img/delete.png"
+                         src="/static/img/delete.png"
                          />
                         <input
                          tal:condition="python:metadatatype.name in used_by"
                          tal:attributes="onclick python:u'alert(\'{}\')'.format(translate('admin_meta_used_title', language).format(used_by[metadatatype.name]).replace('\n','\\n')); title python:translate('admin_meta_used_title', language).format(used_by[metadatatype.name])"
                          type="image"
-                         src="/img/archive.png"
+                         src="/static/img/archive.png"
                          />
                     </td>
                 </tr>
@@ -309,7 +309,7 @@
         </head>
         <body>
             <h3 i18n:translate="admin_defpopup_header">TEXT '<span tal:content="python:metadatatype.getName()" i18n:name="name"/>'</h3>
-            <a href="#" onclick="window.print()"><img i18n:attributes="title admin_print_title" src="/img/print.png" border="0px"/></a>
+            <a href="#" onclick="window.print()"><img i18n:attributes="title admin_print_title" src="/static/img/print.png" border="0px"/></a>
             <table class="list" cellspacing="0px">
                 <thead>
                     <tr>
@@ -339,7 +339,11 @@
                                 <tr>
                                     <tal:block tal:repeat="fieldoption fieldoptions">
                                         <td tal:define="index python:fieldoptions.index(fieldoption)" width="20px" align="center">
-                                            <img tal:condition="python:flist[index]" tal:attributes="title python:flist[index] and fieldoption.name or ''; src python:flist[index] and '/img/haken.gif' or '/img/mark_empty.gif'" i18n:attributes="title"/>
+                                            <img
+                                                tal:condition="python:flist[index]"
+                                                tal:attributes="title python:flist[index] and fieldoption.name or ''; src python:flist[index] and '/static/img/haken.gif' or '/static/img/mark_empty.gif'"
+                                                i18n:attributes="title"
+                                            />
                                         </td>
                                     </tal:block>
                                 </tr>
@@ -373,7 +377,7 @@
                     <select id="selection" name="group_type">
                         <option value="vgroup" i18n:translate="mask_editor_into_vert_group">TEXT</option>
                         <option value="hgroup" i18n:translate="mask_editor_into_hor_group">TEXT</option>
-                    </select> <input i18n:attributes="title mask_editor_group_title" type="image" name="make_group" src="/img/rightarrow.png" onclick="getSellist()"/>
+                    </select> <input i18n:attributes="title mask_editor_group_title" type="image" name="make_group" src="/static/img/rightarrow.png" onclick="getSellist()"/>
                     <input type="hidden" name="sel_id" id="sel_id"/>
                     <input type="hidden" name="op" value="group"/>
                     <br/>

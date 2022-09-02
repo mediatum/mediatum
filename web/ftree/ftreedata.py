@@ -69,7 +69,7 @@ def getData(req):
 
                 elif style == "classification":  # style for classification
                     ret.append(u'<li class="{}.gif" id="Node{}">'.format(cls, c.id))
-                    ret.append(u'<a href="#" title="{}" id="{}" class="{}">{}<input type="image" src="/img/ftree/uncheck.gif"/></a>'.format(
+                    ret.append(u'<a href="#" title="{}" id="{}" class="{}">{}<input type="image" src="/static/img/ftree/uncheck.gif"/></a>'.format(
                                     title, c.id, itemcls, label))
 
                     if cnum > 0:

@@ -85,8 +85,13 @@
                             <td tal:content="python:file.getSize()" class="mediatum_filetable_files_th_ralign" />
                             <td tal:content="python:file.mimetype"/>
                             <td class="mediatum_filetable_files_th_ralign mediatum_filetable_files_th_size30" >
-                                <input tal:attributes="name python:u'del|{}|{}'.format(file.type, file.getName())"
-                                type="image" src="/img/editor/mediatum_delete_black.svg" onclick="return questionDelName('')"/>&nbsp;</td>
+                                <input
+                                    tal:attributes="name python:u'del|{}|{}'.format(file.type, file.getName())"
+                                    type="image"
+                                    src="/static/img/editor/mediatum_delete_black.svg"
+                                    onclick="return questionDelName('')"
+                                />&nbsp;
+                            </td>
                             </tal:block>
                         </tr>
                     </table>
@@ -118,9 +123,15 @@
                                             tal:content="python:file.getName()" i18n:attributes="title edit_files_open_title" target="filewindow"/>
                                         <b tal:condition="python:file.getSize()==0" tal:content="python:file.getName()"/>
                                     </td>
-                                    <td class="mediatum_files_ta_center"><input tal:condition="python:file.type not in ['original', 'image']"
-                                        tal:attributes="name python:u'del|{}|{}'.format(file.type, file.getName())" type="image" src="/img/delete.png"
-                                        onclick="return questionDelName('')"/>&nbsp;</td>
+                                    <td class="mediatum_files_ta_center">
+                                        <input
+                                            tal:condition="python:file.type not in ['original', 'image']"
+                                            tal:attributes="name python:u'del|{}|{}'.format(file.type, file.getName())"
+                                            type="image"
+                                            src="/static/img/delete.png"
+                                            onclick="return questionDelName('')"
+                                        />&nbsp;
+                                    </td>
                                 </tr>
                                 <tr tal:repeat="file att">
                                     <td tal:content="python:u' - {}'.format(file.filetype)"/>
@@ -131,9 +142,15 @@
                                             tal:content="python:file.getName()" i18n:attributes="title edit_files_open_title" target="filewindow"/>
                                         <b tal:condition="python:file.getSize()==0" tal:content="python:file.getName()"/>
                                     </td>
-                                    <td class="mediatum_files_ta_center"><input tal:condition="python:file.type not in ['original', 'image']"
-                                        tal:attributes="name python:u'delatt|{}|{}'.format(file.type, file.getName())" type="image" src="/img/delete.png"
-                                        onclick="return questionDelName('')"/>&nbsp;</td>
+                                    <td class="mediatum_files_ta_center">
+                                        <input
+                                            tal:condition="python:file.type not in ['original', 'image']"
+                                            tal:attributes="name python:u'delatt|{}|{}'.format(file.type, file.getName())"
+                                            type="image"
+                                            src="/static/img/delete.png"
+                                            onclick="return questionDelName('')"
+                                        />&nbsp;
+                                    </td>
                                 </tr>
                             </table>
                             <input type="hidden" name="operation" value="delete"/>
@@ -164,9 +181,15 @@
                                         <a tal:attributes="href python:u'/file/{}/{}'.format(node.id, file.getName())" tal:content="python:file.getName()"
                                         i18n:attributes="title edit_files_open_title" target="filewindow"/>
                                     </td>
-                                    <td class="mediatum_files_ta_center"><input tal:condition="python:file.type not in ['original', 'image']"
-                                        tal:attributes="name python:u'del|{}|{}'.format(file.type, file.getName())" type="image" src="/img/delete.png"
-                                        onclick="return questionDelName('')"/>&nbsp;</td>
+                                    <td class="mediatum_files_ta_center">
+                                        <input
+                                            tal:condition="python:file.type not in ['original', 'image']"
+                                            tal:attributes="name python:u'del|{}|{}'.format(file.type, file.getName())"
+                                            type="image"
+                                            src="/static/img/delete.png"
+                                            onclick="return questionDelName('')"
+                                        />&nbsp;
+                                    </td>
                                 </tr>
                             </table>
                             <input type="hidden" name="operation" value="delete"/>
@@ -199,10 +222,15 @@
                                                 tal:attributes="href python:u'/edit/edit_content?srcnodeid={}&id={}&tab=metadata'.format(srcnodeid, child.id)"
                                                 i18n:attributes="title edit_files_edit_child"
                                                 >
-                                                <img src="/img/edit.png"/>
+                                                <img src="/static/img/edit.png"/>
                                             </a>
-                                            <a href="#" tal:attributes="onclick python:u'return removeItem(this.id, {})'.format(node.id);id python:child.id"
-                                            i18n:attributes="title edit_files_delete_child"><img src="/img/delete.png"/></a>
+                                            <a
+                                                href="#"
+                                                tal:attributes="onclick python:u'return removeItem(this.id, {})'.format(node.id);id python:child.id"
+                                                i18n:attributes="title edit_files_delete_child"
+                                                >
+                                                <img src="/static/img/delete.png"/>
+                                            </a>
                                         </div>
                                     </div>
                                 </div>
@@ -226,8 +254,12 @@
         <a tal:attributes="href python:u'/edit/edit_content?srcnodeid={}&id={}&tab={}'.format(srcnodeid, child.id, child.get_default_edit_tab())">
             <img tal:attributes="src python:u'/thumbs/{}'.format(child.id)"/></a>
         <div class="mediatum_edit_files_children_list_div">
-            <a tal:attributes="href python:u'/edit/edit_content?srcnodeid={}&id={}&tab=metadata'.format(srcnodeid, child.id)"><img src="/img/edit.png"/></a>
-            <a href="#" tal:attributes="onclick python:u'return removeItem(this.id, {})'.format(node.id);id python:child.id"><img src="/img/delete.png"/></a>
+            <a tal:attributes="href python:u'/edit/edit_content?srcnodeid={}&id={}&tab=metadata'.format(srcnodeid, child.id)">
+                <img src="/static/img/edit.png"/>
+            </a>
+            <a href="#" tal:attributes="onclick python:u'return removeItem(this.id, {})'.format(node.id);id python:child.id">
+                <img src="/static/img/delete.png"/>
+            </a>
         </div>
     </div>
 </tal:block>

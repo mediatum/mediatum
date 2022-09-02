@@ -112,7 +112,7 @@ function createObjectsPluploadFile(){ // build object out of files
 
 console.log('number_files: ' + number_files + ' all_files: ' + all_files);
 
-var new_elem = $('<img height="30" src="/img/wait.gif" />');
+var new_elem = $('<img height="30" src="/static/img/wait.gif" />');
 new_elem.insertBefore('#span_plupload_createobjects_file');
 new_elem.insertBefore('.plupload_logo');
 $('.plupload_logo').attr('class', '');
@@ -471,7 +471,7 @@ function createObjectsPluploadBib(){ // build object out of files
 
     console.log('number_files: ' + number_files);
 
-    var new_elem = $('<img height="30" src="/img/wait.gif" />');
+    var new_elem = $('<img height="30" src="/static/img/wait.gif" />');
     new_elem.insertBefore('#span_plupload_createobjects_bib');
     new_elem.insertBefore('.plupload_logo');
     $('.plupload_logo').attr('class', '');

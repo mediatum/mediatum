@@ -13,13 +13,13 @@
         <td tal:content="python:unicode(item.technical_name)"/>
         <td style="width:20px;text-align:right">
             <a target="_blank" tal:attributes="href python:item.technical_name"  i18n:attributes="title edit_startpages_link">
-                <img src="/img/rightarrow.png"/>
+                <img src="/static/img/rightarrow.png"/>
             </a>
         </td>
         <td style="text-align:right; font-size:9px" tal:content="python:unicode(item.file_size)"/>
         <td style="text-align:right">
-            <a href="#" tal:attributes="onclick python:u'editFile(\'{}\')'.format(item.short_path)" i18n:attributes="title edit_startpages_edit"><img src="/img/edit_opt.png"/></a>
-            <input tal:attributes="onclick python:u'questionDel(\'{}\')'.format(item.short_path);" i18n:attributes="title edit_startpages_delete" type="image" src="/img/delete.png"/>
+            <a href="#" tal:attributes="onclick python:u'editFile(\'{}\')'.format(item.short_path)" i18n:attributes="title edit_startpages_edit"><img src="/static/img/edit_opt.png"/></a>
+            <input tal:attributes="onclick python:u'questionDel(\'{}\')'.format(item.short_path);" i18n:attributes="title edit_startpages_delete" type="image" src="/static/img/delete.png"/>
         </td>
     </tr>
 </tal:block>
@@ -37,7 +37,11 @@
      <div id="editform">
         <div id="editform-background">&nbsp;</div>
         <div id="editform-form">
-            <div style="position:absolute;top:-7px;right:-7px;z-index:10002"><a href="#" onclick="closeForm()" i18n:attributes="title mask_editor_cancel"><img src="/img/cancel.png"/></a></div>
+            <div style="position:absolute;top:-7px;right:-7px;z-index:10002">
+                <a href="#" onclick="closeForm()" i18n:attributes="title mask_editor_cancel">
+                    <img src="/static/img/cancel.png"/>
+                </a>
+            </div>
             <form action="javascript:handleCKEditorPost();void(0);">
                 <input type="hidden" id="filename" name="filename"/>
                 <textarea id="page_content" name="page_content"> </textarea>
@@ -65,7 +69,9 @@
                                 <th i18n:translate="edit_startpages_technical_name" colspan="2">TEXT</th>
                                 <th i18n:translate="edit_startpages_file_size">TEXT</th>
                                 <th style="text-align:right">
-                                    <a href="#" i18n:attributes="value edit_startpages_addnew"  onclick="addFile()"><img src="/img/install.png"/></a>
+                                    <a href="#" i18n:attributes="value edit_startpages_addnew"  onclick="addFile()">
+                                        <img src="/static/img/install.png"/>
+                                    </a>
                                 </th>
                             </tr>
                         </thead>
@@ -125,7 +131,7 @@
                 <span style="color:#dd0000;width:50px;font-size:10px" tal:condition="python:(file.getName())==(logoname)" i18n:translate="edit_fckeditor_cfm_imageislogo">TEXT</span>
                 <span width="50px" tal:condition="python:(file.getName())!=(logoname)">&nbsp;</span>
                 <div width="75px" style="text-align:center;cursor:pointer" tal:condition="python:delbutton">
-                    <img i18n:attributes="title edit_fckeditor_cfm_delete" tal:attributes="name python:file.getName(); onclick python:'return delete_nodefile(this)'; " type="image" src="/img/delete.png"/>
+                    <img i18n:attributes="title edit_fckeditor_cfm_delete" tal:attributes="name python:file.getName(); onclick python:'return delete_nodefile(this)'; " type="image" src="/static/img/delete.png"/>
                 </div>
             </div>
         </div>

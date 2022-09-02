@@ -37,7 +37,7 @@ Owner of DHTMLgoodies.com
     var ajaxObjectArray = new Array();
     var treeUlCounter = 0;
     
-    var imageFolder = '/img/ftree/';    // Path to images
+    var imageFolder = '/static/img/ftree/';    // Path to images
     var folderImage = 'folder.gif';
     var plusImage = 'plus.gif';
     var minusImage = 'minus.gif';

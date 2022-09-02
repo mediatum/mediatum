@@ -187,7 +187,7 @@ function show(pos, id){
 
 function startsearch(pos, baseid, language){
     language = language || lan;
-    $("#searchresult_"+pos).html('<img src="'+baseurl+'/img/wait_small.gif"/>');
+    $("#searchresult_"+pos).html('<img src="'+baseurl+'/static/img/wait_small.gif"/>');
     $(".part_"+pos).css("display", "none");
     $("#searchresult_"+pos).css("display", "block");
 

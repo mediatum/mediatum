@@ -69,7 +69,7 @@
         <div id="uploadform-form">
             <div class="mediatum_uploadform_widget">
                 <a href="#" onclick="closeFormPluploadWidgetFile();" i18n:attributes="title mask_editor_cancel">
-                <img src="/img/cancel.png"/></a>
+                <img src="/static/img/cancel.png"/></a>
             </div>
             <form tal:condition="python:len(schemes)!=0" class="mediatum_uploadform_style">
                 <div id="uploaderfile">
@@ -93,7 +93,7 @@
         <div id="uploadform-form">
             <div class="mediatum_uploadform_widget">
                 <a href="#" onclick="closeFormPluploadWidgetBib();" i18n:attributes="title mask_editor_cancel">
-                <img src="/img/cancel.png"/></a>
+                <img src="/static/img/cancel.png"/></a>
             </div>
             <form tal:condition="python:len(schemes)!=0" class="mediatum_uploadform_style">
                 <div id="uploaderbib">
@@ -117,7 +117,7 @@
         <div id="metaform-form">
             <div class="mediatum_metaform_div">
                 <a href="#" onclick="closeMetaForm()" i18n:attributes="title mask_editor_cancel">
-                    <img src="/img/cancel.png"/>
+                    <img src="/static/img/cancel.png"/>
                 </a>
             </div>
             <form id="metaformcontent"> </form>
@@ -236,7 +236,7 @@
 
 <tal:block metal:define-macro="uploadfileok">
     <div class="mediatum_uploadmsg">
-        <a href="#" onclick="return removeItem(this)"><img src="/img/delete.png" /></a>
+        <a href="#" onclick="return removeItem(this)"><img src="/static/img/delete.png" /></a>
     </div>
     <div class="schema" tal:define="type python:schemes.keys()[0]">
         <select name="scheme" class="typesel" tal:attributes="id type" tal:condition="python:len(schemes[type])>1">
@@ -252,7 +252,7 @@
 
 <tal:block metal:define-macro="uploadzipfileok">
     <div class="mediatum_uploadmsg">
-        <a href="#" onclick="return removeItem(this)"><img src="/img/delete.png" /></a>
+        <a href="#" onclick="return removeItem(this)"><img src="/static/img/delete.png" /></a>
     </div>
     <div class="schema" style="overflow:hidden;z-index:0">
         <div class="selection" style="background-color:white;z-index:3">
@@ -279,7 +279,7 @@
 
 <tal:block metal:define-macro="uploadbibfileok">
     <div class="mediatum_uploadmsg">
-        <a href="#" onclick="return removeItem(this)"><img src="/img/delete.png" /></a>
+        <a href="#" onclick="return removeItem(this)"><img src="/static/img/delete.png" /></a>
     </div>
     <div class="schema error" tal:condition="python:error!=''" i18n:translate="" tal:content="python:u'upload_{}'.format(error)">TEXT</div>
     <tal:block tal:condition="python:error==''">
@@ -291,7 +291,7 @@
 
 <tal:block metal:define-macro="uploadfileerror">
     <div class="mediatum_uploadmsg">
-        <a href="#" onclick="return removeItem(this)"><img src="/img/delete.png" /></a>
+        <a href="#" onclick="return removeItem(this)"><img src="/static/img/delete.png" /></a>
     </div>
     <div class="schema error">Dateityp wird nicht unterstützt oder Sie besitzen keine Berechtigung.</div>
 </tal:block>

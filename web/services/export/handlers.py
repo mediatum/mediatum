@@ -477,8 +477,8 @@ def struct2rss(req, path, params, data, struct, debug=False, singlenode=False, s
     fcd['link'] = host
     fcd['atom_link'] = host + req.path
     fcd['image_title'] = 'testlogo'
-    fcd['image_link'] = host + u'/img/testlogo.png'
-    fcd['image_url'] = host + u'/img/testlogo.png'
+    fcd['image_link'] = host + u'/static/img/testlogo.png'
+    fcd['image_url'] = host + u'/static/img/testlogo.png'
 
     if 'feed_info' in params:
         for k, v in params['feed_info'].items():

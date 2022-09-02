@@ -33,7 +33,8 @@
         <option value="" tal:attributes="selected python:'selected' if icon=='' else None" i18n:translate="url_edit_noicon">TEXT</option>
         <option tal:repeat="pos python:list(icons)" tal:attributes="value python:icons[pos]; selected python:'selected' if icon==icons[pos] else None" tal:content="pos"/>
     </select>
-    <span i18n:translate="url_edit_preview">TEXT</span> <img tal:attributes="src python:'/img/emtyDot1Pix.gif' if icon=='' else icon" id="image_preview"/>
+    <span i18n:translate="url_edit_preview">TEXT</span>
+    <img tal:attributes="src python:'/static/img/emtyDot1Pix.gif' if icon=='' else icon" id="image_preview"/>
     <br/>
     <div class="label" i18n:translate="url_urltarget">TEXT</div>
     <input type="checkbox" name="fieldsetting_new_window" value="1" tal:attributes="checked python:'checked' if new_window else None" />

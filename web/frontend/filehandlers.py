@@ -90,8 +90,7 @@ def _send_thumbnail(thumb_type, req):
     # a) node type and schema, or
     # b) schema, or
     # c) node type
-    img_filestorepaths = _request_handler.getFileStorePaths("/img/")
-
+    img_filestorepaths = _request_handler.getFileStorePaths("/static/img/")
     for pattern_fmt in (
             "default_thumb_{ntype}_{schema}.*",
             "default_thumb_{schema}.*",
@@ -107,7 +106,7 @@ def _send_thumbnail(thumb_type, req):
                 return _request_handler.sendFile(req, thumb_path, thumb_mimetype, force=1)
 
 
-    return _request_handler.sendFile(req, config.basedir + "/web/img/questionmark.png", "image/png", force=1)
+    return _request_handler.sendFile(req, config.basedir + "/static/img/questionmark.png", "image/png", force=1)
 
 
 send_thumbnail = partial(_send_thumbnail, u"thumb")

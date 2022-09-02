@@ -6,7 +6,7 @@ from __future__ import print_function
 
 
 def getInformation(attribute=""):
-    attributes = {"icon": "/img/icons/system.gif",
+    attributes = {"icon": "/static/img/icons/system.gif",
                   "required": 1,
                   "version": "1.0"}
     if attribute != "":

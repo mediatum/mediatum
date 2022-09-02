@@ -33,7 +33,7 @@ class Theme(object):
         self.style_path = os.path.join(path, "styles")
 
     def getImagePath(self):
-        return self.path + "/img/"
+        return self.path + "/static/img/"
 
     def activate(self):
         import core.webconfig
@@ -48,7 +48,7 @@ class Theme(object):
 
         _addFileStore("/theme/", self.path + "/")
         _addFileStorePath("/static/css/", self.path + "/static/css/")
-        _addFileStorePath("/img/", self.path + "/img/")
+        _addFileStorePath("/static/img/", self.path + "/static/img/")
         _addFileStorePath("/static/js/", self.path + "/static/js/")
 
     def get_tal_template_path(self, filename):

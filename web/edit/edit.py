@@ -929,7 +929,7 @@ def content(req):
         else:
             ipath = getEditorIconPath(node)
 
-    v["dircontent"] += '&nbsp;&nbsp;<img src="' + '/img/' + ipath + '" />'
+    v["dircontent"] += '&nbsp;&nbsp;<img src="' + '/static/img/' + ipath + '" />'
     v["nodesperpage_options"] = _web_common_pagination.get_config_nodes_per_page(True)
     v["sortfield"] = v.get("collection_sortfield", req.values.get("sortfield", node.get("sortfield"))) or "off"
     v["nodesperpage_from_req"] = req.values.get("nodes_per_page")

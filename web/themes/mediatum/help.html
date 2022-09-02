@@ -120,10 +120,12 @@
             return false;
         }
     </script>
-    <a href="#" onclick="return getExport('pdf')" i18n:attributes="title help_exportpdf"><img src="/img/mmicon_pdf.gif" style="border:0px"/></a>
+    <a href="#" onclick="return getExport('pdf')" i18n:attributes="title help_exportpdf">
+        <img src="/static/img/mmicon_pdf.gif" style="border:0px"/>
+    </a>
     <form method="post" style="display:inline">
-        <!--<input tal:condition="python:user.isAdmin()" i18n:attributes="title help_edit_content" type="image" src="/img/edit.png" name="edit"/>-->
-        <input tal:condition="python:user.isAdmin()" i18n:attributes="title help_refresh" type="image" src="/img/refresh.gif" name="refresh"/>
+        <!--<input tal:condition="python:user.isAdmin()" i18n:attributes="title help_edit_content" type="image" src="/static/img/edit.png" name="edit"/>-->
+        <input tal:condition="python:user.isAdmin()" i18n:attributes="title help_refresh" type="image" src="/static/img/refresh.gif" name="refresh"/>
     </form>
 </div>
 

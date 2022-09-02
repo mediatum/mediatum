@@ -152,9 +152,15 @@
                 <div class="mediatum_subnavigation">
                     <div tal:content="python:''" class="mediatum_subnavigation_1"></div>
                     <div class="mediatum_subnavigation_2" i18n:translate="">
-                        <a href="#" tal:attributes="onclick python:u'return reloadPage({},\'{}\')'.format(folders['homedir'][0].id, folders['homedir'][1])"><img class="mediatum_subnavigation_2_img" src="/img/webtree/homeicon.gif" i18n:attributes="title e_folder_homedir" /></a>
-                        <a href="#" tal:attributes="onclick python:u'return reloadPage({},\'{}\')'.format(folders['trashdir'][0].id, folders['trashdir'][1])"><img class="mediatum_subnavigation_2_img" src="/img/webtree/trashicon.gif" i18n:attributes="title e_folder_trashdir" /></a>
-                        <a href="#" tal:attributes="onclick python:u'return reloadPage({},\'{}\')'.format(folders['uploaddir'][0].id, folders['uploaddir'][1])"><img class="mediatum_subnavigation_2_img" src="/img/webtree/uploadicon.gif" i18n:attributes="title e_folder_uploaddir" /></a>
+                        <a href="#" tal:attributes="onclick python:u'return reloadPage({},\'{}\')'.format(folders['homedir'][0].id, folders['homedir'][1])">
+                            <img class="mediatum_subnavigation_2_img" src="/static/img/webtree/homeicon.gif" i18n:attributes="title e_folder_homedir" />
+                        </a>
+                        <a href="#" tal:attributes="onclick python:u'return reloadPage({},\'{}\')'.format(folders['trashdir'][0].id, folders['trashdir'][1])">
+                            <img class="mediatum_subnavigation_2_img" src="/static/img/webtree/trashicon.gif" i18n:attributes="title e_folder_trashdir" />
+                        </a>
+                        <a href="#" tal:attributes="onclick python:u'return reloadPage({},\'{}\')'.format(folders['uploaddir'][0].id, folders['uploaddir'][1])">
+                            <img class="mediatum_subnavigation_2_img" src="/static/img/webtree/uploadicon.gif" i18n:attributes="title e_folder_uploaddir" />
+                        </a>
                         &nbsp;&nbsp;&nbsp;
                     </div>
                 </div>
@@ -193,13 +199,15 @@
             <script tal:content="python:u'var csrf = \'{}\';'.format(csrf)"> </script>
             <!-- Definition of context menu -->
             <tal:block tal:repeat="ct_iconpath cmenu_iconpaths">
-                <style tal:content="python: '.context-menu-item.icon-%s { background-image: url(img/%s); }' % (ct_iconpath[0], ct_iconpath[2])">#</style>
+                <style tal:content="python: '.context-menu-item.icon-%s { background-image: url(/static/img/%s); }' % (ct_iconpath[0], ct_iconpath[2])">#</style>
             </tal:block>
             <div id="mediatum_clear_trash_question" i18n:translate="clear_trash_question"> </div>
             <div id="mediatum_delete_folder_question" i18n:translate="delete_folder_question"> </div>
             <div id="select_target_dir" >
                <tal:block i18n:translate="select_target_dir"/>&nbsp;&nbsp;&nbsp;
-               <a href="#" tal:attributes="onclick python:'parent.cancelOperation()'"><img src="/img/delete.png" i18n:attributes="title edit_publish_cancel"/></a>&nbsp;
+               <a href="#" tal:attributes="onclick python:'parent.cancelOperation()'">
+                   <img src="/static/img/delete.png" i18n:attributes="title edit_publish_cancel"/>
+               </a>&nbsp;
             </div>
         </body>
     </html>
@@ -207,7 +215,9 @@
 
 <div metal:define-macro="edit_paging" class="mediatum_edit_paging">
     <div tal:condition="python:previd" id="previd">
-        <a tal:attributes="href python:u'/edit/edit_content?srcnodeid={}&id={}&tab={}'.format(srcnodeid, previd, tab)"><img border="0" src="/img/pageleft.gif"/></a>
+        <a tal:attributes="href python:u'/edit/edit_content?srcnodeid={}&id={}&tab={}'.format(srcnodeid, previd, tab)">
+            <img border="0" src="/static/img/pageleft.gif"/>
+        </a>
     </div>
     <div tal:condition="python:previd or nextid" id="orid" >
         <tal:block tal:replace="raw script"/>
@@ -217,7 +227,9 @@
         / <tal:block tal:replace="absitems" />
     </div>
     <div tal:condition="python:nextid" id="nextid">
-        <a tal:attributes="href python:u'/edit/edit_content?srcnodeid={}&id={}&tab={}'.format(srcnodeid, nextid, tab)"><img border="0" src="/img/pageright.gif"/></a>
+        <a tal:attributes="href python:u'/edit/edit_content?srcnodeid={}&id={}&tab={}'.format(srcnodeid, nextid, tab)">
+            <img border="0" src="/static/img/pageright.gif"/>
+        </a>
     </div>
 </div>
 
@@ -295,7 +307,7 @@
                 <tal:block tal:replace="raw body"/>
             </div>
             <!--content end-->
-            <div class="mediatum_wait_"><img src="/img/wait.gif"/></div>
+            <div class="mediatum_wait_"><img src="/static/img/wait.gif"/></div>
             <div id="overlay">
                 <div id="background"> </div>
                 <div id="text"></div>

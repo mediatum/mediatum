@@ -365,7 +365,7 @@ function edit_action_sync(action, src, nodeids, add) {
         }
         if (src_node) {
             var src_node_title_old = src_node.title;
-            src_node.setTitle(src_node_title_old + '<img height="30" src="/img/wait.gif" />');
+            src_node.setTitle(src_node_title_old + '<img height="30" src="/static/img/wait.gif" />');
         }
     }    
 

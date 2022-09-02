@@ -23,7 +23,7 @@
             <td tal:condition="delbutton">
                 <input
                         i18n:attributes="title upload_filelist_delete_title"
-                        src="/img/delete.png"
+                        src="/static/img/delete.png"
                         tal:attributes="name python:u'delete_{}'.format(file.getName());onclick python:u'return m_upload_delete_file_json_for_targetnode(&quot;{}&quot;,this.name)'.format(fieldname)"
                         type="image"
                        />
@@ -49,7 +49,7 @@
             <td tal:condition="delbutton">
                 <input
                         i18n:attributes="title upload_filelist_delete_title"
-                        src="/img/delete.png"
+                        src="/static/img/delete.png"
                         tal:attributes="name python:u'delete_{}'.format(file.getName());onclick python:u'return m_upload_delete_file_json_for_targetnode(&quot;{}&quot;, this.name)'.format(fieldname)"
                         type="image"
                        />

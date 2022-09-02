@@ -39,8 +39,8 @@
                         <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:u'sortcol_{}'.format(col.link)" class="admin_sortcol" type="submit" value="">TEXT</button>
                     </th>
                     <th align="right">
-                        <input tal:attributes="name python:u'automask_{}'.format(metadatatype.getName())" i18n:attributes="title admin_mask_createstd_title" type="image" src="/img/styles.png">&nbsp;&nbsp;&nbsp;&nbsp;
-                        <input tal:attributes="name python:u'newmask_{}'.format(metadatatype.getName())" i18n:attributes="title admin_mask_create_title" type="image" src="/img/install.png">
+                        <input tal:attributes="name python:u'automask_{}'.format(metadatatype.getName())" i18n:attributes="title admin_mask_createstd_title" type="image" src="/static/img/styles.png">&nbsp;&nbsp;&nbsp;&nbsp;
+                        <input tal:attributes="name python:u'newmask_{}'.format(metadatatype.getName())" i18n:attributes="title admin_mask_create_title" type="image" src="/static/img/install.png">
                     </th>
                 </tr>
             </thead>
@@ -55,21 +55,23 @@
                     <td tal:content="python:masktypes[mask.getMasktype()].getType()" i18n:translate=""/>
                     <td tal:content="python:mask.getDescription()"/>
                     <td>&nbsp;&nbsp;
-                        <img tal:condition="python:mask.getDefaultMask()" src="/img/haken.gif"/>
-                        <img tal:condition="python:not mask.getDefaultMask()" src="/img/emtyDot1Pix.gif"/>
+                        <img tal:condition="python:mask.getDefaultMask()" src="/static/img/haken.gif"/>
+                        <img tal:condition="python:not mask.getDefaultMask()" src="/static/img/emtyDot1Pix.gif"/>
                     </td>
                     <td>
                         <img tal:attributes="src python:lang_icons.get(mask.getLanguage())"/>
                     </td>
                     <td>
-                        <img tal:condition="python:mask.access_ruleset_assocs.filter_by(ruletype='read').count()>0" i18n:attributes="title admin_mask_acl_title" src="/img/archive.png"/>
-                        <img tal:condition="python:mask.access_ruleset_assocs.filter_by(ruletype='read').count()==0" i18n:attributes="title admin_mask_acl_title" src="/img/mark_empty.png"/>
+                        <img tal:condition="python:mask.access_ruleset_assocs.filter_by(ruletype='read').count()>0" i18n:attributes="title admin_mask_acl_title" src="/static/img/archive.png"/>
+                        <img tal:condition="python:mask.access_ruleset_assocs.filter_by(ruletype='read').count()==0" i18n:attributes="title admin_mask_acl_title" src="/static/img/mark_empty.png"/>
                     </td>
                     <td>
-                        <a tal:attributes="onclick python:u'javascript:openPopupWithScroll(\'/admin/metatype/{}/{}/editor?style=popup\',\'editor\',800,600)'.format(metadatatype.getName(), mask.getName())" href="#"><img i18n:attributes="title admin_mask_edit_field" src="/img/rightarrow.png" border="0"/></a>&nbsp;
-                        <input tal:attributes="name python:u'copymask_{}'.format(mask.id)" i18n:attributes="title admin_mask_clone_title" type="image" src="/img/clone.png"/>&nbsp;&nbsp;
-                        <input tal:attributes="name python:u'editmask_{}'.format(mask.id)" i18n:attributes="title admin_mask_edit_title" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
-                        <input tal:attributes="name python:u'deletemask_{}'.format(mask.id); onclick python:u'return questionDelName(\'{} ({})\')'.format(mask.getName(), mask.id)" i18n:attributes="title admin_mask_delete_title" type="image" src="/img/delete.png"/>
+                        <a tal:attributes="onclick python:u'javascript:openPopupWithScroll(\'/admin/metatype/{}/{}/editor?style=popup\',\'editor\',800,600)'.format(metadatatype.getName(), mask.getName())" href="#">
+                            <img i18n:attributes="title admin_mask_edit_field" src="/static/img/rightarrow.png" border="0"/>
+                        </a>&nbsp;
+                        <input tal:attributes="name python:u'copymask_{}'.format(mask.id)" i18n:attributes="title admin_mask_clone_title" type="image" src="/static/img/clone.png"/>&nbsp;&nbsp;
+                        <input tal:attributes="name python:u'editmask_{}'.format(mask.id)" i18n:attributes="title admin_mask_edit_title" type="image" src="/static/img/edit.png"/>&nbsp;&nbsp;
+                        <input tal:attributes="name python:u'deletemask_{}'.format(mask.id); onclick python:u'return questionDelName(\'{} ({})\')'.format(mask.getName(), mask.id)" i18n:attributes="title admin_mask_delete_title" type="image" src="/static/img/delete.png"/>
                     </td>
                 </tr>
                 </tal:block>

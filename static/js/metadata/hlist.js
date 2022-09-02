@@ -12,7 +12,7 @@ $(function() {
         set_value_on: 'each',
         on_each_change: '/metatype/hlist?attrfilter='+attrfilter,
         select_class: 'vertical',
-        loading_image: '/img/loading.gif',
+        loading_image: '/static/img/loading.gif',
         attr: 'id'
     };
     var displayParents = function() {

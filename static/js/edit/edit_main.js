@@ -89,7 +89,7 @@ var ctree_dragstop_pnode_key = null;
 var last_ajax_result = null;
 
 var FANCYTREE_KEYBOARD = true;
-var FANCYTREE_DEFAULT_ICON = 'img/webtree/directory.gif';
+var FANCYTREE_DEFAULT_ICON = '/static/img/webtree/directory.gif';
 
 function build_context_menu_items(node, opts) {
 
@@ -133,7 +133,7 @@ function build_context_menu_items(node, opts) {
 
     if (special_dir_type === "trash") {
       ctx_items["clear_trash"] = {name: emptybin_t,
-                                  icon: '../img/' + node.data.icon}
+                                  icon: '/static/img/' + node.data.icon}
     }
 
     ctx_items["sep4"] = "---------";
@@ -626,7 +626,7 @@ function questionOperation(type){
 
             // some operations may take time ... indicate activity with wait.gif
             // var node_to_clear_old_title = node_to_clear.data.title;
-            //node_to_clear.setTitle(node_to_clear_old_title + '<img height="30" src="/img/wait.gif" />');
+            //node_to_clear.setTitle(node_to_clear_old_title + '<img height="30" src="/static/img/wait.gif" />');
 
             node_to_clear.removeChildren()
 
@@ -814,7 +814,7 @@ function get_tree_opts(tree_selector, tree_node_id_prefix, tree_root_key, tree_r
         debugLevel: 1, // 0:quiet, 1:normal, 2:debug
         enableAspx: false, //Accept passing ajax data in a property named `d` (default: true).
 
-        imagePath: '../img/',
+        imagePath: '/static/img/',
 
         extensions: ["filter"],  //["persist", "filter"],
 

@@ -27,7 +27,7 @@
             </form>
             <div id="pdfdiv" style="position:absolute;right:5px">
                 <p style="text-align:right"><a tal:attributes="href python:u'/edit/print/{}_statsaccess_{}.pdf'.format(id, current_period)" target="_blank">
-                    <img src="/img/print_icon.gif"/></a>
+                    <img src="/static/img/print_icon.gif"/></a>
                 </p>
             </div>
         </div>
@@ -58,8 +58,8 @@
                                         <a tal:attributes="href python:u'/?id={}'.format(id[0])" tal:content="python:unicode(id[0])" target="blank" class="stat">TEXT</a>
                                     </td>
                                     <td>
-                                        <img tal:condition="python:id[1]>0" src="/img/stat_bar.png" style="height:10px" i18n:attributes="title edit_stats_access" tal:attributes="width python:u'{}px'.format(id[1]*500/max)"/>
-                                        <img tal:condition="python:id[1]==0" src="/img/stat_bar.png" style="height:10px" i18n:attributes="title edit_stats_access"/>
+                                        <img tal:condition="python:id[1]>0" src="/static/img/stat_bar.png" style="height:10px" i18n:attributes="title edit_stats_access" tal:attributes="width python:u'{}px'.format(id[1]*500/max)"/>
+                                        <img tal:condition="python:id[1]==0" src="/static/img/stat_bar.png" style="height:10px" i18n:attributes="title edit_stats_access"/>
                                         <tal:block tal:replace="python:unicode(id[1])"/>
                                     </td>
                                 </tr>
@@ -81,8 +81,8 @@
                                         <a tal:attributes="href python:u'/?id={}'.format(id[0])" tal:content="python:unicode(id[0])" target="blank" class="stat">TEXT</a>
                                     </td>
                                     <td>
-                                        <img tal:condition="python:id[1]>0" src="/img/stat_bar.png" style="height:10px" i18n:attributes="title edit_stats_access" tal:attributes="width python:u'{}px'.format(id[1]*500/max)"/>
-                                        <img tal:condition="python:id[1]==0" src="/img/stat_bar.png" style="height:10px" i18n:attributes="title edit_stats_access"/>
+                                        <img tal:condition="python:id[1]>0" src="/static/img/stat_bar.png" style="height:10px" i18n:attributes="title edit_stats_access" tal:attributes="width python:u'{}px'.format(id[1]*500/max)"/>
+                                        <img tal:condition="python:id[1]==0" src="/static/img/stat_bar.png" style="height:10px" i18n:attributes="title edit_stats_access"/>
                                         <tal:block tal:replace="python:unicode(id[1])"/>
                                     </td>
                                 </tr>
@@ -107,7 +107,7 @@
                                 </tr>
                                 <tr tal:repeat="p python:sorted([(len(items[k]['items']), k) for k in filter(lambda x:x!=0, items.keys())], reverse=True)[:10]">
                                     <td tal:content="python:current_file.getCountryName(p[1])"/>
-                                    <td><img src="/img/stat_bar.png" style="height:10px" i18n:attributes="title edit_stats_access" tal:attributes="width python:u'{}px'.format(p[0]*500/max)"/> <tal:block tal:replace="python:p[0]"/></td>
+                                    <td><img src="/static/img/stat_bar.png" style="height:10px" i18n:attributes="title edit_stats_access" tal:attributes="width python:u'{}px'.format(p[0]*500/max)"/> <tal:block tal:replace="python:p[0]"/></td>
                                 </tr>
                             </table>
                         </div>
@@ -120,7 +120,7 @@
                                 </tr>
                                 <tr tal:repeat="p python:sorted([(len(items[k]['items']), k) for k in filter(lambda x:x!=0, items.keys())], reverse=True)">
                                     <td tal:content="python:current_file.getCountryName(p[1])"/>
-                                    <td><img src="/img/stat_bar.png" style="height:10px" i18n:attributes="title edit_stats_access" tal:attributes="width python:u'{}px'.format(p[0]*500/max)"/> <tal:block tal:replace="python:p[0]"/></td>
+                                    <td><img src="/static/img/stat_bar.png" style="height:10px" i18n:attributes="title edit_stats_access" tal:attributes="width python:u'{}px'.format(p[0]*500/max)"/> <tal:block tal:replace="python:p[0]"/></td>
                                 </tr>
                             </table>
                         </div>
@@ -133,12 +133,12 @@
                         <table class="progress" align="center" tal:condition="python:len(items)>1">
                             <tr>
                                 <td tal:repeat="item python:list(items)[1:]" class="bar">
-                                    <img tal:condition="python:len(items[item]['visitors'])>0" src="/img/stat_baruser_vert.png" style="width:5px" tal:attributes="height python:u'{}px'.format(len(items[item]['visitors'])*150/int(max_u))"/>
-                                    <img tal:condition="python:len(items[item]['visitors'])==0" src="/img/stat_baruser_vert.png" style="width:5px"/>
-                                    <img tal:condition="python:len(items[item]['different'])>0" src="/img/stat_barpage_vert.png" style="width:5px" tal:attributes="height python:u'{}px'.format(len(items[item]['different'])*150/int(max_p))"/>
-                                    <img tal:condition="python:len(items[item]['different'])==0" src="/img/stat_barpage_vert.png" style="width:5px"/>
-                                    <img tal:condition="python:len(items[item]['items'])>0" src="/img/stat_bar_vert.png" style="width:5px" tal:attributes="height python:u'{}px'.format(len(items[item]['items'])*150/int(max))"/>
-                                    <img tal:condition="python:len(items[item]['items'])==0" src="/img/stat_bar_vert.png" style="width:5px"/>
+                                    <img tal:condition="python:len(items[item]['visitors'])>0" src="/static/img/stat_baruser_vert.png" style="width:5px" tal:attributes="height python:u'{}px'.format(len(items[item]['visitors'])*150/int(max_u))"/>
+                                    <img tal:condition="python:len(items[item]['visitors'])==0" src="/static/img/stat_baruser_vert.png" style="width:5px"/>
+                                    <img tal:condition="python:len(items[item]['different'])>0" src="/static/img/stat_barpage_vert.png" style="width:5px" tal:attributes="height python:u'{}px'.format(len(items[item]['different'])*150/int(max_p))"/>
+                                    <img tal:condition="python:len(items[item]['different'])==0" src="/static/img/stat_barpage_vert.png" style="width:5px"/>
+                                    <img tal:condition="python:len(items[item]['items'])>0" src="/static/img/stat_bar_vert.png" style="width:5px" tal:attributes="height python:u'{}px'.format(len(items[item]['items'])*150/int(max))"/>
+                                    <img tal:condition="python:len(items[item]['items'])==0" src="/static/img/stat_bar_vert.png" style="width:5px"/>
                                 </td>
                             </tr>
                             <tr>
@@ -181,12 +181,12 @@
                         <table class="progressday" align="center" tal:condition="python:max>0">
                             <tr>
                                 <td tal:repeat="item python:list(items)[1:]" class="bar">
-                                    <img tal:condition="python:len(items[item]['visitors'])>0" src="/img/stat_baruser_vert.png" style="width:5px" tal:attributes="height python:u'{}px'.format(len(items[item]['visitors'])*150/int(max_u))"/>
-                                    <img tal:condition="python:len(items[item]['visitors'])==0" src="/img/stat_baruser_vert.png" style="width:5px"/>
-                                    <img tal:condition="python:len(items[item]['different'])>0" src="/img/stat_barpage_vert.png" style="width:5px" tal:attributes="height python:u'{}px'.format(len(items[item]['different'])*150/int(max_p))"/>
-                                    <img tal:condition="python:len(items[item]['different'])==0" src="/img/stat_barpage_vert.png" style="width:5px"/>
-                                    <img tal:condition="python:len(items[item]['items'])>0" src="/img/stat_bar_vert.png" style="width:5px" tal:attributes="height python:u'{}px'.format(len(items[item]['items'])*150/int(max))"/>
-                                    <img tal:condition="python:len(items[item]['items'])==0" src="/img/stat_bar_vert.png" style="width:5px"/>
+                                    <img tal:condition="python:len(items[item]['visitors'])>0" src="/static/img/stat_baruser_vert.png" style="width:5px" tal:attributes="height python:u'{}px'.format(len(items[item]['visitors'])*150/int(max_u))"/>
+                                    <img tal:condition="python:len(items[item]['visitors'])==0" src="/static/img/stat_baruser_vert.png" style="width:5px"/>
+                                    <img tal:condition="python:len(items[item]['different'])>0" src="/static/img/stat_barpage_vert.png" style="width:5px" tal:attributes="height python:u'{}px'.format(len(items[item]['different'])*150/int(max_p))"/>
+                                    <img tal:condition="python:len(items[item]['different'])==0" src="/static/img/stat_barpage_vert.png" style="width:5px"/>
+                                    <img tal:condition="python:len(items[item]['items'])>0" src="/static/img/stat_bar_vert.png" style="width:5px" tal:attributes="height python:u'{}px'.format(len(items[item]['items'])*150/int(max))"/>
+                                    <img tal:condition="python:len(items[item]['items'])==0" src="/static/img/stat_bar_vert.png" style="width:5px"/>
                                 </td>
                             </tr>
                             <tr>
@@ -221,19 +221,19 @@
                         <table class="progresstime" align="center" tal:condition="python:max>0">
                             <tr>
                                 <td tal:repeat="item python:list(items)[1:]" class="bar">
-                                    <img tal:condition="python:len(items[item]['visitors'])>0" src="/img/stat_baruser_vert.png" style="width:5px" tal:attributes="height python:u'{}px'.format(len(items[item]['visitors'])*150/int(max_u))"/>
-                                    <img tal:condition="python:len(items[item]['visitors'])==0" src="/img/stat_baruser_vert.png" style="width:5px"/>
-                                    <img tal:condition="python:len(items[item]['different'])>0" src="/img/stat_barpage_vert.png" style="width:5px" tal:attributes="height python:u'{}px'.format(len(items[item]['different'])*150/int(max_p))"/>
-                                    <img tal:condition="python:len(items[item]['different'])==0" src="/img/stat_barpage_vert.png" style="width:5px"/>
-                                    <img tal:condition="python:len(items[item]['items'])>0" src="/img/stat_bar_vert.png" style="width:5px" tal:attributes="height python:u'{}px'.format(len(items[item]['items'])*150/int(max))"/>
-                                    <img tal:condition="python:len(items[item]['items'])==0" src="/img/stat_bar_vert.png" style="width:5px"/>
+                                    <img tal:condition="python:len(items[item]['visitors'])>0" src="/static/img/stat_baruser_vert.png" style="width:5px" tal:attributes="height python:u'{}px'.format(len(items[item]['visitors'])*150/int(max_u))"/>
+                                    <img tal:condition="python:len(items[item]['visitors'])==0" src="/static/img/stat_baruser_vert.png" style="width:5px"/>
+                                    <img tal:condition="python:len(items[item]['different'])>0" src="/static/img/stat_barpage_vert.png" style="width:5px" tal:attributes="height python:u'{}px'.format(len(items[item]['different'])*150/int(max_p))"/>
+                                    <img tal:condition="python:len(items[item]['different'])==0" src="/static/img/stat_barpage_vert.png" style="width:5px"/>
+                                    <img tal:condition="python:len(items[item]['items'])>0" src="/static/img/stat_bar_vert.png" style="width:5px" tal:attributes="height python:u'{}px'.format(len(items[item]['items'])*150/int(max))"/>
+                                    <img tal:condition="python:len(items[item]['items'])==0" src="/static/img/stat_bar_vert.png" style="width:5px"/>
                                 </td>
                             </tr>
                             <tr>
                                 <td tal:repeat="item python:list(items)[1:]" class="legend" tal:attributes="title python:u'{}:00 - {}:00'.format(item-1, item)">
                                     <small tal:content="python:u'{}-{}'.format(item-1, item)"/>
                                     <br/>
-                                    <img tal:attributes="src python:u'/img/stat_hr{}.png'.format((item-1)%12+1);title python:u'{}:00 - {}:00'.format(item-1, item)" />
+                                    <img tal:attributes="src python:u'/static/img/stat_hr{}.png'.format((item-1)%12+1);title python:u'{}:00 - {}:00'.format(item-1, item)" />
                                 </td>
                             </tr>
                         </table>
@@ -292,7 +292,7 @@
         </div>
 
         <div tal:condition="python:action=='doupdate'" id="result" class="message">
-            <img src="/img/wait_small.gif" style="width:30px; height:30px"/>
+            <img src="/static/img/wait_small.gif" style="width:30px; height:30px"/>
             <script tal:content="python:u'getEditPage(\'result\', \'{}\', \'statsaccess\',\'do\')'.format(id)">
              </script>
         </div>

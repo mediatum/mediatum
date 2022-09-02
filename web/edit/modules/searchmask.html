@@ -13,7 +13,7 @@
         <form class="edit" action="edit_content" name="changeform" id="fbody">
             <input tal:attributes="value csrf" type="hidden" name="csrf_token">
             <span i18n:translate="edit_searchmask_type">TEXT</span>:
-            <input type="image" name="update" value="update" src="/img/s.gif">
+            <input type="image" name="update" value="update" src="/static/img/s.gif">
                 <select id="searchtype_id" name="searchtype" onChange="change_searchtype()">
                 <option tal:attributes="selected python:[None,'selected'][searchtype=='none']" value="none" i18n:translate="edit_searchmask_none">TEXT</option>
                 <option tal:attributes="selected python:[None,'selected'][searchtype=='parent']" value="parent" i18n:translate="edit_searchmask_parent">TEXT</option>
@@ -37,7 +37,9 @@
             <tal:block tal:condition="python:field!=selectedfield">
                 <tr>
                     <td valign="center">
-                        <a href="#" tal:attributes="onclick python:'open_field(\''+ustr(field.id)+'\')'; name python:'open_'+ustr(field.id)" ><img src="/img/boxx.gif"></a>
+                        <a href="#" tal:attributes="onclick python:'open_field(\''+ustr(field.id)+'\')'; name python:'open_'+ustr(field.id)" >
+                            <img src="/static/img/boxx.gif">
+                        </a>
                     </td>
                     <td valign="center" colspan="2">
                         <tal:block tal:content="python:field.name"/>
@@ -57,7 +59,7 @@
             <tal:block metal:define-macro="field_table" tal:condition="python:field==selectedfield">
                 <tr>
                     <td valign="top">
-                        <input type="image" name="close" value="close" tal:attributes="onclick python:'close_field(\''+ustr(field.id)+'\')'" src="/img/box.gif"/>
+                        <input type="image" name="close" value="close" tal:attributes="onclick python:'close_field(\''+ustr(field.id)+'\')'" src="/static/img/box.gif"/>
                     </td>
                     <td colspan="2">
                         <table frame="box">
@@ -66,7 +68,7 @@
                                     <input type="text" name="fieldname" id="fnid" tal:attributes="value python:field.name"/>
                                 </td>
                                 <td colspan="1">
-                                    <input type="image" tal:attributes="onclick python:'delete_field(\''+ustr(field.id)+'\')'; name python:'del_'+ustr(field.id)" src="/img/delete.png"/>
+                                    <input type="image" tal:attributes="onclick python:'delete_field(\''+ustr(field.id)+'\')'; name python:'del_'+ustr(field.id)" src="/static/img/delete.png"/>
                                 </td>
                             </tr>
                             <tr>
@@ -92,7 +94,7 @@
                                     <td tal:content="python:ss and ss.name or '??'"/>
                                 </tal:block>
                                 <td tal:content="python:subfield.name"/>
-                                <td><input type="image" tal:attributes="onclick python:'delete_subfield(\''+ustr(subfield.id)+'\', \''+ustr(field.id)+'\')'; name python:'delsub_'+ustr(subfield.id)" src="/img/delete.png"/></td>
+                                <td><input type="image" tal:attributes="onclick python:'delete_subfield(\''+ustr(subfield.id)+'\', \''+ustr(field.id)+'\')'; name python:'delsub_'+ustr(subfield.id)" src="/static/img/delete.png"/></td>
                             </tr>
                             </tal:block>
                             <tr>
@@ -117,7 +119,7 @@
                                     </select>
                                 </td>
                                 <td>
-                                    <input type="image"  name="createsub" tal:attributes="onclick python:'create_subfield(\''+ustr(field.id)+'\')'" src="/img/haken.gif">
+                                    <input type="image"  name="createsub" tal:attributes="onclick python:'create_subfield(\''+ustr(field.id)+'\')'" src="/static/img/haken.gif">
                                 </td>
                             </tr>
                         </table>
@@ -128,7 +130,7 @@
         </tal:block>
         <tr>
             <td valign="center">
-                <input type="image" name="newfield" value="newfield" onClick="create_field()" src="/img/box3.gif"/>
+                <input type="image" name="newfield" value="newfield" onClick="create_field()" src="/static/img/box3.gif"/>
             </td>
             <td valign="center" colspan="2">
                 <a href="#" onClick="create_field()" ><span style="cursor:pointer;color:#0a5096;" i18n:translate="edit_searchmask_add"/></a>

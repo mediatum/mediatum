@@ -3,7 +3,7 @@
   SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 <metal:block metal:define-macro="view_type">
-    <script src="/js/admin/modules/admin.js"> </script>
+    <script src="/static/js/admin/modules/admin.js"> </script>
     <!--[if lt IE 7]>
         <script type="text/javascript">
             window.attachEvent("onload", buttonfix);
@@ -149,7 +149,7 @@
 </metal:block>
 
 <metal:block metal:define-macro="modify_type" tal:define="id python:metadatatype.getName()">
-    <script src="/js/admin/modules/admin.js"> </script>
+    <script src="/static/js/admin/modules/admin.js"> </script>
     <!--[if lt IE 7]>
     <script type="text/javascript">
         window.attachEvent("onload", buttonfix);
@@ -357,9 +357,9 @@
 
 <html metal:define-macro="editor_popup">
     <head>
-        <script type="text/javascript" language="javascript" src="/js/metaeditor.js">selected==false;</script>
-        <script type="text/javascript" language="javascript" src="/js/jquery-1.12.4.js"> </script>
-        <script type="text/javascript" language="javascript" src="/js/jquery-migrate-1.4.1.js"> </script>
+        <script src="/static/js/metaeditor.js">selected==false;</script>
+        <script src="/static/js/jquery-1.12.4.js"> </script>
+        <script src="/static/js/jquery-migrate-1.4.1.js"> </script>
         <link rel="stylesheet" href="/css/editor.css">
         <title i18n:translate="mask_editor_title">TEXT</title>
     </head>

@@ -5,10 +5,10 @@
 <tal:block metal:define-macro="editorfield">
     <link rel="stylesheet" href="/css/metadata/htmlmemo.css" />
     <!-- for mask editor html memo -->
-    <script type="text/javascript" language="javascript" src="/js/jquery-1.12.4.js"> </script>
-    <script type="text/javascript" language="javascript" src="/js/jquery.textarearesizer.js"> </script>
+    <script src="/static/js/jquery-1.12.4.js"> </script>
+    <script src="/static/js/jquery.textarearesizer.js"> </script>
     <script type="text/javascript" src="/ckeditor/ckeditor.js"> </script>
-    <script src="/js/metadata/htmlmemo.js"> </script>
+    <script src="/static/js/metadata/htmlmemo.js"> </script>
     <tal:block tal:condition="python:wysiwyg">
       <div style="float:left;position:relative;">
         <textarea
@@ -80,7 +80,7 @@
         <meta content="text/html;charset=UTF-8" http-equiv="content-type">
         <title i18n:translate="htmlmemo_popup_title"> </title>
         <link rel="stylesheet" href="/css/metadata/htmlmemo2.css" />
-        <script src="/js/metadata/htmlmemo.js"> </script>
+        <script src="/static/js/metadata/htmlmemo.js"> </script>
     </head>
 
     <body tal:attributes="onload python:u'init(\'{}\')'.format(name)">

@@ -61,10 +61,10 @@
 <tal:block metal:define-macro="editorfield">
 
     <!-- source: http://jquery.malsup.com/form/ -->
-    <script src="/js/jquery-1.12.4.js"> </script>
-    <script src="/js/jquery-migrate-1.4.1.js"> </script>
-    <script src="/js/jquery.form.js"> </script>
-    <script src="/js/metadata/upload.js"> </script>
+    <script src="/static/js/jquery-1.12.4.js"> </script>
+    <script src="/static/js/jquery-migrate-1.4.1.js"> </script>
+    <script src="/static/js/jquery.form.js"> </script>
+    <script src="/static/js/metadata/upload.js"> </script>
 
     <div class="mediatum_blue_border" tal:attributes="id python:u'upload_div_FOR_{}'.format(fieldname); name python:'upload_div_FOR_{}'.format(fieldname); style python:u'width:{}px'.format(width)">
         <input type="hidden" tal:attributes="id python:u'submitter_class_{}'.format(name)" name="submitter_class" value="" />

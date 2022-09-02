@@ -10,7 +10,7 @@
 
 <metal:block metal:define-macro="classtree">
     <link rel="stylesheet" href="/css/ftree.css" type="text/css" />
-    <script type="text/javascript" src="/js/ftree.js"> </script>
+    <script src="/static/js/ftree.js"> </script>
     <script type="text/javascript" tal:content="script"> </script>
 
     <div id="navigation_content" style="border-top:0px!important">
@@ -22,7 +22,7 @@
         <div id="operation" style="position:relative;margin-right:200px;">
             <div style="clear:left;padding-left:10px;padding-bottom:5px"><tal:block i18n:translate="edit_classes_select_position"/></div>
         </div>
-        <div id="scrollcontainer"">
+        <div id="scrollcontainer">
             <div id="scrollcontent">
                 <form>
                   <div>
@@ -44,9 +44,5 @@
 
     <script tal:content="python:u'var js_edit_layout_togglertip_open = \'{}\';'.format(t(language, 'edit_layout_togglertip_open'))">;</script>
     <script tal:content="python:u'var js_edit_layout_togglertip_closed = \'{}\';'.format(t(language, 'edit_layout_togglertip_closed'))">;</script>
-    <script src="js/edit/modules/classes.js"> </script>
+    <script src="/static/js/edit/modules/classes.js"> </script>
 </metal:block>
-
-
-
-

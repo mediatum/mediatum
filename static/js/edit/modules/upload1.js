@@ -254,9 +254,9 @@ function init_plupload_widget_file() {
             stop: true
         },
         // Flash settings
-        flash_swf_url : '/js/plupload/Moxie.swf',
+        flash_swf_url : '/static/js/plupload/Moxie.swf',
         // Silverlight settings
-        silverlight_xap_url : '/js/plupload/Moxie.xap',
+        silverlight_xap_url : '/static/js/plupload/Moxie.xap',
         // PreInit events, bound before any internal events
         preinit : {
             Init: function(up, info) {
@@ -567,9 +567,9 @@ function init_plupload_widget_bib() {
                 stop: true
             },
             // Flash settings
-            flash_swf_url : '/js/plupload/Moxie.swf',
+            flash_swf_url : '/static/js/plupload/Moxie.swf',
             // Silverlight settings
-            silverlight_xap_url : '/js/plupload/Moxie.xap',
+            silverlight_xap_url : '/static/js/plupload/Moxie.xap',
             // PreInit events, bound before any internal events
             preinit : {
                 Init: function(up, info) {

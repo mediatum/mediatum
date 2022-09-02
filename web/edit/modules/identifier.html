@@ -5,9 +5,9 @@
 <tal:block metal:define-macro="set_identifier">
     <div style="display:none" id="confirm_popup"  i18n:translate="edit_identifier_confirm_popup">TEXT</div>
     <tal:block tal:condition="python:not user.is_admin">
-        <script src="/js/edit/modules/idientifier1.js"> </script>
+        <script src="/static/js/edit/modules/idientifier1.js"> </script>
     </tal:block>
-    <script src="/js/edit/modules/identifier2.js"> </script>
+    <script src="/static/js/edit/modules/identifier2.js"> </script>
     <div id="navigation_content">
         <tal:block tal:condition="python:len(nodes) < 2">
             <div style="float:left;width:100%;height:82px;overflow:auto">

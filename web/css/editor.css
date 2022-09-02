@@ -430,6 +430,7 @@ iframe.ui-layout-center, div.ui-layout-north{border-width:0!important;padding:0;
 #mediatum_collectionstree{overflow:hidden!important;}
 #mediatum_collectionstree:hover{overflow-y:auto!important;}
 #mediatum_delete_folder_question{display:none;}
+#mediatum_edit_notree_permission {background-color: #FFFFFF;}
 #mediatum_operations { position:relative;clear:left;}
 #mediatum_selection_div {border-top:1px solid silver; margin:3px; display:none; padding:3px;}
 #mediatum_sub_footer_module_div{position:absolute;right:5px;top:2px;font-size:11px;margin-right:5px;}

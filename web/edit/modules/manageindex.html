@@ -4,7 +4,7 @@
 -->
 <metal:block metal:define-macro="manageform">
     <script tal:content="python:u'\n\tgetEditPage(\'schemes\', \'{}\', \'manageindex\', \'schemes\');\n    '.format(id)"></script>
-    <script src="/js/edit/modules/manageindex.js"> </script>
+    <script src="/static/js/edit/modules/manageindex.js"> </script>
     <div id="sub_content_content" style="border-width:0 0 0 1px!important">
         <p tal:condition="message" tal:content="message" class="mediatum_templateerror" style="text-align:center"></p>
         <form method="post">

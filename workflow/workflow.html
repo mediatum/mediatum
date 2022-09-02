@@ -162,7 +162,7 @@
 
 <div metal:define-macro="workflow_show" id="workflow">
     <script tal:content="python:u'var id={}'.format(step.id)"/>
-    <script src="/js/workflow/workflow.js"> </script>
+    <script src="/static/js/workflow/workflow.js"> </script>
     <div style="display:none" id="confirm_delete"  i18n:translate="workflow_confirm_msg_delete">TEXT</div>
     <div style="display:none" id="confirm_move"  i18n:translate="workflow_confirm_msg_move">TEXT</div>
     <script tal:content="python:u'var id={}'.format(step.id)"/>

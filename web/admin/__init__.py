@@ -40,8 +40,12 @@ class MediatumFlask(Flask):
         extensions=['jinja2.ext.autoescape', 'jinja2.ext.with_', _PyJadeExtension]
     )
 
-    def __init__(self, import_name, template_folder="web/templates"):
-        super(MediatumFlask, self).__init__(import_name=import_name, template_folder=template_folder)
+    def __init__(self, import_name):
+        super(MediatumFlask, self).__init__(
+            import_name=import_name,
+            template_folder="web/templates",
+            static_folder=None,
+        )
 
     @_cached_property
     def jinja_loader(self):
@@ -127,7 +131,7 @@ def make_app():
     When more parts of mediaTUM are converted to Flask,
     we might use a "global" app to which the admin interface is added.
     """
-    admin_app = MediatumFlask("mediaTUM admin", template_folder="web/templates")
+    admin_app = MediatumFlask("mediaTUM admin")
     admin_app.debug = True
     admin_app.config["SECRET_KEY"] = config.get_secret_key("admin.session_secret_key_file", uwsgi_cache_key="session_secret_key")
     admin_app.config['PERMANENT_SESSION_LIFETIME'] = int(config.get('admin.session_expiration_time', 7200))

@@ -263,11 +263,10 @@ def initContexts():
 
     # === static files ===
     _request_handler.addFileStore("/ckeditor/", "lib/CKeditor/files.zip")
-    _request_handler.addFileStore("/ckeditor/js/", "js/")
+    _request_handler.addFileStore("/static/js/", "static/js/")
     _request_handler.addFileStore("/css/", "web/css/")
     _request_handler.addFileStore("/xml/", "web/xml/")
     _request_handler.addFileStore("/img/", ["web/img/", "web/admin/img/", "web/edit/img/"])
-    _request_handler.addFileStore("/js/", ["web/js/", "js", "lib/CKeditor/js/"])
 
     # === last: path aliasing for collections ===
     handler = main_file.addHandler("display_alias")

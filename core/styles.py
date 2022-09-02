@@ -49,7 +49,7 @@ class Theme(object):
         _addFileStore("/theme/", self.path + "/")
         _addFileStorePath("/css/", self.path + "/css/")
         _addFileStorePath("/img/", self.path + "/img/")
-        _addFileStorePath("/js/", self.path + "/js/")
+        _addFileStorePath("/static/js/", self.path + "/static/js/")
 
     def get_tal_template_path(self, filename):
         raise NotImplementedError("implement in subclasses!")

@@ -5,8 +5,8 @@
 
 consoledb.group('--- loading contextmenu js ---');
 var ctx_mode = 1;  // 1: on_demand, 2: bind, 3: ui-contextmenu  // now only 1 supported, 2 and 3 abandoned
-var url_ctx_on_demand = "/js/fancytree/3rd-party/extensions/contextmenu/jsx/jquery.fancytree.contextMenu.js";
-var url_ctx_bind = "/js/jquery.contextMenu-custom-abs.js";
+var url_ctx_on_demand = "/static/js/fancytree/3rd-party/extensions/contextmenu/jsx/jquery.fancytree.contextMenu.js";
+var url_ctx_bind = "/static/js/jquery.contextMenu-custom-abs.js";
 var url_ctx_ui = "//wwwendt.de/tech/demo/jquery-contextmenu/jquery.ui-contextmenu.js";
 
 if (ctx_mode == 1) {

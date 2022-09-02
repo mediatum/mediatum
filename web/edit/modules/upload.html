@@ -2,14 +2,18 @@
   Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
   SPDX-License-Identifier: AGPL-3.0-or-later
 -->
-<tal:block metal:define-macro="upload_form">
-    <script type="text/javascript" src="/js/plupload/plupload.full.min.js"> </script>
-    <script type="text/javascript" src="/js/jquery.ui.plupload/jquery.ui.plupload.js"> </script>
-    <!-- activate translation for plupload -->
-    <script type="text/javascript" tal:attributes="src python:u'/js/plupload/i18n/{}.js'.format(language)"> </script>
 
+<metal:block metal:define-macro="include_plupload_script_tags">
+    <script src="/static/js/plupload/plupload.full.min.js"> </script>
+    <script src="/static/js/jquery.ui.plupload/jquery.ui.plupload.js"> </script>
+    <script src="/static/js/edit/modules/upload1.js"> </script>
+    <!-- activate translation for plupload -->
+    <script tal:attributes="src python:u'/static/js/plupload/i18n/{}.js'.format(language)"> </script>
+</metal:block>
+
+<tal:block metal:define-macro="upload_form">
     <link rel="stylesheet" href="/css/jquery-ui-1.12.1.css" type="text/css" />
-    <link rel="stylesheet" href="/js/jquery.ui.plupload/css/jquery.ui.plupload.css" type="text/css" />
+    <link rel="stylesheet" href="/static/js/jquery.ui.plupload/css/jquery.ui.plupload.css" type="text/css" />
     <link rel="stylesheet" href="/css/uploadform.css" type="text/css" />
 
     <script tal:content="python:u'var id = \'{}\';'.format(id)"> </script>
@@ -119,13 +123,11 @@
             <form id="metaformcontent"> </form>
         </div>
     </div>
-
-    <script src="/js/edit/modules/upload1.js"> </script>
-
+    <tal:block metal:use-macro="include_plupload_script_tags"/>
 </tal:block>
 
 <tal:block metal:define-macro="addmeta">
-    <script src="/js/edit/modules/upload3.js"> </script>
+    <script src="/static/js/edit/modules/upload3.js"> </script>
     <h3 i18n:translate="edit_upload_create_meta">TEXT</h3>
 
     <!-- create object via metadata scheme -->
@@ -146,7 +148,7 @@
 </tal:block>
 
 <tal:block metal:define-macro="adddoi">
-    <script src="/js/edit/modules/upload2.js"> </script>
+    <script src="/static/js/edit/modules/upload2.js"> </script>
     <h3 i18n:translate="edit_upload_create_doi">TEXT</h3>
 
     <!-- create object from identifier (doi, ...) -->

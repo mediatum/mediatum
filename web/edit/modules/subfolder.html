@@ -8,7 +8,7 @@
     <script tal:content="python:u'var id = {};'.format(node.id)"> </script>
     <script tal:content="python:u'var cid_list = {};'.format([n.id for n in nodelist])"> </script>
     <script tal:content="python:u'var csrf = \'{}\';'.format(csrf)"> </script>
-    <script src="/js/edit/modules/subfolder.js"> </script>
+    <script src="/static/js/edit/modules/subfolder.js"> </script>
     <div id="navigation_content">
         <h3 i18n:translate="edit_sort_label">TEXT</h3>
         <input type="hidden" name="tab" value="subfolder">

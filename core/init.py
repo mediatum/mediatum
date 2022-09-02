@@ -277,7 +277,7 @@ def _init_web_roots():
         map(_filehandlers.add_web_root, webroots)
     if core.webconfig.theme:
         _filehandlers.add_web_root(core.webconfig.theme.path)
-    _filehandlers.add_web_root(_os.path.join(config.basedir, "web/root"))
+    _filehandlers.add_web_root(_os.path.join(config.basedir, "static/img/root"))
 
 
 def basic_init(root_loglevel=None, config_filepath=None, prefer_config_filename=None, log_filepath=None,

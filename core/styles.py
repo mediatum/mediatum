@@ -47,7 +47,7 @@ class Theme(object):
             app.add_template_loader(theme_jinja_loader, 0)
 
         _addFileStore("/theme/", self.path + "/")
-        _addFileStorePath("/css/", self.path + "/css/")
+        _addFileStorePath("/static/css/", self.path + "/static/css/")
         _addFileStorePath("/img/", self.path + "/img/")
         _addFileStorePath("/static/js/", self.path + "/static/js/")
 

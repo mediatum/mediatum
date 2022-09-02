@@ -122,8 +122,8 @@
             <title i18n:translate="edit_main_title">TEXT</title>
 
             <link id="id_link_fancytree_skin" rel="stylesheet" href="/static/js/fancytree/src/skin-xp/ui.fancytree.css" />
-            <link rel="stylesheet" href="/css/jquery.contextMenu.css" />
-            <link rel="stylesheet" href="/css/editor.css" />
+            <link rel="stylesheet" href="/static/css/jquery.contextMenu.css" />
+            <link rel="stylesheet" href="/static/css/editor.css" />
 
             <script tal:content="python:u'var user_folders = {};'.format({k: str(folders[k][0].id) for k in folders})">TEXT</script>
             <script tal:content="python:u'var collectionsid = \'{}\';'.format(collectionsid)">TEXT</script>
@@ -251,8 +251,8 @@
             <meta http-equiv="X-UA-Compatible" content="IE=9"/>
             <META http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
             <meta content="text/html;charset=UTF-8" http-equiv="content-type"/>
-            <link rel="stylesheet" href="/css/jquery-ui-1.12.1.css" />
-            <link rel="stylesheet" href="/css/editor.css" />
+            <link rel="stylesheet" href="/static/css/jquery-ui-1.12.1.css" />
+            <link rel="stylesheet" href="/static/css/editor.css" />
 
             <tal:block metal:use-macro="include_javascript_script_tags_frame"/>
             <script type="text/javascript" tal:content="python:U'var tab=\'{}\';'.format(tab)"/>
@@ -310,7 +310,7 @@
         <head>
             <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
             <meta content="text/html;charset=UTF-8" http-equiv="content-type">
-            <link rel="stylesheet" href="/css/editor.css" />
+            <link rel="stylesheet" href="/static/css/editor.css" />
         </head>
         <body>
             <div id="mediatum_logocontainer">

@@ -3,15 +3,15 @@
   SPDX-License-Identifier: AGPL-3.0-or-later
 */
 #uploadform{display:none;position:fixed;top:0px;left:0px;right:0px;bottom:0px;width:100%;height:100%;z-index:99;}
-#uploadform-background{position:absolute;top:0px;left;0px;height:100%;width:100%;background-color:silver;opacity: 0.5; -moz-opacity: 0.5;-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";filter:alpha(opacity=50);}
+#uploadform-background{position:absolute;top:0px;left:0px;height:100%;width:100%;background-color:silver;opacity: 0.5; -moz-opacity: 0.5;-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";filter:alpha(opacity=50);}
 #uploadform-form{width:390px;height:350px;overflow:auto;position:absolute;top:0px;left:0px;bottom:0px;right:0px;padding:5px;margin:auto;z-index:100}
 #uploadform-form form{padding:20px;width:340px;height:310px;overflow:auto;background-color:white;border:1px solid silver}
 #uploadform-form form p, h2{margin-left:18px;}
 
-.progressWrapper {width: 100%;overflow: hidden;position;relative}
-.progressContainer {margin: 5px;padding: 4px;border: solid 1px #E8E8E8;background-color: #F7F7F7;overflow: visible;position:relative}
+.progressWrapper {width: 100%;overflow: hidden;position:relative}
+.progressContainer {margin: 5px;padding: 4px;border: solid 1px #E8E8E8;background-color: #F7F7F7;overflow: visible;position:relative;}
 
-.message {margin: 1em 0;padding: 10px 20px;border: solid 1px #FFDD99;background-color: #FFFFCC;overflow: visible;position:relative}
+.message {margin: 1em 0;padding: 10px 20px;border: solid 1px #FFDD99;background-color: #FFFFCC;overflow: visible;position:relative;}
 .red {border: solid 1px #B50000;background-color: #FFEBEB;}
 .green {border: solid 1px #DDF0DD;background-color: #EBFFEB;}
 .blue {border: solid 1px #CEE2F2;background-color: #F0F5FF;}

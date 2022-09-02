@@ -22,11 +22,11 @@
             <title i18n:translate="treeselect_popup_title">TEXT</title>
             <script src="/static/js/jquery-2.0.3.js"> </script>
             <script src="/static/js/metadata/treeselect.js"> </script>
-            <link rel="stylesheet" href="/css/metadata/treeselect.css" type="text/css" />
+            <link rel="stylesheet" href="/static/css/metadata/treeselect.css" type="text/css" />
         </head>
 
         <body tal:attributes="onload python:u'init(\'{}\')'.format(name)">
-            <link rel="stylesheet" href="/css/ftree.css" type="text/css" />
+            <link rel="stylesheet" href="/static/css/ftree.css" type="text/css" />
             <script src="/static/js/ftree.js"> </script>
             <div style="height:400px; overflow:auto;border:1px solid silver">
                 <ul id="classtree" class="tree">

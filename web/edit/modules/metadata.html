@@ -29,7 +29,7 @@
 </tal:block>
 
 <tal:block metal:define-macro="edit_metadata">
-    <link rel="stylesheet" href="/css/edit/modules/metadata.css" type="text/css" />
+    <link rel="stylesheet" href="/static/css/edit/modules/metadata.css" type="text/css" />
 
     <script tal:content="python:u'var flag_nodename_changed = {};'.format(flag_nodename_changed)">TEXT</script>
     <script tal:content="python:u'var new_nodename = \'{}\';'.format(node.getLabel())">TEXT</script>

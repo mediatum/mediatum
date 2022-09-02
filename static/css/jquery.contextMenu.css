@@ -90,13 +90,13 @@
     .context-menu-item.icon:before {}
  */
 .context-menu-item.icon { min-height: 18px; background-repeat: no-repeat; background-position: 4px 2px; }
-.context-menu-item.icon-edit { background-image: url(../img/contextmenu/page_white_edit.png); }
-.context-menu-item.icon-cut { background-image: url(../img/contextmenu/cut.png); }
-.context-menu-item.icon-copy { background-image: url(../img/contextmenu/page_white_copy.png); }
-.context-menu-item.icon-paste { background-image: url(../img/contextmenu/page_white_paste.png); }
-.context-menu-item.icon-delete { background-image: url(../img/contextmenu/page_white_delete.png); }
-.context-menu-item.icon-add { background-image: url(../img/contextmenu/page_white_add.png); }
-.context-menu-item.icon-quit { background-image: url(../img/contextmenu/door.png); }
+.context-menu-item.icon-edit { background-image: url(/static/img/contextmenu/page_white_edit.png); }
+.context-menu-item.icon-cut { background-image: url(/static/img/contextmenu/cut.png); }
+.context-menu-item.icon-copy { background-image: url(/static/img/contextmenu/page_white_copy.png); }
+.context-menu-item.icon-paste { background-image: url(/static/img/contextmenu/page_white_paste.png); }
+.context-menu-item.icon-delete { background-image: url(/static/img/contextmenu/page_white_delete.png); }
+.context-menu-item.icon-add { background-image: url(/static/img/contextmenu/page_white_add.png); }
+.context-menu-item.icon-quit { background-image: url(/static/img/contextmenu/door.png); }
 
 /* vertically align inside labels */
 .context-menu-input > label > * { vertical-align: top; }

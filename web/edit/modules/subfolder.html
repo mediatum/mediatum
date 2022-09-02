@@ -3,7 +3,7 @@
   SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 <tal:block metal:define-macro="edit_subfolder">
-    <link rel="stylesheet" href="/css/edit/modules/subfolder.css" type="text/css" />
+    <link rel="stylesheet" href="/static/css/edit/modules/subfolder.css" type="text/css" />
 
     <script tal:content="python:u'var id = {};'.format(node.id)"> </script>
     <script tal:content="python:u'var cid_list = {};'.format([n.id for n in nodelist])"> </script>

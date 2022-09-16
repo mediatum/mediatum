@@ -113,13 +113,12 @@ def _yield_export_mask_metatype_names(metadataformat):
                     break
 
 
-def _identifier_to_node(identifier):
+def _identifier_to_node(identifier, idprefix):
     if not identifier:
         raise _OAIError("badArgument")
-    id_prefix = config.get("oai.idprefix", "oai:mediatum.org:node/")
-    if not identifier.startswith(id_prefix):
+    if not identifier.startswith(idprefix):
         raise _OAIError("idDoesNotExist")
-    node = q(Node).get(int(identifier[len(id_prefix):]))
+    node = q(Node).get(int(identifier[len(idprefix):]))
     if not node:
         raise _OAIError("noRecordsMatch")
     if not node.has_read_access(user=get_guest_user()):
@@ -127,7 +126,7 @@ def _identifier_to_node(identifier):
     return node
 
 
-def _list_metadata_formats(identifier=None, **excess):
+def _list_metadata_formats(idprefix, identifier=None, **excess):
     if excess:
         raise _OAIError("badArgument")
 
@@ -138,7 +137,7 @@ def _list_metadata_formats(identifier=None, **excess):
     formats = _itertools.ifilter(None,formats)  # drop empty elements
 
     if identifier:
-        node = _identifier_to_node(identifier)
+        node = _identifier_to_node(identifier, idprefix)
         formats = (x for x in formats if node.getSchema() in _yield_export_mask_metatype_names(x))
         formats = (x for x in formats if _filter_format(node, x.lower()))
 
@@ -160,7 +159,7 @@ def _check_metadata_format(format):
         return False
 
 
-def _identify(**excess):
+def _identify(idprefix, **excess):
     if excess:
         raise _OAIError("badArgument")
 
@@ -198,9 +197,9 @@ def _identify(**excess):
     return identify
 
 
-def _get_header_element(id_prefix, date, node):
+def _get_header_element(idprefix, date, node):
     header = _lxml_etree.Element("header")
-    _lxml_etree.SubElement(header, "identifier").text = "{}{}".format(id_prefix, ustr(node.id))
+    _lxml_etree.SubElement(header, "identifier").text = "{}{}".format(idprefix, ustr(node.id))
     _lxml_etree.SubElement(header, "datestamp").text = "{}Z".format(date)
     setspecs = oaisets.getSetSpecsForNode(node)
     for setspec in setspecs:
@@ -214,8 +213,7 @@ def _get_oai_export_mask_for_schema_name_and_metadataformat(schema_name, metadat
         return schema.getMask(u"oai_{}".format(metadataformat.lower()))
 
 
-def _make_record_element(node, metadataformat, mask=None):
-    id_prefix = config.get("oai.idprefix", "oai:mediatum.org:node/")
+def _make_record_element(node, metadataformat, idprefix, mask=None):
     updatetime = node.get(config.get("oai.datefield", "updatetime"))
     if updatetime:
         d = _iso8601(date.parse_date(updatetime))
@@ -223,7 +221,7 @@ def _make_record_element(node, metadataformat, mask=None):
         d = _iso8601(date.DateTime(config.getint("oai.earliest_year", 1960) - 1, 12, 31, 23, 59, 59))
 
     record = _lxml_etree.Element("record")
-    header = _get_header_element(id_prefix, d, node)
+    header = _get_header_element(idprefix, d, node)
     record.append(header)
 
     metadata = _lxml_etree.SubElement(record, "metadata")
@@ -390,7 +388,7 @@ def _get_nodes(set_param=None, metadataPrefix=None, date_from=None, until=None, 
     return nodes, token_element, metadataformat
 
 
-def _list_identifiers(set=None, metadataPrefix=None, until=None, resumptionToken=None, **excess):
+def _list_identifiers(idprefix, set=None, metadataPrefix=None, until=None, resumptionToken=None, **excess):
     from_ = excess.pop("from", None)
     if excess:
         raise _OAIError("badArgument")
@@ -402,7 +400,7 @@ def _list_identifiers(set=None, metadataPrefix=None, until=None, resumptionToken
             d = _iso8601(date.parse_date(updatetime))
         else:
             d = _iso8601(date.now())
-        header = _get_header_element(config.get("oai.idprefix", "oai:mediatum.org:node/"), d, n)
+        header = _get_header_element(idprefix, d, n)
         list_identifiers.append(header)
     if token is not None:
         list_identifiers.append(token)
@@ -410,7 +408,7 @@ def _list_identifiers(set=None, metadataPrefix=None, until=None, resumptionToken
     return list_identifiers
 
 
-def _list_records(set=None, metadataPrefix=None, until=None, resumptionToken=None, **excess):
+def _list_records(idprefix, set=None, metadataPrefix=None, until=None, resumptionToken=None, **excess):
     from_ = excess.pop("from", None)
     if excess:
         raise _OAIError("badArgument")
@@ -418,17 +416,17 @@ def _list_records(set=None, metadataPrefix=None, until=None, resumptionToken=Non
     list_records = _lxml_etree.Element("ListRecords")
     get_mask = _backports_functools_lru_cache.lru_cache()(_get_oai_export_mask_for_schema_name_and_metadataformat)
     for n in nodes:
-        list_records.append(_make_record_element(n, metadataformat, mask=get_mask(n.getSchema(), metadataformat)))
+        list_records.append(_make_record_element(n, metadataformat, idprefix, mask=get_mask(n.getSchema(), metadataformat)))
     if token is not None:
         list_records.append(token)
 
     return list_records
 
 
-def _get_record(identifier=None, metadataPrefix=None , **excess):
+def _get_record(idprefix, identifier=None, metadataPrefix=None, **excess):
     if excess or (None in (identifier, metadataPrefix)):
         raise _OAIError("badArgument")
-    node = _identifier_to_node(identifier)
+    node = _identifier_to_node(identifier, idprefix)
     if _parent_is_media(node):
         raise _OAIError("noPermission")
 
@@ -441,11 +439,11 @@ def _get_record(identifier=None, metadataPrefix=None , **excess):
     schema_name = node.getSchema()
     mask = _get_oai_export_mask_for_schema_name_and_metadataformat(schema_name, metadataformat)
     get_record = _lxml_etree.Element("GetRecord")
-    get_record.append(_make_record_element(node, metadataformat, mask=mask))
+    get_record.append(_make_record_element(node, metadataformat, idprefix, mask=mask))
     return get_record
 
 
-def _list_sets(resumptionToken=None, **excess):
+def _list_sets(idprefix, resumptionToken=None, **excess):
     if resumptionToken:
         raise _OAIError("badResumptionToken")
     if excess:
@@ -473,6 +471,7 @@ def oaiRequest(req):
     start_time = time.clock()
 
     params = dict(req.params)
+    idprefix = config.get("oai.idprefix", "oai:{}:node/".format(req.host))
     oai_pmh = _make_toplevel_element(**params)
     verb = params.pop("verb", None)
 
@@ -481,7 +480,7 @@ def oaiRequest(req):
     req.response.content_type = 'text/xml; charset=utf-8'
     try:
         if verb in _verb_handlers:
-            oai_pmh.append(_verb_handlers[verb](**params))
+            oai_pmh.append(_verb_handlers[verb](idprefix, **params))
         else:
             raise _OAIError("badVerb")
     except _OAIError as ex:

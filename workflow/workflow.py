@@ -617,8 +617,8 @@ class WorkflowStep(Node):
         if config.get("config.ssh", "") == "yes":
             if not _link.lower().startswith("https:"):
                 _link = "https://{}{}".format(
-                    config.get("host.name"),
-                    _link.replace("http://" + config.get("host.name"), ""),
+                    req.host,
+                    _link.replace("http://" + req.host, ""),
                    )
         return '<script>document.location.href = "{}";</script>'.format(_link)
 

@@ -11,6 +11,9 @@ import logging
 import os
 import re
 import zipfile
+
+import flask as _flask
+
 import utils.utils as _utils_utils
 from core import config, db, Node
 from contenttypes import Content
@@ -137,10 +140,10 @@ def get_transfer_url(n):
     filecount = len(build_filelist(n))
     if filecount < 2:
         transfer_filename = ustr(n.id) + ".pdf"
-        transferurl = u"http://{}/doc/{}/{}".format(config.get("host.name"), n.id, transfer_filename)
+        transferurl = u"http://{}/doc/{}/{}".format(_flask.request.host, n.id, transfer_filename)
     else:
         transfer_filename = ustr(n.id) + "_transfer.zip"
-        transferurl = u"http://{}/file/{}".format(config.get("host.name"), transfer_filename)
+        transferurl = u"http://{}/file/{}".format(_flask.request.host, transfer_filename)
 
     return transferurl
 

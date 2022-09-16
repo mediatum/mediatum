@@ -403,20 +403,11 @@ class UserLinks(object):
                 icon="/static/img/logout.png",
             )]
         if self.user == guest_user:
-            if config.get("config.ssh") == "yes":
-                host = config.get("host.name") or self.host
-                l = [Link(
-                        "https://{}/login".format(host),
-                        _core_translation.t(self.language, "sub_header_login_title"),
-                        _core_translation.t(self.language, "sub_header_login"),
-                        icon="/static/img/login.png",
-                    )]
-            else:
-                l = [Link(
-                        "/login", _core_translation.t(self.language, "sub_header_login_title"),
-                        _core_translation.t(self.language, "sub_header_login"),
-                        icon="/static/img/login.png",
-                    )]
+            l = [Link(
+                    "/login", _core_translation.t(self.language, "sub_header_login_title"),
+                    _core_translation.t(self.language, "sub_header_login"),
+                    icon="/static/img/login.png",
+                )]
 
         if self.is_workflow_area:
             l.append(Link(

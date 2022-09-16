@@ -9,11 +9,12 @@ from __future__ import print_function
 import logging
 import os.path
 
+import flask as _flask
+
 from .workflow import WorkflowStep, registerStep
 from mediatumtal import tal
 
 from utils.utils import formatException
-import core.config as config
 import core.csrfform as _core_csrfform
 import core.translation as _core_translation
 import utils.mail as mail
@@ -102,8 +103,8 @@ class WorkflowStep_SendEmail(WorkflowStep):
         return 1
 
     def runAction(self, node, op=""):
-        link = "https://%s/pnode?id=%s&key=%s" % (config.get("host.name"), node.id, node.get("key"))
-        link2 = "https://%s/node?id=%s" % (config.get("host.name"), node.id)
+        link = "https://{}/pnode?id={}&key={}".format(_flask.request.host, node.id, node.get("key"))
+        link2 = "https://{}/node?id={}".format(_flask.request.host, node.id)
         attrs = {"node": node, "link": link, "publiclink": link2}
         try:
             if "@" in self.get('from'):

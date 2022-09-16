@@ -13,6 +13,8 @@ from multiprocessing import Process
 import shutil
 import logging
 
+import flask as _flask
+
 from reportlab.platypus import Paragraph, BaseDocTemplate, SimpleDocTemplate, FrameBreak, Table, TableStyle, Image as PdfImage, Frame, PageBreak, PageTemplate
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import cm
@@ -259,7 +261,7 @@ class PrintPreview:
 
 def getPrintView(lang, imagepath, metadata, paths, style, children, collection, dest_file):  # style=1: object, style=3: liststyle
     """ returns pdf content of given item """
-    pv = PrintPreview(lang, config.get("host.name"))
+    pv = PrintPreview(lang, _flask.request.host)
     pv.setHeader(collection)
 
     if style == 1 or style == 2:

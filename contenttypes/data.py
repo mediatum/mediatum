@@ -28,12 +28,6 @@ from core.request_handler import request_finished as _request_finished
 logg = logging.getLogger(__name__)
 
 
-# for TAL templates from mask cache
-context = default_context.copy()
-# XXX: does this work without hostname? Can we remove this?
-context['host'] = "http://" + config.get("host.name", "")
-
-
 def make_lookup_key(node, language=None, labels=True):
     languages = config.languages
     if language is None:

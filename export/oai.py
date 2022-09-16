@@ -12,7 +12,9 @@ import socket
 import re
 import time
 import logging
+import urlparse as _urlparse
 
+import flask as _flask
 import lxml.etree as _lxml_etree
 import sqlalchemy.orm as _sqlalchemy_orm
 import collections as _collections
@@ -72,7 +74,7 @@ def _make_toplevel_element(**params):
 
     _lxml_etree.SubElement(oai_pmh, "responseDate").text = "{}Z".format(_iso8601(date.now()))
     _lxml_etree.SubElement(oai_pmh, "request", attrib=dict(params)).text = \
-        'http://{}/oai/oai'.format(config.get("host.name", "{}:8081".format(socket.gethostname())))
+        _urlparse.urljoin(_flask.request.host_url, '/oai/oai')
 
     return oai_pmh
 
@@ -166,7 +168,7 @@ def _identify(**excess):
 
     for tag, txt in (
         ("repositoryName", config.get("config.oaibasename") or _nodecache.get_root_node().getName()),
-        ("baseURL", 'http://{}/oai/oai'.format(config.get("host.name", "{}:8081".format(socket.gethostname())))),
+        ("baseURL", _urlparse.urljoin(_flask.request.host_url, '/oai/oai')),
         ("protocolVersion", "2.0"),
         ("adminEmail", config.get("email.admin")),
         ("earliestDatestamp", "{}-01-01T12:00:00Z".format(ustr(config.getint("oai.earliest_year", 1960) - 1))),
@@ -187,7 +189,7 @@ def _identify(**excess):
 
     for tag, txt in (
         ("scheme", "oai"),
-        ("repositoryIdentifier", config.get("host.name", socket.gethostname())),
+        ("repositoryIdentifier", _flask.request.host),
         ("delimiter", ":"),
         ("sampleIdentifier", config.get("oai.sample_identifier", "oai:mediatum.org:node/123")),
     ):

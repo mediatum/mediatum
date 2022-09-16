@@ -43,7 +43,6 @@ logg = logging.getLogger(__name__)
 q = db.query
 
 
-configured_host = config.get("host.name", "")
 allow_cross_origin = config.getboolean("services.allow_cross_origin", False)
 
 SEND_TIMETABLE = False
@@ -365,7 +364,7 @@ def struct2rss(req, path, params, data, struct, debug=False, singlenode=False, s
     language = params.get('lang', 'en')
     items_list = []
 
-    host = u"http://" + unicode(req.host or configured_host)
+    host = u"http://" + unicode(req.host)
     collections = get_collections_node()
     user = get_guest_user()
 

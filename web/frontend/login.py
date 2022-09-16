@@ -62,7 +62,7 @@ def _handle_login_submit(req):
     if return_after_login:
         req.response.location = return_after_login
     elif config.get("config.ssh", "") == "yes":
-        req.response.location = ''.join(["https://", config.get("host.name"), _make_collection_root_link()])
+        req.response.location = ''.join(["https://", req.host, _make_collection_root_link()])
     else:
         req.response.location = _make_collection_root_link()
 

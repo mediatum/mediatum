@@ -40,7 +40,7 @@ msgstr "Comment"
 msgid "create_version_generate_new_version"
 msgstr "Generate new version"
 
-msgid "edit_meta_version"
+msgid "create_version_version"
 msgstr "Version"
 
 msgid "edit_meta_delete"

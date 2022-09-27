@@ -349,5 +349,4 @@ def full_init(root_loglevel=None, config_filepath=None, prefer_config_filename=N
     _set_current_init_state(init_state)
     init_app()
     _core.plugins.init_web_routes()
-    _core.plugins.add_plugin_file_store_paths()
     _web_edit.edit.getEditModules()

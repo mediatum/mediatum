@@ -275,8 +275,6 @@ def initContexts():
     handler = main_file.addHandler("display_404")
     handler.addPattern("/(.)+$")
 
-    init_theme()
-
     # testing global exception handler
     context = _request_handler.addContext("/_test", ".")
     file = context.addFile("web/handlers/handlertest.py")

@@ -5,13 +5,15 @@ from __future__ import division
 from __future__ import print_function
 
 import copy
+import functools as _functools
 import json
 import logging
 import os
 import re
 import time
-import flask as _flask
+import urlparse as _urlparse
 
+import flask as _flask
 from sqlalchemy.orm import undefer, joinedload
 
 from core.users import get_guest_user
@@ -364,7 +366,7 @@ def struct2rss(req, path, params, data, struct, debug=False, singlenode=False, s
     language = params.get('lang', 'en')
     items_list = []
 
-    host = u"http://" + unicode(req.host)
+    hostjoin = _functools.partial(_urlparse.urljoin, req.host_url)
     collections = get_collections_node()
     user = get_guest_user()
 
@@ -411,8 +413,8 @@ def struct2rss(req, path, params, data, struct, debug=False, singlenode=False, s
         item_d['title'] = esc(u"{} ({}, {}/{}) {}".format(nodename or u'-unnamed-node-',
                                                           nodeid, n.type, n.schema, u"/".join(most_detailed_path)))
         item_d['item_pubDate'] = utime
-        item_d['guid'] = host + u'/node?id=%s' % nodeid
-        item_d['link'] = host + u'/node?id=%s' % nodeid
+        item_d['guid'] = hostjoin(u'/node?id={}'.format(nodeid))
+        item_d['link'] = hostjoin(u'/node?id={}'.format(nodeid))
 
         if mdt:
             lang_mask = mdt.masks.filter(Node.name.startswith(u"nodesmall")).filter(Node.a.language == language).first()
@@ -473,17 +475,17 @@ def struct2rss(req, path, params, data, struct, debug=False, singlenode=False, s
     fcd['lang'] = u'de'
     fcd['pubdate'] = pubDate
     fcd['lastbuild'] = lastBuildDate
-    fcd['link'] = host
-    fcd['atom_link'] = host + req.path
+    fcd['link'] = req.host_url
+    fcd['atom_link'] = hostjoin(req.path)
     fcd['image_title'] = 'testlogo'
-    fcd['image_link'] = host + u'/static/img/testlogo.png'
-    fcd['image_url'] = host + u'/static/img/testlogo.png'
+    fcd['image_link'] = hostjoin(u'/static/img/testlogo.png')
+    fcd['image_url'] = hostjoin(u'/static/img/testlogo.png')
 
     if 'feed_info' in params:
         for k, v in params['feed_info'].items():
             fcd[k] = v
     else:
-        fcd['title'] = host + req.path + req.query_string
+        fcd['title'] = hostjoin(req.path + req.query_string)
     fcd['items'] = items
     s = template_rss_channel % fcd  # params['feed_info']
 

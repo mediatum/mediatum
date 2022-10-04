@@ -8,6 +8,7 @@ from __future__ import print_function
 
 import logging
 import os.path
+import urlparse as _urlparse
 
 import flask as _flask
 
@@ -103,8 +104,8 @@ class WorkflowStep_SendEmail(WorkflowStep):
         return 1
 
     def runAction(self, node, op=""):
-        link = "https://{}/pnode?id={}&key={}".format(_flask.request.host, node.id, node.get("key"))
-        link2 = "https://{}/node?id={}".format(_flask.request.host, node.id)
+        link = _urlparse.urljoin(_flask.request.host_url, "/pnode?id={}&key={}".format(node.id, node.get("key")))
+        link2 = _urlparse.urljoin(_flask.request.host_url, "/node?id={}".format(node.id))
         attrs = {"node": node, "link": link, "publiclink": link2}
         try:
             if "@" in self.get('from'):

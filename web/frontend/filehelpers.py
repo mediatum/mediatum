@@ -10,6 +10,7 @@ from __future__ import print_function
 import logging
 import os
 import re
+import urlparse as _urlparse
 import zipfile
 
 import flask as _flask
@@ -140,10 +141,10 @@ def get_transfer_url(n):
     filecount = len(build_filelist(n))
     if filecount < 2:
         transfer_filename = ustr(n.id) + ".pdf"
-        transferurl = u"http://{}/doc/{}/{}".format(_flask.request.host, n.id, transfer_filename)
+        transferurl = _urlparse.urljoin(_flask.request.host_url, u"/doc/{}/{}".format(n.id, transfer_filename))
     else:
         transfer_filename = ustr(n.id) + "_transfer.zip"
-        transferurl = u"http://{}/file/{}".format(_flask.request.host, transfer_filename)
+        transferurl = _urlparse.urljoin(_flask.request.host_url, u"/file/{}/{}".format(n.id, transfer_filename))
 
     return transferurl
 

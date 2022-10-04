@@ -6,6 +6,7 @@ from __future__ import print_function
 
 import logging
 import hashlib
+
 import flask as _flask
 
 from core import db, User, auth
@@ -59,12 +60,7 @@ def _handle_login_submit(req):
     _flask.session["user_id"] = user.id
     logg.info("%s logged in", user.login_name)
 
-    if return_after_login:
-        req.response.location = return_after_login
-    elif config.get("config.ssh", "") == "yes":
-        req.response.location = ''.join(["https://", req.host, _make_collection_root_link()])
-    else:
-        req.response.location = _make_collection_root_link()
+    req.response.location = return_after_login or _make_collection_root_link()
 
     # stores the date/time when a user logs in except in read-only mode
     if not config.getboolean("config.readonly", False):
@@ -74,12 +70,11 @@ def _handle_login_submit(req):
 
 def _set_return_after_login(req):
     referer = req.referrer
-    host = req.host
 
     if referer is None or any(uri in referer for uri in ('/login', '/logout', '/pwdforgotten', '/pwdchange', '/pnode')):
         return_after_login = False
     # check if referrer is mediatum and not a search engine
-    elif not referer.startswith('http://' + host + '/') and not referer.startswith('https://' + host + '/'):
+    elif not referer.startswith(req.host_url):
         return_after_login = False
     else:
         if '/edit_content' in referer:

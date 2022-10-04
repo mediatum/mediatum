@@ -614,12 +614,6 @@ class WorkflowStep(Node):
             return _tal.processTAL({"node": node}, file="workflow/workflow.html", macro="workflow_forward", request=req)
         if _link is None:
             _link = _build_url_from_path_and_params("/mask", dict(id=newnode.id, obj=node.id))
-        if config.get("config.ssh", "") == "yes":
-            if not _link.lower().startswith("https:"):
-                _link = "https://{}{}".format(
-                    req.host,
-                    _link.replace("http://" + req.host, ""),
-                   )
         return '<script>document.location.href = "{}";</script>'.format(_link)
 
     def getTrueId(self):

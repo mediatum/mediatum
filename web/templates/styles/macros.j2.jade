@@ -84,15 +84,13 @@
         document.location.search = kvp.join('&');
       }
     }
-  div(style='position:absolute;right:15px;')
+  div
     label(style='font-size:10px;')
       = _t("items_per_page")
     select(name='nodes_per_page', onchange='insertParameter(name, this.value)', style='font-size:10px;')
       for n in nodesperpage_options
         option(value=n, selected=n == nodesperpage)
            = _t(n)
-
-  p(style='margin-top:30px;')
 
 // generated from jade
 //- vim: set filetype=jade sw=2 ts=2 sts=2 expandtab:

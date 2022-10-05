@@ -162,10 +162,11 @@ a.page-nav-next::after { content: "\00A0\2192";}
 a.page-nav-next { margin-left: 10px;}
 
 #portal-column-content #page-nav a:hover { color: #000;}
-#portal-column-content #portal-pages { text-align: center; margin: 5px 0px 10px 0px;}
+#portal-column-content #portal-pages { text-align: center;}
 #portal-column-content #portal-pages a { color: #666; font-size: 80%; text-decoration: none;}
 #portal-column-content #portal-pages a:hover { color: #000;}
-
+#portal-column-content #portal-pages table {padding:0px;margin:0px;width:100%;}
+#portal-column-content #portal-pages table tr td {width:33%; vertical-align: center;}
 /* Paths / Vorkommen */
 div#paths { border-top: rgb(71,71,71) solid 1px; padding: 5px; margin: 20px 5px 5px 0px;}
 

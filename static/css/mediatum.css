@@ -101,8 +101,9 @@ form#advancedsearch-box { background-color: white !important;}
 #advancedsearch-box select.searchfield { padding: 1px 2px 1px 2px; font-size: 9px; vertical-align: middle;
     width: 180px; color: rgb(71,71,71); margin-right: 5px; border-style: none;}
 #advancedsearch-box input.searchfield { width: 168px;}
+#advancedsearch-box #reset-button {background-color: #d5dbdb; text-align: center;}
 button#xsearch-button { padding: 0px 2px 0px 0px; margin: 0px 9px 0px 0px; font-size: 90%; vertical-align: middle;
-    width: 5em; cursor: pointer; color: rgb(71,71,71); border-style: none; background-color: transparent; text-align: left;}
+    width: 5em; cursor: pointer; color: rgb(71,71,71); border-style: none; background-color: #aed6f1; text-align: center;}
 button#reset-button { padding: 0px 1px 0px 0px; margin: 0px 5px 0px 0px; font-size: 90%; vertical-align: middle; width: 5em;
     cursor: pointer; color: rgb(71,71,71); border-style: none; background-color: transparent; text-align: left;}
 a#advancedsearchlink { padding-top: 5px; padding-left: 0.5em; padding-bottom: 1em;}

@@ -23,9 +23,9 @@ div#portal-top { position: relative; height: 117px; background-color: #ffffff;}
 
 /* Header */
 div.header ul { list-style-type: none; padding-left: 0;}
-div.header-left { float: left; position: relative; top: 21px; left: 38px;}
+div.header-left { float: left; position: relative; top: 10px; left: 38px;}
 div.header-right { float: right;}
-a.header-logo { position: absolute; margin: 0px; top: 39px; right: 38px;}
+a.header-logo { position: absolute; margin: 0px; top: 10px; right: 38px;}
 div.header a { text-decoration: none; color: rgb(48,112,179); font-size: 13px;}
 
 /* Personal tools */

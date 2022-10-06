@@ -106,7 +106,7 @@ button#xsearch-button { padding: 0px 2px 0px 0px; margin: 0px 9px 0px 0px; font-
     width: 5em; cursor: pointer; color: rgb(71,71,71); border-style: none; background-color: #aed6f1; text-align: center;}
 button#reset-button { padding: 0px 1px 0px 0px; margin: 0px 5px 0px 0px; font-size: 90%; vertical-align: middle; width: 5em;
     cursor: pointer; color: rgb(71,71,71); border-style: none; background-color: transparent; text-align: left;}
-a#advancedsearchlink { padding-top: 5px; padding-left: 0.5em; padding-bottom: 1em;}
+a#advancedsearchlink { padding-top: 5px; padding-left: 0.5em; padding-bottom: 1em; font-size: 12px;}
 a#advancedmorelink { padding: 1px 1.33em 0.5em 0.75em; margin: 0px; display: block; color: #333333; font-size: 90%; text-decoration: none;}
 h3#navigationheading { padding-bottom: 0.5em; margin: 0px; padding-left: 0.75em; padding-right: 1.33em;
     background: url(/static/img/5pxgradient_nav_depth03.gif) #fff repeat-y right 50%; color: #fff; font-size: 100%; padding-top: 0.4em;}

@@ -8,13 +8,10 @@ import itertools as _itertools
 import json
 import os
 import re
-import sys
 import time
 
 import mediatumtal.tal as _tal
 
-import core as _core
-import core.config as config
 import core.csrfform as _core_csrfform
 import core.nodecache as _core_nodecache
 import core.translation as _core_translation
@@ -25,6 +22,7 @@ import utils.utils as _utils_utils
 from contenttypes.container import Collections
 from contenttypes.container import Home
 from contenttypes.data import Data
+from core import plugins as _core_plugins
 from core.database.postgres.user import User
 from edit_common import *
 from core.users import user_from_session as _user_from_session
@@ -398,25 +396,14 @@ def getEditModules():
 
     _editModules = {m.__name__.replace("web.edit.modules.", ""): m for m in modules_list}
 
-    for modpath in _core.editmodulepaths:  # plugins paths with edit modules
-        if os.path.isabs(modpath[1]):
-            mod_dirpath = modpath[1]
-        else:
-            mod_dirpath = os.path.join(config.codebasedir, modpath[1])
-
-        for dirpath, subdirs, files in os.walk(mod_dirpath):
-            if os.path.basename(dirpath) in ("test", "__pycache__"):
-                continue
-            for name in files:
-                if (not name.endswith(".py")) or (name == "__init__.py"):
-                    continue
-                basename, _ = os.path.splitext(name)
-                with _utils_utils.suppress(ImportError, SyntaxError):
-                    path, module = _utils_utils.splitpath(mod_dirpath)
-                    sys.path += [path]
-                    m = __import__(module.replace("/", ".") + "." + basename)
-                    m = eval("m." + basename)
-                    _editModules[basename] = m
+    for plugin in _core_plugins.plugins.values():
+        if hasattr(plugin, "get_edit_modules"):
+            plugin_edit_modules = plugin.get_edit_modules()
+            intersect = frozenset(plugin_edit_modules).intersection(_editModules)
+            if intersect:
+                raise RuntimeError("plugin edit module {} already exists".format(intersect))
+            else:
+                _editModules.update(plugin_edit_modules)
 
 
 def getIDs(req):

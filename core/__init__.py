@@ -12,6 +12,5 @@ db = None
 app = None
 
 # TODO: move to web.edit
-editmodulepaths = []
 
 import utils.log

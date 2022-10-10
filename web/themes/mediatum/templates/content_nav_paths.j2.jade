@@ -10,10 +10,12 @@
     ul
       li
         for step in path
-          a(href=node_url(step.id))
-            = step.getLabel()
           if path.index(step)<path|length-1
-            img.breadcrumb-delimiter(src='/static/img/breadcrumb-arrow.gif')
+            a.breadcrumb-delimiter(href=node_url(step.id))
+              = step.getLabel()
+          else
+            a(href=node_url(step.id))
+              = step.getLabel()
 
 
 // generated from jade

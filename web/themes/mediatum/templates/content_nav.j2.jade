@@ -22,9 +22,8 @@
   if path
     div(style='padding-bottom:20px')
       for step in path
-        a(href=node_url(step.id))
+        a.breadcrumb-delimiter(href=node_url(step.id))
           = step.getLabel()
-        img.breadcrumb-delimiter(src='/static/img/breadcrumb-arrow.gif')
       a(href=node_url(node.id))
         = node.getLabel()
 

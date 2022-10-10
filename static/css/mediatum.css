@@ -32,7 +32,7 @@ div.header a { text-decoration: none; color: rgb(48,112,179); font-size: 13px;}
 #portal-personaltools { position: relative; padding-bottom: 0.6em; background-color: #ffffff; padding-top: 0.4em;
     padding-left: 38px; padding-right: 14em; height: auto;}
 #portal-personaltools a { margin: 0px 0.75em 0px 0px; white-space: nowrap; color: #333333; text-decoration: none;}
-#portal-personaltools a img { vertical-align: middle;}
+#portal-personaltools a img { vertical-align: middle; margin-right:3px;}
 #portal-personaltools #language_switch { float: right; position: absolute; right: 38px; top: 0.4em;}
 
 #language_switch a { margin: 0; font-size: 130%;}
@@ -158,8 +158,8 @@ select[name="nodes_per_page"] { margin-right: 38px !important;}
 #portal-column-content #page-nav a { color: #0A5096; text-decoration: none;}
 a.page-nav { font-size: 130% !important;}
 a.page-nav-previous { margin-right: 10px;}
-a.page-nav-previous::before { content: "\2190\00A0";}
-a.page-nav-next::after { content: "\00A0\2192";}
+a.page-nav-previous::before { content: "\27F5"; margin-right: 5px;}
+a.page-nav-next::after { content:  "\27F6"; margin-left: 5px;}
 a.page-nav-next { margin-left: 10px;}
 
 #portal-column-content #page-nav a:hover { color: #000;}
@@ -175,6 +175,7 @@ div#portal-column-content #paths a { color: rgb(71,71,71); text-decoration: none
 #portal-column-content #paths a:hover { color: rgb(48,112,179); text-decoration: none;}
 #portal-column-content #paths ul { list-style-type: square; margin-left: 15px;}
 #portal-column-content #paths li { margin-left: 15px; line-height: 13px;}
+#portal-column-content #paths ul li a.breadcrumb-delimiter::after { content: "\2192"; margin: 0px 3px 0px 3px;}
 
 /* Breadcrumbs */
 div#portal-breadcrumbs { font-size: 90%; position: relative;}
@@ -367,7 +368,7 @@ div#footer span.footer_left a { margin-right: 9px;}
 
 ul#navigationlist li div a:visited { color: #004682;}
 
-.breadcrumb-delimiter { margin: 0 4px;}
+div#portal-breadcrumbs div a.breadcrumb-delimiter::after { content: "\2192"; margin: 0px 3px 0px 3px;}
 
 .mediatum_paddingimg{ padding-right:15px;padding-bottom:15px;}
 #mediatum_portal_navtree{ width:292px; padding-left:2px; padding-bottom:0px;

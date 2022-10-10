@@ -182,7 +182,7 @@ div#portal-breadcrumbs a { white-space: nowrap; color: rgb(71,71,71); text-decor
 div#portal-breadcrumbs a:hover { color: rgb(48,112,179);}
 
 /* Viewswitch */
-a#view_switch { padding: 2px;}
+div#portal-breadcrumbs div p a.view_switch { padding: 2px;}
 
 div#portal-breadcrumbs #collectionlogo { margin: 0px 0px 10px 0px; width: 100%; right: 0px; text-align: right;}
 

@@ -19,7 +19,8 @@ import fdfgen
 from mediatumtal import tal as _tal
 
 import utils.utils as _utils_utils
-from .workflow import WorkflowStep, getNodeWorkflow, getNodeWorkflowStep, registerStep
+from .workflow import WorkflowStep
+from .workflow import registerStep
 from core.translation import addLabels
 from schema.schema import getMetaType, Metafield
 import utils.fileutils as _fileutils
@@ -125,13 +126,9 @@ class WorkflowStep_AddFormPage(WorkflowStep):
             if fnode.filetype == "document":
                 break
 
-        # get pdf form appended to this workflow step through upload field 'upload_pdfform'
-        current_workflow = getNodeWorkflow(node)
-        current_workflow_step = getNodeWorkflowStep(node)
-
-        pdf_fields_editable = current_workflow_step.get("pdf_fields_editable")
-        pdf_form_separate = current_workflow_step.get("pdf_form_separate")
-        pdf_form_overwrite = current_workflow_step.get("pdf_form_overwrite")
+        pdf_fields_editable = self.get("pdf_fields_editable")
+        pdf_form_separate = self.get("pdf_form_separate")
+        pdf_form_overwrite = self.get("pdf_form_overwrite")
 
         if pdf_fields_editable.lower() in ["1", "true"]:
             pdf_fields_editable = True
@@ -148,8 +145,8 @@ class WorkflowStep_AddFormPage(WorkflowStep):
 
         schema = getMetaType(node.schema)
 
-        if current_workflow_step.files:
-            form, = current_workflow_step.files
+        if self.files:
+            form, = self.files
 
             for field_dict in parse_pdftk_fields_dump(get_pdftk_fields_dump(form.abspath)):
                 fieldname = field_dict.get('FieldName', None)
@@ -192,14 +189,14 @@ class WorkflowStep_AddFormPage(WorkflowStep):
                                 value = value.replace('[att:%s]' % (m.group(0)), v)
                     else:
                         logg.warning("workflowstep %s (%s): could not find attribute for pdf form field '%s' - node: '%s' (%s)",
-                                       current_workflow_step.name, current_workflow_step.id, fieldname, node.name, node.id)
+                                     self.name, self.id, fieldname, node.name, node.id)
                     fields.append((fieldname, remove_tags(desc(value))))
 
         if not pdf_form_separate and fnode and form and form.abspath and os.path.isfile(form.abspath):
             pages = fillPDFForm(form.abspath, fields, input_is_fullpath=True, editable=pdf_fields_editable)
             if pages == "":  # error in pdf creation -> forward to false operation
-                logg.error("workflowstep %s (%s): could not create pdf file - node: '%s' (%s)" %
-                           (current_workflow_step.name, current_workflow_step.id, node.name, node.id))
+                logg.error("workflowstep %s (%s): could not create pdf file - node: '%s' (%s)",
+                           self.name, self.id, node.name, node.id)
                 self.forward(node, False)
                 return
             origname = fnode.abspath
@@ -212,14 +209,14 @@ class WorkflowStep_AddFormPage(WorkflowStep):
             node.files.append(File(origname, 'upload', 'application/pdf'))  # store original filename
             node.event_files_changed()
             db.session.commit()
-            logg.info("workflow '%s' (%s), workflowstep '%s' (%s): added pdf form to pdf (node '%s' (%s)) fields: %s",
-                current_workflow.name, current_workflow.id, current_workflow_step.name, current_workflow_step.id, node.name, node.id, fields)
-            
+            logg.info("workflowstep '%s' (%s): added pdf form to pdf (node '%s' (%s)) fields: %s",
+                      self.name, self.id, node.name, node.id, fields)
+
         elif pdf_form_separate and form and form.abspath and os.path.isfile(form.abspath):
             pages = fillPDFForm(form.abspath, fields, input_is_fullpath=True, editable=pdf_fields_editable)
             if pages == "":  # error in pdf creation -> forward to false operation
-                logg.error("workflowstep %s (%s): could not create pdf file - node: '%s' (%s)" %
-                           (current_workflow_step.name, current_workflow_step.id, node.name, node.id))
+                logg.error("workflowstep %s (%s): could not create pdf file - node: '%s' (%s)",
+                           self.name, self.id, node.name, node.id)
                 self.forward(node, False)
                 return
             importdir = getImportDir()
@@ -237,9 +234,9 @@ class WorkflowStep_AddFormPage(WorkflowStep):
                 shutil.copy(pages, new_form_path)
                 if os.path.exists(pages):
                     os.remove(pages)
-            except Exception:
+            except:
                 logg.exception("workflowstep %s (%s): could not copy pdf form to import directory - node: '%s' (%s), import directory: '%s'",
-                             current_workflow_step.name, current_workflow_step.id, node.name, node.id, importdir)
+                               self.name, self.id, node.name, node.id, importdir)
             found = 0
             for fn in node.files:
                 if fn.abspath == new_form_path:
@@ -249,13 +246,11 @@ class WorkflowStep_AddFormPage(WorkflowStep):
                 node.files.append(File(new_form_path, 'wfstep-addformpage', 'application/pdf'))
                 db.session.commit()
 
-            logg.info(
-                "workflow '%s' (%s), workflowstep '%s' (%s): added separate pdf form to node (node '%s' (%s)) fields: %s, path: '%s'",
-                current_workflow.name, current_workflow.id, current_workflow_step.name,
-                current_workflow_step.id, node.name, node.id, fields, new_form_path)
+            logg.info("workflowstep '%s' (%s): added separate pdf form to node (node '%s' (%s)) fields: %s, path: '%s'",
+                      self.name, self.id, node.name, node.id, fields, new_form_path)
         else:
             logg.warning("workflowstep %s (%s): could not process pdf form - node: '%s' (%s)",
-                           current_workflow_step.name, current_workflow_step.id, node.name, node.id)
+                         self.name, self.id, node.name, node.id)
 
         self.forward(node, True)
 

@@ -34,13 +34,13 @@ msgstr "zuletzt geändert"
 msgid "create_version_information"
 msgstr "Versionierungs-Informationen"
 
-msgid "edit_version_comment"
+msgid "create_version_comment"
 msgstr "Kommentar"
 
 msgid "create_version_generate_new_version"
 msgstr "Neue Version erstellen"
 
-msgid "edit_meta_version"
+msgid "create_version_version"
 msgstr "Version"
 
 msgid "edit_meta_delete"

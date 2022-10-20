@@ -199,7 +199,7 @@ def normLanguage_iso_639_2_t(s, emptyval=''):
         s2 = s1 + "|"
         s3 = "|" + s2
         for line in iso_639_2_list:
-            _b, _t, _two, _english, _french = list.split('|')
+            _b, _t, _two, _english, _french = line.split('|')
             if s1 in [_b, _t]:
                 if _t:
                     return _t

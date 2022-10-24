@@ -32,6 +32,7 @@ from utils.url import build_url_from_path_and_params
 from schema.bibtex import importBibTeX, MissingMapping
 
 from core import db
+import contenttypes as _contenttypes
 from contenttypes import Data
 from core import Node
 from schema.schema import Metadatatype, get_permitted_schemas, get_permitted_schemas_for_datatype
@@ -566,7 +567,11 @@ def upload_bibhandler(filename, id):
             try:
                 retrieved_file = f.abspath
                 logg.debug('going to call importBibTex(%s), import will be logged to backend!', retrieved_file)
-                importBibTeX(retrieved_file, creator=users.user_from_session().login_name)
+                importBibTeX(
+                        retrieved_file,
+                        _contenttypes.Directory(_utils_utils.utf8_decode_escape(os.path.basename(retrieved_file))),
+                        creator=users.user_from_session().login_name,
+                       )
                 logg.info('importBibTex(%s) done, import logged to backend!', retrieved_file)
             except ValueError, e:
                 logg.exception('calling importBibTex(%s)', retrieved_file)

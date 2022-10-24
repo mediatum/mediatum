@@ -31,9 +31,8 @@ import bibtexparser.customization
 from core import db, Node
 from .schema import Metadatatype
 import core.users as users
-from contenttypes import Directory
 from contenttypes.document import Document
-from utils.utils import u, u2, utf8_decode_escape
+from utils.utils import u, u2
 from utils.date import parse_date
 
 q = db.query
@@ -259,7 +258,7 @@ def _getentries(filename):
     return bibtex.entries
 
 
-def importBibTeX(infile, node=None, creator=None):
+def importBibTeX(infile, node, creator=None):
     if creator:
         logg.info("bibtex import: import started by user '%s'", (creator))
     else:
@@ -270,7 +269,6 @@ def importBibTeX(infile, node=None, creator=None):
     if isinstance(infile, list):
         entries = infile
     else:
-        node = node or Directory(utf8_decode_escape(os.path.basename(infile)))
         try:
             entries = _getentries(infile)
         except:

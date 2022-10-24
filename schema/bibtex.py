@@ -230,54 +230,35 @@ def _bibteximport_customize(record):
     return record
 
 
-def _getentries(filename):
+def getentries(filepath):
+    parser = BibTexParser(common_strings=True)
+    # accept also non standard records like @SCIENCEREPORT
+    parser.ignore_nonstandard_types = False
+    parser.customization = _bibteximport_customize
     # use utf-8-sig instead of utf-8 to get rid of BOM_UTF8, which confuses bibtex parser
     for encoding in ('utf-8-sig', 'utf-16', None):
         try:
-            error = None
-            fi = codecs.open(filename, "r", encoding=encoding)
-            parser = BibTexParser(common_strings=True)
-            # accept also non standard records like @SCIENCEREPORT
-            parser.ignore_nonstandard_types = False
-            parser.customization = _bibteximport_customize
-            bibtex = bibtex_load(fi, parser=parser)
+            with codecs.open(filepath, "r", encoding=encoding) as fi:
+                bibtex = bibtex_load(fi, parser=parser)
+        except UnicodeError as exc:
+            error = exc
+        except Exception as exc:
+            error = exc
+            break
+        else:
             # seems to be the correct encoding, don't try other encodings
-            break
-        except Exception as e:
-            # check if there is a utf-encoding error, then try other encoding
-            if (encoding is 'utf-8-sig' and str(e).lower().find('utf8') >= 0) or \
-                (encoding is 'utf-16' and str(e).lower().find('utf-16') >= 0):
-                continue
-            error = e
-            break
-
-    if error:
-        logg.error("bibtex import: bibtexparser failed: %s", e)
-        raise ValueError("bibtexparser failed")
-
-    return bibtex.entries
+            return bibtex.entries
+    logg.error("bibtex import: bibtexparser failed: %s", error)
+    raise ValueError("bibtex_unspecified_error")
 
 
-def importBibTeX(infile, node, creator=None):
+def importBibTeX(entries, node, creator=None):
     if creator:
-        logg.info("bibtex import: import started by user '%s'", (creator))
+        logg.info("bibtex import: import started by user '%s'", creator)
     else:
         logg.info("bibtex import: starting import (%s)", ustr(sys.argv))
 
     bibtextypes = getbibtexmappings()
-
-    if isinstance(infile, list):
-        entries = infile
-    else:
-        try:
-            entries = _getentries(infile)
-        except:
-            # XXX TODO This reports *everything* as encoding error
-            # XXX TODO (even things like full disk or other parsing errors).
-            # XXX TODO We should at least reformulate the error message,
-            # XXX TODO and -- even better -- only catch errors that are to be expected.
-            logg.exception("bibtex import: getentries failed, import stopped (encoding error)")
-            raise ValueError("bibtex_unspecified_error")
 
     logg.info("bibtex import: %d entries", len(entries))
 

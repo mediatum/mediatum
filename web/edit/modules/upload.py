@@ -29,7 +29,7 @@ import web.edit.edit_common as _web_edit_edit_common
 from web.edit.edit import getTreeLabel
 from web.edit.edit_common import showoperations, searchbox_navlist_height
 from utils.url import build_url_from_path_and_params
-from schema.bibtex import importBibTeX, MissingMapping
+from schema.bibtex import getentries, importBibTeX, MissingMapping
 
 from core import db
 import contenttypes as _contenttypes
@@ -109,7 +109,11 @@ def getContent(req, ids):
                     # bibtex import handler
                     if mimetype[1] == "bibtex" and not req.values['type'] == 'file':
                         try:
-                            importBibTeX(f.abspath, basenode, creator=user.login_name)
+                            importBibTeX(
+                                    getentries(f.abspath),
+                                    basenode,
+                                    creator=user.login_name,
+                                   )
                             newnodes.append(basenode.id)
                             basenodefiles_processed.append(f)
                         except ValueError, e:
@@ -568,7 +572,7 @@ def upload_bibhandler(filename, id):
                 retrieved_file = f.abspath
                 logg.debug('going to call importBibTex(%s), import will be logged to backend!', retrieved_file)
                 importBibTeX(
-                        retrieved_file,
+                        getentries(retrieved_file),
                         _contenttypes.Directory(_utils_utils.utf8_decode_escape(os.path.basename(retrieved_file))),
                         creator=users.user_from_session().login_name,
                        )

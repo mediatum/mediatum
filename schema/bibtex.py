@@ -356,5 +356,3 @@ def importBibTeX(infile, node=None, creator=None):
                 raise ValueError()
 
     logg.debug("bibtex import: finished import")
-
-    return node

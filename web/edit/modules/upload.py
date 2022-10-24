@@ -108,8 +108,8 @@ def getContent(req, ids):
                     # bibtex import handler
                     if mimetype[1] == "bibtex" and not req.values['type'] == 'file':
                         try:
-                            new_node = importBibTeX(f.abspath, basenode, creator=user.login_name)
-                            newnodes.append(new_node.id)
+                            importBibTeX(f.abspath, basenode, creator=user.login_name)
+                            newnodes.append(basenode.id)
                             basenodefiles_processed.append(f)
                         except ValueError, e:
                             errornodes.append((

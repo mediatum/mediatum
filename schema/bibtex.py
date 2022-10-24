@@ -259,17 +259,11 @@ def _getentries(filename):
     return bibtex.entries
 
 
-def importBibTeX(infile, node=None, req=None):
-    user = None
-    if req:
-        try:
-            user = users.user_from_session()
-            msg = "bibtex import: import started by user '%s'" % (user.getName())
-        except:
-            msg = "bibtex import: starting import (unable to identify user)"
+def importBibTeX(infile, node=None, creator=None):
+    if creator:
+        logg.info("bibtex import: import started by user '%s'", (creator))
     else:
-        msg = "bibtex import: starting import (%s)" % ustr(sys.argv)
-    logg.info("%s", msg)
+        logg.info("bibtex import: starting import (%s)", ustr(sys.argv))
 
     bibtextypes = getbibtexmappings()
 
@@ -354,8 +348,8 @@ def importBibTeX(infile, node=None, req=None):
 
             try:
                 node.children.append(doc)
-                if user:
-                    doc.set("creator", user.login_name)
+                if creator is not None:
+                    doc.set("creator", creator)
                 doc.set("creationtime",  unicode(time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
             except Exception as e:
                 logg.exception("bibtex exception")

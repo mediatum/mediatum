@@ -108,7 +108,7 @@ def getContent(req, ids):
                     # bibtex import handler
                     if mimetype[1] == "bibtex" and not req.values['type'] == 'file':
                         try:
-                            new_node = importBibTeX(f.abspath, basenode, req=req)
+                            new_node = importBibTeX(f.abspath, basenode, creator=user.login_name)
                             newnodes.append(new_node.id)
                             basenodefiles_processed.append(f)
                         except ValueError, e:
@@ -566,7 +566,7 @@ def upload_bibhandler(filename, id):
             try:
                 retrieved_file = f.abspath
                 logg.debug('going to call importBibTex(%s), import will be logged to backend!', retrieved_file)
-                importBibTeX(retrieved_file, req=True)
+                importBibTeX(retrieved_file, creator=users.user_from_session().login_name)
                 logg.info('importBibTex(%s) done, import logged to backend!', retrieved_file)
             except ValueError, e:
                 logg.exception('calling importBibTex(%s)', retrieved_file)

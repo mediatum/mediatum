@@ -390,6 +390,9 @@ ELSE
     rec = OLD;
 END IF;
 IF rec.ruletype IN ('read', 'data') THEN
+    IF NOT EXISTS (SELECT FROM node_to_access_rule WHERE nid=rec.nid AND ruletype = rec.ruletype) THEN
+        INSERT INTO node_to_access_rule SELECT * from _inherited_access_rules_read_type(rec.nid, rec.ruletype);
+    END IF;
     FOR c IN SELECT cid, max(distance) AS distance FROM noderelation WHERE nid = rec.nid GROUP BY cid ORDER BY max(distance) LOOP
         -- RAISE DEBUG 'updating access rules for node %', c;
         -- ignore nodes that have their own access rules

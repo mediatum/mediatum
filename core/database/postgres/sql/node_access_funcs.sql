@@ -390,7 +390,7 @@ ELSE
     rec = OLD;
 END IF;
 IF rec.ruletype IN ('read', 'data') THEN
-    FOR c IN SELECT cid FROM noderelation WHERE nid = rec.nid LOOP
+    FOR c IN SELECT cid, max(distance) AS distance FROM noderelation WHERE nid = rec.nid GROUP BY cid ORDER BY max(distance) LOOP
         -- RAISE DEBUG 'updating access rules for node %', c;
         -- ignore nodes that have their own access rules
         IF NOT EXISTS (SELECT FROM node_to_access_rule WHERE nid=c.cid AND ruletype = rec.ruletype AND inherited = false) THEN
@@ -399,7 +399,7 @@ IF rec.ruletype IN ('read', 'data') THEN
         END IF;
     END LOOP;
 ELSE
-    FOR c in SELECT cid FROM noderelation WHERE nid = rec.nid LOOP
+    FOR c IN SELECT cid, max(distance) AS distance FROM noderelation WHERE nid = rec.nid GROUP BY cid ORDER BY max(distance) LOOP
         DELETE FROM node_to_access_rule WHERE nid = c.cid AND inherited = true AND ruletype = rec.ruletype;
         
         INSERT INTO node_to_access_rule 

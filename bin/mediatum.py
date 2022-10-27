@@ -155,4 +155,4 @@ def make_flask_app():
 flask_app = make_flask_app()
 # don't run mediaTUM server when this module is imported, unless FORCE_RUN is set
 if __name__ == "__main__" or hasattr(__builtins__, "FORCE_RUN"):
-    flask_app.run(port=int(config.get("host.port")))
+    flask_app.run()

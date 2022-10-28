@@ -5,7 +5,7 @@
 <tal:block metal:define-macro="editorfield">
     <div style="padding-left:220px;">
         <script tal:content="python:'var startnode = \'{}\';\nvar attrname = \'{}\';\nvar attrfilter = \'{}\';\nvar pre = Object();\npre[\'{}\'] = {};'.format(startnode, name, attrname, name.encode('utf-8'), value.encode('utf-8').split(';'))"/>
-        <script src="/static/js/jquery.optionTreeSort.js"> </script>
+        <script src="/static/js/jquery.optionTree.js"> </script>
         <script src="/static/js/metadata/hlist.js"> </script>
         <div tal:attributes="style python:'width:{}px'.format(width-16)">
             <input type="text" tal:attributes="name python:'{}'.format(name); value python:value" style="display:none;"/>

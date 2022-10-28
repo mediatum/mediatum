@@ -3,6 +3,18 @@
   SPDX-License-Identifier: AGPL-3.0-or-later
 */
 
+function sortOptions(options) {
+    var optionsArray = $(options).toArray().sort(function (a, b) {
+            x = a.innerHTML.toLowerCase();
+            y = b.innerHTML.toLowerCase();
+            return x < y ? -1 : x > y ? 1 : 0;
+        });
+    for (var i = 0; i <= options.length; i++) {
+        options[i] = optionsArray[i];
+    }
+    options[0].selected = true;
+}
+
 $(function() {
     var options = {
         choose: ' ',
@@ -23,5 +35,6 @@ $(function() {
 
     $.getJSON('/metatype/hlist?attrfilter='+attrfilter, {id: startnode}, function(tree) {
         $('input[name='+attrname+']').optionTree(tree, options).change(displayParents);
+        sortOptions($("select[name='"+ attrname + "_']").get(0).options);
     });
 });

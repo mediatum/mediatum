@@ -25,6 +25,8 @@ import time
 from warnings import warn
 from urlparse import parse_qsl, urlsplit, urlunsplit
 from urllib import quote, urlencode
+import xml.sax.saxutils as _xml_sax_saxutils
+
 from contextlib import contextmanager
 
 # import xml.parsers.expat
@@ -44,8 +46,7 @@ def esc2(s):
     return cgi.escape(s.replace(u"\"", u"'"))
 
 
-def desc(s):
-    return s.replace("&amp;", "&").replace("&quot;", "\"").replace("&lt;", "<").replace("&gt;", ">")
+desc = _functools.partial(_xml_sax_saxutils.unescape, entities={'&quot;':'"'})
 
 
 def u(s):

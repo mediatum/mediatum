@@ -14,6 +14,7 @@ from mediatumtal import tal
 import core.translation as _core_translation
 from core import config
 from core import httpstatus
+import core.metatype as _core_metatype
 from core.metatype import Metatype
 
 import re
@@ -29,6 +30,7 @@ class m_htmlmemo(Metatype):
 
     default_settings = dict(
         max_length=None,
+        wysiwyg=False,
     )
 
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
@@ -48,6 +50,7 @@ class m_htmlmemo(Metatype):
                     max_length=field.metatype_data['max_length'] or -1,
                     ident=ustr(field.id),
                     required=1 if required else None,
+                    wysiwyg=field.metatype_data['wysiwyg'],
                    ),
                 macro="editorfield",
                 language=language,
@@ -72,24 +75,40 @@ class m_htmlmemo(Metatype):
     def get_metafieldeditor_html(self, fielddata, metadatatype, language):
         return tal.getTAL(
             "metadata/htmlmemo.html",
-            dict(value=fielddata["max_length"]),
+            dict(value=fielddata["max_length"], wysiwyg=fielddata["wysiwyg"]),
             macro="metafieldeditor",
             language=language,
         )
 
     def parse_metafieldeditor_settings(self, data):
+        assert data.get("wysiwyg") in (None, "1")
         return dict(
             max_length=int(data["max_length"]) if data["max_length"] else None,
+            wysiwyg=bool(data.get("wysiwyg")),
         )
 
     def getPopup(self, req):
-        assert req.values["type"] == "configfile"
-        req.response.set_data(tal.processTAL(
-                dict(lang=_core_translation.set_language(req.accept_languages)),
-                file="metadata/htmlmemo.html",
-                macro="ckconfig",
-                request=req,
-            ))
+        if "type" in req.values:
+            assert req.values["type"] == "configfile"
+            req.response.set_data(tal.processTAL(
+                    dict(lang=_core_translation.set_language(req.accept_languages)),
+                    file="metadata/htmlmemo.html",
+                    macro="ckconfig",
+                    request=req,
+                ))
+        else:
+            req.response.set_data(
+                    tal.processTAL(
+                        dict(
+                            charmap=_core_metatype.charmap,
+                            name=req.params.get("name"),
+                            value=req.params.get("value"),
+                           ),
+                        file="metadata/htmlmemo.html",
+                        macro="popup",
+                        request=req,
+                       )
+                    )
         req.response.status_code = httpstatus.HTTP_OK
         return httpstatus.HTTP_OK
 

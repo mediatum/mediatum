@@ -84,8 +84,11 @@ class WorkflowStep_Defer(WorkflowStep):
 
         field = Metafield("accesstype")
         field.set("label", t(lang, "accesstype"))
-        field.setFieldtype("mlist")
-        field.metatype_data = dict(listelements=("", "read", "write", "data"))
+        field.setFieldtype("list")
+        field.metatype_data = dict(
+            multiple=True,
+            listelements=("", "read", "write", "data"),
+        )
         ret.append(field)
 
         field = Metafield("recipient")
@@ -100,7 +103,7 @@ class WorkflowStep_Defer(WorkflowStep):
 
         field = Metafield("body")
         field.set("label", t(lang, "admin_wfstep_email_text"))
-        field.setFieldtype("memo")
+        field.setFieldtype("htmlmemo")
         ret.append(field)
 
         return ret

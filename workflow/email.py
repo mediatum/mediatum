@@ -200,12 +200,12 @@ class WorkflowStep_SendEmail(WorkflowStep):
 
         field = Metafield("subject")
         field.set("label", _core_translation.t(lang, "admin_wfstep_email_subject"))
-        field.setFieldtype("memo")
+        field.setFieldtype("htmlmemo")
         ret.append(field)
 
         field = Metafield("text")
         field.set("label", _core_translation.t(lang, "admin_wfstep_email_text"))
-        field.setFieldtype("memo")
+        field.setFieldtype("htmlmemo")
         ret.append(field)
 
         field = Metafield("allowedit")

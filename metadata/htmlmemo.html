@@ -2,31 +2,27 @@
   Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
   SPDX-License-Identifier: AGPL-3.0-or-later
 -->
-<div tal:attributes="id python:'div_'+lang+'__'+name" style="float:left;">
-  <textarea
-      class="htmlmemo_text"
-      rows="4"
-      tal:attributes="required required disabled python:{0:None,1:'disabled'}[lock]; name python:lang+'__'+name; id python:lang+'__'+name; onkeyup python:'countMeta(this,{})'.format(max_length);style python:'width:'+str(width-20)+'px';"
-      tal:content="python:value"
-     />
-</div>
-
 <tal:block metal:define-macro="editorfield">
+    <style type="text/css">
+        div.grippie{background:#EEEEEE url(/img/grippie.png) no-repeat scroll center 2px; cursor:s-resize; height:9px; width:100%; margin-bottom:10px !important; padding:0px;}
+        .surr{float:left; margin:0px; padding:0px; display:inline;}
+        div .resizable-textarea{overflow:hidden;position:relative;}
+        textarea.memo_text{margin-bottom:0px !important;}
+    </style>
 
     <!-- for mask editor html memo -->
     <script type="text/javascript" language="javascript" src="/js/jquery-1.12.4.js"> </script>
     <script type="text/javascript" language="javascript" src="/js/jquery.textarearesizer.js"> </script>
     <script type="text/javascript" src="/ckeditor/ckeditor.js"> </script>
 
-    <div>
-        <div style="float:left;position:relative;">
-          <textarea
-              rows="4"
-              tal:attributes="required required; disabled python:{0:None,1:'disabled'}[lock]; name python:u'{}'.format(name); id python:u'{}'.format(name); onkeyup python:'countMeta(this,{})'.format(max_length);style python:u'width:{}px'.format(width-20)"
-              tal:content="python:value"
-            />
-        </div>
-    </div>
+    <tal:block tal:condition="python:wysiwyg">
+      <div style="float:left;position:relative;">
+        <textarea
+            rows="4"
+            tal:attributes="required required; disabled python:{0:None,1:'disabled'}[lock]; name python:u'{}'.format(name); id python:u'{}'.format(name); onkeyup python:'countMeta(this,{})'.format(max_length);style python:u'width:{}px'.format(width-20)"
+            tal:content="python:value"
+          />
+      </div>
 
     <span tal:content="raw python:'<script> var _editor = \''+name+'\';var editor = CKEDITOR.replace(_editor, {customConfig: \'/metatype/htmlmemo?type=configfile\',});editor.on(\'required\', function(evt){alert(\'Please fill out the htmlmemo field.\');evt.cancel();});</script>'" />
 
@@ -38,7 +34,30 @@
             </small>
         </div>
     </div>
-   
+    </tal:block>
+
+    <tal:block tal:condition="python:not wysiwyg">
+      <div style="float:left;position:relative;">
+        <div class="surr">
+          <textarea
+              class="memo_text"
+              rows="4"
+              tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; name python:u'{}'.format(name); id python:u'{}'.format(name); onkeyup python:'countMeta(this,{})'.format(max_length);style python:u'width:{}px'.format(width-20); required required"
+              tal:content="python:value"
+            />
+        </div>
+        <button
+            name="button"
+            tal:attributes="onclick python:u'openPopup(\'/metatype/htmlmemo?name={}\', \'\', 550, 600)'.format(name)"
+            style="margin-left:5px;horizontal-align:middle;min-width:20px;width:20px;padding:4px 4px"
+            type="button"
+            i18n:attributes="title memo_titlepopupbutton"
+           >
+          <img src="/img/edit_spc.png" style="height:14px;"/>
+        </button>
+      </div>
+    </tal:block>
+
     <span tal:condition="python:lock!=0" tal:attributes="id python:u'lockspan_{}'.format(name)">&nbsp;
         <input tal:attributes="name python:u'lock_{}'.format(name); id python:u'lock_{}'.format(name); onclick python:u'handlelock(\'{}\')'.format(name)" type="checkbox"/>
         <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
@@ -75,7 +94,181 @@ CKEDITOR.editorConfig = function( config ){
 </tal:block>
 
 <tal:block metal:define-macro="metafieldeditor">
+    <div class="label" i18n:translate="htmlmemo_wysiwyg"/>
+    <input type="checkbox" name="fieldsetting_wysiwyg" value="1" tal:attributes="checked python:'checked' if wysiwyg else None" />
+    <br />
+    <br />
     <div class="label" i18n:translate="mask_edit_max_length">TEXT</div>
     <input tal:attributes="value value" type="text" name="fieldsetting_max_length" rows="4" style="width:250px"/><br/>
 
+</tal:block>
+
+<tal:block metal:define-macro="popup">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta content="text/html;charset=UTF-8" http-equiv="content-type">
+        <title i18n:translate="memo_popup_title"> </title>
+        <script type="text/javascript">
+            function detail(value, title){
+                o = document.getElementById("spcvalue");
+                o.innerHTML = String.fromCharCode(value)
+                o = document.getElementById("spcname");
+                o.innerHTML = title;
+            }
+
+            function setFormated(obj){
+                o = document.getElementById("formatedvalue");
+                o.innerHTML = obj.value;
+            }
+
+            function insert(aTag, eTag) {
+                if (eTag==''){
+                    aTag = String.fromCharCode(aTag);
+                }
+                var input = document.getElementById("value");
+                input.focus();
+                if(typeof document.selection != 'undefined') {
+                    var range = document.selection.createRange();
+                    var insText = range.text;
+                    range.text = aTag + insText + eTag;
+                    range = document.selection.createRange();
+                    if (insText.length == 0) {
+                        range.move('character', -eTag.length);
+                    } else {
+                        range.moveStart('character', aTag.length + insText.length + eTag.length);
+                    }
+                    range.select();
+                }
+                else if(typeof input.selectionStart != 'undefined')
+                {
+                    var start = input.selectionStart;
+                    var end = input.selectionEnd;
+                    var insText = input.value.substring(start, end);
+                    input.value = input.value.substr(0, start) + aTag + insText + eTag + input.value.substr(end);
+
+                    var pos;
+                    if (insText.length == 0) {
+                        pos = start + aTag.length;
+                    } else {
+                        pos = start + aTag.length + insText.length + eTag.length;
+                    }
+                    input.selectionStart = pos;
+                    input.selectionEnd = pos;
+                }
+                else
+                {
+                    var pos;
+                    var re = new RegExp('^[0-9]{0,3}$');
+                    while(!re.test(pos)) {
+                        pos = prompt("insert at (0.." + input.value.length + "):", "0");
+                    }
+                    if(pos > input.value.length) {
+                        pos = input.value.length;
+                    }
+                    var insText = prompt("insert text to format:");
+                    input.value = input.value.substr(0, pos) + aTag + insText + eTag + input.value.substr(pos);
+                }
+                setFormated(input);
+            }
+
+            function init(name){
+                o = document.getElementById('value');
+                if (window.opener && !window.opener.closed){
+                    o.value = window.opener.document.getElementById(name).value;
+                }
+                o.focus();
+                setFormated(o);
+            }
+
+            function save(value){
+                if (window.opener && !window.opener.closed){
+                    window.opener.document.getElementById(value).value=document.getElementById('value').value;
+                }
+                window.close();
+            }
+        </script>
+
+        <style>
+            body{font-size:12px;margin:5px;font-family:arial;background:#fff url(/img/layout/edit_body.jpg) repeat-x scroll left top}
+            #items{width:20px;height:20px;border:1px solid silver;text-align:center;margin:1px;padding:0px;cursor:hand;font-size: 9px}
+            #style{margin:0px;padding:0px;border:1px solid silver;cursor:hand}
+            #value{border:1px solid silver;width:400px;height:100px;font-family:arial}
+            #spcvalue{width:80px;height:80px;border:1px solid silver;float:right;margin:1px;padding-top:20px;font-size: 50px;text-align:center;background-color:#fff}
+            #spcname{width:80px;height:80px;float:right}
+            #formatedvalue{width:405px;height:100px;display:block;font-size:14px;border:1px solid silver;float:left;overflow:scroll}
+            #spccontainer{width:450px;height:313px;border:1px solid silver;display:block;padding:2px 1px 1px 2px;float:left;background-color:#fff;margin-top:1px}
+            #buttons{float:right;margin-top:14px;backgrond-color:#fff}
+            #style:hover, #items:hover{ border:1px solid black}
+        </style>
+    </head>
+
+    <body tal:attributes="onload python:u'init(\'{}\')'.format(name)">
+        <form>
+            <div>
+                <div id="buttons">
+                    <button
+                        i18n:attributes="title memo_bold_title"
+                        type="button"
+                        id="style" onclick="insert('<b>','</b>')"
+                       >
+                      <img src="/img/bold.gif" alt="bold"/>
+                    </button>
+                    <button
+                        i18n:attributes="title memo_italic_title"
+                        type="button"
+                        id="style" onclick="insert('<em>','</em>')"
+                       >
+                      <img src="/img/italic.gif" alt="italic"/>
+                    </button>
+                    <button
+                        i18n:attributes="title memo_sub_title"
+                        type="button"
+                        id="style" onclick="insert('<sub>','</sub>')"
+                       >
+                      <img src="/img/subscript.gif" alt="subscript"/>
+                    </button>
+                    <button
+                        i18n:attributes="title memo_sup_title"
+                        type="button"
+                        id="style" onclick="insert('<sup>','</sup>')"
+                       >
+                      <img src="/img/superscript.gif" alt="superscript"/>
+                    </button>
+                </div>
+                <span i18n:translate="memo_valuelabel"/><br/><textarea
+                    name="value"
+                    id="value"
+                    rows="4"
+                    onkeyup="setFormated(this)"
+                    > </textarea>
+            </div>
+
+            <div>
+                <span i18n:translate="memo_formatedvalue"/><br/>
+                <div id="formatedvalue"> </div>
+                <div style="float:right;text-align:right">
+                  <button
+                    type="button"
+                    tal:attributes="onclick python:u'save(\'{}\')'.format(name)"
+                    i18n:translate="memo_done"
+                    > </button><br/><br/>
+                    <button type="button" onclick="window.close()" i18n:translate="memo_cancel"> </button>
+                </div>
+            </div>
+            <div style="clear:both" i18n:translate="memo_spcchar"> </div>
+            <div id="spccontainer">
+                <button
+                    tal:repeat="item charmap"
+                    type="button"
+                    id="items"
+                    tal:content="raw python:item[0]"
+                    tal:attributes="title python:item[2]; value python:item[1]; onmouseover python:u'detail({},\'\')'.format(item[1], item[2]); onclick python:u'insert(\'{}\',\'\')'.format(item[1])"/>
+            </div>
+            <div id="spcvalue"> </div>
+            <div id="spcname"> </div>
+        </form>
+    </body>
+</html>
 </tal:block>

@@ -71,23 +71,23 @@ class m_mappingfield(Metatype):
             ns = field.getMapping().getNamespace()
             if ns != "":
                 ns += ":"
-            format = field.getExportFormat()
+            fmt = field.getExportFormat()
             field_value = ns + field.getName()
         else:
-            format = field.get("mappingfield")
+            fmt = field.get("mappingfield")
             field_value = field.getName()
-        format = esc(format)
-        for var in re.findall(r'\[(.+?)\]', format):
+        fmt = esc(fmt)
+        for var in re.findall(r'\[(.+?)\]', fmt):
             if var.startswith("att:"):
-                format = format.replace("[" + var + "]", '<i>{attribute:' + var[4:] + '}</i>')
+                fmt = fmt.replace("[" + var + "]", '<i>{attribute:' + var[4:] + '}</i>')
             elif var == "field":
-                format = format.replace("[field]", field_value)
+                fmt = fmt.replace("[field]", field_value)
             elif var == "value":
-                format = format.replace("[value]", '<i>{' + value + '}</i>')
+                fmt = fmt.replace("[value]", '<i>{' + value + '}</i>')
             elif var == "ns":
-                format = format.replace("[value]", '<i>{namspaces}</i>')
-        format = format.replace("\\t", "")
-        return format
+                fmt = fmt.replace("[value]", '<i>{namspaces}</i>')
+        fmt = fmt.replace("\\t", "")
+        return fmt
 
     def getFormHTML(self, field, nodes, req):
         return '<b><mappingFormHTML></b><br/>'
@@ -116,7 +116,7 @@ class m_mappingfield(Metatype):
             return oriString    # syntax error; don't do anything
         return oriString.replace(m.groups()[0], m.groups()[1])
 
-    def replaceVars(self, s, node, attrnode=None, field_value="", options=[], mask=None, raw=0, default=""):
+    def _replace_vars(self, s, node, attrnode, field_value="", options=[], mask=None, default=""):
         # if attrnode and node:
         for var in re.findall(r'\[(.+?)\]', s):
             if var.startswith("att:field|replacestring"):
@@ -154,12 +154,9 @@ class m_mappingfield(Metatype):
 
             elif var == "value":
                 v = getMetadataType(attrnode.getFieldtype()).getFormattedValue(attrnode, None, None, node, "")[1]
-                if v == "":
-                    v = node.get(attrnode.getName())
-                if v == "" and default != "":
-                    v = default
+                v = v or node.get(attrnode.getName()) or default
                 if "t" in options and not v.isdigit():
-                    v = '"' + v + '"'
+                    v = u'"{}"'.format(v)
                 s = s.replace("[value]", v)
 
             elif var == "ns":
@@ -172,8 +169,6 @@ class m_mappingfield(Metatype):
 
             for ext in self.extensions:
                 s = ext.func(s, var, node, attrnode)
-        if raw == 1:
-            return s
 
         ret = ""
         for i in range(0, len(s)):
@@ -184,9 +179,7 @@ class m_mappingfield(Metatype):
                     ret += "\n"
                 elif s[i] == 't':
                     ret += "\t"
-            elif s[i] == '\\':
-                pass
-            else:
+            elif s[i] != '\\':
                 ret += s[i]
         return desc(ret)
 
@@ -230,25 +223,21 @@ class m_mappingfield(Metatype):
                 if ns != "":
                     ns += ":"
                 fld = q(Node).get(field.get("mappingfield"))
-                format = fld.getExportFormat()
+                fmt = fld.getExportFormat()
                 field_value = ns + fld.getName()
                 default = fld.getDefault().strip()
             else:  # attributes of node
-                format = field.get("mappingfield")
+                fmt = field.get("mappingfield")
                 field_value = ""
                 default = ""
 
-            field_vals.append(self.replaceVars(format, node, attrnode, field_value, options=mask.getExportOptions(), mask=mask, default=default))
+            field_vals.append(self._replace_vars(fmt, node, attrnode, field_value, mask.getExportOptions(),
+                                                                                                 mask, default))
 
-        if not mask.hasExportOption("l"):
-            ret += separator.join(field_vals)
-        else:
-            ret += u"".join(field_vals)
+        ret += (u"" if mask.hasExportOption("l") else separator).join(field_vals)
 
         mapping_footer = mask.getMappingFooter()
         if mapping_footer:
             ret += "\r\n" + mapping_footer
 
-        ret = modify_tex(ret, 'strip')
-
-        return self.replaceVars(ret, node, mask)
+        return self._replace_vars(modify_tex(ret, 'strip'), node, mask)

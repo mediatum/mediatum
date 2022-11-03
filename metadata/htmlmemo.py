@@ -47,7 +47,7 @@ class m_htmlmemo(Metatype):
                     value=value,
                     width=width,
                     name=field_node_name,
-                    max_length=field.metatype_data['max_length'] or -1,
+                    max_length=field.metatype_data['max_length'],
                     ident=ustr(field.id),
                     required=1 if required else None,
                     wysiwyg=field.metatype_data['wysiwyg'],
@@ -82,6 +82,7 @@ class m_htmlmemo(Metatype):
 
     def parse_metafieldeditor_settings(self, data):
         assert data.get("wysiwyg") in (None, "1")
+        assert not data["max_length"] or int(data["max_length"]) >= 0
         return dict(
             max_length=int(data["max_length"]) if data["max_length"] else None,
             wysiwyg=bool(data.get("wysiwyg")),

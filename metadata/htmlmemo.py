@@ -115,13 +115,21 @@ class m_htmlmemo(Metatype):
 
     translation_labels = dict(
         de=dict(
-            editor_memo_label=u"Zeichen übrig",
+            editor_htmlmemo_label=u"Zeichen übrig",
             mask_edit_max_length=u"Maximallänge",
             fieldtype_htmlmemo="HTML Memofeld",
             fieldtype_htmlmemo_desc=u"Memofeld mit HTML Markup",
             htmlmemo_titlepopupbutton=u"Editiermaske öffnen",
             htmlmemo_popup_title=u"Eingabemaske für HTML formatierte Texte",
             htmlmemo_valuelabel="Wert:",
+            htmlmemo_formatedvalue="Formatierter Wert:",
+            htmlmemo_done=u"Übernehmen",
+            htmlmemo_cancel="Abbrechen",
+            htmlmemo_spcchar="Sonderzeichen:",
+            htmlmemo_bold_title="Markierten Text 'Fett' setzen",
+            htmlmemo_italic_title="Markierten Text 'Kursiv' setzen",
+            htmlmemo_sub_title="Markierten Text 'tiefstellen'",
+            htmlmemo_sup_title="Markierten Text 'hochstellen'",
         ),
         en=dict(
             editor_htmlmemo_label="characters remaining",
@@ -131,5 +139,13 @@ class m_htmlmemo(Metatype):
             htmlmemo_titlepopupbutton="open editor mask",
             htmlmemo_popup_title="Editor mask for HTML formatted text",
             htmlmemo_valuelabel="Value:",
+            htmlmemo_formatedvalue="Formated Value:",
+            htmlmemo_done="Done",
+            htmlmemo_cancel="Cancel",
+            htmlmemo_spcchar="Special chars:",
+            htmlmemo_bold_title="set marked text 'bold'",
+            htmlmemo_italic_title="set marked text 'italic'",
+            htmlmemo_sub_title="set marked text 'subscript'",
+            htmlmemo_sup_title="set marked text 'superscript'",
         ),
     )

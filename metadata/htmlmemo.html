@@ -51,7 +51,7 @@
             tal:attributes="onclick python:u'openPopup(\'/metatype/htmlmemo?name={}\', \'\', 550, 600)'.format(name)"
             style="margin-left:5px;horizontal-align:middle;min-width:20px;width:20px;padding:4px 4px"
             type="button"
-            i18n:attributes="title memo_titlepopupbutton"
+            i18n:attributes="title htmlmemo_titlepopupbutton"
            >
           <img src="/img/edit_spc.png" style="height:14px;"/>
         </button>
@@ -109,7 +109,7 @@ CKEDITOR.editorConfig = function( config ){
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <meta content="text/html;charset=UTF-8" http-equiv="content-type">
-        <title i18n:translate="memo_popup_title"> </title>
+        <title i18n:translate="htmlmemo_popup_title"> </title>
         <script type="text/javascript">
             function detail(value, title){
                 o = document.getElementById("spcvalue");
@@ -209,35 +209,35 @@ CKEDITOR.editorConfig = function( config ){
             <div>
                 <div id="buttons">
                     <button
-                        i18n:attributes="title memo_bold_title"
+                        i18n:attributes="title htmlmemo_bold_title"
                         type="button"
                         id="style" onclick="insert('<b>','</b>')"
                        >
                       <img src="/img/bold.gif" alt="bold"/>
                     </button>
                     <button
-                        i18n:attributes="title memo_italic_title"
+                        i18n:attributes="title htmlmemo_italic_title"
                         type="button"
                         id="style" onclick="insert('<em>','</em>')"
                        >
                       <img src="/img/italic.gif" alt="italic"/>
                     </button>
                     <button
-                        i18n:attributes="title memo_sub_title"
+                        i18n:attributes="title htmlmemo_sub_title"
                         type="button"
                         id="style" onclick="insert('<sub>','</sub>')"
                        >
                       <img src="/img/subscript.gif" alt="subscript"/>
                     </button>
                     <button
-                        i18n:attributes="title memo_sup_title"
+                        i18n:attributes="title htmlmemo_sup_title"
                         type="button"
                         id="style" onclick="insert('<sup>','</sup>')"
                        >
                       <img src="/img/superscript.gif" alt="superscript"/>
                     </button>
                 </div>
-                <span i18n:translate="memo_valuelabel"/><br/><textarea
+                <span i18n:translate="htmlmemo_valuelabel"/><br/><textarea
                     name="value"
                     id="value"
                     rows="4"
@@ -246,18 +246,18 @@ CKEDITOR.editorConfig = function( config ){
             </div>
 
             <div>
-                <span i18n:translate="memo_formatedvalue"/><br/>
+                <span i18n:translate="htmlmemo_formatedvalue"/><br/>
                 <div id="formatedvalue"> </div>
                 <div style="float:right;text-align:right">
                   <button
                     type="button"
                     tal:attributes="onclick python:u'save(\'{}\')'.format(name)"
-                    i18n:translate="memo_done"
+                    i18n:translate="htmlmemo_done"
                     > </button><br/><br/>
-                    <button type="button" onclick="window.close()" i18n:translate="memo_cancel"> </button>
+                    <button type="button" onclick="window.close()" i18n:translate="htmlmemo_cancel"> </button>
                 </div>
             </div>
-            <div style="clear:both" i18n:translate="memo_spcchar"> </div>
+            <div style="clear:both" i18n:translate="htmlmemo_spcchar"> </div>
             <div id="spccontainer">
                 <button
                     tal:repeat="item charmap"

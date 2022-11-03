@@ -8,8 +8,11 @@ import re
 import os
 import inspect
 import codecs
+import functools as _functools
 import logging
+import urlparse as _urlparse
 
+import flask as _flask
 from mediatumtal import tal
 import core.config as config
 
@@ -263,6 +266,7 @@ def handleCommand(cmd, var, s, node, attrnode=None, field_value="", options=[], 
         context['node'] = node
         context['build_filelist'] = build_filelist
         context['get_transfer_url'] = get_transfer_url
+        context['host_url_join'] = _functools.partial(_urlparse.urljoin, _flask.request.host_url)
         result = runTALSnippet(s, context, mask)
 
         return result.replace("[" + var + "]", "")

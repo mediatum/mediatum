@@ -640,18 +640,20 @@ CREATE OR REPLACE FUNCTION on_node_to_access_ruleset_delete()
     VOLATILE
 AS $f$
 BEGIN
-    DELETE FROM node_to_access_rule
-    WHERE nid=OLD.nid
+    DELETE FROM node_to_access_rule WHERE
+        nid=OLD.nid
     AND ruletype=OLD.ruletype
-    AND (rule_id, invert, blocking)
-        NOT IN (SELECT arr.rule_id, na.invert != arr.invert, na.blocking OR arr.blocking
-                    FROM access_ruleset_to_rule AS arr
-                    JOIN node_to_access_ruleset AS na ON arr.ruleset_name=na.ruleset_name
-                    WHERE na.nid=OLD.nid AND na.ruletype=OLD.ruletype);
+    AND (rule_id, invert, blocking) NOT IN (
+        SELECT arr.rule_id, na.invert != arr.invert, na.blocking OR arr.blocking
+        FROM access_ruleset_to_rule AS arr
+        JOIN node_to_access_ruleset AS na ON arr.ruleset_name=na.ruleset_name
+        WHERE na.nid=OLD.nid AND na.ruletype=OLD.ruletype
+       );
 
-    IF OLD.ruletype IN ('read', 'data') 
+    IF OLD.ruletype IN ('read', 'data')
         AND NOT EXISTS (SELECT FROM node_to_access_ruleset WHERE nid=OLD.nid AND ruletype=OLD.ruletype)
-        AND NOT EXISTS (SELECT FROM node_to_access_rule WHERE nid=OLD.nid AND ruletype=OLD.ruletype) THEN
+        AND NOT EXISTS (SELECT FROM node_to_access_rule WHERE nid=OLD.nid AND ruletype=OLD.ruletype)
+    THEN
         -- inherit from parents if no rules and rulesets are present for the node anymore
         INSERT INTO node_to_access_rule SELECT * FROM _inherited_access_rules_read_type(OLD.nid, OLD.ruletype);
     END IF;

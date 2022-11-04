@@ -643,11 +643,11 @@ BEGIN
     DELETE FROM node_to_access_rule
     WHERE nid=OLD.nid
     AND ruletype=OLD.ruletype
-    AND (nid, rule_id, ruletype, invert, false, blocking) 
-        NOT IN (SELECT na.nid, arr.rule_id, na.ruletype, na.invert != arr.invert, false, na.blocking OR arr.blocking
-                    FROM access_ruleset_to_rule arr
-                    JOIN node_to_access_ruleset na ON arr.ruleset_name=na.ruleset_name
-                    WHERE na.nid=OLD.nid);
+    AND (rule_id, invert, blocking)
+        NOT IN (SELECT arr.rule_id, na.invert != arr.invert, na.blocking OR arr.blocking
+                    FROM access_ruleset_to_rule AS arr
+                    JOIN node_to_access_ruleset AS na ON arr.ruleset_name=na.ruleset_name
+                    WHERE na.nid=OLD.nid AND na.ruletype=OLD.ruletype);
 
     IF OLD.ruletype IN ('read', 'data') 
         AND NOT EXISTS (SELECT FROM node_to_access_ruleset WHERE nid=OLD.nid AND ruletype=OLD.ruletype)

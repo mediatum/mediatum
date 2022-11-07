@@ -20,6 +20,7 @@ import backports.functools_lru_cache as _backports_functools_lru_cache
 
 import core.config as config
 import core.httpstatus as _httpstatus
+import utils.utils as _utils_utils
 from . import oaisets
 import utils.date as date
 from schema.schema import getMetaType
@@ -229,8 +230,7 @@ def _make_record_element(node, metadataformat, mask=None):
     if mask:
         html_tree = mask.getViewHTML([node], flags=8).replace('lang=""', 'lang="unknown"')
         if html_tree:
-            html_tree = _lxml_etree.fromstring(html_tree.encode("utf-8"))
-            metadata.append(html_tree)
+            metadata.append(_lxml_etree.fromstring(_utils_utils.xml_remove_illegal_chars(html_tree).encode("utf-8")))
             return record
 
     _lxml_etree.SubElement(metadata, "recordHasNoXMLRepresentation")

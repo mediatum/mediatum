@@ -31,9 +31,8 @@ import bibtexparser.customization
 from core import db, Node
 from .schema import Metadatatype
 import core.users as users
-from contenttypes import Directory
 from contenttypes.document import Document
-from utils.utils import u, u2, utf8_decode_escape
+from utils.utils import u, u2
 from utils.date import parse_date
 
 q = db.query
@@ -231,61 +230,35 @@ def _bibteximport_customize(record):
     return record
 
 
-def _getentries(filename):
+def getentries(filepath):
+    parser = BibTexParser(common_strings=True)
+    # accept also non standard records like @SCIENCEREPORT
+    parser.ignore_nonstandard_types = False
+    parser.customization = _bibteximport_customize
     # use utf-8-sig instead of utf-8 to get rid of BOM_UTF8, which confuses bibtex parser
     for encoding in ('utf-8-sig', 'utf-16', None):
         try:
-            error = None
-            fi = codecs.open(filename, "r", encoding=encoding)
-            parser = BibTexParser(common_strings=True)
-            # accept also non standard records like @SCIENCEREPORT
-            parser.ignore_nonstandard_types = False
-            parser.customization = _bibteximport_customize
-            bibtex = bibtex_load(fi, parser=parser)
+            with codecs.open(filepath, "r", encoding=encoding) as fi:
+                bibtex = bibtex_load(fi, parser=parser)
+        except UnicodeError as exc:
+            error = exc
+        except Exception as exc:
+            error = exc
+            break
+        else:
             # seems to be the correct encoding, don't try other encodings
-            break
-        except Exception as e:
-            # check if there is a utf-encoding error, then try other encoding
-            if (encoding is 'utf-8-sig' and str(e).lower().find('utf8') >= 0) or \
-                (encoding is 'utf-16' and str(e).lower().find('utf-16') >= 0):
-                continue
-            error = e
-            break
-
-    if error:
-        logg.error("bibtex import: bibtexparser failed: %s", e)
-        raise ValueError("bibtexparser failed")
-
-    return bibtex.entries
+            return bibtex.entries
+    logg.error("bibtex import: bibtexparser failed: %s", error)
+    raise ValueError("bibtex_unspecified_error")
 
 
-def importBibTeX(infile, node=None, req=None):
-    user = None
-    if req:
-        try:
-            user = users.user_from_session()
-            msg = "bibtex import: import started by user '%s'" % (user.getName())
-        except:
-            msg = "bibtex import: starting import (unable to identify user)"
+def importBibTeX(entries, node, creator=None):
+    if creator:
+        logg.info("bibtex import: import started by user '%s'", creator)
     else:
-        msg = "bibtex import: starting import (%s)" % ustr(sys.argv)
-    logg.info("%s", msg)
+        logg.info("bibtex import: starting import (%s)", ustr(sys.argv))
 
     bibtextypes = getbibtexmappings()
-
-    if isinstance(infile, list):
-        entries = infile
-    else:
-        node = node or Directory(utf8_decode_escape(os.path.basename(infile)))
-        try:
-            entries = _getentries(infile)
-        except:
-            # XXX TODO This reports *everything* as encoding error
-            # XXX TODO (even things like full disk or other parsing errors).
-            # XXX TODO We should at least reformulate the error message,
-            # XXX TODO and -- even better -- only catch errors that are to be expected.
-            logg.exception("bibtex import: getentries failed, import stopped (encoding error)")
-            raise ValueError("bibtex_unspecified_error")
 
     logg.info("bibtex import: %d entries", len(entries))
 
@@ -354,13 +327,11 @@ def importBibTeX(infile, node=None, req=None):
 
             try:
                 node.children.append(doc)
-                if user:
-                    doc.set("creator", user.login_name)
+                if creator is not None:
+                    doc.set("creator", creator)
                 doc.set("creationtime",  unicode(time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
             except Exception as e:
                 logg.exception("bibtex exception")
                 raise ValueError()
 
     logg.debug("bibtex import: finished import")
-
-    return node

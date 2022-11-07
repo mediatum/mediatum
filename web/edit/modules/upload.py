@@ -29,9 +29,10 @@ import web.edit.edit_common as _web_edit_edit_common
 from web.edit.edit import getTreeLabel
 from web.edit.edit_common import showoperations, searchbox_navlist_height
 from utils.url import build_url_from_path_and_params
-from schema.bibtex import importBibTeX, MissingMapping
+from schema.bibtex import getentries, importBibTeX, MissingMapping
 
 from core import db
+import contenttypes as _contenttypes
 from contenttypes import Data
 from core import Node
 from schema.schema import Metadatatype, get_permitted_schemas, get_permitted_schemas_for_datatype
@@ -108,8 +109,12 @@ def getContent(req, ids):
                     # bibtex import handler
                     if mimetype[1] == "bibtex" and not req.values['type'] == 'file':
                         try:
-                            new_node = importBibTeX(f.abspath, basenode, req=req)
-                            newnodes.append(new_node.id)
+                            importBibTeX(
+                                    getentries(f.abspath),
+                                    basenode,
+                                    creator=user.login_name,
+                                   )
+                            newnodes.append(basenode.id)
                             basenodefiles_processed.append(f)
                         except ValueError, e:
                             errornodes.append((
@@ -566,7 +571,11 @@ def upload_bibhandler(filename, id):
             try:
                 retrieved_file = f.abspath
                 logg.debug('going to call importBibTex(%s), import will be logged to backend!', retrieved_file)
-                importBibTeX(retrieved_file, req=True)
+                importBibTeX(
+                        getentries(retrieved_file),
+                        _contenttypes.Directory(_utils_utils.utf8_decode_escape(os.path.basename(retrieved_file))),
+                        creator=users.user_from_session().login_name,
+                       )
                 logg.info('importBibTex(%s) done, import logged to backend!', retrieved_file)
             except ValueError, e:
                 logg.exception('calling importBibTex(%s)', retrieved_file)

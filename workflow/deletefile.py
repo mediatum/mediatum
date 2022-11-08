@@ -20,41 +20,46 @@ def register():
 
 class WorkflowStep_DeleteFile(WorkflowStep):
 
+    default_settings = dict(
+        filetype=(),
+    )
+
     def runAction(self, node, op=""):
-        if self.get('filetype') == '*':  # delete all files
+        if not self.settings['filetype']:  # delete all files
             for f in node.files:
                 node.files.remove(f)
 
-        elif self.get('filetype') != '':
-            types = self.get('filetype').split(';')
+        else:
             for f in node.files:
-                if f.filetype in types:
+                if f.filetype in self.settings['filetype']:
                     node.files.remove(f)
         self.forward(node, True)
         db.session.commit()
 
     def admin_settings_get_html_form(self, req):
         return _tal.processTAL(
-            dict(filetype=self.get('filetype'),),
+            self.settings,
             file="workflow/deletefile.html",
             macro="workflow_step_type_config",
             request=req,
            )
 
     def admin_settings_save_form_data(self, data):
-        assert set(data)=={"filetype"}
-        self.set('filetype', data['filetype'])
+        data = data.to_dict()
+        data["filetype"] = filter(None, (s.strip() for s in data["filetype"].split("\r\n")))
+        assert tuple(data) == ("filetype",)
+        self.settings = data
         db.session.commit()
 
 def getLabels(key=None, lang=None):
     return {"de":
             [
                 ("workflowstep-deletefile", "Datei entfernen"),
-                ("admin_wfstep_deletefiletype", "Dateityp"),
+                ("admin_wfstep_deletefiletype", "Dateityp (Leere Liste bedeutet alle Dateitypen"),
             ],
             "en":
             [
                 ("workflowstep-deletefile", "Remove file"),
-                ("admin_wfstep_deletefiletype", "File type"),
+                ("admin_wfstep_deletefiletype", "File type (empty list means all filetypes"),
             ]
             }

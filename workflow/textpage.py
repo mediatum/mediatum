@@ -29,6 +29,10 @@ class WorkflowStep_TextPage(WorkflowStep):
             otherwise forward will be performed automatically by system
     """
 
+    default_settings = dict(
+        htmltext="",
+    )
+
     def runAction(self, node, op=""):
         pass
 
@@ -47,7 +51,7 @@ class WorkflowStep_TextPage(WorkflowStep):
         else:
             buttons = self.tableRowButtons(node)
         return _tal.processTAL(
-                dict(text=self.get("text"), buttons=buttons, csrf=_core_csrfform.get_token()),
+                dict(htmltext=self.settings["htmltext"], buttons=buttons, csrf=_core_csrfform.get_token()),
                 file="workflow/textpage.html",
                 macro="textpage_show_node",
                 request=req,
@@ -55,15 +59,17 @@ class WorkflowStep_TextPage(WorkflowStep):
 
     def admin_settings_get_html_form(self, req):
         return _tal.processTAL(
-            dict(text=self.get('text'),),
+            self.settings,
             file="workflow/textpage.html",
             macro="workflow_step_type_config",
             request=req,
            )
 
     def admin_settings_save_form_data(self, data):
-        assert set(data)=={"text"}
-        self.set('text', data['text'])
+        data = data.to_dict()
+        data.setdefault("htmltext", "")
+        assert tuple(data) == ("htmltext",)
+        self.settings = data
         _db.session.commit()
 
     @staticmethod

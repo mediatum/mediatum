@@ -201,6 +201,7 @@ def validate(req, op):
                     name=req.values["nname"],
                 )
             workflow.addStep(wnode)
+            wnode.settings = wnode.default_settings
 
         elif req.values["form_op"] == "save_editdetail":
             # update workflowstep
@@ -242,6 +243,14 @@ def validate(req, op):
                     typ=req.values["ntype"],
                     **labeltexts
                 )
+            # we know that this must be a POST request,
+            # so that files can be transported
+            assert not set(req.files).intersection(set(req.form))
+            stepsetting = "stepsetting_"
+            stepsettings = {k[len(stepsetting):]:v for k,v in req.form.lists() if k.startswith(stepsetting)}
+            stepsettings.update({k[len(stepsetting):]:v for k,v in req.files.lists() if k.startswith(stepsetting)})
+            stepsettings = _datastructures.ImmutableMultiDict(stepsettings)
+            wnode.admin_settings_save_form_data(stepsettings)
         else:
             raise AssertionError("invalid form_op")
 
@@ -251,15 +260,6 @@ def validate(req, op):
             _update_nodetoaccessruleset_associations(wnode, req.values, ruletype)
 
         db.session.commit()
-
-        # we know that this must be a POST request,
-        # so that files can be transported
-        assert not set(req.files).intersection(set(req.form))
-        stepsetting = "stepsetting_"
-        stepsettings = {k[len(stepsetting):]:v for k,v in req.form.lists() if k.startswith(stepsetting)}
-        stepsettings.update({k[len(stepsetting):]:v for k,v in req.files.lists() if k.startswith(stepsetting)})
-        stepsettings = _datastructures.ImmutableMultiDict(stepsettings)
-        wnode.admin_settings_save_form_data(stepsettings)
 
     return _get_workflow_step_list_html(req, req.values["parent"])
 

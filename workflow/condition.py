@@ -21,8 +21,12 @@ def register():
 
 class WorkflowStep_Condition(WorkflowStep):
 
+    default_settings = dict(
+        condition="",
+    )
+
     def runAction(self, node, op=""):
-        condition = self.get("condition")
+        condition = self.settings["condition"]
         gotoFalse = 1
         if condition.startswith("attr:"):
             hlp = condition[5:].split("=")
@@ -63,15 +67,16 @@ class WorkflowStep_Condition(WorkflowStep):
 
     def admin_settings_get_html_form(self, req):
         return _tal.processTAL(
-            dict(condition=self.get('condition'),),
+            self.settings,
             file="workflow/condition.html",
             macro="workflow_step_type_config",
             request=req,
            )
 
     def admin_settings_save_form_data(self, data):
-        assert set(data)=={"condition"}
-        self.set('condition', data['condition'])
+        data = data.to_dict()
+        assert tuple(data) == ("condition",)
+        self.settings = data
         db.session.commit()
 
     @staticmethod

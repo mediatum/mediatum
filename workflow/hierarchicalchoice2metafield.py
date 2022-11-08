@@ -86,6 +86,8 @@ def _source_has_value(options_tree, value):
 
 class WorkflowStep_HierarchicalChoice2Metafield(_workflow.WorkflowStep):
 
+    default_settings = {"target-attribute-name": ""}
+
     def show_workflow_node(self, node, req):
         if "gofalse" in req.values:
             return self.forwardAndShow(node, False, req)
@@ -98,7 +100,7 @@ class WorkflowStep_HierarchicalChoice2Metafield(_workflow.WorkflowStep):
         if "gotrue" not in req.values:
             metafielderror = u""
         elif _source_has_value(tree_data, req.values["hierarchicalmetafield"]):
-            node.attrs[self.attrs["target-attribute-name"]] = req.values["hierarchicalmetafield"]
+            node.attrs[self.settings["target-attribute-name"]] = req.values["hierarchicalmetafield"]
             if hasattr(node, "event_metadata_changed"):
                 node.event_metadata_changed()
             _core.db.session.commit()
@@ -133,8 +135,7 @@ class WorkflowStep_HierarchicalChoice2Metafield(_workflow.WorkflowStep):
                    )
         else:
             context = dict(filebasename=None, filesize=None, fileurl=None)
-        context.update['target-attribute-name'] = self.get('target-attribute-name')
-
+        context.update(self.settings)
         return _mediatumtal.tal.processTAL(
             context,
             file="workflow/hierarchicalchoice2metafield.html",
@@ -150,8 +151,8 @@ class WorkflowStep_HierarchicalChoice2Metafield(_workflow.WorkflowStep):
                 self.files.remove(f)
             self.files.append(_fileutils.importFile(_fileutils.sanitize_filename(fileatt.filename), fileatt,
                                               filetype="wfstep-hierarchicalchoice2metafield"))
-        self.set('target-attribute-name', data.pop('target-attribute-name'))
-        assert not data
+        assert tuple(data) == ('target-attribute-name',)
+        self.settings = data
         _core.db.session.commit()
 
     @staticmethod

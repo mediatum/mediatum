@@ -35,6 +35,10 @@ def register():
 
 class WorkflowStep_ShowData(WorkflowStep):
 
+    default_settings = dict(
+        masks=("editmask",),
+    )
+
     def show_workflow_node(self, node, req):
 
         if "gotrue" in req.params:
@@ -43,15 +47,10 @@ class WorkflowStep_ShowData(WorkflowStep):
             return self.forwardAndShow(node, False, req)
 
         key = req.params.get("key", _flask.session.get("key", ""))
-        masks = self.get("masks")
-        if not masks:
-            masklist = ["editmask"]
-        else:
-            masklist = masks.split(";")
 
         fieldmap = []
         mask = None
-        for maskname in masklist:
+        for maskname in self.settings["masks"]:
             t = q(Metadatatype).filter_by(name=node.schema).scalar()
             if t:
                 if node.get('system.wflanguage') != '':  # use correct language
@@ -93,16 +92,14 @@ class WorkflowStep_ShowData(WorkflowStep):
             )
     def admin_settings_get_html_form(self, req):
         return _tal.processTAL(
-            dict(
-                masks=self.get('masks'),
-            ),
+            self.settings,
             file="workflow/showdata.html",
             macro="workflow_step_type_config",
             request=req,
            )
 
     def admin_settings_save_form_data(self, data):
-        data = data.to_dict()
-        self.set('masks', data.pop('masks'))
-        assert not data
+        assert tuple(data) == ("masks",)
+        masks = (m.strip() for m in data["masks"].split("\r\n"))
+        self.settings = dict(masks=filter(None, masks))
         db.session.commit()

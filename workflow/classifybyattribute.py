@@ -29,8 +29,10 @@ def register():
 
 class WorkflowStep_ClassifyByAttribute(_workflow.WorkflowStep):
 
+    default_settings = {"target-attribute-name": ""}
+
     def runAction(self, node, op=""):
-        parents = node.attrs[self.attrs["target-attribute-name"]].split()
+        parents = node.attrs[self.settings["target-attribute-name"]].split()
         for nid in frozenset(map(int, parents)):
             _core.db.query(_core.Node).get(nid).children.append(node)
 
@@ -38,7 +40,7 @@ class WorkflowStep_ClassifyByAttribute(_workflow.WorkflowStep):
 
     def admin_settings_get_html_form(self, req):
         return _tal.processTAL(
-            {"target-attribute-name": self.get('target-attribute-name')},
+            self.settings,
             file="workflow/classifybyattribute.html",
             macro="workflow_step_type_config",
             request=req,
@@ -46,8 +48,8 @@ class WorkflowStep_ClassifyByAttribute(_workflow.WorkflowStep):
 
     def admin_settings_save_form_data(self, data):
         data = data.to_dict()
-        self.set('target-attribute-name', data.pop('target-attribute-name'))
-        assert not data
+        assert tuple(data) == ("target-attribute-name",)
+        self.settings = data
         _core.db.session.commit()
 
     @staticmethod

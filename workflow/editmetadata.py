@@ -26,19 +26,22 @@ def register():
 
 class WorkflowStep_EditMetadata(WorkflowStep):
 
+    default_settings = dict(
+        mask="",
+    )
+
     def show_workflow_node(self, node, req):
         user = _user_from_session()
         result = ""
         error = ""
         key = req.params.get("key", _flask.session.get("key", ""))
 
-        maskname = self.get("mask")
         mask = None
         if node.get('system.wflanguage') != '':  # use correct language
-            mask = getMetaType(node.schema).getMask("%s.%s" % (node.get('system.wflanguage'), maskname))
+            mask = getMetaType(node.schema).getMask("{}.{}".format(node.get('system.wflanguage'), self.settings["mask"]))
 
         if not mask:
-            mask = getMetaType(node.schema).getMask(maskname)
+            mask = getMetaType(node.schema).getMask(self.settings["mask"])
 
         if "metaDataEditor" in req.params:
             mask.apply_edit_update_attrs_to_node(node, mask.get_edit_update_attrs(req, user))
@@ -77,15 +80,16 @@ class WorkflowStep_EditMetadata(WorkflowStep):
 
     def admin_settings_get_html_form(self, req):
         return _tal.processTAL(
-            dict(mask=self.get('mask'),),
+            self.settings,
             file="workflow/editmetadata.html",
             macro="workflow_step_type_config",
             request=req,
            )
 
     def admin_settings_save_form_data(self, data):
-        assert set(data)=={"mask"}
-        self.set('mask', data['mask'])
+        data = data.to_dict()
+        assert tuple(data) == ("mask",)
+        self.settings = data
         db.session.commit()
 
     @staticmethod

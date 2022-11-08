@@ -50,19 +50,27 @@ def getTALtext(text, context):
 
 class WorkflowStep_SendEmail(WorkflowStep):
 
+    default_settings = dict(
+        allowedit=False,
+        attach_pdf_form=False,
+        recipient=(),
+        sender="",
+        subject="",
+        text="",
+    )
+
     def sendOut(self, node):
         xfrom = node.get("system.mailtmp.from")
-        to = node.get("system.mailtmp.to")
-        attach_pdf_form = bool(self.get("attach_pdf_form"))
+        recipient = node.get("system.mailtmp.to")
 
         try:
-            logg.info("sending mail to %s (%s)", to, self.get("email"))
-            if not to:
+            logg.info("sending mail to %s (%s)", recipient, " , ".join(self.settings["recipient"]))
+            if not recipient:
                 raise MailError("No receiver address defined")
             if not xfrom:
                 raise MailError("No from address defined")
             attachments_paths_and_filenames = []
-            if attach_pdf_form:
+            if self.settings["attach_pdf_form"]:
                 for f in node.files:
                     if f.filetype != 'wfstep-addformpage':
                         continue
@@ -70,7 +78,7 @@ class WorkflowStep_SendEmail(WorkflowStep):
                         raise MailError("Attachment file not found: '%s'" % f.abspath)
                     attachments_paths_and_filenames.append((f.abspath, f.abspath.split('_')[-1]))
 
-            mail.sendmail(xfrom, to, node.get("system.mailtmp.subject"), node.get(
+            mail.sendmail(xfrom, recipient, node.get("system.mailtmp.subject"), node.get(
                 "system.mailtmp.text"), attachments_paths_and_filenames=attachments_paths_and_filenames)
         except:
             node.set("system.mailtmp.error", formatException())
@@ -93,37 +101,38 @@ class WorkflowStep_SendEmail(WorkflowStep):
         link2 = _urlparse.urljoin(_flask.request.host_url, "/node?id={}".format(node.id))
         attrs = {"node": node, "link": link, "publiclink": link2}
         try:
-            if "@" in self.get('from'):
-                node.set("system.mailtmp.from", getTALtext(self.get("from"), attrs))
-            elif "@" in node.get(self.get('from')):
-                node.set("system.mailtmp.from", getTALtext(node.get(self.get("from")), attrs))
+            sender = self.settings['sender']
+            if "@" in sender:
+                node.set("system.mailtmp.from", getTALtext(sender, attrs))
+            elif "@" in node.get(sender):
+                node.set("system.mailtmp.from", getTALtext(node.get(sender), attrs))
 
             _mails = []
-            for m in self.get('email').split(";"):
+            for m in self.settings['recipient']:
                 if "@" in m:
                     _mails.append(getTALtext(m, attrs))
                 elif "@" in node.get(m):
                     _mails.append(getTALtext(node.get(m), attrs))
             node.set("system.mailtmp.to", ";".join(_mails))
 
-            node.set("system.mailtmp.subject", getTALtext(self.get("subject"), attrs))
-            node.set("system.mailtmp.text", getTALtext(self.get("text"), attrs))
+            node.set("system.mailtmp.subject", getTALtext(self.settings["subject"], attrs))
+            node.set("system.mailtmp.text", getTALtext(self.settings["text"], attrs))
             db.session.commit()
         except:
             node.system_attrs['mailtmp.talerror'] = formatException()
             db.session.commit()
             return
-        if not self.get("allowedit"):
+        if not self.settings["allowedit"]:
             if(self.sendOut(node)):
                 self.forward(node, True)
 
     def show_workflow_node(self, node, req):
         if "sendout" in req.params:
             del req.params["sendout"]
-            if "from" in req.params:
-                node.set("system.mailtmp.from", req.params.get("from"))
-            if "to" in req.params:
-                node.set("system.mailtmp.to", req.params.get("to"))
+            if "sender" in req.params:
+                node.set("system.mailtmp.from", req.params.get("sender"))
+            if "recipient" in req.params:
+                node.set("system.mailtmp.to", req.params.get("recipient"))
             if "subject" in req.params:
                 node.set("system.mailtmp.subject", req.params.get("subject"))
             if "text" in req.params:
@@ -153,8 +162,8 @@ class WorkflowStep_SendEmail(WorkflowStep):
             return _tal.processTAL(
                     dict(
                         page=u"node?id={}&obj={}".format(self.id, node.id),
-                        from_=node.get("system.mailtmp.from"),
-                        to=node.get("system.mailtmp.to"),
+                        sender=node.get("system.mailtmp.from"),
+                        recipient=node.get("system.mailtmp.to"),
                         text=node.get("system.mailtmp.text"),
                         subject=_tal.getTALstr(
                             node.get("system.mailtmp.subject"),
@@ -174,14 +183,7 @@ class WorkflowStep_SendEmail(WorkflowStep):
 
     def admin_settings_get_html_form(self, req):
         return _tal.processTAL(
-            dict(
-                sender=self.get('from'),
-                email=self.get('email'),
-                subject=self.get('subject'),
-                text=self.get('text'),
-                allowedit=self.get('allowedit'),
-                attach_pdf_form=self.get('attach_pdf_form'),
-            ),
+            self.settings,
             file="workflow/email.html",
             macro="workflow_step_type_config",
             request=req,
@@ -189,11 +191,11 @@ class WorkflowStep_SendEmail(WorkflowStep):
 
     def admin_settings_save_form_data(self, data):
         data = data.to_dict()
-        for attr in ("from", "email", "subject", "text"):
-            self.set(attr, data.pop(attr))
         for attr in ("allowedit", "attach_pdf_form"):
-            self.set(attr, "1" if data.pop(attr, None) else "")
-        assert not data
+            data[attr] = bool(data.get(attr))
+        data["recipient"] = filter(None, (s.strip() for s in data["recipient"].split("\r\n")))
+        assert frozenset(data) == frozenset(("allowedit", "attach_pdf_form", "recipient", "sender", "subject", "text"))
+        self.settings = data
         db.session.commit()
 
     @staticmethod

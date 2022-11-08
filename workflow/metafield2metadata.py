@@ -38,13 +38,19 @@ def register():
 
 class WorkflowStep_Metafield2Metadata(_workflow.WorkflowStep):
 
+    default_settings = {
+            'source-attribute-name':"",
+            'source-metadata-separator':"",
+            'target-metadata-separator':"",
+           }
+
     def runAction(self, node, op=""):
         with open(_os.path.join(_core.config.get("paths.datadir"), self.files[0].path), "rb") as f:
             mapping = _yaml_loader(f)
 
-        source_sep = self.attrs.get("source-metadata-separator")
-        target_sep = self.attrs.get("target-metadata-separator", "")
-        source_data = node.attrs[self.attrs["source-attribute-name"]]
+        source_sep = self.settings["source-metadata-separator"]
+        target_sep = self.settings["target-metadata-separator"]
+        source_data = node.attrs[self.settings["source-attribute-name"]]
         source_data = source_data.split(source_sep) if source_sep else [source_data]
 
         target_data = _collections.defaultdict(list)
@@ -77,12 +83,7 @@ class WorkflowStep_Metafield2Metadata(_workflow.WorkflowStep):
                    )
         else:
             context = dict(filebasename=None, filesize=None, fileurl=None)
-        context.update({
-                'source-attribute-name':self.get('source-attribute-name'),
-                'source-metadata-separator':self.get('source-metadata-separator'),
-                'target-metadata-separator':self.get('target-metadata-separator'),
-               })
-
+        context.update(self.settings)
         return _tal.processTAL(
             context,
             file="workflow/metafield2metadata.html",
@@ -98,9 +99,8 @@ class WorkflowStep_Metafield2Metadata(_workflow.WorkflowStep):
                 self.files.remove(f)
             self.files.append(_fileutils.importFile(_fileutils.sanitize_filename(fileatt.filename), fileatt,
                                               filetype="wfstep-metafield2metadata"))
-        for attr in ('source-attribute-name', 'source-metadata-separator', 'target-metadata-separator'):
-            self.set(attr, data.pop(attr))
-        assert not data
+        assert frozenset(data) == frozenset(('source-attribute-name', 'source-metadata-separator', 'target-metadata-separator'))
+        self.settings = data
         _core.db.session.commit()
 
     @staticmethod

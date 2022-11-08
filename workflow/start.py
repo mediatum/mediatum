@@ -37,8 +37,14 @@ def register():
 
 class WorkflowStep_Start(WorkflowStep):
 
+    default_settings = dict(
+        schemas=(),
+        starthtmltext="",
+        allowcontinue=False,
+    )
+
     def show_workflow_step(self, req):
-        typenames = self.get("newnodetype").split(";")
+        typenames = self.settings["schemas"]
         redirect = ""
         message = ""
 
@@ -113,12 +119,12 @@ class WorkflowStep_Start(WorkflowStep):
                 dict(
                     types=types,
                     id=self.id,
-                    starttext=self.get('starttext'),
+                    starthtmltext=self.settings['starthtmltext'],
                     languages=self.parents[0].getLanguages(),
                     currentlang=_core_translation.set_language(req.accept_languages),
                     redirect=redirect,
                     message=message,
-                    allowcontinue=self.get('allowcontinue'),
+                    allowcontinue=self.settings['allowcontinue'],
                     csrf=_core_csrfform.get_token(),
                 ),
                 file="workflow/start.html",
@@ -128,11 +134,7 @@ class WorkflowStep_Start(WorkflowStep):
 
     def admin_settings_get_html_form(self, req):
         return _tal.processTAL(
-            dict(
-                newnodetype=self.get('newnodetype'),
-                starttext=self.get('starttext'),
-                allowcontinue=self.get('allowcontinue'),
-            ),
+            self.settings,
             file="workflow/start.html",
             macro="workflow_step_type_config",
             request=req,
@@ -140,10 +142,10 @@ class WorkflowStep_Start(WorkflowStep):
 
     def admin_settings_save_form_data(self, data):
         data = data.to_dict()
-        for attr in ('newnodetype', 'starttext'):
-            self.set(attr, data.pop(attr))
-        self.set('allowcontinue', "1" if data.pop('allowcontinue', None) else "")
-        assert not data
+        data["allowcontinue"] = bool(data.get("allowcontinue"))
+        data["schemas"] = filter(None, (s.strip() for s in data["schemas"].split("\r\n")))
+        assert frozenset(data) == frozenset(("schemas", "starthtmltext", "allowcontinue"))
+        self.settings = data
         db.session.commit()
 
     @staticmethod

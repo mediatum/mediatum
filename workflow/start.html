@@ -6,7 +6,7 @@
     <script tal:condition="python:redirect!=''" tal:content="raw python:u'window.location.href=\'{}\''.format(redirect)"/>
     <div style="position:relative;overflow:hidden;">
 
-        <div tal:content="raw starttext">TEXT</div>
+        <div tal:content="raw starthtmltext"> </div>
         <form action="/mask" method="post" style="text-align:center;">
             <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
             <div style="width:45%;float:left;">
@@ -42,7 +42,7 @@
                 </button>
             </div>
 
-            <div style="width:45%;float:left;padding-left:10px;border-left:1px solid silver;" tal:condition="python:allowcontinue=='1'">
+            <div style="width:45%;float:left;padding-left:10px;border-left:1px solid silver;" tal:condition="python:allowcontinue">
                 <p tal:condition="python:message!=''" tal:content="message" i18n:translate="" class="error">TEXT</p>
                 <p style="font-weight:bold">
                     <tal:block tal:condition="multilang" i18n:translate="workflow_start_continue_header_m">TEXT</tal:block>
@@ -70,15 +70,15 @@
 
 <metal:block metal:define-macro="workflow_step_type_config">
     <div>
-        <label for="stepsetting_newnodetype" i18n:translate="admin_wfstep_node_types_to_create"> </label>
-        <input type="text" name="stepsetting_newnodetype" id="stepsetting_newnodetype" tal:attributes="value newnodetype"/>
+        <label for="stepsetting_schemas" i18n:translate="admin_wfstep_node_types_to_create"> </label>
+        <textarea name="stepsetting_schemas" id="stepsetting_schemas" wrap="off" tal:content="python:'\r\n'.join(schemas)"/>
     </div>
     <div>
-        <label for="stepsetting_starttext" i18n:translate="admin_wfstep_starttext"> </label>
-        <textarea rows="4" type="text" name="stepsetting_starttext" id="stepsetting_starttext" tal:content="python:starttext"/>
+        <label for="stepsetting_starthtmltext" i18n:translate="admin_wfstep_starttext"> </label>
+        <textarea rows="4" type="text" name="stepsetting_starthtmltext" id="stepsetting_starthtmltext" tal:content="python:starthtmltext"/>
     </div>
     <div>
         <label for="stepsetting_allowcontinue" i18n:translate="admin_wfstep_allowcontinue"> </label>
-        <input type="checkbox" name="stepsetting_allowcontinue" id="stepsetting_allowcontinue" tal:attributes="checked python:'checked' if allowcontinue=='1' else None" value="1"/>
+        <input type="checkbox" name="stepsetting_allowcontinue" id="stepsetting_allowcontinue" tal:attributes="checked python:'checked' if allowcontinue else None" value="1"/>
     </div>
 </metal:block>

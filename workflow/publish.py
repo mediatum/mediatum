@@ -26,6 +26,11 @@ def register():
 
 class WorkflowStep_Publish(WorkflowStep):
 
+    default_settings = dict(
+        set_updatetime=False,
+        set_version=False,
+    )
+
     def runAction(self, node, op=""):
         ugid = q(UserGroup).filter_by(name=u'_workflow').one().id
         user = _user_from_session()
@@ -56,11 +61,11 @@ class WorkflowStep_Publish(WorkflowStep):
         # but refrain from doing so if updatetime is
         # in the future (this indicates an embargo)
         if node.get('updatetime') <= unicode(now()):
-            if self.get("publishsetpublishedversion") != "":
+            if self.settings["set_version"]:
                 # set publish tag
                 with node.new_tagged_version(publish='published', user=user):
                     node.set_legacy_update_attributes(user) # note: also updatetime is set
-            elif self.get("publishsetupdatetime") != "":
+            elif self.settings["set_updatetime"]:
                 node.set('updatetime', unicode(now()))
                 db.session.commit()
         logg.debug("publish node id = %d: db.session.commit()", node.id)
@@ -69,10 +74,7 @@ class WorkflowStep_Publish(WorkflowStep):
 
     def admin_settings_get_html_form(self, req):
         return _tal.processTAL(
-            dict(
-                set_version=self.get('publishsetpublishedversion'),
-                set_updatetime=self.get('publishsetupdatetime'),
-            ),
+            self.settings,
             file="workflow/publish.html",
             macro="workflow_step_type_config",
             request=req,
@@ -80,9 +82,10 @@ class WorkflowStep_Publish(WorkflowStep):
 
     def admin_settings_save_form_data(self, data):
         data = data.to_dict()
-        self.set('publishsetpublishedversion', "1" if data.pop('set_version', None) else "")
-        self.set('publishsetupdatetime', "1" if data.pop('set_updatetime', None) else "")
-        assert not data
+        for attr in ("set_updatetime", "set_version"):
+            data[attr] = bool(data.get(attr))
+        assert frozenset(data) == frozenset(("set_updatetime", "set_version"))
+        self.settings = data
         db.session.commit()
 
     @staticmethod

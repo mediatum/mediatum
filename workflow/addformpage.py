@@ -151,12 +151,13 @@ class WorkflowStep_AddFormPage(WorkflowStep):
         pre-pages can use formular fields
     """
 
-    def runAction(self, node, op=""):
+    default_settings = dict(
+        fields_editable=False,
+        form_separate=False,
+        form_overwrite=False,
+    )
 
-        # get workflow step options
-        pdf_fields_editable = self.get("pdf_fields_editable").lower() in ("1", "true")
-        pdf_form_separate = self.get("pdf_form_separate").lower() in ("1", "true")
-        pdf_form_overwrite = self.get("pdf_form_overwrite")
+    def runAction(self, node, op=""):
 
         # try to get form pdf file
         form = None
@@ -174,20 +175,20 @@ class WorkflowStep_AddFormPage(WorkflowStep):
         else:
             fnode = None
 
-        if not form or not (pdf_form_separate or fnode):
+        if not form or not (self.settings["form_separate"] or fnode):
             logg.warning("workflowstep %s (%s): could not process pdf form - node: '%s' (%s)",
                          self.name, self.id, node.name, node.id)
             self.forward(node, True)
             return
 
-        pages = fillPDFForm(form.abspath, fields, pdf_fields_editable)
+        pages = fillPDFForm(form.abspath, fields, self.settings["fields_editable"])
         if pages is None:  # error in pdf creation -> forward to false operation
             logg.error("workflowstep %s (%s): could not create pdf file - node: '%s' (%s)",
                        self.name, self.id, node.name, node.id)
             self.forward(node, False)
             return
 
-        if not pdf_form_separate:
+        if not self.settings["form_separate"]:
             origname = fnode.abspath
             outfile = addPagesToPDF(pages, origname)
             for f in node.files:
@@ -210,7 +211,7 @@ class WorkflowStep_AddFormPage(WorkflowStep):
             # visible to the user when the file gets
             # emailed in ``email.py``.
             new_form_path = [str(node.id), form.base_name]
-            if pdf_form_overwrite:
+            if self.settings["form_overwrite"]:
                 new_form_path.insert(1, _utils_utils.gen_secure_token(128))
             new_form_path = join_paths(importdir, "_".join(new_form_path))
             # copy new file and remove tmp
@@ -238,11 +239,7 @@ class WorkflowStep_AddFormPage(WorkflowStep):
                    )
         else:
             context = dict(filebasename=None, filesize=None, fileurl=None)
-        context.update(dict(
-                fields_editable=self.get('pdf_fields_editable'),
-                form_separate=self.get('pdf_form_separate'),
-                form_overwrite=self.get('pdf_form_overwrite'),
-               ))
+        context.update(self.settings)
 
         return _tal.processTAL(
             context,
@@ -259,9 +256,10 @@ class WorkflowStep_AddFormPage(WorkflowStep):
                 self.files.remove(f)
             self.files.append(_fileutils.importFile(_fileutils.sanitize_filename(pdfform.filename), pdfform,
                                               filetype="wfstep-addformpage"))
-        for attr in ('fields_editable', 'form_separate', 'form_overwrite'):
-            self.set("pdf_{}".format(attr), "1" if data.pop(attr, None) else "")
-        assert not data
+        for attr in ("fields_editable", "form_separate", "form_overwrite"):
+            data[attr] = bool(data.get(attr))
+        assert frozenset(data) == frozenset(("fields_editable", "form_separate", "form_overwrite"))
+        self.settings = data
         db.session.commit()
 
     @staticmethod

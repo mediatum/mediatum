@@ -16,14 +16,14 @@
     </div>
     <div>
         <label for="stepsetting_fields_editable" i18n:translate="workflowstep-addformpage_label_fields_editable"> </label>
-        <input type="checkbox" name="stepsetting_fields_editable" id="stepsetting_fields_editable" tal:attributes="checked python:'checked' if fields_editable=='1' else None" value="1"/>
+        <input type="checkbox" name="stepsetting_fields_editable" id="stepsetting_fields_editable" tal:attributes="checked python:'checked' if fields_editable else None" value="1"/>
     </div>
     <div>
         <label for="stepsetting_form_separate" i18n:translate="workflowstep-addformpage_label_form_separate"> </label>
-        <input type="checkbox" name="stepsetting_form_separate" id="stepsetting_form_separate" tal:attributes="checked python:'checked' if form_separate=='1' else None" value="1"/>
+        <input type="checkbox" name="stepsetting_form_separate" id="stepsetting_form_separate" tal:attributes="checked python:'checked' if form_separate else None" value="1"/>
     </div>
     <div>
         <label for="stepsetting_form_overwrite" i18n:translate="workflowstep-addformpage_label_overwrite"> </label>
-        <input type="checkbox" name="stepsetting_form_overwrite" id="stepsetting_form_overwrite" tal:attributes="checked python:'checked' if form_overwrite=='1' else None" value="1"/>
+        <input type="checkbox" name="stepsetting_form_overwrite" id="stepsetting_form_overwrite" tal:attributes="checked python:'checked' if form_overwrite else None" value="1"/>
     </div>
 </metal:block>

@@ -33,22 +33,29 @@ class MailError(Exception):
 
 class WorkflowStep_CheckContent(WorkflowStep):
 
+    default_settings = dict(
+        recipient="",
+        sender="",
+        subject="",
+        text="",
+    )
+
     def runAction(self, node, op=""):
         xml = u'<?xml version="1.0" encoding="UTF-8"?><tag>{}</tag>'.format("".join(node.attrs.itervalues()))
         if not checkXMLString(xml):
             with suppress(Exception, warn=False):
-                mail.sendmail(self.get('from'), self.get('to'), self.get('subject'), self.get('text'))
+                mail.sendmail(
+                        self.settings['sender'],
+                        self.settings['recipient'],
+                        self.settings['subject'],
+                        self.settings['text'],
+                       )
 
         self.forward(node, True)
 
     def admin_settings_get_html_form(self, req):
         return _tal.processTAL(
-            dict(
-                sender=self.get('from'),
-                email=self.get('email'),
-                subject=self.get('subject'),
-                text=self.get('text'),
-            ),
+            self.settings,
             file="workflow/checkcontent.html",
             macro="workflow_step_type_config",
             request=req,
@@ -56,10 +63,8 @@ class WorkflowStep_CheckContent(WorkflowStep):
 
     def admin_settings_save_form_data(self, data):
         data = data.to_dict()
-        for attr in ('email', 'subject', 'text'):
-            self.set(attr, data.pop(attr))
-        self.set('from', data.pop('sender'))
-        assert not data
+        assert frozenset(data) == frozenset(("recipient", "sender", "subject", "text"))
+        self.settings = data
         _db.session.commit()
 
     @staticmethod

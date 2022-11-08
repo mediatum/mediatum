@@ -5,14 +5,14 @@
 <metal:block metal:define-macro="workflow_step_type_config">
     <div>
         <label for="stepsetting_endtext" i18n:translate="admin_wfstep_endtext"> </label>
-        <textarea rows="4" type="text" name="stepsetting_endtext" id="stepsetting_endtext" tal:content="python:endtext"/>
+        <textarea rows="4" type="text" name="stepsetting_endtext" id="stepsetting_endtext" tal:content="python:endtext or ''"/>
     </div>
     <div>
         <label for="stepsetting_endremove" i18n:translate="admin_wfstep_endremove"> </label>
-        <input type="checkbox" name="stepsetting_endremove" id="stepsetting_endremove" tal:attributes="checked python:'checked' if endremove=='1' else None" value="1"/>
+        <input type="checkbox" name="stepsetting_endremove" id="stepsetting_endremove" tal:attributes="checked python:'checked' if endremove else None" value="1"/>
     </div>
     <div>
         <label for="stepsetting_endsetupdatetime" i18n:translate="admin_wfstep_endsetupdatetime"> </label>
-        <input type="checkbox" name="stepsetting_endsetupdatetime" id="stepsetting_endsetupdatetime" tal:attributes="checked python:'checked' if endsetupdatetime=='1' else None" value="1"/>
+        <input type="checkbox" name="stepsetting_endsetupdatetime" id="stepsetting_endsetupdatetime" tal:attributes="checked python:'checked' if endsetupdatetime else None" value="1"/>
     </div>
 </metal:block>

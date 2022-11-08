@@ -51,6 +51,11 @@ class WorkflowStep_Defer(WorkflowStep):
     accesstype respectively.
     """
 
+    default_settings = dict(
+        accesstype=(),
+        attrname="",
+    )
+
     def runAction(self, node, op=""):
         """
         The actual proccessing of the node object takes place here.
@@ -58,7 +63,7 @@ class WorkflowStep_Defer(WorkflowStep):
         Read out the values of attrname and accesstype if any. Generate the
         ACL-rule, and save it.
         """
-        l_date = node.get(self.get('attrname'))
+        l_date = node.get(self.settings['attrname'])
         if l_date:
             if date.validateDateString(l_date):
                 try:
@@ -67,7 +72,7 @@ class WorkflowStep_Defer(WorkflowStep):
                     d = formated_date.split('.')
                     rule = get_or_add_defer_daterange_rule(int(d[2]), int(d[1]), int(d[0]))
 
-                    for access_type in self.get('accesstype').split(';'):
+                    for access_type in self.settings['accesstype']:
                         special_access_ruleset = node.get_or_add_special_access_ruleset(ruletype=access_type)
                         special_access_ruleset.rule_assocs.append(AccessRulesetToRule(rule=rule))
 
@@ -81,10 +86,7 @@ class WorkflowStep_Defer(WorkflowStep):
 
     def admin_settings_get_html_form(self, req):
         return _tal.processTAL(
-            dict(
-                attrname=self.get('attrname'),
-                accesstype=frozenset(("read", "write", "data")).intersection(self.get('accesstype').split(";"))
-            ),
+            self.settings,
             file="workflow/defer.html",
             macro="workflow_step_type_config",
             request=req,
@@ -94,8 +96,9 @@ class WorkflowStep_Defer(WorkflowStep):
         assert frozenset(data)==frozenset(("accesstype","attrname"))
         accesstype = data.getlist("accesstype")
         assert not frozenset(accesstype).difference(("read", "write", "data"))
-        self.set("attrname",data["attrname"])
-        self.set("accesstype",";".join(accesstype))
+        data = data.to_dict()
+        data["accesstype"] = accesstype
+        self.settings = data
         db.session.commit()
 
     @staticmethod

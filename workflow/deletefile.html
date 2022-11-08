@@ -5,6 +5,6 @@
 <metal:block metal:define-macro="workflow_step_type_config">
     <div>
         <label for="stepsetting_filetype" i18n:translate="admin_wfstep_deletefiletype"> </label>
-        <input type="text" name="stepsetting_filetype" id="stepsetting_filetype" tal:attributes="value filetype"/>
+        <textarea name="stepsetting_filetype" id="stepsetting_filetype" wrap="off" tal:content="python: '\r\n'.join(filetype)"/>
     </div>
 </metal:block>

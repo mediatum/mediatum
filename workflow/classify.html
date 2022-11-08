@@ -5,7 +5,7 @@
 <metal:block metal:define-macro="workflow_step_type_config">
     <div>
         <label for="stepsetting_destination" i18n:translate="admin_wfstep_classify_destination"> </label>
-        <input type="text" name="stepsetting_destination" id="stepsetting_destination" tal:attributes="value destination"/>
+        <textarea name="stepsetting_destination" id="stepsetting_destination" tal:content="python:'\r\n'.join(destination)"/>
     </div>
     <div>
         <label for="stepsetting_destination_attr" i18n:translate="admin_wfstep_classify_destination_attr"> </label>
@@ -13,6 +13,6 @@
     </div>
     <div>
         <label for="stepsetting_only_sub" i18n:translate="admin_wfstep_classify_only_sub"> </label>
-        <input type="checkbox" name="stepsetting_only_sub" id="stepsetting_only_sub" tal:attributes="checked python:'checked' if only_sub=='1' else None" value="1"/>
+        <input type="checkbox" name="stepsetting_only_sub" id="stepsetting_only_sub" tal:attributes="checked python:'checked' if only_sub else None" value="1"/>
     </div>
 </metal:block>

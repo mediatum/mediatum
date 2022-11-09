@@ -170,7 +170,7 @@ class m_mappingfield(Metatype):
             for ext in self.extensions:
                 s = ext.func(s, var, node, attrnode)
 
-        return desc(s)
+        return s
 
     def getViewHTML(self, fields, nodes, flags, language="", template_from_caller=None, mask=None):
         ret = ""

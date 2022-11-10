@@ -203,24 +203,6 @@ IF EXISTS (SELECT FROM node_to_access_rule WHERE nid=node_id AND ruletype=_rulet
     RETURN;
 END IF;
 RETURN QUERY
-  WITH
-    RECURSIVE parent_rule_ids_nested(nid, rule_ids) AS (
-        SELECT nodemapping.nid,
-        (SELECT array_agg(rule_id) FROM node_to_access_rule WHERE node_to_access_rule.nid=nodemapping.nid)
-        FROM  nodemapping
-        WHERE nodemapping.cid = node_id
-      UNION ALL
-        SELECT nodemapping.nid,
-        (SELECT array_agg(rule_id) FROM node_to_access_rule WHERE node_to_access_rule.nid=nodemapping.nid)
-        FROM nodemapping
-        JOIN parent_rule_ids_nested ON nodemapping.cid = parent_rule_ids_nested.nid
-        WHERE parent_rule_ids_nested.rule_ids IS NULL
-    )
-  ,
-    parent_rule_ids AS (
-      SELECT nid,unnest(rule_ids) AS rule_id
-      FROM parent_rule_ids_nested
-    )
   SELECT DISTINCT
      node_id AS nid
     ,node_to_access_rule.rule_id
@@ -229,9 +211,10 @@ RETURN QUERY
     ,TRUE AS inherited
     ,FALSE AS blocking
   FROM node_to_access_rule
-  JOIN parent_rule_ids
-    ON parent_rule_ids.nid=node_to_access_rule.nid AND parent_rule_ids.rule_id=node_to_access_rule.rule_id
-  WHERE node_to_access_rule.ruletype=_ruletype;
+  JOIN nodemapping ON nodemapping.nid = node_to_access_rule.nid
+  WHERE nodemapping.cid = node_id
+    AND node_to_access_rule.ruletype = _ruletype
+  ;
 END;
 $f$;
 

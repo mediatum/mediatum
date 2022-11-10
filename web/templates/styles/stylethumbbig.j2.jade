@@ -14,6 +14,6 @@ each file in files
         if (file.node.get('width') or 0) < (file.node.get('height') or 0)
           img.thumbnail(src='/thumbnail/{}'.format(file.node.id), border='0')
         if file.node.get('width') == file.node.get('height')
-          p(class='mediatum-stylethumb-p-big')
+          p(class='mediatum-stylethumbbig-p')
             = file.text
 .break

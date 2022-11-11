@@ -39,7 +39,6 @@ class WorkflowStep_Start(WorkflowStep):
 
     def show_workflow_step(self, req):
         typenames = self.get("newnodetype").split(";")
-        wfnode = self.parents[0]
         redirect = ""
         message = ""
 

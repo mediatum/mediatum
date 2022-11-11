@@ -178,11 +178,18 @@ class Container(Data, ContainerMixin, SchemaMixin):
                     content = c.read()
                 return content
 
-        spn = self.getStartpageFileNode(_core_translation.set_language(req.accept_languages))
+        language = _core_translation.set_language(req.accept_languages)
+        spn = self.getStartpageFileNode(language)
         if spn:
             long_path = spn.retrieveFile()
             if os.path.isfile(long_path) and fileIsNotEmpty(long_path):
-                content = includetemplate(self, long_path, {'${next}': link})
+                startpage_text = includetemplate(self, long_path, {'${next}': link})
+                content = tal.getTAL(
+                        "contenttypes/container.html",
+                        dict(startpage_text=startpage_text),
+                        macro="startpage",
+                        language=language,
+                    )
 
         return content
 

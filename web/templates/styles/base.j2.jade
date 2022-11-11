@@ -5,8 +5,8 @@
 = old_version_alert_html
 = deleted_version_alert_html
 
-link(rel="stylesheet", href="/css/childs.css")
-link(rel="stylesheet", href="/css/jade_style.css")
+link(rel="stylesheet", href="/static/css/childs.css")
+link(rel="stylesheet", href="/static/css/jade_style.css")
 
 - block top
   // CSS, custom JS, counting pixel, etc...
@@ -26,7 +26,7 @@ link(rel="stylesheet", href="/css/jade_style.css")
     if bibtex
       .action_icon
         a(href="/export/{{ node.id }}/bibtex", target="bibtexdocument", title=_t("doc_bibtex_title"))
-          img(src="/img/bibtex.gif")
+          img(src="/static/img/bibtex.gif")
           |&nbsp;BibTeX
 
   - block after_metadata

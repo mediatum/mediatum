@@ -1,0 +1,9 @@
+/*
+  Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+  SPDX-License-Identifier: AGPL-3.0-or-later
+*/
+html body{font-family:Arial;padding:0;margin:0;height:100%}
+.imagecontainer { height:150px; width: 146px; float:left; border:1px solid #888; padding:10px; margin:0 0 3px 3px; text-align:center; display:block; vertical-align:middle;}
+.innerimagecontainer { height:110px; width:144px}
+.image { border:1px solid #888;}
+#closewindowdiv{ clear:left;}

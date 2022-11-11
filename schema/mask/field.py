@@ -63,7 +63,7 @@ class m_field(Metatype):
 
         if field.getDescription() != "":
             description = '<div id="div_description"><a href="#" onclick="openPopup(\'/popup_help?id=' + ustr(element.id) + \
-                '&maskid=' + ustr(field.id) + '\', \'\', 400, 250)"><img src="/img/tooltip.png" border="0"/></a></div>'
+                '&maskid=' + ustr(field.id) + '\', \'\', 400, 250)"><img src="/static/img/tooltip.png" border="0"/></a></div>'
 
         if not sub:
             if ustr(element.id) in req.params.get("errorlist", []):
@@ -183,7 +183,7 @@ class m_field(Metatype):
                 field, width=item.getWidth(), value=attribute.getName(), language=language) + ' ' + item.getUnit()
 
         if item.getDescription() != "":
-            description = '<div id="div_description"><a href="#" onclick="openPopup(\'/popup_help?id=%s&maskid=%s\', \'\', 400, 250)"> <img src="/img/tooltip.png" border="0"/></a></div>' % (
+            description = '<div id="div_description"><a href="#" onclick="openPopup(\'/popup_help?id=%s&maskid=%s\', \'\', 400, 250)"> <img src="/static/img/tooltip.png" border="0"/></a></div>' % (
                 field.id, item.id)
 
         if len(item.getLabel()) > 0 and item.getLabel() != "mapping":
@@ -214,23 +214,23 @@ class m_field(Metatype):
                 item.id)
 
             if index > 0:
-                ret += '<input type="image" src="/img/uparrow.png" name="up_%s" i18n:attributes="title mask_edit_up_title"/>' % (item.id)
+                ret += '<input type="image" src="/static/img/uparrow.png" name="up_%s" i18n:attributes="title mask_edit_up_title"/>' % (item.id)
             else:
                 ret += '&nbsp;&nbsp;&nbsp;'
             if index < pitems - 1:
-                ret += '<input type="image" src="/img/downarrow.png" name="down_%s" i18n:attributes="title mask_edit_down_title"/>' % (
+                ret += '<input type="image" src="/static/img/downarrow.png" name="down_%s" i18n:attributes="title mask_edit_down_title"/>' % (
                     item.id)
             else:
                 ret += '&nbsp;&nbsp;&nbsp;'
 
             if field.getName() in fieldlist.keys():
                 if len(fieldlist[field.getName()]) > 1:
-                    ret += '&nbsp;<img src="/img/attention.gif" title="{} '.format(
+                    ret += '&nbsp;<img src="/static/img/attention.gif" title="{} '.format(
                             _core_translation.translate("mask_edit_multi_label", language),
                         )
                     ret += ", ".join([schema.getName() for schema in fieldlist[field.getName()]]) + '"/>'
 
-            ret += ' <input type="image" src="/img/edit.png" name="edit_%s" i18n:attributes="title mask_edit_edit_row"/> <input type="image" src="/img/delete.png" name="delete_%s" i18n:attributes="title mask_edit_delete_row" onClick="return questionDel()"/></div></div>' % (item.id,
+            ret += ' <input type="image" src="/static/img/edit.png" name="edit_%s" i18n:attributes="title mask_edit_edit_row"/> <input type="image" src="/static/img/delete.png" name="delete_%s" i18n:attributes="title mask_edit_delete_row" onClick="return questionDel()"/></div></div>' % (item.id,
                                                                                                                                                                                                                                                                                   item.id)
         return ret
 

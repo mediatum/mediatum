@@ -183,7 +183,7 @@ class PrintPreview:
         if not path:
             return
         if not os.path.isfile(path):
-            path = config.basedir + "/web/img/questionmark.png"
+            path = config.basedir + "/static/img/questionmark.png"
         im = Image.open(path)
         im.load()
         width, height = im.size

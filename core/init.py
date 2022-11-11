@@ -15,6 +15,7 @@ from utils.locks import register_lock as _register_lock
 
 import core.config as config
 import core as _core
+import core.webconfig as _core_webconfig
 import web.edit as _web_edit
 
 logg = logging.getLogger(__name__)
@@ -277,7 +278,7 @@ def _init_web_roots():
         map(_filehandlers.add_web_root, webroots)
     if core.webconfig.theme:
         _filehandlers.add_web_root(core.webconfig.theme.path)
-    _filehandlers.add_web_root(_os.path.join(config.basedir, "web/root"))
+    _filehandlers.add_web_root(_os.path.join(config.basedir, "static/img/root"))
 
 
 def basic_init(root_loglevel=None, config_filepath=None, prefer_config_filename=None, log_filepath=None,
@@ -328,6 +329,7 @@ def _additional_init():
         init_fulltext_search()
         _check_fulltext_attrs_search_indexes_node()
     tal_setup()
+    _core_webconfig.init_theme()
     db.session.rollback()
 
 
@@ -345,9 +347,8 @@ def full_init(root_loglevel=None, config_filepath=None, prefer_config_filename=N
         force_test_db=force_test_db,
         automigrate=automigrate,
     )
+    init_app()
     _additional_init()
     _set_current_init_state(init_state)
-    init_app()
     _core.plugins.init_web_routes()
-    _core.plugins.add_plugin_file_store_paths()
     _web_edit.edit.getEditModules()

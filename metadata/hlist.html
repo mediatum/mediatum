@@ -3,42 +3,14 @@
   SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 <tal:block metal:define-macro="editorfield">
-<div style="padding-left:220px;">
-    <style tal:attributes="name python:name">
-        select.vertical{display:block;width:100%;margin-bottom:5px;height:25px;}
-    </style>
-    <script src="/js/jquery.optionTreeSort.js"> </script>
-    <div tal:attributes="style python:'width:{}px'.format(width-16)">
-        <input type="text" tal:attributes="name python:'{}'.format(name); value python:value" style="display:none;"/>
+    <div style="padding-left:220px;">
+        <script tal:content="python:'var startnode = \'{}\';\nvar attrname = \'{}\';\nvar attrfilter = \'{}\';\nvar pre = Object();\npre[\'{}\'] = {};'.format(startnode, name, attrname, name.encode('utf-8'), value.encode('utf-8').split(';'))"/>
+        <script src="/static/js/jquery.optionTreeSort.js"> </script>
+        <script src="/static/js/metadata/hlist.js"> </script>
+        <div tal:attributes="style python:'width:{}px'.format(width-16)">
+            <input type="text" tal:attributes="name python:'{}'.format(name); value python:value" style="display:none;"/>
+        </div>
     </div>
-    <script tal:content="python:'var startnode = \'{}\';\nvar attrname = \'{}\';\nvar attrfilter = \'{}\';\nvar pre = Object();\npre[\'{}\'] = {};'.format(startnode, name, attrname, name.encode('utf-8'), value.encode('utf-8').split(';'))">TEXT</script>
-    <script type="text/javascript">
-    $(function() {
-
-        var options = {
-                choose: ' ',
-                empty_value: 'null',
-                preselect: pre,
-                indexed: true,
-                set_value_on: 'each',
-                on_each_change: '/metatype/hlist?attrfilter='+attrfilter,
-                select_class: 'vertical',
-                loading_image: '/img/loading.gif',
-                attr: 'id'
-            };
-        var displayParents = function() {
-            var labels = [];
-            $(this).siblings().find(':selected').each(function() { labels.push($(this).val()); });
-                $('input[name='+attrname+']').val(labels.join(';'));
-            };
-
-        $.getJSON('/metatype/hlist?attrfilter='+attrfilter, {id: startnode}, function(tree) {
-            $('input[name='+attrname+']').optionTree(tree, options).change(displayParents);
-        });
-    });
-    </script>
-
-</div>
 </tal:block>
 
 <tal:block metal:define-macro="metafieldeditor">

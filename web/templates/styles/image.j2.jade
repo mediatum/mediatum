@@ -13,7 +13,7 @@
     if data_access and (has_original or image_formats)
       a(href=image_url, onclick="vgwPixelCall();", target='_blank')
         if node.get('width') != '' and node.get('width') >= node.get('height')
-            img(src=presentation_url, style="width:300px;cursor:pointer;border:1px double silver;", border="1px")
+            img(src=presentation_url, style="max-width:300px;max-height:auto;cursor:pointer;border:1px double silver;", border="1px")
         else
           img(src=presentation_url, style="max-width:300px;max-height:300px;cursor:pointer;border:1px double silver;", border="1px")
 

@@ -210,6 +210,7 @@ class NavTreeEntry(object):
         self.indent = indent
         self.defaultopen = indent == 0
         self.hassubdir = 0
+        self.isSelected = 0
         self.folded = 1
         self.active = 0
         self.small = small
@@ -219,8 +220,9 @@ class NavTreeEntry(object):
         self.show_childcount = node.show_childcount
 
         self.count = self.node.childcount()
+        self.container_children = self.node.container_children
 
-        if self.count:
+        if self.container_children:
             self.hassubdir = 1
             self.folded = 1
 
@@ -292,6 +294,7 @@ def make_navtree_entries(language, collection, container):
     hide_empty = collection.get("style_hide_empty") == "1"
 
     opened = {t[0] for t in container.all_parents.with_entities(Node.id)}
+    activelist = {t[0] for t in container.all_parents.with_entities(Node.id)}
     opened.add(container.id)
 
     navtree_entries = []
@@ -301,6 +304,11 @@ def make_navtree_entries(language, collection, container):
         e = NavTreeEntry(node, indent, small, hide_empty, language)
         if node.id == collection.id or node.id == container.id:
             e.active = 1
+
+        # 2021-05-27 KL: Need only one active navtree entry, not both container and collection
+        if node.id in activelist:
+            e.active = 0
+
         navtree_entries.append(e)
         if node.id in opened:
             e.folded = 0
@@ -392,7 +400,7 @@ class UserLinks(object):
                 "/logout",
                 _core_translation.t(self.language, "sub_header_logout_title"),
                 _core_translation.t(self.language, "sub_header_logout"),
-                icon="/img/logout.gif",
+                icon="/static/img/logout.png",
             )]
         if self.user == guest_user:
             if config.get("config.ssh") == "yes":
@@ -401,13 +409,13 @@ class UserLinks(object):
                         "https://{}/login".format(host),
                         _core_translation.t(self.language, "sub_header_login_title"),
                         _core_translation.t(self.language, "sub_header_login"),
-                        icon="/img/login.gif",
+                        icon="/static/img/login.png",
                     )]
             else:
                 l = [Link(
                         "/login", _core_translation.t(self.language, "sub_header_login_title"),
                         _core_translation.t(self.language, "sub_header_login"),
-                        icon="/img/login.gif",
+                        icon="/static/img/login.png",
                     )]
 
         if self.is_workflow_area:
@@ -415,7 +423,7 @@ class UserLinks(object):
                     "/",
                     _core_translation.t(self.language, "sub_header_frontend_title"),
                     _core_translation.t(self.language, "sub_header_frontend"),
-                    icon="/img/frontend.gif",
+                    icon="/static/img/frontend.gif",
                 ))
 
         if self.user.is_editor:
@@ -430,7 +438,7 @@ class UserLinks(object):
                     "/edit{}".format(idstr),
                     _core_translation.t(self.language, "sub_header_edit_title"),
                     _core_translation.t(self.language, "sub_header_edit"),
-                    icon="/img/edit.gif",
+                    icon="/static/img/edit.gif",
                 ))
 
         if self.user.is_admin:
@@ -438,7 +446,7 @@ class UserLinks(object):
                     "/admin",
                     _core_translation.t(self.language, "sub_header_administration_title"),
                     _core_translation.t(self.language, "sub_header_administration"),
-                    icon="/img/admin.gif",
+                    icon="/static/img/admin.gif",
                 ))
 
         if self.user.is_workflow_editor:
@@ -446,7 +454,7 @@ class UserLinks(object):
                     "/publish/",
                     _core_translation.t(self.language, "sub_header_workflow_title"),
                     _core_translation.t(self.language, "sub_header_workflow"),
-                    icon="/img/workflow.gif",
+                    icon="/static/img/workflow.gif",
                 ))
 
         if self.user.can_change_password:
@@ -455,7 +463,7 @@ class UserLinks(object):
                     _core_translation.t(self.language, "sub_header_changepwd_title"),
                     _core_translation.t(self.language, "sub_header_changepwd"),
                     "_parent",
-                    icon="/img/changepwd.gif",
+                    icon="/static/img/changepwd.gif",
                 ))
         return l
 

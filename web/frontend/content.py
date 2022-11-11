@@ -561,27 +561,23 @@ class ContentList(ContentBase):
             return headline + self.content.html(req)
 
         # render result list
-
-        ctx = {
-            "page_nav": Markup(self.page_nav),
-            "nav": self,
-            "sortfieldslist": self.getSortFieldsList(),
-            "op": "", "query": req.args.get("query", ""),}
-
-        content_nav_list_header_html = webconfig.theme.render_template("content_nav_list_header.j2.jade", ctx)
-
-        # use template of style and build html content
-        ctx = dict(
-                files=self.files,
-                op="",
-                language=self.lang,
-                nodesperpage="all" if self.nodes_per_page_from_req == "all" else self.nodes_per_page,
-                nodesperpage_options=_web_common_pagination.get_config_nodes_per_page(False),
+        content_nav_list_header_html = webconfig.theme.render_template(
+                "content_nav_list_header.j2.jade",
+                dict(
+                    page_nav=Markup(self.page_nav),
+                    nav=self,
+                    sortfieldslist=self.getSortFieldsList(),
+                    op="",
+                    query=req.args.get("query", ""),
+                    nodesperpage="all" if self.nodes_per_page_from_req == "all" else self.nodes_per_page,
+                    nodesperpage_options=_web_common_pagination.get_config_nodes_per_page(False),
+                )
             )
 
-        content_list_html = self.liststyle.render_template(req, ctx)
+        # use template of style and build html content
+        content_list_html = self.liststyle.render_template(req, dict(files=self.files, op="", language=self.lang))
 
-        return u'{0}<div id="nodes">{1}</div>{0}'.format(content_nav_list_header_html, content_list_html)
+        return u'{}<div id="nodes">{}</div>'.format(content_nav_list_header_html, content_list_html)
 
 
 class ContentNode(ContentBase):

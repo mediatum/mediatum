@@ -3,10 +3,17 @@
   SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 <tal:block metal:define-macro="edit_admin_file">
+    <script tal:content="python:u'var id={}'.format(node.id)" />
+    <script src="/static/js/edit/modules/admin.js"> </script>
+
     <div id="mediatum_addform">
         <div class="mediatum_addform-background">&nbsp;</div>
         <div class="mediatum_addform-form">
-            <div class="mediatum_addform-div"><a href="#" onclick="closeForm()" i18n:attributes="title mask_editor_cancel"><img src="/img/cancel.png"/></a></div>
+            <div class="mediatum_addform-div">
+                <a href="#" onclick="closeForm()" i18n:attributes="title mask_editor_cancel">
+                    <img src="/static/img/cancel.png"/>
+                </a>
+            </div>
             <form
                 tal:attributes="action python:u'edit_content?srcnodeid={}&id={}&tab=admin'.format(srcnodeid, id)"
                 method="post"
@@ -34,8 +41,10 @@
     </div>
 
     <div id="navigation_content" class="mediatum_navigation_content">
-        <a tal:condition="canedit" href="#" onclick="openForm()"><img src="/img/upload.png"/>
-            <tal:block i18n:translate="edit_admin_add_attribute"/></a>
+        <a tal:condition="canedit" href="#" onclick="openForm()">
+            <img src="/static/img/upload.png"/>
+            <tal:block i18n:translate="edit_admin_add_attribute"/>
+        </a>
     </div>
 
     <div id="sub_content_content" class="mediatum_sub_content_content">
@@ -77,10 +86,10 @@
                          <div class="label" tal:content="key">TEXT</div>
                          <div class="content" tal:content="python:fd(node.get(key))">TEXT</div>
                          <img tal:condition="canedit" tal:attributes="name python:key;value python:fd(node.get(key))"
-                         i18n:attributes="title edit_admin_editattr_title" type="image" src="/img/edit.png"
+                         i18n:attributes="title edit_admin_editattr_title" type="image" src="/static/img/edit.png"
                          onClick="return openFilledForm(this)" class="mediatum_subcontent_position"/>
                          <input tal:condition="user_is_admin" tal:attributes="name python:u'attr_{}'.format(key)"
-                         i18n:attributes="title edit_admin_del_attribute" type="image" src="/img/delete.png" onClick="return questionDel()"
+                         i18n:attributes="title edit_admin_del_attribute" type="image" src="/static/img/delete.png" onClick="return questionDel()"
                          class="mediatum_subcontent_top"/>
                      </div>
 
@@ -94,8 +103,8 @@
                     <div class="mediatum_entry" tal:repeat="key python:list(obsoletefields)">
                         <div class="label" tal:content="key">TEXT</div>
                         <div class="content" tal:content="python:fd(node.get(key))">TEXT</div>
-                        <img tal:condition="canedit" tal:attributes="name python:key;value python:fd(node.get(key))" i18n:attributes="title edit_admin_editattr_title" type="image" src="/img/edit.png" onClick="return openFilledForm(this)" class="mediatum_subcontent_position"/>
-                        <input tal:condition="user_is_admin" tal:attributes="name python:u'attr_{}'.format(key)" i18n:attributes="title edit_admin_del_attribute" type="image" src="/img/delete.png" onClick="return questionDel()" class="mediatum_subcontent_top"/>
+                        <img tal:condition="canedit" tal:attributes="name python:key;value python:fd(node.get(key))" i18n:attributes="title edit_admin_editattr_title" type="image" src="/static/img/edit.png" onClick="return openFilledForm(this)" class="mediatum_subcontent_position"/>
+                        <input tal:condition="user_is_admin" tal:attributes="name python:u'attr_{}'.format(key)" i18n:attributes="title edit_admin_del_attribute" type="image" src="/static/img/delete.png" onClick="return questionDel()" class="mediatum_subcontent_top"/>
                     </div>
 
                     <div tal:condition="python: len(list(obsoletefields))==0" class="mediatum_entry">
@@ -108,8 +117,8 @@
                     <div class="mediatum_entry" tal:repeat="item python:system_attrs">
                         <div class="label" tal:content="python:item[0]">TEXT</div>
                         <div class="content" tal:content="python:item[1]">TEXT</div>
-                        <img tal:condition="user_is_admin" tal:attributes="name python:'system.' + item[0];value python:item[1]" i18n:attributes="title edit_admin_editattr_title" type="image" src="/img/edit.png" onClick="return openFilledForm(this)" class="mediatum_subcontent_position"/>
-                        <input tal:condition="user_is_admin" tal:attributes="name python:u'system_attr_{}'.format(item[0])" i18n:attributes="title edit_admin_del_attribute" type="image" src="/img/delete.png" onClick="return questionDel()" class="mediatum_subcontent_top"/>
+                        <img tal:condition="user_is_admin" tal:attributes="name python:'system.' + item[0];value python:item[1]" i18n:attributes="title edit_admin_editattr_title" type="image" src="/static/img/edit.png" onClick="return openFilledForm(this)" class="mediatum_subcontent_position"/>
+                        <input tal:condition="user_is_admin" tal:attributes="name python:u'system_attr_{}'.format(item[0])" i18n:attributes="title edit_admin_del_attribute" type="image" src="/static/img/delete.png" onClick="return questionDel()" class="mediatum_subcontent_top"/>
                     </div>
 
                     <div tal:condition="python: not system_attrs" class="mediatum_entry">
@@ -127,8 +136,8 @@
                             </div>
                         </tal:block>
                         <div class="content" tal:content="python:fd(node.get(key))">TEXT</div>
-                        <img tal:condition="canedit" tal:attributes="name python:key;value python:fd(node.get(key))" i18n:attributes="title edit_admin_editattr_title" type="image" src="/img/edit.png" onClick="return openFilledForm(this)" class="mediatum_subcontent_position"/>
-                        <input tal:condition="user_is_admin" tal:attributes="name python:u'attr_{}'.format(key)" i18n:attributes="title edit_admin_del_attribute" type="image" src="/img/delete.png" onClick="return questionDel()" class="mediatum_subcontent_top"/>
+                        <img tal:condition="canedit" tal:attributes="name python:key;value python:fd(node.get(key))" i18n:attributes="title edit_admin_editattr_title" type="image" src="/static/img/edit.png" onClick="return openFilledForm(this)" class="mediatum_subcontent_position"/>
+                        <input tal:condition="user_is_admin" tal:attributes="name python:u'attr_{}'.format(key)" i18n:attributes="title edit_admin_del_attribute" type="image" src="/static/img/delete.png" onClick="return questionDel()" class="mediatum_subcontent_top"/>
                     </div>
                     <div tal:condition="python:len(list(technfields))==0" class="mediatum_entry">
                         <div class="label" i18n:translate="edit_admin_noattribute">TEXT</div>
@@ -140,41 +149,6 @@
         </form>
     </div>
     <div id="sub_footer_module"> </div>
-
-    <script tal:content="python:u'var id={}'.format(node.id)" />
-
-    <script>
-        $(document).ready(function () { // set correct height of scrollable content
-           var sublayout = $('#sub_content').layout({applyDemoStyles: true,
-                center:{paneSelector: "#sub_content_content", onresize: $.layout.callbacks.resizePaneAccordions},
-                north:{paneSelector: "#navigation_content", size:50,resizable:false, closable:false},
-                south:{paneSelector: "#sub_footer_module",size:20,closable:false, resizable:false, spacing_open: 0, spacing_closed: 0}
-                });
-            $("#accordion").accordion({heightStyle: "fill"});
-        });
-
-        function openForm(){ // show upload form
-            $('#mediatum_addform').css('display','block');
-             parent.$('#overlay').css('display', 'block');
-        }
-
-        function openFilledForm(obj){
-            $('#new_name').val($(obj).attr('name'));
-            $('#new_value').val($(obj).attr('value'));
-
-            $('#mediatum_addform').css('display','block');
-            parent.$('#overlay').css('display', 'block');
-            return false;
-        }
-
-        function closeForm(){ // close upload form
-            $('#mediatum_addform').css('display','none');
-        }
-
-        function setActionType(value){
-            $("#type").val(value);
-        }
-    </script>
 </tal:block>
 
 

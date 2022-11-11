@@ -106,9 +106,9 @@ class FileStore:
                 dir = dir[2:]
             dir = _os.path.join(GLOBAL_ROOT_DIR, dir)
         if _zipfile.is_zipfile(dir[:-1]) and dir.lower().endswith("zip/"):
-            self.handlers += [default_handler(zip_filesystem(dir[:-1]))]
+            self.handlers.insert(0, default_handler(zip_filesystem(dir[:-1])))
         else:
-            self.handlers += [default_handler(os_filesystem(dir))]
+            self.handlers.insert(0, default_handler(os_filesystem(dir)))
 
 
 class WebFile:

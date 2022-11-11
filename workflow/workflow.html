@@ -161,90 +161,11 @@
 
 
 <div metal:define-macro="workflow_show" id="workflow">
-
+    <script tal:content="python:u'var id={}'.format(step.id)"/>
+    <script src="/static/js/workflow/workflow.js"> </script>
     <div style="display:none" id="confirm_delete"  i18n:translate="workflow_confirm_msg_delete">TEXT</div>
     <div style="display:none" id="confirm_move"  i18n:translate="workflow_confirm_msg_move">TEXT</div>
     <script tal:content="python:u'var id={}'.format(step.id)"/>
-    <script>
-        var allChecked = false;
-        $(document).ready(function()
-        {
-            $('.checkbox').attr('checked', false);
-
-            $('.checkbox, .toggled_text').click(function()
-            {
-                if ($('.checkbox:checked').size() > 0)
-                {
-                    $(':button').attr('disabled', false);
-                }
-                else
-                {
-                    $(':button').attr('disabled', true);
-                }
-            });
-        });
-
-        function submit(csrf)
-        {
-            if ($('.checkbox:checked').size() > 0)
-            {
-                if ($("#selectid").val() == "delete")
-                {
-                    confirmf('#confirm_delete', csrf);
-                }
-                else
-                {
-                    confirmf('#confirm_move', csrf);
-                }
-            }
-            else
-            {
-                //do nothing
-            }
-        }
-
-        function confirmf(v, csrf)
-        {
-            if (confirm($(v).html()))
-            {
-                var selected = new Array();
-                $('.checkbox:checked').each(function()
-                {
-                    selected.push($(this).attr('id'));
-                });
-                $.ajax({
-                    url: '/mask?id='+id+'&action='+$('select').val(),
-                    traditional: true, //would POST param "obj[]" with brackets in the name otherwise
-                    data: {obj: selected, csrf_token: csrf},
-                    type: 'POST',
-                    success: function (response) {
-                        $('#workflow').replaceWith($(response).find('#workflow'));
-                    },
-                });
-            }
-        }
-
-        function toggleAll()
-        {
-            $('.toggled_text').toggle();
-            if (allChecked == true)
-            {
-                $('.checkbox').each(function()
-                {
-                    $(this).prop('checked', false);
-                });
-                allChecked = false;
-            }
-            else
-            {
-                $('.checkbox').each(function()
-                {
-                    $(this).prop('checked', true);
-                });
-                allChecked = true;
-            }
-        }
-    </script>
     <p>
     <span style="text-align:left"><a tal:attributes="href python:u'/publish/{}'.format(workflow.getName())" i18n:translate="workflow_back">TEXT</a></span>
     </p>
@@ -283,14 +204,12 @@
     <br/>
 </div>
 
-
 <tal:block metal:define-macro="workflow_forward">
     <h2 i18n:translate="wf_step_ready">TEXT</h2>
     <p i18n:translate="workflow_msg4">
         TEXT <span tal:content="python:node.id" i18n:name="name"/>
     </p>
 </tal:block>
-
 
 <tal:block metal:define-macro="workflow_forward2">
     <h2 i18n:translate="wf_step_ready">TEXT</h2>
@@ -302,7 +221,6 @@
     <p i18n:translate="workflow_msg6">TEXT <span tal:content="email" i18n:name="email"/></p>
 
 </tal:block>
-
 
 <table id="workflowbuttons" metal:define-macro="workflow_buttons" style="margin-top:20px;">
     <tr>

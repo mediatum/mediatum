@@ -27,13 +27,13 @@
 
 - macro archive(highres_url, archive_fetch_url)
   if archive_fetch_url == "pending"
-    img(src = "/img/wait_small.gif")
+    img(src = "/static/img/wait_small.gif")
   if archive_fetch_url and archive_fetch_url != "pending"
     div(style="padding-top:10px")
       script(type='text/javascript').
         function getArchivedFile(path) {
           // replace archive fetch link with spinner image
-          $('#archive_div').html('<img src="/img/wait_small.gif"/>');
+          $('#archive_div').html('<img src="/static/img/wait_small.gif"/>');
           $.ajax({
             url: path,
             type: "GET",
@@ -84,15 +84,13 @@
         document.location.search = kvp.join('&');
       }
     }
-  div(style='position:absolute;right:15px;')
+  div
     label(style='font-size:10px;')
       = _t("items_per_page")
     select(name='nodes_per_page', onchange='insertParameter(name, this.value)', style='font-size:10px;')
       for n in nodesperpage_options
         option(value=n, selected=n == nodesperpage)
            = _t(n)
-
-  p(style='margin-top:30px;')
 
 // generated from jade
 //- vim: set filetype=jade sw=2 ts=2 sts=2 expandtab:

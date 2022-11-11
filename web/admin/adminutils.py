@@ -147,13 +147,13 @@ class Overview:
                         retList.append(Link(
                                 "{}1".format(unicode(i)),
                                 _core_translation.t(self.language, "admin_sort_label"),
-                                '{} <img src="/img/az.png" border="0" />'.format(col),
+                                '{} <img src="/static/img/az.png" border="0" />'.format(col),
                             ))
                     else:
                         retList.append(Link(
                                 "{}0".format(unicode(i)),
                                 _core_translation.t(self.language, "admin_sort_label"),
-                                '{} <img src="/img/za.png" border="0" />'.format(col),
+                                '{} <img src="/static/img/za.png" border="0" />'.format(col),
                             ))
                 else:
                     retList.append(Link(

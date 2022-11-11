@@ -11,11 +11,9 @@ from collections import OrderedDict
 
 from mediatumtal import tal
 
-import core.translation as _core_translation
 from core import config
 from core import httpstatus
 import core.metatype as _core_metatype
-from core.metatype import Metatype
 
 import re
 
@@ -24,7 +22,7 @@ logg = logging.getLogger(__name__)
 max_lang_length = max([len(lang) for lang in config.languages])
 
 
-class m_htmlmemo(Metatype):
+class m_htmlmemo(_core_metatype.Metatype):
 
     name = "htmlmemo"
 
@@ -89,30 +87,20 @@ class m_htmlmemo(Metatype):
         )
 
     def getPopup(self, req):
-        if "type" in req.values:
-            assert req.values["type"] == "configfile"
-            req.response.set_data(tal.processTAL(
-                    dict(lang=_core_translation.set_language(req.accept_languages)),
+        req.response.set_data(
+                tal.processTAL(
+                    dict(
+                        charmap=_core_metatype.charmap,
+                        name=req.params.get("name"),
+                        value=req.params.get("value"),
+                       ),
                     file="metadata/htmlmemo.html",
-                    macro="ckconfig",
+                    macro="popup",
                     request=req,
-                ))
-        else:
-            req.response.set_data(
-                    tal.processTAL(
-                        dict(
-                            charmap=_core_metatype.charmap,
-                            name=req.params.get("name"),
-                            value=req.params.get("value"),
-                           ),
-                        file="metadata/htmlmemo.html",
-                        macro="popup",
-                        request=req,
-                       )
-                    )
+                   )
+                )
         req.response.status_code = httpstatus.HTTP_OK
         return httpstatus.HTTP_OK
-
 
     translation_labels = dict(
         de=dict(

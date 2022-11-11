@@ -1,0 +1,44 @@
+/*
+  Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+  SPDX-License-Identifier: AGPL-3.0-or-later
+*/
+#div_select{width: 260px;height:40px;float:left;display:table;}
+#div_button{height:30px;float:left;display:table;margin-top:5px;}
+
+#addform{display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;z-index:99;}
+#addform-background{position:absolute;top:0;left:0;height:100%;width:100%;background-color:silver;opacity: 0.5; -moz-opacity: 0.5;-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";filter:alpha(opacity=50);}
+#addform-form{width:390px;min-height:250px;overflow:auto;position:absolute;top:100px;left:0;bottom:0;right:0;padding:5px;margin:auto;z-index:100}
+#addform-form form{padding:20px;width:340px;min-height:210px;overflow:auto;background-color:white;border:1px solid silver}
+#addform-form form p, h2{margin-left:18px;}
+
+input[type=text]{width:300px}
+
+div.label{width:200px;float:left;padding-left:15px;height:100%}
+div.content{white-space:normal;margin-left:220px;border:1px solid #E6E6E6;min-width:20px;min-height:16px;margin-right:40px;overflow:auto}
+div#entry{padding:5px;margin-right:10px;position:relative}
+div#entry:hover{background-color:#E6E6E6}
+div#entry input{position:absolute;right:20px;top:4px}
+
+.ui-accordion .ui-accordion-header {border:1px solid silver;color:#fff;background-color:#333; display: block; cursor: pointer; position: relative; margin-top: 2px;margin-bottom:0; padding: .5em .5em .5em .7em; zoom: 1; }
+#accordion form{padding:0!important;}
+#accordion h3 {border-left:0;margin:0}
+#accordion h3 a{color:#fff;}
+
+#sub_content_content{padding:0!important}
+#navigation_content{border-width:0 0 1px 1px!important}
+
+#pdfdiv{display:none}
+
+table.progress{border:1px solid #E6E6E6}
+table.progress th{padding:2px; text-align:center;width:100px}
+table.progress td.week{border:1px solid #E6E6E6;text-align:center}
+table.progress td.weekend{background-color:#E6E6E6;text-align:center}
+table.progress td.bar{text-align:center;vertical-align:bottom; padding:0px 2px;font-size:0px}
+table.progressday{border:1px solid #E6E6E6}
+table.progressday th{padding:5px; text-align:center;width:100px}
+table.progressday td.week{border:1px solid #E6E6E6;text-align:center}
+table.progressday td.weekend{background-color:#E6E6E6;text-align:center}
+table.progressday td.bar{text-align:center;vertical-align:bottom;padding:0px 5px;font-size:0px}
+table.progresstime{border:1px solid #E6E6E6}
+table.progresstime td.bar{text-align:center;vertical-align:bottom;text-align:center;padding:0px 5px;font-size:0px}
+table.progresstime td.legend{border:1px solid #E6E6E6;text-align:center}

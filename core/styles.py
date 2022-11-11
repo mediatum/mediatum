@@ -33,7 +33,7 @@ class Theme(object):
         self.style_path = os.path.join(path, "styles")
 
     def getImagePath(self):
-        return self.path + "/img/"
+        return self.path + "/static/img/"
 
     def activate(self):
         import core.webconfig
@@ -47,9 +47,9 @@ class Theme(object):
             app.add_template_loader(theme_jinja_loader, 0)
 
         _addFileStore("/theme/", self.path + "/")
-        _addFileStorePath("/css/", self.path + "/css/")
-        _addFileStorePath("/img/", self.path + "/img/")
-        _addFileStorePath("/js/", self.path + "/js/")
+        _addFileStorePath("/static/css/", self.path + "/static/css/")
+        _addFileStorePath("/static/img/", self.path + "/static/img/")
+        _addFileStorePath("/static/js/", self.path + "/static/js/")
 
     def get_tal_template_path(self, filename):
         raise NotImplementedError("implement in subclasses!")

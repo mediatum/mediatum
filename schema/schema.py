@@ -58,18 +58,18 @@ requiredoption = (
         name="Kein Pflichtfeld",
         shortname="notmandatory",
         value="0",
-        imgsource="/img/req2_opt.png",
+        imgsource="/static/img/req2_opt.png",
     ),
     _Option(
         name="Pflichtfeld, darf nicht leer sein",
         shortname="mandatory1", value="1",
-        imgsource="/img/req0_opt.png",
+        imgsource="/static/img/req0_opt.png",
     ),
     _Option(
         name="Pflichtfeld, muss eine Zahl sein",
         shortname="mandatory2",
         value="2",
-        imgsource="/img/req1_opt.png",
+        imgsource="/static/img/req1_opt.png",
     ),
 )
 
@@ -77,13 +77,13 @@ fieldoption = (
     _Option(
         name="metafield_option1",
         shortname="search", value="s",
-        imgsource="/img/folder_plus.gif",
+        imgsource="/static/img/folder_plus.gif",
     ),
     _Option(
         name="metafield_option2",
         shortname="sort",
         value="o",
-        imgsource="/img/ordersel.png",
+        imgsource="/static/img/ordersel.png",
     ),
 )
 
@@ -1123,7 +1123,7 @@ class Mask(Node):
         ret = '<form method="post" name="myform">'
         ret += '<input value="' + _core_csrfform.get_token() + '" type="hidden" name="csrf_token">'
         ret += '<div class="back"><h3 i18n:translate="mask_editor_field_definition">Felddefinition </h3>'
-        ret += '<div align="right"><input type="image" src="/img/install.png" name="newdetail_'
+        ret += '<div align="right"><input type="image" src="/static/img/install.png" name="newdetail_'
         ret += unicode(self.id)
         ret += '" i18n:attributes="title mask_editor_new_line_title"/></div><br/>'
 

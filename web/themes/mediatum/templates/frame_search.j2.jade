@@ -6,7 +6,7 @@
   if search.isSimple()
     span
       form#search-box(name='search', action=action)
-        input#search-field(value=search.simple_search_query, placeholder=search_placeholder, name='query', style='width:180px')
+        input#search-field(value=search.simple_search_query, placeholder=search_placeholder, name='query')
         input#search-button(value=_t('search'), title=_t('search_title'), type='submit')
         input(type='hidden', name='srcnodeid', value=container_id)
         input(type='hidden', name='id', value=container_id)
@@ -25,7 +25,7 @@
       table
         for pos in range(1, max)
           tr
-            td(valign='top')
+            td(style='vertical-align: top;')
               select(name='field{}'.format(pos), onchange='chg()')
                 option(selected = (search.searchmaskitem_ids[pos] == None), value='full')
                   = _t('all_data')

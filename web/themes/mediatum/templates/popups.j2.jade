@@ -10,7 +10,7 @@
       meta(content='text/html;charset=UTF-8', http-equiv='content-type')
       title
         = _t('popup_help_header')
-      link(rel='stylesheet', href='/css/mediatum.css')
+      link(rel='stylesheet', href='/static/css/mediatum.css')
       style(type='text/css').
         body {
           margin: 5px;
@@ -38,8 +38,8 @@
     head
       title
         = _t('att_browser_title')
-      link(rel='stylesheet', href='/css/tum.css')
-      link(rel='stylesheet', href='/css/admin.css')
+      link(rel='stylesheet', href='/static/css/tum.css')
+      link(rel='stylesheet', href='/static/css/admin/admin.css')
     body(style='margin:5px')
       h3
         = _t('att_browser_title')
@@ -59,7 +59,7 @@
               if (file['type'] == 'dir') or (file['type'] == 'back')
                 td(class=cssclass, align='center')
                   a(href='/attachmentbrowser?id={}&path={}'.format(id, file['req_path']))
-                    img(src='/img/{}'.format(file['icon']), border='0')
+                    img(src='/static/img/{}'.format(file['icon']), border='0')
                 td(class=cssclass, valign='top')
                   a(href='/attachmentbrowser?id={}&path={}'.format(id, file['req_path']))
                     = file['name']
@@ -67,7 +67,7 @@
               if (file['type'] != 'dir') and (file['type'] != 'back')
                 td(class=cssclass, align='center')
                   a(href='/attfile/{}/{}'.format(id, file['path']), target='_blank')
-                    img(src='/img/{}'.format(file['icon']), border='0')
+                    img(src='/static/img/{}'.format(file['icon']), border='0')
                 td(class=cssclass)
                   a(href='attfile/{}/{}'.format(id, file['path']), target='_blank')
                     = file['name']

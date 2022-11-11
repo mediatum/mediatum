@@ -1,0 +1,28 @@
+/*
+  Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+  SPDX-License-Identifier: AGPL-3.0-or-later
+*/
+#editform{display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;z-index:10;}
+#editform-background{position:absolute;top:0;left:0;height:100%;width:100%;background-color:silver;opacity: 0.5; -moz-opacity: 0.5;-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";filter:alpha(opacity=50);}
+#editform-form{position:absolute;top:0;left:0;bottom:0;right:0;padding:0;margin:30px;z-index:11;height:80%;width:80%;margin:auto;}
+#editform-form form{min-height:100%;padding:0}
+
+.ui-accordion .ui-accordion-header {border:1px solid silver;color:#fff;background-color:#333; display: block; cursor: pointer; position: relative; margin-top: 2px;margin-bottom:0; padding: .5em .5em .5em .7em; zoom: 1; }
+#accordion h3 {border-left:0;margin:0}
+#accordion h3 a{color:#fff;}
+#printdiv a{display:none}
+#filetable{border:1px solid silver; border-width:1px 1px 0 0; width:100%}
+#filetable input{background-color:transparent; margin:1px; border-width:0}
+#filetable input:hover{border-width:0}
+#filetable input[type="text"]{border:1px solid silver}
+#filetable input[type="text"]:hover{border:1px solid black; background-color:#ffffff}
+
+#filetable th{background-color:#d8d8d8; padding:3px 5px 2px 3px; border-bottom:1px solid silver; font-variant:small-caps}
+#filetable tr{border:1px solid silver}
+#filetable td{vertical-align:middle; padding:2px; border-bottom:1px solid silver}
+#filetable tr:hover{background-color:silver}
+#filetable a{color:#000000; padding:1px; margin:0}
+td.silver{background-color:#efefef}
+
+#sub_content_content{padding:0!important}
+#navigation_content{border-width:0 0 1px 1px!important}

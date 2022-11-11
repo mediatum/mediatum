@@ -71,7 +71,7 @@ def getContent(req, ids):
             node.set('url', req.params.get("logo_link"))
 
         # save filename
-        if req.params.get('logo') == "/img/empty.gif":
+        if req.params.get('logo') == "/static/img/empty.gif":
             # remove logo from current node
             node.set("system.logo", "")
             logg.info("%s cleared logo for node %s (%s, %s)", user.login_name, node.id, node.name, node.type)

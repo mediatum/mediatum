@@ -1,0 +1,14 @@
+/*
+  Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+  SPDX-License-Identifier: AGPL-3.0-or-later
+*/
+input, button, textarea, select{background-color:white}
+
+#operation{position:relative;margin-right:200px;min-height:30px}
+#operation div{position:absolute;bottom:1px;right:-195px}
+#navigation_content{border-top:0px!important}
+#changeform{padding-bottom:3px}
+
+.label{width:225px}
+
+#sub_footer_module{overflow:hidden;}

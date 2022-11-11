@@ -23,7 +23,10 @@
 </metal:macro>
 
 <metal:macro define-macro="object_versions">
-	<div class="version_toggle" onclick="$('#versions').toggle()" style="cursor:pointer" i18n:attributes="title document_versions_existing_title"><tal:block i18n:translate="document_versions">TEXT</tal:block> <img src="/img/greyarrow.gif"/></div>
+	<div class="version_toggle" onclick="$('#versions').toggle()" style="cursor:pointer" i18n:attributes="title document_versions_existing_title">
+        <tal:block i18n:translate="document_versions">TEXT</tal:block>
+        <img src="/static/img/greyarrow.gif"/>
+    </div>
 	<div style="display:none;border:1px solid silver;padding:5px;" id="versions">
 	  <div>
 		<!-- shown version: node is active and is tagged -->

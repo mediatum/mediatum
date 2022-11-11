@@ -193,7 +193,7 @@ def isNumeric(s):
 
 
 class Link:
-    def __init__(self, link, title, label, target="_self", icon="/img/blank.gif"):
+    def __init__(self, link, title, label, target="_self", icon="/static/img/blank.gif"):
         self.link = link
         self.title = title
         self.label = label

@@ -83,17 +83,17 @@ class m_vgroup(Metatype):
             ret += '<div align="right" id="' + unicode(item.id) + \
                 '_sub" style="display:none"><small style="color:silver">(' + (item.get("type")) + ')</small>'
             if index > 0:
-                ret += '<input type="image" src="/img/uparrow.png" name="up_' + \
+                ret += '<input type="image" src="/static/img/uparrow.png" name="up_' + \
                     unicode(item.id) + '" i18n:attributes="title mask_edit_up_title"/>'
             else:
                 ret += '&nbsp;&nbsp;&nbsp;'
             if index < len(parent.getChildren()) - 1:
-                ret += '<input type="image" src="/img/downarrow.png" name="down_' + \
+                ret += '<input type="image" src="/static/img/downarrow.png" name="down_' + \
                     unicode(item.id) + '" i18n:attributes="title mask_edit_down_title"/>'
             else:
                 ret += '&nbsp;&nbsp;&nbsp;'
-            ret += ' <input type="image" src="/img/edit.png" name="edit_' + unicode(
-                item.id) + '" i18n:attributes="title mask_edit_edit_row"/> <input type="image" src="/img/delete.png" name="delete_' + unicode(
+            ret += ' <input type="image" src="/static/img/edit.png" name="edit_' + unicode(
+                item.id) + '" i18n:attributes="title mask_edit_edit_row"/> <input type="image" src="/static/img/delete.png" name="delete_' + unicode(
                 item.id) + '" i18n:attributes="title mask_edit_delete_row" onClick="return questionDel()"/></div>'
             ret += '</div>'
 

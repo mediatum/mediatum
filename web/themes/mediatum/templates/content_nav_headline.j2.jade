@@ -7,9 +7,9 @@
     tr
       td(align='left', valign='top', nowrap='')
         a(href=nav.link_first())
-          img(border='0', src='/img/pagestart.gif')
+          div(id='mediatum_img_pageleft_end')
         a(href=nav.link_prev())
-          img(border='0', src='/img/pageleft.gif')
+          div(id='mediatum_img_pageleft')
       td(width='100%', align='center')
         a(href='javascript: history.back()')
           = _t('back')
@@ -21,9 +21,9 @@
           = _t('direct_link_current_node')
       td(align='right', valign='top', nowrap='')
         a(href=nav.link_next())
-          img(border='0', src='/img/pageright.gif')
+          div(id='mediatum_img_pageright')
         a(href=nav.link_last())
-          img(border='0', src='/img/pageend.gif')
+          div(id='mediatum_img_pageright_end')
   br
 
 

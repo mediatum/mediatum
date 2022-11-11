@@ -262,11 +262,10 @@ def initContexts():
     file.addHandler("export").addPattern("/.*")
 
     # === static files ===
-    _request_handler.addFileStore("/ckeditor/", "lib/CKeditor/files.zip")
-    _request_handler.addFileStore("/css/", "web/css/")
-    _request_handler.addFileStore("/xml/", "web/xml/")
-    _request_handler.addFileStore("/img/", ["web/img/", "web/admin/img/", "web/edit/img/"])
-    _request_handler.addFileStore("/js/", ["web/js/", "js", "lib/CKeditor/js/"])
+    _request_handler.addFileStore("/static/ckeditor/", "static/CKeditor/files.zip")
+    _request_handler.addFileStore("/static/js/", "static/js/")
+    _request_handler.addFileStore("/static/css/", "static/css/")
+    _request_handler.addFileStore("/static/img/", "static/img/")
 
     # === last: path aliasing for collections ===
     handler = main_file.addHandler("display_alias")
@@ -275,8 +274,6 @@ def initContexts():
     # 404
     handler = main_file.addHandler("display_404")
     handler.addPattern("/(.)+$")
-
-    init_theme()
 
     # testing global exception handler
     context = _request_handler.addContext("/_test", ".")

@@ -336,7 +336,7 @@ def get_license_urls(node):
         else:
             license_name, license_url = parts
             # XXX: hardcoded URL
-            license_image_url = "/img/{}.png".format(license_name)
+            license_image_url = "/static/img/{}.png".format(license_name)
 
     return license_url, license_image_url
 

@@ -25,7 +25,7 @@ def _replace_vars(node, s):
     return s
 
 
-_icons = {"externer Link": "/img/extlink.png", "Email": "/img/email.png"}
+_icons = {"externer Link": "/static/img/extlink.png", "Email": "/static/img/email.png"}
 _targets = {"selbes Fenster": "same", "neues Fenster": "_blank"}
 
 

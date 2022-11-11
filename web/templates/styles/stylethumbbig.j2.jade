@@ -8,12 +8,10 @@ each file in files
       div
         img(title=translate('view_list_att_title'), src='/static/img/attach.png')
     a(href=file.getLink(), target='_parent')
-      div
-        if (file.node.get('width') or 0) > (file.node.get('height') or 0)
-          img.thumbnail(src='/thumbnail/{}'.format(file.node.id), border='0')
-        if (file.node.get('width') or 0) < (file.node.get('height') or 0)
-          img.thumbnail(src='/thumbnail/{}'.format(file.node.id), border='0')
+      div.mediatum-stylethumbbig-div
         if file.node.get('width') == file.node.get('height')
           p(class='mediatum-stylethumbbig-p')
             = file.text
+        else
+          img.thumbnail(src='/thumbnail/{}'.format(file.node.id), border='0')
 .break

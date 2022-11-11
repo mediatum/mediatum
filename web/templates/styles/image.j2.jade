@@ -11,9 +11,9 @@
 -block before_metadata
   .object_image.object_column.left.mediatum_paddingimg
     if data_access and (has_original or image_formats)
-      div.mediatum-image-div
-        a(href=image_url, onclick="vgwPixelCall();", target='_blank')
-          img(src=thumbnail_url, width="300", border="1px")
+      a(href=image_url, onclick="vgwPixelCall();", target='_blank')
+        div.mediatum-image-div
+          img.mediatum-image-thumbnail(src=thumbnail_url, border="1px")
 
       if image_formats
         = format(image_formats)
@@ -22,12 +22,12 @@
         = archive(highres_url, archive_fetch_url)
 
     elif image_formats
-      div.mediatum-image-div
-        a(href=preferred_image_url, onclick="vgwPixelCall();", target='_blank')
-          img(src=thumbnail_url, width="300", border="1px")
+      a(href=preferred_image_url, onclick="vgwPixelCall();", target='_blank')
+        div.mediatum-image-div
+          img.mediatum-image-thumbnail(src=thumbnail_url, border="1px")
 
       = format(image_formats)
 
     else
       div.mediatum-image-div
-        img(src=thumbnail_url, width="300", border="1px")
+        img.mediatum-image-thumbnail(src=thumbnail_url, border="1px")

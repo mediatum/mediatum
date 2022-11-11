@@ -11,9 +11,9 @@
 - block before_metadata
   if data_access and has_original
     .object_image.object_column.left
-      .document_thumb
-        a(href=documentlink, target="documentdownload", onclick="vgwPixelCall();", title=translate("doc_fulltext_title"))
-          img(src=documentthumb, width="300")
+      a(href=documentlink, target="documentdownload", onclick="vgwPixelCall();", title=translate("doc_fulltext_title"))
+        .document_thumb
+          img(src=documentthumb)
 
       .document_download
         a(href=documentdownload, onclick="vgwPixelCall();")= translate("alternative_pdf_link")

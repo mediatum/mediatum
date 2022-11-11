@@ -50,16 +50,11 @@ class WorkflowStep_Upload(WorkflowStep):
             if not file:
                 error = _core_translation.translate_in_request("workflowstep_file_not_uploaded", req)
             else:
-                fileExtension = os.path.splitext(file.filename)[1][1:].strip().lower()
-
-                if fileExtension in self.get("limit").lower().split(";") or self.get("limit").strip() in ['*', '']:
-                    orig_filename = file.filename
-                    file = fileutils.importFile(file.filename, file)
-                    node.files.append(file)
-                    node.name = orig_filename
-                    node.event_files_changed()
-                else:
-                    error = _core_translation.translate_in_request("WorkflowStep_InvalidFileType", req)
+                orig_filename = file.filename
+                file = fileutils.importFile(file.filename, file)
+                node.files.append(file)
+                node.name = orig_filename
+                node.event_files_changed()
         db.session.commit()
         if "gotrue" in req.params:
             if hasattr(node, "event_files_changed"):
@@ -84,7 +79,6 @@ class WorkflowStep_Upload(WorkflowStep):
                 dict(
                     obj=node.id,
                     id=self.id,
-                    limit=self.get("limit"),
                     filelist=filelist,
                     filelistshort=filelistshort,
                     node=node,
@@ -98,15 +92,3 @@ class WorkflowStep_Upload(WorkflowStep):
                 macro="workflow_upload",
                 request=req,
             )
-    def admin_settings_get_html_form(self, req):
-        return _tal.processTAL(
-            dict(limit=self.get('limit'),),
-            file="workflow/upload.html",
-            macro="workflow_step_type_config",
-            request=req,
-           )
-
-    def admin_settings_save_form_data(self, data):
-        assert set(data)=={"limit"}
-        self.set('limit', data['limit'])
-        db.session.commit()

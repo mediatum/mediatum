@@ -163,9 +163,6 @@ msgstr "Additional information for current node type"
 msgid "admin_wf_definition"
 msgstr "Workflow definition"
 
-msgid "admin_wfstep_uploadtype"
-msgstr "Allowed file types (;-separated)"
-
 msgid "admin_wfstep_node_types_to_create"
 msgstr "node types to create (;-separated schema list)"
 
@@ -198,9 +195,6 @@ msgstr "Details editable?"
 
 msgid "admin_wfstep_textpage_text_to_display"
 msgstr "Text to display"
-
-msgid "WorkflowStep_InvalidFileType"
-msgstr "Type of chosen file invalid"
 
 msgid "admin_wfstep_pretext"
 msgstr "Header text"

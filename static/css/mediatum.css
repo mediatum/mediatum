@@ -168,6 +168,12 @@ a.page-nav-next { margin-left: 10px;}
 #portal-column-content #portal-pages a:hover { color: #000;}
 #portal-column-content #portal-pages table {padding:0px;margin:0px;width:100%;}
 #portal-column-content #portal-pages table tr td {width:33%; vertical-align: center;}
+#portal-column-content #portal-pages table tr td table tr td.mediatum-content-nav-list-header-label {
+    text-align: right;
+}
+#portal-column-content #portal-pages table tr td table tr td.mediatum-content-nav-list-header-select {
+    text-align: left;
+}
 /* Paths / Vorkommen */
 div#paths { border-top: rgb(71,71,71) solid 1px; padding: 5px; margin: 20px 5px 5px 0px;}
 

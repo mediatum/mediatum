@@ -211,7 +211,7 @@ def getContent(req, ids):
             schemes = get_permitted_schemas()
             dtypes = getDatatypes(req, schemes)
             dtypenames = {t.__name__.lower():t.__name__ for t in dtypes}
-            for scheme in get_permitted_schemas():
+            for scheme in schemes:
                 datatypes = scheme.getDatatypes()
                 for datatype in datatypes:
                     if datatype in dtypenames.keys():

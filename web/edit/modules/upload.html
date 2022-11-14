@@ -4,16 +4,16 @@
 -->
 
 <metal:block metal:define-macro="include_plupload_script_tags">
-    <script src="/static/plupload/plupload.full.min.js"> </script>
-    <script src="/static/jquery.ui.plupload/jquery.ui.plupload.js"> </script>
+    <script src="/static/plupload-js/plupload.full.min.js"> </script>
+    <script src="/static/plupload-js/jquery.ui.plupload/jquery.ui.plupload.js"> </script>
     <script src="/static/js/edit/modules/upload1.js"> </script>
     <!-- activate translation for plupload -->
-    <script tal:attributes="src python:u'/static/plupload/i18n/{}.js'.format(language)"> </script>
+    <script tal:attributes="src python:u'/static/plupload-js/i18n/{}.js'.format(language)"> </script>
 </metal:block>
 
 <tal:block metal:define-macro="upload_form">
-    <link rel="stylesheet" href="/static/css/jquery-ui-1.12.1.css" type="text/css" />
-    <link rel="stylesheet" href="/static/jquery.ui.plupload/css/jquery.ui.plupload.css" type="text/css" />
+    <link rel="stylesheet" href="/static/jquery-ui-1.12.1/jquery-ui.css" type="text/css" />
+    <link rel="stylesheet" href="/static/plupload-js/jquery.ui.plupload/css/jquery.ui.plupload.css" type="text/css" />
     <link rel="stylesheet" href="/static/css/uploadform.css" type="text/css" />
 
     <script tal:content="python:u'var id = \'{}\';'.format(id)"> </script>

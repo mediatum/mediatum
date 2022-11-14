@@ -12,7 +12,6 @@ let
       url = "https://github.com/ckeditor/ckeditor4/archive/refs/tags/4.4.6.tar.gz";
       hash = "sha512-o8HGv6zwwSY1m7Nf1nj/MkmvunjI9KSaB5RRg06qSrMI7J0PsPGqFJpUNBFlREmOR6NMgCYrEq6982+3vOi9Yg==";
     };
-    "css/jquery-ui-1.12.1.css" = "../jquery-ui-1.12.1/jquery-ui.css";
     "fancytree" = fetchzip {
       url = "https://github.com/mar10/fancytree/archive/refs/tags/v2.4.1.tar.gz";
       hash = "sha512-O3AP9eu6ONtsCI1BOp2JlhiEpFKOzejeZLQ2KoChd9BKXan7CWsgkfGbuDRiE/wD3QWwEGv+Lvi8eZ6JvqqxMQ==";
@@ -53,12 +52,10 @@ let
       url = "https://jqueryui.com/resources/download/jquery-ui-1.12.1.zip";
       hash = "sha512-SsuIvuolutgpOU9O2YWxw3btHHiAL8N9GJpB4YbB6HMPl1fnhs4eqbXliFvcoNnBF/mIgAtbcD6RjSNVseznKw==";
     };
-    "plupload" = "${fetchzip {
+    "plupload-js" = "${fetchzip {
       url = "https://github.com/moxiecode/plupload/archive/refs/tags/v2.1.1.tar.gz";
       hash = "sha512-oXfvX9015m0o0flbXwYrPS+S192DsxC0VlaoJ143b3jiNleXbgzI23/8t4yVMGv7DEHGL6mreqdoS/lb5AhHow==";
     }}/js";
-    "jquery.ui.plupload" = "plupload/jquery.ui.plupload";
-    "js/jquery-ui-1.12.1.js" = "../jquery-ui-1.12.1/jquery-ui.js";
   };
 
   commands = lib.trivial.flip lib.attrsets.mapAttrsToList paths (path: file: ''

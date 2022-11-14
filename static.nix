@@ -8,6 +8,10 @@
 let
 
   paths = {
+    "ckeditor" = fetchzip {
+      url = "https://github.com/ckeditor/ckeditor4/archive/refs/tags/4.4.6.tar.gz";
+      hash = "sha512-o8HGv6zwwSY1m7Nf1nj/MkmvunjI9KSaB5RRg06qSrMI7J0PsPGqFJpUNBFlREmOR6NMgCYrEq6982+3vOi9Yg==";
+    };
     "css/jquery-ui-1.12.1.css" = "../jquery-ui-1.12.1/jquery-ui.css";
     "fancytree" = fetchzip {
       url = "https://github.com/mar10/fancytree/archive/refs/tags/v2.4.1.tar.gz";

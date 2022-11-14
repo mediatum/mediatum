@@ -198,9 +198,6 @@ def initContexts():
     file = context.addFile("web/frontend/export.py")
     file.addHandler("export").addPattern("/.*")
 
-    # === static files ===
-    _request_handler.addFileStore("/static/ckeditor/", "web-root/static/CKeditor/files.zip")
-
     # === last: path aliasing for collections ===
     handler = main_file.addHandler("display_alias")
     handler.addPattern("/([_a-zA-Z][_/a-zA-Z0-9]+)$")

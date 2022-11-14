@@ -12,8 +12,6 @@ import string as _string
 import logging as _logging
 import mimetypes as _mimetypes
 import importlib as _importlib
-import zipfile as _zipfile
-
 from cgi import escape as _escape
 from functools import partial as _partial
 
@@ -21,8 +19,6 @@ import flask as _flask
 
 import core.translation as _core_translation
 import httpstatus as _httpstatus
-import utils.locks as _utils_lock
-import csrfform as _csrfform
 from core import config as _config
 from utils.utils import suppress as _suppress, nullcontext as _nullcontext
 from utils.url import build_url_from_path_and_params as _build_url_from_path_and_params
@@ -101,10 +97,7 @@ class _FileStore:
             while dir.startswith("./"):
                 dir = dir[2:]
             dir = _os.path.join(GLOBAL_ROOT_DIR, dir)
-        if _zipfile.is_zipfile(dir[:-1]) and dir.lower().endswith("zip/"):
-            self.handlers.insert(0, _default_handler(_ZipFilesystem(dir[:-1])))
-        else:
-            self.handlers.insert(0, _default_handler(_OSFilesystem(dir)))
+        self.handlers.insert(0, _default_handler(_OSFilesystem(dir)))
 
 
 class _WebFile:
@@ -164,67 +157,6 @@ class _WebPattern:
 
     def getPatternString(self):
         return self.pattern
-
-
-class _ZipFilesystem:
-
-    def __init__(self, filename):
-        self.filename = filename
-        self.m = {}
-        self.z = _zipfile.ZipFile(filename)
-        for f in self.z.filelist:
-            self.m['/' + f.filename] = f
-
-        if "/index.html" in self.m:
-            self.m['/'] = self.m['/index.html']
-
-    def isfile(self, path):
-        if len(path) and path[-1] == '/':
-            return 0
-        return _os.path.join("/", path) in self.m
-
-    def isdir(self, path):
-        if not (len(path) and path[-1] == '/'):
-            path += '/'
-        return path in self.m
-
-    # TODO: implement a cache w/timeout for stat()
-    def stat(self, path):
-        fullpath = join_paths("/", path)
-        if self.isfile(path):
-            size = self.m[fullpath].file_size
-            return (33188, 77396L, 10L, 1, 1000, 1000, size, 0, 0, 0)
-        elif self.isdir(path):
-            return (16895, 117481L, 10L, 20, 1000, 1000, 4096L, 0, 0, 0)
-        else:
-            raise IOError("No such file or directory " + path)
-
-    def open(self, path, mode):
-        class zFile:
-
-            def __init__(self, content):
-                self.content = content
-                self.pos = 0
-                self.len = len(content)
-
-            def read(self, l=None):
-                if l is None:
-                    l = self.len - self.pos
-                if self.len < self.pos + l:
-                    l = self.len - self.pos
-                s = self.content[self.pos: self.pos + l]
-                self.pos += l
-                return s
-
-            def close(self):
-                del self.content
-                del self.len
-                del self.pos
-
-        with _utils_lock.named_lock("zipfile"):
-            data = self.z.read(path)
-
-        return zFile(data)
 
 
 class _OSFilesystem:
@@ -642,15 +574,6 @@ def handle_request(req):
         req.response.status_code = _httpstatus.HTTP_NOT_FOUND
 
     return req
-
-
-def addFileStore(webpath, localpaths):
-    global contexts
-    if len(webpath) and webpath[0] != '/':
-        webpath = "/" + webpath
-    c = _FileStore(webpath, localpaths)
-    contexts += [c]
-    return c
 
 
 def addContext(webpath, localpath):

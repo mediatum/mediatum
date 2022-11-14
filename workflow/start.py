@@ -53,6 +53,12 @@ class WorkflowStep_Start(WorkflowStep):
                     )
 
         if "workflow_start" in req.params:
+            if req.params.get('selected_schema') not in typenames:
+                return ('<i>{}: {} </i>').format(
+                        schema,
+                        _core_translation.t(_core_translation.set_language(req.accept_languages), "permission_denied"),
+                    )
+
             _core_translation.set_language(req.accept_languages, req.values.get('workflow_language'))
             content_class = Node.get_class_for_typestring(req.params.get('selected_schema').split('/')[0])
             node = content_class(name=u'', schema=req.params.get('selected_schema').split('/')[1])

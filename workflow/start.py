@@ -103,28 +103,11 @@ class WorkflowStep_Start(WorkflowStep):
                 # just take all specified metatypes, so that edit area
                 # and workflow are independent on this
                 types += [(m, a)]
-        cookie_error = _core_translation.translate(
-                _core_translation.set_language(req.accept_languages),
-                "Your_browser_doesnt_support_cookies",
-            )
-
-        js = """
-        <script language="javascript">
-        function cookie_test() {
-            if (document.cookie=="")
-                document.cookie = "CookieTest=Erfolgreich";
-            if (document.cookie=="") {
-                alert("%s");
-            }
-        }
-        cookie_test();
-        </script>""" % cookie_error
 
         return _tal.processTAL(
                 dict(
                     types=types,
                     id=self.id,
-                    js=js,
                     starttext=self.get('starttext'),
                     languages=self.parents[0].getLanguages(),
                     currentlang=_core_translation.set_language(req.accept_languages),

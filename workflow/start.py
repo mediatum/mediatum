@@ -10,7 +10,6 @@ import logging
 import flask as _flask
 import mediatumtal.tal as _tal
 
-import core.config as config
 import core.csrfform as _core_csrfform
 import core.translation as _core_translation
 from .workflow import WorkflowStep, registerStep

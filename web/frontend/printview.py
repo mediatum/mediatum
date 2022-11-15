@@ -6,12 +6,15 @@ from __future__ import print_function
 
 import os
 import re
+import urlparse as _urlparse
 from PIL import Image
 import core.config as config
 import tempfile
 from multiprocessing import Process
 import shutil
 import logging
+
+import flask as _flask
 
 from reportlab.platypus import Paragraph, BaseDocTemplate, SimpleDocTemplate, FrameBreak, Table, TableStyle, Image as PdfImage, Frame, PageBreak, PageTemplate
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -212,7 +215,7 @@ class PrintPreview:
             for path in pathlist:
 
                 for item in path:
-                    p += u'<link href="http://{}{}">{}</link>'.format(self.host, node_url(item.id), item.getName())
+                    p += u'<link href="{}">{}</link>'.format(_urlparse.urljoin(self.host, node_url(item.id)), item.getName())
 
                     if path.index(item) < len(path) - 1:
                         p += ' > '
@@ -259,7 +262,7 @@ class PrintPreview:
 
 def getPrintView(lang, imagepath, metadata, paths, style, children, collection, dest_file):  # style=1: object, style=3: liststyle
     """ returns pdf content of given item """
-    pv = PrintPreview(lang, config.get("host.name"))
+    pv = PrintPreview(lang, _flask.request.host_url)
     pv.setHeader(collection)
 
     if style == 1 or style == 2:

@@ -99,44 +99,17 @@ def getNodeWorkflow(node):
         for p2 in p.parents:
             if p2.type == "workflow":
                 return p2
-    return None
 
 
 def getNodeWorkflowStep(node):
     workflow = getNodeWorkflow(node)
     if workflow is None:
         return None
-    steps = [n.id for n in workflow.getSteps()]
+    steps = frozenset(n.id for n in workflow.getSteps())
     for p in node.parents:
         if p.id in steps:
             return p
-    return None
 
-# execute step operation and set node step
-
-
-def runWorkflowStep(node, op, forward=True):
-    workflow = getNodeWorkflow(node)
-    workflowstep = getNodeWorkflowStep(node)
-
-    if workflowstep is None:
-        return
-
-    if forward:
-        newstep = None
-        if op == "true":
-            newstep = workflow.getStep(workflowstep.getTrueId())
-        else:
-            newstep = workflow.getStep(workflowstep.getFalseId())
-
-        workflowstep.children.remove(node)
-        newstep.children.append(node)
-        db.session.commit()
-    else:
-        newstep = workflowstep
-    newstep.runAction(node, op)
-    logg.info('workflow run action "%s" (op="%s") for node %s', newstep.name, op, node.id)
-    return getNodeWorkflowStep(node)
 
 # set workflow for node
 
@@ -515,9 +488,9 @@ class WorkflowStep(Node):
 
                     link = _build_url_from_path_and_params("/mask", {"id": self.id})
                     if "forcetrue" in req.values:
-                        return self.forwardAndShow(node, True, req, link=link)
+                        return self.forwardAndShow(node, True, req, _link=link)
                     if "forcefalse" in req.values:
-                        return self.forwardAndShow(node, False, req, link=link)
+                        return self.forwardAndShow(node, False, req, _link=link)
 
                     return self.show_workflow_node(node, req)
                 else:
@@ -617,37 +590,31 @@ class WorkflowStep(Node):
         if self.getTrueId() == '':
             logg.error("No Workflow action defined for workflowstep %s (op=%s)", self.getId(), op)
 
-    def forward(self, node, op, forward=True):
-        op_str = "true" if op else "false"
-        return runWorkflowStep(node, op_str, forward)
+    def forward(self, node, op, _forward=True):
+        workflow = getNodeWorkflow(node)
+        workflowstep = getNodeWorkflowStep(node)
 
-    def forwardAndShow(self, node, op, req, link=None, data=None, forward=True):
-        newnode = self.forward(node, op, forward)
+        if workflowstep is None:
+            return
 
+        if _forward:
+            newstep = workflow.getStep(workflowstep.getTrueId() if op else workflowstep.getFalseId())
+            workflowstep.children.remove(node)
+            newstep.children.append(node)
+            db.session.commit()
+        else:
+            newstep = workflowstep
+        newstep.runAction(node, "true" if op else "false")
+        logg.info('workflow run action "%s" (op="%s") for node %s', newstep.name, op, node.id)
+        return getNodeWorkflowStep(node)
+
+    def forwardAndShow(self, node, op, req, forward=True, _link=None):
+        newnode = self.forward(node, op, _forward=forward)
         if newnode is None:
             return _tal.processTAL({"node": node}, file="workflow/workflow.html", macro="workflow_forward", request=req)
-
-        if link is None:
-            context = {"id": newnode.id, "obj": node.id}
-            if data and isinstance(data, type({})):
-                for k in data:
-                    if k not in context:
-                        context[k] = data[k]
-                    else:
-                        logg.warning("workflow '%s', step '%s', node %s: ignored data key '%s' (value='%s')",
-                                     getNodeWorkflow(node).name, getNodeWorkflowStep(node).name, node.id, k, data[k])
-
-            newloc = _build_url_from_path_and_params("/mask", context)
-        else:
-            newloc = link
-        redirect = 1
-        if redirect == 0:
-            return _tal.processTAL(context, file="workflow/workflow.html", macro="workflow_forward2", request=req)
-        else:
-            if config.get("config.ssh", "") == "yes":
-                if not newloc.lower().startswith("https:"):
-                    newloc = "https://" + config.get("host.name") + newloc.replace("http://" + config.get("host.name"), "")
-            return '<script language="javascript">document.location.href = "%s";</script>' % newloc
+        if _link is None:
+            _link = _build_url_from_path_and_params("/mask", dict(id=newnode.id, obj=node.id))
+        return '<script>document.location.href = "{}";</script>'.format(_link)
 
     def getTrueId(self):
         """XXX: misleading name: returns name, not node id!"""

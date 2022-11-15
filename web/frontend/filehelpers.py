@@ -10,7 +10,11 @@ from __future__ import print_function
 import logging
 import os
 import re
+import urlparse as _urlparse
 import zipfile
+
+import flask as _flask
+
 import utils.utils as _utils_utils
 from core import config, db, Node
 from contenttypes import Content
@@ -137,10 +141,10 @@ def get_transfer_url(n):
     filecount = len(build_filelist(n))
     if filecount < 2:
         transfer_filename = ustr(n.id) + ".pdf"
-        transferurl = u"http://{}/doc/{}/{}".format(config.get("host.name"), n.id, transfer_filename)
+        transferurl = _urlparse.urljoin(_flask.request.host_url, u"/doc/{}/{}".format(n.id, transfer_filename))
     else:
         transfer_filename = ustr(n.id) + "_transfer.zip"
-        transferurl = u"http://{}/file/{}".format(config.get("host.name"), transfer_filename)
+        transferurl = _urlparse.urljoin(_flask.request.host_url, u"/file/{}/{}".format(n.id, transfer_filename))
 
     return transferurl
 

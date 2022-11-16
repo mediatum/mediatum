@@ -184,6 +184,13 @@ div#portal-breadcrumbs a:hover { color: rgb(48,112,179);}
 
 /* Viewswitch */
 div#portal-breadcrumbs div p a.view_switch { padding: 2px;}
+div#portal-breadcrumbs div.mediatum-content-nav-path {
+    padding-bottom: 20px;
+    word-break: break-word;
+}
+div#portal-breadcrumbs div.mediatum-content-nav-path a {
+    display: inline-block;
+}
 
 div#portal-breadcrumbs #collectionlogo { margin: 0px 0px 10px 0px; width: 100%; right: 0px; text-align: right;}
 

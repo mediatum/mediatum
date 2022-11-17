@@ -5,7 +5,7 @@
 
 consoledb.group('--- loading contextmenu js ---');
 $.getScript(
-    "/static/js/fancytree/3rd-party/extensions/contextmenu/jsx/jquery.fancytree.contextMenu.js",
+    "/static/js/fancytree/3rd-party/extensions/contextmenu/js/jquery.fancytree.contextMenu.js",
     function( data, sStatus, jqxhr ) {
         consoledb.log(sStatus); // Success
         consoledb.log(jqxhr.status ); // 200

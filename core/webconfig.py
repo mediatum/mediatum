@@ -107,17 +107,16 @@ def initContexts():
     oai_enabled = config.getboolean("oai.activate", False)
 
     # === public area ===
-    file = context.addFile("web/frontend/filehandlers.py")
-    file.addHandler("send_thumbnail").addPattern("/thumbnail/.*")
-    file.addHandler("send_doc").addPattern("/doc/.*")
-    file.addHandler("send_image").addPattern("/image/.*")
-    file.addHandler("redirect_images").addPattern("/images/.*")
-    handler = file.addHandler("send_file")
+    filehandlers = context.addFile("web/frontend/filehandlers.py")
+    filehandlers.addHandler("send_thumbnail").addPattern("/thumbnail/.*")
+    filehandlers.addHandler("send_doc").addPattern("/doc/.*")
+    filehandlers.addHandler("send_image").addPattern("/image/.*")
+    filehandlers.addHandler("redirect_images").addPattern("/images/.*")
+    handler = filehandlers.addHandler("send_file")
     handler.addPattern("/file/.*")
     handler.addPattern("/download/.*")
-    file.addHandler("send_attfile").addPattern("/attfile/.*")
-    file.addHandler("fetch_archived").addPattern("/archive/.*")
-    file.addHandler("send_from_webroot").addPattern("/[a-z,0-9,-]*\.[a-z]*")  # root directory added /web/root (only files with extensions)
+    filehandlers.addHandler("send_attfile").addPattern("/attfile/.*")
+    filehandlers.addHandler("fetch_archived").addPattern("/archive/.*")
 
     main_file = file = context.addFile("web/frontend/main.py")
     handler = file.addHandler("display")
@@ -200,18 +199,14 @@ def initContexts():
     file.addHandler("export").addPattern("/.*")
 
     # === static files ===
-    _request_handler.addFileStore("/static/ckeditor/", "static/CKeditor/files.zip")
-    _request_handler.addFileStore("/static/js/", "static/js/")
-    _request_handler.addFileStore("/static/css/", "static/css/")
-    _request_handler.addFileStore("/static/img/", "static/img/")
+    _request_handler.addFileStore("/static/ckeditor/", "web-root/static/CKeditor/files.zip")
 
     # === last: path aliasing for collections ===
     handler = main_file.addHandler("display_alias")
     handler.addPattern("/([_a-zA-Z][_/a-zA-Z0-9]+)$")
 
-    # 404
-    handler = main_file.addHandler("display_404")
-    handler.addPattern("/(.)+$")
+    # handle rest pattern
+    filehandlers.addHandler("send_from_webroot").addPattern("/(.)+$")
 
     # testing global exception handler
     context = _request_handler.addContext("/_test", ".")

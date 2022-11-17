@@ -653,25 +653,8 @@ def addFileStore(webpath, localpaths):
     return c
 
 
-def addFileStorePath(webpath, path):
-    for context in contexts:
-        if context.name == webpath:
-            if path not in context.handlers:
-                context.addRoot(path)
-
-
 def addContext(webpath, localpath):
     global contexts
     c = _WebContext(webpath, localpath)
     contexts += [c]
     return c
-
-
-def getFileStorePaths(webpath):
-    global contexts
-    ret = []
-    for context in contexts:
-        if context.name == webpath:
-            for h in context.handlers:
-                ret.append(h.filesystem.root)
-    return ret

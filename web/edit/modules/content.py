@@ -24,29 +24,20 @@ import web.common.sort as _sort
 q = db.query
 
 
-def elemInList(elemlist, name):
-    for item in elemlist:
-        if item.getName() == name:
-            return True
-    return False
-
+def getDatatypes(req, schemes):
+    dtypes = []
+    datatypes = Data.get_all_datatypes()
+    for scheme in schemes:
+        for dtype in scheme.getDatatypes():
+            if dtype not in dtypes:
+                dtypes.extend(datatypes)
+    try:
+        dtypes.sort(key=lambda x: _core_translation.translate_in_request(x, req).lower())
+    except _core_translation.MessageIdNotFound:
+        dtypes.sort(key=lambda x: x.__name__.lower())
+    return dtypes
 
 def getContent(req, ids):
-
-    def getDatatypes(_req, _schemes):
-        _dtypes = []
-        datatypes = Data.get_all_datatypes()
-        for scheme in _schemes:
-            for dtype in scheme.getDatatypes():
-                if dtype not in _dtypes:
-                    for _t in datatypes:
-#                         if _t.getName() == dtype and not elemInList(dtypes, _t.getName()):
-                        dtypes.append(_t)
-        try:
-            _dtypes.sort(key=lambda x: _core_translation.translate_in_request(x, req).lower())
-        except _core_translation.MessageIdNotFound:
-            _dtypes.sort(key=lambda x: x.__name__.lower())
-        return _dtypes
 
     node = q(Data).get(long(ids[0]))
     show_dir_nav = _web_edit_edit_common.ShowDirNav(req, node)

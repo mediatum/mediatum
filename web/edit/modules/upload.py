@@ -6,6 +6,7 @@
 from __future__ import division
 from __future__ import print_function
 
+import itertools as _itertools
 import os
 import codecs
 import core.users as users
@@ -52,26 +53,19 @@ def getInformation():
     return {"version": "1.1", "system": 0}
 
 
-def elemInList(list, name):
-    for item in list:
-        if item.__name__.lower() == name:
-            return True
-    return False
-
-
 def getDatatypes(req, schemes):
+    get_name = lambda c:c.__name__.lower()
     dtypes = []
     datatypes = Data.get_all_datatypes()
     for scheme in schemes:
         for dtype in scheme.getDatatypes():
-            if dtype not in dtypes:
-                for t in datatypes:
-                    if t.__name__.lower() == dtype and not elemInList(dtypes, t.__name__.lower()):
-                        dtypes.append(t)
+            for t in datatypes:
+                if get_name(t) == dtype and dtype not in _itertools.imap(get_name, dtypes):
+                    dtypes.append(t)
     try:
-        dtypes.sort(key=lambda x: _core_translation.translate_in_request(x.__name__.lower(), req).lower())
+        dtypes.sort(key=lambda x: _core_translation.translate_in_request(get_name(x), req).lower())
     except _core_translation.MessageIdNotFound:
-        dtypes.sort(key=lambda x: x.__name__.lower())
+        dtypes.sort(key=get_name)
     return dtypes
 
 

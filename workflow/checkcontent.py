@@ -34,10 +34,8 @@ class MailError(Exception):
 class WorkflowStep_CheckContent(WorkflowStep):
 
     def runAction(self, node, op=""):
-        attrs = ""
-        for k, v in node.attrs.items():
-            attrs += v
-        if not checkXMLString(u'<?xml version="1.0" encoding="UTF-8"?>' + u'<tag>' + attrs + u'</tag>'):
+        xml = u'<?xml version="1.0" encoding="UTF-8"?><tag>{}</tag>'.format("".join(node.attrs.itervalues()))
+        if not checkXMLString(xml):
             with suppress(Exception, warn=False):
                 mail.sendmail(self.get('from'), self.get('to'), self.get('subject'), self.get('text'))
 

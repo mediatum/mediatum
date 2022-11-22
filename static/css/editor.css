@@ -451,6 +451,8 @@ iframe.ui-layout-center, div.ui-layout-north{border-width:0!important;padding:0;
 #sub_content_content div.object_main div.object_image div.mediatum-image-div { width: 320px; height: 320px;}
 #sub_content_content div.object_main div.object_image div.document_thumb { width: 320px; height: 320px;}
 #sub_content_content div.object_main div.object_video div.video_container { width: 320px; height: 320px;}
+#sub_content_content div.object_main dl.object_meta dt.mask_label { float: left; width: 200px; text-align: left;}
+#sub_content_content div.object_main dl.object_meta dd.mask_value { margin: 0 0 0 202px; padding: 0 0 8px 0;}
 
 #orid{margin-left:20px;margin-right:20px;text-align:center;display:inline-block;}
 #overlay{display:none;position:fixed;top:0px;left:0px;right:0px;bottom:0px;width:100%;height:100%;}

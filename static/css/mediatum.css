@@ -300,10 +300,9 @@ div.preview_list { width: 99%; padding-top: 5px; margin-bottom: 5px; border: sil
 #portal-column-content div.object_main div.object_image div.mediatum-image-div img { cursor:pointer;border:1px double silver;}
 #portal-column-content div.object_main div.document_thumb { width: 320px; height: 320px;}
 #portal-column-content div.object_main div.object_video div.video_container { width: 320px; height: 320px;}
+#portal-column-content div.object_main dl.object_meta dt.mask_label { float: left; width: 200px; text-align: left;}
+#portal-column-content div.object_main dl.object_meta dd.mask_value { margin: 0 0 0 202px; padding: 0 0 8px 0;}
 
-#portal-column-content div.mask_row { margin-bottom: 5px; position: relative;}
-#portal-column-content div.mask_label { width: 200px; float: left; position: relative;}
-#portal-column-content div.mask_value { margin-left: 202px; position: relative;}
 #portal-column-content div#pages { position: relative;}
 
 * html #visual-portal-wrapper { position: relative; margin: 0px auto;}

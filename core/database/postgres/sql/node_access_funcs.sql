@@ -199,7 +199,8 @@ CREATE OR REPLACE FUNCTION _inherited_access_rules_read_type(node_id integer, _r
     STABLE
 AS $f$
 BEGIN
-IF EXISTS (SELECT FROM node_to_access_rule WHERE nid=node_id AND ruletype=_ruletype AND inherited = false) THEN
+-- inheritance is blocked by any ruleset (note: even empty rulesets block inheritance)
+IF EXISTS (SELECT FROM node_to_access_ruleset WHERE node_to_access_ruleset.nid=node_id AND node_to_access_ruleset.ruletype=_ruletype) THEN
     RETURN;
 END IF;
 RETURN QUERY
@@ -395,6 +396,9 @@ BEGIN
             END IF;
         END LOOP;
     ELSE
+        -- if a not-inherited rule got deleted, we might have to add its inherited
+        -- pendant which was previously barred from being part of the rules
+        INSERT INTO node_to_access_rule (SELECT * from inherited_access_rules_write(node_id) EXCEPT SELECT nid, rule_id, ruletype, invert, true, blocking FROM node_to_access_rule WHERE nid=node_id);
         FOR childrel IN SELECT cid, max(distance) AS distance FROM noderelation WHERE noderelation.nid=node_id GROUP BY cid ORDER BY max(distance) LOOP
             DELETE FROM node_to_access_rule WHERE node_to_access_rule.nid=childrel.cid AND node_to_access_rule.ruletype=ruletype_ AND node_to_access_rule.inherited;
             INSERT INTO node_to_access_rule
@@ -403,6 +407,7 @@ BEGIN
                     SELECT FROM node_to_access_rule WHERE
                             node_to_access_rule.nid=rules.nid
                         AND node_to_access_rule.rule_id=rules.rule_id
+                        AND node_to_access_rule.invert=rules.invert
                         AND node_to_access_rule.ruletype=ruletype_
                    )
                ;
@@ -645,6 +650,13 @@ BEGIN
     FROM access_ruleset_to_rule 
     WHERE ruleset_name=NEW.ruleset_name
     ON CONFLICT DO NOTHING;
+
+    -- If the ruleset is empty, the lines above might do nothing
+    -- (no rules inserted or deleted); yet we have to ensure
+    -- inheritance is recomputed: for read/data rights,
+    -- a new ruleset might stop inheritance and require
+    -- previously inherited rules to be removed.
+    PERFORM _update_children_inherited_rules(NEW.nid, NEW.ruletype);
     
 RETURN NEW;
 END;
@@ -667,6 +679,13 @@ BEGIN
         JOIN node_to_access_ruleset AS na ON arr.ruleset_name=na.ruleset_name
         WHERE na.nid=OLD.nid AND na.ruletype=OLD.ruletype
        );
+
+    -- If the ruleset is empty, the lines above might do nothing
+    -- (no rules inserted or deleted); yet we have to ensure
+    -- inheritance is recomputed: for read/data rights,
+    -- a dropped ruleset might trigger inheritance and require
+    -- previously rules to be added that were suppressed before.
+    PERFORM _update_children_inherited_rules(OLD.nid, OLD.ruletype);
 
     IF OLD.ruletype IN ('read', 'data')
         AND NOT EXISTS (SELECT FROM node_to_access_ruleset WHERE nid=OLD.nid AND ruletype=OLD.ruletype)

@@ -383,7 +383,7 @@ img.thumbnail{border:0px; position:relative; top:0px; left:0px; width:128px; hei
 .context-menu-item.icon-collection { background-image: url(/static/img/webtree/collection.gif); }
 .context-menu-item.icon-cut { background-image: url(/static/img/webtree/cut.png); }
 .context-menu-item.icon-directory { background-image: url(/static/img/webtree/directory.gif); }
-.context-menu-item.icon-edit { background-image: url(/static/img/webtree/page_white_edit.png); }
+.context-menu-item.icon-edit { background-image: url(/static/js/fancytree/3rd-party/extensions/contextmenu/images/page_white_edit.png); }
 .context-menu-item.icon-trashicon { background-image: url(/static/img/webtree/trashicon.gif); }
 ul.fancytree-container {background-color: transparent; border: 0px; height: 99%;overflow: hidden;}
 .ui-accordion .ui-accordion-header {border:1px solid silver;color:#fff;background-color:#333; display: block; cursor: pointer; position: relative;

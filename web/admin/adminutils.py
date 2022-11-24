@@ -24,7 +24,6 @@ from utils.strings import ensure_unicode_returned
 from utils.utils import get_menu_strings
 from utils.utils import Link
 from utils.utils import parse_menu_struct
-from utils.list import filter_scalar
 from core.exceptions import SecurityException
 from .modules import default as _modules_default
 from .modules import mapping as _modules_mapping
@@ -284,33 +283,9 @@ def become_user(login_name, authenticator_key=None):
         raise SecurityException("becoming other users not allowed for non-admin users")
 
     candidate_users = q(User).filter_by(login_name=login_name).all()
-
     if not candidate_users:
         raise ValueError("unknown user login name " + login_name)
 
-    if len(candidate_users) == 1:
-        user = candidate_users[0]
-    else:
-        # multiple candidates
-        if not authenticator_key:
-            raise ValueError("no authenticator_key given, but multiple users found for login name" + login_name)
-
-
-        parts = authenticator_key.split(":")
-
-        if len(parts) != 2:
-            raise ValueError("invalid authenticator key " + authenticator_key)
-
-        authenticator_type, authenticator_name = parts
-        authenticator_info = q(AuthenticatorInfo).filter_by(type=authenticator_type, name=authenticator_name).scalar()
-
-        if authenticator_info is None:
-            raise ValueError("cannot find authenticator key" + authenticator_key)
-
-        user = filter_scalar(lambda u: u.authenticator_id == authenticator_info.id)
-
-        if user is None:
-            return
-
+    user, = candidate_users
     _flask.session["user_id"] = user.id
     return user

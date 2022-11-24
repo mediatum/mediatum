@@ -38,8 +38,7 @@
         <textarea id="edit_help" tal:content="python:item.get('description')" name="description" rows="4" style="width:500px"/>
         <br/>
         <div class="label" i18n:translate="mask_edit_required">TEXT</div> 
-        <input tal:condition="python:item.getRequired()==1" type="checkbox" name="required" value="1" checked="checked"/>
-        <input tal:condition="python:item.getRequired()!=1" type="checkbox" name="required" value="1"/>
+        <input type="checkbox" name="required" value="1" tal:attributes="checked python:'1' if item.get_required() else None"/>
         <small i18n:translate="mask_edit_required_info">TEXT</small>
         <br/>
         <div class="label" i18n:translate="mask_edit_field_width">TEXT</div>

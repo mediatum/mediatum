@@ -922,7 +922,7 @@ class Mask(Node):
         for node in nodes:
             for item in self.getMaskFields():
                 field = item.getField()
-                if item.getRequired() == 1:
+                if item.get_required():
                     if node.get(field.getName()) == "":
                         ret.append(field.id)
                         continue
@@ -941,7 +941,7 @@ class Mask(Node):
                 continue
             for item in self.getMaskFields():
                 field = item.getField()
-                if item.getRequired() == 1:
+                if item.get_required():
                     if node.get(field.getName()) == "":
                         ret.append(node.id)
                         logg.error("Error in publishing of node %s: The required field %s is empty.", node.id, field.name)
@@ -1352,14 +1352,11 @@ class Maskitem(Node):
     def setDescription(self, value):
         self.set("description", value)
 
-    def getRequired(self):
-        if self.get("required"):
-            return int(self.get("required"))
-        else:
-            return 0
+    def get_required(self):
+        return bool(int(self.get("required", "0")))
 
-    def setRequired(self, value):
-        self.set("required", value)
+    def set_required(self, value):
+        self.set("required", "1" if value else "0")
 
     def getWidth(self):
         return int(self.get("width", 400))

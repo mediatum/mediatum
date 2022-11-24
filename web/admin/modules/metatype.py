@@ -650,12 +650,7 @@ def showEditor(req):
         item.setFormat(req.params.get("format", u""))
         item.setSeparator(req.params.get("separator", u""))
         item.setDescription(req.params.get("description", u""))
-        db.session.commit()
-
-        if "required" in req.params.keys():
-            item.setRequired(unicode(1))
-        else:
-            item.setRequired(unicode(0))
+        item.set_required("required" in req.values)
         db.session.commit()
 
     if "savedetail" in req.params.keys():
@@ -712,10 +707,7 @@ def showEditor(req):
         item.setFormat(req.params.get("format", u""))
         item.setSeparator(req.params.get("separator", u""))
         item.setDescription(req.params.get("description", u""))
-        if "required" in req.params.keys():
-            item.setRequired(unicode(1))
-        else:
-            item.setRequired(unicode(0))
+        item.set_required("required" in req.values)
         db.session.commit()
 
     v = {}

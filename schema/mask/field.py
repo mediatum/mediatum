@@ -53,13 +53,13 @@ class m_field(Metatype):
 
         if not sub:
             label += '<div class="label">' + field.getLabel() + ':'
-            if (int(field.getRequired()) > 0):
+            if field.get_required():
                 label += ' <span class="required">*</span>'
             label += '</div>'
         else:
             if field.getLabel() != "":
                 label += field.getLabel() + ': '
-                if int(field.getRequired()) > 0:
+                if field.get_required():
                     label += '<span class="required">*</span> '
 
         if field.getDescription() != "":
@@ -109,7 +109,8 @@ class m_field(Metatype):
                             width=field.getWidth(),
                             lock=lock,
                             language=_core_translation.set_language(req.accept_languages),
-                            required=field.getRequired()) + unit + '</div>'
+                            required=field.get_required(),
+                           ) + unit + '</div>'
         if not sub:
             ret += '</div>'
         return ret
@@ -202,7 +203,7 @@ class m_field(Metatype):
         if len(item.getLabel()) > 0 and item.getLabel() != "mapping":
             label = item.getLabel() + ': '
             required = ""
-            if item.getRequired():
+            if item.get_required():
                 required = '<span class="required">*</span>'
 
             if ptype in("vgroup", "hgroup") or not sub:

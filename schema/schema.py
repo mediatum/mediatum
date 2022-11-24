@@ -1362,10 +1362,7 @@ class Maskitem(Node):
         self.set("required", value)
 
     def getWidth(self):
-        if self.get("width"):
-            return int(self.get("width"))
-        else:
-            return 400
+        return int(self.get("width", 400))
 
     def setWidth(self, value=u'400'):
         self.set("width", value)

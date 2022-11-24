@@ -104,9 +104,13 @@ def getData(req):
             elif c.Container == user_home_dir:
                 cls = "homeicon"
 
-            ret.append(u'<li class="{}.gif" id="Node{}">'.format(cls, c.Container.id))
-            ret.append(u'<a href="#" title="{} ({})" id="{}" class="{}">{}<input type="image" src="/static/img/ftree/uncheck.gif"/></a>'.format(
-                            label, c.Container.id, c.Container.id, itemcls, label))
+            ret.append(u"""
+                <li class="{0}.gif" id="Node{2}">
+                    <a href="#" title="{1} ({2})" id="{2}" class="{3}">
+                        {1}
+                        <input type="image" src="/static/img/webtree/uncheck.gif"/>
+                    </a>
+                """.format(cls, label, c.Container.id, itemcls))
 
             if c.has_container_children:
                 ret.append(u'<ul><li parentId="{}" class="spinner.gif"><a href="#">&nbsp;</a></li></ul>'.format(c.Container.id))

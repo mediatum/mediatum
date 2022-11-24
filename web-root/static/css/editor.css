@@ -220,7 +220,7 @@ div.label{width:210px;float:left;padding-left:15px;}
 .mediatum-editor-nav-image-wait::before {content: url(/static/img/wait.gif);}
 
 .mediatum_img_uploadbibtex::before {content: "";display:block;height:32px;width:32px;background-size: 32px 32px;background-repeat: no-repeat;
-    background-image: url(/static/img/editor/bibtex.gif);}/* Uploads: Bibtex-Import */
+    background-image: url(/static/img/bibtex.gif);}/* Uploads: Bibtex-Import */
 .mediatum_img_uploaddoi::before {
     content: "";display:block;height:32px;width:32px;background-size: 32px 32px;background-repeat: no-repeat;
     background-image: url(/static/img/editor/DOI_logo.svg);}/* Uploads: DOI-Eingabe */
@@ -381,7 +381,7 @@ img.thumbnail{border:0px; position:relative; top:0px; left:0px; width:128px; hei
 .context-menu-item.icon-bare_directory { background-image: url(/static/img/webtree/bare_directory.gif); }
 .context-menu-item.icon-bare_collection { background-image: url(/static/img/webtree/bare_collection.gif); }
 .context-menu-item.icon-collection { background-image: url(/static/img/webtree/collection.gif); }
-.context-menu-item.icon-cut { background-image: url(/static/img/webtree/cut.png); }
+.context-menu-item.icon-cut { background-image: url(/static/fancytree/3rd-party/extensions/contextmenu/images/cut.png); }
 .context-menu-item.icon-directory { background-image: url(/static/img/webtree/directory.gif); }
 .context-menu-item.icon-edit { background-image: url(/static/fancytree/3rd-party/extensions/contextmenu/images/page_white_edit.png); }
 .context-menu-item.icon-trashicon { background-image: url(/static/img/webtree/trashicon.gif); }

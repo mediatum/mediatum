@@ -373,6 +373,45 @@ $f$;
 --- trigger functions for access rules
 
 
+CREATE OR REPLACE FUNCTION _update_children_inherited_rules(node_id integer, ruletype_ text)
+    RETURNS void
+    LANGUAGE plpgsql
+    SET search_path TO :search_path
+    VOLATILE
+AS $f$
+DECLARE
+    childrel record;
+    rec node_to_access_rule;
+BEGIN
+    IF ruletype_ IN ('read', 'data') THEN
+        IF NOT EXISTS (SELECT FROM node_to_access_rule WHERE node_to_access_rule.nid=node_id AND node_to_access_rule.ruletype=ruletype_) THEN
+            INSERT INTO node_to_access_rule SELECT * FROM _inherited_access_rules_read_type(node_id, ruletype_);
+        END IF;
+        FOR childrel IN SELECT cid, max(distance) AS distance FROM noderelation WHERE noderelation.nid=node_id GROUP BY cid ORDER BY max(distance) LOOP
+            -- ignore nodes that have their own access rules
+            IF NOT EXISTS (SELECT FROM node_to_access_rule WHERE node_to_access_rule.nid=childrel.cid AND node_to_access_rule.ruletype=ruletype_ AND NOT node_to_access_rule.inherited) THEN
+                DELETE            FROM node_to_access_rule WHERE node_to_access_rule.nid=childrel.cid AND node_to_access_rule.ruletype=ruletype_ AND node_to_access_rule.inherited;
+                INSERT INTO node_to_access_rule SELECT * from _inherited_access_rules_read_type(childrel.cid, ruletype_);
+            END IF;
+        END LOOP;
+    ELSE
+        FOR childrel IN SELECT cid, max(distance) AS distance FROM noderelation WHERE noderelation.nid=node_id GROUP BY cid ORDER BY max(distance) LOOP
+            DELETE FROM node_to_access_rule WHERE node_to_access_rule.nid=childrel.cid AND node_to_access_rule.ruletype=ruletype_ AND node_to_access_rule.inherited;
+            INSERT INTO node_to_access_rule
+                SELECT * from inherited_access_rules_write(childrel.cid) AS rules
+                WHERE NOT EXISTS (
+                    SELECT FROM node_to_access_rule WHERE
+                            node_to_access_rule.nid=rules.nid
+                        AND node_to_access_rule.rule_id=rules.rule_id
+                        AND node_to_access_rule.ruletype=ruletype_
+                   )
+               ;
+        END LOOP;
+    END IF;
+END;
+$f$;
+
+
 CREATE OR REPLACE FUNCTION on_node_to_access_rule_insert_delete()
     RETURNS trigger
     LANGUAGE plpgsql
@@ -380,7 +419,6 @@ CREATE OR REPLACE FUNCTION on_node_to_access_rule_insert_delete()
     VOLATILE
 AS $f$
 DECLARE
-    c record;
     rec node_to_access_rule;
 BEGIN
 
@@ -389,27 +427,7 @@ IF TG_OP = 'INSERT' THEN
 ELSE
     rec = OLD;
 END IF;
-IF rec.ruletype IN ('read', 'data') THEN
-    IF NOT EXISTS (SELECT FROM node_to_access_rule WHERE nid=rec.nid AND ruletype = rec.ruletype) THEN
-        INSERT INTO node_to_access_rule SELECT * from _inherited_access_rules_read_type(rec.nid, rec.ruletype);
-    END IF;
-    FOR c IN SELECT cid, max(distance) AS distance FROM noderelation WHERE nid = rec.nid GROUP BY cid ORDER BY max(distance) LOOP
-        -- RAISE DEBUG 'updating access rules for node %', c;
-        -- ignore nodes that have their own access rules
-        IF NOT EXISTS (SELECT FROM node_to_access_rule WHERE nid=c.cid AND ruletype = rec.ruletype AND inherited = false) THEN
-            DELETE FROM node_to_access_rule WHERE nid=c.cid AND inherited = true AND ruletype = rec.ruletype;
-            INSERT INTO node_to_access_rule SELECT * from _inherited_access_rules_read_type(c.cid, rec.ruletype);
-        END IF;
-    END LOOP;
-ELSE
-    FOR c IN SELECT cid, max(distance) AS distance FROM noderelation WHERE nid = rec.nid GROUP BY cid ORDER BY max(distance) LOOP
-        DELETE FROM node_to_access_rule WHERE nid = c.cid AND inherited = true AND ruletype = rec.ruletype;
-        
-        INSERT INTO node_to_access_rule 
-        SELECT * from inherited_access_rules_write(c.cid) t
-        WHERE NOT EXISTS (SELECT FROM node_to_access_rule WHERE nid=t.nid AND rule_id=t.rule_id AND ruletype='write');
-    END LOOP;
-END IF;
+PERFORM _update_children_inherited_rules(rec.nid, rec.ruletype);
 RETURN NULL;
 END;
 $f$;

@@ -250,7 +250,6 @@ def init():
     default_context['cdata'] = cdata
     default_context['get_udate'] = get_udate
     default_context['getAccessRights'] = getAccessRights
-    default_context['config_get'] = config.get
     default_context['normLanguage_iso_639_2_b'] = normLanguage_iso_639_2_b
     default_context['normLanguage_iso_639_2_t'] = normLanguage_iso_639_2_t
 

@@ -207,13 +207,14 @@ def getContent(req, ids):
                 datatypes = scheme.getDatatypes()
                 for datatype in datatypes:
                     if datatype in dtypenames.keys():
+                        try:
+                            dtypename = _core_translation.translate_in_request(dtypenames[datatype], req)
+                        except _core_translation.MessageIdNotFound:
+                            dtypename = dtypenames[datatype]
                         ret.append(
                             dict(
                                 id=scheme.name,
-                                name=u'{} / {}'.format(
-                                        scheme.getLongName(),
-                                        _core_translation.translate_in_request(dtypenames[datatype], req),
-                                    ),
+                                name=u'{} / {}'.format(scheme.getLongName(), dtypename),
                                 description=scheme.getDescription(), datatype=datatype,
                             ),
                         )

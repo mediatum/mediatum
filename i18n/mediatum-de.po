@@ -617,9 +617,6 @@ msgstr "Mitteilungen verwalten"
 msgid "tab_identifier"
 msgstr "Objektidentifikator erzeugen"
 
-msgid "liststyle_text"
-msgstr "Listen-Ansicht, nur Text"
-
 msgid "liststyle_list"
 msgstr "Listen-Ansicht mit Thumbnail"
 

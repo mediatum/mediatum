@@ -394,33 +394,6 @@ div#portal-breadcrumbs #collectionlogo { margin: 0px 0px 10px 0px; width: 100%; 
 #portal-column-content div#nodes div.preview a { color: #666666; text-decoration: none; width: 98%;}
 #portal-column-content div#nodes div.preview a:hover { color: #000000; text-decoration: none;}
 
-#portal-column-content div#nodes div.preview_text {
-    border: 1px solid silver;
-    position: relative;
-    left: 0px;
-    top: 0px;
-    background-color: white;
-    height: auto;
-}
-#portal-column-content div#nodes div.preview_text a { color: #666666; text-decoration: none;}
-#portal-column-content div#nodes div.preview_text a:hover { color: #000000; text-decoration: none;}
-#portal-column-content div#nodes div.preview_text a div {
-    justify-content: center;
-    align-items: center;
-    display: flex;
-}
-#portal-column-content div#nodes div.preview_text a div p {
-    text-overflow: ellipsis;
-    Word-wrap: break-Word;
-    display: -webkit-box;
-    -webkit-line-clamp: 4;
-    -webkit-box-orient: vertical;
-    line-height: normal;
-    width: 100%;
-    vertical-align: middle;
-    padding: 0 5px 0 5px;
-}
-
 #portal-column-content .img-caption-floatleft p {
     padding-bottom: 0px;
     line-height: 121%;
@@ -440,6 +413,7 @@ div#portal-breadcrumbs #collectionlogo { margin: 0px 0px 10px 0px; width: 100%; 
     padding-right: 0px;
     padding-top: 0px;
 }
+
 #portal-column-content ul li { padding-bottom: 0px; margin: 0px 0px 0.2em; padding-left: 0px; padding-right: 0px; padding-top: 0px;}
 #portal-column-content ol ul li { padding-bottom: 0px; margin: 0px 0px 0.2em; padding-left: 0px; padding-right: 0px; padding-top: 0px;}
 #portal-column-content ol {

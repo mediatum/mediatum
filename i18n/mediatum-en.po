@@ -604,9 +604,6 @@ msgstr "Manage messages"
 msgid "tab_identifier"
 msgstr "Create identifier"
 
-msgid "liststyle_text"
-msgstr "List view, text only"
-
 msgid "liststyle_list"
 msgstr "List view with thumbnails"
 

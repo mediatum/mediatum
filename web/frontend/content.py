@@ -366,25 +366,10 @@ class ContentList(ContentBase):
                 default_sortfield = self.collection.get(u"sortfield")
             self.sortfields[0] = default_sortfield if default_sortfield else u"-node.id"
 
-        liststyle_name = req.args.get("liststyle")
-
-        if liststyle_name:
-            ls = liststyle_name
-            # use default collection style
-        else:
-            ls = self.collection.get("style", None)
-            if ls is None:
-                # nothing found, use default style
-                ls = "list"
-            else:
-                ls = ls.split(";")[0]
-
-        liststyle = get_list_style(ls)
-        
+        liststyle = req.args.get("liststyle")
         if not liststyle:
-            raise Exception("invalid liststyle '" + ls + "'")
-        
-        self.liststyle = liststyle
+            liststyle = self.collection.get("style", "list")
+        self.liststyle = get_list_style(liststyle)
 
         self.nodes_per_page_from_req = _web_common_pagination.get_nodes_per_page(req.args.get("nodes_per_page"), None, False)
         self.nodes_per_page = self.node_query.count() if self.nodes_per_page_from_req == "all" else self.nodes_per_page_from_req

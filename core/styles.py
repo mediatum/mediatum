@@ -247,7 +247,7 @@ def get_list_style(style_name):
     if not list_styles:
         _load_all_styles()
 
-    return list_styles.get(style_name)
+    return list_styles[style_name]
 
 
 def get_full_style(content_type, style_name):

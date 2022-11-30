@@ -607,9 +607,6 @@ msgstr "Create identifier"
 msgid "liststyle_list"
 msgstr "List view with thumbnails"
 
-msgid "liststyle_thumbnailbig"
-msgstr "Thumbnail view (big)"
-
 msgid "liststyle_thumbnail"
 msgstr "Thumbnail view"
 

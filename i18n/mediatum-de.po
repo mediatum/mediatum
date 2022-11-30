@@ -620,9 +620,6 @@ msgstr "Objektidentifikator erzeugen"
 msgid "liststyle_list"
 msgstr "Listen-Ansicht mit Thumbnail"
 
-msgid "liststyle_thumbnailbig"
-msgstr "Thumbnail-Ansicht (groß)"
-
 msgid "liststyle_thumbnail"
 msgstr "Thumbnail-Ansicht"
 

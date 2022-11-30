@@ -24,6 +24,7 @@ from contenttypes import Collections
 from core.database.postgres import mediatumfunc
 from core.database.postgres.alchemyext import exec_sqlfunc
 import metadata.common_list as _common_list
+from web import frontend as _web_frontend
 
 q = db.query
 logg = logging.getLogger(__name__)
@@ -139,6 +140,7 @@ class m_ilist(Metatype):
                         option_list=option_list,
                         fieldname=fieldname,
                         schema=schema,
+                        html_head_style_src=_web_frontend.html_head_style_src,
                        ),
                     file="metadata/ilist.html",
                     macro="popup",

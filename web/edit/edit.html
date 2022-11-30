@@ -99,6 +99,9 @@
 <metal:block metal:define-macro="edit_errorpage">
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <script tal:repeat="src html_head_javascript_src" tal:attributes="src src"> </script>
+    </head>
     <body>
         <h1 tal:content="errormsg"/>
     </body>
@@ -139,6 +142,7 @@
             <script tal:content="python:u'var delete_t = \'{}\';'.format(translate(language, 'edit_delete_container'))">;</script>
             <script tal:content="python:u'var add_col_t = \'{}\';'.format(translate(language, 'edit_add_new_collection'))">;</script>
             <tal:block metal:use-macro="include_javascript_script_tags"/>
+            <script tal:repeat="src html_head_javascript_src" tal:attributes="src src"> </script>
         </head>
         <body id="body1">
             <iframe class="ui-layout-center" tal:attributes="src python:u'/edit/edit_content?srcnodeid={}&id={}&page={}&nodes_per_page={}&sortfield={}&value={}{}'.format(id, id, page, nodes_per_page,sortfield, value, searchitems)"> </iframe>
@@ -241,6 +245,9 @@
 <metal:block metal:define-macro="edit_action_error">
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <script tal:repeat="src html_head_javascript_src" tal:attributes="src src"> </script>
+    </head>
     <body>
         <h1 i18n:translate="edit_error">TEXT</h1>
         <i i18n:translate="edit_nobase">TEXT<span tal:content="edit_action_error" i18n:name="msg"/></i>
@@ -255,6 +262,7 @@
         <script language="text/javascript">
             opener.reloadURL('edit?id="""+node.id+"""');
         </script>
+        <script tal:repeat="src html_head_javascript_src" tal:attributes="src src"> </script>
     </head>
     <body>
         <h2 i18n:translate="edit_error">TEXT</h2>
@@ -282,6 +290,7 @@
             <script tal:content="python:u'var js_edit_layout_resizertip = \'{}\';'.format(translate(language, 'edit_layout_resizertip'))"/>
             <script src="/static/js/edit/edit_frame.js"> </script>
             <tal:block tal:replace="script"/>
+            <script tal:repeat="src html_head_javascript_src" tal:attributes="src src"> </script>
         </head>
 
         <body id="body2">
@@ -332,6 +341,7 @@
             <META http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
             <meta content="text/html;charset=UTF-8" http-equiv="content-type"/>
             <link rel="stylesheet" href="/static/css/editor.css" />
+            <script tal:repeat="src html_head_javascript_src" tal:attributes="src src"> </script>
         </head>
         <body>
             <div id="mediatum_logocontainer">

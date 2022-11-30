@@ -10,8 +10,9 @@ import importlib
 import logging
 import tempfile as _tempfile
 import os as _os
-from utils.locks import register_lock as _register_lock
 
+from utils.locks import register_lock as _register_lock
+from web import frontend as _web_frontend
 import core.config as config
 import core as _core
 import core.webconfig as _core_webconfig
@@ -311,6 +312,7 @@ def _additional_init():
         register_workflow()
     from core import plugins
     init_modules()
+    _web_frontend.html_head_style_src.extend(filter(None, config.get('paths.css', '').split('|')))
     plugins.init_plugins()
     if enable_startup_checks:
         check_undefined_nodeclasses()

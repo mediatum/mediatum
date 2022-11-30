@@ -36,6 +36,7 @@
             <script src="/static/js/jquery-2.0.3.js"> </script>
             <script src="/static/js/metadata/treeselect.js"> </script>
             <link rel="stylesheet" href="/static/css/metadata/treeselect.css" type="text/css" />
+            <link rel="stylesheet" tal:repeat="src html_head_style_src" tal:attributes="href src" />
         </head>
 
         <body tal:attributes="onload python:u'init(\'{}\')'.format(name)">

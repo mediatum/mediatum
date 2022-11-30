@@ -37,6 +37,7 @@ from utils.pathutils import get_accessible_paths
 import core.database.postgres.node as _core_database_postgres_node
 import web.common.pagination as _web_common_pagination
 import web.common.sort as _sort
+from web import frontend as _web_frontend
 
 logg = logging.getLogger(__name__)
 q = db.query
@@ -111,7 +112,12 @@ def frameset(req):
 
     user = _user_from_session()
     if not user.is_editor:
-        data = _tal.processTAL({}, file="web/edit/edit.html", macro="error", request=req)
+        data = _tal.processTAL(
+                dict(html_head_style_src=_web_frontend.html_head_style_src),
+                file="web/edit/edit.html",
+                macro="error",
+                request=req,
+            )
         data += _tal.processTAL({}, file="web/edit/edit.html", macro="edit_notree_permission", request=req)
         req.response.set_data(data)
         req.response.mimetype = "text/html"
@@ -243,6 +249,7 @@ def frameset(req):
                 _getIDPath=_getIDPath,
                 homenodefilter=homenodefilter,
                 csrf=_core_csrfform.get_token(),
+                html_head_style_src=_web_frontend.html_head_style_src,
             ),
             file="web/edit/edit.html",
             macro="edit_main",
@@ -311,7 +318,7 @@ def _handletabs(req, ids, tabs, sort_choices):
 
 def error(req):
     req.response.set_data(_tal.processTAL(
-            dict(errormsg=req.values.get("errmsg", "")),
+            dict(errormsg=req.values.get("errmsg", ""), html_head_style_src=_web_frontend.html_head_style_src),
             string="<tal:block tal:replace=\"errormsg\"/>",
             macro="edit_errorpage",
             request=req,
@@ -504,7 +511,7 @@ def action(req):
         except:
             req.response.status_code = httpstatus.HTTP_OK
             req.response.set_data(_tal.processTAL(
-                    dict(edit_action_error=srcnodeid),
+                    dict(edit_action_error=srcnodeid, html_head_style_src=_web_frontend.html_head_style_src),
                     file="web/edit/edit.html",
                     macro="edit_action_error",
                     request=req,
@@ -757,10 +764,13 @@ def content(req):
     if req.method == "POST":
         _core_csrfform.validate_token(req.form)
 
+    v = dict()
+    v["html_head_style_src"] = _web_frontend.html_head_style_src
+
     user = _user_from_session()
     req.response.status_code = httpstatus.HTTP_OK
     if not user.is_editor:
-        req.response.set_data(_tal.processTAL({}, file="web/edit/edit.html", macro="error", request=req))
+        req.response.set_data(_tal.processTAL(v, file="web/edit/edit.html", macro="error", request=req))
         return
 
     if req.values.get("type", "") == "help" and req.values.get("tab", "") == "upload":
@@ -812,8 +822,6 @@ def content(req):
     # if current in ["files", "view", "upload"]:
     if current in ["files", "upload"]:
         ids = ids[0:1]
-
-    v = dict()
 
     try:
         v['nodeiconpath'] = getEditorIconPath(node)

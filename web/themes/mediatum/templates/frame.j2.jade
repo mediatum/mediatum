@@ -30,6 +30,8 @@ html(xmlns="http://www.w3.org/1999/xhtml")
     link(rel='icon', type='image/png', href='/static/img/root/android-chrome-192x192.png', sizes='192x192')
     link(rel='icon', type='image/png', href='/static/img/root/favicon-16x16.png', sizes='16x16')
     link(rel='manifest', href='/static/root/manifest.json')
+    for src in html_head_style_src
+      link(rel="stylesheet", href=src)
     meta(name='msapplication-TileColor', content='#ffffff')
     meta(name='msapplication-TileImage', content='/static/img/root/mstile-144x144.png')
     meta(name='theme-color', content='#ffffff')

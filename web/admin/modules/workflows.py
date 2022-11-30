@@ -21,6 +21,7 @@ from web.common.acl_web import makeList
 from utils.utils import removeEmptyStrings
 from core import db, Node as _Node
 from core.database.postgres.permission import NodeToAccessRuleset
+from web import frontend as _web_frontend
 
 logg = logging.getLogger(__name__)
 
@@ -478,6 +479,7 @@ def WorkflowPopup(req):
             dict(
                 id=path[1],
                 csrf=_core_csrfform.get_token(),
+                html_head_style_src=_web_frontend.html_head_style_src,
             ),
             file="web/admin/modules/workflows.html",
             macro="view_popup",

@@ -62,6 +62,7 @@ class m_treeselect(Metatype):
                     basedir=_core_nodecache.get_collections_node(),
                     name=req.params.get("name", ''),
                     value=req.params.get("value"),
+                    html_head_style_src=_web_frontend.html_head_style_src,
                 ),
                 file="metadata/treeselect.html",
                 macro="popup",

@@ -6,7 +6,8 @@
 html(xmlns="http://www.w3.org/1999/xhtml")
   head
     link(rel='stylesheet', href='/static/css/admin/admin.css')
-
+    for src in html_head_style_src
+      link(rel="stylesheet", href=src)
   h2 Server Status
   h3.admin-serverstatus-title Workers
   if workers == 'Application is not running under uwsgi'

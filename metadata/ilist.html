@@ -41,6 +41,7 @@
             <title i18n:translate="popup_index_header">TEXT</title>
             <script src="/static/js/metadata/ilist.js"> </script>
             <link href="/static/css/popup.css" rel="stylesheet" type="text/css"/>
+            <link rel="stylesheet" tal:repeat="src html_head_style_src" tal:attributes="href src" />
         </head>
         <body class="form" tal:attributes="onload python:u'getValue(\'{}\')'.format(fieldname)">
             <form>

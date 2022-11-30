@@ -3,3 +3,5 @@
 
 from __future__ import division
 from __future__ import print_function
+
+html_head_style_src = list()

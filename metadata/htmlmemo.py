@@ -14,7 +14,7 @@ from mediatumtal import tal
 from core import config
 from core import httpstatus
 import core.metatype as _core_metatype
-
+from web import frontend as _web_frontend
 import re
 
 logg = logging.getLogger(__name__)
@@ -93,6 +93,7 @@ class m_htmlmemo(_core_metatype.Metatype):
                         charmap=_core_metatype.charmap,
                         name=req.params.get("name"),
                         value=req.params.get("value"),
+                        html_head_style_src=_web_frontend.html_head_style_src,
                        ),
                     file="metadata/htmlmemo.html",
                     macro="popup",

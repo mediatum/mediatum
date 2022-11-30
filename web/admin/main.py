@@ -27,7 +27,7 @@ from core import httpstatus
 from utils.utils import join_paths, Menu
 from web.admin.adminutils import findmodule, show_content, adminNavigation, getMenuItemID
 from core.users import user_from_session as _user_from_session
-
+from web import frontend as _web_frontend
 
 logg = logging.getLogger(__name__)
 
@@ -60,7 +60,7 @@ def show_node(req):
         spc.append(Menu("sub_header_workflow", u"../publish/"))
 
     v["spc"] = spc
-
+    v["html_head_style_src"] = _web_frontend.html_head_style_src
     if len(p) > 0:
         if style == "":
             req.response.set_data(_tal.processTAL(v, file="web/admin/frame.html", macro="frame", request=req))
@@ -201,8 +201,16 @@ def stats_server(req):
 
     rootmem = get_info(os.statvfs("/"))
 
-    ctx = {"workers": workers_without_cores, "meminfo": meminfo, "tempdirmem": tempdirmem,
-           "rootmem": rootmem, "uploadmem": uploadmem, "datadir": datadir, "tempdir": tempdir}
+    ctx = dict(
+            workers=workers_without_cores,
+            meminfo=meminfo,
+            tempdirmem=tempdirmem,
+            rootmem=rootmem,
+            uploadmem=uploadmem,
+            datadir=datadir,
+            tempdir=tempdir,
+            html_head_style_src=_web_frontend.html_head_style_src,
+        )
     html = _core_webconfig.theme.render_template("server_status.j2.jade", ctx)
     req.response.set_data(html)
     req.response.status_code = httpstatus.HTTP_OK

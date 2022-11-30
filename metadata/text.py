@@ -15,7 +15,7 @@ from utils.utils import esc
 from utils.utils import modify_tex
 from core.metatype import Metatype, charmap
 from utils.strings import replace_attribute_variables
-
+from web import frontend as _web_frontend
 
 logg = logging.getLogger(__name__)
 
@@ -89,7 +89,12 @@ class m_text(Metatype):
     # method for popup methods of type text
     def getPopup(self, req):
         req.response.set_data(tal.processTAL(
-                dict(charmap=charmap, name=req.values.get("name"), value=req.values.get("value")),
+                dict(
+                    charmap=charmap,
+                    name=req.values.get("name"),
+                    value=req.values.get("value"),
+                    html_head_style_src=_web_frontend.html_head_style_src,
+                ),
                 file="metadata/text.html",
                 macro="popup",
                 request=req,

@@ -30,6 +30,7 @@ import core.database.postgres.node as _database_postgres_node
 import core.translation as _core_translation
 import utils.utils as _utils_utils
 import web.frontend.printview as _web_frontend_printview
+from web import frontend as _web_frontend
 
 logg = logging.getLogger(__name__)
 q = db.query
@@ -43,7 +44,11 @@ def show_help(req):
     else:
         field = q(Node).get(req.values["id"])
     if field.has_read_access():
-        html = webconfig.theme.render_macro("popups.j2.jade", "show_help", {"field": field})
+        html = webconfig.theme.render_macro(
+                "popups.j2.jade",
+                "show_help",
+                dict(field=field, html_head_style_src=_web_frontend.html_head_style_src),
+            )
         req.response.status_code = httpstatus.HTTP_OK
     else:
         html = _core_translation.translate(_core_translation.set_language(req.accept_languages), "permission_denied")

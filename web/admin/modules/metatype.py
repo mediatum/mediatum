@@ -40,6 +40,7 @@ import core.systemtypes as _systemtypes
 from schema.schema import Metadatatype, Mask
 from core.database.postgres.permission import NodeToAccessRuleset
 import core.database.postgres.node as _node
+from web import frontend as _web_frontend
 
 q = db.query
 
@@ -437,7 +438,11 @@ def MetatypeDetail(req, id, err=0):
 
 def showInfo(req):
         return _tal.processTAL(
-                dict(fieldtypes=getMetaFieldTypeNames(), csrf=_core_csrfform.get_token()),
+                dict(
+                    fieldtypes=getMetaFieldTypeNames(),
+                    csrf=_core_csrfform.get_token(),
+                    html_head_style_src=_web_frontend.html_head_style_src,
+                ),
                 file="web/admin/modules/metatype.html",
                 macro="show_info",
                 request=req,
@@ -458,6 +463,7 @@ def showFieldOverview(req):
                 fieldoptions=fieldoption,
                 fieldtypes=getMetaFieldTypeNames(),
                 csrf=_core_csrfform.get_token(),
+                html_head_style_src=_web_frontend.html_head_style_src,
             ),
             file="web/admin/modules/metatype.html",
             macro="show_fieldoverview",
@@ -698,6 +704,7 @@ def showEditor(req):
 
     v["title"] = editor.name
     v["csrf"] = _core_csrfform.get_token()
+    v["html_head_style_src"] = _web_frontend.html_head_style_src
     return _tal.processTAL(v, file="web/admin/modules/metatype.html", macro="editor_popup", request=req)
 
 

@@ -17,6 +17,7 @@ import core.database.postgres.search as _postgres_search
 from contenttypes.container import includetemplate
 from utils.strings import ensure_unicode_returned
 from utils.compat import iteritems
+from web import frontend as _web_frontend
 from web.frontend.search import simple_search, extended_search
 import web.frontend.search as _frontend_search
 from contenttypes.container import Container
@@ -739,7 +740,10 @@ def get_make_search_content_function(req_args):
 
 
 def render_content_error(error, language):
-    return webconfig.theme.render_template("content_error.j2.jade", {"error": error})
+    return webconfig.theme.render_template(
+            "content_error.j2.jade",
+            dict(error=error, html_head_style_src=_web_frontend.html_head_style_src),
+        )
 
 
 def render_startpage_error(node, language):

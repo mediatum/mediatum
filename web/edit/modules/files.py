@@ -22,6 +22,7 @@ from core import httpstatus
 from core import Node
 from core import db
 from core import File
+from web import frontend as _web_frontend
 
 q = db.query
 logg = logging.getLogger(__name__)
@@ -246,6 +247,7 @@ def getContent(req, ids):
                     srcnodeid=srcnodeid,
                     node=node,
                     csrf=_core_csrfform.get_token(),
+                    html_head_style_src=_web_frontend.html_head_style_src,
                 ),
                 file="web/edit/modules/files.html",
                 macro="edit_files_popup_selection",

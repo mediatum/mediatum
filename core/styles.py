@@ -18,14 +18,14 @@ from core.request_handler import addFileStore as _addFileStore
 from core.request_handler import addFileStorePath as _addFileStorePath
 
 
-full_styles_by_contenttype = {}
+_full_styles_by_contenttype = {}
 list_styles = {}
 
 
-logg = logging.getLogger(__name__)
+_logg = logging.getLogger(__name__)
 
 
-class Theme(object):
+class _Theme(object):
 
     def __init__(self, name, path):
         self.name = name
@@ -43,7 +43,7 @@ class Theme(object):
         theme_jinja_loader = self.make_jinja_loader()
         if theme_jinja_loader is not None:
             from core import app
-            logg.info("adding jinja loader for theme %s", self.name)
+            _logg.info("adding jinja loader for theme %s", self.name)
             app.add_template_loader(theme_jinja_loader, 0)
 
         _addFileStore("/theme/", self.path + "/")
@@ -81,7 +81,7 @@ class Theme(object):
             raise TemplateNotFound("invalid template name (must end with .j2.jade, .j2.html or .html): " + template_name)
 
 
-class DefaultTheme(Theme):
+class DefaultTheme(_Theme):
 
     PATH = "web/themes/mediatum"
 
@@ -103,7 +103,7 @@ class DefaultTheme(Theme):
         return relative_template_path
 
 
-class CustomTheme(Theme):
+class CustomTheme(_Theme):
 
     def get_tal_template_path(self, filename):
         relative_template_path = self.path + filename
@@ -130,7 +130,7 @@ class CustomTheme(Theme):
             return default_jinja_loader
 
 
-class FullStyle(object):
+class _FullStyle(object):
 
     def __init__(self, path="", template=None, contenttype="all", name="name", label="label",
                  icon="icon", default="", description="", maskfield_separator=""):
@@ -146,14 +146,14 @@ class FullStyle(object):
         self.maskfield_separator = maskfield_separator
 
 
-class TALFullStyle(FullStyle):
+class _TALFullStyle(_FullStyle):
 
     def render_template(self, req, context):
         template_path = os.path.join(self.path, self.template)
         return tal.getTAL(template_path, context, request=req)
 
 
-class JinjaFullStyle(FullStyle):
+class _JinjaFullStyle(_FullStyle):
 
     def render_template(self, req, context):
         template_path = os.path.join("styles", self.template)
@@ -161,7 +161,7 @@ class JinjaFullStyle(FullStyle):
 
 
 @attr.s
-class ListStyle(object):
+class _ListStyle(object):
     name = attr.ib()
     icon = attr.ib()
     label = attr.ib()
@@ -179,7 +179,7 @@ class ListStyle(object):
             template_path = os.path.join(self.path, self.template)
             return tal.getTAL(template_path, context, request=req)
 
-def readStyleConfig(filename):
+def _readStyleConfig(filename):
     attrs = {}
 
     with codecs.open(filename, "rb", encoding='utf8') as fi:
@@ -194,18 +194,18 @@ def readStyleConfig(filename):
     return attrs
 
 
-def make_style_from_config(attrs):
+def _make_style_from_config(attrs):
     style_type = attrs["type"]
     del attrs["type"]
 
     if style_type == "smallview":
-        return ListStyle(**attrs)
+        return _ListStyle(**attrs)
     elif style_type == "bigview":
         template = attrs["template"]
         if template.endswith("j2.jade") or template.endswith("j2.html"):
-            return JinjaFullStyle(**attrs)
+            return _JinjaFullStyle(**attrs)
         else:
-            return TALFullStyle(**attrs)
+            return _TALFullStyle(**attrs)
 
 
 def _load_styles_from_path(dirpath):
@@ -215,16 +215,16 @@ def _load_styles_from_path(dirpath):
     if os.path.exists(dirpath):
         config_filepaths = glob.glob(dirpath + "/*.cfg")
         for filepath in config_filepaths:
-            style_config = readStyleConfig(filepath)
-            style = make_style_from_config(style_config)
+            style_config = _readStyleConfig(filepath)
+            style = _make_style_from_config(style_config)
 
-            if isinstance(style, ListStyle):
+            if isinstance(style, _ListStyle):
                 list_styles_from_path[style.name] = style
             else:
                 styles_for_type = full_styles_from_path.setdefault(style.contenttype, {})
                 styles_for_type[style.name] = style
     else:
-        logg.warning("style path %s not found, ignoring", dirpath)
+        _logg.warning("style path %s not found, ignoring", dirpath)
 
     return full_styles_from_path, list_styles_from_path
 
@@ -236,8 +236,8 @@ def _load_all_styles():
     theme_full_styles, theme_list_styles = _load_styles_from_path(webconfig.theme.style_path)
 
     # styles from a theme have higher priority
-    full_styles_by_contenttype.update(default_full_styles)
-    full_styles_by_contenttype.update(theme_full_styles)
+    _full_styles_by_contenttype.update(default_full_styles)
+    _full_styles_by_contenttype.update(theme_full_styles)
 
     list_styles.update(default_list_styles)
     list_styles.update(theme_list_styles)
@@ -251,10 +251,10 @@ def get_list_style(style_name):
 
 
 def get_full_style(content_type, style_name):
-    if not full_styles_by_contenttype:
+    if not _full_styles_by_contenttype:
         _load_all_styles()
 
-    styles_for_content_type = full_styles_by_contenttype.get(content_type)
+    styles_for_content_type = _full_styles_by_contenttype.get(content_type)
     if styles_for_content_type is None:
         raise Exception("no content styles defined for node type {}".format(content_type))
 
@@ -262,7 +262,7 @@ def get_full_style(content_type, style_name):
 
 
 def get_styles_for_contenttype(content_type):
-    if not full_styles_by_contenttype:
+    if not _full_styles_by_contenttype:
         _load_all_styles()
 
-    return full_styles_by_contenttype.get(content_type, {}).values()
+    return _full_styles_by_contenttype.get(content_type, {}).values()

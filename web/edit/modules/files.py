@@ -248,6 +248,7 @@ def getContent(req, ids):
                     node=node,
                     csrf=_core_csrfform.get_token(),
                     html_head_style_src=_web_frontend.html_head_style_src,
+                    html_head_javascript_src=_web_frontend.html_head_javascript_src,
                 ),
                 file="web/edit/modules/files.html",
                 macro="edit_files_popup_selection",

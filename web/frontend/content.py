@@ -742,7 +742,11 @@ def get_make_search_content_function(req_args):
 def render_content_error(error, language):
     return webconfig.theme.render_template(
             "content_error.j2.jade",
-            dict(error=error, html_head_style_src=_web_frontend.html_head_style_src),
+            dict(
+                error=error,
+                html_head_style_src=_web_frontend.html_head_style_src,
+                html_head_javascript_src=_web_frontend.html_head_javascript_src,
+            ),
         )
 
 

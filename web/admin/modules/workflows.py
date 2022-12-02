@@ -480,6 +480,7 @@ def WorkflowPopup(req):
                 id=path[1],
                 csrf=_core_csrfform.get_token(),
                 html_head_style_src=_web_frontend.html_head_style_src,
+                html_head_javascript_src=_web_frontend.html_head_javascript_src,
             ),
             file="web/admin/modules/workflows.html",
             macro="view_popup",

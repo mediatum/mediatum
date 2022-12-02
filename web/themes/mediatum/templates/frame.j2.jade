@@ -32,6 +32,8 @@ html(xmlns="http://www.w3.org/1999/xhtml")
     link(rel='manifest', href='/static/root/manifest.json')
     for src in html_head_style_src
       link(rel="stylesheet", href=src)
+    for src in html_head_javascript_src
+      script(src=src)
     meta(name='msapplication-TileColor', content='#ffffff')
     meta(name='msapplication-TileImage', content='/static/img/root/mstile-144x144.png')
     meta(name='theme-color', content='#ffffff')

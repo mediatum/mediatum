@@ -459,4 +459,5 @@ def render_page(req, content_html, node=None, show_navbar=True, show_id=None):
             footer=Markup(footer_html),
             google_scholar=head_meta,
             html_head_style_src=_web_frontend.html_head_style_src,
+            html_head_javascript_src=_web_frontend.html_head_javascript_src,
            ))

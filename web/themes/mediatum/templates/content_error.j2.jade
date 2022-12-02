@@ -7,6 +7,8 @@ html(xmlns="http://www.w3.org/1999/xhtml")
   head
     for src in html_head_style_src
       link(rel="stylesheet", href=src)
+    for src in html_head_javascript_src
+      script(src=src)
   p &nbsp;
   p(align='center')
     font(color='red')

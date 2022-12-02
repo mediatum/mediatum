@@ -301,6 +301,7 @@
         <script src="/static/js/ftree.js"> </script>
         <script src="/static/js/jquery-2.0.3.js"> </script>
         <script src="/static/js/mediatum.js"> </script>
+        <script tal:repeat="src html_head_javascript_src" tal:attributes="src src"> </script>
     </head>
     <body>
         <script type="text/javascript" tal:content="script"> </script>

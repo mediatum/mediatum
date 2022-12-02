@@ -40,6 +40,7 @@
             <meta content="text/html;charset=UTF-8" http-equiv="content-type"/>
             <title i18n:translate="popup_index_header">TEXT</title>
             <script src="/static/js/metadata/ilist.js"> </script>
+            <script tal:repeat="src html_head_javascript_src" tal:attributes="src src"> </script>
             <link href="/static/css/popup.css" rel="stylesheet" type="text/css"/>
             <link rel="stylesheet" tal:repeat="src html_head_style_src" tal:attributes="href src" />
         </head>

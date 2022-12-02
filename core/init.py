@@ -313,6 +313,7 @@ def _additional_init():
     from core import plugins
     init_modules()
     _web_frontend.html_head_style_src.extend(filter(None, config.get('paths.css', '').split('|')))
+    _web_frontend.html_head_javascript_src.extend(filter(None, config.get('paths.javascript', '').split('|')))
     plugins.init_plugins()
     if enable_startup_checks:
         check_undefined_nodeclasses()

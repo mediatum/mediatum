@@ -114,6 +114,7 @@
         <script src="/static/js/jquery-migrate-1.4.1.js"> </script>
         <script tal:content="python:u'var id = {};'.format(id)"> </script>
         <script src="/static/js/edit/modules/startpages.js"> </script>
+        <script tal:repeat="src html_head_javascript_src" tal:attributes="src src"> </script>
     </head>
     <body>
         <div id="deleteconfirm" i18n:translate="edit_fckeditor_cfm_deleteconfirm" style="display:none">TEXT</div>

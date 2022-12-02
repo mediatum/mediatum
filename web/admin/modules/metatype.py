@@ -442,6 +442,7 @@ def showInfo(req):
                     fieldtypes=getMetaFieldTypeNames(),
                     csrf=_core_csrfform.get_token(),
                     html_head_style_src=_web_frontend.html_head_style_src,
+                    html_head_javascript_src=_web_frontend.html_head_javascript_src,
                 ),
                 file="web/admin/modules/metatype.html",
                 macro="show_info",
@@ -464,6 +465,7 @@ def showFieldOverview(req):
                 fieldtypes=getMetaFieldTypeNames(),
                 csrf=_core_csrfform.get_token(),
                 html_head_style_src=_web_frontend.html_head_style_src,
+                html_head_javascript_src=_web_frontend.html_head_javascript_src,
             ),
             file="web/admin/modules/metatype.html",
             macro="show_fieldoverview",
@@ -705,6 +707,7 @@ def showEditor(req):
     v["title"] = editor.name
     v["csrf"] = _core_csrfform.get_token()
     v["html_head_style_src"] = _web_frontend.html_head_style_src
+    v["html_head_javascript_src"] = _web_frontend.html_head_javascript_src
     return _tal.processTAL(v, file="web/admin/modules/metatype.html", macro="editor_popup", request=req)
 
 

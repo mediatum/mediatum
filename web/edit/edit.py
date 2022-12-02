@@ -113,7 +113,10 @@ def frameset(req):
     user = _user_from_session()
     if not user.is_editor:
         data = _tal.processTAL(
-                dict(html_head_style_src=_web_frontend.html_head_style_src),
+                dict(
+                    html_head_style_src=_web_frontend.html_head_style_src,
+                    html_head_javascript_src=_web_frontend.html_head_javascript_src,
+                ),
                 file="web/edit/edit.html",
                 macro="error",
                 request=req,
@@ -250,6 +253,7 @@ def frameset(req):
                 homenodefilter=homenodefilter,
                 csrf=_core_csrfform.get_token(),
                 html_head_style_src=_web_frontend.html_head_style_src,
+                html_head_javascript_src=_web_frontend.html_head_javascript_src,
             ),
             file="web/edit/edit.html",
             macro="edit_main",
@@ -318,7 +322,11 @@ def _handletabs(req, ids, tabs, sort_choices):
 
 def error(req):
     req.response.set_data(_tal.processTAL(
-            dict(errormsg=req.values.get("errmsg", ""), html_head_style_src=_web_frontend.html_head_style_src),
+            dict(
+                errormsg=req.values.get("errmsg", ""),
+                html_head_style_src=_web_frontend.html_head_style_src,
+                html_head_javascript_src=_web_frontend.html_head_javascript_src,
+            ),
             string="<tal:block tal:replace=\"errormsg\"/>",
             macro="edit_errorpage",
             request=req,
@@ -511,7 +519,11 @@ def action(req):
         except:
             req.response.status_code = httpstatus.HTTP_OK
             req.response.set_data(_tal.processTAL(
-                    dict(edit_action_error=srcnodeid, html_head_style_src=_web_frontend.html_head_style_src),
+                    dict(
+                        edit_action_error=srcnodeid,
+                        html_head_style_src=_web_frontend.html_head_style_src,
+                        html_head_javascript_src=_web_frontend.html_head_javascript_src,
+                    ),
                     file="web/edit/edit.html",
                     macro="edit_action_error",
                     request=req,
@@ -766,6 +778,7 @@ def content(req):
 
     v = dict()
     v["html_head_style_src"] = _web_frontend.html_head_style_src
+    v["html_head_javascript_src"] = _web_frontend.html_head_javascript_src
 
     user = _user_from_session()
     req.response.status_code = httpstatus.HTTP_OK

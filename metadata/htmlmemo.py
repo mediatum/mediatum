@@ -94,6 +94,7 @@ class m_htmlmemo(_core_metatype.Metatype):
                         name=req.params.get("name"),
                         value=req.params.get("value"),
                         html_head_style_src=_web_frontend.html_head_style_src,
+                        html_head_javascript_src=_web_frontend.html_head_javascript_src,
                        ),
                     file="metadata/htmlmemo.html",
                     macro="popup",

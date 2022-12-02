@@ -292,6 +292,7 @@
             <title i18n:translate="admin_infopopup_title">TEXT</title>
             <link rel="stylesheet" href="/static/css/admin/admin.css"/>
             <link rel="stylesheet" tal:repeat="src html_head_style_src" tal:attributes="href src" />
+            <script tal:repeat="src html_head_javascript_src" tal:attributes="src src"> </script>
         </head>
         <body>
             <table cellpadding="20" cellspacing="0" width="100%" class="header">
@@ -322,6 +323,7 @@
             <link rel="stylesheet" href="/static/css/admin/admin.css"/>
             <link rel="stylesheet" href="/static/css/admin/modules/metatype.css"/>
             <link rel="stylesheet" tal:repeat="src html_head_style_src" tal:attributes="href src" />
+            <script tal:repeat="src html_head_javascript_src" tal:attributes="src src"> </script>
         </head>
         <body>
             <h3 i18n:translate="admin_defpopup_header">TEXT '<span tal:content="python:metadatatype.getName()" i18n:name="name"/>'</h3>
@@ -382,6 +384,7 @@
         <script src="/static/js/metaeditor.js">selected==false;</script>
         <script src="/static/js/jquery-1.12.4.js"> </script>
         <script src="/static/js/jquery-migrate-1.4.1.js"> </script>
+        <script tal:repeat="src html_head_javascript_src" tal:attributes="src src"> </script>
         <link rel="stylesheet" href="/static/css/editor.css"/>
         <link rel="stylesheet" tal:repeat="src html_head_style_src" tal:attributes="href src" />
         <title i18n:translate="mask_editor_title">TEXT</title>

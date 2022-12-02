@@ -61,6 +61,7 @@ def show_node(req):
 
     v["spc"] = spc
     v["html_head_style_src"] = _web_frontend.html_head_style_src
+    v["html_head_javascript_src"] = _web_frontend.html_head_javascript_src
     if len(p) > 0:
         if style == "":
             req.response.set_data(_tal.processTAL(v, file="web/admin/frame.html", macro="frame", request=req))

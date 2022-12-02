@@ -35,6 +35,7 @@
             <title i18n:translate="treeselect_popup_title">TEXT</title>
             <script src="/static/js/jquery-2.0.3.js"> </script>
             <script src="/static/js/metadata/treeselect.js"> </script>
+            <script tal:repeat="src html_head_javascript_src" tal:attributes="src src"> </script>
             <link rel="stylesheet" href="/static/css/metadata/treeselect.css" type="text/css" />
             <link rel="stylesheet" tal:repeat="src html_head_style_src" tal:attributes="href src" />
         </head>

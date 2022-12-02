@@ -82,6 +82,7 @@
         <link rel="stylesheet" href="/static/css/metadata/htmlmemo2.css" />
         <link rel="stylesheet" tal:repeat="src html_head_style_src" tal:attributes="href src" />
         <script src="/static/js/metadata/htmlmemo.js"> </script>
+        <script tal:repeat="src html_head_javascript_src" tal:attributes="src src"> </script>
     </head>
 
     <body tal:attributes="onload python:u'init(\'{}\')'.format(name)">

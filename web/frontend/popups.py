@@ -47,7 +47,11 @@ def show_help(req):
         html = webconfig.theme.render_macro(
                 "popups.j2.jade",
                 "show_help",
-                dict(field=field, html_head_style_src=_web_frontend.html_head_style_src),
+                dict(
+                    field=field,
+                    html_head_style_src=_web_frontend.html_head_style_src,
+                    html_head_javascript_src=_web_frontend.html_head_javascript_src,
+                ),
             )
         req.response.status_code = httpstatus.HTTP_OK
     else:

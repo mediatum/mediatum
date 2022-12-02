@@ -100,6 +100,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
+        <link rel="stylesheet" tal:repeat="src html_head_style_src" tal:attributes="href src" />
         <script tal:repeat="src html_head_javascript_src" tal:attributes="src src"> </script>
     </head>
     <body>
@@ -341,6 +342,7 @@
             <META http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
             <meta content="text/html;charset=UTF-8" http-equiv="content-type"/>
             <link rel="stylesheet" href="/static/css/editor.css" />
+            <link rel="stylesheet" tal:repeat="src html_head_style_src" tal:attributes="href src" />
             <script tal:repeat="src html_head_javascript_src" tal:attributes="src src"> </script>
         </head>
         <body>

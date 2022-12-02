@@ -33,6 +33,7 @@
         <script src="/static/js/jquery-1.12.4.js"> </script>
         <script src="/static/js/jquery-migrate-1.4.1.js"> </script>
         <script src="/static/js/metadata/text.js"> </script>
+        <script tal:repeat="src html_head_javascript_src" tal:attributes="src src"> </script>
         <link rel="stylesheet" href="/static/css/metadata/text.css" type="text/css" />
         <link rel="stylesheet" tal:repeat="src html_head_style_src" tal:attributes="href src" />
     </head>

@@ -25,9 +25,6 @@ msgstr "Ungültig"
 msgid "show_in_new_window"
 msgstr "In neuem Fenster anzeigen"
 
-msgid "show in new window"
-msgstr "In neuem Fenster anzeigen"
-
 msgid "main_title"
 msgstr "mediaTUM - Medien- und Publikationsserver"
 

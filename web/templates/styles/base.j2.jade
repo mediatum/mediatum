@@ -15,16 +15,16 @@ link(rel="stylesheet", href="/static/css/jade_style.css")
   - block before_metadata
     // thumbnails, additional download links, etc...
 
-  .object_meta.object_column
+  dl.object_meta.object_column
     = metadata
 
     if license_url
-      br
-      a(href=license_url)
-        img(src=license_image_url, width=100)
+      dt
+        a(href=license_url)
+          img(src=license_image_url, width=100)
 
     if bibtex
-      .action_icon
+      dt.action_icon
         a(href="/export/{{ node.id }}/bibtex", target="bibtexdocument", title=translate("doc_bibtex_title"))
           img(src="/static/img/bibtex.gif")
           |&nbsp;BibTeX

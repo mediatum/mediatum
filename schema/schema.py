@@ -207,16 +207,6 @@ def get_permitted_schemas_for_datatype(datatype):
     return [sc for sc in get_permitted_schemas() if datatype in sc.getDatatypes()]
 
 #
-# check if metatype with given name is still existing in db
-#
-
-def existMetaType(name):
-    warn("use q(Metadatatype) instead", DeprecationWarning)
-    if getMetaType(name):
-        return True
-    return False
-
-#
 # update/create metatype by given object
 #
 def updateMetaType(name, description="", longname="", active=0, datatypes="", bibtexmapping="", orig_name="", citeprocmapping=""):

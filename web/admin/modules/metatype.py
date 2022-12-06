@@ -20,8 +20,20 @@ import core.nodecache as _core_nodecache
 import web.common.acl_web as _acl_web
 from utils.utils import suppress
 import core.translation as _translation
-from schema.schema import getMetaFieldTypeNames, getMetaType, updateMetaType, existMetaType, deleteMetaType, fieldoption, moveMetaField, getMetaField, deleteMetaField, getFieldsForMeta, dateoption, requiredoption, existMetaField, updateMetaField, generateMask, cloneMask, exportMetaScheme, importMetaSchema
-from schema.schema import VIEW_DEFAULT
+from schema.schema import cloneMask
+from schema.schema import deleteMetaField
+from schema.schema import deleteMetaType
+from schema.schema import existMetaField
+from schema.schema import exportMetaScheme
+from schema.schema import fieldoption
+from schema.schema import generateMask
+from schema.schema import getFieldsForMeta
+from schema.schema import getMetaFieldTypeNames
+from schema.schema import getMetaType
+from schema.schema import importMetaSchema
+from schema.schema import moveMetaField
+from schema.schema import updateMetaField
+from schema.schema import updateMetaType
 from schema.bibtex import getAllBibTeXTypes
 from schema import citeproc
 import schema.schema as _schema
@@ -178,7 +190,7 @@ def validate(req, op):
                 return MetatypeDetail(req, req.params.get("mname_orig", ""), 1)  # no name was given
             elif not checkString(req.params.get("mname", "")):
                 return MetatypeDetail(req, req.params.get("mname_orig", ""), 4)  # if the name contains wrong characters
-            elif req.params.get("mname_orig", "") != req.params.get("mname", "") and existMetaType(req.params.get("mname")):
+            elif req.params.get("mname_orig", "") != req.params.get("mname", "") and getMetaType(req.params.get("mname")):
                 return MetatypeDetail(req, req.params.get("mname_orig", ""), 2)  # metadata still existing
 
             _active = 0

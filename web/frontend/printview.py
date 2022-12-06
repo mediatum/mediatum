@@ -85,7 +85,11 @@ class PrintPreview:
         if not collection:
             self.header = Paragraph(_core_translation.translate(self.language, "print_view_header"), h1)
         else:
-            p = Paragraph(_core_translation.translate(self.language, collection.name), h1)
+            try:
+                collection_name = _core_translation.translate(self.language, collection.name)
+            except _core_translation.MessageIdNotFound:
+                collection_name = collection.name
+            p = Paragraph(collection_name, h1)
             p.wrap(defaultPageSize[0], defaultPageSize[1])
             self.headerWidth = p.getActualLineWidths0()[0]
             self.header = p

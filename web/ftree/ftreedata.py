@@ -4,8 +4,6 @@
 from __future__ import division
 from __future__ import print_function
 
-import logging as _logging
-
 import contenttypes as _contenttypes
 import core as _core
 import core.nodecache as _core_nodecache
@@ -13,6 +11,7 @@ import core.translation as _core_translation
 import core.users as _core_users
 import core.httpstatus as _httpstatus
 import utils.pathutils as _pathutils
+import utils.utils as _utils
 import web.edit.edit_common as _web_edit_common
 import web.edit.edit as _web_edit_edit
 
@@ -25,7 +24,7 @@ def getData(req):
     user = _core_users.user_from_session()
 
     for c in _core.db.query(_core.Node).get(pid).children.filter_read_access().order_by(_core.Node.orderpos):
-        try:
+        with _utils.suppress(Exception):
             if isinstance(c, _contenttypes.Container):
                 special_dir_type = _web_edit_edit.get_special_dir_type(c)
                 cnum = c.container_children.count()
@@ -73,8 +72,6 @@ def getData(req):
                         ret.append(u'<ul><li parentId="{}" class="spinner.gif"><a href="#">&nbsp;</a></li></ul>'.format(c.id))
 
                     ret.append(u'</li>')
-        except:
-            _logging.getLogger(__name__).exception("exception in getData")
 
     req.response.set_data(u"\n".join(ret))
     req.response.status_code = _httpstatus.HTTP_OK

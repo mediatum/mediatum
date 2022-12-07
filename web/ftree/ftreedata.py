@@ -24,54 +24,57 @@ def getData(req):
     user = _core_users.user_from_session()
 
     for c in _core.db.query(_core.Node).get(pid).children.filter_read_access().order_by(_core.Node.orderpos):
+
+        if not isinstance(c, _contenttypes.Container):
+            continue
+
         with _utils.suppress(Exception):
-            if isinstance(c, _contenttypes.Container):
-                special_dir_type = _web_edit_edit.get_special_dir_type(c)
-                cnum = c.container_children.count()
-                inum = c.content_children.count()
+            special_dir_type = _web_edit_edit.get_special_dir_type(c)
+            cnum = c.container_children.count()
+            inum = c.content_children.count()
 
-                label = _web_edit_common.get_edit_label(c, _core_translation.set_language(req.accept_languages))
-                title = label + " (" + unicode(c.id) + ")"
+            label = _web_edit_common.get_edit_label(c, _core_translation.set_language(req.accept_languages))
+            title = label + " (" + unicode(c.id) + ")"
 
-                cls = "folder"
+            cls = "folder"
 
-                itemcls = ""
-                if not c.has_write_access():
-                    itemcls = "read"
+            itemcls = ""
+            if not c.has_write_access():
+                itemcls = "read"
 
-                if c.type == "collection":  # or "collection" in c.type:
-                    cls = "collection"
-                if hasattr(c, 'treeiconclass'):
-                    cls = c.treeiconclass()
+            if c.type == "collection":  # or "collection" in c.type:
+                cls = "collection"
+            if hasattr(c, 'treeiconclass'):
+                cls = c.treeiconclass()
 
-                if special_dir_type == u'trash':
-                    cls = "trashicon"
-                elif special_dir_type == u'upload':
-                    cls = "uploadicon"
-                elif c == user.home_dir:
-                    cls = "homeicon"
+            if special_dir_type == u'trash':
+                cls = "trashicon"
+            elif special_dir_type == u'upload':
+                cls = "uploadicon"
+            elif c == user.home_dir:
+                cls = "homeicon"
 
-                if style == "edittree":  # standard tree for edit area
-                    if inum > 0:
-                        label += u" <small>({})</small>".format(inum)
+            if style == "edittree":  # standard tree for edit area
+                if inum > 0:
+                    label += u" <small>({})</small>".format(inum)
 
 
-                    ret.append(u'<li class="{}.gif" id="Node{}">'.format(cls, c.id))
-                    ret.append(u'<a href="#" title="{}" id="{}" class="{}">{}</a>'.format(title, c.id, itemcls, label))
+                ret.append(u'<li class="{}.gif" id="Node{}">'.format(cls, c.id))
+                ret.append(u'<a href="#" title="{}" id="{}" class="{}">{}</a>'.format(title, c.id, itemcls, label))
 
-                    if cnum > 0:
-                        ret.append(u'<ul><li parentId="{}" class="spinner.gif"><a href="#">&nbsp;</a></li></ul>'.format(c.id))
-                    ret.append(u'</li>')
+                if cnum > 0:
+                    ret.append(u'<ul><li parentId="{}" class="spinner.gif"><a href="#">&nbsp;</a></li></ul>'.format(c.id))
+                ret.append(u'</li>')
 
-                elif style == "classification":  # style for classification
-                    ret.append(u'<li class="{}.gif" id="Node{}">'.format(cls, c.id))
-                    ret.append(u'<a href="#" title="{}" id="{}" class="{}">{}<input type="image" src="/static/img/ftree/uncheck.gif"/></a>'.format(
-                                    title, c.id, itemcls, label))
+            elif style == "classification":  # style for classification
+                ret.append(u'<li class="{}.gif" id="Node{}">'.format(cls, c.id))
+                ret.append(u'<a href="#" title="{}" id="{}" class="{}">{}<input type="image" src="/static/img/ftree/uncheck.gif"/></a>'.format(
+                                title, c.id, itemcls, label))
 
-                    if cnum > 0:
-                        ret.append(u'<ul><li parentId="{}" class="spinner.gif"><a href="#">&nbsp;</a></li></ul>'.format(c.id))
+                if cnum > 0:
+                    ret.append(u'<ul><li parentId="{}" class="spinner.gif"><a href="#">&nbsp;</a></li></ul>'.format(c.id))
 
-                    ret.append(u'</li>')
+                ret.append(u'</li>')
 
     req.response.set_data(u"\n".join(ret))
     req.response.status_code = _httpstatus.HTTP_OK

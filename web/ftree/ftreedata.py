@@ -4,37 +4,34 @@
 from __future__ import division
 from __future__ import print_function
 
-import logging
+import logging as _logging
 
-import core.httpstatus as _httpstatus
+import contenttypes as _contenttypes
+import core as _core
 import core.nodecache as _core_nodecache
 import core.translation as _core_translation
-from core.users import user_from_session as _user_from_session
-from contenttypes import Container
-from core import Node
-from core import db
-from web.edit.edit import get_special_dir_type
-from web.edit.edit_common import get_edit_label
-from utils.pathutils import getPaths
+import core.users as _core_users
+import core.httpstatus as _httpstatus
+import utils.pathutils as _pathutils
+import web.edit.edit_common as _web_edit_common
+import web.edit.edit as _web_edit_edit
 
-logg = logging.getLogger(__name__)
-q = db.query
 
 
 def getData(req):
     pid = req.params.get("parentId")
     style = req.params.get("style", "edittree")
     ret = []
-    user = _user_from_session()
+    user = _core_users.user_from_session()
 
-    for c in q(Node).get(pid).children.filter_read_access().order_by(Node.orderpos):
+    for c in _core.db.query(_core.Node).get(pid).children.filter_read_access().order_by(_core.Node.orderpos):
         try:
-            if isinstance(c, Container):
-                special_dir_type = get_special_dir_type(c)
+            if isinstance(c, _contenttypes.Container):
+                special_dir_type = _web_edit_edit.get_special_dir_type(c)
                 cnum = c.container_children.count()
                 inum = c.content_children.count()
 
-                label = get_edit_label(c, _core_translation.set_language(req.accept_languages))
+                label = _web_edit_common.get_edit_label(c, _core_translation.set_language(req.accept_languages))
                 title = label + " (" + unicode(c.id) + ")"
 
                 cls = "folder"
@@ -77,14 +74,14 @@ def getData(req):
 
                     ret.append(u'</li>')
         except:
-            logg.exception("exception in getData")
+            _logging.getLogger(__name__).exception("exception in getData")
 
     req.response.set_data(u"\n".join(ret))
     req.response.status_code = _httpstatus.HTTP_OK
 
 
 def getLabel(req):
-    node = q(Node).get(req.params.get("getLabel"))
+    node = _core.db.query(_core.Node).get(req.params.get("getLabel"))
 
     inum = len(node.content_children)
     label = node.getLabel()
@@ -102,12 +99,12 @@ def getPathTo(req):
     nid = req.args.get("pathTo", collectionsid).split(',')[0]
     if not nid:
         raise ValueError("node id must be numeric, got '{}'".format(req.args.get("pathTo")))
-    node = q(Node).get(nid)
+    node = _core.db.query(_core.Node).get(nid)
 
     items = []
     checked = []
 
-    for path in getPaths(node):
+    for path in _pathutils.getPaths(node):
         if node.id not in path and node.isContainer():  # add node if container
             path.append(node)
 
@@ -124,7 +121,7 @@ def getPathTo(req):
         if req.params.get("multiselect", "false") == "false":  # if not multiselect use only first path
             break
 
-    if len(items) == 0 or collectionsid == q(Node).get(items[0]).parents[0].id:
+    if len(items) == 0 or collectionsid == _core.db.query(_core.Node).get(items[0]).parents[0].id:
         items = [collectionsid] + items
 
     items = u",".join([unicode(i) for i in items])

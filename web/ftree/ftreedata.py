@@ -81,7 +81,6 @@ def getData(req):
 
     req.response.set_data(u"\n".join(ret))
     req.response.status_code = _httpstatus.HTTP_OK
-    return
 
 
 def getLabel(req):
@@ -93,7 +92,6 @@ def getLabel(req):
         label += u" <small>({})</small>".format(inum)
     req.response.status_code = _httpstatus.HTTP_OK
     req.response.set_data(label)
-    return
 
 
 def getPathTo(req):
@@ -136,4 +134,3 @@ def getPathTo(req):
 
     req.response.status_code = _httpstatus.HTTP_OK
     req.response.set_data(items)
-    return

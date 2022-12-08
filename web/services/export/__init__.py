@@ -20,16 +20,10 @@ SERVICES_URL_HAS_HANDLER = 1
 SERVICES_URL_SIMPLE_REWRITE = 2
 
 urls = [
-    ["GET", "/index.html$", handlers.serve_file, ("/static/index.html", {}, {'filepath': 'index.html'}), SERVICES_URL_SIMPLE_REWRITE, None],
-    ["GET", "/$", handlers.serve_file,
-            ("/static/index.html", {}, {'filepath': 'index.html'}), SERVICES_URL_SIMPLE_REWRITE, None],
-
     ["GET", "/node/(?P<id>\d+)/{0,1}$", handlers.get_node_single, None, SERVICES_URL_HAS_HANDLER, None],
     ["GET", "/node/(?P<id>\d+)/children/{0,1}$", handlers.get_node_children, None, SERVICES_URL_HAS_HANDLER, None],
     ["GET", "/node/(?P<id>\d+)/allchildren/{0,1}$", handlers.get_node_allchildren, None, SERVICES_URL_HAS_HANDLER, None],
     ["GET", "/node/(?P<id>\d+)/parents/{0,1}$", handlers.get_node_parents, None, SERVICES_URL_HAS_HANDLER, None],
-
-    ["GET", "/static/(?P<filepath>.*)$", handlers.serve_file, None, SERVICES_URL_HAS_HANDLER, None],
 ]
 
 request_count = 0

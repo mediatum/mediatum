@@ -8,8 +8,6 @@ import copy
 import functools as _functools
 import json
 import logging
-import os
-import re
 import time
 import urlparse as _urlparse
 
@@ -22,7 +20,7 @@ from core import Node, db, User
 from schema.schema import VIEW_DATA_ONLY, Metadatatype
 from utils.date import format_date
 from utils.pathutils import getBrowsingPathList
-from utils.utils import esc, getMimeType, modify_tex
+from utils.utils import esc, modify_tex
 from utils.utils import xml_remove_illegal_chars
 import web.services.jsonnode as jsonnode
 from web.services.rssnode import template_rss_channel, template_rss_item, feed_channel_dict, try_node_date
@@ -38,8 +36,6 @@ from core.nodecache import get_collections_node, get_home_root_node
 import core.oauth as oauth
 from core.search.config import get_service_search_languages
 from array import array
-from core.request_handler import sendFile as _sendFile
-
 
 logg = logging.getLogger(__name__)
 q = db.query
@@ -963,54 +959,3 @@ def get_node_allchildren(req, path, params, data, id):
 
 def get_node_parents(req, path, params, data, id):
     return write_formatted_response(req, path, params, data, id, debug=True, singlenode=False, parents=True)
-
-
-# alternative base dir for static html files
-#
-# relative to mediatum folder:
-# WEBROOT="./web/services/static01/files/"
-#
-# absolute:
-# WEBROOT="/tmp/"
-
-# WEBROOT="./web/services/static01/files/"
-
-# no WEBROOT configured, default will be used
-WEBROOT = None
-
-
-def serve_file(req, path, params, data, filepath):
-    atime = starttime = time.time()
-
-    d = {}
-    d['timetable'] = []
-
-    if 'mimetype' in params:
-        mimetype = params['mimetype']
-    elif filepath.lower().endswith('.html') or filepath.lower().endswith('.htm'):
-        mimetype = 'text/html'
-    else:
-        mimetype = getMimeType(filepath)
-
-    req.response.content_type = mimetype
-
-    if WEBROOT:
-        basedir = WEBROOT
-    else:
-        basedir = os.path.dirname(os.path.abspath(__file__))
-    abspath = os.path.join(basedir, 'static', filepath)
-    logg.info("web service trying to serve: %s", abspath)
-    if os.path.isfile(abspath):
-        filesize = os.path.getsize(abspath)
-        _sendFile(req, abspath, mimetype, force=1)
-        d['timetable'].append(["reading file '%s'" % filepath, time.time() - atime])
-        atime = time.time()
-        d['status'] = 'ok'
-        dataready = "%.3f" % (time.time() - starttime)
-        d['dataready'] = dataready
-        return 200, filesize, d  # ok
-    else:
-        d['status'] = 'fail'
-        dataready = "%.3f" % (time.time() - starttime)
-        d['dataready'] = dataready
-        return 404, 0, d  # not found

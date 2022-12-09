@@ -165,6 +165,7 @@ def getContent(req, ids):
     if any([openfield, isnewfield, delfield, delsubfield, createsub, schema, searchtypechanged, closefield]):
         content =  _tal.processTAL(data, file="web/edit/modules/searchmask.html", macro="edit_search", request=req)
         s = json.dumps({'content': content}, ensure_ascii=False)
+        req.response.mimetype = "application/json"
         req.response.set_data(s)
         return None
 

@@ -92,6 +92,7 @@ def getContent(req, ids):
                     state = "error"
             basenode.files = []
             db.session.commit()
+            req.response.mimetype = "application/json"
             req.response.set_data(json.dumps({'state': state}, ensure_ascii=False))
             return None
 
@@ -186,6 +187,7 @@ def getContent(req, ids):
 
             db.session.commit()
             # standard file
+            req.response.mimetype = "application/json"
             req.response.set_data(json.dumps(
                     dict(
                         state=state,
@@ -227,6 +229,7 @@ def getContent(req, ids):
             if len(dtypes) == 1:  # load schemes for type
                 schemes = get_permitted_schemas_for_datatype(dtypes[0].__name__.lower())
 
+            req.response.mimetype = "application/json"
             req.response.set_data(json.dumps(
                 dict(content=_tal.processTAL(
                     dict(
@@ -244,6 +247,7 @@ def getContent(req, ids):
 
         # add new object, only doi
         if req.values['action'] == "adddoi":
+            req.response.mimetype = "application/json"
             req.response.set_data(json.dumps(
                 dict(
                     content=_tal.processTAL(
@@ -265,6 +269,7 @@ def getContent(req, ids):
             ret = []
             for scheme in get_permitted_schemas_for_datatype(req.values.get('contenttype')):
                 ret.append(dict(id=scheme.name, name=scheme.getLongName()))
+            req.response.mimetype = "application/json"
             req.response.set_data(json.dumps(dict(schemes=ret), ensure_ascii=False))
             return None
 
@@ -278,6 +283,7 @@ def getContent(req, ids):
             node.set("creator", user.login_name)
             node.set("creationtime",  ustr(time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
             db.session.commit()
+            req.response.mimetype = "application/json"
             req.response.set_data(json.dumps(dict(newid=node.id, id=req.values.get('id')), ensure_ascii=False))
             return None
 
@@ -316,6 +322,7 @@ def getContent(req, ids):
                 else:  # import failed, no new_node created
                     logg.info("import failed, no new_node created for identifier (%s)", identifier)
 
+                req.response.mimetype = "application/json"
                 req.response.set_data(json.dumps(res, ensure_ascii=False))
 
             # return value will be logged when level is DEBUG
@@ -342,6 +349,7 @@ def getContent(req, ids):
             if data_extra == 'tofile':
                 ctx = dict(filename=incoming_file.getName())
                 ctx.update(upload_to_filetype_filehandler(uploadfile.filename))
+                req.response.mimetype = "application/json"
                 req.response.set_data(json.dumps(
                     dict(
                         type='file',
@@ -360,6 +368,7 @@ def getContent(req, ids):
                 return None
 
             if mime[1] == "other":  # file type not supported
+                req.response.mimetype = "application/json"
                 req.response.set_data(json.dumps(
                     dict(
                         type=mime[1],
@@ -413,6 +422,7 @@ def getContent(req, ids):
                             request=req,
                         )
 
+            req.response.mimetype = "application/json"
             req.response.set_data(json.dumps(
                 dict(
                     type=mime[1],

@@ -444,6 +444,7 @@ def edit_tree(req):
         data.append(nodedata)
 
     req.response.status_code = httpstatus.HTTP_OK
+    req.response.mimetype = "application/json"
     req.response.set_data(json.dumps(data, indent=4, ensure_ascii=False))
 
 
@@ -488,6 +489,7 @@ def action(req):
             except:
                 logg.exception("exception ignored: could not make fancytree label for node %s", nid)
         req.response.status_code = httpstatus.HTTP_OK
+        req.response.mimetype = "application/json"
         req.response.set_data(json.dumps(dict(changednodes=changednodes), indent=4, ensure_ascii=False))
         return
     else:
@@ -567,6 +569,7 @@ def action(req):
         label = getTreeLabel(newnode, lang=language)
 
         req.response.status_code = httpstatus.HTTP_OK
+        req.response.mimetype = "application/json"
         req.response.set_data(json.dumps(
                 dict(
                     title=label,
@@ -697,6 +700,7 @@ def action(req):
             except:
                 logg.exception("exception ignored: could not make fancytree label for node %s", nid)
         req.response.status_code = httpstatus.HTTP_OK
+        req.response.mimetype = "application/json"
         req.response.set_data(json.dumps(dict(changednodes=changednodes), indent=4, ensure_ascii=False))
     else:
         try:

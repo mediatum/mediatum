@@ -207,7 +207,7 @@ def handle_request(req):
                     filelist=filelist,
                     html_filelist=_mkfilelist(n, filelist2, m_upload_field_name, deletebutton=1, request=req),
                    )
-
+            req.response.mimetype = "application/json"
             req.response.set_data(req.params.get("jsoncallback") + "(%s)" % json.dumps(s, indent=4))
             req.response.status_code = 200
 
@@ -233,6 +233,7 @@ def handle_request(req):
                 errors.append(msg)
 
                 s['errors'] = errors
+                req.response.mimetype = "application/json"
                 req.response.set_data(req.params.get("jsoncallback") + "(%s)" % json.dumps(s, indent=4))
                 req.response.status_code = 403
                 return 403
@@ -256,11 +257,13 @@ def handle_request(req):
             db.session.commit()
 
             s['errors'] = errors
+            req.response.mimetype = "application/json"
             req.response.set_data(req.params.get("jsoncallback") + "(%s)" % json.dumps(s, indent=4))
             req.response.status_code = 200
             return 200
         else:
             s = {'response': 'response for cmd="%s" not completely implemented feature' % cmd}
+            req.response.mimetype = "application/json"
             req.response.set_data(req.params.get("jsoncallback") + "(%s)" % json.dumps(s, indent=4))
             return 200
 
@@ -290,6 +293,7 @@ def handle_request(req):
             errors.append(msg)
 
             s['errors'] = errors
+            req.response.mimetype = "application/json"
             req.response.set_data("%s" % json.dumps(s, indent=4))
             return
 
@@ -338,7 +342,7 @@ def handle_request(req):
         'errors': errors,
         'copy_report': copy_report,
     }
-
+    req.response.mimetype = "application/json"
     req.response.set_data("%s" % json.dumps(s, indent=4))
     req.response.status_code = 200
 

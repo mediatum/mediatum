@@ -25,18 +25,13 @@ class m_text(Metatype):
     name = "text"
 
     def editor_get_html_form(self, field, value="", width=40, lock=0, language=None, required=None):
-        try:
-            field_node_name = field.name
-        except:
-            field_node_name = None
-
         return tal.getTAL(
                 "metadata/text.html",
                 dict(
                     lock=lock,
                     value=value,
                     width=width,
-                    name=field_node_name,
+                    name=field.name,
                     field=field,
                     ident=field.id if field.id else "",
                     required=1 if required else None,

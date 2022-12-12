@@ -29,19 +29,13 @@ class m_htmlmemo(_core_metatype.Metatype):
     )
 
     def editor_get_html_form(self, field, value="", width=400, lock=0, language=None, required=None):
-
-        try:
-            field_node_name = field.name
-        except:
-            field_node_name = None
-
         s = tal.getTAL(
                 "metadata/htmlmemo.html",
                 dict(
                     lock=lock,
                     value=value,
                     width=width,
-                    name=field_node_name,
+                    name=field.name,
                     max_length=field.metatype_data['max_length'],
                     ident=ustr(field.id),
                     required=1 if required else None,

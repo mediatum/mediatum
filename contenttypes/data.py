@@ -4,6 +4,7 @@
 from __future__ import division
 from __future__ import print_function
 
+import cgi as _cgi
 import re
 import functools as _functools
 import logging
@@ -134,7 +135,7 @@ def _build_field_template(labels, field_descriptor):
         template = u'<b>{value}</b>'
     else:
         template = u"{value}"
-    return _functools.partial(template.format, label=field_descriptor.get("label", ""))
+    return _functools.partial(template.format, label=_cgi.escape(field_descriptor.get("label", ""), quote=True))
 
 
 class Data(Node):

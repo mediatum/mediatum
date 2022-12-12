@@ -695,7 +695,7 @@ msgid "mask_editor_msg1"
 msgstr "There are different field types available for mask fields. Standard is the 'normal field'"
 
 msgid "mask_editor_order_label"
-msgstr "(Change order by drag & drop)"
+msgstr "(Change order by drag &amp; drop)"
 
 msgid "mask_edit_up_title"
 msgstr "Move up"

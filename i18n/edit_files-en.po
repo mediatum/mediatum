@@ -77,7 +77,7 @@ msgid "edit_files_choosefile"
 msgstr "Select file:"
 
 msgid "edit_files_order_label"
-msgstr "Change order of objects(drag & drop)"
+msgstr "Change order of objects(drag &amp; drop)"
 
 msgid "edit_files_order_save"
 msgstr "Save order"

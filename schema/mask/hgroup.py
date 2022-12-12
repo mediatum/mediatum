@@ -4,6 +4,8 @@
 from __future__ import division
 from __future__ import print_function
 
+import cgi as _cgi
+
 import mediatumtal.tal as _tal
 
 import core.translation as _core_translation
@@ -42,7 +44,16 @@ class m_hgroup(Metatype):
             return ret
         else:
             if use_label:
-                snippets = ['<div class="mask_row hgroup hgroup-%s"><div class="mask_label">%s: </div><div class="mask_value">' % (maskitem.id, maskitem.getLabel())]
+                snippets = [
+                        """
+                            <div class="mask_row hgroup hgroup-{}">
+                                <div class="mask_label">{}: </div>
+                                <div class="mask_value">
+                        """.format(
+                            maskitem.id,
+                            _cgi.escape(maskitem.getLabel(), quote=True),
+                        )
+                    ]
             else:
                 snippets = ['<div class="mask_row hgroup hgroup-%s"><div class="mask_value">' % (maskitem.id)]
             raw_values = ['&nbsp;']

@@ -4,6 +4,8 @@
 from __future__ import division
 from __future__ import print_function
 
+import cgi as _cgi
+
 import core.translation as _core_translation
 
 
@@ -27,7 +29,7 @@ def makeList(req, own_ruleset_assocs, inherited_ruleset_assocs, special_ruleset,
                     )),
             )
         else:
-            val_left.append("""<optgroup label="%s"></optgroup>""" % rulesetname)
+            val_left.append(u'<optgroup label="{}"/>'.format(_cgi.escape(rulesetname, quote=True)))
             already_shown_left[rulesetname] = 1
 
     # node level rulesets (not inherited)
@@ -38,12 +40,12 @@ def makeList(req, own_ruleset_assocs, inherited_ruleset_assocs, special_ruleset,
             val_left.append(
                 """<option value="__special_rule__">%s</optgroup>""" % (entry_text, ))
         else:
-            val_left.append("""<option value="%s">%s</option>""" % (rulesetname, rulesetname))
+            val_left.append(u'<option value="{0}">{0}</option>'.format(_cgi.escape(rulesetname, quote=True)))
             already_shown_left[rulesetname] = 1
 
     for rulesetname in rulesetnamelist:
         if rulesetname not in already_shown_left:
-            val_right.append("""<option value="%s">%s</option>""" % (rulesetname, rulesetname))
+            val_right.append(u'<option value="{0}">{0}</option>'.format(_cgi.escape(rulesetname, quote=True)))
 
     res = {"name": rule_type, "val_left": "".join(val_left), "val_right": "".join(val_right), "type": rule_type}
 

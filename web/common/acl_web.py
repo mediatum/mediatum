@@ -4,6 +4,8 @@
 from __future__ import division
 from __future__ import print_function
 
+import cgi as _cgi
+
 import core.translation as _core_translation
 from core.database.postgres.permission import AccessRuleset
 from core import db
@@ -35,7 +37,7 @@ def makeList(req, name, rights, readonlyrights, overload=0, type=""):
                             "edit_acl_special_rule",
                         ))
                 else:
-                    val_left += """<optgroup label="%s"></optgroup>""" % rule.description
+                    val_left += u'<optgroup label="{}"/>'.format(_cgi.escape(rule.description, quote=True))
                 rorightsmap[rule.name] = 1
 
         # inherited implicit rules
@@ -47,12 +49,15 @@ def makeList(req, name, rights, readonlyrights, overload=0, type=""):
                             "edit_acl_special_rule",
                         ))
                 else:
-                    val_left += """<optgroup label="%s"></optgroup>""" % rule
+                    val_left += u'<optgroup label="{}"/>'.format(_cgi.escape(rule, quote=True))
 
     # node-level standard rules
     for rule in rulelist:
         if rule.name in rightsmap:
-            val_left += """<option value="%s">%s</option>""" % (rule.name, rule.description)
+            val_left += u'<option value="{}">{}</option>'.format(
+                    _cgi.escape(rule.name, quote=True),
+                    _cgi.escape(rule.description, quote=True),
+                )
             rightsmap[rule.name] = 1
 
     # node-level implicit rules
@@ -64,9 +69,12 @@ def makeList(req, name, rights, readonlyrights, overload=0, type=""):
                         _core_translation.translate(language, "edit_acl_special_rule"),
                     )
             else:
-                val_left += """<option value="%s">%s</option>""" % (r, r)
+                val_left += u'<option value="{0}">{0}</option>'.format(_cgi.escape(r, quote=True))
 
     for rule in rulelist:
         if rule.name not in rightsmap and rule.name not in rorightsmap:
-            val_right += """<option value="%s">%s</option>""" % (rule.name, rule.description)
+            val_right += u'<option value="{}">{}</option>'.format(
+                    _cgi.escape(rule.name, quote=True),
+                    _cgi.escape(rule.description, quote=True),
+                )
     return {"name": name, "val_left": val_left, "val_right": val_right, "type": type}

@@ -4,6 +4,7 @@
 from __future__ import division
 from __future__ import print_function
 
+import cgi as _cgi
 import operator as _operator
 
 import mediatumtal.tal as _tal
@@ -62,8 +63,16 @@ class m_field(Metatype):
                     label += '<span class="required">*</span> '
 
         if field.getDescription() != "":
-            description = '<div id="div_description"><a href="#" onclick="openPopup(\'/popup_help?id=' + ustr(element.id) + \
-                '&maskid=' + ustr(field.id) + '\', \'\', 400, 250)"><img src="/static/img/tooltip.png" border="0"/></a></div>'
+            description = """
+                    <div id="div_description">
+                        <a
+                           href="#"
+                           onclick="openPopup('/popup_help?id={}&amp;maskid={}', '', 400, 250)"
+                        >
+                            <img src="/static/img/tooltip.png" border="0"/>
+                        </a>
+                    </div>
+                """.format(element.id, field.id)
 
         if not sub:
             if ustr(element.id) in req.params.get("errorlist", []):
@@ -151,7 +160,10 @@ class m_field(Metatype):
         else:
             label = u'&nbsp;'
 
-        return u'<dt class="mask_label">{}</dt>\n<dd class="mask_value">{}</dd>\n'.format(label, value)
+        return u'<dt class="mask_label">{}</dt>\n<dd class="mask_value">{}</dd>\n'.format(
+                _cgi.escape(label, quote=True),
+                value,
+            )
 
     def getMetaHTML(self, parent, index, sub=False, language=None, itemlist=[], ptype="", fieldlist={}):
         """ return formated row for metaeditor """
@@ -179,8 +191,13 @@ class m_field(Metatype):
                 field, width=item.getWidth(), value=attribute.getName(), language=language) + ' ' + item.getUnit()
 
         if item.getDescription() != "":
-            description = '<div id="div_description"><a href="#" onclick="openPopup(\'/popup_help?id=%s&maskid=%s\', \'\', 400, 250)"> <img src="/static/img/tooltip.png" border="0"/></a></div>' % (
-                field.id, item.id)
+            description = """
+                <div id="div_description">
+                    <a href="#" onclick="openPopup('/popup_help?id={}&amp;maskid={}', '', 400, 250)">
+                        <img src="/static/img/tooltip.png" border="0"/>
+                    </a>
+                </div>
+                """.format(field.id, item.id)
 
         if len(item.getLabel()) > 0 and item.getLabel() != "mapping":
             label = item.getLabel() + ': '

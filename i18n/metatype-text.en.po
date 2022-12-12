@@ -1,11 +1,5 @@
-msgid "text_popup_title"
-msgstr "Editor mask for specialchars"
-
 msgid "fieldtype_text"
 msgstr "text field"
 
 msgid "fieldtype_text_desc"
 msgstr "normal text input field"
-
-msgid "text_italic_title"
-msgstr "set marked text 'italic'"

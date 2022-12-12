@@ -76,21 +76,3 @@ class m_htmlmemo(_core_metatype.Metatype):
             max_length=int(data["max_length"]) if data["max_length"] else None,
             wysiwyg=bool(data.get("wysiwyg")),
         )
-
-    def getPopup(self, req):
-        req.response.set_data(
-                tal.processTAL(
-                    dict(
-                        charmap=_core_metatype.charmap,
-                        name=req.params.get("name"),
-                        value=req.params.get("value"),
-                        html_head_style_src=_web_frontend.html_head_style_src,
-                        html_head_javascript_src=_web_frontend.html_head_javascript_src,
-                       ),
-                    file="metadata/htmlmemo.html",
-                    macro="popup",
-                    request=req,
-                   )
-                )
-        req.response.status_code = httpstatus.HTTP_OK
-        return httpstatus.HTTP_OK

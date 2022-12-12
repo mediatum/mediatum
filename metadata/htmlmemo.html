@@ -39,15 +39,6 @@
               tal:content="python:value"
             />
         </div>
-        <button
-            name="button"
-            tal:attributes="onclick python:u'openPopup(\'/metatype/htmlmemo?name={}\', \'\', 550, 600)'.format(name)"
-            style="margin-left:5px;horizontal-align:middle;min-width:20px;width:20px;padding:4px 4px"
-            type="button"
-            i18n:attributes="title titlepopupbutton"
-        >
-          <img src="/static/img/edit_spc.png" style="height:14px;"/>
-        </button>
       </div>
     </tal:block>
 
@@ -70,86 +61,4 @@
     <br />
     <div class="label" i18n:translate="mask_edit_max_length">TEXT</div>
     <input tal:attributes="value value" type="text" name="fieldsetting_max_length" rows="4" style="width:250px"/><br/>
-</tal:block>
-
-<tal:block metal:define-macro="popup">
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-        <meta content="text/html;charset=UTF-8" http-equiv="content-type"/>
-        <title i18n:translate="htmlmemo_popup_title"> </title>
-        <link rel="stylesheet" href="/static/css/metadata/htmlmemo2.css" />
-        <link rel="stylesheet" tal:repeat="src html_head_style_src" tal:attributes="href src" />
-        <script src="/static/js/metadata/htmlmemo.js"> </script>
-        <script tal:repeat="src html_head_javascript_src" tal:attributes="src src"> </script>
-    </head>
-
-    <body tal:attributes="onload python:u'init(\'{}\')'.format(name)">
-        <form>
-            <div>
-                <div id="buttons">
-                    <button
-                        i18n:attributes="title text_bold_title"
-                        type="button"
-                        id="style" onclick="insert('<b>','</b>')"
-                       >
-                      <img src="/static/img/bold.gif" alt="bold"/>
-                    </button>
-                    <button
-                        i18n:attributes="title text_italic_title"
-                        type="button"
-                        id="style" onclick="insert('<em>','</em>')"
-                       >
-                      <img src="/static/img/italic.gif" alt="italic"/>
-                    </button>
-                    <button
-                        i18n:attributes="title htmlmemo_sub_title"
-                        type="button"
-                        id="style" onclick="insert('<sub>','</sub>')"
-                       >
-                      <img src="/static/img/subscript.gif" alt="subscript"/>
-                    </button>
-                    <button
-                        i18n:attributes="title text_sup_title"
-                        type="button"
-                        id="style" onclick="insert('<sup>','</sup>')"
-                       >
-                      <img src="/static/img/superscript.gif" alt="superscript"/>
-                    </button>
-                </div>
-                <span i18n:translate="valuelabel"/><br/><textarea
-                    name="value"
-                    id="value"
-                    rows="4"
-                    onkeyup="setFormated(this)"
-                    > </textarea>
-            </div>
-
-            <div>
-                <span i18n:translate="text_formatedvalue"/><br/>
-                <div id="formatedvalue"> </div>
-                <div style="float:right;text-align:right">
-                  <button
-                    type="button"
-                    tal:attributes="onclick python:u'save(\'{}\')'.format(name)"
-                    i18n:translate="done"
-                    > </button><br/><br/>
-                    <button type="button" onclick="window.close()" i18n:translate="cancel"> </button>
-                </div>
-            </div>
-            <div style="clear:both" i18n:translate="spcchar"> </div>
-            <div id="spccontainer">
-                <button
-                    tal:repeat="item charmap"
-                    type="button"
-                    id="items"
-                    tal:content="raw python:item[0]"
-                    tal:attributes="title python:item[2]; value python:item[1]; onmouseover python:u'detail({},\'\')'.format(item[1], item[2]); onclick python:u'insert(\'{}\',\'\')'.format(item[1])"/>
-            </div>
-            <div id="spcvalue"> </div>
-            <div id="spcname"> </div>
-        </form>
-    </body>
-</html>
 </tal:block>

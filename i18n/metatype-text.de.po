@@ -1,11 +1,5 @@
-msgid "text_popup_title"
-msgstr "Eingabemaske für Sonderzeichen"
-
 msgid "fieldtype_text"
 msgstr "Textfeld"
 
 msgid "fieldtype_text_desc"
 msgstr "Normales Texteingabefeld"
-
-msgid "text_italic_title"
-msgstr "Markierten Text 'Kursiv' setzen"

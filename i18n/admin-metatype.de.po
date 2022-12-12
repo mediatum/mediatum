@@ -137,18 +137,3 @@ msgstr "(Nur für Veröffentlichungen!)"
 
 msgid "admin_meta_citeproc"
 msgstr "citeproc / CSL mapping"
-
-msgid "text_bold_title"
-msgstr "Markierten Text 'Fett' setzen"
-
-msgid "text_sub_title"
-msgstr "Markierten Text 'tiefstellen'"
-
-msgid "text_sup_title"
-msgstr "Markierten Text 'hochstellen'"
-
-msgid "titlepopupbutton"
-msgstr "Editiermaske öffnen"
-
-msgid "text_formatedvalue"
-msgstr "Formatierter Wert:"

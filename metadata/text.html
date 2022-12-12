@@ -7,12 +7,6 @@
     <div style="float:left;position:relative;">
         <span class="surround" style="padding-left:0px;overflow:visible;">
             <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:u'width:{}px'.format(width-26); name python:u'{}'.format(name); id python:u'{}'.format(name); value python:value; required required"/>
-            <button name="button" tal:attributes="onclick python:u'openPopup(\'/metatype/text?name={}\', \'\', 550, 470)'.format(name)"
-                    style="horizontal-align:middle;min-width:20px;width:20px;padding:4px 4px;" type="button"
-                    i18n:attributes="title titlepopupbutton"
-            >
-                <img src="/static/img/edit_spc.png" style="height:14px"/>
-            </button>
         </span>
         <span tal:condition="python:lock!=0" tal:attributes="id python:u'lockspan_{}'.format(name)">&nbsp;
           <input tal:attributes="name python:u'lock_{}'.format(name); id python:u'lock_{}'.format(name); onchange python:u'handlelock(\'{}\')'.format(name)" type="checkbox"/>
@@ -23,63 +17,3 @@
 </tal:block>
 
 <input metal:define-macro="searchfield" tal:attributes="name python:name; id python:name; value python:value" type="text" class="searchfield"/>
-
-<tal:block metal:define-macro="popup">
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-        <meta content="text/html;charset=UTF-8" http-equiv="content-type"/>
-        <title i18n:translate="text_popup_title">TEXT</title>
-        <script src="/static/js/jquery-1.12.4.js"> </script>
-        <script src="/static/js/jquery-migrate-1.4.1.js"> </script>
-        <script src="/static/js/metadata/text.js"> </script>
-        <script tal:repeat="src html_head_javascript_src" tal:attributes="src src"> </script>
-        <link rel="stylesheet" href="/static/css/metadata/text.css" type="text/css" />
-        <link rel="stylesheet" tal:repeat="src html_head_style_src" tal:attributes="href src" />
-    </head>
-    
-    <body tal:attributes="onload python:u'init(\'{}\')'.format(name)">
-        <form>
-            <div>
-                <div id="buttons">
-                    <button i18n:attributes="title text_bold_title" type="button" id="style" onclick="insert('<b>','</b>')">
-                        <img src="/static/img/bold.gif" alt="bold"/>
-                    </button>
-                    <button i18n:attributes="title text_italic_title" type="button" id="style" onclick="insert('<em>','</em>')">
-                        <img src="/static/img/italic.gif" alt="italic"/>
-                    </button>
-                    <button i18n:attributes="title text_sub_title" type="button" id="style" onclick="insert('<sub>','</sub>')">
-                        <img src="/static/img/subscript.gif" alt="subscript"/>
-                    </button>
-                    <button i18n:attributes="title text_sup_title" type="button" id="style" onclick="insert('<sup>','</sup>')">
-                        <img src="/static/img/superscript.gif" alt="superscript"/>
-                    </button>
-                </div>
-                <span i18n:translate="valuelabel"> </span><br/>
-                <input type="text" name="value" id="value" onkeyup="setFormated(this)"/>
-            </div>
-            <div>
-                <span i18n:translate="text_formatedvalue">TEXT</span><br/>
-                <div id="formatedvalue"> </div>
-                <div style="float:right;text-align:right">
-                    <button
-                        type="button"
-                        tal:attributes="onclick python:u'save(\'{}\')'.format(name)"
-                        i18n:translate="done"
-                    >
-                    </button>
-                    <br/><br/>
-                    <button type="button" onclick="window.close()" i18n:translate="cancel"> </button>
-                </div> 
-            </div>
-            <div style="clear:both" i18n:translate="spcchar"> </div>
-            <div id="spccontainer">
-                <button tal:repeat="item charmap" type="button" id="items" tal:content="raw python:item[0]" tal:attributes="title python:item[2]; value python:item[1]; onmouseover python:u'detail({},\'{}\')'.format(item[1], item[2]); onclick python:u'insert(\'{}\',\'\')'.format(item[1])"/>
-            </div>
-            <div id="spcvalue"> </div>
-            <div id="spcname"> </div>
-        </form>
-    </body>
-</html>
-</tal:block>

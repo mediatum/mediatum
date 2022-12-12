@@ -776,12 +776,6 @@ msgstr "Übernehmen"
 msgid "hier_link"
 msgstr "here"
 
-msgid "valuelabel"
-msgstr "Wert:"
-
-msgid "spcchar"
-msgstr "Sonderzeichen:"
-
 msgid "import"
 msgstr "Importieren"
 

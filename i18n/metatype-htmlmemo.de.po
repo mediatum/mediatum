@@ -12,6 +12,3 @@ msgstr "Memofeld mit HTML Markup"
 
 msgid "htmlmemo_titlepopupbutton"
 msgstr "Editiermaske öffnen"
-
-msgid "htmlmemo_popup_title"
-msgstr "Eingabemaske für HTML formatierte Texte"

@@ -137,18 +137,3 @@ msgstr "(only use this for publications!)"
 
 msgid "admin_meta_citeproc"
 msgstr "citeproc / CSL mapping"
-
-msgid "text_bold_title"
-msgstr "set marked text 'bold'"
-
-msgid "text_sub_title"
-msgstr "set marked text 'subscript'"
-
-msgid "text_sup_title"
-msgstr "set marked text 'superscript'"
-
-msgid "titlepopupbutton"
-msgstr "open editor mask"
-
-msgid "text_formatedvalue"
-msgstr "Formated Value:"

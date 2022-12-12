@@ -12,6 +12,3 @@ msgstr "memo field with html markup"
 
 msgid "htmlmemo_titlepopupbutton"
 msgstr "open editor mask"
-
-msgid "htmlmemo_popup_title"
-msgstr "Editor mask for HTML formatted text"

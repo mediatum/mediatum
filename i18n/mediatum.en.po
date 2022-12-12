@@ -774,12 +774,6 @@ msgstr "Done"
 msgid "hier_link"
 msgstr "hier"
 
-msgid "valuelabel"
-msgstr "Value:"
-
-msgid "spcchar"
-msgstr "Special chars:"
-
 msgid "import"
 msgstr "Import"
 

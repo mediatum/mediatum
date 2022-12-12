@@ -13,7 +13,7 @@ from core import httpstatus
 import core.config as config
 from utils.utils import esc
 from utils.utils import modify_tex
-from core.metatype import Metatype, charmap
+from core.metatype import Metatype
 from utils.strings import replace_attribute_variables
 from web import frontend as _web_frontend
 
@@ -80,20 +80,3 @@ class m_text(Metatype):
             value = maskitem.getDefault()
 
         return (metafield.getLabel(), value)
-
-    # method for popup methods of type text
-    def getPopup(self, req):
-        req.response.set_data(tal.processTAL(
-                dict(
-                    charmap=charmap,
-                    name=req.values.get("name"),
-                    value=req.values.get("value"),
-                    html_head_style_src=_web_frontend.html_head_style_src,
-                    html_head_javascript_src=_web_frontend.html_head_javascript_src,
-                ),
-                file="metadata/text.html",
-                macro="popup",
-                request=req,
-            ))
-        req.response.status_code = httpstatus.HTTP_OK
-        return httpstatus.HTTP_OK

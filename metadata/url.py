@@ -71,61 +71,54 @@ class m_url(Metatype):
                )
 
     def viewer_get_data(self, metafield, maskitem, mask, node, language, html=True):
-        try:
-            value = (node.get(metafield.getName()).split(";") + ["", "", "", ""])[0:4]
-            metacfg = metafield.metatype_data
-            fielddef = (
-                    metacfg["link"],
-                    metacfg["text"],
-                    metacfg["icon"],
-            )
+        value = (node.get(metafield.getName()).split(";") + ["", "", "", ""])[0:4]
+        metacfg = metafield.metatype_data
+        fielddef = (
+                metacfg["link"],
+                metacfg["text"],
+                metacfg["icon"],
+        )
 
-            l = []
-            for i in range(0, 3):
-                try:
-                    if value[i]:
-                        l.append(value[i])
-                    else:
-                        l.append(fielddef[i])
-                except:
-                    l.append(fielddef[i])
-
-            link, text, icon = [_replace_vars(node, str(p)) for p in l]
-            new_window = value[3] != "same" or metacfg["new_window"]
-
-            # find unsatisfied variables
-            if link.find("____") >= 0:
-                link = u''
-            if text.find("____") >= 0:
-                text = u''
-
-            if len(fielddef) < 4:
-                target = u""
-            if link != "" and text == "":
-                text = unquote(link)
-
-            if link == '' and text == '':
-                value = icon = u""
-            # XXX: ???
-            elif link == '' and text != '':
-                value = text
-                icon = u""
+        l = []
+        for i in range(0, 3):
+            if value[i]:
+                l.append(value[i])
             else:
-                if new_window:
-                    value = u'<a href="{}" target="_blank" title="{}">{}</a>'.format(
-                            link,
-                            _core_translation.translate(language, 'show_in_new_window'),
-                            text,
-                        )
-                else:
-                    value = u'<a href="{}">{}</a>'.format(link, text)
-            if icon != "":
-                value += u'<img src="{}"/>'.format(icon)
+                l.append(fielddef[i])
 
-            return (metafield.getLabel(), value)
-        except:
-            logg.exception("exception in viewer_get_data, error getting formatted value for URI")
-            return (metafield.getLabel(), "")
+        link, text, icon = [_replace_vars(node, str(p)) for p in l]
+        new_window = value[3] != "same" or metacfg["new_window"]
+
+        # find unsatisfied variables
+        if link.find("____") >= 0:
+            link = u''
+        if text.find("____") >= 0:
+            text = u''
+
+        if len(fielddef) < 4:
+            target = u""
+        if link != "" and text == "":
+            text = unquote(link)
+
+        if link == '' and text == '':
+            value = icon = u""
+        # XXX: ???
+        elif link == '' and text != '':
+            value = text
+            icon = u""
+        else:
+            if new_window:
+                value = u'<a href="{}" target="_blank" title="{}">{}</a>'.format(
+                        link,
+                        _core_translation.translate(language, 'show_in_new_window'),
+                        text,
+                    )
+            else:
+                value = u'<a href="{}">{}</a>'.format(link, text)
+        if icon != "":
+            value += u'<img src="{}"/>'.format(icon)
+
+        return (metafield.getLabel(), value)
 
     def editor_parse_form_data(self, field, form):
         uri = form.get(field.name)

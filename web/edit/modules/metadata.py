@@ -221,14 +221,12 @@ def getContent(req, ids):
         flag_nodename_changed = _handle_edit_metadata(req, mask, nodes)
         logg.debug("%s change metadata %s", user.login_name, idstr)
         logg.debug("%r", req.params)
-
-    if "edit_metadata" in req.params or nodes[-1].system_attrs.get("faulty") == "true":
         if not hasattr(mask, "i_am_not_a_mask"):
             req.params["errorlist"] = mask.validate(nodes)
 
     update_date, creation_date = get_datelists(nodes)
     data = {}
-    
+
     data["creation_date"] = creation_date
     data["update_date"] = update_date
     data["err"] = err

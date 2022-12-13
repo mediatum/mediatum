@@ -24,33 +24,33 @@ q = db.query
 logg = logging.getLogger(__name__)
 
 
-def get_datelists(nodes):
+def _get_datelists(nodes):
     '''
     helper funtion to update default context before calling TAL interpreter
     '''
-    update_date = []
-    if len(nodes) == 1:
-        for node in nodes:
-            if node.updatetime:
-                try:
-                    date = parse_date(
-                        node.updatetime, "%Y-%m-%dT%H:%M:%S")
-                    datestr = format_date(date, format='%d.%m.%Y %H:%M:%S')
-                except:
-                    datestr = node.updatetime
-                update_date.append([node.get("updateuser"), datestr])
+    if len(nodes) != 1:
+        return None, None
+    node, = nodes
 
-    creation_date = []
-    if len(nodes) == 1:
-        for node in nodes:
-            if node.get("creationtime"):
-                try:
-                    date = parse_date(
-                        node.get("creationtime"), "%Y-%m-%dT%H:%M:%S")
-                    datestr = format_date(date, format='%d.%m.%Y %H:%M:%S')
-                except:
-                    datestr = node.get("creationtime")
-                creation_date.append([node.get("creator"), datestr])
+    update_date = None
+    if node.updatetime:
+        try:
+            date = parse_date(
+                node.updatetime, "%Y-%m-%dT%H:%M:%S")
+            datestr = format_date(date, format='%d.%m.%Y %H:%M:%S')
+        except:
+            datestr = node.updatetime
+        update_date = (node.get("updateuser"), datestr)
+
+    creation_date = None
+    if node.get("creationtime"):
+        try:
+            date = parse_date(
+                node.get("creationtime"), "%Y-%m-%dT%H:%M:%S")
+            datestr = format_date(date, format='%d.%m.%Y %H:%M:%S')
+        except:
+            datestr = node.get("creationtime")
+        creation_date = (node.get("creator"), datestr)
 
     return update_date, creation_date
 
@@ -224,11 +224,9 @@ def getContent(req, ids):
         if not hasattr(mask, "i_am_not_a_mask"):
             req.params["errorlist"] = mask.validate(nodes)
 
-    update_date, creation_date = get_datelists(nodes)
     data = {}
 
-    data["creation_date"] = creation_date
-    data["update_date"] = update_date
+    data["update_date"], data["creation_date"] = _get_datelists(nodes)
     data["err"] = err
 
     _maskform, _fields = get_maskform_and_fields(nodes, mask, req)

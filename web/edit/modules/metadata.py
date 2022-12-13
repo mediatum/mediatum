@@ -84,7 +84,7 @@ class _SystemMask:
     def metaFields(self, lang=None):
         return self.fields
 
-    def i_am_not_a_mask():
+    def i_am_not_a_mask(self):
         pass
 
 
@@ -152,9 +152,6 @@ def getContent(req, ids):
         req.response.status_code = httpstatus.HTTP_FORBIDDEN
         return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
-    metatypes = []
-    nodes = []
-    masklist = []
     err = 0
 
     # flag indicating change of node.name (fancytree node may have to be updated)
@@ -163,59 +160,45 @@ def getContent(req, ids):
     # else -> id of changed node
     flag_nodename_changed = -1
 
-    for nid in ids:
-        node = q(Node).get(nid)
-        if not node.has_write_access():
-            req.response.status_code = httpstatus.HTTP_FORBIDDEN
-            return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
+    nodes = map(q(Node).get, ids)
 
-        schema = node.schema
-        if schema not in metatypes:
-            metatypes.append(schema)
-        if len(nodes) == 0 or nodes[0].schema == schema:
-            nodes += [node]
-
-    idstr = ",".join(ids)
+    if not all(node.has_write_access() for node in nodes):
+        req.response.status_code = httpstatus.HTTP_FORBIDDEN
+        return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
     logg.info("%s in editor metadata: %r", user.login_name, [[n.id, n.name, n.type]for n in nodes])
-    if len(ids) > 1 and len(metatypes) > 1:
+
+    if len(frozenset(node.schema for node in nodes))!=1:
         logg.info("%s user error: multiple metatypes in editor not supported", user.login_name)
         return _tal.processTAL({}, file="web/edit/modules/metadata.html", macro="multiple_documents_not_supported", request=req)
 
-    if hasattr(node, "metaFields"):
-        masklist.append(_SystemMask(
+    idstr = ",".join(ids)
+
+    masks = {}
+    if hasattr(nodes[-1], "metaFields"):
+        masks["settings"] = _SystemMask(
                 "settings",
                 _core_translation.translate_in_request("settings", req),
-                node.metaFields(_core_translation.set_language(req.accept_languages)),
-               ))
+                nodes[-1].metaFields(_core_translation.set_language(req.accept_languages)),
+               )
 
-    metadatatype = node.metadatatype
+    metadatatype = nodes[-1].metadatatype
     if metadatatype:
-        for m in metadatatype.filter_masks(masktype='edit'):
-            if m.has_read_access():
-                masklist.append(m)
+        masks.update(**{
+                mask.name:mask
+                for mask in metadatatype.filter_masks(masktype='edit')
+                if mask.has_read_access()
+               })
 
-    default = None
-    for m in masklist:
-        if m.getDefaultMask():
-            default = m
-            break
-    if not default and len(masklist):
-        default = masklist[0]
+    # default mask is first mask that claims to be default mask, or None
+    default_mask = list(mask for mask in masks.itervalues() if mask.getDefaultMask())
+    default_mask.append(None)
+    default_mask = default_mask[0]
 
-    maskname = req.params.get("mask", node.system_attrs.get("edit.lastmask") or "editmask")
-    if maskname == "":
-        maskname = default.name
-
-    mask = None
-    for m in masklist:
-        if maskname == m.name:
-            mask = m
-            break
-
-    if not mask and default:
-        mask = default
-        maskname = default.name
+    mask = masks.get(
+            req.values.get("mask", nodes[-1].system_attrs.get("edit.lastmask") or "editmask"),
+            default_mask,
+           )
 
     if not mask:
         return _tal.processTAL({}, file="web/edit/modules/metadata.html", macro="no_mask", request=req)
@@ -223,13 +206,12 @@ def getContent(req, ids):
     # context default for TAL interpreter
     ctx = dict(
             user=user,
-            metatypes=metatypes,
             idstr=idstr,
             node=nodes[0], # ?
             node_count=len(nodes),
             flag_nodename_changed=flag_nodename_changed,
-            masklist=masklist,
-            maskname=maskname,
+            masklist=masks.values(),
+            maskname=mask.name,
             language=_core_translation.set_language(req.accept_languages),
             translate=_core_translation.translate,
             csrf=_core_csrfform.get_token(),
@@ -240,7 +222,7 @@ def getContent(req, ids):
         logg.debug("%s change metadata %s", user.login_name, idstr)
         logg.debug("%r", req.params)
 
-    if "edit_metadata" in req.params or node.system_attrs.get("faulty") == "true":
+    if "edit_metadata" in req.params or nodes[-1].system_attrs.get("faulty") == "true":
         if not hasattr(mask, "i_am_not_a_mask"):
             req.params["errorlist"] = mask.validate(nodes)
 

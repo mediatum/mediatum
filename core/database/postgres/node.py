@@ -167,18 +167,6 @@ def _subquery_subtree_distinct(node):
             .subquery())
 
 
-def _subquery_subtree_container(node):
-    from contenttypes.container import Container
-    from core import db
-
-    query = (_core.db.query(t_noderelation.c.cid)
-             .filter(t_noderelation.c.nid == node.id)
-             .join(Container, Container.id == t_noderelation.c.cid)
-             .subquery())
-
-    return query
-
-
 # permission check functions for the access types
 access_funcs = {
     "read": mediatumfunc.has_read_access_to_node,
@@ -277,24 +265,6 @@ class Node(DeclarativeBase, NodeMixin):
             self.system_attrs.update(system_attrs)
         if orderpos:
             self.orderpos = orderpos
-
-    @property
-    def slow_content_children_for_all_subcontainers(self):
-        """
-        !!! very slow, use content_children_for_all_subcontainers instead!!!
-        Collects all Content nodes in all subcontainers of this node.
-        This excludes content nodes that are children of other content nodes.
-        """
-        warn("very slow, use content_children_for_all_subcontainers instead", DeprecationWarning)
-        from contenttypes.data import Content
-        from core import db
-        sq = _subquery_subtree_container(self)
-        query = db.query(Content).\
-            join(t_noderelation, Node.id == t_noderelation.c.cid).\
-            filter(t_noderelation.c.nid.in_(sq) | (t_noderelation.c.nid == self.id)).\
-            filter(t_noderelation.c.distance == 1)
-
-        return query
 
     @property
     def content_children_for_all_subcontainers(self):

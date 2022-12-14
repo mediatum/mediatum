@@ -73,52 +73,35 @@ class m_url(Metatype):
     def viewer_get_data(self, metafield, maskitem, mask, node, language, html=True):
         value = (node.get(metafield.getName()).split(";") + ["", "", "", ""])[0:4]
         metacfg = metafield.metatype_data
-        fielddef = (
-                metacfg["link"],
-                metacfg["text"],
-                metacfg["icon"],
-        )
-
-        l = []
-        for i in range(0, 3):
-            if value[i]:
-                l.append(value[i])
-            else:
-                l.append(fielddef[i])
-
-        link, text, icon = [_replace_vars(node, str(p)) for p in l]
-        new_window = value[3] != "same" or metacfg["new_window"]
+        link, text, icon = (
+                _replace_vars(node, str(v or f))
+                for v, f in zip(value[:3], (metacfg["link"], metacfg["text"], metacfg["icon"]))
+               )
 
         # find unsatisfied variables
-        if link.find("____") >= 0:
+        if "____" in link:
             link = u''
-        if text.find("____") >= 0:
+        if "____" in text:
             text = u''
-
-        if len(fielddef) < 4:
-            target = u""
-        if link != "" and text == "":
+        if link and not text:
             text = unquote(link)
-
-        if link == '' and text == '':
+        if not (link or text):
             value = icon = u""
-        # XXX: ???
-        elif link == '' and text != '':
+        elif text and not link:
             value = text
             icon = u""
+        elif value[3] != "same" or metacfg["new_window"]:
+            value = u'<a href="{}" target="_blank" title="{}">{}</a>'.format(
+                    link,
+                    _core_translation.translate(language, 'show_in_new_window'),
+                    text,
+                )
         else:
-            if new_window:
-                value = u'<a href="{}" target="_blank" title="{}">{}</a>'.format(
-                        link,
-                        _core_translation.translate(language, 'show_in_new_window'),
-                        text,
-                    )
-            else:
-                value = u'<a href="{}">{}</a>'.format(link, text)
-        if icon != "":
+            value = u'<a href="{}">{}</a>'.format(link, text)
+        if icon:
             value += u'<img src="{}"/>'.format(icon)
 
-        return (metafield.getLabel(), value)
+        return metafield.getLabel(), value
 
     def editor_parse_form_data(self, field, form):
         uri = form.get(field.name)

@@ -9,7 +9,6 @@ import re as _re
 import os as _os
 import stat as _stat
 import string as _string
-import traceback as _traceback
 import logging as _logging
 import mimetypes as _mimetypes
 import importlib as _importlib
@@ -599,43 +598,33 @@ def _callhandler(handler_func, req):
     except Exception as e:
         # XXX: this shouldn't be in Athana, most of it is mediaTUM-specific...
         # TODO: add some kind of exception handler system for Athana
-        if _config.get('host.type') != 'testing':
-            from utils.log import make_xid_and_errormsg_hash
-            from core import db
+        from utils.log import make_xid_and_errormsg_hash
+        from core import db
 
-            # Roll back if the error was caused by a database problem.
-            # DB requests in this error handler will fail until rollback is called, so let's do it here.
-            db.session.rollback()
+        # Roll back if the error was caused by a database problem.
+        # DB requests in this error handler will fail until rollback is called, so let's do it here.
+        db.session.rollback()
 
-            xid, hashed_errormsg, hashed_tb = make_xid_and_errormsg_hash()
+        xid, hashed_errormsg, hashed_tb = make_xid_and_errormsg_hash()
 
-            mail_to_address = _config.get('email.support')
-            if not mail_to_address:
-                _logg.warning("no support mail address configured, consider setting it with `email.support`")
+        mail_to_address = _config.get('email.support')
+        if not mail_to_address:
+            _logg.warning("no support mail address configured, consider setting it with `email.support`")
 
-            _logg.exception(u"exception (xid=%s) while handling request %s %s, %s",
-                           xid, req.method, req.mediatum_contextfree_path, dict(req.args))
+        _logg.exception(u"exception (xid=%s) while handling request %s %s, %s",
+                       xid, req.method, req.mediatum_contextfree_path, dict(req.args))
 
-            if mail_to_address:
-                msg = _core_translation.translate_in_request(
-                        "core_snipped_internal_server_error_with_mail",
-                        req,
-                    ).replace('${email}', mail_to_address)
-            else:
-                msg = _core_translation.translate_in_request("core_snipped_internal_server_error_without_mail", req)
-            s = msg.replace('${XID}', xid)
-
-            req.response.headers["X-XID"] = xid
-            req.response.set_data(s.encode("utf8"))
-            req.response.status_code = _httpstatus.HTTP_INTERNAL_SERVER_ERROR
-            return
+        if mail_to_address:
+            msg = _core_translation.translate_in_request("core_snipped_internal_server_error_with_mail", req).replace(
+                    '${email}',
+                    mail_to_address,
+                )
         else:
-            _logg.exception("Error in page: '%s %s'", req.method, req.full_path)
-            s = "<pre>" + _traceback.format_exc() + "</pre>"
-            req.response.set_data(s)
-            req.response.status_code = _httpstatus.HTTP_INTERNAL_SERVER_ERROR
-            return
-
+            msg = _core_translation.translate_in_request("core_snipped_internal_server_error_without_mail", req)
+        s = msg.replace('${XID}', xid)
+        req.response.headers["X-XID"] = xid
+        req.response.status_code = _httpstatus.HTTP_INTERNAL_SERVER_ERROR
+        req.response.set_data(s.encode("utf8"))
     finally:
         for handler in _request_finished_handlers:
             handler(req)

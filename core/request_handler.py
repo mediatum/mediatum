@@ -275,40 +275,6 @@ class _OSFilesystem:
         return p
 
 
-def _done(req):
-    # ----------------------------------------
-    # persistent connection management
-    # ----------------------------------------
-
-    #  --- BUCKLE UP! ----
-
-    connection = req.headers.get("connection")
-
-    close_it = 0
-
-    version = req.environ.get('SERVER_PROTOCOL')
-    if version == '1.0':
-        if connection == 'keep-alive':
-            if 'Content-Length' not in req.headers:
-                close_it = 1
-            else:
-                req.response.headers['Connection'] = 'Keep-Alive'
-        else:
-            close_it = 1
-    elif version == '1.1' and (connection == 'close' or 'Content-Length' not in req.headers):
-            close_it = 1
-    elif version is None:
-        # Although we don't *really* support http/0.9 (because we'd have to
-        # use \r\n as a terminator, and it would just yuck up a lot of stuff)
-        # it's very common for developers to not want to type a version number
-        # when using telnet to debug a server.
-        close_it = 1
-
-    req.response.headers["Cache-Control"] = "no-cache"
-
-    if close_it:
-        req.response.headers['Connection'] = 'close'
-
 
 def _error(req, code, s=None, content_type='text/html'):
     req.response.status_code = code
@@ -321,7 +287,6 @@ def _error(req, code, s=None, content_type='text/html'):
     req.response.content_length = len(s)
     req.response.content_type = content_type
     req.response.set_data(s)
-    _done(req)
 
 
 def sendFile(req, path, content_type, force=0, nginx_x_accel_redirect_enabled=True):
@@ -373,7 +338,7 @@ def sendFile(req, path, content_type, force=0, nginx_x_accel_redirect_enabled=Tr
         req.response.headers['X-Accel-Redirect'] = _os.path.join("/{}".format(nginx_alias), _os.path.relpath(path, nginx_dir))
     if req.method == 'GET':
         if nginx_alias:
-            _done(req)
+            return
         else:
             req.response = _flask.send_file(path, conditional=True)
             req.response.content_length = file_length
@@ -563,7 +528,6 @@ class _default_handler:
         if request.if_modified_since:
             if mtime <= request.if_modified_since:
                 request.response.status_code = 304
-                _done(request)
                 return
         try:
             file = self.filesystem.open(path, 'rb')
@@ -577,8 +541,6 @@ class _default_handler:
 
         if request.method == 'GET':
             request.response.set_data(file.read())
-
-        _done(request)
 
     def set_content_type(self, path, request):
         ext = _string.lower(_get_extension(path))
@@ -629,7 +591,7 @@ class _WebContext:
                 req.response.status_code = status
                 if(status >= 400 and status <= 500):
                     return _error(req, status)
-            return _done(req)
+            return
 
         for pattern, call in self.pattern_to_function.items():
             if pattern.match(path):

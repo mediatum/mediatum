@@ -15,12 +15,8 @@ from core.systemtypes import Mappings
 q = db.query
 
 
-def getMapping(id):
-    n = q(Node).get(id)
-    if n is None:
-        mappings = _nodecache.get_mappings_node()
-        return mappings.getChild(id)
-    return n
+def getMapping(nid):
+    return q(Node).get(nid) or _nodecache.get_mappings_node().getChild(nid)
 
 
 def getMappingTypes():
@@ -31,10 +27,10 @@ def getMappingTypes():
         if len(ret) == 0 or ret[0] == "":
             mappings.set("mappingtypes", ";".join(("default", "bibtex", "rss", "marc21", "citeproc")))
             db.session.commit()
-            return getMappingTypes()
-        return ret
+            ret = getMappingTypes()
     except:
-        return ret
+        pass
+    return ret
 
 
 def updateMapping(name, namespace="", namespaceurl="", description="", header="", footer="",
@@ -98,16 +94,16 @@ def exportMapping(name):
 
 def importMapping(filename):
     n = readNodeXML(filename)
-    importlist = list()
     if n.getContentType() == "mapping":
-        importlist.append(n)
+        importlist = (n,)
     elif n.getContentType() == "mappings":
-        for ch in n.children:
-            importlist.append(ch)
+        importlist = tuple(n.children)
+    else:
+        importlist = ()
 
     mappings = _nodecache.get_mappings_node()
     for m in importlist:
-        m.name = u"import-" + m.getName()
+        m.name = u"import-{}".format(m.getName())
         mappings.children.append(m)
     db.session.commit()
 
@@ -158,16 +154,10 @@ class Mapping(Node):
         self.set("standardformat", standardformat)
 
     def getFields(self):
-        f = list(self.children)
-        f.sort(lambda x, y: cmp(x.name.lower(), y.name.lower()))
-        return f
+        return sorted(self.children, key=lambda f: f.name.lower())
 
     def getMandatoryFields(self):
-        ret = []
-        for f in self.getFields():
-            if f.getMandatory():
-                ret.append(f)
-        return ret
+        return [f for f in self.getFields() if f.getMandatory()]
 
     def addField(self, field):
         self.children.append(field)
@@ -176,19 +166,13 @@ class Mapping(Node):
         return "mapping"
 
     def getActive(self):
-        if self.get("active") == "0":
-            return 0
-        return 1
+        return int(self.get("active") != "0")
 
     def setActive(self, value):
-        if value is None:
-            value = "0"
-        self.set("active", ustr(value))
+        self.set("active", ustr("0" if value is None else value))
 
     def getMappingType(self):
-        if self.get("mappingtype") == "":
-            return "default"
-        return self.get("mappingtype")
+        return self.get("mappingtype") or "default"
 
     def setMappingType(self, value):
         self.set("mappingtype", value)
@@ -198,9 +182,7 @@ class Mapping(Node):
 class MappingField(Node):
 
     def getFullName(self):
-        if self.getMandatory():
-            return self.name + " *"
-        return self.name
+        return u"{}{}".format(self.name, " *" if self.getMandatory() else "")
 
     def getDescription(self):
         return self.get("description")
@@ -209,28 +191,19 @@ class MappingField(Node):
         self.set("description", description)
 
     def getExportFormat(self):
-        if self.get("exportformat") == "":
-            m = self.getMapping()
-            if m:
-                return m.getStandardFormat()
-            else:
-                return ""
-        return self.get("exportformat")
+        if self.get("exportformat"):
+            return self.get("exportformat")
+        mapping = self.getMapping()
+        return mapping.getStandardFormat() if mapping else ""
 
     def setExportFormat(self, exportformat):
         self.set("exportformat", exportformat)
 
     def getMandatory(self):
-        if self.get("mandatory") == "True":
-            return True
-        else:
-            return False
+        return self.get("mandatory") == "True"
 
     def setMandatory(self, mandatory):
-        if mandatory:
-            self.set("mandatory", "True")
-        else:
-            self.set("mandatory", "False")
+        self.set("mandatory", "True" if mandatory else "False")
 
     def getMapping(self):
         return self.parents.filter_by(type=u"mapping").first()

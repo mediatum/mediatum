@@ -96,8 +96,9 @@ class _FileStore:
         for handler in self.handlers:
             if handler.can_handle(request):
                 return handler.handle_request(request)
-        request.mediatum_contextfree_path = _escape(request.mediatum_contextfree_path)
-        return _error(request, 404, "File " + request.mediatum_contextfree_path + " not found")
+        request.response.set_data("File {} not found".format(request.path))
+        request.response.status_code = _httpstatus.HTTP_NOT_FOUND
+        return
 
     def addRoot(self, dir):
         if not _os.path.isabs(dir):
@@ -275,20 +276,6 @@ class _OSFilesystem:
         return p
 
 
-
-def _error(req, code, s=None, content_type='text/html'):
-    req.response.status_code = code
-    message = _httpstatus.responses[code]
-    if s is None:
-        s = _httpstatus.DEFAULT_ERROR_MESSAGE % {
-            'code': code,
-            'message': message,
-        }
-    req.response.content_length = len(s)
-    req.response.content_type = content_type
-    req.response.set_data(s)
-
-
 def sendFile(req, path, content_type, force=0, nginx_x_accel_redirect_enabled=True):
     if isinstance(path, unicode):
         path = path.encode("utf8")
@@ -318,13 +305,13 @@ def sendFile(req, path, content_type, force=0, nginx_x_accel_redirect_enabled=Tr
         try:
             file_length = _os.stat(path)[_stat.ST_SIZE]
         except OSError:
-            _error(req, 404)
+            req.response.status_code = _httpstatus.HTTP_NOT_FOUND
             return
 
     try:
         mtime = _datetime.datetime.utcfromtimestamp(_os.stat(path)[_stat.ST_MTIME])
     except:
-        _error(req, 404)
+        req.response.status_code = _httpstatus.HTTP_NOT_FOUND
         return
     if req.if_modified_since:
         if mtime <= req.if_modified_since and not force:
@@ -482,7 +469,8 @@ class _default_handler:
     def handle_request(self, request):
 
         if request.method not in self.valid_commands:
-            _error(request, 400)  # bad request
+            request.response.status_code = _httpstatus.HTTP_BAD_REQUEST
+            request.response.set_data(_httpstatus.responses[_httpstatus.HTTP_BAD_REQUEST])
             return
 
         path = request.mediatum_contextfree_path
@@ -494,7 +482,8 @@ class _default_handler:
         if self.filesystem.isdir(path):
             if path and path[-1] != '/':
                 request.response.location = '%s%s/' % (request.host_url, path)
-                _error(request, 301)
+                request.response.status_code = 301
+                request.response.set_data(_httpstatus.responses[301])
                 return
 
             # we could also generate a directory listing here,
@@ -510,11 +499,13 @@ class _default_handler:
                     found = 1
                     break
             if not found:
-                _error(request, 404)  # Not Found
+                request.response.status_code = _httpstatus.HTTP_NOT_FOUND
+                request.response.set_data("File {} not found".format(path))
                 return
 
         elif not self.filesystem.isfile(path):
-            _error(request, 404)  # Not Found
+            request.response.status_code = _httpstatus.HTTP_NOT_FOUND
+            request.response.set_data("File {} not found".format(path))
             return
 
         file_length = self.filesystem.stat(path)[_stat.ST_SIZE]
@@ -522,17 +513,20 @@ class _default_handler:
         try:
             mtime = _datetime.datetime.utcfromtimestamp(self.filesystem.stat(path)[_stat.ST_MTIME])
         except:
-            _error(request, 404)
+            request.response.status_code = _httpstatus.HTTP_NOT_FOUND
+            request.response.set_data("File {} not found".format(path))
             return
 
         if request.if_modified_since:
             if mtime <= request.if_modified_since:
                 request.response.status_code = 304
+                request.response.set_data(_httpstatus.responses[304])
                 return
         try:
             file = self.filesystem.open(path, 'rb')
         except IOError:
-            _error(request, 404)
+            request.response.status_code = _httpstatus.HTTP_NOT_FOUND
+            request.response.set_data("File {} not found".format(path))
             return
 
         request.response.last_modified = mtime
@@ -590,7 +584,9 @@ class _WebContext:
             if status is not None and type(1) == type(status) and status > 10:
                 req.response.status_code = status
                 if(status >= 400 and status <= 500):
-                    return _error(req, status)
+                    req.response.status_code = status
+                    req.response.set_data(_httpstatus.responses[status])
+                    return
             return
 
         for pattern, call in self.pattern_to_function.items():
@@ -643,12 +639,15 @@ def _callhandler(handler_func, req):
             s = msg.replace('${XID}', xid)
 
             req.response.headers["X-XID"] = xid
-            return _error(req, 500, s.encode("utf8"), content_type='text/html; encoding=utf-8; charset=utf-8')
-
+            req.response.set_data(s.encode("utf8"))
+            req.response.status_code = _httpstatus.HTTP_INTERNAL_SERVER_ERROR
+            return
         else:
             _logg.exception("Error in page: '%s %s'", req.method, req.full_path)
             s = "<pre>" + _traceback.format_exc() + "</pre>"
-            return _error(req, 500, s)
+            req.response.set_data(s)
+            req.response.status_code = _httpstatus.HTTP_INTERNAL_SERVER_ERROR
+            return
 
     finally:
         for handler in _request_finished_handlers:
@@ -666,7 +665,7 @@ def handle_request(req):
             context = c
             maxlen = len(context.name)
     if context is None:
-        _error(req, 404)
+        req.response.status_code = _httpstatus.HTTP_NOT_FOUND
         return req
 
     mediatum_contextfree_path = req.path[len(context.name):]
@@ -684,7 +683,8 @@ def handle_request(req):
         _callhandler(function, req)
     else:
         _logg.debug("Request %s matches no pattern (context: %s)", req.path, context.name)
-        _error(req, 404, "File %s not found" % req.path)
+        req.response.set_data("File {} not found".format(req.path))
+        req.response.status_code = _httpstatus.HTTP_NOT_FOUND
 
     return req
 

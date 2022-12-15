@@ -276,7 +276,7 @@ class _OSFilesystem:
         return p
 
 
-def sendFile(req, path, content_type, force=0, nginx_x_accel_redirect_enabled=True):
+def sendFile(req, path, content_type, force=0):
     if isinstance(path, unicode):
         path = path.encode("utf8")
 
@@ -287,15 +287,12 @@ def sendFile(req, path, content_type, force=0, nginx_x_accel_redirect_enabled=Tr
 
     assert _os.path.isabs(path), "sendFile: path: {} is not an absolute path".format(path)
 
-    if nginx_x_accel_redirect_enabled:
-        # TODO: It should be checked if a path is a subdirectory of another path.
-        #       This would be a configuration error by the admin.
-        for nginx_alias, nginx_dir in _config.getsubset("nginx-redirect").iteritems():
-            assert _os.path.isabs(nginx_dir), "sendFile: nginx_dir: {} is not an absolute path".format(nginx_dir)
-            if not _os.path.relpath(path, nginx_dir).startswith("../"):
-                break
-        else:
-            nginx_alias = None
+    # TODO: It should be checked if a path is a subdirectory of another path.
+    #       This would be a configuration error by the admin.
+    for nginx_alias, nginx_dir in _config.getsubset("nginx-redirect").iteritems():
+        assert _os.path.isabs(nginx_dir), "sendFile: nginx_dir: {} is not an absolute path".format(nginx_dir)
+        if not _os.path.relpath(path, nginx_dir).startswith("../"):
+            break
     else:
         nginx_alias = None
 

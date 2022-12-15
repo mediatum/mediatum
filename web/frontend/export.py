@@ -11,7 +11,6 @@ import core.translation as _core_translation
 from core import db
 from contenttypes import Data
 from sqlalchemy.orm.exc import NoResultFound
-from core.request_handler import error as _error
 
 q = db.query
 
@@ -21,16 +20,21 @@ logg = logging.getLogger(__name__)
 def export(req):
     p = req.mediatum_contextfree_path[1:].split("/")
     if len(p) != 2 or not p[0].isdigit():
-        _error(req, 404, "Object not found")
+        req.response.set_data("Object not found")
+        req.response.status_code = _httpstatus.HTTP_NOT_FOUND
         return
 
     try:
         node = q(Data).get(p[0])
     except:
-        return _error(req, 404, "Object not found")
+        req.response.set_data("Object not found")
+        req.response.status_code = _httpstatus.HTTP_NOT_FOUND
+        return
 
     if not node:
-        return _error(req, 404, "Object not found")
+        req.response.set_data("Object not found")
+        req.response.status_code = _httpstatus.HTTP_NOT_FOUND
+        return
 
     if not node.has_read_access():
         req.response.status_code = _httpstatus.HTTP_FORBIDDEN
@@ -39,11 +43,14 @@ def export(req):
 
     mask = node.metadatatype.getMask(p[1])
     if not mask:
-        return _error(req, 404, "Object not found")
+        req.response.set_data("Object not found")
+        req.response.status_code = _httpstatus.HTTP_NOT_FOUND
+        return
 
     try:
         req.response.status_code = _httpstatus.HTTP_OK
         req.response.set_data(mask.getViewHTML([node], flags=8))
         req.response.content_type = "text/plain; charset=utf-8"
     except NoResultFound:
-        return _error(req, 404, "Object not found")
+        req.response.set_data("Object not found")
+        req.response.status_code = _httpstatus.HTTP_NOT_FOUND

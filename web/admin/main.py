@@ -20,7 +20,6 @@ except ImportError:
 import core
 import mediatumtal.tal as _tal
 import core.csrfform as _core_csrfform
-import core.request_handler as _core_request_handler
 import core.webconfig as _core_webconfig
 from core import config
 from core.users import get_guest_user
@@ -82,7 +81,8 @@ def export(req):
         xml_result = module.export(req, path[2])
     except AttributeError as err:
         req.response.status_code = httpstatus.HTTP_NOT_FOUND
-        _core_request_handler.error(req, httpstatus.HTTP_NOT_FOUND, str(err))
+        req.response.set_data(str(err))
+        return
 
     req.response.status_code = httpstatus.HTTP_OK
     req.response.mimetype = "application/xml"
@@ -125,7 +125,9 @@ def stats_server(req):
 
     user = _user_from_session()
     if not user.is_admin:
-        return _core_request_handler.error(req, httpstatus.HTTP_FORBIDDEN, "<pre>You have not required rights</pre>")
+        req.response.set_data("You have not required rights")
+        req.response.status_code = httpstatus.HTTP_FORBIDDEN
+        return
 
     if _uwsgi:
         if "stats" in _uwsgi.opt:
@@ -139,7 +141,9 @@ def stats_server(req):
                     workers = _json.loads(workers)
                     workers = workers["workers"]
                 except _socket.error as msg:
-                    _core_request_handler.error(req, httpstatus.HTTP_INTERNAL_SERVER_ERROR, "<pre>" + str(msg) + "</pre>")
+                    req.response.set_data(str(msg))
+                    req.response.status_code = httpstatus.HTTP_INTERNAL_SERVER_ERROR
+                    return
         else:
             workers = _uwsgi.workers()
         workers_without_cores = map(_operator.itemgetter("id", "pid", "requests", "delta_requests", "exceptions",

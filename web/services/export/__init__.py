@@ -15,8 +15,6 @@ response_code_dict = BaseHTTPServer.BaseHTTPRequestHandler.responses
 
 from . import handlers
 from .. import dec_handle_exception
-from core.request_handler import error as _error
-
 
 logg = logging.getLogger(__name__)
 
@@ -80,7 +78,10 @@ def request_handler(req):
             if getattr(handlers, 'default_handler'):
                 response_code, bytes_sent = handlers.default_handler(req)
         except:
-            response_code, bytes_sent = '404', 0
+            req.mediatum_contextfree_path = cgi.escape(req.mediatum_contextfree_path)
+            req.response.set_data("File {} not found".format(req.mediatum_contextfree_path))
+            req.response.status_code = 404
+            return
 
     handle_endtime = time.time()
     handle_duration = "%.3f sec." % (handle_endtime - handle_starttime)
@@ -131,9 +132,5 @@ def request_handler(req):
     else:
         logg.info("%s", s)
     sys.stdout.flush()
-
-    if not matched:
-        req.mediatum_contextfree_path = cgi.escape(req.mediatum_contextfree_path)
-        return _error(req, 404, "File " + req.mediatum_contextfree_path + " not found")
 
     return response_code

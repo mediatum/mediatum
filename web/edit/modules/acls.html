@@ -15,8 +15,8 @@
 
 
     <form class="edit" name="myform" method="post">
-        <input tal:attributes="value csrf" type="hidden" name="csrf_token">
-        <input tal:attributes="value srcnodeid" type="hidden" name="srcnodeid">
+        <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
+        <input tal:attributes="value srcnodeid" type="hidden" name="srcnodeid"/>
         <input type="hidden" name="save" value="save"/>
         <input type="hidden" name="nodeid" tal:attributes="value idstr"/>
         <p><input i18n:attributes="value edit_save_title" type="button" name="save" onClick="runsubmit()"/></p>
@@ -39,7 +39,7 @@
 
         <p>
             <input type="hidden" name="type" id="type" value="acl"/>
-            <input i18n:attributes="value edit_save_title" type="button" name="save" onClick="runsubmit()">
+            <input i18n:attributes="value edit_save_title" type="button" name="save" onClick="runsubmit()"/>
         </p>
     </form>
 
@@ -61,7 +61,7 @@
             </td>
             <td style="padding-left:10px;padding-right:10px;" align="left" valign="center">
                 <input tal:attributes="onclick python:'moveLeft(document.myform.left'+name+',document.myform.right'+name+')'" type="button" value="<<"/>
-                <br>
+                <br/>
                 <input tal:attributes="onclick python:'moveRight(document.myform.left'+name+',document.myform.right'+name+')'" type="button" value=">>"/>
             </td>
             <td align="left" valign="top">
@@ -73,7 +73,14 @@
             <td>
             </td>
             <td></td>
-            <td><tal:block i18n:translate="edit_acls_filter_input_label">TEXT</tal:block><input type="text" tal:attributes="id python: 'input_acl_%s' % type " onChange="" i18n:attributes="title edit_acls_filter_input_tooltip"></td>
+            <td><tal:block i18n:translate="edit_acls_filter_input_label">TEXT</tal:block>
+                <input
+                    type="text"
+                    tal:attributes="id python: 'input_acl_%s' % type "
+                    onChange=""
+                    i18n:attributes="title edit_acls_filter_input_tooltip"
+                />
+            </td>
         </tr>
     </table>
     <br/>
@@ -92,7 +99,7 @@
             </td>
             <td style="padding-left:10px;padding-right:10px;" align="left" valign="center">
                 <input tal:attributes="onclick python:'moveLeft(document.myform.leftuser'+name+',document.myform.rightuser'+name+')'" type="button" value="<<"/>
-                <br>
+                <br/>
                 <input tal:attributes="onclick python:'moveRight(document.myform.leftuser'+name+',document.myform.rightuser'+name+')'" type="button" value=">>"/>
             </td>
             <td align="left" valign="top">
@@ -104,7 +111,14 @@
             <td>
             </td>
             <td></td>
-            <td><tal:block i18n:translate="edit_acls_filter_input_label">TEXT</tal:block><input type="text" tal:attributes="id python: 'input_user_%s' % type " onChange="" i18n:attributes="title edit_acls_filter_input_tooltip"></td>
+            <td><tal:block i18n:translate="edit_acls_filter_input_label">TEXT</tal:block>
+                <input
+                    type="text"
+                    tal:attributes="id python: 'input_user_%s' % type "
+                    onChange=""
+                    i18n:attributes="title edit_acls_filter_input_tooltip"
+                />
+            </td>
         </tr>
     </table>
     <br/>

@@ -155,7 +155,7 @@ def stats_server(req):
 
             remote_addrs = lambda worker_vars: filter(lambda x: x.startswith("REMOTE_ADDR"), worker_vars)
             remote_addrs = map(lambda worker_vars: map(remote_addrs, worker_vars), workers_vars)
-            break_line = lambda remote_addrs: map(lambda remote_addrs: "<br>".join(remote_addrs), remote_addrs)
+            break_line = lambda remote_addrs: map(lambda remote_addrs: "<br/>".join(remote_addrs), remote_addrs)
             remote_addrs = map(break_line, remote_addrs)
             remote_addrs = map(lambda remote_addrs: remote_addrs[0], remote_addrs)
             remote_addrs = map(lambda remote_addr: remote_addr.split("=")[1] if "=" in remote_addr else remote_addr, remote_addrs)
@@ -165,7 +165,7 @@ def stats_server(req):
 
             request_uris = lambda worker_vars: filter(lambda x: x.startswith("REQUEST_URI"), worker_vars)
             request_uris = map(lambda worker_vars: map(request_uris, worker_vars), workers_vars)
-            break_line = lambda request_uris: map(lambda request_uris: "<br>".join(request_uris), request_uris)
+            break_line = lambda request_uris: map(lambda request_uris: "<br/>".join(request_uris), request_uris)
             get_worker_request_uris = map(break_line, request_uris)
             request_uris = map(lambda request_uris: request_uris[0], get_worker_request_uris)
             request_uris = map(lambda request_uri: request_uri.split("=")[1] if "=" in request_uri else request_uri, request_uris)

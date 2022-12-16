@@ -11,9 +11,9 @@
     <script src="/static/js/edit/modules/searchmask.js"> </script>
     <div id="sub_content_content">
         <form class="edit" action="edit_content" name="changeform" id="fbody">
-            <input tal:attributes="value csrf" type="hidden" name="csrf_token">
+            <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
             <span i18n:translate="edit_searchmask_type">TEXT</span>:
-            <input type="image" name="update" value="update" src="/static/img/s.gif">
+            <input type="image" name="update" value="update" src="/static/img/s.gif"/>
                 <select id="searchtype_id" name="searchtype" onChange="change_searchtype()">
                 <option tal:attributes="selected python:[None,'selected'][searchtype=='none']" value="none" i18n:translate="edit_searchmask_none">TEXT</option>
                 <option tal:attributes="selected python:[None,'selected'][searchtype=='parent']" value="parent" i18n:translate="edit_searchmask_parent">TEXT</option>
@@ -38,7 +38,7 @@
                 <tr>
                     <td valign="center">
                         <a href="#" tal:attributes="onclick python:'open_field(\''+ustr(field.id)+'\')'; name python:'open_'+ustr(field.id)" >
-                            <img src="/static/img/boxx.gif">
+                            <img src="/static/img/boxx.gif"/>
                         </a>
                     </td>
                     <td valign="center" colspan="2">
@@ -119,7 +119,12 @@
                                     </select>
                                 </td>
                                 <td>
-                                    <input type="image"  name="createsub" tal:attributes="onclick python:'create_subfield(\''+ustr(field.id)+'\')'" src="/static/img/haken.gif">
+                                    <input
+                                        type="image"
+                                        name="createsub"
+                                        tal:attributes="onclick python:&quot;create_subfield('{}')&quot;.format(field.id)"
+                                        src="/static/img/haken.gif"
+                                    />
                                 </td>
                             </tr>
                         </table>

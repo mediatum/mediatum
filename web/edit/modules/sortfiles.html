@@ -14,7 +14,7 @@
                 <option tal:repeat="sortchoice sortchoices" onSelect="form.submit()" tal:attributes="value python:sortchoice.value; selected python:'selected' if sortchoice.value==collection_sortfield else None" tal:content="python:sortchoice.label"/>
             </select>
             <input type="submit" name="ok" value="ok"/>
-            <input tal:attributes="value srcnodeid" type="hidden" name="srcnodeid">
+            <input tal:attributes="value srcnodeid" type="hidden" name="srcnodeid"/>
         </form>
     </div>
 

@@ -902,7 +902,7 @@ def explain(query, analyze=False, pygments_style="native"):
             HtmlFormatter().get_style_defs('.highlight') +
             "</style>" +
             formatted_statement +
-            "<br>" +
+            "<br/>" +
             explained)
     else:
         # strip EXPLAIN (ANALYZE)

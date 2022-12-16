@@ -71,7 +71,7 @@ def format_elements(elements, field, values=(), node=None):
             num = u" ({})".format(unicode(num)) if num else u""
 
         if not selectable:
-            yield _Element(opt="optgroup", indent='<optgroup label="{}{}">'.format(indentstr,value), item="", count="")
+            yield _Element(opt="optgroup", indent='<optgroup label="{}{}"/>'.format(indentstr,value), item="", count="")
         elif value in values:
             yield _Element(opt="optionselected", indent=indentstr, item=value, count=num)
         else:

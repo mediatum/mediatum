@@ -833,7 +833,7 @@ msgid "mask_edit_attribute_description"
 msgstr "mögliche Variablen:<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* [value] = Attributwert aus 'Feld'<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* [att:field] = Attributfeldname<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* [att:id] = Knoten-ID<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (&lt;[att:field]&gt;[value]&lt;/[att:field]&gt;)"
 
 msgid "PostprocessingError_document"
-msgstr "Der Upload des Dokuments konnte nicht durchgeführt werden.<br>Bitte überprüfen Sie, ob das PDF evtl. kopiergeschützt oder beschädigt ist."
+msgstr "Der Upload des Dokuments konnte nicht durchgeführt werden.<br/>Bitte überprüfen Sie, ob das PDF evtl. kopiergeschützt oder beschädigt ist."
 
 msgid "EncryptionError_document"
 msgstr "Der Upload des Dokuments konnte nicht durchgeführt werden., da Ihr PDF kopiergeschützt ist. Bitte entfernen Sie den Schutz und versuchen den Upload erneut."

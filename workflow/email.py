@@ -158,7 +158,7 @@ class WorkflowStep_SendEmail(WorkflowStep):
                 return """<pre>%s</pre>""" % node.system_attrs.get("mailtmp.talerror")
 
         elif node.get("system.mailtmp.error"):
-            return u'{}<br/><pre>{}</pre><br>&gt;<a href="{}">{}</a>&lt;'.format(
+            return u'{}<br/><pre>{}</pre><br/>&gt;<a href="{}">{}</a>&lt;'.format(
                     _core_translation.translate(_core_translation.set_language(req.accept_languages), "workflow_email_msg_1"),
                     node.get("system.mailtmp.error"),
                     _makeSelfLink(req, {"sendout": "true"}),

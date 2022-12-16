@@ -27,8 +27,8 @@
             <h3><a href="#" i18n:translate="edit_files_options">TEXT</a></h3>
             <div class="mediatum_files_options">
                 <form method="post" enctype="multipart/form-data">
-                    <input tal:attributes="value csrf" type="hidden" name="csrf_token">
-                    <input tal:attributes="value srcnodeid" type="hidden" name="srcnodeid">
+                    <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
+                    <input tal:attributes="value srcnodeid" type="hidden" name="srcnodeid"/>
                             <b><tal:block i18n:translate="edit_files_change"/>:</b>
                             <p>
                                 <tal:block tal:condition="python:node.has_upload_file">
@@ -64,8 +64,8 @@
             <h3><a href="#" i18n:translate="edit_files_files">TEXT</a></h3>
             <div id="files">
                 <form method="post">
-                    <input tal:attributes="value csrf" type="hidden" name="csrf_token">
-                    <input tal:attributes="value srcnodeid" type="hidden" name="srcnodeid">
+                    <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
+                    <input tal:attributes="value srcnodeid" type="hidden" name="srcnodeid"/>
                     <table class="mediatum_filetable_files" cellpadding="0px" cellspacing="0px">
                         <tr>
                             <th i18n:translate="edit_files_location">TEXT</th>

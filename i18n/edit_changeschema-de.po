@@ -10,7 +10,7 @@ msgid "edit_changeschema_obj_selection"
 msgstr "Wechseln des Objekttyps/Metadatentyps"
 
 msgid "edit_changeschema_msg2"
-msgstr "Neuen Objekttyp bitte aus folgender Liste wählen. <br>Die verfügbaren Matadaten-Schemata werden dann nachgeladen."
+msgstr "Neuen Objekttyp bitte aus folgender Liste wählen. <br/>Die verfügbaren Matadaten-Schemata werden dann nachgeladen."
 
 msgid "edit_changeschema_obj_sel"
 msgstr "Objekttyp und Metadatentyp für dieses Objekt neu wählen: "

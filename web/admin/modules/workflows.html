@@ -10,7 +10,7 @@
     <![endif]-->
     <p><a i18n:translate="admin_overview" href=".">TEXT</a></p>
     <form tal:attributes="action python:page" name="addnewworkflow" method="post" action="#" enctype="multipart/form-data">
-        <input tal:attributes="value csrf" type="hidden" name="csrf_token">
+        <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
         <table class="overview">
             <thead>
                 <tr>
@@ -31,7 +31,7 @@
                     </th>
                     <th>
                         <a i18n:attributes="title admin_wf_exportall_title" href="/admin/export/workflows/all" target="_blank">
-                            <img src="/static/img/export.png" border="0">
+                            <img src="/static/img/export.png" border="0"/>
                         </a>
                     </th>
                     <th align="right">
@@ -87,7 +87,7 @@
                                 <tr>
                                     <td align="left">
                                         <fieldset>
-                                            <tal:block i18n:translate="admin_fw_msg1">TEXT</tal:block>:<br>
+                                            <tal:block i18n:translate="admin_fw_msg1">TEXT</tal:block>:<br/>
                                             <input name="file" type="file" size="50" maxlength="100000"/>
                                             <br/><button i18n:translate="admin_wf_import" i18n:attributes="title admin_wf_import_title" type="submit" name="submit" value="submit">TEXT</button>
                                         </fieldset>
@@ -99,7 +99,7 @@
                 </tr>
             </tfoot>
         </table>
-        <br>
+        <br/>
         <input type="hidden" name="acttype" value="workflow"/>
         <input type="hidden" name="actpage" tal:attributes="value actpage"/>
         <input type="hidden" name="actfilter" tal:attributes="value actfilter"/>
@@ -110,7 +110,7 @@
     <script src="/static/js/admin/modules/admin.js"> </script>
     <p><a tal:attributes="href python:u'./workflows{}'.format(page)" i18n:translate="admin_overview">TEXT</a></p>
     <form tal:attributes="action page" name="editworkflow" method="post" action="#">
-        <input tal:attributes="value csrf" type="hidden" name="csrf_token">
+        <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
         <table>
             <tr>
                 <td colspan="2">
@@ -150,7 +150,7 @@
                             </td>
                             <td style="padding-left:10px;padding-right:10px;" align="left" valign="center">
                                 <input tal:attributes="onclick python:u'moveLeft(document.editworkflow.left_write{},document.editworkflow.right_write{})'.format(acl_write['name'], acl_write['name'])" type="button" value="<<"/>
-                                <br>
+                                <br/>
                                 <input tal:attributes="onclick python:u'moveRight(document.editworkflow.left_write{},document.editworkflow.right_write{})'.format(acl_write['name'], acl_write['name'])" type="button" value=">>"/>
                             </td>
                             <td align="left" valign="top">
@@ -173,7 +173,7 @@
                             </td>
                             <td style="padding-left:10px;padding-right:10px;" align="left" valign="center">
                                 <input tal:attributes="onclick python:u'moveLeft(document.editworkflow.left_read{},document.editworkflow.right_read{})'.format(acl_read['name'], acl_read['name'])" type="button" value="<<"/>
-                                <br>
+                                <br/>
                                 <input tal:attributes="onclick python:u'moveRight(document.editworkflow.left_read{},document.editworkflow.right_read{})'.format(acl_read['name'], acl_read['name'])" type="button" value=">>"/>
                             </td>
                             <td align="left" valign="top">
@@ -223,7 +223,7 @@
     <![endif]-->
     <p><a href="./workflows" i18n:translate="admin_overview">TEXT</a></p>
     <form tal:attributes="action page" name="metafields" method="post" action="#">
-        <input tal:attributes="value csrf" type="hidden" name="csrf_token">
+        <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
         <table class="overview">
             <thead>
                 <tr>
@@ -246,7 +246,12 @@
                         <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:u'sortcol_{}'.format(col.link)" class="admin_sortcol" type="submit" value="">TEXT</button>
                     </th>
                     <th align="right">
-                        <input tal:attributes="name python:u'newdetail_{}'.format(workflow.getId())" i18n:attributes="title admin_wfstep_new_title" type="image" src="/static/img/install.png">
+                        <input
+                            tal:attributes="name python:u'newdetail_{}'.format(workflow.getId())"
+                            i18n:attributes="title admin_wfstep_new_title"
+                            type="image"
+                            src="/static/img/install.png"
+                        />
                     </th>
                 </tr>
             </thead>
@@ -318,7 +323,7 @@
     <script src="/static/js/admin/modules/admin.js"> </script>
     <p><a tal:attributes="href python:u'./workflows?detailof={}{}'.format(workflow_id, page)" i18n:translate="admin_overview">TEXT</a></p>
     <form tal:attributes="action page" name="addmfield" id="addmfield" method="post" action="#">
-        <input tal:attributes="value csrf" type="hidden" name="csrf_token">
+        <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
         <table>
             <tr>
                 <td colspan="2">
@@ -428,7 +433,7 @@
                             </td>
                             <td style="padding-left:10px;padding-right:10px;" align="left" valign="center">
                                 <input tal:attributes="onclick python:u'moveLeft(document.addmfield.left_write{},document.addmfield.right_write{})'.format(acl_write['name'], acl_write['name'])" type="button" value="<<"/>
-                                <br>
+                                <br/>
                                 <input tal:attributes="onclick python:u'moveRight(document.addmfield.left_write{},document.addmfield.right_write{})'.format(acl_write['name'], acl_write['name'])" type="button" value=">>"/>
                             </td>
                             <td align="left" valign="top">
@@ -450,7 +455,7 @@
                             </td>
                             <td style="padding-left:10px;padding-right:10px;" align="left" valign="center">
                                 <input tal:attributes="onclick python:u'moveLeft(document.addmfield.left_read{},document.addmfield.right_read{})'.format(acl_read['name'], acl_read['name'])" type="button" value="<<"/>
-                                <br>
+                                <br/>
                                 <input tal:attributes="onclick python:u'moveRight(document.addmfield.left_read{},document.addmfield.right_read{})'.format(acl_read['name'], acl_read['name'])" type="button" value=">>"/>
                             </td>
                             <td align="left" valign="top">
@@ -508,9 +513,9 @@
     <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
     <html xmlns="http://www.w3.org/1999/xhtml">
         <head>
-            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-            <meta content="text/html;charset=UTF-8" http-equiv="content-type">
-            <link rel="stylesheet" href="/static/css/admin/admin.css">
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+            <meta content="text/html;charset=UTF-8" http-equiv="content-type"/>
+            <link rel="stylesheet" href="/static/css/admin/admin.css"/>
             <title i18n:translate="admin_wf_definition">TEXT</title>
         </head>
         <body style="margin:5px">

@@ -11,7 +11,7 @@
     <![endif]-->
     <p><a i18n:translate="admin_overview" href=".">TEXT</a></p>
     <form name="useroverview" method="post" action="#" enctype="multipart/form-data" tal:attributes="action page">
-        <input tal:attributes="value csrf" type="hidden" name="csrf_token">
+        <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
         <table class="overview">
             <thead>
                 <tr>
@@ -127,7 +127,7 @@
                                 <tr>
                                     <td align="left">
                                         <fieldset>
-                                            <tal:block i18n:translate="admin_meta_msg1">TEXT</tal:block>:<br>
+                                            <tal:block i18n:translate="admin_meta_msg1">TEXT</tal:block>:<br/>
                                             <input name="file" type="file" size="50" maxlength="100000"/>
                                             <br/><button i18n:attributes="title admin_meta_import_title" i18n:translate="admin_meta_import" type="submit" name="submit" value="submit">TEXT</button>
                                         </fieldset>
@@ -157,7 +157,7 @@
     <![endif]-->
     <p><a tal:attributes="href python:u'./metatype{}'.format(page)" i18n:translate="admin_overview">TEXT</a></p>
     <form tal:attributes="action page" name="editmetatype" method="post">
-        <input tal:attributes="value csrf" type="hidden" name="csrf_token">
+        <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
         <table>
             <tr>
                 <td colspan="2">
@@ -204,7 +204,7 @@
                 </td>
             </tr>
             <tr>
-                <td><tal:block i18n:translate="admin_meta_bibtex">TEXT</tal:block>: <br>
+                <td><tal:block i18n:translate="admin_meta_bibtex">TEXT</tal:block>: <br/>
                     <tal:block i18n:translate="admin_meta_bibtex_warning">TEXT</tal:block>
                 </td>
                 <td>
@@ -214,7 +214,7 @@
                 </td>
             </tr>
             <tr>
-                <td><tal:block i18n:translate="admin_meta_citeproc">TEXT</tal:block>: <br>
+                <td><tal:block i18n:translate="admin_meta_citeproc">TEXT</tal:block>: <br/>
                 </td>
                 <td>
                     <select name="mciteproc" multiple="multiple" style="width:300px" size="5">
@@ -237,7 +237,7 @@
                             </td>
                             <td style="padding-left:10px;padding-right:10px;" align="left" valign="center">
                                 <input tal:attributes="onclick python:u'moveLeft(document.editmetatype.left{},document.editmetatype.right{})'.format(acl['name'], acl['name'])" type="button" value="<<"/>
-                                <br>
+                                <br/>
                                 <input tal:attributes="onclick python:u'moveRight(document.editmetatype.left{},document.editmetatype.right{})'.format(acl['name'], acl['name'])" type="button" value=">>"/>
                             </td>
                             <td align="left" valign="top">
@@ -272,11 +272,11 @@
     <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
     <html xmlns="http://www.w3.org/1999/xhtml">
         <head>
-            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-            <meta content="text/html;charset=UTF-8" http-equiv="content-type">
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+            <meta content="text/html;charset=UTF-8" http-equiv="content-type"/>
 
             <title i18n:translate="admin_infopopup_title">TEXT</title>
-            <link rel="stylesheet" href="/static/css/admin/admin.css">
+            <link rel="stylesheet" href="/static/css/admin/admin.css"/>
         </head>
         <body>
             <table cellpadding="20" cellspacing="0" width="100%" class="header">
@@ -300,12 +300,12 @@
     <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
     <html xmlns="http://www.w3.org/1999/xhtml">
         <head>
-            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-            <meta content="text/html;charset=UTF-8" http-equiv="content-type">
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+            <meta content="text/html;charset=UTF-8" http-equiv="content-type"/>
 
             <title i18n:translate="admin_defpopup_title">TEXT</title>
-            <link rel="stylesheet" href="/static/css/admin/admin.css">
-            <link rel="stylesheet" href="/static/css/admin/modules/metatype.css">
+            <link rel="stylesheet" href="/static/css/admin/admin.css"/>
+            <link rel="stylesheet" href="/static/css/admin/modules/metatype.css"/>
         </head>
         <body>
             <h3 i18n:translate="admin_defpopup_header">TEXT '<span tal:content="python:metadatatype.getName()" i18n:name="name"/>'</h3>
@@ -366,14 +366,14 @@
         <script src="/static/js/metaeditor.js">selected==false;</script>
         <script src="/static/js/jquery-1.12.4.js"> </script>
         <script src="/static/js/jquery-migrate-1.4.1.js"> </script>
-        <link rel="stylesheet" href="/static/css/editor.css">
+        <link rel="stylesheet" href="/static/css/editor.css"/>
         <title i18n:translate="mask_editor_title">TEXT</title>
     </head>
     <body class="form">
         <tal:block tal:replace="raw editor"/>
         <tal:block tal:condition="python:edit==''">
             <form method="post" name="op">
-                <input tal:attributes="value csrf" type="hidden" name="csrf_token">
+                <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
                 <div id="mediatum_selection_div">
                     <span i18n:translate="mask_editor_chosen_element">TEXT</span>
                     <select id="selection" name="group_type">

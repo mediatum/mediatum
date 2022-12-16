@@ -11,7 +11,7 @@
     <script src="/static/js/edit/modules/subfolder.js"> </script>
     <div id="navigation_content">
         <h3 i18n:translate="edit_sort_label">TEXT</h3>
-        <input type="hidden" name="tab" value="subfolder">
+        <input type="hidden" name="tab" value="subfolder"/>
         <input tal:attributes="value python:node.id" type="hidden" name="id"/>
         <input i18n:attributes="value edit_sort_name" type="hidden" name="resort"/>
             <span i18n:translate="edit_sort_label_1"/>
@@ -34,7 +34,7 @@
     <div id="sub_content_content">
         <h3 i18n:translate="edit_sort_header">TEXT</h3>
         <form>
-            <input tal:attributes="value csrf" type="hidden" name="csrf_token">
+            <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
             <input type="hidden" name="tab" value="subfolder"/>
             <input tal:attributes="value python:node.id" type="hidden" name="id"/>
             <ul id="sortable">

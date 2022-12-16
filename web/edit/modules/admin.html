@@ -19,7 +19,7 @@
                 method="post"
                 name="addmeta"
             >
-                <input tal:attributes="value csrf" type="hidden" name="csrf_token">
+                <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
                 <h2 i18n:translate="edit_admin_add_attribute">TEXT</h2>
                 <p tal:condition="user_is_admin" i18n:translate="edit_notice_adding_system_attrs">TEXT</p>
                 <p>
@@ -54,7 +54,7 @@
             name="meta"
             class="mediatum_subcontent_form"
         >
-            <input tal:attributes="value csrf" type="hidden" name="csrf_token">
+            <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
             <div id="accordion">
                 <h3><a href="#" i18n:translate="edit_nodeinformation">TEXT</a></h3>
                 <div id="info" class="mediatum_subcontent_padding">

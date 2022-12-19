@@ -91,12 +91,24 @@
                         </td>
                         <td tal:define="index python:metafields.index(metafield); count python:len(metafields)">&nbsp;&nbsp;&nbsp;
                             <tal:block tal:condition="python:index>=0 and index<count-1">
-                                <input tal:condition="python:order[0:1]!='0' and order!=''" tal:attributes="name python:u'downdetail_{}'.format(metafield.name)" disabled type="image" src="/static/img/downarrowdisabled.png"/>
+                                <input
+                                    tal:condition="python:order[0:1]!='0' and order!=''"
+                                    tal:attributes="name python:u'downdetail_{}'.format(metafield.name)"
+                                    disabled="disabled"
+                                    type="image"
+                                    src="/static/img/downarrowdisabled.png"
+                                />
                                 <input tal:condition="python:order[0:1]=='0' or order==''" tal:attributes="name python:u'downdetail_{}'.format(metafield.name)" i18n:attributes="title admin_metafield_down_title" type="image" src="/static/img/downarrow.png"/>
                             </tal:block>
                             <tal:block tal:condition="python:index==count-1"></tal:block>
                             <tal:block tal:condition="python:index>0 and index<=count">
-                                <input tal:condition="python:order[0:1]!='0' and order!=''" tal:attributes="name python:u'updetail_{}'.format(metafield.name)" disabled type="image" src="/static/img/uparrowdisabled.png"/>
+                                <input
+                                    tal:condition="python:order[0:1]!='0' and order!=''"
+                                    tal:attributes="name python:u'updetail_{}'.format(metafield.name)"
+                                    disabled="disabled"
+                                    type="image"
+                                    src="/static/img/uparrowdisabled.png"
+                                />
                                 <input tal:condition="python:order[0:1]=='0' or order==''" tal:attributes="name python:u'updetail_{}'.format(metafield.name)" i18n:attributes="title admin_metafield_up_title" type="image" src="/static/img/uparrow.png"/>
                             </tal:block>
                         </td>

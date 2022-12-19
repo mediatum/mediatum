@@ -76,7 +76,13 @@
                     <p>Your browser doesn't have HTML5 support.</p>
                 </div>
                 <br />
-                <button id="id_button_createobjectsplupload_file" type="button" disabled onclick="createObjectsPluploadFile();" i18n:translate="edit_upload_create_objects"/>
+                <button
+                    id="id_button_createobjectsplupload_file"
+                    type="button"
+                    disabled="disabled"
+                    onclick="createObjectsPluploadFile();"
+                    i18n:translate="edit_upload_create_objects"
+                />
                 <span id="span_plupload_createobjects_file" > </span>
             </form>
             <form tal:condition="python:len(schemes)==0" class="mediatum_uploadform_style">
@@ -100,7 +106,14 @@
                     <p>Your browser doesn't have HTML5 support.</p>
                 </div>
                 <br />
-                <button id="id_button_createobjectsplupload_bib" type="button" disabled onclick="createObjectsPluploadBib();" i18n:translate="edit_upload_create_objects"> </button>
+                <button
+                    id="id_button_createobjectsplupload_bib"
+                    type="button"
+                    disabled="disabled"
+                    onclick="createObjectsPluploadBib();"
+                    i18n:translate="edit_upload_create_objects"
+                >
+                </button>
                 <span id="span_plupload_createobjects_bib" > </span>
             </form>
             <form tal:condition="python:len(schemes)==0" class="mediatum_uploadform_style">
@@ -165,7 +178,7 @@
           <div id="identifier_subform">
           <p tal:content="structure python:identifier_importers[0].get('labels', {}).get(language, {}).get('identifier_importer_explain', 'identifier_importer_explain')">TEXT</p>
           <div class="label"><tal:block i18n:translate="edit_upload_or_doi">TEXT</tal:block>:</div>
-          <input id="input_identifier" type="text" name="input_identifier" disabled/>
+          <input id="input_identifier" type="text" name="input_identifier" disabled="disabled"/>
           <p class="mediatum_subform_identifier_text">
               <button type="button" class="mediatum_buttoncreate3" onclick="createObjectFromIdentifier()" i18n:translate="edit_upload_create_object_doi">TEXT</button>
           </p>
@@ -176,7 +189,7 @@
           <p tal:content="structure python:identifier_importers[0].get('labels', {}).get(language, {}).get('identifier_importer_explain', 'identifier_importer_explain')">TEXT</p>
           <input type="hidden" name="identifier_importer" id="identifier_importer" tal:attributes="value python:identifier_importers[0].name"/>
           <input id="input_identifier" type="text" name="input_identifier" />
-          <input id="dummy" type="text" name="" disabled/>
+          <input id="dummy" type="text" name="" disabled="disabled"/>
           <p class="mediatum_subform_identifier_text">
               <button type="button" class="mediatum_buttoncreate3" onclick="createObjectFromIdentifier()" i18n:translate="edit_upload_create_object_doi">TEXT</button>
           </p>

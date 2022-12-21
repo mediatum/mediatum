@@ -30,8 +30,7 @@ def getData(req):
 
         with _utils.suppress(Exception):
             special_dir_type = _web_edit_edit.get_special_dir_type(c)
-            cnum = c.container_children.count()
-            inum = c.content_children.count()
+            has_container_children = _core.db.query(c.container_children.exists()).scalar()
 
             label = _web_edit_common.get_edit_label(c, _core_translation.set_language(req.accept_languages))
             title = label + " (" + unicode(c.id) + ")"
@@ -55,6 +54,7 @@ def getData(req):
                 cls = "homeicon"
 
             if style == "edittree":  # standard tree for edit area
+                inum = c.content_children.count()
                 if inum > 0:
                     label += u" <small>({})</small>".format(inum)
 
@@ -62,7 +62,7 @@ def getData(req):
                 ret.append(u'<li class="{}.gif" id="Node{}">'.format(cls, c.id))
                 ret.append(u'<a href="#" title="{}" id="{}" class="{}">{}</a>'.format(title, c.id, itemcls, label))
 
-                if cnum > 0:
+                if has_container_children:
                     ret.append(u'<ul><li parentId="{}" class="spinner.gif"><a href="#">&nbsp;</a></li></ul>'.format(c.id))
                 ret.append(u'</li>')
 
@@ -71,7 +71,7 @@ def getData(req):
                 ret.append(u'<a href="#" title="{}" id="{}" class="{}">{}<input type="image" src="/static/img/ftree/uncheck.gif"/></a>'.format(
                                 title, c.id, itemcls, label))
 
-                if cnum > 0:
+                if has_container_children:
                     ret.append(u'<ul><li parentId="{}" class="spinner.gif"><a href="#">&nbsp;</a></li></ul>'.format(c.id))
 
                 ret.append(u'</li>')

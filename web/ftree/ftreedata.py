@@ -123,33 +123,26 @@ def getPathTo(req):
     # parameters: pathTo=selected Node
     collectionsid = _core_nodecache.get_collections_node().id
     # if more than one node selected use the first to get the path to
-    nid = req.values["pathTo"].split(',')[0]
-    node = _core.db.query(_core.Node).get(nid)
-
     items = []
-    checked = []
+    for nid in req.values["pathTo"].split(','):
+        node = _core.db.query(_core.Node).get(nid)
 
-    for path in _pathutils.getPaths(node):
-        if node.id not in path and node.isContainer():  # add node if container
-            path.append(node)
+        for path in _pathutils.getPaths(node):
+            if node.id not in path and node.isContainer():  # add node if container
+                path.append(node)
 
-        checked.append(unicode(path[-1].id))  # last item of path is checked
+            if path[0].parents[0].id == collectionsid and collectionsid not in items:
+                items.append(collectionsid)
 
-        if path[0].parents[0].id == collectionsid and collectionsid not in items:
-            items.append(collectionsid)
+            for item in path:
+                if item.id not in items:
+                    items.append(item.id)
 
-        for item in path:
-            if item.id not in items:
-                items.append(item.id)
-
-        items.append("x")  # set devider for next path
-        if req.params.get("multiselect", "false") == "false":  # if not multiselect use only first path
-            break
+            items.append("x")  # set devider for next path
+            if req.params.get("multiselect", "false") == "false":  # if not multiselect use only first path
+                break
 
     items = u",".join(map(unicode, items)) or unicode(collectionsid)
-
-    for check in checked:  # set marked items
-        items = items.replace(check, u'({})'.format(check))
 
     req.response.status_code = _httpstatus.HTTP_OK
     req.response.set_data(items)

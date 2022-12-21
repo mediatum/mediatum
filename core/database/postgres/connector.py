@@ -243,7 +243,7 @@ class PostgresSQLAConnector(object):
 
     def get_model_classes(self):
         from core.database.postgres.file import File, NodeToFile
-        from core.database.postgres.node import NodeType, Node, NodeAlias
+        from core.database.postgres.node import NodeType, Node
         from core.database.postgres.user import User, UserGroup, UserToUserGroup, AuthenticatorInfo, OAuthUserCredentials
         from core.database.postgres.permission import AccessRule, AccessRuleset, NodeToAccessRule, NodeToAccessRuleset, AccessRulesetToRule
         from core.database.postgres.setting import Setting
@@ -263,7 +263,7 @@ class PostgresSQLAConnector(object):
             AccessRulesetToRule,
             Setting,
             NodeType,
-            NodeAlias)
+        )
 
     def make_session(self):
         """Create a session.

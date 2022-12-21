@@ -198,10 +198,6 @@ def initContexts():
     file = context.addFile("web/frontend/export.py")
     file.addHandler("export").addPattern("/.*")
 
-    # === last: path aliasing for collections ===
-    handler = main_file.addHandler("display_alias")
-    handler.addPattern("/([_a-zA-Z][_/a-zA-Z0-9]+)$")
-
     # handle rest pattern
     filehandlers.addHandler("send_from_webroot").addPattern("/(.)+$")
 

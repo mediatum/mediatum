@@ -587,17 +587,3 @@ def all_parents_rel(*args, **kwargs):
 Node.children = children_rel(Node, backref=bref("parents", lazy="dynamic", query_class=NodeAppenderQuery))
 Node.all_children = all_children_rel(Node)
 Node.all_parents = all_parents_rel(Node)
-
-
-class NodeAlias(DeclarativeBase):
-
-    """Alias name for a node that will be shown if the alias is requested in the frontend.
-    A node can have multiple aliases."""
-
-    __tablename__ = "node_alias"
-
-    alias = C(Unicode, primary_key=True)
-    nid = integer_fk(Node.id)
-    description = C(Unicode)
-
-    node = rel(Node)

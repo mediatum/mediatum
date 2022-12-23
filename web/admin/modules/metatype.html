@@ -270,7 +270,7 @@
 
 <metal:block metal:define-macro="show_info">
     <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
-    <html>
+    <html xmlns="http://www.w3.org/1999/xhtml">
         <head>
             <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
             <meta content="text/html;charset=UTF-8" http-equiv="content-type">
@@ -298,7 +298,7 @@
 
 <metal:block metal:define-macro="show_fieldoverview">
     <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
-    <html>
+    <html xmlns="http://www.w3.org/1999/xhtml">
         <head>
             <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
             <meta content="text/html;charset=UTF-8" http-equiv="content-type">
@@ -359,7 +359,9 @@
     </html>
 </metal:block>
 
-<html metal:define-macro="editor_popup">
+<metal:block metal:define-macro="editor_popup">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <script src="/static/js/metaeditor.js">selected==false;</script>
         <script src="/static/js/jquery-1.12.4.js"> </script>
@@ -390,3 +392,4 @@
         </tal:block>
     </body>
 </html>
+</metal:block>

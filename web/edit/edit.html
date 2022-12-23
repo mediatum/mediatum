@@ -96,11 +96,14 @@
      </div>
 </div>
 
-<html metal:define-macro="edit_errorpage">
+<metal:block metal:define-macro="edit_errorpage">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
     <body>
         <h1 tal:content="errormsg"/>
     </body>
 </html>
+</metal:block>
 
 <p metal:define-macro="edit_errortemplate" class="mediatum_templateerror">
     <tal:block i18n:translate="edit_template_error"/><br/><br/>
@@ -114,8 +117,8 @@
 </body>
 
 <metal:block metal:define-macro="edit_main">
-  <!doctype html>
-    <html>
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
+    <html xmlns="http://www.w3.org/1999/xhtml">
         <head>
             <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
             <meta content="text/html;charset=UTF-8" http-equiv="content-type">
@@ -235,14 +238,19 @@
 
 <metal:block metal:define-macro="edit_paging_combo"> </metal:block>
 
-<html metal:define-macro="edit_action_error">
+<metal:block metal:define-macro="edit_action_error">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
     <body>
         <h1 i18n:translate="edit_error">TEXT</h1>
         <i i18n:translate="edit_nobase">TEXT<span tal:content="edit_action_error" i18n:name="msg"/></i>
     </body>
 </html>
+</metal:block>
 
-<html metal:define-macro="edit_action_new_error">
+<metal:block metal:define-macro="edit_action_new_error">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <script language="text/javascript">
             opener.reloadURL('edit?id="""+node.id+"""');
@@ -253,12 +261,13 @@
         <span i18n:translate="edit_create_new_folder">TEXT</span>
     </body>
 </html>
+</metal:block>
 
 <i metal:define-macro="access_error" i18n:translate="edit_access_error">TEXT</i>
 
 <metal:block metal:define-macro="frame_content">
-    <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-    <html>
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
+    <html xmlns="http://www.w3.org/1999/xhtml">
         <head>
             <meta http-equiv="X-UA-Compatible" content="IE=9"/>
             <META http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
@@ -318,7 +327,7 @@
 
 <metal:block metal:define-macro="error">
     <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
-    <html>
+    <html xmlns="http://www.w3.org/1999/xhtml">
         <head>
             <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
             <meta content="text/html;charset=UTF-8" http-equiv="content-type">

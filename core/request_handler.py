@@ -78,7 +78,7 @@ def getBase():
     return GLOBAL_ROOT_DIR
 
 
-class FileStore:
+class _FileStore:
 
     def __init__(self, name, root=None):
         self.name = name
@@ -97,7 +97,7 @@ class FileStore:
             if handler.can_handle(request):
                 return handler.handle_request(request)
         request.mediatum_contextfree_path = _escape(request.mediatum_contextfree_path)
-        return error(request, 404, "File " + request.mediatum_contextfree_path + " not found")
+        return _error(request, 404, "File " + request.mediatum_contextfree_path + " not found")
 
     def addRoot(self, dir):
         if not _os.path.isabs(dir):
@@ -106,12 +106,12 @@ class FileStore:
                 dir = dir[2:]
             dir = _os.path.join(GLOBAL_ROOT_DIR, dir)
         if _zipfile.is_zipfile(dir[:-1]) and dir.lower().endswith("zip/"):
-            self.handlers.insert(0, default_handler(zip_filesystem(dir[:-1])))
+            self.handlers.insert(0, _default_handler(_ZipFilesystem(dir[:-1])))
         else:
-            self.handlers.insert(0, default_handler(os_filesystem(dir)))
+            self.handlers.insert(0, _default_handler(_OSFilesystem(dir)))
 
 
-class WebFile:
+class _WebFile:
 
     def __init__(self, context, filename, module=None):
         self.context = context
@@ -126,7 +126,7 @@ class WebFile:
         self.handlers = []
 
     def addHandler(self, function):
-        handler = WebHandler(self, function)
+        handler = _WebHandler(self, function)
         self.handlers += [handler]
         return handler
 
@@ -134,7 +134,7 @@ class WebFile:
         return self.context.root + self.filename
 
 
-class WebHandler:
+class _WebHandler:
 
     def __init__(self, file, function):
         self.file = file
@@ -148,13 +148,13 @@ class WebHandler:
             self.function = function.func_name
 
     def addPattern(self, pattern):
-        p = WebPattern(self, pattern)
+        p = _WebPattern(self, pattern)
         desc = "pattern %s, file %s, function %s" % (pattern, self.file.filename, self.function)
         self.file.context.pattern_to_function[p.getPattern()] = (self.f, desc)
         return p
 
 
-class WebPattern:
+class _WebPattern:
 
     def __init__(self, handler, pattern):
         self.handler = handler
@@ -170,7 +170,7 @@ class WebPattern:
         return self.pattern
 
 
-class zip_filesystem:
+class _ZipFilesystem:
 
     def __init__(self, filename):
         self.filename = filename
@@ -231,7 +231,7 @@ class zip_filesystem:
         return zFile(data)
 
 
-class os_filesystem:
+class _OSFilesystem:
     # set this to zero if you want to disable pathname globbing.
     # [we currently don't glob, anyway]
     def __init__(self, root):
@@ -275,7 +275,7 @@ class os_filesystem:
         return p
 
 
-def done(req):
+def _done(req):
     # ----------------------------------------
     # persistent connection management
     # ----------------------------------------
@@ -310,7 +310,7 @@ def done(req):
         req.response.headers['Connection'] = 'close'
 
 
-def error(req, code, s=None, content_type='text/html'):
+def _error(req, code, s=None, content_type='text/html'):
     req.response.status_code = code
     message = _httpstatus.responses[code]
     if s is None:
@@ -321,7 +321,7 @@ def error(req, code, s=None, content_type='text/html'):
     req.response.content_length = len(s)
     req.response.content_type = content_type
     req.response.set_data(s)
-    done(req)
+    _done(req)
 
 
 def sendFile(req, path, content_type, force=0, nginx_x_accel_redirect_enabled=True):
@@ -353,13 +353,13 @@ def sendFile(req, path, content_type, force=0, nginx_x_accel_redirect_enabled=Tr
         try:
             file_length = _os.stat(path)[_stat.ST_SIZE]
         except OSError:
-            error(req, 404)
+            _error(req, 404)
             return
 
     try:
         mtime = _datetime.datetime.utcfromtimestamp(_os.stat(path)[_stat.ST_MTIME])
     except:
-        error(req, 404)
+        _error(req, 404)
         return
     if req.if_modified_since:
         if mtime <= req.if_modified_since and not force:
@@ -373,7 +373,7 @@ def sendFile(req, path, content_type, force=0, nginx_x_accel_redirect_enabled=Tr
         req.response.headers['X-Accel-Redirect'] = _os.path.join("/{}".format(nginx_alias), _os.path.relpath(path, nginx_dir))
     if req.method == 'GET':
         if nginx_alias:
-            done(req)
+            _done(req)
         else:
             req.response = _flask.send_file(path, conditional=True)
             req.response.content_length = file_length
@@ -381,7 +381,7 @@ def sendFile(req, path, content_type, force=0, nginx_x_accel_redirect_enabled=Tr
     return
 
 
-def get_extension(path):
+def _get_extension(path):
     dirsep = _string.rfind(path, '/')
     dotsep = _string.rfind(path, '.')
     if dotsep > dirsep:
@@ -472,7 +472,7 @@ def _load_module(filename):
 # class <default_with_post_handler>, defined below.
 #
 
-class default_handler:
+class _default_handler:
     valid_commands = ['GET', 'HEAD']
 
     IDENT = 'Default HTTP Request Handler'
@@ -517,7 +517,7 @@ class default_handler:
     def handle_request(self, request):
 
         if request.method not in self.valid_commands:
-            error(request, 400)  # bad request
+            _error(request, 400)  # bad request
             return
 
         path = request.mediatum_contextfree_path
@@ -529,7 +529,7 @@ class default_handler:
         if self.filesystem.isdir(path):
             if path and path[-1] != '/':
                 request.response.location = '%s%s/' % (request.host_url, path)
-                error(request, 301)
+                _error(request, 301)
                 return
 
             # we could also generate a directory listing here,
@@ -545,11 +545,11 @@ class default_handler:
                     found = 1
                     break
             if not found:
-                error(request, 404)  # Not Found
+                _error(request, 404)  # Not Found
                 return
 
         elif not self.filesystem.isfile(path):
-            error(request, 404)  # Not Found
+            _error(request, 404)  # Not Found
             return
 
         file_length = self.filesystem.stat(path)[_stat.ST_SIZE]
@@ -557,18 +557,18 @@ class default_handler:
         try:
             mtime = _datetime.datetime.utcfromtimestamp(self.filesystem.stat(path)[_stat.ST_MTIME])
         except:
-            error(request, 404)
+            _error(request, 404)
             return
 
         if request.if_modified_since:
             if mtime <= request.if_modified_since:
                 request.response.status_code = 304
-                done(request)
+                _done(request)
                 return
         try:
             file = self.filesystem.open(path, 'rb')
         except IOError:
-            error(request, 404)
+            _error(request, 404)
             return
 
         request.response.last_modified = mtime
@@ -578,10 +578,10 @@ class default_handler:
         if request.method == 'GET':
             request.response.set_data(file.read())
 
-        done(request)
+        _done(request)
 
     def set_content_type(self, path, request):
-        ext = _string.lower(get_extension(path))
+        ext = _string.lower(_get_extension(path))
         typ, encoding = _mimetypes.guess_type(path)
         if typ is not None:
             request.response.content_type = typ
@@ -591,7 +591,7 @@ class default_handler:
             request.response.content_type = 'text/plain'
 
 
-class WebContext:
+class _WebContext:
 
     def __init__(self, name, root=None):
         self.name = name
@@ -603,7 +603,7 @@ class WebContext:
         self.catchall_handler = None
 
     def addFile(self, filename, module=None):
-        file = WebFile(self, filename, module)
+        file = _WebFile(self, filename, module)
         self.files += [file]
         return file
 
@@ -628,8 +628,8 @@ class WebContext:
             if status is not None and type(1) == type(status) and status > 10:
                 req.response.status_code = status
                 if(status >= 400 and status <= 500):
-                    return error(req, status)
-            return done(req)
+                    return _error(req, status)
+            return _done(req)
 
         for pattern, call in self.pattern_to_function.items():
             if pattern.match(path):
@@ -645,7 +645,7 @@ class WebContext:
         return None
 
 
-def callhandler(handler_func, req):
+def _callhandler(handler_func, req):
     for handler in _request_started_handlers:
         handler(req)
 
@@ -681,12 +681,12 @@ def callhandler(handler_func, req):
             s = msg.replace('${XID}', xid)
 
             req.response.headers["X-XID"] = xid
-            return error(req, 500, s.encode("utf8"), content_type='text/html; encoding=utf-8; charset=utf-8')
+            return _error(req, 500, s.encode("utf8"), content_type='text/html; encoding=utf-8; charset=utf-8')
 
         else:
             _logg.exception("Error in page: '%s %s'", req.method, req.full_path)
             s = "<pre>" + _traceback.format_exc() + "</pre>"
-            return error(req, 500, s)
+            return _error(req, 500, s)
 
     finally:
         for handler in _request_finished_handlers:
@@ -704,7 +704,7 @@ def handle_request(req):
             context = c
             maxlen = len(context.name)
     if context is None:
-        error(req, 404)
+        _error(req, 404)
         return req
 
     mediatum_contextfree_path = req.path[len(context.name):]
@@ -719,10 +719,10 @@ def handle_request(req):
 
     function = context.match(mediatum_contextfree_path)
     if function is not None:
-        callhandler(function, req)
+        _callhandler(function, req)
     else:
         _logg.debug("Request %s matches no pattern (context: %s)", req.path, context.name)
-        error(req, 404, "File %s not found" % req.path)
+        _error(req, 404, "File %s not found" % req.path)
 
     return req
 
@@ -731,7 +731,7 @@ def addFileStore(webpath, localpaths):
     global contexts
     if len(webpath) and webpath[0] != '/':
         webpath = "/" + webpath
-    c = FileStore(webpath, localpaths)
+    c = _FileStore(webpath, localpaths)
     contexts += [c]
     return c
 
@@ -745,7 +745,7 @@ def addFileStorePath(webpath, path):
 
 def addContext(webpath, localpath):
     global contexts
-    c = WebContext(webpath, localpath)
+    c = _WebContext(webpath, localpath)
     contexts += [c]
     return c
 

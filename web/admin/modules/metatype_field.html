@@ -189,14 +189,26 @@
             <tr>
                 <td><tal:block i18n:translate="admin_metafield_name">TEXT</tal:block>: <span class="required">*</span></td>
                 <td>
-                    <input tal:attributes="value python:metafield.name" type="text" name="mname" maxlenght=50 style="width:390px;"/>
+                    <input
+                        tal:attributes="value python:metafield.name"
+                        type="text"
+                        name="mname"
+                        maxlength="50"
+                        style="width:390px;"
+                    />
                     <input tal:attributes="value python:metafield.name" type="hidden" name="mname_orig"/>
                 </td>
             </tr>
             <tr>
                 <td><tal:block i18n:translate="admin_metafield_label">TEXT</tal:block>: <span class="required">*</span></td>
                 <td>
-                    <input tal:attributes="value python:metafield.getLabel()" type="text" name="mlabel" maxlenght=50 style="width:390px;"/>
+                    <input
+                        tal:attributes="value python:metafield.getLabel()"
+                        type="text"
+                        name="mlabel"
+                        maxlength="50"
+                        style="width:390px;"
+                    />
                 </td>
             </tr>
             <tr>
@@ -260,14 +272,26 @@
             <tr>
                 <td><tal:block i18n:translate="admin_metafield_name">TEXT</tal:block>: <span class="required">*</span></td>
                 <td>
-                    <input tal:attributes="value python:metafield.name" type="text" name="mname" maxlenght=50 style="width:390px;"/>
+                    <input
+                        tal:attributes="value python:metafield.name"
+                        type="text"
+                        name="mname"
+                        maxlength="50"
+                        style="width:390px;"
+                    />
                     <input tal:attributes="value python:metafield.name" type="hidden" name="mname_orig"/>
                 </td>
             </tr>
             <tr>
                 <td><tal:block i18n:translate="admin_metafield_label">TEXT</tal:block>: <span class="required">*</span></td>
                 <td>
-                    <input tal:attributes="value python:metafield.getLabel()" type="text" name="mlabel" maxlenght=50 style="width:390px;"/>
+                    <input
+                        tal:attributes="value python:metafield.getLabel()"
+                        type="text"
+                        name="mlabel"
+                        maxlength="50"
+                        style="width:390px;"
+                    />
                 </td>
             </tr>
             <tr>

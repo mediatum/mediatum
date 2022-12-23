@@ -127,7 +127,13 @@
             <tr>
                 <td><tal:block i18n:translate="admin_wf_name">TEXT</tal:block>: <span class="required">*</span></td>
                 <td>
-                    <input tal:attributes="value python:workflow.getName()" type="text" name="name" maxlenght=64 style="width:400px"/>
+                    <input
+                        tal:attributes="value python:workflow.getName()"
+                        type="text"
+                        name="name"
+                        maxlength="64"
+                        style="width:400px"
+                    />
                     <input tal:attributes="value original_name" type="hidden" name="orig_name"/>
                 </td>
             </tr>
@@ -192,7 +198,13 @@
             <tr>
                 <td><tal:block i18n:translate="admin_wf_display_name_attribute">TEXT</tal:block>:</td>
                 <td>
-                    <input tal:attributes="value python:workflow.display_name_attribute" type="text" name="name_attr" maxlenght=64 style="width:400px"/>
+                    <input
+                        tal:attributes="value python:workflow.display_name_attribute"
+                        type="text"
+                        name="name_attr"
+                        maxlength="64"
+                        style="width:400px"
+                    />
                 </td>
             </tr>
             <tr>
@@ -340,8 +352,20 @@
             <tr>
                 <td><tal:block i18n:translate="admin_wfstep_name">TEXT</tal:block>: <span class="required">*</span></td>
                 <td>
-                    <input tal:attributes="value python:workflowstep.name" style="width:400px" type="text" name="nname" maxlenght=64/>	
-                    <input tal:attributes="value orig_name" style="width:400px" type="hidden" name="orig_name" maxlenght=64/>	
+                    <input
+                        tal:attributes="value python:workflowstep.name"
+                        style="width:400px"
+                        type="text"
+                        name="nname"
+                        maxlength="64"
+                    />
+                    <input
+                        tal:attributes="value orig_name"
+                        style="width:400px"
+                        type="hidden"
+                        name="orig_name"
+                        maxlength="64"
+                    />
                 </td>
             </tr>
             <tr>

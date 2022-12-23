@@ -176,13 +176,27 @@
             <tr>
                 <td><tal:block i18n:translate="admin_meta_id">TEXT</tal:block>: <span class="required">*</span></td>
                 <td>
-                    <input tal:attributes="value python:metadatatype.name" type="text" style="width:300px" name="mname" maxlenght=50/>
+                    <input
+                        tal:attributes="value python:metadatatype.name"
+                        type="text"
+                        style="width:300px"
+                        name="mname"
+                        maxlength="50"
+                    />
                     <input tal:attributes="value original_name" type="hidden" name="mname_orig"/>
                 </td>
             </tr>
             <tr>
                 <td><tal:block i18n:translate="admin_meta_name">TEXT</tal:block>: <span class="required">*</span></td>
-                <td><input tal:attributes="value python:metadatatype.getLongName()" type="text" style="width:300px" name="mlongname" maxlenght=100/></td>
+                <td>
+                    <input
+                        tal:attributes="value python:metadatatype.getLongName()"
+                        type="text"
+                        style="width:300px"
+                        name="mlongname"
+                        maxlength="100"
+                    />
+                </td>
             </tr>
             <tr>
                 <td><tal:block i18n:translate="admin_meta_description">TEXT</tal:block>:</td>

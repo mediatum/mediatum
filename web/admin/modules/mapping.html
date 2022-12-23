@@ -159,37 +159,37 @@
             <tr>
                 <td><tal:block i18n:translate="admin_mapping_namespace">TEXT</tal:block>:</td>
                 <td>
-                    <input tal:attributes="value python:mapping.getNamespace()" type="text" name="namespace" maxlength=50 size="50"/>
+                    <input tal:attributes="value python:mapping.getNamespace()" type="text" name="namespace" maxlength="50" size="50"/>
                 </td>
             </tr>
             <tr>
                 <td><tal:block i18n:translate="admin_mapping_namespaceurl">TEXT</tal:block>:</td>
                 <td>
-                    <input tal:attributes="value python:mapping.getNamespaceUrl()" type="text" name="namespaceurl" maxlength=50 size="50"/>
+                    <input tal:attributes="value python:mapping.getNamespaceUrl()" type="text" name="namespaceurl" maxlength="50" size="50"/>
                 </td>
             </tr>
             <tr>
                 <td><tal:block i18n:translate="admin_mapping_description">TEXT</tal:block>:</td>
                 <td>
-                    <input tal:attributes="value python:mapping.getDescription()" type="text" name="description" maxlength=50 size="50"/>
+                    <input tal:attributes="value python:mapping.getDescription()" type="text" name="description" maxlength="50" size="50"/>
                 </td>
             </tr>
             <tr>
                 <td><tal:block i18n:translate="admin_mapping_header">TEXT</tal:block>:</td>
                 <td>
-                    <input tal:attributes="value python:mapping.getHeader()" type="text" name="header" maxlength=50 size="50"/>
+                    <input tal:attributes="value python:mapping.getHeader()" type="text" name="header" maxlength="50" size="50"/>
                 </td>
             </tr>
             <tr>
                 <td><tal:block i18n:translate="admin_mapping_footer">TEXT</tal:block>:</td>
                 <td>
-                    <input tal:attributes="value python:mapping.getFooter()" type="text" name="footer" maxlength=50 size="50"/>
+                    <input tal:attributes="value python:mapping.getFooter()" type="text" name="footer" maxlength="50" size="50"/>
                 </td>
             </tr>
             <tr>
                 <td><tal:block i18n:translate="admin_mapping_separator">TEXT</tal:block>:</td>
                 <td>
-                    <input tal:attributes="value python:mapping.getSeparator()" type="text" name="separator" maxlength=50 size="50"/>
+                    <input tal:attributes="value python:mapping.getSeparator()" type="text" name="separator" maxlength="50" size="50"/>
                 </td>
             </tr>
             <tr>
@@ -201,7 +201,7 @@
             <tr>
                 <td><tal:block i18n:translate="admin_mapping_standardformat">TEXT</tal:block>:</td>
                 <td>
-                    <input tal:attributes="value python:mapping.getStandardFormat()" type="text" name="standardformat" maxlength=70 size="50"/>
+                    <input tal:attributes="value python:mapping.getStandardFormat()" type="text" name="standardformat" maxlength="70" size="50"/>
                     <br/>
                     <tal:block i18n:translate="admin_mapping_standardformat_description">TEXT</tal:block>
                 </td>
@@ -334,13 +334,13 @@
             <tr>
                 <td><tal:block i18n:translate="admin_mappingfield_description">TEXT</tal:block>:</td>
                 <td>
-                    <input tal:attributes="value python:field.getDescription()" type="text" name="description" maxlength=50 size="50"/>
+                    <input tal:attributes="value python:field.getDescription()" type="text" name="description" maxlength="50" size="50"/>
                 </td>
             </tr>
             <tr>
                 <td><tal:block i18n:translate="admin_mappingfield_exportformat">TEXT</tal:block>:</td>
                 <td>
-                    <input tal:attributes="value python:field.getExportFormat()" type="text" name="exportformat" maxlength=1000 size="50"/>
+                    <input tal:attributes="value python:field.getExportFormat()" type="text" name="exportformat" maxlength="1000" size="50"/>
                     <tal:block tal:condition="python:parent.getStandardFormat()!=''">
                         <br/><tal:block i18n:translate="admin_mappingfield_parent">TEXT</tal:block>: <span tal:content="python:parent.getStandardFormat()"/>
                     </tal:block>

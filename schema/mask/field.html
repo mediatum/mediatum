@@ -102,7 +102,16 @@
             
             <input tal:condition="python:item.get('fieldtype')!='mapping' and item.get('mappingfield').find('[cmd:getTAL]')<0" tal:attributes="value python:item.get('mappingfield')" type="textarea" rows="5" id="mappingfield" name="mappingfield" style="width:250px;" /><br/>
             <pre tal:condition="python:item.get('fieldtype')!='mapping' and item.get('mappingfield').find('[cmd:getTAL]')>=0"><textarea rows="5" id="mappingfield" name="mappingfield" style="width:100%;" wrap="off"><span tal:replace="python:item.get('mappingfield')"/></textarea></pre><br/>
-            <input tal:condition="python:item.get('fieldtype')=='mapping'" value="" type="text" id="mappingfield" name="mappingfield" style="width:250px;" maxlength=100002 /><br/>
+            <input
+                tal:condition="python:item.get('fieldtype')=='mapping'"
+                value=""
+                type="text"
+                id="mappingfield"
+                name="mappingfield"
+                style="width:250px;"
+                maxlength="100002"
+            />
+            <br/>
             <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
             <span i18n:translate="mask_edit_attribute_description">TEXT</span>
         </fieldset>

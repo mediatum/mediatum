@@ -20,19 +20,16 @@ logg = logging.getLogger(__name__)
 
 def export(req):
     p = req.mediatum_contextfree_path[1:].split("/")
-
-    if len(p) != 2:
+    if len(p) != 2 or not p[0].isdigit():
         _error(req, 404, "Object not found")
         return
 
-    if p[0].isdigit():
-        try:
-            node = q(Data).get(p[0])
-            if not node:
-                return _error(req, 404, "Object not found")
-        except:
-            return _error(req, 404, "Object not found")
-    else:
+    try:
+        node = q(Data).get(p[0])
+    except:
+        return _error(req, 404, "Object not found")
+
+    if not node:
         return _error(req, 404, "Object not found")
 
     if not node.has_read_access():
@@ -41,13 +38,12 @@ def export(req):
         return
 
     mask = node.metadatatype.getMask(p[1])
-    if mask:
-        try:
-            req.response.status_code = _httpstatus.HTTP_OK
-            req.response.set_data(mask.getViewHTML([node], flags=8))
-            req.response.content_type = "text/plain; charset=utf-8"
-        except NoResultFound:
-            return _error(req, 404, "Object not found")
-    else:
-        _error(req, 404, "Object not found")
-        return
+    if not mask:
+        return _error(req, 404, "Object not found")
+
+    try:
+        req.response.status_code = _httpstatus.HTTP_OK
+        req.response.set_data(mask.getViewHTML([node], flags=8))
+        req.response.content_type = "text/plain; charset=utf-8"
+    except NoResultFound:
+        return _error(req, 404, "Object not found")

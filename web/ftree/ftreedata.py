@@ -34,27 +34,45 @@ def getData(req):
             .label('write_access')
            )
 
-    nodemapping_alias = _sqlalchemy_orm.aliased(_node.t_nodemapping)
     has_container_children_alias = _sqlalchemy_orm.aliased(_contenttypes.Container)
     has_container_children_stmt = (_core.db.query(has_container_children_alias)
-            .join(nodemapping_alias, nodemapping_alias.c.cid == has_container_children_alias.id)
-            .filter(nodemapping_alias.c.nid == _contenttypes.Container.id)
+            .join(_node.t_nodemapping, _node.t_nodemapping.c.cid == has_container_children_alias.id)
+            .filter(_node.t_nodemapping.c.nid == _contenttypes.Container.id)
             .exists()
             .label("has_container_children")
            )
 
-    for c in (_core.db.query(_contenttypes.Container, write_access_stmt, has_container_children_stmt)
-            .join(_node.t_nodemapping, _node.t_nodemapping.c.cid == _contenttypes.Container.id)
-            .filter(_node.t_nodemapping.c.nid == pid)
-            .filter(_sqlalchemy.func.has_read_access_to_node(_contenttypes.Container.id, group_ids, ip, date))
-            .prefetch_attrs()
-            .prefetch_system_attrs()
-            .order_by(_core.Node.orderpos)
-           ):
+    has_writable_container_alias = _sqlalchemy_orm.aliased(_contenttypes.Container)
+    has_writable_container_children_stmt = (_core.db.query(has_writable_container_alias)
+            .join(_node.t_noderelation, _node.t_noderelation.c.cid == has_writable_container_alias.id)
+            .filter(_node.t_noderelation.c.nid == _contenttypes.Container.id)
+            .filter_read_access()
+            .filter_write_access()
+            .exists()
+            .label("has_writable_container_children")
+           )
+
+    query_container = _core.db.query(
+            _contenttypes.Container,
+            write_access_stmt,
+            has_container_children_stmt,
+            has_writable_container_children_stmt,
+           )
+    query_container = (query_container
+        .join(_node.t_nodemapping, _node.t_nodemapping.c.cid == _contenttypes.Container.id)
+        .filter(_node.t_nodemapping.c.nid == pid)
+        .filter(_sqlalchemy.func.has_read_access_to_node(_contenttypes.Container.id, group_ids, ip, date))
+        .prefetch_attrs()
+        .prefetch_system_attrs()
+        .order_by(_core.Node.orderpos)
+       )
+
+    for c in query_container:
 
         with _utils.suppress(Exception):
             special_dir_type = _web_edit_edit.get_special_dir_type(c.Container)
-
+            if not c.write_access and not c.has_writable_container_children:
+                continue
             label = _web_edit_common.get_edit_label(c.Container, _core_translation.set_language(req.accept_languages))
             title = u"{} ({})".format(label, c.Container.id)
 

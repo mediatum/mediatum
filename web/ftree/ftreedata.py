@@ -4,8 +4,12 @@
 from __future__ import division
 from __future__ import print_function
 
+import sqlalchemy as _sqlalchemy
+import sqlalchemy.orm as _sqlalchemy_orm
 import contenttypes as _contenttypes
 import core as _core
+import core.database.postgres as _database_postgres
+import core.database.postgres.node as _node
 import core.nodecache as _core_nodecache
 import core.translation as _core_translation
 import core.users as _core_users
@@ -22,57 +26,76 @@ def getData(req):
     style = req.params.get("style", "edittree")
     ret = []
     user_home_dir = _core_users.user_from_session().home_dir
+    group_ids, ip, date = _database_postgres.build_accessfunc_arguments()
 
-    for c in _core.db.query(_core.Node).get(pid).children.filter_read_access().prefetch_attrs().prefetch_system_attrs().order_by(_core.Node.orderpos):
+    write_access_alias = _sqlalchemy_orm.aliased(_core.Node)
+    write_access_stmt = (_core.db.query(_sqlalchemy.func.has_write_access_to_node(write_access_alias.id, group_ids, ip, date))
+            .filter(write_access_alias.id == _contenttypes.Container.id)
+            .label('write_access')
+           )
 
-        if not isinstance(c, _contenttypes.Container):
-            continue
+    nodemapping_alias = _sqlalchemy_orm.aliased(_node.t_nodemapping)
+    has_container_children_alias = _sqlalchemy_orm.aliased(_contenttypes.Container)
+    has_container_children_stmt = (_core.db.query(has_container_children_alias)
+            .join(nodemapping_alias, nodemapping_alias.c.cid == has_container_children_alias.id)
+            .filter(nodemapping_alias.c.nid == _contenttypes.Container.id)
+            .exists()
+            .label("has_container_children")
+           )
+
+    for c in (_core.db.query(_contenttypes.Container, write_access_stmt, has_container_children_stmt)
+            .join(_node.t_nodemapping, _node.t_nodemapping.c.cid == _contenttypes.Container.id)
+            .filter(_node.t_nodemapping.c.nid == pid)
+            .filter(_sqlalchemy.func.has_read_access_to_node(_contenttypes.Container.id, group_ids, ip, date))
+            .prefetch_attrs()
+            .prefetch_system_attrs()
+            .order_by(_core.Node.orderpos)
+           ):
 
         with _utils.suppress(Exception):
-            special_dir_type = _web_edit_edit.get_special_dir_type(c)
-            has_container_children = _core.db.query(c.container_children.exists()).scalar()
+            special_dir_type = _web_edit_edit.get_special_dir_type(c.Container)
 
-            label = _web_edit_common.get_edit_label(c, _core_translation.set_language(req.accept_languages))
-            title = label + " (" + unicode(c.id) + ")"
+            label = _web_edit_common.get_edit_label(c.Container, _core_translation.set_language(req.accept_languages))
+            title = u"{} ({})".format(label, c.Container.id)
 
             cls = "folder"
 
             itemcls = ""
-            if not c.has_write_access():
+            if not c.write_access:
                 itemcls = "read"
 
-            if c.type == "collection":  # or "collection" in c.type:
+            if c.Container.type == "collection":  # or "collection" in c.type:
                 cls = "collection"
-            if hasattr(c, 'treeiconclass'):
-                cls = c.treeiconclass()
+            if hasattr(c.Container, 'treeiconclass'):
+                cls = c.Container.treeiconclass()
 
             if special_dir_type == u'trash':
                 cls = "trashicon"
             elif special_dir_type == u'upload':
                 cls = "uploadicon"
-            elif c == user_home_dir:
+            elif c.Container == user_home_dir:
                 cls = "homeicon"
 
             if style == "edittree":  # standard tree for edit area
-                inum = c.content_children.count()
+                inum = c.Container.content_children.count()
                 if inum > 0:
                     label += u" <small>({})</small>".format(inum)
 
 
-                ret.append(u'<li class="{}.gif" id="Node{}">'.format(cls, c.id))
-                ret.append(u'<a href="#" title="{}" id="{}" class="{}">{}</a>'.format(title, c.id, itemcls, label))
+                ret.append(u'<li class="{}.gif" id="Node{}">'.format(cls, c.Container.id))
+                ret.append(u'<a href="#" title="{}" id="{}" class="{}">{}</a>'.format(title, c.Container.id, itemcls, label))
 
-                if has_container_children:
-                    ret.append(u'<ul><li parentId="{}" class="spinner.gif"><a href="#">&nbsp;</a></li></ul>'.format(c.id))
+                if c.has_container_children:
+                    ret.append(u'<ul><li parentId="{}" class="spinner.gif"><a href="#">&nbsp;</a></li></ul>'.format(c.Container.id))
                 ret.append(u'</li>')
 
             elif style == "classification":  # style for classification
-                ret.append(u'<li class="{}.gif" id="Node{}">'.format(cls, c.id))
+                ret.append(u'<li class="{}.gif" id="Node{}">'.format(cls, c.Container.id))
                 ret.append(u'<a href="#" title="{}" id="{}" class="{}">{}<input type="image" src="/static/img/ftree/uncheck.gif"/></a>'.format(
-                                title, c.id, itemcls, label))
+                                title, c.Container.id, itemcls, label))
 
-                if has_container_children:
-                    ret.append(u'<ul><li parentId="{}" class="spinner.gif"><a href="#">&nbsp;</a></li></ul>'.format(c.id))
+                if c.has_container_children:
+                    ret.append(u'<ul><li parentId="{}" class="spinner.gif"><a href="#">&nbsp;</a></li></ul>'.format(c.Container.id))
 
                 ret.append(u'</li>')
 

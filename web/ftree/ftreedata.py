@@ -119,10 +119,7 @@ def getPathTo(req):
         if req.params.get("multiselect", "false") == "false":  # if not multiselect use only first path
             break
 
-    if len(items) == 0 or collectionsid == _core.db.query(_core.Node).get(items[0]).parents[0].id:
-        items = [collectionsid] + items
-
-    items = u",".join([unicode(i) for i in items])
+    items = u",".join(map(unicode, items)) or unicode(collectionsid)
 
     for check in checked:  # set marked items
         items = items.replace(check, u'({})'.format(check))

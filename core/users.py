@@ -114,24 +114,3 @@ def moveUserToIntern(id):
 def getHideMenusForUser(user):
     warn("use User.hidden_edit_functions", DeprecationWarning)
     return user.hidden_edit_functions
-
-
-def getHomeDir(user):
-    warn("use User.home_dir (User.create_home_dir() if user has no home)", DeprecationWarning)
-    return user.home_dir
-
-
-def getSpecialDir(user, type):
-    warn("use User.upload_dir | User.trash_dir instead", DeprecationWarning)
-    if type == "upload":
-        return user.upload_dir
-    elif type == "trash":
-        return user.trash_dir
-
-
-def getUploadDir(user):
-    return getSpecialDir(user, "upload")
-
-
-def getTrashDir(user):
-    return getSpecialDir(user, "trash")

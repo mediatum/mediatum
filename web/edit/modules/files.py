@@ -17,7 +17,6 @@ import core.nodecache as _core_nodecache
 from utils.utils import getMimeType, get_user_id, suppress
 from utils.fileutils import importFile
 from contenttypes.image import make_thumbnail_image
-from core.users import getUploadDir as _getUploadDir
 from core.database.postgres.file import File
 from core.database.postgres.node import Node
 from web import frontend as _web_frontend
@@ -194,7 +193,7 @@ def getContent(req, ids):
             with suppress(Exception):
                 remnode = _core.db.query(Node).get(req.params.get('remove'))
                 if len(remnode.parents) == 1:
-                    _getUploadDir(user).children.append(remnode)
+                    user.upload_dir.children.append(remnode)
                 node.children.remove(remnode)
 
             ret += _tal.processTAL(

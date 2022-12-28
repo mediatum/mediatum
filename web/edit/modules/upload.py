@@ -286,9 +286,7 @@ def getContent(req, ids):
                 importer_func = identifierImporter.importer_func
 
                 user = users.user_from_session()
-                importdir = users.getUploadDir(user)
-
-                new_node = importer_func(identifier, importdir, req=req)
+                new_node = importer_func(identifier, user.upload_dir, req=req)
 
                 res = dict(id=id, error=req.params.get('error', ''), error_detail=req.values.get('error_detail', ''))
 
@@ -305,7 +303,7 @@ def getContent(req, ids):
 
                     logg.info("%s created new node id=%s (name=%s, type=%s) by importing identifier %s, "
                               "node is child of base node id=%s (name=%s, type=%s)", user.login_name, new_node.id, new_node.name, new_node.type,
-                             identifier, importdir.id, importdir.name, importdir.type)
+                             identifier, user.upload_dir.id, user.upload_dir.name, user.upload_dir.type)
                 else:  # import failed, no new_node created
                     logg.info("import failed, no new_node created for identifier (%s)", identifier)
 

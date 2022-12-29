@@ -21,7 +21,7 @@ def getData(req):
     pid = req.params.get("parentId")
     style = req.params.get("style", "edittree")
     ret = []
-    user = _core_users.user_from_session()
+    user_home_dir = _core_users.user_from_session().home_dir
 
     for c in _core.db.query(_core.Node).get(pid).children.filter_read_access().order_by(_core.Node.orderpos):
 
@@ -51,7 +51,7 @@ def getData(req):
                 cls = "trashicon"
             elif special_dir_type == u'upload':
                 cls = "uploadicon"
-            elif c == user.home_dir:
+            elif c == user_home_dir:
                 cls = "homeicon"
 
             if style == "edittree":  # standard tree for edit area

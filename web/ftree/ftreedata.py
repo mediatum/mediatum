@@ -23,7 +23,7 @@ import web.edit.edit as _web_edit_edit
 
 def getData(req):
     pid = req.params.get("parentId")
-    style = req.params.get("style", "edittree")
+    assert tuple(req.values.getlist("style"))==("classification",)
     ret = []
     user_home_dir = _core_users.user_from_session().home_dir
     group_ids, ip, date = _database_postgres.build_accessfunc_arguments()
@@ -76,28 +76,14 @@ def getData(req):
             elif c.Container == user_home_dir:
                 cls = "homeicon"
 
-            if style == "edittree":  # standard tree for edit area
-                inum = c.Container.content_children.count()
-                if inum > 0:
-                    label += u" <small>({})</small>".format(inum)
+            ret.append(u'<li class="{}.gif" id="Node{}">'.format(cls, c.Container.id))
+            ret.append(u'<a href="#" title="{}" id="{}" class="{}">{}<input type="image" src="/static/img/ftree/uncheck.gif"/></a>'.format(
+                            title, c.Container.id, itemcls, label))
 
+            if c.has_container_children:
+                ret.append(u'<ul><li parentId="{}" class="spinner.gif"><a href="#">&nbsp;</a></li></ul>'.format(c.Container.id))
 
-                ret.append(u'<li class="{}.gif" id="Node{}">'.format(cls, c.Container.id))
-                ret.append(u'<a href="#" title="{}" id="{}" class="{}">{}</a>'.format(title, c.Container.id, itemcls, label))
-
-                if c.has_container_children:
-                    ret.append(u'<ul><li parentId="{}" class="spinner.gif"><a href="#">&nbsp;</a></li></ul>'.format(c.Container.id))
-                ret.append(u'</li>')
-
-            elif style == "classification":  # style for classification
-                ret.append(u'<li class="{}.gif" id="Node{}">'.format(cls, c.Container.id))
-                ret.append(u'<a href="#" title="{}" id="{}" class="{}">{}<input type="image" src="/static/img/ftree/uncheck.gif"/></a>'.format(
-                                title, c.Container.id, itemcls, label))
-
-                if c.has_container_children:
-                    ret.append(u'<ul><li parentId="{}" class="spinner.gif"><a href="#">&nbsp;</a></li></ul>'.format(c.Container.id))
-
-                ret.append(u'</li>')
+            ret.append(u'</li>')
 
     req.response.set_data(u"\n".join(ret))
     req.response.status_code = _httpstatus.HTTP_OK

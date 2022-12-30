@@ -174,7 +174,6 @@ class zip_filesystem:
 
     def __init__(self, filename):
         self.filename = filename
-        self.wd = '/'
         self.m = {}
         self.z = _zipfile.ZipFile(filename)
         for f in self.z.filelist:
@@ -183,41 +182,19 @@ class zip_filesystem:
         if "/index.html" in self.m:
             self.m['/'] = self.m['/index.html']
 
-    def current_directory(self):
-        return self.wd
-
     def isfile(self, path):
         if len(path) and path[-1] == '/':
             return 0
-        return (self.wd + path) in self.m
+        return _os.path.join("/", path) in self.m
 
     def isdir(self, path):
         if not (len(path) and path[-1] == '/'):
             path += '/'
         return path in self.m
 
-    def cwd(self, path):
-        path = join_paths(self.wd, path)
-        if not self.isdir(path):
-            return 0
-        else:
-            self.wd = path
-            return 1
-
-    def cdup(self):
-        try:
-            i = self.wd[:-1].rindex('/')
-            self.wd = self.wd[0:i + 1]
-        except ValueError:
-            self.wd = '/'
-        return 1
-
-    def listdir(self, path, long=0):
-        raise NotImplementedError()
-
     # TODO: implement a cache w/timeout for stat()
     def stat(self, path):
-        fullpath = join_paths(self.wd, path)
+        fullpath = join_paths("/", path)
         if self.isfile(path):
             size = self.m[fullpath].file_size
             return (33188, 77396L, 10L, 1, 1000, 1000, size, 0, 0, 0)
@@ -253,63 +230,20 @@ class zip_filesystem:
 
         return zFile(data)
 
-    def unlink(self, path):
-        raise NotImplementedError()
-
-    def mkdir(self, path):
-        raise NotImplementedError()
-
-    def rmdir(self, path):
-        raise NotImplementedError()
-
-    def __repr__(self):
-        return '<zipfile fs root:%s wd:%s>' % (self.filename, self.wd)
-
 
 class os_filesystem:
-    path_module = _os.path
-
     # set this to zero if you want to disable pathname globbing.
     # [we currently don't glob, anyway]
-    do_globbing = 1
-
-    def __init__(self, root, wd='/'):
+    def __init__(self, root):
         self.root = root
-        self.wd = wd
-
-    def current_directory(self):
-        return self.wd
 
     def isfile(self, path):
-        p = self.normalize(self.path_module.join(self.wd, path))
-        return self.path_module.isfile(self.translate(p))
+        p = self.normalize(_os.path.join("/", path))
+        return _os.path.isfile(self.translate(p))
 
     def isdir(self, path):
-        p = self.normalize(self.path_module.join(self.wd, path))
-        return self.path_module.isdir(self.translate(p))
-
-    def cwd(self, path):
-        p = self.normalize(self.path_module.join(self.wd, path))
-        translated_path = self.translate(p)
-        if not self.path_module.isdir(translated_path):
-            return 0
-        else:
-            old_dir = _os.getcwd()
-            # temporarily change to that directory, in order
-            # to see if we have permission to do so.
-            try:
-                can = 0
-                with _suppress(Exception, warn=False):
-                    _os.chdir(translated_path)
-                    can = 1
-                    self.wd = p
-            finally:
-                if can:
-                    _os.chdir(old_dir)
-            return can
-
-    def cdup(self):
-        return self.cwd('..')
+        p = self.normalize(_os.path.join("/", path))
+        return _os.path.isdir(self.translate(p))
 
     # TODO: implement a cache w/timeout for stat()
     def stat(self, path):
@@ -320,23 +254,11 @@ class os_filesystem:
         p = self.translate(path)
         return open(p, mode)
 
-    def unlink(self, path):
-        p = self.translate(path)
-        return _os.unlink(p)
-
-    def mkdir(self, path):
-        p = self.translate(path)
-        return _os.mkdir(p)
-
-    def rmdir(self, path):
-        p = self.translate(path)
-        return _os.rmdir(p)
-
     # utility methods
     def normalize(self, path):
         # watch for the ever-sneaky '/+' path element
         path = _re.sub('/+', '/', path)
-        p = self.path_module.normpath(path)
+        p = _os.path.normpath(path)
         # remove 'dangling' cdup's.
         if len(p) > 2 and p[:3] == '/..':
             p = '/'
@@ -348,15 +270,10 @@ class os_filesystem:
         # <real_root>/<current_directory>/<path>
         # use the operating system's path separator.
         path = _string.join(_string.split(path, '/'), _os.sep)
-        p = self.normalize(self.path_module.join(self.wd, path))
-        p = self.normalize(self.path_module.join(self.root, p[1:]))
+        p = self.normalize(_os.path.join('/', path))
+        p = self.normalize(_os.path.join(self.root, p[1:]))
         return p
 
-    def __repr__(self):
-        return '<unix-style fs root:%s wd:%s>' % (
-            self.root,
-            self.wd
-        )
 
 def done(req):
     # ----------------------------------------

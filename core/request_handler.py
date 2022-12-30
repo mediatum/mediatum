@@ -467,7 +467,6 @@ class _default_handler:
     # handle a file request, with caching.
 
     def handle_request(self, request):
-
         if request.method not in self.valid_commands:
             request.response.status_code = _httpstatus.HTTP_BAD_REQUEST
             request.response.set_data(_httpstatus.responses[_httpstatus.HTTP_BAD_REQUEST])
@@ -480,7 +479,7 @@ class _default_handler:
             path = path[1:]
 
         if self.filesystem.isdir(path):
-            if path and path[-1] != '/':
+            if not path.endswith(_os.sep):
                 request.response.location = '%s%s/' % (request.host_url, path)
                 request.response.status_code = 301
                 request.response.set_data(_httpstatus.responses[301])
@@ -508,31 +507,22 @@ class _default_handler:
             request.response.set_data("File {} not found".format(path))
             return
 
-        file_length = self.filesystem.stat(path)[_stat.ST_SIZE]
-
         try:
             mtime = _datetime.datetime.utcfromtimestamp(self.filesystem.stat(path)[_stat.ST_MTIME])
+            file = self.filesystem.open(path, 'rb')
         except:
             request.response.status_code = _httpstatus.HTTP_NOT_FOUND
             request.response.set_data("File {} not found".format(path))
             return
 
-        if request.if_modified_since:
-            if mtime <= request.if_modified_since:
-                request.response.status_code = 304
-                request.response.set_data(_httpstatus.responses[304])
-                return
-        try:
-            file = self.filesystem.open(path, 'rb')
-        except IOError:
-            request.response.status_code = _httpstatus.HTTP_NOT_FOUND
-            request.response.set_data("File {} not found".format(path))
+        if request.if_modified_since and mtime <= request.if_modified_since:
+            request.response.status_code = 304
+            request.response.set_data(_httpstatus.responses[304])
             return
 
         request.response.last_modified = mtime
-        request.response.content_length = file_length
+        request.response.content_length = self.filesystem.stat(path)[_stat.ST_SIZE]
         self.set_content_type(path, request)
-
         if request.method == 'GET':
             request.response.set_data(file.read())
 

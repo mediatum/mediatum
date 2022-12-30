@@ -38,14 +38,11 @@ from core.nodecache import get_collections_node, get_home_root_node
 import core.oauth as oauth
 from core.search.config import get_service_search_languages
 from array import array
-from core.request_handler import sendAsBuffer as _sendAsBuffer, sendFile as _sendFile
+from core.request_handler import sendFile as _sendFile
 
 
 logg = logging.getLogger(__name__)
 q = db.query
-
-
-allow_cross_origin = config.getboolean("services.allow_cross_origin", False)
 
 SEND_TIMETABLE = False
 DEFAULT_NODEQUERY_LIMIT = config.getint("services.default_limit", 1000)
@@ -942,11 +939,12 @@ def write_formatted_response(
     # (format) Expires: Mon, 28 Nov 2011 12:41:22 GMT
     # see core.athana.build_http_date
     # req.response.headers['Expires'] = time.strftime ('%a, %d %b %Y %H:%M:%S GMT', time.gmtime(time.time()+60.0)) # 1 minute
-
-    # remark: on 2011-12-01 switched response from req.write to sendAsBuffer for performance reasons
-    # (before: ) req.write(s)
-    _sendAsBuffer(req, s, content_type, force=1, allow_cross_origin=allow_cross_origin)
-    d['timetable'].append(["executed sendAsBuffer, {} bytes, content type='{}'".format(len(s), content_type), time.time() - atime])
+    req.response.set_data(s)
+    req.response.content_type = content_type
+    req.response.content_length = len(s)
+    if config.getboolean("services.allow_cross_origin", False):
+        req.response.headers['Access-Control-Allow-Origin'] = '*'
+    d['timetable'].append(["sending {} bytes, content type='{}'".format(len(s), content_type), time.time() - atime])
 
     return d['html_response_code'], len(s), d
 

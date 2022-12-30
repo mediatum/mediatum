@@ -6,7 +6,6 @@ from __future__ import print_function
 
 import datetime as _datetime
 import re as _re
-import time as _time
 import os as _os
 import stat as _stat
 import string as _string
@@ -18,7 +17,6 @@ import zipfile as _zipfile
 
 from cgi import escape as _escape
 from functools import partial as _partial
-from StringIO import StringIO as _StringIO
 
 import flask as _flask
 
@@ -481,42 +479,6 @@ def html_repr(object):
         return '<a href="/status/object/%d/">%s</a>' % (id(object), so)
     else:
         return so
-
-
-def sendAsBuffer(req, text, content_type, force=0, allow_cross_origin=False):
-    stringio = _StringIO(text)
-    try:
-        file_length = len(stringio.buf)
-    except OSError:
-        error(req, 404)
-        return
-
-    try:
-        import time
-        mtime = _datetime.datetime.utcfromtimestamp(_time.time())  # _os.stat (path)[stat.ST_MTIME]
-    except:
-        error(req, 404)
-        return
-
-    if req.if_modified_since:
-        if mtime <= req.if_modified_since and not force:
-            req.response.status_code = 304
-            return
-    try:
-        file = stringio
-    except IOError:
-        error(req, 404)
-        return
-
-    req.response.last_modified = mtime
-    req.response.content_length = file_length
-    req.response.content_type = content_type
-    if allow_cross_origin:
-        req.response.headers['Access-Control-Allow-Origin'] = '*'
-    if req.method == 'GET':
-        req.response.set_data(file.read())
-    req.response.status_code = _httpstatus.HTTP_OK
-    return
 
 
 def makeSelfLink(req, params):

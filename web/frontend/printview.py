@@ -230,7 +230,7 @@ class PrintPreview:
                 p = ' '
 
     def addChildren(self, children):
-        self.addData(Paragraph('{}:'.format(_core_translation.translate(self.language, "print_view_children"), self.bp)))
+        self.addData(Paragraph(u'{}:'.format(_core_translation.translate(self.language, "print_view_children")), self.bp))
 
         _head = 0  # count headers
         for c in children:

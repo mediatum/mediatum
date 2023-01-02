@@ -23,7 +23,7 @@ def getData(req):
     ret = []
     user_home_dir = _core_users.user_from_session().home_dir
 
-    for c in _core.db.query(_core.Node).get(pid).children.filter_read_access().order_by(_core.Node.orderpos):
+    for c in _core.db.query(_core.Node).get(pid).children.filter_read_access().prefetch_attrs().prefetch_system_attrs().order_by(_core.Node.orderpos):
 
         if not isinstance(c, _contenttypes.Container):
             continue

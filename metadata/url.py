@@ -74,7 +74,7 @@ class m_url(Metatype):
         value = (node.get(metafield.getName()).split(";") + ["", "", "", ""])[0:4]
         metacfg = metafield.metatype_data
         link, text, icon = (
-                _replace_vars(node, str(v or f))
+                _replace_vars(node, unicode(v or f))
                 for v, f in zip(value[:3], (metacfg["link"], metacfg["text"], metacfg["icon"]))
                )
 

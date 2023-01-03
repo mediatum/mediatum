@@ -3,35 +3,69 @@
   SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 <tal:block metal:define-macro="editorfield">
-    <tal:block tal:condition="python:not multiple">
-        <select class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[int(lock)]; style python:u'width:{}px'.format(width-16); name python:name; id python:name;">
-            <tal:block tal:repeat="v valuelist">
-                <option tal:condition="python:v.opt in ['optionselected','option']" tal:attributes="value python:v.item; selected python:'selected' if v.opt=='optionselected' else None" tal:content="python:v.indent+v.item+v.count"/>
-                <optgroup tal:condition="python:v.opt=='optgroup'" tal:replace="raw python:v.indent"/>
-            </tal:block>
-        </select>
-    </tal:block>
-    <tal:block tal:condition="python:multiple">
-        <select class="mediatum_multitext" tal:attributes="disabled python:{0:None,1:'disabled'}[int(lock)]; style python:u'width:{}px'.format(width-16); name python: name; id python: name; required required" multiple="multiple">
-            <tal:block tal:repeat="v valuelist">
-                <option tal:condition="python:v.opt=='optionselected'" tal:attributes="value python:v.item" tal:content="python:v.indent+v.item+v.count" selected="selected"/>
-                <option tal:condition="python:v.opt=='option'" tal:attributes="value python:v.item" tal:content="python:v.indent+v.item+v.count"/>
-                <optgroup tal:condition="python:v.opt=='optgroup'" tal:replace="raw python:v.indent"/>
-            </tal:block>
-        </select>
-    </tal:block>
-    <tal:block tal:condition="python:lock!=0" tal:attributes="id python:u'lockspan_{}'.format(name)">&nbsp;
-        <input tal:attributes="name python:u'lock_{}'.format(name); id python:u'lock_{}'.format(name); onclick python:u'handlelock(\'{}\')'.format(name)" type="checkbox"/>
-        <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
+    <select
+            class="text"
+            tal:attributes="
+                    class python:'mediatum_multitext' if multiple else 'text';
+                    disabled python:'disabled' if lock else None;
+                    id python:name;
+                    multiple python:'multiple' if multiple else None;
+                    name python:name;
+                    style python:u'width:{}px'.format(width-16);
+                   "
+           >
+        <tal:block tal:repeat="element elements">
+            <option
+                    tal:condition="python:not element.optgroup"
+                    tal:attributes="value python:element.label; selected python:'selected' if element.selected else None"
+                   >
+                <tal:block tal:repeat="x python:range(element.indent)">&nbsp;&nbsp;</tal:block>
+                <tal:block tal:content="python:element.label"/>
+            </option>
+            <!-- 0xa0 is the unicode code-point of &nbsp; -->
+            <optgroup
+                    tal:condition="python:element.optgroup"
+                    tal:attributes="label python:u'{}{}'.format(2*element.indent*unichr(0xa0), element.label)"
+                   >
+            </optgroup>
+        </tal:block>
+    </select>
+    <tal:block tal:condition="python:lock!=0" tal:attributes="id python:u'lockspan_{}'.format(name)">
+        &nbsp;
+        <input
+                tal:attributes="
+                        name python:u'lock_{}'.format(name);
+                        id python:u'lock_{}'.format(name);
+                        onclick python:u'handlelock(\'{}\')'.format(name);
+                       "
+                type="checkbox"
+               />
+        <small style="color: silver" i18n:translate="editor_overwrite"> </small>
     </tal:block>
 </tal:block>
 
 
-<select metal:define-macro="searchfield" tal:attributes="name python:name; id python:name;" class="searchfield">
-    <tal:block tal:repeat="v valuelist">
-       <option tal:condition="python:v.opt!='optgroup'" tal:attributes="value python:v.item; selected python:'selected' if value==v.item else None" tal:content="python:v.indent+v.item+v.count"/>
-       <optgroup tal:condition="python:v.opt=='optgroup'" tal:replace="raw python:v.indent"/>
-    </tal:block>
+<select
+        metal:define-macro="searchfield"
+        class="searchfield"
+        tal:attributes="id python:name; name python:name;"
+       >
+        <tal:block tal:repeat="element elements">
+            <option
+                    tal:condition="python:not element.optgroup"
+                    tal:attributes="value python:element.label; selected python:'selected' if element.selected else None"
+                   >
+                <tal:block tal:repeat="x python:range(element.indent)">&nbsp;&nbsp;</tal:block>
+                <tal:block tal:content="python:element.label"/>
+                <tal:block tal:condition="python:element.count is not None" tal:content="python:u' ({})'.format(element.count)"/>
+            </option>
+            <!-- 0xa0 is the unicode code-point of &nbsp; -->
+            <optgroup
+                    tal:condition="python:element.optgroup"
+                    tal:attributes="label python:u'{}{}'.format(2*element.indent*unichr(0xa0), element.label)"
+                   >
+            </optgroup>
+        </tal:block>
 </select>
 
 
@@ -41,6 +75,10 @@
     <br />
     <br />
     <div class="label" i18n:translate="list_list_values">TEXT</div>
-    <textarea name="fieldsetting_listelements" rows="4" style="width:500px;margin-bottom:5px">
-<tal:block tal:replace="value"/></textarea>
+    <textarea
+        class="mediatum-admin-metafieldtype-list-elements"
+        name="fieldsetting_listelements"
+        rows="4"
+        tal:content="value"
+       />
 </tal:block>

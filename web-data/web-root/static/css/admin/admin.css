@@ -141,6 +141,7 @@ button.admin_filter:hover{color:#000000; background:#CCCCCC;}
 #mediatum_admin_frame_div{position:absolute;left:0px;right:0px;min-width:100%;}
 .mediatum-admin-workflow-settings-head{font-weight:bold;}
 .mediatum_td_option{width:20px; text-align:center;}
+.mediatum-admin-metafieldtype-list-elements{margin-bottom:5px;font-family:ui-monospace, monospace;}
 
 .admin-serverstatus {
   font-size: 14px;

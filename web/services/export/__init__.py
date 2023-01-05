@@ -9,7 +9,6 @@ import re
 import time
 import logging
 import BaseHTTPServer
-import cgi
 
 response_code_dict = BaseHTTPServer.BaseHTTPRequestHandler.responses
 
@@ -70,16 +69,10 @@ def request_handler(req):
                     response_code, bytes_sent, d = handler_func(req, handle_path, handle_params, data, **argsdict)
                     break
 
-    # try to call default handler, if no match
     if not matched:
-        try:
-            if getattr(handlers, 'default_handler'):
-                response_code, bytes_sent = handlers.default_handler(req)
-        except:
-            req.mediatum_contextfree_path = cgi.escape(req.mediatum_contextfree_path)
-            req.response.set_data("File {} not found".format(req.mediatum_contextfree_path))
-            req.response.status_code = 404
-            return
+        req.response.set_data(response_code_dict[400])
+        req.response.status_code = 400
+        return
 
     handle_endtime = time.time()
     handle_duration = "%.3f sec." % (handle_endtime - handle_starttime)

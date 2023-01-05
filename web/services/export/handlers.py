@@ -89,7 +89,7 @@ def _add_timetable_to_xmldoc(xmlroot, timetable):
     xml_allsteps.set("unit", "sec.")
 
 
-def struct2xml(req, path, params, d, singlenode=False, send_children=False, send_timetable=SEND_TIMETABLE):
+def struct2xml(req, path, params, d, singlenode=False, send_timetable=SEND_TIMETABLE):
 
     atime = time.time()
 
@@ -116,12 +116,23 @@ def struct2xml(req, path, params, d, singlenode=False, send_children=False, send
         xmlroot.set("servicereactivity", d["dataready"])
         if singlenode:
             n = d['nodelist'][0]
-            if not send_children:
-                xmlnode = add_node_to_xmldoc(n, xmlroot, children=False, exclude_filetypes=exclude_filetypes, attribute_name_filter=attribute_name_filter)
-            else:
+            if "send_children" in params:
                 xml_nodelist = create_xml_nodelist(xmlroot)
-                xmlnode = add_node_to_xmldoc(n, xml_nodelist, children=True, exclude_filetypes=exclude_filetypes,
-                                           attribute_name_filter=attribute_name_filter)
+                xmlnode = add_node_to_xmldoc(
+                        n,
+                        xml_nodelist,
+                        children=True,
+                        exclude_filetypes=exclude_filetypes,
+                        attribute_name_filter=attribute_name_filter,
+                    )
+            else:
+                xmlnode = add_node_to_xmldoc(
+                        n,
+                        xmlroot,
+                        children=False,
+                        exclude_filetypes=exclude_filetypes,
+                        attribute_name_filter=attribute_name_filter,
+                    )
 
             add_mask_xml(xmlnode, n, mask, language)
 
@@ -169,13 +180,13 @@ def struct2xml(req, path, params, d, singlenode=False, send_children=False, send
     return xmlstr
 
 
-def struct2template_test(req, path, params, d, singlenode=False, send_children=False, send_timetable=SEND_TIMETABLE):
+def struct2template_test(req, path, params, d, singlenode=False, send_timetable=SEND_TIMETABLE):
     nodelist = d['nodelist']
 
     if 'add_shortlist' not in params:
         d['result_shortlist'] = []
 
-    d['nodelist'] = [jsonnode.buildNodeDescriptor(params, n, children=send_children) for n in nodelist]
+    d['nodelist'] = [jsonnode.buildNodeDescriptor(params, n, children="send_children" in params) for n in nodelist]
     json_timetable = d['timetable']
 
     template = params.get("template", u"record $$[_rcd]$$: id=$$[id]$$: no-template-given\n")
@@ -219,13 +230,13 @@ def struct2template_test(req, path, params, d, singlenode=False, send_children=F
         return res.encode("utf8")
 
 
-def struct2json(req, path, params, d, singlenode=False, send_children=False, send_timetable=SEND_TIMETABLE):
+def struct2json(req, path, params, d, singlenode=False, send_timetable=SEND_TIMETABLE):
     nodelist = d['nodelist']
 
     if 'add_shortlist' not in params:
         d['result_shortlist'] = []
 
-    d['nodelist'] = [jsonnode.buildNodeDescriptor(params, n, children=send_children) for n in nodelist]
+    d['nodelist'] = [jsonnode.buildNodeDescriptor(params, n, children="send_children" in params) for n in nodelist]
     json_timetable = d['timetable']
 
     if not send_timetable:
@@ -238,7 +249,7 @@ def struct2json(req, path, params, d, singlenode=False, send_children=False, sen
     return s
 
 
-def struct2csv(req, path, params, d, sep=u';', string_delimiter=u'"', singlenode=False, send_children=False):
+def struct2csv(req, path, params, d, sep=u';', string_delimiter=u'"', singlenode=False):
     # delimiter and separator can be transferred by the query
     # this dictionary decodes the characters that would disturb in the url
     trans = {
@@ -352,7 +363,7 @@ def struct2csv(req, path, params, d, sep=u';', string_delimiter=u'"', singlenode
         return r.encode("utf8")
 
 
-def struct2rss(req, path, params, struct, singlenode=False, send_children=False):
+def struct2rss(req, path, params, struct, singlenode=False):
     nodelist = struct['nodelist']
     language = params.get('lang', 'en')
     items_list = []
@@ -576,7 +587,6 @@ def get_node_data_struct(
         allchildren=False,
         singlenode=False,
         parents=False,
-        send_children=False,
         fetch_files=False,
         csv=False,
     ):
@@ -822,8 +832,6 @@ def write_formatted_response(req, path, params, id, allchildren=False, singlenod
     if "_" in _p:
         del _p['_']
 
-    send_children = "send_children" in params
-
     res_format = params.get('format', 'xml').lower()
 
     d = get_node_data_struct(
@@ -833,7 +841,6 @@ def write_formatted_response(req, path, params, id, allchildren=False, singlenod
             id,
             allchildren=allchildren,
             singlenode=singlenode,
-            send_children=send_children,
             parents=parents,
             # XXX: hack because we want all files for the XML format only
             fetch_files=res_format=="xml",
@@ -846,7 +853,7 @@ def write_formatted_response(req, path, params, id, allchildren=False, singlenod
         if res_format not in supported_format[0]:
             continue
         atime = time.time()
-        s = supported_format[1](req, path, params, d, singlenode=singlenode, send_children=send_children)
+        s = supported_format[1](req, path, params, d, singlenode=singlenode)
         if res_format == 'json' and 'jsoncallback' in params:
             s = "{}({})".format(params['jsoncallback'], s)
             # the return value of this kind of call must be interpreted as javascript,
@@ -880,7 +887,7 @@ def write_formatted_response(req, path, params, id, allchildren=False, singlenod
         d['errormessage'] = 'unsupported format'
         d['build_response_end'] = time.time()
 
-        s = struct2xml(req, path, params, d, singlenode=True, send_children=False)
+        s = struct2xml(req, path, params, d, singlenode=True)
         content_type = "text/xml; charset=utf-8"
 
     s = modify_tex(s.decode("utf8"), 'strip').encode("utf8")

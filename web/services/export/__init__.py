@@ -16,15 +16,12 @@ from . import handlers
 
 logg = logging.getLogger(__name__)
 
-SERVICES_URL_HAS_HANDLER = 1
-SERVICES_URL_SIMPLE_REWRITE = 2
-
-urls = [
-    ["GET", "/node/(?P<id>\d+)/{0,1}$", handlers.get_node_single, None, SERVICES_URL_HAS_HANDLER, None],
-    ["GET", "/node/(?P<id>\d+)/children/{0,1}$", handlers.get_node_children, None, SERVICES_URL_HAS_HANDLER, None],
-    ["GET", "/node/(?P<id>\d+)/allchildren/{0,1}$", handlers.get_node_allchildren, None, SERVICES_URL_HAS_HANDLER, None],
-    ["GET", "/node/(?P<id>\d+)/parents/{0,1}$", handlers.get_node_parents, None, SERVICES_URL_HAS_HANDLER, None],
-]
+urls = {
+    "/node/(?P<id>\d+)/{0,1}$": handlers.get_node_single,
+    "/node/(?P<id>\d+)/children/{0,1}$": handlers.get_node_children,
+    "/node/(?P<id>\d+)/allchildren/{0,1}$": handlers.get_node_allchildren,
+    "/node/(?P<id>\d+)/parents/{0,1}$": handlers.get_node_parents,
+}
 
 request_count = 0
 
@@ -36,32 +33,14 @@ def request_handler(req):
     matched = False
     req_path = req.mediatum_contextfree_path
 
-    for method, pattern, handler_func, rewrite_target, url_flags, data in urls:
-        if method and method == req.method:
-            m = re.match(pattern, req_path)
-            if m:
-
-                matched = True
-
-                if url_flags == SERVICES_URL_HAS_HANDLER:
-                    handle_path = req.mediatum_contextfree_path
-                    handle_params = req.params
-                    response_code, bytes_sent, d = handler_func(req, handle_path, handle_params, data, **m.groupdict())
-                    break
-
-                if url_flags == SERVICES_URL_SIMPLE_REWRITE:
-                    handle_path = rewrite_target[0]
-
-                    handle_params = req.params.copy()
-                    for key, value in rewrite_target[1].items():
-                        handle_params[key] = value
-
-                    argsdict = m.groupdict().copy()
-                    for key, value in rewrite_target[2].items():
-                        argsdict[key] = value
-
-                    response_code, bytes_sent, d = handler_func(req, handle_path, handle_params, data, **argsdict)
-                    break
+    for pattern, handler_func in urls.iteritems():
+        m = re.match(pattern, req_path)
+        if m:
+            matched = True
+            handle_path = req.mediatum_contextfree_path
+            handle_params = req.params
+            response_code, bytes_sent, d = handler_func(req, handle_path, handle_params, **m.groupdict())
+            break
 
     if not matched:
         req.response.set_data(response_code_dict[400])

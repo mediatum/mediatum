@@ -89,7 +89,7 @@ def _add_timetable_to_xmldoc(xmlroot, timetable):
     xml_allsteps.set("unit", "sec.")
 
 
-def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_children=False, send_timetable=SEND_TIMETABLE):
+def struct2xml(req, path, params, d, debug=False, singlenode=False, send_children=False, send_timetable=SEND_TIMETABLE):
 
     atime = time.time()
 
@@ -169,7 +169,7 @@ def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_c
     return xmlstr
 
 
-def struct2template_test(req, path, params, data, d, debug=False, singlenode=False, send_children=False, send_timetable=SEND_TIMETABLE):
+def struct2template_test(req, path, params, d, debug=False, singlenode=False, send_children=False, send_timetable=SEND_TIMETABLE):
     nodelist = d['nodelist']
 
     if 'add_shortlist' not in params:
@@ -219,7 +219,7 @@ def struct2template_test(req, path, params, data, d, debug=False, singlenode=Fal
         return res.encode("utf8")
 
 
-def struct2json(req, path, params, data, d, debug=False, singlenode=False, send_children=False, send_timetable=SEND_TIMETABLE):
+def struct2json(req, path, params, d, debug=False, singlenode=False, send_children=False, send_timetable=SEND_TIMETABLE):
     nodelist = d['nodelist']
 
     if 'add_shortlist' not in params:
@@ -238,7 +238,7 @@ def struct2json(req, path, params, data, d, debug=False, singlenode=False, send_
     return s
 
 
-def struct2csv(req, path, params, data, d, debug=False, sep=u';', string_delimiter=u'"', singlenode=False, send_children=False):
+def struct2csv(req, path, params, d, debug=False, sep=u';', string_delimiter=u'"', singlenode=False, send_children=False):
 
 
     # delimiter and separator can be transferred by the query
@@ -354,7 +354,7 @@ def struct2csv(req, path, params, data, d, debug=False, sep=u';', string_delimit
         return r.encode("utf8")
 
 
-def struct2rss(req, path, params, data, struct, debug=False, singlenode=False, send_children=False):
+def struct2rss(req, path, params, struct, debug=False, singlenode=False, send_children=False):
     nodelist = struct['nodelist']
     language = params.get('lang', 'en')
     items_list = []
@@ -806,7 +806,7 @@ def get_node_data_struct(
 
 
 def write_formatted_response(
-        req, path, params, data, id, debug=True, allchildren=False, singlenode=False, parents=False):
+        req, path, params, id, debug=True, allchildren=False, singlenode=False, parents=False):
 
     atime = time.time()
 
@@ -824,7 +824,6 @@ def write_formatted_response(
             req,
             path,
             params,
-            data,
             id,
             debug=debug,
             allchildren=allchildren,
@@ -842,7 +841,7 @@ def write_formatted_response(
         if res_format not in supported_format[0]:
             continue
         atime = time.time()
-        s = supported_format[1](req, path, params, data, d, debug=debug, singlenode=singlenode, send_children=send_children)
+        s = supported_format[1](req, path, params, d, debug=debug, singlenode=singlenode, send_children=send_children)
         if res_format == 'json' and 'jsoncallback' in params:
             s = "{}({})".format(params['jsoncallback'], s)
             # the return value of this kind of call must be interpreted as javascript,
@@ -876,7 +875,7 @@ def write_formatted_response(
         d['errormessage'] = 'unsupported format'
         d['build_response_end'] = time.time()
 
-        s = struct2xml(req, path, params, data, d, singlenode=True, send_children=False)
+        s = struct2xml(req, path, params, d, singlenode=True, send_children=False)
         content_type = "text/xml; charset=utf-8"
 
     s = modify_tex(s.decode("utf8"), 'strip').encode("utf8")
@@ -945,17 +944,17 @@ def write_formatted_response(
     return d['html_response_code'], len(s), d
 
 
-def get_node_single(req, path, params, data, id):
-    return write_formatted_response(req, path, params, data, id, debug=True, singlenode=True)
+def get_node_single(req, path, params, id):
+    return write_formatted_response(req, path, params, id, debug=True, singlenode=True)
 
 
-def get_node_children(req, path, params, data, id):
-    return write_formatted_response(req, path, params, data, id, debug=True, singlenode=False, allchildren=False)
+def get_node_children(req, path, params, id):
+    return write_formatted_response(req, path, params, id, debug=True, singlenode=False, allchildren=False)
 
 
-def get_node_allchildren(req, path, params, data, id):
-    return write_formatted_response(req, path, params, data, id, debug=True, singlenode=False, allchildren=True)
+def get_node_allchildren(req, path, params, id):
+    return write_formatted_response(req, path, params, id, debug=True, singlenode=False, allchildren=True)
 
 
-def get_node_parents(req, path, params, data, id):
-    return write_formatted_response(req, path, params, data, id, debug=True, singlenode=False, parents=True)
+def get_node_parents(req, path, params, id):
+    return write_formatted_response(req, path, params, id, debug=True, singlenode=False, parents=True)

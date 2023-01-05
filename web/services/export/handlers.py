@@ -89,7 +89,7 @@ def _add_timetable_to_xmldoc(xmlroot, timetable):
     xml_allsteps.set("unit", "sec.")
 
 
-def struct2xml(path, query_string, host_url, params, d, send_timetable=SEND_TIMETABLE):
+def struct2xml(path, qualifier, query_string, host_url, params, d, send_timetable=SEND_TIMETABLE):
 
     atime = time.time()
 
@@ -114,7 +114,7 @@ def struct2xml(path, query_string, host_url, params, d, send_timetable=SEND_TIME
 
     if d['status'] == 'ok':
         xmlroot.set("servicereactivity", d["dataready"])
-        if "children" in path or "parents" in path:
+        if qualifier in ("children", "allchildren", "parents"):
             xml_nodelist = create_xml_nodelist(xmlroot)
             xml_nodelist.set("start", unicode(d["nodelist_start"]))
             xml_nodelist.set("count", unicode(d["nodelist_limit"]))
@@ -185,7 +185,7 @@ def struct2xml(path, query_string, host_url, params, d, send_timetable=SEND_TIME
     return xmlstr
 
 
-def struct2template_test(path, query_string, host_url, params, d, send_timetable=SEND_TIMETABLE):
+def struct2template_test(path, qualifier, query_string, host_url, params, d, send_timetable=SEND_TIMETABLE):
     nodelist = d['nodelist']
 
     if 'add_shortlist' not in params:
@@ -235,7 +235,7 @@ def struct2template_test(path, query_string, host_url, params, d, send_timetable
         return res.encode("utf8")
 
 
-def struct2json(path, query_string, host_url, params, d, send_timetable=SEND_TIMETABLE):
+def struct2json(path, qualifier, query_string, host_url, params, d, send_timetable=SEND_TIMETABLE):
     nodelist = d['nodelist']
 
     if 'add_shortlist' not in params:
@@ -254,7 +254,7 @@ def struct2json(path, query_string, host_url, params, d, send_timetable=SEND_TIM
     return s
 
 
-def struct2csv(path, query_string, host_url, params, d, sep=u';', string_delimiter=u'"'):
+def struct2csv(path, qualifier, query_string, host_url, params, d, sep=u';', string_delimiter=u'"'):
     # delimiter and separator can be transferred by the query
     # this dictionary decodes the characters that would disturb in the url
     trans = {
@@ -368,7 +368,7 @@ def struct2csv(path, query_string, host_url, params, d, sep=u';', string_delimit
         return r.encode("utf8")
 
 
-def struct2rss(path, query_string, host_url, params, struct):
+def struct2rss(path, qualifier, query_string, host_url, params, struct):
     nodelist = struct['nodelist']
     language = params.get('lang', 'en')
     items_list = []
@@ -588,10 +588,10 @@ def get_node_data_struct(
         path,
         params,
         id,
+        qualifier,
         fetch_files=False,
         csv=False,
     ):
-
     res = _prepare_response()
     timetable = res["timetable"]
 
@@ -625,7 +625,7 @@ def get_node_data_struct(
     sortformat = params.get('sortformat', '')  # 'sissfi'
     limit = params.get("limit", DEFAULT_NODEQUERY_LIMIT)
     offset = params.get("start", 0)
-    allchildren = "allchildren" in path
+    allchildren = qualifier == "allchildren"
     csv_allchildren = csv and allchildren
 
     # check node existence
@@ -652,7 +652,7 @@ def get_node_data_struct(
             nodequery = node.all_children_by_query(q(Node.attrs.label("attributes"), Node.id, Node.name, Node.schema, Node.type))
         else:
             nodequery = node.all_children
-    elif "parents" in path:
+    elif qualifier == "parents":
         nodequery = node.parents
     else:
         nodequery = node.children
@@ -743,7 +743,7 @@ def get_node_data_struct(
     if fetch_files:
         nodequery = nodequery.options(joinedload(Node.file_objects))
 
-    if "children" in path or "parents" in path:
+    if qualifier in ("children", "allchildren", "parents"):
         if mdt_name:
             nodequery = nodequery.filter(Node.schema==mdt_name)
 
@@ -824,7 +824,7 @@ def get_node_data_struct(
     return res
 
 
-def write_formatted_response(path, query_string, host_url, params, id):
+def write_formatted_response(path, query_string, host_url, params, id, qualifier):
     atime = time.time()
 
     _p = params.copy()
@@ -839,6 +839,7 @@ def write_formatted_response(path, query_string, host_url, params, id):
             path,
             params,
             id,
+            qualifier,
             # XXX: hack because we want all files for the XML format only
             fetch_files=res_format=="xml",
             csv=res_format==u'csv'
@@ -850,7 +851,7 @@ def write_formatted_response(path, query_string, host_url, params, id):
         if res_format not in supported_format[0]:
             continue
         atime = time.time()
-        s = supported_format[1](path, query_string, host_url, params, d)
+        s = supported_format[1](path, qualifier, query_string, host_url, params, d)
         if res_format == 'json' and 'jsoncallback' in params:
             s = "{}({})".format(params['jsoncallback'], s)
             # the return value of this kind of call must be interpreted as javascript,
@@ -883,7 +884,7 @@ def write_formatted_response(path, query_string, host_url, params, id):
         d['errormessage'] = 'unsupported format'
         d['build_response_end'] = time.time()
 
-        s = struct2xml(path, query_string, host_url, params, d)
+        s = struct2xml(path, qualifier, query_string, host_url, params, d)
         content_type = "text/xml; charset=utf-8"
 
     s = modify_tex(s.decode("utf8"), 'strip').encode("utf8")
@@ -940,19 +941,3 @@ def write_formatted_response(path, query_string, host_url, params, id):
     d['timetable'].append(["sending {} bytes, content type='{}'".format(len(s), content_type), time.time() - atime])
 
     return d['html_response_code'], s, d, content_type
-
-
-def get_node_single(path, query_string, host_url, params, id):
-    return write_formatted_response(path, query_string, host_url, params, id)
-
-
-def get_node_children(path, query_string, host_url, params, id):
-    return write_formatted_response(path, query_string, host_url, params, id)
-
-
-def get_node_allchildren(path, query_string, host_url, params, id):
-    return write_formatted_response(path, query_string, host_url, params, id)
-
-
-def get_node_parents(path, query_string, host_url, params, id):
-    return write_formatted_response(path, query_string, host_url, params, id)

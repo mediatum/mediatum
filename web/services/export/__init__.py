@@ -17,13 +17,6 @@ from core import config as _core_config
 
 logg = logging.getLogger(__name__)
 
-urls = {
-    "/node/(?P<id>\d+)/{0,1}$": handlers.get_node_single,
-    "/node/(?P<id>\d+)/children/{0,1}$": handlers.get_node_children,
-    "/node/(?P<id>\d+)/allchildren/{0,1}$": handlers.get_node_allchildren,
-    "/node/(?P<id>\d+)/parents/{0,1}$": handlers.get_node_parents,
-}
-
 request_count = 0
 
 
@@ -31,25 +24,23 @@ def request_handler(req):
     global request_count
 
     handle_starttime = time.time()
-    matched = False
-    req_path = req.mediatum_contextfree_path
-    for pattern, handler_func in urls.iteritems():
-        m = re.match(pattern, req_path)
-        if m:
-            matched = True
-            response_code, s, d, content_type = handler_func(
-                    req.path,
-                    req.query_string,
-                    req.host_url,
-                    req.values,
-                    **m.groupdict()
-                )
-            break
-
+    matched = re.match(
+            "/node/(?P<id>\d+)(/(?P<qualifier>(allchildren)|(children)|(parents)))?/?([?].*)?$",
+            req.mediatum_contextfree_path,
+        )
+    # try to call default handler, if no match
     if not matched:
         req.response.set_data(response_code_dict[400])
         req.response.status_code = 400
         return
+    else:
+        response_code, s, d, content_type = handlers.write_formatted_response(
+                req.path,
+                req.query_string,
+                req.host_url,
+                req.values,
+                **matched.groupdict()
+            )
 
     disposition = req.values.get('disposition', '')
     if disposition:

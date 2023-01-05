@@ -7,7 +7,10 @@ from __future__ import print_function
 import copy
 import functools as _functools
 import json
+import httplib as _httplib
 import logging
+import re as _re
+import sys as _sys
 import time
 import urlparse as _urlparse
 
@@ -43,12 +46,12 @@ q = db.query
 SEND_TIMETABLE = False
 DEFAULT_NODEQUERY_LIMIT = config.getint("services.default_limit", 1000)
 
+request_count = 0
+
 
 def add_mask_xml(xmlroot, node, mask_name, language):
     # mask handling
     if mask_name not in ["", "none"]:  # deliver every mask
-        
-        
         if mask_name == 'default':
             formated = node.show_node_text(labels=1, language=language)
         else:
@@ -824,7 +827,7 @@ def get_node_data_struct(
     return res
 
 
-def write_formatted_response(path, query_string, host_url, params, id, qualifier):
+def _write_formatted_response(path, query_string, host_url, params, id, qualifier):
     atime = time.time()
 
     _p = params.copy()
@@ -941,3 +944,87 @@ def write_formatted_response(path, query_string, host_url, params, id, qualifier
     d['timetable'].append(["sending {} bytes, content type='{}'".format(len(s), content_type), time.time() - atime])
 
     return d['html_response_code'], s, d, content_type
+
+
+def request_handler(req):
+    global request_count
+
+    handle_starttime = time.time()
+    matched = _re.match(
+            "/node/(?P<id>\d+)(/(?P<qualifier>(allchildren)|(children)|(parents)))?/?([?].*)?$",
+            req.mediatum_contextfree_path,
+        )
+    # try to call default handler, if no match
+    if not matched:
+        req.response.set_data(_httplib.responses[400])
+        req.response.status_code = 400
+        return
+    else:
+        response_code, s, d, content_type = _write_formatted_response(
+                req.path,
+                req.query_string,
+                req.host_url,
+                req.values,
+                **matched.groupdict()
+            )
+
+    disposition = req.values.get('disposition', '')
+    if disposition:
+        req.response.headers['Content-Disposition'] = disposition
+    if 'deflate' in req.values:
+        req.response.content_encoding = "deflate"
+    elif 'gzip' in req.values:
+        req.response.content_encoding = "gzip"
+    req.response.set_data(s)
+    req.response.content_type = content_type
+    req.response.content_length = len(s)
+    if config.getboolean("services.allow_cross_origin", False):
+        req.response.headers['Access-Control-Allow-Origin'] = '*'
+
+    handle_endtime = time.time()
+    handle_duration = "%.3f sec." % (handle_endtime - handle_starttime)
+
+    useragent = 'unknown'
+    try:
+        cutoff = 60
+        useragent = req.headers['user-agent']
+        if len(useragent) > cutoff:
+            useragent = useragent[0:cutoff] + '...'
+    except:
+        pass
+
+    request_count += 1
+    bytes_sent = len(s)
+    s = "services {} '{}' ({}): {} for {} bytes for service request no. {} ({}, {}, {}) - (user-agent: {})".format(
+            req.remote_addr,
+            ustr(response_code),
+            _httplib.responses[int(response_code)],
+            handle_duration,
+            bytes_sent,
+            request_count,
+            req.method,
+            "{}{}".format(req.path, req.query_string),
+            req.params,
+            useragent,
+        )
+
+    if logg.isEnabledFor(logging.INFO) and matched and 'timetable' in d:
+        timesum = 0.0
+        s += "\n| timetable for request ({}, {}, {})".format(req.method, req.path, req.values)
+        for i, timetable_step in enumerate(d['timetable']):
+            if len(timetable_step) == 2:
+                step, executiontime = timetable_step
+            elif len(timetable_step) == 1:
+                step = timetable_step[0]
+                executiontime = 0.0
+            else:
+                continue
+            s += "\n|  %2d. step: %.3f sec.: %s" % (i, executiontime, step)
+            timesum += executiontime
+        s += "\n| sum of execution times: %.3f sec.: %s bytes returned" % (timesum, bytes_sent)
+        logg.info("%s", s)
+    else:
+        logg.info("%s", s)
+    _sys.stdout.flush()
+
+    return response_code

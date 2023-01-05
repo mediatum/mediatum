@@ -14,10 +14,8 @@ from mediatumtal import tal
 import core.translation as _core_translation
 import core.config as config
 from core.styles import CustomTheme, DefaultTheme
-from core import db
 
 from core.plugins import find_plugin_with_theme
-from utils.utils import suppress
 import request_handler as _request_handler
 
 logg = logging.getLogger(__name__)
@@ -47,53 +45,6 @@ def init_theme():
     theme = DefaultTheme()
     theme.activate()
     logg.warning("using (broken) standard theme, you should create your own theme :)")
-
-
-def loadServices():
-    datapath = config.get("services.datapath", "")
-    if not os.path.exists(os.path.join(datapath, "common")):
-        with suppress(OSError, warn=False):
-            os.makedirs(os.path.join(datapath, "common"))
-
-    def manageService(servicename, servicedir, servicedata):
-        if not os.path.exists(servicedir + "services/" + servicename + "/__init__.py"):
-            return
-
-        if config.get('services.' + servicename + '.activate', "").lower() == "false":
-            return
-        if servicename + '.basecontext' in config.getsubset("services").keys():
-            basecontext = config.getsubset("services")[servicename + '.basecontext']
-        else:
-            basecontext = config.get("services.contextprefix", u"services") + '/' + servicename
-        basecontext = ('/' + basecontext).replace('//', '/').replace('//', '/')
-        context = _request_handler.addContext(str(basecontext), ".")
-        file = context.addFile(servicedir + "services/" + servicename)
-
-        if hasattr(file.m, "request_handler"):
-            file.addHandler("request_handler").addPattern("/.*")
-
-            if not os.path.exists(servicedata):
-                try:
-                    os.makedirs(servicedata)
-                    os.makedirs(os.path.join(servicedata, "cache"))
-                except OSError:
-                    return
-
-    if config.get("services.activate", "").lower() == "true":
-        # try loading services from mediatum web/services/ folder
-        p = config.basedir + "/web/services/"
-        for servicedir in [f for f in os.listdir(p) if os.path.isdir(os.path.join(p, f))]:
-            manageService(servicedir, "web/", os.path.join(datapath, servicedir))
-
-        # try loading services from all plugins services/ folder
-        for k, v in config.getsubset("plugins").items():
-            p = os.path.join(config.basedir, v, 'services')
-            if os.path.exists(p):
-                for servicedir in [f for f in os.listdir(p) if os.path.isdir(os.path.join(p, f))]:
-                    manageService(servicedir, v, os.path.join(datapath, k, servicedir))
-
-    else:
-        logg.info("web services not activated")
 
 
 def node_url(nid=None, version=None, **kwargs):
@@ -237,7 +188,8 @@ def initContexts():
     context.addFile("metadata/upload.py").addHandler("handle_request").addPattern("/.*")
 
     # === services handling ===
-    loadServices()
+    context = _request_handler.addContext("/services/export", ".")
+    context.addFile("web/services/export.py").addHandler("request_handler").addPattern("/node/(?P<id>\d+).*")
 
     # === OAI ===
     if oai_enabled:

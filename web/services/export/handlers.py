@@ -589,8 +589,6 @@ def get_node_data_struct(
         path,
         params,
         id,
-        allchildren=False,
-        parents=False,
         fetch_files=False,
         csv=False,
     ):
@@ -628,6 +626,7 @@ def get_node_data_struct(
     sortformat = params.get('sortformat', '')  # 'sissfi'
     limit = params.get("limit", DEFAULT_NODEQUERY_LIMIT)
     offset = params.get("start", 0)
+    allchildren = "allchildren" in path
     csv_allchildren = csv and allchildren
 
     # check node existence
@@ -654,7 +653,7 @@ def get_node_data_struct(
             nodequery = node.all_children_by_query(q(Node.attrs.label("attributes"), Node.id, Node.name, Node.schema, Node.type))
         else:
             nodequery = node.all_children
-    elif parents:
+    elif "parents" in path:
         nodequery = node.parents
     else:
         nodequery = node.children
@@ -826,7 +825,7 @@ def get_node_data_struct(
     return res
 
 
-def write_formatted_response(req, path, params, id, allchildren=False, parents=False):
+def write_formatted_response(req, path, params, id):
 
     atime = time.time()
 
@@ -843,8 +842,6 @@ def write_formatted_response(req, path, params, id, allchildren=False, parents=F
             path,
             params,
             id,
-            allchildren=allchildren,
-            parents=parents,
             # XXX: hack because we want all files for the XML format only
             fetch_files=res_format=="xml",
             csv=res_format==u'csv'
@@ -964,12 +961,12 @@ def get_node_single(req, path, params, id):
 
 
 def get_node_children(req, path, params, id):
-    return write_formatted_response(req, path, params, id, allchildren=False)
+    return write_formatted_response(req, path, params, id)
 
 
 def get_node_allchildren(req, path, params, id):
-    return write_formatted_response(req, path, params, id, allchildren=True)
+    return write_formatted_response(req, path, params, id)
 
 
 def get_node_parents(req, path, params, id):
-    return write_formatted_response(req, path, params, id, parents=True)
+    return write_formatted_response(req, path, params, id)

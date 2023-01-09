@@ -89,7 +89,7 @@ def _add_timetable_to_xmldoc(xmlroot, timetable):
     xml_allsteps.set("unit", "sec.")
 
 
-def struct2xml(req, path, params, d, singlenode=False, send_timetable=SEND_TIMETABLE):
+def struct2xml(req, path, params, d, send_timetable=SEND_TIMETABLE):
 
     atime = time.time()
 
@@ -114,7 +114,22 @@ def struct2xml(req, path, params, d, singlenode=False, send_timetable=SEND_TIMET
 
     if d['status'] == 'ok':
         xmlroot.set("servicereactivity", d["dataready"])
-        if singlenode:
+        if "children" in path or "parents" in path:
+            xml_nodelist = create_xml_nodelist(xmlroot)
+            xml_nodelist.set("start", unicode(d["nodelist_start"]))
+            xml_nodelist.set("count", unicode(d["nodelist_limit"]))
+            xml_nodelist.set("actual_count", unicode(d["nodelist_count"]))
+
+            for n in d['nodelist']:
+                xmlnode = add_node_to_xmldoc(
+                        n,
+                        xml_nodelist,
+                        children=False,
+                        exclude_filetypes=exclude_filetypes,
+                        attribute_name_filter=attribute_name_filter,
+                    )
+                add_mask_xml(xmlnode, n, mask, language)
+        else:
             n = d['nodelist'][0]
             if "send_children" in params:
                 xml_nodelist = create_xml_nodelist(xmlroot)
@@ -135,16 +150,6 @@ def struct2xml(req, path, params, d, singlenode=False, send_timetable=SEND_TIMET
                     )
 
             add_mask_xml(xmlnode, n, mask, language)
-
-        else:
-            xml_nodelist = create_xml_nodelist(xmlroot)
-            xml_nodelist.set("start", unicode(d["nodelist_start"]))
-            xml_nodelist.set("count", unicode(d["nodelist_limit"]))
-            xml_nodelist.set("actual_count", unicode(d["nodelist_count"]))
-
-            for n in d['nodelist']:
-                xmlnode = add_node_to_xmldoc(n, xml_nodelist, children=False, exclude_filetypes=exclude_filetypes, attribute_name_filter=attribute_name_filter)
-                add_mask_xml(xmlnode, n, mask, language)
 
         # append a shortlist with id, name and type of the nodes
         # from result_shortlist = [[i, x.id, x.name, x.type, attr_list(x, sfields)] for i, x in enumerate(nodelist)]
@@ -180,7 +185,7 @@ def struct2xml(req, path, params, d, singlenode=False, send_timetable=SEND_TIMET
     return xmlstr
 
 
-def struct2template_test(req, path, params, d, singlenode=False, send_timetable=SEND_TIMETABLE):
+def struct2template_test(req, path, params, d, send_timetable=SEND_TIMETABLE):
     nodelist = d['nodelist']
 
     if 'add_shortlist' not in params:
@@ -230,7 +235,7 @@ def struct2template_test(req, path, params, d, singlenode=False, send_timetable=
         return res.encode("utf8")
 
 
-def struct2json(req, path, params, d, singlenode=False, send_timetable=SEND_TIMETABLE):
+def struct2json(req, path, params, d, send_timetable=SEND_TIMETABLE):
     nodelist = d['nodelist']
 
     if 'add_shortlist' not in params:
@@ -249,7 +254,7 @@ def struct2json(req, path, params, d, singlenode=False, send_timetable=SEND_TIME
     return s
 
 
-def struct2csv(req, path, params, d, sep=u';', string_delimiter=u'"', singlenode=False):
+def struct2csv(req, path, params, d, sep=u';', string_delimiter=u'"'):
     # delimiter and separator can be transferred by the query
     # this dictionary decodes the characters that would disturb in the url
     trans = {
@@ -363,7 +368,7 @@ def struct2csv(req, path, params, d, sep=u';', string_delimiter=u'"', singlenode
         return r.encode("utf8")
 
 
-def struct2rss(req, path, params, struct, singlenode=False):
+def struct2rss(req, path, params, struct):
     nodelist = struct['nodelist']
     language = params.get('lang', 'en')
     items_list = []
@@ -585,7 +590,6 @@ def get_node_data_struct(
         params,
         id,
         allchildren=False,
-        singlenode=False,
         parents=False,
         fetch_files=False,
         csv=False,
@@ -741,12 +745,7 @@ def get_node_data_struct(
     if fetch_files:
         nodequery = nodequery.options(joinedload(Node.file_objects))
 
-    if singlenode:
-        # we already checked that node can be accessed by the user, just return the node
-        nodelist = [node]
-        node_count = 1
-        limit = 1
-    else:
+    if "children" in path or "parents" in path:
         if mdt_name:
             nodequery = nodequery.filter(Node.schema==mdt_name)
 
@@ -768,6 +767,11 @@ def get_node_data_struct(
         node_count = len(nodelist)
         timetable.append(['fetching nodes from db returned {} results'.format(node_count), time.time() - atime])
         atime = time.time()
+    else:
+        # we already checked that node can be accessed by the user, just return the node
+        nodelist = [node]
+        node_count = 1
+        limit = 1
 
     i0 = int(params.get('i0', '0'))
     i1 = int(params.get('i1', node_count))
@@ -822,7 +826,7 @@ def get_node_data_struct(
     return res
 
 
-def write_formatted_response(req, path, params, id, allchildren=False, singlenode=False, parents=False):
+def write_formatted_response(req, path, params, id, allchildren=False, parents=False):
 
     atime = time.time()
 
@@ -840,7 +844,6 @@ def write_formatted_response(req, path, params, id, allchildren=False, singlenod
             params,
             id,
             allchildren=allchildren,
-            singlenode=singlenode,
             parents=parents,
             # XXX: hack because we want all files for the XML format only
             fetch_files=res_format=="xml",
@@ -853,7 +856,7 @@ def write_formatted_response(req, path, params, id, allchildren=False, singlenod
         if res_format not in supported_format[0]:
             continue
         atime = time.time()
-        s = supported_format[1](req, path, params, d, singlenode=singlenode)
+        s = supported_format[1](req, path, params, d)
         if res_format == 'json' and 'jsoncallback' in params:
             s = "{}({})".format(params['jsoncallback'], s)
             # the return value of this kind of call must be interpreted as javascript,
@@ -887,7 +890,7 @@ def write_formatted_response(req, path, params, id, allchildren=False, singlenod
         d['errormessage'] = 'unsupported format'
         d['build_response_end'] = time.time()
 
-        s = struct2xml(req, path, params, d, singlenode=True)
+        s = struct2xml(req, path, params, d)
         content_type = "text/xml; charset=utf-8"
 
     s = modify_tex(s.decode("utf8"), 'strip').encode("utf8")
@@ -957,16 +960,16 @@ def write_formatted_response(req, path, params, id, allchildren=False, singlenod
 
 
 def get_node_single(req, path, params, id):
-    return write_formatted_response(req, path, params, id, singlenode=True)
+    return write_formatted_response(req, path, params, id)
 
 
 def get_node_children(req, path, params, id):
-    return write_formatted_response(req, path, params, id, singlenode=False, allchildren=False)
+    return write_formatted_response(req, path, params, id, allchildren=False)
 
 
 def get_node_allchildren(req, path, params, id):
-    return write_formatted_response(req, path, params, id, singlenode=False, allchildren=True)
+    return write_formatted_response(req, path, params, id, allchildren=True)
 
 
 def get_node_parents(req, path, params, id):
-    return write_formatted_response(req, path, params, id, singlenode=False, parents=True)
+    return write_formatted_response(req, path, params, id, parents=True)

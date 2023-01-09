@@ -89,7 +89,7 @@ def _add_timetable_to_xmldoc(xmlroot, timetable):
     xml_allsteps.set("unit", "sec.")
 
 
-def struct2xml(req, path, params, d, send_timetable=SEND_TIMETABLE):
+def struct2xml(path, query_string, host_url, params, d, send_timetable=SEND_TIMETABLE):
 
     atime = time.time()
 
@@ -185,7 +185,7 @@ def struct2xml(req, path, params, d, send_timetable=SEND_TIMETABLE):
     return xmlstr
 
 
-def struct2template_test(req, path, params, d, send_timetable=SEND_TIMETABLE):
+def struct2template_test(path, query_string, host_url, params, d, send_timetable=SEND_TIMETABLE):
     nodelist = d['nodelist']
 
     if 'add_shortlist' not in params:
@@ -235,7 +235,7 @@ def struct2template_test(req, path, params, d, send_timetable=SEND_TIMETABLE):
         return res.encode("utf8")
 
 
-def struct2json(req, path, params, d, send_timetable=SEND_TIMETABLE):
+def struct2json(path, query_string, host_url, params, d, send_timetable=SEND_TIMETABLE):
     nodelist = d['nodelist']
 
     if 'add_shortlist' not in params:
@@ -254,7 +254,7 @@ def struct2json(req, path, params, d, send_timetable=SEND_TIMETABLE):
     return s
 
 
-def struct2csv(req, path, params, d, sep=u';', string_delimiter=u'"'):
+def struct2csv(path, query_string, host_url, params, d, sep=u';', string_delimiter=u'"'):
     # delimiter and separator can be transferred by the query
     # this dictionary decodes the characters that would disturb in the url
     trans = {
@@ -368,12 +368,12 @@ def struct2csv(req, path, params, d, sep=u';', string_delimiter=u'"'):
         return r.encode("utf8")
 
 
-def struct2rss(req, path, params, struct):
+def struct2rss(path, query_string, host_url, params, struct):
     nodelist = struct['nodelist']
     language = params.get('lang', 'en')
     items_list = []
 
-    hostjoin = _functools.partial(_urlparse.urljoin, req.host_url)
+    hostjoin = _functools.partial(_urlparse.urljoin, host_url)
     collections = get_collections_node()
     user = get_guest_user()
 
@@ -482,8 +482,8 @@ def struct2rss(req, path, params, struct):
     fcd['lang'] = u'de'
     fcd['pubdate'] = pubDate
     fcd['lastbuild'] = lastBuildDate
-    fcd['link'] = req.host_url
-    fcd['atom_link'] = hostjoin(req.path)
+    fcd['link'] = host_url
+    fcd['atom_link'] = hostjoin(path)
     fcd['image_title'] = 'testlogo'
     fcd['image_link'] = hostjoin(u'/static/img/testlogo.png')
     fcd['image_url'] = hostjoin(u'/static/img/testlogo.png')
@@ -492,7 +492,7 @@ def struct2rss(req, path, params, struct):
         for k, v in params['feed_info'].items():
             fcd[k] = v
     else:
-        fcd['title'] = hostjoin(req.path + req.query_string)
+        fcd['title'] = hostjoin(path + query_string)
     fcd['items'] = items
     s = template_rss_channel % fcd  # params['feed_info']
 
@@ -585,7 +585,6 @@ def _client_error_response(status_code, error_msg, **additional_data):
 
 
 def get_node_data_struct(
-        req,
         path,
         params,
         id,
@@ -598,7 +597,7 @@ def get_node_data_struct(
 
     # verify signature if a user is given, otherwise use guest user
     if params.get('user'):
-        user = _handle_oauth(res, req.path, params, timetable)
+        user = _handle_oauth(res, path, params, timetable)
     else:
         user = get_guest_user()
         res['oauthuser'] = ''  # username supplied for authentication (login name) in query parameter user
@@ -816,7 +815,7 @@ def get_node_data_struct(
     res['nodelist_start'] = offset
     res['nodelist_limit'] = limit
     res['nodelist_count'] = node_count
-    res['path'] = req.mediatum_contextfree_path
+    res['path'] = path
     res['status'] = 'ok'
     res['html_response_code'] = '200'  # ok
     res['build_response_end'] = time.time()
@@ -825,8 +824,7 @@ def get_node_data_struct(
     return res
 
 
-def write_formatted_response(req, path, params, id):
-
+def write_formatted_response(path, query_string, host_url, params, id):
     atime = time.time()
 
     _p = params.copy()
@@ -838,7 +836,6 @@ def write_formatted_response(req, path, params, id):
     res_format = params.get('format', 'xml').lower()
 
     d = get_node_data_struct(
-            req,
             path,
             params,
             id,
@@ -853,7 +850,7 @@ def write_formatted_response(req, path, params, id):
         if res_format not in supported_format[0]:
             continue
         atime = time.time()
-        s = supported_format[1](req, path, params, d)
+        s = supported_format[1](path, query_string, host_url, params, d)
         if res_format == 'json' and 'jsoncallback' in params:
             s = "{}({})".format(params['jsoncallback'], s)
             # the return value of this kind of call must be interpreted as javascript,
@@ -876,7 +873,6 @@ def write_formatted_response(req, path, params, id):
         if disposition:
             # ex.: (direct to download) value: "attachment; filename=myfilename.txt"
             # ex.: (open in browser) value: "filename=myfilename.txt"
-            req.response.headers['Content-Disposition'] = disposition
             d['timetable'].append(["wrote disposition {()} to reply header".format(disposition), time.time() - atime])
             atime = time.time()
 
@@ -887,7 +883,7 @@ def write_formatted_response(req, path, params, id):
         d['errormessage'] = 'unsupported format'
         d['build_response_end'] = time.time()
 
-        s = struct2xml(req, path, params, d)
+        s = struct2xml(path, query_string, host_url, params, d)
         content_type = "text/xml; charset=utf-8"
 
     s = modify_tex(s.decode("utf8"), 'strip').encode("utf8")
@@ -914,7 +910,6 @@ def write_formatted_response(req, path, params, id):
             percentage = 100.0 * size_compressed / size_uncompressed
         except:
             percentage = 100.0
-        req.response.content_encoding = "deflate"
         d['timetable'].append(
             [
                 "'deflate' in request: executed compressForDeflate(s), {} bytes -> {} bytes (compressed to: {} %%)".format(
@@ -933,7 +928,6 @@ def write_formatted_response(req, path, params, id):
             percentage = 100.0 * size_compressed / size_uncompressed
         except:
             percentage = 100.0
-        req.response.content_encoding = "gzip"
         d['timetable'].append(
             [
                 "'gzip' in request: executed compressForGzip(s), {} bytes -> {} bytes (compressed to: {} %%)".format(
@@ -943,30 +937,22 @@ def write_formatted_response(req, path, params, id):
         )
         atime = time.time()
 
-    # (format) Expires: Mon, 28 Nov 2011 12:41:22 GMT
-    # see core.athana.build_http_date
-    # req.response.headers['Expires'] = time.strftime ('%a, %d %b %Y %H:%M:%S GMT', time.gmtime(time.time()+60.0)) # 1 minute
-    req.response.set_data(s)
-    req.response.content_type = content_type
-    req.response.content_length = len(s)
-    if config.getboolean("services.allow_cross_origin", False):
-        req.response.headers['Access-Control-Allow-Origin'] = '*'
     d['timetable'].append(["sending {} bytes, content type='{}'".format(len(s), content_type), time.time() - atime])
 
-    return d['html_response_code'], len(s), d
+    return d['html_response_code'], s, d, content_type
 
 
-def get_node_single(req, path, params, id):
-    return write_formatted_response(req, path, params, id)
+def get_node_single(path, query_string, host_url, params, id):
+    return write_formatted_response(path, query_string, host_url, params, id)
 
 
-def get_node_children(req, path, params, id):
-    return write_formatted_response(req, path, params, id)
+def get_node_children(path, query_string, host_url, params, id):
+    return write_formatted_response(path, query_string, host_url, params, id)
 
 
-def get_node_allchildren(req, path, params, id):
-    return write_formatted_response(req, path, params, id)
+def get_node_allchildren(path, query_string, host_url, params, id):
+    return write_formatted_response(path, query_string, host_url, params, id)
 
 
-def get_node_parents(req, path, params, id):
-    return write_formatted_response(req, path, params, id)
+def get_node_parents(path, query_string, host_url, params, id):
+    return write_formatted_response(path, query_string, host_url, params, id)

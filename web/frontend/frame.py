@@ -5,6 +5,7 @@ from __future__ import division
 from __future__ import print_function
 
 import logging
+import collections as _collections
 from collections import OrderedDict
 from warnings import warn
 from sqlalchemy import event
@@ -31,6 +32,9 @@ import time
 
 q = db.query
 logg = logging.getLogger(__name__)
+
+
+_NavTreeEntry = _collections.namedtuple("_NavTreeEntry", "label child_count link a_class active li_class indent")
 
 
 def getSearchMask(collection):
@@ -207,73 +211,6 @@ def render_edit_search_box(container, language, req, edit=False):
     return search_html
 
 
-class NavTreeEntry(object):
-
-    def __init__(self, node, indent, small=0, hide_empty=0, lang=None):
-        assert isinstance(node, Container)
-        self.node = node
-        self.id = node.id
-        self.orderpos = node.orderpos
-        self.indent = indent
-        self.defaultopen = indent == 0
-        self.hassubdir = 0
-        self.isSelected = 0
-        self.folded = 1
-        self.active = 0
-        self.small = small
-        self.hide_empty = hide_empty
-        self.lang = lang
-        self.orderpos = 0
-        self.show_childcount = node.show_childcount
-
-        self.count = self.node.childcount()
-        self.container_children = self.node.container_children
-
-        if self.container_children:
-            self.hassubdir = 1
-            self.folded = 1
-
-    def getFoldLink(self):
-        return self.getLink()
-
-    def getUnfoldLink(self):
-        return self.getLink()
-
-    def getLink(self):
-        return node_url(self.node.id)
-
-    def isFolded(self):
-        return self.folded
-
-    def getStyle(self):
-        return "padding-left: %dpx" % (self.indent * 6)
-
-    def getText(self, accessdata=None):
-        if accessdata is not None:
-            warn("accessdata argument is unused, remove it", DeprecationWarning)
-        try:
-            if self.hide_empty and self.count == 0:
-                return ""  # hides entry
-
-            if self.show_childcount and self.count > 0:
-                return Markup(u"%s <small>(%s)</small>" % (self.node.getLabel(lang=self.lang), unicode(self.count)))
-            else:
-                return self.node.getLabel(lang=self.lang)
-
-        except:
-            logg.exception("exception in NavTreeEntry.getText, return Node (0)")
-            return "Node (0)"
-
-    def getClass(self):
-        if isinstance(self.node, Directory):
-            return "lv2"
-        else:
-            if self.indent > 1:
-                return "lv1"
-            else:
-                return "lv0"
-
-
 def find_collection_and_container(node_id):
     
     node = q(Node).get(node_id) if node_id else None
@@ -307,18 +244,35 @@ def make_navtree_entries(language, collection, container):
     navtree_entries = []
 
     def make_navtree_entries_rec(navtree_entries, node, indent, hide_empty):
-        small = not isinstance(node, (Collection, Collections))
-        e = NavTreeEntry(node, indent, small, hide_empty, language)
-        if node.id == collection.id or node.id == container.id:
-            e.active = 1
+        # we need the childcount (causing a DB request) only in these cases
+        # * hide_empty: if childcount==0, we skip the entry
+        # * node.show_childcount: show it in the entry
+        if hide_empty or node.show_childcount:
+            childcount = node.childcount()
 
-        # 2021-05-27 KL: Need only one active navtree entry, not both container and collection
-        if node.id in activelist:
-            e.active = 0
+        # if there is no childcount, and `hide_emtpy`,
+        # we can skip the complete entry;
+        # in that case, there also cannot exist any sub-entries
+        if hide_empty and not childcount:
+            return
+
+        a_class = set(('mediatum_portal_tree_subnav_link',))
+        if q(node.container_children.exists()).scalar():
+            a_class.add('mediatum_portal_tree_has_submenu')
+            if node.id in opened:
+                a_class.add('mediatum_portal_tree_active')
+        e = _NavTreeEntry(
+                label=node.getLabel(lang=language),
+                child_count=childcount if node.show_childcount else None,
+                link=node_url(node.id),
+                active=(node.id in (collection.id, container.id)) and (node.id not in activelist),
+                indent=indent,
+                li_class="lv2" if isinstance(node, Directory) else "lv1" if indent > 1 else "lv0",
+                a_class=' '.join(a_class),
+               )
 
         navtree_entries.append(e)
         if node.id in opened:
-            e.folded = 0
             """
             find children ids for a given node id for an additional filter to determine the container_children
             important: this additional filter is logical not needed - but it speeds up the computation of the

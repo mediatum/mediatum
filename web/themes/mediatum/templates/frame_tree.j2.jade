@@ -6,13 +6,10 @@
   nav(class="mediatum_portal_tree_subnav")
     ul#navigationlist
       for data in navtree_entries
-        - var label = data.getText()
-        if label
-          li(class=data.getClass())
-            div(style=data.getStyle(), class=['mediatum_portal_tree_link','mediatum_portal_tree_link_current'][data.active])
-              if data.hassubdir
-                - var sd = 'mediatum_portal_tree_has_submenu ' + ['mediatum_portal_tree_active',''][data.isFolded()]
-              else
-                - var sd = ''
-              a(href=data.getFoldLink(), class=sd + " mediatum_portal_tree_subnav_link")
-                = label
+        li(class=data.li_class)
+          div(style='padding-left: {}px'.format(data.indent * 6), class='mediatum_portal_tree_link_current' if data.active else 'mediatum_portal_tree_link')
+            a(href=data.link, class=data.a_class)
+              = data.label
+              if data.child_count
+                small
+                  = ' (' + data.child_count|string + ')'

@@ -93,7 +93,7 @@ class m_url(Metatype):
         elif value[3] != "same" or metacfg["new_window"]:
             value = u'<a href="{}" target="_blank" title="{}">{}</a>'.format(
                     link,
-                    _core_translation.translate(language, 'show_in_new_window'),
+                    _core_translation.translate_in_request('show_in_new_window'),
                     text,
                 )
         else:

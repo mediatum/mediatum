@@ -242,16 +242,14 @@ class Container(Data, ContainerMixin, SchemaMixin):
             "type": u"text"
         })
         metafields.append(field)
-
         field = Metafield(u"style_full", attrs={
-            "label": _core_translation.translate(lang, "full_view_style"),
+            "label": _core_translation.translate_in_request("full_view_style"),
             "type": u"list",
             "valuelist": u"full_standard;full_text"
         })
         metafields.append(field)
-
         field = Metafield(u"style", attrs={
-            "label": _core_translation.translate(lang, "style"),
+            "label": _core_translation.translate_in_request("style"),
             "type": u"list",
             "valuelist": u"thumbnail;list;text",
         })
@@ -309,8 +307,7 @@ class Collection(Container):
     def metaFields(self, lang=None):
         metafields = Container.metaFields(self, lang=lang)
         field = Metafield(u"style_hide_empty")
-
-        field.set("label", _core_translation.translate(lang, "hide_empty_directories"))
+        field.set("label", _core_translation.translate_in_request("hide_empty_directories"))
         field.set("type", u"check")
         metafields.append(field)
         return metafields

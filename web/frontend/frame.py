@@ -293,13 +293,10 @@ def make_navtree_entries(language, collection, container):
 
                 make_navtree_entries_rec(navtree_entries, c, indent + 1, style_hide_empty)
 
-    collections_root = get_collections_node()
-
-    if collections_root is not None:
-        time0 = time.time()
-        make_navtree_entries_rec(navtree_entries, collections_root, 0, hide_empty)
-        time1 = time.time()
-        logg.info("make_navtree_entries: %f", time1 - time0)
+    time0 = time.time()
+    make_navtree_entries_rec(navtree_entries, get_collections_node(), 0, hide_empty)
+    time1 = time.time()
+    logg.info("make_navtree_entries: %f", time1 - time0)
 
     return navtree_entries
 

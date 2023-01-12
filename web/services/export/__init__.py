@@ -7,25 +7,11 @@ from __future__ import print_function
 import sys
 import re
 import time
-import locale
 import logging
 import BaseHTTPServer
 import cgi
 
 response_code_dict = BaseHTTPServer.BaseHTTPRequestHandler.responses
-
-LOCALES = ["en_US.UTF-8", "english", "german"]
-
-
-try:
-    locale.setlocale(locale.LC_ALL, LOCALES[0])  # for thousands separator
-except:
-    pass
-
-try:
-    locale.setlocale(locale.LC_ALL, LOCALES[1])  # for thousands separator
-except:
-    pass
 
 from . import handlers
 from .. import dec_handle_exception
@@ -114,19 +100,18 @@ def request_handler(req):
     req_query = req.query_string
     if not req_query:
         req_query = ''
-    s = "services %s '%s' (%s): %s for %s bytes for service request no. %r (%s, %s, %s) - (user-agent: %s)" % (req.remote_addr,
-                                                                                                               ustr(response_code),
-                                                                                                               response_code_description,
-                                                                                                               handle_duration,
-                                                                                                               locale.format(
-                                                                                                                   "%d",
-                                                                                                                   bytes_sent,
-                                                                                                                   1),
-                                                                                                               request_count,
-                                                                                                               req.method,
-                                                                                                               req.path + req_query,
-                                                                                                               req.params,
-                                                                                                               useragent)
+    s = "services {} '{}' ({}): {} for {} bytes for service request no. {} ({}, {}, {}) - (user-agent: {})".format(
+            req.remote_addr,
+            ustr(response_code),
+            response_code_description,
+            handle_duration,
+            bytes_sent,
+            request_count,
+            req.method,
+            req.path + req_query,
+            req.params,
+            useragent,
+        )
 
     if logg.isEnabledFor(logging.INFO) and matched and 'timetable' in d:
         timesum = 0.0
@@ -141,7 +126,7 @@ def request_handler(req):
                 continue
             s += "\n|  %2d. step: %.3f sec.: %s" % (i, executiontime, step)
             timesum += executiontime
-        s += "\n| sum of execution times: %.3f sec.: %s bytes returned" % (timesum, locale.format("%d", bytes_sent, 1))
+        s += "\n| sum of execution times: {} sec.:{} bytes returned".format(timesum, bytes_sent)
         logg.info("%s", s)
     else:
         logg.info("%s", s)

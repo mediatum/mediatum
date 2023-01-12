@@ -10,7 +10,6 @@ import functools as _functools
 import itertools as _itertools
 import logging
 import operator as _operator
-import locale
 import html as _html
 import backports.functools_lru_cache as _backports_functools_lru_cache
 from sqlalchemy import func, sql

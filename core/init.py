@@ -8,7 +8,6 @@ from functools import wraps
 import sys
 import importlib
 import logging
-import locale
 import tempfile as _tempfile
 import os as _os
 from utils.locks import register_lock as _register_lock
@@ -50,13 +49,6 @@ def _set_current_init_state(state):
     """Set current init state by string representation"""
     global CURRENT_INIT_STATE
     CURRENT_INIT_STATE = INIT_STATES[state]
-
-
-def set_locale():
-    # locale setting, default to system locale
-    # XXX: do we need this?
-    loc = locale.setlocale(locale.LC_COLLATE, '')
-    logg.debug("using locale %s", loc)
 
 
 def load_system_types():
@@ -296,7 +288,6 @@ def basic_init(root_loglevel=None, config_filepath=None, prefer_config_filename=
     log_basic_sys_info()
     if config.getboolean("config.enable_startup_checks", True):
         check_imports()
-    set_locale()
     init_db_connector()
     load_system_types()
     load_types()

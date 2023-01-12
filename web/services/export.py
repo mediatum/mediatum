@@ -46,8 +46,6 @@ q = db.query
 SEND_TIMETABLE = False
 DEFAULT_NODEQUERY_LIMIT = config.getint("services.default_limit", 1000)
 
-request_count = 0
-
 
 def add_mask_xml(xmlroot, node, mask_name, language):
     # mask handling
@@ -947,8 +945,6 @@ def _write_formatted_response(path, query_string, host_url, params, id, qualifie
 
 
 def request_handler(req):
-    global request_count
-
     handle_starttime = time.time()
     matched = _re.match(
             "/node/(?P<id>\d+)(/(?P<qualifier>(allchildren)|(children)|(parents)))?/?([?].*)?$",
@@ -993,15 +989,13 @@ def request_handler(req):
     except:
         pass
 
-    request_count += 1
     bytes_sent = len(s)
-    s = "services {} '{}' ({}): {} for {} bytes for service request no. {} ({}, {}, {}) - (user-agent: {})".format(
+    s = "services {} '{}' ({}): {} for {} bytes. ({}, {}, {}) - (user-agent: {})".format(
             req.remote_addr,
             ustr(response_code),
             _httplib.responses[int(response_code)],
             handle_duration,
             bytes_sent,
-            request_count,
             req.method,
             "{}{}".format(req.path, req.query_string),
             req.params,

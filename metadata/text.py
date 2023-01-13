@@ -13,6 +13,7 @@ from core import httpstatus
 import core.config as config
 from utils.utils import esc
 from utils.utils import modify_tex
+import core.metatype as _core_metatype
 from core.metatype import Metatype
 from utils.strings import replace_attribute_variables
 from web import frontend as _web_frontend
@@ -24,21 +25,20 @@ class m_text(Metatype):
 
     name = "text"
 
-    def editor_get_html_form(self, field, value="", width=40, lock=0, language=None, required=None):
-        return tal.getTAL(
+    def editor_get_html_form(self, metafield, metafield_name_for_html, values, required, language):
+
+        conflict = len(frozenset(values))!=1
+
+        return _core_metatype.EditorHTMLForm(tal.getTAL(
                 "metadata/text.html",
                 dict(
-                    lock=lock,
-                    value=value,
-                    width=width,
-                    name=field.name,
-                    field=field,
-                    ident=field.id if field.id else "",
+                    value="" if conflict else values[0],
+                    name=metafield_name_for_html,
                     required=1 if required else None,
                    ),
                 macro="editorfield",
                 language=language,
-               )
+                ), conflict)
 
     def search_get_html_form(self, collection, field, language, name, value):
         return tal.getTAL(
@@ -80,3 +80,6 @@ class m_text(Metatype):
             value = maskitem.getDefault()
 
         return (metafield.getLabel(), value)
+
+    def editor_parse_form_data(self, field, data):
+        return data.get("text")

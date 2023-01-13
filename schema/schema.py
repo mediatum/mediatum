@@ -11,6 +11,7 @@ import inspect
 import itertools as _itertools
 import json as _json
 import logging
+import re as _re
 import collections as _collections
 from warnings import warn
 
@@ -18,12 +19,14 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import undefer
 import sqlalchemy as _sqlalchemy
+import werkzeug.datastructures as _datastructures
 from werkzeug.utils import cached_property
 import core.config as config
 import core.csrfform as _core_csrfform
 import core.translation as translation
 from core.database.postgres.node import Node
 from core.xmlnode import getNodeXML, readNodeXML
+import core.metatype as _core_metatype
 from core.metatype import Metatype
 from core import db
 import core.nodecache as _nodecache
@@ -125,12 +128,18 @@ VIEW_HIDE_EMPTY = 2     # show only fields with 'non-empty' values
 VIEW_DATA_ONLY = 4      # deliver list with values (not html)
 VIEW_DATA_EXPORT = 8    # deliver export format
 
-_EditUpdateAttrs = _collections.namedtuple("_EditUpdateAttrs", "attrs")
+_EditUpdateAttrs = _collections.namedtuple("_EditUpdateAttrs", "attrs errors")
 
 _MetafieldsDependency = _collections.namedtuple(
     "_MetafieldsDependency",
     "metadatatypes_id schema_name mask_name maskitem_name metafield_name metafield_id"
 )
+
+_sanitize_metafield_sub = _functools.partial(_re.compile("[^a-zA-Z0-9_]").sub, "")
+
+
+def sanitize_metafield_name(name):
+    return _sanitize_metafield_sub(name).lower()
 
 
 def _get_metafields_dependencies():
@@ -302,6 +311,11 @@ def getMetaField(pid, name):
 #
 def existMetaField(pid, name):
     return getMetaField(pid, name) is not None
+
+
+def exist_metafield_sanitizedname(pid, name):
+    metadatatype = q(Metadatatype).get(pid)
+    return sanitize_metafield_name(name) in (sanitize_metafield_name(metafield.name) for metafield in metadatatype.metafields)
 
 """ update/create metadatafield """
 
@@ -803,16 +817,15 @@ class Mask(Node):
                 t.set_default_metadata(field, node)
 
     def getFormHTML(self, nodes, req):
-        if not self.children:
-            return None
-        ret = ''
+        metafieldnames = tuple(sanitize_metafield_name(maskitem.getField().name)
+                for maskitem in self.all_maskitems if maskitem.get("type") == "field")
+        if len(metafieldnames)!=len(frozenset(metafieldnames)):
+            raise ValueError("duplicate field names after sanitization")
         # self may be an instance of web.edit.modules.metadata.SystemMask
         # in this case self is not bound to a session and sqlalchemy order_by cannot be used
-        # so sort self.children in python
-        for field in sorted(self.children, key=lambda n:n.orderpos):
-            t = getMetadataType(field.get("type"))
-            ret += t.getFormHTML(field, nodes, req)
-        return ret
+        # so sort self.maskitems in python
+        return "".join(getMetadataType(maskitem.get("type")).getFormHTML(maskitem, nodes, req)
+                       for maskitem in sorted(self.maskitems, key=lambda n:n.orderpos))
 
     def getViewHTML(self, nodes, flags=0, language=None, template_from_caller=None):
         if flags & 4:
@@ -875,12 +888,12 @@ class Mask(Node):
                 field = item.getField()
                 if item.get_required():
                     if node.get(field.getName()) == "":
-                        ret.append(field.id)
+                        ret.append(field.name)
                         continue
 
                 if field and field.getContentType() == "metafield" and field.getFieldtype() == "date":
                     if not node.get(field.getName()) == "" and not validateDateString(node.get(field.getName())):
-                        ret.append(field.id)
+                        ret.append(field.name)
         return ret
 
     """ return all node ids which are empty """
@@ -944,25 +957,30 @@ class Mask(Node):
         assert self.masktype == "edit"
         form = req.form
         attrs = {}
+        errors = []
         fields = list()
         current_language = translation.set_language(req.accept_languages)
         default_language = config.languages[0]
         for item in self.all_maskitems:
+            if item.get("type") != "field":
+                continue
             field = item.metafield
-            if field and form.get(field.name, "").find("?") != 0:
+            fieldname_for_html = sanitize_metafield_name(field.name)
+            if form.get('mediatum-editor-nodefield-multiedit-{}'.format(fieldname_for_html)):
+                prefix = "mediatum-editor-nodefield-value-{}-".format(fieldname_for_html)
+                data = {k[len(prefix):]:v for k,v in form.lists() if k.startswith(prefix)}
+                data = _datastructures.ImmutableMultiDict(data)
                 t = getMetadataType(field.get("type"))
-                if field.name in form:
-                    value = t.editor_parse_form_data(field, form)
-                    attrs[field.name] = value
-                elif field["type"] == "check":
-                    attrs[field.name] = "0"
-                fields.append(field)
+                try:
+                    attrs[field.name] = t.editor_parse_form_data(field, data)
+                except _core_metatype.MetatypeInvalidFormData as error:
+                    errors.append(field.name)
 
         attrs["system.edit.lastmask"] = self.name
         attrs["updateuser"] = user.getName()
         attrs["updatetime"] = format_date()
 
-        return _EditUpdateAttrs(attrs)
+        return _EditUpdateAttrs(attrs, errors)
 
     def apply_edit_update_attrs_to_node(self, node, attrs):
         """
@@ -971,6 +989,7 @@ class Mask(Node):
         :param attrs: attributes to update
         :return:
         """
+        assert not attrs.errors
         if 'nodename' in attrs.attrs:
             nodename = attrs.attrs['nodename']
             if nodename and node.name != nodename:

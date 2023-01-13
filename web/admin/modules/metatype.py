@@ -20,6 +20,7 @@ import core.nodecache as _core_nodecache
 import web.common.acl_web as _acl_web
 from utils.utils import suppress
 import core.translation as _translation
+import schema.schema as _schema
 from schema.schema import cloneMask
 from schema.schema import deleteMetaField
 from schema.schema import deleteMetaType
@@ -36,7 +37,6 @@ from schema.schema import updateMetaField
 from schema.schema import updateMetaType
 from schema.bibtex import getAllBibTeXTypes
 from schema import citeproc
-import schema.schema as _schema
 
 from utils.fileutils import importFile
 # metafield methods
@@ -241,8 +241,11 @@ def validate(req, op):
             if req.params.get("form_op", "") == "cancel":
                 return showDetailList(req, req.params.get("parent"))
 
-            if existMetaField(req.params.get("parent"), req.params.get("mname")) and \
-                    (req.params.get("form_op", "")  == "save_newdetail" or req.params.get("mname") != req.params.get("mname_orig")):
+            if (
+                    (req.values.get("form_op") == "save_newdetail" or req.values.get("mname") != req.values.get("mname_orig"))
+                    and
+                    _schema.exist_metafield_sanitizedname(req.values.get("parent"), req.values.get("mname"))
+                   ):
                 error = "admin_duplicate_error"
             elif req.params.get("mname", "") == "" or req.params.get("mlabel", "") == "":
                 error = "admin_mandatory_error"

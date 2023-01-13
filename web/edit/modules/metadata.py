@@ -43,6 +43,10 @@ class _SystemMask(_schema.Mask):
     def all_maskitems(self):
         return self.children
 
+    @property
+    def maskitems(self):
+        return self.children
+
 
 class _SystemMaskitem(_schema.Maskitem):
 
@@ -64,10 +68,12 @@ def _handle_edit_metadata(req, mask, nodes):
         assert node.has_write_access() and node is not userdir
 
     attrs = mask.get_edit_update_attrs(req, user)
-    for node in nodes:
-        mask.apply_edit_update_attrs_to_node(node, attrs)
+    if not attrs.errors:
+        for node in nodes:
+            mask.apply_edit_update_attrs_to_node(node, attrs)
 
     db.session.commit()
+    return attrs.errors
 
 
 def getContent(req, ids):
@@ -133,10 +139,10 @@ def getContent(req, ids):
             req.response.status_code = httpstatus.HTTP_FORBIDDEN
             return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
-        _handle_edit_metadata(req, mask, nodes)
+        errors = _handle_edit_metadata(req, mask, nodes)
         logg.debug("%s change metadata %s", user.login_name, idstr)
         logg.debug("%r", req.params)
-        req.params["errorlist"] = mask.validate(nodes)
+        req.params["errorlist"] = errors + mask.validate(nodes)
 
     return _tal.processTAL(
         dict(

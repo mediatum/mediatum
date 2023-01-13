@@ -13,13 +13,18 @@
       <div style="float:left;position:relative;">
         <textarea
             rows="4"
-            tal:attributes="required required; disabled python:{0:None,1:'disabled'}[lock]; name python:u'{}'.format(name); id python:u'{}'.format(name); onkeyup python:'countMeta(this,{})'.format(max_length);style python:u'width:{}px'.format(width-20)"
+            tal:attributes="
+                required required;
+                name python:u'mediatum-editor-nodefield-value-{}-htmlmemo'.format(name);
+                id python:u'mediatum-editor-nodefield-value-{}-htmlmemo'.format(name);
+                onkeyup python:'countMeta(this,{})'.format(max_length);
+               "
             tal:content="python:value"
           />
       </div>
 
-      <script tal:content="python:u'ckeditor_config(&quot;{}&quot;);'.format(name)"/>
-    <div tal:attributes="style python:u'width:{}px'.format(width)">
+      <script tal:content="python:u'ckeditor_config(&quot;mediatum-editor-nodefield-value-{}-htmlmemo&quot;);'.format(name)"/>
+    <div>
         <div tal:condition="python:max_length" style="text-align:right;padding-right:7px; margin-bottom:7px">
             <small>
                 <span tal:attributes="id python:u'number{}'.format(name)" tal:content="python:max_length-len(value)"/>
@@ -30,28 +35,14 @@
     </tal:block>
 
     <tal:block tal:condition="python:not wysiwyg">
-      <div style="float:left;position:relative;">
-        <div class="surr">
-          <textarea
-              class="memo_text"
-              rows="4"
-              tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; name python:u'{}'.format(name); id python:u'{}'.format(name); onkeyup python:'countMeta(this,{})'.format(max_length);style python:u'width:{}px'.format(width-20); required required"
-              tal:content="python:value"
-            />
-        </div>
-      </div>
+      <textarea
+        rows="4"
+        tal:attributes="name python:u'mediatum-editor-nodefield-value-{}-htmlmemo'.format(name); value python:value; required required"
+        tal:content="python:value"
+       />
     </tal:block>
 
-    <span tal:condition="python:lock!=0" tal:attributes="id python:u'lockspan_{}'.format(name)">&nbsp;
-        <input tal:attributes="name python:u'lock_{}'.format(name); id python:u'lock_{}'.format(name); onclick python:u'handlelock(\'{}\')'.format(name)" type="checkbox"/>
-        <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
-    </span>
-
     <div style="clear:left"> </div>
-</tal:block>
-
-<tal:block metal:define-macro="searchfield">
-    <input tal:attributes="name python:name; id python:name; value python:value" type="text" style="width:174px;" class="searchfield"/>
 </tal:block>
 
 <tal:block metal:define-macro="metafieldeditor">

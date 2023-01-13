@@ -114,6 +114,7 @@ div.label{width:210px;float:left;padding-left:15px;}
 .mediatum_context-menu-home {overflow: hidden!important;}
 .mediatum_delbutton{padding-top:20px;}
 #mediatum_dest_names{width:auto;border:1px solid silver;padding:5px;margin:10px 20px;margin-left:200px;height:50px;overflow:auto;}
+.mediatum-editor-nodefield-error{color:#FF0000;}
 .mediatum_edit_files_border{border:1px solid silver;height:225px;overflow:auto;}
 .mediatum_edit_files_cancel{width:150px;}
 .mediatum_edit_files_childobjects{border:1px solid #A4A4A4; width:129px;height:129px;float:left;margin-right:2px;text-align:center;margin-top:3px;}

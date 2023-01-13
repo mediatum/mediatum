@@ -146,3 +146,45 @@
         <input tal:attributes="value python:op" type="hidden" name="op"/>
     </div>
 </tal:block>
+
+<tal:block metal:define-macro="get_form_html">
+    <fieldset
+      tal:attributes="
+          class python:'mediatum-editor-nodefield mediatum-editor-nodefield-bytype-{}'.format(fieldtype);
+          id python:'mediatum-editor-nodefield-byname-{}'.format(name);
+         "
+      >
+        <legend tal:attributes="title python:description">
+            <tal:block tal:content="python:label"/>
+            <span tal:condition="python:required" class="required">*</span>
+        </legend>
+        <div
+            tal:attributes="id python:'mediatum-editor-nodefield-error-{}'.format(name)"
+            class="mediatum-editor-nodefield-error"
+            tal:condition="python:error"
+            i18n:translate="edit_error"
+           >
+        </div>
+        <label
+            class="mediatum-editor-nodefield-multiedit"
+            i18n:attributes="title editor_nodefield_multiedit_overwrite_description"
+            tal:attributes="style python:None if conflict else 'display:none'"
+            >
+            <input
+                tal:attributes="
+                    id python:'mediatum-editor-nodefield-multiedit-{}'.format(name);
+                    name python:'mediatum-editor-nodefield-multiedit-{}'.format(name);
+                    onchange python:'handle_multiedit_checkbox(\'{}\')'.format(name);
+                    type python:'checkbox' if conflict else 'hidden';
+                    value python:'1' if not conflict else None;
+                   "
+             />
+            <tal:block i18n:translate="">editor_nodefield_multiedit_overwrite</tal:block>
+        </label>
+        <fieldset
+            class="mediatum-editor-nodefield-value"
+            tal:attributes="disabled python:conflict or None"
+            tal:content="structure python:html_form"
+           />
+    </fieldset>
+</tal:block>

@@ -4,14 +4,10 @@
 -->
 <tal:block metal:define-macro="editorfield">
     <select
-            class="text"
             tal:attributes="
-                    class python:'mediatum_multitext' if multiple else 'text';
-                    disabled python:'disabled' if lock else None;
-                    id python:name;
                     multiple python:'multiple' if multiple else None;
-                    name python:name;
-                    style python:u'width:{}px'.format(width-16);
+                    name python:u'mediatum-editor-nodefield-value-{}-list'.format(name);
+                    required required;
                    "
            >
         <tal:block tal:repeat="element elements">
@@ -30,18 +26,6 @@
             </optgroup>
         </tal:block>
     </select>
-    <tal:block tal:condition="python:lock!=0" tal:attributes="id python:u'lockspan_{}'.format(name)">
-        &nbsp;
-        <input
-                tal:attributes="
-                        name python:u'lock_{}'.format(name);
-                        id python:u'lock_{}'.format(name);
-                        onclick python:u'handlelock(\'{}\')'.format(name);
-                       "
-                type="checkbox"
-               />
-        <small style="color: silver" i18n:translate="editor_overwrite"> </small>
-    </tal:block>
 </tal:block>
 
 

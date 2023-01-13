@@ -9,6 +9,7 @@ import logging
 import re
 
 import core.translation as _core_translation
+import core.metatype as _core_metatype
 from core.metatype import Metatype
 from urllib import unquote
 from utils.utils import quote_uri
@@ -41,23 +42,23 @@ class m_url(Metatype):
         new_window=False,
     )
 
-    def editor_get_html_form(self, field, value="", width=400, lock=0, language=None, required=None):
-        metacfg = field.metatype_data
-        link, text = (value.split(";")+[""])[:2]
-        return tal.getTAL(
+    def editor_get_html_form(self, metafield, metafield_name_for_html, values, required, language):
+
+        conflict = len(frozenset(values))!=1
+
+        metacfg = metafield.metatype_data
+        link, text = (values[0].split(";")+[""])[:2]
+        return _core_metatype.EditorHTMLForm(tal.getTAL(
                 "metadata/url.html",
                 dict(
-                    lock=lock,
-                    link=link or metacfg["link"],
-                    text=text or metacfg["text"],
-                    width=width,
-                    name=field.getName(),
-                    field=field,
+                    link="" if conflict else link or metacfg["link"],
+                    text="" if conflict else text or metacfg["text"],
+                    name=metafield_name_for_html,
                     required=1 if required else None,
                    ),
                 macro="editorfield",
                 language=language,
-               )
+                ), conflict)
 
     def search_get_html_form(self, collection, field, language, name, value):
         return tal.getTAL(
@@ -103,12 +104,12 @@ class m_url(Metatype):
 
         return metafield.getLabel(), value
 
-    def editor_parse_form_data(self, field, form):
-        uri = form.get(field.name)
+    def editor_parse_form_data(self, field, data):
+        uri = data.get('link')
         quoted_uri = quote_uri(uri)
         if not quoted_uri:
             return ""
-        linktext = form.get("{}_text".format(field.name)).replace(u";", u"\u037e")
+        linktext = data.get("text").replace(u";", u"\u037e")
         if not linktext:
             # don't add a single ';' add the end of the url (quoted_uri)
             return u"{}".format(quoted_uri)

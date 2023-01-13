@@ -94,20 +94,6 @@ class m_label(Metatype):
                 request=req,
                )
 
-    def editor_get_html_form(self, field, value="", width=40, lock=0, language=None, required=None):
-        return tal.getTAL(
-                "metadata/label.html",
-                dict(
-                    lock=lock,
-                    value=value,
-                    width=width,
-                    name=field.getName(),
-                    field=field,
-                   ),
-                macro="editorfield",
-                language=language,
-               )
-
     def search_get_html_form(self, collection, field, language, name, value):
         return tal.getTAL(
                 "metadata/label.html",

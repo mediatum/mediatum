@@ -2,15 +2,20 @@
   Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
   SPDX-License-Identifier: AGPL-3.0-or-later
 -->
-<tal:block metal:define-macro="editorfield" tal:define="schema python:field.getSchemaNode().getName()">
-    <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:u'width:{}px'.format(width-50); name name; id name; value value; required required"/>
+<tal:block metal:define-macro="editorfield" tal:define="schema python:metafield.getSchemaNode().getName()">
+    <input
+        type="text"
+        tal:attributes="name python:u'mediatum-editor-nodefield-value-{}-text'.format(name);
+            value python:value;
+            required required"
+       />
     &nbsp;
     <button
         tal:attributes="
             name python:u'indexbutton_{}'.format(name);
             onclick python:u'openPopup(\'/metatype/ilist?type={}&name={}&schema={}\', \'\', 400, 400)'.format(
-                field.getFieldtype(),
-                name,
+                metafield.getFieldtype(),
+                metafield.name,
                 schema,
                 );
             "
@@ -21,10 +26,6 @@
     >
     </button>
 
-    <tal:block tal:condition="python:lock!=0" tal:attributes="id python:u'lockspan_{}'.format(name)">&nbsp;
-        <input tal:attributes="name python:u'lock_{}'.format(name); id python:u'lock_{}'.format(name); onclick python:u'handlelock(\'{}\')'.format(name)" type="checkbox"/>
-        <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
-   </tal:block>
 </tal:block>
 
 <select metal:define-macro="searchfield" tal:attributes="name python:name; id python:name" class="searchfield" tal:content="raw option_list"/>
@@ -41,7 +42,7 @@
             <link href="/static/css/popup.css" rel="stylesheet" type="text/css"/>
             <link rel="stylesheet" tal:repeat="src html_head_style_src" tal:attributes="href src" />
         </head>
-        <body class="form" tal:attributes="onload python:u'getValue(\'{}\')'.format(fieldname)">
+        <body class="form" tal:attributes="onload python:u'getValue(\'{}\')'.format(metafield_name_for_html)">
             <form>
                 <table class="maintable">
                     <tr class="headline">
@@ -84,7 +85,7 @@
                         <td>
                             <button
                                 class="mediatum_button_width"
-                                tal:attributes="onclick python:u'pick(\'{}\')'.format(fieldname)"
+                                tal:attributes="onclick python:u'pick(\'{}\')'.format(metafield_name_for_html)"
                                 i18n:translate="ok"
                                 type="button"
                             >

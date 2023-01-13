@@ -11,6 +11,7 @@ from mediatumtal import tal
 import ruamel.yaml as _ruamel_yaml
 
 from utils.utils import esc
+import core.metatype as _core_metatype
 from core.metatype import Metatype
 from core import db
 import metadata.common_list as _common_list
@@ -58,24 +59,25 @@ class m_list(Metatype):
         if not element.optgroup:
             return element.label
 
-    def editor_get_html_form(self, field, value="", width=400, lock=0, language=None, required=None):
-        return tal.getTAL(
+    def editor_get_html_form(self, metafield, metafield_name_for_html, values, required, language):
+        values = tuple(frozenset(v.split(";")) for v in values)
+
+        conflict = len(frozenset(values))!=1
+
+        return _core_metatype.EditorHTMLForm(tal.getTAL(
                 "metadata/list.html",
                 dict(
-                    field=field,
-                    lock=lock,
-                    multiple=field.metatype_data['multiple'],
-                    name=field.getName(),
+                    multiple=metafield.metatype_data['multiple'],
+                    name=metafield_name_for_html,
                     required=1 if required else None,
                     elements=tuple(_format_elements(
-                            field.metatype_data["listelements"],
-                            selected_elements=frozenset(value.split(";")),
+                            metafield.metatype_data.get("listelements"),
+                            selected_elements=frozenset(v for value in values for v in value),
                            )),
-                    width=width,
-                  ),
+                   ),
                 macro="editorfield",
                 language=language,
-               )
+                ), conflict)
 
     def search_get_html_form(self, collection, field, language, name, value):
         return tal.getTAL(
@@ -101,12 +103,12 @@ class m_list(Metatype):
             value = esc(value)
         return (metafield.getLabel(), value)
 
-    def editor_parse_form_data(self, field, form):
+    def editor_parse_form_data(self, field, data):
         if field.metatype_data['multiple']:
-            valuelist = form.getlist(field.name)
+            valuelist = data.getlist("list")
             value = ";".join(valuelist)
         else:
-            value = form.get(field.name)
+            value = data.get("list")
         return value.replace("; ", ";")
 
     def admin_settings_get_html_form(self, fielddata, metadatatype, language):

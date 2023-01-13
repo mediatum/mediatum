@@ -28,23 +28,22 @@ class m_htmlmemo(_core_metatype.Metatype):
         wysiwyg=False,
     )
 
-    def editor_get_html_form(self, field, value="", width=400, lock=0, language=None, required=None):
-        s = tal.getTAL(
+    def editor_get_html_form(self, metafield, metafield_name_for_html, values, required, language):
+
+        conflict = len(frozenset(values))!=1
+
+        return _core_metatype.EditorHTMLForm(tal.getTAL(
                 "metadata/htmlmemo.html",
                 dict(
-                    lock=lock,
-                    value=value,
-                    width=width,
-                    name=field.name,
-                    max_length=field.metatype_data['max_length'],
-                    ident=ustr(field.id),
+                    value="" if conflict else values[0],
+                    max_length=metafield.metatype_data['max_length'],
+                    name=metafield_name_for_html,
                     required=1 if required else None,
-                    wysiwyg=field.metatype_data['wysiwyg'],
+                    wysiwyg=metafield.metatype_data['wysiwyg'],
                    ),
                 macro="editorfield",
                 language=language,
-               )
-        return s.replace("REPLACE_WITH_IDENT", unicode(field.id))
+                ), conflict)
 
     def search_get_html_form(self, collection, field, language, name, value):
         return tal.getTAL(
@@ -76,3 +75,6 @@ class m_htmlmemo(_core_metatype.Metatype):
             max_length=int(data["max_length"]) if data["max_length"] else None,
             wysiwyg=bool(data.get("wysiwyg")),
         )
+
+    def editor_parse_form_data(self, field, data):
+        return data.get("htmlmemo")

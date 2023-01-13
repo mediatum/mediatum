@@ -16,6 +16,7 @@ from sqlalchemy import func, sql
 from mediatumtal import tal
 
 from utils.utils import esc, suppress
+import core.metatype as _core_metatype
 from core.metatype import Metatype
 from core import httpstatus
 from core import db
@@ -24,6 +25,7 @@ from contenttypes import Collections
 from core.database.postgres import mediatumfunc
 from core.database.postgres.alchemyext import exec_sqlfunc
 import metadata.common_list as _common_list
+import schema.schema as _schema
 from web import frontend as _web_frontend
 
 q = db.query
@@ -48,20 +50,21 @@ class m_ilist(Metatype):
 
     name = "ilist"
 
-    def editor_get_html_form(self, field, value="", width=400, lock=0, language=None, required=None):
-        return tal.getTAL(
+    def editor_get_html_form(self, metafield, metafield_name_for_html, values, required, language):
+
+        conflict = len(frozenset(values))!=1
+
+        return _core_metatype.EditorHTMLForm(tal.getTAL(
                 "metadata/ilist.html",
                 dict(
-                    lock=lock,
-                    value=value,
-                    width=width,
-                    name=field.getName(),
-                    field=field,
+                    value="" if conflict else values[0],
+                    name=metafield_name_for_html,
                     required=1 if required else None,
+                    metafield=metafield,
                    ),
                 macro="editorfield",
                 language=language,
-               )
+                ), conflict)
 
     def search_get_html_form(self, collection, field, language, name, value):
         # `value_and_count` contains a list of options,
@@ -139,6 +142,7 @@ class m_ilist(Metatype):
                     dict(
                         option_list=option_list,
                         fieldname=fieldname,
+                        metafield_name_for_html=_schema.sanitize_metafield_name(fieldname),
                         schema=schema,
                         html_head_style_src=_web_frontend.html_head_style_src,
                         html_head_javascript_src=_web_frontend.html_head_javascript_src,
@@ -149,3 +153,6 @@ class m_ilist(Metatype):
                    )
                )
         return httpstatus.HTTP_OK
+
+    def editor_parse_form_data(self, field, data):
+        return data.get("text")

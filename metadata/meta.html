@@ -4,6 +4,7 @@
 -->
 <tal:block metal:define-macro="editorfield">
     <i>[<span i18n:translate="metafield_fieldname">TEXT</span>: <span tal:replace="python:fieldname"/>]</i> <span tal:content="value"/>
+    <input type="hidden" tal:attributes="name python:u'mediatum-editor-nodefield-value-{}-meta'.format(name); value python:value"/>
     <br/>&nbsp;
 </tal:block>
 

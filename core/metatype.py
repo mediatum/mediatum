@@ -4,15 +4,30 @@
 from __future__ import division
 from __future__ import print_function
 
+import collections as _collections
+import core as _core
 from warnings import warn
+
+
+EditorHTMLForm = _collections.namedtuple("EditorHTMLForm", "html conflict");
+
+
+class MetatypeInvalidFormData(Exception):
+    def __init__(self, message_id, mapping={}):
+        super(Exception, self).__init__(message_id)
+        self.message_id = message_id
+        self.mapping = mapping
+
+    def get_translated_message(self):
+        return _core.translation.translate_in_request(self.message_id, mapping=self.mapping)
 
 
 class Metatype(object):
 
     default_settings = None
 
-    def editor_get_html_form(self, field, value="", width=400, lock=0, language=None, required=None):
-        return ""
+    def editor_get_html_form(self, metafield, metafield_name_for_html, values, required, language):
+        raise AssertionError
 
     def search_get_html_form(self, context):
         pass
@@ -20,14 +35,8 @@ class Metatype(object):
     def viewer_get_data(self, metafield, maskitem, mask, node, language, html):
         pass
 
-    def editor_parse_form_data(self, field, form):
-        """Prepare value for the database from update request params.
-        :param field:   associated field
-        :param params: dict which contains POST form values
-        :param item: field name prepended with language specifier. Is the same as field name for non-multilingual fields.
-        """
-        # just fetch the unmodified value from the params dict
-        return form.get(field.name)
+    def editor_parse_form_data(self, field, data):
+        raise AssertionError
 
     def get_default_value(self, field):
         return ""

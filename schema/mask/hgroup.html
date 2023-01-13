@@ -55,8 +55,8 @@
 </div>
 
 <tal:block metal:define-macro="get_form_html">
-  <div tal:attributes="class python:cls">
-    <div class="mask_label" tal:content="label"/>
+  <fieldset class="mediatum-editor-hgroupfield">
+    <legend tal:content="label"/>
     <tal:block tal:content="structure children_html"/>
-  </div>
+  </fieldset>
 </tal:block>

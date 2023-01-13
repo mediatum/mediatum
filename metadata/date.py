@@ -10,6 +10,7 @@ from mediatumtal import tal
 import utils.date as date
 from utils.utils import suppress
 from utils.date import format_date, parse_date, validateDate
+import core.metatype as _core_metatype
 from core.metatype import Metatype
 from schema.schema import dateoption
 
@@ -25,31 +26,34 @@ class m_date(Metatype):
         format=dateoption[0].shortname,
     )
 
-    def editor_get_html_form(self, field, value="", width=400, lock=0, language=None, required=None):
-        date_format = field.metatype_data['format']
-        d = field.getSystemFormat(date_format)
+    def editor_get_html_form(self, metafield, metafield_name_for_html, values, required, language):
+        date_format = metafield.metatype_data['format']
+        d = metafield.getSystemFormat(date_format)
 
-        if value == "?":
-            value = date.format_date(date.now(), d.value)
-        with suppress(Exception, warn=False):
-            value = date.format_date(date.parse_date(value), d.value)
-        return tal.getTAL(
+        conflict = len(frozenset(values))!=1
+
+        if conflict:
+            value = ""
+        else:
+            value = values[0]
+            with suppress(Exception, warn=False):
+                value = date.format_date(date.parse_date(value), d.value)
+
+        return _core_metatype.EditorHTMLForm(tal.getTAL(
                 "metadata/date.html",
                 dict(
-                    lock=lock,
                     value=value,
-                    width=width,
-                    name=field.getName(),
+                    name=metafield_name_for_html,
+                    required=1 if required else None,
                     date_format=date_format,
                     pattern={date.shortname: date.validation_regex
                                  for date in dateoption}[date_format],
                     title=date_format,
                     placeholder=date_format,
-                    required=1 if required else None,
                    ),
                 macro="editorfield",
                 language=language,
-               )
+                ), conflict)
 
     def search_get_html_form(self, collection, field, language, name, value):
         value = value.split(";")
@@ -99,17 +103,19 @@ class m_date(Metatype):
 
         return (metafield.getLabel(), ''.join(value_list))
 
-    def editor_parse_form_data(self, field, form):
+    def editor_parse_form_data(self, field, data):
         f = field.getSystemFormat(ustr(field.metatype_data['format']))
         if not f:
             return ""
-        value = form.get(field.name)
+        value = data.get("date")
+        if not value:
+            return ""
         try:
             value = parse_date(ustr(value), f.value)
-        except ValueError:
-            return ""
+        except ValueError as e:
+            raise _core_metatype.MetatypeInvalidFormData(e.message)
         if not validateDate(value):
-            return ""
+            raise _core_metatype.MetatypeInvalidFormData("not validated")
         return format_date(value, format='%Y-%m-%dT%H:%M:%S')
 
     def admin_settings_get_html_form(self, fielddata, metadatatype, language):

@@ -8,7 +8,7 @@ function trim(str) {
     return str.replace(/^\s*|\s*$/g,"");
 }
 
-function pick(value) {
+function pick(metafield_name_for_html) {
     val = "";
     if (window.opener && !window.opener.closed) {
         el = document.getElementById('values');
@@ -19,15 +19,15 @@ function pick(value) {
             }
             val += el.options[old_id[i]].value;
         }
-        doc.getElementById(value).value=val;
+        doc.getElementsByName('mediatum-editor-nodefield-value-'+metafield_name_for_html+'-text')[0].value=val;
     }
     window.close();
 }
 
-function getValue(value) {
+function getValue(metafield_name_for_html) {
     if (window.opener && !window.opener.closed) {
         doc = window.opener.document;
-        arr = doc.getElementById(value);
+        arr = doc.getElementsByName('mediatum-editor-nodefield-value-'+metafield_name_for_html+'-text')[0];
 
         if (arr) {
             arr = arr.value.split(";");

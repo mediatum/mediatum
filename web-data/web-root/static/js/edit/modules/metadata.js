@@ -9,14 +9,14 @@ function openPopup(url, name, width, height){
     return win1;
 }
 
-function handlelock(name){
-    if (document.getElementById('lock_'+name).checked){
-        document.getElementById(name).disabled = false;
-        document.getElementById(name).value = '';
-    }else{
-        document.getElementById(name).disabled = true;
-        document.getElementById(name).value = '? ';
+function handle_multiedit_checkbox(name){
+    nodefield_value_array = document.getElementById(`mediatum-editor-nodefield-byname-${name}`).getElementsByClassName("mediatum-editor-nodefield-value");
+
+    if (nodefield_value_array.length !== 1) {
+        throw new RangeError(`Array length is ${nodefield_value.length}, expected 1`);
     }
+
+    nodefield_value_array[0].disabled = ! document.getElementById(`mediatum-editor-nodefield-multiedit-${name}`).checked;
 }
 
 $(document).ready(function () {

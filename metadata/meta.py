@@ -6,6 +6,7 @@ from __future__ import print_function
 
 import logging
 from mediatumtal import tal
+import core.metatype as _core_metatype
 from core.metatype import Metatype
 from core.database.postgres.node import Node
 from lib.iptc.IPTC import get_wanted_iptc_tags
@@ -21,19 +22,18 @@ class m_meta(Metatype):
         synchronize=False,
     )
 
-    def editor_get_html_form(self, field, value="", width=400, lock=0, language=None, required=None):
-        return tal.getTAL(
+    def editor_get_html_form(self, metafield, metafield_name_for_html, values, required, language):
+        conflict = len(frozenset(values))!=1
+        return _core_metatype.EditorHTMLForm(tal.getTAL(
                 "metadata/meta.html",
                 dict(
-                    lock=lock,
-                    value=value,
-                    width=width,
-                    name=field.getName(),
-                    fieldname=field.metatype_data['fieldname'],
+                    value="" if conflict else values[0],
+                    name=metafield_name_for_html,
+                    fieldname=metafield.metatype_data['fieldname'],
                    ),
                 macro="editorfield",
                 language=language,
-               )
+               ), conflict)
 
     def search_get_html_form(self, collection, field, language, name, value):
         return tal.getTAL(
@@ -79,3 +79,6 @@ class m_meta(Metatype):
             fieldname=data["fieldname"],
             synchronize=bool(data.get("synchronize")),
         )
+
+    def editor_parse_form_data(self, field, data):
+        return data.get("meta")

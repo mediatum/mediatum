@@ -13,6 +13,8 @@ import utils.utils as _utils_utils
 from utils.utils import formatLongText
 from utils.strings import ensure_unicode
 
+import re as _re
+import schema.schema as _schema
 from schema.schema import getMetadataType, VIEW_DATA_ONLY, VIEW_SUB_ELEMENT, VIEW_HIDE_EMPTY, VIEW_DATA_EXPORT
 from core.metatype import Metatype
 from core import db
@@ -20,6 +22,9 @@ from core.database.postgres.node import Node
 
 q = db.query
 s = db.session
+
+
+_metafield_type_allowed_chars = _re.compile(r'[a-z]').match
 
 
 class m_field(Metatype):
@@ -43,78 +48,29 @@ class m_field(Metatype):
             node.set(key, value)
 
 
-    def getFormHTML(self, field, nodes, req, sub=False):
+    def getFormHTML(self, field, nodes, req):
         """ create editor field (editarea)"""
-        element = field.getField()
-        ret = ''
-        label = ''
-        description = '<div id="div_description"></div>'
-        unit = ''
-
-        if not sub:
-            label += '<div class="label">' + field.getLabel() + ':'
-            if field.get_required():
-                label += ' <span class="required">*</span>'
-            label += '</div>'
-        else:
-            if field.getLabel() != "":
-                label += field.getLabel() + ': '
-                if field.get_required():
-                    label += '<span class="required">*</span> '
-
-        if field.getDescription() != "":
-            description = """
-                    <div id="div_description">
-                        <a
-                           href="#!"
-                           onclick="openPopup('/popup_help?id={}&amp;maskid={}', '', 400, 250)"
-                           class="mediatum-link-mediatum"
-                        >
-                            <img src="/static/img/tooltip.png" border="0"/>
-                        </a>
-                    </div>
-                """.format(element.id, field.id)
-
-        if not sub:
-            if ustr(element.id) in req.params.get("errorlist", []):
-                ret += '<div class="editorerror">'
-            else:
-                ret += '<div class="editorrow">'
-
-        ret += label + description
-        elementtype = element.get("type")
-
-        val = nodes[0].get_special(element.getName())
-        for node in nodes:
-            elementname = node.get_special(element.getName())
-            if elementname == "":
-                val = ""
-
-        values = frozenset(node.get_special(element.getName()) for node in nodes)
-        lock = 1
-        if len(values) == 2 and (val=="" or "" in values):
-            for val in filter(None, values):
-                pass
-        elif len(values) >= 2:
-            val = "? "
-        else:
-            lock = 0
-        if val == "":
-            val = field.getDefault()
-        t = getMetadataType(elementtype)
-        unit += field.getUnit()
-
-        ret += '<div id="editor_content">' + \
-            t.editor_get_html_form(element,
-                            value=val,
-                            width=field.getWidth(),
-                            lock=lock,
-                            language=_core_translation.set_language(req.accept_languages),
+        metafield = field.getField()
+        metafield_type = metafield.get("type")
+        assert _metafield_type_allowed_chars(metafield_type)
+        values = tuple(node.get_special(metafield.name) for node in nodes)
+        editor_html_form = getMetadataType(metafield_type).editor_get_html_form(metafield,
+                            metafield_name_for_html=_schema.sanitize_metafield_name(metafield.name),
+                            values=values,
                             required=field.get_required(),
-                           ) + unit + '</div>'
-        if not sub:
-            ret += '</div>'
-        return ret
+                            language=_core_translation.set_language(req.accept_languages),
+                       )
+        tal_ctx = dict(
+                name=_schema.sanitize_metafield_name(metafield.name),
+                description=field.getDescription() or None,
+                fieldtype=metafield_type,
+                label=field.getLabel(),
+                conflict=editor_html_form.conflict,
+                required=field.get_required(),
+                html_form=editor_html_form.html,
+                error=metafield.name in req.params.get("errorlist", [])
+               )
+        return _tal.processTAL(tal_ctx, file="schema/mask/field.html", macro="get_form_html", request=req)
 
 
     def getViewHTML(self, maskitem, nodes, flags, language=None, template_from_caller=None, mask=None):
@@ -182,7 +138,14 @@ class m_field(Metatype):
 
         if field:
             f = getMetadataType(field.get("type"))
-            fieldstring = f.editor_get_html_form(field, width=item.getWidth(), value=item.getDefault(), language=language) + ' ' + item.getUnit()
+            editor_html_form = f.editor_get_html_form(
+                    field,
+                    metafield_name_for_html=_schema.sanitize_metafield_name(field.name),
+                    values=(item.getDefault(),),
+                    language=language,
+                    required=item.get_required(),
+                    )
+            fieldstring = editor_html_form.html + ' ' + item.getUnit()
         else:  # node for export mask
             attribute = q(Node).get(item.get("attribute"))
             field = item

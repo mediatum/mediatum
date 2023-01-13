@@ -103,8 +103,11 @@ msgstr "Papierkorb"
 msgid "user_home"
 msgstr "Arbeitsverzeichnis"
 
-msgid "editor_overwrite"
-msgstr "überschreiben"
+msgid "editor_nodefield_multiedit_overwrite"
+msgstr "Feldwert(e) für alle Knoten übernehmen"
+
+msgid "editor_nodefield_multiedit_overwrite_description"
+msgstr "Die ursprünglichen Metadaten der selektierten Knoten sind widersprüchlich. Mit dieser Checkbox werden alle Feldinhalte beim Speichern durch die hier eingegebenen ersetzt, statt sie unangetastet zu lassen."
 
 msgid "editor_to"
 msgstr "bis"

@@ -97,8 +97,11 @@ msgstr "Trashbox"
 msgid "user_home"
 msgstr "Home Directory"
 
-msgid "editor_overwrite"
-msgstr "overwrite"
+msgid "editor_nodefield_multiedit_overwrite"
+msgstr "Apply value(s) for all nodes"
+
+msgid "editor_nodefield_multiedit_overwrite_description"
+msgstr "Original metadata values of selected nodes are contradictory. With this option, the values entered here will replace existing values, instead of leaving them untouched."
 
 msgid "editor_to"
 msgstr "until"

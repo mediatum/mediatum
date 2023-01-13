@@ -41,18 +41,20 @@ class WorkflowStep_EditMetadata(WorkflowStep):
             mask = getMetaType(node.schema).getMask(self.settings["mask"])
 
         if "metaDataEditor" in req.params:
-            mask.apply_edit_update_attrs_to_node(node, mask.get_edit_update_attrs(req, user))
-            db.session.commit()
-            missing = mask.validate([node])
-            if not missing or "gofalse" in req.params:
-                op = "gotrue" in req.params
-                return self.forwardAndShow(node, op, req)
-            else:
-                error = u'<p class="error">{}</p>'.format(_core_translation.translate(
-                        _core_translation.set_language(req.accept_languages),
-                        "workflow_error_msg",
-                    ))
-                req.params["errorlist"] = missing
+            if "gofalse" in req.params:
+                return self.forwardAndShow(node, False, req)
+            attrs = mask.get_edit_update_attrs(req, user)
+            if not attrs.errors:
+                mask.apply_edit_update_attrs_to_node(node, attrs)
+                db.session.commit()
+            missing = attrs.errors + mask.validate([node])
+            if not missing:
+                return self.forwardAndShow(node, True, req)
+            error = u'<p class="error">{}</p>'.format(_core_translation.translate(
+                    _core_translation.set_language(req.accept_languages),
+                    "workflow_error_msg",
+                ))
+            req.params["errorlist"] = missing
 
         if mask:
             maskcontent = mask.getFormHTML([node], req)

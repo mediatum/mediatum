@@ -22,19 +22,13 @@ class m_hgroup(Metatype):
     name = "hgroup"
 
     def getFormHTML(self, field, nodes, req):
-        cls = "editorrow"
-        for item in field.getChildren().sort_by_orderpos():
-            if item.getField().id in req.params.get("errorlist", []):
-                cls = "editorerror"
-                break
 
         children_html = []
         for item in field.getChildren().sort_by_orderpos():
             f = getMetadataType(item.get("type"))
-            children_html.append(f.getFormHTML(item, nodes, req, True))
+            children_html.append(f.getFormHTML(item, nodes, req))
         v = dict(
                 children_html="".join(children_html),
-                cls=cls,
                 label=field.getLabel(),
                )
         return _tal.processTAL(v, file="schema/mask/hgroup.html", macro="get_form_html", request=req)

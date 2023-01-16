@@ -28,9 +28,7 @@ logg = logging.getLogger(__name__)
 
 
 def sendmail(fromemail, email, subject, text, attachments_paths_and_filenames=[]):
-    testing = config.get("host.type") == "testing"
     fromaddr = fromemail
-
     if ";" in email:
         toaddrs = []
         toaddrs_string = ""
@@ -45,66 +43,73 @@ def sendmail(fromemail, email, subject, text, attachments_paths_and_filenames=[]
         toaddrs = email
         toaddrs_string = email
 
-    logg.info("Sending mail from %s to %s", fromaddr, toaddrs)
-    if not testing:
-        if not attachments_paths_and_filenames:
-            msg = MIMEText(text.encode('utf-8'), _charset="utf-8")
-            msg['Subject'] = subject
-            msg['From'] = fromaddr
-            msg['To'] = toaddrs_string
+    logg.info("Attempting to send email with %s bytes text and %s attachments from '%s' to '%s'",
+              len(text),
+              len(attachments_paths_and_filenames),
+              fromaddr,
+              toaddrs
+        )
 
-            try:
-                server = smtplib.SMTP(config.get("server.mail"))
-                server.set_debuglevel(1)
-                server.sendmail(fromaddr, toaddrs, msg.as_string())
-                server.quit()
-            except smtplib.socket.error:
-                raise SocketError
+    if config.get("server.mail") is None:
+        logg.warning("No email server specified, not sending email to '%s'", toaddrs)
+        return
+
+    if not attachments_paths_and_filenames:
+        msg = MIMEText(text.encode('utf-8'), _charset="utf-8")
+        msg['Subject'] = subject
+        msg['From'] = fromaddr
+        msg['To'] = toaddrs_string
+        try:
+            server = smtplib.SMTP(config.get("server.mail"))
+            server.set_debuglevel(1)
+            server.sendmail(fromaddr, toaddrs, msg.as_string())
+            server.quit()
+        except smtplib.socket.error:
+            raise SocketError
+
+        return
+
+    mime_multipart = MIMEMultipart()
+    mime_multipart['Subject'] = subject
+    mime_multipart['To'] = toaddrs_string
+    mime_multipart['From'] = fromaddr
+    text = text.replace("\r", "\r\n")
+    msg = MIMEText(text, _subtype="plain", _charset="utf-8")
+    mime_multipart.attach(msg)
+    # from exapmle in python docu
+    for path, filename in attachments_paths_and_filenames:
+        if not os.path.isfile(path):
+            logg.error(
+                    "error sending mail to '%s' ('%s'): attachment: no such file: '%s', skipping file",
+                    toaddrs_string,
+                    subject,
+                    path,
+                )
+            continue
+        ctype, encoding = mimetypes.guess_type(path)
+        if ctype is None or encoding is not None:
+            ctype = 'application/octet-stream'
+        maintype, subtype = ctype.split('/', 1)
+        if maintype == 'text':
+            # tested with ansi and utf-8
+            with codecs.open(path, 'r', encoding='utf8') as fp:
+                msg = MIMEText(fp.read(), _subtype=subtype, _charset="utf-8")
         else:
-            try:
-                mime_multipart = MIMEMultipart()
-                mime_multipart['Subject'] = subject
-                mime_multipart['To'] = toaddrs_string
-                mime_multipart['From'] = fromaddr
+            with open(path, 'rb') as fp:
+                if maintype == 'image':
+                    msg = MIMEImage(fp.read(), _subtype=subtype)
+                elif maintype == 'audio':
+                    msg = MIMEAudio(fp.read(), _subtype=subtype)
+                else:
+                    msg = MIMEBase(maintype, subtype)
+                    msg.set_payload(fp.read())
+                    encoders.encode_base64(msg)
+        msg.add_header('Content-Disposition', 'attachment', filename=filename)
+        mime_multipart.attach(msg)
 
-                text = text.replace("\r", "\r\n")
+    composed = mime_multipart.as_string()
 
-                msg = MIMEText(text, _subtype="plain", _charset="utf-8")
-
-                mime_multipart.attach(msg)
-                # from exapmle in python docu
-                for path, filename in attachments_paths_and_filenames:
-                    if not os.path.isfile(path):
-                        logg.error("error sending mail to '%s' ('%s'): attachment: no such file: '%s', skipping file", 
-                                   toaddrs_string, subject, path)
-                        continue
-                    ctype, encoding = mimetypes.guess_type(path)
-                    if ctype is None or encoding is not None:
-                        ctype = 'application/octet-stream'
-                    maintype, subtype = ctype.split('/', 1)
-                    if maintype == 'text':
-                        # tested with ansi and utf-8
-                        with codecs.open(path, 'r', encoding='utf8') as fp:
-                            msg = MIMEText(fp.read(), _subtype=subtype, _charset="utf-8")
-                    else:
-                        with open(path, 'rb') as fp:
-                            if maintype == 'image':
-                                msg = MIMEImage(fp.read(), _subtype=subtype)
-                            elif maintype == 'audio':
-                                msg = MIMEAudio(fp.read(), _subtype=subtype)
-                            else:
-                                msg = MIMEBase(maintype, subtype)
-                                msg.set_payload(fp.read())
-                                encoders.encode_base64(msg)
-                    msg.add_header('Content-Disposition', 'attachment', filename=filename)
-                    mime_multipart.attach(msg)
-
-                composed = mime_multipart.as_string()
-
-                server = smtplib.SMTP(config.get("server.mail"))
-                server.sendmail(fromaddr, toaddrs, composed)
-                server.quit()
-                logg.info("sent email to '%s' ('%s'): attachments: '%s'",toaddrs_string, subject, attachments_paths_and_filenames)
-            except Exception:
-                logg.exception("exception sending mail!")
-                raise
+    server = smtplib.SMTP(config.get("server.mail"))
+    server.sendmail(fromaddr, toaddrs, composed)
+    server.quit()
+    logg.info("sent email to '%s' ('%s'): attachments: '%s'", toaddrs_string, subject, attachments_paths_and_filenames)

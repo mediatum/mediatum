@@ -14,7 +14,6 @@ import cgi
 response_code_dict = BaseHTTPServer.BaseHTTPRequestHandler.responses
 
 from . import handlers
-from .. import dec_handle_exception
 
 logg = logging.getLogger(__name__)
 
@@ -37,7 +36,6 @@ urls = [
 request_count = 0
 
 
-@dec_handle_exception
 def request_handler(req):
     global request_count
 

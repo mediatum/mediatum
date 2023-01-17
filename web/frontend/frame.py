@@ -234,7 +234,7 @@ def find_collection_and_container(node_id):
     return collection, container
 
 
-def make_navtree_entries(language, collection, container):
+def _make_navtree_entries(language, collection, container):
     hide_empty = collection.get("style_hide_empty") == "1"
 
     opened = {t[0] for t in container.all_parents.with_entities(Node.id)}
@@ -300,39 +300,6 @@ def make_navtree_entries(language, collection, container):
 
     return navtree_entries
 
-
-def _render_navtree_cached_for_anon(language, node_id):
-    """
-    XXX: This can be improved to reduce the number of stored trees. 
-    Trees for sibling containers without own container children are the same except for the directory / collection highlighting.
-    Maybe we can store a generic tree for all of them and just set the highlighting here?
-
-    TODO: cache invalidation / timeout
-    """
-    return _render_navtree(language, node_id)
-
-
-def _render_navtree(language, node_id):
-    collection, container = find_collection_and_container(node_id)
-    navtree_entries = make_navtree_entries(language, collection, container)
-    if navtree_entries:
-        html = webconfig.theme.render_template("frame_tree.j2.jade", {"navtree_entries": navtree_entries})
-    else:
-        html = u""
-    logg.debug("rendered navtree with %s unicode chars", len(html))
-    return html
-
-
-def render_navtree(language, node_id, user):
-    """Renders the navigation tree HTML.
-    Results are cached (key is (language, node_id)) for anonymous users only. 
-    They all see the same tree, so it's feasible to cache the HTML.
-    """
-    if user.is_anonymous:
-        html = _render_navtree_cached_for_anon(language, node_id)
-        return html
-    else:
-        return _render_navtree(language, node_id)
 
 class UserLinks(object):
 
@@ -461,7 +428,12 @@ def render_page(req, content_html, node=None, show_navbar=True, show_id=None):
         if not req.args.get("disable_search"):
             search_html = _render_search_box(container, language, req)
         if not req.args.get("disable_navtree"):
-            navtree_html = render_navtree(language, node.id, user)
+            navtree_html = _make_navtree_entries(language, *find_collection_and_container(node.id))
+            navtree_html = (
+                    webconfig.theme.render_template("frame_tree.j2.jade", dict(navtree_entries=navtree_html))
+                    if navtree_html else
+                    u""
+                   )
 
     front_lang = dict(
             actlang=language,

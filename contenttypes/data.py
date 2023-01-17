@@ -15,6 +15,8 @@ import flask as _flask
 
 from mediatumtal import tal
 
+import core as _core
+import core.webconfig as _
 from core.database.postgres.node import Node
 from core.database.postgres.node import children_rel
 import core.config as config
@@ -321,7 +323,6 @@ def _get_node_metadata_html(node, req):
 
 def child_node_url(child_id, **kwargs):
     """XXX: this shouldn't be here, child display should not be a responsibility of content types!"""
-    from core.webconfig import node_url
     params = {k: v for k, v in _flask.request.args.items()}
     if "show_id" in params:
         params["show_id"] = child_id
@@ -329,7 +330,7 @@ def child_node_url(child_id, **kwargs):
         params["id"] = child_id
 
     params.update(kwargs)
-    return node_url(**params)
+    return _core.webconfig.node_url(**params)
 
 
 def get_license_urls(node):

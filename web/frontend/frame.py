@@ -8,9 +8,13 @@ import logging
 import collections as _collections
 from collections import OrderedDict
 from warnings import warn
-from sqlalchemy import event
+
+import sqlalchemy as _sqlalchemy
+import sqlalchemy.orm as _orm
 from markupsafe import Markup
 
+import core.database.postgres as _database_postgres
+import core.database.postgres.node as _node
 import core.config as config
 import core.translation as _core_translation
 from core import db, Node
@@ -211,70 +215,82 @@ def render_edit_search_box(container, language, req, edit=False):
     return search_html
 
 
-def _make_navtree_entries(language, container):
-    collection = container.get_collection()
+def _make_navtree_entries_rec(tree_elements, opened, active, language, parent_id, _indent=0):
+    for child in tree_elements.get(parent_id, ()):
+        # skip empyt elements if told so by style
+        if child.Container.get("style_hide_empty") and not child.count_content_children:
+            continue
 
-    opened = {t[0] for t in container.all_parents.with_entities(Node.id)}
-    activelist = {t[0] for t in container.all_parents.with_entities(Node.id)}
-    opened.add(container.id)
-
-    navtree_entries = []
-
-    def make_navtree_entries_rec(navtree_entries, node, indent):
-        # we need the childcount (causing a DB request) only in these cases
-        # * style_hide_empty: if childcount==0, we skip the entry
-        # * node.show_childcount: show it in the entry
-        if node.get("style_hide_empty") or node.show_childcount:
-            childcount = node.childcount()
-
-        # if there is no childcount, and `style_hide_emtpy`,
-        # we can skip the complete entry;
-        # in that case, there also cannot exist any sub-entries
-        if node.get("style_hide_empty") and not childcount:
-            return
-
+        # render the element at hand
         a_class = set(('mediatum_portal_tree_subnav_link',))
-        if q(node.container_children.exists()).scalar():
+        if child.container_children_exists:
             a_class.add('mediatum_portal_tree_has_submenu')
-            if node.id in opened:
+            if child.Container.id in opened:
                 a_class.add('mediatum_portal_tree_active')
-        e = _NavTreeEntry(
-                label=node.getLabel(lang=language),
-                child_count=childcount if node.show_childcount else None,
-                link=node_url(node.id),
-                active=(node.id in (collection.id, container.id)) and (node.id not in activelist),
-                indent=indent,
-                li_class="lv2" if isinstance(node, Directory) else "lv1" if indent > 1 else "lv0",
+        yield _NavTreeEntry(
+                label=child.Container.getLabel(lang=language),
+                child_count=child.count_content_children if child.Container.show_childcount else None,
+                link=node_url(child.Container.id),
+                active=child.Container.id in active,
+                indent=_indent,
+                li_class="lv2" if isinstance(child.Container, Directory) else "lv1" if _indent > 1 else "lv0",
                 a_class=' '.join(a_class),
                )
 
-        navtree_entries.append(e)
-        if node.id in opened:
-            """
-            find children ids for a given node id for an additional filter to determine the container_children
-            important: this additional filter is logical not needed - but it speeds up the computation of the
-                       container_children especially for guest users
-                       this additional filter is only used if the number of children ids is lower than 100
-            """
-            children_ids = db.session.execute("select cid from nodemapping where nid = %d" % node.id)
-            cids = [row['cid'] for row in children_ids]
-            if len(cids) < 100:
-                container_children = node.container_children.filter(Node.id.in_(cids)).filter_read_access().order_by(Node.orderpos).prefetch_attrs()
-            else:
-                container_children = node.container_children.filter_read_access().order_by(Node.orderpos).prefetch_attrs()
-            for c in container_children:
-                make_navtree_entries_rec(navtree_entries, c, indent + 1)
+        # if this element is "opened", we recurse into the next indentation
+        if child.Container.id in opened:
+            for entry in _make_navtree_entries_rec(tree_elements, opened, active, language, child.Container.id, _indent=_indent+1):
+                yield entry
 
-    time0 = time.time()
-    make_navtree_entries_rec(
-            navtree_entries,
-            get_collections_node(),
-            0,
+def _make_navtree_entries(language, container):
+    navtree_entries = []
+
+    # before building the finale query, we build a query
+    # (which will form a column in the main query later)
+    # that will detect if a container has any container children
+    container_alias = _orm.aliased(Container)
+    container_children_exist_column = (q(container_alias.id)
+            .join(_node.t_nodemapping, _node.t_nodemapping.c.cid == container_alias.id)
+            .filter(_node.t_nodemapping.c.nid == Container.id)
+            .exists()
            )
-    time1 = time.time()
-    logg.info("make_navtree_entries: %f", time1 - time0)
 
-    return navtree_entries
+    # this subquery lists all "opened" containers, i.e.,
+    # the ids of all parent container nodes of our `container`,
+    # including the `container` itself
+    opened_containers_subquery = (q(_node.t_noderelation.c.nid)
+            .filter(_node.t_noderelation.c.cid == container.id)
+            .union(_sqlalchemy.select([_sqlalchemy.sql.expression.literal(container.id)])
+           ).subquery())
+
+    # the main query lists all container nodes that are
+    # the child of any of the "opened" containers (see above);
+    # this will permit us to show unfolded containers, i.e.,
+    # for each parent container, we will not only show the child
+    # in the path to the root, but also all direct siblings
+    tree_elements = q(
+            Container,
+            _node.t_nodemapping.c.nid.label("parent_id"),
+            _sqlalchemy.func.count_content_children_for_all_subcontainers(Node.id).label("count_content_children"),
+            container_children_exist_column.label('container_children_exists'),
+           )
+    tree_elements = (tree_elements
+            .join(_node.t_nodemapping, _node.t_nodemapping.c.cid == Container.id)
+            .filter(_node.t_nodemapping.c.nid.in_(opened_containers_subquery))
+            .filter(_sqlalchemy.func.has_read_access_to_node(Container.id, *_database_postgres.build_accessfunc_arguments()))
+            .order_by(Container.orderpos)
+            .prefetch_attrs()
+            .all()
+           )
+
+    not_active = frozenset(te.parent_id for te in tree_elements)
+    return tuple(_make_navtree_entries_rec(
+            {pid:tuple(te for te in tree_elements if te.parent_id==pid) for pid in not_active},
+            not_active.union((container.id,)),
+            frozenset((container.id, container.get_collection().id)).difference(not_active),
+            language,
+            _nodecache.get_collections_node().parents[0].id,
+           ))
 
 
 class UserLinks(object):

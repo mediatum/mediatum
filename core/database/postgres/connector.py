@@ -253,12 +253,11 @@ class PostgresSQLAConnector(object):
         Workaround for Node objects which are kept between requests.
         XXX: must be removed later
         """
-        from .node import Node
-        NodeVersion = version_class(Node)
+        NodeVersion = version_class(_core.database.postgres.node.Node)
         if isinstance(node, NodeVersion):
             return self.session.query(NodeVersion).get((node.id, node.transaction.id))
         else:
-            return self.session.query(Node).get(node.id)
+            return self.session.query(_core.database.postgres.node.Node).get(node.id)
 
     # database manipulation helpers
 

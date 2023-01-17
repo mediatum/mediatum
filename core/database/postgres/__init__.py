@@ -23,6 +23,7 @@ import flask as _flask
 from core.database.postgres.continuumext import MtVersionBase
 from utils.compat import iteritems
 
+import core as _core
 
 logg = logging.getLogger(__name__)
 
@@ -139,15 +140,11 @@ def build_accessfunc_arguments(user=None, ip=None, date=None, req=None):
         For admin users, it returns (None, None, None) which means: ignore all access checks.
         Users can test for this and skip permission checks completely.
     """
-    from core.users import get_guest_user
-
     if user is None and ip is None:
         if req is None:
             req = _flask.request
 
-        from core.users import user_from_session
-
-        user = user_from_session()
+        user = _core.users.user_from_session()
         # XXX: like in mysql version, what's the real solution?
         try:
             ip = IPv4Address(req.remote_addr)
@@ -156,7 +153,7 @@ def build_accessfunc_arguments(user=None, ip=None, date=None, req=None):
             ip = None
 
     if user is None:
-        user = get_guest_user()
+        user = _core.users.get_guest_user()
 
     # admin sees everything ;)
     if user.is_admin:

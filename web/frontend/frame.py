@@ -211,30 +211,8 @@ def render_edit_search_box(container, language, req, edit=False):
     return search_html
 
 
-def find_collection_and_container(node_id):
-    
-    node = q(Node).get(node_id) if node_id else None
-    
-    if node is None:
-        collection = get_collections_node()
-        container = collection
-
-    else:
-        if isinstance(node, Container):
-            container = node
-
-            if isinstance(node, Collection):  # XXX: is Collections also needed here?
-                collection = node
-            else:
-                collection = node.get_collection()
-        else:
-            container = node.get_container()
-            collection = node.get_collection()
-
-    return collection, container
-
-
-def _make_navtree_entries(language, collection, container):
+def _make_navtree_entries(language, container):
+    collection = container.get_collection()
     hide_empty = collection.get("style_hide_empty") == "1"
 
     opened = {t[0] for t in container.all_parents.with_entities(Node.id)}
@@ -428,7 +406,7 @@ def render_page(req, content_html, node=None, show_navbar=True, show_id=None):
         if not req.args.get("disable_search"):
             search_html = _render_search_box(container, language, req)
         if not req.args.get("disable_navtree"):
-            navtree_html = _make_navtree_entries(language, *find_collection_and_container(node.id))
+            navtree_html = _make_navtree_entries(language, node.get_container())
             navtree_html = (
                     webconfig.theme.render_template("frame_tree.j2.jade", dict(navtree_entries=navtree_html))
                     if navtree_html else

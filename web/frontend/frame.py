@@ -213,7 +213,6 @@ def render_edit_search_box(container, language, req, edit=False):
 
 def _make_navtree_entries(language, container):
     collection = container.get_collection()
-    hide_empty = collection.get("style_hide_empty") == "1"
 
     opened = {t[0] for t in container.all_parents.with_entities(Node.id)}
     activelist = {t[0] for t in container.all_parents.with_entities(Node.id)}
@@ -221,17 +220,17 @@ def _make_navtree_entries(language, container):
 
     navtree_entries = []
 
-    def make_navtree_entries_rec(navtree_entries, node, indent, hide_empty):
+    def make_navtree_entries_rec(navtree_entries, node, indent):
         # we need the childcount (causing a DB request) only in these cases
-        # * hide_empty: if childcount==0, we skip the entry
+        # * style_hide_empty: if childcount==0, we skip the entry
         # * node.show_childcount: show it in the entry
-        if hide_empty or node.show_childcount:
+        if node.get("style_hide_empty") or node.show_childcount:
             childcount = node.childcount()
 
-        # if there is no childcount, and `hide_emtpy`,
+        # if there is no childcount, and `style_hide_emtpy`,
         # we can skip the complete entry;
         # in that case, there also cannot exist any sub-entries
-        if hide_empty and not childcount:
+        if node.get("style_hide_empty") and not childcount:
             return
 
         a_class = set(('mediatum_portal_tree_subnav_link',))
@@ -264,15 +263,14 @@ def _make_navtree_entries(language, container):
             else:
                 container_children = node.container_children.filter_read_access().order_by(Node.orderpos).prefetch_attrs()
             for c in container_children:
-                if hasattr(node, "dont_ask_children_for_hide_empty"):
-                    style_hide_empty = hide_empty
-                else:
-                    style_hide_empty = c.get("style_hide_empty") == "1"
-
-                make_navtree_entries_rec(navtree_entries, c, indent + 1, style_hide_empty)
+                make_navtree_entries_rec(navtree_entries, c, indent + 1)
 
     time0 = time.time()
-    make_navtree_entries_rec(navtree_entries, get_collections_node(), 0, hide_empty)
+    make_navtree_entries_rec(
+            navtree_entries,
+            get_collections_node(),
+            0,
+           )
     time1 = time.time()
     logg.info("make_navtree_entries: %f", time1 - time0)
 

@@ -29,8 +29,33 @@ from schema.schema import Metadatatype
 from web.edit.edit_common import get_edit_label, get_searchparams
 from utils.pathutils import get_accessible_paths
 import core.database.postgres.node as _core_database_postgres_node
+import web as _web
 import web.common.pagination as _web_common_pagination
 import web.common.sort as _sort
+import web.edit.modules.acls as _
+import web.edit.modules.admin as _
+import web.edit.modules.changeschema as _
+import web.edit.modules.classes as _
+import web.edit.modules.content as _
+import web.edit.modules.copyall as _
+import web.edit.modules.copyobject as _
+import web.edit.modules.deleteall as _
+import web.edit.modules.deleteobject as _
+import web.edit.modules.editall as _
+import web.edit.modules.files as _
+import web.edit.modules.logo as _
+import web.edit.modules.metadata as _
+import web.edit.modules.moveall as _
+import web.edit.modules.moveobject as _
+import web.edit.modules.parentcontent as _
+import web.edit.modules.publish as _
+import web.edit.modules.searchmask as _
+import web.edit.modules.sortfiles as _
+import web.edit.modules.startpages as _
+import web.edit.modules.subfolder as _
+import web.edit.modules.upload as _
+import web.edit.modules.version as _
+import web.edit.modules.view as _
 from web import frontend as _web_frontend
 
 logg = logging.getLogger(__name__)
@@ -327,58 +352,32 @@ _editModules = {}
 def getEditModules():
     global _editModules
 
-    from web.edit.modules import acls
-    from web.edit.modules import admin
-    from web.edit.modules import changeschema
-    from web.edit.modules import classes
-    from web.edit.modules import content
-    from web.edit.modules import copyall
-    from web.edit.modules import copyobject
-    from web.edit.modules import deleteall
-    from web.edit.modules import deleteobject
-    from web.edit.modules import editall
-    from web.edit.modules import files
-    from web.edit.modules import logo
-    from web.edit.modules import metadata
-    from web.edit.modules import moveall
-    from web.edit.modules import moveobject
-    from web.edit.modules import parentcontent
-    from web.edit.modules import publish
-    from web.edit.modules import searchmask
-    from web.edit.modules import sortfiles
-    from web.edit.modules import startpages
-    from web.edit.modules import subfolder
-    from web.edit.modules import upload
-    from web.edit.modules import version
-    from web.edit.modules import view
-
     modules_list = (
-        acls,
-        admin,
-        changeschema,
-        classes,
-        content,
-        copyall,
-        copyobject,
-        deleteall,
-        deleteobject,
-        editall,
-        files,
-        logo,
-        metadata,
-        moveall,
-        moveobject,
-        parentcontent,
-        publish,
-        searchmask,
-        sortfiles,
-        startpages,
-        subfolder,
-        upload,
-        version,
-        view,
-    )
-
+        _web.edit.modules.acls,
+        _web.edit.modules.admin,
+        _web.edit.modules.changeschema,
+        _web.edit.modules.classes,
+        _web.edit.modules.content,
+        _web.edit.modules.copyall,
+        _web.edit.modules.copyobject,
+        _web.edit.modules.deleteall,
+        _web.edit.modules.deleteobject,
+        _web.edit.modules.editall,
+        _web.edit.modules.files,
+        _web.edit.modules.logo,
+        _web.edit.modules.metadata,
+        _web.edit.modules.moveall,
+        _web.edit.modules.moveobject,
+        _web.edit.modules.parentcontent,
+        _web.edit.modules.publish,
+        _web.edit.modules.searchmask,
+        _web.edit.modules.sortfiles,
+        _web.edit.modules.startpages,
+        _web.edit.modules.subfolder,
+        _web.edit.modules.upload,
+        _web.edit.modules.version,
+        _web.edit.modules.view,
+        )
     _editModules = {m.__name__.replace("web.edit.modules.", ""): m for m in modules_list}
 
 

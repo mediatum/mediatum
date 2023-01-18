@@ -16,6 +16,8 @@ import core.csrfform as _core_csrfform
 import core.users as users
 import core.config as config
 import core.translation as _core_translation
+import web as _web
+import web.frontend.frame as _
 from core.nodecache import get_collections_node
 from core import webconfig
 from core.auth import PasswordsDoNotMatch, WrongPassword, PasswordChangeNotAllowed
@@ -104,8 +106,7 @@ def login(req):
         csrf=_core_csrfform.get_token(),
     )
     login_html = webconfig.theme.render_macro("login.j2.jade", "login", ctx)
-    from web.frontend.frame import render_page
-    html = render_page(req, login_html)
+    html = _web.frontend.frame.render_page(req, login_html)
     req.response.status_code = _httplib.OK
     req.response.set_data(html)
     return _httplib.OK
@@ -162,8 +163,7 @@ def pwdchange(req):
             "change_pwd",
             dict(error=error, user=user, csrf=_core_csrfform.get_token()),
         )
-    from web.frontend.frame import render_page
-    html = render_page(req, content_html)
+    html = _web.frontend.frame.render_page(req, content_html)
     req.response.set_data(html)
     req.response.status_code = _httplib.OK
     return _httplib.OK

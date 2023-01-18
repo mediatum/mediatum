@@ -5,9 +5,11 @@ from __future__ import division
 from __future__ import print_function
 
 import copy
+import cStringIO as _cStringIO
 import functools as _functools
 import json
 import httplib as _httplib
+import gzip as _gzip
 import logging
 import re as _re
 import sys as _sys
@@ -891,14 +893,11 @@ def _write_formatted_response(path, query_string, host_url, params, id, qualifie
     s = modify_tex(s.decode("utf8"), 'strip').encode("utf8")
 
     def compressForDeflate(s):
-        import gzip
-        return gzip.zlib.compress(s, 9)
+        return _gzip.zlib.compress(s, 9)
 
     def compressForGzip(s):
-        import cStringIO
-        import gzip
-        buffer = cStringIO.StringIO()
-        gzfile = gzip.GzipFile(mode='wb', fileobj=buffer, compresslevel=9)
+        buffer = _cStringIO.StringIO()
+        gzfile = _gzip.GzipFile(mode='wb', fileobj=buffer, compresslevel=9)
         gzfile.write(s)
         gzfile.close()
         return buffer.getvalue()

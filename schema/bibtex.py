@@ -16,11 +16,13 @@
 from __future__ import division
 from __future__ import print_function
 
+import datetime as _datetime
 import re
 import sys
 import codecs
 import logging
 import unicodedata
+import string as _string
 import time
 
 from bibtexparser import load as bibtex_load
@@ -28,6 +30,7 @@ from bibtexparser.bparser import BibTexParser
 import bibtexparser.customization
 
 import core as _core
+import schema as _schema
 from core.database.postgres.node import Node
 from .schema import Metadatatype
 from contenttypes.document import Document
@@ -57,11 +60,9 @@ d_escape = dict(din5007_variant2_translation)
 
 
 def escape_bibtexkey(s, default_char="_"):
-    import string
-
     res = ""
     for c in s:
-        if c in string.ascii_letters + string.digits + "-_+:":
+        if c in _string.ascii_letters + _string.digits + "-_+:":
             res = res + c
             continue
         elif c in d_escape:
@@ -93,9 +94,7 @@ class MissingMapping(Exception):
 
 
 def getNow():
-    import datetime
-
-    now = datetime.datetime.now().isoformat()
+    now = _datetime.datetime.now().isoformat()
     now = now.replace('T', '_').replace(':', '-')
     now = now.split('.')[0]
     return now
@@ -147,16 +146,13 @@ article_types = [
      ("address", "month", "note", "key"))]
 
 
-from . import schema as schema
-
-
 def getAllBibTeXTypes():
     return [bibname for bibname, description, required, optional in article_types]
 
 
 def getbibtexmappings():
     bibtextypes = {}
-    for metatype in schema.loadTypesFromDB():
+    for metatype in _schema.loadTypesFromDB():
         for bibtextype in metatype.get("bibtexmapping").split(";"):
             if bibtextype:
                 metatype_name = metatype.getName()

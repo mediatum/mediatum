@@ -11,6 +11,7 @@ from logging.config import fileConfig
 import sqlalchemy.orm
 
 import core as _core
+import core.init as _
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -24,8 +25,7 @@ if not config.attributes.get("running_in_mediatum"):
     # This line sets up loggers basically.
     fileConfig(config.config_file_name)
 
-    from core import init
-    init.basic_init()
+    _core.init.basic_init()
 
     sqlalchemy.orm.configure_mappers()
 

@@ -7,10 +7,11 @@ from __future__ import print_function
 import logging
 import flask as _flask
 
+import contenttypes as _contenttypes
+import contenttypes.data as _
 from utils.utils import esc
 from schema.schema import getMetaType
 from web.services.serviceutils import attribute_name_filter
-
 
 logg = logging.getLogger(__name__)
 
@@ -76,14 +77,13 @@ def buildNodeDescriptor(params, node, indent=None, written=None, children=True, 
         # no attributes should be sent
         pass
     elif attrspec == 'default_mask' or attrspec not in ['none', 'all']:
-        from contenttypes.data import make_lookup_key, get_maskcache_entry
         language = params.get('lang', '')
-        lookup_key = make_lookup_key(node, language=language, labels=False)
+        lookup_key = _contenttypes.data.make_lookup_key(node, language=language, labels=False)
         if lookup_key not in _flask.g.mediatum.get('maskcache', {}):
             # fill cache
             node.show_node_text(labels=False, language=language)
 
-        mask_id, field_descriptors = get_maskcache_entry(lookup_key)
+        mask_id, field_descriptors = _contenttypes.data.get_maskcache_entry(lookup_key)
 
         try:
             for field_descriptor in field_descriptors:

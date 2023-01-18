@@ -8,6 +8,7 @@ import httplib as _httplib
 import logging
 
 import core as _core
+import core.attachment as _
 from schema.schema import getMetadataType
 from core import webconfig
 from core.database.postgres.node import Node
@@ -58,8 +59,7 @@ def show_attachmentbrowser(req):
         req.response.status_code = _httplib.FORBIDDEN
         return
 
-    from core.attachment import getAttachmentBrowser
-    getAttachmentBrowser(node, req)
+    _core.attachment.getAttachmentBrowser(node, req)
 
 # use popup method of  metadatatype
 def popup_metatype(req):

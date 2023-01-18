@@ -4,6 +4,9 @@
 from __future__ import division
 from __future__ import print_function
 
+import os as _os
+
+import IPython as _IPython
 try:
     import pympler
     from pympler.asizeof import asizeof
@@ -48,10 +51,8 @@ def view(req, op):
         summarized_all_objects = sorted(summary.summarize(all_objects), key=lambda t: t[2], reverse=True)
         memory_info["summary"] = summarized_all_objects[:500]
 
-    import os
-    if "MEDIATUM_EMBED_IPYTHON" in os.environ:
-        import IPython
-        IPython.embed()
+    if "MEDIATUM_EMBED_IPYTHON" in _os.environ:
+        _IPython.embed()
 
     del all_objects
 

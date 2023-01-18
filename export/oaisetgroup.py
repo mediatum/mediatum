@@ -6,6 +6,7 @@ from __future__ import print_function
 
 import logging
 
+import oaisearchparser as _oaisearchparser
 
 logg = logging.getLogger(__name__)
 
@@ -49,8 +50,7 @@ class OAISetGroup:
         elif setspec in self.d_filters:
             setspecFilter = self.d_filters.get(setspec)
             return setspecFilter
-            from .oaisearchparser import OAISearchParser
-            osp = OAISearchParser()
+            osp = _oaisearchparser.OAISearchParser()
             res = osp.parse(self.d_queries[setspec]).execute()
             if setspec in self.d_filters:
                 nodefilter = self.d_filters[setspec]
@@ -72,8 +72,7 @@ class OAISetGroup:
         if self.func_getSetSpecsForNode:
             return self.func_getSetSpecsForNode(self, node, schemata=[])
         elif self.d_queries:
-            from .oainodechecker import OAINodeChecker
-            onc = OAINodeChecker()
+            onc = _oaisearchparser.OAINodeChecker()
             erg = []
             for setspec, query in self.d_queries.items():
                 if onc.parse(query).execute(node):

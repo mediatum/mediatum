@@ -298,13 +298,6 @@ def initialize(config_filepath=None, prefer_config_filename=None):
     if _PILImage.MAX_IMAGE_PIXELS == 0:
         _PILImage.MAX_IMAGE_PIXELS = None
 
-
-def check_create_test_db_dir():
-    data_path = settings.get("paths.datadir", get_default_data_dir())
-    dirpath = os.path.join(data_path, "test_db")
-    check_create_dir(dirpath, "datadir/test_db")
-    return dirpath
-
 #
 # resolve given filename to correct path/file
 #

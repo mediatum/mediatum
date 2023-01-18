@@ -181,8 +181,8 @@ def init_db_connector():
     _core.db = PostgresSQLAConnector()
 
 
-def connect_db(force_test_db=None, automigrate=False):
-    _core.db.configure(force_test_db)
+def connect_db(automigrate=False):
+    _core.db.configure()
     _core.db.create_engine()
 
     if automigrate:
@@ -316,8 +316,13 @@ def _init_default_thumbnail():
     )
 
 
-def basic_init(root_loglevel=None, config_filepath=None, prefer_config_filename=None, log_filepath=None,
-                force_test_db=None, automigrate=False):
+def basic_init(
+    root_loglevel=None,
+    config_filepath=None,
+    prefer_config_filename=None,
+    log_filepath=None,
+    automigrate=False,
+    ):
     init_state = "basic"
     if init_state_reached(init_state):
         return
@@ -333,7 +338,7 @@ def basic_init(root_loglevel=None, config_filepath=None, prefer_config_filename=
     init_db_connector()
     load_system_types()
     load_types()
-    connect_db(force_test_db, automigrate)
+    connect_db(automigrate)
     _set_current_init_state(init_state)
     _init_default_thumbnail()
     _core.db.session.rollback()
@@ -369,8 +374,13 @@ def _additional_init():
     _core.db.session.rollback()
 
 
-def full_init(root_loglevel=None, config_filepath=None, prefer_config_filename=None, log_filepath=None,
-              force_test_db=None, automigrate=False):
+def full_init(
+    root_loglevel=None,
+    config_filepath=None,
+    prefer_config_filename=None,
+    log_filepath=None,
+    automigrate=False,
+    ):
     init_state = "full"
     if init_state_reached(init_state):
         return
@@ -380,7 +390,6 @@ def full_init(root_loglevel=None, config_filepath=None, prefer_config_filename=N
         config_filepath=config_filepath,
         prefer_config_filename=prefer_config_filename,
         log_filepath=log_filepath,
-        force_test_db=force_test_db,
         automigrate=automigrate,
     )
     init_app()

@@ -72,10 +72,10 @@ def stackdump_setup():
         _signal.signal(_signal.SIGQUIT, dumpstacks)
 
 
-def run(force_test_db=None, loglevel=None, automigrate=False):
+def run(loglevel=None, automigrate=False):
     """Serve mediaTUM from the WSGI Server Flask, if requested"""
     # init.full_init() must be done as early as possible to init logging etc.
-    _core.init.full_init(force_test_db=force_test_db, root_loglevel=loglevel, automigrate=automigrate)
+    _core.init.full_init(root_loglevel=loglevel, automigrate=automigrate)
     return _core.app
 
 
@@ -92,8 +92,6 @@ def make_flask_app():
     parser.add_argument("-s", "--stackdump", action="store_true", default=True,
                         help="write stackdumps to temp dir {} on SIGQUIT, default true".format(SYSTEM_TMP_DIR))
 
-    parser.add_argument("--force-test-db", action="store_true", default=False,
-                        help="create / use database server with default database for testing (overrides configured db connection)")
     parser.add_argument("-l", "--loglevel", help="root loglevel, sensible values: DEBUG, INFO, WARN")
     parser.add_argument("-m", "--automigrate", action="store_true", default=False,
                         help="run automatic database schema upgrades on startup")
@@ -111,11 +109,11 @@ def make_flask_app():
         extra_files = [maybe_config_filepath] if maybe_config_filepath else []
 
         def main_wrapper():
-            return run(args.force_test_db, args.loglevel, args.automigrate)
+            return run(args.loglevel, args.automigrate)
 
         return run_with_reloader(main_wrapper, extra_files)
     else:
-        return run(args.force_test_db, args.loglevel, args.automigrate)
+        return run(args.loglevel, args.automigrate)
 
 
 flask_app = make_flask_app()

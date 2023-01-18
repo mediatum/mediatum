@@ -16,13 +16,19 @@ import core.config as config
 import zipfile
 import time
 import logging
-
 import json
+
+import requests as _requests
+import requests.exceptions as _
+
 import mediatumtal.tal as _tal
 
 import core as _core
 import core.csrfform as _core_csrfform
 import core.translation as _core_translation
+import schema as _schema
+import schema.citeproc as _
+import schema.importbase as _
 import utils.fileutils as _utils_fileutils
 import utils.utils as _utils_utils
 import web.common.pagination as _web_common_pagination
@@ -30,13 +36,13 @@ import web.edit.edit_common as _web_edit_edit_common
 from web.edit.edit_common import showoperations, searchbox_navlist_height
 from utils.url import build_url_from_path_and_params
 from schema.bibtex import getentries, importBibTeX, MissingMapping
-
 import contenttypes as _contenttypes
 from contenttypes import Data
 from core.database.postgres.node import Node
 from schema.schema import get_permitted_schemas, get_permitted_schemas_for_datatype
 from web.edit.edit_common import get_searchparams
 from web.frontend.frame import render_edit_search_box
+
 import urllib
 
 logg = logging.getLogger(__name__)
@@ -612,33 +618,30 @@ def import_from_doi(identifier, importdir, req=None):
             req.response.location = build_url_from_path_and_params("content", {"id": importdir.id, "error": errormsg})
             req.params["error"] = errormsg
 
-    import schema.citeproc as citeproc
-    import schema.importbase as importbase
-    from requests.exceptions import ConnectionError
     doi = identifier
     logg.info("processing DOI import for: %s", doi)
     try:
-        doi_extracted = citeproc.extract_and_check_doi(doi)
-        new_node = citeproc.import_doi(doi_extracted, importdir)
+        doi_extracted = _schema.citeproc.extract_and_check_doi(doi)
+        new_node = _schema.citeproc.import_doi(doi_extracted, importdir)
         return new_node
 
-    except citeproc.InvalidDOI:
+    except _schema.citeproc.InvalidDOI:
         logg.error("Invalid DOI: '%s'", doi)
         handle_error(req, "doi_invalid")
 
-    except citeproc.DOINotFound:
+    except _schema.citeproc.DOINotFound:
         logg.error("DOI not found: '%s'", doi)
         handle_error(req, "doi_unknown")
 
-    except citeproc.DOINotImported:
+    except _schema.citeproc.DOINotImported:
         logg.error("no metadata imported for DOI: '%s'", doi)
         handle_error(req, "doi_no_metadata_imported")
 
-    except importbase.NoMappingFound as e:
+    except _schema.importbase.NoMappingFound as e:
         logg.error("no mapping found for DOI: '%s', type '%s'", doi, e.typ)
         handle_error(req, "doi_type_not_mapped")
 
-    except ConnectionError as e:
+    except _requests.exceptions.ConnectionError as e:
         logg.error("Connection to external server failed with error '%s'", e)
         handle_error(req, "doi_error_connecting_external_server")
     else:

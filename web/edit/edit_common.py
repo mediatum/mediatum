@@ -8,9 +8,13 @@ import logging
 import functools as _functools
 
 import backports.functools_lru_cache as _backports_functools_lru_cache
+import PIL as _PIL
+
 import mediatumtal.tal as _tal
 import sqlalchemy as _sqlalchemy
 
+import contenttypes as _contenttypes
+import contenttypes.data as _
 import core as _core
 import core.database.postgres.node as _node
 import core.database.postgres.permission as _permission
@@ -326,8 +330,7 @@ def _shownodelist(req, nodes, page, publishwarn=True, markunpublished=False, dir
         item_count.append(len(all_nodes))
 
     for child in nodes_in_page:
-        from contenttypes import Content
-        if isinstance(child, Content):
+        if isinstance(child, _contenttypes.data.Content):
             nodelist.append(child)
 
     notpublished = {}
@@ -434,8 +437,7 @@ def send_nodefile_tal(req):
         # fits the image into a box with dimensions cn, returning new width and
         # height
         try:
-            import PIL
-            sz = PIL.Image.open(imagefile).size
+            sz = _PIL.Image.open(imagefile).size
             (x, y) = (sz[0], sz[1])
             if x > cn[0]:
                 y = (y * cn[0]) // x

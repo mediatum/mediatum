@@ -17,6 +17,8 @@ import flask as _flask
 
 import core as _core
 import core.translation as _core_translation
+import utils as _utils
+import utils.log as _
 from core import config as _config
 from utils import utils as _utils_utils
 from utils.url import build_url_from_path_and_params as _build_url_from_path_and_params
@@ -235,12 +237,11 @@ def _callhandler(handler_func, req):
     except Exception as e:
         # XXX: this shouldn't be in Athana, most of it is mediaTUM-specific...
         # TODO: add some kind of exception handler system for Athana
-        from utils.log import make_xid_and_errormsg_hash
         # Roll back if the error was caused by a database problem.
         # DB requests in this error handler will fail until rollback is called, so let's do it here.
         _core.db.session.rollback()
 
-        xid, hashed_errormsg, hashed_tb = make_xid_and_errormsg_hash()
+        xid, hashed_errormsg, hashed_tb = _utils.log.make_xid_and_errormsg_hash()
 
         mail_to_address = _config.get('email.support')
         if not mail_to_address:

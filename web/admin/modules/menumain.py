@@ -6,7 +6,7 @@ from __future__ import print_function
 
 import mediatumtal.tal as _tal
 
-from web.admin.adminutils import adminNavigation, adminModules
+from web import admin as _web_admin
 
 
 def getInformation(attribute=""):
@@ -24,10 +24,10 @@ def getInformation(attribute=""):
 def validate(req, op):
     v = {}
     items = []
-    for menu in adminNavigation():
+    for menu in _web_admin.adminutils.adminNavigation():
         itemdata = {}
         itemdata["name"] = menu.getName()
-        itemdata["icon"] = adminModules[menu.getName()].getInformation("icon")
+        itemdata["icon"] = _web_admin.adminutils.adminModules[menu.getName()].getInformation("icon")
         itemdata["submenu"] = menu.getItemList()
 
         items.append(itemdata)

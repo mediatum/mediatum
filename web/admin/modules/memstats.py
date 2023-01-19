@@ -15,7 +15,6 @@ import humanize
 
 import gc
 from itertools import islice
-from web.admin.adminutils import getAdminStdVars
 from core.templating import make_template_functions
 from contenttypes import data
 from utils.compat import iteritems

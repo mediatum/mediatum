@@ -148,10 +148,6 @@ def initContexts():
     tal.add_translator(_core_translation.translate_in_template)
     add_template_globals()
 
-    @_request_handler.request_started
-    def set_lang(req, *args):
-        _core_translation.set_language(req.accept_languages)
-
     context = _request_handler.addContext("/", ".")
 
     workflows_enabled = config.getboolean("workflows.activate", True)

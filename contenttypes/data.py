@@ -27,7 +27,6 @@ from utils.utils import highlight
 from utils.compat import iteritems, string_types
 from markupsafe import Markup
 from utils.strings import replace_attribute_variables
-from core.request_handler import request_finished as _request_finished
 
 logg = logging.getLogger(__name__)
 

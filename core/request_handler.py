@@ -33,10 +33,6 @@ _logg = _logging.getLogger(__name__)
 GLOBAL_TEMP_DIR = "/tmp/"
 GLOBAL_ROOT_DIR = "no-root-dir-set"
 
-# COMPAT: before / after request handlers and request / app context handling
-_request_started_handlers = []
-_request_finished_handlers = []
-
 contexts = []
 global_modules = {}
 
@@ -360,17 +356,6 @@ def makeSelfLink(req, params):
 
 # COMPAT: added functions
 
-def request_started(handler):
-    """Decorator for functions which should be run before the view handler is called"""
-    _request_started_handlers.append(handler)
-    return handler
-
-
-def request_finished(handler):
-    """Decorator for functions which should be run after the view handler is called"""
-    _request_finished_handlers.append(handler)
-    return handler
-
 
 def _load_module(filename):
     b = BASENAME.match(filename)
@@ -590,9 +575,6 @@ class _WebContext:
 
 
 def _callhandler(handler_func, req):
-    for handler in _request_started_handlers:
-        handler(req)
-
     try:
         status = handler_func(req)
     except Exception as e:
@@ -625,9 +607,6 @@ def _callhandler(handler_func, req):
         req.response.headers["X-XID"] = xid
         req.response.status_code = _httpstatus.HTTP_INTERNAL_SERVER_ERROR
         req.response.set_data(s.encode("utf8"))
-    finally:
-        for handler in _request_finished_handlers:
-            handler(req)
 
 
 def handle_request(req):

@@ -13,6 +13,7 @@ from flask_admin import Admin
 from web.admin.views.user import UserView, UserGroupView, AuthenticatorInfoView, OAuthUserCredentialsView
 from wtforms import fields, validators
 from core import db, User, config
+from core import translation as _core_translation
 from core.auth import authenticate_user_credentials, logout_user
 from flask_admin import AdminIndexView
 from flask_admin import helpers, expose
@@ -142,6 +143,15 @@ def make_app():
         from werkzeug.debug import DebuggedApplication
         admin_app.wsgi_app = DebuggedApplication(admin_app.wsgi_app, True)
 
+    @admin_app.before_request
+    def set_lang():
+        _core_translation.set_language(request.accept_languages)
+
+    @admin_app.after_request
+    def request_finished_db_session(response):
+        db.session.close()
+        return response
+
     admin = Admin(admin_app, name="mediaTUM", template_mode="bootstrap3",
                   index_view=IndexView(), base_template='admin_base.html')
 
@@ -196,12 +206,6 @@ def flask_routes(app):
 app = make_app()
 
 flask_routes(app)
-
-@app.after_request
-def request_finished_db_session(response):
-    from core import db
-    db.session.close()
-    return response
 
 
 def init_login():

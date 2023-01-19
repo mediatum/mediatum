@@ -102,13 +102,6 @@ def run(force_test_db=None, loglevel=None, automigrate=False):
     # init.full_init() must be done as early as possible to init logging etc.
     from core import init
     init.full_init(force_test_db=force_test_db, root_loglevel=loglevel, automigrate=automigrate)
-
-    from core.request_handler import request_finished as _request_finished
-    @_request_finished
-    def request_finished_db_session(*args):
-        from core import db
-        db.session.close()
-
     from core import app as flask_app
     return flask_app
 

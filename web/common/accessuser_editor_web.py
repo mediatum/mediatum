@@ -110,27 +110,20 @@ def makeUserList(req, own_ruleset_assocs, inherited_ruleset_assocs, special_rule
                 test_result = decider_is_private_user_group_access_rule(rule)
 
                 if type(test_result) in [unicode, str]:
-                    if len(test_result) > 50:
-                        val_left += """<option value="" title="%s">%s</option>""" % (test_result, test_result)
-                    else:
-                        val_left += """<option value="">%s</option>""" % (test_result,)
+                    val_left += u'<option value="" title="{0}">{0}</option>'.format(test_result)
                 elif type(test_result) == User:
-                    long_val = get_list_representation_for_user(test_result,
-                                                                prefix=authenticator_id2user_prefix[test_result.authenticator_id])
-                    if len(long_val) > 50:
-                        val_left += """<option value="%s" title="%s">%s</option>""" % (test_result.id, long_val, long_val)
-                    else:
-                        val_left += """<option value="%s">%s</option>""" % (test_result.id, long_val,)
+                    long_val = get_list_representation_for_user(
+                            test_result,
+                            prefix=authenticator_id2user_prefix[test_result.authenticator_id],
+                        )
+                    val_left += u'<option value="{0}" title="{1}">{1}</option>'.format(test_result.id, long_val)
                     user_not_inherited_in_left_list.append(test_result.id)
                 else:
                     param_value = 'rule_id:%r' % rule.id
                     text_content = "rule: %r" % rule.to_dict()
                     val_left += """<option value="%s" title="%s">%s</option>""" % (param_value, text_content, text_content)
         else:
-            if len(ruleset_name) > 50:
-                val_left += """<option value="" title="%s">%s</option>""" % (ruleset_name, ruleset_name)
-            else:
-                val_left += """<option>%s</option>""" % (ruleset_name,)
+            val_left += u'<option value="" title="{0}">{0}</option>'.format(ruleset_name)
 
     inherited_ruleset_names = [r.ruleset_name for r in inherited_ruleset_assocs]
     for ruleset_name in inherited_ruleset_names:
@@ -141,35 +134,23 @@ def makeUserList(req, own_ruleset_assocs, inherited_ruleset_assocs, special_rule
                 test_result = decider_is_private_user_group_access_rule(rule)
 
                 if type(test_result) in [unicode, str]:
-                    if len(test_result) > 50:
-                        val_left += """<optgroup label="%s" title="%s"></optgroup>""" % (test_result, test_result)
-                    else:
-                        val_left += """<optgroup label="%s"></optgroup>""" % (test_result,)
+                    val_left += u'<optgroup label="{0}" title="{0}"/>'.format(test_result)
                 elif type(test_result) == User:
                     long_val = get_list_representation_for_user(test_result, prefix=authenticator_id2user_prefix[test_result.authenticator_id])
-                    if len(long_val) > 50:
-                        val_left += """<optgroup label="%s" title="%s"></optgroup>""" % (long_val, long_val)
-                    else:
-                        val_left += """<optgroup label="%s"></optgroup>""" % (long_val, )
+                    val_left += u'<optgroup label="{0}" title="{0}"/>'.format(long_val)
                 else:
                     param_value = 'rule_id:%r' % rule.id
                     text_content = "rule: %r" % rule.to_dict()
                     val_left += """<option value="%s" title="%s">%s</option>""" % (
                     param_value, text_content, text_content)
         else:
-            if len(ruleset_name) > 50:
-                val_left += """<optgroup label="%s" title="%s"></optgroup>""" % (ruleset_name, ruleset_name)
-            else:
-                val_left += """<optgroup label="%s"></optgroup>""" % (ruleset_name,)
+            val_left += u'<optgroup label="{0}" title="{0}"/>'.format(ruleset_name)
 
     sorted_decorated_userlist = sorted([(authenticator_id2user_prefix[u.authenticator_id], u.getName().lower(), u) for u in userlist])
     for u_prefix, u_name, u in sorted_decorated_userlist:
         if u.id in user_not_inherited_in_left_list:
             continue
         long_val = get_list_representation_for_user(u, prefix=u_prefix)
-        if len(long_val) > 50:
-            val_right += """<option value="%s" title="%s">%s</option>""" % (u.id, long_val, long_val)
-        else:
-            val_right += """<option value="%s">%s</option>""" % (u.id, long_val)
+        val_right += u'<option value="{0}" title="{1}">{1}</option>'.format(u.id, long_val)
 
     return {"name": rule_type, "val_left": val_left, "val_right": val_right, "type": rule_type}

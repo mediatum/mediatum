@@ -5,6 +5,7 @@ from __future__ import division
 from __future__ import print_function
 
 import re
+import functools as _functools
 import logging
 from warnings import warn
 import humanize
@@ -105,7 +106,7 @@ def render_mask_template(node, mask, field_descriptors, language, words=None, se
             value = fd["format"].replace("<value>", value)
         if words:
             value = highlight(value, words, '<font class="hilite">', "</font>")
-        res.append(fd["template"] % value)
+        res.append(fd["template"](value=value))
 
     return separator.join(res)
 
@@ -113,6 +114,27 @@ def render_mask_template(node, mask, field_descriptors, language, words=None, se
 def get_thumbnail_size(width, height):
     scale = max(min(512 / width, 512 / height), _math.sqrt(65536 / (width * height)))
     return max(1, round(width*scale)), max(1, round(height*scale))
+
+
+def _get_node_attribute_name(maskitem):
+    metafields = maskitem.children.filter_by(type=u"metafield").all()
+    if len(metafields) != 1:
+        # this can only happen in case of vgroup or hgroup
+        logg.error("maskitem %s has zero or multiple metafield child(s)", maskitem.id)
+        return maskitem.name
+    return metafields[0].name
+
+
+def _build_field_template(labels, field_descriptor):
+    if labels:
+        template = u"<b>{label}:</b> {value}"
+    elif field_descriptor['node_attribute'].startswith("author"):
+        template = u'<span class="author">{value}</span>'
+    elif field_descriptor['node_attribute'].startswith("subject"):
+        template = u'<b>{value}</b>'
+    else:
+        template = u"{value}"
+    return _functools.partial(template.format, label=field_descriptor.get("label", ""))
 
 
 class Data(Node):
@@ -244,32 +266,10 @@ class Data(Node):
                     t = getMetadataType(metafield_type)
                     fd['metatype'] = t
 
-                    def getNodeAttributeName(maskitem):
-                        metafields = maskitem.children.filter_by(type=u"metafield").all()
-                        if len(metafields) != 1:
-                            # this can only happen in case of vgroup or hgroup
-                            logg.error("maskitem %s has zero or multiple metafield child(s)", maskitem.id)
-                            return maskitem.name
-                        return metafields[0].name
-
-                    node_attribute = getNodeAttributeName(maskitem)
+                    node_attribute = _get_node_attribute_name(maskitem)
                     fd['node_attribute'] = node_attribute
 
-                    def build_field_template(field_descriptor):
-                        if labels:
-                            template = "<b>" + field_descriptor['label'] + ":</b> %s"
-                        else:
-                            if field_descriptor['node_attribute'].startswith("author"):
-                                template = '<span class="author">%s</span>'
-                            elif field_descriptor['node_attribute'].startswith("subject"):
-                                template = '<b>%s</b>'
-                            else:
-                                template = "%s"
-                        return template
-
-                    template = build_field_template(fd)
-
-                    fd['template'] = template
+                    fd['template'] = _build_field_template(labels, fd)
                     long_field_descriptor = (node_attribute, fd)
                     field_descriptors.append(long_field_descriptor)
 

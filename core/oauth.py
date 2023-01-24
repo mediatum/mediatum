@@ -16,8 +16,6 @@ q = db.query
 
 logg = logging.getLogger(__name__)
 
-logg.info("imported core.oauth")
-
 
 def verify_request_signature(req_path, params):
     # we generate the signature from the shared secret, the request path and all sorted parameters

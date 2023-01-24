@@ -25,6 +25,7 @@ function previewimageson() {
 };
 
 function visitPage(id){
+    $("#unpub").addClass("mediatum-showpreview-btn-wait");
     window.location = $("#unpub").attr("href");
 }
 

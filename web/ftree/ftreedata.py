@@ -18,7 +18,6 @@ import core.translation as _core_translation
 import core.users as _core_users
 import utils.utils as _utils
 import web.edit.edit_common as _web_edit_common
-import web.edit.edit as _web_edit_edit
 
 
 def getData(req):
@@ -84,7 +83,7 @@ def getData(req):
     for c in query_container:
 
         with _utils.suppress(Exception):
-            special_dir_type = _web_edit_edit.get_special_dir_type(c.Container)
+            special_dir_type = _web_edit_common.get_special_dir_type(c.Container)
             if not c.write_access and not c.has_writable_container_children:
                 continue
             label = _web_edit_common.get_edit_label(c.Container, language)

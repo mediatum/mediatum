@@ -338,77 +338,44 @@ def highlight(string, words, left, right):
         pos = si + len(left) + len(right)
     return string
 
+_fileextension2mimetype = dict(
+        aif="audio/x-aiff",
+        aiff="audio/x-aiff",
+        bib="text/x-bibtex",
+        bmp="image/x-ms-bmp",
+        doc="application/msword",
+        gif="image/gif",
+        jpeg="image/jpeg",
+        jpg="image/jpeg",
+        mp3="audio/mpeg",
+        mp4="video/mp4",
+        new="text/plain",
+        pdf="application/pdf",
+        png="image/png",
+        ppt="application/mspowerpoint",
+        ps="application/postscript",
+        svg="image/svg+xml",
+        tif="image/tiff",
+        tiff="image/tiff",
+        wav="audio/x-wav",
+        xml="application/xml",
+        zip="application/zip",
+    )
 
+_fileextension2filetype_override = dict(
+        bib="bibtex",
+        doc="document",
+        new="news",
+        pdf="document",
+        ps="document",
+    )
 #
 # mimetype validator
 #
 def getMimeType(filename):
-    filename = filename.lower().strip()
-    mimetype = "application/x-download"
-    type = "file"
-    if filename.endswith(".jpg") or filename.endswith(".jpeg"):
-        mimetype = "image/jpeg"
-        type = "image"
-    elif filename.endswith(".gif"):
-        mimetype = "image/gif"
-        type = "image"
-    elif filename.endswith(".png"):
-        mimetype = "image/png"
-        type = "image"
-    elif filename.endswith(".bmp"):
-        mimetype = "image/x-ms-bmp"
-        type = "image"
-    elif filename.endswith(".tif"):
-        mimetype = "image/tiff"
-        type = "image"
-    elif filename.endswith(".tiff"):
-        mimetype = "image/tiff"
-        type = "image"
-    elif filename.endswith(".svg"):
-        mimetype = "image/svg+xml"
-        type = "image"
-    elif filename.endswith(".pdf"):
-        mimetype = "application/pdf"
-        type = "document"
-    elif filename.endswith(".ps"):
-        mimetype = "application/postscript"
-        type = "document"
-    elif filename.endswith(".zip"):
-        mimetype = "application/zip"
-        type = "zip"
-    elif filename.endswith(".mp4"):
-        mimetype = "video/mp4"
-        type = "video"
-    elif filename.endswith(".doc"):
-        mimetype = "application/msword"
-        type = "document"
-    elif filename.endswith(".ppt"):
-        mimetype = "application/mspowerpoint"
-        type = "ppt"
-    elif filename.endswith(".xml"):
-        mimetype = "application/xml"
-        type = "xml"
-    elif filename.endswith(".mp3"):
-        mimetype = "audio/mpeg"
-        type = "audio"
-    elif filename.endswith(".wav"):
-        mimetype = "audio/x-wav"
-        type = "audio"
-    elif filename.endswith(".aif") or filename.endswith(".aiff"):
-        mimetype = "audio/x-aiff"
-        type = "audio"
-    elif filename.endswith(".new"):
-        mimetype = "text/plain"
-        type = "news"
-    elif filename.endswith(".bib"):
-        mimetype = "text/x-bibtex"
-        type = "bibtex"
-
-    else:
-        mimetype = "other"
-        type = "other"
-
-    return mimetype, type
+    extension = os.path.splitext(filename.strip().lower())[1][1:]
+    mimetype = _fileextension2mimetype.get(extension, "other")
+    return mimetype, _fileextension2filetype_override.get(extension, mimetype.split("/")[0])
 
 
 def formatTechAttrs(attrs):

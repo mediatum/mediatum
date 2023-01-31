@@ -13,6 +13,7 @@ import io
 import json as _json
 import logging
 import math as _math
+import mimetypes as _mimetypes
 import os
 import random as _random
 import re
@@ -338,29 +339,32 @@ def highlight(string, words, left, right):
         pos = si + len(left) + len(right)
     return string
 
-_fileextension2mimetype = dict(
-        aif="audio/x-aiff",
-        aiff="audio/x-aiff",
-        bib="text/x-bibtex",
-        bmp="image/x-ms-bmp",
-        doc="application/msword",
-        gif="image/gif",
-        jpeg="image/jpeg",
-        jpg="image/jpeg",
-        mp3="audio/mpeg",
-        mp4="video/mp4",
-        new="text/plain",
-        pdf="application/pdf",
-        png="image/png",
-        ppt="application/mspowerpoint",
-        ps="application/postscript",
-        svg="image/svg+xml",
-        tif="image/tiff",
-        tiff="image/tiff",
-        wav="audio/x-wav",
-        xml="application/xml",
-        zip="application/zip",
-    )
+
+_fileextension2mimetype = dict(bib="text/x-bibtex")
+
+_valid_fileextensions = frozenset((
+        "aif",
+        "aiff",
+        "bib",
+        "bmp",
+        "doc",
+        "gif",
+        "jpeg",
+        "jpg",
+        "mp3",
+        "mp4",
+        "new",
+        "pdf",
+        "png",
+        "ppt",
+        "ps",
+        "svg",
+        "tif",
+        "tiff",
+        "wav",
+        "xml",
+        "zip",
+    ))
 
 _fileextension2filetype_override = dict(
         bib="bibtex",
@@ -373,9 +377,16 @@ _fileextension2filetype_override = dict(
 # mimetype validator
 #
 def getMimeType(filename):
-    extension = os.path.splitext(filename.strip().lower())[1][1:]
-    mimetype = _fileextension2mimetype.get(extension, "other")
-    return mimetype, _fileextension2filetype_override.get(extension, mimetype.split("/")[0])
+    filename = filename.strip().lower()
+    extension = os.path.splitext(filename)[1][1:]
+    if extension not in _valid_fileextensions:
+        return "other", "other"
+
+    mimetype = _mimetypes.guess_type(filename)[0] or _fileextension2mimetype.get(extension, "other")
+    return mimetype, _fileextension2filetype_override.get(
+            extension,
+            mimetype.split("/")[0],
+        )
 
 
 def formatTechAttrs(attrs):

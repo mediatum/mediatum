@@ -113,18 +113,6 @@ def getNodeWorkflowStep(node):
             return p
 
 
-# set workflow for node
-
-
-def setNodeWorkflow(node, workflow):
-    """XXX: unused?"""
-    start = workflow.getStartNode()
-    start.children.append(node)
-    start.runAction(node, True)
-    db.session.commit()
-    return getNodeWorkflowStep(node)
-
-
 def create_update_workflow_step(
         step=None,
         name="",
@@ -194,15 +182,6 @@ def registerStep(nodename):
     if "_" in nodename:
         name = nodename[nodename.index("_") + 1:]
     workflowtypes[nodename] = name
-
-
-def registerWorkflowStep(nodename, cls):
-    name = nodename
-    if "_" in nodename:
-        name = nodename[nodename.index("_") + 1:]
-    workflowtypes[nodename] = name
-
-    _core_translation.addLabels(cls.getLabels())
 
 
 def getWorkflowTypes():

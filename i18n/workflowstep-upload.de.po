@@ -1,0 +1,11 @@
+msgid "admin_wfstep_text_before_upload_form"
+msgstr "Text vor dem Upload-Formular"
+
+msgid "admin_wfstep_text_after_upload_form"
+msgstr "Text nach dem Upload-Formular"
+
+msgid "admin_wfstep_uploadtype"
+msgstr "Erl. Dateiendungen (;-separiert)"
+
+msgid "admin_wfstep_single_upload"
+msgstr "Nur eine Datei erlaubt"

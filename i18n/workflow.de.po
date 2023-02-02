@@ -147,14 +147,8 @@ msgid "workflow_back"
 msgstr "Zurück"
 
 ### workflow types ###
-msgid "workflowstep_urn"
-msgstr "URN-erzeugen"
-
 msgid "workflowstep_delete"
 msgstr "Eintrag löschen"
-
-msgid "workflowstep_editmetadata"
-msgstr "Knotenbearbeitung"
 
 msgid "workflowstep_jahrbuch"
 msgstr "Datenexport (Jahrbuch)"
@@ -162,44 +156,17 @@ msgstr "Datenexport (Jahrbuch)"
 msgid "workflowstep_protect"
 msgstr "ACL Änderungen"
 
-msgid "workflowstep_sendemail"
-msgstr "Email senden"
-
 msgid "workflowstep_showdata"
 msgstr "Metadateneditor"
-
-msgid "workflowstep_start"
-msgstr "Startknoten"
 
 msgid "workflowstep_upload"
 msgstr "Uploadknoten"
 
-msgid "workflowstep_publish"
-msgstr "Freischaltung"
-
 msgid "workflowstep_wait"
 msgstr "Warten"
 
-msgid "workflowstep_end"
-msgstr "Endknoten"
-
-msgid "workflowstep_addformpage"
-msgstr "PDF-Seiten hinzufügen"
-
 msgid "workflowstep_reauth"
 msgstr "Re-Auth"
-
-msgid "workflowstep_checkcontent"
-msgstr "Inhalt Prüfen"
-
-msgid "workflowstep_deletefile"
-msgstr "Datei entfernen"
-
-msgid "workflowstep_textpage"
-msgstr "Textseite anzeigen"
-
-msgid "workflowstep_defer"
-msgstr "Freischaltverzögerung"
 
 msgid "workflowstep_fileattachment"
 msgstr "Dateianhang"

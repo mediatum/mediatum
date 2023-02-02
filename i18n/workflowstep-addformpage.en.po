@@ -1,0 +1,20 @@
+msgid "workflowstep_addformpage"
+msgstr "add PDF pages"
+
+msgid "workflowstep-addformpage_label_current_pdfform"
+msgstr "Current PDF form:"
+
+msgid "workflowstep-addformpage_label_replace_pdfform"
+msgstr "Replace one PDF form here"
+
+msgid "workflowstep-addformpage_label_upload_pdfform"
+msgstr "Upload a PDF form here"
+
+msgid "workflowstep-addformpage_label_fields_editable"
+msgstr "PDF form fields editable"
+
+msgid "workflowstep-addformpage_label_form_separate"
+msgstr "append PDF form separately to node"
+
+msgid "workflowstep-addformpage_label_overwrite"
+msgstr "Overwrite existing form"

@@ -9,7 +9,6 @@ from core import db
 from utils.utils import suppress
 
 def register():
-    #tree.registerNodeClass("workflowstep-delete", WorkflowStep_Delete)
     registerStep("workflowstep_delete")
 
 

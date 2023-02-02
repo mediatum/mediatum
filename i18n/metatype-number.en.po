@@ -1,0 +1,5 @@
+msgid "fieldtype_number"
+msgstr "number"
+
+msgid "fieldtype_number_desc"
+msgstr "field for digit input"

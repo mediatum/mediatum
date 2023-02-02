@@ -1,0 +1,5 @@
+msgid "fieldtype_label"
+msgstr "label field"
+
+msgid "fieldtype_label_desc"
+msgstr "text without input field"

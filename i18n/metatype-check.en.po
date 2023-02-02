@@ -1,0 +1,5 @@
+msgid "fieldtype_check"
+msgstr "checkbox"
+
+msgid "fieldtype_check_desc"
+msgstr "checkbox field (true/false)"

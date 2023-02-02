@@ -1,0 +1,5 @@
+msgid "workflowstep_editmetadata"
+msgstr "Knotenbearbeitung"
+
+msgid "wf_nomaskfound"
+msgstr "Die angebene Maske wurde nicht gefunden."

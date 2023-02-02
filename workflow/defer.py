@@ -13,9 +13,7 @@ import utils.date as date
 from mediatumtal import tal as _tal
 
 from .workflow import WorkflowStep, registerStep
-from core.translation import addLabels
 from core import db
-from schema.schema import Metafield
 from core.database.postgres.permission import AccessRulesetToRule
 from psycopg2.extras import DateRange
 import datetime
@@ -27,9 +25,7 @@ logg = logging.getLogger(__name__)
 
 
 def register():
-    #tree.registerNodeClass("workflowstep-defer", WorkflowStep_Defer)
     registerStep("workflowstep_defer")
-    addLabels(WorkflowStep_Defer.getLabels())
 
 
 def get_or_add_defer_daterange_rule(year, month, day):
@@ -100,19 +96,3 @@ class WorkflowStep_Defer(WorkflowStep):
         data["accesstype"] = accesstype
         self.settings = data
         db.session.commit()
-
-    @staticmethod
-    def getLabels():
-        return {"de":
-                [
-                    ("workflowstep-defer", u"Freischaltverzögerung"),
-                    ("attributname", "Attributname"),
-                    ("accesstype", "Zugriffsattribut"),
-                ],
-                "en":
-                [
-                    ("workflowstep-defer", "Defer-Field"),
-                    ("attributname", "Attributename"),
-                    ("accesstype", "Access attribute"),
-                ]
-                }

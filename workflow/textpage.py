@@ -9,14 +9,10 @@ import mediatumtal.tal as _tal
 from core import db as _db
 import core.csrfform as _core_csrfform
 from .workflow import WorkflowStep, registerStep
-from core.translation import addLabels
-from schema.schema import Metafield
 
 
 def register():
-    #tree.registerNodeClass("workflowstep-textpage", WorkflowStep_TextPage)
     registerStep("workflowstep_textpage")
-    addLabels(WorkflowStep_TextPage.getLabels())
 
 
 class WorkflowStep_TextPage(WorkflowStep):
@@ -71,17 +67,3 @@ class WorkflowStep_TextPage(WorkflowStep):
         assert tuple(data) == ("htmltext",)
         self.settings = data
         _db.session.commit()
-
-    @staticmethod
-    def getLabels():
-        return {"de":
-                [
-                    ("workflowstep-textpage", "Textseite anzeigen"),
-                    ("admin_wfstep_textpage_text_to_display", "Seiteninhalt"),
-                ],
-                "en":
-                [
-                    ("workflowstep-textpage", "show textpage"),
-                    ("admin_wfstep_textpage_text_to_display", "Page content"),
-                ]
-                }

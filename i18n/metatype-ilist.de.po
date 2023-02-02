@@ -1,0 +1,38 @@
+msgid "editor_index"
+msgstr "Index"
+
+msgid "editor_index_title"
+msgstr "Indexwerte anzeigen"
+
+msgid "popup_index_header"
+msgstr "Vorhandene Indexwerte"
+
+msgid "popup_indexnumber"
+msgstr "Wert(e) selektiert"
+
+msgid "popup_listvalue_title"
+msgstr "Listenwerte als Popup anzeigen"
+
+msgid "popup_listvalue"
+msgstr "Listenwerte anzeigen"
+
+msgid "popup_clearselection_title"
+msgstr "Auswahlliste leeren"
+
+msgid "popup_clearselection"
+msgstr "Auwahl aufheben"
+
+msgid "popup_ok"
+msgstr "OK"
+
+msgid "popup_cancel"
+msgstr "Abbrechen"
+
+msgid "fieldtype_ilist"
+msgstr "Werteliste mit Index"
+
+msgid "fieldtype_ilist_desc"
+msgstr "Eingabefeld mit Index als Popup"
+
+msgid "ilist_titlepopupbutton"
+msgstr "Editiermaske öffnen"

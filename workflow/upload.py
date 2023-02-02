@@ -16,13 +16,11 @@ from utils.utils import OperationException
 from .showdata import mkfilelist, mkfilelistshort
 import os
 from core import db
-from schema.schema import Metafield
 
 logg = logging.getLogger(__name__)
 
 
 def register():
-    #tree.registerNodeClass("workflowstep-upload", WorkflowStep_Upload)
     registerStep("workflowstep_upload")
 
 

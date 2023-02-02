@@ -1,0 +1,11 @@
+msgid "metafield_tech_meta"
+msgstr "Technisches Metadatenfeld:"
+
+msgid "metafield_fieldname"
+msgstr "Metadatenfeld"
+
+msgid "fieldtype_meta"
+msgstr "Technisches Metadatum"
+
+msgid "fieldtype_meta_desc"
+msgstr "Technisches Metadatum (automatisch vom System erstellt)"

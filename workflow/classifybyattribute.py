@@ -18,13 +18,11 @@ range = xrange
 
 import core as _core
 from mediatumtal import tal as _tal
-import schema.schema as _schema_schema
 import workflow as _workflow
 
 
 def register():
     _workflow.registerStep("workflowstep_classifybyattribute")
-    _core.translation.addLabels(WorkflowStep_ClassifyByAttribute.getLabels())
 
 
 class WorkflowStep_ClassifyByAttribute(_workflow.WorkflowStep):
@@ -51,16 +49,3 @@ class WorkflowStep_ClassifyByAttribute(_workflow.WorkflowStep):
         assert tuple(data) == ("target-attribute-name",)
         self.settings = data
         _core.db.session.commit()
-
-    @staticmethod
-    def getLabels():
-        return dict(
-            de=[
-                    ("workflowstep_classifybyattribute", "Klassifizieren nach Attribute"),
-                    ("classifybyattribute-target-attribute-name", "Metadatenfeld-Name für Knoten-IDs"),
-                ],
-            en=[
-                    ("workflowstep_classifybyattribute", "Classify by Attribute"),
-                    ("classifybyattribute-target-attribute-name", "Metafield Name for Node IDs"),
-                ],
-        )

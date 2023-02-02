@@ -25,7 +25,6 @@ import ruamel.yaml as _ruamel_yaml
 
 import core as _core
 import core.csrfform as _core_csrfform
-import schema.schema as _schema_schema
 import utils.fileutils as _fileutils
 import workflow as _workflow
 
@@ -35,7 +34,6 @@ _yaml_loader = _ruamel_yaml.YAML(typ="safe", pure=True).load
 
 def register():
     _workflow.registerStep("workflowstep_hierarchicalchoice2metafield")
-    _core.translation.addLabels(WorkflowStep_HierarchicalChoice2Metafield.getLabels())
 
 
 def _make_fancytree_source(options_tree):
@@ -106,7 +104,10 @@ class WorkflowStep_HierarchicalChoice2Metafield(_workflow.WorkflowStep):
             _core.db.session.commit()
             return self.forwardAndShow(node, True, req)
         else:
-            metafielderror = u"{}: {}".format(self.getLabels()[lang][3][1], req.values["hierarchicalmetafield"])
+            metafielderror = u"{}: {}".format(
+                    _core.translation.translate(lang, "wf_target_metafield_error"),
+                    req.values["hierarchicalmetafield"],
+                )
 
         fancytree_source = _json.dumps(_make_fancytree_source(tree_data))
 
@@ -154,20 +155,3 @@ class WorkflowStep_HierarchicalChoice2Metafield(_workflow.WorkflowStep):
         assert tuple(data) == ('target-attribute-name',)
         self.settings = data
         _core.db.session.commit()
-
-    @staticmethod
-    def getLabels():
-        return dict(
-            de=[
-                    ("workflowstep_hierarchicalchoice2metafield", "hierarchische Auswahl"),
-                    ("hierarchicalchoice-upload-fileatt", "Hierarchie (JSON/YAML)"),
-                    ("hierarchicalchoice-target-attribute-name", "Ziel-Metafeld"),
-                    ("wf_target_metafield_error", "Ziel-Metafeld nicht gefunden"),
-                ],
-            en=[
-                    ("workflowstep_hierarchicalchoice2metafield", "hierarchical choice"),
-                    ("hierarchicalchoice-upload-fileatt", "Hierarchy (JSON/YAML)"),
-                    ("hierarchicalchoice-target-attribute-name", "Target-Metafield"),
-                    ("wf_target_metafield_error", "Target-Metafield not found"),
-                ],
-        )

@@ -1,0 +1,14 @@
+msgid "workflowstep_metafield2metadata"
+msgstr "Metadaten aus Metafeld generieren"
+
+msgid "metafield2metadata-upload-fileatt"
+msgstr "Metadaten (YAML/JSON)"
+
+msgid "metafield2metadata-source-attribute-name"
+msgstr "Quell-Metadatenfeld-Name"
+
+msgid "metafield2metadata-source-metadata-separator"
+msgstr "Quell-Metadaten-Trennzeichen"
+
+msgid "metafield2metadata-target-metadata-separator"
+msgstr "Ergebnis-Metadaten-Trennzeichen"

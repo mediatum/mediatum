@@ -7,16 +7,12 @@ from __future__ import print_function
 from mediatumtal import tal as _tal
 
 from .workflow import WorkflowStep, registerStep, getNodeWorkflow
-from core.translation import addLabels
 from core import db
-from schema.schema import Metafield
 
 q = db.query
 
 def register():
-    #tree.registerNodeClass("workflowstep-condition", WorkflowStep_Condition)
     registerStep("workflowstep_condition")
-    addLabels(WorkflowStep_Condition.getLabels())
 
 
 class WorkflowStep_Condition(WorkflowStep):
@@ -78,18 +74,3 @@ class WorkflowStep_Condition(WorkflowStep):
         assert tuple(data) == ("condition",)
         self.settings = data
         db.session.commit()
-
-    @staticmethod
-    def getLabels():
-        return {"de":
-                [
-                    ("workflowstep-condition", "Bedingungsfeld"),
-                    ("admin_wfstep_condition", "Bedingung"),
-                ],
-                "en":
-                [
-                    ("workflowstep-condition", "Condition field"),
-                    ("admin_wfstep_condition", "Condition"),
-
-                ]
-                }

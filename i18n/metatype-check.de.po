@@ -1,0 +1,5 @@
+msgid "fieldtype_check"
+msgstr "Checkbox"
+
+msgid "fieldtype_check_desc"
+msgstr "Checkbox Auswahl (für Ja/Nein-Werte)"

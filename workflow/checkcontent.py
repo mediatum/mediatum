@@ -11,15 +11,11 @@ from mediatumtal import tal as _tal
 from core import db as _db
 from .workflow import WorkflowStep, registerStep
 from utils.utils import checkXMLString, suppress
-import core.translation as _core_translation
 import utils.mail as mail
-from schema.schema import Metafield
 
 
 def register():
-    #tree.registerNodeClass("workflowstep-checkcontent", WorkflowStep_CheckContent)
     registerStep("workflowstep_checkcontent")
-    _core_translation.addLabels(WorkflowStep_CheckContent.getLabels())
 
 
 class MailError(Exception):
@@ -66,23 +62,3 @@ class WorkflowStep_CheckContent(WorkflowStep):
         assert frozenset(data) == frozenset(("recipient", "sender", "subject", "text"))
         self.settings = data
         _db.session.commit()
-
-    @staticmethod
-    def getLabels():
-        return {"de":
-                [
-                    ("workflowstep-checkcontent", u"Inhalt Prüfen"),
-                    ("admin_wfstep_checkcontent_sender", "E-Mail Absender"),
-                    ("admin_wfstep_checkcontent_recipient", u"Empfänger"),
-                    ("admin_wfstep_checkcontent_subject", "Betreff"),
-                    ("admin_wfstep_checkcontent_text", "Text"),
-                ],
-                "en":
-                [
-                    ("workflowstep-checkcontent", "Check Content"),
-                    ("admin_wfstep_checkcontent_sender", "Email Sender"),
-                    ("admin_wfstep_checkcontent_recipient", "Recipient"),
-                    ("admin_wfstep_checkcontent_subject", "Subject"),
-                    ("admin_wfstep_checkcontent_text", "Text"),
-                ]
-                }

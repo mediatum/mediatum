@@ -1,0 +1,11 @@
+msgid "metafield_tech_meta"
+msgstr "Technical metadata field:"
+
+msgid "metafield_fieldname"
+msgstr "metafield"
+
+msgid "fieldtype_meta"
+msgstr "technical metadata"
+
+msgid "fieldtype_meta_desc"
+msgstr "field for technical metadata (automatically filled in by mediatum)"

@@ -115,3 +115,25 @@ msgstr "Image too big"
 
 msgid "unknown_image_format"
 msgstr "Unknown image format"
+
+msgid "identifier_importer_longname"
+msgstr "Import via DOI"
+
+msgid "identifier_importer_explain"
+msgstr "Please enter DOI to import metadata of publication. "
+    "<p>Examples:</p> doi:10.1371/journal.pbio.0020449 <br/>DOI:10.1002/nme.4628 "
+
+msgid "edit_import_nothing"
+msgstr 'No DOI was given.'
+
+msgid "doi_unknown"
+msgstr "The specified DOI doesn't exist."
+
+msgid "doi_invalid"
+msgstr "This doesn't look like an valid DOI (must contain a string starting with 10.)"
+
+msgid "doi_type_not_mapped"
+msgstr 'No mapping defined for type of given DOI.'
+
+msgid "doi_error_connecting_external_server"
+msgstr 'Error connecting to external server'

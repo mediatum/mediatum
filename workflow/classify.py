@@ -8,21 +8,16 @@ from mediatumtal import tal as _tal
 
 from .upload import WorkflowStep
 from .workflow import registerStep
-from core.translation import addLabels
 from utils.utils import isNumeric
 from core import Node
 from core import db
-from schema.schema import Metafield
 from contenttypes.container import Directory
 
 q = db.query
 
 
 def register():
-    #tree.registerNodeClass("workflowstep-classify", WorkflowStep_Classify)
-    # registerStep("workflowstep-classify")
     registerStep("workflowstep_classify")
-    addLabels(WorkflowStep_Classify.getLabels())
 
 
 class WorkflowStep_Classify(WorkflowStep):
@@ -90,21 +85,3 @@ class WorkflowStep_Classify(WorkflowStep):
         assert frozenset(data) == frozenset(("destination", "destination_attr", "only_sub"))
         self.settings = data
         db.session.commit()
-
-    @staticmethod
-    def getLabels():
-        return {"de":
-                [
-                    ("workflowstep-classify", "Klassifizieren"),
-                    ("admin_wfstep_classify_destination", "Zielknoten-IDs Zeilenwechsel-getrennt"),
-                    ("admin_wfstep_classify_destination_attr", "Unterknoten Attribut"),
-                    ("admin_wfstep_classify_only_sub", "Nur Unterknoten"),
-                ],
-                "en":
-                [
-                    ("workflowstep-classify", "classify"),
-                    ("admin_wfstep_classify_destination", "IDs of destination node line-separated"),
-                    ("admin_wfstep_classify_destination_attr", "attribute name"),
-                    ("admin_wfstep_classify_only_sub", "only subnode"),
-                ]
-                }

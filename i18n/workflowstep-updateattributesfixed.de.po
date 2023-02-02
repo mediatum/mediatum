@@ -1,0 +1,5 @@
+msgid "workflowstep_updateattributesfixed"
+msgstr "Update-Attribute behoben"
+
+msgid "updateattributesfixed-upload-fileatt"
+msgstr "Metadaten (YAML/JSON)"

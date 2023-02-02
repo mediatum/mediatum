@@ -117,15 +117,3 @@ class m_label(Metatype):
         if html:
             value = esc(value)
         return (metafield.getLabel(), value)
-
-
-    translation_labels = dict(
-        de=dict(
-            fieldtype_label="Label",
-            fieldtype_label_desc="Text als String",
-        ),
-        en=dict(
-            fieldtype_label="label field",
-            fieldtype_label_desc="text without input field",
-        ),
-    )

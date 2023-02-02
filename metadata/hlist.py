@@ -103,20 +103,3 @@ class m_hlist(Metatype):
         req.response.set_data(json.dumps({c.id: c.getName() for c in children}))
         req.response.status_code = httpstatus.HTTP_OK
         return httpstatus.HTTP_OK
-
-    translation_labels = dict(
-        de=dict(
-            fieldtype_hlist="Hierarchische Werteliste",
-            fieldtype_hlist_desc="Hierarchische Werteliste aus Attributwerten",
-            hlist_edit_parentnodes="Basisknoten:",
-            hlist_edit_attrname="Attributname:",
-            hlist_edit_onlylast="Zeige nur Kindknoten:",
-        ),
-        en=dict(
-            fieldtype_hlist="hierarchical list",
-            fieldtype_hlist_desc="hierarchical list from attributes",
-            hlist_edit_parentnodes="Base node:",
-            hlist_edit_attrname="Attribute name:",
-            hlist_edit_onlylast="Show only child:",
-        ),
-    )

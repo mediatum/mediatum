@@ -1,0 +1,56 @@
+msgid "workflowstep_start"
+msgstr "start node"
+
+msgid "admin_wfstep_starttext"
+msgstr "Text in front of selection"
+
+msgid "admin_wfstep_node_types_to_create"
+msgstr "Node types to create (;-separated schema list)"
+
+msgid "admin_wfstep_allowcontinue"
+msgstr "Allow continue"
+
+msgid "workflow_start_create"
+msgstr "Create"
+
+msgid "workflow_start_create_m"
+msgstr "Create / Erstellen"
+
+msgid "workflow_start_chooselang"
+msgstr "Please choose input language / Bitte Sprache für die Eingabe wählen"
+
+msgid "workflow_start_type"
+msgstr "Registering your"
+
+msgid "workflow_start_type_m"
+msgstr "Registering your / Melden ihrer"
+
+msgid "workflow_start_continue_header"
+msgstr "Publizieren fortsetzen"
+
+msgid "workflow_start_continue_header_m"
+msgstr "Continue publishing / Publizieren fortsetzen "
+
+msgid "workflow_start_identificator"
+msgstr "Identification Number"
+
+msgid "workflow_start_identificator_m"
+msgstr "Identification Number / Identifikationsnummer"
+
+msgid "workflow_start_key"
+msgstr "Key"
+
+msgid "workflow_start_key_m"
+msgstr "Key / Schlüssel"
+
+msgid "workflow_start_continue"
+msgstr "Continue"
+
+msgid "workflow_start_continue_m"
+msgstr "Continue / Fortsetzen"
+
+msgid "workflow_start_err_wrongkey"
+msgstr "In order to proceed, please fill out fields \"Identification Number\" and \"Key\" properly"
+
+msgid "workflow_start_err_protected"
+msgstr "no changes needed."

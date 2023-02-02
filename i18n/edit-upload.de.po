@@ -118,3 +118,25 @@ msgstr "Bild zu groß"
 
 msgid "unknown_image_format"
 msgstr "Unbekanntes Bildformat"
+
+msgid "identifier_importer_longname"
+msgstr "Via DOI importieren"
+
+msgid "identifier_importer_explain"
+msgstr "Bitte DOI eingeben und <i>OK</i> klicken, um die Metadaten einer Publikation in mediaTUM zu importieren."
+       "<p>Beispiele:</p>doi:10.1371/journal.pbio.0020449<br/>DOI:10.1002/nme.4628 "
+
+msgid "edit_import_nothing"
+msgstr 'Es wurde kein DOI angegeben.'
+
+msgid "doi_unknown"
+msgstr 'Der angegebene DOI existiert nicht'
+
+msgid "doi_invalid"
+msgstr 'Dies sieht nicht wie eine gültige DOI aus! (muss eine Zeichenkette enthalten, die mit 10. beginnt)'
+
+msgid "doi_type_not_mapped"
+msgstr 'Für den Typ der angegebenen DOI ist kein Mapping definiert.'
+
+msgid "doi_error_connecting_external_server"
+msgstr 'Verbindungsfehler zum externen Server'

@@ -1,0 +1,11 @@
+msgid "workflowstep_classify"
+msgstr "Klassifizieren"
+
+msgid "admin_wfstep_classify_destination"
+msgstr "Zielknoten-IDs Zeilenwechsel-getrennt"
+
+msgid "admin_wfstep_classify_destination_attr"
+msgstr "Unterknoten Attribut"
+
+msgid "admin_wfstep_classify_only_sub"
+msgstr "Nur Unterknoten"

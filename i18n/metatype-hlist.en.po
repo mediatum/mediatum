@@ -1,0 +1,14 @@
+msgid "fieldtype_hlist"
+msgstr "hierarchical list"
+
+msgid "fieldtype_hlist_desc"
+msgstr "hierarchical list from attributes"
+
+msgid "hlist_edit_parentnodes"
+msgstr "Base node:"
+
+msgid "hlist_edit_attrname"
+msgstr "Attribute name:"
+
+msgid "hlist_edit_onlylast"
+msgstr "Show only child:"

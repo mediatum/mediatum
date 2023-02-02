@@ -11,7 +11,6 @@ import core.csrfform as _core_csrfform
 import core.translation as _core_translation
 from .workflow import WorkflowStep, registerStep
 from schema.schema import getMetaType
-from schema.schema import Metafield
 from core import db
 from core.users import user_from_session as _user_from_session
 
@@ -19,9 +18,7 @@ q = db.query
 
 
 def register():
-    #tree.registerNodeClass("workflowstep-edit", WorkflowStep_EditMetadata)
     registerStep("workflowstep_editmetadata")
-    _core_translation.addLabels(WorkflowStep_EditMetadata.getLabels())
 
 
 class WorkflowStep_EditMetadata(WorkflowStep):
@@ -91,15 +88,3 @@ class WorkflowStep_EditMetadata(WorkflowStep):
         assert tuple(data) == ("mask",)
         self.settings = data
         db.session.commit()
-
-    @staticmethod
-    def getLabels():
-        return {"de":
-                [
-                    ("wf_nomaskfound", "Die angebene Maske wurde nicht gefunden."),
-                ],
-                "en":
-                [
-                    ("wf_nomaskfound", "Configured Mask not found."),
-                ]
-                }

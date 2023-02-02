@@ -1,0 +1,20 @@
+msgid "workflowstep_addformpage"
+msgstr "PDF-Seiten hinzufügen"
+
+msgid "workflowstep-addformpage_label_current_pdfform"
+msgstr "Aktuelles Formular:"
+
+msgid "workflowstep-addformpage_label_replace_pdfform"
+msgstr "Eine PDF-Form hier ersetzen"
+
+msgid "workflowstep-addformpage_label_upload_pdfform"
+msgstr "Eine PDF-Form hier hochladen"
+
+msgid "workflowstep-addformpage_label_fields_editable"
+msgstr "PDF-Form-Felder editierbar"
+
+msgid "workflowstep-addformpage_label_form_separate"
+msgstr "PDF-Form separat an Knoten anhängen"
+
+msgid "workflowstep-addformpage_label_overwrite"
+msgstr "PDF-Form überschreiben"

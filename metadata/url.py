@@ -137,26 +137,3 @@ class m_url(Metatype):
             icon=data["icon"],
             new_window=bool(data.get("new_window")),
         )
-
-    translation_labels = dict(
-        de=dict(
-            url_edit_link="Link:",
-            url_edit_linktext="Angezeigter Text:",
-            url_edit_icon="Icon:",
-            url_edit_noicon="-kein Icon-",
-            url_edit_preview="Vorschau:",
-            url_urltarget="Neues Fenster:",
-            fieldtype_url="URL",
-            fieldtype_url_desc="externer Link (neues Fenster)",
-        ),
-        en=dict(
-            url_edit_link="Link:",
-            url_edit_linktext="Link Text:",
-            url_edit_icon="Icon:",
-            url_edit_noicon="-kein Icon-",
-            url_edit_preview="Preview:",
-            url_urltarget="New window:",
-            fieldtype_url="url",
-            fieldtype_url_desc="external link (new window)",
-        ),
-    )

@@ -1,0 +1,11 @@
+msgid "workflowstep_hierarchicalchoice2metafield"
+msgstr "hierarchical choice"
+
+msgid "hierarchicalchoice-upload-fileatt"
+msgstr "Hierarchy (JSON/YAML)"
+
+msgid "hierarchicalchoice-target-attribute-name"
+msgstr "Target-Metafield"
+
+msgid "wf_target_metafield_error"
+msgstr "Target-Metafield not found"

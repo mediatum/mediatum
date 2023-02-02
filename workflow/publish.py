@@ -7,12 +7,10 @@ from __future__ import print_function
 from mediatumtal import tal as _tal
 
 from .workflow import WorkflowStep, registerStep
-from core.translation import addLabels
 from core import UserGroup, db
 from core.permission import get_all_access_rules
 from core.users import user_from_session as _user_from_session
 from utils.date import now
-from schema.schema import Metafield
 import logging
 
 q = db.query
@@ -21,7 +19,6 @@ logg = logging.getLogger(__name__)
 
 def register():
     registerStep("workflowstep_publish")
-    addLabels(WorkflowStep_Publish.getLabels())
 
 
 class WorkflowStep_Publish(WorkflowStep):
@@ -87,17 +84,3 @@ class WorkflowStep_Publish(WorkflowStep):
         assert frozenset(data) == frozenset(("set_updatetime", "set_version"))
         self.settings = data
         db.session.commit()
-
-    @staticmethod
-    def getLabels():
-        return {"de":
-                [
-                    ("admin_wfstep_publishsetpublishedversion", "Setze Publizierte Version"),
-                    ("admin_wfstep_publishsetupdatetime", "Setze Aktualisierungszeit"),
-                ],
-                "en":
-                [
-                    ("admin_wfstep_publishsetpublishedversion", "set published version"),
-                    ("admin_wfstep_publishsetupdatetime", "set updatetime"),
-                ]
-                }

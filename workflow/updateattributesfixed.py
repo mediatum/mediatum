@@ -20,7 +20,6 @@ import ruamel.yaml as _ruamel_yaml
 from mediatumtal import tal as _tal
 
 import core as _core
-import schema.schema as _schema_schema
 import utils.fileutils as _fileutils
 import workflow as _workflow
 
@@ -30,7 +29,6 @@ _yaml_loader = _ruamel_yaml.YAML(typ="safe", pure=True).load
 
 def register():
     _workflow.registerStep("workflowstep_updateattributesfixed")
-    _core.translation.addLabels(WorkflowStep_UpdateAttributesFixed.getLabels())
 
 
 class WorkflowStep_UpdateAttributesFixed(_workflow.WorkflowStep):
@@ -78,16 +76,3 @@ class WorkflowStep_UpdateAttributesFixed(_workflow.WorkflowStep):
                                               filetype="wfstep-updateattributesfixed"))
         assert not data
         _core.db.session.commit()
-
-    @staticmethod
-    def getLabels():
-        return {
-            "de": [
-                    ("workflowstep_updateattributesfixed", "Update-Attribute behoben"),
-                    ("updateattributesfixed-upload-fileatt", "Metadaten (YAML/JSON)"),
-                ],
-            "en": [
-                    ("workflowstep_updateattributesfixed", "Update Attributes fixed"),
-                    ("updateattributesfixed-upload-fileatt", "Metadata (YAML/JSON)"),
-                ]
-        }

@@ -1,0 +1,5 @@
+msgid "workflowstep_classifybyattribute"
+msgstr "Classify by Attribute"
+
+msgid "classifybyattribute-target-attribute-name"
+msgstr "Metafield Name for Node IDs"

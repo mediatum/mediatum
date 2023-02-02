@@ -1,0 +1,11 @@
+msgid "workflowstep_end"
+msgstr "Endknoten"
+
+msgid "admin_wfstep_endtext"
+msgstr "Textseite"
+
+msgid "admin_wfstep_endremove"
+msgstr "Entferne aus Workflow"
+
+msgid "admin_wfstep_endsetupdatetime"
+msgstr "Setze Aktualisierungszeit"

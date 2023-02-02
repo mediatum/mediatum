@@ -79,19 +79,3 @@ class m_meta(Metatype):
             fieldname=data["fieldname"],
             synchronize=bool(data.get("synchronize")),
         )
-
-
-    translation_labels = dict(
-        de=dict(
-            metafield_tech_meta="Technisches Metadatenfeld:",
-            metafield_fieldname="Metadatenfeld",
-            fieldtype_meta="Technisches Metadatum",
-            fieldtype_meta_desc="Technisches Metadatum (automatisch vom System erstellt)",
-        ),
-        en=dict(
-            metafield_tech_meta="Technical metadata field:",
-            metafield_fieldname="metafield",
-            fieldtype_meta="technical metadata",
-            fieldtype_meta_desc="field for technical metadata (automatically filled in by mediatum)",
-        ),
-    )

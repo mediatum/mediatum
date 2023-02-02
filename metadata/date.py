@@ -127,16 +127,3 @@ class m_date(Metatype):
         return dict(
             format=data["format"],
         )
-
-    translation_labels = dict(
-        de=dict(
-            date_edit_date_format="Datums-/Zeitformat:",
-            fieldtype_date="Datum",
-            fieldtype_date_desc="Datumsauswahl (Tag / Monat / Jahr)",
-        ),
-        en=dict(
-            date_edit_date_format="Date-/Time-format:",
-            fieldtype_date="date",
-            fieldtype_date_desc="date field (day / month / year)",
-        ),
-    )

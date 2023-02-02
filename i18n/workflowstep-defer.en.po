@@ -1,0 +1,8 @@
+msgid "workflowstep_defer"
+msgstr "Defer-Field"
+
+msgid "attributname"
+msgstr "Attributename"
+
+msgid "accesstype"
+msgstr "Access attribute"

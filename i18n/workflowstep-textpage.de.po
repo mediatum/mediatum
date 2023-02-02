@@ -1,0 +1,5 @@
+msgid "workflowstep_textpage"
+msgstr "Textseite anzeigen"
+
+msgid "admin_wfstep_textpage_text_to_display"
+msgstr "Seiteninhalt"

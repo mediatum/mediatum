@@ -102,18 +102,3 @@ class m_list(Metatype):
             listelements=listelements,
             multiple=bool(data.get("multiple")),
         )
-
-    translation_labels = dict(
-        de=dict(
-            list_multiple="Mehrfachauswahl:",
-            list_list_values="Listenwerte:",
-            fieldtype_list="Werteliste",
-            fieldtype_list_desc="Werte-Auswahlfeld als Drop-Down Liste",
-        ),
-        en=dict(
-            list_multiple="Multiple choice:",
-            list_list_values="List values:",
-            fieldtype_list="valuelist",
-            fieldtype_list_desc="drop down valuelist",
-        ),
-    )

@@ -142,14 +142,8 @@ msgstr "Objekt ${name} has reached the end of the current workflow."
 msgid "workflow_back"
 msgstr "Back"
 
-msgid "workflowstep_urn"
-msgstr "create URN"
-
 msgid "workflowstep_delete"
 msgstr "delete entry"
-
-msgid "workflowstep_editmetadata"
-msgstr "edit node"
 
 msgid "workflowstep_jahrbuch"
 msgstr "data export (yearbook)"
@@ -157,44 +151,17 @@ msgstr "data export (yearbook)"
 msgid "workflowstep_protect"
 msgstr "ACL protection"
 
-msgid "workflowstep_sendemail"
-msgstr "send email"
-
 msgid "workflowstep_showdata"
 msgstr "metadata editor"
-
-msgid "workflowstep_start"
-msgstr "start node"
 
 msgid "workflowstep_upload"
 msgstr "upload node"
 
-msgid "workflowstep_publish"
-msgstr "publish"
-
 msgid "workflowstep_wait"
 msgstr "wait"
 
-msgid "workflowstep_end"
-msgstr "end node"
-
-msgid "workflowstep_addformpage"
-msgstr "add PDF pages"
-
 msgid "workflowstep_reauth"
 msgstr "Re-Auth"
-
-msgid "workflowstep_checkcontent"
-msgstr "Check Content"
-
-msgid "workflowstep_deletefile"
-msgstr "Remove file"
-
-msgid "workflowstep_textpage"
-msgstr "show textpage"
-
-msgid "workflowstep_defer"
-msgstr "Defer-Field"
 
 msgid "workflowstep_fileattachment"
 msgstr "File-Attachment"

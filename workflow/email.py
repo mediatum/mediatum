@@ -20,16 +20,13 @@ import core.csrfform as _core_csrfform
 import core.translation as _core_translation
 import utils.mail as mail
 from core import db
-from schema.schema import Metafield
 from core.request_handler import makeSelfLink as _makeSelfLink
 
 logg = logging.getLogger(__name__)
 
 
 def register():
-    #tree.registerNodeClass("workflowstep-send_email", WorkflowStep_SendEmail)
     registerStep("workflowstep_sendemail")
-    _core_translation.addLabels(WorkflowStep_SendEmail.getLabels())
 
 
 class MailError(Exception):
@@ -180,30 +177,3 @@ class WorkflowStep_SendEmail(WorkflowStep):
         assert frozenset(data) == frozenset(("allowedit", "attach_pdf_form", "recipient", "sender", "subject", "text"))
         self.settings = data
         db.session.commit()
-
-    @staticmethod
-    def getLabels():
-        return {"de":
-                [
-                    ("workflowstep-email_label_attach_pdf_form", "PDF-Form als Anhang senden"),
-                    ("workflowstep-email_label_header", "Email versenden"),
-                    ("workflowstep-email_label_sender", "Von"),
-                    ("workflowstep-email_label_recipient", "An"),
-                    ("workflowstep-email_label_subject", "Betreff"),
-                    ("workflowstep-email_label_text", "Nachricht"),
-                    ("workflowstep-email_label_send", "Absenden"),
-                    ("workflowstep-email_label_reset", u"Zurücksetzen"),
-
-                ],
-                "en":
-                [
-                    ("workflowstep-email_label_attach_pdf_form", "Send PDF from as attachment"),
-                    ("workflowstep-email_label_header", "Send Email"),
-                    ("workflowstep-email_label_sender", "From"),
-                    ("workflowstep-email_label_recipient", "To"),
-                    ("workflowstep-email_label_subject", "Subject"),
-                    ("workflowstep-email_label_text", "Message"),
-                    ("workflowstep-email_label_send", "Send"),
-                    ("workflowstep-email_label_reset", "Reset"),
-                ]
-                }

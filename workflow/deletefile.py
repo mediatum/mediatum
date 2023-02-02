@@ -6,16 +6,12 @@ from __future__ import print_function
 
 from mediatumtal import tal as _tal
 
-import core.translation as _core_translation
 from .workflow import WorkflowStep, registerStep
 from core import db
-from schema.schema import Metafield
 
 
 def register():
-    #tree.registerNodeClass("workflowstep-deletefile", WorkflowStep_DeleteFile)
     registerStep("workflowstep_deletefile")
-    _core_translation.addLabels(getLabels())
 
 
 class WorkflowStep_DeleteFile(WorkflowStep):
@@ -50,16 +46,3 @@ class WorkflowStep_DeleteFile(WorkflowStep):
         assert tuple(data) == ("filetype",)
         self.settings = data
         db.session.commit()
-
-def getLabels(key=None, lang=None):
-    return {"de":
-            [
-                ("workflowstep-deletefile", "Datei entfernen"),
-                ("admin_wfstep_deletefiletype", "Dateityp (Leere Liste bedeutet alle Dateitypen"),
-            ],
-            "en":
-            [
-                ("workflowstep-deletefile", "Remove file"),
-                ("admin_wfstep_deletefiletype", "File type (empty list means all filetypes"),
-            ]
-            }

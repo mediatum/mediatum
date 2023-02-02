@@ -1,0 +1,26 @@
+msgid "workflowstep_sendemail"
+msgstr "Email senden"
+
+msgid "workflowstep-email_label_attach_pdf_form"
+msgstr "PDF-Form als Anhang senden"
+
+msgid "workflowstep-email_label_header"
+msgstr "Email versenden"
+
+msgid "workflowstep-email_label_sender"
+msgstr "Von"
+
+msgid "workflowstep-email_label_recipient"
+msgstr "An"
+
+msgid "workflowstep-email_label_subject"
+msgstr "Betreff"
+
+msgid "workflowstep-email_label_text"
+msgstr "Nachricht"
+
+msgid "workflowstep-email_label_send"
+msgstr "Absenden"
+
+msgid "workflowstep-email_label_reset"
+msgstr "Zurücksetzen"

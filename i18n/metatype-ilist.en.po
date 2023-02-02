@@ -1,0 +1,38 @@
+msgid "editor_index"
+msgstr "Index"
+
+msgid "editor_index_title"
+msgstr "show index values"
+
+msgid "popup_index_header"
+msgstr "Existing Index values"
+
+msgid "popup_ok"
+msgstr "OK"
+
+msgid "popup_cancel"
+msgstr "Cancel"
+
+msgid "popup_listvalue_title"
+msgstr "Show list values as popup"
+
+msgid "popup_listvalue"
+msgstr "show list values"
+
+msgid "popup_clearselection"
+msgstr "clear selection"
+
+msgid "popup_clearselection_title"
+msgstr "Unselect all values"
+
+msgid "popup_indexnumber"
+msgstr "values selected"
+
+msgid "fieldtype_ilist"
+msgstr "indexlist"
+
+msgid "fieldtype_ilist_desc"
+msgstr "input field with index"
+
+msgid "ilist_titlepopupbutton"
+msgstr "open editor mask"

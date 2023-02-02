@@ -1,0 +1,17 @@
+msgid "workflowstep_urn"
+msgstr "URN-erzeugen"
+
+msgid "admin_wfstep_urn"
+msgstr "URN"
+
+msgid "admin_wfstep_urn_snid1"
+msgstr "URN SNID 1"
+
+msgid "admin_wfstep_urn_snid2"
+msgstr "URN SNID 2"
+
+msgid "admin_wfstep_urn_niss"
+msgstr "URN NISS"
+
+msgid "admin_wfstep_urn_attrname"
+msgstr "URN Attributname"

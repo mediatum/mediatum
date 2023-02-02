@@ -1,0 +1,56 @@
+msgid "workflowstep_start"
+msgstr "Startknoten"
+
+msgid "admin_wfstep_starttext"
+msgstr "Text vor Auswahl"
+
+msgid "admin_wfstep_node_types_to_create"
+msgstr "Erstellbare Node-Typen (;-separiert)"
+
+msgid "admin_wfstep_allowcontinue"
+msgstr "Fortsetzen erlauben"
+
+msgid "workflow_start_create"
+msgstr "Erstellen"
+
+msgid "workflow_start_create_m"
+msgstr "Erstellen / Create"
+
+msgid "workflow_start_chooselang"
+msgstr "Bitte Sprache für die Eingabe wählen / Please choose input language"
+
+msgid "workflow_start_type"
+msgstr "Melden Ihrer"
+
+msgid "workflow_start_type_m"
+msgstr "Melden Ihrer / Registering your"
+
+msgid "workflow_start_continue_header"
+msgstr "Publizieren fortsetzen"
+
+msgid "workflow_start_continue_header_m"
+msgstr "Publizieren fortsetzen / Continue publishing"
+
+msgid "workflow_start_identificator"
+msgstr "Identifikationsnummer"
+
+msgid "workflow_start_identificator_m"
+msgstr "Identifikationsnummer / Identification Number"
+
+msgid "workflow_start_key"
+msgstr "Schlüssel"
+
+msgid "workflow_start_key_m"
+msgstr "Schlüssel / Key"
+
+msgid "workflow_start_continue"
+msgstr "Fortsetzen"
+
+msgid "workflow_start_continue_m"
+msgstr "Fortsetzen / Continue"
+
+msgid "workflow_start_err_wrongkey"
+msgstr "Identifikationsnummer oder Schlüssel ist nicht korrekt."
+
+msgid "workflow_start_err_protected"
+msgstr "Keine Bearbeitung erforderlich."

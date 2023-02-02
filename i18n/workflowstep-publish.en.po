@@ -1,0 +1,8 @@
+msgid "workflowstep_publish"
+msgstr "publish"
+
+msgid "admin_wfstep_publishsetpublishedversion"
+msgstr "set published version"
+
+msgid "admin_wfstep_publishsetupdatetime"
+msgstr "set updatetime"

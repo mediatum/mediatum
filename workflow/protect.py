@@ -10,7 +10,6 @@ from core import db
 
 
 def register():
-    #tree.registerNodeClass("workflowstep-protect", WorkflowStep_Protect)
     registerStep("workflowstep_protect")
 
 

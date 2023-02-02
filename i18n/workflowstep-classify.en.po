@@ -1,0 +1,11 @@
+msgid "workflowstep_classify"
+msgstr "classify"
+
+msgid "admin_wfstep_classify_destination"
+msgstr "IDs of destination node line-separated"
+
+msgid "admin_wfstep_classify_destination_attr"
+msgstr "attribute name"
+
+msgid "admin_wfstep_classify_only_sub"
+msgstr "only subnode"

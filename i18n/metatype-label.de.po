@@ -1,0 +1,5 @@
+msgid "fieldtype_label"
+msgstr "Label"
+
+msgid "fieldtype_label_desc"
+msgstr "Text als String"

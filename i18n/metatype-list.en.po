@@ -1,0 +1,11 @@
+msgid "list_multiple"
+msgstr "Multiple choice:"
+
+msgid "list_list_values"
+msgstr "List values:"
+
+msgid "fieldtype_list"
+msgstr "valuelist"
+
+msgid "fieldtype_list_desc"
+msgstr "drop down valuelist"

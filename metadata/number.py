@@ -44,14 +44,3 @@ class m_number(Metatype):
         if html:
             value = esc(value)
         return (metafield.getLabel(), value)
-
-    translation_labels = dict(
-        de=dict(
-            fieldtype_number="Zahl",
-            fieldtype_number_desc="Feld zur Eingabe eines Zahlenwertes",
-        ),
-        en=dict(
-            fieldtype_number="number",
-            fieldtype_number_desc="field for digit input",
-        ),
-    )

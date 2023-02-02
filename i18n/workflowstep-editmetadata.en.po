@@ -1,0 +1,5 @@
+msgid "workflowstep_editmetadata"
+msgstr "edit node"
+
+msgid "wf_nomaskfound"
+msgstr "Configured Mask not found."

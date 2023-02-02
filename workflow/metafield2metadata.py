@@ -23,7 +23,6 @@ import ruamel.yaml as _ruamel_yaml
 
 import core as _core
 from mediatumtal import tal as _tal
-import schema.schema as _schema_schema
 import utils.fileutils as _fileutils
 import workflow as _workflow
 
@@ -33,7 +32,6 @@ _yaml_loader = _ruamel_yaml.YAML(typ="safe", pure=True).load
 
 def register():
     _workflow.registerStep("workflowstep_metafield2metadata")
-    _core.translation.addLabels(WorkflowStep_Metafield2Metadata.getLabels())
 
 
 class WorkflowStep_Metafield2Metadata(_workflow.WorkflowStep):
@@ -102,22 +100,3 @@ class WorkflowStep_Metafield2Metadata(_workflow.WorkflowStep):
         assert frozenset(data) == frozenset(('source-attribute-name', 'source-metadata-separator', 'target-metadata-separator'))
         self.settings = data
         _core.db.session.commit()
-
-    @staticmethod
-    def getLabels():
-        return dict(
-            de=[
-                    ("workflowstep_metafield2metadata", "Metadaten aus Metafeld generieren"),
-                    ("metafield2metadata-upload-fileatt", "Metadaten (YAML/JSON)"),
-                    ("metafield2metadata-source-attribute-name", "Quell-Metadatenfeld-Name"),
-                    ("metafield2metadata-source-metadata-separator", "Quell-Metadaten-Trennzeichen"),
-                    ("metafield2metadata-target-metadata-separator", "Ergebnis-Metadaten-Trennzeichen"),
-                ],
-            en=[
-                    ("workflowstep_metafield2metadata", "Generate Metadata from Metafield"),
-                    ("metafield2metadata-upload-fileatt", "Metadata (YAML/JSON)"),
-                    ("metafield2metadata-source-attribute-name", "Source Metafield Name"),
-                    ("metafield2metadata-source-metadata-separator", "Source-Metadata-Separator"),
-                    ("metafield2metadata-target-metadata-separator", "Target-Metadata-Separator"),
-                ]
-        )

@@ -676,45 +676,6 @@ def register_identifier_importer(uniquename, identifierImporter):
     assert tuple(identifier_importers) == ("doi_importer",)  # we only permit/support DOI import
 
 
-doi_labels = dict(
-    de=[
-            ("identifier_importer_longname", "Via DOI importieren"),
-            ("identifier_importer_explain", u"""Bitte DOI eingeben und <i>OK</i> klicken, um die Metadaten einer Publikation in mediaTUM zu importieren.
-          <p>Beispiele:</p>
-          doi:10.1371/journal.pbio.0020449
-          <br/>DOI:10.1002/nme.4628 """),
-
-            # error messages written by importer-function into request
-            ("edit_import_nothing", 'Es wurde kein DOI angegeben.'),
-            ("doi_unknown", 'Der angegebene DOI existiert nicht'),
-            ("doi_invalid",
-             u'Dies sieht nicht wie eine gültige DOI aus! (muss eine Zeichenkette enthalten, die mit 10. beginnt)'),
-            ("doi_type_not_mapped",
-             u'Für den Typ der angegebenen DOI ist kein Mapping definiert.'),
-            ("doi_error_connecting_external_server",
-             'Verbindungsfehler zum externen Server'),
-        ],
-    en=[
-            ("identifier_importer_longname", "Import via DOI"),
-            ("identifier_importer_explain", """Please enter DOI to import metadata of publication.
-          <p>Examples:</p>
-          doi:10.1371/journal.pbio.0020449
-          <br/>DOI:10.1002/nme.4628 """),
-
-            # error messages written by importer-function into request
-            ("edit_import_nothing", 'No DOI was given.'),
-            ("doi_unknown", "The specified DOI doesn't exist."),
-            ("doi_invalid",
-             "This doesn't look like an valid DOI (must contain a string starting with 10.)"),
-            ("doi_type_not_mapped",
-             'No mapping defined for type of given DOI.'),
-            ("doi_error_connecting_external_server",
-             'Error connecting to external server'),
-        ],
-)
-
 
 doi_importer = IdentifierImporter('doi_importer', import_from_doi)
-_core_translation.addLabels(doi_labels)  # make labels known to TAL interpreter
-doi_importer.set('labels', {k: dict(v) for (k, v) in doi_labels.items()})
 register_identifier_importer(doi_importer.name, doi_importer)

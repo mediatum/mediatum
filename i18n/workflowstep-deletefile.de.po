@@ -1,0 +1,5 @@
+msgid "workflowstep_deletefile"
+msgstr "Datei entfernen"
+
+msgid "admin_wfstep_deletefiletype"
+msgstr "Dateityp (Leere Liste bedeutet alle Dateitypen)"

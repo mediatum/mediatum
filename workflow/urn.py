@@ -11,18 +11,14 @@ import mediatumtal.tal as _tal
 
 from .workflow import WorkflowStep, registerStep
 import utils.urn as utilsurn
-from core.translation import addLabels
 import utils.date as date
 from core import db
-from schema.schema import Metafield
 
 logg = logging.getLogger(__name__)
 
 
 def register():
-    #tree.registerNodeClass("workflowstep-addurn", WorkflowStep_Urn)
     registerStep("workflowstep_urn")
-    addLabels(WorkflowStep_Urn.getLabels())
 
 
 class WorkflowStep_Urn(WorkflowStep):
@@ -72,27 +68,3 @@ class WorkflowStep_Urn(WorkflowStep):
         assert frozenset(data) == frozenset(("attrname", "snid1", "snid2", "niss"))
         self.settings = data
         db.session.commit()
-
-    @staticmethod
-    def getLabels():
-        return {"de":
-                [
-                    ("workflowstep-urn", "URN Knoten"),
-                    ("admin_wfstep_urn", "URN"),
-                    ("admin_wfstep_urn_snid1", "URN SNID 1"),
-                    ("admin_wfstep_urn_snid2", "URN SNID 2"),
-                    ("admin_wfstep_urn_niss", "URN NISS"),
-                    ("admin_wfstep_urn_attrname", "URN Attributname"),
-
-                ],
-                "en":
-                [
-                    ("workflowstep-condition", "URN node"),
-                    ("admin_wfstep_condition", "URN"),
-                    ("admin_wfstep_urn_snid1", "URN SNID 1"),
-                    ("admin_wfstep_urn_snid2", "URN SNID 2"),
-                    ("admin_wfstep_urn_niss", "URN NISS"),
-                    ("admin_wfstep_urn_attrname", "URN attribute name"),
-
-                ]
-                }

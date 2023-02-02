@@ -7,19 +7,15 @@ from __future__ import print_function
 import logging
 import mediatumtal.tal as _tal
 
-import core.translation as _core_translation
 from .workflow import WorkflowStep, registerStep
 from utils.date import now
-from schema.schema import Metafield
 from core import db
 
 logg = logging.getLogger(__name__)
 
 
 def register():
-    #tree.registerNodeClass("workflowstep-end", WorkflowStep_End)
     registerStep("workflowstep_end")
-    _core_translation.addLabels(WorkflowStep_End.getLabels())
 
 
 class WorkflowStep_End(WorkflowStep):
@@ -70,21 +66,3 @@ class WorkflowStep_End(WorkflowStep):
         assert frozenset(data) == frozenset(("endremove", "endsetupdatetime", "endtext"))
         self.settings = data
         db.session.commit()
-
-    @staticmethod
-    def getLabels():
-        return {"de":
-                [
-                    ("workflowstep-end", "Endknoten"),
-                    ("admin_wfstep_endtext", "Textseite"),
-                    ("admin_wfstep_endremove", "Entferne aus Workflow"),
-                    ("admin_wfstep_endsetupdatetime", "Setze Aktualisierungszeit"),
-                ],
-                "en":
-                [
-                    ("workflowstep-end", "End node"),
-                    ("admin_wfstep_endtext", "Text Page"),
-                    ("admin_wfstep_endremove", "Remove from Workflow"),
-                    ("admin_wfstep_endsetupdatetime", "set updatetime"),
-                ]
-                }

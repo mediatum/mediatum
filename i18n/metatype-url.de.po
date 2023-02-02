@@ -1,0 +1,23 @@
+msgid "url_edit_link"
+msgstr "Link:"
+
+msgid "url_edit_linktext"
+msgstr "Angezeigter Text:"
+
+msgid "url_edit_icon"
+msgstr "Icon:"
+
+msgid "url_edit_noicon"
+msgstr "-kein Icon-"
+
+msgid "url_edit_preview"
+msgstr "Vorschau:"
+
+msgid "url_urltarget"
+msgstr "Neues Fenster:"
+
+msgid "fieldtype_url"
+msgstr "URL"
+
+msgid "fieldtype_url_desc"
+msgstr "externer Link (neues Fenster)"

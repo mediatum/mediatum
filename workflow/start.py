@@ -30,9 +30,7 @@ logg = logging.getLogger(__name__)
 
 
 def register():
-    #tree.registerNodeClass("workflowstep-start", WorkflowStep_Start)
     registerStep("workflowstep_start")
-    _core_translation.addLabels(WorkflowStep_Start.getLabels())
 
 
 def _get_schemas():
@@ -145,51 +143,3 @@ class WorkflowStep_Start(WorkflowStep):
         assert frozenset(data) == frozenset(("schemas", "starthtmltext", "allowcontinue"))
         self.settings = data
         db.session.commit()
-
-    @staticmethod
-    def getLabels():
-        return {"de":
-                [
-                    ("workflowstep-start", "Startknoten"),
-                    ("admin_wfstep_starttext", "Text vor Auswahl"),
-                    ("admin_wfstep_node_types_to_create", "Erstellbare Node-Typen (;-separiert)"),
-                    ("admin_wfstep_allowcontinue", "Fortsetzen erlauben"),
-                    ("workflow_start_create", "Erstellen"),
-                    ("workflow_start_create_m", "Erstellen / Create"),
-                    ("workflow_start_chooselang", u"Bitte Sprache für die Eingabe wählen / Please choose input language"),
-                    ("workflow_start_type", "Melden Ihrer"),
-                    ("workflow_start_type_m", "Melden Ihrer / Registering your"),
-                    ("workflow_start_continue_header", "Publizieren fortsetzen"),
-                    ("workflow_start_continue_header_m", "Publizieren fortsetzen / Continue publishing"),
-                    ("workflow_start_identificator", "Identifikationsnummer"),
-                    ("workflow_start_identificator_m", "Identifikationsnummer / Identification Number"),
-                    ("workflow_start_key", u"Schlüssel"),
-                    ("workflow_start_key_m", u"Schlüssel / Key"),
-                    ("workflow_start_continue", "Fortsetzen"),
-                    ("workflow_start_continue_m", "Fortsetzen / Continue"),
-                    ("workflow_start_err_wrongkey", u"Identifikationsnummer oder Schlüssel ist nicht korrekt."),
-                    ("workflow_start_err_protected", "Keine Bearbeitung erforderlich."),
-                ],
-                "en":
-                [
-                    ("workflowstep-start", "Start node"),
-                    ("admin_wfstep_starttext", "Text in front of selection"),
-                    ("admin_wfstep_node_types_to_create", "Node types to create (;-separated schema list)"),
-                    ("admin_wfstep_allowcontinue", "Allow continue"),
-                    ("workflow_start_create", "Create"),
-                    ("workflow_start_create_m", "Create / Erstellen"),
-                    ("workflow_start_chooselang", u"Please choose input language / Bitte Sprache für die Eingabe wählen"),
-                    ("workflow_start_type", "Registering your"),
-                    ("workflow_start_type_m", "Registering your / Melden ihrer"),
-                    ("workflow_start_continue_header", "Publizieren fortsetzen"),
-                    ("workflow_start_continue_header_m", "Continue publishing / Publizieren fortsetzen "),
-                    ("workflow_start_identificator", "Identification Number"),
-                    ("workflow_start_identificator_m", "Identification Number / Identifikationsnummer"),
-                    ("workflow_start_key", "Key"),
-                    ("workflow_start_key_m", u"Key / Schlüssel"),
-                    ("workflow_start_continue", "Continue"),
-                    ("workflow_start_continue_m", "Continue / Fortsetzen"),
-                    ("workflow_start_err_wrongkey", 'In order to proceed, please fill out fields "Identification Number" and "Key" properly'),
-                    ("workflow_start_err_protected", "no changes needed."),
-                ]
-                }

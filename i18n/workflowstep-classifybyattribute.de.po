@@ -1,0 +1,5 @@
+msgid "workflowstep_classifybyattribute"
+msgstr "Klassifizieren nach Attribute"
+
+msgid "classifybyattribute-target-attribute-name"
+msgstr "Metadatenfeld-Name für Knoten-IDs"

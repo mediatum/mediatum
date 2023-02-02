@@ -1,0 +1,8 @@
+msgid "date_edit_date_format"
+msgstr "Date-/Time-format:"
+
+msgid "fieldtype_date"
+msgstr "date"
+
+msgid "fieldtype_date_desc"
+msgstr "date field (day / month / year)"

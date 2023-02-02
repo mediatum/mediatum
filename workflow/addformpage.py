@@ -19,7 +19,6 @@ from mediatumtal import tal as _tal
 import utils.utils as _utils_utils
 from .workflow import WorkflowStep
 from .workflow import registerStep
-from core.translation import addLabels
 from schema.schema import getMetaType
 import utils.fileutils as _fileutils
 from utils.fileutils import getImportDir
@@ -36,9 +35,7 @@ logg = logging.getLogger(__name__)
 
 
 def register():
-    #tree.registerNodeClass("workflowstep-addformpage", WorkflowStep_AddFormPage)
     registerStep("workflowstep_addformpage")
-    addLabels(WorkflowStep_AddFormPage.getLabels())
 
 
 def fillPDFForm(formPdf, fields, editable):
@@ -259,26 +256,3 @@ class WorkflowStep_AddFormPage(WorkflowStep):
         assert frozenset(data) == frozenset(("fields_editable", "form_separate", "form_overwrite"))
         self.settings = data
         db.session.commit()
-
-    @staticmethod
-    def getLabels():
-        return {"de":
-                [
-                    ("workflowstep-addformpage", u"PDF-Seiten hinzufügen"),
-                    ("workflowstep-addformpage_label_current_pdfform", "Aktuelles Formular:"),
-                    ("workflowstep-addformpage_label_replace_pdfform", "Eine PDF-Form hier ersetzen"),
-                    ("workflowstep-addformpage_label_upload_pdfform", "Eine PDF-Form hier hochladen"),
-                    ("workflowstep-addformpage_label_fields_editable", "PDF-Form-Felder editierbar"),
-                    ("workflowstep-addformpage_label_form_separate", u"PDF-Form separat an Knoten anhängen"),
-                    ("workflowstep-addformpage_label_overwrite", u"PDF-Form überschreiben"),
-                ],
-                "en":
-                [
-                    ("workflowstep-addformpage", "add PDF pages"),
-                    ("workflowstep-addformpage_label_current_pdfform", "Current PDF form:"),
-                    ("workflowstep-addformpage_label_replace_pdfform", "Replace one PDF form here"),
-                    ("workflowstep-addformpage_label_fields_editable", "PDF form fields editable"),
-                    ("workflowstep-addformpage_label_form_separate", "append PDF form separately to node"),
-                    ("workflowstep-addformpage_label_overwrite", "Overwrite existing form"),
-                ]
-                }

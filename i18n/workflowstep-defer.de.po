@@ -1,0 +1,8 @@
+msgid "workflowstep_defer"
+msgstr "Freischaltverzögerung"
+
+msgid "attributname"
+msgstr "Attributname"
+
+msgid "accesstype"
+msgstr "Zugriffsattribut"

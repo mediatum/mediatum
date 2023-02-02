@@ -44,13 +44,3 @@ class m_check(Metatype):
         value = node.get(metafield.name)
         return (metafield.label, value)
 
-    translation_labels = dict(
-        de=dict(
-            fieldtype_check="Checkbox",
-            fieldtype_check_desc=u"Checkbox Auswahl (für Ja/Nein-Werte)",
-        ),
-        en=dict(
-            fieldtype_check="checkbox",
-            fieldtype_check_desc="checkbox field (true/false)",
-        ),
-    )

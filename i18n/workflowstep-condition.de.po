@@ -1,0 +1,5 @@
+msgid "workflowstep_condition"
+msgstr "Bedingungsfeld"
+
+msgid "admin_wfstep_condition"
+msgstr "Bedingung"

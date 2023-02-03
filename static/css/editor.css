@@ -317,7 +317,7 @@ div.label{width:210px;float:left;padding-left:15px;}
 .mediatum_subnavigation_2_img {padding-right:10px;}
 .mediatum_table_nodelist_row_header{display: table-row;border-bottom:1px solid black;padding-bottom:5px;}
 .mediatum_templateerror {text-align:center;}
-p.mediatum_templateerror {background: url("/static/img/talerror.gif") #d8d8d8 no-repeat; background-position:10px 50%; padding:7px; border:1px solid #0c0c0c;
+p.mediatum_templateerror {background: background-position:10px 50%; padding:7px; border:1px solid #0c0c0c;
     margin-left:20px; margin-right:20px; vertical-align:middle;}
 p.mediatum_templateerror #msg {font-family: Courier;}
 .mediatum_text_center {text-align:center;}

@@ -76,17 +76,6 @@ div#footer span.footer_right a { margin-right: 9px;}
 *:first-child+html .left_c { width: 16.23em;}
 .row_blank { background: #fff; height: 20px;}
 
-a.link-parent {
-    padding-bottom: 1px;
-    margin: 0.25em 0px 0.4em;
-    padding-left: 20px;
-    padding-right: 0px;
-    display: block;
-    background: url(/static/img/levelup.gif) no-repeat 0px 0px;
-    font-size: 80%;
-    padding-top: 1px;
-}
-
 .visualclear { clear: both;}
 
 .portlet .content {
@@ -199,16 +188,6 @@ button#reset-button {
 }
 a#advancedsearchlink { padding-top: 5px; padding-left: 0.5em; padding-bottom: 1em; font-size: 12px;}
 a#advancedmorelink { padding: 1px 1.33em 0.5em 0.75em; margin: 0px; display: block; color: #333333; font-size: 90%; text-decoration: none;}
-h3#navigationheading {
-    padding-bottom: 0.5em;
-    margin: 0px;
-    padding-left: 0.75em;
-    padding-right: 1.33em;
-    background: url(/static/img/5pxgradient_nav_depth03.gif) #fff repeat-y right 50%;
-    color: #fff;
-    font-size: 100%;
-    padding-top: 0.4em;
-}
 
 /* navigation start*/
 div#frame-tree { margin-left: -2px; background-color: white;}
@@ -387,7 +366,6 @@ div#portal-breadcrumbs #collectionlogo { margin: 0px 0px 10px 0px; width: 100%; 
     border: 1px solid #FD9999;
     background: #FEDADA;
     color: #DE2C27;
-    background: url(/static/img/error.gif) no-repeat #FEDADA;
     background-position: 10px 50%;
 }
 #portal-column-content div#nodes { margin: 2px 4px 2px 0px; padding-left: 0px; overflow: hidden; clear: left;}
@@ -499,19 +477,6 @@ div#portal-breadcrumbs #collectionlogo { margin: 0px 0px 10px 0px; width: 100%; 
 }
 #portal-column-content img.banner { margin: 0px 0px 0px -1.4em;}
 
-.contentnavactions_bereitsbelegt {
-    border-bottom: #cdd9dd 3px solid;
-    position: relative;
-    padding-bottom: 0.3em;
-    margin: 1.5em 0px;
-    padding-left: 0px;
-    padding-right: 0px;
-    background: url(/static/img/3pxcdd9dd-line.gif) repeat-x;
-    color: #0a5096;
-    clear: left;
-    padding-top: 0.4em;
-}
-
 #portal-column-content .documentactions {
     position: relative;
     padding-bottom: 0px;
@@ -567,16 +532,6 @@ div#portal-breadcrumbs #collectionlogo { margin: 0px 0px 10px 0px; width: 100%; 
 #portal-column-content #calendarview_switch a { margin-right: 1em; text-decoration: none;}
 #portal-column-content #calendarview_switch a:visited { color: #0a5096;}
 #portal-column-content div.description { margin: 0px 0px 1em;}
-#portal-column-content #calendar {
-    border-bottom: #cdd9dd 3px solid;
-    padding-bottom: 0.4em;
-    margin: 0px 0px 1.5em;
-    padding-left: 0px;
-    padding-right: 0px;
-    background: url(/static/img/3pxcdd9dd-line.gif) repeat-x;
-    height: 1.2em;
-    padding-top: 0.4em;
-}
 #portal-column-content #calendar a {
     position: static;
     min-width: 4.4ex;
@@ -590,31 +545,7 @@ div#portal-breadcrumbs #collectionlogo { margin: 0px 0px 10px 0px; width: 100%; 
     text-decoration: underline;
     padding-top: 0px;
 }
-#portal-column-content #calendar a#skip_year_backward {
-    min-width: 10px;
-    text-indent: -99999px;
-    margin: 0px;
-    width: 10px;
-    background: url(/static/img/bluearrow-right-to-left.gif) no-repeat left center;
-}
-#portal-column-content #calendar a#skip_year_forward {
-    min-width: 10px;
-    text-indent: -99999px;
-    margin: 0px 5% 0px 0px;
-    width: 10px;
-    background: url(/static/img/bluearrow-left-to-right.gif) no-repeat right center;
-}
 #portal-column-content #calendar a#actual_year { margin: 0px; width: auto;}
-#portal-column-content .contentnav .contentnavactions {
-    border-bottom: #cdd9dd 3px solid;
-    padding-bottom: 0.3em;
-    margin: 1.5em 0.83em 1.5em 1.75em;
-    padding-left: 0px;
-    padding-right: 0px;
-    background: url(/static/img/3pxcdd9dd-line.gif) repeat-x;
-    padding-top: 0.4em;
-    vertical-align: top;
-}
 #portal-column-content .documentActions { border-top: 1px solid #eee; padding: 0.35em 0 0 0; position: relative; height: 0.5em; margin: 1em 0 0;}
 #portal-column-content .documentActions span { position: absolute; right: 9px;}
 #portal-column-content .documentActions a { color: #333333; text-decoration: none; border: none;}

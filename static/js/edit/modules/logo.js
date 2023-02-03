@@ -12,9 +12,6 @@ function deleteLogo(path){
         $.get('/edit/edit_content?id='+id+'&tab=logo&action=delete&file='+$(path).parent().parent().attr('id'), function(data) {
             if (data=='ok'){
                 o = $("#logo").children().get(0);
-                if (o.getAttribute('src')=='/file/'+id+'/'+$(path).parent().parent().attr('id')){
-                    o.setAttribute('src', '/static/img/empty.gif');
-                }
                 $(path).parent().parent().remove();
             }
             return false;

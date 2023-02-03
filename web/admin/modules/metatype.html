@@ -349,7 +349,7 @@
                                         <td tal:define="index python:fieldoptions.index(fieldoption)" width="20px" align="center">
                                             <img
                                                 tal:condition="python:flist[index]"
-                                                tal:attributes="title python:flist[index] and fieldoption.name or ''; src python:flist[index] and '/static/img/haken.gif' or '/static/img/mark_empty.gif'"
+                                                tal:attributes="title python:flist[index] and fieldoption.name or ''; src python:flist[index] and '/static/img/haken.gif'"
                                                 i18n:attributes="title"
                                             />
                                         </td>

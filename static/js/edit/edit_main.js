@@ -4,25 +4,13 @@
 */
 
 consoledb.group('--- loading contextmenu js ---');
-var ctx_mode = 1;  // 1: on_demand, 2: bind, 3: ui-contextmenu  // now only 1 supported, 2 and 3 abandoned
-var url_ctx_on_demand = "/static/js/fancytree/3rd-party/extensions/contextmenu/jsx/jquery.fancytree.contextMenu.js";
-var url_ctx_bind = "/static/js/jquery.contextMenu-custom-abs.js";
-var url_ctx_ui = "//wwwendt.de/tech/demo/jquery-contextmenu/jquery.ui-contextmenu.js";
-
-if (ctx_mode == 1) {
-    url_ctx = url_ctx_on_demand;
-}
-else if (ctx_mode == 2) {
-    url_ctx = url_ctx_bind;
-}
-else {
-    url_ctx = url_ctx_ui;
-}
-$.getScript( url_ctx, function( data, sStatus, jqxhr ) {
-    consoledb.log(sStatus); // Success
-    consoledb.log(jqxhr.status ); // 200
-    consoledb.log("loaded");
-});
+$.getScript(
+    "/static/js/fancytree/3rd-party/extensions/contextmenu/jsx/jquery.fancytree.contextMenu.js",
+    function( data, sStatus, jqxhr ) {
+        consoledb.log(sStatus); // Success
+        consoledb.log(jqxhr.status ); // 200
+        consoledb.log("loaded");
+    });
 consoledb.groupEnd('--- loading contextmenu js ---');
 
 // for older browsers such as IE8

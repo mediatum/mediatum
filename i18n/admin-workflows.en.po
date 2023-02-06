@@ -163,9 +163,6 @@ msgstr "Additional information for current node type"
 msgid "admin_wf_definition"
 msgstr "Workflow definition"
 
-msgid "admin_wfstep_node_types_to_create"
-msgstr "node types to create (;-separated schema list)"
-
 msgid "admin_wfstep_editor_mask"
 msgstr "Editor mask"
 
@@ -192,9 +189,6 @@ msgstr "Text"
 
 msgid "admin_wfstep_email_text_editable"
 msgstr "Details editable?"
-
-msgid "admin_wfstep_textpage_text_to_display"
-msgstr "Text to display"
 
 msgid "admin_wfstep_pretext"
 msgstr "Header text"

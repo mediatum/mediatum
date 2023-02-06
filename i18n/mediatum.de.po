@@ -738,9 +738,6 @@ msgstr "Feld:"
 msgid "mask_edit_help"
 msgstr "Hilfetext:"
 
-msgid "mask_edit_max_length"
-msgstr "Maximallänge"
-
 msgid "mask_edit_required"
 msgstr "Pflichtfeld:"
 

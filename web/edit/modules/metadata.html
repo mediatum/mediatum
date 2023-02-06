@@ -74,8 +74,8 @@
                 <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
                 <input tal:attributes="value srcnodeid" type="hidden" name="srcnodeid"/>
                 <div class="label">&nbsp;</div>
-                <input i18n:attributes="value edit_meta_save" type="submit" name="save"/>
-                <input i18n:attributes="value edit_meta_reset" type="reset"/>
+                <input i18n:attributes="value save" type="submit" name="save"/>
+                <input i18n:attributes="value reset_field" type="reset"/>
                 <br/>
                 <br/>
                 <tal:block tal:condition="maskform" tal:replace="raw python:maskform"/>
@@ -94,7 +94,7 @@
                     </tal:block>
                 </tal:block>
                 <div class="label">&nbsp;</div>
-                <small>(<span class="required">*</span> <span i18n:translate="edit_mask_required">TEXT</span>)</small>
+                <small>(<span class="required">*</span> <span i18n:translate="admin_mandatory_info"> </span>)</small>
                 <br/>
                 <br/>
 
@@ -102,8 +102,8 @@
         <br/>
                 <br/>
                 <div class="label">&nbsp;</div>
-                <input i18n:attributes="value edit_meta_save" type="submit" name="save"/>
-                <input i18n:attributes="value edit_meta_reset" type="reset"/>
+                <input i18n:attributes="value save" type="submit" name="save"/>
+                <input i18n:attributes="value reset_field" type="reset"/>
                 <br/>
                 <br/>
                 <br/>

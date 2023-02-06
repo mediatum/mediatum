@@ -8,9 +8,6 @@ msgstr "Bei der Verarbeitung des Templates ist ein Fehler aufgetreten. Den genau
 msgid "edit_error_msg"
 msgstr "Sie besitzen nicht die notwendigen Rechte, um den Editorbereich zu betreten.<br/> Falls Sie nicht angemeldet sein sollten, können Sie das ${link}"
 
-msgid "edit_linktext"
-msgstr "hier"
-
 msgid "edit_nodeinformation"
 msgstr "Node Informationen"
 
@@ -35,22 +32,7 @@ msgstr "Fehler"
 msgid "edit_nobase"
 msgstr "Kein Basisverzeichnis ausgewählt (${msg})"
 
-msgid "edit_main_title"
-msgstr "mediatum"
-
-msgid "edit_save"
-msgstr "Speichern"
-
-msgid "edit_save_title"
-msgstr "Änderungen speichern"
-
-msgid "edit_ok"
-msgstr "OK"
-
-msgid "edit_cancel"
-msgstr "Abbrechen"
-
-msgid "edit_add_folder"
+msgid "edit_add_directory"
 msgstr "Neuer Ordner"
 
 msgid "edit_add_collection"
@@ -71,9 +53,6 @@ msgstr "Neu Anlegen"
 ### workflow ###
 msgid "edit_object_not_viewable"
 msgstr "Dieses Objekt hat keine Ansicht"
-
-msgid "edit_save_title"
-msgstr "Speichern"
 
 msgid "delete_folder_question"
 msgstr "Wenn Sie diesen Ordner löschen, sind alle Dateien und Unterverzeichnisse darin unwiderruflich verloren. Löschen durchführen?"
@@ -127,9 +106,6 @@ msgstr "Arbeitsverzeichnis"
 msgid "editor_overwrite"
 msgstr "überschreiben"
 
-msgid "editor_from"
-msgstr "von"
-
 msgid "editor_to"
 msgstr "bis"
 
@@ -159,17 +135,8 @@ msgstr "Papierkorb leeren"
 msgid "edit_delete_container"
 msgstr "Ordner in Papierkorb verschieben"
 
-msgid "e_folder_homedir"
-msgstr "Arbeitsverzeichnis"
-
-msgid "e_folder_trashdir"
-msgstr "Papierkorb"
-
 msgid "e_folder_uploaddir"
 msgstr "Uploads"
-
-msgid "edit_common_edit_meta"
-msgstr "Metadaten bearbeiten"
 
 msgid "edit_common_edit_move"
 msgstr "Objekt verschieben"
@@ -197,9 +164,6 @@ msgstr "Markierte Dokumente:"
 
 msgid "edit_common_noobjectsfound"
 msgstr "Keine Objekte gefunden"
-
-msgid "edit_add_directory"
-msgstr "Neuer Ordner"
 
 msgid "edit_add_container_default"
 msgstr "Neuer Ordner vom Typ "

@@ -68,7 +68,7 @@
         <div class="mediatum_pluploadform-background">&nbsp;</div>
         <div id="uploadform-form">
             <div class="mediatum_uploadform_widget">
-                <a href="#" onclick="closeFormPluploadWidgetFile();" i18n:attributes="title mask_editor_cancel">
+                <a href="#" onclick="closeFormPluploadWidgetFile();" i18n:attributes="title cancel">
                 <img src="/static/img/cancel.png"/></a>
             </div>
             <form tal:condition="python:len(schemes)!=0" class="mediatum_uploadform_style">
@@ -98,7 +98,7 @@
         <div class="mediatum_pluploadform-background">&nbsp;</div>
         <div id="uploadform-form">
             <div class="mediatum_uploadform_widget">
-                <a href="#" onclick="closeFormPluploadWidgetBib();" i18n:attributes="title mask_editor_cancel">
+                <a href="#" onclick="closeFormPluploadWidgetBib();" i18n:attributes="title cancel">
                 <img src="/static/img/cancel.png"/></a>
             </div>
             <form tal:condition="python:len(schemes)!=0" class="mediatum_uploadform_style">
@@ -129,7 +129,7 @@
         <div id="metaform-background">&nbsp;</div>
         <div id="metaform-form">
             <div class="mediatum_metaform_div">
-                <a href="#" onclick="closeMetaForm()" i18n:attributes="title mask_editor_cancel">
+                <a href="#" onclick="closeMetaForm()" i18n:attributes="title cancel">
                     <img src="/static/img/cancel.png"/>
                 </a>
             </div>
@@ -179,7 +179,14 @@
           <div class="label"><tal:block i18n:translate="edit_upload_or_doi">TEXT</tal:block>:</div>
           <input id="input_identifier" type="text" name="input_identifier" disabled="disabled"/>
           <p class="mediatum_subform_identifier_text">
-              <button type="button" class="mediatum_buttoncreate3" onclick="createObjectFromIdentifier()" i18n:translate="edit_upload_create_object_doi">TEXT</button>
+              <button
+                  class="mediatum_buttoncreate3"
+                  type="button"
+                  class="mediatum_buttoncreate3"
+                  onclick="createObjectFromIdentifier()"
+                  i18n:translate="ok"
+              >
+              </button>
           </p>
           </div>
       </div>
@@ -190,7 +197,14 @@
           <input id="input_identifier" type="text" name="input_identifier" />
           <input id="dummy" type="text" name="" disabled="disabled"/>
           <p class="mediatum_subform_identifier_text">
-              <button type="button" class="mediatum_buttoncreate3" onclick="createObjectFromIdentifier()" i18n:translate="edit_upload_create_object_doi">TEXT</button>
+              <button
+                  class="mediatum_buttoncreate3"
+                  type="button"
+                  class="mediatum_buttoncreate3"
+                  onclick="createObjectFromIdentifier()"
+                  i18n:translate="ok"
+              >
+              </button>
           </p>
       </div>
 

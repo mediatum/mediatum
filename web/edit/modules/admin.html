@@ -10,7 +10,7 @@
         <div class="mediatum_addform-background">&nbsp;</div>
         <div class="mediatum_addform-form">
             <div class="mediatum_addform-div">
-                <a href="#" onclick="closeForm()" i18n:attributes="title mask_editor_cancel">
+                <a href="#" onclick="closeForm()" i18n:attributes="title cancel">
                     <img src="/static/img/cancel.png"/>
                 </a>
             </div>
@@ -34,7 +34,7 @@
                 <input type="hidden" name="type" value="addattr"/>
                 <p>&nbsp;</p>
                 <p class="mediatum_text_center">
-                    <button onclick="closeForm()" name="addattr" type="submit" i18n:translate="edit_admin_add_attr">TEXT</button>
+                    <button onclick="closeForm()" name="addattr" type="submit" i18n:translate="save"> </button>
                 </p>
             </form>
         </div>
@@ -80,7 +80,7 @@
                     </div>
                 </div>
 
-                <h3><a href="#" i18n:translate="edit_files_metafields">TEXT</a></h3>
+                <h3><a href="#" i18n:translate="admin_metafield_fields"> </a></h3>
                 <div id="meta" class="mediatum_subcontent_padding">
                      <div class="mediatum_entry" tal:repeat="key python: list(metafields)">
                          <div class="label" tal:content="key">TEXT</div>
@@ -154,7 +154,7 @@
 
 <tal:block metal:define-macro="searchdata">
     <div class="mediatum_searchdata">
-        <h5 i18n:translate="edit_admin_simplesearch">TEXT</h5>
+        <h5 i18n:translate="search_simple"> </h5>
         <div tal:condition="python: len(searchdata[0])>0" class="mediatum_searchinfo">
             <tal:block tal:repeat="i python:searchdata[0]">
                 <span tal:content="i">.</span><br/>
@@ -162,7 +162,7 @@
         </div>
         <div tal:condition="python: len(searchdata[0])==0" i18n:translate="edit_admin_nosearchdata">TEXT</div>
 
-        <h5 i18n:translate="edit_admin_extsearch">TEXT</h5>
+        <h5 i18n:translate="xsearch"> </h5>
         <div tal:condition="python: len(searchdata[1])>0" class="mediatum_searchinfo">
             <tal:block tal:repeat="i python:searchdata[1]">
                 <span tal:content="i">.</span><br/>

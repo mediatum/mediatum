@@ -49,7 +49,7 @@
             <thead>
             <tbody>
                 <tr tal:condition="python:len(metadatatypes)==0">
-                    <td colspan="10"><small i18n:translate="admin_meta_nometa">TEXT</small></td>
+                    <td colspan="10"><small i18n:translate="nometa"> </small></td>
                 </tr>
                 <tal:block tal:repeat="metadatatype python:metadatatypes[pages.getStart():pages.getEnd()]">
                 <tr tal:define="cssclass python:metadatatypes.index(metadatatype)%2 and 'norm' or 'silver'" tal:attributes="class cssclass">
@@ -71,7 +71,7 @@
                         <img tal:condition="python:metadatatype.access_ruleset_assocs.filter_by(ruletype='read').count()==0" i18n:attributes="title admin_meta_acl_title" src="/static/img/mark_empty.png"/>
                     </td>
                     <td>
-                        <input tal:attributes="name python:u'detaillist_{}'.format(metadatatype.getName())" i18n:attributes="title admin_meta_editdetail" type="image" src="/static/img/rightarrow.png"/>&nbsp;
+                        <input tal:attributes="name python:u'detaillist_{}'.format(metadatatype.getName())" i18n:attributes="title edit_fields" type="image" src="/static/img/rightarrow.png"/>&nbsp;
                         <input tal:attributes="name python:u'masks_{}'.format(metadatatype.getName())" i18n:attributes="title admin_meta_maskdetail_title" type="image" src="/static/img/styles.png"/>
                     </td>
                     <td>
@@ -124,7 +124,15 @@
                                         <fieldset>
                                             <tal:block i18n:translate="admin_meta_msg1">TEXT</tal:block>:<br/>
                                             <input name="file" type="file" size="50" maxlength="100000"/>
-                                            <br/><button i18n:attributes="title admin_meta_import_title" i18n:translate="admin_meta_import" type="submit" name="submit" value="submit">TEXT</button>
+                                            <br/>
+                                            <button
+                                                i18n:attributes="title admin_meta_import_title"
+                                                i18n:translate="import"
+                                                type="submit"
+                                                name="submit"
+                                                value="submit"
+                                            >
+                                            </button>
                                         </fieldset>
                                     </td>
                                 </tr>
@@ -157,7 +165,7 @@
             </tr>
             <tr tal:condition="python:error>0">
                 <td colspan="2">
-                    <p tal:condition="python:error==1" i18n:translate="admin_meta_error_1" class="error">TEXT</p>
+                    <p tal:condition="python:error==1" i18n:translate="admin_mandatory_error" class="error"> </p>
                     <p tal:condition="python:error==2" i18n:translate="admin_meta_error_2" class="error">TEXT</p>
                     <p tal:condition="python:error==3" i18n:translate="admin_meta_error_3" class="error">TEXT</p>
                     <p tal:condition="python:error==4" i18n:translate="admin_meta_error_4" class="error">TEXT</p>
@@ -193,7 +201,7 @@
                 <td><textarea tal:content="python:metadatatype.getDescription()" name="description" rows="4" cols="35"/><td>
             </tr>
             <tr>
-                <td><tal:block i18n:translate="admin_meta_active">TEXT</tal:block>:</td>
+                <td><tal:block i18n:translate="active"> </tal:block>:</td>
                 <td>
                     <input tal:attributes="checked python:'checked' if metadatatype.isActive() else None" type="checkbox" name="mactive" value="1"/>
                     <small>(<span i18n:translate="admin_meta_msg3">TEXT</span>)</small>
@@ -259,8 +267,24 @@
             <tr>
                 <td>&nbsp;</td>
                 <td>
-                    <button i18n:translate="admin_save" i18n:attributes="title admin_save_title" tal:attributes="onclick python:u'selectacl(\'leftread\')';"  type="submit" name="submit" value="submit">TEXT</button>&nbsp;&nbsp;
-                    <button i18n:translate="admin_cancel" i18n:attributes="title admin_cancel_title" type="submit" name="cancel" value="cancel" onclick="setCancel()">TEXT</button>
+                    <button
+                        i18n:translate="save"
+                        i18n:attributes="title admin_save_title"
+                        tal:attributes="onclick python:u'selectacl(\'leftread\')';"
+                        type="submit"
+                        name="submit"
+                        value="submit"
+                    >
+                    </button>&nbsp;&nbsp;
+                    <button
+                        i18n:translate="cancel"
+                        i18n:attributes="title admin_cancel_title"
+                        type="submit"
+                        name="cancel"
+                        value="cancel"
+                        onclick="setCancel()"
+                    >
+                    </button>
                 </td>
             </tr>
         </table>
@@ -323,7 +347,7 @@
                     <tr>
                         <th i18n:translate="admin_defpopup_id">TEXT</th>
                         <th i18n:translate="admin_defpopup_name">TEXT</th>
-                        <th i18n:translate="admin_defpopup_type">TEXT</th>
+                        <th i18n:translate="type"> </th>
                         <th>
                             <table>
                                 <tr>
@@ -397,7 +421,7 @@
                 </div>
             </form>
             <div align="center">
-                <button type="button" onclick="self.close()" class="mediatum_width_100px" i18n:translate="mask_editor_ok">TEXT</button>
+                <button type="button" onclick="self.close()" class="mediatum_width_100px" i18n:translate="ok"> </button>
             </div>
         </tal:block>
     </body>

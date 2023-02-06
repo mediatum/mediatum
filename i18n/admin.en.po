@@ -43,26 +43,14 @@ msgstr "System"
 msgid "admin_error"
 msgstr "You're not allowed to access the administration area.<br/> You can logon here: ${link}"
 
-msgid "admin_linktext"
-msgstr "here"
-
 msgid "admin_overview"
 msgstr "Overview"
 
 msgid "admin_allelements_title"
 msgstr "show all elements"
 
-msgid "admin_allelements"
-msgstr "show all"
-
 msgid "admin_pageelements_title"
 msgstr "show by page"
-
-msgid "admin_pageelements"
-msgstr "by page"
-
-msgid "admin_page"
-msgstr "page"
 
 msgid "admin_sort_label"
 msgstr "sort values according to current column"
@@ -79,17 +67,8 @@ msgstr "Required, can't be empty"
 msgid "admin_save_title"
 msgstr "save changes"
 
-msgid "admin_save"
-msgstr "Save"
-
 msgid "admin_cancel_title"
 msgstr "Back to overview"
-
-msgid "admin_cancel"
-msgstr "Cancel"
-
-msgid "admin_header"
-msgstr "mediaTUM Administration Interface"
 
 msgid "admin_title"
 msgstr "mediaTUM Administration Interface"
@@ -97,9 +76,14 @@ msgstr "mediaTUM Administration Interface"
 msgid "admin_filter_label"
 msgstr "Filter:"
 
-msgid "admin_filter_all"
-msgstr "all"
-
 msgid "admin_filter_else"
 msgstr "else"
 
+msgid "edit_fields"
+msgstr "edit fields"
+
+msgid "options"
+msgstr "Options"
+
+msgid "active"
+msgstr "Active"

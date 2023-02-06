@@ -58,12 +58,6 @@ msgstr "Name"
 msgid "admin_metafield_label"
 msgstr "Label"
 
-msgid "admin_metafield_type"
-msgstr "Type"
-
-msgid "admin_metafield_help_title"
-msgstr "Show help"
-
 msgid "htmlmemo_wysiwyg"
 msgstr "WYSIYG"
 
@@ -91,17 +85,11 @@ msgstr "Metadata fields"
 msgid "admin_metafield_description"
 msgstr "Description"
 
-msgid "admin_metafield_options"
-msgstr "Options"
-
 msgid "admin_metafield_filter_name"
 msgstr "Name"
 
 msgid "admin_metafield_filter_label"
 msgstr "Label"
-
-msgid "metafield_option1"
-msgstr "search field"
 
 msgid "metafield_option2"
 msgstr "sort field"

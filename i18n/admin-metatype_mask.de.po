@@ -30,9 +30,6 @@ msgstr "Maskenfelder bearbeiten"
 msgid "admin_mask_clone_title"
 msgstr "Maske klonen"
 
-msgid "admin_mask_edit_title"
-msgstr "Maske bearbeiten"
-
 msgid "admin_mask_edit"
 msgstr "Maske bearbeiten"
 
@@ -75,15 +72,6 @@ msgstr "Es wurden nicht für alle Maskentypen Standardmasken definiert."
 msgid "admin_mask_exportmapping"
 msgstr "Definition"
 
-msgid "admin_mask_exportheader"
-msgstr "Kopfzeile"
-
-msgid "admin_mask_exportfooter"
-msgstr "Fusszeile"
-
-msgid "admin_mask_exportoptions"
-msgstr "Optionen"
-
 msgid "admin_mask_export_validatetypes"
 msgstr "Datentypen validieren (Text in '')"
 
@@ -104,15 +92,6 @@ msgstr "-kein Typ-"
 
 msgid "masktype_edit"
 msgstr "Editormaske"
-
-msgid "masktype_search"
-msgstr "Suchmaske"
-
-msgid "masktype_short"
-msgstr "Kurzanzeige"
-
-msgid "masktype_full"
-msgstr "Vollansicht"
 
 msgid "masktype_export"
 msgstr "Export-Maske"

@@ -67,8 +67,9 @@
         <input tal:attributes="value pid" type="hidden" name="pid"/>
         <input type="hidden" name="type" value="field"/>
         <br/>&nbsp;<br/><div class="label"><small style="color:silver">(id: <tal:block tal:replace="python:item.id"/>)</small></div>
-        <button type="submit" name="saveedit" i18n:translate="mask_edit_save">TEXT</button>
-        &nbsp;&nbsp;<button type="submit" onclick="setCancel(document.myform.op)" i18n:translate="mask_edit_cancel">TEXT</button>
+        <button type="submit" name="saveedit" i18n:translate="save"> </button>
+        &nbsp;&nbsp;
+        <button type="submit" onclick="setCancel(document.myform.op)" i18n:translate="cancel"> </button>
         <input tal:attributes="value python:op" type="hidden" name="op"/>
     </div>
     
@@ -129,8 +130,9 @@
         <input tal:attributes="value pid" type="hidden" name="pid"/>
         <input type="hidden" name="type" value="field"/>
         <br/>&nbsp;<br/><div class="label">&nbsp;</div>
-        <button type="submit" name="saveedit" i18n:translate="mask_edit_save">TEXT</button>
-        &nbsp;&nbsp;<button type="submit" onclick="setCancel(document.myform.op)" i18n:translate="mask_edit_cancel">TEXT</button>
+        <button type="submit" name="saveedit" i18n:translate="save"> </button>
+        &nbsp;&nbsp;
+        <button type="submit" onclick="setCancel(document.myform.op)" i18n:translate="cancel"> </button>
         <input tal:attributes="value python:op" type="hidden" name="op"/>
     </div>
 </tal:block>

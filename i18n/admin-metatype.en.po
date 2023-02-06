@@ -7,12 +7,6 @@ msgstr "add new metadata scheme"
 msgid "admin_meta_exportall_title"
 msgstr "export all metadata schemes"
 
-msgid "admin_meta_nometa"
-msgstr "- no metadata schemes defined -"
-
-msgid "admin_meta_editdetail"
-msgstr "edit fields"
-
 msgid "admin_meta_maskdetail_title"
 msgstr "edit masks"
 
@@ -46,9 +40,6 @@ msgstr "only active metadata schemes will be used for upload"
 msgid "admin_meta_import_title"
 msgstr "import from file"
 
-msgid "admin_meta_import"
-msgstr "import"
-
 msgid "admin_meta_col_1"
 msgstr "ID"
 
@@ -69,9 +60,6 @@ msgstr "ACL"
 
 msgid "admin_meta_col_7"
 msgstr "Searchindex"
-
-msgid "admin_meta_error_1"
-msgstr "Not all required fields were filled in."
 
 msgid "admin_meta_error_2"
 msgstr "Name already assigned."
@@ -99,9 +87,6 @@ msgstr "Rights"
 
 msgid "admin_meta_writerights"
 msgstr "Write Rights"
-
-msgid "admin_meta_active"
-msgstr "Active"
 
 msgid "admin_meta_datatype"
 msgstr "Datatypes"
@@ -141,9 +126,6 @@ msgstr "Name"
 msgid "admin_defpopup_id"
 msgstr "ID"
 
-msgid "admin_defpopup_type"
-msgstr "Type"
-
 msgid "admin_defpopup_description"
 msgstr "Description"
 
@@ -156,3 +138,17 @@ msgstr "(only use this for publications!)"
 msgid "admin_meta_citeproc"
 msgstr "citeproc / CSL mapping"
 
+msgid "text_bold_title"
+msgstr "set marked text 'bold'"
+
+msgid "text_sub_title"
+msgstr "set marked text 'subscript'"
+
+msgid "text_sup_title"
+msgstr "set marked text 'superscript'"
+
+msgid "titlepopupbutton"
+msgstr "open editor mask"
+
+msgid "text_formatedvalue"
+msgstr "Formated Value:"

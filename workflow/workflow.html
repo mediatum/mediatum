@@ -39,7 +39,8 @@
             <th colspan="7" style="padding-top:20px;padding-bottom:20px">
                 <form>
                     <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
-                    <tal:block i18n:translate="wf_edit_search"/>: <input tal:attributes="value search" type="text" name="workflow_search"/><button type="submit" i18n:translate="wf_edit_search">TEXT</button>
+                    <tal:block i18n:translate="search"/>: <input tal:attributes="value search" type="text" name="workflow_search"/>
+                    <button type="submit" i18n:translate="search"> </button>
                 </form>
                 <p tal:condition="python:search!='' and len(items)==0" i18n:translate="wf_edit_nosearchresults"></p>
             </th>
@@ -88,7 +89,7 @@
 
 <div metal:define-macro="object_list" id="workflow">
     <p>
-        <a href="/publish" i18n:translate="workflow_back">TEXT</a>
+        <a href="/publish" i18n:translate="back"> </a>
     </p>
     <h2><tal:block i18n:translate="wf_list_header"><tal:block tal:content="python:unicode(len(workflow.getNodeList()))" i18n:name="number"/>
         <tal:block tal:content="python:workflow.getName()" i18n:name="name"/>
@@ -167,7 +168,9 @@
     <div style="display:none" id="confirm_move"  i18n:translate="workflow_confirm_msg_move">TEXT</div>
     <script tal:content="python:u'var id={}'.format(step.id)"/>
     <p>
-    <span style="text-align:left"><a tal:attributes="href python:u'/publish/{}'.format(workflow.getName())" i18n:translate="workflow_back">TEXT</a></span>
+    <span style="text-align:left">
+        <a tal:attributes="href python:u'/publish/{}'.format(workflow.getName())" i18n:translate="back"> </a>
+    </span>
     </p>
     <h2 i18n:translate="workflow_msg3">TEXT <span tal:content="python:step.name" i18n:name="name"/>:</h2>
     <table id="workflowtable" cellspacing="0px">
@@ -192,7 +195,7 @@
             </th>
             <th colspan="2" style="text-align: right;">
                 <select id="selectid">
-                    <option value="delete" i18n:translate="workflow_label_select_delete">TEXT</option>
+                    <option value="delete" i18n:translate="tab_deleteobject"> </option>
                     <optgroup label="Move" i18n:attributes="label workflow_label_select_move" tal:define="steps python:sorted([[s.getName().title(), s.id] for s in workflow.getSteps() if s.id != step.id])">
                         <option tal:repeat="value steps" tal:content="python:value[0]" tal:attributes="value python:u'move_{}'.format(value[1])" />
                     </optgroup>

@@ -28,9 +28,6 @@ msgstr "edit mask fields"
 msgid "admin_mask_clone_title"
 msgstr "clone mask"
 
-msgid "admin_mask_edit_title"
-msgstr "edit mask"
-
 msgid "admin_mask_edit"
 msgstr "edit mask"
 
@@ -73,15 +70,6 @@ msgstr "For some masktype are no default masks defined."
 msgid "admin_mask_exportmapping"
 msgstr "Definition"
 
-msgid "admin_mask_exportheader"
-msgstr "Header"
-
-msgid "admin_mask_exportfooter"
-msgstr "Footer"
-
-msgid "admin_mask_exportoptions"
-msgstr "Options"
-
 msgid "admin_mask_export_validatetypes"
 msgstr "validate datatypes (text in '')"
 
@@ -102,15 +90,6 @@ msgstr "-no type-"
 
 msgid "masktype_edit"
 msgstr "edit mask"
-
-msgid "masktype_search"
-msgstr "search mask"
-
-msgid "masktype_short"
-msgstr "short view"
-
-msgid "masktype_full"
-msgstr "full view"
 
 msgid "masktype_export"
 msgstr "export mask"

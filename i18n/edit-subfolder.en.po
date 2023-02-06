@@ -1,9 +1,6 @@
 msgid "edit_sort_header"
 msgstr "Sort manually"
 
-msgid "edit_sort_label"
-msgstr "Sort automatically"
-
 msgid "edit_sort_label_1"
 msgstr "Attribute:"
 

@@ -35,9 +35,6 @@ msgstr "Objekte erzeugen"
 msgid "edit_upload_create_object"
 msgstr "Objekt erzeugen"
 
-msgid "edit_upload_create_object_doi"
-msgstr "OK"
-
 msgid "edit_upload_create_meta"
 msgstr "Neues Metadatenobjekt anlegen"
 

@@ -48,7 +48,7 @@ def getAdminStdVars(req):
     for i in range(65, 91):
         tabs.append((unichr(i), unichr(i)))
     tabs.append(("admin_filter_else", "-"))
-    tabs.append(("admin_filter_all", "*"))
+    tabs.append(("all", "*"))
 
     actpage = req.params.get("page", req.params.get("actpage", "1"))
     return {"user": user, "page": page, "op": req.params.get(
@@ -111,7 +111,7 @@ class Overview:
                     b_class = "admin_page_act"
                 ret += '<button type="submit" name="page" class="{0}" title="{1}" value="{2}">{2}</button>'.format(
                         b_class,
-                        _core_translation.translate(self.language, "admin_page"),
+                        _core_translation.translate(self.language, "page"),
                         unicode(p),
                     )
         if len(ret) == 0:
@@ -122,7 +122,7 @@ class Overview:
         if self.page != 0:
             return '<button name="resetpage" title="{}" class="admin_page" type="submit" value="">{}</button>'.format(
                     _core_translation.translate(self.language, "admin_allelements_title"),
-                    _core_translation.translate(self.language, "admin_allelements"),
+                    _core_translation.translate(self.language, "show_all"),
                 )
         else:
             return '<button name="firstpage" title="{}" class="admin_page" type="submit" value="">{}</button>'.format(

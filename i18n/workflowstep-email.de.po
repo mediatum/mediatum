@@ -13,14 +13,8 @@ msgstr "Von"
 msgid "workflowstep-email_label_recipient"
 msgstr "An"
 
-msgid "workflowstep-email_label_subject"
-msgstr "Betreff"
-
 msgid "workflowstep-email_label_text"
 msgstr "Nachricht"
 
 msgid "workflowstep-email_label_send"
 msgstr "Absenden"
-
-msgid "workflowstep-email_label_reset"
-msgstr "Zurücksetzen"

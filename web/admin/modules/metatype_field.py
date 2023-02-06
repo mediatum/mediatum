@@ -52,7 +52,7 @@ def showDetailList(req, id):
 
     # filter
     if actfilter != "":
-        if actfilter in ("all", "*", _translation.translate(_translation.set_language(req.accept_languages), "admin_filter_all")):
+        if actfilter in ("all", "*", _translation.translate(_translation.set_language(req.accept_languages), "all")):
             None  # all users
         elif actfilter == "0-9":
             num = re.compile(r'([0-9])')

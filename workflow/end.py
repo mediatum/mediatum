@@ -38,7 +38,17 @@ class WorkflowStep_End(WorkflowStep):
             link2 = u"/node?id={}".format(node.id)
 
             return _tal.processTAL({"node": node, "link": link, "link2": link2}, string=self.settings["endtext"], macro=None, request=req)
-        return _tal.processTAL({"node": unicode(node.id)}, '<p><a href="/publish" i18n:translate="workflow_back">TEXT</a></p><h2 i18n:translate="wf_step_ready">Fertig</h2><p>&nbsp;</p><p i18n:translate="workflow_step_ready_msg">Das Objekt <span tal:content="node" i18n:name="name"/> ist am Ende des Workflows angekommen.</p>', macro=None, request=req)
+        return _tal.processTAL(
+                dict(node=unicode(node.id)),
+                """
+                    <p><a href="/publish" i18n:translate="back"> </a></p>
+                    <h2 i18n:translate="wf_step_ready"> </h2>
+                    <p>&nbsp;</p>
+                    <p i18n:translate="workflow_step_ready_msg"><span tal:content="node" i18n:name="name"/></p>
+                """,
+                macro=None,
+                request=req,
+            )
 
     def runAction(self, node, op=""):
         if self.settings["endsetupdatetime"]:

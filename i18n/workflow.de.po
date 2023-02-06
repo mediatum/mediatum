@@ -8,9 +8,6 @@ msgstr "Keine Workflows zur Bearbeitung vorhanden."
 msgid "wf_edit_nosearchresults"
 msgstr "- keine Treffer -"
 
-msgid "wf_edit_search"
-msgstr "Suchen"
-
 msgid "wf_edit_name"
 msgstr "Name"
 
@@ -74,9 +71,6 @@ msgstr "alle markieren"
 msgid "workflow_label_deselect_all"
 msgstr "alle unmarkieren"
 
-msgid "workflow_label_select_delete"
-msgstr "Löschen"
-
 msgid "workflow_label_select_move"
 msgstr "Verschieben nach..."
 
@@ -110,12 +104,6 @@ msgstr "Erneut versenden"
 msgid "workflow_filelist_type"
 msgstr "Typ"
 
-msgid "workflow_filelist_size"
-msgstr "Größe"
-
-msgid "workflow_filelist_mimetype"
-msgstr "Mimetype"
-
 msgid "workflow_filelist_open_title"
 msgstr "Datei anzeigen"
 
@@ -134,24 +122,15 @@ msgstr "Hochladen"
 msgid "workflow_step_ready_msg"
 msgstr "Das Objekt ${name} ist am Ende des Workflows angekommen."
 
-msgid "workflow_back"
-msgstr "Zurück"
-
 ### workflow types ###
 msgid "workflowstep_delete"
 msgstr "Eintrag löschen"
-
-msgid "workflowstep_jahrbuch"
-msgstr "Datenexport (Jahrbuch)"
 
 msgid "workflowstep_protect"
 msgstr "ACL Änderungen"
 
 msgid "workflowstep_showdata"
 msgstr "Metadateneditor"
-
-msgid "workflowstep_upload"
-msgstr "Uploadknoten"
 
 msgid "workflowstep_wait"
 msgstr "Warten"
@@ -162,44 +141,14 @@ msgstr "Re-Auth"
 msgid "workflowstep_fileattachment"
 msgstr "Dateianhang"
 
-msgid "WorkflowStep_ShowData"
-msgstr "Editor (Workflow)"
-
-msgid "WorkflowStep_Protect"
-msgstr "Rechteänderung (Workflow)"
-
-msgid "WorkflowStep_SendEmail"
-msgstr "Email-Senden (Workflow)"
-
-msgid "WorkflowStep_Publish"
-msgstr "Publizieren (Workflow)"
-
-msgid "WorkflowStep_TextPage"
-msgstr "Textseite (Workflow)"
-
-msgid "WorkflowStep_Delete"
-msgstr "Löschen (Workflow)"
-
 msgid "WorkflowStep"
 msgstr "Workflowschritt (Systemtyp)"
-
-msgid "WorkflowStep_Start"
-msgstr "Initialschritt (Workflow)"
 
 msgid "Workflow"
 msgstr "Workflow (Systemtyp)"
 
 msgid "Workflows"
 msgstr "Workflows (Systemtyp)"
-
-msgid "WorkflowStep_Upload"
-msgstr "Upload (Workflow)"
-
-msgid "WorkflowStep_EditMetadata"
-msgstr "Metadateneditor (Workflow)"
-
-msgid "WorkflowStep_End"
-msgstr "Endknoten (Workflow)"
 
 msgid "workflow_identificator"
 msgstr "Identifikator"
@@ -210,3 +159,11 @@ msgstr "Schlüssel"
 msgid "workflowstep_file_not_uploaded"
 msgstr "Keine Datei hochgeladen."
 
+msgid "admin_wfstep_destination"
+msgstr "Zielknoten-ID"
+
+msgid "admin_wfstep_setupdatetime"
+msgstr "Setze Aktualisierungszeit"
+
+msgid "admin_wfstep_text"
+msgstr "Text"

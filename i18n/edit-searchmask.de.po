@@ -21,6 +21,3 @@ msgstr "Metadatenschema"
 
 msgid "edit_searchmask_field"
 msgstr "Feld"
-
-msgid "edit_searchfield_none"
-msgstr "- keine Metadatenschemata vorhanden -"

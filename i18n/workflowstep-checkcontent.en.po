@@ -6,9 +6,3 @@ msgstr "Email Sender"
 
 msgid "admin_wfstep_checkcontent_recipient"
 msgstr "Recipient"
-
-msgid "admin_wfstep_checkcontent_subject"
-msgstr "Subject"
-
-msgid "admin_wfstep_checkcontent_text"
-msgstr "Text"

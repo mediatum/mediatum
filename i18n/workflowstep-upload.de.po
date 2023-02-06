@@ -1,3 +1,6 @@
+msgid "workflowstep_upload"
+msgstr "Uploadknoten"
+
 msgid "admin_wfstep_text_before_upload_form"
 msgstr "Text vor dem Upload-Formular"
 

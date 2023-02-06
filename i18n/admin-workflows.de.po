@@ -51,23 +51,8 @@ msgstr "${number} Workflows"
 msgid "admin_fw_msg1"
 msgstr "Workflow-Import aus XML-Datei"
 
-msgid "admin_wf_import"
-msgstr "Importieren"
-
-msgid "admin_wf_import_title"
-msgstr "Importieren"
-
-msgid "admin_wf_create_header"
-msgstr "Neuen Workflow anlegen"
-
-msgid "admin_wf_edit_header"
-msgstr "Workflow bearbeiten"
-
 msgid "admin_wf_writerights"
 msgstr "Schreibrechte"
-
-msgid "admin_wf_description"
-msgstr "Beschreibung"
 
 msgid "admin_wf_header"
 msgstr "Knoten des Workflows '${name}'"
@@ -129,12 +114,6 @@ msgstr "Adminstep"
 msgid "admin_wfstep_msg1"
 msgstr "wird in der Workflow-Übersicht markiert"
 
-msgid "admin_wfstep_nodetype"
-msgstr "Knotentyp"
-
-msgid "admin_wfstep_comment"
-msgstr "Kommentar"
-
 msgid "admin_wfstep_truelabel"
 msgstr "Label für 'True'-Operation"
 
@@ -171,17 +150,8 @@ msgstr "Email-Adresse Empfänger"
 msgid "admin_wfstep_email_subject"
 msgstr "Betreff"
 
-msgid "admin_wfstep_email_text"
-msgstr "Text"
-
 msgid "admin_wfstep_email_text_editable"
 msgstr "Angaben editierbar?"
-
-msgid "admin_wfstep_pretext"
-msgstr "Kopfzeile"
-
-msgid "admin_wfstep_posttext"
-msgstr "Fußzeile"
 
 msgid "admin_wf_languages"
 msgstr "Sprachunterstützung"

@@ -7,32 +7,5 @@ msgstr "Textfeld"
 msgid "fieldtype_text_desc"
 msgstr "Normales Texteingabefeld"
 
-msgid "text_titlepopupbutton"
-msgstr "Editiermaske öffnen"
-
-msgid "text_valuelabel"
-msgstr "Wert:"
-
-msgid "text_formatedvalue"
-msgstr "Formatierter Wert:"
-
-msgid "text_done"
-msgstr "Übernehmen"
-
-msgid "text_cancel"
-msgstr "Abbrechen"
-
-msgid "text_spcchar"
-msgstr "Sonderzeichen:"
-
-msgid "text_bold_title"
-msgstr "Markierten Text 'Fett' setzen"
-
 msgid "text_italic_title"
 msgstr "Markierten Text 'Kursiv' setzen"
-
-msgid "text_sub_title"
-msgstr "Markierten Text 'tiefstellen'"
-
-msgid "text_sup_title"
-msgstr "Markierten Text 'hochstellen'"

@@ -16,9 +16,6 @@ msgstr "Test link"
 msgid "edit_logo_savechanges"
 msgstr "Save changes"
 
-msgid "edit_logo_reset"
-msgstr "Reset"
-
 msgid "edit_logo_filetypeerror"
 msgstr "Uploaded filetype is not supported for logos. Allowed types are '.jpeg', '.jpg', '.gif' or '.png'."
 

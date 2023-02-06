@@ -1,4 +1,3 @@
-### classes ###
 msgid "edit_classes_noparent"
 msgstr "Operation kann nicht ausgeführt werden, da es sich um den einzigen Eltern-Knoten handelt."
 

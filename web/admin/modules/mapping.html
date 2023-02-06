@@ -51,13 +51,14 @@
                             &nbsp;<img tal:condition="python:mapping.getActive()==1" src="/static/img/haken.gif"/>
                         </td>
                         <td>
-                            <input tal:attributes="name python:u'fieldlist_{}'.format(mapping.id)" i18n:attributes="title admin_mapping_fieldlist_title" type="image" src="/static/img/rightarrow.png"/>
+                            <input tal:attributes="name python:u'fieldlist_{}'.format(mapping.id)" i18n:attributes="title edit_fields" type="image" src="/static/img/rightarrow.png"/>
                         </td>
                         <td>
                             <a tal:attributes="href python:u'/admin/export/mapping/{}'.format(mapping.getName())" i18n:attributes="title admin_mapping_export_title" target="_blank">
                                 <img src="/static/img/export.png" border="0"/>
                             </a>
-                            <input tal:attributes="name python:u'edit_{}'.format(mapping.id)" i18n:attributes="title admin_mapping_edit_title" type="image" src="/static/img/edit.png"/>&nbsp;&nbsp;
+                            <input tal:attributes="name python:u'edit_{}'.format(mapping.id)" i18n:attributes="title admin_mapping_edit_title" type="image" src="/static/img/edit.png"/>
+                            &nbsp;&nbsp;
                             <input tal:condition="python:len(mapping.getFields())==0" tal:attributes="name python:u'delete_{}'.format(mapping.id); onclick python:u'return questionDelName(\'{}\')'.format(mapping.getName())" i18n:attributes="title admin_mapping_delete_title" type="image" src="/static/img/delete.png"/>
                         </td>
                     </tr>
@@ -85,7 +86,14 @@
                                     <fieldset>
                                         <tal:block i18n:translate="admin_mapping_msg1">TEXT</tal:block>:<br/>
                                         <input name="file" type="file" size="50" maxlength="100000"/>
-                                        <br/><button i18n:attributes="title admin_mapping_import_title" i18n:translate="admin_mapping_import" type="submit" name="submit" value="submit">TEXT</button>
+                                        <br/>
+                                        <button
+                                            i18n:attributes="title admin_mapping_import_title"
+                                            i18n:translate="import"
+                                            type="submit"
+                                            name="submit" value="submit"
+                                        >
+                                        </button>
                                     </fieldset>
                                 </td>
                             </tr>
@@ -113,8 +121,15 @@
             <tr>
                 <td>&nbsp;</td>
                 <td>
-                    <button type="submit" name="save_config" i18n:attributes="title admin_save_title" i18n:translate="admin_save">TEXT</button>&nbsp;&nbsp;
-                    <button type="reset" i18n:attributes="title admin_cancel_title" i18n:translate="admin_cancel" >TEXT</button>
+                    <button
+                        type="submit"
+                        name="save_config"
+                        i18n:attributes="title admin_save_title"
+                        i18n:translate="save"
+                    >
+                    </button>
+                    &nbsp;&nbsp;
+                    <button type="reset" i18n:attributes="title admin_cancel_title" i18n:translate="cancel" > </button>
                 </td>
             </tr>
         </table>
@@ -132,7 +147,7 @@
         <table>
             <tr>
                 <td colspan="2">
-                    <h3 tal:condition="python:id==''" i18n:translate="admin_mapping_new_label">TEXT</h3>
+                    <h3 tal:condition="python:id==''" i18n:translate="admin_mapping_create"> </h3>
                     <h3 tal:condition="python:id!=''" i18n:translate="admin_mapping_edit_label">TEXT</h3>
                 </td>
             </tr>
@@ -157,7 +172,7 @@
                 </td>
             </tr>
             <tr>
-                <td><tal:block i18n:translate="admin_mapping_namespace">TEXT</tal:block>:</td>
+                <td><tal:block i18n:translate="admin_mapping_col_2"> </tal:block>:</td>
                 <td>
                     <input tal:attributes="value python:mapping.getNamespace()" type="text" name="namespace" maxlength="50" size="50"/>
                 </td>
@@ -175,25 +190,25 @@
                 </td>
             </tr>
             <tr>
-                <td><tal:block i18n:translate="admin_mapping_header">TEXT</tal:block>:</td>
+                <td><tal:block i18n:translate="mask_edit_header"> </tal:block>:</td>
                 <td>
                     <input tal:attributes="value python:mapping.getHeader()" type="text" name="header" maxlength="50" size="50"/>
                 </td>
             </tr>
             <tr>
-                <td><tal:block i18n:translate="admin_mapping_footer">TEXT</tal:block>:</td>
+                <td><tal:block i18n:translate="mask_edit_footer"> </tal:block>:</td>
                 <td>
                     <input tal:attributes="value python:mapping.getFooter()" type="text" name="footer" maxlength="50" size="50"/>
                 </td>
             </tr>
             <tr>
-                <td><tal:block i18n:translate="admin_mapping_separator">TEXT</tal:block>:</td>
+                <td><tal:block i18n:translate="mask_edit_separator"> </tal:block>:</td>
                 <td>
                     <input tal:attributes="value python:mapping.getSeparator()" type="text" name="separator" maxlength="50" size="50"/>
                 </td>
             </tr>
             <tr>
-                <td><tal:block i18n:translate="admin_mapping_active"/>:</td>
+                <td><tal:block i18n:translate="active"/>:</td>
                 <td>
                     <input tal:attributes="checked python:{0:None,1:'checked'}[mapping.getActive()]" type="checkbox" name="active" value="1"/>
                 </td>
@@ -213,8 +228,24 @@
             <tr>
                 <td>&nbsp;</td>
                 <td>
-                    <button i18n:attributes="title admin_save_title" i18n:translate="admin_save" type="submit" name="submit" value="submit">TEXT</button>&nbsp;&nbsp;
-                    <button i18n:attributes="title admin_cancel_title" i18n:translate="admin_cancel" type="submit" name="cancel" value="cancel" onclick="setCancel()">TEXT</button>
+                    <button
+                        i18n:attributes="title admin_save_title"
+                        i18n:translate="save"
+                        type="submit"
+                        name="submit"
+                        value="submit"
+                    >
+                    </button>
+                    &nbsp;&nbsp;
+                    <button
+                        i18n:attributes="title admin_cancel_title"
+                        i18n:translate="cancel"
+                        type="submit"
+                        name="cancel"
+                        value="cancel"
+                        onclick="setCancel()"
+                    >
+                    </button>
                 </td>
             </tr>
         </table>
@@ -263,7 +294,8 @@
                         <img tal:condition="python:field.getMandatory()" src="/static/img/haken.gif"/>&nbsp;
                     </td>
                     <td tal:attributes="class cssclass" class="_norm_">
-                        <input tal:attributes="name python:u'editfield_{}'.format(field.id)" i18n:attributes="title admin_mappingfield_edit_title" type="image" src="/static/img/edit.png"/>&nbsp;&nbsp;
+                        <input tal:attributes="name python:u'editfield_{}'.format(field.id)" i18n:attributes="title admin_mappingfield_edit_title" type="image" src="/static/img/edit.png"/>
+                        &nbsp;&nbsp;
                         <input tal:condition="python:not used_by[field.id]" tal:attributes="name python:u'deletefield_{}'.format(field.id); onclick python:u'return questionDelName(\'{}\')'.format(field.getName())" i18n:attributes="title admin_mappingfield_delete_title" type="image" src="/static/img/delete.png"/>
                         <input
                             tal:condition="python:used_by[field.id]"
@@ -305,7 +337,7 @@
         <table>
             <tr>
                 <td colspan="2">
-                    <h3 tal:condition="python:id==''" i18n:translate="admin_mappingfield_new_label">TEXT</h3>
+                    <h3 tal:condition="python:id==''" i18n:translate="admin_mappingfield_create"> </h3>
                     <h3 tal:condition="python:id!=''" i18n:translate="admin_mappingfield_edit_label">TEXT</h3>
                 </td>
             </tr>
@@ -359,8 +391,24 @@
             <tr>
                 <td>&nbsp;</td>
                 <td>
-                    <button i18n:attributes="title admin_save_title" i18n:translate="admin_save" type="submit" name="submit" value="submit">TEXT</button>&nbsp;&nbsp;
-                    <button i18n:attributes="title admin_cancel_title" i18n:translate="admin_cancel" type="submit" name="cancel" value="cancel" onclick="setCancel()">TEXT</button>
+                    <button
+                        i18n:attributes="title admin_save_title"
+                        i18n:translate="save"
+                        type="submit"
+                        name="submit"
+                        value="submit"
+                    >
+                    </button>
+                    &nbsp;&nbsp;
+                    <button
+                        i18n:attributes="title admin_cancel_title"
+                        i18n:translate="cancel"
+                        type="submit"
+                        name="cancel"
+                        value="cancel"
+                        onclick="setCancel()"
+                    >
+                    </button>
                 </td>
             </tr>
         </table>

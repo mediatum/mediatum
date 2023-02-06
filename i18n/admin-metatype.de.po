@@ -7,12 +7,6 @@ msgstr "Neues Metadatenschema anlegen"
 msgid "admin_meta_exportall_title"
 msgstr "Alle Metadatenschemata exportieren"
 
-msgid "admin_meta_nometa"
-msgstr "- keine Metadatenschemata vorhanden -"
-
-msgid "admin_meta_editdetail"
-msgstr "Felder anzeigen/bearbeiten"
-
 msgid "admin_meta_maskdetail_title"
 msgstr "Masken anzeigen/bearbeiten"
 
@@ -46,9 +40,6 @@ msgstr "nur aktive Metadatenschemata werden für Uploads herangezogen"
 msgid "admin_meta_import_title"
 msgstr "aus Datei Importieren"
 
-msgid "admin_meta_import"
-msgstr "Importieren"
-
 msgid "admin_meta_col_1"
 msgstr "ID"
 
@@ -69,9 +60,6 @@ msgstr "ACL"
 
 msgid "admin_meta_col_7"
 msgstr "Suchindex"
-
-msgid "admin_meta_error_1"
-msgstr "Nicht alle Pflichtfelder wurden ausgefüllt."
 
 msgid "admin_meta_error_2"
 msgstr "Ein Metadatenschema mit gleichem Namen ist bereits vorhanden."
@@ -99,9 +87,6 @@ msgstr "Berechtigung"
 
 msgid "admin_meta_writerights"
 msgstr "Schreibrechte"
-
-msgid "admin_meta_active"
-msgstr "Aktiv"
 
 msgid "admin_meta_datatype"
 msgstr "Datentypen"
@@ -141,9 +126,6 @@ msgstr "Name"
 msgid "admin_defpopup_id"
 msgstr "ID"
 
-msgid "admin_defpopup_type"
-msgstr "Typ"
-
 msgid "admin_defpopup_description"
 msgstr "Beschreibung"
 
@@ -155,3 +137,18 @@ msgstr "(Nur für Veröffentlichungen!)"
 
 msgid "admin_meta_citeproc"
 msgstr "citeproc / CSL mapping"
+
+msgid "text_bold_title"
+msgstr "Markierten Text 'Fett' setzen"
+
+msgid "text_sub_title"
+msgstr "Markierten Text 'tiefstellen'"
+
+msgid "text_sup_title"
+msgstr "Markierten Text 'hochstellen'"
+
+msgid "titlepopupbutton"
+msgstr "Editiermaske öffnen"
+
+msgid "text_formatedvalue"
+msgstr "Formatierter Wert:"

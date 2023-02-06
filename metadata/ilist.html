@@ -20,7 +20,13 @@
         i18n:translate="editor_index"
     >
     </button>
-    <button name="button" tal:attributes="onclick python:u'openPopup(\'/metatype/text?name={}\', \'\', 550, 470)'.format(name)" style="horizontal-align:middle;min-width:20px;width:20px;padding:4px 4px" type="button" i18n:attributes="title ilist_titlepopupbutton">
+    <button
+        name="button"
+        tal:attributes="onclick python:u'openPopup(\'/metatype/text?name={}\', \'\', 550, 470)'.format(name)"
+        style="horizontal-align:middle;min-width:20px;width:20px;padding:4px 4px"
+        type="button"
+        i18n:attributes="title titlepopupbutton"
+    >
         <img src="/static/img/edit_spc.png" style="height:14px"/>
     </button>
 
@@ -71,7 +77,20 @@
                     </tr>
                     <tr class="bottom">
                         <td>
-                            <button class="mediatum_button_width" tal:attributes="onclick python:u'pick(\'{}\')'.format(fieldname)" i18n:translate="popup_ok" type="button">TEXT</button> <button i18n:translate="popup_cancel" type="button" onclick="window.close()" style="width: 100px">TEXT</button>
+                            <button
+                                class="mediatum_button_width"
+                                tal:attributes="onclick python:u'pick(\'{}\')'.format(fieldname)"
+                                i18n:translate="ok"
+                                type="button"
+                            >
+                            </button>
+                            <button
+                                i18n:translate="cancel"
+                                type="button"
+                                onclick="window.close()"
+                                style="width: 100px"
+                            >
+                            </button>
                         </td>
                     </tr> 
                 </table>

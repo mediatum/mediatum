@@ -9,7 +9,7 @@
       meta(http-equiv='Content-Type', content='text/html; charset=UTF-8')
       meta(content='text/html;charset=UTF-8', http-equiv='content-type')
       title
-        = translate('popup_help_header')
+        = translate('help_title')
       link(rel='stylesheet', href='/static/css/mediatum.css')
       for src in html_head_style_src
         link(rel="stylesheet", href=src)
@@ -56,11 +56,11 @@
         table.overview
           tr
             th(width='30px')
-              = translate('att_browser_type')
+              = translate('type')
             th(align='left')
               =translate('att_browser_name')
             th(align='right')
-              =translate('att_browser_size')
+              =translate('size')
           each file in files
             tr
               - var cssclass = files.index(file)%2 and 'norm' or 'silver'

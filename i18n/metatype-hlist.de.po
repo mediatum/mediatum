@@ -7,8 +7,5 @@ msgstr "Hierarchische Werteliste aus Attributwerten"
 msgid "hlist_edit_parentnodes"
 msgstr "Basisknoten:"
 
-msgid "hlist_edit_attrname"
-msgstr "Attributname:"
-
 msgid "hlist_edit_onlylast"
 msgstr "Zeige nur Kindknoten:"

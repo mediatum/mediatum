@@ -3,7 +3,15 @@
   SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 <metal:block metal:define-macro="view_mask">
-    <p><a tal:attributes="href python:u'./metatype{}'.format(page)" i18n:translate="admin_overview">TEXT</a> | <a href="?detaillist_x=1" tal:attributes="href python:u'?detaillist_{}__=1'.format(metadatatype.getName())" i18n:translate="admin_meta_editdetail">TEXT</a></p>
+    <p>
+        <a tal:attributes="href python:u'./metatype{}'.format(page)" i18n:translate="admin_overview"> </a> |
+        <a
+            href="?detaillist_x=1"
+            tal:attributes="href python:u'?detaillist_{}__=1'.format(metadatatype.getName())"
+            i18n:translate="edit_fields"
+        >
+        </a>
+    </p>
     <script src="/static/js/admin/modules/admin.js"> </script>
     <form name="fieldoverview" method="post" action="#" tal:attributes="action page">
         <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
@@ -75,7 +83,7 @@
                             <img i18n:attributes="title admin_mask_edit_field" src="/static/img/rightarrow.png" border="0"/>
                         </a>&nbsp;
                         <input tal:attributes="name python:u'copymask_{}'.format(mask.id)" i18n:attributes="title admin_mask_clone_title" type="image" src="/static/img/clone.png"/>&nbsp;&nbsp;
-                        <input tal:attributes="name python:u'editmask_{}'.format(mask.id)" i18n:attributes="title admin_mask_edit_title" type="image" src="/static/img/edit.png"/>&nbsp;&nbsp;
+                        <input tal:attributes="name python:u'editmask_{}'.format(mask.id)" i18n:attributes="title admin_mask_edit" type="image" src="/static/img/edit.png"/>&nbsp;&nbsp;
                         <input tal:attributes="name python:u'deletemask_{}'.format(mask.id); onclick python:u'return questionDelName(\'{} ({})\')'.format(mask.getName(), mask.id)" i18n:attributes="title admin_mask_delete_title" type="image" src="/static/img/delete.png"/>
                     </td>
                 </tr>
@@ -157,15 +165,15 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td><tal:block i18n:translate="admin_mask_exportheader">TEXT</tal:block>:</td>
+                                <td><tal:block i18n:translate="mask_edit_header"> </tal:block>:</td>
                                 <td><input tal:attributes="value python:mask.getExportHeader()" type="text" name="exportheader" style="width:300px"/></td>
                             </tr>
                             <tr>
-                                <td><tal:block i18n:translate="admin_mask_exportfooter">TEXT</tal:block>:</td>
+                                <td><tal:block i18n:translate="mask_edit_footer"> </tal:block>:</td>
                                 <td><input tal:attributes="value python:mask.getExportFooter()" type="text" name="exportfooter" style="width:300px"/></td>
                             </tr>
                             <tr>
-                                <td><tal:block i18n:translate="admin_mask_exportoptions">TEXT</tal:block>:</td>
+                                <td><tal:block i18n:translate="options"> </tal:block>:</td>
                                 <td>
                                     <fieldset style="display:inline">
                                         <input tal:attributes="checked python:'checked' if mask.hasExportOption('t') else None" type="checkbox" name="types" value="types"/> <tal:block i18n:translate="admin_mask_export_validatetypes">TEXT</tal:block><br/>
@@ -234,8 +242,24 @@
             <tr>
                 <td>&nbsp;</td>
                 <td>
-                    <button tal:attributes="onclick python:u'selectacl(\'leftread\')';" i18n:translate="admin_save" i18n:attributes="title admin_save_title" type="submit" name="submit" value="submit">TEXT</button>&nbsp;&nbsp;
-                    <button i18n:translate="admin_cancel" i18n:attributes="title admin_cancel_title" type="submit" name="cancel" value="cancel" onclick="setCancel()">TEXT</button>
+                    <button
+                        tal:attributes="onclick python:u'selectacl(\'leftread\')';"
+                        i18n:translate="save"
+                        i18n:attributes="title admin_save_title"
+                        type="submit"
+                        name="submit"
+                        value="submit"
+                    >
+                    </button>&nbsp;&nbsp;
+                    <button
+                        i18n:translate="cancel"
+                        i18n:attributes="title admin_cancel_title"
+                        type="submit"
+                        name="cancel"
+                        value="cancel"
+                        onclick="setCancel()"
+                    >
+                    </button>
                 </td>
             </tr>
         </table>

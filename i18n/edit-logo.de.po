@@ -16,8 +16,5 @@ msgstr "Link testen"
 msgid "edit_logo_savechanges"
 msgstr "Änderungen speichern"
 
-msgid "edit_logo_reset"
-msgstr "Zurücksetzen"
-
 msgid "edit_logo_filetypeerror"
 msgstr "Die hochgeladene Datei hat keinen unterstützen Dateityp für Logos. Zugelassen sind nur Dateien vom Typ '.jpeg', '.jpg', '.gif' oder '.png'."

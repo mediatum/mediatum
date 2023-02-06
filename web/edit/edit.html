@@ -151,7 +151,7 @@
         <head>
             <META http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
             <meta content="text/html;charset=UTF-8" http-equiv="content-type"/>
-            <title i18n:translate="edit_main_title">TEXT</title>
+            <title i18n:translate="mediatum_main_title"> </title>
 
             <link id="id_link_fancytree_skin" rel="stylesheet" href="/static/js/fancytree/src/skin-xp/ui.fancytree.css" />
             <link rel="stylesheet" href="/static/css/jquery.contextMenu.css" />
@@ -186,10 +186,10 @@
                     <div tal:content="python:''" class="mediatum_subnavigation_1"></div>
                     <div class="mediatum_subnavigation_2" i18n:translate="">
                         <a href="#" tal:attributes="onclick python:u'return reloadPage({},\'{}\')'.format(folders['homedir'][0].id, folders['homedir'][1])">
-                            <img class="mediatum_subnavigation_2_img" src="/static/img/webtree/homeicon.gif" i18n:attributes="title e_folder_homedir" />
+                            <img class="mediatum_subnavigation_2_img" src="/static/img/webtree/homeicon.gif" i18n:attributes="title user_home" />
                         </a>
                         <a href="#" tal:attributes="onclick python:u'return reloadPage({},\'{}\')'.format(folders['trashdir'][0].id, folders['trashdir'][1])">
-                            <img class="mediatum_subnavigation_2_img" src="/static/img/webtree/trashicon.gif" i18n:attributes="title e_folder_trashdir" />
+                            <img class="mediatum_subnavigation_2_img" src="/static/img/webtree/trashicon.gif" i18n:attributes="title user_trash" />
                         </a>
                         <a href="#" tal:attributes="onclick python:u'return reloadPage({},\'{}\')'.format(folders['uploaddir'][0].id, folders['uploaddir'][1])">
                             <img class="mediatum_subnavigation_2_img" src="/static/img/webtree/uploadicon.gif" i18n:attributes="title e_folder_uploaddir" />
@@ -239,7 +239,7 @@
             <div id="select_target_dir" >
                <tal:block i18n:translate="select_target_dir"/>&nbsp;&nbsp;&nbsp;
                <a href="#" tal:attributes="onclick python:'parent.cancelOperation()'">
-                   <img src="/static/img/delete.png" i18n:attributes="title edit_publish_cancel"/>
+                   <img src="/static/img/delete.png" i18n:attributes="title cancel"/>
                </a>&nbsp;
             </div>
         </body>
@@ -381,7 +381,7 @@
                 <br/>
                 <br/>
                 <p i18n:translate="edit_error_msg" class="error">TEXT
-                    <span i18n:name="link"><a i18n:translate="edit_linktext" href="../login" target="_parent">TEXT</a></span>
+                    <span i18n:name="link"><a i18n:translate="hier_link" href="../login" target="_parent"> </a></span>
                 </p>
             </div>
         </body>

@@ -13,18 +13,6 @@ msgstr "Maskenauswahl"
 msgid "edit_mask"
 msgstr "Maske"
 
-msgid "edit_meta_save"
-msgstr "Speichern"
-
-msgid "create_version_save"
-msgstr "Speichern"
-
-msgid "edit_meta_reset"
-msgstr "Zurücksetzen"
-
-msgid "edit_mask_required"
-msgstr "Pflichtfeld, darf nicht leer sein"
-
 msgid "edit_meta_created"
 msgstr "erstellt"
 
@@ -33,9 +21,6 @@ msgstr "zuletzt geändert"
 
 msgid "create_version_information"
 msgstr "Versionierungs-Informationen"
-
-msgid "create_version_comment"
-msgstr "Kommentar"
 
 msgid "create_version_generate_new_version"
 msgstr "Neue Version erstellen"

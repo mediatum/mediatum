@@ -20,7 +20,7 @@
             <div id="mediatum_treeform-background">&nbsp;</div>
             <div id="mediatum_treeform-form">
                 <div class="mediatum_treeform_close">
-                    <a href="#" onclick="closeForm()" i18n:attributes="title mask_editor_cancel">
+                    <a href="#" onclick="closeForm()" i18n:attributes="title cancel">
                         <img src="/static/img/cancel.png"/>
                     </a>
                 </div>
@@ -52,11 +52,23 @@
         <div id="mediatum_publish_operation">
             <div class="mediatum_publish_op_div">
                 <br/>
-                <button type="button" onclick="showForm();event.preventDefault();" i18n:translate="edit_publish_button_select">Verzeichnisse auswählen</button>
+                <button
+                    type="button"
+                    onclick="showForm();event.preventDefault();"
+                    i18n:translate="edit_publish_button_select"
+                >Verzeichnisse auswählen
+                </button>
                 <p>
                     <input type="hidden" name="destination" id="destination" tal:attributes="value stddir" />
                     <br/>
-                    <button id="btn_publish" type="submit" name="dopublish" i18n:attributes="title edit_publish_button_deactivated_tooltip" i18n:translate="edit_publish_button">TEXT</button>
+                    <button
+                        id="btn_publish"
+                        type="submit"
+                        name="dopublish"
+                        i18n:attributes="title edit_publish_button_deactivated_tooltip"
+                        i18n:translate="tab_publish"
+                    >
+                    </button>
                 </p>
 
         </div>

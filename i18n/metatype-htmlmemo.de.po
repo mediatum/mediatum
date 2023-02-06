@@ -15,30 +15,3 @@ msgstr "Editiermaske öffnen"
 
 msgid "htmlmemo_popup_title"
 msgstr "Eingabemaske für HTML formatierte Texte"
-
-msgid "htmlmemo_valuelabel"
-msgstr "Wert:"
-
-msgid "htmlmemo_formatedvalue"
-msgstr "Formatierter Wert:"
-
-msgid "htmlmemo_done"
-msgstr "Übernehmen"
-
-msgid "htmlmemo_cancel"
-msgstr "Abbrechen"
-
-msgid "htmlmemo_spcchar"
-msgstr "Sonderzeichen:"
-
-msgid "htmlmemo_bold_title"
-msgstr "Markierten Text 'Fett' setzen"
-
-msgid "htmlmemo_italic_title"
-msgstr "Markierten Text 'Kursiv' setzen"
-
-msgid "htmlmemo_sub_title"
-msgstr "Markierten Text 'tiefstellen'"
-
-msgid "htmlmemo_sup_title"
-msgstr "Markierten Text 'hochstellen'"

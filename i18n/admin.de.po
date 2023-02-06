@@ -44,26 +44,14 @@ msgstr "System-Einstellungen"
 msgid "admin_error"
 msgstr "Sie besitzen nicht die notwendigen Rechte, um den Administrationsbereich zu betreten.<br/> Falls Sie nicht angemeldet sein sollten, können Sie das ${link}"
 
-msgid "admin_linktext"
-msgstr "hier"
-
 msgid "admin_overview"
 msgstr "zur Übersicht"
 
 msgid "admin_allelements_title"
 msgstr "Alle Elemente anzeigen"
 
-msgid "admin_allelements"
-msgstr "alle anzeigen"
-
 msgid "admin_pageelements_title"
 msgstr "Elemente seitenweise anzeigen"
-
-msgid "admin_pageelements"
-msgstr "seitenweise anzeigen"
-
-msgid "admin_page"
-msgstr "Seite"
 
 msgid "admin_sort_label"
 msgstr "Werte nach aktueller Spalte sortieren"
@@ -80,17 +68,8 @@ msgstr "Pflichtfeld, darf nicht leer sein"
 msgid "admin_save_title"
 msgstr "Änderungen speichern"
 
-msgid "admin_save"
-msgstr "Speichern"
-
 msgid "admin_cancel_title"
 msgstr "Zurück zur Übersicht"
-
-msgid "admin_cancel"
-msgstr "Abbrechen"
-
-msgid "admin_header"
-msgstr "mediaTUM Administration Interface"
 
 msgid "admin_title"
 msgstr "mediaTUM Administration Interface"
@@ -98,10 +77,14 @@ msgstr "mediaTUM Administration Interface"
 msgid "admin_filter_label"
 msgstr "Filter:"
 
-msgid "admin_filter_all"
-msgstr "alle"
-
 msgid "admin_filter_else"
 msgstr "sonstige"
 
+msgid "edit_fields"
+msgstr "Felder anzeigen/bearbeiten"
 
+msgid "options"
+msgstr "Optionen"
+
+msgid "active"
+msgstr "Aktiv"

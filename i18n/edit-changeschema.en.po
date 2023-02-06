@@ -18,9 +18,6 @@ msgstr "Set metadata type anew"
 msgid "edit_changeschema_nodeid"
 msgstr "Object id"
 
-msgid "edit_changeschema_objtype"
-msgstr "Object type"
-
 msgid "edit_changeschema_schemeid"
 msgstr "Metadata type (id)"
 

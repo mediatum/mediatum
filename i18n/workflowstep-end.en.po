@@ -6,6 +6,3 @@ msgstr "Text Page"
 
 msgid "admin_wfstep_endremove"
 msgstr "Remove from Workflow"
-
-msgid "admin_wfstep_endsetupdatetime"
-msgstr "set updatetime"

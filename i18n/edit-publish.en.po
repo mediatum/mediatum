@@ -4,17 +4,8 @@ msgstr "All selected objects will be published in selected directory."
 msgid "edit_publish_button_select"
 msgstr "Choose directories"
 
-msgid "edit_publish_button"
-msgstr "Publish"
-
 msgid "edit_publish_button_deactivated_tooltip"
 msgstr "(deactivated) Objects can be published after the selection of target directories."
-
-msgid "edit_publish_ok"
-msgstr "OK"
-
-msgid "edit_publish_cancel"
-msgstr "Cancel"
 
 msgid "error_publish_single_node"
 msgstr "A data set could not be published. Please check if all required fields are filled out and if date values have the correct format."

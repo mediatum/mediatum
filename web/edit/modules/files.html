@@ -69,9 +69,9 @@
                     <table class="mediatum_filetable_files" cellpadding="0px" cellspacing="0px">
                         <tr>
                             <th i18n:translate="edit_files_location">TEXT</th>
-                            <th i18n:translate="edit_files_type" class="mediatum_filetable_files_th_size50">TEXT</th>
-                            <th i18n:translate="edit_files_size" class="mediatum_filetable_files_th_size50 mediatum_filetable_files_th_ralign">TEXT</th>
-                            <th i18n:translate="edit_files_mimetype" class="mediatum_filetable_files_th_size50">TEXT</th>
+                            <th i18n:translate="type" class="mediatum_filetable_files_th_size50"> </th>
+                            <th i18n:translate="size" class="mediatum_filetable_files_th_size50 mediatum_filetable_files_th_ralign"> </th>
+                            <th i18n:translate="mimetype" class="mediatum_filetable_files_th_size50"> </th>
                             <th class="mediatum_filetable_files_th_ralign mediatum_filetable_files_th_size25" > </th>
                          </tr>
 
@@ -108,9 +108,9 @@
                         <input tal:attributes="value srcnodeid" type="hidden" name="srcnodeid">
                             <table class="mediatum_filetable_files" cellpadding="0px" cellspacing="0px">
                                 <tr>
-                                    <th i18n:translate="edit_files_type">TEXT</th>
-                                    <th i18n:translate="edit_files_size">TEXT</th>
-                                    <th i18n:translate="edit_files_mimetype">TEXT</th>
+                                    <th i18n:translate="type"> </th>
+                                    <th i18n:translate="size"> </th>
+                                    <th i18n:translate="mimetype"> </th>
                                     <th i18n:translate="edit_files_location">TEXT</th>
                                     <th i18n:translate="edit_files_options">TEXT</th>
                                 </tr>
@@ -167,9 +167,9 @@
                         <input tal:attributes="value srcnodeid" type="hidden" name="srcnodeid">
                             <table class="mediatum_filetable_files" cellpadding="0px" cellspacing="0px">
                                 <tr>
-                                    <th i18n:translate="edit_files_type">TEXT</th>
-                                    <th i18n:translate="edit_files_size">TEXT</th>
-                                    <th i18n:translate="edit_files_mimetype">TEXT</th>
+                                    <th i18n:translate="type"> </th>
+                                    <th i18n:translate="size"> </th>
+                                    <th i18n:translate="mimetype"> </th>
                                     <th i18n:translate="edit_files_location">TEXT</th>
                                     <th i18n:translate="edit_files_options">TEXT</th>
                                 </tr>
@@ -333,7 +333,7 @@
                     class="mediatum_edit_files_ok"
                     type="button"
                     tal:attributes="onclick python:'selectedItems({})'.format(srcnodeid)"
-                    i18n:translate="edit_ok">
+                    i18n:translate="ok">
                 </button>
                 <button class="mediatum_edit_files_cancel" type="button" onclick="self.close()" i18n:translate="edit_cancel">TEXT</button>
             </p>

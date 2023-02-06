@@ -37,7 +37,7 @@
         = translate('login_submit')
       | &nbsp;&nbsp;
       button(type='button', onclick="location='/'", name='cancel')
-        = translate('login_reset')
+        = translate('cancel')
       br
       .label &nbsp;
       small(style='font-size:9px')
@@ -71,10 +71,10 @@
       br
       .label &nbsp;
       button(type='submit', name='ChangeSubmit')
-        = translate('login_save')
+        = translate('save')
       | &nbsp;&nbsp;
       button(type='button', onclick="location='/'", name='cancel')
-        = translate('login_reset')
+        = translate('cancel')
     script.
       function setFocus(){document.login.password_old.focus();}
       setFocus()

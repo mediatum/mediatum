@@ -7,32 +7,5 @@ msgstr "text field"
 msgid "fieldtype_text_desc"
 msgstr "normal text input field"
 
-msgid "text_titlepopupbutton"
-msgstr "open editor mask"
-
-msgid "text_valuelabel"
-msgstr "Value:"
-
-msgid "text_formatedvalue"
-msgstr "Formated Value:"
-
-msgid "text_done"
-msgstr "Done"
-
-msgid "text_cancel"
-msgstr "Cancel"
-
-msgid "text_spcchar"
-msgstr "Special chars:"
-
-msgid "text_bold_title"
-msgstr "set marked text 'bold'"
-
 msgid "text_italic_title"
 msgstr "set marked text 'italic'"
-
-msgid "text_sub_title"
-msgstr "set marked text 'subscript'"
-
-msgid "text_sup_title"
-msgstr "set marked text 'superscript'"

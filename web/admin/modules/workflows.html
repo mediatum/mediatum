@@ -84,7 +84,15 @@
                                         <fieldset>
                                             <tal:block i18n:translate="admin_fw_msg1">TEXT</tal:block>:<br/>
                                             <input name="file" type="file" size="50" maxlength="100000"/>
-                                            <br/><button i18n:translate="admin_wf_import" i18n:attributes="title admin_wf_import_title" type="submit" name="submit" value="submit">TEXT</button>
+                                            <br/>
+                                            <button
+                                                i18n:translate="import"
+                                                i18n:attributes="title import"
+                                                type="submit"
+                                                name="submit"
+                                                value="submit"
+                                            >
+                                            </button>
                                         </fieldset>
                                     </td>
                                 </tr>
@@ -109,8 +117,8 @@
         <table>
             <tr>
                 <td colspan="2">
-                    <h3 tal:condition="python:id==''" i18n:translate="admin_wf_create_header">TEXT</h3>
-                    <h3 tal:condition="python:id!=''" i18n:translate="admin_wf_edit_header">TEXT</h3>
+                    <h3 tal:condition="python:id==''" i18n:translate="admin_wf_create_title"> </h3>
+                    <h3 tal:condition="python:id!=''" i18n:translate="admin_wf_edit_title"> </h3>
                 </td>
             </tr>
             <tr tal:condition="python:error">
@@ -186,7 +194,7 @@
                 </td>
             </tr>
             <tr>
-                <td><tal:block i18n:translate="admin_wf_description">TEXT</tal:block>:</td>
+                <td><tal:block i18n:translate="admin_wf_col_2"> </tal:block>:</td>
                 <td><textarea tal:content="python:workflow.get('description')" name="description" rows="4" style="width:400px"/><td>
             </tr>
             <tr>
@@ -208,8 +216,24 @@
             <tr>
                 <td>&nbsp;</td>
                 <td>
-                    <button i18n:attributes="title admin_save_title" tal:attributes="onclick python:u'selectacl(Array(\'left_readread\', \'left_writewrite\'))';" i18n:translate="admin_save" type="submit" name="submit" value="submit">TEXT</button>&nbsp;&nbsp;
-                    <button i18n:attributes="title admin_cancel_title" i18n:translate="admin_cancel" type="submit" name="cancel" value="cancel" onclick="setCancel()">TEXT</button>
+                    <button
+                        i18n:attributes="title admin_save_title"
+                        tal:attributes="onclick python:u'selectacl(Array(\'left_readread\', \'left_writewrite\'))';"
+                        i18n:translate="save"
+                        type="submit"
+                        name="submit"
+                        value="submit"
+                    >
+                    </button>&nbsp;&nbsp;
+                    <button
+                        i18n:attributes="title admin_cancel_title"
+                        i18n:translate="cancel"
+                        type="submit"
+                        name="cancel"
+                        value="cancel"
+                        onclick="setCancel()"
+                    >
+                    </button>
                 </td>
             </tr>
         </table>
@@ -374,7 +398,7 @@
                 </td>
             </tr>
             <tr>
-                <td><tal:block i18n:translate="admin_wfstep_nodetype" />:</td>
+                <td><tal:block i18n:translate="admin_wfstep_col_2" />:</td>
                 <td>
                     <select style="width:400px" name="ntype">
                         <tal:block tal:repeat="key python:workflow_step_type_names" tal:define="typename python:contenttype">
@@ -392,7 +416,7 @@
                 <td>
                     <button
                         i18n:attributes="title admin_save_title"
-                        i18n:translate="admin_save"
+                        i18n:translate="save"
                         name="submitbutton"
                         type="submit"
                         value="submit"
@@ -400,7 +424,7 @@
                     &nbsp;&nbsp;
                     <button
                         i18n:attributes="title admin_cancel_title"
-                        i18n:translate="admin_cancel"
+                        i18n:translate="cancel"
                         name="cancel"
                         onclick="setCancel()"
                         type="submit"
@@ -475,11 +499,11 @@
                 </td>
             </tr>
             <tr>
-                <td><tal:block i18n:translate="admin_wfstep_nodetype">TEXT</tal:block>:</td>
+                <td><tal:block i18n:translate="admin_wfstep_col_2"> </tal:block>:</td>
                 <td tal:content="python:contenttype" i18n:translate=""/>
             </tr>
             <tr>
-                <td><tal:block i18n:translate="admin_wfstep_pretext">TEXT</tal:block>:</td>
+                <td><tal:block i18n:translate="mask_edit_header"> </tal:block>:</td>
                 <td>
                     <tal:block tal:define="content pretext; name python:'npretext'">
                         <tal:block metal:use-macro="language_dependent_textarea"/>
@@ -487,7 +511,7 @@
                 </td>
             </tr>
             <tr>
-                <td><tal:block i18n:translate="admin_wfstep_posttext">TEXT</tal:block>:</td>
+                <td><tal:block i18n:translate="mask_edit_footer"> </tal:block>:</td>
                 <td>
                     <tal:block tal:define="content posttext; name python:'nposttext'">
                         <tal:block metal:use-macro="language_dependent_textarea"/>
@@ -495,7 +519,7 @@
                 </td>
             </tr>
             <tr>
-                <td><tal:block i18n:translate="admin_wfstep_comment">TEXT</tal:block>:</td>
+                <td><tal:block i18n:translate="comment"> </tal:block>:</td>
                 <td><textarea tal:content="python:comment" name="ncomment" style="width:400px" rows="5"/></td>
             </tr>
             <tr>
@@ -543,7 +567,7 @@
                 </td>
             </tr>
             <tr>
-                <td><tal:block i18n:translate="admin_meta_writerights">TEXT</tal:block>:</td>
+                <td><tal:block i18n:translate="admin_wf_writerights"> </tal:block>:</td>
                 <td>
                     <table border="0px" cellpadding="0px" cellspacing="0px">
                         <tr>
@@ -599,8 +623,24 @@
             <tr>
                 <td>&nbsp;</td>
                 <td>
-                    <button i18n:attributes="title admin_save_title" i18n:translate="admin_save" tal:attributes="onclick python:u'selectacls(Array(\'left_readread\', \'left_writewrite\'))';" type="submit" name="submitbutton" value="submit">TEXT</button>&nbsp;&nbsp;
-                    <button i18n:attributes="title admin_cancel_title" i18n:translate="admin_cancel" type="submit" name="cancel" value="cancel" onclick="setCancel()">TEXT</button>
+                    <button
+                        i18n:attributes="title admin_save_title"
+                        i18n:translate="save"
+                        tal:attributes="onclick python:u'selectacls(Array(\'left_readread\', \'left_writewrite\'))';"
+                        type="submit"
+                        name="submitbutton"
+                        value="submit"
+                    >
+                    </button>&nbsp;&nbsp;
+                    <button
+                        i18n:attributes="title admin_cancel_title"
+                        i18n:translate="cancel"
+                        type="submit"
+                        name="cancel"
+                        value="cancel"
+                        onclick="setCancel()"
+                    >
+                    </button>
                 </td>
             </tr>
         </table>

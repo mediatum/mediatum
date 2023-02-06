@@ -7,9 +7,6 @@ msgstr "Error while loading template. See the description below for closer infor
 msgid "edit_error_msg"
 msgstr "You're not allowed to access the editor area.<br/> You can logon here: ${link}"
 
-msgid "edit_linktext"
-msgstr "here"
-
 msgid "edit_nodeinformation"
 msgstr "Node information"
 
@@ -34,18 +31,6 @@ msgstr "Error"
 msgid "edit_nobase"
 msgstr "No base directory selected (${msg})"
 
-msgid "edit_main_title"
-msgstr "mediatum"
-
-msgid "edit_save"
-msgstr "Save"
-
-msgid "edit_save_title"
-msgstr "Save changes"
-
-msgid "edit_ok"
-msgstr "OK"
-
 msgid "edit_add_collection"
 msgstr "New collection"
 
@@ -59,13 +44,10 @@ msgid "edit_files"
 msgstr "Files:"
 
 msgid "edit_action_new"
-msgstr "Create"
+msgstr "Create new"
 
 msgid "edit_object_not_viewable"
 msgstr "This object doesn't have a skin"
-
-msgid "edit_save_title"
-msgstr "Save"
 
 msgid "delete_folder_question"
 msgstr "If you delete this file, all files and subfolders in it will be irrevocably lost. Perform delete operation?"
@@ -118,9 +100,6 @@ msgstr "Home Directory"
 msgid "editor_overwrite"
 msgstr "overwrite"
 
-msgid "editor_from"
-msgstr "from"
-
 msgid "editor_to"
 msgstr "until"
 
@@ -150,17 +129,8 @@ msgstr "Empty recycle bin"
 msgid "edit_delete_container"
 msgstr "Move folder to recycle bin"
 
-msgid "e_folder_homedir"
-msgstr "Home Directory"
-
-msgid "e_folder_trashdir"
-msgstr "Recycle bin"
-
 msgid "e_folder_uploaddir"
 msgstr "Uploads"
-
-msgid "edit_common_edit_meta"
-msgstr "Edit metadata"
 
 msgid "edit_common_edit_move"
 msgstr "Move object"

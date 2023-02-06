@@ -207,13 +207,13 @@
                 </td>
             </tr>
             <tr>
-                <td><tal:block i18n:translate="admin_metafield_type">TEXT</tal:block>: <span class="required">*</span></td>
+                <td><tal:block i18n:translate="type"> </tal:block>: <span class="required">*</span></td>
                 <td>
                     <select name="mtype" id="mtype">
                         <option tal:repeat="key python:fieldtypes.keys()" tal:attributes="value key; selected python:'selected' if metafield.get('type')==key else None" tal:content="python:fieldtypes[key]" i18n:translate=""/>
                     </select>
                     &nbsp;&nbsp;&nbsp;
-                    <button tal:attributes="onclick python:'openwindow(\'./metatype/info?style=popup\')'" i18n:attributes="title admin_metafield_help_title" type="button">i</button>
+                    <button tal:attributes="onclick python:'openwindow(\'./metatype/info?style=popup\')'" i18n:attributes="title help_title" type="button">i</button>
                 </td>
             </tr>
             <tr>
@@ -231,8 +231,16 @@
             <tr>
                 <td>&nbsp;</td>
                 <td>
-                    <button i18n:translate="admin_save" i18n:attributes="title admin_save_title" type="submit" name="submit" value="submit">TEXT</button>&nbsp;&nbsp;
-                    <button i18n:translate="admin_cancel" i18n:attributes="title admin_cancel_title" type="submit" name="cancel" value="cancel" onclick="setCancel()">TEXT</button>
+                    <button i18n:translate="save" i18n:attributes="title admin_save_title" type="submit" name="submit" value="submit">TEXT</button>&nbsp;&nbsp;
+                    <button
+                        i18n:translate="cancel"
+                        i18n:attributes="title admin_cancel_title"
+                        type="submit"
+                        name="cancel"
+                        value="cancel"
+                        onclick="setCancel()"
+                    >
+                    </button>
                 </td>
             </tr>
         </table>
@@ -290,7 +298,7 @@
                 </td>
             </tr>
             <tr>
-                <td><tal:block i18n:translate="admin_metafield_type">TEXT</tal:block>: <span class="required">*</span></td>
+                <td><tal:block i18n:translate="type"> </tal:block>: <span class="required">*</span></td>
                 <td tal:content="python:fieldtypes[field.get('type')]" i18n:translate="">
                   TEXT
                 </td>
@@ -313,7 +321,7 @@
                 <td>&nbsp;</td>
                 <td>
                     <fieldset style="width:390px;">
-                        <legend i18n:translate="admin_metafield_options">TEXT</legend>
+                        <legend i18n:translate="options"> </legend>
                         <tal:block  tal:repeat="fieldoption fieldoptions">
                             <input
                                 tal:define="index python:fieldoptions.index(fieldoption)"
@@ -342,8 +350,16 @@
             <tr>
                 <td>&nbsp;</td>
                 <td>
-                    <button i18n:translate="admin_save" i18n:attributes="title admin_save_title" type="submit" name="submit" value="submit">TEXT</button>&nbsp;&nbsp;
-                    <button i18n:translate="admin_cancel" i18n:attributes="title admin_cancel_title" type="submit" name="cancel" value="cancel" onclick="setCancel()">TEXT</button>
+                    <button i18n:translate="save" i18n:attributes="title admin_save_title" type="submit" name="submit" value="submit">TEXT</button>&nbsp;&nbsp;
+                    <button
+                        i18n:translate="cancel"
+                        i18n:attributes="title admin_cancel_title"
+                        type="submit"
+                        name="cancel"
+                        value="cancel"
+                        onclick="setCancel()"
+                    >
+                    </button>
                 </td>
             </tr>
         </table>

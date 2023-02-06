@@ -1177,8 +1177,8 @@ class Mask(Node):
                 <input type="hidden" name="op" value="new"/>"""
             ret += '<input value="{}" type="hidden" name="csrf_token"/>'.format(_core_csrfform.get_token())
             ret += '<input type="hidden" name="pid" value="' + req.params.get("pid") + '"/>'
-            ret += '<div class="label">&nbsp;</div><button type="submit" name="new_" style="width:100px" i18n:translate="mask_editor_ok"> OK </button>'
-            ret += '&nbsp;&nbsp;<button type="submit" onclick="setCancel(document.myform.op)" i18n:translate="mask_editor_cancel">Abbrechen</button><br/>'
+            ret += '<div class="label">&nbsp;</div><button type="submit" name="new_" style="width:100px" i18n:translate="ok"> OK </button>'
+            ret += '&nbsp;&nbsp;<button type="submit" onclick="setCancel(document.myform.op)" i18n:translate="cancel">Abbrechen</button><br/>'
             ret += '</div></form>'
             return _tal.processTAL({}, string=ret, macro=None, request=req)
 

@@ -49,23 +49,8 @@ msgstr "${number} workflows"
 msgid "admin_fw_msg1"
 msgstr "workflow import (xml-file)"
 
-msgid "admin_wf_import"
-msgstr "Import"
-
-msgid "admin_wf_import_title"
-msgstr "Import"
-
-msgid "admin_wf_create_header"
-msgstr "create new workflow"
-
-msgid "admin_wf_edit_header"
-msgstr "edit workflow"
-
 msgid "admin_wf_writerights"
 msgstr "write access"
-
-msgid "admin_wf_description"
-msgstr "Description"
 
 msgid "admin_wf_header"
 msgstr "Node of workflow '${name}'"
@@ -127,12 +112,6 @@ msgstr "Adminstep"
 msgid "admin_wfstep_msg1"
 msgstr "will be marked in workflow overview"
 
-msgid "admin_wfstep_nodetype"
-msgstr "Node type"
-
-msgid "admin_wfstep_comment"
-msgstr "Comment"
-
 msgid "admin_wfstep_truelabel"
 msgstr "Label for 'True' operation"
 
@@ -169,17 +148,8 @@ msgstr "Email address recipient"
 msgid "admin_wfstep_email_subject"
 msgstr "Subject"
 
-msgid "admin_wfstep_email_text"
-msgstr "Text"
-
 msgid "admin_wfstep_email_text_editable"
 msgstr "Details editable?"
-
-msgid "admin_wfstep_pretext"
-msgstr "Header text"
-
-msgid "admin_wfstep_posttext"
-msgstr "Footer text"
 
 msgid "admin_wf_languages"
 msgstr "Languages"

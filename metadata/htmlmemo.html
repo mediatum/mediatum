@@ -44,8 +44,8 @@
             tal:attributes="onclick python:u'openPopup(\'/metatype/htmlmemo?name={}\', \'\', 550, 600)'.format(name)"
             style="margin-left:5px;horizontal-align:middle;min-width:20px;width:20px;padding:4px 4px"
             type="button"
-            i18n:attributes="title htmlmemo_titlepopupbutton"
-           >
+            i18n:attributes="title titlepopupbutton"
+        >
           <img src="/static/img/edit_spc.png" style="height:14px;"/>
         </button>
       </div>
@@ -90,14 +90,14 @@
             <div>
                 <div id="buttons">
                     <button
-                        i18n:attributes="title htmlmemo_bold_title"
+                        i18n:attributes="title text_bold_title"
                         type="button"
                         id="style" onclick="insert('<b>','</b>')"
                        >
                       <img src="/static/img/bold.gif" alt="bold"/>
                     </button>
                     <button
-                        i18n:attributes="title htmlmemo_italic_title"
+                        i18n:attributes="title text_italic_title"
                         type="button"
                         id="style" onclick="insert('<em>','</em>')"
                        >
@@ -111,14 +111,14 @@
                       <img src="/static/img/subscript.gif" alt="subscript"/>
                     </button>
                     <button
-                        i18n:attributes="title htmlmemo_sup_title"
+                        i18n:attributes="title text_sup_title"
                         type="button"
                         id="style" onclick="insert('<sup>','</sup>')"
                        >
                       <img src="/static/img/superscript.gif" alt="superscript"/>
                     </button>
                 </div>
-                <span i18n:translate="htmlmemo_valuelabel"/><br/><textarea
+                <span i18n:translate="valuelabel"/><br/><textarea
                     name="value"
                     id="value"
                     rows="4"
@@ -127,18 +127,18 @@
             </div>
 
             <div>
-                <span i18n:translate="htmlmemo_formatedvalue"/><br/>
+                <span i18n:translate="text_formatedvalue"/><br/>
                 <div id="formatedvalue"> </div>
                 <div style="float:right;text-align:right">
                   <button
                     type="button"
                     tal:attributes="onclick python:u'save(\'{}\')'.format(name)"
-                    i18n:translate="htmlmemo_done"
+                    i18n:translate="done"
                     > </button><br/><br/>
-                    <button type="button" onclick="window.close()" i18n:translate="htmlmemo_cancel"> </button>
+                    <button type="button" onclick="window.close()" i18n:translate="cancel"> </button>
                 </div>
             </div>
-            <div style="clear:both" i18n:translate="htmlmemo_spcchar"> </div>
+            <div style="clear:both" i18n:translate="spcchar"> </div>
             <div id="spccontainer">
                 <button
                     tal:repeat="item charmap"

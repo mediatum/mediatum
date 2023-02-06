@@ -22,15 +22,6 @@ msgstr "Thumbnail neu hochladen:"
 msgid "edit_files_add_attfile"
 msgstr "Attachment hinzufügen"
 
-msgid "edit_files_type"
-msgstr "Typ"
-
-msgid "edit_files_size"
-msgstr "Größe"
-
-msgid "edit_files_mimetype"
-msgstr "Mimetype"
-
 msgid "edit_files_location"
 msgstr "Lokation / Name"
 
@@ -45,9 +36,6 @@ msgstr "Digitales Objekt hinzufügen"
 
 msgid "edit_files_obsolete"
 msgstr "nicht verwendete Metadatenfelder"
-
-msgid "edit_files_metafields"
-msgstr "Metadatenfelder"
 
 msgid "edit_files_tech_meta"
 msgstr "technische Metadatenfelder"

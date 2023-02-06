@@ -75,7 +75,7 @@ class PrintPreview:
         canvas.drawString(
             10 * cm,
             1.9 * cm,
-            "- {} {} -".format(_core_translation.translate(self.language, "print_view_page"), doc.page),
+            "- {} {} -".format(_core_translation.translate(self.language, "page"), doc.page),
         )
         canvas.restoreState()
 

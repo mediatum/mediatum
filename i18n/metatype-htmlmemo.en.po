@@ -15,30 +15,3 @@ msgstr "open editor mask"
 
 msgid "htmlmemo_popup_title"
 msgstr "Editor mask for HTML formatted text"
-
-msgid "htmlmemo_valuelabel"
-msgstr "Value:"
-
-msgid "htmlmemo_formatedvalue"
-msgstr "Formated Value:"
-
-msgid "htmlmemo_done"
-msgstr "Done"
-
-msgid "htmlmemo_cancel"
-msgstr "Cancel"
-
-msgid "htmlmemo_spcchar"
-msgstr "Special chars:"
-
-msgid "htmlmemo_bold_title"
-msgstr "set marked text 'bold'"
-
-msgid "htmlmemo_italic_title"
-msgstr "set marked text 'italic'"
-
-msgid "htmlmemo_sub_title"
-msgstr "set marked text 'subscript'"
-
-msgid "htmlmemo_sup_title"
-msgstr "set marked text 'superscript'"

@@ -8,17 +8,8 @@ msgstr "Attributname:"
 msgid "edit_admin_add_attributevalue"
 msgstr "Attributwert:"
 
-msgid "edit_admin_add_attr"
-msgstr "Speichern"
-
 msgid "edit_admin_noattribute"
 msgstr "Kein solches Attribut für dieses Object"
-
-msgid "edit_admin_simplesearch"
-msgstr "Einfache Suche"
-
-msgid "edit_admin_extsearch"
-msgstr "Erweiterte Suche"
 
 msgid "edit_admin_textsearch"
 msgstr "Volltext Suche"

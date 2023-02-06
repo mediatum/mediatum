@@ -22,17 +22,8 @@ msgstr "Auswahlliste leeren"
 msgid "popup_clearselection"
 msgstr "Auwahl aufheben"
 
-msgid "popup_ok"
-msgstr "OK"
-
-msgid "popup_cancel"
-msgstr "Abbrechen"
-
 msgid "fieldtype_ilist"
 msgstr "Werteliste mit Index"
 
 msgid "fieldtype_ilist_desc"
 msgstr "Eingabefeld mit Index als Popup"
-
-msgid "ilist_titlepopupbutton"
-msgstr "Editiermaske öffnen"

@@ -7,12 +7,6 @@ msgstr "show index values"
 msgid "popup_index_header"
 msgstr "Existing Index values"
 
-msgid "popup_ok"
-msgstr "OK"
-
-msgid "popup_cancel"
-msgstr "Cancel"
-
 msgid "popup_listvalue_title"
 msgstr "Show list values as popup"
 
@@ -33,6 +27,3 @@ msgstr "indexlist"
 
 msgid "fieldtype_ilist_desc"
 msgstr "input field with index"
-
-msgid "ilist_titlepopupbutton"
-msgstr "open editor mask"

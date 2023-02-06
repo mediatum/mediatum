@@ -38,7 +38,10 @@
 		<!-- shown version: node is not active -->
 		<tal:block tal:condition="python:node != node.getActiveVersion() and node != node.versions[-1]" i18n:translate="document_view_current_version_from">Current version:<br/><span i18n:name="version" tal:replace="python:'Version {}'.format(tag)">Version</span> from</tal:block>
 
-		  <tal:block tal:condition="python:node.updatetime or node.creationtime" tal:replace="python:node.pretty_format_update_time"></tal:block> <tal:block i18n:translate="document_view_by" /> <tal:block tal:replace="python:node.updateuser or node.creator" /></div>
+		  <tal:block tal:condition="python:node.updatetime or node.creationtime" tal:replace="python:node.pretty_format_update_time"></tal:block>
+          <tal:block i18n:translate="document_view_from" />
+          <tal:block tal:replace="python:node.updateuser or node.creator" />
+      </div>
 		<div i18n:translate="document_view_other_versions_of_the_document">Other versions of the document:</div>
 		<!-- other versions: active node is not tagged -->
 		<tal:block tal:condition="python:not node.versions[-1].tag">

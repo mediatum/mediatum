@@ -7,9 +7,6 @@ msgstr "No workflows for processing."
 msgid "wf_edit_nosearchresults"
 msgstr "- no hits -"
 
-msgid "wf_edit_search"
-msgstr "Search"
-
 msgid "wf_edit_name"
 msgstr "Name"
 
@@ -73,9 +70,6 @@ msgstr "Select All"
 msgid "workflow_label_deselect_all"
 msgstr "Deselect All"
 
-msgid "workflow_label_select_delete"
-msgstr "Delete"
-
 msgid "workflow_label_select_move"
 msgstr "Move"
 
@@ -109,12 +103,6 @@ msgstr "Try again to send"
 msgid "workflow_filelist_type"
 msgstr "Type"
 
-msgid "workflow_filelist_size"
-msgstr "Size"
-
-msgid "workflow_filelist_mimetype"
-msgstr "Mimetype"
-
 msgid "workflow_filelist_open_title"
 msgstr "Attach file"
 
@@ -130,14 +118,8 @@ msgstr "Upload"
 msgid "workflow_step_ready_msg"
 msgstr "Objekt ${name} has reached the end of the current workflow."
 
-msgid "workflow_back"
-msgstr "Back"
-
 msgid "workflowstep_delete"
 msgstr "delete entry"
-
-msgid "workflowstep_jahrbuch"
-msgstr "data export (yearbook)"
 
 msgid "workflowstep_protect"
 msgstr "ACL protection"
@@ -157,29 +139,8 @@ msgstr "Re-Auth"
 msgid "workflowstep_fileattachment"
 msgstr "File-Attachment"
 
-msgid "WorkflowStep_ShowData"
-msgstr "editor (workflow)"
-
-msgid "WorkflowStep_Protect"
-msgstr "protect (workflow)"
-
-msgid "WorkflowStep_SendEmail"
-msgstr "email (workflow)"
-
-msgid "WorkflowStep_Publish"
-msgstr "publish (workflow)"
-
-msgid "WorkflowStep_TextPage"
-msgstr "textpage (workflow)"
-
-msgid "WorkflowStep_Delete"
-msgstr "delete (workflow)"
-
 msgid "WorkflowStep"
 msgstr "workflowstep (system type)"
-
-msgid "WorkflowStep_Start"
-msgstr "initial step (workflow)"
 
 msgid "Workflow"
 msgstr "workflow (system type)"
@@ -187,15 +148,14 @@ msgstr "workflow (system type)"
 msgid "Workflows"
 msgstr "workflows (system type)"
 
-msgid "WorkflowStep_Upload"
-msgstr "upload (workflow)"
-
-msgid "WorkflowStep_EditMetadata"
-msgstr "metadata editor (workflow)"
-
-msgid "WorkflowStep_End"
-msgstr "end node (workflow)"
-
 msgid "workflowstep_file_not_uploaded"
 msgstr "no file uploaded"
 
+msgid "admin_wfstep_destination"
+msgstr "ID of destination node"
+
+msgid "admin_wfstep_setupdatetime"
+msgstr "set updatetime"
+
+msgid "admin_wfstep_text"
+msgstr "Text"

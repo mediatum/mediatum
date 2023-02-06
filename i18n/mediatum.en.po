@@ -1,3 +1,6 @@
+msgid "mediatum_main_title"
+msgstr "mediatum"
+
 msgid "en"
 msgstr "English"
 
@@ -49,10 +52,10 @@ msgstr "Please contact support: "
 msgid "login_submit"
 msgstr "Login"
 
-msgid "login_reset"
+msgid "cancel"
 msgstr "Cancel"
 
-msgid "login_save"
+msgid "save"
 msgstr "Save"
 
 msgid "login_currentuser_msg"
@@ -109,9 +112,6 @@ msgstr "Logout current user"
 msgid "sub_header_logout"
 msgstr "Logout"
 
-msgid "sub_header_login_title"
-msgstr "Login"
-
 msgid "sub_header_login"
 msgstr "Login"
 
@@ -138,9 +138,6 @@ msgstr "Switch to workflows"
 
 msgid "sub_header_workflow"
 msgstr "Workflows"
-
-msgid "sub_header_changepwd_title"
-msgstr "Change password"
 
 msgid "sub_header_changepwd"
 msgstr "Change password"
@@ -237,18 +234,6 @@ msgstr "mask (system type)"
 
 msgid "Directory"
 msgstr "directory"
-
-msgid "directory"
-msgstr "Directory"
-
-msgid "bare_directory"
-msgstr "Directory"
-
-msgid "collection"
-msgstr "Collection"
-
-msgid "bare_collection"
-msgstr "Collection"
 
 msgid "Root"
 msgstr "root node (system type)"
@@ -355,9 +340,6 @@ msgstr "Edit search mask"
 msgid "tab_subfolder"
 msgstr "Sort subdirectories"
 
-msgid "tab_subfolder_title"
-msgstr "Sort subdirectories"
-
 msgid "tab_acls"
 msgstr "Manage rights"
 
@@ -391,9 +373,6 @@ msgstr "Manage messages"
 msgid "liststyle_list"
 msgstr "List view with thumbnails"
 
-msgid "liststyle_thumbnail"
-msgstr "Thumbnail view"
-
 msgid "items_per_page"
 msgstr "Items per page"
 
@@ -406,7 +385,7 @@ msgstr "Entries"
 msgid "print_view_list"
 msgstr "List of mediatum objects"
 
-msgid "print_view_page"
+msgid "page"
 msgstr "Page"
 
 msgid "print_preview_occurences"
@@ -427,11 +406,8 @@ msgstr "Group in new horizontal group"
 msgid "mask_editor_group_title"
 msgstr "Group"
 
-msgid "mask_editor_ok"
+msgid "ok"
 msgstr " OK "
-
-msgid "mask_editor_cancel"
-msgstr "Cancel"
 
 msgid "mask_editor_field_definition"
 msgstr "Field definition "
@@ -520,12 +496,6 @@ msgstr "Default value:"
 msgid "mask_edit_unit"
 msgstr "Unit:"
 
-msgid "mask_edit_save"
-msgstr "Save"
-
-msgid "mask_edit_cancel"
-msgstr "Cancel"
-
 msgid "mask_edit_new_hor_field"
 msgstr "Create new horizontal field"
 
@@ -610,13 +580,13 @@ msgstr "videos"
 msgid "att_browser_title"
 msgstr "Attachment browser"
 
-msgid "att_browser_type"
+msgid "type"
 msgstr "Type"
 
 msgid "att_browser_name"
 msgstr "Name"
 
-msgid "att_browser_size"
+msgid "size"
 msgstr "Size"
 
 msgid "att_browser_files"
@@ -643,9 +613,6 @@ msgstr "Search result"
 
 msgid "alternative_pdf_link"
 msgstr "If you experience problems opening the document, please try this link."
-
-msgid "popup_help_header"
-msgstr "Help"
 
 msgid "full_view"
 msgstr "Full view"
@@ -740,9 +707,6 @@ msgstr "<b>Shown version: </b><br/>Current Version from"
 msgid "document_view_other_versions_of_the_document"
 msgstr "<b>Other versions of the object:</b><br/>"
 
-msgid "document_view_by"
-msgstr "from"
-
 msgid "document_versions"
 msgstr "versions"
 
@@ -794,3 +758,27 @@ msgstr "Download"
 
 msgid "all"
 msgstr "all"
+
+msgid "comment"
+msgstr "Comment"
+
+msgid "mimetype"
+msgstr "Mimetype"
+
+msgid "done"
+msgstr "Done"
+
+msgid "hier_link"
+msgstr "hier"
+
+msgid "valuelabel"
+msgstr "Value:"
+
+msgid "spcchar"
+msgstr "Special chars:"
+
+msgid "import"
+msgstr "Import"
+
+msgid "nometa"
+msgstr "- no metadata schemes defined -"

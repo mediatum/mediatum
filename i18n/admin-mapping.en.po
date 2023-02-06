@@ -31,14 +31,8 @@ msgstr "Mapping Types:"
 msgid "admin_mapping_type"
 msgstr "Mapping Type"
 
-msgid "admin_mapping_active"
-msgstr "Active"
-
 msgid "admin_mapping_create"
 msgstr "Create new mapping"
-
-msgid "admin_mapping_fieldlist_title"
-msgstr "edit fields"
 
 msgid "admin_mapping_edit_title"
 msgstr "edit mapping"
@@ -46,32 +40,17 @@ msgstr "edit mapping"
 msgid "admin_mapping_delete_title"
 msgstr "delete mapping"
 
-msgid "admin_mapping_new_label"
-msgstr "Create new Mapping"
-
 msgid "admin_mapping_edit_label"
 msgstr "Edit Mapping"
 
 msgid "admin_mapping_name"
 msgstr "Mapping Name"
 
-msgid "admin_mapping_namespace"
-msgstr "Namespace"
-
 msgid "admin_mapping_namespaceurl"
 msgstr "Namespace URL"
 
 msgid "admin_mapping_description"
 msgstr "Description"
-
-msgid "admin_mapping_header"
-msgstr "Header"
-
-msgid "admin_mapping_footer"
-msgstr "Footer"
-
-msgid "admin_mapping_separator"
-msgstr "Separator"
 
 msgid "admin_mapping_standardformat"
 msgstr "Std. format"
@@ -84,9 +63,6 @@ msgstr "${number} Mappings"
 
 msgid "admin_mapping_msg1"
 msgstr "mapping import (xml-file)"
-
-msgid "admin_mapping_import"
-msgstr "import"
 
 msgid "admin_mapping_exportall_title"
 msgstr "export all mappings"
@@ -117,9 +93,6 @@ msgstr "Mapping field is used by:{}"
 
 msgid "admin_mappingfield_delete_title"
 msgstr "delete Mapping field"
-
-msgid "admin_mappingfield_new_label"
-msgstr "Create new Mapping field"
 
 msgid "admin_mappingfield_edit_label"
 msgstr "Edit Mapping field"

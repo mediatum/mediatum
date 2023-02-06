@@ -324,7 +324,7 @@ class UserLinks(object):
             )]
         if self.user == guest_user:
             l = [Link(
-                    "/login", _core_translation.translate(self.language, "sub_header_login_title"),
+                    "/login", _core_translation.translate(self.language, "sub_header_login"),
                     _core_translation.translate(self.language, "sub_header_login"),
                     icon="/static/img/login.png",
                 )]
@@ -356,7 +356,7 @@ class UserLinks(object):
             l.append(Link(
                     "/admin",
                     _core_translation.translate(self.language, "sub_header_administration_title"),
-                    _core_translation.translate(self.language, "sub_header_administration"),
+                    "Administration",
                     icon="/static/img/admin.gif",
                 ))
 
@@ -364,14 +364,14 @@ class UserLinks(object):
             l.append(Link(
                     "/publish/",
                     _core_translation.translate(self.language, "sub_header_workflow_title"),
-                    _core_translation.translate(self.language, "sub_header_workflow"),
+                    _core_translation.translate(self.language, "admin_menu_menuworkflow"),
                     icon="/static/img/workflow.gif",
                 ))
 
         if self.user.can_change_password:
             l.append(Link(
                     "/pwdchange",
-                    _core_translation.translate(self.language, "sub_header_changepwd_title"),
+                    _core_translation.translate(self.language, "sub_header_changepwd"),
                     _core_translation.translate(self.language, "sub_header_changepwd"),
                     "_parent",
                     icon="/static/img/changepwd.gif",

@@ -1,3 +1,6 @@
+msgid "mediatum_main_title"
+msgstr "mediatum"
+
 msgid "en"
 msgstr "Englisch"
 
@@ -52,10 +55,7 @@ msgstr "Anmelden"
 msgid "document_versions_existing_title"
 msgstr "Weitere Versionen des Dokuments anzeigen"
 
-msgid "login_reset"
-msgstr "Abbrechen"
-
-msgid "login_save"
+msgid "save"
 msgstr "Speichern"
 
 msgid "login_currentuser_msg"
@@ -113,9 +113,6 @@ msgstr "Abmelden"
 msgid "sub_header_logout"
 msgstr "Logout"
 
-msgid "sub_header_login_title"
-msgstr "Anmelden"
-
 msgid "sub_header_login"
 msgstr "Login"
 
@@ -142,9 +139,6 @@ msgstr "Zu den Workflows wechseln"
 
 msgid "sub_header_workflow"
 msgstr "Workflows"
-
-msgid "sub_header_changepwd_title"
-msgstr "Passwort ändern"
 
 msgid "sub_header_changepwd"
 msgstr "Passwort ändern"
@@ -186,7 +180,7 @@ msgid "reset_field_title"
 msgstr "Alle Felder zurücksetzen"
 
 msgid "reset_field"
-msgstr "Reset"
+msgstr "Zurücksetzen"
 
 msgid "search_simple"
 msgstr "Einfache Suche"
@@ -243,21 +237,8 @@ msgstr "Maske (Systemtyp)"
 msgid "Directory"
 msgstr "Verzeichnis"
 
-msgid "directory"
-msgstr "Verzeichnis"
-
-msgid "bare_directory"
-msgstr "Verzeichnis"
-
-msgid "collection"
-msgstr "Kollektion"
-
-msgid "bare_collection"
-msgstr "Kollektion"
-
 msgid "Root"
 msgstr "Root-Knoten (Systemtyp)"
-
 
 ### views ###
 msgid "view_list_att_title"
@@ -338,6 +319,9 @@ msgstr "Startseiten verwalten"
 msgid "tab_startpages"
 msgstr "Startseite bearbeiten"
 
+msgid "tab_metadata_dir"
+msgstr "Anzeige"
+
 msgid "tab_meta"
 msgstr "Metadaten"
 
@@ -360,9 +344,6 @@ msgid "tab_searchmask"
 msgstr "Suchmaske anlegen"
 
 msgid "tab_subfolder"
-msgstr "Unterordner sortieren"
-
-msgid "tab_subfolder_title"
 msgstr "Unterordner sortieren"
 
 msgid "tab_acls"
@@ -398,9 +379,6 @@ msgstr "Mitteilungen verwalten"
 msgid "liststyle_list"
 msgstr "Listen-Ansicht mit Thumbnail"
 
-msgid "liststyle_thumbnail"
-msgstr "Thumbnail-Ansicht"
-
 msgid "items_per_page"
 msgstr "Artikel pro Seite"
 
@@ -413,7 +391,7 @@ msgstr "Einträge"
 msgid "print_view_list"
 msgstr "Liste der Objekte"
 
-msgid "print_view_page"
+msgid "page"
 msgstr "Seite"
 
 msgid "print_preview_occurences"
@@ -435,11 +413,8 @@ msgstr "in neuer horizontaler Gruppe gruppieren"
 msgid "mask_editor_group_title"
 msgstr "Gruppieren"
 
-msgid "mask_editor_ok"
+msgid "ok"
 msgstr " OK "
-
-msgid "mask_editor_cancel"
-msgstr "Abbrechen"
 
 msgid "mask_editor_field_definition"
 msgstr "Felddefinition "
@@ -528,10 +503,7 @@ msgstr "Default-Wert:"
 msgid "mask_edit_unit"
 msgstr "Einheit:"
 
-msgid "mask_edit_save"
-msgstr "Speichern"
-
-msgid "mask_edit_cancel"
+msgid "cancel"
 msgstr "Abbrechen"
 
 msgid "mask_edit_new_hor_field"
@@ -623,13 +595,13 @@ msgstr "Videos"
 msgid "att_browser_title"
 msgstr "Attachment-Browser"
 
-msgid "att_browser_type"
+msgid "type"
 msgstr "Typ"
 
 msgid "att_browser_name"
 msgstr "Name"
 
-msgid "att_browser_size"
+msgid "size"
 msgstr "Größe"
 
 msgid "att_browser_files"
@@ -656,9 +628,6 @@ msgstr "Suchresultate"
 
 msgid "alternative_pdf_link"
 msgstr "Wenn Sie Schwierigkeiten haben, das Dokument zu öffnen, versuchen Sie auch bitte diesen Link"
-
-msgid "popup_help_header"
-msgstr "Hilfe"
 
 msgid "full_view"
 msgstr "Vollansicht"
@@ -743,9 +712,6 @@ msgstr "<b>Angezeigte Version: </b><br/>Aktuelle Version vom"
 msgid "document_view_other_versions_of_the_document"
 msgstr "<b>Andere Versionen des Dokuments:</b><br/>"
 
-msgid "document_view_by"
-msgstr "von"
-
 msgid "document_versions"
 msgstr "Versionen"
 
@@ -797,3 +763,27 @@ msgstr "Download"
 
 msgid "all"
 msgstr "alle"
+
+msgid "comment"
+msgstr "Kommentar"
+
+msgid "mimetype"
+msgstr "Mimetype"
+
+msgid "done"
+msgstr "Übernehmen"
+
+msgid "hier_link"
+msgstr "here"
+
+msgid "valuelabel"
+msgstr "Wert:"
+
+msgid "spcchar"
+msgstr "Sonderzeichen:"
+
+msgid "import"
+msgstr "Importieren"
+
+msgid "nometa"
+msgstr "- keine Metadatenschemata vorhanden -"

@@ -226,11 +226,7 @@ def getContent(req, ids):
             req.response.mimetype = "application/json"
             req.response.set_data(json.dumps(
                 dict(content=_tal.processTAL(
-                    dict(
-                        datatypes=dtypes,
-                        schemes=ret,
-                        identifier_importers=identifier_importers.values(),
-                    ),
+                    dict(datatypes=dtypes, schemes=ret),
                     file='web/edit/modules/upload.html',
                     macro="addmeta",
                     request=req,
@@ -677,6 +673,8 @@ def register_identifier_importer(uniquename, identifierImporter):
         raise KeyError("unique name %s for identifierImporter already used" % uniquename)
     else:
         identifier_importers[uniquename] = identifierImporter
+    assert tuple(identifier_importers) == ("doi_importer",)  # we only permit/support DOI import
+
 
 doi_labels = dict(
     de=[

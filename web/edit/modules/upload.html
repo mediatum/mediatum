@@ -171,12 +171,11 @@
           <select name="identifier_importer" id="identifier_importer" onchange="disenableInput(this.selectedIndex)">
               <option value="-1" i18n:translate="edit_upload_importerselection">TEXT</option>
               <tal:block tal:repeat="identifier_importer identifier_importers">
-                  <option i18n:translate="" tal:attributes="value python:identifier_importer.name"
-                  tal:content="python:identifier_importer.get('labels', {}).get(language, {}).get('identifier_importer_longname', 'identifier_importer_longname')"/>
+                  <option i18n:translate="identifier_importer_longname" tal:attributes="value python:identifier_importer.name"/>
               </tal:block>
           </select>
           <div id="identifier_subform">
-          <p tal:content="structure python:identifier_importers[0].get('labels', {}).get(language, {}).get('identifier_importer_explain', 'identifier_importer_explain')">TEXT</p>
+          <p i18n:translate="identifier_importer_explain"> </p>
           <div class="label"><tal:block i18n:translate="edit_upload_or_doi">TEXT</tal:block>:</div>
           <input id="input_identifier" type="text" name="input_identifier" disabled="disabled"/>
           <p class="mediatum_subform_identifier_text">
@@ -186,7 +185,7 @@
       </div>
 
       <div tal:condition="python:len(identifier_importers)==1">
-          <p tal:content="structure python:identifier_importers[0].get('labels', {}).get(language, {}).get('identifier_importer_explain', 'identifier_importer_explain')">TEXT</p>
+          <p i18n:translate="identifier_importer_explain"> </p>
           <input type="hidden" name="identifier_importer" id="identifier_importer" tal:attributes="value python:identifier_importers[0].name"/>
           <input id="input_identifier" type="text" name="input_identifier" />
           <input id="dummy" type="text" name="" disabled="disabled"/>

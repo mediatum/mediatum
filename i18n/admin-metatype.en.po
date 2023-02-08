@@ -79,12 +79,6 @@ msgstr "Name already assigned."
 msgid "admin_meta_error_3"
 msgstr "Name already assigned."
 
-msgid "admin_meta_index_state_ok"
-msgstr "OK"
-
-msgid "admin_meta_index_state_title"
-msgstr "index for schema corrupt"
-
 msgid "admin_meta_id"
 msgstr "ID"
 
@@ -126,15 +120,6 @@ msgstr "Schema-ID"
 
 msgid "admin_metatype_filter_name"
 msgstr "Name"
-
-msgid "admin_metatype_reindex_title"
-msgstr "Search index for current schema is not active, update:"
-
-msgid "admin_metatype_reindex_button"
-msgstr "Reindex"
-
-msgid "admin_metatype_index_ok"
-msgstr "Search index for current schema is active."
 
 ### metatype info popup ###
 msgid "admin_infopopup_title"

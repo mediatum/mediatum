@@ -27,9 +27,6 @@ msgstr "Name"
 msgid "admin_wf_display_name_attribute"
 msgstr "Anzeigename-Attribut"
 
-msgid "admin_wf_acl_title"
-msgstr "Workflow besitzt ACL-Regel"
-
 msgid "admin_wf_nowf"
 msgstr "- keine Workflows vorhanden -"
 
@@ -69,9 +66,6 @@ msgstr "Workflow bearbeiten"
 msgid "admin_wf_writerights"
 msgstr "Schreibrechte"
 
-msgid "admin_wf_nolimit"
-msgstr "-keine Einschränkungen-"
-
 msgid "admin_wf_description"
 msgstr "Beschreibung"
 
@@ -101,9 +95,6 @@ msgstr "ACL (lesen)"
 
 msgid "admin_wfstep_col_7"
 msgstr "ACL (schreiben)"
-
-msgid "admin_wfstep_acl_title"
-msgstr "Schritt besitzt ACL-Regel"
 
 msgid "admin_wfstep_new_title"
 msgstr "Neuen Knoten anlegen"
@@ -167,12 +158,6 @@ msgstr "Workflow Definition"
 
 msgid "admin_wfstep_editor_mask"
 msgstr "Editor-Maske"
-
-msgid "admin_wfstep_text_before_data"
-msgstr "Text vor den Daten"
-
-msgid "admin_wfstep_text_after_data"
-msgstr "Text nach den Daten"
 
 msgid "admin_wfstep_masks_to_display"
 msgstr "anzuzeigende Masken (;-separiert)"

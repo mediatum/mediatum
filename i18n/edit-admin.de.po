@@ -1,10 +1,4 @@
 ### edit admin ###
-msgid "edit_admin_setdirty_title"
-msgstr "Knoten für Reindizierung markieren"
-
-msgid "edit_admin_localread_del_title"
-msgstr "Localread neu setzen (ACL-Rechte Cache)"
-
 msgid "edit_admin_add_attribute"
 msgstr "Neues Attribut erzeugen"
 
@@ -19,12 +13,6 @@ msgstr "Speichern"
 
 msgid "edit_admin_noattribute"
 msgstr "Kein solches Attribut für dieses Object"
-
-msgid "edit_admin_searchdata"
-msgstr "Suchindex-Daten"
-
-msgid "edit_admin_index_button"
-msgstr "Daten laden"
 
 msgid "edit_admin_simplesearch"
 msgstr "Einfache Suche"

@@ -1,13 +1,4 @@
 ### edit FCKeditor custom file manager ###
-msgid "edit_fckeditor_cfm_filetype"
-msgstr "Typ"
-
-msgid "edit_fckeditor_cfm_filesize"
-msgstr "Größe"
-
-msgid "edit_fckeditor_cfm_mimetype"
-msgstr "Mimetype"
-
 msgid "edit_fckeditor_cfm_nameonserver"
 msgstr "Name auf Server"
 
@@ -20,17 +11,8 @@ msgstr "Bild durch Anklicken auswählen"
 msgid "edit_fckeditor_cfm_hasnoimages"
 msgstr "Es sind noch keine Bilder für diese Seite hochgeladen. Bitte zuerst ein Bild hochladen."
 
-msgid "edit_fckeditor_cfm_closewindow"
-msgstr "Fenster schließen"
-
 msgid "edit_fckeditor_cfm_imageislogo"
 msgstr "Bild ist Logo"
-
-msgid "edit_fckeditor_cfm_uploadexplain"
-msgstr "Sie können eine neue Datei für diesen Node hochladen:"
-
-msgid "edit_fckeditor_cfm_uploadbutton"
-msgstr "auf Server hochladen"
 
 msgid "edit_fckeditor_cfm_deleteconfirm"
 msgstr "Wollen Sie diese Datei wirklich löschen?"
@@ -53,15 +35,6 @@ msgstr "diese Seite vom Server löschen"
 
 msgid "edit_startpages_savechanges"
 msgstr "Änderungen speichern"
-
-msgid "edit_startpages_file_missing"
-msgstr "Datei konnte nicht geöffnet werden: ${filename}"
-
-msgid "edit_startpages_reset"
-msgstr "Zurücksetzen"
-
-msgid "edit_startpages_explain_addbutton"
-msgstr "Klicken Sie auf den Schalter, um eine neue Seite im HTML-Editor zu bearbeiten."
 
 msgid "edit_startpages_addnew"
 msgstr "Neue Seite erzeugen"

@@ -4,26 +4,14 @@ msgstr "print current page"
 msgid "admin_menu_menumain"
 msgstr "Main Menu"
 
-msgid "admin_menu_start"
-msgstr "Start"
-
 msgid "admin_menu_menuuser"
 msgstr "User administration"
-
-msgid "admin_menu_menuuser_description"
-msgstr "Maintenance of Usergroups and Users"
-
-msgid "admin_menu_usergroup"
-msgstr "Usergroups"
 
 msgid "admin_menu_user"
 msgstr "Users"
 
 msgid "admin_menu_menuacl"
 msgstr "Access Rights"
-
-msgid "admin_menu_menuacl_description"
-msgstr "Maintenance of ACL-rules"
 
 msgid "admin_menu_acls"
 msgstr "ACL editor"
@@ -51,15 +39,6 @@ msgstr "Workflow"
 
 msgid "admin_menu_menusystem"
 msgstr "System"
-
-msgid "admin_menu_menusystem_description"
-msgstr "Maintenance of System Options"
-
-msgid "admin_menu_logfile"
-msgstr "Log Files"
-
-msgid "admin_menu_flush"
-msgstr "Caches"
 
 msgid "admin_error"
 msgstr "You're not allowed to access the administration area.<br/> You can logon here: ${link}"
@@ -117,54 +96,6 @@ msgstr "mediaTUM Administration Interface"
 
 msgid "admin_filter_label"
 msgstr "Filter:"
-
-msgid "e_acls"
-msgstr "acl-functions"
-
-msgid "e_classes"
-msgstr "classifiaction"
-
-msgid "e_editor"
-msgstr "html editor (start page)"
-
-msgid "e_files"
-msgstr "technical metadata"
-
-msgid "e_license"
-msgstr "license functions"
-
-msgid "e_logo"
-msgstr "logo functions"
-
-msgid "e_metadata"
-msgstr "metadata editor"
-
-msgid "e_search"
-msgstr "search"
-
-msgid "e_searchmask"
-msgstr "search mask functions"
-
-msgid "e_sort"
-msgstr "sort functions"
-
-msgid "e_sortfiles"
-msgstr "file sort functions"
-
-msgid "e_subfolder"
-msgstr "sort subfolder"
-
-msgid "e_upload"
-msgstr "file upload"
-
-msgid "e_workflow"
-msgstr "workflow functions"
-
-msgid "e_publish"
-msgstr "publishing"
-
-msgid "e_changeschema"
-msgstr "schema type change"
 
 msgid "admin_filter_all"
 msgstr "all"

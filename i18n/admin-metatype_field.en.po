@@ -64,15 +64,6 @@ msgstr "Type"
 msgid "admin_metafield_help_title"
 msgstr "Show help"
 
-msgid "admin_metafield_listvalues"
-msgstr "List values"
-
-msgid "admin_metafield_dateformat"
-msgstr "Date-/Time-format"
-
-msgid "admin_memofield_maxlength"
-msgstr "max. length"
-
 msgid "htmlmemo_wysiwyg"
 msgstr "WYSIYG"
 
@@ -96,9 +87,6 @@ msgstr "Date long (dd.mm.yyyy hh:mm:ss)"
 
 msgid "admin_metafield_fields"
 msgstr "Metadata fields"
-
-msgid "admin_metafields_techfields"
-msgstr "Technical metadata field"
 
 msgid "admin_metafield_description"
 msgstr "Description"

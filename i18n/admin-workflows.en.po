@@ -25,9 +25,6 @@ msgstr "Name"
 msgid "admin_wf_display_name_attribute"
 msgstr "Display name attribute"
 
-msgid "admin_wf_acl_title"
-msgstr "workflow uses ACL-rule"
-
 msgid "admin_wf_nowf"
 msgstr "- no workflows defined -"
 
@@ -67,9 +64,6 @@ msgstr "edit workflow"
 msgid "admin_wf_writerights"
 msgstr "write access"
 
-msgid "admin_wf_nolimit"
-msgstr "-no limitation-"
-
 msgid "admin_wf_description"
 msgstr "Description"
 
@@ -99,9 +93,6 @@ msgstr "ACL (read)"
 
 msgid "admin_wfstep_col_7"
 msgstr "ACL (write)"
-
-msgid "admin_wfstep_acl_title"
-msgstr "step uses ACL-rule"
 
 msgid "admin_wfstep_new_title"
 msgstr "Create new node"
@@ -165,12 +156,6 @@ msgstr "Workflow definition"
 
 msgid "admin_wfstep_editor_mask"
 msgstr "Editor mask"
-
-msgid "admin_wfstep_text_before_data"
-msgstr "Text before data"
-
-msgid "admin_wfstep_text_after_data"
-msgstr "Text after data"
 
 msgid "admin_wfstep_masks_to_display"
 msgstr "Masks to display (;-separated list)"

@@ -43,23 +43,11 @@ msgstr "Generate new version"
 msgid "create_version_version"
 msgstr "Version"
 
-msgid "edit_meta_delete"
-msgstr "Delete"
-
-msgid "edit_meta_restore"
-msgstr "Restore"
-
 msgid "create_version_timestamp_comment"
 msgstr "Timestamp / Comment"
 
 msgid "create_version_updateduser"
 msgstr "Updated user"
-
-msgid "edit_meta_delete_confirm"
-msgstr "Do you really want to delete version ${version}?"
-
-msgid "edit_meta_restore_confirm"
-msgstr "Do you really want to restore version ${version}?"
 
 msgid "edit_meta_count_of_nodes"
 msgstr "${number} record(s) are being edited"

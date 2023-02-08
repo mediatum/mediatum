@@ -10,9 +10,6 @@ msgstr "Willkommen auf mediaTUM"
 msgid "username:"
 msgstr "Benutzername:"
 
-msgid "tum_username:"
-msgstr "Benutzername / TUM-Kennung:"
-
 msgid "password:"
 msgstr "Passwort:"
 
@@ -36,9 +33,6 @@ msgstr "Benutzer"
 
 msgid "footer_impressum"
 msgstr "Impressum"
-
-msgid "help_link"
-msgstr "Hilfe"
 
 msgid "help_title"
 msgstr "Hilfe anzeigen"
@@ -88,45 +82,6 @@ msgstr "Neues Passwort (Wiederholung):"
 msgid "pwdforgotten_link"
 msgstr "Passwort vergessen?"
 
-msgid "pwdforgotten_explain_procedure"
-msgstr "Um ein neues Passwort zu erhalten, geben Sie bitte Ihren Benutzernamen ein. Ein neues Passwort und ein Link zur Aktivierung werden dann an Ihre E-Mail-Adresse gesandt."
-
-msgid "tum_pwdforgotten_explain_procedure"
-msgstr "Um ein neues Passwort zu erhalten, geben Sie bitte Ihren Benutzernamen ein. Ein neues Passwort und ein Link zur Aktivierung werden dann an Ihre E-Mail-Adresse gesandt. Dies gilt nur für mediaTUM-interne Benutzernamen. Bei Problemen mit Ihrer TUM-Kennung und dem zugehörigen Passwort wenden Sie sich bitte an TUMonline."
-
-msgid "pwdforgotten_username:"
-msgstr "Benutzername:"
-
-msgid "pwdforgotten_submit"
-msgstr "Absenden"
-
-msgid "pwdforgotten_cancel"
-msgstr "Zurück"
-
-msgid "pwdforgotten_butmailnowsent"
-msgstr "Ein neues Passwort und ein Link zur Aktivierung wurden an Ihre Email-Adresse gesandt."
-
-msgid "pwdforgotten_noentry"
-msgstr "Keine Eingabe"
-
-msgid "pwdforgotten_nosuchuser"
-msgstr "Benutzername nicht gefunden"
-
-msgid "pwdforgotten_password_activated"
-msgstr "Neues Passwort aktiviert für Benutzer: "
-
-msgid "pwdforgotten_password_invalid_key"
-msgstr "Ungültiger Schlüssel: falscher oder bereits genutzter Schlüssel"
-
-msgid "pwdforgotten_email_subject"
-msgstr "Ihr mediaTUM-Zugang: neues Passwort angefordert"
-
-msgid "pwdforgotten_emailsenderror"
-msgstr "Fehler beim Versenden der Email"
-
-msgid "pwdforgotten_excludedgroup"
-msgstr "Der Benutzername ist einer Gruppe zugeordnet, für die diese Anfrage ausgeschlossen wurde. Sie müßten die AdministratorInnen kontaktieren, um ein neues Passwort zu erhalten."
-
 msgid "hint"
 msgstr "Hinweis: "
 
@@ -149,9 +104,6 @@ msgid "sort_label2"
 msgstr "und:"
 
 # sub_header
-msgid "sub_header_help_title"
-msgstr "Zur Dokumentation wechseln"
-
 msgid "sub_header_help"
 msgstr "Hilfe"
 
@@ -179,17 +131,11 @@ msgstr "Zur Bearbeitungsoberfläche wechseln"
 msgid "sub_header_edit"
 msgstr "Bearbeiten"
 
-msgid "sub_header_inquest_title"
-msgstr "Zur Rechercheoberfläche wechseln"
-
 msgid "sub_header_frontend_title"
 msgstr "Zur Rechercheoberfläche wechseln"
 
 msgid "sub_header_server_status"
 msgstr "server status"
-
-msgid "sub_header_inquest"
-msgstr "Recherche"
 
 msgid "sub_header_workflow_title"
 msgstr "Zu den Workflows wechseln"
@@ -236,9 +182,6 @@ msgstr "Suche nach"
 msgid "search_in"
 msgstr "Suche in"
 
-msgid "search_result_header"
-msgstr "Ihr(e) Suchbegriff(e) \" ${searchstring} \" wurde(n) in folgenden Kollektionen gefunden:"
-
 msgid "reset_field_title"
 msgstr "Alle Felder zurücksetzen"
 
@@ -251,9 +194,6 @@ msgstr "Einfache Suche"
 msgid "collections"
 msgstr "Kollektionen"
 
-msgid "collection_title"
-msgstr "Kollektion anzeigen"
-
 msgid "fold"
 msgstr "Zuklappen"
 
@@ -265,9 +205,6 @@ msgstr "Zurück zum Anfang der Trefferliste"
 
 msgid "back"
 msgstr "Zurück"
-
-msgid "search_hit"
-msgstr "Treffer"
 
 ### datatypes ###
 msgid "Dissertation"
@@ -284,9 +221,6 @@ msgstr "BenutzerGruppen (Systemtyp)"
 
 msgid "Metadatatype"
 msgstr "Metadatenschema (Systemtyp)"
-
-msgid "Metadatafield"
-msgstr "Metadatenfeld (Systemtyp)"
 
 msgid "Maskitem"
 msgstr "Maskenfeld (Systemtyp)"
@@ -336,9 +270,6 @@ msgstr "Hochaufgelöste Version herunterladen"
 msgid "image_available_formats"
 msgstr "Verfügbare Bildformate"
 
-msgid "image_high_res_load"
-msgstr "  Datei wird geladen..."
-
 msgid "image_high_res_archive"
 msgstr "Hochaufgelöste Version aus Archiv laden"
 
@@ -351,94 +282,13 @@ msgstr "BibTeX Informationen in neuem Fenster öffnen"
 msgid "doc_att_browser"
 msgstr "Attachment-Browser öffnen..."
 
-#########################################
-
-msgid "sqlite_type"
-msgstr "Typ:"
-
-msgid "sqlite_name"
-msgstr "Name:"
-
-msgid "sqlite_tbl_name"
-msgstr "Tabellenname:"
-
-msgid "sqlite_rootpage"
-msgstr "Rootpage:"
-
-msgid "sqlite_sql"
-msgstr "SQL:"
-
-msgid "mysql_name"
-msgstr "Tabellenname:"
-
-msgid "mysql_engine"
-msgstr "Typ:"
-
-msgid "mysql_version"
-msgstr "Version:"
-
-msgid "mysql_row_format"
-msgstr "Zeilenformat:"
-
-msgid "mysql_rows"
-msgstr "Datensätze:"
-
-msgid "mysql_avg_row_length"
-msgstr "Durchschn. Zeilenlänge:"
-
-msgid "mysql_data_length"
-msgstr "Größe (Daten):"
-
-msgid "mysql_max_data_length"
-msgstr "Max. Datenlänge:"
-
-msgid "mysql_index_length"
-msgstr "Größe (Index):"
-
-msgid "mysql_data_free"
-msgstr "Freieinträge:"
-
-msgid "mysql_auto_increment"
-msgstr "Autowert:"
-
-msgid "mysql_create_time"
-msgstr "Erstelldatum:"
-
-msgid "mysql_update_time"
-msgstr "Aktualisierungsdatum:"
-
-msgid "mysql_check_time"
-msgstr "Prüfdatum:"
-
-msgid "mysql_collation"
-msgstr "Kodierung:"
-
-msgid "mysql_checksum"
-msgstr "Prüfsumme:"
-
-msgid "mysql_create_options"
-msgstr "Erstelloptionen:"
-
-msgid "mysql_comment"
-msgstr "Bemerkung:"
-
-
 ### popup help###
 msgid "popup_help_title"
 msgstr "Hilfe zum Metadatenfeld "
 
 ### edit tabs ###
-msgid "tab_menulayout"
-msgstr "Verzeichnis-Übersicht"
-
-msgid "tab_metadata_col"
-msgstr "Konfiguration"
-
 msgid "tab_menuoperation"
 msgstr "Spezialfunktionen"
-
-msgid "tab_menusecurity"
-msgstr "Berechtigungen"
 
 msgid "tab_upload"
 msgstr "Uploads"
@@ -479,9 +329,6 @@ msgstr "Alle Datensätze markieren"
 msgid "tab_marknone"
 msgstr "Markierung aufheben"
 
-msgid "tab_markinvert"
-msgstr "Markierung invertieren"
-
 msgid "tab_editor"
 msgstr "Startseite editieren"
 
@@ -491,26 +338,11 @@ msgstr "Startseiten verwalten"
 msgid "tab_startpages"
 msgstr "Startseite bearbeiten"
 
-msgid "tab_metadata_dir"
-msgstr "Anzeige"
-
-msgid "tab_techmeta"
-msgstr "Technische Metadaten"
-
 msgid "tab_meta"
 msgstr "Metadaten"
 
 msgid "tab_logo"
 msgstr "Logo editieren"
-
-msgid "tab_editor_title"
-msgstr "HTML-Seiten bearbeiten"
-
-msgid "tab_html_title"
-msgstr "HTML-Seiten bearbeiten"
-
-msgid "tab_upload_title"
-msgstr "Upload-Bereich anzeigen"
 
 msgid "tab_metadata"
 msgstr "Metadaten bearbeiten"
@@ -518,20 +350,11 @@ msgstr "Metadaten bearbeiten"
 msgid "tab_menumetadata"
 msgstr "Metadaten bearbeiten"
 
-msgid "tab_meta_title"
-msgstr "Metadateneditor anzeigen"
-
 msgid "tab_content"
 msgstr "Verzeichnis-Übersicht"
 
-msgid "tab_content_title"
-msgstr "Inhalt anzeigen"
-
 msgid "tab_search"
 msgstr "Durchsuchen"
-
-msgid "tab_search_title"
-msgstr "Suche anzeigen"
 
 msgid "tab_searchmask"
 msgstr "Suchmaske anlegen"
@@ -545,38 +368,17 @@ msgstr "Unterordner sortieren"
 msgid "tab_acls"
 msgstr "Rechte vergeben"
 
-msgid "tab_acls_title"
-msgstr "Rechte bearbeiten"
-
-msgid "tab_menusortnodes"
-msgstr "Einstellungen: Datensätze sortieren"
-
 msgid "tab_files"
 msgstr "Datei hinzufügen"
-
-msgid "tab_files_title"
-msgstr "Technische Metadaten anzeigen"
-
-msgid "tab_files_obj"
-msgstr "digitale Objekte austauschen/hinzufügen"
 
 msgid "tab_view"
 msgstr "Vorschau"
 
-msgid "tab_view_title"
-msgstr "Vorschau auf späteres Aussehen in Recherche"
-
 msgid "tab_workflow"
 msgstr "Workflow"
 
-msgid "tab_workflow_title"
-msgstr "Workflow anzeigen"
-
 msgid "tab_classes"
 msgstr "Verzeichnisbaum"
-
-msgid "tab_classes_title"
-msgstr "Klassifizierung anzeigen"
 
 msgid "tab_admin"
 msgstr "Administration"
@@ -584,38 +386,14 @@ msgstr "Administration"
 msgid "tab_version"
 msgstr "Versionierung"
 
-msgid "tab_imports"
-msgstr "Upload"
-
 msgid "tab_publish"
 msgstr "Publizieren"
-
-msgid "tab_statsaccess"
-msgstr "Zugriffsstatistiken"
 
 msgid "tab_statsfiles"
 msgstr "Datenstatistiken"
 
-msgid "tab_meta_col"
-msgstr "Anzeigen"
-
-msgid "tab_meta_dir"
-msgstr "Anzeigen"
-
-msgid "tab_techmeta_title"
-msgstr "Technische Metadaten anzeigen"
-
-msgid "tab_html"
-msgstr "Startseite bearbeiten"
-
-msgid "tab_techmeta_obj"
-msgstr "Digitales Objekt bearbeiten"
-
 msgid "tab_news"
 msgstr "Mitteilungen verwalten"
-
-msgid "tab_identifier"
-msgstr "Objektidentifikator erzeugen"
 
 msgid "liststyle_list"
 msgstr "Listen-Ansicht mit Thumbnail"
@@ -625,12 +403,6 @@ msgstr "Thumbnail-Ansicht"
 
 msgid "items_per_page"
 msgstr "Artikel pro Seite"
-
-msgid "full_standard_doc_title"
-msgstr "Default-Ansicht für Dokumente"
-
-msgid "full_text_doc_title"
-msgstr "Text-Ansicht für Dokumente"
 
 msgid "print_view_header"
 msgstr "mediaTUM-Objekt"
@@ -823,12 +595,6 @@ msgstr "Freie Formatbeschreibung"
 msgid "mask_edit_attribute_description"
 msgstr "mögliche Variablen:<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* [value] = Attributwert aus 'Feld'<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* [att:field] = Attributfeldname<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* [att:id] = Knoten-ID<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (&lt;[att:field]&gt;[value]&lt;/[att:field]&gt;)"
 
-msgid "PostprocessingError_document"
-msgstr "Der Upload des Dokuments konnte nicht durchgeführt werden.<br/>Bitte überprüfen Sie, ob das PDF evtl. kopiergeschützt oder beschädigt ist."
-
-msgid "EncryptionError_document"
-msgstr "Der Upload des Dokuments konnte nicht durchgeführt werden., da Ihr PDF kopiergeschützt ist. Bitte entfernen Sie den Schutz und versuchen den Upload erneut."
-
 msgid "Your_browser_doesnt_support_cookies"
 msgstr "Ihr Browser unterstützt leider keine Cookies. Möglicherweise ist der Cookie-Support im Browser abgeschaltet. Ohne Cookies werden Sie auf späteren Seiten evtl. auf Probleme stoßen."
 
@@ -869,25 +635,12 @@ msgstr "Größe"
 msgid "att_browser_files"
 msgstr " Dateien"
 
-msgid "video_showvideo"
-msgstr "Video ansehen"
-
 ####################################
-
-msgid "search_result_text"
-msgstr "Gesucht wurde in folgenden Kollektionen:"
-
 msgid "error_msg_objectnotfound"
 msgstr "Fehler auf der Seite, Objekt nicht vorhanden bzw. kein Zugriffsrecht auf das gewünschte Objekt."
 
-msgid "error_msg_startpage_not_found"
-msgstr "Fehler auf der Seite, Startseite ist konfiguriert, kann aber nicht gefunden werden"
-
 msgid "home_link"
 msgstr "zur Startseite"
-
-msgid "list_link"
-msgstr "Zum Inhalt der Seite als Liste"
 
 msgid "content_text_file_title"
 msgstr "digitales Objekt vorhanden"
@@ -910,23 +663,11 @@ msgstr "Hilfe"
 msgid "full_view"
 msgstr "Vollansicht"
 
-msgid "this_link"
-msgstr "diesen Link"
-
-msgid "tab_globals"
-msgstr "Globale Einstellungen"
-
 msgid "settings"
 msgstr "Einstellungen"
 
 msgid "style"
 msgstr "Kurzanzeigeformat:"
-
-msgid "dont_display_logo"
-msgstr "Kein Logo Anzeigen"
-
-msgid "no_extended_search"
-msgstr "Keine erweiterte Suche"
 
 msgid "full_view_style"
 msgstr "Vollanzeigeformat:"
@@ -934,38 +675,17 @@ msgstr "Vollanzeigeformat:"
 msgid "node_name"
 msgstr "Name:"
 
-msgid "no_extsearch"
-msgstr "keine erweiterte Suche:"
-
 msgid "fieldname"
 msgstr "Feldname"
 
 msgid "none"
 msgstr "keine"
 
-msgid "from_parent"
-msgstr "vererbt"
-
-msgid "define_new"
-msgstr "neu definieren"
-
-msgid "search_mask"
-msgstr "Suchmaske"
-
-msgid "search_field"
-msgstr "Suchfeld"
-
 msgid "schema"
 msgstr "Schema"
 
 msgid "field"
 msgstr "Feld"
-
-msgid "append_new_field"
-msgstr "Neues Suchfeld anlegen"
-
-msgid "Search_within_the_following_fields:"
-msgstr "Folgende Felder durchsuchen:"
 
 msgid "add"
 msgstr "hinzufügen"
@@ -984,132 +704,11 @@ msgstr "Jahrbuch"
 msgid "intern"
 msgstr "Intern"
 
-########## colors
-msgid "color_black"
-msgstr "Schwarz"
-
-msgid "color_red"
-msgstr "Rot"
-
-msgid "color_blue"
-msgstr "Blau"
-
-msgid "color_green"
-msgstr "Grün"
-
-msgid "view_yes"
-msgstr "ja"
-
 msgid "view_no"
 msgstr "nein"
 
-msgid "style_normal"
-msgstr "normal"
-
-msgid "style_bold"
-msgstr "fett"
-
-msgid "style_italic"
-msgstr "kursiv"
-
-msgid "style_bold_italic"
-msgstr "fett + kursiv"
-
-msgid "field_msg_text"
-msgstr "Text:"
-
-msgid "field_msg_style"
-msgstr "Stil:"
-
-msgid "field_msg_view"
-msgstr "Anzeigen:"
-
-msgid "field_msg_color"
-msgstr "Farbe/Stil:"
-
 msgid "show_all"
 msgstr "alle anzeigen"
-
-msgid "show_pages"
-msgstr "seitenweise anzeigen"
-
-msgid "monthname_1_short"
-msgstr "Jan"
-
-msgid "monthname_2_short"
-msgstr "Feb"
-
-msgid "monthname_3_short"
-msgstr "Mär"
-
-msgid "monthname_4_short"
-msgstr "Apr"
-
-msgid "monthname_5_short"
-msgstr "Mai"
-
-msgid "monthname_6_short"
-msgstr "Jun"
-
-msgid "monthname_7_short"
-msgstr "Jul"
-
-msgid "monthname_8_short"
-msgstr "Aug"
-
-msgid "monthname_9_short"
-msgstr "Sep"
-
-msgid "monthname_10_short"
-msgstr "Okt"
-
-msgid "monthname_11_short"
-msgstr "Nov"
-
-msgid "monthname_12_short"
-msgstr "Dez"
-
-msgid "dayname_0_short"
-msgstr "Mo"
-
-msgid "dayname_1_short"
-msgstr "Di"
-
-msgid "dayname_2_short"
-msgstr "Mi"
-
-msgid "dayname_3_short"
-msgstr "Do"
-
-msgid "dayname_4_short"
-msgstr "Fr"
-
-msgid "dayname_5_short"
-msgstr "Sa"
-
-msgid "dayname_6_short"
-msgstr "So"
-
-msgid "dayname_0_long"
-msgstr "Montag"
-
-msgid "dayname_1_long"
-msgstr "Dienstag"
-
-msgid "dayname_2_long"
-msgstr "Mittwoch"
-
-msgid "dayname_3_long"
-msgstr "Donnerstag"
-
-msgid "dayname_4_long"
-msgstr "Freitag"
-
-msgid "dayname_5_long"
-msgstr "Samstag"
-
-msgid "dayname_6_long"
-msgstr "Sonntag"
 
 msgid "document_view"
 msgstr "Dokument-Ansicht"
@@ -1120,17 +719,8 @@ msgstr "Textansicht"
 msgid "list_view"
 msgstr "Listenansicht"
 
-msgid "thumb_view"
-msgstr "Thumbnail-Ansicht"
-
-msgid "text_view"
-msgstr "Text-Ansicht"
-
 msgid "image_view"
 msgstr "Bild/Text-Ansicht"
-
-msgid "image_view_big"
-msgstr "Bild-Ansicht"
 
 msgid "document_view_new_version_exist"
 msgstr "Es ist eine neuere Version des gewünschten Dokuments verfügbar."
@@ -1159,22 +749,13 @@ msgstr "von"
 msgid "document_versions"
 msgstr "Versionen"
 
-msgid "document_new_version_comment"
-msgstr "Änderungen an den Metadaten"
-
 msgid "details"
 msgstr "Details"
 
 msgid "details_colon"
 msgstr "Details:"
 
-msgid "further_details_colon"
-msgstr "weitere Details:"
-
 ###### scholar
-msgid "show_all_years"
-msgstr "Alle"
-
 msgid "year"
 msgstr "Jahr:"
 

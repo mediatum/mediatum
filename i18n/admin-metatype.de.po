@@ -79,12 +79,6 @@ msgstr "Ein Metadatenschema mit gleichem Namen ist bereits vorhanden."
 msgid "admin_meta_error_3"
 msgstr "Ein Metadatenschema mit gleichem Namen ist bereits für diesen Metadatentyp vorhanden."
 
-msgid "admin_meta_index_state_ok"
-msgstr "OK"
-
-msgid "admin_meta_index_state_title"
-msgstr "Index für Schema nicht synchron"
-
 msgid "admin_meta_id"
 msgstr "ID"
 
@@ -126,15 +120,6 @@ msgstr "Schema-ID"
 
 msgid "admin_metatype_filter_name"
 msgstr "Name"
-
-msgid "admin_metatype_reindex_title"
-msgstr "Der Suchindex für das aktuelle Schema ist nicht aktuell, erneuern:"
-
-msgid "admin_metatype_reindex_button"
-msgstr "Reindex"
-
-msgid "admin_metatype_index_ok"
-msgstr "Der Suchindex für das aktuelle Metadatenschema ist aktuell."
 
 ### metatype info popup ###
 msgid "admin_infopopup_title"

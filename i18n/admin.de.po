@@ -5,26 +5,14 @@ msgstr "Aktuelle Seite drucken"
 msgid "admin_menu_menumain"
 msgstr "Hauptmenü"
 
-msgid "admin_menu_start"
-msgstr "Start"
-
 msgid "admin_menu_menuuser"
 msgstr "Benutzerverwaltung"
-
-msgid "admin_menu_menuuser_description"
-msgstr "Verwaltung von Benutzern und Gruppen"
-
-msgid "admin_menu_usergroup"
-msgstr "Benutzergruppe"
 
 msgid "admin_menu_user"
 msgstr "Benutzer"
 
 msgid "admin_menu_menuacl"
 msgstr "Zugriffsrechte"
-
-msgid "admin_menu_menuacl_description"
-msgstr "Verwaltung der ACL-Regeln"
 
 msgid "admin_menu_acls"
 msgstr "ACL Editor"
@@ -52,15 +40,6 @@ msgstr "Workflow"
 
 msgid "admin_menu_menusystem"
 msgstr "System-Einstellungen"
-
-msgid "admin_menu_menusystem_description"
-msgstr "Verwaltung der Systemeinstellungen"
-
-msgid "admin_menu_logfile"
-msgstr "Log-Dateien"
-
-msgid "admin_menu_flush"
-msgstr "Caches"
 
 msgid "admin_error"
 msgstr "Sie besitzen nicht die notwendigen Rechte, um den Administrationsbereich zu betreten.<br/> Falls Sie nicht angemeldet sein sollten, können Sie das ${link}"
@@ -118,56 +97,6 @@ msgstr "mediaTUM Administration Interface"
 
 msgid "admin_filter_label"
 msgstr "Filter:"
-
-
-msgid "e_acls"
-msgstr "ACL-Funktionen"
-
-msgid "e_classes"
-msgstr "Klassifikationsfunktion"
-
-msgid "e_editor"
-msgstr "Startseiteneditor"
-
-msgid "e_files"
-msgstr "Technische Metadaten"
-
-msgid "e_license"
-msgstr "Lizensierung"
-
-msgid "e_logo"
-msgstr "Logo Funktionen"
-
-msgid "e_metadata"
-msgstr "Metadateneditor"
-
-msgid "e_search"
-msgstr "Suche"
-
-msgid "e_searchmask"
-msgstr "Suchmaskenfunktionen"
-
-msgid "e_sort"
-msgstr "Sortierfunktionen"
-
-msgid "e_sortfiles"
-msgstr "Dateien sortieren"
-
-msgid "e_subfolder"
-msgstr "Unterordner sortieren"
-
-msgid "e_upload"
-msgstr "Daten hochladen"
-
-msgid "e_workflow"
-msgstr "Workflow Funktionen"
-
-msgid "e_publish"
-msgstr "Veröffentlichung"
-
-msgid "e_changeschema"
-msgstr "Schema/Typ-Änderung"
-
 
 msgid "admin_filter_all"
 msgstr "alle"

@@ -43,23 +43,11 @@ msgstr "Neue Version erstellen"
 msgid "create_version_version"
 msgstr "Version"
 
-msgid "edit_meta_delete"
-msgstr "Löschen"
-
-msgid "edit_meta_restore"
-msgstr "Wiederherstellen"
-
 msgid "create_version_timestamp_comment"
 msgstr "Timestamp / Kommentar"
 
 msgid "create_version_updateduser"
 msgstr "Aktualisiert von"
-
-msgid "edit_meta_delete_confirm"
-msgstr "Möchten Sie Version ${version} wirklich löschen?"
-
-msgid "edit_meta_restore_confirm"
-msgstr "Wollen Sie wirklich Version ${version} wiederherstellen?"
 
 msgid "edit_meta_count_of_nodes"
 msgstr "${number}  Datensatz/Datensätze werden bearbeitet"

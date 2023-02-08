@@ -10,9 +10,6 @@ msgstr "Welcome to mediaTUM"
 msgid "username:"
 msgstr "username:"
 
-msgid "tum_username:"
-msgstr "username / TUM-id:"
-
 msgid "password:"
 msgstr "password:"
 
@@ -36,9 +33,6 @@ msgstr "User"
 
 msgid "footer_impressum"
 msgstr "imprint"
-
-msgid "help_link"
-msgstr "Help"
 
 msgid "help_title"
 msgstr "Show Help"
@@ -85,45 +79,6 @@ msgstr "repeat new password:"
 msgid "pwdforgotten_link"
 msgstr "Password forgotten?"
 
-msgid "pwdforgotten_explain_procedure"
-msgstr "To obtain a new password, please enter your username. A new password and an activation link will be sent to your e-mail address."
-
-msgid "tum_pwdforgotten_explain_procedure"
-msgstr "To obtain a new password, please enter your username. A new password and an activation link will be sent to your e-mail address. This applies only to mediaTUM-internal usernames. In case of problems with your TUM-id and the associated password you should contact TUMonline."
-
-msgid "pwdforgotten_username:"
-msgstr "username:"
-
-msgid "pwdforgotten_submit"
-msgstr "Send"
-
-msgid "pwdforgotten_cancel"
-msgstr "Back"
-
-msgid "pwdforgotten_butmailnowsent"
-msgstr "A new password and an activation link have been sent to your e-mail address."
-
-msgid "pwdforgotten_noentry"
-msgstr "No entry submitted"
-
-msgid "pwdforgotten_nosuchuser"
-msgstr "Username not found"
-
-msgid "pwdforgotten_password_activated"
-msgstr "New password has been activated for user: "
-
-msgid "pwdforgotten_password_invalid_key"
-msgstr "Invalid key: wrong key or already used key"
-
-msgid "pwdforgotten_email_subject"
-msgstr "Your mediaTUM account: new password requested"
-
-msgid "pwdforgotten_emailsenderror"
-msgstr "Failed to send e-mail"
-
-msgid "pwdforgotten_excludedgroup"
-msgstr "The username belongs to a usergroup that has been excluded from this feature. You would have to contact the administrator to obtain a new password."
-
 msgid "hint"
 msgstr "Notice: "
 
@@ -144,9 +99,6 @@ msgstr "Sort by:"
 
 msgid "sort_label2"
 msgstr "and:"
-
-msgid "sub_header_help_title"
-msgstr "Switch to documentation"
 
 msgid "sub_header_help"
 msgstr "Help"
@@ -175,17 +127,11 @@ msgstr "Switch to editor area"
 msgid "sub_header_edit"
 msgstr "Edit"
 
-msgid "sub_header_inquest_title"
-msgstr "Switch to search area"
-
 msgid "sub_header_frontend_title"
 msgstr "Switch to search area"
 
 msgid "sub_header_server_status"
 msgstr "server status"
-
-msgid "sub_header_inquest"
-msgstr "Search"
 
 msgid "sub_header_workflow_title"
 msgstr "Switch to workflows"
@@ -232,9 +178,6 @@ msgstr "Search for"
 msgid "search_in"
 msgstr "Search in"
 
-msgid "search_result_header"
-msgstr "Your search string "
-
 msgid "reset_field_title"
 msgstr "Reset all fields"
 
@@ -247,9 +190,6 @@ msgstr "Simple search"
 msgid "collections"
 msgstr "Collections"
 
-msgid "collection_title"
-msgstr "Show collections"
-
 msgid "fold"
 msgstr "fold"
 
@@ -261,9 +201,6 @@ msgstr "Back to start of result list"
 
 msgid "back"
 msgstr "Back"
-
-msgid "search_hit"
-msgstr "hints"
 
 msgid "Dissertation"
 msgstr "dissertation/postdoc"
@@ -279,9 +216,6 @@ msgstr "usergroup (system type)"
 
 msgid "Metadatatype"
 msgstr "metadata scheme (system type)"
-
-msgid "Metadatafield"
-msgstr "metadata field (system type)"
 
 msgid "Maskitem"
 msgstr "mask field (system type)"
@@ -328,9 +262,6 @@ msgstr "Download high resolution version"
 msgid "image_available_formats"
 msgstr "Available image formats"
 
-msgid "image_high_res_load"
-msgstr "  File being loaded..."
-
 msgid "image_high_res_archive"
 msgstr "Load high resolution from archive"
 
@@ -343,89 +274,11 @@ msgstr "Open BibTeX information in new window"
 msgid "doc_att_browser"
 msgstr "Open attachment browser..."
 
-msgid "sqlite_type"
-msgstr "Type:"
-
-msgid "sqlite_name"
-msgstr "Name:"
-
-msgid "sqlite_tbl_name"
-msgstr "Table Name:"
-
-msgid "sqlite_rootpage"
-msgstr "Rootpage:"
-
-msgid "sqlite_sql"
-msgstr "SQL:"
-
-msgid "mysql_name"
-msgstr "Table Name:"
-
-msgid "mysql_engine"
-msgstr "Type:"
-
-msgid "mysql_version"
-msgstr "Version:"
-
-msgid "mysql_row_format"
-msgstr "Format:"
-
-msgid "mysql_rows"
-msgstr "Rows:"
-
-msgid "mysql_avg_row_length"
-msgstr "Avg. Row Length:"
-
-msgid "mysql_data_length"
-msgstr "Size (data):"
-
-msgid "mysql_max_data_length"
-msgstr "Max. Data Length:"
-
-msgid "mysql_index_length"
-msgstr "Size (index):"
-
-msgid "mysql_data_free"
-msgstr "Data Free:"
-
-msgid "mysql_auto_increment"
-msgstr "Auto Increment:"
-
-msgid "mysql_create_time"
-msgstr "Created:"
-
-msgid "mysql_update_time"
-msgstr "Updated:"
-
-msgid "mysql_check_time"
-msgstr "Check Date:"
-
-msgid "mysql_collation"
-msgstr "Collation:"
-
-msgid "mysql_checksum"
-msgstr "Checksum:"
-
-msgid "mysql_create_options"
-msgstr "Creation Options:"
-
-msgid "mysql_comment"
-msgstr "Comment:"
-
 msgid "popup_help_title"
 msgstr "Help for metadata field "
 
-msgid "tab_menulayout"
-msgstr "Layout"
-
-msgid "tab_metadata_col"
-msgstr "Configuration"
-
 msgid "tab_menuoperation"
 msgstr "Special functions"
-
-msgid "tab_menusecurity"
-msgstr "Rights"
 
 msgid "tab_upload"
 msgstr "Uploads"
@@ -466,9 +319,6 @@ msgstr "Select all objects"
 msgid "tab_marknone"
 msgstr "Unselect all objects"
 
-msgid "tab_markinvert"
-msgstr "Invert selected objects"
-
 msgid "tab_editor"
 msgstr "Edit start page"
 
@@ -481,23 +331,11 @@ msgstr "Edit start pages"
 msgid "tab_metadata_dir"
 msgstr "Edit metadata"
 
-msgid "tab_techmeta"
-msgstr "Technical metadata"
-
 msgid "tab_meta"
 msgstr "Metadata"
 
 msgid "tab_logo"
 msgstr "Edit logo"
-
-msgid "tab_editor_title"
-msgstr "Edit HTML pages"
-
-msgid "tab_html_title"
-msgstr "Edit HTML pages"
-
-msgid "tab_upload_title"
-msgstr "View upload area"
 
 msgid "tab_metadata"
 msgstr "Edit metadata"
@@ -505,20 +343,11 @@ msgstr "Edit metadata"
 msgid "tab_menumetadata"
 msgstr "Edit metadata"
 
-msgid "tab_meta_title"
-msgstr "Open metadata editor"
-
 msgid "tab_content"
 msgstr "Content"
 
-msgid "tab_content_title"
-msgstr "Show Content"
-
 msgid "tab_search"
 msgstr "Search"
-
-msgid "tab_search_title"
-msgstr "Open search"
 
 msgid "tab_searchmask"
 msgstr "Edit search mask"
@@ -532,38 +361,17 @@ msgstr "Sort subdirectories"
 msgid "tab_acls"
 msgstr "Manage rights"
 
-msgid "tab_acls_title"
-msgstr "Edit rights"
-
-msgid "tab_menusortnodes"
-msgstr "Configure: sort objects"
-
 msgid "tab_files"
 msgstr "Add files"
-
-msgid "tab_files_title"
-msgstr "Edit technical metadata"
-
-msgid "tab_files_obj"
-msgstr "Change/add digital object"
 
 msgid "tab_view"
 msgstr "Preview"
 
-msgid "tab_view_title"
-msgstr "Preview of object appearance"
-
 msgid "tab_workflow"
 msgstr "Workflow"
 
-msgid "tab_workflow_title"
-msgstr "Open workflow"
-
 msgid "tab_classes"
 msgstr "Directory tree"
-
-msgid "tab_classes_title"
-msgstr "Show classification"
 
 msgid "tab_admin"
 msgstr "Administration"
@@ -571,38 +379,14 @@ msgstr "Administration"
 msgid "tab_version"
 msgstr "Versioning"
 
-msgid "tab_imports"
-msgstr "Upload"
-
 msgid "tab_publish"
 msgstr "Publish"
-
-msgid "tab_statsaccess"
-msgstr "User statistics"
 
 msgid "tab_statsfiles"
 msgstr "File statistics"
 
-msgid "tab_meta_col"
-msgstr "View"
-
-msgid "tab_meta_dir"
-msgstr "View"
-
-msgid "tab_techmeta_title"
-msgstr "Open technical metadata"
-
-msgid "tab_html"
-msgstr "Edit startpage"
-
-msgid "tab_techmeta_obj"
-msgstr "Edit digital object"
-
 msgid "tab_news"
 msgstr "Manage messages"
-
-msgid "tab_identifier"
-msgstr "Create identifier"
 
 msgid "liststyle_list"
 msgstr "List view with thumbnails"
@@ -612,12 +396,6 @@ msgstr "Thumbnail view"
 
 msgid "items_per_page"
 msgstr "Items per page"
-
-msgid "full_standard_doc_title"
-msgstr "Default view for documents"
-
-msgid "full_text_doc_title"
-msgstr "Text view for documents"
 
 msgid "print_view_header"
 msgstr "mediaTUM object"
@@ -687,9 +465,6 @@ msgstr "Not all mandatory fields of mapping definition are used. This can result
 
 msgid "mask_editor_msg1"
 msgstr "There are different field types available for mask fields. Standard is the 'normal field'"
-
-msgid "mask_editor_order_label"
-msgstr "(Change order by drag &amp; drop)"
 
 msgid "mask_edit_up_title"
 msgstr "Move up"
@@ -808,12 +583,6 @@ msgstr "Possible variables:<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* [value] = attrib
 msgid "mask_edit_separator"
 msgstr "Separator"
 
-msgid "PostprocessingError_document"
-msgstr "Document could not be uploaded into the system.<br/>This may be caused by a possibly copy-protected or damaged PDF file."
-
-msgid "EncryptionError_document"
-msgstr "This document couldn't be uploaded because the PDF is copy-protected. Please remove the encryption and try uploading it again."
-
 msgid "Your_browser_doesnt_support_cookies"
 msgstr "Your browser doesn't support cookies. Maybe the 'Allow Cookies' option in your browser is deactivated. Please switch on Cookies again to proceed."
 
@@ -853,23 +622,12 @@ msgstr "Size"
 msgid "att_browser_files"
 msgstr " Files"
 
-msgid "video_showvideo"
-msgstr "Show video"
-
-msgid "search_result_text"
-msgstr "The search covered the following collections:"
 
 msgid "error_msg_objectnotfound"
 msgstr "Error on page, object not found or no access rights."
 
-msgid "error_msg_startpage_not_found"
-msgstr "Error on page, a startpage is configured, but cannot be found."
-
 msgid "home_link"
 msgstr "Home"
-
-msgid "list_link"
-msgstr "Content of page as list"
 
 msgid "content_text_file_title"
 msgstr "Digital object available"
@@ -892,23 +650,11 @@ msgstr "Help"
 msgid "full_view"
 msgstr "Full view"
 
-msgid "this_link"
-msgstr "this link"
-
-msgid "tab_globals"
-msgstr "Global settings"
-
 msgid "settings"
 msgstr "Settings"
 
 msgid "style"
 msgstr "Short view style:"
-
-msgid "dont_display_logo"
-msgstr "Don't display logo"
-
-msgid "no_extended_search"
-msgstr "No extended search:"
 
 msgid "full_view_style"
 msgstr "Full view style:"
@@ -916,38 +662,17 @@ msgstr "Full view style:"
 msgid "node_name"
 msgstr "name:"
 
-msgid "no_extsearch"
-msgstr "No extended search:"
-
 msgid "fieldname"
 msgstr "field name"
 
 msgid "none"
 msgstr "none"
 
-msgid "from_parent"
-msgstr "from parent"
-
-msgid "define_new"
-msgstr "define new"
-
-msgid "search_mask"
-msgstr "search mask"
-
-msgid "search_field"
-msgstr "search field"
-
 msgid "schema"
 msgstr "schema"
 
 msgid "field"
 msgstr "Field"
-
-msgid "append_new_field"
-msgstr "append_new_field"
-
-msgid "Search_within_the_following_fields:"
-msgstr "Search within the following fields:"
 
 msgid "add"
 msgstr "add"
@@ -964,131 +689,11 @@ msgstr "Yearbook"
 msgid "intern"
 msgstr "Intern"
 
-msgid "color_black"
-msgstr "Black"
-
-msgid "color_red"
-msgstr "Red"
-
-msgid "color_blue"
-msgstr "Blue"
-
-msgid "color_green"
-msgstr "Green"
-
-msgid "view_yes"
-msgstr "yes"
-
 msgid "view_no"
 msgstr "no"
 
-msgid "style_normal"
-msgstr "normal"
-
-msgid "style_bold"
-msgstr "bold"
-
-msgid "style_italic"
-msgstr "italic"
-
-msgid "style_bold_italic"
-msgstr "bold + italic"
-
-msgid "field_msg_text"
-msgstr "Text:"
-
-msgid "field_msg_style"
-msgstr "Style:"
-
-msgid "field_msg_view"
-msgstr "Show:"
-
-msgid "field_msg_color"
-msgstr "color/style:"
-
 msgid "show_all"
 msgstr "Show all"
-
-msgid "show_pages"
-msgstr "pages"
-
-msgid "monthname_1_short"
-msgstr "Jan"
-
-msgid "monthname_2_short"
-msgstr "Feb"
-
-msgid "monthname_3_short"
-msgstr "Mar"
-
-msgid "monthname_4_short"
-msgstr "Apr"
-
-msgid "monthname_5_short"
-msgstr "May"
-
-msgid "monthname_6_short"
-msgstr "Jun"
-
-msgid "monthname_7_short"
-msgstr "Jul"
-
-msgid "monthname_8_short"
-msgstr "Aug"
-
-msgid "monthname_9_short"
-msgstr "Sep"
-
-msgid "monthname_10_short"
-msgstr "Oct"
-
-msgid "monthname_11_short"
-msgstr "Nov"
-
-msgid "monthname_12_short"
-msgstr "Dec"
-
-msgid "dayname_0_short"
-msgstr "Mo"
-
-msgid "dayname_1_short"
-msgstr "Tu"
-
-msgid "dayname_2_short"
-msgstr "We"
-
-msgid "dayname_3_short"
-msgstr "Th"
-
-msgid "dayname_4_short"
-msgstr "Fr"
-
-msgid "dayname_5_short"
-msgstr "Sa"
-
-msgid "dayname_6_short"
-msgstr "Su"
-
-msgid "dayname_0_long"
-msgstr "Monday"
-
-msgid "dayname_1_long"
-msgstr "Tuesday"
-
-msgid "dayname_2_long"
-msgstr "Wednesday"
-
-msgid "dayname_3_long"
-msgstr "Thursday"
-
-msgid "dayname_4_long"
-msgstr "Friday"
-
-msgid "dayname_5_long"
-msgstr "Saturday"
-
-msgid "dayname_6_long"
-msgstr "Sunday"
 
 msgid "document_view"
 msgstr "Document view"
@@ -1099,17 +704,8 @@ msgstr "Text view"
 msgid "list_view"
 msgstr "List view"
 
-msgid "thumb_view"
-msgstr "Thumbnail view"
-
-msgid "text_view"
-msgstr "Text view"
-
 msgid "image_view"
 msgstr "Image/text view"
-
-msgid "image_view_big"
-msgstr "Image view"
 
 msgid "document_versions"
 msgstr "Versions"
@@ -1150,22 +746,13 @@ msgstr "from"
 msgid "document_versions"
 msgstr "versions"
 
-msgid "document_new_version_comment"
-msgstr "Change of the metadata"
-
 msgid "details"
 msgstr "Details"
 
 msgid "details_colon"
 msgstr "Details:"
 
-msgid "further_details_colon"
-msgstr "Further details:"
-
 ###### scholar
-msgid "show_all_years"
-msgstr "All"
-
 msgid "year"
 msgstr "Year:"
 

@@ -1,6 +1,3 @@
-msgid "edit_logo_logoheader"
-msgstr "Logo:"
-
 msgid "edit_logo_del_button"
 msgstr "Delete logo"
 
@@ -9,9 +6,6 @@ msgstr "No logo"
 
 msgid "edit_logo_addfile"
 msgstr "Upload file:"
-
-msgid "edit_logo_selecttitle"
-msgstr "Select as logo"
 
 msgid "edit_logo_link_label"
 msgstr "Link behind logo:"
@@ -24,9 +18,6 @@ msgstr "Save changes"
 
 msgid "edit_logo_reset"
 msgstr "Reset"
-
-msgid "edit_logo_changeheader"
-msgstr "Change logo:"
 
 msgid "edit_logo_filetypeerror"
 msgstr "Uploaded filetype is not supported for logos. Allowed types are '.jpeg', '.jpg', '.gif' or '.png'."

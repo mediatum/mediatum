@@ -1,12 +1,3 @@
-msgid "edit_fckeditor_cfm_filetype"
-msgstr "Type"
-
-msgid "edit_fckeditor_cfm_filesize"
-msgstr "Size"
-
-msgid "edit_fckeditor_cfm_mimetype"
-msgstr "Mimetype"
-
 msgid "edit_fckeditor_cfm_nameonserver"
 msgstr "Name on server"
 
@@ -19,17 +10,8 @@ msgstr "Click on an image to select"
 msgid "edit_fckeditor_cfm_hasnoimages"
 msgstr "No images uploaded for this page. Upload an image first."
 
-msgid "edit_fckeditor_cfm_closewindow"
-msgstr "Close window"
-
 msgid "edit_fckeditor_cfm_imageislogo"
 msgstr "Image is logo"
-
-msgid "edit_fckeditor_cfm_uploadexplain"
-msgstr "You can upload a new file to this node:"
-
-msgid "edit_fckeditor_cfm_uploadbutton"
-msgstr "Upload to server"
 
 msgid "edit_fckeditor_cfm_deleteconfirm"
 msgstr "Do you really want to delete this file?"
@@ -51,15 +33,6 @@ msgstr "Click to delete this page from the server"
 
 msgid "edit_startpages_savechanges"
 msgstr "Save changes"
-
-msgid "edit_startpages_file_missing"
-msgstr "Could not open file: "
-
-msgid "edit_startpages_reset"
-msgstr "Reset"
-
-msgid "edit_startpages_explain_addbutton"
-msgstr "Click this button to open a new page in the HTML editor"
 
 msgid "edit_startpages_addnew"
 msgstr "Create new page"

@@ -65,15 +65,6 @@ msgstr "Typ"
 msgid "admin_metafield_help_title"
 msgstr "Hilfe anzeigen"
 
-msgid "admin_metafield_listvalues"
-msgstr "Listenwerte"
-
-msgid "admin_metafield_dateformat"
-msgstr "Datums-/Zeitformat"
-
-msgid "admin_memofield_maxlength"
-msgstr "Maximallänge"
-
 msgid "htmlmemo_wysiwyg"
 msgstr "WYSIYG"
 
@@ -97,9 +88,6 @@ msgstr "Datum lang (dd.mm.yyyy hh:mm:ss)"
 
 msgid "admin_metafield_fields"
 msgstr "Metadatenfelder"
-
-msgid "admin_metafields_techfields"
-msgstr "Technisches Metadatenfeld"
 
 msgid "admin_metafield_description"
 msgstr "Beschreibung"

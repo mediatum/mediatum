@@ -3,9 +3,6 @@
 msgid "tab_changeschema"
 msgstr "Metadatenschema ändern"
 
-msgid "edit_changeschema_msg1"
-msgstr "Sie besitzen nicht die Berechtigung, hieran Veränderungen vorzunehmen. Bitte wenden Sich an Ihren Administrator"
-
 msgid "edit_changeschema_obj_selection"
 msgstr "Wechseln des Objekttyps/Metadatentyps"
 

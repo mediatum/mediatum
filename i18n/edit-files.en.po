@@ -19,9 +19,6 @@ msgstr "Directory name:"
 msgid "edit_files_addthumbnail"
 msgstr "Add new thumbnail:"
 
-msgid "edit_files_add_attdir"
-msgstr "Add attachment directory (all attachments will be saved in this directory)"
-
 msgid "edit_files_add_attfile"
 msgstr "Add attachment"
 
@@ -40,35 +37,20 @@ msgstr "Location / Name"
 msgid "edit_files_options"
 msgstr "Upload files"
 
-msgid "edit_files_opne_title"
-msgstr "Open"
-
 msgid "edit_files_change"
 msgstr "Add or exchange digital object"
 
 msgid "edit_files_add_obj"
 msgstr "Add digital object"
 
-msgid "edit_files_reprocess"
-msgstr "Re-process digital object"
-
-msgid "edit_files_reprocess_info"
-msgstr "(all technical metadata and thumbnails will be updated)"
-
 msgid "edit_files_obsolete"
 msgstr "Metadata fields not in use"
-
-msgid "edit_files_obsolete_del_title"
-msgstr "Delete attribute"
 
 msgid "edit_files_metafields"
 msgstr "Metadata fields"
 
 msgid "edit_files_tech_meta"
 msgstr "Technical metadata fields"
-
-msgid "edit_files_del_tech_meta"
-msgstr "Delete technical metadata field"
 
 msgid "edit_files_removequestion"
 msgstr "Do you really want to remove the selected object?"
@@ -81,27 +63,6 @@ msgstr "Change order of objects(drag &amp; drop)"
 
 msgid "edit_files_order_save"
 msgstr "Save order"
-
-msgid "edit_files_create_identifier"
-msgstr "Create"
-
-msgid "edit_files_create_a_new_version_with_uploading"
-msgstr "Create a new version with uploading"
-
-msgid "edit_files_comment"
-msgstr "Comment"
-
-msgid "edit_files_new_version_adding_comment"
-msgstr "digital object added"
-
-msgid "edit_files_new_version_exchanging_comment"
-msgstr "digital object exchanged"
-
-msgid "edit_files_new_version_attachment_directory_comment"
-msgstr "attachment directory added"
-
-msgid "edit_files_new_version_attachment_comment"
-msgstr "attachment added"
 
 msgid "edit_files_nodes_colon"
 msgstr "Nodes:"

@@ -3,9 +3,6 @@
 msgid "tab_changeschema"
 msgstr "Change metadata scheme"
 
-msgid "edit_changeschema_msg1"
-msgstr "You do not have the rights to perform changes here. Please turn to your administrator."
-
 msgid "edit_changeschema_obj_selection"
 msgstr "Change object type/metadata type selection"
 

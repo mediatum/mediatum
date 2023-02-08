@@ -19,9 +19,6 @@ msgstr "Verzeichnisname: "
 msgid "edit_files_addthumbnail"
 msgstr "Thumbnail neu hochladen:"
 
-msgid "edit_files_add_attdir"
-msgstr "Attachment-Verzeichnis hinzufügen (alle weiteren Attachments werden in diesem Verzeichnis gespeichert)"
-
 msgid "edit_files_add_attfile"
 msgstr "Attachment hinzufügen"
 
@@ -40,20 +37,11 @@ msgstr "Lokation / Name"
 msgid "edit_files_options"
 msgstr "Datei-Upload"
 
-msgid "edit_files_opne_title"
-msgstr "Öffnen"
-
 msgid "edit_files_change"
 msgstr "Digitales Objekt hinzufügen (bzw. austauschen)"
 
 msgid "edit_files_add_obj"
 msgstr "Digitales Objekt hinzufügen"
-
-msgid "edit_files_reprocess"
-msgstr "Digitales Objekt erneut verarbeiten"
-
-msgid "edit_files_reprocess_info"
-msgstr "(dabei werden alle Operationen ausgeführt, die notwendig sind, um Technische-Metadaten und die Thumbnails zu erzeugen)"
 
 msgid "edit_files_obsolete"
 msgstr "nicht verwendete Metadatenfelder"
@@ -63,9 +51,6 @@ msgstr "Metadatenfelder"
 
 msgid "edit_files_tech_meta"
 msgstr "technische Metadatenfelder"
-
-msgid "edit_files_del_tech_meta"
-msgstr "Technische Metadaten löschen"
 
 msgid "edit_files_removequestion"
 msgstr "Soll das Objekt wirklich abgetrennt werden?"
@@ -93,27 +78,6 @@ msgstr "Reihenfolge der Objekte per Drag&Drop ändern"
 
 msgid "edit_files_order_save"
 msgstr "Reihenfolge speichern"
-
-msgid "edit_files_create_identifier"
-msgstr "Erzeugen"
-
-msgid "edit_files_create_a_new_version_with_uploading"
-msgstr "Mit dem Hochladen eine neue Version erstellen"
-
-msgid "edit_files_comment"
-msgstr "Kommentar"
-
-msgid "edit_files_new_version_adding_comment"
-msgstr "digitales Objekt hinzugefügt"
-
-msgid "edit_files_new_version_exchanging_comment"
-msgstr "digitales Objekt ausgetauscht"
-
-msgid "edit_files_new_version_attachment_directory_comment"
-msgstr "Befestigung Verzeichnis hinzugefügt"
-
-msgid "edit_files_new_version_attachment_comment"
-msgstr "Anhang hinzugefügt"
 
 msgid "edit_files_nodes_colon"
 msgstr "Elementknoten:"

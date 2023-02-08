@@ -101,12 +101,6 @@ msgstr "${number} Einträge gefunden"
 msgid "workflow_error_msg"
 msgstr "Bitte füllen Sie die fehlenden Pflichtfelder aus bzw. kontrollieren Sie die fehlerhaften Eingaben."
 
-msgid "workflow_create_object"
-msgstr "Neues Objekt anlegen"
-
-msgid "workflow_start_submit"
-msgstr "Erzeugen"
-
 msgid "workflow_email_msg_1"
 msgstr "Ein Fehler ist beim Versenden aufgetreten"
 
@@ -136,9 +130,6 @@ msgstr "Neue Datei hinzufügen:"
 
 msgid "workflow_upload_button"
 msgstr "Hochladen"
-
-msgid "workflow_ready_msg"
-msgstr "Das Objekt ${name} ist am Ende des Workflows angekommen."
 
 msgid "workflow_step_ready_msg"
 msgstr "Das Objekt ${name} ist am Ende des Workflows angekommen."
@@ -197,12 +188,6 @@ msgstr "Initialschritt (Workflow)"
 
 msgid "Workflow"
 msgstr "Workflow (Systemtyp)"
-
-msgid "WorkflowStep_Jahrbuch"
-msgstr "Transfer Jahrbuch (Workflow)"
-
-msgid "WorkflowStep_AddURN"
-msgstr "URN erzeugen (Workflow)"
 
 msgid "Workflows"
 msgstr "Workflows (Systemtyp)"

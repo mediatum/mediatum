@@ -347,10 +347,15 @@ _valid_fileextensions = frozenset((
         "aiff",
         "bib",
         "bmp",
+        "css",
         "doc",
         "gif",
+        "html",
+        "ico",
         "jpeg",
         "jpg",
+        "js",
+        "json",
         "mp3",
         "mp4",
         "new",
@@ -361,10 +366,13 @@ _valid_fileextensions = frozenset((
         "svg",
         "tif",
         "tiff",
+        "txt",
         "wav",
+        "xls",
         "xml",
         "zip",
     ))
+
 
 _fileextension2filetype_override = dict(
         bib="bibtex",

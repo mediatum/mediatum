@@ -879,23 +879,6 @@ class Mask(Node):
         else:
             return self.all_maskitems
 
-    """ return all fields which are empty """
-
-    def validate(self, nodes):
-        ret = []
-        for node in nodes:
-            for item in self.getMaskFields():
-                field = item.getField()
-                if item.get_required():
-                    if node.get(field.getName()) == "":
-                        ret.append(field.name)
-                        continue
-
-                if field and field.getContentType() == "metafield" and field.getFieldtype() == "date":
-                    if not node.get(field.getName()) == "" and not validateDateString(node.get(field.getName())):
-                        ret.append(field.name)
-        return ret
-
     """ return all node ids which are empty """
 
     def validateNodelist(self, nodes):
@@ -957,7 +940,7 @@ class Mask(Node):
         assert self.masktype == "edit"
         form = req.form
         attrs = {}
-        errors = []
+        errors = {}
         fields = list()
         current_language = translation.set_language(req.accept_languages)
         default_language = config.languages[0]
@@ -972,9 +955,9 @@ class Mask(Node):
                 data = _datastructures.ImmutableMultiDict(data)
                 t = getMetadataType(field.get("type"))
                 try:
-                    attrs[field.name] = t.editor_parse_form_data(field, data)
+                    attrs[field.name] = t.editor_parse_form_data(field, data, item.get_required())
                 except _core_metatype.MetatypeInvalidFormData as error:
-                    errors.append(field.name)
+                    errors[field.name] = error
 
         attrs["system.edit.lastmask"] = self.name
         attrs["updateuser"] = user.getName()

@@ -59,3 +59,36 @@ function toggleAll() {
         allChecked = true;
     }
 }
+
+
+// inspired by https://stackoverflow.com/questions/374644/how-do-i-capture-response-of-form-submit
+document.getElementById('mediatum-workflow-editmetadata-form').addEventListener('submit', (event) => {
+    if (event.submitter.name == "gofalse")
+        return;
+    event.preventDefault();
+    fetch(event.target.action, {
+        method: 'POST',
+        body: new URLSearchParams(new FormData(event.target)) // event.target is the form
+    }).then((response) => {
+        if (!response.ok) {
+            alert(`HTTP error! Status: ${response.status}`);
+            return;
+        }
+        return response.text();
+    }).then((body) => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(body, "text/html");
+        fielderrors = doc.getElementById("mediatum-workflow-editmetadata-fielderrors");
+        key = doc.getElementById("mediatum-workflow-editmetadata-submitkey");
+        if (key != null) {
+            key = key.innerText;
+            form = document.getElementById("mediatum-workflow-editmetadata-key");
+            document.getElementsByName("mediatum-workflow-editmetadata-keyinput")[0].value = key;
+            form.submit();
+            return;
+        }
+        mediatum_metadataeditor_highlighterrors(JSON.parse(fielderrors.innerText));
+    }).catch((error) => {
+        alert(error);
+    });
+});

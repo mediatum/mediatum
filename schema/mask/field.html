@@ -161,8 +161,7 @@
         <div
             tal:attributes="id python:'mediatum-editor-nodefield-error-{}'.format(name)"
             class="mediatum-editor-nodefield-error"
-            tal:condition="python:error"
-            i18n:translate="edit_error"
+            hidden="hidden"
            >
         </div>
         <label

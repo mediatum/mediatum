@@ -207,3 +207,15 @@ function insertParameter(k, v) {
         document.location.search = kvp.join('&');
     }
 }
+
+function mediatum_metadataeditor_highlighterrors(errors){
+    errorDivs = document.getElementsByClassName("mediatum-editor-nodefield-error");
+    for (let item of errorDivs)
+        item.hidden = true;
+    for (const[key, value] of Object.entries(errors)) {
+        div = document.getElementById("mediatum-editor-nodefield-error-"+key);
+        div.hidden = false;
+        div.innerText = value;
+    };
+    div.scrollIntoView();
+}

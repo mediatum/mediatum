@@ -80,5 +80,7 @@ class m_meta(Metatype):
             synchronize=bool(data.get("synchronize")),
         )
 
-    def editor_parse_form_data(self, field, data):
+    def editor_parse_form_data(self, field, data, required):
+        if required and not data.get("meta"):
+            raise _core_metatype.MetatypeInvalidFormData("edit_mask_required")
         return data.get("meta")

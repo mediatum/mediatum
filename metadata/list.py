@@ -103,7 +103,9 @@ class m_list(Metatype):
             value = esc(value)
         return (metafield.getLabel(), value)
 
-    def editor_parse_form_data(self, field, data):
+    def editor_parse_form_data(self, field, data, required):
+        if required and not data.get("list"):
+            raise _core_metatype.MetatypeInvalidFormData("edit_mask_required")
         if field.metatype_data['multiple']:
             valuelist = data.getlist("list")
             value = ";".join(valuelist)

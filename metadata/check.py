@@ -45,5 +45,7 @@ class m_check(Metatype):
         value = node.get(metafield.name)
         return (metafield.label, value)
 
-    def editor_parse_form_data(self, field, data):
+    def editor_parse_form_data(self, field, data, required):
+        if required and not data.get("check"):
+            raise _core_metatype.MetatypeInvalidFormData("edit_mask_required")
         return data.get("check")

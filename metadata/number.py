@@ -46,5 +46,7 @@ class m_number(Metatype):
             value = esc(value)
         return (metafield.getLabel(), value)
 
-    def editor_parse_form_data(self, field, data):
+    def editor_parse_form_data(self, field, data, required):
+        if required and not data.get("number"):
+            raise _core_metatype.MetatypeInvalidFormData("edit_mask_required")
         return data.get("number")

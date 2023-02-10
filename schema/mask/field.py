@@ -68,7 +68,6 @@ class m_field(Metatype):
                 conflict=editor_html_form.conflict,
                 required=field.get_required(),
                 html_form=editor_html_form.html,
-                error=metafield.name in req.params.get("errorlist", [])
                )
         return _tal.processTAL(tal_ctx, file="schema/mask/field.html", macro="get_form_html", request=req)
 

@@ -32,3 +32,35 @@ $(document).ready(function () {
     var k = parent.last_activated_node.key;
     updateNodeLabels(k);
 });
+
+// inspired by https://stackoverflow.com/questions/374644/how-do-i-capture-response-of-form-submit
+document.getElementById('mediatum-edit-form-metadata').addEventListener('submit', (event) => {
+    event.preventDefault();
+    fetch(event.target.action, {
+        method: 'POST',
+        body: new URLSearchParams(new FormData(event.target)) // event.target is the form
+    }).then((response) => {
+        if (!response.ok) {
+            alert(`HTTP error! Status: ${response.status}`);
+            return;
+        }
+        return response.json();
+    }).then((body) => {
+        console.log(body);
+        if (Object.keys(body) != 0) {
+            mediatum_metadataeditor_highlighterrors(body);
+            return;
+        }
+        const url = new URL(location.href);
+        url.searchParams.delete("tab");
+        for (const param of ['id', 'srcnodeid']) {
+            if (url.searchParams.get(param) == null) {
+                url.searchParams.append(param, document.getElementsByName(param)[0].value.split(',')[0]);
+            }
+        }
+        document.location.href = url.href;
+        return;
+    }).catch((error) => {
+        alert(error);
+    });
+});

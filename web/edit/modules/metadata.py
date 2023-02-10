@@ -7,6 +7,7 @@ from __future__ import print_function
 import functools as _functools
 import logging
 
+import flask as _flask
 import mediatumtal.tal as _tal
 
 import core.csrfform as _core_csrfform
@@ -140,9 +141,11 @@ def getContent(req, ids):
             return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
         errors = _handle_edit_metadata(req, mask, nodes)
+        errors = {_schema.sanitize_metafield_name(name):error.get_translated_message() for name,error in errors.iteritems()}
         logg.debug("%s change metadata %s", user.login_name, idstr)
         logg.debug("%r", req.params)
-        req.params["errorlist"] = errors + mask.validate(nodes)
+        req.response = _flask.jsonify(errors)
+        return req.response.status_code
 
     return _tal.processTAL(
         dict(

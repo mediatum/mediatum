@@ -104,7 +104,9 @@ class m_url(Metatype):
 
         return metafield.getLabel(), value
 
-    def editor_parse_form_data(self, field, data):
+    def editor_parse_form_data(self, field, data, required):
+        if required and not data.get("link"):
+            raise _core_metatype.MetatypeInvalidFormData("edit_mask_required")
         uri = data.get('link')
         quoted_uri = quote_uri(uri)
         if not quoted_uri:

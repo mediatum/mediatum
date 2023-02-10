@@ -76,5 +76,7 @@ class m_htmlmemo(_core_metatype.Metatype):
             wysiwyg=bool(data.get("wysiwyg")),
         )
 
-    def editor_parse_form_data(self, field, data):
+    def editor_parse_form_data(self, field, data, required):
+        if required and not data.get("htmlmemo"):
+            raise _core_metatype.MetatypeInvalidFormData("edit_mask_required")
         return data.get("htmlmemo")

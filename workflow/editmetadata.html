@@ -3,8 +3,16 @@
   SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 <tal:block  metal:define-macro="workflow_metadateneditor">
-    <form class="edit" action="/mask" method="post" style="position:relative!important;">
+    <form id="mediatum-workflow-editmetadata-key" action="/mask" method="post">
+        <input type="hidden" name="mediatum-workflow-editmetadata-keyinput"/>
         <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
+        <input tal:attributes="value idstr" type="hidden" name="id"/>
+        <input tal:attributes="value obj" type="hidden" name="obj"/>
+    </form>
+    <form id="mediatum-workflow-editmetadata-form" class="edit" action="/mask" method="post" style="position:relative!important;">
+        <!-- Prevent implicit submission of the form -->
+        <button type="submit" disabled="disabled" style="display: none;" aria-hidden="true"> </button>
+        <input tal:attributes="value csrf" type="hidden" name="csrf_token">
         <div class="mediatum_clean-container" style="overflow:hidden;position:relative;padding-right:10px;">
             <span tal:replace="raw error"/>
             <input tal:attributes="value key" type="hidden" name="key"/>
@@ -25,6 +33,8 @@
         <div tal:condition="python:posttext!=''" tal:content="raw posttext" class="posttext">TEXT</div>
         <tal:block tal:replace="raw buttons"/>
     </form>
+    <script src="/static/js/mediatum.js"> </script>
+    <script src="/static/js/workflow/workflow.js"> </script>
 </tal:block>
 
 <div metal:define-macro="maskerror">

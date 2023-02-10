@@ -103,7 +103,9 @@ class m_date(Metatype):
 
         return (metafield.getLabel(), ''.join(value_list))
 
-    def editor_parse_form_data(self, field, data):
+    def editor_parse_form_data(self, field, data, required):
+        if required and not data.get("date"):
+            raise _core_metatype.MetatypeInvalidFormData("edit_mask_required")
         f = field.getSystemFormat(ustr(field.metatype_data['format']))
         if not f:
             return ""

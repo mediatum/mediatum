@@ -33,7 +33,6 @@ from core.request_handler import handle_request as _handle_request
 
 
 q = db.query
-DEBUG = True
 
 
 class MediatumFlask(Flask):
@@ -134,15 +133,9 @@ def make_app():
     we might use a "global" app to which the admin interface is added.
     """
     admin_app = MediatumFlask("mediaTUM admin")
-    admin_app.debug = True
     admin_app.config["SECRET_KEY"] = config.get_secret_key("admin.session_secret_key_file", uwsgi_cache_key="session_secret_key")
     admin_app.config['PERMANENT_SESSION_LIFETIME'] = int(config.get('admin.session_expiration_time', 7200))
     admin_app.config["SESSION_COOKIE_NAME"] = 'mediatum_session'
-
-    if DEBUG:
-        admin_app.debug = True
-        from werkzeug.debug import DebuggedApplication
-        admin_app.wsgi_app = DebuggedApplication(admin_app.wsgi_app, True)
 
     @admin_app.before_request
     def set_lang():

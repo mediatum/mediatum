@@ -238,9 +238,8 @@ class Document(Content):
     def metaFields(self, lang=None):
         metafields = []
 
-        field = Metafield(u"nodename", attrs={
-            "label": "node name",
-            "type": u"text"
-        })
+        field = Metafield(u"nodename")
+        field.set("label", "node name")
+        field.setFieldtype("text")
         metafields.append(field)
         return metafields

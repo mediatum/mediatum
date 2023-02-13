@@ -96,9 +96,7 @@ def _handle_edit_metadata(req, mask, nodes):
     form = req.form
 
     for node in nodes:
-        if not node.has_write_access() or node is userdir:
-            req.response.status_code = httpstatus.HTTP_FORBIDDEN
-            return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
+        assert node.has_write_access() and node is not userdir
 
     if not hasattr(mask, "i_am_not_a_mask"):
         # XXX: why check here?
@@ -220,6 +218,10 @@ def getContent(req, ids):
         )
 
     if "edit_metadata" in req.params:
+        if user.home_dir in nodes or not all(node.has_write_access() for node in nodes):
+            req.response.status_code = httpstatus.HTTP_FORBIDDEN
+            return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
+
         flag_nodename_changed = _handle_edit_metadata(req, mask, nodes)
         logg.debug("%s change metadata %s", user.login_name, idstr)
         logg.debug("%r", req.params)

@@ -125,7 +125,7 @@ VIEW_HIDE_EMPTY = 2     # show only fields with 'non-empty' values
 VIEW_DATA_ONLY = 4      # deliver list with values (not html)
 VIEW_DATA_EXPORT = 8    # deliver export format
 
-_EditUpdateAttrs = _collections.namedtuple("_EditUpdateAttrs", "nodename attrs system_attrs")
+_EditUpdateAttrs = _collections.namedtuple("_EditUpdateAttrs", "nodename attrs")
 
 _MetafieldsDependency = _collections.namedtuple(
     "_MetafieldsDependency",
@@ -972,7 +972,6 @@ class Mask(Node):
         assert self.masktype == "edit"
         form = req.form
         attrs = {}
-        system_attrs = {}
         nodename = None
         fields = list()
         current_language = translation.set_language(req.accept_languages)
@@ -987,10 +986,7 @@ class Mask(Node):
                         nodename = value
                     else:
                         value = t.editor_parse_form_data(field, form)
-                        if field.name.startswith("system."):
-                            system_attrs[field.name[len("system."):]] = value
-                        else:
-                            attrs[field.name] = value
+                        attrs[field.name] = value
                 elif field["type"] == "check":
                     attrs[field.name] = "0"
                 # handle multilang heritage
@@ -1003,11 +999,11 @@ class Mask(Node):
                         nodename = value
                 fields.append(field)
 
-        system_attrs["edit.lastmask"] = self.name
+        attrs["system.edit.lastmask"] = self.name
         attrs["updateuser"] = user.getName()
         attrs["updatetime"] = format_date()
 
-        return _EditUpdateAttrs(nodename, attrs, system_attrs)
+        return _EditUpdateAttrs(nodename, attrs)
 
     def apply_edit_update_attrs_to_node(self, node, attrs):
         """
@@ -1019,8 +1015,10 @@ class Mask(Node):
         if attrs.nodename and node.name != attrs.nodename:
             node.name = attrs.nodename
 
-        node.attrs.update(attrs.attrs)
-        node.system_attrs.update(attrs.system_attrs)
+        node.attrs.update((name,value) for name,value in attrs.attrs.iteritems() if not name.startswith("system."))
+        node.system_attrs.update(
+                (name[len("system."):],value) for name,value in attrs.attrs.iteritems() if name.startswith("system.")
+               )
 
         if hasattr(node, "event_metadata_changed"):
             node.event_metadata_changed()

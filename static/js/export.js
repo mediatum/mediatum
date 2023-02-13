@@ -8,7 +8,7 @@ var $ = exports.$;
 var mediatum_config = {};
 var mediatum_config_default = {'fields':['<b>[att:pos]</b>','defaultexport'], 'divider':'<br/>', 'target':'internal', 'output':'default', 'groupby':''};
 var module_count = 0;
-var baseurl = getLocation();
+var baseurl = new URL(document.currentScript.src).origin;
 var styledone = 0;
 var lan = 'de';
 
@@ -35,16 +35,6 @@ var load_script = function(options) {
     };
     options.owner_document.getElementsByTagName('head')[0].appendChild(script_tag);
 };
-
-function getLocation(){
-    objs = document.getElementsByTagName('script');
-    for (var i in objs){
-        if (objs[i].src && objs[i].src.indexOf("export.js")>0){
-            return(objs[i].src.replace("/static/js/export.js", ""));
-        }
-    }
-    return "";
-}
 
 function pad(number, length) {
     var str = '' + number;

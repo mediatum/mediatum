@@ -54,18 +54,6 @@ def _get_datelists(nodes):
 
     return update_date, creation_date
 
-def get_maskform_and_fields(nodes, mask, req):
-    '''
-    helper funtion to update default context before calling TAL interpreter
-    '''
-    if not hasattr(mask, "i_am_not_a_mask"):
-        _maskform = mask.getFormHTML(nodes, req)
-        _fields = None
-    else:
-        _maskform = None
-        _fields = mask.metaFields()
-    return _maskform, _fields
-
 
 class _SystemMask:
 
@@ -233,9 +221,8 @@ def getContent(req, ids):
     data["update_date"], data["creation_date"] = _get_datelists(nodes)
     data["err"] = err
 
-    _maskform, _fields = get_maskform_and_fields(nodes, mask, req)
-    data["maskform"] = _maskform
-    data["fields"] = _fields
+    data["maskform"] = mask.getFormHTML(nodes, req) if not hasattr(mask, "i_am_not_a_mask") else None
+    data["fields"] = mask.metaFields() if hasattr(mask, "i_am_not_a_mask") else None
 
     data.update(ctx)
     data["flag_nodename_changed"] = flag_nodename_changed

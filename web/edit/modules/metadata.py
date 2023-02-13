@@ -100,30 +100,7 @@ def _handle_edit_metadata(req, mask, nodes):
             req.response.status_code = httpstatus.HTTP_FORBIDDEN
             return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
-    if hasattr(mask, "i_am_not_a_mask"):
-        for field in mask.metaFields():
-            logg.debug("in %s.%s: (hasattr(mask,'i_am_not_a_mask')) field: %s, field.id: %s, field.name: %s, mask: %s, maskname: %s",
-                __name__, funcname(), field, field.id, field.name, mask, mask.name)
-            field_name = field.name
-            if field_name == 'nodename' and mask.name == 'settings':
-                if '__nodename' in form:
-                    field_name = '__nodename'  # no multilang here !
-                elif '{}__nodename'.format(_core_config.languages[0]) in form:
-                    # no multilang here !
-                    field_name = '{}__nodename'.format(_core_config.languages[0])
-                value = form.get(field_name, None)
-                if value:
-                    if value != node.name:
-                        flag_nodename_changed = ustr(node.id)
-                    for node in nodes:
-                        node.name = value
-            value = form.get(field_name, None)
-            if value is not None:
-                for node in nodes:
-                    node.set(field.name, value)
-            else:
-                node.set(field.getName(), "")
-    else:
+    if not hasattr(mask, "i_am_not_a_mask"):
         # XXX: why check here?
         # if nodes:
         old_nodename = nodes[0].name
@@ -138,6 +115,31 @@ def _handle_edit_metadata(req, mask, nodes):
         if (len(nodes) == 1 or old_nodename != new_nodename) and isinstance(nodes[0], Container):
             # for updates of node label in editor tree
             flag_nodename_changed = ustr(nodes[0].id)
+        db.session.commit()
+        return flag_nodename_changed
+
+    for field in mask.metaFields():
+        logg.debug("in %s.%s: (hasattr(mask,'i_am_not_a_mask')) field: %s, field.id: %s, field.name: %s, mask: %s, maskname: %s",
+            __name__, funcname(), field, field.id, field.name, mask, mask.name)
+        field_name = field.name
+        if field_name == 'nodename' and mask.name == 'settings':
+            if '__nodename' in form:
+                field_name = '__nodename'  # no multilang here !
+            elif '{}__nodename'.format(_core_config.languages[0]) in form:
+                # no multilang here !
+                field_name = '{}__nodename'.format(_core_config.languages[0])
+            value = form.get(field_name, None)
+            if value:
+                if value != node.name:
+                    flag_nodename_changed = ustr(node.id)
+                for node in nodes:
+                    node.name = value
+        value = form.get(field_name, None)
+        if value is not None:
+            for node in nodes:
+                node.set(field.name, value)
+        else:
+            node.set(field.getName(), "")
 
     db.session.commit()
     return flag_nodename_changed

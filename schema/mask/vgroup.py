@@ -25,18 +25,18 @@ class m_vgroup(Metatype):
     name = "vgroup"
 
     def getFormHTML(self, field, nodes, req):
-        ret = '<fieldset>'
-        if field.getLabel() != "":
-            ret += '<legend>' + field.getLabel() + '</legend>'
-
+        children_html = []
         for item in field.getChildren().sort_by_orderpos():
             if item.get("type") in ("hgroup", "vgroup", "field", "label"):
                 f = getMetadataType(item.get("type"))
-                ret += f.getFormHTML(item, nodes, req)
+                children_html.append(f.getFormHTML(item, nodes, req))
             else:
                 _logg.error("wrong field")
-        ret += '</fieldset>'
-        return ret
+        v = dict(
+                children_html="".join(children_html),
+                label=field.getLabel(),
+               )
+        return _tal.processTAL(v, file="schema/mask/vgroup.html", macro="get_form_html", request=req)
 
     def getViewHTML(self, field, nodes, flags, language=None, template_from_caller=None, mask=None, use_label=True):
         if flags & VIEW_DATA_ONLY:

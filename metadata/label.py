@@ -18,7 +18,14 @@ class m_label(Metatype):
     name = "label"
 
     def getFormHTML(self, field, nodes, req):
-        return '<b>' + field.getLabel() + '</b><br/>'
+        return tal.processTAL(
+                dict(
+                    label=field.getLabel()
+                   ),
+                file="metadata/label.html",
+                macro="get_form_html",
+                request=req,
+               )
 
     def getViewHTML(self, field, nodes, flags, language=None, template_from_caller=None, mask=None):
         if flags & VIEW_DATA_ONLY:

@@ -27,14 +27,17 @@ class m_hgroup(Metatype):
             if item.getField().id in req.params.get("errorlist", []):
                 cls = "editorerror"
                 break
-        ret = '<div class="' + cls + '">'
 
-        ret += '<div class="mask_label">' + field.getLabel() + '</div>'
-
+        children_html = []
         for item in field.getChildren().sort_by_orderpos():
             f = getMetadataType(item.get("type"))
-            ret += f.getFormHTML(item, nodes, req, True)
-        return ret + '</div>'
+            children_html.append(f.getFormHTML(item, nodes, req, True))
+        v = dict(
+                children_html="".join(children_html),
+                cls=cls,
+                label=field.getLabel(),
+               )
+        return _tal.processTAL(v, file="schema/mask/hgroup.html", macro="get_form_html", request=req)
 
     def getViewHTML(self, maskitem, nodes, flags, language=None, template_from_caller=None, mask=None, use_label=True):
         if flags & VIEW_DATA_ONLY:

@@ -262,6 +262,12 @@ def validate(req, op):
                 return MaskDetails(req, req.params.get("parent", ""), req.params.get("morig_name", ""), err=4)
 
             mtype = q(Metadatatype).filter_by(name=q(Node).get(req.params.get("parent", "")).name).one()
+            if (
+                    ((req.values["form_op"] == "save_newmask") or
+                     (req.values["form_op"] == "save_editmask" and req.values["mname"] != req.values.get("morig_name", "")))
+                    and
+                    req.values["mname"] in (mask.name for mask in mtype.masks)):
+                return MaskDetails(req, req.values.get("parent"), req.values.get("morig_name", ""), err=2)
             if req.params.get("form_op") == "save_editmask":
                 mask = mtype.get_mask(req.params.get("mname", ""))
                 # in case of renaming a mask the mask cannot be detected via the new mname

@@ -325,34 +325,17 @@ Owner of DHTMLgoodies.com
         if (e){
             return false;
         }
-        if(config['treeStyle']=='classification'){
-            n_node = document.getElementById('Node'+newid);
-            if (n_node){
-                t = n_node.getElementsByTagName('A');
-                
-                if (t[0].style.backgroundColor=="" && t[0].className==""){
-                    t[0].style.backgroundColor = "#ccc";
-                    t[0].getElementsByTagName('input')[0].src = imageFolder + checkImage;
-                    t[0].getElementsByTagName('input')[0].backgroundColor = "";
-                    return false;
-                }else{
-                    t[0].style.backgroundColor = "";
-                    t[0].getElementsByTagName('input')[0].src = imageFolder + uncheckImage;
-                    t[0].getElementsByTagName('input')[0].backgroundColor = "";
-                    return true;
-                }
-            }
-            return false;
-        }else{
-            o_node = document.getElementById('Node'+oldid);
-            if (o_node){
-                t = o_node.getElementsByTagName('A');
-                t[0].style.backgroundColor = "";
-            }
-            n_node = document.getElementById('Node'+newid);
-            if(n_node){
-                t = n_node.getElementsByTagName('A');
+        n_node = document.getElementById('Node'+newid);
+        if (n_node){
+            t = n_node.getElementsByTagName('A');
+            t[0].getElementsByTagName('input')[0].backgroundColor = "";
+            if (t[0].style.backgroundColor=="" && t[0].className==""){
                 t[0].style.backgroundColor = "#ccc";
+                t[0].getElementsByTagName('input')[0].src = imageFolder + checkImage;
+            }else{
+                t[0].style.backgroundColor = "";
+                t[0].getElementsByTagName('input')[0].src = imageFolder + uncheckImage;
+                return true;
             }
         }
         return false;
@@ -401,4 +384,3 @@ Owner of DHTMLgoodies.com
         }
         return  -1;
     }
-  

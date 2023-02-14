@@ -23,6 +23,7 @@ import web.edit.edit as _web_edit_edit
 
 def getData(req):
     pid = req.params.get("parentId")
+    language = _core_translation.set_language(req.accept_languages)
     ret = []
     user_home_dir = _core_users.user_from_session().home_dir
     group_ids, ip, date = _database_postgres.build_accessfunc_arguments()
@@ -72,7 +73,7 @@ def getData(req):
             special_dir_type = _web_edit_edit.get_special_dir_type(c.Container)
             if not c.write_access and not c.has_writable_container_children:
                 continue
-            label = _web_edit_common.get_edit_label(c.Container, _core_translation.set_language(req.accept_languages))
+            label = _web_edit_common.get_edit_label(c.Container, language)
             title = u"{} ({})".format(label, c.Container.id)
 
             cls = "folder"

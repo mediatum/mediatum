@@ -74,7 +74,6 @@ def getData(req):
             if not c.write_access and not c.has_writable_container_children:
                 continue
             label = _web_edit_common.get_edit_label(c.Container, language)
-            title = u"{} ({})".format(label, c.Container.id)
 
             cls = "folder"
 
@@ -95,8 +94,8 @@ def getData(req):
                 cls = "homeicon"
 
             ret.append(u'<li class="{}.gif" id="Node{}">'.format(cls, c.Container.id))
-            ret.append(u'<a href="#" title="{}" id="{}" class="{}">{}<input type="image" src="/static/img/ftree/uncheck.gif"/></a>'.format(
-                            title, c.Container.id, itemcls, label))
+            ret.append(u'<a href="#" title="{} ({})" id="{}" class="{}">{}<input type="image" src="/static/img/ftree/uncheck.gif"/></a>'.format(
+                            label, c.Container.id, c.Container.id, itemcls, label))
 
             if c.has_container_children:
                 ret.append(u'<ul><li parentId="{}" class="spinner.gif"><a href="#">&nbsp;</a></li></ul>'.format(c.Container.id))

@@ -39,7 +39,6 @@ class Metatype(object):
     def admin_settings_parse_form_data(self, data):
         assert not data
 
-    translation_labels = {}
 
 charmap = [
     ['&nbsp;', '160', 'no-break space'],

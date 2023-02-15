@@ -14,7 +14,6 @@ import polib as _polib
 from . import config
 from utils.strings import ensure_unicode_returned
 
-_addlangitems = {}
 _addlangfiles = _collections.defaultdict(list)
 
 
@@ -43,24 +42,14 @@ def _list_po_files(language):
     return tuple(plist)
 
 
-def _translate_lang_and_key_to_translated_text(language, msg_id):
-    for pofile in _list_po_files(language):
-        po = _parse_po_file_to_dict(pofile)
-        if msg_id in po:
-            return po[msg_id]
-
-
 @ensure_unicode_returned(silent=True)
 def translate(language, msgid):
-    msg_str = _translate_lang_and_key_to_translated_text(language, msgid)
-    if msg_str is not None:
-        return msg_str
+    for pofile in _list_po_files(language):
+        po = _parse_po_file_to_dict(pofile)
+        if msgid in po:
+            return po[msgid]
 
-    # try additional keys
-    try:
-        return _addlangitems[language][msgid]
-    except KeyError:
-        raise MessageIdNotFound(msgid)
+    raise MessageIdNotFound(msgid)
 
 
 def translate_in_request(msgid, request=None):
@@ -75,15 +64,6 @@ def translate_in_template(msgid, language=None, request=None):
             return translate_in_request(msgid, request)
     except MessageIdNotFound:
         return msgid
-
-
-def addLabels(labels):
-    for key in labels:
-        if key not in _addlangitems.keys():
-            _addlangitems[key] = {}
-
-        for item in labels[key]:
-            _addlangitems[key][item[0]] = item[1]
 
 
 def register_po_file(language, path):

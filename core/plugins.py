@@ -55,13 +55,6 @@ def init_plugins():
         if hasattr(m, "init") and callable(m.init):
             m.init()
 
-        # add po file paths
-        if hasattr(m, "pofiles"):  
-            if len(m.pofiles) > 0:
-                logg.debug("loading translation files for plugin %s", name)
-                for fp in m.pofiles:
-                    translation.register_po_file(fp[-5:-3], fp)
-
 
 def find_plugin_with_theme(theme_name):
     """Look for a plugin which contains the requested theme `theme_name and return its path.`

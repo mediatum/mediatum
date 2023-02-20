@@ -20,12 +20,12 @@ link(rel="stylesheet", href="/static/css/jade_style.css")
 
     if license_url
       dt
-        a(href=license_url)
+        a.mediatum-link-external(href=license_url)
           img(src=license_image_url, width=100)
 
     if bibtex
       dt.action_icon
-        a(href="/export/{{ node.id }}/bibtex", target="bibtexdocument", title=translate("doc_bibtex_title"))
+        a.mediatum-link-mediatum(href="/export/{{ node.id }}/bibtex", target="bibtexdocument", title=translate("doc_bibtex_title"))
           img(src="/static/img/bibtex.gif")
           |&nbsp;BibTeX
 
@@ -35,7 +35,10 @@ link(rel="stylesheet", href="/static/css/jade_style.css")
 
 if attachment and data_access
   #object_attachment
-    a(onclick="javascript:openPopup('/attachmentbrowser?id={{ node.id }}&v={{ version }}&path={{ path }}')", href="#")
+    a.mediatum-link-mediatum(
+        onclick="javascript:openPopup('/attachmentbrowser?id={{ node.id }}&v={{ version }}&path={{ path }}')",
+        href="#!",
+    )
       = translate("doc_att_browser")
 
 if versions_html

@@ -3,7 +3,7 @@
   SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 <metal:block metal:define-macro="view">
-    <p><a i18n:translate="admin_overview" href=".">TEXT</a></p>
+    <p><a i18n:translate="admin_overview" href="." class="mediatum-link-mediatum"> </a></p>
     <form name="mappingoverview" method="post" enctype="multipart/form-data" tal:attributes="action page">
         <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
         <table class="overview">
@@ -141,7 +141,7 @@
 </metal:block>
 
 <metal:block metal:define-macro="modify">
-    <p><a i18n:translate="admin_overview" href="./mapping">TEXT</a></p>
+    <p><a i18n:translate="admin_overview" href="./mapping" class="mediatum-link-mediatum"> </a></p>
     <form tal:attributes="action page" name="editmapping" method="post">
         <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
         <table>
@@ -258,7 +258,7 @@
 
 
 <metal:block metal:define-macro="viewlist">
-    <p><a i18n:translate="admin_overview" href="./mapping">TEXT</a></p>
+    <p><a i18n:translate="admin_overview" href="./mapping" class="mediatum-link-mediatum"> </a></p>
     <form name="mappingfieldoverview" method="post" action="#" tal:attributes="action page">
         <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
         <table class="overview">
@@ -331,7 +331,7 @@
 </metal:block>
 
 <metal:block metal:define-macro="modifyfield">
-    <p><a i18n:translate="admin_overview" href="./mapping">TEXT</a></p>
+    <p><a i18n:translate="admin_overview" href="./mapping" class="mediatum-link-mediatum"> </a></p>
     <form tal:attributes="action page" name="editmappingfield" method="post">
         <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
         <table>

@@ -7,14 +7,14 @@
     block left
       ul
         li
-          a(href='/')
+          a.mediatum-link-mediatum(href='/')
             = translate('main_title')
         li
-          a(href='https://github.com/mediatum/mediatum', target='_blank') mediatum
+          a.mediatum-link-external(href='https://github.com/mediatum/mediatum', target='_blank') mediatum
 
   .header.header-right
     block right
-      a.header-logo(href='https://github.com/mediatum/mediatum', target='_blank', title='Home mediatum')
+      a.header-logo.mediatum-link-external(href='https://github.com/mediatum/mediatum', target='_blank', title='Home mediatum')
         img(src='/static/img/logo.png', alt='Logo', width='110', height='59')
 
 #portal-personaltools
@@ -22,14 +22,14 @@
     | : {{ user_name }}
 
   for menuitem in userlinks.getLinks()
-    a(href=menuitem.link, title=menuitem.title)
+    a.mediatum-link-mediatum(href=menuitem.link, title=menuitem.title)
       | &nbsp;
       img(border='0', height='16', src=menuitem.icon)
       = menuitem.label
 
   for item in header_items
     if item.getType()!='text'
-      a(href=item.getLink())
+      a.mediatum-link-mediatum(href=item.getLink())
         if item.icon!=''
           img(border='0', height='16', src=item.icon)
           = translate(item.getName())
@@ -41,9 +41,9 @@
         for lang in language['name']
           li
             if language['actlang']==lang
-              a.selected_language(href=userlinks.change_language_link(lang))
+              a.selected_language.mediatum-link-mediatum(href=userlinks.change_language_link(lang))
                 = lang
             else
-              a(href=userlinks.change_language_link(lang))
+              a.mediatum-link-mediatum(href=userlinks.change_language_link(lang))
                 = lang
 

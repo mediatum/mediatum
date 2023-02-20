@@ -161,17 +161,17 @@ def frameset(req):
     path = ['%s' % p.id for p in nodepath]
     containerpath = [('%s' % p.id) for p in nodepath if isinstance(p, Container)]
 
-    spc = [_utils_utils.Menu("sub_header_frontend", "../", target="_parent")]
+    spc = [_utils_utils.Menu("sub_header_frontend", "../", target="_parent", cssclass="mediatum-link-internal")]
     if user.is_admin:
         spc.append(
-            _utils_utils.Menu("sub_header_administration", "../admin", target="_parent"))
+            _utils_utils.Menu("sub_header_administration", "../admin", target="_parent", cssclass="mediatum-link-internal"))
 
     if user.is_workflow_editor:
-        spc.append(_utils_utils.Menu("sub_header_workflow", "../publish/", target="_parent"))
+        spc.append(_utils_utils.Menu("sub_header_workflow", "../publish/", target="_parent", cssclass="mediatum-link-internal"))
 
-    spc.append(_utils_utils.Menu("sub_header_help", "https://mediatum.readthedocs.io", target="_blank"))
+    spc.append(_utils_utils.Menu("sub_header_help", "https://mediatum.readthedocs.io", target="_blank", cssclass="mediatum-link-external"))
 
-    spc.append(_utils_utils.Menu("sub_header_logout", "../logout", target="_parent"))
+    spc.append(_utils_utils.Menu("sub_header_logout", "../logout", target="_parent", cssclass="mediatum-link-mediatum"))
 
     def getPathToFolder(node):
         n = node
@@ -875,10 +875,12 @@ def content(req):
             path.append(n)
         for p in path:
             s.append(
-                     u"<a onClick='activateEditorTreeNode({id}); return true;'"
-                     " href='/edit/edit_content?srcnodeid={id}&id={id}'>{label}</a>"
-                     .format(id=p.id, label=get_edit_label(p, language))
-                     )
+                 u"<a onClick='activateEditorTreeNode({id}); return true;'"
+                 " href='/edit/edit_content?srcnodeid={id}&id={id}' class='mediatum-link-mediatum'>{label}</a>".format(
+                     id=p.id,
+                     label=get_edit_label(p, language),
+                 )
+            )
         v["dircontent"] = ' <b>&raquo;</b> '.join(s)
     else:  # or current directory
         v["notdirectory"] = 0
@@ -886,10 +888,12 @@ def content(req):
         s = []
         for p in next(iter(get_accessible_paths(n) or ((),))):
             s.append(
-                     u"<a onClick='activateEditorTreeNode({id}); return true;'"
-                     " href='/edit/edit_content?srcnodeid={id}&id={id}'>{label}</a>"
-                     .format(id=p.id, label=get_edit_label(p, language))
-                     )
+                 u"<a onClick='activateEditorTreeNode({id}); return true;'"
+                 " href='/edit/edit_content?srcnodeid={id}&id={id}' class='mediatum-link-mediatum'>{label}</a>".format(
+                     id=p.id,
+                     label=get_edit_label(p, language),
+                 )
+            )
         s.append(get_edit_label(n, language))
         v["dircontent"] = ' <b>&raquo;</b> '.join(s)
 

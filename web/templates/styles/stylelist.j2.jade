@@ -18,10 +18,10 @@ each file in files
           img.thumbnail(src='/thumbnail/{}'.format(file.node.id), border='0')
     div.mediatum-stylelist-div
       if title
-        a.mediatum-stylelist-a(href=file.getLink(), title=title)
+        a.mediatum-stylelist-a.mediatum-link-internal(href=file.getLink(), title=title)
           = translate('stylelist-nodelink-text', mapping=mapping)
       else
-        a.mediatum-stylelist-a(href=file.getLink())
+        a.mediatum-stylelist-a.mediatum-link-internal(href=file.getLink())
           = translate('stylelist-nodelink-text', mapping=mapping)
       p
         = file.text

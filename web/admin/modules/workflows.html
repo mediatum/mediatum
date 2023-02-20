@@ -3,7 +3,7 @@
   SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 <metal:block metal:define-macro="list_workflows">
-    <p><a i18n:translate="admin_overview" href=".">TEXT</a></p>
+    <p><a i18n:translate="admin_overview" href="." class="mediatum-link-mediatum"> </a></p>
     <form tal:attributes="action python:page" name="addnewworkflow" method="post" action="#" enctype="multipart/form-data">
         <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
         <table class="overview">
@@ -111,7 +111,14 @@
 
 <metal:block metal:define-macro="workflow_config" tal:define="id python:workflow.getName()">
     <script src="/static/js/admin/modules/admin.js"> </script>
-    <p><a tal:attributes="href python:u'./workflows{}'.format(page)" i18n:translate="admin_overview">TEXT</a></p>
+    <p>
+        <a
+            tal:attributes="href python:u'./workflows{}'.format(page)"
+            i18n:translate="admin_overview"
+            class="mediatum-link-mediatum"
+        >
+        </a>
+    </p>
     <form tal:attributes="action page" name="editworkflow" method="post" action="#">
         <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
         <table>
@@ -246,7 +253,7 @@
 </metal:block>
 
 <metal:block metal:define-macro="workflow_steps_list">
-    <p><a href="./workflows" i18n:translate="admin_overview">TEXT</a></p>
+    <p><a href="./workflows" i18n:translate="admin_overview" class="mediatum-link-mediatum"> </a></p>
     <form tal:attributes="action page" name="metafields" method="post" action="#">
         <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
         <table class="overview">
@@ -254,7 +261,14 @@
                 <tr>
                     <td colspan="9">
                         <h3 i18n:translate="admin_wf_header">TEXT '<span tal:content="python:workflow.name" i18n:name="name"/>'</h3>
-                        <a tal:attributes="href python:u'./workflows/{}/overview?style=popup'.format(workflow.name)" i18n:attributes="title admin_wf_graphic_title" target="_blank" i18n:translate="admin_wf_showdef">TEXT</a>
+                        <a
+                            tal:attributes="href python:u'./workflows/{}/overview?style=popup'.format(workflow.name)"
+                            i18n:attributes="title admin_wf_graphic_title"
+                            target="_blank"
+                            i18n:translate="admin_wf_showdef"
+                            class="mediatum-link-mediatum"
+                        >
+                        </a>
                     </td>
                 </tr>
                 <tr>
@@ -451,6 +465,7 @@
             i18n:translate=""
             tal:attributes="href python:u'./workflows?detailof={}'.format(workflow_id)"
             tal:content="python:'admin_overview'"
+            class="mediatum-link-mediatum"
         />
     </p>
     <form name="addmfield" id="addmfield" method="post" enctype="multipart/form-data" action="#">

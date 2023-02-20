@@ -42,7 +42,7 @@
         <div id="scrollcontainer">
             <div id="scrollcontent" style="padding-left:0px;padding-bottom:10px">
                 <div id="accordion">
-                    <h3><a href="#" i18n:translate="edit_stats_overview"/></h3>
+                    <h3><a href="#!" i18n:translate="edit_stats_overview" class="mediatum-link-mediatum"/></h3>
                     <div id="section" style="min-height:150px">
                         <!-- section 1 -->
                         <table style="padding-top:5px">
@@ -50,7 +50,14 @@
                                 <td>&nbsp;</td>
                                 <td style="vertical-align:center">
                                     <tal:block i18n:translate="" tal:content="python:type.getName()"/>
-                                    <small><a href="#" tal:attributes="onclick python:u'return activateTab({})'.format(data.data.index(type)+1)" i18n:translate="edit_stats_details"/></small>
+                                    <small>
+                                        <a
+                                            href="#!"
+                                            tal:attributes="onclick python:u'return activateTab({})'.format(data.data.index(type)+1)"
+                                            i18n:translate="edit_stats_details"
+                                            class="mediatum-link-mediatum"
+                                        />
+                                    </small>
                                 </td>
                                 <td>
                                     <img tal:attributes="width python:u'{}px'.format(int(type.getSum())*400/max)" src="/static/img/stat_bar.png" style="height:10px">
@@ -65,7 +72,9 @@
                     </div>
 
                     <tal:block tal:repeat="type python:data.data">
-                        <h3><a href="#" i18n:translate="" tal:content="python:type.getName()"/></h3>
+                        <h3>
+                            <a href="#!" i18n:translate="" tal:content="python:type.getName()" class="mediatum-link-mediatum"/>
+                        </h3>
                         <div id="section" style="position:relative;min-height:150px">
                             <!-- section  -->
                             <div style="position:absolute; top:5px;right:5px">

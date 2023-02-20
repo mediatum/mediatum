@@ -65,8 +65,9 @@ class m_field(Metatype):
             description = """
                     <div id="div_description">
                         <a
-                           href="#"
+                           href="#!"
                            onclick="openPopup('/popup_help?id={}&amp;maskid={}', '', 400, 250)"
+                           class="mediatum-link-mediatum"
                         >
                             <img src="/static/img/tooltip.png" border="0"/>
                         </a>
@@ -190,7 +191,7 @@ class m_field(Metatype):
         if item.getDescription() != "":
             description = """
                 <div id="div_description">
-                    <a href="#" onclick="openPopup('/popup_help?id={}&amp;maskid={}', '', 400, 250)">
+                    <a href="#!" onclick="openPopup('/popup_help?id={}&amp;maskid={}', '', 400, 250)" class="mediatum-link-mediatum">
                         <img src="/static/img/tooltip.png" border="0"/>
                     </a>
                 </div>

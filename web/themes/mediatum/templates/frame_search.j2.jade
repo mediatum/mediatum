@@ -13,7 +13,7 @@
         if liststyle
           input(type='hidden', name='liststyle', value=liststyle)
     if search.hasExtendedSearch()
-      a#advancedsearchlink(href=search.searchLinkExtended())
+      a#advancedsearchlink.mediatum-link-mediatum(href=search.searchLinkExtended())
         = translate('xsearch')
   if search.isExtendedNormal() or search.isExtendedSuper()
     - var bgcolor = ['#edf1f4', '#ffffff'][search.inEditor()]
@@ -38,16 +38,16 @@
           td
             small
               if search.isExtendedNormal()
-                a#advancedmorelink(href=search.searchLinkExtendedSuper())
+                a#advancedmorelink.mediatum-link-mediatum(href=search.searchLinkExtendedSuper())
                   = translate('search_extendedsuper')
               if search.isExtendedSuper()
-                a#advancedmorelink(href=search.searchLinkExtended())
+                a#advancedmorelink.mediatum-link-mediatum(href=search.searchLinkExtended())
                   = translate('xsearch2')
           td(style='text-align:right')
             button#reset-button(title=translate('reset_field_title'), type='button', onclick='clearFields()')
               = translate('reset_field')
             button#xsearch-button(title=translate('search_title'), type='submit')
               = translate('search')
-      a#advancedsearchlink(href=search.searchLinkSimple())
+      a#advancedsearchlink.mediatum-link-mediatum(href=search.searchLinkSimple())
         =translate('search_simple')
 

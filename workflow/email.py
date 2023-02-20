@@ -133,7 +133,7 @@ class WorkflowStep_SendEmail(WorkflowStep):
             return self.forwardAndShow(node, False, req)
 
         elif node.get("system.mailtmp.error"):
-            return u'{} &gt;<a href="{}">{}</a>&lt;'.format(
+            return u'{} &gt;<a href="{}" class="mediatum-link-mediatum">{}</a>&lt;'.format(
                     _core_translation.translate(_core_translation.set_language(req.accept_languages), "workflow_email_msg_1"),
                     _makeSelfLink(req, {"sendout": "true"}),
                     _core_translation.translate(_core_translation.set_language(req.accept_languages), "workflow_email_resend"),

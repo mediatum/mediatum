@@ -4,10 +4,20 @@
 -->
 <div tal:repeat="file python:files" class="preview_list" onmouseover="this.style.backgroundColor='#cccccc'" onmouseout="this.style.backgroundColor='white'">
     <div style="float:left; width:128px; height:128px; margin: 3px;overflow:hidden">
-        <a tal:attributes="href python:file.getLink()" tal:content="raw python:file.image" target="_parent"/>
+        <a
+            tal:attributes="href python:file.getLink()"
+            tal:content="raw python:file.image"
+            target="_parent"
+            class="mediatum-link-mediatum"
+        />
     </div>
     <p tal:content="python:u'[{}/{}]'.format(file.nr+1, file.num)" class="docnum"/>
-    <a tal:attributes="href python:file.getLink()" tal:content="raw python:file.text" style="white-space:normal"/>
+    <a
+        tal:attributes="href python:file.getLink()"
+        tal:content="raw python:file.text"
+        style="white-space:normal"
+        class="mediatum-link-mediatum"
+    />
 
     <div tal:condition="python:file.attachment" style="position:absolute; right:25px; top:5px; overflow:hidden;">
         <img i18n:attributes="title view_list_att_title" src="/static/img/attach.png"/>

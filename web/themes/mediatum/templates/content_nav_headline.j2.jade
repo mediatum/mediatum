@@ -11,13 +11,13 @@
         a(href=nav.link_prev())
           div(id='mediatum_img_pageleft')
       td(width='100%', align='center')
-        a(href='javascript: history.back()')
+        a.mediatum-link-mediatum(href='javascript: history.back()')
           = translate('back')
         br
-        a(href=nav.link_back())
+        a.mediatum-link-mediatum(href=nav.link_back())
           = translate('back_to_list_view_start')
         br
-        a(href=nav.link_current_node())
+        a.mediatum-link-mediatum(href=nav.link_current_node())
           = translate('direct_link_current_node')
       td(align='right', valign='top', nowrap='')
         a(href=nav.link_next())

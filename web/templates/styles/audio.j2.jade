@@ -15,7 +15,7 @@
         audio(controls="controls", onplay="vgwPixelCall();")
           source(type="audio/mp3", src=audio_url)
     .document_download
-      a(href=audiodownload, onclick="vgwPixelCall();")= translate("audio_download_link")
+      a.mediatum-link-mediatum(href=audiodownload, onclick="vgwPixelCall();")= translate("audio_download_link")
   else
     .audio_thumb
       img(src="/thumbnail/{{ node.id }}", width="300")

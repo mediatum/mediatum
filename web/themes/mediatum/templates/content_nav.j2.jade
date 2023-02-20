@@ -14,17 +14,17 @@
     p
       if styles|length > 1
         for style in styles
-          a.view_switch(href=select_style_link(style=style.name), title=translate(style.label))
+          a.view_switch.mediatum-link-mediatum(href=select_style_link(style=style.name), title=translate(style.label))
             img(src='/static/img/{}'.format(style.icon))
       if printlink
-        a.view_switch(target='_blank', href=printlink, rel="nofollow", title=translate("printpdf"))
+        a.view_switch.mediatum-link-internal(target='_blank', href=printlink, rel="nofollow", title=translate("printpdf"))
           img(src='/static/img/print_icon.png')
   if path
     div.mediatum-content-nav-path
       for step in path
-        a.breadcrumb-delimiter(href=node_url(step.id))
+        a.breadcrumb-delimiter.mediatum-link-mediatum(href=node_url(step.id))
           = step.getLabel()
-      a(href=node_url(node.id))
+      a.mediatum-link-mediatum(href=node_url(node.id))
         = node.getLabel()
 
 

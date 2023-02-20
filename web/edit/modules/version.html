@@ -66,9 +66,14 @@
                         <th><tal:block i18n:translate="create_version_updateduser"/></th>
                     </tr>
                     <tr tal:condition="python: untagged_current_version" class="row active">
-						<td><a tal:attributes="href python:node_url(untagged_current_version.id)"
-						       i18n:translate="untagged_version"
-						       target="frontend">untagged</a>
+						<td>
+                            <a
+                                tal:attributes="href python:node_url(untagged_current_version.id)"
+						        i18n:translate="untagged_version"
+						        target="frontend"
+                                class="mediatum-link-mediatum"
+                            >untagged
+                            </a>
 						</td>
                         <td>
                         <div tal:content="python:untagged_current_version.pretty_format_update_time"></div>
@@ -79,8 +84,15 @@
                     </tr>
                     <tal:block tal:repeat="v tagged_versions">
                     <tr tal:attributes="class python:(v.isActiveVersion() and 'row active' or 'row') ">
-                      <td><a href="/" tal:attributes="href python:node_url(v.id, v.tag)" target="frontend"
-                             tal:content="python:v.tag">Version</a></td>
+                      <td>
+                          <a
+                              href="/"
+                              tal:attributes="href python:node_url(v.id, v.tag)"
+                              target="frontend"
+                              tal:content="python:v.tag"
+                              class="mediatum-link-mediatum"
+                          >Version
+                          </a></td>
                         <td>
                         <div tal:content="python:v.pretty_format_update_time"></div>
                         <div tal:content="python:v.comment"></div>
@@ -91,9 +103,14 @@
                     </tr>
                     </tal:block>
                     <tr tal:condition="python: published_version" class="row active">
-						<td><a tal:attributes="href python:node_url(published_version.id, 'published')"
-						       i18n:translate="published_version"
-						       target="frontend">untagged</a>
+						<td>
+                            <a
+                                tal:attributes="href python:node_url(published_version.id, 'published')"
+						        i18n:translate="published_version"
+						        target="frontend"
+                                class="mediatum-link-mediatum"
+                            >untagged
+                            </a>
 						</td>
                         <td>
                         <div tal:content="python:published_version.pretty_format_update_time"></div>

@@ -4,10 +4,10 @@
 
 #list-page-nav
   if before
-    a.page-nav.page-nav-previous(href=nav.nav_link(before=before))
+    a.page-nav.page-nav-previous.mediatum-link-mediatum(href=nav.nav_link(before=before))
       = translate('previous')
   if after
-    a.page-nav.page-nav-next(href=nav.nav_link(after=after))
+    a.page-nav.page-nav-next.mediatum-link-mediatum(href=nav.nav_link(after=after))
       = translate('next')
 
 

@@ -109,6 +109,9 @@ msgstr "Attach file"
 msgid "workflow_filelist_delete_title"
 msgstr "delete file"
 
+msgid "workflow_filelist_delete_label"
+msgstr "Delete file and back to Upload"
+
 msgid "workflow_add_file"
 msgstr "add file:"
 

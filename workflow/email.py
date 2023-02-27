@@ -81,7 +81,7 @@ class WorkflowStep_SendEmail(WorkflowStep):
             mail.sendmail(xfrom, recipient, node.get("system.mailtmp.subject"), node.get(
                 "system.mailtmp.text"), attachments_paths_and_filenames=attachments_paths_and_filenames)
         except:
-            node.set("system.mailtmp.error", formatException())
+            node.set("system.mailtmp.error", "1")
             db.session.commit()
             logg.exception("Error while sending mail- node stays in workflowstep %s %s", self.id, self.name)
             return
@@ -140,9 +140,8 @@ class WorkflowStep_SendEmail(WorkflowStep):
             return self.forwardAndShow(node, False, req)
 
         elif node.get("system.mailtmp.error"):
-            return u'{}<br/><pre>{}</pre><br/>&gt;<a href="{}">{}</a>&lt;'.format(
+            return u'{} &gt;<a href="{}">{}</a>&lt;'.format(
                     _core_translation.translate(_core_translation.set_language(req.accept_languages), "workflow_email_msg_1"),
-                    node.get("system.mailtmp.error"),
                     _makeSelfLink(req, {"sendout": "true"}),
                     _core_translation.translate(_core_translation.set_language(req.accept_languages), "workflow_email_resend"),
                 )

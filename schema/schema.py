@@ -125,7 +125,7 @@ VIEW_HIDE_EMPTY = 2     # show only fields with 'non-empty' values
 VIEW_DATA_ONLY = 4      # deliver list with values (not html)
 VIEW_DATA_EXPORT = 8    # deliver export format
 
-_EditUpdateAttrs = _collections.namedtuple("_EditUpdateAttrs", "nodename attrs")
+_EditUpdateAttrs = _collections.namedtuple("_EditUpdateAttrs", "attrs")
 
 _MetafieldsDependency = _collections.namedtuple(
     "_MetafieldsDependency",
@@ -972,7 +972,6 @@ class Mask(Node):
         assert self.masktype == "edit"
         form = req.form
         attrs = {}
-        nodename = None
         fields = list()
         current_language = translation.set_language(req.accept_languages)
         default_language = config.languages[0]
@@ -981,29 +980,17 @@ class Mask(Node):
             if field and form.get(field.name, "").find("?") != 0:
                 t = getMetadataType(field.get("type"))
                 if field.name in form:
-                    if field.name == 'nodename':
-                        value = form.get('nodename')
-                        nodename = value
-                    else:
-                        value = t.editor_parse_form_data(field, form)
-                        attrs[field.name] = value
+                    value = t.editor_parse_form_data(field, form)
+                    attrs[field.name] = value
                 elif field["type"] == "check":
                     attrs[field.name] = "0"
-                # handle multilang heritage
-                elif field.name == 'nodename':
-                    if default_language + '__nodename' in form:
-                        value = form.get(default_language + '__nodename')
-                        nodename = value
-                    elif current_language + '__nodename' in form:
-                        value = form.get(current_language + '__nodename')
-                        nodename = value
                 fields.append(field)
 
         attrs["system.edit.lastmask"] = self.name
         attrs["updateuser"] = user.getName()
         attrs["updatetime"] = format_date()
 
-        return _EditUpdateAttrs(nodename, attrs)
+        return _EditUpdateAttrs(attrs)
 
     def apply_edit_update_attrs_to_node(self, node, attrs):
         """
@@ -1012,10 +999,15 @@ class Mask(Node):
         :param attrs: attributes to update
         :return:
         """
-        if attrs.nodename and node.name != attrs.nodename:
-            node.name = attrs.nodename
+        if 'nodename' in attrs.attrs:
+            nodename = attrs.attrs['nodename']
+            if nodename and node.name != nodename:
+                node.name = nodename
 
-        node.attrs.update((name,value) for name,value in attrs.attrs.iteritems() if not name.startswith("system."))
+        node.attrs.update(
+                (name,value) for name,value in attrs.attrs.iteritems()
+                if not name.startswith("system.") and name != "nodename"
+               )
         node.system_attrs.update(
                 (name[len("system."):],value) for name,value in attrs.attrs.iteritems() if name.startswith("system.")
                )

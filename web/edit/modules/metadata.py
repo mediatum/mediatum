@@ -109,11 +109,6 @@ def _handle_edit_metadata(req, mask, nodes):
             __name__, funcname(), field, field.id, field.name, mask, mask.name)
         field_name = field.name
         if field_name == 'nodename' and mask.name == 'settings':
-            if '__nodename' in form:
-                field_name = '__nodename'  # no multilang here !
-            elif '{}__nodename'.format(_core_config.languages[0]) in form:
-                # no multilang here !
-                field_name = '{}__nodename'.format(_core_config.languages[0])
             value = form.get(field_name, None)
             if value:
                 if value != node.name:

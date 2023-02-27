@@ -87,7 +87,7 @@ class WorkflowStep_SendEmail(WorkflowStep):
             return
 
         for s in ["mailtmp.from", "mailtmp.to", "mailtmp.subject", "mailtmp.text",
-                  "mailtmp.error", "mailtmp.talerror", "mailtmp.send"]:
+                  "mailtmp.error", "mailtmp.send"]:
             try:
                 del node.system_attrs[s]
             except KeyError:
@@ -100,28 +100,23 @@ class WorkflowStep_SendEmail(WorkflowStep):
         link = _urlparse.urljoin(_flask.request.host_url, "/pnode?id={}&key={}".format(node.id, node.get("key")))
         link2 = _urlparse.urljoin(_flask.request.host_url, "/node?id={}".format(node.id))
         attrs = {"node": node, "link": link, "publiclink": link2}
-        try:
-            sender = self.settings['sender']
-            if "@" in sender:
-                node.set("system.mailtmp.from", getTALtext(sender, attrs))
-            elif "@" in node.get(sender):
-                node.set("system.mailtmp.from", getTALtext(node.get(sender), attrs))
+        sender = self.settings['sender']
+        if "@" in sender:
+            node.set("system.mailtmp.from", getTALtext(sender, attrs))
+        elif "@" in node.get(sender):
+            node.set("system.mailtmp.from", getTALtext(node.get(sender), attrs))
 
-            _mails = []
-            for m in self.settings['recipient']:
-                if "@" in m:
-                    _mails.append(getTALtext(m, attrs))
-                elif "@" in node.get(m):
-                    _mails.append(getTALtext(node.get(m), attrs))
-            node.set("system.mailtmp.to", ";".join(_mails))
+        _mails = []
+        for m in self.settings['recipient']:
+            if "@" in m:
+                _mails.append(getTALtext(m, attrs))
+            elif "@" in node.get(m):
+                _mails.append(getTALtext(node.get(m), attrs))
+        node.set("system.mailtmp.to", ";".join(_mails))
 
-            node.set("system.mailtmp.subject", getTALtext(self.settings["subject"], attrs))
-            node.set("system.mailtmp.text", getTALtext(self.settings["text"], attrs))
-            db.session.commit()
-        except:
-            node.system_attrs['mailtmp.talerror'] = formatException()
-            db.session.commit()
-            return
+        node.set("system.mailtmp.subject", getTALtext(self.settings["subject"], attrs))
+        node.set("system.mailtmp.text", getTALtext(self.settings["text"], attrs))
+        db.session.commit()
         if not self.settings["allowedit"]:
             if(self.sendOut(node)):
                 self.forward(node, True)
@@ -143,13 +138,6 @@ class WorkflowStep_SendEmail(WorkflowStep):
 
         if "gofalse" in req.params:
             return self.forwardAndShow(node, False, req)
-
-        elif node.system_attrs.get("mailtmp.talerror", "") != "":
-            del node.system_attrs["mailtmp.talerror"]
-            db.session.commit()
-            self.runAction(node, "true")
-            if node.system_attrs.get("mailtmp.talerror", "") != "":
-                return """<pre>%s</pre>""" % node.system_attrs.get("mailtmp.talerror")
 
         elif node.get("system.mailtmp.error"):
             return u'{}<br/><pre>{}</pre><br/>&gt;<a href="{}">{}</a>&lt;'.format(

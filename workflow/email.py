@@ -86,12 +86,8 @@ class WorkflowStep_SendEmail(WorkflowStep):
             logg.exception("Error while sending mail- node stays in workflowstep %s %s", self.id, self.name)
             return
 
-        for s in ["mailtmp.from", "mailtmp.to", "mailtmp.subject", "mailtmp.text",
-                  "mailtmp.error", "mailtmp.send"]:
-            try:
-                del node.system_attrs[s]
-            except KeyError:
-                continue
+        for s in ("from", "to", "subject", "text", "error", "send"):
+            node.system_attrs.pop("mailtmp.{}".format(s), None)
 
         db.session.commit()
         return 1

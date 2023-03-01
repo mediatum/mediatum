@@ -197,7 +197,7 @@ Owner of DHTMLgoodies.com
                 var parentId = firstLi.getAttribute('parentId');
                 if(!parentId)parentId = firstLi.parentId;
                 if(parentId){                   
-                    $.get(ajaxRequestFile+'?parentId='+parentId+'&style='+config['treeStyle'], function(data){
+                    $.post(ajaxRequestFile, {parentId: parentId, style: config['treeStyle']}, function(data){
                         document.getElementById(ul.id).innerHTML = data;
                         parseSubItems(ul.id, parentId);
                     });

@@ -189,7 +189,7 @@ def flask_routes(app):
     @app.route('/edit/<path:action>', methods=['GET', 'POST'])
     @app.route('/admin/<path:action>', methods=['GET', 'POST'])
     @app.route('/services/<path:action>')
-    @app.route('/ftree/<path:action>')
+    @app.route('/ftree/<path:action>', methods=['GET', 'POST'])
     @app.route('/publish/<path:action>')
     @app.route('/thumbnail/<path:action>')
     @app.route('/image/<path:action>')

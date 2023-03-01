@@ -154,18 +154,21 @@ def getContent(req, ids):
         ret += _tal.processTAL(v, file="web/edit/modules/publish.html", macro="reload", request=req)
 
     collections = _core_nodecache.get_collections_node()
-    writable_container_query = (q(Container.id)
-            .join(_node.t_noderelation, _node.t_noderelation.c.cid == Container.id)
-            .filter_read_access()
-            .filter_write_access()
-            .filter(_node.t_noderelation.c.nid == collections.id)
-            .cte()
-           )
-    writable_container_nids = (q(_node.t_nodemapping.c.nid)
-            .filter(~_node.t_nodemapping.c.nid.in_(q(writable_container_query)))
-            .filter(_node.t_nodemapping.c.cid.in_(q(writable_container_query)))
-            .distinct()
-           ).all()
+    if user.is_admin:
+        writable_container_nids = ((collections.id, ),)
+    else:
+        writable_container_query = (q(Container.id)
+                .join(_node.t_noderelation, _node.t_noderelation.c.cid == Container.id)
+                .filter_read_access()
+                .filter_write_access()
+                .filter(_node.t_noderelation.c.nid == collections.id)
+                .cte()
+               )
+        writable_container_nids = (q(_node.t_nodemapping.c.nid)
+                .filter(~_node.t_nodemapping.c.nid.in_(q(writable_container_query)))
+                .filter(_node.t_nodemapping.c.cid.in_(q(writable_container_query)))
+                .distinct()
+               ).all()
 
     # build normal window
     stddir = ""  # preset value for destination ids

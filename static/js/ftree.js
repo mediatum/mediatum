@@ -46,6 +46,7 @@ var checkImage = 'check.gif';
 var uncheckImage = 'uncheck.gif';
 
 var initExpandedNodes = '';    // Cookie - initially expanded nodes;
+var initial_initExpandedNodes = '';
 
 var useAjaxToLoadNodesDynamically = true;
 var ajaxRequestFile = '/ftree/edittree';
@@ -106,7 +107,7 @@ function collapseAll(treeId)
 function getNodePath(itemId)
 {
     $.get(ajaxRequestFile+'?pathTo='+itemId+'&style='+config['treeStyle']+"&multiselect="+config['multiselect'], function(data){
-        initExpandedNodes = data;
+        initial_initExpandedNodes = initExpandedNodes = data;
         startpath = initExpandedNodes.split(",");
         showHideNode(false, startpath[0]);
         startpath.splice(0,1);
@@ -195,7 +196,7 @@ function showHideNode(e,inputId)
             var parentId = firstLi.getAttribute('parentId');
             if(!parentId)parentId = firstLi.parentId;
             if(parentId){
-                $.post(ajaxRequestFile, {parentId: parentId, style: config['treeStyle']}, function(data){
+                $.post(ajaxRequestFile, {parentId: parentId, style: config['treeStyle'], path: initial_initExpandedNodes}, function(data){
                     document.getElementById(ul.id).innerHTML = data;
                     parseSubItems(ul.id, parentId);
                 });

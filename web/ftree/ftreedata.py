@@ -22,11 +22,15 @@ import web.edit.edit as _web_edit_edit
 
 
 def getData(req):
-    pid = req.params.get("parentId")
+    pid = int(req.values.get("parentId"))
     language = _core_translation.set_language(req.accept_languages)
     ret = []
     user_home_dir = _core_users.user_from_session().home_dir
     group_ids, ip, date = _database_postgres.build_accessfunc_arguments()
+    if req.values["style"] == "publish":
+        initial_opened_nids = frozenset(int(p) for p in req.values["path"].split(",") if p != "x")
+    else:
+        initial_opened_nids = frozenset()
 
     write_access_alias = _sqlalchemy_orm.aliased(_core.Node)
     write_access_stmt = (_core.db.query(_sqlalchemy.func.has_write_access_to_node(write_access_alias.id, group_ids, ip, date))
@@ -42,15 +46,21 @@ def getData(req):
             .label("has_container_children")
            )
 
-    has_writable_container_alias = _sqlalchemy_orm.aliased(_contenttypes.Container)
-    has_writable_container_children_stmt = (_core.db.query(has_writable_container_alias)
-            .join(_node.t_noderelation, _node.t_noderelation.c.cid == has_writable_container_alias.id)
-            .filter(_node.t_noderelation.c.nid == _contenttypes.Container.id)
-            .filter_read_access()
-            .filter_write_access()
-            .exists()
-            .label("has_writable_container_children")
-           )
+    if pid in initial_opened_nids:
+        has_writable_container_children_stmt = (_contenttypes.Container.id
+                .in_(initial_opened_nids)
+                .label("has_writable_container_children")
+               )
+    else:
+        has_writable_container_alias = _sqlalchemy_orm.aliased(_contenttypes.Container)
+        has_writable_container_children_stmt = (_core.db.query(has_writable_container_alias)
+                .join(_node.t_noderelation, _node.t_noderelation.c.cid == has_writable_container_alias.id)
+                .filter(_node.t_noderelation.c.nid == _contenttypes.Container.id)
+                .filter_read_access()
+                .filter_write_access()
+                .exists()
+                .label("has_writable_container_children")
+               )
 
     query_container = _core.db.query(
             _contenttypes.Container,

@@ -23,7 +23,7 @@ import web.edit.edit as _web_edit_edit
 
 def getData(req):
     pid = req.params.get("parentId")
-    assert tuple(req.values.getlist("style"))==("classification",)
+    language = _core_translation.set_language(req.accept_languages)
     ret = []
     user_home_dir = _core_users.user_from_session().home_dir
     group_ids, ip, date = _database_postgres.build_accessfunc_arguments()
@@ -73,8 +73,7 @@ def getData(req):
             special_dir_type = _web_edit_edit.get_special_dir_type(c.Container)
             if not c.write_access and not c.has_writable_container_children:
                 continue
-            label = _web_edit_common.get_edit_label(c.Container, _core_translation.set_language(req.accept_languages))
-            title = u"{} ({})".format(label, c.Container.id)
+            label = _web_edit_common.get_edit_label(c.Container, language)
 
             cls = "folder"
 
@@ -95,8 +94,8 @@ def getData(req):
                 cls = "homeicon"
 
             ret.append(u'<li class="{}.gif" id="Node{}">'.format(cls, c.Container.id))
-            ret.append(u'<a href="#" title="{}" id="{}" class="{}">{}<input type="image" src="/static/img/ftree/uncheck.gif"/></a>'.format(
-                            title, c.Container.id, itemcls, label))
+            ret.append(u'<a href="#" title="{} ({})" id="{}" class="{}">{}<input type="image" src="/static/img/ftree/uncheck.gif"/></a>'.format(
+                            label, c.Container.id, c.Container.id, itemcls, label))
 
             if c.has_container_children:
                 ret.append(u'<ul><li parentId="{}" class="spinner.gif"><a href="#">&nbsp;</a></li></ul>'.format(c.Container.id))
@@ -124,12 +123,15 @@ def getPathTo(req):
     collectionsid = _core_nodecache.get_collections_node().id
     # if more than one node selected use the first to get the path to
     items = []
+    checked = set()
     for nid in req.values["pathTo"].split(','):
         node = _core.db.query(_core.Node).get(nid)
 
         for path in _pathutils.getPaths(node):
             if node.id not in path and node.isContainer():  # add node if container
                 path.append(node)
+
+            checked.add(path[-1].id)  # last item of path is checked
 
             if path[0].parents[0].id == collectionsid and collectionsid not in items:
                 items.append(collectionsid)
@@ -142,7 +144,12 @@ def getPathTo(req):
             if req.params.get("multiselect", "false") == "false":  # if not multiselect use only first path
                 break
 
-    items = u",".join(map(unicode, items)) or unicode(collectionsid)
-
+    if req.values["style"] == "classification":
+        assert len(req.values["pathTo"].split(",")) == 1
+    elif req.values["style"] == "publish":
+        checked.clear() # no pre-checked checkmarks in quick publisher
+    else:
+        raise RuntimeError("unknown tree style")
+    items = (("({})" if i in checked else "{}").format(i) for i in items)
     req.response.status_code = _httpstatus.HTTP_OK
-    req.response.set_data(items)
+    req.response.set_data(unicode(",".join(items) or collectionsid))

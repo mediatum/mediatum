@@ -4,6 +4,8 @@
 from __future__ import division
 from __future__ import print_function
 
+import flask as _flask
+
 import mediatumtal.tal as _tal
 
 import core.csrfform as _core_csrfform
@@ -141,6 +143,10 @@ def getContent(req, ids):
                 publisherror.append(_core_translation.translate(language, "error_publish_database_single"))
             else:
                 publisherror.append(_core_translation.translate(language, "error_publish_database_multiple"))
+
+        if not publisherror:
+            req.response = _flask.redirect("/edit/edit_content?srcnodeid={0}&id={0}".format(publishdir.id), code=303)
+            return req.response.status_code
 
         v = {}
         v["id"] = publishdir.id

@@ -196,7 +196,10 @@ function showHideNode(e,inputId)
             var parentId = firstLi.getAttribute('parentId');
             if(!parentId)parentId = firstLi.parentId;
             if(parentId){
-                $.post(ajaxRequestFile, {parentId: parentId, style: config['treeStyle'], path: initial_initExpandedNodes}, function(data){
+                data = {parentId: parentId, style: config['treeStyle'], path: initial_initExpandedNodes};
+                if (typeof nids !== 'undefined')
+                    data['nids'] = nids;
+                $.post(ajaxRequestFile, data, function(data){
                     document.getElementById(ul.id).innerHTML = data;
                     parseSubItems(ul.id, parentId);
                 });

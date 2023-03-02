@@ -12,6 +12,7 @@ from core.users import user_from_session as _user_from_session
 from core import httpstatus
 from core import Node
 from core import db
+import web.edit.edit_common as _web_edit_edit_common
 
 q = db.query
 def getInformation():
@@ -27,8 +28,9 @@ def getContent(req, ids):
     return _tal.processTAL(
             dict(
                 basedirs=[_core_nodecache.get_home_root_node(), _core_nodecache.get_collections_node()],
-                script="var currentitem = '{0}';\nvar currentfolder = '{0}'".format(
+                script="var currentitem = '{0}';\nvar currentfolder = '{0}';\nvar nids = '{1}';".format(
                         req.params.get("id", _core_nodecache.get_root_node().id),
+                        ','.join(map(str,_web_edit_edit_common.get_writable_container_parent_nids(user))),
                     ),
                 idstr=",".join(ids),
                 node_count=len(ids),

@@ -27,10 +27,11 @@ def getData(req):
     ret = []
     user_home_dir = _core_users.user_from_session().home_dir
     group_ids, ip, date = _database_postgres.build_accessfunc_arguments()
-    if req.values["style"] == "publish":
-        initial_opened_nids = frozenset(int(p) for p in req.values["path"].split(",") if p != "x")
-    else:
-        initial_opened_nids = frozenset()
+    nids = req.values.get("nids")
+    initial_opened_nids = _get_path_to(map(int, nids.split(',')), "publish", True) if nids else req.values["path"].split(',')
+    initial_opened_nids = frozenset(initial_opened_nids)
+    initial_opened_nids = frozenset(int(p) for p in initial_opened_nids if p[0] not in "x(")
+    del nids
 
     write_access_alias = _sqlalchemy_orm.aliased(_core.Node)
     write_access_stmt = (_core.db.query(_sqlalchemy.func.has_write_access_to_node(write_access_alias.id, group_ids, ip, date))

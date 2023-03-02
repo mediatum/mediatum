@@ -9,7 +9,6 @@ import flask as _flask
 import mediatumtal.tal as _tal
 
 import core.csrfform as _core_csrfform
-import core.database.postgres.node as _node
 import core.translation as _core_translation
 import web.edit.edit_common as _web_edit_edit_common
 from core.users import getHomeDir
@@ -25,6 +24,7 @@ q = db.query
 
 def getInformation():
     return {"version":"1.1", "system":1}
+
 
 def getContent(req, ids):
     logg.error("publish.getContent")
@@ -153,23 +153,6 @@ def getContent(req, ids):
         v["change"] = changes
         ret += _tal.processTAL(v, file="web/edit/modules/publish.html", macro="reload", request=req)
 
-    collections = _core_nodecache.get_collections_node()
-    if user.is_admin:
-        writable_container_nids = ((collections.id, ),)
-    else:
-        writable_container_query = (q(Container.id)
-                .join(_node.t_noderelation, _node.t_noderelation.c.cid == Container.id)
-                .filter_read_access()
-                .filter_write_access()
-                .filter(_node.t_noderelation.c.nid == collections.id)
-                .cte()
-               )
-        writable_container_nids = (q(_node.t_nodemapping.c.nid)
-                .filter(~_node.t_nodemapping.c.nid.in_(q(writable_container_query)))
-                .filter(_node.t_nodemapping.c.cid.in_(q(writable_container_query)))
-                .distinct()
-               ).all()
-
     # build normal window
     stddir = ""  # preset value for destination ids
     stdname = ""
@@ -182,7 +165,9 @@ def getContent(req, ids):
                 stdname=stdname,
                 showdir=show_dir_nav.showdir(publishwarn=None, markunpublished=1, faultyidlist=errorids),
                 basedir=_core_nodecache.get_collections_node(),
-                script="var currentitem = '{0}';\nvar currentfolder = '{0}'".format(",".join(str(nid[0]) for nid in writable_container_nids)),
+                script="var currentitem = '{0}';\nvar currentfolder = '{0}'".format(
+                    ','.join(map(str,_web_edit_edit_common.get_writable_container_parent_nids(user))),
+                    ),
                 idstr=ids,
                 faultyerrlist=publisherror,
                 csrf=_core_csrfform.get_token(),

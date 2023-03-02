@@ -11,8 +11,10 @@ import backports.functools_lru_cache as _backports_functools_lru_cache
 import mediatumtal.tal as _tal
 
 from core import Node, db
+import core.database.postgres.node as _node
 import core.database.postgres.search as _postgres_search
 import core.config as _config
+import core.nodecache as _core_nodecache
 import core.translation as _core_translation
 from core.users import user_from_session as _user_from_session
 from contenttypes import Container
@@ -565,3 +567,24 @@ def get_edit_label(node, lang):
         label = _core_translation.translate(lang, 'user_' + special_dir_type)
 
     return label
+
+
+def get_writable_container_parent_nids(user):
+
+    collections_id = _core_nodecache.get_collections_node().id
+    if user.is_admin:
+        return frozenset((collections_id, ))
+    writable_container_query = (q(Container.id)
+            .join(_node.t_noderelation, _node.t_noderelation.c.cid == Container.id)
+            .filter_read_access()
+            .filter_write_access()
+            .filter(_node.t_noderelation.c.nid == collections_id)
+            .cte()
+           )
+    writable_container_nids = (q(_node.t_nodemapping.c.nid)
+            .filter(~_node.t_nodemapping.c.nid.in_(q(writable_container_query)))
+            .filter(_node.t_nodemapping.c.cid.in_(q(writable_container_query)))
+            .distinct()
+            .all()
+           )
+    return frozenset(nid[0] for nid in writable_container_nids)

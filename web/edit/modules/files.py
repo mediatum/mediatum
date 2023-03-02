@@ -23,6 +23,7 @@ from core import Node
 from core import db
 from core import File
 from web import frontend as _web_frontend
+import web.edit.edit_common as _web_edit_edit_common
 
 q = db.query
 logg = logging.getLogger(__name__)
@@ -236,12 +237,14 @@ def getContent(req, ids):
 
     if req.params.get("style") == "popup":
         id = req.params.get("id", _core_nodecache.get_root_node().id)
+
         ret += _tal.processTAL(
                 dict(
                     basedirs=[_core_nodecache.get_home_root_node(), _core_nodecache.get_collections_node()],
-                    script="var currentitem = '{0}';\nvar currentfolder = '{1}';\nvar node = {0};".format(
+                    script="var currentitem = '{0}';\nvar currentfolder = '{1}';\nvar node = {0};\nvar nids = '{2}';".format(
                             id,
                             req.params.get('parent'),
+                            ','.join(map(str,_web_edit_edit_common.get_writable_container_parent_nids(user))),
                         ),
                     idstr=",".join(ids),
                     srcnodeid=srcnodeid,

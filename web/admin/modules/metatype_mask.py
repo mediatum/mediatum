@@ -10,7 +10,8 @@ import mediatumtal.tal as _tal
 import core.csrfform as _core_csrfform
 import core.translation as _core_translation
 from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter
-from schema.schema import getMetaType, getMaskTypes
+import schema.schema as _schema
+from schema.schema import getMetaType
 from core import db
 
 q = db.query
@@ -82,7 +83,7 @@ def showMaskList(req, id):
         for col in xrange(1, 7)
         ))
     v["metadatatype"] = metadatatype
-    v["masktypes"] = getMaskTypes()
+    v["masktypes"] = _schema.masktypes
     v["lang_icons"] = {"de": "/static/img/flag_de.gif", "en": "/static/img/flag_en.gif", "no": "/static/img/emtyDot1Pix.gif"}
     v["masks"] = masks
     v["pages"] = pages

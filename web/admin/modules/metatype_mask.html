@@ -71,7 +71,7 @@
                 <tr tal:define="cssclass python:masks.index(mask)%2 and 'norm' or 'silver'" tal:attributes="class cssclass">
                     <td tal:content="python:u'{}.'.format(masks.index(mask)+1)"/>
                     <td tal:content="python:mask.getName()"/>
-                    <td tal:content="python:masktypes[mask.getMasktype()].getType()" i18n:translate=""/>
+                    <td tal:content="python:masktypes[mask.getMasktype()].name" i18n:translate=""/>
                     <td tal:content="python:mask.getDescription()"/>
                     <td>&nbsp;&nbsp;
                         <img tal:condition="python:mask.getDefaultMask()" src="/static/img/haken.gif"/>
@@ -158,7 +158,12 @@
                 <td style="vertical-align:top"><tal:block i18n:translate="admin_mask_type">TEXT</tal:block>:</td>
                 <td>
                     <select name="mtype" style="width:200px" onchange="changetype(document, this)" onload="changetype(document)" id="mtype">
-                        <option tal:repeat="key python:masktypes.keys()" tal:attributes="value key; selected python:'selected' if mask.getMasktype()==key else None" tal:content="python:masktypes[key].getType()" i18n:translate=""/>
+                        <option
+                            tal:repeat="key python:masktypes.keys()"
+                            tal:attributes="value key; selected python:'selected' if mask.getMasktype()==key else None"
+                            tal:content="python:masktypes[key].name"
+                            i18n:translate=""
+                           />
                     </select>
                  <td>
             </tr>

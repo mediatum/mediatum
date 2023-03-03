@@ -743,43 +743,16 @@ class Metafield(Node):
 # helper class for masks
 
 
-class MaskType:
+MaskType = _collections.namedtuple("_MaskType", "name separator")
 
-    def __init__(self, type, separator="<br/>"):
-        self.type = type
-        self.separator = separator
-
-    def setType(self, value):
-        self.type = value
-        db.session.commit()
-
-    def getType(self):
-        return self.type
-
-    def setSeparator(self, value):
-        self.separator = value
-        db.session.commit()
-
-    def getSeparator(self):
-        return self.separator
-
-
-def getMaskTypes(key="."):
-    masktypes = {
-        "": MaskType("masktype_empty"),
-        "edit": MaskType("masktype_edit"),
-        "search": MaskType("masktype_search"),
-        "shortview": MaskType("masktype_short", ". "),
-        "fullview": MaskType("masktype_full"),
-        "export": MaskType("masktype_export")
-    }
-    if key == ".":
-        return masktypes
-    else:
-        if key in masktypes.keys():
-            return masktypes[key]
-        else:
-            return MaskType()
+masktypes = {
+        "": MaskType(name="masktype_empty", separator="<br/>"),
+        "edit": MaskType(name="masktype_edit", separator="<br/>"),
+        "search": MaskType(name="masktype_search", separator="<br/>"),
+        "shortview": MaskType(name="masktype_short", separator=". "),
+        "fullview": MaskType(name="masktype_full", separator="<br/>"),
+        "export": MaskType(name="masktype_export", separator="<br/>"),
+       }
 
 
 @check_type_arg
@@ -1225,7 +1198,7 @@ class Mask(Node):
         for key, value in self.attrs.items():
             if key == "separator":
                 return self.get("separator")
-        return getMaskTypes(self.getMasktype()).getSeparator()
+        return masktypes[self.getMasktype()].separator
 
     def setSeparator(self, value):
         self.set("separator", value)

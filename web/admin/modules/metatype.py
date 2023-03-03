@@ -126,7 +126,7 @@ def _mask_details(req, nid=None, err=0):
     v["mappings"] = _core_nodecache.get_mappings_node().children
     v["mtype"] = mtype
     v["error"] = err
-    v["masktypes"] = _schema.getMaskTypes()
+    v["masktypes"] = _schema.masktypes
     v["morig_name"] = morig_name
     v["langs"] = _config.languages
     v["actpage"] = req.values["actpage"]

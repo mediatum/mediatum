@@ -158,7 +158,7 @@ def getContent(req, ids):
     idstr = ",".join(ids)
 
     masks = {}
-    if hasattr(nodes[-1], "metaFields"):
+    if hasattr(nodes[-1], "metaFields") and len(frozenset(node.type for node in nodes)) == 1:
         masks["settings"] = _SystemMask(
                 "settings",
                 _core_translation.translate_in_request("settings", req),

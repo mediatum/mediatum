@@ -9,7 +9,13 @@ from collections import OrderedDict
 import logging
 from warnings import warn
 
+import sqlalchemy as _sqlalchemy
+import sqlalchemy.orm.session as _
+
+import contenttypes as _contenttypes
+import contenttypes.data as _
 import core as _core
+import core.database.postgres.node as _
 import core.translation as _core_translation
 from core import config
 from core import styles
@@ -651,7 +657,16 @@ def make_node_content(node, req, paths):
 
         if node.show_list_view:
             # no startpage found, list view requested
-            allowed_nodes = node.content_children_for_all_subcontainers_with_duplicates.filter_read_access()
+            allowed_nodes = (_sqlalchemy.orm.session.object_session(node)
+                .query(_contenttypes.data.Content)
+                .filter_by(subnode=False)
+                .join(
+                    _core.database.postgres.node.t_noderelation,
+                    _contenttypes.data.Content.id == _core.database.postgres.node.t_noderelation.c.cid,
+                    )
+                .filter(_core.database.postgres.node.t_noderelation.c.nid==node.id)
+                .filter_read_access()
+                )
             c = ContentList(allowed_nodes, node, paths)
             c.feedback(req)
             # if ContentList feedback produced a content error, return that instead of the list itself

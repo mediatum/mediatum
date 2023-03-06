@@ -283,6 +283,8 @@ def _make_navtree_entries(language, container):
             .all()
            )
 
+    tree_elements = tuple(t for t in tree_elements
+            if t.parent_id != _nodecache.get_root_node().id or t.Container == _nodecache.get_collections_node())
     not_active = frozenset(te.parent_id for te in tree_elements)
     return tuple(_make_navtree_entries_rec(
             {pid:tuple(te for te in tree_elements if te.parent_id==pid) for pid in not_active},

@@ -349,15 +349,6 @@ class Node(_core.database.postgres.DeclarativeBase, NodeMixin):
             self.orderpos = orderpos
 
     @property
-    def content_children_for_all_subcontainers(self):
-        """Collects all Content nodes in all subcontainers of this node.
-        This excludes content nodes that are children of other content nodes.
-        """
-        from contenttypes.data import Content
-        sq = _subquery_subtree_distinct(self)
-        return object_session(self).query(Content).filter(Node.id.in_(sq)).filter_by(subnode=False)
-
-    @property
     def content_children_for_all_subcontainers_with_duplicates(self):
         """Collects all Content nodes in all subcontainers of this node.
         This excludes content nodes that are children of other content nodes.
@@ -377,7 +368,11 @@ class Node(_core.database.postgres.DeclarativeBase, NodeMixin):
                     _core.database.postgres.mediatumfunc.count_content_children_for_all_subcontainers(self.id),
                 )
         else:
-            return self.content_children_for_all_subcontainers.count()
+            from contenttypes import data as _contenttypes_data
+            sq = _subquery_subtree_distinct(self)
+            return object_session(self).query(_contenttypes_data.Content).filter(Node.id.in_(sq)).filter_by(
+                subnode=False,
+                ).count()
 
 
     def all_children_by_query(self, query):

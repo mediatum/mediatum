@@ -113,7 +113,6 @@ def _handle_edit_metadata(req, mask, nodes):
 
 
 def getContent(req, ids):
-    ret = ""
     user = user_from_session()
 
     if "metadata" in user.hidden_edit_functions:
@@ -201,5 +200,4 @@ def getContent(req, ids):
     data.update(ctx)
     data["srcnodeid"] = req.values.get("srcnodeid", "")
 
-    ret += _tal.processTAL(data, file="web/edit/modules/metadata.html", macro="edit_metadata", request=req)
-    return ret
+    return _tal.processTAL(data, file="web/edit/modules/metadata.html", macro="edit_metadata", request=req)

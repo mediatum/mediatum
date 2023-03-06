@@ -281,9 +281,6 @@ class Directory(Container):
     def treeiconclass(cls):
         return "directory"
 
-    def get_directory(self):
-        return self
-
 
 @check_type_arg_with_schema
 class Collection(Container):

@@ -4,6 +4,7 @@
 from __future__ import division
 from __future__ import print_function
 
+import functools as _functools
 import logging
 
 import mediatumtal.tal as _tal
@@ -24,35 +25,15 @@ q = db.query
 logg = logging.getLogger(__name__)
 
 
-def _get_datelists(nodes):
-    '''
-    helper funtion to update default context before calling TAL interpreter
-    '''
-    if len(nodes) != 1:
-        return None, None
-    node, = nodes
-
-    update_date = None
-    if node.updatetime:
-        try:
-            date = parse_date(
-                node.updatetime, "%Y-%m-%dT%H:%M:%S")
-            datestr = format_date(date, format='%d.%m.%Y %H:%M:%S')
-        except:
-            datestr = node.updatetime
-        update_date = (node.get("updateuser"), datestr)
-
-    creation_date = None
-    if node.get("creationtime"):
-        try:
-            date = parse_date(
-                node.get("creationtime"), "%Y-%m-%dT%H:%M:%S")
-            datestr = format_date(date, format='%d.%m.%Y %H:%M:%S')
-        except:
-            datestr = node.get("creationtime")
-        creation_date = (node.get("creator"), datestr)
-
-    return update_date, creation_date
+def _get_name_date(date, name_getter):
+    if not date:
+        return
+    try:
+        date = parse_date("%Y-%m-%dT%H:%M:%S")
+        datestr = format_date(date, format='%d.%m.%Y %H:%M:%S')
+    except:
+        datestr = date
+    return (name_getter(), datestr)
 
 
 class _SystemMask:
@@ -165,19 +146,6 @@ def getContent(req, ids):
     if not mask:
         return _tal.processTAL({}, file="web/edit/modules/metadata.html", macro="no_mask", request=req)
 
-    # context default for TAL interpreter
-    ctx = dict(
-            user=user,
-            idstr=idstr,
-            node=nodes[0], # ?
-            node_count=len(nodes),
-            masklist=masks.values(),
-            maskname=mask.name,
-            language=_core_translation.set_language(req.accept_languages),
-            translate=_core_translation.translate,
-            csrf=_core_csrfform.get_token(),
-        )
-
     if "edit_metadata" in req.params:
         if user.home_dir in nodes or not all(node.has_write_access() for node in nodes):
             req.response.status_code = httpstatus.HTTP_FORBIDDEN
@@ -189,15 +157,29 @@ def getContent(req, ids):
         if not hasattr(mask, "i_am_not_a_mask"):
             req.params["errorlist"] = mask.validate(nodes)
 
-    data = {}
-
-    data["update_date"], data["creation_date"] = _get_datelists(nodes)
-    data["err"] = err
-
-    data["maskform"] = mask.getFormHTML(nodes, req) if not hasattr(mask, "i_am_not_a_mask") else None
-    data["fields"] = mask.metaFields() if hasattr(mask, "i_am_not_a_mask") else None
-
-    data.update(ctx)
-    data["srcnodeid"] = req.values.get("srcnodeid", "")
-
-    return _tal.processTAL(data, file="web/edit/modules/metadata.html", macro="edit_metadata", request=req)
+    return _tal.processTAL(
+        dict(
+            creation_date=_get_name_date(
+                nodes[0].get("creationtime"), _functools.partial(nodes[0].get, "creator")
+               ) if len(nodes)==1 else None,
+            err=err,
+            fields=mask.metaFields() if hasattr(mask, "i_am_not_a_mask") else None,
+            idstr=idstr,
+            maskform=mask.getFormHTML(nodes, req) if not hasattr(mask, "i_am_not_a_mask") else None,
+            masklist=masks.values(),
+            maskname=mask.name,
+            node=nodes[0], # ?
+            node_count=len(nodes),
+            srcnodeid=req.values.get("srcnodeid", ""),
+            update_date=_get_name_date(
+                nodes[0].updatetime, _functools.partial(nodes[0].get, "updateuser")
+               ) if len(nodes)==1 else None,
+            user=user,
+            language=_core_translation.set_language(req.accept_languages),
+            translate=_core_translation.translate,
+            csrf=_core_csrfform.get_token(),
+        ),
+        file="web/edit/modules/metadata.html",
+        macro="edit_metadata",
+        request=req,
+       )

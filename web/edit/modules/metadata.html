@@ -31,7 +31,6 @@
 <tal:block metal:define-macro="edit_metadata">
     <link rel="stylesheet" href="/static/css/edit/modules/metadata.css" type="text/css" />
 
-    <script tal:content="python:u'var flag_nodename_changed = {};'.format(flag_nodename_changed)">TEXT</script>
     <script tal:content="python:u'var new_nodename = \'{}\';'.format(node.getLabel())">TEXT</script>
 
     <div id="navigation_content">
@@ -110,7 +109,6 @@
                 <input type="hidden" name="tab" value="metadata"/>
                 <input tal:attributes="value idstr" type="hidden" name="id"/>
                 <input type="hidden" name="edit_metadata" value="edit_metadata"/>
-                <input type="hidden" name="nodename_changed" value="nodename_changed"/>
                 <br/>
                 <br/>
             </form>

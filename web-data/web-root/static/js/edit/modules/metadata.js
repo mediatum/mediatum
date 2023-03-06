@@ -29,12 +29,6 @@ $(document).ready(function () {
         togglerTip_closed: js_edit_layout_togglertip_closed,
 
     });
-    console.log('flag_nodename_changed ', flag_nodename_changed );
-    if (flag_nodename_changed != -1) {
-        if (flag_nodename_changed > 0) {
-            updateNodeLabels(flag_nodename_changed);
-        }
-        var k = parent.last_activated_node.key;
-        updateNodeLabels(k);
-    }
+    var k = parent.last_activated_node.key;
+    updateNodeLabels(k);
 });

@@ -80,29 +80,18 @@ def _handle_edit_metadata(req, mask, nodes):
     # check and save items
     user = user_from_session()
     userdir = user.home_dir
-    flag_nodename_changed = -1
     form = req.form
 
     for node in nodes:
         assert node.has_write_access() and node is not userdir
 
     if not hasattr(mask, "i_am_not_a_mask"):
-        # XXX: why check here?
-        # if nodes:
-        old_nodename = nodes[0].name
-
         attrs = mask.get_edit_update_attrs(req, user)
         for node in nodes:
             mask.apply_edit_update_attrs_to_node(node, attrs)
 
-        # XXX: why check here?
-        # if nodes:
-        new_nodename = nodes[0].name
-        if (len(nodes) == 1 or old_nodename != new_nodename) and isinstance(nodes[0], Container):
-            # for updates of node label in editor tree
-            flag_nodename_changed = ustr(nodes[0].id)
         db.session.commit()
-        return flag_nodename_changed
+        return
 
     for field in mask.metaFields():
         logg.debug("in %s.%s: (hasattr(mask,'i_am_not_a_mask')) field: %s, field.id: %s, field.name: %s, mask: %s, maskname: %s",
@@ -111,8 +100,6 @@ def _handle_edit_metadata(req, mask, nodes):
         if field_name == 'nodename' and mask.name == 'settings':
             value = form.get(field_name, None)
             if value:
-                if value != node.name:
-                    flag_nodename_changed = ustr(node.id)
                 for node in nodes:
                     node.name = value
         value = form.get(field_name, None)
@@ -123,7 +110,6 @@ def _handle_edit_metadata(req, mask, nodes):
             node.set(field.getName(), "")
 
     db.session.commit()
-    return flag_nodename_changed
 
 
 def getContent(req, ids):
@@ -136,12 +122,6 @@ def getContent(req, ids):
         return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
     err = 0
-
-    # flag indicating change of node.name (fancytree node may have to be updated)
-    # keep as integer
-    # negative -> no change
-    # else -> id of changed node
-    flag_nodename_changed = -1
 
     nodes = map(q(Node).get, ids)
 
@@ -192,7 +172,6 @@ def getContent(req, ids):
             idstr=idstr,
             node=nodes[0], # ?
             node_count=len(nodes),
-            flag_nodename_changed=flag_nodename_changed,
             masklist=masks.values(),
             maskname=mask.name,
             language=_core_translation.set_language(req.accept_languages),
@@ -205,7 +184,7 @@ def getContent(req, ids):
             req.response.status_code = httpstatus.HTTP_FORBIDDEN
             return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
-        flag_nodename_changed = _handle_edit_metadata(req, mask, nodes)
+        _handle_edit_metadata(req, mask, nodes)
         logg.debug("%s change metadata %s", user.login_name, idstr)
         logg.debug("%r", req.params)
         if not hasattr(mask, "i_am_not_a_mask"):
@@ -220,7 +199,6 @@ def getContent(req, ids):
     data["fields"] = mask.metaFields() if hasattr(mask, "i_am_not_a_mask") else None
 
     data.update(ctx)
-    data["flag_nodename_changed"] = flag_nodename_changed
     data["srcnodeid"] = req.values.get("srcnodeid", "")
 
     ret += _tal.processTAL(data, file="web/edit/modules/metadata.html", macro="edit_metadata", request=req)

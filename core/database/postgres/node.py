@@ -30,7 +30,6 @@ import flask as _flask
 import core as _core
 import core.database.postgres as _
 import core.nodecache as _core_nodecache
-from core import config
 from core.node import NodeMixin, NodeVersionMixin
 from core.database.postgres import rel, bref, C, FK
 from core.database.postgres.alchemyext import LenMixin, view, exec_sqlfunc
@@ -237,7 +236,7 @@ def _cte_subtree(node):
     return query
 
 
-def _subquery_subtree_distinct(node):
+def subquery_subtree_distinct(node):
 
     return (_core.db.query(t_noderelation.c.cid)
             .filter(t_noderelation.c.nid == node.id)
@@ -360,23 +359,8 @@ class Node(_core.database.postgres.DeclarativeBase, NodeMixin):
         # TODO: check if it's better to use the _subquery_subtree() here
         return object_session(self).query(Content).filter_by(subnode=False).join(nr, Content.id == nr.c.cid).filter(nr.c.nid==self.id)
 
-    @property
-    def content_children_count_for_all_subcontainers(self):
-        if config.getboolean("database.use_cached_childcount"):
-            return exec_sqlfunc(
-                    object_session(self),
-                    _core.database.postgres.mediatumfunc.count_content_children_for_all_subcontainers(self.id),
-                )
-        else:
-            from contenttypes import data as _contenttypes_data
-            sq = _subquery_subtree_distinct(self)
-            return object_session(self).query(_contenttypes_data.Content).filter(Node.id.in_(sq)).filter_by(
-                subnode=False,
-                ).count()
-
-
     def all_children_by_query(self, query):
-        sq = _subquery_subtree_distinct(self)
+        sq = subquery_subtree_distinct(self)
         query = query.filter(Node.id.in_(sq))
         return query
 

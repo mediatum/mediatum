@@ -10,16 +10,21 @@ import logging
 import codecs
 from warnings import warn
 
+import sqlalchemy as _sqlalchemy
+import sqlalchemy.orm.session as _
+
 from mediatumtal import tal
 
+import contenttypes as _contenttypes
+import contenttypes.data as _
 import core as _core
 import core.config as config
+import core.database.postgres as _
+import core.database.postgres.alchemyext as _
+import core.database.postgres.node as _
 import core.translation as _core_translation
-
-from core.database.postgres.node import Node
 from core.webconfig import node_url
 from contenttypes.data import Data
-
 from core.database.helpers import ContainerMixin
 from utils.utils import CustomItem
 from core.users import user_from_session as _user_from_session
@@ -169,7 +174,7 @@ class Container(Data, ContainerMixin, SchemaMixin):
             node_id_list = self.item_file_pattern.findall(fname)
             if node_id_list:
                 node_id = node_id_list[0]
-                node = _core.db.query(Node).get(node_id)
+                node = _core.db.query(_core.database.postgres.node.Node).get(node_id)
                 fname_allowed = node and node.has_read_access(user=user)
 
             fpath = "{}html/{}".format(config.get("paths.datadir"),
@@ -267,7 +272,16 @@ class Container(Data, ContainerMixin, SchemaMixin):
         return self
 
     def childcount(self):
-        return self.content_children_count_for_all_subcontainers
+        if config.getboolean("database.use_cached_childcount"):
+            return _core.database.postgres.alchemyext.exec_sqlfunc(
+                _sqlalchemy.orm.session.object_session(self),
+                _core.database.postgres.mediatumfunc.count_content_children_for_all_subcontainers(self.id),
+                )
+        else:
+            sq = _core.database.postgres.node.subquery_subtree_distinct(self)
+            return _sqlalchemy.orm.session.object_session(self).query(_contenttypes.data.Content).filter(
+                _core.database.postgres.node.Node.id.in_(sq),
+                ).filter_by(subnode=False).count()
 
 
 # concrete Container classes

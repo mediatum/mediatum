@@ -8,7 +8,7 @@ var itemnames = new Array();
 var showContextMenu = false;
 
 function setFolder(){
-    check = markFolder(false, "", this.id);
+    check = markFolder("", this.id);
     obj = document.getElementById('Node'+this.id);
     label = obj.getElementsByTagName('A')[0].title;
     if(!check){

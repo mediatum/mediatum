@@ -110,7 +110,7 @@ function getNodePath(itemId)
         startpath = initExpandedNodes.split(",");
         showHideNode(false, startpath[0]);
         startpath.splice(0,1);
-        markFolder(false, currentfolder, currentfolder);
+        markFolder(currentfolder, currentfolder);
             for (i=0;i<startpath.length-1;i++){
                 if (startpath[i]=='x'){
                     showHideNode(false,startpath[i+1]);
@@ -118,7 +118,7 @@ function getNodePath(itemId)
                 }
             }
             if(startpath.in_array('('+currentfolder+')')>=0){
-                markFolder(false, currentfolder, currentfolder);
+                markFolder(currentfolder, currentfolder);
             }
         });
 }
@@ -165,7 +165,7 @@ function parseSubItems(ulId,parentId)
             showHideNode(false, id);
             startpath.splice(startpath.in_array(id), 1);
         }else if(startpath.in_array('('+id+')')>=0){
-            markFolder(false, id, id);
+            markFolder(id, id);
         }
     }
 }
@@ -308,7 +308,7 @@ function updateNodeLabel(nodeId)
 
 function changeValue(nodeId)
 {
-    markFolder(false,"", nodeId);
+    markFolder("", nodeId);
     $.get(ajaxRequestFile+'?changeCheck='+nodeId+'&currentitem='+currentitem, function(data){
             if(data){
                 alert(data);
@@ -318,11 +318,8 @@ function changeValue(nodeId)
 }
 
 
-function markFolder(e,oldid, newid)
+function markFolder(oldid, newid)
 {
-    if (e){
-        return false;
-    }
     n_node = document.getElementById('Node'+newid);
     if (n_node){
         t = n_node.getElementsByTagName('A');

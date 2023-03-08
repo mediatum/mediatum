@@ -4,7 +4,6 @@
 */
 
 function setFolder(){
-    markFolder(true, "", this.id);
     getFolderItems(this.id);
     getGrandchildren(this.id);
     return false;

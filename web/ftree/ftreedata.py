@@ -148,7 +148,7 @@ def getPathTo(req):
         assert len(req.values["pathTo"].split(",")) == 1
     elif req.values["style"] == "publish":
         checked.clear() # no pre-checked checkmarks in quick publisher
-    else:
+    elif req.values["style"] != "edittree":
         raise RuntimeError("unknown tree style")
     items = (("({})" if i in checked else "{}").format(i) for i in items)
     req.response.status_code = _httpstatus.HTTP_OK

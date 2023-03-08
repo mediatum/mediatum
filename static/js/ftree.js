@@ -108,20 +108,18 @@ function getNodePath(itemId)
     $.get(ajaxRequestFile+'?pathTo='+itemId+'&style='+config['treeStyle']+"&multiselect="+config['multiselect'], function(data){
         initExpandedNodes = data;
         startpath = initExpandedNodes.split(",");
-        if(initExpandedNodes){
-            showHideNode(false, startpath[0]);
-            startpath.splice(0,1);
-            markFolder(false, currentfolder, currentfolder);
-                for (i=0;i<startpath.length-1;i++){
-                    if (startpath[i]=='x'){
-                        showHideNode(false,startpath[i+1]);
-                        startpath.splice(i, 1);
-                    }
+        showHideNode(false, startpath[0]);
+        startpath.splice(0,1);
+        markFolder(false, currentfolder, currentfolder);
+            for (i=0;i<startpath.length-1;i++){
+                if (startpath[i]=='x'){
+                    showHideNode(false,startpath[i+1]);
+                    startpath.splice(i, 1);
                 }
-                if(startpath.in_array('('+currentfolder+')')>=0){
-                    markFolder(false, currentfolder, currentfolder);
-                }
-        }
+            }
+            if(startpath.in_array('('+currentfolder+')')>=0){
+                markFolder(false, currentfolder, currentfolder);
+            }
         });
 }
 

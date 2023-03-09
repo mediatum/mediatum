@@ -35,7 +35,8 @@ def ftree(req):
         return getLabel(req)
 
     if "changeCheck" in req.params:
-        for id in req.params.get("currentitem").split(","):
+        currentitems = req.values["currentitem"].split(",")
+        for id in currentitems[-1:] if req.values["style"] == "classification" else currentitems:
             node = q(Content).get(id)
             parent = q(Container).get(req.params.get("changeCheck"))
             if not(node and parent and node.has_write_access() and parent.has_write_access()):

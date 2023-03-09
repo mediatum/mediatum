@@ -313,7 +313,7 @@ function updateNodeLabel(nodeId)
 function changeValue(nodeId)
 {
     markFolder("", nodeId);
-    $.get(ajaxRequestFile+'?changeCheck='+nodeId+'&currentitem='+currentitem, function(data){
+    $.get(ajaxRequestFile+'?changeCheck='+nodeId+'&currentitem='+currentitem+'&style='+config['treeStyle'], function(data){
             if(data){
                 alert(data);
             }

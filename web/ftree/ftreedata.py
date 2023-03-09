@@ -136,6 +136,7 @@ def _get_path_to(path_to, style, multiselect):
     items = []
     checked = set()
     for nid in path_to:
+        checked.clear()
         node = _core.db.query(_core.Node).get(nid)
 
         for path in _pathutils.getPaths(node):
@@ -155,11 +156,9 @@ def _get_path_to(path_to, style, multiselect):
             if not multiselect:  # if not multiselect use only first path
                 break
 
-    if style == "classification":
-        assert len(path_to) == 1
-    elif style == "publish":
+    if style == "publish":
         checked.clear() # no pre-checked checkmarks in quick publisher
-    elif style != "edittree":
+    elif style not in ("classification", "edittree"):
         raise RuntimeError("unknown tree style")
     items = items or (str(collectionsid), )
     return (("({})" if i in checked else "{}").format(i) for i in items)

@@ -20,6 +20,7 @@ from contenttypes import Container
 from core.users import user_from_session
 import core.config as _core_config
 import datetime
+import schema.schema as _schema
 
 q = db.query
 logg = logging.getLogger(__name__)
@@ -36,25 +37,21 @@ def _get_name_date(date, name_getter):
     return (name_getter(), datestr)
 
 
-class _SystemMask:
+class _SystemMask(_schema.Mask):
 
-    def __init__(self, name, description, fields):
-        self.name, self.description, self.fields = name, description, fields
+    @property
+    def all_maskitems(self):
+        return self.children
 
-    def getName(self):
-        return self.name
 
-    def getDescription(self):
-        return self.description
+class _SystemMaskitem(_schema.Maskitem):
 
-    def getDefaultMask(self):
-        return False
+    @property
+    def metafield(self):
+        return self.children.one()
 
-    def metaFields(self, lang=None):
-        return self.fields
-
-    def i_am_not_a_mask(self):
-        pass
+    def getField(self):
+        return self.metafield
 
 
 def _handle_edit_metadata(req, mask, nodes):
@@ -66,29 +63,9 @@ def _handle_edit_metadata(req, mask, nodes):
     for node in nodes:
         assert node.has_write_access() and node is not userdir
 
-    if not hasattr(mask, "i_am_not_a_mask"):
-        attrs = mask.get_edit_update_attrs(req, user)
-        for node in nodes:
-            mask.apply_edit_update_attrs_to_node(node, attrs)
-
-        db.session.commit()
-        return
-
-    for field in mask.metaFields():
-        logg.debug("in %s.%s: (hasattr(mask,'i_am_not_a_mask')) field: %s, field.id: %s, field.name: %s, mask: %s, maskname: %s",
-            __name__, funcname(), field, field.id, field.name, mask, mask.name)
-        field_name = field.name
-        if field_name == 'nodename' and mask.name == 'settings':
-            value = form.get(field_name, None)
-            if value:
-                for node in nodes:
-                    node.name = value
-        value = form.get(field_name, None)
-        if value is not None:
-            for node in nodes:
-                node.set(field.name, value)
-        else:
-            node.set(field.getName(), "")
+    attrs = mask.get_edit_update_attrs(req, user)
+    for node in nodes:
+        mask.apply_edit_update_attrs_to_node(node, attrs)
 
     db.session.commit()
 
@@ -119,11 +96,15 @@ def getContent(req, ids):
 
     masks = {}
     if hasattr(nodes[-1], "metaFields") and len(frozenset(node.type for node in nodes)) == 1:
-        masks["settings"] = _SystemMask(
-                "settings",
-                _core_translation.translate_in_request("settings", req),
-                nodes[-1].metaFields(_core_translation.set_language(req.accept_languages)),
-               )
+        masks["settings"] = _SystemMask("settings")
+        masks["settings"].setMasktype("edit")
+        masks["settings"].setDescription(_core_translation.translate_in_request("settings", req))
+
+        for orderpos,metafield in enumerate(nodes[-1].metaFields(_core_translation.set_language(req.accept_languages))):
+            maskitem = _SystemMaskitem(metafield.label, orderpos=orderpos)
+            maskitem.set('type', 'field')
+            masks["settings"].children.append(maskitem)
+            maskitem.children.append(metafield)
 
     metadatatype = nodes[-1].metadatatype
     if metadatatype:
@@ -155,8 +136,7 @@ def getContent(req, ids):
         _handle_edit_metadata(req, mask, nodes)
         logg.debug("%s change metadata %s", user.login_name, idstr)
         logg.debug("%r", req.params)
-        if not hasattr(mask, "i_am_not_a_mask"):
-            req.params["errorlist"] = mask.validate(nodes)
+        req.params["errorlist"] = mask.validate(nodes)
 
     return _tal.processTAL(
         dict(
@@ -164,9 +144,8 @@ def getContent(req, ids):
                 nodes[0].get("creationtime"), _functools.partial(nodes[0].get, "creator")
                ) if len(nodes)==1 else None,
             err=err,
-            fields=mask.metaFields() if hasattr(mask, "i_am_not_a_mask") else None,
             idstr=idstr,
-            maskform=mask.getFormHTML(nodes, req) if not hasattr(mask, "i_am_not_a_mask") else None,
+            maskform=mask.getFormHTML(nodes, req),
             masklist=masks.values(),
             maskname=mask.name,
             node=nodes[0], # ?

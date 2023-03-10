@@ -723,9 +723,6 @@ class Metafield(Node):
                 return option
         return dateoption[0]
 
-    def getEditorHTML(self, val="", width=400, lock=0, language=None, required=None):
-        return getMetadataType(self.getFieldtype()).editor_get_html_form(self, val, width, lock, language=language, required=required)
-
     def getSearchHTML(self, collection, field, language, name, value):
         return getMetadataType(self.getFieldtype()).search_get_html_form(collection, self, language, name, value)
 
@@ -808,9 +805,11 @@ class Mask(Node):
     def getFormHTML(self, nodes, req):
         if not self.children:
             return None
-
         ret = ''
-        for field in self.children.sort_by_orderpos():
+        # self may be an instance of web.edit.modules.metadata.SystemMask
+        # in this case self is not bound to a session and sqlalchemy order_by cannot be used
+        # so sort self.children in python
+        for field in sorted(self.children, key=lambda n:n.orderpos):
             t = getMetadataType(field.get("type"))
             ret += t.getFormHTML(field, nodes, req)
         return ret

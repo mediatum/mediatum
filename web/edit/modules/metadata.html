@@ -76,21 +76,7 @@
                 <input i18n:attributes="value reset_field" type="reset"/>
                 <br/>
                 <br/>
-                <tal:block tal:condition="maskform" tal:replace="raw python:maskform"/>
-                <tal:block tal:condition="fields">
-                    <tal:block tal:repeat="field fields">
-                        <div class="editorrow">
-                            <div class="label" tal:content="python:field.getLabel()"> </div>
-                            <div id="description">&nbsp;</div>
-                            <div id="editor_content">
-                                <span
-                                        tal:define="name python:field.getValue() if field.getFieldtype()=='meta' else field.getName(); value python:node.get_special(name)"
-                                        tal:replace="structure python:field.getEditorHTML(value)"
-                                       />
-                             </div>
-                        </div>
-                    </tal:block>
-                </tal:block>
+                <tal:block tal:replace="raw python:maskform"/>
                 <div class="label">&nbsp;</div>
                 <small>(<span class="required">*</span> <span i18n:translate="admin_mandatory_info"> </span>)</small>
                 <br/>

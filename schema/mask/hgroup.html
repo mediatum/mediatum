@@ -26,7 +26,13 @@
     <h4 i18n:translate="mask_edit_fields">TEXT</h4>
 
     <div tal:condition="python:op=='edit'" align="right">
-        <input tal:attributes="name python:u'newdetail_{}'.format(item.id)" type="image" src="/static/img/install.png" onclick="document.myform.type.value=''" i18n:attributes="title mask_edit_insert_field_title"/>
+        <input
+            tal:attributes="name python:u'newdetail_{}'.format(item.id)"
+            type="image"
+            src="/static/img/install.png"
+            onclick="document.getElementById('mediatum-edit-form-metadata').type.value=''"
+            i18n:attributes="title mask_edit_insert_field_title"
+           />
     </div>
 
     <tal:block tal:replace="raw details"/>
@@ -40,7 +46,12 @@
     <div class="label">&nbsp;</div>
     <button type="submit" name="savedetail" i18n:translate="save"> </button>
     &nbsp;&nbsp;
-    <button type="submit" onclick="setCancel(document.myform.op)" i18n:translate="cancel"> </button>
+    <button
+        type="submit"
+        onclick="setCancel(document.getElementById('mediatum-edit-form-metadata').op)"
+        i18n:translate="cancel"
+       >
+    </button>
 </div>
 
 <tal:block metal:define-macro="get_form_html">

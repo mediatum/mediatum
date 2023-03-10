@@ -7,14 +7,14 @@
     <script src="/static/js/mediatum.js"> </script>
     <script tal:content="runsubmit" language="javascript">
         function runsubmit(){
-            document.myform.submit();
+            document.getElementById('mediatum-edit-form-acls').submit();
         }
     </script>
 
     <div id="sub_content_content">
 
 
-    <form class="edit" name="myform" method="post">
+    <form class="edit" id="mediatum-edit-form-acls" method="post">
         <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
         <input tal:attributes="value srcnodeid" type="hidden" name="srcnodeid"/>
         <input type="hidden" name="save" value="save"/>
@@ -32,7 +32,7 @@
             </a> |
             <a
                 href="#!"
-                onclick="showACLUser();getSelect(document.myform.nodeid.value)"
+                onclick="showACLUser();getSelect(document.getElementById('mediatum-edit-form-acls').nodeid.value)"
                 i18n:translate="edit_acls_selectuser"
                 i18n:attributes="title edit_acls_selectusertitle"
                 class="mediatum-link-mediatum"
@@ -71,16 +71,47 @@
     <table>
         <tr>
             <td align="left" valign="top">
-                <select tal:content="raw val_left" tal:attributes="name python:'left'+name; ondblclick python:'moveRight(document.myform.left'+name+',document.myform.right'+name+')'" style="width:320px" size="10" multiple="multiple">
+                <select
+                    tal:content="raw val_left"
+                    tal:attributes="
+                        name python:'left{}'.format(name);
+                        ondblclick python:'moveRight(document.getElementById(\'mediatum-edit-form-acls\').left{0},document.getElementById(\'mediatum-edit-form-acls\').right{0})'.format(name);
+                       "
+                    style="width:320px"
+                    size="10"
+                    multiple="multiple"
+                   >
                 </select>
             </td>
             <td style="padding-left:10px;padding-right:10px;" align="left" valign="center">
-                <input tal:attributes="onclick python:'moveLeft(document.myform.left'+name+',document.myform.right'+name+')'" type="button" value="<<"/>
+                <input
+                    tal:attributes="
+                        onclick python:'moveLeft(document.getElementById(\'mediatum-edit-form-acls\').left{0},document.getElementById(\'mediatum-edit-form-acls\').right{0})'.format(name);
+                       "
+                    type="button"
+                    value="<<"
+                   />
                 <br/>
-                <input tal:attributes="onclick python:'moveRight(document.myform.left'+name+',document.myform.right'+name+')'" type="button" value=">>"/>
+                <input
+                    tal:attributes="
+                        onclick python:'moveRight(document.getElementById(\'mediatum-edit-form-acls\').left{0},document.getElementById(\'mediatum-edit-form-acls\').right{0})'.format(name);
+                       "
+                    type="button"
+                    value=">>"
+                   />
             </td>
             <td align="left" valign="top">
-                <select tal:content="raw val_right" tal:attributes="id python: 'select_right_acl_%s' % type; name python:'right'+name;  ondblclick python:'moveLeft(document.myform.left'+name+',document.myform.right'+name+')'" style="width:320px" size="10" multiple="multiple">
+                <select
+                    tal:content="raw val_right"
+                    tal:attributes="
+                        id python: 'select_right_acl_{}'.format(type);
+                        name python:'right{}'.format(name);
+                        ondblclick python:'moveLeft(document.getElementById(\'mediatum-edit-form-acls\').left{0},document.getElementById(\'mediatum-edit-form-acls\').right{0})'.format(name);
+                       "
+                    style="width:320px"
+                    size="10"
+                    multiple="multiple"
+                   >
                 </select>
             </td>
         </tr>
@@ -109,16 +140,47 @@
     <table>
         <tr>
             <td align="left" valign="top">
-                <select tal:content="raw val_left" tal:attributes="name python:'leftuser'+name; ondblclick python:'moveRight(document.myform.leftuser'+name+',document.myform.rightuser'+name+')'" style="width:320px" size="10" multiple="multiple">
+                <select
+                    tal:content="raw val_left"
+                    tal:attributes="
+                        name python:'leftuser{}'.format(name);
+                        ondblclick python:'moveRight(document.getElementById(\'mediatum-edit-form-acls\').leftuser{0},document.getElementById(\'mediatum-edit-form-acls\').rightuser{0})'.format(name);
+                       "
+                    style="width:320px"
+                    size="10"
+                    multiple="multiple"
+                   >
                 </select>
             </td>
             <td style="padding-left:10px;padding-right:10px;" align="left" valign="center">
-                <input tal:attributes="onclick python:'moveLeft(document.myform.leftuser'+name+',document.myform.rightuser'+name+')'" type="button" value="<<"/>
+                <input
+                    tal:attributes="
+                        onclick python:'moveLeft(document.getElementById(\'mediatum-edit-form-acls\').leftuser{0},document.getElementById(\'mediatum-edit-form-acls\').rightuser{0})'.format(name);
+                       "
+                    type="button"
+                    value="<<"
+                   />
                 <br/>
-                <input tal:attributes="onclick python:'moveRight(document.myform.leftuser'+name+',document.myform.rightuser'+name+')'" type="button" value=">>"/>
+                <input
+                    tal:attributes="
+                        onclick python:'moveRight(document.getElementById(\'mediatum-edit-form-acls\').leftuser{0},document.getElementById(\'mediatum-edit-form-acls\').rightuser{0})'.format(name);
+                       "
+                    type="button"
+                    value=">>"
+                   />
             </td>
             <td align="left" valign="top">
-                <select tal:content="raw val_right" tal:attributes="id python: 'select_right_user_%s' % type; name python:'rightuser'+name;  ondblclick python:'moveLeft(document.myform.leftuser'+name+',document.myform.rightuser'+name+')'" style="width:320px" size="10" multiple="multiple">
+                <select
+                    tal:content="raw val_right"
+                    tal:attributes="
+                        id python: 'select_right_user_{}'.format(type);
+                        name python:'rightuser{}'.format(name);
+                        ondblclick python:'moveLeft(document.getElementById(\'mediatum-edit-form-acls\').leftuser{0},document.getElementById(\'mediatum-edit-form-acls\').rightuser{0})'.format(name);
+                       "
+                    style="width:320px"
+                    size="10"
+                    multiple="multiple"
+                   >
                 </select>
             </td>
         </tr>

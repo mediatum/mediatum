@@ -1026,7 +1026,7 @@ class Mask(Node):
 
     def getMetaMask(self, req):
         language = translation.set_language(req.accept_languages)
-        ret = '<form method="post" name="myform">'
+        ret = '<form method="post">'
         ret += '<input value="{}" type="hidden" name="csrf_token"/>'.format(_core_csrfform.get_token())
         ret += '<div class="back"><h3 i18n:translate="mask_editor_field_definition">Felddefinition </h3>'
         ret += '<div align="right"><input type="image" src="/static/img/install.png" name="newdetail_'
@@ -1076,7 +1076,7 @@ class Mask(Node):
             if key.startswith("edit_"):
                 item = q(Node).get(req.params.get("edit", ""))
                 t = getMetadataType(item.get("type"))
-                ret = '<form method="post" name="myform">'
+                ret = '<form method="post">'
                 ret += '<input value="{}" type="hidden" name="csrf_token"/>'.format(_core_csrfform.get_token())
                 return ret + '%s</form>' % (t.getMetaEditor(item, req))
 
@@ -1095,14 +1095,14 @@ class Mask(Node):
                 req.params["edit"] = item
             else:
                 req.params["edit"] = item.id
-            ret = '<form method="post" name="myform">'
+            ret = '<form method="post">'
             ret += '<input value="{}" type="hidden" name="csrf_token"/>'.format(_core_csrfform.get_token())
             return ret + u'{}</form>'.format(t.getMetaEditor(item, req))
 
         if (req.params.get("type", "") == "" and self.getMasktype() != "export") or req.params.get('op') == 'newdetail':
             # type selection for new field
             ret = """
-            <form method="post" name="myform">
+            <form method="post" id="mediatum-edit-form-metadata">
                 <div class="back"><h3 i18n:translate="mask_editor_add_choose_fieldtype">Feldtyp w&auml;hlen</h3>
                 <div class="label" i18n:translate="mask_editor_field_selection">Feldtypauswahl:</div>
                 <select name="type">
@@ -1120,7 +1120,7 @@ class Mask(Node):
             ret += '<input value="{}" type="hidden" name="csrf_token"/>'.format(_core_csrfform.get_token())
             ret += '<input type="hidden" name="pid" value="' + req.params.get("pid") + '"/>'
             ret += '<div class="label">&nbsp;</div><button type="submit" name="new_" style="width:100px" i18n:translate="ok"> OK </button>'
-            ret += '&nbsp;&nbsp;<button type="submit" onclick="setCancel(document.myform.op)" i18n:translate="cancel">Abbrechen</button><br/>'
+            ret += '&nbsp;&nbsp;<button type="submit" onclick="setCancel(document.getElementById(\'mediatum-edit-form-metadata\').op)" i18n:translate="cancel">Abbrechen</button><br/>'
             ret += '</div></form>'
             return _tal.processTAL({}, string=ret, macro=None, request=req)
 
@@ -1128,7 +1128,7 @@ class Mask(Node):
             # create new node
             item = q(Node).get(req.params.get("id"))
             t = getMetadataType(req.params.get("type"))
-            ret = '<form method="post" name="myform">'
+            ret = '<form method="post">'
             ret += '<input value="{}" type="hidden" name="csrf_token"/>'.format(_core_csrfform.get_token())
             return ret + '%s</form>' % (t.getMetaEditor(item, req))
 

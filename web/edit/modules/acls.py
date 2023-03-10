@@ -253,9 +253,9 @@ def getContent(req, ids):
 
     runsubmit = ["function runsubmit(){"]
     for rule_type in _rule_types:
-        runsubmit.append("\tmark(document.myform.left{});".format(rule_type))
-        runsubmit.append("\tmark(document.myform.leftuser{});".format(rule_type))
-    runsubmit.append("\tdocument.myform.submit();")
+        runsubmit.append("\tmark(document.getElementById('mediatum-edit-form-acls').left{});".format(rule_type))
+        runsubmit.append("\tmark(document.getElementById('mediatum-edit-form-acls').leftuser{});".format(rule_type))
+    runsubmit.append("\tdocument.getElementById('mediatum-edit-form-acls').submit();")
     runsubmit.append("}")
 
     context = dict(

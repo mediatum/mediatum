@@ -120,9 +120,12 @@ def getContent(req, ids):
                             newnodes.append(basenode.id)
                             basenodefiles_processed.append(f)
                         except ValueError, e:
+                            msgerr = unicode(e)
+                            with _utils_utils.suppress(_core_translation.MessageIdNotFound, warn=False):
+                                msgerr = _core_translation.translate_in_request(msgerr, req)
                             errornodes.append((
                                 filename,
-                                _core_translation.translate_in_request(unicode(e), req),
+                                msgerr,
                                 unicode(hash(f.getName())),
                             ))
                         db.session.commit()
@@ -146,9 +149,12 @@ def getContent(req, ids):
                     try:
                         node.event_files_changed()
                     except Exception as e:
+                        msgerr = unicode(e)
+                        with _utils_utils.suppress(_core_translation.MessageIdNotFound, warn=False):
+                            msgerr = _core_translation.translate_in_request(msgerr, req)
                         errornodes.append((
                             filename,
-                            _core_translation.translate_in_request(unicode(e), req),
+                            msgerr,
                             unicode(hash(f.getName())),
                         ))
                         db.session.rollback()

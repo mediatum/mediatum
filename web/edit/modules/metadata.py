@@ -147,7 +147,8 @@ def getContent(req, ids):
         return _tal.processTAL({}, file="web/edit/modules/metadata.html", macro="no_mask", request=req)
 
     if "edit_metadata" in req.params:
-        if user.home_dir in nodes or not all(node.has_write_access() for node in nodes):
+        if user.home_dir in nodes or not all(node.has_write_access() for node in nodes) \
+                or req.values.get("mask")!=mask.name:
             req.response.status_code = httpstatus.HTTP_FORBIDDEN
             return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 

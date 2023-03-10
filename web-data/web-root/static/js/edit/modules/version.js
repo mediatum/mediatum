@@ -9,16 +9,6 @@ function openPopup(url, name, width, height){
     return win1;
 }
 
-function handlelock(name){
-    if (document.getElementById('lock_'+name).checked){
-        document.getElementById(name).disabled = false;
-        document.getElementById(name).value = '';
-    }else{
-        document.getElementById(name).disabled = true;
-        document.getElementById(name).value = '? ';
-    }
-}
-
 function onNewVersionChecked (self) {
     if (self.checked) {
         $('#version_comment').show();

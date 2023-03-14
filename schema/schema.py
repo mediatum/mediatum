@@ -125,7 +125,7 @@ VIEW_HIDE_EMPTY = 2     # show only fields with 'non-empty' values
 VIEW_DATA_ONLY = 4      # deliver list with values (not html)
 VIEW_DATA_EXPORT = 8    # deliver export format
 
-_EditUpdateAttrs = _collections.namedtuple("_EditUpdateAttrs", "nodename fields attrs system_attrs")
+_EditUpdateAttrs = _collections.namedtuple("_EditUpdateAttrs", "nodename attrs system_attrs")
 
 _MetafieldsDependency = _collections.namedtuple(
     "_MetafieldsDependency",
@@ -1007,7 +1007,7 @@ class Mask(Node):
         attrs["updateuser"] = user.getName()
         attrs["updatetime"] = format_date()
 
-        return _EditUpdateAttrs(nodename, fields, attrs, system_attrs)
+        return _EditUpdateAttrs(nodename, attrs, system_attrs)
 
     def apply_edit_update_attrs_to_node(self, node, attrs):
         """

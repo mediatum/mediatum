@@ -15,14 +15,14 @@
             table(cellspacing='0', cellpadding='0')
               for i in range(sortfieldslist|length)
                 tr
-                  td
+                  td.mediatum-content-nav-list-header-label
                     if i==0
                       small
                         = translate('sort_label')
                     else
                       small
                         = translate('sort_label2')
-                  td
+                  td.mediatum-content-nav-list-header-select
                     select(name='sortfield{}'.format(i), style='font-size: 9px', onchange='submit()')
                       for field in sortfieldslist[i]
                         option(value=field.getName(), selected=field.selected())

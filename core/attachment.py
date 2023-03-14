@@ -105,7 +105,7 @@ def filebrowser(node, req):
 
     for name in os.listdir(config.settings["paths.datadir"] + path + "/"):
 
-        if name.endswith(".thumb") or name.endswith(".thumb2"):
+        if name.endswith(".thumbnail"):
             continue
         file = {}
 

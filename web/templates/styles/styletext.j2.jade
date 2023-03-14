@@ -3,10 +3,11 @@
   SPDX-License-Identifier: AGPL-3.0-or-later
 
 each file in files
-  .preview_text(style="height: auto; padding-bottom: 10px", onmouseover="this.style.backgroundColor='#cccccc'", onmouseout="this.style.backgroundColor='white'")
-    a(href=file.getLink(), style='padding:2px')
-      div(style="margin:0px 30px")
-        = file.text
+  .preview_text(onmouseover="this.style.backgroundColor='#cccccc'", onmouseout="this.style.backgroundColor='white'")
+    a(href=file.getLink())
+      div
+        p
+          = file.text
     div(style="position:absolute; right:23px; top:3px; overflow:hidden;")
       if file.attachment
         img(title=translate('view_list_att_title'), src='/static/img/attach.png')

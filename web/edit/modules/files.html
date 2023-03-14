@@ -216,7 +216,7 @@
                                 <div id="sortable" class="connectedSortable">
                                     <div tal:repeat="child python:node.getChildren().sort_by_name()" class="mediatum_sortable_default"
                                     tal:attributes="id python:child.id">
-                                        <img tal:attributes="id python:child.id; src python:u'/thumbs/{}'.format(child.id)"/>
+                                        <img tal:attributes="id python:child.id; src python:u'/thumbnail/{}'.format(child.id)"/>
                                         <div class="mediatum_edit_files_edit_child">
                                             <a
                                                 tal:attributes="href python:u'/edit/edit_content?srcnodeid={}&id={}&tab=metadata'.format(srcnodeid, child.id)"
@@ -252,7 +252,7 @@
 <tal:block metal:define-macro="edit_files_children_list">
     <div class="mediatum_edit_files_children_list" tal:repeat="child children">
         <a tal:attributes="href python:u'/edit/edit_content?srcnodeid={}&id={}&tab={}'.format(srcnodeid, child.id, child.get_default_edit_tab())">
-            <img tal:attributes="src python:u'/thumbs/{}'.format(child.id)"/></a>
+            <img tal:attributes="src python:u'/thumbnail/{}'.format(child.id)"/></a>
         <div class="mediatum_edit_files_children_list_div">
             <a tal:attributes="href python:u'/edit/edit_content?srcnodeid={}&id={}&tab=metadata'.format(srcnodeid, child.id)">
                 <img src="/static/img/edit.png"/>
@@ -271,7 +271,7 @@
         <div class="mediatum_edit_files_popup_children_child">
             <input class="mediatum_edit_files_popup_children_input" tal:attributes="value python:child.id" name="items_add" id="child_add" type="checkbox"/>
         </div>
-        <img tal:attributes="src python:'/thumbs/{}'.format(child.id)"/>
+        <img tal:attributes="src python:'/thumbnail/{}'.format(child.id)"/>
     </div>
     </tal:block>
 </tal:block>
@@ -280,7 +280,7 @@
     <tal:block tal:repeat="grand grandchildren">
     <div id="grandchildnode" tal:condition="python:grand in grandchildren" class="mediatum_edit_files_popup_children">
         <div class="mediatum_edit_files_popup_children_id" tal:content="python:grand.id"></div>
-        <img tal:attributes="src python:'/thumbs/{}'.format(grand.id)"/>
+        <img tal:attributes="src python:'/thumbnail/{}'.format(grand.id)"/>
         <div class="mediatum_edit_files_popup_children_child">
             <input class="mediatum_edit_files_popup_children_input" tal:attributes="value python:grand.id" name="items_add" id="grands_add" type="checkbox"/>
         </div>

@@ -9,127 +9,33 @@ from __future__ import print_function
 
 import logging
 import os
-import tempfile
 import exifread as _exifread
-from PIL import Image as PILImage, ImageDraw
-from PIL.Image import DecompressionBombError as _DecompressionBombError
+from PIL import Image as PILImage
 
-import core.httpstatus as _httpstatus
-from core import config, File, db
+import contenttypes.data as _contenttypes_data
+from core import File
+from core import db
 from core.archive import Archive, get_archive_for_node
 from core.attachment import filebrowser
 from core.postgres import check_type_arg_with_schema
-from contenttypes.data import Content, prepare_node_data, BadFile as _BadFile
 from utils.utils import isnewer
-
 import lib.iptc.IPTC
 from utils.list import filter_scalar
 from utils.compat import iteritems
 import utils.process
-import zipfile
-from contextlib import contextmanager
-from StringIO import StringIO
 from collections import defaultdict
 import humanize
-from core import webconfig
-
 
 logg = logging.getLogger(__name__)
 
-# XXX: some refactoring has to be done for the next two methods, many similarities ...
-
 def make_thumbnail_image(src_filepath, dest_filepath):
-    """make thumbnail (jpeg 128x128)"""
-
     if isnewer(dest_filepath, src_filepath):
         return
 
-    try:
-        pic = PILImage.open(src_filepath)
-    except IOError as exe:
-        raise _BadFile("unknown_image_format")
-    except _DecompressionBombError as exe:
-        raise _BadFile("image_too_big")
-    temp_jpg_file = tempfile.NamedTemporaryFile(suffix=".jpg", delete=False)
-
-    try:
-        temp_jpg_file.close()
-        tmpjpg = temp_jpg_file.name
-
-        if pic.mode == "CMYK" and (src_filepath.endswith("jpg") or src_filepath.endswith("jpeg")) or pic.mode in ["P", "L"]:
-            convert_image(src_filepath, tmpjpg, ["-quality", "100", "-draw", "rectangle 0,0 1,1"])
-            pic = PILImage.open(tmpjpg)
-
-        pic.load()
-        width = pic.size[0]
-        height = pic.size[1]
-
-        if width > height:
-            newwidth = 128
-            newheight = height * newwidth // width
-        else:
-            newheight = 128
-            newwidth = width * newheight // height
-
-        pic = pic.resize((newwidth, newheight), PILImage.ANTIALIAS)
-
-        try:
-            im = PILImage.new(pic.mode, (128, 128), (255, 255, 255))
-        except:
-            im = PILImage.new("RGB", (128, 128), (255, 255, 255))
-
-        x = (128 - newwidth) // 2
-        y = (128 - newheight) // 2
-        im.paste(pic, (x, y, x + newwidth, y + newheight))
-
-        draw = ImageDraw.ImageDraw(im)
-        draw.line([(0, 0), (127, 0), (127, 127), (0, 127), (0, 0)], (128, 128, 128))
-
-        im = im.convert("RGB")
-        im.save(dest_filepath, "jpeg")
-    finally:
-        os.unlink(tmpjpg)
-
-
-def make_presentation_image(src_filepath, dest_filepath):
-
-    if isnewer(dest_filepath, src_filepath):
-        return
-
-    pic = PILImage.open(src_filepath)
-    temp_jpg_file = tempfile.NamedTemporaryFile(suffix=".jpg", delete=False)
-
-    try:
-        temp_jpg_file.close()
-        tmpjpg = temp_jpg_file.name
-
-        if pic.mode == "CMYK" and (src_filepath.endswith("jpg") or src_filepath.endswith("jpeg")) or pic.mode in ["P", "L"]:
-            convert_image(src_filepath, tmpjpg, ["-quality", "100", "-draw", "rectangle 0,0 1,1"])
-            pic = PILImage.open(tmpjpg)
-
-        pic.load()
-
-        width = pic.size[0]
-        height = pic.size[1]
-
-        resize = 1
-        if resize:
-            # resize images only if they are actually too big
-            if width > height:
-                newwidth = 320
-                newheight = height * newwidth // width
-            else:
-                newheight = 320
-                newwidth = width * newheight // height
-            pic = pic.resize((newwidth, newheight), PILImage.ANTIALIAS)
-
-        try:
-            pic.save(dest_filepath, "jpeg")
-        except IOError:
-            pic.convert('RGB').save(dest_filepath, "jpeg")
-
-    finally:
-        os.unlink(tmpjpg)
+    with PILImage.open(src_filepath) as pic:
+        pic.thumbnail(_contenttypes_data.get_thumbnail_size(*pic.size))
+        pic = pic.convert("RGB")
+        pic.save(dest_filepath, "JPEG", quality="web_high")
 
 
 def convert_image(src_filepath, dest_filepath, options=[]):
@@ -139,77 +45,8 @@ def convert_image(src_filepath, dest_filepath, options=[]):
     utils.process.check_call(["gm", "convert"] + options + [src_filepath, dest_filepath])
 
 
-def get_image_dimensions(image):
-    pic = PILImage.open(image.abspath)
-    width = pic.size[0]
-    height = pic.size[1]
-    return width, height
-
-
-@contextmanager
-def _create_zoom_tile_buffer(img, max_level, tilesize, level, x, y):
-    level = 1 << (max_level - level)
-    buff = StringIO()
-
-    x0, y0, x1, y1 = (x * tilesize * level, y * tilesize * level, (x + 1) * tilesize * level, (y + 1) * tilesize * level)
-    if x0 > img.size[0] or y0 > img.size[1]:
-        yield None
-
-    if x1 > img.size[0]:
-        x1 = img.size[0]
-    if y1 > img.size[1]:
-        y1 = img.size[1]
-
-    xl = (x1 - x0) // level
-    yl = (y1 - y0) // level
-
-    # do not resize to zero dimension (would cause exception when saving)
-    xl = max(1, xl)
-    yl = max(1, yl)
-
-    img = img.crop((x0, y0, x1, y1)).resize((xl, yl))
-    img.save(buff, format="JPEG")
-    try:
-        yield buff
-    finally:
-        buff.close()
-
-
-def get_zoom_zip_filename(nid):
-    return u"zoom{}.zip".format(nid)
-
-
-def _create_zoom_archive(tilesize, image_filepath, zoom_zip_filepath):
-    """Create tiles in zip file that will be displayed by zoom.swf"""
-    img = PILImage.open(image_filepath)
-    img = img.convert("RGB")
-
-    width, height = img.size
-    l = max(width, height)
-    max_level = 0
-    while l > tilesize:
-        l = l // 2
-        max_level += 1
-
-    logg.debug('Creating: %s', zoom_zip_filepath)
-    with zipfile.ZipFile(zoom_zip_filepath, "w") as zfile:
-        for level in range(max_level + 1):
-            t = (tilesize << (max_level - level))
-            for x in range((width + (t - 1)) // t):
-                for y in range((height + (t - 1)) // t):
-                    with _create_zoom_tile_buffer(img, max_level, tilesize, level, x, y) as buff:
-                        tile_name = "tile-%d-%d-%d.jpg" % (level, x, y)
-                        zfile.writestr(tile_name, buff.getvalue(), zipfile.ZIP_DEFLATED)
-
-
 @check_type_arg_with_schema
-class Image(Content):
-
-    #: create zoom tiles when width or height of image exceeds this value
-    ZOOM_SIZE = 2000
-
-    ZOOM_TILESIZE = 256
-
+class Image(_contenttypes_data.Content):
     # image formats that should exist for each mimetype of the `original` image
     IMAGE_FORMATS_FOR_MIMETYPE = defaultdict(
         lambda: [u"image/png"], {
@@ -237,28 +74,11 @@ class Image(Content):
 
     @classmethod
     def get_sys_filetypes(cls):
-        return [u"original", u"thumb", u"image", u"presentation", u"zoom"]
+        return [u"image", u"original", u"thumbnail"]
 
     @classmethod
     def get_upload_filetype(cls):
         return u"original"
-
-    @property
-    def svg_image(self):
-        return self.files.filter_by(filetype=u"image", mimetype=u"image/svg+xml").scalar()
-
-    @property
-    def zoom_available(self):
-        zoom_file = self.files.filter_by(filetype=u"zoom").scalar()
-        return zoom_file is not None
-
-    @property
-    def should_use_zoom(self):
-        # svg should never use the flash zoom
-        if self.svg_image is not None:
-            return False
-
-        return int(self.get("width") or 0) > Image.ZOOM_SIZE or int(self.get("height") or 0) > Image.ZOOM_SIZE
 
     # compare document.py and
     # core.database.postgres.file.File.ORIGINAL_FILETYPES:
@@ -287,8 +107,8 @@ class Image(Content):
         return self._add_version_tag_to_url(url)
 
     @property
-    def presentation_url(self):
-        url = u"/thumb2/" + unicode(self.id)
+    def thumbnail_url(self):
+        url = u"/thumbnail/{}".format(self.id)
         return self._add_version_tag_to_url(url)
 
     def get_image_formats(self):
@@ -305,7 +125,7 @@ class Image(Content):
 
     # prepare hash table with values for TAL-template
     def _prepareData(self, req):
-        obj = prepare_node_data(self, req)
+        obj = _contenttypes_data.prepare_node_data(self, req)
         if obj["deleted"]:
             # no more processing needed if this object version has been deleted
             # rendering has been delegated to current version
@@ -316,8 +136,7 @@ class Image(Content):
         obj['data_access'] = self.has_data_access()
         obj['has_original'] = self.has_object()
 
-        use_flash_zoom = config.getboolean("image.use_flash_zoom", True) and self.should_use_zoom
-        image_url = '/fullsize?id=%d' % self.id if use_flash_zoom else '/image/%d' % self.id
+        image_url = '/image/{}'.format(self.id)
         image_url = self._add_version_tag_to_url(image_url)
 
         archive = get_archive_for_node(self)
@@ -336,11 +155,10 @@ class Image(Content):
 
         obj['preferred_image_url'] = self.preferred_image_url
         obj["image_formats"] = self.get_image_formats()
-        obj['zoom'] = self.zoom_available
         obj['image_url'] = image_url
         obj['attachment'] = files
         obj['sum_size'] = sum_size
-        obj['presentation_url'] = self.presentation_url
+        obj['thumbnail_url'] = self.thumbnail_url
         obj['fullsize'] = str(self.id)
         if not self.isActiveVersion():
             obj['tag'] = self.tag
@@ -443,10 +261,9 @@ class Image(Content):
         path = os.path.splitext(image_file.abspath)[0]
 
         # XXX: we really should use the correct file ending and find another way of naming
-        thumbname = path + ".thumb"
-        thumbname2 = path + ".presentation"
+        thumbname = "{}.thumbnail.jpeg".format(path)
 
-        old_thumb_files = filter(lambda f: f.filetype in (u"thumb", u"presentation"), files)
+        old_thumb_files = filter(lambda f: f.filetype == u"thumbnail", files)
 
         # XXX: removing files before the new ones are created is bad, that should happen later (use File.unlink_after_deletion).
         # XXX: But we need better thumbnail naming first.
@@ -455,34 +272,16 @@ class Image(Content):
             old.unlink()
 
         make_thumbnail_image(image_file.abspath, thumbname)
-        make_presentation_image(image_file.abspath, thumbname2)
 
-        self.files.append(File(thumbname, u"thumb", u"image/jpeg"))
-        self.files.append(File(thumbname2, u"presentation", u"image/jpeg"))
+        self.files.append(File(thumbname, u"thumbnail", u"image/jpeg"))
 
-    def _generate_zoom_archive(self, files=None):
-        if files is None:
-            files = self.files.all()
-
-        image_file = self._find_processing_file(files)
-
-        zip_filename = get_zoom_zip_filename(self.id)
-        zip_filepath = os.path.join(config.get("paths.zoomdir"), zip_filename)
-
-        old_zoom_files = filter(lambda f: f.filetype == u"zoom", files)
-
-        for old in old_zoom_files:
-            self.files.remove(old)
-            old.unlink()
-
-        _create_zoom_archive(Image.ZOOM_TILESIZE, image_file.abspath, zip_filepath)
-        file_obj = File(path=zip_filepath, filetype=u"zoom", mimetype=u"application/zip")
-        self.files.append(file_obj)
 
     def _extract_metadata(self, files=None):
         image_file = self._find_processing_file(files)
-        width, height = get_image_dimensions(image_file)
-        # XXX: this is a bit redundant...
+        with PILImage.open(image_file.abspath) as pic:
+            # XXX: this is a bit redundant...
+            width = pic.size[0]
+            height = pic.size[1]
         self.set("origwidth", width)
         self.set("origheight", height)
         self.set("origsize", image_file.size)
@@ -525,20 +324,11 @@ class Image(Content):
         files = self.files.all()
 
         # generate both thumbnail sizes if one is missing because they should always display the same
-        if (filter_scalar(lambda f: f.filetype == u"thumb", files) is None
-            or filter_scalar(lambda f: f.filetype == u"presentation", files) is None):
+        if filter_scalar(lambda f: f.filetype == u"thumbnail", files) is None:
             self._generate_thumbnails(files)
 
         # should we skip this sometimes? Do we want to overwrite everything?
         self._extract_metadata(files)
-
-        if self.should_use_zoom:
-            try:
-                self._generate_zoom_archive(files)
-            except:
-                # XXX: this sometimes throws SystemError, see #806
-                # XXX: missing zoom tiles shouldn't abort the upload process
-                logg.exception("zoom image generation failed!")
 
         db.session.commit()
 
@@ -639,21 +429,3 @@ class Image(Content):
                          "exif_Thumbnail_Model": "Thumbnail Model",
                          "exif_JPEGThumbnail": "JPEGThumbnail",
                          "Thumbnail": "Thumbnail"}}
-
-    """ fullsize popup-window for image node """
-    def popup_fullsize(self, req):
-        # XXX: should be has_data_access instead, see #1135>
-        # but cannot be changed at the moment
-        if not self.has_read_access():
-            return 404
-
-        d = {}
-        d["image_url"] = self.preferred_image_url
-        d['tileurl'] = "/tile/{}/".format(self.id)
-        d["no_flash_url"] = "/fullsize?id={}&no_flash=1".format(self.id)
-        html = webconfig.theme.render_macro("image.j2.jade", "imageviewer", d)
-        req.response.set_data(html)
-        req.response.status_code = _httpstatus.HTTP_OK
-
-    def popup_thumbbig(self, req):
-        self.popup_fullsize(req)

@@ -351,9 +351,6 @@ msgstr "BibTeX Informationen in neuem Fenster öffnen"
 msgid "doc_att_browser"
 msgstr "Attachment-Browser öffnen..."
 
-msgid "image_no_flash_link"
-msgstr "Hier klicken, um das Bild in Originalgröße anzuzeigen (ohne Flash-Zoom). Nutzen Sie diesen Link bei Problemen mit der aktuellen Darstellung."
-
 #########################################
 
 msgid "sqlite_type"

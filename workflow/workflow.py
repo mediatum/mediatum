@@ -12,6 +12,7 @@ import flask as _flask
 import core.config as config
 import mediatumtal.tal as _tal
 
+import utils.utils as _utils_utils
 from utils.utils import *
 from core.xmlnode import getNodeXML, readNodeXML
 
@@ -259,7 +260,7 @@ def importWorkflow(filename):
             importlist.append(ch)
     workflows = _nodecache.get_workflows_node()
     for w in importlist:
-        w.name = "import_" + w.name
+        w.name = "{}-{}-import".format(w.name, _utils_utils.gen_secure_token())
         workflows.children.append(w)
     db.session.commit()
 

@@ -201,22 +201,9 @@ var files_uploaded_file = 0;
 function init_plupload_widget_file() {
     csrf = csrf.replace("##", "!!!!!");
     var u = $(function() {
-
-        /* NOT WORKING IN FIREFOX */
-        moxie.core.utils.Mime.addMimeType("image/jpeg,jpg jpeg");
-        moxie.core.utils.Mime.addMimeType("image/gif,gif");
-        moxie.core.utils.Mime.addMimeType("image/png,png");
-        moxie.core.utils.Mime.addMimeType("image/tiff,tiff");
-        moxie.core.utils.Mime.addMimeType("image/svg+xml,svg");
-        moxie.core.utils.Mime.addMimeType("image/bmp,bmp");
-        moxie.core.utils.Mime.addMimeType("application/zip,zip");
-        moxie.core.utils.Mime.addMimeType("application/pdf,pdf");
-        moxie.core.utils.Mime.addMimeType("video/mp4,mp4");
-        moxie.core.utils.Mime.addMimeType("audio/mpeg,mp3");
-
         $("#uploaderfile").plupload({
         // General settings
-        runtimes : 'html5,silverlight,flash,html4',
+        runtimes : 'html5',
         autostart: false,
         url : '/edit/edit_content?action=upload&func=init_plupload_widget_file&uploader=plupload&id='+id,
         // User can upload no more then 20 files in one go (sets multiple_queues to false)
@@ -253,10 +240,6 @@ function init_plupload_widget_file() {
             start: true,
             stop: true
         },
-        // Flash settings
-        flash_swf_url : '/static/js/plupload/Moxie.swf',
-        // Silverlight settings
-        silverlight_xap_url : '/static/js/plupload/Moxie.xap',
         // PreInit events, bound before any internal events
         preinit : {
             Init: function(up, info) {
@@ -530,10 +513,9 @@ var files_uploaded_bib = 0;
 function init_plupload_widget_bib() {
     csrf = csrf.replace("##", "!!!!!");
     var u = $(function() {
-        moxie.core.utils.Mime.addMimeType("text/x-bibtex,bib");
         $("#uploaderbib").plupload({
             // General settings
-            runtimes : 'html5,flash,silverlight,html4',
+            runtimes : 'html5',
             autostart: false,
             url : '/edit/edit_content?action=upload&func=init_plupload_widget_bib&uploader=plupload&id='+id,
             // User can upload no more then 20 files in one go (sets multiple_queues to false)
@@ -566,10 +548,6 @@ function init_plupload_widget_bib() {
                 start: true,
                 stop: true
             },
-            // Flash settings
-            flash_swf_url : '/static/js/plupload/Moxie.swf',
-            // Silverlight settings
-            silverlight_xap_url : '/static/js/plupload/Moxie.xap',
             // PreInit events, bound before any internal events
             preinit : {
                 Init: function(up, info) {

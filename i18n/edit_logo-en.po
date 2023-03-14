@@ -7,9 +7,6 @@ msgstr "Delete logo"
 msgid "edit_logo_no_logo"
 msgstr "No logo"
 
-msgid "edit_logo_zoom"
-msgstr "(mouseover for zoom)"
-
 msgid "edit_logo_addfile"
 msgstr "Upload file:"
 

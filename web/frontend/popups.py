@@ -23,7 +23,6 @@ from core import db
 from core import Node
 from contenttypes import Container
 from utils.pathutils import getPaths
-from utils import userinput
 from core import httpstatus
 from core.request_handler import sendFile as _sendFile
 import core.database.postgres as _database_postgres
@@ -32,65 +31,8 @@ import core.translation as _core_translation
 import utils.utils as _utils_utils
 import web.frontend.printview as _web_frontend_printview
 
-#
-# execute fullsize method from node-type
-#
-
-
 logg = logging.getLogger(__name__)
 q = db.query
-
-
-def popup_fullsize(req):
-    nid = userinput.string_to_int(req.args.get("id", type=int))
-    if nid is None:
-        req.response.status_code = httpstatus.HTTP_BAD_REQUEST
-        req.response.set_data(_core_translation.translate(
-            _core_translation.set_language(req.accept_languages),
-                "edit_common_noobjectsfound",
-            ))
-        return
-    
-    node = q(Node).get(nid)
-    if not isinstance(node, Node):
-        req.response.status_code = httpstatus.HTTP_NOT_FOUND
-        req.response.set_data(_core_translation.translate(
-                _core_translation.set_language(req.accept_languages),
-                "edit_common_noobjectsfound",
-            ))
-        return
-    
-    version_id = req.values.get("v")
-    version = node.get_tagged_version(unicode(version_id))
-    node_or_version = version if version else node
-    if not node_or_version.has_read_access():
-        req.response.set_data(_core_translation.translate(
-                _core_translation.set_language(req.accept_languages),
-                "permission_denied",
-            ))
-        return httpstatus.HTTP_FORBIDDEN
-
-    return node_or_version.popup_fullsize(req)
-#
-# execute thumbBig method from node-type
-#
-
-
-def popup_thumbbig(req):
-    node = q(Node).get(req.params["id"])
-    if not isinstance(node, Node):
-        req.response.status_code = httpstatus.HTTP_NOT_FOUND
-        req.response.set_data(_core_translation.translate(
-                _core_translation.set_language(req.accept_languages),
-                "edit_common_noobjectsfound",
-            ))
-        return
-    if not node.has_read_access():
-        req.response.set_data("permisssion_denied")
-        return httpstatus.HTTP_FORBIDDEN
-
-    return node.popup_thumbbig(req)
-
 
 #
 # help window for metadata field
@@ -185,8 +127,8 @@ def show_printview(req):
         metadata = [['nodename', node.getName(), 'Name', 'text']]
 
     # XXX: use scalar() after duplicate cleanup
-    presentation_file = node.files.filter_by(filetype=u"presentation").first()
-    imagepath = presentation_file.abspath if presentation_file is not None else None
+    thumbnail_file = node.files.filter_by(filetype=u"thumbnail").first()
+    imagepath = thumbnail_file.abspath if thumbnail_file is not None else None
 
     # children
     children = []

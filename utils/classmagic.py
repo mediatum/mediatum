@@ -11,45 +11,6 @@ import inspect
 from decorator import decorator
 
 
-def assign_args(f):
-    """
-    Auto-generates assignments for all arguments for the given method. 
-    
-    Used as method decorator:
-    
-    class X(object):
-        @assign_args
-        def __init__(a=5, b=None, c=something): pass
-        
-        
-    works like:
-    
-    class X(object):
-        def __init__(a=5, b=None, c=something):
-            self.a = a
-            self.b = b
-            self.c = c
-    """
-    f_code = f.__code__
-    self = ast.Name(id=f_code.co_varnames[0], ctx=ast.Load())
-    mod = ast.Module(body=[])
-    args_args = [ast.Name(id=n, ctx=ast.Param()) for n in f_code.co_varnames]
-    args = ast.arguments(args=args_args, defaults=[], vararg=None, kwarg=None)
-    func = ast.FunctionDef(name="f", args=args, body=[], decorator_list=[])
-    mod.body.append(func)
-    
-    for name in f_code.co_varnames[1:]:
-        attr = ast.Attribute(value=self, attr=name, ctx=ast.Store())
-        assign = ast.Assign(targets=[attr], value=ast.Name(id=name, ctx=ast.Load()))
-        func.body.append(assign)
-        
-    ast.fix_missing_locations(mod)
-    ctx = {}
-    cc = compile(mod, "", "exec")
-    eval(cc, ctx)
-    f.func_code = ctx["f"].__code__
-    return f
-
 
 class CaseMetaClass(type):
     """

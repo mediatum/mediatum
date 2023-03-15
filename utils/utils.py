@@ -61,21 +61,6 @@ def u(s):
             return s
 
 
-def u2(s):
-    warn("u2 is deprecated, use unicode objects!!!", DeprecationWarning)
-    try:
-        return s.encode("utf-8")
-    except:
-        try:
-            s2 = unicode(s, 'utf-8')
-            return s2.encode("utf-8")
-        except:
-            try:
-                return s.decode('latin1').encode('utf-8')
-            except:
-                return s
-
-
 def utf8_decode_escape(s):
     '''
     Returns the string if it is utf8 encoded, otherwise a string escaped version

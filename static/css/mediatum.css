@@ -920,7 +920,6 @@ div#portal-breadcrumbs div a.breadcrumb-delimiter::after { content: "\2192"; mar
 #portal-column-content div#nodes div.preview_list a.mediatum-stylelist-a div.mediatum-stylelist-div {
     margin-left: 132px;
     justify-content: flex-start;
-    align-items: center;
     display: flex;
     flex-direction: column;
 }

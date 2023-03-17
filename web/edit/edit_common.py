@@ -205,7 +205,7 @@ class ShowDirNav(object):
 
         return nodes
 
-    def showdir(self, publishwarn="auto", markunpublished=False, sortfield=None, item_count=None, all_nodes=None, faultyidlist=[]):
+    def showdir(self, publishwarn="auto", markunpublished=False, sortfield=None, item_count=None, faultyidlist=[]):
         user = _user_from_session()
         if publishwarn == "auto":
             homedirs = user.home_dir.all_children_by_query(q(Container))
@@ -219,8 +219,8 @@ class ShowDirNav(object):
         # set self.nodes to be used by shownav which must be called after showdir
         self.nodes = nodes
         page = int(self.req.params.get('page', 1))
-        return shownodelist(self.req, nodes, page, publishwarn=publishwarn, markunpublished=markunpublished, dir=self.node,
-                            item_count=item_count, all_nodes=all_nodes, faultyidlist=faultyidlist)
+        return _shownodelist(self.req, nodes, page, publishwarn=publishwarn, markunpublished=markunpublished, dir=self.node,
+                            item_count=item_count, faultyidlist=faultyidlist)
 
     def get_ids_from_req(self):
         nid = self.req.params.get("srcnodeid", self.req.params.get("id"))
@@ -295,7 +295,7 @@ def shownavlist(req, node, nodes, page, dir=None):
     return page_nav
 
 
-def shownodelist(req, nodes, page, publishwarn=True, markunpublished=False, dir=None, item_count=None, all_nodes=None,
+def _shownodelist(req, nodes, page, publishwarn=True, markunpublished=False, dir=None, item_count=None,
                  faultyidlist=[]):
     nodelist = []
     nodes_per_page = _web_common_pagination.get_nodes_per_page(req.values.get("nodes_per_page"), dir)

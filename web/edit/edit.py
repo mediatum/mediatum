@@ -711,7 +711,7 @@ def action(req):
     return
 
 
-def showPaging(req, tab, ids):
+def _show_paging(req, tab, ids):
     nodelist = None
     srcnodeid = req.values.get("srcnodeid")
     if srcnodeid:
@@ -904,7 +904,7 @@ def content(req):
     v.update(
             script="",
             body=c,
-            paging=showPaging(req, current, ids),
+            paging=_show_paging(req, current, ids),
             node=node,
             ids=(req.values.get("ids") or req.values.get("id", "")).split(","),
             tab=current,

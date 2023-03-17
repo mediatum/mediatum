@@ -486,7 +486,6 @@ def getContent(req, ids):
         csrf=_core_csrfform.get_token(),
     )
     html = _tal.processTAL(v, file="web/edit/modules/upload.html", macro="upload_form", request=req)
-    show_dir_nav.nodes = None
     return html
 
 

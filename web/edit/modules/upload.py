@@ -458,7 +458,7 @@ def getContent(req, ids):
     searchmode = req.values.get("searchmode")
     item_count = []
     show_dir_nav = _web_edit_edit_common.ShowDirNav(req, node)
-    items = show_dir_nav.showdir(sortfield=req.values.get("sortfield"), item_count=item_count)
+    items = show_dir_nav.showdir(item_count=item_count)
     nav = show_dir_nav.shownav()
     navigation_height = searchbox_navlist_height(req, item_count)
     count = item_count[0] if item_count[0] == item_count[1] else "%d from %d" % (item_count[0], item_count[1])

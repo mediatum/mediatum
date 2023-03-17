@@ -180,6 +180,7 @@ class ShowDirNav(object):
     def shownav(self):
         page = int(self._req.params.get('page', 1))
         # showdir must be called before shownav, so nodes can be used from showdir
+        assert self._nodes is not None
         return shownavlist(self._req, self._node, self._nodes, page, dir=self._node)
 
     def get_children(self, node, sortfield):

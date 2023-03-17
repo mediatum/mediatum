@@ -171,24 +171,24 @@ class ShowDirNav(object):
     nodes as simple nodelist cache which is filled in showdir() and used by shownav()
     and get_ids_from_req() to avoid a recomputing of nodelist, especially if search is used
     """
-    nodes = None
+    _nodes = None
 
     def __init__(self, req, node=None):
-        self.req = req
-        self.node = node
+        self._req = req
+        self._node = node
 
     def shownav(self):
-        page = int(self.req.params.get('page', 1))
+        page = int(self._req.params.get('page', 1))
         # showdir must be called before shownav, so nodes can be used from showdir
-        return shownavlist(self.req, self.node, self.nodes, page, dir=self.node)
+        return shownavlist(self._req, self._node, self._nodes, page, dir=self._node)
 
     def get_children(self, node, sortfield):
         nodes = node.content_children.prefetch_attrs() # XXX: ?? correct
-        make_search_content = get_make_search_content_function(self.req.args)
+        make_search_content = get_make_search_content_function(self._req.args)
         paths = get_accessible_paths(node, q(Node).prefetch_attrs())
         if make_search_content:
             _postgres_search.set_session_timeout(_config.getint('search.timeout_edit', 300))
-            content_or_error = make_search_content(self.req, paths)
+            content_or_error = make_search_content(self._req, paths)
             if content_or_error:
                 if isinstance(content_or_error, NoSearchResult):
                     nodes = []
@@ -209,24 +209,24 @@ class ShowDirNav(object):
         user = _user_from_session()
         if publishwarn == "auto":
             homedirs = user.home_dir.all_children_by_query(q(Container))
-            publishwarn = self.node in homedirs
+            publishwarn = self._node in homedirs
 
         if sortfield is None:
-            sortfield = self.req.params.get('sortfield')
+            sortfield = self._req.params.get('sortfield')
 
-        nodes = self.get_children(self.node, sortfield)
+        nodes = self.get_children(self._node, sortfield)
 
-        # set self.nodes to be used by shownav which must be called after showdir
-        self.nodes = nodes
-        page = int(self.req.params.get('page', 1))
-        return _shownodelist(self.req, nodes, page, publishwarn=publishwarn, markunpublished=markunpublished, dir=self.node,
+        # set self._nodes to be used by shownav which must be called after showdir
+        self._nodes = nodes
+        page = int(self._req.params.get('page', 1))
+        return _shownodelist(self._req, nodes, page, publishwarn=publishwarn, markunpublished=markunpublished, dir=self._node,
                             item_count=item_count, faultyidlist=faultyidlist)
 
     def get_ids_from_req(self):
-        nid = self.req.params.get("srcnodeid", self.req.params.get("id"))
+        nid = self._req.params.get("srcnodeid", self._req.params.get("id"))
         if nid:
             node = q(Node).get(nid)
-            sortfield = self.req.params.get('sortfield')
+            sortfield = self._req.params.get('sortfield')
             nodes = self.get_children(node, sortfield)
             ids = [str(n.id) for n in nodes]
             return ids

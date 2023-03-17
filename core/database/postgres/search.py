@@ -13,6 +13,7 @@ import itertools as _itertools
 import operator as _operator
 
 import logging
+import re as _re
 from sqlalchemy import func, Index as _Index
 
 import utils.utils as _utils
@@ -64,24 +65,13 @@ def _rewrite_prefix_search(t):
     return term_without_leading_wildcard[:starpos] + u":*"
 
 
-_escape_postgres_ts_replacements = tuple(z.split() for z in (
-    u'\\ \\\\',
-    u"& \&",
-    u"| \|",
-    u"! \!",
-    u": \:",
-    u'" \"',
-    u'( \(',
-    u') \)',
-    u'< \<',
-    u'> \>',
-    u"' \\'",
-   ))
+_escape_postgres_ts_replacements = "\\|!:\"()<>'"
+
 
 def _escape_postgres_ts_operators(t):
-    for x,y in _escape_postgres_ts_replacements:
-        t = t.replace(x,y)
-    return t
+    for x in _escape_postgres_ts_replacements:
+        t = t.replace(x,'&')
+    return _re.sub('\&+', '&', t).strip('&')
 
 
 def _prepare_searchstring(op, searchstring):

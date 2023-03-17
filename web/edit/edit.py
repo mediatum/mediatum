@@ -717,7 +717,7 @@ def _show_paging(req, tab, ids):
     if srcnodeid:
         node = q(Node).get(srcnodeid)
         _show_dir_nav = _web_edit_edit_common.ShowDirNav(req)
-        nodes = _show_dir_nav.get_children(node, req.values.get('sortfield'))
+        nodes = _show_dir_nav.get_children(node.id, req.values.get('sortfield'))
         nodelist = EditorNodeList(nodes)
 
     nextid = previd = None

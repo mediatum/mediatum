@@ -6,6 +6,8 @@ from __future__ import print_function
 
 import logging
 import functools as _functools
+
+import backports.functools_lru_cache as _backports_functools_lru_cache
 import mediatumtal.tal as _tal
 
 from core import Node, db
@@ -176,6 +178,7 @@ class ShowDirNav(object):
     def __init__(self, req, node=None):
         self._req = req
         self._node = node
+        self.get_children = _backports_functools_lru_cache.lru_cache(maxsize=None)(self.get_children)
 
     def shownav(self):
         page = int(self._req.params.get('page', 1))
@@ -183,7 +186,8 @@ class ShowDirNav(object):
         assert self._nodes is not None
         return shownavlist(self._req, self._node, self._nodes, page, dir=self._node)
 
-    def get_children(self, node, sortfield):
+    def get_children(self, node_id, sortfield):
+        node = q(Node).get(node_id)
         nodes = node.content_children.prefetch_attrs() # XXX: ?? correct
         make_search_content = get_make_search_content_function(self._req.args)
         paths = get_accessible_paths(node, q(Node).prefetch_attrs())
@@ -215,7 +219,7 @@ class ShowDirNav(object):
         if sortfield is None:
             sortfield = self._req.params.get('sortfield')
 
-        nodes = self.get_children(self._node, sortfield)
+        nodes = self.get_children(self._node.id, sortfield)
 
         # set self._nodes to be used by shownav which must be called after showdir
         self._nodes = nodes
@@ -228,7 +232,7 @@ class ShowDirNav(object):
         if nid:
             node = q(Node).get(nid)
             sortfield = self._req.params.get('sortfield')
-            nodes = self.get_children(node, sortfield)
+            nodes = self.get_children(node.id, sortfield)
             ids = [str(n.id) for n in nodes]
             return ids
 

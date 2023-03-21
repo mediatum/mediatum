@@ -204,22 +204,20 @@ class WorkflowStep_AddFormPage(WorkflowStep):
             return
 
         importdir = getImportDir()
-        try:
-            # Build the filename of the form file on disk.
-            # Note that the filename is underscore separated
-            # and the part after the last underscore is
-            # visible to the user when the file gets
-            # emailed in ``email.py``.
-            new_form_path = [str(node.id), form.base_name]
-            if self.settings["form_overwrite"]:
-                new_form_path.insert(1, _utils_utils.gen_secure_token(128))
-            new_form_path = join_paths(importdir, "_".join(new_form_path))
-            # copy new file and remove tmp
-            shutil.copy(pages, new_form_path)
-            os.remove(pages)
-        except:
-            logg.exception("workflowstep %s (%s): could not copy pdf form to import directory - node: '%s' (%s), import directory: '%s'",
-                           self.name, self.id, node.name, node.id, importdir)
+
+        # Build the filename of the form file on disk.
+        # Note that the filename is underscore separated
+        # and the part after the last underscore is
+        # visible to the user when the file gets
+        # emailed in ``email.py``.
+        new_form_path = [str(node.id), form.base_name]
+        if self.settings["form_overwrite"]:
+            new_form_path.insert(1, _utils_utils.gen_secure_token(128))
+        new_form_path = join_paths(importdir, "_".join(new_form_path))
+        # copy new file and remove tmp
+        shutil.copy(pages, new_form_path)
+        os.remove(pages)
+
         node.files.append(File(new_form_path, 'wfstep-addformpage', 'application/pdf'))
         db.session.commit()
         logg.info("workflowstep '%s' (%s): added separate pdf form to node (node '%s' (%s)) fields: %s, path: '%s'",

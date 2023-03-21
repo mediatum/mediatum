@@ -363,7 +363,10 @@
                         <div class="mediatum_nodesperpage" tal:condition="python: node.isContainer()">
                             <input id="sortfield" type="hidden" name="type" tal:attributes="value python:sortfield;"/>
                             <label for="nodesperpage" i18n:translate="edit_nodes_per_page"> </label>
-                            <select name="nodesperpage" onchange="sortItemsPage_sync($('#sortfield'), this, '');">
+                            <select
+                                name="nodesperpage"
+                                tal:attributes="onchange python:'''sortItemsPage_sync($('#sortfield'), this, '{}')'''.format(tab)"
+                            >
                                 <option
                                     tal:repeat="npp nodesperpage_options"
                                     tal:attributes="value npp; selected python:'selected' if ustr(npp)==nodesperpage_from_req else None"

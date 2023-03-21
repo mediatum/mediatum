@@ -555,15 +555,8 @@ function loadUrl(newLocation)
 }
 
 
-function sortItemsPage_sync(o1, o2, o3){
-
-
-    var url
-    if (o3 == '')
-       url = '/edit/edit_content?srcnodeid='+id+'&id='+id+'&sortfield='+$(o1).val()+'&nodes_per_page='+$(o2).val();
-    else
-       url = '/edit/edit_content?srcnodeid='+id+'&id='+id+'&'+o3+'&sortfield='+$(o1).val()+'&nodes_per_page='+$(o2).val();
-    reloadURL(url);
+function sortItemsPage_sync(o1, o2, tab) {
+    reloadURL(`/edit/edit_content?srcnodeid=${id}&id=${id}&sortfield=${$(o1).val()}&nodes_per_page=${$(o2).val()}&tab=${tab}`);
 }
 
 

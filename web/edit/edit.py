@@ -546,7 +546,6 @@ def action(req):
         newnode.set("creator", user.login_name)
         newnode.set("creationtime", unicode(
             time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
-        newnode.set("nodename", translated_label)  # set attribute named "nodename" to label text
         # place newnode at top of the children by setting the orderpos to the lowest orderpos - 1
         # if the orderpos gets negative, shift the oderpos of all children by incrementing with a positive number
         # make this number large enough, to avoid the next shifting of orderpos if more containers are added

@@ -55,6 +55,9 @@ button, input[type="button"],input[type="submit"],input[type="reset"], button[ty
     background-color:#ededed; -moz-border-radius:6px; -webkit-border-radius:6px; border-radius:6px; border:1px solid #dcdcdc; display:inline-block;
     font-size:12px; padding:4px 24px;
 }
+.mediatum-showpreview-btn-wait, .mediatum-showpreview-btn-wait:hover {
+    background: no-repeat url("/static/img/wait.gif");
+}
 button:hover, input[type="button"]:hover,input[type="submit"]:hover,input[type="reset"]:hover, button[type="submit"]:hover {
     background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #dfdfdf), color-stop(1, #ededed) );
     background:-moz-linear-gradient( center top, #dfdfdf 5%, #ededed 100% );
@@ -80,9 +83,6 @@ p.error a:hover {color:black; text-decoration:underline;}
 div.grippie {background:#EEEEEE url(/static/img/grippie.png) no-repeat scroll center 2px; cursor:s-resize; height:9px; width:100%; margin:0px 5px 5px 2px; padding:0px;}
 div.hstippled {font-size:1px; height:1px;}
 div.label{width:210px;float:left;padding-left:15px;}
-div.mask_label {width:200px; float:left;}
-div.mask_value {margin-left:220px; top:0px;}
-div.mask_row {margin-bottom:6px;}
 
 .mediatum_acc_content{overflow-x:hidden!important;}
 .mediatum_acc_content{box-shadow: 0px 0px 5px silver inset!important;}
@@ -159,10 +159,23 @@ div.mask_row {margin-bottom:6px;}
 /* Image Links */
 .mediatum_img_nav::before{padding: 0px 5px 0px 5px;width:16px;height:16px;background-size: 21px 16px;background-repeat: no-repeat;float:left;}
 .mediatum_imgtooltipbase{padding-right:5px;vertical-align: middle;padding-top:2px;}
-.mediatum_imgtooltipbase .mediatum_minithumb {display: inline-block;padding-top:2px;}
-.mediatum_imgtooltipbase:hover .mediatum_minithumb {display:none;}
+.mediatum_imgtooltipbase img.mediatum_minithumb {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+    object-position: top;
+ }
 .mediatum_imgtooltipbase .mediatum_imghover{display:none;}
-.mediatum_imgtooltipbase:hover .mediatum_imghover{display: inline-block;position: relative;left: 0px;height:128px;width:128px;}
+.mediatum_imgtooltipbase:hover img.mediatum_minithumb {display:none;}
+.mediatum_imgtooltipbase:hover .mediatum_imghover {
+    display: initial;
+}
+.mediatum_imgtooltipbase:hover .mediatum_imghover img {
+    width: 128px;
+    height: 128px;
+    object-fit: contain;
+    object-position: top;
+}
 .mediatum_imgtooltipbasedefault .mediatum_imghoverdefault{display:none;}
 .mediatum_imgtooltipbasedefault:hover .mediatum_imghoverdefault{display: inline-block;position: relative;left: 0px;height:128px;width:128px;}
 
@@ -228,7 +241,6 @@ div.mask_row {margin-bottom:6px;}
 .mediatum_logocontainer img {float:left; padding:0px; margin:5px; margin-left:10px;}
 .mediatum_MainMenu {margin-left:40px; margin-top:50px; margin-bottom:30px; float:left; height:auto; width:auto; padding:10px;}
 .mediatum_metaform_div{position:absolute;top:-7px;right:-7px;z-index:10002;}
-.mediatum_minithumb{height:30px;width:30px;}
 .mediatum_multitext {height:60px; margin-bottom:5px;}
 .mediatum_nav { top: 0; left: 0; width: 100%;/*  background: #3070b3; */  background: #333;list-style:none; margin:0; padding:0; }
 .mediatum_nav a{color:#fff;font-weight:normal !important;font-size: 12px;}
@@ -253,13 +265,12 @@ div.mask_row {margin-bottom:6px;}
 .mediatum_node_icon{display:table-cell;width:30px;cursor:pointer;}
 .mediatum_node_icon_chk{width:30px;}
 .mediatum_node_icon_header{display:table-cell;padding-bottom: 5px;width:30px;}
-.mediatum_node_text {display:table-cell; font-size:10px; }
+.mediatum_node_text {display: table-cell; vertical-align: top; font-size:10px;}
 .mediatum_node_text_grid{padding:0px 5px 0px 5px;width:138px;}
 .mediatum_node_text_grid p{overflow:hidden;text-overflow: ellipsis;}
 .mediatum_nodelist_text{display:table-cell;text-align:right; font-weight: bold;padding-right: 20px;}
 .mediatum_nonodelist{text-align:center;padding-top:50px;}
 .mediatum_padding10{padding:10px;}
-.mediatum_paddingimg{padding-right:15px;padding-bottom:15px;}
 .mediatum_pagenumber{font-size:14px;margin-left:5px;margin-right:5px;}
 .mediatum_pagenumber_act{font-size:18px;}
 #mediatum_publish_error{left: 200px; top: 100px; position: absolute;}
@@ -307,7 +318,17 @@ p.mediatum_templateerror {background: url("/static/img/talerror.gif") #d8d8d8 no
     margin-left:20px; margin-right:20px; vertical-align:middle;}
 p.mediatum_templateerror #msg {font-family: Courier;}
 .mediatum_text_center {text-align:center;}
-.mediatum_thumbnail{border:0px!important; position:relative; top:0px; left:0px; width:128px; height:128px;}
+.mediatum_thumbnail {
+    border: 0px!important;
+    position: relative;
+    top: 0px;
+    left: 0px;
+    width:128px;
+    height:128px;
+    cursor:pointer;
+    object-fit: contain;
+    object-position: top;
+}
 .mediatum_treecontent { background-color:#ddd;border-right:1px solid #ddd;}
 .mediatum_treecontent .mediatum_accordiontree h3 {font-size: 0.9em; background:#333;margin:0px;cursor:pointer;padding:10px 0px;position:relative;z-index:0;
     border-bottom:1px solid #ddd;text-align:center;}
@@ -446,7 +467,38 @@ iframe.ui-layout-center, div.ui-layout-north{border-width:0!important;padding:0;
 #nextid{display:inline-block;}
 #object_main {padding:5px;}
 #object_image {float:left; width:330px;}
+
+#sub_content_content div.object_main div.object_image a div.document_thumb img {
+    width: 320px;
+    height: 320px;
+    cursor:pointer;
+    object-fit: contain;
+    object-position: top;
+}
+#sub_content_content div.object_main div.object_video div.video_container video {
+    width: 320px;
+    height: 320px;
+    cursor:pointer;
+    border:1px double silver;
+    object-fit: contain;
+    object-position: top;
+}
+#sub_content_content div.object_main div.mediatum_paddingimg {padding-right:15px;padding-bottom:15px;}
+
+#sub_content_content div.object_main div.mediatum_paddingimg a div.mediatum-image-div img.mediatum-image-thumbnail {
+    width: 320px;
+    height: 320px;
+    cursor:pointer;
+    border:1px double silver;
+    object-fit: contain;
+    object-position: top;
+}
+
 #object_meta{ margin-left:325px;}
+
+#sub_content_content div.object_main dl.object_meta dt.mask_label { float: left; width: 200px; text-align: left;}
+#sub_content_content div.object_main dl.object_meta dd.mask_value { margin: 0 0 0 202px; padding: 0 0 8px 0;}
+
 #orid{margin-left:20px;margin-right:20px;text-align:center;display:inline-block;}
 #overlay{display:none;position:fixed;top:0px;left:0px;right:0px;bottom:0px;width:100%;height:100%;}
 #overlay_content{display:none;}

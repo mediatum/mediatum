@@ -25,9 +25,6 @@ msgstr "Ungültig"
 msgid "show_in_new_window"
 msgstr "In neuem Fenster anzeigen"
 
-msgid "show in new window"
-msgstr "In neuem Fenster anzeigen"
-
 msgid "main_title"
 msgstr "mediaTUM - Medien- und Publikationsserver"
 
@@ -353,9 +350,6 @@ msgstr "BibTeX Informationen in neuem Fenster öffnen"
 
 msgid "doc_att_browser"
 msgstr "Attachment-Browser öffnen..."
-
-msgid "image_no_flash_link"
-msgstr "Hier klicken, um das Bild in Originalgröße anzuzeigen (ohne Flash-Zoom). Nutzen Sie diesen Link bei Problemen mit der aktuellen Darstellung."
 
 #########################################
 

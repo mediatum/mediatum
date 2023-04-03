@@ -7,9 +7,6 @@ msgstr "Logo löschen"
 msgid "edit_logo_no_logo"
 msgstr "kein Logo"
 
-msgid "edit_logo_zoom"
-msgstr "(Vergrößerung beim Darüberfahren)"
-
 msgid "edit_logo_addfile"
 msgstr "Datei hinzufügen:"
 

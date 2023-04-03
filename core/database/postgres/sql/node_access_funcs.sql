@@ -199,28 +199,11 @@ CREATE OR REPLACE FUNCTION _inherited_access_rules_read_type(node_id integer, _r
     STABLE
 AS $f$
 BEGIN
-IF EXISTS (SELECT FROM node_to_access_rule WHERE nid=node_id AND ruletype=_ruletype AND inherited = false) THEN
+-- inheritance is blocked by any ruleset (note: even empty rulesets block inheritance)
+IF EXISTS (SELECT FROM node_to_access_ruleset WHERE node_to_access_ruleset.nid=node_id AND node_to_access_ruleset.ruletype=_ruletype) THEN
     RETURN;
 END IF;
 RETURN QUERY
-  WITH
-    RECURSIVE parent_rule_ids_nested(nid, rule_ids) AS (
-        SELECT nodemapping.nid,
-        (SELECT array_agg(rule_id) FROM node_to_access_rule WHERE node_to_access_rule.nid=nodemapping.nid)
-        FROM  nodemapping
-        WHERE nodemapping.cid = node_id
-      UNION ALL
-        SELECT nodemapping.nid,
-        (SELECT array_agg(rule_id) FROM node_to_access_rule WHERE node_to_access_rule.nid=nodemapping.nid)
-        FROM nodemapping
-        JOIN parent_rule_ids_nested ON nodemapping.cid = parent_rule_ids_nested.nid
-        WHERE parent_rule_ids_nested.rule_ids IS NULL
-    )
-  ,
-    parent_rule_ids AS (
-      SELECT nid,unnest(rule_ids) AS rule_id
-      FROM parent_rule_ids_nested
-    )
   SELECT DISTINCT
      node_id AS nid
     ,node_to_access_rule.rule_id
@@ -229,9 +212,10 @@ RETURN QUERY
     ,TRUE AS inherited
     ,FALSE AS blocking
   FROM node_to_access_rule
-  JOIN parent_rule_ids
-    ON parent_rule_ids.nid=node_to_access_rule.nid AND parent_rule_ids.rule_id=node_to_access_rule.rule_id
-  WHERE node_to_access_rule.ruletype=_ruletype;
+  JOIN nodemapping ON nodemapping.nid = node_to_access_rule.nid
+  WHERE nodemapping.cid = node_id
+    AND node_to_access_rule.ruletype = _ruletype
+  ;
 END;
 $f$;
 
@@ -390,6 +374,49 @@ $f$;
 --- trigger functions for access rules
 
 
+CREATE OR REPLACE FUNCTION _update_children_inherited_rules(node_id integer, ruletype_ text)
+    RETURNS void
+    LANGUAGE plpgsql
+    SET search_path TO :search_path
+    VOLATILE
+AS $f$
+DECLARE
+    childrel record;
+    rec node_to_access_rule;
+BEGIN
+    IF ruletype_ IN ('read', 'data') THEN
+        IF NOT EXISTS (SELECT FROM node_to_access_rule WHERE node_to_access_rule.nid=node_id AND node_to_access_rule.ruletype=ruletype_) THEN
+            INSERT INTO node_to_access_rule SELECT * FROM _inherited_access_rules_read_type(node_id, ruletype_);
+        END IF;
+        FOR childrel IN SELECT cid, max(distance) AS distance FROM noderelation WHERE noderelation.nid=node_id GROUP BY cid ORDER BY max(distance) LOOP
+            -- ignore nodes that have their own access rules
+            IF NOT EXISTS (SELECT FROM node_to_access_rule WHERE node_to_access_rule.nid=childrel.cid AND node_to_access_rule.ruletype=ruletype_ AND NOT node_to_access_rule.inherited) THEN
+                DELETE            FROM node_to_access_rule WHERE node_to_access_rule.nid=childrel.cid AND node_to_access_rule.ruletype=ruletype_ AND node_to_access_rule.inherited;
+                INSERT INTO node_to_access_rule SELECT * from _inherited_access_rules_read_type(childrel.cid, ruletype_);
+            END IF;
+        END LOOP;
+    ELSE
+        -- if a not-inherited rule got deleted, we might have to add its inherited
+        -- pendant which was previously barred from being part of the rules
+        INSERT INTO node_to_access_rule (SELECT * from inherited_access_rules_write(node_id) EXCEPT SELECT nid, rule_id, ruletype, invert, true, blocking FROM node_to_access_rule WHERE nid=node_id);
+        FOR childrel IN SELECT cid, max(distance) AS distance FROM noderelation WHERE noderelation.nid=node_id GROUP BY cid ORDER BY max(distance) LOOP
+            DELETE FROM node_to_access_rule WHERE node_to_access_rule.nid=childrel.cid AND node_to_access_rule.ruletype=ruletype_ AND node_to_access_rule.inherited;
+            INSERT INTO node_to_access_rule
+                SELECT * from inherited_access_rules_write(childrel.cid) AS rules
+                WHERE NOT EXISTS (
+                    SELECT FROM node_to_access_rule WHERE
+                            node_to_access_rule.nid=rules.nid
+                        AND node_to_access_rule.rule_id=rules.rule_id
+                        AND node_to_access_rule.invert=rules.invert
+                        AND node_to_access_rule.ruletype=ruletype_
+                   )
+               ;
+        END LOOP;
+    END IF;
+END;
+$f$;
+
+
 CREATE OR REPLACE FUNCTION on_node_to_access_rule_insert_delete()
     RETURNS trigger
     LANGUAGE plpgsql
@@ -397,7 +424,6 @@ CREATE OR REPLACE FUNCTION on_node_to_access_rule_insert_delete()
     VOLATILE
 AS $f$
 DECLARE
-    c record;
     rec node_to_access_rule;
 BEGIN
 
@@ -406,24 +432,7 @@ IF TG_OP = 'INSERT' THEN
 ELSE
     rec = OLD;
 END IF;
-IF rec.ruletype IN ('read', 'data') THEN
-    FOR c IN SELECT cid FROM noderelation WHERE nid = rec.nid LOOP
-        -- RAISE DEBUG 'updating access rules for node %', c;
-        -- ignore nodes that have their own access rules
-        IF NOT EXISTS (SELECT FROM node_to_access_rule WHERE nid=c.cid AND ruletype = rec.ruletype AND inherited = false) THEN
-            DELETE FROM node_to_access_rule WHERE nid=c.cid AND inherited = true AND ruletype = rec.ruletype;
-            INSERT INTO node_to_access_rule SELECT * from _inherited_access_rules_read_type(c.cid, rec.ruletype);
-        END IF;
-    END LOOP;
-ELSE
-    FOR c in SELECT cid FROM noderelation WHERE nid = rec.nid LOOP
-        DELETE FROM node_to_access_rule WHERE nid = c.cid AND inherited = true AND ruletype = rec.ruletype;
-        
-        INSERT INTO node_to_access_rule 
-        SELECT * from inherited_access_rules_write(c.cid) t
-        WHERE NOT EXISTS (SELECT FROM node_to_access_rule WHERE nid=t.nid AND rule_id=t.rule_id AND ruletype='write');
-    END LOOP;
-END IF;
+PERFORM _update_children_inherited_rules(rec.nid, rec.ruletype);
 RETURN NULL;
 END;
 $f$;
@@ -641,6 +650,13 @@ BEGIN
     FROM access_ruleset_to_rule 
     WHERE ruleset_name=NEW.ruleset_name
     ON CONFLICT DO NOTHING;
+
+    -- If the ruleset is empty, the lines above might do nothing
+    -- (no rules inserted or deleted); yet we have to ensure
+    -- inheritance is recomputed: for read/data rights,
+    -- a new ruleset might stop inheritance and require
+    -- previously inherited rules to be removed.
+    PERFORM _update_children_inherited_rules(NEW.nid, NEW.ruletype);
     
 RETURN NEW;
 END;
@@ -654,18 +670,27 @@ CREATE OR REPLACE FUNCTION on_node_to_access_ruleset_delete()
     VOLATILE
 AS $f$
 BEGIN
-    DELETE FROM node_to_access_rule
-    WHERE nid=OLD.nid
+    DELETE FROM node_to_access_rule WHERE
+        nid=OLD.nid
     AND ruletype=OLD.ruletype
-    AND (nid, rule_id, ruletype, invert, false, blocking) 
-        NOT IN (SELECT na.nid, arr.rule_id, na.ruletype, na.invert != arr.invert, false, na.blocking OR arr.blocking
-                    FROM access_ruleset_to_rule arr
-                    JOIN node_to_access_ruleset na ON arr.ruleset_name=na.ruleset_name
-                    WHERE na.nid=OLD.nid);
+    AND (rule_id, invert, blocking) NOT IN (
+        SELECT arr.rule_id, na.invert != arr.invert, na.blocking OR arr.blocking
+        FROM access_ruleset_to_rule AS arr
+        JOIN node_to_access_ruleset AS na ON arr.ruleset_name=na.ruleset_name
+        WHERE na.nid=OLD.nid AND na.ruletype=OLD.ruletype
+       );
 
-    IF OLD.ruletype IN ('read', 'data') 
+    -- If the ruleset is empty, the lines above might do nothing
+    -- (no rules inserted or deleted); yet we have to ensure
+    -- inheritance is recomputed: for read/data rights,
+    -- a dropped ruleset might trigger inheritance and require
+    -- previously rules to be added that were suppressed before.
+    PERFORM _update_children_inherited_rules(OLD.nid, OLD.ruletype);
+
+    IF OLD.ruletype IN ('read', 'data')
         AND NOT EXISTS (SELECT FROM node_to_access_ruleset WHERE nid=OLD.nid AND ruletype=OLD.ruletype)
-        AND NOT EXISTS (SELECT FROM node_to_access_rule WHERE nid=OLD.nid AND ruletype=OLD.ruletype) THEN
+        AND NOT EXISTS (SELECT FROM node_to_access_rule WHERE nid=OLD.nid AND ruletype=OLD.ruletype)
+    THEN
         -- inherit from parents if no rules and rulesets are present for the node anymore
         INSERT INTO node_to_access_rule SELECT * FROM _inherited_access_rules_read_type(OLD.nid, OLD.ruletype);
     END IF;

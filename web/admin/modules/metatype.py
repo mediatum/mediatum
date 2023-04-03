@@ -201,7 +201,7 @@ def validate(req, op):
 
             fieldsetting = "fieldsetting_"
             fieldsettings = {k[len(fieldsetting):]:v for k,v in req.values.lists() if k.startswith(fieldsetting)}
-            fieldsettings = _datastructures.CombinedMultiDict((_datastructures.ImmutableMultiDict(fieldsettings),))
+            fieldsettings = _datastructures.ImmutableMultiDict(fieldsettings)
 
             updateMetaField(
                     req.values["parent"],

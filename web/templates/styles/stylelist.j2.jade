@@ -9,7 +9,7 @@ each file in files
         img(title=translate('view_list_att_title'), src='/static/img/attach.png')
     a(href=file.getLink(), class='mediatum-stylelist-a')
       div(class='mediatum-stylelist-img')
-        = file.image
+        img.thumbnail(src='/thumbnail/{}'.format(file.node.id), border='0')
       div(class='mediatum-stylelist-div')
         p
           = file.text

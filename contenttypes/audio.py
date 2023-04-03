@@ -7,7 +7,6 @@ from __future__ import print_function
 import logging
 import shutil
 from PIL import Image, ImageDraw
-from contenttypes.data import Content, prepare_node_data
 from mutagen import File as AudioFile
 from utils.utils import splitfilename
 from utils.date import parse_date, format_date, make_date
@@ -16,6 +15,7 @@ from core.postgres import check_type_arg_with_schema
 from core.attachment import filebrowser as _filebrowser
 from core import File
 from core import db
+import contenttypes.data as _contenttypes_data
 import utils.process
 
 logg = logging.getLogger(__name__)
@@ -30,71 +30,23 @@ def makeAudioThumb(self, audiofile):
     self.files.append(File(path + ".mp3", "mp3", "audio/mpeg"))
     return ret
 
-# """ make thumbnail (jpeg 128x128) """
 
-
-def make_thumbnail_image(self, audiofile):
-    path, ext = splitfilename(audiofile.filename)
-
-    if audiofile.tags:
-        for k in audiofile.tags:
-            if k == "APIC:thumbnail":
-                with open("{}.thumb".format(path), "wb") as fout:
-                    fout.write(audiofile.tags[k].data)
-
-                pic = Image.open(path + ".thumb2")
-                width = pic.size[0]
-                height = pic.size[1]
-
-                if width > height:
-                    newwidth = 128
-                    newheight = height * newwidth // width
-                else:
-                    newheight = 128
-                    newwidth = width * newheight // height
-                pic = pic.resize((newwidth, newheight), Image.ANTIALIAS)
-                pic.save(path + ".thumb", "jpeg")
-                pic = pic.resize((newwidth, newheight), Image.ANTIALIAS)
-                im = Image.new(pic.mode, (128, 128), (255, 255, 255))
-
-                x = (128 - newwidth) // 2
-                y = (128 - newheight) // 2
-                im.paste(pic, (x, y, x + newwidth, y + newheight))
-
-                draw = ImageDraw.ImageDraw(im)
-                draw.line([(0, 0), (127, 0), (127, 127), (0, 127), (0, 0)], (128, 128, 128))
-
-                im = im.convert("RGB")
-                im.save(path + ".thumb", "jpeg")
-
-                self.files.append(File(path + ".thumb", "thumb", audiofile.tags[k].mime))
-                break
-
-
-# """ make presentation format (jpeg 320x320) """
+# """ make thumbnail format (jpeg 320x320) """
 def convert_image(self, audiofile):
+    if "APIC:thumbnail" not in (audiofile.tags or ()):
+        return
+
+    tag = audiofile.tags["APIC:thumbnail"]
     path, ext = splitfilename(audiofile.filename)
+    path = "{}.thumbnail.jpeg".format(path)
+    with open(path, "wb") as fout:
+        fout.write(tag.data)
 
-    if audiofile.tags:
-        for k in audiofile.tags:
-            if k == "APIC:thumbnail":
-                with open("{}.thumb2".format(path), "wb") as fout:
-                    fout.write(audiofile.tags[k].data)
-
-                pic = Image.open(path + ".thumb2")
-                width = pic.size[0]
-                height = pic.size[1]
-
-                if width > height:
-                    newwidth = 320
-                    newheight = height * newwidth // width
-                else:
-                    newheight = 320
-                    newwidth = width * newheight // height
-                pic = pic.resize((newwidth, newheight), Image.ANTIALIAS)
-                pic.save(path + ".thumb2", "jpeg")
-                self.files.append(File(path + ".thumb2", "presentation", audiofile.tags[k].mime))
-                break
+    with Image.open(path) as pic:
+        pic.thumbnail(_contenttypes_data.get_thumbnail_size(*pic.size))
+        pic = pic.convert("RGB")
+        pic.save(path, "JPEG", quality="web_high")
+        self.files.append(File(path, "thumbnail", tag.mime))
 
 
 def makeMetaData(self, audiofile):
@@ -116,11 +68,11 @@ def makeMetaData(self, audiofile):
 
 
 @check_type_arg_with_schema
-class Audio(Content):
+class Audio(_contenttypes_data.Content):
 
     @classmethod
     def get_sys_filetypes(cls):
-        return [u"audio", u"thumb", u"presentation", u"mp3"]
+        return [u"audio", u"thumbnail", u"mp3"]
 
     # compare document.py and
     # core.database.postgres.file.File.ORIGINAL_FILETYPES:
@@ -135,7 +87,7 @@ class Audio(Content):
 
     # prepare hash table with values for TAL-template
     def _prepareData(self, req):
-        obj = prepare_node_data(self, req)
+        obj = _contenttypes_data.prepare_node_data(self, req)
         if obj["deleted"]:
             # no more processing needed if this object version has been deleted
             # rendering has been delegated to current version
@@ -180,27 +132,21 @@ class Audio(Content):
 
         original = None
         audiothumb = None
-        thumb = None
-        thumb2 = None
+        thumbnail = None
 
         for f in self.files:
             if f.type == "audio":
                 original = f
             if f.type == "mp3":
                 audiothumb = f
-            if f.type.startswith("present"):
-                thumb2 = f
-            if f.type == "thumb":
-                thumb = f
+            if f.type == "thumbnail":
+                thumbnail = f
 
         if original:
-
             if audiothumb:
                 self.files.remove(audiothumb)
-            if thumb:  # delete old thumb
-                self.files.remove(thumb)
-            if thumb2:  # delete old thumb2
-                self.files.remove(thumb2)
+            if thumbnail:  # delete old thumb
+                self.files.remove(thumnail)
 
             athumb = makeAudioThumb(self, original)
             if athumb:
@@ -208,7 +154,6 @@ class Audio(Content):
             else:
                 _original = AudioFile(original.abspath)
             convert_image(self, _original)
-            make_thumbnail_image(self, _original)
             makeMetaData(self, _original)
 
         db.session.commit()

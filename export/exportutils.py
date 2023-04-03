@@ -18,7 +18,11 @@ import core.config as config
 
 import utils.date as date
 
-from utils.utils import esc, u, u2, esc2, utf82iso, iso2utf8
+from utils.utils import esc
+from utils.utils import esc2
+from utils.utils import iso2utf8
+from utils.utils import u
+from utils.utils import utf82iso
 from utils.date import parse_date, format_date
 from core.users import get_guest_user
 

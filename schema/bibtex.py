@@ -32,7 +32,7 @@ from core import db, Node
 from .schema import Metadatatype
 import core.users as users
 from contenttypes.document import Document
-from utils.utils import u, u2
+from utils.utils import u
 from utils.date import parse_date
 
 q = db.query

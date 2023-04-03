@@ -4,9 +4,12 @@
 from __future__ import division
 from __future__ import print_function
 
+import flask as _flask
+
 import mediatumtal.tal as _tal
 
 import core.csrfform as _core_csrfform
+import core.database.postgres.node as _node
 import core.translation as _core_translation
 import web.edit.edit_common as _web_edit_edit_common
 from core.users import getHomeDir
@@ -141,10 +144,28 @@ def getContent(req, ids):
             else:
                 publisherror.append(_core_translation.translate(language, "error_publish_database_multiple"))
 
+        if not publisherror:
+            req.response = _flask.redirect("/edit/edit_content?srcnodeid={0}&id={0}".format(publishdir.id), code=303)
+            return req.response.status_code
+
         v = {}
         v["id"] = publishdir.id
         v["change"] = changes
         ret += _tal.processTAL(v, file="web/edit/modules/publish.html", macro="reload", request=req)
+
+    collections = _core_nodecache.get_collections_node()
+    writable_container_query = (q(Container.id)
+            .join(_node.t_noderelation, _node.t_noderelation.c.cid == Container.id)
+            .filter_read_access()
+            .filter_write_access()
+            .filter(_node.t_noderelation.c.nid == collections.id)
+            .cte()
+           )
+    writable_container_nids = (q(_node.t_nodemapping.c.nid)
+            .filter(~_node.t_nodemapping.c.nid.in_(q(writable_container_query)))
+            .filter(_node.t_nodemapping.c.cid.in_(q(writable_container_query)))
+            .distinct()
+           ).all()
 
     # build normal window
     stddir = ""  # preset value for destination ids
@@ -158,7 +179,7 @@ def getContent(req, ids):
                 stdname=stdname,
                 showdir=show_dir_nav.showdir(publishwarn=None, markunpublished=1, faultyidlist=errorids),
                 basedir=_core_nodecache.get_collections_node(),
-                script="var currentitem = '{}';\nvar currentfolder = '{}'".format(publishdir.id, publishdir.id),
+                script="var currentitem = '{0}';\nvar currentfolder = '{0}'".format(",".join(str(nid[0]) for nid in writable_container_nids)),
                 idstr=ids,
                 faultyerrlist=publisherror,
                 csrf=_core_csrfform.get_token(),

@@ -5,6 +5,7 @@
 let
 
   backend = pkgs.callPackage ./backend.nix { inherit pkgsPy; inherit (pkgsPy) python2; };
+  acme-sh = pkgs.callPackage ./acme-sh.nix {};
   nginx = pkgs.callPackage ./nginx.nix {};
   postgresql = pkgs.callPackage ./postgresql.nix {};
   uwsgi = pkgs.callPackage ./uwsgi.nix {};
@@ -12,6 +13,6 @@ let
 in
 
 pkgsPy.mkShell {
-  nativeBuildInputs = [ nginx postgresql uwsgi ];
+  nativeBuildInputs = [ acme-sh nginx postgresql uwsgi ];
   inputsFrom = [ backend ];
 }

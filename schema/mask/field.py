@@ -151,11 +151,7 @@ class m_field(Metatype):
         else:
             label = u'&nbsp;'
 
-        # render HTML
-        ret = u'<div class="mask_row field-{}"><div>'.format(metafield.name)
-        ret += u'<div class="mask_label">{}</div>\n<div class="mask_value">{}&nbsp;</div>\n'.format(label, value)
-        ret += u'</div></div>'
-        return ret
+        return u'<dt class="mask_label">{}</dt>\n<dd class="mask_value">{}</dd>\n'.format(label, value)
 
     def getMetaHTML(self, parent, index, sub=False, language=None, itemlist=[], ptype="", fieldlist={}):
         """ return formated row for metaeditor """

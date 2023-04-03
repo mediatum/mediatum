@@ -38,10 +38,6 @@ logg = logging.getLogger(__name__)
 q = db.query
 
 
-def print_url(nid, **params):
-    return build_url_from_path_and_params(u"/print/{}".format(nid), params)
-        
-
 class SingleFile(object):
 
     def __init__(self, file, link_params, language, fullstyle_name, separator=None):
@@ -322,16 +318,18 @@ class ContentList(ContentBase):
         
     @property
     def print_url(self):
-        if config.getboolean("config.enable_printing"):
-            # self.content means: we're showing a single result node.
-            # Therefore, we want to print the node, not the list.
-            if self.content is not None:
-                return self.content.print_url
-            
-            if self.container.system_attrs.get("print", "1") == "1":
-                # printing is allowed for containers by default, unless system.print != "1" is set on the node
-                params = {k:v for k, v in iteritems(self.nav_params) if k.startswith("sortfield")}
-                return print_url(self.container.id, **params)
+        if not config.getboolean("config.enable_printing"):
+            return
+
+        # self.content means: we're showing a single result node.
+        # Therefore, we want to print the node, not the list.
+        if self.content is not None:
+            return self.content.print_url
+
+        # printing is allowed for containers by default, unless system.print != "1" is set on the node
+        if self.container.system_attrs.get("print", "1") == "1":
+            return build_url_from_path_and_params(u"/print/{}".format(self.container.id),
+                    {k:v for k, v in iteritems(self.nav_params) if k.startswith("sortfield")})
 
     def feedback(self, req):
         self.container_id = req.args.get("id", type=int)
@@ -618,7 +616,7 @@ class ContentNode(ContentBase):
     @property
     def print_url(self):
         if config.getboolean("config.enable_printing") and self.node.system_attrs.get("print", "1") == "1":
-            return print_url(self.id)
+            return build_url_from_path_and_params(u"/print/{}".format(self.id), {})
 
     @ensure_unicode_returned(name="web.frontend.content:html")
     def html(self, req):

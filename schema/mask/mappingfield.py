@@ -170,18 +170,7 @@ class m_mappingfield(Metatype):
             for ext in self.extensions:
                 s = ext.func(s, var, node, attrnode)
 
-        ret = ""
-        for i in range(0, len(s)):
-            if s[i - 1] == '\\':
-                if s[i] == 'r':
-                    ret += "\r"
-                elif s[i] == 'n':
-                    ret += "\n"
-                elif s[i] == 't':
-                    ret += "\t"
-            elif s[i] != '\\':
-                ret += s[i]
-        return desc(ret)
+        return s
 
     def getViewHTML(self, fields, nodes, flags, language="", template_from_caller=None, mask=None):
         ret = ""

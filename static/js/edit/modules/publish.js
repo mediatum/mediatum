@@ -56,7 +56,7 @@ function closeForm(){
 }
 
 $(document).ready(function () { // set correct height of scrollable content
-    initTree({'idOfFolderTrees': ['classtree'], 'style':'classification', 'multiselect':true});
+    initTree({'idOfFolderTrees': ['classtree'], 'style':'publish', 'multiselect':true});
     $('#mediatum_publish_operation').css('height', $('#mediatum_publish_operation').height() + $('#mediatum_publish_error').outerHeight());
     sublayout = $('#sub_content').layout({applyDemoStyles: true,
         center:{paneSelector: "#sub_content_content"},

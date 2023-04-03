@@ -76,7 +76,7 @@ def _finish_change(node, change_file, user, uploadfile, req):
     if change_file == "addthumb": # create new thumbanil from uploaded file
         file = importFile(uploadfile.filename, uploadfile)  # add new file
         filename, ext = os.path.splitext(file.abspath)
-        thumbname = "{}.thumbnail.jpeg".format(filename)
+        thumbname = u"{}.thumbnail.jpeg".format(filename)
         make_thumbnail_image(file.abspath, thumbname)
 
         if os.path.exists(file.abspath):  # remove uploaded original

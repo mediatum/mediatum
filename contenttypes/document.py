@@ -108,7 +108,7 @@ def _process_pdf(filename, thumbnailname, fulltextname, infoname):
             "convert",
             "-colorspace", "RGB",
             "-density", "300",
-            "{}[0]".format(filename),
+            u"{}[0]".format(filename),
             "-background", "white",
             "-thumbnail", "x300",
             imgfile,
@@ -253,9 +253,9 @@ class Document(_contenttypes_data.Content):
             return
 
         path, ext = _utils_utils.splitfilename(doc.abspath)
-        thumbnailname = "{}.thumbnail.jpeg".format(path)
-        fulltextname = "{}.txt".format(path)
-        infoname = "{}.info".format(path)
+        thumbnailname = u"{}.thumbnail.jpeg".format(path)
+        fulltextname = u"{}.txt".format(path)
+        infoname = u"{}.info".format(path)
         try:
             _process_pdf(doc.abspath, thumbnailname, fulltextname, infoname)
         except _PdfEncryptedError:

@@ -261,7 +261,7 @@ class Image(_contenttypes_data.Content):
         path = os.path.splitext(image_file.abspath)[0]
 
         # XXX: we really should use the correct file ending and find another way of naming
-        thumbname = "{}.thumbnail.jpeg".format(path)
+        thumbname = u"{}.thumbnail.jpeg".format(path)
 
         old_thumb_files = filter(lambda f: f.filetype == u"thumbnail", files)
 

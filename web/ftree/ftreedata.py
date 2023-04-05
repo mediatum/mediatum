@@ -127,14 +127,14 @@ def getLabel(req):
     req.response.set_data(label)
 
 
-def getPathTo(req):
+def _get_path_to(path_to, style, multiselect):
     # returns path(s) to selected node, 'x' separated, with selected nodes in ()
     # parameters: pathTo=selected Node
     collectionsid = _core_nodecache.get_collections_node().id
     # if more than one node selected use the first to get the path to
     items = []
     checked = set()
-    for nid in req.values["pathTo"].split(','):
+    for nid in path_to:
         node = _core.db.query(_core.Node).get(nid)
 
         for path in _pathutils.getPaths(node):
@@ -151,15 +151,23 @@ def getPathTo(req):
                     items.append(item.id)
 
             items.append("x")  # set devider for next path
-            if req.params.get("multiselect", "false") == "false":  # if not multiselect use only first path
+            if not multiselect:  # if not multiselect use only first path
                 break
 
-    if req.values["style"] == "classification":
-        assert len(req.values["pathTo"].split(",")) == 1
-    elif req.values["style"] == "publish":
+    if style == "classification":
+        assert len(path_to) == 1
+    elif style == "publish":
         checked.clear() # no pre-checked checkmarks in quick publisher
-    elif req.values["style"] != "edittree":
+    elif style != "edittree":
         raise RuntimeError("unknown tree style")
-    items = (("({})" if i in checked else "{}").format(i) for i in items)
+    items = items or (str(collectionsid), )
+    return (("({})" if i in checked else "{}").format(i) for i in items)
+
+
+def getPathTo(req):
     req.response.status_code = _httpstatus.HTTP_OK
-    req.response.set_data(unicode(",".join(items) or collectionsid))
+    req.response.set_data(unicode(",".join(_get_path_to(
+        map(int,req.values["pathTo"].split(",")),
+        req.values["style"],
+        req.params.get("multiselect", "false") != "false",
+       ))))

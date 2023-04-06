@@ -646,14 +646,21 @@ div#portal-breadcrumbs #collectionlogo { margin: 0px 0px 10px 0px; width: 100%; 
 #portal-column-content .documentActions a { color: #333333; text-decoration: none; border: none;}
 #portal-column-content .documentActions a img { vertical-align: middle;}
 #portal-column-content #object_main { min-height: 400px; padding: 5px; margin-left: 0px; position: relative; overflow: hidden; padding-bottom: 0px;}
-#portal-column-content #object_image { width: 320px; float: left; padding-bottom: 20px;}
+#portal-column-content #object_image { float: left; padding-bottom: 20px;}
 
-#portal-column-content div.object_main div.object_image div.document_thumb { width: 320px; height: 320px;}
-#portal-column-content div.object_main div.object_image div.document_thumb a img { cursor:pointer;border:1px double silver;}
-#portal-column-content div.object_main div.object_image div.mediatum-image-div { width: 320px; height: 320px;}
-#portal-column-content div.object_main div.object_image div.mediatum-image-div img { cursor:pointer;border:1px double silver;}
-#portal-column-content div.object_main div.document_thumb { width: 320px; height: 320px;}
-#portal-column-content div.object_main div.object_video div.video_container { width: 320px; height: 320px;}
+#portal-column-content div.object_main div.object_image div.document_thumb a img {
+    width: 320px;
+    height: 320px;
+    cursor:pointer;
+    border:1px double silver;
+ }
+#portal-column-content div.object_main div.object_image div.mediatum-image-div img {
+    width: 320px;
+    height: 320px;
+    cursor:pointer;
+    border:1px double silver;
+}
+
 #portal-column-content div.object_main dl.object_meta dt.mask_label { float: left; width: 200px; text-align: left;}
 #portal-column-content div.object_main dl.object_meta dd.mask_value { margin: 0 0 0 202px; padding: 0 0 8px 0;}
 
@@ -847,12 +854,10 @@ div#portal-breadcrumbs div a.breadcrumb-delimiter::after { content: "\2192"; mar
     top:3px;
     overflow:hidden;
 }
-#portal-column-content div#nodes div.preview a div.mediatum-stylethumb-div-img {
+#portal-column-content div#nodes div.preview a div.mediatum-stylethumb-div-img img.thumbnail {
     float:left;
     margin: 3px;
     position:absolute;
-}
-#portal-column-content div#nodes div.preview a div.mediatum-stylethumb-div-img img.thumbnail {
     height: 260px;
     width: 125px;
     object-fit: contain;
@@ -907,11 +912,9 @@ div#portal-breadcrumbs div a.breadcrumb-delimiter::after { content: "\2192"; mar
     top:3px;
     overflow:hidden;
 }
-#portal-column-content div#nodes div.preview_list a.mediatum-stylelist-a div.mediatum-stylelist-img {
+#portal-column-content div#nodes div.preview_list a.mediatum-stylelist-a div.mediatum-stylelist-img img.thumbnail {
     float:left;
     margin: 5px;
-}
-#portal-column-content div#nodes div.preview_list a.mediatum-stylelist-a div.mediatum-stylelist-img img.thumbnail {
     width:128px;
     height:auto;
     object-fit: contain;

@@ -323,9 +323,9 @@ p.mediatum_templateerror #msg {font-family: Courier;}
     position: relative;
     top: 0px;
     left: 0px;
-    width:128px;
-    height:128px;
-    cursor:pointer;
+    width: 128px;
+    height: 128px;
+    cursor: pointer;
     object-fit: contain;
     object-position: top;
 }
@@ -470,15 +470,17 @@ iframe.ui-layout-center, div.ui-layout-north{border-width:0!important;padding:0;
 
 #sub_content_content div.object_main div.object_image a div.document_thumb img {
     width: 320px;
-    height: 320px;
-    cursor:pointer;
+    min-width: 320px;
+    max-height: 320px;
+    cursor: pointer;
     object-fit: contain;
     object-position: top;
 }
 #sub_content_content div.object_main div.object_video div.video_container video {
     width: 320px;
-    height: 320px;
-    cursor:pointer;
+    min-width: 320px;
+    max-height: 320px;
+    cursor: pointer;
     border:1px double silver;
     object-fit: contain;
     object-position: top;
@@ -487,9 +489,10 @@ iframe.ui-layout-center, div.ui-layout-north{border-width:0!important;padding:0;
 
 #sub_content_content div.object_main div.mediatum_paddingimg a div.mediatum-image-div img.mediatum-image-thumbnail {
     width: 320px;
-    height: 320px;
-    cursor:pointer;
-    border:1px double silver;
+    min-width: 320px;
+    max-height: 320px;
+    cursor: pointer;
+    border: 1px double silver;
     object-fit: contain;
     object-position: top;
 }

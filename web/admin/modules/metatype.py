@@ -26,7 +26,7 @@ import schema.schema as _schema
 
 from utils.fileutils import importFile
 # metafield methods
-from .metatype_field import showDetailList, FieldDetail
+from .metatype_field import showDetailList
 # meta mask methods
 from .metatype_mask import showMaskList, MaskDetails
 
@@ -165,11 +165,11 @@ def validate(req, op):
         for key in req.params.keys():
             # create new meta field
             if key.startswith("newdetail_"):
-                return FieldDetail(req, "")
+                return _field_detail(req, "")
 
             # edit meta field
             elif key.startswith("editdetail_"):
-                return FieldDetail(req, key[11:-2])
+                return _field_detail(req, key[11:-2])
 
             # delete metafield: key[13:-2] = pid | n
             elif key.startswith("deletedetail_"):
@@ -193,11 +193,11 @@ def validate(req, op):
 
             if existMetaField(req.params.get("parent"), req.params.get("mname")) and \
                     (req.params.get("form_op", "")  == "save_newdetail" or req.params.get("mname") != req.params.get("mname_orig")):
-                return FieldDetail(req, error="admin_duplicate_error")
+                return _field_detail(req, error="admin_duplicate_error")
             elif req.params.get("mname", "") == "" or req.params.get("mlabel", "") == "":
-                return FieldDetail(req, error="admin_mandatory_error")
+                return _field_detail(req, error="admin_mandatory_error")
             elif not checkString(req.params.get("mname", "")):
-                return FieldDetail(req, error="admin_metafield_error_badchars")
+                return _field_detail(req, error="admin_metafield_error_badchars")
 
             fieldsetting = "fieldsetting_"
             fieldsettings = {k[len(fieldsetting):]:v for k,v in req.values.lists() if k.startswith(fieldsetting)}
@@ -719,3 +719,53 @@ def changeOrder(parent, up, down):
             child.orderpos = pos
             db.session.commit()
             i = i + 1
+
+
+# form for field of given metadatatype (edit/new)
+def _field_detail(req, name=None, error=None):
+    name = name or req.params.get("orig_name", "")
+    if name != "":  # edit field, irrespective of error
+        field = q(Metadatatype).get(req.params.get("parent")).children
+        field = field.filter_by(name=name, type=u'metafield').scalar()
+    elif error:  # new field, with error filling values
+        field = _schema.Metafield(req.params.get("mname") or req.params.get("orig_name"))
+        field.setLabel(req.params.get("mlabel"))
+        field.setOrderPos(req.params.get("orderpos"))
+        field.setFieldtype(req.params.get("mtype"))
+        field.setOption("".join(key[7] for key in req.params if key.startswith("option_")))
+        field.setDescription(req.params.get("mdescription"))
+        db.session.commit()
+    else:  # new field, no error (yet)
+        field = _schema.Metafield(u"")
+        db.session.commit()
+
+    metadatatype = getMetaType(req.params.get("parent"))
+    tal_ctx = getAdminStdVars(req)
+    tal_ctx.update(
+            actpage=req.params.get("actpage"),
+            fieldsettings_html="",
+            csrf= _core_csrfform.get_token(),
+            error=error,
+            fieldoptions=fieldoption,
+            fieldtypes=getMetaFieldTypeNames(),
+            filtertype=req.params.get("filtertype", ""),
+            metadatatype=metadatatype,
+            metafield=field,
+            metafields={fields.name:fields for fields in getFieldsForMeta(req.params.get("parent"))},
+           )
+
+    if field.id:
+        tal_ctx["field"] = field
+        tal_ctx["fieldsettings_html"] = _schema.getMetadataType(field.getFieldtype()).admin_settings_get_html_form(
+                field.metatype_data,
+                metadatatype,
+                _translation.set_language(req.accept_languages),
+               )
+
+    db.session.commit()
+    return _tal.processTAL(
+            tal_ctx,
+            file="web/admin/modules/metatype_field.html",
+            macro="modify_field" if field.id else "new_field",
+            request=req,
+           )

@@ -14,13 +14,10 @@ import utils.utils as _utils_utils
 from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter
 from schema.schema import Metadatatype
 from schema.schema import fieldoption
-from schema.schema import getFieldsForMeta
 from schema.schema import getMetaField
 from schema.schema import getMetaFieldTypeNames
 from schema.schema import getMetaType
-from schema.schema import getMetadataType
 import core.translation as _translation
-from schema.schema import Metafield
 import schema.schema as _schema
 from core import Node
 from core import db
@@ -122,55 +119,3 @@ def showDetailList(req, id):
         v["actpage"] = req.params.get("page")
 
     return _tal.processTAL(v, file="web/admin/modules/metatype_field.html", macro="view_field", request=req)
-
-
-""" form for field of given metadatatype (edit/new) """
-
-
-def FieldDetail(req, name=None, error=None):
-    name = name or req.params.get("orig_name", "")
-    if name != "":  # edit field, irrespective of error
-        field = q(Metadatatype).get(req.params.get("parent")).children
-        field = field.filter_by(name=name, type=u'metafield').scalar()
-    elif error:  # new field, with error filling values
-        field = Metafield(req.params.get("mname") or req.params.get("orig_name"))
-        field.setLabel(req.params.get("mlabel"))
-        field.setOrderPos(req.params.get("orderpos"))
-        field.setFieldtype(req.params.get("mtype"))
-        field.setOption("".join(key[7] for key in req.params if key.startswith("option_")))
-        field.setDescription(req.params.get("mdescription"))
-        db.session.commit()
-    else:  # new field, no error (yet)
-        field = Metafield(u"")
-        db.session.commit()
-
-    metadatatype = getMetaType(req.params.get("parent"))
-    tal_ctx = getAdminStdVars(req)
-    tal_ctx.update(
-            actpage=req.params.get("actpage"),
-            fieldsettings_html="",
-            csrf= _core_csrfform.get_token(),
-            error=error,
-            fieldoptions=fieldoption,
-            fieldtypes=getMetaFieldTypeNames(),
-            filtertype=req.params.get("filtertype", ""),
-            metadatatype=metadatatype,
-            metafield=field,
-            metafields={fields.name:fields for fields in getFieldsForMeta(req.params.get("parent"))},
-           )
-
-    if field.id:
-        tal_ctx["field"] = field
-        tal_ctx["fieldsettings_html"] = getMetadataType(field.getFieldtype()).admin_settings_get_html_form(
-                field.metatype_data,
-                metadatatype,
-                _translation.set_language(req.accept_languages),
-               )
-
-    db.session.commit()
-    return _tal.processTAL(
-            tal_ctx,
-            file="web/admin/modules/metatype_field.html",
-            macro="modify_field" if field.id else "new_field",
-            request=req,
-           )

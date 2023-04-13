@@ -723,12 +723,12 @@ def changeOrder(parent, up, down):
 
 # form for field of given metadatatype (edit/new)
 def _field_detail(req, name=None, error=None):
-    name = name or req.params.get("orig_name", "")
+    name = name or req.params.get("mname_orig", "")
     if name != "":  # edit field, irrespective of error
         field = q(Metadatatype).get(req.params.get("parent")).children
         field = field.filter_by(name=name, type=u'metafield').scalar()
     elif error:  # new field, with error filling values
-        field = _schema.Metafield(req.params.get("mname") or req.params.get("orig_name"))
+        field = _schema.Metafield(req.params.get("mname") or req.params.get("mname_orig"))
         field.setLabel(req.params.get("mlabel"))
         field.setOrderPos(req.params.get("orderpos"))
         field.setFieldtype(req.params.get("mtype"))

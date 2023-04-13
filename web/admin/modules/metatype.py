@@ -723,35 +723,35 @@ def changeOrder(parent, up, down):
 
 # form for field of given metadatatype (edit/new)
 def _field_detail(req, name=None, error=None):
-    name = name or req.params.get("mname_orig", "")
+    name = name or req.values.get("mname_orig", "")
     if name != "":  # edit field, irrespective of error
-        field = q(Metadatatype).get(req.params.get("parent")).children
+        field = q(Metadatatype).get(req.values["parent"]).children
         field = field.filter_by(name=name, type=u'metafield').scalar()
     elif error:  # new field, with error filling values
-        field = _schema.Metafield(req.params.get("mname") or req.params.get("mname_orig"))
-        field.setLabel(req.params.get("mlabel"))
-        field.setOrderPos(req.params.get("orderpos"))
-        field.setFieldtype(req.params.get("mtype"))
-        field.setOption("".join(key[7] for key in req.params if key.startswith("option_")))
-        field.setDescription(req.params.get("mdescription"))
+        field = _schema.Metafield(req.values.get("mname") or req.values.get("mname_orig"))
+        field.setLabel(req.values.get("mlabel"))
+        field.setOrderPos(req.values["orderpos"])
+        field.setFieldtype(req.values["mtype"])
+        field.setOption("".join(key[7] for key in req.values if key.startswith("option_")))
+        field.setDescription(req.values.get("mdescription"))
         db.session.commit()
     else:  # new field, no error (yet)
         field = _schema.Metafield(u"")
         db.session.commit()
 
-    metadatatype = getMetaType(req.params.get("parent"))
+    metadatatype = getMetaType(req.values["parent"])
     tal_ctx = getAdminStdVars(req)
     tal_ctx.update(
-            actpage=req.params.get("actpage"),
+            actpage=req.values.get("actpage"),
             fieldsettings_html="",
             csrf= _core_csrfform.get_token(),
             error=error,
             fieldoptions=fieldoption,
             fieldtypes=getMetaFieldTypeNames(),
-            filtertype=req.params.get("filtertype", ""),
+            filtertype=req.values.get("filtertype", ""),
             metadatatype=metadatatype,
             metafield=field,
-            metafields={fields.name:fields for fields in getFieldsForMeta(req.params.get("parent"))},
+            metafields={fields.name:fields for fields in getFieldsForMeta(req.values["parent"])},
            )
 
     if field.id:

@@ -95,13 +95,16 @@ def _mask_details(req, id, err=0):
         # new mask
         mask = Mask(u"")
         db.session.commit()
+        morig_name = None
     elif id != "" and err == 0:
         # edit mask
         if id.isdigit():
             mask = q(Mask).get(id)
+            morig_name = mask.name
             db.session.commit()
         else:
             mask = mtype.getMask(id)
+            morig_name = id
 
     else:
         # error filling values
@@ -110,6 +113,7 @@ def _mask_details(req, id, err=0):
         mask.setMasktype(req.values["mtype"])
         mask.setLanguage(req.values["mlanguage"])
         mask.setDefaultMask(req.values.get("mdefault", False))
+        morig_name = id or None
         db.session.commit()
 
     v = getAdminStdVars(req)
@@ -118,7 +122,7 @@ def _mask_details(req, id, err=0):
     v["mtype"] = mtype
     v["error"] = err
     v["masktypes"] = _schema.getMaskTypes()
-    v["id"] = id
+    v["morig_name"] = morig_name
     v["langs"] = _config.languages
     v["actpage"] = req.values["actpage"]
 

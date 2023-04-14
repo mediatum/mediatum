@@ -16,7 +16,9 @@ import werkzeug.datastructures as _datastructures
 from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter
 from web.common.acl_web import makeList
 from utils.utils import removeEmptyStrings, esc, suppress
+import core.config as _config
 import core.csrfform as _core_csrfform
+import core.nodecache as _core_nodecache
 import core.translation as _translation
 from schema.schema import getMetaFieldTypeNames, getMetaType, updateMetaType, existMetaType, deleteMetaType, fieldoption, moveMetaField, getMetaField, deleteMetaField, getFieldsForMeta, dateoption, requiredoption, existMetaField, updateMetaField, generateMask, cloneMask, exportMetaScheme, importMetaSchema
 from schema.schema import VIEW_DEFAULT
@@ -28,7 +30,7 @@ from utils.fileutils import importFile
 # metafield methods
 from .metatype_field import showDetailList, FieldDetail
 # meta mask methods
-from .metatype_mask import showMaskList, MaskDetails
+from .metatype_mask import showMaskList
 
 from contenttypes.data import Data
 import contenttypes as _contenttypes
@@ -84,6 +86,52 @@ def _get_nodecount_per_metaschema():
                 .filter(noderelation.c.nid == root_id)
                 .group_by(Node.schema)
                 )
+
+
+def _mask_details(req, pid, id, err=0):
+    mtype = getMetaType(pid)
+
+    if err == 0 and id == "":
+        # new mask
+        mask = Mask(u"")
+        db.session.commit()
+    elif id != "" and err == 0:
+        # edit mask
+        if id.isdigit():
+            mask = q(Mask).get(id)
+            db.session.commit()
+        else:
+            mask = mtype.getMask(id)
+
+    else:
+        # error filling values
+        mask = Mask(req.params.get("mname", ""))
+        mask.setDescription(req.params.get("mdescription", ""))
+        mask.setMasktype(req.params.get("mtype"))
+        mask.setLanguage(req.params.get("mlanguage", ""))
+        mask.setDefaultMask(req.params.get("mdefault", False))
+        db.session.commit()
+
+    v = getAdminStdVars(req)
+    v["mask"] = mask
+    v["mappings"] = _core_nodecache.get_mappings_node().children
+    v["mtype"] = mtype
+    v["error"] = err
+    v["pid"] = pid
+    v["masktypes"] = _schema.getMaskTypes()
+    v["id"] = id
+    v["langs"] = _config.languages
+    v["actpage"] = req.params.get("actpage")
+
+    try:
+        rules = [r.ruleset_name for r in mask.access_ruleset_assocs.filter_by(ruletype=u'read')]
+    except:
+        rules = []
+
+    v["acl"] = makeList(req, "read", removeEmptyStrings(rules), {}, overload=0, type=u"read")
+    v["csrf"] = _core_csrfform.get_token()
+
+    return _tal.processTAL(v, file="web/admin/modules/metatype_mask.html", macro="modify_mask", request=req)
 
 
 def validate(req, op):
@@ -223,11 +271,11 @@ def validate(req, op):
 
             # new mask
             if key.startswith("newmask_"):
-                return MaskDetails(req, req.params.get("parent"), "")
+                return _mask_details(req, req.params.get("parent"), "")
 
             # edit metatype masks
             elif key.startswith("editmask_"):
-                return MaskDetails(req, req.params.get("parent"), key[9:-2], err=0)
+                return _mask_details(req, req.params.get("parent"), key[9:-2], err=0)
 
             # delete mask
             elif key.startswith("deletemask_"):
@@ -256,10 +304,10 @@ def validate(req, op):
                 return showMaskList(req, req.params.get("parent"))
 
             if req.params.get("mname", "") == "":
-                return MaskDetails(req, req.params.get("parent", ""), req.params.get("morig_name", ""), err=1)
+                return _mask_details(req, req.params.get("parent", ""), req.params.get("morig_name", ""), err=1)
             elif not checkString(req.params.get("mname", "")):
                 # if the name contains wrong characters
-                return MaskDetails(req, req.params.get("parent", ""), req.params.get("morig_name", ""), err=4)
+                return _mask_details(req, req.params.get("parent", ""), req.params.get("morig_name", ""), err=4)
 
             mtype = q(Metadatatype).filter_by(name=q(Node).get(req.params.get("parent", "")).name).one()
             if (
@@ -267,7 +315,7 @@ def validate(req, op):
                      (req.values["form_op"] == "save_editmask" and req.values["mname"] != req.values.get("morig_name", "")))
                     and
                     req.values["mname"] in (mask.name for mask in mtype.masks)):
-                return MaskDetails(req, req.values.get("parent"), req.values.get("morig_name", ""), err=2)
+                return _mask_details(req, req.values.get("parent"), req.values.get("morig_name", ""), err=2)
             if req.params.get("form_op") == "save_editmask":
                 mask = mtype.get_mask(req.params.get("mname", ""))
                 # in case of renaming a mask the mask cannot be detected via the new mname

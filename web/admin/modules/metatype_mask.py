@@ -7,15 +7,10 @@ from __future__ import print_function
 import re
 import mediatumtal.tal as _tal
 
-import core.config as config
 import core.csrfform as _core_csrfform
-import core.nodecache as _core_nodecache
 import core.translation as _core_translation
 from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter
 from schema.schema import getMetaType, getMaskTypes
-from utils.utils import removeEmptyStrings
-from web.common.acl_web import makeList
-from schema.schema import Mask
 from core import db
 
 q = db.query
@@ -98,51 +93,3 @@ def showMaskList(req, id):
     v["actfilter"] = actfilter
     v["csrf"] = _core_csrfform.get_token()
     return _tal.processTAL(v, file="web/admin/modules/metatype_mask.html", macro="view_mask", request=req)
-
-""" mask details """
-
-
-def MaskDetails(req, pid, id, err=0):
-    mtype = getMetaType(pid)
-
-    if err == 0 and id == "":
-        # new mask
-        mask = Mask(u"")
-        db.session.commit()
-    elif id != "" and err == 0:
-        # edit mask
-        if id.isdigit():
-            mask = q(Mask).get(id)
-            db.session.commit()
-        else:
-            mask = mtype.getMask(id)
-
-    else:
-        # error filling values
-        mask = Mask(req.params.get("mname", ""))
-        mask.setDescription(req.params.get("mdescription", ""))
-        mask.setMasktype(req.params.get("mtype"))
-        mask.setLanguage(req.params.get("mlanguage", ""))
-        mask.setDefaultMask(req.params.get("mdefault", False))
-        db.session.commit()
-
-    v = getAdminStdVars(req)
-    v["mask"] = mask
-    v["mappings"] = _core_nodecache.get_mappings_node().children
-    v["mtype"] = mtype
-    v["error"] = err
-    v["pid"] = pid
-    v["masktypes"] = getMaskTypes()
-    v["id"] = id
-    v["langs"] = config.languages
-    v["actpage"] = req.params.get("actpage")
-
-    try:
-        rules = [r.ruleset_name for r in mask.access_ruleset_assocs.filter_by(ruletype=u'read')]
-    except:
-        rules = []
-
-    v["acl"] = makeList(req, "read", removeEmptyStrings(rules), {}, overload=0, type=u"read")
-    v["csrf"] = _core_csrfform.get_token()
-
-    return _tal.processTAL(v, file="web/admin/modules/metatype_mask.html", macro="modify_mask", request=req)

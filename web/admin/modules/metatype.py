@@ -105,11 +105,11 @@ def _mask_details(req, pid, id, err=0):
 
     else:
         # error filling values
-        mask = Mask(req.params.get("mname", ""))
-        mask.setDescription(req.params.get("mdescription", ""))
-        mask.setMasktype(req.params.get("mtype"))
-        mask.setLanguage(req.params.get("mlanguage", ""))
-        mask.setDefaultMask(req.params.get("mdefault", False))
+        mask = Mask(req.values["mname"])
+        mask.setDescription(req.values["mdescription"])
+        mask.setMasktype(req.values["mtype"])
+        mask.setLanguage(req.values["mlanguage"])
+        mask.setDefaultMask(req.values.get("mdefault", False))
         db.session.commit()
 
     v = getAdminStdVars(req)
@@ -121,7 +121,7 @@ def _mask_details(req, pid, id, err=0):
     v["masktypes"] = _schema.getMaskTypes()
     v["id"] = id
     v["langs"] = _config.languages
-    v["actpage"] = req.params.get("actpage")
+    v["actpage"] = req.values["actpage"]
 
     try:
         rules = [r.ruleset_name for r in mask.access_ruleset_assocs.filter_by(ruletype=u'read')]

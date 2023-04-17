@@ -320,13 +320,16 @@ FOR rel IN SELECT cid, distance FROM noderelation WHERE nid = root_id LOOP
 
 	-- RAISE DEBUG 'cid % distance %, deleted %, inserted %', rel.cid, rel.distance, del, ins;
     
-    PERFORM update_inherited_access_rules_for_node(rel.cid);
-	
 	inserted := inserted + ins;
 	deleted := deleted + del;
 	affected_relations := affected_relations + 1;
 
 END LOOP;
+
+FOR rel IN SELECT cid, max(distance) AS distance FROM noderelation WHERE nid = root_id GROUP BY cid ORDER BY max(distance) LOOP
+    PERFORM update_inherited_access_rules_for_node(rel.cid);
+END LOOP;
+
 END;
 $f$;
 

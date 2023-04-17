@@ -1,0 +1,24 @@
+<!--
+  Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<tal:block metal:define-macro="workflow_hierarchicalchoice2metafield">
+    <link rel="stylesheet" href="/static/js/fancytree/src/skin-xp/ui.fancytree.css" />
+    <link rel="stylesheet" href="/static/css/workflow/hierarchicalchoice2metafield.css" />
+    <script src="/static/js/jquery-ui-1.12.1.js"> </script>
+    <script src="/static/js/fancytree/src/jquery.fancytree.js"> </script>
+    <script src="/static/js/workflow/hierarchicalchoice2metafield.js"> </script>
+
+    <div tal:condition="python:pretext!=''" tal:content="structure pretext" style="margin-bottom:20px;"/>
+
+    <div id="fancytreesource" tal:content="python:fancytree_source" style="display:none"></div>
+    <div id="hierarchicalchoice2metafield"> </div>
+
+    <form id="choice_metadatafield" class="edit" action="/mask" method="post">
+        <input tal:attributes="value csrf" type="hidden" name="csrf_token">
+        <input id="hierarchicalmetafield" type="hidden" name="hierarchicalmetafield" value=""/>
+        <tal:block metal:use-macro="workflow/workflow.html/workflow_buttons"/>
+    </form>
+    <div tal:condition="python:posttext!=''" tal:content="structure posttext" style="margin-top:20px;"/>
+    <div tal:content="raw metafielderror"> </div>
+</tal:block>

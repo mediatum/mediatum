@@ -137,7 +137,6 @@ def getContent(req, ids):
             ).format(item_count[1])
         v['translate'] = _core_translation.translate
         res = _tal.processTAL(v, file="web/edit/modules/content.html", macro="edit_content", request=req)
-        show_dir_nav.nodes = None
         return res
     if hasattr(node, "editContentDefault"):
         return node.editContentDefault(req)

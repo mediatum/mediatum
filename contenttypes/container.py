@@ -241,18 +241,6 @@ class Container(Data, ContainerMixin, SchemaMixin):
         field.set("label", "node name")
         field.setFieldtype("text")
         metafields.append(field)
-
-        field = Metafield(u"style_full")
-        field.set("label", _core_translation.translate_in_request("full_view_style"))
-        field.setFieldtype("list")
-        field.metatype_data = dict(listelements=(u"full_standard", u"full_text"), multiple=False)
-        metafields.append(field)
-
-        field = Metafield(u"style")
-        field.set("label", _core_translation.translate_in_request("style"))
-        field.setFieldtype("list")
-        field.metatype_data = dict(listelements=(u"thumbnail", u"list", u"text"), multiple=False)
-        metafields.append(field)
         return metafields
 
     def getCustomItems(self, type=""):
@@ -305,6 +293,19 @@ class Collection(Container):
 
     def metaFields(self, lang=None):
         metafields = Container.metaFields(self, lang=lang)
+
+        field = Metafield(u"style_full")
+        field.set("label", _core_translation.translate_in_request("full_view_style"))
+        field.setFieldtype("list")
+        field.metatype_data = dict(listelements=(u"full_standard", u"full_text"), multiple=False)
+        metafields.append(field)
+
+        field = Metafield(u"style")
+        field.set("label", _core_translation.translate_in_request("style"))
+        field.setFieldtype("list")
+        field.metatype_data = dict(listelements=(u"thumbnail", u"list", u"text"), multiple=False)
+        metafields.append(field)
+
         field = Metafield(u"style_hide_empty")
         field.set("label", _core_translation.translate_in_request("hide_empty_directories"))
         field.setFieldtype("check")

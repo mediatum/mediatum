@@ -86,7 +86,7 @@
                             <div id="description">&nbsp;</div>
                             <div id="editor_content">
                                 <span
-                                        tal:define="name python:field.getValue() if field.getFieldtype()=='meta' else field.getName(); value python:node.get(name)"
+                                        tal:define="name python:field.getValue() if field.getFieldtype()=='meta' else field.getName(); value python:node.get_special(name)"
                                         tal:replace="structure python:field.getEditorHTML(value)"
                                        />
                              </div>

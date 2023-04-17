@@ -567,7 +567,6 @@ def action(req):
         newnode.set("creator", user.login_name)
         newnode.set("creationtime", unicode(
             time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
-        newnode.set("nodename", translated_label)  # set attribute named "nodename" to label text
         # place newnode at top of the children by setting the orderpos to the lowest orderpos - 1
         # if the orderpos gets negative, shift the oderpos of all children by incrementing with a positive number
         # make this number large enough, to avoid the next shifting of orderpos if more containers are added
@@ -734,13 +733,13 @@ def action(req):
     return
 
 
-def showPaging(req, tab, ids):
+def _show_paging(req, tab, ids):
     nodelist = None
     srcnodeid = req.values.get("srcnodeid")
     if srcnodeid:
         node = q(Node).get(srcnodeid)
         _show_dir_nav = _web_edit_edit_common.ShowDirNav(req)
-        nodes = _show_dir_nav.get_children(node, req.values.get('sortfield'))
+        nodes = _show_dir_nav.get_children(node.id, req.values.get('sortfield'))
         nodelist = EditorNodeList(nodes)
 
     nextid = previd = None
@@ -929,7 +928,7 @@ def content(req):
     v.update(
             script="",
             body=c,
-            paging=showPaging(req, current, ids),
+            paging=_show_paging(req, current, ids),
             node=node,
             ids=(req.values.get("ids") or req.values.get("id", "")).split(","),
             tab=current,

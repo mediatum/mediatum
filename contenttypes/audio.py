@@ -38,7 +38,7 @@ def convert_image(self, audiofile):
 
     tag = audiofile.tags["APIC:thumbnail"]
     path, ext = splitfilename(audiofile.filename)
-    path = "{}.thumbnail.jpeg".format(path)
+    path = u"{}.thumbnail.jpeg".format(path)
     with open(path, "wb") as fout:
         fout.write(tag.data)
 

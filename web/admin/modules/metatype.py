@@ -88,24 +88,20 @@ def _get_nodecount_per_metaschema():
                 )
 
 
-def _mask_details(req, id, err=0):
+def _mask_details(req, nid=None, err=0):
     mtype = q(Metadatatype).get(int(req.values["parent"]))
+    morig_name = req.values.get("morig_name")
 
-    if err == 0 and id == "":
+    if err == 0 and nid is None and morig_name is None :
         # new mask
         mask = Mask(u"")
-        db.session.commit()
-        morig_name = None
-    elif id != "" and err == 0:
+    elif nid is not None and err == 0:
         # edit mask
-        if id.isdigit():
-            mask = q(Mask).get(id)
-            morig_name = mask.name
-            db.session.commit()
-        else:
-            mask = mtype.getMask(id)
-            morig_name = id
-
+        mask = q(Mask).get(nid)
+        morig_name = mask.name
+    elif err == 0:
+        # edit mask
+        mask = mtype.getMask(morig_name)
     else:
         # error filling values
         mask = Mask(req.values["mname"])
@@ -113,8 +109,6 @@ def _mask_details(req, id, err=0):
         mask.setMasktype(req.values["mtype"])
         mask.setLanguage(req.values["mlanguage"])
         mask.setDefaultMask(req.values.get("mdefault", False))
-        morig_name = id or None
-        db.session.commit()
 
     v = getAdminStdVars(req)
     v["mask"] = mask
@@ -274,11 +268,11 @@ def validate(req, op):
 
             # new mask
             if key.startswith("newmask_"):
-                return _mask_details(req, "")
+                return _mask_details(req)
 
             # edit metatype masks
             elif key.startswith("editmask_"):
-                return _mask_details(req, key[9:-2], err=0)
+                return _mask_details(req, int(key[9:-2]), err=0)
 
             # delete mask
             elif key.startswith("deletemask_"):
@@ -307,10 +301,10 @@ def validate(req, op):
                 return showMaskList(req, req.params.get("parent"))
 
             if req.params.get("mname", "") == "":
-                return _mask_details(req, req.params.get("morig_name", ""), err=1)
+                return _mask_details(req, err=1)
             elif not checkString(req.params.get("mname", "")):
                 # if the name contains wrong characters
-                return _mask_details(req, req.params.get("morig_name", ""), err=4)
+                return _mask_details(req, err=4)
 
             mtype = q(Metadatatype).filter_by(name=q(Node).get(req.params.get("parent", "")).name).one()
             if (
@@ -318,7 +312,7 @@ def validate(req, op):
                      (req.values["form_op"] == "save_editmask" and req.values["mname"] != req.values.get("morig_name", "")))
                     and
                     req.values["mname"] in (mask.name for mask in mtype.masks)):
-                return _mask_details(req, req.values.get("morig_name", ""), err=2)
+                return _mask_details(req, err=2)
             if req.params.get("form_op") == "save_editmask":
                 mask = mtype.get_mask(req.params.get("mname", ""))
                 # in case of renaming a mask the mask cannot be detected via the new mname

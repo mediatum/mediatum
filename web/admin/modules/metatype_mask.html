@@ -125,7 +125,7 @@
                 <td><tal:block i18n:translate="admin_mask_name">TEXT</tal:block>: <span class="required">*</span></td>
                 <td>
                     <input tal:attributes="value python:mask.getName()" type="text" style="width:300px" name="mname"/>
-                    <input tal:attributes="value morig_name" type="hidden" name="morig_name"/>
+                    <input tal:condition="python:morig_name is not None" tal:attributes="value morig_name" type="hidden" name="morig_name"/>
                 </td>
             </tr>
             <tr>

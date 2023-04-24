@@ -55,7 +55,10 @@
         </div>
         <div
             class="mediatum_node_icon"
-            tal:attributes="onclick python:u'reloadURL(&quot;/edit/edit_content?srcnodeid={}&id={}&tab=classes&quot;)'.format(srcnodeid, node.id)"
+            tal:attributes="
+                id python:node.id;
+                onclick python:u'''reloadURL(&quot;/edit/edit_content?srcnodeid={0}&id={1}&tab=classes&quot;, '{1}', 'mediatum-editor-node-icon-wait')'''.format(srcnodeid, node.id);
+                "
             i18n:attributes="title tab_classes"
             target="content"
         >

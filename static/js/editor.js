@@ -418,8 +418,11 @@ function openWindow(fileName, width, height)
     win1.focus();
 }
 
-function reloadURL(url)
+function reloadURL(url, id, className)
 {
+    if (id !== undefined) {
+        document.getElementById(id).classList.add(className);
+    }
     this.location.href = url;
 }
 

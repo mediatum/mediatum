@@ -217,6 +217,8 @@ div.label{width:210px;float:left;padding-left:15px;}
 .mediatum_img_changeschema::before {content: url(/static/img/editor/mediatum_edit.svg);} /* Objekttyp / Metadatentyp ändern */
 .mediatum_img_files::before {content: url(/static/img/editor/mediatum_attach.svg);} /* Datei hinzufügen */
 
+.mediatum-editor-nav-image-wait::before {content: url(/static/img/wait.gif);}
+
 .mediatum_img_uploadbibtex::before {content: "";display:block;height:32px;width:32px;background-size: 32px 32px;background-repeat: no-repeat;
     background-image: url(/static/img/editor/bibtex.gif);}/* Uploads: Bibtex-Import */
 .mediatum_img_uploaddoi::before {
@@ -265,6 +267,7 @@ div.label{width:210px;float:left;padding-left:15px;}
 .mediatum_node_icon{display:table-cell;width:30px;cursor:pointer;}
 .mediatum_node_icon_chk{width:30px;}
 .mediatum_node_icon_header{display:table-cell;padding-bottom: 5px;width:30px;}
+.mediatum-editor-node-icon-wait {content: url(/static/img/wait.gif);}
 .mediatum_node_text {display: table-cell; vertical-align: top; font-size:10px;}
 .mediatum_node_text_grid{padding:0px 5px 0px 5px;width:138px;}
 .mediatum_node_text_grid p{overflow:hidden;text-overflow: ellipsis;}

@@ -44,9 +44,18 @@
             <!-- Main Menu -->
             <li tal:condition="python:len(navitem.getItemList())==0" tal:attributes="class python:{0:None,1:'selected'}[navitem.name==breadcrumbs[0]]">
                 <a
+                    href="#!"
                     i18n:translate=""
                     tal:content="python:u'tab_{}'.format(navitem.getName())"
-                    tal:attributes="href python:u'?srcnodeid={}&id={}&tab={}'.format(srcnodeid, idstr, navitem.getName());class python:u'mediatum_img_nav mediatum_img_{}'.format(navitem.getName())"
+                    tal:attributes="
+                        id python:u'{}'.format(navitem.getName());
+                        onclick python:u'''reloadURL('?srcnodeid={0}&id={1}&tab={2}', '{2}', 'mediatum-editor-nav-image-wait')'''.format(
+                            srcnodeid,
+                            idstr,
+                            navitem.getName(),
+                           );
+                        class python:u'mediatum_img_nav mediatum_img_{}'.format(navitem.getName());
+                       "
                 />
             </li>
             <li tal:condition="python:len(navitem.getItemList())>0" tal:attributes="class python:{0:None,1:'selected'}[navitem.name==breadcrumbs[0]]">
@@ -54,21 +63,37 @@
                 <ul>
                     <!-- Second Menu -->
                     <li tal:repeat="item python:navitem.getItemList()">
-                        <a tal:condition="python:item.getItemList()" i18n:translate="" tal:content="python:u'tab_{}'.format(item.getName())" tal:attributes="class python:u'mediatum_img_nav mediatum_img_{}'.format(item.getName())"/>
                         <a
-                            tal:condition="python:len(item.getItemList())==0"
+                            href="#!"
                             i18n:translate=""
                             tal:content="python:u'tab_{}'.format(item.getName())"
-                            tal:attributes="class python:u'mediatum_img_nav mediatum_img_{}'.format(item.getName());href python:u'?srcnodeid={}&id={}&tab={}'.format(srcnodeid, idstr, item.getName())"
+                            tal:attributes="
+                                id python:u'{}'.format(item.getName());
+                                onclick python:u'''reloadURL('?srcnodeid={0}&id={1}&tab={2}', '{2}', 'mediatum-editor-nav-image-wait')'''.format(
+                                    srcnodeid,
+                                    idstr,
+                                    item.getName(),
+                                   );
+                                class python:u'mediatum_img_nav mediatum_img_{}'.format(item.getName());
+                               "
                         />
                         <!-- Third Menu -->
                         <ul tal:condition="python:item.getItemList()">
                             <li tal:repeat="item1 python:item.getItemList()">
                                 <div>
                                     <a
+                                        href="#!"
                                         i18n:translate=""
                                         tal:content="python:u'tab_{}'.format(item1.getName())"
-                                        tal:attributes="id  python:u'{}'.format(item1.getName());href python:u'?srcnodeid={}&id={}&tab={}'.format(srcnodeid, idstr, item1.getName());class python:u'mediatum_img_nav mediatum_img_{}'.format(item1.getName())"
+                                        tal:attributes="
+                                            id python:u'{}'.format(item1.getName());
+                                            onclick python:u'''reloadURL('?srcnodeid={0}&id={1}&tab={2}', '{2}', 'mediatum-editor-nav-image-wait')'''.format(
+                                                srcnodeid,
+                                                idstr,
+                                                item1.getName(),
+                                               );
+                                            class python:u'mediatum_img_nav mediatum_img_{}'.format(item1.getName());
+                                           "
                                     />
                                 </div>
                             </li>

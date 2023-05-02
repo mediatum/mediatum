@@ -16,7 +16,9 @@ import werkzeug.datastructures as _datastructures
 from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter
 from web.common.acl_web import makeList
 from utils.utils import removeEmptyStrings, esc, suppress
+import core.config as _config
 import core.csrfform as _core_csrfform
+import core.nodecache as _core_nodecache
 import core.translation as _translation
 from schema.schema import getMetaFieldTypeNames, getMetaType, updateMetaType, existMetaType, deleteMetaType, fieldoption, moveMetaField, getMetaField, deleteMetaField, getFieldsForMeta, dateoption, requiredoption, existMetaField, updateMetaField, generateMask, cloneMask, exportMetaScheme, importMetaSchema
 from schema.schema import VIEW_DEFAULT
@@ -26,9 +28,9 @@ import schema.schema as _schema
 
 from utils.fileutils import importFile
 # metafield methods
-from .metatype_field import showDetailList, FieldDetail
+from .metatype_field import showDetailList
 # meta mask methods
-from .metatype_mask import showMaskList, MaskDetails
+from .metatype_mask import showMaskList
 
 from contenttypes.data import Data
 import contenttypes as _contenttypes
@@ -85,6 +87,49 @@ def _get_nodecount_per_metaschema():
                 .filter(noderelation.c.nid == root_id)
                 .group_by(Node.schema)
                 )
+
+
+def _mask_details(req, nid=None, err=0):
+    mtype = q(Metadatatype).get(int(req.values["parent"]))
+    morig_name = req.values.get("morig_name")
+
+    if err == 0 and nid is None and morig_name is None :
+        # new mask
+        mask = Mask(u"")
+    elif nid is not None and err == 0:
+        # edit mask
+        mask = q(Mask).get(nid)
+        morig_name = mask.name
+    elif err == 0:
+        # edit mask
+        mask = mtype.getMask(morig_name)
+    else:
+        # error filling values
+        mask = Mask(req.values["mname"])
+        mask.setDescription(req.values["mdescription"])
+        mask.setMasktype(req.values["mtype"])
+        mask.setLanguage(req.values["mlanguage"])
+        mask.setDefaultMask(req.values.get("mdefault", False))
+
+    v = getAdminStdVars(req)
+    v["mask"] = mask
+    v["mappings"] = _core_nodecache.get_mappings_node().children
+    v["mtype"] = mtype
+    v["error"] = err
+    v["masktypes"] = _schema.getMaskTypes()
+    v["morig_name"] = morig_name
+    v["langs"] = _config.languages
+    v["actpage"] = req.values["actpage"]
+
+    try:
+        rules = [r.ruleset_name for r in mask.access_ruleset_assocs.filter_by(ruletype=u'read')]
+    except:
+        rules = []
+
+    v["acl"] = makeList(req, "read", removeEmptyStrings(rules), {}, overload=0, type=u"read")
+    v["csrf"] = _core_csrfform.get_token()
+
+    return _tal.processTAL(v, file="web/admin/modules/metatype_mask.html", macro="modify_mask", request=req)
 
 
 def validate(req, op):
@@ -166,11 +211,11 @@ def validate(req, op):
         for key in req.params.keys():
             # create new meta field
             if key.startswith("newdetail_"):
-                return FieldDetail(req, "")
+                return _field_detail(req, "")
 
             # edit meta field
             elif key.startswith("editdetail_"):
-                return FieldDetail(req, key[11:-2])
+                return _field_detail(req, key[11:-2])
 
             # delete metafield: key[13:-2] = pid | n
             elif key.startswith("deletedetail_"):
@@ -194,11 +239,11 @@ def validate(req, op):
 
             if existMetaField(req.params.get("parent"), req.params.get("mname")) and \
                     (req.params.get("form_op", "")  == "save_newdetail" or req.params.get("mname") != req.params.get("mname_orig")):
-                return FieldDetail(req, error="admin_duplicate_error")
+                return _field_detail(req, error="admin_duplicate_error")
             elif req.params.get("mname", "") == "" or req.params.get("mlabel", "") == "":
-                return FieldDetail(req, error="admin_mandatory_error")
+                return _field_detail(req, error="admin_mandatory_error")
             elif not checkString(req.params.get("mname", "")):
-                return FieldDetail(req, error="admin_metafield_error_badchars")
+                return _field_detail(req, error="admin_metafield_error_badchars")
 
             fieldsetting = "fieldsetting_"
             fieldsettings = {k[len(fieldsetting):]:v for k,v in req.values.lists() if k.startswith(fieldsetting)}
@@ -224,11 +269,11 @@ def validate(req, op):
 
             # new mask
             if key.startswith("newmask_"):
-                return MaskDetails(req, req.params.get("parent"), "")
+                return _mask_details(req)
 
             # edit metatype masks
             elif key.startswith("editmask_"):
-                return MaskDetails(req, req.params.get("parent"), key[9:-2], err=0)
+                return _mask_details(req, int(key[9:-2]), err=0)
 
             # delete mask
             elif key.startswith("deletemask_"):
@@ -257,12 +302,18 @@ def validate(req, op):
                 return showMaskList(req, req.params.get("parent"))
 
             if req.params.get("mname", "") == "":
-                return MaskDetails(req, req.params.get("parent", ""), req.params.get("morig_name", ""), err=1)
+                return _mask_details(req, err=1)
             elif not checkString(req.params.get("mname", "")):
                 # if the name contains wrong characters
-                return MaskDetails(req, req.params.get("parent", ""), req.params.get("morig_name", ""), err=4)
+                return _mask_details(req, err=4)
 
             mtype = q(Metadatatype).filter_by(name=q(Node).get(req.params.get("parent", "")).name).one()
+            if (
+                    ((req.values["form_op"] == "save_newmask") or
+                     (req.values["form_op"] == "save_editmask" and req.values["mname"] != req.values.get("morig_name", "")))
+                    and
+                    req.values["mname"] in (mask.name for mask in mtype.masks)):
+                return _mask_details(req, err=2)
             if req.params.get("form_op") == "save_editmask":
                 mask = mtype.get_mask(req.params.get("mname", ""))
                 # in case of renaming a mask the mask cannot be detected via the new mname
@@ -729,3 +780,53 @@ def changeOrder(parent, up, down):
             child.orderpos = pos
             db.session.commit()
             i = i + 1
+
+
+# form for field of given metadatatype (edit/new)
+def _field_detail(req, name=None, error=None):
+    name = name or req.values.get("mname_orig", "")
+    if name != "":  # edit field, irrespective of error
+        field = q(Metadatatype).get(req.values["parent"]).children
+        field = field.filter_by(name=name, type=u'metafield').scalar()
+    elif error:  # new field, with error filling values
+        field = _schema.Metafield(req.values.get("mname") or req.values.get("mname_orig"))
+        field.setLabel(req.values.get("mlabel"))
+        field.setOrderPos(req.values["orderpos"])
+        field.setFieldtype(req.values["mtype"])
+        field.setOption("".join(key[7] for key in req.values if key.startswith("option_")))
+        field.setDescription(req.values.get("mdescription"))
+        db.session.commit()
+    else:  # new field, no error (yet)
+        field = _schema.Metafield(u"")
+        db.session.commit()
+
+    metadatatype = getMetaType(req.values["parent"])
+    tal_ctx = getAdminStdVars(req)
+    tal_ctx.update(
+            actpage=req.values.get("actpage"),
+            fieldsettings_html="",
+            csrf= _core_csrfform.get_token(),
+            error=error,
+            fieldoptions=fieldoption,
+            fieldtypes=getMetaFieldTypeNames(),
+            filtertype=req.values.get("filtertype", ""),
+            metadatatype=metadatatype,
+            metafield=field,
+            metafields={fields.name:fields for fields in getFieldsForMeta(req.values["parent"])},
+           )
+
+    if field.id:
+        tal_ctx["field"] = field
+        tal_ctx["fieldsettings_html"] = _schema.getMetadataType(field.getFieldtype()).admin_settings_get_html_form(
+                field.metatype_data,
+                metadatatype,
+                _translation.set_language(req.accept_languages),
+               )
+
+    db.session.commit()
+    return _tal.processTAL(
+            tal_ctx,
+            file="web/admin/modules/metatype_field.html",
+            macro="modify_field" if field.id else "new_field",
+            request=req,
+           )

@@ -119,8 +119,8 @@
         <table>
             <tr>
                 <td colspan="2">
-                    <h3 tal:condition="python:id==''" i18n:translate="admin_mask_create">TEXT</h3>
-                    <h3 tal:condition="python:id!=''" i18n:translate="admin_mask_edit">TEXT</h3>
+                    <h3 tal:condition="python:morig_name is None" i18n:translate="admin_mask_create">TEXT</h3>
+                    <h3 tal:condition="python:morig_name is not None" i18n:translate="admin_mask_edit">TEXT</h3>
                 </td>
             </tr>
             <tr tal:condition="python:error>0">
@@ -135,7 +135,7 @@
                 <td><tal:block i18n:translate="admin_mask_name">TEXT</tal:block>: <span class="required">*</span></td>
                 <td>
                     <input tal:attributes="value python:mask.getName()" type="text" style="width:300px" name="mname"/>
-                    <input tal:attributes="value python:mask.getName()" type="hidden" name="morig_name"/>
+                    <input tal:condition="python:morig_name is not None" tal:attributes="value morig_name" type="hidden" name="morig_name"/>
                 </td>
             </tr>
             <tr>
@@ -245,7 +245,7 @@
             </tr>
         </table>
         <input tal:attributes="value python:mtype.getName()" type="hidden" name="maskof"/>
-        <input tal:attributes="value python:id=='' and 'save_newmask' or 'save_editmask'" type="hidden" name="form_op" id="form_op"/>
+        <input tal:attributes="value python:'save_newmask' if morig_name is None else 'save_editmask'" type="hidden" name="form_op" id="form_op"/>
         <input type="hidden" name="acttype" value="mask"/>
         <input type="hidden" name="parent" tal:attributes="value python:mtype.id"/>
         <input type="hidden" name="maskid" tal:attributes="value python:mask.id"/>

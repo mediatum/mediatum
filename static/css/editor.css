@@ -481,7 +481,6 @@ iframe.ui-layout-center, div.ui-layout-north{border-width:0!important;padding:0;
     min-width: 320px;
     max-height: 320px;
     cursor: pointer;
-    border:1px double silver;
     object-fit: contain;
     object-position: top;
 }
@@ -492,7 +491,6 @@ iframe.ui-layout-center, div.ui-layout-north{border-width:0!important;padding:0;
     min-width: 320px;
     max-height: 320px;
     cursor: pointer;
-    border: 1px double silver;
     object-fit: contain;
     object-position: top;
 }

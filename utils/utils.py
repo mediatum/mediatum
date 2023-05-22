@@ -562,14 +562,6 @@ def formatLongText(value, field, cutoff=500):
         return value
 
 
-def removeEmptyStrings(list):
-    list2 = []
-    for r in list:
-        if r:
-            list2 += [r]
-    return list2
-
-
 def clean_path(path):
     newpath = ""
     lastc = None

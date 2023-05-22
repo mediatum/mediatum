@@ -22,7 +22,9 @@ import os as _os
 import ruamel.yaml as _ruamel_yaml
 
 import core as _core
+from mediatumtal import tal as _tal
 import schema.schema as _schema_schema
+import utils.fileutils as _fileutils
 import workflow as _workflow
 
 
@@ -36,13 +38,19 @@ def register():
 
 class WorkflowStep_Metafield2Metadata(_workflow.WorkflowStep):
 
+    default_settings = {
+            'source-attribute-name':"",
+            'source-metadata-separator':"",
+            'target-metadata-separator':"",
+           }
+
     def runAction(self, node, op=""):
         with open(_os.path.join(_core.config.get("paths.datadir"), self.files[0].path), "rb") as f:
             mapping = _yaml_loader(f)
 
-        source_sep = self.attrs.get("source-metadata-separator")
-        target_sep = self.attrs.get("target-metadata-separator", "")
-        source_data = node.attrs[self.attrs["source-attribute-name"]]
+        source_sep = self.settings["source-metadata-separator"]
+        target_sep = self.settings["target-metadata-separator"]
+        source_data = node.attrs[self.settings["source-attribute-name"]]
         source_data = source_data.split(source_sep) if source_sep else [source_data]
 
         target_data = _collections.defaultdict(list)
@@ -65,36 +73,35 @@ class WorkflowStep_Metafield2Metadata(_workflow.WorkflowStep):
 
         self.forward(node, True)
 
-    def metaFields(self, lang=None):
-        field = _schema_schema.Metafield("upload_fileatt")
-        label = "metafield2metadata-upload-fileatt"
-        field.set(
-            "label",
-            _core.translation.translate(lang, label) if lang else _core.translation.translate_in_request(label),
-        )
-        field.set("type", "upload")
-        field2 = _schema_schema.Metafield("source-attribute-name")
-        label = "metafield2metadata-source-attribute-name"
-        field2.set(
-            "label",
-            _core.translation.translate(lang, label) if lang else _core.translation.translate_in_request(label),
-        )
-        field2.set("type", "text")
-        field3 = _schema_schema.Metafield("source-metadata-separator")
-        label = "metafield2metadata-source-metadata-separator"
-        field3.set(
-            "label",
-            _core.translation.translate(lang, label) if lang else _core.translation.translate_in_request(label),
-        )
-        field3.set("type", "text")
-        field4 = _schema_schema.Metafield("target-metadata-separator")
-        label = "metafield2metadata-target-metadata-separator"
-        field4.set(
-            "label",
-            _core.translation.translate(lang, label) if lang else _core.translation.translate_in_request(label),
-        )
-        field4.set("type", "text")
-        return [field, field2, field3, field4]
+    def admin_settings_get_html_form(self, req):
+        files = tuple(f for f in self.files if f.filetype=="wfstep-metafield2metadata")
+        if len(files) == 1:
+            context = dict(
+                    filebasename=files[0].base_name,
+                    filesize=files[0].size,
+                    fileurl=u'/file/{}/{}'.format(self.id, files[0].base_name),
+                   )
+        else:
+            context = dict(filebasename=None, filesize=None, fileurl=None)
+        context.update(self.settings)
+        return _tal.processTAL(
+            context,
+            file="workflow/metafield2metadata.html",
+            macro="workflow_step_type_config",
+            request=req,
+           )
+
+    def admin_settings_save_form_data(self, data):
+        data = data.to_dict()
+        fileatt = data.pop('fileatt', None)
+        if fileatt:
+            for f in self.files:
+                self.files.remove(f)
+            self.files.append(_fileutils.importFile(_fileutils.sanitize_filename(fileatt.filename), fileatt,
+                                              filetype="wfstep-metafield2metadata"))
+        assert frozenset(data) == frozenset(('source-attribute-name', 'source-metadata-separator', 'target-metadata-separator'))
+        self.settings = data
+        _core.db.session.commit()
 
     @staticmethod
     def getLabels():

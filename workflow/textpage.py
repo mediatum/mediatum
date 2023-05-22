@@ -6,7 +6,7 @@ from __future__ import print_function
 
 import mediatumtal.tal as _tal
 
-import core.translation as _core_translation
+from core import db as _db
 import core.csrfform as _core_csrfform
 from .workflow import WorkflowStep, registerStep
 from core.translation import addLabels
@@ -29,6 +29,10 @@ class WorkflowStep_TextPage(WorkflowStep):
             otherwise forward will be performed automatically by system
     """
 
+    default_settings = dict(
+        htmltext="",
+    )
+
     def runAction(self, node, op=""):
         pass
 
@@ -47,20 +51,26 @@ class WorkflowStep_TextPage(WorkflowStep):
         else:
             buttons = self.tableRowButtons(node)
         return _tal.processTAL(
-                dict(text=self.get("text"), buttons=buttons, csrf=_core_csrfform.get_token()),
+                dict(htmltext=self.settings["htmltext"], buttons=buttons, csrf=_core_csrfform.get_token()),
                 file="workflow/textpage.html",
                 macro="textpage_show_node",
                 request=req,
             )
 
-    def metaFields(self, lang=None):
-        field = Metafield("text")
-        if lang:
-            field.set("label", _core_translation.translate(lang, "admin_wfstep_textpage_text_to_display"))
-        else:
-            field.set("label", _core_translation.translate_in_request("admin_wfstep_textpage_text_to_display"))
-        field.setFieldtype("htmlmemo")
-        return [field]
+    def admin_settings_get_html_form(self, req):
+        return _tal.processTAL(
+            self.settings,
+            file="workflow/textpage.html",
+            macro="workflow_step_type_config",
+            request=req,
+           )
+
+    def admin_settings_save_form_data(self, data):
+        data = data.to_dict()
+        data.setdefault("htmltext", "")
+        assert tuple(data) == ("htmltext",)
+        self.settings = data
+        _db.session.commit()
 
     @staticmethod
     def getLabels():

@@ -22,3 +22,19 @@
     <div tal:condition="python:posttext!=''" tal:content="structure posttext" style="margin-top:20px;"/>
     <div tal:content="raw metafielderror"> </div>
 </tal:block>
+
+
+<metal:block metal:define-macro="workflow_step_type_config">
+    <div>
+      <tal:block tal:condition="python:fileurl">
+      <tal:block i18n:translate="hierarchicalchoice-upload-fileatt"/>
+      <a tal:attributes="href fileurl" tal:content="python:'{}  {} Bytes'.format(filebasename, filesize)"/>
+        <br/>
+      </tal:block>
+      <input id="stepsetting_fileatt" name="stepsetting_fileatt" type="file"/>
+    </div>
+    <div>
+        <label for="stepsetting_target-attribute-name" i18n:translate="hierarchicalchoice-target-attribute-name"> </label>
+        <input type="text" name="stepsetting_target-attribute-name" id="stepsetting_target-attribute-name" tal:attributes="value target-attribute-name"/>
+    </div>
+</metal:block>

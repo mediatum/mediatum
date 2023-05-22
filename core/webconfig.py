@@ -184,9 +184,6 @@ def initContexts():
         file = context.addFile("web/ftree/ftree.py")
         file.addHandler("ftree").addPattern("/.*")
 
-    context = _request_handler.addContext("/md_upload", ".")
-    context.addFile("metadata/upload.py").addHandler("handle_request").addPattern("/.*")
-
     # === services handling ===
     context = _request_handler.addContext("/services/export", ".")
     context.addFile("web/services/export.py").addHandler("request_handler").addPattern("/node/(?P<id>\d+).*")

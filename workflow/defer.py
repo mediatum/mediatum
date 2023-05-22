@@ -8,8 +8,10 @@ from __future__ import print_function
 
 import logging
 
-import core.translation as _core_translation
 import utils.date as date
+
+from mediatumtal import tal as _tal
+
 from .workflow import WorkflowStep, registerStep
 from core.translation import addLabels
 from core import db
@@ -49,6 +51,11 @@ class WorkflowStep_Defer(WorkflowStep):
     accesstype respectively.
     """
 
+    default_settings = dict(
+        accesstype=(),
+        attrname="",
+    )
+
     def runAction(self, node, op=""):
         """
         The actual proccessing of the node object takes place here.
@@ -56,7 +63,7 @@ class WorkflowStep_Defer(WorkflowStep):
         Read out the values of attrname and accesstype if any. Generate the
         ACL-rule, and save it.
         """
-        l_date = node.get(self.get('attrname'))
+        l_date = node.get(self.settings['attrname'])
         if l_date:
             if date.validateDateString(l_date):
                 try:
@@ -65,7 +72,7 @@ class WorkflowStep_Defer(WorkflowStep):
                     d = formated_date.split('.')
                     rule = get_or_add_defer_daterange_rule(int(d[2]), int(d[1]), int(d[0]))
 
-                    for access_type in self.get('accesstype').split(';'):
+                    for access_type in self.settings['accesstype']:
                         special_access_ruleset = node.get_or_add_special_access_ruleset(ruletype=access_type)
                         special_access_ruleset.rule_assocs.append(AccessRulesetToRule(rule=rule))
 
@@ -77,25 +84,22 @@ class WorkflowStep_Defer(WorkflowStep):
     def show_workflow_node(self, node, req):
         return self.forwardAndShow(node, True, req)
 
-    def metaFields(self, lang=None):
-        ret = list()
-        for name, label, type_ in (
-                ("attrname", "attributname", "text"),
-                ("accesstype", "accesstype", "list"),
-                ("recipient", "admin_wfstep_email_recipient", "text"),
-                ("subject", "admin_wfstep_email_subject", "text"),
-                ("body", "admin_wfstep_email_text", "htmlmemo"),
-        ):
-            field = Metafield(name)
-            field.set(
-                "label",
-                _core_translation.translate(lang, label) if lang else _core_translation.translate_in_request(label),
-            )
-            field.setFieldtype(type_)
-            if name == "accesstype":
-                field.metatype_data = dict(multiple=True, listelements=("", "read", "write", "data"))
-            ret.append(field)
-        return ret
+    def admin_settings_get_html_form(self, req):
+        return _tal.processTAL(
+            self.settings,
+            file="workflow/defer.html",
+            macro="workflow_step_type_config",
+            request=req,
+           )
+
+    def admin_settings_save_form_data(self, data):
+        assert frozenset(data)==frozenset(("accesstype","attrname"))
+        accesstype = data.getlist("accesstype")
+        assert not frozenset(accesstype).difference(("read", "write", "data"))
+        data = data.to_dict()
+        data["accesstype"] = accesstype
+        self.settings = data
+        db.session.commit()
 
     @staticmethod
     def getLabels():

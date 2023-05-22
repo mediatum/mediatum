@@ -8,6 +8,7 @@ import itertools as _itertools
 import pkgutil
 import importlib
 import flask as _flask
+import json as _json
 
 import core.config as config
 import mediatumtal.tal as _tal
@@ -417,6 +418,8 @@ workflow_lock = _named_lock('workflow')
 @check_type_arg
 class WorkflowStep(Node):
 
+    default_settings = None
+
     def set_class(self, type):
         # set the correct WorkflowStep-class e.g. WorkflowStep_Publish
         self.__class__ = self.get_class_for_typestring(type)
@@ -668,9 +671,6 @@ class WorkflowStep(Node):
     def getComment(self):
         return self.get("comment")
 
-    def metaFields(self, lang=None):
-        return list()
-
     def tableRowButtons(self, node):
         if node.get('system.key') == node.get('key'):
             # user has permission -> use users language
@@ -706,6 +706,20 @@ class WorkflowStep(Node):
             self.set('shortstepname_' + lang, value.strip())
         else:
             self.set('shortstepname', value.strip())
+
+    def admin_settings_get_html_form(self, req):
+        pass
+
+    def admin_settings_save_form_data(self, data):
+        assert not data
+
+    @property
+    def settings(self):
+        return _json.loads(self.attrs['workflowstep-settings'])
+
+    @settings.setter
+    def settings(self, data):
+        self.attrs['workflowstep-settings'] = _json.dumps(data)
 
 
 def register():

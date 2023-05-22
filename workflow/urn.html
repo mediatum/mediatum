@@ -1,0 +1,22 @@
+<!--
+  Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<metal:block metal:define-macro="workflow_step_type_config">
+    <div>
+        <label for="stepsetting_attrname" i18n:translate="admin_wfstep_urn_attrname"> </label>
+        <input type="text" name="stepsetting_attrname" id="stepsetting_attrname" tal:attributes="value attrname"/>
+    </div>
+    <div>
+        <label for="stepsetting_snid1" i18n:translate="admin_wfstep_urn_snid1"> </label>
+        <input type="text" name="stepsetting_snid1" id="stepsetting_snid1" tal:attributes="value snid1"/>
+    </div>
+    <div>
+        <label for="stepsetting_snid2" i18n:translate="admin_wfstep_urn_snid2"> </label>
+        <input type="text" name="stepsetting_snid2" id="stepsetting_snid2" tal:attributes="value snid2"/>
+    </div>
+    <div>
+        <label for="stepsetting_niss" i18n:translate="admin_wfstep_urn_niss"> </label>
+        <input type="text" name="stepsetting_niss" id="stepsetting_niss" tal:attributes="value niss"/>
+    </div>
+</metal:block>

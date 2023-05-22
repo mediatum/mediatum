@@ -227,11 +227,6 @@
 
 
 <metal:block metal:define-macro="viewlist">
-    <!--[if lt IE 7]>
-            <script type="text/javascript">
-                window.attachEvent("onload", buttonfix);
-            </script>
-        <![endif]-->
     <p><a i18n:translate="admin_overview" href="./mapping">TEXT</a></p>
     <form name="mappingfieldoverview" method="post" action="#" tal:attributes="action page">
         <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>

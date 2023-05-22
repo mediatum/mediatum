@@ -17,6 +17,7 @@ from itertools import ifilter as filter
 range = xrange
 
 import core as _core
+from mediatumtal import tal as _tal
 import schema.schema as _schema_schema
 import workflow as _workflow
 
@@ -28,22 +29,28 @@ def register():
 
 class WorkflowStep_ClassifyByAttribute(_workflow.WorkflowStep):
 
+    default_settings = {"target-attribute-name": ""}
+
     def runAction(self, node, op=""):
-        parents = node.attrs[self.attrs["target-attribute-name"]].split()
+        parents = node.attrs[self.settings["target-attribute-name"]].split()
         for nid in frozenset(map(int, parents)):
             _core.db.query(_core.Node).get(nid).children.append(node)
 
         self.forward(node, True)
 
-    def metaFields(self, lang=None):
-        field = _schema_schema.Metafield("target-attribute-name")
-        label = "classifybyattribute-target-attribute-name"
-        field.set(
-            "label",
-            _core.translation.translate(lang, label) if lang else _core.translation.translate_in_request(label),
-        )
-        field.set("type", "text")
-        return [field]
+    def admin_settings_get_html_form(self, req):
+        return _tal.processTAL(
+            self.settings,
+            file="workflow/classifybyattribute.html",
+            macro="workflow_step_type_config",
+            request=req,
+           )
+
+    def admin_settings_save_form_data(self, data):
+        data = data.to_dict()
+        assert tuple(data) == ("target-attribute-name",)
+        self.settings = data
+        _core.db.session.commit()
 
     @staticmethod
     def getLabels():

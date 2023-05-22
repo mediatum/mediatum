@@ -6,6 +6,9 @@
 from __future__ import division
 from __future__ import print_function
 
+from mediatumtal import tal as _tal
+
+from core import db as _db
 from .workflow import WorkflowStep, registerStep
 from utils.utils import checkXMLString, suppress
 import core.translation as _core_translation
@@ -30,32 +33,39 @@ class MailError(Exception):
 
 class WorkflowStep_CheckContent(WorkflowStep):
 
+    default_settings = dict(
+        recipient="",
+        sender="",
+        subject="",
+        text="",
+    )
+
     def runAction(self, node, op=""):
-        attrs = ""
-        for k, v in node.attrs.items():
-            attrs += v
-        if not checkXMLString(u'<?xml version="1.0" encoding="UTF-8"?>' + u'<tag>' + attrs + u'</tag>'):
+        xml = u'<?xml version="1.0" encoding="UTF-8"?><tag>{}</tag>'.format("".join(node.attrs.itervalues()))
+        if not checkXMLString(xml):
             with suppress(Exception, warn=False):
-                mail.sendmail(self.get('from'), self.get('to'), self.get('subject'), self.get('text'))
+                mail.sendmail(
+                        self.settings['sender'],
+                        self.settings['recipient'],
+                        self.settings['subject'],
+                        self.settings['text'],
+                       )
 
         self.forward(node, True)
 
-    def metaFields(self, lang=None):
-        ret = []
-        for name, label, type_ in (
-                ("from", "admin_wfstep_checkcontent_sender", "text"),
-                ("email", "admin_wfstep_checkcontent_recipient", "text"),
-                ("subject", "admin_wfstep_checkcontent_subject", "text"),
-                ("text", "admin_wfstep_checkcontent_text", "htmlmemo"),
-        ):
-            field = Metafield(name)
-            field.set(
-                "label",
-                _core_translation.translate(lang, label) if lang else _core_translation.translate_in_request(label),
-            )
-            field.setFieldtype(type_)
-            ret.append(field)
-        return ret
+    def admin_settings_get_html_form(self, req):
+        return _tal.processTAL(
+            self.settings,
+            file="workflow/checkcontent.html",
+            macro="workflow_step_type_config",
+            request=req,
+           )
+
+    def admin_settings_save_form_data(self, data):
+        data = data.to_dict()
+        assert frozenset(data) == frozenset(("recipient", "sender", "subject", "text"))
+        self.settings = data
+        _db.session.commit()
 
     @staticmethod
     def getLabels():

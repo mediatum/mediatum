@@ -3,7 +3,7 @@
   SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 <tal:block metal:define-macro="textpage_show_node">
-    <tal:block tal:replace="raw python:text"/>
+    <tal:block tal:replace="raw python:htmltext"/>
     <form tal:condition="python:len(buttons)>0" action="/mask" method="post" enctype="multipart/form-data" style="padding:4px">
         <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
         <table>
@@ -11,3 +11,10 @@
         </table>
     </form>
 </tal:block>
+
+<metal:block metal:define-macro="workflow_step_type_config">
+    <div>
+        <label for="stepsetting_htmltext" i18n:translate="admin_wfstep_textpage_text_to_display"> </label>
+        <textarea rows="4" type="text" name="stepsetting_htmltext" id="stepsetting_htmltext" tal:content="python:htmltext"/>
+    </div>
+</metal:block>

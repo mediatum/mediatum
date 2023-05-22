@@ -559,39 +559,6 @@ def checkMask(mask, fix=0, verbose=1, show_unused=0):
     return error
 
 
-def parseEditorData(req, node):
-    nodes = [node]
-    incorrect = False
-    defaultlang = translation.set_language(req.accept_languages)
-
-    for field in node.metaFields():
-        name = field.getName()
-        value = req.params.get(name, "? ")
-
-        if value != "? ":
-            for node in nodes:
-                node.set(name, value)
-
-            if field.get('type') == "date":
-                f = field.getSystemFormat(field.fieldvalues)
-                try:
-                    date = parse_date(ustr(value), f.value)
-                except ValueError:
-                    date = None
-                if date:
-                    value = format_date(date, format='%Y-%m-%dT%H:%M:%S')
-                    for node in nodes:
-                        node.set(name, value)
-            else:
-                for node in nodes:
-                    node.set(name, value)
-        else:  # value not in request -> remove attribute
-            with suppress(KeyError, warn=False):
-                node.removeAttribute(field.getName())
-    db.session.commit()
-    return not incorrect
-
-
 #
 # export metadatascheme
 #
@@ -955,7 +922,7 @@ class Mask(Node):
         for node in nodes:
             for item in self.getMaskFields():
                 field = item.getField()
-                if item.getRequired() == 1:
+                if item.get_required():
                     if node.get(field.getName()) == "":
                         ret.append(field.id)
                         continue
@@ -974,7 +941,7 @@ class Mask(Node):
                 continue
             for item in self.getMaskFields():
                 field = item.getField()
-                if item.getRequired() == 1:
+                if item.get_required():
                     if node.get(field.getName()) == "":
                         ret.append(node.id)
                         logg.error("Error in publishing of node %s: The required field %s is empty.", node.id, field.name)
@@ -1385,20 +1352,14 @@ class Maskitem(Node):
     def setDescription(self, value):
         self.set("description", value)
 
-    def getRequired(self):
-        if self.get("required"):
-            return int(self.get("required"))
-        else:
-            return 0
+    def get_required(self):
+        return bool(int(self.get("required", "0")))
 
-    def setRequired(self, value):
-        self.set("required", value)
+    def set_required(self, value):
+        self.set("required", "1" if value else "0")
 
     def getWidth(self):
-        if self.get("width"):
-            return int(self.get("width"))
-        else:
-            return 400
+        return int(self.get("width", 400))
 
     def setWidth(self, value=u'400'):
         self.set("width", value)

@@ -13,7 +13,7 @@ import urlparse as _urlparse
 import flask as _flask
 
 from .workflow import WorkflowStep, registerStep
-from mediatumtal import tal
+from mediatumtal import tal as _tal
 
 from utils.utils import formatException
 import core.csrfform as _core_csrfform
@@ -45,60 +45,49 @@ def getTALtext(text, context):
     #text = tal.getTALstr('<body xmlns:tal="http://xml.zope.org/namespaces/tal">%s</body>' %(text), context)
     #text = text.replace("<body>","").replace("</body>","").replace("<body/>","")
     # return text.replace("\n","").strip()
-    return tal.getTALstr(text, context).replace('\n', '').strip()
+    return _tal.getTALstr(text, context).replace('\n', '').strip()
 
 
 class WorkflowStep_SendEmail(WorkflowStep):
 
+    default_settings = dict(
+        allowedit=False,
+        attach_pdf_form=False,
+        recipient=(),
+        sender="",
+        subject="",
+        text="",
+    )
+
     def sendOut(self, node):
         xfrom = node.get("system.mailtmp.from")
-        to = node.get("system.mailtmp.to")
-        sendcondition = self.get("sendcondition")
-        attach_pdf_form = bool(self.get("attach_pdf_form"))
-        sendOk = 1
+        recipient = node.get("system.mailtmp.to")
 
         try:
-            if sendcondition.startswith("attr:") and "=" in sendcondition:
-                arrname, value = sendcondition[5:].split("=")
-                if node.get(arrname) != value:
-                    sendOk = 0
-            elif (sendcondition.startswith("schema=") and node.schema not in sendcondition[7:].split(";")) or (sendcondition.startswith("type=") and not node.get("type") in sendcondition[5:].split(";")) or (sendcondition == "hasfile" and len(node.files) == 0):
-                sendOk = 0
+            logg.info("sending mail to %s (%s)", recipient, " , ".join(self.settings["recipient"]))
+            if not recipient:
+                raise MailError("No receiver address defined")
+            if not xfrom:
+                raise MailError("No from address defined")
+            attachments_paths_and_filenames = []
+            if self.settings["attach_pdf_form"]:
+                for f in node.files:
+                    if f.filetype != 'wfstep-addformpage':
+                        continue
+                    if not os.path.isfile(f.abspath):
+                        raise MailError("Attachment file not found: '%s'" % f.abspath)
+                    attachments_paths_and_filenames.append((f.abspath, f.abspath.split('_')[-1]))
+
+            mail.sendmail(xfrom, recipient, node.get("system.mailtmp.subject"), node.get(
+                "system.mailtmp.text"), attachments_paths_and_filenames=attachments_paths_and_filenames)
         except:
-            logg.exception("syntax error in email condition: %s", sendcondition)
-
-        if sendOk:
-            try:
-                logg.info("sending mail to %s (%s)", to, self.get("email"))
-                if not to:
-                    raise MailError("No receiver address defined")
-                if not xfrom:
-                    raise MailError("No from address defined")
-                attachments_paths_and_filenames = []
-                if attach_pdf_form:
-                    for f in node.files:
-                        if f.filetype != 'metafield-upload.upload_pdfform':
-                            continue
-                        if not os.path.isfile(f.abspath):
-                            raise MailError("Attachment file not found: '%s'" % f.abspath)
-                        attachments_paths_and_filenames.append((f.abspath, f.abspath.split('_')[-1]))
-
-                mail.sendmail(xfrom, to, node.get("system.mailtmp.subject"), node.get(
-                    "system.mailtmp.text"), attachments_paths_and_filenames=attachments_paths_and_filenames)
-            except:
-                node.set("system.mailtmp.error", formatException())
-                db.session.commit()
-                logg.exception("Error while sending mail- node stays in workflowstep %s %s", self.id, self.name)
-                return
-        else:
-            logg.info("sending mail prevented by condition %s ", sendcondition)
+            node.set("system.mailtmp.error", "1")
+            db.session.commit()
+            logg.exception("Error while sending mail- node stays in workflowstep %s %s", self.id, self.name)
             return
-        for s in ["mailtmp.from", "mailtmp.to", "mailtmp.subject", "mailtmp.text",
-                  "mailtmp.error", "mailtmp.talerror", "mailtmp.send"]:
-            try:
-                del node.system_attrs[s]
-            except KeyError:
-                continue
+
+        for s in ("from", "to", "subject", "text", "error", "send"):
+            node.system_attrs.pop("mailtmp.{}".format(s), None)
 
         db.session.commit()
         return 1
@@ -107,38 +96,34 @@ class WorkflowStep_SendEmail(WorkflowStep):
         link = _urlparse.urljoin(_flask.request.host_url, "/pnode?id={}&key={}".format(node.id, node.get("key")))
         link2 = _urlparse.urljoin(_flask.request.host_url, "/node?id={}".format(node.id))
         attrs = {"node": node, "link": link, "publiclink": link2}
-        try:
-            if "@" in self.get('from'):
-                node.set("system.mailtmp.from", getTALtext(self.get("from"), attrs))
-            elif "@" in node.get(self.get('from')):
-                node.set("system.mailtmp.from", getTALtext(node.get(self.get("from")), attrs))
+        sender = self.settings['sender']
+        if "@" in sender:
+            node.set("system.mailtmp.from", getTALtext(sender, attrs))
+        elif "@" in node.get(sender):
+            node.set("system.mailtmp.from", getTALtext(node.get(sender), attrs))
 
-            _mails = []
-            for m in self.get('email').split(";"):
-                if "@" in m:
-                    _mails.append(getTALtext(m, attrs))
-                elif "@" in node.get(m):
-                    _mails.append(getTALtext(node.get(m), attrs))
-            node.set("system.mailtmp.to", ";".join(_mails))
+        _mails = []
+        for m in self.settings['recipient']:
+            if "@" in m:
+                _mails.append(getTALtext(m, attrs))
+            elif "@" in node.get(m):
+                _mails.append(getTALtext(node.get(m), attrs))
+        node.set("system.mailtmp.to", ";".join(_mails))
 
-            node.set("system.mailtmp.subject", getTALtext(self.get("subject"), attrs))
-            node.set("system.mailtmp.text", getTALtext(self.get("text"), attrs))
-            db.session.commit()
-        except:
-            node.system_attrs['mailtmp.talerror'] = formatException()
-            db.session.commit()
-            return
-        if self.get("allowedit").lower().startswith("n"):
+        node.set("system.mailtmp.subject", getTALtext(self.settings["subject"], attrs))
+        node.set("system.mailtmp.text", getTALtext(self.settings["text"], attrs))
+        db.session.commit()
+        if not self.settings["allowedit"]:
             if(self.sendOut(node)):
                 self.forward(node, True)
 
     def show_workflow_node(self, node, req):
         if "sendout" in req.params:
             del req.params["sendout"]
-            if "from" in req.params:
-                node.set("system.mailtmp.from", req.params.get("from"))
-            if "to" in req.params:
-                node.set("system.mailtmp.to", req.params.get("to"))
+            if "sender" in req.params:
+                node.set("system.mailtmp.from", req.params.get("sender"))
+            if "recipient" in req.params:
+                node.set("system.mailtmp.to", req.params.get("recipient"))
             if "subject" in req.params:
                 node.set("system.mailtmp.subject", req.params.get("subject"))
             if "text" in req.params:
@@ -150,34 +135,25 @@ class WorkflowStep_SendEmail(WorkflowStep):
         if "gofalse" in req.params:
             return self.forwardAndShow(node, False, req)
 
-        elif node.system_attrs.get("mailtmp.talerror", "") != "":
-            del node.system_attrs["mailtmp.talerror"]
-            db.session.commit()
-            self.runAction(node, "true")
-            if node.system_attrs.get("mailtmp.talerror", "") != "":
-                return """<pre>%s</pre>""" % node.system_attrs.get("mailtmp.talerror")
-
         elif node.get("system.mailtmp.error"):
-            return u'{}<br/><pre>{}</pre><br/>&gt;<a href="{}">{}</a>&lt;'.format(
+            return u'{} &gt;<a href="{}">{}</a>&lt;'.format(
                     _core_translation.translate(_core_translation.set_language(req.accept_languages), "workflow_email_msg_1"),
-                    node.get("system.mailtmp.error"),
                     _makeSelfLink(req, {"sendout": "true"}),
                     _core_translation.translate(_core_translation.set_language(req.accept_languages), "workflow_email_resend"),
                 )
         else:
-            return tal.processTAL(
+            return _tal.processTAL(
                     dict(
                         page=u"node?id={}&obj={}".format(self.id, node.id),
-                        from_=node.get("system.mailtmp.from"),
-                        to=node.get("system.mailtmp.to"),
+                        sender=node.get("system.mailtmp.from"),
+                        recipient=node.get("system.mailtmp.to"),
                         text=node.get("system.mailtmp.text"),
-                        subject=tal.getTALstr(
+                        subject=_tal.getTALstr(
                             node.get("system.mailtmp.subject"),
                             {},
                             language=node.get("system.wflanguage"),
                            ),
                         node=node,
-                        sendcondition=self.get("sendcondition"),
                         wfnode=self,
                         pretext=self.getPreText(_core_translation.set_language(req.accept_languages)),
                         posttext=self.getPostText(_core_translation.set_language(req.accept_languages)),
@@ -188,30 +164,22 @@ class WorkflowStep_SendEmail(WorkflowStep):
                     request=req,
                 )
 
-    def metaFields(self, lang=None):
-        ret = list()
-        for name, label, type_ in (
-                ("from", "admin_wfstep_email_sender", "text"),
-                ("email", "admin_wfstep_email_recipient", "text"),
-                ("subject", "admin_wfstep_email_subject", "htmlmemo"),
-                ("text", "admin_wfstep_email_text", "htmlmemo"),
-                ("allowedit", "admin_wfstep_email_text_editable", "list"),
-                ("sendcondition", "admin_wfstep_email_sendcondition", "text"),
-                ("attach_pdf_form", "workflowstep-email_label_attach_pdf_form", "check"),
-        ):
-            field = Metafield(name)
-            field.set(
-                "label",
-                _core_translation.translate(lang, label) if lang else _core_translation.translate_in_request(label),
-            )
-            field.setFieldtype(type_)
-            if name == "allowedit":
-                field.metatype_data = dict(
-                        multiple=False,
-                        listelements=_core_translation.translate(lang, "admin_wfstep_email_text_editable_options").split(";"),
-                    )
-            ret.append(field)
-        return ret
+    def admin_settings_get_html_form(self, req):
+        return _tal.processTAL(
+            self.settings,
+            file="workflow/email.html",
+            macro="workflow_step_type_config",
+            request=req,
+           )
+
+    def admin_settings_save_form_data(self, data):
+        data = data.to_dict()
+        for attr in ("allowedit", "attach_pdf_form"):
+            data[attr] = bool(data.get(attr))
+        data["recipient"] = filter(None, (s.strip() for s in data["recipient"].split("\r\n")))
+        assert frozenset(data) == frozenset(("allowedit", "attach_pdf_form", "recipient", "sender", "subject", "text"))
+        self.settings = data
+        db.session.commit()
 
     @staticmethod
     def getLabels():

@@ -12,11 +12,11 @@
             <table style="width:100%;" border="1px" cellspacing="5px">
                 <tr>
                     <td><tal:block i18n:translate="workflowstep-email_label_sender"/>: <span class="required">*</span></td>
-                    <td><input type="text" name="from" tal:attributes="value from_" maxlength="100" size="50" /></td>
+                    <td><input type="text" name="sender" tal:attributes="value sender" maxlength="100" size="50" /></td>
                 </tr>
                 <tr>
                     <td><tal:block i18n:translate="workflowstep-email_label_recipient"/>: <span class="required">*</span></td>
-                    <td><input type="text" name="to" tal:attributes="value to" value="" maxlength="50" size="50" /></td>
+                    <td><input type="text" name="recipient" tal:attributes="value recipient" value="" maxlength="50" size="50" /></td>
                 </tr>
                 <tr>
                     <td><tal:block i18n:translate="workflowstep-email_label_subject"/>: <span class="required">*</span></td>
@@ -52,3 +52,32 @@
         }
     </script>
 </tal:block>
+
+
+<metal:block metal:define-macro="workflow_step_type_config">
+    <div>
+        <label for="stepsetting_sender" i18n:translate="admin_wfstep_email_sender"> </label>
+        <input type="text" name="stepsetting_sender" id="stepsetting_sender" tal:attributes="value sender"/>
+    </div>
+    <div>
+        <label for="stepsetting_recipient" i18n:translate="admin_wfstep_email_recipient"> </label>
+        <textarea name="stepsetting_recipient" id="stepsetting_recipient" tal:content="python:'\r\n'.join(recipient)"/>
+
+    </div>
+    <div>
+        <label for="stepsetting_subject" i18n:translate="admin_wfstep_email_subject"> </label>
+        <input type="text" name="stepsetting_subject" id="stepsetting_subject" tal:attributes="value subject"/>
+    </div>
+    <div>
+        <label for="stepsetting_text" i18n:translate="admin_wfstep_email_text"> </label>
+        <textarea rows="4" type="text" name="stepsetting_text" id="stepsetting_text" tal:content="python:text"/>
+    </div>
+    <div>
+        <label for="stepsetting_allowedit" i18n:translate="admin_wfstep_email_text_editable"> </label>
+        <input type="checkbox" name="stepsetting_allowedit" id="stepsetting_allowedit" tal:attributes="checked python:'checked' if allowedit else None" value="1"/>
+    </div>
+    <div>
+        <label for="stepsetting_attach_pdf_form" i18n:translate="workflowstep-email_label_attach_pdf_form"> </label>
+        <input type="checkbox" name="stepsetting_attach_pdf_form" id="stepsetting_attach_pdf_form" tal:attributes="checked python:'checked' if attach_pdf_form else None" value="1"/>
+    </div>
+</metal:block>

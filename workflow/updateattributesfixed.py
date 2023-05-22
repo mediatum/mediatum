@@ -17,9 +17,11 @@ range = xrange
 import os as _os
 
 import ruamel.yaml as _ruamel_yaml
+from mediatumtal import tal as _tal
 
 import core as _core
 import schema.schema as _schema_schema
+import utils.fileutils as _fileutils
 import workflow as _workflow
 
 
@@ -48,15 +50,34 @@ class WorkflowStep_UpdateAttributesFixed(_workflow.WorkflowStep):
 
         self.forward(node, True)
 
-    def metaFields(self, lang=None):
-        field = _schema_schema.Metafield("upload_fileatt")
-        label = "updateattributesfixed-upload-fileatt"
-        field.set(
-            "label",
-            _core.translation.translate(lang, label) if lang else _core.translation.translate_in_request(label),
-        )
-        field.set("type", "upload")
-        return [field]
+    def admin_settings_get_html_form(self, req):
+        files = tuple(f for f in self.files if f.filetype=="wfstep-updateattributesfixed")
+        if len(files) == 1:
+            context = dict(
+                    filebasename=files[0].base_name,
+                    filesize=files[0].size,
+                    fileurl=u'/file/{}/{}'.format(self.id, files[0].base_name),
+                   )
+        else:
+            context = dict(filebasename=None, filesize=None, fileurl=None)
+
+        return _tal.processTAL(
+            context,
+            file="workflow/updateattributesfixed.html",
+            macro="workflow_step_type_config",
+            request=req,
+           )
+
+    def admin_settings_save_form_data(self, data):
+        data = data.to_dict()
+        fileatt = data.pop('fileatt', None)
+        if fileatt:
+            for f in self.files:
+                self.files.remove(f)
+            self.files.append(_fileutils.importFile(_fileutils.sanitize_filename(fileatt.filename), fileatt,
+                                              filetype="wfstep-updateattributesfixed"))
+        assert not data
+        _core.db.session.commit()
 
     @staticmethod
     def getLabels():

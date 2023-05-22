@@ -24,22 +24,28 @@ def register():
 
 class WorkflowStep_End(WorkflowStep):
 
+    default_settings = dict(
+        endremove=False,
+        endsetupdatetime=False,
+        endtext=None,
+    )
+
     def show_workflow_node(self, node, req):
 
-        if self.get("endremove") != "":
+        if self.settings["endremove"]:
             # remove obj from workflownode
             self.children.remove(node)
 
         db.session.commit()
-        if self.get("endtext") != "":
+        if self.settings["endtext"] is not None:
             link = u"/pnode?id={}&key={}".format(node.id, node.get("key"))
             link2 = u"/node?id={}".format(node.id)
 
-            return _tal.processTAL({"node": node, "link": link, "link2": link2}, string=self.get("endtext"), macro=None, request=req)
+            return _tal.processTAL({"node": node, "link": link, "link2": link2}, string=self.settings["endtext"], macro=None, request=req)
         return _tal.processTAL({"node": unicode(node.id)}, '<p><a href="/publish" i18n:translate="workflow_back">TEXT</a></p><h2 i18n:translate="wf_step_ready">Fertig</h2><p>&nbsp;</p><p i18n:translate="workflow_step_ready_msg">Das Objekt <span tal:content="node" i18n:name="name"/> ist am Ende des Workflows angekommen.</p>', macro=None, request=req)
 
     def runAction(self, node, op=""):
-        if self.get("endsetupdatetime") != "":
+        if self.settings["endsetupdatetime"]:
             # insert node into searchindex
             try:
                 if node.get('updatetime') <= unicode(now()):  # do only if date in the past
@@ -48,21 +54,22 @@ class WorkflowStep_End(WorkflowStep):
             except:
                 logg.exception("exception in workflow step end, runAction failed")
 
-    def metaFields(self, lang=None):
-        ret = []
-        for name, label, type_ in (
-                ("endtext", "admin_wfstep_endtext", "htmlmemo"),
-                ("endremove", "admin_wfstep_endremove", "check"),
-                ("endsetupdatetime", "admin_wfstep_endsetupdatetime", "check"),
-        ):
-            field = Metafield(name)
-            field.set(
-                "label",
-                _core_translation.translate(lang, label) if lang else _core_translation.translate_in_request(label),
-            )
-            field.setFieldtype(type_)
-            ret.append(field)
-        return ret
+    def admin_settings_get_html_form(self, req):
+        return _tal.processTAL(
+            self.settings,
+            file="workflow/end.html",
+            macro="workflow_step_type_config",
+            request=req,
+           )
+
+    def admin_settings_save_form_data(self, data):
+        data = data.to_dict()
+        for attr in ('endremove', 'endsetupdatetime'):
+            data[attr] = bool(data.get(attr))
+        data["endtext"] = data["endtext"] or None
+        assert frozenset(data) == frozenset(("endremove", "endsetupdatetime", "endtext"))
+        self.settings = data
+        db.session.commit()
 
     @staticmethod
     def getLabels():

@@ -2,12 +2,7 @@
   Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
   SPDX-License-Identifier: AGPL-3.0-or-later
 -->
-<metal:block metal:define-macro="view">
-    <!--[if lt IE 7]>
-        <script type="text/javascript">
-            window.attachEvent("onload", buttonfix);
-        </script>
-    <![endif]-->
+<metal:block metal:define-macro="list_workflows">
     <p><a i18n:translate="admin_overview" href=".">TEXT</a></p>
     <form tal:attributes="action python:page" name="addnewworkflow" method="post" action="#" enctype="multipart/form-data">
         <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
@@ -106,7 +101,7 @@
     </form>
 </metal:block>
 
-<metal:block metal:define-macro="modify" tal:define="id python:workflow.getName()">
+<metal:block metal:define-macro="workflow_config" tal:define="id python:workflow.getName()">
     <script src="/static/js/admin/modules/admin.js"> </script>
     <p><a tal:attributes="href python:u'./workflows{}'.format(page)" i18n:translate="admin_overview">TEXT</a></p>
     <form tal:attributes="action page" name="editworkflow" method="post" action="#">
@@ -118,10 +113,9 @@
                     <h3 tal:condition="python:id!=''" i18n:translate="admin_wf_edit_header">TEXT</h3>
                 </td>
             </tr>
-            <tr tal:condition="python:error>0">
+            <tr tal:condition="python:error">
                 <td colspan="2">
-                    <p tal:condition="python:error==1" class="error" i18n:translate="admin_mandatory_error">TEXT</p>
-                    <p tal:condition="python:error==2" class="error" i18n:translate="admin_duplicate_error">TEXT</p>
+                    <p class="error" i18n:translate="" tal:content="python:error"/>
                 </td>
             </tr>
             <tr>
@@ -151,16 +145,16 @@
                     <table border="0px" cellpadding="0px" cellspacing="0px">
                         <tr>
                             <td align="left" valign="top">
-                                <select tal:content="raw python:acl_write['val_left']" tal:attributes="name python:u'left_write{}'.format(acl_write['name']);id python:u'left_write{}'.format(acl_write['name']); ondblclick python:u'moveRight(document.editworkflow.left_write{},document.editworkflow.right_write{})'.format(acl_write['name'], acl_write['name'])" style="width:320px" size="6" multiple="multiple">
+                                <select tal:content="raw python:acl_write['left']" tal:attributes="name python:u'left_writewrite';id python:u'left_writewrite'; ondblclick python:u'moveRight(document.editworkflow.left_writewrite,document.editworkflow.right_writewrite)'" style="width:320px" size="6" multiple="multiple">
                                 </select>
                             </td>
                             <td style="padding-left:10px;padding-right:10px;" align="left" valign="center">
-                                <input tal:attributes="onclick python:u'moveLeft(document.editworkflow.left_write{},document.editworkflow.right_write{})'.format(acl_write['name'], acl_write['name'])" type="button" value="<<"/>
+                                <input tal:attributes="onclick python:u'moveLeft(document.editworkflow.left_writewrite,document.editworkflow.right_writewrite)'" type="button" value="<<"/>
                                 <br/>
-                                <input tal:attributes="onclick python:u'moveRight(document.editworkflow.left_write{},document.editworkflow.right_write{})'.format(acl_write['name'], acl_write['name'])" type="button" value=">>"/>
+                                <input tal:attributes="onclick python:u'moveRight(document.editworkflow.left_writewrite,document.editworkflow.right_writewrite)'" type="button" value=">>"/>
                             </td>
                             <td align="left" valign="top">
-                                <select tal:content="raw python:acl_write['val_right']" tal:attributes="name python:u'right_write{}'.format(acl_write['name']); ondblclick python:u'moveLeft(document.editworkflow.left_write{},document.editworkflow.right_write{})'.format(acl_write['name'], acl_write['name'])" style="width:320px" size="6" multiple="multiple">
+                                <select tal:content="raw python:acl_write['right']" tal:attributes="name python:u'right_writewrite'; ondblclick python:u'moveLeft(document.editworkflow.left_writewrite,document.editworkflow.right_writewrite)'" style="width:320px" size="6" multiple="multiple">
                                 </select>
                             </td>
                         </tr>
@@ -174,16 +168,16 @@
                     <table border="0px" cellpadding="0px" cellspacing="0px">
                         <tr>
                             <td align="left" valign="top">
-                                <select tal:content="raw python:acl_read['val_left']" tal:attributes="name python:u'left_read{}'.format(acl_read['name']);id python:u'left_read{}'.format(acl_read['name']); ondblclick python:u'moveRight(document.editworkflow.left_read{},document.editworkflow.right_read{})'.format(acl_read['name'], acl_read['name'])" style="width:320px" size="6" multiple="multiple">
+                                <select tal:content="raw python:acl_read['left']" tal:attributes="name python:u'left_readread';id python:u'left_readread'; ondblclick python:u'moveRight(document.editworkflow.left_readread,document.editworkflow.right_readread)'" style="width:320px" size="6" multiple="multiple">
                                 </select>
                             </td>
                             <td style="padding-left:10px;padding-right:10px;" align="left" valign="center">
-                                <input tal:attributes="onclick python:u'moveLeft(document.editworkflow.left_read{},document.editworkflow.right_read{})'.format(acl_read['name'], acl_read['name'])" type="button" value="<<"/>
+                                <input tal:attributes="onclick python:u'moveLeft(document.editworkflow.left_readread,document.editworkflow.right_readread)'" type="button" value="<<"/>
                                 <br/>
-                                <input tal:attributes="onclick python:u'moveRight(document.editworkflow.left_read{},document.editworkflow.right_read{})'.format(acl_read['name'], acl_read['name'])" type="button" value=">>"/>
+                                <input tal:attributes="onclick python:u'moveRight(document.editworkflow.left_readread,document.editworkflow.right_readread)'" type="button" value=">>"/>
                             </td>
                             <td align="left" valign="top">
-                                <select tal:content="raw python:acl_read['val_right']" tal:attributes="name python:u'right_read{}'.format(acl_read['name']);  ondblclick python:u'moveLeft(document.editworkflow.left_read{},document.editworkflow.right_read{})'.format(acl_read['name'], acl_read['name'])" style="width:320px" size="6" multiple="multiple">
+                                <select tal:content="raw python:acl_read['right']" tal:attributes="name python:u'right_readread';  ondblclick python:u'moveLeft(document.editworkflow.left_readread,document.editworkflow.right_readread)'" style="width:320px" size="6" multiple="multiple">
                                 </select>
                             </td>
                         </tr>
@@ -214,7 +208,7 @@
             <tr>
                 <td>&nbsp;</td>
                 <td>
-                    <button i18n:attributes="title admin_save_title" tal:attributes="onclick python:u'selectacl(Array(\'left_read{}\', \'left_write{}\'))'.format(acl_read['name'], acl_write['name']);" i18n:translate="admin_save" type="submit" name="submit" value="submit">TEXT</button>&nbsp;&nbsp;
+                    <button i18n:attributes="title admin_save_title" tal:attributes="onclick python:u'selectacl(Array(\'left_readread\', \'left_writewrite\'))';" i18n:translate="admin_save" type="submit" name="submit" value="submit">TEXT</button>&nbsp;&nbsp;
                     <button i18n:attributes="title admin_cancel_title" i18n:translate="admin_cancel" type="submit" name="cancel" value="cancel" onclick="setCancel()">TEXT</button>
                 </td>
             </tr>
@@ -227,12 +221,7 @@
     </form>
 </metal:block>
 
-<metal:block metal:define-macro="view_step">
-    <!--[if lt IE 7]>
-        <script type="text/javascript">
-            window.attachEvent("onload", buttonfix);
-        </script>
-    <![endif]-->
+<metal:block metal:define-macro="workflow_steps_list">
     <p><a href="./workflows" i18n:translate="admin_overview">TEXT</a></p>
     <form tal:attributes="action page" name="metafields" method="post" action="#">
         <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
@@ -323,7 +312,7 @@
     </form>
 </metal:block>
 
-<metal:block metal:define-macro="workflowstep_field">
+<metal:block metal:define-macro="language_dependent_textarea">
     <textarea tal:condition="python:not languages" tal:content="python:content()" tal:attributes="name python:name" style="width:400px"/>
     <div tal:repeat="language python:languages">
         <div style="float:left;width:50px;"><span tal:content="language"/>:</div>
@@ -331,10 +320,116 @@
     </div>
 </metal:block>
 
-<metal:block metal:define-macro="modify_step" tal:define="id python:workflowstep.id; language_count python:len(languages)">
+<metal:block metal:define-macro="workflow_step_new">
+    <p>
+        <a
+            i18n:translate=""
+            tal:attributes="href python:u'./workflows?detailof={}'.format(workflow_id)"
+            tal:content="python:'admin_overview'"
+        />
+    </p>
+    <form name="addmfield" id="addmfield" method="post" action="#">
+        <input tal:attributes="value csrf" type="hidden" name="csrf_token">
+        <table>
+            <tr>
+                <td colspan="2">
+                    <h3 i18n:translate="admin_wfstep_create_header" />
+                </td>
+            </tr>
+            <tr tal:condition="python:error">
+                <td colspan="2">
+                    <p class="error" i18n:translate="" tal:content="python:error"/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <tal:block i18n:translate="admin_wfstep_name" />: <span class="required">*</span>
+                </td>
+                <td>
+                    <input
+                        maxlength="64"
+                        name="nname"
+                        style="width:400px"
+                        tal:attributes="value python:name"
+                        type="text"
+                       />
+                    <input
+                        name="orig_name"
+                        style="width:400px"
+                        tal:attributes="value orig_name"
+                        type="hidden"
+                       />
+                </td>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_wfstep_adminstep" />:</td>
+                <td>
+                    <input
+                        tal:attributes="checked python:'checked' if isadminstep else None"
+                        type="checkbox"
+                        name="adminstep"
+                        value="1"
+                       />
+                    <small>(<span i18n:translate="admin_wfstep_msg1" />)</small>
+                </td>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_wfstep_nodetype" />:</td>
+                <td>
+                    <select style="width:400px" name="ntype">
+                        <tal:block tal:repeat="key python:workflow_step_type_names" tal:define="typename python:contenttype">
+                            <option
+                                tal:attributes="value python:key; selected python:'selected' if (key==typename and update_type=='') or update_type==key else None"
+                                tal:content="key"
+                                i18n:translate=""
+                               />
+                        </tal:block>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+                <td>
+                    <button
+                        i18n:attributes="title admin_save_title"
+                        i18n:translate="admin_save"
+                        name="submitbutton"
+                        type="submit"
+                        value="submit"
+                       />
+                    &nbsp;&nbsp;
+                    <button
+                        i18n:attributes="title admin_cancel_title"
+                        i18n:translate="admin_cancel"
+                        name="cancel"
+                        onclick="setCancel()"
+                        type="submit"
+                        value="cancel"
+                       />
+                </td>
+            </tr>
+        </table>
+        <input id="form_op" name="form_op" type="hidden" value="save_newdetail" />
+        <input type="hidden" name="acttype" value="step"/>
+        <input tal:attributes="value python:workflow_id" type="hidden" name="parent"/>
+        <input type="hidden" name="actpage" tal:attributes="value actpage"/>
+        <input type="hidden" name="actfilter" value="all"/>
+    </form>
+</metal:block>
+
+<metal:block
+        metal:define-macro="workflow_step_config"
+        tal:define="id python:workflowstep_id"
+       >
     <script src="/static/js/admin/modules/admin.js"> </script>
-    <p><a tal:attributes="href python:u'./workflows?detailof={}{}'.format(workflow_id, page)" i18n:translate="admin_overview">TEXT</a></p>
-    <form tal:attributes="action page" name="addmfield" id="addmfield" method="post" action="#">
+    <p>
+        <a
+            i18n:translate=""
+            tal:attributes="href python:u'./workflows?detailof={}'.format(workflow_id)"
+            tal:content="python:'admin_overview'"
+        />
+    </p>
+    <form name="addmfield" id="addmfield" method="post" enctype="multipart/form-data" action="#">
         <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
         <table>
             <tr>
@@ -343,17 +438,16 @@
                     <h3 tal:condition="python:id!=''" i18n:translate="admin_wfstep_edit_header">TEXT</h3>
                 </td>
             </tr>
-            <tr tal:condition="python:error>0">
+            <tr tal:condition="python:error">
                 <td colspan="2">
-                    <p tal:condition="python:error==1" i18n:translate="admin_mandatory_error" class="error">TEXT</p>
-                    <p tal:condition="python:error==2" i18n:translate="admin_duplicate_error" class="error">TEXT</p>
+                    <p class="error" i18n:translate="" tal:content="python:error"/>
                 </td>
             </tr>
             <tr>
                 <td><tal:block i18n:translate="admin_wfstep_name">TEXT</tal:block>: <span class="required">*</span></td>
                 <td>
                     <input
-                        tal:attributes="value python:workflowstep.name"
+                        tal:attributes="value name"
                         style="width:400px"
                         type="text"
                         name="nname"
@@ -371,45 +465,44 @@
             <tr>
                 <td><tal:block i18n:translate="admin_wfstep_adminstep">TEXT</tal:block>:</td>
                 <td>
-                    <input tal:attributes="checked python:{0:None,1:'checked'}[workflowstep.isAdminStep()]" type="checkbox" name="adminstep" value="1"/> <small>(<span i18n:translate="admin_wfstep_msg1">TEXT</span>)</small>
+                    <input
+                        tal:attributes="checked python:'checked' if isadminstep else None"
+                        type="checkbox"
+                        name="adminstep"
+                        value="1"
+                       />
+                    <small>(<span i18n:translate="admin_wfstep_msg1" />)</small>
                 </td>
             </tr>
             <tr>
                 <td><tal:block i18n:translate="admin_wfstep_nodetype">TEXT</tal:block>:</td>
-                <td>
-                    <select style="width:400px" name="ntype" onchange="sendForm()">
-                        <tal:block tal:repeat="key python:list(workflowtypes)" tal:define="typename python:workflowstep.getContentType()">
-                            <option tal:condition="python:(key==typename and update_type=='') or update_type==key" tal:attributes="value python:key" tal:content="key" selected="selected" i18n:translate=""/>
-                            <option tal:condition="python:(key!=typename or update_type!='') and update_type!=key" tal:attributes="value python:key" tal:content="key" i18n:translate=""/>
-                        </tal:block>
-                    </select>
-                </td>
+                <td tal:content="python:contenttype" i18n:translate=""/>
             </tr>
             <tr>
                 <td><tal:block i18n:translate="admin_wfstep_pretext">TEXT</tal:block>:</td>
                 <td>
-                    <tal:block tal:define="content python:workflowstep.getPreText; name python:'npretext'">
-                        <tal:block metal:use-macro="workflowstep_field"/>
+                    <tal:block tal:define="content pretext; name python:'npretext'">
+                        <tal:block metal:use-macro="language_dependent_textarea"/>
                     </tal:block>
                 </td>
             </tr>
             <tr>
                 <td><tal:block i18n:translate="admin_wfstep_posttext">TEXT</tal:block>:</td>
                 <td>
-                    <tal:block tal:define="content python:workflowstep.getPostText; name python:'nposttext'">
-                        <tal:block metal:use-macro="workflowstep_field"/>
+                    <tal:block tal:define="content posttext; name python:'nposttext'">
+                        <tal:block metal:use-macro="language_dependent_textarea"/>
                     </tal:block>
                 </td>
             </tr>
             <tr>
                 <td><tal:block i18n:translate="admin_wfstep_comment">TEXT</tal:block>:</td>
-                <td><textarea tal:content="python:workflowstep.getComment()" name="ncomment" style="width:400px" rows="5"/></td>
+                <td><textarea tal:content="python:comment" name="ncomment" style="width:400px" rows="5"/></td>
             </tr>
             <tr>
                 <td><tal:block i18n:translate="admin_wfstep_truelabel">TEXT</tal:block>:</td>
                 <td>
-                    <tal:block tal:define="content python:workflowstep.getTrueLabel; name python:'ntruelabel'">
-                        <tal:block metal:use-macro="workflowstep_field"/>
+                    <tal:block tal:define="content python:truelabel; name python:'ntruelabel'">
+                        <tal:block metal:use-macro="language_dependent_textarea"/>
                     </tal:block>
                 </td>
             </tr>
@@ -418,9 +511,11 @@
                 <td>
                     <select style="width:400px" name="ntrueid">
                         <option value="" i18n:translate="admin_wfstep_nonode">TEXT</option>
-                        <tal:block tal:repeat="node nodelist">
-                            <option tal:condition="python:workflowstep.getTrueId()==node.getName()" tal:attributes="value python:node.getName()" tal:content="python:node.getName()" selected="selected"/>
-                            <option tal:condition="python:workflowstep.getTrueId()!=node.getName()" tal:attributes="value python:node.getName()" tal:content="python:node.getName()"/>
+                        <tal:block tal:repeat="stepname stepnames">
+                            <option
+                                tal:attributes="value python:stepname; selected python:'selected' if trueid==stepname else None"
+                                tal:content="python:stepname"
+                            />
                         </tal:block>
                     </select>
                 </td>
@@ -428,8 +523,8 @@
             <tr>
                 <td><tal:block i18n:translate="admin_wfstep_falselabel">TEXT</tal:block>:</td>
                 <td>
-                    <tal:block tal:define="content python:workflowstep.getFalseLabel; name python:'nfalselabel'">
-                        <tal:block metal:use-macro="workflowstep_field"/>
+                    <tal:block tal:define="content python:falselabel; name python:'nfalselabel'">
+                        <tal:block metal:use-macro="language_dependent_textarea"/>
                     </tal:block>
                 </td>
             </tr>
@@ -438,34 +533,35 @@
                 <td>
                     <select style="width:400px" name="nfalseid">
                         <option value="" i18n:translate="admin_wfstep_nonode">TEXT</option>
-                        <tal:block tal:repeat="node nodelist">
-                            <option tal:condition="python:workflowstep.getFalseId()==node.getName()" tal:attributes="value python:node.getName()" tal:content="python:node.getName()" selected="selected"/>
-                            <option tal:condition="python:workflowstep.getFalseId()!=node.getName()" tal:attributes="value python:node.getName()" tal:content="python:node.getName()"/>
+                        <tal:block tal:repeat="stepname stepnames">
+                            <option
+                                tal:attributes="value python:stepname; selected python:'selected' if falseid==stepname else None"
+                                tal:content="python:stepname"
+                            />
                         </tal:block>
                     </select>
                 </td>
             </tr>
-            <div tal:replace="raw editor"/>
             <tr>
                 <td><tal:block i18n:translate="admin_meta_writerights">TEXT</tal:block>:</td>
                 <td>
                     <table border="0px" cellpadding="0px" cellspacing="0px">
                         <tr>
                             <td align="left" valign="top">
-                                <select tal:content="raw python:acl_write['val_left']" tal:attributes="name python:u'left_write{}'.format(acl_write['name']);id python:u'left_write{}'.format(acl_write['name']); ondblclick python:u'moveRight(document.addmfield.left_write{},document.addmfield.right_write{})'.format(acl_write['name'], acl_write['name'])" style="width:320px" size="6" multiple="multiple">
+                                <select tal:content="raw python:acl_write['left']" tal:attributes="name python:u'left_writewrite';id python:u'left_writewrite'; ondblclick python:u'moveRight(document.addmfield.left_writewrite,document.addmfield.right_writewrite)'" style="width:320px" size="6" multiple="multiple">
                                 </select>
                             </td>
                             <td style="padding-left:10px;padding-right:10px;" align="left" valign="center">
-                                <input tal:attributes="onclick python:u'moveLeft(document.addmfield.left_write{},document.addmfield.right_write{})'.format(acl_write['name'], acl_write['name'])" type="button" value="<<"/>
+                                <input tal:attributes="onclick python:u'moveLeft(document.addmfield.left_writewrite,document.addmfield.right_writewrite)'" type="button" value="<<"/>
                                 <br/>
-                                <input tal:attributes="onclick python:u'moveRight(document.addmfield.left_write{},document.addmfield.right_write{})'.format(acl_write['name'], acl_write['name'])" type="button" value=">>"/>
+                                <input tal:attributes="onclick python:u'moveRight(document.addmfield.left_writewrite,document.addmfield.right_writewrite)'" type="button" value=">>"/>
                             </td>
                             <td align="left" valign="top">
-                                <select tal:content="raw python:acl_write['val_right']" tal:attributes="name python:u'right_write{}'.format(acl_write['name']);  ondblclick python:u'moveLeft(document.addmfield.left_write{},document.addmfield.right_write{})'.format(acl_write['name'], acl_write['name'])" style="width:320px" size="6" multiple="multiple">
+                                <select tal:content="raw python:acl_write['right']" tal:attributes="name python:u'right_writewrite';  ondblclick python:u'moveLeft(document.addmfield.left_writewrite,document.addmfield.right_writewrite)'" style="width:320px" size="6" multiple="multiple">
                                 </select>
                             </td>
                         </tr>
-                    </table> 
+                    </table>
                 </td>
             </tr>
             <tr>
@@ -474,22 +570,28 @@
                     <table border="0px" cellpadding="0px" cellspacing="0px">
                         <tr>
                             <td align="left" valign="top">
-                                <select tal:content="raw python:acl_read['val_left']" tal:attributes="name python:u'left_read{}'.format(acl_read['name']);id python:u'left_read{}'.format(acl_read['name']); ondblclick python:u'moveRight(document.addmfield.left_read{},document.addmfield.right_read{})'.format(acl_read['name'], acl_read['name'])" style="width:320px" size="6" multiple="multiple">
+                                <select tal:content="raw python:acl_read['left']" tal:attributes="name python:u'left_readread';id python:u'left_readread'; ondblclick python:u'moveRight(document.addmfield.left_readread,document.addmfield.right_readread)'" style="width:320px" size="6" multiple="multiple">
                                 </select>
                             </td>
                             <td style="padding-left:10px;padding-right:10px;" align="left" valign="center">
-                                <input tal:attributes="onclick python:u'moveLeft(document.addmfield.left_read{},document.addmfield.right_read{})'.format(acl_read['name'], acl_read['name'])" type="button" value="<<"/>
+                                <input tal:attributes="onclick python:u'moveLeft(document.addmfield.left_readread,document.addmfield.right_readread)'" type="button" value="<<"/>
                                 <br/>
-                                <input tal:attributes="onclick python:u'moveRight(document.addmfield.left_read{},document.addmfield.right_read{})'.format(acl_read['name'], acl_read['name'])" type="button" value=">>"/>
+                                <input tal:attributes="onclick python:u'moveRight(document.addmfield.left_readread,document.addmfield.right_readread)'" type="button" value=">>"/>
                             </td>
                             <td align="left" valign="top">
-                                <select tal:content="raw python:acl_read['val_right']" tal:attributes="name python:u'right_read{}'.format(acl_read['name']);  ondblclick python:u'moveLeft(document.addmfield.left_read{},document.addmfield.right_read{})'.format(acl_read['name'], acl_read['name'])" style="width:320px" size="6" multiple="multiple">
+                                <select tal:content="raw python:acl_read['right']" tal:attributes="name python:u'right_readread';  ondblclick python:u'moveLeft(document.addmfield.left_readread,document.addmfield.right_readread)'" style="width:320px" size="6" multiple="multiple">
                                 </select>
                             </td>
                         </tr>
-                    </table> 
+                    </table>
                 </td>
             </tr>
+        </table>
+        <tal:block tal:condition="python:workflow_step_type_settings_html is not None">
+          <div class="mediatum-admin-workflow-settings-head" i18n:translate="admin_wfstep_additional"> </div>
+          <tal:block tal:replace="structure workflow_step_type_settings_html"/>
+        </tal:block>
+        <table>
             <tr>
                 <td>&nbsp;</td>
                 <td><small>(<span class="required">*</span> <span i18n:translate="admin_mandatory_info">TEXT</span>)</small></td>
@@ -497,7 +599,7 @@
             <tr>
                 <td>&nbsp;</td>
                 <td>
-                    <button i18n:attributes="title admin_save_title" i18n:translate="admin_save" tal:attributes="onclick python:u'selectacls(Array(\'left_read{}\', \'left_write{}\'))'.format(acl_read['name'], acl_write['name']);" type="submit" name="submitbutton" value="submit">TEXT</button>&nbsp;&nbsp;
+                    <button i18n:attributes="title admin_save_title" i18n:translate="admin_save" tal:attributes="onclick python:u'selectacls(Array(\'left_readread\', \'left_writewrite\'))';" type="submit" name="submitbutton" value="submit">TEXT</button>&nbsp;&nbsp;
                     <button i18n:attributes="title admin_cancel_title" i18n:translate="admin_cancel" type="submit" name="cancel" value="cancel" onclick="setCancel()">TEXT</button>
                 </td>
             </tr>
@@ -507,33 +609,12 @@
         <input type="hidden" name="acttype" value="step"/>
         <input tal:attributes="value python:workflow_id" type="hidden" name="parent"/>
         <input type="hidden" name="actpage" tal:attributes="value actpage"/>
-        <input type="hidden" name="actfilter" tal:attributes="value actfilter"/>
+        <input type="hidden" name="actfilter" value="all"/>
+        <input type="hidden" name="ntype" tal:attributes="value ntype"/>
     </form>
 </metal:block>
 
-<metal:block metal:define-macro="view_editor">
-    <tr tal:condition="python:len(fields)>0">
-        <td colspan="2"><b i18n:translate="admin_wfstep_additional">TEXT</b>:</td>
-    </tr>
-    <tal:block tal:repeat="field fields">
-        <tr tal:define="name python:field.getName(); value python:node.get(name)">
-            <td>
-                <span tal:replace="python:field.getLabel()"/>
-            </td>
-            <td>
-                <span tal:replace="raw python:field.getEditorHTML(value, width=400)"/>
-            </td>
-        </tr>
-    </tal:block>
-    <tr>
-        <td colspan="2">
-            <input type="hidden" name="metaDataEditor" value="metaDataEditor"/>
-            <input tal:attributes="value python:node.name" type="hidden" name="wnodeid"/>
-        </td>
-    </tr>
-</metal:block>
-
-<metal:block metal:define-macro="view_popup">
+<metal:block metal:define-macro="workflowimage_popup">
     <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
     <html xmlns="http://www.w3.org/1999/xhtml">
         <head>

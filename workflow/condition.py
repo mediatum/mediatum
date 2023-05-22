@@ -4,7 +4,8 @@
 from __future__ import division
 from __future__ import print_function
 
-import core.translation as _core_translation
+from mediatumtal import tal as _tal
+
 from .workflow import WorkflowStep, registerStep, getNodeWorkflow
 from core.translation import addLabels
 from core import db
@@ -20,8 +21,12 @@ def register():
 
 class WorkflowStep_Condition(WorkflowStep):
 
+    default_settings = dict(
+        condition="",
+    )
+
     def runAction(self, node, op=""):
-        condition = self.get("condition")
+        condition = self.settings["condition"]
         gotoFalse = 1
         if condition.startswith("attr:"):
             hlp = condition[5:].split("=")
@@ -60,14 +65,19 @@ class WorkflowStep_Condition(WorkflowStep):
 
         newstep.runAction(node, True)  # always run true operation
 
-    def metaFields(self, lang=None):
-        field = Metafield("condition")
-        if lang:
-            field.set("label", _core_translation.translate(lang, "admin_wfstep_condition"))
-        else:
-            field.set("label", _core_translation.translate_in_request("admin_wfstep_condition"))
-        field.setFieldtype("text")
-        return [field]
+    def admin_settings_get_html_form(self, req):
+        return _tal.processTAL(
+            self.settings,
+            file="workflow/condition.html",
+            macro="workflow_step_type_config",
+            request=req,
+           )
+
+    def admin_settings_save_form_data(self, data):
+        data = data.to_dict()
+        assert tuple(data) == ("condition",)
+        self.settings = data
+        db.session.commit()
 
     @staticmethod
     def getLabels():

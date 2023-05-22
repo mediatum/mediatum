@@ -107,7 +107,7 @@ msgid "workflow_start_submit"
 msgstr "Create"
 
 msgid "workflow_email_msg_1"
-msgstr "The following error occured while sending the mail:"
+msgstr "An error occured while sending the mail"
 
 msgid "workflow_email_resend"
 msgstr "Try again to send"

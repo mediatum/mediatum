@@ -165,18 +165,6 @@ msgstr "Zusätzliche Daten für den gewählten Knotentyp"
 msgid "admin_wf_definition"
 msgstr "Workflow Definition"
 
-msgid "admin_wfstep_text_before_upload_form"
-msgstr "Text vor dem Upload-Formular"
-
-msgid "admin_wfstep_text_after_upload_form"
-msgstr "Text nach dem Upload-Formular"
- 
-msgid "admin_wfstep_uploadtype"
-msgstr "Erl. Dateiendungen (;-separiert)"
-
-msgid "admin_wfstep_email_sendcondition"
-msgstr "Bedingung für Email-Versand"
-
 ### msgid "admin_wfstep_node_types_to_create"
 ### msgstr "erstellbare Node-Typen (;-separiert)"
 
@@ -206,9 +194,6 @@ msgstr "Text"
 
 msgid "admin_wfstep_email_text_editable"
 msgstr "Angaben editierbar?"
-
-msgid "admin_wfstep_email_text_editable_options"
-msgstr "Ja;Nein"
 
 msgid "admin_wfstep_textpage_text_to_display"
 msgstr "anzuzeigender Text"

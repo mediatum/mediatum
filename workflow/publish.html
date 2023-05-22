@@ -1,0 +1,14 @@
+<!--
+  Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<metal:block metal:define-macro="workflow_step_type_config">
+    <div>
+        <label for="stepsetting_set_version" i18n:translate="admin_wfstep_publishsetpublishedversion"> </label>
+        <input type="checkbox" name="stepsetting_set_version" id="stepsetting_set_version" tal:attributes="checked python:'checked' if set_version else None" value="1"/>
+    </div>
+    <div>
+        <label for="stepsetting_set_updatetime" i18n:translate="admin_wfstep_publishsetupdatetime"> </label>
+        <input type="checkbox" name="stepsetting_set_updatetime" id="stepsetting_set_updatetime" tal:attributes="checked python:'checked' if set_updatetime else None" value="1"/>
+    </div>
+</metal:block>

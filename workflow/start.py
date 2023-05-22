@@ -18,7 +18,7 @@ import utils.date as date
 from utils.utils import mkKey
 from core import Node
 from core import db
-from schema.schema import Metafield
+import schema.schema as _schema
 from core.database.postgres.permission import AccessRule, AccessRulesetToRule
 from core import UserGroup
 import core.nodecache as _nodecache
@@ -35,27 +35,39 @@ def register():
     _core_translation.addLabels(WorkflowStep_Start.getLabels())
 
 
+def _get_schemas():
+    metadatatypes = _nodecache.get_metadatatypes_node()
+    for metadatatype in metadatatypes.children.filter(_schema.Metadatatype.a.active == "1").all():
+        for datatypename in metadatatype.getDatatypes():
+            yield (datatypename, metadatatype.name)
+
+
 class WorkflowStep_Start(WorkflowStep):
 
+    default_settings = dict(
+        schemas=(),
+        starthtmltext="",
+        allowcontinue=False,
+    )
+
     def show_workflow_step(self, req):
-        typenames = self.get("newnodetype").split(";")
-        wfnode = self.parents[0]
+        schemas = frozenset(map(tuple, self.settings["schemas"]))
         redirect = ""
         message = ""
 
+        assert schemas
         # check existence of metadata types listed in the definition of the start node
-        mdts = _nodecache.get_metadatatypes_node()
-        for schema in typenames:
-            if not mdts.children.filter_by(name=schema.strip().split("/")[-1]).scalar():
-                return ('<i>{}: {} </i>').format(
-                        schema,
-                        _core_translation.translate(_core_translation.set_language(req.accept_languages), "permission_denied"),
-                    )
+        if not schemas.issubset(_get_schemas()):
+            raise RuntimeError("missing/forbidden schemas: {!r}".format(schemas.difference(_get_schemas())))
 
         if "workflow_start" in req.params:
+            schema = tuple(req.values["selected_schema"].split("/"))
+            if schema not in schemas:
+                return '<i>{}: {}</i>'.format(schema, _core_translation.translate_in_request("permission_denied", req))
+
             _core_translation.set_language(req.accept_languages, req.values.get('workflow_language'))
-            content_class = Node.get_class_for_typestring(req.params.get('selected_schema').split('/')[0])
-            node = content_class(name=u'', schema=req.params.get('selected_schema').split('/')[1])
+            content_class = Node.get_class_for_typestring(schema[0])
+            node = content_class(name=u'', schema=schema[1])
             self.children.append(node)
 
             # create user group named '_workflow' if it doesn't exist
@@ -95,42 +107,16 @@ class WorkflowStep_Start(WorkflowStep):
                 message = "workflow_start_err_wrongkey"
                 db.session.rollback()
 
-        types = []
-        for a in typenames:
-            if a:
-                m = getMetaType(a)
-                # we could now check m.isActive(), but for now let's
-                # just take all specified metatypes, so that edit area
-                # and workflow are independent on this
-                types += [(m, a)]
-        cookie_error = _core_translation.translate(
-                _core_translation.set_language(req.accept_languages),
-                "Your_browser_doesnt_support_cookies",
-            )
-
-        js = """
-        <script language="javascript">
-        function cookie_test() {
-            if (document.cookie=="")
-                document.cookie = "CookieTest=Erfolgreich";
-            if (document.cookie=="") {
-                alert("%s");
-            }
-        }
-        cookie_test();
-        </script>""" % cookie_error
-
         return _tal.processTAL(
                 dict(
-                    types=types,
+                    types=sorted((getMetaType(s[1]).getLongName(), '/'.join(s)) for s in schemas),
                     id=self.id,
-                    js=js,
-                    starttext=self.get('starttext'),
+                    starthtmltext=self.settings['starthtmltext'],
                     languages=self.parents[0].getLanguages(),
                     currentlang=_core_translation.set_language(req.accept_languages),
                     redirect=redirect,
                     message=message,
-                    allowcontinue=self.get('allowcontinue'),
+                    allowcontinue=self.settings['allowcontinue'],
                     csrf=_core_csrfform.get_token(),
                 ),
                 file="workflow/start.html",
@@ -138,21 +124,27 @@ class WorkflowStep_Start(WorkflowStep):
                 request=req,
             )
 
-    def metaFields(self, lang=None):
-        ret = []
-        for name, label, type_ in (
-                ("newnodetype", "admin_wfstep_node_types_to_create", "text"),
-                ("starttext", "admin_wfstep_starttext", "htmlmemo"),
-                ("allowcontinue", "admin_wfstep_allowcontinue", "check"),
-        ):
-            field = Metafield(name)
-            field.set(
-                "label",
-                _core_translation.translate(lang, label) if lang else _core_translation.translate_in_request(label),
-            )
-            field.setFieldtype(type_)
-            ret.append(field)
-        return ret
+    def admin_settings_get_html_form(self, req):
+        return _tal.processTAL(
+            dict(
+                allowcontinue=self.settings["allowcontinue"],
+                schemas=map(tuple, self.settings["schemas"]),
+                starthtmltext=self.settings["starthtmltext"],
+                permitted_schemas=sorted(_get_schemas()),
+               ),
+            file="workflow/start.html",
+            macro="workflow_step_type_config",
+            request=req,
+           )
+
+    def admin_settings_save_form_data(self, data):
+        schemas = data.getlist("schemas")
+        data = data.to_dict()
+        data["allowcontinue"] = bool(data.get("allowcontinue"))
+        data["schemas"] = tuple(s.split("/") for s in schemas)
+        assert frozenset(data) == frozenset(("schemas", "starthtmltext", "allowcontinue"))
+        self.settings = data
+        db.session.commit()
 
     @staticmethod
     def getLabels():

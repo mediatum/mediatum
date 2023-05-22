@@ -351,9 +351,3 @@ def editMappingField_mask(req, id, parent, err=0):
 
 def export(req, name):
     return exportMapping(name)
-
-""" import definition from file """
-
-
-def xmlimport(req, filename):
-    importMapping(filename)

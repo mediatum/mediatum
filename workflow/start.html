@@ -3,11 +3,10 @@
   SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 <tal:block metal:define-macro="workflow_start" tal:define="multilang python:1 if len(languages)>1 else 0">
-    <tal:block tal:content="raw js"/>
     <script tal:condition="python:redirect!=''" tal:content="raw python:u'window.location.href=\'{}\''.format(redirect)"/>
     <div style="position:relative;overflow:hidden;">
 
-        <div tal:content="raw starttext">TEXT</div>
+        <div tal:content="raw starthtmltext"> </div>
         <form action="/mask" method="post" style="text-align:center;">
             <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
             <div style="width:45%;float:left;">
@@ -20,10 +19,10 @@
                 <span tal:condition="not: multilang " i18n:translate="workflow_start_type" style="font-weight:bold">TEXT</span>
                 
                 <select tal:condition="python:len(types)>1" name="selected_schema">
-                    <option tal:repeat="schema types" tal:attributes="value python:schema[1]" tal:content="python:schema[0].getLongName()"/>
+                    <option tal:repeat="schema types" tal:attributes="value python:schema[1]" tal:content="python:schema[0]"/>
                 </select>
                 <br/>
-                <div style="font-weight:bold;margin-top:5px;" class="typename" tal:condition="python:len(types)==1" tal:content="python:types[0][0].getLongName()"/>
+                <div style="font-weight:bold;margin-top:5px;" class="typename" tal:condition="python:len(types)==1" tal:content="python:types[0][0]"/>
                 <br/>
                 <br/>
                 <div class="wf_start_languageselection" tal:condition="multilang">
@@ -43,7 +42,7 @@
                 </button>
             </div>
 
-            <div style="width:45%;float:left;padding-left:10px;border-left:1px solid silver;" tal:condition="python:allowcontinue=='1'">
+            <div style="width:45%;float:left;padding-left:10px;border-left:1px solid silver;" tal:condition="python:allowcontinue">
                 <p tal:condition="python:message!=''" tal:content="message" i18n:translate="" class="error">TEXT</p>
                 <p style="font-weight:bold">
                     <tal:block tal:condition="multilang" i18n:translate="workflow_start_continue_header_m">TEXT</tal:block>
@@ -68,3 +67,22 @@
     </div>
     <p>&nbsp;</p>
 </tal:block>
+
+<metal:block metal:define-macro="workflow_step_type_config">
+    <div>
+        <label for="stepsetting_schemas" i18n:translate="admin_wfstep_node_types_to_create"> </label>
+        <select name="stepsetting_schemas" id="stepsetting_schemas" multiple="multiple">
+          <tal:block tal:repeat="schema permitted_schemas">
+            <option tal:attributes="selected python:'1' if schema in schemas else None; value python:'/'.join(schema)" tal:content="python:' / '.join(schema)"/>
+          </tal:block>
+        </select>
+    </div>
+    <div>
+        <label for="stepsetting_starthtmltext" i18n:translate="admin_wfstep_starttext"> </label>
+        <textarea rows="4" type="text" name="stepsetting_starthtmltext" id="stepsetting_starthtmltext" tal:content="python:starthtmltext"/>
+    </div>
+    <div>
+        <label for="stepsetting_allowcontinue" i18n:translate="admin_wfstep_allowcontinue"> </label>
+        <input type="checkbox" name="stepsetting_allowcontinue" id="stepsetting_allowcontinue" tal:attributes="checked python:'checked' if allowcontinue else None" value="1"/>
+    </div>
+</metal:block>

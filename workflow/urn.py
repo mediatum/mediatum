@@ -7,7 +7,8 @@ from __future__ import print_function
 import logging
 import re
 
-import core.translation as _core_translation
+import mediatumtal.tal as _tal
+
 from .workflow import WorkflowStep, registerStep
 import utils.urn as utilsurn
 from core.translation import addLabels
@@ -26,12 +27,16 @@ def register():
 
 class WorkflowStep_Urn(WorkflowStep):
 
-    def show_workflow_node(self, node, req):
-        attrname = self.get("attrname")
-        niss = self.get("niss")
+    default_settings = dict(
+        attrname="urn",
+        snid1="",
+        snid2="",
+        niss="",
+    )
 
-        if attrname == "":
-            attrname = "urn"
+    def show_workflow_node(self, node, req):
+        attrname = self.settings["attrname"]
+        niss = self.settings["niss"]
 
         # create urn only for nodes with files
         if len(node.files) > 0:
@@ -50,26 +55,23 @@ class WorkflowStep_Urn(WorkflowStep):
                             logg.exception("exception in workflow step urn, date formatting failed, ignoring")
                             
                         niss = niss.replace("[" + var + "]", val)
-                node.set(attrname, utilsurn.buildNBN(self.get("snid1"), self.get("snid2"), niss))
+                node.set(attrname, utilsurn.buildNBN(self.settings["snid1"], self.settings["snid2"], niss))
         db.session.commit()
         return self.forwardAndShow(node, True, req)
 
-    def metaFields(self, lang=None):
-        ret = list()
-        for name, label in (
-                ("attrname", "admin_wfstep_urn_attrname"),
-                ("snid1", "admin_wfstep_urn_snid1"),
-                ("snid2", "admin_wfstep_urn_snid2"),
-                ("niss", "admin_wfstep_urn_niss"),
-        ):
-            field = Metafield(name)
-            field.set(
-                "label",
-                _core_translation.translate(lang, label) if lang else _core_translation.translate_in_request(label),
-            )
-            field.setFieldtype("text")
-            ret.append(field)
-        return ret
+    def admin_settings_get_html_form(self, req):
+        return _tal.processTAL(
+            self.settings,
+            file="workflow/urn.html",
+            macro="workflow_step_type_config",
+            request=req,
+           )
+
+    def admin_settings_save_form_data(self, data):
+        data = data.to_dict()
+        assert frozenset(data) == frozenset(("attrname", "snid1", "snid2", "niss"))
+        self.settings = data
+        db.session.commit()
 
     @staticmethod
     def getLabels():

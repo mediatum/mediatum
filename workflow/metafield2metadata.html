@@ -1,0 +1,27 @@
+<!--
+  Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<metal:block metal:define-macro="workflow_step_type_config">
+    <div>
+      <tal:block tal:condition="python:fileurl">
+      <tal:block i18n:translate="metafield2metadata-upload-fileatt"/>
+      <a tal:attributes="href fileurl" tal:content="python:'{}  {} Bytes'.format(filebasename, filesize)"/>
+        <br/>
+      </tal:block>
+      <input id="stepsetting_fileatt" name="stepsetting_fileatt" type="file"/>
+    </div>
+
+    <div>
+        <label for="stepsetting_source-attribute-name" i18n:translate="metafield2metadata-source-attribute-name"> </label>
+        <input type="text" name="stepsetting_source-attribute-name" id="stepsetting_source-attribute-name" tal:attributes="value source-attribute-name"/>
+    </div>
+    <div>
+        <label for="stepsetting_source-metadata-separator" i18n:translate="metafield2metadata-source-metadata-separator"> </label>
+        <input type="text" name="stepsetting_source-metadata-separator" id="stepsetting_source-metadata-separator" tal:attributes="value source-metadata-separator"/>
+    </div>
+    <div>
+        <label for="stepsetting_target-metadata-separator" i18n:translate="metafield2metadata-target-metadata-separator"> </label>
+        <input type="text" name="stepsetting_target-metadata-separator" id="stepsetting_target-metadata-separator" tal:attributes="value target-metadata-separator"/>
+    </div>
+</metal:block>

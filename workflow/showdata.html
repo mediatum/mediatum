@@ -79,3 +79,10 @@
         </table>
     </form>
 </tal:block>
+
+<metal:block metal:define-macro="workflow_step_type_config">
+    <div>
+        <label for="stepsetting_masks" i18n:translate="admin_wfstep_masks_to_display"> </label>
+        <textarea name="stepsetting_masks" id="stepsetting_masks" wrap="off" tal:content="python:'\r\n'.join(masks)"/>
+    </div>
+</metal:block>

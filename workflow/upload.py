@@ -5,6 +5,7 @@ from __future__ import division
 from __future__ import print_function
 
 import logging
+
 import mediatumtal.tal as _tal
 
 import core.csrfform as _core_csrfform
@@ -49,16 +50,11 @@ class WorkflowStep_Upload(WorkflowStep):
             if not file:
                 error = _core_translation.translate_in_request("workflowstep_file_not_uploaded", req)
             else:
-                fileExtension = os.path.splitext(file.filename)[1][1:].strip().lower()
-
-                if fileExtension in self.get("limit").lower().split(";") or self.get("limit").strip() in ['*', '']:
-                    orig_filename = file.filename
-                    file = fileutils.importFile(file.filename, file)
-                    node.files.append(file)
-                    node.name = orig_filename
-                    node.event_files_changed()
-                else:
-                    error = _core_translation.translate_in_request("WorkflowStep_InvalidFileType", req)
+                orig_filename = file.filename
+                file = fileutils.importFile(file.filename, file)
+                node.files.append(file)
+                node.name = orig_filename
+                node.event_files_changed()
         db.session.commit()
         if "gotrue" in req.params:
             if hasattr(node, "event_files_changed"):
@@ -83,14 +79,10 @@ class WorkflowStep_Upload(WorkflowStep):
                 dict(
                     obj=node.id,
                     id=self.id,
-                    prefix=self.get("prefix"),
-                    suffix=self.get("suffix"),
-                    limit=self.get("limit"),
                     filelist=filelist,
                     filelistshort=filelistshort,
                     node=node,
                     buttons=self.tableRowButtons(node),
-                    singlefile=self.get('singleobj'),
                     error=error,
                     pretext=self.getPreText(_core_translation.set_language(req.accept_languages)),
                     posttext=self.getPostText(_core_translation.set_language(req.accept_languages)),
@@ -100,20 +92,3 @@ class WorkflowStep_Upload(WorkflowStep):
                 macro="workflow_upload",
                 request=req,
             )
-
-    def metaFields(self, lang=None):
-        ret = list()
-        for name, label, type_ in (
-                ("prefix", "admin_wfstep_text_before_upload_form", "htmlmemo"),
-                ("suffix", "admin_wfstep_text_after_upload_form", "htmlmemo"),
-                ("singleobj", "admin_wfstep_single_upload", "check"),
-                ("limit", "admin_wfstep_uploadtype", "text"),
-        ):
-            field = Metafield(name)
-            field.set(
-                "label",
-                _core_translation.translate(lang, label) if lang else _core_translation.translate_in_request(label),
-            )
-            field.setFieldtype(type_)
-            ret.append(field)
-        return ret

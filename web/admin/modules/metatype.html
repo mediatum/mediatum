@@ -4,11 +4,6 @@
 -->
 <metal:block metal:define-macro="view_type">
     <script src="/static/js/admin/modules/admin.js"> </script>
-    <!--[if lt IE 7]>
-        <script type="text/javascript">
-            window.attachEvent("onload", buttonfix);
-        </script>
-    <![endif]-->
     <p><a i18n:translate="admin_overview" href=".">TEXT</a></p>
     <form name="useroverview" method="post" action="#" enctype="multipart/form-data" tal:attributes="action page">
         <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
@@ -150,11 +145,6 @@
 
 <metal:block metal:define-macro="modify_type" tal:define="id python:metadatatype.getName()">
     <script src="/static/js/admin/modules/admin.js"> </script>
-    <!--[if lt IE 7]>
-    <script type="text/javascript">
-        window.attachEvent("onload", buttonfix);
-    </script>
-    <![endif]-->
     <p><a tal:attributes="href python:u'./metatype{}'.format(page)" i18n:translate="admin_overview">TEXT</a></p>
     <form tal:attributes="action page" name="editmetatype" method="post">
         <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
@@ -246,16 +236,16 @@
                     <table border="0px" cellpadding="0px" cellspacing="0px">
                         <tr>
                             <td align="left" valign="top">
-                                <select tal:content="raw python:acl['val_left']" tal:attributes="name python:u'left{}'.format(acl['name']);id python:u'left{}'.format(acl['name']); ondblclick python:u'moveRight(document.editmetatype.left{},document.editmetatype.right{})'.format(acl['name'], acl['name'])" style="width:320px" size="6" multiple="multiple">
+                                <select tal:content="raw python:acl['left']" tal:attributes="name python:u'leftread';id python:u'leftread'; ondblclick python:u'moveRight(document.editmetatype.leftread,document.editmetatype.rightread)'" style="width:320px" size="6" multiple="multiple">
                                 </select>
                             </td>
                             <td style="padding-left:10px;padding-right:10px;" align="left" valign="center">
-                                <input tal:attributes="onclick python:u'moveLeft(document.editmetatype.left{},document.editmetatype.right{})'.format(acl['name'], acl['name'])" type="button" value="<<"/>
+                                <input tal:attributes="onclick python:u'moveLeft(document.editmetatype.leftread,document.editmetatype.rightread)'" type="button" value="<<"/>
                                 <br/>
-                                <input tal:attributes="onclick python:u'moveRight(document.editmetatype.left{},document.editmetatype.right{})'.format(acl['name'], acl['name'])" type="button" value=">>"/>
+                                <input tal:attributes="onclick python:u'moveRight(document.editmetatype.leftread,document.editmetatype.rightread)'" type="button" value=">>"/>
                             </td>
                             <td align="left" valign="top">
-                                <select tal:content="raw python:acl['val_right']" tal:attributes="name python:u'right{}'.format(acl['name']);  ondblclick python:u'moveLeft(document.editmetatype.left{},document.editmetatype.right{})'.format(acl['name'], acl['name'])" style="width:320px" size="6" multiple="multiple">
+                                <select tal:content="raw python:acl['right']" tal:attributes="name python:u'rightread';  ondblclick python:u'moveLeft(document.editmetatype.leftread,document.editmetatype.rightread)'" style="width:320px" size="6" multiple="multiple">
                                 </select>
                             </td>
                         </tr>
@@ -269,7 +259,7 @@
             <tr>
                 <td>&nbsp;</td>
                 <td>
-                    <button i18n:translate="admin_save" i18n:attributes="title admin_save_title" tal:attributes="onclick python:u'selectacl(\'left{}\')'.format(acl['name']);"  type="submit" name="submit" value="submit">TEXT</button>&nbsp;&nbsp;
+                    <button i18n:translate="admin_save" i18n:attributes="title admin_save_title" tal:attributes="onclick python:u'selectacl(\'leftread\')';"  type="submit" name="submit" value="submit">TEXT</button>&nbsp;&nbsp;
                     <button i18n:translate="admin_cancel" i18n:attributes="title admin_cancel_title" type="submit" name="cancel" value="cancel" onclick="setCancel()">TEXT</button>
                 </td>
             </tr>

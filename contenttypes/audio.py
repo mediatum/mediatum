@@ -146,7 +146,7 @@ class Audio(_contenttypes_data.Content):
             if audiothumb:
                 self.files.remove(audiothumb)
             if thumbnail:  # delete old thumb
-                self.files.remove(thumnail)
+                self.files.remove(thumbnail)
 
             athumb = makeAudioThumb(self, original)
             if athumb:

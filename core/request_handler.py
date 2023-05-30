@@ -321,6 +321,7 @@ def sendFile(req, path, content_type, force=0):
         else:
             req.response = _flask.send_file(path, conditional=True)
             req.response.content_length = file_length
+            return
     req.response.status_code = _httpstatus.HTTP_OK
     return
 

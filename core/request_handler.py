@@ -224,18 +224,9 @@ def sendFile(req, path, content_type, force=0):
     else:
         nginx_alias = None
 
-    file_length = 0
-
-    if not nginx_alias:
-        try:
-            file_length = _os.stat(path)[_stat.ST_SIZE]
-        except OSError:
-            req.response.status_code = _httpstatus.HTTP_NOT_FOUND
-            return
-
     try:
         mtime = _datetime.datetime.utcfromtimestamp(_os.stat(path)[_stat.ST_MTIME])
-    except:
+    except OSError:
         req.response.status_code = _httpstatus.HTTP_NOT_FOUND
         return
     if req.if_modified_since:
@@ -244,13 +235,11 @@ def sendFile(req, path, content_type, force=0):
             return
 
     req.response.last_modified = mtime
-    req.response.content_length = file_length
     req.response.content_type = content_type
     if nginx_alias:
         req.response.headers['X-Accel-Redirect'] = _os.path.join("/{}".format(nginx_alias), _os.path.relpath(path, nginx_dir))
         return
     req.response = _flask.send_file(path, conditional=True)
-    req.response.content_length = file_length
 
 
 def _get_extension(path):

@@ -169,7 +169,7 @@ def frameset(req):
     if user.is_workflow_editor:
         spc.append(_utils_utils.Menu("sub_header_workflow", "../publish/", target="_parent"))
 
-    spc.append(_utils_utils.Menu("sub_header_help", "http://mediatum.readthedocs.io", target="_blank"))
+    spc.append(_utils_utils.Menu("sub_header_help", "https://mediatum.readthedocs.io", target="_blank"))
 
     spc.append(_utils_utils.Menu("sub_header_logout", "../logout", target="_parent"))
 

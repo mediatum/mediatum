@@ -3,10 +3,18 @@
   SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 <tal:block metal:define-macro="editorfield">
-        <span i18n:translate="url_edit_link">TEXT</span>
-        <input type="text" tal:attributes="name python:u'mediatum-editor-nodefield-value-{}-link'.format(name); value python:link; required required"/>
-        <br/> <span i18n:translate="url_edit_linktext">TEXT</span>
-        <input type="text" tal:attributes="name python:u'mediatum-editor-nodefield-value-{}-text'.format(name); value python:text; required required"/>
+        <span class="mediatum-editor-nodefield-value-link-label" i18n:translate="url_edit_link">TEXT</span>
+        <input
+            class="mediatum-editor-nodefield-value-link"
+            type="text"
+            tal:attributes="name python:u'mediatum-editor-nodefield-value-{}-link'.format(name); value python:link; required required"
+           />
+        <br/> <span class="mediatum-editor-nodefield-value-linktext-label" i18n:translate="url_edit_linktext">TEXT</span>
+        <input
+            type="text"
+            class="mediatum-editor-nodefield-value-linktext"
+            tal:attributes="name python:u'mediatum-editor-nodefield-value-{}-text'.format(name); value python:text; required required"
+           />
 </tal:block>
 
 

@@ -63,7 +63,6 @@
         <tal:block tal:condition="python:err">
             <p class="error">
                 <b i18n:translate="fieldsmissing"> </b>
-                <br/>
                 <b i18n:translate="saved_in_inconsistent_data"> </b>
             </p>
         </tal:block>
@@ -73,40 +72,24 @@
                 <button type="submit" disabled="disabled" style="display: none;" aria-hidden="true"> </button>
                 <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
                 <input tal:attributes="value srcnodeid" type="hidden" name="srcnodeid"/>
-                <div class="label">&nbsp;</div>
                 <input i18n:attributes="value save" type="submit" name="save"/>
                 <input
                     type="button"
                     i18n:attributes="value cancel"
                     tal:attributes="onclick python:'window.location.href=\'/edit/edit_content?srcnodeid={}&id={}\''.format(srcnodeid, idstr)"
                    />
-                <br/>
-                <br/>
                 <tal:block tal:replace="structure python:maskform"/>
-                <div class="label">&nbsp;</div>
-                <small>(<span class="required">*</span> <span i18n:translate="admin_mandatory_info"> </span>)</small>
-                <br/>
-                <br/>
-
-        <br/>
-        <br/>
-                <br/>
-                <div class="label">&nbsp;</div>
+                <small class="mediatum-form-required-info">(<span class="required">*</span> <span i18n:translate="admin_mandatory_info"> </span>)</small>
                 <input i18n:attributes="value save" type="submit" name="save"/>
                 <input
                     type="button"
                     i18n:attributes="value cancel"
                     tal:attributes="onclick python:'window.location.href=\'/edit/edit_content?srcnodeid={}&id={}\''.format(srcnodeid, idstr)"
                    />
-                <br/>
-                <br/>
-                <br/>
                 <input tal:attributes="value maskname" type="hidden" name="mask"/>
                 <input type="hidden" name="tab" value="metadata"/>
                 <input tal:attributes="value idstr" type="hidden" name="id"/>
                 <input type="hidden" name="edit_metadata" value="edit_metadata"/>
-                <br/>
-                <br/>
             </form>
     </div>
     <div id="sub_footer_module">

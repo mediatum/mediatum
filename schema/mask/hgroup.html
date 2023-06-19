@@ -89,7 +89,7 @@
     <fieldset
         tal:condition="python:not is_sub"
         tal:attributes="id python:item_id"
-        class="row metaeditor"
+        class="mediatum-admin-maskedit-maskitem metaeditor"
     >
         <legend tal:condition="python:label" tal:content="python:label"/>
         <tal:block tal:condition="python:html_form" tal:replace="structure html_form"/>
@@ -100,8 +100,9 @@
             tal:condition="python:not is_sub"
             align="right"
             tal:attributes="python:id python:'{}_sub'.format(item_id)"
+            class="mediatum-admin-maskedit-itemeditgroup"
         >
-            <small style="color:silver" tal:content="python:item_type"/>
+            <small tal:content="python:item_type" class="mediatum-admin-maskitem-group-type"/>
             <input
                 tal:condition="python:not is_first"
                 tal:attributes="name python:'up_{}'.format(item_id)"

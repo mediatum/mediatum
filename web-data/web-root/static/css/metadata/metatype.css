@@ -1,0 +1,326 @@
+/*
+  Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+  SPDX-License-Identifier: AGPL-3.0-or-later
+*/
+
+
+
+/* Edit mask form */
+form#mediatum-edit-form-metadata {
+    min-width: 20rem;
+}
+
+fieldset.mediatum-editor-nodefield
+{
+    display: grid;
+    grid-template-columns: 18rem 1fr;
+    grid-template-rows: auto auto auto;
+    grid-template-areas:
+        "legend-area value-area"
+        "error-area value-area"
+        "multiedit-area value-area"
+    ;
+    border-width: 0px 1px 0px 1px;
+    border-color: transparent;
+    margin-top: 2px;
+}
+
+@media (max-width: 40rem)
+{
+    fieldset.mediatum-editor-nodefield
+    {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto auto;
+        grid-template-areas:
+            "legend-area"
+            "error-area"
+            "multiedit-area"
+            "value-area"
+        ;
+    }
+}
+
+fieldset.mediatum-admin-maskedit-maskitem
+fieldset.mediatum-editor-nodefield,
+fieldset.mediatum-editor-nodefield:hover,
+fieldset.mediatum-editor-nodefield:focus-within
+{
+    border-left: 1px solid gainsboro;
+    border-right: 1px solid gainsboro;
+    border-top: none;
+    border-bottom: none;
+    background-color: aliceblue;
+    box-shadow: 0 -1px gainsboro, 0 1px gainsboro;
+}
+
+fieldset.mediatum-admin-maskedit-maskitem
+fieldset.mediatum-editor-nodefield
+{
+    margin-bottom: 0;
+}
+
+fieldset.mediatum-editor-nodefield:focus-within
+{
+    box-shadow: 0 -1px lightslategray, 0 1px lightslategray;
+    border-left: 1px solid lightslategray;
+    border-right: 1px solid lightslategray;
+}
+
+.mediatum-editor-nodefield-error
+{
+    grid-area: error-area;
+    color: white;
+    font-weight: bold;
+    background-color: crimson;
+}
+
+fieldset.mediatum-editor-nodefield:hover >
+.mediatum-editor-nodefield-multiedit,
+fieldset.mediatum-editor-nodefield:focus-within >
+.mediatum-editor-nodefield-multiedit
+{
+    background-color: dodgerblue;
+    color: white;
+    border-bottom: solid 1px gainsboro;
+    border-right: solid 1px gainsboro;
+}
+
+.mediatum-editor-nodefield-multiedit
+{
+    grid-area: multiedit-area;
+    background-color: aliceblue;
+    color: dodgerblue;
+    font-weight: bold;
+    border-bottom: solid 1px transparent;
+    border-right: solid 1px transparent;
+}
+
+fieldset.mediatum-editor-nodefield >
+legend
+{
+    grid-area: legend-area;
+    float: left;
+    text-align: left;
+    font-size: .85rem;
+    white-space: normal;
+    color: darkslategray;
+    overflow: auto;
+    text-overflow: ellipsis;
+}
+
+fieldset.mediatum-editor-nodefield >
+legend[title]
+{
+    cursor: pointer;
+    text-decoration: underline dotted currentcolor 1px;
+    text-underline-offset: .4em;
+}
+
+fieldset.mediatum-editor-nodefield-value
+{
+    grid-area: value-area;
+    display: flex;
+    flex-flow: column wrap;
+    justify-content: center;
+    align-content: stretch;
+    height: fit-content;
+    border: none;
+    grid-row: span 3;
+    padding-bottom: 0;
+}
+
+span.required {
+    display: contents;
+    grid-area: legend-area;
+    color:#ff0000;
+}
+
+fieldset.mediatum-editor-nodefield-bytype-text
+fieldset.mediatum-editor-nodefield-value
+input
+{
+    text-overflow: ellipsis;
+    flex: 1 auto;
+}
+
+fieldset.mediatum-editor-nodefield-bytype-ilist
+fieldset.mediatum-editor-nodefield-value
+input
+{
+    flex: 1 auto;
+    height: auto;
+    text-overflow: ellipsis;
+}
+
+
+fieldset.mediatum-editor-nodefield-bytype-ilist
+fieldset.mediatum-editor-nodefield-value
+.mediatum-editor-nodefield-value-indexbutton
+{
+    align-self: flex-end;
+    margin-top: 5px;
+}
+
+fieldset.mediatum-editor-nodefield-bytype-date
+fieldset.mediatum-editor-nodefield-value
+input
+{
+    width: 6em;
+    text-overflow: ellipsis;
+}
+
+fieldset.mediatum-editor-nodefield-bytype-number
+fieldset.mediatum-editor-nodefield-value
+input
+{
+    width: 12em;
+    text-overflow: ellipsis;
+}
+
+fieldset.mediatum-editor-nodefield-bytype-list
+fieldset.mediatum-editor-nodefield-value
+select
+{
+    flex: 1 auto;
+    font-size: .65rem;
+    padding: .2em;
+    text-overflow: ellipsis;
+}
+
+fieldset.mediatum-editor-nodefield-bytype-htmlmemo
+fieldset.mediatum-editor-nodefield-value
+textarea
+{
+    width: 99%;
+    resize: both;
+    text-overflow: ellipsis;
+}
+
+fieldset.mediatum-editor-nodefield-bytype-htmlmemo >
+fieldset.mediatum-editor-nodefield-value
+small
+{
+    white-space: normal;
+}
+
+fieldset.mediatum-editor-nodefield-bytype-url
+fieldset.mediatum-editor-nodefield-value
+{
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: 1fr 1fr;
+    grid-gap: 3px;
+    grid-template-areas:
+        "link-label link-value"
+        "linktext-label linktext-value"
+    ;
+    font-weight: bolder;
+    color: slategray;
+}
+
+fieldset.mediatum-editor-nodefield-bytype-url
+.mediatum-editor-nodefield-value-link
+{
+    grid-area: link-value;
+}
+
+fieldset.mediatum-editor-nodefield-bytype-url
+.mediatum-editor-nodefield-value-linktext
+{
+    grid-area: linktext-value;
+}
+
+fieldset.mediatum-editor-nodefield-bytype-url
+.mediatum-editor-nodefield-value-link-label
+{
+    grid-area: link-label;
+}
+
+fieldset.mediatum-editor-nodefield-bytype-url
+.mediatum-editor-nodefield-value-linktext-label
+{
+    grid-area: linktext-label;
+}
+
+fieldset.mediatum-editor-nodefield-bytype-url
+fieldset.mediatum-editor-nodefield-value
+input
+{
+    flex: 1 auto;
+    text-overflow: ellipsis;
+}
+
+fieldset.mediatum-editor-vgroupfield
+{
+    border: 1px solid lightgray;
+    border-left: none;
+    box-shadow: -1px 0 lightgray;
+    margin-top: 1rem;
+    background-color: ghostwhite;
+    padding: 0 0 .5rem 0;
+    white-space: nowrap;
+}
+
+fieldset.mediatum-editor-vgroupfield:focus-within,
+fieldset.mediatum-editor-vgroupfield:hover
+{
+    box-shadow: -3px 0 lightgray;
+}
+
+fieldset.mediatum-editor-vgroupfield:focus-within
+{
+    box-shadow: -3px 0 darkslateblue;
+}
+
+fieldset.mediatum-editor-vgroupfield
+fieldset.mediatum-editor-nodefield >
+legend
+{
+    color: gray;
+    font-weight: bold;
+}
+
+fieldset.mediatum-editor-vgroupfield >
+legend
+{
+    color: white;
+    background-color: darkslateblue;
+    box-shadow: -1px 0  darkslateblue;
+    font-weight: bolder;
+    min-width: 20rem;
+    padding: .4rem;
+}
+
+fieldset.mediatum-editor-vgroupfield:focus-within >
+legend,
+fieldset.mediatum-editor-vgroupfield:hover >
+legend
+{
+    box-shadow: -3px 0  lightgray;
+}
+
+fieldset.mediatum-editor-vgroupfield:focus-within >
+legend
+{
+    box-shadow: -3px 0 darkslateblue;
+    text-decoration: underline;
+}
+
+fieldset.mediatum-editor-vgroupfield:hover >
+fieldset >
+legend,
+fieldset.mediatum-editor-vgroupfield:focus-within >
+fieldset >
+legend
+{
+    color: darkslategray;
+}
+
+fieldset.mediatum-editor-nodefield:has(.mediatum-editor-nodefield-error:not([hidden]))
+{
+    background-color: lightcoral;
+    border-bottom: 1px solid crimson;
+    border-left: 1px solid crimson;
+    border-right: 1px solid crimson;
+    box-shadow: 0 -1px crimson;
+}

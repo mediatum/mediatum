@@ -9,7 +9,6 @@
             value python:value;
             required required"
        />
-    &nbsp;
     <button
         tal:attributes="
             onclick python:u'openPopup(\'/metatype/ilist?type={}&name={}&schema={}\', \'\', 400, 400)'.format(
@@ -18,6 +17,7 @@
                 schema,
                 );
             "
+        class="mediatum-editor-nodefield-value-indexbutton"
         style="width: 44px; padding: 0px;"
         type="button"
         i18n:attributes="title editor_index_title"

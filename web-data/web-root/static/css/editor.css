@@ -2,6 +2,7 @@
   Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
   SPDX-License-Identifier: AGPL-3.0-or-later
 */
+@import "metadata/metatype.css";
 a {text-decoration:none; outline:none;}
 a:link, a:visited {text-decoration:none; color:#08088A; font-weight:bold;}
 a:hover, a:active {text-decoration:none; color:#e85c0d; font-weight:bold;}
@@ -15,7 +16,7 @@ body {
     font-weight:normal; text-decoration:none; text-align:left;
     margin:0px; padding:0px;
 }
-body.form {background-color:ButtonFace;}
+body.form {background-color:ButtonFace; padding-bottom: 2.5rem;}
 code, tt, pre {font-size:120%;}
 div {text-align:left;}
 form {padding:10px;}
@@ -42,7 +43,14 @@ th {vertical-align:top; white-space:nowrap; font-size:11px; font-weight:bold;tex
 /*  classes */
 /* general */
 .actions span{cursor:pointer;}
-div.back {background:#ffffff; padding:7px; border:1px solid silver; margin-left:20px; margin-right:20px;}
+div.back {
+    background:#ffffff;
+    padding:7px;
+    border:1px solid silver;
+    margin-left:20px;
+    margin-right:20px;
+    min-width: min-content;
+}
 .breadcrumbs{ clear:left;}
 .blue {border: solid 1px #CEE2F2;background-color: #F0F5FF;}
 div.breadcrumbs {margin:0px; border-bottom:0px solid #E2E9EB; padding:2px 10px 2px 5px; color:#243135;overflow:visible;
@@ -114,7 +122,196 @@ div.label{width:210px;float:left;padding-left:15px;}
 .mediatum_context-menu-home {overflow: hidden!important;}
 .mediatum_delbutton{padding-top:20px;}
 #mediatum_dest_names{width:auto;border:1px solid silver;padding:5px;margin:10px 20px;margin-left:200px;height:50px;overflow:auto;}
-.mediatum-editor-nodefield-error{color:#FF0000;}
+
+fieldset.mediatum-admin-maskedit-masksubitem,
+fieldset.mediatum-admin-maskedit-maskitem-disabler
+{
+    border: none;
+    margin: 0;
+    padding: 0;
+}
+
+fieldset.mediatum-admin-maskedit-masksubitem
+{
+    margin-top: 2px;
+}
+
+.mediatum-admin-maskedit-maskitem
+{
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    grid-template-rows: repeat(auto-fit, min-content);
+    border-style: solid;
+    border-width: 3px;
+    border-color: lightsteelblue;
+    cursor:pointer;
+    text-align: left;
+    background-color: ghostwhite;
+    color: slategray;
+    margin: 0 0 2px 0;
+    padding: .5rem;
+}
+
+.mediatum-admin-maskedit-maskitem:hover
+{
+    border-color: dodgerblue;
+}
+
+
+.mediatum-admin-maskedit-maskitem >
+.mediatum-admin-maskedit-masksubitem
+{
+    grid-column: 2;
+    grid-row: auto;
+}
+
+.mediatum-admin-maskedit-maskitem >
+legend
+{
+    float: left;
+    grid-column: 2;
+    font-size: 1.3em;
+}
+
+.mediatum-admin-maskedit-maskitem
+fieldset.mediatum-editor-nodefield
+{
+    border-left: 1px solid gainsboro;
+    border-right: 1px solid gainsboro;
+    border-top: groove 2px mintcream;
+    border-bottom: 1px solid gainsboro;
+    background-color: aliceblue;
+}
+
+.mediatum-admin-maskedit-maskitem >
+legend,
+.mediatum-admin-maskedit-maskitem
+.mediatum-editor-nodefield >
+legend
+{
+    color: slategray;
+}
+
+.mediatum-admin-maskedit-maskitem >
+.mediatum-admin-maskedit-itemeditgroup
+{
+    grid-column: 1;
+    grid-row: 1;
+    text-align: center;
+    margin: 0 1rem 0 0;
+    padding: 2px 2px 8px 1px;
+    border: none;
+    box-shadow: 0 2px lightsteelblue;
+    display: inline-block;
+    vertical-align: top;
+    background-color: transparent;
+    height: 30px;
+    width: max-content;
+    min-width: 150px;
+}
+
+.mediatum-admin-maskedit-maskitem:hover >
+.mediatum-admin-maskedit-itemeditgroup
+{
+    box-shadow: 0 2px dodgerblue;
+}
+
+.mediatum-admin-maskedit-itemeditgroup >
+.mediatum-admin-maskitem-group-type
+{
+    margin-top: 5em;
+    position: absolute;
+    color: lightslategray;
+}
+
+.mediatum-admin-maskedit-maskitem:hover
+.mediatum-admin-maskedit-itemeditgroup >
+.mediatum-admin-maskitem-group-type
+{
+    color: dodgerblue;
+}
+
+.mediatum-admin-maskedit-maskitem >
+.mediatum-admin-maskedit-itemeditgroup >
+input
+{
+    box-shadow: 1px 1px steelblue;
+    border-top: 1px solid white;
+    border-left: 1px solid white;
+}
+
+.mediatum-admin-maskedit-itemeditgroup >
+input
+{
+    padding: .5em;
+    margin: 1px;
+    background: lavender;
+    border-top: 1px solid transparent;
+    border-left: 1px solid transparent;
+    border-radius: 5px;
+}
+
+.mediatum-admin-maskedit-maskitem .mediatum-admin-maskedit-itemeditgroup >
+input:hover
+{
+    background: lightsteelblue;
+    border-top: 1px solid steelblue;
+    border-left: 1px solid steelblue;
+    box-shadow: 1px 1px white, 0 -1px dodgerblue;
+}
+
+div[align="center"]
+{
+    text-align: center;
+}
+
+div[align="center"] >
+button
+{
+    display: inline-block;
+}
+
+.mediatum-admin-maskedit-itemeditgroup
+fieldset.mediatum-editor-nodefield
+{
+    padding: 0;
+    margin-top: -1em;
+    position: relative;
+    bottom: 1em;
+    min-width: 65em;
+}
+
+/* Save and Cancel Buttons */
+fieldset.btn-group {
+    border: none;
+    padding: 1em 0 2em 22em;
+    width: max-content;
+}
+
+form#mediatum-edit-form-metadata >
+input[name="save"]
+{
+    margin-left: 20%;
+    margin-top: 0;
+    margin-bottom: 2rem;
+}
+
+form#mediatum-edit-form-metadata >
+input[value="Cancel"]
+{
+    float: right;
+    margin-right: 25%;
+}
+
+.mediatum-form-required-info
+{
+    display: block;
+    padding: 2em 0 1em 5em;
+    width: max-content;
+    margin-left: 15%;
+    margin-bottom: 15px;
+}
+
 .mediatum_edit_files_border{border:1px solid silver;height:225px;overflow:auto;}
 .mediatum_edit_files_cancel{width:150px;}
 .mediatum_edit_files_childobjects{border:1px solid #A4A4A4; width:129px;height:129px;float:left;margin-right:2px;text-align:center;margin-top:3px;}
@@ -371,13 +568,7 @@ div.metaeditor div#editor_content{margin-left:110px;}
 .no_overlap{ overflow: hidden;text-overflow: ellipsis; white-space: nowrap; max-width: 50px; }
 .readonly span.fancytree-title{color:#666!important;font-weight:normal!important;margin-left:3px;cursor:not-allowed}
 td.silver{background-color:#efefef;}
-span.required {color:#ff0000;}
-div.row {border:solid white 1px; margin:2px; width: 100%; white-space:nowrap; cursor:pointer;}
-div.row:hover
-{
-    border: solid silver 1px;
-    background-color: #dcdcdc;
-}
+
 input.text {margin-bottom:5px;}
 select.text {height:25px; margin-bottom:5px;}
 img.thumbnail{border:0px; position:relative; top:0px; left:0px; width:128px; height:128px;}

@@ -3,6 +3,7 @@
   SPDX-License-Identifier: AGPL-3.0-or-later
 */
 
+@import "metadata/metatype.css";
 /* MediaTUM TUM-CI */
 body { background-color: white; color: rgb(71,71,71); font-family: Arial,Helvetica,sans-serif; font-size: 14px;}
 h1 {font-size: 35px; font-weight: bold; line-height: 1.14em; color: #333; }
@@ -574,6 +575,49 @@ div#workflow input { border: 1px solid #cdd9dd; margin: 3px;}
 #layouttable #workflowbuttons input[type="submit"]:hover { border: 1px solid #c4d2d8;  color: #000000; background-color: #c4d2d8;}
 #workflowbuttons { width: 100%;}
 
+.pretext {
+    padding: 3em 0 1.5em 0;
+    line-height: 100%;
+}
+
+#workflowbuttons
+{
+    display: block;
+    padding-left: 0;
+    padding-top: 1%;
+    border: none;
+    min-width: 20rem;
+}
+
+#workflowbuttons
+button
+{
+    margin-top: 1em;
+    margin-bottom: 2em;
+}
+
+#workflowbuttons
+button[name="gotrue"]
+{
+    float: right;
+    margin-right: 5rem;
+}
+
+#workflowbuttons
+button[name="gofalse"]
+{
+    margin-left: 5rem;
+    float: left;
+}
+
+#workflowbuttons
+em
+{
+    display: block;
+    clear: both;
+    text-align: end;
+}
+
 div.editorrow { margin: 4px;}
 div.editorrow  div.label { width: 200px; float: left; padding-top: 4px; display: inline;}
 div.editorrow #div_description { float: left; border: 0px solid white; min-width: 20px; display: block; padding-top: 2px;}
@@ -803,4 +847,3 @@ div#portal-breadcrumbs div a.breadcrumb-delimiter::after { content: "\2192"; mar
     line-height: normal;
     margin: 1em 0 0 1em;
 }
-.mediatum-editor-nodefield-error{color:#FF0000;}

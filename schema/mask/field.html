@@ -194,10 +194,10 @@
     <fieldset
         tal:attributes="
             id python:None if is_sub else item_id;
-            class python:None if is_sub else 'row';
+            class python:'mediatum-admin-maskedit-masksubitem' if is_sub else 'mediatum-admin-maskedit-maskitem';
             "
     >
-        <fieldset disabled="disabled">
+        <fieldset disabled="disabled" class="mediatum-admin-maskedit-maskitem-disabler">
             <!-- mediatum-editor-nodefield-value -->
             <tal:block metal:use-macro="editor_get_field" />
         </fieldset>
@@ -205,7 +205,7 @@
         <fieldset
             tal:condition="python:not is_sub"
             tal:attributes="id python:'{0}_sub'.format(item_id)"
-            class="edit_tools"
+            class="mediatum-admin-maskedit-itemeditgroup"
         >
             <input
                 tal:condition="python:not is_first"

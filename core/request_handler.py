@@ -204,6 +204,7 @@ class _OSFilesystem:
 
 
 def sendFile(req, path, content_type, force=0):
+    assert req.method == 'GET'
     if isinstance(path, unicode):
         path = path.encode("utf8")
 
@@ -247,15 +248,9 @@ def sendFile(req, path, content_type, force=0):
     req.response.content_type = content_type
     if nginx_alias:
         req.response.headers['X-Accel-Redirect'] = _os.path.join("/{}".format(nginx_alias), _os.path.relpath(path, nginx_dir))
-    if req.method == 'GET':
-        if nginx_alias:
-            return
-        else:
-            req.response = _flask.send_file(path, conditional=True)
-            req.response.content_length = file_length
-            return
-    req.response.status_code = _httpstatus.HTTP_OK
-    return
+        return
+    req.response = _flask.send_file(path, conditional=True)
+    req.response.content_length = file_length
 
 
 def _get_extension(path):

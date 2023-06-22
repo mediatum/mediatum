@@ -154,7 +154,7 @@ def _get_paths(node):
         if node.type in ("directory", "home", "collection") or node.type.startswith("directory"):
             path.append(node)
         if isinstance(node, (_contenttypes.Collections, _core_systemtypes.Root)):
-            if path and not omit:
+            if not omit:
                 path.reverse()
                 yield path
             omit = False

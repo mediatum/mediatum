@@ -22,13 +22,13 @@ from core import webconfig
 from core import db
 from core import Node
 from contenttypes import Container
-from utils.pathutils import getPaths
 from core import httpstatus
 from core.request_handler import sendFile as _sendFile
 import core.database.postgres as _database_postgres
 import core.database.postgres.node as _database_postgres_node
 import core.translation as _core_translation
 import utils.utils as _utils_utils
+import utils.pathutils as _utils_pathutils
 import web.frontend.printview as _web_frontend_printview
 from web import frontend as _web_frontend
 
@@ -141,6 +141,7 @@ def show_printview(req):
 
     # children
     children = []
+    accessible_paths = frozenset(path[1:] for path in _utils_pathutils.get_accessible_paths(node))
     if isinstance(node, Container):
         group_ids, ip, date = _database_postgres.build_accessfunc_arguments()
         node_ids_cte = q(_database_postgres_node.t_nodemapping.c.cid.label('nodeid'),
@@ -158,7 +159,8 @@ def show_printview(req):
         nodes = q(Node, node_ids_cte.c.sortpath).join(node_ids_cte, Node.id == node_ids_cte.c.nodeid)\
                     .order_by(node_ids_cte.c.sortpath).prefetch_attrs().all()[1:]
 
-        base_path = tuple((getPaths(node) or ((),))[0][1:]) + (node,)
+        base_path = list(next(iter(accessible_paths)))
+        base_path.append(node)
         base_path = _functools.partial(_itertools.chain, tuple(n.name for n in base_path))
 
 
@@ -252,7 +254,7 @@ def show_printview(req):
         _core_translation.set_language(req.accept_languages),
         imagepath,
         metadata,
-        getPaths(node),
+        accessible_paths,
         style,
         children,
         getCollection(node),

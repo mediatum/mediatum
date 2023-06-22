@@ -208,9 +208,6 @@ def sendFile(req, path, content_type, force=0):
     if isinstance(path, unicode):
         path = path.encode("utf8")
 
-    if isinstance(content_type, unicode):
-        content_type = content_type.encode("utf8")
-
     _logg.debug("sendFile: %s", path)
 
     assert _os.path.isabs(path), "sendFile: path: {} is not an absolute path".format(path)
@@ -229,17 +226,20 @@ def sendFile(req, path, content_type, force=0):
     except OSError:
         req.response.status_code = _httpstatus.HTTP_NOT_FOUND
         return
-    if req.if_modified_since:
-        if mtime <= req.if_modified_since and not force:
-            req.response.status_code = 304
-            return
 
+    if req.if_modified_since and mtime <= req.if_modified_since and not force:
+        req.response.status_code = 304
+        return
+
+    if not nginx_alias:
+        req.response = _flask.send_file(path, conditional=True)
+        return
+
+    if isinstance(content_type, unicode):
+        content_type = content_type.encode("utf8")
     req.response.last_modified = mtime
     req.response.content_type = content_type
-    if nginx_alias:
-        req.response.headers['X-Accel-Redirect'] = _os.path.join("/{}".format(nginx_alias), _os.path.relpath(path, nginx_dir))
-        return
-    req.response = _flask.send_file(path, conditional=True)
+    req.response.headers['X-Accel-Redirect'] = _os.path.join("/{}".format(nginx_alias), _os.path.relpath(path, nginx_dir))
 
 
 def _get_extension(path):

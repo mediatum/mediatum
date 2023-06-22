@@ -11,10 +11,10 @@ import core as _core
 import core.database.postgres as _database_postgres
 import core.database.postgres.node as _node
 import core.nodecache as _core_nodecache
+import core.systemtypes as _core_systemtypes
 import core.translation as _core_translation
 import core.users as _core_users
 import core.httpstatus as _httpstatus
-import utils.pathutils as _pathutils
 import utils.utils as _utils
 import web.edit.edit_common as _web_edit_common
 import web.edit.edit as _web_edit_edit
@@ -132,6 +132,35 @@ def getLabel(req):
     req.response.set_data(label)
 
 
+def _get_parents_recursive(node, _path=None):
+    _path = _path or list()
+    node = node.getActiveVersion()
+    if isinstance(node, _core_systemtypes.Root):
+        return
+    for parent in node.getParents():
+        _path.append(parent)
+        if not isinstance(parent, _contenttypes.Collections):
+            _get_parents_recursive(parent, _path)
+    return _path
+
+
+def _get_paths(node):
+    path = []
+    omit = False
+    for node in _get_parents_recursive(node):
+        if node.type not in ("home", "root") and not node.has_read_access():
+            omit = True
+            continue
+        if node.type in ("directory", "home", "collection") or node.type.startswith("directory"):
+            path.append(node)
+        if isinstance(node, (_contenttypes.Collections, _core_systemtypes.Root)):
+            if path and not omit:
+                path.reverse()
+                yield path
+            omit = False
+            path = []
+
+
 def _get_path_to(path_to, style, multiselect):
     # returns path(s) to selected node, 'x' separated, with selected nodes in ()
     # parameters: pathTo=selected Node
@@ -143,7 +172,7 @@ def _get_path_to(path_to, style, multiselect):
         checked.clear()
         node = _core.db.query(_core.Node).get(nid)
 
-        for path in _pathutils.getPaths(node):
+        for path in _get_paths(node):
             if node.id not in path and node.isContainer():  # add node if container
                 path.append(node)
 

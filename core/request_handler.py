@@ -69,37 +69,6 @@ def getBase():
     return GLOBAL_ROOT_DIR
 
 
-class _FileStore:
-
-    def __init__(self, name, root=None):
-        self.name = name
-        self.handlers = []
-        if type(root) == type(""):
-            self.addRoot(root)
-        elif type(root) == type([]):
-            for dir in root:
-                self.addRoot(dir)
-
-    def match(self, path):
-        return lambda req: self.findfile(req)
-
-    def findfile(self, request):
-        for handler in self.handlers:
-            if handler.can_handle(request):
-                return handler.handle_request(request)
-        request.response.set_data("File {} not found".format(request.path))
-        request.response.status_code = _httpstatus.HTTP_NOT_FOUND
-        return
-
-    def addRoot(self, dir):
-        if not _os.path.isabs(dir):
-            dir = qualify_path(dir)
-            while dir.startswith("./"):
-                dir = dir[2:]
-            dir = _os.path.join(GLOBAL_ROOT_DIR, dir)
-        self.handlers.insert(0, _default_handler(_OSFilesystem(dir)))
-
-
 class _WebFile:
 
     def __init__(self, context, filename, module=None):
@@ -242,15 +211,6 @@ def sendFile(req, path, content_type, force=0):
     req.response.headers['X-Accel-Redirect'] = _os.path.join("/{}".format(nginx_alias), _os.path.relpath(path, nginx_dir))
 
 
-def _get_extension(path):
-    dirsep = _string.rfind(path, '/')
-    dotsep = _string.rfind(path, '.')
-    if dotsep > dirsep:
-        return path[dotsep + 1:]
-    else:
-        return ''
-
-
 def html_repr(object):
     so = _escape(repr(object))
     if hasattr(object, 'hyper_respond'):
@@ -307,132 +267,6 @@ def _load_module(filename):
     m = _importlib.import_module(module2)
     global_modules[filename] = m
     return m
-
-
-# This is the 'default' handler.  it implements the base set of
-# features expected of a simple file-delivering HTTP server.  file
-# services are provided through a 'filesystem' object, the very same
-# one used by the FTP server.
-#
-# You can replace or modify this handler if you want a non-standard
-# HTTP server.  You can also derive your own handler classes from
-# it.
-#
-# support for handling POST requests is available in the derived
-# class <default_with_post_handler>, defined below.
-#
-
-class _default_handler:
-    valid_commands = ['GET', 'HEAD']
-
-    IDENT = 'Default HTTP Request Handler'
-
-    # Pathnames that are tried when a URI resolves to a directory name
-    directory_defaults = [
-        'index.html',
-        'default.html'
-    ]
-
-    def __init__(self, filesystem):
-        self.filesystem = filesystem
-
-    # always match, since this is a default
-    def match(self, request):
-        return 1
-
-    def can_handle(self, request):
-        path = request.mediatum_contextfree_path
-        while path and path[0] == '/':
-            path = path[1:]
-        if self.filesystem.isdir(path):
-            if path and path[-1] != '/':
-                return 0
-            found = 0
-            if path and path[-1] != '/':
-                path = path + '/'
-            for default in self.directory_defaults:
-                p = path + default
-                if self.filesystem.isfile(p):
-                    path = p
-                    found = 1
-                    break
-            if not found:
-                return 0
-        elif not self.filesystem.isfile(path):
-            return 0
-        return 1
-
-    # handle a file request, with caching.
-
-    def handle_request(self, request):
-        if request.method not in self.valid_commands:
-            request.response.status_code = _httpstatus.HTTP_BAD_REQUEST
-            request.response.set_data(_httpstatus.responses[_httpstatus.HTTP_BAD_REQUEST])
-            return
-
-        path = request.mediatum_contextfree_path
-
-        # strip off all leading slashes
-        while path and path[0] == '/':
-            path = path[1:]
-
-        if self.filesystem.isdir(path):
-            if not path.endswith(_os.sep):
-                request.response.location = '%s%s/' % (request.host_url, path)
-                request.response.status_code = 301
-                request.response.set_data(_httpstatus.responses[301])
-                return
-
-            # we could also generate a directory listing here,
-            # may want to move this into another method for that
-            # purpose
-            found = 0
-            if path and path[-1] != '/':
-                path = path + '/'
-            for default in self.directory_defaults:
-                p = path + default
-                if self.filesystem.isfile(p):
-                    path = p
-                    found = 1
-                    break
-            if not found:
-                request.response.status_code = _httpstatus.HTTP_NOT_FOUND
-                request.response.set_data("File {} not found".format(path))
-                return
-
-        elif not self.filesystem.isfile(path):
-            request.response.status_code = _httpstatus.HTTP_NOT_FOUND
-            request.response.set_data("File {} not found".format(path))
-            return
-
-        try:
-            mtime = _datetime.datetime.utcfromtimestamp(self.filesystem.stat(path)[_stat.ST_MTIME])
-            file = self.filesystem.open(path, 'rb')
-        except:
-            request.response.status_code = _httpstatus.HTTP_NOT_FOUND
-            request.response.set_data("File {} not found".format(path))
-            return
-
-        if request.if_modified_since and mtime <= request.if_modified_since:
-            request.response.status_code = 304
-            request.response.set_data(_httpstatus.responses[304])
-            return
-
-        request.response.last_modified = mtime
-        request.response.content_length = self.filesystem.stat(path)[_stat.ST_SIZE]
-        self.set_content_type(path, request)
-        if request.method == 'GET':
-            request.response.set_data(file.read())
-
-    def set_content_type(self, path, request):
-        ext = _string.lower(_get_extension(path))
-        typ, encoding = _mimetypes.guess_type(path)
-        if typ is not None:
-            request.response.content_type = typ
-        else:
-            # TODO: test a chunk off the front of the file for 8-bit
-            # characters, and use application/octet-stream instead.
-            request.response.content_type = 'text/plain'
 
 
 class _WebContext:

@@ -696,7 +696,9 @@ div#portal-breadcrumbs div a.breadcrumb-delimiter::after { content: "\2192"; mar
     position: relative;
     margin: 2px 4px 2px 0px;
     padding: 2px;
+    background-color: white;
 }
+#portal-column-content div#nodes div.preview:hover { background-color: #cccccc;}
 #portal-column-content div#nodes div.preview div.mediatum-stylethumb-attach {
     position:absolute;
     right:25px;
@@ -733,7 +735,13 @@ div#portal-breadcrumbs div a.breadcrumb-delimiter::after { content: "\2192"; mar
     margin-right: 3px;
 }
 
-#portal-column-content div#nodes div.preview_list { width: 98%;border: silver solid 1px;position: relative;}
+#portal-column-content div#nodes div.preview_list {
+    width: 98%;
+    border: silver solid 1px;
+    position: relative;
+    backgroundColor: white;
+}
+#portal-column-content div#nodes div.preview_list:hover {background-color: #cccccc;}
 #portal-column-content div#nodes div.preview_list a.mediatum-stylelist-a { color: #666666; text-decoration: none; width: 100%;}
 #portal-column-content div#nodes div.preview_list a.mediatum-stylelist-a:hover { color: #000000; text-decoration: none;}
 #portal-column-content div#nodes div.preview_list div.mediatum-stylelist-attach {

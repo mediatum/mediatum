@@ -9,9 +9,13 @@ import functools as _functools
 
 import backports.functools_lru_cache as _backports_functools_lru_cache
 import mediatumtal.tal as _tal
+import sqlalchemy as _sqlalchemy
+import sqlalchemy.dialects.postgresql as _dialects_postgresql
 
 from core import Node, db
+import core as _core
 import core.database.postgres.node as _node
+import core.database.postgres.permission as _permission
 import core.database.postgres.search as _postgres_search
 import core.config as _config
 import core.nodecache as _core_nodecache
@@ -570,17 +574,50 @@ def get_edit_label(node, lang):
 
 
 def get_writable_container_parent_nids(user):
+    """
+    Find all container nodes in the database that
+    satify these conditions:
+    * the container itself is not
+      writable for the current user
+    * the container has one or more direct children that
+      _are_ read- and writable for the current user
+    * the container is a (possibly indirect)
+      child of the great Collections node
+    Return a frozenset of the ids
+    of all such container nodes.
+    """
 
     collections_id = _core_nodecache.get_collections_node().id
     if user.is_admin:
         return frozenset((collections_id, ))
+
+    usergroup_ids = (q(_sqlalchemy.func.array_agg(_core.UserToUserGroup.usergroup_id))
+            .filter(_core.UserToUserGroup.user_id == user.id)
+            .subquery()
+           )
+
+    rule_ids = (q(_core.AccessRule.id)
+            .filter(_sqlalchemy.or_(
+                _core.AccessRule.group_ids == None,
+                _core.AccessRule.group_ids.overlap(usergroup_ids),
+               )
+              )
+            .subquery()
+           )
+
     writable_container_query = (q(Container.id)
             .join(_node.t_noderelation, _node.t_noderelation.c.cid == Container.id)
+            .join(_permission.NodeToAccessRule, _permission.NodeToAccessRule.nid == Container.id)
             .filter_read_access()
-            .filter_write_access()
+            .filter(_permission.NodeToAccessRule.rule_id.in_(rule_ids))
             .filter(_node.t_noderelation.c.nid == collections_id)
+            .filter(_permission.NodeToAccessRule.ruletype == 'write')
+            .offset(0)
+            .from_self()
+            .filter_write_access()
             .cte()
            )
+
     writable_container_nids = (q(_node.t_nodemapping.c.nid)
             .filter(~_node.t_nodemapping.c.nid.in_(q(writable_container_query)))
             .filter(_node.t_nodemapping.c.cid.in_(q(writable_container_query)))

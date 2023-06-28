@@ -785,3 +785,9 @@ msgstr "Import"
 
 msgid "nometa"
 msgstr "- no metadata schemes defined -"
+
+msgid "stylelist-nodelink-text"
+msgstr "More ..."
+
+msgid "stylelist-nodelink-title"
+msgstr ""

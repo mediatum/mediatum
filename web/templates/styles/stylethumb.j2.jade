@@ -3,14 +3,26 @@
   SPDX-License-Identifier: AGPL-3.0-or-later
 
 each file in files
+  - var mapping = dict(name=xml_escape(file.node.name), nodeid=file.node.id|string)
+  - var title = translate('stylelist-nodelink-title', mapping=mapping)
   .preview
     if file.attachment
       div(class='mediatum-stylethumb-attach')
         img(title=translate('view_list_att_title'), src='/static/img/attach.png')
-    a(href=file.getLink())
-      div(class='mediatum-stylethumb-div-img')
-        img.thumbnail(src='/thumbnail/{}'.format(file.node.id), border='0')
-      div(class='mediatum-stylethumb-div-p')
-        p(class='mediatum-stylethumb-p')
-          = file.text
+    div(class='mediatum-stylethumb-div-img')
+      if title
+        a(href=file.getLink(), title=title)
+          img.thumbnail(src='/thumbnail/{}'.format(file.node.id), border='0')
+      else
+        a(href=file.getLink())
+          img.thumbnail(src='/thumbnail/{}'.format(file.node.id), border='0')
+    div(class='mediatum-stylethumb-div-p')
+      if title
+        a(href=file.getLink(), title=title)
+          = translate('stylelist-nodelink-text', mapping=mapping)
+      else
+        a(href=file.getLink())
+          = translate('stylelist-nodelink-text', mapping=mapping)
+      p(class='mediatum-stylethumb-p')
+        = file.text
 .break

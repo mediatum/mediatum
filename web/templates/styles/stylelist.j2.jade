@@ -3,15 +3,27 @@
   SPDX-License-Identifier: AGPL-3.0-or-later
 
 each file in files
+  - var mapping = dict(name=xml_escape(file.node.name), nodeid=file.node.id|string)
+  - var title = translate('stylelist-nodelink-title', mapping=mapping)
   .preview_list
     if file.attachment
       div(class='mediatum-stylelist-attach')
         img(title=translate('view_list_att_title'), src='/static/img/attach.png')
-    a(href=file.getLink(), class='mediatum-stylelist-a')
-      div(class='mediatum-stylelist-img')
-        img.thumbnail(src='/thumbnail/{}'.format(file.node.id), border='0')
-      div(class='mediatum-stylelist-div')
-        p
-          = file.text
+    div(class='mediatum-stylelist-img')
+      if title
+        a(href=file.getLink(), class='mediatum-stylelist-a', title=title)
+          img.thumbnail(src='/thumbnail/{}'.format(file.node.id), border='0')
+      else
+        a(href=file.getLink(), class='mediatum-stylelist-a')
+          img.thumbnail(src='/thumbnail/{}'.format(file.node.id), border='0')
+    div(class='mediatum-stylelist-div')
+      if title
+        a(href=file.getLink(), class='mediatum-stylelist-a', title=title)
+          = translate('stylelist-nodelink-text', mapping=mapping)
+      else
+        a(href=file.getLink(), class='mediatum-stylelist-a')
+          = translate('stylelist-nodelink-text', mapping=mapping)
+      p
+        = file.text
     .break
       = ''

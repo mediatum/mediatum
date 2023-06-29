@@ -73,7 +73,7 @@
                                     srcnodeid,
                                     idstr,
                                     item.getName(),
-                                   );
+                                   ) if not item.getItemList() else None;
                                 class python:u'mediatum_img_nav mediatum_img_{}'.format(item.getName());
                                "
                         />

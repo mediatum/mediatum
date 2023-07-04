@@ -560,6 +560,7 @@ def showEditor(req):
     path = req.mediatum_contextfree_path[1:].split("/")
     mtype = getMetaType(path[1])
     editor = mtype.getMask(path[2])
+    error = None
 
     req.params["metadatatype"] = mtype
     for key in req.params.keys():
@@ -635,39 +636,50 @@ def showEditor(req):
                 # existing field used
                 fieldid = long(req.params.get("field"))
 
-            item = editor.addMaskitem(label, req.params.get("type"), fieldid, req.params.get("pid", "0"))
+                for p in q(Node).get(fieldid).parents:
+                    if p in editor.all_maskitems:
+                        error = _translation.translate(
+                                _translation.set_language(req.accept_languages),
+                                'admin_meta_field_used_by_maskitem',
+                                mapping=dict(metafield=q(Node).get(fieldid).name,maskitem=p.name),
+                               )
+                        break
 
-            if "mappingfield" in req.params.keys():
-                _set_export_maskitem_fields(
-                    item,
-                    editor.get("exportmapping"),
-                    req.values.getlist("mappingfield"),
-                    req.values["fieldtype"],
-                    req.values["attribute"]
-                )
-            position = req.params.get("insertposition", "end")
-            if position == "end":
-                # insert at the end of existing mask
-                item.orderpos = len(q(Node).get(req.params.get("pid")).children) - 1
-                db.session.commit()
-            else:
-                # insert at special position
-                fields = editor.getMaskFields()
-                fields.all().sort(key=_operator.attrgetter("orderpos"))
-                for f in fields:
-                    if f.orderpos >= q(Node).get(position).orderpos and f.id != item.id:
-                        f.orderpos = f.orderpos + 1
-                item.orderpos = q(Node).get(position).orderpos - 1
-                db.session.commit()
+            if error is None:
+                item = editor.addMaskitem(label, req.params.get("type"), fieldid, req.params.get("pid", "0"))
 
-        item.setWidth(req.params.get("width", u'400'))
-        item.setUnit(req.params.get("unit", u""))
-        item.setDefault(req.params.get("default", u""))
-        item.setFormat(req.params.get("format", u""))
-        item.setSeparator(req.params.get("separator", u""))
-        item.setDescription(req.params.get("description", u""))
-        item.set_required("required" in req.values)
-        db.session.commit()
+                if "mappingfield" in req.params.keys():
+                    _set_export_maskitem_fields(
+                        item,
+                        editor.get("exportmapping"),
+                        req.values.getlist("mappingfield"),
+                        req.values["fieldtype"],
+                        req.values["attribute"]
+                    )
+                position = req.params.get("insertposition", "end")
+                if position == "end":
+                    # insert at the end of existing mask
+                    item.orderpos = len(q(Node).get(req.params.get("pid")).children) - 1
+                    db.session.commit()
+                else:
+                    # insert at special position
+                    fields = editor.getMaskFields()
+                    fields.all().sort(key=_operator.attrgetter("orderpos"))
+                    for f in fields:
+                        if f.orderpos >= q(Node).get(position).orderpos and f.id != item.id:
+                            f.orderpos = f.orderpos + 1
+                    item.orderpos = q(Node).get(position).orderpos - 1
+                    db.session.commit()
+
+        if error is None:
+            item.setWidth(req.params.get("width", u'400'))
+            item.setUnit(req.params.get("unit", u""))
+            item.setDefault(req.params.get("default", u""))
+            item.setFormat(req.params.get("format", u""))
+            item.setSeparator(req.params.get("separator", u""))
+            item.setDescription(req.params.get("description", u""))
+            item.set_required("required" in req.values)
+            db.session.commit()
 
     if "savedetail" in req.params.keys():
         label = req.params.get("label", "-new-")
@@ -728,22 +740,7 @@ def showEditor(req):
 
     v = {}
     v["edit"] = req.params.get("edit", "")
-    if req.params.get("edit", "") != "":
-        v["editor"] = editor.editItem(req)
-    else:
-        # show metaEditor
-        v["editor"] = ""
-        try:
-            v["editor"] = _tal.processTAL(
-                    {},
-                    string=editor.getMetaMask(language=_translation.set_language(req.accept_languages)),
-                    macro=None,
-                    request=req,
-                )
-        except:
-            logg.exception("exception in showEditor")
-            v["editor"] = editor.getMetaMask(req)
-
+    v["editor"] = editor.editItem(req) if req.params.get("edit") else editor.getMetaMask(req, error)
     v["title"] = editor.name
     v["csrf"] = _core_csrfform.get_token()
     v["html_head_style_src"] = _web_frontend.html_head_style_src

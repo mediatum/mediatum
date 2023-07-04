@@ -76,6 +76,7 @@ div.content{white-space:normal;margin-left:220px;border:1px solid #E6E6E6;min-wi
 div.editorrow {margin:4px;}
 div.editorrow  div.label{width:150px; float:left; padding-top:4px;}
 .error{text-align:center;}
+div.admin_error {color:red;}
 p.error {background:#FFE7E7; color:#AF0101;  padding:7px; border:1px solid #AF0101; margin-left:20px; margin-right:20px; vertical-align:middle;}
 p.error a {color:black; margin:0px;}
 p.error a:hover {color:black; text-decoration:underline;}

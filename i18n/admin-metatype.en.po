@@ -25,6 +25,9 @@ msgstr "delete metadata scheme"
 msgid "admin_meta_used_title"
 msgstr "metadata scheme is used by {} nodes"
 
+msgid "admin_meta_field_used_by_maskitem"
+msgstr "Field ${metafield} already used by item ${maskitem}"
+
 msgid "admin_meta_footer"
 msgstr "${number} schemes"
 

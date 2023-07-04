@@ -1023,7 +1023,7 @@ class Mask(Node):
 
     ''' show maskeditor - definition '''
 
-    def getMetaMask(self, req):
+    def getMetaMask(self, req, error):
         language = translation.set_language(req.accept_languages)
         ret = '<form method="post">'
         ret += '<input value="{}" type="hidden" name="csrf_token"/>'.format(_core_csrfform.get_token())
@@ -1035,6 +1035,8 @@ class Mask(Node):
         if not self.validateMappingDef():
             ret += '<p i18n:translate="mask_editor_export_error" class="error">TEXT</p>'
 
+        if error:
+            ret += '<div class="admin_error">{}</div>'.format(error)
         if len(self.children) == 0:
             ret += '<div i18n:translate="mask_editor_no_fields">- keine Felder definiert -</div>'
         else:

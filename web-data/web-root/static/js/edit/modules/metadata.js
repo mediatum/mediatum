@@ -58,6 +58,7 @@ document.getElementById('mediatum-edit-form-metadata').addEventListener('submit'
                 url.searchParams.append(param, document.getElementsByName(param)[0].value.split(',')[0]);
             }
         }
+        updateNodeLabels(url.searchParams.get('srcnodeid'));
         document.location.href = url.href;
         return;
     }).catch((error) => {

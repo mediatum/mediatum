@@ -28,10 +28,6 @@ let
       url = "https://layout.jquery-dev.com/lib/js/jquery.layout.resizePaneAccordions-1.2.min.js";
       hash = "sha512-mC0fXGmUcplIj+rIew/vqaeTPPx7GIVkB3fpDEA+QfJpwbeCkOTEjLGyCmKmGNQW0Vp9RjH/LrgOzAsoBRWlCA==";
     };
-    "js/jquery.optionTree.js" = fetchurl {
-      url = "https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/jquery-option-tree/jquery.optionTree.js";
-      hash = "sha512-jntiBhxoAqjTpy3rfsbyK+kwr7N//F4IABMMFAZlt3VHkWCXoVrd0H4Q9gy2j4b56DhJXVTh6qFCYJpUOWmcWg==";
-    };
     "js/jquery.textarearesizer.js" = fetchurl {
       url = "https://github.com/gouten5010/jquery.textarearesizer/raw/dfdb395a3b250c41f9aff681e9deafa750a85e50/jquery.textarearesizer.js";
       hash = "sha512-Ltr/MpYdIrQhx+CMz/3vNQDuPCI6WweogFAEn9gotMBcUPYCXxn2EK0Gqvsf4p8MioUHBAkRWcaIEsL5d/OFhw==";

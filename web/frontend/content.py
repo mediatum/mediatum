@@ -545,23 +545,27 @@ class ContentList(ContentBase):
             return headline + self.content.html(req)
 
         # render result list
-        content_nav_list_header_html = webconfig.theme.render_template(
-                "content_nav_list_header.j2.jade",
-                dict(
-                    page_nav=Markup(self.page_nav),
-                    nav=self,
-                    sortfieldslist=self.getSortFieldsList(),
-                    op="",
-                    query=req.args.get("query", ""),
-                    nodesperpage="all" if self.nodes_per_page_from_req == "all" else self.nodes_per_page,
-                    nodesperpage_options=_web_common_pagination.get_config_nodes_per_page(False),
-                )
-            )
-
         # use template of style and build html content
-        content_list_html = self.liststyle.render_template(req, dict(files=self.files, op="", language=self.lang))
-
-        return u'{}<div id="nodes">{}</div>'.format(content_nav_list_header_html, content_list_html)
+        page_nav = Markup(self.page_nav)
+        return u'{}<div id="nodes">{}</div><br/>{}'.format(
+                webconfig.theme.render_template(
+                    "content_nav_list_header.j2.jade",
+                    dict(
+                        page_nav=page_nav,
+                        nav=self,
+                        sortfieldslist=self.getSortFieldsList(),
+                        op="",
+                        query=req.args.get("query", ""),
+                        nodesperpage="all" if self.nodes_per_page_from_req == "all" else self.nodes_per_page,
+                        nodesperpage_options=_web_common_pagination.get_config_nodes_per_page(False),
+                    ),
+                ),
+                self.liststyle.render_template(req, dict(files=self.files, op="", language=self.lang)),
+                webconfig.theme.render_template(
+                    "content_nav_list_header.j2.jade",
+                    dict(page_nav=page_nav, nav=None, nodesperpage=None),
+                ),
+            )
 
 
 class ContentNode(ContentBase):

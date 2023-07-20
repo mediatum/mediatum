@@ -275,23 +275,16 @@ select[name="nodes_per_page"] { margin-right: 38px !important;}
 #portal-column-content #page-nav { margin: 2px 5px 2px 0px;}
 #portal-column-content #page-nav a { color: #0A5096; text-decoration: none;}
 a.page-nav { font-size: 130% !important;}
-a.page-nav-previous { margin-right: 10px;}
-a.page-nav-previous::before { content: "\27F5"; margin-right: 5px;}
-a.page-nav-next::after { content:  "\27F6"; margin-left: 5px;}
-a.page-nav-next { margin-left: 10px;}
+a.page-nav-previous { margin-right: 3px;}
+a.page-nav-previous::before { content: "\27F5"; margin-right: 3px;}
+a.page-nav-next::after { content:  "\27F6"; margin-left: 3px;}
+a.page-nav-next { margin-left: 3px;}
 
 #portal-column-content #page-nav a:hover { color: #000;}
 #portal-column-content #portal-pages { text-align: center;}
 #portal-column-content #portal-pages a { color: #666; font-size: 80%; text-decoration: none;}
 #portal-column-content #portal-pages a:hover { color: #000;}
-#portal-column-content #portal-pages table {padding:0px;margin:0px;width:100%;}
-#portal-column-content #portal-pages table tr td {width:33%; vertical-align: center;}
-#portal-column-content #portal-pages table tr td table tr td.mediatum-content-nav-list-header-label {
-    text-align: right;
-}
-#portal-column-content #portal-pages table tr td table tr td.mediatum-content-nav-list-header-select {
-    text-align: left;
-}
+
 /* Paths / Vorkommen */
 div#paths { border-top: rgb(71,71,71) solid 1px; padding: 5px; margin: 20px 5px 5px 0px;}
 
@@ -301,6 +294,43 @@ div#portal-column-content #paths a { color: rgb(71,71,71); text-decoration: none
 #portal-column-content #paths li { margin-left: 15px; line-height: 13px;}
 #portal-column-content #paths ul li a.breadcrumb-delimiter::after { content: "\2192"; margin: 0px 3px 0px 3px;}
 
+#portal-pages div.mediatum-content-nav-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+#portal-pages div.mediatum-content-nav-list div.mediatum-content-nav-1 {
+  width: 40%;
+}
+#portal-pages div.mediatum-content-nav-list div.mediatum-content-nav-2 {
+  width: 30%;
+}
+#portal-pages div.mediatum-content-nav-list div.mediatum-content-nav-3 {
+  width: 30%;
+}
+#portal-pages div.mediatum-content-nav-list div.mediatum-content-nav-1 form div.mediatum-content-nav-sort {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+#portal-pages div.mediatum-content-nav-list div.mediatum-content-nav-1 form div.mediatum-content-nav-sort div.mediatum-content-nav-sort-field {
+    display: flex;
+    justify-content: flex-start;
+    padding-bottom: 2px;
+    width: 100%;
+}
+#portal-pages div.mediatum-content-nav-list div.mediatum-content-nav-1 form div.mediatum-content-nav-sort div.mediatum-content-nav-sort-field div.mediatum-content-nav-sort-field-label {
+    width: 40%;
+    padding-right: 2px;
+}
+#portal-pages div.mediatum-content-nav-list div.mediatum-content-nav-1 form div.mediatum-content-nav-sort div.mediatum-content-nav-sort-field div.mediatum-content-nav-sort-field-label small {
+    float: right;
+}
+#portal-pages div.mediatum-content-nav-list div.mediatum-content-nav-1 form div.mediatum-content-nav-sort div.mediatum-content-nav-sort-field div.mediatum-content-nav-sort-field-select {
+    width: 56%;
+}
 /* Breadcrumbs */
 div#portal-breadcrumbs { font-size: 90%; position: relative;}
 div#portal-breadcrumbs a { white-space: nowrap; color: rgb(71,71,71); text-decoration: none;}

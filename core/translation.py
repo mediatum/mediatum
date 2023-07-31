@@ -11,6 +11,8 @@ import backports.functools_lru_cache as _backports_functools_lru_cache
 import flask as _flask
 import polib as _polib
 
+from mediatumtal import talextracted as _mediatumtal_talextracted
+
 from . import config
 from utils.strings import ensure_unicode_returned
 
@@ -51,25 +53,28 @@ def _list_po_files(language):
 
 
 @ensure_unicode_returned(silent=True)
-def translate(language, msgid):
+def translate(language, msgid, mapping={}):
     for pofile in _list_po_files(language):
         po = _parse_po_file_to_dict(pofile)
         if msgid in po:
-            return po[msgid]
+            return _mediatumtal_talextracted.interpolate(
+                po[msgid].encode("utf-8"),
+                {k:v.encode("utf-8") for k,v in mapping.iteritems()},
+               ).decode("utf-8")
 
     raise MessageIdNotFound(msgid)
 
 
-def translate_in_request(msgid, request=None):
-    return translate(set_language(request.accept_languages if request else _flask.request.accept_languages), msgid)
+def translate_in_request(msgid, request=None, mapping={}):
+    return translate(set_language(request.accept_languages if request else _flask.request.accept_languages), msgid, mapping)
 
 
-def translate_in_template(msgid, language=None, request=None):
+def translate_in_template(msgid, language=None, request=None, mapping={}):
     try:
         if language:
-            return translate(language, msgid)
+            return translate(language, msgid, mapping)
         else:
-            return translate_in_request(msgid, request)
+            return translate_in_request(msgid, request, mapping)
     except MessageIdNotFound:
         return msgid
 

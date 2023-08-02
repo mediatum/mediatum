@@ -1,5 +1,6 @@
 { pkgs ? (import ./nixpkgs.nix {}).pkgs
 , pkgsPy ? (import ./nixpkgs.nix {}).pkgsPy
+, pkgsUwsgi ? (import ./nixpkgs.nix {}).pkgsUwsgi
 }:
 
 let
@@ -8,7 +9,7 @@ let
   acme-sh = pkgs.callPackage ./acme-sh.nix {};
   nginx = pkgs.callPackage ./nginx.nix {};
   postgresql = pkgs.callPackage ./postgresql.nix {};
-  uwsgi = pkgs.callPackage ./uwsgi.nix {};
+  uwsgi = pkgsUwsgi.callPackage ./uwsgi.nix {};
 
 in
 

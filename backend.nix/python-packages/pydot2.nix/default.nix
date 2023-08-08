@@ -11,4 +11,5 @@ buildPythonPackage {
     sha256 = "16xwl6907nwlp2lgsb00lwxya8m33yw2ylmj5dz0fdy4l60ydh02";
   };
   propagatedBuildInputs = [ pyparsing setuptools ];
+  patches = [ ./dotparser-warning-stderr.patch ];
 }

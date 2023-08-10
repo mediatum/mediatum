@@ -4,14 +4,13 @@
 from __future__ import division
 from __future__ import print_function
 
-import cgi as _cgi
-
 import mediatumtal.tal as _tal
 
 import core.translation as _core_translation
 from schema.schema import getMetadataType, getAllMetaFields, VIEW_DATA_ONLY, VIEW_SUB_ELEMENT, Maskitem
 from core.metatype import Metatype
 from core import Node, db
+from utils import utils as _utils_utils
 
 q = db.query
 
@@ -51,7 +50,7 @@ class m_hgroup(Metatype):
                                 <div class="mask_value">
                         """.format(
                             maskitem.id,
-                            _cgi.escape(maskitem.getLabel(), quote=True),
+                            _utils_utils.esc(maskitem.getLabel()),
                         )
                     ]
             else:

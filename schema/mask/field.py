@@ -4,7 +4,6 @@
 from __future__ import division
 from __future__ import print_function
 
-import cgi as _cgi
 import operator as _operator
 
 import mediatumtal.tal as _tal
@@ -161,10 +160,7 @@ class m_field(Metatype):
         else:
             label = u'&nbsp;'
 
-        return u'<dt class="mask_label">{}</dt>\n<dd class="mask_value">{}</dd>\n'.format(
-                _cgi.escape(label, quote=True),
-                value,
-            )
+        return u'<dt class="mask_label">{}</dt>\n<dd class="mask_value">{}</dd>\n'.format(_utils_utils.esc(label), value)
 
     def getMetaHTML(self, parent, index, sub=False, language=None, itemlist=[], ptype="", fieldlist={}):
         """ return formated row for metaeditor """

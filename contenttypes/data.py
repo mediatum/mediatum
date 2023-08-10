@@ -4,7 +4,6 @@
 from __future__ import division
 from __future__ import print_function
 
-import cgi as _cgi
 import re
 import functools as _functools
 import logging
@@ -23,6 +22,7 @@ from core.styles import get_full_style
 from core.postgres import check_type_arg_with_schema
 from export.exportutils import default_context
 from schema.schema import getMetadataType, VIEW_HIDE_EMPTY, SchemaMixin
+from utils import utils as _utils_utils
 from utils.utils import highlight
 from utils.compat import iteritems, string_types
 from markupsafe import Markup
@@ -134,7 +134,7 @@ def _build_field_template(labels, field_descriptor):
         template = u'<b>{value}</b>'
     else:
         template = u"{value}"
-    return _functools.partial(template.format, label=_cgi.escape(field_descriptor.get("label", ""), quote=True))
+    return _functools.partial(template.format, label=_utils_utils.esc(field_descriptor.get("label", "")))
 
 
 class Data(Node):

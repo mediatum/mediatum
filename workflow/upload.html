@@ -3,7 +3,7 @@
   SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 <tal:block metal:define-macro="workflow_upload">
-    <div tal:condition="python:pretext!=''" tal:content="raw pretext" class="pretext">TEXT</div>
+    <div tal:condition="python:pretext!=''" tal:content="raw pretext" class="pretext"> </div>
 
     <p tal:condition="python:len(error)>0" tal:content="structure error" class="error"/>
 
@@ -19,13 +19,13 @@
     <form action="/mask" method="post" enctype="multipart/form-data" style="padding:4px">
         <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
         <div>
-            <h2 i18n:translate="workflow_add_file">TEXT</h2>
+            <h2 i18n:translate="">workflow_add_file</h2>
             <input type="file" name="file"/>
             <input i18n:attributes="value workflow_upload_button" type="submit" name="submit"/>
         </div>
 
 
-        <div tal:condition="python:posttext!=''" tal:content="raw posttext" class="posttext">TEXT</div>
+        <div tal:condition="python:posttext!=''" tal:content="raw posttext" class="posttext"> </div>
 
         <table>
             <tal:block tal:replace="raw python:buttons"/>

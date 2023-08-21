@@ -18,7 +18,7 @@ from core.auth import authenticate_user_credentials, logout_user
 from flask_admin import AdminIndexView
 from flask_admin import helpers, expose
 from flask_admin.babel import lazy_gettext as _lazy_gettext
-from web.admin.views.node import NodeView, FileView, NodeAliasView
+from web.admin.views.node import NodeView, FileView
 from web.admin.views.setting import SettingView
 from web.admin.views.acl import AccessRulesetView, AccessRuleView, AccessRulesetToRuleView
 from datetime import timedelta
@@ -164,7 +164,6 @@ def make_app():
 
         admin.add_view(NodeView())
         admin.add_view(FileView())
-        admin.add_view(NodeAliasView())
 
         admin.add_view(SettingView())
 

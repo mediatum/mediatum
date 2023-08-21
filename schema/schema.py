@@ -58,18 +58,15 @@ requiredoption = (
         name="Kein Pflichtfeld",
         shortname="notmandatory",
         value="0",
-        imgsource="/static/img/req2_opt.png",
     ),
     _Option(
         name="Pflichtfeld, darf nicht leer sein",
         shortname="mandatory1", value="1",
-        imgsource="/static/img/req0_opt.png",
     ),
     _Option(
         name="Pflichtfeld, muss eine Zahl sein",
         shortname="mandatory2",
         value="2",
-        imgsource="/static/img/req1_opt.png",
     ),
 )
 

@@ -485,9 +485,6 @@ def struct2rss(path, qualifier, query_string, host_url, params, struct):
     fcd['lastbuild'] = lastBuildDate
     fcd['link'] = host_url
     fcd['atom_link'] = hostjoin(path)
-    fcd['image_title'] = 'testlogo'
-    fcd['image_link'] = hostjoin(u'/static/img/testlogo.png')
-    fcd['image_url'] = hostjoin(u'/static/img/testlogo.png')
 
     if 'feed_info' in params:
         for k, v in params['feed_info'].items():

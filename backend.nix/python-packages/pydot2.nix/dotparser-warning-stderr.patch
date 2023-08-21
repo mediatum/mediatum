@@ -1,0 +1,17 @@
+--- old/pydot.py
++++ new/pydot.py
+@@ -25,12 +25,13 @@
+ import os
+ import re
+ import subprocess
++import sys
+ import tempfile
+ import copy
+ try:
+     import dot_parser
+ except Exception, e:
+-    print "Couldn't import dot_parser, loading of dot files will not be possible."
++    sys.stderr.write("Couldn't import dot_parser, loading of dot files will not be possible.\n")
+ 
+ 
+ 

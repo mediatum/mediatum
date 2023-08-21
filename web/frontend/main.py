@@ -17,7 +17,7 @@ import core.csrfform as _core_csrfform
 import core.translation as _core_translation
 from core import httpstatus
 from core import db
-from core import Node, NodeAlias
+from core import Node
 import core.nodecache as _nodecache
 from core.users import user_from_session as _user_from_session
 from contenttypes import Container
@@ -70,10 +70,6 @@ def _handle_json_request(req):
     req.response.status_code = httpstatus.HTTP_OK
 
 
-DISPLAY_PATH = re.compile("/([_a-zA-Z][_/a-zA-Z0-9]+)$")
-known_node_aliases = {}
-
-
 def _check_change_language_request(func):
     @wraps(func)
     def checked(req, *args, **kwargs):
@@ -108,26 +104,6 @@ def overwrite_id_in_req(nid, req):
     return req
 
 
-@_check_change_language_request
-def display_alias(req):
-    match = DISPLAY_PATH.match(req.mediatum_contextfree_path)
-    if match:
-        alias_name = match.group(1).rstrip("/").lower()
-        node_alias = q(NodeAlias).get(unicode(alias_name))
-
-        if node_alias is not None:
-            new_nid = node_alias.nid
-        else:
-            # -1 is a node ID that's never found, this will just display 404
-            new_nid = -1
-
-        req = overwrite_id_in_req(new_nid, req)
-        # redirect to regular display handler
-        display(req)
-    else:
-        raise RuntimeError(u"illegal alias '{}', should not be passed to this handler!".format(req.mediatum_contextfree_path))
-
-
 RE_NEWSTYLE_NODE_URL = re.compile("/(nodes/)?(\d+).*")
 
 
@@ -135,18 +111,10 @@ RE_NEWSTYLE_NODE_URL = re.compile("/(nodes/)?(\d+).*")
 def display_newstyle(req):
     """Handles requests for new style frontend node URLs matching
     /nodes/<nid> OR
-    /<nid> (can be interpreted as alias, too)
+    /<nid>
     """
-    nodes_path, nid_or_alias = RE_NEWSTYLE_NODE_URL.match(req.mediatum_contextfree_path).groups()
-    if nodes_path is None:
-        # check first if nid_or_alias is an alias
-        maybe_node_alias = q(NodeAlias).get(unicode(nid_or_alias))
-        if maybe_node_alias is not None:
-            # found matching alias, assume it's an alias
-            return display_alias(req)
-
-    # either coming from /nodes/ or nid_or_alias is not a valid alias
-    req = overwrite_id_in_req(nid_or_alias, req)
+    _, nid = RE_NEWSTYLE_NODE_URL.match(req.mediatum_contextfree_path).groups()
+    req = overwrite_id_in_req(nid, req)
     return display(req)
 
 

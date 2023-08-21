@@ -29,6 +29,7 @@ from web.frontend.filehelpers import preference_sorted_image_mimetypes
 from web.frontend.filehelpers import split_image_path
 from web.frontend.filehelpers import splitpath
 from web.frontend.filehelpers import version_id_from_req
+from web.frontend import main as _frontend_main
 from utils import userinput
 import utils.utils
 from utils.utils import getMimeType, clean_path, get_filesize
@@ -90,23 +91,26 @@ def send_thumbnail(req):
     # a) node type and schema, or
     # b) schema, or
     # c) node type
-    img_filestorepaths = _request_handler.getFileStorePaths("/static/img/")
+    img_filestorepath = os.path.join(config.basedir, "web-root", "static", "img")
     for pattern_fmt in (
             "default_thumb_{ntype}_{schema}.*",
             "default_thumb_{schema}.*",
             "default_thumb_{ntype}.*",
     ):
-
-        for p in img_filestorepaths:
-            fps = glob.glob(os.path.join(p, pattern_fmt.format(schema=schema, ntype=ntype)))
-            if fps:
-                thumb_path, = fps  # implicit: raises ValueError if not len(fps)==1
-                thumb_mimetype, thumb_type = utils.utils.getMimeType(thumb_path)
-                logg.debug("serving default thumb for node '%s': %s", node, thumb_path)
-                return _request_handler.sendFile(req, thumb_path, thumb_mimetype, force=1)
+        fps = glob.glob(os.path.join(img_filestorepath, pattern_fmt.format(schema=schema, ntype=ntype)))
+        if fps:
+            thumb_path, = fps  # implicit: raises ValueError if not len(fps)==1
+            thumb_mimetype, thumb_type = utils.utils.getMimeType(thumb_path)
+            logg.debug("serving default thumb for node '%s': %s", node, thumb_path)
+            return _request_handler.sendFile(req, thumb_path, thumb_mimetype, force=1)
 
 
-    return _request_handler.sendFile(req, config.basedir + "/static/img/questionmark.png", "image/png", force=1)
+    return _request_handler.sendFile(
+            req,
+            os.path.join(img_filestorepath, "questionmark.png"),
+            "image/png",
+            force=1,
+        )
 
 
 def send_doc(req):
@@ -374,11 +378,11 @@ def fetch_archived(req):
 
 def send_from_webroot(req):
     for webroot_dir in _webroots:
-        filepath = os.path.join(config.basedir, webroot_dir, req.mediatum_contextfree_path.strip("/"))
+        filepath = os.path.join(webroot_dir, req.path.strip("/"))
         if os.path.isfile(filepath):
             return _request_handler.sendFile(req, filepath, getMimeType(filepath)[0])
 
-    return 404
+    return _frontend_main.display_404(req)
 
 ### redirects for legacy handlers
 
@@ -391,4 +395,4 @@ def redirect_images(req):
 def add_web_root(webroot):
     if not (os.path.isdir(webroot) and os.path.isabs(webroot)):
         raise ValueError('Directory is not an absolute path {}'.format(webroot))
-    _webroots.append(webroot)
+    _webroots.insert(0, webroot)

@@ -71,13 +71,8 @@ def getContent(req, ids):
             node.set('url', req.params.get("logo_link"))
 
         # save filename
-        if req.params.get('logo') == "/static/img/empty.gif":
-            # remove logo from current node
-            node.set("system.logo", "")
-            logg.info("%s cleared logo for node %s (%s, %s)", user.login_name, node.id, node.name, node.type)
-        else:
-            node.set("system.logo", req.params.get("logo").split("/")[-1])
-            logg.info("%s set logo for node %s (%s, %s) to %s", user.login_name, node.id, node.name, node.type, node.get("system.logo"))
+        node.set("system.logo", req.params.get("logo").split("/")[-1])
+        logg.info("%s set logo for node %s (%s, %s) to %s", user.login_name, node.id, node.name, node.type, node.get("system.logo"))
 
         db.session.commit()
 

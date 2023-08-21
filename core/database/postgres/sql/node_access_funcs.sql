@@ -28,11 +28,10 @@ CREATE OR REPLACE FUNCTION _has_read_type_access_to_node(node_id integer, _rulet
 AS $f$
 BEGIN
 RETURN EXISTS (
-    SELECT FROM node 
-    JOIN node_to_access_rule na on node.id=na.nid
+    SELECT FROM node_to_access_rule na
     JOIN access_rule a on na.rule_id=a.id
     WHERE na.ruletype=_ruletype
-    AND node.id = node_id
+    AND na.nid = node_id
     AND na.invert != check_access_rule(a, _group_ids, ipaddr, _date));
 END;
 $f$;
@@ -71,22 +70,20 @@ CREATE OR REPLACE FUNCTION _has_write_type_access_to_node(node_id integer, _rule
 AS $f$
 BEGIN
 RETURN EXISTS (
-    SELECT node.id FROM node 
-    JOIN node_to_access_rule na on node.id=na.nid
+    SELECT FROM node_to_access_rule na
     JOIN access_rule a on na.rule_id=a.id
     WHERE na.ruletype=_ruletype
     AND na.blocking = false
-    AND node.id = node_id
+    AND na.nid = node_id
     AND na.invert != check_access_rule(a, _group_ids, ipaddr, _date)
 
-    EXCEPT
+    ) AND NOT EXISTS (
 
-    SELECT node.id FROM node 
-    JOIN node_to_access_rule na on node.id=na.nid
+    SELECT FROM node_to_access_rule na
     JOIN access_rule a on na.rule_id=a.id
     WHERE na.ruletype=_ruletype
     AND na.blocking = true
-    AND node.id = node_id
+    AND na.nid = node_id
     AND NOT na.invert != check_access_rule(a, _group_ids, ipaddr, _date));
 
 END;

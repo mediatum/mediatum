@@ -13,7 +13,6 @@
 
     <div id="navigation_content">
         <div id="logo">
-            <img tal:condition="python:logo==''" id="previewlogo" src="/static/img/empty.gif"/>
             <img tal:condition="python:logo!=''" tal:attributes="src python:u'/file/{}/{}'.format(id, logo)" id="previewlogo"/>
         </div>
         <div id="logoform">
@@ -45,7 +44,7 @@
     <div id="sub_content_content">
         <div id="scrollcontainer" style="width:99%">
             <div id="scrollcontent">
-                <div class="imageblock" onclick="setImage('/static/img/empty.gif')">
+                <div class="imageblock">
                     <p style="text-align:center;padding-top:80px" i18n:translate="edit_logo_no_logo">TEXT</p>
                 </div>
   

@@ -79,7 +79,7 @@
                             <table>
                                 <tr>
                                     <td tal:repeat="fieldoption fieldoptions" width="20px" align="center">
-                                        <img tal:define="index python:fieldoptions.index(fieldoption)" tal:condition="python:flist[index]" tal:attributes="title python:flist[index] and fieldoption.name or ''; src python:flist[index] and '/static/img/haken.gif' or '/static/img/mark_empty.gif'" i18n:attributes="title"/>
+                                        <img tal:define="index python:fieldoptions.index(fieldoption)" tal:condition="python:flist[index]" tal:attributes="title python:flist[index] and fieldoption.name or ''; src python:flist[index] and '/static/img/haken.gif'" i18n:attributes="title"/>
                                     </td>
                                 </tr>
                             </table>

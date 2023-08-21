@@ -20,8 +20,6 @@ from itertools import chain
 
 q = db.query
 
-# scaled down version of web.frontend.contend.getPaths() to get all paths
-
 
 def getBrowsingPathList(node):
     warn("use get_accessible_paths()", DeprecationWarning)
@@ -61,43 +59,6 @@ def getBrowsingPathList(node):
 def isDescendantOf(node, parent):
     warn("use node.is_descendant_of(parent)", DeprecationWarning)
     return node.is_descendant_of(parent)
-
-
-def getPaths(node):
-    warn("use get_accessible_paths()", DeprecationWarning)
-    res = []
-
-    def r(node, path):
-        node = node.getActiveVersion()
-        if isinstance(node, Root):
-            return
-        for p in node.getParents():
-            path.append(p)
-            if not isinstance(p, Collections):
-                r(p, path)
-        return path
-
-    paths = []
-
-    p = r(node, [])
-    omit = 0
-    if p:
-        for node in p:
-            if node.has_read_access() or node.type in ("home", "root"):
-                if node.type in ("directory", "home", "collection") or node.type.startswith("directory"):
-                    paths.append(node)
-                if isinstance(node, (Collections, Root)):
-                    paths.reverse()
-                    if len(paths) > 0 and not omit:
-                        res.append(paths)
-                    omit = 0
-                    paths = []
-            else:
-                omit = 1
-    if len(res) > 0:
-        return res
-    else:
-        return []
 
 
 def get_accessible_paths(node, node_query=None):

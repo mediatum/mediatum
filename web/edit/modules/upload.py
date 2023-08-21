@@ -293,7 +293,7 @@ def getContent(req, ids):
 
                 new_node = importer_func(identifier, importdir, req=req)
 
-                res = dict(id=req.values['id'], error=req.values.get('error', ''), error_detail=req.values.get('error_detail', ''))
+                res = dict(id=req.values['id'], error=req.params.get('error', ''), error_detail=req.values.get('error_detail', ''))
 
                 if new_node:
                     new_node.set("creator", user.login_name)
@@ -618,7 +618,7 @@ def import_from_doi(identifier, importdir, req=None):
         if req:
             errormsg = _core_translation.translate_in_request(error_msgstr, req)
             req.response.location = build_url_from_path_and_params("content", {"id": importdir.id, "error": errormsg})
-            req.values["error"] = errormsg
+            req.params["error"] = errormsg
 
     import schema.citeproc as citeproc
     import schema.importbase as importbase

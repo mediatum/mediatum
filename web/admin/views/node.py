@@ -16,8 +16,6 @@ from pygments.lexers import JsonLexer
 import core.csrfform as _core_csrfform
 from core import Node, File, db
 from web.admin.views import BaseAdminView
-from core.database.postgres.node import NodeAlias
-
 
 logg = logging.getLogger(__name__)
 
@@ -63,12 +61,3 @@ class FileView(BaseAdminView):
 
     def __init__(self, session=db.session, *args, **kwargs):
         super(FileView, self).__init__(File, session, category="Node", *args, **kwargs)
-
-class NodeAliasView(BaseAdminView):
-    form_base_class = _core_csrfform.CSRFForm
-
-    def __init__(self, session=db.session, *args, **kwargs):
-        super(NodeAliasView, self).__init__(NodeAlias, session, category="Node", *args, **kwargs)
-
-    form_columns = ("alias", "nid", "description")
-    column_labels = {"nid": "Node ID"}

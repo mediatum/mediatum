@@ -14,9 +14,6 @@ import glob
 import flask as _flask
 from jinja2.loaders import FileSystemLoader, ChoiceLoader, PrefixLoader
 from jinja2.exceptions import TemplateNotFound
-from core.request_handler import addFileStore as _addFileStore
-from core.request_handler import addFileStorePath as _addFileStorePath
-
 
 _full_styles_by_contenttype = {}
 list_styles = {}
@@ -45,11 +42,6 @@ class _Theme(object):
             from core import app
             _logg.info("adding jinja loader for theme %s", self.name)
             app.add_template_loader(theme_jinja_loader, 0)
-
-        _addFileStore("/theme/", self.path + "/")
-        _addFileStorePath("/static/css/", self.path + "/static/css/")
-        _addFileStorePath("/static/img/", self.path + "/static/img/")
-        _addFileStorePath("/static/js/", self.path + "/static/js/")
 
     def get_tal_template_path(self, filename):
         raise NotImplementedError("implement in subclasses!")

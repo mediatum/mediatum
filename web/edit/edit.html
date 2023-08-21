@@ -4,7 +4,7 @@
 -->
 <metal:block metal:define-macro="include_jquery_script_tags">
   <script src="/static/js/jquery-2.0.3.js"> </script>
-  <script src="/static/js/jquery-ui-1.12.1.js"> </script>
+  <script src="/static/jquery-ui-1.12.1/jquery-ui.js"> </script>
 </metal:block>
 
 <metal:block metal:define-macro="include_jquery_layout_script_tags">
@@ -13,12 +13,12 @@
 </metal:block>
 
 <metal:block metal:define-macro="include_fancytree_script_tags">
-  <script src="/static/js/fancytree/src/jquery.fancytree.js"> </script>
-  <script src="/static/js/fancytree/src/jquery.fancytree.persist.js"> </script>
-  <script src="/static/js/fancytree/src/jquery.fancytree.filter.js"> </script>
-  <script src="/static/js/fancytree/src/jquery.fancytree.dnd.js"> </script>
-  <script src="/static/js/fancytree/src/jquery.fancytree.edit.js"> </script>
-  <script src="/static/js/fancytree/3rd-party/extensions/contextmenu/jsx/jquery.contextMenu-1.6.5.js"> </script>
+  <script src="/static/fancytree/src/jquery.fancytree.js"> </script>
+  <script src="/static/fancytree/src/jquery.fancytree.persist.js"> </script>
+  <script src="/static/fancytree/src/jquery.fancytree.filter.js"> </script>
+  <script src="/static/fancytree/src/jquery.fancytree.dnd.js"> </script>
+  <script src="/static/fancytree/src/jquery.fancytree.edit.js"> </script>
+  <script src="/static/fancytree/3rd-party/extensions/contextmenu/js/jquery.contextMenu-1.6.5.js"> </script>
 </metal:block>
 
 <metal:block metal:define-macro="include_javascript_script_tags">
@@ -153,8 +153,8 @@
             <meta content="text/html;charset=UTF-8" http-equiv="content-type"/>
             <title i18n:translate="mediatum_main_title"> </title>
 
-            <link id="id_link_fancytree_skin" rel="stylesheet" href="/static/js/fancytree/src/skin-xp/ui.fancytree.css" />
-            <link rel="stylesheet" href="/static/css/jquery.contextMenu.css" />
+            <link id="id_link_fancytree_skin" rel="stylesheet" href="/static/fancytree/src/skin-xp/ui.fancytree.css" />
+            <link rel="stylesheet" href="/static/fancytree/3rd-party/extensions/contextmenu/css/jquery.contextMenu.css" />
             <link rel="stylesheet" href="/static/css/editor.css" />
 
             <script tal:content="python:u'var user_folders = {};'.format({k: str(folders[k][0].id) for k in folders})">TEXT</script>
@@ -306,7 +306,7 @@
             <meta http-equiv="X-UA-Compatible" content="IE=9"/>
             <META http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
             <meta content="text/html;charset=UTF-8" http-equiv="content-type"/>
-            <link rel="stylesheet" href="/static/css/jquery-ui-1.12.1.css" />
+            <link rel="stylesheet" href="/static/jquery-ui-1.12.1/jquery-ui.css" />
             <link rel="stylesheet" href="/static/css/editor.css" />
 
             <tal:block metal:use-macro="include_javascript_script_tags_frame"/>

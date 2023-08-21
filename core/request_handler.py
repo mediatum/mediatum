@@ -12,8 +12,6 @@ import string as _string
 import logging as _logging
 import mimetypes as _mimetypes
 import importlib as _importlib
-import zipfile as _zipfile
-
 from cgi import escape as _escape
 from functools import partial as _partial
 
@@ -21,8 +19,6 @@ import flask as _flask
 
 import core.translation as _core_translation
 import httpstatus as _httpstatus
-import utils.locks as _utils_lock
-import csrfform as _csrfform
 from core import config as _config
 from utils.utils import suppress as _suppress, nullcontext as _nullcontext
 from utils.url import build_url_from_path_and_params as _build_url_from_path_and_params
@@ -71,40 +67,6 @@ def setTempDir(tempdir):
 
 def getBase():
     return GLOBAL_ROOT_DIR
-
-
-class _FileStore:
-
-    def __init__(self, name, root=None):
-        self.name = name
-        self.handlers = []
-        if type(root) == type(""):
-            self.addRoot(root)
-        elif type(root) == type([]):
-            for dir in root:
-                self.addRoot(dir)
-
-    def match(self, path):
-        return lambda req: self.findfile(req)
-
-    def findfile(self, request):
-        for handler in self.handlers:
-            if handler.can_handle(request):
-                return handler.handle_request(request)
-        request.response.set_data("File {} not found".format(request.path))
-        request.response.status_code = _httpstatus.HTTP_NOT_FOUND
-        return
-
-    def addRoot(self, dir):
-        if not _os.path.isabs(dir):
-            dir = qualify_path(dir)
-            while dir.startswith("./"):
-                dir = dir[2:]
-            dir = _os.path.join(GLOBAL_ROOT_DIR, dir)
-        if _zipfile.is_zipfile(dir[:-1]) and dir.lower().endswith("zip/"):
-            self.handlers.insert(0, _default_handler(_ZipFilesystem(dir[:-1])))
-        else:
-            self.handlers.insert(0, _default_handler(_OSFilesystem(dir)))
 
 
 class _WebFile:
@@ -166,67 +128,6 @@ class _WebPattern:
         return self.pattern
 
 
-class _ZipFilesystem:
-
-    def __init__(self, filename):
-        self.filename = filename
-        self.m = {}
-        self.z = _zipfile.ZipFile(filename)
-        for f in self.z.filelist:
-            self.m['/' + f.filename] = f
-
-        if "/index.html" in self.m:
-            self.m['/'] = self.m['/index.html']
-
-    def isfile(self, path):
-        if len(path) and path[-1] == '/':
-            return 0
-        return _os.path.join("/", path) in self.m
-
-    def isdir(self, path):
-        if not (len(path) and path[-1] == '/'):
-            path += '/'
-        return path in self.m
-
-    # TODO: implement a cache w/timeout for stat()
-    def stat(self, path):
-        fullpath = join_paths("/", path)
-        if self.isfile(path):
-            size = self.m[fullpath].file_size
-            return (33188, 77396L, 10L, 1, 1000, 1000, size, 0, 0, 0)
-        elif self.isdir(path):
-            return (16895, 117481L, 10L, 20, 1000, 1000, 4096L, 0, 0, 0)
-        else:
-            raise IOError("No such file or directory " + path)
-
-    def open(self, path, mode):
-        class zFile:
-
-            def __init__(self, content):
-                self.content = content
-                self.pos = 0
-                self.len = len(content)
-
-            def read(self, l=None):
-                if l is None:
-                    l = self.len - self.pos
-                if self.len < self.pos + l:
-                    l = self.len - self.pos
-                s = self.content[self.pos: self.pos + l]
-                self.pos += l
-                return s
-
-            def close(self):
-                del self.content
-                del self.len
-                del self.pos
-
-        with _utils_lock.named_lock("zipfile"):
-            data = self.z.read(path)
-
-        return zFile(data)
-
-
 class _OSFilesystem:
     # set this to zero if you want to disable pathname globbing.
     # [we currently don't glob, anyway]
@@ -272,11 +173,9 @@ class _OSFilesystem:
 
 
 def sendFile(req, path, content_type, force=0):
+    assert req.method == 'GET'
     if isinstance(path, unicode):
         path = path.encode("utf8")
-
-    if isinstance(content_type, unicode):
-        content_type = content_type.encode("utf8")
 
     _logg.debug("sendFile: %s", path)
 
@@ -291,47 +190,25 @@ def sendFile(req, path, content_type, force=0):
     else:
         nginx_alias = None
 
-    file_length = 0
-
-    if not nginx_alias:
-        try:
-            file_length = _os.stat(path)[_stat.ST_SIZE]
-        except OSError:
-            req.response.status_code = _httpstatus.HTTP_NOT_FOUND
-            return
-
     try:
         mtime = _datetime.datetime.utcfromtimestamp(_os.stat(path)[_stat.ST_MTIME])
-    except:
+    except OSError:
         req.response.status_code = _httpstatus.HTTP_NOT_FOUND
         return
-    if req.if_modified_since:
-        if mtime <= req.if_modified_since and not force:
-            req.response.status_code = 304
-            return
 
+    if req.if_modified_since and mtime <= req.if_modified_since and not force:
+        req.response.status_code = 304
+        return
+
+    if not nginx_alias:
+        req.response = _flask.send_file(path, conditional=True)
+        return
+
+    if isinstance(content_type, unicode):
+        content_type = content_type.encode("utf8")
     req.response.last_modified = mtime
-    req.response.content_length = file_length
     req.response.content_type = content_type
-    if nginx_alias:
-        req.response.headers['X-Accel-Redirect'] = _os.path.join("/{}".format(nginx_alias), _os.path.relpath(path, nginx_dir))
-    if req.method == 'GET':
-        if nginx_alias:
-            return
-        else:
-            req.response = _flask.send_file(path, conditional=True)
-            req.response.content_length = file_length
-    req.response.status_code = _httpstatus.HTTP_OK
-    return
-
-
-def _get_extension(path):
-    dirsep = _string.rfind(path, '/')
-    dotsep = _string.rfind(path, '.')
-    if dotsep > dirsep:
-        return path[dotsep + 1:]
-    else:
-        return ''
+    req.response.headers['X-Accel-Redirect'] = _os.path.join("/{}".format(nginx_alias), _os.path.relpath(path, nginx_dir))
 
 
 def html_repr(object):
@@ -390,132 +267,6 @@ def _load_module(filename):
     m = _importlib.import_module(module2)
     global_modules[filename] = m
     return m
-
-
-# This is the 'default' handler.  it implements the base set of
-# features expected of a simple file-delivering HTTP server.  file
-# services are provided through a 'filesystem' object, the very same
-# one used by the FTP server.
-#
-# You can replace or modify this handler if you want a non-standard
-# HTTP server.  You can also derive your own handler classes from
-# it.
-#
-# support for handling POST requests is available in the derived
-# class <default_with_post_handler>, defined below.
-#
-
-class _default_handler:
-    valid_commands = ['GET', 'HEAD']
-
-    IDENT = 'Default HTTP Request Handler'
-
-    # Pathnames that are tried when a URI resolves to a directory name
-    directory_defaults = [
-        'index.html',
-        'default.html'
-    ]
-
-    def __init__(self, filesystem):
-        self.filesystem = filesystem
-
-    # always match, since this is a default
-    def match(self, request):
-        return 1
-
-    def can_handle(self, request):
-        path = request.mediatum_contextfree_path
-        while path and path[0] == '/':
-            path = path[1:]
-        if self.filesystem.isdir(path):
-            if path and path[-1] != '/':
-                return 0
-            found = 0
-            if path and path[-1] != '/':
-                path = path + '/'
-            for default in self.directory_defaults:
-                p = path + default
-                if self.filesystem.isfile(p):
-                    path = p
-                    found = 1
-                    break
-            if not found:
-                return 0
-        elif not self.filesystem.isfile(path):
-            return 0
-        return 1
-
-    # handle a file request, with caching.
-
-    def handle_request(self, request):
-        if request.method not in self.valid_commands:
-            request.response.status_code = _httpstatus.HTTP_BAD_REQUEST
-            request.response.set_data(_httpstatus.responses[_httpstatus.HTTP_BAD_REQUEST])
-            return
-
-        path = request.mediatum_contextfree_path
-
-        # strip off all leading slashes
-        while path and path[0] == '/':
-            path = path[1:]
-
-        if self.filesystem.isdir(path):
-            if not path.endswith(_os.sep):
-                request.response.location = '%s%s/' % (request.host_url, path)
-                request.response.status_code = 301
-                request.response.set_data(_httpstatus.responses[301])
-                return
-
-            # we could also generate a directory listing here,
-            # may want to move this into another method for that
-            # purpose
-            found = 0
-            if path and path[-1] != '/':
-                path = path + '/'
-            for default in self.directory_defaults:
-                p = path + default
-                if self.filesystem.isfile(p):
-                    path = p
-                    found = 1
-                    break
-            if not found:
-                request.response.status_code = _httpstatus.HTTP_NOT_FOUND
-                request.response.set_data("File {} not found".format(path))
-                return
-
-        elif not self.filesystem.isfile(path):
-            request.response.status_code = _httpstatus.HTTP_NOT_FOUND
-            request.response.set_data("File {} not found".format(path))
-            return
-
-        try:
-            mtime = _datetime.datetime.utcfromtimestamp(self.filesystem.stat(path)[_stat.ST_MTIME])
-            file = self.filesystem.open(path, 'rb')
-        except:
-            request.response.status_code = _httpstatus.HTTP_NOT_FOUND
-            request.response.set_data("File {} not found".format(path))
-            return
-
-        if request.if_modified_since and mtime <= request.if_modified_since:
-            request.response.status_code = 304
-            request.response.set_data(_httpstatus.responses[304])
-            return
-
-        request.response.last_modified = mtime
-        request.response.content_length = self.filesystem.stat(path)[_stat.ST_SIZE]
-        self.set_content_type(path, request)
-        if request.method == 'GET':
-            request.response.set_data(file.read())
-
-    def set_content_type(self, path, request):
-        ext = _string.lower(_get_extension(path))
-        typ, encoding = _mimetypes.guess_type(path)
-        if typ is not None:
-            request.response.content_type = typ
-        else:
-            # TODO: test a chunk off the front of the file for 8-bit
-            # characters, and use application/octet-stream instead.
-            request.response.content_type = 'text/plain'
 
 
 class _WebContext:
@@ -644,34 +395,8 @@ def handle_request(req):
     return req
 
 
-def addFileStore(webpath, localpaths):
-    global contexts
-    if len(webpath) and webpath[0] != '/':
-        webpath = "/" + webpath
-    c = _FileStore(webpath, localpaths)
-    contexts += [c]
-    return c
-
-
-def addFileStorePath(webpath, path):
-    for context in contexts:
-        if context.name == webpath:
-            if path not in context.handlers:
-                context.addRoot(path)
-
-
 def addContext(webpath, localpath):
     global contexts
     c = _WebContext(webpath, localpath)
     contexts += [c]
     return c
-
-
-def getFileStorePaths(webpath):
-    global contexts
-    ret = []
-    for context in contexts:
-        if context.name == webpath:
-            for h in context.handlers:
-                ret.append(h.filesystem.root)
-    return ret

@@ -13,6 +13,7 @@ import io
 import json as _json
 import logging
 import math as _math
+import mimetypes as _mimetypes
 import os
 import random as _random
 import re
@@ -178,7 +179,7 @@ def isNumeric(s):
 
 
 class Link:
-    def __init__(self, link, title, label, target="_self", icon="/static/img/blank.gif"):
+    def __init__(self, link, title, label, target="_self", icon=""):
         self.link = link
         self.title = title
         self.label = label
@@ -339,76 +340,61 @@ def highlight(string, words, left, right):
     return string
 
 
+_fileextension2mimetype = dict(bib="text/x-bibtex")
+
+_valid_fileextensions = frozenset((
+        "aif",
+        "aiff",
+        "bib",
+        "bmp",
+        "css",
+        "doc",
+        "gif",
+        "html",
+        "ico",
+        "jpeg",
+        "jpg",
+        "js",
+        "json",
+        "mp3",
+        "mp4",
+        "new",
+        "pdf",
+        "png",
+        "ppt",
+        "ps",
+        "svg",
+        "tif",
+        "tiff",
+        "txt",
+        "wav",
+        "xls",
+        "xml",
+        "zip",
+    ))
+
+
+_fileextension2filetype_override = dict(
+        bib="bibtex",
+        doc="document",
+        new="news",
+        pdf="document",
+        ps="document",
+    )
 #
 # mimetype validator
 #
 def getMimeType(filename):
-    filename = filename.lower().strip()
-    mimetype = "application/x-download"
-    type = "file"
-    if filename.endswith(".jpg") or filename.endswith(".jpeg"):
-        mimetype = "image/jpeg"
-        type = "image"
-    elif filename.endswith(".gif"):
-        mimetype = "image/gif"
-        type = "image"
-    elif filename.endswith(".png"):
-        mimetype = "image/png"
-        type = "image"
-    elif filename.endswith(".bmp"):
-        mimetype = "image/x-ms-bmp"
-        type = "image"
-    elif filename.endswith(".tif"):
-        mimetype = "image/tiff"
-        type = "image"
-    elif filename.endswith(".tiff"):
-        mimetype = "image/tiff"
-        type = "image"
-    elif filename.endswith(".svg"):
-        mimetype = "image/svg+xml"
-        type = "image"
-    elif filename.endswith(".pdf"):
-        mimetype = "application/pdf"
-        type = "document"
-    elif filename.endswith(".ps"):
-        mimetype = "application/postscript"
-        type = "document"
-    elif filename.endswith(".zip"):
-        mimetype = "application/zip"
-        type = "zip"
-    elif filename.endswith(".mp4"):
-        mimetype = "video/mp4"
-        type = "video"
-    elif filename.endswith(".doc"):
-        mimetype = "application/msword"
-        type = "document"
-    elif filename.endswith(".ppt"):
-        mimetype = "application/mspowerpoint"
-        type = "ppt"
-    elif filename.endswith(".xml"):
-        mimetype = "application/xml"
-        type = "xml"
-    elif filename.endswith(".mp3"):
-        mimetype = "audio/mpeg"
-        type = "audio"
-    elif filename.endswith(".wav"):
-        mimetype = "audio/x-wav"
-        type = "audio"
-    elif filename.endswith(".aif") or filename.endswith(".aiff"):
-        mimetype = "audio/x-aiff"
-        type = "audio"
-    elif filename.endswith(".new"):
-        mimetype = "text/plain"
-        type = "news"
-    elif filename.endswith(".bib"):
-        mimetype = "text/x-bibtex"
-        type = "bibtex"
+    filename = filename.strip().lower()
+    extension = os.path.splitext(filename)[1][1:]
+    if extension not in _valid_fileextensions:
+        return "other", "other"
 
-    else:
-        mimetype = "other"
-        type = "other"
-
-    return mimetype, type
+    mimetype = _mimetypes.guess_type(filename)[0] or _fileextension2mimetype.get(extension, "other")
+    return mimetype, _fileextension2filetype_override.get(
+            extension,
+            mimetype.split("/")[0],
+        )
 
 
 def formatTechAttrs(attrs):

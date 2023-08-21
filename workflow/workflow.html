@@ -93,8 +93,8 @@
     </p>
     <h2><tal:block i18n:translate="wf_list_header"><tal:block tal:content="python:unicode(len(workflow.getNodeList()))" i18n:name="number"/>
         <tal:block tal:content="python:workflow.getName()" i18n:name="name"/>
-        </tal:block>:
-        <tal:block tal:replace="python:workflow.getDescription()"/>
+    </tal:block>:
+    <tal:block tal:replace="python:workflow.getDescription()"/>
     </h2>
     <table id="workflowtable" cellspacing="0px">
         <tbody>
@@ -136,41 +136,41 @@
 
 
 <tal:block metal:define-macro="workflow_show_table">
-        <tr>
-            <tal:block tal:define="truestep python:step.getTrueLabel(); falsestep python:step.getFalseLabel()">
-                <td tal:content="child_id"/>
-                <td tal:content="child_creationtime"/>
-                <td tal:content="child_name"/>
+    <tr>
+        <tal:block tal:define="truestep python:step.getTrueLabel(); falsestep python:step.getFalseLabel()">
+            <td tal:content="child_id"/>
+            <td tal:content="child_creationtime"/>
+            <td tal:content="child_name"/>
 
-                <td><a tal:attributes="href python:u'{}{}&type=editor'.format(nodelink, child_id)" i18n:translate="workflow_show_step">TEXT</a></td>
-                <td><a target="editorwindow" tal:attributes="href python:u'/edit/edit?id={}'.format(child_id)" i18n:translate="sub_header_edit">TEXT</a></td>
+            <td><a tal:attributes="href python:u'{}{}&type=editor'.format(nodelink, child_id)" i18n:translate="workflow_show_step">TEXT</a></td>
+            <td><a target="editorwindow" tal:attributes="href python:u'/edit/edit?id={}'.format(child_id)" i18n:translate="sub_header_edit">TEXT</a></td>
 
-                <td>
-                    <a tal:condition="python:falsestep!=''" tal:attributes="href python:u'{}{}&forcefalse=1'.format(nodelink, child_id)" tal:content="raw falsestep"/>
-                    <tal:block tal:condition="python:falsestep==''">-</tal:block>
-                </td>
-                <td>
-                    <a tal:condition="python:truestep!=''" tal:attributes="href python:u'{}{}&forcetrue=1'.format(nodelink, child_id)" tal:content="raw truestep"/>
-                    <tal:block tal:condition="python:truestep==''">-</tal:block>
-                </td>
-                <td style="vertical-align: middle; text-align: center;">
-                    <input tal:attributes="id child_id" class="checkbox" id="" type="checkbox"/>
-                </td>
-            </tal:block>
-        </tr>
+            <td>
+                <a tal:condition="python:falsestep!=''" tal:attributes="href python:u'{}{}&forcefalse=1'.format(nodelink, child_id)" tal:content="raw falsestep"/>
+                <tal:block tal:condition="python:falsestep==''">-</tal:block>
+            </td>
+            <td>
+                <a tal:condition="python:truestep!=''" tal:attributes="href python:u'{}{}&forcetrue=1'.format(nodelink, child_id)" tal:content="raw truestep"/>
+                <tal:block tal:condition="python:truestep==''">-</tal:block>
+            </td>
+            <td style="vertical-align: middle; text-align: center;">
+                <input tal:attributes="id child_id" class="checkbox" id="" type="checkbox"/>
+            </td>
+        </tal:block>
+    </tr>
 </tal:block>
 
 
 <div metal:define-macro="workflow_show" id="workflow">
     <script tal:content="python:u'var id={}'.format(step.id)"/>
-    <script src="/static/js/workflow/workflow.js"> </script>
+     <script src="/static/js/workflow/workflow.js"> </script>
     <div style="display:none" id="confirm_delete"  i18n:translate="workflow_confirm_msg_delete">TEXT</div>
     <div style="display:none" id="confirm_move"  i18n:translate="workflow_confirm_msg_move">TEXT</div>
     <script tal:content="python:u'var id={}'.format(step.id)"/>
     <p>
-    <span style="text-align:left">
-        <a tal:attributes="href python:u'/publish/{}'.format(workflow.getName())" i18n:translate="back"> </a>
-    </span>
+        <span style="text-align:left">
+            <a tal:attributes="href python:u'/publish/{}'.format(workflow.getName())" i18n:translate="back"> </a>
+        </span>
     </p>
     <h2 i18n:translate="workflow_msg3">TEXT <span tal:content="python:step.name" i18n:name="name"/>:</h2>
     <table id="workflowtable" cellspacing="0px">
@@ -249,7 +249,7 @@
 
 <metal:block metal:define-macro="workflow_step_type_config">
     <tr tal:condition="python:len(settings)>0">
-            <td colspan="2"><b i18n:translate="admin_wfstep_additional">TEXT</b>:</td>
+        <td colspan="2"><b i18n:translate="admin_wfstep_additional">TEXT</b>:</td>
     </tr>
     <tal:block tal:repeat="setting settings">
         <tr>

@@ -16,9 +16,9 @@
             <td tal:content="python:u'{} bytes'.format(file.getSize())" style="text-align:right;width:100px"/>
             <td tal:content="python:file.mimetype"/>
             <td>
-                <a i18n:attributes="title workflow_filelist_open_title" target="filewindow" 
-                 tal:attributes="href python:u'/file/{}/{}'.format(node.id, file.getName())"
-                 tal:content="python:file.getName()"/>
+                <a i18n:attributes="title workflow_filelist_open_title" target="filewindow"
+                   tal:attributes="href python:u'/file/{}/{}'.format(node.id, file.getName())"
+                   tal:content="python:file.getName()"/>
             </td>
             <td tal:condition="delbutton">
                 <input tal:attributes="name python:u'delete_{}'.format(file.getName())" i18n:attributes="title workflow_filelist_delete_title" onclick="return questionDel()" type="image" src="/static/img/delete.png"/>
@@ -39,13 +39,13 @@
         <tal:block tal:condition="python:file.type in ['document', 'image']">
             <div style="padding:20px;margin-left:150px">
                 <p tal:content="python:u'{} bytes'.format(file.getSize())"/>
-                <a i18n:attributes="title workflow_filelist_open_title" target="filewindow" 
-             tal:attributes="href python:u'/file/{}/{}'.format(node.id, file.getName())"
-             tal:content="python:file.getName()"/>
-             <p style="padding-top:20px" tal:condition="delbutton">
-                <input tal:attributes="name python:u'delete_{}'.format(file.getName())" i18n:attributes="title workflow_filelist_delete_title" onclick="return questionDel()" type="image" src="/static/img/delete.png"/>
-                <span i18n:translate="workflow_filelist_delete_label">TEXT</span>
-             </p>
+                <a i18n:attributes="title workflow_filelist_open_title" target="filewindow"
+                   tal:attributes="href python:u'/file/{}/{}'.format(node.id, file.getName())"
+                   tal:content="python:file.getName()"/>
+                <p style="padding-top:20px" tal:condition="delbutton">
+                    <input tal:attributes="name python:u'delete_{}'.format(file.getName())" i18n:attributes="title workflow_filelist_delete_title" onclick="return questionDel()" type="image" src="/static/img/delete.png"/>
+                    <span i18n:translate="workflow_filelist_delete_label">TEXT</span>
+                </p>
             </div>
         </tal:block>
     </tal:block>
@@ -64,9 +64,9 @@
 
     <tal:block tal:replace="raw filelist"/>
     <tal:block tal:replace="raw filelistshort"/>
-   
+
     <p tal:content="raw python:posttext"/>
-    
+
     <form action="/mask" method="post">
         <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
         <input tal:attributes="value key" type="hidden" name="key"/>

@@ -10,9 +10,9 @@
     <div>
         <label for="stepsetting_accesstype" i18n:translate="accesstype"> </label>
         <select name="stepsetting_accesstype" id="stepsetting_accesstype" multiple="multiple" size="3">
-          <option tal:attributes="selected python:'1' if 'read' in accesstype else None" value="read">read</option>
-          <option tal:attributes="selected python:'1' if 'write' in accesstype else None" value="write">write</option>
-          <option tal:attributes="selected python:'1' if 'data' in accesstype else None" value="data">data</option>
+            <option tal:attributes="selected python:'1' if 'read' in accesstype else None" value="read">read</option>
+            <option tal:attributes="selected python:'1' if 'write' in accesstype else None" value="write">write</option>
+            <option tal:attributes="selected python:'1' if 'data' in accesstype else None" value="data">data</option>
         </select>
     </div>
 </metal:block>

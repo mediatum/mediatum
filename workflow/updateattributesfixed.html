@@ -4,11 +4,11 @@
 -->
 <metal:block metal:define-macro="workflow_step_type_config">
     <div>
-      <tal:block tal:condition="python:fileurl">
-      <tal:block i18n:translate="updateattributesfixed-upload-fileatt"/>
-      <a tal:attributes="href fileurl" tal:content="python:'{}  {} Bytes'.format(filebasename, filesize)"/>
-        <br/>
-      </tal:block>
-      <input id="stepsetting_fileatt" name="stepsetting_fileatt" type="file"/>
+        <tal:block tal:condition="python:fileurl">
+            <tal:block i18n:translate="updateattributesfixed-upload-fileatt"/>
+            <a tal:attributes="href fileurl" tal:content="python:'{}  {} Bytes'.format(filebasename, filesize)"/>
+            <br/>
+        </tal:block>
+        <input id="stepsetting_fileatt" name="stepsetting_fileatt" type="file"/>
     </div>
 </metal:block>

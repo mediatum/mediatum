@@ -155,3 +155,12 @@ msgstr "Angaben editierbar?"
 
 msgid "admin_wf_languages"
 msgstr "Sprachunterstützung"
+
+msgid "admin_wfstep_upload_file_extensions"
+msgstr "Erlaubte Dateitypen bearbeiten"
+
+msgid "admin_wfstep_upload_extensions_saved"
+msgstr "Gespeicherte Dateitypen (entfernen Sie Dateitypen durch Abwählen)"
+
+msgid "admin_wfstep_upload_file_extension_hints"
+msgstr "Neue Dateiendungen (ein Wert pro Zeile)"

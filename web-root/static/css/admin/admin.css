@@ -192,3 +192,15 @@ fieldset.mediatum-admin-workflow-settings-additional > label > * {
     margin-right: .5em;
     margin-left: .5em;
 }
+
+ul.mediatum_wfstep_upload_settings {
+    list-style-type: none;
+    float: none;
+    padding-left: 0;
+}
+
+ul.mediatum_wfstep_upload_settings > li
+{
+    display: block;
+    height: 1.5em;
+}

@@ -153,3 +153,12 @@ msgstr "Details editable?"
 
 msgid "admin_wf_languages"
 msgstr "Languages"
+
+msgid "admin_wfstep_upload_file_extensions"
+msgstr "Change accepted file types"
+
+msgid "admin_wfstep_upload_extensions_saved"
+msgstr "Saved file types (uncheck types to delete)"
+
+msgid "admin_wfstep_upload_file_extension_hints"
+msgstr "New filename extensions (insert one value per line)"

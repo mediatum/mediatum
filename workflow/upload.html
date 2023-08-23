@@ -20,7 +20,7 @@
         <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
         <div>
             <h2 i18n:translate="">workflow_add_file</h2>
-            <input type="file" name="file"/>
+            <input type="file" name="file" tal:attributes="accept python:mimetypes"/>
             <input i18n:attributes="value workflow_upload_button" type="submit" name="submit"/>
         </div>
 
@@ -32,3 +32,45 @@
         </table>
     </form>
 </tal:block>
+
+<!-- special upload workflowstep config -->
+<metal:block metal:define-macro="workflow_step_type_config">
+    <p i18n:translate="">
+        admin_wfstep_upload_file_extensions
+    </p>
+    <!-- existing configuration -->
+    <label>
+        <tal:block i18n:translate="">
+            admin_wfstep_upload_extensions_saved
+        </tal:block>
+        <ul class="mediatum_wfstep_upload_settings">
+            <!-- tal's repeat variable syntax (e.g. repeat/item/index) does not work in mediatum -->
+            <li tal:repeat="m python:mimetype_repr">
+                <label>
+                    <input
+                        type="checkbox"
+                        checked="true"
+                        tal:attributes="name python:'stepsetting_{}{}'.format(known_prefix, m)"
+                    />
+                    <tal:block tal:content="python:mimetype_repr[m]" />
+                </label>
+            </li>
+        </ul>
+    </label>
+    <label class="mediatum_wfstep_upload_settings">
+        <!-- input for filename extensions -->
+        <textarea
+            class="mediatum_wfstep_upload_settings"
+            name="stepsetting_new_extensions"
+            i18n:attributes="placeholder admin_wfstep_upload_file_extension_hints"
+        />
+        <tal:block i18n:translate="">admin_wfstep_upload_file_extension_hints</tal:block>
+    </label>
+    <!-- contains data of currently accepted mime types -->
+    <textarea
+        name="stepsetting_deletable_mimetypes"
+        readonly="true"
+        style="display:none;"
+        tal:content="python:'\n'.join(mimetype_repr)"
+    />
+</metal:block>

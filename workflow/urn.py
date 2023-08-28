@@ -33,25 +33,23 @@ class WorkflowStep_Urn(WorkflowStep):
     def show_workflow_node(self, node, req):
         attrname = self.settings["attrname"]
         niss = self.settings["niss"]
+        urn = node.get(attrname)
 
-        # create urn only for nodes with files
-        if len(node.files) > 0:
-            urn = node.get(attrname)
-            if urn:
-                node.set(attrname, utilsurn.increaseURN(node.get(attrname)))
-            else:
-                for var in re.findall(r'\[(.+?)\]', niss):
-                    if var == "att:id":
-                        niss = niss.replace("[" + var + "]", unicode(node.id))
-                    elif var.startswith("att:"):
-                        val = node.get(var[4:])
-                        try:
-                            val = date.format_date(date.parse_date(val), '%Y%m%d')
-                        except:
-                            logg.exception("exception in workflow step urn, date formatting failed, ignoring")
-                            
-                        niss = niss.replace("[" + var + "]", val)
-                node.set(attrname, utilsurn.buildNBN(self.settings["snid1"], self.settings["snid2"], niss))
+        if urn:
+            node.set(attrname, utilsurn.increaseURN(node.get(attrname)))
+        else:
+            for var in re.findall(r'\[(.+?)\]', niss):
+                if var == "att:id":
+                    niss = niss.replace("[" + var + "]", unicode(node.id))
+                elif var.startswith("att:"):
+                    val = node.get(var[4:])
+                    try:
+                        val = date.format_date(date.parse_date(val), '%Y%m%d')
+                    except:
+                        logg.exception("exception in workflow step urn, date formatting failed, ignoring")
+
+                    niss = niss.replace("[" + var + "]", val)
+            node.set(attrname, utilsurn.buildNBN(self.settings["snid1"], self.settings["snid2"], niss))
         db.session.commit()
         return self.forwardAndShow(node, True, req)
 

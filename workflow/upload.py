@@ -1,8 +1,21 @@
 # Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
+
+"""
+This module defines the workflow step: upload.
+Generates markup for the user page to upload a single file.
+Generates markup for the admin page.
+Accepted file types are configurable.
+The module writes the new file to the database on success.
+"""
+
 from __future__ import division
 from __future__ import print_function
+from __future__ import unicode_literals
+from itertools import imap as map
+from itertools import ifilter as filter
+range = xrange
 
 import logging
 
@@ -14,7 +27,6 @@ from .workflow import WorkflowStep, registerStep
 import utils.fileutils as fileutils
 from utils.utils import OperationException
 from .showdata import mkfilelist, mkfilelistshort
-import os
 from core import db
 
 logg = logging.getLogger(__name__)

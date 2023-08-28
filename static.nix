@@ -21,11 +21,11 @@ let
       hash = "sha512-IMpIlZCOtmvCMfOB0c9AmK6rBbvin8DbEr0fiUIyEhzLJFgNuHQsfvGjl2mXrNz80PaByM+ckiYhjNFhzmo9zA==";
     };
     "js/jquery.layout.min.js" = fetchurl {
-      url = "https://layout.jquery-dev.com/lib/js/jquery.layout-latest.min.js";
+      url = "http://layout.jquery-dev.com/lib/js/jquery.layout-latest.min.js";
       hash = "sha512-kBA+j26xHcSGvJvvP2Wm4nzIPXSVabGfeM+U/PcB1grzVmV6H7b+uisAYA+lsKP7iI4rvdyJ83CIac874VpBHg==";
     };
     "js/jquery.layout.resizePaneAccordions-latest.min.js" = fetchurl {
-      url = "https://layout.jquery-dev.com/lib/js/jquery.layout.resizePaneAccordions-1.2.min.js";
+      url = "http://layout.jquery-dev.com/lib/js/jquery.layout.resizePaneAccordions-1.2.min.js";
       hash = "sha512-mC0fXGmUcplIj+rIew/vqaeTPPx7GIVkB3fpDEA+QfJpwbeCkOTEjLGyCmKmGNQW0Vp9RjH/LrgOzAsoBRWlCA==";
     };
     "js/jquery.optionTree.js" = fetchurl {

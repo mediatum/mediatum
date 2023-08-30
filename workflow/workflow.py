@@ -716,6 +716,7 @@ def register():
     from . import email
     from . import end
     from . import hierarchicalchoice2metafield
+    from . import joinmetafields
     from . import metafield2metadata
     from . import protect
     from . import publish
@@ -739,6 +740,7 @@ def register():
         email,
         end,
         hierarchicalchoice2metafield,
+        joinmetafields,
         metafield2metadata,
         protect,
         publish,

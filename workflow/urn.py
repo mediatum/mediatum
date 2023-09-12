@@ -5,46 +5,49 @@ from __future__ import division
 from __future__ import print_function
 
 import logging
+import os as _os
 import re
+
+import backports.functools_lru_cache as _backports_functools_lru_cache
+import ruamel.yaml as _ruamel_yaml
 
 import mediatumtal.tal as _tal
 
 from .workflow import WorkflowStep, registerStep
 import utils.date as date
 from core import db
+from core import config as _core_config
 
 logg = logging.getLogger(__name__)
 
 
-_chkmap = {
-    "0": "1", "1": "2", "2": "3", "3": "4", "4": "5", "5": "6", "6": "7", "7": "8",
-    "8": "9", "9": "41", "a": "18", "b": "14", "c": "19", "d": "15", "e": "16", "f": "21",
-    "g": "22", "h": "23", "i": "24", "j": "25", "k": "42", "l": "26", "m": "27", "n": "13",
-    "o": "28", "p": "29", "q": "31", "r": "12", "s": "32", "t": "33", "u": "11", "v": "34",
-    "w": "35", "x": "36", "y": "37", "z": "38", "-": "39", ":": "17"}
+@_backports_functools_lru_cache.lru_cache(maxsize=None)
+def _get_chkmap():
+    with open(_os.path.join(_core_config.basedir, "workflow", "urn-checksum-map.yaml"), "rb") as f:
+        return _ruamel_yaml.YAML(typ="safe", pure=True).load(f).get
 
 
 def _build_checksum(urn):
     i = 1
     digit = "0"
     sum = 0
+
     for char in urn:
-        for digit in _chkmap.get(char, ""):
+        for digit in str(_get_chkmap()(char, "")):
             sum += int(digit) * i
             i = i + 1
     return ustr(sum // int(digit))[-1:]
 
 
 def _build_bnb(snid1, snid2, niss):
-    """
-    ----- urn structure -----
-    urn:<NID>:<NID-specific Part>
+    # ----- urn structure -----
+    # urn:<NID>:<NID-specific Part>
+    #
+    # NID - Namespace IDentifier
+    # The complete list of Univorm Resource Names Namespaces
+    # can be referenced here:
+    # http://www.iana.org/assignments/urn-namespaces/urn-namespaces.xml
 
-    NID - Namespace IDentifier
-    The complete list of Univorm Resource Names Namespaces
-    can be referenced here:
-    http://www.iana.org/assignments/urn-namespaces/urn-namespaces.xml
-    """
     urn = "urn:" + ustr(snid1) + ":" + ustr(snid2) + "-" + niss + "-"
     return urn + _build_checksum(urn)
 

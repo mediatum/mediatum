@@ -24,7 +24,7 @@ _chkmap = {
     "w": "35", "x": "36", "y": "37", "z": "38", "-": "39", ":": "17"}
 
 
-def _buildChecksum(urn):
+def _build_checksum(urn):
     i = 1
     digit = "0"
     sum = 0
@@ -35,7 +35,7 @@ def _buildChecksum(urn):
     return ustr(sum // int(digit))[-1:]
 
 
-def _buildNBN(snid1, snid2, niss):
+def _build_bnb(snid1, snid2, niss):
     """
     ----- urn structure -----
     urn:<NID>:<NID-specific Part>
@@ -46,10 +46,10 @@ def _buildNBN(snid1, snid2, niss):
     http://www.iana.org/assignments/urn-namespaces/urn-namespaces.xml
     """
     urn = "urn:" + ustr(snid1) + ":" + ustr(snid2) + "-" + niss + "-"
-    return urn + _buildChecksum(urn)
+    return urn + _build_checksum(urn)
 
 
-def _increaseURN(urn):
+def _increase_urn(urn):
     checksum = 0
     dashes = 0
     if urn.startswith("urn:nbn"):
@@ -76,7 +76,7 @@ def _increaseURN(urn):
     urn += "-" * dashes
     if checksum:
         # re-add checksum digit
-        urn += _buildChecksum(urn)
+        urn += _build_checksum(urn)
     return urn
 
 
@@ -99,7 +99,7 @@ class WorkflowStep_Urn(WorkflowStep):
         urn = node.get(attrname)
 
         if urn:
-            node.set(attrname, _increaseURN(node.get(attrname)))
+            node.set(attrname, _increase_urn(node.get(attrname)))
         else:
             for var in re.findall(r'\[(.+?)\]', niss):
                 if var == "att:id":
@@ -112,7 +112,7 @@ class WorkflowStep_Urn(WorkflowStep):
                         logg.exception("exception in workflow step urn, date formatting failed, ignoring")
 
                     niss = niss.replace("[" + var + "]", val)
-            node.set(attrname, _buildNBN(self.settings["snid1"], self.settings["snid2"], niss))
+            node.set(attrname, _build_bnb(self.settings["snid1"], self.settings["snid2"], niss))
         db.session.commit()
         return self.forwardAndShow(node, True, req)
 

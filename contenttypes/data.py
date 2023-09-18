@@ -63,7 +63,7 @@ def render_mask_template(node, mask, field_descriptors, language, words=None, se
         metatype = fd["metatype"]
         maskitem_type = fd["maskitem_type"]
 
-        if metafield_type in ['date', 'url', 'hlist']:
+        if metafield_type in ['date', 'url']:
             value = metatype.viewer_get_data(metafield, maskitem, mask, node, language)[1]
 
         elif metafield_type in ['field']:

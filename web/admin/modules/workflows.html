@@ -611,10 +611,15 @@
                 </td>
             </tr>
         </table>
-        <tal:block tal:condition="python:workflow_step_type_settings_html is not None">
-          <div class="mediatum-admin-workflow-settings-head" i18n:translate="admin_wfstep_additional"> </div>
-          <tal:block tal:replace="structure workflow_step_type_settings_html"/>
-        </tal:block>
+        <fieldset
+            tal:condition="python:workflow_step_type_settings_html is not None"
+            class="mediatum-admin-workflow-settings-additional"
+        >
+            <legend class="mediatum-admin-workflow-settings-head" i18n:translate="">
+                admin_wfstep_additional
+            </legend>
+            <tal:block tal:replace="structure workflow_step_type_settings_html"/>
+        </fieldset>
         <table>
             <tr>
                 <td>&nbsp;</td>

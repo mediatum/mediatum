@@ -172,3 +172,23 @@ button.admin_filter:hover{color:#000000; background:#CCCCCC;}
 .admin-serverstatus-fspath {
   font-family:monospace;
 }
+
+/* Additional information for current node type */
+
+fieldset.mediatum-admin-workflow-settings-additional {
+    border: none;
+    padding: 0;
+}
+
+fieldset.mediatum-admin-workflow-settings-additional > label {
+    display: block;
+    float: none;
+    width: fit-content;
+    padding: 1em 0 .5em .5em;
+}
+
+fieldset.mediatum-admin-workflow-settings-additional > label > * {
+    vertical-align: middle;
+    margin-right: .5em;
+    margin-left: .5em;
+}

@@ -721,6 +721,7 @@ def register():
     from . import protect
     from . import publish
     from . import reauth
+    from . import setnodename
     from . import showdata
     from . import start
     from . import textpage
@@ -745,6 +746,7 @@ def register():
         protect,
         publish,
         reauth,
+        setnodename,
         showdata,
         start,
         textpage,

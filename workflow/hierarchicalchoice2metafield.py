@@ -29,9 +29,6 @@ import utils.fileutils as _fileutils
 import workflow as _workflow
 
 
-_yaml_loader = _ruamel_yaml.YAML(typ="safe", pure=True).load
-
-
 def register():
     _workflow.registerStep("workflowstep_hierarchicalchoice2metafield")
 
@@ -91,7 +88,7 @@ class WorkflowStep_HierarchicalChoice2Metafield(_workflow.WorkflowStep):
             return self.forwardAndShow(node, False, req)
 
         with open(_os.path.join(_core.config.get("paths.datadir"), self.files[0].path), "rb") as f:
-            tree_data = _yaml_loader(f)
+            tree_data = _ruamel_yaml.YAML(typ="safe", pure=True).load(f)
 
         lang = _core.translation.set_language(req.accept_languages)
 

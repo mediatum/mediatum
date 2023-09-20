@@ -27,9 +27,6 @@ import utils.fileutils as _fileutils
 import workflow as _workflow
 
 
-_yaml_loader = _ruamel_yaml.YAML(typ="safe", pure=True).load
-
-
 def register():
     _workflow.registerStep("workflowstep_metafield2metadata")
 
@@ -44,7 +41,7 @@ class WorkflowStep_Metafield2Metadata(_workflow.WorkflowStep):
 
     def runAction(self, node, op=""):
         with open(_os.path.join(_core.config.get("paths.datadir"), self.files[0].path), "rb") as f:
-            mapping = _yaml_loader(f)
+            mapping = _ruamel_yaml.YAML(typ="safe", pure=True).load(f)
 
         source_sep = self.settings["source-metadata-separator"]
         target_sep = self.settings["target-metadata-separator"]

@@ -24,7 +24,15 @@ class MessageIdNotFound(KeyError):
 @_backports_functools_lru_cache.lru_cache(maxsize=None)
 def _parse_po_file_to_dict(po_file_path):
     po = _polib.pofile(po_file_path, encoding='utf-8')
-    return {entry.msgid: entry.msgstr for entry in po.translated_entries()}
+    d = {entry.msgid: entry.msgstr for entry in po.translated_entries()}
+    # We currently permit empty strings as messages.
+    # However, polib does not expose them in
+    # `.translated_entries()`, but in `.untranslated_entries()`.
+    # Let's ensure we don't abuse this mechanism.
+    for entry in po.untranslated_entries():
+        assert entry.msgstr == ""
+        d[entry.msgid] = ""
+    return d
 
 
 @_backports_functools_lru_cache.lru_cache(maxsize=None)

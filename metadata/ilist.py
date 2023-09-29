@@ -15,6 +15,7 @@ import backports.functools_lru_cache as _backports_functools_lru_cache
 from sqlalchemy import func, sql
 from mediatumtal import tal
 
+import utils.utils as _utils
 from utils.utils import esc, suppress
 import core.metatype as _core_metatype
 from core.metatype import Metatype
@@ -157,4 +158,6 @@ class m_ilist(Metatype):
     def editor_parse_form_data(self, field, data, required):
         if required and not data.get("text"):
             raise _core_metatype.MetatypeInvalidFormData("edit_mask_required")
+        if _utils.xml_check_illegal_chars_or_null(data.get("text")):
+            raise _core_metatype.MetatypeInvalidFormData("edit_mask_illegal_char")
         return data.get("text")

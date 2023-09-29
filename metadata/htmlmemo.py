@@ -13,6 +13,7 @@ from mediatumtal import tal
 
 from core import httpstatus
 import core.metatype as _core_metatype
+import utils.utils as _utils
 from web import frontend as _web_frontend
 import re
 
@@ -79,4 +80,6 @@ class m_htmlmemo(_core_metatype.Metatype):
     def editor_parse_form_data(self, field, data, required):
         if required and not data.get("htmlmemo"):
             raise _core_metatype.MetatypeInvalidFormData("edit_mask_required")
+        if _utils.xml_check_illegal_chars_or_null(data.get("htmlmemo")):
+            raise _core_metatype.MetatypeInvalidFormData("edit_mask_illegal_char")
         return data.get("htmlmemo")

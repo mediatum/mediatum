@@ -9,8 +9,10 @@ from __future__ import print_function
 import logging
 import re
 from mediatumtal import tal
+import core as _core
 from core import httpstatus
 import core.config as config
+import utils.utils as _utils
 from utils.utils import esc
 from utils.utils import modify_tex
 import core.metatype as _core_metatype
@@ -84,4 +86,6 @@ class m_text(Metatype):
     def editor_parse_form_data(self, field, data, required):
         if required and not data.get("text"):
             raise _core_metatype.MetatypeInvalidFormData("edit_mask_required")
+        if _utils.xml_check_illegal_chars_or_null(data.get("text")):
+            raise _core_metatype.MetatypeInvalidFormData("edit_mask_illegal_char")
         return data.get("text")

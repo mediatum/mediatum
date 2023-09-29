@@ -12,6 +12,7 @@ import core.translation as _core_translation
 import core.metatype as _core_metatype
 from core.metatype import Metatype
 from urllib import unquote
+import utils.utils as _utils
 from utils.utils import quote_uri
 from utils.strings import ensure_unicode_returned
 from utils.strings import replace_attribute_variables
@@ -107,6 +108,8 @@ class m_url(Metatype):
     def editor_parse_form_data(self, field, data, required):
         if required and not data.get("link"):
             raise _core_metatype.MetatypeInvalidFormData("edit_mask_required")
+        if _utils.xml_check_illegal_chars_or_null(data.get("link")):
+            raise _core_metatype.MetatypeInvalidFormData("edit_mask_illegal_char")
         uri = data.get('link')
         quoted_uri = quote_uri(uri)
         if not quoted_uri:
@@ -115,6 +118,8 @@ class m_url(Metatype):
         if not linktext:
             # don't add a single ';' add the end of the url (quoted_uri)
             return u"{}".format(quoted_uri)
+        if _utils.xml_check_illegal_chars_or_null(linktext):
+            raise _core_metatype.MetatypeInvalidFormData("edit_mask_illegal_char")
         return u"{};{}".format(quoted_uri, linktext)
 
     def admin_settings_get_html_form(self, fielddata, metadatatype, language):

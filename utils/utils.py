@@ -847,3 +847,7 @@ def new_temp_download_file(filename):
     with tempfile.NamedTemporaryFile(prefix="tmp_", suffix=_fileutils.sanitize_filename(filename), dir=tmppath, delete=False) as outfile:
         os.chmod(outfile.name, 0o644)
         return outfile.name
+
+
+def xml_check_illegal_chars_or_null(text):
+    return (text != xml_remove_illegal_chars(text)) or ('\0' in text)

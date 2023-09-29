@@ -13,6 +13,9 @@ msgstr "Maskenauswahl"
 msgid "edit_mask"
 msgstr "Maske"
 
+msgid "edit_mask_illegal_char"
+msgstr "Illegales Zeichen"
+
 msgid "edit_mask_required"
 msgstr "Pflichtfeld, darf nicht leer sein"
 

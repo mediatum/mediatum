@@ -317,6 +317,12 @@ def exist_metafield_sanitizedname(pid, name):
     metadatatype = q(Metadatatype).get(pid)
     return sanitize_metafield_name(name) in (sanitize_metafield_name(metafield.name) for metafield in metadatatype.metafields)
 
+
+def exist_maskitem_sanitizedname(pid, name):
+    mask = q(Mask).get(pid)
+    return sanitize_metafield_name(name) in (sanitize_metafield_name(maskitem.metafield.name)
+                                             for maskitem in mask.all_maskitems if maskitem.metafield)
+
 """ update/create metadatafield """
 
 def updateMetaField(

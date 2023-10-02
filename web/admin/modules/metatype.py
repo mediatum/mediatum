@@ -638,6 +638,8 @@ def showEditor(req):
             elif req.params.get("field"):
                 # existing field used
                 fieldid = long(req.params.get("field"))
+                if _schema.exist_maskitem_sanitizedname(editor.id, q(Node).get(fieldid).name):
+                    error = _translation.translate(_translation.set_language(req.accept_languages), "admin_duplicate_error")
 
                 for p in q(Node).get(fieldid).parents:
                     if p in editor.all_maskitems:

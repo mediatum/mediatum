@@ -61,7 +61,8 @@ def _pdfinfo(filename):
     for line in out.splitlines():
         for attr in _pdfinfo_attribute_names:
             parts = line.replace("\n", "").replace("\r", "").split(attr + ":")
-            if len(parts) != 2:
+            # subtype line is indented and is ignored
+            if len(parts) != 2 or parts[0]:
                 continue
             # pdfinfo cannot handle strings in utf-16, they are clipped after BOM_UTF16_BE:
             if parts[1].strip() == codecs.BOM_UTF16_BE:

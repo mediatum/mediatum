@@ -76,7 +76,7 @@ def _pdfinfo(filename):
                     data[option[0]] = option[1]
                 data[attr] = "yes"
             break
-    return data
+    return {k:_utils_utils.utf8_decode_escape(v.strip()) for k,v in data.iteritems()}
 
 
 def _makeThumbs(src, thumbnailname):
@@ -87,19 +87,16 @@ def _makeThumbs(src, thumbnailname):
         pic.save(thumbnailname, "JPEG", quality="web_high")
 
 
-def _process_pdf(filename, thumbnailname, fulltextname, infoname):
+def _process_pdf(filename, thumbnailname, fulltextname):
     tempdir = config.get("paths.tempdir")
     imgfile = os.path.join(tempdir, "pdfpreview.{}.png".format(_utils_utils.gen_secure_token()))
     name = ".".join(filename.split(".")[:-1])
     fulltext_from_pdftotext = name + ".pdftotext"  # output of pdf to text, possibly not normalized utf-8
 
-    info = _pdfinfo(filename)
+    pdfinfo = _pdfinfo(filename)
     # test for correct rights
-    if info.get("Encrypted") == "yes":
+    if pdfinfo.get("Encrypted") == "yes":
         raise _PdfEncryptedError("error:document encrypted")
-
-    with open(infoname, "w") as finfo:
-        finfo.writelines("{}:{}{}\n".format(key, " "*(15-len(key)), value) for key, value in info.iteritems())
 
     # convert first page to image (graphicsmagick + ghostview)
     try:
@@ -142,6 +139,8 @@ def _process_pdf(filename, thumbnailname, fulltextname, infoname):
         os.remove(fulltext_from_pdftotext)
     with _utils_utils.suppress(OSError, warn=False):
         os.remove(imgfile)
+
+    return pdfinfo
 
 
 def _prepare_document_data(node, req, words=""):
@@ -207,7 +206,7 @@ class Document(_contenttypes_data.Content):
 
     @classmethod
     def get_sys_filetypes(cls):
-        return [u"document", u"fileinfo", u"fulltext", u"thumbnail"]
+        return [u"document", u"fulltext", u"thumbnail"]
 
     def _prepareData(self, req, words=""):
         return _prepare_document_data(self, req)
@@ -227,21 +226,16 @@ class Document(_contenttypes_data.Content):
         thumbnail = 0
         fulltext = 0
         doc = None
-        fileinfo = 0
         for f in self.files:
             if f.type == "thumbnail":
                 thumbnail = 1
             elif f.type == "fulltext":
                 fulltext = 1
-            elif f.type == "fileinfo":
-                fileinfo = 1
             elif f.type == "document":
                 doc = f
         if not doc:
             for f in self.files:
                 if f.type == "thumbnail":
-                    self.files.remove(f)
-                elif f.type == "fileinfo":
                     self.files.remove(f)
                 elif f.type == "fulltext":
                     self.files.remove(f)
@@ -249,15 +243,14 @@ class Document(_contenttypes_data.Content):
             db.session.commit()
             return
 
-        if thumbnail or fulltext or fileinfo:
+        if thumbnail or fulltext:
             return
 
         path, ext = _utils_utils.splitfilename(doc.abspath)
         thumbnailname = u"{}.thumbnail.jpeg".format(path)
         fulltextname = u"{}.txt".format(path)
-        infoname = u"{}.info".format(path)
         try:
-            _process_pdf(doc.abspath, thumbnailname, fulltextname, infoname)
+            pdfinfo = _process_pdf(doc.abspath, thumbnailname, fulltextname)
         except _PdfEncryptedError:
             # allow upload of encrypted document
             db.session.commit()
@@ -265,19 +258,16 @@ class Document(_contenttypes_data.Content):
         except _PIL_Image.DecompressionBombError:
             # must match error string in parsepdf.py
             raise _contenttypes_data.BadFile("image_too_big")
-
-        unwanted_attrs = self.get_unwanted_exif_attributes()
-        with codecs.open(infoname, "rb", encoding='utf8') as fi:
-            for line in fi:
-                i = line.find(':')
-                if i > 0:
-                    if any(tag in line[0:i].strip().lower() for tag in unwanted_attrs):
-                        continue
-                    self.set("pdf_" + line[0:i].strip().lower(), _utils_utils.utf8_decode_escape(line[i + 1:].strip()))
+        else:
+            unwanted_attrs = self.get_unwanted_exif_attributes()
+            for key, value in pdfinfo.iteritems():
+                key = key.lower()
+                if any(tag in key for tag in unwanted_attrs):
+                    continue
+                self.set("pdf_{}".format(key), value)
 
         self.files.append(File(thumbnailname, "thumbnail", "image/jpeg"))
         self.files.append(File(fulltextname, "fulltext", "text/plain"))
-        self.files.append(File(infoname, "fileinfo", "text/plain"))
 
         import_node_fulltext(self, overwrite=True)
 

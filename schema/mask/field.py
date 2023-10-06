@@ -211,6 +211,7 @@ class m_field(Metatype):
     def getMetaEditor(self, item, req):
         """ editor mask for field definition """
         fields = []
+        mask = None
 
         if "pid" in req.values:
             pidnode = None
@@ -225,6 +226,10 @@ class m_field(Metatype):
         metadatatype = req.params.get("metadatatype")
         if req.params.get("op", "") == "new":
             pidnode = q(Node).get(req.params.get("pid"))
+            mask = pidnode
+            while (mask.type == 'maskitem'):
+                mask = mask.parents[0]
+
             for m in metadatatype.getMasks():
                 if ustr(m.id) == ustr(req.params.get("pid")):
                     fields.extend(m.getChildren())
@@ -232,6 +237,13 @@ class m_field(Metatype):
         fields.sort(key=_operator.methodcaller("getOrderPos"))
 
         metafields = metadatatype.getMetaFields()
+        if mask:
+            mask_metafieldnames = frozenset(
+                    _schema.sanitize_metafield_name(maskitem.metafield.name)
+                    for maskitem in mask.all_maskitems if maskitem.metafield
+                   )
+            metafields = [mf for mf in metafields
+                    if _schema.sanitize_metafield_name(mf.name) not in mask_metafieldnames]
         metafields.sort(key=lambda mf:mf.getName().lower())
 
         tal_ctx = dict(

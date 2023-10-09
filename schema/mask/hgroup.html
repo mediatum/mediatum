@@ -6,12 +6,24 @@
     <h3 tal:condition="python:op=='new'" i18n:translate="mask_edit_new_hor_field">TEXT</h3>
     <h3 tal:condition="python:op=='edit'" i18n:translate="mask_edit_edit_hor_field">TEXT</h3>
     <br/>
-    <div class="label" i18n:translate="mask_edit_row_label">TEXT</div> <input tal:attributes="value python:item.getLabel()" type="text" name="label" style="width:500px"/>
+    <label>
+      <tal:block i18n:translate="">mask_edit_row_label</tal:block>
+      <input
+        tal:attributes="value python:item.getLabel()"
+        type="text"
+        name="label"
+        style="width:500px"
+       />
+    </label>
     <br/>
-    <div class="label" i18n:translate="mask_edit_unit">TEXT</div> <input tal:attributes="value python:item.getUnit()" type="text" name="unit"/>
+    <label>
+      <tal:block i18n:translate="">mask_edit_unit</tal:block>
+      <input tal:attributes="value python:item.getUnit()" type="text" name="unit"/>
+    </label>
     <br/>
     <tal:block tal:condition="python:op=='new'">
-        <div class="label" i18n:translate="mask_edit_position">TEXT</div> 
+      <label>
+        <tal:block i18n:translate="">mask_edit_position</tal:block>
         <select name="insertposition" style="width:500px">
             <option value="end" selected="selected" i18n:translate="mask_edit_end">TEXT</option>
             <tal:block tal:repeat="field fields">
@@ -20,6 +32,7 @@
                 <option tal:condition="python:not hasattr(field.getField(),'getFieldtype')" tal:attributes="value python:field.id" tal:content="python:u'{} ({})'.format(field.getLabel(), field.get('type'))"/>
             </tal:block>
         </select>
+      </label>
         <br/>
     </tal:block>
     <hr/> 

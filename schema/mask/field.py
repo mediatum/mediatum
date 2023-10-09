@@ -174,7 +174,7 @@ class m_field(Metatype):
         else:
             label = '<div class="label">&nbsp;</div>'
         if not sub:
-            ret += '<div id="%s" class="row" onmouseover="pick(this)" onmouseout="unpick(this)" onclick="select(this)" style="position:relative;min-height:30px">' % (
+            ret += '<div id="%s" class="row" onmouseover="pick(this)" onmouseout="unpick(this)" style="position:relative;min-height:30px">' % (
                 item.id)
 
         if len(label) > 0:

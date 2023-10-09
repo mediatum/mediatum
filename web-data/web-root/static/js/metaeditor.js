@@ -41,25 +41,6 @@ function unpick(obj){
     }
 }
 
-function select(obj){
-    if (!isSelected(obj)){
-        sellist += obj.id+";";
-        obj.style.border = "solid red 1px";
-        obj.style.backgroundColor = "#FFE7E7";
-    }else{
-        sellist = sellist.replace(obj.id+";","");
-        unpick(obj);
-    }
-    var div = document.getElementById("mediatum_selection_div");
-    if(div){
-        if (sellist.length>0){
-            div.style.display= 'block';
-        }else{
-            div.style.display= 'none';
-        }
-    }
-}
-
 function isSelected(obj){
     if (sellist == sellist.replace(obj.id+";","")){
         return false;

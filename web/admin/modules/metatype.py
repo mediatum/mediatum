@@ -606,13 +606,6 @@ def showEditor(req):
                 del req.params["savedetail"]
             break
 
-    if req.params.get("op", "") == "group":
-        # create new group for selected objects
-        req.params["op"] = "new"
-        req.params["edit"] = " "
-        req.params["type"] = req.params.get("group_type")
-        req.params["pid"] = q(Node).get(req.params.get("sel_id").split(";")[0]).parents[0].id
-
     if "saveedit" in req.params.keys() and req.params.get("op", "") != "cancel":
         # update node
         label = req.params.get("label", "-new-")

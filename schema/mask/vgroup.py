@@ -64,7 +64,7 @@ class m_vgroup(Metatype):
         i = 0
 
         if not sub:
-            ret += '<div id="' + unicode(item.id) + '" class="row" onmouseover="pick(this)" onmouseout="unpick(this)" onclick="select(this)">'
+            ret += '<div id="' + unicode(item.id) + '" class="row" onmouseover="pick(this)" onmouseout="unpick(this)">'
         ret += '<fieldset style="cursor:hand">'
 
         if item.getLabel() != "":

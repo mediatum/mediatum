@@ -88,7 +88,7 @@ class m_hgroup(Metatype):
         i = 0
 
         if not sub:
-            ret += '<div id="{}" class="row metaeditor" onmouseover="pick(this)" onmouseout="unpick(this)" onclick="select(this)">'.format(item.id)
+            ret += '<div id="{}" class="row metaeditor" onmouseover="pick(this)" onmouseout="unpick(this)">'.format(item.id)
 
         ret += '<fieldset>'
 

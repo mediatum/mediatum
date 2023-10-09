@@ -540,7 +540,7 @@ msgid "mask_edit_label"
 msgstr "Label:"
 
 msgid "mask_edit_multi_label"
-msgstr "Attributvorkommen in Schema: "
+msgstr "Attributvorkommen in Schema: ${schemes}"
 
 msgid "mask_edit_header"
 msgstr "Kopfzeile"

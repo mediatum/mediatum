@@ -530,7 +530,7 @@ msgid "mask_edit_label"
 msgstr "Label:"
 
 msgid "mask_edit_multi_label"
-msgstr "Attribute occures in scheme:"
+msgstr "Attribute occures in scheme: ${schemes}"
 
 msgid "mask_edit_header"
 msgstr "Header"

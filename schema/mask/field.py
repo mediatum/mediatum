@@ -69,7 +69,7 @@ class m_field(Metatype):
                 required=field.get_required(),
                 html_form=editor_html_form.html,
                )
-        return _tal.processTAL(tal_ctx, file="schema/mask/field.html", macro="get_form_html", request=req)
+        return _tal.processTAL(tal_ctx, file="schema/mask/field.html", macro="editor_get_field", request=req)
 
 
     def getViewHTML(self, maskitem, nodes, flags, language=None, template_from_caller=None, mask=None):
@@ -131,20 +131,18 @@ class m_field(Metatype):
             pitems = len(parent.getChildren())
 
         field = item.getField()
-        ret = ''
-        label = ''
-        description = ''
 
         if field:
-            f = getMetadataType(field.get("type"))
-            editor_html_form = f.editor_get_html_form(
+            html_form = u"{} {}".format(
+                getMetadataType(field.get("type")).editor_get_html_form(
                     field,
                     metafield_name_for_html=_schema.sanitize_metafield_name(field.name),
                     values=(item.getDefault(),),
                     language=language,
                     required=item.get_required(),
-                    )
-            html_form = u"{} {}".format(editor_html_form.html, item.getUnit())
+                    ).html,
+                item.getUnit(),
+            )
         else:  # node for export mask
             attribute = q(Node).get(item.get("attribute"))
             field = item
@@ -169,14 +167,15 @@ class m_field(Metatype):
 
         return _tal.processTAL(
             dict(
+                name=_schema.sanitize_metafield_name(field.name),
+                fieldtype=_schema.sanitize_metafield_name(field.get('type')),
+                conflict=None,
                 html_form=html_form,
-                description=item.getDescription(),
+                description=item.getDescription() or None,
                 item_id=item.id,
-                field_id=field.id,
                 required=item.get_required(),
                 is_sub=sub,
-                is_vhgroup=ptype in("vgroup", "hgroup"),
-                label=None if item.getLabel() in ("mapping", "") else item.getLabel(),
+                label=item.getLabel(),
                 is_first=index==0,
                 is_last=index==pitems-1,
                 multi_title=multi_title,

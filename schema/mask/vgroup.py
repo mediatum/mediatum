@@ -59,7 +59,7 @@ class m_vgroup(Metatype):
 
         return ret
 
-    def getMetaHTML(self, parent, index, sub=False, language=None, fieldlist={}):
+    def getMetaHTML(self, parent, index, sub=False, language=None, fieldlist={}, req=None):
         item = parent.children.order_by(Node.orderpos)[index]
 
         html_form = u"".join(

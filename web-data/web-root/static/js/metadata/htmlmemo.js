@@ -22,4 +22,17 @@ function ckeditor_config(name) {
         alert('Please fill out the htmlmemo field.');
         evt.cancel();
     });
+    // After loading, check for a disabled parent element (e. g. admin area)
+    ckeditor.once("instanceReady", function(evt) {
+        let checkDisabled = document.createElement("input");
+        checkDisabled.type = "hidden";
+        checkDisabled.id = `a${Math.random().toString(36).substring(2)}`;
+        ckeditor.container.$.before(checkDisabled);
+
+        // Use the original element
+        if (document.querySelector(`input#${checkDisabled.id}:disabled`) !== null) {
+            ckeditor.destroy();
+        }
+        checkDisabled.parentNode.removeChild(checkDisabled);
+    });
 }

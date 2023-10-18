@@ -32,6 +32,8 @@ from utils.strings import replace_attribute_variables
 
 logg = logging.getLogger(__name__)
 
+_default_thumbnail_paths = {}
+
 
 def make_lookup_key(node, language=None, labels=True):
     languages = config.languages
@@ -137,6 +139,14 @@ def _build_field_template(labels, field_descriptor):
     else:
         template = u"{value}"
     return _functools.partial(template.format, label=_utils_utils.esc(field_descriptor.get("label", "")))
+
+
+def register_default_thumbnail_path(path, type_=None, schema=None):
+    if (type_, schema) in _default_thumbnail_paths:
+        raise RuntimeError(u"{} already exists!".format((type_, schema)))
+    if not _os.path.isfile(path):
+        raise RuntimeError(u"Default thumbnail '{}' does not exist!".format(path))
+    _default_thumbnail_paths[(type_, schema)] = path
 
 
 class Data(Node):
@@ -445,16 +455,9 @@ class Content(Data, SchemaMixin):
         # a) node type and schema, or
         # b) schema, or
         # c) node type
-        basedir = _os.path.join(config.basedir, "web-root", "static", "img")
-        for path in (
-                "default_thumb_{ntype}_{schema}",
-                "default_thumb_{ntype}",
-                "default_thumb_{schema}",
-                "questionmark",
-        ):
-            path = _os.path.join(basedir, "{}.png".format(path.format(ntype=self.type, schema=self.schema)))
-            if _os.path.isfile(path):
-                return path
+        return _default_thumbnail_paths.get((self.type, None)) or \
+               _default_thumbnail_paths.get((None, self.schema)) or \
+               _default_thumbnail_paths.get((self.type, self.schema))
 
 
 @check_type_arg_with_schema

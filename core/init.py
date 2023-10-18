@@ -273,6 +273,14 @@ def _init_web_roots():
     _filehandlers.add_web_root(_os.path.join(config.basedir, "web-root"))
 
 
+def _init_default_thumbnail():
+    from contenttypes import data
+    img_filestorepath = _os.path.join(config.basedir, "web-root", "static", "img", "default_thumb_{ntype}.png")
+    for filetype in ("audio", "document", "file", "image", "text", "video"):
+        data.register_default_thumbnail_path(img_filestorepath.format(ntype=filetype), type_=filetype)
+    data.register_default_thumbnail_path(_os.path.join(config.basedir, "web-root", "static", "img", "questionmark.png"))
+
+
 def basic_init(root_loglevel=None, config_filepath=None, prefer_config_filename=None, log_filepath=None,
                 force_test_db=None, automigrate=False):
     init_state = "basic"
@@ -295,6 +303,7 @@ def basic_init(root_loglevel=None, config_filepath=None, prefer_config_filename=
     connect_db(force_test_db, automigrate)
     _set_current_init_state(init_state)
     from core import medmarc as _  # mustn't be imported too early
+    _init_default_thumbnail()
     from core import db
     db.session.rollback()
     _init_web_roots()

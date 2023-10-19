@@ -193,7 +193,7 @@ class PrintPreview:
         if not path:
             return
         if not os.path.isfile(path):
-            path = config.basedir + "/static/img/questionmark.png"
+            path = os.path.join(config.basedir, "web-data", "default-thumbnails", "questionmark.png")
         im = Image.open(path)
         im.load()
         width, height = im.size

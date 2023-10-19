@@ -270,15 +270,17 @@ def _init_web_roots():
         map(_filehandlers.add_web_root, webroots)
     if core.webconfig.theme:
         _filehandlers.add_web_root(core.webconfig.theme.path)
-    _filehandlers.add_web_root(_os.path.join(config.basedir, "web-root"))
+    _filehandlers.add_web_root(_os.path.join(config.basedir, "web-data", "web-root"))
 
 
 def _init_default_thumbnail():
     from contenttypes import data
-    img_filestorepath = _os.path.join(config.basedir, "web-root", "static", "img", "default_thumb_{ntype}.png")
+    img_filestorepath = _os.path.join(config.basedir, "web-data", "default-thumbnails", "{ntype}.png")
     for filetype in ("audio", "document", "file", "image", "text", "video"):
         data.register_default_thumbnail_path(img_filestorepath.format(ntype=filetype), type_=filetype)
-    data.register_default_thumbnail_path(_os.path.join(config.basedir, "web-root", "static", "img", "questionmark.png"))
+    data.register_default_thumbnail_path(
+        _os.path.join(config.basedir, "web-data", "default-thumbnails", "questionmark.png"),
+    )
 
 
 def basic_init(root_loglevel=None, config_filepath=None, prefer_config_filename=None, log_filepath=None,

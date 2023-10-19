@@ -4,13 +4,15 @@
 from __future__ import division
 from __future__ import print_function
 
+import os as _os
 import re
 import functools as _functools
 import logging
-from warnings import warn
 import humanize
-import flask as _flask
 import math as _math
+from warnings import warn
+
+import flask as _flask
 
 from mediatumtal import tal
 
@@ -431,9 +433,28 @@ class BadFile(Exception):
 
 
 class Content(Data, SchemaMixin):
-
     """(Abstract) base class for all content node types.
     """
+    def get_thumbnail_path(self):
+        files = self.files.filter_by(filetype="thumbnail")
+        for f in files:
+            if f.exists:
+                return f.abspath
+
+        # looking in all img filestores for default thumb for this
+        # a) node type and schema, or
+        # b) schema, or
+        # c) node type
+        basedir = _os.path.join(config.basedir, "web-root", "static", "img")
+        for path in (
+                "default_thumb_{ntype}_{schema}",
+                "default_thumb_{ntype}",
+                "default_thumb_{schema}",
+                "questionmark",
+        ):
+            path = _os.path.join(basedir, "{}.png".format(path.format(ntype=self.type, schema=self.schema)))
+            if _os.path.isfile(path):
+                return path
 
 
 @check_type_arg_with_schema

@@ -262,9 +262,8 @@ class Document(_contenttypes_data.Content):
             unwanted_attrs = self.get_unwanted_exif_attributes()
             for key, value in pdfinfo.iteritems():
                 key = key.lower()
-                if any(tag in key for tag in unwanted_attrs):
-                    continue
-                self.set("pdf_{}".format(key), value)
+                if key not in unwanted_attrs:
+                    self.set("pdf_{}".format(key), value)
 
         self.files.append(File(thumbnailname, "thumbnail", "image/jpeg"))
         self.files.append(File(fulltextname, "fulltext", "text/plain"))

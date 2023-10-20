@@ -3,25 +3,29 @@
   SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 <metal:block metal:define-macro="workflow_step_type_config">
-    <div>
-        <tal:block tal:condition="python:fileurl">
-            <tal:block i18n:translate="metafield2metadata-upload-fileatt"/>
-            <a tal:attributes="href fileurl" tal:content="python:'{}  {} Bytes'.format(filebasename, filesize)"/>
-            <br/>
-        </tal:block>
-        <input id="stepsetting_fileatt" name="stepsetting_fileatt" type="file"/>
-    </div>
-
-    <div>
-        <label for="stepsetting_source-attribute-name" i18n:translate="metafield2metadata-source-attribute-name"> </label>
-        <input type="text" name="stepsetting_source-attribute-name" id="stepsetting_source-attribute-name" tal:attributes="value source-attribute-name"/>
-    </div>
-    <div>
-        <label for="stepsetting_source-metadata-separator" i18n:translate="metafield2metadata-source-metadata-separator"> </label>
-        <input type="text" name="stepsetting_source-metadata-separator" id="stepsetting_source-metadata-separator" tal:attributes="value source-metadata-separator"/>
-    </div>
-    <div>
-        <label for="stepsetting_target-metadata-separator" i18n:translate="metafield2metadata-target-metadata-separator"> </label>
-        <input type="text" name="stepsetting_target-metadata-separator" id="stepsetting_target-metadata-separator" tal:attributes="value target-metadata-separator"/>
-    </div>
+    <tal:block tal:condition="python:fileurl">
+        <tal:block i18n:translate="metafield2metadata-current-upload-fileatt"/>
+        <a tal:attributes="href fileurl" tal:content="python:'{}  {} Bytes'.format(filebasename, filesize)"/>
+        <br/>
+        <label>
+            <tal:block i18n:translate="metafield2metadata-upload-fileatt-replace"/>
+            <input name="stepsetting_fileatt" type="file"/>
+        </label>
+    </tal:block>
+    <label tal:condition="python:not fileurl">
+        <tal:block i18n:translate="metafield2metadata-upload-fileatt"/>
+        <input name="stepsetting_fileatt" type="file"/>
+    </label>
+    <label>
+        <tal:block i18n:translate="metafield2metadata-source-attribute-name"/>
+        <input type="text" name="stepsetting_source-attribute-name" tal:attributes="value source-attribute-name"/>
+    </label>
+    <label>
+        <tal:block i18n:translate="metafield2metadata-source-metadata-separator"/>
+        <input type="text" name="stepsetting_source-metadata-separator" tal:attributes="value source-metadata-separator"/>
+    </label>
+    <label>
+        <tal:block i18n:translate="metafield2metadata-target-metadata-separator"/>
+        <input type="text" name="stepsetting_target-metadata-separator" tal:attributes="value target-metadata-separator"/>
+    </label>
 </metal:block>

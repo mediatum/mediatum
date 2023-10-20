@@ -1,8 +1,14 @@
 msgid "workflowstep_metafield2metadata"
 msgstr "Metadaten aus Metafeld generieren"
 
+msgid "metafield2metadata-current-upload-fileatt"
+msgstr "Aktuelle metadaten (YAML/JSON)"
+
 msgid "metafield2metadata-upload-fileatt"
 msgstr "Metadaten (YAML/JSON)"
+
+msgid "metafield2metadata-upload-fileatt-replace"
+msgstr "Metadaten (YAML/JSON) hier ersetzen"
 
 msgid "metafield2metadata-source-attribute-name"
 msgstr "Quell-Metadatenfeld-Name"

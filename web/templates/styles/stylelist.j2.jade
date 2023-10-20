@@ -7,21 +7,21 @@ each file in files
   - var title = translate('stylelist-nodelink-title', mapping=mapping)
   .preview_list
     if file.attachment
-      div(class='mediatum-stylelist-attach')
+      div.mediatum-stylelist-attach
         img(title=translate('view_list_att_title'), src='/static/img/attach.png')
-    div(class='mediatum-stylelist-img')
+    div.mediatum-stylelist-img
       if title
-        a(href=file.getLink(), class='mediatum-stylelist-a', title=title)
+        a.mediatum-stylelist-a(href=file.getLink(), title=title)
           img.thumbnail(src='/thumbnail/{}'.format(file.node.id), border='0')
       else
-        a(href=file.getLink(), class='mediatum-stylelist-a')
+        a.mediatum-stylelist-a(href=file.getLink())
           img.thumbnail(src='/thumbnail/{}'.format(file.node.id), border='0')
-    div(class='mediatum-stylelist-div')
+    div.mediatum-stylelist-div
       if title
-        a(href=file.getLink(), class='mediatum-stylelist-a', title=title)
+        a.mediatum-stylelist-a(href=file.getLink(), title=title)
           = translate('stylelist-nodelink-text', mapping=mapping)
       else
-        a(href=file.getLink(), class='mediatum-stylelist-a')
+        a.mediatum-stylelist-a(href=file.getLink())
           = translate('stylelist-nodelink-text', mapping=mapping)
       p
         = file.text

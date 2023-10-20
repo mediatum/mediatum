@@ -132,7 +132,13 @@ class m_hgroup(Metatype):
         i = 0
         for field in item.getChildren().sort_by_orderpos():
             f = getMetadataType(field.get("type"))
-            details += f.getMetaHTML(item, i, False, fieldlist=fieldlist)
+            details += f.getMetaHTML(
+                    item,
+                    i,
+                    False,
+                    fieldlist=fieldlist,
+                    language=_core_translation.set_language(req.accept_languages),
+                   )
             i += 1
 
         if req.params.get("sel_id", "") != "":

@@ -305,34 +305,28 @@
 
 </tal:block>
 
-<table id="workflowbuttons" metal:define-macro="workflow_buttons" style="margin-top:20px;">
-    <tr>
-        <td colspan="2" style="text-align:right;padding-bottom:20px;">
-            <em><tal:block i18n:translate="workflow_identificator"/>: <tal:block tal:replace="python:unicode(node.id)"/>, <tal:block i18n:translate="workflow_key"/>: <tal:block tal:replace="python:node.get('key')"/></em>
-        </td>
-    </tr>
-    <tr>
-        <td align="left">
-            <input type="hidden" name="id" tal:attributes="value python:unicode(wfstep.id)"/>
-            <input type="hidden" name="obj" tal:attributes="value python:unicode(node.id)"/>
-
-            <button
-                tal:condition="python:wfstep.getFalseId()"
-                type="submit"
-                name="gofalse"
-                formnovalidate="formnovalidate"
-                tal:content="python:wfstep.getFalseLabel(lang)"
-               >
-            </button>
-            &nbsp;
-        </td>
-        <td align="right">
-            <button tal:condition="python:wfstep.getTrueId()" type="submit" name="gotrue" tal:content="python:wfstep.getTrueLabel(lang)">TEXT</button>
-            &nbsp;
-        </td>
-    </tr>
-</table>
-
+<fieldset id="workflowbuttons" metal:define-macro="workflow_buttons" style="margin-top:20px;">
+    <input type="hidden" name="id" tal:attributes="value python:unicode(wfstep.id)"/>
+    <input type="hidden" name="obj" tal:attributes="value python:unicode(node.id)"/>
+    <button
+        tal:condition="python:wfstep.getFalseId()"
+        formnovalidate="formnovalidate"
+        type="submit"
+        name="gofalse"
+        tal:content="python:wfstep.getFalseLabel(lang)"
+    />
+    <button
+        tal:condition="python:wfstep.getTrueId()"
+        type="submit"
+        name="gotrue"
+        tal:content="python:wfstep.getTrueLabel(lang)"/>
+    <em>
+        <tal:block i18n:translate="workflow_identificator"/>:
+        <tal:block tal:replace="python:unicode(node.id)"/>,
+        <tal:block i18n:translate="workflow_key"/>:
+        <tal:block tal:replace="python:node.get('key')"/>
+    </em>
+</fieldset>
 
 <metal:block metal:define-macro="workflow_step_type_config">
     <tr tal:condition="python:len(settings)>0">

@@ -29,10 +29,6 @@ html(xmlns="http://www.w3.org/1999/xhtml")
     link(rel='icon', type='image/png', href='/favicon-96x96.png', sizes='96x96')
     link(rel='icon', type='image/png', href='/android-chrome-192x192.png', sizes='192x192')
     link(rel='icon', type='image/png', href='/favicon-16x16.png', sizes='16x16')
-    for src in html_head_style_src
-      link(rel="stylesheet", href=src)
-    for src in html_head_javascript_src
-      script(src=src)
     meta(name='msapplication-TileColor', content='#ffffff')
     meta(name='msapplication-TileImage', content='/mstile-144x144.png')
     meta(name='theme-color', content='#ffffff')
@@ -50,6 +46,11 @@ html(xmlns="http://www.w3.org/1999/xhtml")
       });
     if google_scholar
       = google_scholar|safe
+
+    for src in html_head_style_src
+      link(rel="stylesheet", href=src)
+    for src in html_head_javascript_src
+      script(src=src)
 
   body(onload='change_size();')
     #visual-portal-wrapper

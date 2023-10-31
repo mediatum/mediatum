@@ -28,6 +28,22 @@ logg = logging.getLogger(__name__)
 
 
 def sendmail(fromemail, email, subject, text, attachments_paths_and_filenames=[]):
+    host = config.get("smtp-server.host")
+    if not host:
+        raise RuntimeError("No email server specified, not sending email")
+
+    encryption = config.get("smtp-server.encryption")
+    if encryption == "tls":
+        server = smtplib.SMTP_SSL(host, port=config.get("smtp-server.port", 465))
+    else:
+        server = smtplib.SMTP(host, port=config.get("smtp-server.port", 587))
+    if encryption == "starttls":
+        server.starttls()
+    username = config.get('smtp-server.username')
+    if username:
+        with open(config.get("smtp-server.password-file"), "rb") as f:
+            server.login(username, f.read())
+
     fromaddr = fromemail
     if ";" in email:
         toaddrs = []
@@ -50,20 +66,17 @@ def sendmail(fromemail, email, subject, text, attachments_paths_and_filenames=[]
               toaddrs
         )
 
-    if config.get("server.mail") is None:
-        logg.warning("No email server specified, not sending email to '%s'", toaddrs)
-        return
-
     if not attachments_paths_and_filenames:
         msg = MIMEText(text.encode('utf-8'), _charset="utf-8")
         msg['Subject'] = subject
         msg['From'] = fromaddr
         msg['To'] = toaddrs_string
         try:
-            server = smtplib.SMTP(config.get("server.mail"))
             server.set_debuglevel(1)
-            server.sendmail(fromaddr, toaddrs, msg.as_string())
-            server.quit()
+            try:
+                server.sendmail(fromaddr, toaddrs, msg.as_string())
+            finally:
+                server.quit()
         except smtplib.socket.error:
             raise SocketError
 
@@ -109,7 +122,8 @@ def sendmail(fromemail, email, subject, text, attachments_paths_and_filenames=[]
 
     composed = mime_multipart.as_string()
 
-    server = smtplib.SMTP(config.get("server.mail"))
-    server.sendmail(fromaddr, toaddrs, composed)
-    server.quit()
+    try:
+        server.sendmail(fromaddr, toaddrs, composed)
+    finally:
+        server.quit()
     logg.info("sent email to '%s' ('%s'): attachments: '%s'", toaddrs_string, subject, attachments_paths_and_filenames)

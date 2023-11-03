@@ -48,8 +48,11 @@ def send_thumbnail(req):
         return 400
     version_id = version_id_from_req(req.args)
     node_or_version = get_node_or_version(nid, version_id, Data)
+    if not node_or_version.has_read_access():
+        req.response.status_code = 403
+        return 403
     thumbnail_path = node_or_version.get_thumbnail_path()
-    if not node_or_version.has_read_access() or thumbnail_path is None:
+    if thumbnail_path is None:
         req.response.status_code = 404
         return 404
 

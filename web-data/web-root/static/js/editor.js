@@ -467,7 +467,8 @@ function editSelected(nodeid){
     if (nodeid.length == 0) return;
 
     var form = $('<form action="/edit/edit_content" method="POST"></form>');
-    form.append($('<input name="srcnodeid" value="' + parent.idselection + '" type="hidden">'));
+    var srcnodeid = parent.idselection || document.getElementsByName("srcnodeid")[0].value.split(',')[0];
+    form.append($('<input name="srcnodeid" value="' + srcnodeid + '" type="hidden">'));
     form.append($('<input name="tab" value="metadata" type="hidden">'));
     form.append($('<input name="csrf_token" value="' + parent.csrf + '" type="hidden">'));
     for (nid of nodeid)

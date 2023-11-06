@@ -19,6 +19,9 @@ msgstr "illegal character"
 msgid "edit_mask_required"
 msgstr "Required, can't be empty"
 
+msgid "edit_mask_invalid_dateformat"
+msgstr "Invalid date"
+
 msgid "edit_meta_created"
 msgstr "created"
 

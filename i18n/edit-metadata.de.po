@@ -19,6 +19,9 @@ msgstr "Illegales Zeichen"
 msgid "edit_mask_required"
 msgstr "Pflichtfeld, darf nicht leer sein"
 
+msgid "edit_mask_invalid_dateformat"
+msgstr "Ungültiges Datum"
+
 msgid "edit_meta_created"
 msgstr "erstellt"
 

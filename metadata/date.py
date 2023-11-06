@@ -115,9 +115,9 @@ class m_date(Metatype):
         try:
             value = parse_date(ustr(value), f.value)
         except ValueError as e:
-            raise _core_metatype.MetatypeInvalidFormData(e.message)
+            raise _core_metatype.MetatypeInvalidFormData("edit_mask_invalid_dateformat")
         if not validateDate(value):
-            raise _core_metatype.MetatypeInvalidFormData("not validated")
+            raise _core_metatype.MetatypeInvalidFormData("edit_mask_invalid_dateformat")
         return format_date(value, format='%Y-%m-%dT%H:%M:%S')
 
     def admin_settings_get_html_form(self, fielddata, metadatatype, language):

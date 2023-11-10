@@ -813,6 +813,7 @@ def content(req):
     user = _user_from_session()
     req.response.status_code = httpstatus.HTTP_OK
     if not user.is_editor:
+        req.response.status_code = httpstatus.HTTP_FORBIDDEN
         req.response.set_data(_tal.processTAL(v, file="web/edit/edit.html", macro="error", request=req))
         return
 

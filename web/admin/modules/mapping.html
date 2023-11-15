@@ -344,6 +344,7 @@
             <tr tal:condition="python:error>0">
                 <td colspan="2">
                     <p tal:condition="python:error==1" i18n:translate="admin_mandatory_error" class="error">TEXT</p>
+                    <p tal:condition="python:error==2" i18n:translate="admin_duplicate_error" class="error">TEXT</p>
                 </td>
             </tr>
             <tr>

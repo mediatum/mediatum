@@ -144,9 +144,12 @@ def validate(req, op):
             if req.params.get("form_op", "") == "cancel":
                 return viewlist(req, req.params.get("parent"))
             # save mapping field values
+            mapping = q(Node).get(req.values.get("parent"))
             if ustr(req.params["name"]) == "":
                 # empty required field
                 return editMappingField_mask(req, req.params.get("id", ""), q(Node).get(req.params.get("parent")), 1)
+            elif req.values.get("name") in (mappingfield.name for mappingfield in mapping.getFields()):
+                return editMappingField_mask(req, req.params.get("id", ""), q(Node).get(req.params.get("parent")), 2)
             else:
                 _mandatory = False
                 if "mandatory" in req.params.keys():

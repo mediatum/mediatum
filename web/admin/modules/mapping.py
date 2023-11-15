@@ -335,7 +335,7 @@ def editMappingField_mask(req, id, parent, err=0):
         field.setExportFormat(req.params.get("exportformat", u""))
         if "mandatory" in req.params.keys():
             field.setMandatory("True")
-        db.session.commit()
+        db.session.add(field)
 
     v = getAdminStdVars(req)
     v["error"] = err

@@ -76,13 +76,11 @@ def sendmail(fromemail, email, subject, text, attachments_paths_and_filenames=[]
     # from exapmle in python docu
     for path, filename in attachments_paths_and_filenames:
         if not os.path.isfile(path):
-            logg.error(
-                    "error sending mail to '%s' ('%s'): attachment: no such file: '%s', skipping file",
-                    toaddrs_string,
-                    subject,
-                    path,
-                )
-            continue
+            raise RuntimeError("error sending mail to '{}' ('{}'): attachment: no such file: '{}', skipping file".format(
+                        toaddrs_string,
+                        subject,
+                        path,
+                    ))
         ctype, encoding = mimetypes.guess_type(path)
         if ctype is None or encoding is not None:
             ctype = 'application/octet-stream'

@@ -41,11 +41,11 @@ class WorkflowStep_CheckContent(WorkflowStep):
         if not checkXMLString(xml):
             with suppress(Exception, warn=False):
                 mail.sendmail(
-                        self.settings['sender'],
-                        self.settings['recipient'],
+                        mail.EmailAddress(self.settings['sender'], None),
+                        (mail.EmailAddress(self.settings['recipient'], None),),
                         self.settings['subject'],
                         self.settings['text'],
-                       )
+                    )
 
         self.forward(node, True)
 

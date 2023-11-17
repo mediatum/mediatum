@@ -58,25 +58,28 @@ class WorkflowStep_SendEmail(WorkflowStep):
 
     def sendOut(self, node):
         xfrom = node.get("system.mailtmp.from")
-        recipient = node.get("system.mailtmp.to")
-
+        recipients = node.get("system.mailtmp.to")
         try:
-            logg.info("sending mail to %s (%s)", recipient, " , ".join(self.settings["recipient"]))
-            if not recipient:
+            logg.info("sending mail to %s", recipients)
+            if not recipients:
                 raise MailError("No receiver address defined")
             if not xfrom:
                 raise MailError("No from address defined")
-            attachments_paths_and_filenames = []
+            attachments = {}
             if self.settings["attach_pdf_form"]:
                 for f in node.files:
                     if f.filetype != 'wfstep-addformpage':
                         continue
                     if not os.path.isfile(f.abspath):
                         raise MailError("Attachment file not found: '%s'" % f.abspath)
-                    attachments_paths_and_filenames.append((f.abspath, f.abspath.split('_')[-1]))
-
-            mail.sendmail(xfrom, recipient, node.get("system.mailtmp.subject"), node.get(
-                "system.mailtmp.text"), attachments_paths_and_filenames=attachments_paths_and_filenames)
+                    attachments[f.abspath.split('_')[-1]] = f.abspath
+            mail.sendmail(
+                mail.EmailAddress(xfrom, None),
+                tuple(mail.EmailAddress(r, None) for r in recipients.split(";")),
+                node.get("system.mailtmp.subject"),
+                node.get("system.mailtmp.text"),
+                attachments=attachments,
+            )
         except:
             node.set("system.mailtmp.error", "1")
             db.session.commit()

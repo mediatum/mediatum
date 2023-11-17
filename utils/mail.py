@@ -6,6 +6,7 @@
 from __future__ import division
 from __future__ import print_function
 
+import collections as _collections
 import smtplib
 
 import mimetypes
@@ -16,6 +17,8 @@ from email.mime.base import MIMEBase
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+import email.quoprimime as _email_quoprimime
+import email.utils as _email_utils
 
 import codecs
 import os
@@ -27,7 +30,31 @@ SocketError = "socketerror"
 logg = logging.getLogger(__name__)
 
 
-def sendmail(fromemail, email, subject, text, attachments_paths_and_filenames=[]):
+class EmailAddress(_collections.namedtuple("EmailAddress", "address name")):
+    def __str__(self):
+        return unicode(self).encode('utf-8')
+
+    def __unicode__(self):
+         assert "@" in self.address
+         assert "<" not in self.address
+         assert ">" not in self.address
+         if self.name is not None:
+             assert "<" not in self.name
+             assert ">" not in self.name
+             assert '"' not in self.name
+             return u'"{name}" <{address}>'.format(**self._asdict())
+         return unicode(self.address)
+
+    @property
+    def rfc2045(self):
+        return _email_utils.formataddr((
+            None if self.name is None else _email_quoprimime.header_encode(self.name),
+            self.address,
+           ))
+
+
+def sendmail(sender, recipients, subject, text, envelope_sender_address=None, attachments={}, reply_to=None):
+    assert envelope_sender_address is None or "@" in envelope_sender_address
     host = config.get("smtp-server.host")
     if not host:
         raise RuntimeError("No email server specified, not sending email")
@@ -44,43 +71,29 @@ def sendmail(fromemail, email, subject, text, attachments_paths_and_filenames=[]
         with open(config.get("smtp-server.password-file"), "rb") as f:
             server.login(username, f.read())
 
-    fromaddr = fromemail
-    if ";" in email:
-        toaddrs = []
-        toaddrs_string = ""
-        for x in email.split(';'):
-            x = x.strip()
-            if x:
-                toaddrs += [x]
-                if toaddrs_string:
-                    toaddrs_string += ", "
-                toaddrs_string += x
-    else:
-        toaddrs = email
-        toaddrs_string = email
-
-    logg.info("Attempting to send email with %s bytes text and %s attachments from '%s' to '%s'",
-              len(text),
-              len(attachments_paths_and_filenames),
-              fromaddr,
-              toaddrs
-        )
-
+    logg.debug(
+        "About to send Email from %s with %s byte(s) text, %s attachment(s) to %s recipient(s): '%s'",
+        sender.address,
+        len(text),
+        len(attachments),
+        len(recipients),
+        subject,
+    )
     mime_multipart = MIMEMultipart()
     mime_multipart['Subject'] = subject
-    mime_multipart['To'] = toaddrs_string
-    mime_multipart['From'] = fromaddr
+    mime_multipart['To'] = u", ".join(r.rfc2045 for r in recipients)
+    mime_multipart['From'] = sender.rfc2045
+    if reply_to is not None:
+        mime_multipart["Reply-To"] = reply_to.rfc2045
     text = text.replace("\r", "\r\n")
     msg = MIMEText(text, _subtype="plain", _charset="utf-8")
     mime_multipart.attach(msg)
     # from exapmle in python docu
-    for path, filename in attachments_paths_and_filenames:
+    for filename, path in attachments.iteritems():
         if not os.path.isfile(path):
-            raise RuntimeError("error sending mail to '{}' ('{}'): attachment: no such file: '{}', skipping file".format(
-                        toaddrs_string,
-                        subject,
-                        path,
-                    ))
+            raise RuntimeError("missing attachment file '{}' for mail '{}' to '{}'".format(
+                    path, subject, ", ".join(r.address for r in recipients),
+                ))
         ctype, encoding = mimetypes.guess_type(path)
         if ctype is None or encoding is not None:
             ctype = 'application/octet-stream'
@@ -105,7 +118,6 @@ def sendmail(fromemail, email, subject, text, attachments_paths_and_filenames=[]
     composed = mime_multipart.as_string()
 
     try:
-        server.sendmail(fromaddr, toaddrs, composed)
+        server.sendmail(envelope_sender_address or sender.address, tuple(r.address for r in recipients), composed)
     finally:
         server.quit()
-    logg.info("sent email to '%s' ('%s'): attachments: '%s'", toaddrs_string, subject, attachments_paths_and_filenames)

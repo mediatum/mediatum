@@ -66,22 +66,6 @@ def sendmail(fromemail, email, subject, text, attachments_paths_and_filenames=[]
               toaddrs
         )
 
-    if not attachments_paths_and_filenames:
-        msg = MIMEText(text.encode('utf-8'), _charset="utf-8")
-        msg['Subject'] = subject
-        msg['From'] = fromaddr
-        msg['To'] = toaddrs_string
-        try:
-            server.set_debuglevel(1)
-            try:
-                server.sendmail(fromaddr, toaddrs, msg.as_string())
-            finally:
-                server.quit()
-        except smtplib.socket.error:
-            raise SocketError
-
-        return
-
     mime_multipart = MIMEMultipart()
     mime_multipart['Subject'] = subject
     mime_multipart['To'] = toaddrs_string

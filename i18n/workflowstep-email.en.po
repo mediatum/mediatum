@@ -1,20 +1,32 @@
 msgid "workflowstep_sendemail"
 msgstr "send email"
 
-msgid "workflowstep-email_label_attach_pdf_form"
+msgid "workflowstep_email_label_attach_pdf_form"
 msgstr "Send PDF from as attachment"
 
-msgid "workflowstep-email_label_header"
+msgid "workflowstep_email_label_header"
 msgstr "Send Email"
 
-msgid "workflowstep-email_label_sender"
+msgid "workflowstep_email_label_sender"
 msgstr "From"
 
-msgid "workflowstep-email_label_recipient"
+msgid "workflowstep_email_label_recipient"
 msgstr "To"
 
-msgid "workflowstep-email_label_text"
+msgid "workflowstep_email_label_text"
 msgstr "Message"
 
-msgid "workflowstep-email_label_send"
+msgid "workflowstep_email_label_send"
 msgstr "Send"
+
+msgid "workflowstep_email_sender"
+msgstr "Email address sender"
+
+msgid "workflowstep_email_recipient"
+msgstr "Email address recipient"
+
+msgid "workflowstep_email_subject"
+msgstr "Subject"
+
+msgid "workflowstep_email_text_editable"
+msgstr "Details editable?"

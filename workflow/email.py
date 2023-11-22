@@ -104,6 +104,8 @@ class WorkflowStep_SendEmail(WorkflowStep):
                 self.forward(node, True)
 
     def show_workflow_node(self, node, req):
+        if not self.settings["allowedit"]:
+            raise RuntimeError("editing unsent email not allowed")
         if "sendout" in req.params:
             del req.params["sendout"]
             if "sender" in req.params:

@@ -118,6 +118,12 @@ def sendmail(sender, recipients, subject, text, envelope_sender_address=None, at
     composed = mime_multipart.as_string()
 
     try:
-        server.sendmail(envelope_sender_address or sender.address, tuple(r.address for r in recipients), composed)
+        senderrs = server.sendmail(
+                envelope_sender_address or sender.address,
+                tuple(r.address for r in recipients),
+                composed,
+            )
+        if senderrs:
+            raise RuntimeError("failed to send email to: {}".format(", ".join(senderrs)))
     finally:
         server.quit()

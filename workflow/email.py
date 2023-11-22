@@ -28,13 +28,6 @@ def register():
     registerStep("workflowstep_sendemail")
 
 
-def getTALtext(text, context):
-    #text = tal.getTALstr('<body xmlns:tal="http://xml.zope.org/namespaces/tal">%s</body>' %(text), context)
-    #text = text.replace("<body>","").replace("</body>","").replace("<body/>","")
-    # return text.replace("\n","").strip()
-    return _tal.getTALstr(text, context).replace('\n', '').strip()
-
-
 class WorkflowStep_SendEmail(WorkflowStep):
 
     default_settings = dict(
@@ -45,6 +38,22 @@ class WorkflowStep_SendEmail(WorkflowStep):
         subject="",
         text="",
     )
+
+
+    def get_tal_renderer(self, node, language):
+        context = dict(
+                node=node,
+                link=_urlparse.urljoin(_flask.request.host_url, "/pnode?id={}&key={}".format(node.id, node.get("key"))),
+                publiclink=_urlparse.urljoin(_flask.request.host_url, "/node?id={}".format(node.id)),
+            )
+        if language:
+            context["language"] = language
+
+        def renderer(text):
+            return _tal.getTALstr(text, context).replace('\n', '').strip()
+
+        return renderer
+
 
     def sendOut(self, node):
         xfrom = node.get("system.mailtmp.from")
@@ -79,25 +88,22 @@ class WorkflowStep_SendEmail(WorkflowStep):
         return 1
 
     def runAction(self, node, op=""):
-        link = _urlparse.urljoin(_flask.request.host_url, "/pnode?id={}&key={}".format(node.id, node.get("key")))
-        link2 = _urlparse.urljoin(_flask.request.host_url, "/node?id={}".format(node.id))
-        attrs = {"node": node, "link": link, "publiclink": link2}
+        tal_renderer = self.get_tal_renderer(node, node.get("system.wflanguage"))
         sender = self.settings['sender']
         if "@" in sender:
-            node.set("system.mailtmp.from", getTALtext(sender, attrs))
+            node.set("system.mailtmp.from", tal_renderer(sender))
         elif "@" in node.get(sender):
-            node.set("system.mailtmp.from", getTALtext(node.get(sender), attrs))
+            node.set("system.mailtmp.from", tal_renderer(node.get(sender)))
 
         _mails = []
         for m in self.settings['recipient']:
             if "@" in m:
-                _mails.append(getTALtext(m, attrs))
+                _mails.append(tal_renderer(m))
             elif "@" in node.get(m):
-                _mails.append(getTALtext(node.get(m), attrs))
+                _mails.append(tal_renderer(node.get(m)))
         node.set("system.mailtmp.to", ";".join(_mails))
-
-        node.set("system.mailtmp.subject", getTALtext(self.settings["subject"], attrs))
-        node.set("system.mailtmp.text", getTALtext(self.settings["text"], attrs))
+        node.set("system.mailtmp.subject", tal_renderer(self.settings["subject"], node.get("system.wflanguage")))
+        node.set("system.mailtmp.text", tal_renderer(self.settings["text"]))
         db.session.commit()
         if not self.settings["allowedit"]:
             if(self.sendOut(node)):
@@ -136,11 +142,7 @@ class WorkflowStep_SendEmail(WorkflowStep):
                         sender=node.get("system.mailtmp.from"),
                         recipient=node.get("system.mailtmp.to"),
                         text=node.get("system.mailtmp.text"),
-                        subject=_tal.getTALstr(
-                            node.get("system.mailtmp.subject"),
-                            {},
-                            language=node.get("system.wflanguage"),
-                           ),
+                        subject=node.get("system.mailtmp.subject"),
                         node=node,
                         wfnode=self,
                         pretext=self.getPreText(_core_translation.set_language(req.accept_languages)),

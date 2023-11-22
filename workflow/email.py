@@ -39,7 +39,6 @@ class WorkflowStep_SendEmail(WorkflowStep):
         text="",
     )
 
-
     def get_tal_renderer(self, node, language):
         context = dict(
                 node=node,
@@ -54,95 +53,125 @@ class WorkflowStep_SendEmail(WorkflowStep):
 
         return renderer
 
-
-    def sendOut(self, node):
-        xfrom = node.get("system.mailtmp.from")
-        recipients = node.get("system.mailtmp.to")
+    def send_email(self, node, sender, recipients, subject, text):
         try:
-            logg.info("sending mail to %s", recipients)
             if not recipients:
                 raise RuntimeError("No receiver address defined")
-            if not xfrom:
+            if not sender:
                 raise RuntimeError("No from address defined")
             if self.settings["attach_pdf_form"]:
                 attachments = {f.abspath.split("_")[-1]:f.abspath for f in node.files if f.filetype=="wfstep-addformpage"}
             else:
                 attachments = {}
-            mail.sendmail(
-                mail.EmailAddress(xfrom, None),
-                tuple(mail.EmailAddress(r, None) for r in recipients.split(";")),
-                node.get("system.mailtmp.subject"),
-                node.get("system.mailtmp.text"),
-                attachments=attachments,
-            )
+            mail.sendmail(sender, recipients, subject, text, attachments=attachments)
         except:
-            node.set("system.mailtmp.error", "1")
-            db.session.commit()
             logg.exception("Error while sending mail- node stays in workflowstep %s %s", self.id, self.name)
-            return
-
-        for s in ("from", "to", "subject", "text", "error", "send"):
-            node.system_attrs.pop("mailtmp.{}".format(s), None)
-
-        db.session.commit()
-        return 1
+            raise
 
     def runAction(self, node, op=""):
+        if self.settings["allowedit"]:
+            return
         tal_renderer = self.get_tal_renderer(node, node.get("system.wflanguage"))
         sender = self.settings['sender']
         if "@" in sender:
-            node.set("system.mailtmp.from", tal_renderer(sender))
+            sender = tal_renderer(sender)
         elif "@" in node.get(sender):
-            node.set("system.mailtmp.from", tal_renderer(node.get(sender)))
+            sender = tal_renderer(node.get(sender))
 
-        _mails = []
+        recipients = []
         for m in self.settings['recipient']:
             if "@" in m:
-                _mails.append(tal_renderer(m))
+                recipients.append(tal_renderer(m))
             elif "@" in node.get(m):
-                _mails.append(tal_renderer(node.get(m)))
-        node.set("system.mailtmp.to", ";".join(_mails))
-        node.set("system.mailtmp.subject", tal_renderer(self.settings["subject"], node.get("system.wflanguage")))
-        node.set("system.mailtmp.text", tal_renderer(self.settings["text"]))
-        db.session.commit()
-        if not self.settings["allowedit"]:
-            if(self.sendOut(node)):
-                self.forward(node, True)
+                recipients.append(tal_renderer(node.get(m)))
+
+        subject = tal_renderer(self.settings["subject"])
+        text = tal_renderer(self.settings["text"])
+        try:
+            self.send_email(
+                node,
+                mail.EmailAddress(sender, None),
+                tuple(mail.EmailAddress(r, None) for r in recipients),
+                subject,
+                text,
+            )
+        except:
+            # Will raise later in 'show_workflow_node'
+            pass
+        else:
+            self.forward(node, True)
 
     def show_workflow_node(self, node, req):
         if not self.settings["allowedit"]:
             raise RuntimeError("editing unsent email not allowed")
+
+        tal_renderer = self.get_tal_renderer(
+                node, node.get("system.wflanguage") or _core_translation.set_language(req.accept_languages),
+            )
+        if "sender" in req.values:
+            sender = req.values["sender"]
+        else:
+            sender = self.settings['sender']
+            if "@" in sender:
+                sender = tal_renderer(sender)
+            elif "@" in node.get(sender):
+                sender = tal_renderer(node.get(sender))
+
+        if "recipient" in req.values:
+            recipient = req.values["recipient"].split(";")
+        else:
+            recipient = []
+            for m in self.settings['recipient']:
+                if "@" in m:
+                    recipient.append(tal_renderer(m))
+                elif "@" in node.get(m):
+                    recipient.append(tal_renderer(node.get(m)))
+
+        if "subject" in req.values:
+            subject = req.values["subject"]
+        else:
+            subject = tal_renderer(self.settings["subject"])
+
+        if "text" in req.values:
+            text = req.values["text"]
+        else:
+            text = tal_renderer(self.settings["text"])
+
         if "sendout" in req.params:
             del req.params["sendout"]
-            if "sender" in req.params:
-                node.set("system.mailtmp.from", req.params.get("sender"))
-            if "recipient" in req.params:
-                node.set("system.mailtmp.to", req.params.get("recipient"))
-            if "subject" in req.params:
-                node.set("system.mailtmp.subject", req.params.get("subject"))
-            if "text" in req.params:
-                node.set("system.mailtmp.text", req.params.get("text"))
-            db.session.commit()
-            if(self.sendOut(node)):
+            try:
+                self.send_email(
+                    node,
+                    mail.EmailAddress(sender, None),
+                    tuple(mail.EmailAddress(r, None) for r in recipient)),
+                    subject,
+                    text,
+                )
+            except:
+                return u'{} &gt;<a href="{}">{}</a>&lt;'.format(
+                        _core_translation.translate(
+                            _core_translation.set_language(req.accept_languages),
+                            "workflow_email_msg_1",
+                        ),
+                        _makeSelfLink(req, {"sendout": "true"}),
+                        _core_translation.translate(
+                            _core_translation.set_language(req.accept_languages),
+                            "workflow_email_resend",
+                        ),
+                    )
+            else:
                 return self.forwardAndShow(node, True, req)
 
         if "gofalse" in req.params:
             return self.forwardAndShow(node, False, req)
-
-        elif node.get("system.mailtmp.error"):
-            return u'{} &gt;<a href="{}" class="mediatum-link-mediatum">{}</a>&lt;'.format(
-                    _core_translation.translate(_core_translation.set_language(req.accept_languages), "workflow_email_msg_1"),
-                    _makeSelfLink(req, {"sendout": "true"}),
-                    _core_translation.translate(_core_translation.set_language(req.accept_languages), "workflow_email_resend"),
-                )
         else:
             return _tal.processTAL(
                     dict(
                         page=u"node?id={}&obj={}".format(self.id, node.id),
-                        sender=node.get("system.mailtmp.from"),
-                        recipient=node.get("system.mailtmp.to"),
-                        text=node.get("system.mailtmp.text"),
-                        subject=node.get("system.mailtmp.subject"),
+                        sender=sender,
+                        recipient=recipient,
+                        text=text,
+                        subject=subject,
                         node=node,
                         wfnode=self,
                         pretext=self.getPreText(_core_translation.set_language(req.accept_languages)),

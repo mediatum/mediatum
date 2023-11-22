@@ -7,7 +7,6 @@ from __future__ import division
 from __future__ import print_function
 
 import logging
-import os.path
 import urlparse as _urlparse
 
 import flask as _flask
@@ -27,15 +26,6 @@ logg = logging.getLogger(__name__)
 
 def register():
     registerStep("workflowstep_sendemail")
-
-
-class MailError(Exception):
-
-    def __init__(self, value):
-        self.value = value
-
-    def __str__(self):
-        return repr(self.value)
 
 
 def getTALtext(text, context):
@@ -62,17 +52,13 @@ class WorkflowStep_SendEmail(WorkflowStep):
         try:
             logg.info("sending mail to %s", recipients)
             if not recipients:
-                raise MailError("No receiver address defined")
+                raise RuntimeError("No receiver address defined")
             if not xfrom:
-                raise MailError("No from address defined")
-            attachments = {}
+                raise RuntimeError("No from address defined")
             if self.settings["attach_pdf_form"]:
-                for f in node.files:
-                    if f.filetype != 'wfstep-addformpage':
-                        continue
-                    if not os.path.isfile(f.abspath):
-                        raise MailError("Attachment file not found: '%s'" % f.abspath)
-                    attachments[f.abspath.split('_')[-1]] = f.abspath
+                attachments = {f.abspath.split("_")[-1]:f.abspath for f in node.files if f.filetype=="wfstep-addformpage"}
+            else:
+                attachments = {}
             mail.sendmail(
                 mail.EmailAddress(xfrom, None),
                 tuple(mail.EmailAddress(r, None) for r in recipients.split(";")),

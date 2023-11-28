@@ -4,7 +4,7 @@
 -->
 <metal:block metal:define-macro="workflow_step_type_config">
     <div>
-        <h4 i18n:translate="workflowstep-addformpage"> </h4>
+        <h4 i18n:translate="workflowstep_addformpage"> </h4>
         <tal:block tal:condition="python:fileurl">
             <tal:block i18n:translate="workflowstep-addformpage_label_current_pdfform"/>
             <a tal:attributes="href fileurl" tal:content="python:'{}  {} Bytes'.format(filebasename, filesize)"/>

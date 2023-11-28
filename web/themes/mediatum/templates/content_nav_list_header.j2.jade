@@ -5,33 +5,33 @@
 - from "styles/macros.j2.jade" import itemsperpage
 
 #portal-pages
-    table(cellspacing='0', cellpadding='0')
-      tr
-        td
-          form
-            for param in nav.nav_params.items()
-              if not param[0].startswith('sortfield')
-                input(type='hidden',name=param[0], value=param[1])
-            table(cellspacing='0', cellpadding='0')
-              for i in range(sortfieldslist|length)
-                tr
-                  td.mediatum-content-nav-list-header-label
-                    if i==0
-                      small
-                        = translate('sort_label')
-                    else
-                      small
-                        = translate('sort_label2')
-                  td.mediatum-content-nav-list-header-select
-                    select(name='sortfield{}'.format(i), style='font-size: 9px', onchange='submit()')
-                      for field in sortfieldslist[i]
-                        option(value=field.getName(), selected=field.selected())
-                          = translate(field.getLabel())
-              tr
-        td
-          = page_nav
-        td
-          = itemsperpage(nodesperpage, nodesperpage_options)
+  .mediatum-content-nav-list
+    .mediatum-content-nav-1
+      if nav
+        form
+          for param in nav.nav_params.items()
+            if not param[0].startswith('sortfield')
+              input(type='hidden',name=param[0], value=param[1])
+          div.mediatum-content-nav-sort
+            for i in range(sortfieldslist|length)
+              div.mediatum-content-nav-sort-field
+                div.mediatum-content-nav-sort-field-label
+                  if i==0
+                    small
+                      = translate('sort_label')
+                  else
+                    small
+                      = translate('sort_label2')
+                div.mediatum-content-nav-sort-select
+                  select(name='sortfield{}'.format(i), style='font-size: 9px', onchange='submit()')
+                    for field in sortfieldslist[i]
+                      option(value=field.getName(), selected=field.selected())
+                        = translate(field.getLabel())
+    .mediatum-content-nav-2
+      = page_nav
+    .mediatum-content-nav-3
+      if nodesperpage
+        = itemsperpage(nodesperpage, nodesperpage_options)
 
 // generated from jade
 //- vim: set filetype=jade sw=2 ts=2 sts=2 expandtab:

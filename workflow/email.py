@@ -72,19 +72,8 @@ class WorkflowStep_SendEmail(WorkflowStep):
         if self.settings["allowedit"]:
             return
         tal_renderer = self.get_tal_renderer(node, node.get("system.wflanguage"))
-        sender = self.settings['sender']
-        if "@" in sender:
-            sender = tal_renderer(sender)
-        elif "@" in node.get(sender):
-            sender = tal_renderer(node.get(sender))
-
-        recipients = []
-        for m in self.settings['recipient']:
-            if "@" in m:
-                recipients.append(tal_renderer(m))
-            elif "@" in node.get(m):
-                recipients.append(tal_renderer(node.get(m)))
-
+        sender = tal_renderer(self.settings['sender'])
+        recipients = map(tal_renderer, self.settings['recipient'])
         subject = tal_renderer(self.settings["subject"])
         text = tal_renderer(self.settings["text"])
         try:
@@ -108,34 +97,12 @@ class WorkflowStep_SendEmail(WorkflowStep):
         tal_renderer = self.get_tal_renderer(
                 node, node.get("system.wflanguage") or _core_translation.set_language(req.accept_languages),
             )
-        if "sender" in req.values:
-            sender = req.values["sender"]
-        else:
-            sender = self.settings['sender']
-            if "@" in sender:
-                sender = tal_renderer(sender)
-            elif "@" in node.get(sender):
-                sender = tal_renderer(node.get(sender))
 
-        if "recipient" in req.values:
-            recipient = req.values["recipient"].split(";")
-        else:
-            recipient = []
-            for m in self.settings['recipient']:
-                if "@" in m:
-                    recipient.append(tal_renderer(m))
-                elif "@" in node.get(m):
-                    recipient.append(tal_renderer(node.get(m)))
-
-        if "subject" in req.values:
-            subject = req.values["subject"]
-        else:
-            subject = tal_renderer(self.settings["subject"])
-
-        if "text" in req.values:
-            text = req.values["text"]
-        else:
-            text = tal_renderer(self.settings["text"])
+        sender = req.values["sender"] if "sender" in req.values else tal_renderer(self.settings['sender'])
+        recipient = (req.values["recipient"].split(";") if "recipient" in
+                    req.values else map(tal_renderer, self.settings['recipient']))
+        subject = req.values["subject"] if "subject" in req.values else tal_renderer(self.settings["subject"])
+        text = req.values["text"] if "text" in req.values else tal_renderer(self.settings["text"])
 
         if "sendout" in req.params:
             del req.params["sendout"]

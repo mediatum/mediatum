@@ -1,26 +1,14 @@
 msgid "workflowstep_sendemail"
 msgstr "send email"
 
-msgid "workflowstep_email_label_attach_pdf_form"
-msgstr "Send PDF from as attachment"
+msgid "workflowstep_email_from_envelope"
+msgstr "differing SMTP-Envelope-Sender"
 
-msgid "workflowstep_email_label_header"
-msgstr "Send Email"
+msgid "workflowstep_email_from_email"
+msgstr "Sender Email Address"
 
-msgid "workflowstep_email_label_sender"
-msgstr "From"
-
-msgid "workflowstep_email_label_recipient"
-msgstr "To"
-
-msgid "workflowstep_email_label_text"
-msgstr "Message"
-
-msgid "workflowstep_email_label_send"
-msgstr "Send"
-
-msgid "workflowstep_email_sender"
-msgstr "Email address sender"
+msgid "workflowstep_email_from_name"
+msgstr "Sender Name"
 
 msgid "workflowstep_email_recipient"
 msgstr "Email address recipient"
@@ -30,3 +18,18 @@ msgstr "Subject"
 
 msgid "workflowstep_email_text_editable"
 msgstr "Details editable?"
+
+msgid "workflowstep_email_reply_to_email"
+msgstr "Reply-To Email Address"
+
+msgid "workflowstep_email_reply_to_name"
+msgstr "Reply-To Name"
+
+msgid "workflowstep_email_text"
+msgstr "Message"
+
+msgid "workflowstep_email_attach_pdf_form"
+msgstr "Send PDF from as attachment"
+
+msgid "workflowstep_email_send"
+msgstr "Send"

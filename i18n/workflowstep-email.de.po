@@ -1,26 +1,14 @@
 msgid "workflowstep_sendemail"
 msgstr "Email senden"
 
-msgid "workflowstep_email_label_attach_pdf_form"
-msgstr "PDF-Form als Anhang senden"
+msgid "workflowstep_email_from_envelope"
+msgstr "abweichender Absender (SMTP-Envelope)"
 
-msgid "workflowstep_email_label_header"
-msgstr "Email versenden"
+msgid "workflowstep_email_from_name"
+msgstr "Absender-Name"
 
-msgid "workflowstep_email_label_sender"
-msgstr "Von"
-
-msgid "workflowstep_email_label_recipient"
-msgstr "An"
-
-msgid "workflowstep_email_label_text"
-msgstr "Nachricht"
-
-msgid "workflowstep_email_label_send"
-msgstr "Absenden"
-
-msgid "workflowstep_email_sender"
-msgstr "Email-Adresse Absender"
+msgid "workflowstep_email_from_email"
+msgstr "Absender-Email-Adresse"
 
 msgid "workflowstep_email_recipient"
 msgstr "Email-Adresse Empfänger"
@@ -30,3 +18,18 @@ msgstr "Betreff"
 
 msgid "workflowstep_email_text_editable"
 msgstr "Angaben editierbar?"
+
+msgid "workflowstep_email_reply_to_email"
+msgstr "Antwort-Email-Adresse"
+
+msgid "workflowstep_email_reply_to_name"
+msgstr "Antwort-Name"
+
+msgid "workflowstep_email_text"
+msgstr "Nachricht"
+
+msgid "workflowstep_email_attach_pdf_form"
+msgstr "PDF-Form als Anhang senden"
+
+msgid "workflowstep_email_send"
+msgstr "Absenden"

@@ -9,9 +9,7 @@ from __future__ import print_function
 from functools import partial
 import logging
 import os
-import glob
 
-from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy_continuum.utils import version_class
 from urllib import quote
 from core import db
@@ -31,7 +29,6 @@ from web.frontend.filehelpers import splitpath
 from web.frontend.filehelpers import version_id_from_req
 from web.frontend import main as _frontend_main
 from utils import userinput
-import utils.utils
 from utils.utils import getMimeType, clean_path, get_filesize
 import tempfile
 from utils.compat import iterkeys
@@ -49,68 +46,17 @@ def send_thumbnail(req):
     except ValueError:
         req.response.status_code = 400
         return 400
-
-
     version_id = version_id_from_req(req.args)
-
     node_or_version = get_node_or_version(nid, version_id, Data)
-
     if not node_or_version.has_read_access():
+        req.response.status_code = 403
+        return 403
+    thumbnail_path = node_or_version.get_thumbnail_path()
+    if thumbnail_path is None:
         req.response.status_code = 404
         return 404
 
-    FileVersion = version_class(File)
-    if version_id:
-        version = node_or_version
-        files = version.files.filter_by(filetype="thumbnail", transaction_id=version.transaction_id).all()
-        if not files:
-            # files may be None if in this version only metadata changed
-            # then try previous transaction_ids
-            files = version.files.filter(FileVersion.filetype=="thumbnail", FileVersion.transaction_id<=version.transaction_id). \
-                order_by(FileVersion.transaction_id.desc())
-        for f in files:
-            if f.exists:
-                return _request_handler.sendFile(req, f.abspath, f.mimetype)
-
-        ntype, schema = version.type, version.schema
-    else:
-        # no version id given
-        # XXX: better to use scalar(), but we must ensure that we have no dupes first
-        node = node_or_version
-        for f in node.files.filter_by(filetype="thumbnail"):
-            if f.exists:
-                return _request_handler.sendFile(req, f.abspath, f.mimetype)
-
-        try:
-            ntype, schema = node.type, node.schema
-        except NoResultFound:
-            req.response.status_code = 404
-            return 404
-
-    # looking in all img filestores for default thumb for this
-    # a) node type and schema, or
-    # b) schema, or
-    # c) node type
-    img_filestorepath = os.path.join(config.basedir, "web-root", "static", "img")
-    for pattern_fmt in (
-            "default_thumb_{ntype}_{schema}.*",
-            "default_thumb_{schema}.*",
-            "default_thumb_{ntype}.*",
-    ):
-        fps = glob.glob(os.path.join(img_filestorepath, pattern_fmt.format(schema=schema, ntype=ntype)))
-        if fps:
-            thumb_path, = fps  # implicit: raises ValueError if not len(fps)==1
-            thumb_mimetype, thumb_type = utils.utils.getMimeType(thumb_path)
-            logg.debug("serving default thumb for node '%s': %s", node, thumb_path)
-            return _request_handler.sendFile(req, thumb_path, thumb_mimetype, force=1)
-
-
-    return _request_handler.sendFile(
-            req,
-            os.path.join(img_filestorepath, "questionmark.png"),
-            "image/png",
-            force=1,
-        )
+    return _request_handler.sendFile(req, thumbnail_path, "image/png", force=1)
 
 
 def send_doc(req):

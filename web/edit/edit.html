@@ -54,12 +54,12 @@
                             idstr,
                             navitem.getName(),
                            );
-                        class python:u'mediatum_img_nav mediatum_img_{}'.format(navitem.getName());
+                        class python:u'mediatum_img_nav mediatum_img_{} mediatum-link-mediatum'.format(navitem.getName());
                        "
                 />
             </li>
             <li tal:condition="python:len(navitem.getItemList())>0" tal:attributes="class python:{0:None,1:'selected'}[navitem.name==breadcrumbs[0]]">
-                <a tal:attributes="class python:u'mediatum_img_nav mediatum_img_{}'.format(navitem.getName()); target python:navitem.target" i18n:translate="" tal:content="python:u'tab_{}'.format(navitem.getName())"/>
+                <a tal:attributes="class python:u'mediatum_img_nav mediatum_img_{} mediatum-link-mediatum'.format(navitem.getName()); target python:navitem.target" i18n:translate="" tal:content="python:u'tab_{}'.format(navitem.getName())"/>
                 <ul>
                     <!-- Second Menu -->
                     <li tal:repeat="item python:navitem.getItemList()">
@@ -74,7 +74,7 @@
                                     idstr,
                                     item.getName(),
                                    ) if not item.getItemList() else None;
-                                class python:u'mediatum_img_nav mediatum_img_{}'.format(item.getName());
+                                class python:u'mediatum_img_nav mediatum_img_{} mediatum-link-mediatum'.format(item.getName());
                                "
                         />
                         <!-- Third Menu -->
@@ -92,7 +92,7 @@
                                                 idstr,
                                                 item1.getName(),
                                                );
-                                            class python:u'mediatum_img_nav mediatum_img_{}'.format(item1.getName());
+                                            class python:u'mediatum_img_nav mediatum_img_{} mediatum-link-mediatum'.format(item1.getName());
                                            "
                                     />
                                 </div>
@@ -114,7 +114,14 @@
         </div>
         <div id="nodeid_" class="mediatum_breadcrumbs_id">
         ID:
-             <a target="_blank" tal:condition="python:len(ids)==1" tal:attributes="href python: node_url(ids[0])" tal:content='python:ids[0]'></a>
+             <a
+                 target="_blank"
+                 tal:condition="python:len(ids)==1"
+                 tal:attributes="href python: node_url(ids[0])"
+                 tal:content='python:ids[0]'
+                 class="mediatum-link-internal"
+             >
+             </a>
              <span tal:condition="python:1 < len(ids) <= 5" tal:replace="python:u', '.join(ids)"/>
              <span tal:condition="python:len(ids) > 5" tal:replace="python:u'{}...'.format(u', '.join(ids[:5]))"/>
         </div>
@@ -176,7 +183,18 @@
                 <div class="mediatum_logocontainer">
                     <span i18n:translate="sub_header_user">TEXT</span>: <span tal:replace="raw python:user.getName()"/>
                     <span tal:repeat="item python:spc">
-                        | <a tal:attributes="href python:item.link; target python:item.target; title python:u'{}_title'.format(item.getName())" i18n:translate="" i18n:attributes="title" tal:content="python:item.getName()">TEXT</a>
+                        | <a
+                            tal:attributes="
+                                href python:item.link;
+                                target python:item.target;
+                                title python:u'{}_title'.format(item.getName());
+                                class python: item.cssclass;
+                            "
+                            i18n:translate=""
+                            i18n:attributes="title"
+                            tal:content="python:item.getName()"
+                    >
+                    </a>
                     </span>
                 </div>
             </div>
@@ -200,7 +218,15 @@
                 <div class="mediatum_treecontent" id="tree">
                     <div i18n:translate="select_target_dir" id="select_target_dir">TEXT</div>
                     <div class="mediatum_accordiontree">
-                        <h3 class="mediatum_context-menu-home"><a href="#" tal:attributes="onclick python:u'loadEditArea({})'.format(basedirs[0].id)"><span id="homedir" tal:content="python:basedirs[0].getName()" i18n:translate=""/></a></h3>
+                        <h3 class="mediatum_context-menu-home">
+                            <a
+                                href="#!"
+                                tal:attributes="onclick python:u'loadEditArea({})'.format(basedirs[0].id)"
+                                class="mediatum-link-internal"
+                            >
+                                <span id="homedir" tal:content="python:basedirs[0].getName()" i18n:translate=""/>
+                            </a>
+                        </h3>
                         <div class="mediatum_home_content" onmouseover="$(this).scrollTop(-100);">
                             <tal:block tal:condition="python:user.isAdmin()">
                               <label>Filter:</label>
@@ -211,7 +237,13 @@
                             <div  class="mediatum_acc_content" id="hometree"> </div>
                         </div>
                         <h3 class="context-menu-collections">
-                            <a href="#" tal:attributes="onclick python:u'loadEditArea({})'.format(basedirs[1].id)"><span id="collections" tal:content="python:basedirs[1].getLabel()"/></a>
+                            <a
+                                href="#!"
+                                tal:attributes="onclick python:u'loadEditArea({})'.format(basedirs[1].id)"
+                                class="mediatum-link-internal"
+                            >
+                                <span id="collections" tal:content="python:basedirs[1].getLabel()"/>
+                            </a>
                         </h3>
                         <div class="mediatum_acc_content" id="tree_content">
                             <div id="mediatum_collectionstree"> </div>
@@ -381,7 +413,10 @@
                 <br/>
                 <br/>
                 <p i18n:translate="edit_error_msg" class="error">TEXT
-                    <span i18n:name="link"><a i18n:translate="hier_link" href="../login" target="_parent"> </a></span>
+                    <span i18n:name="link">
+                        <a i18n:translate="hier_link" href="../login" target="_parent" class="mediatum-link-internal">
+                        </a>
+                    </span>
                 </p>
             </div>
         </body>

@@ -94,6 +94,9 @@ msgstr "Label"
 
 ### metadatatype ###
 
+msgid "metafield_option1"
+msgstr "Suchfeld"
+
 msgid "metafield_option2"
 msgstr "Sortierfeld"
 

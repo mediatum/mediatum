@@ -275,23 +275,16 @@ select[name="nodes_per_page"] { margin-right: 38px !important;}
 #portal-column-content #page-nav { margin: 2px 5px 2px 0px;}
 #portal-column-content #page-nav a { color: #0A5096; text-decoration: none;}
 a.page-nav { font-size: 130% !important;}
-a.page-nav-previous { margin-right: 10px;}
-a.page-nav-previous::before { content: "\27F5"; margin-right: 5px;}
-a.page-nav-next::after { content:  "\27F6"; margin-left: 5px;}
-a.page-nav-next { margin-left: 10px;}
+a.page-nav-previous { margin-right: 3px;}
+a.page-nav-previous::before { content: "\27F5"; margin-right: 3px;}
+a.page-nav-next::after { content:  "\27F6"; margin-left: 3px;}
+a.page-nav-next { margin-left: 3px;}
 
 #portal-column-content #page-nav a:hover { color: #000;}
 #portal-column-content #portal-pages { text-align: center;}
 #portal-column-content #portal-pages a { color: #666; font-size: 80%; text-decoration: none;}
 #portal-column-content #portal-pages a:hover { color: #000;}
-#portal-column-content #portal-pages table {padding:0px;margin:0px;width:100%;}
-#portal-column-content #portal-pages table tr td {width:33%; vertical-align: center;}
-#portal-column-content #portal-pages table tr td table tr td.mediatum-content-nav-list-header-label {
-    text-align: right;
-}
-#portal-column-content #portal-pages table tr td table tr td.mediatum-content-nav-list-header-select {
-    text-align: left;
-}
+
 /* Paths / Vorkommen */
 div#paths { border-top: rgb(71,71,71) solid 1px; padding: 5px; margin: 20px 5px 5px 0px;}
 
@@ -301,6 +294,43 @@ div#portal-column-content #paths a { color: rgb(71,71,71); text-decoration: none
 #portal-column-content #paths li { margin-left: 15px; line-height: 13px;}
 #portal-column-content #paths ul li a.breadcrumb-delimiter::after { content: "\2192"; margin: 0px 3px 0px 3px;}
 
+#portal-pages div.mediatum-content-nav-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+#portal-pages div.mediatum-content-nav-list div.mediatum-content-nav-1 {
+  width: 40%;
+}
+#portal-pages div.mediatum-content-nav-list div.mediatum-content-nav-2 {
+  width: 30%;
+}
+#portal-pages div.mediatum-content-nav-list div.mediatum-content-nav-3 {
+  width: 30%;
+}
+#portal-pages div.mediatum-content-nav-list div.mediatum-content-nav-1 form div.mediatum-content-nav-sort {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+#portal-pages div.mediatum-content-nav-list div.mediatum-content-nav-1 form div.mediatum-content-nav-sort div.mediatum-content-nav-sort-field {
+    display: flex;
+    justify-content: flex-start;
+    padding-bottom: 2px;
+    width: 100%;
+}
+#portal-pages div.mediatum-content-nav-list div.mediatum-content-nav-1 form div.mediatum-content-nav-sort div.mediatum-content-nav-sort-field div.mediatum-content-nav-sort-field-label {
+    width: 40%;
+    padding-right: 2px;
+}
+#portal-pages div.mediatum-content-nav-list div.mediatum-content-nav-1 form div.mediatum-content-nav-sort div.mediatum-content-nav-sort-field div.mediatum-content-nav-sort-field-label small {
+    float: right;
+}
+#portal-pages div.mediatum-content-nav-list div.mediatum-content-nav-1 form div.mediatum-content-nav-sort div.mediatum-content-nav-sort-field div.mediatum-content-nav-sort-field-select {
+    width: 56%;
+}
 /* Breadcrumbs */
 div#portal-breadcrumbs { font-size: 90%; position: relative;}
 div#portal-breadcrumbs a { white-space: nowrap; color: rgb(71,71,71); text-decoration: none;}
@@ -369,8 +399,6 @@ div#portal-breadcrumbs #collectionlogo { margin: 0px 0px 10px 0px; width: 100%; 
     background-position: 10px 50%;
 }
 #portal-column-content div#nodes { margin: 2px 4px 2px 0px; padding-left: 0px; overflow: hidden; clear: left;}
-#portal-column-content div#nodes div.preview a { color: #666666; text-decoration: none; width: 98%;}
-#portal-column-content div#nodes div.preview a:hover { color: #000000; text-decoration: none;}
 
 #portal-column-content .img-caption-floatleft p {
     padding-bottom: 0px;
@@ -696,14 +724,16 @@ div#portal-breadcrumbs div a.breadcrumb-delimiter::after { content: "\2192"; mar
     position: relative;
     margin: 2px 4px 2px 0px;
     padding: 2px;
+    background-color: white;
 }
+#portal-column-content div#nodes div.preview:hover { background-color: #cccccc;}
 #portal-column-content div#nodes div.preview div.mediatum-stylethumb-attach {
     position:absolute;
     right:25px;
     top:3px;
     overflow:hidden;
 }
-#portal-column-content div#nodes div.preview a div.mediatum-stylethumb-div-img img.thumbnail {
+#portal-column-content div#nodes div.preview div.mediatum-stylethumb-div-img a img.thumbnail {
     float: left;
     margin: 3px;
     position: absolute;
@@ -712,7 +742,7 @@ div#portal-breadcrumbs div a.breadcrumb-delimiter::after { content: "\2192"; mar
     object-fit: contain;
     object-position: top;
 }
-#portal-column-content div#nodes div.preview a div.mediatum-stylethumb-div-p {
+#portal-column-content div#nodes div.preview div.mediatum-stylethumb-div-p {
     margin-left: 132px;
     width: 128px;
     height: 260px;
@@ -721,7 +751,7 @@ div#portal-breadcrumbs div a.breadcrumb-delimiter::after { content: "\2192"; mar
     display: flex;
     flex-direction: column;
 }
-#portal-column-content div#nodes div.preview a div.mediatum-stylethumb-div-p p.mediatum-stylethumb-p {
+#portal-column-content div#nodes div.preview div.mediatum-stylethumb-div-p p.mediatum-stylethumb-p {
     text-overflow: ellipsis;
     Word-wrap: break-Word;
     display: -webkit-box;
@@ -733,29 +763,36 @@ div#portal-breadcrumbs div a.breadcrumb-delimiter::after { content: "\2192"; mar
     margin-right: 3px;
 }
 
-#portal-column-content div#nodes div.preview_list { width: 98%;border: silver solid 1px;position: relative;}
-#portal-column-content div#nodes div.preview_list a.mediatum-stylelist-a { color: #666666; text-decoration: none; width: 100%;}
-#portal-column-content div#nodes div.preview_list a.mediatum-stylelist-a:hover { color: #000000; text-decoration: none;}
+#portal-column-content div#nodes div.preview_list {
+    width: 98%;
+    border: silver solid 1px;
+    position: relative;
+    backgroundColor: white;
+}
+#portal-column-content div#nodes div.preview_list:hover {background-color: #cccccc;}
 #portal-column-content div#nodes div.preview_list div.mediatum-stylelist-attach {
     position:absolute;
     right:25px;
     top:3px;
     overflow:hidden;
 }
-#portal-column-content div#nodes div.preview_list a.mediatum-stylelist-a div.mediatum-stylelist-img img.thumbnail {
+#portal-column-content div#nodes div.preview_list div.mediatum-stylelist-div a.mediatum-stylelist-a {
+    margin-left: 1em;
+}
+#portal-column-content div#nodes div.preview_list div.mediatum-stylelist-img a.mediatum-stylelist-a img.thumbnail {
     float: left;
     margin: 5px;
     width: 128px;
     object-fit: contain;
     object-position: top;
 }
-#portal-column-content div#nodes div.preview_list a.mediatum-stylelist-a div.mediatum-stylelist-div {
+#portal-column-content div#nodes div.preview_list div.mediatum-stylelist-div {
     margin-left: 132px;
     justify-content: flex-start;
     display: flex;
     flex-direction: column;
 }
-#portal-column-content div#nodes div.preview_list a.mediatum-stylelist-a div.mediatum-stylelist-div p {
+#portal-column-content div#nodes div.preview_list div.mediatum-stylelist-div p {
     max-width: 100%;
     max-height: 100%;
     text-overflow: ellipsis;

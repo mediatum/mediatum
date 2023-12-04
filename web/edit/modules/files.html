@@ -24,7 +24,7 @@
 
         <div id="accordion">
             <!-- file upload -->
-            <h3><a href="#" i18n:translate="edit_files_options">TEXT</a></h3>
+            <h3><a href="#!" i18n:translate="edit_files_options" class="mediatum-link-mediatum"> </a></h3>
             <div class="mediatum_files_options">
                 <form method="post" enctype="multipart/form-data">
                     <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
@@ -61,7 +61,7 @@
                 </div>
 
             <!-- file list -->
-            <h3><a href="#" i18n:translate="edit_files_files">TEXT</a></h3>
+            <h3><a href="#!" i18n:translate="edit_files_files" class="mediatum-link-mediatum"> </a></h3>
             <div id="files">
                 <form method="post">
                     <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
@@ -78,8 +78,13 @@
                         <tr tal:repeat="file python:files">
                             <tal:block tal:condition="python:file.type!='attachment' and (user.isAdmin() or file.type!='statistic')">
                             <td>
-                                <a tal:attributes="href python:u'/file/{}/{}'.format(node.id, file.getName())" tal:content="python:file.path"
-                                i18n:attributes="title edit_files_open_title" target="filewindow"/>
+                                <a
+                                    tal:attributes="href python:u'/file/{}/{}'.format(node.id, file.getName())"
+                                    tal:content="python:file.path"
+                                    i18n:attributes="title edit_files_open_title"
+                                    target="filewindow"
+                                    class="mediatum-link-mediatum"
+                                />
                             </td>
                             <td tal:content="python:file.type"/>
                             <td tal:content="python:file.getSize()" class="mediatum_filetable_files_th_ralign" />
@@ -101,7 +106,7 @@
 
             <!-- attachments -->
             <tal:block tal:condition="python:len(attfiles)>0">
-                <h3><a href="#"  i18n:translate="edit_files_attachments">TEXT</a></h3>
+                <h3><a href="#!"  i18n:translate="edit_files_attachments" class="mediatum-link-mediatum"> </a></h3>
                 <div id="attfiles">
                     <form method="post">
                         <input tal:attributes="value csrf" type="hidden" name="csrf_token">
@@ -119,8 +124,14 @@
                                     <td tal:content="python:file.getSize()"/>
                                     <td tal:content="python:file.mimetype"/>
                                     <td>
-                                        <a tal:condition="python:file.getSize()>0" tal:attributes="href python:u'/file/{}/{}'.format(node.id, file.getName())"
-                                            tal:content="python:file.getName()" i18n:attributes="title edit_files_open_title" target="filewindow"/>
+                                        <a
+                                            tal:condition="python:file.getSize()>0"
+                                            tal:attributes="href python:u'/file/{}/{}'.format(node.id, file.getName())"
+                                            tal:content="python:file.getName()"
+                                            i18n:attributes="title edit_files_open_title"
+                                            target="filewindow"
+                                            class="mediatum-link-mediatum"
+                                        />
                                         <b tal:condition="python:file.getSize()==0" tal:content="python:file.getName()"/>
                                     </td>
                                     <td class="mediatum_files_ta_center">
@@ -138,8 +149,14 @@
                                     <td tal:content="python:file.getSize()"/>
                                     <td tal:content="python:file.mimetype"/>
                                     <td>
-                                        <a tal:condition="python:file.getSize()>0" tal:attributes="href python:u'/attfile/{}/{}'.format(node.id, file._path)"
-                                            tal:content="python:file.getName()" i18n:attributes="title edit_files_open_title" target="filewindow"/>
+                                        <a
+                                            tal:condition="python:file.getSize()>0"
+                                            tal:attributes="href python:u'/attfile/{}/{}'.format(node.id, file._path)"
+                                            tal:content="python:file.getName()"
+                                            i18n:attributes="title edit_files_open_title"
+                                            target="filewindow"
+                                            class="mediatum-link-mediatum"
+                                        />
                                         <b tal:condition="python:file.getSize()==0" tal:content="python:file.getName()"/>
                                     </td>
                                     <td class="mediatum_files_ta_center">
@@ -160,7 +177,7 @@
 
             <!-- statistics -->
             <tal:block tal:condition="python:len(statfiles)>0">
-                <h3><a href="#" i18n:translate="edit_files_stats">TEXT</a></h3>
+                <h3><a href="#!" i18n:translate="edit_files_stats" class="mediatum-link-mediatum"> </a></h3>
                 <div id="statfiles">
                     <form method="post">
                         <input tal:attributes="value csrf" type="hidden" name="csrf_token">
@@ -178,8 +195,13 @@
                                     <td tal:content="python:file.getSize()"/>
                                     <td tal:content="python:file.mimetype"/>
                                     <td>
-                                        <a tal:attributes="href python:u'/file/{}/{}'.format(node.id, file.getName())" tal:content="python:file.getName()"
-                                        i18n:attributes="title edit_files_open_title" target="filewindow"/>
+                                        <a
+                                            tal:attributes="href python:u'/file/{}/{}'.format(node.id, file.getName())"
+                                            tal:content="python:file.getName()"
+                                            i18n:attributes="title edit_files_open_title"
+                                            target="filewindow"
+                                            class="mediatum-link-mediatum"
+                                        />
                                     </td>
                                     <td class="mediatum_files_ta_center">
                                         <input
@@ -199,7 +221,7 @@
 
             <!-- child elements -->
             <tal:block tal:condition="python:not node.isContainer()">
-                <h3><a href="#" i18n:translate="edit_files_children">TEXT</a></h3>
+                <h3><a href="#!" i18n:translate="edit_files_children" class="mediatum-link-mediatum"> </a></h3>
                 <div id="children" class="mediatum_padding10">
                     <h2>Kindelemente</h2>
                             <b i18n:translate="edit_files_childobjects">TEXT</b><br/>
@@ -221,14 +243,14 @@
                                             <a
                                                 tal:attributes="href python:u'/edit/edit_content?srcnodeid={}&id={}&tab=metadata'.format(srcnodeid, child.id)"
                                                 i18n:attributes="title edit_files_edit_child"
-                                                >
+                                            >
                                                 <img src="/static/img/edit.png"/>
                                             </a>
                                             <a
                                                 href="#"
                                                 tal:attributes="onclick python:u'return removeItem(this.id, {})'.format(node.id);id python:child.id"
                                                 i18n:attributes="title edit_files_delete_child"
-                                                >
+                                            >
                                                 <img src="/static/img/delete.png"/>
                                             </a>
                                         </div>
@@ -312,7 +334,9 @@
                 <ul id="tree" class="tree">
                     <li tal:repeat="basedir basedirs" tal:attributes="id python:'Node{}'.format(basedir.id)"><a tal:attributes="id python:str(basedir.id); title python: '{} ({})'.format(basedir.getLabel(), str(basedir.id))" tal:content="python:basedir.getLabel()" href="#">TEXT</a>
                         <ul>
-                            <li tal:attributes="parentId python:basedir.id" class="spinner.gif"><a href="#" id="node_0"> </a></li>
+                            <li tal:attributes="parentId python:basedir.id" class="spinner.gif">
+                                <a href="#!" id="node_0" class="mediatum-link-mediatum"> </a>
+                            </li>
                         </ul>
                     </li>
                 </ul>
@@ -335,7 +359,9 @@
                     tal:attributes="onclick python:'selectedItems({})'.format(srcnodeid)"
                     i18n:translate="ok">
                 </button>
-                <button class="mediatum_edit_files_cancel" type="button" onclick="self.close()" i18n:translate="edit_cancel">TEXT</button>
+                <button class="mediatum_edit_files_cancel" type="button" onclick="self.close()" i18n:translate="">
+                    cancel
+                </button>
             </p>
         </form>
        <script type="text/javascript">

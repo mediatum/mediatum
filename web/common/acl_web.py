@@ -13,8 +13,6 @@ import itertools as _itertools
 
 import sqlalchemy.orm.exc as _sqlalchemy_orm_exc
 
-import cgi as _cgi
-
 import core.translation as _core_translation
 from core.database.postgres.permission import AccessRuleset
 from core import db
@@ -51,7 +49,7 @@ def make_acl_html_options(node, ruletype, language):
             _core_translation.translate(language, "edit_acl_special_rule") if right.startswith("{") else right,
            ))
 
-    esc_map = _functools.partial(map, _functools.partial(_cgi.escape, quote=True))
+    esc_map = _functools.partial(map, _functools.partial(_utils_utils.esc))
     return dict(
         left="\n".join(_itertools.starmap("<option value=\"{}\">{}</option>".format, map(esc_map, left))),
         right="\n".join(_itertools.starmap("<option value=\"{}\">{}</option>".format, map(esc_map, right))),

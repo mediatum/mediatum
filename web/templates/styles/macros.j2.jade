@@ -21,7 +21,7 @@
   ul
     for type in image_formats
       li
-        a(href=image_formats[type]['url'])
+        a.mediatum-link-mediatum(href=image_formats[type]['url'])
           span {{ type }} ({{ image_formats[type]['display_size'] }})
 
 
@@ -47,14 +47,14 @@
             }
           });
         }
-      a(style="display:none;", id="high_resolution_link", href=highres_url)
+      a.mediatum-link-mediatum(style="display:none;", id="high_resolution_link", href=highres_url)
         = translate("image_high_res_title")
       div(id="archive_div")
-        a(id="get_archive_link", href="javascript:getArchivedFile('{}')".format(archive_fetch_url))
+        a.mediatum-link-mediatum(id="get_archive_link", href="javascript:getArchivedFile('{}')".format(archive_fetch_url))
           = translate("image_high_res_archive")
   if not archive_fetch_url
     div(style="padding-top:20px")
-      a(href=highres_url)
+      a.mediatum-link-mediatum(href=highres_url)
         = translate("image_high_res_title")
 
 - macro itemsperpage(nodesperpage, nodesperpage_options)

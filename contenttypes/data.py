@@ -4,14 +4,15 @@
 from __future__ import division
 from __future__ import print_function
 
-import cgi as _cgi
+import os as _os
 import re
 import functools as _functools
 import logging
-from warnings import warn
 import humanize
-import flask as _flask
 import math as _math
+from warnings import warn
+
+import flask as _flask
 
 from mediatumtal import tal
 
@@ -23,12 +24,15 @@ from core.styles import get_full_style
 from core.postgres import check_type_arg_with_schema
 from export.exportutils import default_context
 from schema.schema import getMetadataType, VIEW_HIDE_EMPTY, SchemaMixin
+from utils import utils as _utils_utils
 from utils.utils import highlight
 from utils.compat import iteritems, string_types
 from markupsafe import Markup
 from utils.strings import replace_attribute_variables
 
 logg = logging.getLogger(__name__)
+
+_default_thumbnail_paths = {}
 
 
 def make_lookup_key(node, language=None, labels=True):
@@ -134,7 +138,15 @@ def _build_field_template(labels, field_descriptor):
         template = u'<b>{value}</b>'
     else:
         template = u"{value}"
-    return _functools.partial(template.format, label=_cgi.escape(field_descriptor.get("label", ""), quote=True))
+    return _functools.partial(template.format, label=_utils_utils.esc(field_descriptor.get("label", "")))
+
+
+def register_default_thumbnail_path(path, type_=None, schema=None):
+    if (type_, schema) in _default_thumbnail_paths:
+        raise RuntimeError(u"{} already exists!".format((type_, schema)))
+    if not _os.path.isfile(path):
+        raise RuntimeError(u"Default thumbnail '{}' does not exist!".format(path))
+    _default_thumbnail_paths[(type_, schema)] = path
 
 
 class Data(Node):
@@ -431,9 +443,21 @@ class BadFile(Exception):
 
 
 class Content(Data, SchemaMixin):
-
     """(Abstract) base class for all content node types.
     """
+    def get_thumbnail_path(self):
+        files = self.files.filter_by(filetype="thumbnail")
+        for f in files:
+            if f.exists:
+                return f.abspath
+
+        # looking in all img filestores for default thumb for this
+        # a) node type and schema, or
+        # b) schema, or
+        # c) node type
+        return _default_thumbnail_paths.get((self.type, None)) or \
+               _default_thumbnail_paths.get((None, self.schema)) or \
+               _default_thumbnail_paths.get((self.type, self.schema))
 
 
 @check_type_arg_with_schema

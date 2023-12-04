@@ -21,12 +21,12 @@ let
       hash = "sha512-IMpIlZCOtmvCMfOB0c9AmK6rBbvin8DbEr0fiUIyEhzLJFgNuHQsfvGjl2mXrNz80PaByM+ckiYhjNFhzmo9zA==";
     };
     "js/jquery.layout.min.js" = fetchurl {
-      url = "http://layout.jquery-dev.com/lib/js/jquery.layout-latest.min.js";
-      hash = "sha512-kBA+j26xHcSGvJvvP2Wm4nzIPXSVabGfeM+U/PcB1grzVmV6H7b+uisAYA+lsKP7iI4rvdyJ83CIac874VpBHg==";
+      url = "https://cdnjs.cloudflare.com/ajax/libs/jquery-layout/1.3.0-rc-30.79/jquery.layout.min.js";
+      hash = "sha512-p0MGIH84Td1hpoLDySvTeIiiOA0bJkpQZZGoQlh7l31tQKIQmkzjS7HxLrpsFlpGGmIpJmP0hL+SUHuT6QlzSg==";
     };
     "js/jquery.layout.resizePaneAccordions-latest.min.js" = fetchurl {
-      url = "http://layout.jquery-dev.com/lib/js/jquery.layout.resizePaneAccordions-1.2.min.js";
-      hash = "sha512-mC0fXGmUcplIj+rIew/vqaeTPPx7GIVkB3fpDEA+QfJpwbeCkOTEjLGyCmKmGNQW0Vp9RjH/LrgOzAsoBRWlCA==";
+      url = "http://layout.jquery-dev.net/lib/js/jquery.layout.resizePaneAccordions-1.2.min.js";
+      hash = "sha512-AVKXbn647MwXnhZEqHxj/niPkpKOfcWh+ht8lIoJF8N4sscEGtQcx4FnQUdrSKgqeizQOAQqh3L4zuEmu/FSSw==";
     };
     "js/jquery.textarearesizer.js" = fetchurl {
       url = "https://github.com/gouten5010/jquery.textarearesizer/raw/dfdb395a3b250c41f9aff681e9deafa750a85e50/jquery.textarearesizer.js";

@@ -33,7 +33,14 @@
                             <span i18n:translate="admin_title"> </span><br/>
                             <span i18n:translate="sub_header_user">TEXT</span>: <span tal:replace="raw python:user.getName()"/>
                             <span tal:repeat="item python:spc">
-                                | <a tal:attributes="href python:item.link; target python:item.target; title python:u'{}_title'.format(item.getName())" i18n:translate="" i18n:attributes="title" tal:content="python:item.name">TEXT</a>
+                                | <a
+                                    tal:attributes="href python:item.link; target python:item.target; title python:u'{}_title'.format(item.getName())"
+                                    i18n:translate=""
+                                    i18n:attributes="title"
+                                    tal:content="python:item.name"
+                                    class="mediatum-link-mediatum"
+                                    >
+                            </a>
                             </span>
                         </div>
                     </div>
@@ -41,12 +48,24 @@
                     <div class="topmenucontainer">
                         <ul id="nav">
                             <li tal:repeat="navitem python:navigation">
-                                <a tal:condition="python:len(navitem.getItemList())==0" tal:attributes="class python:'selected' if navitem.name==breadcrumbs[0] else None; href python:navitem.getLink()" i18n:translate="" tal:content="python:u'admin_menu_{}'.format(navitem.getName())">TEXT</a>
+                                <a
+                                    tal:condition="python:len(navitem.getItemList())==0"
+                                    tal:attributes="class python:'selected' if navitem.name==breadcrumbs[0] else None; href python:navitem.getLink()"
+                                    i18n:translate=""
+                                    tal:content="python:u'admin_menu_{}'.format(navitem.getName())"
+                                    class="mediatum-link-mediatum"
+                                >
+                                </a>
                                 <tal:block tal:condition="python:len(navitem.getItemList())>0">
                                     <a tal:attributes="class python:'selected' if navitem.name==breadcrumbs[0] else None" i18n:translate="" tal:content="python:u'admin_menu_{}'.format(navitem.getName())"/>
                                     <ul>
                                         <li tal:repeat="item python:navitem.getItemList()">
-                                            <a i18n:translate="" tal:content="python:u'admin_menu_{}'.format(item.name)" tal:attributes="href python:u'/admin/{}'.format(item.name)"/>
+                                            <a
+                                                i18n:translate=""
+                                                tal:content="python:u'admin_menu_{}'.format(item.name)"
+                                                tal:attributes="href python:u'/admin/{}'.format(item.name)"
+                                                class="mediatum-link-mediatum"
+                                            />
                                         </li>
                                     </ul>
                                 </tal:block>                            
@@ -74,7 +93,16 @@
                 </div>
                 <!-- content end -->
                 <div id="footer">
-                    <a rel="external" href="http://mediatum-pages.ub.tum.de"><b>mediatum</b></a> <span tal:content="version">TEXT</span><br /><b>mediatum</b> is free software released under the General Public Licence.
+                    <a
+                        rel="external"
+                        href="http://mediatum-pages.ub.tum.de"
+                        class="mediatum-link-external"
+                    >
+                        <b>mediatum</b>
+                    </a>
+                    <span tal:content="version">TEXT</span>
+                    <br />
+                    <b>mediatum</b> is free software released under the General Public Licence.
                 </div>
             </div>
         </body>
@@ -94,7 +122,7 @@
     <br/>
     <br/>
     <p i18n:translate="admin_error" class="error">
-        <span i18n:name="link"><a i18n:translate="hier_link" href="../login"> </a></span>
+        <span i18n:name="link"><a i18n:translate="hier_link" href="../login" class="mediatum-link-internal"> </a></span>
     </p>
 </metal:block>
 

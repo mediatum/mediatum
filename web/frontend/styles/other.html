@@ -26,7 +26,13 @@
                 <div class="mask_label" i18n:translate="file"> </div>
             </div>
             <div class="mask_row" style="overflow: hidden">
-                <a class="mask_value" tal:attributes="href python:u'/file/{}{}{}'.format(node.id, '/', fl.base_name)" tal:content="python:fl.base_name" i18n:attributes="title edit_files_open_title" target="filewindow"/>
+                <a
+                    class="mask_value mediatum-link-mediatum"
+                    tal:attributes="href python:u'/file/{}{}{}'.format(node.id, '/', fl.base_name)"
+                    tal:content="python:fl.base_name"
+                    i18n:attributes="title edit_files_open_title"
+                    target="filewindow"
+                />
             </div>
         </tal:block>
         </div>

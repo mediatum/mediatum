@@ -17,6 +17,7 @@ from core.styles import CustomTheme, DefaultTheme
 
 from core.plugins import find_plugin_with_theme
 import request_handler as _request_handler
+from utils import utils as _utils_utils
 
 logg = logging.getLogger(__name__)
 
@@ -83,7 +84,7 @@ def current_node_url(**kwargs):
 
 def add_template_globals():
     from core import app
-    template_globals = dict(node_url=node_url, current_node_url=current_node_url)
+    template_globals = dict(node_url=node_url, current_node_url=current_node_url, xml_escape=_utils_utils.esc)
 
     tal.add_template_globals(**template_globals)
     app.add_template_globals(**template_globals)

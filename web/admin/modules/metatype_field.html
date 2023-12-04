@@ -4,7 +4,20 @@
 -->
 <metal:block metal:define-macro="view_field">
     <script src="/static/js/admin/modules/admin.js"> </script>
-    <p><a tal:attributes="href python:u'./metatype{}'.format(page)" i18n:translate="admin_overview">TEXT</a> | <a href="?masks_x=1" tal:attributes="href python:u'?masks_{}__=1'.format(metadatatype.name)" i18n:translate="admin_meta_maskdetail_title">TEXT</a></p>
+    <p>
+        <a
+            tal:attributes="href python:u'./metatype{}'.format(page)"
+            i18n:translate="admin_overview"
+            class="mediatum-link-mediatum"
+        >
+        </a> | <a
+                href="?masks_x=1"
+                tal:attributes="href python:u'?masks_{}__=1'.format(metadatatype.name)"
+                i18n:translate="admin_meta_maskdetail_title"
+                class="mediatum-link-mediatum"
+                >
+                </a>
+    </p>
     <form name="fieldoverview" method="post" action="#" tal:attributes="action page">
         <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
         <table class="overview">
@@ -18,7 +31,13 @@
                 </tr>
                 <tr>
                     <td colspan="10">
-                        <a tal:attributes="href python:u'./metatype/{}/overview?style=popup'.format(metadatatype.name)" i18n:translate="admin_metafield_fieldlist" target="_blank">TEXT</a>
+                        <a
+                            tal:attributes="href python:u'./metatype/{}/overview?style=popup'.format(metadatatype.name)"
+                            i18n:translate="admin_metafield_fieldlist"
+                            target="_blank"
+                            class="mediatum-link-mediatum"
+                        >
+                        </a>
                     </td>
                 </tr>
                 <tr>
@@ -165,7 +184,12 @@
         }
     </script>
     <p>
-        <a tal:attributes="href python:u'./metatype?detailof={}{}'.format(metadatatype.name, page)" i18n:translate="admin_overview">TEXT</a>
+        <a
+            tal:attributes="href python:u'./metatype?detailof={}{}'.format(metadatatype.name, page)"
+            i18n:translate="admin_overview"
+            class="mediatum-link-mediatum"
+        >
+        </a>
     </p>
     <form tal:attributes="action page" name="addmfield" id="addmfield" method="post" action="#" enctype="multipart/form-data">
         <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
@@ -257,7 +281,12 @@
 
 <metal:block metal:define-macro="modify_field" tal:define="id python:metafield.name">
     <p>
-        <a tal:attributes="href python:u'./metatype?detailof={}{}'.format(metadatatype.name, page)" i18n:translate="admin_overview">TEXT</a>
+        <a
+            tal:attributes="href python:u'./metatype?detailof={}{}'.format(metadatatype.name, page)"
+            i18n:translate="admin_overview"
+            class="mediatum-link-mediatum"
+        >
+        </a>
     </p>
     <form tal:attributes="action page" name="addmfield" id="addmfield" method="post" action="#" enctype="multipart/form-data">
         <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>

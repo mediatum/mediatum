@@ -223,7 +223,7 @@ def _make_navtree_entries_rec(tree_elements, opened, active, language, parent_id
             continue
 
         # render the element at hand
-        a_class = set(('mediatum_portal_tree_subnav_link',))
+        a_class = set(('mediatum_portal_tree_subnav_link', 'mediatum-link-mediatum'))
         if child.container_children_exists:
             a_class.add('mediatum_portal_tree_has_submenu')
             if child.Container.id in opened:

@@ -91,6 +91,9 @@ msgstr "Name"
 msgid "admin_metafield_filter_label"
 msgstr "Label"
 
+msgid "metafield_option1"
+msgstr "Search field"
+
 msgid "metafield_option2"
 msgstr "sort field"
 

@@ -22,7 +22,12 @@
                 </tr>
                 <tr tal:repeat="w list">
                     <td>
-                        <a tal:content="python:w.getName()" tal:attributes="href python:u'/publish/{}'.format(w.getName())" i18n:attributes="title wf_show_details_title"/>
+                        <a
+                            tal:content="python:w.getName()"
+                            tal:attributes="href python:u'/publish/{}'.format(w.getName())"
+                            i18n:attributes="title wf_show_details_title"
+                            class="mediatum-link-mediatum"
+                        />
                     </td>
                     <td tal:content="raw python:w.getDescription() or '&nbsp;'"/>
                 </tr>
@@ -56,13 +61,40 @@
     <tbody>
         <tr tal:repeat="item items">
             <tal:block tal:define="step python:getStep(item)">
-                <td><a target="editorwindow" tal:attributes="href python:u'/edit/edit?id={}'.format(item.id)" tal:content="python:item.id"></a></td>
+                <td>
+                    <a
+                        target="editorwindow"
+                        tal:attributes="href python:u'/edit/edit?id={}'.format(item.id)"
+                        tal:content="python:item.id"
+                        class="mediatum-link-mediatum"
+                    >
+                    </a>
+                </td>
                 <td tal:content="python:format_date(item.get('creationtime'))"/>
                 <td tal:content="python:item.getName()"/>
                 <td tal:content="python:step.getName()"/>
-                <td><a tal:attributes="href python:u'/mask?id={}&obj={}'.format(step.id, item.id)" i18n:translate="workflow_show_step">TEXT</a></td>
-                <td><a tal:attributes="href python:u'/mask?id={}&obj={}&forcefalse=1'.format(step.id, item.id)" tal:content="raw python:step.getFalseLabel() or '&nbsp;'"/></td>
-                <td><a tal:attributes="href python:u'/mask?id={}&obj={}&forcetrue=1'.format(step.id, item.id)" tal:content="raw python:step.getTrueLabel() or '&nbsp;'"/></td>
+                <td>
+                    <a
+                        tal:attributes="href python:u'/mask?id={}&obj={}'.format(step.id, item.id)"
+                        i18n:translate="workflow_show_step"
+                        class="mediatum-link-mediatum"
+                    >
+                    </a>
+                </td>
+                <td>
+                    <a
+                        tal:attributes="href python:u'/mask?id={}&obj={}&forcefalse=1'.format(step.id, item.id)"
+                        tal:content="raw python:step.getFalseLabel() or '&nbsp;'"
+                        class="mediatum-link-mediatum"
+                    />
+                </td>
+                <td>
+                    <a
+                        tal:attributes="href python:u'/mask?id={}&obj={}&forcetrue=1'.format(step.id, item.id)"
+                        tal:content="raw python:step.getTrueLabel() or '&nbsp;'"
+                        class="mediatum-link-mediatum"
+                    />
+                </td>
             </tal:block>
         </tr>
     </tbody>
@@ -89,7 +121,7 @@
 
 <div metal:define-macro="object_list" id="workflow">
     <p>
-        <a href="/publish" i18n:translate="back"> </a>
+        <a href="/publish" i18n:translate="back" class="mediatum-link-internal"> </a>
     </p>
     <h2><tal:block i18n:translate="wf_list_header"><tal:block tal:content="python:unicode(len(workflow.getNodeList()))" i18n:name="number"/>
         <tal:block tal:content="python:workflow.getName()" i18n:name="name"/>
@@ -105,7 +137,15 @@
             <tal:block tal:repeat="step python:workflow.getSteps('write')">
                 <tr tal:attributes="bgcolor python:step.get('adminstep') and '#bec2d3' or None">
                     <td align="left"><b tal:content="python:step.getName()"></b></td>
-                    <td align="left"><a tal:attributes="href python:'/mask?id=' + unicode(step.id)" i18n:translate="wf_list_objects"><span tal:content="python:unicode(len(step.getChildren()))" i18n:name="number"/> TEXT</a></td>
+                    <td align="left">
+                        <a
+                            tal:attributes="href python:'/mask?id=' + unicode(step.id)"
+                            i18n:translate="wf_list_objects"
+                            class="mediatum-link-mediatum"
+                        >
+                            <span tal:content="python:unicode(len(step.getChildren()))" i18n:name="number"/>
+                        </a>
+                    </td>
                 </tr>
             </tal:block>
         </tbody>
@@ -141,16 +181,39 @@
             <td tal:content="child_id"/>
             <td tal:content="child_creationtime"/>
             <td tal:content="child_name"/>
-
-            <td><a tal:attributes="href python:u'{}{}&type=editor'.format(nodelink, child_id)" i18n:translate="workflow_show_step">TEXT</a></td>
-            <td><a target="editorwindow" tal:attributes="href python:u'/edit/edit?id={}'.format(child_id)" i18n:translate="sub_header_edit">TEXT</a></td>
-
             <td>
-                <a tal:condition="python:falsestep!=''" tal:attributes="href python:u'{}{}&forcefalse=1'.format(nodelink, child_id)" tal:content="raw falsestep"/>
+                <a
+                    tal:attributes="href python:u'{}{}&type=editor'.format(nodelink, child_id)"
+                    i18n:translate="workflow_show_step"
+                    class="mediatum-link-mediatum"
+                >
+                </a>
+            </td>
+            <td>
+                <a
+                    target="editorwindow"
+                    tal:attributes="href python:u'/edit/edit?id={}'.format(child_id)"
+                    i18n:translate="sub_header_edit"
+                    class="mediatum-link-mediatum"
+                >
+                </a>
+            </td>
+            <td>
+                <a
+                    tal:condition="python:falsestep!=''"
+                    tal:attributes="href python:u'{}{}&forcefalse=1'.format(nodelink, child_id)"
+                    tal:content="raw falsestep"
+                    class="mediatum-link-mediatum"
+                />
                 <tal:block tal:condition="python:falsestep==''">-</tal:block>
             </td>
             <td>
-                <a tal:condition="python:truestep!=''" tal:attributes="href python:u'{}{}&forcetrue=1'.format(nodelink, child_id)" tal:content="raw truestep"/>
+                <a
+                    tal:condition="python:truestep!=''"
+                    tal:attributes="href python:u'{}{}&forcetrue=1'.format(nodelink, child_id)"
+                    tal:content="raw truestep"
+                    class="mediatum-link-mediatum"
+                />
                 <tal:block tal:condition="python:truestep==''">-</tal:block>
             </td>
             <td style="vertical-align: middle; text-align: center;">
@@ -169,7 +232,12 @@
     <script tal:content="python:u'var id={}'.format(step.id)"/>
     <p>
         <span style="text-align:left">
-            <a tal:attributes="href python:u'/publish/{}'.format(workflow.getName())" i18n:translate="back"> </a>
+            <a
+                tal:attributes="href python:u'/publish/{}'.format(workflow.getName())"
+                i18n:translate="back"
+                class="mediatum-link-mediatum"
+            >
+            </a>
         </span>
     </p>
     <h2 i18n:translate="workflow_msg3">TEXT <span tal:content="python:step.name" i18n:name="name"/>:</h2>
@@ -182,8 +250,20 @@
             <th i18n:translate="workflow_label_editor">TEXT</th>
             <th i18n:translate="workflow_label_forward">TEXT</th>
             <th colspan="2" style="text-align: right;">
-                <a href="#" class="toggled_text" onclick="toggleAll()" i18n:translate="workflow_label_select_all">TEXT</a>
-                <a href="#" class="toggled_text" style="display: none" onclick="toggleAll()" i18n:translate="workflow_label_deselect_all">TEXT</a>
+                <a
+                    href="#!"
+                    class="toggled_text mediatum-link-mediatum"
+                    onclick="toggleAll()"
+                    i18n:translate="workflow_label_select_all"
+                >
+                </a>
+                <a
+                    href="#!" class="toggled_text mediatum-link-mediatum"
+                    style="display: none"
+                    onclick="toggleAll()"
+                    i18n:translate="workflow_label_deselect_all"
+                >
+                </a>
             </th>
         </tr>
         <tal:block tal:content="raw python:table">TEXT</tal:block>

@@ -539,9 +539,14 @@ def formatLongText(value, field, cutoff=500):
         if p.is_cutted:
             val = p.output.getvalue()
             val = val.rstrip()
-            return u'<div id="' + field.getName() + '_full" style="display:none">' + value + '&nbsp;&nbsp;&nbsp;&nbsp;<a href="#" title="Text reduzieren" onclick="expandLongMetatext(\'' + field.getName() + '\');return false">&laquo;</a></div><div id="' + \
-                   field.getName() + '_more">' + val + '...&nbsp;&nbsp;&nbsp;&nbsp;<a href="#" title="gesamten Text zeigen" onclick="expandLongMetatext(\'' + \
-                   field.getName() + '\');return false">&raquo;</a></div>'
+            return u"""
+                    <div id="{fieldname}_full" style="display:none">{value}&nbsp;&nbsp;&nbsp;&nbsp;
+                    <a href="#!" title="Text reduzieren" onclick="expandLongMetatext('{fieldname}');
+                    return false" class="mediatum-link-mediatum">&laquo;</a></div><div id="{fieldname}_more">
+                    {val}...&nbsp;&nbsp;&nbsp;&nbsp;
+                    <a href="#!" title="gesamten Text zeigen" onclick="expandLongMetatext('{fieldname}');
+                    return false" class="mediatum-link-mediatum">&raquo;</a></div>
+                    """.format(fieldname=field.getName(), value=value, val=val)
         else:
             return value
     except:
@@ -622,12 +627,13 @@ class FileException:
 
 
 class Menu:
-    def __init__(self, name, link="", target="_self"):
+    def __init__(self, name, link="", target="_self", cssclass=None):
         self.name = name
         self.link = link
         self.target = target
         self.item = list()
         self.default = ""
+        self.cssclass = cssclass
 
     def getLink(self):
         if self.link == "":

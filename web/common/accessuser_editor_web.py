@@ -4,7 +4,6 @@
 from __future__ import division
 from __future__ import print_function
 
-import cgi as _cgi
 import logging
 
 import core.translation as _core_translation
@@ -110,7 +109,7 @@ def makeUserList(req, own_ruleset_assocs, inherited_ruleset_assocs, special_rule
                 rule = rule_assoc.rule
                 test_result = decider_is_private_user_group_access_rule(rule)
                 if type(test_result) in [unicode, str]:
-                    val_left += u'<option value="" title="{0}">{0}</option>'.format(_cgi.escape(test_result, quote=True))
+                    val_left += u'<option value="" title="{0}">{0}</option>'.format(_utils_utils.esc(test_result))
                 elif type(test_result) == User:
                     long_val = get_list_representation_for_user(
                             test_result,
@@ -118,7 +117,7 @@ def makeUserList(req, own_ruleset_assocs, inherited_ruleset_assocs, special_rule
                         )
                     val_left += u'<option value="{0}" title="{1}">{1}</option>'.format(
                             test_result.id,
-                            _cgi.escape(long_val, quote=True),
+                            _utils_utils.esc(long_val),
                         )
                     user_not_inherited_in_left_list.append(test_result.id)
                 else:
@@ -126,10 +125,10 @@ def makeUserList(req, own_ruleset_assocs, inherited_ruleset_assocs, special_rule
                     text_content = "rule: %r" % rule.to_dict()
                     val_left += u'<option value="{0}" title="{1}">{1}</option>'.format(
                             param_value,
-                            _cgi.escape(text_content, quote=True),
+                            _utils_utils.esc(text_content),
                         )
         else:
-            val_left += u'<option value="" title="{0}">{0}</option>'.format(_cgi.escape(ruleset_name, quote=True))
+            val_left += u'<option value="" title="{0}">{0}</option>'.format(_utils_utils.esc(ruleset_name))
 
     inherited_ruleset_names = [r.ruleset_name for r in inherited_ruleset_assocs]
     for ruleset_name in inherited_ruleset_names:
@@ -140,28 +139,28 @@ def makeUserList(req, own_ruleset_assocs, inherited_ruleset_assocs, special_rule
                 test_result = decider_is_private_user_group_access_rule(rule)
 
                 if type(test_result) in [unicode, str]:
-                    val_left += u'<optgroup label="{0}" title="{0}"/>'.format(_cgi.escape(test_result, quote=True))
+                    val_left += u'<optgroup label="{0}" title="{0}"/>'.format(_utils_utils.esc(test_result))
                 elif type(test_result) == User:
                     long_val = get_list_representation_for_user(
                             test_result,
                             prefix=authenticator_id2user_prefix[test_result.authenticator_id],
                         )
-                    val_left += u'<optgroup label="{0}" title="{0}"/>'.format(_cgi.escape(long_val, quote=True))
+                    val_left += u'<optgroup label="{0}" title="{0}"/>'.format(_utils_utils.esc(long_val))
                 else:
                     param_value = 'rule_id:%r' % rule.id
                     text_content = "rule: %r" % rule.to_dict()
                     val_left += u'<option value="{0}" title="{1}">{1}</option>'.format(
                             param_value,
-                            _cgi.escape(text_content, quote=True),
+                            _utils_utils.esc(text_content),
                         )
         else:
-            val_left += u'<optgroup label="{0}" title="{0}"/>'.format(_cgi.escape(ruleset_name, quote=True))
+            val_left += u'<optgroup label="{0}" title="{0}"/>'.format(_utils_utils.esc(ruleset_name))
 
     sorted_decorated_userlist = sorted([(authenticator_id2user_prefix[u.authenticator_id], u.getName().lower(), u) for u in userlist])
     for u_prefix, u_name, u in sorted_decorated_userlist:
         if u.id in user_not_inherited_in_left_list:
             continue
         long_val = get_list_representation_for_user(u, prefix=u_prefix)
-        val_right += u'<option value="{0}" title="{1}">{1}</option>'.format(u.id, _cgi.escape(long_val, quote=True))
+        val_right += u'<option value="{0}" title="{1}">{1}</option>'.format(u.id, _utils_utils.esc(long_val))
 
     return {"name": rule_type, "val_left": val_left, "val_right": val_right, "type": rule_type}

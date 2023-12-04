@@ -5,7 +5,12 @@
 <metal:macro define-macro="old_version_alert">
     <div style="width:100%;text-align:center;color:red;" tal:condition="python: not node.isActiveVersion()">
         <p class="info">
-            <a href="/" tal:attributes="href python:node_url(node.id)" i18n:translate="document_view_new_version_exist">
+            <a
+                href="/"
+                tal:attributes="href python:node_url(node.id)"
+                i18n:translate="document_view_new_version_exist"
+                class="mediatum-link-mediatum"
+            >
             There is a new version of the desired document.
             </a>
         </p>
@@ -15,7 +20,12 @@
 <metal:macro define-macro="deleted_version_alert">
     <div style="width:100%;text-align:center;color:red;" tal:condition="deleted">
         <p class="error">
-            <a href="/" tal:attributes="href python:node_url(node.id)" i18n:translate="document_view_version_deleted">
+            <a
+                href="/"
+                tal:attributes="href python:node_url(node.id)"
+                i18n:translate="document_view_version_deleted"
+                class="mediatum-link-mediatum"
+            >
             The desired version of the document has been deleted.<br />The document is displayed in the latest version.
             </a>.
         </p>
@@ -46,15 +56,26 @@
 		<!-- other versions: active node is not tagged -->
 		<tal:block tal:condition="python:not node.versions[-1].tag">
 		<div>
-			<a href="/" tal:attributes="href python:node_url(node.id)"><span i18n:translate="current_version">Version</span>
+			<a href="/" tal:attributes="href python:node_url(node.id)" class="mediatum-link-mediatum">
+                <span i18n:translate="current_version">Version</span>
 			<span tal:condition="python:node.getActiveVersion().updatetime or node.getActiveVersion().creationtime">(<tal:block i18n:translate="document_view_from">from</tal:block> <tal:block tal:replace="python:node.getActiveVersion().pretty_format_update_time"></tal:block> <tal:block i18n:translate="document_view_by" /> <tal:block tal:replace="python:node.getActiveVersion().updateuser or node.getActiveVersion().creator" />)</span></a>
 		</div>
 		</tal:block>
 		<div tal:repeat="v versions">
-			<a href="/" tal:attributes="href python:node_url(v.id, None if v == v.versions[-1] else v.tag)"><span tal:content="python:'Version {}'.format(v.tag)">Version</span>
-			  <span tal:condition="python:v == v.versions[-1]">(<tal:block i18n:translate="current_version"></tal:block>)
-			  </span>
-			<span tal:condition="python:v.updatetime or v.creationtime">(<tal:block i18n:translate="document_view_from">from</tal:block> <tal:block tal:replace="python:v.pretty_format_update_time"></tal:block> <tal:block i18n:translate="document_view_by" /> <tal:block tal:replace="python:v.updateuser or v.creator" />)</span></a>
+			<a
+                href="/"
+                tal:attributes="href python:node_url(v.id, None if v == v.versions[-1] else v.tag)"
+                class="mediatum-link-mediatum"
+            >
+                <span tal:content="python:'Version {}'.format(v.tag)">Version</span>
+			    <span tal:condition="python:v == v.versions[-1]">(<tal:block i18n:translate="current_version"></tal:block>)</span>
+			    <span tal:condition="python:v.updatetime or v.creationtime">
+                    (<tal:block i18n:translate="document_view_from">from</tal:block>
+                    <tal:block tal:replace="python:v.pretty_format_update_time"></tal:block>
+                    <tal:block i18n:translate="document_view_by" />
+                    <tal:block tal:replace="python:v.updateuser or v.creator" />)
+                </span>
+            </a>
 		</div>
 	</div>
 </metal:macro>
@@ -70,7 +91,14 @@
                         <small class="small_name">
                             <span tal:content="python:child.name" tal:attributes="title python:child.name">TEXT</span>
                         </small>
-                        <div class="morelink"><a tal:attributes="href python:get_detail_url(srcnodeid, child.id, parent.id)"><tal:block i18n:translate="details">TEXT</tal:block>...</a></div>
+                        <div class="morelink">
+                            <a
+                                tal:attributes="href python:get_detail_url(srcnodeid, child.id, parent.id)"
+                                class="mediatum-link-mediatum"
+                            >
+                                <tal:block i18n:translate="details">TEXT</tal:block>...
+                            </a>
+                        </div>
                 </div>
             </tal:block>
         </div>

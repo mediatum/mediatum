@@ -262,15 +262,14 @@ def _init_locks():
     _register_lock('zipfile', 7)
 
 
-def _init_web_roots():
-    import core.webconfig
-    import web.frontend.filehandlers as _filehandlers
-    webroots = config.get('paths.webroots', '').split('|')
-    if any(webroots):
-        map(_filehandlers.add_web_root, webroots)
-    if core.webconfig.theme:
-        _filehandlers.add_web_root(core.webconfig.theme.path)
-    _filehandlers.add_web_root(_os.path.join(config.basedir, "web-root"))
+def _init_default_thumbnail():
+    from contenttypes import data
+    img_filestorepath = _os.path.join(config.basedir, "web-data", "default-thumbnails", "{ntype}.png")
+    for filetype in ("audio", "document", "file", "image", "text", "video"):
+        data.register_default_thumbnail_path(img_filestorepath.format(ntype=filetype), type_=filetype)
+    data.register_default_thumbnail_path(
+        _os.path.join(config.basedir, "web-data", "default-thumbnails", "questionmark.png"),
+    )
 
 
 def basic_init(root_loglevel=None, config_filepath=None, prefer_config_filename=None, log_filepath=None,
@@ -295,9 +294,9 @@ def basic_init(root_loglevel=None, config_filepath=None, prefer_config_filename=
     connect_db(force_test_db, automigrate)
     _set_current_init_state(init_state)
     from core import medmarc as _  # mustn't be imported too early
+    _init_default_thumbnail()
     from core import db
     db.session.rollback()
-    _init_web_roots()
 
 
 def _additional_init():
@@ -310,11 +309,16 @@ def _additional_init():
         validity.check_database()
     if config.getboolean("workflows.activate", True):
         register_workflow()
+    import web.frontend.filehandlers as _filehandlers
+    _filehandlers.add_web_root(_os.path.join(config.basedir, "web-data", "web-root"))
     from core import plugins
     init_modules()
     _web_frontend.html_head_style_src.extend(filter(None, config.get('paths.css', '').split('|')))
     _web_frontend.html_head_javascript_src.extend(filter(None, config.get('paths.javascript', '').split('|')))
     plugins.init_plugins()
+    webroots = config.get('paths.webroots', '').split('|')
+    if any(webroots):
+        map(_filehandlers.add_web_root, webroots)
     if enable_startup_checks:
         check_undefined_nodeclasses()
     update_nodetypes_in_db()

@@ -11,6 +11,8 @@ import backports.functools_lru_cache as _backports_functools_lru_cache
 import flask as _flask
 import polib as _polib
 
+from mediatumtal import talextracted as _mediatumtal_talextracted
+
 from . import config
 from utils.strings import ensure_unicode_returned
 
@@ -24,7 +26,15 @@ class MessageIdNotFound(KeyError):
 @_backports_functools_lru_cache.lru_cache(maxsize=None)
 def _parse_po_file_to_dict(po_file_path):
     po = _polib.pofile(po_file_path, encoding='utf-8')
-    return {entry.msgid: entry.msgstr for entry in po.translated_entries()}
+    d = {entry.msgid: entry.msgstr for entry in po.translated_entries()}
+    # We currently permit empty strings as messages.
+    # However, polib does not expose them in
+    # `.translated_entries()`, but in `.untranslated_entries()`.
+    # Let's ensure we don't abuse this mechanism.
+    for entry in po.untranslated_entries():
+        assert entry.msgstr == ""
+        d[entry.msgid] = ""
+    return d
 
 
 @_backports_functools_lru_cache.lru_cache(maxsize=None)
@@ -43,25 +53,28 @@ def _list_po_files(language):
 
 
 @ensure_unicode_returned(silent=True)
-def translate(language, msgid):
+def translate(language, msgid, mapping={}):
     for pofile in _list_po_files(language):
         po = _parse_po_file_to_dict(pofile)
         if msgid in po:
-            return po[msgid]
+            return _mediatumtal_talextracted.interpolate(
+                po[msgid].encode("utf-8"),
+                {k:v.encode("utf-8") for k,v in mapping.iteritems()},
+               ).decode("utf-8")
 
     raise MessageIdNotFound(msgid)
 
 
-def translate_in_request(msgid, request=None):
-    return translate(set_language(request.accept_languages if request else _flask.request.accept_languages), msgid)
+def translate_in_request(msgid, request=None, mapping={}):
+    return translate(set_language(request.accept_languages if request else _flask.request.accept_languages), msgid, mapping)
 
 
-def translate_in_template(msgid, language=None, request=None):
+def translate_in_template(msgid, language=None, request=None, mapping={}):
     try:
         if language:
-            return translate(language, msgid)
+            return translate(language, msgid, mapping)
         else:
-            return translate_in_request(msgid, request)
+            return translate_in_request(msgid, request, mapping)
     except MessageIdNotFound:
         return msgid
 

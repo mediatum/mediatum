@@ -11,10 +11,10 @@
       li
         for step in path
           if path.index(step)<path|length-1
-            a.breadcrumb-delimiter(href=node_url(step.id))
+            a.breadcrumb-delimiter.mediatum-link-mediatum(href=node_url(step.id))
               = step.getLabel()
           else
-            a(href=node_url(step.id))
+            a.mediatum-link-mediatum(href=node_url(step.id))
               = step.getLabel()
 
 

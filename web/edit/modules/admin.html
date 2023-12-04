@@ -56,7 +56,7 @@
         >
             <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
             <div id="accordion">
-                <h3><a href="#" i18n:translate="edit_nodeinformation">TEXT</a></h3>
+                <h3><a href="#!" i18n:translate="edit_nodeinformation" class="mediatum-link-mediatum"> </a></h3>
                 <div id="info" class="mediatum_subcontent_padding">
                     <div class="mediatum_entry">
                         <div class="label" i18n:translate="edit_id">TEXT</div>
@@ -79,8 +79,7 @@
                         <div class="content" tal:content="python:node.orderpos">TEXT</div>
                     </div>
                 </div>
-
-                <h3><a href="#" i18n:translate="admin_metafield_fields"> </a></h3>
+                <h3><a href="#!" i18n:translate="admin_metafield_fields" class="mediatum-link-mediatum"> </a></h3>
                 <div id="meta" class="mediatum_subcontent_padding">
                      <div class="mediatum_entry" tal:repeat="key python: list(metafields)">
                          <div class="label" tal:content="key">TEXT</div>
@@ -98,7 +97,7 @@
                     </div>
                 </div>
 
-                <h3><a href="#" i18n:translate="edit_files_obsolete">TEXT</a></h3>
+                <h3><a href="#!" i18n:translate="edit_files_obsolete" class="mediatum-link-mediatum"> </a></h3>
                 <div id="obsolete" class="mediatum_subcontent_padding">
                     <div class="mediatum_entry" tal:repeat="key python:list(obsoletefields)">
                         <div class="label" tal:content="key">TEXT</div>
@@ -112,7 +111,7 @@
                     </div>
                 </div>
 
-                <h3><a href="#" i18n:translate="edit_system_attrs">TEXT</a></h3>
+                <h3><a href="#!" i18n:translate="edit_system_attrs" class="mediatum-link-mediatum"> </a></h3>
                 <div id="system_attrs" class="mediatum_subcontent_padding">
                     <div class="mediatum_entry" tal:repeat="item python:system_attrs">
                         <div class="label" tal:content="python:item[0]">TEXT</div>
@@ -126,7 +125,7 @@
                     </div>
                 </div>
 
-                <h3><a href="#" i18n:translate="edit_files_tech_meta">TEXT</a></h3>
+                <h3><a href="#!" i18n:translate="edit_files_tech_meta" class="mediatum-link-mediatum"> </a></h3>
                 <div id="tech" class="mediatum_subcontent_padding">
                     <div class="mediatum_entry" tal:repeat="key python:list(technfields)">
                         <tal:block tal:repeat="sec python:node.getTechnAttributes().keys()">

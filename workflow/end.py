@@ -41,7 +41,7 @@ class WorkflowStep_End(WorkflowStep):
         return _tal.processTAL(
                 dict(node=unicode(node.id)),
                 """
-                    <p><a href="/publish" i18n:translate="back"> </a></p>
+                    <p><a href="/publish" i18n:translate="back" class="mediatum-link-mediatum"> </a></p>
                     <h2 i18n:translate="wf_step_ready"> </h2>
                     <p>&nbsp;</p>
                     <p i18n:translate="workflow_step_ready_msg"><span tal:content="node" i18n:name="name"/></p>

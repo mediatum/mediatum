@@ -28,23 +28,33 @@
     <div id="navigation_content">
         <tal:block tal:condition="python:len(schemes)>=1 and len(datatypes)>=1">
         <div class="mediatum_upload">
-            <a class="mediatum_img_uploadmeta" href="#" onclick="openMetaForm()">
+            <a class="mediatum_img_uploadmeta mediatum-link-mediatum" href="#!" onclick="openMetaForm()">
             <tal:block i18n:translate="edit_upload_meta"/></a>
         </div>
         </tal:block>
 
         <div class="mediatum_upload">
-            <a class="mediatum_img_uploaddoi" href="#" onclick="openDoiForm()">
+            <a class="mediatum_img_uploaddoi  mediatum-link-mediatum" href="#!" onclick="openDoiForm()">
             <tal:block i18n:translate="edit_upload_doi"/></a>
         </div>
 
         <div class="mediatum_upload">
-            <a class="mediatum_img_uploadfile" id="id_a_openplupload_file" href="#" onclick="openUploadFormPluploadWidgetFile()">
+            <a
+                class="mediatum_img_uploadfile mediatum-link-mediatum"
+                id="id_a_openplupload_file"
+                href="#!"
+                onclick="openUploadFormPluploadWidgetFile()"
+            >
             <tal:block i18n:translate="edit_upload_files_plupload_widget"/></a>
         </div>
 
         <div class="mediatum_upload">
-            <a class="mediatum_img_uploadbibtex" id="id_a_openplupload_bibtex" href="#" onclick="openUploadFormPluploadWidgetBib()">
+            <a
+                class="mediatum_img_uploadbibtex mediatum-link-mediatum"
+                id="id_a_openplupload_bibtex"
+                href="#!"
+                onclick="openUploadFormPluploadWidgetBib()"
+            >
             <tal:block i18n:translate="edit_upload_bibtex_plupload_widget"/></a>
         </div>
 

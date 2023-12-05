@@ -384,6 +384,16 @@ def handle_request(req):
     req.response = _flask.make_response()
     req.response.content_type = 'text/html; encoding=utf-8; charset=utf-8'
 
+    try:
+        for key in ("container_id", "id", "obj", "pid", "searchmaskitem_id", "show_id", "srcnodeid"):
+            for value in req.values.getlist(key):
+                for v in value.split(','):
+                    int(v or 0)
+    except ValueError:
+        req.response.status_code = _httpstatus.HTTP_BAD_REQUEST
+        req.response.set_data(_httpstatus.responses[req.response.status_code])
+        return req
+
     function = context.match(mediatum_contextfree_path)
     if function is not None:
         _callhandler(function, req)

@@ -4,54 +4,6 @@
 */
 
 var i = 0;
-var selected = false;
-var sellist = "";
-var spanid = 0;
-
-function pick(obj){
-    if (selected==false){
-        i++;
-        if (i==1){
-           if (!isSelected(obj)){
-                obj.style.border = "solid silver 1px";
-                obj.style.backgroundColor = "#dcdcdc";
-                spanid=obj.id;
-                sub = document.getElementById(obj.id+"_sub");
-                if (sub){
-                    sub.style.display='block';
-                }
-            }
-        }
-    }   
-}
-
-function unpick(obj){
-    if (selected==false){
-        if (isSelected(obj)){
-           return;
-        }
-        obj.style.border = "solid white 1px";
-        obj.style.backgroundColor = "";
-        i=0;
-        spanid = 0;
-        sub = document.getElementById(obj.id+"_sub");
-        if (sub){        
-            sub.style.display='none';
-        }
-    }
-}
-
-function isSelected(obj){
-    if (sellist == sellist.replace(obj.id+";","")){
-        return false;
-    }else{
-        return true;
-    }
-}
-
-function getSellist(){
-    document.getElementById("sel_id").value=sellist;
-}
 
 function questionDel(){
     return confirm(unescape("Soll dieser Eintrag wirklich gel%F6scht werden?"));

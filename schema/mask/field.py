@@ -174,7 +174,7 @@ class m_field(Metatype):
         else:
             label = '<div class="label">&nbsp;</div>'
         if not sub:
-            ret += '<div id="%s" class="row" onmouseover="pick(this)" onmouseout="unpick(this)" style="position:relative;min-height:30px">' % (
+            ret += '<div id="%s" class="row">' % (
                 item.id)
 
         if len(label) > 0:
@@ -184,7 +184,7 @@ class m_field(Metatype):
 
         if not sub:
             # <small style="color:silver">('+(item.get("type"))+')</small>'
-            ret += '<div align="right" id="%s_sub" style="display:none; position:absolute; right:1px; top:3px" class="edit_tools">' % (
+            ret += '<div align="right" id="%s_sub" class="edit_tools">' % (
                 item.id)
 
             if index > 0:

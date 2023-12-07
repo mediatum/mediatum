@@ -88,7 +88,7 @@ class m_hgroup(Metatype):
         i = 0
 
         if not sub:
-            ret += '<div id="{}" class="row metaeditor" onmouseover="pick(this)" onmouseout="unpick(this)">'.format(item.id)
+            ret += '<div id="{}" class="row metaeditor">'.format(item.id)
 
         ret += '<fieldset>'
 
@@ -107,8 +107,9 @@ class m_hgroup(Metatype):
         ret += '</fieldset>'
 
         if not sub:
-            ret += '<div align="right" id="' + unicode(item.id) + \
-                '_sub" style="display:none; clear:both"><small style="color:silver">(' + (item.get("type")) + ')</small>'
+            ret += u"""
+                <div align="right" id="{}_sub" clear:both"><small style="color:silver">({})</small>
+                """.format(item.id, item.get("type"))
             if index > 0:
                 ret += '<input type="image" src="/static/img/uparrow.png" name="up_' + \
                     unicode(item.id) + '" i18n:attributes="title mask_edit_up_title"/>'

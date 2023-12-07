@@ -373,6 +373,11 @@ div.metaeditor div#editor_content{margin-left:110px;}
 td.silver{background-color:#efefef;}
 span.required {color:#ff0000;}
 div.row {border:solid white 1px; margin:2px; width: 100%; white-space:nowrap; cursor:pointer;}
+div.row:hover
+{
+    border: solid silver 1px;
+    background-color: #dcdcdc;
+}
 input.text {margin-bottom:5px;}
 select.text {height:25px; margin-bottom:5px;}
 img.thumbnail{border:0px; position:relative; top:0px; left:0px; width:128px; height:128px;}

@@ -41,7 +41,7 @@ class m_label(Metatype):
         item = parent.getChildren().sort_by_orderpos()[index]
         ret = ''
         if not sub:
-            ret += '<div id="' + ustr(item.id) + '" class="row" onmouseover="pick(this)" onmouseout="unpick(this)" onclick="select(this)">'
+            ret += '<div id="' + ustr(item.id) + '" class="row">'
         ret += '<b>' + ustr(item.getLabel()) + '</b>'
 
         if not sub:

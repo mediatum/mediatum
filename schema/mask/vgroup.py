@@ -64,7 +64,7 @@ class m_vgroup(Metatype):
         i = 0
 
         if not sub:
-            ret += '<div id="' + unicode(item.id) + '" class="row" onmouseover="pick(this)" onmouseout="unpick(this)">'
+            ret += '<div id="' + unicode(item.id) + '" class="row">'
         ret += '<fieldset style="cursor:hand">'
 
         if item.getLabel() != "":
@@ -81,8 +81,9 @@ class m_vgroup(Metatype):
         ret += '</fieldset>'
 
         if not sub:
-            ret += '<div align="right" id="' + unicode(item.id) + \
-                '_sub" style="display:none"><small style="color:silver">(' + (item.get("type")) + ')</small>'
+            ret += u"""
+                <div align="right" id="{}_sub"><small style="color:silver">({})</small>
+                """.format(item.id, item.get("type"))
             if index > 0:
                 ret += '<input type="image" src="/static/img/uparrow.png" name="up_' + \
                     unicode(item.id) + '" i18n:attributes="title mask_edit_up_title"/>'

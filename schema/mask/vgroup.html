@@ -78,3 +78,60 @@
     <tal:block tal:content="structure children_html"/>
   </fieldset>
 </tal:block>
+
+<!-- admin area: row for mask editing -->
+<tal:block metal:define-macro="admin_get_field_for_maskedit">
+    <fieldset tal:condition="python:is_sub" style="cursor:hand">
+        <legend tal:condition="python:label" tal:content="python:label"/>
+        <tal:block tal:condition="python:html_form" tal:replace="structure html_form"/>
+        <span tal:condition="python:not html_form" i18n:translate="">
+            mask_editor_no_fields
+        </span>
+    </fieldset>
+    <div tal:condition="python:not is_sub" tal:attributes="id python:item_id" class="row">
+        <fieldset style="cursor:hand">
+            <legend tal:condition="python:label" tal:content="python:label"/>
+            <tal:block tal:condition="python:html_form" tal:replace="structure html_form"/>
+            <span tal:condition="python:not html_form" i18n:translate="">
+                mask_editor_no_fields
+            </span>
+        </fieldset>
+        <div
+            tal:condition="python:not is_sub"
+            tal:attributes="python:id python:'{}_sub'.format(item_id)"
+            align="right"
+        >
+            <small style="color:silver" tal:content="python:item_type"/>
+            <input
+                tal:condition="python:not is_first"
+                tal:attributes="name python:'up_{}'.format(item_id)"
+                i18n:attributes="title mask_edit_up_title"
+                type="image"
+                src="/static/img/uparrow.png"
+            />
+            <input
+                tal:condition="python:not is_last"
+                tal:attributes="name python:'down_{}'.format(item_id)"
+                i18n:attributes="title mask_edit_down_title"
+                type="image"
+                src="/static/img/downarrow.png"
+            />
+            <tal:block tal:condition="python:is_first or is_last">
+                &nbsp;&nbsp;&nbsp;
+            </tal:block>
+            <input
+                tal:attributes="name python:'edit_{}'.format(item_id)"
+                i18n:attributes="title mask_edit_edit_row"
+                type="image"
+                src="/static/img/edit.png"
+            />
+            <input
+                tal:attributes="name python:'delete_{}'.format(item_id)"
+                i18n:attributes="title mask_edit_delete_row"
+                type="image"
+                src="/static/img/delete.png"
+                onClick="return questionDel()"
+            />
+        </div>
+    </div>
+</tal:block>

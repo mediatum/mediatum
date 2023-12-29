@@ -144,69 +144,46 @@ class m_field(Metatype):
                     language=language,
                     required=item.get_required(),
                     )
-            fieldstring = editor_html_form.html + ' ' + item.getUnit()
+            html_form = u"{} {}".format(editor_html_form.html, item.getUnit())
         else:  # node for export mask
             attribute = q(Node).get(item.get("attribute"))
             field = item
-            fieldstring = getMetadataType("mappingfield").editor_get_html_form(
-                field, width=item.getWidth(), value=attribute.getName(), language=language) + ' ' + item.getUnit()
+            html_form = u"{} {}".format(
+                getMetadataType("mappingfield").editor_get_html_form(
+                    field,
+                    width=item.getWidth(),
+                    value=attribute.getName(),
+                    language=language,
+                ),
+                item.getUnit(),
+            )
 
-        if item.getDescription() != "":
-            description = """
-                <div id="div_description">
-                    <a href="#!" onclick="openPopup('/popup_help?id={}&amp;maskid={}', '', 400, 250)" class="mediatum-link-mediatum">
-                        <img src="/static/img/tooltip.png" border="0"/>
-                    </a>
-                </div>
-                """.format(field.id, item.id)
-
-        if len(item.getLabel()) > 0 and item.getLabel() != "mapping":
-            label = item.getLabel() + ': '
-            required = ""
-            if item.get_required():
-                required = '<span class="required">*</span>'
-
-            if ptype in("vgroup", "hgroup") or not sub:
-                label = '<div class="label">%s %s</div>%s' % (label, required, description)
-            else:
-                label += required
-
+        if (not sub) and (len(fieldlist.get(field.getName(), ())) > 1):
+            multi_title = _core_translation.translate(
+                language,
+                "mask_edit_multi_label",
+                mapping=dict(schemes=u", ".join(schema.getName() for schema in fieldlist[field.getName()])),
+            )
         else:
-            label = '<div class="label">&nbsp;</div>'
-        if not sub:
-            ret += '<div id="%s" class="row">' % (
-                item.id)
+            multi_title = None
 
-        if len(label) > 0:
-            ret += '%s<div id="editor_content">%s</div>' % (label, fieldstring)
-        else:
-            ret += fieldstring
-
-        if not sub:
-            # <small style="color:silver">('+(item.get("type"))+')</small>'
-            ret += '<div align="right" id="%s_sub" class="edit_tools">' % (
-                item.id)
-
-            if index > 0:
-                ret += '<input type="image" src="/static/img/uparrow.png" name="up_%s" i18n:attributes="title mask_edit_up_title"/>' % (item.id)
-            else:
-                ret += '&nbsp;&nbsp;&nbsp;'
-            if index < pitems - 1:
-                ret += '<input type="image" src="/static/img/downarrow.png" name="down_%s" i18n:attributes="title mask_edit_down_title"/>' % (
-                    item.id)
-            else:
-                ret += '&nbsp;&nbsp;&nbsp;'
-
-            if field.getName() in fieldlist.keys():
-                if len(fieldlist[field.getName()]) > 1:
-                    ret += '&nbsp;<img src="/static/img/attention.gif" title="{} '.format(
-                            _core_translation.translate(language, "mask_edit_multi_label"),
-                        )
-                    ret += ", ".join([schema.getName() for schema in fieldlist[field.getName()]]) + '"/>'
-
-            ret += ' <input type="image" src="/static/img/edit.png" name="edit_%s" i18n:attributes="title mask_edit_edit_row"/> <input type="image" src="/static/img/delete.png" name="delete_%s" i18n:attributes="title mask_edit_delete_row" onClick="return questionDel()"/></div></div>' % (item.id,
-                                                                                                                                                                                                                                                                                  item.id)
-        return ret
+        return _tal.processTAL(
+            dict(
+                html_form=html_form,
+                description=item.getDescription(),
+                item_id=item.id,
+                field_id=field.id,
+                required=item.get_required(),
+                is_sub=sub,
+                is_vhgroup=ptype in("vgroup", "hgroup"),
+                label=None if item.getLabel() in ("mapping", "") else item.getLabel(),
+                is_first=index==0,
+                is_last=index==pitems-1,
+                multi_title=multi_title,
+            ),
+            file="schema/mask/field.html",
+            macro="admin_get_field_for_maskedit",
+        )
 
     def getMetaEditor(self, item, req):
         """ editor mask for field definition """

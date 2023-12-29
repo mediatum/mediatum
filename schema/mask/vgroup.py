@@ -60,46 +60,27 @@ class m_vgroup(Metatype):
 
     def getMetaHTML(self, parent, index, sub=False, language=None, fieldlist={}):
         item = parent.getChildren().sort_by_orderpos()[index]
-        ret = ''
         i = 0
-
-        if not sub:
-            ret += '<div id="' + unicode(item.id) + '" class="row">'
-        ret += '<fieldset style="cursor:hand">'
-
-        if item.getLabel() != "":
-            ret += '<legend>' + item.getLabel() + '</legend>'
+        html_form = u""
 
         for field in item.getChildren().sort_by_orderpos():
             f = getMetadataType(field.get("type"))
-            ret += f.getMetaHTML(item, i, True, language=language, fieldlist=fieldlist) + '<br/>'
+            html_form += f.getMetaHTML(item, i, True, language=language, fieldlist=fieldlist) + '<br/>'
             i += 1
 
-        if len(item.getChildren()) == 0:
-            ret += '<span i18n:translate="mask_editor_no_fields">- keine Felder definiert -</span>'
-
-        ret += '</fieldset>'
-
-        if not sub:
-            ret += u"""
-                <div align="right" id="{}_sub"><small style="color:silver">({})</small>
-                """.format(item.id, item.get("type"))
-            if index > 0:
-                ret += '<input type="image" src="/static/img/uparrow.png" name="up_' + \
-                    unicode(item.id) + '" i18n:attributes="title mask_edit_up_title"/>'
-            else:
-                ret += '&nbsp;&nbsp;&nbsp;'
-            if index < len(parent.getChildren()) - 1:
-                ret += '<input type="image" src="/static/img/downarrow.png" name="down_' + \
-                    unicode(item.id) + '" i18n:attributes="title mask_edit_down_title"/>'
-            else:
-                ret += '&nbsp;&nbsp;&nbsp;'
-            ret += ' <input type="image" src="/static/img/edit.png" name="edit_' + unicode(
-                item.id) + '" i18n:attributes="title mask_edit_edit_row"/> <input type="image" src="/static/img/delete.png" name="delete_' + unicode(
-                item.id) + '" i18n:attributes="title mask_edit_delete_row" onClick="return questionDel()"/></div>'
-            ret += '</div>'
-
-        return ret
+        return _tal.processTAL(
+            dict(
+                html_form=html_form,
+                item_id=item.id,
+                item_type=item.get("type"),
+                is_sub=sub,
+                label=item.getLabel(),
+                is_first=index==0,
+                is_last=index==len(parent.getChildren())-1,
+            ),
+            file="schema/mask/vgroup.html",
+            macro="admin_get_field_for_maskedit",
+        )
 
     def getMetaEditor(self, item, req):
         """ editor mask for vgroup-field definition """

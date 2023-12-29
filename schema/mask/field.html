@@ -187,3 +187,78 @@
            />
     </fieldset>
 </tal:block>
+
+<!-- admin area: row for mask editing -->
+<tal:block metal:define-macro="admin_get_field_for_maskedit">
+    <tal:block tal:condition="python:label">
+        <tal:block tal:condition="python:is_vhgroup or not is_sub">
+            <div class="label">
+                <tal:block tal:replace="python:label"/>:
+                <span class="required" tal:condition="python:required">*</span>
+            </div>
+            <div id="div_description" tal:condition="python: description">
+                <a
+                    href="#!"
+                    class="mediatum-link-mediatum"
+                    tal:attributes="
+                        onclick python:'''
+                            openPopup('/popup_help?id={}&amp;maskid={}', '', 400, 250)
+                            '''.format(field_id, item_id);
+                        "
+                >
+                    <img src="/static/img/tooltip.png" border="0"/>
+                </a>
+            </div>
+        </tal:block>
+        <tal:block tal:condition="python:not is_vhgroup and is_sub">
+            <tal:block tal:replace="python:label"/>:
+            <span class="required" tal:condition="python:required">*</span>
+        </tal:block>
+    </tal:block>
+    <div class="label" tal:condition="python:not label">&nbsp;</div>
+    <div tal:condition="python:not is_sub" class="row" tal:attributes="id python:item_id">
+        <!-- mediatum-editor-nodefield-value -->
+        <div id="editor_content" tal:content="structure python:html_form"/>
+        <!-- admin buttons -->
+        <div tal:attributes="id python:'{}_sub'.format(item_id)" align="right" class="edit_tools">
+            <input
+                tal:condition="python:not is_first"
+                type="image"
+                src="/static/img/uparrow.png"
+                tal:attributes="name python:'up_{}'.format(item_id)"
+                i18n:attributes="title mask_edit_up_title"
+            />
+            <input
+                tal:condition="python:not is_last"
+                type="image"
+                src="/static/img/downarrow.png"
+                tal:attributes="name python:'down_{}'.format(item_id)"
+                i18n:attributes="title mask_edit_down_title"
+            />
+            <tal:block tal:condition="python:is_first or is_last">
+                &nbsp;&nbsp;&nbsp;
+            </tal:block>
+            <tal:block tal:condition="python:multi_title is not None">
+                &nbsp;
+            </tal:block>
+            <img
+                tal:condition="python:multi_title is not None"
+                src="/static/img/attention.gif"
+                tal:attributes="title python:multi_title"
+            />
+            <input
+                type="image"
+                src="/static/img/edit.png"
+                tal:attributes="name python:'edit_{}'.format(item_id)"
+                i18n:attributes="title mask_edit_edit_row"
+            />
+            <input
+                type="image"
+                src="/static/img/delete.png"
+                tal:attributes="name python:'delete_{}'.format(item_id)"
+                i18n:attributes="title mask_edit_delete_row"
+                onClick="return questionDel()"/>
+        </div>
+    </div>
+    <div tal:condition="python:is_sub" id="editor_content" tal:content="structure python:html_form"/>
+</tal:block>

@@ -55,12 +55,18 @@ def addWorkflow(name, description):
     return node
 
 
-def updateWorkflow(name, description, nameattribute="", origname="", writeaccess=""):
-    if origname == "":
-        if _nodecache.get_workflows_node().children.filter_by(name=name).scalar() is None:
-            w = addWorkflow(name, description)
-        else:
-            w = _nodecache.get_workflows_node().children.filter_by(name=name).one()
+class WorkflowNameTaken(Exception):
+    pass
+
+
+def create_or_update_workflow(name, description, nameattribute, origname):
+    assert name > ""
+
+    if _nodecache.get_workflows_node().children.filter_by(name=name).scalar() and origname != name:
+        raise WorkflowNameTaken(_core_translation.translate_in_request("admin_duplicate_error"))
+
+    if origname is None:
+        w = addWorkflow(name, description)
     else:
         w = _nodecache.get_workflows_node().children.filter_by(name=origname).one()
         w.name = name
@@ -68,11 +74,8 @@ def updateWorkflow(name, description, nameattribute="", origname="", writeaccess
     w.display_name_attribute = nameattribute
 
     # TODO: is this part necessary?
-    if not writeaccess:
-        for r in w.access_ruleset_assocs.filter_by(ruletype=u'write'):
-            db.session.delete(r)
-    else:
-        w.access_ruleset_assocs.append(NodeToAccessRuleset(ruleset_name=writeaccess, ruletype=u'write'))
+    for r in w.access_ruleset_assocs.filter_by(ruletype=u'write'):
+        db.session.delete(r)
     db.session.commit()
 
     return w

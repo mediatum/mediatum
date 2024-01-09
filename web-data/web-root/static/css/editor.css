@@ -85,6 +85,14 @@ div.admin_error {color:red;}
 p.error {background:#FFE7E7; color:#AF0101;  padding:7px; border:1px solid #AF0101; margin-left:20px; margin-right:20px; vertical-align:middle;}
 p.error a {color:black; margin:0px;}
 p.error a:hover {color:black; text-decoration:underline;}
+p.mediatum-editor-oktext {
+    background: aquamarine;
+    color: green;
+    padding: 7px;
+    border: 1px solid green;
+    margin-left: 20px;
+    margin-right: 20px;
+}
 .fancytree-node-disabled {opacity: 0.5;background-color: silver;}
 div.hstippled {font-size:1px; height:1px;}
 div.label{width:210px;float:left;padding-left:15px;}
@@ -418,6 +426,7 @@ a.mediatum-icon-medium::before {display: block; height: 32px; width: 32px; backg
 .mediatum_img_version::before {background-image: url(/static/img/versioning.svg);}  /* Versionierung */
 .mediatum_img_classes::before {background-image: url(/static/img/editor/navigationtree.svg);} /* Klassifikation */
 .mediatum_img_menueditobject::before {background-image: url(/static/img/editor/settings.svg);} /* Weitere Aktionen für Datensatz */
+.mediatum_img_registerdoi::before {background-image: url(/static/img/editor/doi-logo.svg);}
 /* Second Submenu */
 .mediatum_img_editall::before {background-image: url(/static/img/edit-pen-paper.svg);}
 .mediatum_img_moveall::before {background-image: url(/static/img/editor/move.svg);} /* Verschieben */
@@ -751,3 +760,21 @@ iframe.ui-layout-center, div.ui-layout-north{border-width:0!important;padding:0;
 /* visual focus */
 a:focus{outline-style: dotted;outline-color: grey;outline-width: 1px;outline-offset: -1px;}
 .mediatum_tab_big:focus{outline-style: dotted;outline-color: grey;outline-width: 1px;outline-offset: 0px;}
+
+form.mediatum_editor_doi {
+    border: none;
+    padding: 0;
+}
+
+form.mediatum_editor_doi > label {
+    display: block;
+    float: none;
+    width: fit-content;
+    padding: 1em 0 .5em .5em;
+}
+
+form.mediatum_editor_doi > label > *, form.mediatum_editor_doi > h2, form.mediatum_editor_doi > p > button {
+    vertical-align: middle;
+    margin-right: .5em;
+    margin-left: .5em;
+}

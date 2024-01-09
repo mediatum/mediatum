@@ -1,0 +1,17 @@
+msgid "registerdoi-suffix"
+msgstr "DOI-Suffix"
+
+msgid "registerdoi-donot-update"
+msgstr "Do not update metadata"
+
+msgid "registerdoi-title"
+msgstr "DOI Registration for node '${id}' (${name})"
+
+msgid "registerdoi-error"
+msgstr "DOI '${prefix}/${suffix}' Registration failed/rejected"
+
+msgid "registerdoi-ok"
+msgstr "DOI '${prefix}/${suffix}' successfully registered/updated"
+
+msgid "registerdoi-url"
+msgstr "Target-URL"

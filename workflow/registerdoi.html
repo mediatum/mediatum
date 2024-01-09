@@ -1,0 +1,36 @@
+<!--
+  Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+
+<metal:block metal:define-macro="workflow_step_type_config">
+    <label>
+        <tal:block i18n:translate="">registerdoi-suffixattr</tal:block>
+        <input type="text" name="stepsetting_suffixattr" required="required" tal:attributes="value suffixattr"/>
+    </label>
+    <label>
+        <tal:block i18n:translate="">registerdoi-mask</tal:block>
+        <input type="text" name="stepsetting_mask" tal:attributes="value mask"/>
+    </label>
+    <label>
+        <tal:block i18n:translate="">registerdoi-event</tal:block>
+        <select name="stepsetting_event">
+            <option value="none" selected="selected" i18n:translate="">registerdoi-event-draft</option>
+            <option value="register" i18n:translate="">registerdoi-event-register</option>
+            <option value="publish" i18n:translate="">registerdoi-event-publish</option>
+            <option value="hide" i18n:translate="">registerdoi-event-hide</option>
+        </select>
+    </label>
+    <label>
+        <tal:block i18n:translate="">registerdoi-urlattr</tal:block>
+        <input type="text" name="stepsetting_urlattr" tal:attributes="value urlattr"/>
+    </label>
+    <label>
+        <tal:block i18n:translate="">registerdoi-action</tal:block>
+        <select name="stepsetting_action">
+            <option value="create" selected="selected" i18n:translate="">registerdoi-create</option>
+            <option value="update" i18n:translate="">registerdoi-update</option>
+            <option value="update-create" i18n:translate="">registerdoi-update-create</option>
+        </select>
+    </label>
+</metal:block>

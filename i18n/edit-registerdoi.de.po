@@ -1,0 +1,17 @@
+msgid "registerdoi-suffix"
+msgstr "DOI-Suffix"
+
+msgid "registerdoi-donot-update"
+msgstr "Metadaten nicht updaten"
+
+msgid "registerdoi-title"
+msgstr "DOI Registrierung für Knoten '${id}' (${name})"
+
+msgid "registerdoi-error"
+msgstr "DOI '${prefix}/${suffix}' Registrierung fehlgeschlagen/zurückgewiesen"
+
+msgid "registerdoi-ok"
+msgstr "DOI '${prefix}/${suffix}' erfolgreich registriert/aktualisiert"
+
+msgid "registerdoi-url"
+msgstr "Ziel-URL"

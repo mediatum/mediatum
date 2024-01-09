@@ -367,6 +367,18 @@ msgstr "Publish"
 msgid "tab_news"
 msgstr "Manage messages"
 
+msgid "tab_registerdoi"
+msgstr "DOI Registration"
+
+msgid "tab_createdoi"
+msgstr "Create"
+
+msgid "tab_updatedoi"
+msgstr "Update"
+
+msgid "tab_createorupdatedoi"
+msgstr "Create or Update"
+
 msgid "liststyle_list"
 msgstr "List view with thumbnails"
 
@@ -782,3 +794,30 @@ msgstr "More ..."
 
 msgid "stylelist-nodelink-title"
 msgstr ""
+
+msgid "registerdoi-create"
+msgstr "Create"
+
+msgid "registerdoi-update"
+msgstr "Update"
+
+msgid "registerdoi-update-create"
+msgstr "Update or Create"
+
+msgid "registerdoi-event"
+msgstr "Event"
+
+msgid "registerdoi-event-draft"
+msgstr "unchanged/draft [empty]"
+
+msgid "registerdoi-event-register"
+msgstr "register draft"
+
+msgid "registerdoi-event-publish"
+msgstr "publish"
+
+msgid "registerdoi-event-hidden"
+msgstr "hide published"
+
+msgid "registerdoi-mask"
+msgstr "XML TAL Maskname"

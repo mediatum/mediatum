@@ -51,6 +51,7 @@ import web.edit.modules.moveall as _
 import web.edit.modules.moveobject as _
 import web.edit.modules.parentcontent as _
 import web.edit.modules.publish as _
+import web.edit.modules.registerdoi as _
 import web.edit.modules.searchmask as _
 import web.edit.modules.sortfiles as _
 import web.edit.modules.startpages as _
@@ -377,6 +378,7 @@ def getEditModules():
         _web.edit.modules.moveobject,
         _web.edit.modules.parentcontent,
         _web.edit.modules.publish,
+        _web.edit.modules.registerdoi,
         _web.edit.modules.searchmask,
         _web.edit.modules.sortfiles,
         _web.edit.modules.startpages,

@@ -593,3 +593,10 @@ function deleteobject_ready(srcnodeid, id) {
           reloadURL(url);
     }));
 }
+
+
+function registerdoi_exit(srcnodeid, id) {
+    document.addEventListener("DOMContentLoaded", (function () {
+        reloadURL(`/edit/edit_content?srcnodeid=${srcnodeid}&id=${id}&tab=view`);
+    }));
+}

@@ -446,6 +446,8 @@ class Content(Data, SchemaMixin):
         menuoperations = list(menu[1]["menuoperation"])
         menuoperations.insert(1, "changeschema")
         menuoperations.insert(2, { "menueditobject": ("classes", "moveobject", "copyobject", "deleteobject")})
+        if user.is_admin:
+            menuoperations.insert(3, "registerdoi")
         menu.insert(0, "parentcontent")
         menu.insert(2, "files")
         if not multiple_nodes:

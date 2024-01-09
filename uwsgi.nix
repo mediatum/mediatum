@@ -1,4 +1,4 @@
-{ pkgs ? (import ./nixpkgs.nix {}).pkgs
+{ pkgs ? (import ./nixpkgs.nix {}).pkgsUwsgi
 , uwsgi ? pkgs.uwsgi
 }:
 

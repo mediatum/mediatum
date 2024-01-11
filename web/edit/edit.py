@@ -309,7 +309,6 @@ def _handletabs(req, ids, tabs, sort_choices):
                 menu=menu,
                 breadcrumbs=getBreadcrumbs(menu, req.values.get("tab", tabs)),
                 sort_choices=sort_choices,
-                sortfield=sortfield,
                 nodes_per_page=nodes_per_page,
             ),
             file="web/edit/edit.html",
@@ -867,28 +866,8 @@ def content(req):
     if current in ["files", "upload"]:
         ids = ids[0:1]
 
-    try:
-        v['nodeiconpath'] = getEditorIconPath(node)
-    except:
-        v['nodeiconpath'] = "webtree/directory.gif"
-
     # display current images
     if not isinstance(q(Data).get(ids[0]), Container):
-        v["notdirectory"] = 1
-        items = []
-        if current != "view":
-            for id in ids:
-                node = q(Data).get(id)
-                if hasattr(node, "show_node_image"):
-                    if not _utils_utils.isDirectory(node) and not node.isContainer():
-                        items.append((id, node.show_node_image()))
-                    else:
-                        items.append(("", node.show_node_image()))
-        v["items"] = items
-        if logg.isEnabledFor(logging.DEBUG):
-            logg.debug("... %s inside %s.%s: -> display current images: items: %s",
-                       _utils_utils.get_user_id(), __name__, _utils_utils.funcname(), [_t[0] for _t in items])
-
         nid = req.values.get('srcnodeid', req.values.get('id'))
         if nid is None:
             raise ValueError("invalid request, neither 'srcnodeid' not 'id' parameter is set!")
@@ -915,7 +894,6 @@ def content(req):
             )
         v["dircontent"] = ' <b>&raquo;</b> '.join(s)
     else:  # or current directory
-        v["notdirectory"] = 0
         n = q(Data).get(long(ids[0]))
         s = []
         for p in next(iter(get_accessible_paths(n) or ((),))):

@@ -122,7 +122,6 @@ def getContent(req, ids):
         searchparams = get_searchparams(req)
         searchparams = {k: unicode(v).encode("utf8") for k, v in searchparams.items()}
         v['searchparams'] = urllib.urlencode(searchparams)
-        v['get_ids_from_query'] = ",".join(show_dir_nav.get_ids_from_req())
         v['edit_all_objects'] = _core_translation.translate(
                 _core_translation.set_language(req.accept_languages), "edit_all_objects",
             ).format(item_count[1])

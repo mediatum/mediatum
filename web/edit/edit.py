@@ -267,7 +267,7 @@ def getBreadcrumbs(menulist, tab):
     return [tab]
 
 
-def _handletabs(req, node, ids, tabs, sort_choices):
+def _handletabs(req, node, ids, tabs, sort_choices, has_child):
     user = _user_from_session()
 
     srcnodeid = req.values.get('srcnodeid', '')
@@ -279,6 +279,16 @@ def _handletabs(req, node, ids, tabs, sort_choices):
     if srcnodeid and q(Node).get(int(srcnodeid)) is user.trash_dir:
         skip_items.add("deleteobject")
         skip_items.add("deleteall")
+    if not has_child:
+        skip_items.update({
+            "menueditall",
+            "editall",
+            "moveall",
+            "copyall",
+            "deleteall",
+            "sortfiles",
+            })
+
     menu = _utils_utils.parse_menu_struct(node.editor_menu, skip_items)
 
     nodes_per_page = req.args.get("nodes_per_page", type=int)
@@ -748,44 +758,6 @@ def action(req):
     return
 
 
-def _show_paging(req, tab, ids):
-    nodelist = None
-    srcnodeid = req.values.get("srcnodeid")
-    if srcnodeid:
-        node = q(Node).get(srcnodeid)
-        _show_dir_nav = _web_edit_edit_common.ShowDirNav(req)
-        nodes = _show_dir_nav.get_children(node.id, req.values.get('sortfield'))
-        nodelist = EditorNodeList(nodes)
-
-    nextid = previd = None
-    position = absitems = '&nbsp;'
-    combodata = ""
-    script = ""
-    if nodelist and len(ids) == 1:
-        previd = nodelist.getPrevious(ids[0])
-        nextid = nodelist.getNext(ids[0])
-        position, absitems = nodelist.getPositionString(ids[0])
-        combodata, script = nodelist.getPositionCombo(tab)
-
-    req.response.status_code = _httplib.OK
-    return _tal.processTAL(
-            dict(
-                nextid=nextid,
-                previd=previd,
-                position=position,
-                absitems=absitems,
-                tab=tab,
-                combodata=combodata,
-                script=script,
-                srcnodeid=srcnodeid,
-                nodeid=int(ids[0]),
-            ),
-            file="web/edit/edit.html",
-            macro="edit_paging",
-            request=req,
-        )
-
-
 def content(req):
     if req.method == "POST":
         _core_csrfform.validate_token(req.form)
@@ -817,8 +789,7 @@ def content(req):
     ids = getIDs(req)
     if len(ids) > 0:
         if ids[0] == "all":
-            show_dir_nav = _web_edit_edit_common.ShowDirNav(req)
-            ids = show_dir_nav.get_ids_from_req()
+            ids[0] = req.values["srcnodeid"]
         node = q(Node).get(long(ids[0]))
 
     language = _core_translation.set_language(req.accept_languages)
@@ -858,16 +829,6 @@ def content(req):
         node.set("sortfield", req.values["globalsort"])
 
     if req.values.get("style") != "popup":
-        if not isinstance(node, (_core_systemtypes.Root, Collections, Home)):
-            sortchoices = tuple(_sort.get_sort_choices(
-                    container=node,
-                    off="off",
-                    t_off=_core_translation.translate_in_request("off", req),
-                    t_desc=_core_translation.translate_in_request("descending", req),
-                ))
-        else:
-            sortchoices = ()
-
         n = q(Data).get(ids[0])
         if n.type.startswith("workflow"):
             n = _core_nodecache.get_root_node()
@@ -880,7 +841,68 @@ def content(req):
 
         db.session.commit()
 
-        v["tabs"] = _handletabs(req, n, ids, tabs, sortchoices)
+    if req.values.get("srcnodeid"):
+        paging_nodelist = EditorNodeList(
+            _web_edit_edit_common.ShowDirNav(req).get_children(
+                req.values["srcnodeid"],
+                req.values.get('sortfield')
+               )
+           )
+    else:
+        paging_nodelist = None
+
+    if paging_nodelist and len(ids) == 1:
+        paging_context = (
+            paging_nodelist.getPositionString(ids[0])+
+            paging_nodelist.getPositionCombo(current)
+           )
+        paging_context = dict(
+            nextid=paging_nodelist.getNext(ids[0]),
+            previd=paging_nodelist.getPrevious(ids[0]),
+            position=paging_context[0],
+            absitems=paging_context[1],
+            combodata=paging_context[2],
+            script=paging_context[3],
+           )
+    else:
+        paging_context = dict(
+            nextid=None,
+            previd=None,
+            position="&nbsp;",
+            absitems="&nbsp;",
+            combodata="",
+            script="",
+           )
+    paging_context.update(
+        tab=current,
+        srcnodeid=req.values.get("srcnodeid"),
+       )
+
+    if req.values.get("ids") == "all":
+        paging_context["nodeid"] = int(req.values["srcnodeid"])
+        ids = tuple(_itertools.imap(str, paging_nodelist.nodeids if paging_nodelist else ()))
+    else:
+        paging_context["nodeid"] = int(ids[0])
+
+    if req.values.get("style") != "popup":
+        if not isinstance(node, (_core_systemtypes.Root, Collections, Home)):
+            sortchoices = tuple(_sort.get_sort_choices(
+                    container=node,
+                    off="off",
+                    t_off=_core_translation.translate_in_request("off", req),
+                    t_desc=_core_translation.translate_in_request("descending", req),
+                ))
+        else:
+            sortchoices = ()
+
+        v["tabs"] = _handletabs(
+            req,
+            n,
+            ids,
+            tabs,
+            sortchoices,
+            bool(paging_nodelist and paging_nodelist.nodeids),
+            )
 
     c = _editModules[current].getContent(req, ids)
     if not c:
@@ -949,7 +971,12 @@ def content(req):
     v.update(
         script="",
         body=c,
-        paging=_show_paging(req, current, ids),
+        paging=_tal.processTAL(
+            paging_context,
+            file="web/edit/edit.html",
+            macro="edit_paging",
+            request=req,
+           ),
         node=node,
         ids=(req.values.get("ids") or req.values.get("id", "")).split(","),
         tab=current,

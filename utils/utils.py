@@ -667,7 +667,8 @@ def parse_menu_struct(menu, skip_items=frozenset(), _upper=None):
         (sub_title, sub_items), = item.iteritems()
         sub_menu = Menu(sub_title)
         parse_menu_struct(sub_items, skip_items, sub_menu)
-        add(sub_menu)
+        if sub_title not in skip_items:
+            add(sub_menu)
     if not _upper:
         return result
 

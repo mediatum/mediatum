@@ -90,21 +90,26 @@ def _process_pdf(filename, thumbnailname, fulltextname):
     if pdfinfo.get("Encrypted") == "yes":
         raise _PdfEncryptedError("error:document encrypted")
 
-    size = _contenttypes_data.get_thumbnail_size(*map(float, _re_pagesize(pdfinfo["Page size"]).groups()))
-    # convert first page to image (graphicsmagick + ghostview)
+    size = map(float, _re_pagesize(pdfinfo["Page size"]).groups())
+    size = _contenttypes_data.get_thumbnail_size(*size)
+    # generate thumbnail
     try:
         _utils_process.check_call((
-            "gm",
-            "convert",
-            "-colorspace", "RGB",
-            "-density", "300",
-            "-background", "white",
-            "-thumbnail", "{}x{}".format(size[0], size[1]),
-            u"{}[0]".format(filename),
-            thumbnailname,
+            "pdftoppm",
+            "-singlefile",
+            "-jpeg",
+            "-jpegopt", "progressive=y,optimize=y",
+            "-scale-to-x", str(size[0]),
+            "-scale-to-y", str(size[1]),
+            filename,
+            "{}.pdftoppm-temp".format(thumbnailname),
         ))
+        os.rename("{}.pdftoppm-temp.jpg".format(thumbnailname), thumbnailname)
     except _subprocess.CalledProcessError:
         logg.exception("failed to create PDF thumbnail for file " + filename)
+    finally:
+        with _utils_utils.suppress(OSError, warn=False):
+            os.remove("{}.pdftoppm-temp.jpg".format(thumbnailname))
 
     # extract fulltext (xpdf)
     try:

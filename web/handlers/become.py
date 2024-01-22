@@ -7,10 +7,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import httplib as _httplib
 import logging
 import re
 from core.users import user_from_session as _user_from_session
-from core import httpstatus
 import web.admin.adminutils
 
 
@@ -49,5 +49,5 @@ def become_user(req):
         logg.info("become user handler: user with login_name %s not found", login_name)
 
     req.response.location = "/"
-    req.response.status_code = httpstatus.HTTP_MOVED_TEMPORARILY
-    return httpstatus.HTTP_MOVED_TEMPORARILY
+    req.response.status_code = _httplib.FOUND
+    return _httplib.FOUND

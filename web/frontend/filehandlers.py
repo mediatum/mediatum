@@ -7,6 +7,7 @@ from __future__ import division
 from __future__ import print_function
 
 from functools import partial
+import httplib as _httplib
 import logging
 import os
 
@@ -32,7 +33,6 @@ from utils import userinput
 from utils.utils import getMimeType, clean_path, get_filesize
 import tempfile
 from utils.compat import iterkeys
-from core import httpstatus
 
 
 logg = logging.getLogger(__name__)
@@ -126,15 +126,15 @@ def send_image(req):
         # client wants a specific mimetype
         client_mimetype = node.MIMETYPE_FOR_EXTENSION.get(file_ext)
         if not client_mimetype:
-            req.response.status_code = httpstatus.HTTP_NOT_ACCEPTABLE
-            return httpstatus.HTTP_NOT_ACCEPTABLE
+            req.response.status_code = _httplib.NOT_ACCEPTABLE
+            return _httplib.NOT_ACCEPTABLE
 
         image_file = image_files_by_mimetype.get(client_mimetype)
         if image_file:
             return _send(image_file)
         else:
-            req.response.status_code = httpstatus.HTTP_NOT_ACCEPTABLE
-            return httpstatus.HTTP_NOT_ACCEPTABLE
+            req.response.status_code = _httplib.NOT_ACCEPTABLE
+            return _httplib.NOT_ACCEPTABLE
 
     # figure out what we want to send, in that order:
     server_preferred_mimetypes = preference_sorted_image_mimetypes(node, iterkeys(image_files_by_mimetype))
@@ -146,8 +146,8 @@ def send_image(req):
             image_file = image_files_by_mimetype[client_mimetype]
             return _send(image_file)
         else:
-            req.response.status_code = httpstatus.HTTP_NOT_ACCEPTABLE
-            return httpstatus.HTTP_NOT_ACCEPTABLE
+            req.response.status_code = _httplib.NOT_ACCEPTABLE
+            return _httplib.NOT_ACCEPTABLE
     else:
         # client doesn't have any preferences, send our choice
         return _send(image_files_by_mimetype[server_preferred_mimetypes[0]])

@@ -10,7 +10,6 @@ import logging
 import re
 from mediatumtal import tal
 import core as _core
-from core import httpstatus
 import core.config as config
 import utils.utils as _utils
 from utils.utils import esc
@@ -18,7 +17,6 @@ from utils.utils import modify_tex
 import core.metatype as _core_metatype
 from core.metatype import Metatype
 from utils.strings import replace_attribute_variables
-from web import frontend as _web_frontend
 
 logg = logging.getLogger(__name__)
 

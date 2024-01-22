@@ -6,12 +6,12 @@
 from __future__ import division
 from __future__ import print_function
 
+import httplib as _httplib
 import logging
 import os.path
 from pydot import Node, Edge, Dot
 import core.config as config
 from ..workflow import getWorkflow
-from core import httpstatus as _httpstatus
 from core.request_handler import sendFile as _sendFile
 from core.users import user_from_session as _user_from_session
 
@@ -147,7 +147,7 @@ def send_workflow_diagram(req, media_type="png"):
     """
     user = _user_from_session()
     if not user.is_admin:
-        return _httpstatus.HTTP_FORBIDDEN
+        return _httplib.FORBIDDEN
     workflow = getWorkflow(req.params.get("wid", ""))
     diag = GraphvizWorkflowDiagram(workflow)
     if media_type == "png":

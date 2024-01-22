@@ -4,13 +4,12 @@
 from __future__ import division
 from __future__ import print_function
 
+import httplib as _httplib
 import os
 
 import core.config as config
-import core.httpstatus as _httpstatus
 from core.database.postgres.file import File
 from core.database.postgres.node import Node
-
 from utils.utils import getMimeType, format_filesize
 from core import webconfig
 from sqlalchemy_continuum.utils import version_class
@@ -140,4 +139,4 @@ def getAttachmentBrowser(node, req):
         {"files": f, "sum_size": s, "id": req.params.get("id", ""), "path": req.params.get("path", "")})
     req.response.set_data(html)
     req.response.mimetype = "text/html"
-    req.response.status_code = _httpstatus.HTTP_OK
+    req.response.status_code = _httplib.OK

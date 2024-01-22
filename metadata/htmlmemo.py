@@ -11,10 +11,8 @@ from collections import OrderedDict
 
 from mediatumtal import tal
 
-from core import httpstatus
 import core.metatype as _core_metatype
 import utils.utils as _utils
-from web import frontend as _web_frontend
 import re
 
 logg = logging.getLogger(__name__)

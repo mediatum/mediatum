@@ -4,9 +4,10 @@
 from __future__ import division
 from __future__ import print_function
 
+import httplib as _httplib
 import logging
 import mediatumtal.tal as _tal
-import core.httpstatus as _httpstatus
+
 from core import db
 from core.users import user_from_session as _user_from_session
 from contenttypes import Container, Content
@@ -48,12 +49,12 @@ def ftree(req):
                 if len(node.parents) > 1:
                     parent.content_children.remove(node)
                     logg.info("ftree change ")
-                    req.response.status_code = _httpstatus.HTTP_OK
+                    req.response.status_code = _httplib.OK
                     db.session.commit()
                 else:
-                    req.response.status_code = _httpstatus.HTTP_OK
+                    req.response.status_code = _httplib.OK
                     req.response.set_data(_tal.processTAL({}, string='<tal:block i18n:translate="edit_classes_noparent"/>', macro=None, request=req))
             else:
-                req.response.status_code = _httpstatus.HTTP_OK
+                req.response.status_code = _httplib.OK
                 parent.content_children.append(node)
                 db.session.commit()

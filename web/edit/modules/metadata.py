@@ -5,6 +5,7 @@ from __future__ import division
 from __future__ import print_function
 
 import functools as _functools
+import httplib as _httplib
 import logging
 
 import flask as _flask
@@ -14,7 +15,6 @@ import core.csrfform as _core_csrfform
 import core.translation as _core_translation
 from utils.date import format_date, parse_date, now
 from utils.utils import funcname
-from core import httpstatus
 from core import db
 from core.database.postgres.node import Node
 from contenttypes import Container
@@ -82,7 +82,7 @@ def getContent(req, ids):
 
     if "metadata" in user.hidden_edit_functions:
         logg.error("edit function is hidden")
-        req.response.status_code = httpstatus.HTTP_FORBIDDEN
+        req.response.status_code = _httplib.FORBIDDEN
         return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
     err = 0
@@ -90,7 +90,7 @@ def getContent(req, ids):
     nodes = map(q(Node).get, ids)
 
     if not all(node.has_write_access() for node in nodes):
-        req.response.status_code = httpstatus.HTTP_FORBIDDEN
+        req.response.status_code = _httplib.FORBIDDEN
         return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
     logg.info("%s in editor metadata: %r", user.login_name, [[n.id, n.name, n.type]for n in nodes])
@@ -137,7 +137,7 @@ def getContent(req, ids):
     if "edit_metadata" in req.params:
         if user.home_dir in nodes or not all(node.has_write_access() for node in nodes) \
                 or req.values.get("mask")!=mask.name:
-            req.response.status_code = httpstatus.HTTP_FORBIDDEN
+            req.response.status_code = _httplib.FORBIDDEN
             return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
         errors = _handle_edit_metadata(req, mask, nodes)

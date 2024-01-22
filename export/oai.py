@@ -7,6 +7,7 @@ from __future__ import print_function
 import base64 as _base64
 import json as _json
 import hashlib as _hashlib
+import httplib as _httplib
 import itertools as _itertools
 import socket
 import re
@@ -21,7 +22,6 @@ import collections as _collections
 import backports.functools_lru_cache as _backports_functools_lru_cache
 
 import core.config as config
-import core.httpstatus as _httpstatus
 import utils.utils as _utils_utils
 from . import oaisets
 import utils.date as date
@@ -475,7 +475,7 @@ def oaiRequest(req):
     oai_pmh = _make_toplevel_element(**params)
     verb = params.pop("verb", None)
 
-    req.response.status_code = _httpstatus.HTTP_OK
+    req.response.status_code = _httplib.OK
     req.response.charset = 'utf-8'
     req.response.content_type = 'text/xml; charset=utf-8'
     try:
@@ -486,7 +486,7 @@ def oaiRequest(req):
     except _OAIError as ex:
         if ex.code in ("badArgument", "badVerb"):
             oai_pmh = _make_toplevel_element()
-        req.response.status_code = _httpstatus.HTTP_BAD_REQUEST
+        req.response.status_code = _httplib.BAD_REQUEST
         error = _lxml_etree.Element("error", attrib=dict(code= ex.code,))
         error.text = ex.details
         oai_pmh.append(error)

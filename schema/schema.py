@@ -1033,25 +1033,6 @@ class Mask(Node):
 
     def getMetaMask(self, req, error):
         language = translation.set_language(req.accept_languages)
-        ret = '<form method="post">'
-        ret += '<input value="{}" type="hidden" name="csrf_token"/>'.format(_core_csrfform.get_token())
-        ret += '<div class="back"><h3 i18n:translate="mask_editor_field_definition">Felddefinition </h3>'
-        ret += '<div align="right"><input type="image" src="/static/img/install.png" name="newdetail_'
-        ret += unicode(self.id)
-        ret += '" i18n:attributes="title mask_editor_new_line_title"/></div><br/>'
-
-        if not self.validateMappingDef():
-            ret += '<p i18n:translate="mask_editor_export_error" class="error">TEXT</p>'
-
-        if error:
-            ret += '<div class="admin_error">{}</div>'.format(error)
-        if len(self.children) == 0:
-            ret += '<div i18n:translate="mask_editor_no_fields">- keine Felder definiert -</div>'
-        else:
-            mapping_header = self.getMappingHeader()
-            if mapping_header:
-                ret += '<div class="label" i18n:translate="mask_edit_header">TEXT</div><div class="row">%s</div>' % (
-                    esc(mapping_header))
 
         # check if all the orderpos attributes are the same which causes problems with sorting
         z = [t for t in self.children.order_by(Node.orderpos)]
@@ -1064,18 +1045,30 @@ class Mask(Node):
 
         i = 0
         fieldlist = {}  # !!!getAllMetaFields()
+        html_form = u""
         for item in self.children.order_by(Node.orderpos):
             t = getMetadataType(item.get("type"))
-            ret += t.getMetaHTML(self, i, language=language, fieldlist=fieldlist)  # get formated line specific of type (e.g. field)
+            html_form = u"{}{}".format(
+                html_form,
+                t.getMetaHTML(self, i, language=language, fieldlist=fieldlist),  # get formated line specific of type (e.g. field)
+            )
             i += 1
 
-        if len(self.children) > 0:
-            mapping_footer = self.getMappingFooter()
-            if mapping_footer:
-                ret += '<div class="label" i18n:translate="mask_edit_footer">TEXT</div><div class="row">%s</div>' % (
-                    esc(mapping_footer))
-        ret += '</form>'
-        return ret
+        return _tal.processTAL(
+            context=dict(
+                id=self.id,
+                csrf_token=_core_csrfform.get_token(),
+                error=error,
+                is_valid_mapping=self.validateMappingDef(),
+                has_fields=bool(self.children),
+                mapping_header=self.getMappingHeader(),
+                mapping_footer=self.getMappingFooter(),
+                html_form=html_form,
+            ),
+            file="schema/schema.html",
+            macro="admin_get_form_for_maskedit",
+            request=req,
+        )
 
     """ """
 

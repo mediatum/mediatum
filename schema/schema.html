@@ -1,0 +1,52 @@
+<!--
+  Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+
+
+
+<!-- admin area: composed form for mask editing -->
+<tal:block metal:define-macro="admin_get_form_for_maskedit">
+    <form method="post">
+        <input
+            type="hidden"
+            name="csrf_token"
+            tal:attributes="value python:csrf_token"
+        />
+        <div class="back">
+            <h3 i18n:translate="">mask_editor_field_definition</h3>
+            <div align="right">
+                <input
+                    type="image"
+                    src="/static/img/install.png"
+                    tal:attributes="name python:'newdetail_{}'.format(id)"
+                    i18n:attributes="title mask_editor_new_line_title"
+                />
+            </div>
+            <br/>
+            <p tal:condition="python:not is_valid_mapping" class="error" i18n:translate="">
+                mask_editor_export_error
+            </p>
+            <div tal:condition="python:error" class="admin_error" tal:content="python:error"/>
+            <div tal:condition="python:not has_fields" i18n:translate="">mask_editor_no_fields</div>
+            <tal:block tal:condition="python:has_fields">
+                <div tal:condition="python:mapping_header" class="label" i18n:translate="">
+                    mask_edit_header
+                </div>
+                <div
+                    tal:condition="python:mapping_header"
+                    class="mediatum-admin-maskedit-maskitem"
+                    tal:content="python:mapping_header"
+                />
+                <tal:block tal:replace="raw html_form"/>
+                <div tal:condition="python:mapping_footer" class="label" i18n:translate="">
+                    mask_edit_footer
+                </div>
+                <div
+                    tal:condition="python:mapping_footer"
+                    class="mediatum-admin-maskedit-maskitem"
+                    tal:content="python:mapping_footer"
+                />
+            </tal:block>
+    </form>
+</tal:block>

@@ -88,14 +88,16 @@
             mask_editor_no_fields
         </span>
     </fieldset>
-    <div tal:condition="python:not is_sub" tal:attributes="id python:item_id" class="row">
-        <fieldset style="cursor:hand">
-            <legend tal:condition="python:label" tal:content="python:label"/>
-            <tal:block tal:condition="python:html_form" tal:replace="structure html_form"/>
-            <span tal:condition="python:not html_form" i18n:translate="">
-                mask_editor_no_fields
-            </span>
-        </fieldset>
+    <fieldset
+        tal:condition="python:not is_sub"
+        tal:attributes="id python:item_id"
+        class="mediatum-admin-maskedit-maskitem"
+    >
+        <legend tal:condition="python:label" tal:content="python:label"/>
+        <tal:block tal:condition="python:html_form" tal:replace="structure html_form"/>
+        <span tal:condition="python:not html_form" i18n:translate="">
+            mask_editor_no_fields
+        </span>
         <div
             tal:condition="python:not is_sub"
             tal:attributes="python:id python:'{}_sub'.format(item_id)"
@@ -116,9 +118,6 @@
                 type="image"
                 src="/static/img/downarrow.png"
             />
-            <tal:block tal:condition="python:is_first or is_last">
-                &nbsp;&nbsp;&nbsp;
-            </tal:block>
             <input
                 tal:attributes="name python:'edit_{}'.format(item_id)"
                 i18n:attributes="title mask_edit_edit_row"
@@ -133,5 +132,5 @@
                 onClick="return questionDel()"
             />
         </div>
-    </div>
+    </fieldset>
 </tal:block>

@@ -62,20 +62,13 @@ class m_vgroup(Metatype):
     def getMetaHTML(self, parent, index, sub=False, language=None, fieldlist={}, req=None):
         item = parent.children.order_by(Node.orderpos)[index]
 
-        html_form = u"".join(
-            _itertools.imap(
-                u"{}<br/>".format,
-                (
-                    getMetadataType(field.get("type")).getMetaHTML(
-                        item,
-                        idx,
-                        True,
-                        language=language,
-                        fieldlist=fieldlist,
-                    ) for idx, field in enumerate(item.children.order_by(Node.orderpos))
-                ),
-            )
-        )
+        html_form = u"".join(getMetadataType(field.get("type")).getMetaHTML(
+            item,
+            idx,
+            True,
+            language=language,
+            fieldlist=fieldlist,
+        ) for idx, field in enumerate(item.children.order_by(Node.orderpos)))
 
         return _tal.processTAL(
             dict(

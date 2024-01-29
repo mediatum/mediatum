@@ -103,15 +103,6 @@
         <textarea rows="4" type="text" name="stepsetting_text" tal:content="python:text"/>
     </label>
     <label>
-        <tal:block i18n:translate="workflowstep_email_text_editable"/>
-        <input
-            type="checkbox"
-            name="stepsetting_allowedit"
-            tal:attributes="checked python:'checked' if allowedit else None"
-            value="1"
-        />
-    </label>
-    <label>
         <tal:block i18n:translate="workflowstep_email_attach_pdf_form"/>
         <input
             type="checkbox"

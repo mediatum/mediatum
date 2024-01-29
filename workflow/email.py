@@ -31,7 +31,6 @@ def register():
 class WorkflowStep_SendEmail(WorkflowStep):
 
     default_settings = dict(
-        allowedit=False,
         attach_pdf_form=False,
         recipient=(),
         from_email="",
@@ -73,9 +72,6 @@ class WorkflowStep_SendEmail(WorkflowStep):
             raise
 
     def runAction(self, node, op=""):
-        if self.settings["allowedit"]:
-            return
-
         tal_renderer = self.get_tal_renderer(node, node.get("system.wflanguage"))
 
         from_envelope = tal_renderer(self.settings["from_envelope"])
@@ -85,97 +81,16 @@ class WorkflowStep_SendEmail(WorkflowStep):
         text = tal_renderer(self.settings["text"])
         reply_to_email = tal_renderer(self.settings["reply_to_email"])
         reply_to_name = tal_renderer(self.settings["reply_to_name"])
-        try:
-            self.send_email(
-                node,
-                from_email,
-                tuple(mail.EmailAddress(r, None) for r in recipients),
-                subject,
-                text,
-                from_envelope,
-                mail.EmailAddress(reply_to_email, reply_to_name) if reply_to_email else None,
-            )
-        except:
-            # Will raise later in 'show_workflow_node'
-            pass
-        else:
-            self.forward(node, True)
-
-    def show_workflow_node(self, node, req):
-        if not self.settings["allowedit"]:
-            raise RuntimeError("editing unsent email not allowed")
-
-        tal_renderer = self.get_tal_renderer(
-                node, node.get("system.wflanguage") or _core_translation.set_language(req.accept_languages),
-            )
-
-        from_envelope = (req.values["from_envelope"] or None if "from_envelope" in req.values
-                        else tal_renderer(self.settings["from_envelope"]))
-        from_name = (req.values["from_name"] or None if "from_name" in req.values
-                    else tal_renderer(self.settings['from_name']))
-        from_email = req.values["from_email"] if "from_email" in req.values else tal_renderer(self.settings['from_email'])
-        if "recipient" in req.values:
-            recipient = filter(None, (r.strip() for r in req.values["recipient"].split("\r\n")))
-        else:
-            recipient = map(tal_renderer, self.settings["recipient"])
-        subject = req.values["subject"] if "subject" in req.values else tal_renderer(self.settings["subject"])
-        text = req.values["text"] if "text" in req.values else tal_renderer(self.settings["text"])
-        reply_to_name = (req.values["reply_to_name"] or None if "reply_to_name" in req.values
-                         else tal_renderer(self.settings["reply_to_name"]))
-        reply_to_email = (req.values["reply_to_email"] if "reply_to_email" in
-                        req.values else tal_renderer(self.settings["reply_to_email"]))
-        if "sendout" in req.params:
-            del req.params["sendout"]
-
-            try:
-                self.send_email(
-                    node,
-                    mail.EmailAddress(from_email, from_name),
-                    tuple(mail.EmailAddress(r, None) for r in recipient),
-                    subject,
-                    text,
-                    from_envelope,
-                    mail.EmailAddress(reply_to_email, reply_to_name) if reply_to_email else None,
-                )
-            except:
-                return u'{} &gt;<a href="{}">{}</a>&lt;'.format(
-                        _core_translation.translate(
-                            _core_translation.set_language(req.accept_languages),
-                            "workflow_email_msg_1",
-                        ),
-                        _makeSelfLink(req, {"sendout": "true"}),
-                        _core_translation.translate(
-                            _core_translation.set_language(req.accept_languages),
-                            "workflow_email_resend",
-                        ),
-                    )
-            else:
-                return self.forwardAndShow(node, True, req)
-
-        if "gofalse" in req.params:
-            return self.forwardAndShow(node, False, req)
-        else:
-            return _tal.processTAL(
-                    dict(
-                        page=u"node?id={}&obj={}".format(self.id, node.id),
-                        from_envelope=from_envelope,
-                        from_name=from_name,
-                        from_email=from_email,
-                        recipients=u"\r\n".join(recipient),
-                        reply_to_name=reply_to_name,
-                        reply_to_email=reply_to_email,
-                        text=text,
-                        subject=subject,
-                        node=node,
-                        wfnode=self,
-                        pretext=self.getPreText(_core_translation.set_language(req.accept_languages)),
-                        posttext=self.getPostText(_core_translation.set_language(req.accept_languages)),
-                        csrf=_core_csrfform.get_token(),
-                    ),
-                    file="workflow/email.html",
-                    macro="sendmail",
-                    request=req,
-                )
+        self.send_email(
+            node,
+            from_email,
+            tuple(mail.EmailAddress(r, None) for r in recipients),
+            subject,
+            text,
+            from_envelope,
+            mail.EmailAddress(reply_to_email, reply_to_name) if reply_to_email else None,
+        )
+        self.forward(node, True)
 
     def admin_settings_get_html_form(self, req):
         return _tal.processTAL(
@@ -187,10 +102,8 @@ class WorkflowStep_SendEmail(WorkflowStep):
 
     def admin_settings_save_form_data(self, data):
         data = data.to_dict()
-        for attr in ("allowedit", "attach_pdf_form"):
-            data[attr] = bool(data.get(attr))
+        data["attach_pdf_form"] = bool(data.get("attach_pdf_form"))
         assert frozenset(data) == frozenset((
-            "allowedit",
             "attach_pdf_form",
             "recipient",
             "from_email",

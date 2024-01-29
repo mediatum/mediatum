@@ -139,18 +139,6 @@ msgstr "Editor mask"
 msgid "admin_wfstep_masks_to_display"
 msgstr "Masks to display (;-separated list)"
 
-msgid "admin_wfstep_email_sender"
-msgstr "Email address sender"
-
-msgid "admin_wfstep_email_recipient"
-msgstr "Email address recipient"
-
-msgid "admin_wfstep_email_subject"
-msgstr "Subject"
-
-msgid "admin_wfstep_email_text_editable"
-msgstr "Details editable?"
-
 msgid "admin_wf_languages"
 msgstr "Languages"
 

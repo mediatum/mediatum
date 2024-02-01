@@ -5,6 +5,7 @@ from __future__ import division
 from __future__ import print_function
 
 import logging as _logging
+import itertools as _itertools
 
 import mediatumtal.tal as _tal
 
@@ -59,14 +60,22 @@ class m_vgroup(Metatype):
         return ret
 
     def getMetaHTML(self, parent, index, sub=False, language=None, fieldlist={}):
-        item = parent.getChildren().sort_by_orderpos()[index]
-        i = 0
-        html_form = u""
+        item = parent.children.order_by(Node.orderpos)[index]
 
-        for field in item.getChildren().sort_by_orderpos():
-            f = getMetadataType(field.get("type"))
-            html_form += f.getMetaHTML(item, i, True, language=language, fieldlist=fieldlist) + '<br/>'
-            i += 1
+        html_form = u"".join(
+            _itertools.imap(
+                u"{}<br/>".format,
+                (
+                    getMetadataType(field.get("type")).getMetaHTML(
+                        item,
+                        idx,
+                        True,
+                        language=language,
+                        fieldlist=fieldlist,
+                    ) for idx, field in enumerate(item.children.order_by(Node.orderpos))
+                ),
+            )
+        )
 
         return _tal.processTAL(
             dict(

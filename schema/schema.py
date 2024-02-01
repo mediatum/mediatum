@@ -1043,16 +1043,10 @@ class Mask(Node):
                 k += 1
             db.session.commit()
 
-        i = 0
-        fieldlist = {}  # !!!getAllMetaFields()
-        html_form = u""
-        for item in self.children.order_by(Node.orderpos):
-            t = getMetadataType(item.get("type"))
-            html_form = u"{}{}".format(
-                html_form,
-                t.getMetaHTML(self, i, language=language, fieldlist=fieldlist),  # get formated line specific of type (e.g. field)
-            )
-            i += 1
+        html_form = u"".join(
+            getMetadataType(item.get("type")).getMetaHTML(self, idx, language=language)
+            for idx, item in enumerate(self.children.order_by(Node.orderpos)),
+        )
 
         return _tal.processTAL(
             context=dict(

@@ -42,22 +42,17 @@ class WorkflowStep_SendEmail(WorkflowStep):
         text=None,
     )
 
-    def get_tal_renderer(self, node, language):
-        context = dict(
-                node=node,
-                link=_urlparse.urljoin(_flask.request.host_url, "/pnode?id={}&key={}".format(node.id, node.get("key"))),
-                publiclink=_urlparse.urljoin(_flask.request.host_url, "/node?id={}".format(node.id)),
-            )
-        if language:
-            context["language"] = language
-
-        def renderer(text):
-            return None if text is None else _tal.getTALstr(text, context).replace('\n', '').strip()
-
-        return renderer
-
     def runAction(self, node, op=""):
-        tal_renderer = self.get_tal_renderer(node, node.get("system.wflanguage"))
+
+        context = dict(
+            language=node.get("system.wflanguage"),
+            link=_urlparse.urljoin(_flask.request.host_url, "/pnode?id={}&key={}".format(node.id, node.get("key"))),
+            node=node,
+            publiclink=_urlparse.urljoin(_flask.request.host_url, "/node?id={}".format(node.id)),
+        )
+
+        def tal_renderer(text_):
+            return None if text_ is None else _tal.getTALstr(text_, context).replace('\n', '').strip()
 
         from_envelope = tal_renderer(self.settings["from_envelope"])
         from_email = mail.EmailAddress(tal_renderer(self.settings["from_email"]), tal_renderer(self.settings["from_name"]))

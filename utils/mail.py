@@ -54,7 +54,10 @@ class EmailAddress(_collections.namedtuple("EmailAddress", "address name")):
 
 
 def sendmail(sender, recipients, subject, text, envelope_sender_address=None, attachments={}, reply_to=None):
+    assert sender
+    assert recipients
     assert envelope_sender_address is None or "@" in envelope_sender_address
+
     host = config.get("smtp-server.host")
     if not host:
         raise RuntimeError("No email server specified, not sending email")

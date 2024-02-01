@@ -56,21 +56,6 @@ class WorkflowStep_SendEmail(WorkflowStep):
 
         return renderer
 
-    def send_email(self, node, sender, recipients, subject, text, envelope_sender_address=None, reply_to=None):
-        try:
-            if not recipients:
-                raise RuntimeError("No receiver address defined")
-            if not sender:
-                raise RuntimeError("No from address defined")
-            if self.settings["attach_pdf_form"]:
-                attachments = {f.abspath.split("_")[-1]:f.abspath for f in node.files if f.filetype=="wfstep-addformpage"}
-            else:
-                attachments = {}
-            mail.sendmail(sender, recipients, subject, text, envelope_sender_address, attachments=attachments, reply_to=reply_to)
-        except:
-            logg.exception("Error while sending mail- node stays in workflowstep %s %s", self.id, self.name)
-            raise
-
     def runAction(self, node, op=""):
         tal_renderer = self.get_tal_renderer(node, node.get("system.wflanguage"))
 
@@ -81,14 +66,19 @@ class WorkflowStep_SendEmail(WorkflowStep):
         text = tal_renderer(self.settings["text"])
         reply_to_email = tal_renderer(self.settings["reply_to_email"])
         reply_to_name = tal_renderer(self.settings["reply_to_name"])
-        self.send_email(
-            node,
+        if self.settings["attach_pdf_form"]:
+            attachments = {f.abspath.split("_")[-1]: f.abspath for f in node.files if
+                           f.filetype == "wfstep-addformpage"}
+        else:
+            attachments = {}
+        mail.sendmail(
             from_email,
             tuple(mail.EmailAddress(r, None) for r in recipients),
             subject,
             text,
             from_envelope,
-            mail.EmailAddress(reply_to_email, reply_to_name) if reply_to_email else None,
+            attachments=attachments,
+            reply_to=mail.EmailAddress(reply_to_email, reply_to_name) if reply_to_email else None,
         )
         self.forward(node, True)
 

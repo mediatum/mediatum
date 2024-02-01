@@ -719,6 +719,7 @@ def register():
     from . import setnodename
     from . import showdata
     from . import start
+    from . import template2metadata
     from . import textpage
     from . import updateattributesfixed
     from . import upload
@@ -744,6 +745,7 @@ def register():
         setnodename,
         showdata,
         start,
+        template2metadata,
         textpage,
         updateattributesfixed,
         upload,

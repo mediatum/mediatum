@@ -42,7 +42,7 @@ def upgrade():
             (_schema.Mask, _schema.delete_mask),
             (_schema.Metadatatype, _schema._delete_metadatatype),
            ):
-        map(nfctn, _q(ntype).filter(_core.Node.id.notin_(cids)))
+        map(nfctn, _q(ntype).filter(_node.Node.id.notin_(cids)))
         _core.db.session.commit()
 
 

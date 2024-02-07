@@ -14,7 +14,9 @@ import operator as _operator
 import mediatumtal.tal as _tal
 
 import core as _core
+import core.database.postgres.node as _postgres_node
 import core.database.postgres.permission as _db_permission
+import core.database.postgres.user as _postgres_user
 import core.httpstatus as _httpstatus
 import core.permission as _permission
 import core.users as _users
@@ -113,7 +115,7 @@ def getContent(req, ids):
         return _tal.processTAL({}, file="web/edit/modules/acls.html", macro="acl_editor_error", request=req)
 
     idstr, = ids
-    node = _core.db.query(_core.Node).get(int(idstr))
+    node = _core.db.query(_postgres_node.Node).get(int(idstr))
     del ids
 
     # check write access to node
@@ -173,10 +175,10 @@ def getContent(req, ids):
                         _accessuser_editor_web.decider_is_private_user_group_access_rule,
                         uids,
                       )
-                uids = frozenset(u.id for u in uids if isinstance(u, _core.User))
+                uids = frozenset(u.id for u in uids if isinstance(u, _postgres_user.User))
 
                 users_to_add = tuple(_itertools.imap(
-                        _core.db.query(_core.User).get,
+                        _core.db.query(_postgres_user.User).get,
                         user_ids_from_request-uids,
                       ))
                 if users_to_add and not special_ruleset:  # in this case uids_to_remove will be empty
@@ -194,7 +196,7 @@ def getContent(req, ids):
                 # remove *after* having added users_to_add: a trigger may delete empty rulesets
                 for uid in uids-user_ids_from_request:  # this would be `uids_to_remove`
 
-                    user = _core.db.query(_core.User).get(uid)
+                    user = _core.db.query(_postgres_user.User).get(uid)
                     access_rule_id = _get_or_add_private_access_rule_for_user(user).id
 
                     for rule_assoc in special_rule_assocs:

@@ -21,6 +21,8 @@ import core as _core
 import core.init as _core_init
 _core_init.basic_init()
 
+from core.database.postgres import node as _postgres_node
+
 # revision identifiers, used by Alembic.
 revision = '3b473e771f5c'
 down_revision = '160fac8bb7dd'
@@ -29,11 +31,11 @@ depends_on = None
 
 
 def upgrade():
-    for node in _core.db.query(_core.Node).filter(_core.Node.system_attrs['sidebar'] != None).all():
+    for node in _core.db.query(_postgres_node.Node).filter(_postgres_node.Node.system_attrs['sidebar'] != None).all():
         node.system_attrs.pop("sidebar")
-    for node in _core.db.query(_core.Node).filter(_core.Node.system_attrs['sidebar_html'] != None).all():
+    for node in _core.db.query(_postgres_node.Node).filter(_postgres_node.Node.system_attrs['sidebar_html'] != None).all():
         node.system_attrs.pop("sidebar_html")
-    for node in _core.db.query(_core.Node).filter(_core.Node.attrs['sidebartext'] != None).all():
+    for node in _core.db.query(_postgres_node.Node).filter(_postgres_node.Node.attrs['sidebartext'] != None).all():
         node.attrs.pop("sidebartext")
     _core.db.session.commit()
 

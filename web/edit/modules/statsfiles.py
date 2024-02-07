@@ -12,7 +12,7 @@ import core.csrfform as _core_csrfform
 from utils.date import format_date
 from core.users import user_from_session as _user_from_session
 from core import httpstatus
-from core import Node
+from core.database.postgres.node import Node
 from core import db
 
 q = db.query

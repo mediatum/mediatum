@@ -16,7 +16,7 @@ from schema.mapping import getMapping, getMappingTypes, updateMapping, deleteMap
 from web.admin.adminutils import Overview, getAdminStdVars, getFilter, getSortCol
 import core.translation as _translation
 
-from core import Node
+from core.database.postgres.node import Node
 from core import db
 import core.nodecache as _nodecache
 from schema.mapping import Mapping, MappingField

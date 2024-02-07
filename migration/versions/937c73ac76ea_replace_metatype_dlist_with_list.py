@@ -19,8 +19,6 @@ range = xrange
 import os as _os
 import sys as _sys
 
-import json as _json
-
 _sys.path.append(_os.path.abspath(_os.path.join(_os.path.dirname(__file__), "../..")))
 
 import core as _core
@@ -28,7 +26,7 @@ import core.init as _core_init
 import core.nodecache as _nodecache
 _core_init.full_init()
 import schema.schema as _schema
-
+from core.database.postgres import node as _postgres_node
 
 # revision identifiers, used by Alembic.
 revision = '937c73ac76ea'
@@ -43,8 +41,8 @@ def upgrade():
     for metadatatype in _nodecache.get_metadatatypes_node().children:
         for metafield in metadatatype.children.filter(_schema.Metafield.a.type=='dlist'):
             listelements = _nodecache.get_root_node().all_children_by_query(
-                _q(_core.Node.a[metafield.name])
-                .filter(_core.Node.schema==metadatatype.name)
+                _q(_postgres_node.Node.a[metafield.name])
+                .filter(_postgres_node.Node.schema==metadatatype.name)
                ).all()
             listelements = set(elem for elem, in listelements)
             listelements.discard(None)

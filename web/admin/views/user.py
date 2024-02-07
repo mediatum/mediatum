@@ -8,7 +8,11 @@ from __future__ import division
 from __future__ import print_function
 
 import logging
-from core import db, User, UserGroup, AuthenticatorInfo
+
+from core import db
+from core.database.postgres.user import AuthenticatorInfo
+from core.database.postgres.user import User
+from core.database.postgres.user import UserGroup
 from markupsafe import Markup
 from wtforms.fields.core import StringField
 from web.admin.views import BaseAdminView

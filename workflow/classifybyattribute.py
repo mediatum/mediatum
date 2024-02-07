@@ -16,9 +16,11 @@ from itertools import imap as map
 from itertools import ifilter as filter
 range = xrange
 
-import core as _core
 from mediatumtal import tal as _tal
+
+import core as _core
 import workflow as _workflow
+from core.database.postgres.node import Node
 
 
 def register():
@@ -32,7 +34,7 @@ class WorkflowStep_ClassifyByAttribute(_workflow.WorkflowStep):
     def runAction(self, node, op=""):
         parents = node.attrs[self.settings["target-attribute-name"]].split()
         for nid in frozenset(map(int, parents)):
-            _core.db.query(_core.Node).get(nid).children.append(node)
+            _core.db.query(Node).get(nid).children.append(node)
 
         self.forward(node, True)
 

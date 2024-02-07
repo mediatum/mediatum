@@ -5,14 +5,11 @@ from __future__ import division
 from __future__ import print_function
 
 import logging
-import os
-import codecs
+
 from mediatumtal import tal
 
-import utils.utils as _utils
 from utils.utils import esc
 from core.metatype import Metatype
-from core import Node
 from core import db
 import metadata.common_list as _common_list
 

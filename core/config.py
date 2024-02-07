@@ -39,7 +39,8 @@ import utils.utils as _utils_utils
 
 logg = logging.getLogger(__name__)
 
-basedir = os.path.abspath(__file__).rsplit(os.sep, 2)[0]
+basedir = os.path.abspath(os.path.join(__file__, *((os.pardir,)*2)))
+codebasedir = os.path.abspath(basedir)
 
 #: set to True in initialize() if no config file was found
 is_default_config = None

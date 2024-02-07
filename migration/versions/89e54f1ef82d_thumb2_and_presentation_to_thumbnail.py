@@ -28,6 +28,7 @@ import core as _core
 import core.init as _core_init
 _core_init.basic_init()
 import utils.utils as _utils_utils
+from core.database.postgres.file import File
 
 # revision identifiers, used by Alembic.
 revision = '89e54f1ef82d'
@@ -46,8 +47,8 @@ def upgrade():
     with _utils_utils.suppress(OSError, warn=False):
         _os.mkdir(backup_dir_join())
 
-    file_select = _core.db.query(_core.File).with_entities(_core.File.id, _core.File.filetype).filter(
-            _sqlalchemy.or_(_core.File.filetype == u'thumb2', _core.File.filetype == u'presentation'),
+    file_select = _core.db.query(File).with_entities(File.id, File.filetype).filter(
+            _sqlalchemy.or_(File.filetype == u'thumb2', File.filetype == u'presentation'),
         )
     if not file_select.first():
         return
@@ -55,9 +56,9 @@ def upgrade():
     with open(backup_dir_join("{}.thumb2.presentation.json".format(revision)), "wb") as f:
         _json.dump(dict(file_select.all()), f)
 
-    _core.db.session.query(_core.File).filter(
-        _sqlalchemy.or_(_core.File.filetype == u'thumb2', _core.File.filetype == u'presentation'),
-    ).update({_core.File.filetype: "thumbnail"}, synchronize_session=False)
+    _core.db.session.query(File).filter(
+        _sqlalchemy.or_(File.filetype == u'thumb2', File.filetype == u'presentation'),
+    ).update({File.filetype: "thumbnail"}, synchronize_session=False)
 
     _core.db.session.commit()
 
@@ -77,8 +78,8 @@ def downgrade():
         data = _json.load(f)
     # _core.q(File).get(fileid).filetype = filetype is very slow
     for fileid, filetype in data.iteritems():
-        _core.db.session.query(_core.File).filter(_core.File.id == int(fileid)).update(
-            {_core.File.filetype: filetype},
+        _core.db.session.query(File).filter(File.id == int(fileid)).update(
+            {File.filetype: filetype},
             synchronize_session=False,
         )
 

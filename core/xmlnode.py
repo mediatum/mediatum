@@ -4,7 +4,7 @@
 from __future__ import division
 from __future__ import print_function
 
-from core import Node
+from core.database.postgres.node import Node
 import logging
 
 import sqlalchemy as _sqlalchemy
@@ -14,7 +14,8 @@ from lxml import etree
 
 import core.nodecache as _core_nodecache
 import utils.utils as _utils_utils
-from core import File, db
+from core import db
+from core.database.postgres.file import File
 from utils.compat import iteritems
 from utils.list import filter_scalar
 

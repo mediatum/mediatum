@@ -5,6 +5,7 @@ from __future__ import division
 from __future__ import print_function
 
 import logging
+
 import mediatumtal.tal as _tal
 
 import core.csrfform as _core_csrfform
@@ -12,7 +13,8 @@ import core.translation as _core_translation
 from utils.date import format_date, parse_date, now
 from utils.utils import funcname
 from core import httpstatus
-from core import Node, db
+from core import db
+from core.database.postgres.node import Node
 from contenttypes import Container
 from core.users import user_from_session
 import core.config as _core_config

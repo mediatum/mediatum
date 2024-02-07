@@ -6,7 +6,8 @@
 from __future__ import division
 from __future__ import print_function
 
-from core import AccessRule, db
+from core import db
+from core.database.postgres.permission import AccessRule
 
 q = db.query
 

@@ -27,6 +27,8 @@ import core as _core
 import core.init as _core_init
 _core_init.basic_init()
 import utils.utils as _utils_utils
+from core.database.postgres.file import File
+from core.database.postgres.file import NodeToFile
 
 # revision identifiers, used by Alembic.
 revision = '52ce1ef8d73b'
@@ -36,9 +38,9 @@ depends_on = None
 
 
 def upgrade():
-    node_to_files_select = _core.db.query(_core.NodeToFile).with_entities(
-            _core.NodeToFile.nid, _core.NodeToFile.file_id,
-        ).join(_core.File, _core.NodeToFile.file_id == _core.File.id).filter_by(filetype='thumb')
+    node_to_files_select = _core.db.query(NodeToFile).with_entities(
+            NodeToFile.nid, NodeToFile.file_id,
+        ).join(File, NodeToFile.file_id == File.id).filter_by(filetype='thumb')
     if not node_to_files_select.first():
         return
 
@@ -55,9 +57,9 @@ def upgrade():
     with open(backup_dir_join("{}.smallthumb_node_to_files.json".format(revision)), "wb") as f:
         _json.dump(dict(node_to_files), f)
 
-    node_to_files = _core.db.query(_core.NodeToFile).join(
-            _core.File,
-            _core.NodeToFile.file_id == _core.File.id,
+    node_to_files = _core.db.query(NodeToFile).join(
+            File,
+            NodeToFile.file_id == File.id,
         ).filter_by(filetype='thumb').all()
     for node_to_file in node_to_files:
         _core.db.session.delete(node_to_file)
@@ -80,7 +82,7 @@ def downgrade():
     with open(node_to_files, "rb") as f:
         data = _json.load(f)
     for nid, file_id in data.iteritems():
-        node_to_file = _core.NodeToFile()
+        node_to_file = NodeToFile()
         node_to_file.nid = int(nid)
         node_to_file.file_id = file_id
         _core.db.session.add(node_to_file)

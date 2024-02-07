@@ -19,7 +19,7 @@ from schema.schema import getMetaFieldTypeNames
 from schema.schema import getMetaType
 import core.translation as _translation
 import schema.schema as _schema
-from core import Node
+from core.database.postgres.node import Node
 from core import db
 
 q = db.query

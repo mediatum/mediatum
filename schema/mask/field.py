@@ -15,7 +15,8 @@ from utils.strings import ensure_unicode
 
 from schema.schema import getMetadataType, VIEW_DATA_ONLY, VIEW_SUB_ELEMENT, VIEW_HIDE_EMPTY, VIEW_DATA_EXPORT
 from core.metatype import Metatype
-from core import db, Node
+from core import db
+from core.database.postgres.node import Node
 
 q = db.query
 s = db.session

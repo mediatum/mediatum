@@ -241,29 +241,6 @@ class PostgresSQLAConnector(object):
             raise Exception("'node' table does not exist."
                             "HINT: You can delete and recreate the database schema with all tables with 'bin/manage.py schema recreate'")
 
-    def get_model_classes(self):
-        from core.database.postgres.file import File, NodeToFile
-        from core.database.postgres.node import NodeType, Node
-        from core.database.postgres.user import User, UserGroup, UserToUserGroup, AuthenticatorInfo, OAuthUserCredentials
-        from core.database.postgres.permission import AccessRule, AccessRuleset, NodeToAccessRule, NodeToAccessRuleset, AccessRulesetToRule
-        from core.database.postgres.setting import Setting
-        return (
-            File,
-            NodeToFile,
-            Node,
-            User,
-            UserGroup,
-            UserToUserGroup,
-            AuthenticatorInfo,
-            OAuthUserCredentials,
-            AccessRule,
-            AccessRuleset,
-            NodeToAccessRule,
-            NodeToAccessRuleset,
-            AccessRulesetToRule,
-            Setting,
-            NodeType,
-        )
 
     def make_session(self):
         """Create a session.

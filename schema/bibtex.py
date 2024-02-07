@@ -28,7 +28,8 @@ from bibtexparser import load as bibtex_load
 from bibtexparser.bparser import BibTexParser
 import bibtexparser.customization
 
-from core import db, Node
+from core import db
+from core.database.postgres.node import Node
 from .schema import Metadatatype
 import core.users as users
 from contenttypes.document import Document

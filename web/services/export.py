@@ -19,7 +19,9 @@ from sqlalchemy.orm import undefer, joinedload
 
 from core.users import get_guest_user
 from core import config, search
-from core import Node, db, User
+from core import db
+from core.database.postgres.node import Node
+from core.database.postgres.user import User
 from schema.schema import VIEW_DATA_ONLY, Metadatatype
 from utils.date import format_date
 from utils.pathutils import getBrowsingPathList

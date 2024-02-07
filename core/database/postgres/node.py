@@ -41,9 +41,6 @@ from utils.date import format_date
 logg = logging.getLogger(__name__)
 
 
-USE_CACHED_CHILDCOUNT = config.getboolean("database.use_cached_childcount")
-
-
 class NodeType(DeclarativeBase):
 
     """Node type / node class description.
@@ -308,8 +305,11 @@ class Node(DeclarativeBase, NodeMixin):
 
     @property
     def content_children_count_for_all_subcontainers(self):
-        if USE_CACHED_CHILDCOUNT:
-            return exec_sqlfunc(object_session(self), mediatumfunc.count_content_children_for_all_subcontainers(self.id))
+        if config.getboolean("database.use_cached_childcount"):
+            return exec_sqlfunc(
+                    object_session(self),
+                    mediatumfunc.count_content_children_for_all_subcontainers(self.id),
+                )
         else:
             return self.content_children_for_all_subcontainers.count()
 

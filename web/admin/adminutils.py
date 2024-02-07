@@ -12,14 +12,18 @@ import flask as _flask
 
 import mediatumtal.tal as _tal
 
-from core import db, User, AuthenticatorInfo
+import core.config as config
 import core.translation as _core_translation
 import core.users as users
-import core.config as config
+from core import db
 from core import httpstatus
+from core.database.postgres.user import AuthenticatorInfo
+from core.database.postgres.user import User
 from core.systemtypes import Root
 from utils.strings import ensure_unicode_returned
-from utils.utils import Link, splitpath, parse_menu_struct, suppress, get_menu_strings
+from utils.utils import get_menu_strings
+from utils.utils import Link
+from utils.utils import parse_menu_struct
 from utils.list import filter_scalar
 from core.exceptions import SecurityException
 
@@ -187,21 +191,6 @@ def getSortCol(req):
             req.params["order"] = order
     return order
 
-""" load module for admin area """
-
-
-def findmodule(type):
-    if type in adminModules:
-        return adminModules[type]
-
-    try:
-        m = __import__("web.admin.modules." + type)
-        m = eval("m.admin.modules." + type)
-    except:
-        logg.exception("couldn't load module for type %s", type)
-        m = __import__("web.admin.modules.default")
-        m = eval("m.admin.modules.default")
-    return m
 
 """ main method for content area """
 
@@ -216,7 +205,7 @@ def show_content(req, op):
         if op == "" or op not in get_menu_strings(_menu):
             if op != "memstats":
                 op = "menumain"
-        module = findmodule(op.split("_")[0])
+        module = adminModules[op.split("_")[0]]
 
         if op.find("_") > -1:
             return module.spc(req, op)
@@ -224,28 +213,36 @@ def show_content(req, op):
             return module.validate(req, op)
 
 # delivers all admin modules
+def _get_admin_modules():
+    from web.admin.modules import default
+    from web.admin.modules import mapping
+    from web.admin.modules import memstats
+    from web.admin.modules import menusystem
+    from web.admin.modules import menuworkflow
+    from web.admin.modules import menudata
+    from web.admin.modules import menuacl
+    from web.admin.modules import menumain
+    from web.admin.modules import menuuser
+    from web.admin.modules import metatype
+    from web.admin.modules import workflows
 
+    modules_list = (
+        default,
+        memstats,
+        menusystem,
+        metatype,
+        menuworkflow,
+        mapping,
+        menudata,
+        menuacl,
+        menuuser,
+        workflows,
+        menumain,
+    )
 
-def getAdminModules(path):
-    mods = {}
-    for root, dirs, files in path:
-        if os.path.basename(root) not in ("test", "__pycache__"):
-            for name in [f for f in files if f.endswith(".py") and f != "__init__.py"]:
-                m = __import__("web.admin.modules." + name[:-3])
-                m = eval("m.admin.modules." + name[:-3])
-                mods[name[:-3]] = m
+    for m in modules_list:
+        adminModules[m.__name__.replace("web.admin.modules.", "")] = m
 
-    # test for external modules by plugin
-    for k, v in config.getsubset("plugins").items():
-        path, module = splitpath(v)
-        with suppress(ImportError,warn=False): # no admin modules in plugin
-            sys.path += [path + ".adminmodules"]
-            for root, dirs, files in os.walk(os.path.join(config.basedir, v + "/adminmodules")):
-                for name in [f for f in files if f.endswith(".py") and f != "__init__.py"]:
-                    m = __import__(module + ".adminmodules." + name[:-3])
-                    m = eval("m.adminmodules." + name[:-3])
-                    mods[name[:-3]] = m
-    return mods
 
 # delivers all active admin modules in navigations
 adminModules = {}
@@ -254,11 +251,7 @@ adminModules = {}
 def adminNavigation():
     if len(adminModules) == 0:
         # load admin modules
-        mods = getAdminModules(os.walk(os.path.join(config.basedir, 'web/admin/modules')))
-        for mod in mods:
-            if hasattr(mods[mod], "getInformation"):
-                adminModules[mod] = (mods[mod])
-
+        _get_admin_modules()
     return parse_menu_struct(_menu)
 
 

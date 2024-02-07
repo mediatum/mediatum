@@ -11,7 +11,6 @@ import stat as _stat
 import string as _string
 import logging as _logging
 import mimetypes as _mimetypes
-import importlib as _importlib
 from cgi import escape as _escape
 from functools import partial as _partial
 
@@ -20,76 +19,39 @@ import flask as _flask
 import core.translation as _core_translation
 import httpstatus as _httpstatus
 from core import config as _config
-from utils.utils import suppress as _suppress, nullcontext as _nullcontext
+from utils import utils as _utils_utils
 from utils.url import build_url_from_path_and_params as _build_url_from_path_and_params
 from collections import OrderedDict as _OrderedDict
 
 _logg = _logging.getLogger(__name__)
 
-GLOBAL_TEMP_DIR = "/tmp/"
-GLOBAL_ROOT_DIR = "no-root-dir-set"
+_basedir = "no-root-dir-set"
 
 contexts = []
-global_modules = {}
 
 BASENAME = _re.compile("([^/]*/)*([^/.]*)(.py)?")
-verbose = 1
 
 
-def join_paths(p1, p2):
-    if p1.endswith("/"):
-        if p2.startswith("/"):
-            return p1[:-1] + p2
-        else:
-            return p1 + p2
-    else:
-        if p2.startswith("/"):
-            return p1 + p2
-        else:
-            return p1 + "/" + p2
-
-
-def qualify_path(p):
-    if p[-1] != '/':
-        return p + "/"
-    return p
+def _qualify_path(p):
+    return "{}/".format(p.rstrip("/"))
 
 
 def setBase(base):
-    global GLOBAL_ROOT_DIR
-    GLOBAL_ROOT_DIR = qualify_path(base)
-
-
-def setTempDir(tempdir):
-    global GLOBAL_TEMP_DIR
-    GLOBAL_TEMP_DIR = qualify_path(tempdir)
-
-
-def getBase():
-    return GLOBAL_ROOT_DIR
+    global _basedir
+    _basedir = _qualify_path(base)
 
 
 class _WebFile:
 
-    def __init__(self, context, filename, module=None):
+    def __init__(self, context, module):
         self.context = context
-        if filename[0] == '/':
-            filename = filename[1:]
-        self.filename = filename
-        if module is None:
-            self.m = _load_module(join_paths(context.root, filename))
-        else:
-            self.m = module
-            global_modules[filename] = module
+        self.m = module
         self.handlers = []
 
     def addHandler(self, function):
         handler = _WebHandler(self, function)
         self.handlers += [handler]
         return handler
-
-    def getFileName(self):
-        return self.context.root + self.filename
 
 
 class _WebHandler:
@@ -99,7 +61,7 @@ class _WebHandler:
         if isinstance(function, str):
             self.function = function
             m = file.m
-            with _nullcontext():
+            with _utils_utils.nullcontext():
                 self.f = getattr(m, function)
         else:
             self.f = function
@@ -107,7 +69,7 @@ class _WebHandler:
 
     def addPattern(self, pattern):
         p = _WebPattern(self, pattern)
-        desc = "pattern %s, file %s, function %s" % (pattern, self.file.filename, self.function)
+        desc = u"pattern {}, module {} function {}".format(pattern, self.file.m.__name__, self.function)
         self.file.context.pattern_to_function[p.getPattern()] = (self.f, desc)
         return p
 
@@ -211,62 +173,19 @@ def sendFile(req, path, content_type, force=0):
     req.response.headers['X-Accel-Redirect'] = _os.path.join("/{}".format(nginx_alias), _os.path.relpath(path, nginx_dir))
 
 
-def html_repr(object):
-    so = _escape(repr(object))
-    if hasattr(object, 'hyper_respond'):
-        return '<a href="/status/object/%d/">%s</a>' % (id(object), so)
-    else:
-        return so
-
-
 def makeSelfLink(req, params):
     params2 = req.params.copy()
     for k, v in params.items():
         if v is not None:
             params2[k] = v
         else:
-            with _suppress(Exception, warn=False):
+            with _utils_utils.suppress(Exception, warn=False):
                 del params2[k]
     ret = _build_url_from_path_and_params(req.path, params2)
     return ret
 
 
 # COMPAT: added functions
-
-
-def _load_module(filename):
-    b = BASENAME.match(filename)
-
-    # filename e.g. /my/modules/test.py
-    # b.group(1) = /my/modules/
-    # b.group(2) = test.py
-    if b is None:
-        raise ValueError("Internal error with filename " + filename)
-    module = b.group(2)
-    if module is None:
-        raise ValueError("Internal error with filename " + filename)
-
-    while filename.startswith("./"):
-        filename = filename[2:]
-
-    if filename in global_modules:
-        return global_modules[filename]
-
-    dir = _os.path.dirname(filename)
-    path = dir.replace("/", ".")
-
-    # strip tailing/leading dots
-    while len(path) and path[0] == '.':
-        path = path[1:]
-    while len(path) and path[-1] != '.':
-        path = path + "."
-
-    module2 = (path + module)
-    _logg.debug("Loading module %s", module2)
-
-    m = _importlib.import_module(module2)
-    global_modules[filename] = m
-    return m
 
 
 class _WebContext:
@@ -276,27 +195,14 @@ class _WebContext:
         self.files = []
         self.startupfile = None
         if root:
-            self.root = qualify_path(root)
+            self.root = _qualify_path(root)
         self.pattern_to_function = _OrderedDict()
         self.catchall_handler = None
 
-    def addFile(self, filename, module=None):
-        file = _WebFile(self, filename, module)
+    def addModule(self, module):
+        file = _WebFile(self, module)
         self.files += [file]
         return file
-
-    def setRoot(self, root):
-        self.root = qualify_path(root)
-        while self.root.startswith("./"):
-            self.root = self.root[2:]
-
-    def setStartupFile(self, startupfile):
-        self.startupfile = startupfile
-        _logg.info("  executing startupfile")
-        self._load_module(self.startupfile)
-
-    def getStartupFile(self):
-        return self.startupfile
 
     def match(self, path):
         def call_and_close(f, req):
@@ -314,8 +220,7 @@ class _WebContext:
         for pattern, call in self.pattern_to_function.items():
             if pattern.match(path):
                 function, desc = call
-                if verbose:
-                    _logg.debug("Request %s matches (%s)", path, desc)
+                _logg.debug("Request %s matches (%s)", path, desc)
                 return lambda req: call_and_close(function, req)
 
         # no pattern matched, use catchall handler if present

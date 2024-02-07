@@ -12,6 +12,7 @@ import asyncore
 
 from PyZ3950 import z3950, zdefs, asn1
 from sqlalchemy.orm import undefer
+from core.database import postgres as _database_postgres
 from core.search.config import get_service_search_languages
 from utils.utils import suppress
 import core as _core
@@ -307,7 +308,7 @@ class AsyncPyZ3950Server(z3950.Server):
         map_node = _core.medmarc.MarcMapper()
 
         node_ids = res_set[start-1:start+count-1]
-        nodes = _core.db.query(_core.Node).filter(_core.Node.id.in_(node_ids)).prefetch_attrs()
+        nodes = _core.db.query(_database_postgres.node.Node).filter(_database_postgres.node.Node.id.in_(node_ids)).prefetch_attrs()
         formatted = [fo for fo in [format_node(n, map_node) for n in nodes] if fo is not None]
         return formatted
 
@@ -355,7 +356,7 @@ def search_nodes(query, mapping_prefix='Z3950_search_'):
     def get_root_for_mapping(mapping_node):
         name = mapping_node.name
         node_id = name[len(mapping_prefix):]
-        node = _core.db.query(_core.Node).get(node_id)
+        node = _core.db.query(_database_postgres.node.Node).get(node_id)
         return node
 
     def filter_dbquery_results(dbquery):

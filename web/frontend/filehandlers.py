@@ -13,7 +13,7 @@ import os
 from sqlalchemy_continuum.utils import version_class
 from urllib import quote
 from core import db
-from core import Node, File
+from core.database.postgres.file import File
 import core.config as config
 from core import request_handler as _request_handler
 from core.archive import get_archive_for_node

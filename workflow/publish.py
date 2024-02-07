@@ -7,7 +7,8 @@ from __future__ import print_function
 from mediatumtal import tal as _tal
 
 from .workflow import WorkflowStep, registerStep
-from core import UserGroup, db
+from core import db
+from core.database.postgres.user import UserGroup
 from core.permission import get_all_access_rules
 from core.users import user_from_session as _user_from_session
 from utils.date import now

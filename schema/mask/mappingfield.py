@@ -12,7 +12,7 @@ from utils.utils import esc, desc, modify_tex
 from utils.date import parse_date, format_date
 from schema.schema import getMetadataType
 import export.exportutils as exportutils
-from core import Node
+from core.database.postgres.node import Node
 from core import db
 
 logg = logging.getLogger(__name__)

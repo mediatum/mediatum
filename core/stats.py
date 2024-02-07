@@ -19,7 +19,8 @@ import shutil
 import calendar
 import pygeoip as _pygeoip
 
-from core import db, Node
+from core import db
+from core.database.postgres.node import Node
 import core.config as config
 from utils.date import parse_date, format_date, now, make_date
 from utils.utils import splitpath

@@ -25,7 +25,7 @@ from core import config
 from core.users import get_guest_user
 from core import httpstatus
 from utils.utils import join_paths, Menu
-from web.admin.adminutils import findmodule, show_content, adminNavigation, getMenuItemID
+from web.admin.adminutils import adminModules, show_content, adminNavigation, getMenuItemID
 from core.users import user_from_session as _user_from_session
 from web import frontend as _web_frontend
 
@@ -45,8 +45,8 @@ def show_node(req):
     v["user"] = user
     v["guestuser"] = get_guest_user().login_name
     v["version"] = core.__version__
-    v["content"] = show_content(req, p[0])
     v["navigation"] = adminNavigation()
+    v["content"] = show_content(req, p[0])
     v["breadcrumbs"] = getMenuItemID(v["navigation"], req.mediatum_contextfree_path[1:])
 
     spc = [
@@ -77,7 +77,7 @@ def export(req):
         return httpstatus.HTTP_FORBIDDEN
 
     path = req.mediatum_contextfree_path[1:].split("/")
-    module = findmodule(path[1])
+    module = adminModules[path[1]]
     try:
         xml_result = module.export(req, path[2])
     except AttributeError as err:

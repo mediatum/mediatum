@@ -185,22 +185,22 @@ class MtQuery(Query):
     def node_offset0(self):
         # offset0 is used to prevent the postgresql planner from using other (slower) scan
         # methods than a Bitmap Index Scan
-        from core import Node
+        from core.database.postgres.node import Node
         query = self.options(undefer("*")).offset(0).from_self()
         deferred_columns = (prop.key for prop in _class_mapper(Node).iterate_properties
                                  if isinstance(prop, _ColumnProperty) and prop.deferred)
         return query.options(*_itertools.imap(_defer,deferred_columns))
 
     def prefetch_attrs(self):
-        from core import Node
+        from core.database.postgres.node import Node
         return self.options(undefer(Node.attrs))
 
     def prefetch_system_attrs(self):
-        from core import Node
+        from core.database.postgres.node import Node
         return self.options(undefer(Node.system_attrs))
 
     def _find_nodeclass(self):
-        from core import Node
+        from core.database.postgres.node import Node
         """Returns the query's underlying model classes."""
         nodeclass = dict()  # stores node class in key 0
         for d in self.column_descriptions:

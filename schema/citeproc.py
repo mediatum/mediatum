@@ -21,7 +21,7 @@ from sqlalchemy.orm.exc import NoResultFound
 import requests
 
 import utils.utils as _utils_utils
-from core import Node
+from core.database.postgres.node import Node
 from core import db
 from contenttypes import Document
 from .schema import Metadatatype

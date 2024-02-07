@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 from __future__ import division, absolute_import, print_function
-from core import Node
+from core.database.postgres.node import Node
 from core.postgres import check_type_arg
 
 

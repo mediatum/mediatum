@@ -27,7 +27,7 @@ import core as _core
 import core.init as _core_init
 _core_init.full_init()
 
-from core import User
+from core.database.postgres.user import User
 
 import sqlalchemy as _sqlalchemy
 

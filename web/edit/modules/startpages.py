@@ -20,9 +20,9 @@ from utils.utils import format_filesize, suppress
 from web.edit.edit_common import send_nodefile_tal, upload_for_html
 from core.users import user_from_session as _user_from_session
 from core import httpstatus
-from core import Node
+from core.database.postgres.node import Node
 from core import db
-from core import File
+from core.database.postgres.file import File
 
 q = db.query
 logg = logging.getLogger(__name__)

@@ -9,12 +9,16 @@ from __future__ import print_function
 
 import json
 import logging
+
 from markupsafe import Markup
 from pygments import highlight
 from pygments.formatters import HtmlFormatter
 from pygments.lexers import JsonLexer
+
 import core.csrfform as _core_csrfform
-from core import Node, File, db
+from core import db
+from core.database.postgres.file import File
+from core.database.postgres.node import Node
 from web.admin.views import BaseAdminView
 
 logg = logging.getLogger(__name__)

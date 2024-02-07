@@ -14,7 +14,10 @@ logg = logging.getLogger(__name__)
 
 def init_database_values(s, default_admin_password=None):
     from core import config
-    from core import User, UserGroup, AuthenticatorInfo, AccessRule
+    from core.database.postgres.permission import AccessRule
+    from core.database.postgres.user import AuthenticatorInfo
+    from core.database.postgres.user import User
+    from core.database.postgres.user import UserGroup
     from core.systemtypes import Root, Metadatatypes, Mappings, Searchmasks
     from contenttypes import Collections, Home
     from workflow.workflow import Workflows

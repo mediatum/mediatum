@@ -16,7 +16,9 @@ import zipfile
 import flask as _flask
 
 import utils.utils as _utils_utils
-from core import config, db, Node
+from core import config
+from core import db
+from core.database.postgres.node import Node
 from contenttypes import Content
 from utils.utils import getMimeType, get_filesize, suppress
 from utils import userinput

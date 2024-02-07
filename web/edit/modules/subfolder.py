@@ -13,7 +13,7 @@ import core.translation as _core_translation
 from schema.schema import getMetaType
 from core.users import user_from_session as _user_from_session
 from core import httpstatus
-from core import Node
+from core.database.postgres.node import Node
 from core import db
 
 q = db.query

@@ -13,9 +13,9 @@ import mediatumtal.tal as _tal
 import werkzeug.datastructures as _datastructures
 
 import core.config as config
-from core import Node as _Node
 from core import db
 import core.csrfform as _core_csrfform
+from core.database.postgres.node import Node as _Node
 from core.database.postgres.permission import NodeToAccessRuleset
 from web import frontend as _web_frontend
 import core.translation as _core_translation

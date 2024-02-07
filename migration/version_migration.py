@@ -10,7 +10,9 @@
 from __future__ import division
 from __future__ import print_function
 
-from core import db, Node, File
+from core import db
+from core.database.postgres.file import File
+from core.database.postgres.node import Node
 import logging
 from sqlalchemy import Integer
 from sqlalchemy_continuum import versioning_manager, Operation

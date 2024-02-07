@@ -7,9 +7,12 @@ from __future__ import print_function
 import logging
 
 import core.translation as _core_translation
+from core import db
 from core.database.postgres.permission import AccessRuleset, AccessRule
-from core import User, AuthenticatorInfo
-from core import db, UserToUserGroup, UserGroup
+from core.database.postgres.user import AuthenticatorInfo
+from core.database.postgres.user import User
+from core.database.postgres.user import UserGroup
+from core.database.postgres.user import UserToUserGroup
 from utils import utils as _utils_utils
 
 q = db.query

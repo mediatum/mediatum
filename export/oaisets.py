@@ -9,7 +9,9 @@ from collections import OrderedDict
 from utils.utils import esc
 from utils.pathutils import isDescendantOf
 from .oaisetgroup import OAISetGroup as OAISetGroup
-from core import db, config, Node
+from core import config
+from core import db
+from core.database.postgres.node import Node
 import core.database.postgres.search as _postgres_search
 import logging as _logging
 

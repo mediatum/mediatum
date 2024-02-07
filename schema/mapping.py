@@ -4,7 +4,7 @@
 from __future__ import division
 from __future__ import print_function
 
-from core import Node
+from core.database.postgres.node import Node
 from core.xmlnode import getNodeXML, readNodeXML
 from core.postgres import check_type_arg
 

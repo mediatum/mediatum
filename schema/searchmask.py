@@ -9,7 +9,7 @@ from sqlalchemy import func
 import utils.utils as _utils_utils
 from . import schema
 from core.postgres import check_type_arg
-from core import Node
+from core.database.postgres.node import Node
 from core import db
 from core.systemtypes import Root, Searchmasks
 from .schema import Metadatatype

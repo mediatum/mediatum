@@ -12,7 +12,10 @@ import os
 import hashlib
 from collections import OrderedDict
 import scrypt
-from core import db, config, AuthenticatorInfo, User
+from core import db
+from core import config
+from core.database.postgres.user import AuthenticatorInfo
+from core.database.postgres.user import User
 
 q = db.query
 

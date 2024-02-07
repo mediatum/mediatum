@@ -17,7 +17,7 @@ import core.config as config
 import core.translation as _core_translation
 import utils.process as _utils_process
 import utils.utils as _utils_utils
-from core import File
+from core.database.postgres.file import File
 from core import db
 from core.attachment import filebrowser
 from core.postgres import check_type_arg_with_schema

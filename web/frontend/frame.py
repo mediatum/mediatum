@@ -17,7 +17,8 @@ import core.database.postgres as _database_postgres
 import core.database.postgres.node as _node
 import core.config as config
 import core.translation as _core_translation
-from core import db, Node
+from core import db
+from core.database.postgres.node import Node
 from core import webconfig
 from core.users import user_from_session as _user_from_session
 from core.users import get_guest_user

@@ -29,7 +29,7 @@ import core.config as config
 import utils.process
 
 from core import db
-from core import File
+from core.database.postgres.file import File
 
 logg = logging.getLogger(__name__)
 

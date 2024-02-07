@@ -19,7 +19,7 @@ from utils.utils import esc, suppress
 from core.metatype import Metatype
 from core import httpstatus
 from core import db
-from core import Node
+from core.database.postgres.node import Node
 from contenttypes import Collections
 from core.database.postgres import mediatumfunc
 from core.database.postgres.alchemyext import exec_sqlfunc

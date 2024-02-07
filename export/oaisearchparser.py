@@ -8,7 +8,7 @@ import re
 import logging
 from utils.utils import intersection, union
 from utils.boolparser import BoolParser
-from core import Node
+from core.database.postgres.node import Node
 from core import db
 from core.database.postgres.search import comparisons
 

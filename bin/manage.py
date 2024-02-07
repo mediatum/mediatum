@@ -41,7 +41,8 @@ import configargparse
 logg = logging.getLogger("manage.py")
 
 from core.database.init import init_database_values
-from core import db, Node
+from core import db
+from core.database.postgres.node import Node
 import utils.search
 import utils.iplist
 from utils.postgres import truncate_tables, run_single_sql, vacuum_tables, vacuum_full_tables, vacuum_analyze_tables

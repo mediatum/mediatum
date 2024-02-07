@@ -17,7 +17,7 @@ import core.csrfform as _core_csrfform
 import core.translation as _core_translation
 from core import httpstatus
 from core import db
-from core import Node
+from core.database.postgres.node import Node
 import core.nodecache as _nodecache
 from core.users import user_from_session as _user_from_session
 from contenttypes import Container

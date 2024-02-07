@@ -16,7 +16,7 @@ from core.users import user_from_session as _user_from_session
 import logging
 import core.nodecache as _core_nodecache
 from contenttypes import Container
-from core import Node
+from core.database.postgres.node import Node
 from core import db
 
 logg = logging.getLogger(__name__)

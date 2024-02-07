@@ -8,13 +8,10 @@ import itertools as _itertools
 import json
 import os
 import re
-import sys
 import time
 
 import mediatumtal.tal as _tal
 
-import core as _core
-import core.config as config
 import core.csrfform as _core_csrfform
 import core.nodecache as _core_nodecache
 import core.translation as _core_translation
@@ -22,12 +19,12 @@ import web.edit.edit_common as _web_edit_edit_common
 import core.systemtypes as _core_systemtypes
 import utils.utils as _utils_utils
 
-from core import Node, NodeType, db, User, UserGroup, UserToUserGroup
-from core.database.postgres.permission import NodeToAccessRuleset, AccessRulesetToRule, AccessRule
-
-from contenttypes import Container, Collections, Data, Home
+from contenttypes.container import Collections
+from contenttypes.container import Home
+from contenttypes.data import Data
+from core import plugins as _core_plugins
+from core.database.postgres.user import User
 from edit_common import *
-
 from core.users import user_from_session as _user_from_session
 from core import httpstatus
 from schema.schema import Metadatatype
@@ -341,29 +338,72 @@ _editModules = {}
 
 
 def getEditModules():
-    for modpath in _core.editmodulepaths:  # paths with edit modules
-        if os.path.isabs(modpath[1]):
-            mod_dirpath = modpath[1]
-        else:
-            mod_dirpath = os.path.join(config.basedir, modpath[1])
+    global _editModules
 
-        for dirpath, subdirs, files in os.walk(mod_dirpath):
-            if os.path.basename(dirpath) in ("test", "__pycache__"):
-                continue
-            for name in files:
-                if (not name.endswith(".py")) or (name == "__init__.py"):
-                    continue
-                basename,_ = os.path.splitext(name)
-                with _utils_utils.suppress(ImportError,SyntaxError):
-                    path, module = _utils_utils.splitpath(mod_dirpath)
-                    if not modpath[0]:
-                        m = __import__("web.edit.modules." + basename)
-                        m = eval("m.edit.modules." + basename)
-                    else:
-                        sys.path += [path]
-                        m = __import__(module.replace("/", ".") + "." + basename)
-                        m = eval("m." + basename)
-                    _editModules[basename] = m
+    from web.edit.modules import acls
+    from web.edit.modules import admin
+    from web.edit.modules import changeschema
+    from web.edit.modules import classes
+    from web.edit.modules import content
+    from web.edit.modules import copyall
+    from web.edit.modules import copyobject
+    from web.edit.modules import deleteall
+    from web.edit.modules import deleteobject
+    from web.edit.modules import editall
+    from web.edit.modules import files
+    from web.edit.modules import logo
+    from web.edit.modules import metadata
+    from web.edit.modules import moveall
+    from web.edit.modules import moveobject
+    from web.edit.modules import parentcontent
+    from web.edit.modules import publish
+    from web.edit.modules import searchmask
+    from web.edit.modules import sortfiles
+    from web.edit.modules import startpages
+    from web.edit.modules import statsfiles
+    from web.edit.modules import subfolder
+    from web.edit.modules import upload
+    from web.edit.modules import version
+    from web.edit.modules import view
+
+    modules_list = (
+        acls,
+        admin,
+        changeschema,
+        classes,
+        content,
+        copyall,
+        copyobject,
+        deleteall,
+        deleteobject,
+        editall,
+        files,
+        logo,
+        metadata,
+        moveall,
+        moveobject,
+        parentcontent,
+        publish,
+        searchmask,
+        sortfiles,
+        startpages,
+        statsfiles,
+        subfolder,
+        upload,
+        version,
+        view,
+    )
+
+    _editModules = {m.__name__.replace("web.edit.modules.", ""): m for m in modules_list}
+
+    for plugin in _core_plugins.plugins.values():
+        if hasattr(plugin, "get_edit_modules"):
+            plugin_edit_modules = plugin.get_edit_modules()
+            intersect = frozenset(plugin_edit_modules).intersection(_editModules)
+            if intersect:
+                raise RuntimeError("plugin edit module {} already exists".format(intersect))
+            else:
+                _editModules.update(plugin_edit_modules)
 
 
 def getIDs(req):

@@ -9,7 +9,7 @@ from mediatumtal import tal as _tal
 from .upload import WorkflowStep
 from .workflow import registerStep
 from utils.utils import isNumeric
-from core import Node
+from core.database.postgres.node import Node
 from core import db
 from contenttypes.container import Directory
 

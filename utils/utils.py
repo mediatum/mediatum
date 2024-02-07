@@ -306,16 +306,7 @@ def formatException():
 
 
 def join_paths(p1, p2):
-    if p1.endswith("/"):
-        if p2.startswith("/"):
-            return p1[:-1] + p2
-        else:
-            return p1 + p2
-    else:
-        if p2.startswith("/"):
-            return p1 + p2
-        else:
-            return p1 + "/" + p2
+    return "{}/{}".format(p1.rstrip("/"), p2.lstrip("/"))
 
 
 def highlight(string, words, left, right):

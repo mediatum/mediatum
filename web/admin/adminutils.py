@@ -151,13 +151,23 @@ class Overview:
                         retList.append(Link(
                                 "{}1".format(unicode(i)),
                                 _core_translation.translate(self.language, "admin_sort_label"),
-                                '{} <img src="/static/img/sort-by-alphabet-az.png" border="0" />'.format(col),
+                                '''{} <img
+                                        src="/static/img/sort-by-alphabet-az.svg"
+                                        border="0"
+                                        class="mediatum-icon-small"
+                                     />
+                                '''.format(col),
                             ))
                     else:
                         retList.append(Link(
                                 "{}0".format(unicode(i)),
                                 _core_translation.translate(self.language, "admin_sort_label"),
-                                '{} <img src="/static/img/sort-by-alphabet-za.png" border="0" />'.format(col),
+                                '''{} <img
+                                        src="/static/img/sort-by-alphabet-za.svg"
+                                        border="0"
+                                        class="mediatum-icon-small"
+                                      />
+                                '''.format(col),
                             ))
                 else:
                     retList.append(Link(

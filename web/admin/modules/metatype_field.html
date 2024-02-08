@@ -69,7 +69,7 @@
                     </th>
                     <th tal:condition="python:order[0:1]==0 or order==''">
                         <tal:block i18n:translate="admin_metafield_order">Reihenfolge</tal:block>
-                        <img src="/static/img/sort-by-alphabet-az.png" border="0" />
+                        <img src="/static/img/sort-by-alphabet-az.svg" border="0" class="mediatum-icon-small"/>
                     </th>
                     <th tal:condition="python:order[0:1]!=0 and order!=''">
                         <button i18n:translate="admin_metafield_order" i18n:attributes="title admin_sort_label" tal:attributes="name python:'sortcol_00'" class="admin_sortcol" type="submit">TEXT</button>
@@ -79,7 +79,8 @@
                             tal:attributes="name python:u'newdetail_{}'.format(metadatatype.name)"
                             i18n:attributes="title admin_metafield_new_title"
                             type="image"
-                            src="/static/img/install.png"
+                            src="/static/img/install.svg"
+                            class="mediatum-icon-small"
                         />
                     </th>
                 </tr>
@@ -103,7 +104,7 @@
                                             tal:condition="python:flist[index]"
                                             tal:attributes="
                                                 title python:flist[index] and fieldoption.name or '';
-                                                src python:flist[index] and '/static/img/webtree/check.gif';
+                                                src python:flist[index] and '/static/img/webtree/check.svg';
                                                 "
                                             i18n:attributes="title"
                                         />
@@ -118,9 +119,17 @@
                                     tal:attributes="name python:u'downdetail_{}'.format(metafield.name)"
                                     disabled="disabled"
                                     type="image"
-                                    src="/static/img/downarrowdisabled.png"
+                                    src="/static/img/downarrowdisabled.svg"
+                                    class="mediatum-icon-small"
                                 />
-                                <input tal:condition="python:order[0:1]=='0' or order==''" tal:attributes="name python:u'downdetail_{}'.format(metafield.name)" i18n:attributes="title admin_metafield_down_title" type="image" src="/static/img/downarrow.png"/>
+                                <input
+                                    tal:condition="python:order[0:1]=='0' or order==''"
+                                    tal:attributes="name python:u'downdetail_{}'.format(metafield.name)"
+                                    i18n:attributes="title admin_metafield_down_title"
+                                    type="image"
+                                    src="/static/img/downarrow.svg"
+                                    class="mediatum-icon-small"
+                                />
                             </tal:block>
                             <tal:block tal:condition="python:index==count-1"></tal:block>
                             <tal:block tal:condition="python:index>0 and index<=count">
@@ -129,9 +138,17 @@
                                     tal:attributes="name python:u'updetail_{}'.format(metafield.name)"
                                     disabled="disabled"
                                     type="image"
-                                    src="/static/img/uparrowdisabled.png"
+                                    src="/static/img/uparrowdisabled.svg"
+                                    class="mediatum-icon-small"
                                 />
-                                <input tal:condition="python:order[0:1]=='0' or order==''" tal:attributes="name python:u'updetail_{}'.format(metafield.name)" i18n:attributes="title admin_metafield_up_title" type="image" src="/static/img/uparrow.png"/>
+                                <input
+                                    tal:condition="python:order[0:1]=='0' or order==''"
+                                    tal:attributes="name python:u'updetail_{}'.format(metafield.name)"
+                                    i18n:attributes="title admin_metafield_up_title"
+                                    type="image"
+                                    src="/static/img/uparrow.svg"
+                                    class="mediatum-icon-small"
+                                />
                             </tal:block>
                         </td>
                         <td>
@@ -139,22 +156,28 @@
                                 tal:attributes="name python:u'editdetail_{}'.format(metafield.name)"
                                 i18n:attributes="title admin_metafield_edit_title"
                                 type="image"
-                                src="/static/img/editor/edit-pen-paper.svg"
+                                src="/static/img/edit-pen-paper.svg"
+                                class="mediatum-icon-small"
                             />
                             &nbsp;&nbsp;
                             <input
                                 tal:condition="python:not used_by[metafield.id]"
-                                tal:attributes="name python:u'deletedetail_{}'.format(metafield.name); onclick python:u'return questionDelName(\'{} ({})\')'.format(metafield.getLabel(), metafield.name)"
+                                tal:attributes="
+                                    name python:u'deletedetail_{}'.format(metafield.name);
+                                    onclick python:u'return questionDelName(\'{} ({})\')'.format(metafield.getLabel(), metafield.name);
+                                    "
                                 i18n:attributes="title admin_metafield_delete_title"
                                 type="image"
-                                src="/static/img/delete.png"
+                                src="/static/img/cancel.svg"
                                 alt="delete"
+                                class="mediatum-icon-small"
                                />
                             <input
                                 tal:condition="python:used_by[metafield.id]"
                                 tal:attributes="onclick python:u'alert(\'{}\')'.format(translate(language, 'admin_metafield_used_title').format(used_by[metafield.id]).replace('\n','\\n')); title python:translate(language, 'admin_metafield_used_title').format(used_by[metafield.id])"
                                 type="image"
-                                src="/static/img/padlock.png"
+                                src="/static/img/padlock.svg"
+                                class="mediatum-icon-small"
                                />
                         </td>
                     </tr>

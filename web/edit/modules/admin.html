@@ -10,7 +10,7 @@
         <div class="mediatum_addform-form">
             <div class="mediatum_addform-div">
                 <a href="#" onclick="closeForm()" i18n:attributes="title cancel">
-                    <img src="/static/img/cancel.png"/>
+                    <img src="/static/img/cancel.svg" class="mediatum-icon-small"/>
                 </a>
             </div>
             <form
@@ -41,7 +41,7 @@
 
     <div id="navigation_content" class="mediatum_navigation_content">
         <a tal:condition="canedit" href="#" onclick="openForm()">
-            <img src="/static/img/upload.png"/>
+            <img src="/static/img/webtree/upload.svg" class="mediatum-icon-small"/>
             <tal:block i18n:translate="edit_admin_add_attribute"/>
         </a>
     </div>
@@ -88,13 +88,19 @@
                              tal:attributes="name python:key;value python:fd(node.get(key))"
                              i18n:attributes="title edit_admin_editattr_title"
                              type="image"
-                             src="/static/img/editor/edit-pen-paper.svg"
+                             src="/static/img/edit-pen-paper.svg"
                              onClick="return openFilledForm(this)"
-                             class="mediatum_subcontent_position"
+                             class="mediatum_subcontent_position mediatum-icon-small"
                          />
-                         <input tal:condition="user_is_admin" tal:attributes="name python:u'attr_{}'.format(key)"
-                         i18n:attributes="title edit_admin_del_attribute" type="image" src="/static/img/delete.png" onClick="return questionDel()"
-                         class="mediatum_subcontent_top"/>
+                         <input
+                             tal:condition="user_is_admin"
+                             tal:attributes="name python:u'attr_{}'.format(key)"
+                             i18n:attributes="title edit_admin_del_attribute"
+                             type="image"
+                             src="/static/img/cancel.svg"
+                             onClick="return questionDel()"
+                             class="mediatum_subcontent_top mediatum-icon-small"
+                         />
                      </div>
 
                     <div tal:condition="python: len(list(metafields))==0" class="mediatum_entry">
@@ -112,11 +118,19 @@
                             tal:attributes="name python:key;value python:fd(node.get(key))"
                             i18n:attributes="title edit_admin_editattr_title"
                             type="image"
-                            src="/static/img/editor/edit-pen-paper.svg"
+                            src="/static/img/edit-pen-paper.svg"
                             onClick="return openFilledForm(this)"
-                            class="mediatum_subcontent_position"
+                            class="mediatum_subcontent_position mediatum-icon-small"
                         />
-                        <input tal:condition="user_is_admin" tal:attributes="name python:u'attr_{}'.format(key)" i18n:attributes="title edit_admin_del_attribute" type="image" src="/static/img/delete.png" onClick="return questionDel()" class="mediatum_subcontent_top"/>
+                        <input
+                            tal:condition="user_is_admin"
+                            tal:attributes="name python:u'attr_{}'.format(key)"
+                            i18n:attributes="title edit_admin_del_attribute"
+                            type="image"
+                            src="/static/img/cancel.svg"
+                            onClick="return questionDel()"
+                            class="mediatum_subcontent_top mediatum-icon-small"
+                        />
                     </div>
 
                     <div tal:condition="python: len(list(obsoletefields))==0" class="mediatum_entry">
@@ -133,11 +147,20 @@
                             tal:condition="user_is_admin"
                             tal:attributes="name python:'system.' + item[0];value python:item[1]"
                             i18n:attributes="title edit_admin_editattr_title"
-                            type="image" src="/static/img/editor/edit-pen-paper.svg"
+                            type="image"
+                            src="/static/img/edit-pen-paper.svg"
                             onClick="return openFilledForm(this)"
-                            class="mediatum_subcontent_position"
+                            class="mediatum_subcontent_position mediatum-icon-small"
                         />
-                        <input tal:condition="user_is_admin" tal:attributes="name python:u'system_attr_{}'.format(item[0])" i18n:attributes="title edit_admin_del_attribute" type="image" src="/static/img/delete.png" onClick="return questionDel()" class="mediatum_subcontent_top"/>
+                        <input
+                            tal:condition="user_is_admin"
+                            tal:attributes="name python:u'system_attr_{}'.format(item[0])"
+                            i18n:attributes="title edit_admin_del_attribute"
+                            type="image"
+                            src="/static/img/cancel.svg"
+                            onClick="return questionDel()"
+                            class="mediatum_subcontent_top mediatum-icon-small"
+                        />
                     </div>
 
                     <div tal:condition="python: not system_attrs" class="mediatum_entry">
@@ -160,11 +183,19 @@
                             tal:attributes="name python:key;value python:fd(node.get(key))"
                             i18n:attributes="title edit_admin_editattr_title"
                             type="image"
-                            src="/static/img/editor/edit-pen-paper.svg"
+                            src="/static/img/edit-pen-paper.svg"
                             onClick="return openFilledForm(this)"
-                            class="mediatum_subcontent_position"
+                            class="mediatum_subcontent_position mediatum-icon-small"
                         />
-                        <input tal:condition="user_is_admin" tal:attributes="name python:u'attr_{}'.format(key)" i18n:attributes="title edit_admin_del_attribute" type="image" src="/static/img/delete.png" onClick="return questionDel()" class="mediatum_subcontent_top"/>
+                        <input
+                            tal:condition="user_is_admin"
+                            tal:attributes="name python:u'attr_{}'.format(key)"
+                            i18n:attributes="title edit_admin_del_attribute"
+                            type="image"
+                            src="/static/img/cancel.svg"
+                            onClick="return questionDel()"
+                            class="mediatum_subcontent_top mediatum-icon-small"
+                        />
                     </div>
                     <div tal:condition="python:len(list(technfields))==0" class="mediatum_entry">
                         <div class="label" i18n:translate="edit_admin_noattribute">TEXT</div>

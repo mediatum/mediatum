@@ -245,3 +245,7 @@ ul.mediatum_wfstep_upload_settings > li
     display: block;
     height: 1.5em;
 }
+
+a.mediatum-icon-small::before { content: ""; }
+img.mediatum-icon-small, a.mediatum-icon-small::before, input.mediatum-icon-small {height: 16px ; width: 16px;}
+img.mediatum-icon-big {height: 120px ; width: 120px;}

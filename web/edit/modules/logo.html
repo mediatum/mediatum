@@ -26,7 +26,13 @@
                     <br/>
                     <input type="text" name="logo_link" id="logo_link" tal:attributes="value python:node.get('url')" style="min-width:200px;max-width:100%"/>
                     <br/>
-                    <img i18n:attributes="title edit_logo_test_title" src="/static/img/extlink.png" onclick="window.open($('#logo_link').val())" style="cursor:pointer"/>
+                    <img
+                        i18n:attributes="title edit_logo_test_title"
+                        src="/static/img/extlink.svg"
+                        onclick="window.open($('#logo_link').val())"
+                        style="cursor:pointer"
+                        class="mediatum-icon-small"
+                    />
                     <br/>
                     <br/>
                     <input type="hidden" name="logo" id="logofield" value=""/>
@@ -51,7 +57,7 @@
                     <img tal:attributes="onclick python:u'setImage(\'/file/{}/{}\')'.format(id, item[1]); src python:u'/file/{}/{}'.format(id, item[1])" style="max-height:200px;max-width:200px" />
                     <div class="options">
                         <a href="#" tal:attributes="onclick python:'''deleteLogo(this, '{}')'''.format(id)">
-                            <img src="/static/img/delete.png"/>
+                            <img src="/static/img/cancel.svg" class="mediatum-icon-small"/>
                         </a>
                     </div>
                 </div>
@@ -72,7 +78,9 @@
 
 <tal:block metal:define-macro="uploadlogook">
     <div style="position:absolute;top:2px;right:2px;">
-        <a href="#" onclick="return removeItem(this)"><img src="/static/img/delete.png" /></a>
+        <a href="#" onclick="return removeItem(this)">
+            <img src="/static/img/cancel.svg" class="mediatum-icon-small"/>
+        </a>
     </div>
     <input type="input" class="typesel" id="image" tal:attributes="value filename"/>
 </tal:block>

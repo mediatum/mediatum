@@ -52,13 +52,15 @@
                             tal:attributes="name python:u'automask_{}'.format(metadatatype.getName())"
                             i18n:attributes="title admin_mask_createstd_title"
                             type="image"
-                            src="/static/img/styles.png"
+                            src="/static/img/admin.svg"
+                            class="mediatum-icon-small"
                         />&nbsp;&nbsp;&nbsp;&nbsp;
                         <input
                             tal:attributes="name python:u'newmask_{}'.format(metadatatype.getName())"
                             i18n:attributes="title admin_mask_create_title"
                             type="image"
-                            src="/static/img/install.png"
+                            src="/static/img/install.svg"
+                            class="mediatum-icon-small"
                         />
                     </th>
                 </tr>
@@ -74,37 +76,69 @@
                     <td tal:content="python:masktypes[mask.getMasktype()].name" i18n:translate=""/>
                     <td tal:content="python:mask.getDescription()"/>
                     <td>&nbsp;&nbsp;
-                        <img tal:condition="python:mask.getDefaultMask()" src="/static/img/check.gif"/>
-                        <img tal:condition="python:not mask.getDefaultMask()" src="/static/img/transparent-pixel.gif"/>
+                        <img
+                            tal:condition="python:mask.getDefaultMask()"
+                            src="/static/img/webtree/check.svg"
+                            class="mediatum-icon-small"
+                        />
+                        <img
+                            tal:condition="python:not mask.getDefaultMask()"
+                            src="/static/img/webtree/transparent-pixel.svg"
+                            class="mediatum-icon-small"
+                        />
                     </td>
                     <td>
-                        <img tal:attributes="src python:lang_icons.get(mask.getLanguage())"/>
+                        <img tal:attributes="src python:lang_icons.get(mask.getLanguage())" class="mediatum-icon-small"/>
                     </td>
                     <td>
                         <img
                             tal:condition="python:mask.access_ruleset_assocs.filter_by(ruletype='read').count()>0"
                             i18n:attributes="title admin_mask_acl_title"
-                            src="/static/img/padlock.png"
+                            src="/static/img/padlock.svg"
+                            class="mediatum-icon-small"
                         />
                         <img
                             tal:condition="python:mask.access_ruleset_assocs.filter_by(ruletype='read').count()==0"
                             i18n:attributes="title admin_mask_acl_title"
-                            src="/static/img/transparent-pixel.gif"
+                            src="/static/img/webtree/transparent-pixel.svg"
+                            class="mediatum-icon-small"
                         />
                     </td>
                     <td>
                         <a tal:attributes="onclick python:u'javascript:openPopupWithScroll(\'/admin/metatype/{}/{}/editor?style=popup\',\'editor\',800,600)'.format(metadatatype.getName(), mask.getName())" href="#">
-                            <img i18n:attributes="title admin_mask_edit_field" src="/static/img/rightarrow.png" border="0"/>
+                            <img
+                                i18n:attributes="title admin_mask_edit_field"
+                                src="/static/img/arrow-right.svg"
+                                border="0"
+                                class="mediatum-icon-small"
+                            />
                         </a>&nbsp;
-                        <input tal:attributes="name python:u'copymask_{}'.format(mask.id)" i18n:attributes="title admin_mask_clone_title" type="image" src="/static/img/clone.png"/>&nbsp;&nbsp;
+                        <input
+                            tal:attributes="name python:u'copymask_{}'.format(mask.id)"
+                            i18n:attributes="title admin_mask_clone_title"
+                            type="image"
+                            src="/static/img/clone.svg"
+                            class="mediatum-icon-small"
+                        />
+                        &nbsp;&nbsp;
                         <input
                             tal:attributes="name python:u'editmask_{}'.format(mask.id)"
                             i18n:attributes="title admin_mask_edit"
                             type="image"
-                            src="/static/img/editor/edit-pen-paper.svg"
+                            src="/static/img/edit-pen-paper.svg"
+                            class="mediatum-icon-small"
                         />
                         &nbsp;&nbsp;
-                        <input tal:attributes="name python:u'deletemask_{}'.format(mask.id); onclick python:u'return questionDelName(\'{} ({})\')'.format(mask.getName(), mask.id)" i18n:attributes="title admin_mask_delete_title" type="image" src="/static/img/delete.png"/>
+                        <input
+                            tal:attributes="
+                                name python:u'deletemask_{}'.format(mask.id);
+                                onclick python:u'return questionDelName(\'{} ({})\')'.format(mask.getName(), mask.id);
+                                "
+                            i18n:attributes="title admin_mask_delete_title"
+                            type="image"
+                            src="/static/img/cancel.svg"
+                            class="mediatum-icon-small"
+                        />
                     </td>
                 </tr>
                 </tal:block>

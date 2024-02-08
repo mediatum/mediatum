@@ -38,12 +38,11 @@ var ajaxObjectArray = new Array();
 var treeUlCounter = 0;
 
 var imageFolder = '/static/img/webtree/';    // Path to images
-var folderImage = 'directory.png';
+var folderImage = 'directory.svg';
 var plusImage = 'plus.svg';
-var minusImage = 'minus.gif';
-var waitImage = 'spinner.gif';
-var checkImage = 'check.gif';
-var uncheckImage = 'uncheck.gif';
+var minusImage = 'minus.svg';
+var checkImage = 'check.svg';
+var uncheckImage = 'transparent-pixel.svg';
 
 var initExpandedNodes = '';    // Cookie - initially expanded nodes;
 var initial_initExpandedNodes = '';
@@ -138,6 +137,7 @@ function parseSubItems(ulId,parentId)
         var subItems = menuItems[no].getElementsByTagName('UL');
         var img = document.createElement('IMG');
         img.src = imageFolder + plusImage;
+        img.classList.add("mediatum-icon-small");
         img.onclick = showHideNode;
         if(subItems.length==0)img.style.visibility='hidden';else{
             subItems[0].id = 'tree_ul_' + treeUlCounter;
@@ -148,6 +148,7 @@ function parseSubItems(ulId,parentId)
         aTag.onclick = setFolder;
         menuItems[no].insertBefore(img,aTag);
         var folderImg = document.createElement('IMG');
+        folderImg.classList.add("mediatum-icon-small");
         if(menuItems[no].className){
             folderImg.src = imageFolder + menuItems[no].className;
         }else{
@@ -248,7 +249,7 @@ function addNewNode(e)
     var img = source.getElementsByTagName('IMG');
     img[0].style.visibility='visible';
     var li = document.createElement('LI');
-    li.className='sheet.gif';
+    li.className='sheet.svg';
     var a = document.createElement('A');
     a.href = '#';
     a.innerHTML = nameOfNewNode;
@@ -356,7 +357,9 @@ function initTree(configuration)
             var img = document.createElement('IMG');
             img.src = imageFolder + plusImage;
             img.onclick = showHideNode;
-            if(subItems.length==0)img.style.visibility='hidden';else{
+            img.classList.add("mediatum-icon-small");
+            if(subItems.length==0) img.style.visibility='hidden';
+            else{
                 subItems[0].id = 'tree_ul_' + menuItems[no].id;
             }
             var aTag = menuItems[no].getElementsByTagName('A')[0];
@@ -364,6 +367,7 @@ function initTree(configuration)
             aTag.onclick = setFolder;
             menuItems[no].insertBefore(img,aTag);
             var folderImg = document.createElement('IMG');
+            folderImg.classList.add("mediatum-icon-small");
             if(menuItems[no].className){
                 folderImg.src = imageFolder + menuItems[no].className;
             }else{

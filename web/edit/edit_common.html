@@ -41,13 +41,13 @@
             </a>
         </div>
         <div class="mediatum_node_icon mediatum-link-mediatum" tal:attributes="onclick python:u'editSelected({})'.format(node.id)" target="content" i18n:attributes="title tab_metadata">
-            <img class="mediatum_img_size" src="/static/img/editor/edit-pen-paper.svg" tabindex="0"/>
+            <img class="mediatum_img_size" src="/static/img/edit-pen-paper.svg" tabindex="0" class="mediatum-icon-small"/>
         </div>
         <div class="mediatum_node_icon mediatum-link-mediatum" tal:attributes="onclick python:u'movecopySelected(\'move\', [{}])'.format(node.id)" target="content" i18n:attributes="title edit_common_edit_move">
-            <img class="mediatum_img_size" src="/static/img/editor/mediatum_move_black.svg" tabindex="0"/>
+            <img class="mediatum_img_size" src="/static/img/editor/move.svg" tabindex="0"/>
         </div>
         <div class="mediatum_node_icon mediatum-link-mediatum" tal:attributes="onclick python:u'movecopySelected(\'copy\', [{}])'.format(node.id)" target="content" i18n:attributes="title edit_common_edit_copy">
-            <img class="mediatum_img_size" src="/static/img/editor/mediatum_copy_black.svg" tabindex="0"/>
+            <img class="mediatum_img_size" src="/static/img/clone.svg" tabindex="0"/>
         </div>
         <div
             class="mediatum_node_icon mediatum-link-mediatum"
@@ -56,7 +56,11 @@
             i18n:attributes="title edit_common_edit_delete"
             target="content"
         >
-             <img class="mediatum_img_size" src="/static/img/webtree/trashbin.svg" tabindex="0"/>
+             <img
+                 class="mediatum_img_size"
+                 src="/static/img/webtree/trashbin.svg"
+                 tabindex="0" class="mediatum-icon-small"
+             />
         </div>
         <div
             class="mediatum_node_icon mediatum-link-mediatum"
@@ -67,7 +71,7 @@
             i18n:attributes="title tab_classes"
             target="content"
         >
-            <img class="mediatum_img_size" src="/static/img/editor/mediatum_tree_black.svg" tabindex="0"/>
+            <img class="mediatum_img_size" src="/static/img/editor/navigationtree.svg" tabindex="0" class="mediatum-icon-small"/>
         </div>
     </div>
 </tal:block>
@@ -110,13 +114,18 @@
         </div>
         <div class="mediatum_node_grid_icons">
             <div class="mediatum_node_grid_icon mediatum-link-mediatum" tal:attributes="onclick python:u'editSelected({})'.format(node.id)" target="content" i18n:attributes="title tab_metadata">
-                <img class="mediatum_center mediatum_img_size" src="/static/img/editor/edit-pen-paper.svg" tabindex="0"/>
+                <img
+                    class="mediatum_center mediatum_img_size"
+                    src="/static/img/edit-pen-paper.svg"
+                    tabindex="0"
+                    class="mediatum-icon-small"
+                />
             </div>
             <div class="mediatum_node_grid_icon mediatum-link-mediatum" tal:attributes="onclick python:u'return movecopySelected(\'move\', [{}])'.format(node.id)" target="content" i18n:attributes="title edit_common_edit_move">
-                <img class="mediatum_center mediatum_img_size" src="/static/img/editor/mediatum_move_black.svg" tabindex="0"/>
+                <img class="mediatum_center mediatum_img_size" src="/static/img/editor/move.svg" tabindex="0"/>
             </div>
             <div class="mediatum_node_grid_icon mediatum-link-mediatum" tal:attributes="onclick python:u'movecopySelected(\'copy\', [{}])'.format(node.id)" target="content" i18n:attributes="title edit_common_edit_copy">
-                <img class="mediatum_center mediatum_img_size" src="/static/img/editor/mediatum_copy_black.svg" tabindex="0"/>
+                <img class="mediatum_center mediatum_img_size" src="/static/img/clone.svg" tabindex="0"/>
             </div>
             <div
                 class="mediatum_node_grid_icon mediatum-link-mediatum"
@@ -124,7 +133,12 @@
                 tal:attributes="onclick python:u'deleteSelected([{}])'.format(node.id)"
                 i18n:attributes="title edit_common_edit_delete"
                 target="content">
-                <img class="mediatum_center mediatum_img_size" src="/static/img/webtree/trashbin.svg" tabindex="0"/>
+                <img
+                    class="mediatum_center mediatum_img_size"
+                    src="/static/img/webtree/trashbin.svg"
+                    tabindex="0"
+                    class="mediatum-icon-small"
+                />
             </div>
             <div
                 class="mediatum_node_gird_icon mediatum-link-mediatum"
@@ -132,7 +146,7 @@
                 i18n:attributes="title tab_classes"
                 target="content"
             >
-                <img class="mediatum_img_size" src="/static/img/editor/mediatum_tree_black.svg" tabindex="0"/>
+                <img class="mediatum_img_size" src="/static/img/editor/navigationtree.svg" tabindex="0" class="mediatum-icon-small"/>
             </div>
         </div>
     </div>
@@ -164,7 +178,12 @@
                         target="content"
                         i18n:attributes="title edit_common_edit_meta_selected"
                     >
-                        <img class="mediatum_img_size_big" src="/static/img/editor/edit-pen-paper.svg" tabindex="0"/>
+                        <img
+                            class="mediatum_img_size_big"
+                            src="/static/img/edit-pen-paper.svg"
+                            tabindex="0"
+                            class="mediatum-icon-small"
+                        />
                     </div>
                     <div
                         class="mediatum_node_icon mediatum-link-mediatum"
@@ -172,7 +191,7 @@
                         target="content"
                         i18n:attributes="title edit_common_edit_move_selected"
                     >
-                        <img class="mediatum_img_size_big" src="/static/img/editor/mediatum_move_black.svg" tabindex="0"/>
+                        <img class="mediatum_img_size_big" src="/static/img/editor/move.svg" tabindex="0"/>
                     </div>
                     <div
                         class="mediatum_node_icon mediatum-link-mediatum"
@@ -180,7 +199,7 @@
                         target="content"
                         i18n:attributes="title edit_common_edit_copy_selected"
                     >
-                        <img class="mediatum_img_size_big" src="/static/img/editor/mediatum_copy_black.svg" tabindex="0"/>
+                        <img class="mediatum_img_size_big" src="/static/img/clone.svg" tabindex="0"/>
                     </div>
                     <div
                          class="mediatum_node_icon mediatum-link-mediatum"
@@ -189,7 +208,12 @@
                          i18n:attributes="title edit_common_edit_delete_selected"
                          target="content"
                     >
-                         <img class="mediatum_img_size_big" src="/static/img/webtree/trashbin.svg" tabindex="0"/>
+                         <img
+                             class="mediatum_img_size_big"
+                             src="/static/img/webtree/trashbin.svg"
+                             tabindex="0"
+                             class="mediatum-icon-small"
+                         />
                     </div>
                 </div>
                 <!-- Show Thumbnail view-->
@@ -214,7 +238,12 @@
                             target="content"
                             i18n:attributes="title edit_common_edit_meta_selected"
                         >
-                            <img class="mediatum_img_size" src="/static/img/editor/edit-pen-paper.svg" tabindex="0"/>
+                            <img
+                                class="mediatum_img_size"
+                                src="/static/img/edit-pen-paper.svg"
+                                tabindex="0"
+                                class="mediatum-icon-small"
+                            />
                         </div>
                         <div
                             class="mediatum_node_icon mediatum-link-mediatum"
@@ -222,7 +251,7 @@
                             target="content"
                             i18n:attributes="title edit_common_edit_move_selected"
                         >
-                            <img class="mediatum_img_size" src="/static/img/editor/mediatum_move_black.svg" tabindex="0"/>
+                            <img class="mediatum_img_size" src="/static/img/editor/move.svg" tabindex="0"/>
                         </div>
                         <div
                             class="mediatum_node_icon mediatum-link-mediatum"
@@ -230,7 +259,7 @@
                             target="content"
                             i18n:attributes="title edit_common_edit_copy_selected"
                         >
-                            <img class="mediatum_img_size" src="/static/img/editor/mediatum_copy_black.svg" tabindex="0"/>
+                            <img class="mediatum_img_size" src="/static/img/clone.svg" tabindex="0"/>
                         </div>
                         <div
                             class="mediatum_node_icon mediatum-link-mediatum"
@@ -239,7 +268,12 @@
                             i18n:attributes="title edit_common_edit_delete_selected"
                             target="content"
                         >
-                            <img class="mediatum_img_size" src="/static/img/webtree/trashbin.svg" tabindex="0"/>
+                            <img
+                                class="mediatum_img_size"
+                                src="/static/img/webtree/trashbin.svg"
+                                tabindex="0"
+                                class="mediatum-icon-small"
+                            />
                         </div>
                      </div>
                      <tal:block tal:content="raw python:html_list_nodes">TEXT</tal:block>
@@ -248,7 +282,7 @@
             <div id="delete_text" i18n:translate="delete_object_question">TEXT</div>
             <div id="overlay_content">
                 <div id="close">
-                    <img class="mediatum_pointer" onclick="closeSubOverlay()" src="/static/img/cancel.png"/>
+                    <img class="mediatum_pointer mediatum-icon-small" onclick="closeSubOverlay()" src="/static/img/cancel.svg"/>
                 </div>
                 <p>Wählen Sie ein Verzeichnis aus, in das die selektierten Dateien kopiert/verschoben werden sollen.</p>
             </div>

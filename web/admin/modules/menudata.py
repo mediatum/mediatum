@@ -6,8 +6,7 @@ from __future__ import print_function
 
 
 def getInformation(attribute=""):
-    attributes = {"icon": "/static/img/icons/datatypes.gif",
-                  "version": "1.0"}
+    attributes = dict(icon="/static/img/admin.svg", version="1.0")
     if attribute != "":
         if attribute in attributes.keys():
             return attributes[attribute]

@@ -84,7 +84,7 @@ div#footer span.footer_right a { margin-right: 9px;}
     padding-bottom: 0px;
     padding-left: 0px;
     padding-right: 8px;
-    background: url(/static/img/greyarrow.gif) no-repeat right center;
+    background: url(/static/img/greyarrow.svg) no-repeat right center;
     font-size: 90%;
     text-decoration: none;
     padding-top: 1px;
@@ -101,7 +101,7 @@ div#footer span.footer_right a { margin-right: 9px;}
     padding-right: 6px;
     display: block;
     font-family: arial, helvetica, sans-serif;
-    background: url(/static/img/greyarrow.gif) no-repeat right center;
+    background: url(/static/img/greyarrow.svg) no-repeat right center;
     color: #333333;
     font-size: 90%;
     border-top: medium none;
@@ -204,7 +204,7 @@ ul#navigationlist li div a:hover { color: rgb(71,71,71);}
 }
 .mediatum_portal_tree_active {font-weight: bold;}
 .mediatum_portal_tree_active::after {
-    background-image: url("/static/img/nav/nav-minus.svg");
+    background-image: url("/static/img/webtree/minus.svg");
     height: 1px;
     content: "";
     display: block;
@@ -706,31 +706,31 @@ div#portal-breadcrumbs div a.breadcrumb-delimiter::after { content: "\2192"; mar
 #frame-tree.portlet{ overflow:auto;height:600px;}
 
 #mediatum_img_pageright {
-    height: 11px;
-    width: 9px;
+    height: 15px;
+    width: 15px;
     float: left;
-    margin-right: 11px;
-    background-image: url("/static/img/nav/mediatum_arrow_right.svg");
+    margin-right: 18px;
+    background-image: url("/static/img/arrow-right.svg");
     background-repeat: no-repeat;
 }
 #mediatum_img_pageright_end {
-    height: 11px;
-    width: 9px;
-    background-image: url("/static/img/nav/mediatum_arrow_right_end.svg");
+    height: 15px;
+    width: 15px;
+    background-image: url("/static/img/arrow-right-end.svg");
     background-repeat: no-repeat;
 }
 #mediatum_img_pageleft {
-    height: 11px;
-    width: 9px;
-    margin-left: 11px;
-    background-image: url("/static/img/nav/mediatum_arrow_left.svg");
+    height: 15px;
+    width: 15px;
+    margin-left: 18px;
+    background-image: url("/static/img/arrow-left.svg");
     background-repeat: no-repeat;
 }
 #mediatum_img_pageleft_end {
-    height: 11px;
-    width: 9px;
+    height: 15px;
+    width: 15px;
     float: left;
-    background-image: url("/static/img/nav/mediatum_arrow_left_end.svg");
+    background-image: url("/static/img/arrow-left-end.svg");
     background-repeat: no-repeat;
 }
 
@@ -822,3 +822,6 @@ div#portal-breadcrumbs div a.breadcrumb-delimiter::after { content: "\2192"; mar
     line-height: normal;
     margin: 1em 0 0 1em;
 }
+
+img.mediatum-icon-small, input.mediatum-icon-small {height: 16px ; width: 16px;}
+img.mediatum-icon-medium {height: 32px; width: 32px;}

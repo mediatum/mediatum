@@ -14,27 +14,29 @@ from utils.utils import getMimeType, format_filesize
 from core import webconfig
 from sqlalchemy_continuum.utils import version_class
 
-fileicons = {'directory': 'mmicon_dir.gif',
-             'application/pdf': 'pdf.gif',
-             'image/jpeg': 'mmicon_jpg.gif',
-             'image/gif': 'mmicon_gif.gif',
-             'image/png': 'mmicon_png.gif',
-             'image/svg+xml': 'mmicon_png.gif',
-             'image/tiff': 'mmicon_tiff.gif',
-             'image/x-ms-bmp': 'mmicon_bmp.gif',
-             'application/postscript': 'mmicon_ps.gif',
-             'application/zip': 'mmicon_zip.gif',
-             'other': 'mmicon_file.gif',
-             'back': 'mmicon_back.gif',
-             'application/mspowerpoint': 'mmicon_ppt.gif',
-             'application/msword': 'mmicon_doc.gif',
-             'video/x-msvideo': 'mmicon_avi.gif',
-             'video/x-flv': 'mmicon_mpeg.gif',
-             'video/quicktime': 'mmicon_mpeg.gif',
-             'video/mp4': 'mmicon_mpeg.gif',
-             'audio/x-wav': 'mmicon_avi.gif',
-             'audio/mpeg': 'mmicon_mpeg.gif',
-             'text/x-bibtex': 'mmicon_txt.gif'}
+fileicons = {
+    'directory': 'webtree/folder.svg',
+    'application/pdf': 'pdf.svg',
+    'image/jpeg': 'jpg.svg',
+    'image/gif': 'gif.svg',
+    'image/png': 'png.svg',
+    'image/svg+xml': 'png.svg',
+    'image/tiff': 'tiff.svg',
+    'image/x-ms-bmp': 'bmp.svg',
+    'application/postscript': 'ps.svg',
+    'application/zip': 'zip.svg',
+    'other': 'file.svg',
+    'back': 'back.svg',
+    'application/mspowerpoint': 'ppt.svg',
+    'application/msword': 'msword.svg',
+    'video/x-msvideo': 'avi.svg',
+    'video/x-flv': 'mpg.svg',
+    'video/quicktime': 'mpg.svg',
+    'video/mp4': 'mpg.svg',
+    'audio/x-wav': 'avi.svg',
+    'audio/mpeg': 'mpg.svg',
+    'text/x-bibtex': 'text.svg'
+    }
 
 
 def filebrowser(node, req):

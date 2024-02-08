@@ -95,6 +95,7 @@
                                     type="image"
                                     src="/static/img/webtree/trashbin.svg"
                                     onclick="return questionDelName('')"
+                                    class="mediatum-icon-small"
                                 />&nbsp;
                             </td>
                             </tal:block>
@@ -139,8 +140,9 @@
                                             tal:condition="python:file.type not in ['original', 'image']"
                                             tal:attributes="name python:u'del|{}|{}'.format(file.type, file.getName())"
                                             type="image"
-                                            src="/static/img/delete.png"
+                                            src="/static/img/cancel.svg"
                                             onclick="return questionDelName('')"
+                                            class="mediatum-icon-small"
                                         />&nbsp;
                                     </td>
                                 </tr>
@@ -164,8 +166,9 @@
                                             tal:condition="python:file.type not in ['original', 'image']"
                                             tal:attributes="name python:u'delatt|{}|{}'.format(file.type, file.getName())"
                                             type="image"
-                                            src="/static/img/delete.png"
+                                            src="/static/img/cancel.svg"
                                             onclick="return questionDelName('')"
+                                            class="mediatum-icon-small"
                                         />&nbsp;
                                     </td>
                                 </tr>
@@ -208,8 +211,9 @@
                                             tal:condition="python:file.type not in ['original', 'image']"
                                             tal:attributes="name python:u'del|{}|{}'.format(file.type, file.getName())"
                                             type="image"
-                                            src="/static/img/delete.png"
+                                            src="/static/img/cancel.svg"
                                             onclick="return questionDelName('')"
+                                            class="mediatum-icon-small"
                                         />&nbsp;
                                     </td>
                                 </tr>
@@ -244,14 +248,14 @@
                                                 tal:attributes="href python:u'/edit/edit_content?srcnodeid={}&id={}&tab=metadata'.format(srcnodeid, child.id)"
                                                 i18n:attributes="title edit_files_edit_child"
                                             >
-                                                <img src="/static/img/editor/edit-pen-paper.svg"/>
+                                                <img src="/static/img/edit-pen-paper.svg" class="mediatum-icon-small"/>
                                             </a>
                                             <a
                                                 href="#"
                                                 tal:attributes="onclick python:u'return removeItem(this.id, {})'.format(node.id);id python:child.id"
                                                 i18n:attributes="title edit_files_delete_child"
                                             >
-                                                <img src="/static/img/delete.png"/>
+                                                <img src="/static/img/cancel.svg" class="mediatum-icon-small"/>
                                             </a>
                                         </div>
                                     </div>
@@ -277,10 +281,10 @@
             <img tal:attributes="src python:u'/thumbnail/{}'.format(child.id)"/></a>
         <div class="mediatum_edit_files_children_list_div">
             <a tal:attributes="href python:u'/edit/edit_content?srcnodeid={}&id={}&tab=metadata'.format(srcnodeid, child.id)">
-                <img src="/static/img/editor/edit-pen-paper.svg"/>
+                <img src="/static/img/edit-pen-paper.svg" class="mediatum-icon-small"/>
             </a>
             <a href="#" tal:attributes="onclick python:u'return removeItem(this.id, {})'.format(node.id);id python:child.id">
-                <img src="/static/img/delete.png"/>
+                <img src="/static/img/cancel.svg" class="mediatum-icon-small"/>
             </a>
         </div>
     </div>

@@ -66,7 +66,7 @@
               if (file['type'] == 'dir') or (file['type'] == 'back')
                 td(class=cssclass, align='center')
                   a(href='/attachmentbrowser?id={}&path={}'.format(id, file['req_path']))
-                    img(src='/static/img/{}'.format(file['icon']), border='0')
+                    img.mediatum-icon-small(src='/static/img/{}'.format(file['icon']), border='0')
                 td(class=cssclass, valign='top')
                   a.mediatum-link-mediatum(href='/attachmentbrowser?id={}&path={}'.format(id, file['req_path']))
                     = file['name']
@@ -75,7 +75,7 @@
                 - var path = file['path']
                 td(class=cssclass, align='center')
                   a(href='/attfile/'+id+'/'+path, target='_blank')
-                    img(src='/static/img/{}'.format(file['icon']), border='0')
+                    img.mediatum-icon-big(src='/static/img/{}'.format(file['icon']), border='0')
                 td(class=cssclass)
                   a.mediatum-link-mediatum(href='attfile/'+id+'/'+path, target='_blank')
                     = file['name']

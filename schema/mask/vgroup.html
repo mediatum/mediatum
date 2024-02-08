@@ -42,9 +42,10 @@
             <input
                 tal:attributes="name python:u'newdetail_{}'.format(item.id)"
                 type="image"
-                src="/static/img/install.png"
+                src="/static/img/install.svg"
                 onclick="document.getElementById('mediatum-edit-form-metadata').type.value=''"
                 i18n:attributes="title mask_edit_insert_field_title"
+                class="mediatum-icon-small"
                />
         </div>
     </tal:block>
@@ -110,27 +111,31 @@
                 tal:attributes="name python:'up_{}'.format(item_id)"
                 i18n:attributes="title mask_edit_up_title"
                 type="image"
-                src="/static/img/uparrow.png"
+                src="/static/img/uparrow.svg"
+                class="mediatum-icon-small"
             />
             <input
                 tal:condition="python:not is_last"
                 tal:attributes="name python:'down_{}'.format(item_id)"
                 i18n:attributes="title mask_edit_down_title"
                 type="image"
-                src="/static/img/downarrow.png"
+                src="/static/img/downarrow.svg"
+                class="mediatum-icon-small"
             />
             <input
                 tal:attributes="name python:'edit_{}'.format(item_id)"
                 i18n:attributes="title mask_edit_edit_row"
                 type="image"
-                src="/static/img/editor/edit-pen-paper.svg"
+                src="/static/img/edit-pen-paper.svg"
+                class="mediatum-icon-small"
             />
             <input
                 tal:attributes="name python:'delete_{}'.format(item_id)"
                 i18n:attributes="title mask_edit_delete_row"
                 type="image"
-                src="/static/img/delete.png"
+                src="/static/img/cancel.svg"
                 onClick="return questionDel()"
+                class="mediatum-icon-small"
             />
         </div>
     </fieldset>

@@ -14,7 +14,6 @@ function getSelect(id) {
 
 // load data to tab via ajax
 function get_json_for_action(src, action, id) {
-
   var tempdiv = $('<span id="tempdiv"><img height="12" src="/static/img/webtree/spinner.gif" />   </span>');
   $(src).append(tempdiv);
   var ajax_response;

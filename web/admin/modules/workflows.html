@@ -26,11 +26,17 @@
                     </th>
                     <th>
                         <a i18n:attributes="title admin_wf_exportall_title" href="/admin/export/workflows/all" target="_blank">
-                            <img src="/static/img/export.png" border="0"/>
+                            <img src="/static/img/export.svg" border="0" class="mediatum-icon-small"/>
                         </a>
                     </th>
                     <th align="right">
-                        <input i18n:attributes="title admin_wf_create_title" type="image" src="/static/img/install.png" name="new_"/>
+                        <input
+                            i18n:attributes="title admin_wf_create_title"
+                            type="image"
+                            src="/static/img/install.svg"
+                            name="new_"
+                            class="mediatum-icon-small"
+                        />
                     </th>
                 </tr>
             </thead>
@@ -47,7 +53,13 @@
                     <td style="text-align:center"> </td>
                     <td style="text-align:center"> </td>
                     <td style="text-align:right;width:50px">
-                        <input tal:attributes="name python:u'detaillist_{}'.format(workflow.getId())" i18n:attributes="title admin_wf_nodeedit_title" type="image" src="/static/img/rightarrow.png"/>
+                        <input
+                            tal:attributes="name python:u'detaillist_{}'.format(workflow.getId())"
+                            i18n:attributes="title admin_wf_nodeedit_title"
+                            type="image"
+                            src="/static/img/arrow-right.svg"
+                            class="mediatum-icon-small"
+                        />
                         &nbsp;
                         &nbsp;
                         <a
@@ -55,20 +67,36 @@
                             i18n:attributes="title admin_wf_graphic_title"
                             target="_blank"
                         >
-                            <img src="/static/img/editor/magnifying-glass.svg" border="0"/>
+                            <img src="/static/img/magnifying-glass.svg" border="0" class="mediatum-icon-small"/>
                         </a>
 
-                        <a tal:attributes="href python:u'/admin/export/workflows/{}'.format(workflow.getId())" i18n:attributes="title admin_wf_export_title" target="_blank"><img src="/static/img/export.png" border="0"/></a>
+                        <a
+                            tal:attributes="href python:u'/admin/export/workflows/{}'.format(workflow.getId())"
+                            i18n:attributes="title admin_wf_export_title"
+                            target="_blank"
+                        >
+                            <img src="/static/img/export.svg" border="0" class="mediatum-icon-small"/>
+                        </a>
                     </td>
                     <td style="text-align:right;width:50px">
                         <input
                             tal:attributes="name python:u'edit_{}'.format(workflow.getId())"
                             i18n:attributes="title admin_wf_edit_title"
                             type="image"
-                            src="/static/img/editor/edit-pen-paper.svg"
+                            src="/static/img/edit-pen-paper.svg"
+                            class="mediatum-icon-small"
                         />
                         &nbsp;&nbsp;
-                        <input tal:attributes="name python:u'delete_{}'.format(workflow.getId()); onclick python:u'return questionDelName(\'{}\')'.format(workflow.getName())" i18n:attributes="title admin_wf_delete_title" type="image" src="/static/img/delete.png"/>
+                        <input
+                            tal:attributes="
+                                name python:u'delete_{}'.format(workflow.getId());
+                                onclick python:u'return questionDelName(\'{}\')'.format(workflow.getName());
+                                "
+                            i18n:attributes="title admin_wf_delete_title"
+                            type="image"
+                            src="/static/img/cancel.svg"
+                            class="mediatum-icon-small"
+                        />
                     </td>
                 </tr>
                 </tal:block>
@@ -300,7 +328,8 @@
                             tal:attributes="name python:u'newdetail_{}'.format(workflow.getId())"
                             i18n:attributes="title admin_wfstep_new_title"
                             type="image"
-                            src="/static/img/install.png"
+                            src="/static/img/install.svg"
+                            class="mediatum-icon-small"
                         />
                     </th>
                 </tr>
@@ -337,10 +366,20 @@
                             tal:attributes="name python:u'editdetail_{}|{}'.format(workflow.getId(), workflowstep.getId())"
                             i18n:attributes="title admin_wfstep_edit"
                             type="image"
-                            src="/static/img/editor/edit-pen-paper.svg"
+                            src="/static/img/edit-pen-paper.svg"
+                            class="mediatum-icon-small"
                         />
                         &nbsp;&nbsp;
-                        <input tal:attributes="name python:u'deletedetail_{}|{}'.format(workflow.getId(), workflowstep.getId()); onclick python:u'return questionDelName(\'{}\')'.format(workflowstep.getName())" i18n:attributes="title admin_wfstep_delete" type="image" src="/static/img/delete.png"/>
+                        <input
+                            tal:attributes="
+                                name python:u'deletedetail_{}|{}'.format(workflow.getId(), workflowstep.getId());
+                                onclick python:u'return questionDelName(\'{}\')'.format(workflowstep.getName());
+                                "
+                            i18n:attributes="title admin_wfstep_delete"
+                            type="image"
+                            src="/static/img/cancel.svg"
+                            class="mediatum-icon-small"
+                        />
                     </td>
                 </tr>
                 </tal:block>

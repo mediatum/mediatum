@@ -194,7 +194,8 @@ function showPreview(doc, src){
     if (src!=""){
         obj.src = src;
     }else{
-        obj.src = "/static/img/transparent-pixel.gif";
+        obj.src = "/static/img/webtree/transparent-pixel.svg";
+        obj.className = "mediatum-icon-small";
     }
 
 }

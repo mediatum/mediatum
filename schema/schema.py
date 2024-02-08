@@ -73,13 +73,13 @@ fieldoption = (
     _Option(
         name="metafield_option1",
         shortname="search", value="s",
-        imgsource="/static/img/webtree/plus.svg",
+        imgsource="/static/img/folder-plus.svg",
     ),
     _Option(
         name="metafield_option2",
         shortname="sort",
         value="o",
-        imgsource="/static/img/sort-by-alphabet-az.png",
+        imgsource="/static/img/sort-by-alphabet-az.svg",
     ),
 )
 

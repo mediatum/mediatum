@@ -26,7 +26,7 @@ link(rel="stylesheet", href="/static/css/jade_style.css")
     if bibtex
       dt.action_icon
         a.mediatum-link-mediatum(href="/export/{{ node.id }}/bibtex", target="bibtexdocument", title=translate("doc_bibtex_title"))
-          img(src="/static/img/bibtex.gif")
+          img.mediatum-icon-small(src="/static/img/bibtex.gif")
           |&nbsp;BibTeX
 
   - block after_metadata

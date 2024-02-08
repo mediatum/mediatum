@@ -77,7 +77,8 @@ var ctree_dragstop_pnode_key = null;
 var last_ajax_result = null;
 
 var FANCYTREE_KEYBOARD = true;
-var FANCYTREE_DEFAULT_ICON = '/static/img/webtree/directory.png';
+var FANCYTREE_DEFAULT_ICON = '/static/img/webtree/directory.svg';
+
 
 function build_context_menu_items(node, opts) {
 

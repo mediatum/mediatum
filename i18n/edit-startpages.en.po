@@ -57,3 +57,6 @@ msgstr "Do not use a startpage for this language"
 
 msgid "edit_startpages_selectlanguage"
 msgstr "Select as startpage for this language"
+
+msgid "edit_startpages_filebrowser_title"
+msgstr "Node images browser"

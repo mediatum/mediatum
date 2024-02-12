@@ -59,3 +59,6 @@ msgstr "Keine Startseite für diese Sprache"
 
 msgid "edit_startpages_selectlanguage"
 msgstr "als Startseite für diese Sprache wählen"
+
+msgid "edit_startpages_filebrowser_title"
+msgstr "Browser für Knotenbilder"

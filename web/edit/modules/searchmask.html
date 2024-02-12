@@ -7,14 +7,17 @@
         #sub_content_content{padding:0!important}
     </style>
 
-    <script tal:content="python:'var id = %r;' % str(id)"> </script>
     <script src="/static/js/edit/modules/searchmask.js"> </script>
     <div id="sub_content_content">
         <form class="edit" action="edit_content" name="changeform" id="fbody">
             <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
             <span i18n:translate="edit_searchmask_type">TEXT</span>:
             <input type="image" name="update" value="update" src="/static/img/s.gif"/>
-                <select id="searchtype_id" name="searchtype" onChange="change_searchtype()">
+            <select
+                id="searchtype_id"
+                name="searchtype"
+                tal:attributes="onChange python: '''change_searchtype('{}')'''.format(id)"
+            >
                 <option tal:attributes="selected python:[None,'selected'][searchtype=='none']" value="none" i18n:translate="edit_searchmask_none">TEXT</option>
                 <option tal:attributes="selected python:[None,'selected'][searchtype=='parent']" value="parent" i18n:translate="edit_searchmask_parent">TEXT</option>
                 <option tal:attributes="selected python:[None,'selected'][searchtype=='own']" value="own" i18n:translate="edit_searchmask_new">TEXT</option>
@@ -37,7 +40,13 @@
             <tal:block tal:condition="python:field!=selectedfield">
                 <tr>
                     <td valign="center">
-                        <a href="#" tal:attributes="onclick python:'open_field(\''+ustr(field.id)+'\')'; name python:'open_'+ustr(field.id)" >
+                        <a
+                            href="#"
+                            tal:attributes="
+                                onclick python:'open_field({}, {})'.format(id, field.id);
+                                name python:'open_{}'.format(field.id);
+                                "
+                        >
                             <img src="/static/img/boxx.gif"/>
                         </a>
                     </td>
@@ -59,7 +68,13 @@
             <tal:block metal:define-macro="field_table" tal:condition="python:field==selectedfield">
                 <tr>
                     <td valign="top">
-                        <input type="image" name="close" value="close" tal:attributes="onclick python:'close_field(\''+ustr(field.id)+'\')'" src="/static/img/box.gif"/>
+                        <input
+                            type="image"
+                            name="close"
+                            value="close"
+                            tal:attributes="onclick python:'''close_field('{}', '{}')'''.format(id, field.id)"
+                            src="/static/img/box.gif"
+                        />
                     </td>
                     <td colspan="2">
                         <table frame="box">
@@ -68,7 +83,14 @@
                                     <input type="text" name="fieldname" id="fnid" tal:attributes="value python:field.name"/>
                                 </td>
                                 <td colspan="1">
-                                    <input type="image" tal:attributes="onclick python:'delete_field(\''+ustr(field.id)+'\')'; name python:'del_'+ustr(field.id)" src="/static/img/delete.png"/>
+                                    <input
+                                        type="image"
+                                        tal:attributes="
+                                            onclick python:'''delete_field('{}', '{}')'''.format(id, field.id);
+                                            name python:'del_{}'.format(field.id);
+                                            "
+                                        src="/static/img/delete.png"
+                                    />
                                 </td>
                             </tr>
                             <tr>
@@ -94,7 +116,16 @@
                                     <td tal:content="python:ss and ss.name or '??'"/>
                                 </tal:block>
                                 <td tal:content="python:subfield.name"/>
-                                <td><input type="image" tal:attributes="onclick python:'delete_subfield(\''+ustr(subfield.id)+'\', \''+ustr(field.id)+'\')'; name python:'delsub_'+ustr(subfield.id)" src="/static/img/delete.png"/></td>
+                                <td>
+                                    <input
+                                        type="image"
+                                        tal:attributes="
+                                            onclick python:'''delete_subfield('{}', '{}', '{}')'''.format(id, subfield.id, field.id);
+                                            name python:'delsub_{}'.format(subfield.id);
+                                        "
+                                        src="/static/img/delete.png"
+                                    />
+                                </td>
                             </tr>
                             </tal:block>
                             <tr>
@@ -102,7 +133,11 @@
                             </tr>
                             <tr>
                                 <td>
-                                    <select name="schema" id="ssel" tal:attributes="onchange python:'select_schema(\''+ustr(field.id)+'\')'">
+                                    <select
+                                        name="schema"
+                                        id="ssel"
+                                        tal:attributes="onchange python:'''select_schema('{}', '{}')'''.format(id, field.id)"
+                                    >
                                         <option value=""></option>
                                         <tal:block tal:repeat="schema schemas">
                                             <option tal:attributes="value python:schema.id; selected python:[None,'selected'][schema.id==defaultschemaid]" tal:content="python:schema.name"></option>
@@ -122,7 +157,7 @@
                                     <input
                                         type="image"
                                         name="createsub"
-                                        tal:attributes="onclick python:&quot;create_subfield('{}')&quot;.format(field.id)"
+                                        tal:attributes="onclick python: '''create_subfield('{}', '{}')'''.format(id, field.id)"
                                         src="/static/img/haken.gif"
                                     />
                                 </td>
@@ -135,10 +170,20 @@
         </tal:block>
         <tr>
             <td valign="center">
-                <input type="image" name="newfield" value="newfield" onClick="create_field()" src="/static/img/box3.gif"/>
+                <input
+                    type="image"
+                    name="newfield"
+                    value="newfield"
+                    tal:attributes="onClick python: '''create_field('{}')'''.format(id)"
+                    src="/static/img/box3.gif"
+                />
             </td>
             <td valign="center" colspan="2">
-                <a href="#!" onClick="create_field()" class="mediatum-link-mediatum">
+                <a
+                    href="#!"
+                    tal:attributes="onClick python: '''create_field('{}')'''.format(id)"
+                    class="mediatum-link-mediatum"
+                >
                     <span style="cursor:pointer;color:#0a5096;" i18n:translate="edit_searchmask_add"/>
                 </a>
             </td>

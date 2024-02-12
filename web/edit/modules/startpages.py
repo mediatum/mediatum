@@ -70,6 +70,7 @@ def getContent(req, ids):
         req.response.status_code = httpstatus.HTTP_FORBIDDEN
         return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
+    id = req.values.get("id", "0")
     if "action" in req.values:
         if req.values['action'] == "getfile":  # deliver filecontent
             data = ""
@@ -116,6 +117,7 @@ def getContent(req, ids):
 
             req.response.set_data(_tal.processTAL(
                 dict(
+                    id=id,
                     named_filelist=_get_named_filelist(node, req.values.get("id", "0")),
                     languages=config.languages,
                 ),
@@ -180,7 +182,8 @@ def getContent(req, ids):
                     user.login_name, node.id, node.name, page, filenode.path, filenode.filetype, filenode.mimetype)
             req.response.set_data(_tal.processTAL(
                     dict(
-                        named_filelist=_get_named_filelist(node, req.values.get("id", "0")),
+                        id=id,
+                        named_filelist=_get_named_filelist(node, id),
                         languages=config.languages,
                         ),
                     file="web/edit/modules/startpages.html",
@@ -206,13 +209,13 @@ def getContent(req, ids):
         node.system_attrs['startpage_selector'] = startpage_selector[0:-1]
         db.session.commit()
 
-    named_filelist = _get_named_filelist(node, req.values.get("id", "0"))
+    named_filelist = _get_named_filelist(node, id)
     lang2file = {lang: "" for lang in config.languages}
     lang2file.update(node.getStartpageDict())
 
     return _tal.processTAL(
             dict(
-                id=req.values.get("id", "0"),
+                id=id,
                 tab=req.values.get("tab", ""),
                 node=node,
                 named_filelist=named_filelist,

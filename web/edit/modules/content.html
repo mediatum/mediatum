@@ -5,7 +5,6 @@
 <tal:block metal:define-macro="edit_content">
     <script tal:content="python:u'var js_edit_layout_togglertip_open = \'{}\';'.format(translate(language, 'edit_layout_togglertip_open'))"/>
     <script tal:content="python:u'var js_edit_layout_togglertip_closed = \'{}\';'.format(translate(language, 'edit_layout_togglertip_closed'))"/>
-    <script tal:content="python:u'var id = {};'.format(id)"/>
     <script tal:content="python:u'var north_size = {};'.format(navigation_height + 20)"/>
     <script src="/static/js/edit/modules/content.js"> </script>
 

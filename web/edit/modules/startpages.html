@@ -18,8 +18,18 @@
         </td>
         <td style="text-align:right; font-size:9px" tal:content="python:unicode(item.file_size)"/>
         <td style="text-align:right">
-            <a href="#" tal:attributes="onclick python:u'editFile(\'{}\')'.format(item.short_path)" i18n:attributes="title edit_startpages_edit"><img src="/static/img/edit_opt.png"/></a>
-            <input tal:attributes="onclick python:u'questionDel(\'{}\')'.format(item.short_path);" i18n:attributes="title edit_startpages_delete" type="image" src="/static/img/delete.png"/>
+            <a
+                href="#"
+                tal:attributes="onclick python:u'''editFile('{}', '{}')'''.format(id, item.short_path)"
+                i18n:attributes="title edit_startpages_edit">
+                <img src="/static/img/edit_opt.png"/>
+            </a>
+            <input
+                tal:attributes="onclick python:u'''questionDel('{}', '{}')'''.format(id, item.short_path)"
+                i18n:attributes="title edit_startpages_delete"
+                type="image"
+                src="/static/img/delete.png"
+            />
         </td>
     </tr>
 </tal:block>
@@ -29,7 +39,6 @@
 
     <script src="/static/ckeditor/ckeditor.js"> </script>
     <script src="/static/js/jquery.layout.resizePaneAccordions-latest.min.js"> </script>
-    <script tal:content="python:u'var id = {};'.format(id)"> </script>
     <script tal:content="python:u'var csrf = \'{}\';'.format(csrf)"> </script>
     <script src="/static/js/edit/modules/startpages.js"> </script>
 
@@ -42,10 +51,10 @@
                     <img src="/static/img/cancel.png"/>
                 </a>
             </div>
-            <form action="javascript:handleCKEditorPost();void(0);">
+            <form tal:attributes="action python: '''javascript:handleCKEditorPost('{}')'''.format(id)">
                 <input type="hidden" id="filename" name="filename"/>
                 <textarea id="page_content" name="page_content"> </textarea>
-                <script>ckeditor_config();</script>
+                <script tal:content="python: '''ckeditor_config('{}')'''.format(id)"></script>
             </form>
         </div>
     </div>
@@ -115,7 +124,6 @@
         <link rel="stylesheet" tal:repeat="src html_head_style_src" tal:attributes="href src" />
         <script src="/static/js/jquery-1.12.4.js"> </script>
         <script src="/static/js/jquery-migrate-1.4.1.js"> </script>
-        <script tal:content="python:u'var id = {};'.format(id)"> </script>
         <script src="/static/js/edit/modules/startpages.js"> </script>
         <script tal:repeat="src html_head_javascript_src" tal:attributes="src src"> </script>
     </head>
@@ -137,7 +145,15 @@
                 <span style="color:#dd0000;width:50px;font-size:10px" tal:condition="python:(file.getName())==(logoname)" i18n:translate="edit_fckeditor_cfm_imageislogo">TEXT</span>
                 <span width="50px" tal:condition="python:(file.getName())!=(logoname)">&nbsp;</span>
                 <div width="75px" style="text-align:center;cursor:pointer" tal:condition="python:delbutton">
-                    <img i18n:attributes="title edit_fckeditor_cfm_delete" tal:attributes="name python:file.getName(); onclick python:'return delete_nodefile(this)'; " type="image" src="/static/img/delete.png"/>
+                    <img
+                        i18n:attributes="title edit_fckeditor_cfm_delete"
+                        tal:attributes="
+                            name python:file.getName();
+                            onclick python:'''return delete_nodefile(this, '{}')'''.format(id);
+                            "
+                        type="image"
+                        src="/static/img/delete.png"
+                    />
                 </div>
             </div>
         </div>

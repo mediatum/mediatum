@@ -74,9 +74,10 @@ def getContent(req, ids):
     user = users.user_from_session()
     language = _core_translation.set_language(req.accept_languages)
 
+    id = req.values["id"]
     if "action" in req.values:
         state = 'ok'
-        basenode = q(Node).get(req.values['id'])
+        basenode = q(Node).get(id)
         if req.values['action'] == "removefiles":
             for f in basenode.files:
                 try:
@@ -226,7 +227,7 @@ def getContent(req, ids):
             req.response.mimetype = "application/json"
             req.response.set_data(json.dumps(
                 dict(content=_tal.processTAL(
-                    dict(datatypes=dtypes, schemes=ret),
+                    dict(id=id, datatypes=dtypes, schemes=ret),
                     file='web/edit/modules/upload.html',
                     macro="addmeta",
                     request=req,
@@ -242,6 +243,7 @@ def getContent(req, ids):
                 dict(
                     content=_tal.processTAL(
                             dict(
+                                id=id,
                                 language=language,
                                 identifier_importers=identifier_importers.values(),
                             ),
@@ -293,7 +295,7 @@ def getContent(req, ids):
 
                 new_node = importer_func(identifier, importdir, req=req)
 
-                res = dict(id=req.values['id'], error=req.params.get('error', ''), error_detail=req.values.get('error_detail', ''))
+                res = dict(id=id, error=req.params.get('error', ''), error_detail=req.values.get('error_detail', ''))
 
                 if new_node:
                     new_node.set("creator", user.login_name)
@@ -325,7 +327,7 @@ def getContent(req, ids):
             proceed_to_uploadcomplete = True
             # XXX: check this: import to realnamne or random name ?
             incoming_file = _utils_fileutils.importFile(uploadfile.filename, uploadfile)
-            node = q(Node).get(req.values['id'])
+            node = q(Node).get(id)
             node.files.append(incoming_file)
             db.session.commit()
             req.response.set_data("")
@@ -378,7 +380,7 @@ def getContent(req, ids):
                 else:
                     macro = "uploadzipfileok"
                 content = _tal.processTAL(
-                        upload_ziphandler(uploadfile.filename, req.values['id']),
+                        upload_ziphandler(uploadfile.filename, id),
                         file='web/edit/modules/upload.html',
                         macro=macro,
                         request=req,
@@ -389,7 +391,7 @@ def getContent(req, ids):
                 else:
                     macro = "uploadbibfileok"
                 content = _tal.processTAL(
-                        upload_bibhandler(uploadfile.filename, req.values['id']),
+                        upload_bibhandler(uploadfile.filename, id),
                         file='web/edit/modules/upload.html',
                         macro=macro,
                         request=req,
@@ -466,7 +468,7 @@ def getContent(req, ids):
     searchparams = {k: unicode(v).encode("utf8") for k, v in searchparams.items()}
 
     v.update(
-        id=req.values["id"],
+        id=id,
         datatypes=getDatatypes(req, schemes),
         schemes=schemes,
         uploadstate=req.values.get("upload"),

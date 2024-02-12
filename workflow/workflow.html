@@ -225,11 +225,9 @@
 
 
 <div metal:define-macro="workflow_show" id="workflow">
-    <script tal:content="python:u'var id={}'.format(step.id)"/>
-     <script src="/static/js/workflow/workflow.js"> </script>
+    <script src="/static/js/workflow/workflow.js"> </script>
     <div style="display:none" id="confirm_delete"  i18n:translate="workflow_confirm_msg_delete">TEXT</div>
     <div style="display:none" id="confirm_move"  i18n:translate="workflow_confirm_msg_move">TEXT</div>
-    <script tal:content="python:u'var id={}'.format(step.id)"/>
     <p>
         <span style="text-align:left">
             <a
@@ -280,7 +278,13 @@
                         <option tal:repeat="value steps" tal:content="python:value[0]" tal:attributes="value python:u'move_{}'.format(value[1])" />
                     </optgroup>
                 </select>
-                <button value="submit" type="submit" tal:attributes="onclick python:u'submit(&quot;{}&quot;)'.format(csrf)" i18n:translate="workflow_label_button_submit">TEXT</button>
+                <button
+                    value="submit"
+                    type="submit"
+                    tal:attributes="onclick python:u'''submit('{}', '{}')'''.format(step.id, csrf)"
+                    i18n:translate="workflow_label_button_submit"
+                >
+                </button>
             </th>
         </tr>
     </table>

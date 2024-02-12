@@ -365,7 +365,7 @@
                             <label for="nodesperpage" i18n:translate="edit_nodes_per_page"> </label>
                             <select
                                 name="nodesperpage"
-                                tal:attributes="onchange python:'''sortItemsPage_sync($('#sortfield'), this, '{}')'''.format(tab)"
+                                tal:attributes="onchange python: '''sortItemsPage_sync($('#sortfield'), this, '{}', '{}')'''.format(ids[0], tab)"
                             >
                                 <option
                                     tal:repeat="npp nodesperpage_options"

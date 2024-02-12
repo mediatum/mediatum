@@ -16,17 +16,17 @@ $(document).ready(function() {
     });
 });
 
-function submit(csrf) {
+function submit(id, csrf) {
     if ($('.checkbox:checked').size() > 0) {
         if ($("#selectid").val() == "delete") {
-            confirmf('#confirm_delete', csrf);
+            confirmf(id, '#confirm_delete', csrf);
         } else {
-            confirmf('#confirm_move', csrf);
+            confirmf(id, '#confirm_move', csrf);
         }
     }
 }
 
-function confirmf(v, csrf) {
+function confirmf(id, v, csrf) {
     if (confirm($(v).html())) {
         var selected = new Array();
         $('.checkbox:checked').each(function() {

@@ -3,7 +3,7 @@
   SPDX-License-Identifier: AGPL-3.0-or-later
 */
 
-function createObjectFromIdentifier(){
+function createObjectFromIdentifier(id){
 
     var ajax_response;
 

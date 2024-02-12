@@ -3,8 +3,6 @@
   SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 <tal:block metal:define-macro="edit_logo">
-
-    <script tal:content="python:u'var id = {};'.format(id)"> </script>
     <link rel="stylesheet" href="/static/css/edit/modules/logo.css" type="text/css" />
     <script src="/static/js/edit/modules/logo.js"> </script>
 
@@ -52,7 +50,7 @@
                 <div class="imageblock" tal:attributes="id python:item[1]">
                     <img tal:attributes="onclick python:u'setImage(\'/file/{}/{}\')'.format(id, item[1]); src python:u'/file/{}/{}'.format(id, item[1])" style="max-height:200px;max-width:200px" />
                     <div class="options">
-                        <a href="#" tal:attributes="onclick python:'deleteLogo(this)'">
+                        <a href="#" tal:attributes="onclick python:'''deleteLogo(this, '{}')'''.format(id)">
                             <img src="/static/img/delete.png"/>
                         </a>
                     </div>

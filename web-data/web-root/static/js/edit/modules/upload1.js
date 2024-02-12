@@ -3,7 +3,7 @@
   SPDX-License-Identifier: AGPL-3.0-or-later
 */
 
-function openMetaForm(){
+function openMetaForm(id){
     var ajax_response;
     var options = {
         url: '/edit/edit_content?action=addmeta&func=openMetaForm&id='+id,
@@ -29,7 +29,7 @@ function closeMetaForm(){ // close upload form
     $('#metaform').hide();
 }
 
-function openDoiForm(){
+function openDoiForm(id){
     var ajax_response;
     var options = {
         url: '/edit/edit_content?action=adddoi&func=openMetaForm&id='+id,
@@ -55,7 +55,7 @@ var singlefile = 0;
 var uploaderfile = null;
 var uploaderbibtext = null;
 
-function openUploadFormPluploadWidgetFile(){ // show upload form
+function openUploadFormPluploadWidgetFile(id){ // show upload form
     var ajax_response;
     var options = {
         url: '/edit/edit_content?action=removefiles&func=openUploadFormPluploadWidgetFile&id='+id,
@@ -74,7 +74,7 @@ function openUploadFormPluploadWidgetFile(){ // show upload form
 
     $.ajax(options);
 
-    uploaderfile = init_plupload_widget_file();
+    uploaderfile = init_plupload_widget_file(id);
 
     uf = $('#mediatum_uploadform_plupload_widget_file');
     uf.show();
@@ -87,7 +87,7 @@ function openUploadFormPluploadWidgetFile(){ // show upload form
     parent.$('#overlay').css('display', 'block');
 }
 
-function closeFormPluploadWidgetFile() { // close upload form
+function closeFormPluploadWidgetFile(id) { // close upload form
     $('#mediatum_uploadform_plupload_widget_file').hide();
         parent.$('#overlay').css('display', 'none');
 
@@ -95,7 +95,7 @@ function closeFormPluploadWidgetFile() { // close upload form
     return reloadPage(id);
 }
 
-function createObjectsPluploadFile(){ // build object out of files
+function createObjectsPluploadFile(id){ // build object out of files
     console.group('edit.modules: upload.html createObjectsPluploadFile');
 
     $('#uploader_start').attr('aria-disabled','true');  // not functional ?
@@ -193,7 +193,7 @@ function createObjectsPluploadFile(){ // build object out of files
 
 var files_uploaded_file = 0;
 
-function init_plupload_widget_file() {
+function init_plupload_widget_file(id) {
     csrf = csrf.replace("##", "!!!!!");
     var u = $(function() {
         $("#uploaderfile").plupload({
@@ -396,7 +396,7 @@ function init_plupload_widget_file() {
     return u;
 }
 
-function openUploadFormPluploadWidgetBib(){ // show upload form
+function openUploadFormPluploadWidgetBib(id){ // show upload form
     var ajax_response;
 
     var options = {
@@ -416,7 +416,7 @@ function openUploadFormPluploadWidgetBib(){ // show upload form
 
     $.ajax(options);
 
-    uploaderbib = init_plupload_widget_bib();
+    uploaderbib = init_plupload_widget_bib(id);
 
     uf = $('#mediatum_uploadform_plupload_widget_bib');
     uf.show();
@@ -429,7 +429,7 @@ function openUploadFormPluploadWidgetBib(){ // show upload form
     parent.$('#overlay').css('display', 'block');
 }
 
-function closeFormPluploadWidgetBib() { // close upload form
+function closeFormPluploadWidgetBib(id) { // close upload form
     $('#mediatum_uploadform_plupload_widget_bib').hide();
         parent.$('#overlay').css('display', 'none');
 
@@ -437,7 +437,7 @@ function closeFormPluploadWidgetBib() { // close upload form
     return reloadPage(id);
 }
 
-function createObjectsPluploadBib(){ // build object out of files
+function createObjectsPluploadBib(id){ // build object out of files
     console.group('edit.modules: upload.html createObjectsPluploadBib');
 
     $('#uploader_start').attr('aria-disabled','true');  // not functional ?
@@ -505,7 +505,7 @@ function createObjectsPluploadBib(){ // build object out of files
 
 var files_uploaded_bib = 0;
 
-function init_plupload_widget_bib() {
+function init_plupload_widget_bib(id) {
     csrf = csrf.replace("##", "!!!!!");
     var u = $(function() {
         $("#uploaderbib").plupload({

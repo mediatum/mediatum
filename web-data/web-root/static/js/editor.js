@@ -555,7 +555,7 @@ function loadUrl(newLocation)
 }
 
 
-function sortItemsPage_sync(o1, o2, tab) {
+function sortItemsPage_sync(o1, o2, id, tab) {
     reloadURL(`/edit/edit_content?srcnodeid=${id}&id=${id}&sortfield=${$(o1).val()}&nodes_per_page=${$(o2).val()}&tab=${tab}`);
 }
 
@@ -569,4 +569,25 @@ function getAllObjectsNodeids(){
         }
     });
     return s;
+}
+
+
+function nodesperpage_ready(id) {
+    document.addEventListener(
+        "DOMContentLoaded", (function () {
+        sortItemsPage_sync(document.getElementById("sortfield"), document.getElementById("nodesperpage"), id, "content");
+    }));
+}
+
+
+function deleteobject_ready(srcnodeid, id) {
+    document.addEventListener("DOMContentLoaded", (function () {
+          var url;
+          if (deleteSelected(id)) {
+            url = `/edit/edit_content?srcnodeid=${srcnodeid}&id=${srcnodeid}&tab=content`;
+          } else {
+            url = `/edit/edit_content?srcnodeid=${srcnodeid}&id=${id}&tab=view`;
+          }
+          reloadURL(url);
+    }));
 }

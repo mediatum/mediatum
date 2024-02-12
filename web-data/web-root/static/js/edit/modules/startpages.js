@@ -5,7 +5,7 @@
 
 var CKEDITOR_BASEPATH = '/ckeditor/';
 
-function questionDel(filename){ //old
+function questionDel(id, filename){ //old
     yes = confirm(unescape(document.getElementById("deleteconfirm").innerHTML));
     if (!yes) return;
 
@@ -24,7 +24,7 @@ function questionDel(filename){ //old
     });
 }
 
-function editFile(filename){ // edit file click
+function editFile(id, filename){ // edit file click
     $("#filename").val(filename);
     $.getJSON('/edit/edit_content?id='+id+'&tab=startpages&action=getfile&filename='+filename, function(data) {
         CKEDITOR.instances['page_content'].setData(data.filecontent);
@@ -46,7 +46,7 @@ function closeForm(){ // close form
     $('#editform').css('display','none');
 }
 
-function handleCKEditorPost(){ // save data
+function handleCKEditorPost(id){ // save data
     csrf = csrf.replace("##", "!!!!!");
     $.ajax({ type :"post",
         data : { data: CKEDITOR.instances['page_content'].getData(), csrf_token: csrf },
@@ -55,6 +55,7 @@ function handleCKEditorPost(){ // save data
         $('#editform').css('display','none');
         document.getElementById("filetable").tBodies[0].innerHTML = ret;
     });
+    void(0);
 }
 
 function SelectFile( fileUrl ){
@@ -69,7 +70,7 @@ function SelectFile( fileUrl ){
     window.close() ;
 }
 
-function delete_nodefile(obj){
+function delete_nodefile(obj, id){
     o = $(obj);
     if(confirm($('#deleteconfirm').html())){
         $.get('/edit/edit_content/'+id+'/startpages/'+o.attr('name')+'?delete=True', function(data) {});
@@ -80,7 +81,7 @@ function delete_nodefile(obj){
     }
 }
 
-function ckeditor_config() {
+function ckeditor_config(id) {
     var ckeditor = CKEDITOR.replace('page_content');
     ckeditor.config.filebrowserBrowseUrl = '/edit/edit_content?id='+id+'&'+'tab=startpages'+'&'+'option=filebrowser';
     ckeditor.config.filebrowserUploadUrl = '/edit/edit_content?id='+id+'&'+'tab=startpages'+'&'+'option=filebrowser';

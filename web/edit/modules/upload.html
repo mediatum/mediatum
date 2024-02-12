@@ -16,7 +16,6 @@
     <link rel="stylesheet" href="/static/plupload-js/jquery.ui.plupload/css/jquery.ui.plupload.css" type="text/css" />
     <link rel="stylesheet" href="/static/css/uploadform.css" type="text/css" />
 
-    <script tal:content="python:u'var id = \'{}\';'.format(id)"> </script>
     <script tal:content="python:u'var uploadstate = \'{}\';'.format(uploadstate)"/>
     <script tal:content="python:u'var js_upload_unpack = \'{}\';'.format(translate(language, 'edit_upload_unpack'))"/>
     <script tal:content="python:u'var js_upload_no_unpack = \'{}\';'.format(translate(language, 'edit_upload_no_unpack'))"/>
@@ -28,14 +27,25 @@
     <div id="navigation_content">
         <tal:block tal:condition="python:len(schemes)>=1 and len(datatypes)>=1">
         <div class="mediatum_upload">
-            <a class="mediatum_img_uploadmeta mediatum-link-mediatum" href="#!" onclick="openMetaForm()">
-            <tal:block i18n:translate="edit_upload_meta"/></a>
+            <a
+                class="mediatum_img_uploadmeta mediatum-link-mediatum"
+                href="#!"
+                tal:attributes="onclick python: '''openMetaForm('{}')'''.format(id)"
+                i18n:translate=""
+            >
+                edit_upload_meta
+            </a>
         </div>
         </tal:block>
 
         <div class="mediatum_upload">
-            <a class="mediatum_img_uploaddoi  mediatum-link-mediatum" href="#!" onclick="openDoiForm()">
-            <tal:block i18n:translate="edit_upload_doi"/></a>
+            <a
+                class="mediatum_img_uploaddoi  mediatum-link-mediatum"
+                href="#!"
+                tal:attributes="onclick python: '''openDoiForm('{}')'''.format(id)"
+            >
+                <tal:block i18n:translate="edit_upload_doi"/>
+            </a>
         </div>
 
         <div class="mediatum_upload">
@@ -43,7 +53,7 @@
                 class="mediatum_img_uploadfile mediatum-link-mediatum"
                 id="id_a_openplupload_file"
                 href="#!"
-                onclick="openUploadFormPluploadWidgetFile()"
+                tal:attributes="onclick python: '''openUploadFormPluploadWidgetFile('{}')'''.format(id)"
             >
             <tal:block i18n:translate="edit_upload_files_plupload_widget"/></a>
         </div>
@@ -53,7 +63,7 @@
                 class="mediatum_img_uploadbibtex mediatum-link-mediatum"
                 id="id_a_openplupload_bibtex"
                 href="#!"
-                onclick="openUploadFormPluploadWidgetBib()"
+                tal:attributes="onclick python: '''openUploadFormPluploadWidgetBib('{}')'''.format(id)"
             >
             <tal:block i18n:translate="edit_upload_bibtex_plupload_widget"/></a>
         </div>
@@ -78,7 +88,11 @@
         <div class="mediatum_pluploadform-background">&nbsp;</div>
         <div id="uploadform-form">
             <div class="mediatum_uploadform_widget">
-                <a href="#" onclick="closeFormPluploadWidgetFile();" i18n:attributes="title cancel">
+                <a
+                    href="#"
+                    tal:attributes="onclick python: '''closeFormPluploadWidgetFile('{}')'''.format(id)"
+                    i18n:attributes="title cancel"
+                >
                 <img src="/static/img/cancel.png"/></a>
             </div>
             <form tal:condition="python:len(schemes)!=0" class="mediatum_uploadform_style">
@@ -90,7 +104,7 @@
                     id="id_button_createobjectsplupload_file"
                     type="button"
                     disabled="disabled"
-                    onclick="createObjectsPluploadFile();"
+                    tal:attributes="onclick python: '''createObjectsPluploadFile('{}')'''.format(id)"
                     i18n:translate="edit_upload_create_objects"
                 />
                 <span id="span_plupload_createobjects_file" > </span>
@@ -108,8 +122,13 @@
         <div class="mediatum_pluploadform-background">&nbsp;</div>
         <div id="uploadform-form">
             <div class="mediatum_uploadform_widget">
-                <a href="#" onclick="closeFormPluploadWidgetBib();" i18n:attributes="title cancel">
-                <img src="/static/img/cancel.png"/></a>
+                <a
+                    href="#"
+                    tal:attributes="onclick python: '''closeFormPluploadWidgetBib('{}')'''.format(id)"
+                    i18n:attributes="title cancel"
+                >
+                    <img src="/static/img/cancel.png"/>
+                </a>
             </div>
             <form tal:condition="python:len(schemes)!=0" class="mediatum_uploadform_style">
                 <div id="uploaderbib">
@@ -120,7 +139,7 @@
                     id="id_button_createobjectsplupload_bib"
                     type="button"
                     disabled="disabled"
-                    onclick="createObjectsPluploadBib();"
+                    tal:attributes="onclick python: '''createObjectsPluploadBib('{}')'''.format(id)"
                     i18n:translate="edit_upload_create_objects"
                 >
                 </button>
@@ -165,7 +184,13 @@
           </select>
       </p>
       <p class="mediatum_edit_upload_scheme_text">
-          <button type="button" id="buttoncreate2" onclick="createMetaObject()" i18n:translate="edit_upload_create_object">TEXT</button>
+          <button
+              type="button"
+              id="buttoncreate2"
+              tal:attributes="onclick python: '''createMetaObject('{}')'''.format(id)"
+              i18n:translate="edit_upload_create_object"
+          >
+          </button>
       </p>
     </div>
 </tal:block>
@@ -193,7 +218,7 @@
                   class="mediatum_buttoncreate3"
                   type="button"
                   class="mediatum_buttoncreate3"
-                  onclick="createObjectFromIdentifier()"
+                  tal:attributes="onclick python: '''createObjectFromIdentifier('{}')'''.format(id)"
                   i18n:translate="ok"
               >
               </button>
@@ -211,7 +236,7 @@
                   class="mediatum_buttoncreate3"
                   type="button"
                   class="mediatum_buttoncreate3"
-                  onclick="createObjectFromIdentifier()"
+                  tal:attributes="onclick python: '''createObjectFromIdentifier('{}')'''.format(id)"
                   i18n:translate="ok"
               >
               </button>

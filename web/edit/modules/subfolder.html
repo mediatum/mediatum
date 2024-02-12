@@ -5,7 +5,6 @@
 <tal:block metal:define-macro="edit_subfolder">
     <link rel="stylesheet" href="/static/css/edit/modules/subfolder.css" type="text/css" />
 
-    <script tal:content="python:u'var id = {};'.format(node.id)"> </script>
     <script tal:content="python:u'var cid_list = {};'.format([n.id for n in nodelist])"> </script>
     <script tal:content="python:u'var csrf = \'{}\';'.format(csrf)"> </script>
     <script src="/static/js/edit/modules/subfolder.js"> </script>
@@ -46,6 +45,7 @@
         </form>
     </div>
     <div id="sub_footer_module"> </div>
+    <script tal:content="python:u'''subfolder_ready('{}')'''.format(node.id)"> </script>
 </tal:block>
 
 <tal:block metal:define-macro="ordered_list">

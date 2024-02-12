@@ -3,17 +3,11 @@
   SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 <tal:block metal:define-macro="view_node">
-
 <select name="nodesperpage" id="nodesperpage">
   <option tal:attributes="value python:nodesperpage" selected="selected"/>
 </select>
 <select name="sortfield" id="sortfield">
   <option tal:attributes="value python:sortfield" selected="selected"/>
 </select>
-    <script tal:content="python:u'var id = \'{}\';'.format(id)"> </script>
-    <script>
-        $(document).ready(function () {
-          sortItemsPage_sync($('#sortfield'), $('#nodesperpage'), "content");
-        });
-    </script>
+<script tal:content="python:u'''nodesperpage_ready('{}')'''.format(id)"> </script>
 </tal:block>

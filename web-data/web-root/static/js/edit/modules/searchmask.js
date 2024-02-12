@@ -3,7 +3,7 @@
   SPDX-License-Identifier: AGPL-3.0-or-later
 */
 
-function change_searchtype(){
+function change_searchtype(id){
     var ajax_response;
     var options = {
           url: '/edit/edit_content?id='+id+'&tab=searchmask'+'&searchtype='+$('#searchtype_id').val()+'&isnewfield='+'&searchtypechanged=true',
@@ -17,7 +17,7 @@ function change_searchtype(){
     $.ajax(options);
 }
 
-function select_schema(fid){
+function select_schema(id, fid){
     var ajax_response;
     var options = {
           url: '/edit/edit_content?id='+id+'&tab=searchmask'+'&searchtype=own'+'&schema='+$('#ssel').val()+'&isnewfield='+'&selectedfield='+fid+'&fieldname='+$('#fnid').val(),
@@ -31,7 +31,7 @@ function select_schema(fid){
     $.ajax(options);
 }
 
-function create_subfield(fid){
+function create_subfield(id, fid){
     var ajax_response;
     var options = {
           url: '/edit/edit_content?id='+id+'&tab=searchmask'+'&searchtype=own'+'&schema='+$('#ssel').val()+'&schemafield='+$('#sfsel').val()+'&isnewfield='+'&selectedfield='+fid+'&fieldname='+$('#fnid').val()+'&createsub=',
@@ -45,7 +45,7 @@ function create_subfield(fid){
     $.ajax(options);
 }
 
-function delete_subfield(sfid, fid){
+function delete_subfield(id, sfid, fid){
     var ajax_response;
     var options = {
           url: '/edit/edit_content?id='+id+'&tab=searchmask'+'&searchtype=own'+'&delsub_'+sfid+'.x='+'&delsub_'+sfid+'.y='+'&isnewfield='+'&selectedfield='+fid+'&schema='+'&fieldname='+$('#fnid').val(),
@@ -59,7 +59,7 @@ function delete_subfield(sfid, fid){
     $.ajax(options);
 }
 
-function delete_field(fid){
+function delete_field(id, fid){
     var ajax_response;
     var options = {
           url: '/edit/edit_content?id='+id+'&tab=searchmask'+'&searchtype=own'+'&del_'+fid+'.x='+'&del_'+fid+'.y='+'&isnewfield='+'&selectedfield='+fid+'&schema='+'&fieldname='+$('#fnid').val(),
@@ -73,7 +73,7 @@ function delete_field(fid){
     $.ajax(options);
 }
 
-function close_field(fid){
+function close_field(id, fid){
     var ajax_response;
     var options = {
           url: '/edit/edit_content?id='+id+'&tab=searchmask'+'&searchtype=own'+'&close.x='+'&close.y='+'&isnewfield='+'&selectedfield='+fid+'&schema='+'&fieldname='+$('#fnid').val(),
@@ -87,7 +87,7 @@ function close_field(fid){
     $.ajax(options);
 }
 
-function create_field(){
+function create_field(id){
     var ajax_response;
     var options = {
           url: '/edit/edit_content?id='+id+'&tab=searchmask'+'&searchtype=own'+'&isnewfield=yes',
@@ -101,7 +101,7 @@ function create_field(){
     $.ajax(options);
 }
 
-function open_field(fid){
+function open_field(id, fid){
     var ajax_response;
     var options = {
           url: '/edit/edit_content?id='+id+'&tab=searchmask'+'&searchtype=own'+'&open_'+fid+'.x='+'&open_'+fid+'.y='+'&isnewfield=',

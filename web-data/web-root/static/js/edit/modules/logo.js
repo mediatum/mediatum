@@ -7,7 +7,7 @@ function setImage(path){
     $("#previewlogo").attr("src", path);
 }
 
-function deleteLogo(path){
+function deleteLogo(path, id){
     if (confirm($("#delquestion").html())){
         $.get('/edit/edit_content?id='+id+'&tab=logo&action=delete&file='+$(path).parent().parent().attr('id'), function(data) {
             if (data=='ok'){

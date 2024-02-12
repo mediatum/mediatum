@@ -19,11 +19,10 @@
                     <span i18n:translate="admin_submenu">TEXT</span>
                     <tal:block tal:repeat="item python:navitem['submenu']">
                         <a
-                            class="mediatum_itemsublink"
+                            class="mediatum_itemsublink mediatum-link-mediatum"
                             i18n:translate=""
                             tal:content="python:u'admin_menu_{}'.format(item.name)"
                             tal:attributes="href python:u'/admin/{}'.format(item.name)"
-                            class="mediatum-link-mediatum"
                         >
                         </a>
                         <span tal:condition="python: navitem['submenu'].index(item)<len(navitem['submenu'])-1">, </span>

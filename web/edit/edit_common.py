@@ -28,6 +28,7 @@ from utils.fileutils import importFile
 from utils.utils import EncryptionException
 from utils.pathutils import get_accessible_paths
 from utils.compat import iteritems
+from web import frontend as _web_frontend
 from web.frontend.content import get_make_search_content_function
 from web.frontend.search import NoSearchResult
 import re
@@ -461,6 +462,8 @@ def send_nodefile_tal(req):
                 fit=fit,
                 logoname=node.get("system.logo"),
                 delbutton=True,
+                html_head_style_src=_web_frontend.html_head_style_src,
+                html_head_javascript_src=_web_frontend.html_head_javascript_src,
             ),
             file="web/edit/modules/startpages.html",
             macro="fckeditor_customs_filemanager",

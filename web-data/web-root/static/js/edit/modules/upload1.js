@@ -52,11 +52,6 @@ var number_files = 0;
 var all_files = 0;
 var err_files = 0;
 var singlefile = 0;
-
-function loadEditArea02(id){
-    $('.ui-layout-center').attr('src', '/edit/edit_content?id='+id);
-}
-
 var uploaderfile = null;
 var uploaderbibtext = null;
 

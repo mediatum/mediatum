@@ -1,8 +1,0 @@
-msgid "workflowstep_checkcontent"
-msgstr "Check Content"
-
-msgid "admin_wfstep_checkcontent_sender"
-msgstr "Email Sender"
-
-msgid "admin_wfstep_checkcontent_recipient"
-msgstr "Recipient"

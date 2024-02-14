@@ -703,7 +703,6 @@ def register():
 
     # run register method of step types
     from . import addformpage
-    from . import checkcontent
     from . import classify
     from . import classifybyattribute
     from . import condition
@@ -728,7 +727,6 @@ def register():
 
     modules_list = (
         addformpage,
-        checkcontent,
         classify,
         classifybyattribute,
         condition,

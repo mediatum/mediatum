@@ -1,8 +1,0 @@
-msgid "workflowstep_checkcontent"
-msgstr "Inhalt Prüfen"
-
-msgid "admin_wfstep_checkcontent_sender"
-msgstr "E-Mail Absender"
-
-msgid "admin_wfstep_checkcontent_recipient"
-msgstr "Empfänger"

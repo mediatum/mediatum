@@ -215,7 +215,7 @@ def validate(req, op):
         for key in req.params.keys():
             # create new meta field
             if key.startswith("newdetail_"):
-                return _field_detail(req, "")
+                return _field_detail(req)
 
             # edit meta field
             elif key.startswith("editdetail_"):
@@ -251,7 +251,7 @@ def validate(req, op):
             else:
                 error = None
             if error:
-                return _field_detail(req, error=error)
+                return _field_detail(req, req.values.get("mname_orig"), error)
 
             fieldsetting = "fieldsetting_"
             fieldsettings = {k[len(fieldsetting):]:v for k,v in req.values.lists() if k.startswith(fieldsetting)}
@@ -772,53 +772,59 @@ def changeOrder(parent, up, down):
 
 
 # form for field of given metadatatype (edit/new)
-def _field_detail(req, name=None, error=None):
-    name = name or req.values.get("mname_orig", "")
-    if name != "":  # edit field, irrespective of error
-        field = q(Metadatatype).get(req.values["parent"]).children
-        field = field.filter_by(name=name, type=u'metafield').scalar()
-    elif error:  # new field, with error filling values
-        field = _schema.Metafield(req.values.get("mname") or req.values.get("mname_orig"))
-        field.setLabel(req.values.get("mlabel"))
-        field.setFieldtype(req.values["mtype"])
-        field.setOption("".join(key[7] for key in req.values if key.startswith("option_")))
-        field.setDescription(req.values.get("mdescription"))
-        db.session.commit()
-    else:  # new field, no error (yet)
-        field = _schema.Metafield(u"")
-        db.session.commit()
-
+def _field_detail(req, edit_name=None, error=None):
+    """
+    Generate the metafield settings dialog box HTML code.
+    This function may be used for editing an existing field
+    (name must be given in `edit_name`),
+    or to create a new field (`edit_name` is `None`).
+    If `error` is set, the function assumes that
+    the user already submitted such a dialog
+    (and the corresponding values are present in `req`),
+    but with bad content:
+    The dialog is rendered again, and the error message
+    (for the given message-id) is presented to the user.
+    """
     metadatatype = getMetaType(req.values["parent"])
-    tal_ctx = getAdminStdVars(req)
-    tal_ctx.update(
-            actpage=req.values.get("actpage"),
-            fieldsettings_html="",
-            csrf= _core_csrfform.get_token(),
-            error=error,
-            fieldoptions=fieldoption,
-            fieldtypes=getMetaFieldTypeNames(),
-            filtertype=req.values.get("filtertype", ""),
-            mdescription=field.getDescription(),
-            metadatatype=metadatatype,
-            metafields={fields.name:fields for fields in getFieldsForMeta(req.values["parent"])},
-            mlabel=field.label,
-            mname=field.name,
-            mtype=field.get("type"),
-            option_flags=field.option_flags,
+    context = getAdminStdVars(req)
+    if edit_name is not None:
+        field = (metadatatype
+            .children
+            .filter_by(name=edit_name, type=u'metafield')
+            .scalar()
            )
-
-    if field.id:
-        tal_ctx["fieldid"] = field.id
-        tal_ctx["fieldsettings_html"] = _schema.getMetadataType(field.getFieldtype()).admin_settings_get_html_form(
+        option_flags = field.option_flags if error is None else tuple(
+            bool(req.values.get("option_{}".format(opt.value))) for opt in fieldoption)
+        fieldsettings_html = (_schema
+            .getMetadataType(field.getFieldtype())
+            .admin_settings_get_html_form(
                 field.metatype_data,
                 metadatatype,
                 _translation.set_language(req.accept_languages),
                )
-
-    db.session.commit()
+           )
+        context.update(
+            fieldid=field.id,
+            fieldoptions=fieldoption,
+            fieldsettings_html=fieldsettings_html,
+            mdescription=field.getDescription(),
+            mname_orig=edit_name,  # always the original name of the field
+            mtype=field.get("type"),
+            option_flags=option_flags,
+           )
+    context.update(
+        actpage=req.values.get("actpage"),
+        csrf=_core_csrfform.get_token(),
+        error=error,
+        fieldtypes=getMetaFieldTypeNames(),
+        filtertype=req.values.get("filtertype", ""),
+        metadatatype=metadatatype,
+        mlabel=req.values.get("mlabel", "" if edit_name is None else field.label),
+        mname=req.values.get("mname", "" if edit_name is None else edit_name),
+       )
     return _tal.processTAL(
-            tal_ctx,
+            context,
             file="web/admin/modules/metatype_field.html",
-            macro="modify_field" if field.id else "new_field",
+            macro="new_field" if edit_name is None else "modify_field",
             request=req,
            )

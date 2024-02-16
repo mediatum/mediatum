@@ -215,7 +215,6 @@
                         maxlength="50"
                         style="width:390px;"
                     />
-                    <input tal:attributes="value python:mname" type="hidden" name="mname_orig"/>
                 </td>
             </tr>
             <tr>
@@ -234,7 +233,7 @@
                 <td><tal:block i18n:translate="type"> </tal:block>: <span class="required">*</span></td>
                 <td>
                     <select name="mtype" id="mtype">
-                        <option tal:repeat="key python:fieldtypes.keys()" tal:attributes="value key; selected python:'selected' if mtype==key else None" tal:content="python:fieldtypes[key]" i18n:translate=""/>
+                        <option tal:repeat="key python:fieldtypes.keys()" tal:attributes="value key" tal:content="python:fieldtypes[key]" i18n:translate=""/>
                     </select>
                     &nbsp;&nbsp;&nbsp;
                     <button tal:attributes="onclick python:'openwindow(\'./metatype/info?style=popup\')'" i18n:attributes="title help_title" type="button">i</button>
@@ -313,7 +312,7 @@
                         maxlength="50"
                         style="width:390px;"
                     />
-                    <input tal:attributes="value python:mname" type="hidden" name="mname_orig"/>
+                    <input tal:attributes="value mname_orig" type="hidden" name="mname_orig"/>
                 </td>
             </tr>
             <tr>

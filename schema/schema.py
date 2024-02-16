@@ -700,14 +700,10 @@ class Metafield(Node):
     def setOption(self, value):
         self.set("opts", value)
 
-    def getFieldOptionList(self):
-        retList = []
-        for option in fieldoption:
-            if option.value in self.getOption() and option.value != "":
-                retList += [True]
-            else:
-                retList += [False]
-        return retList
+    @property
+    def option_flags(self):
+        opt_str = self.get("opts")
+        return tuple(opt.value in opt_str for opt in fieldoption)
 
     def getDescription(self):
         return self.get("description")

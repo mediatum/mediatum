@@ -373,7 +373,7 @@
                         <td tal:content="python:metafield.getLabel()" class="list"/>
                         <td tal:content="python:fieldtypes[metafield.getFieldtype()]" i18n:translate="" class="list"/>
 
-                        <td tal:define="flist python:metafield.getFieldOptionList()" class="list">
+                        <td tal:define="flist python:metafield.option_flags" class="list">
                             <table>
                                 <tr>
                                     <tal:block tal:repeat="fieldoption fieldoptions">

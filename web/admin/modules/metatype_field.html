@@ -94,7 +94,7 @@
                         <td tal:content="python:metafield.name"/>
                         <td tal:content="python:metafield.getLabel()"/>
                         <td tal:content="python:fieldtypes.get(metafield.getFieldtype())" i18n:translate=""/>
-                        <td tal:define="flist python:metafield.getFieldOptionList()">
+                        <td tal:define="flist python:metafield.option_flags">
                             <table>
                                 <tr>
                                     <td tal:repeat="fieldoption fieldoptions" width="20px" align="center">
@@ -357,7 +357,7 @@
                                 tal:attributes="
                                     name python:u'option_{}'.format(fieldoption.value);
                                     value python:fieldoption.value;
-                                    checked python:'checked' if metafield.getFieldOptionList()[index] else None;
+                                    checked python:'checked' if metafield.option_flags[index] else None;
                                     "
                                 type="checkbox"
                             />

@@ -243,11 +243,15 @@ def validate(req, op):
 
             if existMetaField(req.params.get("parent"), req.params.get("mname")) and \
                     (req.params.get("form_op", "")  == "save_newdetail" or req.params.get("mname") != req.params.get("mname_orig")):
-                return _field_detail(req, error="admin_duplicate_error")
+                error = "admin_duplicate_error"
             elif req.params.get("mname", "") == "" or req.params.get("mlabel", "") == "":
-                return _field_detail(req, error="admin_mandatory_error")
+                error = "admin_mandatory_error"
             elif not checkString(req.params.get("mname", "")):
-                return _field_detail(req, error="admin_metafield_error_badchars")
+                error = "admin_metafield_error_badchars"
+            else:
+                error = None
+            if error:
+                return _field_detail(req, error=error)
 
             fieldsetting = "fieldsetting_"
             fieldsettings = {k[len(fieldsetting):]:v for k,v in req.values.lists() if k.startswith(fieldsetting)}

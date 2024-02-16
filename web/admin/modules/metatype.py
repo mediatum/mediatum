@@ -776,7 +776,6 @@ def _field_detail(req, name=None, error=None):
     elif error:  # new field, with error filling values
         field = _schema.Metafield(req.values.get("mname") or req.values.get("mname_orig"))
         field.setLabel(req.values.get("mlabel"))
-        field.setOrderPos(req.values["orderpos"])
         field.setFieldtype(req.values["mtype"])
         field.setOption("".join(key[7] for key in req.values if key.startswith("option_")))
         field.setDescription(req.values.get("mdescription"))

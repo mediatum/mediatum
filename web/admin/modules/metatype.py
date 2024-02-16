@@ -798,13 +798,17 @@ def _field_detail(req, name=None, error=None):
             fieldoptions=fieldoption,
             fieldtypes=getMetaFieldTypeNames(),
             filtertype=req.values.get("filtertype", ""),
+            mdescription=field.getDescription(),
             metadatatype=metadatatype,
-            metafield=field,
             metafields={fields.name:fields for fields in getFieldsForMeta(req.values["parent"])},
+            mlabel=field.label,
+            mname=field.name,
+            mtype=field.get("type"),
+            option_flags=field.option_flags,
            )
 
     if field.id:
-        tal_ctx["field"] = field
+        tal_ctx["fieldid"] = field.id
         tal_ctx["fieldsettings_html"] = _schema.getMetadataType(field.getFieldtype()).admin_settings_get_html_form(
                 field.metatype_data,
                 metadatatype,

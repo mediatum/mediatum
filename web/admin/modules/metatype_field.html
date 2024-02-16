@@ -176,7 +176,7 @@
 
 
 
-<metal:block metal:define-macro="new_field" tal:define="id python:metafield.name">
+<metal:block metal:define-macro="new_field">
     <script type="text/javascript">
         function openwindow(url) {
           popup = window.open(url, "popup", "width=400,height=450,scrollbars");
@@ -209,20 +209,20 @@
                 <td><tal:block i18n:translate="admin_metafield_name">TEXT</tal:block>: <span class="required">*</span></td>
                 <td>
                     <input
-                        tal:attributes="value python:metafield.name"
+                        tal:attributes="value python:mname"
                         type="text"
                         name="mname"
                         maxlength="50"
                         style="width:390px;"
                     />
-                    <input tal:attributes="value python:metafield.name" type="hidden" name="mname_orig"/>
+                    <input tal:attributes="value python:mname" type="hidden" name="mname_orig"/>
                 </td>
             </tr>
             <tr>
                 <td><tal:block i18n:translate="admin_metafield_label">TEXT</tal:block>: <span class="required">*</span></td>
                 <td>
                     <input
-                        tal:attributes="value python:metafield.getLabel()"
+                        tal:attributes="value python:mlabel"
                         type="text"
                         name="mlabel"
                         maxlength="50"
@@ -234,7 +234,7 @@
                 <td><tal:block i18n:translate="type"> </tal:block>: <span class="required">*</span></td>
                 <td>
                     <select name="mtype" id="mtype">
-                        <option tal:repeat="key python:fieldtypes.keys()" tal:attributes="value key; selected python:'selected' if metafield.get('type')==key else None" tal:content="python:fieldtypes[key]" i18n:translate=""/>
+                        <option tal:repeat="key python:fieldtypes.keys()" tal:attributes="value key; selected python:'selected' if mtype==key else None" tal:content="python:fieldtypes[key]" i18n:translate=""/>
                     </select>
                     &nbsp;&nbsp;&nbsp;
                     <button tal:attributes="onclick python:'openwindow(\'./metatype/info?style=popup\')'" i18n:attributes="title help_title" type="button">i</button>
@@ -278,7 +278,7 @@
 
 
 
-<metal:block metal:define-macro="modify_field" tal:define="id python:metafield.name">
+<metal:block metal:define-macro="modify_field">
     <p>
         <a
             tal:attributes="href python:u'./metatype?detailof={}{}'.format(metadatatype.name, page)"
@@ -292,7 +292,10 @@
         <table>
             <tr>
                 <td colspan="2">
-                    <h3 i18n:translate="admin_metafield_edit_header">TEXT '<span tal:content="id" i18n:name="field"/>' TEXT '<span tal:content="python:metadatatype.name" i18n:name="name"/>' </h3>
+                    <h3 i18n:translate="admin_metafield_edit_header">
+                        <tal:block tal:content="mname" i18n:name="field"/>
+                        <tal:block tal:content="python:metadatatype.name" i18n:name="name"/>
+                    </h3>
                 </td>
             </tr>
             <tr tal:condition="python:error">
@@ -304,20 +307,20 @@
                 <td><tal:block i18n:translate="admin_metafield_name">TEXT</tal:block>: <span class="required">*</span></td>
                 <td>
                     <input
-                        tal:attributes="value python:metafield.name"
+                        tal:attributes="value python:mname"
                         type="text"
                         name="mname"
                         maxlength="50"
                         style="width:390px;"
                     />
-                    <input tal:attributes="value python:metafield.name" type="hidden" name="mname_orig"/>
+                    <input tal:attributes="value python:mname" type="hidden" name="mname_orig"/>
                 </td>
             </tr>
             <tr>
                 <td><tal:block i18n:translate="admin_metafield_label">TEXT</tal:block>: <span class="required">*</span></td>
                 <td>
                     <input
-                        tal:attributes="value python:metafield.getLabel()"
+                        tal:attributes="value python:mlabel"
                         type="text"
                         name="mlabel"
                         maxlength="50"
@@ -327,7 +330,7 @@
             </tr>
             <tr>
                 <td><tal:block i18n:translate="type"> </tal:block>: <span class="required">*</span></td>
-                <td tal:content="python:fieldtypes[field.get('type')]" i18n:translate="">
+                <td tal:content="python:fieldtypes[mtype]" i18n:translate="">
                   TEXT
                 </td>
             </tr>
@@ -340,7 +343,7 @@
             <tr>
                 <td><tal:block i18n:translate="admin_metafield_description">TEXT</tal:block>:</td>
                 <td>
-                    <textarea tal:content="python:metafield.getDescription()" name="mdescription" rows="4" style="width:390px;"/>
+                    <textarea tal:content="mdescription" name="mdescription" rows="4" style="width:390px;"/>
                     <br/>
                     <small style="color: silver">(<span i18n:translate="admin_metafield_msg2">TEXT</span>)</small>
                 </td>
@@ -356,7 +359,7 @@
                                 tal:attributes="
                                     name python:u'option_{}'.format(fieldoption.value);
                                     value python:fieldoption.value;
-                                    checked python:'checked' if metafield.option_flags[index] else None;
+                                    checked python:'checked' if option_flags[index] else None;
                                     "
                                 type="checkbox"
                             />
@@ -393,7 +396,7 @@
         <input type="hidden" name="form_op" value="save_editdetail" id="form_op"/>
         <input type="hidden" name="parent" tal:attributes="value python:metadatatype.id" />
         <input type="hidden" name="acttype" value="field"/>
-        <input type="hidden" name="fieldid" tal:attributes="value python:metafield.id"/>
+        <input type="hidden" name="fieldid" tal:attributes="value python:fieldid"/>
         <input type="hidden" name="actpage" tal:attributes="value actpage"/>
         <input type="hidden" name="actfilter" tal:attributes="value actfilter"/>
         <input type="hidden" name="filtertype" tal:attributes="value filtertype"/>

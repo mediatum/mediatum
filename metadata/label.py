@@ -57,9 +57,22 @@ class m_label(Metatype):
                     ustr(item.id) + '" i18n:attributes="title mask_edit_down_title"/>'
             else:
                 ret += '&nbsp;&nbsp;&nbsp;'
-            ret += ' <input type="image" src="/static/img/edit.png" name="edit_' + ustr(
-                item.id) + '" i18n:attributes="title mask_edit_edit_row"/> <input type="image" src="/static/img/delete.png" name="delete_' + ustr(
-                item.id) + '" i18n:attributes="title mask_edit_delete_row" onClick="return questionDel()"/></div>'
+            ret += '''
+                    <input
+                        type="image"
+                        src="/static/img/editor/edit-pen-paper.svg"
+                        name="edit_{}"
+                        i18n:attributes="title mask_edit_edit_row"
+                    />
+                    <input
+                        type="image"
+                        src="/static/img/delete.png"
+                        name="delete_{}"
+                        i18n:attributes="title mask_edit_delete_row"
+                        onClick="return questionDel()"
+                    />
+                </div>
+                '''.format(item.id)
             ret += '</div>'
 
         return ret

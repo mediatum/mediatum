@@ -77,7 +77,7 @@ var ctree_dragstop_pnode_key = null;
 var last_ajax_result = null;
 
 var FANCYTREE_KEYBOARD = true;
-var FANCYTREE_DEFAULT_ICON = '/static/img/webtree/directory.gif';
+var FANCYTREE_DEFAULT_ICON = '/static/img/webtree/directory.png';
 
 function build_context_menu_items(node, opts) {
 
@@ -611,10 +611,6 @@ function questionOperation(type){
             var node_to_clear = htree.getNodeByKey(key_to_clear);
             var parent_node = node_to_clear.getParent();
             var parent_node_key = parent_node.key;
-
-            // some operations may take time ... indicate activity with wait.gif
-            // var node_to_clear_old_title = node_to_clear.data.title;
-            //node_to_clear.setTitle(node_to_clear_old_title + '<img height="30" src="/static/img/wait.gif" />');
 
             node_to_clear.removeChildren()
 

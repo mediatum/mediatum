@@ -48,7 +48,8 @@
                         <td style="width:40px;padding-right:10px;text-align:right" tal:content="python:unicode(len(mapping.getFields()))"/>
                         <td tal:content="python:mapping.getMappingType()"/>
                         <td style="padding-left:14px">
-                            &nbsp;<img tal:condition="python:mapping.getActive()==1" src="/static/img/haken.gif"/>
+                            &nbsp;
+                            <img tal:condition="python:mapping.getActive()==1" src="/static/img/webtree/check.gif"/>
                         </td>
                         <td>
                             <input tal:attributes="name python:u'fieldlist_{}'.format(mapping.id)" i18n:attributes="title edit_fields" type="image" src="/static/img/rightarrow.png"/>
@@ -57,7 +58,12 @@
                             <a tal:attributes="href python:u'/admin/export/mapping/{}'.format(mapping.getName())" i18n:attributes="title admin_mapping_export_title" target="_blank">
                                 <img src="/static/img/export.png" border="0"/>
                             </a>
-                            <input tal:attributes="name python:u'edit_{}'.format(mapping.id)" i18n:attributes="title admin_mapping_edit_title" type="image" src="/static/img/edit.png"/>
+                            <input
+                                tal:attributes="name python:u'edit_{}'.format(mapping.id)"
+                                i18n:attributes="title admin_mapping_edit_title"
+                                type="image"
+                                src="/static/img/editor/edit-pen-paper.svg"
+                            />
                             &nbsp;&nbsp;
                             <input
                                 tal:condition="python:not (mapping.getFields() or used_by[mapping.id])"
@@ -307,10 +313,16 @@
                     <td tal:attributes="class cssclass" tal:content="python:field.getName()"/>
                     <td tal:attributes="class cssclass" tal:content="python:field.getDescription()"/>
                     <td tal:attributes="class cssclass">
-                        <img tal:condition="python:field.getMandatory()" src="/static/img/haken.gif"/>&nbsp;
+                        <img tal:condition="python:field.getMandatory()" src="/static/img/webtree/check.gif"/>
+                        &nbsp;
                     </td>
                     <td tal:attributes="class cssclass" class="_norm_">
-                        <input tal:attributes="name python:u'editfield_{}'.format(field.id)" i18n:attributes="title admin_mappingfield_edit_title" type="image" src="/static/img/edit.png"/>
+                        <input
+                            tal:attributes="name python:u'editfield_{}'.format(field.id)"
+                            i18n:attributes="title admin_mappingfield_edit_title"
+                            type="image"
+                            src="/static/img/editor/edit-pen-paper.svg"
+                        />
                         &nbsp;&nbsp;
                         <input tal:condition="python:not used_by[field.id]" tal:attributes="name python:u'deletefield_{}'.format(field.id); onclick python:u'return questionDelName(\'{}\')'.format(field.getName())" i18n:attributes="title admin_mappingfield_delete_title" type="image" src="/static/img/delete.png"/>
                         <input
@@ -322,7 +334,7 @@
                                 title python:translate(language, 'admin_mappingfield_used_title').format(used_by[field.id]);
                                 "
                             type="image"
-                            src="/static/img/archive.png"
+                            src="/static/img/padlock.png"
                         />
                     </td>
                 </tr>

@@ -15,7 +15,7 @@ from core import webconfig
 from sqlalchemy_continuum.utils import version_class
 
 fileicons = {'directory': 'mmicon_dir.gif',
-             'application/pdf': 'mmicon_pdf.gif',
+             'application/pdf': 'pdf.gif',
              'image/jpeg': 'mmicon_jpg.gif',
              'image/gif': 'mmicon_gif.gif',
              'image/png': 'mmicon_png.gif',

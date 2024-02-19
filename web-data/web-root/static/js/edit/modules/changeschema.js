@@ -8,7 +8,7 @@ function getSelect(id, newobjtype) {
 }
 
 function showWait() {
-    document.getElementById("schema").innerHTML='<img height="12" src="/static/img/wait.gif"/>';
+    document.getElementById("schema").innerHTML='<img height="12" src="/static/img/webtree/spinner.gif"/>';
 }
 
 $(document).ready(function () {

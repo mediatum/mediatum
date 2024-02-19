@@ -6,7 +6,7 @@
 var firstload = 1;
 function getSelect(id) {
     if (firstload==1){
-        document.getElementById("useracl").innerHTML='<img height="12" src="/static/img/wait.gif"/>';
+        document.getElementById("useracl").innerHTML='<img height="12" src="/static/img/webtree/spinner.gif"/>';
         getEditPage('useracl', id, 'acls', 'get_userlist');
         firstload=0;
     }
@@ -15,7 +15,7 @@ function getSelect(id) {
 // load data to tab via ajax
 function get_json_for_action(src, action, id) {
 
-  var tempdiv = $('<span id="tempdiv"><img height="12" src="/static/img/wait.gif" />   </span>');
+  var tempdiv = $('<span id="tempdiv"><img height="12" src="/static/img/webtree/spinner.gif" />   </span>');
   $(src).append(tempdiv);
   var ajax_response;
 

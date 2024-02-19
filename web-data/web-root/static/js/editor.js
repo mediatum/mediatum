@@ -359,7 +359,7 @@ function edit_action_sync(action, src, nodeids, add) {
         }
         if (src_node) {
             var src_node_title_old = src_node.title;
-            src_node.setTitle(src_node_title_old + '<img height="30" src="/static/img/wait.gif" />');
+            src_node.setTitle(src_node_title_old + '<img height="30" src="/static/img/webtree/spinner.gif" />');
         }
     }    
 
@@ -378,7 +378,7 @@ function edit_action_sync(action, src, nodeids, add) {
               consoledb.dir(response);
 
               if (src_node) {
-                  // remove image wait.gif
+                  // remove image
                   src_node.setTitle(src_node_title_old);
                   src_node.render();
               }

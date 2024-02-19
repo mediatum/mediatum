@@ -955,7 +955,7 @@ def content(req):
         dircontent = ' <b>&raquo;</b> '.join(s)
 
     # add icons to breadcrumbs
-    ipath = 'webtree/directory.gif'
+    ipath = 'webtree/directory.png'
     if node and node.isContainer():
         if node.name == 'home' or 'Arbeitsverzeichnis' in node.name or node == user.home_dir:
             ipath = 'webtree/homeicon.gif'

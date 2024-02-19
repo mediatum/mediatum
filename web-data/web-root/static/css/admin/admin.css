@@ -33,7 +33,7 @@ th1, td1{text-align: left;}
 code1, tt1, pre1{font-size: 120%;}
 /* container */
 .mediatum_clean-container{ margin:0px;background-color: #fff;text-align: left;width: auto;}
- /* Top - banner */      
+ /* Top - banner */
 .mediatum_logocontainer {
     height: 50px;
     margin: 0;
@@ -113,7 +113,7 @@ border-left: 1px solid #CCCCCC;border-top: 1px solid #F4F4F4;}
 .mediatum_itemoverflow  {overflow: hidden;}
 .mediatum_itemoverflow img  {border: none;}
 .mediatum_itemoverflow a  {border: none;}
-.mediatum_itemicon  {float: left;margin-right: 10px;}
+.mediatum_itemicon  {float: left;margin-right: 10px; width:60px; height:60px;}
 .mediatum_itemtext  {float: left;width: 39em;}
 div.hstippled  {font-size: 1px;height: 1px;}
 div.breadcrumbs{margin:0px;background: #F2F5F7;border-bottom: 1px solid #E2E9EB;padding: 10px 10px 10px 20px;color: #243135;height:20px;}

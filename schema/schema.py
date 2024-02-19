@@ -73,7 +73,7 @@ fieldoption = (
     _Option(
         name="metafield_option1",
         shortname="search", value="s",
-        imgsource="/static/img/folder_plus.gif",
+        imgsource="/static/img/webtree/plus.svg",
     ),
     _Option(
         name="metafield_option2",

@@ -355,7 +355,7 @@ class UserLinks(object):
                     "/",
                     _core_translation.translate(self.language, "sub_header_frontend_title"),
                     _core_translation.translate(self.language, "sub_header_frontend"),
-                    icon="/static/img/frontend.gif",
+                    icon="/static/img/editor/magnifying-glass.svg",
                 ))
 
         if self.user.is_editor:
@@ -370,7 +370,7 @@ class UserLinks(object):
                     "/edit{}".format(idstr),
                     _core_translation.translate(self.language, "sub_header_edit_title"),
                     _core_translation.translate(self.language, "sub_header_edit"),
-                    icon="/static/img/edit.gif",
+                    icon="/static/img/editor/edit-pen-paper.svg",
                 ))
 
         if self.user.is_admin:
@@ -395,7 +395,7 @@ class UserLinks(object):
                     _core_translation.translate(self.language, "sub_header_changepwd"),
                     _core_translation.translate(self.language, "sub_header_changepwd"),
                     "_parent",
-                    icon="/static/img/changepwd.gif",
+                    icon="/static/img/padlock.png",
                 ))
         return l
 

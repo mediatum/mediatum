@@ -396,15 +396,6 @@ def getEditModules():
 
     _editModules = {m.__name__.replace("web.edit.modules.", ""): m for m in modules_list}
 
-    for plugin in _core_plugins.plugins.values():
-        if hasattr(plugin, "get_edit_modules"):
-            plugin_edit_modules = plugin.get_edit_modules()
-            intersect = frozenset(plugin_edit_modules).intersection(_editModules)
-            if intersect:
-                raise RuntimeError("plugin edit module {} already exists".format(intersect))
-            else:
-                _editModules.update(plugin_edit_modules)
-
 
 def getIDs(req):
     # look for one "id" parameter, containing an id or a list of ids

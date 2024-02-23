@@ -410,8 +410,6 @@ input[value="Cancel"]
 .mediatum_img_logo::before {content: url(/static/img/editor/mediatum_edit.svg);} /* Logo editieren */
 .mediatum_img_searchmask::before {content: url(/static/img/editor/mediatum_search.svg);} /* Suchmaske anlegen */
 .mediatum_img_subfolder::before {content: url(/static/img/editor/mediatum_sort.svg);} /* Unterordner sortieren */
-.mediatum_img_statsaccess::before {content: url(/static/img/editor/mediatum_stat.svg);} /* Zugriffsstatistiken */
-.mediatum_img_statsfiles::before {content: url(/static/img/editor/mediatum_stat.svg);} /* Datenstatistiken */
 .mediatum_img_sortfiles::before {content: url(/static/img/editor/mediatum_sort.svg);} /* Dateien sortieren */
 .mediatum_img_changeschema::before {content: url(/static/img/editor/mediatum_edit.svg);} /* Objekttyp / Metadatentyp ändern */
 .mediatum_img_files::before {content: url(/static/img/editor/mediatum_attach.svg);} /* Datei hinzufügen */

@@ -370,9 +370,6 @@ msgstr "Versionierung"
 msgid "tab_publish"
 msgstr "Publizieren"
 
-msgid "tab_statsfiles"
-msgstr "Datenstatistiken"
-
 msgid "tab_news"
 msgstr "Mitteilungen verwalten"
 

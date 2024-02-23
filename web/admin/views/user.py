@@ -121,9 +121,21 @@ class UserGroupView(BaseAdminView):
 
     column_labels = dict(metadatatype_access = 'Metadatatypes', user_names = 'Users')
 
-    edit_functions = ['acls', 'admin', 'changeschema', 'classes', 'editor', 'files', 'identifier',
-                      'logo',
-                      'metadata', 'search', 'searchmask', 'sortfiles', 'statsaccess', 'statsfiles', 'upload']
+    edit_functions = [
+        'acls',
+        'admin',
+        'changeschema',
+        'classes',
+        'editor',
+        'files',
+        'identifier',
+        'logo',
+        'metadata',
+        'search',
+        'searchmask',
+        'sortfiles',
+        'upload'
+        ]
 
     edit_function_choices = [(x, x) for x in edit_functions]
 

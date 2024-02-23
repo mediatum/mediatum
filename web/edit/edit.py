@@ -354,7 +354,6 @@ def getEditModules():
     from web.edit.modules import searchmask
     from web.edit.modules import sortfiles
     from web.edit.modules import startpages
-    from web.edit.modules import statsfiles
     from web.edit.modules import subfolder
     from web.edit.modules import upload
     from web.edit.modules import version
@@ -381,7 +380,6 @@ def getEditModules():
         searchmask,
         sortfiles,
         startpages,
-        statsfiles,
         subfolder,
         upload,
         version,

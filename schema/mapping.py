@@ -29,7 +29,7 @@ def getMappingTypes():
         mappings = _nodecache.get_mappings_node()
         ret = mappings.get("mappingtypes").split(";")
         if len(ret) == 0 or ret[0] == "":
-            mappings.set("mappingtypes", "default;bibtex;rss;marc21;z3950;citeproc")
+            mappings.set("mappingtypes", ";".join(("default", "bibtex", "rss", "marc21", "citeproc")))
             db.session.commit()
             return getMappingTypes()
         return ret

@@ -12,7 +12,6 @@
     &nbsp;
     <button
         tal:attributes="
-            name python:u'indexbutton_{}'.format(name);
             onclick python:u'openPopup(\'/metatype/ilist?type={}&name={}&schema={}\', \'\', 400, 400)'.format(
                 metafield.getFieldtype(),
                 metafield.name,

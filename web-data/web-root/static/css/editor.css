@@ -427,12 +427,9 @@ input[value="Cancel"]
 
 .mediatum_itemicon {float:left; margin-right:10px;}
 .mediatum_itemmenucontainer {
-    color: #666666;
-    background: transparent;
     padding: 20px 10px 10px;
     width: 582px;
-    background-image: url(/static/img/layout/menuitem-background-gradient.gif);
-    background-repeat: no-repeat;
+    background-image: linear-gradient(0deg, white, silver);
     background-position: right top;
     min-height: 70px;
     margin: 0 10px;
@@ -639,11 +636,10 @@ iframe.ui-layout-center, div.ui-layout-north{border-width:0!important;padding:0;
 #filetable_nodebig tr:hover{background-color:silver;}
 #filetable_nodebig a{color:#000000; padding:1px; margin:0px;}
 #footer {
-    color: #fff;
     text-align: center;
     padding: 20px;
     clear: both;
-    background: #314348 url(/static/img/layout/bg-banner.png) repeat-x left top;
+    background-image: linear-gradient(0deg, dimgray, black);
     width: auto;
     margin-top: 0px;
     height: 20px;

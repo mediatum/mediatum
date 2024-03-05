@@ -16,9 +16,6 @@ msgstr "Email-Adresse Empfänger"
 msgid "workflowstep_email_subject"
 msgstr "Betreff"
 
-msgid "workflowstep_email_text_editable"
-msgstr "Angaben editierbar?"
-
 msgid "workflowstep_email_reply_to_email"
 msgstr "Antwort-Email-Adresse"
 

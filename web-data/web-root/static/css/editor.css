@@ -376,8 +376,6 @@ input[value="Cancel"]
     object-fit: contain;
     object-position: top;
 }
-.mediatum_imgtooltipbasedefault .mediatum_imghoverdefault{display:none;}
-.mediatum_imgtooltipbasedefault:hover .mediatum_imghoverdefault{display: inline-block;position: relative;left: 0px;height:128px;width:128px;}
 
 /* Top Menu */
 a.mediatum-icon-small::before, a.mediatum-icon-medium::before { content: ""; }

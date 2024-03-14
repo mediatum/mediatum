@@ -34,8 +34,13 @@ code1, tt1, pre1{font-size: 120%;}
 /* container */
 .mediatum_clean-container{ margin:0px;background-color: #fff;text-align: left;width: auto;}
  /* Top - banner */      
-.mediatum_logocontainer  {height: 50px; margin: 0;background: #243135 url(/static/img/layout/bg_banner.png) repeat-x left top;
-    border-bottom: 1px solid #D9E2E6; width:auto;}
+.mediatum_logocontainer {
+    height: 50px;
+    margin: 0;
+    background: #243135 url(/static/img/layout/bg-banner.png) repeat-x left top;
+    border-bottom: 1px solid #D9E2E6;
+    width: auto;
+}
  /* Top - logo */     
 .mediatum_logocontainer img  {float:left;padding: 0px;margin: 5px;margin-left:10px;}
 /* Top - logo - text */    
@@ -50,7 +55,13 @@ div.logotext a:hover{color: #FFFFFF;}
 .info h1{font: bold 1em Verdana, Arial, Helvetica, sans-serif;color: #fff;background: #506D76 url(/static/img/layout/nav.png) repeat-x 0px -50px;
 width: auto;padding: 11px;margin: 5px 5px 5px;}
 /*Layer login*/
-.login {background: #fff url(/static/img/layout/itenmenucontainer.gif) no-repeat left top;float: right;width: 350px;margin:0;padding-bottom: 50px;}
+.login {
+    background: #fff url(/static/img/layout/menuitem-background-gradient.gif) no-repeat left top;
+    float: right;
+    width: 350px;
+    margin: 0;
+    padding-bottom: 50px;
+}
 input.order { width:2em;font-size: 1em;text-align: center;}
  
  /* MENU*/
@@ -88,8 +99,17 @@ margin-right: 1px;margin-left: 1px;font-weight: bold;}
 #page_content  {background: transparent;padding: 20px 10px;border-right: 1px solid #CCCCCC;border-bottom: 1px solid #CCCCCC;
 border-left: 1px solid #CCCCCC;border-top: 1px solid #F4F4F4;}
 .mediatum_itemsublink  {color: #384654;}
-.mediatum_itemmenucontainer  {color: #666666;background: transparent;padding: 20px 10px 10px;width: 582px;
-    background-image: url(/static/img/layout/itenmenucontainer.gif);background-repeat: no-repeat;background-position: right top;min-height:70px;margin: 0 10px;}
+.mediatum_itemmenucontainer {
+    color: #666666;
+    background: transparent;
+    padding: 20px 10px 10px;
+    width: 582px;
+    background-image: url(/static/img/layout/menuitem-background-gradient.gif);
+    background-repeat: no-repeat;
+    background-position: right top;
+    min-height:70px;
+    margin: 0 10px;
+}
 .mediatum_itemoverflow  {overflow: hidden;}
 .mediatum_itemoverflow img  {border: none;}
 .mediatum_itemoverflow a  {border: none;}
@@ -99,8 +119,16 @@ div.hstippled  {font-size: 1px;height: 1px;}
 div.breadcrumbs{margin:0px;background: #F2F5F7;border-bottom: 1px solid #E2E9EB;padding: 10px 10px 10px 20px;color: #243135;height:20px;}
 a.breadcrumbs  {color: #243135;}
 /*FOOTER*/
-#footer  {color: #fff;text-align: center;padding: 20px;clear:both;background: #314348 url(/static/img/layout/bg_banner.png) repeat-x left top;
-width: auto;margin-top: 0px;height: 20px;}
+#footer {
+    color: #fff;
+    text-align: center;
+    padding: 20px;
+    clear: both;
+    background: #314348 url(/static/img/layout/bg-banner.png) repeat-x left top;
+    width: auto;
+    margin-top: 0px;
+    height: 20px;
+}
 #footer a  {color: #fff;text-decoration: underline;}
 .checkbox {padding-left: 10px;}
 iframe.preview  {background-color: #fff;margin: 10px;border: solid 1px #666;width: 95%;height: 400px;}

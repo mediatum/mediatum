@@ -101,7 +101,7 @@ def getData(req):
                 cls = c.Container.treeiconclass()
 
             if special_dir_type == u'trash':
-                cls = "trashicon"
+                cls = "trashbin"
             elif special_dir_type == u'upload':
                 cls = "uploadicon"
             elif c.Container == user_home_dir:

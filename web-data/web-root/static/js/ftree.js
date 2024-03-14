@@ -38,7 +38,7 @@ var ajaxObjectArray = new Array();
 var treeUlCounter = 0;
 
 var imageFolder = '/static/img/webtree/';    // Path to images
-var folderImage = 'folder.gif';
+var folderImage = 'directory.gif';
 var plusImage = 'plus.gif';
 var minusImage = 'minus.gif';
 var waitImage = 'spinner.gif';

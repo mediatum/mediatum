@@ -75,7 +75,7 @@
                     <td tal:content="python:mask.getDescription()"/>
                     <td>&nbsp;&nbsp;
                         <img tal:condition="python:mask.getDefaultMask()" src="/static/img/haken.gif"/>
-                        <img tal:condition="python:not mask.getDefaultMask()" src="/static/img/emtyDot1Pix.gif"/>
+                        <img tal:condition="python:not mask.getDefaultMask()" src="/static/img/transparent-pixel.gif"/>
                     </td>
                     <td>
                         <img tal:attributes="src python:lang_icons.get(mask.getLanguage())"/>

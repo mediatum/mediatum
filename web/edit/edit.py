@@ -55,7 +55,7 @@ def getEditorIconPath(node, home_dir = None, upload_dir = None, trash_dir = None
     if node is upload_dir:
         return 'webtree/uploadicon.gif'
     if node is trash_dir:
-        return 'webtree/trashicon.gif'
+        return 'webtree/trashbin.gif'
 
     if hasattr(node, 'treeiconclass'):
         return "webtree/" + node.treeiconclass() + ".gif"
@@ -962,7 +962,7 @@ def content(req):
         elif node.name in ('Uploads', 'upload'):
             ipath = 'webtree/uploadicon.gif'
         elif node.name in ('Papierkorb', 'trash'):
-            ipath = 'webtree/trashicon.gif'
+            ipath = 'webtree/trashbin.gif'
         else:
             ipath = getEditorIconPath(node)
 

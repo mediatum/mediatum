@@ -79,7 +79,7 @@ fieldoption = (
         name="metafield_option2",
         shortname="sort",
         value="o",
-        imgsource="/static/img/ordersel.png",
+        imgsource="/static/img/sort-by-alphabet-az.png",
     ),
 )
 

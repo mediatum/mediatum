@@ -98,7 +98,7 @@ def stackdump_setup():
 
 
 def run(force_test_db=None, loglevel=None, automigrate=False):
-    """Serve mediaTUM from the Athana HTTP Server and start FTP and Z3950, if requested"""
+    """Serve mediaTUM from the WSGI Server Flask, if requested"""
     # init.full_init() must be done as early as possible to init logging etc.
     from core import init
     init.full_init(force_test_db=force_test_db, root_loglevel=loglevel, automigrate=automigrate)

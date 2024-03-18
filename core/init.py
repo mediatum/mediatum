@@ -251,7 +251,6 @@ def basic_init(root_loglevel=None, config_filepath=None, prefer_config_filename=
     load_types()
     connect_db(force_test_db, automigrate)
     _set_current_init_state(init_state)
-    from core import medmarc as _  # mustn't be imported too early
     _init_default_thumbnail()
     from core import db
     db.session.rollback()

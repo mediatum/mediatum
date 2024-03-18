@@ -55,7 +55,6 @@ let
       mediatumtal
       munch
       mutagen
-      mollyZ3950
       parcon
       pillow
       polib
@@ -67,7 +66,6 @@ let
       pygeoip
       pygments
       pyjade
-      pymarc
       pympler
       pyyaml
       reportlab

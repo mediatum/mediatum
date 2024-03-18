@@ -7,7 +7,7 @@
 Search configuration. Currently, the following language configurations can be set:
 
 * default: used by default in node.search* methods
-* service:  used for searches via services (currently: Z39.50, export webservice, OAI)
+* service:  used for searches via services (currently: export webservice, OAI)
 * fulltext_autoindex: which search configs should be used for automatically indexing fulltexts on changes
 * attribute_autoindex: which search configs should be used for automatically indexing attributes on changes
 

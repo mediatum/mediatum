@@ -913,8 +913,6 @@ def content(req):
     if "globalsort" in req.values:
         node.set("sortfield", req.values["globalsort"])
 
-    v['collection_sortfield'] = req.values.get("sortfield", node.get("sortfield"))
-
     if req.values.get("style") != "popup":
         if not isinstance(node, (_core_systemtypes.Root, Collections, Home)):
             sortchoices = tuple(_sort.get_sort_choices(
@@ -971,7 +969,7 @@ def content(req):
 
     v["dircontent"] += '&nbsp;&nbsp;<img src="' + '/static/img/' + ipath + '" />'
     v["nodesperpage_options"] = _web_common_pagination.get_config_nodes_per_page(True)
-    v["sortfield"] = v.get("collection_sortfield", req.values.get("sortfield", node.get("sortfield"))) or "off"
+    v["sortfield"] = req.values.get("sortfield", node.get("sortfield")) or "off"
     v["nodesperpage_from_req"] = req.values.get("nodes_per_page")
 
     req.response.set_data(_tal.processTAL(v, file="web/edit/edit.html", macro="frame_content", request=req))

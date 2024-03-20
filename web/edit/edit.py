@@ -866,6 +866,36 @@ def content(req):
     if current in ["files", "upload"]:
         ids = ids[0:1]
 
+    if tabs == 'upload' and current == 'content':
+        current = 'upload'
+
+    if "globalsort" in req.values:
+        node.set("sortfield", req.values["globalsort"])
+
+    if req.values.get("style") != "popup":
+        if not isinstance(node, (_core_systemtypes.Root, Collections, Home)):
+            sortchoices = tuple(_sort.get_sort_choices(
+                    container=node,
+                    off="off",
+                    t_off=_core_translation.translate_in_request("off", req),
+                    t_desc=_core_translation.translate_in_request("descending", req),
+                ))
+        else:
+            sortchoices = ()
+
+        v["tabs"] = _handletabs(req, ids, tabs, sortchoices)
+
+    c = _editModules[current].getContent(req, ids)
+    if not c:
+        logg.debug('empty content')
+        return
+    if isinstance(c, int):
+        # module returned a custom http status code instead of HTML content
+        return c
+
+    if req.values.get("style") == "popup":  # normal page with header
+        return
+
     # display current images
     if not isinstance(q(Data).get(ids[0]), Container):
         nid = req.values.get('srcnodeid', req.values.get('id'))
@@ -906,36 +936,6 @@ def content(req):
             )
         s.append(get_edit_label(n, language))
         dircontent = ' <b>&raquo;</b> '.join(s)
-
-    if tabs == 'upload' and current == 'content':
-        current = 'upload'
-
-    if "globalsort" in req.values:
-        node.set("sortfield", req.values["globalsort"])
-
-    if req.values.get("style") != "popup":
-        if not isinstance(node, (_core_systemtypes.Root, Collections, Home)):
-            sortchoices = tuple(_sort.get_sort_choices(
-                    container=node,
-                    off="off",
-                    t_off=_core_translation.translate_in_request("off", req),
-                    t_desc=_core_translation.translate_in_request("descending", req),
-                ))
-        else:
-            sortchoices = ()
-
-        v["tabs"] = _handletabs(req, ids, tabs, sortchoices)
-
-    c = _editModules[current].getContent(req, ids)
-    if not c:
-        logg.debug('empty content')
-        return
-    if isinstance(c, int):
-        # module returned a custom http status code instead of HTML content
-        return c
-
-    if req.values.get("style") == "popup":  # normal page with header
-        return
 
     # add icons to breadcrumbs
     ipath = 'webtree/directory.gif'

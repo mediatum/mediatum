@@ -892,7 +892,7 @@ def content(req):
                      label=get_edit_label(p, language),
                  )
             )
-        v["dircontent"] = ' <b>&raquo;</b> '.join(s)
+        dircontent = ' <b>&raquo;</b> '.join(s)
     else:  # or current directory
         n = q(Data).get(long(ids[0]))
         s = []
@@ -905,7 +905,7 @@ def content(req):
                  )
             )
         s.append(get_edit_label(n, language))
-        v["dircontent"] = ' <b>&raquo;</b> '.join(s)
+        dircontent = ' <b>&raquo;</b> '.join(s)
 
     if tabs == 'upload' and current == 'content':
         current = 'upload'
@@ -937,24 +937,6 @@ def content(req):
     if req.values.get("style") == "popup":  # normal page with header
         return
 
-    v.update(
-            script="",
-            body=c,
-            paging=_show_paging(req, current, ids),
-            node=node,
-            ids=(req.values.get("ids") or req.values.get("id", "")).split(","),
-            tab=current,
-            operations=_tal.processTAL(
-                 dict(iscontainer=node.isContainer()),
-                 file="web/edit/edit_common.html",
-                 macro="show_operations",
-                 request=req,
-             ),
-            user=user,
-            language=_core_translation.set_language(req.accept_languages),
-            translate=_core_translation.translate,
-           )
-
     # add icons to breadcrumbs
     ipath = 'webtree/directory.gif'
     if node and node.isContainer():
@@ -967,10 +949,27 @@ def content(req):
         else:
             ipath = getEditorIconPath(node)
 
-    v["dircontent"] += '&nbsp;&nbsp;<img src="' + '/static/img/' + ipath + '" />'
-    v["nodesperpage_options"] = _web_common_pagination.get_config_nodes_per_page(True)
-    v["sortfield"] = req.values.get("sortfield", node.get("sortfield")) or "off"
-    v["nodesperpage_from_req"] = req.values.get("nodes_per_page")
+    v.update(
+        script="",
+        body=c,
+        paging=_show_paging(req, current, ids),
+        node=node,
+        ids=(req.values.get("ids") or req.values.get("id", "")).split(","),
+        tab=current,
+        operations=_tal.processTAL(
+            dict(iscontainer=node.isContainer()),
+            file="web/edit/edit_common.html",
+            macro="show_operations",
+            request=req,
+        ),
+        dircontent=u'{}&nbsp;&nbsp;<img src="/static/img/{}"/>'.format(dircontent, ipath),
+        nodesperpage_options=_web_common_pagination.get_config_nodes_per_page(True),
+        nodesperpage_from_req=req.values.get("nodes_per_page"),
+        sortfield=req.values.get("sortfield", node.get("sortfield")) or "off",
+        user=user,
+        language=_core_translation.set_language(req.accept_languages),
+        translate=_core_translation.translate,
+    )
 
     req.response.set_data(_tal.processTAL(v, file="web/edit/edit.html", macro="frame_content", request=req))
 

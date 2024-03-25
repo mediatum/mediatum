@@ -702,7 +702,7 @@ def showEditor(req):
             fields = []
             pidnode = q(Node).get(req.params.get("pid"))
             for field in pidnode.getChildren():
-                if field.getType().getName() == "maskitem" and field.id != pidnode.id:
+                if field.type == "maskitem" and field.id != pidnode.id:
                     fields.append(field)
             fields.sort(key=_operator.attrgetter("orderpos"))
             for f in fields:

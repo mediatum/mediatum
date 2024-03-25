@@ -118,7 +118,8 @@ def getData(req):
             if c.has_container_children:
                 ret.append(u'''
                     <ul>
-                        <li parentId="{}" class="spinner.gif">
+                        <li parentId="{}">
+                            <span class="mediatum-editor-nav-image-wait"> </span>
                             <a href="#">&nbsp;</a>
                         </li>
                     </ul>

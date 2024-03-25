@@ -8,7 +8,9 @@ function getSelect(id, newobjtype) {
 }
 
 function showWait() {
-    document.getElementById("schema").innerHTML='<img height="12" src="/static/img/webtree/spinner.gif"/>';
+    var span = document.createElement("span");
+    span.classList.add("mediatum-editor-nav-image-wait");
+    document.getElementById("schema").replaceChildren(span);
 }
 
 $(document).ready(function () {

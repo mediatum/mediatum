@@ -359,7 +359,7 @@ function edit_action_sync(action, src, nodeids, add) {
         }
         if (src_node) {
             var src_node_title_old = src_node.title;
-            src_node.setTitle(src_node_title_old + '<img height="30" src="/static/img/webtree/spinner.gif" />');
+            src_node.setTitle(src_node_title_old + '<span class="mediatum-editor-nav-image-wait"/>');
         }
     }    
 
@@ -421,7 +421,9 @@ function openWindow(fileName, width, height)
 function reloadURL(url, id, className)
 {
     if (id !== undefined) {
-        document.getElementById(id).classList.add(className);
+        var span = document.createElement("span");
+        span.classList.add(className);
+        document.getElementById(id).insertAdjacentElement("afterend", span);
     }
     this.location.href = url;
 }

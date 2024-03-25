@@ -177,7 +177,7 @@ function show(pos, id){
 
 function startsearch(pos, baseid, language){
     language = language || lan;
-    $("#searchresult_"+pos).html('<img src="'+baseurl+'/static/img/webtree/spinner.gif"/>');
+    $("#searchresult_"+pos).html('<span class="mediatum-editor-nav-image-wait"> </span>');
     $(".part_"+pos).css("display", "none");
     $("#searchresult_"+pos).css("display", "block");
 

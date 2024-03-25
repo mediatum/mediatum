@@ -66,7 +66,9 @@
             class="mediatum_node_icon mediatum-link-mediatum"
             tal:attributes="
                 id python:node.id;
-                onclick python:u'''reloadURL(&quot;/edit/edit_content?srcnodeid={0}&id={1}&tab=classes&quot;, '{1}', 'mediatum-editor-node-icon-wait')'''.format(srcnodeid, node.id);
+                onclick python:u'''
+                    reloadURL('/edit/edit_content?srcnodeid={0}&id={1}&tab=classes', '{1}', 'mediatum-editor-nav-image-wait')
+                    '''.format(srcnodeid, node.id);
                 "
             i18n:attributes="title tab_classes"
             target="content"

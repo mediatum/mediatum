@@ -338,7 +338,8 @@
                 <ul id="tree" class="tree">
                     <li tal:repeat="basedir basedirs" tal:attributes="id python:'Node{}'.format(basedir.id)"><a tal:attributes="id python:str(basedir.id); title python: '{} ({})'.format(basedir.getLabel(), str(basedir.id))" tal:content="python:basedir.getLabel()" href="#">TEXT</a>
                         <ul>
-                            <li tal:attributes="parentId python:basedir.id" class="spinner.gif">
+                            <li tal:attributes="parentId python:basedir.id">
+                                <span class="mediatum-editor-nav-image-wait"> </span>
                                 <a href="#!" id="node_0" class="mediatum-link-mediatum"> </a>
                             </li>
                         </ul>

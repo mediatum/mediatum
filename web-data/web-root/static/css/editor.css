@@ -63,9 +63,6 @@ button, input[type="button"],input[type="submit"],input[type="reset"], button[ty
     background-color:#ededed; -moz-border-radius:6px; -webkit-border-radius:6px; border-radius:6px; border:1px solid #dcdcdc; display:inline-block;
     font-size:12px; padding:4px 24px;
 }
-.mediatum-showpreview-btn-wait, .mediatum-showpreview-btn-wait:hover {
-    background: no-repeat url("/static/img/webtree/spinner.gif");
-}
 button:hover, input[type="button"]:hover,input[type="submit"]:hover,input[type="reset"]:hover, button[type="submit"]:hover {
     background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #dfdfdf), color-stop(1, #ededed) );
     background:-moz-linear-gradient( center top, #dfdfdf 5%, #ededed 100% );
@@ -386,11 +383,28 @@ input[value="Cancel"]
 a.mediatum-icon-small::before, a.mediatum-icon-medium::before { content: ""; }
 img.mediatum-icon-small, a.mediatum-icon-small::before, input.mediatum-icon-small {height: 16px ; width: 16px;}
 a.mediatum-icon-medium::before {display: block; height: 32px; width: 32px; background-size: 32px 32px;}
-.mediatum-showpreview-btn-wait, .mediatum-showpreview-btn-wait:hover {
-    background: no-repeat url("/static/img/webtree/spinner.gif");
-    background-size: 22px 22px;
+
+.mediatum-editor-nav-image-wait {
+    width: 16px;
+    height: 16px;
+    border: 2px solid black;
+    border-bottom-color: white;
+    border-radius: 50%;
+    display: inline-block;
+    box-sizing: border-box;
+    animation: rotation 1s linear infinite;
+    margin-left: 2px;
+    background-color: white;
 }
-.mediatum-editor-nav-image-wait::before {content: url(/static/img/webtree/spinner.gif);}
+
+@keyframes rotation {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
 
 .mediatum_img_content::before {background-image: url(/static/img/content-list.svg);} /* Verzeichnis-Übersicht */
 .mediatum_img_metadata::before {background-image: url(/static/img/edit-pen-paper.svg);}
@@ -471,7 +485,6 @@ a.mediatum-icon-medium::before {display: block; height: 32px; width: 32px; backg
 .mediatum_node_icon{display:table-cell;width:30px;cursor:pointer;}
 .mediatum_node_icon_chk{width:30px;}
 .mediatum_node_icon_header{display:table-cell;padding-bottom: 5px;width:30px;}
-.mediatum-editor-node-icon-wait {content: url(/static/img/webtree/spinner.gif);}
 .mediatum_node_text {display: table-cell; vertical-align: top; font-size:10px;}
 .mediatum_node_text_grid{padding:0px 5px 0px 5px;width:138px;}
 .mediatum_node_text_grid p{overflow:hidden;text-overflow: ellipsis;}

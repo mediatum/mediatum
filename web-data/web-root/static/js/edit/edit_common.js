@@ -24,9 +24,10 @@ function previewimageson() {
     $("#mediatum_showpreviewon").hide();
 };
 
-function visitPage(id){
+function visitPage(event) {
     $("#unpub").addClass("mediatum-showpreview-btn-wait");
     window.location = $("#unpub").attr("href");
+    event.preventDefault();
 }
 
 function closeSubOverlay(){

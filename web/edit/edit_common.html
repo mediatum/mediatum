@@ -159,7 +159,14 @@
         <div id="scrollcontent">
             <div class="mediatum_showpreview">
                 <div id="publish" tal:condition="unpublishedlink" class="mediatum_showpreview_input_publish">
-                    <button class="mediatum_showpreview_btn" i18n:translate="unpublished_objects2" id="unpub" tal:attributes="href unpublishedlink;" onclick="visitPage('unpub');event.preventDefault();">TEXT</button>
+                    <button
+                        class="mediatum_showpreview_btn"
+                        i18n:translate="unpublished_objects2"
+                        id="unpub"
+                        tal:attributes="href unpublishedlink"
+                        onclick="visitPage(event);"
+                    >
+                    </button>
                 </div>
                 <div class="mediatum_showpreview_input">
                     <button class="mediatum_showpreview_btn" id="mediatum_showpreviewon" i18n:translate="preview_images_on" onclick="previewimageson();event.preventDefault();">TEXT</button>

@@ -117,7 +117,7 @@ def render_mask_template(node, mask, field_descriptors, language, words=None, se
 
 def get_thumbnail_size(width, height):
     scale = max(min(512 / width, 512 / height), _math.sqrt(65536 / (width * height)))
-    return max(1, round(width*scale)), max(1, round(height*scale))
+    return max(1, int(round(width*scale))), max(1, int(round(height*scale)))
 
 
 def _get_node_attribute_name(maskitem):

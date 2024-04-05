@@ -779,9 +779,6 @@ class MediatumMagics(Magics):
             node = cnode
         else:
             node = q(Node).get(args.nid)
-        if hasattr(node, "event_metadata_changed"):
-            node.event_metadata_changed()
-            logg.info("called event_metadata_changed")
         if hasattr(node, "event_files_changed"):
             node.event_files_changed()
             logg.info("called event_files_changed")

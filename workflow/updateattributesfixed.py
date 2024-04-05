@@ -38,9 +38,6 @@ class WorkflowStep_UpdateAttributesFixed(_workflow.WorkflowStep):
             if v is None:
                 del node.attrs[k]
 
-        if hasattr(node, "event_metadata_changed"):
-            node.event_metadata_changed()
-
         _core.db.session.commit()
 
         self.forward(node, True)

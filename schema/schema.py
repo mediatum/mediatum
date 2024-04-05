@@ -992,8 +992,6 @@ class Mask(Node):
                 (name[len("system."):],value) for name,value in attrs.attrs.iteritems() if name.startswith("system.")
                )
 
-        if hasattr(node, "event_metadata_changed"):
-            node.event_metadata_changed()
 
     def getMappingHeader(self):
         from .mapping import Mapping

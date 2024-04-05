@@ -96,8 +96,6 @@ class WorkflowStep_HierarchicalChoice2Metafield(_workflow.WorkflowStep):
             metafielderror = u""
         elif _source_has_value(tree_data, req.values["hierarchicalmetafield"]):
             node.attrs[self.settings["target-attribute-name"]] = req.values["hierarchicalmetafield"]
-            if hasattr(node, "event_metadata_changed"):
-                node.event_metadata_changed()
             _core.db.session.commit()
             return self.forwardAndShow(node, True, req)
         else:

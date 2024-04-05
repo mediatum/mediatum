@@ -103,92 +103,92 @@ function createObjectsPluploadFile(){ // build object out of files
     number_files = all_files = $('#uploaderfile_filelist').children().length;
     if (number_files==1){
         singlefile==1;
-}
+    }
 
-console.log('number_files: ' + number_files + ' all_files: ' + all_files);
+    console.log('number_files: ' + number_files + ' all_files: ' + all_files);
 
-var new_elem = $('<img height="30" src="/static/img/wait.gif" />');
-new_elem.insertBefore('#span_plupload_createobjects_file');
-new_elem.insertBefore('.plupload_logo');
-$('.plupload_logo').attr('class', '');
+    var new_elem = $('<img height="30" src="/static/img/wait.gif" />');
+    new_elem.insertBefore('#span_plupload_createobjects_file');
+    new_elem.insertBefore('.plupload_logo');
+    $('.plupload_logo').attr('class', '');
 
-var htree = parent.gethometree();
+    var htree = parent.gethometree();
 
-$.each($(".typesel"), function(i, l){
-    x = $(l);
-    value = x.val(); // value
-    type = x.attr('id'); // type
-    files = x.parents().children('#'+x.attr('id')+':last').val(); //files
+    $.each($(".typesel"), function(i, l){
+        x = $(l);
+        value = x.val(); // value
+        type = x.attr('id'); // type
+        files = x.parents().children('#'+x.attr('id')+':last').val(); //files
 
-    console.log('upload.createObjectsfile: l:'+l+', value:'+value+', type:'+type+', files:'+files);
+        console.log('upload.createObjectsfile: l:'+l+', value:'+value+', type:'+type+', files:'+files);
 
-    var ajax_response;
+        var ajax_response;
 
-    var options = {
-        url: '/edit/edit_content?action=buildnode&func=createObjectsPlupload&id='+id+'&files='+encodeURIComponent(files)+'&type='+type+'&value='+value,
-        async: false,
-        dataType: 'json',
-        success: function (data) {
-            ajax_response = data;
-            console.log('createObjects');
-            curr_file = $('#uploaderfile_filelist').children().slice(all_files-number_files).first()
-            var err = 0;
-            if (data.errornodes.length>0){
-                err_div = curr_file[0].children[1].children[2];
-                for (i = 0; i < data.errornodes.length; i ++) {
-                  if (err_div.id == 'err_' + data.errornodes[i][2]) {
-                    err_div.textContent = data.errornodes[i][1];
-                    err = 1;
-                    break;
-                  }
+        var options = {
+            url: '/edit/edit_content?action=buildnode&func=createObjectsPlupload&id='+id+'&files='+encodeURIComponent(files)+'&type='+type+'&value='+value,
+            async: false,
+            dataType: 'json',
+            success: function (data) {
+                ajax_response = data;
+                console.log('createObjects');
+                curr_file = $('#uploaderfile_filelist').children().slice(all_files-number_files).first()
+                var err = 0;
+                if (data.errornodes.length>0){
+                    err_div = curr_file[0].children[1].children[2];
+                    for (i = 0; i < data.errornodes.length; i ++) {
+                      if (err_div.id == 'err_' + data.errornodes[i][2]) {
+                        err_div.textContent = data.errornodes[i][1];
+                        err = 1;
+                        break;
+                      }
+                    }
                 }
-            }
-            if (data.errornodes.length>0 && err != 0){
-                err_files += 1;
-                $('#uploaderfile_filelist').children().slice(all_files-number_files).first().removeClass('blue');
-                $('#uploaderfile_filelist').children().slice(all_files-number_files).first().addClass('red');
-            }else{
+                if (data.errornodes.length>0 && err != 0){
+                    err_files += 1;
+                    $('#uploaderfile_filelist').children().slice(all_files-number_files).first().removeClass('blue');
+                    $('#uploaderfile_filelist').children().slice(all_files-number_files).first().addClass('red');
+                }else{
 
-                $('#uploaderfile_filelist').children().slice(all_files-number_files).first().remove();
+                    $('#uploaderfile_filelist').children().slice(all_files-number_files).first().remove();
 
-                $('#divStatus').html('processing / ' + number_files);
-                data.new_tree_labels.forEach(
-                function(nentry) {
-                    console.log('tree_node: '+nentry.id+', new label: '+nentry.label);
-                    changed_node = htree.getNodeByKey(nentry.id);
-                    changed_node.title = nentry.label;
-                    changed_node.renderTitle();
+                    $('#divStatus').html('processing / ' + number_files);
+                    data.new_tree_labels.forEach(
+                    function(nentry) {
+                        console.log('tree_node: '+nentry.id+', new label: '+nentry.label);
+                        changed_node = htree.getNodeByKey(nentry.id);
+                        changed_node.title = nentry.label;
+                        changed_node.renderTitle();
+                    }
+                    )
+                  all_files -= 1;
                 }
-                )
-              all_files -= 1;
-            }
-            number_files -= 1;
+                number_files -= 1;
 
-            console.log('$.ajax returns: '+data);
-            console.log('number_files: ' + number_files);
-        }, // success function
-    }; // options
+                console.log('$.ajax returns: '+data);
+                console.log('number_files: ' + number_files);
+            }, // success function
+        }; // options
 
-    $.ajax(options);
+        $.ajax(options);
 
-    var childnode = ajax_response;
+        var childnode = ajax_response;
 
-}) // $.each
-if (err_files == 0) {
-  console.log('going to call closeFormFile()');
-  closeFormPluploadWidgetFile();
-  console.log('after called: closeFormFile()');
-  console.log('going to call loadEditArea(id), id:'+id);
-  parent.loadEditArea(id);
-  console.log('after called loadEditArea(id), id:'+id);
-} else {
-  // $('#error_dummy')[0].textContent='';
-  // throw "some files cannot be created";
-  $('#id_button_createobjectsplupload_file').prop('disabled', true);
-  $('#uploaderfile_browse').addClass('ui-state-disabled').attr('aria-disabled', 'true');
-  new_elem[0].style.visibility = 'hidden';
-}
-console.groupEnd('edit.modules: upload.html createObjectsPluploadFile');
+    }) // $.each
+    if (err_files == 0) {
+        console.log('going to call closeFormFile()');
+        closeFormPluploadWidgetFile();
+        console.log('after called: closeFormFile()');
+        console.log('going to call loadEditArea(id), id:'+id);
+        parent.loadEditArea(id);
+        console.log('after called loadEditArea(id), id:'+id);
+    } else {
+        // $('#error_dummy')[0].textContent='';
+        // throw "some files cannot be created";
+        $('#id_button_createobjectsplupload_file').prop('disabled', true);
+        $('#uploaderfile_browse').addClass('ui-state-disabled').attr('aria-disabled', 'true');
+        new_elem[0].style.visibility = 'hidden';
+    }
+    console.groupEnd('edit.modules: upload.html createObjectsPluploadFile');
 }  // function createObjectsPluploadFile
 
 var files_uploaded_file = 0;

@@ -355,7 +355,10 @@ def _shownodelist(req, nodes, page, publishwarn=True, markunpublished=False, dir
             uploaddir = dir
         else:
             uploaddir = user.upload_dir
-        unpublishedlink = "edit_content?tab=publish&srcnodeid={dirid}&id={dirid}".format(dirid=uploaddir.id)
+        unpublishedlink = "edit_content?tab=publish&srcnodeid={dirid}&id={dirid}&nodes_per_page={nodesperpage}".format(
+            dirid=uploaddir.id,
+            nodesperpage=req.values.get("nodes_per_page", ""),
+            )
 
     html_list_nodes = []
     html_thumb_nodes = []

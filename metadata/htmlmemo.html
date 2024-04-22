@@ -7,7 +7,6 @@
     <!-- for mask editor html memo -->
     <script src="/static/js/jquery-1.12.4.js"> </script>
     <script src="/static/js/jquery.textarearesizer.js"> </script>
-    <script src="/static/ckeditor/ckeditor.js"> </script>
     <script src="/static/js/metadata/htmlmemo.js"> </script>
     <tal:block tal:condition="python:wysiwyg">
       <div style="float:left;position:relative;">
@@ -23,6 +22,7 @@
           />
       </div>
 
+      <script src="/static/ckeditor/ckeditor.js"> </script>
       <script tal:content="python:u'ckeditor_config(&quot;mediatum-editor-nodefield-value-{}-htmlmemo&quot;);'.format(name)"/>
     <div>
         <div tal:condition="python:max_length" style="text-align:right;padding-right:7px; margin-bottom:7px">

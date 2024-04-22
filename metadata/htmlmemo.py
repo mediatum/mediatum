@@ -27,6 +27,7 @@ class m_htmlmemo(_core_metatype.Metatype):
     default_settings = dict(
         max_length=None,
         wysiwyg=False,
+        wysiwyg_entermode="p"
     )
 
     def editor_get_html_form(self, metafield, metafield_name_for_html, values, required, language):
@@ -41,6 +42,7 @@ class m_htmlmemo(_core_metatype.Metatype):
                     name=metafield_name_for_html,
                     required=1 if required else None,
                     wysiwyg=metafield.metatype_data['wysiwyg'],
+                    wysiwyg_entermode=metafield.metatype_data['wysiwyg_entermode']
                    ),
                 macro="editorfield",
                 language=language,
@@ -64,7 +66,7 @@ class m_htmlmemo(_core_metatype.Metatype):
     def admin_settings_get_html_form(self, fielddata, metadatatype, language):
         return tal.getTAL(
             "metadata/htmlmemo.html",
-            dict(value=fielddata["max_length"], wysiwyg=fielddata["wysiwyg"]),
+            dict(value=fielddata["max_length"], wysiwyg=fielddata["wysiwyg"], wysiwyg_entermode=fielddata["wysiwyg_entermode"]),
             macro="metafieldeditor",
             language=language,
         )
@@ -72,9 +74,11 @@ class m_htmlmemo(_core_metatype.Metatype):
     def admin_settings_parse_form_data(self, data):
         assert data.get("wysiwyg") in (None, "1")
         assert not data["max_length"] or int(data["max_length"]) >= 0
+        assert data["wysiwyg-entermode"] in ("p", "br", "div")
         return dict(
             max_length=int(data["max_length"]) if data["max_length"] else None,
             wysiwyg=bool(data.get("wysiwyg")),
+            wysiwyg_entermode=data["wysiwyg-entermode"],
         )
 
     def editor_parse_form_data(self, field, data, required):

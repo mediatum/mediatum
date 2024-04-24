@@ -7,13 +7,13 @@ from __future__ import print_function
 import codecs
 import logging
 import os
+import re as _re
 import shutil
 import subprocess as _subprocess
 
 import PIL.Image as _PIL_Image
 
 import contenttypes.data as _contenttypes_data
-import core.config as config
 import core.translation as _core_translation
 import utils.process as _utils_process
 import utils.utils as _utils_utils
@@ -48,6 +48,7 @@ _pdfinfo_attribute_names = frozenset((
         "PDF Version",
         "Metadata",
     ))
+_re_pagesize = _re.compile(r"^([.\d]+) x ([.\d]+) pts.*$").match
 
 
 def _pdfinfo(filename):
@@ -80,17 +81,7 @@ def _pdfinfo(filename):
     return {k:_utils_utils.utf8_decode_escape(v.strip()) for k,v in data.iteritems()}
 
 
-def _makeThumbs(src, thumbnailname):
-    """create preview image for given pdf """
-    with _PIL_Image.open(src) as pic:
-        pic.thumbnail(_contenttypes_data.get_thumbnail_size(*pic.size))
-        pic = pic.convert("RGB")
-        pic.save(thumbnailname, "JPEG", quality="web_high")
-
-
 def _process_pdf(filename, thumbnailname, fulltextname):
-    tempdir = config.get("paths.tempdir")
-    imgfile = os.path.join(tempdir, "pdfpreview.{}.png".format(_utils_utils.gen_secure_token()))
     name = ".".join(filename.split(".")[:-1])
     fulltext_from_pdftotext = name + ".pdftotext"  # output of pdf to text, possibly not normalized utf-8
 
@@ -99,22 +90,26 @@ def _process_pdf(filename, thumbnailname, fulltextname):
     if pdfinfo.get("Encrypted") == "yes":
         raise _PdfEncryptedError("error:document encrypted")
 
-    # convert first page to image (graphicsmagick + ghostview)
+    size = map(float, _re_pagesize(pdfinfo["Page size"]).groups())
+    size = _contenttypes_data.get_thumbnail_size(*size)
+    # generate thumbnail
     try:
         _utils_process.check_call((
-            "gm",
-            "convert",
-            "-colorspace", "RGB",
-            "-density", "300",
-            u"{}[0]".format(filename),
-            "-background", "white",
-            "-thumbnail", "x300",
-            imgfile,
+            "pdftoppm",
+            "-singlefile",
+            "-jpeg",
+            "-jpegopt", "progressive=y,optimize=y",
+            "-scale-to-x", str(size[0]),
+            "-scale-to-y", str(size[1]),
+            filename,
+            "{}.pdftoppm-temp".format(thumbnailname),
         ))
+        os.rename("{}.pdftoppm-temp.jpg".format(thumbnailname), thumbnailname)
     except _subprocess.CalledProcessError:
         logg.exception("failed to create PDF thumbnail for file " + filename)
-    else:
-        _makeThumbs(imgfile, thumbnailname)
+    finally:
+        with _utils_utils.suppress(OSError, warn=False):
+            os.remove("{}.pdftoppm-temp.jpg".format(thumbnailname))
 
     # extract fulltext (xpdf)
     try:
@@ -138,8 +133,6 @@ def _process_pdf(filename, thumbnailname, fulltextname):
 
     with _utils_utils.suppress(OSError, warn=False):
         os.remove(fulltext_from_pdftotext)
-    with _utils_utils.suppress(OSError, warn=False):
-        os.remove(imgfile)
 
     return pdfinfo
 

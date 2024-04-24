@@ -59,7 +59,6 @@ let
       pillow
       polib
       psycopg2
-      pyPdf
       py_scrypt
       pydot2
       pyexiftool

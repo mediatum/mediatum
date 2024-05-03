@@ -102,14 +102,14 @@ def _process_pdf(filename, thumbnailname, fulltextname):
             "-scale-to-x", str(size[0]),
             "-scale-to-y", str(size[1]),
             filename,
-            "{}.pdftoppm-temp".format(thumbnailname),
+            u"{}.pdftoppm-temp".format(thumbnailname),
         ))
-        os.rename("{}.pdftoppm-temp.jpg".format(thumbnailname), thumbnailname)
+        os.rename(u"{}.pdftoppm-temp.jpg".format(thumbnailname), thumbnailname)
     except _subprocess.CalledProcessError:
         logg.exception("failed to create PDF thumbnail for file " + filename)
     finally:
         with _utils_utils.suppress(OSError, warn=False):
-            os.remove("{}.pdftoppm-temp.jpg".format(thumbnailname))
+            os.remove(u"{}.pdftoppm-temp.jpg".format(thumbnailname))
 
     # extract fulltext (xpdf)
     try:
@@ -257,7 +257,7 @@ class Document(_contenttypes_data.Content):
             for key, value in pdfinfo.iteritems():
                 key = key.lower()
                 if key not in unwanted_attrs:
-                    self.set("pdf_{}".format(key), value)
+                    self.set(u"pdf_{}".format(key), value)
 
         self.files.append(File(thumbnailname, "thumbnail", "image/jpeg"))
         self.files.append(File(fulltextname, "fulltext", "text/plain"))

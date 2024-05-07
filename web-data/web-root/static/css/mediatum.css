@@ -79,14 +79,6 @@ div#footer span.footer_right a { margin-right: 9px;}
 
 .visualclear { clear: both;}
 
-.portlet .content {
-    padding-bottom: 0.5em;
-    padding-left: 0.75em;
-    padding-right: 1.33em;
-    border-collapse: collapse;
-    background: url(/static/img/5pxgradient_nav_depth02.gif) #edf1f4 repeat-y right 50%;
-    padding-top: 0.4em;
-}
 .portlet .last.content { border-bottom: #d3dee3 1px solid;}
 .portlet .content a {
     padding-bottom: 0px;
@@ -98,23 +90,6 @@ div#footer span.footer_right a { margin-right: 9px;}
     padding-top: 1px;
 }
 .portlet .content a img { display: none;}
-.portlet .content input {
-    border-bottom: medium none;
-    border-left: medium none;
-    padding-bottom: 1px;
-    padding-left: 2px;
-    width: 14ex;
-    padding-right: 2px;
-    font-family: arial, helvetica, sans-serif;
-    background: url(/static/img/gradientsearchfield.gif) #fff repeat-x;
-    color: #333333;
-    font-size: 90%;
-    vertical-align: middle;
-    border-top: medium none;
-    margin-right: 5px;
-    border-right: medium none;
-    padding-top: 1px;
-}
 .portlet .content input.widget.context {
     border-bottom: medium none;
     text-align: left;

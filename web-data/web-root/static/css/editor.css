@@ -89,7 +89,6 @@ p.error {background:#FFE7E7; color:#AF0101;  padding:7px; border:1px solid #AF01
 p.error a {color:black; margin:0px;}
 p.error a:hover {color:black; text-decoration:underline;}
 .fancytree-node-disabled {opacity: 0.5;background-color: silver;}
-div.grippie {background:#EEEEEE url(/static/img/grippie.png) no-repeat scroll center 2px; cursor:s-resize; height:9px; width:100%; margin:0px 5px 5px 2px; padding:0px;}
 div.hstippled {font-size:1px; height:1px;}
 div.label{width:210px;float:left;padding-left:15px;}
 
@@ -388,7 +387,6 @@ input[value="Cancel"]
 .mediatum_img_acls::before {content: url(/static/img/editor/mediatum_people.svg);} /* Rechte vergeben */
 .mediatum_img_menueditall::before {content: url(/static/img/editor/mediatum_edit_all.svg);} /* Alle Datensätze im Verzeichnis bearbeiten */
 .mediatum_img_menunodesperpage::before {content: url(/static/img/editor/mediatum_settings2.svg);} /* Einstellungen: Datensätze pro Seite */
-.mediatum_img_menusortnodes::before {content: url(/static/img/editor/mediatum_stat.svg);} /* Einstellungen: Datensätze sortieren */
 .mediatum_img_startpagesmenu::before {content: url(/static/img/editor/mediatum_world.svg);} /* Startseiten verwalten */
 .mediatum_img_admin::before {content: url(/static/img/editor/mediatum_tools.svg);}  /* Administration */
 .mediatum_img_version::before {content: "V";}  /* Versionierung */
@@ -403,7 +401,6 @@ input[value="Cancel"]
 .mediatum_img_copyobject::before {content: url(/static/img/editor/mediatum_copy.svg);} /* Kopieren */
 .mediatum_img_deleteobject::before {content: url(/static/img/editor/mediatum_delete.svg);} /* Löschen */
 .mediatum_img_menusortsubdir::before {content: url(/static/img/editor/mediatum_sort.svg);} /* Unterordner sortieren */
-.mediatum_img_menustatistics::before {content: url(/static/img/editor/mediatum_stat.svg);} /* Statistik */
 
 /* sortsubdir items??? */
 .mediatum_img_startpages::before {content: url(/static/img/editor/mediatum_edit.svg);} /* Startseite bearbeiten */
@@ -556,7 +553,6 @@ p.mediatum_templateerror #msg {font-family: Courier;}
 .mediatum_uploadmsg{position:absolute;top:2px;right:2px;}
 .mediatum_uploadzipfileok{padding-left:5px;white-space:nowrap;z-index:2;}
 .mediatum_uploadzipfileok_plupload{background-color:white;z-index:3;}
-.mediatum_wait_ {position:fixed;top:0;left:0;right:0;bottom:0;background-color:white;opacity: 0.5;display:none;padding:40%;}
 .mediatum_white_border{border:1px solid white;}
 .mediatum_width_100px{width:100px;}
 
@@ -589,9 +585,6 @@ ul.fancytree-container {background-color: transparent; border: 0px; height: 99%;
 .ui-helper-reset {line-height: unset!important;}
 .ui-layout-north {background-color:#ddd!important;}
 .ui-layout-west {border-width:0!important;padding:0!important;width:300px;}
-.ui-widget-header{background: #cccccc url(https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/themes/base/images/ui-bg_highlight-soft_75_cccccc_1x100.png) 50% 50% repeat-x;}
-.ui-button .ui-icon{background-image:url(https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/themes/base/images/ui-icons_888888_256x240.png);}
-.ui-button:hover .ui-icon, .ui-state-hover .ui-icon{background-image:url(https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/themes/base/images/ui-icons_454545_256x240.png);}
 div.ui-layout-north{background-color:#ddd!important;}
 /* removes jquery border on active menu items */
 .ui-state-active, .ui-widget-content .ui-state-active, .ui-widget-header .ui-state-active, a.ui-button:active, .ui-button:active, .ui-button.ui-state-active:hover
@@ -652,7 +645,6 @@ iframe.ui-layout-center, div.ui-layout-north{border-width:0!important;padding:0;
 #mediatum_delete_folder_question{display:none;}
 #mediatum_edit_notree_permission {background-color: #FFFFFF;}
 #mediatum_operations { position:relative;clear:left;}
-#mediatum_selection_div {border-top:1px solid silver; margin:3px; display:none; padding:3px;}
 #mediatum_sub_footer_module_div{position:absolute;right:5px;top:2px;font-size:11px;margin-right:5px;}
 #mediatum_table_nodelist{display:table;border-collapse: collapse;width: 100%;}
 #mediatum_table_nodeview{display:none;}

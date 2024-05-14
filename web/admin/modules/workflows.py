@@ -24,8 +24,8 @@ from web.admin.adminutils import getAdminStdVars
 from web.admin.adminutils import getFilter
 from web.admin.adminutils import getSortCol
 import web.common.acl_web as _acl_web
+from workflow import workflow as _workflow_workflow
 from workflow.workflow import Workflow
-from workflow.workflow import addWorkflow
 from workflow.workflow import create_update_workflow_step
 from workflow.workflow import deleteWorkflow
 from workflow.workflow import deleteWorkflowStep
@@ -35,7 +35,6 @@ from workflow.workflow import getWorkflowList
 from workflow.workflow import getWorkflowTypes
 from workflow.workflow import importWorkflow
 from workflow.workflow import inheritWorkflowRights
-from workflow.workflow import updateWorkflow
 
 logg = logging.getLogger(__name__)
 
@@ -121,17 +120,17 @@ def validate(req, op):
                     "admin_mandatory_error",
                    )
 
-            if req.values["form_op"] == "save_new":
+            if req.values["form_op"] in ("save_new", "save_edit"):
                 # save workflow values
-                wf = addWorkflow(req.values["name"], req.values["description"])
-            elif req.values["form_op"] == "save_edit":
-                # save workflow values
-                wf = updateWorkflow(
-                        req.values["name"],
-                        req.values["description"],
-                        req.values["name_attr"],
-                        req.values["orig_name"],
-                    )
+                try:
+                    wf = _workflow_workflow.create_or_update_workflow(
+                            req.values["name"],
+                            req.values["description"],
+                            req.values["name_attr"],
+                            req.values["orig_name"] or None,
+                        )
+                except _workflow_workflow.WorkflowNameTaken:
+                    return _get_workflow_config_form_html(req, req.values["id"], error="admin_duplicate_error")
             else:
                 raise AssertionError("invalid form_op")
 

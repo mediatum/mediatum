@@ -524,12 +524,12 @@ def db_check_image(node):
     # if it has a file with type 'image'
     if image_list and not original_list and not archive_avail:
         warn_str += "warning: {}: image files but no original or archive files\n".format(node.id)
-    # files with type 'image' must have a 'presentation' file
-    if image_list and not presentation_list:
-        warn_str += "warning: {}: image without presentation\n".format(node.id)
-    # files must have no duplicate 'presentation' files
+    # files with type 'image' must have a 'thumbnail' file
+    if image_list and not thumb_list:
+        warn_str += "warning: {}: image without thumbnail\n".format(node.id)
+    # files must have no duplicate 'thumbnail' files
     if len(thumb_list) > 1:
-        warn_str += "warning: {}: presentation ({}, equal: {}) files\n".format(
+        warn_str += "warning: {}: thumbnail ({}, equal: {}) files\n".format(
                 node.id,
                 len(thumb_list),
                 cmp_filelist(thumb_list)[0],

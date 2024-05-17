@@ -38,7 +38,7 @@ document.getElementById('mediatum-edit-form-metadata').addEventListener('submit'
     event.preventDefault();
     fetch(event.target.action, {
         method: 'POST',
-        body: new URLSearchParams(new FormData(event.target)) // event.target is the form
+        body: new FormData(event.target) // event.target is the form
     }).then((response) => {
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);

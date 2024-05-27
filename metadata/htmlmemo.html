@@ -7,7 +7,6 @@
     <!-- for mask editor html memo -->
     <script src="/static/js/jquery-1.12.4.js"> </script>
     <script src="/static/js/jquery.textarearesizer.js"> </script>
-    <script src="/static/ckeditor/ckeditor.js"> </script>
     <script src="/static/js/metadata/htmlmemo.js"> </script>
     <tal:block tal:condition="python:wysiwyg">
       <div style="float:left;position:relative;">
@@ -23,7 +22,8 @@
           />
       </div>
 
-      <script tal:content="python:u'ckeditor_config(&quot;mediatum-editor-nodefield-value-{}-htmlmemo&quot;);'.format(name)"/>
+      <script src="/static/ckeditor/ckeditor.js"> </script>
+      <script tal:content="python:u'''ckeditor_config('mediatum-editor-nodefield-value-{}-htmlmemo', '{}');'''.format(name, wysiwyg_entermode)"/>
     <div>
         <div tal:condition="python:max_length" style="text-align:right;padding-right:7px; margin-bottom:7px">
             <small>
@@ -46,10 +46,46 @@
 </tal:block>
 
 <tal:block metal:define-macro="metafieldeditor">
-    <div class="label" i18n:translate="htmlmemo_wysiwyg"/>
-    <input type="checkbox" name="fieldsetting_wysiwyg" value="1" tal:attributes="checked python:'checked' if wysiwyg else None" />
-    <br />
-    <br />
+    <div class="label" i18n:translate="">htmlmemo_wysiwyg</div>
+    <input
+        type="checkbox"
+        name="fieldsetting_wysiwyg"
+        value="1"
+        tal:attributes="checked python:'checked' if wysiwyg else None"
+       />
+    <fieldset>
+        <legend i18n:translate="">admin_htmlmemo_wysiwyg_entermode</legend>
+        <label>
+            &lt;p&gt;...&lt;/p&gt;
+            <input
+                type="radio"
+                name="fieldsetting_wysiwyg-entermode"
+                id="mediatum-htmlmemo-enter-p"
+                value="p"
+                tal:attributes="checked python:'checked' if wysiwyg_entermode=='p' else None"
+            />
+        </label>
+        <label>
+            &lt;br/&gt;
+            <input
+                type="radio"
+                name="fieldsetting_wysiwyg-entermode"
+                id="mediatum-htmlmemo-enter-br"
+                value="br"
+                tal:attributes="checked python:'checked' if wysiwyg_entermode=='br' else None"
+            />
+        </label>
+        <label>
+            &lt;div&gt;...&lt;/div&gt;
+            <input
+                type="radio"
+                name="fieldsetting_wysiwyg-entermode"
+                id="mediatum-htmlmemo-enter-div"
+                value="div"
+                tal:attributes="checked python:'checked' if wysiwyg_entermode=='div' else None"
+            />
+        </label>
+    </fieldset>
     <div class="label" i18n:translate="mask_edit_max_length">TEXT</div>
     <input tal:attributes="value value" type="text" name="fieldsetting_max_length" rows="4" style="width:250px"/><br/>
 </tal:block>

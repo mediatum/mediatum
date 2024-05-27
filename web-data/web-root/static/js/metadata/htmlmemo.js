@@ -3,7 +3,7 @@
   SPDX-License-Identifier: AGPL-3.0-or-later
 */
 
-function ckeditor_config(name) {
+function ckeditor_config(name, entermode) {
     var ckeditor = CKEDITOR.replace(name);
     ckeditor.config.toolbar = 'Meta';
     ckeditor.config.toolbar_Meta = [
@@ -18,6 +18,9 @@ function ckeditor_config(name) {
         '/',
         ['Styles','Format','Font','FontSize','TextColor','BGColor','ShowBlocks']
     ];
+    ckeditor.config.enterMode = entermode==="br" ? CKEDITOR.ENTER_BR
+        : entermode==="div" ? CKEDITOR.ENTER_DIV
+        : CKEDITOR.ENTER_P;
     ckeditor.on('required', function(evt) {
         alert('Please fill out the htmlmemo field.');
         evt.cancel();

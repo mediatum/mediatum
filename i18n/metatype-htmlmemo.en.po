@@ -12,3 +12,6 @@ msgstr "memo field with html markup"
 
 msgid "htmlmemo_titlepopupbutton"
 msgstr "open editor mask"
+
+msgid "admin_htmlmemo_wysiwyg_entermode"
+msgstr "WYSIWYG ENTER mode"

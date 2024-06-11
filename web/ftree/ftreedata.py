@@ -32,11 +32,14 @@ def getData(req):
     initial_opened_nids = frozenset(int(p) for p in initial_opened_nids if p[0] not in "x(")
     del nids
 
-    write_access_alias = _sqlalchemy_orm.aliased(_node.Node)
-    write_access_stmt = (_core.db.query(_sqlalchemy.func.has_write_access_to_node(write_access_alias.id, group_ids, ip, date))
-            .filter(write_access_alias.id == _contenttypes.Container.id)
-            .label('write_access')
-           )
+    if _core_users.user_from_session().is_admin:
+        write_access_stmt = _core.db.query(_sqlalchemy.true())
+    else:
+        write_access_alias = _sqlalchemy_orm.aliased(_node.Node)
+        write_access_stmt = (_core.db.query(_sqlalchemy.func.has_write_access_to_node(write_access_alias.id, group_ids, ip, date))
+                .filter(write_access_alias.id == _contenttypes.Container.id)
+               )
+    write_access_stmt = write_access_stmt.label('write_access')
 
     has_container_children_alias = _sqlalchemy_orm.aliased(_contenttypes.Container)
     has_container_children_stmt = (_core.db.query(has_container_children_alias)

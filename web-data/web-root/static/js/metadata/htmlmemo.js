@@ -5,6 +5,7 @@
 
 function ckeditor_config(name, entermode) {
     var ckeditor = CKEDITOR.replace(name);
+    ckeditor.config.autoUpdateElement = false;
     ckeditor.config.toolbar = 'Meta';
     ckeditor.config.toolbar_Meta = [
         ['Source','Preview'],
@@ -24,6 +25,19 @@ function ckeditor_config(name, entermode) {
     ckeditor.on('required', function(evt) {
         alert('Please fill out the htmlmemo field.');
         evt.cancel();
+    });
+    // Input listener only for "wysiwyg" mode
+    ckeditor.on('change', function(event) {
+        ckeditor.updateElement();
+    });
+    // On source wysiwyg switch
+    ckeditor.on('mode', function(event) {
+        if (this.editable().$.tagName === "TEXTAREA") {
+            // Input listener only for "source" mode
+            this.editable().$.addEventListener("input", function (event) {
+                ckeditor.updateElement();
+            });
+        }
     });
     // After loading, check for a disabled parent element (e. g. admin area)
     ckeditor.once("instanceReady", function(evt) {

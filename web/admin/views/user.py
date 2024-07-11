@@ -86,7 +86,7 @@ class UserView(BaseAdminView):
 class UserGroupView(BaseAdminView):
     form_base_class = _core_csrfform.CSRFForm
 
-    form_excluded_columns = "user_assocs"
+    form_excluded_columns = ("name", "user_assocs")
     column_details_list = ["id", "name", "description", "hidden_edit_functions", "is_editor_group",
                            "is_workflow_editor_group", "is_admin_group", "created_at", "metadatatype_access", "user_names"]
 
@@ -113,7 +113,7 @@ class UserGroupView(BaseAdminView):
     }
 
     def on_form_prefill(self, form, id):
-        form.metadatatypes.data = form._obj.metadatatype_access
+        form.metadatatypes.data = q(UserGroup).filter_by(id=id).scalar().metadatatype_access
 
     def on_model_change(self, form, usergroup, is_created):
         if is_created:

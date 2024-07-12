@@ -266,15 +266,12 @@ def getBreadcrumbs(menulist, tab):
                 return [menuitem.name, "*" + item.name]
     return [tab]
 
-def _handletabs(req, ids, tabs, sort_choices):
+
+def _handletabs(req, node, ids, tabs, sort_choices):
     user = _user_from_session()
 
-    n = q(Data).get(ids[0])
-    if n.type.startswith("workflow"):
-        n = _core_nodecache.get_root_node()
-
     srcnodeid = req.values.get('srcnodeid', '')
-    skip_items = set(_utils_utils.get_menu_strings(n.editor_menu))
+    skip_items = set(_utils_utils.get_menu_strings(node.editor_menu))
     skip_items.intersection_update(user.hidden_edit_functions)
     if len(ids) > 1:
         skip_items.add("version")
@@ -282,23 +279,11 @@ def _handletabs(req, ids, tabs, sort_choices):
     if srcnodeid and q(Node).get(int(srcnodeid)) is user.trash_dir:
         skip_items.add("deleteobject")
         skip_items.add("deleteall")
-    menu = _utils_utils.parse_menu_struct(n.editor_menu, skip_items)
+    menu = _utils_utils.parse_menu_struct(node.editor_menu, skip_items)
 
     nodes_per_page = req.args.get("nodes_per_page", type=int)
     if not nodes_per_page:
         nodes_per_page = 20
-    sortfield = req.args.get("sortfield")
-
-    if not sortfield:
-        sortfield = n.get("sortfield")
-        if sortfield.strip() == "":
-            sortfield = "off"
-
-    if sortfield.strip() not in ("", "off"):
-        n.set("sortfield", sortfield)
-    elif n.get("sortfield"):
-        n.removeAttribute("sortfield")
-    db.session.commit()
 
     return _tal.processTAL(
             dict(
@@ -883,7 +868,19 @@ def content(req):
         else:
             sortchoices = ()
 
-        v["tabs"] = _handletabs(req, ids, tabs, sortchoices)
+        n = q(Data).get(ids[0])
+        if n.type.startswith("workflow"):
+            n = _core_nodecache.get_root_node()
+
+        sortfield = req.args.get("sortfield", "").strip() or n.get("sortfield").strip() or "off"
+        if sortfield in ("", "off") and n.get("sortfield"):
+            n.removeAttribute("sortfield")
+        else:
+            n.set("sortfield", sortfield)
+
+        db.session.commit()
+
+        v["tabs"] = _handletabs(req, n, ids, tabs, sortchoices)
 
     c = _editModules[current].getContent(req, ids)
     if not c:
@@ -897,7 +894,7 @@ def content(req):
         return
 
     # display current images
-    if not isinstance(q(Data).get(ids[0]), Container):
+    if not isinstance(n, Container):
         nid = req.values.get('srcnodeid', req.values.get('id'))
         if nid is None:
             raise ValueError("invalid request, neither 'srcnodeid' not 'id' parameter is set!")

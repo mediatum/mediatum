@@ -97,7 +97,7 @@ def overwrite_id_in_req(nid, req):
     """Patches a GET request to include a new nid.
     XXX: A bit hacky, nid handling should be changed somehow.
     """
-    assert req.method == "GET"
+    assert req.method in ("GET", "HEAD")
     req.args = ImmutableMultiDict(dict(req.args, id=nid))
     req.params["id"] = nid
     req.__dict__["values"] = _werkzeug_utils._missing

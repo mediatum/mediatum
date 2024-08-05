@@ -6,6 +6,7 @@ from __future__ import print_function
 
 import itertools as _itertools
 import collections as _collections
+import functools as _functools
 import re
 
 import sqlalchemy as _sqlalchemy
@@ -30,6 +31,11 @@ q = db.query
 _MaskitemsDependency = _collections.namedtuple(
     "_MaskitemsDependency",
     "metadatatypes_id mappingfield schema_name mask_name metafield_name"
+)
+
+_MasksDependency = _collections.namedtuple(
+    "_MasksDependency",
+    "metadatatypes_id exportmapping schema_name mask_name"
 )
 
 
@@ -65,6 +71,35 @@ def _get_maskitems_dependencies():
     query = query.filter(mask.attrs['masktype'].astext == 'export')
     query = query.filter(maskitem.attrs['fieldtype'].astext == 'mapping')
     return tuple(_itertools.starmap(_MaskitemsDependency, query.all()))
+
+
+def _get_masks_dependencies():
+    """
+    collect a list of all importmasks together with metadatatype
+    :return: list of _MasksDependency
+    """
+    metadatatype, mask = (
+        _sqlalchemy.orm.aliased(_node.Node) for _ in xrange(2))
+
+    query = q(
+        _core_systemtypes.Metadatatypes.id,
+        mask.attrs['exportmapping'].astext,
+        metadatatype.name,
+        mask.name,
+    )
+
+    joins = (
+        _core_systemtypes.Metadatatypes,
+        metadatatype,
+        mask,
+    )
+
+    for parent, child in zip(joins[:-1], joins[1:]):
+        nodemapping = _sqlalchemy.orm.aliased(_node.t_nodemapping)
+        query = query.join(nodemapping, nodemapping.c.nid == parent.id)
+        query = query.join(child, child.id == nodemapping.c.cid)
+    query = query.filter(mask.attrs['masktype'].astext == 'export')
+    return tuple(_itertools.starmap(_MasksDependency, query.all()))
 
 
 def getInformation():
@@ -211,6 +246,13 @@ def view(req):
     else:
         mappings.sort(lambda x, y: cmp(x.name.lower(), y.name.lower()))
 
+    masks_dependencies = _get_masks_dependencies()
+    used_by = {mapping.id: tuple("{schema_name}: {mask_name}".format(**md._asdict())
+                                 for md in masks_dependencies if md.exportmapping == str(mapping.id))
+               for mapping in mappings}
+
+    format_used_by = _functools.partial(_translation.translate, _translation.set_language(req.accept_languages), "admin_mapping_used_title")
+
     v = getAdminStdVars(req)
     v["sortcol"] = pages.OrderColHeader(tuple(
         _translation.translate(
@@ -220,11 +262,13 @@ def view(req):
         for col in xrange(1, 8)
         ))
     v["mappings"] = mappings
+    v["used_by"] = used_by
     v["options"] = []
     v["pages"] = pages
     v["actfilter"] = actfilter
     v["mappingtypes"] = "\n".join(getMappingTypes())
     v["csrf"] = _core_csrfform.get_token()
+    v["format_used_by"] = format_used_by
     return _tal.processTAL(v, file="web/admin/modules/mapping.html", macro="view", request=req)
 
 

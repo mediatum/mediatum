@@ -59,7 +59,23 @@
                             </a>
                             <input tal:attributes="name python:u'edit_{}'.format(mapping.id)" i18n:attributes="title admin_mapping_edit_title" type="image" src="/static/img/edit.png"/>
                             &nbsp;&nbsp;
-                            <input tal:condition="python:len(mapping.getFields())==0" tal:attributes="name python:u'delete_{}'.format(mapping.id); onclick python:u'return questionDelName(\'{}\')'.format(mapping.getName())" i18n:attributes="title admin_mapping_delete_title" type="image" src="/static/img/delete.png"/>
+                            <input
+                                tal:condition="python:not (mapping.getFields() or used_by[mapping.id])"
+                                tal:attributes="name python:u'delete_{}'.format(mapping.id); onclick python:u'''return questionDelName('{}')'''.format(mapping.getName())"
+                                i18n:attributes="title admin_mapping_delete_title"
+                                type="image"
+                                src="/static/img/delete.png"
+                            />
+                            <input
+                                tal:condition="python:used_by[mapping.id]"
+                                tal:attributes="
+                                    onclick python:u'''alert('{}')'''.format(format_used_by(mapping=dict(used_by='\\n'.join(used_by[mapping.id]))));
+                                    title python:format_used_by(mapping=dict(used_by='\n'.join(used_by[mapping.id])));
+                                    "
+                                type="image"
+                                src="/static/img/archive.png"
+                            />
+
                         </td>
                     </tr>
                 </tal:block>

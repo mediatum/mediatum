@@ -96,6 +96,9 @@ msgstr "Mappingfeld löschen"
 msgid "admin_mappingfield_used_title"
 msgstr "Mappingfeld wird benutzt von:{}"
 
+msgid "admin_mapping_used_title"
+msgstr "Mapping wird benutzt von:${used_by}"
+
 msgid "admin_mappingfield_edit_label"
 msgstr "Mappingfeld bearbeiten"
 

@@ -86,7 +86,8 @@ class UserView(BaseAdminView):
 class UserGroupView(BaseAdminView):
     form_base_class = _core_csrfform.CSRFForm
 
-    form_excluded_columns = ("name", "user_assocs")
+    form_excluded_columns = ("name", "user_assocs", "versions")
+
     column_details_list = ["id", "name", "description", "hidden_edit_functions", "is_editor_group",
                            "is_workflow_editor_group", "is_admin_group", "created_at", "metadatatype_access", "user_names"]
 

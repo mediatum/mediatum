@@ -270,11 +270,20 @@ def _make_navtree_entries(language, container):
     else:
         content_alias = _orm.aliased(_contenttypes.Content)
         noderelation_alias = _orm.aliased(_node.t_noderelation)
-        count_content_children_for_all_subcontainers = (q(_sqlalchemy.func.count(content_alias.id.distinct()))
+        count_content_children_for_all_subcontainers_dir = (q(_sqlalchemy.func.count(content_alias.id.distinct()))
                 .filter(content_alias.id == noderelation_alias.c.cid)
                 .filter(noderelation_alias.c.nid == Container.id)
                 .filter(content_alias.subnode == False)
                )
+        count_content_children_for_all_subcontainers = _sqlalchemy.case(
+                ((
+                    Container.type.in_(
+                        frozenset(n.__name__.lower() for n in Directory.get_all_subclasses() if n.show_childcount)
+                       ),
+                    count_content_children_for_all_subcontainers_dir.as_scalar(),
+                ),),
+                else_=_sqlalchemy.literal_column("1"),
+            )
 
     # the main query lists all container nodes that are
     # the child of any of the "opened" containers (see above);

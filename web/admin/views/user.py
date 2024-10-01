@@ -8,6 +8,7 @@ from __future__ import division
 from __future__ import print_function
 
 import functools as _functools
+import itertools as _itertools
 import logging
 
 import core as _core
@@ -155,6 +156,18 @@ class UserGroupView(BaseAdminView):
             _update_access_ruleset_assocs(model.name, form.metadatatypes.data, ())
         else:
             _update_access_ruleset_assocs(model.name, form.metadatatypes.data, model.metadatatype_access)
+
+    def on_model_delete(self, model):
+        _update_access_ruleset_assocs(model.name, (), model.metadatatype_access)
+        get_db_obj = lambda cls, **flt: q(cls).filter_by(**flt).scalar()
+        ruleset = get_db_obj(_core.database.postgres.permission.AccessRuleset, name=model.name)
+        rule = get_db_obj(_core.database.postgres.permission.AccessRule, group_ids=(model.id,))
+        ruleset2rule = ruleset and rule and get_db_obj(
+            _core.database.postgres.permission.AccessRulesetToRule,
+            ruleset_name=ruleset.name,
+            rule=rule,
+            )
+        map(db.session.delete, _itertools.ifilter(None, (ruleset2rule, rule, ruleset)))
 
     def __init__(self, session=None, *args, **kwargs):
         super(UserGroupView, self).__init__(UserGroup, session, category="User", *args, **kwargs)

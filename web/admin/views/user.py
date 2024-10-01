@@ -7,6 +7,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import functools as _functools
 import logging
 
 import core as _core
@@ -35,6 +36,26 @@ logg = logging.getLogger(__name__)
 def _link_format_node_id_column(node_id):
     # XXX: just for testing, this should link to this instance
     return Markup('<a href="/node?id={0}" class="mediatum-link-mediatum">{0}</a>'.format(node_id))
+
+
+def _update_access_ruleset_assocs(ruleset_name, add_metadatatypes, drop_metadatatypes):
+    """
+    add/remove access to Metadatatypes
+    """
+    mkquery = _functools.partial(
+        q(_core.database.postgres.permission.NodeToAccessRuleset).filter_by,
+        ruleset_name=ruleset_name,
+        )
+    nodetoaccessruleset = _core.database.postgres.permission.NodeToAccessRuleset(
+        ruleset_name=ruleset_name,
+        ruletype=u'read',
+        )
+    for metadatatype in add_metadatatypes:
+        if mkquery(nid=metadatatype.id).scalar() is None:
+            metadatatype.access_ruleset_assocs.append(nodetoaccessruleset)
+    for metadatatype in drop_metadatatypes:
+        if metadatatype not in add_metadatatypes:
+            map(metadatatype.access_ruleset_assocs.remove, mkquery(nid=metadatatype.id).all())
 
 
 class UserView(BaseAdminView):
@@ -126,21 +147,9 @@ class UserGroupView(BaseAdminView):
                 ruleset = _core.database.postgres.permission.AccessRuleset(name=model.name, description=model.name)
                 arr = _core.database.postgres.permission.AccessRulesetToRule(rule=rule)
                 ruleset.rule_assocs.append(arr)
-
-        """ add/remove access to Metadatatypes """
-        for mt in q(Metadatatype):
-            nrs_list = q(_core.database.postgres.permission.NodeToAccessRuleset).filter_by(
-                nid=mt.id
-                ).filter_by(ruleset_name=model.name).all()
-            if mt in form.metadatatypes.data:
-                if not nrs_list:
-                    mt.access_ruleset_assocs.append(_core.database.postgres.permission.NodeToAccessRuleset(
-                        ruleset_name=model.name,
-                        ruletype=u'read',
-                        ))
-            else:
-                for nrs in nrs_list:
-                    mt.access_ruleset_assocs.remove(nrs)
+            _update_access_ruleset_assocs(model.name, form.metadatatypes.data, ())
+        else:
+            _update_access_ruleset_assocs(model.name, form.metadatatypes.data, model.metadatatype_access)
 
     def __init__(self, session=None, *args, **kwargs):
         super(UserGroupView, self).__init__(UserGroup, session, category="User", *args, **kwargs)

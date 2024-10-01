@@ -108,7 +108,7 @@ class UserView(BaseAdminView):
 class UserGroupView(BaseAdminView):
     form_base_class = _core_csrfform.CSRFForm
 
-    form_excluded_columns = ("name", "user_assocs", "versions")
+    form_excluded_columns = ("user_assocs", "versions")
 
     column_details_list = ["id", "name", "description", "hidden_edit_functions", "is_editor_group",
                            "is_workflow_editor_group", "is_admin_group", "created_at", "metadatatype_access", "user_names"]
@@ -134,6 +134,11 @@ class UserGroupView(BaseAdminView):
         "hidden_edit_functions": SelectMultipleField(choices=edit_function_choices,
                                           widget=form.Select2Widget(multiple=True)),
     }
+
+    def get_edit_form(self):
+        form = super(UserGroupView, self).get_edit_form()
+        del form.name
+        return form
 
     def on_form_prefill(self, form, id):
         form.metadatatypes.data = q(UserGroup).filter_by(id=id).scalar().metadatatype_access

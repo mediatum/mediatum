@@ -9,6 +9,8 @@ from __future__ import print_function
 
 import logging
 
+import core as _core
+import core.database.postgres.permission as _
 from core import db
 from core.database.postgres.user import AuthenticatorInfo
 from core.database.postgres.user import User
@@ -23,7 +25,6 @@ from flask_admin import form, expose
 import core.csrfform as _core_csrfform
 from core.auth import INTERNAL_AUTHENTICATOR_KEY
 from core.permission import get_or_add_access_rule
-from core.database.postgres.permission import AccessRuleset, AccessRulesetToRule, NodeToAccessRuleset
 from schema.schema import Metadatatype
 from core.database.postgres.user import OAuthUserCredentials
 
@@ -119,19 +120,24 @@ class UserGroupView(BaseAdminView):
     def on_model_change(self, form, usergroup, is_created):
         if is_created:
             """ create ruleset for group """
-            existing_ruleset = q(AccessRuleset).filter_by(name=usergroup.name).scalar()
+            existing_ruleset = q(_core.database.postgres.permission.AccessRuleset).filter_by(name=usergroup.name).scalar()
             if existing_ruleset is None:
                 rule = get_or_add_access_rule(group_ids=[usergroup.id])
-                ruleset = AccessRuleset(name=usergroup.name, description=usergroup.name)
-                arr = AccessRulesetToRule(rule=rule)
+                ruleset = _core.database.postgres.permission.AccessRuleset(name=usergroup.name, description=usergroup.name)
+                arr = _core.database.postgres.permission.AccessRulesetToRule(rule=rule)
                 ruleset.rule_assocs.append(arr)
 
         """ add/remove access to Metadatatypes """
         for mt in q(Metadatatype):
-            nrs_list = q(NodeToAccessRuleset).filter_by(nid=mt.id).filter_by(ruleset_name=usergroup.name).all()
+            nrs_list = q(_core.database.postgres.permission.NodeToAccessRuleset).filter_by(
+                nid=mt.id
+                ).filter_by(ruleset_name=usergroup.name).all()
             if mt in form.metadatatypes.data:
                 if not nrs_list:
-                    mt.access_ruleset_assocs.append(NodeToAccessRuleset(ruleset_name=usergroup.name, ruletype=u'read'))
+                    mt.access_ruleset_assocs.append(_core.database.postgres.permission.NodeToAccessRuleset(
+                        ruleset_name=usergroup.name,
+                        ruletype=u'read',
+                        ))
             else:
                 for nrs in nrs_list:
                     mt.access_ruleset_assocs.remove(nrs)

@@ -117,13 +117,13 @@ class UserGroupView(BaseAdminView):
     def on_form_prefill(self, form, id):
         form.metadatatypes.data = q(UserGroup).filter_by(id=id).scalar().metadatatype_access
 
-    def on_model_change(self, form, usergroup, is_created):
+    def on_model_change(self, form, model, is_created):
         if is_created:
             """ create ruleset for group """
-            existing_ruleset = q(_core.database.postgres.permission.AccessRuleset).filter_by(name=usergroup.name).scalar()
+            existing_ruleset = q(_core.database.postgres.permission.AccessRuleset).filter_by(name=model.name).scalar()
             if existing_ruleset is None:
-                rule = get_or_add_access_rule(group_ids=[usergroup.id])
-                ruleset = _core.database.postgres.permission.AccessRuleset(name=usergroup.name, description=usergroup.name)
+                rule = get_or_add_access_rule(group_ids=(model.id, ))
+                ruleset = _core.database.postgres.permission.AccessRuleset(name=model.name, description=model.name)
                 arr = _core.database.postgres.permission.AccessRulesetToRule(rule=rule)
                 ruleset.rule_assocs.append(arr)
 
@@ -131,11 +131,11 @@ class UserGroupView(BaseAdminView):
         for mt in q(Metadatatype):
             nrs_list = q(_core.database.postgres.permission.NodeToAccessRuleset).filter_by(
                 nid=mt.id
-                ).filter_by(ruleset_name=usergroup.name).all()
+                ).filter_by(ruleset_name=model.name).all()
             if mt in form.metadatatypes.data:
                 if not nrs_list:
                     mt.access_ruleset_assocs.append(_core.database.postgres.permission.NodeToAccessRuleset(
-                        ruleset_name=usergroup.name,
+                        ruleset_name=model.name,
                         ruletype=u'read',
                         ))
             else:

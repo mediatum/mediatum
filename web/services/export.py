@@ -68,7 +68,7 @@ def add_mask_xml(xmlroot, node, mask_name, language):
         maskxml.text = etree.CDATA(xml_remove_illegal_chars(formated))
 
 
-def _add_attrs_to_listinfo_item(xml_listinfo_item, attr_list, attribute_name_filter):
+def _add_attrs_to_listinfo_item(xml_listinfo_item, attr_list):
     for name, value in attr_list:
         if attribute_name_filter(name):
             xml_attribute = etree.SubElement(xml_listinfo_item, "attribute")
@@ -168,7 +168,7 @@ def struct2xml(path, qualifier, query_string, host_url, params, d, send_timetabl
             xml_item.set("type", p[3])
 
             if sfields:
-                _add_attrs_to_listinfo_item(xml_item, p[4], attribute_name_filter)
+                _add_attrs_to_listinfo_item(xml_item, p[4])
 
         if send_timetable:
             # append info on how long the steps took to get the result

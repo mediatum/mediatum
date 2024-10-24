@@ -34,9 +34,15 @@ def showDetailList(req, id):
     metadatatype = getMetaType(id)
     metafields = metadatatype.getMetaFields()
     metafields_dependencies = _schema._get_metafields_dependencies()
-    used_by = {metafield.id: u"".join(u"\n{schema_name}: {mask_name}: {metafield_name}".format(**md._asdict())
-                                         for md in metafields_dependencies if md.metafield_id == metafield.id)
-               for metafield in metafields}
+    used_by = {metafield.id:u"".join(
+        u"\n{schema_name}: {mask_name}: {metafield_name}".format(**md._asdict())
+        for md in metafields_dependencies
+        if md.metafield_id == metafield.id or (
+            md.maskitem_fieldtype in ('mapping', 'attribute')
+            and
+            int(md.maskitem_attribute) == metafield.id
+           )
+       ) for metafield in metafields}
 
     order = getSortCol(req)
     actfilter = getFilter(req)

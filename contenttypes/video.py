@@ -109,6 +109,9 @@ class Video(Content):
         """Generates thumbnails (a small and a larger one) from a MP4 video file.
         The frame used as thumbnail can be changed by setting self.system_attrs["thumbframe"] to a number > 0.
         """
+        if self.files.filter_by(filetype=u'thumbnail').scalar() is not None:
+            return
+
         video_file = self.files.filter_by(filetype=u"video").scalar()
 
         if video_file is not None:
@@ -145,12 +148,6 @@ class Video(Content):
                 make_thumbnail_image(temp_thumbnail_path, resolve_datadir_path(thumbname))
             finally:
                 os.unlink(temp_thumbnail_path)
-
-            old_thumb_files = self.files.filter(File.filetype == u'thumbnail')
-
-            for old_thumb_file in old_thumb_files:
-                self.files.remove(old_thumb_file)
-                old_thumb_file.unlink()
 
             self.files.append(File(thumbname, u'thumbnail', u'image/jpeg'))
 

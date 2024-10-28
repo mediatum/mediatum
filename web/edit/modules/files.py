@@ -81,7 +81,7 @@ def _finish_change(node, change_file, user, uploadfile, req):
         make_thumbnail_image(file.abspath, thumbname)
 
         if os.path.exists(file.abspath):  # remove uploaded original
-                os.remove(file.abspath)
+            os.remove(file.abspath)
 
         for f in node.files:
             if f.type == "thumbnail":

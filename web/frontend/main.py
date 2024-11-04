@@ -6,6 +6,7 @@ from __future__ import print_function
 
 import json
 from functools import partial, wraps
+import httplib as _httplib
 import logging
 import re
 import flask as _flask
@@ -15,7 +16,6 @@ import werkzeug.utils as _werkzeug_utils
 import core.config as config
 import core.csrfform as _core_csrfform
 import core.translation as _core_translation
-from core import httpstatus
 from core import db
 from core.database.postgres.node import Node
 import core.nodecache as _nodecache
@@ -67,7 +67,7 @@ def _handle_json_request(req):
         req.values["jsoncallback"],
         json.dumps(s, indent=2),
        ))
-    req.response.status_code = httpstatus.HTTP_OK
+    req.response.status_code = _httplib.OK
 
 
 def _check_change_language_request(func):
@@ -89,8 +89,8 @@ def _check_change_language_request(func):
 
 @_check_change_language_request
 def display_404(req):
-    req.response.status_code = httpstatus.HTTP_NOT_FOUND
-    return httpstatus.HTTP_NOT_FOUND
+    req.response.status_code = _httplib.NOT_FOUND
+    return _httplib.NOT_FOUND
 
 
 def overwrite_id_in_req(nid, req):
@@ -139,7 +139,7 @@ def display(req, show_navbar=True, render_paths=True, params=None):
         content_html, show_id = render_content(node, req, render_paths)
     req.response.set_data(content_html if params.get("raw") else
                           render_page(req, content_html, node, show_navbar, show_id))
-    req.response.status_code = httpstatus.HTTP_OK
+    req.response.status_code = _httplib.OK
 
 
 @_check_change_language_request

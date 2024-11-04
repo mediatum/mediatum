@@ -4,6 +4,7 @@
 from __future__ import division
 from __future__ import print_function
 
+import httplib as _httplib
 import logging
 import os
 import codecs
@@ -23,7 +24,6 @@ import core.csrfform as _core_csrfform
 import core.webconfig as _core_webconfig
 from core import config
 from core.users import get_guest_user
-from core import httpstatus
 from utils.utils import join_paths, Menu
 from web.admin.adminutils import adminModules, show_content, adminNavigation, getMenuItemID
 from core.users import user_from_session as _user_from_session
@@ -74,18 +74,18 @@ def export(req):
     """ export definition: url contains /[type]/[id] """
 
     if not user.is_admin:
-        return httpstatus.HTTP_FORBIDDEN
+        return _httplib.FORBIDDEN
 
     path = req.mediatum_contextfree_path[1:].split("/")
     module = adminModules[path[1]]
     try:
         xml_result = module.export(req, path[2])
     except AttributeError as err:
-        req.response.status_code = httpstatus.HTTP_NOT_FOUND
+        req.response.status_code = _httplib.NOT_FOUND
         req.response.set_data(str(err))
         return
 
-    req.response.status_code = httpstatus.HTTP_OK
+    req.response.status_code = _httplib.OK
     req.response.mimetype = "application/xml"
     req.response.set_data(xml_result)
 
@@ -127,7 +127,7 @@ def stats_server(req):
     user = _user_from_session()
     if not user.is_admin:
         req.response.set_data("You have not required rights")
-        req.response.status_code = httpstatus.HTTP_FORBIDDEN
+        req.response.status_code = _httplib.FORBIDDEN
         return
 
     if _uwsgi:
@@ -143,7 +143,7 @@ def stats_server(req):
                     workers = workers["workers"]
                 except _socket.error as msg:
                     req.response.set_data(str(msg))
-                    req.response.status_code = httpstatus.HTTP_INTERNAL_SERVER_ERROR
+                    req.response.status_code = _httplib.INTERNAL_SERVER_ERROR
                     return
         else:
             workers = _uwsgi.workers()
@@ -214,4 +214,4 @@ def stats_server(req):
         )
     html = _core_webconfig.theme.render_template("server_status.j2.jade", ctx)
     req.response.set_data(html)
-    req.response.status_code = httpstatus.HTTP_OK
+    req.response.status_code = _httplib.OK

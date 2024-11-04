@@ -7,6 +7,7 @@ from __future__ import division
 from __future__ import print_function
 
 import functools as _functools
+import httplib as _httplib
 import itertools as _itertools
 import logging as _logging
 import operator as _operator
@@ -17,7 +18,6 @@ import core as _core
 import core.database.postgres.node as _postgres_node
 import core.database.postgres.permission as _db_permission
 import core.database.postgres.user as _postgres_user
-import core.httpstatus as _httpstatus
 import core.permission as _permission
 import core.users as _users
 import utils.utils as _utils
@@ -107,11 +107,11 @@ def getContent(req, ids):
     hidden_edit_functions_for_current_user = user.hidden_edit_functions
 
     if 'acls' in hidden_edit_functions_for_current_user:
-        req.response.status_code = _httpstatus.HTTP_FORBIDDEN
+        req.response.status_code = _httplib.FORBIDDEN
         return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
     if len(ids) != 1:  # should not happen
-        req.response.status_code = _httpstatus.HTTP_FORBIDDEN
+        req.response.status_code = _httplib.FORBIDDEN
         return _tal.processTAL({}, file="web/edit/modules/acls.html", macro="acl_editor_error", request=req)
 
     idstr, = ids
@@ -120,7 +120,7 @@ def getContent(req, ids):
 
     # check write access to node
     if not node.has_write_access():
-        req.response.status_code = _httpstatus.HTTP_FORBIDDEN
+        req.response.status_code = _httplib.FORBIDDEN
         return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
     if "save" in req.params:

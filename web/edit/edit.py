@@ -4,6 +4,7 @@
 from __future__ import division
 from __future__ import print_function
 
+import httplib as _httplib
 import itertools as _itertools
 import json
 import os
@@ -26,7 +27,6 @@ from core import plugins as _core_plugins
 from core.database.postgres.user import User
 from edit_common import *
 from core.users import user_from_session as _user_from_session
-from core import httpstatus
 from schema.schema import Metadatatype
 from web.edit.edit_common import get_edit_label, get_searchparams
 from web.frontend.search import NoSearchResult
@@ -121,19 +121,19 @@ def frameset(req):
         data += _tal.processTAL({}, file="web/edit/edit.html", macro="edit_notree_permission", request=req)
         req.response.set_data(data)
         req.response.mimetype = "text/html"
-        req.response.status_code = httpstatus.HTTP_FORBIDDEN
+        req.response.status_code = _httplib.FORBIDDEN
         return
 
     language = _core_translation.set_language(req.accept_languages)
     id = req.values.get("id", _core_nodecache.get_collections_node().id)
     currentdir = q(Data).get(id)
     if currentdir is None:
-        req.response.status_code = httpstatus.HTTP_NOT_FOUND
+        req.response.status_code = _httplib.NOT_FOUND
         req.response.set_data(_core_translation.translate(language, "error_msg_objectnotfound"))
         return
 
     if not currentdir.has_read_access():
-        req.response.status_code = httpstatus.HTTP_FORBIDDEN
+        req.response.status_code = _httplib.FORBIDDEN
         req.response.set_data(_core_translation.translate(language, "permission_denied"))
         return
 
@@ -226,7 +226,7 @@ def frameset(req):
 
     homenodefilter = req.values.get('homenodefilter', '')
 
-    req.response.status_code = httpstatus.HTTP_OK
+    req.response.status_code = _httplib.OK
     req.response.set_data(_tal.processTAL(
             dict(
                 id=id,
@@ -329,8 +329,8 @@ def error(req):
             request=req,
         ),
     )
-    req.response.status_code = httpstatus.HTTP_OK
-    return httpstatus.HTTP_OK
+    req.response.status_code = _httplib.OK
+    return _httplib.OK
 
 
 # delivers all edit modules
@@ -489,7 +489,7 @@ def edit_tree(req):
 
         data.append(nodedata)
 
-    req.response.status_code = httpstatus.HTTP_OK
+    req.response.status_code = _httplib.OK
     req.response.mimetype = "application/json"
     req.response.set_data(json.dumps(data, indent=4, ensure_ascii=False))
 
@@ -502,18 +502,18 @@ def action(req):
     user = _user_from_session()
     if not user.is_editor:
         req.response.set_data(_core_translation.translate(language, "permission_denied"))
-        req.response.status_code = httpstatus.HTTP_FORBIDDEN
+        req.response.status_code = _httplib.FORBIDDEN
         return
 
     if "tab" in req.values:
         nid = req.values.get("id")
         node = q(Node).get(nid)
         if not node:
-            req.response.status_code = httpstatus.HTTP_NOT_FOUND
+            req.response.status_code = _httplib.NOT_FOUND
             req.response.set_data(_core_translation.translate(language, "error_msg_objectnotfound"))
             return
         if not node.has_read_access():
-            req.response.status_code = httpstatus.HTTP_FORBIDDEN
+            req.response.status_code = _httplib.FORBIDDEN
             req.response.set_data(_core_translation.translate(language, "permission_denied"))
             return
         tab = req.values["tab"].split("_")[-1]
@@ -534,7 +534,7 @@ def action(req):
                 changednodes[nid] = getTreeLabel(q(Node).get(nid), language)
             except:
                 logg.exception("exception ignored: could not make fancytree label for node %s", nid)
-        req.response.status_code = httpstatus.HTTP_OK
+        req.response.status_code = _httplib.OK
         req.response.mimetype = "application/json"
         req.response.set_data(json.dumps(dict(changednodes=changednodes), indent=4, ensure_ascii=False))
         return
@@ -548,7 +548,7 @@ def action(req):
         try:
             srcnode = q(Node).get(srcnodeid)
         except:
-            req.response.status_code = httpstatus.HTTP_OK
+            req.response.status_code = _httplib.OK
             req.response.set_data(_tal.processTAL(
                     dict(
                         edit_action_error=srcnodeid,
@@ -565,7 +565,7 @@ def action(req):
     if req.values['action'] == 'addcontainer':
         if not srcnode.has_write_access():
             # deliver errorlabel
-            req.response.status_code = httpstatus.HTTP_FORBIDDEN
+            req.response.status_code = _httplib.FORBIDDEN
             req.response.set_data(_tal.processTAL(
                     {},
                     string='<tal:block i18n:translate="edit_nopermission"/>',
@@ -617,7 +617,7 @@ def action(req):
 
         label = getTreeLabel(newnode, lang=language)
 
-        req.response.status_code = httpstatus.HTTP_OK
+        req.response.status_code = _httplib.OK
         req.response.mimetype = "application/json"
         req.response.set_data(json.dumps(
                 dict(
@@ -748,12 +748,12 @@ def action(req):
                 changednodes[nid] = getTreeLabel(changednodes[nid], lang=language)
             except:
                 logg.exception("exception ignored: could not make fancytree label for node %s", nid)
-        req.response.status_code = httpstatus.HTTP_OK
+        req.response.status_code = _httplib.OK
         req.response.mimetype = "application/json"
         req.response.set_data(json.dumps(dict(changednodes=changednodes), indent=4, ensure_ascii=False))
     else:
         try:
-            req.response.status_code = httpstatus.HTTP_OK
+            req.response.status_code = _httplib.OK
             if dest is not None:
                 req.response.set_data(dest.id)
             else:
@@ -783,7 +783,7 @@ def _show_paging(req, tab, ids):
         position, absitems = nodelist.getPositionString(ids[0])
         combodata, script = nodelist.getPositionCombo(tab)
 
-    req.response.status_code = httpstatus.HTTP_OK
+    req.response.status_code = _httplib.OK
     return _tal.processTAL(
             dict(
                 nextid=nextid,
@@ -811,9 +811,9 @@ def content(req):
     v["html_head_javascript_src"] = _web_frontend.html_head_javascript_src
 
     user = _user_from_session()
-    req.response.status_code = httpstatus.HTTP_OK
+    req.response.status_code = _httplib.OK
     if not user.is_editor:
-        req.response.status_code = httpstatus.HTTP_FORBIDDEN
+        req.response.status_code = _httplib.FORBIDDEN
         req.response.set_data(_tal.processTAL(v, file="web/edit/edit.html", macro="error", request=req))
         return
 
@@ -839,7 +839,7 @@ def content(req):
 
     language = _core_translation.set_language(req.accept_languages)
     if not node.has_read_access():
-        req.response.status_code = httpstatus.HTTP_FORBIDDEN
+        req.response.status_code = _httplib.FORBIDDEN
         req.response.set_data(_core_translation.translate(language, "permission_denied"))
         return
 
@@ -1023,7 +1023,7 @@ def edit_print(req):
     mod = _editModules.get(module_name)
     
     if not mod:
-        req.response.status_code = httpstatus.HTTP_BAD_REQUEST
+        req.response.status_code = _httplib.BAD_REQUEST
         req.response.set_data(_core_translation.translate(
                 _core_translation.set_language(req.accept_languages),
                 "admin_settings_nomodule",
@@ -1036,4 +1036,4 @@ def edit_print(req):
     req.response.headers['Content-Disposition'] = u'inline; filename="{}_{}_{}.pdf"'.format(nid, module_name,
                                                                                               additional_data)
     req.response.set_data(print_content)
-    req.response.status_code = httpstatus.HTTP_OK
+    req.response.status_code = _httplib.OK

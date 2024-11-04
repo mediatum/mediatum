@@ -5,6 +5,7 @@ from __future__ import division
 from __future__ import print_function
 
 import os
+import httplib as _httplib
 import logging
 import mediatumtal.tal as _tal
 
@@ -13,7 +14,6 @@ import core.translation as _core_translation
 from utils.utils import getMimeType, splitpath
 from utils.fileutils import importFile
 from core.users import user_from_session as _user_from_session
-from core import httpstatus
 from core.database.postgres.node import Node
 from core import db
 
@@ -29,7 +29,7 @@ def getContent(req, ids):
     node = q(Node).get(ids[0])
 
     if "logo" in user.hidden_edit_functions or not node.has_write_access():
-        req.response.status_code = httpstatus.HTTP_FORBIDDEN
+        req.response.status_code = _httplib.FORBIDDEN
         return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
     # delete logo file
@@ -54,7 +54,7 @@ def getContent(req, ids):
 
             if mimetype not in ("image/jpeg", "image/gif", "image/png"):
                 # wrong file type (jpeg, jpg, gif, png)
-                req.response.status_code = httpstatus.HTTP_INTERNAL_SERVER_ERROR
+                req.response.status_code = _httplib.INTERNAL_SERVER_ERROR
                 return _tal.processTAL({}, file="web/edit/modules/logo.html", macro="filetype_error", request=req)
             else:
                 file = importFile(file.filename, file)

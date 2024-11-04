@@ -4,6 +4,7 @@
 from __future__ import division
 from __future__ import print_function
 
+import httplib as _httplib
 import logging
 import os as _os
 import shutil
@@ -22,7 +23,6 @@ from core import webconfig
 from core import db
 from core.database.postgres.node import Node
 from contenttypes import Container
-from core import httpstatus
 from core.request_handler import sendFile as _sendFile
 import core.database.postgres as _database_postgres
 import core.database.postgres.node as _database_postgres_node
@@ -53,10 +53,10 @@ def show_help(req):
                     html_head_javascript_src=_web_frontend.html_head_javascript_src,
                 ),
             )
-        req.response.status_code = httpstatus.HTTP_OK
+        req.response.status_code = _httplib.OK
     else:
         html = _core_translation.translate(_core_translation.set_language(req.accept_languages), "permission_denied")
-        req.response.status_code = httpstatus.HTTP_FORBIDDEN
+        req.response.status_code = _httplib.FORBIDDEN
     req.response.set_data(html)
 #
 # show attachmentbrowser for given node
@@ -74,7 +74,7 @@ def show_attachmentbrowser(req):
                 _core_translation.set_language(req.accept_languages),
                 "permission_denied",
             ))
-        req.response.status_code = httpstatus.HTTP_FORBIDDEN
+        req.response.status_code = _httplib.FORBIDDEN
         return
 
     from core.attachment import getAttachmentBrowser
@@ -86,7 +86,7 @@ RE_PRINT_URL = re.compile("/print/(\d+).pdf")
 
 def redirect_old_printview(req):
     req.response.location = req.mediatum_contextfree_path + ".pdf"
-    req.response.status_code = httpstatus.HTTP_TEMPORARY_REDIRECT
+    req.response.status_code = _httplib.FOUND
     return
 
 
@@ -97,14 +97,14 @@ def show_printview(req):
 
     node = q(Node).get(nodeid)
     if node.system_attrs.get("print") == "0":
-        req.response.status_code = httpstatus.HTTP_NOT_FOUND
+        req.response.status_code = _httplib.NOT_FOUND
         req.response.set_data(_core_translation.translate(
                 _core_translation.set_language(req.accept_languages),
                 "edit_common_noobjectsfound",
             ))
         return
     if not node.has_read_access():
-        req.response.status_code = httpstatus.HTTP_FORBIDDEN
+        req.response.status_code = _httplib.FORBIDDEN
         req.response.set_data(_core_translation.translate(
                 _core_translation.set_language(req.accept_languages),
                 "permission_denied",

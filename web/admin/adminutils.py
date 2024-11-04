@@ -4,6 +4,7 @@
 from __future__ import division
 from __future__ import print_function
 
+import httplib as _httplib
 import logging
 import os
 import math
@@ -16,7 +17,6 @@ import core.config as config
 import core.translation as _core_translation
 import core.users as users
 from core import db
-from core import httpstatus
 from core.database.postgres.user import AuthenticatorInfo
 from core.database.postgres.user import User
 from core.systemtypes import Root
@@ -199,7 +199,7 @@ def show_content(req, op):
 
     user = users.user_from_session()
     if not user.is_admin:
-        req.response.status_code = httpstatus.HTTP_FORBIDDEN
+        req.response.status_code = _httplib.FORBIDDEN
         return _tal.processTAL({}, file="web/admin/frame.html", macro="errormessage", request=req)
     else:
         if op == "" or op not in get_menu_strings(_menu):

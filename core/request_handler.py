@@ -5,6 +5,7 @@ from __future__ import division
 from __future__ import print_function
 
 import datetime as _datetime
+import httplib as _httplib
 import re as _re
 import os as _os
 import stat as _stat
@@ -17,7 +18,6 @@ from functools import partial as _partial
 import flask as _flask
 
 import core.translation as _core_translation
-import httpstatus as _httpstatus
 from core import config as _config
 from utils import utils as _utils_utils
 from utils.url import build_url_from_path_and_params as _build_url_from_path_and_params
@@ -155,7 +155,7 @@ def sendFile(req, path, content_type, force=0):
     try:
         mtime = _datetime.datetime.utcfromtimestamp(_os.stat(path)[_stat.ST_MTIME])
     except OSError:
-        req.response.status_code = _httpstatus.HTTP_NOT_FOUND
+        req.response.status_code = _httplib.NOT_FOUND
         return
 
     if req.if_modified_since and mtime <= req.if_modified_since and not force:
@@ -213,7 +213,7 @@ class _WebContext:
                 req.response.status_code = status
                 if(status >= 400 and status <= 500):
                     req.response.status_code = status
-                    req.response.set_data(_httpstatus.responses[status])
+                    req.response.set_data(_httplib.responses[status])
                     return
             return
 
@@ -261,7 +261,7 @@ def _callhandler(handler_func, req):
             msg = _core_translation.translate_in_request("core_snipped_internal_server_error_without_mail", req)
         s = msg.replace('${XID}', xid)
         req.response.headers["X-XID"] = xid
-        req.response.status_code = _httpstatus.HTTP_INTERNAL_SERVER_ERROR
+        req.response.status_code = _httplib.INTERNAL_SERVER_ERROR
         req.response.set_data(s.encode("utf8"))
 
 
@@ -276,7 +276,7 @@ def handle_request(req):
             context = c
             maxlen = len(context.name)
     if context is None:
-        req.response.status_code = _httpstatus.HTTP_NOT_FOUND
+        req.response.status_code = _httplib.NOT_FOUND
         return req
 
     mediatum_contextfree_path = req.path[len(context.name):]
@@ -295,8 +295,8 @@ def handle_request(req):
                 for v in value.split(','):
                     int(v or 0)
     except ValueError:
-        req.response.status_code = _httpstatus.HTTP_BAD_REQUEST
-        req.response.set_data(_httpstatus.responses[req.response.status_code])
+        req.response.status_code = _httplib.BAD_REQUEST
+        req.response.set_data(_httplib.responses[req.response.status_code])
         return req
 
     function = context.match(mediatum_contextfree_path)
@@ -305,7 +305,7 @@ def handle_request(req):
     else:
         _logg.debug("Request %s matches no pattern (context: %s)", req.path, context.name)
         req.response.set_data("File {} not found".format(req.path))
-        req.response.status_code = _httpstatus.HTTP_NOT_FOUND
+        req.response.status_code = _httplib.NOT_FOUND
 
     return req
 

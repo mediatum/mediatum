@@ -7,8 +7,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import functools as _functools
+import itertools as _itertools
 import logging
 
+import core as _core
+import core.database.postgres.permission as _
 from core import db
 from core.database.postgres.user import AuthenticatorInfo
 from core.database.postgres.user import User
@@ -23,7 +27,6 @@ from flask_admin import form, expose
 import core.csrfform as _core_csrfform
 from core.auth import INTERNAL_AUTHENTICATOR_KEY
 from core.permission import get_or_add_access_rule
-from core.database.postgres.permission import AccessRuleset, AccessRulesetToRule, NodeToAccessRuleset
 from schema.schema import Metadatatype
 from core.database.postgres.user import OAuthUserCredentials
 
@@ -34,6 +37,26 @@ logg = logging.getLogger(__name__)
 def _link_format_node_id_column(node_id):
     # XXX: just for testing, this should link to this instance
     return Markup('<a href="/node?id={0}" class="mediatum-link-mediatum">{0}</a>'.format(node_id))
+
+
+def _update_access_ruleset_assocs(ruleset_name, add_metadatatypes, drop_metadatatypes):
+    """
+    add/remove access to Metadatatypes
+    """
+    mkquery = _functools.partial(
+        q(_core.database.postgres.permission.NodeToAccessRuleset).filter_by,
+        ruleset_name=ruleset_name,
+        )
+    nodetoaccessruleset = _core.database.postgres.permission.NodeToAccessRuleset(
+        ruleset_name=ruleset_name,
+        ruletype=u'read',
+        )
+    for metadatatype in add_metadatatypes:
+        if mkquery(nid=metadatatype.id).scalar() is None:
+            metadatatype.access_ruleset_assocs.append(nodetoaccessruleset)
+    for metadatatype in drop_metadatatypes:
+        if metadatatype not in add_metadatatypes:
+            map(metadatatype.access_ruleset_assocs.remove, mkquery(nid=metadatatype.id).all())
 
 
 class UserView(BaseAdminView):
@@ -86,7 +109,8 @@ class UserView(BaseAdminView):
 class UserGroupView(BaseAdminView):
     form_base_class = _core_csrfform.CSRFForm
 
-    form_excluded_columns = ("name", "user_assocs")
+    form_excluded_columns = ("user_assocs", "versions")
+
     column_details_list = ["id", "name", "description", "hidden_edit_functions", "is_editor_group",
                            "is_workflow_editor_group", "is_admin_group", "created_at", "metadatatype_access", "user_names"]
 
@@ -112,28 +136,38 @@ class UserGroupView(BaseAdminView):
                                           widget=form.Select2Widget(multiple=True)),
     }
 
+    def get_edit_form(self):
+        form = super(UserGroupView, self).get_edit_form()
+        del form.name
+        return form
+
     def on_form_prefill(self, form, id):
         form.metadatatypes.data = q(UserGroup).filter_by(id=id).scalar().metadatatype_access
 
-    def on_model_change(self, form, usergroup, is_created):
+    def on_model_change(self, form, model, is_created):
         if is_created:
             """ create ruleset for group """
-            existing_ruleset = q(AccessRuleset).filter_by(name=usergroup.name).scalar()
+            existing_ruleset = q(_core.database.postgres.permission.AccessRuleset).filter_by(name=model.name).scalar()
             if existing_ruleset is None:
-                rule = get_or_add_access_rule(group_ids=[usergroup.id])
-                ruleset = AccessRuleset(name=usergroup.name, description=usergroup.name)
-                arr = AccessRulesetToRule(rule=rule)
+                rule = get_or_add_access_rule(group_ids=(model.id, ))
+                ruleset = _core.database.postgres.permission.AccessRuleset(name=model.name, description=model.name)
+                arr = _core.database.postgres.permission.AccessRulesetToRule(rule=rule)
                 ruleset.rule_assocs.append(arr)
+            _update_access_ruleset_assocs(model.name, form.metadatatypes.data, ())
+        else:
+            _update_access_ruleset_assocs(model.name, form.metadatatypes.data, model.metadatatype_access)
 
-        """ add/remove access to Metadatatypes """
-        for mt in q(Metadatatype):
-            nrs_list = q(NodeToAccessRuleset).filter_by(nid=mt.id).filter_by(ruleset_name=usergroup.name).all()
-            if mt in form.metadatatypes.data:
-                if not nrs_list:
-                    mt.access_ruleset_assocs.append(NodeToAccessRuleset(ruleset_name=usergroup.name, ruletype=u'read'))
-            else:
-                for nrs in nrs_list:
-                    mt.access_ruleset_assocs.remove(nrs)
+    def on_model_delete(self, model):
+        _update_access_ruleset_assocs(model.name, (), model.metadatatype_access)
+        get_db_obj = lambda cls, **flt: q(cls).filter_by(**flt).scalar()
+        ruleset = get_db_obj(_core.database.postgres.permission.AccessRuleset, name=model.name)
+        rule = get_db_obj(_core.database.postgres.permission.AccessRule, group_ids=(model.id,))
+        ruleset2rule = ruleset and rule and get_db_obj(
+            _core.database.postgres.permission.AccessRulesetToRule,
+            ruleset_name=ruleset.name,
+            rule=rule,
+            )
+        map(db.session.delete, _itertools.ifilter(None, (ruleset2rule, rule, ruleset)))
 
     def __init__(self, session=None, *args, **kwargs):
         super(UserGroupView, self).__init__(UserGroup, session, category="User", *args, **kwargs)

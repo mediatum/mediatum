@@ -7,7 +7,7 @@ from __future__ import print_function
 import os
 import json
 import codecs
-
+import httplib as _httplib
 import logging
 import collections as _collections
 import operator as _operator
@@ -19,7 +19,6 @@ import core.translation as _core_translation
 from utils.utils import format_filesize, suppress
 from web.edit.edit_common import send_nodefile_tal, upload_for_html
 from core.users import user_from_session as _user_from_session
-from core import httpstatus
 from core.database.postgres.node import Node
 from core import db
 from core.database.postgres.file import File
@@ -67,7 +66,7 @@ def getContent(req, ids):
     node = q(Node).get(ids[0])
     user = _user_from_session()
     if not node.has_write_access() or "editor" in user.hidden_edit_functions:
-        req.response.status_code = httpstatus.HTTP_FORBIDDEN
+        req.response.status_code = _httplib.FORBIDDEN
         return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
     id = req.values.get("id", "0")

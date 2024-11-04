@@ -4,6 +4,7 @@
 from __future__ import division
 from __future__ import print_function
 
+import httplib as _httplib
 import hashlib
 
 import os
@@ -17,7 +18,6 @@ from utils.utils import getMimeType, get_user_id, suppress
 from utils.fileutils import importFile, getImportDir, importFileIntoDir
 from contenttypes.image import make_thumbnail_image
 from core.users import getUploadDir as _getUploadDir
-from core import httpstatus
 from core import db
 from core.database.postgres.file import File
 from core.database.postgres.node import Node
@@ -37,7 +37,7 @@ def _finish_change(node, change_file, user, uploadfile, req):
         # note: only the suffix of the filename is checked not the file content
         uploadfile_type = getMimeType(uploadfile.filename)[1]
         if uploadfile_type != node.type and uploadfile_type != node.get_upload_filetype():
-            req.response.status_code = httpstatus.HTTP_NOT_ACCEPTABLE
+            req.response.status_code = _httplib.NOT_ACCEPTABLE
             return
 
         # sys files are always cleared to delete remaining thumbnails etc.
@@ -119,7 +119,7 @@ def getContent(req, ids):
                get_user_id(), req.path, req.mediatum_contextfree_path, req.params, ids)
 
     if not node.has_write_access() or "files" in user.hidden_edit_functions:
-        req.response.status_code = httpstatus.HTTP_FORBIDDEN
+        req.response.status_code = _httplib.FORBIDDEN
         return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
     srcnodeid = req.values.get("srcnodeid", "")
@@ -294,8 +294,8 @@ def getContent(req, ids):
 
         elif op == "change":
             _handle_change(node, req)
-            if req.response.status_code != httpstatus.HTTP_OK and req.response.status_code != httpstatus.HTTP_MOVED_TEMPORARILY:
-                if req.response.status_code is httpstatus.HTTP_NOT_ACCEPTABLE:
+            if req.response.status_code != _httplib.OK and req.response.status_code != _httplib.FOUND:
+                if req.response.status_code is _httplib.NOT_ACCEPTABLE:
                     update_error_extension = True
                 else:
                     update_error = True

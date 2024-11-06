@@ -17,6 +17,7 @@ import mimetypes as _mimetypes
 import os
 import random as _random
 import re
+import shutil as _shutil
 import string as _string
 import sys
 import traceback
@@ -810,3 +811,19 @@ def new_temp_download_file(filename):
 
 def xml_check_illegal_chars_or_null(text):
     return (text != xml_remove_illegal_chars(text)) or ('\0' in text)
+
+
+@contextmanager
+def TemporaryDirectory(prefix):
+    """
+    Context manager that (securely) creates a temporary directory,
+    returns a path join function that prepends the directory path to the given argument
+    (e.g. "return_value("abc.txt") -> "/path/to/tmp/dir/abc.txt"),
+    and finally cleans up the directory."
+    """
+
+    dtemp = tempfile.mkdtemp(prefix=prefix, dir=tempfile.tempdir)
+    try:
+        yield _functools.partial(os.path.join, dtemp)
+    finally:
+        _shutil.rmtree(dtemp)

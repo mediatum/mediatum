@@ -47,13 +47,14 @@ def _update_access_ruleset_assocs(ruleset_name, add_metadatatypes, drop_metadata
         q(_core.database.postgres.permission.NodeToAccessRuleset).filter_by,
         ruleset_name=ruleset_name,
         )
-    nodetoaccessruleset = _core.database.postgres.permission.NodeToAccessRuleset(
+    mknodetoaccessruleset = _functools.partial(
+        _core.database.postgres.permission.NodeToAccessRuleset,
         ruleset_name=ruleset_name,
         ruletype=u'read',
         )
     for metadatatype in add_metadatatypes:
         if mkquery(nid=metadatatype.id).scalar() is None:
-            metadatatype.access_ruleset_assocs.append(nodetoaccessruleset)
+            metadatatype.access_ruleset_assocs.append(mknodetoaccessruleset())
     for metadatatype in drop_metadatatypes:
         if metadatatype not in add_metadatatypes:
             map(metadatatype.access_ruleset_assocs.remove, mkquery(nid=metadatatype.id).all())

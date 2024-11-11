@@ -479,7 +479,6 @@ def getContent(req, ids):
         search=search_html,
         query=req.query_string.replace('id=', 'src='),
         searchparams=urllib.urlencode(searchparams),
-        get_ids_from_query=",".join(show_dir_nav.get_ids_from_req()),
         edit_all_objects=_core_translation.translate(
                 language,
                 "edit_all_objects",

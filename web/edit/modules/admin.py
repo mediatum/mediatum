@@ -4,13 +4,13 @@
 from __future__ import division
 from __future__ import print_function
 
+import httplib as _httplib
 import logging
 import mediatumtal.tal as _tal
 
 import core.csrfform as _core_csrfform
 from utils.utils import formatTechAttrs, suppress
 from utils.date import format_date, parse_date
-from core import httpstatus
 from core import db
 from core.database.postgres.node import Node
 from core.users import user_from_session
@@ -25,7 +25,7 @@ def getContent(req, ids):
     user = user_from_session()
     node = q(Node).get(ids[0])
     if not node.has_write_access() or "admin" in user.hidden_edit_functions:
-        req.response.status_code = httpstatus.HTTP_FORBIDDEN
+        req.response.status_code = _httplib.FORBIDDEN
         return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
     if req.params.get("type", "") == "addattr" and req.params.get("new_name", "") != "" and req.params.get("new_value", "") != "":
@@ -43,7 +43,7 @@ def getContent(req, ids):
                     attrname,
                     user.id,
                 )
-                return httpstatus.HTTP_FORBIDDEN
+                return _httplib.FORBIDDEN
 
         node.set(attrname, attrvalue)
         db.session.commit()
@@ -61,7 +61,7 @@ def getContent(req, ids):
         # remove attribute
         if key.startswith("attr_"):
             if not user.is_admin:
-                return httpstatus.HTTP_FORBIDDEN
+                return _httplib.FORBIDDEN
 
             del node.attrs[key[5:-2]]
             db.session.commit()
@@ -71,7 +71,7 @@ def getContent(req, ids):
         # remove system attribute
         if key.startswith("system_attr_"):
             if not user.is_admin:
-                return httpstatus.HTTP_FORBIDDEN
+                return _httplib.FORBIDDEN
 
             attrname = key[12:-2]
             del node.system_attrs[attrname]

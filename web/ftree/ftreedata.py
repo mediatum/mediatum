@@ -4,6 +4,8 @@
 from __future__ import division
 from __future__ import print_function
 
+import httplib as _httplib
+
 import sqlalchemy as _sqlalchemy
 import sqlalchemy.orm as _sqlalchemy_orm
 import contenttypes as _contenttypes
@@ -14,7 +16,6 @@ import core.nodecache as _core_nodecache
 import core.systemtypes as _core_systemtypes
 import core.translation as _core_translation
 import core.users as _core_users
-import core.httpstatus as _httpstatus
 import utils.utils as _utils
 import web.edit.edit_common as _web_edit_common
 import web.edit.edit as _web_edit_edit
@@ -120,7 +121,7 @@ def getData(req):
             ret.append(u'</li>')
 
     req.response.set_data(u"\n".join(ret))
-    req.response.status_code = _httpstatus.HTTP_OK
+    req.response.status_code = _httplib.OK
 
 
 def getLabel(req):
@@ -130,7 +131,7 @@ def getLabel(req):
     label = node.getLabel()
     if inum > 0:
         label += u" <small>({})</small>".format(inum)
-    req.response.status_code = _httpstatus.HTTP_OK
+    req.response.status_code = _httplib.OK
     req.response.set_data(label)
 
 
@@ -200,7 +201,7 @@ def _get_path_to(path_to, style, multiselect):
 
 
 def getPathTo(req):
-    req.response.status_code = _httpstatus.HTTP_OK
+    req.response.status_code = _httplib.OK
     req.response.set_data(unicode(",".join(_get_path_to(
         map(int,req.values["pathTo"].split(",")),
         req.values["style"],

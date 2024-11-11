@@ -23,6 +23,7 @@ from core import webconfig
 from core.users import user_from_session as _user_from_session
 from core.users import get_guest_user
 from core.webconfig import node_url, edit_node_url
+import contenttypes as _contenttypes
 from contenttypes import Directory, Container, Collection, Collections
 from schema.schema import getMetadataType
 from utils.compat import iteritems
@@ -264,6 +265,25 @@ def _make_navtree_entries(language, container):
             .filter(_node.t_noderelation.c.cid == container.id)
             .union(_sqlalchemy.select([_sqlalchemy.sql.expression.literal(container.id)])
            ).subquery())
+    if config.getboolean("database.use_cached_childcount"):
+        count_content_children_for_all_subcontainers = _sqlalchemy.func.count_content_children_for_all_subcontainers(Node.id)
+    else:
+        content_alias = _orm.aliased(_contenttypes.Content)
+        noderelation_alias = _orm.aliased(_node.t_noderelation)
+        count_content_children_for_all_subcontainers_dir = (q(_sqlalchemy.func.count(content_alias.id.distinct()))
+                .filter(content_alias.id == noderelation_alias.c.cid)
+                .filter(noderelation_alias.c.nid == Container.id)
+                .filter(content_alias.subnode == False)
+               )
+        count_content_children_for_all_subcontainers = _sqlalchemy.case(
+                ((
+                    Container.type.in_(
+                        frozenset(n.__name__.lower() for n in Directory.get_all_subclasses() if n.show_childcount)
+                       ),
+                    count_content_children_for_all_subcontainers_dir.as_scalar(),
+                ),),
+                else_=_sqlalchemy.literal_column("1"),
+            )
 
     # the main query lists all container nodes that are
     # the child of any of the "opened" containers (see above);
@@ -273,7 +293,7 @@ def _make_navtree_entries(language, container):
     tree_elements = q(
             Container,
             _node.t_nodemapping.c.nid.label("parent_id"),
-            _sqlalchemy.func.count_content_children_for_all_subcontainers(Node.id).label("count_content_children"),
+            count_content_children_for_all_subcontainers.label('count_content_children'),
             container_children_exist_column.label('container_children_exists'),
            )
     tree_elements = (tree_elements

@@ -7,6 +7,7 @@ from __future__ import division
 from __future__ import print_function
 
 import functools as _functools
+import httplib as _httplib
 import itertools as _itertools
 import logging
 import operator as _operator
@@ -19,7 +20,6 @@ import utils.utils as _utils
 from utils.utils import esc, suppress
 import core.metatype as _core_metatype
 from core.metatype import Metatype
-from core import httpstatus
 from core import db
 from core.database.postgres.node import Node
 from contenttypes import Collections
@@ -125,12 +125,12 @@ class m_ilist(Metatype):
             fieldname = req.params.get('fieldname', name)
         except:
             logg.exception("missing request parameter")
-            req.response.status_code = httpstatus.HTTP_NOT_FOUND
-            return httpstatus.HTTP_NOT_FOUND
+            req.response.status_code = _httplib.NOT_FOUND
+            return _httplib.NOT_FOUND
 
         index = sorted(_get_list_values_for_nodes_with_schema(schema, fieldname))
 
-        req.response.status_code = httpstatus.HTTP_OK
+        req.response.status_code = _httplib.OK
         if req.params.get("print", "") != "":
             req.response.headers["Content-Disposition"] = "attachment; filename=index.txt"
             req.response.set_data(u"".join(_itertools.imap(u"{}\r\n".format, index)))
@@ -153,7 +153,7 @@ class m_ilist(Metatype):
                     request=req,
                    )
                )
-        return httpstatus.HTTP_OK
+        return _httplib.OK
 
     def editor_parse_form_data(self, field, data, required):
         if required and not data.get("text"):

@@ -4,6 +4,7 @@
 from __future__ import division
 from __future__ import print_function
 
+import httplib as _httplib
 import logging
 
 import mediatumtal.tal as _tal
@@ -11,7 +12,6 @@ import mediatumtal.tal as _tal
 import core.csrfform as _core_csrfform
 from utils.date import format_date
 from core.users import user_from_session as _user_from_session
-from core import httpstatus
 from core.database.postgres.node import Node
 from core import db
 
@@ -126,7 +126,7 @@ def getContent(req, ids):
     node = q(Node).get(ids)
 
     if "statsfiles" in user.hidden_edit_functions or not node.has_write_access():
-        req.response.status_code = httpstatus.HTTP_FORBIDDEN
+        req.response.status_code = _httplib.FORBIDDEN
         return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
     if "update_stat" in req.params.keys():  # reset stored statistics data

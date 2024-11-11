@@ -4,6 +4,7 @@
 from __future__ import division
 from __future__ import print_function
 
+import httplib as _httplib
 import logging
 
 import mediatumtal.tal as _tal
@@ -12,7 +13,6 @@ import core.translation as _core_translation
 import core.csrfform as _core_csrfform
 from schema.schema import get_permitted_schemas
 from core.users import user_from_session as _user_from_session
-from core import httpstatus
 from core.database.postgres.node import Node
 from contenttypes import Data, Content, Container
 from core import db
@@ -27,19 +27,19 @@ def _redirect_to_view(req):
             req.values.get("srcnodeid", ""),
             req.args["id"],
         )
-    return httpstatus.HTTP_MOVED_TEMPORARILY
+    return _httplib.FOUND
 
 
 def getContent(req, ids):
     user = _user_from_session()
     node = q(Node).get(ids[0])
     if not node.has_write_access() or "changeschema" in user.hidden_edit_functions:
-        req.response.status_code = httpstatus.HTTP_FORBIDDEN
+        req.response.status_code = _httplib.FORBIDDEN
         return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
     # nobody should be able to change the type/schema of his home directory
     if node.id == user.home_dir_id:
-        req.response.status_code = httpstatus.HTTP_FORBIDDEN
+        req.response.status_code = _httplib.FORBIDDEN
         return _tal.processTAL({}, file="web/edit/edit.html", macro="access_error", request=req)
 
     error = req.params.get("error")
@@ -71,17 +71,17 @@ def getContent(req, ids):
             if isinstance(node, Container):
                 if not new_type in admissible_containers:
                     logg.warning(u"changeschema: illegal container type %s", new_type)
-                    return httpstatus.HTTP_BAD_REQUEST
+                    return _httplib.BAD_REQUEST
             else:
                 if not new_type in admissible_content_types:
                     logg.warning(u"changeschema: illegal content type %s", new_type)
-                    return httpstatus.HTTP_BAD_REQUEST
+                    return _httplib.BAD_REQUEST
 
             available_schema_names = [s.name for s in schemes if new_type in s.getDatatypes()]
 
             if not new_schema in available_schema_names:
                     logg.warning(u"changeschema: illegal schema %s", new_schema)
-                    return httpstatus.HTTP_BAD_REQUEST
+                    return _httplib.BAD_REQUEST
 
             logg.info(
                     u"%s changed node schema for node %s '%s' from '%s' to '%s'",

@@ -4,6 +4,7 @@
 from __future__ import division
 from __future__ import print_function
 
+import httplib as _httplib
 import logging
 import hashlib
 
@@ -11,7 +12,6 @@ import flask as _flask
 
 from core import auth
 from core import db
-from core import httpstatus
 from core.webconfig import node_url
 import core.csrfform as _core_csrfform
 import core.users as users
@@ -94,8 +94,8 @@ def login(req):
     if "LoginSubmit" in req.form:
         error = _handle_login_submit(req)
         if not error:
-            req.response.status_code = httpstatus.HTTP_MOVED_TEMPORARILY
-            return httpstatus.HTTP_MOVED_TEMPORARILY
+            req.response.status_code = _httplib.FOUND
+            return _httplib.FOUND
     else:
         error = None
 
@@ -115,9 +115,9 @@ def login(req):
     login_html = webconfig.theme.render_macro("login.j2.jade", "login", ctx)
     from web.frontend.frame import render_page
     html = render_page(req, login_html)
-    req.response.status_code = httpstatus.HTTP_OK
+    req.response.status_code = _httplib.OK
     req.response.set_data(html)
-    return httpstatus.HTTP_OK
+    return _httplib.OK
 
 
 def logout(req):
@@ -129,9 +129,9 @@ def logout(req):
             del _flask.session["user_id"]
 
     req.response.location = '/'
-    req.response.status_code = httpstatus.HTTP_MOVED_TEMPORARILY
+    req.response.status_code = _httplib.FOUND
     # return to caching
-    return httpstatus.HTTP_MOVED_TEMPORARILY
+    return _httplib.FOUND
 
 
 def pwdchange(req):
@@ -144,8 +144,8 @@ def pwdchange(req):
     if "ChangeSubmit" in req.form:
         if user.is_anonymous:
             req.response.location = _make_collection_root_link()
-            req.response.status_code = httpstatus.HTTP_MOVED_TEMPORARILY
-            return httpstatus.HTTP_MOVED_TEMPORARILY
+            req.response.status_code = _httplib.FOUND
+            return _httplib.FOUND
 
         else:
             password_old = req.form.get("password_old")
@@ -163,8 +163,8 @@ def pwdchange(req):
             else:
                 req.response.location = _make_collection_root_link()
                 req.response.autocorrect_location_header = False
-                req.response.status_code = httpstatus.HTTP_MOVED_TEMPORARILY
-                return httpstatus.HTTP_MOVED_TEMPORARILY
+                req.response.status_code = _httplib.FOUND
+                return _httplib.FOUND
 
     content_html = webconfig.theme.render_macro(
             "login.j2.jade",
@@ -174,8 +174,8 @@ def pwdchange(req):
     from web.frontend.frame import render_page
     html = render_page(req, content_html)
     req.response.set_data(html)
-    req.response.status_code = httpstatus.HTTP_OK
-    return httpstatus.HTTP_OK
+    req.response.status_code = _httplib.OK
+    return _httplib.OK
 
 
 def pwdforgotten(req):

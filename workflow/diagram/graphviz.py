@@ -164,31 +164,3 @@ def send_workflow_diagram(req, media_type="png"):
         _sendFile(req, diag.filename(media_type), "text/vnd.graphviz")
     else:
         raise ValueError("media type " + media_type + " not supported!")
-
-
-def create_example_graph():
-    g = Dot(graph_name="workflow: example",
-            labelloc="t", label="workflow: example", fontsize=18, fontcolor="blue")
-    g.set_node_defaults(shape="box", fontsize=12)
-    g.set_edge_defaults(fontsize=13, labeldistance=3)
-    n1 = Node(name="Start")
-    g.add_node(n1)
-    n2 = Node(name="StepTrueEnd", color="#04B45F")
-    g.add_node(n2)
-    n3 = Node(name="StepFalse")
-    g.add_node(n3)
-    n4 = Node(name="StepFalse2")
-    g.add_node(n4)
-    n5 = Node(name="StepFalse3End", color="#04B45F")
-    g.add_node(n5)
-    e1 = true_edge(n1, n2)
-    g.add_edge(e1)
-    e2 = false_edge(n1, n3)
-    g.add_edge(e2)
-    e3 = true_edge(n3, n4)
-    g.add_edge(e3)
-    e_back = false_edge(n4, n1, label="back if false")
-    g.add_edge(e_back)
-    e4 = true_edge(n4, n5)
-    g.add_edge(e4)
-    return g

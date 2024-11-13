@@ -20,6 +20,8 @@ from core.attachment import filebrowser as _filebrowser
 from core import db
 from core.database.postgres.file import File
 from core.config import resolve_datadir_path
+import utils as _utils
+import utils.utils as _
 from utils.utils import splitfilename
 from utils.date import format_date, make_date
 import utils.process
@@ -127,11 +129,8 @@ class Video(Content):
             ffmpeg_call += ['-i', video_file.abspath]  # input settings
 
             # Temporary file must be named and closed right after creation because ffmpeg wants to access it later.
-            temp_thumbnail = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
-            try:
-                temp_thumbnail.close()
-                temp_thumbnail_path = temp_thumbnail.name
-                ffmpeg_call += ['-vframes', '1', '-pix_fmt', 'rgb24', temp_thumbnail_path]  # output options
+            with _utils.utils.TemporaryDirectory("mediatum-video") as tmpfilejoin:
+                ffmpeg_call += ['-vframes', '1', '-pix_fmt', 'rgb24', tmpfilejoin("thumbnail.png")]  # output options
 
                 try:
                     utils.process.check_call(ffmpeg_call)
@@ -144,9 +143,7 @@ class Video(Content):
 
                 name_without_ext = os.path.splitext(video_file.path)[0]
                 thumbname = u'{}.thumbnail.jpeg'.format(name_without_ext)
-                make_thumbnail_image(temp_thumbnail_path, resolve_datadir_path(thumbname))
-            finally:
-                os.unlink(temp_thumbnail_path)
+                make_thumbnail_image(tmpfilejoin("thumbnail.png"), resolve_datadir_path(thumbname))
 
             self.files.append(File(thumbname, u'thumbnail', u'image/jpeg'))
 

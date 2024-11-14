@@ -11,6 +11,10 @@ import logging
 from warnings import warn
 
 import ruamel.yaml as _ruamel_yaml
+import sqlalchemy as _sqlalchemy
+import sqlalchemy_continuum as _sqlalchemy_continuum
+import sqlalchemy_continuum.plugins.flask as _
+import sqlalchemy_continuum.plugins.transaction_meta as _
 from sqlalchemy import (Table, Sequence, Integer, Unicode, Boolean, sql, text, select, func)
 from sqlalchemy.orm import deferred, object_session
 from sqlalchemy.orm.dynamic import AppenderMixin
@@ -21,6 +25,9 @@ from sqlalchemy.ext.hybrid import hybrid_property
 
 import flask as _flask
 
+import core as _core
+import core.database.postgres as _
+import core.database.postgres.continuumext as _
 import core.nodecache as _core_nodecache
 from core import config
 from core.node import NodeMixin, NodeVersionMixin
@@ -35,6 +42,20 @@ from core.search.representation import SearchTreeElement
 
 
 logg = logging.getLogger(__name__)
+
+_sqlalchemy_continuum.make_versioned(
+        plugins=[
+                _sqlalchemy_continuum.plugins.transaction_meta.TransactionMetaPlugin(),
+                _sqlalchemy_continuum.plugins.flask.FlaskPlugin()
+            ],
+        options=dict(
+            native_versioning=True,
+            base_classes= (
+                _core.database.postgres.continuumext.MtVersionBase,
+                _core.database.postgres.DeclarativeBase,
+            ),
+        )
+    )
 
 
 class NodeType(DeclarativeBase):

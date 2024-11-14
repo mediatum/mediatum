@@ -26,10 +26,6 @@ from utils.postgres import schema_exists, table_exists
 import utils.process
 import sys
 from core.search.config import get_fulltext_autoindex_languages, get_attribute_autoindex_languages
-from sqlalchemy_continuum import make_versioned
-from sqlalchemy_continuum.plugins import FlaskPlugin
-from sqlalchemy_continuum.plugins.transaction_meta import TransactionMetaPlugin
-from core.database.postgres.continuumext import MtVersionBase
 
 # set this to True or False to override debug config settings
 DEBUG = None
@@ -71,21 +67,6 @@ class PostgresSQLAConnector(object):
         session_factory = sessionmaker(query_cls=MtQuery)
         self.Session = scoped_session(session_factory)
         self.metadata = db_metadata
-        self.meta_plugin = TransactionMetaPlugin()
- 
-        # XXX: maybe there is a better place for this, but we need it before some methods in this class are called.
-        # XXX: maybe we could make it optionsl
-        self.setup_versioning()
-
-    def setup_versioning(self):
-        make_versioned(
-            plugins=[self.meta_plugin, FlaskPlugin()],
-            options={
-                'native_versioning': True,
-                'base_classes': (MtVersionBase, DeclarativeBase),
-                'extension_schema': config.get("database.extension_schema", "public")
-            }
-        )
 
     def configure(self, force_test_db=False):
         if DEBUG is None:

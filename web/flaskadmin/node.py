@@ -16,10 +16,11 @@ from pygments.formatters import HtmlFormatter
 from pygments.lexers import JsonLexer
 
 import core.csrfform as _core_csrfform
+import web as _web
+import web.flaskadmin.baseadminview as _
 from core import db
 from core.database.postgres.file import File
 from core.database.postgres.node import Node
-from web.admin.views import BaseAdminView
 
 logg = logging.getLogger(__name__)
 
@@ -36,7 +37,7 @@ def _format_as_json_html(data):
         "</style>" + formatted)
 
 
-class NodeView(BaseAdminView):
+class NodeView(_web.flaskadmin.baseadminview.BaseAdminView):
     form_base_class = _core_csrfform.CSRFForm
 
     column_list = ("id", "name", "type", "schema", "orderpos")
@@ -53,7 +54,7 @@ class NodeView(BaseAdminView):
     def __init__(self, session=db.session, *args, **kwargs):
         super(NodeView, self).__init__(Node, session, category="Node", *args, **kwargs)
 
-class FileView(BaseAdminView):
+class FileView(_web.flaskadmin.baseadminview.BaseAdminView):
     form_base_class = _core_csrfform.CSRFForm
 
     column_filters = ("path", "filetype", "mimetype")

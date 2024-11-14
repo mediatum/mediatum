@@ -22,6 +22,7 @@ import core.config as config
 import core as _core
 import core.templating as _
 import core.translation as _
+import core.request_handler as _
 import core.webconfig as _core_webconfig
 import web.edit as _web_edit
 
@@ -139,11 +140,40 @@ def log_basic_sys_info():
     for path in sys.path:
         logg.debug("sys.path: %s", path)
 
+def _flask_routes(app):
+    @app.route('/')
+    @app.route('/login', methods=['GET', 'POST'])
+    @app.route('/logout')
+    @app.route('/edit')
+    @app.route('/admin/')
+    @app.route('/publish/')
+    @app.route('/pwdchange', methods=['GET', 'POST'])
+    @app.route('/pwdforgotten')
+    @app.route('/mask', methods=['GET', 'POST'])
+    @app.route('/node', methods=['GET', 'POST'])
+    @app.route('/edit/<path:action>', methods=['GET', 'POST'])
+    @app.route('/admin/<path:action>', methods=['GET', 'POST'])
+    @app.route('/services/<path:action>')
+    @app.route('/ftree/<path:action>', methods=['GET', 'POST'])
+    @app.route('/publish/<path:action>')
+    @app.route('/thumbnail/<path:action>')
+    @app.route('/image/<path:action>')
+    @app.route('/doc/<path:action>')
+    @app.route('/file/<path:action>')
+    @app.route('/download/<path:action>')
+    @app.route('/<path:action>')
+    def action(action=None):
+        req = _core.request_handler.handle_request(_flask.request)
+        return req.response
 
 def init_app():
     _core.app = _make_app()
     from webconfig import initContexts as _initContexts
+    import web as _web
+    import web.flaskadmin.init as _
     _initContexts()
+    _web.flaskadmin.init.init_flask_app(_core.app)
+    _flask_routes(_core.app)
 
 
 def init_db_connector():

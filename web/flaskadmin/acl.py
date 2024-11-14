@@ -6,12 +6,12 @@
 from __future__ import division
 from __future__ import print_function
 
+import web as _web
+import web.flaskadmin.baseadminview as _
 from core import db
 from core.database.postgres.permission import AccessRule, AccessRuleset, AccessRulesetToRule
-from web.admin.views import BaseAdminView
 
-
-class AccessRuleView(BaseAdminView):
+class AccessRuleView(_web.flaskadmin.baseadminview.BaseAdminView):
 
     can_create = False
     can_delete = False
@@ -22,7 +22,7 @@ class AccessRuleView(BaseAdminView):
         super(AccessRuleView, self).__init__(AccessRule, session, category="ACL", *args, **kwargs)
 
 
-class AccessRulesetView(BaseAdminView):
+class AccessRulesetView(_web.flaskadmin.baseadminview.BaseAdminView):
 
     can_create = False
     can_delete = False
@@ -37,7 +37,7 @@ class AccessRulesetView(BaseAdminView):
         super(AccessRulesetView, self).__init__(AccessRuleset, session, category="ACL", *args, **kwargs)
 
 
-class AccessRulesetToRuleView(BaseAdminView):
+class AccessRulesetToRuleView(_web.flaskadmin.baseadminview.BaseAdminView):
 
     can_create = False
     can_delete = False

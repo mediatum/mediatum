@@ -13,13 +13,14 @@ import logging
 
 import core as _core
 import core.database.postgres.permission as _
+import web as _web
+import web.flaskadmin.baseadminview as _
 from core import db
 from core.database.postgres.user import AuthenticatorInfo
 from core.database.postgres.user import User
 from core.database.postgres.user import UserGroup
 from markupsafe import Markup
 from wtforms.fields.core import StringField
-from web.admin.views import BaseAdminView
 from wtforms.ext.sqlalchemy.fields import QuerySelectMultipleField
 from wtforms import SelectMultipleField
 from flask_admin import form
@@ -60,7 +61,7 @@ def _update_access_ruleset_assocs(ruleset_name, add_metadatatypes, drop_metadata
             map(metadatatype.access_ruleset_assocs.remove, mkquery(nid=metadatatype.id).all())
 
 
-class UserView(BaseAdminView):
+class UserView(_web.flaskadmin.baseadminview.BaseAdminView):
 
     can_delete = False
 
@@ -107,7 +108,7 @@ class UserView(BaseAdminView):
         if form.password.data and user.authenticator_info.authenticator_key == INTERNAL_AUTHENTICATOR_KEY:
             user.change_password(form.password.data)
 
-class UserGroupView(BaseAdminView):
+class UserGroupView(_web.flaskadmin.baseadminview.BaseAdminView):
     form_base_class = _core_csrfform.CSRFForm
 
     form_excluded_columns = ("user_assocs", "versions")
@@ -186,14 +187,14 @@ class UserGroupView(BaseAdminView):
         super(UserGroupView, self).__init__(UserGroup, session, category="User", *args, **kwargs)
 
 
-class AuthenticatorInfoView(BaseAdminView):
+class AuthenticatorInfoView(_web.flaskadmin.baseadminview.BaseAdminView):
     form_base_class = _core_csrfform.CSRFForm
 
     def __init__(self, session=None, *args, **kwargs):
         super(AuthenticatorInfoView, self).__init__(AuthenticatorInfo, session, category="User", *args, **kwargs)
 
 
-class OAuthUserCredentialsView(BaseAdminView):
+class OAuthUserCredentialsView(_web.flaskadmin.baseadminview.BaseAdminView):
     form_base_class = _core_csrfform.CSRFForm
     form_columns = ("user", "oauth_user", "oauth_key")
 

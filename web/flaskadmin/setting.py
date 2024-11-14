@@ -9,14 +9,15 @@ from __future__ import print_function
 
 import logging
 
+import web as _web
+import web.flaskadmin.baseadminview as _
 from core import db
 from core.database.postgres.setting import Setting
-from web.admin.views import BaseAdminView
 
 logg = logging.getLogger(__name__)
 
 
-class SettingView(BaseAdminView):
+class SettingView(_web.flaskadmin.baseadminview.BaseAdminView):
 
     form_columns = ("key", "value")
 

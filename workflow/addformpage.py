@@ -39,42 +39,6 @@ def register():
     registerStep("workflowstep_addformpage")
 
 
-def fillPDFForm(formPdf, fields, editable):
-    """
-        fill given pdf file with form fields with given attributes and store result in pdf file
-    """
-    # build data file
-    filenamebase = os.path.join(config.get('paths.tempdir'), _utils_utils.gen_secure_token(128))
-    fdffilename = "{}.infdata.fdf".format(filenamebase)
-    outputPdf = "{}.filled.pdf".format(filenamebase)
-    try:
-        with open(fdffilename, 'wb') as fdf_file:
-            fdf_file.write(fdfgen.forge_fdf(fdf_data_strings=fields))
-
-        # fill data in form pdf and generate pdf
-        pdftkcmd = ["pdftk", formPdf, "fill_form", fdffilename, "output", outputPdf]
-        if not editable:
-            pdftkcmd.append("flatten")
-        utils.process.call(pdftkcmd)
-
-        if os.path.exists(fdffilename):
-            os.remove(fdffilename)
-    except Exception:
-        logg.exception("exception in workflow step addformpage, error while filling pdf form, ignoring")
-
-    return outputPdf if os.path.exists(outputPdf) else None  # check if file created
-
-
-def addPagesToPDF(prefile, pdffile):
-    outfile = pdffile[:-4] + "1.pdf"
-    try:
-        utils.process.call(("pdftk", prefile, pdffile, "output", outfile))
-        os.remove(prefile)
-    except Exception:
-        logg.exception("exception in workflow step addformpage, error while adding pages, ignoring")
-    return outfile
-
-
 def _get_fields_from_from_and_node(pdf_form_path, node):
     """
     Generate a list of pdf form values (a list of dicts, neede by `fdf_gen`),
@@ -179,42 +143,65 @@ class WorkflowStep_AddFormPage(WorkflowStep):
             self.forward(node, True)
             return
 
-        pages = fillPDFForm(form.abspath, fields, self.settings["fields_editable"])
-        if pages is None:  # error in pdf creation -> forward to false operation
-            logg.error("workflowstep %s (%s): could not create pdf file - node: '%s' (%s)",
-                       self.name, self.id, node.name, node.id)
-            self.forward(node, False)
-            return
+        with _utils_utils.TemporaryDirectory("mediatum-addformpage") as tmpdirjoin:
+            try:
+                with open(tmpdirjoin("infdata.fdf"), 'wb') as fdf_file:
+                    fdf_file.write(fdfgen.forge_fdf(fdf_data_strings=fields))
 
-        if not self.settings["form_separate"]:
-            origname = fnode.abspath
-            outfile = addPagesToPDF(pages, origname)
-            old_files = tuple(node.files)
-            fnode.path = outfile.replace(config.get("paths.datadir"), "")
-            node.files.append(fnode)
-            node.files.append(File(origname, 'upload', 'application/pdf'))  # store original filename
-            tuple(_itertools.imap(node.files.remove, old_files))
-            node.event_files_changed()
-            db.session.commit()
-            logg.info("workflowstep '%s' (%s): added pdf form to pdf (node '%s' (%s)) fields: %s",
-                      self.name, self.id, node.name, node.id, fields)
-            self.forward(node, True)
-            return
+                # fill data in form pdf and generate pdf
+                pdftkcmd = [
+                    "pdftk",
+                    form.abspath,
+                    "fill_form",
+                    tmpdirjoin("infdata.fdf"),
+                    "output",
+                    tmpdirjoin("filled.pdf"),
+                   ]
+                if not self.settings["fields_editable"]:
+                    pdftkcmd.append("flatten")
+                utils.process.call(pdftkcmd)
+                if not os.path.isfile(tmpdirjoin("filled.pdf")):
+                    raise RuntimeError("failed to create filled pdf form")
 
-        importdir = getImportDir()
+            except Exception:
+                # error in pdf creation -> forward to false operation
+                logg.exception("workflowstep %s (%s): could not create pdf file - node: '%s' (%s)",
+                           self.name, self.id, node.name, node.id)
+                self.forward(node, False)
+                return
 
-        # Build the filename of the form file on disk.
-        # Note that the filename is underscore separated
-        # and the part after the last underscore is
-        # visible to the user when the file gets
-        # emailed in ``email.py``.
-        new_form_path = [str(node.id), form.base_name]
-        if self.settings["form_overwrite"]:
-            new_form_path.insert(1, _utils_utils.gen_secure_token(128))
-        new_form_path = join_paths(importdir, "_".join(new_form_path))
-        # copy new file and remove tmp
-        shutil.copy(pages, new_form_path)
-        os.remove(pages)
+            if not self.settings["form_separate"]:
+                origname = fnode.abspath
+                outfile = origname[:-4] + "1.pdf"
+                try:
+                    utils.process.call(("pdftk", tmpdirjoin("filled.pdf"), origname, "output", outfile))
+                except Exception:
+                    logg.exception("exception in workflow step addformpage, error while adding pages, ignoring")
+                old_files = tuple(node.files)
+                fnode.path = outfile.replace(config.get("paths.datadir"), "")
+                node.files.append(fnode)
+                node.files.append(File(origname, 'upload', 'application/pdf'))  # store original filename
+                tuple(_itertools.imap(node.files.remove, old_files))
+                node.event_files_changed()
+                db.session.commit()
+                logg.info("workflowstep '%s' (%s): added pdf form to pdf (node '%s' (%s)) fields: %s",
+                          self.name, self.id, node.name, node.id, fields)
+                self.forward(node, True)
+                return
+
+            importdir = getImportDir()
+
+            # Build the filename of the form file on disk.
+            # Note that the filename is underscore separated
+            # and the part after the last underscore is
+            # visible to the user when the file gets
+            # emailed in ``email.py``.
+            new_form_path = [str(node.id), form.base_name]
+            if self.settings["form_overwrite"]:
+                new_form_path.insert(1, _utils_utils.gen_secure_token(128))
+            new_form_path = join_paths(importdir, "_".join(new_form_path))
+            # copy new file and remove tmp
+            shutil.copy(tmpdirjoin("filled.pdf"), new_form_path)
 
         node.files.append(File(new_form_path, 'wfstep-addformpage', 'application/pdf'))
         db.session.commit()

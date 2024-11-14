@@ -9,10 +9,19 @@ import logging
 import tempfile as _tempfile
 import os as _os
 
+import flask as _flask
+import jinja2 as _jinja2
+import jinja2.loaders as _
+import werkzeug as _werkzeug
+import werkzeug.datastructures as _
+import werkzeug.utils as _
+
 from utils.locks import register_lock as _register_lock
 from web import frontend as _web_frontend
 import core.config as config
 import core as _core
+import core.templating as _
+import core.translation as _
 import core.webconfig as _core_webconfig
 import web.edit as _web_edit
 
@@ -29,6 +38,61 @@ INIT_STATES = {
 REV_INIT_STATES = {v: k for k, v in INIT_STATES.items()}
 
 CURRENT_INIT_STATE = INIT_STATES[None]
+
+
+class MediatumFlask(_flask.Flask):
+
+    jinja_options = _werkzeug.datastructures.ImmutableDict(
+        extensions=('jinja2.ext.autoescape', 'jinja2.ext.with_', _core.templating.PyJadeExtension)
+        )
+
+    def __init__(self, import_name):
+        super(MediatumFlask, self).__init__(
+            import_name=import_name,
+            template_folder="web/templates",
+            static_folder=None,
+        )
+
+    @_werkzeug.utils.cached_property
+    def jinja_loader(self):
+        if self.template_folder is not None:
+            loaders = [_jinja2.loaders.FileSystemLoader(_os.path.join(self.root_path, self.template_folder))]
+        else:
+            loaders = []
+        return _jinja2.loaders.ChoiceLoader(loaders)
+
+    def add_template_loader(self, loader, pos=None):
+        if pos is not None:
+            self.jinja_loader.loaders.insert(pos, loader)
+        else:
+            self.jinja_loader.loaders.append(loader)
+
+    def add_template_globals(self, **global_names):
+        self.jinja_env.globals.update(global_names)
+
+
+def _make_app():
+    """
+    Creates the mediaTUM application.
+    """
+    app = MediatumFlask("mediaTUM admin")
+    app.config["SECRET_KEY"] = config.get_secret_key(
+        "admin.session_secret_key_file",
+        uwsgi_cache_key="session_secret_key",
+        )
+    app.config['PERMANENT_SESSION_LIFETIME'] = int(config.get('admin.session_expiration_time', 7200))
+    app.config["SESSION_COOKIE_NAME"] = 'mediatum_session'
+
+    @app.before_request
+    def set_lang():
+        _core.translation.set_language(_flask.request.accept_languages)
+
+    @app.after_request
+    def request_finished_db_session(response):
+        _core.db.session.close()
+        return response
+
+    return app
 
 
 def init_state_reached(min_state):
@@ -77,9 +141,7 @@ def log_basic_sys_info():
 
 
 def init_app():
-    from web.admin import app as _app
-    import core
-    core.app = _app
+    _core.app = _make_app()
     from webconfig import initContexts as _initContexts
     _initContexts()
 

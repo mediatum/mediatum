@@ -6,14 +6,13 @@
 from __future__ import division
 from __future__ import print_function
 
-import os
+import flask as _flask
 import flask_login as _flask_login
-from flask import Flask, request, url_for, redirect, flash
 from flask_admin import Admin
 from web.admin.views.user import UserView, UserGroupView, AuthenticatorInfoView, OAuthUserCredentialsView
 from wtforms import fields, validators
 
-from core import translation as _core_translation
+import core as _core
 from core import db
 from core import config
 from core.database.postgres.user import User
@@ -24,46 +23,10 @@ from flask_admin.babel import lazy_gettext as _lazy_gettext
 from web.admin.views.node import NodeView, FileView
 from web.admin.views.setting import SettingView
 from web.admin.views.acl import AccessRulesetView, AccessRuleView, AccessRulesetToRuleView
-from werkzeug.datastructures import ImmutableDict as _ImmutableDict
-from werkzeug.utils import cached_property as _cached_property
-from core.templating import PyJadeExtension as _PyJadeExtension
-from jinja2.loaders import FileSystemLoader as _FileSystemLoader, ChoiceLoader as _ChoiceLoader
 import core.csrfform as _core_csrfform
 from core.request_handler import handle_request as _handle_request
 
-
 q = db.query
-
-
-class MediatumFlask(Flask):
-
-    jinja_options = _ImmutableDict(
-        extensions=['jinja2.ext.autoescape', 'jinja2.ext.with_', _PyJadeExtension]
-    )
-
-    def __init__(self, import_name):
-        super(MediatumFlask, self).__init__(
-            import_name=import_name,
-            template_folder="web/templates",
-            static_folder=None,
-        )
-
-    @_cached_property
-    def jinja_loader(self):
-        if self.template_folder is not None:
-            loaders = [_FileSystemLoader(os.path.join(self.root_path, self.template_folder))]
-        else:
-            loaders = []
-        return _ChoiceLoader(loaders)
-
-    def add_template_loader(self, loader, pos=None):
-        if pos is not None:
-            self.jinja_loader.loaders.insert(pos, loader)
-        else:
-            self.jinja_loader.loaders.append(loader)
-
-    def add_template_globals(self, **global_names):
-        self.jinja_env.globals.update(global_names)
 
 
 class IndexView(AdminIndexView):
@@ -87,27 +50,27 @@ class IndexView(AdminIndexView):
     @expose('/')
     def index(self):
         if not _flask_login.current_user.is_authenticated:
-            return redirect(url_for('.login_view'))
+            return _flask.redirect(_flask.url_for('.login_view'))
         return super(IndexView, self).index()
 
     @expose('/login/', methods=('GET', 'POST'))
     def login_view(self):
-        login_form = LoginForm(request.form)
+        login_form = LoginForm(_flask.request.form)
 
         if helpers.validate_form_on_submit(login_form):
             user = login_form.get_user()
             _flask_login.login_user(user)
         if _flask_login.current_user.is_authenticated:
-            return redirect(url_for('.index'))
+            return _flask.redirect(_flask.url_for('.index'))
         self._template_args['form'] = login_form
         return super(IndexView, self).index()
 
     @expose('/logout/')
     def logout_view(self):
         user = _flask_login.current_user
-        logout_user(user, request)
+        logout_user(user, _flask.request)
         _flask_login.logout_user()
-        return redirect(url_for('.index'))
+        return _flask.redirect(_flask.url_for('.index'))
 
 
 class LoginForm(_core_csrfform.CSRFForm):
@@ -119,35 +82,24 @@ class LoginForm(_core_csrfform.CSRFForm):
         user = self.get_user()
         if user is None:
             raise validators.ValidationError('Invalid user')
-        if authenticate_user_credentials(self.login.data, self.password.data, request) is None:
+        if authenticate_user_credentials(self.login.data, self.password.data, _flask.request) is None:
             raise validators.ValidationError('Invalid password')
-        flash('Logged in successfully')
+        _flask.flash('Logged in successfully')
 
     def get_user(self):
         return q(User).filter_by(login_name=self.login.data).first()
 
 
-def make_app():
+def make_admin_app(app):
     """Creates the mediaTUM-admin Flask app.
-    When more parts of mediaTUM are converted to Flask,
-    we might use a "global" app to which the admin interface is added.
     """
-    admin_app = MediatumFlask("mediaTUM admin")
-    admin_app.config["SECRET_KEY"] = config.get_secret_key("admin.session_secret_key_file", uwsgi_cache_key="session_secret_key")
-    admin_app.config['PERMANENT_SESSION_LIFETIME'] = int(config.get('admin.session_expiration_time', 7200))
-    admin_app.config["SESSION_COOKIE_NAME"] = 'mediatum_session'
-
-    @admin_app.before_request
-    def set_lang():
-        _core_translation.set_language(request.accept_languages)
-
-    @admin_app.after_request
-    def request_finished_db_session(response):
-        db.session.close()
-        return response
-
-    admin = Admin(admin_app, name="mediaTUM", template_mode="bootstrap3",
-                  index_view=IndexView(), base_template='admin_base.html')
+    admin = Admin(
+        app,
+        name="mediaTUM",
+        template_mode="bootstrap3",
+        index_view=IndexView(),
+        base_template='admin_base.html',
+        )
 
     admin_enabled = config.getboolean("admin.activate", True)
     if admin_enabled:
@@ -165,7 +117,7 @@ def make_app():
         admin.add_view(AccessRulesetView())
         admin.add_view(AccessRulesetToRuleView())
 
-    return admin_app
+    return admin
 
 
 def flask_routes(app):
@@ -191,16 +143,11 @@ def flask_routes(app):
     @app.route('/download/<path:action>')
     @app.route('/<path:action>')
     def action(action=None):
-        req = _handle_request(request)
+        req = _handle_request(_flask.request)
         return req.response
 
 
-app = make_app()
-
-flask_routes(app)
-
-
-def init_login():
+def init_login(app):
     """Initializes flask-login."""
     login_manager = _flask_login.LoginManager()
     login_manager.init_app(app)
@@ -210,4 +157,6 @@ def init_login():
         return q(User).get(user_id)
 
 
-init_login()
+make_admin_app(_core.app)
+init_login(_core.app)
+flask_routes(_core.app)

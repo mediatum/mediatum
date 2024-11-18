@@ -17,7 +17,6 @@ import utils.utils as _utils_utils
 from core import db
 from core.database.postgres.file import File
 from utils.compat import iteritems
-from utils.list import filter_scalar
 
 
 EXCLUDE_WORKFLOW_NEWNODES = True

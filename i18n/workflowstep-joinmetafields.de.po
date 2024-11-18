@@ -1,0 +1,23 @@
+msgid "workflowstep_joinmetafields"
+msgstr "Metafelder Zusammenstellen"
+
+msgid "workflowstep_joinmetafields_source_metafieldnames"
+msgstr "Quell Metadatenfeld Namen"
+
+msgid "workflowstep_joinmetafields_ignore_missing"
+msgstr "Fehlende Felder ignorieren"
+
+msgid "workflowstep_joinmetafields_source_separator"
+msgstr "Quell Metadaten Separator"
+
+msgid "workflowstep_joinmetafields_unique_values"
+msgstr "Dublette Werte entfernen"
+
+msgid "workflowstep_joinmetafields_ignore_empty"
+msgstr "Leere Werte ignorieren"
+
+msgid "workflowstep_joinmetafields_target_separator"
+msgstr "Ziel Metadaten Separator"
+
+msgid "workflowstep_joinmetafields_target_metafieldname"
+msgstr "Ziel Metadatenfeld Name"

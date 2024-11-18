@@ -1,0 +1,5 @@
+msgid "workflowstep_setnodename"
+msgstr "Knotennamen festlegen"
+
+msgid "workflowstep_setnodename_sourceattributename"
+msgstr "Name des Quellattributs"

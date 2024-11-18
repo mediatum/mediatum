@@ -703,6 +703,7 @@ def register():
     from . import classifybyattribute
     from . import condition
     from . import defer
+    from . import deferprocessing
     from . import delete
     from . import deletefile
     from . import editmetadata
@@ -730,6 +731,7 @@ def register():
         classifybyattribute,
         condition,
         defer,
+        deferprocessing,
         delete,
         deletefile,
         editmetadata,

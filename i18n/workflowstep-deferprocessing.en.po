@@ -1,0 +1,20 @@
+msgid "workflowstep_deferprocessing"
+msgstr "Defer Processing"
+
+msgid "timestamp_attribute"
+msgstr "Timestamp Attribute"
+
+msgid "defer_process"
+msgstr "Processing"
+
+msgid "process_direct"
+msgstr "forward always immediatelly"
+
+msgid "process_stop"
+msgstr "always hold"
+
+msgid "process_uwsgi_direct"
+msgstr "forward in background (Uwsgi) or immediatelly"
+
+msgid "process_uwsgi_stop"
+msgstr "forward in background (Uwsgi) or hold"

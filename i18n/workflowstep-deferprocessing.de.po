@@ -1,0 +1,20 @@
+msgid "workflowstep_deferprocessing"
+msgstr "Verzögerte Weiterverarbeitung"
+
+msgid "timestamp_attribute"
+msgstr "Zeitstempel-Attribut"
+
+msgid "defer_process"
+msgstr "Verarbeitung"
+
+msgid "process_direct"
+msgstr "stets unverzögert weiterverarbeiten"
+
+msgid "process_stop"
+msgstr "unbedingt anhalten"
+
+msgid "process_uwsgi_direct"
+msgstr "im Hintergrund (Uwsgi) oder unverzögert weiterverarbeiten"
+
+msgid "process_uwsgi_stop"
+msgstr "im Hintergrund weiterverarbeiten (Uwsgi) oder anhalten"

@@ -1,0 +1,38 @@
+<!--
+  Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<metal:block metal:define-macro="workflow_step_type_config">
+    <label>
+        <tal:block i18n:translate="">timestamp_attribute</tal:block>
+        <input
+            type="text"
+            name="stepsetting_timestamp-attribute"
+            required="required"
+            tal:attributes="value timestamp_attribute"
+        />
+    </label>
+    <label>
+        <tal:block i18n:translate="">defer_process</tal:block>
+        <select name="stepsetting_process" required="required" size="4">
+            <option
+                tal:attributes="selected python:'selected' if process == 'uwsgi-direct' else None" value="uwsgi-direct"
+                i18n:translate=""
+            >
+                process_uwsgi_direct
+            </option>
+            <option tal:attributes="selected python:'selected' if process == 'direct' else None" value="direct" i18n:translate="">
+                process_direct
+            </option>
+            <option tal:attributes="selected python:'selected' if process == 'stop' else None" value="stop" i18n:translate="">
+                process_stop
+            </option>
+            <option
+                tal:attributes="selected python:'selected' if process == 'uwsgi-stop' else None" value="uwsgi-stop"
+                i18n:translate=""
+            >
+                process_uwsgi_stop
+            </option>
+        </select>
+    </label>
+</metal:block>

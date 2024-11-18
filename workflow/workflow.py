@@ -718,6 +718,7 @@ def register():
     from . import reauth
     from . import registerdoi
     from . import setnodename
+    from . import setmetadatatype
     from . import showdata
     from . import start
     from . import template2metadata
@@ -745,6 +746,7 @@ def register():
         reauth,
         registerdoi,
         setnodename,
+        setmetadatatype,
         showdata,
         start,
         template2metadata,

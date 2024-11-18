@@ -1,0 +1,23 @@
+<!--
+  Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<metal:block metal:define-macro="workflow_step_type_config">
+    <label>
+        <tal:block i18n:translate="">setmetadatatype_type_attribute</tal:block>
+        <input type="text" name="stepsetting_type-attribute" tal:attributes="value type_attribute"/>
+    </label>
+    <label>
+        <tal:block i18n:translate="">setmetadatatype_schema_attribute</tal:block>
+        <input type="text" name="stepsetting_schema-attribute" tal:attributes="value schema_attribute"/>
+    </label>
+    <label>
+        <tal:block i18n:translate="">setmetadatatype_keep_files</tal:block>
+        <input
+            type="checkbox"
+            name="stepsetting_keep-files"
+            tal:attributes="checked python:'checked' if keep_files else None"
+            value="1"
+        />
+    </label>
+</metal:block>

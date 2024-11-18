@@ -1,0 +1,5 @@
+msgid "workflowstep_fork"
+msgstr "Weiche"
+
+msgid "fork_attribute"
+msgstr "Attribute"

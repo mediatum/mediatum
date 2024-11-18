@@ -1,0 +1,10 @@
+<!--
+  Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<metal:block metal:define-macro="workflow_step_type_config">
+    <label>
+        <tal:block i18n:translate="">fork_attribute</tal:block>
+        <input type="text" name="stepsetting_attribute" tal:attributes="value attribute" required="required"/>
+    </label>
+</metal:block>

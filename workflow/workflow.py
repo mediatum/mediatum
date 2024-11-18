@@ -710,6 +710,7 @@ def register():
     from . import editmetadata
     from . import email
     from . import end
+    from . import fork
     from . import hierarchicalchoice2metafield
     from . import joinmetafields
     from . import metafield2metadata
@@ -738,6 +739,7 @@ def register():
         editmetadata,
         email,
         end,
+        fork,
         hierarchicalchoice2metafield,
         joinmetafields,
         metafield2metadata,

@@ -6,36 +6,36 @@
 from __future__ import division
 from __future__ import print_function
 
+import configargparse
+import codecs as _codecs
 import logging as _logging
+import os as _os
+import signal as _signal
+import sys as _sys
+import tempfile
+import threading as _threading
+import traceback as _traceback
 
+_sys.path.append(_os.path.abspath(_os.path.join(__file__, "..", "..")))
 
-_logg = _logging.getLogger(__name__)
-
+try:
+    import IPython.core.ultratb as ultratb
+except:
+    ultratb = None
 
 from werkzeug._reloader import run_with_reloader
-import configargparse
-import tempfile
-import os as _os
-import sys as _sys
-_sys.path.append(_os.path.abspath(_os.path.join(__file__, "..", "..")))
+
+import core as _core
+import core.init as _
 from core import config
+
+_logg = _logging.getLogger(__name__)
 
 SYSTEM_TMP_DIR = tempfile.gettempdir()
 
 
 def stackdump_setup():
-    import codecs
-    import sys
     # stackdump
-
-    import os
-    import threading
-    import traceback
-    try:
-        import IPython.core.ultratb as ultratb
-    except:
-        ultratb = None
-
     if ultratb is None:
         _logg.warning("IPython not installed, stack dumps not available!")
     else:
@@ -44,18 +44,18 @@ def stackdump_setup():
         def dumpstacks(signal, frame):
             _logg.debug("dumping stack")
             # we must use the system temp dir here because mediaTUM config must not be loaded here
-            filepath = os.path.join(SYSTEM_TMP_DIR, "mediatum_threadstatus")
-            id2name = dict([(th.ident, th.name) for th in threading.enumerate()])
+            filepath = _os.path.join(SYSTEM_TMP_DIR, "mediatum_threadstatus")
+            id2name = dict([(th.ident, th.name) for th in _threading.enumerate()])
             full = ["-" * 80]
             tb_formatter = ultratb.ListTB(color_scheme="Linux")
-            for thread_id, stack in sys._current_frames().items():
+            for thread_id, stack in _sys._current_frames().items():
                 thread_name = id2name.get(thread_id, "")
                 if not "Main" in thread_name:
-                    stacktrace = traceback.extract_stack(stack)
+                    stacktrace = _traceback.extract_stack(stack)
                     stb = tb_formatter.structured_traceback(Exception, Exception(), stacktrace)[8:-1]
                     if stb:
                         formatted_trace = tb_formatter.stb2text(stb).strip()
-                        with codecs.open("{}.{}".format(filepath, thread_id), "w", encoding='utf8') as wf:
+                        with _codecs.open("{}.{}".format(filepath, thread_id), "w", encoding='utf8') as wf:
                             wf.write("\n{}".format(formatted_trace))
                         if len(stb) > 4:
                             short_stb = stb[:2] + ["..."] + stb[-2:]
@@ -66,20 +66,17 @@ def stackdump_setup():
                         full.append(formatted_trace_short)
                         full.append("-" * 80)
 
-            with codecs.open(filepath, "wf", encoding='utf8') as wf:
+            with _codecs.open(filepath, "wf", encoding='utf8') as wf:
                 wf.write("\n".join(full))
 
-        import signal
-        signal.signal(signal.SIGQUIT, dumpstacks)
+        _signal.signal(_signal.SIGQUIT, dumpstacks)
 
 
 def run(force_test_db=None, loglevel=None, automigrate=False):
     """Serve mediaTUM from the WSGI Server Flask, if requested"""
     # init.full_init() must be done as early as possible to init logging etc.
-    from core import init
-    init.full_init(force_test_db=force_test_db, root_loglevel=loglevel, automigrate=automigrate)
-    from core import app as flask_app
-    return flask_app
+    _core.init.full_init(force_test_db=force_test_db, root_loglevel=loglevel, automigrate=automigrate)
+    return _core.app
 
 
 def make_flask_app():

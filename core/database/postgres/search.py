@@ -14,17 +14,21 @@ import operator as _operator
 
 import logging
 import re as _re
+
+import sqlalchemy as _sqlalchemy
+import sqlalchemy.orm as _
 from sqlalchemy import func, Index as _Index
 
+import contenttypes as _contenttypes
+import contenttypes.data as _
 import core as _core
+import core.database.postgres.node as _
 import utils.utils as _utils
 import utils.locks as _locks
 from core.database.postgres import DB_SCHEMA_NAME as _DB_SCHEMA_NAME
 from core.search import SearchQueryException
 from core.search.config import get_default_search_languages
 from core.search.representation import AttributeMatch, FullMatch, SchemaMatch, FulltextMatch, AttributeCompare, TypeMatch, And, Or
-from core.database.postgres.node import Node
-
 
 comparisons = {
     ">": _operator.gt,
@@ -111,7 +115,7 @@ def make_fulltext_expr_tsvec(languages, searchstring, op="&"):
     :param op: operator used to join searchterms separated by space, | or &
     """
     ts_query = _make_languages_tsquery(languages, searchstring, op)
-    mk_cond = lambda lang: func.to_tsvector_safe(lang, Node.fulltext).op("@@")(ts_query)
+    mk_cond = lambda lang: func.to_tsvector_safe(lang, _core.database.postgres.node.Node.fulltext).op("@@")(ts_query)
     conds = _itertools.imap(mk_cond, languages)
     return reduce(lambda cond1, cond2: cond1.op("or")(cond2), conds)
 
@@ -123,7 +127,10 @@ def _make_attrs_expr_tsvec(languages, searchstring, op="&"):
     :param op: operator used to join searchterms separated by space, | or &
     """
     ts_query = _make_languages_tsquery(languages, searchstring, op)
-    mk_cond = lambda lang: func.jsonb_object_values_to_tsvector(lang, Node.attrs).op("@@")(ts_query)
+    mk_cond = lambda lang: func.jsonb_object_values_to_tsvector(
+        lang,
+        _core.database.postgres.node.Node.attrs,
+        ).op("@@")(ts_query)
     conds = _itertools.imap(mk_cond, languages)
     return reduce(lambda cond1, cond2: cond1.op("or")(cond2), conds)
 
@@ -231,9 +238,9 @@ def _check_search_indexes_node(type, languages):
     for indexname in needed_indexnames:
         lang = wanted_indexes_lang[indexname]
         if type == "attrs":
-            indexfunc = func.jsonb_object_values_to_tsvector(lang, Node.attrs)
+            indexfunc = func.jsonb_object_values_to_tsvector(lang, _core.database.postgres.node.Node.attrs)
         else:
-            indexfunc = func.to_tsvector_safe(lang, Node.fulltext)
+            indexfunc = func.to_tsvector_safe(lang, _core.database.postgres.node.Node.fulltext)
         needed_indexes.append(_Index(indexname, indexfunc, postgresql_using="gin"))
         logg.info('_check_search_indexes_node: create index %s', indexname)
 
@@ -256,3 +263,20 @@ def check_fulltext_attrs_search_indexes_node():
     with _locks.named_lock('createsearchindices'):
         _check_search_indexes_node("attrs", languages)
         _check_search_indexes_node("fulltext", languages)
+
+
+def search(node, searchquery, languages=None, filter_dbquery=lambda q: q):
+    """Creates a search query.
+    :param searchquery: query in search language or parsed query (search tree) as `SearchTreeElement`:
+    :param language: sequence of language config strings matching Fts.config
+    :param filter_dbquery: db query filter
+    :returns: Node Query
+    """
+    q = _sqlalchemy.orm.object_session(node).query
+    searchtree = node._parse_searchquery(searchquery)
+    query = apply_searchtree_to_query(q(_contenttypes.data.Content), searchtree, languages)
+    query = filter_dbquery(query).node_offset0()
+    return query.join(
+        _core.database.postgres.node.t_noderelation,
+        _contenttypes.data.Content.id == _core.database.postgres.node.t_noderelation.c.cid,
+        ).filter_by(nid=node.id)

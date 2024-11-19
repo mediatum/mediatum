@@ -8,6 +8,7 @@ import itertools as _itertools
 import logging
 
 import core as _core
+import core.database.postgres.search as _
 import core.translation as _core_translation
 import utils.date as date
 from core.search import SearchQueryException
@@ -76,7 +77,7 @@ def search(searchtype, searchquery, readable_query, paths, req, container_id = N
         return dbquery.filter_read_access()
 
     try:
-        result = container.search(searchquery, filter_dbquery=filter_dbquery_results)
+        result = _core.database.postgres.search.search(container, searchquery, filter_dbquery=filter_dbquery_results)
     except SearchQueryException as e:
         # query parsing went wrong or the search backend complained about something
         return NoSearchResult(readable_query, container, readable_query, error=True)

@@ -439,21 +439,6 @@ class Node(_core.database.postgres.DeclarativeBase, NodeMixin):
             searchtree = parse_searchquery(searchquery)
         return searchtree
 
-    def search(self, searchquery, languages=None, filter_dbquery=lambda q: q):
-        """Creates a search query.
-        :param searchquery: query in search language or parsed query (search tree) as `SearchTreeElement`:
-        :param language: sequence of language config strings matching Fts.config
-        :param filter_dbquery: db query filter
-        :returns: Node Query
-        """
-        from core.database.postgres.search import apply_searchtree_to_query
-        from contenttypes import Content
-        q = object_session(self).query
-        searchtree = self._parse_searchquery(searchquery)
-        query = apply_searchtree_to_query(q(Content), searchtree, languages)
-        query = filter_dbquery(query).node_offset0()
-        return query.join(t_noderelation, Content.id == t_noderelation.c.cid).filter_by(nid=self.id)
-
     @property
     def tagged_versions(self):
         Transaction = versioning_manager.transaction_cls

@@ -16,9 +16,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy_continuum.utils import version_class
 
+import core as _core
+import core.database.postgres.node as _
 from core import config
 from . import db_metadata, DeclarativeBase
-from core.database.postgres import MtQuery
 from core.database.postgres.psycopg2_debug import make_debug_connection_factory
 from core.database.init import init_database_values
 from utils.utils import find_free_port
@@ -64,7 +65,7 @@ class PostgresSQLAConnector(object):
     """
 
     def __init__(self):
-        session_factory = sessionmaker(query_cls=MtQuery)
+        session_factory = sessionmaker(query_cls=_core.database.postgres.node.MtQuery)
         self.Session = scoped_session(session_factory)
         self.metadata = db_metadata
 

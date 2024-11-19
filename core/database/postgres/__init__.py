@@ -8,20 +8,16 @@ from __future__ import print_function
 
 import datetime
 import logging
-import itertools as _itertools
 
 import ruamel.yaml as _ruamel_yaml
 from ipaddr import IPv4Network, IPv4Address, AddressValueError
 import psycopg2.extensions
 from psycopg2.extensions import adapt, AsIs
-import sqlalchemy as sqla
+import sqlalchemy as _sqlalchemy
+import sqlalchemy.orm as _
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, ForeignKey, Integer, DateTime, func as sqlfunc
-from sqlalchemy.orm import relationship, backref, Query, undefer
-from sqlalchemy.orm import defer as _defer, ColumnProperty as _ColumnProperty, class_mapper as _class_mapper
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy_continuum.utils import version_class
-from sqlalchemy_continuum import versioning_manager
 
 import flask as _flask
 from core.database.postgres.continuumext import MtVersionBase
@@ -33,17 +29,17 @@ logg = logging.getLogger(__name__)
 
 C = Column
 FK = ForeignKey
-rel = relationship
-bref = backref
+rel = _sqlalchemy.orm.relationship
+bref = _sqlalchemy.orm.backref
 
 DB_SCHEMA_NAME = "mediatum"
 
 
 def dynamic_rel(*args, **kwargs):
-    return relationship(*args, lazy="dynamic", **kwargs)
+    return _sqlalchemy.orm.relationship(*args, lazy="dynamic", **kwargs)
 
 
-db_metadata = sqla.MetaData(schema=DB_SCHEMA_NAME)
+db_metadata = _sqlalchemy.MetaData(schema=DB_SCHEMA_NAME)
 mediatumfunc = getattr(sqlfunc, DB_SCHEMA_NAME)
 DeclarativeBase = declarative_base(metadata=db_metadata)
 
@@ -173,84 +169,3 @@ def build_accessfunc_arguments(user=None, ip=None, date=None, req=None):
         date = sqlfunc.current_date()
 
     return user.group_ids, ip, date
-        
-
-class MtQuery(Query):
-
-    def node_offset0(self):
-        # offset0 is used to prevent the postgresql planner from using other (slower) scan
-        # methods than a Bitmap Index Scan
-        from core.database.postgres.node import Node
-        query = self.options(undefer("*")).offset(0).from_self()
-        deferred_columns = (prop.key for prop in _class_mapper(Node).iterate_properties
-                                 if isinstance(prop, _ColumnProperty) and prop.deferred)
-        return query.options(*_itertools.imap(_defer,deferred_columns))
-
-    def prefetch_attrs(self):
-        from core.database.postgres.node import Node
-        return self.options(undefer(Node.attrs))
-
-    def prefetch_system_attrs(self):
-        from core.database.postgres.node import Node
-        return self.options(undefer(Node.system_attrs))
-
-    def _find_nodeclass(self):
-        from core.database.postgres.node import Node
-        """Returns the query's underlying model classes."""
-        nodeclass = dict()  # stores node class in key 0
-        for d in self.column_descriptions:
-            d = d["entity"]
-            if issubclass(d, Node):
-                # class found: memorize it, but fail if it's not unique
-                if nodeclass.setdefault(0,d) is not d:
-                    raise AssertionError("Non-unique node class")
-        return nodeclass.get(0)
-
-    def filter_read_access(self, user=None, ip=None, req=None):
-        return self._filter_access("read", user, ip, req)
-
-    def filter_write_access(self, user=None, ip=None, req=None):
-        return self._filter_access("write", user, ip, req)
-
-    def filter_data_access(self, user=None, ip=None, req=None):
-        return self._filter_access("data", user, ip, req)
-
-    def _filter_access(self, accesstype, user=None, ip=None, req=None):
-        group_ids, ip, date = build_accessfunc_arguments(user, ip, req=req)
-        
-        if group_ids is None and ip is None and date is None:
-            # everything is None means: permission checks always pass, so we can skip access checks completely.
-            # This will happen for an admin user.
-            return self
-        
-        nodeclass = self._find_nodeclass()
-        if not nodeclass:
-            return self
-
-        db_funcs = {
-            "read": mediatumfunc.has_read_access_to_node,
-            "write": mediatumfunc.has_write_access_to_node,
-            "data": mediatumfunc.has_data_access_to_node
-        }
-
-        try:
-            db_accessfunc = db_funcs[accesstype]
-        except KeyError:
-            raise ValueError("accesstype '{}' does not exist, accesstype must be one of: read, write, data".format(accesstype))
-
-        access_filter = db_accessfunc(nodeclass.id, group_ids, ip, date)
-        return self.filter(access_filter)
-
-    def get(self, ident):
-        nodeclass = self._find_nodeclass()
-        if not nodeclass:
-            return Query.get(self, ident)
-        active_version = Query.get(self, ident)
-        Transaction = versioning_manager.transaction_cls
-        if active_version is None:
-            ver_cls = version_class(nodeclass)
-            return (self.session.query(ver_cls).join(Transaction, ver_cls.transaction_id == Transaction.id)
-                    .join(Transaction.meta_relation)
-                    .filter_by(key=u'alias_id', value=unicode(ident)).scalar())
-
-        return active_version

@@ -7,6 +7,7 @@ from __future__ import division
 from __future__ import print_function
 
 import contextlib as _contextlib
+import itertools as _itertools
 import logging
 from warnings import warn
 
@@ -15,6 +16,7 @@ import sqlalchemy as _sqlalchemy
 import sqlalchemy_continuum as _sqlalchemy_continuum
 import sqlalchemy_continuum.plugins.flask as _
 import sqlalchemy_continuum.plugins.transaction_meta as _
+import sqlalchemy.orm as _
 from sqlalchemy import (Table, Sequence, Integer, Unicode, Boolean, sql, text, select, func)
 from sqlalchemy.orm import deferred, object_session
 from sqlalchemy.orm.dynamic import AppenderMixin
@@ -27,11 +29,9 @@ import flask as _flask
 
 import core as _core
 import core.database.postgres as _
-import core.database.postgres.continuumext as _
 import core.nodecache as _core_nodecache
 from core import config
 from core.node import NodeMixin, NodeVersionMixin
-from core.database.postgres import db_metadata, DeclarativeBase, MtQuery, mediatumfunc, MtVersionBase
 from core.database.postgres import rel, bref, C, FK
 from core.database.postgres.alchemyext import LenMixin, view, exec_sqlfunc
 from core.database.postgres.attributes import Attributes, AttributesExpressionAdapter
@@ -58,7 +58,7 @@ _sqlalchemy_continuum.make_versioned(
     )
 
 
-class NodeType(DeclarativeBase):
+class NodeType(_core.database.postgres.DeclarativeBase):
 
     """Node type / node class description.
     We don't need that in the application, that's just to inform Postgres about our types.
@@ -69,6 +69,84 @@ class NodeType(DeclarativeBase):
     name = C(Unicode, primary_key=True)
     # does this type act as a container type? Other types are "content types".
     is_container = C(Boolean, index=True)
+
+
+class MtQuery(_sqlalchemy.orm.Query):
+
+    def node_offset0(self):
+        # offset0 is used to prevent the postgresql planner from using other (slower) scan
+        # methods than a Bitmap Index Scan
+        query = self.options(_sqlalchemy.orm.undefer("*")).offset(0).from_self()
+        deferred_columns = (prop.key for prop in _sqlalchemy.orm.class_mapper(Node).iterate_properties
+                            if isinstance(prop, _sqlalchemy.orm.ColumnProperty) and prop.deferred)
+        return query.options(*_itertools.imap(_sqlalchemy.orm.defer, deferred_columns))
+
+    def prefetch_attrs(self):
+        return self.options(_sqlalchemy.orm.undefer(Node.attrs))
+
+    def prefetch_system_attrs(self):
+        return self.options(_sqlalchemy.orm.undefer(Node.system_attrs))
+
+    def _find_nodeclass(self):
+        """Returns the query's underlying model classes."""
+        nodeclass = dict()  # stores node class in key 0
+        for d in self.column_descriptions:
+            d = d["entity"]
+            if issubclass(d, Node):
+                # class found: memorize it, but fail if it's not unique
+                if nodeclass.setdefault(0, d) is not d:
+                    raise AssertionError("Non-unique node class")
+        return nodeclass.get(0)
+
+    def filter_read_access(self, user=None, ip=None, req=None):
+        return self._filter_access("read", user, ip, req)
+
+    def filter_write_access(self, user=None, ip=None, req=None):
+        return self._filter_access("write", user, ip, req)
+
+    def filter_data_access(self, user=None, ip=None, req=None):
+        return self._filter_access("data", user, ip, req)
+
+    def _filter_access(self, accesstype, user=None, ip=None, req=None):
+        group_ids, ip, date = _core.database.postgres.build_accessfunc_arguments(user, ip, req=req)
+
+        if group_ids is None and ip is None and date is None:
+            # everything is None means: permission checks always pass, so we can skip access checks completely.
+            # This will happen for an admin user.
+            return self
+
+        nodeclass = self._find_nodeclass()
+        if not nodeclass:
+            return self
+
+        db_funcs = {
+            "read": _core.database.postgres.mediatumfunc.has_read_access_to_node,
+            "write": _core.database.postgres.mediatumfunc.has_write_access_to_node,
+            "data": _core.database.postgres.mediatumfunc.has_data_access_to_node
+        }
+
+        try:
+            db_accessfunc = db_funcs[accesstype]
+        except KeyError:
+            raise ValueError(
+                "accesstype '{}' does not exist, accesstype must be one of: read, write, data".format(accesstype))
+
+        access_filter = db_accessfunc(nodeclass.id, group_ids, ip, date)
+        return self.filter(access_filter)
+
+    def get(self, ident):
+        nodeclass = self._find_nodeclass()
+        if not nodeclass:
+            return _sqlalchemy.orm.Query.get(self, ident)
+        active_version = _sqlalchemy.orm.Query.get(self, ident)
+        Transaction = versioning_manager.transaction_cls
+        if active_version is None:
+            ver_cls = version_class(nodeclass)
+            return (self.session.query(ver_cls).join(Transaction, ver_cls.transaction_id == Transaction.id)
+                    .join(Transaction.meta_relation)
+                    .filter_by(key=u'alias_id', value=unicode(ident)).scalar())
+
+        return active_version
 
 
 class NodeAppenderQuery(AppenderMixin, LenMixin, MtQuery):
@@ -128,7 +206,7 @@ class NodeAppenderQuery(AppenderMixin, LenMixin, MtQuery):
         return query
 
 
-t_noderelation = Table("noderelation", db_metadata,
+t_noderelation = Table("noderelation", _core.database.postgres.db_metadata,
                        C("nid", Integer, FK("node.id"), primary_key=True, index=True),
                        C("cid", Integer, FK("node.id", ondelete="CASCADE"), primary_key=True, index=True),
                        # SQLAlchemy automatically generates primary key integers as SERIAL.
@@ -169,21 +247,25 @@ def _subquery_subtree_distinct(node):
 
 # permission check functions for the access types
 access_funcs = {
-    "read": mediatumfunc.has_read_access_to_node,
-    "write": mediatumfunc.has_write_access_to_node,
-    "data": mediatumfunc.has_data_access_to_node
+    "read": _core.database.postgres.mediatumfunc.has_read_access_to_node,
+    "write": _core.database.postgres.mediatumfunc.has_write_access_to_node,
+    "data": _core.database.postgres.mediatumfunc.has_data_access_to_node
 }
 
-node_id_seq = Sequence('node_id_seq', schema=db_metadata.schema, start=100)
+node_id_seq = Sequence('node_id_seq', schema=_core.database.postgres.db_metadata.schema, start=100)
 
-class Node(DeclarativeBase, NodeMixin):
+class Node(_core.database.postgres.DeclarativeBase, NodeMixin):
 
     """Base class for Nodes which holds all SQLAlchemy fields definitions
     """
     __metaclass__ = BaseNodeMeta
     __tablename__ = "node"
     __versioned__ = {
-        "base_classes": (NodeVersionMixin, MtVersionBase, DeclarativeBase),
+        "base_classes": (
+            NodeVersionMixin,
+            _core.database.postgres.MtVersionBase,
+            _core.database.postgres.DeclarativeBase,
+            ),
         "exclude": ["subnode", "system_attrs"]
     }
 
@@ -292,7 +374,7 @@ class Node(DeclarativeBase, NodeMixin):
         if config.getboolean("database.use_cached_childcount"):
             return exec_sqlfunc(
                     object_session(self),
-                    mediatumfunc.count_content_children_for_all_subcontainers(self.id),
+                    _core.database.postgres.mediatumfunc.count_content_children_for_all_subcontainers(self.id),
                 )
         else:
             return self.content_children_for_all_subcontainers.count()
@@ -445,7 +527,7 @@ class Node(DeclarativeBase, NodeMixin):
         self.session.commit()
 
     def is_descendant_of(self, node):
-        return exec_sqlfunc(object_session(self), mediatumfunc.is_descendant_of(self.id, node.id))
+        return exec_sqlfunc(object_session(self), _core.database.postgres.mediatumfunc.is_descendant_of(self.id, node.id))
 
     def _get_nearest_ancestor_by_type(self, ancestor_type):
         """Returns a nearest ancestor of `ancestor_type`.
@@ -498,7 +580,7 @@ class Node(DeclarativeBase, NodeMixin):
 
 
 # view for direct parent-child relationship (distance = 1), also used for inserting new node connections
-t_nodemapping = view("nodemapping", db_metadata,
+t_nodemapping = view("nodemapping", _core.database.postgres.db_metadata,
                      sql.select([t_noderelation.c.nid, t_noderelation.c.cid]).where(t_noderelation.c.distance == text("1")))
 
 # helpers for node child/parent relationships

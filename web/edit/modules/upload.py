@@ -27,7 +27,6 @@ import utils.fileutils as _utils_fileutils
 import utils.utils as _utils_utils
 import web.common.pagination as _web_common_pagination
 import web.edit.edit_common as _web_edit_edit_common
-from web.edit.edit import getTreeLabel
 from web.edit.edit_common import showoperations, searchbox_navlist_height
 from utils.url import build_url_from_path_and_params
 from schema.bibtex import getentries, importBibTeX, MissingMapping
@@ -183,7 +182,10 @@ def getContent(req, ids):
                         state=state,
                         newnodes=newnodes,
                         errornodes=errornodes,
-                        new_tree_labels=[dict(id=basenode.id, label=getTreeLabel(basenode, lang=language))],
+                        new_tree_labels=(dict(
+                            id=basenode.id,
+                            label=_web_edit_edit_common.get_edit_label(basenode, lang=language),
+                            ),),
                         ret=_tal.processTAL(
                                 dict(files=[filename], schemes=scheme_type),
                                 file='web/edit/modules/upload.html',
@@ -346,7 +348,10 @@ def getContent(req, ids):
                               ),
                         state=state,
                         filename=uploadfile.filename,
-                        new_tree_labels=[dict(id=basenode.id, label=getTreeLabel(basenode, lang=language))],
+                        new_tree_labels=(dict(
+                            id=basenode.id,
+                            label=_web_edit_edit_common.get_edit_label(basenode, lang=language),
+                            ),),
                     ),
                     ensure_ascii=False,
                 ))
@@ -414,7 +419,10 @@ def getContent(req, ids):
                     ret=content,
                     state=state,
                     filename=uploadfile.filename,
-                    new_tree_labels=[dict(id=basenode.id, label=getTreeLabel(basenode, lang=language))],
+                    new_tree_labels=(dict(
+                        id=basenode.id,
+                        label=_web_edit_edit_common.get_edit_label(basenode, lang=language),
+                        ),),
                 ),
                 ensure_ascii=False,
             ))

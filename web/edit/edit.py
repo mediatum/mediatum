@@ -36,11 +36,6 @@ from web import frontend as _web_frontend
 logg = logging.getLogger(__name__)
 
 
-def getTreeLabel(node, lang):
-    label = get_edit_label(node, lang)
-    return label
-
-
 def getEditorIconPath(node, home_dir = None, upload_dir = None, trash_dir = None):
     '''
     retrieve icon path for editor tree relative to img/
@@ -443,7 +438,7 @@ def edit_tree(req):
         if not node.has_read_access():
             continue
 
-        label = getTreeLabel(node, language)
+        label = get_edit_label(node, language)
         nodedata = dict(
                 title=label,
                 key=node.id,
@@ -521,7 +516,7 @@ def action(req):
 
         for nid in set(nids + [_n.id for _n in [trashdir, uploaddir]]):
             try:
-                changednodes[nid] = getTreeLabel(_core.db.query(Node).get(nid), language)
+                changednodes[nid] = get_edit_label(_core.db.query(Node).get(nid), language)
             except:
                 logg.exception("exception ignored: could not make fancytree label for node %s", nid)
         req.response.status_code = _httplib.OK
@@ -605,7 +600,7 @@ def action(req):
                     c.orderpos += 1000
         _core.db.session.commit()
 
-        label = getTreeLabel(newnode, lang=language)
+        label = get_edit_label(newnode, lang=language)
 
         req.response.status_code = _httplib.OK
         req.response.mimetype = "application/json"
@@ -735,7 +730,7 @@ def action(req):
     if action in ["move", "copy", "delete", "clear_trash"]:
         for nid in changednodes:
             try:
-                changednodes[nid] = getTreeLabel(changednodes[nid], lang=language)
+                changednodes[nid] = get_edit_label(changednodes[nid], lang=language)
             except:
                 logg.exception("exception ignored: could not make fancytree label for node %s", nid)
         req.response.status_code = _httplib.OK

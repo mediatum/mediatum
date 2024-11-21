@@ -7,6 +7,8 @@ from __future__ import division
 from __future__ import print_function
 
 from warnings import warn
+
+import core as _core
 from utils.date import format_date, parse_date
 from utils.url import add_query_params_to_url
 
@@ -256,7 +258,7 @@ class NodeMixin(object):
             if req is not None:
                 raise ValueError("has_access can only be called with a request instance or user/ip/date, but not both!")
 
-            return self.has_access_to_node_id(self.id, accesstype, user, ip, date)
+            return _core.users.has_access_to_node_id(self.id, accesstype, user, ip, date)
 
         return self.req_has_access_to_node_id(self.id, accesstype, req)
 

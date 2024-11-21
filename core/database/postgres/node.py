@@ -368,30 +368,7 @@ class Node(_core.database.postgres.DeclarativeBase, NodeMixin):
             logg.warning("illegal IP address %s, refusing IP-based access", req.remote_addr)
             ip = None
 
-        return Node.has_access_to_node_id(node_id, accesstype, user, ip, date)
-
-    @staticmethod
-    def has_access_to_node_id(node_id, accesstype, user=None, ip=None, date=None):
-        # XXX: the database-independent code could move to core.node
-        from core import db
-        from core.users import get_guest_user
-
-        if user is None:
-            user = get_guest_user()
-
-        if user.is_admin:
-            return True
-
-        if ip is None:
-            ip = IPv4Address("0.0.0.0")
-
-        if date is None:
-            date = func.current_date()
-
-        accessfunc = access_funcs[accesstype]
-        group_ids = user.group_ids
-        access = accessfunc(node_id, group_ids, ip, date)
-        return db.session.execute(select([access])).scalar()
+        return _core.users.has_access_to_node_id(node_id, accesstype, user, ip, date)
 
     def _parse_searchquery(self, searchquery):
         """

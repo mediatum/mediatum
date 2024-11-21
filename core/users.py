@@ -6,13 +6,23 @@ from __future__ import print_function
 
 import logging
 from warnings import warn
+
+import ipaddr as _ipaddr
 import flask as _flask
+import sqlalchemy as _syqlalchemy
 
 import core as _core
 import core.database.postgres.user as _
+import core.database.postgres as _
 
 logg = logging.getLogger(__name__)
 
+# permission check functions for the access types
+access_funcs = {
+    "read": _core.database.postgres.mediatumfunc.has_read_access_to_node,
+    "write": _core.database.postgres.mediatumfunc.has_write_access_to_node,
+    "data": _core.database.postgres.mediatumfunc.has_data_access_to_node
+}
 
 def create_user(name, email, groups, pwd="", lastname="", firstname="", telephone="",
                 comment="", option="", organisation="", identificator="", type="intern"):
@@ -113,3 +123,25 @@ def moveUserToIntern(id):
 def getHideMenusForUser(user):
     warn("use User.hidden_edit_functions", DeprecationWarning)
     return user.hidden_edit_functions
+
+
+def has_access_to_node_id(node_id, accesstype, user=None, ip=None, date=None):
+    from core import db
+    from core.users import get_guest_user
+
+    if user is None:
+        user = get_guest_user()
+
+    if user.is_admin:
+        return True
+
+    if ip is None:
+        ip = _ipaddr.IPv4Address("0.0.0.0")
+
+    if date is None:
+        date = _syqlalchemy.func.current_date()
+
+    accessfunc = access_funcs[accesstype]
+    group_ids = user.group_ids
+    access = accessfunc(node_id, group_ids, ip, date)
+    return db.session.execute(_syqlalchemy.select([access])).scalar()

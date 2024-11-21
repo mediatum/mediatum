@@ -268,9 +268,6 @@ class Container(Data, ContainerMixin, SchemaMixin):
     def event_files_changed(self):
         logg.debug("Postprocessing node %s", self.id)
 
-    def get_container(self):
-        return self
-
     def childcount(self):
         if config.getboolean("database.use_cached_childcount"):
             return _core.database.postgres.alchemyext.exec_sqlfunc(
@@ -324,9 +321,6 @@ class Collection(Container):
         metafields.append(field)
         return metafields
 
-    def get_collection(self):
-        return self
-
     def childcount(self):
         if self.children.first() is None:
             return 0
@@ -339,9 +333,6 @@ class Collections(Container):
 
     # XXX: as in other places, we assume that the Collections root is public.
     cache_duration = 600
-
-    def get_collection(self):
-        return self
 
     def childcount(self):
         if self.children.first() is None:

@@ -29,7 +29,6 @@ import flask as _flask
 
 import core as _core
 import core.database.postgres as _
-import core.nodecache as _core_nodecache
 from core.node import NodeMixin, NodeVersionMixin
 from core.database.postgres import rel, bref, C, FK
 from core.database.postgres.alchemyext import LenMixin, view, exec_sqlfunc
@@ -481,31 +480,22 @@ class Node(_core.database.postgres.DeclarativeBase, NodeMixin):
     def is_descendant_of(self, node):
         return exec_sqlfunc(object_session(self), _core.database.postgres.mediatumfunc.is_descendant_of(self.id, node.id))
 
-    def _get_nearest_ancestor_by_type(self, ancestor_type):
+    def get_self_or_first_ancestor(self, typ):
         """Returns a nearest ancestor of `ancestor_type`.
         If none is found, return `Collections` as default.
         It's undefined which one will be returned if more than one nearest ancestor is found.
         """
-        nr = t_noderelation
-        q = object_session(self).query
+        if isinstance(self, typ):
+            return self
 
-        maybe_ancestor = (q(ancestor_type)
-                .join(nr, Node.id == nr.c.nid)
+        return (object_session(self)
+                .query(typ)
+                .join(t_noderelation, Node.id == t_noderelation.c.nid)
                 .filter_by(cid=self.id)
-                .order_by(nr.c.distance).limit(1).first())
-
-        if maybe_ancestor is None:
-            return _core_nodecache.get_collections_node()
-
-        return maybe_ancestor
-
-    def get_container(self):
-        from contenttypes import Container
-        return self._get_nearest_ancestor_by_type(Container)
-
-    def get_collection(self):
-        from contenttypes import Collection
-        return self._get_nearest_ancestor_by_type(Collection)
+                .order_by(t_noderelation.c.distance)
+                .limit(1)
+                .first()
+                )
 
     def get_parent_sortfield(self):
         """Returns a nearest ancestor with non-empty sortfield.

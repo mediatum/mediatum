@@ -12,11 +12,7 @@ from core.postgres import check_type_arg
 
 @check_type_arg
 class Root(Node):
-    def get_container(self):
-        pass
-
-    def get_collection(self):
-        pass
+    pass
 
 
 @check_type_arg

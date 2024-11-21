@@ -13,9 +13,11 @@ import sqlalchemy as _sqlalchemy
 import sqlalchemy.orm.session as _
 
 import contenttypes as _contenttypes
+import contenttypes.container as _
 import contenttypes.data as _
 import core as _core
 import core.database.postgres.node as _
+import core.nodecache as _
 import core.translation as _core_translation
 from core import config
 from core import styles
@@ -237,7 +239,8 @@ class ContentList(ContentBase):
         self._num = -1
         self.content = None
         self.liststyle_name = None
-        self.collection = container.get_collection()
+        self.collection = (container.get_self_or_first_ancestor(_contenttypes.container.Collection)
+                           or _core.nodecache.get_collections_node())
         self.sortfields = OrderedDict()
         self.default_fullstyle_name = None
 
@@ -562,7 +565,8 @@ class ContentNode(ContentBase):
 
     def __init__(self, node, paths=None, nr=0, num=0, words=None):
         self._node = node
-        self.collection = node.get_collection()
+        self.collection = (node.get_self_or_first_ancestor(_contenttypes.container.Collection)
+                           or _core.nodecache.get_collections_node())
         self.id = node.id
         self.paths = paths
         self.nr = nr

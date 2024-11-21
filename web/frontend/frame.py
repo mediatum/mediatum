@@ -12,6 +12,8 @@ import sqlalchemy as _sqlalchemy
 import sqlalchemy.orm as _orm
 from markupsafe import Markup
 
+import contenttypes as _contenttypes
+import contenttypes.container as _
 import core as _core
 import core.database.postgres as _database_postgres
 import core.database.postgres.node as _node
@@ -22,7 +24,6 @@ from core import webconfig
 from core.users import user_from_session as _user_from_session
 from core.users import get_guest_user
 from core.webconfig import node_url, edit_node_url
-import contenttypes as _contenttypes
 from contenttypes import Directory, Container
 from schema.schema import getMetadataType
 from utils.compat import iteritems
@@ -62,7 +63,8 @@ class Searchlet(object):
         self.ip = None
         self.container = container
         # Searchmasks are defined on collections, so we must find the parent collection if container is not a collection.
-        collection = container.get_collection()
+        collection = (container.get_self_or_first_ancestor(_contenttypes.container.Collection)
+                      or _nodecache.get_collections_node())
         self.searchmask = getSearchMask(collection)
         self.searchmode = "simple"
 
@@ -279,7 +281,6 @@ def _make_navtree_entries(language, container):
                 ),),
                 else_=_sqlalchemy.literal_column("1"),
             )
-
     # the main query lists all container nodes that are
     # the child of any of the "opened" containers (see above);
     # this will permit us to show unfolded containers, i.e.,
@@ -303,10 +304,12 @@ def _make_navtree_entries(language, container):
     tree_elements = tuple(t for t in tree_elements
             if t.parent_id != _nodecache.get_root_node().id or t.Container == _nodecache.get_collections_node())
     not_active = frozenset(te.parent_id for te in tree_elements)
+    collection = (container.get_self_or_first_ancestor(_contenttypes.container.Collection)
+                  or _nodecache.get_collections_node())
     return tuple(_make_navtree_entries_rec(
             {pid:tuple(te for te in tree_elements if te.parent_id==pid) for pid in not_active},
             not_active.union((container.id,)),
-            frozenset((container.id, container.get_collection().id)).difference(not_active),
+            frozenset((container.id, collection.id)).difference(not_active),
             language,
             _nodecache.get_collections_node().parents[0].id,
            ))
@@ -429,7 +432,8 @@ def render_page(req, content_html, node=None, show_navbar=True, show_id=None):
         container = rootnode
         head_meta = ""
     else:
-        container = node.get_container()
+        container = (node.get_self_or_first_ancestor(_contenttypes.container.Container)
+                     or _nodecache.get_collections_node())
         head_meta = _render_head_meta(_core.db.query(Node).get(show_id) if show_id else node) or ""
 
     search_html = u""
@@ -439,7 +443,11 @@ def render_page(req, content_html, node=None, show_navbar=True, show_id=None):
         if not req.args.get("disable_search"):
             search_html = _render_search_box(container, language, req)
         if not req.args.get("disable_navtree"):
-            navtree_html = _make_navtree_entries(language, node.get_container())
+            navtree_html = _make_navtree_entries(
+                language,
+                node.get_self_or_first_ancestor(_contenttypes.container.Container)
+                    or _nodecache.get_collections_node(),
+                )
             navtree_html = (
                     webconfig.theme.render_template("frame_tree.j2.jade", dict(navtree_entries=navtree_html))
                     if navtree_html else

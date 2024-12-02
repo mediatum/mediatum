@@ -7,13 +7,11 @@ from __future__ import division
 from __future__ import print_function
 
 import logging
-from collections import OrderedDict
 
 from mediatumtal import tal
 
 import core.metatype as _core_metatype
 import utils.utils as _utils
-import re
 
 logg = logging.getLogger(__name__)
 

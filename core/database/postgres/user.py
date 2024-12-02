@@ -6,17 +6,16 @@
 from __future__ import division
 from __future__ import print_function
 
-from itertools import chain
 import logging
 
-from sqlalchemy import Unicode, UnicodeText, Boolean, Table, DateTime, UniqueConstraint, String
+from sqlalchemy import Unicode, UnicodeText, Boolean, DateTime, UniqueConstraint, String
 from sqlalchemy.dialects.postgresql import ARRAY, ExcludeConstraint
 from sqlalchemy.orm.session import object_session
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy_utils.types import EmailType
 
 import core.nodecache as _core_nodecache
-from core.database.postgres import DeclarativeBase, db_metadata
+from core.database.postgres import DeclarativeBase
 from core.database.postgres import rel, C, FK, bref
 from core.database.postgres import TimeStamp, integer_fk, integer_pk
 from core import config

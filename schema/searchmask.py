@@ -4,14 +4,12 @@
 from __future__ import division
 from __future__ import print_function
 
-import hashlib
 from sqlalchemy import func
 import utils.utils as _utils_utils
-from . import schema
 from core.postgres import check_type_arg
 from core.database.postgres.node import Node
 from core import db
-from core.systemtypes import Root, Searchmasks
+from core.systemtypes import Searchmasks
 from .schema import Metadatatype
 
 q = db.query

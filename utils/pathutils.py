@@ -5,16 +5,11 @@ from __future__ import division
 from __future__ import print_function
 
 import operator as _operator
-import os
-import string
 from warnings import warn
 
 import core.nodecache as _core_nodecache
 from core import db
 from core.database.postgres.node import Node
-from contenttypes import Collections
-from core.systemtypes import Root
-from core.database.postgres.alchemyext import exec_sqlfunc
 from core.database.postgres import mediatumfunc, build_accessfunc_arguments
 from itertools import chain
 

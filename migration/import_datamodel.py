@@ -18,7 +18,6 @@ from sqlalchemy import Column, ForeignKey, String, Text, Integer, Index, Table, 
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm.collections import attribute_mapped_collection
-from sqlalchemy.ext.hybrid import hybrid_property
 
 try:
     import msgpack

@@ -10,14 +10,11 @@ import citeproc metadata in CSL, JSON variant as served by dx.doi.org.
 from __future__ import division
 from __future__ import print_function
 
-from core.metatype import Metatype
-
 from collections import defaultdict
 import datetime
 import logging
 import re
 
-from sqlalchemy.orm.exc import NoResultFound
 import requests
 
 import utils.utils as _utils_utils

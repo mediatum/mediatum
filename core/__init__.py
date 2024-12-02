@@ -10,7 +10,3 @@ __version__ = "v2020.04"
 db = None
 # set by core.init.init_app()
 app = None
-
-# TODO: move to web.edit
-
-import utils.log

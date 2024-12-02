@@ -72,11 +72,12 @@
                     = file['name']
                 td(class=cssclass) &nbsp;
               if (file['type'] != 'dir') and (file['type'] != 'back')
+                - var path = file['path']
                 td(class=cssclass, align='center')
-                  a(href='/attfile/{}/{}'.format(id, file['path']), target='_blank')
+                  a(href='/attfile/'+id+'/'+path, target='_blank')
                     img(src='/static/img/{}'.format(file['icon']), border='0')
                 td(class=cssclass)
-                  a.mediatum-link-mediatum(href='attfile/{}/{}'.format(id, file['path']), target='_blank')
+                  a.mediatum-link-mediatum(href='attfile/'+id+'/'+path, target='_blank')
                     = file['name']
                 td(class=cssclass, align='right')
                   small

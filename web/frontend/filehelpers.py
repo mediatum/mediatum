@@ -11,17 +11,13 @@ import logging
 import os
 import re
 import urlparse as _urlparse
-import zipfile
 
 import flask as _flask
 
-import utils.utils as _utils_utils
-from core import config
 from core import db
 from core.database.postgres.node import Node
 from contenttypes import Content
-from utils.utils import getMimeType, get_filesize, suppress
-from utils import userinput
+from utils.utils import getMimeType, get_filesize
 from utils.compat import text_type
 from core.request_handler import sendFile as _sendFile
 
@@ -61,16 +57,9 @@ def splitpath(path):
 
 def node_id_from_req_path(path):
     parts = splitpath(path)
-
     if not parts:
         raise ValueError("invalid node ID path '{}'".format(path))
-
-    nid = userinput.string_to_int(parts[0])
-
-    if nid is None:
-        raise ValueError("path contains an invalid node ID: '{}'".format(path))
-
-    return nid
+    return int(parts[0])
 
 
 def version_id_from_req(req_args):

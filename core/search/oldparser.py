@@ -12,7 +12,7 @@ from __future__ import division
 from __future__ import print_function
 
 import re
-from utils.utils import u, intersection, union
+from utils.utils import intersection, union
 from utils.boolparser import BoolParser
 
 pattern_op = re.compile('^([a-zA-Z0-9._-]+)\s*(=|>=|<=|<|>)\s*"?([^"]*)"?$')

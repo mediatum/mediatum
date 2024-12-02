@@ -19,7 +19,7 @@ from utils.utils import mkKey
 from core.database.postgres.node import Node
 from core import db
 import schema.schema as _schema
-from core.database.postgres.permission import AccessRule, AccessRulesetToRule
+from core.database.postgres.permission import AccessRulesetToRule
 from core.database.postgres.user import UserGroup
 import core.nodecache as _nodecache
 from core.permission import get_or_add_access_rule

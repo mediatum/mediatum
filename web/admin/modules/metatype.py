@@ -6,25 +6,23 @@ from __future__ import print_function
 
 import operator as _operator
 import re
-import sys
 
 import logging
 import mediatumtal.tal as _tal
 import sqlalchemy as _sqlalchemy
 import werkzeug.datastructures as _datastructures
 
-from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter
 import core.config as _config
 import core.csrfform as _core_csrfform
 import core.nodecache as _core_nodecache
 import web.common.acl_web as _acl_web
 from utils.utils import suppress
+from web import admin as _web_admin
 import core.translation as _translation
 import schema.schema as _schema
 from schema.schema import cloneMask
 from schema.schema import deleteMetaField
 from schema.schema import deleteMetaType
-from schema.schema import existMetaField
 from schema.schema import exportMetaScheme
 from schema.schema import fieldoption
 from schema.schema import generateMask
@@ -38,7 +36,6 @@ from schema.schema import updateMetaType
 from schema.bibtex import getAllBibTeXTypes
 from schema import citeproc
 
-from utils.fileutils import importFile
 # metafield methods
 from .metatype_field import showDetailList
 # meta mask methods
@@ -121,7 +118,7 @@ def _mask_details(req, nid=None, err=0):
         mask.setLanguage(req.values["mlanguage"])
         mask.setDefaultMask(req.values.get("mdefault", False))
 
-    v = getAdminStdVars(req)
+    v = _web_admin.adminutils.getAdminStdVars(req)
     v["mask"] = mask
     v["mappings"] = _core_nodecache.get_mappings_node().children
     v["mtype"] = mtype
@@ -377,7 +374,7 @@ def view(req):
     mtypes = _nodecache.get_metadatatypes_node().children.order_by("name").all()
     if set(q(Metadatatype).all()) - set(mtypes):
         raise RuntimeError(u"unlinked metadatatypes found")
-    actfilter = getFilter(req)
+    actfilter = _web_admin.adminutils.getFilter(req)
     used_by = _get_nodecount_per_metaschema()
 
     # filter
@@ -402,8 +399,8 @@ def view(req):
             else:
                 mtypes = filter(lambda x: x.getLongName().lower().startswith(actfilter), mtypes)
 
-    pages = Overview(req, mtypes)
-    order = getSortCol(req)
+    pages = _web_admin.adminutils.Overview(req, mtypes)
+    order = _web_admin.adminutils.getSortCol(req)
 
     # sorting
     if order:
@@ -417,7 +414,7 @@ def view(req):
     else:
         mtypes.sort(key=lambda mt:mt.name.lower())
 
-    v = getAdminStdVars(req)
+    v = _web_admin.adminutils.getAdminStdVars(req)
     v["sortcol"] = pages.OrderColHeader(tuple(
         _translation.translate(
             _translation.set_language(req.accept_languages),
@@ -443,7 +440,7 @@ def view(req):
 
 
 def MetatypeDetail(req, id, err=0):
-    v = getAdminStdVars(req)
+    v = _web_admin.adminutils.getAdminStdVars(req)
 
     if err == 0 and id == "":
         # new metadatatype
@@ -781,7 +778,7 @@ def _field_detail(req, edit_name=None, error=None):
     (for the given message-id) is presented to the user.
     """
     metadatatype = getMetaType(req.values["parent"])
-    context = getAdminStdVars(req)
+    context = _web_admin.adminutils.getAdminStdVars(req)
     if edit_name is not None:
         field = (metadatatype
             .children

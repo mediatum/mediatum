@@ -14,7 +14,7 @@ import core.csrfform as _core_csrfform
 from schema.schema import get_permitted_schemas
 from core.users import user_from_session as _user_from_session
 from core.database.postgres.node import Node
-from contenttypes import Data, Content, Container
+from contenttypes import Content, Container
 from core import db
 
 q = db.query

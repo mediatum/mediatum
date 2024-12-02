@@ -13,14 +13,10 @@ import mediatumtal.tal as _tal
 
 import core.csrfform as _core_csrfform
 import core.translation as _core_translation
-from utils.date import format_date, parse_date, now
-from utils.utils import funcname
+from utils.date import format_date, parse_date
 from core import db
 from core.database.postgres.node import Node
-from contenttypes import Container
 from core.users import user_from_session
-import core.config as _core_config
-import datetime
 import schema.schema as _schema
 
 q = db.query

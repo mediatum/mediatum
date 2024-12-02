@@ -5,15 +5,13 @@ from __future__ import division
 from __future__ import print_function
 
 import json
-from functools import partial, wraps
 import httplib as _httplib
+from functools import wraps
 import logging
 import re
-import flask as _flask
 from werkzeug.datastructures import ImmutableMultiDict
 import werkzeug.utils as _werkzeug_utils
 
-import core.config as config
 import core.csrfform as _core_csrfform
 import core.translation as _core_translation
 from core import db
@@ -25,7 +23,6 @@ from schema.schema import getMetadataType
 from utils.url import build_url_from_path_and_params
 from web.frontend.frame import render_page
 from web.frontend.content import render_content
-from workflow.workflow import Workflows
 from core.nodecache import get_collections_node
 
 q = db.query

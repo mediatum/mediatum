@@ -14,12 +14,8 @@ import flask as _flask
 from .workflow import WorkflowStep, registerStep
 from mediatumtal import tal as _tal
 
-from utils.utils import formatException
-import core.csrfform as _core_csrfform
-import core.translation as _core_translation
 import utils.mail as mail
 from core import db
-from core.request_handler import makeSelfLink as _makeSelfLink
 
 logg = logging.getLogger(__name__)
 

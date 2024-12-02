@@ -12,7 +12,7 @@ import core.translation as _core_translation
 import web.common.pagination as _web_common_pagination
 import web.edit.edit_common as _web_edit_edit_common
 from core import db
-from contenttypes import Data, Home, Collection, Collections
+from contenttypes import Data, Home, Collections
 from core.systemtypes import Root
 from web.edit.edit_common import showoperations, searchbox_navlist_height
 from web.frontend.frame import render_edit_search_box
@@ -122,7 +122,6 @@ def getContent(req, ids):
         searchparams = get_searchparams(req)
         searchparams = {k: unicode(v).encode("utf8") for k, v in searchparams.items()}
         v['searchparams'] = urllib.urlencode(searchparams)
-        v['get_ids_from_query'] = ",".join(show_dir_nav.get_ids_from_req())
         v['edit_all_objects'] = _core_translation.translate(
                 _core_translation.set_language(req.accept_languages), "edit_all_objects",
             ).format(item_count[1])

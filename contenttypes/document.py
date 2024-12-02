@@ -14,14 +14,13 @@ import subprocess as _subprocess
 import PIL.Image as _PIL_Image
 
 import contenttypes.data as _contenttypes_data
-import core.translation as _core_translation
 import utils.process as _utils_process
 import utils.utils as _utils_utils
 from core.database.postgres.file import File
 from core import db
 from core.attachment import filebrowser
 from core.postgres import check_type_arg_with_schema
-from schema.schema import VIEW_HIDE_EMPTY, Metafield
+from schema.schema import Metafield
 from utils.search import import_node_fulltext
 from web.frontend.filehelpers import version_id_from_req
 

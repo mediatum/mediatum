@@ -7,6 +7,7 @@
 from __future__ import division
 from __future__ import print_function
 
+import itertools as _itertools
 import logging
 import os
 import exifread as _exifread
@@ -20,7 +21,6 @@ from core.attachment import filebrowser
 from core.postgres import check_type_arg_with_schema
 from utils.utils import isnewer
 import lib.iptc.IPTC
-from utils.list import filter_scalar
 from utils.compat import iteritems
 import utils.process
 from collections import defaultdict
@@ -172,7 +172,7 @@ class Image(_contenttypes_data.Content):
         return obj
 
     def _generate_other_format(self, mimetype_to_generate, files=None):
-        original_file = filter_scalar(lambda f: f.filetype == u"original", files)
+        original_file, = _itertools.ifilter(lambda f: f.filetype == u"original", files)
 
         extension = mimetype_to_generate.split("/")[1]
         newimg_name = os.path.splitext(original_file.abspath)[0] + "." + extension
@@ -184,9 +184,10 @@ class Image(_contenttypes_data.Content):
         else:
             convert_options = []
 
-        old_file = filter_scalar(lambda f: f.filetype == u"image" and f.mimetype == mimetype_to_generate, files)
+        old_file = filter(lambda f: f.filetype == u"image" and f.mimetype == mimetype_to_generate, files)
 
-        if old_file is not None:
+        if old_file:
+            old_file, = old_file
             self.files.remove(old_file)
             old_file.unlink()
 
@@ -198,7 +199,7 @@ class Image(_contenttypes_data.Content):
         if files is None:
             files = self.files.all()
 
-        original_file = filter_scalar(lambda f: f.filetype == u"original", files)
+        original_file, = _itertools.ifilter(lambda f: f.filetype == u"original", files)
         old_image_files = filter(lambda f: f.filetype == u"image", files)
 
         wanted_mimetypes = set(Image.IMAGE_FORMATS_FOR_MIMETYPE[original_file.mimetype])
@@ -216,10 +217,9 @@ class Image(_contenttypes_data.Content):
         if files is None:
             files = self.files.all()
 
-        original_file = filter_scalar(lambda f: f.filetype == u"original", files)
-        old_image_files = filter(lambda f: f.filetype == u"image", files)
+        original_file, = _itertools.ifilter(lambda f: f.filetype == u"original", files)
 
-        for old_img_file in old_image_files:
+        for old_img_file in _itertools.ifilter(lambda f: f.filetype == u"image", files):
             # we don't want to remove the original file...
             if old_img_file.path != original_file.path:
                 self.files.remove(old_img_file)
@@ -245,10 +245,12 @@ class Image(_contenttypes_data.Content):
         if files is None:
             files = self.files.all()
 
-        original_file = filter_scalar(lambda f: f.filetype == u"original", files)
+        original_file, = _itertools.ifilter(lambda f: f.filetype == u"original", files)
 
         if original_file.mimetype == u"image/svg+xml":
-            return filter_scalar(lambda f: f.filetype == u"image" and f.mimetype == u"image/png", files)
+            original_file = filter(lambda f: f.filetype == u"image" and f.mimetype == u"image/png", files)
+            if original_file:
+                original_file, = original_file
 
         return original_file
 
@@ -311,7 +313,7 @@ class Image(_contenttypes_data.Content):
         logg.debug("Postprocessing node %s", self.id)
         existing_files = self.files.all()
 
-        if filter_scalar(lambda f: f.filetype == u"original", existing_files) is None:
+        if not filter(lambda f: f.filetype == u"original", existing_files):
             # we cannot do anything without an `original` file, stop here
             return
 
@@ -324,7 +326,7 @@ class Image(_contenttypes_data.Content):
         files = self.files.all()
 
         # generate both thumbnail sizes if one is missing because they should always display the same
-        if filter_scalar(lambda f: f.filetype == u"thumbnail", files) is None:
+        if not filter(lambda f: f.filetype == u"thumbnail", files):
             self._generate_thumbnails(files)
 
         # should we skip this sometimes? Do we want to overwrite everything?

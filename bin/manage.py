@@ -18,12 +18,9 @@ from __future__ import division
 from __future__ import print_function
 
 from collections import OrderedDict
-from functools import partial
 import logging
 import os
 import sys
-import tempfile
-import warnings
 
 sys.path.append(os.path.normpath(os.path.join(__file__, "..", "..")))
 

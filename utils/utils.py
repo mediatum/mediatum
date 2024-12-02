@@ -34,7 +34,6 @@ from contextlib import contextmanager
 from lxml import etree
 from HTMLParser import HTMLParser
 
-from .compat import iteritems
 from .strings import ensure_unicode_returned
 
 logg = logging.getLogger(__name__)
@@ -613,10 +612,6 @@ class OperationException(Exception):
         return repr(self.value)
 
 
-class FileException:
-    pass
-
-
 class Menu:
     def __init__(self, name, link="", target="_self", cssclass=None):
         self.name = name
@@ -667,7 +662,8 @@ def parse_menu_struct(menu, skip_items=frozenset(), _upper=None):
         (sub_title, sub_items), = item.iteritems()
         sub_menu = Menu(sub_title)
         parse_menu_struct(sub_items, skip_items, sub_menu)
-        add(sub_menu)
+        if sub_title not in skip_items:
+            add(sub_menu)
     if not _upper:
         return result
 
@@ -731,48 +727,11 @@ def funcname():
     return inspect.stack()[1][3]
 
 
-def callername():
-    '''returns name of the calling function'''
-    return inspect.stack()[2][3]
-
-
 def get_user_id():
     import core.users as users
     user = users.user_from_session()
     res = "userid=%r|username=%r" % (user.id, user.getName())
     return res
-
-
-def make_repr(**args):
-    """Class decorator which uses init params to create a human readable instance repr.
-    Looks like: MyClass(arg1=value,arg2=value)
-    """
-
-    def _make_repr(cls):
-        """
-        :param cls: A class that defines an __init__ method.
-        """
-        init_args = cls.__init__.__func__.func_code.co_varnames[1:]
-        arg_placeholder = ",".join(arg + "={" + arg + "!r}" for arg in init_args)
-        tmpl = cls.__name__ + "(" + arg_placeholder + ")"
-
-        def repr(self):
-            return tmpl.format(**self.__dict__)
-
-        cls.__repr__ = repr
-        return cls
-
-    return _make_repr
-
-
-def utf8_encode_recursive(d):
-    if isinstance(d, dict):
-        return {k.encode("utf8"): utf8_encode_recursive(v) for k, v in iteritems(d)}
-    elif isinstance(d, list):
-        return [utf8_encode_recursive(v) for v in d]
-    elif isinstance(d, unicode):
-        return d.encode("utf8")
-    return d
 
 
 def find_free_port():

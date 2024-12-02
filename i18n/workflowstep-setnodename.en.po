@@ -1,0 +1,5 @@
+msgid "workflowstep_setnodename"
+msgstr "set node name"
+
+msgid "workflowstep_setnodename_sourceattributename"
+msgstr "Source attributesname"

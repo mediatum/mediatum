@@ -6,9 +6,7 @@ from __future__ import print_function
 
 import httplib as _httplib
 import logging
-import os
 import math
-import sys
 import flask as _flask
 
 import mediatumtal.tal as _tal
@@ -17,15 +15,23 @@ import core.config as config
 import core.translation as _core_translation
 import core.users as users
 from core import db
-from core.database.postgres.user import AuthenticatorInfo
 from core.database.postgres.user import User
-from core.systemtypes import Root
 from utils.strings import ensure_unicode_returned
 from utils.utils import get_menu_strings
 from utils.utils import Link
 from utils.utils import parse_menu_struct
-from utils.list import filter_scalar
 from core.exceptions import SecurityException
+from .modules import default as _modules_default
+from .modules import mapping as _modules_mapping
+from .modules import memstats as _modules_memstats
+from .modules import menusystem as _modules_menusystem
+from .modules import menuworkflow as _modules_menuworkflow
+from .modules import menudata as _modules_menudata
+from .modules import menuacl as _modules_menuacl
+from .modules import menumain as _modules_menumain
+from .modules import menuuser as _modules_menuuser
+from .modules import metatype as _modules_metatype
+from .modules import workflows as _modules_workflows
 
 logg = logging.getLogger(__name__)
 q = db.query
@@ -40,6 +46,22 @@ _menu = (
         "workflows",
         )},
 )
+
+# delivers all active admin modules in navigations
+adminModules = {m.__name__.replace("web.admin.modules.", ""):m for m in (
+    _modules_default,
+    _modules_memstats,
+    _modules_menusystem,
+    _modules_metatype,
+    _modules_menuworkflow,
+    _modules_mapping,
+    _modules_menudata,
+    _modules_menuacl,
+    _modules_menuuser,
+    _modules_workflows,
+    _modules_menumain,
+    )}
+
 
 def getAdminStdVars(req):
     page = ""
@@ -212,46 +234,8 @@ def show_content(req, op):
         else:
             return module.validate(req, op)
 
-# delivers all admin modules
-def _get_admin_modules():
-    from web.admin.modules import default
-    from web.admin.modules import mapping
-    from web.admin.modules import memstats
-    from web.admin.modules import menusystem
-    from web.admin.modules import menuworkflow
-    from web.admin.modules import menudata
-    from web.admin.modules import menuacl
-    from web.admin.modules import menumain
-    from web.admin.modules import menuuser
-    from web.admin.modules import metatype
-    from web.admin.modules import workflows
-
-    modules_list = (
-        default,
-        memstats,
-        menusystem,
-        metatype,
-        menuworkflow,
-        mapping,
-        menudata,
-        menuacl,
-        menuuser,
-        workflows,
-        menumain,
-    )
-
-    for m in modules_list:
-        adminModules[m.__name__.replace("web.admin.modules.", "")] = m
-
-
-# delivers all active admin modules in navigations
-adminModules = {}
-
 
 def adminNavigation():
-    if len(adminModules) == 0:
-        # load admin modules
-        _get_admin_modules()
     return parse_menu_struct(_menu)
 
 
@@ -295,33 +279,9 @@ def become_user(login_name, authenticator_key=None):
         raise SecurityException("becoming other users not allowed for non-admin users")
 
     candidate_users = q(User).filter_by(login_name=login_name).all()
-
     if not candidate_users:
         raise ValueError("unknown user login name " + login_name)
 
-    if len(candidate_users) == 1:
-        user = candidate_users[0]
-    else:
-        # multiple candidates
-        if not authenticator_key:
-            raise ValueError("no authenticator_key given, but multiple users found for login name" + login_name)
-
-
-        parts = authenticator_key.split(":")
-
-        if len(parts) != 2:
-            raise ValueError("invalid authenticator key " + authenticator_key)
-
-        authenticator_type, authenticator_name = parts
-        authenticator_info = q(AuthenticatorInfo).filter_by(type=authenticator_type, name=authenticator_name).scalar()
-
-        if authenticator_info is None:
-            raise ValueError("cannot find authenticator key" + authenticator_key)
-
-        user = filter_scalar(lambda u: u.authenticator_id == authenticator_info.id)
-
-        if user is None:
-            return
-
+    user, = candidate_users
     _flask.session["user_id"] = user.id
     return user

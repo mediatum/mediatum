@@ -9,14 +9,12 @@ import re
 import urlparse as _urlparse
 from PIL import Image
 import core.config as config
-import tempfile
 from multiprocessing import Process
-import shutil
 import logging
 
 import flask as _flask
 
-from reportlab.platypus import Paragraph, BaseDocTemplate, SimpleDocTemplate, FrameBreak, Table, TableStyle, Image as PdfImage, Frame, PageBreak, PageTemplate
+from reportlab.platypus import Paragraph, BaseDocTemplate, SimpleDocTemplate, FrameBreak, Image as PdfImage, Frame, PageTemplate
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import cm
 from reportlab.rl_config import defaultPageSize

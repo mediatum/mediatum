@@ -6,11 +6,13 @@ from __future__ import print_function
 
 import mediatumtal.tal as _tal
 
-from web.admin.adminutils import adminNavigation
+from web import admin as _web_admin
 
 
 def validate(req, op):
-
-    v = {}
-    v["navigation"] = adminNavigation()
-    return _tal.processTAL(v, file="/web/admin/modules/default.html", macro="view", request=req)
+    return _tal.processTAL(
+        dict(navigation=_web_admin.adminutils.adminNavigation()),
+        file="/web/admin/modules/default.html",
+        macro="view",
+        request=req,
+        )

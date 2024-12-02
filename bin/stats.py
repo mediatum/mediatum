@@ -27,16 +27,12 @@ import tempfile
 
 sys.path.append(os.path.normpath(os.path.join(__file__, "..", "..")))
 
-import time
-
 from core.init import basic_init
 basic_init(prefer_config_filename="stats.log")
 
 
 from core.stats import buildStatAll
 from core import init
-from core import config
-from contenttypes import Collections, Collection
 from itertools import imap, ifilter, repeat
 import operator
 

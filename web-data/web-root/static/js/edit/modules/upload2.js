@@ -25,11 +25,11 @@ function createObjectFromIdentifier(id){
                 $('#metaform').hide();
                 updateNodeLabels("");
                 if (false && typeof data.newid !== 'undefined') {
-                  document.location = '/edit/edit_content?id='+data.newid+'&func=createObjectFromIdentifier&tab=metadata'  // open newly created node in metadata editor
+                  document.location = `/edit/edit_content?srcnodeid=${id}&id=${data.newid}&func=createObjectFromIdentifier&tab=metadata`  // open newly created node in metadata editor
                 }
                 else
                 {
-                  document.location = '/edit/edit_content?id='+id+'&func=createObjectFromIdentifier'; // show content of upload container
+                  document.location = `/edit/edit_content?srcnodeid=${id}&id=${id}&func=createObjectFromIdentifier`; // show content of upload container
                 }
               }
           }

@@ -4,12 +4,11 @@
 from __future__ import division
 from __future__ import print_function
 
-import collections as _collections
 import datetime
 import functools as _functools
 import inspect
-import itertools as _itertools
 import json as _json
+
 import logging
 import re as _re
 import collections as _collections
@@ -21,6 +20,7 @@ from sqlalchemy.orm import undefer
 import sqlalchemy as _sqlalchemy
 import werkzeug.datastructures as _datastructures
 from werkzeug.utils import cached_property
+
 import core.config as config
 import core.csrfform as _core_csrfform
 import core.translation as translation
@@ -33,7 +33,7 @@ import core.nodecache as _nodecache
 from core.systemtypes import Metadatatypes
 from core.postgres import check_type_arg
 from core.database.postgres.node import children_rel, parents_rel
-from utils.date import parse_date, format_date, validateDateString
+from utils.date import format_date, validateDateString
 from utils.utils import esc, suppress
 import utils as _utils
 from mediatumtal import tal as _tal
@@ -132,7 +132,7 @@ _EditUpdateAttrs = _collections.namedtuple("_EditUpdateAttrs", "attrs errors")
 
 _MetafieldsDependency = _collections.namedtuple(
     "_MetafieldsDependency",
-    "metadatatypes_id schema_name mask_name maskitem_name metafield_name metafield_id"
+    "schema_name mask_name maskitem_name maskitem_attribute maskitem_fieldtype metafield_name metafield_id"
 )
 
 _sanitize_metafield_sub = _functools.partial(_re.compile("[^a-zA-Z0-9_]").sub, "")
@@ -151,29 +151,31 @@ def _get_metafields_dependencies():
         _sqlalchemy.orm.aliased(_node.Node) for _ in xrange(4))
 
     query = q(
-        Metadatatypes.id.label('metadatatypes_id'),
         metadatatype.name.label('schema_name'),
         mask.name.label('mask_name'),
         maskitem.name.label('maskitem_name'),
+        maskitem.attrs['attribute'].label('maskitem_attribute'),
+        maskitem.attrs['fieldtype'].label('maskitem_fieldtype'),
         metafield.name.label('metafield_name'),
         metafield.id.label('metafield_id'),
     )
 
-    joins = (
-        Metadatatypes,
-        metadatatype,
-        mask,
-        maskitem,
-        metafield,
-    )
+    query = query.select_from(Metadatatypes)
 
-    for parent, child in zip(joins[:-1], joins[1:]):
+    joins = (
+        (Metadatatypes, _node.t_nodemapping, False),
+        (metadatatype, _node.t_nodemapping, False),
         # maskitems can be nested, which means that a masktitem can have another maskitem as child
         # so use noderelation for maskitems to get all childs instead of nodemapping
-        node2node = _node.t_noderelation if (parent, child) == (mask, maskitem) else _node.t_nodemapping
-        noderelation = _sqlalchemy.orm.aliased(node2node)
-        query = query.join(noderelation, noderelation.c.nid == parent.id)
-        query = query.join(child, child.id == noderelation.c.cid)
+        (mask, _node.t_noderelation, False),
+        # we need all metafield, even those that are *not* attached to a maskitem, so set `isouter=True`
+        (maskitem, _node.t_nodemapping, True),
+        (metafield, None, None),
+    )
+    for (parent, node2node, isouter), (child, _1, _2) in zip(joins[:-1], joins[1:]):
+        node2node = _sqlalchemy.orm.aliased(node2node)
+        query = query.join(node2node, node2node.c.nid == parent.id, isouter=isouter)
+        query = query.join(child, child.id == node2node.c.cid, isouter=isouter)
     return tuple(_MetafieldsDependency(**row._asdict()) for row in query.all())
 
 #

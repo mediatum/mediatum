@@ -221,8 +221,6 @@ from core.database.postgres.node import Node
 from core.database.postgres.user import User
 from core.database.postgres.user import UserGroup
 
-from core import app
-
 q = core.db.query
 s = core.db.Session
 

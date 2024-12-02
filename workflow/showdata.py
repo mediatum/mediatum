@@ -11,7 +11,7 @@ import mediatumtal.tal as _tal
 import core.csrfform as _core_csrfform
 import core.translation as _core_translation
 from .workflow import WorkflowStep, registerStep
-from schema.schema import VIEW_HIDE_EMPTY, Metafield, Metadatatype
+from schema.schema import VIEW_HIDE_EMPTY, Metadatatype
 from core import db
 
 q = db.query

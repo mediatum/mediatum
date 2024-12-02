@@ -14,7 +14,6 @@ from core import db
 from core.database.postgres.file import File
 from core.database.postgres.node import Node
 import logging
-from sqlalchemy import Integer
 from sqlalchemy_continuum import versioning_manager, Operation
 from sqlalchemy_continuum.utils import version_class
 from core.database.postgres.file import NodeToFile

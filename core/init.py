@@ -4,7 +4,6 @@
 from __future__ import division
 from __future__ import print_function
 
-from functools import wraps
 import sys
 import logging
 import tempfile as _tempfile

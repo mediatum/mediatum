@@ -5,8 +5,6 @@ from __future__ import division
 from __future__ import print_function
 
 import httplib as _httplib
-import hashlib
-
 import os
 import core.users as users
 import logging

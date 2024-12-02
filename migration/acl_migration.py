@@ -22,13 +22,12 @@ from core import db
 from core.database.postgres.user import User
 from core.database.postgres.user import UserGroup
 from core.database.postgres import mediatumfunc
-from core.database.postgres.permission import AccessRule, NodeToAccessRule, AccessRulesetToRule, AccessRuleset, NodeToAccessRuleset,\
+from core.database.postgres.permission import AccessRule, AccessRulesetToRule, AccessRuleset, NodeToAccessRuleset,\
     IPNetworkList, _create_private_ruleset_assoc_for_nid
 from migration import oldaclparser
 from migration.oldaclparser import ACLAndCondition, ACLDateAfterClause, ACLDateBeforeClause, ACLOrCondition, ACLNotCondition,\
     ACLTrueCondition, ACLFalseCondition, ACLGroupCondition, ACLIPCondition, ACLUserCondition, ACLParseException, ACLIPListCondition
 from utils.compat import iteritems
-from core.database.postgres.alchemyext import disable_triggers, disabled_triggers
 
 
 q = db.query
@@ -179,7 +178,6 @@ def save_node_to_ruleset_mappings(nid_to_rulesets, ruletype):
 
 
 def save_node_to_special_rules(nid_to_special_rules, ruletype):
-    from core.database.postgres.node import Node
     logg.info("saving special %s rules for %d nodes", ruletype, len(nid_to_special_rules))
     for nid, rules_with_flags in iteritems(nid_to_special_rules):
         ruleset_assoc = _create_private_ruleset_assoc_for_nid(nid, ruletype)

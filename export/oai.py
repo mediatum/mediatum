@@ -9,7 +9,6 @@ import json as _json
 import hashlib as _hashlib
 import httplib as _httplib
 import itertools as _itertools
-import socket
 import re
 import time
 import logging
@@ -18,7 +17,6 @@ import urlparse as _urlparse
 import flask as _flask
 import lxml.etree as _lxml_etree
 import sqlalchemy.orm as _sqlalchemy_orm
-import collections as _collections
 import backports.functools_lru_cache as _backports_functools_lru_cache
 
 import core.config as config

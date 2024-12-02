@@ -6,8 +6,6 @@ from __future__ import print_function
 
 import logging
 import re
-import sys
-import traceback
 
 import mediatumtal.tal as _tal
 import werkzeug.datastructures as _datastructures
@@ -19,10 +17,7 @@ from core.database.postgres.node import Node as _Node
 from core.database.postgres.permission import NodeToAccessRuleset
 from web import frontend as _web_frontend
 import core.translation as _core_translation
-from web.admin.adminutils import Overview
-from web.admin.adminutils import getAdminStdVars
-from web.admin.adminutils import getFilter
-from web.admin.adminutils import getSortCol
+from web import admin as _web_admin
 import web.common.acl_web as _acl_web
 from workflow import workflow as _workflow_workflow
 from workflow.workflow import Workflow
@@ -271,8 +266,8 @@ def _get_workflow_list_html(req):
     parameter: req=request
     """
     workflows = list(getWorkflowList())
-    order = getSortCol(req)
-    actfilter = getFilter(req)
+    order = _web_admin.adminutils.getSortCol(req)
+    actfilter = _web_admin.adminutils.getFilter(req)
     # filter
     if actfilter != "":
         if actfilter in ("all", "*", _core_translation.translate(_core_translation.set_language(req.accept_languages), "all")):
@@ -286,7 +281,7 @@ def _get_workflow_list_html(req):
         else:
             workflows = filter(lambda x: x.name.lower().startswith(actfilter), workflows)
 
-    pages = Overview(req, workflows)
+    pages = _web_admin.adminutils.Overview(req, workflows)
 
     # sorting
     if order != "":
@@ -301,7 +296,7 @@ def _get_workflow_list_html(req):
         if int(order[1:]) == 1:
             workflows.reverse()
 
-    v = getAdminStdVars(req)
+    v = _web_admin.adminutils.getAdminStdVars(req)
     v["sortcol"] = pages.OrderColHeader(tuple(
         _core_translation.translate(
             _core_translation.set_language(req.accept_languages),
@@ -325,7 +320,7 @@ def _get_workflow_config_form_html(req, id, error=None):
     id=workflowid (name)
     err=error message id (or None for no error)
     """
-    v = getAdminStdVars(req)
+    v = _web_admin.adminutils.getAdminStdVars(req)
     if id == "" and not error:
         # new workflow
         workflow = Workflow(u"")
@@ -367,8 +362,8 @@ def _get_workflow_step_list_html(req, wid):
     global _cssclass, _page
     workflow = getWorkflow(wid)
     workflowsteps = list(workflow.getSteps())
-    order = getSortCol(req)
-    actfilter = getFilter(req)
+    order = _web_admin.adminutils.getSortCol(req)
+    actfilter = _web_admin.adminutils.getFilter(req)
 
     # filter
     if actfilter != "":
@@ -383,7 +378,7 @@ def _get_workflow_step_list_html(req, wid):
         else:
             workflowsteps = filter(lambda x: x.name.lower().startswith(actfilter), workflowsteps)
 
-    pages = Overview(req, workflowsteps)
+    pages = _web_admin.adminutils.Overview(req, workflowsteps)
 
     # sorting
     if order != "":
@@ -406,7 +401,7 @@ def _get_workflow_step_list_html(req, wid):
     else:
         workflowsteps.sort(lambda x, y: cmp(x.name.lower(), y.name.lower()))
 
-    v = getAdminStdVars(req)
+    v = _web_admin.adminutils.getAdminStdVars(req)
     v["sortcol"] = pages.OrderColHeader(tuple(
         _core_translation.translate(
             _core_translation.set_language(req.accept_languages),

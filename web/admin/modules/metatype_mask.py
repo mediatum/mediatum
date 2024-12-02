@@ -9,10 +9,10 @@ import mediatumtal.tal as _tal
 
 import core.csrfform as _core_csrfform
 import core.translation as _core_translation
-from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter
 import schema.schema as _schema
 from schema.schema import getMetaType
 from core import db
+from web import admin as _web_admin
 
 q = db.query
 
@@ -22,8 +22,8 @@ q = db.query
 def showMaskList(req, id):
     metadatatype = getMetaType(id)
     masks = metadatatype.getMasks()
-    order = getSortCol(req)
-    actfilter = getFilter(req)
+    order = _web_admin.adminutils.getSortCol(req)
+    actfilter = _web_admin.adminutils.getFilter(req)
 
     # resets filter to all if adding mask in /metatype view
     # if req.params.get('acttype') == 'mask' or req.params.get('acttype') == 'schema':
@@ -48,7 +48,7 @@ def showMaskList(req, id):
         else:
             masks = filter(lambda x: x.name.lower().startswith(actfilter), masks)
 
-    pages = Overview(req, masks)
+    pages = _web_admin.adminutils.Overview(req, masks)
 
     defaults = {}
     for mask in masks:
@@ -72,7 +72,7 @@ def showMaskList(req, id):
     else:
         masks.sort(lambda x, y: cmp(x.getOrderPos(), y.getOrderPos()))
 
-    v = getAdminStdVars(req)
+    v = _web_admin.adminutils.getAdminStdVars(req)
     v["filterattrs"] = []
     v["filterarg"] = req.params.get("filtertype", "name")
     v["sortcol"] = pages.OrderColHeader(tuple(

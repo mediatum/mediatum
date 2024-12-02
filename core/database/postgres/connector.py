@@ -10,11 +10,9 @@ import logging
 import atexit
 import pwd
 import os.path
-import time
 import urllib as _urllib
 
-from sqlalchemy import create_engine, event
-from sqlalchemy.engine import Engine
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy_continuum.utils import version_class
 

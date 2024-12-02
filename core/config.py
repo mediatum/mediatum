@@ -155,13 +155,11 @@ def resolve_datadir_path(path):
 
 
 def _read_ini_file(basedir, filepath):
-    lineno = 0
     params = {}
 
     with codecs.open(filepath, "rb", encoding='utf8') as fi:
         module = ""
-        for line in fi.readlines():
-            lineno = lineno + 1
+        for line in fi:
             # remove comments
             hashpos = line.find("#")
             if hashpos >= 0:
@@ -173,12 +171,12 @@ def _read_ini_file(basedir, filepath):
                 pass  # skip empty line
             elif line[0] == '[':
                 if line[-1] != ']':
-                    raise ValueError("Syntax error in line {} of file {}:\n{}".format(lineno, filepath, line))
+                    raise ValueError("Syntax error in file {}:\n{}".format(filepath, line))
                 module = line[1:-1]
             else:
                 equals = line.find("=")
                 if equals < 0:
-                    raise ValueError("Syntax error in line {} of file {}:\n{}".format(lineno, filepath, line))
+                    raise ValueError("Syntax error in file {}:\n{}".format(filepath, line))
                 key = module + "." + line[0:equals].strip()
                 value = line[equals + 1:].strip()
                 if(len(value) and value[0] == '\'' and value[-1] == '\''):

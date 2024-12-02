@@ -6,7 +6,6 @@
 from __future__ import division
 from __future__ import print_function
 
-from functools import partial
 import httplib as _httplib
 import logging
 import os
@@ -29,9 +28,8 @@ from web.frontend.filehelpers import split_image_path
 from web.frontend.filehelpers import splitpath
 from web.frontend.filehelpers import version_id_from_req
 from web.frontend import main as _frontend_main
-from utils import userinput
+
 from utils.utils import getMimeType, clean_path, get_filesize
-import tempfile
 from utils.compat import iterkeys
 
 
@@ -188,8 +186,9 @@ def send_file(req):
     nidstr, filename = parts
     assert not nidstr.endswith("_transfer.zip")
 
-    nid = userinput.string_to_int(nidstr)
-    if nid is None:
+    try:
+        nid = int(nidstr)
+    except ValueError:
         req.response.status_code = 400
         return 400
 
@@ -251,8 +250,9 @@ def send_attfile(req):
         req.response.status_code = 404
         return 400
 
-    nid = userinput.string_to_int(parts[0])
-    if nid is None:
+    try:
+        nid = int(parts[0])
+    except ValueError:
         req.response.status_code = 404
         return 400
 

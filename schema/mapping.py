@@ -10,7 +10,6 @@ from core.postgres import check_type_arg
 
 from core import db
 import core.nodecache as _nodecache
-from core.systemtypes import Mappings
 
 q = db.query
 

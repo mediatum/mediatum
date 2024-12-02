@@ -15,7 +15,6 @@ import core.config as config
 import mediatumtal.tal as _tal
 
 import core.csrfform as _core_csrfform
-import core.translation as _core_translation
 from utils.utils import format_filesize, suppress
 from web.edit.edit_common import send_nodefile_tal, upload_for_html
 from core.users import user_from_session as _user_from_session

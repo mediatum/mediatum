@@ -14,7 +14,6 @@ import sqlalchemy as _sqlalchemy
 import mediatumtal.tal as _tal
 
 from schema.mapping import getMapping, getMappingTypes, updateMapping, deleteMapping, updateMappingField, deleteMappingField, exportMapping, importMapping
-from web.admin.adminutils import Overview, getAdminStdVars, getFilter, getSortCol
 import core.translation as _translation
 
 from core.database.postgres.node import Node
@@ -24,6 +23,7 @@ from schema.mapping import Mapping, MappingField
 import core.csrfform as _core_csrfform
 import core.database.postgres.node as _node
 import core.systemtypes as _core_systemtypes
+from web import admin as _web_admin
 
 q = db.query
 
@@ -204,8 +204,8 @@ def validate(req, op):
 
 def view(req):
     mappings = list(_nodecache.get_mappings_node().children)
-    order = getSortCol(req)
-    actfilter = getFilter(req)
+    order = _web_admin.adminutils.getSortCol(req)
+    actfilter = _web_admin.adminutils.getFilter(req)
 
     # filter
     if actfilter != "":
@@ -222,7 +222,7 @@ def view(req):
         else:
             mappings = filter(lambda x: x.name.lower().startswith(actfilter), mappings)
 
-    pages = Overview(req, mappings)
+    pages = _web_admin.adminutils.Overview(req, mappings)
 
     # sorting
     if order != "":
@@ -253,7 +253,7 @@ def view(req):
 
     format_used_by = _functools.partial(_translation.translate, _translation.set_language(req.accept_languages), "admin_mapping_used_title")
 
-    v = getAdminStdVars(req)
+    v = _web_admin.adminutils.getAdminStdVars(req)
     v["sortcol"] = pages.OrderColHeader(tuple(
         _translation.translate(
              _translation.set_language(req.accept_languages),
@@ -293,7 +293,7 @@ def editMapping_mask(req, id, err=0):
         mapping.setStandardFormat(req.params.get("standardformat"))
         db.session.commit()
 
-    v = getAdminStdVars(req)
+    v = _web_admin.adminutils.getAdminStdVars(req)
     v["error"] = err
     v["mapping"] = mapping
     v["id"] = id
@@ -307,8 +307,8 @@ def viewlist(req, id):
     mapping = getMapping(id)
 
     fields = list(mapping.getFields())
-    order = getSortCol(req)
-    actfilter = getFilter(req)
+    order = _web_admin.adminutils.getSortCol(req)
+    actfilter = _web_admin.adminutils.getFilter(req)
 
     # filter
     if actfilter != "":
@@ -325,7 +325,7 @@ def viewlist(req, id):
         else:
             fields = filter(lambda x: x.name.lower().startswith(actfilter), fields)
 
-    pages = Overview(req, fields)
+    pages = _web_admin.adminutils.Overview(req, fields)
 
     # sorting
     if order != "":
@@ -346,7 +346,7 @@ def viewlist(req, id):
                                          for md in maskitems_dependencies if md.mappingfield == str(field.id)])
                for field in fields}
 
-    v = getAdminStdVars(req)
+    v = _web_admin.adminutils.getAdminStdVars(req)
     v["sortcol"] = pages.OrderColHeader(tuple(
         _translation.translate(
             _translation.set_language(req.accept_languages),
@@ -384,7 +384,7 @@ def editMappingField_mask(req, id, parent, err=0):
             field.setMandatory("True")
         db.session.add(field)
 
-    v = getAdminStdVars(req)
+    v = _web_admin.adminutils.getAdminStdVars(req)
     v["error"] = err
     v["field"] = field
     v["parent"] = parent

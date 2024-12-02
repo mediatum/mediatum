@@ -16,8 +16,6 @@ from itertools import imap as map
 from itertools import ifilter as filter
 range = xrange
 
-
-from sqlalchemy.orm import undefer, joinedload
 import backports.functools_lru_cache as _backports_functools_lru_cache
 import sqlalchemy.orm as _sa_orm
 

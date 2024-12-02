@@ -5,22 +5,17 @@ from __future__ import division
 from __future__ import print_function
 
 import re
-import inspect
 import logging
 import mediatumtal.tal as _tal
 
 import core.csrfform as _core_csrfform
-import utils.utils as _utils_utils
-from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter
-from schema.schema import Metadatatype
 from schema.schema import fieldoption
-from schema.schema import getMetaField
 from schema.schema import getMetaFieldTypeNames
 from schema.schema import getMetaType
 import core.translation as _translation
 import schema.schema as _schema
-from core.database.postgres.node import Node
 from core import db
+from web import admin as _web_admin
 
 q = db.query
 
@@ -34,12 +29,18 @@ def showDetailList(req, id):
     metadatatype = getMetaType(id)
     metafields = metadatatype.getMetaFields()
     metafields_dependencies = _schema._get_metafields_dependencies()
-    used_by = {metafield.id: u"".join(u"\n{schema_name}: {mask_name}: {metafield_name}".format(**md._asdict())
-                                         for md in metafields_dependencies if md.metafield_id == metafield.id)
-               for metafield in metafields}
+    used_by = {metafield.id:u"".join(
+        u"\n{schema_name}: {mask_name}: {metafield_name}".format(**md._asdict())
+        for md in metafields_dependencies
+        if md.metafield_id == metafield.id or (
+            md.maskitem_fieldtype in ('mapping', 'attribute')
+            and
+            int(md.maskitem_attribute) == metafield.id
+           )
+       ) for metafield in metafields}
 
-    order = getSortCol(req)
-    actfilter = getFilter(req)
+    order = _web_admin.adminutils.getSortCol(req)
+    actfilter = _web_admin.adminutils.getFilter(req)
 
     # resets filter to all if adding mask in /metatype view
     # if req.params.get('acttype') == 'mask' or req.params.get('acttype') == 'schema':
@@ -73,7 +74,7 @@ def showDetailList(req, id):
             else:
                 metafields = filter(lambda x: x.getLabel().lower().startswith(actfilter), metafields)
 
-    pages = Overview(req, metafields)
+    pages = _web_admin.adminutils.Overview(req, metafields)
 
     # sorting
     if order != "":
@@ -91,7 +92,7 @@ def showDetailList(req, id):
     else:
         metafields.sort(lambda x, y: cmp(x.orderpos, y.orderpos))
 
-    v = getAdminStdVars(req)
+    v = _web_admin.adminutils.getAdminStdVars(req)
     v["filterattrs"] = [("name", "admin_metafield_filter_name"), ("label", "admin_metafield_filter_label")]
     v["filterarg"] = req.params.get("filtertype", "name")
 

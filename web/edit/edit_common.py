@@ -10,9 +10,7 @@ import functools as _functools
 import backports.functools_lru_cache as _backports_functools_lru_cache
 import mediatumtal.tal as _tal
 import sqlalchemy as _sqlalchemy
-import sqlalchemy.dialects.postgresql as _dialects_postgresql
 
-import core as _core
 import core.database.postgres.node as _node
 import core.database.postgres.permission as _permission
 import core.database.postgres.search as _postgres_search

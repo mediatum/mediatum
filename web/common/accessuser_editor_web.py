@@ -8,7 +8,7 @@ import logging
 
 import core.translation as _core_translation
 from core import db
-from core.database.postgres.permission import AccessRuleset, AccessRule
+from core.database.postgres.permission import AccessRuleset
 from core.database.postgres.user import AuthenticatorInfo
 from core.database.postgres.user import User
 from core.database.postgres.user import UserGroup

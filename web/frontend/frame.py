@@ -7,7 +7,6 @@ from __future__ import print_function
 import logging
 import collections as _collections
 from collections import OrderedDict
-from warnings import warn
 
 import sqlalchemy as _sqlalchemy
 import sqlalchemy.orm as _orm
@@ -24,17 +23,15 @@ from core.users import user_from_session as _user_from_session
 from core.users import get_guest_user
 from core.webconfig import node_url, edit_node_url
 import contenttypes as _contenttypes
-from contenttypes import Directory, Container, Collection, Collections
+from contenttypes import Directory, Container
 from schema.schema import getMetadataType
 from utils.compat import iteritems
 from utils.utils import Link
 from utils.url import build_url_from_path_and_params
 from schema.searchmask import SearchMask
-from mediatumtal import tal
 import core.nodecache as _nodecache
 from core.nodecache import get_collections_node
 from web import frontend as _web_frontend
-import time
 
 
 q = db.query

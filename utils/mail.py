@@ -24,7 +24,6 @@ import codecs
 import os
 import logging
 import core.config as config
-from .utils import formatException
 
 SocketError = "socketerror"
 logg = logging.getLogger(__name__)

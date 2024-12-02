@@ -82,7 +82,7 @@ def filebrowser(node, req):
         for f in node.files.filter(~file_entity.filetype.in_(node.get_sys_filetypes())):
             file = {}
             file["mimetype"], file["type"] = getMimeType(f.getName())
-            file["icon"] = fileicons[file["mimetype"]]
+            file["icon"] = fileicons.get(file["mimetype"], fileicons["other"])
             file["path"] = f.path
             file["name"] = f.base_name
             file["size"] = format_filesize(f.size)
@@ -98,7 +98,7 @@ def filebrowser(node, req):
         file = {}
         file["type"] = "back"
         file["mimetype"] = "back"
-        file["icon"] = fileicons[file["mimetype"]]
+        file["icon"] = fileicons.get(file["mimetype"], fileicons["other"])
         file["name"] = ".."
         file["path"] = req.params.get("path", "")
         file["req_path"] = req.params.get("path", "")[:req.params.get("path", "").rfind("/")]
@@ -121,7 +121,7 @@ def filebrowser(node, req):
             file["size"] = format_filesize(os.path.getsize(file_path))
             filesize += os.path.getsize(file_path)
 
-        file["icon"] = fileicons[file["mimetype"]]
+        file["icon"] = fileicons.get(file["mimetype"], fileicons["other"])
         file["path"] = os.path.join(path, name)
         file["name"] = name
         file["req_path"] = req.params.get("path", "") + "/" + file["name"]

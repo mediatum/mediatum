@@ -6,7 +6,6 @@ from __future__ import print_function
 
 from mediatumtal import tal
 import logging
-import re
 
 import core.translation as _core_translation
 import core.metatype as _core_metatype

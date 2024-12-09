@@ -12,30 +12,6 @@ import logging as _logging
 _logg = _logging.getLogger(__name__)
 
 
-# This code patches a potential security risk in `urlparse.urlsplit`.
-# ** It must be executed before any other modules are loaded **
-# TODO This code can be dropped after an update to Python 2.7.17 .
-def _patch_urlparse_urlsplit():
-    from urlparse import urlsplit as _urlsplit_vulnerable
-    def _urlsplit_patched(*args, **kwargs):
-        rv = _urlsplit_vulnerable(*args, **kwargs)
-        # Check netloc for unicode characters that decompose to any of '/?#@:'.
-        # Those might lead further code astray, so we raise a ValueError.
-        # See also https://bugs.python.org/issue36216 .
-        # The following code is inspired by
-        # https://github.com/python/cpython/commit/e37ef41289b77e0f0bb9a6aedb0360664c55bdd5 .
-        from unicodedata import normalize
-        if rv.netloc and isinstance(rv.netloc, unicode):
-            normnetloc = normalize("NFKC", rv.netloc)
-            if (rv.netloc!=normnetloc) and frozenset(normnetloc).intersection("/?#@:"):
-                raise ValueError(
-                    "invalid characters in netloc: {}".format(normnetloc))
-        return rv
-    import urlparse
-    urlparse.urlsplit = _urlsplit_patched
-_patch_urlparse_urlsplit()
-
-
 from werkzeug._reloader import run_with_reloader
 import configargparse
 import tempfile

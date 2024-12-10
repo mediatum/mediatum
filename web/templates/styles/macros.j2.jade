@@ -27,23 +27,26 @@
 
 - macro archive(highres_url, archive_fetch_url)
   if archive_fetch_url == "pending"
-    img(src = "/static/img/wait_small.gif")
+    span.mediatum-editor-nav-image-wait
   if archive_fetch_url and archive_fetch_url != "pending"
     div(style="padding-top:10px")
       script(type='text/javascript').
         function getArchivedFile(path) {
           // replace archive fetch link with spinner image
-          $('#archive_div').html('<img src="/static/img/wait_small.gif"/>');
+          var archive_div = document.getElementById('archive_div');
+          var span = document.createElement("span");
+          span.classList.add("mediatum-editor-nav-image-wait");
+          archive_div.replaceChildren(span);
           $.ajax({
             url: path,
             type: "GET",
             success: function (msg) {
-              $('#archive_div').hide();
+              archive_div.style.display = 'none';
               $('#high_resolution_link').show();
             },
             error: function (msg) {
               alert(msg.responseText);
-              $('#archive_div').hide();
+              archive_div.style.display = 'none';
             }
           });
         }

@@ -63,9 +63,6 @@ button, input[type="button"],input[type="submit"],input[type="reset"], button[ty
     background-color:#ededed; -moz-border-radius:6px; -webkit-border-radius:6px; border-radius:6px; border:1px solid #dcdcdc; display:inline-block;
     font-size:12px; padding:4px 24px;
 }
-.mediatum-showpreview-btn-wait, .mediatum-showpreview-btn-wait:hover {
-    background: no-repeat url("/static/img/wait.gif");
-}
 button:hover, input[type="button"]:hover,input[type="submit"]:hover,input[type="reset"]:hover, button[type="submit"]:hover {
     background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #dfdfdf), color-stop(1, #ededed) );
     background:-moz-linear-gradient( center top, #dfdfdf 5%, #ededed 100% );
@@ -89,7 +86,6 @@ p.error {background:#FFE7E7; color:#AF0101;  padding:7px; border:1px solid #AF01
 p.error a {color:black; margin:0px;}
 p.error a:hover {color:black; text-decoration:underline;}
 .fancytree-node-disabled {opacity: 0.5;background-color: silver;}
-div.grippie {background:#EEEEEE url(/static/img/grippie.png) no-repeat scroll center 2px; cursor:s-resize; height:9px; width:100%; margin:0px 5px 5px 2px; padding:0px;}
 div.hstippled {font-size:1px; height:1px;}
 div.label{width:210px;float:left;padding-left:15px;}
 
@@ -356,7 +352,12 @@ input[value="Cancel"]
 .mediatum_img_size{width:16px;height:16px;}
 .mediatum_img_size_big{width:20px;height:20px;}
 /* Image Links */
-.mediatum_img_nav::before{padding: 0px 5px 0px 5px;width:16px;height:16px;background-size: 21px 16px;background-repeat: no-repeat;float:left;}
+.mediatum_img_nav::before{
+    padding: 2px 2px 2px 2px;
+    background-size: 16px 16px;
+    background-repeat: no-repeat;
+    float:left;
+}
 .mediatum_imgtooltipbase{padding-right:5px;vertical-align: middle;padding-top:2px;}
 .mediatum_imgtooltipbase img.mediatum_minithumb {
     width: 30px;
@@ -375,64 +376,80 @@ input[value="Cancel"]
     object-fit: contain;
     object-position: top;
 }
-.mediatum_imgtooltipbasedefault .mediatum_imghoverdefault{display:none;}
-.mediatum_imgtooltipbasedefault:hover .mediatum_imghoverdefault{display: inline-block;position: relative;left: 0px;height:128px;width:128px;}
 
 /* Top Menu */
-.mediatum_img_content::before {content: url(/static/img/editor/mediatum_list.svg);} /* Verzeichnis-Übersicht */
-.mediatum_img_metadata::before {content: url(/static/img/editor/mediatum_edit.svg);} /* Metadaten bearbeiten */
-.mediatum_img_menuoperation::before{content: url(/static/img/editor/mediatum_settings.svg);} /*  Spezialfunktionen */
-.mediatum_img_parentcontent::before {content: url(/static/img/editor/mediatum_list.svg);} /* Verzeichnisübersicht */
-.mediatum_img_view::before {content: url(/static/img/editor/mediatum_eye.svg);} /* Vorschau */
+a.mediatum-icon-small::before, a.mediatum-icon-medium::before { content: ""; }
+img.mediatum-icon-small, a.mediatum-icon-small::before, input.mediatum-icon-small {height: 16px ; width: 16px;}
+a.mediatum-icon-medium::before {display: block; height: 32px; width: 32px; background-size: 32px 32px;}
+
+.mediatum-editor-nav-image-wait {
+    width: 16px;
+    height: 16px;
+    border: 2px solid black;
+    border-bottom-color: white;
+    border-radius: 50%;
+    display: inline-block;
+    box-sizing: border-box;
+    animation: rotation 1s linear infinite;
+    margin-left: 2px;
+    background-color: white;
+}
+
+@keyframes rotation {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.mediatum_img_content::before {background-image: url(/static/img/content-list.svg);} /* Verzeichnis-Übersicht */
+.mediatum_img_metadata::before {background-image: url(/static/img/edit-pen-paper.svg);}
+.mediatum_img_menuoperation::before{background-image: url(/static/img/editor/settings.svg);} /*  Spezialfunktionen */
+.mediatum_img_parentcontent::before {background-image: url(/static/img/content-list.svg);} /* Verzeichnisübersicht */
+.mediatum_img_view::before {background-image: url(/static/img/editor/eye.svg);} /* Vorschau */
 /* First Sub Menu */
-.mediatum_img_acls::before {content: url(/static/img/editor/mediatum_people.svg);} /* Rechte vergeben */
-.mediatum_img_menueditall::before {content: url(/static/img/editor/mediatum_edit_all.svg);} /* Alle Datensätze im Verzeichnis bearbeiten */
-.mediatum_img_menunodesperpage::before {content: url(/static/img/editor/mediatum_settings2.svg);} /* Einstellungen: Datensätze pro Seite */
-.mediatum_img_menusortnodes::before {content: url(/static/img/editor/mediatum_stat.svg);} /* Einstellungen: Datensätze sortieren */
-.mediatum_img_startpagesmenu::before {content: url(/static/img/editor/mediatum_world.svg);} /* Startseiten verwalten */
-.mediatum_img_admin::before {content: url(/static/img/editor/mediatum_tools.svg);}  /* Administration */
-.mediatum_img_version::before {content: "V";}  /* Versionierung */
-.mediatum_img_classes::before {content: url(/static/img/editor/mediatum_tree.svg);} /* Klassifikation */
-.mediatum_img_menueditobject::before {content: url(/static/img/editor/mediatum_settings.svg);} /* Weitere Aktionen für Datensatz */
+.mediatum_img_acls::before {background-image: url(/static/img/people-group.svg);} /* Rechte vergeben */
+.mediatum_img_menueditall::before {background-image: url(/static/img/edit-all.svg);} /* Alle Datensätze im Verzeichnis bearbeiten */
+.mediatum_img_menunodesperpage::before {background-image: url(/static/img/editor/settings2.svg);} /* Einstellungen: Datensätze pro Seite */
+.mediatum_img_startpagesmenu::before {background-image: url(/static/img/editor/world.svg);} /* Startseiten verwalten */
+.mediatum_img_admin::before {background-image: url(/static/img/tools.svg);}  /* Administration */
+.mediatum_img_version::before {background-image: url(/static/img/versioning.svg);}  /* Versionierung */
+.mediatum_img_classes::before {background-image: url(/static/img/editor/navigationtree.svg);} /* Klassifikation */
+.mediatum_img_menueditobject::before {background-image: url(/static/img/editor/settings.svg);} /* Weitere Aktionen für Datensatz */
 /* Second Submenu */
-.mediatum_img_editall::before {content: url(/static/img/editor/mediatum_edit.svg);} /* Bearbeiten */
-.mediatum_img_moveall::before {content: url(/static/img/editor/mediatum_move.svg);} /* Verschieben */
-.mediatum_img_copyall::before {content: url(/static/img/editor/mediatum_copy.svg);}
-.mediatum_img_deleteall::before {content: url(/static/img/editor/mediatum_delete.svg);} /* Löschen */
-.mediatum_img_moveobject::before {content: url(/static/img/editor/mediatum_move.svg);} /* Verschieben */
-.mediatum_img_copyobject::before {content: url(/static/img/editor/mediatum_copy.svg);} /* Kopieren */
-.mediatum_img_deleteobject::before {content: url(/static/img/editor/mediatum_delete.svg);} /* Löschen */
-.mediatum_img_menusortsubdir::before {content: url(/static/img/editor/mediatum_sort.svg);} /* Unterordner sortieren */
-.mediatum_img_menustatistics::before {content: url(/static/img/editor/mediatum_stat.svg);} /* Statistik */
+.mediatum_img_editall::before {background-image: url(/static/img/edit-pen-paper.svg);}
+.mediatum_img_moveall::before {background-image: url(/static/img/editor/move.svg);} /* Verschieben */
+.mediatum_img_copyall::before {background-image: url(/static/img/clone.svg);}
+.mediatum_img_deleteall::before {background-image: url(/static/img/webtree/trashbin.svg);} /* Löschen */
+.mediatum_img_moveobject::before {background-image: url(/static/img/editor/move.svg);} /* Verschieben */
+.mediatum_img_copyobject::before {background-image: url(/static/img/clone.svg);} /* Kopieren */
+.mediatum_img_deleteobject::before {background-image: url(/static/img/webtree/trashbin.svg);} /* Löschen */
+.mediatum_img_menusortsubdir::before {background-image: url(/static/img/editor/sort.svg);} /* Unterordner sortieren */
 
 /* sortsubdir items??? */
-.mediatum_img_startpages::before {content: url(/static/img/editor/mediatum_edit.svg);} /* Startseite bearbeiten */
-.mediatum_img_logo::before {content: url(/static/img/editor/mediatum_edit.svg);} /* Logo editieren */
-.mediatum_img_searchmask::before {content: url(/static/img/editor/mediatum_search.svg);} /* Suchmaske anlegen */
-.mediatum_img_subfolder::before {content: url(/static/img/editor/mediatum_sort.svg);} /* Unterordner sortieren */
-.mediatum_img_statsaccess::before {content: url(/static/img/editor/mediatum_stat.svg);} /* Zugriffsstatistiken */
-.mediatum_img_statsfiles::before {content: url(/static/img/editor/mediatum_stat.svg);} /* Datenstatistiken */
-.mediatum_img_sortfiles::before {content: url(/static/img/editor/mediatum_sort.svg);} /* Dateien sortieren */
-.mediatum_img_changeschema::before {content: url(/static/img/editor/mediatum_edit.svg);} /* Objekttyp / Metadatentyp ändern */
-.mediatum_img_files::before {content: url(/static/img/editor/mediatum_attach.svg);} /* Datei hinzufügen */
-
-.mediatum-editor-nav-image-wait::before {content: url(/static/img/wait.gif);}
-
-.mediatum_img_uploadbibtex::before {content: "";display:block;height:32px;width:32px;background-size: 32px 32px;background-repeat: no-repeat;
-    background-image: url(/static/img/bibtex.gif);}/* Uploads: Bibtex-Import */
-.mediatum_img_uploaddoi::before {
-    content: "";display:block;height:32px;width:32px;background-size: 32px 32px;background-repeat: no-repeat;
-    background-image: url(/static/img/editor/DOI_logo.svg);}/* Uploads: DOI-Eingabe */
-.mediatum_img_uploadmeta::before {
-    content: "";display:block;height:32px;width:32px;background-size: 32px 32px;background-repeat: no-repeat;
-    background-image: url(/static/img/editor/document-new.svg);}/* Uploads: Metadaten einstellen */
-.mediatum_img_uploadfile::before {
-    content: "";display:block;height:32px;width:32px;background-size: 32px 32px;background-repeat: no-repeat;
-    background-image: url(/static/img/editor/insert-image.svg);}/* Uploads: Datei hochladen */
+.mediatum_img_startpages::before {background-image: url(/static/img/edit-pen-paper.svg);} /* Startseite bearbeiten */
+.mediatum_img_logo::before {background-image: url(/static/img/edit-pen-paper.svg);}
+.mediatum_img_changeschema::before {background-image: url(/static/img/edit-pen-paper.svg);}
+.mediatum_img_searchmask::before {background-image: url(/static/img/magnifying-glass.svg);} /* Suchmaske anlegen */
+.mediatum_img_subfolder::before {background-image: url(/static/img/editor/sort.svg);} /* Unterordner sortieren */
+.mediatum_img_sortfiles::before {background-image: url(/static/img/editor/sort.svg);} /* Dateien sortieren */
+.mediatum_img_files::before {background-image: url(/static/img/attachment-paperclip.svg);} /* Datei hinzufügen */
+.mediatum_img_uploadbibtex::before {background-image: url(/static/img/bibtex.gif);}/* Uploads: Bibtex-Import */
+.mediatum_img_uploaddoi::before {background-image: url(/static/img/editor/doi-logo.svg);}/* Uploads: DOI-Eingabe */
+.mediatum_img_uploadmeta::before {background-image: url(/static/img/editor/document-new.svg);}/* Uploads: Metadaten einstellen */
+.mediatum_img_uploadfile::before {background-image: url(/static/img/editor/file-new.svg);}/* Uploads: Datei hochladen */)
 
 .mediatum_itemicon {float:left; margin-right:10px;}
-.mediatum_itemmenucontainer {color:#666666; background:transparent; padding:20px 10px 10px; width:582px; background-image:url(/static/img/layout/edit_itenmenucontainer.gif);
-    background-repeat:no-repeat; background-position:right top; min-height:70px; margin:0 10px;}
+.mediatum_itemmenucontainer {
+    padding: 20px 10px 10px;
+    width: 582px;
+    background-image: linear-gradient(0deg, white, silver);
+    background-position: right top;
+    min-height: 70px;
+    margin: 0 10px;
+}
 .mediatum_itemoverflow {overflow:hidden;}
 .mediatum_itemoverflow img {border:none;}
 .mediatum_itemoverflow a {border:none;}
@@ -466,7 +483,6 @@ input[value="Cancel"]
 .mediatum_node_icon{display:table-cell;width:30px;cursor:pointer;}
 .mediatum_node_icon_chk{width:30px;}
 .mediatum_node_icon_header{display:table-cell;padding-bottom: 5px;width:30px;}
-.mediatum-editor-node-icon-wait {content: url(/static/img/wait.gif);}
 .mediatum_node_text {display: table-cell; vertical-align: top; font-size:10px;}
 .mediatum_node_text_grid{padding:0px 5px 0px 5px;width:138px;}
 .mediatum_node_text_grid p{overflow:hidden;text-overflow: ellipsis;}
@@ -550,7 +566,7 @@ p.mediatum_templateerror #msg {font-family: Courier;}
 .mediatum_treeform_div{height:90%;background-color:white;padding:5px;}
 /* #treeform-form form{background-color:white} */
 .mediatum_treesouth{background-color:#bbb;}
-.mediatum_upload{padding:5px;height:40px;display:block;float:left;margin:0px 5px;}
+.mediatum_upload{padding:5px;float:left;margin:0px 5px;}
 .mediatum_upload:hover{background-color: #ddd;}
 .mediatum_upload_files{padding:20px;margin-left:150px;}
 .mediatum_uploadform_style{border:2px solid silver;}
@@ -558,7 +574,6 @@ p.mediatum_templateerror #msg {font-family: Courier;}
 .mediatum_uploadmsg{position:absolute;top:2px;right:2px;}
 .mediatum_uploadzipfileok{padding-left:5px;white-space:nowrap;z-index:2;}
 .mediatum_uploadzipfileok_plupload{background-color:white;z-index:3;}
-.mediatum_wait_ {position:fixed;top:0;left:0;right:0;bottom:0;background-color:white;opacity: 0.5;display:none;padding:40%;}
 .mediatum_white_border{border:1px solid white;}
 .mediatum_width_100px{width:100px;}
 
@@ -576,13 +591,13 @@ img.thumbnail{border:0px; position:relative; top:0px; left:0px; width:128px; hei
 /* third party css */
 .context-menu-item .disabled {color: #666;cursor: default}
 .context-menu-item > span {display: inline-block;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;width: 100%;}
-.context-menu-item.icon-bare_directory { background-image: url(/static/img/webtree/bare_directory.gif); }
-.context-menu-item.icon-bare_collection { background-image: url(/static/img/webtree/bare_collection.gif); }
-.context-menu-item.icon-collection { background-image: url(/static/img/webtree/collection.gif); }
+.context-menu-item.icon-bare_directory { background-image: url(/static/img/webtree/directory.svg); }
+.context-menu-item.icon-bare_collection { background-image: url(/static/img/webtree/directory.svg); }
+.context-menu-item.icon-collection { background-image: url(/static/img/webtree/collection.svg); }
 .context-menu-item.icon-cut { background-image: url(/static/fancytree/3rd-party/extensions/contextmenu/images/cut.png); }
-.context-menu-item.icon-directory { background-image: url(/static/img/webtree/directory.gif); }
+.context-menu-item.icon-directory { background-image: url(/static/img/webtree/directory.svg); }
 .context-menu-item.icon-edit { background-image: url(/static/fancytree/3rd-party/extensions/contextmenu/images/page_white_edit.png); }
-.context-menu-item.icon-trashicon { background-image: url(/static/img/webtree/trashicon.gif); }
+.context-menu-item.icon-trashicon { background-image: url(/static/img/webtree/trashbin.svg); }
 ul.fancytree-container {background-color: transparent; border: 0px; height: 99%;overflow: hidden;}
 .ui-accordion .ui-accordion-header {border:1px solid silver;color:#fff;background-color:#333; display: block; cursor: pointer; position: relative;
     margin-top: 2px;margin-bottom:0; padding: .5em .5em .5em .7em; zoom: 1; }
@@ -591,9 +606,6 @@ ul.fancytree-container {background-color: transparent; border: 0px; height: 99%;
 .ui-helper-reset {line-height: unset!important;}
 .ui-layout-north {background-color:#ddd!important;}
 .ui-layout-west {border-width:0!important;padding:0!important;width:300px;}
-.ui-widget-header{background: #cccccc url(https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/themes/base/images/ui-bg_highlight-soft_75_cccccc_1x100.png) 50% 50% repeat-x;}
-.ui-button .ui-icon{background-image:url(https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/themes/base/images/ui-icons_888888_256x240.png);}
-.ui-button:hover .ui-icon, .ui-state-hover .ui-icon{background-image:url(https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/themes/base/images/ui-icons_454545_256x240.png);}
 div.ui-layout-north{background-color:#ddd!important;}
 /* removes jquery border on active menu items */
 .ui-state-active, .ui-widget-content .ui-state-active, .ui-widget-header .ui-state-active, a.ui-button:active, .ui-button:active, .ui-button.ui-state-active:hover
@@ -638,8 +650,15 @@ iframe.ui-layout-center, div.ui-layout-north{border-width:0!important;padding:0;
 #filetable_nodebig td{vertical-align:middle; padding:2px; border-bottom:1px solid silver;}
 #filetable_nodebig tr:hover{background-color:silver;}
 #filetable_nodebig a{color:#000000; padding:1px; margin:0px;}
-#footer {color:#fff; text-align:center; padding:20px; clear:both; background:#314348 url(/static/img/layout/edit_bg_banner.png) repeat-x left top;
-    width:auto; margin-top:0px; height:20px;}
+#footer {
+    text-align: center;
+    padding: 20px;
+    clear: both;
+    background-image: linear-gradient(0deg, dimgray, black);
+    width: auto;
+    margin-top: 0px;
+    height: 20px;
+}
 #footer a {color:#fff; text-decoration:underline;}
 #header {background-color:silver;overflow:hidden;height:53px;border-bottom:1px solid #bfbfbf;}
 #hitem {display:inline; margin-right:5px;}
@@ -654,7 +673,6 @@ iframe.ui-layout-center, div.ui-layout-north{border-width:0!important;padding:0;
 #mediatum_delete_folder_question{display:none;}
 #mediatum_edit_notree_permission {background-color: #FFFFFF;}
 #mediatum_operations { position:relative;clear:left;}
-#mediatum_selection_div {border-top:1px solid silver; margin:3px; display:none; padding:3px;}
 #mediatum_sub_footer_module_div{position:absolute;right:5px;top:2px;font-size:11px;margin-right:5px;}
 #mediatum_table_nodelist{display:table;border-collapse: collapse;width: 100%;}
 #mediatum_table_nodeview{display:none;}

@@ -13,7 +13,7 @@
         <td tal:content="python:unicode(item.technical_name)"/>
         <td style="width:20px;text-align:right">
             <a target="_blank" tal:attributes="href python:item.technical_name"  i18n:attributes="title edit_startpages_link">
-                <img src="/static/img/rightarrow.png"/>
+                <img src="/static/img/arrow-right.svg" class="mediatum-icon-small"/>
             </a>
         </td>
         <td style="text-align:right; font-size:9px" tal:content="python:unicode(item.file_size)"/>
@@ -22,13 +22,14 @@
                 href="#"
                 tal:attributes="onclick python:u'''editFile('{}', '{}')'''.format(id, item.short_path)"
                 i18n:attributes="title edit_startpages_edit">
-                <img src="/static/img/edit_opt.png"/>
+                <img src="/static/img/edit-pen-paper.svg" class="mediatum-icon-small"/>
             </a>
             <input
                 tal:attributes="onclick python:u'''questionDel('{}', '{}')'''.format(id, item.short_path)"
                 i18n:attributes="title edit_startpages_delete"
                 type="image"
-                src="/static/img/delete.png"
+                src="/static/img/cancel.svg"
+                class="mediatum-icon-small"
             />
         </td>
     </tr>
@@ -48,7 +49,7 @@
         <div id="editform-form">
             <div style="position:absolute;top:-7px;right:-7px;z-index:10002">
                 <a href="#" onclick="closeForm()" i18n:attributes="title cancel">
-                    <img src="/static/img/cancel.png"/>
+                    <img src="/static/img/cancel.svg" class="mediatum-icon-small"/>
                 </a>
             </div>
             <form tal:attributes="action python: '''javascript:handleCKEditorPost('{}')'''.format(id)">
@@ -82,7 +83,7 @@
                                 <th i18n:translate="edit_startpages_file_size">TEXT</th>
                                 <th style="text-align:right">
                                     <a href="#" i18n:attributes="value edit_startpages_addnew"  onclick="addFile()">
-                                        <img src="/static/img/install.png"/>
+                                        <img src="/static/img/install.svg" class="mediatum-icon-small"/>
                                     </a>
                                 </th>
                             </tr>
@@ -152,7 +153,8 @@
                             onclick python:'''return delete_nodefile(this, '{}')'''.format(id);
                             "
                         type="image"
-                        src="/static/img/delete.png"
+                        src="/static/img/cancel.svg"
+                        class="mediatum-icon-small"
                     />
                 </div>
             </div>

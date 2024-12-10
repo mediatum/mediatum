@@ -27,7 +27,7 @@ def _replace_vars(node, s):
     return s
 
 
-_icons = {"externer Link": "/static/img/extlink.png", "Email": "/static/img/email.png"}
+_icons = {"externer Link": "/static/img/extlink.svg", "Email": "/static/img/email.svg"}
 _targets = {"selbes Fenster": "same", "neues Fenster": "_blank"}
 
 
@@ -100,7 +100,7 @@ class m_url(Metatype):
         else:
             value = u'<a href="{}" class="mediatum-link-external">{}</a>'.format(link, text)
         if icon:
-            value += u'<img src="{}"/>'.format(icon)
+            value += u'<img class="mediatum-icon-small" src="{}"/>'.format(icon)
 
         return metafield.getLabel(), value
 

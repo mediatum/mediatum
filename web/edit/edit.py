@@ -48,16 +48,16 @@ def getEditorIconPath(node, home_dir = None, upload_dir = None, trash_dir = None
     '''
 
     if node is home_dir:
-        return 'webtree/homeicon.gif'
+        return 'webtree/home.svg'
     if node is upload_dir:
-        return 'webtree/uploadicon.gif'
+        return 'webtree/download.svg'
     if node is trash_dir:
-        return 'webtree/trashicon.gif'
+        return 'webtree/trashbin.svg'
 
     if hasattr(node, 'treeiconclass'):
-        return "webtree/" + node.treeiconclass() + ".gif"
+        return "webtree/" + node.treeiconclass() + ".svg"
     else:
-        return "webtree/" + node.type + ".gif"
+        return "webtree/" + node.type + ".svg"
 
 
 def get_editor_icon_path_from_nodeclass(cls):
@@ -66,9 +66,9 @@ def get_editor_icon_path_from_nodeclass(cls):
     '''
 
     if hasattr(cls, 'treeiconclass'):
-        return u"webtree/{}.gif".format(cls.treeiconclass())
+        return u"webtree/{}.svg".format(cls.treeiconclass())
     else:
-        return u"webtree/{}.gif".format(cls.__name__)
+        return u"webtree/{}.svg".format(cls.__name__)
 
 
 def getIDPaths(nid, sep="/", containers_only=True):
@@ -351,7 +351,6 @@ def getEditModules():
     from web.edit.modules import searchmask
     from web.edit.modules import sortfiles
     from web.edit.modules import startpages
-    from web.edit.modules import statsfiles
     from web.edit.modules import subfolder
     from web.edit.modules import upload
     from web.edit.modules import version
@@ -378,7 +377,6 @@ def getEditModules():
         searchmask,
         sortfiles,
         startpages,
-        statsfiles,
         subfolder,
         upload,
         version,
@@ -954,14 +952,14 @@ def content(req):
         dircontent = ' <b>&raquo;</b> '.join(s)
 
     # add icons to breadcrumbs
-    ipath = 'webtree/directory.gif'
+    ipath = 'webtree/directory.svg'
     if node and node.isContainer():
         if node.name == 'home' or 'Arbeitsverzeichnis' in node.name or node == user.home_dir:
-            ipath = 'webtree/homeicon.gif'
+            ipath = 'webtree/home.svg'
         elif node.name in ('Uploads', 'upload'):
-            ipath = 'webtree/uploadicon.gif'
+            ipath = 'webtree/download.svg'
         elif node.name in ('Papierkorb', 'trash'):
-            ipath = 'webtree/trashicon.gif'
+            ipath = 'webtree/trashbin.svg'
         else:
             ipath = getEditorIconPath(node)
 
@@ -983,7 +981,7 @@ def content(req):
             macro="show_operations",
             request=req,
         ),
-        dircontent=u'{}&nbsp;&nbsp;<img src="/static/img/{}"/>'.format(dircontent, ipath),
+        dircontent=u'{}&nbsp;&nbsp;<img src="/static/img/{}" class="mediatum-icon-small"/>'.format(dircontent, ipath),
         nodesperpage_options=_web_common_pagination.get_config_nodes_per_page(True),
         nodesperpage_from_req=req.values.get("nodes_per_page"),
         sortfield=req.values.get("sortfield", node.get("sortfield")) or "off",

@@ -315,7 +315,7 @@ class Workflow(Node):
         return '?id=' + self.id
 
     def show_node_image(node):
-        return '<img border="0" src="/static/img/directory.png">'
+        return '<img border="0" src="/static/img/webtree/directory.svg" class="mediatum-icon-small">'
 
     def show_node_text(node, words=None):
         return ""
@@ -551,7 +551,7 @@ class WorkflowStep(Node):
                                )
 
     def show_node_image(node):
-        return '<img border="0" src="/static/img/directory.png">'
+        return '<img border="0" src="/static/img/webtree/directory.svg" class="mediatum-icon-small">'
 
     def show_node_text(node, req, context):
         return ""

@@ -24,7 +24,6 @@
         i18n:translate="editor_index"
     >
     </button>
-
 </tal:block>
 
 <select metal:define-macro="searchfield" tal:attributes="name python:name; id python:name" class="searchfield" tal:content="raw option_list"/>
@@ -49,7 +48,7 @@
                             <span i18n:translate="popup_index_header">TEXT</span>: 
                             <div style="position:absolute; right:8px;top:8px">
                               <a tal:attributes="href python:u'/metatype/ilist?print=do&name={}&schema={}'.format(fieldname,schema)">
-                                  <img src="/static/img/print_icon.png" border="0px"/>
+                                  <img src="/static/img/printer.svg" border="0px" class="mediatum-icon-small"/>
                               </a>
                             </div>
                         </th>

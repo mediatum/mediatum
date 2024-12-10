@@ -84,7 +84,11 @@ def showMaskList(req, id):
         ))
     v["metadatatype"] = metadatatype
     v["masktypes"] = _schema.masktypes
-    v["lang_icons"] = {"de": "/static/img/flag_de.gif", "en": "/static/img/flag_en.gif", "no": "/static/img/emtyDot1Pix.gif"}
+    v["lang_icons"] = dict(
+        de="/static/img/flag-de.svg",
+        en="/static/img/flag-en.svg",
+        no="/static/img/webtree/transparent-pixel.svg",
+        )
     v["masks"] = masks
     v["pages"] = pages
     v["order"] = order

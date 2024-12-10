@@ -8,7 +8,7 @@ each file in files
   .preview_list
     if file.attachment
       div.mediatum-stylelist-attach
-        img(title=translate('view_list_att_title'), src='/static/img/attach.png')
+        img.mediatum-icon-small(title=translate('view_list_att_title'), src='/static/img/attachment-paperclip.svg')
     div.mediatum-stylelist-img
       if title
         a.mediatum-stylelist-a(href=file.getLink(), title=title)

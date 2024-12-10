@@ -6,7 +6,9 @@
 var firstload = 1;
 function getSelect(id) {
     if (firstload==1){
-        document.getElementById("useracl").innerHTML='<img height="12" src="/static/img/wait.gif"/>';
+        var span = document.createElement("span");
+        span.classList.add("mediatum-editor-nav-image-wait");
+        document.getElementById("useracl").replaceChildren(span);
         getEditPage('useracl', id, 'acls', 'get_userlist');
         firstload=0;
     }
@@ -14,8 +16,11 @@ function getSelect(id) {
 
 // load data to tab via ajax
 function get_json_for_action(src, action, id) {
-
-  var tempdiv = $('<span id="tempdiv"><img height="12" src="/static/img/wait.gif" />   </span>');
+  var span = document.createElement("span");
+  span.classList.add("mediatum-editor-nav-image-wait");
+  var tempdiv = document.createElement("span");
+  tempdiv.id = "tempdiv";
+  tempdiv.appendChild(span);
   $(src).append(tempdiv);
   var ajax_response;
 

@@ -364,9 +364,6 @@ msgstr "Versioning"
 msgid "tab_publish"
 msgstr "Publish"
 
-msgid "tab_statsfiles"
-msgstr "File statistics"
-
 msgid "tab_news"
 msgstr "Manage messages"
 

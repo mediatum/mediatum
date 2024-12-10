@@ -12,7 +12,7 @@
   if data_access and has_original
     .action_icon
       a(href=documentlink, target="documentdownload", onclick="vgwPixelCall();", title=translate("doc_fulltext_title"))
-        img(src="/static/img/pdf.gif")
+        img.mediatum-icon-medium(src="/static/img/pdf.svg")
         |&nbsp;PDF
     .clear
     a.mediatum-link-mediatum(href=documentdownload, onclick="vgwPixelCall();")= translate("alternative_pdf_link")

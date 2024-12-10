@@ -12,7 +12,13 @@
         <form class="edit" action="edit_content" name="changeform" id="fbody">
             <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
             <span i18n:translate="edit_searchmask_type">TEXT</span>:
-            <input type="image" name="update" value="update" src="/static/img/s.gif"/>
+            <input
+                type="image"
+                name="update"
+                value="update"
+                src="/static/img/webtree/transparent-pixel.svg"
+                class="mediatum-icon-small"
+            />
             <select
                 id="searchtype_id"
                 name="searchtype"
@@ -47,7 +53,7 @@
                                 name python:'open_{}'.format(field.id);
                                 "
                         >
-                            <img src="/static/img/boxx.gif"/>
+                            <img src="/static/img/boxx.svg" class="mediatum-icon-small"/>
                         </a>
                     </td>
                     <td valign="center" colspan="2">
@@ -73,7 +79,8 @@
                             name="close"
                             value="close"
                             tal:attributes="onclick python:'''close_field('{}', '{}')'''.format(id, field.id)"
-                            src="/static/img/box.gif"
+                            src="/static/img/box.svg"
+                            class="mediatum-icon-small"
                         />
                     </td>
                     <td colspan="2">
@@ -89,7 +96,8 @@
                                             onclick python:'''delete_field('{}', '{}')'''.format(id, field.id);
                                             name python:'del_{}'.format(field.id);
                                             "
-                                        src="/static/img/delete.png"
+                                        src="/static/img/cancel.svg"
+                                        class="mediatum-icon-small"
                                     />
                                 </td>
                             </tr>
@@ -122,8 +130,9 @@
                                         tal:attributes="
                                             onclick python:'''delete_subfield('{}', '{}', '{}')'''.format(id, subfield.id, field.id);
                                             name python:'delsub_{}'.format(subfield.id);
-                                        "
-                                        src="/static/img/delete.png"
+                                            "
+                                        src="/static/img/cancel.svg"
+                                        class="mediatum-icon-small"
                                     />
                                 </td>
                             </tr>
@@ -158,7 +167,8 @@
                                         type="image"
                                         name="createsub"
                                         tal:attributes="onclick python: '''create_subfield('{}', '{}')'''.format(id, field.id)"
-                                        src="/static/img/haken.gif"
+                                        src="/static/img/webtree/check.svg"
+                                        class="mediatum-icon-small"
                                     />
                                 </td>
                             </tr>
@@ -175,7 +185,8 @@
                     name="newfield"
                     value="newfield"
                     tal:attributes="onClick python: '''create_field('{}')'''.format(id)"
-                    src="/static/img/box3.gif"
+                    src="/static/img/webtree/transparent-pixel.svg"
+                    class="mediatum-icon-small"
                 />
             </td>
             <td valign="center" colspan="2">

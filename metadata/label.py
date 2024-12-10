@@ -48,18 +48,47 @@ class m_label(Metatype):
             ret += '<div align="right" id="' + ustr(item.id) + \
                 '_sub" style="display:none"><small style="color:silver">(' + (item.get("type")) + ')</small>'
             if index > 0:
-                ret += '<input type="image" src="/static/img/uparrow.png" name="up_' + \
-                    ustr(item.id) + '" i18n:attributes="title mask_edit_up_title"/>'
+                ret += '''
+                    <input
+                        type="image"
+                        src="/static/img/uparrow.svg"
+                        name="up_{}"
+                        i18n:attributes="title mask_edit_up_title"
+                        class="mediatum-icon-small"
+                    />
+                    '''.format(item.id)
             else:
                 ret += '&nbsp;&nbsp;&nbsp;'
             if index < len(parent.getChildren()) - 1:
-                ret += '<input type="image" src="/static/img/downarrow.png" name="down_' + \
-                    ustr(item.id) + '" i18n:attributes="title mask_edit_down_title"/>'
+                ret += '''
+                    <input
+                        type="image"
+                        src="/static/img/downarrow.svg"
+                        name="down_{}"
+                        i18n:attributes="title mask_edit_down_title"
+                        class="mediatum-icon-small"
+                    />
+                    '''.format(item.id)
             else:
                 ret += '&nbsp;&nbsp;&nbsp;'
-            ret += ' <input type="image" src="/static/img/edit.png" name="edit_' + ustr(
-                item.id) + '" i18n:attributes="title mask_edit_edit_row"/> <input type="image" src="/static/img/delete.png" name="delete_' + ustr(
-                item.id) + '" i18n:attributes="title mask_edit_delete_row" onClick="return questionDel()"/></div>'
+            ret += '''
+                    <input
+                        type="image"
+                        src="/static/img/edit-pen-paper.svg"
+                        name="edit_{}"
+                        i18n:attributes="title mask_edit_edit_row"
+                        class="mediatum-icon-small"
+                    />
+                    <input
+                        type="image"
+                        src="/static/img/cancel.svg"
+                        name="delete_{}"
+                        i18n:attributes="title mask_edit_delete_row"
+                        onClick="return questionDel()"
+                        class="mediatum-icon-small"
+                    />
+                </div>
+                '''.format(item.id)
             ret += '</div>'
 
         return ret

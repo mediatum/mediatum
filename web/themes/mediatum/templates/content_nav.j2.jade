@@ -15,10 +15,10 @@
       if styles|length > 1
         for style in styles
           a.view_switch.mediatum-link-mediatum(href=select_style_link(style=style.name), title=translate(style.label))
-            img(src='/static/img/{}'.format(style.icon))
+            img.mediatum-icon-small(src='/static/img/{}'.format(style.icon))
       if printlink
         a.view_switch.mediatum-link-internal(target='_blank', href=printlink, rel="nofollow", title=translate("printpdf"))
-          img(src='/static/img/print_icon.png')
+          img.mediatum-icon-small(src='/static/img/printer.svg')
   if path
     div.mediatum-content-nav-path
       for step in path

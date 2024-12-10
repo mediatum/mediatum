@@ -20,7 +20,7 @@
 .progressBarComplete {width: 100%;background-color: green;visibility: hidden;}
 .progressBarError {width: 100%;background-color: red;visibility: hidden;}
 .progressBarStatus {margin-top: 2px;width: 90%;font-size: 7pt;font-family: Arial;text-align: left;white-space: nowrap;}
-a.progressCancel {font-size: 0;display: block;height: 14px;width: 14px;background-image: url(/static/img/delete.png);background-repeat: no-repeat;background-position: -14px 0px;float: right;}
+a.progressCancel {font-size: 0;display: block;height: 14px;width: 14px;background-image: url(/static/img/cancel.svg);background-repeat: no-repeat;background-position: -14px 0px;float: right;}
 a.progressCancel:hover {background-position: 0px 0px;}
 #fsUploadProgress{height:100px}
 

@@ -101,22 +101,29 @@ def getData(req):
                 cls = c.Container.treeiconclass()
 
             if special_dir_type == u'trash':
-                cls = "trashicon"
+                cls = "trashbin"
             elif special_dir_type == u'upload':
-                cls = "uploadicon"
+                cls = "download"
             elif c.Container == user_home_dir:
-                cls = "homeicon"
+                cls = "home"
 
             ret.append(u"""
-                <li class="{0}.gif" id="Node{2}">
+                <li class="{0}.svg" id="Node{2}">
                     <a href="#" title="{1} ({2})" id="{2}" class="{3}">
                         {1}
-                        <input type="image" src="/static/img/webtree/uncheck.gif"/>
+                        <input type="image" src="/static/img/webtree/transparent-pixel.svg" class="mediatum-icon-small"/>
                     </a>
                 """.format(cls, label, c.Container.id, itemcls))
 
             if c.has_container_children:
-                ret.append(u'<ul><li parentId="{}" class="spinner.gif"><a href="#">&nbsp;</a></li></ul>'.format(c.Container.id))
+                ret.append(u'''
+                    <ul>
+                        <li parentId="{}">
+                            <span class="mediatum-editor-nav-image-wait"> </span>
+                            <a href="#">&nbsp;</a>
+                        </li>
+                    </ul>
+                    '''.format(c.Container.id))
 
             ret.append(u'</li>')
 

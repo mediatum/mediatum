@@ -61,9 +61,6 @@ class WorkflowStep_Metafield2Metadata(_workflow.WorkflowStep):
             if value is None:
                 del node.attrs[key]
 
-        if hasattr(node, "event_metadata_changed"):
-            node.event_metadata_changed()
-
         _core.db.session.commit()
 
         self.forward(node, True)

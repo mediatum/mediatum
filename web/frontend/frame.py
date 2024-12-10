@@ -338,13 +338,13 @@ class UserLinks(object):
                 "/logout",
                 _core_translation.translate(self.language, "sub_header_logout_title"),
                 _core_translation.translate(self.language, "sub_header_logout"),
-                icon="/static/img/logout.png",
+                icon="/static/img/logout.svg",
             )]
         if self.user == guest_user:
             l = [Link(
                     "/login", _core_translation.translate(self.language, "sub_header_login"),
                     _core_translation.translate(self.language, "sub_header_login"),
-                    icon="/static/img/login.png",
+                    icon="/static/img/login.svg",
                 )]
 
         if self.is_workflow_area:
@@ -352,7 +352,7 @@ class UserLinks(object):
                     "/",
                     _core_translation.translate(self.language, "sub_header_frontend_title"),
                     _core_translation.translate(self.language, "sub_header_frontend"),
-                    icon="/static/img/frontend.gif",
+                    icon="/static/img/magnifying-glass.svg",
                 ))
 
         if self.user.is_editor:
@@ -367,7 +367,7 @@ class UserLinks(object):
                     "/edit{}".format(idstr),
                     _core_translation.translate(self.language, "sub_header_edit_title"),
                     _core_translation.translate(self.language, "sub_header_edit"),
-                    icon="/static/img/edit.gif",
+                    icon="/static/img/edit-pen-paper.svg",
                 ))
 
         if self.user.is_admin:
@@ -375,7 +375,7 @@ class UserLinks(object):
                     "/admin",
                     _core_translation.translate(self.language, "sub_header_administration_title"),
                     "Administration",
-                    icon="/static/img/admin.gif",
+                    icon="/static/img/admin.svg",
                 ))
 
         if self.user.is_workflow_editor:
@@ -383,7 +383,7 @@ class UserLinks(object):
                     "/publish/",
                     _core_translation.translate(self.language, "sub_header_workflow_title"),
                     _core_translation.translate(self.language, "admin_menu_menuworkflow"),
-                    icon="/static/img/workflow.gif",
+                    icon="/static/img/workflow.svg",
                 ))
 
         if self.user.can_change_password:
@@ -392,7 +392,7 @@ class UserLinks(object):
                     _core_translation.translate(self.language, "sub_header_changepwd"),
                     _core_translation.translate(self.language, "sub_header_changepwd"),
                     "_parent",
-                    icon="/static/img/changepwd.gif",
+                    icon="/static/img/padlock.svg",
                 ))
         return l
 

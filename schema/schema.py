@@ -73,13 +73,13 @@ fieldoption = (
     _Option(
         name="metafield_option1",
         shortname="search", value="s",
-        imgsource="/static/img/folder_plus.gif",
+        imgsource="/static/img/folder-plus.svg",
     ),
     _Option(
         name="metafield_option2",
         shortname="sort",
         value="o",
-        imgsource="/static/img/ordersel.png",
+        imgsource="/static/img/sort-by-alphabet-az.svg",
     ),
 )
 
@@ -994,8 +994,6 @@ class Mask(Node):
                 (name[len("system."):],value) for name,value in attrs.attrs.iteritems() if name.startswith("system.")
                )
 
-        if hasattr(node, "event_metadata_changed"):
-            node.event_metadata_changed()
 
     def getMappingHeader(self):
         from .mapping import Mapping

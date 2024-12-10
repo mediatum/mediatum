@@ -27,10 +27,16 @@
                     <th>&nbsp;</th>
                     <th align="right">
                         <a i18n:attributes="title admin_mapping_exportall_title" href="/admin/export/mapping/all" target="_blank">
-                                <img src="/static/img/export.png" border="0"/>
+                                <img src="/static/img/export.svg" border="0" class="mediatum-icon-small"/>
                         </a>
                         &nbsp;
-                        <input i18n:attributes="title admin_mapping_create" type="image" src="/static/img/install.png" name="new"/>
+                        <input
+                            i18n:attributes="title admin_mapping_create"
+                            type="image"
+                            src="/static/img/install.svg"
+                            name="new"
+                            class="mediatum-icon-small"
+                        />
                     </th>
                 </tr>
             </thead>
@@ -48,23 +54,37 @@
                         <td style="width:40px;padding-right:10px;text-align:right" tal:content="python:unicode(len(mapping.getFields()))"/>
                         <td tal:content="python:mapping.getMappingType()"/>
                         <td style="padding-left:14px">
-                            &nbsp;<img tal:condition="python:mapping.getActive()==1" src="/static/img/haken.gif"/>
+                            &nbsp;
+                            <img tal:condition="python:mapping.getActive()==1" src="/static/img/webtree/check.svg"/>
                         </td>
                         <td>
-                            <input tal:attributes="name python:u'fieldlist_{}'.format(mapping.id)" i18n:attributes="title edit_fields" type="image" src="/static/img/rightarrow.png"/>
+                            <input
+                                tal:attributes="name python:u'fieldlist_{}'.format(mapping.id)"
+                                i18n:attributes="title edit_fields"
+                                type="image"
+                                src="/static/img/arrow-right.svg"
+                                class="mediatum-icon-small"
+                            />
                         </td>
                         <td>
                             <a tal:attributes="href python:u'/admin/export/mapping/{}'.format(mapping.getName())" i18n:attributes="title admin_mapping_export_title" target="_blank">
-                                <img src="/static/img/export.png" border="0"/>
+                                <img src="/static/img/export.svg" border="0"  class="mediatum-icon-small"/>
                             </a>
-                            <input tal:attributes="name python:u'edit_{}'.format(mapping.id)" i18n:attributes="title admin_mapping_edit_title" type="image" src="/static/img/edit.png"/>
+                            <input
+                                tal:attributes="name python:u'edit_{}'.format(mapping.id)"
+                                i18n:attributes="title admin_mapping_edit_title"
+                                type="image"
+                                src="/static/img/edit-pen-paper.svg"
+                                class="mediatum-icon-small"
+                            />
                             &nbsp;&nbsp;
                             <input
                                 tal:condition="python:not (mapping.getFields() or used_by[mapping.id])"
                                 tal:attributes="name python:u'delete_{}'.format(mapping.id); onclick python:u'''return questionDelName('{}')'''.format(mapping.getName())"
                                 i18n:attributes="title admin_mapping_delete_title"
                                 type="image"
-                                src="/static/img/delete.png"
+                                src="/static/img/cancel.svg"
+                                class="mediatum-icon-small"
                             />
                             <input
                                 tal:condition="python:used_by[mapping.id]"
@@ -73,9 +93,9 @@
                                     title python:format_used_by(mapping=dict(used_by='\n'.join(used_by[mapping.id])));
                                     "
                                 type="image"
-                                src="/static/img/archive.png"
+                                src="/static/img/padlock.svg"
+                                class="mediatum-icon-small"
                             />
-
                         </td>
                     </tr>
                 </tal:block>
@@ -295,7 +315,13 @@
                     <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:u'sortcol_{}'.format(col.link)" class="admin_sortcol" type="submit" value="">TEXT</button>
                 </th>
                 <th align="right">
-                    <input i18n:attributes="title admin_mappingfield_create" tal:attributes="name python:u'newfield_{}'.format(mapping.id)" type="image" src="/static/img/install.png"/>
+                    <input
+                        i18n:attributes="title admin_mappingfield_create"
+                        tal:attributes="name python:u'newfield_{}'.format(mapping.id)"
+                        type="image"
+                        src="/static/img/install.svg"
+                        class="mediatum-icon-small"
+                    />
                 </th>
             </tr>
             <tr tal:condition="python:len(fields)==0">
@@ -307,12 +333,29 @@
                     <td tal:attributes="class cssclass" tal:content="python:field.getName()"/>
                     <td tal:attributes="class cssclass" tal:content="python:field.getDescription()"/>
                     <td tal:attributes="class cssclass">
-                        <img tal:condition="python:field.getMandatory()" src="/static/img/haken.gif"/>&nbsp;
+                        <img tal:condition="python:field.getMandatory()" src="/static/img/webtree/check.svg"/>
+                        &nbsp;
                     </td>
                     <td tal:attributes="class cssclass" class="_norm_">
-                        <input tal:attributes="name python:u'editfield_{}'.format(field.id)" i18n:attributes="title admin_mappingfield_edit_title" type="image" src="/static/img/edit.png"/>
+                        <input
+                            tal:attributes="name python:u'editfield_{}'.format(field.id)"
+                            i18n:attributes="title admin_mappingfield_edit_title"
+                            type="image"
+                            src="/static/img/edit-pen-paper.svg"
+                            class="mediatum-icon-small"
+                        />
                         &nbsp;&nbsp;
-                        <input tal:condition="python:not used_by[field.id]" tal:attributes="name python:u'deletefield_{}'.format(field.id); onclick python:u'return questionDelName(\'{}\')'.format(field.getName())" i18n:attributes="title admin_mappingfield_delete_title" type="image" src="/static/img/delete.png"/>
+                        <input
+                            tal:condition="python:not used_by[field.id]"
+                            tal:attributes="
+                                name python:u'deletefield_{}'.format(field.id);
+                                onclick python:u'return questionDelName(\'{}\')'.format(field.getName());
+                                "
+                            i18n:attributes="title admin_mappingfield_delete_title"
+                            type="image"
+                            src="/static/img/cancel.svg"
+                            class="mediatum-icon-small"
+                        />
                         <input
                             tal:condition="python:used_by[field.id]"
                             tal:attributes="
@@ -322,7 +365,8 @@
                                 title python:translate(language, 'admin_mappingfield_used_title').format(used_by[field.id]);
                                 "
                             type="image"
-                            src="/static/img/archive.png"
+                            src="/static/img/padlock.svg"
+                            class="mediatum-icon-small"
                         />
                     </td>
                 </tr>

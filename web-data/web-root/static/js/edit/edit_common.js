@@ -24,9 +24,13 @@ function previewimageson() {
     $("#mediatum_showpreviewon").hide();
 };
 
-function visitPage(id){
-    $("#unpub").addClass("mediatum-showpreview-btn-wait");
-    window.location = $("#unpub").attr("href");
+function visitPage(event) {
+    var span = document.createElement("span");
+    span.classList.add("mediatum-editor-nav-image-wait");
+    var unpub = document.getElementById("unpub");
+    unpub.insertAdjacentElement("afterend", span);
+    window.location = unpub.getAttribute("href");
+    event.preventDefault();
 }
 
 function closeSubOverlay(){

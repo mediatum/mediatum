@@ -54,12 +54,18 @@
                             idstr,
                             navitem.getName(),
                            );
-                        class python:u'mediatum_img_nav mediatum_img_{} mediatum-link-mediatum'.format(navitem.getName());
+                        class python:u'mediatum_img_nav mediatum_img_{} mediatum-link-mediatum mediatum-icon-small'.format(navitem.getName());
                        "
                 />
             </li>
             <li tal:condition="python:len(navitem.getItemList())>0" tal:attributes="class python:{0:None,1:'selected'}[navitem.name==breadcrumbs[0]]">
-                <a tal:attributes="class python:u'mediatum_img_nav mediatum_img_{} mediatum-link-mediatum'.format(navitem.getName()); target python:navitem.target" i18n:translate="" tal:content="python:u'tab_{}'.format(navitem.getName())"/>
+                <a
+                    tal:attributes="
+                    class python:u'mediatum_img_nav mediatum_img_{} mediatum-link-mediatum mediatum-icon-small'.format(navitem.getName());
+                    target python:navitem.target;
+                    " i18n:translate=""
+                    tal:content="python:u'tab_{}'.format(navitem.getName())"
+                />
                 <ul>
                     <!-- Second Menu -->
                     <li tal:repeat="item python:navitem.getItemList()">
@@ -74,7 +80,7 @@
                                     idstr,
                                     item.getName(),
                                    ) if not item.getItemList() else None;
-                                class python:u'mediatum_img_nav mediatum_img_{} mediatum-link-mediatum'.format(item.getName());
+                                class python:u'mediatum_img_nav mediatum_img_{} mediatum-link-mediatum mediatum-icon-small'.format(item.getName());
                                "
                         />
                         <!-- Third Menu -->
@@ -92,7 +98,7 @@
                                                 idstr,
                                                 item1.getName(),
                                                );
-                                            class python:u'mediatum_img_nav mediatum_img_{} mediatum-link-mediatum'.format(item1.getName());
+                                            class python:u'mediatum_img_nav mediatum_img_{} mediatum-link-mediatum mediatum-icon-small'.format(item1.getName());
                                            "
                                     />
                                 </div>
@@ -204,13 +210,25 @@
                     <div tal:content="python:''" class="mediatum_subnavigation_1"></div>
                     <div class="mediatum_subnavigation_2" i18n:translate="">
                         <a href="#" tal:attributes="onclick python:u'return reloadPage({},\'{}\')'.format(folders['homedir'][0].id, folders['homedir'][1])">
-                            <img class="mediatum_subnavigation_2_img" src="/static/img/webtree/homeicon.gif" i18n:attributes="title user_home" />
+                            <img
+                                class="mediatum_subnavigation_2_img mediatum-icon-small"
+                                src="/static/img/webtree/home.svg"
+                                i18n:attributes="title user_home"
+                            />
                         </a>
                         <a href="#" tal:attributes="onclick python:u'return reloadPage({},\'{}\')'.format(folders['trashdir'][0].id, folders['trashdir'][1])">
-                            <img class="mediatum_subnavigation_2_img" src="/static/img/webtree/trashicon.gif" i18n:attributes="title user_trash" />
+                            <img
+                                class="mediatum_subnavigation_2_img mediatum-icon-small"
+                                src="/static/img/webtree/trashbin.svg"
+                                i18n:attributes="title user_trash"
+                            />
                         </a>
                         <a href="#" tal:attributes="onclick python:u'return reloadPage({},\'{}\')'.format(folders['uploaddir'][0].id, folders['uploaddir'][1])">
-                            <img class="mediatum_subnavigation_2_img" src="/static/img/webtree/uploadicon.gif" i18n:attributes="title e_folder_uploaddir" />
+                            <img
+                                class="mediatum_subnavigation_2_img mediatum-icon-small"
+                                src="/static/img/webtree/download.svg"
+                                i18n:attributes="title e_folder_uploaddir"
+                            />
                         </a>
                         &nbsp;&nbsp;&nbsp;
                     </div>
@@ -271,7 +289,7 @@
             <div id="select_target_dir" >
                <tal:block i18n:translate="select_target_dir"/>&nbsp;&nbsp;&nbsp;
                <a href="#" tal:attributes="onclick python:'parent.cancelOperation()'">
-                   <img src="/static/img/delete.png" i18n:attributes="title cancel"/>
+                   <img src="/static/img/cancel.svg" i18n:attributes="title cancel"/>
                </a>&nbsp;
             </div>
         </body>
@@ -281,7 +299,7 @@
 <div metal:define-macro="edit_paging" class="mediatum_edit_paging">
     <div tal:condition="python:previd" id="previd">
         <a tal:attributes="href python:u'/edit/edit_content?srcnodeid={}&id={}&tab={}'.format(srcnodeid, previd, tab)">
-            <img border="0" src="/static/img/pageleft.gif"/>
+            <img class="mediatum-icon-small" border="0" src="/static/img/arrow-left.svg"/>
         </a>
     </div>
     <div tal:condition="python:previd or nextid" id="orid" >
@@ -293,7 +311,7 @@
     </div>
     <div tal:condition="python:nextid" id="nextid">
         <a tal:attributes="href python:u'/edit/edit_content?srcnodeid={}&id={}&tab={}'.format(srcnodeid, nextid, tab)">
-            <img border="0" src="/static/img/pageright.gif"/>
+            <img class="mediatum-icon-small" border="0" src="/static/img/arrow-right.svg"/>
         </a>
     </div>
 </div>
@@ -386,7 +404,6 @@
                 <tal:block tal:replace="raw body"/>
             </div>
             <!--content end-->
-            <div class="mediatum_wait_"><img src="/static/img/wait.gif"/></div>
             <div id="overlay">
                 <div id="background"> </div>
                 <div id="text"></div>

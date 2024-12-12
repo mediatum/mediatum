@@ -107,10 +107,6 @@ function createObjectsPluploadFile(id){ // build object out of files
 
     console.log('number_files: ' + number_files + ' all_files: ' + all_files);
 
-    var new_elem = document.createElement("span");
-    new_elem.classList.add("mediatum-editor-nav-image-wait");
-    new_elem.insertBefore('#span_plupload_createobjects_file');
-    new_elem.insertBefore('.plupload_logo');
     $('.plupload_logo').attr('class', '');
 
     var htree = parent.gethometree();
@@ -450,10 +446,6 @@ function createObjectsPluploadBib(id){ // build object out of files
 
     console.log('number_files: ' + number_files);
 
-    var new_elem = document.createElement("span");
-    new_elem.classList.add("mediatum-editor-nav-image-wait");
-    new_elem.insertBefore('#span_plupload_createobjects_bib');
-    new_elem.insertBefore('.plupload_logo');
     $('.plupload_logo').attr('class', '');
     var htree = parent.gethometree();
     $.each($(".typesel"), function(i, l){

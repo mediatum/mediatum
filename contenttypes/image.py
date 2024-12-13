@@ -16,7 +16,6 @@ from PIL import Image as PILImage
 import core as _core
 import contenttypes.data as _contenttypes_data
 from core.database.postgres.file import File
-from core.archive import Archive, get_archive_for_node
 from core.attachment import filebrowser
 from core.postgres import check_type_arg_with_schema
 from utils.utils import isnewer
@@ -138,18 +137,6 @@ class Image(_contenttypes_data.Content):
 
         image_url = '/image/{}'.format(self.id)
         image_url = self._add_version_tag_to_url(image_url)
-
-        archive = get_archive_for_node(self)
-        if archive:
-            if obj['data_access']:
-                obj['highres_url'] = u"/file/{nid}/{nid}.tif".format(nid=self.id)
-                archive_state = archive.get_file_state(self)
-                if archive_state == Archive.NOT_PRESENT:
-                    obj['archive_fetch_url'] = u"/archive/{}".format(self.id)
-                elif archive_state == Archive.PENDING:
-                    obj['archive_fetch_url'] = u"pending"
-                elif archive_state == Archive.PRESENT:
-                    obj['archive_fetch_url'] = None
 
         files, sum_size = filebrowser(self, req)
 

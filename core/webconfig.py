@@ -116,7 +116,6 @@ def initContexts():
     handler.addPattern("/file/.*")
     handler.addPattern("/download/.*")
     filehandlers.addHandler("send_attfile").addPattern("/attfile/.*")
-    filehandlers.addHandler("fetch_archived").addPattern("/archive/.*")
 
     from web.frontend import main
     main_file = file = context.addModule(main)

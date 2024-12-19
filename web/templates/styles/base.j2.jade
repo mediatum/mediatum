@@ -36,7 +36,7 @@ link(rel="stylesheet", href="/static/css/jade_style.css")
 if attachment and data_access
   #object_attachment
     a.mediatum-link-mediatum(
-        onclick="javascript:openPopup('/attachmentbrowser?id={{ node.id }}&v={{ version }}&path={{ path }}')",
+        onclick="javascript:openPopup('/attachmentbrowser?id={{ node.id }}&v={{ version }}')",
         href="#!",
     )
       = translate("doc_att_browser")

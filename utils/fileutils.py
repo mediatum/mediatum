@@ -56,23 +56,6 @@ def importFile(destname, sourcefileobj, filetype=None):
     return File(destname, filetype or filetype_, mimetype)
 
 
-def importFileIntoDir(destdir, tempname):
-    filename = os.path.basename(tempname)
-
-    dest_dirpath = os.path.join(getImportDir(), destdir)
-    dest_filepath = os.path.join(dest_dirpath, filename)
-
-    if not os.path.exists(dest_dirpath):
-        os.mkdir(dest_dirpath)
-
-    shutil.copyfile(tempname, dest_filepath)
-
-    r = tempname.lower()
-    mimetype, filetype = getMimeType(r)
-
-    return File(os.path.join(dest_filepath), filetype, mimetype)
-
-
 def importFileRandom(tempname):
     filename = os.path.basename(tempname)
     uploaddir = getImportDir()

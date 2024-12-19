@@ -150,11 +150,11 @@ def sendFile(req, path, content_type, force=0):
     else:
         nginx_alias = None
 
-    try:
-        mtime = _datetime.datetime.utcfromtimestamp(_os.stat(path)[_stat.ST_MTIME])
-    except OSError:
+    if not _os.path.isfile(path):
         req.response.status_code = _httplib.NOT_FOUND
         return
+
+    mtime = _datetime.datetime.utcfromtimestamp(_os.stat(path)[_stat.ST_MTIME])
 
     if req.if_modified_since and mtime <= req.if_modified_since and not force:
         req.response.status_code = 304

@@ -65,10 +65,10 @@
               - var cssclass = files.index(file)%2 and 'norm' or 'silver'
               if (file['type'] == 'dir') or (file['type'] == 'back')
                 td(class=cssclass, align='center')
-                  a(href='/attachmentbrowser?id={}&path={}'.format(id, file['req_path']))
+                  a(href='/attachmentbrowser?id={}'.format(id))
                     img.mediatum-icon-small(src='/static/img/{}'.format(file['icon']), border='0')
                 td(class=cssclass, valign='top')
-                  a.mediatum-link-mediatum(href='/attachmentbrowser?id={}&path={}'.format(id, file['req_path']))
+                  a.mediatum-link-mediatum(href='/attachmentbrowser?id={}'.format(id))
                     = file['name']
                 td(class=cssclass) &nbsp;
               if (file['type'] != 'dir') and (file['type'] != 'back')

@@ -203,6 +203,8 @@ def send_file(req):
         return 404
 
     def _send_attachment(filepath, mimetype):
+        if not os.path.isfile(filepath):
+            raise RuntimeError(u"node file '{}' not found on disk".format(filepath))
         file_ext = os.path.splitext(filepath)[1]
         if node.schema and existMetaField(node.schema, u'nodename'):
             display_file_name = u'{}{}'.format(os.path.splitext(os.path.basename(node.name))[0], file_ext)
@@ -275,17 +277,6 @@ def send_attfile(req):
         return 404
 
     fileobj = fileobjs[0]
-
-    if fileobj.mimetype == u'inode/directory':
-        # files in attachment directory cannot be found in node.files
-        # so send file directly as it was made in mysql
-        filename = clean_path("/".join(parts[1:]))
-        path = os.path.join(config.get("paths.datadir"), filename)
-        mime, type = getMimeType(filename)
-        if (get_filesize(filename) > 16 * 1048576):
-            req.response.headers["Content-Disposition"] = 'attachment; filename="{}"'.format(filename)
-
-        return _request_handler.sendFile(req, path, mime)
 
     if (fileobj.size > 16 * 1048576):
         req.response.headers["Content-Disposition"] = u'attachment; filename="{}"'.format(fileobj.base_name).encode('utf8')

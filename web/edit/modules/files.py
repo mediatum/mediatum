@@ -12,8 +12,9 @@ import mediatumtal.tal as _tal
 
 import core.csrfform as _core_csrfform
 import core.nodecache as _core_nodecache
+
 from utils.utils import getMimeType, get_user_id, suppress
-from utils.fileutils import importFile, getImportDir, importFileIntoDir
+from utils.fileutils import importFile
 from contenttypes.image import make_thumbnail_image
 from core.users import getUploadDir as _getUploadDir
 from core import db
@@ -51,22 +52,12 @@ def _finish_change(node, change_file, user, uploadfile, req):
         logg.info(u"%s changed file of node %s to %s", user.login_name, node.id, uploadfile.filename)
         return
 
-    attpath = ""
-    for f in node.files:
-        if f.mimetype == "inode/directory":
-            attpath = f.base_name
-            break
 
     if change_file == "attfile":  # add file as attachment
-        if attpath == "":
-            # no attachment directory existing
-            file = importFile(uploadfile.filename, uploadfile)  # add new file
-            file.mimetype = "inode/file"
-            file.filetype = "attachment"
-            node.files.append(file)
-        else:
-            # import attachment file into existing attachment directory
-            importFileIntoDir(uploadfile.filename, os.path.join(getImportDir(), attpath))  # add new file
+        file = importFile(uploadfile.filename, uploadfile)  # add new file
+        file.mimetype = "inode/file"
+        file.filetype = "attachment"
+        node.files.append(file)
 
         # this should re-create all dependent files
         node.event_files_changed()
@@ -265,28 +256,10 @@ def getContent(req, ids):
                     filename = key[4:-2].split("|")
                     for file in node.files:
                         if file.base_name == filename[1] and file.filetype == filename[0]:
-                            # remove all files in directory
-                            if file.mimetype == "inode/directory":
-                                for root, dirs, files in os.walk(file.abspath):
-                                    for name in files:
-                                        try:
-                                            os.remove(root + "/" + name)
-                                        except:
-                                            logg.exception("exception while removing file, ignore")
-                                    os.removedirs(file.abspath + "/")
                             node.files.remove(file)
                             with suppress(Exception, warn=False):
                                 os.remove(file.abspath)
 
-                            break
-                    break
-                elif key.startswith("delatt|"):
-                    for file in node.files:
-                        if file.mimetype == "inode/directory":
-                            try:
-                                os.remove(file.abspath + "/" + key.split("|")[2][:-2])
-                            except:
-                                logg.exception("exception while removing file, ignore")
                             break
                     break
 
@@ -315,12 +288,5 @@ def getContent(req, ids):
             nodes=[node],
             csrf=_core_csrfform.get_token(),
         )
-
-    for f in v["attfiles"]:  # collect all files in attachment directory
-        if f.mimetype == "inode/directory":
-            for root, dirs, files in os.walk(f.abspath):
-                for name in files:
-                    af = File(root + "/" + name, "attachmentfile", getMimeType(name)[0])
-                    v["att"].append(af)
 
     return _tal.processTAL(v, file="web/edit/modules/files.html", macro="edit_files_file", request=req)

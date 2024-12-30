@@ -296,14 +296,8 @@ def update_nodetypes_in_db():
 
 
 def _init_locks():
-    _register_lock('cache', 0)
-    _register_lock('createsearchindices', 1)
-    _register_lock('iolock', 2)
-    _register_lock('lrucachelock', 3)
-    _register_lock('producer', 4)
-    _register_lock('queuelock', 5)
-    _register_lock('workflow', 6)
-    _register_lock('zipfile', 7)
+    _register_lock('createsearchindices', 0)
+    _register_lock('workflow', 1)
 
 
 def _init_default_thumbnail():

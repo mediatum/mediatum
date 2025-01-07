@@ -276,10 +276,7 @@ class Container(Data, ContainerMixin, SchemaMixin):
 class Directory(Container):
 
     show_childcount = True
-    
-    @classmethod
-    def treeiconclass(cls):
-        return "directory"
+    tree_icon_path = "/static/img/webtree/directory.svg"
 
     def get_directory(self):
         return self
@@ -288,9 +285,7 @@ class Directory(Container):
 @check_type_arg_with_schema
 class Collection(Container):
 
-    @classmethod
-    def treeiconclass(cls):
-        return "collection"
+    tree_icon_path = "/static/img/webtree/collection.svg"
 
     def metaFields(self, lang=None):
         metafields = Container.metaFields(self, lang=lang)
@@ -328,6 +323,7 @@ class Collections(Container):
 
     # XXX: as in other places, we assume that the Collections root is public.
     cache_duration = 600
+    tree_icon_path = "/static/img/webtree/collection.svg"
 
     def get_collection(self):
         return self
@@ -341,4 +337,4 @@ class Collections(Container):
 
 @check_type_arg_with_schema
 class Home(Container):
-    pass
+    tree_icon_path = "/static/img/webtree/home.svg"

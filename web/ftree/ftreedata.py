@@ -89,31 +89,21 @@ def getData(req):
                 continue
             label = _web_edit_common.get_edit_label(c.Container, language)
 
-            cls = "folder"
-
             itemcls = ""
             if not c.write_access:
                 itemcls = "read"
 
-            if c.Container.type == "collection":  # or "collection" in c.type:
-                cls = "collection"
-            if hasattr(c.Container, 'treeiconclass'):
-                cls = c.Container.treeiconclass()
-
-            if special_dir_type == u'trash':
-                cls = "trashbin"
-            elif special_dir_type == u'upload':
-                cls = "download"
-            elif c.Container == user_home_dir:
-                cls = "home"
-
+            iconpath = dict(
+                trash="/static/img/webtree/trashbin.svg",
+                upload="/static/img/webtree/download.svg",
+                ).get(special_dir_type, c.Container.tree_icon_path)
             ret.append(u"""
-                <li data-folder-image-path="/static/img/webtree/{0}.svg" id="Node{2}">
+                <li data-folder-image-path="{0}" id="Node{2}">
                     <a href="#" title="{1} ({2})" id="{2}" class="{3}">
                         {1}
                         <input type="image" src="/static/img/webtree/transparent-pixel.svg" class="mediatum-icon-small"/>
                     </a>
-                """.format(cls, label, c.Container.id, itemcls))
+                """.format(iconpath, label, c.Container.id, itemcls))
 
             if c.has_container_children:
                 ret.append(u'''

@@ -108,7 +108,7 @@ def getData(req):
                 cls = "home"
 
             ret.append(u"""
-                <li class="{0}.svg" id="Node{2}">
+                <li data-folder-image-path="/static/img/webtree/{0}.svg" id="Node{2}">
                     <a href="#" title="{1} ({2})" id="{2}" class="{3}">
                         {1}
                         <input type="image" src="/static/img/webtree/transparent-pixel.svg" class="mediatum-icon-small"/>

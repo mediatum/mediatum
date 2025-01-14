@@ -67,13 +67,6 @@
                             </tr>
                         </table>
                     </th>
-                    <th tal:condition="python:order[0:1]==0 or order==''">
-                        <tal:block i18n:translate="admin_metafield_order">Reihenfolge</tal:block>
-                        <img src="/static/img/sort-by-alphabet-az.svg" border="0" class="mediatum-icon-small"/>
-                    </th>
-                    <th tal:condition="python:order[0:1]!=0 and order!=''">
-                        <button i18n:translate="admin_metafield_order" i18n:attributes="title admin_sort_label" tal:attributes="name python:'sortcol_00'" class="admin_sortcol" type="submit">TEXT</button>
-                    </th>
                     <th align="right">
                         <input
                             tal:attributes="name python:u'newdetail_{}'.format(metadatatype.name)"
@@ -111,45 +104,6 @@
                                     </td>
                                 </tr>
                             </table>
-                        </td>
-                        <td tal:define="index python:metafields.index(metafield); count python:len(metafields)">&nbsp;&nbsp;&nbsp;
-                            <tal:block tal:condition="python:index>=0 and index<count-1">
-                                <input
-                                    tal:condition="python:order[0:1]!='0' and order!=''"
-                                    tal:attributes="name python:u'downdetail_{}'.format(metafield.name)"
-                                    disabled="disabled"
-                                    type="image"
-                                    src="/static/img/downarrowdisabled.svg"
-                                    class="mediatum-icon-small"
-                                />
-                                <input
-                                    tal:condition="python:order[0:1]=='0' or order==''"
-                                    tal:attributes="name python:u'downdetail_{}'.format(metafield.name)"
-                                    i18n:attributes="title admin_metafield_down_title"
-                                    type="image"
-                                    src="/static/img/downarrow.svg"
-                                    class="mediatum-icon-small"
-                                />
-                            </tal:block>
-                            <tal:block tal:condition="python:index==count-1"></tal:block>
-                            <tal:block tal:condition="python:index>0 and index<=count">
-                                <input
-                                    tal:condition="python:order[0:1]!='0' and order!=''"
-                                    tal:attributes="name python:u'updetail_{}'.format(metafield.name)"
-                                    disabled="disabled"
-                                    type="image"
-                                    src="/static/img/uparrowdisabled.svg"
-                                    class="mediatum-icon-small"
-                                />
-                                <input
-                                    tal:condition="python:order[0:1]=='0' or order==''"
-                                    tal:attributes="name python:u'updetail_{}'.format(metafield.name)"
-                                    i18n:attributes="title admin_metafield_up_title"
-                                    type="image"
-                                    src="/static/img/uparrow.svg"
-                                    class="mediatum-icon-small"
-                                />
-                            </tal:block>
                         </td>
                         <td>
                             <input

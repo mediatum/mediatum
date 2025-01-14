@@ -89,8 +89,6 @@ def showDetailList(req, id):
                 lambda x, y: cmp(getMetaFieldTypeNames()[ustr(x.getFieldtype())], getMetaFieldTypeNames()[ustr(y.getFieldtype())]))
         if int(order[1:]) == 1:
             metafields.reverse()
-    else:
-        metafields.sort(lambda x, y: cmp(x.orderpos, y.orderpos))
 
     v = _web_admin.adminutils.getAdminStdVars(req)
     v["filterattrs"] = [("name", "admin_metafield_filter_name"), ("label", "admin_metafield_filter_label")]
@@ -109,7 +107,6 @@ def showDetailList(req, id):
     v["fieldoptions"] = fieldoption
     v["fieldtypes"] = getMetaFieldTypeNames()
     v["pages"] = pages
-    v["order"] = order
     v["actfilter"] = actfilter
 
     v["actpage"] = req.params.get("actpage")

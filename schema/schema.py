@@ -380,37 +380,6 @@ def deleteMetaField(pid, name):
         i += 1
     db.session.commit()
 
-#
-# change order of metadatafields: move element up/down
-#
-
-def moveMetaField(pid, name, direction):
-    up, down = -1, -1
-
-    if direction == 1:
-        down = int(getMetaField(pid, name).getOrderPos())
-    elif direction == -1:
-        up = int(getMetaField(pid, name).getOrderPos())
-
-    i = 0
-    for field in getMetaType(pid).getChildren().sort_by_orderpos():
-        with suppress(Exception): # FIXME: what kind of exception is raised here?
-            if i == up:
-                pos = i - 1
-            elif i == up - 1:
-                pos = up
-            elif i == down:
-                pos = i + 1
-            elif i == down + 1:
-                pos = down
-            else:
-                pos = i
-
-            if pos < 0:
-                pos = 0
-            field.setOrderPos(pos)
-            i += 1
-
 def generateMask(metatype, masktype="", force=0):
     if force:
         with suppress(Exception, warn=False): # if we can't remove the existing mask, it wasn't there, which is ok

@@ -7,6 +7,7 @@ from __future__ import print_function
 import re
 import os
 import inspect
+import json as _json
 import codecs
 import functools as _functools
 import logging
@@ -254,6 +255,8 @@ _default_context = dict(
     getAccessRights = getAccessRights,
     normLanguage_iso_639_2_b = normLanguage_iso_639_2_b,
     normLanguage_iso_639_2_t = normLanguage_iso_639_2_t,
+    json_load = _json.loads,
+    json_dump = _json.dumps,
 )
 
 

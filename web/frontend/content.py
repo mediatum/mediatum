@@ -30,7 +30,6 @@ from sqlalchemy_continuum.utils import version_class
 import json
 from utils.pathutils import get_accessible_paths
 from web.frontend.contentbase import ContentBase
-from utils.url import build_url_from_path_and_params
 from markupsafe import Markup
 import web.common.pagination as _web_common_pagination
 import web.common.sort as _sort
@@ -318,21 +317,6 @@ class ContentList(ContentBase):
             return self.nav_link(style=style)
         
         return self.nav_link(liststyle=style)
-        
-    @property
-    def print_url(self):
-        if not config.getboolean("config.enable_printing"):
-            return
-
-        # self.content means: we're showing a single result node.
-        # Therefore, we want to print the node, not the list.
-        if self.content is not None:
-            return self.content.print_url
-
-        # printing is allowed for containers by default, unless system.print != "1" is set on the node
-        if self.container.system_attrs.get("print", "1") == "1":
-            return build_url_from_path_and_params(u"/print/{}".format(self.container.id),
-                    {k:v for k, v in iteritems(self.nav_params) if k.startswith("sortfield")})
 
     def feedback(self, req):
         self.container_id = req.args.get("id", type=int)
@@ -604,11 +588,6 @@ class ContentNode(ContentBase):
     def select_style_link(self, style):
         version = self._node.tag if isinstance(self._node, version_class(Node)) else None
         return node_url(self.id, version=version, style=style)
-    
-    @property
-    def print_url(self):
-        if config.getboolean("config.enable_printing") and self.node.system_attrs.get("print", "1") == "1":
-            return build_url_from_path_and_params(u"/print/{}".format(self.id), {})
 
     @ensure_unicode_returned(name="web.frontend.content:html")
     def html(self, req):
@@ -698,14 +677,13 @@ def make_node_content(node, req, paths):
     return c
 
 
-def render_content_nav(node, logo, styles, select_style_link, print_url, paths):
+def render_content_nav(node, logo, styles, select_style_link, paths):
     return webconfig.theme.render_template("content_nav.j2.jade", dict(
            path=min(paths, key=len) if paths else None,
            styles=styles,
            logo=logo,
            select_style_link=select_style_link,
            node=node,
-           printlink=print_url,
           ))
 
 
@@ -791,7 +769,6 @@ def render_content(node, req, render_paths):
             content.logo,
             content.content_styles,
             content.select_style_link,
-            content.print_url,
             paths,
            )
     return (u"{}\n{}".format(content_nav_html, content.html(req)),

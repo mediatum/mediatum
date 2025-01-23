@@ -4,9 +4,11 @@
 from __future__ import division
 from __future__ import print_function
 
+import functools as _functools
 import httplib as _httplib
 import itertools as _itertools
 import json
+import operator as _operator
 import os
 import time
 
@@ -289,25 +291,25 @@ def _handletabs(req, node, ids, tabs, sort_choices, has_child):
     user = _user_from_session()
 
     srcnodeid = req.values.get('srcnodeid', '')
-    skip_items = set(_utils_utils.get_menu_strings(node.editor_menu))
-    skip_items.intersection_update(user.hidden_edit_functions)
-    if len(ids) > 1:
-        skip_items.add("version")
-        skip_items.add("view")
+    get_editor_menu = _operator.methodcaller("get_editor_menu", user, len(ids) > 1, has_child)
+    # create intersection of all node's menus,
+    # we permit only actions that are supported by all nodes
+    hide_items = _itertools.imap(_core.db.query(Node).get, ids)
+    hide_items = _itertools.imap(get_editor_menu, hide_items)
+    hide_items = _itertools.imap(_utils_utils.get_menu_strings, hide_items)
+    hide_items = _functools.reduce(lambda s,i:frozenset(s).intersection(i), hide_items)
+    # we hide all actions which would be provided by the first node's menu,
+    # but which are *not* in the intersection computed above,
+    # i.e., which are not supported by at least one node
+    hide_items = set(_utils_utils.get_menu_strings(get_editor_menu(node))).difference(hide_items)
+    # we also hide actions that the current user may not see
+    hide_items.update(user.hidden_edit_functions)
+    # we also hide delete actions inside the trash container
     if srcnodeid and _core.db.query(Node).get(int(srcnodeid)) is user.trash_dir:
-        skip_items.add("deleteobject")
-        skip_items.add("deleteall")
-    if not has_child:
-        skip_items.update({
-            "menueditall",
-            "editall",
-            "moveall",
-            "copyall",
-            "deleteall",
-            "sortfiles",
-            })
+        hide_items.add("deleteobject")
+        hide_items.add("deleteall")
 
-    menu = _utils_utils.parse_menu_struct(node.editor_menu, skip_items)
+    menu = _utils_utils.parse_menu_struct(get_editor_menu(node), hide_items)
 
     nodes_per_page = req.args.get("nodes_per_page", type=int)
     if not nodes_per_page:

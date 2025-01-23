@@ -497,6 +497,9 @@ class Node(_core.database.postgres.DeclarativeBase, NodeMixin):
         node_dict["system_attrs"] = dict(node_dict["system_attrs"])
         return _ruamel_yaml.round_trip_dump(node_dict)
 
+    def get_editor_menu(self, user, multiple_nodes, has_child):
+        return ("metadata", {"menuoperation": ("acls", "admin",)},)
+
 
 # view for direct parent-child relationship (distance = 1), also used for inserting new node connections
 t_nodemapping = view("nodemapping", _core.database.postgres.db_metadata,

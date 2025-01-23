@@ -88,29 +88,6 @@ class Container(Data, ContainerMixin, SchemaMixin):
     # Subclasses can set this to False if they want to display something else via show_node_big().
     show_list_view = True
 
-    editor_menu = (
-        "content",
-        "metadata",
-        { "menuoperation": (
-            "acls",
-            { "menueditall": (
-                "editall",
-                "moveall",
-                "copyall",
-                "deleteall",
-                )},
-            { "startpagesmenu": (
-                "startpages",
-                "logo",
-                "searchmask",
-                )},
-            "admin",
-            "subfolder",
-            "sortfiles",
-        )},
-    )
-
-
     @classmethod
     def isContainer(cls):
         warn("use isinstance(node, Container) or issubclass(nodecls, Container)", DeprecationWarning)
@@ -280,6 +257,19 @@ class Container(Data, ContainerMixin, SchemaMixin):
                 _core.database.postgres.node.Node.id.in_(sq),
                 ).filter_by(subnode=False).count()
 
+    def get_editor_menu(self, user, multiple_nodes, has_childs):
+        menu = list(super(Container, self).get_editor_menu(user, multiple_nodes, has_childs))
+        menu.insert(0, "content")
+        menuoperations = list(menu[2]["menuoperation"])
+        menuoperations.insert(1, { "startpagesmenu": ("startpages", "logo", "searchmask")})
+        menuoperations.append("subfolder")
+        if has_childs:
+            menuoperations.insert(1, { "menueditall": ("editall", "moveall", "copyall", "deleteall")})
+            menuoperations.append("sortfiles")
+
+        menu[2]["menuoperation"] = tuple(menuoperations)
+
+        return tuple(menu)
 
 # concrete Container classes
 

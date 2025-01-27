@@ -287,6 +287,14 @@ def getBreadcrumbs(menulist, tab):
     return [tab]
 
 
+_menu_extender_functions = {}
+
+def register_menu_extender(fctn, orderpos=""):
+    while orderpos in _menu_extender_functions:
+        orderpos += "\0"
+    _menu_extender_functions[orderpos] = fctn
+
+
 def _handletabs(req, node, ids, tabs, sort_choices, has_child):
     user = _user_from_session()
 
@@ -309,7 +317,17 @@ def _handletabs(req, node, ids, tabs, sort_choices, has_child):
         hide_items.add("deleteobject")
         hide_items.add("deleteall")
 
-    menu = _utils_utils.parse_menu_struct(get_editor_menu(node), hide_items)
+    args = (node, user, len(ids) > 1, has_child)
+    menu = _functools.reduce(
+        lambda m,f:f(m,*args),
+        _itertools.imap(
+            _operator.itemgetter(1),
+            sorted(_menu_extender_functions.iteritems(), key=_operator.itemgetter(0)),
+           ),
+        get_editor_menu(node),
+       )
+
+    menu = _utils_utils.parse_menu_struct(menu, hide_items)
 
     nodes_per_page = req.args.get("nodes_per_page", type=int)
     if not nodes_per_page:
@@ -351,9 +369,13 @@ def error(req):
 _editModules = {}
 
 
-def getEditModules():
-    global _editModules
+def register_edit_modules(**modules):
+    if frozenset(_editModules).intersection(modules):
+        raise RuntimeError("module already defined: {}".format(modules))
+    _editModules.update(modules)
 
+
+def getEditModules():
     modules_list = (
         _web.edit.modules.acls,
         _web.edit.modules.admin,
@@ -380,7 +402,7 @@ def getEditModules():
         _web.edit.modules.version,
         _web.edit.modules.view,
         )
-    _editModules = {m.__name__.replace("web.edit.modules.", ""): m for m in modules_list}
+    register_edit_modules(**{m.__name__.replace("web.edit.modules.", ""): m for m in modules_list})
 
 
 def getIDs(req):

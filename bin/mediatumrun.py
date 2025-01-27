@@ -7,14 +7,10 @@ from __future__ import division
 from __future__ import print_function
 
 import configargparse
-import codecs as _codecs
 import logging as _logging
 import os as _os
-import signal as _signal
 import sys as _sys
 import tempfile
-import threading as _threading
-import traceback as _traceback
 
 _sys.path.append(_os.path.abspath(_os.path.join(__file__, "..", "..")))
 
@@ -34,44 +30,6 @@ _logg = _logging.getLogger(__name__)
 SYSTEM_TMP_DIR = tempfile.gettempdir()
 
 
-def stackdump_setup():
-    # stackdump
-    if ultratb is None:
-        _logg.warning("IPython not installed, stack dumps not available!")
-    else:
-        _logg.info("IPython installed, write stack dumps to tmpdir with: `kill -QUIT <mediatum_pid>`")
-
-        def dumpstacks(signal, frame):
-            _logg.debug("dumping stack")
-            # we must use the system temp dir here because mediaTUM config must not be loaded here
-            filepath = _os.path.join(SYSTEM_TMP_DIR, "mediatum_threadstatus")
-            id2name = dict([(th.ident, th.name) for th in _threading.enumerate()])
-            full = ["-" * 80]
-            tb_formatter = ultratb.ListTB(color_scheme="Linux")
-            for thread_id, stack in _sys._current_frames().items():
-                thread_name = id2name.get(thread_id, "")
-                if not "Main" in thread_name:
-                    stacktrace = _traceback.extract_stack(stack)
-                    stb = tb_formatter.structured_traceback(Exception, Exception(), stacktrace)[8:-1]
-                    if stb:
-                        formatted_trace = tb_formatter.stb2text(stb).strip()
-                        with _codecs.open("{}.{}".format(filepath, thread_id), "w", encoding='utf8') as wf:
-                            wf.write("\n{}".format(formatted_trace))
-                        if len(stb) > 4:
-                            short_stb = stb[:2] + ["..."] + stb[-2:]
-                        else:
-                            short_stb = stb
-                        formatted_trace_short = tb_formatter.stb2text(short_stb).strip()
-                        full.append("# Thread: %s(%d)" % (thread_name, thread_id))
-                        full.append(formatted_trace_short)
-                        full.append("-" * 80)
-
-            with _codecs.open(filepath, "wf", encoding='utf8') as wf:
-                wf.write("\n".join(full))
-
-        _signal.signal(_signal.SIGQUIT, dumpstacks)
-
-
 def run(loglevel=None, automigrate=False):
     """Serve mediaTUM from the WSGI Server Flask, if requested"""
     # init.full_init() must be done as early as possible to init logging etc.
@@ -89,19 +47,12 @@ def make_flask_app():
     parser.add_argument("-r", "--reload", action="store_true", default=False,
                         help="reload when code or config file changes, default false")
 
-    parser.add_argument("-s", "--stackdump", action="store_true", default=True,
-                        help="write stackdumps to temp dir {} on SIGQUIT, default true".format(SYSTEM_TMP_DIR))
-
     parser.add_argument("-l", "--loglevel", help="root loglevel, sensible values: DEBUG, INFO, WARN")
     parser.add_argument("-m", "--automigrate", action="store_true", default=False,
                         help="run automatic database schema upgrades on startup")
 
     args = parser.parse_args()
     _logg.debug("start.py args: %s", args)
-
-
-    if args.stackdump:
-        stackdump_setup()
 
     if args.reload:
         # don't use this in production!

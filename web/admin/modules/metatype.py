@@ -30,7 +30,6 @@ from schema.schema import getFieldsForMeta
 from schema.schema import getMetaFieldTypeNames
 from schema.schema import getMetaType
 from schema.schema import importMetaSchema
-from schema.schema import moveMetaField
 from schema.schema import updateMetaField
 from schema.schema import updateMetaType
 from schema.bibtex import getAllBibTeXTypes
@@ -222,16 +221,6 @@ def validate(req, op):
             elif key.startswith("deletedetail_"):
                 deleteMetaField(req.params.get("parent"), key[13:-2])
                 db.session.commit()
-                return showDetailList(req, req.params.get("parent"))
-
-            # change field order up
-            if key.startswith("updetail_"):
-                moveMetaField(req.params.get("parent"), key[9:-2], -1)
-                return showDetailList(req, req.params.get("parent"))
-
-            # change field order down
-            elif key.startswith("downdetail_"):
-                moveMetaField(req.params.get("parent"), key[11:-2], 1)
                 return showDetailList(req, req.params.get("parent"))
 
         if "form_op" in req.params.keys():

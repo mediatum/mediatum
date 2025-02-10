@@ -67,7 +67,6 @@ let
       pyjade
       pympler
       pyyaml
-      reportlab
       requests
       ruamel_yaml
       sqlalchemy

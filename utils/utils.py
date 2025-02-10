@@ -281,11 +281,6 @@ def isCollection(node):
     return int(isinstance(node, (Collection, Collections)))
 
 
-def getCollection(node):
-    warn("use Node.get_collection()", DeprecationWarning)
-    return node.get_collection()
-
-
 def isDirectory(node):
     warn("use isinstance(node, Directory)", DeprecationWarning)
     from contenttypes import Directory

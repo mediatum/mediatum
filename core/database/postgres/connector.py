@@ -18,14 +18,11 @@ import core as _core
 import core.database.postgres.node as _
 from core import config
 from . import db_metadata, DeclarativeBase
-from core.database.postgres.psycopg2_debug import make_debug_connection_factory
 from utils.postgres import schema_exists, table_exists
 import utils.process
 import sys
 from core.search.config import get_fulltext_autoindex_languages, get_attribute_autoindex_languages
 
-# set this to True or False to override debug config settings
-DEBUG = None
 
 CONNECTSTR_TEMPLATE = "postgresql+psycopg2://{user}:{passwd}@:{port}/{database}"
 CONNECTSTR_TEMPLATE_WITHOUT_PW = "postgresql+psycopg2://{user}@:{port}/{database}"
@@ -65,11 +62,6 @@ class PostgresSQLAConnector(object):
         self.metadata = db_metadata
 
     def configure(self):
-        if DEBUG is None:
-            self.debug = config.get("database.debug", "").lower() == "true"
-        else:
-            self.debug = DEBUG
-
         self.host = config.get("database.host", "localhost")
         self.port = config.getint("database.port", "5432")
         self.database = config.get("database.db", "mediatum")
@@ -88,8 +80,6 @@ class PostgresSQLAConnector(object):
             host=self.host,
             application_name="{}({})".format(os.path.basename(sys.argv[0]), os.getpid())
         )
-        if self.debug:
-            connect_args["connection_factory"] = make_debug_connection_factory()
 
         engine = create_engine(self.connectstr, connect_args=connect_args, pool_size=self.pool_size)
         db_connection_exception = self.check_db_connection(engine)
@@ -145,12 +135,6 @@ class PostgresSQLAConnector(object):
     @property
     def session(self):
         return self.Session()
-
-    @property
-    def statement_history(self):
-        if not self.debug:
-            raise Exception("connector debugging disabled (cfg: database.debug), statement history not available")
-        return self.Session().connection().connection.connection.history
 
     def query(self, *entities, **kwargs):
         """Query proxy.

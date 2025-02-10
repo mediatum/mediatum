@@ -872,51 +872,6 @@ ip.set_hook("pre_prompt_hook", set_prompt)
 
 # setup custom exception handler for automatic rollbacks on SQLAlchemy errors
 
-
-def explain(query, analyze=False, pygments_style="native"):
-    """Prints EXPLAIN (ANALYZE) query in current session."""
-    explained = alchemyext.explain(query, s, analyze)
-    from pygments.lexers import PostgresConsoleLexer
-    from pygments import highlight
-
-    if IPYTHON_NOTEBOOK:
-        from pygments.formatters import HtmlFormatter
-        formatter = HtmlFormatter
-    else:
-        from pygments.formatters import Terminal256Formatter
-        formatter = Terminal256Formatter
-
-    explained = highlight(
-        explained,
-        PostgresConsoleLexer(),
-        formatter(style=pygments_style))
-
-    if IPYTHON_NOTEBOOK:
-        formatted_statement = db.statement_history.format_statement(
-            db.statement_history.last_statement,
-            formatter_cls=HtmlFormatter)
-        from IPython.display import HTML
-        return HTML(
-            "<style>" +
-            HtmlFormatter().get_style_defs('.highlight') +
-            "</style>" +
-            formatted_statement +
-            "<br/>" +
-            explained)
-    else:
-        # strip EXPLAIN (ANALYZE)
-        stmt_start = 16 if analyze else 8
-        stmt = db.statement_history.last_statement[stmt_start:]
-        formatted_statement = db.statement_history.format_statement(stmt)
-        print(formatted_statement)
-        print(explained)
-
-
-def eanalyze(query, pygments_style="native"):
-    """Shortcut for explain(query, analyze=True)"""
-    explain(query, True, pygments_style)
-
-
 def handle_sqla_exception(self, etype, value, tb, tb_offset=None):
     from core import db
     db.session.rollback()

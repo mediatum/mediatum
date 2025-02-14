@@ -323,10 +323,3 @@ def validateDateString(value, format=None):
     except ValueError:
         return False
     return validateDate(d)
-
-
-def dt_fromiso(isoformat_datestring):
-    """Convert datetime string in isoformat to datetime object
-       :param isoformat_datestring: string formatted like datetime.isoformat()
-    """
-    return datetime.datetime.strptime(isoformat_datestring, "%Y-%m-%dT%H:%M:%S")

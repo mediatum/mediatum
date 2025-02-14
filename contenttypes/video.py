@@ -23,7 +23,9 @@ from core.config import resolve_datadir_path
 import utils as _utils
 import utils.utils as _
 from utils.utils import splitfilename
-from utils.date import format_date, make_date
+from utils.date import format_date
+import utils as _utils
+import utils.date as _
 import utils.process
 
 logg = logging.getLogger(__name__)
@@ -155,7 +157,7 @@ class Video(Content):
         except ValueError:
             return 0
         else:
-            return format_date(make_date(0, 0, 0, int(duration) // 3600, duration / 60, int(duration % 60)), '%H:%M:%S')
+            return format_date(_utils.date.DateTime(0, 0, 0, int(duration) // 3600, duration / 60, int(duration % 60)), '%H:%M:%S')
 
     def get_unwanted_exif_attributes(self):
         '''

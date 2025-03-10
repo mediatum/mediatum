@@ -6,12 +6,17 @@ from __future__ import print_function
 
 import httplib as _httplib
 import logging
+import os as _os
+
+import itertools as _itertools
+
 import mediatumtal.tal as _tal
 
 import core as _core
 import core.csrfform as _core_csrfform
 import core.translation as _core_translation
-from utils.utils import getMimeType, splitpath
+import utils as _utils
+import utils.utils as _
 from utils.fileutils import importFile
 from core.users import user_from_session as _user_from_session
 from core.database.postgres.node import Node
@@ -47,7 +52,7 @@ def getContent(req, ids):
         if file:
             mimetype = "application/x-download"
             type = "file"
-            mimetype, type = getMimeType(file.filename.lower())
+            mimetype, type = _utils.utils.getMimeType(file.filename.lower())
 
             if mimetype not in ("image/jpeg", "image/gif", "image/png"):
                 # wrong file type (jpeg, jpg, gif, png)
@@ -73,11 +78,11 @@ def getContent(req, ids):
 
         _core.db.session.commit()
 
-    logofiles = []
-    for f in node.files:
-        if f.filetype == "image":
-            logofiles.append(splitpath(f.abspath))
-    
+    logofiles = (file.abspath for file in node.files if file.filetype == "image")
+    logofiles = _itertools.imap(_os.path.normpath, logofiles)
+    logofiles = _itertools.imap(_os.path.split, logofiles)
+    logofiles = ((_os.path.normpath(dirname), basename) if dirname else (basename,) for dirname, basename in logofiles)
+
     return _tal.processTAL(
             dict(
                 id=req.params.get("id", "0"),

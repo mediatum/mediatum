@@ -12,8 +12,9 @@ import re
 import os.path
 import shutil
 import logging
-import fdfgen
+import itertools as _itertools
 
+import fdfgen
 from mediatumtal import tal as _tal
 
 import utils.utils as _utils_utils
@@ -188,11 +189,11 @@ class WorkflowStep_AddFormPage(WorkflowStep):
         if not self.settings["form_separate"]:
             origname = fnode.abspath
             outfile = addPagesToPDF(pages, origname)
-            for f in node.files:
-                node.files.remove(f)
+            old_files = tuple(node.files)
             fnode.path = outfile.replace(config.get("paths.datadir"), "")
             node.files.append(fnode)
             node.files.append(File(origname, 'upload', 'application/pdf'))  # store original filename
+            tuple(_itertools.imap(node.files.remove, old_files))
             node.event_files_changed()
             db.session.commit()
             logg.info("workflowstep '%s' (%s): added pdf form to pdf (node '%s' (%s)) fields: %s",

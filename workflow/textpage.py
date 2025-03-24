@@ -31,11 +31,9 @@ class WorkflowStep_TextPage(WorkflowStep):
 
     def show_workflow_node(self, node, req):
         if "gotrue" in req.params:
-            self.forward(node, True)
-            return self.forwardAndShow(node, True, req, forward=False)
+            return self.forwardAndShow(node, True, req)
         if "gofalse" in req.params:
-            self.forward(node, False)
-            return self.forwardAndShow(node, False, req, forward=False)
+            return self.forwardAndShow(node, False, req)
 
         if self.getTrueLabel(language=node.get("system.wflanguage")) == "" and self.getFalseLabel(
                 language=node.get("system.wflanguage")) == "":

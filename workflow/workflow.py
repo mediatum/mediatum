@@ -245,7 +245,7 @@ def importWorkflow(filename):
 @check_type_arg
 class Workflows(Node):
 
-    def show_node_big(self, req, *args):
+    def show_node_big(self, req, style_name=None):
         # style name is ignored
         template = "workflow/workflow.html"
         macro= "workflowlist"
@@ -281,7 +281,7 @@ class Workflows(Node):
 @check_type_arg
 class Workflow(Node):
 
-    def show_node_big(self, req, *args): 
+    def show_node_big(self, req, style_name=None):
         template = "workflow/workflow.html"
         macro = "object_list"
         if self.children.filter_write_access().first() is None:
@@ -400,7 +400,7 @@ class WorkflowStep(Node):
     def getId(self):
         return self.name
 
-    def show_node_big(self, req, *args):
+    def show_node_big(self, req, style_name=None):
         template = "workflow/workflow.html"
         macro = "object_step"
 

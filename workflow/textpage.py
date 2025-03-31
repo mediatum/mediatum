@@ -29,9 +29,6 @@ class WorkflowStep_TextPage(WorkflowStep):
         htmltext="",
     )
 
-    def runAction(self, node, op=""):
-        pass
-
     def show_workflow_node(self, node, req):
         if "gotrue" in req.params:
             self.forward(node, True)

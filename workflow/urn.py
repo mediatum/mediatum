@@ -96,7 +96,7 @@ class WorkflowStep_Urn(WorkflowStep):
         niss="",
     )
 
-    def show_workflow_node(self, node, req):
+    def runAction(self, node, op=""):
         attrname = self.settings["attrname"]
         niss = self.settings["niss"]
         urn = node.get(attrname)
@@ -117,7 +117,7 @@ class WorkflowStep_Urn(WorkflowStep):
                     niss = niss.replace("[" + var + "]", val)
             node.set(attrname, _build_bnb(self.settings["snid1"], self.settings["snid2"], niss))
         _core.db.session.commit()
-        return self.forwardAndShow(node, True, req)
+        return self.forward(node, True)
 
     def admin_settings_get_html_form(self, req):
         return _tal.processTAL(

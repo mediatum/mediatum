@@ -38,11 +38,11 @@ def make_thumbnail_image(src_filepath, dest_filepath):
         pic.save(dest_filepath, "JPEG", quality="web_high")
 
 
-def convert_image(src_filepath, dest_filepath, options=[]):
+def convert_image(src_filepath, dest_filepath, *options):
     """Create a PNG with filename `dest_filepath` from a file at `src_filepath`
     :param options: additional command line option list passed to convert
     """
-    utils.process.check_call(["gm", "convert"] + options + [src_filepath, dest_filepath])
+    utils.process.check_call(("gm", "convert") + options + (src_filepath, dest_filepath))
 
 
 @check_type_arg_with_schema
@@ -191,7 +191,7 @@ class Image(_contenttypes_data.Content):
             self.files.remove(old_file)
             old_file.unlink()
 
-        convert_image(original_file.abspath, newimg_name, convert_options)
+        convert_image(original_file.abspath, newimg_name, *convert_options)
 
         self.files.append(File(newimg_name, u"image", mimetype_to_generate))
 

@@ -57,11 +57,8 @@ div.header a { text-decoration: none; color: rgb(48,112,179); font-size: 13px;}
 #content-wrapper { margin-left: 38px; margin-right: 38px; padding-top: 20px; width: auto;}
 
 /* Footer */
-div#footer { margin-left: 38px; padding-top: 10px;}
-div#footer span.footer_right { position: absolute; right: 20px;}
-div#footer a { color: rgb(71,71,71); text-decoration: none;}
-div#footer a:hover { color: rgb(48,112,179); text-decoration: none;}
-div#footer span.footer_right a { margin-right: 9px;}
+span.footer_right { position: absolute; right: 20px;}
+span.footer_right a { margin-right: 9px;}
 
 /* Breakpoints */
 @media (max-width: 700px) {
@@ -664,7 +661,7 @@ a:link { color: #0a5096;}
 a:active { color: #0a5096;}
 a:visited { color: #0a5096;}
 
-div#footer span.footer_left a { margin-right: 9px;}
+span.footer_left a { margin-right: 9px;}
 
 ul#navigationlist li div a:visited { color: #004682;}
 

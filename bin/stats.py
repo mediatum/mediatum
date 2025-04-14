@@ -35,6 +35,8 @@ from core.stats import buildStatAll
 from core import init
 from itertools import imap, ifilter, repeat
 import operator
+import utils as _utils
+import utils.utils as _
 
 """
 if parameter is given it will be used as period, format: %Y-%m
@@ -69,11 +71,11 @@ def main():
     lines = imap(operator.concat, lines, repeat(("\n",)))
     lines = imap("".join,lines)
 
-    with tempfile.NamedTemporaryFile() as tmpfile:
-        tmpfile.writelines(lines)
-        tmpfile.flush()
+    with _utils.utils.TemporaryDirectory("mediatum-stats") as tmpdirjoin:
+        with open(tmpdirjoin("logfile"), "w") as tmpfile:
+            tmpfile.writelines(lines)
         init.full_init()
-        buildStatAll(period, tmpfile.name)
+        buildStatAll(period, tmpdirjoin("logfile"))
 
 if __name__ == '__main__':
     main()

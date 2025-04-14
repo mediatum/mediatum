@@ -131,17 +131,6 @@ border-left: 1px solid #CCCCCC;border-top: 1px solid #F4F4F4;}
 div.hstippled  {font-size: 1px;height: 1px;}
 div.breadcrumbs{margin:0px;background: #F2F5F7;border-bottom: 1px solid #E2E9EB;padding: 10px 10px 10px 20px;color: #243135;height:20px;}
 a.breadcrumbs  {color: #243135;}
-/*FOOTER*/
-#footer {
-    text-align: center;
-    padding: 20px;
-    clear: both;
-    background-image: linear-gradient(0deg, dimgray, black);
-    width: auto;
-    margin-top: 0px;
-    height: 20px;
-}
-#footer a  {color: #fff;text-decoration: underline;}
 .checkbox {padding-left: 10px;}
 iframe.preview  {background-color: #fff;margin: 10px;border: solid 1px #666;width: 95%;height: 400px;}
 div.pageerrorcontainer a {color: #fff;}
@@ -249,5 +238,3 @@ ul.mediatum_wfstep_upload_settings > li
 a.mediatum-icon-small::before { content: ""; }
 img.mediatum-icon-small, a.mediatum-icon-small::before, input.mediatum-icon-small {height: 16px ; width: 16px;}
 img.mediatum-icon-big {height: 120px ; width: 120px;}
-
-#footer, #footer > span, #footer > b {color: white}

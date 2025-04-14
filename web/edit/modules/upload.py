@@ -544,18 +544,8 @@ def upload_ziphandler(filename, id):
                 files.append(name.replace(" ", "_"))
                 _m = _utils_utils.getMimeType(name)
 
-                if random_str in name:
-                    newfilename = _utils_utils.join_paths(config.get("paths.tempdir"), name.replace(" ", "_"))
-                else:
-                    newfilename = _utils_utils.join_paths(config.get("paths.tempdir"),  random_str + name.replace(" ", "_"))
-
-                with codecs.open(newfilename, "wb") as fi:
-                    fi.write(z.read(f))
-                with codecs.open(newfilename, "rb") as fi:
-                    fn = _utils_fileutils.importFile(mybasename(name.replace(" ", "_")), fi)
+                fn = _utils_fileutils.importFile(mybasename(name.replace(" ", "_")), z.open(f))
                 basenode.files.append(fn)
-                if os.path.exists(newfilename):
-                    os.unlink(newfilename)
 
                 if _m[1] not in scheme_type:
                     scheme_type[_m[1]] = []

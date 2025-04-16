@@ -126,11 +126,7 @@ def display(req, show_navbar=True, render_paths=True, params=None):
     if not (node and node.has_read_access()):
         node = None
 
-    if req.args.get("disable_content"):
-        content_html = u""
-        show_id = None
-    else:
-        content_html, show_id = render_content(node, req, render_paths)
+    content_html, show_id = render_content(node, req, render_paths)
     req.response.set_data(content_html if params.get("raw") else
                           render_page(req, content_html, node, show_navbar, show_id))
     req.response.status_code = _httplib.OK

@@ -439,20 +439,17 @@ def render_page(req, content_html, node=None, show_navbar=True, show_id=None):
     search_html = u""
     navtree_html = u""
 
-    if show_navbar and not req.args.get("disable_navbar"):
-        if not req.args.get("disable_search"):
-            search_html = _render_search_box(container, language, req)
-        if not req.args.get("disable_navtree"):
-            navtree_html = _make_navtree_entries(
-                language,
-                node.get_self_or_first_ancestor(_contenttypes.container.Container)
-                    or _nodecache.get_collections_node(),
-                )
-            navtree_html = (
-                    webconfig.theme.render_template("frame_tree.j2.jade", dict(navtree_entries=navtree_html))
-                    if navtree_html else
-                    u""
-                   )
+    if show_navbar:
+        search_html = _render_search_box(container, language, req)
+        navtree_html = _make_navtree_entries(
+            language,
+            node.get_self_or_first_ancestor(_contenttypes.container.Container) or _nodecache.get_collections_node(),
+            )
+        navtree_html = (
+                webconfig.theme.render_template("frame_tree.j2.jade", dict(navtree_entries=navtree_html))
+                if navtree_html else
+                u""
+               )
 
     front_lang = dict(
             actlang=language,

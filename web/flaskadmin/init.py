@@ -64,6 +64,11 @@ class _IndexView(_flask_admin.AdminIndexView):
                                         menu_icon_value=menu_icon_value)
         self._template = template
 
+    def render(self, template, **kwargs):
+        kwargs["html_head_style_src"] = _web.frontend.html_head_style_src
+        kwargs["html_head_javascript_src"] = _web.frontend.html_head_javascript_src
+        return super(_IndexView, self).render(template, **kwargs)
+
     @_flask_admin.expose('/')
     def index(self):
         if not _flask_login.current_user.is_authenticated:

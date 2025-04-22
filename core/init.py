@@ -357,8 +357,6 @@ def _additional_init():
     _filehandlers.add_web_root(_os.path.join(config.basedir, "web-data", "web-root"))
     from core import plugins
     init_modules()
-    _web_frontend.html_head_style_src.extend(filter(None, config.get('paths.css', '').split('|')))
-    _web_frontend.html_head_javascript_src.extend(filter(None, config.get('paths.javascript', '').split('|')))
     plugins.init_plugins()
     webroots = config.get('paths.webroots', '').split('|')
     if any(webroots):
@@ -392,6 +390,8 @@ def full_init(
         log_filepath=log_filepath,
         automigrate=automigrate,
     )
+    _web_frontend.html_head_style_src.extend(filter(None, config.get('paths.css', '').split('|')))
+    _web_frontend.html_head_javascript_src.extend(filter(None, config.get('paths.javascript', '').split('|')))
     init_app()
     _additional_init()
     _set_current_init_state(init_state)

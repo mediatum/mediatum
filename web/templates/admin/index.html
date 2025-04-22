@@ -4,6 +4,12 @@
 -->
 {% extends 'admin/master.html' %}
 {% block body %}
+{% for src in html_head_style_src %}
+<link rel="stylesheet" href="{{ src }}" />
+{% endfor %}
+{% for src in html_head_javascript_src %}
+<script src="{{ src }}"> </script>
+{% endfor %}
 {{ super() }}
 <div class="row-fluid">
     <div>

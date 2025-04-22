@@ -2,6 +2,12 @@
   Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
   SPDX-License-Identifier: AGPL-3.0-or-later
 -->
+{% for src in html_head_style_src %}
+<link rel="stylesheet" href="{{ src }}" />
+{% endfor %}
+{% for src in html_head_javascript_src %}
+<script src="{{ src }}"> </script>
+{% endfor %}
 {% extends 'admin/base.html' %}
 {% block access_control %}
 {% if current_user.is_authenticated %}

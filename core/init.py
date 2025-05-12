@@ -16,7 +16,6 @@ import werkzeug as _werkzeug
 import werkzeug.datastructures as _
 import werkzeug.utils as _
 
-from utils.locks import register_lock as _register_lock
 from web import frontend as _web_frontend
 import core.config as config
 import core as _core
@@ -295,11 +294,6 @@ def update_nodetypes_in_db():
     _core.db.session.commit()
 
 
-def _init_locks():
-    _register_lock('createsearchindices', 0)
-    _register_lock('workflow', 1)
-
-
 def _init_default_thumbnail():
     from contenttypes import data
     img_filestorepath = _os.path.join(config.basedir, "web-data", "default-thumbnails", "{ntype}.png")
@@ -321,7 +315,6 @@ def basic_init(
     if init_state_reached(init_state):
         return
 
-    _init_locks()
     add_ustr_builtin()
     import core.config
     core.config.initialize(config_filepath, prefer_config_filename)

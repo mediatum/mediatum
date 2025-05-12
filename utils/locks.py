@@ -1,19 +1,25 @@
 # Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
+from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
 import logging as _logging
+import threading as _threading
+
+import backports as _backports
+import backports.functools_lru_cache as _
+
 try:
     import uwsgi as _uwsgi
 except ImportError:
     _uwsgi = None
-    import threading as _threading
-
 
 _logg = _logging.getLogger(__name__)
-_locks = {}
+
+import utils as _utils
+import utils.uwsgi as _
 
 
 class _UwsgiLock():
@@ -27,21 +33,15 @@ class _UwsgiLock():
     def __exit__(self, *args):
         _uwsgi.unlock(self.number)
 
-def register_lock(name, number):
-    """lock centrally or locally can be registered by name and number"""
-    if name in _locks:
-        raise RuntimeError(u"lock name '{}' already exists!".format(name))
-    if number in _locks.values():
-        raise RuntimeError(u"lock number '{}' already exists!".format(number))
 
-    _logg.debug("Lock %s is registered with number %s", name, number)
-    if _uwsgi:
-        _locks[name] = _UwsgiLock(number)
-    else:
-        _locks[name] = _threading.Lock()
-
+@_backports.functools_lru_cache.lru_cache(maxsize=None)
 def named_lock(name):
     """get a lock by name"""
-    if name not in _locks.keys():
-        raise RuntimeError(u"lock name '{}' does not exist!".format(name))
-    return _locks[name]
+    _logg.debug("preparing new lock '%s'", name)
+    if _uwsgi is None:
+        return _threading.Lock()
+    with _UwsgiLock(0):
+        @_utils.uwsgi.synchronize_number_in_cache("locks", name)
+        def number(existing):
+            return max(existing) + 1 if existing else 1
+    return _UwsgiLock(number)

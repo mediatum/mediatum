@@ -284,6 +284,8 @@ class Node(_core.database.postgres.DeclarativeBase, NodeMixin):
     # unversioned
     system_attrs = deferred(C(MutableDict.as_mutable(JSONB)))
 
+    tree_icon_path = "/static/img/admin.svg"
+
     @hybrid_property
     def a_expr(self):
         """ see: Attributes"""

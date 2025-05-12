@@ -149,8 +149,8 @@ function parseSubItems(ulId,parentId)
         menuItems[no].insertBefore(img,aTag);
         var folderImg = document.createElement('IMG');
         folderImg.classList.add("mediatum-icon-small");
-        if(menuItems[no].className){
-            folderImg.src = imageFolder + menuItems[no].className;
+        if (menuItems[no].dataset.folderImagePath) {
+            folderImg.src = menuItems[no].dataset.folderImagePath;
         }else{
             folderImg.src = imageFolder + folderImage;
         }
@@ -368,8 +368,8 @@ function initTree(configuration)
             menuItems[no].insertBefore(img,aTag);
             var folderImg = document.createElement('IMG');
             folderImg.classList.add("mediatum-icon-small");
-            if(menuItems[no].className){
-                folderImg.src = imageFolder + menuItems[no].className;
+            if (menuItems[no].dataset.folderImagePath) {
+                folderImg.src = menuItems[no].dataset.folderImagePath;
             }else{
                 folderImg.src = imageFolder + folderImage;
             }

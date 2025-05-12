@@ -17,7 +17,6 @@ import core as _core
 from core.database.postgres.file import File
 import core.config as config
 from core import request_handler as _request_handler
-from core.archive import get_archive_for_node
 from contenttypes import Container
 from contenttypes import Content
 from contenttypes.data import Data
@@ -226,19 +225,12 @@ def send_file(req):
         if f.base_name == filename:
             return _send_attachment(f.abspath, f.mimetype)
 
-    archive = get_archive_for_node(node)
-    if archive:
-        filepath = archive.get_local_filepath(node)
-        mimetype, _ = getMimeType(filepath)
-        return _send_attachment(filepath, mimetype)
-
-    else:
-        # try only extension
-        file_ext = os.path.splitext(filename)[1]
-        for f in node.files:
-            if os.path.splitext(f.base_name)[1] == file_ext and f.filetype in [u'document', u'original', u'mp3']:
-                logg.warning("serving file %s for node %s only by matched extension", f.path, node.id)
-                return _send_attachment(f.abspath, f.mimetype)
+    # try only extension
+    file_ext = os.path.splitext(filename)[1]
+    for f in node.files:
+        if os.path.splitext(f.base_name)[1] == file_ext and f.filetype in [u'document', u'original', u'mp3']:
+            logg.warning("serving file %s for node %s only by matched extension", f.path, node.id)
+            return _send_attachment(f.abspath, f.mimetype)
 
     req.response.status_code = 404
     return 404
@@ -282,35 +274,6 @@ def send_attfile(req):
         req.response.headers["Content-Disposition"] = u'attachment; filename="{}"'.format(fileobj.base_name).encode('utf8')
 
     return _request_handler.sendFile(req, fileobj.abspath, fileobj.mimetype)
-
-
-def fetch_archived(req):
-    try:
-        nid = node_id_from_req_path(req.mediatum_contextfree_path)
-    except ValueError:
-        req.response.status_code = 400
-        return 400
-
-    node = _core.db.query(Content).get(nid)
-
-    archive = get_archive_for_node(node)
-    if archive:
-        try:
-            archive.fetch_file_from_archive(node)
-        except:
-            logg.exception("exception in fetch_file_from_archive for archive %s", archive.archive_type)
-            msg = "fetch archive for node failed"
-            req.response.status_code = 500
-            req.response.set_data(msg)
-        else:
-            req.response.set_data("done")
-    else:
-        msg = "archive for node not found"
-        req.response.status_code = 400
-        req.response.set_data(msg)
-        logg.warning("%s", msg)
-
-    _core.db.session.commit()
 
 
 def send_from_webroot(req):

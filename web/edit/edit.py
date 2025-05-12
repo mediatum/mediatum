@@ -65,29 +65,12 @@ def getEditorIconPath(node, home_dir = None, upload_dir = None, trash_dir = None
     '''
     retrieve icon path for editor tree relative to img/
     '''
-
-    if node is home_dir:
-        return 'webtree/home.svg'
     if node is upload_dir:
-        return 'webtree/download.svg'
+        return '/static/img/webtree/download.svg'
     if node is trash_dir:
-        return 'webtree/trashbin.svg'
+        return '/static/img/webtree/trashbin.svg'
 
-    if hasattr(node, 'treeiconclass'):
-        return "webtree/" + node.treeiconclass() + ".svg"
-    else:
-        return "webtree/" + node.type + ".svg"
-
-
-def get_editor_icon_path_from_nodeclass(cls):
-    '''
-    retrieve icon path for editor tree relative to img/
-    '''
-
-    if hasattr(cls, 'treeiconclass'):
-        return u"webtree/{}.svg".format(cls.treeiconclass())
-    else:
-        return u"webtree/{}.svg".format(cls.__name__)
+    return node.tree_icon_path
 
 
 def getIDPaths(nid, sep="/", containers_only=True):
@@ -240,7 +223,7 @@ def frameset(req):
             ct_name = _core_translation.translate(language, ct.__name__)
         except _core_translation.MessageIdNotFound:
             ct_name = ct.__name__
-        cmenu_iconpaths.append([ct.__name__.lower(), ct_name, get_editor_icon_path_from_nodeclass(ct)])
+        cmenu_iconpaths.append([ct.__name__.lower(), ct_name, ct.tree_icon_path])
 
     homenodefilter = req.values.get('homenodefilter', '')
 
@@ -946,17 +929,15 @@ def content(req):
         s.append(get_edit_label(n, language))
         dircontent = ' <b>&raquo;</b> '.join(s)
 
-    # add icons to breadcrumbs
-    ipath = 'webtree/directory.svg'
-    if node and node.isContainer():
-        if node.name == 'home' or 'Arbeitsverzeichnis' in node.name or node == user.home_dir:
-            ipath = 'webtree/home.svg'
-        elif node.name in ('Uploads', 'upload'):
-            ipath = 'webtree/download.svg'
-        elif node.name in ('Papierkorb', 'trash'):
-            ipath = 'webtree/trashbin.svg'
-        else:
-            ipath = getEditorIconPath(node)
+    # add icons to breadcrumb
+    if not (node and node.isContainer()):
+        icon_path = '/static/img/webtree/directory.svg'
+    elif node.name in ('Uploads', 'upload'):
+        icon_path = '/static/img/webtree/download.svg'
+    elif node.name in ('Papierkorb', 'trash'):
+        icon_path = '/static/img/webtree/trashbin.svg'
+    else:
+        icon_path = getEditorIconPath(node)
 
     v.update(
         script="",
@@ -976,7 +957,7 @@ def content(req):
             macro="show_operations",
             request=req,
         ),
-        dircontent=u'{}&nbsp;&nbsp;<img src="/static/img/{}" class="mediatum-icon-small"/>'.format(dircontent, ipath),
+        dircontent=u'{}&nbsp;&nbsp;<img src="{}" class="mediatum-icon-small"/>'.format(dircontent, icon_path),
         nodesperpage_options=_web_common_pagination.get_config_nodes_per_page(True),
         nodesperpage_from_req=req.values.get("nodes_per_page"),
         sortfield=req.values.get("sortfield", node.get("sortfield")) or "off",

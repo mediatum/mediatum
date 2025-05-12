@@ -443,6 +443,9 @@ class BadFile(Exception):
 class Content(Data, SchemaMixin):
     """(Abstract) base class for all content node types.
     """
+
+    tree_icon_path = "/static/img/file.svg"
+
     def get_thumbnail_path(self):
         files = self.files.filter_by(filetype="thumbnail")
         for f in files:

@@ -1,22 +1,21 @@
 # Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
+from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
 import datetime
+import hashlib
 import logging
 import logging.handlers as _logging_handlers
 import sys
 import traceback
 
 from core import config
-import hashlib
-try:
-    import uwsgi as _uwsgi
-except ImportError:
-    _uwsgi = None
-import utils as _utils_utils
+import utils as _utils
+import utils.utils as _
+import utils.uwsgi as _
 
 ROOT_STREAM_LOGFORMAT = '%(asctime)s [%(process)d/%(threadName)s] %(name)s %(levelname)s | %(message)s'
 # this also logs filename and line number, which is great for debugging
@@ -42,7 +41,7 @@ def initialize(level=None, log_filepath=None):
     root_logger.handlers = []
     root_logger.addHandler(stream_handler)
 
-    if _uwsgi:
+    if _utils.uwsgi.loaded:
         return
 
     if log_filepath is None:
@@ -67,6 +66,6 @@ def make_xid_and_errormsg_hash():
     formatted_traceback = "\n".join(traceback.format_tb(sys.exc_info()[2]))
     hashed_errormsg = hashlib.md5(error_msg).hexdigest()[:6]
     hashed_tb = hashlib.md5(formatted_traceback).hexdigest()[:6]
-    random_string = _utils_utils.gen_secure_token(64).upper()
+    random_string = _utils.utils.gen_secure_token(64).upper()
     xid = "%s__%s__%s__%s" % (date_now, hashed_tb, hashed_errormsg, random_string)
     return xid, hashed_errormsg, hashed_tb

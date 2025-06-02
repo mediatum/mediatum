@@ -158,25 +158,6 @@ class Data(Node):
 
     content_children = children_rel("Content")
 
-    editor_menu = (
-        "parentcontent",
-        "view",
-        "metadata",
-        "files",
-        { "menuoperation": (
-            "acls",
-            "changeschema",
-            { "menueditobject": (
-                "classes",
-                "moveobject",
-                "copyobject",
-                "deleteobject",
-                )},
-            "admin",
-            "version",
-        )},
-    )
-
     @classmethod
     def get_all_datatypes(cls):
         """Returns all known subclasses of cls except `Collections` and `Home`"""
@@ -459,6 +440,20 @@ class Content(Data, SchemaMixin):
         return _default_thumbnail_paths.get((self.type, None)) or \
                _default_thumbnail_paths.get((None, self.schema)) or \
                _default_thumbnail_paths.get((self.type, self.schema))
+
+    def get_editor_menu(self, user, multiple_nodes, has_childs):
+        menu = list(super(Content, self).get_editor_menu(user, multiple_nodes, has_childs))
+        menuoperations = list(menu[1]["menuoperation"])
+        menuoperations.insert(1, "changeschema")
+        menuoperations.insert(2, { "menueditobject": ("classes", "moveobject", "copyobject", "deleteobject")})
+        menu.insert(0, "parentcontent")
+        menu.insert(2, "files")
+        if not multiple_nodes:
+            menuoperations.append("version")
+            menu.insert(1, "view")
+        menu[-1]["menuoperation"] = tuple(menuoperations)
+
+        return tuple(menu)
 
 
 @check_type_arg_with_schema

@@ -44,8 +44,6 @@ let
       humanize
       ipaddr
       ipdb
-      ipython
-      ipython-sql
       jinja2
       ldap
       lrucache-1-6-1

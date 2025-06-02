@@ -29,6 +29,7 @@ import utils as _utils
 _logg = _logging.getLogger(__name__)
 
 _registered_signal_names = set()
+_registered_rbtimer_names = set()
 
 
 def synchronize_number_in_cache(cache_name, number_name):
@@ -117,3 +118,32 @@ def register_signal_handler_for_worker(name):
                         )
         _uwsgi.register_signal(signal, "worker", wrapper)
     return decorator
+
+
+def add_rb_timer(timer_name, signal_name, interval):
+    """
+    Registers a uwsgi red-black timer for the
+    signal with the given `signal_name`.
+    The timer needs a `timer_name`, which is used as follows:
+    If a timer of this name was already registered in uwsgi
+    (e.g. by another worker process), it is not registered again.
+    If a timer of this name was already registered
+    in the calling process, an error is raised.
+    It is also an error to register a timer with
+    a different signal name, or with a different interval.
+    This function may only be called with uwsgi loaded.
+    """
+    assert loaded
+    assert (interval > 0) and isinstance(interval, (int, long))
+    if timer_name in _registered_rbtimer_names:
+        raise RuntimeError("timer with name {} already exists".format(timer_name))
+    _registered_rbtimer_names.add(timer_name)
+    with _utils.locks.named_lock("uwsgi-timers"):
+        name2timer = _json.loads(_uwsgi.cache_get("rbtimers") or "{}")
+        if timer_name not in name2timer:
+            name2timer[timer_name] = dict(sig=signal_name, int=int(interval))
+            _logg.debug("storing new uwsgi timer %s=(%s, %s) in cache rbtimers", timer_name, signal_name, interval)
+            _uwsgi.add_rb_timer(get_signal_number(signal_name), interval)
+            _uwsgi.cache_update("rbtimers", _json.dumps(name2timer))
+    if (name2timer[timer_name]["sig"] != signal_name) or (name2timer[timer_name]["int"] != interval):
+        raise RuntimeError("attempting to re-register rb-timer with inconsistent values")

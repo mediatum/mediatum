@@ -82,7 +82,6 @@ let
       });
     inherit (pkgs)
       ffmpeg
-      ghostscript
       glibcLocales
       graphviz-nox
       pdftk

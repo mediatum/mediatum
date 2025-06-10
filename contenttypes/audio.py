@@ -10,12 +10,14 @@ from PIL import Image, ImageDraw
 from mutagen import File as AudioFile
 
 from utils.utils import splitfilename
-from utils.date import parse_date, format_date, make_date
+from utils.date import parse_date, format_date
 from core.postgres import check_type_arg_with_schema
 from core.attachment import filebrowser as _filebrowser
 from core.database.postgres.file import File
 import contenttypes.data as _contenttypes_data
 import core as _core
+import utils as _utils
+import utils.date as _
 import utils.process
 
 logg = logging.getLogger(__name__)
@@ -59,7 +61,7 @@ def makeMetaData(self, audiofile):
     _m = audiofile.info.length // 60
     _h = int(audiofile.info.length) // 3600
 
-    self.attrs["mp3.length"] = format_date(make_date(0, 0, 0, _h, _m, _s), '%Y-%m-%dT%H:%M:%S')
+    self.attrs["mp3.length"] = format_date(_utils.date.DateTime(0, 0, 0, _h, _m, _s), '%Y-%m-%dT%H:%M:%S')
 
     if audiofile.tags:
         for key in audio_frames.keys():

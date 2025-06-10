@@ -142,16 +142,6 @@ def nullcontext():
     return suppress()
 
 
-def splitpath(path):
-    while path.endswith("/") or path.endswith("\\"):
-        path = path[:-1]
-    i = max(path.rfind("/"), path.rfind("\\"))
-    if i >= 0:
-        return path[0:i], path[i + 1:]
-    else:
-        return "", path
-
-
 def splitfilename(path):
     try:
         i = path.rindex(".")

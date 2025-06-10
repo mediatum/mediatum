@@ -60,7 +60,6 @@ let
       py_scrypt
       pydot2
       pyexiftool
-      pygeoip
       pygments
       pyjade
       pympler

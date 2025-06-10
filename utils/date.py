@@ -150,10 +150,6 @@ def format_date(t=None, format=None):
         return result
 
 
-def make_date(year, month, day, hour=0, minute=0, second=0):
-    return DateTime(year, month, day, hour, minute, second)
-
-
 def now():
     t = time.localtime(time.time())
     return DateTime(t[0], t[1], t[2], t[3], t[4], t[5])
@@ -327,10 +323,3 @@ def validateDateString(value, format=None):
     except ValueError:
         return False
     return validateDate(d)
-
-
-def dt_fromiso(isoformat_datestring):
-    """Convert datetime string in isoformat to datetime object
-       :param isoformat_datestring: string formatted like datetime.isoformat()
-    """
-    return datetime.datetime.strptime(isoformat_datestring, "%Y-%m-%dT%H:%M:%S")

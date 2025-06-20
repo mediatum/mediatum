@@ -14,11 +14,6 @@ import tempfile
 
 _sys.path.append(_os.path.abspath(_os.path.join(__file__, "..", "..")))
 
-try:
-    import IPython.core.ultratb as ultratb
-except:
-    ultratb = None
-
 from werkzeug._reloader import run_with_reloader
 
 import core as _core

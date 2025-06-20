@@ -147,3 +147,8 @@ def add_rb_timer(timer_name, signal_name, interval):
             _uwsgi.cache_update("rbtimers", _json.dumps(name2timer))
     if (name2timer[timer_name]["sig"] != signal_name) or (name2timer[timer_name]["int"] != interval):
         raise RuntimeError("attempting to re-register rb-timer with inconsistent values")
+
+
+def trigger_signal(name):
+    assert loaded
+    _uwsgi.signal(get_signal_number(name))

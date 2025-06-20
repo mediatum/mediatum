@@ -62,7 +62,6 @@ let
       pyexiftool
       pygments
       pyjade
-      pympler
       pyyaml
       requests
       ruamel_yaml

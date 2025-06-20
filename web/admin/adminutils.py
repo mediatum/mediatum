@@ -23,7 +23,6 @@ from utils.utils import parse_menu_struct
 from core.exceptions import SecurityException
 from .modules import default as _modules_default
 from .modules import mapping as _modules_mapping
-from .modules import memstats as _modules_memstats
 from .modules import menusystem as _modules_menusystem
 from .modules import menuworkflow as _modules_menuworkflow
 from .modules import menudata as _modules_menudata
@@ -49,7 +48,6 @@ _menu = (
 # delivers all active admin modules in navigations
 adminModules = {m.__name__.replace("web.admin.modules.", ""):m for m in (
     _modules_default,
-    _modules_memstats,
     _modules_menusystem,
     _modules_metatype,
     _modules_menuworkflow,
@@ -234,8 +232,7 @@ def show_content(req, op):
         return _tal.processTAL({}, file="web/admin/frame.html", macro="errormessage", request=req)
     else:
         if op == "" or op not in get_menu_strings(_menu):
-            if op != "memstats":
-                op = "menumain"
+            op = "menumain"
         module = adminModules[op.split("_")[0]]
 
         if op.find("_") > -1:

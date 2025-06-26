@@ -198,16 +198,10 @@ def init_modules():
     if config.getboolean("oai.activate", False):
         oaisets.init()
 
-    from export import exportutils
-    exportutils.init()
     from schema import schema
     schema.init()
-    from core import xmlnode
-#     xmlnode.init()
     from core import auth
     auth.init()
-    from export import exportutils
-    exportutils.init()
 
 
 def add_ustr_builtin():

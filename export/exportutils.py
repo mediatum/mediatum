@@ -30,8 +30,6 @@ logg = logging.getLogger(__name__)
 
 tagpattern = re.compile(r'<[^>]*?>')
 
-default_context = {} # filled by init()
-
 
 def no_html(s):
     return tagpattern.sub('', s)
@@ -241,31 +239,32 @@ def runTALSnippet(s, context, mask=None):
     return wr_result[wr_result.find(cutter)+len(cutter):wr_result.rfind(cutter)]
 
 
-def init():
-    default_context['esc'] = esc  # may be needed for example in escaping rss item elements
-    default_context['esc2'] = esc2  # may be needed for example in escaping rss item elements
-    default_context['no_html'] = no_html
-    default_context['u'] = u
-    default_context['utf82iso'] = utf82iso
-    default_context['iso2utf8'] = iso2utf8
-    default_context['prss'] = prss # protect rss
-    default_context['parse_date'] = parse_date
-    default_context['format_date'] = format_date
-    default_context['cdata'] = cdata
-    default_context['get_udate'] = get_udate
-    default_context['getAccessRights'] = getAccessRights
-    default_context['normLanguage_iso_639_2_b'] = normLanguage_iso_639_2_b
-    default_context['normLanguage_iso_639_2_t'] = normLanguage_iso_639_2_t
+_default_context = dict(
+    esc = esc,      # may be needed for example in escaping rss item elements
+    esc2 = esc2,    # may be needed for example in escaping rss item elements
+    no_html = no_html,
+    u = u,
+    utf82iso = utf82iso,
+    iso2utf8 = iso2utf8,
+    prss = prss,    # protect rss
+    parse_date = parse_date,
+    format_date = format_date,
+    cdata = cdata,
+    get_udate = get_udate,
+    getAccessRights = getAccessRights,
+    normLanguage_iso_639_2_b = normLanguage_iso_639_2_b,
+    normLanguage_iso_639_2_t = normLanguage_iso_639_2_t,
+)
 
 
 def registerDefaultContextEntry(key, entry):
-    default_context[key] = entry
+    _default_context[key] = entry
 
 
 def handleCommand(cmd, var, s, node, attrnode=None, field_value="", options=[], mask=None):
     from web.frontend.filehelpers import build_filelist, get_transfer_url
     if cmd == 'cmd:getTAL':
-        context = default_context.copy()
+        context = _default_context.copy()
         context['node'] = node
         context['build_filelist'] = build_filelist
         context['get_transfer_url'] = get_transfer_url

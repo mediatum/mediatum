@@ -1,0 +1,32 @@
+<!--
+  Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<metal:block metal:define-macro="workflow_step_type_config">
+    <label>
+        <tal:block i18n:translate="">template2metadata-target-metadata-name</tal:block>
+        <input type="text" name="stepsetting_target-metadata-name" tal:attributes="value target_metadata_name"/>
+    </label>
+    <label>
+        <tal:block i18n:translate="">template2metadata-tal-template</tal:block>
+        <textarea type="text" name="stepsetting_tal-template" tal:content="python: tal_template"/>
+    </label>
+    <label>
+        <tal:block i18n:translate="">template2metadata-remove-empty</tal:block>
+        <input
+            type="checkbox"
+            name="stepsetting_empty-remove"
+            tal:attributes="checked python:'checked' if empty_remove else None"
+            value="1"
+        />
+    </label>
+    <label>
+        <tal:block i18n:translate="">template2metadata-strip-eol</tal:block>
+        <input
+            type="checkbox"
+            name="stepsetting_strip-eol"
+            tal:attributes="checked python:'checked' if strip_eol else None"
+            value="1"
+        />
+    </label>
+</metal:block>

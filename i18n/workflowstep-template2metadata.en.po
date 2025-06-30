@@ -1,0 +1,14 @@
+msgid "workflowstep_template2metadata"
+msgstr "Generate Metadata from Template"
+
+msgid "template2metadata-strip-eol"
+msgstr "strip tailing EOL"
+
+msgid "template2metadata-target-metadata-name"
+msgstr "Target Metadatafield Name"
+
+msgid "template2metadata-tal-template"
+msgstr "TAL-Template"
+
+msgid "template2metadata-remove-empty"
+msgstr "Remove empty metadata field"

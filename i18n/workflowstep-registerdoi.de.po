@@ -1,0 +1,11 @@
+msgid "workflowstep_registerdoi"
+msgstr "DOI registrieren"
+
+msgid "registerdoi-suffixattr"
+msgstr "DOI-Suffix Attribut"
+
+msgid "registerdoi-action"
+msgstr "Handlung"
+
+msgid "registerdoi-urlattr"
+msgstr "Ziel-URL Attribut"

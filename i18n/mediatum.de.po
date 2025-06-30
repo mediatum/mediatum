@@ -373,6 +373,18 @@ msgstr "Publizieren"
 msgid "tab_news"
 msgstr "Mitteilungen verwalten"
 
+msgid "tab_registerdoi"
+msgstr "DOI-Vergabe"
+
+msgid "tab_createdoi"
+msgstr "Erzeugen"
+
+msgid "tab_updatedoi"
+msgstr "Aktualisieren"
+
+msgid "tab_createorupdatedoi"
+msgstr "Aktualisieren oder Erzeugen"
+
 msgid "liststyle_list"
 msgstr "Listen-Ansicht mit Thumbnail"
 
@@ -784,3 +796,33 @@ msgstr "Mehr ..."
 
 msgid "stylelist-nodelink-title"
 msgstr ""
+
+msgid "registerdoi-create"
+msgstr "Erzeugen"
+
+msgid "registerdoi-update"
+msgstr "Aktualisieren"
+
+msgid "registerdoi-event"
+msgstr "Event"
+
+msgid "registerdoi-event-draft"
+msgstr "unverändert/Entwurf [leer]"
+
+msgid "registerdoi-event-register"
+msgstr "Entwurf registrieren [register]"
+
+msgid "registerdoi-event-publish"
+msgstr "veröffentlichen [publish]"
+
+msgid "registerdoi-event-hidden"
+msgstr "Veröffentlichung verstecken [hide]"
+
+msgid "registerdoi-update-create"
+msgstr "Aktualisieren oder Erzeugen"
+
+msgid "registerdoi-event"
+msgstr "Event"
+
+msgid "registerdoi-mask"
+msgstr "XML-TAL-Maskenname"

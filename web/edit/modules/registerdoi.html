@@ -1,0 +1,131 @@
+<!--
+  Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<tal:block metal:define-macro="registerdoi">
+    <p class="error" tal:condition="python:status == False" i18n:translate="registerdoi-error">
+        <span tal:content="python: prefix" i18n:name="prefix"/>
+        <span tal:content="python: suffix" i18n:name="suffix"/>
+    </p>
+    <p class="mediatum-editor-oktext" tal:condition="python:status == True" i18n:translate="registerdoi-ok">
+        <span tal:content="python: prefix" i18n:name="prefix"/>
+        <span tal:content="python: suffix" i18n:name="suffix"/>
+    </p>
+    <form
+        tal:attributes="action python:u'edit_content?id={}&tab=registerdoi'.format(id)"
+        method="POST"
+        class="mediatum_editor_doi"
+        >
+        <h2 i18n:translate="registerdoi-title">
+            <span tal:content="python: id" i18n:name="id"/>
+            <span tal:content="python: nodename" i18n:name="name"/>
+        </h2>
+        <input tal:attributes="value csrf" type="hidden" name="csrf_token"/>
+        <input tal:attributes="value srcnodeid" type="hidden" name="srcnodeid"/>
+        <label>
+            <tal:block i18n:translate="">registerdoi-suffix</tal:block>
+            <input
+                type="text"
+                name="suffix"
+                required="required"
+                tal:attributes="value python:suffix; disabled python:'disabled' if status == True else None"
+            />
+        </label>
+        <label>
+            <tal:block i18n:translate="">registerdoi-mask</tal:block>
+            <select
+                name="mask"
+                tal:condition="python: not status"
+            >
+                <option
+                    tal:attributes="selected python:'selected' if selected_mask is None else None"
+                    style="font-style: italic;"
+                    value="0"
+                    i18n:translate=""
+                >
+                    registerdoi-donot-update
+                </option>
+                <option
+                    tal:repeat="mask masks"
+                    tal:attributes="value python:u'1.{}'.format(mask.name); selected python:'selected' if mask.name == selected_mask else None"
+                    tal:content="python:mask.name"
+                />
+            </select>
+        </label>
+        <label>
+            <tal:block i18n:translate="">registerdoi-url</tal:block>
+            <input
+                type="text"
+                name="url"
+                tal:attributes="value python: url; disabled python:'disabled' if status == True else None"
+            />
+        </label>
+        <label>
+            <tal:block i18n:translate="">registerdoi-event</tal:block>
+            <select name="event" tal:attributes="disabled python:'disabled' if status == True else None">
+                <option
+                    value="none"
+                    tal:attributes="selected python:'selected' if event is None else None"
+                    i18n:translate=""
+                >
+                    registerdoi-event-draft
+                </option>
+                <option
+                    value="register"
+                    tal:attributes="selected python:'selected' if event == 'register' else None"
+                    i18n:translate=""
+                >
+                    registerdoi-event-register
+                </option>
+                <option
+                    value="publish"
+                    tal:attributes="selected python:'selected' if event == 'publish' else None"
+                    i18n:translate=""
+                >
+                    registerdoi-event-publish
+                </option>
+                <option
+                    value="hide"
+                    tal:attributes="selected python:'selected' if event == 'hide' else None"
+                    i18n:translate=""
+                >
+                    registerdoi-event-hide
+                </option>
+            </select>
+        </label>
+        <p>
+            <button
+                type="submit"
+                name="create"
+                value="create"
+                tal:attributes="disabled python: 'disabled' if status == True else None"
+                i18n:translate=""
+            >
+                registerdoi-create
+            </button>
+            <button
+                type="submit"
+                name="update"
+                value="update"
+                tal:attributes="disabled python: 'disabled' if status == True else None"
+                i18n:translate=""
+            >
+                registerdoi-update
+            </button>
+            <button
+                type="submit"
+                name="update-create"
+                value="update-create"
+                tal:attributes="disabled python: 'disabled' if status == True else None"
+                i18n:translate=""
+            >
+                registerdoi-update-create
+            </button>
+            <button type="submit" name="back" value="back" formnovalidate="formnovalidate" i18n:translate="">back</button>
+        </p>
+    </form>
+</tal:block>
+
+<tal:block metal:define-macro="view_node">
+    <script tal:content="python:u'''registerdoi_exit('{}', '{}');'''.format(srcnodeid, id)"> </script>
+</tal:block>

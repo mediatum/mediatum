@@ -15,7 +15,10 @@ function showOrHide(selector, selectedIndex){
 function createMetaObject(id){
     var ajax_response;
     var options = {
-          url: '/edit/edit_content?action=createobject&func=createMetaObject&contenttype='+$('#schema').val().split('|')[1]+'&schema='+$('#schema').val().split('|')[0]+'&id='+id,
+          url: `/edit/edit_content?action=createobject` +
+            `&contenttype=${$('#schema').val().split('|')[1]}` +
+            `&schema=${$('#schema').val().split('|')[0]}` +
+            `&id=${id}`,
           async: false,
           dataType: 'json',
           success: function(data){

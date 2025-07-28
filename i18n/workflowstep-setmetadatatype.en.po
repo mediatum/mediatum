@@ -1,0 +1,11 @@
+msgid "workflowstep_setmetadatatype"
+msgstr "Set Metadatatype and Schema"
+
+msgid "setmetadatatype_type_attribute"
+msgstr "Type-Attribute"
+
+msgid "setmetadatatype_schema_attribute"
+msgstr "Schema-Attribute"
+
+msgid "setmetadatatype_keep_files"
+msgstr "Keep node files"

@@ -8,7 +8,10 @@ function createObjectFromIdentifier(id){
     var ajax_response;
 
     var options = {
-          url: '/edit/edit_content?action=obj_from_identifier&func=createObjectFromIdentifier&identifier_importer='+$('#identifier_importer').val()+'&identifier='+$('#input_identifier').val()+'&id='+id,
+          url: `/edit/edit_content?action=obj_from_identifier` +
+            `&identifier_importer=${$('#identifier_importer').val()}` +
+            `&identifier=${$('#input_identifier').val()}` +
+            `&id=${id}`,
           async: false,
           dataType: 'json',
           success: function(data){

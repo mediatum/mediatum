@@ -709,6 +709,7 @@ def register():
     from . import editmetadata
     from . import email
     from . import end
+    from . import fork
     from . import hierarchicalchoice2metafield
     from . import joinmetafields
     from . import metafield2metadata
@@ -717,6 +718,7 @@ def register():
     from . import reauth
     from . import registerdoi
     from . import setnodename
+    from . import setmetadatatype
     from . import showdata
     from . import start
     from . import template2metadata
@@ -737,6 +739,7 @@ def register():
         editmetadata,
         email,
         end,
+        fork,
         hierarchicalchoice2metafield,
         joinmetafields,
         metafield2metadata,
@@ -745,6 +748,7 @@ def register():
         reauth,
         registerdoi,
         setnodename,
+        setmetadatatype,
         showdata,
         start,
         template2metadata,

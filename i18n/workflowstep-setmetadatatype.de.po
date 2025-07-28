@@ -1,0 +1,11 @@
+msgid "workflowstep_setmetadatatype"
+msgstr "Metadatentyp und -schema festlegen"
+
+msgid "setmetadatatype_type_attribute"
+msgstr "Typ-Attribut"
+
+msgid "setmetadatatype_schema_attribute"
+msgstr "Schema-Attribut"
+
+msgid "setmetadatatype_keep_files"
+msgstr "Knoten-Dateien erhalten"

@@ -1,0 +1,5 @@
+msgid "workflowstep_fork"
+msgstr "Forking workflow"
+
+msgid "fork_attribute"
+msgstr "Attribut"

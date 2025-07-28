@@ -146,7 +146,7 @@ def splitfilename(path):
     try:
         i = path.rindex(".")
         return path[0:i], path[i + 1:]
-    except:
+    except ValueError:
         return path, ""
 
 

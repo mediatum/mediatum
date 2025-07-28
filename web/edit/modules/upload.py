@@ -7,6 +7,7 @@ from __future__ import division
 from __future__ import print_function
 
 import itertools as _itertools
+import httplib as _httplib
 import os
 import codecs
 import core.users as users
@@ -78,6 +79,10 @@ def getContent(req, ids):
     if "action" in req.values:
         state = 'ok'
         basenode = _core.db.query(Node).get(id)
+        if not basenode.has_write_access():
+            req.response.status_code = _httplib.FORBIDDEN
+            req.response.set_data(_core_translation.translate(language, "permission_denied"))
+            return
         if req.values['action'] == "removefiles":
             for f in basenode.files:
                 try:

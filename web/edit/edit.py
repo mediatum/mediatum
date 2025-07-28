@@ -811,9 +811,6 @@ def content(req):
     assert "_" not in current
     logg.debug("... %s inside %s.%s: ->  !!! current = %s !!!", _utils_utils.get_user_id(), __name__, _utils_utils.funcname(), current)
     msg = "%s selected editor module is %s" % (user.login_name, current)
-    jsfunc = req.values.get("func", "")
-    if jsfunc:
-        msg = msg + (', js-function: %r' % jsfunc)
     logg.info("%s", msg)
 
     # some tabs operate on only one file

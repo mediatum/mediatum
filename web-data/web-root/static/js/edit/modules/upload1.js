@@ -6,7 +6,7 @@
 function openMetaForm(id){
     var ajax_response;
     var options = {
-        url: '/edit/edit_content?action=addmeta&func=openMetaForm&id='+id,
+        url: `/edit/edit_content?action=addmeta&id=${id}`,
         async: false,
         dataType: 'json',
         success: function(data){
@@ -32,7 +32,7 @@ function closeMetaForm(){ // close upload form
 function openDoiForm(id){
     var ajax_response;
     var options = {
-        url: '/edit/edit_content?action=adddoi&func=openMetaForm&id='+id,
+        url: `/edit/edit_content?action=adddoi&id=${id}`,
         async: false,
         dataType: 'json',
         success: function(data){
@@ -58,7 +58,7 @@ var uploaderbibtext = null;
 function openUploadFormPluploadWidgetFile(id){ // show upload form
     var ajax_response;
     var options = {
-        url: '/edit/edit_content?action=removefiles&func=openUploadFormPluploadWidgetFile&id='+id,
+        url: `/edit/edit_content?action=removefiles&id=${id}`,
         async: false,
         dataType: 'json',
         success: function(data) {
@@ -122,7 +122,7 @@ function createObjectsPluploadFile(id){ // build object out of files
         var ajax_response;
 
         var options = {
-            url: '/edit/edit_content?action=buildnode&func=createObjectsPlupload&id='+id+'&files='+encodeURIComponent(files)+'&type='+type+'&value='+value,
+            url: `/edit/edit_content?action=buildnode&id=${id}&files=${encodeURIComponent(files)}&type=${type}&value=${value}`,
             async: false,
             dataType: 'json',
             success: function (data) {
@@ -197,7 +197,7 @@ function init_plupload_widget_file(id) {
         // General settings
         runtimes : 'html5',
         autostart: false,
-        url : '/edit/edit_content?action=upload&func=init_plupload_widget_file&uploader=plupload&id='+id,
+        url: `/edit/edit_content?action=upload&uploader=plupload&id=${id}`,
         // User can upload no more then 20 files in one go (sets multiple_queues to false)
         max_file_count: 0,  // default is 0 -> no limit
         //multipart_params : mpv,
@@ -397,7 +397,7 @@ function openUploadFormPluploadWidgetBib(id){ // show upload form
     var ajax_response;
 
     var options = {
-        url: '/edit/edit_content?action=removefiles&func=openUploadFormPluploadWidgetBib&id='+id,
+        url: `/edit/edit_content?action=removefiles&id=${id}`,
         async: false,
         dataType: 'json',
         success: function(data) {
@@ -456,7 +456,7 @@ function createObjectsPluploadBib(id){ // build object out of files
         console.log('upload.createObjectsbib: l:'+l+', value:'+value+', type:'+type+', files:'+files);
         var ajax_response;
         var options = {
-                url: '/edit/edit_content?action=buildnode&func=createObjectsPlupload&id='+id+'&files='+encodeURIComponent(files)+'&type='+type+'&value='+value,
+                url: `/edit/edit_content?action=buildnode&id=${id}&files=${encodeURIComponent(files)}&type=${type}&value=${value}`,
                 async: false,
                 dataType: 'json',
                 success: function (data) {
@@ -506,7 +506,7 @@ function init_plupload_widget_bib(id) {
             // General settings
             runtimes : 'html5',
             autostart: false,
-            url : '/edit/edit_content?action=upload&func=init_plupload_widget_bib&uploader=plupload&id='+id,
+            url: `/edit/edit_content?action=upload&uploader=plupload&id=${id}`,
             // User can upload no more then 20 files in one go (sets multiple_queues to false)
             max_file_count: 0,  // default is 0 -> no limit
             //multipart_params : mpv,

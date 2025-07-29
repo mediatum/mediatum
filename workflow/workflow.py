@@ -701,7 +701,6 @@ def register():
     from . import addformpage
     from . import classify
     from . import classifybyattribute
-    from . import condition
     from . import defer
     from . import deferprocessing
     from . import delete
@@ -731,7 +730,6 @@ def register():
         addformpage,
         classify,
         classifybyattribute,
-        condition,
         defer,
         deferprocessing,
         delete,

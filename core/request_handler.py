@@ -136,7 +136,7 @@ class _OSFilesystem:
 
 
 def sendFile(req, path, content_type, force=0):
-    assert req.method == 'GET'
+    assert req.method in ('GET', 'HEAD')
     if isinstance(path, unicode):
         path = path.encode("utf8")
 

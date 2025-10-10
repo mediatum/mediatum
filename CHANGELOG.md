@@ -1,8 +1,9 @@
 # Change Log
 All notable changes to mediaTUM will be documented in this file.
 
-We mostly follow the conventions given in [Keep a Changelog](http://keepachangelog.com/) and relase a new version several times a year
-Calendar Versioning is used for our version numbers: http://calver.org/
+## [v2025.10] - 2020-10-10
+
+- mediatum is now licensed under AGPL 3.0+ (see the file COPYING).
 
 - New Features
   - New Workflowsteps:
@@ -87,6 +88,7 @@ Calendar Versioning is used for our version numbers: http://calver.org/
       - add to folder
       - Check Content
       - File-Attachment
+      - Condition
     - remove metadatatypes
       - dynamic valuelist
       - hierarchical list
@@ -106,7 +108,7 @@ Calendar Versioning is used for our version numbers: http://calver.org/
   - unsent email is not allowed to edit
   - nginx X-Accel is now configured per directory in mediatum.conf
   - all collection node with exactly one image is used as logo
-  - esc(esc(..)) and desc(..) and cdata(..)) and config_get(..) must be removed from tal templates. 
+  - esc(esc(..)) and desc(..) and cdata(..)) and config_get(..) must be removed from tal templates.
     Use 'host_url_join' in place of 'config_get("host.name")', and ` for proper escaping.
   - all startpages must fulfill xml-specification
   - versioning of nodes is now exclusively handled by a dedicated editor module and menu entry

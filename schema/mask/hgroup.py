@@ -38,19 +38,12 @@ class m_hgroup(Metatype):
                 ret.append(f.getViewHTML(item, nodes, flags, language=language))
             return ret
         else:
-            if use_label:
-                snippets = [
-                        """
-                            <div class="mask_row hgroup hgroup-{}">
-                                <div class="mask_label">{}: </div>
-                                <div class="mask_value">
-                        """.format(
-                            maskitem.id,
-                            _utils_utils.esc(maskitem.getLabel()),
-                        )
-                    ]
-            else:
-                snippets = ['<div class="mask_row hgroup hgroup-%s"><div class="mask_value">' % (maskitem.id)]
+            snippets = []
+            use_label = maskitem.getLabel() if use_label or ""
+            use_label = "{}: ".format(_utils_utils.esc(use_label)) if use_label else "&nbsp;"
+            snippets.append('<dt class="mask_label">{}: </dt>'.format(use_label)
+            del use_label
+            snippets.append('<dd class="mask_value">')
             raw_values = ['&nbsp;']
             sep = ''
             has_raw_value = False  # skip group display if no item has raw_value
@@ -73,9 +66,9 @@ class m_hgroup(Metatype):
             if not has_raw_value:
                 snippets = []  # no value when all sub elements are empty
             elif raw_values and unit:
-                snippets.append('&nbsp;<span class="hgroup_unit field_unit hgroup-%s">%s</span></div></div>' % (maskitem.id, unit))
+                snippets.append('&nbsp;<span class="hgroup_unit field_unit hgroup-%s">%s</span></dd>' % (maskitem.id, unit))
             elif raw_values:
-                snippets.append('</div></div>')
+                snippets.append('</dd>')
             ret = ''.join(snippets)
             return ret
 

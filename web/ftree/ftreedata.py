@@ -176,6 +176,9 @@ def _get_path_to(path_to, style, multiselect):
             if node.id not in path and node.isContainer():  # add node if container
                 path.append(node)
 
+            if not path:  # this might happen if a document is (also) at a workflow step
+                continue
+
             checked.add(path[-1].id)  # last item of path is checked
 
             if path[0].parents[0].id == collectionsid and collectionsid not in items:

@@ -28,12 +28,16 @@ depends_on = None
 _sys.path.append(_os.path.abspath(_os.path.join(_os.path.dirname(__file__), "../..")))
 
 import core as _core
+import core.database as _
+import core.database.postgres as _
+import core.database.postgres.node as _
 from core import init as _core_init
 _core_init.full_init()
 
 
 def upgrade():
-    for node in _core.db.query(_core.Node).filter(_core.Node.system_attrs['mailtmp.from'] != None).all():
+    Node = _core.database.postgres.node.Node
+    for node in _core.db.query(Node).filter(Node.system_attrs['mailtmp.from'] != None).all():
         node.system_attrs.pop("mailtmp.from")
         node.system_attrs.pop("mailtmp.to", None)
         node.system_attrs.pop("mailtmp.subject", None)

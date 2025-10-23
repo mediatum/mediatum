@@ -590,6 +590,11 @@ em
     text-align: end;
 }
 
+/* workflowstep type "showdata" */
+dl.mediatum-workflowstep-showdata-fieldscolumn dt.mask_label { float: left; width: 200px; text-align: left;}
+dl.mediatum-workflowstep-showdata-fieldscolumn dd.mask_value { margin: 0 0 0 202px; padding: 0 0 8px 0;}
+
+
 div.editorrow { margin: 4px;}
 div.editorrow  div.label { width: 200px; float: left; padding-top: 4px; display: inline;}
 div.editorrow #div_description { float: left; border: 0px solid white; min-width: 20px; display: block; padding-top: 2px;}

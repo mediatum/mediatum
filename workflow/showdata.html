@@ -79,7 +79,9 @@
     <table style="width:100%">
         <tr>
             <td tal:repeat="field fields" style="width:50%;padding-right:20px">
-                <tal:block tal:replace="raw field"/>
+                <dl class="mediatum-workflowstep-showdata-fieldscolumn">
+                    <tal:block tal:replace="raw field"/>
+                </dl>
             </td>
         </tr>
     </table>

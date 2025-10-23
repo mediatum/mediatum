@@ -37,40 +37,34 @@ class m_hgroup(Metatype):
                 f = getMetadataType(item.get("type"))
                 ret.append(f.getViewHTML(item, nodes, flags, language=language))
             return ret
-        else:
-            snippets = []
-            use_label = maskitem.getLabel() if use_label or ""
-            use_label = "{}: ".format(_utils_utils.esc(use_label)) if use_label else "&nbsp;"
-            snippets.append('<dt class="mask_label">{}: </dt>'.format(use_label)
-            del use_label
-            snippets.append('<dd class="mask_value">')
-            raw_values = ['&nbsp;']
-            sep = ''
-            has_raw_value = False  # skip group display if no item has raw_value
-            items = maskitem.getChildren().sort_by_orderpos()
-            for i, item in enumerate(items):
-                f = getMetadataType(item.get("type"))
-                raw_value = f.getViewHTML(item, nodes, flags | VIEW_SUB_ELEMENT, language=language)
-                if raw_value.strip():
-                    raw_values.append(raw_value)
-                    if not raw_value == '&nbsp;':
-                        has_raw_value = True
-                    if sep:
-                        snippets.append(sep)
-                        sep = item.get('separator', '&nbsp;')
-                    snippets.append('<span class="hgroup_item">%s</span>' % raw_value)
-                else:
-                    sep = ''  # no separator before or after empty sub element
+        snippets = []
+        use_label = maskitem.getLabel() if use_label else ""
+        use_label = u"{}: ".format(_utils_utils.esc(use_label)) if use_label else u"&nbsp;"
+        snippets.append(u'<dt class="mask_label">{}: </dt>'.format(use_label))
+        del use_label
+        snippets.append(u'<dd class="mask_value">')
+        raw_values = [u'&nbsp;']
+        sep = u''
+        has_raw_value = False  # skip group display if no item has raw_value
+        for item in maskitem.getChildren().sort_by_orderpos():
+            f = getMetadataType(item.get("type"))
+            raw_value = f.getViewHTML(item, nodes, flags | VIEW_SUB_ELEMENT, language=language)
+            if raw_value.strip():
+                raw_values.append(raw_value)
+                has_raw_value = has_raw_value or (raw_value != u"&nbsp;")
+                snippets.append(sep)
+                sep = sep and item.get('separator', u'&nbsp;')
+                snippets.append(u'<span class="hgroup_item">{}</span>'.format(raw_value))
+            else:
+                sep = u''  # no separator before or after empty sub element
 
-            unit = maskitem.get('unit').strip()
-            if not has_raw_value:
-                snippets = []  # no value when all sub elements are empty
-            elif raw_values and unit:
-                snippets.append('&nbsp;<span class="hgroup_unit field_unit hgroup-%s">%s</span></dd>' % (maskitem.id, unit))
-            elif raw_values:
-                snippets.append('</dd>')
-            ret = ''.join(snippets)
-            return ret
+        if not has_raw_value:
+            return u""  # no value when all sub elements are empty
+        unit = maskitem.get('unit').strip()
+        if unit:
+            snippets.append(u'&nbsp;<span class="hgroup_unit field_unit hgroup-{}">{}</span>'.format(maskitem.id, unit))
+        snippets.append(u'</dd>')
+        return u''.join(snippets)
 
     def getMetaHTML(self, parent, index, sub=False, language=None, fieldlist={}):
         item = parent.children.order_by(Node.orderpos)[index]

@@ -125,7 +125,7 @@ def struct2xml(path, qualifier, query_string, host_url, params, d, send_timetabl
                 xmlnode = add_node_to_xmldoc(
                         n,
                         xml_nodelist,
-                        children=False,
+                        max_depth=0,
                         attribute_name_filter=attribute_name_filter,
                     )
                 add_mask_xml(xmlnode, n, mask, language)
@@ -136,14 +136,12 @@ def struct2xml(path, qualifier, query_string, host_url, params, d, send_timetabl
                 xmlnode = add_node_to_xmldoc(
                         n,
                         xml_nodelist,
-                        children=True,
                         attribute_name_filter=attribute_name_filter,
                     )
             else:
                 xmlnode = add_node_to_xmldoc(
                         n,
                         xmlroot,
-                        children=False,
                         attribute_name_filter=attribute_name_filter,
                     )
 

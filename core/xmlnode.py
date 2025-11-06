@@ -5,6 +5,7 @@ from __future__ import division
 from __future__ import print_function
 
 from core.database.postgres.node import Node
+import decimal as _decimal
 import itertools as _itertools
 import logging
 import operator as _operator
@@ -34,8 +35,7 @@ def create_xml_nodelist(xmlroot=None):
 def add_node_to_xmldoc(
         node,
         xmlroot,
-        children=True,
-        exclude_childtypes=frozenset(),
+        max_depth=_decimal.Decimal("infinity"),
         attribute_name_filter=lambda name:True,
         _written=None,
        ):
@@ -68,11 +68,8 @@ def add_node_to_xmldoc(
                 "type": fileobj.filetype
                })
 
-    if children:
+    if max_depth > 0:
         child_query = node.children
-
-        if exclude_childtypes:
-            child_query = child_query.filter(_sqlalchemy.or_(Node.schema == None, ~((Node.type + u'/' + Node.schema).in_(exclude_childtypes))))
 
         for child in child_query.order_by("orderpos"):
             etree.SubElement(xmlnode, "child").attrib.update(dict(
@@ -83,7 +80,7 @@ def add_node_to_xmldoc(
                ))
 
             if child.id not in _written:
-                add_node_to_xmldoc(child, xmlroot, children, exclude_childtypes, attribute_name_filter, _written)
+                add_node_to_xmldoc(child, xmlroot, max_depth-1, attribute_name_filter, _written)
 
     if isinstance(node, Mask):
         exportmappings = node.get(u"exportmapping").split(";")
@@ -95,7 +92,7 @@ def add_node_to_xmldoc(
         exportmappings = _itertools.imap(_core.db.query(Mapping).get, exportmappings)
         exportmappings = _itertools.ifilter(None, exportmappings)
         for mapping in exportmappings:
-            add_node_to_xmldoc(mapping, xmlroot, children, exclude_childtypes, attribute_name_filter=attribute_name_filter, _written=_written)
+            add_node_to_xmldoc(mapping, xmlroot, attribute_name_filter=attribute_name_filter, _written=_written)
     return xmlnode
 
 

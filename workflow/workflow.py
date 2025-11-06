@@ -218,9 +218,9 @@ def formatItemDate(d):
 
 def exportWorkflow(name):
     if name == "all":
-        return getNodeXML(_nodecache.get_workflows_node())
+        return getNodeXML(_nodecache.get_workflows_node(), max_depth=2)
     else:
-        return getNodeXML(getWorkflow(name))
+        return getNodeXML(getWorkflow(name), max_depth=1)
 
 
 """ import workflow from file """

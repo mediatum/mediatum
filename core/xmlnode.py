@@ -258,7 +258,7 @@ def readNodeXML(fi):
     return nodeloader.root
 
 
-def getNodeXML(node):
+def getNodeXML(node, max_depth=_decimal.Decimal("infinity")):
     nodelist = create_xml_nodelist()
 
     nodelist.set('rootname', node.name)
@@ -267,5 +267,5 @@ def getNodeXML(node):
     nodelist.set('rootschema', (node.schema or u""))
     nodelist.set('original_nodeid', unicode(node.id))
 
-    add_node_to_xmldoc(node, nodelist)
+    add_node_to_xmldoc(node, nodelist, max_depth=max_depth)
     return etree.tostring(nodelist, xml_declaration=True, pretty_print=True, encoding="utf8")

@@ -104,78 +104,17 @@ def add_node_to_xmldoc(
     return xmlnode
 
 
-class _HandlerTarget(object):
-    def start(self, tag, attrib):
-        raise NotImplementedError
-    def end(self, tag):
-        raise NotImplementedError
-    def data(self, data):
-        raise NotImplementedError
-    def comment(self, text):
-        pass
-    def close(self):
-        return "closed!"
+class _NodeLoaderTarget(object):
 
-
-class _NodeLoader(object):
-
-    def __init__(self, xml):
+    def __init__(self):
         self.root = None
         self.nodes = []
-        self.attributename = None
+        self._attributename = None
         self.id2node = {}
-        self.node_already_seen = False
-        self.rand =_utils_utils.gen_secure_token(128)
+        self._node_already_seen = False
+        self._rand =_utils_utils.gen_secure_token(128)
 
-        handler = _HandlerTarget()
-        handler.start = lambda name, attrs: self.xml_start_element(name, attrs)
-        handler.end = lambda name: self.xml_end_element(name)
-        handler.data = lambda d: self.xml_char_data(d)
-        parser = etree.XMLParser(target = handler)
-
-        try:
-            result = etree.XML(xml, parser)
-        except:
-            logg.exception("xml import: xml file not well-formed.")
-            return
-
-        mappings = _core_nodecache.get_mappings_node()
-        for node in self.nodes:
-            if (node.type == "mapping") and not any(node.name == n.name for n in mappings.children if n.type == "mapping"):
-                mappings.children.append(node)
-                _core.db.session.commit()
-                logg.debug("xml import: added  mapping id=%s, type='%s', name='%s'", node.id, node.type, node.name)
-
-        logg.debug("xml import: linking children to parents")
-        for node in self.nodes:
-            node.children.extend(self.id2node[i] for i in node.tmpchilds)
-            logg.debug("xml import: added %d children to node id='%s', type='%s', name='%s'",
-                    len(node.tmpchilds), node.id, node.type, node.name)
-        _core.db.session.commit()
-
-        for node in self.nodes:
-            if node.type == "maskitem":
-                attrs_to_map = ["attribute"]
-                if node.get("fieldtype") == u"mapping":
-                    attrs_to_map.append("mappingfield")
-            elif node.type == "mask":
-                attrs_to_map = ("exportmapping", )
-            else:
-                attrs_to_map = ()
-            for attr_name in attrs_to_map:
-                attr = node.get(attr_name)
-                if attr in self.id2node:
-                    logg.debug(
-                            "xml import: "
-                            "adjusting node attribute '%s' for %s: %s -> %s",
-                            attr_name, node.type, attr, ustr(self.id2node[attr].id)
-                           )
-                    node.set(attr_name, ustr(self.id2node[attr].id))
-
-        logg.info("xml import done")
-        _core.db.session.commit()
-
-    def xml_start_element(self, name, attrs):
+    def start(self, name, attrs):
         node = None
         with _utils_utils.suppress(Exception):
             node = self.nodes[-1]
@@ -183,7 +122,7 @@ class _NodeLoader(object):
             logg.debug("xml node import: found <nodelist>, proceeding with import")
 
         elif name == "node":
-            self.node_already_seen = False
+            self._node_already_seen = False
             parent = node
 
             # compatibility for old xml files created with mediatum:
@@ -195,12 +134,12 @@ class _NodeLoader(object):
 
             if old_id in self.id2node:
                 node = self.id2node[old_id]
-                self.node_already_seen = True
+                self._node_already_seen = True
                 return
 
             content_class = Node.get_class_for_typestring(datatype)
             if datatype=="mapping":
-                node = content_class(name=u"{}_import_{}".format(attrs["name"], self.rand))
+                node = content_class(name=u"{}_import_{}".format(attrs["name"], self._rand))
             else:
                 node = content_class(name=attrs["name"])
 
@@ -225,13 +164,13 @@ class _NodeLoader(object):
                 _core.db.session.commit()
             return
 
-        if self.node_already_seen:
+        if self._node_already_seen:
             return
 
         if name == "attribute":
             attr_name = attrs["name"]
             if "value" not in attrs:
-                self.attributename = attr_name
+                self._attributename = attr_name
                 return
             attr_value = attrs["value"]
             if attr_name=="valuelist":
@@ -249,28 +188,33 @@ class _NodeLoader(object):
                     mimetype=attrs.get("mime-type"),
                    ))
 
-    def xml_end_element(self, name):
-        if not self.node_already_seen:
+    def end(self, name):
+        if not self._node_already_seen:
             if name == "attribute":
                 logg.debug(
                         "xml import: "
                         "added attribute '%s': '%s'",
-                        self.attributename, self.nodes[-1].get(self.attributename),
+                        self._attributename, self.nodes[-1].get(self._attributename),
                        )
-            self.attributename = None
+            self._attributename = None
 
-    def xml_char_data(self, data):
-        if self.node_already_seen or not self.attributename:
+    def data(self, data):
+        if self._node_already_seen or not self._attributename:
             return
         val = ""
         with _utils_utils.suppress(Exception):
-            val = self.nodes[-1].get(self.attributename)
+            val = self.nodes[-1].get(self._attributename)
             n = self.nodes[-1]
         val += data
-        if self.attributename=="valuelist":
+        if self._attributename=="valuelist":
             val = val.replace("\n\n", "\n").replace("\n", ";").replace(";;", ";")
-        self.nodes[-1].set(self.attributename, val)
+        self.nodes[-1].set(self._attributename, val)
 
+    def comment(self, text):
+        pass
+
+    def close(self):
+        return "closed!"
 
 
 def readNodeXML(fi):
@@ -281,7 +225,49 @@ def readNodeXML(fi):
         fi.close()
     else:
         raise NotImplementedError()
-    return _NodeLoader(xml).root
+    nodeloader = _NodeLoaderTarget()
+    xmlparser = etree.XMLParser(target=nodeloader)
+    try:
+        etree.XML(xml, xmlparser)
+    except:
+        logg.exception("failed to parse XML, maybe invalid content")
+        return
+    mappings = _core_nodecache.get_mappings_node()
+    for node in nodeloader.nodes:
+        if (node.type == "mapping") and not any(node.name == n.name for n in mappings.children if n.type == "mapping"):
+            mappings.children.append(node)
+            _core.db.session.commit()
+            logg.debug("xml import: added  mapping id=%s, type='%s', name='%s'", node.id, node.type, node.name)
+
+    logg.debug("xml import: linking children to parents")
+    for node in nodeloader.nodes:
+        node.children.extend(nodeloader.id2node[i] for i in node.tmpchilds)
+        logg.debug("xml import: added %d children to node id='%s', type='%s', name='%s'",
+                len(node.tmpchilds), node.id, node.type, node.name)
+    _core.db.session.commit()
+
+    for node in nodeloader.nodes:
+        if node.type == "maskitem":
+            attrs_to_map = ["attribute"]
+            if node.get("fieldtype") == u"mapping":
+                attrs_to_map.append("mappingfield")
+        elif node.type == "mask":
+            attrs_to_map = ("exportmapping", )
+        else:
+            attrs_to_map = ()
+        for attr_name in attrs_to_map:
+            attr = node.get(attr_name)
+            if attr in nodeloader.id2node:
+                logg.debug(
+                        "xml import: "
+                        "adjusting node attribute '%s' for %s: %s -> %s",
+                        attr_name, node.type, attr, ustr(nodeloader.id2node[attr].id)
+                       )
+                node.set(attr_name, ustr(nodeloader.id2node[attr].id))
+
+    logg.info("xml import done")
+    _core.db.session.commit()
+    return nodeloader.root
 
 
 def getNodeXML(node):

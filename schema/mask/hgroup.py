@@ -40,7 +40,7 @@ class m_hgroup(Metatype):
         snippets = []
         use_label = maskitem.getLabel() if use_label else ""
         use_label = u"{}: ".format(_utils_utils.esc(use_label)) if use_label else u"&nbsp;"
-        snippets.append(u'<dt class="mask_label">{}: </dt>'.format(use_label))
+        snippets.append(u'<dt class="mask_label">{}</dt>'.format(use_label))
         del use_label
         snippets.append(u'<dd class="mask_value">')
         raw_values = [u'&nbsp;']

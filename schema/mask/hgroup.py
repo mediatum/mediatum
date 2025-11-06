@@ -43,20 +43,13 @@ class m_hgroup(Metatype):
         snippets.append(u'<dt class="mask_label">{}</dt>'.format(use_label))
         del use_label
         snippets.append(u'<dd class="mask_value">')
-        raw_values = [u'&nbsp;']
-        sep = u''
         has_raw_value = False  # skip group display if no item has raw_value
         for item in maskitem.getChildren().sort_by_orderpos():
             f = getMetadataType(item.get("type"))
             raw_value = f.getViewHTML(item, nodes, flags | VIEW_SUB_ELEMENT, language=language)
             if raw_value.strip():
-                raw_values.append(raw_value)
                 has_raw_value = has_raw_value or (raw_value != u"&nbsp;")
-                snippets.append(sep)
-                sep = sep and item.get('separator', u'&nbsp;')
                 snippets.append(u'<span class="hgroup_item">{}</span>'.format(raw_value))
-            else:
-                sep = u''  # no separator before or after empty sub element
 
         if not has_raw_value:
             return u""  # no value when all sub elements are empty

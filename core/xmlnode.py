@@ -23,8 +23,6 @@ EXCLUDE_WORKFLOW_NEWNODES = True
 
 logg = logging.getLogger(__name__)
 
-EXPORTVERSION = u"1.1a"
-
 
 def create_xml_nodelist(xmlroot=None):
     if xmlroot is None:
@@ -32,7 +30,6 @@ def create_xml_nodelist(xmlroot=None):
     else:
         xmlnodelist = etree.SubElement(xmlroot, "nodelist")
 
-    xmlnodelist.set("exportversion", EXPORTVERSION)
     return xmlnodelist
 
 
@@ -189,8 +186,7 @@ class _NodeLoader(object):
         with _utils_utils.suppress(Exception):
             node = self.nodes[-1]
         if name == "nodelist":
-            if "exportversion" in attrs:
-                logg.info("starting xml import: %s", attrs)
+            logg.debug("xml node import: found <nodelist>, proceeding with import")
 
         elif name == "node":
             self.node_already_seen = False

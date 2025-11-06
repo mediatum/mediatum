@@ -19,8 +19,6 @@ import core.nodecache as _core_nodecache
 import utils.utils as _utils_utils
 from core.database.postgres.file import File
 
-EXCLUDE_WORKFLOW_NEWNODES = True
-
 logg = logging.getLogger(__name__)
 
 
@@ -272,12 +270,5 @@ def getNodeXML(node):
     nodelist.set('rootschema', (node.schema or u""))
     nodelist.set('original_nodeid', unicode(node.id))
 
-    from workflow.workflow import Workflow
-    exclude_childtypes = set()
-    if EXCLUDE_WORKFLOW_NEWNODES and isinstance(node, Workflow):
-        for c in node.children:
-            if c.type == "workflowstep_start":
-                exclude_childtypes.update(c.get("newnodetype").strip().split(";"))
-
-    add_node_to_xmldoc(node, nodelist, exclude_childtypes=exclude_childtypes)
+    add_node_to_xmldoc(node, nodelist)
     return etree.tostring(nodelist, xml_declaration=True, pretty_print=True, encoding="utf8")

@@ -33,21 +33,6 @@ def create_xml_nodelist(xmlroot=None):
     return xmlnodelist
 
 
-def add_file_to_xmlnode(file, xmlnode):
-    xmlfile = etree.SubElement(xmlnode, "file")
-    xmlfile.set("filename", file.base_name)
-    xmlfile.set("mime-type", file.mimetype)
-    xmlfile.set("type", file.filetype)
-
-
-def add_child_to_xmlnode(child, xmlnode):
-    xmlchild = etree.SubElement(xmlnode, "child")
-    xmlchild.set("id", unicode(child.id))
-    xmlchild.set("type", (child.type + "/" + (child.schema or u"")).strip("/"))
-    xmlchild.set("datatype", child.type)
-    xmlchild.set("schema", (child.schema or u""))
-
-
 def add_node_to_xmldoc(
         node,
         xmlroot,
@@ -82,7 +67,11 @@ def add_node_to_xmldoc(
     exclude_filetypes.add(u"metadata")
     for fileobj in node.file_objects:
         if fileobj.filetype not in exclude_filetypes:
-            add_file_to_xmlnode(fileobj, xmlnode)
+            etree.SubElement(xmlnode, "file").attrib.update({
+                "filename": fileobj.base_name,
+                "mime-type": fileobj.mimetype,
+                "type": fileobj.filetype
+               })
 
     if children:
         child_query = node.children
@@ -91,7 +80,12 @@ def add_node_to_xmldoc(
             child_query = child_query.filter(_sqlalchemy.or_(Node.schema == None, ~((Node.type + u'/' + Node.schema).in_(exclude_childtypes))))
 
         for child in child_query.order_by("orderpos"):
-            add_child_to_xmlnode(child, xmlnode)
+            etree.SubElement(xmlnode, "child").attrib.update(dict(
+                id=unicode(child.id),
+                type=u"{}/{}".format(child.type,child.schema) if child.schema else child.type,
+                datatype=child.type,
+                schema=(child.schema or u""),
+               ))
 
             if child.id not in _written:
                 add_node_to_xmldoc(child, xmlroot, children, exclude_filetypes, exclude_childtypes, attribute_name_filter, _written)

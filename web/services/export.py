@@ -97,9 +97,6 @@ def struct2xml(path, qualifier, query_string, host_url, params, d, send_timetabl
 
     atime = time.time()
 
-    # file types not to be included in listed node files
-    exclude_filetypes = ['statistic']
-
     # sortfields
     sfields = d.setdefault('sfields', [])
 
@@ -129,7 +126,6 @@ def struct2xml(path, qualifier, query_string, host_url, params, d, send_timetabl
                         n,
                         xml_nodelist,
                         children=False,
-                        exclude_filetypes=exclude_filetypes,
                         attribute_name_filter=attribute_name_filter,
                     )
                 add_mask_xml(xmlnode, n, mask, language)
@@ -141,7 +137,6 @@ def struct2xml(path, qualifier, query_string, host_url, params, d, send_timetabl
                         n,
                         xml_nodelist,
                         children=True,
-                        exclude_filetypes=exclude_filetypes,
                         attribute_name_filter=attribute_name_filter,
                     )
             else:
@@ -149,7 +144,6 @@ def struct2xml(path, qualifier, query_string, host_url, params, d, send_timetabl
                         n,
                         xmlroot,
                         children=False,
-                        exclude_filetypes=exclude_filetypes,
                         attribute_name_filter=attribute_name_filter,
                     )
 

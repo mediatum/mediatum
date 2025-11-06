@@ -37,7 +37,6 @@ def add_node_to_xmldoc(
         node,
         xmlroot,
         children=True,
-        exclude_filetypes=frozenset(),
         exclude_childtypes=frozenset(),
         attribute_name_filter=lambda name:True,
         _written=None,
@@ -63,10 +62,8 @@ def add_node_to_xmldoc(
         xmlattr.set("name", name)
         xmlattr.text = _utils_utils.xml_remove_illegal_chars(unicode(node.attrs[name]))
 
-    exclude_filetypes = set(exclude_filetypes)
-    exclude_filetypes.add(u"metadata")
     for fileobj in node.file_objects:
-        if fileobj.filetype not in exclude_filetypes:
+        if fileobj.filetype not in ('statistic', 'metadata'):
             etree.SubElement(xmlnode, "file").attrib.update({
                 "filename": fileobj.base_name,
                 "mime-type": fileobj.mimetype,
@@ -88,7 +85,7 @@ def add_node_to_xmldoc(
                ))
 
             if child.id not in _written:
-                add_node_to_xmldoc(child, xmlroot, children, exclude_filetypes, exclude_childtypes, attribute_name_filter, _written)
+                add_node_to_xmldoc(child, xmlroot, children, exclude_childtypes, attribute_name_filter, _written)
 
     if isinstance(node, Mask):
         exportmappings = node.get(u"exportmapping").split(";")
@@ -100,7 +97,7 @@ def add_node_to_xmldoc(
         exportmappings = _itertools.imap(_core.db.query(Mapping).get, exportmappings)
         exportmappings = _itertools.ifilter(None, exportmappings)
         for mapping in exportmappings:
-            add_node_to_xmldoc(mapping, xmlroot, children, exclude_filetypes, exclude_childtypes, attribute_name_filter=attribute_name_filter, _written=_written)
+            add_node_to_xmldoc(mapping, xmlroot, children, exclude_childtypes, attribute_name_filter=attribute_name_filter, _written=_written)
     return xmlnode
 
 

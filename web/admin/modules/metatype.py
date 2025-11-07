@@ -699,24 +699,18 @@ def showEditor(req):
                 pos += 1
             _core.db.session.commit()
 
-        # position:
-        position = req.params.get("insertposition", "end")
-        if position == "end":
-            # insert at the end of existing mask
-            item.setOrderPos(len(_core.db.query(Node).get(req.params.get("pid")).children) - 1)
-            _core.db.session.commit()
-        else:
-            # insert at special position
-            fields = []
-            pidnode = _core.db.query(Node).get(req.params.get("pid"))
-            for field in pidnode.getChildren():
-                if field.type == "maskitem" and field.id != pidnode.id:
-                    fields.append(field)
-            fields.sort(key=_operator.attrgetter("orderpos"))
-            for f in fields:
-                if f.orderpos >= _core.db.query(Node).get(position).orderpos and f.id != item.id:
-                    f.orderpos = f.orderpos + 1
-            item.orderpos = _core.db.query(Node).get(position).orderpos - 1
+        if req.params.get("op", "") == "new":
+            pidnode = _core.db.query(Node).get(req.values["pid"])
+            if req.values.get("insertposition", "end") == "end":
+                # insert at the end of existing mask
+                item.orderpos = len(pidnode.children) - 1
+            else:
+                # insert at special position
+                posnode = _core.db.query(Node).get(req.values["insertposition"])
+                for field in pidnode.children:
+                    if (field.id not in (pidnode.id, item.id)) and (field.type == "maskitem") and (field.orderpos >= posnode.orderpos):
+                        field.orderpos += 1
+                item.orderpos = posnode.orderpos - 1
             _core.db.session.commit()
 
         if "edit" not in req.params.keys():

@@ -5,7 +5,9 @@ from __future__ import division
 from __future__ import print_function
 
 from core.database.postgres.node import Node
+import itertools as _itertools
 import logging
+import operator as _operator
 
 import sqlalchemy as _sqlalchemy
 
@@ -98,12 +100,16 @@ def add_node_to_xmldoc(
                 add_node_to_xmldoc(child, xmlroot, children, exclude_filetypes, exclude_childtypes, attribute_name_filter, _written)
 
     if isinstance(node, Mask):
-        exportmapping_id = node.get(u"exportmapping").strip()
-        if exportmapping_id and exportmapping_id not in _written:
-            mapping = _core.db.query(Mapping).get(int(exportmapping_id))
-            if mapping is not None:
-                _written.add(mapping.id)
-                add_node_to_xmldoc(mapping, xmlroot, children, exclude_filetypes, exclude_childtypes, attribute_name_filter, _written)
+        exportmappings = node.get(u"exportmapping").split(";")
+        exportmappings = _itertools.imap(_operator.methodcaller("strip"), exportmappings)
+        exportmappings = _itertools.ifilter(None, exportmappings)
+        exportmappings = _itertools.imap(int, exportmappings)
+        exportmappings = set(exportmappings)
+        exportmappings.difference_update(_written)
+        exportmappings = _itertools.imap(_core.db.query(Mapping).get, exportmappings)
+        exportmappings = _itertools.ifilter(None, exportmappings)
+        for mapping in exportmappings:
+            add_node_to_xmldoc(mapping, xmlroot, children, exclude_filetypes, exclude_childtypes, attribute_name_filter=attribute_name_filter, _written=_written)
     return xmlnode
 
 

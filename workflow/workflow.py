@@ -699,6 +699,7 @@ def register():
 
     # run register method of step types
     from . import addformpage
+    from . import addnode
     from . import classify
     from . import classifybyattribute
     from . import defer
@@ -727,6 +728,7 @@ def register():
     from . import urn
 
     modules_list = (
+        addnode,
         addformpage,
         classify,
         classifybyattribute,

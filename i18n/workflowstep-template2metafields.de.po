@@ -1,0 +1,11 @@
+msgid "workflowstep_template2metafields"
+msgstr "Metafelder aus Template generieren"
+
+msgid "template2metafields-tal-template"
+msgstr "TAL-Template"
+
+msgid "template2metafields-current-tal-template"
+msgstr "Aktuelles TAL-Template"
+
+msgid "template2metafields-replace-tal-template"
+msgstr "TAL-Template ersetzen"

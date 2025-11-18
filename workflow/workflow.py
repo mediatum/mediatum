@@ -735,6 +735,7 @@ def register():
     from . import showdata
     from . import start
     from . import template2metadata
+    from . import template2metafields
     from . import textpage
     from . import updateattributesfixed
     from . import upload
@@ -767,6 +768,7 @@ def register():
         showdata,
         start,
         template2metadata,
+        template2metafields,
         textpage,
         updateattributesfixed,
         upload,

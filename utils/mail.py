@@ -61,13 +61,16 @@ def sendmail(sender, recipients, subject, text, envelope_sender_address=None, at
     if not host:
         raise RuntimeError("No email server specified, not sending email")
 
-    encryption = config.get("smtp-server.encryption")
+    encryption = config.get("smtp-server.encryption", "none")
     if encryption == "tls":
-        server = smtplib.SMTP_SSL(host, port=config.get("smtp-server.port", 465))
-    else:
-        server = smtplib.SMTP(host, port=config.get("smtp-server.port", 587))
-    if encryption == "starttls":
+        server = smtplib.SMTP_SSL(host, port=config.getint("smtp-server.port", 465))
+    elif encryption == "starttls":
+        server = smtplib.SMTP(host, port=config.getint("smtp-server.port", 587))
         server.starttls()
+    elif encryption == "none":
+        server = smtplib.SMTP(host, port=config.getint("smtp-server.port", 25))
+    else:
+        raise RuntimeError("bad smtp-server.encryption")
     username = config.get('smtp-server.username')
     if username:
         with open(config.get("smtp-server.password-file"), "rb") as f:

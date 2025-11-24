@@ -227,11 +227,7 @@ def readNodeXML(fi):
         raise NotImplementedError()
     nodeloader = _NodeLoaderTarget()
     xmlparser = etree.XMLParser(target=nodeloader)
-    try:
-        etree.XML(xml, xmlparser)
-    except:
-        logg.exception("failed to parse XML, maybe invalid content")
-        return
+    etree.XML(xml, xmlparser)
     mappings = _core_nodecache.get_mappings_node()
     for node in nodeloader.nodes:
         if (node.type == "mapping") and not any(node.name == n.name for n in mappings.children if n.type == "mapping"):

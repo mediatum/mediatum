@@ -94,10 +94,15 @@ def inheritWorkflowRights(name, type):
 
 
 def getNodeWorkflow(node):
+    workflow_ids = set()
+    workflow = None
     for p in node.parents:
         for p2 in p.parents:
             if p2.type == "workflow":
-                return p2
+                workflow = p2
+                workflow_ids.add(workflow.id)
+    assert len(workflow_ids) <= 1
+    return workflow
 
 
 def getNodeWorkflowStep(node):
@@ -105,9 +110,14 @@ def getNodeWorkflowStep(node):
     if workflow is None:
         return None
     steps = frozenset(n.id for n in workflow.getSteps())
+    step = None
+    step_ids = set()
     for p in node.parents:
         if p.id in steps:
-            return p
+            step = p
+            step_ids.add(step.id)
+    assert len(step_ids) <= 1
+    return step
 
 
 def create_update_workflow_step(

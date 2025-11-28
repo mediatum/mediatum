@@ -402,6 +402,7 @@ class Workflow(Node):
 class WorkflowStep(Node):
 
     default_settings = None
+    _recursion_stack = ()
 
     def set_class(self, type):
         # set the correct WorkflowStep-class e.g. WorkflowStep_Publish
@@ -577,6 +578,8 @@ class WorkflowStep(Node):
             logg.error("No Workflow action defined for workflowstep %s (op=%s)", self.getId(), op)
 
     def forward(self, node, op):
+        if self._recursion_stack.count(self.id) >= config.getint("workflows.max-cycles", 2):
+            raise RuntimeError("deep loop in Workflow")
         workflow = getNodeWorkflow(node)
         workflowstep = getNodeWorkflowStep(node)
 
@@ -588,7 +591,9 @@ class WorkflowStep(Node):
         newstep.children.append(node)
         _core.db.session.commit()
 
+        newstep._recursion_stack = self._recursion_stack + (self.id,)
         newstep.runAction(node, "true" if op else "false")
+        newstep._recursion_stack = ()  # shouldn't be required, but who knows whether SQLAlchemy might reuse a step instance
         logg.info('workflow run action "%s" (op="%s") for node %s', newstep.name, op, node.id)
         return getNodeWorkflowStep(node)
 

@@ -34,7 +34,6 @@ let
       alembic
       attrs
       bibtexparser
-      coffeescript
       decorator
       exifread_2_3_2
       fdfgen
@@ -48,8 +47,6 @@ let
       ldap
       lrucache-1-6-1
       lxml
-      magic
-      mediatumfsm
       mediatumtal
       munch
       mutagen

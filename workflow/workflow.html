@@ -55,7 +55,6 @@
             <th i18n:translate="workflow_label_date"/>
             <th i18n:translate="workflow_label_name"/>
             <th i18n:translate="workflow_label_step" colspan="2"/>
-            <th i18n:translate="workflow_label_forward" colspan="2"/>
         </tr>
     </thead>
     <tbody>
@@ -80,20 +79,6 @@
                         class="mediatum-link-mediatum"
                     >
                     </a>
-                </td>
-                <td>
-                    <a
-                        tal:attributes="href python:u'/mask?id={}&obj={}&forcefalse=1'.format(step.id, item.id)"
-                        tal:content="raw python:step.getFalseLabel() or '&nbsp;'"
-                        class="mediatum-link-mediatum"
-                    />
-                </td>
-                <td>
-                    <a
-                        tal:attributes="href python:u'/mask?id={}&obj={}&forcetrue=1'.format(step.id, item.id)"
-                        tal:content="raw python:step.getTrueLabel() or '&nbsp;'"
-                        class="mediatum-link-mediatum"
-                    />
                 </td>
             </tal:block>
         </tr>
@@ -198,25 +183,7 @@
                 >
                 </a>
             </td>
-            <td>
-                <a
-                    tal:condition="python:falsestep!=''"
-                    tal:attributes="href python:u'{}{}&forcefalse=1'.format(nodelink, child_id)"
-                    tal:content="raw falsestep"
-                    class="mediatum-link-mediatum"
-                />
-                <tal:block tal:condition="python:falsestep==''">-</tal:block>
-            </td>
-            <td>
-                <a
-                    tal:condition="python:truestep!=''"
-                    tal:attributes="href python:u'{}{}&forcetrue=1'.format(nodelink, child_id)"
-                    tal:content="raw truestep"
-                    class="mediatum-link-mediatum"
-                />
-                <tal:block tal:condition="python:truestep==''">-</tal:block>
-            </td>
-            <td style="vertical-align: middle; text-align: center;">
+            <td style="vertical-align: middle; text-align: right;">
                 <input tal:attributes="id child_id" class="checkbox" id="" type="checkbox"/>
             </td>
         </tal:block>
@@ -246,8 +213,7 @@
             <th i18n:translate="workflow_label_name">TEXT</th>
             <th i18n:translate="workflow_label_step">TEXT</th>
             <th i18n:translate="workflow_label_editor">TEXT</th>
-            <th i18n:translate="workflow_label_forward">TEXT</th>
-            <th colspan="2" style="text-align: right;">
+            <th style="text-align: right;">
                 <a
                     href="#!"
                     class="toggled_text mediatum-link-mediatum"
@@ -266,7 +232,7 @@
         </tr>
         <tal:block tal:content="raw python:table">TEXT</tal:block>
         <tr>
-            <th colspan="6" align="left">
+            <th colspan="5" align="left">
                 <small i18n:translate="workflow_footer">
                     <tal:block tal:content="python:unicode(len_children)" i18n:name="number"/>
                 </small>

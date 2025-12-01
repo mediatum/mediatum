@@ -39,16 +39,13 @@ let
       fdfgen
       flask-admin
       flask_login
-      httplib2
       humanize
       ipaddr
-      ipdb
       jinja2
       ldap
       lrucache-1-6-1
       lxml
       mediatumtal
-      munch
       mutagen
       parcon
       pillow
@@ -59,14 +56,11 @@ let
       pyexiftool
       pygments
       pyjade
-      pyyaml
       requests
       ruamel_yaml
       sqlalchemy
       sqlalchemy-continuum
       sqlalchemy-utils
-      sympy
-      unicodecsv
       werkzeug
     ;
     graphicsmagick = pkgs.graphicsmagick.overrideAttrs

@@ -45,7 +45,6 @@ let
       ldap
       lrucache-1-6-1
       lxml
-      mediatumtal
       mutagen
       parcon
       pillow

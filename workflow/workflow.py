@@ -712,6 +712,7 @@ def register():
     from . import hierarchicalchoice2metafield
     from . import joinmetafields
     from . import metafield2metadata
+    from . import multiply
     from . import protect
     from . import publish
     from . import reauth
@@ -741,6 +742,7 @@ def register():
         hierarchicalchoice2metafield,
         joinmetafields,
         metafield2metadata,
+        multiply,
         protect,
         publish,
         reauth,

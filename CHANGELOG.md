@@ -1,6 +1,16 @@
 # Change Log
 All notable changes to mediaTUM will be documented in this file.
 
+## [v2025.12] - 2025-12-05
+
+### Changed
+- XML node import properly complains about invalid XML
+### Fixed
+- hgroup, vgroup display
+- correct default smtp server ports (depending on `smtp-server.encryption`)
+- XML export includes multiple assigned Mappings to a Mask
+- pending workflow documents are no longer exported with XML Workflow exports
+
 ## [v2025.10] - 2020-10-10
 
 - mediatum is now licensed under AGPL 3.0+ (see the file COPYING).

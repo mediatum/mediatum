@@ -716,6 +716,7 @@ def register():
     from . import publish
     from . import reauth
     from . import registerdoi
+    from . import searchnode
     from . import setnodename
     from . import setmetadatatype
     from . import showdata
@@ -745,6 +746,7 @@ def register():
         publish,
         reauth,
         registerdoi,
+        searchnode,
         setnodename,
         setmetadatatype,
         showdata,

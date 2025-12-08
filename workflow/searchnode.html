@@ -1,0 +1,44 @@
+<!--
+  Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<metal:block metal:define-macro="workflow_step_type_config">
+    <h4 i18n:translate="searchnode-match-metafields"> </h4>
+    <tal:block tal:condition="python:fileurl">
+        <tal:block i18n:translate="searchnode-current-match-metafields"/>
+        <a tal:attributes="href fileurl" tal:content="python:'{}  {} Bytes'.format(filebasename, filesize)"/>
+        <br/>
+        <label>
+            <tal:block i18n:translate="searchnode-replace-match-metafields"/>
+            <input name="stepsetting_match-metafields" type="file"/>
+        </label>
+        <label>
+            <tal:block i18n:translate="searchnode-delete-match-metafields"/>:
+            <input name="stepsetting_match-metafields-delete" type="checkbox" value="0"/>
+        </label>
+    </tal:block>
+    <label tal:condition="python:not fileurl">
+        <tal:block i18n:translate="searchnode-replace-match-metafields"/>
+        <input name="stepsetting_match-metafields" type="file"/>
+    </label>
+    <label>
+        <tal:block i18n:translate="searchnode-target-metafield"/>
+        <input type="text" name="stepsetting_target-metafield" tal:attributes="value target-metafield"/>
+    </label>
+    <label>
+        <tal:block i18n:translate="searchnode-root-id-metafield"/>
+        <input type="text" name="stepsetting_root-id-metafield" tal:attributes="value root-id-metafield"/>
+    </label>
+    <label>
+        <tal:block i18n:translate="searchnode-type-match-metafield"/>
+        <input type="text" name="stepsetting_type-match-metafield" tal:attributes="value type-match-metafield"/>
+    </label>
+    <label>
+        <tal:block i18n:translate="searchnode-schema-match-metafield"/>
+        <input type="text" name="stepsetting_schema-match-metafield" tal:attributes="value schema-match-metafield"/>
+    </label>
+    <label>
+        <tal:block i18n:translate="searchnode-name-match-metafield"/>
+        <input type="text" name="stepsetting_name-match-metafield" tal:attributes="value name-match-metafield"/>
+    </label>
+</metal:block>

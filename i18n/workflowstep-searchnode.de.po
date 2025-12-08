@@ -1,0 +1,29 @@
+msgid "workflowstep_searchnode"
+msgstr "Knoten Suche"
+
+msgid "searchnode-current-match-metafields"
+msgstr "Aktuelle passende Metafeld Datei"
+
+msgid "searchnode-replace-match-metafields"
+msgstr "passende Metafeld Datei ersetzen"
+
+msgid "searchnode-delete-match-metafields"
+msgstr "passende Metafeld Datei löschen"
+
+msgid "searchnode-match-metafields"
+msgstr "passende Metafeld Datei"
+
+msgid "searchnode-target-metafield"
+msgstr "Ziel Metafeld"
+
+msgid "searchnode-root-id-metafield"
+msgstr "Root Knoten ID Metafeld"
+
+msgid "searchnode-type-match-metafield"
+msgstr "Typ Metafeld"
+
+msgid "searchnode-schema-match-metafield"
+msgstr "Schema Metafeld"
+
+msgid "searchnode-name-match-metafield"
+msgstr "Namen Metafeld"

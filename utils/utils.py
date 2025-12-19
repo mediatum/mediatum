@@ -9,7 +9,7 @@ import cgi
 import functools as _functools
 import hashlib
 import inspect
-import io
+import io as _io
 import json as _json
 import logging
 import math as _math
@@ -508,7 +508,7 @@ class HTMLTextCutter(HTMLParser):
 @ensure_unicode_returned(silent=True)
 def formatLongText(value, field, cutoff=500):
     try:
-        out = io.StringIO()
+        out = _io.StringIO()
         p = HTMLTextCutter(cutoff, out)
         p.feed(value)
         p.close()

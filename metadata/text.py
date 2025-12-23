@@ -80,8 +80,8 @@ class m_text(Metatype):
         return (metafield.getLabel(), value)
 
     def editor_parse_form_data(self, field, data, required):
-        if required and not data.get("text"):
+        if required and not data["text"]:
             raise _core_metatype.MetatypeInvalidFormData("edit_mask_required")
-        if _utils.xml_check_illegal_chars_or_null(data.get("text")):
+        if _utils.xml_check_illegal_chars_or_null(data["text"]):
             raise _core_metatype.MetatypeInvalidFormData("edit_mask_illegal_char")
-        return data.get("text")
+        return data["text"]

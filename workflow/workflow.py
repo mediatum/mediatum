@@ -463,10 +463,6 @@ class WorkflowStep(Node):
                         _core_translation.set_language(req.accept_languages, node.get('system.wflanguage'))
 
                     link = _build_url_from_path_and_params("/mask", {"id": self.id})
-                    if "forcetrue" in req.values:
-                        return self.forwardAndShow(node, True, req, _link=link)
-                    if "forcefalse" in req.values:
-                        return self.forwardAndShow(node, False, req, _link=link)
 
                     return self.show_workflow_node(node, req)
                 else:

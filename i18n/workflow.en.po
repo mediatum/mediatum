@@ -61,9 +61,6 @@ msgstr "Step"
 msgid "workflow_label_editor"
 msgstr "Editor"
 
-msgid "workflow_label_forward"
-msgstr "Pass"
-
 msgid "workflow_label_select_all"
 msgstr "Select All"
 

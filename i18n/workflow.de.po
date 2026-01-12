@@ -62,9 +62,6 @@ msgstr "Schritt"
 msgid "workflow_label_editor"
 msgstr "Editor"
 
-msgid "workflow_label_forward"
-msgstr "Weiterleiten"
-
 msgid "workflow_label_select_all"
 msgstr "alle markieren"
 

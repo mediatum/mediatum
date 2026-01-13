@@ -94,10 +94,15 @@ def inheritWorkflowRights(name, type):
 
 
 def getNodeWorkflow(node):
+    workflow_ids = set()
+    workflow = None
     for p in node.parents:
         for p2 in p.parents:
             if p2.type == "workflow":
-                return p2
+                workflow = p2
+                workflow_ids.add(workflow.id)
+    assert len(workflow_ids) <= 1
+    return workflow
 
 
 def getNodeWorkflowStep(node):
@@ -105,9 +110,14 @@ def getNodeWorkflowStep(node):
     if workflow is None:
         return None
     steps = frozenset(n.id for n in workflow.getSteps())
+    step = None
+    step_ids = set()
     for p in node.parents:
         if p.id in steps:
-            return p
+            step = p
+            step_ids.add(step.id)
+    assert len(step_ids) <= 1
+    return step
 
 
 def create_update_workflow_step(
@@ -392,6 +402,7 @@ class Workflow(Node):
 class WorkflowStep(Node):
 
     default_settings = None
+    _recursion_stack = ()
 
     def set_class(self, type):
         # set the correct WorkflowStep-class e.g. WorkflowStep_Publish
@@ -563,6 +574,8 @@ class WorkflowStep(Node):
             logg.error("No Workflow action defined for workflowstep %s (op=%s)", self.getId(), op)
 
     def forward(self, node, op):
+        if self._recursion_stack.count(self.id) >= config.getint("workflows.max-cycles", 2):
+            raise RuntimeError("deep loop in Workflow")
         workflow = getNodeWorkflow(node)
         workflowstep = getNodeWorkflowStep(node)
 
@@ -574,7 +587,9 @@ class WorkflowStep(Node):
         newstep.children.append(node)
         _core.db.session.commit()
 
+        newstep._recursion_stack = self._recursion_stack + (self.id,)
         newstep.runAction(node, "true" if op else "false")
+        newstep._recursion_stack = ()  # shouldn't be required, but who knows whether SQLAlchemy might reuse a step instance
         logg.info('workflow run action "%s" (op="%s") for node %s', newstep.name, op, node.id)
         return getNodeWorkflowStep(node)
 

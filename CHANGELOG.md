@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to mediaTUM will be documented in this file.
 
+## [v2026.01] - 2026-01-16
+
+### Changed
+- Non-interactive cycles in a workflow are limited (`workflows.max-cycles`)
+
 ## [v2025.12] - 2025-12-05
 
 ### Changed

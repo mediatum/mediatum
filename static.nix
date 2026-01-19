@@ -116,8 +116,8 @@ let
       hash = "sha512-gO/Q9zLP9MzWIOtSostYfnztmqGIrKTp1f/uV9zIgp6XhQ2vxGKa+S5A8CCfUb5Vk1gHvoPROVvjzsA7wKBNRw==";
     };
     "img/content-list.svg" = fetchurl {
-      url = "https://www.svgrepo.com/download/286574/list.svg";
-      hash = "sha512-Eg1AWI4LYjDoQ4WooVEexBMw1EksveCsTD/vU2xw40B6Ki75LwRS1aPkCCnCoHpzivQu5fDsl+NvFcignuRPKQ==";
+      url = "https://publicdomainvectors.org/download.php?file=1462438854.svg";
+      hash = "sha512-egXo15hbX/OqQ/GKc+Cca6Dnphm9bfkfAXprjnoQyVJr7NVDC33BF4bDCdrTV2ssMA/e4gH6bZFHHumBMpbzCg==";
     };
     "img/webtree/collection.svg" = fetchurl {
       url = "https://publicdomainvectors.org/download.php?file=folder2.svg";
@@ -148,8 +148,8 @@ let
       hash = "sha512-sw2r8BoWONNeaVFjeEOcv9Ta8/C3Z0o/anb4V8f6roMjL304gQxyeP8gZtui/5RTcRhO+KnXle5s66J24JqvdA==";
     };
     "img/webtree/download.svg" = fetchurl {
-      url = "https://www.svgrepo.com/download/313131/download.svg";
-      hash = "sha512-avLL4+U3UFpnGb8em2HoEMFwQtrPhb7aWRSYXByQoEbXsIKrTQ3HuBrvdN/TLzsVihcqQJ9jAhgNXoj5E+ZZuA==";
+      url = "https://publicdomainvectors.org/download.php?file=save-file.svg";
+      hash = "sha512-SgTJRu7UIk9FO2xmFnXRH5RGvTBS9jigEEykNPsESlWqhzcD7COPou5vQIqb81qU4zpyu/+5YXkLQUQOhkqJqg==";
     };
     "img/edit-pen-paper.svg" = fetchurl {
       url = "https://publicdomainvectors.org/download.php?file=MajinCline_Notepad.svg";
@@ -292,8 +292,8 @@ let
       hash = "sha512-7ykZcQuwUj+jOfVxLB1qD14vWvysxxs76SEEV/Qp9KpGlUhjBHILQ0Ul7KH4xwDzuisl4UJbrXGe+tfeBY5hlg==";
     };
     "img/editor/sort.svg" = fetchurl {
-      url = "https://www.svgrepo.com/download/181276/sort-arrows.svg";
-      hash = "sha512-4QJ/VGN+GtL7/k3ITJ3qv5xpqapEwfNJs8rrwIh++EwGi5S/jOMT+knxCWoU6lSy7BNW0zFCV2ZRdj6bpBdyEg==";
+      url = "https://upload.wikimedia.org/wikipedia/commons/f/f5/Sort_both_small.svg";
+      hash = "sha512-BewwhJfQacrH6fR4UNjya8mQGC9GC5riM4igf4wf9pxTKCxyQdPuaNM2i0ilrDYsD25RtPs/UKJS5pSpl9WwkQ==";
     };
     "img/sort-by-alphabet-az.svg" = fetchurl {
       url = "https://publicdomainvectors.org/download.php?file=ftsort-incr.svg";
@@ -304,16 +304,16 @@ let
       hash = "sha512-Ke2ZIlzF2YS4HmwfXcK6c8R/sfJHaUcGN1N6uBflgVXe0rP+HEGtc7hzHxUDuNWpJnVN6rlYUOQda6rm5oTH3A==";
     };
     "img/stylelist.svg" = fetchurl {
-      url = "https://www.svgrepo.com/download/258665/list.svg";
-      hash = "sha512-PJmOy9fDtjcgoU3ZWKT0UhJuLMUySkQ/uACkIRrtm5PaioLnmeE2O0D1czewr4ONMUDJycL+DSpRlgFFlhdC5g==";
+      url = "https://publicdomainvectors.org/download.php?file=ftunsortedList.svg";
+      hash = "sha512-cGqaaFFuO+3SHeoIJCaZCGTmaQQUwJMUTFDYc3vus9DucBMrsd3o1a4o7S6Hhgmh55Ls4eBrbPsw1ecTmzYCAA==";
     };
     "img/text.svg" = fetchurl {
       url = "https://publicdomainvectors.org/download.php?file=rodentia-icons_text-x-generic.svg";
       hash = "sha512-nMmbKBs2fZVjO5edh73+X19dkX1nYJ4RSvy+oejxw0pDpAcPYQ1yevO2Z96Rxh/KWvFa7xRTSmnwauN4NaIVKw==";
     };
     "img/thumb.svg" = fetchurl {
-      url = "https://www.svgrepo.com/download/174027/four-squares-button-of-view-options.svg";
-      hash = "sha512-l9IKI2K3M4N3dsSCKqCKYPBWrORqkr4Wem6gg/tAWOXzpcXlK1m91zq1TChoxwDpLKnlcztUFM4NaOgmsCG+UA==";
+      url = "https://publicdomainvectors.org/download.php?file=ftmedthumbnails.svg";
+      hash = "sha512-sDj7jb/0oeb0w6Jwoar5L9i8FQT5xJw4cC1gPIcEI8Y4olaORVk60o4bY7zyFjlfNtKRfzIgc5lSXqnvSjXAGQ==";
     };
     "img/tiff.svg" = fetchurl {
       url = "https://github.com/sempostma/cc0-file-icons/raw/6a216fdb638583744321b9fa76e4244ca4f54b05/background/svg/tiff.svg";
@@ -332,8 +332,8 @@ let
       hash = "sha512-acGwuxlXT/+l6nPWZ2fEjwmx/E0jhgr+5vde99zyCtB2jGZn/DWgLTkBzgu4epHwTT+rSaYLm/VKb3P/BFyWhA==";
     };
     "img/up.svg" = fetchurl {
-      url = "https://www.svgrepo.com/download/142150/up-arrow.svg";
-      hash = "sha512-wLQjFaM6d/UJL1B28Wun2WIpfIbeNHo4JxtpvmiN1NZlwppYsQKomf2KPVdJaUqJ988TjT8YWbGFAzcrjiFLTQ==";
+      url = "https://publicdomainvectors.org/download.php?file=1303263806.svg";
+      hash = "sha512-RWFlPcwhsYpdVhHCWDPG2MTKnA2lCy7fPYZxW4YYgeVPh2bpl2xhF+zreImVgFQhQ+aBTgytzVTc3+w5/tbcUg==";
     };
     "img/uparrow.svg" = fetchurl {
       url = "https://publicdomainvectors.org/download.php?file=tango-up-arrow-blue.svg";
@@ -356,8 +356,8 @@ let
       hash = "sha512-mfiWzy3mXo78KI1Yt3+gEYRenoq/kgzx18+9bJtxS6oOuPX7EI5N5vvwTNfepj4AEJ7F6SkhXI9AbBkxnAUTew==";
     };
     "img/workflow.svg" = fetchurl {
-      url = "https://www.svgrepo.com/download/475025/workflow.svg";
-      hash = "sha512-c0Py71btEdMEiBZX6xYysb5CxercRESQWMk4gfCO+OOX14D1W6YjVqy34wL8Prh9wlQ3u2OLoYnG2HDKqzh4xQ==";
+      url = "https://publicdomainvectors.org/download.php?file=Farmeral-Flow-Chart-Graphic.svg";
+      hash = "sha512-ia3XSb98NVvf6o3n1b+Iq+UbX0c/5qd6w9cS4ipmw+r310Rnz/nPC0tyWrzM1kLmBeLlK8di71VcKtOjFXprdA==";
     };
     "img/editor/world.svg" = fetchurl {
       url = "https://publicdomainvectors.org/download.php?file=provider_internetsvg.svg";

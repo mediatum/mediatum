@@ -34,24 +34,17 @@ let
       alembic
       attrs
       bibtexparser
-      coffeescript
       decorator
       exifread_2_3_2
       fdfgen
       flask-admin
       flask_login
-      httplib2
       humanize
       ipaddr
-      ipdb
       jinja2
       ldap
       lrucache-1-6-1
       lxml
-      magic
-      mediatumfsm
-      mediatumtal
-      munch
       mutagen
       parcon
       pillow
@@ -62,14 +55,11 @@ let
       pyexiftool
       pygments
       pyjade
-      pyyaml
       requests
       ruamel_yaml
       sqlalchemy
       sqlalchemy-continuum
       sqlalchemy-utils
-      sympy
-      unicodecsv
       werkzeug
     ;
     graphicsmagick = pkgs.graphicsmagick.overrideAttrs

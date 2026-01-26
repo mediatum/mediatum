@@ -184,7 +184,10 @@ def validate(req, op):
                     _core.db.query(Node).get(req.params.get("parent")),
                     1,
                     )
-            elif req.values.get("name") in (mappingfield.name for mappingfield in mapping.getFields()):
+            elif any(mappingfield.name==req.values.get("name")
+                     and mappingfield.id!=req.values.get("id",-1,type=int)
+                     for mappingfield in mapping.getFields()):
+                # rename conflict
                 return editMappingField_mask(
                     req,
                     req.params.get("id", ""),

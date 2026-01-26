@@ -83,7 +83,13 @@ def current_node_url(**kwargs):
 
 def add_template_globals():
     from core import app
-    template_globals = dict(node_url=node_url, current_node_url=current_node_url, xml_escape=_utils_utils.esc)
+    template_globals = dict(
+            current_node_url=current_node_url,
+            json_dump=_utils_utils.json_dump,
+            json_load=_utils_utils.json_load,
+            node_url=node_url,
+            xml_escape=_utils_utils.esc,
+           )
 
     tal.add_template_globals(**template_globals)
     app.add_template_globals(**template_globals)

@@ -3,3 +3,6 @@ msgstr "Textfeld"
 
 msgid "fieldtype_text_desc"
 msgstr "Normales Texteingabefeld"
+
+msgid "fieldtype_text_pattern"
+msgstr "Muster:"

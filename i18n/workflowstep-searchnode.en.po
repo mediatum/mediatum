@@ -1,0 +1,29 @@
+msgid "workflowstep_searchnode"
+msgstr "search nodes"
+
+msgid "searchnode-current-match-metafields"
+msgstr "current match metafields file"
+
+msgid "searchnode-replace-match-metafields"
+msgstr "replace match metafelds file"
+
+msgid "searchnode-delete-match-metafields"
+msgstr "delete match metafields file"
+
+msgid "searchnode-match-metafields"
+msgstr "match metafelds file"
+
+msgid "searchnode-target-metafield"
+msgstr "target metafield"
+
+msgid "searchnode-root-id-metafield"
+msgstr "root id metafield"
+
+msgid "searchnode-type-match-metafield"
+msgstr "type match metafield"
+
+msgid "searchnode-schema-match-metafield"
+msgstr "schema match metafield"
+
+msgid "searchnode-name-match-metafield"
+msgstr "name match metafield"

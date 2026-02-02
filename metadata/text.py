@@ -6,6 +6,8 @@
 from __future__ import division
 from __future__ import print_function
 
+import re as _re
+
 import logging
 
 from mediatumtal import tal
@@ -23,7 +25,10 @@ class m_text(Metatype):
 
     name = "text"
 
+    default_settings = dict(pattern=".*")
+
     def editor_get_html_form(self, metafield, metafield_name_for_html, values, required, language):
+        pattern = metafield.metatype_data['pattern']
 
         conflict = len(frozenset(values))!=1
 
@@ -33,6 +38,7 @@ class m_text(Metatype):
                     value="" if conflict else values[0],
                     name=metafield_name_for_html,
                     required=1 if required else None,
+                    pattern='^{}$'.format(pattern),
                    ),
                 macro="editorfield",
                 language=language,
@@ -80,8 +86,24 @@ class m_text(Metatype):
         return (metafield.getLabel(), value)
 
     def editor_parse_form_data(self, field, data, required):
-        if required and not data.get("text"):
+        if required and not data["text"]:
             raise _core_metatype.MetatypeInvalidFormData("edit_mask_required")
-        if _utils.xml_check_illegal_chars_or_null(data.get("text")):
+        if _utils.xml_check_illegal_chars_or_null(data["text"]):
             raise _core_metatype.MetatypeInvalidFormData("edit_mask_illegal_char")
-        return data.get("text")
+        if not _re.match('\A{}\Z'.format(field.metatype_data['pattern']), data["text"]):
+            raise _core_metatype.MetatypeInvalidFormData("edit_mask_illegal_char")
+        return data["text"]
+
+    def admin_settings_get_html_form(self, fielddata, metadatatype, language):
+        return tal.getTAL(
+                "metadata/text.html",
+                dict(pattern=fielddata['pattern']),
+                macro="metafieldeditor",
+                language=language,
+               )
+
+    def admin_settings_parse_form_data(self, data):
+        # validate RegEx before storing it
+        _re.compile(data["pattern"])
+        _re.compile('\A{}\Z'.format(data["pattern"]))
+        return dict(pattern=data["pattern"])

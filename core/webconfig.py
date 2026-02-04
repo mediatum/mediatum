@@ -16,6 +16,8 @@ import core.config as config
 import request_handler as _request_handler
 from core.styles import CustomTheme, DefaultTheme
 from core.plugins import find_plugin_with_theme
+import schema as _schema
+import schema.schema as _
 from utils import utils as _utils_utils
 
 logg = logging.getLogger(__name__)
@@ -85,6 +87,7 @@ def add_template_globals():
     from core import app
     template_globals = dict(
             current_node_url=current_node_url,
+            get_schema_fields=_schema.schema.get_schema_fields,
             json_dump=_utils_utils.json_dump,
             json_load=_utils_utils.json_load,
             node_url=node_url,

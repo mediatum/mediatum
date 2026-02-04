@@ -89,6 +89,7 @@ def add_template_globals():
             current_node_url=current_node_url,
             get_schema_fields=_schema.schema.get_schema_fields,
             json_dump=_utils_utils.json_dump,
+            json_hash=_utils_utils.json_hash,
             json_load=_utils_utils.json_load,
             node_url=node_url,
             xml_escape=_utils_utils.esc,

@@ -820,3 +820,7 @@ def json_dump(data):
 
 def json_load(data):
     return _json.loads(data)
+
+
+def json_hash(data):
+    return hashlib.sha512(json_dump(data)).hexdigest()

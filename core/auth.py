@@ -10,6 +10,7 @@ from base64 import b64encode
 import logging
 import os
 import hashlib
+import hmac as _hmac
 from collections import OrderedDict
 import scrypt
 
@@ -31,7 +32,7 @@ def generate_salt():
 
 
 def check_user_password(user, password):
-    return user.password_hash == b64encode(scrypt.hash(password.encode("utf8"), str(user.salt)))
+    return _hmac.compare_digest(str(user.password_hash), b64encode(scrypt.hash(password.encode("utf8"), str(user.salt))))
 
 
 def create_password_hash(password, salt=None):
@@ -128,7 +129,7 @@ class InternalAuthenticator(Authenticator):
                     return user
             else:
                 # check legacy md5 hash directly
-                if user.password_hash == create_md5_hash(password):
+                if _hmac.compare_digest(str(user.password_hash), create_md5_hash(password)):
                     rehashed = rehash_legacy_password(password)
                     # not rehashing md5 is NOT ok, let's warn...
                     if not rehashed:

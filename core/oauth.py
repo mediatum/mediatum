@@ -8,6 +8,7 @@ from __future__ import print_function
 
 import logging
 import hashlib
+import hmac as _hmac
 
 import core as _core
 import utils.utils as _utils_utils
@@ -66,7 +67,7 @@ def verify_request_signature(req_path, params):
         workingString += '{}={}'.format(oneKey,
                                         oneValue)
     testSignature = hashlib.md5(workingString).hexdigest()
-    return (testSignature == signature)
+    return _hmac.compare_digest(testSignature, str(signature))
 
 
 def get_oauth_key_for_user(user):

@@ -1,0 +1,8 @@
+msgid "workflowstep_multiply"
+msgstr "multiply nodes"
+
+msgid "multiply-split-attribute"
+msgstr "split attribute"
+
+msgid "multiply-fileid-map-attribute"
+msgstr "fileid map attribute"

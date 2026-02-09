@@ -1,0 +1,8 @@
+msgid "workflowstep_multiply"
+msgstr "Knoten vervielfältigen"
+
+msgid "multiply-split-attribute"
+msgstr "Split Attribut"
+
+msgid "multiply-fileid-map-attribute"
+msgstr "File Id Zuordnungs Attribut"

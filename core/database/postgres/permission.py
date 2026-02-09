@@ -86,6 +86,9 @@ class NodeToAccessRuleset(DeclarativeBase):
                           using="btree",
                           where="private = true",
                           name="only_one_private_ruleset_per_node_and_ruletype"),
+        ExcludeConstraint((ruleset_name, "="),
+                          where="private = true",
+                          name="distinct_private_ruleset_name"),
         # XXX: missing constraint: private rulesets cannot be used elsewhere if they are private
     )
 

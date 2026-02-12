@@ -119,7 +119,7 @@ class WorkflowStep_AddFormPage(WorkflowStep):
         form_overwrite=False,
     )
 
-    def runAction(self, node, op=""):
+    def runAction(self, node):
 
         # try to get form pdf file
         form = None

@@ -15,7 +15,7 @@ def register():
 
 class WorkflowStep_Delete(WorkflowStep):
 
-    def runAction(self, node, op=""):
+    def runAction(self, node):
         for p in node.parents:
             with suppress(Exception, warn=False):
                 p.children.remove(node)

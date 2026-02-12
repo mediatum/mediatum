@@ -39,7 +39,7 @@ class WorkflowStep_Metafield2Metadata(_workflow.WorkflowStep):
             'target-metadata-separator':"",
            }
 
-    def runAction(self, node, op=""):
+    def runAction(self, node):
         with open(_os.path.join(_core.config.get("paths.datadir"), self.files[0].path), "rb") as f:
             mapping = _ruamel_yaml.YAML(typ="safe", pure=True).load(f)
 

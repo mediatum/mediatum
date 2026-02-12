@@ -30,7 +30,7 @@ class WorkflowStep_SetMetadatatype(_workflow.WorkflowStep):
 
     default_settings = {"type-attribute":None, "schema-attribute":None, "clear-files":True}
 
-    def runAction(self, node, op=""):
+    def runAction(self, node):
         if self.settings["type-attribute"] is not None:
             node.type = node.attrs[self.settings["type-attribute"]]
         if self.settings["schema-attribute"] is not None:

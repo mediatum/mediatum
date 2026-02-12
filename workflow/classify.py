@@ -39,7 +39,7 @@ class WorkflowStep_Classify(WorkflowStep):
     def show_workflow_node(self, node, req):
         return self.forwardAndShow(node, True, req)
 
-    def runAction(self, node, op=""):
+    def runAction(self, node):
         name = ""
         func = start = end = None
         attr = self.settings['destination_attr']

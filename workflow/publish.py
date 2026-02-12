@@ -29,7 +29,7 @@ class WorkflowStep_Publish(WorkflowStep):
         set_version=False,
     )
 
-    def runAction(self, node, op=""):
+    def runAction(self, node):
         ugid = _core.db.query(UserGroup).filter_by(name=u'_workflow').one().id
         user = _user_from_session()
 

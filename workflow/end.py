@@ -49,7 +49,7 @@ class WorkflowStep_End(WorkflowStep):
                 request=req,
             )
 
-    def runAction(self, node, op=""):
+    def runAction(self, node):
         if self.settings["endsetupdatetime"]:
             # insert node into searchindex
             try:

@@ -96,7 +96,7 @@ class WorkflowStep_Urn(WorkflowStep):
         niss="",
     )
 
-    def runAction(self, node, op=""):
+    def runAction(self, node):
         attrname = self.settings["attrname"]
         niss = self.settings["niss"]
         urn = node.get(attrname)

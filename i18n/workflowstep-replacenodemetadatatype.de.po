@@ -1,0 +1,11 @@
+msgid "workflowstep_replacenodemetadatatype"
+msgstr "Ersatzknoten Metadatentyp und -schema festlegen"
+
+msgid "setmetadatatype_type-attribute"
+msgstr "Typ-Attribut"
+
+msgid "setmetadatatype_schema-attribute"
+msgstr "Schema-Attribut"
+
+msgid "setmetadatatype_id-attribute"
+msgstr "Knotenid-Attribute"

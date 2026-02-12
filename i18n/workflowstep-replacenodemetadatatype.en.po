@@ -1,0 +1,11 @@
+msgid "workflowstep_replacenodemetadatatype"
+msgstr "Replacenode Set Metadatatype and Schema"
+
+msgid "setmetadatatype_type-attribute"
+msgstr "Type-Attribute"
+
+msgid "setmetadatatype_schema-attribute"
+msgstr "Schema-Attribute"
+
+msgid "setmetadatatype_keep_files"
+msgstr "Nodeid-Attribute"

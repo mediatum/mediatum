@@ -1,0 +1,18 @@
+<!--
+  Copyright (C) since 2007, Technical University of Munich (TUM) and mediaTUM authors
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<metal:block metal:define-macro="workflow_step_type_config">
+    <label>
+        <tal:block i18n:translate="">setmetadatatype_type-attribute</tal:block>
+        <input type="text" name="stepsetting_type-attribute" tal:attributes="value type-attribute"/>
+    </label>
+    <label>
+        <tal:block i18n:translate="">setmetadatatype_schema-attribute</tal:block>
+        <input type="text" name="stepsetting_schema-attribute" tal:attributes="value schema-attribute"/>
+    </label>
+    <label>
+        <tal:block i18n:translate="">setmetadatatype_id-attribute</tal:block>
+        <input type="text" name="stepsetting_id-attribute" tal:attributes="value id-attribute"/>
+    </label>
+</metal:block>

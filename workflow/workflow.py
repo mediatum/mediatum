@@ -732,7 +732,6 @@ def register():
     from . import replacenodemetadatatype
     from . import searchnode
     from . import setnodename
-    from . import setmetadatatype
     from . import showdata
     from . import start
     from . import template2metadata
@@ -766,7 +765,6 @@ def register():
         replacenodemetadatatype,
         searchnode,
         setnodename,
-        setmetadatatype,
         showdata,
         start,
         template2metadata,

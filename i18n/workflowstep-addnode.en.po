@@ -1,0 +1,11 @@
+msgid "workflowstep_addnode"
+msgstr "Pull in Nodes"
+
+msgid "addnode-node-id-attribute"
+msgstr "nodeid attribute"
+
+msgid "addnode-replace-assignment"
+msgstr "Pull in nodes even from other workflows"
+
+msgid "copy-metafield-attribute"
+msgstr "metafield to transfer"

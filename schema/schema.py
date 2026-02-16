@@ -1442,3 +1442,13 @@ class SchemaMixin(object):
                 return mtype.getDescription()
             else:
                 return ""
+
+
+def get_schema_fields(schema_name):
+    """
+    Return a dictionary that maps all the schema's metafields' names to their respective metafield type,
+    or simply `None` if there exists no schema with the name provided.
+    """
+    schema = _nodecache.get_metadatatypes_node().children.filter_by(name=schema_name).scalar()
+    if schema:
+        return {metafield.name:metafield.getFieldtype() for metafield in schema.getMetaFields()}

@@ -812,3 +812,15 @@ def TemporaryDirectory(prefix):
         yield _functools.partial(os.path.join, dtemp)
     finally:
         _shutil.rmtree(dtemp)
+
+
+def json_dump(data):
+    return _json.dumps(data, ensure_ascii=True, encoding="ascii", separators=(',', ':'), sort_keys=True)
+
+
+def json_load(data):
+    return _json.loads(data)
+
+
+def json_hash(data):
+    return hashlib.sha512(json_dump(data)).hexdigest()

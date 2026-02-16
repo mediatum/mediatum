@@ -1,0 +1,11 @@
+msgid "workflowstep_addnode"
+msgstr "Knoten beiziehen"
+
+msgid "addnode-node-id-attribute"
+msgstr "Knotennummer Attribut"
+
+msgid "addnode-replace-assignment"
+msgstr "Auch Knoten aus anderen Workflows beiziehen"
+
+msgid "copy-metafield-attribute"
+msgstr "zu übertragendes Metadatenfeld"

@@ -232,11 +232,9 @@ def registerDefaultContextEntry(key, entry):
     _default_context[key] = entry
 
 
-def handleCommand(cmd, var, s, node, attrnode=None, field_value="", options=[], mask=None):
+def handleCommand(template, mask, value, node=None):
     from web.frontend.filehelpers import build_filelist, get_transfer_url
-    if cmd != 'cmd:getTAL':
-        return
-    if "tal:" not in s:
+    if "tal:" not in template:
         return ""
     context = _default_context.copy()
     context.update(
@@ -244,14 +242,15 @@ def handleCommand(cmd, var, s, node, attrnode=None, field_value="", options=[], 
         build_filelist=build_filelist,
         get_transfer_url=get_transfer_url,
         host_url_join=_functools.partial(_urlparse.urljoin, _flask.request.host_url),
+        value=value,
        )
     cutter = u"----cut-TAL-result-here----"
-    s = u'''{xmlheader}{exportheader}
+    template = u'''{xmlheader}{exportheader}
             <talnamespaces
                     xmlns:tal="http://xml.zope.org/namespaces/tal"
                     xmlns:metal="http://xml.zope.org/namespaces/metal"
                    >
-            {cutter}{s}{cutter}
+            {cutter}{template}{cutter}
             </talnamespaces>
             {exportfooter}
         '''.format(
@@ -259,7 +258,7 @@ def handleCommand(cmd, var, s, node, attrnode=None, field_value="", options=[], 
             exportheader=mask.get("exportheader"),
             exportfooter=mask.get("exportfooter"),
             cutter=cutter,
-            s=s,
+            template=template,
            )
-    s = tal.getTALstr(s, context, mode='xml')
-    return s[s.find(cutter)+len(cutter):s.rfind(cutter)].replace("[{}]".format(var), "")
+    template = tal.getTALstr(template, context, mode='xml')
+    return template[template.find(cutter)+len(cutter):template.rfind(cutter)].replace("[cmd:getTAL]", "")

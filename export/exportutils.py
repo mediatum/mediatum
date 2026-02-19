@@ -35,11 +35,6 @@ def no_html(s):
     return tagpattern.sub('', s)
 
 
-def prss(s):
-    '''protect rss item elements'''
-    return esc(no_html(esc(no_html(esc(no_html(esc(u(s))))))))
-
-
 def cdata(s):
     return '<![CDATA[%s]]>' % s
 
@@ -217,13 +212,12 @@ def normLanguage_iso_639_2_t(s, emptyval=''):
 
 
 _default_context = dict(
-    esc = esc,      # may be needed for example in escaping rss item elements
-    esc2 = esc2,    # may be needed for example in escaping rss item elements
+    esc = esc,
+    esc2 = esc2,
     no_html = no_html,
     u = u,
     utf82iso = utf82iso,
     iso2utf8 = iso2utf8,
-    prss = prss,    # protect rss
     parse_date = parse_date,
     format_date = format_date,
     cdata = cdata,

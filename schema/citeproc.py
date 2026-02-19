@@ -12,6 +12,7 @@ from __future__ import print_function
 
 from collections import defaultdict
 import datetime
+import json as _json
 import logging
 import re
 
@@ -21,6 +22,7 @@ import core as _core
 import utils.utils as _utils_utils
 from core.database.postgres.node import Node
 from contenttypes import Document
+import schema as _schema
 from .schema import Metadatatype
 from . import importbase
 from .importbase import NoMappingFound
@@ -260,9 +262,9 @@ def import_csl(record, target=None, name=None, testing=False):
             raise NoMappingFound("No citeproc schema mapping could be found", typ)
         logg.warning("no mapping found for type %s, using _default fallback mapping", typ)
     metatype = _core.db.query(Metadatatype).filter_by(name=schema).one()
-    mask = metatype.getMask(u"citeproc")
+    mask = metatype.getMask(u"import-citeproc")
     if not mask:
-        raise NoMappingFound("target schema does not have a citeproc mask", typ)
+        raise NoMappingFound("target schema does not have a import-citeproc mask", typ)
     if name is None:
         name = record.get(u"DOI") or _utils_utils.gen_secure_token(128)
     node = Document(name, schema=schema)
@@ -294,30 +296,34 @@ def import_csl(record, target=None, name=None, testing=False):
 
     for maskitem in mask.maskitems:
         try:
-            csl_name = "not defined"
-            mfield = "not defined"
-            med_name = "not defined"
-            csl_name = _core.db.query(Node).get(int(maskitem[u"mappingfield"])).name
+            mappingfield = _core.db.query(Node).get(int(maskitem[u"mappingfield"]))
             mfield = _core.db.query(Node).get(int(maskitem[u"attribute"]))
-            med_name = mfield.name
         except:
-            logg.exception("citeproc import name='%s': field error for citeproc mask for type '%s and " +
-                "csl-type '%s' csl_name='%s', mfield='%s', med_name='%s'", name, schema, typ, csl_name, mfield, med_name)
+            logg.exception("citeproc import %r (%s): field error in maskitem %s (%s)",
+                    name, typ, maskitem.id, maskitem.name)
             continue
 
-        value = get_converted_from_csl_record(csl_name)
-
+        value = get_converted_from_csl_record(mappingfield.name)
         # fixes for special fields
-        mfield_type = mfield.get(u"type")
-        if mfield_type == "url":
+        if mfield.get(u"type") == "url":
             value += u";Link"
 
         # get rid of month and day
-        if med_name == u'year' and value is not None:
+        if mfield.name == u'year' and value is not None:
             value = value[0:4] + u'-00-00T00:00:00'
 
+        # value must not be changed if 'exportformat' is empty
+        if mappingfield.get('exportformat'):
+            value = _schema.getMetadataType("mappingfield").evaluate_square_brackets(
+                    mappingfield.get('exportformat'),
+                    mfield,
+                    mask,
+                    mappingfield.name,
+                    value=_json.dumps(dict(raw=record.get(mappingfield.name),cooked=value)),
+                   )
+
         if value is not None:
-            node.set(med_name, value)
+            node.set(mfield.name, value)
 
     if target:
         target.content_children.append(node)

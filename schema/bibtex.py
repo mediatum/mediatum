@@ -17,6 +17,7 @@ from __future__ import division
 from __future__ import print_function
 
 import datetime as _datetime
+import json as _json
 import re
 import sys
 import codecs
@@ -253,76 +254,84 @@ def importBibTeX(entries, node, creator=None):
 
     logg.info("bibtex import: %d entries", len(entries))
 
-    for count, fields in enumerate(entries):
-        fields[u"key"] = docid_utf8 = fields.pop("ID")
-        doctype = fields.pop("ENTRYTYPE")
-        mytype = _detecttype(doctype, fields)
+    for fields in entries:
+        entry_key = fields[u"key"] = fields.pop("ID")
+        metadatatype = _detecttype(fields.pop("ENTRYTYPE"), fields)
+        if not metadatatype:
+            continue
+        if metadatatype not in bibtextypes:
+            raise MissingMapping(metadatatype)
+        metadatatype = _core.db.query(Metadatatype).filter_by(name=bibtextypes[metadatatype]).one()
+        mappingfields = {}
+        metadatafields = {}
+        dateformats = {}
 
-        if mytype:
-            fieldnames = {}
-            datefields = {}
-            if mytype not in bibtextypes:
-                msg = "bibtex mapping of bibtex type '{}' not defined - import stopped".format(mytype)
-                logg.error("%s", msg)
-                raise MissingMapping(msg)
-
-            metatype = bibtextypes[mytype]
-
-            # check for mask configuration
-            metadatatype = _core.db.query(Metadatatype).filter_by(name=metatype).one()
-            mask = metadatatype.get_mask(u"bibtex_import") or metadatatype.get_mask(u"bibtex")
-            for maskitem in (mask.all_maskitems if mask else ()):
-                try:
-                    bib_name = _core.db.query(Node).get(maskitem.get(u"mappingfield")).name
-                    mfield = _core.db.query(Node).get(maskitem.get(u"attribute"))
-                    metafield_name = mfield.name
-                    if mfield.get(u"type") == u"date":
-                        datefields[metafield_name] = mfield.metatype_data["format"]
-                except AttributeError as e:
-                    logg.error(
-                            "bibtex import docid='%s': field error for bibtex mask for type %s and bibtex-type '%s': %s",
-                            docid_utf8,
-                            metatype,
-                            mytype,
-                            e,
-                           )
-                else:
-                    fieldnames[bib_name] = metafield_name
-
-            doc = Document(docid_utf8,schema=metatype)
-            for k, v in fields.iteritems():
-                k = fieldnames.get(k, k)  # map bibtex name
-
-                if k in datefields:  # format date field
-                    try:
-                        v = str(parse_date(v, datefields[k]))
-                        # if date format does not contains '%' the valid digit of the result must not be longer than the date format
-                        # e.g. if datefields[k] is 'yyyy' then the result v must be clipped after 4 characters
-                        # afterwards the result is expanded again (without the invalid digits)
-                        if datefields[k].find('%') < 0:
-                            v = v[:len(datefields[k])]
-                            v = str(parse_date(v, datefields[k]))
-                    except ValueError as e:
-                        logg.exception("bibtex exception: %s: %s", k, v)
-                        raise ValueError("bibtex_date_error")
-
-                doc.set(k, v)
-
-            # because the bibtex import contains only a subset of the metadata defined in metadatatype,
-            # all other metadata are created and set to default values.
-            # this will be done in the same manner as if the document is loaded in editor and saved without
-            # any changes (required fields are not considered)
-            editmask = metadatatype.get_mask(u"editmask")
-            if editmask:
-                editmask.set_default_metadata(doc)
-
+        # check for mask configuration
+        mask = metadatatype.get_mask("import-bibtex")
+        if not mask:
+            logg.warning("bibtex import: no 'import-bibtex' mask found, importing without mapping")
+        for maskitem in (mask.all_maskitems if mask else ()):
             try:
-                node.children.append(doc)
-                if creator is not None:
-                    doc.set("creator", creator)
-                doc.set("creationtime",  unicode(time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
-            except Exception as e:
-                logg.exception("bibtex exception")
-                raise ValueError()
+                mappingfield = _core.db.query(Node).get(maskitem.get(u"mappingfield"))
+                metadatafield = _core.db.query(Node).get(maskitem.get(u"attribute"))
+                # force AttributeError if those objects weren't found in DB:
+                mappingfield.name
+                metadatafield.name
+            except AttributeError as error:
+                logg.error(
+                        "bibtex import docid='%s': field error for bibtex mask for type %s and bibtex-type '%s': %s",
+                        entry_key,
+                        metadatatype.name,
+                        metadatatype.get("bibtexmapping"),
+                        error,
+                       )
+            else:
+                if metadatafield.get(u"type") == u"date":
+                    dateformats[metadatafield.name] = metadatafield.metatype_data["format"]
+                mappingfields[mappingfield.name] = mappingfield
+                metadatafields[mappingfield.name] = metadatafield
+
+        doc = Document(entry_key, schema=metadatatype.name)
+        for fieldname, fieldvalue in fields.iteritems():
+            if fieldname in metadatafields:
+                fieldname = metadatafields[fieldname].name
+            value = fieldvalue
+            if fieldname in dateformats:  # format date field
+                value = str(parse_date(value, dateformats[fieldname]))
+                # if date format does not contains '%' the valid digit of the result must not be longer than the date format
+                # e.g. if dateformats[fieldname] is 'yyyy' then the result value must be clipped after 4 characters
+                # afterwards the result is expanded again (without the invalid digits)
+                if "%" not in dateformats[fieldname]:
+                    value = value[:len(dateformats[fieldname])]
+                    value = str(parse_date(value, dateformats[fieldname]))
+
+            # value must not be changed if 'exportformat' is empty
+            if fieldname in mappingfields and mappingfields[fieldname].get('exportformat'):
+                value = _schema.getMetadataType("mappingfield").evaluate_square_brackets(
+                        mappingfields[fieldname].get('exportformat'),
+                        metadatafields[fieldname],
+                        mask,
+                        fieldname,
+                        value=_json.dumps(dict(raw=fieldvalue,cooked=value)),
+                       )
+
+            doc.set(fieldname, value)
+
+        # because the bibtex import contains only a subset of the metadata defined in metadatatype,
+        # all other metadata are created and set to default values.
+        # this will be done in the same manner as if the document is loaded in editor and saved without
+        # any changes (required fields are not considered)
+        editmask = metadatatype.get_mask(u"editmask")
+        if editmask:
+            editmask.set_default_metadata(doc)
+
+        try:
+            node.children.append(doc)
+            if creator is not None:
+                doc.set("creator", creator)
+            doc.set("creationtime", unicode(time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
+        except Exception as e:
+            logg.exception("bibtex exception")
+            raise ValueError()
 
     logg.debug("bibtex import: finished import")

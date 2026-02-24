@@ -14,6 +14,7 @@ import jinja2 as _jinja2
 import jinja2.loaders as _
 import werkzeug as _werkzeug
 import werkzeug.datastructures as _
+import werkzeug.middleware.proxy_fix as _
 import werkzeug.utils as _
 
 from web import frontend as _web_frontend
@@ -76,6 +77,10 @@ def _make_app():
     Creates the mediaTUM application.
     """
     app = MediatumFlask("mediaTUM admin")
+    app.wsgi_app = _werkzeug.middleware.proxy_fix.ProxyFix(app.wsgi_app, **{
+            "x_{}".format(k): config.getint('x-forwarded.{}'.format(k), 0)
+            for k in ("for", "proto", "host", "port", "prefix")
+           })
     app.config["SECRET_KEY"] = config.get_secret_key(
         "admin.session_secret_key_file",
         uwsgi_cache_key="session_secret_key",

@@ -16,7 +16,7 @@ import math as _math
 import mimetypes as _mimetypes
 import os
 import random as _random
-import re
+import re as _re
 import shutil as _shutil
 import string as _string
 import sys
@@ -89,15 +89,15 @@ def utf82iso(s):
 
 
 xml_remove_illegal_chars = _functools.partial(
-        re.compile(u'[^\u0020-\uD7FF\u0009\u000A\u000D\uE000-\uFFFD\u10000-\u10FFFF]+', re.UNICODE).sub,
+        _re.compile(u'[^\u0020-\uD7FF\u0009\u000A\u000D\uE000-\uFFFD\u10000-\u10FFFF]+', _re.UNICODE).sub,
         u"",
        )
 
 
-replacements = {'sub': {'regex': re.compile(r'(?<=\$_)(.*?)(?=\$)'),
+replacements = {'sub': {'regex': _re.compile(r'(?<=\$_)(.*?)(?=\$)'),
                         'tex': '$_%s$',
                         'html': '<sub>%s</sub>'},
-                'sup': {'regex': re.compile(r'(?<=\$\^)(.*?)(?=\$)'),
+                'sup': {'regex': _re.compile(r'(?<=\$\^)(.*?)(?=\$)'),
                         'tex': '$^%s$',
                         'html': '<sup>%s</sup>'}}
 
@@ -112,7 +112,7 @@ def modify_tex(string, option):
     @param option: 'html' swaps tex for html tags or 'strip' nto remove tex markup
     """
     for tag in replacements.keys():
-        matches = re.findall(replacements[tag]['regex'], string)
+        matches = _re.findall(replacements[tag]['regex'], string)
         for match in matches:
             if option == 'html':
                 string = string.replace(replacements[tag]['tex'] % match,
@@ -732,7 +732,7 @@ def find_free_port():
     return port
 
 
-_db_auto_name_match_allowed_chars = re.compile("^([_a-zA-Z0-9_]+)$").match
+_db_auto_name_match_allowed_chars = _re.compile("^([_a-zA-Z0-9_]+)$").match
 _db_auto_name_match_allowed_sql_types = ("function", "trigger", "index", "column")
 
 

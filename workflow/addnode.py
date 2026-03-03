@@ -65,7 +65,7 @@ class WorkflowStep_AddNode(_workflow.WorkflowStep):
                 if workflow_step:
                     workflow_step.children.remove(newnode)
         else:
-            nodes = _itertools.ifilterfalse(_workflow.getNodeWorkflowStep, nodes)
+            nodes = tuple(_itertools.ifilterfalse(_workflow.getNodeWorkflowStep, nodes))
 
         self.children.extend(nodes)
         copy_metafield = self.settings["copy-metafield-attribute"]

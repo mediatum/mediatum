@@ -18,50 +18,9 @@ from core.database.postgres.node import Node
 logg = logging.getLogger(__name__)
 
 
-class MappingReplacement():
-
-    def __init__(self):
-        self.description = ""
-
-    """
-        s:        input string to be replaced
-        var:      variable values
-        node:     node holding values
-        attrnode: node with attributes to be passed
-    """
-
-    def func(self, s, var, node, attrnode):
-        raise None
-
-# define standard replacements
-
-
-class MappingExtStdAttr(MappingReplacement):  # replace all 'att:X' types
-
-    def func(self, s, var, node, attrnode):
-        if var.startswith("att:"):
-            if var == "att:field":
-                s = s.replace("[" + var + "]", attrnode.getName())
-            elif var == "att:id":
-                s = s.replace("[" + var + "]", unicode(node.id))
-            elif var == "att:nodename":
-                s = s.replace("[" + var + "]", node.name)
-            elif var == "att:filename":
-                s = s.replace("[" + var + "]", node.name)
-            else:
-                s = s.replace("[" + var + "]", ustr(node.get(var.split(":")[-1])))
-        return s
-
-
 class m_mappingfield(Metatype):
 
     name = "mappingfield"
-
-    def __init__(self):
-        self.extensions = [MappingExtStdAttr()]
-
-    def addMappingExt(self, ext):
-        self.extensions.append(ext)
 
     def editor_get_html_form(self, field, value="", width=400, lock=0, language=None, required=None):
 
@@ -167,8 +126,13 @@ class m_mappingfield(Metatype):
                         ns += 'xmlns:' + n.getNamespace() + '="' + n.getNamespaceUrl() + '" '
                 s = s.replace("[" + var + "]", ns)
 
-            for ext in self.extensions:
-                s = ext.func(s, var, node, attrnode)
+            if var.startswith("att:"):
+                s = s.replace("[{}]".format(var),
+                    attrnode.name if var == "att:field" else
+                    unicode(node.id) if var == "att:id" else
+                    node.name if var in ("att:nodename", "att:filename") else
+                    ustr(node.get(var.split(":")[-1]))
+                   )
 
         return s
 

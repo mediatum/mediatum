@@ -18,20 +18,20 @@ var labels = {'de':['lade...', 'Suche', 'Suche nach:', 'Treffer'],
 
 var load_script = function(options) {
     options.owner_document = options.owner_document || document;
-    
+
     var script_tag = options.owner_document.createElement('script');
     script_tag.setAttribute('type', 'text/javascript');
     script_tag.setAttribute('src', options.src);
     script_tag.onload = function() {
         script_tag.onreadystatechange = null;
-        options.callback && options.callback(options.position);  
-    };  
-    
+        options.callback && options.callback(options.position);
+    };
+
     script_tag.onreadystatechange = function() {
         if (script_tag.readyState == 'loaded' || script_tag.readyState == 'complete') {
             script_tag.onload = null;
             options.callback && options.callback(options.position);
-        }  
+        }
     };
     options.owner_document.getElementsByTagName('head')[0].appendChild(script_tag);
 };
@@ -59,7 +59,7 @@ function mediatum_load(id, limit, sort, query, format, language, type, detailof)
         callback: function(pos) {
             // fix jQuery conflicts, see https://api.jquery.com/jquery.noconflict/
             $ = jQuery.noConflict(true);
-            
+
             if(detailof || detailof==0){
                 var divider = mediatum_config['divider'+detailof] ? mediatum_config['divider'+detailof] : mediatum_config_default.divider;
                 var fields = mediatum_config['fields'+detailof] ? mediatum_config['fields'+detailof] : mediatum_config_default.fields;
@@ -75,13 +75,13 @@ function mediatum_load(id, limit, sort, query, format, language, type, detailof)
             if (output!='default'){
                 fields = new Array('defaultexport');
             }
-            
+
             if (type[0]=='struct'){
                 var url = baseurl+"/services/export/node/"+id+"/children?format=json&type=.*(directory|collection).*";
             }else{
                 var url = baseurl+"/services/export/node/"+id+"/allchildren?format=json&type=.*(document|diss|image|video).*";
             }
-            
+
             var file = true;
             if (mediatum_config['fields'+pos]){
                 file = /!hasfile*/.test(mediatum_config['fields'+pos].join(""));
@@ -186,7 +186,7 @@ function startsearch(pos, baseid, language){
     var fields = mediatum_config['fields'+pos] ? mediatum_config['fields'+pos] : mediatum_config_default.fields;
     var divider = mediatum_config['divider'+pos] ? mediatum_config['divider'+pos] : mediatum_config_default.divider;
     var target = mediatum_config['target'+pos] ? mediatum_config['target'+pos] : mediatum_config_default.target;
-    
+
     url = baseurl+"/services/export/node/"+baseid+"/allchildren?sortfield=-node.name&type=.*(document|diss|image|video).*&format=json&q=full="+ $('#searchterm_'+pos).val();
     url += (mediatum_config['fields'+pos] || mediatum_config['fields'+detailof]) ? "&attrspec=all" : "";
     url += mediatum_config['output']!="default" ? "&mask="+mediatum_config['output'] :"";
@@ -245,7 +245,7 @@ function formatData(value, item, i, l){
     var val;
     var result;
     var re = new RegExp("\[att\:[\\.\\,\\\\;\\\\s\\\\&|A-Za-z0-9_-]*\]");
-    
+
     func = "";
     while(result = re.exec(value)!=null){ // replace all attributes
         val = re.exec(value);
@@ -256,7 +256,7 @@ function formatData(value, item, i, l){
             func = attrname.replace(/(.*)\|/, '');
             attrname = attrname.replace(/(\|.*)/g,'');
         }
-        
+
         if(value.match(/(\[att:id\])/g)){ // id
             value = value.replace(/(\[att:id\])/g, item[0].id);
         }
@@ -266,20 +266,20 @@ function formatData(value, item, i, l){
         else if(item[0]['attributes'][attrname] && item[0]['attributes'][attrname]!=""){ // test attributes
             value = value.replace(val, execFuncts(item[0]['attributes'][attrname], func));
             //value = value.replace(val, item[0]['attributes'][attrname]);
-            
+
         }else{ // attribute not found
             value = "";
         }
-        
+
         func = "";
     }
-    
 
-    
+
+
     if ((new RegExp(/(defaultexport)/g)).exec(value)){ // defaultexport
         value = item[0]['defaultexport'];
     }
-    
+
     if ((new RegExp(/(\|hasfile)/g)).exec(value)){ // test of existing file
         value = value.replace(/(\|hasfile)/g, '');
         if ((item[0]['files'].length)==0){
@@ -307,34 +307,34 @@ function execFuncts(value, func){
             return "";
         }
     }
-    
+
     /*if ((new RegExp(/(replace:)/g)).exec(func)){ // replace -> syntax: |replace:pattern,replace
         //format = func.replace(/(replace:)/, "").split("|")[0].split(",");
         format = func.replace(/(replace:)/, "").split("|")[0].split(/([^\,]*),(.*)/g);
         if (format.length==4){
-            return value.replace(new RegExp(format[1],"g"), format[2]);  
+            return value.replace(new RegExp(format[1],"g"), format[2]);
         }
     }*/
     if ((new RegExp(/(replace:)/g)).exec(func)){ // replace -> syntax: |replace:pattern,replace
         format = func.replace(/(replace:)/, "").split("|")[0];
         var a = format.split(/([^\,]*),(.*)/g);
         if (a.length==4){
-            return value.replace(new RegExp(a[1],"g"), a[2]);  
+            return value.replace(new RegExp(a[1],"g"), a[2]);
         }else{
             a = format.split(',');
-            return value.replace(new RegExp(a[0],"g"), a[2]);  
+            return value.replace(new RegExp(a[0],"g"), a[2]);
         }
     }
-    
+
     if ((new RegExp(/(splitstring:)/g)).exec(func)){ // splitstring -> syntax: |splitstring:pattern,position
         format = func.replace(/(splitstring:)/, "").split("|")[0].split(",");
         if (format.length==2){
             if (value.split(format[0])[format[1]]){
                 return value.replace(value, value.split(format[0])[format[1]]);
-            }   
+            }
         }
     }
-    
+
     if ((new RegExp(/(formatdate:)/g)).exec(func)){ // date format -> syntax: |formatdate:[Y|M|D|h|m|s]*
         format = func.replace(/(formatdate:)/g, "");
         d = new Date(Date.parse(value.replace(/(\-)/g,"/"), 'YYYY/MM/DDThh:mm:ss'));

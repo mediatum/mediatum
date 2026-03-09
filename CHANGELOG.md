@@ -1,6 +1,23 @@
 # Change Log
 All notable changes to mediaTUM will be documented in this file.
 
+## [V2026.03] - 2026-03-09
+
+### Added
+- Python function available in TAL context
+  - `json_hash`
+  - `get_schema_fields`
+  - `json_dump`
+  - `json_load`
+- workflowstep addnode
+- workflowstep multiply
+- workflowstep searchnode
+- `pattern` setting for `text` metadata field type
+
+### Fixed
+- admin edit mapping field display "Line Format"
+- admin edit mapping field saving unedited form conflict check
+
 ## [v2026.01] - 2026-01-16
 
 ### Changed

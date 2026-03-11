@@ -39,7 +39,7 @@ class WorkflowStep_JoinMetafields(_workflow.WorkflowStep):
             target_metafieldname="",
         )
 
-    def runAction(self, node, op=""):
+    def runAction(self, node):
         values = tuple(map(node.attrs.get, self.settings["source_metafieldnames"]))
         if (None in values) and not self.settings["ignore_missing"]:
             raise RuntimeError("Node {} does not have all value names {}".format(node.id,  self.settings["source_metafieldnames"]))

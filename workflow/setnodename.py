@@ -26,7 +26,7 @@ class WorkflowStep_SetNodeName(_workflow.WorkflowStep):
 
     default_settings = dict(sourceattributename="")
 
-    def runAction(self, node, op=""):
+    def runAction(self, node):
         node.name = node.attrs[self.settings["sourceattributename"]]
         _core.db.session.commit()
         self.forward(node, True)

@@ -14,7 +14,7 @@ def register():
 
 class WorkflowStep_Reauth(WorkflowStep):
 
-    def runAction(self, node, op=""):
+    def runAction(self, node):
         node.set("key", node.get("system.key"))
         _core.db.session.commit()
         self.forward(node, True)

@@ -31,7 +31,7 @@ class WorkflowStep_ClassifyByAttribute(_workflow.WorkflowStep):
 
     default_settings = {"target-attribute-name": ""}
 
-    def runAction(self, node, op=""):
+    def runAction(self, node):
         parents = node.attrs[self.settings["target-attribute-name"]].split()
         for nid in frozenset(map(int, parents)):
             _core.db.query(Node).get(nid).children.append(node)

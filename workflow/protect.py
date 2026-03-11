@@ -15,7 +15,7 @@ def register():
 
 class WorkflowStep_Protect(WorkflowStep):
 
-    def runAction(self, node, op=""):
+    def runAction(self, node):
         node.set("key", mkKey())
         _core.db.session.commit()
         self.forward(node, True)

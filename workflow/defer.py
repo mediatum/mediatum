@@ -50,7 +50,7 @@ class WorkflowStep_Defer(WorkflowStep):
         attrname="",
     )
 
-    def runAction(self, node, op=""):
+    def runAction(self, node):
         """
         The actual proccessing of the node object takes place here.
 

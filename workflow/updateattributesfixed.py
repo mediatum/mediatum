@@ -30,7 +30,7 @@ def register():
 
 class WorkflowStep_UpdateAttributesFixed(_workflow.WorkflowStep):
 
-    def runAction(self, node, op=""):
+    def runAction(self, node):
         with open(_os.path.join(_core.config.get("paths.datadir"), self.files[0].path), "rb") as f:
             data = _ruamel_yaml.YAML(typ="safe", pure=True).load(f)
         node.attrs.update(data)

@@ -38,7 +38,7 @@ class WorkflowStep_SendEmail(WorkflowStep):
         text=None,
     )
 
-    def runAction(self, node, op=""):
+    def runAction(self, node):
 
         context = dict(
             language=node.get("system.wflanguage"),

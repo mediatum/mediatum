@@ -20,7 +20,7 @@ class WorkflowStep_DeleteFile(WorkflowStep):
         filetype=(),
     )
 
-    def runAction(self, node, op=""):
+    def runAction(self, node):
         if not self.settings['filetype']:  # delete all files
             for f in node.files:
                 node.files.remove(f)

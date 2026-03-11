@@ -27,7 +27,7 @@ class WorkflowStep_Template2Metadata(_workflow.WorkflowStep):
 
     default_settings = {'empty-remove':False, 'strip-eol': False, 'tal-template':"", 'target-metadata-name':""}
 
-    def runAction(self, node, op=""):
+    def runAction(self, node):
         assert self.settings["tal-template"]
         assert self.settings["target-metadata-name"]
 

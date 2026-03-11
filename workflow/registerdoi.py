@@ -34,7 +34,7 @@ class WorkflowStep_RegisterDOI(_workflow.WorkflowStep):
 
     default_settings = dict(action="create", event=None, suffixattr=None, urlattr=None, mask=None)
 
-    def runAction(self, node, op=""):
+    def runAction(self, node):
         suffix = node.get(self.settings["suffixattr"])
         if not suffix:
             raise RuntimeError("missing DOI-Suffix Attribut")

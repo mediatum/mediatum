@@ -1,0 +1,38 @@
+<element
+    name="node-data"
+    datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes"
+    xmlns="http://relaxng.org/ns/structure/1.0"
+>
+    <interleave>
+        <zeroOrMore>
+            <choice>
+                <element name="metafield">
+                    <attribute name="name">
+                        <text/>
+                    </attribute>
+                    <text/>
+                </element>
+                <element name="metafield">
+                    <attribute name="name">
+                        <text/>
+                    </attribute>
+                    <attribute name="clear">
+                        <data type="string">
+                            <param name="minLength">1</param>
+                        </data>
+                    </attribute>
+                </element>
+            </choice>
+        </zeroOrMore>
+        <optional>
+            <element name="name">
+                <text/>
+            </element>
+        </optional>
+        <optional>
+            <element name="schema">
+                <text/>
+            </element>
+        </optional>
+    </interleave>
+</element>

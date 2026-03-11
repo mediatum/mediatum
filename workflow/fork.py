@@ -30,7 +30,7 @@ class WorkflowStep_Fork(_workflow.WorkflowStep):
 
     default_settings = dict(attribute="")
 
-    def runAction(self, node, op=""):
+    def runAction(self, node):
         if not self.settings["attribute"]:
             raise RuntimeError(_core_translation.translate_in_request("admin_mandatory_info"))
         self.forward(node, bool(node.attrs.get(self.settings["attribute"])))

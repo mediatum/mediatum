@@ -569,9 +569,9 @@ class WorkflowStep(Node):
             return 1
         return 0
 
-    def runAction(self, node, op=""):
+    def runAction(self, node):
         if self.getTrueId() == '':
-            logg.error("No Workflow action defined for workflowstep %s (op=%s)", self.getId(), op)
+            logg.error("No Workflow action defined for workflowstep %s (id=%s)", self.name, self.id)
 
     def forward(self, node, op):
         if self._recursion_stack.count(self.id) >= config.getint("workflows.max-cycles", 2):
@@ -588,7 +588,7 @@ class WorkflowStep(Node):
         _core.db.session.commit()
 
         newstep._recursion_stack = self._recursion_stack + (self.id,)
-        newstep.runAction(node, "true" if op else "false")
+        newstep.runAction(node)
         newstep._recursion_stack = ()  # shouldn't be required, but who knows whether SQLAlchemy might reuse a step instance
         logg.info('workflow run action "%s" (op="%s") for node %s', newstep.name, op, node.id)
         return getNodeWorkflowStep(node)
@@ -729,12 +729,13 @@ def register():
     from . import publish
     from . import reauth
     from . import registerdoi
+    from . import replacenodemetadatatype
     from . import searchnode
     from . import setnodename
-    from . import setmetadatatype
     from . import showdata
     from . import start
     from . import template2metadata
+    from . import template2metafields
     from . import textpage
     from . import updateattributesfixed
     from . import upload
@@ -761,12 +762,13 @@ def register():
         publish,
         reauth,
         registerdoi,
+        replacenodemetadatatype,
         searchnode,
         setnodename,
-        setmetadatatype,
         showdata,
         start,
         template2metadata,
+        template2metafields,
         textpage,
         updateattributesfixed,
         upload,

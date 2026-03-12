@@ -82,6 +82,12 @@ def _make_app():
         )
     app.config['PERMANENT_SESSION_LIFETIME'] = int(config.get('admin.session_expiration_time', 7200))
     app.config["SESSION_COOKIE_NAME"] = 'mediatum_session'
+    # Security: prevent JavaScript access to session cookie (mitigates XSS)
+    app.config["SESSION_COOKIE_HTTPONLY"] = True
+    # Security: only send cookie over HTTPS (configurable for dev environments)
+    app.config["SESSION_COOKIE_SECURE"] = config.getboolean('admin.session_cookie_secure', True)
+    # Security: prevent CSRF by restricting cookie sending to same-site requests
+    app.config["SESSION_COOKIE_SAMESITE"] = 'Lax'
 
     @app.before_request
     def set_lang():

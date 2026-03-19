@@ -556,11 +556,6 @@ tree_node_id_prefix = "tree-node-";
 tree_root_key = "home";  // "home", "root"
 used_tree_selectors = ["#hometree", "#mediatum_collectionstree"];
 
-function get_used_trees (selector_list) {
-    res = selector_list.map(function (selector) {return $(selector).fancytree("getTree")});
-    return res;
-}
-
 function get_tree_opts(tree_selector, tree_node_id_prefix, tree_root_key, tree_root_nid, used_tree_selectors) {
     // options template for tree (htree and ctree)
     tree_opts = {
@@ -798,7 +793,10 @@ function get_tree_opts(tree_selector, tree_node_id_prefix, tree_root_key, tree_r
             };
 
             if (flag_cut_mode) {
-                disable_tree_nodes(get_used_trees(used_tree_selectors), [node_to_paste.key]);
+                disable_tree_nodes(
+                        used_tree_selectors.map(function (selector) {return $(selector).fancytree("getTree")}),
+                        [node_to_paste.key],
+                       );
             }
         },  // activate:
 

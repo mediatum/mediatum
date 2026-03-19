@@ -146,8 +146,6 @@ function createObjectsPluploadFile(id){ // build object out of files
         closeFormPluploadWidgetFile();
         parent.loadEditArea(id);
     } else {
-        // $('#error_dummy')[0].textContent='';
-        // throw "some files cannot be created";
         $('#id_button_createobjectsplupload_file').prop('disabled', true);
         $('#uploaderfile_browse').addClass('ui-state-disabled').attr('aria-disabled', 'true');
         new_elem[0].style.visibility = 'hidden';
@@ -166,10 +164,7 @@ function init_plupload_widget_file(id) {
         url: `/edit/edit_content?action=upload&uploader=plupload&id=${id}`,
         // User can upload no more then 20 files in one go (sets multiple_queues to false)
         max_file_count: 0,  // default is 0 -> no limit
-        //multipart_params : mpv,
         filters : {
-            // Maximum file size
-            //max_file_size : '1000mb',
             // Specify what files to browse for
             mime_types: [
             {title : "Image files", extensions : "jpg,jpeg,gif,png,tif,tiff,svg,bmp"},
@@ -226,7 +221,6 @@ function init_plupload_widget_file(id) {
             FilesAdded: function(up, files) {
                 // Called when files are added to queue
                 plupload.each(files, function(file) {
-                    //file.x = '777';
                     var iframe_c = $("iframe.ui-layout-center");
                     var fid = file.id;
                     var filelist_line = $("#"+fid);
@@ -382,10 +376,7 @@ function init_plupload_widget_bib(id) {
             url: `/edit/edit_content?action=upload&uploader=plupload&id=${id}`,
             // User can upload no more then 20 files in one go (sets multiple_queues to false)
             max_file_count: 0,  // default is 0 -> no limit
-            //multipart_params : mpv,
             filters : {
-                // Maximum file size
-                //max_file_size : '1000mb',
                 // Specify what files to browse for
                 mime_types: [
                 {title : "bibtex files", extensions : "bib"}
@@ -439,7 +430,6 @@ function init_plupload_widget_bib(id) {
                 FilesAdded: function(up, files) {
                     // Called when files are added to queue
                     plupload.each(files, function(file) {
-                        //file.x = '777';
                         var iframe_c = $("iframe.ui-layout-center");
                         var fid = file.id;
                         var filelist_line = $("#"+fid);
@@ -455,15 +445,6 @@ function init_plupload_widget_bib(id) {
                                 "<option value='totype' selected>" + js_upload_unpack + "</option>" +
                             "</select>";
                         }
-                        else {
-                            /*
-                            var sel = "<select name='tofiletype' id='select_extra_" + fid + "'>" +
-                                "<option value='tofile'>To File (no unzip)</option>" +
-                                "<option value='totype' selected>To typed nodes (unzip)</option>" +
-                            "</select>";
-                            */
-                        }
-
                         c1.innerHTML = c1.innerHTML + sel;
                         c1ppp = c1.parentNode.parentNode.parentNode;
                         c1ppp.style.position = 'relative';

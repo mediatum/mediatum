@@ -194,8 +194,8 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curkey) 
                                 break;
                             case "paste_container_here":
                                 if (_paste_container_here(node_to_paste, node.key))  {
-                                    reloadHomeTree();
-                                    reloadColTree();
+                                    gethometree().reload();
+                                    getcoltree().reload();
                                 }
                                 res = false;
                                 break;
@@ -255,10 +255,10 @@ function contextmenu_collections(selector) {
 
                         if (key == "create_container_collection") {
                             _add_new_container("collection");
-                            reloadColTree();
+                            getcoltree().reload();
                         }
                         if (key == "paste_container_here") {
-                            if (_paste_container_here(node_to_paste, collectionsid))  reloadColTree();
+                            if (_paste_container_here(node_to_paste, collectionsid))  getcoltree().reload();
                         }
                     },
 
@@ -295,14 +295,6 @@ function removeByKey(dtree, ckey) {
         }
         catch { ; }
     }
-}
-
-function reloadColTree(){
-    $("#mediatum_collectionstree").fancytree("getTree").reload();
-}
-
-function reloadHomeTree(){
-    $("#hometree").fancytree("getTree").reload();
 }
 
 

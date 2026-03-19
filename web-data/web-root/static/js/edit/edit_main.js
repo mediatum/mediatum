@@ -102,6 +102,15 @@ function _paste_container_here(container, targetId)  {
 }
 
 
+function _tree_node_show_state(node, state)  {
+    if (state==="loaded")  {
+      node.setExpanded(true);
+    }  else  if (state=="ok")  {
+      node.setActive(true);
+    }
+}
+
+
 function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curkey) {
     // arguments: '#(h|c)tree-node-'+data.node.key, get(hometree|coltree)(), '(h|c)tree-node-', data.node
     $(function(){
@@ -160,13 +169,7 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curkey) 
                                 node.setExpanded();
                                 _add_new_container(container_type, node);
 
-                                node.tree.loadKeyPath(currentpath, function(node, status){
-                                    if(status=="loaded"){
-                                        node.setExpanded(true);
-                                    }else if(status=="ok"){
-                                        node.setActive(true);
-                                    }
-                                });
+                                node.tree.loadKeyPath(currentpath, _tree_node_show_state);
 
                                 if (currentpath) {
                                     $('.ui-layout-center').attr('src',
@@ -332,16 +335,10 @@ function reloadPage(id, path, tree_selector){
     idselection = id;
     $('.ui-layout-center').attr('src', '/edit/edit_content?srcnodeid='+id+'&id='+id);
     $('.mediatum_accordiontree').accordion("option", "active", active_accordion);
-    $(tree_selector).fancytree("getTree").loadKeyPath(path, function(node, status){
-        if(status=="loaded"){
-            node.setExpanded(true);
-        }else if(status=="ok"){
-            node.setActive(true);
-            if (!isElementInViewport(node.span)) {
-              node.span.scrollIntoView();
-            }
-        }else{
-            var seg = arguments[2], isEndNode = arguments[3];
+    $(tree_selector).fancytree("getTree").loadKeyPath(path, function (node, state) {
+        _tree_node_show_state(node, state);
+        if ((state==="ok") && (!isElementInViewport(node.span))) {
+            node.span.scrollIntoView();
         }
     });
     try {
@@ -398,13 +395,7 @@ function questionOperation(type){
 
             edit_action_sync(type, currentid, currentid);
 
-            $("#hometree").fancytree("getTree").loadKeyPath(currentpath, function(node, status){
-                if(status=="loaded"){
-                    node.setExpanded();
-                }else if(status=="ok"){
-                    node.setActive();
-                }
-            });
+            $("#hometree").fancytree("getTree").loadKeyPath(currentpath, _tree_node_show_state);
 
             node_to_clear.setActive();
             var activenode = $("#hometree").fancytree("getTree").activeNode;
@@ -440,13 +431,7 @@ function questionOperation(type){
 
             edit_action_sync(type, currentid, currentid);
 
-            cur_tree.loadKeyPath(currentpath, function(node, status){
-                if(status=="loaded"){
-                    node.setExpanded(true);
-                }else if(status=="ok"){
-                    node.setActive(true);
-                }
-            });
+            cur_tree.loadKeyPath(currentpath, _tree_node_show_state);
 
             parent_node.setActive(true);
             var activenode = cur_tree.activeNode;
@@ -767,15 +752,8 @@ function get_tree_opts(tree_selector, tree_node_id_prefix, tree_root_key, tree_r
 
         postProcess: function(event, data) {  // check this
             data.tree.rootNode.setTitle(tree_root_nid);
-            if (currentpath!="/"){
-                var thistree = $(tree_selector).fancytree("getTree");
-                thistree.loadKeyPath(currentpath, function(node, status){
-                    if(status=="loaded"){
-                        node.setExpanded();
-                    }else if(status=="ok"){
-                        node.setActive();
-                    }
-                });
+            if (currentpath!="/")  {
+                $(tree_selector).fancytree("getTree").loadKeyPath(currentpath, _tree_node_show_state);
             }
         }  // postProcess:
 

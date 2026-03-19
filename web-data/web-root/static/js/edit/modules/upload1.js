@@ -61,15 +61,7 @@ function openUploadFormPluploadWidgetFile(id){ // show upload form
         url: `/edit/edit_content?action=removefiles&id=${id}`,
         async: false,
         dataType: 'json',
-        success: function(data) {
-            ajax_response = data;
-            if (data.state=='error'){
-                console.log('upload.html: openUploadFormPluploadWidgetFile: error removing files');
-            }
-            else {
-                console.log('upload.html: openUploadFormPluploadWidgetFile:' + JSON.stringify(data));
-            }
-        }
+        success: function(data) { ajax_response = data; }
     };
 
     $.ajax(options);
@@ -96,16 +88,12 @@ function closeFormPluploadWidgetFile(id) { // close upload form
 }
 
 function createObjectsPluploadFile(id){ // build object out of files
-    console.group('edit.modules: upload.html createObjectsPluploadFile');
-
     $('#uploader_start').attr('aria-disabled','true');  // not functional ?
 
     number_files = all_files = $('#uploaderfile_filelist').children().length;
     if (number_files==1){
         singlefile==1;
     }
-
-    console.log('number_files: ' + number_files + ' all_files: ' + all_files);
 
     $('.plupload_logo').attr('class', '');
 
@@ -117,8 +105,6 @@ function createObjectsPluploadFile(id){ // build object out of files
         type = x.attr('id'); // type
         files = x.parents().children('#'+x.attr('id')+':last').val(); //files
 
-        console.log('upload.createObjectsfile: l:'+l+', value:'+value+', type:'+type+', files:'+files);
-
         var ajax_response;
 
         var options = {
@@ -127,7 +113,6 @@ function createObjectsPluploadFile(id){ // build object out of files
             dataType: 'json',
             success: function (data) {
                 ajax_response = data;
-                console.log('createObjects');
                 curr_file = $('#uploaderfile_filelist').children().slice(all_files-number_files).first()
                 var err = 0;
                 if (data.errornodes.length>0){
@@ -151,7 +136,6 @@ function createObjectsPluploadFile(id){ // build object out of files
                     $('#divStatus').html('processing / ' + number_files);
                     data.new_tree_labels.forEach(
                     function(nentry) {
-                        console.log('tree_node: '+nentry.id+', new label: '+nentry.label);
                         changed_node = htree.getNodeByKey(nentry.id);
                         changed_node.title = nentry.label;
                         changed_node.renderTitle();
@@ -160,9 +144,6 @@ function createObjectsPluploadFile(id){ // build object out of files
                   all_files -= 1;
                 }
                 number_files -= 1;
-
-                console.log('$.ajax returns: '+data);
-                console.log('number_files: ' + number_files);
             }, // success function
         }; // options
 
@@ -172,12 +153,8 @@ function createObjectsPluploadFile(id){ // build object out of files
 
     }) // $.each
     if (err_files == 0) {
-        console.log('going to call closeFormFile()');
         closeFormPluploadWidgetFile();
-        console.log('after called: closeFormFile()');
-        console.log('going to call loadEditArea(id), id:'+id);
         parent.loadEditArea(id);
-        console.log('after called loadEditArea(id), id:'+id);
     } else {
         // $('#error_dummy')[0].textContent='';
         // throw "some files cannot be created";
@@ -185,7 +162,6 @@ function createObjectsPluploadFile(id){ // build object out of files
         $('#uploaderfile_browse').addClass('ui-state-disabled').attr('aria-disabled', 'true');
         new_elem[0].style.visibility = 'hidden';
     }
-    console.groupEnd('edit.modules: upload.html createObjectsPluploadFile');
 }  // function createObjectsPluploadFile
 
 var files_uploaded_file = 0;
@@ -234,14 +210,8 @@ function init_plupload_widget_file(id) {
         },
         // PreInit events, bound before any internal events
         preinit : {
-            Init: function(up, info) {
-                log('[Init]', 'Info:', info, 'Features:', up.features);
-            },
             UploadFile: function(up, file) {
-                log('[UploadFile]', file);
                 // You can override settings before the file is uploaded
-                // up.setOption('url', 'upload.php?id=' + file.id);
-                // up.setOption('multipart_params', {param1 : 'value1', param2 : 'value2'});
                 up.setOption('multipart_params', {csrf_token : csrf});
             }
         },
@@ -249,64 +219,27 @@ function init_plupload_widget_file(id) {
         init : {
             PostInit: function(up) {
                 // Called after initialization is finished and internal event handlers bound
-                log('[PostInit]');
                 files_uploaded = 0;
-            },
-            Browse: function(up) {
-                // Called when file picker is clicked
-                log('[Browse]');
-            },
-            Refresh: function(up) {
-                // Called when the position or dimensions of the picker change
-                log('[Refresh]');
-            },
-            StateChanged: function(up) {
-                // Called when the state of the queue is changed
-                log('[StateChanged]', up.state == plupload.STARTED ? "STARTED" : "STOPPED");
-            },
-            QueueChanged: function(up) {
-                // Called when queue is changed by adding or removing files
-                log('[QueueChanged]');
-            },
-            OptionChanged: function(up, name, value, oldValue) {
-                // Called when one of the configuration options is changed
-                log('[OptionChanged]', 'Option Name: ', name, 'Value: ', value, 'Old Value: ', oldValue);
             },
             BeforeUpload: function(up, file) {
                 // Called right before the upload for a given file starts, can be used to cancel it if required
-                log('[BeforeUpload]', 'File: ', file);
-
                 var iframe_c = $("iframe.ui-layout-center");
                 var fid = file.id;
-                console.log('fid='+fid);
                 var filelist_line = $("#"+fid);
                 var c1 = filelist_line.children()[1];
-
                 // sending additional parameters
                 this.settings.multipart_params = {
                     "file_name" : file.name,
                     "data_extra" : $('#select_extra_' + fid).val()
                 };
             },
-            UploadProgress: function(up, file) {
-                // Called while file is being uploaded
-                log('[UploadProgress]', 'File:', file, "Total:", up.total);
-            },
-            FileFiltered: function(up, file) {
-                // Called when file successfully files all the filters
-                log('[FileFiltered]', 'File:', file);
-            },
             FilesAdded: function(up, files) {
                 // Called when files are added to queue
-                log('[FilesAdded]');
                 plupload.each(files, function(file) {
-                    log('  File:', file);
                     //file.x = '777';
                     var iframe_c = $("iframe.ui-layout-center");
                     var fid = file.id;
-                    console.log('fid='+fid);
                     var filelist_line = $("#"+fid);
-                    console.log('filelist_line', filelist_line);
 
                     filelist_line.attr('class', 'progressContainer green');
                     var c1 = filelist_line.children()[1];
@@ -327,21 +260,11 @@ function init_plupload_widget_file(id) {
                     c1ppp.style.overflow = 'auto';
                 });
             },
-            FilesRemoved: function(up, files) {
-                // Called when files are removed from queue
-                log('[FilesRemoved]');
-                plupload.each(files, function(file) {
-                    log('  File:', file);
-                });
-            },
             FileUploaded: function(up, file, info) {
                 // Called when file has finished uploading
-                log('[FileUploaded] File:', file, "Info:", info);
                 var iframe_c = $("iframe.ui-layout-center");
                 var fid = file.id;
-                console.log('fid='+fid);
                 var filelist_line = $("#"+fid);
-                console.log('filelist_line', filelist_line);
                 filelist_line.attr('class', 'progressContainer blue');
                 var c1 = filelist_line.children()[1];
                 c1.innerHTML = c1.innerHTML + JSON.parse(info.response).ret;
@@ -354,7 +277,6 @@ function init_plupload_widget_file(id) {
                 htree = parent.gethometree();
                 JSON.parse(info.response).new_tree_labels.forEach(
                     function(nentry) {
-                    console.log('tree_node: '+nentry.id+', new label: '+nentry.label);
                     changed_node = htree.getNodeByKey(nentry.id);
                     changed_node.data.title = nentry.label;
                     changed_node.render();
@@ -367,26 +289,12 @@ function init_plupload_widget_file(id) {
 
                 files_uploaded_file = files_uploaded_file + 1;
             },
-            ChunkUploaded: function(up, file, info) {
-                // Called when file chunk has finished uploading
-                log('[ChunkUploaded] File:', file, "Info:", info);
-            },
             UploadComplete: function(up, files) {
                 // Called when all files are either uploaded or failed
-                log('[UploadComplete]');
                 if (files_uploaded_file > 0) {
                     $('#id_button_createobjectsplupload_file').prop('disabled', false);
                 }
             },
-            Destroy: function(up) {
-                // Called when uploaderfile is destroyed
-                log('[Destroy] ');
-            },
-            Error: function(up, args) {
-                // Called when error occurs
-                log('[Error] ', args);
-                alert(args.message + ': ' + args.file.name);
-            }
         }
     });
     });
@@ -400,15 +308,7 @@ function openUploadFormPluploadWidgetBib(id){ // show upload form
         url: `/edit/edit_content?action=removefiles&id=${id}`,
         async: false,
         dataType: 'json',
-        success: function(data) {
-            ajax_response = data;
-            if (data.state=='error'){
-                console.log('upload.html: openUploadFormPluploadWidgetBib: error removing files');
-            }
-            else {
-                console.log('upload.html: openUploadFormPluploadWidgetBib:' + JSON.stringify(data));
-            }
-        }
+        success: function(data) { ajax_response = data; }
     };
 
     $.ajax(options);
@@ -435,16 +335,12 @@ function closeFormPluploadWidgetBib(id) { // close upload form
 }
 
 function createObjectsPluploadBib(id){ // build object out of files
-    console.group('edit.modules: upload.html createObjectsPluploadBib');
-
     $('#uploader_start').attr('aria-disabled','true');  // not functional ?
 
     number_files = $('#uploaderbib_filelist').children().length;
     if (number_files==1){
         singlefile==1;
     }
-
-    console.log('number_files: ' + number_files);
 
     $('.plupload_logo').attr('class', '');
     var htree = parent.gethometree();
@@ -453,7 +349,6 @@ function createObjectsPluploadBib(id){ // build object out of files
         value = x.val(); // value
         type = x.attr('id'); // type
         files = x.parents().children('#'+x.attr('id')+':last').val(); //files
-        console.log('upload.createObjectsbib: l:'+l+', value:'+value+', type:'+type+', files:'+files);
         var ajax_response;
         var options = {
                 url: `/edit/edit_content?action=buildnode&id=${id}&files=${encodeURIComponent(files)}&type=${type}&value=${value}`,
@@ -461,7 +356,6 @@ function createObjectsPluploadBib(id){ // build object out of files
                 dataType: 'json',
                 success: function (data) {
                     ajax_response = data;
-                    console.log('createObjects');
                     if (data.errornodes.length>0){
                         $('#uploaderbib_filelist').children().first().removeClass('blue');
                         $('#uploaderbib_filelist').children().first().addClass('red');
@@ -473,28 +367,20 @@ function createObjectsPluploadBib(id){ // build object out of files
                         $('#divStatus').html('processing / ' + number_files);
                         data.new_tree_labels.forEach(
                         function(nentry) {
-                            console.log('tree_node: '+nentry.id+', new label: '+nentry.label);
                             changed_node = htree.getNodeByKey(nentry.id);
                             changed_node.title = nentry.label;
                             changed_node.renderTitle();
                         }
                         )
                     }
-                    console.log('$.ajax returns: '+data);
-                    console.log('number_files: ' + number_files);
             }, // success function
         }; // options
 
         $.ajax(options);
         var childnode = ajax_response;
     }) // $.each
-    console.log('going to call closeFormBib()');
     closeFormPluploadWidgetFile();
-    console.log('after called: closeFormBib()');
-    console.log('going to call loadEditArea(id), id:'+id);
     parent.loadEditArea(id);
-    console.log('after called loadEditArea(id), id:'+id);
-    console.groupEnd('edit.modules: upload.html createObjectsPluploadBib');
 }  // function createObjectsPluploadBib
 
 var files_uploaded_bib = 0;
@@ -539,14 +425,8 @@ function init_plupload_widget_bib(id) {
             },
             // PreInit events, bound before any internal events
             preinit : {
-                Init: function(up, info) {
-                    log('[Init]', 'Info:', info, 'Features:', up.features);
-                },
                 UploadFile: function(up, file) {
-                    log('[UploadFile]', file);
                     // You can override settings before the file is uploaded
-                    // up.setOption('url', 'upload.php?id=' + file.id);
-                    // up.setOption('multipart_params', {param1 : 'value1', param2 : 'value2'});
                     up.setOption('multipart_params', {csrf_token : csrf});
                 }
             },
@@ -554,36 +434,12 @@ function init_plupload_widget_bib(id) {
             init : {
                 PostInit: function(up) {
                     // Called after initialization is finished and internal event handlers bound
-                    log('[PostInit]');
                     files_uploaded_bib = 0;
-                },
-                Browse: function(up) {
-                    // Called when file picker is clicked
-                    log('[Browse]');
-                },
-                Refresh: function(up) {
-                    // Called when the position or dimensions of the picker change
-                    log('[Refresh]');
-                },
-                StateChanged: function(up) {
-                    // Called when the state of the queue is changed
-                    log('[StateChanged]', up.state == plupload.STARTED ? "STARTED" : "STOPPED");
-                },
-                QueueChanged: function(up) {
-                    // Called when queue is changed by adding or removing files
-                    log('[QueueChanged]');
-                },
-                OptionChanged: function(up, name, value, oldValue) {
-                    // Called when one of the configuration options is changed
-                    log('[OptionChanged]', 'Option Name: ', name, 'Value: ', value, 'Old Value: ', oldValue);
                 },
                 BeforeUpload: function(up, file) {
                     // Called right before the upload for a given file starts, can be used to cancel it if required
-                    log('[BeforeUpload]', 'File: ', file);
-
                     var iframe_c = $("iframe.ui-layout-center");
                     var fid = file.id;
-                    console.log('fid='+fid);
                     var filelist_line = $("#"+fid);
                     var c1 = filelist_line.children()[1];
 
@@ -593,25 +449,13 @@ function init_plupload_widget_bib(id) {
                         "data_extra" : $('#select_extra_' + fid).val()
                     };
                 },
-                UploadProgress: function(up, file) {
-                    // Called while file is being uploaded
-                    log('[UploadProgress]', 'File:', file, "Total:", up.total);
-                },
-                FileFiltered: function(up, file) {
-                    // Called when file successfully files all the filters
-                    log('[FileFiltered]', 'File:', file);
-                },
                 FilesAdded: function(up, files) {
                     // Called when files are added to queue
-                    log('[FilesAdded]');
                     plupload.each(files, function(file) {
-                        log('  File:', file);
                         //file.x = '777';
                         var iframe_c = $("iframe.ui-layout-center");
                         var fid = file.id;
-                        console.log('fid='+fid);
                         var filelist_line = $("#"+fid);
-                        console.log('filelist_line', filelist_line);
 
                         filelist_line.attr('class', 'progressContainer green');
                         var c1 = filelist_line.children()[1];
@@ -640,21 +484,11 @@ function init_plupload_widget_bib(id) {
                         c1ppp.style.overflow = 'auto';
                     });
                 },
-                FilesRemoved: function(up, files) {
-                    // Called when files are removed from queue
-                    log('[FilesRemoved]');
-                    plupload.each(files, function(file) {
-                        log('  File:', file);
-                    });
-                },
                 FileUploaded: function(up, file, info) {
                     // Called when file has finished uploading
-                    log('[FileUploaded] File:', file, "Info:", info);
                     var iframe_c = $("iframe.ui-layout-center");
                     var fid = file.id;
-                    console.log('fid='+fid);
                     var filelist_line = $("#"+fid);
-                    console.log('filelist_line', filelist_line);
                     if (JSON.parse(info.response).ret.indexOf('schema error') >= 0)
                       filelist_line.attr('class', 'progressContainer red');
                     else
@@ -670,7 +504,6 @@ function init_plupload_widget_bib(id) {
                     htree = parent.gethometree();
                     JSON.parse(info.response).new_tree_labels.forEach(
                         function(nentry) {
-                        console.log('tree_node: '+nentry.id+', new label: '+nentry.label);
                         changed_node = htree.getNodeByKey(nentry.id);
                         changed_node.data.title = nentry.label;
                         changed_node.render();
@@ -683,71 +516,18 @@ function init_plupload_widget_bib(id) {
 
                     files_uploaded_bib = files_uploaded_bib + 1;
                 },
-                ChunkUploaded: function(up, file, info) {
-                    // Called when file chunk has finished uploading
-                    log('[ChunkUploaded] File:', file, "Info:", info);
-                },
                 UploadComplete: function(up, files) {
                     // Called when all files are either uploaded or failed
-                    log('[UploadComplete]');
                     if (files_uploaded_bib > 0) {
                         $('#id_button_createobjectsplupload_bib').prop('disabled', false);
                     }
                 },
-                Destroy: function(up) {
-                    // Called when uploaderfile is destroyed
-                    log('[Destroy] ');
-                },
-                Error: function(up, args) {
-                    // Called when error occurs
-                    log('[Error] ', args);
-                    alert(args.message + ': ' + args.file.name);
-                }
             }
         });
     });
     return u;
 }
 
-function log() {
-    var str = "";
-    plupload.each(arguments, function(arg) {
-        var row = "";
-
-        if (typeof(arg) != "string") {
-            plupload.each(arg, function(value, key) {
-                // Convert items in File objects to human readable form
-                if (arg instanceof plupload.File) {
-                    // Convert status to human readable
-                    switch (value) {
-                        case plupload.QUEUED:
-                            value = 'QUEUED';
-                            break;
-
-                        case plupload.UPLOADING:
-                            value = 'UPLOADING';
-                            break;
-
-                        case plupload.FAILED:
-                            value = 'FAILED';
-                            break;
-
-                        case plupload.DONE:
-                            value = 'DONE';
-                            break;
-                    }
-                }
-                if (typeof(value) != "function") {
-                    row += (row ? ', ' : '') + key + '=' + value;
-                }
-            });
-            str += row + " ";
-        } else {
-            str += arg + " ";
-        }
-    });
-    console.log(str);
-};
 
 // Handle the case when form was submitted before uploading has finished
 $('#form').submit(function(e) {

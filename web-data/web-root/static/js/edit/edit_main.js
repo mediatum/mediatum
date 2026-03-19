@@ -3,15 +3,9 @@
   SPDX-License-Identifier: AGPL-3.0-or-later
 */
 
-consoledb.group('--- loading contextmenu js ---');
 $.getScript(
     "/static/fancytree/3rd-party/extensions/contextmenu/js/jquery.fancytree.contextMenu.js",
-    function( data, sStatus, jqxhr ) {
-        consoledb.log(sStatus); // Success
-        consoledb.log(jqxhr.status ); // 200
-        consoledb.log("loaded");
-    });
-consoledb.groupEnd('--- loading contextmenu js ---');
+    function( data, sStatus, jqxhr ) { });
 
 // some globals
 var idselection = "";
@@ -33,9 +27,6 @@ var FANCYTREE_DEFAULT_ICON = '/static/img/webtree/directory.svg';
 
 
 function build_context_menu_items(node) {
-
-    consoledb.groupCollapsed('build_context_menu_items for node ' +  node.key + ', ' + node.title);
-
     // no contextMenu for disabled nodes or descendants of cut node
     if ( node.li && node.li.classList.contains('fancytree-node-disabled') || (flag_cut_mode && node.isDescendantOf(node_to_paste)) ) {
         return false;
@@ -79,7 +70,6 @@ function build_context_menu_items(node) {
 
     ctx_items["sep4"] = "---------";
 
-    consoledb.groupEnd('build_context_menu_items for node ' +  node.key + ', ' + node.title);
     return ctx_items;
 };
 
@@ -88,10 +78,7 @@ function hideContextMenuForNode(node) {
     try {
         $('#'+node.li.id).contextMenu('hide');
     }
-    catch (e) {
-        //consoledb.error('trying to hideContextMenuForNode:', node, e);
-        ;
-    }
+    catch { ; }
 }
 
 
@@ -107,10 +94,6 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curkey) 
             zIndex:9999,
 
             build: function($trigger, e) {
-                consoledb.groupCollapsed('contextMenu build for selector "' + selector + '"');
-                consoledb.log("ctx_$trigger:", $trigger);
-                consoledb.log("ctx_event:", e);
-
                 var node = curtree.getNodeByKey(curkey);
 
                 // show contextMenu only for the active node
@@ -118,9 +101,6 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curkey) 
 
                 //$('.context-menu-list .context-menu-root').focus();
                 curtree.widget.options.keyboard = false;
-
-                consoledb.log('ctx menu for node ', node.key, node.title, node);
-                consoledb.groupEnd('contextMenu build for selector "' + selector + '"');
 
                 return {
 
@@ -134,26 +114,15 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curkey) 
                             // to their textContent value making the tooltip fulltext
                             // may be used to add help info as tooltext
 
-                            consoledb.groupCollapsed('contextMenu events show');
                             var an = node;
-                            consoledb.log(an.key, an.title, opt);
-                            consoledb.log('opt: ', opt);
-                            consoledb.log(opt.$menu);
                             opt.$menu.find('.context-menu-item > span').attr('title', function() {
                                 return $(this).text();
                             });
-                            consoledb.groupEnd('contextMenu events show');
                         } // show
                     },  // events
 
 
                     callback: function(action, opts) {
-
-                        consoledb.groupCollapsed('--- ctx_callback ---');
-                        consoledb.log('action cut: ', action);
-                        consoledb.log(opts);
-                        consoledb.log('node.key: ' + node.key + ', node.title: ' + node.title);
-
                         var res = false;  // return_value
 
                         var s = "create_container_";
@@ -168,12 +137,10 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curkey) 
                                 res = false;
                                 break;
                             case "create_container":
-                                consoledb.group('edit.html: create_container');
                                 node.load(true);
                                 node.setExpanded();
                                 addNewContainer(node, container_type);
 
-                                consoledb.log("should expand: " + currentpath);
                                 node.tree.loadKeyPath(currentpath, function(node, status){
                                     if(status=="loaded"){
                                         node.setExpanded(true);
@@ -182,24 +149,17 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curkey) 
                                     }
                                 });
 
-                                consoledb.log(1);
                                 if (currentpath) {
-                                    consoledb.log(2);
                                     $('.ui-layout-center').attr('src',
                                     '/edit/edit_content?srcnodeid='+new_path_endpoint+'&id='+new_path_endpoint+'&tab=metadata');
                                 }
-                                consoledb.log(3);
 
-                                consoledb.groupEnd('edit.html: create_container')
                                 res = false;
                                 break;
                             case "cut_container":
-                                consoledb.log('cut node:' + node.key);
-                                consoledb.log('cut node has focus: ', node.hasFocus());
                                 node_to_paste = node;
                                 node_to_paste_li = $(node.li);
                                 node_to_paste_classname = node_to_paste.li.className;
-                                consoledb.log('cut node parent.key: ', node_to_paste.parent.key);
 
                                 node_to_paste_li.addClass('fancytree-node-disabled');
                                 flag_cut_mode = true;
@@ -211,14 +171,12 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curkey) 
                                 res = false;
                                 break;
                             case "paste_container_here":
-                                consoledb.log('cut node:' + node.key);
                                 var src = node_to_paste.parent.key;
                                 var obj = node_to_paste.key;
                                 var dest = node.key;
                                 if(!($.isNumeric(src)))
                                 {
                                     src = node_to_paste.parent.title;
-                                    consoledb.log("src: ", src);
                                 };
                                 if (src == dest) { // nothing to be done: user tries to paste node to parent
                                     flag_cut_mode = false;
@@ -226,36 +184,27 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curkey) 
                                     res = false;
                                     break;
                                 }
-                                consoledb.log("moving node "+obj+" from parent "+src+" to destination "+dest);
                                 if (!($.isNumeric(src) && $.isNumeric(obj) && $.isNumeric(dest))) {
                                     throw "moving node failed: node id is not an integer";
                                 };
                                 ret = edit_action_sync('move', src, obj, dest);
-                                consoledb.log("edit_action_sync finished: ", ret);
                                 flag_cut_mode = false;
                                 new_path_endpoint = obj;
                                 if (currentpath) {
-                                    consoledb.log(2);
                                     $('.ui-layout-center').attr('src',
                                     '/edit/edit_content?srcnodeid='+new_path_endpoint+'&id='+new_path_endpoint+'&tab=content');
                                 }
-                                consoledb.log("finished paste to: ", dest);
                                 reloadHomeTree();
                                 reloadColTree();
                                 res = false;
                                 break;
                             case "delete":
-                                consoledb.log('---> new delete <---');
                                 currentid = node.key;
-                                var parent_node = node.getParent();
-                                consoledb.log('action: '+action+', node'+node+', node.key:'+node.key+', parent_node.key:'+parent_node.key);
                                 questionOperation('delete'); // removes active node
                                 res = false;
                                 break;
                             case "clear_trash":
                                 currentid = node.key;
-                                var parent_node = node.getParent();
-                                consoledb.log('action: '+action+', node'+node+', node.key:'+node.key+', parent_node.key:'+parent_node.key);
                                 questionOperation("clear_trash"); // removes active node
                                 node.setActive();
                                 res = false;
@@ -273,7 +222,6 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curkey) 
                                 res = false;
                             }
                         current_tree.widget.options.keyboard = FANCYTREE_KEYBOARD;
-                        consoledb.groupEnd('--- ctx_callback ---');
                         return res;
                     }  // callback
 
@@ -285,7 +233,6 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curkey) 
 
 
 function contextmenu_collections(selector) {
-    consoledb.log("contextmenu_collections collectionsid=", collectionsid);
     $(function(){
         $.contextMenu({
 
@@ -295,9 +242,6 @@ function contextmenu_collections(selector) {
             zIndex:9999,
 
             build: function($trigger, e) {
-                consoledb.log("$trigger:"+$trigger);
-                consoledb.log("e:"+e);
-
                 var ctx_items = {
                     "edit": {name: edit_t, icon: "edit"},
                     "sep1": "---------",
@@ -308,31 +252,22 @@ function contextmenu_collections(selector) {
 
                 return {
                     callback: function(key, options) {
-                        consoledb.log("key: " + key);
-
                         if (key == "edit") {
-                            var m = "clicked: " + key;
-                            window.console && consoledb.log(m);
                             $('.ui-layout-center').attr('src',
                             '/edit/edit_content?srcnodeid='+collectionsid+'&id='+collectionsid+'&tab=metadata');
                         }
 
                         if (key == "create_container_collection") {
-                            var p = "clicked: " + key;
-                            window.console && consoledb.log(p);
-
                             addNewContainerToRoot("collection");
                             reloadColTree();
                         }
                         if (key == "paste_container_here") {
-                            consoledb.log("paste_container_here: ", collectionsid);
                             var src = node_to_paste.parent.key;
                             var obj = node_to_paste.key;
                             var dest = collectionsid;
                             if(!($.isNumeric(src)))
                             {
                                 src = node_to_paste.parent.title;
-                                consoledb.log("src: ", src);
                             };
                             if (src == dest) { // nothing to be done: user tries to paste node to parent
                                 flag_cut_mode = false;
@@ -340,19 +275,16 @@ function contextmenu_collections(selector) {
                             }
                             else
                             {
-                                consoledb.log("moving node "+obj+" from parent "+src+" to destination "+dest);
                                 if (!($.isNumeric(src) && $.isNumeric(obj) && $.isNumeric(dest))) {
                                     throw "moving node failed: node id is not an integer";
                                 };
                                 ret = edit_action_sync('move', src, obj, dest);
-                                consoledb.log("edit_action_sync finished: ", ret);
                                 flag_cut_mode = false;
                                 new_path_endpoint = obj;
                                 if (currentpath) {
                                     $('.ui-layout-center').attr('src',
                                     '/edit/edit_content?srcnodeid='+new_path_endpoint+'&id='+new_path_endpoint+'&tab=content');
                                 }
-                                consoledb.log("finished paste to: ", dest);
                                 reloadColTree();
                             }
                         }
@@ -389,9 +321,7 @@ function removeByKey(dtree, ckey) {
                 pnode.toggleExpand();
             }
         }
-        catch(e) {
-            consoledb.log('removeByKey for key='+ckey+' caught: '+e);
-        }
+        catch { ; }
     }
 }
 
@@ -424,7 +354,6 @@ function isElementInViewport(el) {
 
 
 function reloadPage(id, path, tree_selector){
-    consoledb.log('web/edit/edit.html: function reloadPage(id, path): id: '+id+', path: '+path);
     var active_accordion = 1;  // #collectionstree
     if (typeof tree_selector === 'undefined' || tree_selector == '#hometree') {
         tree_selector = '#hometree';
@@ -432,11 +361,9 @@ function reloadPage(id, path, tree_selector){
     }
     action = "";
     idselection = id;
-    consoledb.log(path);
     $('.ui-layout-center').attr('src', '/edit/edit_content?srcnodeid='+id+'&id='+id);
     $('.mediatum_accordiontree').accordion("option", "active", active_accordion);
     $(tree_selector).fancytree("getTree").loadKeyPath(path, function(node, status){
-        consoledb.log('arguments: ', arguments);
         if(status=="loaded"){
             node.setExpanded(true);
         }else if(status=="ok"){
@@ -458,9 +385,7 @@ function reloadPage(id, path, tree_selector){
         an.toggleExpanded();
         an.toggleExpanded();
     }
-    catch(e) {
-        consoledb.log('tried to reloadChildren(), caught: '+e);
-    }
+    catch { ; }
 
     return false;
 }
@@ -469,7 +394,6 @@ function reloadPage(id, path, tree_selector){
 function addNewContainerToRoot(type){ /* add new container */
     new_path_endpoint = false;
     var ajax_response;
-    consoledb.log('addNewContainerToRoot: collectionsid=', collectionsid);
     var parent_id = collectionsid;
     var options = {
         url: '/edit/edit_action?srcnodeid='+parent_id+'&action=addcontainer&type='+type,
@@ -480,9 +404,6 @@ function addNewContainerToRoot(type){ /* add new container */
             new_path_endpoint = response.key;
 
             currentpath = response.key;
-
-            consoledb.log('$.ajax returns: '+response);
-            consoledb.log('currentpath: '+currentpath);
         },
     };
 
@@ -493,7 +414,6 @@ function addNewContainer(parent_node, type){ /* add new container */
     new_path_endpoint = false;
     var ajax_response;
     var parent_id = parent_node.key;
-    consoledb.log('addNewContainer: parent_node.key '+parent_node.key);
     var options = {
           url: '/edit/edit_action?srcnodeid='+parent_id+'&action=addcontainer&type='+type,
           async: false,
@@ -502,8 +422,6 @@ function addNewContainer(parent_node, type){ /* add new container */
               ajax_response = response;
               new_path_endpoint = response.key;
               currentpath = currentpath + '/' + response.key;
-              consoledb.log('$.ajax returns: '+response);
-              consoledb.log('currentpath: '+currentpath);
           },
     };
 
@@ -513,15 +431,10 @@ function addNewContainer(parent_node, type){ /* add new container */
     parent_node.tree.getNodeByKey(parent_id).addChildren([childnode], parent_node.children[0]);
     parent_node.tree.activateKey(new_path_endpoint);
     parent_node.tree.activeNode.data.isFolder = true;
-    consoledb.log('activeNode:', parent_node.tree.activeNode.key);
-    consoledb.log('parent_node.tree.activeNode.data.isFolder:', parent_node.tree.activeNode.data.isFolder);
 }
 
 
 function questionOperation(type){
-
-    consoledb.group('edit: edit.html: questionOperation('+type+')');
-
     if (type=='clear_trash'){
         var q = $("#mediatum_clear_trash_question").text();
 
@@ -536,9 +449,6 @@ function questionOperation(type){
             node_to_clear.removeChildren()
 
             edit_action_sync(type, currentid, currentid);
-
-            consoledb.log('currentid  :'+currentid);
-            consoledb.log('currentpath:'+currentpath);
 
             $("#hometree").fancytree("getTree").loadKeyPath(currentpath, function(node, status){
                 if(status=="loaded"){
@@ -560,21 +470,16 @@ function questionOperation(type){
                 node_to_clear.toggleExpanded();
                 }
             catch(e) {
-                consoledb.log('caught exeption :' + e);
                 activenode.toggleExpanded();
                 activenode.toggleExpanded();
             }
             loadEditArea(key_to_clear);
-            consoledb.groupEnd('edit: edit.html: questionOperation('+type+')');
 
             return false;
         }
 
     } else if (type=='delete'){   // never reached?
         var q = $("#mediatum_delete_folder_question").text();
-
-        consoledb.log('currentid  :'+currentid);
-        consoledb.log('currentpath:'+currentpath);
 
         if(confirm(q)){
 
@@ -586,9 +491,6 @@ function questionOperation(type){
             removeByKey(cur_tree, key_to_delete);
 
             edit_action_sync(type, currentid, currentid);
-
-            consoledb.log('currentid  :'+currentid);
-            consoledb.log('currentpath:'+currentpath);
 
             cur_tree.loadKeyPath(currentpath, function(node, status){
                 if(status=="loaded"){
@@ -609,7 +511,6 @@ function questionOperation(type){
                 parent_node.toggleExpanded();
                 }
             catch(e) {
-                consoledb.log('caught exeption :' + e);
                 activenode.toggleExpanded();
                 activenode.toggleExpanded();
             }
@@ -617,7 +518,6 @@ function questionOperation(type){
             trashdir = htree.getNodeByKey(user_folders.trashdir);
             trashdir.addChildren(node_to_delete);
             trashdir.load(forceReload=true);
-            consoledb.groupEnd('edit: edit.html: questionOperation('+type+')');
             return false;
         }
     }
@@ -634,10 +534,6 @@ function loadEditArea(id){
     $('.ui-layout-center').attr('src', '/edit/edit_content?srcnodeid='+ id + '&id=' + id);
 }
 
-function set_cm_to_default() {
-    flag_cut_mode = false;
-    consoledb.log('set_cm_to_default: flag_cut_mode =', flag_cut_mode);
-}
 
 var currentselection="";
 
@@ -702,9 +598,6 @@ function get_tree_opts(tree_selector, tree_node_id_prefix, tree_root_key, tree_r
         },
 
         createNode: function(event, data){
-            consoledb.log('--- tree createNode ---');
-            consoledb.log(event);
-            consoledb.log(data);
             var iconpath = data.node.data.icon;
             if (iconpath == "") {data.node.data.icon = FANCYTREE_DEFAULT_ICON;}
         },
@@ -726,9 +619,6 @@ function get_tree_opts(tree_selector, tree_node_id_prefix, tree_root_key, tree_r
 
         // Called when a lazy node is expanded for the first time
         lazyLoad: function(event, data){
-            consoledb.log('--- lazyLoad ---');
-            consoledb.log(event);
-            consoledb.log(data);
             var node = data.node;
             // Load child nodes via ajax
 
@@ -760,15 +650,8 @@ function get_tree_opts(tree_selector, tree_node_id_prefix, tree_root_key, tree_r
         },
 
         keydown: function(event, data){
-            consoledb.log('--- keydown ---');
-            consoledb.log('event:', event);
-            consoledb.log('event.key:', "'"+event.key+"'",'event.altKey:', event.altKey,'event.ctrlKey:', event.ctrlKey,'event.metaKey:', event.metaKey);
-            consoledb.log('data:', data);
-
             // Eat keyboard events, when a menu is open
             if( $(".context-menu-item:visible").length > 0 ) {
-                consoledb.log('detected ctx-menu');
-
                 // give keyboard focus to context menu; disable keyboard fo tree
                 $('.context-menu-list .context-menu-root').focus();
                 current_tree.widget.options.keyboard = false;
@@ -793,15 +676,13 @@ function get_tree_opts(tree_selector, tree_node_id_prefix, tree_root_key, tree_r
                 current_tree.widget.options.keyboard = false;
             }
             if(event.key=="Del" && node.data.readonly==0 && action==""){
-                consoledb.log('going to remove active node');
                 current_tree = $(this).fancytree("getTree");
                 currentid = current_tree.activeNode.key;
                 questionOperation('delete'); // removes active node
             }
             if(event.key=="Esc" && event.altKey==false && event.ctrlKey==false && event.metaKey==false) {
-                consoledb.log('Esc key pressed');
                 hideContextMenuForNode(node);
-                set_cm_to_default();
+                flag_cut_mode = false;
                 action = "";
                 try {
                     node_to_paste.li.className = node_to_paste_classname;
@@ -837,14 +718,7 @@ function get_tree_opts(tree_selector, tree_node_id_prefix, tree_root_key, tree_r
         // event click is fired befor activate
         click: function(event, data){
             var click_target_type = data.targetType;
-            consoledb.log('#### click ####: ', click_target_type);
-            consoledb.log(event);
-            consoledb.log('event.type: ' + event.type);
-            consoledb.log('action click: ', action);
-
             node = data.node;
-            consoledb.log(data);
-            consoledb.log('---> node.data.readonly: ' + node.data.readonly);
             current_tree = $(this).fancytree("getTree");
             current_tree.widget.options.keyboard = FANCYTREE_KEYBOARD;
             currentpath = node.getKeyPath();
@@ -855,10 +729,6 @@ function get_tree_opts(tree_selector, tree_node_id_prefix, tree_root_key, tree_r
                 loadEditArea(node.key);
             }
             else if (click_target_type == 'title' || click_target_type == 'icon') {
-
-                consoledb.groupCollapsed('tree onClick with action');
-                consoledb.log('action: '+action);
-
                 var url = '&action='+encodeURIComponent(action);
 
                 if (action=="move" || action=="copy"){
@@ -875,18 +745,13 @@ function get_tree_opts(tree_selector, tree_node_id_prefix, tree_root_key, tree_r
                     traditional: true, //"would POST param "id[]" with brackets in the name otherwise
                     data: { ids: currentselection, csrf_token: csrf},
                     success: function (data) {
-                        consoledb.log('entering callback function ...');
                         if (data!=""){
-                            var msg = '-- after action: '+action+' --: '+data;
-                            consoledb.log(msg);
                             ajax_response = data;
                             ctree = getcoltree();  // ???  // more general solution needed ?
                             htree = gethometree();
                             if ('changednodes' in data) {
                                 var changednodes = data.changednodes;
                                 for (key in changednodes) {
-                                    consoledb.log(key);
-                                    consoledb.log(changednodes[key]);
                                     var changed_node = ctree.getNodeByKey(key);
                                     if (changed_node) {
                                         changed_node.title = changednodes[key];
@@ -911,14 +776,10 @@ function get_tree_opts(tree_selector, tree_node_id_prefix, tree_root_key, tree_r
                 };  // options:
 
                 $.ajax(options);
-                consoledb.groupEnd('tree onClick');
             }  // else if
         },  // click:
 
         activate: function(event, data) {
-            consoledb.log('--- activate ---', data.node.title, data.node.key);
-            consoledb.log(event);
-            consoledb.log(data);
             var node = data.node;
 
             if (node.data.readonly == 1) {return;}
@@ -963,8 +824,6 @@ function get_tree_opts(tree_selector, tree_node_id_prefix, tree_root_key, tree_r
         },
 
         postProcess: function(event, data) {  // check this
-            consoledb.log('--- tree postProcess ---');
-            consoledb.log('event:', event, 'data:', data);
             data.tree.rootNode.setTitle(tree_root_nid);
             if (currentpath!="/"){
                 //var node = data.node;
@@ -985,12 +844,6 @@ function get_tree_opts(tree_selector, tree_node_id_prefix, tree_root_key, tree_r
 }
 
 $(document).ready(function () {
-    consoledb.log('document ready function #002');
-
-    $('.context-menu-collections').on('click', function(e){
-        consoledb.log('clicked context-menu-collections', this);
-    })
-
     layout = $('#body1').layout({
         applyDemoStyles: true,
         center__maskContents: true,

@@ -44,16 +44,9 @@ function openDoiForm(id){
     $.ajax(options);
 }
 
-function closeDoiForm(){ // close upload form
-    $('#metaform').hide();
-}
-
 var number_files = 0;
 var all_files = 0;
 var err_files = 0;
-var singlefile = 0;
-var uploaderfile = null;
-var uploaderbibtext = null;
 
 function openUploadFormPluploadWidgetFile(id){ // show upload form
     var ajax_response;
@@ -66,7 +59,7 @@ function openUploadFormPluploadWidgetFile(id){ // show upload form
 
     $.ajax(options);
 
-    uploaderfile = init_plupload_widget_file(id);
+    init_plupload_widget_file(id);
 
     uf = $('#mediatum_uploadform_plupload_widget_file');
     uf.show();
@@ -91,9 +84,6 @@ function createObjectsPluploadFile(id){ // build object out of files
     $('#uploader_start').attr('aria-disabled','true');  // not functional ?
 
     number_files = all_files = $('#uploaderfile_filelist').children().length;
-    if (number_files==1){
-        singlefile==1;
-    }
 
     $('.plupload_logo').attr('class', '');
 
@@ -338,9 +328,6 @@ function createObjectsPluploadBib(id){ // build object out of files
     $('#uploader_start').attr('aria-disabled','true');  // not functional ?
 
     number_files = $('#uploaderbib_filelist').children().length;
-    if (number_files==1){
-        singlefile==1;
-    }
 
     $('.plupload_logo').attr('class', '');
     var htree = parent.gethometree();

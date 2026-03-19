@@ -23,31 +23,16 @@ var node_to_paste = null;  // node to be moves via context menu
 var node_to_paste_classname = '';
 var node_to_paste_li = null;
 
-var dummy_temp = null;
-var temp_ctx_event = null;
-var temp_ctx_trigger = null;
-
-var temp_node = null;
-
-var last_activated_collectiontree_node = null;
-var last_activated_hometree_node = null;
 var last_activated_node = null;
 var last_activated_tree_id_sel = null;
 
-var last_click_event = null;
-
 var tree = gethometree(); // check this
-
-var ctree_dragstart_pnode_key = null;
-var ctree_dragstop_pnode_key = null;
-
-var last_ajax_result = null;
 
 var FANCYTREE_KEYBOARD = true;
 var FANCYTREE_DEFAULT_ICON = '/static/img/webtree/directory.svg';
 
 
-function build_context_menu_items(node, opts) {
+function build_context_menu_items(node) {
 
     consoledb.groupCollapsed('build_context_menu_items for node ' +  node.key + ', ' + node.title);
 
@@ -99,19 +84,6 @@ function build_context_menu_items(node, opts) {
 };
 
 
-function showContextMenuForNode(node) {
-    try {
-        $('#'+node.li.id).contextMenu();
-    }
-    catch (e) {
-        //consoledb.error('trying to showContextMenuForNode:', node, e);
-        ;
-    }
-    var ctx = _tmp_opt_menu;
-    return ctx;
-}
-
-
 function hideContextMenuForNode(node) {
     try {
         $('#'+node.li.id).contextMenu('hide');
@@ -122,18 +94,6 @@ function hideContextMenuForNode(node) {
     }
 }
 
-
-function callContextMenuCommandForNode(node, action, opt) {
-    // opt: optional, may be omitted
-    // important: node has to be active
-    var ctx = showContextMenuForNode(node);
-    var ctx_data = ctx.data();
-    var res = ctx_data.contextMenu.callback(action, opt);
-    hideContextMenuForNode(node);
-    return res;
-}
-
-var _tmp_opt_menu = null;
 
 function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curkey) {
     // arguments: '#(h|c)tree-node-'+data.node.key, get(hometree|coltree)(), '(h|c)tree-node-', data.node
@@ -150,9 +110,6 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curkey) 
                 consoledb.groupCollapsed('contextMenu build for selector "' + selector + '"');
                 consoledb.log("ctx_$trigger:", $trigger);
                 consoledb.log("ctx_event:", e);
-
-                temp_ctx_event = e;
-                temp_ctx_trigger = $trigger;
 
                 var node = curtree.getNodeByKey(curkey);
 
@@ -182,8 +139,6 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curkey) 
                             consoledb.log(an.key, an.title, opt);
                             consoledb.log('opt: ', opt);
                             consoledb.log(opt.$menu);
-                            _tmp_opt_menu = opt.$menu;
-
                             opt.$menu.find('.context-menu-item > span').attr('title', function() {
                                 return $(this).text();
                             });
@@ -577,8 +532,6 @@ function questionOperation(type){
             var key_to_clear = currentid;
 
             var node_to_clear = htree.getNodeByKey(key_to_clear);
-            var parent_node = node_to_clear.getParent();
-            var parent_node_key = parent_node.key;
 
             node_to_clear.removeChildren()
 
@@ -629,7 +582,6 @@ function questionOperation(type){
             var key_to_delete = currentid;
             var node_to_delete = cur_tree.getNodeByKey(key_to_delete);
             var parent_node = node_to_delete.getParent();
-            var parent_node_key = parent_node.key;
 
             removeByKey(cur_tree, key_to_delete);
 
@@ -662,8 +614,7 @@ function questionOperation(type){
                 activenode.toggleExpanded();
             }
             htree = gethometree();
-            trashdir_key = user_folders.trashdir;
-            trashdir = htree.getNodeByKey(trashdir_key);
+            trashdir = htree.getNodeByKey(user_folders.trashdir);
             trashdir.addChildren(node_to_delete);
             trashdir.load(forceReload=true);
             consoledb.groupEnd('edit: edit.html: questionOperation('+type+')');
@@ -678,29 +629,6 @@ function cancelOperation(){
     tree.$(".mediatum_buttonmessage").html('');
 }
 
-function addItem(id, path){  // currently unused
-    action = "";
-    idselection = "";
-    consoledb.log(path);
-    $('.ui-layout-center').attr('src', '/edit/edit_content?srcnodeid='+id+'&id='+id+"&upload=visible&r="+""+Math.random()*10000);
-    $('.mediatum_accordiontree').accordion("option", "active", 0);
-    $("#hometree").fancytree("getTree").loadKeyPath(path, function(node, status){
-        if(status=="loaded"){
-            node.setExpanded();
-        }else if(status=="ok"){
-            node.setActive();
-        }else{
-            var seg = arguments[2], isEndNode = arguments[3];
-        }
-    });
-    try {
-        $("#hometree").fancytree("getActiveNode").reloadChildren();
-    }
-    catch(e) {
-        consoledb.log('tried to reloadChildren(), caught: '+e);
-    }
-    return false;
-}
 
 function loadEditArea(id){
     $('.ui-layout-center').attr('src', '/edit/edit_content?srcnodeid='+ id + '&id=' + id);
@@ -711,7 +639,6 @@ function set_cm_to_default() {
     consoledb.log('set_cm_to_default: flag_cut_mode =', flag_cut_mode);
 }
 
-var rct = null;
 var currentselection="";
 
 var htree = null;
@@ -914,7 +841,6 @@ function get_tree_opts(tree_selector, tree_node_id_prefix, tree_root_key, tree_r
             consoledb.log(event);
             consoledb.log('event.type: ' + event.type);
             consoledb.log('action click: ', action);
-            last_click_event = event;
 
             node = data.node;
             consoledb.log(data);
@@ -1013,7 +939,7 @@ function get_tree_opts(tree_selector, tree_node_id_prefix, tree_root_key, tree_r
                 $(".contextMenu").hide();
             }
 
-            last_activated_node = last_activated_hometree_node = node;
+            last_activated_node = node;
 
             if(event.type=="fanytreeclickactivate" && node.data.readonly==0 && action==""){
                 idselection = node.key;
@@ -1102,42 +1028,3 @@ $(document).ready(function () {
     triggertarget.on('mouseover', function() {hideContextMenuForNode(last_activated_node);})
 
 });  // $(document).ready(...)
-
-function __load(path){
-    consoledb.log('called edit.html: __load(path)');
-    $("#mediatum_collectionstree").fancytree("getTree").loadKeyPath(path, function(node, status){
-        consoledb.log('load');
-
-        if(status=="loaded"){
-            //node.toggleExpanded(); //expand();
-            //node.toggleExpanded();
-            node.setExpanded();
-        }else if(status=="ok"){
-            node.setActive();
-        }else{
-            var seg = arguments[2], isEndNode = arguments[3];
-            consoledb.log(seg);
-        }
-    });
-}
-
-// reload collections tree
-function rct() {
-    consoledb.group('edit.html: rct()');
-    consoledb.log('currentpath: '+ currentpath);
-    ctree = getcoltree();
-    consoledb.log('acquired ctree');
-    htree = gethometree();
-    consoledb.log('acquired htree');
-    if (current_tree == ctree) {
-        consoledb.log('true: current_tree == ctree');
-        $("#mediatum_collectionstree").fancytree("getTree").reload();
-    }
-    if (current_tree == htree) {
-        consoledb.log('true: current_tree == htree');
-        $("#hometree").fancytree("getTree").reload();
-        consoledb.log('htree reloaded');
-        consoledb.log('loaded key path');
-    }
-    consoledb.groupEnd('edit.html: rct()');
-};

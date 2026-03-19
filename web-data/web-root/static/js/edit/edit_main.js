@@ -158,7 +158,7 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curkey) 
                             case "create_container":
                                 node.load(true);
                                 node.setExpanded();
-                                addNewContainer(node, container_type);
+                                _add_new_container(container_type, node);
 
                                 node.tree.loadKeyPath(currentpath, function(node, status){
                                     if(status=="loaded"){
@@ -251,7 +251,7 @@ function contextmenu_collections(selector) {
                         }
 
                         if (key == "create_container_collection") {
-                            addNewContainerToRoot("collection");
+                            _add_new_container("collection");
                             reloadColTree();
                         }
                         if (key == "paste_container_here") {
@@ -360,46 +360,25 @@ function reloadPage(id, path, tree_selector){
 }
 
 
-function addNewContainerToRoot(type){ /* add new container */
+function _add_new_container(type, parent_node)  {
     new_path_endpoint = false;
     var ajax_response;
-    var parent_id = collectionsid;
-    var options = {
+    var parent_id = (parent_node) ? parent_node.key : collectionsid;
+    $.ajax({
         url: '/edit/edit_action?srcnodeid='+parent_id+'&action=addcontainer&type='+type,
         async: false,
         dataType: 'json',
-        success: function (response) {
-            ajax_response = response;
-            new_path_endpoint = response.key;
-
-            currentpath = response.key;
-        },
-    };
-
-    $.ajax(options);
-}
-
-function addNewContainer(parent_node, type){ /* add new container */
-    new_path_endpoint = false;
-    var ajax_response;
-    var parent_id = parent_node.key;
-    var options = {
-          url: '/edit/edit_action?srcnodeid='+parent_id+'&action=addcontainer&type='+type,
-          async: false,
-          dataType: 'json',
-          success: function (response) {
-              ajax_response = response;
-              new_path_endpoint = response.key;
-              currentpath = currentpath + '/' + response.key;
-          },
-    };
-
-    $.ajax(options);
-
-    var childnode = ajax_response;
-    parent_node.tree.getNodeByKey(parent_id).addChildren([childnode], parent_node.children[0]);
-    parent_node.tree.activateKey(new_path_endpoint);
-    parent_node.tree.activeNode.data.isFolder = true;
+        success: function (response) { ajax_response = response; },
+    });
+    new_path_endpoint = ajax_response.key;
+    if (parent_node)  {
+        currentpath = currentpath + '/' + new_path_endpoint;
+        parent_node.tree.getNodeByKey(parent_id).addChildren([ajax_response], parent_node.children[0]);
+        parent_node.tree.activateKey(new_path_endpoint);
+        parent_node.tree.activeNode.data.isFolder = true;
+    }  else  {
+        currentpath = new_path_endpoint;
+    }
 }
 
 

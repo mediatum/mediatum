@@ -99,7 +99,6 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curkey) 
                 // show contextMenu only for the active node
                 if (!node.isActive()) {curtree.widget.options.keyboard = FANCYTREE_KEYBOARD; return false;};
 
-                //$('.context-menu-list .context-menu-root').focus();
                 curtree.widget.options.keyboard = false;
 
                 return {
@@ -347,8 +346,8 @@ function isElementInViewport(el) {
     return (
         rect.top >= 0 &&
         rect.left >= 0 &&
-        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) && /*or $(window).height() */
-        rect.right <= (window.innerWidth || document.documentElement.clientWidth) /*or $(window).width() */
+        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+        rect.right <= (window.innerWidth || document.documentElement.clientWidth)
     );
 }
 
@@ -573,7 +572,6 @@ function get_tree_opts(tree_selector, tree_node_id_prefix, tree_root_key, tree_r
 
         autoFocus: false, // Set focus to first child, when expanding or lazy-loading.
         autoCollapse: false, // Automatically collapse all siblings, when a node is expanded.
-        //autoScroll: true,
         activeVisible: true, // Make sure, active nodes are visible (expanded).
         clickFolderMode: 1, // 1:activate, 2:expand, 3:activate and expand
         checkbox: false, // Show checkboxes.
@@ -581,7 +579,6 @@ function get_tree_opts(tree_selector, tree_node_id_prefix, tree_root_key, tree_r
         idPrefix: tree_node_id_prefix, // Used to generate node id's like <span id="fancytree-id-<key>">.
         generateIds: true,
         minExpandLevel: 1, // 1: root node is not collapsible, 2, .., 4
-        //nolink: false, // Use <span> instead of <a> tags for all nodes
         selectMode: 2, // 1:single, 2:multi, 3:multi-hier
         keyboard: FANCYTREE_KEYBOARD, // Support keyboard navigation.
         tabbable: true, // Whole tree behaves as one single control
@@ -668,7 +665,6 @@ function get_tree_opts(tree_selector, tree_node_id_prefix, tree_root_key, tree_r
                 loadEditArea(node.key);
             }
             if(event.key==" " && node.data.readonly==0 && action==""){
-                // 2014-11-26
                 contextmenue_on_demand('#'+tree_node_id_prefix+data.node.key, $(tree_selector).fancytree("getTree"), tree_node_id_prefix,
                 data.node.key);  // tree-dependent
                 $('#'+tree_node_id_prefix+node.key+' span').contextMenu(); // show contextmenu programatically
@@ -792,7 +788,6 @@ function get_tree_opts(tree_selector, tree_node_id_prefix, tree_root_key, tree_r
             currentpath = node.getKeyPath();
             idselection = node.key;
             tree.currentfolder = node.key;
-            // 2014-11-26
             contextmenue_on_demand('#'+tree_node_id_prefix+data.node.key, $(tree_selector).fancytree("getTree"), tree_node_id_prefix,
             data.node.key);  // tree-dependent
             $(node.span).removeClass('disabled');
@@ -826,7 +821,6 @@ function get_tree_opts(tree_selector, tree_node_id_prefix, tree_root_key, tree_r
         postProcess: function(event, data) {  // check this
             data.tree.rootNode.setTitle(tree_root_nid);
             if (currentpath!="/"){
-                //var node = data.node;
                 var thistree = $(tree_selector).fancytree("getTree");
                 thistree.loadKeyPath(currentpath, function(node, status){
                     if(status=="loaded"){

@@ -621,7 +621,6 @@ function get_tree_opts(tree_selector, tree_node_id_prefix, tree_root_key, tree_r
 
         // event click is fired befor activate
         click: function(event, data){
-            var click_target_type = data.targetType;
             node = data.node;
             current_tree = $(this).fancytree("getTree");
             current_tree.widget.options.keyboard = FANCYTREE_KEYBOARD;
@@ -632,7 +631,7 @@ function get_tree_opts(tree_selector, tree_node_id_prefix, tree_root_key, tree_r
                 idselection = node.key;
                 loadEditArea(node.key);
             }
-            else if (click_target_type == 'title' || click_target_type == 'icon') {
+            else if (data.targetType == 'title' || data.targetType == 'icon') {
                 var url = '&action='+encodeURIComponent(action);
 
                 if (action=="move" || action=="copy"){

@@ -77,8 +77,7 @@ function build_context_menu_items(node) {
 function hideContextMenuForNode(node) {
     try {
         $('#'+node.li.id).contextMenu('hide');
-    }
-    catch { ; }
+    }  catch  {}
 }
 
 
@@ -292,8 +291,7 @@ function removeByKey(dtree, ckey) {
             if (pnode.isExpanded() != pnode_was_expanded) {
                 pnode.toggleExpand();
             }
-        }
-        catch { ; }
+        }  catch  {}
     }
 }
 
@@ -342,8 +340,7 @@ function reloadPage(id, path, tree_selector){
         an.load(forceReload=true);  // fancytree
         an.toggleExpanded();
         an.toggleExpanded();
-    }
-    catch { ; }
+    }  catch  {}
 
     return false;
 }
@@ -400,7 +397,7 @@ function questionOperation(type){
                 node_to_clear.toggleExpanded();
                 node_to_clear.toggleExpanded();
                 }
-            catch(e) {
+            catch  {
                 activenode.toggleExpanded();
                 activenode.toggleExpanded();
             }
@@ -434,8 +431,7 @@ function questionOperation(type){
                 parent_node.removeChild(node_to_delete);
                 parent_node.toggleExpanded();
                 parent_node.toggleExpanded();
-                }
-            catch(e) {
+            }  catch  {
                 activenode.toggleExpanded();
                 activenode.toggleExpanded();
             }
@@ -553,18 +549,12 @@ function get_tree_opts(tree_selector, tree_node_id_prefix, tree_root_key, tree_r
                 };
             try {
               $(node.li).addClass('fancytree-loading');
-            }
-            catch (e) {
-             ;
-            }
+            }  catch  {}
             $.ajax(options);
             data.result = ajax_response;
             try {
               $(node.li).removeClass('fancytree-loading');
-            }
-            catch (e) {
-             ;
-            }
+            }  catch  {}
         },
 
         keydown: function(event, data){
@@ -603,10 +593,7 @@ function get_tree_opts(tree_selector, tree_node_id_prefix, tree_root_key, tree_r
                 action = "";
                 try {
                     node_to_paste.li.className = node_to_paste_classname;
-                }
-                catch(e) {
-                    ;
-                }
+                }  catch  {}
             }
 
             switch( event.which ) {
